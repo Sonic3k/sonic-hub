@@ -49,7 +49,7 @@ export function useUpdateTask(id: string) {
   const qc = useQueryClient()
   return useMutation({
     mutationFn: (data: TaskRequest) => tasksApi.update(id, data),
-    onSuccess: (task) => {
+    onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['tasks'] })
     },
   })

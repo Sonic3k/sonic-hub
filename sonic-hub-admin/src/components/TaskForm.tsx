@@ -1,7 +1,7 @@
 import { useState } from 'react'
-import { Button, Input, Textarea, Select, Modal } from '../ui'
-import { useTags } from '../../hooks/useTags'
-import type { Task, TaskRequest, TaskStatus } from '../../types'
+import { Button, Input, Textarea, Select, Modal } from './ui'
+import { useTags } from '../hooks/useTags'
+import type { Task, TaskRequest, TaskStatus } from '../types'
 
 const STATUSES: TaskStatus[] = ['OPEN', 'IN_PROGRESS', 'SNOOZED', 'DONE', 'CLOSED']
 const STATUS_LABELS: Record<TaskStatus, string> = {
