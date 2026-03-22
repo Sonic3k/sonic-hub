@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import EditModal from './EditModal'
 import { useTags, useProjects } from '../../hooks/useBoard'
 import { useQueryClient, useMutation } from '@tanstack/react-query'
@@ -7,16 +7,16 @@ import type { Todo } from '../../types'
 
 interface Props { todo: Todo; onClose: () => void }
 
-const field = "w-full bg-black/5 rounded px-3 py-2 text-sm outline-none border border-transparent focus:border-[#b8905a] transition-colors text-[#2a1e10] placeholder:text-[#b0997a]"
-const label = "block text-[10px] font-semibold uppercase tracking-wider mb-1"
-
 export default function EditTodoForm({ todo, onClose }: Props) {
   const [title, setTitle] = useState(todo.title)
   const [projectId, setProjectId] = useState(todo.projectId ?? '')
   const [selectedTagIds, setSelectedTagIds] = useState<Set<string>>(new Set(todo.tags.map(t => t.id)))
 
+  const titleRef = useRef<HTMLInputElement>(null)
   const { data: tags = [] } = useTags()
   const { data: projects = [] } = useProjects()
+
+  useEffect(() => { titleRef.current?.focus() }, [])
 
   const qc = useQueryClient()
   const updateTodo = useMutation({
@@ -36,50 +36,66 @@ export default function EditTodoForm({ todo, onClose }: Props) {
   }
 
   return (
-    <EditModal title="Edit Todo" onClose={onClose}>
-      <form onSubmit={handleSubmit} className="space-y-3">
-        <div>
-          <label className={label} style={{ color: '#9a8a70' }}>Title</label>
-          <input value={title} onChange={e => setTitle(e.target.value)} className={field}
-            placeholder="Todo title..." autoFocus required />
+    <EditModal onClose={onClose} ruleColor="#7a9a5a">
+      <form onSubmit={handleSubmit}>
+        <input
+          ref={titleRef}
+          value={title}
+          onChange={e => setTitle(e.target.value)}
+          placeholder="Todo..."
+          className="w-full bg-transparent border-none outline-none text-[17px] font-semibold text-[#2a1e10] placeholder:text-[#c0aa88] mb-4"
+          required
+        />
+
+        <div className="border-t border-black/8 pt-3 space-y-3">
+          {projects.length > 0 && (
+            <div className="flex items-center gap-2 flex-wrap">
+              <span className="text-[11px] text-[#9a8a70] w-14">Project</span>
+              <div className="flex gap-1.5 flex-wrap">
+                <button type="button" onClick={() => setProjectId('')}
+                  className="px-2 py-1 rounded text-[11px] transition-all"
+                  style={projectId === '' ? { background: '#2c2010', color: '#faf5eb' } : { background: 'rgba(0,0,0,.07)', color: '#8a7055' }}>
+                  None
+                </button>
+                {projects.map(p => (
+                  <button key={p.id} type="button" onClick={() => setProjectId(p.id)}
+                    className="flex items-center gap-1 px-2 py-1 rounded text-[11px] transition-all"
+                    style={projectId === p.id
+                      ? { background: (p.color || '#6366f1') + '33', color: p.color || '#6366f1', fontWeight: 600 }
+                      : { background: 'rgba(0,0,0,.07)', color: '#8a7055' }}>
+                    <span className="w-1.5 h-1.5 rounded-full" style={{ background: p.color || '#94a3b8' }} />
+                    {p.name}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {tags.length > 0 && (
+            <div className="flex items-center gap-2 flex-wrap">
+              <span className="text-[11px] text-[#9a8a70] w-14">Tags</span>
+              <div className="flex gap-1.5 flex-wrap">
+                {tags.map(tag => (
+                  <button key={tag.id} type="button" onClick={() => toggleTag(tag.id)}
+                    className="flex items-center gap-1 px-2 py-1 rounded text-[11px] transition-all"
+                    style={selectedTagIds.has(tag.id)
+                      ? { background: tag.color + '30', color: tag.color, fontWeight: 600 }
+                      : { background: 'rgba(0,0,0,.07)', color: '#8a7055' }}>
+                    <span className="w-1.5 h-1.5 rounded-full" style={{ background: tag.color }} />
+                    {tag.name}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
 
-        {projects.length > 0 && (
-          <div>
-            <label className={label} style={{ color: '#9a8a70' }}>Project</label>
-            <select value={projectId} onChange={e => setProjectId(e.target.value)} className={field}>
-              <option value="">No project</option>
-              {projects.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
-            </select>
-          </div>
-        )}
-
-        {tags.length > 0 && (
-          <div>
-            <label className={label} style={{ color: '#9a8a70' }}>Tags</label>
-            <div className="flex flex-wrap gap-1.5">
-              {tags.map(tag => (
-                <button key={tag.id} type="button" onClick={() => toggleTag(tag.id)}
-                  className="flex items-center gap-1 px-2 py-0.5 rounded text-[10px] border transition-all"
-                  style={selectedTagIds.has(tag.id)
-                    ? { background: tag.color + '22', borderColor: tag.color, color: tag.color }
-                    : { borderColor: 'rgba(0,0,0,.15)', color: '#9a8a70' }}>
-                  <span className="w-1.5 h-1.5 rounded-full" style={{ background: tag.color }} />
-                  {tag.name}
-                </button>
-              ))}
-            </div>
-          </div>
-        )}
-
-        <div className="flex justify-end gap-2 pt-1">
-          <button type="button" onClick={onClose}
-            className="px-3 py-1.5 rounded text-xs font-medium"
-            style={{ background: 'rgba(0,0,0,.07)', color: '#6b5c44' }}>
+        <div className="flex justify-end gap-2 mt-4 pt-3 border-t border-black/8">
+          <button type="button" onClick={onClose} className="px-3 py-1.5 rounded text-[12px]" style={{ color: '#9a8a70' }}>
             Cancel
           </button>
           <button type="submit" disabled={updateTodo.isPending || !title.trim()}
-            className="px-4 py-1.5 rounded text-xs font-medium disabled:opacity-50"
+            className="px-5 py-1.5 rounded text-[12px] font-medium disabled:opacity-50"
             style={{ background: '#2c2010', color: '#faf5eb' }}>
             {updateTodo.isPending ? 'Saving...' : 'Save'}
           </button>
