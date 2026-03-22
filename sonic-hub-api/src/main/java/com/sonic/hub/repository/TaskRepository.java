@@ -6,24 +6,26 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 
 public interface TaskRepository extends JpaRepository<Task, UUID> {
 
-    // Root tasks (no parent)
     List<Task> findByParentIsNullOrderByCreatedAtDesc();
-
-    // Children of a task
     List<Task> findByParentIdOrderByCreatedAtDesc(UUID parentId);
-
-    // Count children
     long countByParentId(UUID parentId);
-
-    // Root tasks filtered by status
     List<Task> findByParentIsNullAndStatusOrderByCreatedAtDesc(TaskStatus status);
+    List<Task> findByProjectIdAndParentIsNullOrderByCreatedAtDesc(UUID projectId);
 
-    // Check circular reference: traverse up the tree
+    // Recurring: find tasks due for regeneration
+    @Query("SELECT t FROM Task t WHERE t.recurringConfig IS NOT NULL")
+    List<Task> findAllRecurring();
+
+    // Due today or overdue
+    List<Task> findByDueDateLessThanEqualAndStatusNotOrderByDueDateAsc(
+        LocalDate date, TaskStatus status);
+
     @Query(value = """
         WITH RECURSIVE ancestors AS (
             SELECT id, parent_id FROM tasks WHERE id = :parentId

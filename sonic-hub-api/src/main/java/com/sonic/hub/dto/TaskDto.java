@@ -1,51 +1,54 @@
 package com.sonic.hub.dto;
 
+import com.sonic.hub.model.Priority;
 import com.sonic.hub.model.TaskStatus;
 import jakarta.validation.constraints.NotBlank;
 import lombok.*;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
 public class TaskDto {
 
-    @Getter
-    @Setter
-    @NoArgsConstructor
-    @AllArgsConstructor
-    @Builder
+    @Getter @Setter @NoArgsConstructor @AllArgsConstructor @Builder
     public static class Response {
         private UUID id;
         private String title;
         private String description;
         private TaskStatus status;
+        private Priority priority;
+        private LocalDate dueDate;
         private UUID parentId;
         private long childCount;
+        private UUID projectId;
+        private String projectName;
         private Set<TagDto.Response> tags;
+        private Map<String, Object> recurringConfig;
         private LocalDateTime createdAt;
         private LocalDateTime updatedAt;
     }
 
-    @Getter
-    @Setter
-    @NoArgsConstructor
-    @AllArgsConstructor
+    @Getter @Setter @NoArgsConstructor @AllArgsConstructor
     public static class Request {
         @NotBlank(message = "Title is required")
         private String title;
 
         private String description;
         private TaskStatus status;
+        private Priority priority;
+        private LocalDate dueDate;
         private UUID parentId;
+        private UUID projectId;
         private Set<UUID> tagIds;
+        private Map<String, Object> recurringConfig;
     }
 
-    @Getter
-    @Setter
-    @NoArgsConstructor
-    @AllArgsConstructor
+    @Getter @Setter @NoArgsConstructor @AllArgsConstructor
     public static class MoveRequest {
-        private UUID parentId; // null = move to root
+        private UUID parentId;
+        private UUID projectId;
     }
 }

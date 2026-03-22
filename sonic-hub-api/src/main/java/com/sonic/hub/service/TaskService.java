@@ -4,9 +4,7 @@ import com.sonic.hub.dto.TagDto;
 import com.sonic.hub.dto.TaskDto;
 import com.sonic.hub.exception.BadRequestException;
 import com.sonic.hub.exception.ResourceNotFoundException;
-import com.sonic.hub.model.Tag;
-import com.sonic.hub.model.Task;
-import com.sonic.hub.model.TaskStatus;
+import com.sonic.hub.model.*;
 import com.sonic.hub.repository.TagRepository;
 import com.sonic.hub.repository.TaskRepository;
 import lombok.RequiredArgsConstructor;
@@ -24,8 +22,7 @@ public class TaskService {
     private final TaskRepository taskRepository;
     private final TagRepository tagRepository;
     private final TagService tagService;
-
-    // --- Queries ---
+    private final ProjectService projectService;
 
     public List<TaskDto.Response> getRootTasks(TaskStatus status) {
         List<Task> tasks = (status != null)
@@ -34,17 +31,20 @@ public class TaskService {
         return tasks.stream().map(this::toResponse).collect(Collectors.toList());
     }
 
+    public List<TaskDto.Response> getByProject(UUID projectId) {
+        return taskRepository.findByProjectIdAndParentIsNullOrderByCreatedAtDesc(projectId)
+                .stream().map(this::toResponse).collect(Collectors.toList());
+    }
+
     public TaskDto.Response getById(UUID id) {
         return toResponse(findById(id));
     }
 
     public List<TaskDto.Response> getChildren(UUID parentId) {
-        findById(parentId); // validate parent exists
+        findById(parentId);
         return taskRepository.findByParentIdOrderByCreatedAtDesc(parentId)
                 .stream().map(this::toResponse).collect(Collectors.toList());
     }
-
-    // --- Mutations ---
 
     @Transactional
     public TaskDto.Response create(TaskDto.Request request) {
@@ -52,37 +52,41 @@ public class TaskService {
                 .title(request.getTitle().trim())
                 .description(request.getDescription())
                 .status(request.getStatus() != null ? request.getStatus() : TaskStatus.OPEN)
+                .priority(request.getPriority() != null ? request.getPriority() : Priority.MEDIUM)
+                .dueDate(request.getDueDate())
+                .recurringConfig(request.getRecurringConfig())
                 .build();
 
         if (request.getParentId() != null) {
-            Task parent = findById(request.getParentId());
-            task.setParent(parent);
+            task.setParent(findById(request.getParentId()));
         }
-
+        if (request.getProjectId() != null) {
+            task.setProject(projectService.findById(request.getProjectId()));
+        }
         if (request.getTagIds() != null && !request.getTagIds().isEmpty()) {
-            Set<Tag> tags = tagRepository.findAllByIdIn(request.getTagIds());
-            task.setTags(tags);
+            task.setTags(tagRepository.findAllByIdIn(request.getTagIds()));
         }
-
         return toResponse(taskRepository.save(task));
     }
 
     @Transactional
     public TaskDto.Response update(UUID id, TaskDto.Request request) {
         Task task = findById(id);
-
         task.setTitle(request.getTitle().trim());
         task.setDescription(request.getDescription());
+        task.setDueDate(request.getDueDate());
+        if (request.getStatus() != null) task.setStatus(request.getStatus());
+        if (request.getPriority() != null) task.setPriority(request.getPriority());
+        if (request.getRecurringConfig() != null) task.setRecurringConfig(request.getRecurringConfig());
 
-        if (request.getStatus() != null) {
-            task.setStatus(request.getStatus());
+        if (request.getProjectId() != null) {
+            task.setProject(projectService.findById(request.getProjectId()));
+        } else {
+            task.setProject(null);
         }
-
         if (request.getTagIds() != null) {
-            Set<Tag> tags = tagRepository.findAllByIdIn(request.getTagIds());
-            task.setTags(tags);
+            task.setTags(tagRepository.findAllByIdIn(request.getTagIds()));
         }
-
         return toResponse(taskRepository.save(task));
     }
 
@@ -90,18 +94,22 @@ public class TaskService {
     public TaskDto.Response move(UUID id, TaskDto.MoveRequest request) {
         Task task = findById(id);
 
+        // Move parent
         if (request.getParentId() == null) {
-            // Move to root
             task.setParent(null);
         } else {
-            if (request.getParentId().equals(id)) {
+            if (request.getParentId().equals(id))
                 throw new BadRequestException("Task cannot be its own parent");
-            }
-            if (taskRepository.wouldCreateCycle(id, request.getParentId())) {
+            if (taskRepository.wouldCreateCycle(id, request.getParentId()))
                 throw new BadRequestException("Move would create a circular reference");
-            }
-            Task newParent = findById(request.getParentId());
-            task.setParent(newParent);
+            task.setParent(findById(request.getParentId()));
+        }
+
+        // Move project
+        if (request.getProjectId() != null) {
+            task.setProject(projectService.findById(request.getProjectId()));
+        } else {
+            task.setProject(null);
         }
 
         return toResponse(taskRepository.save(task));
@@ -110,8 +118,7 @@ public class TaskService {
     @Transactional
     public TaskDto.Response addTag(UUID taskId, UUID tagId) {
         Task task = findById(taskId);
-        Tag tag = tagService.findById(tagId);
-        task.getTags().add(tag);
+        task.getTags().add(tagService.findById(tagId));
         return toResponse(taskRepository.save(task));
     }
 
@@ -124,30 +131,30 @@ public class TaskService {
 
     @Transactional
     public void delete(UUID id) {
-        Task task = findById(id);
-        taskRepository.delete(task);
+        taskRepository.delete(findById(id));
     }
 
-    // --- Helpers ---
-
-    private Task findById(UUID id) {
+    public Task findById(UUID id) {
         return taskRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Task not found: " + id));
     }
 
-    private TaskDto.Response toResponse(Task task) {
+    public TaskDto.Response toResponse(Task task) {
         Set<TagDto.Response> tagResponses = task.getTags().stream()
-                .map(tagService::toResponse)
-                .collect(Collectors.toSet());
-
+                .map(tagService::toResponse).collect(Collectors.toSet());
         return TaskDto.Response.builder()
                 .id(task.getId())
                 .title(task.getTitle())
                 .description(task.getDescription())
                 .status(task.getStatus())
+                .priority(task.getPriority())
+                .dueDate(task.getDueDate())
                 .parentId(task.getParent() != null ? task.getParent().getId() : null)
                 .childCount(taskRepository.countByParentId(task.getId()))
+                .projectId(task.getProject() != null ? task.getProject().getId() : null)
+                .projectName(task.getProject() != null ? task.getProject().getName() : null)
                 .tags(tagResponses)
+                .recurringConfig(task.getRecurringConfig())
                 .createdAt(task.getCreatedAt())
                 .updatedAt(task.getUpdatedAt())
                 .build();

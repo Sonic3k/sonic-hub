@@ -41,15 +41,14 @@ public class TaskController {
     }
 
     @PutMapping("/{id}")
-    public TaskDto.Response update(
-            @PathVariable UUID id,
+    public TaskDto.Response update(@PathVariable UUID id,
             @Valid @RequestBody TaskDto.Request request) {
         return taskService.update(id, request);
     }
 
+    // Move task to different parent and/or project
     @PostMapping("/{id}/move")
-    public TaskDto.Response move(
-            @PathVariable UUID id,
+    public TaskDto.Response move(@PathVariable UUID id,
             @RequestBody TaskDto.MoveRequest request) {
         return taskService.move(id, request);
     }
