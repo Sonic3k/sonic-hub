@@ -43,7 +43,7 @@ export default function EditTodoForm({ todo, onClose }: Props) {
           value={title}
           onChange={e => setTitle(e.target.value)}
           placeholder="Todo..."
-          className="w-full bg-transparent border-none outline-none text-[17px] font-semibold text-[#2a1e10] placeholder:text-[#c0aa88] mb-4"
+          className="w-full bg-transparent border-none outline-none caret-[#2c2010] text-[17px] font-semibold text-[#2a1e10] placeholder:text-[#c0aa88] mb-4"
           required
         />
 

@@ -49,7 +49,7 @@ export default function EditProblemForm({ problem, onClose }: Props) {
           value={title}
           onChange={e => setTitle(e.target.value)}
           placeholder="What's the problem?"
-          className="w-full bg-transparent border-none outline-none text-[17px] font-semibold text-[#2a1e10] placeholder:text-[#c0aa88] mb-3"
+          className="w-full bg-transparent border-none outline-none caret-[#2c2010] text-[17px] font-semibold text-[#2a1e10] placeholder:text-[#c0aa88] mb-3"
           required
         />
 
@@ -60,7 +60,7 @@ export default function EditProblemForm({ problem, onClose }: Props) {
           placeholder="Context, findings, ideas to solve..."
           rows={7}
           className="w-full bg-transparent border-none outline-none resize-none placeholder:text-[#c0aa88]"
-          style={{ fontFamily: "'Caveat', cursive", fontSize: '16px', lineHeight: '32px', color: '#5a3e28' }}
+          style={{ caretColor: '#2c2010', fontFamily: "'Caveat', cursive", fontSize: '16px', lineHeight: '32px', color: '#5a3e28' }}
         />
 
         <div className="border-t border-black/8 mt-1 pt-3 space-y-3">

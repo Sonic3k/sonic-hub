@@ -63,7 +63,7 @@ export default function QuickAdd({ onClose, defaultType = 'task' }: Props) {
           onChange={e => setTitle(e.target.value)}
           onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey && !expanded) { e.preventDefault(); handleSubmit(e as unknown as React.FormEvent) } }}
           placeholder={type === 'problem' ? "What's the problem?" : type === 'todo' ? 'What needs doing?' : 'Task title...'}
-          className="w-full bg-transparent border-none outline-none text-[17px] font-semibold text-[#2a1e10] placeholder:text-[#c0aa88]"
+          className="w-full bg-transparent border-none outline-none caret-[#2c2010] text-[17px] font-semibold text-[#2a1e10] placeholder:text-[#c0aa88]"
           required
         />
 
@@ -76,7 +76,7 @@ export default function QuickAdd({ onClose, defaultType = 'task' }: Props) {
             rows={4}
             autoFocus={expanded}
             className="w-full bg-transparent border-none outline-none resize-none mt-2 placeholder:text-[#c0aa88]"
-            style={{ fontFamily: "'Caveat', cursive", fontSize: '15px', lineHeight: '30px', color: '#5a3e28' }}
+            style={{ caretColor: '#2c2010', fontFamily: "'Caveat', cursive", fontSize: '15px', lineHeight: '30px', color: '#5a3e28' }}
           />
         )}
 

@@ -60,7 +60,7 @@ export default function EditTaskForm({ task, onClose }: Props) {
           value={title}
           onChange={e => setTitle(e.target.value)}
           placeholder="Task title..."
-          className="w-full bg-transparent border-none outline-none text-[17px] font-semibold text-[#2a1e10] placeholder:text-[#c0aa88] mb-3"
+          className="w-full bg-transparent border-none outline-none caret-[#2c2010] text-[17px] font-semibold text-[#2a1e10] placeholder:text-[#c0aa88] mb-3"
           style={{ fontFamily: "'DM Sans', sans-serif" }}
           required
         />
@@ -73,7 +73,7 @@ export default function EditTaskForm({ task, onClose }: Props) {
           placeholder="Write anything here — context, notes, ideas..."
           rows={6}
           className="w-full bg-transparent border-none outline-none resize-none text-[14px] leading-[32px] text-[#5a3e28] placeholder:text-[#c0aa88]"
-          style={{ fontFamily: "'Caveat', cursive", fontSize: '16px', lineHeight: '32px' }}
+          style={{ caretColor: '#2c2010', fontFamily: "'Caveat', cursive", fontSize: '16px', lineHeight: '32px' }}
         />
 
         {/* Divider */}
