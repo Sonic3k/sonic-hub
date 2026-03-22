@@ -19,6 +19,8 @@ export const todosApi = {
   getAll: () => api.get<Todo[]>('/api/todos').then(r => r.data),
   create: (data: { title: string; projectId?: string; tagIds?: string[] }) =>
     api.post<Todo>('/api/todos', data).then(r => r.data),
+  update: (id: string, data: { title: string; projectId?: string; tagIds?: string[] }) =>
+    api.put<Todo>(`/api/todos/${id}`, data).then(r => r.data),
   toggleDone: (id: string) => api.patch<Todo>(`/api/todos/${id}/done`).then(r => r.data),
   delete: (id: string) => api.delete(`/api/todos/${id}`),
 }

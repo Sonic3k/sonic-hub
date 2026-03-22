@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import EditModal from './EditModal'
 import { useUpdateTask, useTags, useProjects } from '../../hooks/useBoard'
-import { STATUS_LABELS, PRIORITY_DOT } from '../../types'
+import { STATUS_LABELS } from '../../types'
 import type { Task, TaskStatus, Priority } from '../../types'
 
 const STATUSES: TaskStatus[] = ['OPEN', 'IN_PROGRESS', 'SNOOZED', 'DONE', 'CLOSED']
