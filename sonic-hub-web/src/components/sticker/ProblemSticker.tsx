@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Pencil, Trash2 } from 'lucide-react'
+import { Trash2 } from 'lucide-react'
 import StickerBase, { stickerColor, stickerRotation } from './StickerBase'
 import EditProblemForm from '../ui/EditProblemForm'
 import { useDeleteProblem } from '../../hooks/useBoard'
@@ -20,14 +20,13 @@ export default function ProblemSticker({ problem, index }: Props) {
   return (
     <>
       <div className="mb-3 group">
-        <StickerBase color={stickerColor(index + 4)} rotation={stickerRotation(index + 3)} faded={isDismissed}>
+        <StickerBase
+          color={stickerColor(index + 4)}
+          rotation={stickerRotation(index + 3)}
+          faded={isDismissed}
+          onClick={() => setEditing(true)}
+        >
           <div className="px-3 pt-2 pb-4 relative z-[1]">
-            <button
-              onClick={e => { e.stopPropagation(); setEditing(true) }}
-              className="absolute top-2 left-2 opacity-0 group-hover:opacity-100 transition-opacity text-[#9a8070] hover:text-[#5a3e28]">
-              <Pencil size={11} />
-            </button>
-
             <span className="text-[9px] font-bold uppercase tracking-wider text-[#9a6050] mb-1 block">
               Problem
             </span>

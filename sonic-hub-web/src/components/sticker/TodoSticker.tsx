@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Pencil, Trash2 } from 'lucide-react'
+import { Trash2 } from 'lucide-react'
 import clsx from 'clsx'
 import StickerBase, { stickerColor, stickerRotation } from './StickerBase'
 import EditTodoForm from '../ui/EditTodoForm'
@@ -16,15 +16,14 @@ export default function TodoSticker({ todo, index }: Props) {
   return (
     <>
       <div className="mb-3 group">
-        <StickerBase color={stickerColor(index + 2)} rotation={stickerRotation(index + 1)} faded={todo.done}>
+        <StickerBase
+          color={stickerColor(index + 2)}
+          rotation={stickerRotation(index + 1)}
+          faded={todo.done}
+          onClick={() => setEditing(true)}
+        >
           <div className="px-3 pt-2 pb-4 relative z-[1]">
-            <button
-              onClick={e => { e.stopPropagation(); setEditing(true) }}
-              className="absolute top-2 left-2 opacity-0 group-hover:opacity-100 transition-opacity text-[#9a8070] hover:text-[#5a3e28]">
-              <Pencil size={11} />
-            </button>
-
-            <p className={clsx('text-[13px] font-medium leading-snug pr-5 pt-1',
+            <p className={clsx('text-[13px] font-medium leading-snug pr-5',
               todo.done ? 'line-through text-[#9a8a70]' : 'text-[#2a1e10]')}>
               {todo.title}
             </p>
@@ -51,7 +50,8 @@ export default function TodoSticker({ todo, index }: Props) {
               <Trash2 size={11} />
             </button>
 
-            <button onClick={() => toggle.mutate(todo.id)}
+            <button
+              onClick={e => { e.stopPropagation(); toggle.mutate(todo.id) }}
               className={clsx(
                 'absolute bottom-2 right-2 w-5 h-5 rounded-full border-[1.5px] flex items-center justify-center text-[10px] transition-all',
                 todo.done
