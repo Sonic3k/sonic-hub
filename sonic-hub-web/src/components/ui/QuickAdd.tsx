@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from 'react'
 import { X } from 'lucide-react'
 import { useCreateTask, useCreateTodo, useCreateProblem, useProjects, useTags } from '../../hooks/useBoard'
-import type { TaskStatus, Priority } from '../../types'
+
 
 type ItemType = 'task' | 'todo' | 'problem'
 
