@@ -1,0 +1,31 @@
+# Maven
+target/
+.mvn/wrapper/maven-wrapper.jar
+!**/src/main/**/target/
+!**/src/test/**/target/
+
+# Compiled
+*.class
+*.jar
+*.war
+*.ear
+
+# IDE
+.idea/
+*.iml
+*.iws
+.vscode/
+*.suo
+
+# Env
+.env
+.env.local
+application-local.properties
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+logs/

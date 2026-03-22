@@ -1,0 +1,8 @@
+[build]
+builder = "nixpacks"
+
+[deploy]
+startCommand = "java -jar target/sonic-hub-api.jar"
+healthcheckPath = "/actuator/health"
+healthcheckTimeout = 60
+restartPolicyType = "on_failure"
