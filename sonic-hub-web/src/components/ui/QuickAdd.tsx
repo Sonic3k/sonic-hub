@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react'
+import { useState } from 'react'
 import { ChevronDown } from 'lucide-react'
 import EditModal from './EditModal'
 import { useCreateTask, useCreateTodo, useCreateProblem, useProjects, useTags } from '../../hooks/useBoard'
@@ -14,7 +14,7 @@ export default function QuickAdd({ onClose, defaultType = 'task' }: Props) {
   const [projectId, setProjectId] = useState('')
   const [selectedTagIds, setSelectedTagIds] = useState<Set<string>>(new Set())
 
-  const titleRef = useRef<HTMLInputElement>(null)
+  
   const { data: projects = [] } = useProjects()
   const { data: tags = [] } = useTags()
 
@@ -22,7 +22,7 @@ export default function QuickAdd({ onClose, defaultType = 'task' }: Props) {
   const createTodo = useCreateTodo()
   const createProblem = useCreateProblem()
 
-  useEffect(() => { titleRef.current?.focus() }, [])
+  
 
   const isPending = createTask.isPending || createTodo.isPending || createProblem.isPending
 
@@ -58,7 +58,7 @@ export default function QuickAdd({ onClose, defaultType = 'task' }: Props) {
 
         {/* Title */}
         <input
-          ref={titleRef}
+          autoFocus
           value={title}
           onChange={e => setTitle(e.target.value)}
           onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey && !expanded) { e.preventDefault(); handleSubmit(e as unknown as React.FormEvent) } }}

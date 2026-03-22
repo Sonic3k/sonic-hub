@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react'
+import { useState } from 'react'
 import EditModal from './EditModal'
 import { useTags, useProjects } from '../../hooks/useBoard'
 import { useQueryClient, useMutation } from '@tanstack/react-query'
@@ -12,11 +12,11 @@ export default function EditTodoForm({ todo, onClose }: Props) {
   const [projectId, setProjectId] = useState(todo.projectId ?? '')
   const [selectedTagIds, setSelectedTagIds] = useState<Set<string>>(new Set(todo.tags.map(t => t.id)))
 
-  const titleRef = useRef<HTMLInputElement>(null)
+  
   const { data: tags = [] } = useTags()
   const { data: projects = [] } = useProjects()
 
-  useEffect(() => { titleRef.current?.focus() }, [])
+  
 
   const qc = useQueryClient()
   const updateTodo = useMutation({
@@ -39,7 +39,7 @@ export default function EditTodoForm({ todo, onClose }: Props) {
     <EditModal onClose={onClose} ruleColor="#7a9a5a">
       <form onSubmit={handleSubmit}>
         <input
-          ref={titleRef}
+          autoFocus
           value={title}
           onChange={e => setTitle(e.target.value)}
           placeholder="Todo..."

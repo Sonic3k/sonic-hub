@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react'
+import { useState } from 'react'
 import EditModal from './EditModal'
 import { useUpdateTask, useTags, useProjects } from '../../hooks/useBoard'
 import { STATUS_LABELS } from '../../types'
@@ -21,19 +21,15 @@ export default function EditTaskForm({ task, onClose }: Props) {
   const [selectedTagIds, setSelectedTagIds] = useState<Set<string>>(new Set(task.tags.map(t => t.id)))
   
 
-  const titleRef = useRef<HTMLInputElement>(null)
-  const descRef = useRef<HTMLTextAreaElement>(null)
+  
+  
   const { data: tags = [] } = useTags()
   const { data: projects = [] } = useProjects()
   const updateTask = useUpdateTask()
 
-  useEffect(() => { titleRef.current?.focus() }, [])
+  
 
-  // Auto-expand if task already has meta filled
-  useEffect(() => {
-    if (task.dueDate || task.projectId || task.tags.length > 0 || task.priority !== 'MEDIUM') {
-    }
-  }, [])
+
 
   const toggleTag = (id: string) => {
     setSelectedTagIds(prev => { const n = new Set(prev); n.has(id) ? n.delete(id) : n.add(id); return n })
@@ -60,7 +56,7 @@ export default function EditTaskForm({ task, onClose }: Props) {
       <form onSubmit={handleSubmit}>
         {/* Title — large, prominent */}
         <input
-          ref={titleRef}
+          autoFocus
           value={title}
           onChange={e => setTitle(e.target.value)}
           placeholder="Task title..."
@@ -71,7 +67,7 @@ export default function EditTaskForm({ task, onClose }: Props) {
 
         {/* Description — the star of the show */}
         <textarea
-          ref={descRef}
+          
           value={description}
           onChange={e => setDescription(e.target.value)}
           placeholder="Write anything here — context, notes, ideas..."

@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react'
+import { useState } from 'react'
 import EditModal from './EditModal'
 import { useTags, useProjects } from '../../hooks/useBoard'
 import { useQueryClient, useMutation } from '@tanstack/react-query'
@@ -17,11 +17,11 @@ export default function EditProblemForm({ problem, onClose }: Props) {
   const [projectId, setProjectId] = useState(problem.projectId ?? '')
   const [selectedTagIds, setSelectedTagIds] = useState<Set<string>>(new Set(problem.tags.map(t => t.id)))
 
-  const titleRef = useRef<HTMLInputElement>(null)
+  
   const { data: tags = [] } = useTags()
   const { data: projects = [] } = useProjects()
 
-  useEffect(() => { titleRef.current?.focus() }, [])
+  
 
   const qc = useQueryClient()
   const updateProblem = useMutation({
@@ -45,7 +45,7 @@ export default function EditProblemForm({ problem, onClose }: Props) {
         <div className="text-[10px] font-bold uppercase tracking-widest mb-2" style={{ color: '#9a6050' }}>Problem</div>
 
         <input
-          ref={titleRef}
+          autoFocus
           value={title}
           onChange={e => setTitle(e.target.value)}
           placeholder="What's the problem?"
