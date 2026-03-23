@@ -1,55 +1,51 @@
 export type TaskStatus = 'OPEN' | 'IN_PROGRESS' | 'SNOOZED' | 'DONE' | 'CLOSED'
-export type Priority = 'LOW' | 'MEDIUM' | 'HIGH' | 'URGENT'
+export type Priority   = 'LOW' | 'MEDIUM' | 'HIGH' | 'URGENT'
 export type ProblemStatus = 'NEW' | 'INVESTIGATING' | 'RESOLVED' | 'DISMISSED'
 
-export interface Tag {
-  id: string; name: string; color: string
-}
-
-export interface Project {
-  id: string; name: string; description?: string; color?: string
-  createdAt: string; updatedAt: string
-}
+export interface Tag     { id: string; name: string; color: string }
+export interface Project { id: string; name: string; description?: string; color?: string; createdAt: string; updatedAt: string }
 
 export interface Task {
   id: string; title: string; description?: string
   status: TaskStatus; priority: Priority; dueDate?: string
   parentId?: string; childCount: number
   projectId?: string; projectName?: string
-  tags: Tag[]
-  recurringConfig?: Record<string, unknown>
+  tags: Tag[]; recurringConfig?: Record<string, unknown>
   createdAt: string; updatedAt: string
 }
 
 export interface Todo {
   id: string; title: string; done: boolean
   projectId?: string; projectName?: string
-  tags: Tag[]
-  createdAt: string; updatedAt: string
+  tags: Tag[]; createdAt: string; updatedAt: string
 }
 
 export interface Problem {
   id: string; title: string; note?: string
   status: ProblemStatus
   projectId?: string; projectName?: string
-  tags: Tag[]
-  createdAt: string; updatedAt: string
+  tags: Tag[]; createdAt: string; updatedAt: string
 }
 
-// sticker color assignment
-export const STICKER_COLORS = ['sk-ecru','sk-blush','sk-mist','sk-dusk','sk-wheat','sk-sage','sk-ivory'] as const
-export type StickerColor = typeof STICKER_COLORS[number]
-
-export const ROTATIONS = ['r-n2','r-1','r-n1','r-2','r-n3','r-3','r-0'] as const
-
-export const STATUS_LABELS: Record<TaskStatus, string> = {
+export const STATUS_LABEL: Record<TaskStatus, string> = {
   OPEN: 'Open', IN_PROGRESS: 'In Progress', SNOOZED: 'Snoozed', DONE: 'Done', CLOSED: 'Closed',
 }
-
-export const PRIORITY_DOT: Record<Priority, string> = {
-  LOW: '#94a3b8', MEDIUM: '#60a5fa', HIGH: '#f97316', URGENT: '#f43f5e',
+export const STATUS_COLOR: Record<TaskStatus, { bg: string; text: string }> = {
+  OPEN:        { bg: '#f1f0ed', text: '#6b5e4e' },
+  IN_PROGRESS: { bg: '#fef3e2', text: '#a05c1a' },
+  SNOOZED:     { bg: '#f0eefc', text: '#6b5cb8' },
+  DONE:        { bg: '#edf6ed', text: '#3d7a3d' },
+  CLOSED:      { bg: '#f5f0ee', text: '#8a6a5a' },
 }
-
-export const PROBLEM_STATUS_LABELS: Record<ProblemStatus, string> = {
+export const PRIORITY_COLOR: Record<Priority, string> = {
+  LOW: '#b0bec5', MEDIUM: '#78a9d4', HIGH: '#e8924a', URGENT: '#e05252',
+}
+export const PROBLEM_STATUS_LABEL: Record<ProblemStatus, string> = {
   NEW: 'New', INVESTIGATING: 'Investigating', RESOLVED: 'Resolved', DISMISSED: 'Dismissed',
+}
+export const PROBLEM_STATUS_COLOR: Record<ProblemStatus, { bg: string; text: string }> = {
+  NEW:           { bg: '#fef3e2', text: '#a05c1a' },
+  INVESTIGATING: { bg: '#f0eefc', text: '#6b5cb8' },
+  RESOLVED:      { bg: '#edf6ed', text: '#3d7a3d' },
+  DISMISSED:     { bg: '#f1f0ed', text: '#9a8a7a' },
 }
