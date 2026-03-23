@@ -1,14 +1,15 @@
 import { Outlet, NavLink } from 'react-router-dom'
-import { CheckSquare, ListTodo, AlertCircle, Zap } from 'lucide-react'
+import { CheckSquare, ListTodo, AlertCircle, FolderOpen, Zap } from 'lucide-react'
 import { useTasks, useTodos, useProblems } from '../../hooks'
 
 const nav = [
   { to: '/',         label: 'Tasks',    icon: CheckSquare, end: true },
   { to: '/todos',    label: 'Todos',    icon: ListTodo },
   { to: '/problems', label: 'Problems', icon: AlertCircle },
+  { to: '/projects', label: 'Projects', icon: FolderOpen },
 ]
 
-function NavCounts() {
+function useCounts() {
   const { data: tasks    = [] } = useTasks()
   const { data: todos    = [] } = useTodos()
   const { data: problems = [] } = useProblems()
@@ -16,11 +17,12 @@ function NavCounts() {
     '/':         tasks.filter(t => t.status !== 'DONE' && t.status !== 'CLOSED').length,
     '/todos':    todos.filter(t => !t.done).length,
     '/problems': problems.filter(p => p.status !== 'RESOLVED' && p.status !== 'DISMISSED').length,
+    '/projects': 0,
   }
 }
 
 export default function Layout() {
-  const counts = NavCounts()
+  const counts = useCounts()
 
   return (
     <div className="flex h-screen overflow-hidden" style={{ background: '#f7f4ef' }}>
@@ -43,8 +45,7 @@ export default function Layout() {
               }
               style={({ isActive }) => isActive
                 ? { background: '#f0e8de', color: '#c17f3e', fontWeight: 600 }
-                : { color: '#6b5e4e' }
-              }>
+                : { color: '#6b5e4e' }}>
               <div className="flex items-center gap-2.5">
                 <Icon size={15} />
                 {label}
@@ -64,7 +65,7 @@ export default function Layout() {
         </div>
       </aside>
 
-      {/* Main content */}
+      {/* Main */}
       <main className="flex-1 overflow-hidden flex flex-col">
         {/* Mobile header */}
         <div className="md:hidden flex items-center gap-2.5 px-4 py-3 border-b flex-shrink-0"
@@ -75,19 +76,18 @@ export default function Layout() {
           <span className="font-heading font-semibold text-sm" style={{ color: '#2a1e10' }}>Sonic Hub</span>
         </div>
 
-        {/* Page content */}
         <div className="flex-1 overflow-hidden">
           <Outlet />
         </div>
 
         {/* Mobile bottom tab bar */}
-        <nav className="md:hidden flex border-t flex-shrink-0 safe-area-pb"
+        <nav className="md:hidden flex border-t flex-shrink-0"
           style={{ background: '#faf8f5', borderColor: '#e8e0d4' }}>
           {nav.map(({ to, label, icon: Icon, end }) => (
-            <NavLink key={to} to={to} end={end} className="flex-1"
+            <NavLink key={to} to={to} end={end} className="flex-1 relative"
               style={({ isActive }) => ({
                 display: 'flex', flexDirection: 'column', alignItems: 'center',
-                gap: 3, padding: '10px 0 12px',
+                gap: 3, padding: '10px 0 14px',
                 color: isActive ? '#c17f3e' : '#9a8a7a',
               })}>
               {({ isActive }) => (
@@ -95,8 +95,8 @@ export default function Layout() {
                   <Icon size={20} strokeWidth={isActive ? 2.5 : 1.8} />
                   <span style={{ fontSize: 10, fontWeight: isActive ? 700 : 500 }}>{label}</span>
                   {counts[to as keyof typeof counts] > 0 && (
-                    <span className="absolute top-2 rounded-full text-white text-[9px] font-bold w-4 h-4 flex items-center justify-center"
-                      style={{ background: '#c17f3e', marginLeft: 14, marginTop: -4 }}>
+                    <span className="absolute top-1.5 right-1/4 rounded-full text-white text-[9px] font-bold w-4 h-4 flex items-center justify-center"
+                      style={{ background: '#c17f3e' }}>
                       {counts[to as keyof typeof counts]}
                     </span>
                   )}

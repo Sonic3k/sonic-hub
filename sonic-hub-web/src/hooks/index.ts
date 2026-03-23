@@ -78,3 +78,13 @@ export const useDeleteProblem = () => {
   const qc = useQueryClient()
   return useMutation({ mutationFn: (id: string) => problemsApi.remove(id), onSuccess: () => inv(qc, 'problems') })
 }
+
+// ── Project details ──────────────────────────────────────────────────────────
+import { projectDetailsApi } from '../api'
+
+export const useProjectTasks    = (id: string) =>
+  useQuery({ queryKey: ['projects', id, 'tasks'],    queryFn: () => projectDetailsApi.getTasks(id),    enabled: !!id })
+export const useProjectTodos    = (id: string) =>
+  useQuery({ queryKey: ['projects', id, 'todos'],    queryFn: () => projectDetailsApi.getTodos(id),    enabled: !!id })
+export const useProjectProblems = (id: string) =>
+  useQuery({ queryKey: ['projects', id, 'problems'], queryFn: () => projectDetailsApi.getProblems(id), enabled: !!id })

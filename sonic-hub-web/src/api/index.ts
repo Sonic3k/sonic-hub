@@ -41,3 +41,10 @@ export const problemsApi = {
 // ── Projects & Tags ─────────────────────────────────────────────────────────
 export const projectsApi = { list: () => client.get<Project[]>('/api/projects').then(r => r.data) }
 export const tagsApi     = { list: () => client.get<Tag[]>('/api/tags').then(r => r.data) }
+
+// ── Project details ──────────────────────────────────────────────────────────
+export const projectDetailsApi = {
+  getTasks:    (id: string) => client.get<Task[]>(`/api/projects/${id}/tasks`).then(r => r.data),
+  getTodos:    (id: string) => client.get<Todo[]>(`/api/projects/${id}/todos`).then(r => r.data),
+  getProblems: (id: string) => client.get<Problem[]>(`/api/projects/${id}/problems`).then(r => r.data),
+}
