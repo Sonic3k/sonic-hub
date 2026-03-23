@@ -1,16 +1,20 @@
 import { useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import { ArrowLeft, Plus, ChevronDown, ChevronRight } from 'lucide-react'
+import { ArrowLeft, Plus, ChevronDown, ChevronRight, Pencil } from 'lucide-react'
 import {
   useProjects, useProjectTasks, useProjectTodos, useProjectProblems,
   useCreateTask, useCreateTodo, useCreateProblem,
-  useUpdateTask, useToggleTodo,
+  useUpdateTask, useToggleTodo, useUpdateProject,
 } from '../hooks'
-import { STATUS_LABEL, STATUS_COLOR, PRIORITY_COLOR, PROBLEM_STATUS_LABEL, PROBLEM_STATUS_COLOR } from '../types'
+import {
+  STATUS_LABEL, STATUS_COLOR, PRIORITY_COLOR,
+  PROBLEM_STATUS_LABEL, PROBLEM_STATUS_COLOR,
+} from '../types'
 import TaskPanel from '../components/panel/TaskPanel'
 import TodoPanel from '../components/panel/TodoPanel'
 import ProblemPanel from '../components/panel/ProblemPanel'
-import type { Task, Todo, Problem, TaskStatus } from '../types'
+import ProjectForm from '../components/panel/ProjectForm'
+import type { Task, Todo, Problem, Tag, TaskStatus } from '../types'
 
 type AddType = 'task' | 'todo' | 'problem' | null
 type Selected =
@@ -19,19 +23,17 @@ type Selected =
   | { kind: 'problem'; item: Problem }
   | null
 
-function SectionHeader({
-  label, count, open, onToggle,
-}: { label: string; count: number; open: boolean; onToggle: () => void }) {
+function SectionHeader({ label, count, open, onToggle }: {
+  label: string; count: number; open: boolean; onToggle: () => void
+}) {
   return (
     <button onClick={onToggle}
-      className="w-full flex items-center justify-between px-4 md:px-6 py-2 transition-colors"
+      className="w-full flex items-center gap-2 px-4 md:px-6 py-2 transition-colors"
       style={{ color: '#6b5e4e' }}>
-      <div className="flex items-center gap-2">
-        {open ? <ChevronDown size={13} /> : <ChevronRight size={13} />}
-        <span className="text-xs font-bold uppercase tracking-wider">{label}</span>
-        <span className="text-xs px-1.5 py-0.5 rounded-full font-semibold tabular-nums"
-          style={{ background: '#ede9e3', color: '#9a8a7a' }}>{count}</span>
-      </div>
+      {open ? <ChevronDown size={13} /> : <ChevronRight size={13} />}
+      <span className="text-xs font-bold uppercase tracking-wider">{label}</span>
+      <span className="text-xs px-1.5 py-0.5 rounded-full font-semibold"
+        style={{ background: '#ede9e3', color: '#9a8a7a' }}>{count}</span>
     </button>
   )
 }
@@ -47,15 +49,17 @@ export default function ProjectDetailPage() {
   const { data: todos    = [], isLoading: lo } = useProjectTodos(id!)
   const { data: problems = [], isLoading: lp } = useProjectProblems(id!)
 
-  const [selected, setSelected]     = useState<Selected>(null)
-  const [adding, setAdding]         = useState<AddType>(null)
-  const [newTitle, setNewTitle]     = useState('')
-  const [showDropdown, setShowDropdown] = useState(false)
-  const [openTasks, setOpenTasks]   = useState(true)
-  const [openTodos, setOpenTodos]   = useState(true)
-  const [openProblems, setOpenProblems] = useState(true)
-  const [taskFilter, setTaskFilter] = useState<'active' | 'all'>('active')
+  const [selected,      setSelected]      = useState<Selected>(null)
+  const [adding,        setAdding]        = useState<AddType>(null)
+  const [newTitle,      setNewTitle]      = useState('')
+  const [showDropdown,  setShowDropdown]  = useState(false)
+  const [editingInfo,   setEditingInfo]   = useState(false)
+  const [openTasks,     setOpenTasks]     = useState(true)
+  const [openTodos,     setOpenTodos]     = useState(true)
+  const [openProblems,  setOpenProblems]  = useState(true)
+  const [taskFilter,    setTaskFilter]    = useState<'active' | 'all'>('active')
 
+  const updateProject = useUpdateProject()
   const createTask    = useCreateTask()
   const createTodo    = useCreateTodo()
   const createProblem = useCreateProblem()
@@ -63,12 +67,12 @@ export default function ProjectDetailPage() {
   const toggleTodo    = useToggleTodo()
 
   const visibleTasks = taskFilter === 'active'
-    ? tasks.filter(t => t.status !== 'DONE' && t.status !== 'CLOSED')
+    ? tasks.filter((t: Task) => t.status !== 'DONE' && t.status !== 'CLOSED')
     : tasks
 
-  const doneTasks   = tasks.filter(t => t.status === 'DONE' || t.status === 'CLOSED').length
-  const openTodosCount   = todos.filter(t => !t.done).length
-  const openProblemsCount = problems.filter(p => p.status !== 'RESOLVED' && p.status !== 'DISMISSED').length
+  const doneTasks        = tasks.filter((t: Task) => t.status === 'DONE' || t.status === 'CLOSED').length
+  const openTodosCount   = todos.filter((t: Todo) => !t.done).length
+  const openProblemsCount = problems.filter((p: Problem) => p.status !== 'RESOLVED' && p.status !== 'DISMISSED').length
   const pct = tasks.length > 0 ? Math.round((doneTasks / tasks.length) * 100) : 0
 
   const handleCreate = (e: React.FormEvent) => {
@@ -100,7 +104,7 @@ export default function ProjectDetailPage() {
           style={{ borderColor: '#e8e0d4' }}>
           <div className="flex items-center gap-3">
             <button onClick={() => navigate('/projects')}
-              className="flex items-center gap-1.5 text-sm font-semibold transition-colors"
+              className="flex items-center gap-1.5 text-sm font-semibold"
               style={{ color: '#c17f3e' }}>
               <ArrowLeft size={15} />
               <span className="hidden md:inline">Projects</span>
@@ -109,23 +113,28 @@ export default function ProjectDetailPage() {
               <>
                 <span style={{ color: '#d8d0c8' }}>/</span>
                 <div className="flex items-center gap-2">
-                  <div className="w-3 h-3 rounded-full" style={{ background: project.color || '#c17f3e' }} />
+                  <div className="w-3 h-3 rounded-full flex-shrink-0"
+                    style={{ background: project.color || '#c17f3e' }} />
                   <h1 className="font-heading font-semibold text-base" style={{ color: '#1a1208' }}>
                     {project.name}
                   </h1>
+                  {/* Edit project info button */}
+                  <button onClick={() => setEditingInfo(v => !v)}
+                    className="p-1 rounded-md transition-colors hover:bg-black/5"
+                    style={{ color: editingInfo ? '#c17f3e' : '#c0b09a' }}>
+                    <Pencil size={13} />
+                  </button>
                 </div>
               </>
             )}
           </div>
 
-          {/* Add button with dropdown */}
+          {/* Add dropdown */}
           <div className="relative">
-            <button
-              onClick={() => setShowDropdown(v => !v)}
+            <button onClick={() => setShowDropdown(v => !v)}
               className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-semibold active:scale-95"
               style={{ background: '#c17f3e', color: '#fff' }}>
-              <Plus size={14} strokeWidth={2.5} /> Add
-              <ChevronDown size={12} />
+              <Plus size={14} strokeWidth={2.5} /> Add <ChevronDown size={12} />
             </button>
             {showDropdown && (
               <>
@@ -147,9 +156,24 @@ export default function ProjectDetailPage() {
           </div>
         </div>
 
-        {/* Project summary bar */}
+        {/* Inline project edit form */}
+        {editingInfo && project && (
+          <div className="px-4 md:px-6 py-3 border-b flex-shrink-0" style={{ borderColor: '#e8e0d4' }}>
+            <ProjectForm
+              project={project}
+              onSubmit={data => updateProject.mutate(
+                { id: project.id, data },
+                { onSuccess: () => setEditingInfo(false) }
+              )}
+              onCancel={() => setEditingInfo(false)}
+              isLoading={updateProject.isPending}
+            />
+          </div>
+        )}
+
+        {/* Summary bar */}
         {!isLoading && (tasks.length > 0 || todos.length > 0 || problems.length > 0) && (
-          <div className="flex items-center gap-4 px-4 md:px-6 py-3 border-b flex-shrink-0"
+          <div className="flex items-center gap-4 px-4 md:px-6 py-2.5 border-b flex-shrink-0"
             style={{ borderColor: '#e8e0d4', background: '#faf8f5' }}>
             {tasks.length > 0 && (
               <div className="flex items-center gap-2">
@@ -162,18 +186,16 @@ export default function ProjectDetailPage() {
                 </span>
               </div>
             )}
-            <div className="flex items-center gap-3">
-              {openTodosCount > 0 && (
-                <span className="text-xs" style={{ color: '#9a8a7a' }}>
-                  {openTodosCount} todo{openTodosCount > 1 ? 's' : ''}
-                </span>
-              )}
-              {openProblemsCount > 0 && (
-                <span className="text-xs font-semibold" style={{ color: '#e8924a' }}>
-                  {openProblemsCount} open problem{openProblemsCount > 1 ? 's' : ''}
-                </span>
-              )}
-            </div>
+            {openTodosCount > 0 && (
+              <span className="text-xs" style={{ color: '#9a8a7a' }}>
+                {openTodosCount} todo{openTodosCount > 1 ? 's' : ''}
+              </span>
+            )}
+            {openProblemsCount > 0 && (
+              <span className="text-xs font-semibold" style={{ color: '#e8924a' }}>
+                {openProblemsCount} open problem{openProblemsCount > 1 ? 's' : ''}
+              </span>
+            )}
           </div>
         )}
 
@@ -182,35 +204,34 @@ export default function ProjectDetailPage() {
           <form onSubmit={handleCreate}
             className="flex items-center gap-3 px-4 md:px-6 py-3 border-b bg-white flex-shrink-0"
             style={{ borderColor: '#e8e0d4' }}>
-            <span className="text-xs font-semibold px-2 py-0.5 rounded-full capitalize"
+            <span className="text-xs font-semibold px-2 py-0.5 rounded-full capitalize flex-shrink-0"
               style={{ background: '#f0e8de', color: '#c17f3e' }}>{adding}</span>
             <input autoFocus value={newTitle} onChange={e => setNewTitle(e.target.value)}
-              placeholder={`${adding === 'problem' ? 'Describe the problem' : adding === 'todo' ? 'What needs doing' : 'Task title'}...`}
+              placeholder={adding === 'problem' ? 'Describe the problem...' : adding === 'todo' ? 'What needs doing...' : 'Task title...'}
               onKeyDown={e => { if (e.key === 'Escape') { setAdding(null); setNewTitle('') } }}
               className="flex-1 bg-transparent border-none outline-none text-sm"
               style={{ color: '#1a1208', caretColor: '#c17f3e' }} />
           </form>
         )}
 
-        {/* Scrollable content */}
+        {/* List */}
         <div className="flex-1 overflow-y-auto py-2">
           {isLoading ? (
-            <div className="px-4 md:px-6 pt-4 space-y-2">
+            <div className="px-4 pt-4 space-y-2">
               {[...Array(5)].map((_, i) => (
                 <div key={i} className="h-11 rounded-xl animate-pulse" style={{ background: '#ede9e3' }} />
               ))}
             </div>
           ) : (
             <>
-              {/* ── Tasks ── */}
+              {/* Tasks */}
               <SectionHeader label="Tasks" count={visibleTasks.length}
                 open={openTasks} onToggle={() => setOpenTasks(v => !v)} />
               {openTasks && (
                 <>
-                  {/* Active / All toggle */}
                   {tasks.length > 0 && (
                     <div className="flex gap-1 px-4 md:px-6 pb-1">
-                      {(['active','all'] as const).map(f => (
+                      {(['active', 'all'] as const).map(f => (
                         <button key={f} onClick={() => setTaskFilter(f)}
                           className="px-2.5 py-0.5 rounded-full text-[11px] font-semibold capitalize transition-colors"
                           style={taskFilter === f
@@ -225,7 +246,7 @@ export default function ProjectDetailPage() {
                     <p className="px-6 py-2 text-xs" style={{ color: '#c0b09a' }}>
                       {taskFilter === 'active' ? 'All tasks done 🎉' : 'No tasks yet'}
                     </p>
-                  ) : visibleTasks.map(task => {
+                  ) : visibleTasks.map((task: Task) => {
                     const isDone = task.status === 'DONE' || task.status === 'CLOSED'
                     const isSel  = selected?.kind === 'task' && selected.item.id === task.id
                     const isOver = task.dueDate && !isDone && new Date(task.dueDate) < new Date()
@@ -233,10 +254,7 @@ export default function ProjectDetailPage() {
                       <div key={task.id}
                         onClick={() => setSelected(isSel ? null : { kind: 'task', item: task })}
                         className="flex items-center gap-3 px-4 md:px-6 py-2.5 cursor-pointer transition-colors active:bg-orange-50"
-                        style={{
-                          background: isSel ? '#f0e8de' : 'transparent',
-                          borderLeft: isSel ? '3px solid #c17f3e' : '3px solid transparent',
-                        }}>
+                        style={{ background: isSel ? '#f0e8de' : 'transparent', borderLeft: isSel ? '3px solid #c17f3e' : '3px solid transparent' }}>
                         <button onClick={e => cycleStatus(e, task)}
                           className="w-5 h-5 rounded-full border-2 flex items-center justify-center flex-shrink-0 active:scale-90 transition-colors"
                           style={{ borderColor: isDone ? '#7a9a6a' : '#c8bdb0', background: isDone ? '#7a9a6a' : 'transparent' }}>
@@ -260,23 +278,20 @@ export default function ProjectDetailPage() {
                 </>
               )}
 
-              {/* ── Todos ── */}
+              {/* Todos */}
               <div className="mt-3">
                 <SectionHeader label="Todos" count={todos.length}
                   open={openTodos} onToggle={() => setOpenTodos(v => !v)} />
                 {openTodos && (
                   todos.length === 0 ? (
                     <p className="px-6 py-2 text-xs" style={{ color: '#c0b09a' }}>No todos yet</p>
-                  ) : todos.map(todo => {
+                  ) : todos.map((todo: Todo) => {
                     const isSel = selected?.kind === 'todo' && selected.item.id === todo.id
                     return (
                       <div key={todo.id}
                         onClick={() => setSelected(isSel ? null : { kind: 'todo', item: todo })}
                         className="flex items-center gap-3 px-4 md:px-6 py-2.5 cursor-pointer transition-colors active:bg-orange-50"
-                        style={{
-                          background: isSel ? '#f0e8de' : 'transparent',
-                          borderLeft: isSel ? '3px solid #c17f3e' : '3px solid transparent',
-                        }}>
+                        style={{ background: isSel ? '#f0e8de' : 'transparent', borderLeft: isSel ? '3px solid #c17f3e' : '3px solid transparent' }}>
                         <button onClick={e => { e.stopPropagation(); toggleTodo.mutate(todo.id) }}
                           className="w-5 h-5 rounded-full border-2 flex items-center justify-center flex-shrink-0 active:scale-90 transition-colors"
                           style={{ borderColor: todo.done ? '#7a9a6a' : '#c8bdb0', background: todo.done ? '#7a9a6a' : 'transparent' }}>
@@ -286,7 +301,7 @@ export default function ProjectDetailPage() {
                           style={{ color: todo.done ? '#b0a090' : '#1a1208', textDecoration: todo.done ? 'line-through' : 'none' }}>
                           {todo.title}
                         </span>
-                        {todo.tags.slice(0, 2).map(tag => (
+                        {todo.tags.slice(0, 2).map((tag: Tag) => (
                           <span key={tag.id} className="text-[10px] px-1.5 py-0.5 rounded-full flex-shrink-0"
                             style={{ background: tag.color + '20', color: tag.color }}>{tag.name}</span>
                         ))}
@@ -296,23 +311,20 @@ export default function ProjectDetailPage() {
                 )}
               </div>
 
-              {/* ── Problems ── */}
+              {/* Problems */}
               <div className="mt-3">
                 <SectionHeader label="Problems" count={problems.length}
                   open={openProblems} onToggle={() => setOpenProblems(v => !v)} />
                 {openProblems && (
                   problems.length === 0 ? (
                     <p className="px-6 py-2 text-xs" style={{ color: '#c0b09a' }}>No problems logged</p>
-                  ) : problems.map(problem => {
+                  ) : problems.map((problem: Problem) => {
                     const isSel = selected?.kind === 'problem' && selected.item.id === problem.id
                     return (
                       <div key={problem.id}
                         onClick={() => setSelected(isSel ? null : { kind: 'problem', item: problem })}
                         className="flex items-start gap-3 px-4 md:px-6 py-3 cursor-pointer transition-colors active:bg-orange-50"
-                        style={{
-                          background: isSel ? '#f0e8de' : 'transparent',
-                          borderLeft: isSel ? '3px solid #c17f3e' : '3px solid transparent',
-                        }}>
+                        style={{ background: isSel ? '#f0e8de' : 'transparent', borderLeft: isSel ? '3px solid #c17f3e' : '3px solid transparent' }}>
                         <div className="w-2 h-2 rounded-full mt-1.5 flex-shrink-0"
                           style={{ background: PROBLEM_STATUS_COLOR[problem.status].text }} />
                         <div className="flex-1 min-w-0">
@@ -339,18 +351,16 @@ export default function ProjectDetailPage() {
       {selected && (
         <div className="absolute inset-0 md:static md:inset-auto flex flex-col z-10"
           style={{ background: '#faf8f5' }}>
-          {/* Mobile back */}
-          <div className="md:hidden flex items-center gap-2 px-4 py-3 border-b flex-shrink-0"
+          <div className="md:hidden flex items-center px-4 py-3 border-b flex-shrink-0"
             style={{ borderColor: '#e8e0d4' }}>
             <button onClick={() => setSelected(null)}
               className="flex items-center gap-1.5 text-sm font-semibold" style={{ color: '#c17f3e' }}>
               <ArrowLeft size={16} /> {project?.name}
             </button>
           </div>
-
-          {selected.kind === 'task'    && <TaskPanel    key={selected.item.id} task={selected.item}       onClose={() => setSelected(null)} />}
-          {selected.kind === 'todo'    && <TodoPanel    key={selected.item.id} todo={selected.item}       onClose={() => setSelected(null)} />}
-          {selected.kind === 'problem' && <ProblemPanel key={selected.item.id} problem={selected.item}   onClose={() => setSelected(null)} />}
+          {selected.kind === 'task'    && <TaskPanel    key={selected.item.id} task={selected.item}    onClose={() => setSelected(null)} />}
+          {selected.kind === 'todo'    && <TodoPanel    key={selected.item.id} todo={selected.item}    onClose={() => setSelected(null)} />}
+          {selected.kind === 'problem' && <ProblemPanel key={selected.item.id} problem={selected.item} onClose={() => setSelected(null)} />}
         </div>
       )}
     </div>

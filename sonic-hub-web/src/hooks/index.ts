@@ -1,24 +1,22 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { tasksApi, todosApi, problemsApi, projectsApi, tagsApi } from '../api'
-import type { TaskStatus, ProblemStatus } from '../types'
-import type { TaskPayload, TodoPayload, ProblemPayload } from '../api'
+import { tasksApi, todosApi, problemsApi, projectsApi, projectDetailsApi, tagsApi } from '../api'
+import type { Task, Todo, Problem, Project, Tag, TaskStatus, ProblemStatus } from '../types'
+import type { TaskPayload, TodoPayload, ProblemPayload, ProjectPayload } from '../api'
 
 const inv = (qc: ReturnType<typeof useQueryClient>, key: string) =>
   qc.invalidateQueries({ queryKey: [key] })
 
-// ── Shared ──────────────────────────────────────────────────────────────────
+// ── Shared ────────────────────────────────────────────────────────────────────
 export const useProjects = () =>
-  useQuery({ queryKey: ['projects'], queryFn: projectsApi.list, staleTime: 60_000 })
+  useQuery<Project[]>({ queryKey: ['projects'], queryFn: projectsApi.list, staleTime: 60_000 })
 export const useTags = () =>
-  useQuery({ queryKey: ['tags'], queryFn: tagsApi.list, staleTime: 60_000 })
+  useQuery<Tag[]>({ queryKey: ['tags'], queryFn: tagsApi.list, staleTime: 60_000 })
 
-// ── Tasks ───────────────────────────────────────────────────────────────────
+// ── Tasks ─────────────────────────────────────────────────────────────────────
 export const useTasks = (status?: TaskStatus) =>
-  useQuery({ queryKey: ['tasks', status], queryFn: () => tasksApi.list(status) })
-
+  useQuery<Task[]>({ queryKey: ['tasks', status], queryFn: () => tasksApi.list(status) })
 export const useTaskChildren = (id: string, enabled: boolean) =>
-  useQuery({ queryKey: ['tasks', id, 'children'], queryFn: () => tasksApi.children(id), enabled })
-
+  useQuery<Task[]>({ queryKey: ['tasks', id, 'children'], queryFn: () => tasksApi.children(id), enabled })
 export const useCreateTask = () => {
   const qc = useQueryClient()
   return useMutation({ mutationFn: (d: TaskPayload) => tasksApi.create(d), onSuccess: () => inv(qc, 'tasks') })
@@ -35,10 +33,9 @@ export const useDeleteTask = () => {
   return useMutation({ mutationFn: (id: string) => tasksApi.remove(id), onSuccess: () => inv(qc, 'tasks') })
 }
 
-// ── Todos ───────────────────────────────────────────────────────────────────
+// ── Todos ─────────────────────────────────────────────────────────────────────
 export const useTodos = () =>
-  useQuery({ queryKey: ['todos'], queryFn: todosApi.list })
-
+  useQuery<Todo[]>({ queryKey: ['todos'], queryFn: todosApi.list })
 export const useCreateTodo = () => {
   const qc = useQueryClient()
   return useMutation({ mutationFn: (d: TodoPayload) => todosApi.create(d), onSuccess: () => inv(qc, 'todos') })
@@ -59,10 +56,9 @@ export const useDeleteTodo = () => {
   return useMutation({ mutationFn: (id: string) => todosApi.remove(id), onSuccess: () => inv(qc, 'todos') })
 }
 
-// ── Problems ────────────────────────────────────────────────────────────────
+// ── Problems ──────────────────────────────────────────────────────────────────
 export const useProblems = (status?: ProblemStatus) =>
-  useQuery({ queryKey: ['problems', status], queryFn: () => problemsApi.list(status) })
-
+  useQuery<Problem[]>({ queryKey: ['problems', status], queryFn: () => problemsApi.list(status) })
 export const useCreateProblem = () => {
   const qc = useQueryClient()
   return useMutation({ mutationFn: (d: ProblemPayload) => problemsApi.create(d), onSuccess: () => inv(qc, 'problems') })
@@ -79,12 +75,25 @@ export const useDeleteProblem = () => {
   return useMutation({ mutationFn: (id: string) => problemsApi.remove(id), onSuccess: () => inv(qc, 'problems') })
 }
 
-// ── Project details ──────────────────────────────────────────────────────────
-import { projectDetailsApi } from '../api'
-
-export const useProjectTasks    = (id: string) =>
-  useQuery({ queryKey: ['projects', id, 'tasks'],    queryFn: () => projectDetailsApi.getTasks(id),    enabled: !!id })
-export const useProjectTodos    = (id: string) =>
-  useQuery({ queryKey: ['projects', id, 'todos'],    queryFn: () => projectDetailsApi.getTodos(id),    enabled: !!id })
+// ── Projects ──────────────────────────────────────────────────────────────────
+export const useProjectTasks = (id: string) =>
+  useQuery<Task[]>({ queryKey: ['projects', id, 'tasks'], queryFn: () => projectDetailsApi.getTasks(id), enabled: !!id })
+export const useProjectTodos = (id: string) =>
+  useQuery<Todo[]>({ queryKey: ['projects', id, 'todos'], queryFn: () => projectDetailsApi.getTodos(id), enabled: !!id })
 export const useProjectProblems = (id: string) =>
-  useQuery({ queryKey: ['projects', id, 'problems'], queryFn: () => projectDetailsApi.getProblems(id), enabled: !!id })
+  useQuery<Problem[]>({ queryKey: ['projects', id, 'problems'], queryFn: () => projectDetailsApi.getProblems(id), enabled: !!id })
+export const useCreateProject = () => {
+  const qc = useQueryClient()
+  return useMutation({ mutationFn: (d: ProjectPayload) => projectsApi.create(d), onSuccess: () => inv(qc, 'projects') })
+}
+export const useUpdateProject = () => {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: ({ id, data }: { id: string; data: ProjectPayload }) => projectsApi.update(id, data),
+    onSuccess: () => inv(qc, 'projects'),
+  })
+}
+export const useDeleteProject = () => {
+  const qc = useQueryClient()
+  return useMutation({ mutationFn: (id: string) => projectsApi.remove(id), onSuccess: () => inv(qc, 'projects') })
+}
