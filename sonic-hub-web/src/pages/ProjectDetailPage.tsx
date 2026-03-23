@@ -10,11 +10,11 @@ import {
   STATUS_LABEL, STATUS_COLOR, PRIORITY_COLOR,
   PROBLEM_STATUS_LABEL, PROBLEM_STATUS_COLOR,
 } from '../types'
-import TaskPanel from '../components/panel/TaskPanel'
-import TodoPanel from '../components/panel/TodoPanel'
-import ProblemPanel from '../components/panel/ProblemPanel'
-import ProjectForm from '../components/panel/ProjectForm'
-import type { Task, Todo, Problem, Tag, TaskStatus } from '../types'
+import TaskDetail from '../components/panel/TaskDetail'
+import TodoDetail from '../components/panel/TodoDetail'
+import ProblemDetail from '../components/panel/ProblemDetail'
+
+import type { Task, Todo, Problem, Tag, TaskStatus, Project } from '../types'
 
 type AddType = 'task' | 'todo' | 'problem' | null
 type Selected =
@@ -37,6 +37,58 @@ function SectionHeader({ label, count, open, onToggle }: {
     </button>
   )
 }
+
+const PROJ_COLORS = ['#c17f3e','#7a9a6a','#6b8fc0','#b06070','#8878a8','#c08050','#5a9a8a','#a07850']
+
+function InlineProjectEdit({ project, onSave, onCancel, isSaving }: {
+  project: Project
+  onSave: (data: { name: string; description?: string; color?: string }) => void
+  onCancel: () => void
+  isSaving: boolean
+}) {
+  const [name, setName]   = useState(project.name)
+  const [desc, setDesc]   = useState(project.description ?? '')
+  const [color, setColor] = useState(project.color ?? '#c17f3e')
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!name.trim()) return
+    onSave({ name: name.trim(), description: desc || undefined, color })
+  }
+
+  return (
+    <form onSubmit={handleSubmit}
+      className="px-4 md:px-6 py-3 border-b flex-shrink-0 space-y-2"
+      style={{ borderColor: '#e8e0d4', background: '#faf8f5', borderLeftWidth: 3, borderLeftColor: color }}>
+      <input autoFocus value={name} onChange={e => setName(e.target.value)}
+        className="w-full bg-transparent outline-none font-heading font-semibold text-sm border-none"
+        style={{ color: '#1a1208', caretColor: color }} required />
+      <input value={desc} onChange={e => setDesc(e.target.value)}
+        placeholder="Short description..."
+        className="w-full bg-transparent outline-none text-xs border-none"
+        style={{ color: '#6b5e4e', caretColor: color }} />
+      <div className="flex items-center justify-between">
+        <div className="flex gap-1.5">
+          {PROJ_COLORS.map(c => (
+            <button key={c} type="button" onClick={() => setColor(c)}
+              className="w-4 h-4 rounded-full transition-all active:scale-90"
+              style={{ background: c, outline: color === c ? `2px solid ${c}` : 'none', outlineOffset: 2, opacity: color === c ? 1 : 0.45 }} />
+          ))}
+        </div>
+        <div className="flex gap-2">
+          <button type="button" onClick={onCancel}
+            className="text-xs font-semibold" style={{ color: '#9a8a7a' }}>Cancel</button>
+          <button type="submit" disabled={isSaving}
+            className="px-3 py-1 rounded-full text-xs font-semibold active:scale-95 disabled:opacity-50"
+            style={{ background: color, color: '#fff' }}>
+            {isSaving ? '...' : 'Save'}
+          </button>
+        </div>
+      </div>
+    </form>
+  )
+}
+
 
 export default function ProjectDetailPage() {
   const { id } = useParams<{ id: string }>()
@@ -156,19 +208,14 @@ export default function ProjectDetailPage() {
           </div>
         </div>
 
-        {/* Inline project edit form */}
+        {/* Inline project edit */}
         {editingInfo && project && (
-          <div className="px-4 md:px-6 py-3 border-b flex-shrink-0" style={{ borderColor: '#e8e0d4' }}>
-            <ProjectForm
-              project={project}
-              onSubmit={data => updateProject.mutate(
-                { id: project.id, data },
-                { onSuccess: () => setEditingInfo(false) }
-              )}
-              onCancel={() => setEditingInfo(false)}
-              isLoading={updateProject.isPending}
-            />
-          </div>
+          <InlineProjectEdit
+            project={project}
+            onSave={(data) => updateProject.mutate({ id: project.id, data }, { onSuccess: () => setEditingInfo(false) })}
+            onCancel={() => setEditingInfo(false)}
+            isSaving={updateProject.isPending}
+          />
         )}
 
         {/* Summary bar */}
@@ -358,9 +405,9 @@ export default function ProjectDetailPage() {
               <ArrowLeft size={16} /> {project?.name}
             </button>
           </div>
-          {selected.kind === 'task'    && <TaskPanel    key={selected.item.id} task={selected.item}    onClose={() => setSelected(null)} />}
-          {selected.kind === 'todo'    && <TodoPanel    key={selected.item.id} todo={selected.item}    onClose={() => setSelected(null)} />}
-          {selected.kind === 'problem' && <ProblemPanel key={selected.item.id} problem={selected.item} onClose={() => setSelected(null)} />}
+          {selected.kind === 'task'    && <TaskDetail    key={selected.item.id} task={selected.item}    onClose={() => setSelected(null)} />}
+          {selected.kind === 'todo'    && <TodoDetail    key={selected.item.id} todo={selected.item}    onClose={() => setSelected(null)} />}
+          {selected.kind === 'problem' && <ProblemDetail key={selected.item.id} problem={selected.item} onClose={() => setSelected(null)} />}
         </div>
       )}
     </div>
