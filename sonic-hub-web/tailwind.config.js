@@ -4,16 +4,8 @@ export default {
   theme: {
     extend: {
       fontFamily: {
-        sans: ['DM Sans', 'sans-serif'],
-        hand: ['Caveat', 'cursive'],
-        mono: ['JetBrains Mono', 'monospace'],
-      },
-      colors: {
-        paper: {
-          bg: '#ede8df',
-          topbar: '#faf6ef',
-          border: '#ddd5c4',
-        },
+        sans:    ['Nunito', 'sans-serif'],
+        heading: ['Lora', 'serif'],
       },
     },
   },

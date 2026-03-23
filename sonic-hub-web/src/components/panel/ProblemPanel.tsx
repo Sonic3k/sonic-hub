@@ -46,7 +46,7 @@ export default function ProblemPanel({ problem, onClose }: Props) {
   }
 
   return (
-    <div className="h-full flex flex-col border-l overflow-y-auto" style={{ width: 360, background: '#faf8f5', borderColor: '#e8e0d4' }}>
+    <div className="h-full flex flex-col border-l overflow-y-auto" style={{ background: '#faf8f5', borderColor: '#e8e0d4' }}>
       <div className="flex items-center justify-between px-5 py-3.5 border-b flex-shrink-0" style={{ borderColor: '#e8e0d4' }}>
         <span className="text-xs font-medium" style={{ color: '#9a8a7a' }}>Problem detail</span>
         <div className="flex items-center gap-1">
@@ -65,8 +65,8 @@ export default function ProblemPanel({ problem, onClose }: Props) {
           onChange={e => { setTitle(e.target.value); setDirty(true) }}
           autoFocus rows={2}
           placeholder="What's the problem?"
-          className="w-full bg-transparent border-none outline-none resize-none text-[18px] font-semibold leading-snug"
-          style={{ color: '#1a1208', caretColor: '#c17f3e', fontFamily: "'DM Sans', sans-serif" }}
+          className="w-full bg-transparent border-none outline-none resize-none text-[18px] font-heading font-semibold leading-snug"
+          style={{ color: '#1a1208', caretColor: '#c17f3e', fontFamily: "'Nunito', sans-serif" }}
         />
 
         <div>
@@ -77,7 +77,7 @@ export default function ProblemPanel({ problem, onClose }: Props) {
             rows={8}
             placeholder="Context, findings, ideas to solve..."
             className="w-full bg-white rounded-lg border px-3 py-2.5 text-sm outline-none resize-none leading-relaxed"
-            style={{ borderColor: '#e8e0d4', color: '#3a2e20', caretColor: '#c17f3e', fontFamily: "'DM Sans', sans-serif" }}
+            style={{ borderColor: '#e8e0d4', color: '#3a2e20', caretColor: '#c17f3e', fontFamily: "'Nunito', sans-serif" }}
           />
         </div>
 

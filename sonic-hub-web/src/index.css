@@ -3,7 +3,17 @@
 @tailwind utilities;
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
-body { font-family: 'DM Sans', sans-serif; -webkit-font-smoothing: antialiased; }
+
+body {
+  font-family: 'Nunito', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  background: #f7f4ef;
+}
+
+h1, h2, h3, .font-heading {
+  font-family: 'Lora', serif;
+}
+
 ::-webkit-scrollbar { width: 5px; }
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: #d8d0c8; border-radius: 10px; }
