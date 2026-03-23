@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { Trash2 } from 'lucide-react'
 import FullScreenPanel from './FullScreenPanel'
-import { ProblemStatusPills, TagChip, TYPE_COLOR } from '../card/Card'
+import { ProblemStatusPills, TagChip, TYPE_COLOR, TYPE_CHIP_BG } from '../card/Card'
 import { useUpdateProblem, useDeleteProblem, useTags, useProjects } from '../../hooks'
 import type { Problem, ProblemStatus } from '../../types'
 
@@ -44,7 +44,7 @@ export default function ProblemDetail({ problem, onClose }: Props) {
   }
 
   return (
-    <FullScreenPanel title="Problem" onClose={onClose} accentColor={TYPE_COLOR.problem}>
+    <FullScreenPanel type="problem" onClose={onClose}>
       <div className="max-w-xl mx-auto px-4 py-6 space-y-6">
         <textarea value={title} autoFocus rows={2}
           onChange={e => { setTitle(e.target.value); setDirty(true) }}
@@ -64,7 +64,7 @@ export default function ProblemDetail({ problem, onClose }: Props) {
 
         <div>
           {label('Status')}
-          <ProblemStatusPills value={status} onChange={s => { setStatus(s); setDirty(true) }} />
+          <ProblemStatusPills value={status} color={TYPE_COLOR.problem} chipBg={TYPE_CHIP_BG.problem} onChange={s => { setStatus(s); setDirty(true) }} />
         </div>
 
         {projects.length > 0 && (

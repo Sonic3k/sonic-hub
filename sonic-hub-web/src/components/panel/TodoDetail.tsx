@@ -41,7 +41,7 @@ export default function TodoDetail({ todo, onClose }: Props) {
   }
 
   return (
-    <FullScreenPanel title="Todo" onClose={onClose} accentColor={TYPE_COLOR.todo}>
+    <FullScreenPanel type="todo" onClose={onClose}>
       <div className="max-w-xl mx-auto px-4 py-6 space-y-6">
         <input value={title} autoFocus
           onChange={e => { setTitle(e.target.value); setDirty(true) }}
