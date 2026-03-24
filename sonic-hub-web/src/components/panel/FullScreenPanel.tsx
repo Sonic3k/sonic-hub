@@ -1,31 +1,33 @@
 import { useEffect, type ReactNode } from 'react'
 import { ArrowLeft } from 'lucide-react'
+import { TYPE_BG, TYPE_COLOR } from '../card/Card'
+import type { CardType } from '../card/Card'
 
 interface Props {
-  title: string
+  type: CardType
   onClose: () => void
   children: ReactNode
-  accentColor?: string
 }
 
-export default function FullScreenPanel({ title, onClose, children, accentColor = '#c17f3e' }: Props) {
+export default function FullScreenPanel({ type, onClose, children }: Props) {
+  const col = TYPE_COLOR[type]
+  const bg  = TYPE_BG[type]
+
   useEffect(() => {
-    const handler = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose() }
-    window.addEventListener('keydown', handler)
-    return () => window.removeEventListener('keydown', handler)
+    const h = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose() }
+    window.addEventListener('keydown', h)
+    return () => window.removeEventListener('keydown', h)
   }, [onClose])
 
   return (
-    <div className="fixed inset-0 z-50 flex flex-col" style={{ background: '#faf8f5' }}>
-      {/* Top bar */}
+    <div className="fixed inset-0 z-50 flex flex-col" style={{ background: bg }}>
       <div className="flex items-center gap-3 px-4 py-3.5 border-b flex-shrink-0"
-        style={{ borderColor: '#e8e0d4', borderLeftWidth: 3, borderLeftColor: accentColor }}>
+        style={{ borderColor: col + '30' }}>
         <button onClick={onClose}
-          className="flex items-center gap-1.5 font-semibold text-sm transition-colors"
-          style={{ color: accentColor }}>
+          className="flex items-center gap-1.5 font-bold text-sm"
+          style={{ color: col }}>
           <ArrowLeft size={16} /> Back
         </button>
-        <span className="text-xs font-medium" style={{ color: '#9a8a7a' }}>{title}</span>
       </div>
       <div className="flex-1 overflow-y-auto">
         {children}

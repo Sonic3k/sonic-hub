@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { Trash2 } from 'lucide-react'
 import FullScreenPanel from './FullScreenPanel'
-import { StatusPills, TagChip, TYPE_COLOR } from '../card/Card'
+import { StatusPills, TagChip, TYPE_COLOR, TYPE_CHIP_BG } from '../card/Card'
 import { useUpdateTask, useDeleteTask, useTaskChildren, useTags, useProjects } from '../../hooks'
 import { PRIORITY_COLOR } from '../../types'
 import type { Task, TaskStatus, Priority } from '../../types'
@@ -57,7 +57,7 @@ export default function TaskDetail({ task, onClose }: Props) {
   const isToday   = dueDate && new Date(dueDate).toDateString() === new Date().toDateString()
 
   return (
-    <FullScreenPanel title="Task" onClose={onClose} accentColor={TYPE_COLOR.task}>
+    <FullScreenPanel type="task" onClose={onClose}>
       <div className="max-w-xl mx-auto px-4 py-6 space-y-6">
 
         {/* Title */}
@@ -82,6 +82,7 @@ export default function TaskDetail({ task, onClose }: Props) {
         <div>
           {label('Status')}
           <StatusPills value={status} options={STATUSES}
+            color={TYPE_COLOR.task} chipBg={TYPE_CHIP_BG.task}
             onChange={s => { setStatus(s); setDirty(true) }} />
         </div>
 
