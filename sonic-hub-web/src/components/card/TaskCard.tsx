@@ -1,8 +1,8 @@
 import { useState } from 'react'
 import { Expand, Check } from 'lucide-react'
-import Card, { TypeChip, TagChip, StatusPills, TYPE_COLOR, TYPE_CHIP_BG } from './Card'
+import Card, { TagChip, StatusPills, TYPE_COLOR, TYPE_CHIP_BG } from './Card'
 import { useUpdateTask, useDeleteTask } from '../../hooks'
-import { PRIORITY_COLOR } from '../../types'
+import { STATUS_LABEL, PRIORITY_COLOR } from '../../types'
 import type { Task, TaskStatus } from '../../types'
 
 const STATUSES: TaskStatus[] = ['OPEN', 'IN_PROGRESS', 'SNOOZED', 'DONE', 'CLOSED']
@@ -21,7 +21,6 @@ export default function TaskCard({ task, onFullScreen }: Props) {
   const col    = TYPE_COLOR.task
   const chipBg = TYPE_CHIP_BG.task
   const isDone = status === 'DONE' || status === 'CLOSED'
-
   const isOverdue = task.dueDate && !isDone && new Date(task.dueDate) < new Date()
   const isToday   = task.dueDate && !isDone && new Date(task.dueDate).toDateString() === new Date().toDateString()
 
@@ -43,88 +42,116 @@ export default function TaskCard({ task, onFullScreen }: Props) {
   return (
     <Card type="task" expanded={expanded} faded={isDone}
       onClick={() => !expanded && setExpanded(true)}>
-      <div className="p-4 pb-3">
+      <div className="p-4">
 
-        {/* Row 1: check + title + expand */}
-        <div className="flex items-start gap-2.5">
+        {/* Title row */}
+        <div className="flex items-start gap-3 mb-3">
           <button onClick={cycleCheck}
             className="mt-0.5 w-5 h-5 rounded-full border-2 flex items-center justify-center flex-shrink-0 transition-all active:scale-90"
             style={{ borderColor: isDone ? '#7a9a6a' : col, background: isDone ? '#7a9a6a' : 'transparent' }}>
-            {isDone && <Check size={10} color="#fff" strokeWidth={3} />}
+            {isDone && <Check size={9} color="#fff" strokeWidth={3} />}
           </button>
 
-          {expanded
-            ? <textarea value={title} autoFocus rows={2}
-                onClick={e => e.stopPropagation()}
-                onChange={e => { setTitle(e.target.value); setDirty(true) }}
-                className="flex-1 bg-transparent outline-none resize-none font-heading font-semibold text-[14px] leading-snug border-none"
-                style={{ color: '#1a1208', caretColor: col }} />
-            : <p className="flex-1 font-heading font-semibold text-[14px] leading-snug"
-                style={{ color: isDone ? '#9a8a7a' : '#1a1208', textDecoration: isDone ? 'line-through' : 'none' }}>
-                {task.title}
-              </p>
-          }
+          <div className="flex-1 min-w-0">
+            {expanded
+              ? <textarea value={title} autoFocus rows={2}
+                  onClick={e => e.stopPropagation()}
+                  onChange={e => { setTitle(e.target.value); setDirty(true) }}
+                  className="w-full bg-transparent outline-none resize-none border-none text-[15px] font-heading font-semibold leading-snug"
+                  style={{ color: '#1a1208', caretColor: col }}
+                />
+              : <p className="font-heading font-semibold text-[15px] leading-snug"
+                  style={{ color: isDone ? '#b0a090' : '#1a1208', textDecoration: isDone ? 'line-through' : 'none' }}>
+                  {task.title}
+                </p>
+            }
 
+            {/* Note — italic, smaller, tinted */}
+            {!expanded && task.description && (
+              <p className="mt-1.5 text-[13px] leading-relaxed italic line-clamp-2"
+                style={{ color: col + 'bb', fontFamily: "'Nunito', sans-serif" }}>
+                {task.description}
+              </p>
+            )}
+            {expanded && (
+              <div className="mt-2.5" onClick={e => e.stopPropagation()}>
+                <textarea value={desc} rows={4}
+                  onChange={e => { setDesc(e.target.value); setDirty(true) }}
+                  placeholder="Add notes..."
+                  className="w-full rounded-2xl px-3.5 py-2.5 text-[13px] outline-none resize-none leading-relaxed border-none"
+                  style={{ background: 'rgba(255,255,255,.6)', color: '#3a2e20', caretColor: col, fontStyle: 'italic' }}
+                />
+              </div>
+            )}
+          </div>
+
+          {/* Right: priority dot or expand icon */}
           {expanded
             ? <button onClick={e => { e.stopPropagation(); onFullScreen(task) }}
-                className="p-1 rounded-lg flex-shrink-0" style={{ color: col }}>
-                <Expand size={13} />
+                className="p-1 flex-shrink-0 opacity-60 hover:opacity-100 transition-opacity"
+                style={{ color: col }}>
+                <Expand size={14} />
               </button>
-            : <span className="w-2 h-2 rounded-full flex-shrink-0 mt-1.5"
+            : <span className="w-2 h-2 rounded-full flex-shrink-0 mt-2"
                 style={{ background: PRIORITY_COLOR[task.priority] }} />
           }
         </div>
 
-        {/* Description */}
-        {!expanded && task.description && (
-          <p className="text-[12px] leading-relaxed mt-2 ml-[30px] italic line-clamp-2"
-            style={{ color: col + 'cc' }}>
-            {task.description}
-          </p>
-        )}
+        {/* Status pills — only expanded */}
         {expanded && (
-          <div className="mt-2.5 ml-[30px]" onClick={e => e.stopPropagation()}>
-            <textarea value={desc} rows={4}
-              onChange={e => { setDesc(e.target.value); setDirty(true) }}
-              placeholder="Add notes..."
-              className="w-full rounded-xl px-3 py-2.5 text-sm outline-none resize-none leading-relaxed border-none"
-              style={{ background: 'rgba(255,255,255,.55)', color: '#3a2e20', caretColor: col }}
-            />
-          </div>
-        )}
-
-        {/* Status pills (expanded only) */}
-        {expanded && (
-          <div className="mt-2.5 ml-[30px]">
+          <div className="mb-3" onClick={e => e.stopPropagation()}>
             <StatusPills value={status} options={STATUSES} color={col} chipBg={chipBg}
               onChange={s => { setStatus(s); setDirty(true) }} />
           </div>
         )}
 
-        {/* Footer chips */}
-        <div className="flex items-center gap-1.5 flex-wrap mt-2.5 ml-[30px]">
-          {!expanded && <TypeChip type="task" label={status.replace('_',' ')} />}
-          {isOverdue && <span className="text-[11px] font-bold" style={{ color: '#e05252' }}>⚠ Overdue</span>}
-          {isToday && !isOverdue && <span className="text-[11px] font-bold" style={{ color: col }}>Today</span>}
+        {/* Footer: small chips */}
+        <div className="flex items-center gap-1.5 flex-wrap">
+          {/* Status chip — small, sentence case, rounded-full */}
+          <span className="text-[11px] font-semibold px-2.5 py-1 rounded-full"
+            style={{ background: chipBg, color: col }}>
+            {STATUS_LABEL[status]}
+          </span>
+
+          {isOverdue && (
+            <span className="text-[11px] font-semibold px-2.5 py-1 rounded-full"
+              style={{ background: 'rgba(224,82,82,.15)', color: '#e05252' }}>
+              Overdue
+            </span>
+          )}
+          {isToday && !isOverdue && (
+            <span className="text-[11px] font-semibold px-2.5 py-1 rounded-full"
+              style={{ background: chipBg, color: col }}>
+              Today
+            </span>
+          )}
           {task.dueDate && !isOverdue && !isToday && (
-            <span className="text-[11px]" style={{ color: col + 'aa' }}>
+            <span className="text-[11px]" style={{ color: col + '99' }}>
               {new Date(task.dueDate).toLocaleDateString('en', { month: 'short', day: 'numeric' })}
             </span>
           )}
           {task.tags.map(tag => <TagChip key={tag.id} name={tag.name} color={tag.color} />)}
           {task.childCount > 0 && (
-            <span className="text-[11px] font-semibold" style={{ color: col + '99' }}>{task.childCount} sub</span>
+            <span className="text-[11px]" style={{ color: col + '88' }}>{task.childCount} subtasks</span>
           )}
         </div>
 
-        {/* Action row */}
+        {/* Expanded actions */}
         {expanded && (
-          <div className="flex items-center justify-between mt-3 ml-[30px]" onClick={e => e.stopPropagation()}>
+          <div className="flex items-center justify-between mt-4 pt-3"
+            style={{ borderTop: `1px solid ${col}20` }}
+            onClick={e => e.stopPropagation()}>
             <button onClick={() => { if (confirm(`Delete "${task.title}"?`)) remove.mutate(task.id) }}
-              className="text-[12px] font-semibold" style={{ color: col + '80' }}>Delete</button>
-            <div className="flex gap-2">
+              className="text-[12px] font-semibold opacity-50 hover:opacity-100 transition-opacity"
+              style={{ color: col }}>
+              Delete
+            </button>
+            <div className="flex items-center gap-2.5">
               <button onClick={() => { setExpanded(false); setDirty(false); setTitle(task.title); setDesc(task.description ?? ''); setStatus(task.status) }}
-                className="text-[12px] font-semibold" style={{ color: col + '80' }}>Close</button>
+                className="text-[12px] font-semibold opacity-50 hover:opacity-100 transition-opacity"
+                style={{ color: col }}>
+                Close
+              </button>
               {dirty && (
                 <button onClick={save} disabled={update.isPending}
                   className="px-4 py-1.5 rounded-full text-[12px] font-bold active:scale-95 disabled:opacity-50"
