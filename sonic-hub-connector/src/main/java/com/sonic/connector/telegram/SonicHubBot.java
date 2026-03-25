@@ -1,7 +1,7 @@
-package com.sonic.hub.telegram;
+package com.sonic.connector.telegram;
 
-import com.sonic.hub.telegram.config.TelegramConfig;
-import com.sonic.hub.telegram.handler.CommandHandler;
+import com.sonic.connector.telegram.config.TelegramConfig;
+import com.sonic.connector.telegram.handler.CommandHandler;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.stereotype.Component;
@@ -48,7 +48,6 @@ public class SonicHubBot implements SpringLongPollingBot, LongPollingSingleThrea
 
         var message = update.getMessage();
 
-        // Security: only respond to owner
         if (config.getOwnerId() != null && !message.getFrom().getId().equals(config.getOwnerId())) {
             reply(message.getChatId(), "🔒 Unauthorized.");
             return;
@@ -57,12 +56,10 @@ public class SonicHubBot implements SpringLongPollingBot, LongPollingSingleThrea
         String text = message.getText().trim();
         if (!text.startsWith("/")) return;
 
-        // Parse command and args
         String[] split = text.split("\\s+", 2);
-        String command = split[0].toLowerCase().split("@")[0]; // remove @botname suffix
+        String command = split[0].toLowerCase().split("@")[0];
         String args = split.length > 1 ? split[1] : null;
 
-        // Dispatch to handler
         for (CommandHandler handler : handlers) {
             if (handler.supports(command)) {
                 try {

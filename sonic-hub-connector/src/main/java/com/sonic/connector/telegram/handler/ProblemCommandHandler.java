@@ -1,9 +1,8 @@
-package com.sonic.hub.telegram.handler;
+package com.sonic.connector.telegram.handler;
 
-import com.sonic.hub.dto.ProblemDto;
-import com.sonic.hub.model.ProblemStatus;
-import com.sonic.hub.service.ProblemService;
-import com.sonic.hub.telegram.util.MessageFormatter;
+import com.sonic.connector.core.ApiModels.ProblemRequest;
+import com.sonic.connector.core.SonicHubApiClient;
+import com.sonic.connector.telegram.util.MessageFormatter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -16,7 +15,7 @@ import java.util.Set;
 @Slf4j
 public class ProblemCommandHandler implements CommandHandler {
 
-    private final ProblemService problemService;
+    private final SonicHubApiClient apiClient;
 
     @Override
     public boolean supports(String command) {
@@ -36,16 +35,17 @@ public class ProblemCommandHandler implements CommandHandler {
         if (args == null || args.isBlank()) {
             return "❌ Usage: `/p Problem description here`";
         }
-        var request = new ProblemDto.Request();
-        request.setTitle(args.trim());
-        request.setStatus(ProblemStatus.NEW);
-        var created = problemService.create(request);
+        var request = ProblemRequest.builder()
+                .title(args.trim())
+                .status("NEW")
+                .build();
+        var created = apiClient.createProblem(request);
         return MessageFormatter.formatProblemCreated(created);
     }
 
     private String listProblems() {
-        var problems = problemService.getAll(null).stream()
-                .filter(p -> p.getStatus() != ProblemStatus.RESOLVED && p.getStatus() != ProblemStatus.DISMISSED)
+        var problems = apiClient.getProblems().stream()
+                .filter(p -> !"RESOLVED".equals(p.getStatus()) && !"DISMISSED".equals(p.getStatus()))
                 .toList();
         return MessageFormatter.formatProblemList(problems);
     }

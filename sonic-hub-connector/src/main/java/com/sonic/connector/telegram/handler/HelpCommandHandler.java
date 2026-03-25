@@ -1,4 +1,4 @@
-package com.sonic.hub.telegram.handler;
+package com.sonic.connector.telegram.handler;
 
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.objects.message.Message;

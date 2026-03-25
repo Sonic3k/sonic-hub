@@ -1,8 +1,8 @@
-package com.sonic.hub.telegram.handler;
+package com.sonic.connector.telegram.handler;
 
-import com.sonic.hub.dto.TodoDto;
-import com.sonic.hub.service.TodoService;
-import com.sonic.hub.telegram.util.MessageFormatter;
+import com.sonic.connector.core.ApiModels.TodoRequest;
+import com.sonic.connector.core.SonicHubApiClient;
+import com.sonic.connector.telegram.util.MessageFormatter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -15,7 +15,7 @@ import java.util.Set;
 @Slf4j
 public class TodoCommandHandler implements CommandHandler {
 
-    private final TodoService todoService;
+    private final SonicHubApiClient apiClient;
 
     @Override
     public boolean supports(String command) {
@@ -35,14 +35,13 @@ public class TodoCommandHandler implements CommandHandler {
         if (args == null || args.isBlank()) {
             return "❌ Usage: `/td Todo title here`";
         }
-        var request = new TodoDto.Request();
-        request.setTitle(args.trim());
-        var created = todoService.create(request);
+        var request = TodoRequest.builder().title(args.trim()).build();
+        var created = apiClient.createTodo(request);
         return MessageFormatter.formatTodoCreated(created);
     }
 
     private String listTodos() {
-        var todos = todoService.getAll().stream()
+        var todos = apiClient.getTodos().stream()
                 .filter(t -> !t.isDone())
                 .toList();
         return MessageFormatter.formatTodoList(todos);
