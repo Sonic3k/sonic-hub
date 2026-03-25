@@ -1,7 +1,7 @@
 package com.sonic.hub.telegram.handler;
 
 import org.springframework.stereotype.Component;
-import org.telegram.telegrambots.meta.api.objects.Message;
+import org.telegram.telegrambots.meta.api.objects.message.Message;
 
 import java.util.Set;
 

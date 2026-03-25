@@ -2,51 +2,48 @@ package com.sonic.hub.telegram;
 
 import com.sonic.hub.telegram.config.TelegramConfig;
 import com.sonic.hub.telegram.handler.CommandHandler;
-import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.stereotype.Component;
-import org.telegram.telegrambots.bots.TelegramLongPollingBot;
-import org.telegram.telegrambots.meta.TelegramBotsApi;
+import org.telegram.telegrambots.client.okhttp.OkHttpTelegramClient;
+import org.telegram.telegrambots.longpolling.interfaces.LongPollingUpdateConsumer;
+import org.telegram.telegrambots.longpolling.starter.SpringLongPollingBot;
+import org.telegram.telegrambots.longpolling.util.LongPollingSingleThreadUpdateConsumer;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
-import org.telegram.telegrambots.updatesreceivers.DefaultBotSession;
+import org.telegram.telegrambots.meta.generics.TelegramClient;
 
 import java.util.List;
 
 @Component
 @ConditionalOnBean(TelegramConfig.class)
 @Slf4j
-public class SonicHubBot extends TelegramLongPollingBot {
+public class SonicHubBot implements SpringLongPollingBot, LongPollingSingleThreadUpdateConsumer {
 
     private final TelegramConfig config;
+    private final TelegramClient telegramClient;
     private final List<CommandHandler> handlers;
 
     public SonicHubBot(TelegramConfig config, List<CommandHandler> handlers) {
-        super(config.getBotToken());
         this.config = config;
+        this.telegramClient = new OkHttpTelegramClient(config.getBotToken());
         this.handlers = handlers;
-    }
-
-    @PostConstruct
-    public void register() {
-        try {
-            var api = new TelegramBotsApi(DefaultBotSession.class);
-            api.registerBot(this);
-            log.info("✅ Telegram bot registered: @{}", config.getBotUsername());
-        } catch (TelegramApiException e) {
-            log.error("❌ Failed to register Telegram bot", e);
-        }
+        log.info("Telegram bot initialized: @{}", config.getBotUsername());
     }
 
     @Override
-    public String getBotUsername() {
-        return config.getBotUsername();
+    public String getBotToken() {
+        return config.getBotToken();
     }
 
     @Override
-    public void onUpdateReceived(Update update) {
+    public LongPollingUpdateConsumer getUpdatesConsumer() {
+        return this;
+    }
+
+    @Override
+    public void consume(Update update) {
         if (!update.hasMessage() || !update.getMessage().hasText()) return;
 
         var message = update.getMessage();
@@ -81,17 +78,18 @@ public class SonicHubBot extends TelegramLongPollingBot {
             }
         }
 
-        reply(message.getChatId(), "❓ Unknown command. Type `/help` for available commands.");
+        reply(message.getChatId(), "❓ Unknown command. Type /help for available commands.");
     }
 
     private void reply(Long chatId, String text) {
-        var msg = new SendMessage();
-        msg.setChatId(chatId.toString());
-        msg.setText(text);
-        msg.setParseMode("Markdown");
-        msg.setDisableWebPagePreview(true);
+        var msg = SendMessage.builder()
+                .chatId(chatId.toString())
+                .text(text)
+                .parseMode("Markdown")
+                .disableWebPagePreview(true)
+                .build();
         try {
-            execute(msg);
+            telegramClient.execute(msg);
         } catch (TelegramApiException e) {
             log.error("Failed to send message", e);
         }
