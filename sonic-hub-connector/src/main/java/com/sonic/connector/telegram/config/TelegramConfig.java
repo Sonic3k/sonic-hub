@@ -1,4 +1,4 @@
-package com.sonic.hub.telegram.config;
+package com.sonic.connector.telegram.config;
 
 import lombok.Getter;
 import lombok.Setter;

@@ -1,24 +1,21 @@
-package com.sonic.hub.telegram.handler;
+package com.sonic.connector.telegram.handler;
 
-import com.sonic.hub.dto.TaskDto;
-import com.sonic.hub.model.TaskStatus;
-import com.sonic.hub.service.TaskService;
-import com.sonic.hub.telegram.util.MessageFormatter;
+import com.sonic.connector.core.ApiModels.TaskRequest;
+import com.sonic.connector.core.SonicHubApiClient;
+import com.sonic.connector.telegram.util.MessageFormatter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.objects.message.Message;
 
-import java.util.List;
 import java.util.Set;
-import java.util.UUID;
 
 @Component
 @RequiredArgsConstructor
 @Slf4j
 public class TaskCommandHandler implements CommandHandler {
 
-    private final TaskService taskService;
+    private final SonicHubApiClient apiClient;
 
     @Override
     public boolean supports(String command) {
@@ -38,19 +35,18 @@ public class TaskCommandHandler implements CommandHandler {
         if (args == null || args.isBlank()) {
             return "❌ Usage: `/t Task title here`";
         }
-        var request = new TaskDto.Request();
-        request.setTitle(args.trim());
-        request.setStatus(TaskStatus.OPEN);
-        var created = taskService.create(request);
+        var request = TaskRequest.builder()
+                .title(args.trim())
+                .status("OPEN")
+                .build();
+        var created = apiClient.createTask(request);
         return MessageFormatter.formatTaskCreated(created);
     }
 
     private String listTasks() {
-        List<TaskDto.Response> tasks = taskService.getRootTasks(null);
-        // Filter only active tasks (not done/closed)
-        var active = tasks.stream()
-                .filter(t -> t.getStatus() != TaskStatus.DONE && t.getStatus() != TaskStatus.CLOSED)
+        var tasks = apiClient.getTasks().stream()
+                .filter(t -> !"DONE".equals(t.getStatus()) && !"CLOSED".equals(t.getStatus()))
                 .toList();
-        return MessageFormatter.formatTaskList(active);
+        return MessageFormatter.formatTaskList(tasks);
     }
 }
