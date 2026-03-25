@@ -28,6 +28,9 @@ public class HelpCommandHandler implements CommandHandler {
             
             💡 _IDs are shown as short 8-char codes when you list items._
             _Use any unique prefix to match — e.g._ `a1b2` _is enough._
+            
+            *Railway:*
+            `/rw help` — railway deploy commands
             """;
 
     @Override
