@@ -24,9 +24,6 @@ class BotManager:
 
     async def start_all(self):
         """Load all telegram-enabled assistants and start their bots."""
-        # Wait for old instance to fully stop (Railway rolling deploy)
-        await asyncio.sleep(3)
-
         async with async_session() as db:
             assistants = await memory_service.get_all_assistants(db)
 
@@ -41,33 +38,25 @@ class BotManager:
         if assistant_id in self.bots:
             await self.stop_bot(assistant_id)
 
-        for attempt in range(3):
-            try:
-                app = Application.builder().token(token).build()
+        try:
+            app = Application.builder().token(token).build()
 
-                app.bot_data["assistant_id"] = assistant_id
-                app.bot_data["owner_id"] = owner_id
-                app.bot_data["nickname"] = nickname
+            app.bot_data["assistant_id"] = assistant_id
+            app.bot_data["owner_id"] = owner_id
+            app.bot_data["nickname"] = nickname
 
-                app.add_handler(CommandHandler("start", _handle_start))
-                app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, _handle_message))
+            app.add_handler(CommandHandler("start", _handle_start))
+            app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, _handle_message))
 
-                await app.initialize()
-                await app.start()
-                await app.updater.start_polling(drop_pending_updates=True)
+            await app.initialize()
+            await app.start()
+            await app.updater.start_polling(drop_pending_updates=True)
 
-                self.bots[assistant_id] = app
-                logger.info(f"Bot started: {nickname} (assistant: {assistant_id})")
-                return
+            self.bots[assistant_id] = app
+            logger.info(f"Bot started: {nickname} (assistant: {assistant_id})")
 
-            except Exception as e:
-                err_msg = str(e).lower()
-                if "conflict" in err_msg and attempt < 2:
-                    logger.warning(f"Bot conflict for {nickname}, retry {attempt+1}/3 in 5s...")
-                    await asyncio.sleep(5)
-                else:
-                    logger.error(f"Failed to start bot for {nickname}: {e}")
-                    return
+        except Exception as e:
+            logger.error(f"Failed to start bot for {nickname}: {e}")
 
     async def stop_bot(self, assistant_id: str):
         """Stop a single bot."""
