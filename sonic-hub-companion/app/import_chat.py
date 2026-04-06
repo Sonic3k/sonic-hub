@@ -236,10 +236,8 @@ async def extract_memories_batch(conversations: list[dict], assistant_id):
                     summary=ep["summary"],
                     emotion=ep.get("emotion"),
                     importance=ep.get("importance", 5),
+                    occurred_at=occurred,
                 )
-                if occurred:
-                    # Update the episode's occurred_at
-                    pass  # already set by default
 
         await db.commit()
 

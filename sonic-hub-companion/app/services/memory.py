@@ -186,13 +186,15 @@ class MemoryService:
 
     async def save_episode(
         self, db: AsyncSession, assistant_id, summary: str, emotion: str = None,
-        importance: int = 5, source_conversation_id=None
+        importance: int = 5, source_conversation_id=None, occurred_at=None
     ) -> Episode:
         ep = Episode(
             assistant_id=assistant_id,
             summary=summary, emotion=emotion, importance=importance,
             source_conversation_id=source_conversation_id,
         )
+        if occurred_at:
+            ep.occurred_at = occurred_at
         db.add(ep)
         await db.flush()
         return ep
