@@ -265,12 +265,12 @@ async def import_yahoo_messenger(
     assistant_id: str,
     file: UploadFile = File(...),
 ):
-    """Import Yahoo Messenger chat history from uploaded .txt file."""
+    """Import Yahoo Messenger chat history. Messages import immediately, memory extraction runs in background."""
+    import asyncio
     from app.import_chat import parse_ym_chat_from_text, import_conversations, extract_memories_batch
 
     try:
         raw_bytes = await file.read()
-        # Try UTF-16 first, then UTF-8
         try:
             text = raw_bytes.decode('utf-16')
         except (UnicodeDecodeError, UnicodeError):
@@ -285,18 +285,33 @@ async def import_yahoo_messenger(
             channel_id = channel.id
 
         imported = await import_conversations(conversations, assistant_id, channel_id)
-        facts_count, episodes_count = await extract_memories_batch(conversations, assistant_id)
+
+        # Extract memories in background (don't wait)
+        asyncio.create_task(
+            _extract_memories_background(conversations, assistant_id)
+        )
 
         return {
             "status": "success",
             "conversations": len(conversations),
             "messages_imported": imported,
-            "facts_extracted": facts_count,
-            "episodes_extracted": episodes_count,
+            "message": f"Imported {imported} messages. Memory extraction running in background...",
         }
     except Exception as e:
         import traceback
         return {"status": "error", "message": str(e), "trace": traceback.format_exc()}
+
+
+async def _extract_memories_background(conversations, assistant_id):
+    """Background task for memory extraction."""
+    import logging
+    logger = logging.getLogger(__name__)
+    try:
+        from app.import_chat import extract_memories_batch
+        facts, episodes = await extract_memories_batch(conversations, assistant_id)
+        logger.info(f"Background extraction done: {facts} facts, {episodes} episodes")
+    except Exception as e:
+        logger.error(f"Background extraction failed: {e}")
 
 
 # ─── Health ───
