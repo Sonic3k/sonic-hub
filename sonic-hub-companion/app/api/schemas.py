@@ -6,7 +6,7 @@ class ChatRequest(BaseModel):
     channel: str
     external_id: str
     message: str
-    assistant_id: str | None = None  # if None, use default active assistant
+    assistant_id: str | None = None
     timestamp: datetime | None = None
     metadata: dict | None = None
 
@@ -18,6 +18,13 @@ class ChatResponse(BaseModel):
     conversation_id: str
     assistant_id: str
     assistant_nickname: str
+
+
+class AssistantCreateRequest(BaseModel):
+    name: str
+    nickname: str
+    date_of_birth: str | None = None  # ISO format
+    bio: str | None = None
 
 
 class AssistantResponse(BaseModel):
@@ -65,6 +72,22 @@ class EpisodeResponse(BaseModel):
     emotion: str | None
     importance: int
     occurred_at: datetime
+
+
+class ConversationResponse(BaseModel):
+    id: str
+    started_at: datetime
+    ended_at: datetime | None
+    summary: str | None
+    is_active: bool
+
+
+class MessageResponse(BaseModel):
+    id: str
+    role: str
+    content: str
+    timestamp: datetime
+    channel_type: str
 
 
 class HealthResponse(BaseModel):

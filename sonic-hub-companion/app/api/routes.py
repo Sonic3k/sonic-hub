@@ -1,15 +1,17 @@
 from fastapi import APIRouter, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy import select
 from app.core.database import get_db
 from app.api.schemas import (
     ChatRequest, ChatResponse,
-    AssistantResponse,
+    AssistantCreateRequest, AssistantResponse,
     PersonalityRequest, PersonalityResponse,
     ProfileFactRequest, ProfileFactResponse,
-    EpisodeResponse, HealthResponse,
+    EpisodeResponse, HealthResponse, ConversationResponse, MessageResponse,
 )
 from app.services.chat import ChatService
 from app.services.memory import MemoryService
+from app.models.models import Assistant, Conversation, Message
 
 router = APIRouter()
 chat_service = ChatService()
@@ -31,6 +33,16 @@ async def chat(request: ChatRequest, db: AsyncSession = Depends(get_db)):
     return ChatResponse(**result)
 
 
+# ─── Seed ───
+
+@router.post("/seed", response_model=dict)
+async def run_seed(db: AsyncSession = Depends(get_db)):
+    """Run seed to create default assistant (Tommy Filan) if none exists."""
+    from app.seed import seed_with_session
+    result = await seed_with_session(db)
+    return result
+
+
 # ─── Assistants ───
 
 @router.get("/assistants", response_model=list[AssistantResponse])
@@ -44,6 +56,34 @@ async def list_assistants(db: AsyncSession = Depends(get_db)):
         )
         for a in items
     ]
+
+
+@router.post("/assistants", response_model=AssistantResponse)
+async def create_assistant(request: AssistantCreateRequest, db: AsyncSession = Depends(get_db)):
+    from datetime import date as date_type
+    dob = None
+    if request.date_of_birth:
+        dob = date_type.fromisoformat(request.date_of_birth)
+    a = Assistant(
+        name=request.name, nickname=request.nickname,
+        date_of_birth=dob, bio=request.bio, active=True,
+    )
+    db.add(a)
+    await db.commit()
+    return AssistantResponse(
+        id=str(a.id), name=a.name, nickname=a.nickname,
+        avatar_url=a.avatar_url, date_of_birth=a.date_of_birth,
+        bio=a.bio, active=a.active,
+    )
+
+
+@router.delete("/assistants/{assistant_id}", response_model=dict)
+async def delete_assistant(assistant_id: str, db: AsyncSession = Depends(get_db)):
+    a = await memory_service.get_assistant_by_id(db, assistant_id)
+    if a:
+        await db.delete(a)
+        await db.commit()
+    return {"status": "deleted", "id": assistant_id}
 
 
 # ─── Personality ───
@@ -112,6 +152,43 @@ async def get_episodes(
             importance=e.importance, occurred_at=e.occurred_at,
         )
         for e in items
+    ]
+
+
+# ─── Conversations ───
+
+@router.get("/conversations/{assistant_id}", response_model=list[ConversationResponse])
+async def get_conversations(
+    assistant_id: str, limit: int = 20, db: AsyncSession = Depends(get_db)
+):
+    from sqlalchemy import desc
+    result = await db.execute(
+        select(Conversation)
+        .where(Conversation.assistant_id == assistant_id)
+        .order_by(desc(Conversation.started_at))
+        .limit(limit)
+    )
+    convs = list(result.scalars().all())
+    return [
+        ConversationResponse(
+            id=str(c.id), started_at=c.started_at,
+            ended_at=c.ended_at, summary=c.summary, is_active=c.is_active,
+        )
+        for c in convs
+    ]
+
+
+@router.get("/conversations/{assistant_id}/{conversation_id}/messages", response_model=list[MessageResponse])
+async def get_conversation_messages(
+    assistant_id: str, conversation_id: str, db: AsyncSession = Depends(get_db)
+):
+    messages = await memory_service.get_recent_messages(db, conversation_id, limit=100)
+    return [
+        MessageResponse(
+            id=str(m.id), role=m.role, content=m.content,
+            timestamp=m.timestamp, channel_type=m.channel_type,
+        )
+        for m in messages
     ]
 
 

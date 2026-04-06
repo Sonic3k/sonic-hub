@@ -1,5 +1,5 @@
 import { NavLink } from 'react-router-dom'
-import { CheckSquare, Tag, Zap, FolderOpen, ListTodo, AlertCircle } from 'lucide-react'
+import { CheckSquare, Tag, Zap, FolderOpen, ListTodo, AlertCircle, Heart } from 'lucide-react'
 import clsx from 'clsx'
 
 const navItems = [
@@ -8,6 +8,7 @@ const navItems = [
   { to: '/problems', label: 'Problems', icon: AlertCircle },
   { to: '/projects', label: 'Projects', icon: FolderOpen },
   { to: '/tags', label: 'Tags', icon: Tag },
+  { to: '/companion', label: 'Companion', icon: Heart },
 ]
 
 export default function Sidebar() {

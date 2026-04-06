@@ -7,6 +7,7 @@ import TagsPage from './pages/TagsPage'
 import ProjectsPage from './pages/ProjectsPage'
 import TodosPage from './pages/TodosPage'
 import ProblemsPage from './pages/ProblemsPage'
+import CompanionPage from './pages/CompanionPage'
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -25,6 +26,7 @@ export default function App() {
             <Route path="problems" element={<ProblemsPage />} />
             <Route path="projects" element={<ProjectsPage />} />
             <Route path="tags" element={<TagsPage />} />
+            <Route path="companion" element={<CompanionPage />} />
           </Route>
         </Routes>
       </BrowserRouter>

@@ -1,9 +1,12 @@
 """
 Seed script: Initialize Tommy Filan (Bùi Tố Lan).
-Run once: python -m app.seed
+Can run standalone: python -m app.seed
+Or via API: POST /seed
 """
 import asyncio
 from datetime import date
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.database import init_db, async_session
 from app.services.memory import MemoryService
 from app.models.models import Assistant
@@ -93,34 +96,53 @@ PERSONALITY_SEED = [
 ]
 
 
+async def seed_with_session(db: AsyncSession) -> dict:
+    """Seed callable from API endpoint."""
+    # Check if already seeded
+    result = await db.execute(select(Assistant))
+    existing = result.scalars().all()
+    if existing:
+        return {
+            "status": "skipped",
+            "message": f"Already have {len(existing)} assistant(s)",
+            "assistants": [{"id": str(a.id), "nickname": a.nickname} for a in existing],
+        }
+
+    tommy = Assistant(
+        name="Bùi Tố Lan",
+        nickname="Tommy Filan",
+        date_of_birth=date(1993, 6, 22),
+        bio="Bạn gái thân thiện, hay châm chọc nhưng rất quan tâm.",
+        active=True,
+    )
+    db.add(tommy)
+    await db.flush()
+
+    for p in PERSONALITY_SEED:
+        await memory.upsert_personality(
+            db, assistant_id=tommy.id,
+            aspect=p["aspect"],
+            instruction=p["instruction"],
+            examples=p.get("examples"),
+        )
+
+    await memory.upsert_profile_fact(db, tommy.id, "basic", "name", "Ngọc Anh")
+    await memory.upsert_profile_fact(db, tommy.id, "work", "job", "developer")
+
+    await db.commit()
+    return {
+        "status": "created",
+        "message": "Tommy Filan created successfully",
+        "assistant_id": str(tommy.id),
+    }
+
+
 async def seed():
+    """Standalone seed (python -m app.seed)."""
     await init_db()
     async with async_session() as db:
-        tommy = Assistant(
-            name="Bùi Tố Lan",
-            nickname="Tommy Filan",
-            date_of_birth=date(1993, 6, 22),
-            bio="Bạn gái thân thiện, hay châm chọc nhưng rất quan tâm.",
-            active=True,
-        )
-        db.add(tommy)
-        await db.flush()
-
-        for p in PERSONALITY_SEED:
-            await memory.upsert_personality(
-                db, assistant_id=tommy.id,
-                aspect=p["aspect"],
-                instruction=p["instruction"],
-                examples=p.get("examples"),
-            )
-
-        await memory.upsert_profile_fact(db, tommy.id, "basic", "name", "Ngọc Anh")
-        await memory.upsert_profile_fact(db, tommy.id, "work", "job", "developer")
-
-        await db.commit()
-        print(f"✅ Tommy Filan created (id: {tommy.id})")
-        print(f"✅ {len(PERSONALITY_SEED)} personality aspects seeded")
-        print(f"✅ 2 profile facts seeded")
+        result = await seed_with_session(db)
+        print(f"✅ {result['message']}")
 
 
 if __name__ == "__main__":
