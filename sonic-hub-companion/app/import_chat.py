@@ -195,11 +195,16 @@ Trả JSON:
 Chỉ trả JSON."""
 
 
-async def extract_memories_batch(conversations: list[dict], assistant_id):
+async def extract_memories_batch(conversations: list[dict], assistant_id, progress_callback=None):
     """Multi-pass extraction using Sonnet for deep analysis."""
     settings = get_settings()
     client = AsyncAnthropic(api_key=settings.anthropic_api_key)
     model = settings.claude_smart_model  # Sonnet for quality
+
+    def report(msg):
+        logger.info(msg)
+        if progress_callback:
+            progress_callback(msg)
 
     all_facts = []
     all_episodes = []
@@ -227,7 +232,7 @@ async def extract_memories_batch(conversations: list[dict], assistant_id):
         # Limit to ~15000 chars per call
         chat_text = chat_text[:15000]
 
-        logger.info(f"Batch {batch_num}/{total_batches} ({len(chat_text)} chars)")
+        report(f"Batch {batch_num}/{total_batches} — extracting facts...")
 
         # Pass 1: Facts
         facts_data = await _call_extract(client, model, PASS1_FACTS_PROMPT, chat_text)

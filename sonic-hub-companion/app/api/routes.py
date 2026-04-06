@@ -380,6 +380,11 @@ async def manual_import(assistant_id: str, request: dict, db: AsyncSession = Dep
     return {"status": "imported", "counts": counts}
 
 
+# ─── Import Job Tracker ───
+
+import_jobs: dict = {}  # job_id -> {status, progress, result}
+
+
 # ─── Import Chat History ───
 
 @router.post("/import/yahoo-messenger/{assistant_id}", response_model=dict)
@@ -387,9 +392,10 @@ async def import_yahoo_messenger(
     assistant_id: str,
     file: UploadFile = File(...),
 ):
-    """Import Yahoo Messenger chat history. Messages import immediately, memory extraction runs in background."""
+    """Import Yahoo Messenger chat history. Returns immediately, extraction runs in background."""
     import asyncio
-    from app.import_chat import parse_ym_chat_from_text, import_conversations, extract_memories_batch
+    import uuid as uuid_mod
+    from app.import_chat import parse_ym_chat_from_text, import_conversations
 
     try:
         raw_bytes = await file.read()
@@ -399,7 +405,6 @@ async def import_yahoo_messenger(
             text = raw_bytes.decode('utf-8-sig')
 
         conversations = parse_ym_chat_from_text(text)
-        total_msgs = sum(len(c['messages']) for c in conversations)
 
         async with async_session() as db:
             channel = await memory_service.get_or_create_channel(db, "yahoo_messenger", "hypersonic3k")
@@ -408,36 +413,64 @@ async def import_yahoo_messenger(
 
         imported = await import_conversations(conversations, assistant_id, channel_id)
 
-        # Extract memories in background (don't wait)
+        # Create job for background extraction
+        job_id = str(uuid_mod.uuid4())[:8]
+        import_jobs[job_id] = {
+            "status": "extracting",
+            "progress": "Starting memory extraction...",
+            "messages_imported": imported,
+            "conversations": len(conversations),
+        }
+
         asyncio.create_task(
-            _extract_memories_background(conversations, assistant_id)
+            _extract_memories_background(conversations, assistant_id, job_id)
         )
 
         return {
             "status": "success",
+            "job_id": job_id,
             "conversations": len(conversations),
             "messages_imported": imported,
-            "message": f"Imported {imported} messages. Memory extraction running in background...",
+            "message": f"Imported {imported} messages. Extraction started (job: {job_id})",
         }
     except Exception as e:
         import traceback
-        return {"status": "error", "message": str(e), "trace": traceback.format_exc()}
+        return {"status": "error", "message": str(e)}
 
 
-async def _extract_memories_background(conversations, assistant_id):
-    """Background task for memory extraction (multi-pass with Sonnet)."""
+@router.get("/import/status/{job_id}", response_model=dict)
+async def import_status(job_id: str):
+    """Poll extraction job status."""
+    job = import_jobs.get(job_id)
+    if not job:
+        return {"status": "not_found"}
+    return job
+
+
+async def _extract_memories_background(conversations, assistant_id, job_id: str):
+    """Background task for memory extraction with progress tracking."""
     import logging
     logger = logging.getLogger(__name__)
     try:
         from app.import_chat import extract_memories_batch
-        result = await extract_memories_batch(conversations, assistant_id)
-        logger.info(
-            f"Background extraction done: {result['facts']} facts, "
-            f"{result['episodes']} episodes, {result['vocabulary']} vocab, "
-            f"{result['dynamics']} dynamics"
+        result = await extract_memories_batch(
+            conversations, assistant_id,
+            progress_callback=lambda msg: import_jobs.update({job_id: {**import_jobs.get(job_id, {}), "progress": msg, "status": "extracting"}}),
         )
+        import_jobs[job_id] = {
+            **import_jobs.get(job_id, {}),
+            "status": "done",
+            "progress": "Complete!",
+            "result": result,
+        }
+        logger.info(f"Job {job_id} done: {result}")
     except Exception as e:
-        logger.error(f"Background extraction failed: {e}")
+        import_jobs[job_id] = {
+            **import_jobs.get(job_id, {}),
+            "status": "error",
+            "progress": f"Error: {str(e)}",
+        }
+        logger.error(f"Job {job_id} failed: {e}")
 
 
 # ─── Health ───

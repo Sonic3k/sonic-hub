@@ -106,6 +106,7 @@ function AssistantsTab({ selected, onSelect }: { selected: Assistant | null; onS
   const [showCreate, setShowCreate] = useState(false)
   const [form, setForm] = useState({ name: '', nickname: '', date_of_birth: '', bio: '' })
   const [importResult, setImportResult] = useState<any>(null)
+  const [jobStatus, setJobStatus] = useState<any>(null)
 
   const createMutation = useMutation({
     mutationFn: (data: typeof form) => companionApi.post('/assistants', data),
@@ -116,6 +117,27 @@ function AssistantsTab({ selected, onSelect }: { selected: Assistant | null; onS
     },
   })
 
+  // Poll job status
+  const pollJob = async (jobId: string) => {
+    const poll = async () => {
+      try {
+        const res = await companionApi.get(`/import/status/${jobId}`)
+        setJobStatus(res.data)
+        if (res.data.status === 'extracting') {
+          setTimeout(poll, 3000)
+        } else {
+          // Done or error — refresh data
+          qc.invalidateQueries({ queryKey: ['episodes'] })
+          qc.invalidateQueries({ queryKey: ['profile'] })
+          qc.invalidateQueries({ queryKey: ['vocabulary'] })
+          qc.invalidateQueries({ queryKey: ['dynamics'] })
+          qc.invalidateQueries({ queryKey: ['conversations'] })
+        }
+      } catch { /* ignore */ }
+    }
+    poll()
+  }
+
   const importMutation = useMutation({
     mutationFn: async (file: File) => {
       if (!selected) return
@@ -123,13 +145,15 @@ function AssistantsTab({ selected, onSelect }: { selected: Assistant | null; onS
       formData.append('file', file)
       return companionApi.post(`/import/yahoo-messenger/${selected.id}`, formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
-        timeout: 120000,
+        timeout: 60000,
       })
     },
     onSuccess: (res) => {
       setImportResult(res?.data)
-      qc.invalidateQueries({ queryKey: ['episodes'] })
-      qc.invalidateQueries({ queryKey: ['profile'] })
+      setJobStatus({ status: 'extracting', progress: 'Starting...' })
+      if (res?.data?.job_id) {
+        pollJob(res.data.job_id)
+      }
       qc.invalidateQueries({ queryKey: ['conversations'] })
     },
   })
@@ -231,14 +255,32 @@ function AssistantsTab({ selected, onSelect }: { selected: Assistant | null; onS
 
       {importMutation.isPending && (
         <div className="mb-4 px-4 py-3 bg-blue-50 border border-blue-200 rounded-lg text-sm text-blue-700 animate-pulse">
-          ⏳ Importing chat history... This may take 1-2 minutes.
+          ⏳ Uploading and importing messages...
         </div>
       )}
 
       {importMutation.isSuccess && importResult && (
         <div className="mb-4 px-4 py-3 bg-green-50 border border-green-200 rounded-lg text-sm text-green-700">
           ✅ Imported {importResult.messages_imported} messages from {importResult.conversations} conversations.
-          Extracted {importResult.facts_extracted} facts, {importResult.episodes_extracted} episodes.
+        </div>
+      )}
+
+      {jobStatus && jobStatus.status === 'extracting' && (
+        <div className="mb-4 px-4 py-3 bg-purple-50 border border-purple-200 rounded-lg text-sm text-purple-700 animate-pulse">
+          🧠 Extracting memories... {jobStatus.progress}
+        </div>
+      )}
+
+      {jobStatus && jobStatus.status === 'done' && (
+        <div className="mb-4 px-4 py-3 bg-green-50 border border-green-200 rounded-lg text-sm text-green-700">
+          ✅ Extraction complete! {jobStatus.result?.facts} facts, {jobStatus.result?.episodes} episodes,
+          {' '}{jobStatus.result?.vocabulary} vocabulary, {jobStatus.result?.dynamics} dynamics.
+        </div>
+      )}
+
+      {jobStatus && jobStatus.status === 'error' && (
+        <div className="mb-4 px-4 py-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-700">
+          ❌ Extraction error: {jobStatus.progress}
         </div>
       )}
 
