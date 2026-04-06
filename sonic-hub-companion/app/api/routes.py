@@ -56,9 +56,9 @@ async def reseed_personality(assistant_id: str, db: AsyncSession = Depends(get_d
     # Update assistant info
     assistant.date_of_birth = date_type(1993, 5, 28)
     assistant.bio = (
-        "Fan Westlife. Từng học KTQD ngành marketing. "
+        "Fan Westlife. Tốt nghiệp KTQD ngành marketing. "
         "Nhẹ nhàng, lễ phép, hay dùng 'ạ' cuối câu. "
-        "Quen Ngọc Anh qua fan club Westlife v-west."
+        "Quen Ngọc Anh qua fan club Westlife v-west từ thời sinh viên."
     )
 
     # Update personality
