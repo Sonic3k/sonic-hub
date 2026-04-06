@@ -43,6 +43,46 @@ async def run_seed(db: AsyncSession = Depends(get_db)):
     return result
 
 
+@router.post("/reseed/{assistant_id}", response_model=dict)
+async def reseed_personality(assistant_id: str, db: AsyncSession = Depends(get_db)):
+    """Force update personality + profile for existing assistant based on latest seed data."""
+    from datetime import date as date_type
+    from app.seed import PERSONALITY_SEED, PROFILE_SEED
+
+    assistant = await memory_service.get_assistant_by_id(db, assistant_id)
+    if not assistant:
+        return {"status": "error", "message": "Assistant not found"}
+
+    # Update assistant info
+    assistant.date_of_birth = date_type(1993, 5, 28)
+    assistant.bio = (
+        "Fan Westlife. Từng học KTQD ngành marketing. "
+        "Nhẹ nhàng, lễ phép, hay dùng 'ạ' cuối câu. "
+        "Quen Ngọc Anh qua fan club Westlife v-west."
+    )
+
+    # Update personality
+    for p in PERSONALITY_SEED:
+        await memory_service.upsert_personality(
+            db, assistant_id=assistant.id,
+            aspect=p["aspect"],
+            instruction=p["instruction"],
+            examples=p.get("examples"),
+        )
+
+    # Update profile
+    for category, key, value in PROFILE_SEED:
+        await memory_service.upsert_profile_fact(db, assistant.id, category, key, value)
+
+    await db.commit()
+    return {
+        "status": "updated",
+        "message": f"Personality + profile reseeded for {assistant.nickname}",
+        "aspects": len(PERSONALITY_SEED),
+        "facts": len(PROFILE_SEED),
+    }
+
+
 # ─── Assistants ───
 
 @router.get("/assistants", response_model=list[AssistantResponse])
