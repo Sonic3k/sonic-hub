@@ -147,9 +147,6 @@ async def _debounced_reply(update, context, assistant_id, chat_id, buf_key, debo
     if not buffered:
         return
 
-    # Combine messages into one context
-    combined = "\n".join(buffered)
-
     try:
         # Get LLM response
         async with async_session() as db:
@@ -157,30 +154,31 @@ async def _debounced_reply(update, context, assistant_id, chat_id, buf_key, debo
                 db=db,
                 channel_type="telegram",
                 external_id=chat_id,
-                user_message=combined,
+                user_messages=buffered,  # pass list, each saved individually
                 assistant_id=assistant_id,
             )
 
-        chunks = result.get("split", [result.get("reply", "")])
+        messages = result.get("messages", [])
+        if not messages:
+            return
 
         # Limit reply count based on config weights
         max_replies = _weighted_reply_count(config)
-        chunks = chunks[:max_replies]
+        messages = messages[:max_replies]
 
         # Simulate response delay (think time before first message)
-        think_time = _calc_think_time(chunks[0] if chunks else "", config)
+        think_time = _calc_think_time(messages[0] if messages else "", config)
         await update.message.chat.send_action("typing")
         await asyncio.sleep(think_time)
 
-        # Send each chunk with typing delay
-        for i, chunk in enumerate(chunks):
+        # Send each message with typing delay
+        for i, msg_text in enumerate(messages):
             if i > 0:
-                # Typing delay between consecutive messages
-                delay = _calc_typing_delay(chunk, config)
+                delay = _calc_typing_delay(msg_text, config)
                 await update.message.chat.send_action("typing")
                 await asyncio.sleep(delay)
 
-            await update.message.reply_text(chunk)
+            await update.message.reply_text(msg_text)
 
     except Exception as e:
         logger.error(f"Chat error (assistant: {assistant_id}): {e}")

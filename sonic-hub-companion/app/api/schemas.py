@@ -12,9 +12,7 @@ class ChatRequest(BaseModel):
 
 
 class ChatResponse(BaseModel):
-    reply: str
-    typing_delay_ms: int
-    split: list[str]
+    messages: list[str]
     conversation_id: str
     assistant_id: str
     assistant_nickname: str

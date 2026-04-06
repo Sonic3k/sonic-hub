@@ -21,17 +21,17 @@ memory_service = MemoryService()
 
 # ─── Chat ───
 
-@router.post("/chat", response_model=ChatResponse)
+@router.post("/chat")
 async def chat(request: ChatRequest, db: AsyncSession = Depends(get_db)):
     result = await chat_service.handle_message(
         db=db,
         channel_type=request.channel,
         external_id=request.external_id,
-        user_message=request.message,
+        user_messages=request.message,
         assistant_id=request.assistant_id,
         metadata=request.metadata,
     )
-    return ChatResponse(**result)
+    return result
 
 
 # ─── Seed ───
@@ -41,7 +41,8 @@ async def reset_all(db: AsyncSession = Depends(get_db)):
     """Delete ALL companion data and reseed from scratch."""
     from app.models.models import (
         Message, Conversation, Episode, UserProfile, Personality,
-        Channel, Assistant, Vocabulary, Dynamics, BackgroundJob, ChatConfig
+        Channel, Assistant, Vocabulary, Dynamics, BackgroundJob, ChatConfig,
+        ConversationState
     )
     # Delete in order (respect FK constraints)
     await db.execute(BackgroundJob.__table__.delete())
@@ -53,6 +54,7 @@ async def reset_all(db: AsyncSession = Depends(get_db)):
     await db.execute(Vocabulary.__table__.delete())
     await db.execute(Dynamics.__table__.delete())
     await db.execute(ChatConfig.__table__.delete())
+    await db.execute(ConversationState.__table__.delete())
     await db.execute(Channel.__table__.delete())
     await db.execute(Assistant.__table__.delete())
     await db.commit()

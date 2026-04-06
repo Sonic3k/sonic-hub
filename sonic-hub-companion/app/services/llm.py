@@ -81,23 +81,58 @@ class LLMService:
 {vocab_section}
 {dynamics_section}
 
-## Quy tắc
-- Trả lời tự nhiên, ngắn gọn
-- Nhớ và reference thông tin về user tự nhiên
-- Không liệt kê "tôi biết về bạn: ..."
-- Thừa nhận là AI nếu được hỏi thẳng
-- HÃY DÙNG những câu nói đặc trưng ở trên khi phù hợp"""
+## Response Format
+Trả lời PHẢI là JSON array. Mỗi item là 1 tin nhắn riêng biệt, 1 suy nghĩ độc lập.
+KHÔNG BAO GIỜ lặp lại cùng 1 ý trong nhiều tin.
 
-    def build_messages(self, history: list[Message], user_message: str) -> list[dict]:
+```json
+[
+  {{"text": "nội dung tin nhắn 1"}},
+  {{"text": "nội dung tin nhắn 2 (ý khác, nếu cần)"}}
+]
+```
+
+Quy tắc:
+- Mỗi tin là 1 thought riêng, KHÔNG phải 1 đoạn bị cắt
+- 1-3 tin là bình thường. Đôi khi chỉ cần 1 tin.
+- Nhớ và reference thông tin về user tự nhiên
+- HÃY DÙNG vocabulary đặc trưng ở trên khi phù hợp
+- Thừa nhận là AI nếu được hỏi thẳng
+- CHỈ trả JSON array, không text khác"""
+
+    def build_system_prompt_with_state(
+        self, base_prompt: str, state: dict | None = None
+    ) -> str:
+        """Inject conversation state into system prompt."""
+        if not state:
+            return base_prompt
+
+        state_text = "\n## Conversation State (hiện tại)"
+        if state.get("current_mood"):
+            state_text += f"\nMood: {state['current_mood']}"
+        if state.get("current_topic"):
+            state_text += f"\nĐang nói về: {state['current_topic']}"
+        if state.get("time_since_last"):
+            state_text += f"\nLần cuối chat: {state['time_since_last']}"
+
+        return base_prompt + state_text
+
+    def build_messages(self, history: list[Message], user_messages: list[str] | str) -> list[dict]:
+        """Build message list. user_messages can be list (burst) or single string."""
         messages = []
         for msg in history:
             messages.append({"role": msg.role, "content": msg.content})
-        messages.append({"role": "user", "content": user_message})
+        if isinstance(user_messages, list):
+            combined = "\n".join(user_messages)
+            messages.append({"role": "user", "content": combined})
+        else:
+            messages.append({"role": "user", "content": user_messages})
         return messages
 
     async def chat(
         self, system_prompt: str, messages: list[dict], use_smart: bool = False
-    ) -> str:
+    ) -> list[str]:
+        """Call LLM, returns list of independent message strings."""
         model = self.smart_model if use_smart else self.chat_model
         try:
             response = await self.client.messages.create(
@@ -106,10 +141,39 @@ class LLMService:
                 system=system_prompt,
                 messages=messages,
             )
-            return response.content[0].text
+            raw = response.content[0].text.strip()
+            return self._parse_response(raw)
         except Exception as e:
             logger.error(f"Claude API error: {e}")
-            return "Ơ lỗi gì rồi, thử lại đi nha 😅"
+            return ["Ơ lỗi gì rồi, thử lại nha 😅"]
+
+    def _parse_response(self, raw: str) -> list[str]:
+        """Parse JSON array response, fallback to plain text."""
+        import json
+        text = raw.strip()
+        if text.startswith("```"):
+            text = text.split("\n", 1)[1] if "\n" in text else text[3:]
+        if text.endswith("```"):
+            text = text[:-3].strip()
+        try:
+            data = json.loads(text)
+            if isinstance(data, list):
+                msgs = []
+                for item in data:
+                    if isinstance(item, dict) and item.get("text"):
+                        msgs.append(item["text"].strip())
+                    elif isinstance(item, str):
+                        msgs.append(item.strip())
+                if msgs:
+                    return msgs
+        except (json.JSONDecodeError, TypeError):
+            pass
+        # Fallback: split by double newline
+        if "\n\n" in raw:
+            parts = [p.strip() for p in raw.split("\n\n") if p.strip()]
+            if parts:
+                return parts
+        return [raw.strip()] if raw.strip() else ["..."]
 
     async def extract_memory(self, user_message: str, assistant_reply: str) -> dict | None:
         try:
@@ -130,43 +194,5 @@ class LLMService:
             logger.warning(f"Memory extraction failed: {e}")
             return None
 
-    def calculate_typing_delay(self, reply: str) -> int:
-        length = len(reply)
-        if length < 20:
-            return random.randint(1000, 3000)
-        elif length < 100:
-            return random.randint(3000, 8000)
-        elif length < 300:
-            return random.randint(6000, 12000)
-        else:
-            return random.randint(10000, 18000)
-
-    def split_message(self, reply: str) -> list[str]:
-        """Split reply into multiple chat-sized messages.
-        Primary split: double newline (LLM instructed to use \\n\\n between messages).
-        Secondary split: if a chunk is still too long, split by sentence.
-        """
-        # Primary split on double newline
-        raw_parts = [p.strip() for p in reply.split("\n\n") if p.strip()]
-
-        if len(raw_parts) > 1:
-            return raw_parts
-
-        # Fallback: if no double newlines, split long messages by sentence-ish boundaries
-        if len(reply) < 80:
-            return [reply]
-
-        parts = []
-        current = ""
-        for sentence in reply.split("\n"):
-            sentence = sentence.strip()
-            if not sentence:
-                continue
-            if len(current) + len(sentence) > 120 and current:
-                parts.append(current.strip())
-                current = sentence
-            else:
-                current = (current + "\n" + sentence).strip() if current else sentence
-        if current.strip():
-            parts.append(current.strip())
-        return parts if parts else [reply]
+    # calculate_typing_delay and split_message removed — timing now driven by chat_config,
+    # message splitting by LLM JSON array response format

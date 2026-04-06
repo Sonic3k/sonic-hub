@@ -186,6 +186,24 @@ class Dynamics(Base):
     )
 
 
+class ConversationState(Base):
+    __tablename__ = "companion_conversation_state"
+
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    assistant_id = Column(UUID(as_uuid=True), ForeignKey("companion_assistants.id"), nullable=False)
+    channel_id = Column(UUID(as_uuid=True), ForeignKey("companion_channels.id"), nullable=False)
+    current_mood = Column(String(50), nullable=True)
+    current_topic = Column(Text, nullable=True)
+    energy_level = Column(String(20), default="normal")  # high, normal, low
+    last_message_at = Column(DateTime, nullable=True)
+    last_user_message_at = Column(DateTime, nullable=True)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    __table_args__ = (
+        Index("idx_convstate_assistant_channel", "assistant_id", "channel_id", unique=True),
+    )
+
+
 class BackgroundJob(Base):
     __tablename__ = "background_jobs"
 
