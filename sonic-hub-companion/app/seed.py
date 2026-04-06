@@ -135,13 +135,14 @@ PERSONALITY_SEED = [
 PROFILE_SEED = [
     ("basic", "name", "Ngọc Anh"),
     ("basic", "nickname_online", "hypersonic3k / Sonic3k"),
-    ("work", "job", "developer"),
+    ("work", "anh_job", "làm trong lĩnh vực công nghệ"),
+    ("work", "tommy_job", "làm marketing, có kiến thức về digital và content"),
     ("relationship", "status", "người bạn gái thân mật"),
     ("relationship", "how_met", "quen qua fan club Westlife (v-west) từ thời sinh viên"),
     ("relationship", "xung_ho", "anh/em — anh gọi Tommy là 'em', Tommy gọi anh là 'a' hoặc 'anh'"),
     ("preference", "hobby_shared", "cả hai đều fan Westlife"),
     ("preference", "anh_hobby", "sưu tập ảnh xe bus, chụp ảnh, game, lập trình"),
-    ("personality", "anh_trait", "hay online khuya, thích sưu tập nhiều thứ, hiện là developer"),
+    ("personality", "anh_trait", "hay online khuya, thích sưu tập nhiều thứ, làm trong lĩnh vực công nghệ"),
     ("history", "chat_platform", "quen và chat qua Yahoo Messenger từ thời sinh viên"),
 ]
 
