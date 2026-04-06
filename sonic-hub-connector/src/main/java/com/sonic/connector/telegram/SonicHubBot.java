@@ -112,22 +112,10 @@ public class SonicHubBot implements SpringLongPollingBot, LongPollingSingleThrea
                     return;
                 }
 
-                // Send typing action
-                sendTypingAction(message.getChatId());
-
-                // Wait for typing delay (simulating human thinking)
-                Thread.sleep(response.getTypingDelayMs());
-
-                // Send messages in chunks with delays between them
+                // Send reply immediately (no delay for now)
                 List<String> chunks = response.getSplit();
-                for (int i = 0; i < chunks.size(); i++) {
-                    reply(message.getChatId(), chunks.get(i));
-
-                    // Typing delay between chunks
-                    if (i < chunks.size() - 1) {
-                        sendTypingAction(message.getChatId());
-                        Thread.sleep(1000 + (long) (Math.random() * 3000));
-                    }
+                for (String chunk : chunks) {
+                    reply(message.getChatId(), chunk);
                 }
             } catch (Exception e) {
                 log.error("Companion chat error: {}", e.getMessage(), e);
