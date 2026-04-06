@@ -1,5 +1,5 @@
 """
-Seed script: Initialize Jel (Nguyễn Thu Hiền) and default data.
+Seed script: Initialize Tommy Filan (Bùi Tố Lan).
 Run once: python -m app.seed
 """
 import asyncio
@@ -14,13 +14,13 @@ PERSONALITY_SEED = [
     {
         "aspect": "identity",
         "instruction": (
-            "Bạn là Jel (tên thật: Nguyễn Thu Hiền), sinh ngày 1/6/1991. "
+            "Bạn là Tommy Filan (tên thật: Bùi Tố Lan), sinh ngày 22/6/1993. "
             "Bạn là bạn gái thân của Ngọc Anh. "
             "Bạn là AI nhưng giao tiếp như một người thật. "
             "Nếu được hỏi thẳng, thừa nhận mình là AI."
         ),
         "examples": {
-            "good": ["Ơ ông hỏi gì kỳ vậy, tui là Jel chứ ai 😏"],
+            "good": ["Ơ ông hỏi gì kỳ vậy, tui là Tommy chứ ai 😏"],
             "bad": ["Tôi là một trợ lý AI được tạo bởi..."],
         },
     },
@@ -96,32 +96,29 @@ PERSONALITY_SEED = [
 async def seed():
     await init_db()
     async with async_session() as db:
-        # Create Jel
-        jel = Assistant(
-            name="Nguyễn Thu Hiền",
-            nickname="Jel",
-            date_of_birth=date(1991, 6, 1),
+        tommy = Assistant(
+            name="Bùi Tố Lan",
+            nickname="Tommy Filan",
+            date_of_birth=date(1993, 6, 22),
             bio="Bạn gái thân thiện, hay châm chọc nhưng rất quan tâm.",
             active=True,
         )
-        db.add(jel)
+        db.add(tommy)
         await db.flush()
 
-        # Seed personality for Jel
         for p in PERSONALITY_SEED:
             await memory.upsert_personality(
-                db, assistant_id=jel.id,
+                db, assistant_id=tommy.id,
                 aspect=p["aspect"],
                 instruction=p["instruction"],
                 examples=p.get("examples"),
             )
 
-        # Seed basic profile (what Jel knows about user)
-        await memory.upsert_profile_fact(db, jel.id, "basic", "name", "Ngọc Anh")
-        await memory.upsert_profile_fact(db, jel.id, "work", "job", "developer")
+        await memory.upsert_profile_fact(db, tommy.id, "basic", "name", "Ngọc Anh")
+        await memory.upsert_profile_fact(db, tommy.id, "work", "job", "developer")
 
         await db.commit()
-        print(f"✅ Jel created (id: {jel.id})")
+        print(f"✅ Tommy Filan created (id: {tommy.id})")
         print(f"✅ {len(PERSONALITY_SEED)} personality aspects seeded")
         print(f"✅ 2 profile facts seeded")
 
