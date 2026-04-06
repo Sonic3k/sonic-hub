@@ -48,7 +48,7 @@ export default function CompanionPage() {
   }, [assistants, selectedAssistant])
 
   return (
-    <div className="p-6 max-w-6xl">
+    <div className="p-4 md:p-6 max-w-6xl">
       <div className="flex items-center gap-3 mb-6">
         <div className="w-9 h-9 rounded-lg bg-pink-500/10 flex items-center justify-center">
           <Heart size={18} className="text-pink-500" />
@@ -341,7 +341,7 @@ function AssistantsTab({ selected, onSelect }: { selected: Assistant | null; onS
       {showCreate && (
         <div className="mb-6 p-4 bg-white rounded-xl border border-[#e5e7eb]">
           <h3 className="text-sm font-semibold mb-3">New Assistant</h3>
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <input placeholder="Full name" value={form.name} onChange={e => setForm({ ...form, name: e.target.value })}
               className="px-3 py-2 border rounded-lg text-sm" />
             <input placeholder="Nickname" value={form.nickname} onChange={e => setForm({ ...form, nickname: e.target.value })}
@@ -599,7 +599,7 @@ function MemoryTab({ assistantId }: { assistantId: string }) {
       )}
       {addType === 'vocabulary' && (
         <div className="mb-4 p-3 bg-white rounded-xl border border-indigo-200 space-y-2">
-          <div className="grid grid-cols-2 gap-2">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
             <input placeholder="Phrase (nguyên văn)" value={vocabForm.phrase} onChange={e => setVocabForm({...vocabForm, phrase: e.target.value})} className="px-2 py-1.5 border rounded text-xs" />
             <input placeholder="Context (goodbye, reaction, affection...)" value={vocabForm.context} onChange={e => setVocabForm({...vocabForm, context: e.target.value})} className="px-2 py-1.5 border rounded text-xs" />
           </div>
@@ -618,7 +618,7 @@ function MemoryTab({ assistantId }: { assistantId: string }) {
       )}
 
       {/* 4-column grid */}
-      <div className="grid grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Profile Facts */}
         <div>
           <h3 className="text-sm font-semibold text-[#1a1d2d] mb-3 flex items-center gap-2">

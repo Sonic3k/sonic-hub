@@ -50,7 +50,7 @@ function ProblemForm({ problem, onSubmit, onClose, isLoading }: {
           placeholder="What's the problem?" autoFocus required />
         <Textarea label="Notes" value={note} onChange={e => setNote(e.target.value)}
           placeholder="Describe the problem, context, ideas..." rows={4} />
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <Select label="Status" value={status} onChange={e => setStatus(e.target.value as ProblemStatus)}>
             {STATUSES.map(s => <option key={s} value={s}>{PROBLEM_STATUS_LABELS[s]}</option>)}
           </Select>
@@ -97,7 +97,7 @@ export default function ProblemsPage() {
   const updateProblem = useUpdateProblem(editingProblem?.id ?? '')
 
   return (
-    <div className="p-8 max-w-2xl mx-auto">
+    <div className="p-4 md:p-8 max-w-2xl mx-auto">
       <div className="flex items-center justify-between mb-6">
         <div>
           <h1 className="text-xl font-semibold text-slate-800">Problems</h1>

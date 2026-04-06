@@ -67,7 +67,7 @@ export default function TaskForm({ task, parentId, defaultProjectId, onSubmit, o
         <Textarea label="Description" value={description}
           onChange={e => setDescription(e.target.value)} placeholder="Optional description..." rows={3} />
 
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <Select label="Status" value={status} onChange={e => setStatus(e.target.value as TaskStatus)}>
             {STATUSES.map(s => <option key={s} value={s}>{STATUS_LABELS[s]}</option>)}
           </Select>
@@ -76,7 +76,7 @@ export default function TaskForm({ task, parentId, defaultProjectId, onSubmit, o
           </Select>
         </div>
 
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <Input label="Due Date" type="date" value={dueDate} onChange={e => setDueDate(e.target.value)} />
           <Select label="Project" value={projectId} onChange={e => setProjectId(e.target.value)}>
             <option value="">No project</option>
