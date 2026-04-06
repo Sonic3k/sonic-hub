@@ -41,7 +41,7 @@ async def reset_all(db: AsyncSession = Depends(get_db)):
     """Delete ALL companion data and reseed from scratch."""
     from app.models.models import (
         Message, Conversation, Episode, UserProfile, Personality,
-        Channel, Assistant, Vocabulary, Dynamics, BackgroundJob
+        Channel, Assistant, Vocabulary, Dynamics, BackgroundJob, ChatConfig
     )
     # Delete in order (respect FK constraints)
     await db.execute(BackgroundJob.__table__.delete())
@@ -52,6 +52,7 @@ async def reset_all(db: AsyncSession = Depends(get_db)):
     await db.execute(Personality.__table__.delete())
     await db.execute(Vocabulary.__table__.delete())
     await db.execute(Dynamics.__table__.delete())
+    await db.execute(ChatConfig.__table__.delete())
     await db.execute(Channel.__table__.delete())
     await db.execute(Assistant.__table__.delete())
     await db.commit()
@@ -618,6 +619,36 @@ async def _extract_memories_background(conversations, assistant_id, job_id: str)
     except Exception as e:
         await _update_job(job_id, "error", f"Error: {str(e)}")
         logger.error(f"Job {job_id} failed: {e}")
+
+
+# ─── Chat Config ───
+
+@router.get("/chat-config/{assistant_id}")
+async def get_chat_config(assistant_id: str, db: AsyncSession = Depends(get_db)):
+    config = await memory_service.get_chat_config(db, assistant_id)
+    if not config:
+        return {"status": "not_found", "message": "No chat config. Run seed or create one."}
+    return {
+        "debounce_seconds": config.debounce_seconds,
+        "response_delay_min": config.response_delay_min,
+        "response_delay_max": config.response_delay_max,
+        "typing_speed_short": config.typing_speed_short,
+        "typing_speed_medium": config.typing_speed_medium,
+        "typing_speed_long": config.typing_speed_long,
+        "typing_speed_xlong": config.typing_speed_xlong,
+        "quick_reactions": config.quick_reactions,
+        "quick_reaction_delay": config.quick_reaction_delay,
+        "max_messages_per_reply": config.max_messages_per_reply,
+        "reply_count_weights": config.reply_count_weights,
+        "notes": config.notes,
+    }
+
+
+@router.put("/chat-config/{assistant_id}")
+async def update_chat_config(assistant_id: str, request: dict, db: AsyncSession = Depends(get_db)):
+    await memory_service.upsert_chat_config(db, assistant_id, **request)
+    await db.commit()
+    return {"status": "updated"}
 
 
 # ─── Health ───

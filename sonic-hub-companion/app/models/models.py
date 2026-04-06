@@ -201,3 +201,31 @@ class BackgroundJob(Base):
         Index("idx_job_status", "status"),
         Index("idx_job_type", "type"),
     )
+
+
+class ChatConfig(Base):
+    __tablename__ = "companion_chat_config"
+
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    assistant_id = Column(UUID(as_uuid=True), ForeignKey("companion_assistants.id"), nullable=False, unique=True)
+    # Debounce: wait for user to finish typing
+    debounce_seconds = Column(Float, default=10.0)
+    # Response delay: base think time before first reply (seconds)
+    response_delay_min = Column(Float, default=6.0)
+    response_delay_max = Column(Float, default=17.0)
+    # Typing speed between consecutive messages (seconds per char)
+    typing_speed_short = Column(Float, default=1.0)   # ≤5 chars → median gap
+    typing_speed_medium = Column(Float, default=3.0)   # 6-15 chars
+    typing_speed_long = Column(Float, default=5.0)     # 16-30 chars
+    typing_speed_xlong = Column(Float, default=9.0)    # 31+ chars
+    # Quick reaction phrases (near instant reply)
+    quick_reactions = Column(JSONB, default=list)  # ["vâng","@@","dạ","oack","oh","=.="]
+    quick_reaction_delay = Column(Float, default=1.5)
+    # Max messages per reply turn
+    max_messages_per_reply = Column(Integer, default=3)
+    # Reply count distribution weights [1msg, 2msg, 3msg, 4msg]
+    reply_count_weights = Column(JSONB, default=list)  # [48, 27, 14, 6] from real data
+    # Notes
+    notes = Column(Text, nullable=True)
+
+    assistant = relationship("Assistant", backref="chat_config")

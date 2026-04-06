@@ -1,9 +1,9 @@
 """
 Telegram Bot Manager: manages multiple bot instances, one per assistant.
-Each assistant with telegram_enabled=True gets its own polling bot.
+Uses chat config for debounce, typing delay, and reply behavior.
 """
 import asyncio
-import asyncio
+import random
 import logging
 from telegram import Update
 from telegram.ext import Application, MessageHandler, CommandHandler, filters, ContextTypes
@@ -15,15 +15,19 @@ logger = logging.getLogger(__name__)
 chat_service = ChatService()
 memory_service = MemoryService()
 
+# Per-chat debounce timers: {chat_id: asyncio.Task}
+_debounce_timers: dict[str, asyncio.Task] = {}
+# Per-chat message buffers: {chat_id: [messages]}
+_message_buffers: dict[str, list[str]] = {}
+
 
 class BotManager:
     """Manages multiple Telegram bot instances."""
 
     def __init__(self):
-        self.bots: dict[str, Application] = {}  # assistant_id -> Application
+        self.bots: dict[str, Application] = {}
 
     async def start_all(self):
-        """Load all telegram-enabled assistants and start their bots."""
         async with async_session() as db:
             assistants = await memory_service.get_all_assistants(db)
 
@@ -34,7 +38,6 @@ class BotManager:
         logger.info(f"BotManager: {len(self.bots)} bot(s) running")
 
     async def start_bot(self, assistant_id: str, token: str, owner_id: str | None, nickname: str):
-        """Start a single bot for an assistant."""
         if assistant_id in self.bots:
             await self.stop_bot(assistant_id)
 
@@ -59,7 +62,6 @@ class BotManager:
             logger.error(f"Failed to start bot for {nickname}: {e}")
 
     async def stop_bot(self, assistant_id: str):
-        """Stop a single bot."""
         app = self.bots.pop(assistant_id, None)
         if app:
             try:
@@ -71,12 +73,10 @@ class BotManager:
                 logger.warning(f"Error stopping bot {assistant_id}: {e}")
 
     async def stop_all(self):
-        """Stop all bots."""
         for aid in list(self.bots.keys()):
             await self.stop_bot(aid)
 
     async def restart_bot(self, assistant_id: str):
-        """Restart a bot after config change."""
         async with async_session() as db:
             a = await memory_service.get_assistant_by_id(db, assistant_id)
             if not a:
@@ -87,11 +87,7 @@ class BotManager:
                 await self.stop_bot(assistant_id)
 
     def get_status(self) -> list[dict]:
-        """Get status of all running bots."""
-        return [
-            {"assistant_id": aid, "running": True}
-            for aid in self.bots
-        ]
+        return [{"assistant_id": aid, "running": True} for aid in self.bots]
 
 
 # ─── Handlers ───
@@ -108,43 +104,140 @@ async def _handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     assistant_id = context.bot_data.get("assistant_id")
     owner_id = context.bot_data.get("owner_id")
 
-    # Auth check
     if owner_id and str(update.message.from_user.id) != str(owner_id):
         await update.message.reply_text("🔒 Unauthorized.")
         return
 
     chat_id = str(update.message.chat_id)
     text = update.message.text.strip()
-
     if not text:
         return
 
+    # Load chat config for debounce timing
+    config = await _get_config(assistant_id)
+    debounce = config.debounce_seconds if config else 10.0
+
+    # Buffer the message
+    buf_key = f"{assistant_id}:{chat_id}"
+    if buf_key not in _message_buffers:
+        _message_buffers[buf_key] = []
+    _message_buffers[buf_key].append(text)
+
+    # Cancel previous debounce timer
+    if buf_key in _debounce_timers:
+        _debounce_timers[buf_key].cancel()
+
+    # Start new debounce timer
+    _debounce_timers[buf_key] = asyncio.create_task(
+        _debounced_reply(update, context, assistant_id, chat_id, buf_key, debounce, config)
+    )
+
+
+async def _debounced_reply(update, context, assistant_id, chat_id, buf_key, debounce, config):
+    """Wait for debounce period, then process all buffered messages."""
     try:
+        await asyncio.sleep(debounce)
+    except asyncio.CancelledError:
+        return  # New message arrived, timer reset
+
+    # Collect buffered messages
+    buffered = _message_buffers.pop(buf_key, [])
+    _debounce_timers.pop(buf_key, None)
+
+    if not buffered:
+        return
+
+    # Combine messages into one context
+    combined = "\n".join(buffered)
+
+    try:
+        # Get LLM response
         async with async_session() as db:
             result = await chat_service.handle_message(
                 db=db,
                 channel_type="telegram",
                 external_id=chat_id,
-                user_message=text,
+                user_message=combined,
                 assistant_id=assistant_id,
             )
 
         chunks = result.get("split", [result.get("reply", "")])
 
-        for i, chunk in enumerate(chunks):
-            # Typing indicator
-            await update.message.chat.send_action("typing")
+        # Limit reply count based on config weights
+        max_replies = _weighted_reply_count(config)
+        chunks = chunks[:max_replies]
 
-            # Delay based on chunk length (simulate reading + typing)
-            delay = min(len(chunk) * 0.04, 8)  # ~40ms per char, max 8s
-            delay = max(delay, 1.5)  # min 1.5s
-            await asyncio.sleep(delay)
+        # Simulate response delay (think time before first message)
+        think_time = _calc_think_time(chunks[0] if chunks else "", config)
+        await update.message.chat.send_action("typing")
+        await asyncio.sleep(think_time)
+
+        # Send each chunk with typing delay
+        for i, chunk in enumerate(chunks):
+            if i > 0:
+                # Typing delay between consecutive messages
+                delay = _calc_typing_delay(chunk, config)
+                await update.message.chat.send_action("typing")
+                await asyncio.sleep(delay)
 
             await update.message.reply_text(chunk)
 
     except Exception as e:
         logger.error(f"Chat error (assistant: {assistant_id}): {e}")
         await update.message.reply_text("Ơ lỗi gì rồi, thử lại nha 😅")
+
+
+# ─── Config helpers ───
+
+async def _get_config(assistant_id: str):
+    try:
+        async with async_session() as db:
+            return await memory_service.get_chat_config(db, assistant_id)
+    except Exception:
+        return None
+
+
+def _weighted_reply_count(config) -> int:
+    """Pick reply count based on distribution weights."""
+    if not config or not config.reply_count_weights:
+        return 2
+    weights = config.reply_count_weights
+    choices = list(range(1, len(weights) + 1))
+    return random.choices(choices, weights=weights, k=1)[0]
+
+
+def _calc_think_time(first_chunk: str, config) -> float:
+    """Calculate think time before first reply."""
+    if not config:
+        return random.uniform(5, 12)
+
+    # Quick reactions get fast response
+    if config.quick_reactions and first_chunk.strip() in config.quick_reactions:
+        return config.quick_reaction_delay or 1.5
+
+    # Otherwise scale between min and max based on reply length
+    length = len(first_chunk)
+    ratio = min(length / 80.0, 1.0)
+    return config.response_delay_min + ratio * (config.response_delay_max - config.response_delay_min)
+
+
+def _calc_typing_delay(chunk: str, config) -> float:
+    """Calculate delay between consecutive messages (typing speed)."""
+    if not config:
+        return random.uniform(2, 6)
+
+    length = len(chunk)
+    if length <= 5:
+        base = config.typing_speed_short or 1.0
+    elif length <= 15:
+        base = config.typing_speed_medium or 3.0
+    elif length <= 30:
+        base = config.typing_speed_long or 5.0
+    else:
+        base = config.typing_speed_xlong or 9.0
+
+    # Add ±30% randomness
+    return base * random.uniform(0.7, 1.3)
 
 
 # Singleton

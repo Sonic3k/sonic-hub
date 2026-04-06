@@ -344,3 +344,27 @@ class MemoryService:
             s = f" ({d.sentiment})" if d.sentiment else ""
             parts.append(f"- [{d.period}]{s}: {d.description}")
         return "\n".join(parts)
+
+    # ─── Chat Config ───
+
+    async def get_chat_config(self, db: AsyncSession, assistant_id):
+        from app.models.models import ChatConfig
+        result = await db.execute(
+            select(ChatConfig).where(ChatConfig.assistant_id == assistant_id)
+        )
+        return result.scalar_one_or_none()
+
+    async def upsert_chat_config(self, db: AsyncSession, assistant_id, **kwargs):
+        from app.models.models import ChatConfig
+        result = await db.execute(
+            select(ChatConfig).where(ChatConfig.assistant_id == assistant_id)
+        )
+        existing = result.scalar_one_or_none()
+        if existing:
+            for k, v in kwargs.items():
+                if v is not None and hasattr(existing, k):
+                    setattr(existing, k, v)
+        else:
+            config = ChatConfig(assistant_id=assistant_id, **kwargs)
+            db.add(config)
+        await db.flush()

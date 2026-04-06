@@ -112,3 +112,33 @@ class HealthResponse(BaseModel):
     status: str
     service: str
     version: str
+
+
+class ChatConfigResponse(BaseModel):
+    debounce_seconds: float
+    response_delay_min: float
+    response_delay_max: float
+    typing_speed_short: float
+    typing_speed_medium: float
+    typing_speed_long: float
+    typing_speed_xlong: float
+    quick_reactions: list[str] | None
+    quick_reaction_delay: float
+    max_messages_per_reply: int
+    reply_count_weights: list[int] | None
+    notes: str | None
+
+
+class ChatConfigUpdateRequest(BaseModel):
+    debounce_seconds: float | None = None
+    response_delay_min: float | None = None
+    response_delay_max: float | None = None
+    typing_speed_short: float | None = None
+    typing_speed_medium: float | None = None
+    typing_speed_long: float | None = None
+    typing_speed_xlong: float | None = None
+    quick_reactions: list[str] | None = None
+    quick_reaction_delay: float | None = None
+    max_messages_per_reply: int | None = None
+    reply_count_weights: list[int] | None = None
+    notes: str | None = None

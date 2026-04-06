@@ -183,6 +183,25 @@ async def seed_with_session(db: AsyncSession) -> dict:
     for category, key, value in PROFILE_SEED:
         await memory.upsert_profile_fact(db, tommy.id, category, key, value)
 
+    # Chat config based on real Yahoo Messenger analysis (7,594 messages)
+    from app.models.models import ChatConfig
+    config = ChatConfig(
+        assistant_id=tommy.id,
+        debounce_seconds=10.0,          # P75 of user gap = 9s, safe buffer
+        response_delay_min=6.0,         # P25 of response time
+        response_delay_max=17.0,        # Median by reply length (short=11s, long=17s)
+        typing_speed_short=1.0,         # ≤5 chars: median 1s gap
+        typing_speed_medium=3.0,        # 6-15 chars: median 3s gap
+        typing_speed_long=5.0,          # 16-30 chars: median 5s gap
+        typing_speed_xlong=9.0,         # 31+ chars: median 9s gap
+        quick_reactions=["vâng", "@@", "dạ", "oack", "oh", "=.=", "hizhiz", "dạ??", "dạ k", "T__T"],
+        quick_reaction_delay=1.5,
+        max_messages_per_reply=3,
+        reply_count_weights=[48, 27, 14, 6],  # real distribution: 1msg=48%, 2msg=27%, 3msg=14%, 4msg=6%
+        notes="Derived from 7,594 Yahoo Messenger messages (2010-2013). Tommy response median=13s, 48% single message replies.",
+    )
+    db.add(config)
+
     await db.commit()
     return {
         "status": "created",
