@@ -106,6 +106,22 @@ async def reseed_personality(assistant_id: str, db: AsyncSession = Depends(get_d
     for category, key, value in PROFILE_SEED:
         await memory_service.upsert_profile_fact(db, assistant.id, category, key, value)
 
+    # Create/update chat config
+    await memory_service.upsert_chat_config(
+        db, assistant.id,
+        debounce_seconds=10.0,
+        response_delay_min=6.0,
+        response_delay_max=17.0,
+        typing_speed_short=1.0,
+        typing_speed_medium=3.0,
+        typing_speed_long=5.0,
+        typing_speed_xlong=9.0,
+        quick_reactions=["vâng", "@@", "dạ", "oack", "oh", "=.=", "hizhiz", "dạ??", "dạ k", "T__T"],
+        quick_reaction_delay=1.5,
+        max_messages_per_reply=3,
+        reply_count_weights=[48, 27, 14, 6],
+    )
+
     await db.commit()
     return {
         "status": "updated",
