@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { Bot, Brain, Heart, MessageSquare, Sparkles, Play, Plus, Save, ChevronDown, ChevronRight } from 'lucide-react'
+import { Bot, Brain, Heart, MessageSquare, Sparkles, Play, Plus, Save, Trash2, ChevronDown, ChevronRight } from 'lucide-react'
 import companionApi from '../api/companion'
 import clsx from 'clsx'
 
@@ -154,6 +154,24 @@ function AssistantsTab({ selected, onSelect }: { selected: Assistant | null; onS
     },
   })
 
+  const resetMutation = useMutation({
+    mutationFn: () => companionApi.post('/reset'),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['assistants'] })
+      qc.invalidateQueries({ queryKey: ['personality'] })
+      qc.invalidateQueries({ queryKey: ['profile'] })
+      qc.invalidateQueries({ queryKey: ['episodes'] })
+      qc.invalidateQueries({ queryKey: ['conversations'] })
+      onSelect(null as any)
+    },
+  })
+
+  const handleReset = () => {
+    if (window.confirm('⚠️ Xóa TOÀN BỘ data (assistants, conversations, memory, personality) và seed lại từ đầu?')) {
+      resetMutation.mutate()
+    }
+  }
+
   return (
     <div>
       {/* Action buttons */}
@@ -185,6 +203,12 @@ function AssistantsTab({ selected, onSelect }: { selected: Assistant | null; onS
             </button>
           </>
         )}
+        <button onClick={handleReset}
+          disabled={resetMutation.isPending}
+          className="flex items-center gap-2 px-4 py-2 bg-red-500 text-white rounded-lg text-sm font-medium hover:bg-red-600 disabled:opacity-50">
+          <Trash2 size={15} />
+          {resetMutation.isPending ? 'Resetting...' : 'Reset All & Reseed'}
+        </button>
       </div>
 
       {seedMutation.isSuccess && (
@@ -196,6 +220,12 @@ function AssistantsTab({ selected, onSelect }: { selected: Assistant | null; onS
       {reseedMutation.isSuccess && (
         <div className="mb-4 px-4 py-3 bg-green-50 border border-green-200 rounded-lg text-sm text-green-700">
           ✅ {(reseedMutation.data?.data as any)?.message || 'Personality updated!'}
+        </div>
+      )}
+
+      {resetMutation.isSuccess && (
+        <div className="mb-4 px-4 py-3 bg-green-50 border border-green-200 rounded-lg text-sm text-green-700">
+          ✅ Reset complete! All data cleared and Tommy Filan reseeded.
         </div>
       )}
 

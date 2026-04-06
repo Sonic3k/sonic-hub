@@ -35,6 +35,32 @@ async def chat(request: ChatRequest, db: AsyncSession = Depends(get_db)):
 
 # ─── Seed ───
 
+@router.post("/reset", response_model=dict)
+async def reset_all(db: AsyncSession = Depends(get_db)):
+    """Delete ALL companion data and reseed from scratch."""
+    from app.models.models import (
+        Message, Conversation, Episode, UserProfile, Personality, Channel, Assistant
+    )
+    # Delete in order (respect FK constraints)
+    await db.execute(Message.__table__.delete())
+    await db.execute(Conversation.__table__.delete())
+    await db.execute(Episode.__table__.delete())
+    await db.execute(UserProfile.__table__.delete())
+    await db.execute(Personality.__table__.delete())
+    await db.execute(Channel.__table__.delete())
+    await db.execute(Assistant.__table__.delete())
+    await db.commit()
+
+    # Reseed
+    from app.seed import seed_with_session
+    result = await seed_with_session(db)
+    return {
+        "status": "reset_complete",
+        "message": "All data deleted and reseeded",
+        "seed_result": result,
+    }
+
+
 @router.post("/seed", response_model=dict)
 async def run_seed(db: AsyncSession = Depends(get_db)):
     """Run seed to create default assistant (Tommy Filan) if none exists."""
