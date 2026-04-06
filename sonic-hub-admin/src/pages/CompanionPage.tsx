@@ -196,6 +196,15 @@ function AssistantsTab({ selected, onSelect }: { selected: Assistant | null; onS
     }
   }
 
+  const supplementMutation = useMutation({
+    mutationFn: () => companionApi.post(`/supplement/${selected?.id}`),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['vocabulary'] })
+      qc.invalidateQueries({ queryKey: ['dynamics'] })
+      qc.invalidateQueries({ queryKey: ['profile'] })
+    },
+  })
+
   return (
     <div>
       {/* Action buttons */}
@@ -225,6 +234,12 @@ function AssistantsTab({ selected, onSelect }: { selected: Assistant | null; onS
               <MessageSquare size={15} />
               {importMutation.isPending ? 'Importing...' : 'Import Chat History'}
             </button>
+            <button onClick={() => supplementMutation.mutate()}
+              disabled={supplementMutation.isPending}
+              className="flex items-center gap-2 px-4 py-2 bg-teal-500 text-white rounded-lg text-sm font-medium hover:bg-teal-600 disabled:opacity-50">
+              <Brain size={15} />
+              {supplementMutation.isPending ? 'Importing...' : 'Import Curated Data'}
+            </button>
           </>
         )}
         <button onClick={handleReset}
@@ -250,6 +265,12 @@ function AssistantsTab({ selected, onSelect }: { selected: Assistant | null; onS
       {resetMutation.isSuccess && (
         <div className="mb-4 px-4 py-3 bg-green-50 border border-green-200 rounded-lg text-sm text-green-700">
           ✅ Reset complete! All data cleared and Tommy Filan reseeded.
+        </div>
+      )}
+
+      {supplementMutation.isSuccess && (
+        <div className="mb-4 px-4 py-3 bg-teal-50 border border-teal-200 rounded-lg text-sm text-teal-700">
+          ✅ {(supplementMutation.data?.data as any)?.message || 'Curated data imported!'}
         </div>
       )}
 

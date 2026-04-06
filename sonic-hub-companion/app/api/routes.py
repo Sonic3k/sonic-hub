@@ -114,6 +114,45 @@ async def reseed_personality(assistant_id: str, db: AsyncSession = Depends(get_d
     }
 
 
+@router.post("/supplement/{assistant_id}", response_model=dict)
+async def import_supplement(assistant_id: str, db: AsyncSession = Depends(get_db)):
+    """Import curated supplementary data (vocabulary, dynamics, historical facts) from chat analysis."""
+    from app.supplement_data import VOCABULARY_DATA, DYNAMICS_DATA, HISTORICAL_FACTS
+
+    assistant = await memory_service.get_assistant_by_id(db, assistant_id)
+    if not assistant:
+        return {"status": "error", "message": "Assistant not found"}
+
+    counts = {"vocabulary": 0, "dynamics": 0, "facts": 0}
+
+    for v in VOCABULARY_DATA:
+        await memory_service.save_vocabulary(
+            db, assistant.id, phrase=v["phrase"], context=v["context"],
+        )
+        counts["vocabulary"] += 1
+
+    for d in DYNAMICS_DATA:
+        await memory_service.save_dynamics(
+            db, assistant.id, period=d["period"],
+            description=d["description"], sentiment=d["sentiment"],
+        )
+        counts["dynamics"] += 1
+
+    for f in HISTORICAL_FACTS:
+        await memory_service.upsert_profile_fact(
+            db, assistant.id, category=f["category"],
+            key=f["key"], value=f["value"], period=f.get("period"),
+        )
+        counts["facts"] += 1
+
+    await db.commit()
+    return {
+        "status": "imported",
+        "message": f"Supplementary data imported: {counts['vocabulary']} vocab, {counts['dynamics']} dynamics, {counts['facts']} facts",
+        **counts,
+    }
+
+
 # ─── Assistants ───
 
 @router.get("/assistants", response_model=list[AssistantResponse])
