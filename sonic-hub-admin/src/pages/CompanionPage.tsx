@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { Bot, Brain, Heart, MessageSquare, Sparkles, Play, Plus, Save, Trash2, ChevronDown, ChevronRight } from 'lucide-react'
+import { Bot, Brain, Heart, MessageSquare, Sparkles, Play, Plus, Save, ChevronDown, ChevronRight } from 'lucide-react'
 import companionApi from '../api/companion'
 import clsx from 'clsx'
 
