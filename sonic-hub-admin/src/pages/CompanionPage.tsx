@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { Bot, Brain, Heart, MessageSquare, Sparkles, Play, Plus, Save, Trash2, ChevronDown, ChevronRight } from 'lucide-react'
 import companionApi from '../api/companion'
@@ -38,10 +38,12 @@ export default function CompanionPage() {
     queryFn: () => companionApi.get('/assistants').then(r => r.data),
   })
 
-  // Auto-select first assistant
-  if (!selectedAssistant && assistants.length > 0) {
-    setSelectedAssistant(assistants[0])
-  }
+  // Auto-select first assistant when data loads or after reset
+  useEffect(() => {
+    if (!selectedAssistant && assistants.length > 0) {
+      setSelectedAssistant(assistants[0])
+    }
+  }, [assistants, selectedAssistant])
 
   return (
     <div className="p-6 max-w-6xl">
