@@ -57,12 +57,14 @@ class ProfileFactRequest(BaseModel):
     category: str
     key: str
     value: str
+    period: str | None = None
 
 
 class ProfileFactResponse(BaseModel):
     category: str
     key: str
     value: str
+    period: str | None
     confidence: float
     updated_at: datetime
 

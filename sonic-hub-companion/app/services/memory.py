@@ -122,14 +122,19 @@ class MemoryService:
 
     async def upsert_profile_fact(
         self, db: AsyncSession, assistant_id, category: str, key: str,
-        value: str, confidence: float = 1.0, source_message_id=None
+        value: str, period: str = None, confidence: float = 1.0, source_message_id=None
     ):
-        result = await db.execute(
-            select(UserProfile).where(and_(
-                UserProfile.assistant_id == assistant_id,
-                UserProfile.key == key,
-            ))
-        )
+        # Match by assistant_id + key + period
+        conditions = [
+            UserProfile.assistant_id == assistant_id,
+            UserProfile.key == key,
+        ]
+        if period:
+            conditions.append(UserProfile.period == period)
+        else:
+            conditions.append(UserProfile.period.is_(None))
+
+        result = await db.execute(select(UserProfile).where(and_(*conditions)))
         existing = result.scalar_one_or_none()
         if existing:
             existing.value = value
@@ -141,7 +146,8 @@ class MemoryService:
             fact = UserProfile(
                 assistant_id=assistant_id,
                 category=category, key=key, value=value,
-                confidence=confidence, source_message_id=source_message_id,
+                period=period, confidence=confidence,
+                source_message_id=source_message_id,
             )
             db.add(fact)
         await db.flush()
@@ -149,12 +155,26 @@ class MemoryService:
     def format_profile_for_prompt(self, profiles: list[UserProfile]) -> str:
         if not profiles:
             return "Chưa biết gì về user."
-        categories = {}
-        for p in profiles:
-            categories.setdefault(p.category, []).append(f"- {p.key}: {p.value}")
+
+        current = [p for p in profiles if not p.period]
+        historical = [p for p in profiles if p.period]
+
         parts = []
-        for cat, items in categories.items():
-            parts.append(f"[{cat}]\n" + "\n".join(items))
+
+        # Current facts
+        if current:
+            categories = {}
+            for p in current:
+                categories.setdefault(p.category, []).append(f"- {p.key}: {p.value}")
+            for cat, items in categories.items():
+                parts.append(f"[{cat}]\n" + "\n".join(items))
+
+        # Historical facts (for reference when talking about the past)
+        if historical:
+            parts.append("\n[lịch sử - chỉ tham chiếu khi nhắc chuyện cũ]")
+            for p in sorted(historical, key=lambda x: x.period or ""):
+                parts.append(f"- [{p.period}] {p.key}: {p.value}")
+
         return "\n".join(parts)
 
     # ─── Episodes (scoped by assistant) ───

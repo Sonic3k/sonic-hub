@@ -124,9 +124,15 @@ Extract TẤT CẢ thông tin cá nhân dưới dạng JSON:
 {
   "facts": [
     {"category": "education|work|preference|personality|life_event|relationship|location|health|finance", 
-     "key": "tên_fact_cụ_thể", "value": "giá_trị_chi_tiết"}
+     "key": "tên_fact_cụ_thể", "value": "giá_trị_chi_tiết",
+     "period": "năm hoặc giai đoạn nếu fact chỉ đúng ở thời điểm đó, null nếu fact luôn đúng"}
   ]
 }
+
+QUAN TRỌNG về period:
+- Fact LUÔN ĐÚNG (tên, sở thích, tính cách) → period: null
+- Fact CHỈ ĐÚNG ở thời điểm chat (đang đi học, đang thực tập, đang ở đâu) → period: "2012" hoặc "2010-2011"
+- Nhìn date trong chat (--- YYYY-MM-DD ---) để xác định period
 
 Chú ý extract:
 - Trường học, ngành học, lớp, thời gian tốt nghiệp
@@ -258,16 +264,19 @@ async def extract_memories_batch(conversations: list[dict], assistant_id, progre
 
     # Save to DB
     async with async_session() as db:
-        # Facts (deduplicate by key)
+        # Facts (deduplicate by key+period)
         seen_keys = set()
         for fact in all_facts:
             key = fact.get("key", "")
-            if key and key not in seen_keys:
-                seen_keys.add(key)
+            period = fact.get("period") or None
+            dedup_key = f"{key}|{period}"
+            if key and dedup_key not in seen_keys:
+                seen_keys.add(dedup_key)
                 await memory.upsert_profile_fact(
                     db, assistant_id,
                     category=fact.get("category", "general"),
                     key=key, value=fact.get("value", ""),
+                    period=period,
                 )
 
         # Episodes

@@ -92,6 +92,7 @@ class UserProfile(Base):
     category = Column(String(50), nullable=False)
     key = Column(String(255), nullable=False)
     value = Column(Text, nullable=False)
+    period = Column(String(50), nullable=True)  # NULL=current, "2013", "2010-2012"
     confidence = Column(Float, default=1.0)
     source_message_id = Column(UUID(as_uuid=True), nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow)
@@ -100,7 +101,7 @@ class UserProfile(Base):
     assistant = relationship("Assistant", back_populates="user_profiles")
 
     __table_args__ = (
-        Index("idx_profile_assistant_key", "assistant_id", "key", unique=True),
+        Index("idx_profile_assistant_key_period", "assistant_id", "key", "period", unique=True),
         Index("idx_profile_category", "category"),
     )
 
@@ -177,4 +178,21 @@ class Dynamics(Base):
 
     __table_args__ = (
         Index("idx_dynamics_assistant", "assistant_id"),
+    )
+
+
+class BackgroundJob(Base):
+    __tablename__ = "background_jobs"
+
+    id = Column(String(20), primary_key=True)  # short uuid
+    type = Column(String(50), nullable=False)  # import_chat, extract_memory, etc.
+    status = Column(String(20), nullable=False, default="pending")  # pending, running, done, error
+    progress = Column(Text, nullable=True)
+    result = Column(JSONB, nullable=True)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    __table_args__ = (
+        Index("idx_job_status", "status"),
+        Index("idx_job_type", "type"),
     )

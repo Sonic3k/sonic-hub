@@ -1,3 +1,4 @@
+import asyncio
 from fastapi import APIRouter, Depends, UploadFile, File
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
@@ -40,9 +41,10 @@ async def reset_all(db: AsyncSession = Depends(get_db)):
     """Delete ALL companion data and reseed from scratch."""
     from app.models.models import (
         Message, Conversation, Episode, UserProfile, Personality,
-        Channel, Assistant, Vocabulary, Dynamics
+        Channel, Assistant, Vocabulary, Dynamics, BackgroundJob
     )
     # Delete in order (respect FK constraints)
+    await db.execute(BackgroundJob.__table__.delete())
     await db.execute(Message.__table__.delete())
     await db.execute(Conversation.__table__.delete())
     await db.execute(Episode.__table__.delete())
@@ -190,7 +192,7 @@ async def get_profile(assistant_id: str, db: AsyncSession = Depends(get_db)):
     return [
         ProfileFactResponse(
             category=p.category, key=p.key, value=p.value,
-            confidence=p.confidence, updated_at=p.updated_at,
+            period=p.period, confidence=p.confidence, updated_at=p.updated_at,
         )
         for p in items
     ]
@@ -203,6 +205,7 @@ async def update_profile(
     await memory_service.upsert_profile_fact(
         db, assistant_id=request.assistant_id,
         category=request.category, key=request.key, value=request.value,
+        period=request.period,
     )
     await db.commit()
     return {"status": "updated", "key": request.key}
@@ -380,9 +383,31 @@ async def manual_import(assistant_id: str, request: dict, db: AsyncSession = Dep
     return {"status": "imported", "counts": counts}
 
 
-# ─── Import Job Tracker ───
+# ─── Import Job Tracker (DB-based) ───
 
-import_jobs: dict = {}  # job_id -> {status, progress, result}
+async def _get_or_create_job(db: AsyncSession, job_id: str, job_type: str) -> 'BackgroundJob':
+    from app.models.models import BackgroundJob
+    result = await db.execute(select(BackgroundJob).where(BackgroundJob.id == job_id))
+    job = result.scalar_one_or_none()
+    if not job:
+        job = BackgroundJob(id=job_id, type=job_type, status="pending")
+        db.add(job)
+        await db.flush()
+    return job
+
+
+async def _update_job(job_id: str, status: str, progress: str = None, result_data: dict = None):
+    from app.models.models import BackgroundJob
+    async with async_session() as db:
+        res = await db.execute(select(BackgroundJob).where(BackgroundJob.id == job_id))
+        job = res.scalar_one_or_none()
+        if job:
+            job.status = status
+            if progress:
+                job.progress = progress
+            if result_data:
+                job.result = result_data
+            await db.commit()
 
 
 # ─── Import Chat History ───
@@ -393,7 +418,6 @@ async def import_yahoo_messenger(
     file: UploadFile = File(...),
 ):
     """Import Yahoo Messenger chat history. Returns immediately, extraction runs in background."""
-    import asyncio
     import uuid as uuid_mod
     from app.import_chat import parse_ym_chat_from_text, import_conversations
 
@@ -415,12 +439,9 @@ async def import_yahoo_messenger(
 
         # Create job for background extraction
         job_id = str(uuid_mod.uuid4())[:8]
-        import_jobs[job_id] = {
-            "status": "extracting",
-            "progress": "Starting memory extraction...",
-            "messages_imported": imported,
-            "conversations": len(conversations),
-        }
+        async with async_session() as jdb:
+            await _get_or_create_job(jdb, job_id, "import_chat")
+            await jdb.commit()
 
         asyncio.create_task(
             _extract_memories_background(conversations, assistant_id, job_id)
@@ -438,13 +459,22 @@ async def import_yahoo_messenger(
         return {"status": "error", "message": str(e)}
 
 
-@router.get("/import/status/{job_id}", response_model=dict)
-async def import_status(job_id: str):
-    """Poll extraction job status."""
-    job = import_jobs.get(job_id)
+@router.get("/jobs/{job_id}", response_model=dict)
+async def get_job_status(job_id: str, db: AsyncSession = Depends(get_db)):
+    """Poll any background job status."""
+    from app.models.models import BackgroundJob
+    result = await db.execute(select(BackgroundJob).where(BackgroundJob.id == job_id))
+    job = result.scalar_one_or_none()
     if not job:
         return {"status": "not_found"}
-    return job
+    return {
+        "id": job.id,
+        "type": job.type,
+        "status": job.status,
+        "progress": job.progress,
+        "result": job.result,
+        "created_at": str(job.created_at),
+    }
 
 
 async def _extract_memories_background(conversations, assistant_id, job_id: str):
@@ -452,24 +482,16 @@ async def _extract_memories_background(conversations, assistant_id, job_id: str)
     import logging
     logger = logging.getLogger(__name__)
     try:
+        await _update_job(job_id, "running", "Starting extraction...")
         from app.import_chat import extract_memories_batch
         result = await extract_memories_batch(
             conversations, assistant_id,
-            progress_callback=lambda msg: import_jobs.update({job_id: {**import_jobs.get(job_id, {}), "progress": msg, "status": "extracting"}}),
+            progress_callback=lambda msg: asyncio.ensure_future(_update_job(job_id, "running", msg)),
         )
-        import_jobs[job_id] = {
-            **import_jobs.get(job_id, {}),
-            "status": "done",
-            "progress": "Complete!",
-            "result": result,
-        }
+        await _update_job(job_id, "done", "Complete!", result)
         logger.info(f"Job {job_id} done: {result}")
     except Exception as e:
-        import_jobs[job_id] = {
-            **import_jobs.get(job_id, {}),
-            "status": "error",
-            "progress": f"Error: {str(e)}",
-        }
+        await _update_job(job_id, "error", f"Error: {str(e)}")
         logger.error(f"Job {job_id} failed: {e}")
 
 

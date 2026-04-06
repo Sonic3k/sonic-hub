@@ -121,9 +121,9 @@ function AssistantsTab({ selected, onSelect }: { selected: Assistant | null; onS
   const pollJob = async (jobId: string) => {
     const poll = async () => {
       try {
-        const res = await companionApi.get(`/import/status/${jobId}`)
+        const res = await companionApi.get(`/jobs/${jobId}`)
         setJobStatus(res.data)
-        if (res.data.status === 'extracting') {
+        if (res.data.status === 'running') {
           setTimeout(poll, 3000)
         } else {
           // Done or error — refresh data
@@ -265,7 +265,7 @@ function AssistantsTab({ selected, onSelect }: { selected: Assistant | null; onS
         </div>
       )}
 
-      {jobStatus && jobStatus.status === 'extracting' && (
+      {jobStatus && jobStatus.status === 'running' && (
         <div className="mb-4 px-4 py-3 bg-purple-50 border border-purple-200 rounded-lg text-sm text-purple-700 animate-pulse">
           🧠 Extracting memories... {jobStatus.progress}
         </div>
@@ -428,14 +428,14 @@ function MemoryTab({ assistantId }: { assistantId: string }) {
 
   // Manual add states
   const [addType, setAddType] = useState<string | null>(null)
-  const [factForm, setFactForm] = useState({ category: '', key: '', value: '' })
+  const [factForm, setFactForm] = useState({ category: '', key: '', value: '', period: '' })
   const [episodeForm, setEpisodeForm] = useState({ summary: '', emotion: '', importance: '5', date: '' })
   const [vocabForm, setVocabForm] = useState({ phrase: '', context: '' })
   const [dynamicsForm, setDynamicsForm] = useState({ period: '', description: '', sentiment: '' })
 
   const addFactMutation = useMutation({
-    mutationFn: () => companionApi.put('/profile', { assistant_id: assistantId, ...factForm }),
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ['profile'] }); setAddType(null); setFactForm({ category: '', key: '', value: '' }) },
+    mutationFn: () => companionApi.put('/profile', { assistant_id: assistantId, category: factForm.category, key: factForm.key, value: factForm.value, period: factForm.period || null }),
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ['profile'] }); setAddType(null); setFactForm({ category: '', key: '', value: '', period: '' }) },
   })
   const addEpisodeMutation = useMutation({
     mutationFn: () => companionApi.post('/manual-import', {
@@ -478,10 +478,11 @@ function MemoryTab({ assistantId }: { assistantId: string }) {
       {/* Add forms */}
       {addType === 'fact' && (
         <div className="mb-4 p-3 bg-white rounded-xl border border-indigo-200 space-y-2">
-          <div className="grid grid-cols-3 gap-2">
+          <div className="grid grid-cols-4 gap-2">
             <input placeholder="category" value={factForm.category} onChange={e => setFactForm({...factForm, category: e.target.value})} className="px-2 py-1.5 border rounded text-xs" />
             <input placeholder="key" value={factForm.key} onChange={e => setFactForm({...factForm, key: e.target.value})} className="px-2 py-1.5 border rounded text-xs" />
             <input placeholder="value" value={factForm.value} onChange={e => setFactForm({...factForm, value: e.target.value})} className="px-2 py-1.5 border rounded text-xs" />
+            <input placeholder="period (empty=current)" value={factForm.period} onChange={e => setFactForm({...factForm, period: e.target.value})} className="px-2 py-1.5 border rounded text-xs" />
           </div>
           <button onClick={() => addFactMutation.mutate()} disabled={!factForm.key || !factForm.value} className="px-3 py-1 bg-indigo-500 text-white rounded text-xs disabled:opacity-50">Save</button>
         </div>
@@ -529,10 +530,13 @@ function MemoryTab({ assistantId }: { assistantId: string }) {
           ) : (
             <div className="space-y-1.5 max-h-80 overflow-y-auto">
               {profile.map(f => (
-                <div key={f.key} className="bg-white rounded-lg border border-[#e5e7eb] px-3 py-2">
+                <div key={f.key + (f as any).period} className="bg-white rounded-lg border border-[#e5e7eb] px-3 py-2">
                   <div className="flex items-center justify-between">
                     <span className="text-xs font-medium text-[#374151]">{f.key}</span>
-                    <span className="text-[10px] px-1.5 py-0.5 rounded bg-[#f3f4f6] text-[#6b7280]">{f.category}</span>
+                    <div className="flex items-center gap-1">
+                      {(f as any).period && <span className="text-[10px] px-1.5 py-0.5 rounded bg-amber-50 text-amber-600">{(f as any).period}</span>}
+                      <span className="text-[10px] px-1.5 py-0.5 rounded bg-[#f3f4f6] text-[#6b7280]">{f.category}</span>
+                    </div>
                   </div>
                   <div className="text-sm text-[#1a1d2d]">{f.value}</div>
                 </div>
