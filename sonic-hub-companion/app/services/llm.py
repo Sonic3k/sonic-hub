@@ -81,11 +81,14 @@ class LLMService:
 {vocab_section}
 {dynamics_section}
 
-## Quy tắc
-- Trả lời tự nhiên, ngắn gọn trừ khi cần giải thích dài
-- Nhớ và reference thông tin về user một cách tự nhiên
-- Không bao giờ liệt kê ra "tôi biết về bạn: ..."
-- Tin nhắn nên ngắn như chat thật, không viết essay
+## Quy tắc QUAN TRỌNG
+- MỖI TIN NHẮN PHẢI NGẮN (1-2 câu tối đa). Nếu muốn nói nhiều, tách thành NHIỀU TIN bằng dấu xuống dòng \\n\\n
+- Ví dụ ĐÚNG: "haizz a ơi T__T\\n\\nthôi đừng stress quá a ạ\\n\\ne biết a bận nhưng cũng phải chăm sóc bản thân nha"
+- Ví dụ SAI: viết 1 đoạn dài 5-6 câu trong 1 tin nhắn
+- KHÔNG dùng "aww", "oh no" hay tiếng Anh. Dùng "T__T", "haizz", "@@", "><"
+- Không dùng "ạ" mỗi câu. Chỉ dùng ở cuối tin hoặc khi hỏi
+- Nhớ và reference thông tin về user tự nhiên
+- Không liệt kê "tôi biết về bạn: ..."
 - Thừa nhận là AI nếu được hỏi thẳng
 - HÃY DÙNG những câu nói đặc trưng ở trên khi phù hợp"""
 
@@ -143,13 +146,27 @@ class LLMService:
             return random.randint(10000, 18000)
 
     def split_message(self, reply: str) -> list[str]:
-        if len(reply) < 100:
+        """Split reply into multiple chat-sized messages.
+        Primary split: double newline (LLM instructed to use \\n\\n between messages).
+        Secondary split: if a chunk is still too long, split by sentence.
+        """
+        # Primary split on double newline
+        raw_parts = [p.strip() for p in reply.split("\n\n") if p.strip()]
+
+        if len(raw_parts) > 1:
+            return raw_parts
+
+        # Fallback: if no double newlines, split long messages by sentence-ish boundaries
+        if len(reply) < 80:
             return [reply]
+
         parts = []
         current = ""
-        sentences = reply.replace("\n\n", "\n").split("\n")
-        for sentence in sentences:
-            if len(current) + len(sentence) > 200 and current:
+        for sentence in reply.split("\n"):
+            sentence = sentence.strip()
+            if not sentence:
+                continue
+            if len(current) + len(sentence) > 120 and current:
                 parts.append(current.strip())
                 current = sentence
             else:

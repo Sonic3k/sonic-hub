@@ -129,8 +129,17 @@ async def _handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 assistant_id=assistant_id,
             )
 
-        # Send reply chunks
-        for chunk in result.get("split", [result.get("reply", "")]):
+        chunks = result.get("split", [result.get("reply", "")])
+
+        for i, chunk in enumerate(chunks):
+            # Typing indicator
+            await update.message.chat.send_action("typing")
+
+            # Delay based on chunk length (simulate reading + typing)
+            delay = min(len(chunk) * 0.04, 8)  # ~40ms per char, max 8s
+            delay = max(delay, 1.5)  # min 1.5s
+            await asyncio.sleep(delay)
+
             await update.message.reply_text(chunk)
 
     except Exception as e:
