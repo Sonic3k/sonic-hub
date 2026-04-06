@@ -1,20 +1,24 @@
 package com.sonic.connector.telegram;
 
+import com.sonic.connector.companion.CompanionApiClient;
 import com.sonic.connector.telegram.config.TelegramConfig;
 import com.sonic.connector.telegram.handler.CommandHandler;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.client.okhttp.OkHttpTelegramClient;
 import org.telegram.telegrambots.longpolling.interfaces.LongPollingUpdateConsumer;
 import org.telegram.telegrambots.longpolling.starter.SpringLongPollingBot;
 import org.telegram.telegrambots.longpolling.util.LongPollingSingleThreadUpdateConsumer;
+import org.telegram.telegrambots.meta.api.methods.send.SendChatAction;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import org.telegram.telegrambots.meta.generics.TelegramClient;
 
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
 @Component
 @ConditionalOnBean(TelegramConfig.class)
@@ -24,6 +28,9 @@ public class SonicHubBot implements SpringLongPollingBot, LongPollingSingleThrea
     private final TelegramConfig config;
     private final TelegramClient telegramClient;
     private final List<CommandHandler> handlers;
+
+    @Autowired(required = false)
+    private CompanionApiClient companionClient;
 
     public SonicHubBot(TelegramConfig config, List<CommandHandler> handlers) {
         this.config = config;
@@ -54,8 +61,18 @@ public class SonicHubBot implements SpringLongPollingBot, LongPollingSingleThrea
         }
 
         String text = message.getText().trim();
-        if (!text.startsWith("/")) return;
 
+        // Command handling (starts with /)
+        if (text.startsWith("/")) {
+            handleCommand(message, text);
+            return;
+        }
+
+        // Non-command → forward to companion AI
+        handleCompanionChat(message, text);
+    }
+
+    private void handleCommand(org.telegram.telegrambots.meta.api.objects.message.Message message, String text) {
         String[] split = text.split("\\s+", 2);
         String command = split[0].toLowerCase().split("@")[0];
         String args = split.length > 1 ? split[1] : null;
@@ -76,6 +93,57 @@ public class SonicHubBot implements SpringLongPollingBot, LongPollingSingleThrea
         }
 
         reply(message.getChatId(), "❓ Unknown command. Type /help for available commands.");
+    }
+
+    private void handleCompanionChat(org.telegram.telegrambots.meta.api.objects.message.Message message, String text) {
+        if (companionClient == null) {
+            // Companion not enabled, ignore non-command messages
+            return;
+        }
+
+        CompletableFuture.runAsync(() -> {
+            try {
+                String chatId = message.getChatId().toString();
+
+                // Call companion API
+                var response = companionClient.chat("telegram", chatId, text);
+
+                if (response == null || response.getSplit() == null || response.getSplit().isEmpty()) {
+                    return;
+                }
+
+                // Send typing action
+                sendTypingAction(message.getChatId());
+
+                // Wait for typing delay (simulating human thinking)
+                Thread.sleep(response.getTypingDelayMs());
+
+                // Send messages in chunks with delays between them
+                List<String> chunks = response.getSplit();
+                for (int i = 0; i < chunks.size(); i++) {
+                    reply(message.getChatId(), chunks.get(i));
+
+                    // Typing delay between chunks
+                    if (i < chunks.size() - 1) {
+                        sendTypingAction(message.getChatId());
+                        Thread.sleep(1000 + (long) (Math.random() * 3000));
+                    }
+                }
+            } catch (Exception e) {
+                log.error("Companion chat error: {}", e.getMessage(), e);
+            }
+        });
+    }
+
+    private void sendTypingAction(Long chatId) {
+        try {
+            telegramClient.execute(SendChatAction.builder()
+                    .chatId(chatId.toString())
+                    .action("typing")
+                    .build());
+        } catch (TelegramApiException e) {
+            log.warn("Failed to send typing action", e);
+        }
     }
 
     private void reply(Long chatId, String text) {
