@@ -342,7 +342,7 @@ async def _call_extract(client, model, system_prompt, chat_text) -> dict | None:
             raw = raw[:-3]
         return json.loads(raw.strip())
     except Exception as e:
-        logger.warning(f"Extraction failed: {e}")
+        logger.error(f"Extraction failed (model={model}): {type(e).__name__}: {e}")
         return None
 
 

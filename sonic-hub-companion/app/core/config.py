@@ -9,7 +9,7 @@ class Settings(BaseSettings):
     # Claude API
     anthropic_api_key: str = ""
     claude_chat_model: str = "claude-haiku-4-5-20251001"
-    claude_smart_model: str = "claude-sonnet-4-6-20250415"
+    claude_smart_model: str = "claude-sonnet-4-6"
 
     # Sonic Hub API
     sonic_hub_api_url: str = "http://localhost:8080"
