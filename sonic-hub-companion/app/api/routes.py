@@ -1,7 +1,7 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, UploadFile, File
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
-from app.core.database import get_db
+from app.core.database import get_db, async_session
 from app.api.schemas import (
     ChatRequest, ChatResponse,
     AssistantCreateRequest, AssistantResponse,
@@ -190,6 +190,47 @@ async def get_conversation_messages(
         )
         for m in messages
     ]
+
+
+# ─── Import Chat History ───
+
+@router.post("/import/yahoo-messenger/{assistant_id}", response_model=dict)
+async def import_yahoo_messenger(
+    assistant_id: str,
+    file: UploadFile = File(...),
+):
+    """Import Yahoo Messenger chat history from uploaded .txt file."""
+    from app.import_chat import parse_ym_chat_from_text, import_conversations, extract_memories_batch
+
+    try:
+        raw_bytes = await file.read()
+        # Try UTF-16 first, then UTF-8
+        try:
+            text = raw_bytes.decode('utf-16')
+        except (UnicodeDecodeError, UnicodeError):
+            text = raw_bytes.decode('utf-8-sig')
+
+        conversations = parse_ym_chat_from_text(text)
+        total_msgs = sum(len(c['messages']) for c in conversations)
+
+        async with async_session() as db:
+            channel = await memory_service.get_or_create_channel(db, "yahoo_messenger", "hypersonic3k")
+            await db.commit()
+            channel_id = channel.id
+
+        imported = await import_conversations(conversations, assistant_id, channel_id)
+        facts_count, episodes_count = await extract_memories_batch(conversations, assistant_id)
+
+        return {
+            "status": "success",
+            "conversations": len(conversations),
+            "messages_imported": imported,
+            "facts_extracted": facts_count,
+            "episodes_extracted": episodes_count,
+        }
+    except Exception as e:
+        import traceback
+        return {"status": "error", "message": str(e), "trace": traceback.format_exc()}
 
 
 # ─── Health ───

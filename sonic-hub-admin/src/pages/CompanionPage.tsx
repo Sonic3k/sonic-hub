@@ -105,6 +105,7 @@ function AssistantsTab({ selected, onSelect }: { selected: Assistant | null; onS
 
   const [showCreate, setShowCreate] = useState(false)
   const [form, setForm] = useState({ name: '', nickname: '', date_of_birth: '', bio: '' })
+  const [importResult, setImportResult] = useState<any>(null)
 
   const createMutation = useMutation({
     mutationFn: (data: typeof form) => companionApi.post('/assistants', data),
@@ -115,9 +116,38 @@ function AssistantsTab({ selected, onSelect }: { selected: Assistant | null; onS
     },
   })
 
+  const importMutation = useMutation({
+    mutationFn: async (file: File) => {
+      if (!selected) return
+      const formData = new FormData()
+      formData.append('file', file)
+      return companionApi.post(`/import/yahoo-messenger/${selected.id}`, formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+        timeout: 120000,
+      })
+    },
+    onSuccess: (res) => {
+      setImportResult(res?.data)
+      qc.invalidateQueries({ queryKey: ['episodes'] })
+      qc.invalidateQueries({ queryKey: ['profile'] })
+      qc.invalidateQueries({ queryKey: ['conversations'] })
+    },
+  })
+
+  const handleFileImport = () => {
+    const input = document.createElement('input')
+    input.type = 'file'
+    input.accept = '.txt'
+    input.onchange = (e) => {
+      const file = (e.target as HTMLInputElement).files?.[0]
+      if (file) importMutation.mutate(file)
+    }
+    input.click()
+  }
+
   return (
     <div>
-      {/* Seed button */}
+      {/* Action buttons */}
       <div className="flex gap-3 mb-6">
         <button onClick={() => seedMutation.mutate()}
           disabled={seedMutation.isPending}
@@ -130,11 +160,38 @@ function AssistantsTab({ selected, onSelect }: { selected: Assistant | null; onS
           <Plus size={15} />
           Create New
         </button>
+        {selected && (
+          <button onClick={handleFileImport}
+            disabled={importMutation.isPending}
+            className="flex items-center gap-2 px-4 py-2 bg-purple-500 text-white rounded-lg text-sm font-medium hover:bg-purple-600 disabled:opacity-50">
+            <MessageSquare size={15} />
+            {importMutation.isPending ? 'Importing...' : 'Import Chat History'}
+          </button>
+        )}
       </div>
 
       {seedMutation.isSuccess && (
         <div className="mb-4 px-4 py-3 bg-green-50 border border-green-200 rounded-lg text-sm text-green-700">
           ✅ {(seedMutation.data?.data as any)?.message || 'Done!'}
+        </div>
+      )}
+
+      {importMutation.isPending && (
+        <div className="mb-4 px-4 py-3 bg-blue-50 border border-blue-200 rounded-lg text-sm text-blue-700 animate-pulse">
+          ⏳ Importing chat history... This may take 1-2 minutes.
+        </div>
+      )}
+
+      {importMutation.isSuccess && importResult && (
+        <div className="mb-4 px-4 py-3 bg-green-50 border border-green-200 rounded-lg text-sm text-green-700">
+          ✅ Imported {importResult.messages_imported} messages from {importResult.conversations} conversations.
+          Extracted {importResult.facts_extracted} facts, {importResult.episodes_extracted} episodes.
+        </div>
+      )}
+
+      {importMutation.isError && (
+        <div className="mb-4 px-4 py-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-700">
+          ❌ Import failed: {(importMutation.error as any)?.message || 'Unknown error'}
         </div>
       )}
 
