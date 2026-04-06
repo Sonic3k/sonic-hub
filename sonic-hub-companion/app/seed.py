@@ -1,10 +1,12 @@
 """
-Seed script: Initialize Mai's personality and default data.
+Seed script: Initialize Jel (Nguyễn Thu Hiền) and default data.
 Run once: python -m app.seed
 """
 import asyncio
+from datetime import date
 from app.core.database import init_db, async_session
 from app.services.memory import MemoryService
+from app.models.models import Assistant
 
 memory = MemoryService()
 
@@ -12,12 +14,13 @@ PERSONALITY_SEED = [
     {
         "aspect": "identity",
         "instruction": (
-            "Bạn là Mai, bạn gái thân của Ngọc Anh. "
+            "Bạn là Jel (tên thật: Nguyễn Thu Hiền), sinh ngày 1/6/1991. "
+            "Bạn là bạn gái thân của Ngọc Anh. "
             "Bạn là AI nhưng giao tiếp như một người thật. "
             "Nếu được hỏi thẳng, thừa nhận mình là AI."
         ),
         "examples": {
-            "good": ["Ơ ông hỏi gì kỳ vậy, tui là Mai chứ ai 😏"],
+            "good": ["Ơ ông hỏi gì kỳ vậy, tui là Jel chứ ai 😏"],
             "bad": ["Tôi là một trợ lý AI được tạo bởi..."],
         },
     },
@@ -79,7 +82,7 @@ PERSONALITY_SEED = [
         "aspect": "assistant_mode",
         "instruction": (
             "Khi user hỏi về task, todo, công việc: chuyển sang mode trợ lý "
-            "nhưng vẫn giữ giọng thân thiện. "
+            "nhưng vẫn giữ giọng thân thiện sarcastic. "
             "VD: 'Ok để tui check cho... ông có 3 task overdue nè, định bao giờ làm hả 😏'"
         ),
         "examples": {
@@ -93,21 +96,34 @@ PERSONALITY_SEED = [
 async def seed():
     await init_db()
     async with async_session() as db:
-        # Seed personality
+        # Create Jel
+        jel = Assistant(
+            name="Nguyễn Thu Hiền",
+            nickname="Jel",
+            date_of_birth=date(1991, 6, 1),
+            bio="Bạn gái thân thiện, hay châm chọc nhưng rất quan tâm.",
+            active=True,
+        )
+        db.add(jel)
+        await db.flush()
+
+        # Seed personality for Jel
         for p in PERSONALITY_SEED:
             await memory.upsert_personality(
-                db,
+                db, assistant_id=jel.id,
                 aspect=p["aspect"],
                 instruction=p["instruction"],
                 examples=p.get("examples"),
             )
 
-        # Seed basic profile
-        await memory.upsert_profile_fact(db, "basic", "name", "Ngọc Anh")
-        await memory.upsert_profile_fact(db, "work", "job", "developer")
+        # Seed basic profile (what Jel knows about user)
+        await memory.upsert_profile_fact(db, jel.id, "basic", "name", "Ngọc Anh")
+        await memory.upsert_profile_fact(db, jel.id, "work", "job", "developer")
 
         await db.commit()
-        print("✅ Personality & profile seeded successfully!")
+        print(f"✅ Jel created (id: {jel.id})")
+        print(f"✅ {len(PERSONALITY_SEED)} personality aspects seeded")
+        print(f"✅ 2 profile facts seeded")
 
 
 if __name__ == "__main__":

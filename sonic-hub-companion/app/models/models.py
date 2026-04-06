@@ -1,19 +1,40 @@
 import uuid
-from datetime import datetime
+from datetime import datetime, date
 from sqlalchemy import (
-    Column, String, Text, Integer, Float, Boolean, DateTime, ForeignKey, Index
+    Column, String, Text, Integer, Float, Boolean, DateTime, Date,
+    ForeignKey, Index
 )
 from sqlalchemy.dialects.postgresql import UUID, JSONB
 from sqlalchemy.orm import relationship
 from app.core.database import Base
 
 
+class Assistant(Base):
+    __tablename__ = "companion_assistants"
+
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    name = Column(String(100), nullable=False)  # Nguyễn Thu Hiền
+    nickname = Column(String(50), nullable=False)  # Jel
+    avatar_url = Column(String(500), nullable=True)
+    person_id = Column(String(255), nullable=True)  # link to mushroom-hills Person
+    date_of_birth = Column(Date, nullable=True)
+    bio = Column(Text, nullable=True)
+    active = Column(Boolean, default=True)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    personalities = relationship("Personality", back_populates="assistant")
+    conversations = relationship("Conversation", back_populates="assistant")
+    episodes = relationship("Episode", back_populates="assistant")
+    user_profiles = relationship("UserProfile", back_populates="assistant")
+
+
 class Channel(Base):
     __tablename__ = "companion_channels"
 
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    type = Column(String(50), nullable=False)  # telegram, web, zalo
-    external_id = Column(String(255))  # telegram chat_id, etc.
+    type = Column(String(50), nullable=False)
+    external_id = Column(String(255))
     created_at = Column(DateTime, default=datetime.utcnow)
 
     conversations = relationship("Conversation", back_populates="channel")
@@ -27,14 +48,20 @@ class Conversation(Base):
     __tablename__ = "companion_conversations"
 
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    assistant_id = Column(UUID(as_uuid=True), ForeignKey("companion_assistants.id"), nullable=False)
     channel_id = Column(UUID(as_uuid=True), ForeignKey("companion_channels.id"), nullable=False)
     started_at = Column(DateTime, default=datetime.utcnow)
     ended_at = Column(DateTime, nullable=True)
     summary = Column(Text, nullable=True)
     is_active = Column(Boolean, default=True)
 
+    assistant = relationship("Assistant", back_populates="conversations")
     channel = relationship("Channel", back_populates="conversations")
     messages = relationship("Message", back_populates="conversation", order_by="Message.timestamp")
+
+    __table_args__ = (
+        Index("idx_conv_assistant_channel", "assistant_id", "channel_id"),
+    )
 
 
 class Message(Base):
@@ -42,7 +69,7 @@ class Message(Base):
 
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     conversation_id = Column(UUID(as_uuid=True), ForeignKey("companion_conversations.id"), nullable=False)
-    role = Column(String(20), nullable=False)  # user, assistant
+    role = Column(String(20), nullable=False)
     content = Column(Text, nullable=False)
     timestamp = Column(DateTime, default=datetime.utcnow)
     channel_type = Column(String(50), nullable=False)
@@ -59,7 +86,8 @@ class UserProfile(Base):
     __tablename__ = "companion_user_profile"
 
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    category = Column(String(50), nullable=False)  # personality, preference, life_event, relationship
+    assistant_id = Column(UUID(as_uuid=True), ForeignKey("companion_assistants.id"), nullable=False)
+    category = Column(String(50), nullable=False)
     key = Column(String(255), nullable=False)
     value = Column(Text, nullable=False)
     confidence = Column(Float, default=1.0)
@@ -67,9 +95,11 @@ class UserProfile(Base):
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
+    assistant = relationship("Assistant", back_populates="user_profiles")
+
     __table_args__ = (
+        Index("idx_profile_assistant_key", "assistant_id", "key", unique=True),
         Index("idx_profile_category", "category"),
-        Index("idx_profile_key", "key", unique=True),
     )
 
 
@@ -77,14 +107,18 @@ class Episode(Base):
     __tablename__ = "companion_episodes"
 
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    assistant_id = Column(UUID(as_uuid=True), ForeignKey("companion_assistants.id"), nullable=False)
     summary = Column(Text, nullable=False)
-    emotion = Column(String(50), nullable=True)  # happy, sad, stressed, excited
-    importance = Column(Integer, default=5)  # 1-10
+    emotion = Column(String(50), nullable=True)
+    importance = Column(Integer, default=5)
     occurred_at = Column(DateTime, default=datetime.utcnow)
     source_conversation_id = Column(UUID(as_uuid=True), nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow)
 
+    assistant = relationship("Assistant", back_populates="episodes")
+
     __table_args__ = (
+        Index("idx_episode_assistant", "assistant_id"),
         Index("idx_episode_importance", "importance"),
         Index("idx_episode_occurred", "occurred_at"),
     )
@@ -94,14 +128,17 @@ class Personality(Base):
     __tablename__ = "companion_personality"
 
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    aspect = Column(String(50), nullable=False)  # tone, language, boundary, habit, identity
+    assistant_id = Column(UUID(as_uuid=True), ForeignKey("companion_assistants.id"), nullable=False)
+    aspect = Column(String(50), nullable=False)
     instruction = Column(Text, nullable=False)
-    examples = Column(JSONB, nullable=True)  # {"good": [...], "bad": [...]}
+    examples = Column(JSONB, nullable=True)
     active = Column(Boolean, default=True)
     version = Column(Integer, default=1)
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
+    assistant = relationship("Assistant", back_populates="personalities")
+
     __table_args__ = (
-        Index("idx_personality_aspect", "aspect"),
+        Index("idx_personality_assistant_aspect", "assistant_id", "aspect", unique=True),
     )

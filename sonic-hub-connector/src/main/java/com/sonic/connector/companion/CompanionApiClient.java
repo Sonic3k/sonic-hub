@@ -25,7 +25,7 @@ public class CompanionApiClient {
     }
 
     public ChatResponse chat(String channel, String externalId, String message) {
-        var request = new ChatRequest(channel, externalId, message, Instant.now().toString(), null);
+        var request = new ChatRequest(channel, externalId, message, null, Instant.now().toString(), null);
         return restClient.post()
                 .uri("/chat")
                 .header("Content-Type", "application/json")
@@ -42,6 +42,8 @@ public class CompanionApiClient {
         @JsonProperty("external_id")
         private final String externalId;
         private final String message;
+        @JsonProperty("assistant_id")
+        private final String assistantId;
         private final String timestamp;
         private final Object metadata;
     }
@@ -54,5 +56,9 @@ public class CompanionApiClient {
         private List<String> split;
         @JsonProperty("conversation_id")
         private String conversationId;
+        @JsonProperty("assistant_id")
+        private String assistantId;
+        @JsonProperty("assistant_nickname")
+        private String assistantNickname;
     }
 }
