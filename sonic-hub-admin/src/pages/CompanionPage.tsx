@@ -366,6 +366,7 @@ function PersonalityTab({ assistantId }: { assistantId: string }) {
 // ─── Memory Tab ───
 
 function MemoryTab({ assistantId }: { assistantId: string }) {
+  const qc = useQueryClient()
   const { data: profile = [] } = useQuery<ProfileFact[]>({
     queryKey: ['profile', assistantId],
     queryFn: () => companionApi.get(`/profile/${assistantId}`).then(r => r.data),
@@ -374,52 +375,199 @@ function MemoryTab({ assistantId }: { assistantId: string }) {
     queryKey: ['episodes', assistantId],
     queryFn: () => companionApi.get(`/episodes/${assistantId}`).then(r => r.data),
   })
+  const { data: vocabulary = [] } = useQuery<any[]>({
+    queryKey: ['vocabulary', assistantId],
+    queryFn: () => companionApi.get(`/vocabulary/${assistantId}`).then(r => r.data),
+  })
+  const { data: dynamics = [] } = useQuery<any[]>({
+    queryKey: ['dynamics', assistantId],
+    queryFn: () => companionApi.get(`/dynamics/${assistantId}`).then(r => r.data),
+  })
+
+  // Manual add states
+  const [addType, setAddType] = useState<string | null>(null)
+  const [factForm, setFactForm] = useState({ category: '', key: '', value: '' })
+  const [episodeForm, setEpisodeForm] = useState({ summary: '', emotion: '', importance: '5', date: '' })
+  const [vocabForm, setVocabForm] = useState({ phrase: '', context: '' })
+  const [dynamicsForm, setDynamicsForm] = useState({ period: '', description: '', sentiment: '' })
+
+  const addFactMutation = useMutation({
+    mutationFn: () => companionApi.put('/profile', { assistant_id: assistantId, ...factForm }),
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ['profile'] }); setAddType(null); setFactForm({ category: '', key: '', value: '' }) },
+  })
+  const addEpisodeMutation = useMutation({
+    mutationFn: () => companionApi.post('/manual-import', {
+      assistant_id: assistantId,
+      episodes: [{ summary: episodeForm.summary, emotion: episodeForm.emotion || null, importance: parseInt(episodeForm.importance), date: episodeForm.date || null }],
+    }),
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ['episodes'] }); setAddType(null); setEpisodeForm({ summary: '', emotion: '', importance: '5', date: '' }) },
+  })
+  const addVocabMutation = useMutation({
+    mutationFn: () => companionApi.post('/vocabulary', { assistant_id: assistantId, phrase: vocabForm.phrase, context: vocabForm.context }),
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ['vocabulary'] }); setAddType(null); setVocabForm({ phrase: '', context: '' }) },
+  })
+  const addDynamicsMutation = useMutation({
+    mutationFn: () => companionApi.post('/dynamics', { assistant_id: assistantId, ...dynamicsForm }),
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ['dynamics'] }); setAddType(null); setDynamicsForm({ period: '', description: '', sentiment: '' }) },
+  })
+
+  const deleteVocab = useMutation({
+    mutationFn: (id: string) => companionApi.delete(`/vocabulary/${id}`),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['vocabulary'] }),
+  })
+  const deleteDynamics = useMutation({
+    mutationFn: (id: string) => companionApi.delete(`/dynamics/${id}`),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['dynamics'] }),
+  })
 
   return (
-    <div className="grid grid-cols-2 gap-6">
-      {/* Profile Facts */}
-      <div>
-        <h3 className="text-sm font-semibold text-[#1a1d2d] mb-3 flex items-center gap-2">
-          <Brain size={15} /> Profile Facts ({profile.length})
-        </h3>
-        {profile.length === 0 ? (
-          <p className="text-xs text-[#9ca3af]">No facts yet. Chat to build memory.</p>
-        ) : (
-          <div className="space-y-1.5">
-            {profile.map(f => (
-              <div key={f.key} className="bg-white rounded-lg border border-[#e5e7eb] px-3 py-2">
-                <div className="flex items-center justify-between">
-                  <span className="text-xs font-medium text-[#374151]">{f.key}</span>
-                  <span className="text-[10px] px-1.5 py-0.5 rounded bg-[#f3f4f6] text-[#6b7280]">{f.category}</span>
-                </div>
-                <div className="text-sm text-[#1a1d2d]">{f.value}</div>
-              </div>
-            ))}
-          </div>
-        )}
+    <div>
+      {/* Add buttons */}
+      <div className="flex gap-2 mb-4">
+        {['fact', 'episode', 'vocabulary', 'dynamics'].map(t => (
+          <button key={t} onClick={() => setAddType(addType === t ? null : t)}
+            className={clsx('px-3 py-1.5 rounded-lg text-xs font-medium border transition-colors',
+              addType === t ? 'bg-indigo-500 text-white border-indigo-500' : 'bg-white text-[#374151] border-[#e5e7eb] hover:border-indigo-300')}>
+            + Add {t}
+          </button>
+        ))}
       </div>
 
-      {/* Episodes */}
-      <div>
-        <h3 className="text-sm font-semibold text-[#1a1d2d] mb-3 flex items-center gap-2">
-          <Heart size={15} /> Episodes ({episodes.length})
-        </h3>
-        {episodes.length === 0 ? (
-          <p className="text-xs text-[#9ca3af]">No episodes yet. Chat to create memories.</p>
-        ) : (
-          <div className="space-y-1.5">
-            {episodes.map((e, i) => (
-              <div key={i} className="bg-white rounded-lg border border-[#e5e7eb] px-3 py-2">
-                <div className="flex items-center gap-2 mb-1">
-                  <span className="text-[10px] text-[#9ca3af]">{new Date(e.occurred_at).toLocaleDateString('vi-VN')}</span>
-                  {e.emotion && <span className="text-[10px] px-1.5 py-0.5 rounded bg-purple-50 text-purple-600">{e.emotion}</span>}
-                  <span className="text-[10px] text-[#9ca3af]">⭐{e.importance}</span>
-                </div>
-                <div className="text-sm text-[#374151]">{e.summary}</div>
-              </div>
-            ))}
+      {/* Add forms */}
+      {addType === 'fact' && (
+        <div className="mb-4 p-3 bg-white rounded-xl border border-indigo-200 space-y-2">
+          <div className="grid grid-cols-3 gap-2">
+            <input placeholder="category" value={factForm.category} onChange={e => setFactForm({...factForm, category: e.target.value})} className="px-2 py-1.5 border rounded text-xs" />
+            <input placeholder="key" value={factForm.key} onChange={e => setFactForm({...factForm, key: e.target.value})} className="px-2 py-1.5 border rounded text-xs" />
+            <input placeholder="value" value={factForm.value} onChange={e => setFactForm({...factForm, value: e.target.value})} className="px-2 py-1.5 border rounded text-xs" />
           </div>
-        )}
+          <button onClick={() => addFactMutation.mutate()} disabled={!factForm.key || !factForm.value} className="px-3 py-1 bg-indigo-500 text-white rounded text-xs disabled:opacity-50">Save</button>
+        </div>
+      )}
+      {addType === 'episode' && (
+        <div className="mb-4 p-3 bg-white rounded-xl border border-indigo-200 space-y-2">
+          <input placeholder="Summary" value={episodeForm.summary} onChange={e => setEpisodeForm({...episodeForm, summary: e.target.value})} className="w-full px-2 py-1.5 border rounded text-xs" />
+          <div className="grid grid-cols-3 gap-2">
+            <input placeholder="emotion" value={episodeForm.emotion} onChange={e => setEpisodeForm({...episodeForm, emotion: e.target.value})} className="px-2 py-1.5 border rounded text-xs" />
+            <input placeholder="importance (1-10)" value={episodeForm.importance} onChange={e => setEpisodeForm({...episodeForm, importance: e.target.value})} className="px-2 py-1.5 border rounded text-xs" />
+            <input type="date" value={episodeForm.date} onChange={e => setEpisodeForm({...episodeForm, date: e.target.value})} className="px-2 py-1.5 border rounded text-xs" />
+          </div>
+          <button onClick={() => addEpisodeMutation.mutate()} disabled={!episodeForm.summary} className="px-3 py-1 bg-indigo-500 text-white rounded text-xs disabled:opacity-50">Save</button>
+        </div>
+      )}
+      {addType === 'vocabulary' && (
+        <div className="mb-4 p-3 bg-white rounded-xl border border-indigo-200 space-y-2">
+          <div className="grid grid-cols-2 gap-2">
+            <input placeholder="Phrase (nguyên văn)" value={vocabForm.phrase} onChange={e => setVocabForm({...vocabForm, phrase: e.target.value})} className="px-2 py-1.5 border rounded text-xs" />
+            <input placeholder="Context (goodbye, reaction, affection...)" value={vocabForm.context} onChange={e => setVocabForm({...vocabForm, context: e.target.value})} className="px-2 py-1.5 border rounded text-xs" />
+          </div>
+          <button onClick={() => addVocabMutation.mutate()} disabled={!vocabForm.phrase} className="px-3 py-1 bg-indigo-500 text-white rounded text-xs disabled:opacity-50">Save</button>
+        </div>
+      )}
+      {addType === 'dynamics' && (
+        <div className="mb-4 p-3 bg-white rounded-xl border border-indigo-200 space-y-2">
+          <div className="grid grid-cols-3 gap-2">
+            <input placeholder="Period (2010-2011)" value={dynamicsForm.period} onChange={e => setDynamicsForm({...dynamicsForm, period: e.target.value})} className="px-2 py-1.5 border rounded text-xs" />
+            <input placeholder="Sentiment (warm, romantic...)" value={dynamicsForm.sentiment} onChange={e => setDynamicsForm({...dynamicsForm, sentiment: e.target.value})} className="px-2 py-1.5 border rounded text-xs" />
+          </div>
+          <textarea placeholder="Description" value={dynamicsForm.description} onChange={e => setDynamicsForm({...dynamicsForm, description: e.target.value})} rows={2} className="w-full px-2 py-1.5 border rounded text-xs" />
+          <button onClick={() => addDynamicsMutation.mutate()} disabled={!dynamicsForm.description} className="px-3 py-1 bg-indigo-500 text-white rounded text-xs disabled:opacity-50">Save</button>
+        </div>
+      )}
+
+      {/* 4-column grid */}
+      <div className="grid grid-cols-2 gap-6">
+        {/* Profile Facts */}
+        <div>
+          <h3 className="text-sm font-semibold text-[#1a1d2d] mb-3 flex items-center gap-2">
+            <Brain size={15} /> Profile Facts ({profile.length})
+          </h3>
+          {profile.length === 0 ? (
+            <p className="text-xs text-[#9ca3af]">No facts yet.</p>
+          ) : (
+            <div className="space-y-1.5 max-h-80 overflow-y-auto">
+              {profile.map(f => (
+                <div key={f.key} className="bg-white rounded-lg border border-[#e5e7eb] px-3 py-2">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-medium text-[#374151]">{f.key}</span>
+                    <span className="text-[10px] px-1.5 py-0.5 rounded bg-[#f3f4f6] text-[#6b7280]">{f.category}</span>
+                  </div>
+                  <div className="text-sm text-[#1a1d2d]">{f.value}</div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Episodes */}
+        <div>
+          <h3 className="text-sm font-semibold text-[#1a1d2d] mb-3 flex items-center gap-2">
+            <Heart size={15} /> Episodes ({episodes.length})
+          </h3>
+          {episodes.length === 0 ? (
+            <p className="text-xs text-[#9ca3af]">No episodes yet.</p>
+          ) : (
+            <div className="space-y-1.5 max-h-80 overflow-y-auto">
+              {episodes.map((e, i) => (
+                <div key={i} className="bg-white rounded-lg border border-[#e5e7eb] px-3 py-2">
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className="text-[10px] text-[#9ca3af]">{new Date(e.occurred_at).toLocaleDateString('vi-VN')}</span>
+                    {e.emotion && <span className="text-[10px] px-1.5 py-0.5 rounded bg-purple-50 text-purple-600">{e.emotion}</span>}
+                    <span className="text-[10px] text-[#9ca3af]">⭐{e.importance}</span>
+                  </div>
+                  <div className="text-sm text-[#374151]">{e.summary}</div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Vocabulary */}
+        <div>
+          <h3 className="text-sm font-semibold text-[#1a1d2d] mb-3 flex items-center gap-2">
+            <MessageSquare size={15} /> Vocabulary ({vocabulary.length})
+          </h3>
+          {vocabulary.length === 0 ? (
+            <p className="text-xs text-[#9ca3af]">No vocabulary yet. Import chat or add manually.</p>
+          ) : (
+            <div className="space-y-1 max-h-80 overflow-y-auto">
+              {vocabulary.map((v: any) => (
+                <div key={v.id} className="bg-white rounded-lg border border-[#e5e7eb] px-3 py-1.5 flex items-center justify-between group">
+                  <div>
+                    <span className="text-sm text-[#1a1d2d]">"{v.phrase}"</span>
+                    {v.context && <span className="text-[10px] ml-2 px-1.5 py-0.5 rounded bg-blue-50 text-blue-600">{v.context}</span>}
+                  </div>
+                  <button onClick={() => deleteVocab.mutate(v.id)} className="text-red-400 opacity-0 group-hover:opacity-100 text-xs">×</button>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Dynamics */}
+        <div>
+          <h3 className="text-sm font-semibold text-[#1a1d2d] mb-3 flex items-center gap-2">
+            <Sparkles size={15} /> Relationship Dynamics ({dynamics.length})
+          </h3>
+          {dynamics.length === 0 ? (
+            <p className="text-xs text-[#9ca3af]">No dynamics yet. Import chat or add manually.</p>
+          ) : (
+            <div className="space-y-1.5 max-h-80 overflow-y-auto">
+              {dynamics.map((d: any) => (
+                <div key={d.id} className="bg-white rounded-lg border border-[#e5e7eb] px-3 py-2 group">
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="text-xs font-medium text-indigo-500">{d.period}</span>
+                    <div className="flex items-center gap-2">
+                      {d.sentiment && <span className="text-[10px] px-1.5 py-0.5 rounded bg-pink-50 text-pink-600">{d.sentiment}</span>}
+                      <button onClick={() => deleteDynamics.mutate(d.id)} className="text-red-400 opacity-0 group-hover:opacity-100 text-xs">×</button>
+                    </div>
+                  </div>
+                  <div className="text-sm text-[#374151]">{d.description}</div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
       </div>
     </div>
   )

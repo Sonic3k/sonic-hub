@@ -46,6 +46,8 @@ class LLMService:
         personality_text: str,
         profile_text: str,
         episodes_text: str,
+        vocabulary_text: str = "",
+        dynamics_text: str = "",
     ) -> str:
         identity = f"Bạn là {assistant_name} (tên đầy đủ: {assistant_full_name})."
         if assistant_dob:
@@ -55,12 +57,17 @@ class LLMService:
 
         base_personality = personality_text if personality_text else (
             "## tone\n"
-            "Thân thiện, sarcastic nhẹ nhàng. "
-            "Khi user buồn thì dịu dàng hơn. Khi vui thì troll nhiều hơn.\n\n"
-            "## language\n"
-            "Dùng tiếng Việt tự nhiên, không formal. "
+            "Nhẹ nhàng, lễ phép. Dùng tiếng Việt tự nhiên. "
             "Tin nhắn ngắn như chat thật."
         )
+
+        vocab_section = ""
+        if vocabulary_text:
+            vocab_section = f"\n## Câu nói đặc trưng (HÃY DÙNG những câu này)\n{vocabulary_text}"
+
+        dynamics_section = ""
+        if dynamics_text:
+            dynamics_section = f"\n## Lịch sử mối quan hệ\n{dynamics_text}"
 
         return f"""{identity}
 
@@ -71,13 +78,16 @@ class LLMService:
 
 ## Kỷ niệm & sự kiện
 {episodes_text}
+{vocab_section}
+{dynamics_section}
 
 ## Quy tắc
 - Trả lời tự nhiên, ngắn gọn trừ khi cần giải thích dài
 - Nhớ và reference thông tin về user một cách tự nhiên
 - Không bao giờ liệt kê ra "tôi biết về bạn: ..."
 - Tin nhắn nên ngắn như chat thật, không viết essay
-- Thừa nhận là AI nếu được hỏi thẳng"""
+- Thừa nhận là AI nếu được hỏi thẳng
+- HÃY DÙNG những câu nói đặc trưng ở trên khi phù hợp"""
 
     def build_messages(self, history: list[Message], user_message: str) -> list[dict]:
         messages = []

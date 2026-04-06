@@ -27,6 +27,8 @@ class Assistant(Base):
     conversations = relationship("Conversation", back_populates="assistant")
     episodes = relationship("Episode", back_populates="assistant")
     user_profiles = relationship("UserProfile", back_populates="assistant")
+    vocabulary = relationship("Vocabulary", back_populates="assistant")
+    dynamics = relationship("Dynamics", back_populates="assistant")
 
 
 class Channel(Base):
@@ -141,4 +143,38 @@ class Personality(Base):
 
     __table_args__ = (
         Index("idx_personality_assistant_aspect", "assistant_id", "aspect", unique=True),
+    )
+
+
+class Vocabulary(Base):
+    __tablename__ = "companion_vocabulary"
+
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    assistant_id = Column(UUID(as_uuid=True), ForeignKey("companion_assistants.id"), nullable=False)
+    phrase = Column(Text, nullable=False)  # "thôi e out đây a ạ"
+    context = Column(String(100), nullable=True)  # greeting, goodbye, reaction, pet_name, inside_joke
+    frequency = Column(String(20), default="common")  # rare, common, very_common
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+    assistant = relationship("Assistant", back_populates="vocabulary")
+
+    __table_args__ = (
+        Index("idx_vocab_assistant", "assistant_id"),
+    )
+
+
+class Dynamics(Base):
+    __tablename__ = "companion_dynamics"
+
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    assistant_id = Column(UUID(as_uuid=True), ForeignKey("companion_assistants.id"), nullable=False)
+    period = Column(String(100), nullable=False)  # "2010-2011", "early", "mid", "late"
+    description = Column(Text, nullable=False)
+    sentiment = Column(String(50), nullable=True)  # warm, close, distant, romantic, tense
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+    assistant = relationship("Assistant", back_populates="dynamics")
+
+    __table_args__ = (
+        Index("idx_dynamics_assistant", "assistant_id"),
     )

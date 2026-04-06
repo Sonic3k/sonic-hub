@@ -49,6 +49,8 @@ class ChatService:
         history = await self.memory.get_recent_messages(db, conversation.id, limit=20)
         profiles = await self.memory.get_user_profile(db, assistant.id)
         personalities = await self.memory.get_active_personality(db, assistant.id)
+        vocabulary = await self.memory.get_vocabulary(db, assistant.id)
+        dynamics = await self.memory.get_dynamics(db, assistant.id)
 
         # 5. Search relevant episodes
         keywords = self._extract_keywords(user_message)
@@ -68,6 +70,8 @@ class ChatService:
             personality_text=personality_text,
             profile_text=self.memory.format_profile_for_prompt(profiles),
             episodes_text=self.memory.format_episodes_for_prompt(relevant_episodes),
+            vocabulary_text=self.memory.format_vocabulary_for_prompt(vocabulary),
+            dynamics_text=self.memory.format_dynamics_for_prompt(dynamics),
         )
 
         history_without_current = history[:-1] if history else []

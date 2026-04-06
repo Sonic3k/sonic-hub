@@ -39,7 +39,8 @@ async def chat(request: ChatRequest, db: AsyncSession = Depends(get_db)):
 async def reset_all(db: AsyncSession = Depends(get_db)):
     """Delete ALL companion data and reseed from scratch."""
     from app.models.models import (
-        Message, Conversation, Episode, UserProfile, Personality, Channel, Assistant
+        Message, Conversation, Episode, UserProfile, Personality,
+        Channel, Assistant, Vocabulary, Dynamics
     )
     # Delete in order (respect FK constraints)
     await db.execute(Message.__table__.delete())
@@ -47,6 +48,8 @@ async def reset_all(db: AsyncSession = Depends(get_db)):
     await db.execute(Episode.__table__.delete())
     await db.execute(UserProfile.__table__.delete())
     await db.execute(Personality.__table__.delete())
+    await db.execute(Vocabulary.__table__.delete())
+    await db.execute(Dynamics.__table__.delete())
     await db.execute(Channel.__table__.delete())
     await db.execute(Assistant.__table__.delete())
     await db.commit()
@@ -258,6 +261,125 @@ async def get_conversation_messages(
     ]
 
 
+# ─── Vocabulary ───
+
+@router.get("/vocabulary/{assistant_id}")
+async def get_vocabulary(assistant_id: str, db: AsyncSession = Depends(get_db)):
+    items = await memory_service.get_vocabulary(db, assistant_id)
+    return [
+        {"id": str(v.id), "phrase": v.phrase, "context": v.context, "frequency": v.frequency}
+        for v in items
+    ]
+
+
+@router.post("/vocabulary")
+async def add_vocabulary(request: dict, db: AsyncSession = Depends(get_db)):
+    await memory_service.save_vocabulary(
+        db, assistant_id=request["assistant_id"],
+        phrase=request["phrase"],
+        context=request.get("context"),
+        frequency=request.get("frequency", "common"),
+    )
+    await db.commit()
+    return {"status": "added", "phrase": request["phrase"]}
+
+
+@router.delete("/vocabulary/{vocab_id}")
+async def delete_vocabulary(vocab_id: str, db: AsyncSession = Depends(get_db)):
+    from app.models.models import Vocabulary
+    result = await db.execute(select(Vocabulary).where(Vocabulary.id == vocab_id))
+    v = result.scalar_one_or_none()
+    if v:
+        await db.delete(v)
+        await db.commit()
+    return {"status": "deleted"}
+
+
+# ─── Dynamics ───
+
+@router.get("/dynamics/{assistant_id}")
+async def get_dynamics(assistant_id: str, db: AsyncSession = Depends(get_db)):
+    items = await memory_service.get_dynamics(db, assistant_id)
+    return [
+        {"id": str(d.id), "period": d.period, "description": d.description, "sentiment": d.sentiment}
+        for d in items
+    ]
+
+
+@router.post("/dynamics")
+async def add_dynamics(request: dict, db: AsyncSession = Depends(get_db)):
+    await memory_service.save_dynamics(
+        db, assistant_id=request["assistant_id"],
+        period=request["period"],
+        description=request["description"],
+        sentiment=request.get("sentiment"),
+    )
+    await db.commit()
+    return {"status": "added"}
+
+
+@router.delete("/dynamics/{dynamics_id}")
+async def delete_dynamics(dynamics_id: str, db: AsyncSession = Depends(get_db)):
+    from app.models.models import Dynamics
+    result = await db.execute(select(Dynamics).where(Dynamics.id == dynamics_id))
+    d = result.scalar_one_or_none()
+    if d:
+        await db.delete(d)
+        await db.commit()
+    return {"status": "deleted"}
+
+
+# ─── Manual Import (batch) ───
+
+@router.post("/manual-import/{assistant_id}")
+async def manual_import(assistant_id: str, request: dict, db: AsyncSession = Depends(get_db)):
+    """Import facts, episodes, vocabulary, dynamics manually."""
+    counts = {"facts": 0, "episodes": 0, "vocabulary": 0, "dynamics": 0}
+
+    for fact in request.get("facts", []):
+        if fact.get("key") and fact.get("value"):
+            await memory_service.upsert_profile_fact(
+                db, assistant_id, fact.get("category", "general"),
+                fact["key"], fact["value"],
+            )
+            counts["facts"] += 1
+
+    for ep in request.get("episodes", []):
+        if ep.get("summary"):
+            occurred = None
+            if ep.get("date"):
+                try:
+                    from datetime import datetime
+                    occurred = datetime.strptime(ep["date"], "%Y-%m-%d")
+                except ValueError:
+                    pass
+            await memory_service.save_episode(
+                db, assistant_id, ep["summary"],
+                emotion=ep.get("emotion"), importance=ep.get("importance", 5),
+                occurred_at=occurred,
+            )
+            counts["episodes"] += 1
+
+    for v in request.get("vocabulary", []):
+        if v.get("phrase"):
+            await memory_service.save_vocabulary(
+                db, assistant_id, v["phrase"],
+                context=v.get("context"), frequency=v.get("frequency", "common"),
+            )
+            counts["vocabulary"] += 1
+
+    for d in request.get("dynamics", []):
+        if d.get("description"):
+            await memory_service.save_dynamics(
+                db, assistant_id, d.get("period", ""), d["description"],
+                sentiment=d.get("sentiment"),
+            )
+            counts["dynamics"] += 1
+
+    await db.commit()
+    return {"status": "imported", "counts": counts}
+
+
 # ─── Import Chat History ───
 
 @router.post("/import/yahoo-messenger/{assistant_id}", response_model=dict)
@@ -303,13 +425,17 @@ async def import_yahoo_messenger(
 
 
 async def _extract_memories_background(conversations, assistant_id):
-    """Background task for memory extraction."""
+    """Background task for memory extraction (multi-pass with Sonnet)."""
     import logging
     logger = logging.getLogger(__name__)
     try:
         from app.import_chat import extract_memories_batch
-        facts, episodes = await extract_memories_batch(conversations, assistant_id)
-        logger.info(f"Background extraction done: {facts} facts, {episodes} episodes")
+        result = await extract_memories_batch(conversations, assistant_id)
+        logger.info(
+            f"Background extraction done: {result['facts']} facts, "
+            f"{result['episodes']} episodes, {result['vocabulary']} vocab, "
+            f"{result['dynamics']} dynamics"
+        )
     except Exception as e:
         logger.error(f"Background extraction failed: {e}")
 

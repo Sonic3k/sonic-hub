@@ -255,3 +255,72 @@ class MemoryService:
                 if p.examples.get("bad"):
                     parts.append("Ví dụ SAI: " + " | ".join(p.examples["bad"]))
         return "\n\n".join(parts)
+
+    # ─── Vocabulary ───
+
+    async def get_vocabulary(self, db: AsyncSession, assistant_id) -> list:
+        from app.models.models import Vocabulary
+        result = await db.execute(
+            select(Vocabulary)
+            .where(Vocabulary.assistant_id == assistant_id)
+            .order_by(Vocabulary.context, Vocabulary.phrase)
+        )
+        return list(result.scalars().all())
+
+    async def save_vocabulary(
+        self, db: AsyncSession, assistant_id, phrase: str,
+        context: str = None, frequency: str = "common"
+    ):
+        from app.models.models import Vocabulary
+        v = Vocabulary(
+            assistant_id=assistant_id, phrase=phrase,
+            context=context, frequency=frequency,
+        )
+        db.add(v)
+        await db.flush()
+        return v
+
+    def format_vocabulary_for_prompt(self, vocab: list) -> str:
+        if not vocab:
+            return ""
+        by_context = {}
+        for v in vocab:
+            ctx = v.context or "general"
+            by_context.setdefault(ctx, []).append(v.phrase)
+        parts = []
+        for ctx, phrases in by_context.items():
+            parts.append(f"[{ctx}] " + " | ".join(phrases))
+        return "\n".join(parts)
+
+    # ─── Dynamics ───
+
+    async def get_dynamics(self, db: AsyncSession, assistant_id) -> list:
+        from app.models.models import Dynamics
+        result = await db.execute(
+            select(Dynamics)
+            .where(Dynamics.assistant_id == assistant_id)
+            .order_by(Dynamics.period)
+        )
+        return list(result.scalars().all())
+
+    async def save_dynamics(
+        self, db: AsyncSession, assistant_id, period: str,
+        description: str, sentiment: str = None
+    ):
+        from app.models.models import Dynamics
+        d = Dynamics(
+            assistant_id=assistant_id, period=period,
+            description=description, sentiment=sentiment,
+        )
+        db.add(d)
+        await db.flush()
+        return d
+
+    def format_dynamics_for_prompt(self, dynamics: list) -> str:
+        if not dynamics:
+            return ""
+        parts = []
+        for d in dynamics:
+            s = f" ({d.sentiment})" if d.sentiment else ""
+            parts.append(f"- [{d.period}]{s}: {d.description}")
+        return "\n".join(parts)
