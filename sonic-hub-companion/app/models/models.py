@@ -13,13 +13,18 @@ class Assistant(Base):
     __tablename__ = "companion_assistants"
 
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    name = Column(String(100), nullable=False)  # Nguyễn Thu Hiền
-    nickname = Column(String(50), nullable=False)  # Jel
+    name = Column(String(100), nullable=False)
+    nickname = Column(String(50), nullable=False)
     avatar_url = Column(String(500), nullable=True)
-    person_id = Column(String(255), nullable=True)  # link to mushroom-hills Person
+    person_id = Column(String(255), nullable=True)
     date_of_birth = Column(Date, nullable=True)
     bio = Column(Text, nullable=True)
     active = Column(Boolean, default=True)
+    # Telegram bot config
+    telegram_bot_token = Column(String(255), nullable=True)
+    telegram_bot_username = Column(String(100), nullable=True)
+    telegram_enabled = Column(Boolean, default=False)
+    telegram_owner_id = Column(String(50), nullable=True)  # only this user can chat
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 

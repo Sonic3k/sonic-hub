@@ -10,6 +10,8 @@ interface Assistant {
   id: string; name: string; nickname: string
   avatar_url: string | null; date_of_birth: string | null
   bio: string | null; active: boolean
+  telegram_bot_username: string | null; telegram_enabled: boolean
+  telegram_owner_id: string | null
 }
 interface PersonalityItem {
   aspect: string; instruction: string
@@ -106,16 +108,26 @@ function AssistantsTab({ selected, onSelect }: { selected: Assistant | null; onS
   })
 
   const [showCreate, setShowCreate] = useState(false)
-  const [form, setForm] = useState({ name: '', nickname: '', date_of_birth: '', bio: '' })
+  const [form, setForm] = useState({ name: '', nickname: '', date_of_birth: '', bio: '', telegram_bot_token: '', telegram_bot_username: '', telegram_owner_id: '' })
   const [importResult, setImportResult] = useState<any>(null)
   const [jobStatus, setJobStatus] = useState<any>(null)
+  const [editingId, setEditingId] = useState<string | null>(null)
+  const [editForm, setEditForm] = useState({ telegram_bot_token: '', telegram_bot_username: '', telegram_owner_id: '', telegram_enabled: false })
 
   const createMutation = useMutation({
     mutationFn: (data: typeof form) => companionApi.post('/assistants', data),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['assistants'] })
       setShowCreate(false)
-      setForm({ name: '', nickname: '', date_of_birth: '', bio: '' })
+      setForm({ name: '', nickname: '', date_of_birth: '', bio: '', telegram_bot_token: '', telegram_bot_username: '', telegram_owner_id: '' })
+    },
+  })
+
+  const updateMutation = useMutation({
+    mutationFn: ({ id, data }: { id: string; data: any }) => companionApi.put(`/assistants/${id}`, data),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['assistants'] })
+      setEditingId(null)
     },
   })
 
@@ -327,6 +339,15 @@ function AssistantsTab({ selected, onSelect }: { selected: Assistant | null; onS
             <input placeholder="Bio" value={form.bio} onChange={e => setForm({ ...form, bio: e.target.value })}
               className="px-3 py-2 border rounded-lg text-sm" />
           </div>
+          <h4 className="text-xs font-semibold mt-4 mb-2 text-[#6b7280]">Telegram Bot (optional)</h4>
+          <div className="grid grid-cols-3 gap-3">
+            <input placeholder="Bot Token" value={form.telegram_bot_token} onChange={e => setForm({ ...form, telegram_bot_token: e.target.value })}
+              className="px-3 py-2 border rounded-lg text-sm font-mono text-xs" />
+            <input placeholder="@BotUsername" value={form.telegram_bot_username} onChange={e => setForm({ ...form, telegram_bot_username: e.target.value })}
+              className="px-3 py-2 border rounded-lg text-sm" />
+            <input placeholder="Owner Telegram ID" value={form.telegram_owner_id} onChange={e => setForm({ ...form, telegram_owner_id: e.target.value })}
+              className="px-3 py-2 border rounded-lg text-sm" />
+          </div>
           <button onClick={() => createMutation.mutate(form)} disabled={!form.name || !form.nickname}
             className="mt-3 px-4 py-2 bg-indigo-500 text-white rounded-lg text-sm disabled:opacity-50">
             Create
@@ -336,29 +357,72 @@ function AssistantsTab({ selected, onSelect }: { selected: Assistant | null; onS
 
       {/* Assistant list */}
       {isLoading ? <p className="text-sm text-[#9ca3af]">Loading...</p> : (
-        <div className="space-y-2">
+        <div className="space-y-3">
           {assistants.length === 0 && (
             <p className="text-center py-8 text-[#9ca3af] text-sm">No assistants yet. Click "Seed Default" to create Tommy Filan.</p>
           )}
           {assistants.map(a => (
-            <div key={a.id} onClick={() => onSelect(a)}
+            <div key={a.id}
               className={clsx(
-                'flex items-center gap-4 p-4 rounded-xl border cursor-pointer transition-all',
-                selected?.id === a.id
-                  ? 'bg-indigo-50 border-indigo-200'
-                  : 'bg-white border-[#e5e7eb] hover:border-[#c4c9d9]'
+                'rounded-xl border transition-all',
+                selected?.id === a.id ? 'bg-indigo-50 border-indigo-200' : 'bg-white border-[#e5e7eb]'
               )}>
-              <div className="w-11 h-11 rounded-full bg-gradient-to-br from-pink-400 to-purple-500 flex items-center justify-center text-white font-semibold text-sm">
-                {a.nickname.charAt(0)}
+              {/* Card header - clickable */}
+              <div className="flex items-center gap-4 p-4 cursor-pointer" onClick={() => onSelect(a)}>
+                <div className="w-11 h-11 rounded-full bg-gradient-to-br from-pink-400 to-purple-500 flex items-center justify-center text-white font-semibold text-sm">
+                  {a.nickname.charAt(0)}
+                </div>
+                <div className="flex-1">
+                  <div className="font-medium text-sm text-[#1a1d2d]">{a.nickname}</div>
+                  <div className="text-xs text-[#6b7280]">{a.name} · {a.date_of_birth || 'No DOB'}</div>
+                  {a.bio && <div className="text-xs text-[#9ca3af] mt-0.5 line-clamp-1">{a.bio}</div>}
+                </div>
+                <div className="flex items-center gap-2">
+                  {a.telegram_bot_username && (
+                    <span className={clsx('text-xs px-2 py-0.5 rounded-full',
+                      a.telegram_enabled ? 'bg-blue-100 text-blue-700' : 'bg-gray-100 text-gray-500')}>
+                      {a.telegram_enabled ? '🟢' : '⚪'} @{a.telegram_bot_username}
+                    </span>
+                  )}
+                  <button onClick={(e) => { e.stopPropagation(); setEditingId(editingId === a.id ? null : a.id); setEditForm({ telegram_bot_token: '', telegram_bot_username: a.telegram_bot_username || '', telegram_owner_id: a.telegram_owner_id || '', telegram_enabled: a.telegram_enabled }) }}
+                    className="text-xs text-indigo-500 hover:underline">
+                    {editingId === a.id ? 'Close' : 'Config'}
+                  </button>
+                </div>
               </div>
-              <div className="flex-1">
-                <div className="font-medium text-sm text-[#1a1d2d]">{a.nickname}</div>
-                <div className="text-xs text-[#6b7280]">{a.name} · {a.date_of_birth || 'No DOB'}</div>
-                {a.bio && <div className="text-xs text-[#9ca3af] mt-0.5">{a.bio}</div>}
-              </div>
-              <span className={clsx('text-xs px-2 py-0.5 rounded-full', a.active ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500')}>
-                {a.active ? 'Active' : 'Inactive'}
-              </span>
+
+              {/* Edit panel */}
+              {editingId === a.id && (
+                <div className="px-4 pb-4 pt-2 border-t border-[#f3f4f6]">
+                  <h4 className="text-xs font-semibold mb-2 text-[#6b7280]">Telegram Bot Config</h4>
+                  <div className="grid grid-cols-3 gap-2 mb-2">
+                    <input placeholder="Bot Token (leave empty to keep)" value={editForm.telegram_bot_token}
+                      onChange={e => setEditForm({ ...editForm, telegram_bot_token: e.target.value })}
+                      className="px-2 py-1.5 border rounded text-xs font-mono" />
+                    <input placeholder="@BotUsername" value={editForm.telegram_bot_username}
+                      onChange={e => setEditForm({ ...editForm, telegram_bot_username: e.target.value })}
+                      className="px-2 py-1.5 border rounded text-xs" />
+                    <input placeholder="Owner Telegram ID" value={editForm.telegram_owner_id}
+                      onChange={e => setEditForm({ ...editForm, telegram_owner_id: e.target.value })}
+                      className="px-2 py-1.5 border rounded text-xs" />
+                  </div>
+                  <div className="flex items-center gap-4">
+                    <label className="flex items-center gap-2 text-xs">
+                      <input type="checkbox" checked={editForm.telegram_enabled}
+                        onChange={e => setEditForm({ ...editForm, telegram_enabled: e.target.checked })} />
+                      Enable Telegram Bot
+                    </label>
+                    <button onClick={() => {
+                      const data: any = { telegram_bot_username: editForm.telegram_bot_username, telegram_owner_id: editForm.telegram_owner_id, telegram_enabled: editForm.telegram_enabled }
+                      if (editForm.telegram_bot_token) data.telegram_bot_token = editForm.telegram_bot_token
+                      updateMutation.mutate({ id: a.id, data })
+                    }}
+                      className="px-3 py-1 bg-indigo-500 text-white rounded text-xs">
+                      Save & Restart Bot
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
           ))}
         </div>

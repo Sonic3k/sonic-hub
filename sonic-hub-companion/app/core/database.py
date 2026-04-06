@@ -27,8 +27,11 @@ async def init_db():
             "ALTER TABLE companion_user_profile ADD COLUMN IF NOT EXISTS period VARCHAR(50)",
             "ALTER TABLE companion_assistants ADD COLUMN IF NOT EXISTS date_of_birth DATE",
             "ALTER TABLE companion_assistants ADD COLUMN IF NOT EXISTS bio TEXT",
+            "ALTER TABLE companion_assistants ADD COLUMN IF NOT EXISTS telegram_bot_token VARCHAR(255)",
+            "ALTER TABLE companion_assistants ADD COLUMN IF NOT EXISTS telegram_bot_username VARCHAR(100)",
+            "ALTER TABLE companion_assistants ADD COLUMN IF NOT EXISTS telegram_enabled BOOLEAN DEFAULT FALSE",
+            "ALTER TABLE companion_assistants ADD COLUMN IF NOT EXISTS telegram_owner_id VARCHAR(50)",
             "ALTER TABLE companion_conversations ADD COLUMN IF NOT EXISTS assistant_id UUID",
-            # Drop old unique index if exists, new one includes period
             "DROP INDEX IF EXISTS idx_profile_assistant_key",
         ]
         for sql in migrations:

@@ -16,7 +16,21 @@ logging.basicConfig(
 async def lifespan(app: FastAPI):
     await init_db()
     logging.getLogger(__name__).info("sonic-hub-companion started")
+
+    # Start Telegram bots
+    from app.services.telegram import bot_manager
+    try:
+        await bot_manager.start_all()
+    except Exception as e:
+        logging.getLogger(__name__).warning(f"Telegram bot startup: {e}")
+
     yield
+
+    # Stop Telegram bots
+    try:
+        await bot_manager.stop_all()
+    except Exception:
+        pass
 
 
 app = FastAPI(

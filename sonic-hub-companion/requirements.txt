@@ -9,3 +9,4 @@ pydantic-settings==2.5.2
 pgvector==0.3.5
 python-dotenv==1.0.1
 python-multipart==0.0.12
+python-telegram-bot[all]>=21.0

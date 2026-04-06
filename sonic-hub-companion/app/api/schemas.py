@@ -23,8 +23,21 @@ class ChatResponse(BaseModel):
 class AssistantCreateRequest(BaseModel):
     name: str
     nickname: str
-    date_of_birth: str | None = None  # ISO format
+    date_of_birth: str | None = None
     bio: str | None = None
+    telegram_bot_token: str | None = None
+    telegram_bot_username: str | None = None
+    telegram_owner_id: str | None = None
+
+
+class AssistantUpdateRequest(BaseModel):
+    name: str | None = None
+    nickname: str | None = None
+    bio: str | None = None
+    telegram_bot_token: str | None = None
+    telegram_bot_username: str | None = None
+    telegram_enabled: bool | None = None
+    telegram_owner_id: str | None = None
 
 
 class AssistantResponse(BaseModel):
@@ -35,6 +48,9 @@ class AssistantResponse(BaseModel):
     date_of_birth: date | None
     bio: str | None
     active: bool
+    telegram_bot_username: str | None
+    telegram_enabled: bool
+    telegram_owner_id: str | None
 
 
 class PersonalityRequest(BaseModel):

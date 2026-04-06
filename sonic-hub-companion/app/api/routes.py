@@ -5,7 +5,7 @@ from sqlalchemy import select
 from app.core.database import get_db, async_session
 from app.api.schemas import (
     ChatRequest, ChatResponse,
-    AssistantCreateRequest, AssistantResponse,
+    AssistantCreateRequest, AssistantUpdateRequest, AssistantResponse,
     PersonalityRequest, PersonalityResponse,
     ProfileFactRequest, ProfileFactResponse,
     EpisodeResponse, HealthResponse, ConversationResponse, MessageResponse,
@@ -155,17 +155,21 @@ async def import_supplement(assistant_id: str, db: AsyncSession = Depends(get_db
 
 # ─── Assistants ───
 
+def _assistant_response(a) -> AssistantResponse:
+    return AssistantResponse(
+        id=str(a.id), name=a.name, nickname=a.nickname,
+        avatar_url=a.avatar_url, date_of_birth=a.date_of_birth,
+        bio=a.bio, active=a.active,
+        telegram_bot_username=a.telegram_bot_username,
+        telegram_enabled=a.telegram_enabled or False,
+        telegram_owner_id=a.telegram_owner_id,
+    )
+
+
 @router.get("/assistants", response_model=list[AssistantResponse])
 async def list_assistants(db: AsyncSession = Depends(get_db)):
     items = await memory_service.get_all_assistants(db)
-    return [
-        AssistantResponse(
-            id=str(a.id), name=a.name, nickname=a.nickname,
-            avatar_url=a.avatar_url, date_of_birth=a.date_of_birth,
-            bio=a.bio, active=a.active,
-        )
-        for a in items
-    ]
+    return [_assistant_response(a) for a in items]
 
 
 @router.post("/assistants", response_model=AssistantResponse)
@@ -177,23 +181,58 @@ async def create_assistant(request: AssistantCreateRequest, db: AsyncSession = D
     a = Assistant(
         name=request.name, nickname=request.nickname,
         date_of_birth=dob, bio=request.bio, active=True,
+        telegram_bot_token=request.telegram_bot_token,
+        telegram_bot_username=request.telegram_bot_username,
+        telegram_owner_id=request.telegram_owner_id,
     )
     db.add(a)
     await db.commit()
-    return AssistantResponse(
-        id=str(a.id), name=a.name, nickname=a.nickname,
-        avatar_url=a.avatar_url, date_of_birth=a.date_of_birth,
-        bio=a.bio, active=a.active,
-    )
+    return _assistant_response(a)
+
+
+@router.put("/assistants/{assistant_id}", response_model=AssistantResponse)
+async def update_assistant(
+    assistant_id: str, request: AssistantUpdateRequest,
+    db: AsyncSession = Depends(get_db)
+):
+    a = await memory_service.get_assistant_by_id(db, assistant_id)
+    if not a:
+        return {"status": "error", "message": "Not found"}
+
+    if request.name is not None: a.name = request.name
+    if request.nickname is not None: a.nickname = request.nickname
+    if request.bio is not None: a.bio = request.bio
+    if request.telegram_bot_token is not None: a.telegram_bot_token = request.telegram_bot_token
+    if request.telegram_bot_username is not None: a.telegram_bot_username = request.telegram_bot_username
+    if request.telegram_owner_id is not None: a.telegram_owner_id = request.telegram_owner_id
+    if request.telegram_enabled is not None: a.telegram_enabled = request.telegram_enabled
+
+    await db.commit()
+
+    # Restart bot if telegram config changed
+    from app.services.telegram import bot_manager
+    await bot_manager.restart_bot(assistant_id)
+
+    return _assistant_response(a)
 
 
 @router.delete("/assistants/{assistant_id}", response_model=dict)
 async def delete_assistant(assistant_id: str, db: AsyncSession = Depends(get_db)):
+    from app.services.telegram import bot_manager
+    await bot_manager.stop_bot(assistant_id)
     a = await memory_service.get_assistant_by_id(db, assistant_id)
     if a:
         await db.delete(a)
         await db.commit()
     return {"status": "deleted", "id": assistant_id}
+
+
+# ─── Telegram Bot Management ───
+
+@router.get("/telegram/status")
+async def telegram_status():
+    from app.services.telegram import bot_manager
+    return {"bots": bot_manager.get_status()}
 
 
 # ─── Personality ───
