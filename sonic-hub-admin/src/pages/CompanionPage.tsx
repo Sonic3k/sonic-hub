@@ -164,11 +164,17 @@ function AssistantsTab({ selected, onSelect }: { selected: Assistant | null; onS
     },
     onSuccess: (res) => {
       setImportResult(res?.data)
-      setJobStatus({ status: 'extracting', progress: 'Starting...' })
+      qc.invalidateQueries({ queryKey: ['conversations'] })
+    },
+  })
+
+  const extractMutation = useMutation({
+    mutationFn: () => companionApi.post(`/extract/${selected?.id}`),
+    onSuccess: (res) => {
+      setJobStatus({ status: 'running', progress: 'Starting...' })
       if (res?.data?.job_id) {
         pollJob(res.data.job_id)
       }
-      qc.invalidateQueries({ queryKey: ['conversations'] })
     },
   })
 
@@ -247,6 +253,12 @@ function AssistantsTab({ selected, onSelect }: { selected: Assistant | null; onS
               className="flex items-center gap-2 px-4 py-2 bg-purple-500 text-white rounded-lg text-sm font-medium hover:bg-purple-600 disabled:opacity-50">
               <MessageSquare size={15} />
               {importMutation.isPending ? 'Importing...' : 'Import Chat History'}
+            </button>
+            <button onClick={() => extractMutation.mutate()}
+              disabled={extractMutation.isPending}
+              className="flex items-center gap-2 px-4 py-2 bg-orange-500 text-white rounded-lg text-sm font-medium hover:bg-orange-600 disabled:opacity-50">
+              <Sparkles size={15} />
+              {extractMutation.isPending ? 'Starting...' : 'Extract Memories'}
             </button>
             <button onClick={() => supplementMutation.mutate()}
               disabled={supplementMutation.isPending}

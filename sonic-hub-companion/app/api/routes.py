@@ -495,8 +495,7 @@ async def import_yahoo_messenger(
     assistant_id: str,
     file: UploadFile = File(...),
 ):
-    """Import Yahoo Messenger chat history. Returns immediately, extraction runs in background."""
-    import uuid as uuid_mod
+    """Import Yahoo Messenger chat history. ONLY imports messages, no extraction."""
     from app.import_chat import parse_ym_chat_from_text, import_conversations
 
     try:
@@ -515,26 +514,74 @@ async def import_yahoo_messenger(
 
         imported = await import_conversations(conversations, assistant_id, channel_id)
 
-        # Create job for background extraction
-        job_id = str(uuid_mod.uuid4())[:8]
-        async with async_session() as jdb:
-            await _get_or_create_job(jdb, job_id, "import_chat")
-            await jdb.commit()
-
-        asyncio.create_task(
-            _extract_memories_background(conversations, assistant_id, job_id)
-        )
-
         return {
             "status": "success",
-            "job_id": job_id,
             "conversations": len(conversations),
             "messages_imported": imported,
-            "message": f"Imported {imported} messages. Extraction started (job: {job_id})",
+            "message": f"Imported {imported} messages from {len(conversations)} conversations.",
         }
     except Exception as e:
-        import traceback
         return {"status": "error", "message": str(e)}
+
+
+# ─── Extract Memories ───
+
+@router.post("/extract/{assistant_id}", response_model=dict)
+async def extract_memories(assistant_id: str):
+    """Extract memories from already-imported conversations. Runs in background."""
+    import uuid as uuid_mod
+    from sqlalchemy import desc
+
+    # Load conversations from DB
+    async with async_session() as db:
+        result = await db.execute(
+            select(Conversation)
+            .where(Conversation.assistant_id == assistant_id)
+            .order_by(Conversation.started_at)
+        )
+        convs = list(result.scalars().all())
+
+        if not convs:
+            return {"status": "error", "message": "No conversations found. Import chat history first."}
+
+        # Rebuild conversation format for extraction
+        conversations = []
+        for conv in convs:
+            msgs = await memory_service.get_recent_messages(db, conv.id, limit=500)
+            if not msgs:
+                continue
+            conversations.append({
+                "date": conv.started_at,
+                "messages": [
+                    {
+                        "role": m.role,
+                        "content": m.content,
+                        "timestamp": m.timestamp,
+                        "sender": "Tommy Filan" if m.role == "assistant" else "hypersonic3k",
+                    }
+                    for m in msgs
+                ],
+            })
+
+    if not conversations:
+        return {"status": "error", "message": "No messages found in conversations."}
+
+    # Create background job
+    job_id = str(uuid_mod.uuid4())[:8]
+    async with async_session() as jdb:
+        await _get_or_create_job(jdb, job_id, "extract_memories")
+        await jdb.commit()
+
+    asyncio.create_task(
+        _extract_memories_background(conversations, assistant_id, job_id)
+    )
+
+    return {
+        "status": "started",
+        "job_id": job_id,
+        "conversations": len(conversations),
+        "message": f"Extracting from {len(conversations)} conversations (job: {job_id})",
+    }
 
 
 @router.get("/jobs/{job_id}", response_model=dict)
