@@ -94,6 +94,17 @@ async def execute_actions(actions: list[dict], assistant_nickname: str) -> list[
                     await hub_client.update_task(action["id"], status="DONE")
                 results.append(f"Marked {entity} done: {action['id']}")
 
+            elif action_type == "create_wishlist":
+                result = await hub_client.create_wishlist(
+                    title=action["title"],
+                    description=action.get("description"),
+                    category=action.get("category", "general"),
+                    projectId=action.get("project_id"),
+                    createdBy=created_by,
+                )
+                if result:
+                    results.append(f"Created wishlist: {action['title']} (id: {result.get('id')})")
+
             else:
                 logger.warning(f"Unknown action type: {action_type}")
 
@@ -151,6 +162,14 @@ def format_hub_context(ctx: dict) -> str:
             limit = f"{r.get('currentLimit')}/{r.get('frequencyType')}" if r.get('currentLimit') else ""
             target = f" → target {r.get('targetLimit')}" if r.get('targetLimit') else ""
             parts.append(f"  - {r.get('entityType')}: {limit}{target} (reminder: {r.get('reminderPattern', 'none')})")
+
+    # Wishlists
+    wishlists = ctx.get("wishlists", [])
+    if wishlists:
+        parts.append(f"\nWishlist ({len(wishlists)}):")
+        for w in wishlists[:5]:
+            cat = f" [{w.get('category')}]" if w.get('category') else ""
+            parts.append(f"  - {w.get('title')}{cat}")
 
     if len(parts) == 1:
         return ""  # No data

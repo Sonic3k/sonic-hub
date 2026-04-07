@@ -106,6 +106,7 @@ Các action type:
 - create_todo: {{"type":"create_todo","title":"..."}}
 - create_entry: {{"type":"create_entry","entity_type":"problem","entity_id":"uuid","content":"...","entry_type":"OCCURRENCE"}}
 - create_tracking_rule: {{"type":"create_tracking_rule","entity_type":"problem","entity_id":"uuid","frequency_type":"weekly","current_limit":3,"target_limit":1,"reminder_pattern":"every_3_days","reminder_message":"..."}}
+- create_wishlist: {{"type":"create_wishlist","title":"...","description":"...","category":"tech/hobby/business/personal/creative"}}
 - mark_done: {{"type":"mark_done","entity_type":"task","id":"uuid"}}
 
 CHỈ tạo action khi user thật sự có intent. Tán gẫu bình thường thì actions = [].

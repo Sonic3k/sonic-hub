@@ -98,6 +98,20 @@ async def get_recent_entries(days: int = 7) -> list:
     return await _request("GET", "/api/entries/recent", params={"days": days}) or []
 
 
+# ─── Wishlists ───
+
+async def create_wishlist(title: str, **kwargs) -> dict | None:
+    body = {"title": title}
+    for k in ("description", "category", "projectId", "tagIds", "createdBy"):
+        if k in kwargs and kwargs[k] is not None:
+            body[k] = kwargs[k]
+    return await _request("POST", "/api/wishlists", json=body)
+
+
+async def get_wishlists(archived: bool = False) -> list:
+    return await _request("GET", "/api/wishlists", params={"archived": archived}) or []
+
+
 # ─── Tracking Rules ───
 
 async def get_active_rules() -> list:
@@ -125,6 +139,7 @@ async def get_companion_context() -> dict:
     problems = await get_problems()
     entries = await get_recent_entries(3)
     rules = await get_active_rules()
+    wishlists = await get_wishlists()
 
     # Filter relevant data
     open_tasks = [t for t in tasks if t.get("status") in ("OPEN", "IN_PROGRESS")]
@@ -139,4 +154,5 @@ async def get_companion_context() -> dict:
         "problems_active": active_problems,
         "recent_entries": entries[:10],
         "tracking_rules": rules,
+        "wishlists": wishlists,
     }
