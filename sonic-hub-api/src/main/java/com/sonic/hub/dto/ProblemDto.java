@@ -37,7 +37,10 @@ public class ProblemDto {
         private String frequencyType;
         private Integer currentLimit;
         private Integer targetLimit;
-        private String reminderPattern;
+        private Integer remindBeforeMinutes;
+        private Integer remindIntervalDays;
+        private String remindDaysOfWeek;
+        private String remindTime;
         private String reminderMessage;
     }
 }

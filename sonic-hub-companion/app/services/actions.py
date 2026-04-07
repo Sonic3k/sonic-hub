@@ -45,8 +45,11 @@ async def execute_actions(actions: list[dict], assistant_nickname: str) -> list[
                     someday=action.get("someday", False),
                     projectId=action.get("project_id"),
                     createdBy=created_by,
-                    reminderPattern=action.get("reminder_pattern"),
-                    reminderMessage=action.get("reminder_message"),
+                    remind_before_minutes=action.get("remind_before_minutes"),
+                    remind_interval_days=action.get("remind_interval_days"),
+                    remind_days_of_week=action.get("remind_days_of_week"),
+                    remind_time=action.get("remind_time"),
+                    reminder_message=action.get("reminder_message"),
                 )
                 if result:
                     last_ids["task"] = str(result.get("id"))
@@ -73,11 +76,14 @@ async def execute_actions(actions: list[dict], assistant_nickname: str) -> list[
                     note=action.get("note"),
                     projectId=action.get("project_id"),
                     createdBy=created_by,
-                    frequencyType=action.get("frequency_type"),
-                    currentLimit=action.get("current_limit"),
-                    targetLimit=action.get("target_limit"),
-                    reminderPattern=action.get("reminder_pattern"),
-                    reminderMessage=action.get("reminder_message"),
+                    frequency_type=action.get("frequency_type"),
+                    current_limit=action.get("current_limit"),
+                    target_limit=action.get("target_limit"),
+                    remind_before_minutes=action.get("remind_before_minutes"),
+                    remind_interval_days=action.get("remind_interval_days"),
+                    remind_days_of_week=action.get("remind_days_of_week"),
+                    remind_time=action.get("remind_time"),
+                    reminder_message=action.get("reminder_message"),
                 )
                 if result:
                     last_ids["problem"] = str(result.get("id"))

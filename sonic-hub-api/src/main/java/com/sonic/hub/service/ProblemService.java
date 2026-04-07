@@ -70,14 +70,18 @@ public class ProblemService {
         Problem saved = problemRepository.save(problem);
 
         // Auto-create tracking rule if tracking fields present
-        if (request.getReminderPattern() != null || request.getFrequencyType() != null) {
+        if (request.getReminderMessage() != null || request.getFrequencyType() != null
+                || request.getRemindIntervalDays() != null) {
             TrackingRule rule = TrackingRule.builder()
                     .entityType("problem")
                     .entityId(saved.getId())
                     .frequencyType(request.getFrequencyType())
                     .currentLimit(request.getCurrentLimit())
                     .targetLimit(request.getTargetLimit())
-                    .reminderPattern(request.getReminderPattern())
+                    .remindBeforeMinutes(request.getRemindBeforeMinutes())
+                    .remindIntervalDays(request.getRemindIntervalDays())
+                    .remindDaysOfWeek(request.getRemindDaysOfWeek())
+                    .remindTime(request.getRemindTime())
                     .reminderMessage(request.getReminderMessage() != null ? request.getReminderMessage() : request.getTitle())
                     .active(true)
                     .build();

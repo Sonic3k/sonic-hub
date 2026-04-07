@@ -31,7 +31,7 @@ public class TrackingRuleService {
     }
 
     public List<TrackingRuleDto.Response> getActiveWithReminders() {
-        return trackingRuleRepository.findByReminderPatternNotNullAndActiveOrderByCreatedAtDesc(true)
+        return trackingRuleRepository.findActiveWithReminders()
                 .stream().map(this::toResponse).collect(Collectors.toList());
     }
 
@@ -47,7 +47,11 @@ public class TrackingRuleService {
                 .frequencyType(request.getFrequencyType())
                 .currentLimit(request.getCurrentLimit())
                 .targetLimit(request.getTargetLimit())
-                .reminderPattern(request.getReminderPattern())
+                .remindBeforeMinutes(request.getRemindBeforeMinutes())
+                .remindAt(request.getRemindAt())
+                .remindIntervalDays(request.getRemindIntervalDays())
+                .remindDaysOfWeek(request.getRemindDaysOfWeek())
+                .remindTime(request.getRemindTime())
                 .reminderMessage(request.getReminderMessage())
                 .active(request.getActive() != null ? request.getActive() : true)
                 .build();
@@ -63,7 +67,11 @@ public class TrackingRuleService {
         if (request.getFrequencyType() != null) rule.setFrequencyType(request.getFrequencyType());
         if (request.getCurrentLimit() != null) rule.setCurrentLimit(request.getCurrentLimit());
         if (request.getTargetLimit() != null) rule.setTargetLimit(request.getTargetLimit());
-        if (request.getReminderPattern() != null) rule.setReminderPattern(request.getReminderPattern());
+        if (request.getRemindBeforeMinutes() != null) rule.setRemindBeforeMinutes(request.getRemindBeforeMinutes());
+        if (request.getRemindAt() != null) rule.setRemindAt(request.getRemindAt());
+        if (request.getRemindIntervalDays() != null) rule.setRemindIntervalDays(request.getRemindIntervalDays());
+        if (request.getRemindDaysOfWeek() != null) rule.setRemindDaysOfWeek(request.getRemindDaysOfWeek());
+        if (request.getRemindTime() != null) rule.setRemindTime(request.getRemindTime());
         if (request.getReminderMessage() != null) rule.setReminderMessage(request.getReminderMessage());
         if (request.getActive() != null) rule.setActive(request.getActive());
         if (request.getProjectId() != null) {
@@ -90,8 +98,13 @@ public class TrackingRuleService {
                 .frequencyType(r.getFrequencyType())
                 .currentLimit(r.getCurrentLimit())
                 .targetLimit(r.getTargetLimit())
-                .reminderPattern(r.getReminderPattern())
+                .remindBeforeMinutes(r.getRemindBeforeMinutes())
+                .remindAt(r.getRemindAt())
+                .remindIntervalDays(r.getRemindIntervalDays())
+                .remindDaysOfWeek(r.getRemindDaysOfWeek())
+                .remindTime(r.getRemindTime())
                 .reminderMessage(r.getReminderMessage())
+                .lastRemindedAt(r.getLastRemindedAt())
                 .active(r.getActive() != null ? r.getActive() : true)
                 .projectId(r.getProject() != null ? r.getProject().getId() : null)
                 .projectName(r.getProject() != null ? r.getProject().getName() : null)

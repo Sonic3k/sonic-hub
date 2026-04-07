@@ -16,8 +16,13 @@ public class TrackingRuleDto {
         private String frequencyType;
         private Integer currentLimit;
         private Integer targetLimit;
-        private String reminderPattern;
+        private Integer remindBeforeMinutes;
+        private LocalDateTime remindAt;
+        private Integer remindIntervalDays;
+        private String remindDaysOfWeek;
+        private String remindTime;
         private String reminderMessage;
+        private LocalDateTime lastRemindedAt;
         private boolean active;
         private UUID projectId;
         private String projectName;
@@ -34,7 +39,11 @@ public class TrackingRuleDto {
         private String frequencyType;
         private Integer currentLimit;
         private Integer targetLimit;
-        private String reminderPattern;
+        private Integer remindBeforeMinutes;
+        private LocalDateTime remindAt;
+        private Integer remindIntervalDays;
+        private String remindDaysOfWeek;
+        private String remindTime;
         private String reminderMessage;
         private Boolean active;
         private UUID projectId;

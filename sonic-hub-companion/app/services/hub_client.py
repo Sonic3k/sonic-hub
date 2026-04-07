@@ -28,7 +28,17 @@ async def create_task(title: str, **kwargs) -> dict | None:
     body = {"title": title}
     for k in ("description", "status", "priority", "dueDate", "dueDateTime",
               "duePeriod", "someday", "projectId", "tagIds", "createdBy",
-              "reminderPattern", "reminderMessage"):
+              "remindBeforeMinutes", "remindTime", "remindIntervalDays",
+              "remindDaysOfWeek", "reminderMessage"):
+        # Also handle snake_case from LLM
+        snake = k
+        for camel_key, snake_key in [("remindBeforeMinutes", "remind_before_minutes"),
+                                      ("remindIntervalDays", "remind_interval_days"),
+                                      ("remindDaysOfWeek", "remind_days_of_week"),
+                                      ("remindTime", "remind_time"),
+                                      ("reminderMessage", "reminder_message")]:
+            if k == camel_key and camel_key not in kwargs and snake_key in kwargs:
+                kwargs[camel_key] = kwargs[snake_key]
         if k in kwargs and kwargs[k] is not None:
             body[k] = kwargs[k]
     return await _request("POST", "/api/tasks", json=body)
@@ -53,7 +63,19 @@ async def create_problem(title: str, **kwargs) -> dict | None:
     body = {"title": title}
     for k in ("note", "status", "projectId", "tagIds", "createdBy",
               "frequencyType", "currentLimit", "targetLimit",
-              "reminderPattern", "reminderMessage"):
+              "remindBeforeMinutes", "remindIntervalDays",
+              "remindDaysOfWeek", "remindTime", "reminderMessage"):
+        # Handle snake_case from LLM
+        for camel_key, snake_key in [("frequencyType", "frequency_type"),
+                                      ("currentLimit", "current_limit"),
+                                      ("targetLimit", "target_limit"),
+                                      ("remindBeforeMinutes", "remind_before_minutes"),
+                                      ("remindIntervalDays", "remind_interval_days"),
+                                      ("remindDaysOfWeek", "remind_days_of_week"),
+                                      ("remindTime", "remind_time"),
+                                      ("reminderMessage", "reminder_message")]:
+            if k == camel_key and camel_key not in kwargs and snake_key in kwargs:
+                kwargs[camel_key] = kwargs[snake_key]
         if k in kwargs and kwargs[k] is not None:
             body[k] = kwargs[k]
     return await _request("POST", "/api/problems", json=body)

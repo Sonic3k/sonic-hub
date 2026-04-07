@@ -18,23 +18,34 @@ public class TrackingRule {
     private UUID id;
 
     @Column(nullable = false, length = 20)
-    private String entityType;  // "task", "problem", "todo"
+    private String entityType;
 
     @Column(nullable = false)
     private UUID entityId;
 
+    // ─── Habit tracking ───
     @Column(length = 20)
-    private String frequencyType;  // "daily", "weekly", "monthly"
+    private String frequencyType;
 
-    private Integer currentLimit;  // current allowed count per period
+    private Integer currentLimit;
+    private Integer targetLimit;
 
-    private Integer targetLimit;   // goal to reduce to
+    // ─── Reminder scheduling (flexible) ───
+    private Integer remindBeforeMinutes;     // 30 = remind 30min before entity dueDateTime
 
-    @Column(length = 50)
-    private String reminderPattern;  // "daily_morning", "every_3_days", "weekly_checkin", "before_deadline"
+    private LocalDateTime remindAt;          // one-time exact reminder
+
+    private Integer remindIntervalDays;      // every N days
+
+    private String remindDaysOfWeek;         // "1,4" = Monday,Thursday (1=Mon 7=Sun)
+
+    @Column(length = 10)
+    private String remindTime;               // "08:00" = time of day for recurring
 
     @Column(columnDefinition = "TEXT")
-    private String reminderMessage;  // specific tip/message to repeat
+    private String reminderMessage;
+
+    private LocalDateTime lastRemindedAt;    // track last remind for interval calc
 
     @Column(columnDefinition = "boolean default true")
     @Builder.Default

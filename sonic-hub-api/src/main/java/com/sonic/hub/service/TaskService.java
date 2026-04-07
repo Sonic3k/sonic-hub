@@ -75,11 +75,15 @@ public class TaskService {
         Task saved = taskRepository.save(task);
 
         // Auto-create tracking rule if reminder fields present
-        if (request.getReminderPattern() != null) {
+        if (request.getRemindBeforeMinutes() != null || request.getRemindIntervalDays() != null
+                || request.getRemindDaysOfWeek() != null) {
             TrackingRule rule = TrackingRule.builder()
                     .entityType("task")
                     .entityId(saved.getId())
-                    .reminderPattern(request.getReminderPattern())
+                    .remindBeforeMinutes(request.getRemindBeforeMinutes())
+                    .remindIntervalDays(request.getRemindIntervalDays())
+                    .remindDaysOfWeek(request.getRemindDaysOfWeek())
+                    .remindTime(request.getRemindTime())
                     .reminderMessage(request.getReminderMessage() != null ? request.getReminderMessage() : request.getTitle())
                     .active(true)
                     .build();

@@ -101,12 +101,15 @@ Trả lời PHẢI là JSON object. CHỈ trả JSON, không text khác.
 
 ### actions: hành động lên Sonic Hub (có thể rỗng [])
 Các action type:
-- create_task: {{"type":"create_task","title":"...","priority":"MEDIUM","due_date_time":"2026-04-08T22:00","description":"...","reminder_pattern":"before_deadline","reminder_message":"nội dung nhắc"}}
-  reminder_pattern options: before_deadline (30 phút trước), daily_morning (sáng hàng ngày), every_3_days, weekly_checkin
+- create_task: {{"type":"create_task","title":"...","priority":"MEDIUM","due_date_time":"2026-04-08T22:00","description":"...","remind_before_minutes":30,"reminder_message":"nội dung nhắc"}}
+  Reminder options (chọn 1 hoặc kết hợp):
+    remind_before_minutes: 30 (nhắc 30 phút trước deadline)
+    remind_interval_days: 3 (nhắc mỗi 3 ngày)
+    remind_days_of_week: "1,4" (nhắc thứ 2 và thứ 5, 1=Mon 7=Sun)
+    remind_time: "08:00" (giờ nhắc cho recurring)
 - update_task: {{"type":"update_task","id":"uuid từ context","title":"...","status":"OPEN","priority":"HIGH","due_date_time":"..."}}
 - delete_task: {{"type":"delete_task","id":"uuid từ context"}}
-- create_problem: {{"type":"create_problem","title":"...","note":"...","frequency_type":"weekly","current_limit":3,"target_limit":1,"reminder_pattern":"every_3_days","reminder_message":"..."}}
-  frequency_type + current_limit: cho habit tracking (Rockstar, trì hoãn). Không cần thì bỏ qua.
+- create_problem: {{"type":"create_problem","title":"...","note":"...","frequency_type":"weekly","current_limit":3,"target_limit":1,"remind_interval_days":7,"remind_time":"08:00","reminder_message":"..."}}
 - delete_problem: {{"type":"delete_problem","id":"uuid"}}
 - create_todo: {{"type":"create_todo","title":"..."}}
 - delete_todo: {{"type":"delete_todo","id":"uuid"}}
