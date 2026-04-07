@@ -26,12 +26,16 @@ export interface Task {
   status: TaskStatus
   priority: Priority
   dueDate?: string
+  dueDateTime?: string
+  duePeriod?: string
+  someday: boolean
   parentId?: string
   childCount: number
   projectId?: string
   projectName?: string
   tags: Tag[]
   recurringConfig?: Record<string, unknown>
+  createdBy?: string
   createdAt: string
   updatedAt: string
 }
@@ -42,10 +46,14 @@ export interface TaskRequest {
   status?: TaskStatus
   priority?: Priority
   dueDate?: string
+  dueDateTime?: string
+  duePeriod?: string
+  someday?: boolean
   parentId?: string
   projectId?: string
   tagIds?: string[]
   recurringConfig?: Record<string, unknown>
+  createdBy?: string
 }
 
 export interface MoveRequest {
@@ -78,6 +86,7 @@ export interface Problem {
   projectId?: string
   projectName?: string
   tags: Tag[]
+  createdBy?: string
   createdAt: string
   updatedAt: string
 }
@@ -88,6 +97,52 @@ export interface ProblemRequest {
   status?: ProblemStatus
   projectId?: string
   tagIds?: string[]
+  createdBy?: string
+}
+
+export type EntryType = 'NOTE' | 'OCCURRENCE' | 'PROGRESS' | 'MOOD' | 'REMINDER' | 'REMINDER_RESPONSE'
+
+export interface Entry {
+  id: string
+  entityType: string
+  entityId: string
+  content: string
+  entryType: EntryType
+  projectId?: string
+  projectName?: string
+  tags: Tag[]
+  createdBy?: string
+  createdAt: string
+}
+
+export interface TrackingRule {
+  id: string
+  entityType: string
+  entityId: string
+  frequencyType?: string
+  currentLimit?: number
+  targetLimit?: number
+  reminderPattern?: string
+  reminderMessage?: string
+  active: boolean
+  projectId?: string
+  projectName?: string
+  createdAt: string
+  updatedAt: string
+}
+
+export interface Wishlist {
+  id: string
+  title: string
+  description?: string
+  category: string
+  projectId?: string
+  projectName?: string
+  tags: Tag[]
+  archived: boolean
+  createdBy?: string
+  createdAt: string
+  updatedAt: string
 }
 
 export interface TagRequest {

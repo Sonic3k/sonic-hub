@@ -7,6 +7,8 @@ import TagsPage from './pages/TagsPage'
 import ProjectsPage from './pages/ProjectsPage'
 import TodosPage from './pages/TodosPage'
 import ProblemsPage from './pages/ProblemsPage'
+import WishlistsPage from './pages/WishlistsPage'
+import EntriesPage from './pages/EntriesPage'
 import CompanionPage from './pages/CompanionPage'
 
 const queryClient = new QueryClient({
@@ -24,6 +26,8 @@ export default function App() {
             <Route index element={<TasksPage />} />
             <Route path="todos" element={<TodosPage />} />
             <Route path="problems" element={<ProblemsPage />} />
+            <Route path="wishlists" element={<WishlistsPage />} />
+            <Route path="entries" element={<EntriesPage />} />
             <Route path="projects" element={<ProjectsPage />} />
             <Route path="tags" element={<TagsPage />} />
             <Route path="companion" element={<CompanionPage />} />

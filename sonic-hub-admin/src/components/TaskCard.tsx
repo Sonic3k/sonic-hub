@@ -79,6 +79,23 @@ export default function TaskCard({ task, depth = 0 }: Props) {
 
             <div className="flex items-center gap-1.5 mt-2 flex-wrap">
               <Badge className={STATUS_COLORS[task.status]}>{STATUS_LABELS[task.status]}</Badge>
+              {task.someday && (
+                <Badge className="bg-violet-50 text-violet-500">Someday</Badge>
+              )}
+              {task.dueDateTime && (
+                <span className="text-xs text-orange-500 font-medium">
+                  ⏰ {new Date(task.dueDateTime).toLocaleString('vi-VN', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })}
+                </span>
+              )}
+              {!task.dueDateTime && task.dueDate && (
+                <span className="text-xs text-slate-400">📅 {task.dueDate}</span>
+              )}
+              {task.duePeriod && (
+                <span className="text-xs text-blue-400">📆 {task.duePeriod}</span>
+              )}
+              {task.createdBy && (
+                <span className="text-xs text-pink-300">{task.createdBy}</span>
+              )}
               {task.childCount > 0 && (
                 <span className="text-xs text-slate-400 font-mono">{task.childCount} sub</span>
               )}
