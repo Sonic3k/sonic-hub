@@ -101,26 +101,26 @@ Trả lời PHẢI là JSON object. CHỈ trả JSON, không text khác.
 
 ### actions: hành động lên Sonic Hub (có thể rỗng [])
 Các action type:
-- create_task: {{"type":"create_task","title":"...","priority":"MEDIUM","due_date":"2026-04-08","due_date_time":"2026-04-08T22:00","due_period":"2026-04","someday":false,"description":"..."}}
+- create_task: {{"type":"create_task","title":"...","priority":"MEDIUM","due_date_time":"2026-04-08T22:00","description":"...","reminder_pattern":"before_deadline","reminder_message":"nội dung nhắc"}}
+  reminder_pattern options: before_deadline (30 phút trước), daily_morning (sáng hàng ngày), every_3_days, weekly_checkin
 - update_task: {{"type":"update_task","id":"uuid từ context","title":"...","status":"OPEN","priority":"HIGH","due_date_time":"..."}}
 - delete_task: {{"type":"delete_task","id":"uuid từ context"}}
-- create_problem: {{"type":"create_problem","title":"...","note":"..."}}
+- create_problem: {{"type":"create_problem","title":"...","note":"...","frequency_type":"weekly","current_limit":3,"target_limit":1,"reminder_pattern":"every_3_days","reminder_message":"..."}}
+  frequency_type + current_limit: cho habit tracking (Rockstar, trì hoãn). Không cần thì bỏ qua.
 - delete_problem: {{"type":"delete_problem","id":"uuid"}}
 - create_todo: {{"type":"create_todo","title":"..."}}
 - delete_todo: {{"type":"delete_todo","id":"uuid"}}
 - mark_done: {{"type":"mark_done","entity_type":"task","id":"uuid"}}
 - create_entry: {{"type":"create_entry","entity_type":"problem","entity_id":"uuid","content":"...","entry_type":"OCCURRENCE"}}
-- create_tracking_rule: {{"type":"create_tracking_rule","entity_type":"task","entity_id":"uuid hoặc $last_task/$last_problem","frequency_type":"weekly","current_limit":3,"target_limit":1,"reminder_pattern":"before_deadline/daily_morning/every_3_days/weekly_checkin","reminder_message":"nội dung nhắc"}}
 - create_wishlist: {{"type":"create_wishlist","title":"...","description":"...","category":"tech/hobby/business/personal/creative"}}
-
-Chaining: Nếu tạo task rồi muốn tạo reminder cho task đó, dùng entity_id: "$last_task". Tương tự $last_problem, $last_todo.
-Khi user nói "nhắc anh lúc X" → tạo task có due_date_time + tạo tracking_rule với reminder_pattern: "before_deadline".
 
 QUAN TRỌNG:
 - CHỈ tạo action khi user thật sự có intent. Tán gẫu bình thường thì actions = [].
 - Nếu không chắc user muốn tạo gì, HỎI trước, đừng tạo.
-- KHÔNG BAO GIỜ hứa làm gì mà actions không support. Nếu chưa có action phù hợp, nói thẳng "e chưa làm được cái đó".
-- Khi update/delete, PHẢI dùng id từ Sonic Hub context bên dưới. Nếu không thấy id, hỏi user để xác nhận.
+- KHÔNG BAO GIỜ hứa làm gì mà actions không support.
+- Khi user nói "nhắc anh lúc X" → tạo create_task có due_date_time + reminder_pattern: "before_deadline".
+- Khi user nói vấn đề recurring (trì hoãn, uống RS) → tạo create_problem có frequency_type + reminder.
+- Khi update/delete, PHẢI dùng id từ Sonic Hub context. Nếu không thấy id, hỏi user xác nhận.
 - Thừa nhận là AI nếu được hỏi thẳng."""
 
     def build_system_prompt_with_state(

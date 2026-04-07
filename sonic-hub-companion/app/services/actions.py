@@ -47,8 +47,21 @@ async def execute_actions(actions: list[dict], assistant_nickname: str) -> list[
                     createdBy=created_by,
                 )
                 if result:
-                    last_ids["task"] = str(result.get("id"))
-                    results.append(f"Created task: {action['title']} (id: {result.get('id')})")
+                    task_id = str(result.get("id"))
+                    last_ids["task"] = task_id
+                    results.append(f"Created task: {action['title']} (id: {task_id})")
+
+                    # Auto-create tracking rule if reminder fields present
+                    if action.get("reminder_pattern"):
+                        await hub_client.create_tracking_rule(
+                            entity_type="task", entity_id=task_id,
+                            reminderPattern=action["reminder_pattern"],
+                            reminderMessage=action.get("reminder_message", action["title"]),
+                            frequencyType=action.get("frequency_type"),
+                            currentLimit=action.get("current_limit"),
+                            targetLimit=action.get("target_limit"),
+                        )
+                        results.append(f"Created reminder for task: {action['reminder_pattern']}")
 
             elif action_type == "update_task":
                 kwargs = {}
@@ -73,8 +86,20 @@ async def execute_actions(actions: list[dict], assistant_nickname: str) -> list[
                     createdBy=created_by,
                 )
                 if result:
-                    last_ids["problem"] = str(result.get("id"))
-                    results.append(f"Created problem: {action['title']} (id: {result.get('id')})")
+                    problem_id = str(result.get("id"))
+                    last_ids["problem"] = problem_id
+                    results.append(f"Created problem: {action['title']} (id: {problem_id})")
+
+                    if action.get("reminder_pattern") or action.get("frequency_type"):
+                        await hub_client.create_tracking_rule(
+                            entity_type="problem", entity_id=problem_id,
+                            reminderPattern=action.get("reminder_pattern"),
+                            reminderMessage=action.get("reminder_message", action["title"]),
+                            frequencyType=action.get("frequency_type"),
+                            currentLimit=action.get("current_limit"),
+                            targetLimit=action.get("target_limit"),
+                        )
+                        results.append(f"Created tracking for problem: {action.get('reminder_pattern') or action.get('frequency_type')}")
 
             elif action_type == "create_todo":
                 result = await hub_client.create_todo(
