@@ -92,7 +92,7 @@ class ChatService:
             dynamics_text=self.memory.format_dynamics_for_prompt(dynamics),
         )
 
-        # Inject state
+        # Inject state + hub context
         state_dict = None
         if state:
             time_since = ""
@@ -113,17 +113,26 @@ class ChatService:
                 "time_since_last": time_since,
             }
 
-        system_prompt = self.llm.build_system_prompt_with_state(base_prompt, state_dict)
+        # Pull sonic-hub data for context
+        from app.services import hub_client
+        from app.services.actions import format_hub_context
+        hub_ctx = await hub_client.get_companion_context()
+        hub_context_text = format_hub_context(hub_ctx)
+
+        system_prompt = self.llm.build_system_prompt_with_state(
+            base_prompt, state_dict, hub_context=hub_context_text
+        )
 
         # Exclude user messages just saved (they're in user_messages param)
         history_before = [m for m in history if m.role != "user" or m.content not in user_messages]
-        # Keep last 20
         history_before = history_before[-20:] if len(history_before) > 20 else history_before
 
         llm_messages = self.llm.build_messages(history_before, user_messages)
 
-        # 8. Call LLM — returns list[str]
-        reply_messages = await self.llm.chat(system_prompt, llm_messages)
+        # 8. Call LLM — returns {messages: [...], actions: [...]}
+        llm_result = await self.llm.chat(system_prompt, llm_messages)
+        reply_messages = llm_result.get("messages", ["..."])
+        actions = llm_result.get("actions", [])
 
         # 9. Save EACH assistant message individually
         for reply_text in reply_messages:
@@ -137,6 +146,13 @@ class ChatService:
         )
 
         await db.commit()
+
+        # 11. Execute actions against sonic-hub-api (async, don't block response)
+        if actions:
+            from app.services.actions import execute_actions
+            asyncio.create_task(
+                execute_actions(actions, assistant.nickname)
+            )
 
         # 11. Background: extract memory
         asyncio.create_task(

@@ -82,40 +82,57 @@ class LLMService:
 {dynamics_section}
 
 ## Response Format
-Trả lời PHẢI là JSON array. Mỗi item là 1 tin nhắn riêng biệt, 1 suy nghĩ độc lập.
-KHÔNG BAO GIỜ lặp lại cùng 1 ý trong nhiều tin.
+Trả lời PHẢI là JSON object. CHỈ trả JSON, không text khác.
 
 ```json
-[
-  {{"text": "nội dung tin nhắn 1"}},
-  {{"text": "nội dung tin nhắn 2 (ý khác, nếu cần)"}}
-]
+{{
+  "messages": [
+    {{"text": "tin nhắn 1"}},
+    {{"text": "tin nhắn 2 (ý khác, nếu cần)"}}
+  ],
+  "actions": []
+}}
 ```
 
-Quy tắc:
-- Mỗi tin là 1 thought riêng, KHÔNG phải 1 đoạn bị cắt
+### messages: mỗi item là 1 suy nghĩ độc lập
+- KHÔNG lặp lại cùng 1 ý trong nhiều tin
 - 1-3 tin là bình thường. Đôi khi chỉ cần 1 tin.
-- Nhớ và reference thông tin về user tự nhiên
-- HÃY DÙNG vocabulary đặc trưng ở trên khi phù hợp
-- Thừa nhận là AI nếu được hỏi thẳng
-- CHỈ trả JSON array, không text khác"""
+- HÃY DÙNG vocabulary đặc trưng khi phù hợp
+
+### actions: hành động lên Sonic Hub (có thể rỗng [])
+Các action type:
+- create_task: {{"type":"create_task","title":"...","priority":"MEDIUM","due_date":"2026-04-08","due_date_time":"2026-04-08T22:00","due_period":"2026-04","someday":false,"description":"..."}}
+- create_problem: {{"type":"create_problem","title":"...","note":"..."}}
+- create_todo: {{"type":"create_todo","title":"..."}}
+- create_entry: {{"type":"create_entry","entity_type":"problem","entity_id":"uuid","content":"...","entry_type":"OCCURRENCE"}}
+- create_tracking_rule: {{"type":"create_tracking_rule","entity_type":"problem","entity_id":"uuid","frequency_type":"weekly","current_limit":3,"target_limit":1,"reminder_pattern":"every_3_days","reminder_message":"..."}}
+- mark_done: {{"type":"mark_done","entity_type":"task","id":"uuid"}}
+
+CHỈ tạo action khi user thật sự có intent. Tán gẫu bình thường thì actions = [].
+Nếu không chắc user muốn tạo gì, HỎI trước, đừng tạo.
+Thừa nhận là AI nếu được hỏi thẳng."""
 
     def build_system_prompt_with_state(
-        self, base_prompt: str, state: dict | None = None
+        self, base_prompt: str, state: dict | None = None,
+        hub_context: str = ""
     ) -> str:
-        """Inject conversation state into system prompt."""
-        if not state:
-            return base_prompt
+        """Inject conversation state and hub context into system prompt."""
+        result = base_prompt
 
-        state_text = "\n## Conversation State (hiện tại)"
-        if state.get("current_mood"):
-            state_text += f"\nMood: {state['current_mood']}"
-        if state.get("current_topic"):
-            state_text += f"\nĐang nói về: {state['current_topic']}"
-        if state.get("time_since_last"):
-            state_text += f"\nLần cuối chat: {state['time_since_last']}"
+        if hub_context:
+            result += f"\n\n{hub_context}"
 
-        return base_prompt + state_text
+        if state:
+            state_text = "\n\n## Conversation State (hiện tại)"
+            if state.get("current_mood"):
+                state_text += f"\nMood: {state['current_mood']}"
+            if state.get("current_topic"):
+                state_text += f"\nĐang nói về: {state['current_topic']}"
+            if state.get("time_since_last"):
+                state_text += f"\nLần cuối chat: {state['time_since_last']}"
+            result += state_text
+
+        return result
 
     def build_messages(self, history: list[Message], user_messages: list[str] | str) -> list[dict]:
         """Build message list. user_messages can be list (burst) or single string."""
@@ -131,8 +148,8 @@ Quy tắc:
 
     async def chat(
         self, system_prompt: str, messages: list[dict], use_smart: bool = False
-    ) -> list[str]:
-        """Call LLM, returns list of independent message strings."""
+    ) -> dict:
+        """Call LLM, returns {messages: [...], actions: [...]}."""
         model = self.smart_model if use_smart else self.chat_model
         try:
             response = await self.client.messages.create(
@@ -145,18 +162,34 @@ Quy tắc:
             return self._parse_response(raw)
         except Exception as e:
             logger.error(f"Claude API error: {e}")
-            return ["Ơ lỗi gì rồi, thử lại nha 😅"]
+            return {"messages": ["Ơ lỗi gì rồi, thử lại nha 😅"], "actions": []}
 
-    def _parse_response(self, raw: str) -> list[str]:
-        """Parse JSON array response, fallback to plain text."""
+    def _parse_response(self, raw: str) -> dict:
+        """Parse JSON response. Returns {messages: [...], actions: [...]}."""
         import json
         text = raw.strip()
         if text.startswith("```"):
             text = text.split("\n", 1)[1] if "\n" in text else text[3:]
         if text.endswith("```"):
             text = text[:-3].strip()
+
         try:
             data = json.loads(text)
+
+            # New format: {messages: [...], actions: [...]}
+            if isinstance(data, dict) and "messages" in data:
+                msgs = []
+                for item in data["messages"]:
+                    if isinstance(item, dict) and item.get("text"):
+                        msgs.append(item["text"].strip())
+                    elif isinstance(item, str):
+                        msgs.append(item.strip())
+                return {
+                    "messages": msgs or ["..."],
+                    "actions": data.get("actions", []),
+                }
+
+            # Legacy: plain array of messages
             if isinstance(data, list):
                 msgs = []
                 for item in data:
@@ -165,15 +198,18 @@ Quy tắc:
                     elif isinstance(item, str):
                         msgs.append(item.strip())
                 if msgs:
-                    return msgs
+                    return {"messages": msgs, "actions": []}
+
         except (json.JSONDecodeError, TypeError):
             pass
-        # Fallback: split by double newline
+
+        # Fallback: plain text
         if "\n\n" in raw:
             parts = [p.strip() for p in raw.split("\n\n") if p.strip()]
             if parts:
-                return parts
-        return [raw.strip()] if raw.strip() else ["..."]
+                return {"messages": parts, "actions": []}
+
+        return {"messages": [raw.strip()] if raw.strip() else ["..."], "actions": []}
 
     async def extract_memory(self, user_message: str, assistant_reply: str) -> dict | None:
         try:
