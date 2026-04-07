@@ -21,12 +21,16 @@ public class TaskDto {
         private TaskStatus status;
         private Priority priority;
         private LocalDate dueDate;
+        private LocalDateTime dueDateTime;
+        private String duePeriod;
+        private boolean someday;
         private UUID parentId;
         private long childCount;
         private UUID projectId;
         private String projectName;
         private Set<TagDto.Response> tags;
         private Map<String, Object> recurringConfig;
+        private String createdBy;
         private LocalDateTime createdAt;
         private LocalDateTime updatedAt;
     }
@@ -40,10 +44,14 @@ public class TaskDto {
         private TaskStatus status;
         private Priority priority;
         private LocalDate dueDate;
+        private LocalDateTime dueDateTime;
+        private String duePeriod;
+        private Boolean someday;
         private UUID parentId;
         private UUID projectId;
         private Set<UUID> tagIds;
         private Map<String, Object> recurringConfig;
+        private String createdBy;
     }
 
     @Getter @Setter @NoArgsConstructor @AllArgsConstructor

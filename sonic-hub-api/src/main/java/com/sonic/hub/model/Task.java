@@ -40,6 +40,17 @@ public class Task {
 
     private LocalDate dueDate;
 
+    private LocalDateTime dueDateTime;
+
+    @Column(length = 20)
+    private String duePeriod;  // "2026-04", "2026-Q2"
+
+    @Builder.Default
+    private boolean someday = false;
+
+    @Column(length = 50)
+    private String createdBy;  // "manual", "companion:tommy-filan"
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "parent_id")
     private Task parent;

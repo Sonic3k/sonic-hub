@@ -54,7 +54,11 @@ public class TaskService {
                 .status(request.getStatus() != null ? request.getStatus() : TaskStatus.OPEN)
                 .priority(request.getPriority() != null ? request.getPriority() : Priority.MEDIUM)
                 .dueDate(request.getDueDate())
+                .dueDateTime(request.getDueDateTime())
+                .duePeriod(request.getDuePeriod())
+                .someday(request.getSomeday() != null ? request.getSomeday() : false)
                 .recurringConfig(request.getRecurringConfig())
+                .createdBy(request.getCreatedBy())
                 .build();
 
         if (request.getParentId() != null) {
@@ -75,6 +79,9 @@ public class TaskService {
         task.setTitle(request.getTitle().trim());
         task.setDescription(request.getDescription());
         task.setDueDate(request.getDueDate());
+        task.setDueDateTime(request.getDueDateTime());
+        task.setDuePeriod(request.getDuePeriod());
+        if (request.getSomeday() != null) task.setSomeday(request.getSomeday());
         if (request.getStatus() != null) task.setStatus(request.getStatus());
         if (request.getPriority() != null) task.setPriority(request.getPriority());
         if (request.getRecurringConfig() != null) task.setRecurringConfig(request.getRecurringConfig());
@@ -149,12 +156,16 @@ public class TaskService {
                 .status(task.getStatus())
                 .priority(task.getPriority())
                 .dueDate(task.getDueDate())
+                .dueDateTime(task.getDueDateTime())
+                .duePeriod(task.getDuePeriod())
+                .someday(task.isSomeday())
                 .parentId(task.getParent() != null ? task.getParent().getId() : null)
                 .childCount(taskRepository.countByParentId(task.getId()))
                 .projectId(task.getProject() != null ? task.getProject().getId() : null)
                 .projectName(task.getProject() != null ? task.getProject().getName() : null)
                 .tags(tagResponses)
                 .recurringConfig(task.getRecurringConfig())
+                .createdBy(task.getCreatedBy())
                 .createdAt(task.getCreatedAt())
                 .updatedAt(task.getUpdatedAt())
                 .build();

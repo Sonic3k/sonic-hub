@@ -56,6 +56,7 @@ public class ProblemService {
                 .title(request.getTitle().trim())
                 .note(request.getNote())
                 .status(request.getStatus() != null ? request.getStatus() : ProblemStatus.NEW)
+                .createdBy(request.getCreatedBy())
                 .build();
         if (request.getProjectId() != null) {
             problem.setProject(projectService.findById(request.getProjectId()));
@@ -119,6 +120,7 @@ public class ProblemService {
                 .projectId(p.getProject() != null ? p.getProject().getId() : null)
                 .projectName(p.getProject() != null ? p.getProject().getName() : null)
                 .tags(tagResponses)
+                .createdBy(p.getCreatedBy())
                 .createdAt(p.getCreatedAt())
                 .updatedAt(p.getUpdatedAt())
                 .build();

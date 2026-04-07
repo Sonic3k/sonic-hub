@@ -30,6 +30,9 @@ public class Problem {
     @Builder.Default
     private ProblemStatus status = ProblemStatus.NEW;
 
+    @Column(length = 50)
+    private String createdBy;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "project_id")
     private Project project;

@@ -6,40 +6,42 @@ import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDateTime;
-import java.util.HashSet;
-import java.util.Set;
 import java.util.UUID;
 
 @Entity
-@Table(name = "todos")
+@Table(name = "tracking_rules")
 @Getter @Setter @NoArgsConstructor @AllArgsConstructor @Builder
-public class Todo {
+public class TrackingRule {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
-    @Column(nullable = false)
-    private String title;
+    @Column(nullable = false, length = 20)
+    private String entityType;  // "task", "problem", "todo"
 
-    @Builder.Default
-    private boolean done = false;
+    @Column(nullable = false)
+    private UUID entityId;
+
+    @Column(length = 20)
+    private String frequencyType;  // "daily", "weekly", "monthly"
+
+    private Integer currentLimit;  // current allowed count per period
+
+    private Integer targetLimit;   // goal to reduce to
 
     @Column(length = 50)
-    private String createdBy;
+    private String reminderPattern;  // "daily_morning", "every_3_days", "weekly_checkin", "before_deadline"
+
+    @Column(columnDefinition = "TEXT")
+    private String reminderMessage;  // specific tip/message to repeat
+
+    @Builder.Default
+    private boolean active = true;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "project_id")
     private Project project;
-
-    @ManyToMany(fetch = FetchType.LAZY)
-    @JoinTable(
-        name = "todo_tags",
-        joinColumns = @JoinColumn(name = "todo_id"),
-        inverseJoinColumns = @JoinColumn(name = "tag_id")
-    )
-    @Builder.Default
-    private Set<Tag> tags = new HashSet<>();
 
     @CreationTimestamp
     @Column(updatable = false)
