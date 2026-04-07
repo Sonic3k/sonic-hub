@@ -45,8 +45,9 @@ public class Task {
     @Column(length = 20)
     private String duePeriod;  // "2026-04", "2026-Q2"
 
+    @Column(columnDefinition = "boolean default false")
     @Builder.Default
-    private boolean someday = false;
+    private Boolean someday = false;
 
     @Column(length = 50)
     private String createdBy;  // "manual", "companion:tommy-filan"

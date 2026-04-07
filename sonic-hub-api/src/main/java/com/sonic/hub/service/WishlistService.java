@@ -109,7 +109,7 @@ public class WishlistService {
                 .projectId(w.getProject() != null ? w.getProject().getId() : null)
                 .projectName(w.getProject() != null ? w.getProject().getName() : null)
                 .tags(tagResponses)
-                .archived(w.isArchived())
+                .archived(w.getArchived() != null ? w.getArchived() : false)
                 .createdBy(w.getCreatedBy())
                 .createdAt(w.getCreatedAt())
                 .updatedAt(w.getUpdatedAt())

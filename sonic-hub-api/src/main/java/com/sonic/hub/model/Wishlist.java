@@ -42,8 +42,9 @@ public class Wishlist {
     @Builder.Default
     private Set<Tag> tags = new HashSet<>();
 
+    @Column(columnDefinition = "boolean default false")
     @Builder.Default
-    private boolean archived = false;
+    private Boolean archived = false;
 
     @Column(length = 50)
     private String createdBy;

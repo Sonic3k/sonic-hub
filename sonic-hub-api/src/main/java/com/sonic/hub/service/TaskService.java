@@ -158,7 +158,7 @@ public class TaskService {
                 .dueDate(task.getDueDate())
                 .dueDateTime(task.getDueDateTime())
                 .duePeriod(task.getDuePeriod())
-                .someday(task.isSomeday())
+                .someday(task.getSomeday() != null ? task.getSomeday() : false)
                 .parentId(task.getParent() != null ? task.getParent().getId() : null)
                 .childCount(taskRepository.countByParentId(task.getId()))
                 .projectId(task.getProject() != null ? task.getProject().getId() : null)

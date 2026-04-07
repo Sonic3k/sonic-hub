@@ -36,8 +36,9 @@ public class TrackingRule {
     @Column(columnDefinition = "TEXT")
     private String reminderMessage;  // specific tip/message to repeat
 
+    @Column(columnDefinition = "boolean default true")
     @Builder.Default
-    private boolean active = true;
+    private Boolean active = true;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "project_id")

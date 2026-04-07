@@ -92,7 +92,7 @@ public class TrackingRuleService {
                 .targetLimit(r.getTargetLimit())
                 .reminderPattern(r.getReminderPattern())
                 .reminderMessage(r.getReminderMessage())
-                .active(r.isActive())
+                .active(r.getActive() != null ? r.getActive() : true)
                 .projectId(r.getProject() != null ? r.getProject().getId() : null)
                 .projectName(r.getProject() != null ? r.getProject().getName() : null)
                 .createdAt(r.getCreatedAt())
