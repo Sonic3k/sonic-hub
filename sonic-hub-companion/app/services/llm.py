@@ -110,8 +110,11 @@ Các action type:
 - delete_todo: {{"type":"delete_todo","id":"uuid"}}
 - mark_done: {{"type":"mark_done","entity_type":"task","id":"uuid"}}
 - create_entry: {{"type":"create_entry","entity_type":"problem","entity_id":"uuid","content":"...","entry_type":"OCCURRENCE"}}
-- create_tracking_rule: {{"type":"create_tracking_rule","entity_type":"problem","entity_id":"uuid","frequency_type":"weekly","current_limit":3,"target_limit":1,"reminder_pattern":"every_3_days","reminder_message":"..."}}
+- create_tracking_rule: {{"type":"create_tracking_rule","entity_type":"task","entity_id":"uuid hoặc $last_task/$last_problem","frequency_type":"weekly","current_limit":3,"target_limit":1,"reminder_pattern":"before_deadline/daily_morning/every_3_days/weekly_checkin","reminder_message":"nội dung nhắc"}}
 - create_wishlist: {{"type":"create_wishlist","title":"...","description":"...","category":"tech/hobby/business/personal/creative"}}
+
+Chaining: Nếu tạo task rồi muốn tạo reminder cho task đó, dùng entity_id: "$last_task". Tương tự $last_problem, $last_todo.
+Khi user nói "nhắc anh lúc X" → tạo task có due_date_time + tạo tracking_rule với reminder_pattern: "before_deadline".
 
 QUAN TRỌNG:
 - CHỈ tạo action khi user thật sự có intent. Tán gẫu bình thường thì actions = [].

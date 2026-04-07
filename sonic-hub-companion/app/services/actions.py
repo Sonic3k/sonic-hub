@@ -9,14 +9,30 @@ logger = logging.getLogger(__name__)
 
 async def execute_actions(actions: list[dict], assistant_nickname: str) -> list[str]:
     """
-    Execute actions from LLM response. Returns list of result messages
-    (for logging, not sent to user).
+    Execute actions sequentially. Supports $last_task, $last_problem, $last_todo
+    references for chaining (e.g. create_task → create_tracking_rule for that task).
     """
     results = []
     created_by = f"companion:{assistant_nickname}"
 
+    # Track last created IDs for chaining
+    last_ids: dict[str, str] = {}  # "task" -> "uuid", "problem" -> "uuid", etc.
+
     for action in actions:
         action_type = action.get("type", "")
+
+        # Resolve $last_* references
+        for key in ("entity_id", "id"):
+            val = action.get(key, "")
+            if isinstance(val, str) and val.startswith("$last_"):
+                ref_type = val.replace("$last_", "")
+                resolved = last_ids.get(ref_type)
+                if resolved:
+                    action[key] = resolved
+                else:
+                    logger.warning(f"Cannot resolve {val} — no {ref_type} created yet")
+                    continue
+
         try:
             if action_type == "create_task":
                 result = await hub_client.create_task(
@@ -31,17 +47,23 @@ async def execute_actions(actions: list[dict], assistant_nickname: str) -> list[
                     createdBy=created_by,
                 )
                 if result:
+                    last_ids["task"] = str(result.get("id"))
                     results.append(f"Created task: {action['title']} (id: {result.get('id')})")
 
             elif action_type == "update_task":
-                result = await hub_client.update_task(
-                    action["id"],
-                    title=action.get("title"),
-                    status=action.get("status"),
-                    priority=action.get("priority"),
-                )
+                kwargs = {}
+                for k in ("title", "status", "priority", "description",
+                          "dueDate", "dueDateTime", "duePeriod", "someday"):
+                    api_key = k
+                    if k == "due_date": api_key = "dueDate"
+                    elif k == "due_date_time": api_key = "dueDateTime"
+                    elif k == "due_period": api_key = "duePeriod"
+                    val = action.get(k) or action.get(api_key)
+                    if val is not None:
+                        kwargs[api_key] = val
+                result = await hub_client.update_task(action["id"], **kwargs)
                 if result:
-                    results.append(f"Updated task: {action.get('id')}")
+                    results.append(f"Updated task: {action['id']}")
 
             elif action_type == "create_problem":
                 result = await hub_client.create_problem(
@@ -51,6 +73,7 @@ async def execute_actions(actions: list[dict], assistant_nickname: str) -> list[
                     createdBy=created_by,
                 )
                 if result:
+                    last_ids["problem"] = str(result.get("id"))
                     results.append(f"Created problem: {action['title']} (id: {result.get('id')})")
 
             elif action_type == "create_todo":
@@ -60,6 +83,7 @@ async def execute_actions(actions: list[dict], assistant_nickname: str) -> list[
                     createdBy=created_by,
                 )
                 if result:
+                    last_ids["todo"] = str(result.get("id"))
                     results.append(f"Created todo: {action['title']}")
 
             elif action_type == "create_entry":

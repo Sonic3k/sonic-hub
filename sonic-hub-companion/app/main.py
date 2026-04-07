@@ -14,6 +14,7 @@ logging.basicConfig(
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    import asyncio
     await init_db()
     logging.getLogger(__name__).info("sonic-hub-companion started")
 
@@ -24,7 +25,14 @@ async def lifespan(app: FastAPI):
     except Exception as e:
         logging.getLogger(__name__).warning(f"Telegram bot startup: {e}")
 
+    # Start reminder scheduler
+    from app.services.scheduler import start_scheduler
+    scheduler_task = asyncio.create_task(start_scheduler())
+
     yield
+
+    # Stop scheduler
+    scheduler_task.cancel()
 
     # Stop Telegram bots
     try:
