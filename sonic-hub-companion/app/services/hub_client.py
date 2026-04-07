@@ -42,6 +42,10 @@ async def get_tasks(status: str = None) -> list:
     return await _request("GET", "/api/tasks", params=params) or []
 
 
+async def delete_task(task_id: str) -> dict | None:
+    return await _request("DELETE", f"/api/tasks/{task_id}")
+
+
 # ─── Problems ───
 
 async def create_problem(title: str, **kwargs) -> dict | None:
@@ -61,6 +65,10 @@ async def get_problems(status: str = None) -> list:
     return await _request("GET", "/api/problems", params=params) or []
 
 
+async def delete_problem(problem_id: str) -> dict | None:
+    return await _request("DELETE", f"/api/problems/{problem_id}")
+
+
 # ─── Todos ───
 
 async def create_todo(title: str, **kwargs) -> dict | None:
@@ -77,6 +85,10 @@ async def mark_todo_done(todo_id: str) -> dict | None:
 
 async def get_todos() -> list:
     return await _request("GET", "/api/todos") or []
+
+
+async def delete_todo(todo_id: str) -> dict | None:
+    return await _request("DELETE", f"/api/todos/{todo_id}")
 
 
 # ─── Entries ───
@@ -137,21 +149,19 @@ async def get_companion_context() -> dict:
     """Pull current state from sonic-hub-api for LLM context injection."""
     tasks = await get_tasks()
     problems = await get_problems()
+    todos = await get_todos()
     entries = await get_recent_entries(3)
     rules = await get_active_rules()
     wishlists = await get_wishlists()
 
-    # Filter relevant data
     open_tasks = [t for t in tasks if t.get("status") in ("OPEN", "IN_PROGRESS")]
-    urgent_tasks = [t for t in open_tasks if t.get("priority") in ("HIGH", "URGENT")]
-    someday_tasks = [t for t in tasks if t.get("someday")]
     active_problems = [p for p in problems if p.get("status") in ("NEW", "INVESTIGATING")]
+    open_todos = [t for t in todos if not t.get("done")]
 
     return {
-        "tasks_open": len(open_tasks),
-        "tasks_urgent": urgent_tasks,
-        "tasks_someday": someday_tasks,
+        "all_open_tasks": open_tasks,
         "problems_active": active_problems,
+        "todos_open": open_todos,
         "recent_entries": entries[:10],
         "tracking_rules": rules,
         "wishlists": wishlists,

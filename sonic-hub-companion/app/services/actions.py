@@ -105,6 +105,34 @@ async def execute_actions(actions: list[dict], assistant_nickname: str) -> list[
                 if result:
                     results.append(f"Created wishlist: {action['title']} (id: {result.get('id')})")
 
+            elif action_type == "update_task":
+                kwargs = {}
+                for k in ("title", "status", "priority", "description",
+                          "dueDate", "dueDateTime", "duePeriod", "someday"):
+                    # Map snake_case from LLM to camelCase for API
+                    api_key = k
+                    if k == "due_date": api_key = "dueDate"
+                    elif k == "due_date_time": api_key = "dueDateTime"
+                    elif k == "due_period": api_key = "duePeriod"
+                    val = action.get(k) or action.get(api_key)
+                    if val is not None:
+                        kwargs[api_key] = val
+                result = await hub_client.update_task(action["id"], **kwargs)
+                if result:
+                    results.append(f"Updated task: {action['id']}")
+
+            elif action_type == "delete_task":
+                await hub_client.delete_task(action["id"])
+                results.append(f"Deleted task: {action['id']}")
+
+            elif action_type == "delete_problem":
+                await hub_client.delete_problem(action["id"])
+                results.append(f"Deleted problem: {action['id']}")
+
+            elif action_type == "delete_todo":
+                await hub_client.delete_todo(action["id"])
+                results.append(f"Deleted todo: {action['id']}")
+
             else:
                 logger.warning(f"Unknown action type: {action_type}")
 
@@ -115,37 +143,38 @@ async def execute_actions(actions: list[dict], assistant_nickname: str) -> list[
     return results
 
 
+
 def format_hub_context(ctx: dict) -> str:
-    """Format sonic-hub data for injection into LLM system prompt."""
+    """Format sonic-hub data for injection into LLM system prompt. IDs included for actions."""
     if not ctx:
         return ""
 
     parts = ["## Sonic Hub - Tình hình hiện tại"]
 
-    # Tasks
-    urgent = ctx.get("tasks_urgent", [])
-    if urgent:
-        parts.append(f"\nTasks urgent ({len(urgent)}):")
-        for t in urgent[:5]:
-            due = t.get("dueDateTime") or t.get("dueDate") or t.get("duePeriod") or "no deadline"
-            parts.append(f"  - [{t.get('priority')}] {t.get('title')} (deadline: {due})")
+    # All open tasks with IDs
+    all_open = ctx.get("all_open_tasks", [])
+    if all_open:
+        parts.append(f"\nTasks đang mở ({len(all_open)}):")
+        for t in all_open[:10]:
+            due = t.get("dueDateTime") or t.get("dueDate") or t.get("duePeriod") or ""
+            due_str = f" | deadline: {due}" if due else ""
+            someday_str = " | someday" if t.get("someday") else ""
+            source = f" | by: {t.get('createdBy')}" if t.get("createdBy") else ""
+            parts.append(f"  - [id:{t.get('id')}] [{t.get('priority')}] {t.get('title')}{due_str}{someday_str}{source}")
 
-    open_count = ctx.get("tasks_open", 0)
-    if open_count:
-        parts.append(f"\nTổng tasks đang mở: {open_count}")
-
-    someday = ctx.get("tasks_someday", [])
-    if someday:
-        parts.append(f"\nSomeday ({len(someday)}):")
-        for t in someday[:3]:
-            parts.append(f"  - {t.get('title')}")
-
-    # Problems
+    # Problems with IDs
     problems = ctx.get("problems_active", [])
     if problems:
-        parts.append(f"\nProblems đang theo dõi ({len(problems)}):")
+        parts.append(f"\nProblems ({len(problems)}):")
         for p in problems[:5]:
-            parts.append(f"  - [{p.get('status')}] {p.get('title')}")
+            parts.append(f"  - [id:{p.get('id')}] [{p.get('status')}] {p.get('title')}")
+
+    # Todos with IDs
+    todos = ctx.get("todos_open", [])
+    if todos:
+        parts.append(f"\nTodos chưa xong ({len(todos)}):")
+        for t in todos[:5]:
+            parts.append(f"  - [id:{t.get('id')}] {t.get('title')}")
 
     # Recent entries
     entries = ctx.get("recent_entries", [])
@@ -163,15 +192,15 @@ def format_hub_context(ctx: dict) -> str:
             target = f" → target {r.get('targetLimit')}" if r.get('targetLimit') else ""
             parts.append(f"  - {r.get('entityType')}: {limit}{target} (reminder: {r.get('reminderPattern', 'none')})")
 
-    # Wishlists
+    # Wishlists with IDs
     wishlists = ctx.get("wishlists", [])
     if wishlists:
         parts.append(f"\nWishlist ({len(wishlists)}):")
         for w in wishlists[:5]:
             cat = f" [{w.get('category')}]" if w.get('category') else ""
-            parts.append(f"  - {w.get('title')}{cat}")
+            parts.append(f"  - [id:{w.get('id')}] {w.get('title')}{cat}")
 
     if len(parts) == 1:
-        return ""  # No data
+        return ""
 
     return "\n".join(parts)
