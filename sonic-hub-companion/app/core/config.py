@@ -14,6 +14,9 @@ class Settings(BaseSettings):
     # Sonic Hub API
     sonic_hub_api_url: str = "http://localhost:8080"
 
+    # Timezone
+    user_timezone: str = "Asia/Ho_Chi_Minh"
+
     # Server
     port: int = 8082
 

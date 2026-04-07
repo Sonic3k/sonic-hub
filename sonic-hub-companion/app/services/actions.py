@@ -1,10 +1,20 @@
 """
 Executes actions returned by LLM against sonic-hub-api.
+LLM outputs local time → executor converts to UTC before API calls.
 """
 import logging
 from app.services import hub_client
+from app.core.tz import local_to_utc
 
 logger = logging.getLogger(__name__)
+
+
+def _convert_datetimes(action: dict) -> dict:
+    """Convert local datetime fields to UTC."""
+    for key in ("due_date_time", "dueDateTime", "remind_at", "remindAt"):
+        if key in action and action[key]:
+            action[key] = local_to_utc(action[key])
+    return action
 
 
 async def execute_actions(actions: list[dict], assistant_nickname: str) -> list[str]:
@@ -34,6 +44,9 @@ async def execute_actions(actions: list[dict], assistant_nickname: str) -> list[
                     continue
 
         try:
+            # Convert local datetimes to UTC
+            action = _convert_datetimes(action)
+
             if action_type == "create_task":
                 result = await hub_client.create_task(
                     title=action["title"],
@@ -183,6 +196,8 @@ async def execute_actions(actions: list[dict], assistant_nickname: str) -> list[
 
 def format_hub_context(ctx: dict) -> str:
     """Format sonic-hub data for injection into LLM system prompt. IDs included for actions."""
+    from app.core.tz import utc_to_local_display
+
     if not ctx:
         return ""
 
@@ -193,7 +208,8 @@ def format_hub_context(ctx: dict) -> str:
     if all_open:
         parts.append(f"\nTasks đang mở ({len(all_open)}):")
         for t in all_open[:10]:
-            due = t.get("dueDateTime") or t.get("dueDate") or t.get("duePeriod") or ""
+            due_raw = t.get("dueDateTime") or t.get("dueDate") or t.get("duePeriod") or ""
+            due = utc_to_local_display(due_raw) if t.get("dueDateTime") else due_raw
             due_str = f" | deadline: {due}" if due else ""
             someday_str = " | someday" if t.get("someday") else ""
             source = f" | by: {t.get('createdBy')}" if t.get("createdBy") else ""

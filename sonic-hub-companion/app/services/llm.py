@@ -121,8 +121,9 @@ QUAN TRỌNG:
 - CHỈ tạo action khi user thật sự có intent. Tán gẫu bình thường thì actions = [].
 - Nếu không chắc user muốn tạo gì, HỎI trước, đừng tạo.
 - KHÔNG BAO GIỜ hứa làm gì mà actions không support.
-- Khi user nói "nhắc anh lúc X" → tạo create_task có due_date_time + reminder_pattern: "before_deadline".
-- Khi user nói vấn đề recurring (trì hoãn, uống RS) → tạo create_problem có frequency_type + reminder.
+- Khi user nói "nhắc anh lúc X" → tạo create_task có due_date_time + remind_before_minutes: 30.
+- Khi user nói vấn đề recurring → tạo create_problem có frequency_type + remind_interval_days.
+- due_date_time dùng GIỜ ĐỊA PHƯƠNG (Việt Nam). Hệ thống tự convert sang UTC.
 - Khi update/delete, PHẢI dùng id từ Sonic Hub context. Nếu không thấy id, hỏi user xác nhận.
 - Thừa nhận là AI nếu được hỏi thẳng."""
 
@@ -130,8 +131,12 @@ QUAN TRỌNG:
         self, base_prompt: str, state: dict | None = None,
         hub_context: str = ""
     ) -> str:
-        """Inject conversation state and hub context into system prompt."""
+        """Inject conversation state, hub context, and current time into system prompt."""
+        from app.core.tz import now_local_display
         result = base_prompt
+
+        # Always inject current local time
+        result += f"\n\n## Thời gian hiện tại: {now_local_display()}"
 
         if hub_context:
             result += f"\n\n{hub_context}"
