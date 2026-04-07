@@ -669,6 +669,60 @@ async def update_chat_config(assistant_id: str, request: dict, db: AsyncSession 
     return {"status": "updated"}
 
 
+# ─── Debug ───
+
+@router.get("/debug/integration")
+async def debug_integration():
+    """Test sonic-hub-api connectivity and companion config."""
+    from app.services import hub_client
+    from app.core.config import get_settings
+
+    settings = get_settings()
+    results = {
+        "sonic_hub_api_url": settings.sonic_hub_api_url,
+        "claude_chat_model": settings.claude_chat_model,
+        "claude_smart_model": settings.claude_smart_model,
+    }
+
+    # Test API connectivity
+    try:
+        tasks = await hub_client.get_tasks()
+        results["api_reachable"] = True
+        results["tasks_count"] = len(tasks) if tasks else 0
+    except Exception as e:
+        results["api_reachable"] = False
+        results["api_error"] = str(e)
+
+    # Test context pull
+    try:
+        ctx = await hub_client.get_companion_context()
+        results["context_keys"] = list(ctx.keys()) if ctx else []
+    except Exception as e:
+        results["context_error"] = str(e)
+
+    return results
+
+
+@router.post("/debug/test-llm")
+async def debug_test_llm(message: str = "tối nay 10h phải trả dây sạc"):
+    """Test LLM response format with a sample message."""
+    from app.services.llm import LLMService
+    llm = LLMService()
+
+    system = """Bạn là Tommy. Trả lời PHẢI là JSON:
+{"messages": [{"text": "..."}], "actions": []}
+Nếu user muốn tạo task thì thêm action create_task."""
+
+    result = await llm.chat(system, [{"role": "user", "content": message}])
+    return {
+        "input": message,
+        "raw_result": result,
+        "has_messages": "messages" in result,
+        "has_actions": "actions" in result,
+        "actions_count": len(result.get("actions", [])),
+    }
+
+
 # ─── Health ───
 
 @router.get("/actuator/health", response_model=HealthResponse)

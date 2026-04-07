@@ -134,6 +134,10 @@ class ChatService:
         reply_messages = llm_result.get("messages", ["..."])
         actions = llm_result.get("actions", [])
 
+        logger.info(f"LLM result: {len(reply_messages)} messages, {len(actions)} actions")
+        if actions:
+            logger.info(f"Actions: {actions}")
+
         # 9. Save EACH assistant message individually
         for reply_text in reply_messages:
             await self.memory.save_message(
