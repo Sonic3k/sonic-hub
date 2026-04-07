@@ -52,6 +52,8 @@ public class TaskDto {
         private Set<UUID> tagIds;
         private Map<String, Object> recurringConfig;
         private String createdBy;
+        private String reminderPattern;
+        private String reminderMessage;
     }
 
     @Getter @Setter @NoArgsConstructor @AllArgsConstructor

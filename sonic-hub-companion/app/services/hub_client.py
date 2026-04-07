@@ -27,7 +27,8 @@ async def _request(method: str, path: str, json: dict = None, params: dict = Non
 async def create_task(title: str, **kwargs) -> dict | None:
     body = {"title": title}
     for k in ("description", "status", "priority", "dueDate", "dueDateTime",
-              "duePeriod", "someday", "projectId", "tagIds", "createdBy"):
+              "duePeriod", "someday", "projectId", "tagIds", "createdBy",
+              "reminderPattern", "reminderMessage"):
         if k in kwargs and kwargs[k] is not None:
             body[k] = kwargs[k]
     return await _request("POST", "/api/tasks", json=body)
@@ -50,7 +51,9 @@ async def delete_task(task_id: str) -> dict | None:
 
 async def create_problem(title: str, **kwargs) -> dict | None:
     body = {"title": title}
-    for k in ("note", "status", "projectId", "tagIds", "createdBy"):
+    for k in ("note", "status", "projectId", "tagIds", "createdBy",
+              "frequencyType", "currentLimit", "targetLimit",
+              "reminderPattern", "reminderMessage"):
         if k in kwargs and kwargs[k] is not None:
             body[k] = kwargs[k]
     return await _request("POST", "/api/problems", json=body)

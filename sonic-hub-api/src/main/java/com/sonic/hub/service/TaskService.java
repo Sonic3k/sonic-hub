@@ -7,6 +7,7 @@ import com.sonic.hub.exception.ResourceNotFoundException;
 import com.sonic.hub.model.*;
 import com.sonic.hub.repository.TagRepository;
 import com.sonic.hub.repository.TaskRepository;
+import com.sonic.hub.repository.TrackingRuleRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -23,6 +24,7 @@ public class TaskService {
     private final TagRepository tagRepository;
     private final TagService tagService;
     private final ProjectService projectService;
+    private final TrackingRuleRepository trackingRuleRepository;
 
     public List<TaskDto.Response> getRootTasks(TaskStatus status) {
         List<Task> tasks = (status != null)
@@ -70,7 +72,21 @@ public class TaskService {
         if (request.getTagIds() != null && !request.getTagIds().isEmpty()) {
             task.setTags(tagRepository.findAllByIdIn(request.getTagIds()));
         }
-        return toResponse(taskRepository.save(task));
+        Task saved = taskRepository.save(task);
+
+        // Auto-create tracking rule if reminder fields present
+        if (request.getReminderPattern() != null) {
+            TrackingRule rule = TrackingRule.builder()
+                    .entityType("task")
+                    .entityId(saved.getId())
+                    .reminderPattern(request.getReminderPattern())
+                    .reminderMessage(request.getReminderMessage() != null ? request.getReminderMessage() : request.getTitle())
+                    .active(true)
+                    .build();
+            trackingRuleRepository.save(rule);
+        }
+
+        return toResponse(saved);
     }
 
     @Transactional

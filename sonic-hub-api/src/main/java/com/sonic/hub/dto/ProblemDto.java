@@ -34,5 +34,10 @@ public class ProblemDto {
         private UUID projectId;
         private Set<UUID> tagIds;
         private String createdBy;
+        private String frequencyType;
+        private Integer currentLimit;
+        private Integer targetLimit;
+        private String reminderPattern;
+        private String reminderMessage;
     }
 }

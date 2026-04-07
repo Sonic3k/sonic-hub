@@ -6,8 +6,10 @@ import com.sonic.hub.exception.ResourceNotFoundException;
 import com.sonic.hub.model.Problem;
 import com.sonic.hub.model.ProblemStatus;
 import com.sonic.hub.model.Tag;
+import com.sonic.hub.model.TrackingRule;
 import com.sonic.hub.repository.ProblemRepository;
 import com.sonic.hub.repository.TagRepository;
+import com.sonic.hub.repository.TrackingRuleRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -26,6 +28,7 @@ public class ProblemService {
     private final TagRepository tagRepository;
     private final TagService tagService;
     private final ProjectService projectService;
+    private final TrackingRuleRepository trackingRuleRepository;
 
     public List<ProblemDto.Response> getAll(ProblemStatus status) {
         if (status != null) {
@@ -64,7 +67,24 @@ public class ProblemService {
         if (request.getTagIds() != null && !request.getTagIds().isEmpty()) {
             problem.setTags(tagRepository.findAllByIdIn(request.getTagIds()));
         }
-        return toResponse(problemRepository.save(problem));
+        Problem saved = problemRepository.save(problem);
+
+        // Auto-create tracking rule if tracking fields present
+        if (request.getReminderPattern() != null || request.getFrequencyType() != null) {
+            TrackingRule rule = TrackingRule.builder()
+                    .entityType("problem")
+                    .entityId(saved.getId())
+                    .frequencyType(request.getFrequencyType())
+                    .currentLimit(request.getCurrentLimit())
+                    .targetLimit(request.getTargetLimit())
+                    .reminderPattern(request.getReminderPattern())
+                    .reminderMessage(request.getReminderMessage() != null ? request.getReminderMessage() : request.getTitle())
+                    .active(true)
+                    .build();
+            trackingRuleRepository.save(rule);
+        }
+
+        return toResponse(saved);
     }
 
     @Transactional
