@@ -808,6 +808,7 @@ function MemoryTab({ assistantId }: { assistantId: string }) {
 // ─── Conversations Tab ───
 
 function ConversationsTab({ assistantId }: { assistantId: string }) {
+  const qc = useQueryClient()
   const [openConv, setOpenConv] = useState<string | null>(null)
 
   const { data: conversations = [] } = useQuery<Conversation[]>({
