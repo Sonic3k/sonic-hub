@@ -756,14 +756,18 @@ async def debug_integration():
     # Test Together API if key set
     if settings.together_api_key:
         try:
-            from app.services.providers import get_provider
-            provider = get_provider("together")
-            test_result = await provider.chat("Reply 'ok'", [{"role": "user", "content": "test"}])
+            from openai import AsyncOpenAI
+            client = AsyncOpenAI(api_key=settings.together_api_key, base_url="https://api.together.xyz/v1")
+            resp = await client.chat.completions.create(
+                model="meta-llama/Meta-Llama-3.1-70B-Instruct-Turbo",
+                max_tokens=20,
+                messages=[{"role": "user", "content": "say ok"}],
+            )
             results["together_reachable"] = True
-            results["together_test"] = test_result.get("messages", [])[:1]
+            results["together_raw"] = resp.choices[0].message.content[:100]
         except Exception as e:
             results["together_reachable"] = False
-            results["together_error"] = str(e)
+            results["together_error"] = f"{type(e).__name__}: {e}"
 
     # Show assistant LLM configs
     try:

@@ -86,7 +86,7 @@ class TogetherProvider(LLMProvider):
             raw = response.choices[0].message.content.strip()
             return _parse_response(raw)
         except Exception as e:
-            logger.error(f"Together API error ({model}): {e}")
+            logger.error(f"Together API error ({model}): {type(e).__name__}: {e}")
             return {"messages": ["Lỗi rồi, thử lại nha 😅"], "actions": []}
 
 
