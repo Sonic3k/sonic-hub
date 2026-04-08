@@ -29,6 +29,10 @@ PROVIDER_MODELS = {
         {"id": "gpt-4o", "name": "GPT-4o"},
         {"id": "gpt-4o-mini", "name": "GPT-4o Mini (fast, cheap)"},
     ],
+    "deepseek": [
+        {"id": "deepseek-chat", "name": "DeepSeek V3 Chat (rẻ nhất)"},
+        {"id": "deepseek-reasoner", "name": "DeepSeek R1 Reasoner (thinking)"},
+    ],
 }
 
 
@@ -112,6 +116,31 @@ class OpenAIProvider(LLMProvider):
             return {"messages": ["Lỗi rồi, thử lại nha 😅"], "actions": []}
 
 
+class DeepSeekProvider(LLMProvider):
+    def __init__(self):
+        settings = get_settings()
+        self.client = AsyncOpenAI(
+            api_key=settings.deepseek_api_key,
+            base_url="https://api.deepseek.com",
+        )
+        self.default_model = "deepseek-chat"
+
+    async def chat(self, system_prompt: str, messages: list[dict], model: str = None) -> dict:
+        model = model or self.default_model
+        try:
+            oai_messages = [{"role": "system", "content": system_prompt}] + messages
+            response = await self.client.chat.completions.create(
+                model=model,
+                max_tokens=1024,
+                messages=oai_messages,
+            )
+            raw = response.choices[0].message.content.strip()
+            return _parse_response(raw)
+        except Exception as e:
+            logger.error(f"DeepSeek API error ({model}): {type(e).__name__}: {e}")
+            return {"messages": ["Lỗi rồi, thử lại nha 😅"], "actions": []}
+
+
 # ─── Provider factory ───
 
 _providers: dict[str, LLMProvider] = {}
@@ -126,6 +155,8 @@ def get_provider(provider_name: str) -> LLMProvider:
             _providers[provider_name] = TogetherProvider()
         elif provider_name == "openai":
             _providers[provider_name] = OpenAIProvider()
+        elif provider_name == "deepseek":
+            _providers[provider_name] = DeepSeekProvider()
         else:
             logger.warning(f"Unknown provider '{provider_name}', falling back to claude")
             _providers[provider_name] = ClaudeProvider()

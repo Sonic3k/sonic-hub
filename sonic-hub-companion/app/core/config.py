@@ -17,6 +17,9 @@ class Settings(BaseSettings):
     # OpenAI
     openai_api_key: str = ""
 
+    # DeepSeek
+    deepseek_api_key: str = ""
+
     # Sonic Hub API
     sonic_hub_api_url: str = "http://localhost:8080"
 
