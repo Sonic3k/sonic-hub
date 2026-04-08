@@ -814,21 +814,6 @@ async def debug_integration():
             results["deepseek_reachable"] = False
             results["deepseek_error"] = f"{type(e).__name__}: {e}"
 
-    # Test direct task creation (bypass LLM)
-    try:
-        test_task = await hub_client.create_task(
-            title="[TEST] Debug task - delete me",
-            priority="LOW",
-            created_by="debug-test",
-        )
-        if test_task:
-            results["task_creation"] = "SUCCESS"
-            results["task_created_id"] = test_task.get("id")
-        else:
-            results["task_creation"] = "FAILED - returned None (check companion logs)"
-    except Exception as e:
-        results["task_creation"] = f"ERROR: {type(e).__name__}: {e}"
-
     # Show assistant LLM configs
     try:
         async with async_session() as db:
