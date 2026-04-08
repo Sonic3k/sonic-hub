@@ -212,7 +212,8 @@ FOLLOW_UP_PROMPT = """Bạn là {nickname}. {personality}
 Dưới đây là danh sách tasks đang mở của user. Hãy lên LỊCH HỎI THĂM cho hôm nay.
 
 Nguyên tắc:
-- Task quan trọng/quá hạn → nên hỏi, chọn giờ phù hợp
+- Task có "đã nhắc hôm nay" hoặc "có reminder tự động" gần deadline → SKIP, đừng hỏi thăm
+- Task quan trọng/quá hạn, chưa có reminder → nên hỏi
 - Task nhỏ (mua đồ lặt vặt) → hỏi 1 lần hoặc không cần
 - Đã hỏi nhiều lần (3+) mà chưa done → giảm tần suất, đừng spam
 - Task mới tạo hôm nay → chưa cần hỏi
@@ -268,6 +269,14 @@ async def _analyze_follow_ups(local_now):
         return
 
     entries = await hub_client.get_recent_entries(days=30)
+    rules = await hub_client.get_reminder_rules()
+    today_str = local_now.strftime("%Y-%m-%d")
+
+    # Build reminder lookup: task_id → has reminder
+    reminder_task_ids = set()
+    for rule in (rules or []):
+        if rule.get("entityType") == "task":
+            reminder_task_ids.add(str(rule.get("entityId")))
 
     for assistant in enabled:
         if not bot_manager.bots.get(str(assistant.id)):
@@ -280,13 +289,24 @@ async def _analyze_follow_ups(local_now):
             follow_ups = [e for e in entries
                          if str(e.get("entityId")) == task_id
                          and e.get("entryType") == "FOLLOW_UP"]
+            reminders_today = [e for e in entries
+                              if str(e.get("entityId")) == task_id
+                              and e.get("entryType") == "REMINDER"
+                              and e.get("createdAt", "").startswith(today_str)]
 
             due_display = utc_to_local_display(task.get("dueDateTime")) if task.get("dueDateTime") else "không có deadline"
             last_fu = utc_to_local_display(follow_ups[0].get("createdAt")) if follow_ups else "chưa hỏi"
 
+            flags = []
+            if task_id in reminder_task_ids:
+                flags.append("có reminder tự động")
+            if reminders_today:
+                flags.append("đã nhắc hôm nay")
+            flags_str = f" | {', '.join(flags)}" if flags else ""
+
             task_lines.append(
                 f"- [id:{task_id}] [{task.get('priority')}] {task.get('title')} "
-                f"| deadline: {due_display} | đã hỏi: {len(follow_ups)} lần | lần cuối: {last_fu}"
+                f"| deadline: {due_display} | đã hỏi: {len(follow_ups)} lần | lần cuối: {last_fu}{flags_str}"
             )
 
         # Time window
