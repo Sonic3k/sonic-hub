@@ -202,48 +202,56 @@ Trả JSON: {{"messages": [{{"text": "..."}}], "actions": []}}"""
             logger.error(f"Failed to send reminder: {e}")
 
 
-# ─── Follow-up check (2x/day: 9h, 20h local) ───
+# ─── Follow-up system: Analyze (2x/day) + Execute (every 60s) ───
+
+# In-memory queue: [{task_id, message, send_at (naive local), assistant_id}]
+_follow_up_queue: list[dict] = []
 
 FOLLOW_UP_PROMPT = """Bạn là {nickname}. {personality}
 
-Dưới đây là danh sách tasks đang mở của user. Hãy quyết định task nào cần HỎI THĂM.
+Dưới đây là danh sách tasks đang mở của user. Hãy lên LỊCH HỎI THĂM cho hôm nay.
 
 Nguyên tắc:
-- Task quan trọng/quá hạn → nên hỏi
+- Task quan trọng/quá hạn → nên hỏi, chọn giờ phù hợp
 - Task nhỏ (mua đồ lặt vặt) → hỏi 1 lần hoặc không cần
 - Đã hỏi nhiều lần (3+) mà chưa done → giảm tần suất, đừng spam
 - Task mới tạo hôm nay → chưa cần hỏi
+- Chọn giờ hỏi tự nhiên (đừng hỏi lúc ngủ, đừng dồn hết 1 lúc)
 - Viết tin nhắn tự nhiên, đúng tính cách, ngắn gọn
 
 Thời gian hiện tại: {now}
+Khung giờ còn lại hôm nay: {time_window}
 
 Tasks:
 {tasks_context}
 
-Trả JSON:
-{{"follow_ups": [{{"task_id": "uuid", "message": "tin nhắn hỏi thăm"}}]}}
-Nếu không cần hỏi task nào, trả: {{"follow_ups": []}}"""
+Trả JSON (CHỈ JSON, không text khác):
+{{"follow_ups": [{{"task_id": "uuid", "message": "tin nhắn hỏi thăm", "send_at": "HH:MM"}}]}}
+Nếu không cần hỏi task nào hôm nay: {{"follow_ups": []}}"""
 
 
 async def check_follow_ups():
-    """Run at 9h and 20h local. LLM decides which tasks to follow up."""
+    """Called every 60s. Handles both analyze + execute."""
     local_now = now_local()
     hour = local_now.hour
     minute = local_now.minute
 
-    # Only trigger at 9:00-9:04 and 20:00-20:04
-    if not ((hour == 9 and minute < 5) or (hour == 20 and minute < 5)):
-        return
+    # Phase 1: Analyze at 9:00 and 20:00
+    if (hour == 9 or hour == 20) and minute < 5:
+        dedup_key = f"followup-analyze:{local_now.strftime('%Y-%m-%d')}:{hour}"
+        if dedup_key not in _reminded:
+            _reminded.add(dedup_key)
+            await _analyze_follow_ups(local_now)
 
-    dedup_key = f"followup:{local_now.strftime('%Y-%m-%d')}:{hour}"
-    if dedup_key in _reminded:
-        return
-    _reminded.add(dedup_key)
+    # Phase 2: Execute queued follow-ups
+    await _execute_follow_ups(local_now)
 
-    logger.info(f"Follow-up check triggered at {hour}:00")
+
+async def _analyze_follow_ups(local_now):
+    """LLM analyzes tasks → schedules follow-ups for the day."""
+    logger.info(f"Follow-up analysis triggered at {local_now.strftime('%H:%M')}")
 
     from app.services.telegram import bot_manager
-
     if not bot_manager.bots:
         return
 
@@ -254,22 +262,18 @@ async def check_follow_ups():
     if not enabled:
         return
 
-    # Get all open tasks
     tasks = await hub_client.get_tasks()
     open_tasks = [t for t in (tasks or []) if t.get("status") not in ("DONE", "CLOSED")]
-
     if not open_tasks:
         return
 
-    # Get recent entries for follow-up history
     entries = await hub_client.get_recent_entries(days=30)
 
     for assistant in enabled:
-        bot_app = bot_manager.bots.get(str(assistant.id))
-        if not bot_app:
+        if not bot_manager.bots.get(str(assistant.id)):
             continue
 
-        # Build context per task
+        # Build context
         task_lines = []
         for task in open_tasks:
             task_id = str(task.get("id"))
@@ -285,75 +289,105 @@ async def check_follow_ups():
                 f"| deadline: {due_display} | đã hỏi: {len(follow_ups)} lần | lần cuối: {last_fu}"
             )
 
-        tasks_context = "\n".join(task_lines)
+        # Time window
+        hour = local_now.hour
+        if hour <= 12:
+            time_window = "9:00 - 22:00"
+        else:
+            time_window = f"{hour}:00 - 22:00"
 
-        # Build prompt
         async with async_session() as db:
             personality = await memory_service.get_active_personality(db, assistant.id)
 
-        personality_text = memory_service.format_personality_for_prompt(personality)
-
         prompt = FOLLOW_UP_PROMPT.format(
             nickname=assistant.nickname,
-            personality=personality_text,
+            personality=memory_service.format_personality_for_prompt(personality),
             now=local_now.strftime("%Y-%m-%d %H:%M (%A)"),
-            tasks_context=tasks_context,
+            time_window=time_window,
+            tasks_context="\n".join(task_lines),
         )
 
-        # Call LLM — uses assistant's configured provider
-        import json
         result = await llm_service.chat(
             prompt,
-            [{"role": "user", "content": "(system: follow-up check)"}],
+            [{"role": "user", "content": "(system: follow-up analysis)"}],
             provider_name=assistant.llm_provider or "claude",
             model=assistant.llm_model,
         )
 
-        # Parse follow_ups from response
-        follow_ups_to_send = []
+        # Parse scheduled follow-ups
+        import json
+        scheduled = []
         raw_messages = result.get("messages", [])
-
-        # Try to extract JSON from first message
         for msg in raw_messages:
             try:
                 data = json.loads(msg) if isinstance(msg, str) else msg
                 if isinstance(data, dict) and "follow_ups" in data:
-                    follow_ups_to_send = data["follow_ups"]
+                    scheduled = data["follow_ups"]
                     break
             except (json.JSONDecodeError, TypeError):
                 continue
 
-        # Also check actions format (some models return differently)
-        if not follow_ups_to_send and result.get("actions"):
-            for action in result["actions"]:
-                if action.get("type") == "follow_up":
-                    follow_ups_to_send.append({
-                        "task_id": action.get("task_id"),
-                        "message": action.get("message"),
-                    })
+        # Add to queue
+        today = local_now.strftime("%Y-%m-%d")
+        for fu in scheduled:
+            send_at_str = fu.get("send_at", "")
+            if not send_at_str or not fu.get("task_id") or not fu.get("message"):
+                continue
+            _follow_up_queue.append({
+                "task_id": fu["task_id"],
+                "message": fu["message"],
+                "send_at": f"{today}T{send_at_str}:00",
+                "assistant_id": str(assistant.id),
+            })
 
-        if not follow_ups_to_send:
-            logger.info(f"Follow-up: LLM decided no tasks need follow-up")
-            return
+        logger.info(f"Follow-up: scheduled {len(scheduled)} follow-ups for today")
 
-        # Send messages + create entries
-        owner_id = assistant.telegram_owner_id
-        for fu in follow_ups_to_send:
-            msg = fu.get("message", "")
-            task_id = fu.get("task_id", "")
-            if not msg or not task_id:
+
+async def _execute_follow_ups(local_now):
+    """Check queue, send any follow-ups that are due."""
+    if not _follow_up_queue:
+        return
+
+    from app.services.telegram import bot_manager
+    now_str = local_now.strftime("%Y-%m-%dT%H:%M")
+
+    sent = []
+    for i, fu in enumerate(_follow_up_queue):
+        send_at = fu.get("send_at", "")[:16]  # "2026-04-08T11:00"
+        if send_at <= now_str:
+            assistant_id = fu["assistant_id"]
+            bot_app = bot_manager.bots.get(assistant_id)
+            if not bot_app:
+                sent.append(i)
+                continue
+
+            # Get assistant for owner_id
+            async with async_session() as db:
+                assistant = await memory_service.get_assistant_by_id(db, assistant_id)
+
+            if not assistant or not assistant.telegram_owner_id:
+                sent.append(i)
                 continue
 
             try:
-                await bot_app.bot.send_message(chat_id=owner_id, text=msg)
-                logger.info(f"Follow-up sent: {msg[:50]}...")
+                await bot_app.bot.send_message(
+                    chat_id=assistant.telegram_owner_id,
+                    text=fu["message"],
+                )
+                logger.info(f"Follow-up sent: {fu['message'][:50]}...")
 
-                # Record follow-up as entry
+                # Record as FOLLOW_UP entry
                 await hub_client.create_entry(
                     entity_type="task",
-                    entity_id=task_id,
-                    content=msg,
+                    entity_id=fu["task_id"],
+                    content=fu["message"],
                     entry_type="FOLLOW_UP",
                 )
             except Exception as e:
                 logger.error(f"Failed to send follow-up: {e}")
+
+            sent.append(i)
+
+    # Remove sent items (reverse to preserve indices)
+    for i in sorted(sent, reverse=True):
+        _follow_up_queue.pop(i)
