@@ -150,11 +150,10 @@ def _add_minutes(time_str: str, minutes: int) -> str:
 
 
 async def _send_reminder(rule: dict, context: str):
-    """Generate natural message via LLM and send to all enabled Telegram bots."""
+    """Generate natural message via LLM and send via the correct assistant."""
     from app.services.telegram import bot_manager
 
     if not bot_manager.bots:
-        logger.warning("No active Telegram bots for reminder")
         return
 
     async with async_session() as db:
@@ -164,20 +163,36 @@ async def _send_reminder(rule: dict, context: str):
     if not enabled:
         return
 
+    # Find which assistant should handle this reminder
+    # Match task's createdBy (e.g. "companion:Tommy Filan") with assistant nickname
+    entity_id = rule.get("entityId")
+    target_assistant = None
+
+    if entity_id:
+        tasks = await hub_client.get_tasks()
+        for t in (tasks or []):
+            if str(t.get("id")) == str(entity_id):
+                created_by = t.get("createdBy", "")
+                for a in enabled:
+                    if a.nickname and a.nickname.lower() in created_by.lower():
+                        target_assistant = a
+                        break
+                break
+
+    # Fallback: first enabled assistant
+    if not target_assistant:
+        target_assistant = enabled[0]
+
+    bot_app = bot_manager.bots.get(str(target_assistant.id))
+    if not bot_app:
+        return
+
     message = rule.get("reminderMessage", "")
 
-    for assistant in enabled:
-        bot_app = bot_manager.bots.get(str(assistant.id))
-        if not bot_app:
-            continue
+    async with async_session() as db:
+        personality = await memory_service.get_active_personality(db, target_assistant.id)
 
-        # Generate natural message
-        async with async_session() as db:
-            personality = await memory_service.get_active_personality(db, assistant.id)
-
-        personality_text = memory_service.format_personality_for_prompt(personality)
-
-        prompt = f"""Bạn là {assistant.nickname}. {personality_text}
+    prompt = f"""Bạn là {target_assistant.nickname}. {memory_service.format_personality_for_prompt(personality)}
 
 Bạn cần NHẮC user 1 việc. Viết 1 tin nhắn tự nhiên, ngắn gọn, đúng tính cách.
 Nội dung cần nhắc: {message}
@@ -185,21 +200,20 @@ Context: {context}
 
 Trả JSON: {{"messages": [{{"text": "..."}}], "actions": []}}"""
 
-        result = await llm_service.chat(
-            prompt,
-            [{"role": "user", "content": f"(system reminder: {message})"}],
-            provider_name=assistant.llm_provider or "claude",
-            model=assistant.llm_model,
-        )
-        msgs = result.get("messages", [f"a ơi nhớ {message} nha ạ :)"])
+    result = await llm_service.chat(
+        prompt,
+        [{"role": "user", "content": f"(system reminder: {message})"}],
+        provider_name=target_assistant.llm_provider or "claude",
+        model=target_assistant.llm_model,
+    )
+    msgs = result.get("messages", [message or "nhắc việc nè"])
 
-        owner_id = assistant.telegram_owner_id
-        try:
-            for msg in msgs[:2]:
-                await bot_app.bot.send_message(chat_id=owner_id, text=msg)
-            logger.info(f"Reminder sent via {assistant.nickname}: {message}")
-        except Exception as e:
-            logger.error(f"Failed to send reminder: {e}")
+    try:
+        for msg in msgs[:2]:
+            await bot_app.bot.send_message(chat_id=target_assistant.telegram_owner_id, text=msg)
+        logger.info(f"Reminder sent via {target_assistant.nickname}: {message}")
+    except Exception as e:
+        logger.error(f"Failed to send reminder: {e}")
 
 
 # ─── Daily Interaction System: Plan (2x/day) + Execute (every 60s) ───
@@ -209,7 +223,7 @@ _interaction_queue: list[dict] = []
 
 PLAN_PROMPT = """Bạn là {nickname}. {personality}
 
-Hãy lên KẾ HOẠCH TƯƠNG TÁC với user cho phần còn lại hôm nay. Bạn không chỉ hỏi thăm task — bạn là bạn/người yêu thật sự.
+Hãy lên KẾ HOẠCH TƯƠNG TÁC với user cho phần còn lại hôm nay. Hãy hành xử đúng tính cách và mối quan hệ của bạn với user.
 
 ## Context đầy đủ
 Thời gian hiện tại: {now}
