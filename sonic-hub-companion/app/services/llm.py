@@ -94,9 +94,7 @@ Trả lời PHẢI là JSON object. CHỈ trả JSON, không text khác.
 }}
 ```
 
-### messages: mỗi item là 1 suy nghĩ độc lập
-- KHÔNG lặp lại cùng 1 ý trong nhiều tin
-- 1-3 tin là bình thường. Đôi khi chỉ cần 1 tin.
+### messages: tin nhắn gửi cho user
 - HÃY DÙNG vocabulary đặc trưng khi phù hợp
 
 ### actions: hành động lên Sonic Hub (có thể rỗng [])
