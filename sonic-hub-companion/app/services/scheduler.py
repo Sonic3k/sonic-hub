@@ -4,12 +4,12 @@ DB stores UTC. remindTime/remindDaysOfWeek are in user's local timezone.
 """
 import asyncio
 import logging
-from datetime import datetime
+from datetime import datetime, timezone
 from app.services import hub_client
 from app.services.llm import LLMService
 from app.services.memory import MemoryService
 from app.core.database import async_session
-from app.core.tz import now_local
+from app.core.tz import now_utc, now_local
 
 logger = logging.getLogger(__name__)
 llm_service = LLMService()
@@ -29,44 +29,44 @@ async def start_scheduler():
 
 
 async def check_reminders():
+    utc_now = now_utc().replace(tzinfo=None)  # naive UTC for DB comparison
     local_now = now_local()
-    now_naive = local_now.replace(tzinfo=None)  # naive for comparison with DB values
     today_str = local_now.strftime("%Y-%m-%d")
     current_dow = local_now.isoweekday()
-    current_time = local_now.strftime("%H:%M")
+    current_time = local_now.strftime("%H:%M")  # local time for remindTime/dow
 
     rules = await hub_client.get_reminder_rules()
 
     for rule in (rules or []):
         rule_id = rule.get("id")
 
-        # ─── remindBeforeMinutes: check entity dueDateTime ───
+        # ─── remindBeforeMinutes: compare with DB dueDateTime (UTC) ───
         remind_before = rule.get("remindBeforeMinutes")
         if remind_before:
             key = f"rule:{rule_id}:before:{today_str}"
             if key not in _reminded:
                 entity_due = await _get_entity_due(rule.get("entityType"), rule.get("entityId"))
                 if entity_due:
-                    minutes_until = (entity_due - now_naive).total_seconds() / 60
+                    minutes_until = (entity_due - utc_now).total_seconds() / 60
                     if 0 < minutes_until <= remind_before:
                         _reminded.add(key)
                         await _send_reminder(rule, f"Còn {int(minutes_until)} phút")
 
-        # ─── remindAt: one-time exact reminder ───
+        # ─── remindAt: one-time exact reminder (stored as UTC) ───
         remind_at_str = rule.get("remindAt")
         if remind_at_str:
             key = f"rule:{rule_id}:at"
             if key not in _reminded:
                 try:
                     remind_at = datetime.fromisoformat(remind_at_str.replace("Z", "").replace("+00:00", ""))
-                    diff = (now_naive - remind_at).total_seconds() / 60
+                    diff = (utc_now - remind_at).total_seconds() / 60
                     if 0 <= diff <= 5:
                         _reminded.add(key)
                         await _send_reminder(rule, "Đến giờ rồi")
                 except (ValueError, TypeError):
                     pass
 
-        # ─── remindIntervalDays: every N days ───
+        # ─── remindIntervalDays: every N days (lastRemindedAt is UTC) ───
         interval = rule.get("remindIntervalDays")
         if interval:
             key = f"rule:{rule_id}:interval:{today_str}"
@@ -78,11 +78,12 @@ async def check_reminders():
                 else:
                     try:
                         last_dt = datetime.fromisoformat(last.replace("Z", "").replace("+00:00", ""))
-                        days_since = (now_naive - last_dt).days
+                        days_since = (utc_now - last_dt).days
                         should_remind = days_since >= interval
                     except (ValueError, TypeError):
                         should_remind = True
 
+                # remindTime is LOCAL time (e.g. "08:00" Vietnam)
                 remind_time = rule.get("remindTime", "08:00")
                 if should_remind and current_time >= remind_time and current_time <= _add_minutes(remind_time, 5):
                     _reminded.add(key)

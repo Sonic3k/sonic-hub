@@ -84,7 +84,7 @@ export default function TaskCard({ task, depth = 0 }: Props) {
               )}
               {task.dueDateTime && (
                 <span className="text-xs text-orange-500 font-medium">
-                  ⏰ {new Date(task.dueDateTime).toLocaleString('vi-VN', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })}
+                  ⏰ {new Date(task.dueDateTime + 'Z').toLocaleString('vi-VN', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })}
                 </span>
               )}
               {!task.dueDateTime && task.dueDate && (
