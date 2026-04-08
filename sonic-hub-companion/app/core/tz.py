@@ -22,20 +22,22 @@ def now_utc() -> datetime:
 
 
 def local_to_utc(dt_str: str) -> str:
-    """Convert local datetime string to UTC ISO string.
+    """Convert local datetime string to UTC naive string (for Spring LocalDateTime).
     Input: '2026-04-07T22:00' (naive, assumed local)
-    Output: '2026-04-07T15:00:00+00:00' (UTC)
+    Output: '2026-04-07T15:00:00' (UTC, no offset — Spring LocalDateTime compatible)
     """
     if not dt_str:
         return dt_str
     try:
         dt = datetime.fromisoformat(dt_str.replace("Z", "+00:00"))
         if dt.tzinfo is not None:
-            # Already has timezone, convert to UTC
-            return dt.astimezone(timezone.utc).isoformat()
-        # Naive → assume local timezone
-        local_dt = dt.replace(tzinfo=get_tz())
-        return local_dt.astimezone(timezone.utc).isoformat()
+            utc_dt = dt.astimezone(timezone.utc)
+        else:
+            # Naive → assume local timezone
+            local_dt = dt.replace(tzinfo=get_tz())
+            utc_dt = local_dt.astimezone(timezone.utc)
+        # Return naive UTC string (no +00:00) for Spring LocalDateTime
+        return utc_dt.strftime("%Y-%m-%dT%H:%M:%S")
     except (ValueError, TypeError):
         return dt_str
 

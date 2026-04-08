@@ -15,6 +15,8 @@ async def _request(method: str, path: str, json: dict = None, params: dict = Non
     try:
         async with httpx.AsyncClient(timeout=10) as client:
             resp = await client.request(method, f"{BASE_URL}{path}", json=json, params=params)
+            if resp.status_code >= 400:
+                logger.error(f"sonic-hub-api {method} {path} → {resp.status_code}: {resp.text[:200]}")
             resp.raise_for_status()
             return resp.json() if resp.text else None
     except Exception as e:
@@ -26,21 +28,23 @@ async def _request(method: str, path: str, json: dict = None, params: dict = Non
 
 async def create_task(title: str, **kwargs) -> dict | None:
     body = {"title": title}
-    for k in ("description", "status", "priority", "dueDate", "dueDateTime",
-              "duePeriod", "someday", "projectId", "tagIds", "createdBy",
-              "remindBeforeMinutes", "remindTime", "remindIntervalDays",
-              "remindDaysOfWeek", "reminderMessage"):
-        # Also handle snake_case from LLM
-        snake = k
-        for camel_key, snake_key in [("remindBeforeMinutes", "remind_before_minutes"),
-                                      ("remindIntervalDays", "remind_interval_days"),
-                                      ("remindDaysOfWeek", "remind_days_of_week"),
-                                      ("remindTime", "remind_time"),
-                                      ("reminderMessage", "reminder_message")]:
-            if k == camel_key and camel_key not in kwargs and snake_key in kwargs:
-                kwargs[camel_key] = kwargs[snake_key]
-        if k in kwargs and kwargs[k] is not None:
-            body[k] = kwargs[k]
+    # Map all possible keys (accept both snake_case and camelCase)
+    mapping = {
+        "description": "description", "status": "status", "priority": "priority",
+        "dueDate": "dueDate", "due_date": "dueDate",
+        "dueDateTime": "dueDateTime", "due_date_time": "dueDateTime",
+        "duePeriod": "duePeriod", "due_period": "duePeriod",
+        "someday": "someday", "projectId": "projectId", "project_id": "projectId",
+        "tagIds": "tagIds", "tag_ids": "tagIds", "createdBy": "createdBy", "created_by": "createdBy",
+        "remindBeforeMinutes": "remindBeforeMinutes", "remind_before_minutes": "remindBeforeMinutes",
+        "remindTime": "remindTime", "remind_time": "remindTime",
+        "remindIntervalDays": "remindIntervalDays", "remind_interval_days": "remindIntervalDays",
+        "remindDaysOfWeek": "remindDaysOfWeek", "remind_days_of_week": "remindDaysOfWeek",
+        "reminderMessage": "reminderMessage", "reminder_message": "reminderMessage",
+    }
+    for k, v in kwargs.items():
+        if v is not None and k in mapping:
+            body[mapping[k]] = v
     return await _request("POST", "/api/tasks", json=body)
 
 
@@ -61,23 +65,23 @@ async def delete_task(task_id: str) -> dict | None:
 
 async def create_problem(title: str, **kwargs) -> dict | None:
     body = {"title": title}
-    for k in ("note", "status", "projectId", "tagIds", "createdBy",
-              "frequencyType", "currentLimit", "targetLimit",
-              "remindBeforeMinutes", "remindIntervalDays",
-              "remindDaysOfWeek", "remindTime", "reminderMessage"):
-        # Handle snake_case from LLM
-        for camel_key, snake_key in [("frequencyType", "frequency_type"),
-                                      ("currentLimit", "current_limit"),
-                                      ("targetLimit", "target_limit"),
-                                      ("remindBeforeMinutes", "remind_before_minutes"),
-                                      ("remindIntervalDays", "remind_interval_days"),
-                                      ("remindDaysOfWeek", "remind_days_of_week"),
-                                      ("remindTime", "remind_time"),
-                                      ("reminderMessage", "reminder_message")]:
-            if k == camel_key and camel_key not in kwargs and snake_key in kwargs:
-                kwargs[camel_key] = kwargs[snake_key]
-        if k in kwargs and kwargs[k] is not None:
-            body[k] = kwargs[k]
+    mapping = {
+        "note": "note", "status": "status",
+        "projectId": "projectId", "project_id": "projectId",
+        "tagIds": "tagIds", "tag_ids": "tagIds",
+        "createdBy": "createdBy", "created_by": "createdBy",
+        "frequencyType": "frequencyType", "frequency_type": "frequencyType",
+        "currentLimit": "currentLimit", "current_limit": "currentLimit",
+        "targetLimit": "targetLimit", "target_limit": "targetLimit",
+        "remindBeforeMinutes": "remindBeforeMinutes", "remind_before_minutes": "remindBeforeMinutes",
+        "remindIntervalDays": "remindIntervalDays", "remind_interval_days": "remindIntervalDays",
+        "remindDaysOfWeek": "remindDaysOfWeek", "remind_days_of_week": "remindDaysOfWeek",
+        "remindTime": "remindTime", "remind_time": "remindTime",
+        "reminderMessage": "reminderMessage", "reminder_message": "reminderMessage",
+    }
+    for k, v in kwargs.items():
+        if v is not None and k in mapping:
+            body[mapping[k]] = v
     return await _request("POST", "/api/problems", json=body)
 
 
