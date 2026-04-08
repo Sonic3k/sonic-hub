@@ -4,12 +4,12 @@ DB stores UTC. remindTime/remindDaysOfWeek are in user's local timezone.
 """
 import asyncio
 import logging
-from datetime import datetime, timezone
+from datetime import datetime
 from app.services import hub_client
 from app.services.llm import LLMService
 from app.services.memory import MemoryService
 from app.core.database import async_session
-from app.core.tz import now_utc, now_local
+from app.core.tz import now_local
 
 logger = logging.getLogger(__name__)
 llm_service = LLMService()
@@ -29,10 +29,10 @@ async def start_scheduler():
 
 
 async def check_reminders():
-    utc_now = now_utc()
     local_now = now_local()
+    now_naive = local_now.replace(tzinfo=None)  # naive for comparison with DB values
     today_str = local_now.strftime("%Y-%m-%d")
-    current_dow = local_now.isoweekday()  # 1=Mon, 7=Sun
+    current_dow = local_now.isoweekday()
     current_time = local_now.strftime("%H:%M")
 
     rules = await hub_client.get_reminder_rules()
@@ -47,7 +47,7 @@ async def check_reminders():
             if key not in _reminded:
                 entity_due = await _get_entity_due(rule.get("entityType"), rule.get("entityId"))
                 if entity_due:
-                    minutes_until = (entity_due - utc_now).total_seconds() / 60
+                    minutes_until = (entity_due - now_naive).total_seconds() / 60
                     if 0 < minutes_until <= remind_before:
                         _reminded.add(key)
                         await _send_reminder(rule, f"Còn {int(minutes_until)} phút")
@@ -58,11 +58,9 @@ async def check_reminders():
             key = f"rule:{rule_id}:at"
             if key not in _reminded:
                 try:
-                    remind_at = datetime.fromisoformat(remind_at_str.replace("Z", "+00:00"))
-                    if remind_at.tzinfo is None:
-                        remind_at = remind_at.replace(tzinfo=timezone.utc)
-                    diff = (utc_now - remind_at).total_seconds() / 60
-                    if 0 <= diff <= 5:  # within 5 min window
+                    remind_at = datetime.fromisoformat(remind_at_str.replace("Z", "").replace("+00:00", ""))
+                    diff = (now_naive - remind_at).total_seconds() / 60
+                    if 0 <= diff <= 5:
                         _reminded.add(key)
                         await _send_reminder(rule, "Đến giờ rồi")
                 except (ValueError, TypeError):
@@ -76,11 +74,11 @@ async def check_reminders():
                 last = rule.get("lastRemindedAt")
                 should_remind = False
                 if not last:
-                    should_remind = True  # never reminded
+                    should_remind = True
                 else:
                     try:
-                        last_dt = datetime.fromisoformat(last.replace("Z", ""))
-                        days_since = (utc_now - last_dt).days
+                        last_dt = datetime.fromisoformat(last.replace("Z", "").replace("+00:00", ""))
+                        days_since = (now_naive - last_dt).days
                         should_remind = days_since >= interval
                     except (ValueError, TypeError):
                         should_remind = True
@@ -113,7 +111,7 @@ async def check_reminders():
 
 
 async def _get_entity_due(entity_type: str, entity_id: str) -> datetime | None:
-    """Get dueDateTime of an entity (returns UTC-aware datetime)."""
+    """Get dueDateTime of an entity (naive local datetime)."""
     if entity_type == "task":
         tasks = await hub_client.get_tasks()
         for t in (tasks or []):
@@ -121,10 +119,7 @@ async def _get_entity_due(entity_type: str, entity_id: str) -> datetime | None:
                 due = t.get("dueDateTime")
                 if due:
                     try:
-                        dt = datetime.fromisoformat(due.replace("Z", "+00:00"))
-                        if dt.tzinfo is None:
-                            dt = dt.replace(tzinfo=timezone.utc)
-                        return dt
+                        return datetime.fromisoformat(due.replace("Z", "").replace("+00:00", ""))
                     except (ValueError, TypeError):
                         pass
     return None
