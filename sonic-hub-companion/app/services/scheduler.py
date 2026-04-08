@@ -202,55 +202,91 @@ Trả JSON: {{"messages": [{{"text": "..."}}], "actions": []}}"""
             logger.error(f"Failed to send reminder: {e}")
 
 
-# ─── Follow-up system: Analyze (2x/day) + Execute (every 60s) ───
+# ─── Daily Interaction System: Plan (2x/day) + Execute (every 60s) ───
 
-# In-memory queue: [{task_id, message, send_at (naive local), assistant_id}]
-_follow_up_queue: list[dict] = []
+# In-memory queue: [{type, task_id?, draft_message, send_at, assistant_id}]
+_interaction_queue: list[dict] = []
 
-FOLLOW_UP_PROMPT = """Bạn là {nickname}. {personality}
+PLAN_PROMPT = """Bạn là {nickname}. {personality}
 
-Dưới đây là danh sách tasks đang mở của user. Hãy lên LỊCH HỎI THĂM cho hôm nay.
+Hãy lên KẾ HOẠCH TƯƠNG TÁC với user cho phần còn lại hôm nay. Bạn không chỉ hỏi thăm task — bạn là bạn/người yêu thật sự.
 
-Nguyên tắc:
-- Task có "đã nhắc hôm nay" hoặc "có reminder tự động" gần deadline → SKIP, đừng hỏi thăm
-- Task quan trọng/quá hạn, chưa có reminder → nên hỏi
-- Task nhỏ (mua đồ lặt vặt) → hỏi 1 lần hoặc không cần
-- Đã hỏi nhiều lần (3+) mà chưa done → giảm tần suất, đừng spam
-- Task mới tạo hôm nay → chưa cần hỏi
-- Chọn giờ hỏi tự nhiên (đừng hỏi lúc ngủ, đừng dồn hết 1 lúc)
-- Viết tin nhắn tự nhiên, đúng tính cách, ngắn gọn
-
+## Context đầy đủ
 Thời gian hiện tại: {now}
-Khung giờ còn lại hôm nay: {time_window}
+Khung giờ còn lại: {time_window}
 
-Tasks:
+### Cuộc trò chuyện gần đây:
+{recent_chat}
+
+### Trạng thái hiện tại:
+{conversation_state}
+
+### Tasks đang mở:
 {tasks_context}
 
-Trả JSON (CHỈ JSON, không text khác):
-{{"follow_ups": [{{"task_id": "uuid", "message": "tin nhắn hỏi thăm", "send_at": "HH:MM"}}]}}
-Nếu không cần hỏi task nào hôm nay: {{"follow_ups": []}}"""
+## Loại tương tác:
+- follow_up: hỏi thăm tiến độ task (CẦN task_id)
+- casual: tán gẫu, hỏi thăm sức khỏe, chia sẻ, thể hiện quan tâm
+- check_in: hỏi thăm tổng quát ("hôm nay thế nào")
+
+## Nguyên tắc:
+- Xen kẽ hỏi task + tán gẫu, KHÔNG dồn hết follow_up
+- Task có "đã nhắc hôm nay" hoặc "có reminder tự động" gần deadline → SKIP
+- Task đã hỏi 3+ lần → giảm, đừng spam
+- Nếu gần đây mood buồn/stress → ưu tiên casual hỏi thăm trước
+- Nếu lâu không chat (>1 ngày) → bắt đầu nhẹ nhàng, đừng hỏi task ngay
+- Chọn giờ tự nhiên, không dồn cùng lúc, không quá 3-4 interactions/ngày
+- Tin nhắn ngắn gọn, đúng tính cách
+
+Trả JSON (CHỈ JSON):
+{{"interactions": [
+  {{"type": "casual", "send_at": "HH:MM", "message": "draft tin nhắn"}},
+  {{"type": "follow_up", "task_id": "uuid", "send_at": "HH:MM", "message": "draft"}}
+]}}
+Nếu hôm nay không cần tương tác: {{"interactions": []}}"""
+
+EXECUTE_PROMPT = """Bạn là {nickname}. {personality}
+
+Bạn đã lên kế hoạch gửi tin nhắn này:
+Loại: {interaction_type}
+Draft: "{draft_message}"
+
+Nhưng TRƯỚC KHI gửi, hãy xem tình hình hiện tại:
+- Lần cuối user chat: {last_user_msg}
+- Lần cuối bạn chat: {last_bot_msg}
+- Conversation đang: {conv_status}
+- Tin nhắn gần nhất: {recent_snippet}
+
+Quyết định:
+1. GỬI — viết lại tin nhắn cho phù hợp tình huống hiện tại
+2. SKIP — không cần gửi (đã nói chuyện về topic này rồi, hoặc không phù hợp)
+
+Trả JSON (CHỈ JSON):
+{{"action": "send", "messages": [{{"text": "tin nhắn cuối cùng"}}]}}
+hoặc
+{{"action": "skip", "reason": "lý do"}}"""
 
 
 async def check_follow_ups():
-    """Called every 60s. Handles both analyze + execute."""
+    """Called every 60s. Handles both plan + execute."""
     local_now = now_local()
     hour = local_now.hour
     minute = local_now.minute
 
-    # Phase 1: Analyze at 9:00 and 20:00
+    # Phase 1: Plan at 9:00 and 20:00
     if (hour == 9 or hour == 20) and minute < 5:
-        dedup_key = f"followup-analyze:{local_now.strftime('%Y-%m-%d')}:{hour}"
+        dedup_key = f"plan:{local_now.strftime('%Y-%m-%d')}:{hour}"
         if dedup_key not in _reminded:
             _reminded.add(dedup_key)
-            await _analyze_follow_ups(local_now)
+            await _plan_daily_interactions(local_now)
 
-    # Phase 2: Execute queued follow-ups
-    await _execute_follow_ups(local_now)
+    # Phase 2: Execute queued interactions
+    await _execute_interactions(local_now)
 
 
-async def _analyze_follow_ups(local_now):
-    """LLM analyzes tasks → schedules follow-ups for the day."""
-    logger.info(f"Follow-up analysis triggered at {local_now.strftime('%H:%M')}")
+async def _plan_daily_interactions(local_now):
+    """LLM plans the day's interactions based on full context."""
+    logger.info(f"Daily interaction plan triggered at {local_now.strftime('%H:%M')}")
 
     from app.services.telegram import bot_manager
     if not bot_manager.bots:
@@ -265,14 +301,10 @@ async def _analyze_follow_ups(local_now):
 
     tasks = await hub_client.get_tasks()
     open_tasks = [t for t in (tasks or []) if t.get("status") not in ("DONE", "CLOSED")]
-    if not open_tasks:
-        return
-
     entries = await hub_client.get_recent_entries(days=30)
     rules = await hub_client.get_reminder_rules()
     today_str = local_now.strftime("%Y-%m-%d")
 
-    # Build reminder lookup: task_id → has reminder
     reminder_task_ids = set()
     for rule in (rules or []):
         if rule.get("entityType") == "task":
@@ -282,7 +314,7 @@ async def _analyze_follow_ups(local_now):
         if not bot_manager.bots.get(str(assistant.id)):
             continue
 
-        # Build context
+        # Build task context
         task_lines = []
         for task in open_tasks:
             task_id = str(task.get("id"))
@@ -309,105 +341,250 @@ async def _analyze_follow_ups(local_now):
                 f"| deadline: {due_display} | đã hỏi: {len(follow_ups)} lần | lần cuối: {last_fu}{flags_str}"
             )
 
+        tasks_context = "\n".join(task_lines) if task_lines else "(Không có task nào)"
+
+        # Get conversation state
+        from app.models.models import ConversationState
+        from sqlalchemy import select
+        async with async_session() as db:
+            result = await db.execute(
+                select(ConversationState).where(ConversationState.assistant_id == assistant.id)
+            )
+            state = result.scalar_one_or_none()
+
+        if state and state.last_user_message_at:
+            diff = (local_now.replace(tzinfo=None) - state.last_user_message_at)
+            hours_ago = diff.total_seconds() / 3600
+            if hours_ago < 1:
+                conv_state_text = f"Vừa chat {int(hours_ago * 60)} phút trước"
+            elif hours_ago < 24:
+                conv_state_text = f"Chat {int(hours_ago)} giờ trước"
+            else:
+                conv_state_text = f"Lâu không chat ({int(hours_ago / 24)} ngày)"
+            if state.current_mood:
+                conv_state_text += f" | Mood: {state.current_mood}"
+            if state.current_topic:
+                conv_state_text += f" | Topic: {state.current_topic}"
+        else:
+            conv_state_text = "Chưa có thông tin"
+
+        # Get recent chat messages
+        recent_chat = "Không có tin nhắn gần đây"
+        async with async_session() as db:
+            from app.models.models import Conversation, Message as MsgModel
+            from sqlalchemy import desc
+            conv_result = await db.execute(
+                select(Conversation)
+                .where(Conversation.assistant_id == assistant.id)
+                .order_by(desc(Conversation.started_at))
+                .limit(1)
+            )
+            recent_conv = conv_result.scalar_one_or_none()
+            if recent_conv:
+                msg_result = await db.execute(
+                    select(MsgModel)
+                    .where(MsgModel.conversation_id == recent_conv.id)
+                    .order_by(desc(MsgModel.timestamp))
+                    .limit(10)
+                )
+                msgs = list(reversed(msg_result.scalars().all()))
+                if msgs:
+                    recent_chat = "\n".join(
+                        f"{'User' if m.role == 'user' else assistant.nickname}: {m.content[:80]}"
+                        for m in msgs
+                    )
+
         # Time window
         hour = local_now.hour
-        if hour <= 12:
-            time_window = "9:00 - 22:00"
-        else:
-            time_window = f"{hour}:00 - 22:00"
+        time_window = f"{hour}:00 - 22:00" if hour > 9 else "9:00 - 22:00"
 
         async with async_session() as db:
             personality = await memory_service.get_active_personality(db, assistant.id)
 
-        prompt = FOLLOW_UP_PROMPT.format(
+        prompt = PLAN_PROMPT.format(
             nickname=assistant.nickname,
             personality=memory_service.format_personality_for_prompt(personality),
             now=local_now.strftime("%Y-%m-%d %H:%M (%A)"),
             time_window=time_window,
-            tasks_context="\n".join(task_lines),
+            recent_chat=recent_chat,
+            conversation_state=conv_state_text,
+            tasks_context=tasks_context,
         )
 
         result = await llm_service.chat(
             prompt,
-            [{"role": "user", "content": "(system: follow-up analysis)"}],
+            [{"role": "user", "content": "(system: daily interaction plan)"}],
             provider_name=assistant.llm_provider or "claude",
             model=assistant.llm_model,
         )
 
-        # Parse scheduled follow-ups
+        # Parse interactions
         import json
         scheduled = []
-        raw_messages = result.get("messages", [])
-        for msg in raw_messages:
+        for msg in result.get("messages", []):
             try:
                 data = json.loads(msg) if isinstance(msg, str) else msg
-                if isinstance(data, dict) and "follow_ups" in data:
-                    scheduled = data["follow_ups"]
+                if isinstance(data, dict) and "interactions" in data:
+                    scheduled = data["interactions"]
                     break
             except (json.JSONDecodeError, TypeError):
                 continue
 
         # Add to queue
         today = local_now.strftime("%Y-%m-%d")
-        for fu in scheduled:
-            send_at_str = fu.get("send_at", "")
-            if not send_at_str or not fu.get("task_id") or not fu.get("message"):
+        for item in scheduled:
+            send_at_str = item.get("send_at", "")
+            if not send_at_str or not item.get("message"):
                 continue
-            _follow_up_queue.append({
-                "task_id": fu["task_id"],
-                "message": fu["message"],
+            _interaction_queue.append({
+                "type": item.get("type", "casual"),
+                "task_id": item.get("task_id"),
+                "draft_message": item["message"],
                 "send_at": f"{today}T{send_at_str}:00",
                 "assistant_id": str(assistant.id),
             })
 
-        logger.info(f"Follow-up: scheduled {len(scheduled)} follow-ups for today")
+        logger.info(f"Daily plan: scheduled {len(scheduled)} interactions")
 
 
-async def _execute_follow_ups(local_now):
-    """Check queue, send any follow-ups that are due."""
-    if not _follow_up_queue:
+async def _execute_interactions(local_now):
+    """Check queue, LLM re-evaluates before sending."""
+    if not _interaction_queue:
         return
 
     from app.services.telegram import bot_manager
     now_str = local_now.strftime("%Y-%m-%dT%H:%M")
 
     sent = []
-    for i, fu in enumerate(_follow_up_queue):
-        send_at = fu.get("send_at", "")[:16]  # "2026-04-08T11:00"
-        if send_at <= now_str:
-            assistant_id = fu["assistant_id"]
-            bot_app = bot_manager.bots.get(assistant_id)
-            if not bot_app:
-                sent.append(i)
-                continue
+    for i, item in enumerate(_interaction_queue):
+        send_at = item.get("send_at", "")[:16]
+        if send_at > now_str:
+            continue
 
-            # Get assistant for owner_id
-            async with async_session() as db:
-                assistant = await memory_service.get_assistant_by_id(db, assistant_id)
+        assistant_id = item["assistant_id"]
+        bot_app = bot_manager.bots.get(assistant_id)
+        if not bot_app:
+            sent.append(i)
+            continue
 
-            if not assistant or not assistant.telegram_owner_id:
-                sent.append(i)
-                continue
+        async with async_session() as db:
+            assistant = await memory_service.get_assistant_by_id(db, assistant_id)
 
-            try:
-                await bot_app.bot.send_message(
-                    chat_id=assistant.telegram_owner_id,
-                    text=fu["message"],
+        if not assistant or not assistant.telegram_owner_id:
+            sent.append(i)
+            continue
+
+        # Get current conversation state for pre-send check
+        from app.models.models import ConversationState, Conversation, Message as MsgModel
+        from sqlalchemy import select, desc
+
+        async with async_session() as db:
+            state_result = await db.execute(
+                select(ConversationState).where(ConversationState.assistant_id == assistant.id)
+            )
+            state = state_result.scalar_one_or_none()
+
+            # Recent messages (last 5)
+            conv_result = await db.execute(
+                select(Conversation)
+                .where(Conversation.assistant_id == assistant.id)
+                .order_by(desc(Conversation.started_at))
+                .limit(1)
+            )
+            recent_conv = conv_result.scalar_one_or_none()
+            recent_snippet = "Không có"
+            if recent_conv:
+                msg_result = await db.execute(
+                    select(MsgModel)
+                    .where(MsgModel.conversation_id == recent_conv.id)
+                    .order_by(desc(MsgModel.timestamp))
+                    .limit(5)
                 )
-                logger.info(f"Follow-up sent: {fu['message'][:50]}...")
+                msgs = list(reversed(msg_result.scalars().all()))
+                if msgs:
+                    recent_snippet = "\n".join(
+                        f"{'User' if m.role == 'user' else assistant.nickname}: {m.content[:60]}"
+                        for m in msgs
+                    )
 
-                # Record as FOLLOW_UP entry
+        # Determine conversation status
+        if state and state.last_user_message_at:
+            diff_minutes = (local_now.replace(tzinfo=None) - state.last_user_message_at).total_seconds() / 60
+            if diff_minutes < 10:
+                conv_status = "đang chat (vài phút trước)"
+            elif diff_minutes < 60:
+                conv_status = f"chat {int(diff_minutes)} phút trước"
+            elif diff_minutes < 1440:
+                conv_status = f"chat {int(diff_minutes / 60)} giờ trước"
+            else:
+                conv_status = f"lâu không chat ({int(diff_minutes / 1440)} ngày)"
+        else:
+            conv_status = "chưa có thông tin"
+
+        last_user_msg = utc_to_local_display(str(state.last_user_message_at)) if state and state.last_user_message_at else "không rõ"
+        last_bot_msg = utc_to_local_display(str(state.last_message_at)) if state and state.last_message_at else "không rõ"
+
+        # Pre-send LLM check
+        async with async_session() as db:
+            personality = await memory_service.get_active_personality(db, assistant.id)
+
+        execute_prompt = EXECUTE_PROMPT.format(
+            nickname=assistant.nickname,
+            personality=memory_service.format_personality_for_prompt(personality),
+            interaction_type=item.get("type", "casual"),
+            draft_message=item.get("draft_message", ""),
+            last_user_msg=last_user_msg,
+            last_bot_msg=last_bot_msg,
+            conv_status=conv_status,
+            recent_snippet=recent_snippet,
+        )
+
+        result = await llm_service.chat(
+            execute_prompt,
+            [{"role": "user", "content": "(system: pre-send check)"}],
+            provider_name=assistant.llm_provider or "claude",
+            model=assistant.llm_model,
+        )
+
+        # Parse LLM decision
+        import json
+        action = "send"
+        final_messages = [item.get("draft_message", "")]
+
+        for msg in result.get("messages", []):
+            try:
+                data = json.loads(msg) if isinstance(msg, str) else msg
+                if isinstance(data, dict):
+                    action = data.get("action", "send")
+                    if action == "send" and "messages" in data:
+                        final_messages = [m["text"] if isinstance(m, dict) else m for m in data["messages"]]
+                    break
+            except (json.JSONDecodeError, TypeError):
+                continue
+
+        if action == "skip":
+            logger.info(f"Interaction skipped by LLM: {item.get('draft_message', '')[:40]}...")
+            sent.append(i)
+            continue
+
+        # Send
+        try:
+            for msg_text in final_messages[:2]:
+                await bot_app.bot.send_message(chat_id=assistant.telegram_owner_id, text=msg_text)
+            logger.info(f"Interaction sent ({item.get('type')}): {final_messages[0][:50]}...")
+
+            # Record entry if follow_up
+            if item.get("type") == "follow_up" and item.get("task_id"):
                 await hub_client.create_entry(
                     entity_type="task",
-                    entity_id=fu["task_id"],
-                    content=fu["message"],
+                    entity_id=item["task_id"],
+                    content=final_messages[0],
                     entry_type="FOLLOW_UP",
                 )
-            except Exception as e:
-                logger.error(f"Failed to send follow-up: {e}")
+        except Exception as e:
+            logger.error(f"Failed to send interaction: {e}")
 
-            sent.append(i)
+        sent.append(i)
 
-    # Remove sent items (reverse to preserve indices)
     for i in sorted(sent, reverse=True):
-        _follow_up_queue.pop(i)
+        _interaction_queue.pop(i)
