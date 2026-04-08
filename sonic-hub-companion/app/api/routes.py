@@ -732,6 +732,9 @@ async def debug_integration():
         "sonic_hub_api_url": settings.sonic_hub_api_url,
         "claude_chat_model": settings.claude_chat_model,
         "claude_smart_model": settings.claude_smart_model,
+        "together_api_key_set": bool(settings.together_api_key),
+        "together_api_key_prefix": settings.together_api_key[:10] + "..." if settings.together_api_key else None,
+        "openai_api_key_set": bool(settings.openai_api_key),
     }
 
     # Test API connectivity
@@ -749,6 +752,29 @@ async def debug_integration():
         results["context_keys"] = list(ctx.keys()) if ctx else []
     except Exception as e:
         results["context_error"] = str(e)
+
+    # Test Together API if key set
+    if settings.together_api_key:
+        try:
+            from app.services.providers import get_provider
+            provider = get_provider("together")
+            test_result = await provider.chat("Reply 'ok'", [{"role": "user", "content": "test"}])
+            results["together_reachable"] = True
+            results["together_test"] = test_result.get("messages", [])[:1]
+        except Exception as e:
+            results["together_reachable"] = False
+            results["together_error"] = str(e)
+
+    # Show assistant LLM configs
+    try:
+        async with async_session() as db:
+            assistants = await memory_service.get_all_assistants(db)
+            results["assistants_llm"] = [
+                {"nickname": a.nickname, "llm_provider": a.llm_provider, "llm_model": a.llm_model}
+                for a in assistants
+            ]
+    except Exception:
+        pass
 
     return results
 
