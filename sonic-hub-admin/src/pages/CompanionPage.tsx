@@ -18,8 +18,8 @@ interface PersonalityItem {
   examples: { good?: string[]; bad?: string[] } | null
   version: number; active: boolean
 }
-interface ProfileFact { category: string; key: string; value: string; confidence: number; updated_at: string }
-interface Episode { summary: string; emotion: string | null; importance: number; occurred_at: string }
+interface ProfileFact { id: string; category: string; key: string; value: string; period?: string; confidence: number; updated_at: string }
+interface Episode { id: string; summary: string; emotion: string | null; importance: number; occurred_at: string }
 interface Conversation { id: string; started_at: string; ended_at: string | null; summary: string | null; is_active: boolean }
 interface Message { id: string; role: string; content: string; timestamp: string; channel_type: string }
 
@@ -454,6 +454,9 @@ function PersonalityTab({ assistantId }: { assistantId: string }) {
 
   const [editing, setEditing] = useState<string | null>(null)
   const [editValue, setEditValue] = useState('')
+  const [showAdd, setShowAdd] = useState(false)
+  const [newAspect, setNewAspect] = useState('')
+  const [newInstruction, setNewInstruction] = useState('')
 
   const updateMutation = useMutation({
     mutationFn: (data: { aspect: string; instruction: string }) =>
@@ -461,45 +464,78 @@ function PersonalityTab({ assistantId }: { assistantId: string }) {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['personality', assistantId] })
       setEditing(null)
+      setShowAdd(false)
+      setNewAspect('')
+      setNewInstruction('')
     },
   })
 
+  const deleteMutation = useMutation({
+    mutationFn: (aspect: string) => companionApi.delete(`/personality/${assistantId}/${aspect}`),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['personality', assistantId] }),
+  })
+
   return (
-    <div className="space-y-3">
-      {items.length === 0 && <p className="text-sm text-[#9ca3af] py-8 text-center">No personality set. Run seed first.</p>}
-      {items.map(p => (
-        <div key={p.aspect} className="bg-white rounded-xl border border-[#e5e7eb] p-4">
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-xs font-semibold uppercase tracking-wider text-indigo-500">{p.aspect}</span>
-            <span className="text-xs text-[#9ca3af]">v{p.version}</span>
-          </div>
-          {editing === p.aspect ? (
-            <div>
-              <textarea value={editValue} onChange={e => setEditValue(e.target.value)}
-                rows={4} className="w-full px-3 py-2 border rounded-lg text-sm resize-y" />
-              <div className="flex gap-2 mt-2">
-                <button onClick={() => updateMutation.mutate({ aspect: p.aspect, instruction: editValue })}
-                  className="flex items-center gap-1 px-3 py-1.5 bg-indigo-500 text-white rounded-lg text-xs">
-                  <Save size={12} /> Save
-                </button>
-                <button onClick={() => setEditing(null)} className="px-3 py-1.5 text-xs text-[#6b7280]">Cancel</button>
+    <div>
+      <div className="flex justify-end mb-3">
+        <button onClick={() => setShowAdd(!showAdd)}
+          className="px-3 py-1.5 bg-indigo-500 text-white rounded-lg text-xs font-medium">
+          + Add Aspect
+        </button>
+      </div>
+
+      {showAdd && (
+        <div className="mb-4 p-3 bg-white rounded-xl border border-indigo-200 space-y-2">
+          <input placeholder="Aspect name (e.g. chat_format)" value={newAspect}
+            onChange={e => setNewAspect(e.target.value)} className="w-full px-2 py-1.5 border rounded text-xs" />
+          <textarea placeholder="Instruction" value={newInstruction} rows={3}
+            onChange={e => setNewInstruction(e.target.value)} className="w-full px-2 py-1.5 border rounded text-xs resize-y" />
+          <button onClick={() => updateMutation.mutate({ aspect: newAspect, instruction: newInstruction })}
+            disabled={!newAspect || !newInstruction}
+            className="px-3 py-1 bg-indigo-500 text-white rounded text-xs disabled:opacity-50">Save</button>
+        </div>
+      )}
+
+      <div className="space-y-3">
+        {items.length === 0 && <p className="text-sm text-[#9ca3af] py-8 text-center">No personality set. Run seed first.</p>}
+        {items.map(p => (
+          <div key={p.aspect} className="bg-white rounded-xl border border-[#e5e7eb] p-4">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-xs font-semibold uppercase tracking-wider text-indigo-500">{p.aspect}</span>
+              <div className="flex items-center gap-2">
+                <span className="text-xs text-[#9ca3af]">v{p.version}</span>
+                <button onClick={() => { if (confirm(`Delete "${p.aspect}"?`)) deleteMutation.mutate(p.aspect) }}
+                  className="text-xs text-red-400 hover:text-red-600">Delete</button>
               </div>
             </div>
-          ) : (
-            <div>
-              <p className="text-sm text-[#374151] whitespace-pre-wrap">{p.instruction}</p>
-              {p.examples && (
-                <div className="mt-2 space-y-1">
-                  {p.examples.good && <div className="text-xs text-green-600">✓ {p.examples.good.join(' | ')}</div>}
-                  {p.examples.bad && <div className="text-xs text-red-400">✗ {p.examples.bad.join(' | ')}</div>}
+            {editing === p.aspect ? (
+              <div>
+                <textarea value={editValue} onChange={e => setEditValue(e.target.value)}
+                  rows={4} className="w-full px-3 py-2 border rounded-lg text-sm resize-y" />
+                <div className="flex gap-2 mt-2">
+                  <button onClick={() => updateMutation.mutate({ aspect: p.aspect, instruction: editValue })}
+                    className="flex items-center gap-1 px-3 py-1.5 bg-indigo-500 text-white rounded-lg text-xs">
+                    <Save size={12} /> Save
+                  </button>
+                  <button onClick={() => setEditing(null)} className="px-3 py-1.5 text-xs text-[#6b7280]">Cancel</button>
                 </div>
-              )}
-              <button onClick={() => { setEditing(p.aspect); setEditValue(p.instruction) }}
-                className="mt-2 text-xs text-indigo-500 hover:underline">Edit</button>
-            </div>
-          )}
-        </div>
-      ))}
+              </div>
+            ) : (
+              <div>
+                <p className="text-sm text-[#374151] whitespace-pre-wrap">{p.instruction}</p>
+                {p.examples && (
+                  <div className="mt-2 space-y-1">
+                    {p.examples.good && <div className="text-xs text-green-600">✓ {p.examples.good.join(' | ')}</div>}
+                    {p.examples.bad && <div className="text-xs text-red-400">✗ {p.examples.bad.join(' | ')}</div>}
+                  </div>
+                )}
+                <button onClick={() => { setEditing(p.aspect); setEditValue(p.instruction) }}
+                  className="mt-2 text-xs text-indigo-500 hover:underline">Edit</button>
+              </div>
+            )}
+          </div>
+        ))}
+      </div>
     </div>
   )
 }
@@ -559,6 +595,14 @@ function MemoryTab({ assistantId }: { assistantId: string }) {
   const deleteDynamics = useMutation({
     mutationFn: (id: string) => companionApi.delete(`/dynamics/${id}`),
     onSuccess: () => qc.invalidateQueries({ queryKey: ['dynamics'] }),
+  })
+  const deleteFact = useMutation({
+    mutationFn: (id: string) => companionApi.delete(`/profile/fact/${id}`),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['profile'] }),
+  })
+  const deleteEpisode = useMutation({
+    mutationFn: (id: string) => companionApi.delete(`/episodes/${id}`),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['episodes'] }),
   })
 
   return (
@@ -629,12 +673,13 @@ function MemoryTab({ assistantId }: { assistantId: string }) {
           ) : (
             <div className="space-y-1.5 max-h-80 overflow-y-auto">
               {profile.map(f => (
-                <div key={f.key + (f as any).period} className="bg-white rounded-lg border border-[#e5e7eb] px-3 py-2">
+                <div key={f.id} className="bg-white rounded-lg border border-[#e5e7eb] px-3 py-2">
                   <div className="flex items-center justify-between">
                     <span className="text-xs font-medium text-[#374151]">{f.key}</span>
                     <div className="flex items-center gap-1">
-                      {(f as any).period && <span className="text-[10px] px-1.5 py-0.5 rounded bg-amber-50 text-amber-600">{(f as any).period}</span>}
+                      {f.period && <span className="text-[10px] px-1.5 py-0.5 rounded bg-amber-50 text-amber-600">{f.period}</span>}
                       <span className="text-[10px] px-1.5 py-0.5 rounded bg-[#f3f4f6] text-[#6b7280]">{f.category}</span>
+                      <button onClick={() => deleteFact.mutate(f.id)} className="text-[10px] text-red-300 hover:text-red-500 ml-1">✕</button>
                     </div>
                   </div>
                   <div className="text-sm text-[#1a1d2d]">{f.value}</div>
@@ -653,12 +698,15 @@ function MemoryTab({ assistantId }: { assistantId: string }) {
             <p className="text-xs text-[#9ca3af]">No episodes yet.</p>
           ) : (
             <div className="space-y-1.5 max-h-80 overflow-y-auto">
-              {episodes.map((e, i) => (
-                <div key={i} className="bg-white rounded-lg border border-[#e5e7eb] px-3 py-2">
-                  <div className="flex items-center gap-2 mb-1">
-                    <span className="text-[10px] text-[#9ca3af]">{new Date(e.occurred_at).toLocaleDateString('vi-VN')}</span>
-                    {e.emotion && <span className="text-[10px] px-1.5 py-0.5 rounded bg-purple-50 text-purple-600">{e.emotion}</span>}
-                    <span className="text-[10px] text-[#9ca3af]">⭐{e.importance}</span>
+              {episodes.map(e => (
+                <div key={e.id} className="bg-white rounded-lg border border-[#e5e7eb] px-3 py-2">
+                  <div className="flex items-center justify-between mb-1">
+                    <div className="flex items-center gap-2">
+                      <span className="text-[10px] text-[#9ca3af]">{new Date(e.occurred_at).toLocaleDateString('vi-VN')}</span>
+                      {e.emotion && <span className="text-[10px] px-1.5 py-0.5 rounded bg-purple-50 text-purple-600">{e.emotion}</span>}
+                      <span className="text-[10px] text-[#9ca3af]">⭐{e.importance}</span>
+                    </div>
+                    <button onClick={() => deleteEpisode.mutate(e.id)} className="text-[10px] text-red-300 hover:text-red-500">✕</button>
                   </div>
                   <div className="text-sm text-[#374151]">{e.summary}</div>
                 </div>

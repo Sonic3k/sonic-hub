@@ -75,6 +75,7 @@ class ProfileFactRequest(BaseModel):
 
 
 class ProfileFactResponse(BaseModel):
+    id: str
     category: str
     key: str
     value: str
@@ -84,6 +85,7 @@ class ProfileFactResponse(BaseModel):
 
 
 class EpisodeResponse(BaseModel):
+    id: str
     summary: str
     emotion: str | None
     importance: int

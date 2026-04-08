@@ -288,7 +288,7 @@ async def get_profile(assistant_id: str, db: AsyncSession = Depends(get_db)):
     items = await memory_service.get_user_profile(db, assistant_id)
     return [
         ProfileFactResponse(
-            category=p.category, key=p.key, value=p.value,
+            id=str(p.id), category=p.category, key=p.key, value=p.value,
             period=p.period, confidence=p.confidence, updated_at=p.updated_at,
         )
         for p in items
@@ -317,11 +317,49 @@ async def get_episodes(
     items = await memory_service.get_recent_episodes(db, assistant_id, limit=limit)
     return [
         EpisodeResponse(
-            summary=e.summary, emotion=e.emotion,
+            id=str(e.id), summary=e.summary, emotion=e.emotion,
             importance=e.importance, occurred_at=e.occurred_at,
         )
         for e in items
     ]
+
+
+@router.delete("/profile/fact/{fact_id}")
+async def delete_profile_fact(fact_id: str, db: AsyncSession = Depends(get_db)):
+    from app.models.models import UserProfile
+    result = await db.execute(select(UserProfile).where(UserProfile.id == fact_id))
+    item = result.scalar_one_or_none()
+    if item:
+        await db.delete(item)
+        await db.commit()
+    return {"status": "deleted"}
+
+
+@router.delete("/episodes/{episode_id}")
+async def delete_episode(episode_id: str, db: AsyncSession = Depends(get_db)):
+    from app.models.models import Episode
+    result = await db.execute(select(Episode).where(Episode.id == episode_id))
+    item = result.scalar_one_or_none()
+    if item:
+        await db.delete(item)
+        await db.commit()
+    return {"status": "deleted"}
+
+
+@router.delete("/personality/{assistant_id}/{aspect}")
+async def delete_personality(assistant_id: str, aspect: str, db: AsyncSession = Depends(get_db)):
+    from app.models.models import Personality
+    result = await db.execute(
+        select(Personality).where(
+            Personality.assistant_id == assistant_id,
+            Personality.aspect == aspect,
+        )
+    )
+    item = result.scalar_one_or_none()
+    if item:
+        await db.delete(item)
+        await db.commit()
+    return {"status": "deleted"}
 
 
 # ─── Conversations ───
