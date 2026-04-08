@@ -782,6 +782,53 @@ async def debug_integration():
             results["together_reachable"] = False
             results["together_error"] = f"{type(e).__name__}: {e}"
 
+    # Test OpenAI API if key set
+    if settings.openai_api_key:
+        try:
+            from openai import AsyncOpenAI
+            client = AsyncOpenAI(api_key=settings.openai_api_key)
+            resp = await client.chat.completions.create(
+                model="gpt-4o-mini",
+                max_tokens=20,
+                messages=[{"role": "user", "content": "say ok"}],
+            )
+            results["openai_reachable"] = True
+            results["openai_raw"] = resp.choices[0].message.content[:100]
+        except Exception as e:
+            results["openai_reachable"] = False
+            results["openai_error"] = f"{type(e).__name__}: {e}"
+
+    # Test DeepSeek API if key set
+    if settings.deepseek_api_key:
+        try:
+            from openai import AsyncOpenAI
+            client = AsyncOpenAI(api_key=settings.deepseek_api_key, base_url="https://api.deepseek.com")
+            resp = await client.chat.completions.create(
+                model="deepseek-chat",
+                max_tokens=20,
+                messages=[{"role": "user", "content": "say ok"}],
+            )
+            results["deepseek_reachable"] = True
+            results["deepseek_raw"] = resp.choices[0].message.content[:100]
+        except Exception as e:
+            results["deepseek_reachable"] = False
+            results["deepseek_error"] = f"{type(e).__name__}: {e}"
+
+    # Test direct task creation (bypass LLM)
+    try:
+        test_task = await hub_client.create_task(
+            title="[TEST] Debug task - delete me",
+            priority="LOW",
+            created_by="debug-test",
+        )
+        if test_task:
+            results["task_creation"] = "SUCCESS"
+            results["task_created_id"] = test_task.get("id")
+        else:
+            results["task_creation"] = "FAILED - returned None (check companion logs)"
+    except Exception as e:
+        results["task_creation"] = f"ERROR: {type(e).__name__}: {e}"
+
     # Show assistant LLM configs
     try:
         async with async_session() as db:
