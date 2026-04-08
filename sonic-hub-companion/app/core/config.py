@@ -11,6 +11,12 @@ class Settings(BaseSettings):
     claude_chat_model: str = "claude-haiku-4-5-20251001"
     claude_smart_model: str = "claude-sonnet-4-6"
 
+    # Together AI
+    together_api_key: str = ""
+
+    # OpenAI
+    openai_api_key: str = ""
+
     # Sonic Hub API
     sonic_hub_api_url: str = "http://localhost:8080"
 

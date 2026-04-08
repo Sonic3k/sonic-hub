@@ -1,9 +1,9 @@
 import json
-import random
 import logging
 from anthropic import AsyncAnthropic
 from app.core.config import get_settings
 from app.models.models import Message
+from app.services.providers import get_provider
 
 logger = logging.getLogger(__name__)
 
@@ -18,24 +18,21 @@ Trả về JSON object với format:
     "summary": "tóm tắt sự kiện nếu có sự kiện đáng nhớ, null nếu không",
     "emotion": "happy|sad|stressed|excited|angry|neutral",
     "importance": 1-10
-  },
-  "personality_update": {
-    "aspect": "tone|language|habit|identity",
-    "instruction": "nội dung cập nhật nếu user yêu cầu thay đổi tính cách, null nếu không"
   }
 }
 
 Chỉ trả về JSON, không giải thích gì thêm.
 Chỉ extract khi có thông tin MỚI và ĐÁNG NHỚ.
-Nếu không có gì đáng nhớ, trả facts = [], episode = null, personality_update = null."""
+Nếu không có gì đáng nhớ, trả facts = [], episode = null."""
 
 
 class LLMService:
+    """Prompt builder + provider router. Does NOT call LLM directly for chat."""
+
     def __init__(self):
         settings = get_settings()
         self.client = AsyncAnthropic(api_key=settings.anthropic_api_key)
         self.chat_model = settings.claude_chat_model
-        self.smart_model = settings.claude_smart_model
 
     def build_system_prompt(
         self,
@@ -88,7 +85,7 @@ Trả lời PHẢI là JSON object. CHỈ trả JSON, không text khác.
 {{
   "messages": [
     {{"text": "tin nhắn 1"}},
-    {{"text": "tin nhắn 2 (ý khác, nếu cần)"}}
+    {{"text": "tin nhắn 2 (nếu cần)"}}
   ],
   "actions": []
 }}
@@ -133,7 +130,6 @@ QUAN TRỌNG:
         from app.core.tz import now_local_display
         result = base_prompt
 
-        # Always inject current local time
         result += f"\n\n## Thời gian hiện tại: {now_local_display()}"
 
         if hub_context:
@@ -164,71 +160,15 @@ QUAN TRỌNG:
         return messages
 
     async def chat(
-        self, system_prompt: str, messages: list[dict], use_smart: bool = False
+        self, system_prompt: str, messages: list[dict],
+        provider_name: str = "claude", model: str = None
     ) -> dict:
-        """Call LLM, returns {messages: [...], actions: [...]}."""
-        model = self.smart_model if use_smart else self.chat_model
-        try:
-            response = await self.client.messages.create(
-                model=model,
-                max_tokens=1024,
-                system=system_prompt,
-                messages=messages,
-            )
-            raw = response.content[0].text.strip()
-            return self._parse_response(raw)
-        except Exception as e:
-            logger.error(f"Claude API error: {e}")
-            return {"messages": ["Ơ lỗi gì rồi, thử lại nha 😅"], "actions": []}
-
-    def _parse_response(self, raw: str) -> dict:
-        """Parse JSON response. Returns {messages: [...], actions: [...]}."""
-        import json
-        text = raw.strip()
-        if text.startswith("```"):
-            text = text.split("\n", 1)[1] if "\n" in text else text[3:]
-        if text.endswith("```"):
-            text = text[:-3].strip()
-
-        try:
-            data = json.loads(text)
-
-            # New format: {messages: [...], actions: [...]}
-            if isinstance(data, dict) and "messages" in data:
-                msgs = []
-                for item in data["messages"]:
-                    if isinstance(item, dict) and item.get("text"):
-                        msgs.append(item["text"].strip())
-                    elif isinstance(item, str):
-                        msgs.append(item.strip())
-                return {
-                    "messages": msgs or ["..."],
-                    "actions": data.get("actions", []),
-                }
-
-            # Legacy: plain array of messages
-            if isinstance(data, list):
-                msgs = []
-                for item in data:
-                    if isinstance(item, dict) and item.get("text"):
-                        msgs.append(item["text"].strip())
-                    elif isinstance(item, str):
-                        msgs.append(item.strip())
-                if msgs:
-                    return {"messages": msgs, "actions": []}
-
-        except (json.JSONDecodeError, TypeError):
-            pass
-
-        # Fallback: plain text
-        if "\n\n" in raw:
-            parts = [p.strip() for p in raw.split("\n\n") if p.strip()]
-            if parts:
-                return {"messages": parts, "actions": []}
-
-        return {"messages": [raw.strip()] if raw.strip() else ["..."], "actions": []}
+        """Route chat to the right provider. Returns {messages: [...], actions: [...]}."""
+        provider = get_provider(provider_name)
+        return await provider.chat(system_prompt, messages, model)
 
     async def extract_memory(self, user_message: str, assistant_reply: str) -> dict | None:
+        """Always uses Claude for memory extraction (structured task)."""
         try:
             conversation_text = f"User: {user_message}\nAssistant: {assistant_reply}"
             response = await self.client.messages.create(
@@ -246,6 +186,3 @@ QUAN TRỌNG:
         except Exception as e:
             logger.warning(f"Memory extraction failed: {e}")
             return None
-
-    # calculate_typing_delay and split_message removed — timing now driven by chat_config,
-    # message splitting by LLM JSON array response format

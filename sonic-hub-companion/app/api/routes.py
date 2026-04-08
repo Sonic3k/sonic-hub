@@ -182,6 +182,8 @@ def _assistant_response(a) -> AssistantResponse:
         telegram_bot_username=a.telegram_bot_username,
         telegram_enabled=a.telegram_enabled or False,
         telegram_owner_id=a.telegram_owner_id,
+        llm_provider=a.llm_provider or "claude",
+        llm_model=a.llm_model,
     )
 
 
@@ -225,6 +227,8 @@ async def update_assistant(
     if request.telegram_bot_username is not None: a.telegram_bot_username = request.telegram_bot_username
     if request.telegram_owner_id is not None: a.telegram_owner_id = request.telegram_owner_id
     if request.telegram_enabled is not None: a.telegram_enabled = request.telegram_enabled
+    if request.llm_provider is not None: a.llm_provider = request.llm_provider
+    if request.llm_model is not None: a.llm_model = request.llm_model
 
     await db.commit()
 
@@ -705,6 +709,14 @@ async def update_chat_config(assistant_id: str, request: dict, db: AsyncSession 
     await memory_service.upsert_chat_config(db, assistant_id, **request)
     await db.commit()
     return {"status": "updated"}
+
+
+# ─── LLM Providers ───
+
+@router.get("/llm/providers")
+async def get_llm_providers():
+    from app.services.providers import PROVIDER_MODELS
+    return PROVIDER_MODELS
 
 
 # ─── Debug ───

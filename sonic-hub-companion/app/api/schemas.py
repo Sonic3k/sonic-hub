@@ -36,6 +36,8 @@ class AssistantUpdateRequest(BaseModel):
     telegram_bot_username: str | None = None
     telegram_enabled: bool | None = None
     telegram_owner_id: str | None = None
+    llm_provider: str | None = None
+    llm_model: str | None = None
 
 
 class AssistantResponse(BaseModel):
@@ -49,6 +51,8 @@ class AssistantResponse(BaseModel):
     telegram_bot_username: str | None
     telegram_enabled: bool
     telegram_owner_id: str | None
+    llm_provider: str | None
+    llm_model: str | None
 
 
 class PersonalityRequest(BaseModel):

@@ -129,8 +129,12 @@ class ChatService:
 
         llm_messages = self.llm.build_messages(history_before, user_messages)
 
-        # 8. Call LLM — returns {messages: [...], actions: [...]}
-        llm_result = await self.llm.chat(system_prompt, llm_messages)
+        # 8. Call LLM — route to assistant's configured provider
+        llm_result = await self.llm.chat(
+            system_prompt, llm_messages,
+            provider_name=assistant.llm_provider or "claude",
+            model=assistant.llm_model,
+        )
         reply_messages = llm_result.get("messages", ["..."])
         actions = llm_result.get("actions", [])
 

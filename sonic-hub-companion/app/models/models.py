@@ -24,7 +24,10 @@ class Assistant(Base):
     telegram_bot_token = Column(String(255), nullable=True)
     telegram_bot_username = Column(String(100), nullable=True)
     telegram_enabled = Column(Boolean, default=False)
-    telegram_owner_id = Column(String(50), nullable=True)  # only this user can chat
+    telegram_owner_id = Column(String(50), nullable=True)
+    # LLM config
+    llm_provider = Column(String(20), default="claude")  # claude, together, openai
+    llm_model = Column(String(100), nullable=True)       # model string override
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 

@@ -12,6 +12,7 @@ interface Assistant {
   bio: string | null; active: boolean
   telegram_bot_username: string | null; telegram_enabled: boolean
   telegram_owner_id: string | null
+  llm_provider: string | null; llm_model: string | null
 }
 interface PersonalityItem {
   aspect: string; instruction: string
@@ -107,12 +108,17 @@ function AssistantsTab({ selected, onSelect }: { selected: Assistant | null; onS
     onSuccess: () => qc.invalidateQueries({ queryKey: ['assistants'] }),
   })
 
+  const { data: providers = {} } = useQuery<Record<string, { id: string; name: string }[]>>({
+    queryKey: ['llm-providers'],
+    queryFn: () => companionApi.get('/llm/providers').then(r => r.data),
+  })
+
   const [showCreate, setShowCreate] = useState(false)
   const [form, setForm] = useState({ name: '', nickname: '', date_of_birth: '', bio: '', telegram_bot_token: '', telegram_bot_username: '', telegram_owner_id: '' })
   const [importResult, setImportResult] = useState<any>(null)
   const [jobStatus, setJobStatus] = useState<any>(null)
   const [editingId, setEditingId] = useState<string | null>(null)
-  const [editForm, setEditForm] = useState({ telegram_bot_token: '', telegram_bot_username: '', telegram_owner_id: '', telegram_enabled: false })
+  const [editForm, setEditForm] = useState({ telegram_bot_token: '', telegram_bot_username: '', telegram_owner_id: '', telegram_enabled: false, llm_provider: 'claude', llm_model: '' })
 
   const createMutation = useMutation({
     mutationFn: (data: typeof form) => companionApi.post('/assistants', data),
@@ -396,7 +402,10 @@ function AssistantsTab({ selected, onSelect }: { selected: Assistant | null; onS
                       {a.telegram_enabled ? '🟢' : '⚪'} @{a.telegram_bot_username}
                     </span>
                   )}
-                  <button onClick={(e) => { e.stopPropagation(); setEditingId(editingId === a.id ? null : a.id); setEditForm({ telegram_bot_token: '', telegram_bot_username: a.telegram_bot_username || '', telegram_owner_id: a.telegram_owner_id || '', telegram_enabled: a.telegram_enabled }) }}
+                  <span className="text-xs px-2 py-0.5 rounded-full bg-violet-50 text-violet-600">
+                    {a.llm_provider || 'claude'}{a.llm_model ? `: ${a.llm_model.split('/').pop()?.slice(0, 20)}` : ''}
+                  </span>
+                  <button onClick={(e) => { e.stopPropagation(); setEditingId(editingId === a.id ? null : a.id); setEditForm({ telegram_bot_token: '', telegram_bot_username: a.telegram_bot_username || '', telegram_owner_id: a.telegram_owner_id || '', telegram_enabled: a.telegram_enabled, llm_provider: a.llm_provider || 'claude', llm_model: a.llm_model || '' }) }}
                     className="text-xs text-indigo-500 hover:underline">
                     {editingId === a.id ? 'Close' : 'Config'}
                   </button>
@@ -405,34 +414,64 @@ function AssistantsTab({ selected, onSelect }: { selected: Assistant | null; onS
 
               {/* Edit panel */}
               {editingId === a.id && (
-                <div className="px-4 pb-4 pt-2 border-t border-[#f3f4f6]">
-                  <h4 className="text-xs font-semibold mb-2 text-[#6b7280]">Telegram Bot Config</h4>
-                  <div className="grid grid-cols-3 gap-2 mb-2">
-                    <input placeholder="Bot Token (leave empty to keep)" value={editForm.telegram_bot_token}
-                      onChange={e => setEditForm({ ...editForm, telegram_bot_token: e.target.value })}
-                      className="px-2 py-1.5 border rounded text-xs font-mono" />
-                    <input placeholder="@BotUsername" value={editForm.telegram_bot_username}
-                      onChange={e => setEditForm({ ...editForm, telegram_bot_username: e.target.value })}
-                      className="px-2 py-1.5 border rounded text-xs" />
-                    <input placeholder="Owner Telegram ID" value={editForm.telegram_owner_id}
-                      onChange={e => setEditForm({ ...editForm, telegram_owner_id: e.target.value })}
-                      className="px-2 py-1.5 border rounded text-xs" />
-                  </div>
-                  <div className="flex items-center gap-4">
+                <div className="px-4 pb-4 pt-2 border-t border-[#f3f4f6] space-y-4">
+                  {/* Telegram Config */}
+                  <div>
+                    <h4 className="text-xs font-semibold mb-2 text-[#6b7280]">Telegram Bot</h4>
+                    <div className="grid grid-cols-3 gap-2 mb-2">
+                      <input placeholder="Bot Token (leave empty to keep)" value={editForm.telegram_bot_token}
+                        onChange={e => setEditForm({ ...editForm, telegram_bot_token: e.target.value })}
+                        className="px-2 py-1.5 border rounded text-xs font-mono" />
+                      <input placeholder="@BotUsername" value={editForm.telegram_bot_username}
+                        onChange={e => setEditForm({ ...editForm, telegram_bot_username: e.target.value })}
+                        className="px-2 py-1.5 border rounded text-xs" />
+                      <input placeholder="Owner Telegram ID" value={editForm.telegram_owner_id}
+                        onChange={e => setEditForm({ ...editForm, telegram_owner_id: e.target.value })}
+                        className="px-2 py-1.5 border rounded text-xs" />
+                    </div>
                     <label className="flex items-center gap-2 text-xs">
                       <input type="checkbox" checked={editForm.telegram_enabled}
                         onChange={e => setEditForm({ ...editForm, telegram_enabled: e.target.checked })} />
                       Enable Telegram Bot
                     </label>
-                    <button onClick={() => {
-                      const data: any = { telegram_bot_username: editForm.telegram_bot_username, telegram_owner_id: editForm.telegram_owner_id, telegram_enabled: editForm.telegram_enabled }
-                      if (editForm.telegram_bot_token) data.telegram_bot_token = editForm.telegram_bot_token
-                      updateMutation.mutate({ id: a.id, data })
-                    }}
-                      className="px-3 py-1 bg-indigo-500 text-white rounded text-xs">
-                      Save & Restart Bot
-                    </button>
                   </div>
+
+                  {/* LLM Config */}
+                  <div>
+                    <h4 className="text-xs font-semibold mb-2 text-[#6b7280]">LLM Model</h4>
+                    <div className="grid grid-cols-2 gap-2">
+                      <select value={editForm.llm_provider}
+                        onChange={e => setEditForm({ ...editForm, llm_provider: e.target.value, llm_model: '' })}
+                        className="px-2 py-1.5 border rounded text-xs">
+                        {Object.keys(providers).map(p => (
+                          <option key={p} value={p}>{p.charAt(0).toUpperCase() + p.slice(1)}</option>
+                        ))}
+                      </select>
+                      <select value={editForm.llm_model}
+                        onChange={e => setEditForm({ ...editForm, llm_model: e.target.value })}
+                        className="px-2 py-1.5 border rounded text-xs">
+                        <option value="">Default</option>
+                        {(providers[editForm.llm_provider] || []).map((m: any) => (
+                          <option key={m.id} value={m.id}>{m.name}</option>
+                        ))}
+                      </select>
+                    </div>
+                  </div>
+
+                  <button onClick={() => {
+                    const data: any = {
+                      telegram_bot_username: editForm.telegram_bot_username,
+                      telegram_owner_id: editForm.telegram_owner_id,
+                      telegram_enabled: editForm.telegram_enabled,
+                      llm_provider: editForm.llm_provider,
+                      llm_model: editForm.llm_model || null,
+                    }
+                    if (editForm.telegram_bot_token) data.telegram_bot_token = editForm.telegram_bot_token
+                    updateMutation.mutate({ id: a.id, data })
+                  }}
+                    className="px-3 py-1 bg-indigo-500 text-white rounded text-xs">
+                    Save
+                  </button>
                 </div>
               )}
             </div>

@@ -31,6 +31,8 @@ async def init_db():
             "ALTER TABLE companion_assistants ADD COLUMN IF NOT EXISTS telegram_bot_username VARCHAR(100)",
             "ALTER TABLE companion_assistants ADD COLUMN IF NOT EXISTS telegram_enabled BOOLEAN DEFAULT FALSE",
             "ALTER TABLE companion_assistants ADD COLUMN IF NOT EXISTS telegram_owner_id VARCHAR(50)",
+            "ALTER TABLE companion_assistants ADD COLUMN IF NOT EXISTS llm_provider VARCHAR(20) DEFAULT 'claude'",
+            "ALTER TABLE companion_assistants ADD COLUMN IF NOT EXISTS llm_model VARCHAR(100)",
             "ALTER TABLE companion_conversations ADD COLUMN IF NOT EXISTS assistant_id UUID",
             "DROP INDEX IF EXISTS idx_profile_assistant_key",
         ]
