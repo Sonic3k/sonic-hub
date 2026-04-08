@@ -821,6 +821,11 @@ function ConversationsTab({ assistantId }: { assistantId: string }) {
     enabled: !!openConv,
   })
 
+  const deleteConv = useMutation({
+    mutationFn: (id: string) => companionApi.delete(`/conversations/${id}`),
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ['conversations'] }); setOpenConv(null) },
+  })
+
   return (
     <div>
       {conversations.length === 0 ? (
@@ -829,18 +834,24 @@ function ConversationsTab({ assistantId }: { assistantId: string }) {
         <div className="space-y-2">
           {conversations.map(c => (
             <div key={c.id} className="bg-white rounded-xl border border-[#e5e7eb]">
-              <button onClick={() => setOpenConv(openConv === c.id ? null : c.id)}
-                className="w-full flex items-center gap-3 px-4 py-3 text-left">
-                {openConv === c.id ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
-                <div className="flex-1">
-                  <span className="text-sm text-[#374151]">
-                    {new Date(c.started_at).toLocaleString('vi-VN')}
-                  </span>
-                  <span className={clsx('ml-2 text-xs px-1.5 py-0.5 rounded', c.is_active ? 'bg-green-50 text-green-600' : 'bg-gray-50 text-gray-500')}>
-                    {c.is_active ? 'Active' : 'Ended'}
-                  </span>
-                </div>
-              </button>
+              <div className="flex items-center">
+                <button onClick={() => setOpenConv(openConv === c.id ? null : c.id)}
+                  className="flex-1 flex items-center gap-3 px-4 py-3 text-left">
+                  {openConv === c.id ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
+                  <div className="flex-1">
+                    <span className="text-sm text-[#374151]">
+                      {new Date(c.started_at).toLocaleString('vi-VN')}
+                    </span>
+                    <span className={clsx('ml-2 text-xs px-1.5 py-0.5 rounded', c.is_active ? 'bg-green-50 text-green-600' : 'bg-gray-50 text-gray-500')}>
+                      {c.is_active ? 'Active' : 'Ended'}
+                    </span>
+                  </div>
+                </button>
+                <button onClick={() => { if (confirm('Delete conversation + all messages?')) deleteConv.mutate(c.id) }}
+                  className="px-3 text-red-300 hover:text-red-500">
+                  <Trash2 size={14} />
+                </button>
+              </div>
               {openConv === c.id && (
                 <div className="px-4 pb-4 space-y-2 border-t border-[#f3f4f6] pt-3 max-h-96 overflow-y-auto">
                   {messages.map(m => (

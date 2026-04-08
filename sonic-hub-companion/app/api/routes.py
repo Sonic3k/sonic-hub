@@ -403,6 +403,19 @@ async def get_conversation_messages(
     ]
 
 
+@router.delete("/conversations/{conversation_id}")
+async def delete_conversation(conversation_id: str, db: AsyncSession = Depends(get_db)):
+    from app.models.models import Message as MsgModel
+    # Delete messages first (FK)
+    await db.execute(MsgModel.__table__.delete().where(MsgModel.conversation_id == conversation_id))
+    result = await db.execute(select(Conversation).where(Conversation.id == conversation_id))
+    conv = result.scalar_one_or_none()
+    if conv:
+        await db.delete(conv)
+    await db.commit()
+    return {"status": "deleted"}
+
+
 # ─── Vocabulary ───
 
 @router.get("/vocabulary/{assistant_id}")
