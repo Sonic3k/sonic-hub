@@ -162,10 +162,6 @@ async def _debounced_reply(update, context, assistant_id, chat_id, buf_key, debo
         if not messages:
             return
 
-        # Limit reply count based on config weights
-        max_replies = _weighted_reply_count(config)
-        messages = messages[:max_replies]
-
         # Simulate response delay (think time before first message)
         think_time = _calc_think_time(messages[0] if messages else "", config)
         await update.message.chat.send_action("typing")
@@ -193,15 +189,6 @@ async def _get_config(assistant_id: str):
             return await memory_service.get_chat_config(db, assistant_id)
     except Exception:
         return None
-
-
-def _weighted_reply_count(config) -> int:
-    """Pick reply count based on distribution weights."""
-    if not config or not config.reply_count_weights:
-        return 2
-    weights = config.reply_count_weights
-    choices = list(range(1, len(weights) + 1))
-    return random.choices(choices, weights=weights, k=1)[0]
 
 
 def _calc_think_time(first_chunk: str, config) -> float:
