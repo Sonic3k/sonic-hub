@@ -772,7 +772,7 @@ async def debug_integration():
             from openai import AsyncOpenAI
             client = AsyncOpenAI(api_key=settings.together_api_key, base_url="https://api.together.xyz/v1")
             resp = await client.chat.completions.create(
-                model="meta-llama/Meta-Llama-3.1-70B-Instruct-Turbo",
+                model="meta-llama/Llama-3.3-70B-Instruct-Turbo",
                 max_tokens=20,
                 messages=[{"role": "user", "content": "say ok"}],
             )

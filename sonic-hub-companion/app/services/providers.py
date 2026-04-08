@@ -18,12 +18,12 @@ PROVIDER_MODELS = {
         {"id": "claude-sonnet-4-6", "name": "Claude Sonnet 4.6 (smart)"},
     ],
     "together": [
-        {"id": "meta-llama/Llama-3-70b-chat-hf", "name": "LLaMA 3 70B"},
+        {"id": "meta-llama/Llama-3.3-70B-Instruct-Turbo", "name": "LLaMA 3.3 70B Turbo"},
         {"id": "meta-llama/Meta-Llama-3.1-8B-Instruct-Turbo", "name": "LLaMA 3.1 8B Turbo (fast)"},
-        {"id": "meta-llama/Meta-Llama-3.1-70B-Instruct-Turbo", "name": "LLaMA 3.1 70B Turbo"},
-        {"id": "meta-llama/Meta-Llama-3.1-405B-Instruct-Turbo", "name": "LLaMA 3.1 405B (best)"},
-        {"id": "mistralai/Mixtral-8x7B-Instruct-v0.1", "name": "Mixtral 8x7B"},
-        {"id": "mistralai/Mistral-7B-Instruct-v0.3", "name": "Mistral 7B"},
+        {"id": "mistralai/Mixtral-8x22B-Instruct-v0.1", "name": "Mixtral 8x22B"},
+        {"id": "mistralai/Mistral-7B-Instruct-v0.3", "name": "Mistral 7B (fast)"},
+        {"id": "Qwen/Qwen2.5-72B-Instruct-Turbo", "name": "Qwen 2.5 72B"},
+        {"id": "deepseek-ai/DeepSeek-V3", "name": "DeepSeek V3"},
     ],
     "openai": [
         {"id": "gpt-4o", "name": "GPT-4o"},
@@ -72,7 +72,7 @@ class TogetherProvider(LLMProvider):
             api_key=settings.together_api_key,
             base_url="https://api.together.xyz/v1",
         )
-        self.default_model = "meta-llama/Meta-Llama-3.1-70B-Instruct-Turbo"
+        self.default_model = "meta-llama/Llama-3.3-70B-Instruct-Turbo"
 
     async def chat(self, system_prompt: str, messages: list[dict], model: str = None) -> dict:
         model = model or self.default_model
