@@ -16,7 +16,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
-import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.UUID;
 
@@ -143,7 +142,7 @@ public class CollectionService {
         if (req.getName() != null) c.setName(req.getName());
         if (req.getDescription() != null) c.setDescription(req.getDescription());
         if (req.getParentId() != null) {
-            if (req.getParentId() == 0) c.setParent(null);
+            if (req.getParentId().equals(new UUID(0, 0))) c.setParent(null);
             else c.setParent(findById(req.getParentId()));
         }
         if (req.getPersonIds() != null) {
