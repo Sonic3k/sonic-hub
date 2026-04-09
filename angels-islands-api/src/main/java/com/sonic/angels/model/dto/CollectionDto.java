@@ -10,13 +10,13 @@ public class CollectionDto {
         private String description;
         private Long parentId;
         private Set<Long> personIds;
-        private Set<Long> tagIds;
+        private Set<java.util.UUID> tagIds;
 
         public String getName() { return name; } public void setName(String v) { this.name = v; }
         public String getDescription() { return description; } public void setDescription(String v) { this.description = v; }
         public Long getParentId() { return parentId; } public void setParentId(Long v) { this.parentId = v; }
         public Set<Long> getPersonIds() { return personIds; } public void setPersonIds(Set<Long> v) { this.personIds = v; }
-        public Set<Long> getTagIds() { return tagIds; } public void setTagIds(Set<Long> v) { this.tagIds = v; }
+        public Set<java.util.UUID> getTagIds() { return tagIds; } public void setTagIds(Set<java.util.UUID> v) { this.tagIds = v; }
     }
 
     public static class Response {

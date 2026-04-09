@@ -26,7 +26,7 @@ export interface PersonRequest {
   isFavorite?: boolean; isFeatured?: boolean; tagIds?: number[]
 }
 
-export interface TagResponse { id: number; name: string; color?: string; description?: string }
+export interface TagResponse { id: string; name: string; color?: string; description?: string }
 export interface TagRequest { name: string; color?: string; description?: string }
 
 export interface MediaFileResponse {

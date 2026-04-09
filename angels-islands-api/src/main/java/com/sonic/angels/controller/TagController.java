@@ -7,6 +7,7 @@ import com.sonic.angels.service.TagService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/tags")
@@ -22,10 +23,10 @@ public class TagController {
 
     @PostMapping
     public TagDto.Response create(@RequestBody TagDto.Request req) {
-        Tag t = new Tag(); t.setName(req.getName()); t.setColor(req.getColor()); t.setDescription(req.getDescription());
+        Tag t = new Tag(); t.setName(req.getName()); t.setColor(req.getColor());
         return mapper.toTagResponse(tagService.save(t));
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> delete(@PathVariable Long id) { tagService.delete(id); return ResponseEntity.noContent().build(); }
+    public ResponseEntity<Void> delete(@PathVariable UUID id) { tagService.delete(id); return ResponseEntity.noContent().build(); }
 }

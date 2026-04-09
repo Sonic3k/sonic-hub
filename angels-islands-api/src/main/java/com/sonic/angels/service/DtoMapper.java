@@ -14,7 +14,7 @@ public class DtoMapper {
     // ── Tag ──────────────────────────────────────────────────────────────────
     public TagDto.Response toTagResponse(Tag t) {
         TagDto.Response r = new TagDto.Response();
-        r.setId(t.getId()); r.setName(t.getName()); r.setColor(t.getColor()); r.setDescription(t.getDescription());
+        r.setId(t.getId()); r.setName(t.getName()); r.setColor(t.getColor());
         return r;
     }
 
@@ -43,18 +43,6 @@ public class DtoMapper {
         if (p.getCoverMediaFile() != null) d.setCoverUrl(storageService.buildCdnUrl(p.getCoverMediaFile().getStorageKey(), p.getCoverMediaFile().getStorageProvider()));
         if (p.getBannerMediaFile() != null) d.setBannerUrl(storageService.buildCdnUrl(p.getBannerMediaFile().getStorageKey(), p.getBannerMediaFile().getStorageProvider()));
         return d;
-    }
-
-    // ── Collection ───────────────────────────────────────────────────────────
-    public CollectionDto.Response toCollectionResponse(Collection c) {
-        CollectionDto.Response r = new CollectionDto.Response();
-        r.setId(c.getId()); r.setName(c.getName()); r.setDescription(c.getDescription());
-        r.setParentId(c.getParent() != null ? c.getParent().getId() : null);
-        r.setMediaCount(c.getMediaFiles() != null ? c.getMediaFiles().size() : 0);
-        r.setPersonCount(c.getPersons() != null ? c.getPersons().size() : 0);
-        if (c.getThumbnailMediaFile() != null) r.setThumbnailUrl(storageService.buildCdnUrl(c.getThumbnailMediaFile().getStorageKey()));
-        r.setCreatedAt(c.getCreatedAt());
-        return r;
     }
 
     // ── MediaFile ────────────────────────────────────────────────────────────

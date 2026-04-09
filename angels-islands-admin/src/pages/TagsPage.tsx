@@ -9,7 +9,7 @@ export default function TagsPage() {
   const { data: tags = [], isLoading } = useQuery({ queryKey: ['tags'], queryFn: tagsApi.getAll })
   const qc = useQueryClient()
   const create = useMutation({ mutationFn: (d: TagRequest) => tagsApi.create(d), onSuccess: () => qc.invalidateQueries({ queryKey: ['tags'] }) })
-  const remove = useMutation({ mutationFn: (id: number) => tagsApi.delete(id), onSuccess: () => qc.invalidateQueries({ queryKey: ['tags'] }) })
+  const remove = useMutation({ mutationFn: (id: string) => tagsApi.delete(id), onSuccess: () => qc.invalidateQueries({ queryKey: ['tags'] }) })
   const [showForm, setShowForm] = useState(false)
   const [name, setName] = useState('')
 
