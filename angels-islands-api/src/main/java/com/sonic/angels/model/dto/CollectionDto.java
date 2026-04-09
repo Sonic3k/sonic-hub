@@ -45,16 +45,13 @@ public class CollectionDto {
         public Set<PersonDto.Summary> getPersons() { return persons; } public void setPersons(Set<PersonDto.Summary> v) { this.persons = v; }
         public LocalDateTime getCreatedAt() { return createdAt; } public void setCreatedAt(LocalDateTime v) { this.createdAt = v; }
     }
-}
 
     // ── Tree creation (batch) ────────────────────────────────────────────────
-    // POST /api/collections/create-tree
-    // Creates root + nested sub-collections from folder paths in one call
 
     public static class TreeRequest {
         private String rootName;
         private java.util.Set<UUID> personIds;
-        private java.util.List<String> folders; // ["2010", "2011", "2011/summer"]
+        private java.util.List<String> folders;
 
         public String getRootName() { return rootName; } public void setRootName(String v) { this.rootName = v; }
         public java.util.Set<UUID> getPersonIds() { return personIds; } public void setPersonIds(java.util.Set<UUID> v) { this.personIds = v; }
@@ -63,8 +60,9 @@ public class CollectionDto {
 
     public static class TreeResponse {
         private UUID rootId;
-        private java.util.Map<String, UUID> pathToId; // "2011/summer" → uuid
+        private java.util.Map<String, UUID> pathToId;
 
         public UUID getRootId() { return rootId; } public void setRootId(UUID v) { this.rootId = v; }
         public java.util.Map<String, UUID> getPathToId() { return pathToId; } public void setPathToId(java.util.Map<String, UUID> v) { this.pathToId = v; }
     }
+}
