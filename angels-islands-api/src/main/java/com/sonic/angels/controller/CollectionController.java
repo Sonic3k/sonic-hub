@@ -35,6 +35,11 @@ public class CollectionController {
     @PostMapping
     public CollectionDto.Response create(@RequestBody CollectionDto.Request req) { return collectionService.create(req); }
 
+    @PostMapping("/create-tree")
+    public CollectionDto.TreeResponse createTree(@RequestBody CollectionDto.TreeRequest req) {
+        return collectionService.createTree(req);
+    }
+
     @PutMapping("/{id}")
     public CollectionDto.Response update(@PathVariable UUID id, @RequestBody CollectionDto.Request req) { return collectionService.update(id, req); }
 

@@ -7,3 +7,27 @@ export const collectionsApi = {
   update: (id: string, data: CollectionRequest) => api.put<CollectionResponse>(`/api/collections/${id}`, data).then(r => r.data),
   delete: (id: string) => api.delete(`/api/collections/${id}`),
 }
+
+export interface TreeRequest {
+  rootName: string
+  personIds?: string[]
+  folders: string[]
+}
+
+export interface TreeResponse {
+  rootId: string
+  pathToId: Record<string, string>
+}
+
+export const uploadApi = {
+  createTree: (data: TreeRequest) => api.post<TreeResponse>('/api/collections/create-tree', data).then(r => r.data),
+  uploadFile: (file: File, personId?: string, subFolder?: string) => {
+    const form = new FormData()
+    form.append('file', file)
+    if (personId) form.append('personId', personId)
+    if (subFolder) form.append('subFolder', subFolder)
+    return api.post('/api/media-files/upload', form, { headers: { 'Content-Type': 'multipart/form-data' } }).then(r => r.data)
+  },
+  linkMediaToCollection: (collectionId: string, mediaId: string) =>
+    api.post(`/api/collections/${collectionId}/media/${mediaId}`),
+}

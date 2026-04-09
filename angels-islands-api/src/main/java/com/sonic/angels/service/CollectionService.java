@@ -172,3 +172,58 @@ public class CollectionService {
         return r;
     }
 }
+
+    // ── Tree creation (folder upload) ────────────────────────────────────────
+
+    public CollectionDto.TreeResponse createTree(CollectionDto.TreeRequest req) {
+        // 1. Create root collection
+        Collection root = new Collection();
+        root.setName(req.getRootName());
+        if (req.getPersonIds() != null && !req.getPersonIds().isEmpty()) {
+            root.setPersons(new HashSet<>(personRepository.findAllById(req.getPersonIds())));
+        }
+        root = collectionRepository.save(root);
+
+        // 2. Build path → collection map
+        Map<String, UUID> pathToId = new HashMap<>();
+        pathToId.put("", root.getId()); // root = empty path
+
+        if (req.getFolders() != null) {
+            // Sort so parents come before children
+            List<String> sorted = req.getFolders().stream().sorted().toList();
+
+            for (String folderPath : sorted) {
+                String[] parts = folderPath.split("/");
+                StringBuilder currentPath = new StringBuilder();
+
+                for (int i = 0; i < parts.length; i++) {
+                    if (i > 0) currentPath.append("/");
+                    currentPath.append(parts[i]);
+                    String key = currentPath.toString();
+
+                    if (!pathToId.containsKey(key)) {
+                        // Find parent
+                        String parentPath = key.contains("/") ? key.substring(0, key.lastIndexOf("/")) : "";
+                        UUID parentId = pathToId.get(parentPath);
+
+                        Collection sub = new Collection();
+                        sub.setName(parts[i]);
+                        sub.setParent(collectionRepository.findById(parentId).orElse(root));
+                        // Inherit persons from root
+                        if (root.getPersons() != null && !root.getPersons().isEmpty()) {
+                            sub.setPersons(new HashSet<>(root.getPersons()));
+                        }
+                        sub = collectionRepository.save(sub);
+                        pathToId.put(key, sub.getId());
+                    }
+                }
+            }
+        }
+
+        // 3. Build response
+        CollectionDto.TreeResponse resp = new CollectionDto.TreeResponse();
+        resp.setRootId(root.getId());
+        pathToId.remove(""); // don't include root in path map
+        resp.setPathToId(pathToId);
+        return resp;
+    }

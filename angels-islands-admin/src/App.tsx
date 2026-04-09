@@ -6,6 +6,7 @@ import PersonDetailPage from './pages/PersonDetailPage'
 import CollectionsPage from './pages/CollectionsPage'
 import MediaPage from './pages/MediaPage'
 import TagsPage from './pages/TagsPage'
+import UploadPage from './pages/UploadPage'
 import MemoryPage from './pages/MemoryPage'
 
 const queryClient = new QueryClient({
@@ -23,6 +24,7 @@ export default function App() {
             <Route path="collections" element={<CollectionsPage />} />
             <Route path="media" element={<MediaPage />} />
             <Route path="tags" element={<TagsPage />} />
+            <Route path="upload" element={<UploadPage />} />
             <Route path="memory" element={<MemoryPage />} />
           </Route>
         </Routes>
