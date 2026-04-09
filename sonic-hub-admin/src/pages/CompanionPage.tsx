@@ -894,7 +894,10 @@ function PlaygroundTab({ assistant }: { assistant: Assistant }) {
       assistant_id: assistant.id,
     }),
     onSuccess: (res) => {
-      setMessages(prev => [...prev, { role: 'assistant', content: res.data.reply }])
+      const msgs = res.data.messages || []
+      for (const msg of msgs) {
+        setMessages(prev => [...prev, { role: 'assistant', content: msg }])
+      }
     },
   })
 
