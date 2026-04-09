@@ -36,7 +36,11 @@ export interface MediaFileResponse {
   effectiveDate?: string; uploadedAt?: string
 }
 
-export interface CollectionResponse { id: string; name: string; description?: string; parentId?: number; mediaCount?: number; personCount?: number; thumbnailUrl?: string }
+export interface CollectionResponse {
+  id: string; name: string; description?: string; parentId?: string; parentName?: string
+  childrenCount?: number; mediaCount?: number; thumbnailUrl?: string; createdAt?: string
+  tags?: TagResponse[]; persons?: { id: string; name: string; displayName?: string; avatarUrl?: string }[]
+}
 export interface CollectionRequest { name: string; description?: string; parentId?: number }
 
 export interface ChatArchiveResponse {
