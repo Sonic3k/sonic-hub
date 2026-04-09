@@ -15,7 +15,7 @@ type Tab = 'info' | 'memory' | 'chat'
 
 export default function PersonDetailPage() {
   const { id } = useParams<{ id: string }>()
-  const pid = Number(id)
+  const pid = id!
   const navigate = useNavigate()
   const { data: person, isLoading } = usePerson(pid)
   const updatePerson = useUpdatePerson(pid)

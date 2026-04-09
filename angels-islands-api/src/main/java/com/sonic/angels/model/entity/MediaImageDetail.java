@@ -1,5 +1,6 @@
 package com.sonic.angels.model.entity;
 
+import java.util.UUID;
 import jakarta.persistence.*;
 
 @Entity
@@ -7,7 +8,7 @@ import jakarta.persistence.*;
 public class MediaImageDetail {
 
     @Id
-    private Long id;
+    private UUID id;
 
     @OneToOne(fetch = FetchType.LAZY)
     @MapsId
@@ -39,8 +40,8 @@ public class MediaImageDetail {
 
     public MediaImageDetail() {}
 
-    public Long getId() { return id; }
-    public void setId(Long id) { this.id = id; }
+    public UUID getId() { return id; }
+    public void setId(UUID id) { this.id = id; }
     public MediaFile getMediaFile() { return mediaFile; }
     public void setMediaFile(MediaFile mediaFile) { this.mediaFile = mediaFile; }
     public String getCameraMake() { return cameraMake; }

@@ -1,6 +1,7 @@
 package com.sonic.angels.model.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import java.util.UUID;
 import jakarta.persistence.*;
 import java.util.HashSet;
 import java.util.Set;
@@ -10,8 +11,8 @@ import java.util.Set;
 public class Collection extends BaseEntity {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @GeneratedValue(strategy = GenerationType.UUID)
+    private UUID id;
 
     @Column(nullable = false)
     private String name;
@@ -56,8 +57,8 @@ public class Collection extends BaseEntity {
 
     public Collection() {}
 
-    public Long getId() { return id; }
-    public void setId(Long id) { this.id = id; }
+    public UUID getId() { return id; }
+    public void setId(UUID id) { this.id = id; }
     public String getName() { return name; }
     public void setName(String name) { this.name = name; }
     public String getDescription() { return description; }

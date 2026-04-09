@@ -16,7 +16,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
+import java.util.UUID;
 import java.util.stream.Collectors;
+import java.util.UUID;
 
 @Service
 @Transactional
@@ -48,19 +50,19 @@ public class CollectionService {
         return collectionRepository.findByParentIsNull().stream().map(this::toResponse).toList();
     }
 
-    public List<CollectionDto.Response> findByPersonId(Long personId) {
+    public List<CollectionDto.Response> findByPersonId(UUID personId) {
         return collectionRepository.findByPersonsId(personId).stream().map(this::toResponse).toList();
     }
 
-    public List<CollectionDto.Response> findByParentId(Long parentId) {
+    public List<CollectionDto.Response> findByParentId(UUID parentId) {
         return collectionRepository.findByParentId(parentId).stream().map(this::toResponse).toList();
     }
 
-    public CollectionDto.Response findResponseById(Long id) {
+    public CollectionDto.Response findResponseById(UUID id) {
         return toResponse(findById(id));
     }
 
-    public Collection findById(Long id) {
+    public Collection findById(UUID id) {
         return collectionRepository.findById(id).orElseThrow(() -> new RuntimeException("Collection not found: " + id));
     }
 
@@ -70,13 +72,13 @@ public class CollectionService {
         return toResponse(collectionRepository.save(c));
     }
 
-    public CollectionDto.Response update(Long id, CollectionDto.Request req) {
+    public CollectionDto.Response update(UUID id, CollectionDto.Request req) {
         Collection c = findById(id);
         applyRequest(c, req);
         return toResponse(collectionRepository.save(c));
     }
 
-    public void delete(Long id) {
+    public void delete(UUID id) {
         Collection c = findById(id);
         deleteRecursive(c);
     }
@@ -94,27 +96,27 @@ public class CollectionService {
 
     // ── Media management ─────────────────────────────────────────────────────
 
-    public void addMedia(Long collectionId, Long mediaId) {
+    public void addMedia(UUID collectionId, UUID mediaId) {
         Collection c = findById(collectionId);
         MediaFile m = mediaFileRepository.findById(mediaId).orElseThrow(() -> new RuntimeException("MediaFile not found: " + mediaId));
         c.getMediaFiles().add(m);
         collectionRepository.save(c);
     }
 
-    public void removeMedia(Long collectionId, Long mediaId) {
+    public void removeMedia(UUID collectionId, UUID mediaId) {
         Collection c = findById(collectionId);
         c.getMediaFiles().removeIf(m -> m.getId().equals(mediaId));
         collectionRepository.save(c);
     }
 
-    public List<MediaFileDto.Response> getMedia(Long collectionId) {
+    public List<MediaFileDto.Response> getMedia(UUID collectionId) {
         Collection c = findById(collectionId);
         return c.getMediaFiles().stream().map(mapper::toMediaFileResponse).toList();
     }
 
     // ── Thumbnail ────────────────────────────────────────────────────────────
 
-    public CollectionDto.Response setThumbnail(Long collectionId, Long mediaId) {
+    public CollectionDto.Response setThumbnail(UUID collectionId, UUID mediaId) {
         Collection c = findById(collectionId);
         MediaFile m = mediaFileRepository.findById(mediaId).orElseThrow();
         c.setThumbnailMediaFile(m);
@@ -123,7 +125,7 @@ public class CollectionService {
 
     // ── Breadcrumb ───────────────────────────────────────────────────────────
 
-    public List<CollectionDto.Response> getBreadcrumb(Long id) {
+    public List<CollectionDto.Response> getBreadcrumb(UUID id) {
         List<CollectionDto.Response> crumbs = new ArrayList<>();
         Collection c = collectionRepository.findById(id).orElse(null);
         while (c != null) {

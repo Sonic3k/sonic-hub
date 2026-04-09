@@ -5,11 +5,11 @@ import type { PersonSummary } from '../types'
 
 export default function MemoryPage() {
   const { data: persons = [] } = usePersons()
-  const [selectedId, setSelectedId] = useState<number | null>(null)
-  const { data: facts = [] } = useFacts(selectedId || 0)
-  const { data: episodes = [] } = useEpisodes(selectedId || 0)
-  const { data: chapters = [] } = useChapters(selectedId || 0)
-  const { data: traits = [] } = useTraits(selectedId || 0)
+  const [selectedId, setSelectedId] = useState<string | null>(null)
+  const { data: facts = [] } = useFacts(selectedId || '')
+  const { data: episodes = [] } = useEpisodes(selectedId || '')
+  const { data: chapters = [] } = useChapters(selectedId || '')
+  const { data: traits = [] } = useTraits(selectedId || '')
 
   return (
     <div className="p-4 md:p-8">

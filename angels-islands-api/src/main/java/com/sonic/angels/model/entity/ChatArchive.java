@@ -1,6 +1,7 @@
 package com.sonic.angels.model.entity;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
+import java.util.UUID;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -11,8 +12,8 @@ import java.util.List;
 public class ChatArchive extends BaseEntity {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @GeneratedValue(strategy = GenerationType.UUID)
+    private UUID id;
 
     @JsonIgnore
     @ManyToOne(fetch = FetchType.LAZY)
@@ -52,8 +53,8 @@ public class ChatArchive extends BaseEntity {
 
     public ChatArchive() {}
 
-    public Long getId() { return id; }
-    public void setId(Long id) { this.id = id; }
+    public UUID getId() { return id; }
+    public void setId(UUID id) { this.id = id; }
     public Person getPerson() { return person; }
     public void setPerson(Person person) { this.person = person; }
     public Platform getPlatform() { return platform; }

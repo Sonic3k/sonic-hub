@@ -22,10 +22,10 @@ public class MediaFileService {
     }
 
     public List<MediaFile> findAll() { return mediaFileRepository.findAll(); }
-    public MediaFile findById(Long id) { return mediaFileRepository.findById(id).orElseThrow(() -> new RuntimeException("MediaFile not found: " + id)); }
-    public List<MediaFile> findByPersonId(Long personId) { return mediaFileRepository.findByPersonId(personId); }
+    public MediaFile findById(UUID id) { return mediaFileRepository.findById(id).orElseThrow(() -> new RuntimeException("MediaFile not found: " + id)); }
+    public List<MediaFile> findByPersonId(UUID personId) { return mediaFileRepository.findByPersonId(personId); }
 
-    public MediaFile upload(MultipartFile file, Long personId, String subFolder) throws IOException {
+    public MediaFile upload(MultipartFile file, UUID personId, String subFolder) throws IOException {
         String ext = getExtension(file.getOriginalFilename());
         String storageKey = (personId != null ? "person-" + personId : "general") + "/" + (subFolder != null ? subFolder + "/" : "") + UUID.randomUUID() + ext;
 
@@ -42,7 +42,7 @@ public class MediaFileService {
         return mediaFileRepository.save(mf);
     }
 
-    public void delete(Long id) {
+    public void delete(UUID id) {
         MediaFile mf = findById(id);
         if (mf.getStorageProvider() == MediaFile.StorageProvider.B2 && mf.getStorageKey() != null) {
             storageService.delete(mf.getStorageKey());

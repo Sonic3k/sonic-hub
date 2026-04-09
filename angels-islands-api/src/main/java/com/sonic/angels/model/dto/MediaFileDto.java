@@ -1,13 +1,14 @@
 package com.sonic.angels.model.dto;
 
 import com.sonic.angels.model.entity.MediaFile;
+import java.util.UUID;
 import java.time.LocalDateTime;
 import java.util.Set;
 
 public class MediaFileDto {
 
     public static class Response {
-        private Long id; private String fileName; private MediaFile.FileType fileType;
+        private UUID id; private String fileName; private MediaFile.FileType fileType;
         private MediaFile.MediaCategory mediaCategory; private MediaFile.Orientation orientation;
         private Long fileSize; private Integer width; private Integer height; private Float aspectRatio;
         private Integer duration; private Boolean isFavorite; private Boolean isFeatured;
@@ -15,7 +16,7 @@ public class MediaFileDto {
         private LocalDateTime effectiveDate; private LocalDateTime uploadedAt;
         private Set<PersonDto.Summary> persons; private Set<TagDto.Response> tags;
 
-        public Long getId() { return id; } public void setId(Long v) { this.id = v; }
+        public UUID getId() { return id; } public void setId(UUID v) { this.id = v; }
         public String getFileName() { return fileName; } public void setFileName(String v) { this.fileName = v; }
         public MediaFile.FileType getFileType() { return fileType; } public void setFileType(MediaFile.FileType v) { this.fileType = v; }
         public MediaFile.MediaCategory getMediaCategory() { return mediaCategory; } public void setMediaCategory(MediaFile.MediaCategory v) { this.mediaCategory = v; }

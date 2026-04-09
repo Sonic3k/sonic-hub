@@ -4,7 +4,7 @@ export type ExtractionStatus = 'PENDING' | 'EXTRACTING' | 'DONE' | 'ERROR'
 
 // List response (Summary DTO)
 export interface PersonSummary {
-  id: number; name: string; displayName?: string; nickname?: string
+  id: string; name: string; displayName?: string; nickname?: string
   relationshipType?: RelationshipType; period?: string
   isFavorite?: boolean; isFeatured?: boolean; avatarUrl?: string; song?: string
 }
@@ -30,28 +30,28 @@ export interface TagResponse { id: string; name: string; color?: string; descrip
 export interface TagRequest { name: string; color?: string; description?: string }
 
 export interface MediaFileResponse {
-  id: number; fileName: string; fileType: 'IMAGE' | 'VIDEO'; mediaCategory?: string
+  id: string; fileName: string; fileType: 'IMAGE' | 'VIDEO'; mediaCategory?: string
   fileSize?: number; width?: number; height?: number; mimeType?: string
   caption?: string; cdnUrl?: string; thumbnailUrl?: string
   effectiveDate?: string; uploadedAt?: string
 }
 
-export interface CollectionResponse { id: number; name: string; description?: string; parentId?: number; mediaCount?: number; personCount?: number; thumbnailUrl?: string }
+export interface CollectionResponse { id: string; name: string; description?: string; parentId?: number; mediaCount?: number; personCount?: number; thumbnailUrl?: string }
 export interface CollectionRequest { name: string; description?: string; parentId?: number }
 
 export interface ChatArchiveResponse {
-  id: number; platform: Platform; title?: string; messageCount?: number
+  id: string; platform: Platform; title?: string; messageCount?: number
   dateFrom?: string; dateTo?: string; extractionStatus: ExtractionStatus; createdAt: string
 }
 
-export interface FactResponse { id: number; category: string; key: string; value: string; period?: string; confidence?: number; createdAt?: string }
+export interface FactResponse { id: string; category: string; key: string; value: string; period?: string; confidence?: number; createdAt?: string }
 export interface FactRequest { category: string; key: string; value: string; period?: string; confidence?: number }
 
-export interface EpisodeResponse { id: number; summary: string; emotion?: string; importance?: number; occurredAt?: string; createdAt?: string }
+export interface EpisodeResponse { id: string; summary: string; emotion?: string; importance?: number; occurredAt?: string; createdAt?: string }
 export interface EpisodeRequest { summary: string; emotion?: string; importance?: number; occurredAt?: string }
 
-export interface ChapterResponse { id: number; period: string; title?: string; summary?: string; sentiment?: string; sortOrder?: number; createdAt?: string }
+export interface ChapterResponse { id: string; period: string; title?: string; summary?: string; sentiment?: string; sortOrder?: number; createdAt?: string }
 export interface ChapterRequest { period: string; title?: string; summary?: string; sentiment?: string; sortOrder?: number }
 
-export interface TraitResponse { id: number; trait: string; description?: string; evidence?: string; period?: string; createdAt?: string }
+export interface TraitResponse { id: string; trait: string; description?: string; evidence?: string; period?: string; createdAt?: string }
 export interface TraitRequest { trait: string; description?: string; evidence?: string; period?: string }

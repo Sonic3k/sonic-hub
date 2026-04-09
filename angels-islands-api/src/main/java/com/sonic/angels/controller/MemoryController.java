@@ -7,6 +7,7 @@ import com.sonic.angels.service.DtoMapper;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/persons/{personId}/memory")
@@ -28,10 +29,10 @@ public class MemoryController {
     }
 
     @GetMapping("/facts")
-    public List<MemoryDto.FactResponse> getFacts(@PathVariable Long personId) { return factRepo.findByPersonId(personId).stream().map(mapper::toFactResponse).toList(); }
+    public List<MemoryDto.FactResponse> getFacts(@PathVariable UUID personId) { return factRepo.findByPersonId(personId).stream().map(mapper::toFactResponse).toList(); }
 
     @PostMapping("/facts")
-    public MemoryDto.FactResponse createFact(@PathVariable Long personId, @RequestBody MemoryDto.FactRequest req) {
+    public MemoryDto.FactResponse createFact(@PathVariable UUID personId, @RequestBody MemoryDto.FactRequest req) {
         Fact f = new Fact(); f.setPerson(personRepo.findById(personId).orElseThrow());
         f.setCategory(req.getCategory()); f.setKey(req.getKey()); f.setValue(req.getValue());
         f.setPeriod(req.getPeriod()); f.setConfidence(req.getConfidence());
@@ -39,13 +40,13 @@ public class MemoryController {
     }
 
     @DeleteMapping("/facts/{id}")
-    public ResponseEntity<Void> deleteFact(@PathVariable Long id) { factRepo.deleteById(id); return ResponseEntity.noContent().build(); }
+    public ResponseEntity<Void> deleteFact(@PathVariable UUID id) { factRepo.deleteById(id); return ResponseEntity.noContent().build(); }
 
     @GetMapping("/episodes")
-    public List<MemoryDto.EpisodeResponse> getEpisodes(@PathVariable Long personId) { return episodeRepo.findByPersonIdOrderByOccurredAtDesc(personId).stream().map(mapper::toEpisodeResponse).toList(); }
+    public List<MemoryDto.EpisodeResponse> getEpisodes(@PathVariable UUID personId) { return episodeRepo.findByPersonIdOrderByOccurredAtDesc(personId).stream().map(mapper::toEpisodeResponse).toList(); }
 
     @PostMapping("/episodes")
-    public MemoryDto.EpisodeResponse createEpisode(@PathVariable Long personId, @RequestBody MemoryDto.EpisodeRequest req) {
+    public MemoryDto.EpisodeResponse createEpisode(@PathVariable UUID personId, @RequestBody MemoryDto.EpisodeRequest req) {
         Episode e = new Episode(); e.setPerson(personRepo.findById(personId).orElseThrow());
         e.setSummary(req.getSummary()); e.setEmotion(req.getEmotion());
         e.setImportance(req.getImportance()); e.setOccurredAt(req.getOccurredAt());
@@ -53,13 +54,13 @@ public class MemoryController {
     }
 
     @DeleteMapping("/episodes/{id}")
-    public ResponseEntity<Void> deleteEpisode(@PathVariable Long id) { episodeRepo.deleteById(id); return ResponseEntity.noContent().build(); }
+    public ResponseEntity<Void> deleteEpisode(@PathVariable UUID id) { episodeRepo.deleteById(id); return ResponseEntity.noContent().build(); }
 
     @GetMapping("/chapters")
-    public List<MemoryDto.ChapterResponse> getChapters(@PathVariable Long personId) { return chapterRepo.findByPersonIdOrderBySortOrderAsc(personId).stream().map(mapper::toChapterResponse).toList(); }
+    public List<MemoryDto.ChapterResponse> getChapters(@PathVariable UUID personId) { return chapterRepo.findByPersonIdOrderBySortOrderAsc(personId).stream().map(mapper::toChapterResponse).toList(); }
 
     @PostMapping("/chapters")
-    public MemoryDto.ChapterResponse createChapter(@PathVariable Long personId, @RequestBody MemoryDto.ChapterRequest req) {
+    public MemoryDto.ChapterResponse createChapter(@PathVariable UUID personId, @RequestBody MemoryDto.ChapterRequest req) {
         LifeChapter c = new LifeChapter(); c.setPerson(personRepo.findById(personId).orElseThrow());
         c.setPeriod(req.getPeriod()); c.setTitle(req.getTitle()); c.setSummary(req.getSummary());
         c.setSentiment(req.getSentiment()); c.setSortOrder(req.getSortOrder());
@@ -67,13 +68,13 @@ public class MemoryController {
     }
 
     @DeleteMapping("/chapters/{id}")
-    public ResponseEntity<Void> deleteChapter(@PathVariable Long id) { chapterRepo.deleteById(id); return ResponseEntity.noContent().build(); }
+    public ResponseEntity<Void> deleteChapter(@PathVariable UUID id) { chapterRepo.deleteById(id); return ResponseEntity.noContent().build(); }
 
     @GetMapping("/traits")
-    public List<MemoryDto.TraitResponse> getTraits(@PathVariable Long personId) { return traitRepo.findByPersonId(personId).stream().map(mapper::toTraitResponse).toList(); }
+    public List<MemoryDto.TraitResponse> getTraits(@PathVariable UUID personId) { return traitRepo.findByPersonId(personId).stream().map(mapper::toTraitResponse).toList(); }
 
     @PostMapping("/traits")
-    public MemoryDto.TraitResponse createTrait(@PathVariable Long personId, @RequestBody MemoryDto.TraitRequest req) {
+    public MemoryDto.TraitResponse createTrait(@PathVariable UUID personId, @RequestBody MemoryDto.TraitRequest req) {
         PersonalityTrait t = new PersonalityTrait(); t.setPerson(personRepo.findById(personId).orElseThrow());
         t.setTrait(req.getTrait()); t.setDescription(req.getDescription());
         t.setEvidence(req.getEvidence()); t.setPeriod(req.getPeriod());
@@ -81,5 +82,5 @@ public class MemoryController {
     }
 
     @DeleteMapping("/traits/{id}")
-    public ResponseEntity<Void> deleteTrait(@PathVariable Long id) { traitRepo.deleteById(id); return ResponseEntity.noContent().build(); }
+    public ResponseEntity<Void> deleteTrait(@PathVariable UUID id) { traitRepo.deleteById(id); return ResponseEntity.noContent().build(); }
 }

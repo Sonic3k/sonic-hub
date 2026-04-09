@@ -10,6 +10,7 @@ import com.sonic.angels.service.DtoMapper;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/persons/{personId}/chat-archives")
@@ -27,21 +28,21 @@ public class ChatArchiveController {
     }
 
     @GetMapping
-    public List<ChatArchiveDto.Response> findByPerson(@PathVariable Long personId) {
+    public List<ChatArchiveDto.Response> findByPerson(@PathVariable UUID personId) {
         return archiveRepo.findByPersonId(personId).stream().map(mapper::toChatArchiveResponse).toList();
     }
 
     @GetMapping("/{archiveId}/messages")
-    public List<ChatMessage> getMessages(@PathVariable Long archiveId) {
+    public List<ChatMessage> getMessages(@PathVariable UUID archiveId) {
         return messageRepo.findByChatArchiveIdOrderByTimestampAsc(archiveId);
     }
 
     @PostMapping
-    public ChatArchiveDto.Response create(@PathVariable Long personId, @RequestBody ChatArchive archive) {
+    public ChatArchiveDto.Response create(@PathVariable UUID personId, @RequestBody ChatArchive archive) {
         archive.setPerson(personRepo.findById(personId).orElseThrow());
         return mapper.toChatArchiveResponse(archiveRepo.save(archive));
     }
 
     @DeleteMapping("/{archiveId}")
-    public ResponseEntity<Void> delete(@PathVariable Long archiveId) { archiveRepo.deleteById(archiveId); return ResponseEntity.noContent().build(); }
+    public ResponseEntity<Void> delete(@PathVariable UUID archiveId) { archiveRepo.deleteById(archiveId); return ResponseEntity.noContent().build(); }
 }

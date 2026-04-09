@@ -1,6 +1,7 @@
 package com.sonic.angels.model.entity;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
+import java.util.UUID;
 import jakarta.persistence.*;
 
 @Entity
@@ -11,8 +12,8 @@ import jakarta.persistence.*;
 public class Fact extends BaseEntity {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @GeneratedValue(strategy = GenerationType.UUID)
+    private UUID id;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JsonIgnore
@@ -35,12 +36,12 @@ public class Fact extends BaseEntity {
     private Float confidence = 1.0f;
 
     @Column(name = "source_archive_id")
-    private Long sourceArchiveId;
+    private UUID sourceArchiveId;
 
     public Fact() {}
 
-    public Long getId() { return id; }
-    public void setId(Long id) { this.id = id; }
+    public UUID getId() { return id; }
+    public void setId(UUID id) { this.id = id; }
     public Person getPerson() { return person; }
     public void setPerson(Person person) { this.person = person; }
     public String getCategory() { return category; }
@@ -53,6 +54,6 @@ public class Fact extends BaseEntity {
     public void setPeriod(String period) { this.period = period; }
     public Float getConfidence() { return confidence; }
     public void setConfidence(Float confidence) { this.confidence = confidence; }
-    public Long getSourceArchiveId() { return sourceArchiveId; }
-    public void setSourceArchiveId(Long sourceArchiveId) { this.sourceArchiveId = sourceArchiveId; }
+    public UUID getSourceArchiveId() { return sourceArchiveId; }
+    public void setSourceArchiveId(UUID sourceArchiveId) { this.sourceArchiveId = sourceArchiveId; }
 }

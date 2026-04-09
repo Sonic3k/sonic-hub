@@ -31,11 +31,11 @@ public class PersonDto {
     }
 
     public static class Summary {
-        private Long id; private String name; private String displayName; private String nickname;
+        private UUID id; private String name; private String displayName; private String nickname;
         private Person.RelationshipType relationshipType; private String period;
         private Boolean isFavorite; private Boolean isFeatured; private String avatarUrl; private String song;
 
-        public Long getId() { return id; } public void setId(Long v) { this.id = v; }
+        public UUID getId() { return id; } public void setId(UUID v) { this.id = v; }
         public String getName() { return name; } public void setName(String v) { this.name = v; }
         public String getDisplayName() { return displayName; } public void setDisplayName(String v) { this.displayName = v; }
         public String getNickname() { return nickname; } public void setNickname(String v) { this.nickname = v; }

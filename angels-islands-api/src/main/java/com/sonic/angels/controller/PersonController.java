@@ -7,6 +7,7 @@ import com.sonic.angels.service.PersonService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/persons")
@@ -26,7 +27,7 @@ public class PersonController {
     }
 
     @GetMapping("/{id}")
-    public PersonDto.DetailResponse findById(@PathVariable Long id) {
+    public PersonDto.DetailResponse findById(@PathVariable UUID id) {
         return mapper.toPersonDetail(personService.findById(id));
     }
 
@@ -38,14 +39,14 @@ public class PersonController {
     }
 
     @PutMapping("/{id}")
-    public PersonDto.DetailResponse update(@PathVariable Long id, @RequestBody PersonDto.Request req) {
+    public PersonDto.DetailResponse update(@PathVariable UUID id, @RequestBody PersonDto.Request req) {
         Person p = personService.findById(id);
         applyRequest(p, req);
         return mapper.toPersonDetail(personService.save(p));
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> delete(@PathVariable Long id) {
+    public ResponseEntity<Void> delete(@PathVariable UUID id) {
         personService.delete(id);
         return ResponseEntity.noContent().build();
     }

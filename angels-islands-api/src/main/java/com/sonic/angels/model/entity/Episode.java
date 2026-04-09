@@ -1,6 +1,7 @@
 package com.sonic.angels.model.entity;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
+import java.util.UUID;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
 
@@ -13,8 +14,8 @@ import java.time.LocalDateTime;
 public class Episode extends BaseEntity {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @GeneratedValue(strategy = GenerationType.UUID)
+    private UUID id;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JsonIgnore
@@ -34,12 +35,12 @@ public class Episode extends BaseEntity {
     private LocalDateTime occurredAt;
 
     @Column(name = "source_archive_id")
-    private Long sourceArchiveId;
+    private UUID sourceArchiveId;
 
     public Episode() {}
 
-    public Long getId() { return id; }
-    public void setId(Long id) { this.id = id; }
+    public UUID getId() { return id; }
+    public void setId(UUID id) { this.id = id; }
     public Person getPerson() { return person; }
     public void setPerson(Person person) { this.person = person; }
     public String getSummary() { return summary; }
@@ -50,6 +51,6 @@ public class Episode extends BaseEntity {
     public void setImportance(Integer importance) { this.importance = importance; }
     public LocalDateTime getOccurredAt() { return occurredAt; }
     public void setOccurredAt(LocalDateTime occurredAt) { this.occurredAt = occurredAt; }
-    public Long getSourceArchiveId() { return sourceArchiveId; }
-    public void setSourceArchiveId(Long sourceArchiveId) { this.sourceArchiveId = sourceArchiveId; }
+    public UUID getSourceArchiveId() { return sourceArchiveId; }
+    public void setSourceArchiveId(UUID sourceArchiveId) { this.sourceArchiveId = sourceArchiveId; }
 }

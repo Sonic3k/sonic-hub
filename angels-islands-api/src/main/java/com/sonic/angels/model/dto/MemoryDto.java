@@ -1,4 +1,5 @@
 package com.sonic.angels.model.dto;
+import java.util.UUID;
 
 import java.time.LocalDateTime;
 
@@ -13,9 +14,9 @@ public class MemoryDto {
         public Float getConfidence() { return confidence; } public void setConfidence(Float v) { this.confidence = v; }
     }
     public static class FactResponse extends FactRequest {
-        private Long id; private Long sourceArchiveId; private LocalDateTime createdAt;
-        public Long getId() { return id; } public void setId(Long v) { this.id = v; }
-        public Long getSourceArchiveId() { return sourceArchiveId; } public void setSourceArchiveId(Long v) { this.sourceArchiveId = v; }
+        private UUID id; private UUID sourceArchiveId; private LocalDateTime createdAt;
+        public UUID getId() { return id; } public void setId(UUID v) { this.id = v; }
+        public UUID getSourceArchiveId() { return sourceArchiveId; } public void setSourceArchiveId(UUID v) { this.sourceArchiveId = v; }
         public LocalDateTime getCreatedAt() { return createdAt; } public void setCreatedAt(LocalDateTime v) { this.createdAt = v; }
     }
 
@@ -27,8 +28,8 @@ public class MemoryDto {
         public LocalDateTime getOccurredAt() { return occurredAt; } public void setOccurredAt(LocalDateTime v) { this.occurredAt = v; }
     }
     public static class EpisodeResponse extends EpisodeRequest {
-        private Long id; private LocalDateTime createdAt;
-        public Long getId() { return id; } public void setId(Long v) { this.id = v; }
+        private UUID id; private LocalDateTime createdAt;
+        public UUID getId() { return id; } public void setId(UUID v) { this.id = v; }
         public LocalDateTime getCreatedAt() { return createdAt; } public void setCreatedAt(LocalDateTime v) { this.createdAt = v; }
     }
 
@@ -41,8 +42,8 @@ public class MemoryDto {
         public Integer getSortOrder() { return sortOrder; } public void setSortOrder(Integer v) { this.sortOrder = v; }
     }
     public static class ChapterResponse extends ChapterRequest {
-        private Long id; private LocalDateTime createdAt;
-        public Long getId() { return id; } public void setId(Long v) { this.id = v; }
+        private UUID id; private LocalDateTime createdAt;
+        public UUID getId() { return id; } public void setId(UUID v) { this.id = v; }
         public LocalDateTime getCreatedAt() { return createdAt; } public void setCreatedAt(LocalDateTime v) { this.createdAt = v; }
     }
 
@@ -54,8 +55,8 @@ public class MemoryDto {
         public String getPeriod() { return period; } public void setPeriod(String v) { this.period = v; }
     }
     public static class TraitResponse extends TraitRequest {
-        private Long id; private LocalDateTime createdAt;
-        public Long getId() { return id; } public void setId(Long v) { this.id = v; }
+        private UUID id; private LocalDateTime createdAt;
+        public UUID getId() { return id; } public void setId(UUID v) { this.id = v; }
         public LocalDateTime getCreatedAt() { return createdAt; } public void setCreatedAt(LocalDateTime v) { this.createdAt = v; }
     }
 }
