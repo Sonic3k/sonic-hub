@@ -1,4 +1,5 @@
 package com.sonic.angels.model.dto;
+import java.util.UUID;
 
 import com.sonic.angels.model.entity.Person;
 import java.time.LocalDate;
@@ -12,7 +13,7 @@ public class PersonDto {
         private String name; private String displayName; private String alternativeName; private String nickname;
         private LocalDate dateOfBirth; private String bio; private Person.RelationshipType relationshipType;
         private String period; private LocalDate firstMet; private String howWeMet; private String song;
-        private Boolean isFavorite; private Boolean isFeatured; private Set<java.util.UUID> tagIds;
+        private Boolean isFavorite; private Boolean isFeatured; private Set<UUID> tagIds;
 
         public String getName() { return name; } public void setName(String v) { this.name = v; }
         public String getDisplayName() { return displayName; } public void setDisplayName(String v) { this.displayName = v; }
@@ -27,7 +28,7 @@ public class PersonDto {
         public String getSong() { return song; } public void setSong(String v) { this.song = v; }
         public Boolean getIsFavorite() { return isFavorite; } public void setIsFavorite(Boolean v) { this.isFavorite = v; }
         public Boolean getIsFeatured() { return isFeatured; } public void setIsFeatured(Boolean v) { this.isFeatured = v; }
-        public Set<java.util.UUID> getTagIds() { return tagIds; } public void setTagIds(Set<java.util.UUID> v) { this.tagIds = v; }
+        public Set<UUID> getTagIds() { return tagIds; } public void setTagIds(Set<UUID> v) { this.tagIds = v; }
     }
 
     public static class Summary {

@@ -1,4 +1,5 @@
 package com.sonic.angels.model.dto;
+import java.util.UUID;
 
 import java.time.LocalDateTime;
 import java.util.Set;
@@ -10,13 +11,13 @@ public class CollectionDto {
         private String description;
         private UUID parentId;
         private Set<UUID> personIds;
-        private Set<java.util.UUID> tagIds;
+        private Set<UUID> tagIds;
 
         public String getName() { return name; } public void setName(String v) { this.name = v; }
         public String getDescription() { return description; } public void setDescription(String v) { this.description = v; }
         public UUID getParentId() { return parentId; } public void setParentId(UUID v) { this.parentId = v; }
         public Set<UUID> getPersonIds() { return personIds; } public void setPersonIds(Set<UUID> v) { this.personIds = v; }
-        public Set<java.util.UUID> getTagIds() { return tagIds; } public void setTagIds(Set<java.util.UUID> v) { this.tagIds = v; }
+        public Set<UUID> getTagIds() { return tagIds; } public void setTagIds(Set<UUID> v) { this.tagIds = v; }
     }
 
     public static class Response {
