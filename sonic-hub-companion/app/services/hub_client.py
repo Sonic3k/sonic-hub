@@ -112,6 +112,15 @@ async def mark_todo_done(todo_id: str) -> dict | None:
     return await _request("PATCH", f"/api/todos/{todo_id}/done")
 
 
+async def update_todo(todo_id: str, **kwargs) -> dict | None:
+    body = {}
+    mapping = {"title": "title", "done": "done", "projectId": "projectId", "project_id": "projectId"}
+    for k, v in kwargs.items():
+        if v is not None and k in mapping:
+            body[mapping[k]] = v
+    return await _request("PUT", f"/api/todos/{todo_id}", json=body)
+
+
 async def get_todos() -> list:
     return await _request("GET", "/api/todos") or []
 
@@ -147,6 +156,20 @@ async def create_wishlist(title: str, **kwargs) -> dict | None:
         if k in kwargs and kwargs[k] is not None:
             body[k] = kwargs[k]
     return await _request("POST", "/api/wishlists", json=body)
+
+
+async def update_wishlist(wishlist_id: str, **kwargs) -> dict | None:
+    body = {}
+    mapping = {"title": "title", "description": "description", "category": "category",
+               "archived": "archived", "projectId": "projectId", "project_id": "projectId"}
+    for k, v in kwargs.items():
+        if v is not None and k in mapping:
+            body[mapping[k]] = v
+    return await _request("PUT", f"/api/wishlists/{wishlist_id}", json=body)
+
+
+async def delete_wishlist(wishlist_id: str) -> dict | None:
+    return await _request("DELETE", f"/api/wishlists/{wishlist_id}")
 
 
 async def get_wishlists(archived: bool = False) -> list:

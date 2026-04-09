@@ -183,6 +183,32 @@ async def execute_actions(actions: list[dict], assistant_nickname: str) -> list[
                 await hub_client.delete_todo(action["id"])
                 results.append(f"Deleted todo: {action['id']}")
 
+            elif action_type == "update_todo":
+                await hub_client.update_todo(action["id"], title=action.get("title"))
+                results.append(f"Updated todo: {action['id']}")
+
+            elif action_type == "update_problem":
+                kwargs = {}
+                for k in ("title", "note", "status"):
+                    val = action.get(k)
+                    if val is not None:
+                        kwargs[k] = val
+                await hub_client.update_problem(action["id"], **kwargs)
+                results.append(f"Updated problem: {action['id']}")
+
+            elif action_type == "update_wishlist":
+                kwargs = {}
+                for k in ("title", "description", "category", "archived"):
+                    val = action.get(k)
+                    if val is not None:
+                        kwargs[k] = val
+                await hub_client.update_wishlist(action["id"], **kwargs)
+                results.append(f"Updated wishlist: {action['id']}")
+
+            elif action_type == "delete_wishlist":
+                await hub_client.delete_wishlist(action["id"])
+                results.append(f"Deleted wishlist: {action['id']}")
+
             else:
                 logger.warning(f"Unknown action type: {action_type}")
 

@@ -97,10 +97,10 @@ Trả lời PHẢI là JSON object. CHỈ trả JSON, không text khác.
 ### actions: hành động lên Sonic Hub (có thể rỗng [])
 
 Phân loại:
-- Task: việc cụ thể CÓ deadline hoặc thời hạn rõ ràng ("nộp báo cáo thứ 6", "trả dây sạc 10h tối")
-- Todo: việc CẦN làm nhưng CHƯA RÕ khi nào ("dọn phòng", "đổi bóng đèn", "gọi thợ sửa máy lạnh")
-- Wishlist: việc MUỐN làm/có, mơ ước, someday ("học piano", "mua iPad", "đi Nhật")
-- Problem: vấn đề recurring cần theo dõi ("hay trì hoãn", "uống nhiều Rockstar")
+- Task: việc cụ thể CÓ deadline. Status: OPEN → IN_PROGRESS → DONE / SNOOZED / CLOSED
+- Todo: việc CẦN làm nhưng CHƯA RÕ khi nào. Chỉ có done: true/false
+- Wishlist: việc MUỐN làm/có, mơ ước. Có archived: true/false
+- Problem: vấn đề recurring cần theo dõi. Status: NEW → INVESTIGATING → RESOLVED / DISMISSED
 
 Các action type:
 - create_task: {{"type":"create_task","title":"...","priority":"MEDIUM","due_date_time":"2026-04-08T22:00","description":"...","remind_before_minutes":30,"reminder_message":"nội dung nhắc"}}
@@ -114,10 +114,14 @@ Các action type:
 - create_problem: {{"type":"create_problem","title":"...","note":"...","frequency_type":"weekly","current_limit":3,"target_limit":1,"remind_interval_days":7,"remind_time":"08:00","reminder_message":"..."}}
 - delete_problem: {{"type":"delete_problem","id":"uuid"}}
 - create_todo: {{"type":"create_todo","title":"..."}}
+- update_todo: {{"type":"update_todo","id":"uuid","title":"..."}}
 - delete_todo: {{"type":"delete_todo","id":"uuid"}}
 - mark_done: {{"type":"mark_done","entity_type":"task","id":"uuid"}}
 - create_entry: {{"type":"create_entry","entity_type":"problem","entity_id":"uuid","content":"...","entry_type":"OCCURRENCE"}}
 - create_wishlist: {{"type":"create_wishlist","title":"...","description":"...","category":"tech/hobby/business/personal/creative"}}
+- update_wishlist: {{"type":"update_wishlist","id":"uuid","title":"...","archived":true}}
+- delete_wishlist: {{"type":"delete_wishlist","id":"uuid"}}
+- update_problem: {{"type":"update_problem","id":"uuid","status":"RESOLVED","note":"..."}}
 
 QUAN TRỌNG:
 - CHỈ tạo action khi user thật sự có intent. Tán gẫu bình thường thì actions = [].
