@@ -19,12 +19,40 @@ memory_service = MemoryService()
 _reminded: set[str] = set()
 
 
+async def _get_schedule_config(assistant_id, schedule_type: str) -> dict:
+    """Get schedule config for assistant. Returns {enabled: bool, config: dict}."""
+    from app.models.models import ScheduleConfig
+    from sqlalchemy import select
+    defaults = {
+        "reminders": {"enabled": True, "config": {}},
+        "follow_ups": {"enabled": True, "config": {"plan_hours": [9, 20]}},
+        "journal": {"enabled": True, "config": {"hour": 4}},
+        "daily_log": {"enabled": True, "config": {"hour": 22}},
+    }
+    try:
+        async with async_session() as db:
+            result = await db.execute(
+                select(ScheduleConfig).where(
+                    ScheduleConfig.assistant_id == assistant_id,
+                    ScheduleConfig.schedule_type == schedule_type,
+                )
+            )
+            config = result.scalar_one_or_none()
+            if config:
+                return {"enabled": config.enabled, "config": config.config or {}}
+    except Exception:
+        pass
+    return defaults.get(schedule_type, {"enabled": True, "config": {}})
+
+
 async def start_scheduler():
     logger.info("Reminder scheduler started (every 60s)")
     while True:
         try:
             await check_reminders()
             await check_follow_ups()
+            await check_journal()
+            await check_daily_log()
         except Exception as e:
             logger.error(f"Scheduler error: {e}")
         await asyncio.sleep(60)
@@ -287,30 +315,33 @@ async def check_follow_ups():
     hour = local_now.hour
     minute = local_now.minute
 
-    # Phase 1: Plan at 9:00 and 20:00
-    if (hour == 9 or hour == 20) and minute < 5:
-        dedup_key = f"plan:{local_now.strftime('%Y-%m-%d')}:{hour}"
-        if dedup_key not in _reminded:
-            _reminded.add(dedup_key)
-            await _plan_daily_interactions(local_now)
+    # Phase 1: Plan — check per-assistant config for plan_hours
+    if minute < 5:
+        async with async_session() as db:
+            assistants = await memory_service.get_all_assistants(db)
+            for assistant in assistants:
+                cfg = await _get_schedule_config(assistant.id, "follow_ups")
+                if not cfg["enabled"]:
+                    continue
+                plan_hours = cfg["config"].get("plan_hours", [9, 20])
+                if hour in plan_hours:
+                    dedup_key = f"plan:{local_now.strftime('%Y-%m-%d')}:{hour}:{assistant.id}"
+                    if dedup_key not in _reminded:
+                        _reminded.add(dedup_key)
+                        await _plan_daily_interactions(local_now, assistant)
 
     # Phase 2: Execute queued interactions
     await _execute_interactions(local_now)
 
 
-async def _plan_daily_interactions(local_now):
-    """LLM plans the day's interactions based on full context."""
-    logger.info(f"Daily interaction plan triggered at {local_now.strftime('%H:%M')}")
+async def _plan_daily_interactions(local_now, assistant):
+    """LLM plans the day's interactions for one assistant."""
+    logger.info(f"Daily interaction plan triggered for {assistant.nickname} at {local_now.strftime('%H:%M')}")
 
     from app.services.telegram import bot_manager
-    if not bot_manager.bots:
+    if not bot_manager.bots or not bot_manager.bots.get(str(assistant.id)):
         return
-
-    async with async_session() as db:
-        assistants = await memory_service.get_all_assistants(db)
-        enabled = [a for a in assistants if a.telegram_enabled and a.telegram_owner_id]
-
-    if not enabled:
+    if not assistant.telegram_enabled or not assistant.telegram_owner_id:
         return
 
     tasks = await hub_client.get_tasks()
@@ -324,7 +355,7 @@ async def _plan_daily_interactions(local_now):
         if rule.get("entityType") == "task":
             reminder_task_ids.add(str(rule.get("entityId")))
 
-    for assistant in enabled:
+    if True:  # single assistant scope (was: for assistant in enabled)
         if not bot_manager.bots.get(str(assistant.id)):
             continue
 
@@ -602,3 +633,253 @@ async def _execute_interactions(local_now):
 
     for i in sorted(sent, reverse=True):
         _interaction_queue.pop(i)
+
+
+# ─── Journal: auto-generate at 4am ───
+
+JOURNAL_PROMPT = """Bạn là {nickname}. {personality}
+
+Hãy viết NHẬT KÝ tổng kết ngày hôm qua của user, theo góc nhìn và giọng văn của bạn.
+
+Dựa trên:
+### Conversations (những gì user tâm sự):
+{conversations}
+
+### Tasks completed/updated:
+{task_activity}
+
+### Entries (activity log):
+{entries}
+
+Viết tự nhiên, đúng tính cách. Đây là nhật ký bạn viết VỀ user, không phải tin nhắn gửi user.
+Nếu ngày trống (không có hoạt động gì) thì ghi ngắn gọn.
+
+Trả CHỈ nội dung nhật ký, không JSON, không format đặc biệt."""
+
+
+async def check_journal():
+    """Generate journal based on per-assistant config."""
+    local_now = now_local()
+    if local_now.minute >= 5:
+        return
+
+    from app.models.models import Journal, Conversation, Message as MsgModel
+    from sqlalchemy import select, desc, and_
+    from datetime import timedelta
+
+    async with async_session() as db:
+        assistants = await memory_service.get_all_assistants(db)
+
+    for assistant in assistants:
+        cfg = await _get_schedule_config(assistant.id, "journal")
+        if not cfg["enabled"]:
+            continue
+        journal_hour = cfg["config"].get("hour", 4)
+        if local_now.hour != journal_hour:
+            continue
+
+        dedup_key = f"journal:{local_now.strftime('%Y-%m-%d')}:{assistant.id}"
+        if dedup_key in _reminded:
+            continue
+        _reminded.add(dedup_key)
+
+        logger.info(f"Journal generation triggered for {assistant.nickname}")
+
+        # Period: journal_hour yesterday → journal_hour today
+        period_end = local_now.replace(hour=journal_hour, minute=0, second=0, microsecond=0).replace(tzinfo=None)
+        period_start = period_end - timedelta(days=1)
+        yesterday = (local_now - timedelta(days=1)).date()
+
+        entries = await hub_client.get_recent_entries(days=2)
+        tasks = await hub_client.get_tasks()
+
+        # Check if already exists
+        async with async_session() as db:
+            existing = await db.execute(
+                select(Journal).where(
+                    Journal.assistant_id == assistant.id,
+                    Journal.date == yesterday,
+                )
+            )
+            if existing.scalar_one_or_none():
+                continue
+
+            # Get conversations in period
+            conv_result = await db.execute(
+                select(Conversation)
+                .where(
+                    Conversation.assistant_id == assistant.id,
+                    Conversation.started_at >= period_start,
+                    Conversation.started_at < period_end,
+                )
+                .order_by(Conversation.started_at)
+            )
+            convs = list(conv_result.scalars().all())
+
+            # Get messages from those conversations
+            chat_lines = []
+            for conv in convs:
+                msg_result = await db.execute(
+                    select(MsgModel)
+                    .where(MsgModel.conversation_id == conv.id)
+                    .order_by(MsgModel.timestamp)
+                    .limit(30)
+                )
+                msgs = list(msg_result.scalars().all())
+                for m in msgs:
+                    role = "User" if m.role == "user" else assistant.nickname
+                    chat_lines.append(f"{role}: {m.content[:100]}")
+
+            conversations_text = "\n".join(chat_lines[-40:]) if chat_lines else "Không có conversation"
+
+            # Filter entries for yesterday
+            day_entries = [e for e in entries if e.get("createdAt", "").startswith(str(yesterday))]
+            entries_text = "\n".join(
+                f"- [{e.get('entryType')}] {e.get('content', '')[:80]}"
+                for e in day_entries
+            ) if day_entries else "Không có entries"
+
+            # Task activity
+            task_activity_lines = []
+            for t in (tasks or []):
+                updated = t.get("updatedAt", "")
+                if str(yesterday) in updated:
+                    task_activity_lines.append(f"- [{t.get('status')}] {t.get('title')}")
+            task_activity = "\n".join(task_activity_lines) if task_activity_lines else "Không có task activity"
+
+            # Generate
+            personality = await memory_service.get_active_personality(db, assistant.id)
+
+        prompt = JOURNAL_PROMPT.format(
+            nickname=assistant.nickname,
+            personality=memory_service.format_personality_for_prompt(personality),
+            conversations=conversations_text,
+            task_activity=task_activity,
+            entries=entries_text,
+        )
+
+        result = await llm_service.chat(
+            prompt,
+            [{"role": "user", "content": f"(system: generate journal for {yesterday})"}],
+            provider_name=assistant.llm_provider or "claude",
+            model=assistant.llm_model,
+        )
+
+        content = "\n".join(result.get("messages", ["Ngày yên tĩnh."]))
+
+        # Save
+        async with async_session() as db:
+            journal = Journal(
+                assistant_id=assistant.id,
+                date=yesterday,
+                content=content,
+                period_start=period_start,
+                period_end=period_end,
+            )
+            db.add(journal)
+            await db.commit()
+
+        logger.info(f"Journal created for {yesterday} by {assistant.nickname}")
+
+
+# ─── DailyLog: Tommy asks at 22h ───
+
+DAILYLOG_PROMPT = """Bạn là {nickname}. {personality}
+
+Bây giờ là 22h tối. Hãy hỏi user TỔNG KẾT ngày hôm nay và KẾ HOẠCH ngày mai.
+
+Lưu ý:
+{existing_context}
+
+Viết 1-2 tin nhắn ngắn, tự nhiên, đúng tính cách. Đừng hỏi nếu user đã nói rồi.
+
+Trả JSON: {{"messages": [{{"text": "..."}}], "actions": []}}"""
+
+
+async def check_daily_log():
+    """Ask about today/tomorrow based on per-assistant config."""
+    local_now = now_local()
+    if local_now.minute >= 5:
+        return
+
+    from app.services.telegram import bot_manager
+    from app.models.models import DailyLog, ConversationState
+
+    if not bot_manager.bots:
+        return
+
+    today = local_now.date()
+
+    async with async_session() as db:
+        assistants = await memory_service.get_all_assistants(db)
+
+    for assistant in [a for a in assistants if a.telegram_enabled and a.telegram_owner_id]:
+        cfg = await _get_schedule_config(assistant.id, "daily_log")
+        if not cfg["enabled"]:
+            continue
+        dl_hour = cfg["config"].get("hour", 22)
+        if local_now.hour != dl_hour:
+            continue
+
+        dedup_key = f"dailylog:{local_now.strftime('%Y-%m-%d')}:{assistant.id}"
+        if dedup_key in _reminded:
+            continue
+        _reminded.add(dedup_key)
+
+        logger.info(f"DailyLog check triggered for {assistant.nickname}")
+
+        bot_app = bot_manager.bots.get(str(assistant.id))
+        if not bot_app:
+            continue
+
+        # Check if DailyLog already exists for today (user already updated)
+        async with async_session() as db:
+            existing = await db.execute(
+                select(DailyLog).where(
+                    DailyLog.assistant_id == assistant.id,
+                    DailyLog.date == today,
+                )
+            )
+            log = existing.scalar_one_or_none()
+
+        if log and log.items:
+            logger.info(f"DailyLog already exists for {today}, skipping")
+            continue
+
+        # Check recent conversation to see if already discussed
+        existing_context = "User chưa nói gì về plan hôm nay."
+        async with async_session() as db:
+            state_result = await db.execute(
+                select(ConversationState).where(ConversationState.assistant_id == assistant.id)
+            )
+            state = state_result.scalar_one_or_none()
+            if state and state.last_user_message_at:
+                diff_hours = (local_now.replace(tzinfo=None) - state.last_user_message_at).total_seconds() / 3600
+                if diff_hours < 3:
+                    existing_context = f"User vừa chat {int(diff_hours * 60)} phút trước. Có thể đã nói về ngày hôm nay."
+
+            personality = await memory_service.get_active_personality(db, assistant.id)
+
+        prompt = DAILYLOG_PROMPT.format(
+            nickname=assistant.nickname,
+            personality=memory_service.format_personality_for_prompt(personality),
+            existing_context=existing_context,
+        )
+
+        result = await llm_service.chat(
+            prompt,
+            [{"role": "user", "content": "(system: daily log prompt at 22h)"}],
+            provider_name=assistant.llm_provider or "claude",
+            model=assistant.llm_model,
+        )
+
+        msgs = result.get("messages", [])
+        if not msgs:
+            continue
+
+        try:
+            for msg in msgs[:2]:
+                await bot_app.bot.send_message(chat_id=assistant.telegram_owner_id, text=msg)
+            logger.info(f"DailyLog prompt sent by {assistant.nickname}")
+        except Exception as e:
+            logger.error(f"Failed to send daily log prompt: {e}")

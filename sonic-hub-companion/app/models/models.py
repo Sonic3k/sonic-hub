@@ -250,3 +250,56 @@ class ChatConfig(Base):
     notes = Column(Text, nullable=True)
 
     assistant = relationship("Assistant", backref="chat_config")
+
+
+class Journal(Base):
+    __tablename__ = "companion_journals"
+
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    assistant_id = Column(UUID(as_uuid=True), ForeignKey("companion_assistants.id"), nullable=False)
+    date = Column(Date, nullable=False)  # the day being summarized
+    content = Column(Text, nullable=False)  # LLM-generated summary in personality voice
+    period_start = Column(DateTime, nullable=False)  # 4am day
+    period_end = Column(DateTime, nullable=False)  # 4am next day
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+    assistant = relationship("Assistant", backref="journals")
+
+    __table_args__ = (
+        Index("idx_journal_assistant_date", "assistant_id", "date", unique=True),
+    )
+
+
+class DailyLog(Base):
+    __tablename__ = "companion_daily_logs"
+
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    assistant_id = Column(UUID(as_uuid=True), ForeignKey("companion_assistants.id"), nullable=False)
+    date = Column(Date, nullable=False)  # which day
+    items = Column(JSONB, default=list)  # [{title, status: done|in_progress|skipped|planned, type: today|tomorrow}]
+    reflection = Column(Text, nullable=True)  # user's own words or LLM summary
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    assistant = relationship("Assistant", backref="daily_logs")
+
+    __table_args__ = (
+        Index("idx_dailylog_assistant_date", "assistant_id", "date", unique=True),
+    )
+
+
+class ScheduleConfig(Base):
+    __tablename__ = "companion_schedule_config"
+
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    assistant_id = Column(UUID(as_uuid=True), ForeignKey("companion_assistants.id"), nullable=False)
+    schedule_type = Column(String(30), nullable=False)  # reminders, follow_ups, journal, daily_log
+    enabled = Column(Boolean, default=True)
+    config = Column(JSONB, default=dict)  # type-specific config (hours, etc)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    assistant = relationship("Assistant", backref="schedule_configs")
+
+    __table_args__ = (
+        Index("idx_schedconfig_assistant_type", "assistant_id", "schedule_type", unique=True),
+    )

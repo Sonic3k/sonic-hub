@@ -146,3 +146,30 @@ class ChatConfigUpdateRequest(BaseModel):
     max_messages_per_reply: int | None = None
     reply_count_weights: list[int] | None = None
     notes: str | None = None
+
+
+# ─── Journal & DailyLog ───
+
+class JournalResponse(BaseModel):
+    id: str
+    assistant_id: str
+    date: date
+    content: str
+    period_start: datetime
+    period_end: datetime
+    created_at: datetime
+
+
+class DailyLogResponse(BaseModel):
+    id: str
+    assistant_id: str
+    date: date
+    items: list[dict]
+    reflection: str | None
+    created_at: datetime
+    updated_at: datetime
+
+
+class DailyLogUpdateRequest(BaseModel):
+    items: list[dict] | None = None
+    reflection: str | None = None

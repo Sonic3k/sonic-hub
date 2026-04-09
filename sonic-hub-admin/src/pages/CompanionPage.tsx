@@ -472,6 +472,9 @@ function AssistantsTab({ selected, onSelect }: { selected: Assistant | null; onS
                     className="px-3 py-1 bg-indigo-500 text-white rounded text-xs">
                     Save
                   </button>
+
+                  {/* Schedule Config */}
+                  <ScheduleConfigSection assistantId={a.id} />
                 </div>
               )}
             </div>
@@ -481,6 +484,80 @@ function AssistantsTab({ selected, onSelect }: { selected: Assistant | null; onS
     </div>
   )
 }
+
+// ─── Schedule Config Section ───
+
+const SCHEDULE_LABELS: Record<string, { label: string; description: string }> = {
+  reminders: { label: 'Reminders', description: 'Nhắc trước deadline, định kỳ' },
+  follow_ups: { label: 'Daily Interactions', description: 'Follow-up + tán gẫu + check-in' },
+  journal: { label: 'Journal', description: 'Tổng kết ngày tự động' },
+  daily_log: { label: 'Daily Log', description: 'Hỏi plan hôm nay / ngày mai' },
+}
+
+function ScheduleConfigSection({ assistantId }: { assistantId: string }) {
+  const qc = useQueryClient()
+
+  const { data: schedules = [] } = useQuery<{ id: string | null; schedule_type: string; enabled: boolean; config: Record<string, any> }[]>({
+    queryKey: ['schedule-config', assistantId],
+    queryFn: () => companionApi.get(`/schedule-config/${assistantId}`).then(r => r.data),
+  })
+
+  const updateMutation = useMutation({
+    mutationFn: ({ type, data }: { type: string; data: any }) =>
+      companionApi.put(`/schedule-config/${assistantId}/${type}`, data),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['schedule-config', assistantId] }),
+  })
+
+  if (!schedules.length) return null
+
+  return (
+    <div className="mt-4 pt-4 border-t border-[#f3f4f6]">
+      <h4 className="text-xs font-semibold mb-3 text-[#6b7280]">Schedules</h4>
+      <div className="space-y-2">
+        {schedules.map(s => {
+          const info = SCHEDULE_LABELS[s.schedule_type] || { label: s.schedule_type, description: '' }
+          return (
+            <div key={s.schedule_type} className="flex items-center gap-3 text-xs">
+              <label className="flex items-center gap-1.5 min-w-[140px]">
+                <input type="checkbox" checked={s.enabled}
+                  onChange={e => updateMutation.mutate({ type: s.schedule_type, data: { enabled: e.target.checked, config: s.config } })} />
+                <span className={s.enabled ? 'text-[#374151]' : 'text-[#9ca3af]'}>{info.label}</span>
+              </label>
+              <span className="text-[#9ca3af] flex-1">{info.description}</span>
+              {s.config.hour != null && (
+                <select value={s.config.hour}
+                  onChange={e => updateMutation.mutate({ type: s.schedule_type, data: { enabled: s.enabled, config: { ...s.config, hour: parseInt(e.target.value) } } })}
+                  className="px-1.5 py-1 border rounded text-xs w-16">
+                  {Array.from({ length: 24 }, (_, i) => (
+                    <option key={i} value={i}>{String(i).padStart(2, '0')}:00</option>
+                  ))}
+                </select>
+              )}
+              {s.config.plan_hours && (
+                <div className="flex gap-1">
+                  {s.config.plan_hours.map((h: number, i: number) => (
+                    <select key={i} value={h}
+                      onChange={e => {
+                        const newHours = [...s.config.plan_hours]
+                        newHours[i] = parseInt(e.target.value)
+                        updateMutation.mutate({ type: s.schedule_type, data: { enabled: s.enabled, config: { ...s.config, plan_hours: newHours } } })
+                      }}
+                      className="px-1.5 py-1 border rounded text-xs w-16">
+                      {Array.from({ length: 24 }, (_, j) => (
+                        <option key={j} value={j}>{String(j).padStart(2, '0')}:00</option>
+                      ))}
+                    </select>
+                  ))}
+                </div>
+              )}
+            </div>
+          )
+        })}
+      </div>
+    </div>
+  )
+}
+
 
 // ─── Personality Tab ───
 

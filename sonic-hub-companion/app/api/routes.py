@@ -724,6 +724,144 @@ async def update_chat_config(assistant_id: str, request: dict, db: AsyncSession 
     return {"status": "updated"}
 
 
+# ─── Journal ───
+
+@router.get("/journals/{assistant_id}", response_model=list)
+async def get_journals(assistant_id: str, limit: int = 30, db: AsyncSession = Depends(get_db)):
+    from app.models.models import Journal
+    from sqlalchemy import desc
+    result = await db.execute(
+        select(Journal)
+        .where(Journal.assistant_id == assistant_id)
+        .order_by(desc(Journal.date))
+        .limit(limit)
+    )
+    journals = list(result.scalars().all())
+    from app.api.schemas import JournalResponse
+    return [
+        JournalResponse(
+            id=str(j.id), assistant_id=str(j.assistant_id), date=j.date,
+            content=j.content, period_start=j.period_start,
+            period_end=j.period_end, created_at=j.created_at,
+        )
+        for j in journals
+    ]
+
+
+@router.delete("/journals/{journal_id}")
+async def delete_journal(journal_id: str, db: AsyncSession = Depends(get_db)):
+    from app.models.models import Journal
+    result = await db.execute(select(Journal).where(Journal.id == journal_id))
+    item = result.scalar_one_or_none()
+    if item:
+        await db.delete(item)
+        await db.commit()
+    return {"status": "deleted"}
+
+
+# ─── DailyLog ───
+
+@router.get("/daily-logs/{assistant_id}", response_model=list)
+async def get_daily_logs(assistant_id: str, limit: int = 30, db: AsyncSession = Depends(get_db)):
+    from app.models.models import DailyLog
+    from sqlalchemy import desc
+    result = await db.execute(
+        select(DailyLog)
+        .where(DailyLog.assistant_id == assistant_id)
+        .order_by(desc(DailyLog.date))
+        .limit(limit)
+    )
+    logs = list(result.scalars().all())
+    from app.api.schemas import DailyLogResponse
+    return [
+        DailyLogResponse(
+            id=str(l.id), assistant_id=str(l.assistant_id), date=l.date,
+            items=l.items or [], reflection=l.reflection,
+            created_at=l.created_at, updated_at=l.updated_at,
+        )
+        for l in logs
+    ]
+
+
+@router.delete("/daily-logs/{log_id}")
+async def delete_daily_log(log_id: str, db: AsyncSession = Depends(get_db)):
+    from app.models.models import DailyLog
+    result = await db.execute(select(DailyLog).where(DailyLog.id == log_id))
+    item = result.scalar_one_or_none()
+    if item:
+        await db.delete(item)
+        await db.commit()
+    return {"status": "deleted"}
+
+
+# ─── Schedule Config ───
+
+DEFAULT_SCHEDULE_CONFIGS = {
+    "reminders": {"enabled": True, "config": {}},
+    "follow_ups": {"enabled": True, "config": {"plan_hours": [9, 20]}},
+    "journal": {"enabled": True, "config": {"hour": 4}},
+    "daily_log": {"enabled": True, "config": {"hour": 22}},
+}
+
+
+@router.get("/schedule-config/{assistant_id}")
+async def get_schedule_config(assistant_id: str, db: AsyncSession = Depends(get_db)):
+    from app.models.models import ScheduleConfig
+    result = await db.execute(
+        select(ScheduleConfig).where(ScheduleConfig.assistant_id == assistant_id)
+    )
+    configs = {c.schedule_type: c for c in result.scalars().all()}
+
+    # Merge with defaults
+    output = []
+    for stype, defaults in DEFAULT_SCHEDULE_CONFIGS.items():
+        if stype in configs:
+            c = configs[stype]
+            output.append({
+                "id": str(c.id), "schedule_type": stype,
+                "enabled": c.enabled, "config": c.config or defaults["config"],
+            })
+        else:
+            output.append({
+                "id": None, "schedule_type": stype,
+                "enabled": defaults["enabled"], "config": defaults["config"],
+            })
+    return output
+
+
+@router.put("/schedule-config/{assistant_id}/{schedule_type}")
+async def update_schedule_config(
+    assistant_id: str, schedule_type: str,
+    request: dict,
+    db: AsyncSession = Depends(get_db)
+):
+    from app.models.models import ScheduleConfig
+    result = await db.execute(
+        select(ScheduleConfig).where(
+            ScheduleConfig.assistant_id == assistant_id,
+            ScheduleConfig.schedule_type == schedule_type,
+        )
+    )
+    config = result.scalar_one_or_none()
+
+    if config:
+        if "enabled" in request:
+            config.enabled = request["enabled"]
+        if "config" in request:
+            config.config = request["config"]
+    else:
+        config = ScheduleConfig(
+            assistant_id=assistant_id,
+            schedule_type=schedule_type,
+            enabled=request.get("enabled", True),
+            config=request.get("config", {}),
+        )
+        db.add(config)
+
+    await db.commit()
+    return {"status": "updated", "schedule_type": schedule_type}
+
+
 # ─── LLM Providers ───
 
 @router.get("/llm/providers")

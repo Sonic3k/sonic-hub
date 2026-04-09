@@ -122,6 +122,7 @@ Các action type:
 - update_wishlist: {{"type":"update_wishlist","id":"uuid","title":"...","archived":true}}
 - delete_wishlist: {{"type":"delete_wishlist","id":"uuid"}}
 - update_problem: {{"type":"update_problem","id":"uuid","status":"RESOLVED","note":"..."}}
+- update_daily_log: {{"type":"update_daily_log","items":[{{"title":"đi gym","status":"done","type":"today"}},{{"title":"họp team","status":"planned","type":"tomorrow"}}],"reflection":"hôm nay khá productive"}}
 
 QUAN TRỌNG:
 - CHỈ tạo action khi user thật sự có intent. Tán gẫu bình thường thì actions = [].

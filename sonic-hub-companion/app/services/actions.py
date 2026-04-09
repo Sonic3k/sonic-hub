@@ -4,9 +4,11 @@ LLM outputs local time → executor converts to UTC before API calls.
 """
 import logging
 from app.services import hub_client
+from app.services.memory import MemoryService
 from app.core.tz import local_to_utc
 
 logger = logging.getLogger(__name__)
+memory_service = MemoryService()
 
 
 def _convert_datetimes(action: dict) -> dict:
@@ -208,6 +210,50 @@ async def execute_actions(actions: list[dict], assistant_nickname: str) -> list[
             elif action_type == "delete_wishlist":
                 await hub_client.delete_wishlist(action["id"])
                 results.append(f"Deleted wishlist: {action['id']}")
+
+            elif action_type == "update_daily_log":
+                from app.models.models import DailyLog
+                from app.core.database import async_session
+                from app.core.tz import now_local
+                from sqlalchemy import select
+
+                today = now_local().date()
+                items = action.get("items", [])
+                reflection = action.get("reflection")
+
+                # Find assistant_id from context
+                async with async_session() as db:
+                    assistants = await memory_service.get_all_assistants(db)
+                    assistant = next((a for a in assistants if a.nickname == assistant_nickname), None)
+                    if not assistant:
+                        continue
+
+                    existing = await db.execute(
+                        select(DailyLog).where(
+                            DailyLog.assistant_id == assistant.id,
+                            DailyLog.date == today,
+                        )
+                    )
+                    log = existing.scalar_one_or_none()
+
+                    if log:
+                        # Merge items
+                        existing_items = log.items or []
+                        existing_items.extend(items)
+                        log.items = existing_items
+                        if reflection:
+                            log.reflection = reflection
+                    else:
+                        log = DailyLog(
+                            assistant_id=assistant.id,
+                            date=today,
+                            items=items,
+                            reflection=reflection,
+                        )
+                        db.add(log)
+
+                    await db.commit()
+                results.append(f"Updated daily log: {len(items)} items")
 
             else:
                 logger.warning(f"Unknown action type: {action_type}")
