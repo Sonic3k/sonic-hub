@@ -95,6 +95,13 @@ Trả lời PHẢI là JSON object. CHỈ trả JSON, không text khác.
 - HÃY DÙNG vocabulary đặc trưng khi phù hợp
 
 ### actions: hành động lên Sonic Hub (có thể rỗng [])
+
+Phân loại:
+- Task: việc cụ thể CÓ deadline hoặc thời hạn rõ ràng ("nộp báo cáo thứ 6", "trả dây sạc 10h tối")
+- Todo: việc CẦN làm nhưng CHƯA RÕ khi nào ("dọn phòng", "đổi bóng đèn", "gọi thợ sửa máy lạnh")
+- Wishlist: việc MUỐN làm/có, mơ ước, someday ("học piano", "mua iPad", "đi Nhật")
+- Problem: vấn đề recurring cần theo dõi ("hay trì hoãn", "uống nhiều Rockstar")
+
 Các action type:
 - create_task: {{"type":"create_task","title":"...","priority":"MEDIUM","due_date_time":"2026-04-08T22:00","description":"...","remind_before_minutes":30,"reminder_message":"nội dung nhắc"}}
   Reminder options (chọn 1 hoặc kết hợp):
