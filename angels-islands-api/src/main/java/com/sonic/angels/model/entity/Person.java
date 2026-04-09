@@ -57,14 +57,17 @@ public class Person extends BaseEntity {
 
     // ── Avatar / Cover / Banner ──────────────────────────────────────────────
 
+    @JsonIgnore
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "avatar_media_file_id")
     private MediaFile avatarMediaFile;
 
+    @JsonIgnore
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "cover_media_file_id")
     private MediaFile coverMediaFile;
 
+    @JsonIgnore
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "banner_media_file_id")
     private MediaFile bannerMediaFile;
@@ -79,6 +82,7 @@ public class Person extends BaseEntity {
     @ManyToMany(mappedBy = "persons")
     private Set<Collection> collections = new HashSet<>();
 
+    @JsonIgnore
     @ManyToMany
     @JoinTable(name = "person_tags",
         joinColumns = @JoinColumn(name = "person_id"),

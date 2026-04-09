@@ -98,23 +98,28 @@ public class MediaFile extends BaseEntity {
 
     // ── Detail tables (1:1) ──────────────────────────────────────────────────
 
+    @JsonIgnore
     @OneToOne(mappedBy = "mediaFile", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
     private MediaImageDetail imageDetail;
 
+    @JsonIgnore
     @OneToOne(mappedBy = "mediaFile", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
     private MediaVideoDetail videoDetail;
 
+    @JsonIgnore
     @OneToOne(mappedBy = "mediaFile", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
     private MediaLocationDetail locationDetail;
 
     // ── Relations ────────────────────────────────────────────────────────────
 
+    @JsonIgnore
     @ManyToMany
     @JoinTable(name = "media_file_persons",
         joinColumns = @JoinColumn(name = "media_file_id"),
         inverseJoinColumns = @JoinColumn(name = "person_id"))
     private Set<Person> persons = new HashSet<>();
 
+    @JsonIgnore
     @ManyToMany
     @JoinTable(name = "media_file_tags",
         joinColumns = @JoinColumn(name = "media_file_id"),
