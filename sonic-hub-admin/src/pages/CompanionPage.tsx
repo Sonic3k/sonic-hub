@@ -118,7 +118,11 @@ function AssistantsTab({ selected, onSelect }: { selected: Assistant | null; onS
   const [importResult, setImportResult] = useState<any>(null)
   const [jobStatus, setJobStatus] = useState<any>(null)
   const [editingId, setEditingId] = useState<string | null>(null)
-  const [editForm, setEditForm] = useState({ telegram_bot_token: '', telegram_bot_username: '', telegram_owner_id: '', telegram_enabled: false, llm_provider: 'claude', llm_model: '' })
+  const [editForm, setEditForm] = useState({
+    name: '', nickname: '', bio: '', date_of_birth: '',
+    telegram_bot_token: '', telegram_bot_username: '', telegram_owner_id: '', telegram_enabled: false,
+    llm_provider: 'claude', llm_model: '',
+  })
 
   const createMutation = useMutation({
     mutationFn: (data: typeof form) => companionApi.post('/assistants', data),
@@ -386,39 +390,64 @@ function AssistantsTab({ selected, onSelect }: { selected: Assistant | null; onS
                 selected?.id === a.id ? 'bg-indigo-50 border-indigo-200' : 'bg-white border-[#e5e7eb]'
               )}>
               {/* Card header - clickable */}
-              <div className="flex items-center gap-4 p-4 cursor-pointer" onClick={() => onSelect(a)}>
-                <div className="w-11 h-11 rounded-full bg-gradient-to-br from-pink-400 to-purple-500 flex items-center justify-center text-white font-semibold text-sm">
+              <div className="flex items-start gap-3 p-4 cursor-pointer" onClick={() => onSelect(a)}>
+                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-pink-400 to-purple-500 flex items-center justify-center text-white font-semibold text-sm flex-shrink-0">
                   {a.nickname.charAt(0)}
                 </div>
-                <div className="flex-1">
+                <div className="flex-1 min-w-0">
                   <div className="font-medium text-sm text-[#1a1d2d]">{a.nickname}</div>
-                  <div className="text-xs text-[#6b7280]">{a.name} · {a.date_of_birth || 'No DOB'}</div>
+                  <div className="text-xs text-[#6b7280] truncate">{a.name}{a.date_of_birth ? ` · ${a.date_of_birth}` : ''}</div>
                   {a.bio && <div className="text-xs text-[#9ca3af] mt-0.5 line-clamp-1">{a.bio}</div>}
-                </div>
-                <div className="flex items-center gap-2">
-                  {a.telegram_bot_username && (
-                    <span className={clsx('text-xs px-2 py-0.5 rounded-full',
-                      a.telegram_enabled ? 'bg-blue-100 text-blue-700' : 'bg-gray-100 text-gray-500')}>
-                      {a.telegram_enabled ? '🟢' : '⚪'} @{a.telegram_bot_username}
+                  <div className="flex items-center gap-1.5 mt-1.5 flex-wrap">
+                    {a.telegram_bot_username && (
+                      <span className={clsx('text-[10px] px-1.5 py-0.5 rounded-full',
+                        a.telegram_enabled ? 'bg-blue-50 text-blue-600' : 'bg-gray-50 text-gray-400')}>
+                        {a.telegram_enabled ? '🟢' : '⚪'} @{a.telegram_bot_username}
+                      </span>
+                    )}
+                    <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-violet-50 text-violet-600">
+                      {a.llm_provider || 'claude'}{a.llm_model ? `: ${a.llm_model.split('/').pop()?.slice(0, 15)}` : ''}
                     </span>
-                  )}
-                  <span className="text-xs px-2 py-0.5 rounded-full bg-violet-50 text-violet-600">
-                    {a.llm_provider || 'claude'}{a.llm_model ? `: ${a.llm_model.split('/').pop()?.slice(0, 20)}` : ''}
-                  </span>
-                  <button onClick={(e) => { e.stopPropagation(); setEditingId(editingId === a.id ? null : a.id); setEditForm({ telegram_bot_token: '', telegram_bot_username: a.telegram_bot_username || '', telegram_owner_id: a.telegram_owner_id || '', telegram_enabled: a.telegram_enabled, llm_provider: a.llm_provider || 'claude', llm_model: a.llm_model || '' }) }}
-                    className="text-xs text-indigo-500 hover:underline">
-                    {editingId === a.id ? 'Close' : 'Config'}
-                  </button>
+                  </div>
                 </div>
+                <button onClick={(e) => { e.stopPropagation(); setEditingId(editingId === a.id ? null : a.id); setEditForm({
+                  name: a.name || '', nickname: a.nickname || '', bio: a.bio || '', date_of_birth: a.date_of_birth || '',
+                  telegram_bot_token: '', telegram_bot_username: a.telegram_bot_username || '', telegram_owner_id: a.telegram_owner_id || '', telegram_enabled: a.telegram_enabled,
+                  llm_provider: a.llm_provider || 'claude', llm_model: a.llm_model || '',
+                }) }}
+                  className="text-xs text-indigo-500 hover:underline flex-shrink-0">
+                  {editingId === a.id ? 'Close' : 'Config'}
+                </button>
               </div>
 
               {/* Edit panel */}
               {editingId === a.id && (
                 <div className="px-4 pb-4 pt-2 border-t border-[#f3f4f6] space-y-4">
+                  {/* Profile */}
+                  <div>
+                    <h4 className="text-xs font-semibold mb-2 text-[#6b7280]">Profile</h4>
+                    <div className="grid grid-cols-2 gap-2 mb-2">
+                      <input placeholder="Full name" value={editForm.name}
+                        onChange={e => setEditForm({ ...editForm, name: e.target.value })}
+                        className="px-2 py-1.5 border rounded text-xs" />
+                      <input placeholder="Nickname" value={editForm.nickname}
+                        onChange={e => setEditForm({ ...editForm, nickname: e.target.value })}
+                        className="px-2 py-1.5 border rounded text-xs" />
+                    </div>
+                    <div className="grid grid-cols-2 gap-2">
+                      <input type="date" value={editForm.date_of_birth}
+                        onChange={e => setEditForm({ ...editForm, date_of_birth: e.target.value })}
+                        className="px-2 py-1.5 border rounded text-xs" />
+                      <input placeholder="Bio" value={editForm.bio}
+                        onChange={e => setEditForm({ ...editForm, bio: e.target.value })}
+                        className="px-2 py-1.5 border rounded text-xs" />
+                    </div>
+                  </div>
+
                   {/* Telegram Config */}
                   <div>
                     <h4 className="text-xs font-semibold mb-2 text-[#6b7280]">Telegram Bot</h4>
-                    <div className="grid grid-cols-3 gap-2 mb-2">
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 mb-2">
                       <input placeholder="Bot Token (leave empty to keep)" value={editForm.telegram_bot_token}
                         onChange={e => setEditForm({ ...editForm, telegram_bot_token: e.target.value })}
                         className="px-2 py-1.5 border rounded text-xs font-mono" />
@@ -460,6 +489,9 @@ function AssistantsTab({ selected, onSelect }: { selected: Assistant | null; onS
 
                   <button onClick={() => {
                     const data: any = {
+                      name: editForm.name,
+                      nickname: editForm.nickname,
+                      bio: editForm.bio || null,
                       telegram_bot_username: editForm.telegram_bot_username,
                       telegram_owner_id: editForm.telegram_owner_id,
                       telegram_enabled: editForm.telegram_enabled,

@@ -223,6 +223,12 @@ async def update_assistant(
     if request.name is not None: a.name = request.name
     if request.nickname is not None: a.nickname = request.nickname
     if request.bio is not None: a.bio = request.bio
+    if request.date_of_birth is not None:
+        from datetime import date as date_type
+        try:
+            a.date_of_birth = date_type.fromisoformat(request.date_of_birth) if request.date_of_birth else None
+        except (ValueError, TypeError):
+            pass
     if request.telegram_bot_token is not None: a.telegram_bot_token = request.telegram_bot_token
     if request.telegram_bot_username is not None: a.telegram_bot_username = request.telegram_bot_username
     if request.telegram_owner_id is not None: a.telegram_owner_id = request.telegram_owner_id

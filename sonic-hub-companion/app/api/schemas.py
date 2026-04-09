@@ -32,6 +32,7 @@ class AssistantUpdateRequest(BaseModel):
     name: str | None = None
     nickname: str | None = None
     bio: str | None = None
+    date_of_birth: str | None = None
     telegram_bot_token: str | None = None
     telegram_bot_username: str | None = None
     telegram_enabled: bool | None = None
