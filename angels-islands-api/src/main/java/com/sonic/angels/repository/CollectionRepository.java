@@ -8,4 +8,6 @@ import java.util.List;
 @Repository
 public interface CollectionRepository extends JpaRepository<Collection, Long> {
     List<Collection> findByParentIsNull();
+    List<Collection> findByParentId(Long parentId);
+    List<Collection> findByPersonsId(Long personId);
 }
