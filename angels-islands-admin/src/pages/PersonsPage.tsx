@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { Plus, Heart, Star } from 'lucide-react'
 import { Button, Modal, Input, Textarea } from '../components/ui'
 import { usePersons, useCreatePerson } from '../hooks/usePersons'
-import type { Person, RelationshipType } from '../types'
+import type { PersonSummary, PersonRequest, RelationshipType } from '../types'
 
 const REL_LABELS: Record<RelationshipType, string> = {
   CRUSH: '💗 Crush', GIRLFRIEND: '❤️ Girlfriend', FRIEND: '🤝 Friend',
@@ -21,7 +21,7 @@ export default function PersonsPage() {
 
   const handleCreate = () => {
     if (!form.name.trim()) return
-    const payload: Partial<Person> = { ...form }
+    const payload: PersonRequest = { ...form } as PersonRequest
     if (!form.displayName) delete payload.displayName
     if (!form.dateOfBirth) delete payload.dateOfBirth
     if (!form.firstMet) delete payload.firstMet
@@ -39,7 +39,7 @@ export default function PersonsPage() {
 
       {isLoading ? <p className="text-slate-400 text-sm">Loading...</p> : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {persons.map((p: Person) => (
+          {persons.map((p: PersonSummary) => (
             <div key={p.id} onClick={() => navigate(`/persons/${p.id}`)}
               className="bg-white rounded-xl p-5 border border-slate-100 cursor-pointer hover:shadow-md transition-shadow">
               <div className="flex items-start justify-between mb-2">

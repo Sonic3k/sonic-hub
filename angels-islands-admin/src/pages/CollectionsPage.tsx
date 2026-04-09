@@ -3,12 +3,12 @@ import { Plus } from 'lucide-react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { collectionsApi } from '../api/collections'
 import { Button, Modal, Input, Textarea } from '../components/ui'
-import type { Collection } from '../types'
+import type { CollectionResponse, CollectionRequest } from '../types'
 
 export default function CollectionsPage() {
   const { data: collections = [], isLoading } = useQuery({ queryKey: ['collections'], queryFn: collectionsApi.getAll })
   const qc = useQueryClient()
-  const create = useMutation({ mutationFn: (d: Partial<Collection>) => collectionsApi.create(d), onSuccess: () => qc.invalidateQueries({ queryKey: ['collections'] }) })
+  const create = useMutation({ mutationFn: (d: CollectionRequest) => collectionsApi.create(d), onSuccess: () => qc.invalidateQueries({ queryKey: ['collections'] }) })
   const [showForm, setShowForm] = useState(false)
   const [form, setForm] = useState({ name: '', description: '' })
 
@@ -20,7 +20,7 @@ export default function CollectionsPage() {
       </div>
       {isLoading ? <p className="text-sm text-slate-400">Loading...</p> : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {collections.map((c: Collection) => (
+          {collections.map((c: CollectionResponse) => (
             <div key={c.id} className="bg-white rounded-xl p-5 border border-slate-100">
               <h3 className="font-semibold text-slate-800">{c.name}</h3>
               {c.description && <p className="text-xs text-slate-400 mt-1">{c.description}</p>}

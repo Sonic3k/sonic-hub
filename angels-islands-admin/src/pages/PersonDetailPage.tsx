@@ -4,7 +4,7 @@ import { ArrowLeft, Brain, MessageSquare, User, Pencil, Save, X } from 'lucide-r
 import { Button, Input, Textarea } from '../components/ui'
 import { usePerson, useUpdatePerson } from '../hooks/usePersons'
 import { useFacts, useEpisodes, useChapters, useTraits, useArchives } from '../hooks/useMemory'
-import type { RelationshipType } from '../types'
+import type { PersonRequest, RelationshipType } from '../types'
 
 const REL_LABELS: Record<RelationshipType, string> = {
   CRUSH: '💗 Crush', GIRLFRIEND: '❤️ Girlfriend', FRIEND: '🤝 Friend',
@@ -26,7 +26,7 @@ export default function PersonDetailPage() {
   const { data: archives = [] } = useArchives(pid)
   const [tab, setTab] = useState<Tab>('info')
   const [editing, setEditing] = useState(false)
-  const [form, setForm] = useState<Record<string, string>>({})
+  const [form, setForm] = useState<PersonRequest>({})
 
   if (isLoading) return <div className="p-8 text-slate-400">Loading...</div>
   if (!person) return <div className="p-8 text-slate-400">Not found</div>

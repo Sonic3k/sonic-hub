@@ -3,12 +3,12 @@ import { Plus, Trash2 } from 'lucide-react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { tagsApi } from '../api/tags'
 import { Button, Modal, Input } from '../components/ui'
-import type { Tag } from '../types'
+import type { TagResponse, TagRequest } from '../types'
 
 export default function TagsPage() {
   const { data: tags = [], isLoading } = useQuery({ queryKey: ['tags'], queryFn: tagsApi.getAll })
   const qc = useQueryClient()
-  const create = useMutation({ mutationFn: (d: Partial<Tag>) => tagsApi.create(d), onSuccess: () => qc.invalidateQueries({ queryKey: ['tags'] }) })
+  const create = useMutation({ mutationFn: (d: TagRequest) => tagsApi.create(d), onSuccess: () => qc.invalidateQueries({ queryKey: ['tags'] }) })
   const remove = useMutation({ mutationFn: (id: number) => tagsApi.delete(id), onSuccess: () => qc.invalidateQueries({ queryKey: ['tags'] }) })
   const [showForm, setShowForm] = useState(false)
   const [name, setName] = useState('')
@@ -21,7 +21,7 @@ export default function TagsPage() {
       </div>
       {isLoading ? <p className="text-sm text-slate-400">Loading...</p> : (
         <div className="flex flex-wrap gap-2">
-          {tags.map((t: Tag) => (
+          {tags.map((t: TagResponse) => (
             <span key={t.id} className="inline-flex items-center gap-1.5 text-sm px-3 py-1.5 rounded-full bg-white border border-slate-100">
               {t.color && <span className="w-2.5 h-2.5 rounded-full" style={{ background: t.color }} />}
               {t.name}

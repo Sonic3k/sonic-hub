@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { usePersons } from '../hooks/usePersons'
 import { useFacts, useEpisodes, useChapters, useTraits } from '../hooks/useMemory'
-import type { Person } from '../types'
+import type { PersonSummary } from '../types'
 
 export default function MemoryPage() {
   const { data: persons = [] } = usePersons()
@@ -16,7 +16,7 @@ export default function MemoryPage() {
       <h1 className="text-lg font-semibold text-slate-800 mb-4">Memory Explorer</h1>
 
       <div className="flex gap-2 mb-6 flex-wrap">
-        {persons.map((p: Person) => (
+        {persons.map((p: PersonSummary) => (
           <button key={p.id} onClick={() => setSelectedId(p.id)}
             className={`text-sm px-3 py-1.5 rounded-full transition-colors ${
               selectedId === p.id ? 'bg-pink-500 text-white' : 'bg-white border border-slate-200 text-slate-600 hover:border-pink-300'

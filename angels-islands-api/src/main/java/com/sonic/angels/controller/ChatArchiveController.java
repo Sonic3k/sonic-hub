@@ -1,10 +1,12 @@
 package com.sonic.angels.controller;
 
+import com.sonic.angels.model.dto.ChatArchiveDto;
 import com.sonic.angels.model.entity.ChatArchive;
 import com.sonic.angels.model.entity.ChatMessage;
 import com.sonic.angels.repository.ChatArchiveRepository;
 import com.sonic.angels.repository.ChatMessageRepository;
 import com.sonic.angels.repository.PersonRepository;
+import com.sonic.angels.service.DtoMapper;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
@@ -13,36 +15,33 @@ import java.util.List;
 @RequestMapping("/api/persons/{personId}/chat-archives")
 public class ChatArchiveController {
 
-    private final ChatArchiveRepository chatArchiveRepository;
-    private final ChatMessageRepository chatMessageRepository;
-    private final PersonRepository personRepository;
+    private final ChatArchiveRepository archiveRepo;
+    private final ChatMessageRepository messageRepo;
+    private final PersonRepository personRepo;
+    private final DtoMapper mapper;
 
-    public ChatArchiveController(ChatArchiveRepository chatArchiveRepository,
-                                 ChatMessageRepository chatMessageRepository,
-                                 PersonRepository personRepository) {
-        this.chatArchiveRepository = chatArchiveRepository;
-        this.chatMessageRepository = chatMessageRepository;
-        this.personRepository = personRepository;
+    public ChatArchiveController(ChatArchiveRepository archiveRepo, ChatMessageRepository messageRepo,
+                                 PersonRepository personRepo, DtoMapper mapper) {
+        this.archiveRepo = archiveRepo; this.messageRepo = messageRepo;
+        this.personRepo = personRepo; this.mapper = mapper;
     }
 
     @GetMapping
-    public List<ChatArchive> findByPerson(@PathVariable Long personId) { return chatArchiveRepository.findByPersonId(personId); }
-
-    @GetMapping("/{archiveId}")
-    public ChatArchive findById(@PathVariable Long archiveId) { return chatArchiveRepository.findById(archiveId).orElseThrow(); }
+    public List<ChatArchiveDto.Response> findByPerson(@PathVariable Long personId) {
+        return archiveRepo.findByPersonId(personId).stream().map(mapper::toChatArchiveResponse).toList();
+    }
 
     @GetMapping("/{archiveId}/messages")
-    public List<ChatMessage> getMessages(@PathVariable Long archiveId) { return chatMessageRepository.findByChatArchiveIdOrderByTimestampAsc(archiveId); }
+    public List<ChatMessage> getMessages(@PathVariable Long archiveId) {
+        return messageRepo.findByChatArchiveIdOrderByTimestampAsc(archiveId);
+    }
 
     @PostMapping
-    public ChatArchive create(@PathVariable Long personId, @RequestBody ChatArchive archive) {
-        archive.setPerson(personRepository.findById(personId).orElseThrow());
-        return chatArchiveRepository.save(archive);
+    public ChatArchiveDto.Response create(@PathVariable Long personId, @RequestBody ChatArchive archive) {
+        archive.setPerson(personRepo.findById(personId).orElseThrow());
+        return mapper.toChatArchiveResponse(archiveRepo.save(archive));
     }
 
     @DeleteMapping("/{archiveId}")
-    public ResponseEntity<Void> delete(@PathVariable Long archiveId) {
-        chatArchiveRepository.deleteById(archiveId);
-        return ResponseEntity.noContent().build();
-    }
+    public ResponseEntity<Void> delete(@PathVariable Long archiveId) { archiveRepo.deleteById(archiveId); return ResponseEntity.noContent().build(); }
 }
