@@ -17,7 +17,7 @@ function formatReminder(rule: TrackingRule): string {
   if (rule.remindIntervalDays) parts.push(`mỗi ${rule.remindIntervalDays} ngày`)
   if (rule.remindDaysOfWeek) parts.push(formatDow(rule.remindDaysOfWeek))
   if (rule.remindTime) parts.push(`lúc ${rule.remindTime}`)
-  return parts.length ? parts.join(' · ') : 'Không có reminder'
+  return parts.length ? parts.join(' · ') : 'Không có lịch nhắc'
 }
 
 function formatTracking(rule: TrackingRule): string {
@@ -28,6 +28,12 @@ function formatTracking(rule: TrackingRule): string {
   return parts.join(' · ')
 }
 
+const ENTITY_COLORS: Record<string, string> = {
+  task: 'bg-blue-50 text-blue-600',
+  problem: 'bg-red-50 text-red-600',
+  todo: 'bg-green-50 text-green-600',
+}
+
 export default function TrackingRulesPage() {
   const qc = useQueryClient()
 
@@ -36,7 +42,6 @@ export default function TrackingRulesPage() {
     queryFn: () => api.get('/api/tracking-rules/active').then(r => r.data),
   })
 
-  // Load entity names
   const { data: tasks = [] } = useQuery<Task[]>({
     queryKey: ['tasks'],
     queryFn: () => api.get('/api/tasks').then(r => r.data),
@@ -61,87 +66,81 @@ export default function TrackingRulesPage() {
     onSuccess: () => qc.invalidateQueries({ queryKey: ['tracking-rules'] }),
   })
 
-  if (isLoading) return <div className="p-8 text-center text-[#9ca3af]">Loading...</div>
-
   return (
-    <div>
-      <div className="flex items-center gap-3 mb-6">
-        <Bell size={20} className="text-indigo-500" />
-        <h1 className="text-lg font-semibold text-[#1a1d2d]">Tracking Rules</h1>
-        <span className="text-xs text-[#9ca3af]">{rules.length} active</span>
+    <div className="p-4 md:p-8 max-w-3xl mx-auto">
+      <div className="flex items-center justify-between mb-6">
+        <div>
+          <h1 className="text-xl font-semibold text-slate-800">Tracking Rules</h1>
+          <p className="text-sm text-slate-400 mt-0.5">{rules.length} active rules</p>
+        </div>
       </div>
 
-      {rules.length === 0 ? (
-        <p className="text-center py-12 text-sm text-[#9ca3af]">
-          Chưa có tracking rule nào. Tạo task/problem có reminder qua Tommy.
+      {isLoading ? <p className="text-sm text-slate-400">Loading...</p> : rules.length === 0 ? (
+        <p className="text-center py-16 text-slate-400 text-sm">
+          Chưa có tracking rule nào. Tạo task/problem có reminder qua chat.
         </p>
       ) : (
-        <div className="space-y-3">
+        <div className="space-y-2">
           {rules.map(rule => (
             <div key={rule.id} className={clsx(
-              'bg-white rounded-xl border p-4',
-              rule.active ? 'border-[#e5e7eb]' : 'border-[#f3f4f6] opacity-50'
+              'flex items-start gap-3 p-3 bg-white rounded-lg border',
+              rule.active ? 'border-slate-100' : 'border-slate-50 opacity-50'
             )}>
-              <div className="flex items-start justify-between gap-3">
-                <div className="flex-1 min-w-0">
-                  {/* Entity */}
-                  <div className="flex items-center gap-2 mb-1.5">
-                    <span className={clsx('text-[10px] px-1.5 py-0.5 rounded font-medium uppercase',
-                      rule.entityType === 'task' ? 'bg-blue-50 text-blue-600' :
-                      rule.entityType === 'problem' ? 'bg-red-50 text-red-600' :
-                      'bg-gray-50 text-gray-600'
-                    )}>{rule.entityType}</span>
-                    <span className="text-sm font-medium text-[#374151] truncate">
-                      {entityNames[rule.entityId] || rule.entityId.slice(0, 8) + '...'}
+              <Bell size={14} className="text-slate-300 mt-0.5 flex-shrink-0" />
+              <div className="flex-1 min-w-0">
+                {/* Entity name + type badge */}
+                <div className="flex items-center gap-2 flex-wrap">
+                  <span className={clsx('text-[10px] px-1.5 py-0.5 rounded-full font-medium uppercase',
+                    ENTITY_COLORS[rule.entityType] || 'bg-slate-50 text-slate-500'
+                  )}>{rule.entityType}</span>
+                  <span className="text-sm font-medium text-slate-700 truncate">
+                    {entityNames[rule.entityId] || rule.entityId.slice(0, 8) + '...'}
+                  </span>
+                </div>
+
+                {/* Reminder config */}
+                <p className="text-xs text-slate-500 mt-1">🔔 {formatReminder(rule)}</p>
+
+                {/* Tracking config */}
+                {rule.frequencyType && (
+                  <p className="text-xs text-slate-500 mt-0.5">📊 {formatTracking(rule)}</p>
+                )}
+
+                {/* Message */}
+                {rule.reminderMessage && (
+                  <p className="text-xs text-slate-400 mt-1 italic truncate">"{rule.reminderMessage}"</p>
+                )}
+
+                {/* Meta */}
+                <div className="flex items-center gap-3 mt-1.5 flex-wrap">
+                  {rule.lastRemindedAt && (
+                    <span className="text-[10px] text-slate-300">
+                      Lần cuối: {new Date(rule.lastRemindedAt + 'Z').toLocaleString('vi-VN', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })}
                     </span>
-                  </div>
-
-                  {/* Reminder config */}
-                  <div className="text-xs text-[#6b7280]">
-                    🔔 {formatReminder(rule)}
-                  </div>
-
-                  {/* Tracking config */}
-                  {rule.frequencyType && (
-                    <div className="text-xs text-[#6b7280] mt-0.5">
-                      📊 {formatTracking(rule)}
-                    </div>
                   )}
+                  <span className="text-[10px] text-slate-300">
+                    Tạo: {new Date(rule.createdAt).toLocaleDateString('vi-VN')}
+                  </span>
+                </div>
+              </div>
 
-                  {/* Message */}
-                  {rule.reminderMessage && (
-                    <div className="text-xs text-[#9ca3af] mt-1 italic truncate">
-                      "{rule.reminderMessage}"
-                    </div>
+              {/* Actions */}
+              <div className="flex items-center gap-0.5 flex-shrink-0">
+                <button
+                  onClick={() => toggleMutation.mutate({ id: rule.id, entityType: rule.entityType, active: !rule.active })}
+                  className={clsx('p-1.5 rounded-lg transition-colors',
+                    rule.active ? 'text-green-500 hover:bg-green-50' : 'text-slate-300 hover:bg-slate-50'
                   )}
-
-                  {/* Last reminded */}
-                  <div className="flex items-center gap-3 mt-2 text-[10px] text-[#9ca3af]">
-                    {rule.lastRemindedAt && (
-                      <span>Lần cuối: {new Date(rule.lastRemindedAt + 'Z').toLocaleString('vi-VN', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })}</span>
-                    )}
-                    <span>Tạo: {new Date(rule.createdAt).toLocaleDateString('vi-VN')}</span>
-                  </div>
-                </div>
-
-                {/* Actions */}
-                <div className="flex items-center gap-1">
-                  <button
-                    onClick={() => toggleMutation.mutate({ id: rule.id, entityType: rule.entityType, active: !rule.active })}
-                    className={clsx('p-1.5 rounded-lg transition-colors',
-                      rule.active ? 'text-green-500 hover:bg-green-50' : 'text-gray-300 hover:bg-gray-50'
-                    )}
-                    title={rule.active ? 'Tắt' : 'Bật'}
-                  >
-                    {rule.active ? <ToggleRight size={18} /> : <ToggleLeft size={18} />}
-                  </button>
-                  <button
-                    onClick={() => { if (confirm('Xoá tracking rule này?')) deleteMutation.mutate(rule.id) }}
-                    className="p-1.5 rounded-lg text-red-300 hover:text-red-500 hover:bg-red-50 transition-colors"
-                  >
-                    <Trash2 size={14} />
-                  </button>
-                </div>
+                  title={rule.active ? 'Tắt' : 'Bật'}
+                >
+                  {rule.active ? <ToggleRight size={18} /> : <ToggleLeft size={18} />}
+                </button>
+                <button
+                  onClick={() => { if (confirm('Xoá tracking rule này?')) deleteMutation.mutate(rule.id) }}
+                  className="p-1.5 rounded-lg text-slate-300 hover:text-red-400 transition-colors"
+                >
+                  <Trash2 size={13} />
+                </button>
               </div>
             </div>
           ))}
