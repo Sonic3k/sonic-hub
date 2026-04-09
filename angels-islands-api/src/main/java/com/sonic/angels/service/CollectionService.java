@@ -41,16 +41,33 @@ public class CollectionService {
         this.mapper = mapper;
     }
 
-    public List<CollectionDto.Response> findAll() {
-        return collectionRepository.findAll().stream().map(this::toResponse).toList();
+    // ── Root collection ──────────────────────────────────────────────────────
+
+    public Collection getRoot() {
+        return collectionRepository.findByNameAndParentIsNull("Angels Islands")
+            .orElseThrow(() -> new RuntimeException("Root collection 'Angels Islands' not found. App not initialized."));
     }
 
-    public List<CollectionDto.Response> findRoots() {
-        return collectionRepository.findByParentIsNull().stream().map(this::toResponse).toList();
+    public UUID getRootId() { return getRoot().getId(); }
+
+    // ── Queries (scoped under root) ──────────────────────────────────────────
+
+    public List<CollectionDto.Response> findAll() {
+        // All collections under root (excluding root itself)
+        return collectionRepository.findAll().stream()
+            .filter(c -> !c.getId().equals(getRootId()))
+            .map(this::toResponse).toList();
+    }
+
+    public List<CollectionDto.Response> findTopLevel() {
+        // Direct children of root = top-level collections
+        return collectionRepository.findByParentId(getRootId()).stream().map(this::toResponse).toList();
     }
 
     public List<CollectionDto.Response> findByPersonId(UUID personId) {
-        return collectionRepository.findByPersonsId(personId).stream().map(this::toResponse).toList();
+        return collectionRepository.findByPersonsId(personId).stream()
+            .filter(c -> !c.getId().equals(getRootId()))
+            .map(this::toResponse).toList();
     }
 
     public List<CollectionDto.Response> findByParentId(UUID parentId) {
@@ -68,6 +85,8 @@ public class CollectionService {
     public CollectionDto.Response create(CollectionDto.Request req) {
         Collection c = new Collection();
         applyRequest(c, req);
+        // Default parent to root if not specified
+        if (c.getParent() == null) c.setParent(getRoot());
         return toResponse(collectionRepository.save(c));
     }
 
@@ -78,6 +97,7 @@ public class CollectionService {
     }
 
     public void delete(UUID id) {
+        if (id.equals(getRootId())) throw new RuntimeException("Cannot delete root collection");
         Collection c = findById(id);
         deleteRecursive(c);
     }
@@ -127,7 +147,8 @@ public class CollectionService {
     public List<CollectionDto.Response> getBreadcrumb(UUID id) {
         List<CollectionDto.Response> crumbs = new ArrayList<>();
         Collection c = collectionRepository.findById(id).orElse(null);
-        while (c != null) {
+        UUID rootId = getRootId();
+        while (c != null && !c.getId().equals(rootId)) {
             CollectionDto.Response r = new CollectionDto.Response();
             r.setId(c.getId()); r.setName(c.getName());
             crumbs.add(0, r);
@@ -175,15 +196,17 @@ public class CollectionService {
     // ── Tree creation (folder upload) ────────────────────────────────────────
 
     public CollectionDto.TreeResponse createTree(CollectionDto.TreeRequest req) {
-        Collection root = new Collection();
-        root.setName(req.getRootName());
+        // Tree root is a child of "Angels Islands"
+        Collection treeRoot = new Collection();
+        treeRoot.setName(req.getRootName());
+        treeRoot.setParent(getRoot());
         if (req.getPersonIds() != null && !req.getPersonIds().isEmpty()) {
-            root.setPersons(new HashSet<>(personRepository.findAllById(req.getPersonIds())));
+            treeRoot.setPersons(new HashSet<>(personRepository.findAllById(req.getPersonIds())));
         }
-        root = collectionRepository.save(root);
+        treeRoot = collectionRepository.save(treeRoot);
 
         Map<String, UUID> pathToId = new HashMap<>();
-        pathToId.put("", root.getId());
+        pathToId.put("", treeRoot.getId());
 
         if (req.getFolders() != null) {
             List<String> sorted = req.getFolders().stream().sorted().toList();
@@ -199,9 +222,9 @@ public class CollectionService {
                         UUID parentId = pathToId.get(parentPath);
                         Collection sub = new Collection();
                         sub.setName(parts[i]);
-                        sub.setParent(collectionRepository.findById(parentId).orElse(root));
-                        if (root.getPersons() != null && !root.getPersons().isEmpty()) {
-                            sub.setPersons(new HashSet<>(root.getPersons()));
+                        sub.setParent(collectionRepository.findById(parentId).orElse(treeRoot));
+                        if (treeRoot.getPersons() != null && !treeRoot.getPersons().isEmpty()) {
+                            sub.setPersons(new HashSet<>(treeRoot.getPersons()));
                         }
                         sub = collectionRepository.save(sub);
                         pathToId.put(key, sub.getId());
@@ -211,7 +234,7 @@ public class CollectionService {
         }
 
         CollectionDto.TreeResponse resp = new CollectionDto.TreeResponse();
-        resp.setRootId(root.getId());
+        resp.setRootId(treeRoot.getId());
         pathToId.remove("");
         resp.setPathToId(pathToId);
         return resp;

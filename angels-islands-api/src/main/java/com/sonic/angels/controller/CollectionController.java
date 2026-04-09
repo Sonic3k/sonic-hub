@@ -19,10 +19,10 @@ public class CollectionController {
     }
 
     @GetMapping
-    public List<CollectionDto.Response> findAll() { return collectionService.findAll(); }
+    public List<CollectionDto.Response> findTopLevel() { return collectionService.findTopLevel(); }
 
-    @GetMapping("/roots")
-    public List<CollectionDto.Response> findRoots() { return collectionService.findRoots(); }
+    @GetMapping("/all")
+    public List<CollectionDto.Response> findAll() { return collectionService.findAll(); }
 
     @GetMapping("/{id}")
     public CollectionDto.Response findById(@PathVariable UUID id) { return collectionService.findResponseById(id); }
