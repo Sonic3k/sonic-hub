@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { Calendar, Trash2, CheckCircle2, Circle, Clock, SkipForward, ArrowRight } from 'lucide-react'
+import { Calendar, Trash2, CheckCircle2, Clock, SkipForward, ArrowRight } from 'lucide-react'
 import clsx from 'clsx'
 import companionApi from '../api/companion'
 
