@@ -122,8 +122,13 @@ export interface TrackingRule {
   frequencyType?: string
   currentLimit?: number
   targetLimit?: number
-  reminderPattern?: string
+  remindBeforeMinutes?: number
+  remindAt?: string
+  remindIntervalDays?: number
+  remindDaysOfWeek?: string
+  remindTime?: string
   reminderMessage?: string
+  lastRemindedAt?: string
   active: boolean
   projectId?: string
   projectName?: string

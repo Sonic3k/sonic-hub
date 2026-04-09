@@ -12,6 +12,7 @@ const ENTRY_TYPE_COLORS: Record<string, string> = {
   MOOD: 'bg-purple-50 text-purple-600',
   REMINDER: 'bg-blue-50 text-blue-600',
   REMINDER_RESPONSE: 'bg-cyan-50 text-cyan-600',
+  FOLLOW_UP: 'bg-amber-50 text-amber-600',
 }
 
 export default function EntriesPage() {

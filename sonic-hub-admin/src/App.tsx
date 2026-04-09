@@ -9,6 +9,7 @@ import TodosPage from './pages/TodosPage'
 import ProblemsPage from './pages/ProblemsPage'
 import WishlistsPage from './pages/WishlistsPage'
 import EntriesPage from './pages/EntriesPage'
+import TrackingRulesPage from './pages/TrackingRulesPage'
 import CompanionPage from './pages/CompanionPage'
 
 const queryClient = new QueryClient({
@@ -28,6 +29,7 @@ export default function App() {
             <Route path="problems" element={<ProblemsPage />} />
             <Route path="wishlists" element={<WishlistsPage />} />
             <Route path="entries" element={<EntriesPage />} />
+            <Route path="tracking-rules" element={<TrackingRulesPage />} />
             <Route path="projects" element={<ProjectsPage />} />
             <Route path="tags" element={<TagsPage />} />
             <Route path="companion" element={<CompanionPage />} />
