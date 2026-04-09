@@ -355,141 +355,137 @@ async def _plan_daily_interactions(local_now, assistant):
         if rule.get("entityType") == "task":
             reminder_task_ids.add(str(rule.get("entityId")))
 
-    if True:  # single assistant scope (was: for assistant in enabled)
-        if not bot_manager.bots.get(str(assistant.id)):
+    # Build task context
+    task_lines = []
+    for task in open_tasks:
+        task_id = str(task.get("id"))
+        follow_ups = [e for e in entries
+                     if str(e.get("entityId")) == task_id
+                     and e.get("entryType") == "FOLLOW_UP"]
+        reminders_today = [e for e in entries
+                          if str(e.get("entityId")) == task_id
+                          and e.get("entryType") == "REMINDER"
+                          and e.get("createdAt", "").startswith(today_str)]
+
+        due_display = utc_to_local_display(task.get("dueDateTime")) if task.get("dueDateTime") else "không có deadline"
+        last_fu = utc_to_local_display(follow_ups[0].get("createdAt")) if follow_ups else "chưa hỏi"
+
+        flags = []
+        if task_id in reminder_task_ids:
+            flags.append("có reminder tự động")
+        if reminders_today:
+            flags.append("đã nhắc hôm nay")
+        flags_str = f" | {', '.join(flags)}" if flags else ""
+
+        task_lines.append(
+            f"- [id:{task_id}] [{task.get('priority')}] {task.get('title')} "
+            f"| deadline: {due_display} | đã hỏi: {len(follow_ups)} lần | lần cuối: {last_fu}{flags_str}"
+        )
+
+    tasks_context = "\n".join(task_lines) if task_lines else "(Không có task nào)"
+
+    # Get conversation state
+    from app.models.models import ConversationState
+    from sqlalchemy import select
+    async with async_session() as db:
+        result = await db.execute(
+            select(ConversationState).where(ConversationState.assistant_id == assistant.id)
+        )
+        state = result.scalar_one_or_none()
+
+    if state and state.last_user_message_at:
+        diff = (local_now.replace(tzinfo=None) - state.last_user_message_at)
+        hours_ago = diff.total_seconds() / 3600
+        if hours_ago < 1:
+            conv_state_text = f"Vừa chat {int(hours_ago * 60)} phút trước"
+        elif hours_ago < 24:
+            conv_state_text = f"Chat {int(hours_ago)} giờ trước"
+        else:
+            conv_state_text = f"Lâu không chat ({int(hours_ago / 24)} ngày)"
+        if state.current_mood:
+            conv_state_text += f" | Mood: {state.current_mood}"
+        if state.current_topic:
+            conv_state_text += f" | Topic: {state.current_topic}"
+    else:
+        conv_state_text = "Chưa có thông tin"
+
+    # Get recent chat messages
+    recent_chat = "Không có tin nhắn gần đây"
+    async with async_session() as db:
+        from app.models.models import Conversation, Message as MsgModel
+        from sqlalchemy import desc
+        conv_result = await db.execute(
+            select(Conversation)
+            .where(Conversation.assistant_id == assistant.id)
+            .order_by(desc(Conversation.started_at))
+            .limit(1)
+        )
+        recent_conv = conv_result.scalar_one_or_none()
+        if recent_conv:
+            msg_result = await db.execute(
+                select(MsgModel)
+                .where(MsgModel.conversation_id == recent_conv.id)
+                .order_by(desc(MsgModel.timestamp))
+                .limit(10)
+            )
+            msgs = list(reversed(msg_result.scalars().all()))
+            if msgs:
+                recent_chat = "\n".join(
+                    f"{'User' if m.role == 'user' else assistant.nickname}: {m.content[:80]}"
+                    for m in msgs
+                )
+
+    # Time window
+    hour = local_now.hour
+    time_window = f"{hour}:00 - 22:00" if hour > 9 else "9:00 - 22:00"
+
+    async with async_session() as db:
+        personality = await memory_service.get_active_personality(db, assistant.id)
+
+    prompt = PLAN_PROMPT.format(
+        nickname=assistant.nickname,
+        personality=memory_service.format_personality_for_prompt(personality),
+        now=local_now.strftime("%Y-%m-%d %H:%M (%A)"),
+        time_window=time_window,
+        recent_chat=recent_chat,
+        conversation_state=conv_state_text,
+        tasks_context=tasks_context,
+    )
+
+    result = await llm_service.chat(
+        prompt,
+        [{"role": "user", "content": "(system: daily interaction plan)"}],
+        provider_name=assistant.llm_provider or "claude",
+        model=assistant.llm_model,
+    )
+
+    # Parse interactions
+    import json
+    scheduled = []
+    for msg in result.get("messages", []):
+        try:
+            data = json.loads(msg) if isinstance(msg, str) else msg
+            if isinstance(data, dict) and "interactions" in data:
+                scheduled = data["interactions"]
+                break
+        except (json.JSONDecodeError, TypeError):
             continue
 
-        # Build task context
-        task_lines = []
-        for task in open_tasks:
-            task_id = str(task.get("id"))
-            follow_ups = [e for e in entries
-                         if str(e.get("entityId")) == task_id
-                         and e.get("entryType") == "FOLLOW_UP"]
-            reminders_today = [e for e in entries
-                              if str(e.get("entityId")) == task_id
-                              and e.get("entryType") == "REMINDER"
-                              and e.get("createdAt", "").startswith(today_str)]
+    # Add to queue
+    today = local_now.strftime("%Y-%m-%d")
+    for item in scheduled:
+        send_at_str = item.get("send_at", "")
+        if not send_at_str or not item.get("message"):
+            continue
+        _interaction_queue.append({
+            "type": item.get("type", "casual"),
+            "task_id": item.get("task_id"),
+            "draft_message": item["message"],
+            "send_at": f"{today}T{send_at_str}:00",
+            "assistant_id": str(assistant.id),
+        })
 
-            due_display = utc_to_local_display(task.get("dueDateTime")) if task.get("dueDateTime") else "không có deadline"
-            last_fu = utc_to_local_display(follow_ups[0].get("createdAt")) if follow_ups else "chưa hỏi"
-
-            flags = []
-            if task_id in reminder_task_ids:
-                flags.append("có reminder tự động")
-            if reminders_today:
-                flags.append("đã nhắc hôm nay")
-            flags_str = f" | {', '.join(flags)}" if flags else ""
-
-            task_lines.append(
-                f"- [id:{task_id}] [{task.get('priority')}] {task.get('title')} "
-                f"| deadline: {due_display} | đã hỏi: {len(follow_ups)} lần | lần cuối: {last_fu}{flags_str}"
-            )
-
-        tasks_context = "\n".join(task_lines) if task_lines else "(Không có task nào)"
-
-        # Get conversation state
-        from app.models.models import ConversationState
-        from sqlalchemy import select
-        async with async_session() as db:
-            result = await db.execute(
-                select(ConversationState).where(ConversationState.assistant_id == assistant.id)
-            )
-            state = result.scalar_one_or_none()
-
-        if state and state.last_user_message_at:
-            diff = (local_now.replace(tzinfo=None) - state.last_user_message_at)
-            hours_ago = diff.total_seconds() / 3600
-            if hours_ago < 1:
-                conv_state_text = f"Vừa chat {int(hours_ago * 60)} phút trước"
-            elif hours_ago < 24:
-                conv_state_text = f"Chat {int(hours_ago)} giờ trước"
-            else:
-                conv_state_text = f"Lâu không chat ({int(hours_ago / 24)} ngày)"
-            if state.current_mood:
-                conv_state_text += f" | Mood: {state.current_mood}"
-            if state.current_topic:
-                conv_state_text += f" | Topic: {state.current_topic}"
-        else:
-            conv_state_text = "Chưa có thông tin"
-
-        # Get recent chat messages
-        recent_chat = "Không có tin nhắn gần đây"
-        async with async_session() as db:
-            from app.models.models import Conversation, Message as MsgModel
-            from sqlalchemy import desc
-            conv_result = await db.execute(
-                select(Conversation)
-                .where(Conversation.assistant_id == assistant.id)
-                .order_by(desc(Conversation.started_at))
-                .limit(1)
-            )
-            recent_conv = conv_result.scalar_one_or_none()
-            if recent_conv:
-                msg_result = await db.execute(
-                    select(MsgModel)
-                    .where(MsgModel.conversation_id == recent_conv.id)
-                    .order_by(desc(MsgModel.timestamp))
-                    .limit(10)
-                )
-                msgs = list(reversed(msg_result.scalars().all()))
-                if msgs:
-                    recent_chat = "\n".join(
-                        f"{'User' if m.role == 'user' else assistant.nickname}: {m.content[:80]}"
-                        for m in msgs
-                    )
-
-        # Time window
-        hour = local_now.hour
-        time_window = f"{hour}:00 - 22:00" if hour > 9 else "9:00 - 22:00"
-
-        async with async_session() as db:
-            personality = await memory_service.get_active_personality(db, assistant.id)
-
-        prompt = PLAN_PROMPT.format(
-            nickname=assistant.nickname,
-            personality=memory_service.format_personality_for_prompt(personality),
-            now=local_now.strftime("%Y-%m-%d %H:%M (%A)"),
-            time_window=time_window,
-            recent_chat=recent_chat,
-            conversation_state=conv_state_text,
-            tasks_context=tasks_context,
-        )
-
-        result = await llm_service.chat(
-            prompt,
-            [{"role": "user", "content": "(system: daily interaction plan)"}],
-            provider_name=assistant.llm_provider or "claude",
-            model=assistant.llm_model,
-        )
-
-        # Parse interactions
-        import json
-        scheduled = []
-        for msg in result.get("messages", []):
-            try:
-                data = json.loads(msg) if isinstance(msg, str) else msg
-                if isinstance(data, dict) and "interactions" in data:
-                    scheduled = data["interactions"]
-                    break
-            except (json.JSONDecodeError, TypeError):
-                continue
-
-        # Add to queue
-        today = local_now.strftime("%Y-%m-%d")
-        for item in scheduled:
-            send_at_str = item.get("send_at", "")
-            if not send_at_str or not item.get("message"):
-                continue
-            _interaction_queue.append({
-                "type": item.get("type", "casual"),
-                "task_id": item.get("task_id"),
-                "draft_message": item["message"],
-                "send_at": f"{today}T{send_at_str}:00",
-                "assistant_id": str(assistant.id),
-            })
-
-        logger.info(f"Daily plan: scheduled {len(scheduled)} interactions")
+    logger.info(f"Daily plan: scheduled {len(scheduled)} interactions")
 
 
 async def _execute_interactions(local_now):
