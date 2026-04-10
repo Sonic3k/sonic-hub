@@ -336,6 +336,7 @@ export default function CollectionsPage() {
   const [newCollName, setNewCollName] = useState('')
   const [uploading, setUploading] = useState(false)
   const [sort, setSort] = useState<string>('effectiveDate')
+  const [showSortMenu, setShowSortMenu] = useState(false)
   const addPhotosRef = useRef<HTMLInputElement>(null)
   const qc = useQueryClient()
 
@@ -484,10 +485,30 @@ export default function CollectionsPage() {
               Photos & Videos · {media.length}
             </h2>
             <div className="flex items-center gap-2">
-              <button onClick={() => setSort(s => s === 'effectiveDate' ? 'name' : s === 'name' ? 'uploadedAt' : 'effectiveDate')}
-                className="text-[10px] text-slate-400 hover:text-slate-600 transition-colors">
-                {sort === 'effectiveDate' ? '↑ Date' : sort === 'name' ? '↑ Name' : '↑ Added'}
-              </button>
+              {/* Sort menu — same pattern as + button */}
+              <div className="relative">
+                <button onClick={() => setShowSortMenu(v => !v)}
+                  className="text-[11px] text-slate-400 hover:text-slate-600 flex items-center gap-1 transition-colors">
+                  {sort === 'effectiveDate' ? 'Date' : sort === 'name' ? 'Name' : 'Added'}
+                  <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M6 9l6 6 6-6"/></svg>
+                </button>
+                {showSortMenu && (
+                  <>
+                    <div className="fixed inset-0 z-10" onClick={() => setShowSortMenu(false)} />
+                    <div className="absolute right-0 top-7 z-20 bg-white rounded-xl shadow-lg border border-slate-100 py-1 w-28">
+                      {[
+                        { key: 'effectiveDate', label: 'Date' },
+                        { key: 'name', label: 'Name' },
+                        { key: 'uploadedAt', label: 'Added' },
+                      ].map(s => (
+                        <button key={s.key} onClick={() => { setSort(s.key); setShowSortMenu(false) }}
+                          className={`block w-full text-left px-3 py-2 text-xs transition-colors ${
+                            sort === s.key ? 'text-pink-500 bg-pink-50/50' : 'text-slate-600 hover:bg-slate-50'
+                          }`}>{s.label}</button>
+                      ))}
+                    </div>
+                  </>
+                )}
             </div>
             {selectMode && (
               <div className="flex items-center gap-2">
