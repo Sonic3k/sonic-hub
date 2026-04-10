@@ -117,60 +117,62 @@ function Lightbox({ media, allMedia, onClose, onNavigate }: {
   ].filter(Boolean).join('  ·  ')
 
   return (
-    <div className="fixed inset-0 z-50 bg-black">
-      {/* ── Image area — takes FULL screen ──────────────── */}
-      <div className="absolute inset-0 flex items-center justify-center"
-        onClick={onClose}>
+    <div className="fixed inset-0 z-50 bg-black flex">
+      {/* ── Image area — shrinks when info panel opens ── */}
+      <div className="flex-1 relative flex items-center justify-center min-w-0 transition-all duration-300">
+        {/* Image */}
         {media.cdnUrl ? (
           <img src={media.cdnUrl} alt={media.fileName}
-            className="max-w-full max-h-full object-contain select-none" />
+            className="max-w-full max-h-full object-contain select-none p-2" />
         ) : (
           <div className="text-white/30 text-sm">No preview</div>
         )}
+
+        {/* ── Floating controls ────────────────────────── */}
+        {/* Back */}
+        <button onClick={onClose}
+          className="absolute top-3 left-3 md:top-4 md:left-4 text-white/60 hover:text-white p-2 rounded-full hover:bg-white/10 transition-colors">
+          <ArrowLeft size={22} />
+        </button>
+
+        {/* Counter + Info */}
+        <div className="absolute top-3 right-3 md:top-4 md:right-4 flex items-center gap-2">
+          <span className="text-white/40 text-xs tabular-nums">{idx + 1} / {allMedia.length}</span>
+          <button onClick={() => setShowInfo(!showInfo)}
+            className={`p-2 rounded-full transition-colors ${showInfo ? 'text-white bg-white/15' : 'text-white/60 hover:text-white hover:bg-white/10'}`}>
+            <Info size={20} />
+          </button>
+        </div>
+
+        {/* Prev */}
+        {prev && (
+          <button onClick={() => onNavigate(prev)}
+            className="absolute left-2 md:left-4 top-1/2 -translate-y-1/2 bg-black/20 hover:bg-black/40 text-white/60 hover:text-white rounded-full p-2.5 transition-all">
+            <ChevronLeft size={24} />
+          </button>
+        )}
+
+        {/* Next */}
+        {next && (
+          <button onClick={() => onNavigate(next)}
+            className="absolute right-2 md:right-4 top-1/2 -translate-y-1/2 bg-black/20 hover:bg-black/40 text-white/60 hover:text-white rounded-full p-2.5 transition-all">
+            <ChevronRight size={24} />
+          </button>
+        )}
       </div>
 
-      {/* ── Floating controls (overlay) ────────────────── */}
-      {/* Close */}
-      <button onClick={e => { e.stopPropagation(); onClose() }}
-        className="absolute top-3 left-3 md:top-4 md:left-4 z-20 text-white/60 hover:text-white p-2 rounded-full hover:bg-white/10 transition-colors">
-        <ArrowLeft size={22} />
-      </button>
-
-      {/* Counter + Info toggle */}
-      <div className="absolute top-3 right-3 md:top-4 md:right-4 z-20 flex items-center gap-2">
-        <span className="text-white/40 text-xs tabular-nums">{idx + 1} / {allMedia.length}</span>
-        <button onClick={e => { e.stopPropagation(); setShowInfo(!showInfo) }}
-          className={`p-2 rounded-full transition-colors ${showInfo ? 'text-white bg-white/15' : 'text-white/60 hover:text-white hover:bg-white/10'}`}>
-          <Info size={20} />
-        </button>
-      </div>
-
-      {/* Prev / Next */}
-      {prev && (
-        <button onClick={e => { e.stopPropagation(); onNavigate(prev) }}
-          className="absolute left-2 md:left-4 top-1/2 -translate-y-1/2 z-20 bg-black/20 hover:bg-black/40 text-white/60 hover:text-white rounded-full p-2.5 transition-all">
-          <ChevronLeft size={24} />
-        </button>
-      )}
-      {next && (
-        <button onClick={e => { e.stopPropagation(); onNavigate(next) }}
-          className="absolute right-2 md:right-4 top-1/2 -translate-y-1/2 z-20 bg-black/20 hover:bg-black/40 text-white/60 hover:text-white rounded-full p-2.5 transition-all">
-          <ChevronRight size={24} />
-        </button>
-      )}
-
-      {/* ── Desktop: side info panel ───────────────────── */}
-      {showInfo && (
-        <div className="hidden md:block absolute top-0 right-0 bottom-0 w-80 bg-[#111]/95 backdrop-blur-md border-l border-white/5 overflow-y-auto z-30"
-          onClick={e => e.stopPropagation()}>
+      {/* ── Desktop: side info panel (pushes image left) ── */}
+      <div className={`hidden md:flex flex-col bg-[#111] border-l border-white/5 overflow-hidden transition-all duration-300 ${
+        showInfo ? 'w-80' : 'w-0'
+      }`}>
+        <div className="w-80 h-full overflow-y-auto">
           <InfoContent media={media} cameraStr={cameraStr} settingsStr={settingsStr} exif={exif} vid={vid} />
         </div>
-      )}
+      </div>
 
       {/* ── Mobile: bottom sheet ───────────────────────── */}
       {showInfo && (
-        <div className="md:hidden absolute bottom-0 left-0 right-0 bg-[#111]/95 backdrop-blur-md border-t border-white/5 max-h-[55vh] overflow-y-auto animate-slide-up safe-bottom rounded-t-2xl z-30"
-          onClick={e => e.stopPropagation()}>
+        <div className="md:hidden fixed bottom-0 left-0 right-0 bg-[#111]/95 backdrop-blur-md border-t border-white/5 max-h-[55vh] overflow-y-auto animate-slide-up safe-bottom rounded-t-2xl z-10">
           <div className="flex justify-center pt-2 pb-1"><div className="w-10 h-1 rounded-full bg-white/15" /></div>
           <InfoContent media={media} cameraStr={cameraStr} settingsStr={settingsStr} exif={exif} vid={vid} />
         </div>
