@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react'
-import { useQuery } from '@tanstack/react-query'
-import { FolderOpen, ChevronRight, ChevronLeft, Image, ArrowLeft, Camera, MapPin, FileText, Clock, Film, Info } from 'lucide-react'
-import { collectionBrowseApi } from '../api/collections'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { FolderOpen, ChevronRight, ChevronLeft, Image, ArrowLeft, Camera, MapPin, FileText, Clock, Film, Info, Trash2, X, Check } from 'lucide-react'
+import { collectionBrowseApi, uploadApi } from '../api/collections'
 import type { CollectionResponse, MediaFileResponse } from '../types'
 
 function fmtDate(d?: string) {
@@ -63,11 +63,13 @@ function CollectionCard({ collection, onClick }: { collection: CollectionRespons
 
 // ── Media Grid Item ──────────────────────────────────────────────────────────
 
-function MediaItem({ media, onClick }: { media: MediaFileResponse; onClick: () => void }) {
+function MediaItem({ media, onClick, selected, onSelect, selectMode }: {
+  media: MediaFileResponse; onClick: () => void
+  selected: boolean; onSelect: (id: string) => void; selectMode: boolean
+}) {
   return (
-    <div onClick={onClick}
-      className="cursor-pointer rounded-lg overflow-hidden bg-slate-100 relative active:scale-[0.97] transition-transform duration-100">
-      <div className="aspect-square">
+    <div className="relative cursor-pointer rounded-lg overflow-hidden bg-slate-100 group active:scale-[0.97] transition-transform duration-100">
+      <div className="aspect-square" onClick={() => selectMode ? onSelect(media.id) : onClick()}>
         {(media.thumbnailUrl || media.cdnUrl) ? (
           <img src={media.thumbnailUrl || media.cdnUrl} alt={media.fileName} className="w-full h-full object-cover" loading="lazy" />
         ) : (
@@ -79,6 +81,21 @@ function MediaItem({ media, onClick }: { media: MediaFileResponse; onClick: () =
           {fmtDuration(media.duration) || '▶'}
         </div>
       )}
+      {/* Select checkbox — visible on hover or when in select mode */}
+      <div className={`absolute top-1.5 left-1.5 transition-opacity ${
+        selected || selectMode ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'
+      }`}>
+        <button onClick={e => { e.stopPropagation(); onSelect(media.id) }}
+          className={`w-6 h-6 rounded-full flex items-center justify-center transition-all ${
+            selected
+              ? 'bg-pink-500 text-white shadow-md'
+              : 'bg-black/30 hover:bg-black/50 text-white/70 backdrop-blur-sm'
+          }`}>
+          {selected ? <Check size={14} strokeWidth={3} /> : null}
+        </button>
+      </div>
+      {/* Selected overlay */}
+      {selected && <div className="absolute inset-0 bg-pink-500/10 border-2 border-pink-500 rounded-lg pointer-events-none" />}
     </div>
   )
 }
@@ -311,6 +328,9 @@ function Breadcrumb({ items, onNavigate }: { items: { id: string; name: string }
 export default function CollectionsPage() {
   const [currentId, setCurrentId] = useState<string | null>(null)
   const [selectedMedia, setSelectedMedia] = useState<MediaFileResponse | null>(null)
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
+  const [deleting, setDeleting] = useState(false)
+  const qc = useQueryClient()
 
   const { data: topLevel = [], isLoading } = useQuery({
     queryKey: ['collections', 'top'],
@@ -342,8 +362,28 @@ export default function CollectionsPage() {
     enabled: !!currentId,
   })
 
-  const navigate = (id: string | null) => setCurrentId(id)
+  const navigate = (id: string | null) => { setCurrentId(id); setSelectedIds(new Set()) }
   const collections = currentId ? children : topLevel
+  const selectMode = selectedIds.size > 0
+
+  const toggleSelect = (id: string) => {
+    setSelectedIds(prev => {
+      const next = new Set(prev)
+      if (next.has(id)) next.delete(id); else next.add(id)
+      return next
+    })
+  }
+
+  const handleDelete = async () => {
+    if (!selectedIds.size || !confirm(`Delete ${selectedIds.size} file(s)? This will also remove from storage.`)) return
+    setDeleting(true)
+    try {
+      await uploadApi.deleteMedia(Array.from(selectedIds))
+      setSelectedIds(new Set())
+      qc.invalidateQueries({ queryKey: ['collections', currentId, 'media'] })
+    } catch (err) { alert('Delete failed') }
+    setDeleting(false)
+  }
 
   return (
     <div className="p-3 md:p-6 lg:p-8">
@@ -377,12 +417,35 @@ export default function CollectionsPage() {
 
       {currentId && media.length > 0 && (
         <div>
-          <h2 className="text-[10px] uppercase tracking-widest text-slate-400 font-semibold mb-2.5">
-            Photos & Videos · {media.length}
-          </h2>
+          <div className="flex items-center justify-between mb-2.5">
+            <h2 className="text-[10px] uppercase tracking-widest text-slate-400 font-semibold">
+              Photos & Videos · {media.length}
+            </h2>
+            {selectMode && (
+              <div className="flex items-center gap-2">
+                <span className="text-xs text-pink-500 font-medium">{selectedIds.size} selected</span>
+                <button onClick={() => { const all = new Set(media.map((m: MediaFileResponse) => m.id)); setSelectedIds(prev => prev.size === all.size ? new Set() : all) }}
+                  className="text-[11px] text-slate-500 hover:text-slate-700 px-2 py-1 rounded hover:bg-slate-100">
+                  {selectedIds.size === media.length ? 'Deselect all' : 'Select all'}
+                </button>
+                <button onClick={handleDelete} disabled={deleting}
+                  className="flex items-center gap-1 text-[11px] text-rose-500 hover:text-rose-600 px-2 py-1 rounded hover:bg-rose-50 disabled:opacity-50">
+                  <Trash2 size={12} />{deleting ? 'Deleting...' : 'Delete'}
+                </button>
+                <button onClick={() => setSelectedIds(new Set())}
+                  className="text-slate-400 hover:text-slate-600 p-1 rounded hover:bg-slate-100">
+                  <X size={14} />
+                </button>
+              </div>
+            )}
+          </div>
           <div className="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-1.5 md:gap-2">
             {media.map((m: MediaFileResponse) => (
-              <MediaItem key={m.id} media={m} onClick={() => setSelectedMedia(m)} />
+              <MediaItem key={m.id} media={m}
+                onClick={() => setSelectedMedia(m)}
+                selected={selectedIds.has(m.id)}
+                onSelect={toggleSelect}
+                selectMode={selectMode} />
             ))}
           </div>
         </div>

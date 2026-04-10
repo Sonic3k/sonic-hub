@@ -46,4 +46,10 @@ public class MediaFileController {
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(@PathVariable UUID id) { mediaFileService.delete(id); return ResponseEntity.noContent().build(); }
+
+    @PostMapping("/delete-batch")
+    public ResponseEntity<java.util.Map<String, Integer>> deleteBatch(@RequestBody java.util.List<UUID> ids) {
+        int deleted = mediaFileService.deleteBatch(ids);
+        return ResponseEntity.ok(java.util.Map.of("deleted", deleted, "total", ids.size()));
+    }
 }

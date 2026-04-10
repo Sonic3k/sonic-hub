@@ -13,6 +13,7 @@ import com.sonic.angels.model.entity.MediaImageDetail;
 import com.sonic.angels.model.entity.MediaVideoDetail;
 import com.sonic.angels.repository.MediaFileRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
@@ -24,6 +25,7 @@ import java.util.List;
 import java.util.UUID;
 
 @Service
+@Transactional
 public class MediaFileService {
 
     private final MediaFileRepository mediaFileRepository;
@@ -70,10 +72,25 @@ public class MediaFileService {
 
     public void delete(UUID id) {
         MediaFile mf = findById(id);
+        // Clear join tables
+        mf.getPersons().clear();
+        mf.getTags().clear();
+        mediaFileRepository.save(mf);
+        // Remove from all collections (no back-ref on MediaFile)
+        mediaFileRepository.removeFromAllCollections(id);
+        // Delete from storage
         if (mf.getStorageProvider() == MediaFile.StorageProvider.B2 && mf.getStorageKey() != null) {
             storageService.delete(mf.getStorageKey());
         }
         mediaFileRepository.delete(mf);
+    }
+
+    public int deleteBatch(List<UUID> ids) {
+        int count = 0;
+        for (UUID id : ids) {
+            try { delete(id); count++; } catch (Exception ignored) {}
+        }
+        return count;
     }
 
     public String buildCdnUrl(MediaFile mf) {

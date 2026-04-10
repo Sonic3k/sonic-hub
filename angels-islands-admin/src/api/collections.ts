@@ -31,6 +31,8 @@ export const uploadApi = {
   },
   linkMediaToCollection: (collectionId: string, mediaId: string) =>
     api.post(`/api/collections/${collectionId}/media/${mediaId}`),
+  deleteMedia: (ids: string[]) =>
+    api.post('/api/media-files/delete-batch', ids).then(r => r.data),
 }
 
 export const collectionBrowseApi = {
