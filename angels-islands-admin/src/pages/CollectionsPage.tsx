@@ -335,6 +335,7 @@ export default function CollectionsPage() {
   const [showNewCollection, setShowNewCollection] = useState(false)
   const [newCollName, setNewCollName] = useState('')
   const [uploading, setUploading] = useState(false)
+  const [sort, setSort] = useState<string>('effectiveDate')
   const addPhotosRef = useRef<HTMLInputElement>(null)
   const qc = useQueryClient()
 
@@ -351,8 +352,8 @@ export default function CollectionsPage() {
   })
 
   const { data: media = [] } = useQuery({
-    queryKey: ['collections', currentId, 'media'],
-    queryFn: () => collectionBrowseApi.getCollectionMedia(currentId!),
+    queryKey: ['collections', currentId, 'media', sort],
+    queryFn: () => collectionBrowseApi.getCollectionMedia(currentId!, sort),
     enabled: !!currentId,
   })
 
@@ -482,6 +483,19 @@ export default function CollectionsPage() {
             <h2 className="text-[10px] uppercase tracking-widest text-slate-400 font-semibold">
               Photos & Videos · {media.length}
             </h2>
+            <div className="flex items-center gap-1">
+              {/* Sort options */}
+              {[
+                { key: 'effectiveDate', label: 'Date' },
+                { key: 'name', label: 'Name' },
+                { key: 'uploadedAt', label: 'Added' },
+              ].map(s => (
+                <button key={s.key} onClick={() => setSort(s.key)}
+                  className={`text-[10px] px-2 py-1 rounded-full transition-colors ${
+                    sort === s.key ? 'bg-slate-800 text-white' : 'text-slate-400 hover:text-slate-600 hover:bg-slate-100'
+                  }`}>{s.label}</button>
+              ))}
+            </div>
             {selectMode && (
               <div className="flex items-center gap-2">
                 <span className="text-xs text-pink-500 font-medium">{selectedIds.size} selected</span>

@@ -40,5 +40,5 @@ export const collectionBrowseApi = {
   getById: (id: string) => api.get<CollectionResponse>(`/api/collections/${id}`).then(r => r.data),
   getChildren: (id: string) => api.get<CollectionResponse[]>(`/api/collections/${id}/children`).then(r => r.data),
   getBreadcrumb: (id: string) => api.get<CollectionResponse[]>(`/api/collections/${id}/breadcrumb`).then(r => r.data),
-  getCollectionMedia: (id: string) => api.get(`/api/collections/${id}/media`).then(r => r.data),
+  getCollectionMedia: (id: string, sort?: string) => api.get(`/api/collections/${id}/media`, { params: { sort } }).then(r => r.data),
 }

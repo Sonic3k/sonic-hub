@@ -15,6 +15,7 @@ import com.sonic.angels.repository.TagRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.UUID;
@@ -128,9 +129,16 @@ public class CollectionService {
         collectionRepository.save(c);
     }
 
-    public List<MediaFileDto.Response> getMedia(UUID collectionId) {
+    public List<MediaFileDto.Response> getMedia(UUID collectionId, String sort) {
         Collection c = findById(collectionId);
-        return c.getMediaFiles().stream().map(mapper::toMediaFileResponse).toList();
+        var stream = c.getMediaFiles().stream();
+        // Sort
+        java.util.Comparator<MediaFile> cmp = switch (sort != null ? sort : "effectiveDate") {
+            case "name" -> java.util.Comparator.comparing(MediaFile::getFileName, String.CASE_INSENSITIVE_ORDER);
+            case "uploadedAt" -> java.util.Comparator.comparing(m -> m.getUploadedAt() != null ? m.getUploadedAt() : LocalDateTime.MIN);
+            default -> java.util.Comparator.comparing(m -> m.getEffectiveDate() != null ? m.getEffectiveDate() : LocalDateTime.MIN);
+        };
+        return stream.sorted(cmp).map(mapper::toMediaFileResponse).toList();
     }
 
     // ── Thumbnail ────────────────────────────────────────────────────────────
