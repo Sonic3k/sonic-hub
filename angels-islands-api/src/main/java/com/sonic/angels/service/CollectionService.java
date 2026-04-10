@@ -129,16 +129,15 @@ public class CollectionService {
         collectionRepository.save(c);
     }
 
-    public List<MediaFileDto.Response> getMedia(UUID collectionId, String sort) {
+    public List<MediaFileDto.Response> getMedia(UUID collectionId, String sort, String sortDir) {
         Collection c = findById(collectionId);
-        var stream = c.getMediaFiles().stream();
-        // Sort
         java.util.Comparator<MediaFile> cmp = switch (sort != null ? sort : "effectiveDate") {
             case "name" -> java.util.Comparator.comparing(MediaFile::getFileName, String.CASE_INSENSITIVE_ORDER);
             case "uploadedAt" -> java.util.Comparator.comparing(m -> m.getUploadedAt() != null ? m.getUploadedAt() : LocalDateTime.MIN);
             default -> java.util.Comparator.comparing(m -> m.getEffectiveDate() != null ? m.getEffectiveDate() : LocalDateTime.MIN);
         };
-        return stream.sorted(cmp).map(mapper::toMediaFileResponse).toList();
+        if ("desc".equalsIgnoreCase(sortDir)) cmp = cmp.reversed();
+        return c.getMediaFiles().stream().sorted(cmp).map(mapper::toMediaFileResponse).toList();
     }
 
     // ── Thumbnail ────────────────────────────────────────────────────────────

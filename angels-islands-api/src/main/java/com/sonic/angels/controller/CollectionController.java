@@ -50,8 +50,9 @@ public class CollectionController {
 
     @GetMapping("/{id}/media")
     public List<MediaFileDto.Response> getMedia(@PathVariable UUID id,
-        @RequestParam(defaultValue = "effectiveDate") String sort) {
-        return collectionService.getMedia(id, sort);
+        @RequestParam(defaultValue = "effectiveDate") String sort,
+        @RequestParam(defaultValue = "desc") String sortDir) {
+        return collectionService.getMedia(id, sort, sortDir);
     }
 
     @PostMapping("/{id}/media/{mediaId}")

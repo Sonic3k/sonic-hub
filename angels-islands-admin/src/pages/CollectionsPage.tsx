@@ -335,10 +335,21 @@ export default function CollectionsPage() {
   const [showNewCollection, setShowNewCollection] = useState(false)
   const [newCollName, setNewCollName] = useState('')
   const [uploading, setUploading] = useState(false)
-  const [sort, setSort] = useState<string>('effectiveDate')
+  const [sort, setSort] = useState('effectiveDate')
+  const [sortDir, setSortDir] = useState('desc')
   const [showSortMenu, setShowSortMenu] = useState(false)
   const addPhotosRef = useRef<HTMLInputElement>(null)
   const qc = useQueryClient()
+
+  const sortOptions = [
+    { sort: 'effectiveDate', dir: 'desc', label: 'Date · Newest first' },
+    { sort: 'effectiveDate', dir: 'asc',  label: 'Date · Oldest first' },
+    { sort: 'name',          dir: 'asc',  label: 'Name · A → Z' },
+    { sort: 'name',          dir: 'desc', label: 'Name · Z → A' },
+    { sort: 'uploadedAt',    dir: 'desc', label: 'Added · Newest first' },
+    { sort: 'uploadedAt',    dir: 'asc',  label: 'Added · Oldest first' },
+  ]
+  const activeSort = sortOptions.find(o => o.sort === sort && o.dir === sortDir) || sortOptions[0]
 
   const { data: topLevel = [], isLoading } = useQuery({
     queryKey: ['collections', 'top'],
@@ -353,8 +364,8 @@ export default function CollectionsPage() {
   })
 
   const { data: media = [] } = useQuery({
-    queryKey: ['collections', currentId, 'media', sort],
-    queryFn: () => collectionBrowseApi.getCollectionMedia(currentId!, sort),
+    queryKey: ['collections', currentId, 'media', sort, sortDir],
+    queryFn: () => collectionBrowseApi.getCollectionMedia(currentId!, sort, sortDir),
     enabled: !!currentId,
   })
 
@@ -485,48 +496,49 @@ export default function CollectionsPage() {
               Photos & Videos · {media.length}
             </h2>
             <div className="flex items-center gap-2">
-              {/* Sort menu — same pattern as + button */}
+              {/* Sort dropdown */}
               <div className="relative">
                 <button onClick={() => setShowSortMenu(v => !v)}
-                  className="text-[11px] text-slate-400 hover:text-slate-600 flex items-center gap-1 transition-colors">
-                  {sort === 'effectiveDate' ? 'Date' : sort === 'name' ? 'Name' : 'Added'}
-                  <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M6 9l6 6 6-6"/></svg>
+                  className="flex items-center gap-1.5 text-[11px] text-slate-400 hover:text-slate-600 transition-colors">
+                  {activeSort.label}
+                  <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M6 9l6 6 6-6"/></svg>
                 </button>
                 {showSortMenu && (
                   <>
                     <div className="fixed inset-0 z-10" onClick={() => setShowSortMenu(false)} />
-                    <div className="absolute right-0 top-7 z-20 bg-white rounded-xl shadow-lg border border-slate-100 py-1 w-28">
-                      {[
-                        { key: 'effectiveDate', label: 'Date' },
-                        { key: 'name', label: 'Name' },
-                        { key: 'uploadedAt', label: 'Added' },
-                      ].map(s => (
-                        <button key={s.key} onClick={() => { setSort(s.key); setShowSortMenu(false) }}
-                          className={`block w-full text-left px-3 py-2 text-xs transition-colors ${
-                            sort === s.key ? 'text-pink-500 bg-pink-50/50' : 'text-slate-600 hover:bg-slate-50'
-                          }`}>{s.label}</button>
+                    <div className="absolute right-0 top-8 z-20 bg-white rounded-xl shadow-lg border border-slate-100 py-1.5 w-48">
+                      {sortOptions.map((o, i) => (
+                        <button key={i} onClick={() => { setSort(o.sort); setSortDir(o.dir); setShowSortMenu(false) }}
+                          className={`flex items-center w-full px-4 py-2.5 text-sm transition-colors ${
+                            sort === o.sort && sortDir === o.dir
+                              ? 'text-pink-500 bg-pink-50/50'
+                              : 'text-slate-700 hover:bg-slate-50 active:bg-slate-100'
+                          }`}>
+                          {o.label}
+                        </button>
                       ))}
                     </div>
                   </>
                 )}
-            </div>
-            {selectMode && (
-              <div className="flex items-center gap-2">
-                <span className="text-xs text-pink-500 font-medium">{selectedIds.size} selected</span>
-                <button onClick={() => { const all = new Set<string>(media.map((m: MediaFileResponse) => m.id)); setSelectedIds(prev => prev.size === all.size ? new Set<string>() : all) }}
-                  className="text-[11px] text-slate-500 hover:text-slate-700 px-2 py-1 rounded hover:bg-slate-100">
-                  {selectedIds.size === media.length ? 'Deselect all' : 'Select all'}
-                </button>
-                <button onClick={handleDelete} disabled={deleting}
-                  className="flex items-center gap-1 text-[11px] text-rose-500 hover:text-rose-600 px-2 py-1 rounded hover:bg-rose-50 disabled:opacity-50">
-                  <Trash2 size={12} />{deleting ? 'Deleting...' : 'Delete'}
-                </button>
-                <button onClick={() => setSelectedIds(new Set())}
-                  className="text-slate-400 hover:text-slate-600 p-1 rounded hover:bg-slate-100">
-                  <X size={14} />
-                </button>
               </div>
-            )}
+              {/* Select mode actions */}
+              {selectMode && (
+                <div className="flex items-center gap-2">
+                  <span className="text-xs text-pink-500 font-medium">{selectedIds.size} selected</span>
+                  <button onClick={() => { const all = new Set<string>(media.map((m: MediaFileResponse) => m.id)); setSelectedIds(prev => prev.size === all.size ? new Set<string>() : all) }}
+                    className="text-[11px] text-slate-500 hover:text-slate-700 px-2 py-1 rounded hover:bg-slate-100">
+                    {selectedIds.size === media.length ? 'Deselect all' : 'Select all'}
+                  </button>
+                  <button onClick={handleDelete} disabled={deleting}
+                    className="flex items-center gap-1 text-[11px] text-rose-500 hover:text-rose-600 px-2 py-1 rounded hover:bg-rose-50 disabled:opacity-50">
+                    <Trash2 size={12} />{deleting ? 'Deleting...' : 'Delete'}
+                  </button>
+                  <button onClick={() => setSelectedIds(new Set())}
+                    className="text-slate-400 hover:text-slate-600 p-1 rounded hover:bg-slate-100">
+                    <X size={14} />
+                  </button>
+                </div>
+              )}
             </div>
           </div>
           <div className="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-1.5 md:gap-2">
