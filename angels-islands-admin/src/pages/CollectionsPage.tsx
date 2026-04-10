@@ -424,7 +424,7 @@ export default function CollectionsPage() {
             {selectMode && (
               <div className="flex items-center gap-2">
                 <span className="text-xs text-pink-500 font-medium">{selectedIds.size} selected</span>
-                <button onClick={() => { const all = new Set(media.map((m: MediaFileResponse) => m.id)); setSelectedIds(prev => prev.size === all.size ? new Set() : all) }}
+                <button onClick={() => { const all = new Set<string>(media.map((m: MediaFileResponse) => m.id)); setSelectedIds(prev => prev.size === all.size ? new Set<string>() : all) }}
                   className="text-[11px] text-slate-500 hover:text-slate-700 px-2 py-1 rounded hover:bg-slate-100">
                   {selectedIds.size === media.length ? 'Deselect all' : 'Select all'}
                 </button>
