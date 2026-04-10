@@ -484,14 +484,10 @@ export default function CollectionsPage() {
               Photos & Videos · {media.length}
             </h2>
             <div className="flex items-center gap-2">
-              {/* Sort */}
-              <select value={sort} onChange={e => setSort(e.target.value)}
-                className="text-[11px] text-slate-400 bg-transparent border-none outline-none cursor-pointer pr-4 appearance-none"
-                style={{ backgroundImage: 'url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'10\' height=\'10\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'%2394a3b8\' stroke-width=\'2\'%3E%3Cpath d=\'M6 9l6 6 6-6\'/%3E%3C/svg%3E")', backgroundRepeat: 'no-repeat', backgroundPosition: 'right center' }}>
-                <option value="effectiveDate">Date</option>
-                <option value="name">Name</option>
-                <option value="uploadedAt">Added</option>
-              </select>
+              <button onClick={() => setSort(s => s === 'effectiveDate' ? 'name' : s === 'name' ? 'uploadedAt' : 'effectiveDate')}
+                className="text-[10px] text-slate-400 hover:text-slate-600 transition-colors">
+                {sort === 'effectiveDate' ? '↑ Date' : sort === 'name' ? '↑ Name' : '↑ Added'}
+              </button>
             </div>
             {selectMode && (
               <div className="flex items-center gap-2">
