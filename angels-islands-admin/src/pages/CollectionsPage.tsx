@@ -1,7 +1,7 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { FolderOpen, ChevronRight, ChevronLeft, Image, ArrowLeft, Camera, MapPin, FileText, Clock, Film, Info, Trash2, X, Check } from 'lucide-react'
-import { collectionBrowseApi, uploadApi } from '../api/collections'
+import { FolderOpen, ChevronRight, ChevronLeft, Image, ArrowLeft, Camera, MapPin, FileText, Clock, Film, Info, Trash2, X, Check, Plus, FolderPlus, ImagePlus } from 'lucide-react'
+import { collectionBrowseApi, uploadApi, collectionsApi } from '../api/collections'
 import type { CollectionResponse, MediaFileResponse } from '../types'
 
 function fmtDate(d?: string) {
@@ -330,6 +330,11 @@ export default function CollectionsPage() {
   const [selectedMedia, setSelectedMedia] = useState<MediaFileResponse | null>(null)
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
   const [deleting, setDeleting] = useState(false)
+  const [showAddMenu, setShowAddMenu] = useState(false)
+  const [showNewCollection, setShowNewCollection] = useState(false)
+  const [newCollName, setNewCollName] = useState('')
+  const [uploading, setUploading] = useState(false)
+  const addPhotosRef = useRef<HTMLInputElement>(null)
   const qc = useQueryClient()
 
   const { data: topLevel = [], isLoading } = useQuery({
@@ -385,6 +390,30 @@ export default function CollectionsPage() {
     setDeleting(false)
   }
 
+  const handleAddPhotos = async (files: FileList) => {
+    if (!currentId || !files.length) return
+    setUploading(true)
+    let count = 0
+    for (const file of Array.from(files)) {
+      if (!file.type.startsWith('image/') && !file.type.startsWith('video/')) continue
+      try {
+        const media = await uploadApi.uploadFile(file, undefined, current?.name)
+        await uploadApi.linkMediaToCollection(currentId, media.id)
+        count++
+      } catch {}
+    }
+    setUploading(false)
+    if (count > 0) qc.invalidateQueries({ queryKey: ['collections', currentId, 'media'] })
+  }
+
+  const handleCreateSubCollection = async () => {
+    if (!currentId || !newCollName.trim()) return
+    await collectionsApi.create({ name: newCollName.trim(), parentId: currentId })
+    setNewCollName('')
+    setShowNewCollection(false)
+    qc.invalidateQueries({ queryKey: ['collections', currentId, 'children'] })
+  }
+
   return (
     <div className="p-3 md:p-6 lg:p-8">
       {currentId ? (
@@ -396,7 +425,38 @@ export default function CollectionsPage() {
             <ArrowLeft size={12} />Back
           </button>
           <Breadcrumb items={breadcrumb} onNavigate={navigate} />
-          {current && <h1 className="text-lg md:text-xl font-semibold text-slate-800">{current.name}</h1>}
+          <div className="flex items-center gap-3">
+            {current && <h1 className="text-lg md:text-xl font-semibold text-slate-800 flex-1">{current.name}</h1>}
+            {/* + Add menu */}
+            <div className="relative">
+              <button onClick={() => setShowAddMenu(!showAddMenu)}
+                className={`w-9 h-9 rounded-full flex items-center justify-center transition-all ${
+                  showAddMenu ? 'bg-pink-500 text-white rotate-45' : 'bg-white border border-slate-200 text-slate-500 hover:border-pink-300 hover:text-pink-500'
+                }`}>
+                <Plus size={20} />
+              </button>
+              {showAddMenu && (
+                <>
+                  <div className="fixed inset-0 z-10" onClick={() => setShowAddMenu(false)} />
+                  <div className="absolute right-0 top-11 z-20 bg-white rounded-xl shadow-lg border border-slate-100 py-1.5 w-48">
+                    <button onClick={() => { addPhotosRef.current?.click(); setShowAddMenu(false) }}
+                      className="flex items-center gap-2.5 w-full px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 active:bg-slate-100 transition-colors">
+                      <ImagePlus size={16} className="text-slate-400" />Add photos
+                    </button>
+                    <button onClick={() => { setShowNewCollection(true); setShowAddMenu(false) }}
+                      className="flex items-center gap-2.5 w-full px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 active:bg-slate-100 transition-colors">
+                      <FolderPlus size={16} className="text-slate-400" />New sub-collection
+                    </button>
+                  </div>
+                </>
+              )}
+            </div>
+          </div>
+          {/* Hidden file input */}
+          <input ref={addPhotosRef} type="file" multiple accept="image/*,video/*" className="hidden"
+            onChange={e => { if (e.target.files) handleAddPhotos(e.target.files); e.target.value = '' }} />
+          {/* Upload progress */}
+          {uploading && <p className="text-xs text-pink-500 mt-2 animate-pulse">Uploading...</p>}
         </div>
       ) : (
         <h1 className="text-lg md:text-xl font-semibold text-slate-800 mb-5">Collections</h1>
@@ -464,6 +524,27 @@ export default function CollectionsPage() {
         </div>
       )}
 
+      {/* New sub-collection modal */}
+      {showNewCollection && (
+        <div className="fixed inset-0 z-50 flex items-end md:items-center justify-center">
+          <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => setShowNewCollection(false)} />
+          <div className="relative bg-white rounded-t-2xl md:rounded-xl shadow-xl w-full md:max-w-sm md:mx-4 p-5">
+            <div className="flex justify-center pt-0 pb-3 md:hidden"><div className="w-10 h-1 rounded-full bg-slate-200" /></div>
+            <h3 className="text-sm font-semibold text-slate-800 mb-3">New sub-collection</h3>
+            <input className="w-full px-3 py-2.5 text-sm border rounded-lg border-slate-200 focus:border-pink-400 focus:ring-2 focus:ring-pink-50 outline-none mb-3"
+              placeholder="Collection name..." value={newCollName} onChange={e => setNewCollName(e.target.value)} autoFocus
+              onKeyDown={e => e.key === 'Enter' && handleCreateSubCollection()} />
+            <div className="flex justify-end gap-2">
+              <button onClick={() => setShowNewCollection(false)}
+                className="px-4 py-2 text-sm text-slate-500 hover:bg-slate-100 rounded-lg">Cancel</button>
+              <button onClick={handleCreateSubCollection} disabled={!newCollName.trim()}
+                className="px-4 py-2 text-sm bg-pink-500 text-white rounded-lg hover:bg-pink-600 disabled:opacity-50">Create</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Media detail lightbox */}
       {selectedMedia && (
         <Lightbox media={selectedMedia} allMedia={media}
           onClose={() => setSelectedMedia(null)}

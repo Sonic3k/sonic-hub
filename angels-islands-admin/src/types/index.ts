@@ -56,7 +56,7 @@ export interface CollectionResponse {
   childrenCount?: number; mediaCount?: number; thumbnailUrl?: string; createdAt?: string
   tags?: TagResponse[]; persons?: { id: string; name: string; displayName?: string; avatarUrl?: string }[]
 }
-export interface CollectionRequest { name: string; description?: string; parentId?: number }
+export interface CollectionRequest { name: string; description?: string; parentId?: string }
 
 export interface ChatArchiveResponse {
   id: string; platform: Platform; title?: string; messageCount?: number
