@@ -26,6 +26,7 @@ export const uploadApi = {
     form.append('file', file)
     if (personId) form.append('personId', personId)
     if (subFolder) form.append('subFolder', subFolder)
+    if (file.lastModified) form.append('lastModified', String(file.lastModified))
     return api.post('/api/media-files/upload', form, { headers: { 'Content-Type': 'multipart/form-data' } }).then(r => r.data)
   },
   linkMediaToCollection: (collectionId: string, mediaId: string) =>

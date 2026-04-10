@@ -38,8 +38,9 @@ public class MediaFileController {
     @PostMapping("/upload")
     public MediaFileDto.Response upload(@RequestParam("file") MultipartFile file,
         @RequestParam(value = "personId", required = false) UUID personId,
-        @RequestParam(value = "subFolder", required = false) String subFolder) throws IOException {
-        MediaFile mf = mediaFileService.upload(file, personId, subFolder);
+        @RequestParam(value = "subFolder", required = false) String subFolder,
+        @RequestParam(value = "lastModified", required = false) Long lastModified) throws IOException {
+        MediaFile mf = mediaFileService.upload(file, personId, subFolder, lastModified);
         return mapper.toMediaFileResponse(mf);
     }
 

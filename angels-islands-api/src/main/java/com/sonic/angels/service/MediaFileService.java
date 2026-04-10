@@ -38,7 +38,7 @@ public class MediaFileService {
     public MediaFile findById(UUID id) { return mediaFileRepository.findById(id).orElseThrow(() -> new RuntimeException("MediaFile not found: " + id)); }
     public List<MediaFile> findByPersonId(UUID personId) { return mediaFileRepository.findByPersonId(personId); }
 
-    public MediaFile upload(MultipartFile file, UUID personId, String subFolder) throws IOException {
+    public MediaFile upload(MultipartFile file, UUID personId, String subFolder, Long lastModified) throws IOException {
         String ext = getExtension(file.getOriginalFilename());
         String storageKey = (personId != null ? "person-" + personId : "general")
             + "/" + (subFolder != null ? subFolder + "/" : "")
@@ -51,6 +51,12 @@ public class MediaFileService {
         mf.setFileSize(file.getSize());
         mf.setMimeType(file.getContentType());
         mf.setUploadedAt(LocalDateTime.now());
+
+        // Use browser's file.lastModified as fallback date
+        if (lastModified != null && lastModified > 0) {
+            mf.setFileDateModified(LocalDateTime.ofInstant(
+                java.time.Instant.ofEpochMilli(lastModified), ZoneId.systemDefault()));
+        }
 
         extractMetadata(file, mf);
 
