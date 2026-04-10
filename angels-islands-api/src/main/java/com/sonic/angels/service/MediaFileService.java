@@ -46,9 +46,9 @@ public class MediaFileService {
 
     public MediaFile upload(MultipartFile file, UUID personId, String subFolder, Long lastModified) throws IOException {
         String ext = getExtension(file.getOriginalFilename());
-        String storageKey = (personId != null ? "person-" + personId : "general")
-            + "/" + (subFolder != null ? subFolder + "/" : "")
-            + UUID.randomUUID() + ext;
+        String folder = sanitizePath(personId != null ? "person-" + personId : "general");
+        String sub = subFolder != null ? sanitizePath(subFolder) + "/" : "";
+        String storageKey = folder + "/" + sub + UUID.randomUUID() + ext;
 
         // Extract metadata BEFORE upload (consumes stream)
         MediaFile mf = new MediaFile();
@@ -279,6 +279,19 @@ public class MediaFileService {
     }
 
     // ── Helpers ──────────────────────────────────────────────────────────────
+
+    /**
+     * Sanitize path segment for B2/CDN URL safety.
+     * Remove brackets, replace spaces with hyphens, strip unsafe chars.
+     */
+    private String sanitizePath(String path) {
+        if (path == null) return "";
+        return path
+            .replaceAll("[\\[\\]{}()#%&]", "")  // remove brackets and unsafe chars
+            .replaceAll("\\s+", "-")              // spaces → hyphens
+            .replaceAll("-+", "-")                // collapse multiple hyphens
+            .replaceAll("^-|-$", "");             // trim leading/trailing hyphens
+    }
 
     private String getExtension(String filename) {
         if (filename == null) return "";

@@ -68,7 +68,12 @@ public class StorageService {
     public String buildCdnUrl(String storageKey) {
         if (storageKey == null) return null;
         String base = cdnBaseUrl.endsWith("/") ? cdnBaseUrl : cdnBaseUrl + "/";
-        return base + storageKey;
+        // URL-encode each path segment to handle any remaining special chars
+        String[] segments = storageKey.split("/");
+        String encodedPath = java.util.Arrays.stream(segments)
+            .map(s -> java.net.URLEncoder.encode(s, java.nio.charset.StandardCharsets.UTF_8).replace("+", "%20"))
+            .collect(java.util.stream.Collectors.joining("/"));
+        return base + encodedPath;
     }
 
     public String buildCdnUrl(String storageKey, MediaFile.StorageProvider provider) {
