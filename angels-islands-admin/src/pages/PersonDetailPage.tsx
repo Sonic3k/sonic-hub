@@ -28,8 +28,8 @@ export default function PersonDetailPage() {
   const [editing, setEditing] = useState(false)
   const [form, setForm] = useState<PersonRequest>({})
 
-  if (isLoading) return <div className="p-8 text-slate-400">Loading...</div>
-  if (!person) return <div className="p-8 text-slate-400">Not found</div>
+  if (isLoading) return <div className="p-4 md:p-8 text-slate-400">Loading...</div>
+  if (!person) return <div className="p-4 md:p-8 text-slate-400">Not found</div>
 
   const startEdit = () => {
     setForm({
@@ -84,10 +84,10 @@ export default function PersonDetailPage() {
         </div>
       </div>
 
-      <div className="flex gap-1 mb-6 border-b border-slate-100">
+      <div className="flex gap-1 mb-6 border-b border-slate-100 overflow-x-auto">
         {tabs.map(t => (
           <button key={t.key} onClick={() => setTab(t.key)}
-            className={`flex items-center gap-1.5 px-4 py-2.5 text-sm font-medium border-b-2 transition-colors ${
+            className={`flex items-center gap-1.5 px-3 md:px-4 py-2.5 text-xs md:text-sm shrink-0 font-medium border-b-2 transition-colors ${
               tab === t.key ? 'border-pink-500 text-pink-600' : 'border-transparent text-slate-400 hover:text-slate-600'
             }`}>
             <t.icon size={14} />{t.label}
@@ -125,7 +125,7 @@ export default function PersonDetailPage() {
           <Input label="Birthday" type="date" value={form.dateOfBirth} onChange={e => set('dateOfBirth', e.target.value)} />
           <div className="space-y-1">
             <label className="block text-xs font-medium text-slate-600">Relationship</label>
-            <select className="w-full px-3 py-2 text-sm border rounded-lg border-slate-200"
+            <select className="w-full px-3 py-2.5 text-sm border rounded-lg border-slate-200 bg-white"
               value={form.relationshipType} onChange={e => set('relationshipType', e.target.value)}>
               {Object.entries(REL_LABELS).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
             </select>
@@ -168,7 +168,7 @@ export default function PersonDetailPage() {
               <h3 className="text-sm font-semibold text-slate-600 mb-3">Facts</h3>
               <div className="bg-white rounded-lg border border-slate-100 divide-y divide-slate-50">
                 {facts.map(f => (
-                  <div key={f.id} className="px-4 py-2.5 flex items-baseline gap-3">
+                  <div key={f.id} className="px-3 md:px-4 py-2.5 flex flex-wrap items-baseline gap-1.5 md:gap-3">
                     <span className="text-xs text-slate-400 w-20 shrink-0">{f.category}</span>
                     <span className="text-xs font-medium text-slate-600">{f.key}:</span>
                     <span className="text-xs text-slate-700">{f.value}</span>

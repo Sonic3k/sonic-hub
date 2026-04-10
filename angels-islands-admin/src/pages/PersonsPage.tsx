@@ -41,7 +41,7 @@ export default function PersonsPage() {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {persons.map((p: PersonSummary) => (
             <div key={p.id} onClick={() => navigate(`/persons/${p.id}`)}
-              className="bg-white rounded-xl p-5 border border-slate-100 cursor-pointer hover:shadow-md transition-shadow">
+              className="bg-white rounded-xl p-4 md:p-5 border border-slate-100 cursor-pointer hover:shadow-md active:scale-[0.98] transition-all duration-200">
               <div className="flex items-start justify-between mb-2">
                 <div>
                   <h3 className="font-semibold text-slate-800">{p.displayName || p.name}</h3>
@@ -71,7 +71,7 @@ export default function PersonsPage() {
             <Input label="Date of Birth" type="date" value={form.dateOfBirth} onChange={e => set('dateOfBirth', e.target.value)} />
             <div className="space-y-1">
               <label className="block text-xs font-medium text-slate-600">Relationship</label>
-              <select className="w-full px-3 py-2 text-sm border rounded-lg border-slate-200"
+              <select className="w-full px-3 py-2.5 text-sm border rounded-lg border-slate-200 bg-white"
                 value={form.relationshipType} onChange={e => set('relationshipType', e.target.value)}>
                 {Object.entries(REL_LABELS).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
               </select>

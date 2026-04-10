@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
-import { FolderOpen, ChevronRight, Image, X, Calendar, Camera, MapPin, Maximize2, Info, ArrowLeft } from 'lucide-react'
+import { FolderOpen, ChevronRight, ChevronLeft, Image, X, Info, ArrowLeft } from 'lucide-react'
 import { collectionBrowseApi } from '../api/collections'
 import type { CollectionResponse, MediaFileResponse } from '../types'
 
@@ -20,31 +20,31 @@ function formatSize(bytes?: number) {
 function CollectionCard({ collection, onClick }: { collection: CollectionResponse; onClick: () => void }) {
   return (
     <div onClick={onClick}
-      className="group cursor-pointer bg-white rounded-2xl border border-slate-100 overflow-hidden hover:shadow-lg hover:shadow-pink-100/50 hover:-translate-y-0.5 transition-all duration-300">
+      className="group cursor-pointer bg-white rounded-2xl border border-slate-100 overflow-hidden hover:shadow-lg hover:shadow-pink-100/50 hover:-translate-y-0.5 active:scale-[0.98] transition-all duration-200">
       <div className="aspect-[4/3] bg-gradient-to-br from-slate-50 to-slate-100 flex items-center justify-center relative overflow-hidden">
         {collection.thumbnailUrl ? (
-          <img src={collection.thumbnailUrl} alt={collection.name} className="w-full h-full object-cover" />
+          <img src={collection.thumbnailUrl} alt={collection.name} className="w-full h-full object-cover" loading="lazy" />
         ) : (
-          <div className="flex flex-col items-center gap-2 text-slate-300">
-            <FolderOpen size={32} strokeWidth={1.2} />
-            <span className="text-xs">{collection.mediaCount || 0} files</span>
+          <div className="flex flex-col items-center gap-1.5 text-slate-300">
+            <FolderOpen size={28} strokeWidth={1.2} />
+            <span className="text-[10px]">{collection.mediaCount || 0} files</span>
           </div>
         )}
         {(collection.childrenCount ?? 0) > 0 && (
-          <div className="absolute top-2.5 right-2.5 bg-white/90 backdrop-blur-sm text-[10px] font-semibold text-slate-500 px-2 py-0.5 rounded-full">
+          <div className="absolute top-2 right-2 bg-white/90 backdrop-blur-sm text-[9px] font-bold text-slate-500 px-1.5 py-0.5 rounded-full">
             {collection.childrenCount} sub
           </div>
         )}
       </div>
-      <div className="p-3.5">
-        <h3 className="text-sm font-semibold text-slate-800 group-hover:text-pink-600 transition-colors truncate">{collection.name}</h3>
-        <div className="flex items-center gap-3 mt-1.5">
+      <div className="p-3">
+        <h3 className="text-[13px] font-semibold text-slate-800 group-hover:text-pink-600 transition-colors truncate">{collection.name}</h3>
+        <div className="flex items-center gap-2 mt-1">
           {(collection.mediaCount ?? 0) > 0 && (
-            <span className="text-[11px] text-slate-400 flex items-center gap-1"><Image size={10} />{collection.mediaCount}</span>
+            <span className="text-[10px] text-slate-400 flex items-center gap-0.5"><Image size={9} />{collection.mediaCount}</span>
           )}
           {collection.persons && collection.persons.length > 0 && (
-            <span className="text-[11px] text-pink-400 truncate">
-              {Array.from(collection.persons).map((p: { displayName?: string; name: string }) => p.displayName || p.name).join(', ')}
+            <span className="text-[10px] text-pink-400 truncate">
+              {collection.persons.map(p => p.displayName || p.name).join(', ')}
             </span>
           )}
         </div>
@@ -59,100 +59,126 @@ function MediaItem({ media, onClick }: { media: MediaFileResponse; onClick: () =
   const url = media.thumbnailUrl || media.cdnUrl
   return (
     <div onClick={onClick}
-      className="group cursor-pointer rounded-xl overflow-hidden bg-slate-50 relative hover:shadow-lg hover:shadow-slate-200/60 transition-all duration-200">
+      className="cursor-pointer rounded-lg overflow-hidden bg-slate-100 relative active:scale-[0.97] transition-transform duration-100">
       <div className="aspect-square">
         {url ? (
-          <img src={url} alt={media.fileName} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" loading="lazy" />
+          <img src={url} alt={media.fileName} className="w-full h-full object-cover" loading="lazy" />
         ) : (
           <div className="w-full h-full flex items-center justify-center text-slate-300">
-            <Image size={24} strokeWidth={1} />
+            <Image size={20} strokeWidth={1} />
           </div>
         )}
       </div>
-      <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-200" />
-      <div className="absolute bottom-0 left-0 right-0 p-2.5 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-        <p className="text-[10px] text-white/90 truncate">{media.fileName}</p>
-      </div>
     </div>
   )
 }
 
-// ── Media Detail Modal ───────────────────────────────────────────────────────
+// ── Media Detail Modal (lightbox + swipe on mobile) ──────────────────────────
 
-function MediaDetailModal({ media, onClose }: { media: MediaFileResponse; onClose: () => void }) {
-  const url = media.cdnUrl
+function MediaDetailModal({ media, allMedia, onClose, onNavigate }: {
+  media: MediaFileResponse; allMedia: MediaFileResponse[]; onClose: () => void; onNavigate: (m: MediaFileResponse) => void
+}) {
+  const [showInfo, setShowInfo] = useState(false)
+  const idx = allMedia.findIndex(m => m.id === media.id)
+  const prev = idx > 0 ? allMedia[idx - 1] : null
+  const next = idx < allMedia.length - 1 ? allMedia[idx + 1] : null
+
   return (
-    <div className="fixed inset-0 z-50 flex" onClick={onClose}>
-      {/* Backdrop */}
-      <div className="absolute inset-0 bg-black/80 backdrop-blur-sm" />
-
-      {/* Content */}
-      <div className="relative flex w-full h-full" onClick={e => e.stopPropagation()}>
-        {/* Image area */}
-        <div className="flex-1 flex items-center justify-center p-4 min-w-0">
-          {url ? (
-            <img src={url} alt={media.fileName}
-              className="max-w-full max-h-full object-contain rounded-lg shadow-2xl" />
-          ) : (
-            <div className="text-slate-500 text-sm">No preview</div>
-          )}
+    <div className="fixed inset-0 z-50 bg-black/90 flex flex-col" onClick={onClose}>
+      {/* Top bar */}
+      <div className="flex items-center justify-between px-3 py-2 shrink-0" onClick={e => e.stopPropagation()}>
+        <span className="text-white/60 text-xs truncate max-w-[60%]">{media.fileName}</span>
+        <div className="flex items-center gap-1">
+          <button onClick={() => setShowInfo(!showInfo)}
+            className="text-white/60 hover:text-white p-2 rounded-full hover:bg-white/10 transition-colors">
+            <Info size={18} />
+          </button>
+          <button onClick={onClose}
+            className="text-white/60 hover:text-white p-2 rounded-full hover:bg-white/10 transition-colors">
+            <X size={18} />
+          </button>
         </div>
+      </div>
 
-        {/* Info sidebar */}
-        <div className="w-80 bg-white/95 backdrop-blur-md border-l border-slate-100 overflow-y-auto shrink-0 hidden md:block">
-          <div className="p-5">
-            <div className="flex items-center justify-between mb-5">
-              <h3 className="text-sm font-semibold text-slate-800 flex items-center gap-1.5"><Info size={14} />Details</h3>
-              <button onClick={onClose} className="text-slate-400 hover:text-slate-600 p-1"><X size={16} /></button>
-            </div>
+      {/* Image + navigation */}
+      <div className="flex-1 flex items-center justify-center relative min-h-0 px-2" onClick={e => e.stopPropagation()}>
+        {/* Prev button */}
+        {prev && (
+          <button onClick={() => onNavigate(prev)}
+            className="absolute left-1 md:left-4 z-10 bg-black/40 hover:bg-black/60 text-white/80 rounded-full p-2 transition-colors">
+            <ChevronLeft size={20} />
+          </button>
+        )}
 
-            <div className="space-y-4">
-              <DetailRow label="File" value={media.fileName} />
-              <DetailRow label="Type" value={`${media.fileType}${media.mimeType ? ' · ' + media.mimeType : ''}`} />
-              {media.width && media.height && <DetailRow label="Dimensions" value={`${media.width} × ${media.height} px`} icon={<Maximize2 size={11} />} />}
-              {media.fileSize && <DetailRow label="Size" value={formatSize(media.fileSize)} />}
-              {media.effectiveDate && <DetailRow label="Date" value={formatDate(media.effectiveDate)} icon={<Calendar size={11} />} />}
-              {media.caption && <DetailRow label="Caption" value={media.caption} />}
-            </div>
+        {/* Image */}
+        {media.cdnUrl ? (
+          <img src={media.cdnUrl} alt={media.fileName}
+            className="max-w-full max-h-full object-contain select-none" onClick={onClose} />
+        ) : (
+          <div className="text-slate-500 text-sm">No preview</div>
+        )}
+
+        {/* Next button */}
+        {next && (
+          <button onClick={() => onNavigate(next)}
+            className="absolute right-1 md:right-4 z-10 bg-black/40 hover:bg-black/60 text-white/80 rounded-full p-2 transition-colors">
+            <ChevronRight size={20} />
+          </button>
+        )}
+      </div>
+
+      {/* Counter */}
+      <div className="text-center text-white/40 text-[11px] py-1 shrink-0" onClick={e => e.stopPropagation()}>
+        {idx + 1} / {allMedia.length}
+      </div>
+
+      {/* Info bottom sheet */}
+      {showInfo && (
+        <div className="bg-white rounded-t-2xl p-5 shrink-0 max-h-[40vh] overflow-y-auto animate-slide-up safe-bottom"
+          onClick={e => e.stopPropagation()}>
+          <div className="flex justify-center mb-3 md:hidden">
+            <div className="w-10 h-1 rounded-full bg-slate-200" />
+          </div>
+          <div className="grid grid-cols-2 gap-3 text-xs">
+            <InfoCell label="File" value={media.fileName} span={2} />
+            <InfoCell label="Type" value={media.mimeType} />
+            <InfoCell label="Size" value={formatSize(media.fileSize)} />
+            {media.width && media.height && <InfoCell label="Dimensions" value={`${media.width} × ${media.height}`} />}
+            {media.effectiveDate && <InfoCell label="Date" value={formatDate(media.effectiveDate)} />}
+            {media.caption && <InfoCell label="Caption" value={media.caption} span={2} />}
           </div>
         </div>
-
-        {/* Close button (mobile) */}
-        <button onClick={onClose}
-          className="absolute top-4 right-4 md:hidden bg-black/50 text-white rounded-full p-2">
-          <X size={18} />
-        </button>
-      </div>
+      )}
     </div>
   )
 }
 
-function DetailRow({ label, value, icon }: { label: string; value?: string | null; icon?: React.ReactNode }) {
+function InfoCell({ label, value, span }: { label: string; value?: string | null; span?: number }) {
   if (!value) return null
   return (
-    <div>
-      <div className="text-[10px] uppercase tracking-wider text-slate-400 mb-0.5 flex items-center gap-1">{icon}{label}</div>
-      <div className="text-xs text-slate-700 break-all">{value}</div>
+    <div className={span === 2 ? 'col-span-2' : ''}>
+      <div className="text-[10px] uppercase tracking-wider text-slate-400 mb-0.5">{label}</div>
+      <div className="text-slate-700 break-all">{value}</div>
     </div>
   )
 }
 
-// ── Breadcrumb ───────────────────────────────────────────────────────────────
+// ── Breadcrumb (horizontal scroll on mobile) ─────────────────────────────────
 
 function Breadcrumb({ items, onNavigate }: { items: { id: string; name: string }[]; onNavigate: (id: string | null) => void }) {
   return (
-    <div className="flex items-center gap-1 text-xs flex-wrap mb-5">
+    <div className="flex items-center gap-1 text-xs overflow-x-auto scroll-snap-x pb-1 mb-4 -mx-1 px-1">
       <button onClick={() => onNavigate(null)}
-        className="text-slate-400 hover:text-pink-500 transition-colors font-medium">
+        className="text-slate-400 hover:text-pink-500 transition-colors font-medium shrink-0 active:text-pink-600">
         All
       </button>
       {items.map((item, i) => (
-        <div key={item.id} className="flex items-center gap-1">
+        <div key={item.id} className="flex items-center gap-1 shrink-0">
           <ChevronRight size={10} className="text-slate-300" />
           <button
             onClick={() => i < items.length - 1 ? onNavigate(item.id) : null}
-            className={`transition-colors font-medium ${
-              i === items.length - 1 ? 'text-slate-800' : 'text-slate-400 hover:text-pink-500'
+            className={`transition-colors font-medium whitespace-nowrap ${
+              i === items.length - 1 ? 'text-slate-800' : 'text-slate-400 hover:text-pink-500 active:text-pink-600'
             }`}>
             {item.name}
           </button>
@@ -168,35 +194,30 @@ export default function CollectionsPage() {
   const [currentId, setCurrentId] = useState<string | null>(null)
   const [selectedMedia, setSelectedMedia] = useState<MediaFileResponse | null>(null)
 
-  // Top-level collections
   const { data: topLevel = [], isLoading: loadingTop } = useQuery({
     queryKey: ['collections', 'top'],
     queryFn: () => collectionBrowseApi.getTopLevel(),
     enabled: !currentId,
   })
 
-  // Current collection's children
   const { data: children = [] } = useQuery({
     queryKey: ['collections', currentId, 'children'],
     queryFn: () => collectionBrowseApi.getChildren(currentId!),
     enabled: !!currentId,
   })
 
-  // Current collection's media
   const { data: media = [] } = useQuery({
     queryKey: ['collections', currentId, 'media'],
     queryFn: () => collectionBrowseApi.getCollectionMedia(currentId!),
     enabled: !!currentId,
   })
 
-  // Breadcrumb
   const { data: breadcrumb = [] } = useQuery({
     queryKey: ['collections', currentId, 'breadcrumb'],
     queryFn: () => collectionBrowseApi.getBreadcrumb(currentId!),
     enabled: !!currentId,
   })
 
-  // Current collection detail
   const { data: current } = useQuery({
     queryKey: ['collections', currentId, 'detail'],
     queryFn: () => collectionBrowseApi.getById(currentId!),
@@ -204,43 +225,36 @@ export default function CollectionsPage() {
   })
 
   const navigate = (id: string | null) => setCurrentId(id)
-
   const collections = currentId ? children : topLevel
   const isLoading = !currentId && loadingTop
 
   return (
-    <div className="p-4 md:p-8 max-w-6xl">
+    <div className="p-3 md:p-6 lg:p-8">
       {/* Header */}
-      <div className="mb-6">
-        {currentId ? (
-          <>
-            <button onClick={() => {
-              // Go up one level
-              if (breadcrumb.length > 1) navigate(breadcrumb[breadcrumb.length - 2].id)
-              else navigate(null)
-            }} className="flex items-center gap-1 text-xs text-slate-400 hover:text-pink-500 mb-3 transition-colors">
-              <ArrowLeft size={12} />Back
-            </button>
-            <Breadcrumb items={breadcrumb} onNavigate={navigate} />
-            {current && (
-              <div className="flex items-center gap-3">
-                <h1 className="text-xl font-semibold text-slate-800">{current.name}</h1>
-                {current.description && <p className="text-xs text-slate-400">{current.description}</p>}
-              </div>
-            )}
-          </>
-        ) : (
-          <h1 className="text-xl font-semibold text-slate-800">Collections</h1>
-        )}
-      </div>
+      {currentId ? (
+        <div className="mb-4">
+          <button onClick={() => {
+            if (breadcrumb.length > 1) navigate(breadcrumb[breadcrumb.length - 2].id)
+            else navigate(null)
+          }} className="flex items-center gap-1 text-xs text-slate-400 active:text-pink-500 mb-2">
+            <ArrowLeft size={12} />Back
+          </button>
+          <Breadcrumb items={breadcrumb} onNavigate={navigate} />
+          {current && (
+            <h1 className="text-lg md:text-xl font-semibold text-slate-800">{current.name}</h1>
+          )}
+        </div>
+      ) : (
+        <h1 className="text-lg md:text-xl font-semibold text-slate-800 mb-5">Collections</h1>
+      )}
 
       {isLoading && <p className="text-sm text-slate-400">Loading...</p>}
 
       {/* Sub-collections */}
       {collections.length > 0 && (
-        <div className="mb-8">
-          {currentId && <h2 className="text-[11px] uppercase tracking-widest text-slate-400 font-semibold mb-3">Folders</h2>}
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+        <div className="mb-6">
+          {currentId && <h2 className="text-[10px] uppercase tracking-widest text-slate-400 font-semibold mb-2.5">Folders</h2>}
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-4">
             {collections.map((c: CollectionResponse) => (
               <CollectionCard key={c.id} collection={c} onClick={() => navigate(c.id)} />
             ))}
@@ -251,10 +265,10 @@ export default function CollectionsPage() {
       {/* Media grid */}
       {currentId && media.length > 0 && (
         <div>
-          <h2 className="text-[11px] uppercase tracking-widest text-slate-400 font-semibold mb-3">
+          <h2 className="text-[10px] uppercase tracking-widest text-slate-400 font-semibold mb-2.5">
             Photos & Videos · {media.length}
           </h2>
-          <div className="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-2">
+          <div className="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-1.5 md:gap-2">
             {media.map((m: MediaFileResponse) => (
               <MediaItem key={m.id} media={m} onClick={() => setSelectedMedia(m)} />
             ))}
@@ -262,24 +276,28 @@ export default function CollectionsPage() {
         </div>
       )}
 
-      {/* Empty state */}
+      {/* Empty states */}
       {currentId && collections.length === 0 && media.length === 0 && (
-        <div className="text-center py-16">
-          <FolderOpen size={40} className="mx-auto text-slate-200 mb-3" strokeWidth={1} />
-          <p className="text-sm text-slate-400">This collection is empty</p>
+        <div className="text-center py-12">
+          <FolderOpen size={36} className="mx-auto text-slate-200 mb-2" strokeWidth={1} />
+          <p className="text-sm text-slate-400">Empty collection</p>
         </div>
       )}
-
       {!currentId && collections.length === 0 && !isLoading && (
-        <div className="text-center py-16">
-          <FolderOpen size={40} className="mx-auto text-slate-200 mb-3" strokeWidth={1} />
-          <p className="text-sm text-slate-400">No collections yet. Upload a folder to get started.</p>
+        <div className="text-center py-12">
+          <FolderOpen size={36} className="mx-auto text-slate-200 mb-2" strokeWidth={1} />
+          <p className="text-sm text-slate-400">No collections yet</p>
         </div>
       )}
 
-      {/* Media detail modal */}
+      {/* Media detail */}
       {selectedMedia && (
-        <MediaDetailModal media={selectedMedia} onClose={() => setSelectedMedia(null)} />
+        <MediaDetailModal
+          media={selectedMedia}
+          allMedia={media}
+          onClose={() => setSelectedMedia(null)}
+          onNavigate={m => setSelectedMedia(m)}
+        />
       )}
     </div>
   )

@@ -27,7 +27,7 @@ export default function MemoryPage() {
       </div>
 
       {!selectedId ? <p className="text-sm text-slate-400">Select a person to explore their memory.</p> : (
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="space-y-4">
             <h2 className="text-sm font-semibold text-slate-600">Facts ({facts.length})</h2>
             {facts.map(f => (
