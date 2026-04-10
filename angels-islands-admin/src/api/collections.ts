@@ -36,7 +36,6 @@ export const collectionBrowseApi = {
   getTopLevel: () => api.get<CollectionResponse[]>('/api/collections').then(r => r.data),
   getById: (id: string) => api.get<CollectionResponse>(`/api/collections/${id}`).then(r => r.data),
   getChildren: (id: string) => api.get<CollectionResponse[]>(`/api/collections/${id}/children`).then(r => r.data),
-  getMedia: (id: string) => api.get('/api/media-files').then(r => r.data), // TODO: use collection media endpoint
   getBreadcrumb: (id: string) => api.get<CollectionResponse[]>(`/api/collections/${id}/breadcrumb`).then(r => r.data),
   getCollectionMedia: (id: string) => api.get(`/api/collections/${id}/media`).then(r => r.data),
 }
