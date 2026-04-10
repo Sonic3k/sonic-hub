@@ -483,18 +483,15 @@ export default function CollectionsPage() {
             <h2 className="text-[10px] uppercase tracking-widest text-slate-400 font-semibold">
               Photos & Videos · {media.length}
             </h2>
-            <div className="flex items-center gap-1">
-              {/* Sort options */}
-              {[
-                { key: 'effectiveDate', label: 'Date' },
-                { key: 'name', label: 'Name' },
-                { key: 'uploadedAt', label: 'Added' },
-              ].map(s => (
-                <button key={s.key} onClick={() => setSort(s.key)}
-                  className={`text-[10px] px-2 py-1 rounded-full transition-colors ${
-                    sort === s.key ? 'bg-slate-800 text-white' : 'text-slate-400 hover:text-slate-600 hover:bg-slate-100'
-                  }`}>{s.label}</button>
-              ))}
+            <div className="flex items-center gap-2">
+              {/* Sort */}
+              <select value={sort} onChange={e => setSort(e.target.value)}
+                className="text-[11px] text-slate-400 bg-transparent border-none outline-none cursor-pointer pr-4 appearance-none"
+                style={{ backgroundImage: 'url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'10\' height=\'10\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'%2394a3b8\' stroke-width=\'2\'%3E%3Cpath d=\'M6 9l6 6 6-6\'/%3E%3C/svg%3E")', backgroundRepeat: 'no-repeat', backgroundPosition: 'right center' }}>
+                <option value="effectiveDate">Date</option>
+                <option value="name">Name</option>
+                <option value="uploadedAt">Added</option>
+              </select>
             </div>
             {selectMode && (
               <div className="flex items-center gap-2">
