@@ -31,9 +31,24 @@ export interface TagRequest { name: string; color?: string; description?: string
 
 export interface MediaFileResponse {
   id: string; fileName: string; fileType: 'IMAGE' | 'VIDEO'; mediaCategory?: string
-  fileSize?: number; width?: number; height?: number; mimeType?: string
-  caption?: string; cdnUrl?: string; thumbnailUrl?: string
+  fileSize?: number; width?: number; height?: number; orientation?: string; aspectRatio?: number
+  mimeType?: string; caption?: string; cdnUrl?: string; thumbnailUrl?: string
+  dateTaken?: string; fileDateCreated?: string; fileDateModified?: string
   effectiveDate?: string; uploadedAt?: string
+  latitude?: number; longitude?: number; displayedAddress?: string
+  duration?: number; isAnimated?: boolean; isFavorite?: boolean; isFeatured?: boolean
+  // Image EXIF
+  imageDetail?: {
+    cameraMake?: string; cameraModel?: string; lensModel?: string
+    iso?: number; focalLength?: number; aperture?: number; shutterSpeed?: string
+    colorSpace?: string; flashFired?: boolean; whiteBalance?: string
+    exposureMode?: string; meteringMode?: string; software?: string
+    isSelfie?: boolean; isScreenshot?: boolean; isPanorama?: boolean; isPortrait?: boolean
+  }
+  // Video
+  videoDetail?: {
+    videoCodec?: string; audioCodec?: string; fps?: number; bitrate?: number
+  }
 }
 
 export interface CollectionResponse {

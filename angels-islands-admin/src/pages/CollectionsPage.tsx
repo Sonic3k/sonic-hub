@@ -1,18 +1,26 @@
-import { useState } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useQuery } from '@tanstack/react-query'
-import { FolderOpen, ChevronRight, ChevronLeft, Image, X, Info, ArrowLeft } from 'lucide-react'
+import { FolderOpen, ChevronRight, ChevronLeft, Image, X, ArrowLeft, Camera, MapPin, FileText, Clock, Film, Info } from 'lucide-react'
 import { collectionBrowseApi } from '../api/collections'
 import type { CollectionResponse, MediaFileResponse } from '../types'
 
-function formatDate(d?: string) {
+function fmtDate(d?: string) {
   if (!d) return null
-  return new Date(d).toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric' })
+  const dt = new Date(d)
+  return dt.toLocaleDateString('vi-VN', { weekday: 'short', day: '2-digit', month: 'short', year: 'numeric' })
+    + ' · ' + dt.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })
 }
 
-function formatSize(bytes?: number) {
+function fmtSize(bytes?: number) {
   if (!bytes) return null
   if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(0) + ' KB'
   return (bytes / (1024 * 1024)).toFixed(1) + ' MB'
+}
+
+function fmtDuration(sec?: number) {
+  if (!sec) return null
+  const m = Math.floor(sec / 60), s = sec % 60
+  return `${m}:${s.toString().padStart(2, '0')}`
 }
 
 // ── Collection Card ──────────────────────────────────────────────────────────
@@ -56,132 +64,240 @@ function CollectionCard({ collection, onClick }: { collection: CollectionRespons
 // ── Media Grid Item ──────────────────────────────────────────────────────────
 
 function MediaItem({ media, onClick }: { media: MediaFileResponse; onClick: () => void }) {
-  const url = media.thumbnailUrl || media.cdnUrl
   return (
     <div onClick={onClick}
       className="cursor-pointer rounded-lg overflow-hidden bg-slate-100 relative active:scale-[0.97] transition-transform duration-100">
       <div className="aspect-square">
-        {url ? (
-          <img src={url} alt={media.fileName} className="w-full h-full object-cover" loading="lazy" />
+        {(media.thumbnailUrl || media.cdnUrl) ? (
+          <img src={media.thumbnailUrl || media.cdnUrl} alt={media.fileName} className="w-full h-full object-cover" loading="lazy" />
         ) : (
-          <div className="w-full h-full flex items-center justify-center text-slate-300">
-            <Image size={20} strokeWidth={1} />
-          </div>
+          <div className="w-full h-full flex items-center justify-center text-slate-300"><Image size={20} strokeWidth={1} /></div>
         )}
       </div>
-    </div>
-  )
-}
-
-// ── Media Detail Modal (lightbox + swipe on mobile) ──────────────────────────
-
-function MediaDetailModal({ media, allMedia, onClose, onNavigate }: {
-  media: MediaFileResponse; allMedia: MediaFileResponse[]; onClose: () => void; onNavigate: (m: MediaFileResponse) => void
-}) {
-  const [showInfo, setShowInfo] = useState(false)
-  const idx = allMedia.findIndex(m => m.id === media.id)
-  const prev = idx > 0 ? allMedia[idx - 1] : null
-  const next = idx < allMedia.length - 1 ? allMedia[idx + 1] : null
-
-  return (
-    <div className="fixed inset-0 z-50 bg-black/90 flex flex-col" onClick={onClose}>
-      {/* Top bar */}
-      <div className="flex items-center justify-between px-3 py-2 shrink-0" onClick={e => e.stopPropagation()}>
-        <span className="text-white/60 text-xs truncate max-w-[60%]">{media.fileName}</span>
-        <div className="flex items-center gap-1">
-          <button onClick={() => setShowInfo(!showInfo)}
-            className="text-white/60 hover:text-white p-2 rounded-full hover:bg-white/10 transition-colors">
-            <Info size={18} />
-          </button>
-          <button onClick={onClose}
-            className="text-white/60 hover:text-white p-2 rounded-full hover:bg-white/10 transition-colors">
-            <X size={18} />
-          </button>
-        </div>
-      </div>
-
-      {/* Image + navigation */}
-      <div className="flex-1 flex items-center justify-center relative min-h-0 px-2" onClick={e => e.stopPropagation()}>
-        {/* Prev button */}
-        {prev && (
-          <button onClick={() => onNavigate(prev)}
-            className="absolute left-1 md:left-4 z-10 bg-black/40 hover:bg-black/60 text-white/80 rounded-full p-2 transition-colors">
-            <ChevronLeft size={20} />
-          </button>
-        )}
-
-        {/* Image */}
-        {media.cdnUrl ? (
-          <img src={media.cdnUrl} alt={media.fileName}
-            className="max-w-full max-h-full object-contain select-none" onClick={onClose} />
-        ) : (
-          <div className="text-slate-500 text-sm">No preview</div>
-        )}
-
-        {/* Next button */}
-        {next && (
-          <button onClick={() => onNavigate(next)}
-            className="absolute right-1 md:right-4 z-10 bg-black/40 hover:bg-black/60 text-white/80 rounded-full p-2 transition-colors">
-            <ChevronRight size={20} />
-          </button>
-        )}
-      </div>
-
-      {/* Counter */}
-      <div className="text-center text-white/40 text-[11px] py-1 shrink-0" onClick={e => e.stopPropagation()}>
-        {idx + 1} / {allMedia.length}
-      </div>
-
-      {/* Info bottom sheet */}
-      {showInfo && (
-        <div className="bg-white rounded-t-2xl p-5 shrink-0 max-h-[40vh] overflow-y-auto animate-slide-up safe-bottom"
-          onClick={e => e.stopPropagation()}>
-          <div className="flex justify-center mb-3 md:hidden">
-            <div className="w-10 h-1 rounded-full bg-slate-200" />
-          </div>
-          <div className="grid grid-cols-2 gap-3 text-xs">
-            <InfoCell label="File" value={media.fileName} span={2} />
-            <InfoCell label="Type" value={media.mimeType} />
-            <InfoCell label="Size" value={formatSize(media.fileSize)} />
-            {media.width && media.height && <InfoCell label="Dimensions" value={`${media.width} × ${media.height}`} />}
-            {media.effectiveDate && <InfoCell label="Date" value={formatDate(media.effectiveDate)} />}
-            {media.caption && <InfoCell label="Caption" value={media.caption} span={2} />}
-          </div>
+      {media.fileType === 'VIDEO' && (
+        <div className="absolute bottom-1 right-1 bg-black/60 text-white text-[9px] px-1 rounded">
+          {fmtDuration(media.duration) || '▶'}
         </div>
       )}
     </div>
   )
 }
 
-function InfoCell({ label, value, span }: { label: string; value?: string | null; span?: number }) {
-  if (!value) return null
+// ── Lightbox ─────────────────────────────────────────────────────────────────
+
+function Lightbox({ media, allMedia, onClose, onNavigate }: {
+  media: MediaFileResponse; allMedia: MediaFileResponse[]; onClose: () => void; onNavigate: (m: MediaFileResponse) => void
+}) {
+  const [showInfo, setShowInfo] = useState(false)
+  const idx = allMedia.findIndex(m => m.id === media.id)
+  const prev = idx > 0 ? allMedia[idx - 1] : null
+  const next = idx < allMedia.length - 1 ? allMedia[idx + 1] : null
+  const exif = media.imageDetail
+  const vid = media.videoDetail
+
+  const handleKey = useCallback((e: KeyboardEvent) => {
+    if (e.key === 'Escape') onClose()
+    if (e.key === 'ArrowLeft' && prev) onNavigate(prev)
+    if (e.key === 'ArrowRight' && next) onNavigate(next)
+    if (e.key === 'i') setShowInfo(v => !v)
+  }, [prev, next, onClose, onNavigate])
+
+  useEffect(() => {
+    document.addEventListener('keydown', handleKey)
+    document.body.style.overflow = 'hidden'
+    return () => { document.removeEventListener('keydown', handleKey); document.body.style.overflow = '' }
+  }, [handleKey])
+
+  const cameraStr = [exif?.cameraMake, exif?.cameraModel].filter(Boolean).join(' ')
+  const settingsStr = [
+    exif?.focalLength ? `${exif.focalLength}mm` : null,
+    exif?.aperture ? `ƒ/${exif.aperture}` : null,
+    exif?.shutterSpeed,
+    exif?.iso ? `ISO ${exif.iso}` : null,
+  ].filter(Boolean).join('  ·  ')
+
   return (
-    <div className={span === 2 ? 'col-span-2' : ''}>
-      <div className="text-[10px] uppercase tracking-wider text-slate-400 mb-0.5">{label}</div>
-      <div className="text-slate-700 break-all">{value}</div>
+    <div className="fixed inset-0 z-50 bg-black flex flex-col">
+      {/* ── Top bar ─────────────────────────────────────── */}
+      <div className="flex items-center justify-between px-3 md:px-5 h-12 shrink-0 bg-black/80 backdrop-blur-sm z-10">
+        <button onClick={onClose} className="text-white/70 hover:text-white p-1.5 rounded-full hover:bg-white/10 transition-colors">
+          <X size={20} />
+        </button>
+        <div className="flex-1 text-center">
+          <span className="text-white/50 text-xs">{idx + 1} / {allMedia.length}</span>
+        </div>
+        <button onClick={() => setShowInfo(!showInfo)}
+          className={`p-1.5 rounded-full transition-colors ${showInfo ? 'text-white bg-white/15' : 'text-white/70 hover:text-white hover:bg-white/10'}`}>
+          <Info size={20} />
+        </button>
+      </div>
+
+      {/* ── Main area: image + optional info panel ──────── */}
+      <div className="flex-1 flex min-h-0">
+        {/* Image */}
+        <div className="flex-1 flex items-center justify-center relative min-w-0">
+          {/* Prev */}
+          {prev && (
+            <button onClick={() => onNavigate(prev)}
+              className="absolute left-2 md:left-5 z-10 bg-black/30 hover:bg-black/50 text-white/70 hover:text-white rounded-full p-2 md:p-2.5 transition-all">
+              <ChevronLeft size={22} />
+            </button>
+          )}
+
+          {media.cdnUrl ? (
+            <img src={media.cdnUrl} alt={media.fileName}
+              className="max-w-full max-h-full object-contain select-none px-12 md:px-20" />
+          ) : (
+            <div className="text-white/30 text-sm">No preview</div>
+          )}
+
+          {/* Next */}
+          {next && (
+            <button onClick={() => onNavigate(next)}
+              className="absolute right-2 md:right-5 z-10 bg-black/30 hover:bg-black/50 text-white/70 hover:text-white rounded-full p-2 md:p-2.5 transition-all">
+              <ChevronRight size={22} />
+            </button>
+          )}
+        </div>
+
+        {/* ── Desktop: side panel ──────────────────────── */}
+        {showInfo && (
+          <div className="hidden md:block w-80 bg-[#111] border-l border-white/5 overflow-y-auto shrink-0">
+            <InfoContent media={media} cameraStr={cameraStr} settingsStr={settingsStr} exif={exif} vid={vid} />
+          </div>
+        )}
+      </div>
+
+      {/* ── Mobile: bottom sheet ───────────────────────── */}
+      {showInfo && (
+        <div className="md:hidden bg-[#111] border-t border-white/5 max-h-[55vh] overflow-y-auto animate-slide-up safe-bottom rounded-t-2xl">
+          <div className="flex justify-center pt-2 pb-1"><div className="w-10 h-1 rounded-full bg-white/15" /></div>
+          <InfoContent media={media} cameraStr={cameraStr} settingsStr={settingsStr} exif={exif} vid={vid} />
+        </div>
+      )}
     </div>
   )
 }
 
-// ── Breadcrumb (horizontal scroll on mobile) ─────────────────────────────────
+// ── Info Content (shared between side panel & bottom sheet) ──────────────────
+
+function InfoContent({ media, cameraStr, settingsStr, exif, vid }: {
+  media: MediaFileResponse; cameraStr: string; settingsStr: string
+  exif?: MediaFileResponse['imageDetail']; vid?: MediaFileResponse['videoDetail']
+}) {
+  return (
+    <div className="p-4 md:p-5 space-y-5">
+      {/* Date */}
+      {(media.dateTaken || media.effectiveDate) && (
+        <InfoSection icon={<Clock size={15} />} title="Date">
+          <p className="text-white/80 text-sm">{fmtDate(media.dateTaken || media.effectiveDate)}</p>
+          {media.dateTaken && media.uploadedAt && media.dateTaken !== media.uploadedAt && (
+            <p className="text-white/30 text-[11px] mt-0.5">Uploaded {fmtDate(media.uploadedAt)}</p>
+          )}
+        </InfoSection>
+      )}
+
+      {/* Camera & EXIF */}
+      {(cameraStr || settingsStr) && (
+        <InfoSection icon={<Camera size={15} />} title="Camera">
+          {cameraStr && <p className="text-white/80 text-sm">{cameraStr}</p>}
+          {exif?.lensModel && <p className="text-white/40 text-xs mt-0.5">{exif.lensModel}</p>}
+          {settingsStr && <p className="text-white/60 text-xs font-mono mt-1.5">{settingsStr}</p>}
+          <div className="flex flex-wrap gap-x-4 gap-y-1 mt-2 text-[11px]">
+            {exif?.flashFired != null && <span className="text-white/40">{exif.flashFired ? '⚡ Flash' : '⚡ No flash'}</span>}
+            {exif?.whiteBalance && <span className="text-white/40">WB: {exif.whiteBalance}</span>}
+            {exif?.exposureMode && <span className="text-white/40">{exif.exposureMode}</span>}
+            {exif?.meteringMode && <span className="text-white/40">{exif.meteringMode}</span>}
+            {exif?.colorSpace && <span className="text-white/40">{exif.colorSpace}</span>}
+          </div>
+        </InfoSection>
+      )}
+
+      {/* Video */}
+      {vid && (
+        <InfoSection icon={<Film size={15} />} title="Video">
+          <div className="grid grid-cols-2 gap-2 text-xs">
+            {vid.videoCodec && <InfoKV label="Codec" value={vid.videoCodec} />}
+            {vid.audioCodec && <InfoKV label="Audio" value={vid.audioCodec} />}
+            {vid.fps && <InfoKV label="FPS" value={`${vid.fps}`} />}
+            {vid.bitrate && <InfoKV label="Bitrate" value={`${(vid.bitrate / 1000).toFixed(0)} kbps`} />}
+            {media.duration && <InfoKV label="Duration" value={fmtDuration(media.duration)!} />}
+          </div>
+        </InfoSection>
+      )}
+
+      {/* Location */}
+      {(media.latitude || media.displayedAddress) && (
+        <InfoSection icon={<MapPin size={15} />} title="Location">
+          {media.displayedAddress && <p className="text-white/80 text-sm">{media.displayedAddress}</p>}
+          {media.latitude && media.longitude && (
+            <p className="text-white/30 text-[11px] font-mono mt-0.5">
+              {media.latitude.toFixed(6)}, {media.longitude.toFixed(6)}
+            </p>
+          )}
+        </InfoSection>
+      )}
+
+      {/* File details */}
+      <InfoSection icon={<FileText size={15} />} title="File">
+        <div className="grid grid-cols-2 gap-2 text-xs">
+          <InfoKV label="Name" value={media.fileName} span />
+          <InfoKV label="Type" value={media.mimeType || media.fileType} />
+          <InfoKV label="Size" value={fmtSize(media.fileSize) || '—'} />
+          {media.width && media.height && <InfoKV label="Dimensions" value={`${media.width} × ${media.height}`} />}
+          {media.orientation && <InfoKV label="Orientation" value={media.orientation} />}
+        </div>
+      </InfoSection>
+
+      {/* Tags / Classification */}
+      {exif && (exif.isSelfie || exif.isScreenshot || exif.isPanorama || exif.isPortrait || exif.software) && (
+        <div className="flex flex-wrap gap-1.5">
+          {exif.isSelfie && <span className="text-[10px] px-2 py-0.5 rounded-full bg-white/10 text-white/50">Selfie</span>}
+          {exif.isScreenshot && <span className="text-[10px] px-2 py-0.5 rounded-full bg-white/10 text-white/50">Screenshot</span>}
+          {exif.isPanorama && <span className="text-[10px] px-2 py-0.5 rounded-full bg-white/10 text-white/50">Panorama</span>}
+          {exif.isPortrait && <span className="text-[10px] px-2 py-0.5 rounded-full bg-white/10 text-white/50">Portrait</span>}
+          {exif.software && <span className="text-[10px] px-2 py-0.5 rounded-full bg-white/10 text-white/50">{exif.software}</span>}
+        </div>
+      )}
+    </div>
+  )
+}
+
+function InfoSection({ icon, title, children }: { icon: React.ReactNode; title: string; children: React.ReactNode }) {
+  return (
+    <div>
+      <div className="flex items-center gap-2 mb-2">
+        <span className="text-white/30">{icon}</span>
+        <span className="text-[11px] uppercase tracking-wider text-white/40 font-semibold">{title}</span>
+      </div>
+      {children}
+    </div>
+  )
+}
+
+function InfoKV({ label, value, span }: { label: string; value: string; span?: boolean }) {
+  return (
+    <div className={span ? 'col-span-2' : ''}>
+      <div className="text-white/30 text-[10px]">{label}</div>
+      <div className="text-white/70 truncate">{value}</div>
+    </div>
+  )
+}
+
+// ── Breadcrumb ───────────────────────────────────────────────────────────────
 
 function Breadcrumb({ items, onNavigate }: { items: { id: string; name: string }[]; onNavigate: (id: string | null) => void }) {
   return (
     <div className="flex items-center gap-1 text-xs overflow-x-auto scroll-snap-x pb-1 mb-4 -mx-1 px-1">
       <button onClick={() => onNavigate(null)}
-        className="text-slate-400 hover:text-pink-500 transition-colors font-medium shrink-0 active:text-pink-600">
-        All
-      </button>
+        className="text-slate-400 hover:text-pink-500 active:text-pink-600 transition-colors font-medium shrink-0">All</button>
       {items.map((item, i) => (
         <div key={item.id} className="flex items-center gap-1 shrink-0">
           <ChevronRight size={10} className="text-slate-300" />
-          <button
-            onClick={() => i < items.length - 1 ? onNavigate(item.id) : null}
+          <button onClick={() => i < items.length - 1 ? onNavigate(item.id) : null}
             className={`transition-colors font-medium whitespace-nowrap ${
-              i === items.length - 1 ? 'text-slate-800' : 'text-slate-400 hover:text-pink-500 active:text-pink-600'
-            }`}>
-            {item.name}
-          </button>
+              i === items.length - 1 ? 'text-slate-800' : 'text-slate-400 hover:text-pink-500'
+            }`}>{item.name}</button>
         </div>
       ))}
     </div>
@@ -194,7 +310,7 @@ export default function CollectionsPage() {
   const [currentId, setCurrentId] = useState<string | null>(null)
   const [selectedMedia, setSelectedMedia] = useState<MediaFileResponse | null>(null)
 
-  const { data: topLevel = [], isLoading: loadingTop } = useQuery({
+  const { data: topLevel = [], isLoading } = useQuery({
     queryKey: ['collections', 'top'],
     queryFn: () => collectionBrowseApi.getTopLevel(),
     enabled: !currentId,
@@ -226,11 +342,9 @@ export default function CollectionsPage() {
 
   const navigate = (id: string | null) => setCurrentId(id)
   const collections = currentId ? children : topLevel
-  const isLoading = !currentId && loadingTop
 
   return (
     <div className="p-3 md:p-6 lg:p-8">
-      {/* Header */}
       {currentId ? (
         <div className="mb-4">
           <button onClick={() => {
@@ -240,9 +354,7 @@ export default function CollectionsPage() {
             <ArrowLeft size={12} />Back
           </button>
           <Breadcrumb items={breadcrumb} onNavigate={navigate} />
-          {current && (
-            <h1 className="text-lg md:text-xl font-semibold text-slate-800">{current.name}</h1>
-          )}
+          {current && <h1 className="text-lg md:text-xl font-semibold text-slate-800">{current.name}</h1>}
         </div>
       ) : (
         <h1 className="text-lg md:text-xl font-semibold text-slate-800 mb-5">Collections</h1>
@@ -250,7 +362,6 @@ export default function CollectionsPage() {
 
       {isLoading && <p className="text-sm text-slate-400">Loading...</p>}
 
-      {/* Sub-collections */}
       {collections.length > 0 && (
         <div className="mb-6">
           {currentId && <h2 className="text-[10px] uppercase tracking-widest text-slate-400 font-semibold mb-2.5">Folders</h2>}
@@ -262,7 +373,6 @@ export default function CollectionsPage() {
         </div>
       )}
 
-      {/* Media grid */}
       {currentId && media.length > 0 && (
         <div>
           <h2 className="text-[10px] uppercase tracking-widest text-slate-400 font-semibold mb-2.5">
@@ -276,7 +386,6 @@ export default function CollectionsPage() {
         </div>
       )}
 
-      {/* Empty states */}
       {currentId && collections.length === 0 && media.length === 0 && (
         <div className="text-center py-12">
           <FolderOpen size={36} className="mx-auto text-slate-200 mb-2" strokeWidth={1} />
@@ -290,14 +399,10 @@ export default function CollectionsPage() {
         </div>
       )}
 
-      {/* Media detail */}
       {selectedMedia && (
-        <MediaDetailModal
-          media={selectedMedia}
-          allMedia={media}
+        <Lightbox media={selectedMedia} allMedia={media}
           onClose={() => setSelectedMedia(null)}
-          onNavigate={m => setSelectedMedia(m)}
-        />
+          onNavigate={m => setSelectedMedia(m)} />
       )}
     </div>
   )

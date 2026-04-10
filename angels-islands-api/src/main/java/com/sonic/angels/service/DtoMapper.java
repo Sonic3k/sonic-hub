@@ -53,10 +53,39 @@ public class DtoMapper {
         r.setFileSize(m.getFileSize()); r.setWidth(m.getWidth()); r.setHeight(m.getHeight());
         r.setAspectRatio(m.getAspectRatio()); r.setDuration(m.getDuration());
         r.setIsFavorite(m.getIsFavorite()); r.setIsFeatured(m.getIsFeatured());
-        r.setMimeType(m.getMimeType()); r.setCaption(m.getCaption());
+        r.setMimeType(m.getMimeType()); r.setCaption(m.getCaption()); r.setIsAnimated(m.getIsAnimated());
+        r.setDateTaken(m.getDateTaken()); r.setFileDateCreated(m.getFileDateCreated());
+        r.setFileDateModified(m.getFileDateModified());
         r.setEffectiveDate(m.getEffectiveDate()); r.setUploadedAt(m.getUploadedAt());
+        r.setLatitude(m.getLatitude()); r.setLongitude(m.getLongitude());
+        r.setDisplayedAddress(m.getDisplayedAddress());
         r.setCdnUrl(storageService.buildCdnUrl(m.getStorageKey(), m.getStorageProvider()));
         r.setThumbnailUrl(m.getStorageKey() != null ? storageService.buildThumbnailUrl(m.getStorageKey(), 300) : null);
+
+        // Image EXIF detail
+        if (m.getImageDetail() != null) {
+            var img = m.getImageDetail();
+            var d = new MediaFileDto.ImageDetailDto();
+            d.setCameraMake(img.getCameraMake()); d.setCameraModel(img.getCameraModel());
+            d.setLensModel(img.getLensModel()); d.setIso(img.getIso());
+            d.setFocalLength(img.getFocalLength()); d.setAperture(img.getAperture());
+            d.setShutterSpeed(img.getShutterSpeed()); d.setColorSpace(img.getColorSpace());
+            d.setFlashFired(img.getFlashFired()); d.setWhiteBalance(img.getWhiteBalance());
+            d.setExposureMode(img.getExposureMode()); d.setMeteringMode(img.getMeteringMode());
+            d.setSoftware(img.getSoftware()); d.setIsSelfie(img.getIsSelfie());
+            d.setIsScreenshot(img.getIsScreenshot()); d.setIsPanorama(img.getIsPanorama());
+            d.setIsPortrait(img.getIsPortrait());
+            r.setImageDetail(d);
+        }
+
+        // Video detail
+        if (m.getVideoDetail() != null) {
+            var vid = m.getVideoDetail();
+            var d = new MediaFileDto.VideoDetailDto();
+            d.setVideoCodec(vid.getVideoCodec()); d.setAudioCodec(vid.getAudioCodec());
+            d.setFps(vid.getFps()); d.setBitrate(vid.getBitrate());
+            r.setVideoDetail(d);
+        }
         return r;
     }
 
