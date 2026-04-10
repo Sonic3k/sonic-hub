@@ -398,7 +398,7 @@ export default function CollectionsPage() {
     for (const file of Array.from(files)) {
       if (!file.type.startsWith('image/') && !file.type.startsWith('video/')) continue
       try {
-        const media = await uploadApi.uploadFile(file, undefined, current?.name)
+        const media = await uploadApi.uploadFile(file, undefined, currentId)
         await uploadApi.linkMediaToCollection(currentId, media.id)
         count++
       } catch {}
