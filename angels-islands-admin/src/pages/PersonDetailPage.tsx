@@ -187,7 +187,7 @@ export default function PersonDetailPage() {
                   <div className="flex gap-2 mt-2">
                     {e.emotion && <span className="text-xs px-1.5 py-0.5 rounded bg-blue-50 text-blue-500">{e.emotion}</span>}
                     {e.importance && <span className="text-xs text-slate-300">importance: {e.importance}/10</span>}
-                    {e.occurredAt && <span className="text-xs text-slate-300 ml-auto">{new Date(e.occurredAt).toLocaleDateString()}</span>}
+                    {e.occurredAt && <span className="text-xs text-slate-300 ml-auto">{new Date(e.occurredAt.endsWith('Z') ? e.occurredAt : e.occurredAt + 'Z').toLocaleDateString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh' })}</span>}
                   </div>
                 </div>
               ))}</div>

@@ -6,9 +6,10 @@ import type { CollectionResponse, MediaFileResponse } from '../types'
 
 function fmtDate(d?: string) {
   if (!d) return null
-  const dt = new Date(d)
-  return dt.toLocaleDateString('vi-VN', { weekday: 'short', day: '2-digit', month: 'short', year: 'numeric' })
-    + ' · ' + dt.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })
+  // API returns LocalDateTime (UTC) without Z suffix — ensure parsed as UTC
+  const dt = new Date(d.endsWith('Z') ? d : d + 'Z')
+  return dt.toLocaleDateString('vi-VN', { weekday: 'short', day: '2-digit', month: 'short', year: 'numeric', timeZone: 'Asia/Ho_Chi_Minh' })
+    + ' · ' + dt.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Ho_Chi_Minh' })
 }
 
 function fmtSize(bytes?: number) {

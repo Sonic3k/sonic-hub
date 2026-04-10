@@ -45,7 +45,7 @@ export default function MemoryPage() {
                 <p className="text-slate-700">{e.summary}</p>
                 <div className="flex gap-2 mt-1">
                   {e.emotion && <span className="px-1.5 py-0.5 rounded bg-blue-50 text-blue-500">{e.emotion}</span>}
-                  {e.occurredAt && <span className="text-slate-300">{new Date(e.occurredAt).toLocaleDateString()}</span>}
+                  {e.occurredAt && <span className="text-slate-300">{new Date(e.occurredAt.endsWith('Z') ? e.occurredAt : e.occurredAt + 'Z').toLocaleDateString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh' })}</span>}
                 </div>
               </div>
             ))}

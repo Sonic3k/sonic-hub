@@ -20,6 +20,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.time.ZoneOffset;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
@@ -27,6 +28,9 @@ import java.util.UUID;
 @Service
 @Transactional
 public class MediaFileService {
+
+    // All photos assumed taken in Vietnam timezone
+    private static final ZoneId PHOTO_ZONE = ZoneId.of("Asia/Ho_Chi_Minh");
 
     private final MediaFileRepository mediaFileRepository;
     private final StorageService storageService;
@@ -54,10 +58,10 @@ public class MediaFileService {
         mf.setMimeType(file.getContentType());
         mf.setUploadedAt(LocalDateTime.now());
 
-        // Use browser's file.lastModified as fallback date
+        // Browser file.lastModified = epoch ms (UTC-based) → store as UTC
         if (lastModified != null && lastModified > 0) {
             mf.setFileDateModified(LocalDateTime.ofInstant(
-                java.time.Instant.ofEpochMilli(lastModified), ZoneId.systemDefault()));
+                java.time.Instant.ofEpochMilli(lastModified), ZoneOffset.UTC));
         }
 
         extractMetadata(file, mf);
@@ -151,10 +155,10 @@ public class MediaFileService {
             if (exifSub != null) {
                 Date dateTaken = exifSub.getDateOriginal();
                 if (dateTaken != null)
-                    mf.setDateTaken(LocalDateTime.ofInstant(dateTaken.toInstant(), ZoneId.systemDefault()));
+                    mf.setDateTaken(exifToUtc(dateTaken));
                 Date dateDigitized = exifSub.getDateDigitized();
                 if (dateDigitized != null)
-                    mf.setFileDateCreated(LocalDateTime.ofInstant(dateDigitized.toInstant(), ZoneId.systemDefault()));
+                    mf.setFileDateCreated(exifToUtc(dateDigitized));
                 if (exifSub.containsTag(ExifSubIFDDirectory.TAG_ISO_EQUIVALENT))
                     img.setIso(exifSub.getInteger(ExifSubIFDDirectory.TAG_ISO_EQUIVALENT));
                 if (exifSub.containsTag(ExifSubIFDDirectory.TAG_FOCAL_LENGTH))
@@ -181,7 +185,7 @@ public class MediaFileService {
                 if (exifIFD0.containsTag(ExifIFD0Directory.TAG_DATETIME)) {
                     Date dateModified = exifIFD0.getDate(ExifIFD0Directory.TAG_DATETIME);
                     if (dateModified != null)
-                        mf.setFileDateModified(LocalDateTime.ofInstant(dateModified.toInstant(), ZoneId.systemDefault()));
+                        mf.setFileDateModified(exifToUtc(dateModified));
                 }
                 if (exifIFD0.containsTag(ExifIFD0Directory.TAG_MAKE)) {
                     cameraMake = exifIFD0.getString(ExifIFD0Directory.TAG_MAKE);
@@ -215,7 +219,7 @@ public class MediaFileService {
                     if (mp4Dir.containsTag(com.drew.metadata.mp4.Mp4Directory.TAG_CREATION_TIME)) {
                         Date created = mp4Dir.getDate(com.drew.metadata.mp4.Mp4Directory.TAG_CREATION_TIME);
                         if (created != null && mf.getDateTaken() == null)
-                            mf.setDateTaken(LocalDateTime.ofInstant(created.toInstant(), ZoneId.systemDefault()));
+                            mf.setDateTaken(exifToUtc(created));
                     }
                 }
                 var mp4Video = metadata.getFirstDirectoryOfType(com.drew.metadata.mp4.media.Mp4VideoDirectory.class);
@@ -244,7 +248,7 @@ public class MediaFileService {
                     if (mf.getDateTaken() == null && qtDir.containsTag(com.drew.metadata.mov.QuickTimeDirectory.TAG_CREATION_TIME)) {
                         Date created = qtDir.getDate(com.drew.metadata.mov.QuickTimeDirectory.TAG_CREATION_TIME);
                         if (created != null)
-                            mf.setDateTaken(LocalDateTime.ofInstant(created.toInstant(), ZoneId.systemDefault()));
+                            mf.setDateTaken(exifToUtc(created));
                     }
                 }
             } catch (Exception ignored) {}
@@ -284,5 +288,18 @@ public class MediaFileService {
 
     private boolean isVideo(String contentType) {
         return contentType != null && contentType.startsWith("video/");
+    }
+
+    /**
+     * EXIF dates have no timezone info. metadata-extractor parses raw string
+     * using JVM default TZ (UTC on Railway). But the value is actually Vietnam local time.
+     * Re-interpret: treat raw value as Vietnam local → convert to UTC for storage.
+     *
+     * Example: EXIF "21:45:21" → parsed as 21:45:21 UTC (wrong)
+     * → re-interpret as 21:45:21 VN → convert to 14:45:21 UTC (correct)
+     */
+    private LocalDateTime exifToUtc(Date exifDate) {
+        LocalDateTime raw = LocalDateTime.ofInstant(exifDate.toInstant(), ZoneOffset.UTC);
+        return raw.atZone(PHOTO_ZONE).withZoneSameInstant(ZoneOffset.UTC).toLocalDateTime();
     }
 }
