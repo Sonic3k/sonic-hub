@@ -21,4 +21,12 @@ export const memoryApi = {
   deleteTrait: (pid: string, id: string) => api.delete(`${base(pid)}/memory/traits/${id}`),
 
   getArchives: (pid: string) => api.get<ChatArchiveResponse[]>(`${base(pid)}/chat-archives`).then(r => r.data),
+  deleteArchive: (pid: string, archiveId: string) => api.delete(`${base(pid)}/chat-archives/${archiveId}`),
+  importYahooChat: (pid: string, file: File) => {
+    const fd = new FormData()
+    fd.append('file', file)
+    return api.post(`${base(pid)}/chat-archives/import/yahoo`, fd, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    }).then(r => r.data)
+  },
 }

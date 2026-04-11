@@ -18,4 +18,14 @@ public class ChatArchiveDto {
         public ChatArchive.ExtractionStatus getExtractionStatus() { return extractionStatus; } public void setExtractionStatus(ChatArchive.ExtractionStatus v) { this.extractionStatus = v; }
         public LocalDateTime getCreatedAt() { return createdAt; } public void setCreatedAt(LocalDateTime v) { this.createdAt = v; }
     }
+
+    public static class ImportResult {
+        private UUID archiveId; private int totalConversations; private int totalMessages;
+        private LocalDateTime dateFrom; private LocalDateTime dateTo;
+        public UUID getArchiveId() { return archiveId; } public void setArchiveId(UUID v) { this.archiveId = v; }
+        public int getTotalConversations() { return totalConversations; } public void setTotalConversations(int v) { this.totalConversations = v; }
+        public int getTotalMessages() { return totalMessages; } public void setTotalMessages(int v) { this.totalMessages = v; }
+        public LocalDateTime getDateFrom() { return dateFrom; } public void setDateFrom(LocalDateTime v) { this.dateFrom = v; }
+        public LocalDateTime getDateTo() { return dateTo; } public void setDateTo(LocalDateTime v) { this.dateTo = v; }
+    }
 }

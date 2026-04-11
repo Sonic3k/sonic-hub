@@ -8,4 +8,5 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface PersonRepository extends JpaRepository<Person, UUID> {
+    java.util.Optional<Person> findByIsSelfTrue();
 }

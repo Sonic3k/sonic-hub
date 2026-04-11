@@ -1,10 +1,11 @@
 import { useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import { ArrowLeft, Brain, MessageSquare, User, Pencil, Save, X, Plus, Trash2 } from 'lucide-react'
+import { ArrowLeft, Brain, MessageSquare, User, Pencil, Save, X, Plus, Trash2, Upload } from 'lucide-react'
 import { Button, Input, Textarea, Modal } from '../components/ui'
 import { usePerson, useUpdatePerson } from '../hooks/usePersons'
 import { useFacts, useEpisodes, useChapters, useTraits, useArchives } from '../hooks/useMemory'
 import { personsApi } from '../api/persons'
+import { memoryApi } from '../api/memory'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import type { PersonRequest, RelationshipType, ContactPlatform, ContactRequest } from '../types'
 
@@ -42,6 +43,14 @@ export default function PersonDetailPage() {
   const deleteContact = useMutation({
     mutationFn: (contactId: string) => personsApi.deleteContact(pid, contactId),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['person', pid] }),
+  })
+  const importChat = useMutation({
+    mutationFn: (file: File) => memoryApi.importYahooChat(pid, file),
+    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['archives', pid] }); queryClient.invalidateQueries({ queryKey: ['person', pid] }) },
+  })
+  const deleteArchive = useMutation({
+    mutationFn: (archiveId: string) => memoryApi.deleteArchive(pid, archiveId),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['archives', pid] }),
   })
 
   if (isLoading) return <div className="p-4 md:p-8 text-slate-400">Loading...</div>
@@ -269,7 +278,26 @@ export default function PersonDetailPage() {
 
       {tab === 'chat' && (
         <div className="space-y-3">
-          {archives.length === 0 ? <p className="text-sm text-slate-400">No chat archives.</p> : (
+          <div className="flex items-center justify-between">
+            <h3 className="text-sm font-semibold text-slate-600">Chat Archives</h3>
+            <label className="cursor-pointer inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg bg-pink-500 text-white hover:bg-pink-600 active:scale-95 transition-colors">
+              <input type="file" accept=".txt" className="hidden" onChange={e => {
+                const file = e.target.files?.[0]
+                if (file) importChat.mutate(file)
+                e.target.value = ''
+              }} />
+              <Upload size={12} />{importChat.isPending ? 'Importing...' : 'Import Yahoo'}
+            </label>
+          </div>
+          {importChat.isSuccess && (
+            <div className="bg-green-50 text-green-700 text-xs p-3 rounded-lg">
+              Imported {(importChat.data as any)?.totalMessages} messages from {(importChat.data as any)?.totalConversations} conversations
+            </div>
+          )}
+          {importChat.isError && (
+            <div className="bg-red-50 text-red-600 text-xs p-3 rounded-lg">Import failed: {(importChat.error as Error)?.message}</div>
+          )}
+          {archives.length === 0 && !importChat.isPending ? <p className="text-sm text-slate-400">No chat archives.</p> : (
             archives.map(a => (
               <div key={a.id} className="bg-white rounded-lg p-4 border border-slate-100">
                 <div className="flex items-center justify-between">
@@ -277,10 +305,14 @@ export default function PersonDetailPage() {
                     <span className="text-xs font-medium px-2 py-0.5 rounded bg-slate-100 text-slate-600">{a.platform}</span>
                     {a.title && <span className="text-sm text-slate-700 ml-2">{a.title}</span>}
                   </div>
-                  <span className={`text-xs px-2 py-0.5 rounded-full ${
-                    a.extractionStatus === 'DONE' ? 'bg-green-50 text-green-600' :
-                    a.extractionStatus === 'ERROR' ? 'bg-red-50 text-red-600' : 'bg-slate-50 text-slate-500'
-                  }`}>{a.extractionStatus}</span>
+                  <div className="flex items-center gap-2">
+                    <span className={`text-xs px-2 py-0.5 rounded-full ${
+                      a.extractionStatus === 'DONE' ? 'bg-green-50 text-green-600' :
+                      a.extractionStatus === 'ERROR' ? 'bg-red-50 text-red-600' : 'bg-slate-50 text-slate-500'
+                    }`}>{a.extractionStatus}</span>
+                    <button onClick={() => { if (confirm('Delete this archive and all messages?')) deleteArchive.mutate(a.id) }}
+                      className="text-slate-300 hover:text-red-400 p-1"><Trash2 size={13} /></button>
+                  </div>
                 </div>
                 <div className="flex gap-4 mt-2 text-xs text-slate-400">
                   {a.messageCount && <span>{a.messageCount} messages</span>}
