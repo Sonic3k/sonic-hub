@@ -10,7 +10,7 @@ const REL_LABELS: Record<RelationshipType, string> = {
   EX: '💔 Ex', ACQUAINTANCE: '👋 Acquaintance', PEN_PAL: '✉️ Pen Pal', ONLINE_FRIEND: '💬 Online Friend',
 }
 
-const emptyForm = { name: '', displayName: '', nickname: '', dateOfBirth: '', relationshipType: 'FRIEND' as RelationshipType, period: '', firstMet: '', howWeMet: '', song: '', bio: '' }
+const emptyForm = { name: '', displayName: '', nickname: '', dateOfBirth: '', relationshipType: 'FRIEND' as RelationshipType, period: '', firstMet: '', howWeMet: '', song: '', bio: '', isSelf: false }
 
 export default function PersonsPage() {
   const { data: persons = [], isLoading } = usePersons()
@@ -82,6 +82,11 @@ export default function PersonsPage() {
             <Textarea label="How We Met" value={form.howWeMet} onChange={e => set('howWeMet', e.target.value)} rows={2} placeholder="Gặp nhau ở đâu, hoàn cảnh gì..." />
             <Input label="Song" value={form.song} onChange={e => set('song', e.target.value)} placeholder="Bài hát gắn liền" />
             <Textarea label="Bio" value={form.bio} onChange={e => set('bio', e.target.value)} rows={3} />
+            <label className="flex items-center gap-2 cursor-pointer">
+              <input type="checkbox" checked={form.isSelf} onChange={e => setForm(f => ({ ...f, isSelf: e.target.checked }))}
+                className="w-4 h-4 rounded border-slate-300 text-blue-500 focus:ring-blue-200" />
+              <span className="text-xs text-slate-600">This is me (Sonic3k)</span>
+            </label>
             <div className="flex justify-end gap-2 pt-2">
               <Button variant="ghost" onClick={() => setShowForm(false)}>Cancel</Button>
               <Button onClick={handleCreate} disabled={createPerson.isPending}>Create</Button>
