@@ -65,7 +65,7 @@ export default function PersonsPage() {
 
       {showForm && (
         <Modal title="New Person" onClose={() => setShowForm(false)}>
-          <div className="space-y-3 max-h-[70vh] overflow-y-auto">
+          <div className="space-y-3">
             <Input label="Name *" value={form.name} onChange={e => set('name', e.target.value)} autoFocus required />
             <Input label="Display Name" value={form.displayName} onChange={e => set('displayName', e.target.value)} placeholder="Tên hiển thị" />
             <Input label="Nickname" value={form.nickname} onChange={e => set('nickname', e.target.value)} />
