@@ -7,6 +7,7 @@ import com.sonic.angels.repository.PersonContactRepository;
 import com.sonic.angels.service.DtoMapper;
 import com.sonic.angels.service.PersonService;
 import org.springframework.http.ResponseEntity;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.UUID;
@@ -26,11 +27,13 @@ public class PersonController {
     }
 
     @GetMapping
+    @Transactional(readOnly = true)
     public List<PersonDto.Summary> findAll() {
         return personService.findAll().stream().map(mapper::toPersonSummary).toList();
     }
 
     @GetMapping("/{id}")
+    @Transactional(readOnly = true)
     public PersonDto.DetailResponse findById(@PathVariable UUID id) {
         return mapper.toPersonDetail(personService.findById(id));
     }
