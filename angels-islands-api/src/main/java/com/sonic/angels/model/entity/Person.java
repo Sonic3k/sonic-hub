@@ -94,7 +94,7 @@ public class Person extends BaseEntity {
     private Set<Tag> tags = new HashSet<>();
 
     @JsonIgnore
-    @OneToMany(mappedBy = "person", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
+    @OneToMany(mappedBy = "person", cascade = CascadeType.ALL, fetch = FetchType.EAGER, orphanRemoval = true)
     @OrderBy("platform ASC")
     private Set<PersonContact> contacts = new HashSet<>();
 
