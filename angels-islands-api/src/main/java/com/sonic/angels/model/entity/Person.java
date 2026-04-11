@@ -50,6 +50,9 @@ public class Person extends BaseEntity {
     @Column(name = "song")
     private String song; // bài hát gắn liền
 
+    @Column(name = "is_self")
+    private Boolean isSelf = false;
+
     @Column(name = "is_favorite")
     private Boolean isFavorite = false;
 
@@ -89,6 +92,11 @@ public class Person extends BaseEntity {
         joinColumns = @JoinColumn(name = "person_id"),
         inverseJoinColumns = @JoinColumn(name = "tag_id"))
     private Set<Tag> tags = new HashSet<>();
+
+    @JsonIgnore
+    @OneToMany(mappedBy = "person", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
+    @OrderBy("platform ASC")
+    private Set<PersonContact> contacts = new HashSet<>();
 
     @JsonIgnore
     @OneToMany(mappedBy = "person", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
@@ -146,6 +154,8 @@ public class Person extends BaseEntity {
     public void setHowWeMet(String howWeMet) { this.howWeMet = howWeMet; }
     public String getSong() { return song; }
     public void setSong(String song) { this.song = song; }
+    public Boolean getIsSelf() { return isSelf; }
+    public void setIsSelf(Boolean isSelf) { this.isSelf = isSelf; }
     public Boolean getIsFavorite() { return isFavorite; }
     public void setIsFavorite(Boolean isFavorite) { this.isFavorite = isFavorite; }
     public Boolean getIsFeatured() { return isFeatured; }
@@ -164,6 +174,8 @@ public class Person extends BaseEntity {
     public void setTags(Set<Tag> tags) { this.tags = tags; }
     public Set<ChatArchive> getChatArchives() { return chatArchives; }
     public void setChatArchives(Set<ChatArchive> chatArchives) { this.chatArchives = chatArchives; }
+    public Set<PersonContact> getContacts() { return contacts; }
+    public void setContacts(Set<PersonContact> contacts) { this.contacts = contacts; }
     public Set<Fact> getFacts() { return facts; }
     public void setFacts(Set<Fact> facts) { this.facts = facts; }
     public Set<Episode> getEpisodes() { return episodes; }

@@ -1,15 +1,19 @@
 import { useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import { ArrowLeft, Brain, MessageSquare, User, Pencil, Save, X } from 'lucide-react'
-import { Button, Input, Textarea } from '../components/ui'
+import { ArrowLeft, Brain, MessageSquare, User, Pencil, Save, X, Plus, Trash2 } from 'lucide-react'
+import { Button, Input, Textarea, Modal } from '../components/ui'
 import { usePerson, useUpdatePerson } from '../hooks/usePersons'
 import { useFacts, useEpisodes, useChapters, useTraits, useArchives } from '../hooks/useMemory'
-import type { PersonRequest, RelationshipType } from '../types'
+import { personsApi } from '../api/persons'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
+import type { PersonRequest, RelationshipType, ContactPlatform, ContactRequest } from '../types'
 
 const REL_LABELS: Record<RelationshipType, string> = {
   CRUSH: '💗 Crush', GIRLFRIEND: '❤️ Girlfriend', FRIEND: '🤝 Friend',
   EX: '💔 Ex', ACQUAINTANCE: '👋 Acquaintance', PEN_PAL: '✉️ Pen Pal', ONLINE_FRIEND: '💬 Online Friend',
 }
+
+const CONTACT_PLATFORMS: ContactPlatform[] = ['YAHOO', 'FACEBOOK', 'ZALO', 'TELEGRAM', 'SMS', 'PHONE', 'BLOG', 'INSTAGRAM', 'TIKTOK', 'OTHER']
 
 type Tab = 'info' | 'memory' | 'chat'
 
@@ -17,6 +21,7 @@ export default function PersonDetailPage() {
   const { id } = useParams<{ id: string }>()
   const pid = id!
   const navigate = useNavigate()
+  const queryClient = useQueryClient()
   const { data: person, isLoading } = usePerson(pid)
   const updatePerson = useUpdatePerson(pid)
   const { data: facts = [] } = useFacts(pid)
@@ -27,6 +32,17 @@ export default function PersonDetailPage() {
   const [tab, setTab] = useState<Tab>('info')
   const [editing, setEditing] = useState(false)
   const [form, setForm] = useState<PersonRequest>({})
+  const [showContactForm, setShowContactForm] = useState(false)
+  const [contactForm, setContactForm] = useState<ContactRequest>({ platform: 'YAHOO', identifier: '' })
+
+  const addContact = useMutation({
+    mutationFn: (data: ContactRequest) => personsApi.addContact(pid, data),
+    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['person', pid] }); setShowContactForm(false); setContactForm({ platform: 'YAHOO', identifier: '' }) },
+  })
+  const deleteContact = useMutation({
+    mutationFn: (contactId: string) => personsApi.deleteContact(pid, contactId),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['person', pid] }),
+  })
 
   if (isLoading) return <div className="p-4 md:p-8 text-slate-400">Loading...</div>
   if (!person) return <div className="p-4 md:p-8 text-slate-400">Not found</div>
@@ -75,7 +91,10 @@ export default function PersonDetailPage() {
 
       <div className="flex items-start justify-between mb-6">
         <div>
-          <h1 className="text-xl font-semibold text-slate-800">{person.displayName || person.name}</h1>
+          <h1 className="text-xl font-semibold text-slate-800">
+            {person.displayName || person.name}
+            {person.isSelf && <span className="ml-2 text-xs px-1.5 py-0.5 rounded bg-blue-100 text-blue-700 font-medium align-middle">SELF</span>}
+          </h1>
           {person.nickname && <p className="text-sm text-slate-400">{person.nickname}</p>}
           <div className="flex items-center gap-2 mt-1 flex-wrap">
             {person.relationshipType && <span className="text-xs px-2 py-0.5 rounded-full bg-pink-50 text-pink-600">{REL_LABELS[person.relationshipType]}</span>}
@@ -136,6 +155,55 @@ export default function PersonDetailPage() {
           <Input label="Song" value={form.song} onChange={e => set('song', e.target.value)} />
           <Textarea label="Bio" value={form.bio} onChange={e => set('bio', e.target.value)} rows={3} />
         </div>
+      )}
+
+      {tab === 'info' && (
+        <div className="bg-white rounded-xl p-5 border border-slate-100 mt-4">
+          <div className="flex items-center justify-between mb-3">
+            <h3 className="text-sm font-semibold text-slate-600">Contacts / Identities</h3>
+            <Button size="sm" variant="ghost" onClick={() => setShowContactForm(true)}><Plus size={12} />Add</Button>
+          </div>
+          {(!person.contacts || person.contacts.length === 0) ? (
+            <p className="text-xs text-slate-400">No contacts added yet.</p>
+          ) : (
+            <div className="space-y-2">
+              {person.contacts.map(c => (
+                <div key={c.id} className="flex items-center justify-between py-2 px-3 rounded-lg bg-slate-50">
+                  <div className="flex items-center gap-2">
+                    <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-slate-200 text-slate-600">{c.platform}</span>
+                    <span className="text-sm text-slate-700 font-medium">{c.identifier}</span>
+                    {c.displayName && <span className="text-xs text-slate-400">({c.displayName})</span>}
+                  </div>
+                  <button onClick={() => { if (confirm('Delete this contact?')) deleteContact.mutate(c.id) }}
+                    className="text-slate-300 hover:text-red-400 p-1"><Trash2 size={13} /></button>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+
+      {showContactForm && (
+        <Modal title="Add Contact" onClose={() => setShowContactForm(false)}>
+          <div className="space-y-3">
+            <div className="space-y-1">
+              <label className="block text-xs font-medium text-slate-600">Platform</label>
+              <select className="w-full px-3 py-2.5 text-sm border rounded-lg border-slate-200 bg-white"
+                value={contactForm.platform} onChange={e => setContactForm(f => ({ ...f, platform: e.target.value }))}>
+                {CONTACT_PLATFORMS.map(p => <option key={p} value={p}>{p}</option>)}
+              </select>
+            </div>
+            <Input label="Identifier *" value={contactForm.identifier} onChange={e => setContactForm(f => ({ ...f, identifier: e.target.value }))}
+              placeholder="nick yahoo, link fb, số đt..." autoFocus />
+            <Input label="Display Name" value={contactForm.displayName || ''} onChange={e => setContactForm(f => ({ ...f, displayName: e.target.value }))}
+              placeholder="Tên hiển thị trên platform" />
+            <Input label="Notes" value={contactForm.notes || ''} onChange={e => setContactForm(f => ({ ...f, notes: e.target.value }))} />
+            <div className="flex justify-end gap-2 pt-2">
+              <Button variant="ghost" onClick={() => setShowContactForm(false)}>Cancel</Button>
+              <Button onClick={() => addContact.mutate(contactForm)} disabled={!contactForm.identifier.trim() || addContact.isPending}>Add</Button>
+            </div>
+          </div>
+        </Modal>
       )}
 
       {tab === 'memory' && (

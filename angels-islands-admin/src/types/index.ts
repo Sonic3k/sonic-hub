@@ -1,19 +1,21 @@
 export type RelationshipType = 'CRUSH' | 'GIRLFRIEND' | 'FRIEND' | 'EX' | 'ACQUAINTANCE' | 'PEN_PAL' | 'ONLINE_FRIEND'
 export type Platform = 'YAHOO' | 'FACEBOOK' | 'SMS' | 'ZALO' | 'TELEGRAM' | 'BLOG' | 'OTHER'
+export type ContactPlatform = 'YAHOO' | 'FACEBOOK' | 'ZALO' | 'TELEGRAM' | 'SMS' | 'PHONE' | 'BLOG' | 'INSTAGRAM' | 'TIKTOK' | 'OTHER'
 export type ExtractionStatus = 'PENDING' | 'EXTRACTING' | 'DONE' | 'ERROR'
 
 // List response (Summary DTO)
 export interface PersonSummary {
   id: string; name: string; displayName?: string; nickname?: string
   relationshipType?: RelationshipType; period?: string
-  isFavorite?: boolean; isFeatured?: boolean; avatarUrl?: string; song?: string
+  isSelf?: boolean; isFavorite?: boolean; isFeatured?: boolean; avatarUrl?: string; song?: string
 }
 
 // Detail response (DetailResponse DTO)
 export interface PersonDetail extends PersonSummary {
   alternativeName?: string; dateOfBirth?: string; bio?: string
   firstMet?: string; howWeMet?: string; coverUrl?: string; bannerUrl?: string
-  tags?: TagResponse[]; totalCollections?: number; totalMediaFiles?: number
+  tags?: TagResponse[]; contacts?: ContactResponse[]
+  totalCollections?: number; totalMediaFiles?: number
   totalChatArchives?: number; totalFacts?: number; totalEpisodes?: number
   createdAt?: string; updatedAt?: string
 }
@@ -23,8 +25,11 @@ export interface PersonRequest {
   name?: string; displayName?: string; alternativeName?: string; nickname?: string
   dateOfBirth?: string; bio?: string; relationshipType?: RelationshipType
   period?: string; firstMet?: string; howWeMet?: string; song?: string
-  isFavorite?: boolean; isFeatured?: boolean; tagIds?: number[]
+  isSelf?: boolean; isFavorite?: boolean; isFeatured?: boolean; tagIds?: number[]
 }
+
+export interface ContactResponse { id: string; platform: ContactPlatform; identifier: string; displayName?: string; notes?: string; createdAt?: string }
+export interface ContactRequest { platform: string; identifier: string; displayName?: string; notes?: string }
 
 export interface TagResponse { id: string; name: string; color?: string; description?: string }
 export interface TagRequest { name: string; color?: string; description?: string }

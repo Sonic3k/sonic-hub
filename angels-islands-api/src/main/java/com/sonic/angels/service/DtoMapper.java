@@ -2,6 +2,7 @@ package com.sonic.angels.service;
 
 import com.sonic.angels.model.dto.*;
 import com.sonic.angels.model.entity.*;
+import java.util.List;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -23,7 +24,7 @@ public class DtoMapper {
         PersonDto.Summary s = new PersonDto.Summary();
         s.setId(p.getId()); s.setName(p.getName()); s.setDisplayName(p.getDisplayName());
         s.setNickname(p.getNickname()); s.setRelationshipType(p.getRelationshipType());
-        s.setPeriod(p.getPeriod()); s.setIsFavorite(p.getIsFavorite()); s.setIsFeatured(p.getIsFeatured());
+        s.setPeriod(p.getPeriod()); s.setIsSelf(p.getIsSelf()); s.setIsFavorite(p.getIsFavorite()); s.setIsFeatured(p.getIsFeatured());
         s.setSong(p.getSong());
         if (p.getAvatarMediaFile() != null) s.setAvatarUrl(storageService.buildCdnUrl(p.getAvatarMediaFile().getStorageKey(), p.getAvatarMediaFile().getStorageProvider()));
         return s;
@@ -34,7 +35,7 @@ public class DtoMapper {
         PersonDto.DetailResponse d = new PersonDto.DetailResponse();
         d.setId(p.getId()); d.setName(p.getName()); d.setDisplayName(p.getDisplayName());
         d.setNickname(p.getNickname()); d.setRelationshipType(p.getRelationshipType());
-        d.setPeriod(p.getPeriod()); d.setIsFavorite(p.getIsFavorite()); d.setIsFeatured(p.getIsFeatured());
+        d.setPeriod(p.getPeriod()); d.setIsSelf(p.getIsSelf()); d.setIsFavorite(p.getIsFavorite()); d.setIsFeatured(p.getIsFeatured());
         d.setSong(p.getSong()); d.setAlternativeName(p.getAlternativeName());
         d.setDateOfBirth(p.getDateOfBirth()); d.setBio(p.getBio());
         d.setFirstMet(p.getFirstMet()); d.setHowWeMet(p.getHowWeMet());
@@ -42,6 +43,9 @@ public class DtoMapper {
         if (p.getAvatarMediaFile() != null) d.setAvatarUrl(storageService.buildCdnUrl(p.getAvatarMediaFile().getStorageKey(), p.getAvatarMediaFile().getStorageProvider()));
         if (p.getCoverMediaFile() != null) d.setCoverUrl(storageService.buildCdnUrl(p.getCoverMediaFile().getStorageKey(), p.getCoverMediaFile().getStorageProvider()));
         if (p.getBannerMediaFile() != null) d.setBannerUrl(storageService.buildCdnUrl(p.getBannerMediaFile().getStorageKey(), p.getBannerMediaFile().getStorageProvider()));
+        if (p.getContacts() != null) {
+            d.setContacts(p.getContacts().stream().map(this::toContactResponse).toList());
+        }
         return d;
     }
 
@@ -129,6 +133,15 @@ public class DtoMapper {
         MemoryDto.TraitResponse r = new MemoryDto.TraitResponse();
         r.setId(t.getId()); r.setTrait(t.getTrait()); r.setDescription(t.getDescription());
         r.setEvidence(t.getEvidence()); r.setPeriod(t.getPeriod()); r.setCreatedAt(t.getCreatedAt());
+        return r;
+    }
+
+    // ── PersonContact ────────────────────────────────────────────────────────
+    public PersonDto.ContactResponse toContactResponse(PersonContact c) {
+        PersonDto.ContactResponse r = new PersonDto.ContactResponse();
+        r.setId(c.getId()); r.setPlatform(c.getPlatform().name());
+        r.setIdentifier(c.getIdentifier()); r.setDisplayName(c.getDisplayName());
+        r.setNotes(c.getNotes()); r.setCreatedAt(c.getCreatedAt());
         return r;
     }
 }

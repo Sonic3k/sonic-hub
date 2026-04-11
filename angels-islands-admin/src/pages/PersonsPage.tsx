@@ -48,6 +48,7 @@ export default function PersonsPage() {
                   {p.nickname && <p className="text-xs text-slate-400">{p.nickname}</p>}
                 </div>
                 <div className="flex gap-1">
+                  {p.isSelf && <span className="text-[10px] px-1.5 py-0.5 rounded bg-blue-100 text-blue-700 font-medium">SELF</span>}
                   {p.isFavorite && <Heart size={14} className="text-rose-400 fill-rose-400" />}
                   {p.isFeatured && <Star size={14} className="text-amber-400 fill-amber-400" />}
                 </div>
