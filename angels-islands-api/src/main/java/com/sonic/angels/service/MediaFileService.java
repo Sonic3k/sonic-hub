@@ -8,6 +8,7 @@ import com.drew.metadata.exif.GpsDirectory;
 import com.drew.metadata.jpeg.JpegDirectory;
 import com.drew.metadata.png.PngDirectory;
 import com.drew.metadata.webp.WebpDirectory;
+import com.sonic.angels.model.dto.MediaFileDto;
 import com.sonic.angels.model.entity.MediaFile;
 import com.sonic.angels.model.entity.MediaImageDetail;
 import com.sonic.angels.model.entity.MediaVideoDetail;
@@ -34,15 +35,34 @@ public class MediaFileService {
 
     private final MediaFileRepository mediaFileRepository;
     private final StorageService storageService;
+    private final DtoMapper mapper;
 
-    public MediaFileService(MediaFileRepository mediaFileRepository, StorageService storageService) {
+    public MediaFileService(MediaFileRepository mediaFileRepository, StorageService storageService, DtoMapper mapper) {
         this.mediaFileRepository = mediaFileRepository;
         this.storageService = storageService;
+        this.mapper = mapper;
     }
+
+    // ── Queries (return DTOs) ────────────────────────────────────────────────
+
+    @Transactional(readOnly = true)
+    public List<MediaFileDto.Response> findAllDto() { return mediaFileRepository.findAll().stream().map(mapper::toMediaFileResponse).toList(); }
+
+    @Transactional(readOnly = true)
+    public MediaFileDto.Response findDtoById(UUID id) { return mapper.toMediaFileResponse(findById(id)); }
+
+    @Transactional(readOnly = true)
+    public List<MediaFileDto.Response> findDtoByPersonId(UUID personId) { return mediaFileRepository.findByPersonId(personId).stream().map(mapper::toMediaFileResponse).toList(); }
+
+    // ── Entity access (internal) ─────────────────────────────────────────────
 
     public List<MediaFile> findAll() { return mediaFileRepository.findAll(); }
     public MediaFile findById(UUID id) { return mediaFileRepository.findById(id).orElseThrow(() -> new RuntimeException("MediaFile not found: " + id)); }
     public List<MediaFile> findByPersonId(UUID personId) { return mediaFileRepository.findByPersonId(personId); }
+
+    public MediaFileDto.Response uploadAndReturn(MultipartFile file, UUID personId, String subFolder, Long lastModified) throws IOException {
+        return mapper.toMediaFileResponse(upload(file, personId, subFolder, lastModified));
+    }
 
     public MediaFile upload(MultipartFile file, UUID personId, String subFolder, Long lastModified) throws IOException {
         String ext = getExtension(file.getOriginalFilename());
