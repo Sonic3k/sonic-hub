@@ -123,10 +123,11 @@ public class MediaFileService {
         int dot = fileName.lastIndexOf('.');
         String base = dot > 0 ? fileName.substring(0, dot) : fileName;
         String ext = dot > 0 ? fileName.substring(dot) : "";
-        String candidate = dir + "/" + fileName;
+        String folder = dir == null || dir.isBlank() ? "" : dir + "/";
+        String candidate = folder + fileName;
         int i = 2;
         while (mediaFileRepository.existsByStorageKey(storageService.withPrefix(candidate)) && i < 1000) {
-            candidate = dir + "/" + base + "-" + i++ + ext;
+            candidate = folder + base + "-" + i++ + ext;
         }
         return candidate;
     }

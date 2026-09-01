@@ -107,9 +107,10 @@ public class CollectionService {
             .anyMatch(other -> selfId == null || !other.getId().equals(selfId));
     }
 
-    /** Real folder path in storage: root-slug/sub-slug/... (system root "Angels Islands" excluded). */
+    /** Real folder path in storage: root-slug/sub-slug/... System root "Angels Islands" maps to "" (bucket prefix root). */
     public String storagePath(UUID collectionId) {
         Collection c = findById(collectionId);
+        if (c.getParent() == null) return ""; // system root → files live at the top level
         Deque<String> parts = new ArrayDeque<>();
         Collection cur = c;
         int guard = 0;
@@ -117,7 +118,6 @@ public class CollectionService {
             parts.addFirst(ensureSlug(cur));
             cur = cur.getParent();
         }
-        if (parts.isEmpty()) parts.add(ensureSlug(c));
         return String.join("/", parts);
     }
 

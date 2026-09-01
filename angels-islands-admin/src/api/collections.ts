@@ -36,6 +36,7 @@ export const uploadApi = {
 }
 
 export const collectionBrowseApi = {
+  getRoot: () => api.get<CollectionResponse>('/api/collections/root').then(r => r.data),
   getTopLevel: () => api.get<CollectionResponse[]>('/api/collections').then(r => r.data),
   getById: (id: string) => api.get<CollectionResponse>(`/api/collections/${id}`).then(r => r.data),
   getChildren: (id: string) => api.get<CollectionResponse[]>(`/api/collections/${id}/children`).then(r => r.data),

@@ -21,6 +21,9 @@ public class CollectionController {
     @GetMapping
     public List<CollectionDto.Response> findTopLevel() { return collectionService.findTopLevel(); }
 
+    @GetMapping("/root")
+    public CollectionDto.Response getRoot() { return collectionService.findResponseById(collectionService.getRootId()); }
+
     @GetMapping("/all")
     public List<CollectionDto.Response> findAll() { return collectionService.findAll(); }
 

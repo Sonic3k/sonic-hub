@@ -364,10 +364,17 @@ export default function CollectionsPage() {
     enabled: !!currentId,
   })
 
+  const { data: rootInfo } = useQuery({
+    queryKey: ['collections', 'root'],
+    queryFn: () => collectionBrowseApi.getRoot(),
+  })
+
+  const effectiveId = currentId ?? rootInfo?.id ?? null
+
   const { data: media = [] } = useQuery({
-    queryKey: ['collections', currentId, 'media', sort, sortDir],
-    queryFn: () => collectionBrowseApi.getCollectionMedia(currentId!, sort, sortDir),
-    enabled: !!currentId,
+    queryKey: ['collections', effectiveId, 'media', sort, sortDir],
+    queryFn: () => collectionBrowseApi.getCollectionMedia(effectiveId!, sort, sortDir),
+    enabled: !!effectiveId,
   })
 
   const { data: breadcrumb = [] } = useQuery({
@@ -389,9 +396,6 @@ export default function CollectionsPage() {
   // ── Drag & drop upload ─────────────────────────────────────────────────────
   const [dragActive, setDragActive] = useState(false)
   const dragDepth = useRef(0)
-  const [looseDrop, setLooseDrop] = useState<File[] | null>(null) // loose files dropped at root → ask destination
-  const [looseTarget, setLooseTarget] = useState('')              // existing collection id or '' = new
-  const [looseNewName, setLooseNewName] = useState('')
 
   const queue = useUploadQueue(() => qc.invalidateQueries({ queryKey: ['collections'] }))
 
@@ -421,29 +425,10 @@ export default function CollectionsPage() {
     if (!dropped.length) return
     const { folders, loose } = groupDropped(dropped)
 
-    if (currentId) {
-      // Inside a collection: folders become sub-collections here, loose files go straight in
-      if (folders.length) await enqueueFolderGroups(folders, currentId)
-      if (loose.length) queue.enqueue(loose.map(file => ({ file, collectionId: currentId })))
-    } else {
-      // At root: folders become top-level collections, loose files need a destination
-      if (folders.length) await enqueueFolderGroups(folders)
-      if (loose.length) { setLooseDrop(loose); setLooseTarget(''); setLooseNewName('') }
-    }
-  }
-
-  const handleLooseConfirm = async () => {
-    if (!looseDrop) return
-    let targetId = looseTarget
-    if (!targetId) {
-      const name = looseNewName.trim()
-      if (!name) return
-      const created = await collectionsApi.create({ name })
-      targetId = created.id
-      qc.invalidateQueries({ queryKey: ['collections', 'top'] })
-    }
-    queue.enqueue(looseDrop.map(file => ({ file, collectionId: targetId })))
-    setLooseDrop(null)
+    // Folders become sub-collections of where you are (root screen = system root)
+    if (folders.length) await enqueueFolderGroups(folders, currentId ?? undefined)
+    // Loose files go straight into the current collection (root screen = system root)
+    if (loose.length && effectiveId) queue.enqueue(loose.map(file => ({ file, collectionId: effectiveId })))
   }
 
   const dragProps = {
@@ -477,25 +462,25 @@ export default function CollectionsPage() {
     try {
       await uploadApi.deleteMedia(Array.from(selectedIds))
       setSelectedIds(new Set())
-      qc.invalidateQueries({ queryKey: ['collections', currentId, 'media'] })
+      qc.invalidateQueries({ queryKey: ['collections'] })
     } catch (err) { alert('Delete failed') }
     setDeleting(false)
   }
 
   const handleAddPhotos = (files: FileList) => {
-    if (!currentId || !files.length) return
+    if (!effectiveId || !files.length) return
     const tasks: QueueTask[] = Array.from(files)
       .filter(f => f.type.startsWith('image/') || f.type.startsWith('video/'))
-      .map(file => ({ file, collectionId: currentId }))
+      .map(file => ({ file, collectionId: effectiveId }))
     queue.enqueue(tasks)
   }
 
   const handleCreateSubCollection = async () => {
-    if (!currentId || !newCollName.trim()) return
-    await collectionsApi.create({ name: newCollName.trim(), parentId: currentId })
+    if (!newCollName.trim()) return
+    await collectionsApi.create({ name: newCollName.trim(), parentId: currentId ?? undefined })
     setNewCollName('')
     setShowNewCollection(false)
-    qc.invalidateQueries({ queryKey: ['collections', currentId, 'children'] })
+    qc.invalidateQueries({ queryKey: ['collections'] })
   }
 
   return (
@@ -506,57 +491,59 @@ export default function CollectionsPage() {
           <div className="bg-white rounded-2xl shadow-xl border-2 border-dashed border-pink-400 px-8 py-6 flex flex-col items-center gap-2 mx-4">
             <UploadCloud size={28} className="text-pink-500" />
             <p className="text-sm font-semibold text-slate-800 text-center">
-              {currentId && current ? `Thả vào “${current.name}”` : 'Thả folder để tạo collection mới'}
+              {currentId && current ? `Thả vào “${current.name}”` : 'Thả vào Collections'}
             </p>
             <p className="text-[11px] text-slate-400 text-center">
-              {currentId ? 'File vào thẳng đây · folder thành sub-collection' : 'File lẻ sẽ được hỏi nơi lưu'}
+              {currentId ? 'File vào thẳng đây · folder thành sub-collection' : 'Ảnh vào root · folder thành collection mới'}
             </p>
           </div>
         </div>
       )}
-      {currentId ? (
-        <div className="mb-4">
-          <button onClick={() => {
-            if (breadcrumb.length > 1) navigate(breadcrumb[breadcrumb.length - 2].id)
-            else navigate(null)
-          }} className="flex items-center gap-1 text-xs text-slate-400 active:text-pink-500 mb-2">
-            <ArrowLeft size={12} />Back
-          </button>
-          <Breadcrumb items={breadcrumb} onNavigate={navigate} />
-          <div className="flex items-center gap-3">
-            {current && <h1 className="text-lg md:text-xl font-semibold text-slate-800 flex-1">{current.name}</h1>}
-            {/* + Add menu */}
-            <div className="relative">
-              <button onClick={() => setShowAddMenu(!showAddMenu)}
-                className={`w-9 h-9 rounded-full flex items-center justify-center transition-all ${
-                  showAddMenu ? 'bg-pink-500 text-white rotate-45' : 'bg-white border border-slate-200 text-slate-500 hover:border-pink-300 hover:text-pink-500'
-                }`}>
-                <Plus size={20} />
-              </button>
-              {showAddMenu && (
-                <>
-                  <div className="fixed inset-0 z-10" onClick={() => setShowAddMenu(false)} />
-                  <div className="absolute right-0 top-11 z-20 bg-white rounded-xl shadow-lg border border-slate-100 py-1.5 w-48">
-                    <button onClick={() => { addPhotosRef.current?.click(); setShowAddMenu(false) }}
-                      className="flex items-center gap-2.5 w-full px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 active:bg-slate-100 transition-colors">
-                      <ImagePlus size={16} className="text-slate-400" />Add photos
-                    </button>
-                    <button onClick={() => { setShowNewCollection(true); setShowAddMenu(false) }}
-                      className="flex items-center gap-2.5 w-full px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 active:bg-slate-100 transition-colors">
-                      <FolderPlus size={16} className="text-slate-400" />New sub-collection
-                    </button>
-                  </div>
-                </>
-              )}
-            </div>
+      <div className="mb-4">
+        {currentId && (
+          <>
+            <button onClick={() => {
+              if (breadcrumb.length > 1) navigate(breadcrumb[breadcrumb.length - 2].id)
+              else navigate(null)
+            }} className="flex items-center gap-1 text-xs text-slate-400 active:text-pink-500 mb-2">
+              <ArrowLeft size={12} />Back
+            </button>
+            <Breadcrumb items={breadcrumb} onNavigate={navigate} />
+          </>
+        )}
+        <div className="flex items-center gap-3">
+          <h1 className="text-lg md:text-xl font-semibold text-slate-800 flex-1">
+            {currentId ? (current?.name ?? '') : 'Collections'}
+          </h1>
+          {/* + Add menu */}
+          <div className="relative">
+            <button onClick={() => setShowAddMenu(!showAddMenu)}
+              className={`w-9 h-9 rounded-full flex items-center justify-center transition-all ${
+                showAddMenu ? 'bg-pink-500 text-white rotate-45' : 'bg-white border border-slate-200 text-slate-500 hover:border-pink-300 hover:text-pink-500'
+              }`}>
+              <Plus size={20} />
+            </button>
+            {showAddMenu && (
+              <>
+                <div className="fixed inset-0 z-10" onClick={() => setShowAddMenu(false)} />
+                <div className="absolute right-0 top-11 z-20 bg-white rounded-xl shadow-lg border border-slate-100 py-1.5 w-48">
+                  <button onClick={() => { addPhotosRef.current?.click(); setShowAddMenu(false) }}
+                    className="flex items-center gap-2.5 w-full px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 active:bg-slate-100 transition-colors">
+                    <ImagePlus size={16} className="text-slate-400" />Add photos
+                  </button>
+                  <button onClick={() => { setShowNewCollection(true); setShowAddMenu(false) }}
+                    className="flex items-center gap-2.5 w-full px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 active:bg-slate-100 transition-colors">
+                    <FolderPlus size={16} className="text-slate-400" />{currentId ? 'New sub-collection' : 'New collection'}
+                  </button>
+                </div>
+              </>
+            )}
           </div>
-          {/* Hidden file input */}
-          <input ref={addPhotosRef} type="file" multiple accept="image/*,video/*" className="hidden"
-            onChange={e => { if (e.target.files) handleAddPhotos(e.target.files); e.target.value = '' }} />
         </div>
-      ) : (
-        <h1 className="text-lg md:text-xl font-semibold text-slate-800 mb-5">Collections</h1>
-      )}
+        {/* Hidden file input */}
+        <input ref={addPhotosRef} type="file" multiple accept="image/*,video/*" className="hidden"
+          onChange={e => { if (e.target.files) handleAddPhotos(e.target.files); e.target.value = '' }} />
+      </div>
 
       {isLoading && <p className="text-sm text-slate-400">Loading...</p>}
 
@@ -571,7 +558,7 @@ export default function CollectionsPage() {
         </div>
       )}
 
-      {currentId && media.length > 0 && (
+      {media.length > 0 && (
         <div>
           <div className="flex items-center justify-between mb-2.5">
             <h2 className="text-[10px] uppercase tracking-widest text-slate-400 font-semibold">
@@ -641,7 +628,7 @@ export default function CollectionsPage() {
           <p className="text-sm text-slate-400">Empty collection</p>
         </div>
       )}
-      {!currentId && collections.length === 0 && !isLoading && (
+      {!currentId && collections.length === 0 && media.length === 0 && !isLoading && (
         <div className="text-center py-12">
           <FolderOpen size={36} className="mx-auto text-slate-200 mb-2" strokeWidth={1} />
           <p className="text-sm text-slate-400">No collections yet</p>
@@ -654,7 +641,7 @@ export default function CollectionsPage() {
           <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => setShowNewCollection(false)} />
           <div className="relative bg-white rounded-t-2xl md:rounded-xl shadow-xl w-full md:max-w-sm md:mx-4 p-5">
             <div className="flex justify-center pt-0 pb-3 md:hidden"><div className="w-10 h-1 rounded-full bg-slate-200" /></div>
-            <h3 className="text-sm font-semibold text-slate-800 mb-3">New sub-collection</h3>
+            <h3 className="text-sm font-semibold text-slate-800 mb-3">{currentId ? 'New sub-collection' : 'New collection'}</h3>
             <input className="w-full px-3 py-2.5 text-sm border rounded-lg border-slate-200 focus:border-pink-400 focus:ring-2 focus:ring-pink-50 outline-none mb-3"
               placeholder="Collection name..." value={newCollName} onChange={e => setNewCollName(e.target.value)} autoFocus
               onKeyDown={e => e.key === 'Enter' && handleCreateSubCollection()} />
@@ -663,34 +650,6 @@ export default function CollectionsPage() {
                 className="px-4 py-2 text-sm text-slate-500 hover:bg-slate-100 rounded-lg">Cancel</button>
               <button onClick={handleCreateSubCollection} disabled={!newCollName.trim()}
                 className="px-4 py-2 text-sm bg-pink-500 text-white rounded-lg hover:bg-pink-600 disabled:opacity-50">Create</button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Loose files dropped at root — pick destination */}
-      {looseDrop && (
-        <div className="fixed inset-0 z-50 flex items-end md:items-center justify-center">
-          <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => setLooseDrop(null)} />
-          <div className="relative bg-white rounded-t-2xl md:rounded-xl shadow-xl w-full md:max-w-sm md:mx-4 p-5">
-            <div className="flex justify-center pt-0 pb-3 md:hidden"><div className="w-10 h-1 rounded-full bg-slate-200" /></div>
-            <h3 className="text-sm font-semibold text-slate-800 mb-1">Save {looseDrop.length} file{looseDrop.length > 1 ? 's' : ''} to</h3>
-            <p className="text-[11px] text-slate-400 mb-3">Chọn collection có sẵn hoặc tạo mới</p>
-            <select value={looseTarget} onChange={e => setLooseTarget(e.target.value)}
-              className="w-full px-3 py-2.5 text-sm border rounded-lg border-slate-200 focus:border-pink-400 outline-none mb-2 bg-white">
-              <option value="">＋ New collection…</option>
-              {topLevel.map((c: CollectionResponse) => <option key={c.id} value={c.id}>{c.name}</option>)}
-            </select>
-            {!looseTarget && (
-              <input className="w-full px-3 py-2.5 text-sm border rounded-lg border-slate-200 focus:border-pink-400 focus:ring-2 focus:ring-pink-50 outline-none mb-3"
-                placeholder="Collection name..." value={looseNewName} onChange={e => setLooseNewName(e.target.value)} autoFocus
-                onKeyDown={e => e.key === 'Enter' && handleLooseConfirm()} />
-            )}
-            <div className="flex justify-end gap-2">
-              <button onClick={() => setLooseDrop(null)}
-                className="px-4 py-2 text-sm text-slate-500 hover:bg-slate-100 rounded-lg">Cancel</button>
-              <button onClick={handleLooseConfirm} disabled={!looseTarget && !looseNewName.trim()}
-                className="px-4 py-2 text-sm bg-pink-500 text-white rounded-lg hover:bg-pink-600 disabled:opacity-50">Upload</button>
             </div>
           </div>
         </div>
