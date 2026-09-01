@@ -87,9 +87,9 @@ export function UploadQueuePanel({ items, busy, onRetry, onClear }: {
         </p>
         <div className="flex items-center gap-1">
           {!busy && errors > 0 && (
-            <button onClick={onRetry} title="Retry failed"
-              className="p-1.5 text-slate-400 hover:text-pink-500 rounded hover:bg-pink-50 transition-colors">
-              <RotateCw size={13} />
+            <button onClick={onRetry}
+              className="flex items-center gap-1 px-2 py-1 text-[11px] font-medium text-pink-500 hover:bg-pink-50 rounded transition-colors">
+              <RotateCw size={11} />Retry {errors} failed
             </button>
           )}
           {!busy && (

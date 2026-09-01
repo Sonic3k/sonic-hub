@@ -40,6 +40,7 @@ export default function UploadPage() {
   const folderRef = useRef<HTMLInputElement>(null)
   const filesRef = useRef<HTMLInputElement>(null)
   const abortRef = useRef(false)
+  const treeRef = useRef<{ pathToId: Record<string, string>; rootId: string } | null>(null)
 
   const addLog = (msg: string) => setLog(prev => [...prev, msg])
 
@@ -83,28 +84,45 @@ export default function UploadPage() {
       })
       addLog(`✓ Created (${folders.length} sub-folders)`)
 
-      const pathToCollectionId: Record<string, string> = { '': treeResp.rootId, ...treeResp.pathToId }
+      treeRef.current = { pathToId: { '': treeResp.rootId, ...treeResp.pathToId }, rootId: treeResp.rootId }
       const pending = files.filter(f => f.status === 'pending')
-      let doneCount = 0, errorCount = 0
-
-      for (const item of pending) {
-        if (abortRef.current) break
-        updateFile(item.id, { status: 'uploading' })
-        try {
-          const collectionId = pathToCollectionId[item.folder] || treeResp.rootId
-          await uploadApi.uploadFile(item.file, selectedPerson?.id, collectionId)
-          updateFile(item.id, { status: 'done', progress: 100 })
-          doneCount++
-        } catch (err) {
-          updateFile(item.id, { status: 'error' })
-          errorCount++
-          addLog(`✗ ${item.relativePath}`)
-        }
-      }
+      const { doneCount, errorCount } = await uploadBatch(pending)
       addLog(`Done: ${doneCount} uploaded${errorCount ? `, ${errorCount} failed` : ''}`)
     } catch (err) {
       addLog(`✗ Failed: ${err}`)
     }
+    setUploading(false); setDone(true)
+  }
+
+  const uploadBatch = async (batch: FileItem[]) => {
+    const tree = treeRef.current
+    let doneCount = 0, errorCount = 0
+    if (!tree) return { doneCount, errorCount }
+    for (const item of batch) {
+      if (abortRef.current) break
+      updateFile(item.id, { status: 'uploading' })
+      try {
+        const collectionId = tree.pathToId[item.folder] || tree.rootId
+        await uploadApi.uploadFile(item.file, selectedPerson?.id, collectionId)
+        updateFile(item.id, { status: 'done', progress: 100 })
+        doneCount++
+      } catch (err) {
+        updateFile(item.id, { status: 'error' })
+        errorCount++
+        addLog(`✗ ${item.relativePath}`)
+      }
+    }
+    return { doneCount, errorCount }
+  }
+
+  const retryFailed = async () => {
+    const failed = files.filter(f => f.status === 'error')
+    if (!failed.length || !treeRef.current) return
+    setUploading(true); setDone(false); abortRef.current = false
+    failed.forEach(f => updateFile(f.id, { status: 'pending' }))
+    addLog(`Retrying ${failed.length} failed...`)
+    const { doneCount, errorCount } = await uploadBatch(failed)
+    addLog(`Retry done: ${doneCount} uploaded${errorCount ? `, ${errorCount} failed` : ''}`)
     setUploading(false); setDone(true)
   }
 
@@ -204,7 +222,10 @@ export default function UploadPage() {
                 </>
               )}
               {uploading && <Button variant="danger" size="sm" onClick={() => { abortRef.current = true }}>Stop</Button>}
-              {done && <Button variant="ghost" size="sm" onClick={() => { setFiles([]); setDone(false); setLog([]); setRootName('') }}>New</Button>}
+              {done && counts.error > 0 && (
+                <Button size="sm" onClick={retryFailed}>Retry {counts.error} failed</Button>
+              )}
+              {done && <Button variant="ghost" size="sm" onClick={() => { setFiles([]); setDone(false); setLog([]); setRootName(''); treeRef.current = null }}>New</Button>}
             </div>
           </div>
 
