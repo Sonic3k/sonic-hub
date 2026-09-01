@@ -22,6 +22,8 @@ export const memoryApi = {
 
   getArchives: (pid: string) => api.get<ChatArchiveResponse[]>(`${base(pid)}/chat-archives`).then(r => r.data),
   deleteArchive: (pid: string, archiveId: string) => api.delete(`${base(pid)}/chat-archives/${archiveId}`),
+  extractArchive: (pid: string, archiveId: string) =>
+    api.post<{ status: string; message?: string }>(`/api/persons/${pid}/chat-archives/${archiveId}/extract`).then(r => r.data),
   importYahooChat: (pid: string, file: File) => {
     const fd = new FormData()
     fd.append('file', file)

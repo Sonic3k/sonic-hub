@@ -6,7 +6,14 @@ export function useFacts(pid: string) { return useQuery({ queryKey: ['facts', pi
 export function useEpisodes(pid: string) { return useQuery({ queryKey: ['episodes', pid], queryFn: () => memoryApi.getEpisodes(pid), enabled: !!pid }) }
 export function useChapters(pid: string) { return useQuery({ queryKey: ['chapters', pid], queryFn: () => memoryApi.getChapters(pid), enabled: !!pid }) }
 export function useTraits(pid: string) { return useQuery({ queryKey: ['traits', pid], queryFn: () => memoryApi.getTraits(pid), enabled: !!pid }) }
-export function useArchives(pid: string) { return useQuery({ queryKey: ['archives', pid], queryFn: () => memoryApi.getArchives(pid), enabled: !!pid }) }
+export function useArchives(pid: string) {
+  return useQuery({
+    queryKey: ['archives', pid],
+    queryFn: () => memoryApi.getArchives(pid),
+    enabled: !!pid,
+    refetchInterval: q => (q.state.data?.some(a => a.extractionStatus === 'EXTRACTING') ? 5000 : false),
+  })
+}
 
 export function useCreateFact(pid: string) {
   const qc = useQueryClient()

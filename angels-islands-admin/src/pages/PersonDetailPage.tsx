@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { ArrowLeft, Brain, MessageSquare, User, Pencil, Save, X, Plus, Trash2, Upload, Image as ImageIcon, FolderOpen, FolderPlus, UserMinus } from 'lucide-react'
 import { Button, Input, Textarea, Modal } from '../components/ui'
@@ -35,6 +35,15 @@ export default function PersonDetailPage() {
   const { data: traits = [] } = useTraits(pid)
   const { data: archives = [] } = useArchives(pid)
   const [tab, setTab] = useState<Tab>('info')
+  const wasExtracting = useRef(false)
+  useEffect(() => {
+    const extracting = archives.some(a => a.extractionStatus === 'EXTRACTING')
+    if (wasExtracting.current && !extracting) {
+      queryClient.invalidateQueries({ queryKey: ['facts', pid] })
+      queryClient.invalidateQueries({ queryKey: ['episodes', pid] })
+    }
+    wasExtracting.current = extracting
+  }, [archives, pid, queryClient])
   const [editing, setEditing] = useState(false)
   const [form, setForm] = useState<PersonRequest>({})
   const [showContactForm, setShowContactForm] = useState(false)
@@ -52,6 +61,14 @@ export default function PersonDetailPage() {
     mutationFn: (file: File) => memoryApi.importYahooChat(pid, file),
     onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['archives', pid] }); queryClient.invalidateQueries({ queryKey: ['person', pid] }) },
   })
+  const extractArchive = useMutation({
+    mutationFn: (archiveId: string) => memoryApi.extractArchive(pid, archiveId),
+    onSuccess: (res) => {
+      if (res.status === 'NOT_CONFIGURED') alert(res.message || 'LLM not configured')
+      queryClient.invalidateQueries({ queryKey: ['archives', pid] })
+    },
+  })
+
   const deleteArchive = useMutation({
     mutationFn: (archiveId: string) => memoryApi.deleteArchive(pid, archiveId),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['archives', pid] }),
@@ -315,8 +332,15 @@ export default function PersonDetailPage() {
                   <div className="flex items-center gap-2">
                     <span className={`text-xs px-2 py-0.5 rounded-full ${
                       a.extractionStatus === 'DONE' ? 'bg-green-50 text-green-600' :
-                      a.extractionStatus === 'ERROR' ? 'bg-red-50 text-red-600' : 'bg-slate-50 text-slate-500'
+                      a.extractionStatus === 'ERROR' ? 'bg-red-50 text-red-600' :
+                      a.extractionStatus === 'EXTRACTING' ? 'bg-amber-50 text-amber-600 animate-pulse' : 'bg-slate-50 text-slate-500'
                     }`}>{a.extractionStatus}</span>
+                    {a.extractionStatus !== 'EXTRACTING' && (
+                      <button onClick={() => extractArchive.mutate(a.id)} title="Extract memories from this archive"
+                        className="flex items-center gap-1 text-[11px] text-pink-500 hover:bg-pink-50 px-2 py-1 rounded transition-colors">
+                        <Brain size={12} />{a.extractionStatus === 'DONE' ? 'Re-extract' : 'Extract'}
+                      </button>
+                    )}
                     <button onClick={() => { if (confirm('Delete this archive and all messages?')) deleteArchive.mutate(a.id) }}
                       className="text-slate-300 hover:text-red-400 p-1"><Trash2 size={13} /></button>
                   </div>
