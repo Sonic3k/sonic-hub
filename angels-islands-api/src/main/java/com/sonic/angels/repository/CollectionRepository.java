@@ -11,6 +11,7 @@ import java.util.UUID;
 public interface CollectionRepository extends JpaRepository<Collection, UUID> {
     List<Collection> findByParentIsNull();
     List<Collection> findByParentId(UUID parentId);
+    List<Collection> findByParentIdAndSlug(UUID parentId, String slug);
     List<Collection> findByPersonsId(UUID personId);
     Optional<Collection> findByNameAndParentIsNull(String name);
 }

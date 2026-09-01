@@ -38,6 +38,8 @@ public class StorageService {
             .build();
     }
 
+    public String withPrefix(String storageKey) { return prefix + "/" + storageKey; }
+
     public String upload(MultipartFile file, String storageKey) throws IOException {
         if (s3Client == null) throw new IllegalStateException("Storage not configured");
         String fullKey = prefix + "/" + storageKey;

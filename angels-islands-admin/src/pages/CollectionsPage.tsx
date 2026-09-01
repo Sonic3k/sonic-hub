@@ -1,7 +1,9 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { FolderOpen, ChevronRight, ChevronLeft, Image, ArrowLeft, Camera, MapPin, FileText, Clock, Film, Info, Trash2, X, Check, Plus, FolderPlus, ImagePlus } from 'lucide-react'
+import { FolderOpen, ChevronRight, ChevronLeft, Image, ArrowLeft, Camera, MapPin, FileText, Clock, Film, Info, Trash2, X, Check, Plus, FolderPlus, ImagePlus, UploadCloud } from 'lucide-react'
 import { collectionBrowseApi, uploadApi, collectionsApi } from '../api/collections'
+import { collectDroppedFiles, groupDropped } from '../lib/dropUpload'
+import { useUploadQueue, UploadQueuePanel, type QueueTask } from '../components/UploadQueue'
 import type { CollectionResponse, MediaFileResponse } from '../types'
 
 function fmtDate(d?: string) {
@@ -334,7 +336,6 @@ export default function CollectionsPage() {
   const [showAddMenu, setShowAddMenu] = useState(false)
   const [showNewCollection, setShowNewCollection] = useState(false)
   const [newCollName, setNewCollName] = useState('')
-  const [uploading, setUploading] = useState(false)
   const [sort, setSort] = useState('effectiveDate')
   const [sortDir, setSortDir] = useState('desc')
   const [showSortMenu, setShowSortMenu] = useState(false)
@@ -385,6 +386,83 @@ export default function CollectionsPage() {
   const collections = currentId ? children : topLevel
   const selectMode = selectedIds.size > 0
 
+  // ── Drag & drop upload ─────────────────────────────────────────────────────
+  const [dragActive, setDragActive] = useState(false)
+  const dragDepth = useRef(0)
+  const [looseDrop, setLooseDrop] = useState<File[] | null>(null) // loose files dropped at root → ask destination
+  const [looseTarget, setLooseTarget] = useState('')              // existing collection id or '' = new
+  const [looseNewName, setLooseNewName] = useState('')
+
+  const queue = useUploadQueue(() => qc.invalidateQueries({ queryKey: ['collections'] }))
+
+  const enqueueFolderGroups = async (groups: ReturnType<typeof groupDropped>['folders'], parentId?: string) => {
+    for (const g of groups) {
+      const tree = await uploadApi.createTree({
+        rootName: g.rootName,
+        parentId,
+        folders: g.innerFolders,
+      })
+      const tasks: QueueTask[] = g.files.map(f => ({
+        file: f.file,
+        collectionId: tree.pathToId[f.folder] || tree.rootId,
+        label: `${g.rootName}/${f.folder ? f.folder + '/' : ''}${f.file.name}`,
+      }))
+      queue.enqueue(tasks)
+    }
+    qc.invalidateQueries({ queryKey: ['collections'] })
+  }
+
+  const handleDrop = async (e: React.DragEvent) => {
+    e.preventDefault()
+    dragDepth.current = 0
+    setDragActive(false)
+    let dropped
+    try { dropped = await collectDroppedFiles(e.dataTransfer) } catch { return }
+    if (!dropped.length) return
+    const { folders, loose } = groupDropped(dropped)
+
+    if (currentId) {
+      // Inside a collection: folders become sub-collections here, loose files go straight in
+      if (folders.length) await enqueueFolderGroups(folders, currentId)
+      if (loose.length) queue.enqueue(loose.map(file => ({ file, collectionId: currentId })))
+    } else {
+      // At root: folders become top-level collections, loose files need a destination
+      if (folders.length) await enqueueFolderGroups(folders)
+      if (loose.length) { setLooseDrop(loose); setLooseTarget(''); setLooseNewName('') }
+    }
+  }
+
+  const handleLooseConfirm = async () => {
+    if (!looseDrop) return
+    let targetId = looseTarget
+    if (!targetId) {
+      const name = looseNewName.trim()
+      if (!name) return
+      const created = await collectionsApi.create({ name })
+      targetId = created.id
+      qc.invalidateQueries({ queryKey: ['collections', 'top'] })
+    }
+    queue.enqueue(looseDrop.map(file => ({ file, collectionId: targetId })))
+    setLooseDrop(null)
+  }
+
+  const dragProps = {
+    onDragEnter: (e: React.DragEvent) => {
+      if (!e.dataTransfer.types.includes('Files')) return
+      e.preventDefault()
+      dragDepth.current++
+      setDragActive(true)
+    },
+    onDragOver: (e: React.DragEvent) => {
+      if (e.dataTransfer.types.includes('Files')) e.preventDefault()
+    },
+    onDragLeave: () => {
+      dragDepth.current = Math.max(0, dragDepth.current - 1)
+      if (dragDepth.current === 0) setDragActive(false)
+    },
+    onDrop: handleDrop,
+  }
+
   const toggleSelect = (id: string) => {
     setSelectedIds(prev => {
       const next = new Set(prev)
@@ -404,20 +482,12 @@ export default function CollectionsPage() {
     setDeleting(false)
   }
 
-  const handleAddPhotos = async (files: FileList) => {
+  const handleAddPhotos = (files: FileList) => {
     if (!currentId || !files.length) return
-    setUploading(true)
-    let count = 0
-    for (const file of Array.from(files)) {
-      if (!file.type.startsWith('image/') && !file.type.startsWith('video/')) continue
-      try {
-        const media = await uploadApi.uploadFile(file, undefined, currentId)
-        await uploadApi.linkMediaToCollection(currentId, media.id)
-        count++
-      } catch {}
-    }
-    setUploading(false)
-    if (count > 0) qc.invalidateQueries({ queryKey: ['collections', currentId, 'media'] })
+    const tasks: QueueTask[] = Array.from(files)
+      .filter(f => f.type.startsWith('image/') || f.type.startsWith('video/'))
+      .map(file => ({ file, collectionId: currentId }))
+    queue.enqueue(tasks)
   }
 
   const handleCreateSubCollection = async () => {
@@ -429,7 +499,21 @@ export default function CollectionsPage() {
   }
 
   return (
-    <div className="p-3 md:p-6 lg:p-8">
+    <div className="p-3 md:p-6 lg:p-8 min-h-[70dvh]" {...dragProps}>
+      {/* Drop overlay */}
+      {dragActive && (
+        <div className="fixed inset-0 z-50 bg-pink-500/5 backdrop-blur-[1px] pointer-events-none flex items-center justify-center">
+          <div className="bg-white rounded-2xl shadow-xl border-2 border-dashed border-pink-400 px-8 py-6 flex flex-col items-center gap-2 mx-4">
+            <UploadCloud size={28} className="text-pink-500" />
+            <p className="text-sm font-semibold text-slate-800 text-center">
+              {currentId && current ? `Thả vào “${current.name}”` : 'Thả folder để tạo collection mới'}
+            </p>
+            <p className="text-[11px] text-slate-400 text-center">
+              {currentId ? 'File vào thẳng đây · folder thành sub-collection' : 'File lẻ sẽ được hỏi nơi lưu'}
+            </p>
+          </div>
+        </div>
+      )}
       {currentId ? (
         <div className="mb-4">
           <button onClick={() => {
@@ -469,8 +553,6 @@ export default function CollectionsPage() {
           {/* Hidden file input */}
           <input ref={addPhotosRef} type="file" multiple accept="image/*,video/*" className="hidden"
             onChange={e => { if (e.target.files) handleAddPhotos(e.target.files); e.target.value = '' }} />
-          {/* Upload progress */}
-          {uploading && <p className="text-xs text-pink-500 mt-2 animate-pulse">Uploading...</p>}
         </div>
       ) : (
         <h1 className="text-lg md:text-xl font-semibold text-slate-800 mb-5">Collections</h1>
@@ -585,6 +667,37 @@ export default function CollectionsPage() {
           </div>
         </div>
       )}
+
+      {/* Loose files dropped at root — pick destination */}
+      {looseDrop && (
+        <div className="fixed inset-0 z-50 flex items-end md:items-center justify-center">
+          <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => setLooseDrop(null)} />
+          <div className="relative bg-white rounded-t-2xl md:rounded-xl shadow-xl w-full md:max-w-sm md:mx-4 p-5">
+            <div className="flex justify-center pt-0 pb-3 md:hidden"><div className="w-10 h-1 rounded-full bg-slate-200" /></div>
+            <h3 className="text-sm font-semibold text-slate-800 mb-1">Save {looseDrop.length} file{looseDrop.length > 1 ? 's' : ''} to</h3>
+            <p className="text-[11px] text-slate-400 mb-3">Chọn collection có sẵn hoặc tạo mới</p>
+            <select value={looseTarget} onChange={e => setLooseTarget(e.target.value)}
+              className="w-full px-3 py-2.5 text-sm border rounded-lg border-slate-200 focus:border-pink-400 outline-none mb-2 bg-white">
+              <option value="">＋ New collection…</option>
+              {topLevel.map((c: CollectionResponse) => <option key={c.id} value={c.id}>{c.name}</option>)}
+            </select>
+            {!looseTarget && (
+              <input className="w-full px-3 py-2.5 text-sm border rounded-lg border-slate-200 focus:border-pink-400 focus:ring-2 focus:ring-pink-50 outline-none mb-3"
+                placeholder="Collection name..." value={looseNewName} onChange={e => setLooseNewName(e.target.value)} autoFocus
+                onKeyDown={e => e.key === 'Enter' && handleLooseConfirm()} />
+            )}
+            <div className="flex justify-end gap-2">
+              <button onClick={() => setLooseDrop(null)}
+                className="px-4 py-2 text-sm text-slate-500 hover:bg-slate-100 rounded-lg">Cancel</button>
+              <button onClick={handleLooseConfirm} disabled={!looseTarget && !looseNewName.trim()}
+                className="px-4 py-2 text-sm bg-pink-500 text-white rounded-lg hover:bg-pink-600 disabled:opacity-50">Upload</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Upload queue */}
+      <UploadQueuePanel items={queue.items} busy={queue.busy} onRetry={queue.retryFailed} onClear={queue.clear} />
 
       {/* Media detail lightbox */}
       {selectedMedia && (

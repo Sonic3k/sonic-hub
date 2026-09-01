@@ -83,12 +83,52 @@ public class CollectionService {
         return collectionRepository.findById(id).orElseThrow(() -> new RuntimeException("Collection not found: " + id));
     }
 
+    // ── Slug & storage path ──────────────────────────────────────────────────
+
+    /** Ensure the collection has a slug (generated once from name, deduped among siblings). */
+    public String ensureSlug(Collection c) {
+        if (c.getSlug() != null && !c.getSlug().isBlank()) return c.getSlug();
+        String base = com.sonic.angels.util.SlugUtil.slugify(c.getName());
+        String candidate = base;
+        int i = 2;
+        UUID parentId = c.getParent() != null ? c.getParent().getId() : null;
+        if (parentId != null) {
+            while (hasSiblingWithSlug(parentId, candidate, c.getId())) {
+                candidate = base + "-" + i++;
+            }
+        }
+        c.setSlug(candidate);
+        collectionRepository.save(c);
+        return candidate;
+    }
+
+    private boolean hasSiblingWithSlug(UUID parentId, String slug, UUID selfId) {
+        return collectionRepository.findByParentIdAndSlug(parentId, slug).stream()
+            .anyMatch(other -> selfId == null || !other.getId().equals(selfId));
+    }
+
+    /** Real folder path in storage: root-slug/sub-slug/... (system root "Angels Islands" excluded). */
+    public String storagePath(UUID collectionId) {
+        Collection c = findById(collectionId);
+        Deque<String> parts = new ArrayDeque<>();
+        Collection cur = c;
+        int guard = 0;
+        while (cur != null && cur.getParent() != null && guard++ < 20) {
+            parts.addFirst(ensureSlug(cur));
+            cur = cur.getParent();
+        }
+        if (parts.isEmpty()) parts.add(ensureSlug(c));
+        return String.join("/", parts);
+    }
+
     public CollectionDto.Response create(CollectionDto.Request req) {
         Collection c = new Collection();
         applyRequest(c, req);
         // Default parent to root if not specified
         if (c.getParent() == null) c.setParent(getRoot());
-        return toResponse(collectionRepository.save(c));
+        Collection saved = collectionRepository.save(c);
+        ensureSlug(saved);
+        return toResponse(saved);
     }
 
     public CollectionDto.Response update(UUID id, CollectionDto.Request req) {
@@ -203,14 +243,16 @@ public class CollectionService {
     // ── Tree creation (folder upload) ────────────────────────────────────────
 
     public CollectionDto.TreeResponse createTree(CollectionDto.TreeRequest req) {
-        // Tree root is a child of "Angels Islands"
+        // Tree root goes under the given parent, else under "Angels Islands"
+        Collection parent = req.getParentId() != null ? findById(req.getParentId()) : getRoot();
         Collection treeRoot = new Collection();
         treeRoot.setName(req.getRootName());
-        treeRoot.setParent(getRoot());
+        treeRoot.setParent(parent);
         if (req.getPersonIds() != null && !req.getPersonIds().isEmpty()) {
             treeRoot.setPersons(new HashSet<>(personRepository.findAllById(req.getPersonIds())));
         }
         treeRoot = collectionRepository.save(treeRoot);
+        ensureSlug(treeRoot);
 
         Map<String, UUID> pathToId = new HashMap<>();
         pathToId.put("", treeRoot.getId());
@@ -234,6 +276,7 @@ public class CollectionService {
                             sub.setPersons(new HashSet<>(treeRoot.getPersons()));
                         }
                         sub = collectionRepository.save(sub);
+                        ensureSlug(sub);
                         pathToId.put(key, sub.getId());
                     }
                 }

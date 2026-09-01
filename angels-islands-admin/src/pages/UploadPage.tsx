@@ -91,9 +91,8 @@ export default function UploadPage() {
         if (abortRef.current) break
         updateFile(item.id, { status: 'uploading' })
         try {
-          const media = await uploadApi.uploadFile(item.file, selectedPerson?.id, treeResp.rootId)
           const collectionId = pathToCollectionId[item.folder] || treeResp.rootId
-          await uploadApi.linkMediaToCollection(collectionId, media.id)
+          await uploadApi.uploadFile(item.file, selectedPerson?.id, collectionId)
           updateFile(item.id, { status: 'done', progress: 100 })
           doneCount++
         } catch (err) {

@@ -10,6 +10,8 @@ import java.util.UUID;
 
 @Repository
 public interface MediaFileRepository extends JpaRepository<MediaFile, UUID> {
+    boolean existsByStorageKey(String storageKey);
+
     @Query("SELECT m FROM MediaFile m JOIN m.persons p WHERE p.id = :personId ORDER BY m.effectiveDate DESC")
     List<MediaFile> findByPersonId(UUID personId);
 

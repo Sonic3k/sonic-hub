@@ -35,11 +35,17 @@ public class MediaFileService {
 
     private final MediaFileRepository mediaFileRepository;
     private final StorageService storageService;
+    private final CollectionService collectionService;
+    private final com.sonic.angels.repository.PersonRepository personRepository;
     private final DtoMapper mapper;
 
-    public MediaFileService(MediaFileRepository mediaFileRepository, StorageService storageService, DtoMapper mapper) {
+    public MediaFileService(MediaFileRepository mediaFileRepository, StorageService storageService,
+                            CollectionService collectionService,
+                            com.sonic.angels.repository.PersonRepository personRepository, DtoMapper mapper) {
         this.mediaFileRepository = mediaFileRepository;
         this.storageService = storageService;
+        this.collectionService = collectionService;
+        this.personRepository = personRepository;
         this.mapper = mapper;
     }
 
@@ -60,15 +66,24 @@ public class MediaFileService {
     public MediaFile findById(UUID id) { return mediaFileRepository.findById(id).orElseThrow(() -> new RuntimeException("MediaFile not found: " + id)); }
     public List<MediaFile> findByPersonId(UUID personId) { return mediaFileRepository.findByPersonId(personId); }
 
-    public MediaFileDto.Response uploadAndReturn(MultipartFile file, UUID personId, String subFolder, Long lastModified) throws IOException {
-        return mapper.toMediaFileResponse(upload(file, personId, subFolder, lastModified));
+    public MediaFileDto.Response uploadAndReturn(MultipartFile file, UUID personId, UUID collectionId,
+                                                 String subFolder, Long lastModified) throws IOException {
+        return mapper.toMediaFileResponse(upload(file, personId, collectionId, subFolder, lastModified));
     }
 
-    public MediaFile upload(MultipartFile file, UUID personId, String subFolder, Long lastModified) throws IOException {
-        String ext = getExtension(file.getOriginalFilename());
-        String folder = sanitizePath(personId != null ? "person-" + personId : "general");
-        String sub = subFolder != null ? sanitizePath(subFolder) + "/" : "";
-        String storageKey = folder + "/" + sub + UUID.randomUUID() + ext;
+    public MediaFile upload(MultipartFile file, UUID personId, UUID collectionId,
+                            String subFolder, Long lastModified) throws IOException {
+        // Real folder path: collection tree > legacy subFolder > monthly library bucket
+        String dir;
+        if (collectionId != null) {
+            dir = collectionService.storagePath(collectionId);
+        } else if (subFolder != null && !subFolder.isBlank()) {
+            dir = "library/" + com.sonic.angels.util.SlugUtil.slugify(subFolder);
+        } else {
+            dir = "library/" + java.time.YearMonth.now(PHOTO_ZONE); // e.g. library/2026-09
+        }
+        String safeName = com.sonic.angels.util.SlugUtil.slugifyFileName(file.getOriginalFilename());
+        String storageKey = uniqueStorageKey(dir, safeName);
 
         // Extract metadata BEFORE upload (consumes stream)
         MediaFile mf = new MediaFile();
@@ -91,7 +106,29 @@ public class MediaFileService {
         mf.setStorageKey(fullKey);
         mf.setStorageProvider(MediaFile.StorageProvider.B2);
 
-        return mediaFileRepository.save(mf);
+        if (personId != null) {
+            personRepository.findById(personId).ifPresent(p -> mf.getPersons().add(p));
+        }
+
+        MediaFile saved = mediaFileRepository.save(mf);
+
+        if (collectionId != null) {
+            collectionService.addMedia(collectionId, saved.getId());
+        }
+        return saved;
+    }
+
+    /** dir/name.jpg, on clash dir/name-2.jpg, -3... (checked against stored keys incl. prefix). */
+    private String uniqueStorageKey(String dir, String fileName) {
+        int dot = fileName.lastIndexOf('.');
+        String base = dot > 0 ? fileName.substring(0, dot) : fileName;
+        String ext = dot > 0 ? fileName.substring(dot) : "";
+        String candidate = dir + "/" + fileName;
+        int i = 2;
+        while (mediaFileRepository.existsByStorageKey(storageService.withPrefix(candidate)) && i < 1000) {
+            candidate = dir + "/" + base + "-" + i++ + ext;
+        }
+        return candidate;
     }
 
     public void delete(UUID id) {
@@ -304,21 +341,6 @@ public class MediaFileService {
      * Sanitize path segment for B2/CDN URL safety.
      * Remove brackets, replace spaces with hyphens, strip unsafe chars.
      */
-    private String sanitizePath(String path) {
-        if (path == null) return "";
-        return path
-            .replaceAll("[\\[\\]{}()#%&]", "")  // remove brackets and unsafe chars
-            .replaceAll("\\s+", "-")              // spaces → hyphens
-            .replaceAll("-+", "-")                // collapse multiple hyphens
-            .replaceAll("^-|-$", "");             // trim leading/trailing hyphens
-    }
-
-    private String getExtension(String filename) {
-        if (filename == null) return "";
-        int dot = filename.lastIndexOf('.');
-        return dot >= 0 ? filename.substring(dot) : "";
-    }
-
     private boolean isVideo(String contentType) {
         return contentType != null && contentType.startsWith("video/");
     }

@@ -17,6 +17,10 @@ public class Collection extends BaseEntity {
     @Column(nullable = false)
     private String name;
 
+    /** URL/storage-safe folder name; generated once at creation, immutable on rename. */
+    @Column(name = "slug")
+    private String slug;
+
     @Column(columnDefinition = "TEXT")
     private String description;
 
@@ -61,6 +65,9 @@ public class Collection extends BaseEntity {
     public void setId(UUID id) { this.id = id; }
     public String getName() { return name; }
     public void setName(String name) { this.name = name; }
+
+    public String getSlug() { return slug; }
+    public void setSlug(String slug) { this.slug = slug; }
     public String getDescription() { return description; }
     public void setDescription(String description) { this.description = description; }
     public Collection getParent() { return parent; }

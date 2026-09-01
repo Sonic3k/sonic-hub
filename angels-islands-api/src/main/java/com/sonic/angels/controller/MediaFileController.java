@@ -32,9 +32,10 @@ public class MediaFileController {
     @PostMapping("/upload")
     public MediaFileDto.Response upload(@RequestParam("file") MultipartFile file,
         @RequestParam(value = "personId", required = false) UUID personId,
+        @RequestParam(value = "collectionId", required = false) UUID collectionId,
         @RequestParam(value = "subFolder", required = false) String subFolder,
         @RequestParam(value = "lastModified", required = false) Long lastModified) throws IOException {
-        return mediaFileService.uploadAndReturn(file, personId, subFolder, lastModified);
+        return mediaFileService.uploadAndReturn(file, personId, collectionId, subFolder, lastModified);
     }
 
     @DeleteMapping("/{id}")

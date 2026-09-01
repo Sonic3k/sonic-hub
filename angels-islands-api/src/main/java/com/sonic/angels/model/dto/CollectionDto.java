@@ -50,10 +50,12 @@ public class CollectionDto {
 
     public static class TreeRequest {
         private String rootName;
+        private UUID parentId;
         private java.util.Set<UUID> personIds;
         private java.util.List<String> folders;
 
         public String getRootName() { return rootName; } public void setRootName(String v) { this.rootName = v; }
+        public UUID getParentId() { return parentId; } public void setParentId(UUID v) { this.parentId = v; }
         public java.util.Set<UUID> getPersonIds() { return personIds; } public void setPersonIds(java.util.Set<UUID> v) { this.personIds = v; }
         public java.util.List<String> getFolders() { return folders; } public void setFolders(java.util.List<String> v) { this.folders = v; }
     }

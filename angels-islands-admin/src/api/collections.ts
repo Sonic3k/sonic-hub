@@ -10,6 +10,7 @@ export const collectionsApi = {
 
 export interface TreeRequest {
   rootName: string
+  parentId?: string
   personIds?: string[]
   folders: string[]
 }
@@ -21,16 +22,15 @@ export interface TreeResponse {
 
 export const uploadApi = {
   createTree: (data: TreeRequest) => api.post<TreeResponse>('/api/collections/create-tree', data).then(r => r.data),
-  uploadFile: (file: File, personId?: string, subFolder?: string) => {
+  /** Upload 1 file. collectionId → path thật trong B2 theo cây collection + auto-link. */
+  uploadFile: (file: File, personId?: string, collectionId?: string) => {
     const form = new FormData()
     form.append('file', file)
     if (personId) form.append('personId', personId)
-    if (subFolder) form.append('subFolder', subFolder)
+    if (collectionId) form.append('collectionId', collectionId)
     if (file.lastModified) form.append('lastModified', String(file.lastModified))
     return api.post('/api/media-files/upload', form, { headers: { 'Content-Type': 'multipart/form-data' } }).then(r => r.data)
   },
-  linkMediaToCollection: (collectionId: string, mediaId: string) =>
-    api.post(`/api/collections/${collectionId}/media/${mediaId}`),
   deleteMedia: (ids: string[]) =>
     api.post('/api/media-files/delete-batch', ids).then(r => r.data),
 }
