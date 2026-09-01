@@ -1,13 +1,17 @@
 import { useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import { ArrowLeft, Brain, MessageSquare, User, Pencil, Save, X, Plus, Trash2, Upload } from 'lucide-react'
+import { ArrowLeft, Brain, MessageSquare, User, Pencil, Save, X, Plus, Trash2, Upload, Image as ImageIcon, FolderOpen, FolderPlus, UserMinus } from 'lucide-react'
 import { Button, Input, Textarea, Modal } from '../components/ui'
 import { usePerson, useUpdatePerson } from '../hooks/usePersons'
 import { useFacts, useEpisodes, useChapters, useTraits, useArchives } from '../hooks/useMemory'
 import { personsApi } from '../api/persons'
 import { memoryApi } from '../api/memory'
-import { useMutation, useQueryClient } from '@tanstack/react-query'
-import type { PersonRequest, RelationshipType, ContactPlatform, ContactRequest } from '../types'
+import { useMutation, useQuery, useInfiniteQuery, useQueryClient } from '@tanstack/react-query'
+import type { PersonRequest, RelationshipType, ContactPlatform, ContactRequest, MediaFileResponse, CollectionResponse } from '../types'
+import api from '../api/client'
+import { mediaApi, uploadApi, collectionBrowseApi, collectionsApi } from '../api/collections'
+import { Lightbox, MediaItem } from '../components/media'
+import CollectionPicker from '../components/CollectionPicker'
 
 const REL_LABELS: Record<RelationshipType, string> = {
   CRUSH: '💗 Crush', GIRLFRIEND: '❤️ Girlfriend', FRIEND: '🤝 Friend',
@@ -16,7 +20,7 @@ const REL_LABELS: Record<RelationshipType, string> = {
 
 const CONTACT_PLATFORMS: ContactPlatform[] = ['YAHOO', 'FACEBOOK', 'ZALO', 'TELEGRAM', 'SMS', 'PHONE', 'BLOG', 'INSTAGRAM', 'TIKTOK', 'OTHER']
 
-type Tab = 'info' | 'memory' | 'chat'
+type Tab = 'info' | 'photos' | 'memory' | 'chat'
 
 export default function PersonDetailPage() {
   const { id } = useParams<{ id: string }>()
@@ -74,6 +78,7 @@ export default function PersonDetailPage() {
 
   const tabs: { key: Tab; label: string; icon: typeof User }[] = [
     { key: 'info', label: 'Info', icon: User },
+    { key: 'photos', label: 'Photos', icon: ImageIcon },
     { key: 'memory', label: 'Memory', icon: Brain },
     { key: 'chat', label: 'Chat Archives', icon: MessageSquare },
   ]
@@ -122,6 +127,8 @@ export default function PersonDetailPage() {
           </button>
         ))}
       </div>
+
+      {tab === 'photos' && <PersonPhotosTab personId={pid} />}
 
       {tab === 'info' && !editing && (
         <div className="bg-white rounded-xl p-5 border border-slate-100">
@@ -322,6 +329,181 @@ export default function PersonDetailPage() {
             ))
           )}
         </div>
+      )}
+    </div>
+  )
+}
+
+
+// ── Photos tab: collections + toàn bộ ảnh của person ─────────────────────────
+
+function PersonPhotosTab({ personId }: { personId: string }) {
+  const qc = useQueryClient()
+  const navigate = useNavigate()
+  const [selectedMedia, setSelectedMedia] = useState<MediaFileResponse | null>(null)
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
+  const [picker, setPicker] = useState<string[] | null>(null)
+  const [linkPicker, setLinkPicker] = useState(false)
+  const [deleting, setDeleting] = useState(false)
+
+  const { data: collections = [] } = useQuery({
+    queryKey: ['collections', 'person', personId],
+    queryFn: () => collectionBrowseApi.getByPerson(personId),
+  })
+
+  const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading } = useInfiniteQuery({
+    queryKey: ['media', 'person', personId],
+    queryFn: ({ pageParam = 0 }) =>
+      api.get('/api/media-files/search', { params: {
+        personId, page: pageParam, size: 100, inclDetails: true, inclPersons: true,
+      } }).then(r => r.data as { content: MediaFileResponse[]; number: number; last: boolean; totalElements: number }),
+    initialPageParam: 0,
+    getNextPageParam: last => (last.last ? undefined : last.number + 1),
+  })
+  const items: MediaFileResponse[] = (data?.pages || []).flatMap(p => p.content)
+  const total = data?.pages?.[0]?.totalElements ?? 0
+
+  const invalidate = () => {
+    qc.invalidateQueries({ queryKey: ['media', 'person', personId] })
+    qc.invalidateQueries({ queryKey: ['collections'] })
+    qc.invalidateQueries({ queryKey: ['library'] })
+  }
+  const idsArr = () => Array.from(selectedIds)
+  const selectMode = selectedIds.size > 0
+  const toggleSelect = (id: string) => setSelectedIds(prev => {
+    const next = new Set(prev); if (next.has(id)) next.delete(id); else next.add(id); return next
+  })
+
+  const unlinkCollection = async (c: CollectionResponse) => {
+    if (!confirm(`Remove "${c.name}" from this person?`)) return
+    const detail = await collectionBrowseApi.getById(c.id)
+    const ids = (detail.persons || []).map(p => p.id).filter(x => x !== personId)
+    await collectionsApi.update(c.id, { personIds: ids })
+    invalidate()
+  }
+
+  const linkCollection = async (targetId: string) => {
+    const detail = await collectionBrowseApi.getById(targetId)
+    const ids = new Set((detail.persons || []).map(p => p.id))
+    ids.add(personId)
+    await collectionsApi.update(targetId, { personIds: Array.from(ids) })
+    setLinkPicker(false)
+    invalidate()
+  }
+
+  const removeFromPerson = async () => {
+    if (!selectedIds.size || !confirm(`Untag ${selectedIds.size} file(s) from this person? Files are not deleted.`)) return
+    await mediaApi.removePersonBatch(idsArr(), personId)
+    setSelectedIds(new Set())
+    invalidate()
+  }
+
+  const handleDelete = async () => {
+    if (!selectedIds.size || !confirm(`Delete ${selectedIds.size} file(s)? This also removes from storage.`)) return
+    setDeleting(true)
+    try { await uploadApi.deleteMedia(idsArr()); setSelectedIds(new Set()); invalidate() }
+    catch { alert('Delete failed') }
+    setDeleting(false)
+  }
+
+  const handleAddTo = async (targetId: string) => {
+    if (!picker) return
+    await mediaApi.addToCollectionBatch(targetId, picker)
+    setPicker(null); setSelectedIds(new Set()); invalidate()
+  }
+
+  return (
+    <div>
+      {/* Collections của person */}
+      <div className="flex items-center gap-2 mb-2.5">
+        <h2 className="text-[10px] uppercase tracking-widest text-slate-400 font-semibold">Collections · {collections.length}</h2>
+        <button onClick={() => setLinkPicker(true)}
+          className="flex items-center gap-1 text-[11px] text-pink-500 hover:bg-pink-50 px-2 py-1 rounded transition-colors">
+          <Plus size={11} />Link collection
+        </button>
+      </div>
+      {collections.length > 0 && (
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 mb-7">
+          {collections.map((c: CollectionResponse) => (
+            <div key={c.id} className="group relative bg-white rounded-2xl border border-slate-100 overflow-hidden hover:shadow-lg hover:shadow-pink-100/50 transition-all">
+              <div onClick={() => navigate(`/collections?id=${c.id}`)}
+                className="cursor-pointer aspect-[4/3] bg-gradient-to-br from-slate-50 to-slate-100 flex items-center justify-center overflow-hidden">
+                {c.thumbnailUrl
+                  ? <img src={c.thumbnailUrl} alt={c.name} className="w-full h-full object-cover" loading="lazy" />
+                  : <FolderOpen size={24} strokeWidth={1.2} className="text-slate-300" />}
+              </div>
+              <div className="p-2.5">
+                <p className="text-xs font-semibold text-slate-800 truncate">{c.name}</p>
+                <p className="text-[10px] text-slate-400">{c.mediaCount || 0} files</p>
+              </div>
+              <button onClick={() => unlinkCollection(c)} title="Remove from person"
+                className="absolute top-1.5 right-1.5 w-6 h-6 rounded-full bg-black/40 hover:bg-rose-500 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                <X size={12} />
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Photos */}
+      <div className="flex items-center gap-2 mb-2.5 flex-wrap">
+        <h2 className="text-[10px] uppercase tracking-widest text-slate-400 font-semibold">Photos & Videos · {total}</h2>
+        {selectMode && (
+          <div className="ml-auto flex items-center gap-1 flex-wrap justify-end">
+            <span className="text-xs text-pink-500 font-medium mr-1">{selectedIds.size} selected</span>
+            <button onClick={() => setPicker(idsArr())} title="Add to collection"
+              className="p-1.5 rounded text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors"><FolderPlus size={14} /></button>
+            <button onClick={removeFromPerson} title="Untag from this person"
+              className="p-1.5 rounded text-slate-400 hover:text-amber-600 hover:bg-amber-50 transition-colors"><UserMinus size={14} /></button>
+            <button onClick={handleDelete} disabled={deleting} title="Delete files"
+              className="p-1.5 rounded text-rose-400 hover:text-rose-600 hover:bg-rose-50 disabled:opacity-50 transition-colors"><Trash2 size={14} /></button>
+            <button onClick={() => setSelectedIds(new Set())}
+              className="text-slate-400 hover:text-slate-600 p-1 rounded hover:bg-slate-100"><X size={14} /></button>
+          </div>
+        )}
+      </div>
+
+      {isLoading && <p className="text-sm text-slate-400">Loading...</p>}
+      {!isLoading && items.length === 0 && (
+        <div className="text-center py-12">
+          <ImageIcon size={32} className="mx-auto text-slate-200 mb-2" strokeWidth={1} />
+          <p className="text-sm text-slate-400">No photos for this person yet</p>
+        </div>
+      )}
+
+      <div className="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-6 gap-1.5 md:gap-2">
+        {items.map(m => (
+          <MediaItem key={m.id} media={m}
+            onClick={() => setSelectedMedia(m)}
+            selected={selectedIds.has(m.id)}
+            onSelect={toggleSelect}
+            selectMode={selectMode} />
+        ))}
+      </div>
+
+      {hasNextPage && (
+        <div className="flex justify-center py-4">
+          <button onClick={() => fetchNextPage()} disabled={isFetchingNextPage}
+            className="text-xs text-slate-500 hover:text-pink-500 px-3 py-1.5 rounded hover:bg-slate-100 disabled:opacity-50">
+            {isFetchingNextPage ? 'Loading...' : 'Load more'}
+          </button>
+        </div>
+      )}
+
+      {linkPicker && (
+        <CollectionPicker title="Link collection to person" confirmLabel="Link"
+          onSelect={linkCollection} onClose={() => setLinkPicker(false)} />
+      )}
+      {picker && (
+        <CollectionPicker title={`Add ${picker.length} file(s) to...`} confirmLabel="Add"
+          onSelect={handleAddTo} onClose={() => setPicker(null)} />
+      )}
+      {selectedMedia && (
+        <Lightbox media={selectedMedia} allMedia={items} collectionId={null}
+          onClose={() => setSelectedMedia(null)}
+          onNavigate={m => setSelectedMedia(m)}
+          onChanged={m => { setSelectedMedia(m); invalidate() }}
+          onAddTo={id => setPicker([id])} />
       )}
     </div>
   )

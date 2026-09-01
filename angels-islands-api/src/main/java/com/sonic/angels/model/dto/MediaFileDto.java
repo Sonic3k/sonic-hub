@@ -25,6 +25,12 @@ public class MediaFileDto {
         public boolean isValue() { return value; } public void setValue(boolean v) { this.value = v; }
     }
 
+    public static class PersonBatchRequest {
+        private java.util.List<UUID> ids; private UUID personId;
+        public java.util.List<UUID> getIds() { return ids; } public void setIds(java.util.List<UUID> v) { this.ids = v; }
+        public UUID getPersonId() { return personId; } public void setPersonId(UUID v) { this.personId = v; }
+    }
+
     public static class MoveBatchRequest {
         private UUID fromCollectionId; private UUID toCollectionId; private java.util.List<UUID> ids;
         public UUID getFromCollectionId() { return fromCollectionId; } public void setFromCollectionId(UUID v) { this.fromCollectionId = v; }

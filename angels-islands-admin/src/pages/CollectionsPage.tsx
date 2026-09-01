@@ -1,12 +1,14 @@
 import { useState, useRef } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { FolderOpen, ChevronRight, Image, ArrowLeft, Trash2, X, Plus, FolderPlus, ImagePlus, UploadCloud, Heart, FolderInput, FolderMinus, MoreVertical, Pencil, Users, ImageIcon } from 'lucide-react'
+import { FolderOpen, ChevronRight, Image, ArrowLeft, Trash2, X, Plus, FolderPlus, ImagePlus, UploadCloud, Heart, FolderInput, FolderMinus, MoreVertical, Pencil, Users, ImageIcon, UserPlus, ChevronDown } from 'lucide-react'
 import { collectionBrowseApi, uploadApi, collectionsApi, mediaApi } from '../api/collections'
 import CollectionPicker from '../components/CollectionPicker'
+import PersonSelectModal from '../components/PersonSelectModal'
 import { usePersons } from '../hooks/usePersons'
 import { collectDroppedFiles, groupDropped } from '../lib/dropUpload'
 import { useUploadQueue, UploadQueuePanel, type QueueTask } from '../components/UploadQueue'
-import type { CollectionResponse, MediaFileResponse } from '../types'
+import type { CollectionResponse, MediaFileResponse, PersonSummary } from '../types'
 import { Lightbox, MediaItem } from '../components/media'
 
 
@@ -72,7 +74,8 @@ function Breadcrumb({ items, onNavigate }: { items: { id: string; name: string }
 // ── Main Page ────────────────────────────────────────────────────────────────
 
 export default function CollectionsPage() {
-  const [currentId, setCurrentId] = useState<string | null>(null)
+  const [searchParams] = useSearchParams()
+  const [currentId, setCurrentId] = useState<string | null>(searchParams.get('id'))
   const [selectedMedia, setSelectedMedia] = useState<MediaFileResponse | null>(null)
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
   const [deleting, setDeleting] = useState(false)
@@ -147,11 +150,13 @@ export default function CollectionsPage() {
       const tree = await uploadApi.createTree({
         rootName: g.rootName,
         parentId,
+        personIds: tagAsPerson ? [tagAsPerson.id] : undefined,
         folders: g.innerFolders,
       })
       const tasks: QueueTask[] = g.files.map(f => ({
         file: f.file,
         collectionId: tree.pathToId[f.folder] || tree.rootId,
+        personId: tagAsPerson?.id,
         label: `${g.rootName}/${f.folder ? f.folder + '/' : ''}${f.file.name}`,
       }))
       queue.enqueue(tasks)
@@ -171,7 +176,7 @@ export default function CollectionsPage() {
     // Folders become sub-collections of where you are (root screen = system root)
     if (folders.length) await enqueueFolderGroups(folders, currentId ?? undefined)
     // Loose files go straight into the current collection (root screen = system root)
-    if (loose.length && effectiveId) queue.enqueue(loose.map(file => ({ file, collectionId: effectiveId })))
+    if (loose.length && effectiveId) queue.enqueue(loose.map(file => ({ file, collectionId: effectiveId, personId: tagAsPerson?.id })))
   }
 
   const dragProps = {
@@ -201,6 +206,9 @@ export default function CollectionsPage() {
 
   // ── Manage actions ─────────────────────────────────────────────────────────
   const [picker, setPicker] = useState<null | { mode: 'add' | 'move' | 'moveCollection'; ids: string[] }>(null)
+  const [personModal, setPersonModal] = useState<string[] | null>(null)   // media ids to tag
+  const [tagAsPerson, setTagAsPerson] = useState<PersonSummary | null>(null) // upload context
+  const [showTagAsMenu, setShowTagAsMenu] = useState(false)
   const [showCollMenu, setShowCollMenu] = useState(false)
   const [renameOpen, setRenameOpen] = useState(false)
   const [renameDraft, setRenameDraft] = useState('')
@@ -228,6 +236,14 @@ export default function CollectionsPage() {
       await collectionsApi.update(currentId, { parentId: targetId })
     }
     setPicker(null)
+    invalidateAll()
+  }
+
+  const handleTagPersonBatch = async (person: PersonSummary) => {
+    if (!personModal) return
+    await mediaApi.addPersonBatch(personModal, person.id)
+    setPersonModal(null)
+    setSelectedIds(new Set())
     invalidateAll()
   }
 
@@ -285,7 +301,7 @@ export default function CollectionsPage() {
     if (!effectiveId || !files.length) return
     const tasks: QueueTask[] = Array.from(files)
       .filter(f => f.type.startsWith('image/') || f.type.startsWith('video/'))
-      .map(file => ({ file, collectionId: effectiveId }))
+      .map(file => ({ file, collectionId: effectiveId, personId: tagAsPerson?.id }))
     queue.enqueue(tasks)
   }
 
@@ -310,6 +326,9 @@ export default function CollectionsPage() {
             <p className="text-[11px] text-slate-400 text-center">
               {currentId ? 'File vào thẳng đây · folder thành sub-collection' : 'Ảnh vào root · folder thành collection mới'}
             </p>
+            {tagAsPerson && (
+              <p className="text-[11px] text-pink-500 font-medium">Sẽ tag: {tagAsPerson.displayName || tagAsPerson.name}</p>
+            )}
           </div>
         </div>
       )}
@@ -329,6 +348,34 @@ export default function CollectionsPage() {
           <h1 className="text-lg md:text-xl font-semibold text-slate-800 flex-1">
             {currentId ? (current?.name ?? '') : 'Collections'}
           </h1>
+          {/* Tag-as upload context */}
+          <div className="relative">
+            <button onClick={() => setShowTagAsMenu(v => !v)} title="Every upload will be tagged with this person"
+              className={`flex items-center gap-1.5 h-9 px-3 rounded-full text-xs font-medium transition-all border ${
+                tagAsPerson ? 'bg-pink-50 border-pink-200 text-pink-600' : 'bg-white border-slate-200 text-slate-500 hover:border-pink-300 hover:text-pink-500'
+              }`}>
+              <UserPlus size={13} />
+              <span className="max-w-[110px] truncate">{tagAsPerson ? (tagAsPerson.displayName || tagAsPerson.name) : 'Tag as'}</span>
+              <ChevronDown size={12} />
+            </button>
+            {showTagAsMenu && (
+              <>
+                <div className="fixed inset-0 z-10" onClick={() => setShowTagAsMenu(false)} />
+                <div className="absolute right-0 top-11 z-20 bg-white rounded-xl shadow-lg border border-slate-100 py-1.5 w-48 max-h-72 overflow-y-auto">
+                  <button onClick={() => { setTagAsPerson(null); setShowTagAsMenu(false) }}
+                    className={`flex items-center w-full px-4 py-2.5 text-sm transition-colors ${
+                      !tagAsPerson ? 'text-pink-500 bg-pink-50/50' : 'text-slate-700 hover:bg-slate-50 active:bg-slate-100'
+                    }`}>None</button>
+                  {allPersons.map(p => (
+                    <button key={p.id} onClick={() => { setTagAsPerson(p); setShowTagAsMenu(false) }}
+                      className={`flex items-center w-full px-4 py-2.5 text-sm transition-colors ${
+                        tagAsPerson?.id === p.id ? 'text-pink-500 bg-pink-50/50' : 'text-slate-700 hover:bg-slate-50 active:bg-slate-100'
+                      }`}>{p.displayName || p.name}</button>
+                  ))}
+                </div>
+              </>
+            )}
+          </div>
           {/* ⋯ Collection menu */}
           {currentId && (
             <div className="relative">
@@ -451,6 +498,10 @@ export default function CollectionsPage() {
                   <button onClick={() => setPicker({ mode: 'add', ids: selectedList() })} title="Add to collection"
                     className="p-1.5 rounded text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors">
                     <FolderPlus size={14} />
+                  </button>
+                  <button onClick={() => setPersonModal(selectedList())} title="Tag person"
+                    className="p-1.5 rounded text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors">
+                    <UserPlus size={14} />
                   </button>
                   {currentId && (
                     <button onClick={() => setPicker({ mode: 'move', ids: selectedList() })} title="Move to collection"
@@ -585,6 +636,12 @@ export default function CollectionsPage() {
           onSelect={handlePickerSelect}
           onClose={() => setPicker(null)}
         />
+      )}
+
+      {/* Tag person batch */}
+      {personModal && (
+        <PersonSelectModal title={`Tag ${personModal.length} file(s) with...`}
+          onSelect={handleTagPersonBatch} onClose={() => setPersonModal(null)} />
       )}
 
       {/* Upload queue */}

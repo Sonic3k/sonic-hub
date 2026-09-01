@@ -250,6 +250,22 @@ public class MediaFileService {
         return count;
     }
 
+    public int personBatch(List<UUID> ids, UUID personId, boolean add) {
+        var person = personRepository.findById(personId).orElse(null);
+        if (person == null) return 0;
+        int count = 0;
+        for (UUID id : ids) {
+            try {
+                MediaFile mf = findById(id);
+                if (add) mf.getPersons().add(person);
+                else mf.getPersons().removeIf(p -> p.getId().equals(personId));
+                mediaFileRepository.save(mf);
+                count++;
+            } catch (Exception ignored) {}
+        }
+        return count;
+    }
+
     public MediaFileDto.Response addPerson(UUID mediaId, UUID personId) {
         MediaFile mf = findById(mediaId);
         personRepository.findById(personId).ifPresent(p -> mf.getPersons().add(p));

@@ -133,6 +133,16 @@ public class MediaFileController {
         return collectionService.moveMediaBatch(req.getFromCollectionId(), req.getToCollectionId(), req.getIds());
     }
 
+    @PostMapping("/batch/persons")
+    public Map<String, Integer> addPersonBatch(@RequestBody MediaFileDto.PersonBatchRequest req) {
+        return Map.of("updated", mediaFileService.personBatch(req.getIds(), req.getPersonId(), true));
+    }
+
+    @DeleteMapping("/batch/persons")
+    public Map<String, Integer> removePersonBatch(@RequestBody MediaFileDto.PersonBatchRequest req) {
+        return Map.of("updated", mediaFileService.personBatch(req.getIds(), req.getPersonId(), false));
+    }
+
     @PostMapping("/{id}/persons/{personId}")
     public MediaFileDto.Response addPerson(@PathVariable UUID id, @PathVariable UUID personId) {
         return mediaFileService.addPerson(id, personId);

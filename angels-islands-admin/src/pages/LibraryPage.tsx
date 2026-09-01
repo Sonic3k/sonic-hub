@@ -1,11 +1,12 @@
 import { useMemo, useRef, useState, useEffect, useCallback } from 'react'
 import { useInfiniteQuery, useQueryClient } from '@tanstack/react-query'
-import { Heart, FolderPlus, Trash2, X, Image as ImageIcon } from 'lucide-react'
+import { Heart, FolderPlus, Trash2, X, Image as ImageIcon, UserPlus } from 'lucide-react'
 import api from '../api/client'
 import { mediaApi, uploadApi } from '../api/collections'
 import { Lightbox, MediaItem } from '../components/media'
 import CollectionPicker from '../components/CollectionPicker'
-import type { MediaFileResponse } from '../types'
+import PersonSelectModal from '../components/PersonSelectModal'
+import type { MediaFileResponse, PersonSummary } from '../types'
 
 interface LibraryPageData {
   content: MediaFileResponse[]
@@ -27,6 +28,7 @@ export default function LibraryPage() {
   const [selectedMedia, setSelectedMedia] = useState<MediaFileResponse | null>(null)
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
   const [picker, setPicker] = useState<string[] | null>(null) // ids to add
+  const [personModal, setPersonModal] = useState<string[] | null>(null)
   const [deleting, setDeleting] = useState(false)
   const qc = useQueryClient()
 
@@ -96,6 +98,14 @@ export default function LibraryPage() {
     setDeleting(false)
   }
 
+  const handleTagPerson = async (person: PersonSummary) => {
+    if (!personModal) return
+    await mediaApi.addPersonBatch(personModal, person.id)
+    setPersonModal(null)
+    setSelectedIds(new Set())
+    invalidate()
+  }
+
   const handleAddTo = async (targetId: string) => {
     if (!picker) return
     await mediaApi.addToCollectionBatch(targetId, picker)
@@ -132,6 +142,10 @@ export default function LibraryPage() {
             <button onClick={() => setPicker(idsArr())} title="Add to collection"
               className="p-1.5 rounded text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors">
               <FolderPlus size={14} />
+            </button>
+            <button onClick={() => setPersonModal(idsArr())} title="Tag person"
+              className="p-1.5 rounded text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors">
+              <UserPlus size={14} />
             </button>
             <button onClick={handleDelete} disabled={deleting} title="Delete files"
               className="p-1.5 rounded text-rose-400 hover:text-rose-600 hover:bg-rose-50 disabled:opacity-50 transition-colors">
@@ -177,6 +191,11 @@ export default function LibraryPage() {
       <div ref={sentinelRef} className="h-10 flex items-center justify-center">
         {isFetchingNextPage && <span className="text-xs text-slate-400 animate-pulse">Loading more...</span>}
       </div>
+
+      {personModal && (
+        <PersonSelectModal title={`Tag ${personModal.length} file(s) with...`}
+          onSelect={handleTagPerson} onClose={() => setPersonModal(null)} />
+      )}
 
       {picker && (
         <CollectionPicker title={`Add ${picker.length} file(s) to...`} confirmLabel="Add"

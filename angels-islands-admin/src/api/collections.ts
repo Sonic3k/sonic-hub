@@ -46,6 +46,10 @@ export const mediaApi = {
     api.post<MediaFileResponse>(`/api/media-files/${id}/persons/${personId}`).then(r => r.data),
   removePerson: (id: string, personId: string) =>
     api.delete<MediaFileResponse>(`/api/media-files/${id}/persons/${personId}`).then(r => r.data),
+  addPersonBatch: (ids: string[], personId: string) =>
+    api.post('/api/media-files/batch/persons', { ids, personId }).then(r => r.data),
+  removePersonBatch: (ids: string[], personId: string) =>
+    api.delete('/api/media-files/batch/persons', { data: { ids, personId } }).then(r => r.data),
   addToCollectionBatch: (collectionId: string, ids: string[]) =>
     api.post(`/api/collections/${collectionId}/media/batch`, ids).then(r => r.data),
   removeFromCollectionBatch: (collectionId: string, ids: string[]) =>
@@ -55,6 +59,8 @@ export const mediaApi = {
 }
 
 export const collectionBrowseApi = {
+  getByPerson: (personId: string) =>
+    api.get<CollectionResponse[]>(`/api/collections/person/${personId}`, { params: { inclChildrenCount: true, inclMediaCount: true } }).then(r => r.data),
   getRoot: () => api.get<CollectionResponse>('/api/collections/root').then(r => r.data),
   getTopLevel: () => api.get<CollectionResponse[]>('/api/collections', { params: { inclChildrenCount: true, inclMediaCount: true, inclPersons: true } }).then(r => r.data),
   getById: (id: string) => api.get<CollectionResponse>(`/api/collections/${id}`).then(r => r.data),
