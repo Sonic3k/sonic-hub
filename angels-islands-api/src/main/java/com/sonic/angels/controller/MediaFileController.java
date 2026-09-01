@@ -15,9 +15,23 @@ import java.util.UUID;
 public class MediaFileController {
 
     private final MediaFileService mediaFileService;
+    private final com.sonic.angels.service.GeocodingService geocodingService;
 
-    public MediaFileController(MediaFileService mediaFileService) {
+    public MediaFileController(MediaFileService mediaFileService, com.sonic.angels.service.GeocodingService geocodingService) {
         this.mediaFileService = mediaFileService;
+        this.geocodingService = geocodingService;
+    }
+
+    @PostMapping("/rescan-batch")
+    public Map<String, Object> rescanBatch(@RequestParam(defaultValue = "20") int batchSize,
+                                           @RequestParam(defaultValue = "false") boolean force) {
+        return mediaFileService.rescanMetadataBatch(batchSize, force);
+    }
+
+    @PostMapping("/geocode-batch")
+    public Map<String, Object> geocodeBatch(@RequestParam(defaultValue = "20") int batchSize,
+                                            @RequestParam(defaultValue = "false") boolean force) {
+        return geocodingService.geocodeBatch(batchSize, force);
     }
 
     @GetMapping

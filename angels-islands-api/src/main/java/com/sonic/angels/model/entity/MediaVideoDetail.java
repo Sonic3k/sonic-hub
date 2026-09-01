@@ -23,6 +23,7 @@ public class MediaVideoDetail {
     @Column(name = "audio_channels") private Integer audioChannels;
     @Column(name = "audio_sample_rate") private Integer audioSampleRate;
     @Column(name = "container_format") private String containerFormat;
+    @Column(name = "is_slow_mo") private Boolean isSlowMo;
 
     public MediaVideoDetail() {}
 
@@ -46,4 +47,6 @@ public class MediaVideoDetail {
     public void setAudioSampleRate(Integer v) { this.audioSampleRate = v; }
     public String getContainerFormat() { return containerFormat; }
     public void setContainerFormat(String v) { this.containerFormat = v; }
+    public Boolean getIsSlowMo() { return isSlowMo; }
+    public void setIsSlowMo(Boolean v) { this.isSlowMo = v; }
 }

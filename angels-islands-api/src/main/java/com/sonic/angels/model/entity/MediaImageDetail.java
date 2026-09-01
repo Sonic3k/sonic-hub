@@ -37,6 +37,8 @@ public class MediaImageDetail {
     @Column(name = "is_portrait") private Boolean isPortrait;
     @Column(name = "is_hdr") private Boolean isHdr;
     @Column(name = "is_raw") private Boolean isRaw;
+    @Column(name = "is_burst") private Boolean isBurst;
+    @Column(name = "is_live_photo") private Boolean isLivePhoto;
 
     public MediaImageDetail() {}
 
@@ -88,4 +90,8 @@ public class MediaImageDetail {
     public void setIsHdr(Boolean v) { this.isHdr = v; }
     public Boolean getIsRaw() { return isRaw; }
     public void setIsRaw(Boolean v) { this.isRaw = v; }
+    public Boolean getIsBurst() { return isBurst; }
+    public void setIsBurst(Boolean v) { this.isBurst = v; }
+    public Boolean getIsLivePhoto() { return isLivePhoto; }
+    public void setIsLivePhoto(Boolean v) { this.isLivePhoto = v; }
 }

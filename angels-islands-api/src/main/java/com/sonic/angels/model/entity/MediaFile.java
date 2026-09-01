@@ -88,6 +88,10 @@ public class MediaFile extends BaseEntity {
     @Column(name = "latitude")
     private Double latitude;
 
+    /** UTC offset of the capture location, e.g. "+07:00". Display-only label; dateTaken stays local wall-clock. */
+    @Column(name = "timezone")
+    private String timezone;
+
     @Column(name = "longitude")
     private Double longitude;
 
@@ -234,6 +238,9 @@ public class MediaFile extends BaseEntity {
     public void setFileDateModified(LocalDateTime fileDateModified) { this.fileDateModified = fileDateModified; }
     public LocalDateTime getEffectiveDate() { return effectiveDate; }
     public void setEffectiveDate(LocalDateTime effectiveDate) { this.effectiveDate = effectiveDate; }
+    public String getTimezone() { return timezone; }
+    public void setTimezone(String timezone) { this.timezone = timezone; }
+
     public Double getLatitude() { return latitude; }
     public void setLatitude(Double latitude) { this.latitude = latitude; }
     public Double getLongitude() { return longitude; }

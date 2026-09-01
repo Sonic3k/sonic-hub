@@ -16,7 +16,7 @@ public class MediaFileDto {
         private Boolean isAnimated;
         private LocalDateTime dateTaken; private LocalDateTime fileDateCreated;
         private LocalDateTime fileDateModified; private LocalDateTime effectiveDate; private LocalDateTime uploadedAt;
-        private Double latitude; private Double longitude; private String displayedAddress;
+        private Double latitude; private Double longitude; private String displayedAddress; private String timezone;
         private ImageDetailDto imageDetail;
         private VideoDetailDto videoDetail;
         private Set<PersonDto.Summary> persons; private Set<TagDto.Response> tags;
@@ -46,6 +46,7 @@ public class MediaFileDto {
         public Double getLatitude() { return latitude; } public void setLatitude(Double v) { this.latitude = v; }
         public Double getLongitude() { return longitude; } public void setLongitude(Double v) { this.longitude = v; }
         public String getDisplayedAddress() { return displayedAddress; } public void setDisplayedAddress(String v) { this.displayedAddress = v; }
+        public String getTimezone() { return timezone; } public void setTimezone(String v) { this.timezone = v; }
         public ImageDetailDto getImageDetail() { return imageDetail; } public void setImageDetail(ImageDetailDto v) { this.imageDetail = v; }
         public VideoDetailDto getVideoDetail() { return videoDetail; } public void setVideoDetail(VideoDetailDto v) { this.videoDetail = v; }
         public Set<PersonDto.Summary> getPersons() { return persons; } public void setPersons(Set<PersonDto.Summary> v) { this.persons = v; }

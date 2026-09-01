@@ -63,6 +63,7 @@ public class DtoMapper {
         r.setEffectiveDate(m.getEffectiveDate()); r.setUploadedAt(m.getUploadedAt());
         r.setLatitude(m.getLatitude()); r.setLongitude(m.getLongitude());
         r.setDisplayedAddress(m.getDisplayedAddress());
+        r.setTimezone(m.getTimezone());
         r.setCdnUrl(storageService.buildCdnUrl(m.getStorageKey(), m.getStorageProvider()));
         r.setThumbnailUrl(m.getStorageKey() != null ? storageService.buildThumbnailUrl(m.getStorageKey(), 300) : null);
 

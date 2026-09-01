@@ -22,6 +22,13 @@ public class MediaLocationDetail {
     @Column(name = "country_code") private String countryCode;
     @Column(name = "postal_code") private String postalCode;
     @Column(name = "place_name") private String placeName;
+    @Column(name = "district") private String district;
+    @Column(name = "neighborhood") private String neighborhood;
+    @Column(name = "street") private String street;
+    @Column(name = "street_number") private String streetNumber;
+    @Column(name = "formatted_address", columnDefinition = "TEXT") private String formattedAddress;
+    @Column(name = "place_id") private String placeId;
+    @Column(name = "geocoded_at") private java.time.LocalDateTime geocodedAt;
 
     public MediaLocationDetail() {}
 
@@ -43,4 +50,18 @@ public class MediaLocationDetail {
     public void setPostalCode(String v) { this.postalCode = v; }
     public String getPlaceName() { return placeName; }
     public void setPlaceName(String v) { this.placeName = v; }
+    public String getDistrict() { return district; }
+    public void setDistrict(String v) { this.district = v; }
+    public String getNeighborhood() { return neighborhood; }
+    public void setNeighborhood(String v) { this.neighborhood = v; }
+    public String getStreet() { return street; }
+    public void setStreet(String v) { this.street = v; }
+    public String getStreetNumber() { return streetNumber; }
+    public void setStreetNumber(String v) { this.streetNumber = v; }
+    public String getFormattedAddress() { return formattedAddress; }
+    public void setFormattedAddress(String v) { this.formattedAddress = v; }
+    public String getPlaceId() { return placeId; }
+    public void setPlaceId(String v) { this.placeId = v; }
+    public java.time.LocalDateTime getGeocodedAt() { return geocodedAt; }
+    public void setGeocodedAt(java.time.LocalDateTime v) { this.geocodedAt = v; }
 }

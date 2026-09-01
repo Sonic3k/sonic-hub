@@ -62,6 +62,11 @@ public class StorageService {
         return fullKey;
     }
 
+    public java.io.InputStream downloadStream(String storageKey) {
+        if (s3Client == null) throw new IllegalStateException("Storage not configured");
+        return s3Client.getObject(GetObjectRequest.builder().bucket(bucket).key(storageKey).build());
+    }
+
     public void delete(String storageKey) {
         if (s3Client == null) return;
         s3Client.deleteObject(DeleteObjectRequest.builder().bucket(bucket).key(storageKey).build());
