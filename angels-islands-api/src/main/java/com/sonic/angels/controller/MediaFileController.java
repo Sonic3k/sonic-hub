@@ -41,6 +41,17 @@ public class MediaFileController {
     @GetMapping
     public List<MediaFileDto.Response> findAll() { return mediaFileService.findAllDto(); }
 
+    @GetMapping("/library")
+    public org.springframework.data.domain.Page<MediaFileDto.Response> library(
+        @RequestParam(defaultValue = "0") int page,
+        @RequestParam(defaultValue = "100") int size,
+        @RequestParam(required = false) Boolean favorite) {
+        return mediaFileService.library(page, size, favorite);
+    }
+
+    @GetMapping("/geotagged")
+    public List<MediaFileDto.Response> geotagged() { return mediaFileService.geotagged(); }
+
     @GetMapping("/{id}")
     public MediaFileDto.Response findById(@PathVariable UUID id) { return mediaFileService.findDtoById(id); }
 

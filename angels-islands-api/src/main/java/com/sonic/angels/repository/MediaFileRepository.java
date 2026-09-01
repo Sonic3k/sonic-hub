@@ -28,6 +28,11 @@ public interface MediaFileRepository extends JpaRepository<MediaFile, UUID> {
 
     Page<MediaFile> findByStorageKeyIsNotNull(Pageable pageable);
 
+    Page<MediaFile> findByIsFavoriteTrue(Pageable pageable);
+
+    @Query("SELECT m FROM MediaFile m WHERE m.latitude IS NOT NULL AND m.longitude IS NOT NULL ORDER BY m.effectiveDate DESC")
+    List<MediaFile> findGeotagged();
+
     @Query("SELECT m FROM MediaFile m WHERE m.storageKey IS NOT NULL AND (SELECT COUNT(t) FROM m.tags t WHERE t.name = 'CLASSIFIED') = 0")
     Page<MediaFile> findUnscanned(Pageable pageable);
 

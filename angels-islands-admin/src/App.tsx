@@ -4,7 +4,8 @@ import AppLayout from './components/layout/AppLayout'
 import PersonsPage from './pages/PersonsPage'
 import PersonDetailPage from './pages/PersonDetailPage'
 import CollectionsPage from './pages/CollectionsPage'
-import MediaPage from './pages/MediaPage'
+import LibraryPage from './pages/LibraryPage'
+import MapPage from './pages/MapPage'
 import TagsPage from './pages/TagsPage'
 import UploadPage from './pages/UploadPage'
 import MemoryPage from './pages/MemoryPage'
@@ -22,7 +23,8 @@ export default function App() {
             <Route index element={<PersonsPage />} />
             <Route path="persons/:id" element={<PersonDetailPage />} />
             <Route path="collections" element={<CollectionsPage />} />
-            <Route path="media" element={<MediaPage />} />
+            <Route path="library" element={<LibraryPage />} />
+            <Route path="map" element={<MapPage />} />
             <Route path="tags" element={<TagsPage />} />
             <Route path="upload" element={<UploadPage />} />
             <Route path="memory" element={<MemoryPage />} />

@@ -138,6 +138,21 @@ public class MediaFileService {
         return candidate;
     }
 
+    @Transactional(readOnly = true)
+    public org.springframework.data.domain.Page<MediaFileDto.Response> library(int page, int size, Boolean favorite) {
+        var pageable = org.springframework.data.domain.PageRequest.of(page, size,
+            org.springframework.data.domain.Sort.by(org.springframework.data.domain.Sort.Direction.DESC, "effectiveDate"));
+        var result = Boolean.TRUE.equals(favorite)
+            ? mediaFileRepository.findByIsFavoriteTrue(pageable)
+            : mediaFileRepository.findAll(pageable);
+        return result.map(mapper::toMediaFileResponse);
+    }
+
+    @Transactional(readOnly = true)
+    public List<MediaFileDto.Response> geotagged() {
+        return mediaFileRepository.findGeotagged().stream().map(mapper::toMediaFileResponse).toList();
+    }
+
     public MediaFileDto.Response updateMedia(UUID id, MediaFileDto.UpdateRequest req) {
         MediaFile mf = findById(id);
         if (req.getCaption() != null) mf.setCaption(req.getCaption().isBlank() ? null : req.getCaption());
