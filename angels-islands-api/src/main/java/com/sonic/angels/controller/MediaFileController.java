@@ -57,6 +57,38 @@ public class MediaFileController {
         return mediaFileService.library(page, size, favorite, new MediaFileDto.Includes(inclDetails, inclPersons, inclTags));
     }
 
+    /** Super search — one endpoint for every list need on the web:
+     *  filters (type/orientation/category/favorite/featured/hasGps/person/collection/tags incl+excl/free-text q),
+     *  sort or random, paging, and incl* flags for relationship payload. */
+    @GetMapping("/search")
+    public org.springframework.data.domain.Page<MediaFileDto.Response> search(
+        @RequestParam(required = false) String type,
+        @RequestParam(required = false) String orientation,
+        @RequestParam(required = false) String category,
+        @RequestParam(required = false) Boolean favorite,
+        @RequestParam(required = false) Boolean featured,
+        @RequestParam(required = false) Boolean hasGps,
+        @RequestParam(required = false) UUID personId,
+        @RequestParam(required = false) UUID collectionId,
+        @RequestParam(required = false) List<UUID> tagIds,
+        @RequestParam(required = false) List<String> tagNames,
+        @RequestParam(required = false) List<UUID> excludeTagIds,
+        @RequestParam(required = false) List<String> excludeTagNames,
+        @RequestParam(required = false) String q,
+        @RequestParam(defaultValue = "false") boolean random,
+        @RequestParam(defaultValue = "0") int page,
+        @RequestParam(defaultValue = "60") int size,
+        @RequestParam(defaultValue = "effectiveDate") String sortBy,
+        @RequestParam(defaultValue = "desc") String sortDir,
+        @RequestParam(defaultValue = "false") boolean inclDetails,
+        @RequestParam(defaultValue = "false") boolean inclPersons,
+        @RequestParam(defaultValue = "false") boolean inclTags) {
+        return mediaFileService.search(type, orientation, category, favorite, featured, hasGps,
+            personId, collectionId, tagIds, tagNames, excludeTagIds, excludeTagNames,
+            q, random, page, size, sortBy, sortDir,
+            new MediaFileDto.Includes(inclDetails, inclPersons, inclTags));
+    }
+
     @GetMapping("/geotagged")
     public List<MediaFileDto.Response> geotagged(
         @RequestParam(defaultValue = "false") boolean inclDetails,

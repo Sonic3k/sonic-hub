@@ -152,6 +152,79 @@ public class MediaFileService {
         return result.map(m -> mapper.toMediaFileResponse(m, inc));
     }
 
+    // ── Super search (one endpoint for the web: filters + sort/random + paging + includes) ──
+
+    private static final java.util.Set<String> SORT_WHITELIST = java.util.Set.of(
+        "effectiveDate", "uploadedAt", "dateTaken", "fileName", "fileSize", "duration");
+    private static final UUID NIL_UUID = new UUID(0, 0);
+
+    @Transactional(readOnly = true)
+    public org.springframework.data.domain.Page<MediaFileDto.Response> search(
+            String type, String orientation, String category,
+            Boolean favorite, Boolean featured, Boolean hasGps,
+            UUID personId, UUID collectionId,
+            List<UUID> tagIds, List<String> tagNames,
+            List<UUID> excludeTagIds, List<String> excludeTagNames,
+            String q, boolean random, int page, int size,
+            String sortBy, String sortDir, MediaFileDto.Includes inc) {
+
+        MediaFile.FileType ft = parseEnum(type, MediaFile.FileType.class);
+        MediaFile.Orientation ori = parseEnum(orientation, MediaFile.Orientation.class);
+        MediaFile.MediaCategory cat = parseEnum(category, MediaFile.MediaCategory.class);
+
+        boolean hasInclude = notEmpty(tagIds) || notEmpty(tagNames);
+        boolean hasExclude = notEmpty(excludeTagIds) || notEmpty(excludeTagNames);
+        boolean hasQuery = q != null && !q.isBlank();
+        String query = hasQuery ? "%" + q.trim().toLowerCase() + "%" : "";
+
+        List<UUID> safeTagIds = tagIds != null ? tagIds : List.of();
+        List<String> safeTagNames = tagNames != null ? tagNames : List.of();
+        List<UUID> safeExcludeIds = excludeTagIds != null ? excludeTagIds : List.of();
+        List<String> safeExcludeNames = excludeTagNames != null ? excludeTagNames : List.of();
+
+        boolean hasPerson = personId != null;
+        boolean hasCollection = collectionId != null;
+        UUID safePerson = hasPerson ? personId : NIL_UUID;
+        UUID safeCollection = hasCollection ? collectionId : NIL_UUID;
+
+        int safeSize = size > 0 && size <= 500 ? size : 60;
+        int safePage = Math.max(page, 0);
+
+        if (random) {
+            var rows = mediaFileRepository.searchRandom(
+                ft, ori, cat, favorite, featured, hasGps,
+                hasPerson, safePerson, hasCollection, safeCollection,
+                hasInclude, safeTagIds, safeTagNames,
+                hasExclude, safeExcludeIds, safeExcludeNames,
+                hasQuery, query,
+                org.springframework.data.domain.PageRequest.of(0, safeSize));
+            var content = rows.stream().map(m -> mapper.toMediaFileResponse(m, inc)).toList();
+            return new org.springframework.data.domain.PageImpl<>(content);
+        }
+
+        String sb = sortBy != null && SORT_WHITELIST.contains(sortBy) ? sortBy : "effectiveDate";
+        var sort = "asc".equalsIgnoreCase(sortDir)
+            ? org.springframework.data.domain.Sort.by(sb).ascending()
+            : org.springframework.data.domain.Sort.by(sb).descending();
+
+        return mediaFileRepository.searchSorted(
+                ft, ori, cat, favorite, featured, hasGps,
+                hasPerson, safePerson, hasCollection, safeCollection,
+                hasInclude, safeTagIds, safeTagNames,
+                hasExclude, safeExcludeIds, safeExcludeNames,
+                hasQuery, query,
+                org.springframework.data.domain.PageRequest.of(safePage, safeSize, sort))
+            .map(m -> mapper.toMediaFileResponse(m, inc));
+    }
+
+    private <T extends Enum<T>> T parseEnum(String value, Class<T> clazz) {
+        if (value == null || value.isBlank()) return null;
+        try { return Enum.valueOf(clazz, value.toUpperCase()); }
+        catch (IllegalArgumentException e) { return null; }
+    }
+
+    private boolean notEmpty(List<?> list) { return list != null && !list.isEmpty(); }
+
     @Transactional(readOnly = true)
     public List<MediaFileDto.Response> geotagged(MediaFileDto.Includes inc) {
         return mediaFileRepository.findGeotagged().stream().map(m -> mapper.toMediaFileResponse(m, inc)).toList();
