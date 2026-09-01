@@ -40,8 +40,9 @@ export interface MediaFileResponse {
   mimeType?: string; caption?: string; cdnUrl?: string; thumbnailUrl?: string
   dateTaken?: string; fileDateCreated?: string; fileDateModified?: string
   effectiveDate?: string; uploadedAt?: string
-  latitude?: number; longitude?: number; displayedAddress?: string
+  latitude?: number; longitude?: number; displayedAddress?: string; timezone?: string
   duration?: number; isAnimated?: boolean; isFavorite?: boolean; isFeatured?: boolean
+  persons?: { id: string; name: string; displayName?: string; avatarUrl?: string }[]
   // Image EXIF
   imageDetail?: {
     cameraMake?: string; cameraModel?: string; lensModel?: string
@@ -61,7 +62,7 @@ export interface CollectionResponse {
   childrenCount?: number; mediaCount?: number; thumbnailUrl?: string; createdAt?: string
   tags?: TagResponse[]; persons?: { id: string; name: string; displayName?: string; avatarUrl?: string }[]
 }
-export interface CollectionRequest { name: string; description?: string; parentId?: string }
+export interface CollectionRequest { name?: string; description?: string; parentId?: string; personIds?: string[] }
 
 export interface ChatArchiveResponse {
   id: string; platform: Platform; title?: string; messageCount?: number

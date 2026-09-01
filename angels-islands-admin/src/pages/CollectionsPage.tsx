@@ -1,7 +1,9 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { FolderOpen, ChevronRight, ChevronLeft, Image, ArrowLeft, Camera, MapPin, FileText, Clock, Film, Info, Trash2, X, Check, Plus, FolderPlus, ImagePlus, UploadCloud } from 'lucide-react'
-import { collectionBrowseApi, uploadApi, collectionsApi } from '../api/collections'
+import { FolderOpen, ChevronRight, ChevronLeft, Image, ArrowLeft, Camera, MapPin, FileText, Clock, Film, Info, Trash2, X, Check, Plus, FolderPlus, ImagePlus, UploadCloud, Heart, FolderInput, FolderMinus, MoreVertical, Pencil, Users, ImageIcon } from 'lucide-react'
+import { collectionBrowseApi, uploadApi, collectionsApi, mediaApi } from '../api/collections'
+import CollectionPicker from '../components/CollectionPicker'
+import { usePersons } from '../hooks/usePersons'
 import { collectDroppedFiles, groupDropped } from '../lib/dropUpload'
 import { useUploadQueue, UploadQueuePanel, type QueueTask } from '../components/UploadQueue'
 import type { CollectionResponse, MediaFileResponse } from '../types'
@@ -79,6 +81,9 @@ function MediaItem({ media, onClick, selected, onSelect, selectMode }: {
           <div className="w-full h-full flex items-center justify-center text-slate-300"><Image size={20} strokeWidth={1} /></div>
         )}
       </div>
+      {media.isFavorite && (
+        <div className="absolute bottom-1 left-1 text-pink-400 drop-shadow"><Heart size={12} fill="currentColor" /></div>
+      )}
       {media.fileType === 'VIDEO' && (
         <div className="absolute bottom-1 right-1 bg-black/60 text-white text-[9px] px-1 rounded">
           {fmtDuration(media.duration) || '▶'}
@@ -105,8 +110,10 @@ function MediaItem({ media, onClick, selected, onSelect, selectMode }: {
 
 // ── Lightbox ─────────────────────────────────────────────────────────────────
 
-function Lightbox({ media, allMedia, onClose, onNavigate }: {
-  media: MediaFileResponse; allMedia: MediaFileResponse[]; onClose: () => void; onNavigate: (m: MediaFileResponse) => void
+function Lightbox({ media, allMedia, collectionId, onClose, onNavigate, onChanged, onAddTo }: {
+  media: MediaFileResponse; allMedia: MediaFileResponse[]; collectionId: string | null
+  onClose: () => void; onNavigate: (m: MediaFileResponse) => void
+  onChanged: (m: MediaFileResponse) => void; onAddTo: (mediaId: string) => void
 }) {
   const [showInfo, setShowInfo] = useState(false)
   const idx = allMedia.findIndex(m => m.id === media.id)
@@ -155,9 +162,25 @@ function Lightbox({ media, allMedia, onClose, onNavigate }: {
           <ArrowLeft size={22} />
         </button>
 
-        {/* Counter + Info */}
-        <div className="absolute top-3 right-3 md:top-4 md:right-4 flex items-center gap-2">
-          <span className="text-white/40 text-xs tabular-nums">{idx + 1} / {allMedia.length}</span>
+        {/* Counter + actions + Info */}
+        <div className="absolute top-3 right-3 md:top-4 md:right-4 flex items-center gap-1.5">
+          <span className="text-white/40 text-xs tabular-nums mr-1">{idx + 1} / {allMedia.length}</span>
+          <button title={media.isFavorite ? 'Unfavorite' : 'Favorite'}
+            onClick={async () => onChanged(await mediaApi.patch(media.id, { isFavorite: !media.isFavorite }))}
+            className={`p-2 rounded-full transition-colors ${media.isFavorite ? 'text-pink-400' : 'text-white/60 hover:text-white hover:bg-white/10'}`}>
+            <Heart size={19} fill={media.isFavorite ? 'currentColor' : 'none'} />
+          </button>
+          <button title="Add to collection" onClick={() => onAddTo(media.id)}
+            className="p-2 rounded-full text-white/60 hover:text-white hover:bg-white/10 transition-colors">
+            <FolderPlus size={19} />
+          </button>
+          {collectionId && (
+            <button title="Set as collection cover"
+              onClick={async () => { await mediaApi.setAsCover(collectionId, media.id) }}
+              className="p-2 rounded-full text-white/60 hover:text-white hover:bg-white/10 transition-colors">
+              <ImageIcon size={19} />
+            </button>
+          )}
           <button onClick={() => setShowInfo(!showInfo)}
             className={`p-2 rounded-full transition-colors ${showInfo ? 'text-white bg-white/15' : 'text-white/60 hover:text-white hover:bg-white/10'}`}>
             <Info size={20} />
@@ -186,7 +209,7 @@ function Lightbox({ media, allMedia, onClose, onNavigate }: {
         showInfo ? 'w-80' : 'w-0'
       }`}>
         <div className="w-80 h-full overflow-y-auto">
-          <InfoContent media={media} cameraStr={cameraStr} settingsStr={settingsStr} exif={exif} vid={vid} />
+          <InfoContent media={media} cameraStr={cameraStr} settingsStr={settingsStr} exif={exif} vid={vid} onChanged={onChanged} />
         </div>
       </div>
 
@@ -194,7 +217,7 @@ function Lightbox({ media, allMedia, onClose, onNavigate }: {
       {showInfo && (
         <div className="md:hidden fixed bottom-0 left-0 right-0 bg-[#111]/95 backdrop-blur-md border-t border-white/5 max-h-[55vh] overflow-y-auto animate-slide-up safe-bottom rounded-t-2xl z-10">
           <div className="flex justify-center pt-2 pb-1"><div className="w-10 h-1 rounded-full bg-white/15" /></div>
-          <InfoContent media={media} cameraStr={cameraStr} settingsStr={settingsStr} exif={exif} vid={vid} />
+          <InfoContent media={media} cameraStr={cameraStr} settingsStr={settingsStr} exif={exif} vid={vid} onChanged={onChanged} />
         </div>
       )}
     </div>
@@ -203,12 +226,69 @@ function Lightbox({ media, allMedia, onClose, onNavigate }: {
 
 // ── Info Content (shared between side panel & bottom sheet) ──────────────────
 
-function InfoContent({ media, cameraStr, settingsStr, exif, vid }: {
+function InfoContent({ media, cameraStr, settingsStr, exif, vid, onChanged }: {
   media: MediaFileResponse; cameraStr: string; settingsStr: string
   exif?: MediaFileResponse['imageDetail']; vid?: MediaFileResponse['videoDetail']
+  onChanged: (m: MediaFileResponse) => void
 }) {
+  const { data: allPersons = [] } = usePersons()
+  const [editingCaption, setEditingCaption] = useState(false)
+  const [captionDraft, setCaptionDraft] = useState('')
+  const [addingPerson, setAddingPerson] = useState(false)
+  const taggedIds = new Set((media.persons || []).map(p => p.id))
+
+  const saveCaption = async () => {
+    setEditingCaption(false)
+    if (captionDraft === (media.caption || '')) return
+    onChanged(await mediaApi.patch(media.id, { caption: captionDraft }))
+  }
+
   return (
     <div className="p-4 md:p-5 space-y-5">
+      {/* Caption */}
+      <InfoSection icon={<FileText size={15} />} title="Caption">
+        {editingCaption ? (
+          <textarea autoFocus rows={2} value={captionDraft}
+            onChange={e => setCaptionDraft(e.target.value)}
+            onBlur={saveCaption}
+            onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); saveCaption() } }}
+            className="w-full bg-white/5 border border-white/10 rounded-lg px-2.5 py-2 text-sm text-white/90 outline-none focus:border-pink-400/50 resize-none" />
+        ) : (
+          <p onClick={() => { setCaptionDraft(media.caption || ''); setEditingCaption(true) }}
+            className={`text-sm cursor-text rounded px-0.5 -mx-0.5 hover:bg-white/5 ${media.caption ? 'text-white/80' : 'text-white/25 italic'}`}>
+            {media.caption || 'Add a caption...'}
+          </p>
+        )}
+      </InfoSection>
+
+      {/* People */}
+      <InfoSection icon={<Users size={15} />} title="People">
+        <div className="flex flex-wrap gap-1.5">
+          {(media.persons || []).map(p => (
+            <span key={p.id} className="flex items-center gap-1 bg-white/10 text-white/80 text-xs pl-2 pr-1 py-1 rounded-full">
+              {p.displayName || p.name}
+              <button onClick={async () => onChanged(await mediaApi.removePerson(media.id, p.id))}
+                className="text-white/40 hover:text-white p-0.5"><X size={11} /></button>
+            </span>
+          ))}
+          {addingPerson ? (
+            <select autoFocus
+              onChange={async e => { if (e.target.value) onChanged(await mediaApi.addPerson(media.id, e.target.value)); setAddingPerson(false) }}
+              onBlur={() => setAddingPerson(false)}
+              className="bg-[#222] text-white/80 text-xs rounded-full px-2 py-1 outline-none border border-white/10">
+              <option value="">Choose...</option>
+              {allPersons.filter(p => !taggedIds.has(p.id)).map(p => (
+                <option key={p.id} value={p.id}>{p.displayName || p.name}</option>
+              ))}
+            </select>
+          ) : (
+            <button onClick={() => setAddingPerson(true)}
+              className="text-white/40 hover:text-white/80 text-xs border border-dashed border-white/20 rounded-full px-2.5 py-1 transition-colors">
+              + Tag person
+            </button>
+          )}
+        </div>
+      </InfoSection>
       {/* Date */}
       {(media.dateTaken || media.effectiveDate) && (
         <InfoSection icon={<Clock size={15} />} title="Date">
@@ -456,6 +536,77 @@ export default function CollectionsPage() {
     })
   }
 
+  // ── Manage actions ─────────────────────────────────────────────────────────
+  const [picker, setPicker] = useState<null | { mode: 'add' | 'move' | 'moveCollection'; ids: string[] }>(null)
+  const [showCollMenu, setShowCollMenu] = useState(false)
+  const [renameOpen, setRenameOpen] = useState(false)
+  const [renameDraft, setRenameDraft] = useState('')
+  const [personsOpen, setPersonsOpen] = useState(false)
+  const { data: allPersons = [] } = usePersons()
+
+  const selectedList = () => Array.from(selectedIds)
+  const invalidateAll = () => qc.invalidateQueries({ queryKey: ['collections'] })
+
+  const allSelectedFavorite = media.length > 0 && selectedList().every(id => media.find((m: MediaFileResponse) => m.id === id)?.isFavorite)
+
+  const handleFavoriteBatch = async () => {
+    await mediaApi.favoriteBatch(selectedList(), !allSelectedFavorite)
+    invalidateAll()
+  }
+
+  const handlePickerSelect = async (targetId: string) => {
+    if (!picker) return
+    if (picker.mode === 'add') {
+      await mediaApi.addToCollectionBatch(targetId, picker.ids)
+    } else if (picker.mode === 'move' && currentId) {
+      await mediaApi.moveBatch(currentId, targetId, picker.ids)
+      setSelectedIds(new Set())
+    } else if (picker.mode === 'moveCollection' && currentId) {
+      await collectionsApi.update(currentId, { parentId: targetId })
+    }
+    setPicker(null)
+    invalidateAll()
+  }
+
+  const handleRemoveHere = async () => {
+    if (!currentId || !selectedIds.size) return
+    if (!confirm(`Remove ${selectedIds.size} file(s) from "${current?.name}"? Files stay in the library and other collections.`)) return
+    await mediaApi.removeFromCollectionBatch(currentId, selectedList())
+    setSelectedIds(new Set())
+    invalidateAll()
+  }
+
+  const handleSetCoverSelected = async () => {
+    if (!currentId || selectedIds.size !== 1) return
+    await mediaApi.setAsCover(currentId, selectedList()[0])
+    setSelectedIds(new Set())
+    invalidateAll()
+  }
+
+  const handleRename = async () => {
+    if (!currentId || !renameDraft.trim()) return
+    await collectionsApi.update(currentId, { name: renameDraft.trim() })
+    setRenameOpen(false)
+    invalidateAll()
+  }
+
+  const handleTogglePersonOnCollection = async (personId: string) => {
+    if (!currentId || !current) return
+    const ids = new Set((current.persons || []).map(p => p.id))
+    if (ids.has(personId)) ids.delete(personId); else ids.add(personId)
+    await collectionsApi.update(currentId, { personIds: Array.from(ids) })
+    invalidateAll()
+  }
+
+  const handleDeleteCollection = async () => {
+    if (!currentId || !current) return
+    if (!confirm(`Delete "${current.name}" and all its sub-collections? Photos are NOT deleted — they stay in the library and other collections.`)) return
+    const parentId = breadcrumb.length > 1 ? breadcrumb[breadcrumb.length - 2].id : null
+    await collectionsApi.delete(currentId)
+    navigate(parentId)
+    invalidateAll()
+  }
+
   const handleDelete = async () => {
     if (!selectedIds.size || !confirm(`Delete ${selectedIds.size} file(s)? This will also remove from storage.`)) return
     setDeleting(true)
@@ -515,6 +666,38 @@ export default function CollectionsPage() {
           <h1 className="text-lg md:text-xl font-semibold text-slate-800 flex-1">
             {currentId ? (current?.name ?? '') : 'Collections'}
           </h1>
+          {/* ⋯ Collection menu */}
+          {currentId && (
+            <div className="relative">
+              <button onClick={() => setShowCollMenu(!showCollMenu)}
+                className="w-9 h-9 rounded-full flex items-center justify-center bg-white border border-slate-200 text-slate-500 hover:border-pink-300 hover:text-pink-500 transition-all">
+                <MoreVertical size={18} />
+              </button>
+              {showCollMenu && (
+                <>
+                  <div className="fixed inset-0 z-10" onClick={() => setShowCollMenu(false)} />
+                  <div className="absolute right-0 top-11 z-20 bg-white rounded-xl shadow-lg border border-slate-100 py-1.5 w-48">
+                    <button onClick={() => { setRenameDraft(current?.name || ''); setRenameOpen(true); setShowCollMenu(false) }}
+                      className="flex items-center gap-2.5 w-full px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 active:bg-slate-100 transition-colors">
+                      <Pencil size={16} className="text-slate-400" />Rename
+                    </button>
+                    <button onClick={() => { setPicker({ mode: 'moveCollection', ids: [] }); setShowCollMenu(false) }}
+                      className="flex items-center gap-2.5 w-full px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 active:bg-slate-100 transition-colors">
+                      <FolderInput size={16} className="text-slate-400" />Move collection
+                    </button>
+                    <button onClick={() => { setPersonsOpen(true); setShowCollMenu(false) }}
+                      className="flex items-center gap-2.5 w-full px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 active:bg-slate-100 transition-colors">
+                      <Users size={16} className="text-slate-400" />Manage persons
+                    </button>
+                    <button onClick={() => { setShowCollMenu(false); handleDeleteCollection() }}
+                      className="flex items-center gap-2.5 w-full px-4 py-2.5 text-sm text-rose-500 hover:bg-rose-50 active:bg-rose-100 transition-colors">
+                      <Trash2 size={16} className="text-rose-300" />Delete collection
+                    </button>
+                  </div>
+                </>
+              )}
+            </div>
+          )}
           {/* + Add menu */}
           <div className="relative">
             <button onClick={() => setShowAddMenu(!showAddMenu)}
@@ -592,15 +775,41 @@ export default function CollectionsPage() {
               </div>
               {/* Select mode actions */}
               {selectMode && (
-                <div className="flex items-center gap-2">
-                  <span className="text-xs text-pink-500 font-medium">{selectedIds.size} selected</span>
+                <div className="flex items-center gap-1 flex-wrap justify-end">
+                  <span className="text-xs text-pink-500 font-medium mr-1">{selectedIds.size} selected</span>
                   <button onClick={() => { const all = new Set<string>(media.map((m: MediaFileResponse) => m.id)); setSelectedIds(prev => prev.size === all.size ? new Set<string>() : all) }}
                     className="text-[11px] text-slate-500 hover:text-slate-700 px-2 py-1 rounded hover:bg-slate-100">
-                    {selectedIds.size === media.length ? 'Deselect all' : 'Select all'}
+                    {selectedIds.size === media.length ? 'None' : 'All'}
                   </button>
-                  <button onClick={handleDelete} disabled={deleting}
-                    className="flex items-center gap-1 text-[11px] text-rose-500 hover:text-rose-600 px-2 py-1 rounded hover:bg-rose-50 disabled:opacity-50">
-                    <Trash2 size={12} />{deleting ? 'Deleting...' : 'Delete'}
+                  <button onClick={handleFavoriteBatch} title={allSelectedFavorite ? 'Unfavorite' : 'Favorite'}
+                    className={`p-1.5 rounded transition-colors ${allSelectedFavorite ? 'text-pink-500 bg-pink-50' : 'text-slate-400 hover:text-pink-500 hover:bg-pink-50'}`}>
+                    <Heart size={14} fill={allSelectedFavorite ? 'currentColor' : 'none'} />
+                  </button>
+                  <button onClick={() => setPicker({ mode: 'add', ids: selectedList() })} title="Add to collection"
+                    className="p-1.5 rounded text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors">
+                    <FolderPlus size={14} />
+                  </button>
+                  {currentId && (
+                    <button onClick={() => setPicker({ mode: 'move', ids: selectedList() })} title="Move to collection"
+                      className="p-1.5 rounded text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors">
+                      <FolderInput size={14} />
+                    </button>
+                  )}
+                  {currentId && (
+                    <button onClick={handleRemoveHere} title="Remove from this collection"
+                      className="p-1.5 rounded text-slate-400 hover:text-amber-600 hover:bg-amber-50 transition-colors">
+                      <FolderMinus size={14} />
+                    </button>
+                  )}
+                  {currentId && selectedIds.size === 1 && (
+                    <button onClick={handleSetCoverSelected} title="Set as cover"
+                      className="p-1.5 rounded text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors">
+                      <ImageIcon size={14} />
+                    </button>
+                  )}
+                  <button onClick={handleDelete} disabled={deleting} title="Delete files"
+                    className="p-1.5 rounded text-rose-400 hover:text-rose-600 hover:bg-rose-50 disabled:opacity-50 transition-colors">
+                    <Trash2 size={14} />
                   </button>
                   <button onClick={() => setSelectedIds(new Set())}
                     className="text-slate-400 hover:text-slate-600 p-1 rounded hover:bg-slate-100">
@@ -655,14 +864,76 @@ export default function CollectionsPage() {
         </div>
       )}
 
+      {/* Rename collection modal */}
+      {renameOpen && (
+        <div className="fixed inset-0 z-50 flex items-end md:items-center justify-center">
+          <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => setRenameOpen(false)} />
+          <div className="relative bg-white rounded-t-2xl md:rounded-xl shadow-xl w-full md:max-w-sm md:mx-4 p-5">
+            <div className="flex justify-center pt-0 pb-3 md:hidden"><div className="w-10 h-1 rounded-full bg-slate-200" /></div>
+            <h3 className="text-sm font-semibold text-slate-800 mb-1">Rename collection</h3>
+            <p className="text-[11px] text-slate-400 mb-3">Folder path in storage stays unchanged</p>
+            <input className="w-full px-3 py-2.5 text-sm border rounded-lg border-slate-200 focus:border-pink-400 focus:ring-2 focus:ring-pink-50 outline-none mb-3"
+              value={renameDraft} onChange={e => setRenameDraft(e.target.value)} autoFocus
+              onKeyDown={e => e.key === 'Enter' && handleRename()} />
+            <div className="flex justify-end gap-2">
+              <button onClick={() => setRenameOpen(false)} className="px-4 py-2 text-sm text-slate-500 hover:bg-slate-100 rounded-lg">Cancel</button>
+              <button onClick={handleRename} disabled={!renameDraft.trim()}
+                className="px-4 py-2 text-sm bg-pink-500 text-white rounded-lg hover:bg-pink-600 disabled:opacity-50">Save</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Manage persons modal */}
+      {personsOpen && current && (
+        <div className="fixed inset-0 z-50 flex items-end md:items-center justify-center">
+          <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => setPersonsOpen(false)} />
+          <div className="relative bg-white rounded-t-2xl md:rounded-xl shadow-xl w-full md:max-w-sm md:mx-4 p-5">
+            <div className="flex justify-center pt-0 pb-3 md:hidden"><div className="w-10 h-1 rounded-full bg-slate-200" /></div>
+            <h3 className="text-sm font-semibold text-slate-800 mb-3">Persons in "{current.name}"</h3>
+            <div className="flex flex-wrap gap-1.5 mb-4 max-h-60 overflow-y-auto">
+              {allPersons.map(p => {
+                const active = (current.persons || []).some(cp => cp.id === p.id)
+                return (
+                  <button key={p.id} onClick={() => handleTogglePersonOnCollection(p.id)}
+                    className={`text-xs px-3 py-1.5 rounded-full transition-colors active:scale-95 ${
+                      active ? 'bg-pink-500 text-white' : 'bg-white border border-slate-200 text-slate-500 hover:border-pink-300'
+                    }`}>{p.displayName || p.name}</button>
+                )
+              })}
+              {allPersons.length === 0 && <p className="text-xs text-slate-400">No persons yet</p>}
+            </div>
+            <div className="flex justify-end">
+              <button onClick={() => setPersonsOpen(false)} className="px-4 py-2 text-sm bg-pink-500 text-white rounded-lg hover:bg-pink-600">Done</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Collection picker (add / move media / move collection) */}
+      {picker && (
+        <CollectionPicker
+          title={picker.mode === 'add' ? `Add ${picker.ids.length} file(s) to...`
+               : picker.mode === 'move' ? `Move ${picker.ids.length} file(s) to...`
+               : `Move "${current?.name}" into...`}
+          confirmLabel={picker.mode === 'add' ? 'Add' : 'Move'}
+          excludeId={picker.mode === 'moveCollection' ? currentId ?? undefined : undefined}
+          topLevelId={picker.mode === 'moveCollection' ? rootInfo?.id : undefined}
+          onSelect={handlePickerSelect}
+          onClose={() => setPicker(null)}
+        />
+      )}
+
       {/* Upload queue */}
       <UploadQueuePanel items={queue.items} busy={queue.busy} onRetry={queue.retryFailed} onClear={queue.clear} />
 
       {/* Media detail lightbox */}
       {selectedMedia && (
-        <Lightbox media={selectedMedia} allMedia={media}
+        <Lightbox media={selectedMedia} allMedia={media} collectionId={currentId}
           onClose={() => setSelectedMedia(null)}
-          onNavigate={m => setSelectedMedia(m)} />
+          onNavigate={m => setSelectedMedia(m)}
+          onChanged={m => { setSelectedMedia(m); invalidateAll() }}
+          onAddTo={id => setPicker({ mode: 'add', ids: [id] })} />
       )}
     </div>
   )

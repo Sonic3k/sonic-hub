@@ -163,6 +163,30 @@ public class CollectionService {
         collectionRepository.save(c);
     }
 
+    public int addMediaBatch(UUID collectionId, List<UUID> mediaIds) {
+        Collection c = findById(collectionId);
+        List<MediaFile> files = mediaFileRepository.findAllById(mediaIds);
+        c.getMediaFiles().addAll(files);
+        collectionRepository.save(c);
+        return files.size();
+    }
+
+    public int removeMediaBatch(UUID collectionId, List<UUID> mediaIds) {
+        Collection c = findById(collectionId);
+        Set<UUID> ids = new HashSet<>(mediaIds);
+        int before = c.getMediaFiles().size();
+        c.getMediaFiles().removeIf(m -> ids.contains(m.getId()));
+        collectionRepository.save(c);
+        return before - c.getMediaFiles().size();
+    }
+
+    /** Move = add to target + remove from source, single transaction. Files stay put in B2. */
+    public Map<String, Integer> moveMediaBatch(UUID fromCollectionId, UUID toCollectionId, List<UUID> mediaIds) {
+        int added = addMediaBatch(toCollectionId, mediaIds);
+        int removed = removeMediaBatch(fromCollectionId, mediaIds);
+        return Map.of("added", added, "removed", removed);
+    }
+
     public void removeMedia(UUID collectionId, UUID mediaId) {
         Collection c = findById(collectionId);
         c.getMediaFiles().removeIf(m -> m.getId().equals(mediaId));
@@ -211,13 +235,29 @@ public class CollectionService {
         if (req.getDescription() != null) c.setDescription(req.getDescription());
         if (req.getParentId() != null) {
             if (req.getParentId().equals(new UUID(0, 0))) c.setParent(null);
-            else c.setParent(findById(req.getParentId()));
+            else {
+                Collection newParent = findById(req.getParentId());
+                assertNotSelfOrDescendant(c, newParent);
+                c.setParent(newParent);
+            }
         }
         if (req.getPersonIds() != null) {
             c.setPersons(new HashSet<>(personRepository.findAllById(req.getPersonIds())));
         }
         if (req.getTagIds() != null) {
             c.setTags(new HashSet<>(tagRepository.findAllById(req.getTagIds())));
+        }
+    }
+
+    /** Guard: a collection cannot be moved into itself or one of its own descendants. */
+    private void assertNotSelfOrDescendant(Collection c, Collection candidateParent) {
+        if (c.getId() == null) return; // create path
+        Collection cur = candidateParent;
+        int guard = 0;
+        while (cur != null && guard++ < 50) {
+            if (c.getId().equals(cur.getId()))
+                throw new RuntimeException("Cannot move a collection into itself or its descendants");
+            cur = cur.getParent();
         }
     }
 

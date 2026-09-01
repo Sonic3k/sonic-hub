@@ -138,6 +138,38 @@ public class MediaFileService {
         return candidate;
     }
 
+    public MediaFileDto.Response updateMedia(UUID id, MediaFileDto.UpdateRequest req) {
+        MediaFile mf = findById(id);
+        if (req.getCaption() != null) mf.setCaption(req.getCaption().isBlank() ? null : req.getCaption());
+        if (req.getIsFavorite() != null) mf.setIsFavorite(req.getIsFavorite());
+        return mapper.toMediaFileResponse(mediaFileRepository.save(mf));
+    }
+
+    public int favoriteBatch(List<UUID> ids, boolean value) {
+        int count = 0;
+        for (UUID id : ids) {
+            try {
+                MediaFile mf = findById(id);
+                mf.setIsFavorite(value);
+                mediaFileRepository.save(mf);
+                count++;
+            } catch (Exception ignored) {}
+        }
+        return count;
+    }
+
+    public MediaFileDto.Response addPerson(UUID mediaId, UUID personId) {
+        MediaFile mf = findById(mediaId);
+        personRepository.findById(personId).ifPresent(p -> mf.getPersons().add(p));
+        return mapper.toMediaFileResponse(mediaFileRepository.save(mf));
+    }
+
+    public MediaFileDto.Response removePerson(UUID mediaId, UUID personId) {
+        MediaFile mf = findById(mediaId);
+        mf.getPersons().removeIf(p -> p.getId().equals(personId));
+        return mapper.toMediaFileResponse(mediaFileRepository.save(mf));
+    }
+
     public void delete(UUID id) {
         MediaFile mf = findById(id);
         // Clear join tables

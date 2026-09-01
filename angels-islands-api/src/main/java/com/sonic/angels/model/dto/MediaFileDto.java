@@ -7,6 +7,25 @@ import java.util.Set;
 
 public class MediaFileDto {
 
+    public static class UpdateRequest {
+        private String caption; private Boolean isFavorite;
+        public String getCaption() { return caption; } public void setCaption(String v) { this.caption = v; }
+        public Boolean getIsFavorite() { return isFavorite; } public void setIsFavorite(Boolean v) { this.isFavorite = v; }
+    }
+
+    public static class FavoriteBatchRequest {
+        private java.util.List<UUID> ids; private boolean value;
+        public java.util.List<UUID> getIds() { return ids; } public void setIds(java.util.List<UUID> v) { this.ids = v; }
+        public boolean isValue() { return value; } public void setValue(boolean v) { this.value = v; }
+    }
+
+    public static class MoveBatchRequest {
+        private UUID fromCollectionId; private UUID toCollectionId; private java.util.List<UUID> ids;
+        public UUID getFromCollectionId() { return fromCollectionId; } public void setFromCollectionId(UUID v) { this.fromCollectionId = v; }
+        public UUID getToCollectionId() { return toCollectionId; } public void setToCollectionId(UUID v) { this.toCollectionId = v; }
+        public java.util.List<UUID> getIds() { return ids; } public void setIds(java.util.List<UUID> v) { this.ids = v; }
+    }
+
     public static class Response {
         private UUID id; private String fileName; private MediaFile.FileType fileType;
         private MediaFile.MediaCategory mediaCategory; private MediaFile.Orientation orientation;

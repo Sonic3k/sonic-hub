@@ -1,5 +1,5 @@
 import api from './client'
-import type { CollectionResponse, CollectionRequest } from '../types'
+import type { CollectionResponse, CollectionRequest, MediaFileResponse } from '../types'
 
 export const collectionsApi = {
   getAll: () => api.get<CollectionResponse[]>('/api/collections').then(r => r.data),
@@ -33,6 +33,25 @@ export const uploadApi = {
   },
   deleteMedia: (ids: string[]) =>
     api.post('/api/media-files/delete-batch', ids).then(r => r.data),
+}
+
+export const mediaApi = {
+  patch: (id: string, data: { caption?: string; isFavorite?: boolean }) =>
+    api.patch<MediaFileResponse>(`/api/media-files/${id}`, data).then(r => r.data),
+  favoriteBatch: (ids: string[], value: boolean) =>
+    api.post('/api/media-files/batch/favorite', { ids, value }).then(r => r.data),
+  moveBatch: (fromCollectionId: string, toCollectionId: string, ids: string[]) =>
+    api.post('/api/media-files/batch/move', { fromCollectionId, toCollectionId, ids }).then(r => r.data),
+  addPerson: (id: string, personId: string) =>
+    api.post<MediaFileResponse>(`/api/media-files/${id}/persons/${personId}`).then(r => r.data),
+  removePerson: (id: string, personId: string) =>
+    api.delete<MediaFileResponse>(`/api/media-files/${id}/persons/${personId}`).then(r => r.data),
+  addToCollectionBatch: (collectionId: string, ids: string[]) =>
+    api.post(`/api/collections/${collectionId}/media/batch`, ids).then(r => r.data),
+  removeFromCollectionBatch: (collectionId: string, ids: string[]) =>
+    api.delete(`/api/collections/${collectionId}/media/batch`, { data: ids }).then(r => r.data),
+  setAsCover: (collectionId: string, mediaId: string) =>
+    api.post(`/api/collections/${collectionId}/set-thumbnail/${mediaId}`).then(r => r.data),
 }
 
 export const collectionBrowseApi = {

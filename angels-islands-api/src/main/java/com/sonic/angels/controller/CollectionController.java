@@ -63,6 +63,16 @@ public class CollectionController {
         collectionService.addMedia(id, mediaId); return ResponseEntity.ok().build();
     }
 
+    @PostMapping("/{id}/media/batch")
+    public java.util.Map<String, Integer> addMediaBatch(@PathVariable UUID id, @RequestBody List<UUID> mediaIds) {
+        return java.util.Map.of("added", collectionService.addMediaBatch(id, mediaIds));
+    }
+
+    @DeleteMapping("/{id}/media/batch")
+    public java.util.Map<String, Integer> removeMediaBatch(@PathVariable UUID id, @RequestBody List<UUID> mediaIds) {
+        return java.util.Map.of("removed", collectionService.removeMediaBatch(id, mediaIds));
+    }
+
     @DeleteMapping("/{id}/media/{mediaId}")
     public ResponseEntity<Void> removeMedia(@PathVariable UUID id, @PathVariable UUID mediaId) {
         collectionService.removeMedia(id, mediaId); return ResponseEntity.ok().build();

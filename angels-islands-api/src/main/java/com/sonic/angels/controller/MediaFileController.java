@@ -16,10 +16,14 @@ public class MediaFileController {
 
     private final MediaFileService mediaFileService;
     private final com.sonic.angels.service.GeocodingService geocodingService;
+    private final com.sonic.angels.service.CollectionService collectionService;
 
-    public MediaFileController(MediaFileService mediaFileService, com.sonic.angels.service.GeocodingService geocodingService) {
+    public MediaFileController(MediaFileService mediaFileService,
+                               com.sonic.angels.service.GeocodingService geocodingService,
+                               com.sonic.angels.service.CollectionService collectionService) {
         this.mediaFileService = mediaFileService;
         this.geocodingService = geocodingService;
+        this.collectionService = collectionService;
     }
 
     @PostMapping("/rescan-batch")
@@ -50,6 +54,32 @@ public class MediaFileController {
         @RequestParam(value = "subFolder", required = false) String subFolder,
         @RequestParam(value = "lastModified", required = false) Long lastModified) throws IOException {
         return mediaFileService.uploadAndReturn(file, personId, collectionId, subFolder, lastModified);
+    }
+
+    @PatchMapping("/{id}")
+    public MediaFileDto.Response update(@PathVariable UUID id, @RequestBody MediaFileDto.UpdateRequest req) {
+        return mediaFileService.updateMedia(id, req);
+    }
+
+    @PostMapping("/batch/favorite")
+    public Map<String, Integer> favoriteBatch(@RequestBody MediaFileDto.FavoriteBatchRequest req) {
+        int updated = mediaFileService.favoriteBatch(req.getIds(), req.isValue());
+        return Map.of("updated", updated);
+    }
+
+    @PostMapping("/batch/move")
+    public Map<String, Integer> moveBatch(@RequestBody MediaFileDto.MoveBatchRequest req) {
+        return collectionService.moveMediaBatch(req.getFromCollectionId(), req.getToCollectionId(), req.getIds());
+    }
+
+    @PostMapping("/{id}/persons/{personId}")
+    public MediaFileDto.Response addPerson(@PathVariable UUID id, @PathVariable UUID personId) {
+        return mediaFileService.addPerson(id, personId);
+    }
+
+    @DeleteMapping("/{id}/persons/{personId}")
+    public MediaFileDto.Response removePerson(@PathVariable UUID id, @PathVariable UUID personId) {
+        return mediaFileService.removePerson(id, personId);
     }
 
     @DeleteMapping("/{id}")

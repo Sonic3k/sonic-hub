@@ -91,6 +91,10 @@ public class DtoMapper {
             d.setFps(vid.getFps()); d.setBitrate(vid.getBitrate());
             r.setVideoDetail(d);
         }
+
+        if (m.getPersons() != null && !m.getPersons().isEmpty())
+            r.setPersons(m.getPersons().stream().map(this::toPersonSummary).collect(java.util.stream.Collectors.toSet()));
+
         return r;
     }
 
