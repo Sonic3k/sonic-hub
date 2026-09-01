@@ -45,7 +45,7 @@ public class ChatArchive extends BaseEntity {
 
     @JsonIgnore
     @OneToMany(mappedBy = "chatArchive", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    @OrderBy("timestamp ASC")
+    @OrderBy("seq ASC")
     private List<ChatMessage> messages = new ArrayList<>();
 
     public enum Platform { YAHOO, FACEBOOK, SMS, ZALO, TELEGRAM, BLOG, OTHER }

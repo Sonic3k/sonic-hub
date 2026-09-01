@@ -33,6 +33,10 @@ public class ChatMessage {
     @Column(name = "timestamp")
     private LocalDateTime timestamp;
 
+    /** Original order in the imported file — the ground truth for conversation sequence. */
+    @Column(name = "seq")
+    private Integer seq;
+
     public enum SenderType { SELF, PERSON }
 
     public ChatMessage() {}
@@ -49,4 +53,6 @@ public class ChatMessage {
     public void setContent(String content) { this.content = content; }
     public LocalDateTime getTimestamp() { return timestamp; }
     public void setTimestamp(LocalDateTime timestamp) { this.timestamp = timestamp; }
+    public Integer getSeq() { return seq; }
+    public void setSeq(Integer seq) { this.seq = seq; }
 }

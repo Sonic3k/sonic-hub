@@ -21,10 +21,12 @@ public class ChatArchiveDto {
 
     public static class ImportResult {
         private UUID archiveId; private int totalConversations; private int totalMessages;
+        private int skippedLines;
         private LocalDateTime dateFrom; private LocalDateTime dateTo;
         public UUID getArchiveId() { return archiveId; } public void setArchiveId(UUID v) { this.archiveId = v; }
         public int getTotalConversations() { return totalConversations; } public void setTotalConversations(int v) { this.totalConversations = v; }
         public int getTotalMessages() { return totalMessages; } public void setTotalMessages(int v) { this.totalMessages = v; }
+        public int getSkippedLines() { return skippedLines; } public void setSkippedLines(int v) { this.skippedLines = v; }
         public LocalDateTime getDateFrom() { return dateFrom; } public void setDateFrom(LocalDateTime v) { this.dateFrom = v; }
         public LocalDateTime getDateTo() { return dateTo; } public void setDateTo(LocalDateTime v) { this.dateTo = v; }
     }

@@ -64,7 +64,8 @@ public class ChatImportService {
         String[] lines = raw.replace("\r\n", "\n").split("\n");
 
         // Parse into conversation sessions
-        List<ParsedConversation> conversations = parseConversations(lines, selfIdentifiers);
+        ParseOutcome outcome = parseConversations(lines, selfIdentifiers);
+        List<ParsedConversation> conversations = outcome.conversations;
 
         // Save to DB
         int totalMessages = 0;
@@ -77,9 +78,11 @@ public class ChatImportService {
         archive.setPerson(person);
         archive.setPlatform(ChatArchive.Platform.YAHOO);
         archive.setTitle(file.getOriginalFilename());
+        archive.setRawContent(raw); // full-fidelity source of truth — parser may skip lines, raw never lies
         archive.setExtractionStatus(ChatArchive.ExtractionStatus.PENDING);
 
         List<ChatMessage> allMessages = new ArrayList<>();
+        int seq = 0;
         for (ParsedConversation conv : conversations) {
             totalConversations++;
             for (ParsedMessage pm : conv.messages) {
@@ -89,6 +92,7 @@ public class ChatImportService {
                 msg.setSenderType(pm.isSelf ? ChatMessage.SenderType.SELF : ChatMessage.SenderType.PERSON);
                 msg.setContent(pm.content);
                 msg.setTimestamp(pm.timestamp);
+                msg.setSeq(seq++);
                 allMessages.add(msg);
                 totalMessages++;
 
@@ -109,15 +113,18 @@ public class ChatImportService {
         result.setTotalMessages(totalMessages);
         result.setDateFrom(earliest);
         result.setDateTo(latest);
+        result.setSkippedLines(outcome.skippedLines);
         return result;
     }
 
     // ── Parsing ──────────────────────────────────────────────────────────────
 
-    private List<ParsedConversation> parseConversations(String[] lines, Set<String> selfIdentifiers) {
+    private ParseOutcome parseConversations(String[] lines, Set<String> selfIdentifiers) {
         List<ParsedConversation> conversations = new ArrayList<>();
         LocalDateTime currentDate = null;
+        LocalDateTime lastTs = null; // last message time in session — drives day rollover
         List<ParsedMessage> currentMessages = new ArrayList<>();
+        int skippedLines = 0;
 
         for (String line : lines) {
             line = line.trim();
@@ -135,6 +142,7 @@ public class ChatImportService {
                     log.warn("Failed to parse date: {}", dateMatcher.group(1));
                     currentDate = null;
                 }
+                lastTs = currentDate;
                 currentMessages = new ArrayList<>();
                 continue;
             }
@@ -151,24 +159,37 @@ public class ChatImportService {
                 // Strip remaining HTML tags
                 content = HTML_TAG.matcher(content).replaceAll("").trim();
 
-                if (content.isEmpty()) continue;
-
-                // Build timestamp
+                // Build timestamp (monotonic within a session: any step backwards = crossed midnight)
                 LocalDateTime timestamp;
                 try {
                     var time = java.time.LocalTime.parse(timeStr, TIME_FMT);
-                    timestamp = currentDate.toLocalDate().atTime(time);
-                    // Handle midnight crossover: if time is AM and date header was PM
-                    if (time.getHour() < 12 && currentDate.getHour() >= 12) {
-                        timestamp = timestamp.plusDays(1);
-                    }
+                    LocalDateTime base = lastTs != null ? lastTs : currentDate;
+                    timestamp = base.toLocalDate().atTime(time);
+                    if (timestamp.isBefore(base)) timestamp = timestamp.plusDays(1);
                 } catch (Exception e) {
-                    timestamp = currentDate;
+                    timestamp = lastTs != null ? lastTs : currentDate;
                 }
+                lastTs = timestamp;
+
+                if (content.isEmpty()) continue; // html-only remnant; raw_content keeps the original
 
                 boolean isSelf = selfIdentifiers.contains(sender.toLowerCase());
                 currentMessages.add(new ParsedMessage(sender, content, timestamp, isSelf));
+                continue;
             }
+
+            // Continuation of a multi-line message (no timestamp prefix): append to the last message
+            if (!currentMessages.isEmpty()) {
+                String cont = HTML_TAG.matcher(cleanEmoticons(line)).replaceAll("").trim();
+                if (!cont.isEmpty()) {
+                    ParsedMessage last = currentMessages.get(currentMessages.size() - 1);
+                    last.content = last.content + "\n" + cont;
+                }
+                continue;
+            }
+
+            // Unparseable line with nothing to attach to (e.g. before the first date header)
+            skippedLines++;
         }
 
         // Last conversation
@@ -176,7 +197,15 @@ public class ChatImportService {
             conversations.add(new ParsedConversation(currentDate, currentMessages));
         }
 
-        return conversations;
+        return new ParseOutcome(conversations, skippedLines);
+    }
+
+    private static final class ParseOutcome {
+        final List<ParsedConversation> conversations;
+        final int skippedLines;
+        ParseOutcome(List<ParsedConversation> conversations, int skippedLines) {
+            this.conversations = conversations; this.skippedLines = skippedLines;
+        }
     }
 
     private String cleanEmoticons(String content) {
@@ -228,7 +257,7 @@ public class ChatImportService {
 
     private static class ParsedMessage {
         final String sender;
-        final String content;
+        String content; // mutable: multi-line messages get continuation lines appended
         final LocalDateTime timestamp;
         final boolean isSelf;
         ParsedMessage(String sender, String content, LocalDateTime timestamp, boolean isSelf) {

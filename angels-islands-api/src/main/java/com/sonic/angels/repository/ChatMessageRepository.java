@@ -9,6 +9,6 @@ import java.util.List;
 
 @Repository
 public interface ChatMessageRepository extends JpaRepository<ChatMessage, UUID> {
-    List<ChatMessage> findByChatArchiveIdOrderByTimestampAsc(UUID archiveId);
+    List<ChatMessage> findByChatArchiveIdOrderBySeqAsc(UUID archiveId);
     long countByChatArchiveId(UUID archiveId);
 }

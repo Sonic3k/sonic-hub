@@ -37,7 +37,7 @@ public class ChatArchiveController {
 
     @GetMapping("/{archiveId}/messages")
     public List<ChatMessage> getMessages(@PathVariable UUID personId, @PathVariable UUID archiveId) {
-        return messageRepo.findByChatArchiveIdOrderByTimestampAsc(archiveId);
+        return messageRepo.findByChatArchiveIdOrderBySeqAsc(archiveId);
     }
 
     @PostMapping("/import/yahoo")
