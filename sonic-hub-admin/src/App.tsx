@@ -8,10 +8,7 @@ import ProjectsPage from './pages/ProjectsPage'
 import TodosPage from './pages/TodosPage'
 import ProblemsPage from './pages/ProblemsPage'
 import WishlistsPage from './pages/WishlistsPage'
-import EntriesPage from './pages/EntriesPage'
 import TrackingRulesPage from './pages/TrackingRulesPage'
-import JournalPage from './pages/JournalPage'
-import DailyLogPage from './pages/DailyLogPage'
 import CompanionPage from './pages/CompanionPage'
 
 const queryClient = new QueryClient({
@@ -30,10 +27,7 @@ export default function App() {
             <Route path="todos" element={<TodosPage />} />
             <Route path="problems" element={<ProblemsPage />} />
             <Route path="wishlists" element={<WishlistsPage />} />
-            <Route path="entries" element={<EntriesPage />} />
             <Route path="tracking-rules" element={<TrackingRulesPage />} />
-            <Route path="journal" element={<JournalPage />} />
-            <Route path="daily-log" element={<DailyLogPage />} />
             <Route path="projects" element={<ProjectsPage />} />
             <Route path="tags" element={<TagsPage />} />
             <Route path="companion" element={<CompanionPage />} />

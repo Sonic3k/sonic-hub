@@ -1,5 +1,5 @@
 import { NavLink } from 'react-router-dom'
-import { CheckSquare, Tag, Zap, FolderOpen, ListTodo, AlertCircle, Heart, X, Star, Activity, Bell, BookOpen, Calendar } from 'lucide-react'
+import { CheckSquare, Tag, Zap, FolderOpen, ListTodo, AlertCircle, Heart, X, Star, Bell } from 'lucide-react'
 import clsx from 'clsx'
 
 const navItems = [
@@ -7,10 +7,7 @@ const navItems = [
   { to: '/todos', label: 'Todos', icon: ListTodo },
   { to: '/problems', label: 'Problems', icon: AlertCircle },
   { to: '/wishlists', label: 'Wishlists', icon: Star },
-  { to: '/entries', label: 'Entries', icon: Activity },
   { to: '/tracking-rules', label: 'Tracking Rules', icon: Bell },
-  { to: '/journal', label: 'Journal', icon: BookOpen },
-  { to: '/daily-log', label: 'Daily Log', icon: Calendar },
   { to: '/projects', label: 'Projects', icon: FolderOpen },
   { to: '/tags', label: 'Tags', icon: Tag },
   { to: '/companion', label: 'Companion', icon: Heart },

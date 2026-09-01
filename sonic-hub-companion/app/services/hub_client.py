@@ -129,25 +129,6 @@ async def delete_todo(todo_id: str) -> dict | None:
     return await _request("DELETE", f"/api/todos/{todo_id}")
 
 
-# ─── Entries ───
-
-async def create_entry(entity_type: str, entity_id: str, content: str, entry_type: str = "NOTE", **kwargs) -> dict | None:
-    body = {
-        "entityType": entity_type,
-        "entityId": entity_id,
-        "content": content,
-        "entryType": entry_type,
-    }
-    for k in ("projectId", "tagIds", "createdBy"):
-        if k in kwargs and kwargs[k] is not None:
-            body[k] = kwargs[k]
-    return await _request("POST", "/api/entries", json=body)
-
-
-async def get_recent_entries(days: int = 7) -> list:
-    return await _request("GET", "/api/entries/recent", params={"days": days}) or []
-
-
 # ─── Wishlists ───
 
 async def create_wishlist(title: str, **kwargs) -> dict | None:
@@ -202,7 +183,6 @@ async def get_companion_context() -> dict:
     tasks = await get_tasks()
     problems = await get_problems()
     todos = await get_todos()
-    entries = await get_recent_entries(3)
     rules = await get_active_rules()
     wishlists = await get_wishlists()
 
@@ -214,7 +194,6 @@ async def get_companion_context() -> dict:
         "all_open_tasks": open_tasks,
         "problems_active": active_problems,
         "todos_open": open_todos,
-        "recent_entries": entries[:10],
         "tracking_rules": rules,
         "wishlists": wishlists,
     }

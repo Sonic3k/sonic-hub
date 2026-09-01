@@ -117,12 +117,10 @@ Các action type:
 - update_todo: {{"type":"update_todo","id":"uuid","title":"..."}}
 - delete_todo: {{"type":"delete_todo","id":"uuid"}}
 - mark_done: {{"type":"mark_done","entity_type":"task","id":"uuid"}}
-- create_entry: {{"type":"create_entry","entity_type":"problem","entity_id":"uuid","content":"...","entry_type":"OCCURRENCE"}}
 - create_wishlist: {{"type":"create_wishlist","title":"...","description":"...","category":"tech/hobby/business/personal/creative"}}
 - update_wishlist: {{"type":"update_wishlist","id":"uuid","title":"...","archived":true}}
 - delete_wishlist: {{"type":"delete_wishlist","id":"uuid"}}
 - update_problem: {{"type":"update_problem","id":"uuid","status":"RESOLVED","note":"..."}}
-- update_daily_log: {{"type":"update_daily_log","items":[{{"title":"đi gym","status":"done","type":"today"}},{{"title":"họp team","status":"planned","type":"tomorrow"}}],"reflection":"hôm nay khá productive"}}
 
 QUAN TRỌNG:
 - CHỈ tạo action khi user thật sự có intent. Tán gẫu bình thường thì actions = [].

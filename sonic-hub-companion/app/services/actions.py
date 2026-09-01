@@ -114,17 +114,6 @@ async def execute_actions(actions: list[dict], assistant_nickname: str) -> list[
                     last_ids["todo"] = str(result.get("id"))
                     results.append(f"Created todo: {action['title']}")
 
-            elif action_type == "create_entry":
-                result = await hub_client.create_entry(
-                    entity_type=action["entity_type"],
-                    entity_id=action["entity_id"],
-                    content=action["content"],
-                    entry_type=action.get("entry_type", "NOTE"),
-                    createdBy=created_by,
-                )
-                if result:
-                    results.append(f"Created entry on {action['entity_type']}")
-
             elif action_type == "create_tracking_rule":
                 result = await hub_client.create_tracking_rule(
                     entity_type=action["entity_type"],
@@ -211,50 +200,6 @@ async def execute_actions(actions: list[dict], assistant_nickname: str) -> list[
                 await hub_client.delete_wishlist(action["id"])
                 results.append(f"Deleted wishlist: {action['id']}")
 
-            elif action_type == "update_daily_log":
-                from app.models.models import DailyLog
-                from app.core.database import async_session
-                from app.core.tz import now_local
-                from sqlalchemy import select
-
-                today = now_local().date()
-                items = action.get("items", [])
-                reflection = action.get("reflection")
-
-                # Find assistant_id from context
-                async with async_session() as db:
-                    assistants = await memory_service.get_all_assistants(db)
-                    assistant = next((a for a in assistants if a.nickname == assistant_nickname), None)
-                    if not assistant:
-                        continue
-
-                    existing = await db.execute(
-                        select(DailyLog).where(
-                            DailyLog.assistant_id == assistant.id,
-                            DailyLog.date == today,
-                        )
-                    )
-                    log = existing.scalar_one_or_none()
-
-                    if log:
-                        # Merge items
-                        existing_items = log.items or []
-                        existing_items.extend(items)
-                        log.items = existing_items
-                        if reflection:
-                            log.reflection = reflection
-                    else:
-                        log = DailyLog(
-                            assistant_id=assistant.id,
-                            date=today,
-                            items=items,
-                            reflection=reflection,
-                        )
-                        db.add(log)
-
-                    await db.commit()
-                results.append(f"Updated daily log: {len(items)} items")
-
             else:
                 logger.warning(f"Unknown action type: {action_type}")
 
@@ -300,13 +245,6 @@ def format_hub_context(ctx: dict) -> str:
         parts.append(f"\nTodos chưa xong ({len(todos)}):")
         for t in todos[:5]:
             parts.append(f"  - [id:{t.get('id')}] {t.get('title')}")
-
-    # Recent entries
-    entries = ctx.get("recent_entries", [])
-    if entries:
-        parts.append(f"\nEntries gần đây:")
-        for e in entries[:5]:
-            parts.append(f"  - [{e.get('entryType')}] {e.get('entityType')}: {e.get('content', '')[:80]}")
 
     # Tracking rules
     rules = ctx.get("tracking_rules", [])
