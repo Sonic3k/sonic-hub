@@ -7,6 +7,12 @@ import java.util.Set;
 
 public class MediaFileDto {
 
+    /** Which relationships to populate on Response. Default none (slim); consumers opt in per-call. */
+    public record Includes(boolean details, boolean persons, boolean tags) {
+        public static Includes none() { return new Includes(false, false, false); }
+        public static Includes all()  { return new Includes(true, true, true); }
+    }
+
     public static class UpdateRequest {
         private String caption; private Boolean isFavorite;
         public String getCaption() { return caption; } public void setCaption(String v) { this.caption = v; }

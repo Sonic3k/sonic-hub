@@ -53,26 +53,26 @@ public class CollectionService {
 
     // ── Queries (scoped under root) ──────────────────────────────────────────
 
-    public List<CollectionDto.Response> findAll() {
+    public List<CollectionDto.Response> findAll(Includes inc) {
         // All collections under root (excluding root itself)
         return collectionRepository.findAll().stream()
             .filter(c -> !c.getId().equals(getRootId()))
-            .map(this::toResponse).toList();
+            .map(c -> toResponse(c, inc)).toList();
     }
 
-    public List<CollectionDto.Response> findTopLevel() {
+    public List<CollectionDto.Response> findTopLevel(Includes inc) {
         // Direct children of root = top-level collections
-        return collectionRepository.findByParentId(getRootId()).stream().map(this::toResponse).toList();
+        return collectionRepository.findByParentId(getRootId()).stream().map(c -> toResponse(c, inc)).toList();
     }
 
-    public List<CollectionDto.Response> findByPersonId(UUID personId) {
+    public List<CollectionDto.Response> findByPersonId(UUID personId, Includes inc) {
         return collectionRepository.findByPersonsId(personId).stream()
             .filter(c -> !c.getId().equals(getRootId()))
-            .map(this::toResponse).toList();
+            .map(c -> toResponse(c, inc)).toList();
     }
 
-    public List<CollectionDto.Response> findByParentId(UUID parentId) {
-        return collectionRepository.findByParentId(parentId).stream().map(this::toResponse).toList();
+    public List<CollectionDto.Response> findByParentId(UUID parentId, Includes inc) {
+        return collectionRepository.findByParentId(parentId).stream().map(c -> toResponse(c, inc)).toList();
     }
 
     public CollectionDto.Response findResponseById(UUID id) {
@@ -193,7 +193,7 @@ public class CollectionService {
         collectionRepository.save(c);
     }
 
-    public List<MediaFileDto.Response> getMedia(UUID collectionId, String sort, String sortDir) {
+    public List<MediaFileDto.Response> getMedia(UUID collectionId, String sort, String sortDir, MediaFileDto.Includes inc) {
         Collection c = findById(collectionId);
         java.util.Comparator<MediaFile> cmp = switch (sort != null ? sort : "effectiveDate") {
             case "name" -> java.util.Comparator.comparing(MediaFile::getFileName, String.CASE_INSENSITIVE_ORDER);
@@ -201,7 +201,7 @@ public class CollectionService {
             default -> java.util.Comparator.comparing(m -> m.getEffectiveDate() != null ? m.getEffectiveDate() : LocalDateTime.MIN);
         };
         if ("desc".equalsIgnoreCase(sortDir)) cmp = cmp.reversed();
-        return c.getMediaFiles().stream().sorted(cmp).map(mapper::toMediaFileResponse).toList();
+        return c.getMediaFiles().stream().sorted(cmp).map(m -> mapper.toMediaFileResponse(m, inc)).toList();
     }
 
     // ── Thumbnail ────────────────────────────────────────────────────────────
@@ -261,11 +261,24 @@ public class CollectionService {
         }
     }
 
+    /** Which optional fields to populate. Order: childrenCount, mediaCount, tags, persons. */
+    public record Includes(boolean childrenCount, boolean mediaCount, boolean tags, boolean persons) {
+        public static Includes none() { return new Includes(false, false, false, false); }
+        public static Includes all()  { return new Includes(true, true, true, true); }
+    }
+
     private CollectionDto.Response toResponse(Collection c) {
+        return toResponse(c, Includes.all());
+    }
+
+    /**
+     * Heavy/lazy fields (counts, tags, persons) only fetched when the matching include flag
+     * is on. Counts use dedicated COUNT queries instead of loading whole lazy sets.
+     * id/name/description/createdAt/parent/thumbnail are always included (cheap).
+     */
+    private CollectionDto.Response toResponse(Collection c, Includes inc) {
         CollectionDto.Response r = new CollectionDto.Response();
         r.setId(c.getId()); r.setName(c.getName()); r.setDescription(c.getDescription());
-        r.setChildrenCount(c.getChildren() != null ? c.getChildren().size() : 0);
-        r.setMediaCount(c.getMediaFiles() != null ? c.getMediaFiles().size() : 0);
         r.setCreatedAt(c.getCreatedAt());
         if (c.getParent() != null) {
             r.setParentId(c.getParent().getId());
@@ -273,9 +286,13 @@ public class CollectionService {
         }
         if (c.getThumbnailMediaFile() != null)
             r.setThumbnailUrl(storageService.buildCdnUrl(c.getThumbnailMediaFile().getStorageKey(), c.getThumbnailMediaFile().getStorageProvider()));
-        if (c.getTags() != null)
+        if (inc.childrenCount())
+            r.setChildrenCount((int) collectionRepository.countByParentId(c.getId()));
+        if (inc.mediaCount())
+            r.setMediaCount((int) collectionRepository.countMediaInCollection(c.getId()));
+        if (inc.tags() && c.getTags() != null)
             r.setTags(c.getTags().stream().map(mapper::toTagResponse).collect(Collectors.toSet()));
-        if (c.getPersons() != null)
+        if (inc.persons() && c.getPersons() != null)
             r.setPersons(c.getPersons().stream().map(mapper::toPersonSummary).collect(Collectors.toSet()));
         return r;
     }

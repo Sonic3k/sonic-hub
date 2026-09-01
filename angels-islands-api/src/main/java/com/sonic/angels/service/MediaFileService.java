@@ -57,13 +57,17 @@ public class MediaFileService {
     // ── Queries (return DTOs) ────────────────────────────────────────────────
 
     @Transactional(readOnly = true)
-    public List<MediaFileDto.Response> findAllDto() { return mediaFileRepository.findAll().stream().map(mapper::toMediaFileResponse).toList(); }
+    public List<MediaFileDto.Response> findAllDto(MediaFileDto.Includes inc) {
+        return mediaFileRepository.findAll().stream().map(m -> mapper.toMediaFileResponse(m, inc)).toList();
+    }
 
     @Transactional(readOnly = true)
     public MediaFileDto.Response findDtoById(UUID id) { return mapper.toMediaFileResponse(findById(id)); }
 
     @Transactional(readOnly = true)
-    public List<MediaFileDto.Response> findDtoByPersonId(UUID personId) { return mediaFileRepository.findByPersonId(personId).stream().map(mapper::toMediaFileResponse).toList(); }
+    public List<MediaFileDto.Response> findDtoByPersonId(UUID personId, MediaFileDto.Includes inc) {
+        return mediaFileRepository.findByPersonId(personId).stream().map(m -> mapper.toMediaFileResponse(m, inc)).toList();
+    }
 
     // ── Entity access (internal) ─────────────────────────────────────────────
 
@@ -139,18 +143,18 @@ public class MediaFileService {
     }
 
     @Transactional(readOnly = true)
-    public org.springframework.data.domain.Page<MediaFileDto.Response> library(int page, int size, Boolean favorite) {
+    public org.springframework.data.domain.Page<MediaFileDto.Response> library(int page, int size, Boolean favorite, MediaFileDto.Includes inc) {
         var pageable = org.springframework.data.domain.PageRequest.of(page, size,
             org.springframework.data.domain.Sort.by(org.springframework.data.domain.Sort.Direction.DESC, "effectiveDate"));
         var result = Boolean.TRUE.equals(favorite)
             ? mediaFileRepository.findByIsFavoriteTrue(pageable)
             : mediaFileRepository.findAll(pageable);
-        return result.map(mapper::toMediaFileResponse);
+        return result.map(m -> mapper.toMediaFileResponse(m, inc));
     }
 
     @Transactional(readOnly = true)
-    public List<MediaFileDto.Response> geotagged() {
-        return mediaFileRepository.findGeotagged().stream().map(mapper::toMediaFileResponse).toList();
+    public List<MediaFileDto.Response> geotagged(MediaFileDto.Includes inc) {
+        return mediaFileRepository.findGeotagged().stream().map(m -> mapper.toMediaFileResponse(m, inc)).toList();
     }
 
     public MediaFileDto.Response updateMedia(UUID id, MediaFileDto.UpdateRequest req) {

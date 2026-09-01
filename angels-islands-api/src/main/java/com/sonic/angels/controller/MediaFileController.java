@@ -39,24 +39,42 @@ public class MediaFileController {
     }
 
     @GetMapping
-    public List<MediaFileDto.Response> findAll() { return mediaFileService.findAllDto(); }
+    public List<MediaFileDto.Response> findAll(
+        @RequestParam(defaultValue = "false") boolean inclDetails,
+        @RequestParam(defaultValue = "false") boolean inclPersons,
+        @RequestParam(defaultValue = "false") boolean inclTags) {
+        return mediaFileService.findAllDto(new MediaFileDto.Includes(inclDetails, inclPersons, inclTags));
+    }
 
     @GetMapping("/library")
     public org.springframework.data.domain.Page<MediaFileDto.Response> library(
         @RequestParam(defaultValue = "0") int page,
         @RequestParam(defaultValue = "100") int size,
-        @RequestParam(required = false) Boolean favorite) {
-        return mediaFileService.library(page, size, favorite);
+        @RequestParam(required = false) Boolean favorite,
+        @RequestParam(defaultValue = "false") boolean inclDetails,
+        @RequestParam(defaultValue = "false") boolean inclPersons,
+        @RequestParam(defaultValue = "false") boolean inclTags) {
+        return mediaFileService.library(page, size, favorite, new MediaFileDto.Includes(inclDetails, inclPersons, inclTags));
     }
 
     @GetMapping("/geotagged")
-    public List<MediaFileDto.Response> geotagged() { return mediaFileService.geotagged(); }
+    public List<MediaFileDto.Response> geotagged(
+        @RequestParam(defaultValue = "false") boolean inclDetails,
+        @RequestParam(defaultValue = "false") boolean inclPersons,
+        @RequestParam(defaultValue = "false") boolean inclTags) {
+        return mediaFileService.geotagged(new MediaFileDto.Includes(inclDetails, inclPersons, inclTags));
+    }
 
     @GetMapping("/{id}")
     public MediaFileDto.Response findById(@PathVariable UUID id) { return mediaFileService.findDtoById(id); }
 
     @GetMapping("/person/{personId}")
-    public List<MediaFileDto.Response> findByPerson(@PathVariable UUID personId) { return mediaFileService.findDtoByPersonId(personId); }
+    public List<MediaFileDto.Response> findByPerson(@PathVariable UUID personId,
+        @RequestParam(defaultValue = "false") boolean inclDetails,
+        @RequestParam(defaultValue = "false") boolean inclPersons,
+        @RequestParam(defaultValue = "false") boolean inclTags) {
+        return mediaFileService.findDtoByPersonId(personId, new MediaFileDto.Includes(inclDetails, inclPersons, inclTags));
+    }
 
     @PostMapping("/upload")
     public MediaFileDto.Response upload(@RequestParam("file") MultipartFile file,

@@ -56,9 +56,9 @@ export const mediaApi = {
 
 export const collectionBrowseApi = {
   getRoot: () => api.get<CollectionResponse>('/api/collections/root').then(r => r.data),
-  getTopLevel: () => api.get<CollectionResponse[]>('/api/collections').then(r => r.data),
+  getTopLevel: () => api.get<CollectionResponse[]>('/api/collections', { params: { inclChildrenCount: true, inclMediaCount: true, inclPersons: true } }).then(r => r.data),
   getById: (id: string) => api.get<CollectionResponse>(`/api/collections/${id}`).then(r => r.data),
-  getChildren: (id: string) => api.get<CollectionResponse[]>(`/api/collections/${id}/children`).then(r => r.data),
+  getChildren: (id: string) => api.get<CollectionResponse[]>(`/api/collections/${id}/children`, { params: { inclChildrenCount: true, inclMediaCount: true, inclPersons: true } }).then(r => r.data),
   getBreadcrumb: (id: string) => api.get<CollectionResponse[]>(`/api/collections/${id}/breadcrumb`).then(r => r.data),
-  getCollectionMedia: (id: string, sort?: string, sortDir?: string) => api.get(`/api/collections/${id}/media`, { params: { sort, sortDir } }).then(r => r.data),
+  getCollectionMedia: (id: string, sort?: string, sortDir?: string) => api.get(`/api/collections/${id}/media`, { params: { sort, sortDir, inclDetails: true, inclPersons: true } }).then(r => r.data),
 }

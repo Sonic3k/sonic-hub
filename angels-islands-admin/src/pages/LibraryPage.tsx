@@ -33,7 +33,7 @@ export default function LibraryPage() {
   const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading } = useInfiniteQuery({
     queryKey: ['library', fav],
     queryFn: ({ pageParam = 0 }) =>
-      api.get<LibraryPageData>('/api/media-files/library', { params: { page: pageParam, size: PAGE_SIZE, favorite: fav || undefined } })
+      api.get<LibraryPageData>('/api/media-files/library', { params: { page: pageParam, size: PAGE_SIZE, favorite: fav || undefined, inclDetails: true, inclPersons: true } })
         .then(r => r.data),
     initialPageParam: 0,
     getNextPageParam: last => (last.last ? undefined : last.number + 1),

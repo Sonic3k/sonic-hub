@@ -19,20 +19,36 @@ public class CollectionController {
     }
 
     @GetMapping
-    public List<CollectionDto.Response> findTopLevel() { return collectionService.findTopLevel(); }
+    public List<CollectionDto.Response> findTopLevel(
+        @RequestParam(defaultValue = "false") boolean inclChildrenCount,
+        @RequestParam(defaultValue = "false") boolean inclMediaCount,
+        @RequestParam(defaultValue = "false") boolean inclTags,
+        @RequestParam(defaultValue = "false") boolean inclPersons) {
+        return collectionService.findTopLevel(new CollectionService.Includes(inclChildrenCount, inclMediaCount, inclTags, inclPersons));
+    }
 
     @GetMapping("/root")
     public CollectionDto.Response getRoot() { return collectionService.findResponseById(collectionService.getRootId()); }
 
     @GetMapping("/all")
-    public List<CollectionDto.Response> findAll() { return collectionService.findAll(); }
+    public List<CollectionDto.Response> findAll(
+        @RequestParam(defaultValue = "false") boolean inclChildrenCount,
+        @RequestParam(defaultValue = "false") boolean inclMediaCount,
+        @RequestParam(defaultValue = "false") boolean inclTags,
+        @RequestParam(defaultValue = "false") boolean inclPersons) {
+        return collectionService.findAll(new CollectionService.Includes(inclChildrenCount, inclMediaCount, inclTags, inclPersons));
+    }
 
     @GetMapping("/{id}")
     public CollectionDto.Response findById(@PathVariable UUID id) { return collectionService.findResponseById(id); }
 
     @GetMapping("/{id}/children")
-    public List<CollectionDto.Response> findChildren(@PathVariable UUID id) {
-        return collectionService.findByParentId(id);
+    public List<CollectionDto.Response> findChildren(@PathVariable UUID id,
+        @RequestParam(defaultValue = "false") boolean inclChildrenCount,
+        @RequestParam(defaultValue = "false") boolean inclMediaCount,
+        @RequestParam(defaultValue = "false") boolean inclTags,
+        @RequestParam(defaultValue = "false") boolean inclPersons) {
+        return collectionService.findByParentId(id, new CollectionService.Includes(inclChildrenCount, inclMediaCount, inclTags, inclPersons));
     }
 
     @PostMapping
@@ -54,8 +70,11 @@ public class CollectionController {
     @GetMapping("/{id}/media")
     public List<MediaFileDto.Response> getMedia(@PathVariable UUID id,
         @RequestParam(defaultValue = "effectiveDate") String sort,
-        @RequestParam(defaultValue = "desc") String sortDir) {
-        return collectionService.getMedia(id, sort, sortDir);
+        @RequestParam(defaultValue = "desc") String sortDir,
+        @RequestParam(defaultValue = "false") boolean inclDetails,
+        @RequestParam(defaultValue = "false") boolean inclPersons,
+        @RequestParam(defaultValue = "false") boolean inclTags) {
+        return collectionService.getMedia(id, sort, sortDir, new MediaFileDto.Includes(inclDetails, inclPersons, inclTags));
     }
 
     @PostMapping("/{id}/media/{mediaId}")
@@ -95,7 +114,11 @@ public class CollectionController {
     // ── By Person ────────────────────────────────────────────────────────────
 
     @GetMapping("/person/{personId}")
-    public List<CollectionDto.Response> findByPerson(@PathVariable UUID personId) {
-        return collectionService.findByPersonId(personId);
+    public List<CollectionDto.Response> findByPerson(@PathVariable UUID personId,
+        @RequestParam(defaultValue = "false") boolean inclChildrenCount,
+        @RequestParam(defaultValue = "false") boolean inclMediaCount,
+        @RequestParam(defaultValue = "false") boolean inclTags,
+        @RequestParam(defaultValue = "false") boolean inclPersons) {
+        return collectionService.findByPersonId(personId, new CollectionService.Includes(inclChildrenCount, inclMediaCount, inclTags, inclPersons));
     }
 }

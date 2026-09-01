@@ -51,6 +51,12 @@ public class DtoMapper {
 
     // ── MediaFile ────────────────────────────────────────────────────────────
     public MediaFileDto.Response toMediaFileResponse(MediaFile m) {
+        return toMediaFileResponse(m, MediaFileDto.Includes.all());
+    }
+
+    /** Heavy/lazy blocks (image/video detail, persons, tags) only mapped when the matching
+     *  include flag is on — otherwise the lazy association is never touched: no extra query. */
+    public MediaFileDto.Response toMediaFileResponse(MediaFile m, MediaFileDto.Includes inc) {
         MediaFileDto.Response r = new MediaFileDto.Response();
         r.setId(m.getId()); r.setFileName(m.getFileName()); r.setFileType(m.getFileType());
         r.setMediaCategory(m.getMediaCategory()); r.setOrientation(m.getOrientation());
@@ -68,7 +74,7 @@ public class DtoMapper {
         r.setThumbnailUrl(m.getStorageKey() != null ? storageService.buildThumbnailUrl(m.getStorageKey(), 300) : null);
 
         // Image EXIF detail
-        if (m.getImageDetail() != null) {
+        if (inc.details() && m.getImageDetail() != null) {
             var img = m.getImageDetail();
             var d = new MediaFileDto.ImageDetailDto();
             d.setCameraMake(img.getCameraMake()); d.setCameraModel(img.getCameraModel());
@@ -84,7 +90,7 @@ public class DtoMapper {
         }
 
         // Video detail
-        if (m.getVideoDetail() != null) {
+        if (inc.details() && m.getVideoDetail() != null) {
             var vid = m.getVideoDetail();
             var d = new MediaFileDto.VideoDetailDto();
             d.setVideoCodec(vid.getVideoCodec()); d.setAudioCodec(vid.getAudioCodec());
@@ -92,8 +98,11 @@ public class DtoMapper {
             r.setVideoDetail(d);
         }
 
-        if (m.getPersons() != null && !m.getPersons().isEmpty())
+        if (inc.persons() && m.getPersons() != null && !m.getPersons().isEmpty())
             r.setPersons(m.getPersons().stream().map(this::toPersonSummary).collect(java.util.stream.Collectors.toSet()));
+
+        if (inc.tags() && m.getTags() != null && !m.getTags().isEmpty())
+            r.setTags(m.getTags().stream().map(this::toTagResponse).collect(java.util.stream.Collectors.toSet()));
 
         return r;
     }
