@@ -1,6 +1,6 @@
 import { useMemo, useRef, useState, useEffect, useCallback } from 'react'
 import { useInfiniteQuery, useQueryClient } from '@tanstack/react-query'
-import { Heart, FolderPlus, Trash2, X, Image as ImageIcon, UserPlus } from 'lucide-react'
+import { Heart, FolderPlus, Trash2, X, Image as ImageIcon, UserPlus, Search } from 'lucide-react'
 import api from '../api/client'
 import { mediaApi, uploadApi } from '../api/collections'
 import { Lightbox, MediaItem } from '../components/media'
@@ -25,6 +25,9 @@ function dayLabel(iso?: string) {
 
 export default function LibraryPage() {
   const [fav, setFav] = useState(false)
+  const [q, setQ] = useState('')
+  const [activeQ, setActiveQ] = useState('')
+  const [type, setType] = useState<'' | 'IMAGE' | 'VIDEO'>('')
   const [selectedMedia, setSelectedMedia] = useState<MediaFileResponse | null>(null)
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
   const [picker, setPicker] = useState<string[] | null>(null) // ids to add
@@ -32,10 +35,19 @@ export default function LibraryPage() {
   const [deleting, setDeleting] = useState(false)
   const qc = useQueryClient()
 
+  const filtered = !!activeQ || !!type
   const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading } = useInfiniteQuery({
-    queryKey: ['library', fav],
+    queryKey: ['library', fav, activeQ, type],
     queryFn: ({ pageParam = 0 }) =>
-      api.get<LibraryPageData>('/api/media-files/library', { params: { page: pageParam, size: PAGE_SIZE, favorite: fav || undefined, inclDetails: true, inclPersons: true } })
+      api.get<LibraryPageData>(
+        filtered ? '/api/media-files/search' : '/api/media-files/library',
+        { params: {
+          page: pageParam, size: PAGE_SIZE,
+          favorite: fav || undefined,
+          q: activeQ || undefined,
+          type: type || undefined,
+          inclDetails: true, inclPersons: true,
+        } })
         .then(r => r.data),
     initialPageParam: 0,
     getNextPageParam: last => (last.last ? undefined : last.number + 1),
@@ -130,6 +142,27 @@ export default function LibraryPage() {
           </button>
         </div>
         {total > 0 && <span className="text-[11px] text-slate-400">{total} items</span>}
+
+        {/* Search + type filter */}
+        <div className="relative">
+          <Search size={13} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-300" />
+          <input value={q} onChange={e => setQ(e.target.value)}
+            onKeyDown={e => { if (e.key === 'Enter') setActiveQ(q.trim()); if (e.key === 'Escape') { setQ(''); setActiveQ('') } }}
+            placeholder="Search name, caption, place, person..."
+            className="pl-8 pr-7 py-1.5 text-xs bg-white border border-slate-200 rounded-full outline-none focus:border-pink-300 w-44 md:w-64" />
+          {activeQ && (
+            <button onClick={() => { setQ(''); setActiveQ('') }}
+              className="absolute right-1.5 top-1/2 -translate-y-1/2 text-slate-300 hover:text-slate-500 p-0.5"><X size={12} /></button>
+          )}
+        </div>
+        <div className="flex bg-slate-100 rounded-full p-0.5 text-xs">
+          {(['', 'IMAGE', 'VIDEO'] as const).map(t => (
+            <button key={t || 'all'} onClick={() => setType(t)}
+              className={`px-2.5 py-1 rounded-full transition-colors ${type === t ? 'bg-white text-slate-800 shadow-sm font-medium' : 'text-slate-500'}`}>
+              {t === '' ? 'All types' : t === 'IMAGE' ? 'Photos' : 'Videos'}
+            </button>
+          ))}
+        </div>
 
         {/* Select toolbar */}
         {selectMode && (

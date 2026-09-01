@@ -1,7 +1,7 @@
 import { useState, useRef } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { FolderOpen, ChevronRight, Image, ArrowLeft, Trash2, X, Plus, FolderPlus, ImagePlus, UploadCloud, Heart, FolderInput, FolderMinus, MoreVertical, Pencil, Users, ImageIcon, UserPlus, ChevronDown } from 'lucide-react'
+import { FolderOpen, ChevronRight, Image, ArrowLeft, Trash2, X, Plus, FolderPlus, ImagePlus, UploadCloud, Heart, FolderInput, FolderMinus, MoreVertical, Pencil, Users, ImageIcon, UserPlus, ChevronDown, Search } from 'lucide-react'
 import { collectionBrowseApi, uploadApi, collectionsApi, mediaApi } from '../api/collections'
 import CollectionPicker from '../components/CollectionPicker'
 import PersonSelectModal from '../components/PersonSelectModal'
@@ -207,6 +207,16 @@ export default function CollectionsPage() {
   // ── Manage actions ─────────────────────────────────────────────────────────
   const [picker, setPicker] = useState<null | { mode: 'add' | 'move' | 'moveCollection'; ids: string[] }>(null)
   const [personModal, setPersonModal] = useState<string[] | null>(null)   // media ids to tag
+  const [collQ, setCollQ] = useState('')
+  const { data: allColl = [] } = useQuery({
+    queryKey: ['collections', 'all-names'],
+    queryFn: () => collectionsApi.getAll(),
+    enabled: collQ.trim().length > 0,
+    staleTime: 60_000,
+  })
+  const collMatches = collQ.trim().length > 0
+    ? allColl.filter((c: CollectionResponse) => c.name.toLowerCase().includes(collQ.trim().toLowerCase())).slice(0, 12)
+    : []
   const [tagAsPerson, setTagAsPerson] = useState<PersonSummary | null>(null) // upload context
   const [showTagAsMenu, setShowTagAsMenu] = useState(false)
   const [showCollMenu, setShowCollMenu] = useState(false)
@@ -348,6 +358,28 @@ export default function CollectionsPage() {
           <h1 className="text-lg md:text-xl font-semibold text-slate-800 flex-1">
             {currentId ? (current?.name ?? '') : 'Collections'}
           </h1>
+          {/* Jump search collection */}
+          <div className="relative">
+            <Search size={13} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-300" />
+            <input value={collQ} onChange={e => setCollQ(e.target.value)}
+              onKeyDown={e => { if (e.key === 'Escape') setCollQ('') }}
+              placeholder="Find collection..."
+              className="pl-8 pr-3 h-9 text-xs bg-white border border-slate-200 rounded-full outline-none focus:border-pink-300 w-32 md:w-48" />
+            {collMatches.length > 0 && (
+              <>
+                <div className="fixed inset-0 z-10" onClick={() => setCollQ('')} />
+                <div className="absolute left-0 top-11 z-20 bg-white rounded-xl shadow-lg border border-slate-100 py-1.5 w-64 max-h-80 overflow-y-auto">
+                  {collMatches.map((c: CollectionResponse) => (
+                    <button key={c.id} onClick={() => { navigate(c.id); setCollQ('') }}
+                      className="flex flex-col items-start w-full px-4 py-2.5 hover:bg-slate-50 active:bg-slate-100 transition-colors">
+                      <span className="text-sm text-slate-700 truncate w-full text-left">{c.name}</span>
+                      {c.parentName && <span className="text-[10px] text-slate-400">in {c.parentName}</span>}
+                    </button>
+                  ))}
+                </div>
+              </>
+            )}
+          </div>
           {/* Tag-as upload context */}
           <div className="relative">
             <button onClick={() => setShowTagAsMenu(v => !v)} title="Every upload will be tagged with this person"

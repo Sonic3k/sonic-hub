@@ -25,7 +25,7 @@ export default function TagsPage() {
             <span key={t.id} className="inline-flex items-center gap-1.5 text-sm px-3 py-1.5 rounded-full bg-white border border-slate-100">
               {t.color && <span className="w-2.5 h-2.5 rounded-full" style={{ background: t.color }} />}
               {t.name}
-              <button onClick={() => remove.mutate(t.id)} className="text-slate-300 hover:text-rose-400"><Trash2 size={12} /></button>
+              <button onClick={() => { if (confirm(`Delete tag "${t.name}"?`)) remove.mutate(t.id) }} className="text-slate-300 hover:text-rose-400"><Trash2 size={12} /></button>
             </span>
           ))}
         </div>

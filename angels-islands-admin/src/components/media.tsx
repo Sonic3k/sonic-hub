@@ -33,7 +33,10 @@ export function MediaItem({ media, onClick, selected, onSelect, selectMode }: {
   return (
     <div className="relative cursor-pointer rounded-lg overflow-hidden bg-slate-100 group active:scale-[0.97] transition-transform duration-100">
       <div className="aspect-square" onClick={() => selectMode ? onSelect(media.id) : onClick()}>
-        {(media.thumbnailUrl || media.cdnUrl) ? (
+        {media.fileType === 'VIDEO' && media.cdnUrl ? (
+          <video src={`${media.cdnUrl}#t=0.5`} preload="metadata" muted playsInline
+            className="w-full h-full object-cover pointer-events-none" />
+        ) : (media.thumbnailUrl || media.cdnUrl) ? (
           <img src={media.thumbnailUrl || media.cdnUrl} alt={media.fileName} className="w-full h-full object-cover" loading="lazy" />
         ) : (
           <div className="w-full h-full flex items-center justify-center text-slate-300"><Image size={20} strokeWidth={1} /></div>
@@ -105,10 +108,15 @@ export function Lightbox({ media, allMedia, collectionId, onClose, onNavigate, o
     <div className="fixed inset-0 z-50 bg-black flex">
       {/* ── Image area — shrinks when info panel opens ── */}
       <div className="flex-1 relative flex items-center justify-center min-w-0 transition-all duration-300">
-        {/* Image */}
+        {/* Media */}
         {media.cdnUrl ? (
-          <img src={media.cdnUrl} alt={media.fileName}
-            className="max-w-full max-h-full object-contain select-none p-2" />
+          media.fileType === 'VIDEO' ? (
+            <video key={media.id} src={media.cdnUrl} controls autoPlay playsInline
+              className="max-w-full max-h-full object-contain select-none p-2" />
+          ) : (
+            <img src={media.cdnUrl} alt={media.fileName}
+              className="max-w-full max-h-full object-contain select-none p-2" />
+          )
         ) : (
           <div className="text-white/30 text-sm">No preview</div>
         )}

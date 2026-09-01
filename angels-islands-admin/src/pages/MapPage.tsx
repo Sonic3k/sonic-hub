@@ -65,11 +65,15 @@ export default function MapPage() {
                 radius={7} pathOptions={{ color: '#ec4899', fillColor: '#ec4899', fillOpacity: 0.75, weight: 1.5 }}>
                 <Popup>
                   <div className="w-40">
-                    {(m.thumbnailUrl || m.cdnUrl) && (
+                    {m.fileType === 'VIDEO' && m.cdnUrl ? (
+                      <video src={`${m.cdnUrl}#t=0.5`} preload="metadata" muted playsInline
+                        onClick={() => setSelectedMedia(m)}
+                        className="w-full h-28 object-cover rounded-lg cursor-pointer mb-1.5" />
+                    ) : (m.thumbnailUrl || m.cdnUrl) ? (
                       <img src={m.thumbnailUrl || m.cdnUrl} alt={m.fileName}
                         onClick={() => setSelectedMedia(m)}
                         className="w-full h-28 object-cover rounded-lg cursor-pointer mb-1.5" />
-                    )}
+                    ) : null}
                     <p className="text-[11px] text-slate-600 leading-snug">{fmtDate(m.dateTaken || m.effectiveDate)}</p>
                     {m.displayedAddress && <p className="text-[10px] text-slate-400 leading-snug mt-0.5">{m.displayedAddress}</p>}
                   </div>

@@ -40,9 +40,18 @@ public class ChatArchiveController {
         return archiveRepo.findByPersonId(personId).stream().map(mapper::toChatArchiveResponse).toList();
     }
 
+    /** Paged messages in original order; q filters by content for in-conversation search. */
     @GetMapping("/{archiveId}/messages")
-    public List<ChatMessage> getMessages(@PathVariable UUID personId, @PathVariable UUID archiveId) {
-        return messageRepo.findByChatArchiveIdOrderBySeqAsc(archiveId);
+    public org.springframework.data.domain.Page<ChatMessage> getMessages(
+        @PathVariable UUID personId, @PathVariable UUID archiveId,
+        @RequestParam(defaultValue = "0") int page,
+        @RequestParam(defaultValue = "200") int size,
+        @RequestParam(required = false) String q) {
+        var pageable = org.springframework.data.domain.PageRequest.of(page, Math.min(size, 500),
+            org.springframework.data.domain.Sort.by("seq").ascending());
+        if (q != null && !q.isBlank())
+            return messageRepo.findByChatArchiveIdAndContentContainingIgnoreCase(archiveId, q.trim(), pageable);
+        return messageRepo.findByChatArchiveId(archiveId, pageable);
     }
 
     @PostMapping("/import/yahoo")

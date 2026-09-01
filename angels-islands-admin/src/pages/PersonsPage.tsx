@@ -14,6 +14,11 @@ const emptyForm = { name: '', displayName: '', nickname: '', dateOfBirth: '', re
 
 export default function PersonsPage() {
   const { data: persons = [], isLoading } = usePersons()
+  const [filter, setFilter] = useState('')
+  const shown = filter.trim()
+    ? persons.filter((p: PersonSummary) => [p.name, p.displayName, p.nickname]
+        .some(v => v && v.toLowerCase().includes(filter.trim().toLowerCase())))
+    : persons
   const createPerson = useCreatePerson()
   const navigate = useNavigate()
   const [showForm, setShowForm] = useState(false)
@@ -34,12 +39,14 @@ export default function PersonsPage() {
     <div className="p-4 md:p-8">
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-lg font-semibold text-slate-800">Persons</h1>
+        <input value={filter} onChange={e => setFilter(e.target.value)} placeholder="Filter..."
+          className="ml-3 mr-auto px-3 py-1.5 text-xs bg-white border border-slate-200 rounded-full outline-none focus:border-pink-300 w-32 md:w-48" />
         <Button onClick={() => setShowForm(true)}><Plus size={14} />Add</Button>
       </div>
 
       {isLoading ? <p className="text-slate-400 text-sm">Loading...</p> : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {persons.map((p: PersonSummary) => (
+          {shown.map((p: PersonSummary) => (
             <div key={p.id} onClick={() => navigate(`/persons/${p.id}`)}
               className="bg-white rounded-xl p-4 md:p-5 border border-slate-100 cursor-pointer hover:shadow-md active:scale-[0.98] transition-all duration-200">
               <div className="flex items-start justify-between mb-2">

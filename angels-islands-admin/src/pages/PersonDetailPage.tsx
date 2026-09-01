@@ -7,11 +7,12 @@ import { useFacts, useEpisodes, useChapters, useTraits, useArchives } from '../h
 import { personsApi } from '../api/persons'
 import { memoryApi } from '../api/memory'
 import { useMutation, useQuery, useInfiniteQuery, useQueryClient } from '@tanstack/react-query'
-import type { PersonRequest, RelationshipType, ContactPlatform, ContactRequest, MediaFileResponse, CollectionResponse } from '../types'
+import type { PersonRequest, RelationshipType, ContactPlatform, ContactRequest, MediaFileResponse, CollectionResponse, ChatArchiveResponse } from '../types'
 import api from '../api/client'
 import { mediaApi, uploadApi, collectionBrowseApi, collectionsApi } from '../api/collections'
 import { Lightbox, MediaItem } from '../components/media'
 import CollectionPicker from '../components/CollectionPicker'
+import ChatViewer from '../components/ChatViewer'
 
 const REL_LABELS: Record<RelationshipType, string> = {
   CRUSH: '💗 Crush', GIRLFRIEND: '❤️ Girlfriend', FRIEND: '🤝 Friend',
@@ -35,6 +36,7 @@ export default function PersonDetailPage() {
   const { data: traits = [] } = useTraits(pid)
   const { data: archives = [] } = useArchives(pid)
   const [tab, setTab] = useState<Tab>('info')
+  const [viewerArchive, setViewerArchive] = useState<ChatArchiveResponse | null>(null)
   const wasExtracting = useRef(false)
   useEffect(() => {
     const extracting = archives.some(a => a.extractionStatus === 'EXTRACTING')
@@ -146,6 +148,12 @@ export default function PersonDetailPage() {
       </div>
 
       {tab === 'photos' && <PersonPhotosTab personId={pid} />}
+
+      {viewerArchive && (
+        <ChatViewer personId={pid} archive={viewerArchive}
+          personName={person.displayName || person.name}
+          onClose={() => setViewerArchive(null)} />
+      )}
 
       {tab === 'info' && !editing && (
         <div className="bg-white rounded-xl p-5 border border-slate-100">
@@ -325,9 +333,10 @@ export default function PersonDetailPage() {
             archives.map(a => (
               <div key={a.id} className="bg-white rounded-lg p-4 border border-slate-100">
                 <div className="flex items-center justify-between">
-                  <div>
+                  <div onClick={() => setViewerArchive(a)} className="cursor-pointer min-w-0 hover:opacity-70 transition-opacity">
                     <span className="text-xs font-medium px-2 py-0.5 rounded bg-slate-100 text-slate-600">{a.platform}</span>
                     {a.title && <span className="text-sm text-slate-700 ml-2">{a.title}</span>}
+                    <span className="text-[11px] text-pink-400 ml-2">Read →</span>
                   </div>
                   <div className="flex items-center gap-2">
                     <span className={`text-xs px-2 py-0.5 rounded-full ${
@@ -364,6 +373,8 @@ export default function PersonDetailPage() {
 function PersonPhotosTab({ personId }: { personId: string }) {
   const qc = useQueryClient()
   const navigate = useNavigate()
+  const [q, setQ] = useState('')
+  const [activeQ, setActiveQ] = useState('')
   const [selectedMedia, setSelectedMedia] = useState<MediaFileResponse | null>(null)
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
   const [picker, setPicker] = useState<string[] | null>(null)
@@ -376,10 +387,10 @@ function PersonPhotosTab({ personId }: { personId: string }) {
   })
 
   const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading } = useInfiniteQuery({
-    queryKey: ['media', 'person', personId],
+    queryKey: ['media', 'person', personId, activeQ],
     queryFn: ({ pageParam = 0 }) =>
       api.get('/api/media-files/search', { params: {
-        personId, page: pageParam, size: 100, inclDetails: true, inclPersons: true,
+        personId, q: activeQ || undefined, page: pageParam, size: 100, inclDetails: true, inclPersons: true,
       } }).then(r => r.data as { content: MediaFileResponse[]; number: number; last: boolean; totalElements: number }),
     initialPageParam: 0,
     getNextPageParam: last => (last.last ? undefined : last.number + 1),
@@ -472,6 +483,10 @@ function PersonPhotosTab({ personId }: { personId: string }) {
       {/* Photos */}
       <div className="flex items-center gap-2 mb-2.5 flex-wrap">
         <h2 className="text-[10px] uppercase tracking-widest text-slate-400 font-semibold">Photos & Videos · {total}</h2>
+        <input value={q} onChange={e => setQ(e.target.value)}
+          onKeyDown={e => { if (e.key === 'Enter') setActiveQ(q.trim()); if (e.key === 'Escape') { setQ(''); setActiveQ('') } }}
+          placeholder="Search..."
+          className="px-3 py-1 text-xs bg-white border border-slate-200 rounded-full outline-none focus:border-pink-300 w-32 md:w-44" />
         {selectMode && (
           <div className="ml-auto flex items-center gap-1 flex-wrap justify-end">
             <span className="text-xs text-pink-500 font-medium mr-1">{selectedIds.size} selected</span>
