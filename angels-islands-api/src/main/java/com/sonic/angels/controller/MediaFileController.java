@@ -143,6 +143,26 @@ public class MediaFileController {
         return Map.of("updated", mediaFileService.personBatch(req.getIds(), req.getPersonId(), false));
     }
 
+    @PostMapping("/batch/tags")
+    public Map<String, Integer> addTagBatch(@RequestBody MediaFileDto.TagBatchRequest req) {
+        return Map.of("updated", mediaFileService.tagBatch(req.getIds(), req.getTagId(), true));
+    }
+
+    @DeleteMapping("/batch/tags")
+    public Map<String, Integer> removeTagBatch(@RequestBody MediaFileDto.TagBatchRequest req) {
+        return Map.of("updated", mediaFileService.tagBatch(req.getIds(), req.getTagId(), false));
+    }
+
+    @PostMapping("/{id}/tags/{tagId}")
+    public MediaFileDto.Response addTag(@PathVariable UUID id, @PathVariable UUID tagId) {
+        return mediaFileService.addTag(id, tagId);
+    }
+
+    @DeleteMapping("/{id}/tags/{tagId}")
+    public MediaFileDto.Response removeTag(@PathVariable UUID id, @PathVariable UUID tagId) {
+        return mediaFileService.removeTag(id, tagId);
+    }
+
     @PostMapping("/{id}/persons/{personId}")
     public MediaFileDto.Response addPerson(@PathVariable UUID id, @PathVariable UUID personId) {
         return mediaFileService.addPerson(id, personId);

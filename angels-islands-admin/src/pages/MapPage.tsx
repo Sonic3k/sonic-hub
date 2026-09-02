@@ -26,7 +26,7 @@ export default function MapPage() {
 
   const { data: items = [], isLoading } = useQuery<MediaFileResponse[]>({
     queryKey: ['media', 'geotagged'],
-    queryFn: () => api.get<MediaFileResponse[]>('/api/media-files/geotagged', { params: { inclDetails: true, inclPersons: true } }).then(r => r.data),
+    queryFn: () => api.get<MediaFileResponse[]>('/api/media-files/geotagged', { params: { inclDetails: true, inclPersons: true, inclTags: true } }).then(r => r.data),
   })
 
   const points = useMemo(() =>

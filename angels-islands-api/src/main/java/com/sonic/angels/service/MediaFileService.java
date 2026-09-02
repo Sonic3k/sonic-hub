@@ -266,6 +266,34 @@ public class MediaFileService {
         return count;
     }
 
+    public MediaFileDto.Response addTag(UUID mediaId, UUID tagId) {
+        MediaFile mf = findById(mediaId);
+        tagRepository.findById(tagId).ifPresent(t -> mf.getTags().add(t));
+        return mapper.toMediaFileResponse(mediaFileRepository.save(mf));
+    }
+
+    public MediaFileDto.Response removeTag(UUID mediaId, UUID tagId) {
+        MediaFile mf = findById(mediaId);
+        mf.getTags().removeIf(t -> t.getId().equals(tagId));
+        return mapper.toMediaFileResponse(mediaFileRepository.save(mf));
+    }
+
+    public int tagBatch(List<UUID> ids, UUID tagId, boolean add) {
+        var tag = tagRepository.findById(tagId).orElse(null);
+        if (tag == null) return 0;
+        int count = 0;
+        for (UUID id : ids) {
+            try {
+                MediaFile mf = findById(id);
+                if (add) mf.getTags().add(tag);
+                else mf.getTags().removeIf(t -> t.getId().equals(tagId));
+                mediaFileRepository.save(mf);
+                count++;
+            } catch (Exception ignored) {}
+        }
+        return count;
+    }
+
     public MediaFileDto.Response addPerson(UUID mediaId, UUID personId) {
         MediaFile mf = findById(mediaId);
         personRepository.findById(personId).ifPresent(p -> mf.getPersons().add(p));

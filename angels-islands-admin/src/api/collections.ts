@@ -46,6 +46,14 @@ export const mediaApi = {
     api.post<MediaFileResponse>(`/api/media-files/${id}/persons/${personId}`).then(r => r.data),
   removePerson: (id: string, personId: string) =>
     api.delete<MediaFileResponse>(`/api/media-files/${id}/persons/${personId}`).then(r => r.data),
+  addTag: (id: string, tagId: string) =>
+    api.post<MediaFileResponse>(`/api/media-files/${id}/tags/${tagId}`).then(r => r.data),
+  removeTag: (id: string, tagId: string) =>
+    api.delete<MediaFileResponse>(`/api/media-files/${id}/tags/${tagId}`).then(r => r.data),
+  tagBatch: (ids: string[], tagId: string) =>
+    api.post('/api/media-files/batch/tags', { ids, tagId }).then(r => r.data),
+  untagBatch: (ids: string[], tagId: string) =>
+    api.delete('/api/media-files/batch/tags', { data: { ids, tagId } }).then(r => r.data),
   addPersonBatch: (ids: string[], personId: string) =>
     api.post('/api/media-files/batch/persons', { ids, personId }).then(r => r.data),
   removePersonBatch: (ids: string[], personId: string) =>
@@ -62,9 +70,9 @@ export const collectionBrowseApi = {
   getByPerson: (personId: string) =>
     api.get<CollectionResponse[]>(`/api/collections/person/${personId}`, { params: { inclChildrenCount: true, inclMediaCount: true } }).then(r => r.data),
   getRoot: () => api.get<CollectionResponse>('/api/collections/root').then(r => r.data),
-  getTopLevel: () => api.get<CollectionResponse[]>('/api/collections', { params: { inclChildrenCount: true, inclMediaCount: true, inclPersons: true } }).then(r => r.data),
+  getTopLevel: () => api.get<CollectionResponse[]>('/api/collections', { params: { inclChildrenCount: true, inclMediaCount: true, inclPersons: true, inclTags: true } }).then(r => r.data),
   getById: (id: string) => api.get<CollectionResponse>(`/api/collections/${id}`).then(r => r.data),
-  getChildren: (id: string) => api.get<CollectionResponse[]>(`/api/collections/${id}/children`, { params: { inclChildrenCount: true, inclMediaCount: true, inclPersons: true } }).then(r => r.data),
+  getChildren: (id: string) => api.get<CollectionResponse[]>(`/api/collections/${id}/children`, { params: { inclChildrenCount: true, inclMediaCount: true, inclPersons: true, inclTags: true } }).then(r => r.data),
   getBreadcrumb: (id: string) => api.get<CollectionResponse[]>(`/api/collections/${id}/breadcrumb`).then(r => r.data),
-  getCollectionMedia: (id: string, sort?: string, sortDir?: string) => api.get(`/api/collections/${id}/media`, { params: { sort, sortDir, inclDetails: true, inclPersons: true } }).then(r => r.data),
+  getCollectionMedia: (id: string, sort?: string, sortDir?: string) => api.get(`/api/collections/${id}/media`, { params: { sort, sortDir, inclDetails: true, inclPersons: true, inclTags: true } }).then(r => r.data),
 }

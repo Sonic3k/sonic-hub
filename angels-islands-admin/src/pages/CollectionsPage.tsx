@@ -1,14 +1,17 @@
 import { useState, useRef } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { FolderOpen, ChevronRight, Image, ArrowLeft, Trash2, X, Plus, FolderPlus, ImagePlus, UploadCloud, Heart, FolderInput, FolderMinus, MoreVertical, Pencil, Users, ImageIcon, UserPlus, ChevronDown, Search } from 'lucide-react'
+import { FolderOpen, ChevronRight, Image, ArrowLeft, Trash2, X, Plus, FolderPlus, ImagePlus, UploadCloud, Heart, FolderInput, FolderMinus, MoreVertical, Pencil, Users, ImageIcon, UserPlus, ChevronDown, Search, Tag } from 'lucide-react'
 import { collectionBrowseApi, uploadApi, collectionsApi, mediaApi } from '../api/collections'
 import CollectionPicker from '../components/CollectionPicker'
 import PersonSelectModal from '../components/PersonSelectModal'
+import TagSelectModal from '../components/TagSelectModal'
+import { useTags } from '../hooks/useTags'
+import { tagsApi } from '../api/tags'
 import { usePersons } from '../hooks/usePersons'
 import { collectDroppedFiles, groupDropped } from '../lib/dropUpload'
 import { useUploadQueue, UploadQueuePanel, type QueueTask } from '../components/UploadQueue'
-import type { CollectionResponse, MediaFileResponse, PersonSummary } from '../types'
+import type { CollectionResponse, MediaFileResponse, PersonSummary, TagResponse } from '../types'
 import { Lightbox, MediaItem } from '../components/media'
 
 
@@ -45,6 +48,15 @@ function CollectionCard({ collection, onClick }: { collection: CollectionRespons
             </span>
           )}
         </div>
+        {collection.tags && collection.tags.length > 0 && (
+          <div className="flex items-center gap-1 mt-1.5 overflow-hidden">
+            {collection.tags.slice(0, 2).map(t => (
+              <span key={t.id} className="text-[9px] text-white px-1.5 py-0.5 rounded-full truncate max-w-[80px]"
+                style={{ background: t.color || '#94a3b8' }}>{t.name}</span>
+            ))}
+            {collection.tags.length > 2 && <span className="text-[9px] text-slate-400">+{collection.tags.length - 2}</span>}
+          </div>
+        )}
       </div>
     </div>
   )
@@ -206,7 +218,9 @@ export default function CollectionsPage() {
 
   // ── Manage actions ─────────────────────────────────────────────────────────
   const [picker, setPicker] = useState<null | { mode: 'add' | 'move' | 'moveCollection'; ids: string[] }>(null)
-  const [personModal, setPersonModal] = useState<string[] | null>(null)   // media ids to tag
+  const [personModal, setPersonModal] = useState<string[] | null>(null)   // media ids to tag person
+  const [tagModal, setTagModal] = useState<string[] | null>(null)          // media ids to tag label
+  const [manageTagsOpen, setManageTagsOpen] = useState(false)
   const [collQ, setCollQ] = useState('')
   const { data: allColl = [] } = useQuery({
     queryKey: ['collections', 'all-names'],
@@ -246,6 +260,22 @@ export default function CollectionsPage() {
       await collectionsApi.update(currentId, { parentId: targetId })
     }
     setPicker(null)
+    invalidateAll()
+  }
+
+  const handleTagBatch = async (tag: TagResponse) => {
+    if (!tagModal) return
+    await mediaApi.tagBatch(tagModal, tag.id)
+    setTagModal(null)
+    setSelectedIds(new Set())
+    invalidateAll()
+  }
+
+  const handleToggleTagOnCollection = async (tagId: string) => {
+    if (!currentId || !current) return
+    const ids = new Set((current.tags || []).map(t => t.id))
+    if (ids.has(tagId)) ids.delete(tagId); else ids.add(tagId)
+    await collectionsApi.update(currentId, { tagIds: Array.from(ids) })
     invalidateAll()
   }
 
@@ -432,6 +462,10 @@ export default function CollectionsPage() {
                       className="flex items-center gap-2.5 w-full px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 active:bg-slate-100 transition-colors">
                       <Users size={16} className="text-slate-400" />Manage persons
                     </button>
+                    <button onClick={() => { setManageTagsOpen(true); setShowCollMenu(false) }}
+                      className="flex items-center gap-2.5 w-full px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 active:bg-slate-100 transition-colors">
+                      <Tag size={16} className="text-slate-400" />Manage labels
+                    </button>
                     <button onClick={() => { setShowCollMenu(false); handleDeleteCollection() }}
                       className="flex items-center gap-2.5 w-full px-4 py-2.5 text-sm text-rose-500 hover:bg-rose-50 active:bg-rose-100 transition-colors">
                       <Trash2 size={16} className="text-rose-300" />Delete collection
@@ -536,6 +570,10 @@ export default function CollectionsPage() {
                   <button onClick={() => setPersonModal(selectedList())} title="Tag person"
                     className="p-1.5 rounded text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors">
                     <UserPlus size={14} />
+                  </button>
+                  <button onClick={() => setTagModal(selectedList())} title="Add label (Travel, Family...)"
+                    className="p-1.5 rounded text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors">
+                    <Tag size={14} />
                   </button>
                   {currentId && (
                     <button onClick={() => setPicker({ mode: 'move', ids: selectedList() })} title="Move to collection"
@@ -677,6 +715,20 @@ export default function CollectionsPage() {
         />
       )}
 
+      {/* Tag label batch */}
+      {tagModal && (
+        <TagSelectModal title={`Label ${tagModal.length} file(s) as...`}
+          onSelect={handleTagBatch} onClose={() => setTagModal(null)} />
+      )}
+
+      {/* Manage labels on collection */}
+      {manageTagsOpen && current && (
+        <ManageTagsModal collectionName={current.name}
+          activeIds={(current.tags || []).map(t => t.id)}
+          onToggle={handleToggleTagOnCollection}
+          onClose={() => setManageTagsOpen(false)} />
+      )}
+
       {/* Tag person batch */}
       {personModal && (
         <PersonSelectModal title={`Tag ${personModal.length} file(s) with...`}
@@ -694,6 +746,73 @@ export default function CollectionsPage() {
           onChanged={m => { setSelectedMedia(m); invalidateAll() }}
           onAddTo={id => setPicker({ mode: 'add', ids: [id] })} />
       )}
+    </div>
+  )
+}
+
+
+// ── Manage labels modal (toggle tags on a collection) ────────────────────────
+
+function ManageTagsModal({ collectionName, activeIds, onToggle, onClose }: {
+  collectionName: string; activeIds: string[]
+  onToggle: (tagId: string) => void; onClose: () => void
+}) {
+  const { data: tags = [] } = useTags()
+  const [newName, setNewName] = useState('')
+  const [creating, setCreating] = useState(false)
+  const qc = useQueryClient()
+  const active = new Set(activeIds)
+  const PALETTE = ['#ec4899', '#8b5cf6', '#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#14b8a6', '#6366f1']
+
+  const handleCreate = async () => {
+    const name = newName.trim()
+    if (!name || creating) return
+    setCreating(true)
+    try {
+      const created = await tagsApi.create({ name, color: PALETTE[tags.length % PALETTE.length] })
+      qc.invalidateQueries({ queryKey: ['tags'] })
+      onToggle(created.id)
+      setNewName('')
+    } finally { setCreating(false) }
+  }
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-end md:items-center justify-center">
+      <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={onClose} />
+      <div className="relative bg-white rounded-t-2xl md:rounded-xl shadow-xl w-full md:max-w-sm md:mx-4 p-5">
+        <div className="flex justify-center pt-0 pb-3 md:hidden"><div className="w-10 h-1 rounded-full bg-slate-200" /></div>
+        <h3 className="text-sm font-semibold text-slate-800 mb-3">Labels for "{collectionName}"</h3>
+        <div className="flex flex-wrap gap-1.5 mb-4 max-h-60 overflow-y-auto">
+          {tags.map(t => {
+            const isOn = active.has(t.id)
+            return (
+              <button key={t.id} onClick={() => onToggle(t.id)}
+                className={`inline-flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-full border transition-colors active:scale-95 ${
+                  isOn ? 'text-white border-transparent' : 'bg-white border-slate-200 text-slate-600 hover:border-pink-300'
+                }`}
+                style={isOn ? { background: t.color || '#ec4899' } : undefined}>
+                {!isOn && <span className="w-2 h-2 rounded-full" style={{ background: t.color || '#94a3b8' }} />}
+                {t.name}
+              </button>
+            )
+          })}
+          {tags.length === 0 && <p className="text-xs text-slate-400">Chưa có label nào — tạo bên dưới</p>}
+        </div>
+        <div className="flex items-center gap-2 pt-3 border-t border-slate-100 mb-3">
+          <Plus size={14} className="text-slate-300 shrink-0" />
+          <input className="flex-1 px-2 py-1.5 text-sm border rounded-lg border-slate-200 focus:border-pink-400 outline-none"
+            placeholder="Label mới (vd: Travel, Family)..."
+            value={newName} onChange={e => setNewName(e.target.value)}
+            onKeyDown={e => e.key === 'Enter' && handleCreate()} />
+          {newName.trim() && (
+            <button onClick={handleCreate} disabled={creating}
+              className="text-xs text-pink-500 font-medium px-2 py-1.5 hover:bg-pink-50 rounded disabled:opacity-50">Create</button>
+          )}
+        </div>
+        <div className="flex justify-end">
+          <button onClick={onClose} className="px-4 py-2 text-sm bg-pink-500 text-white rounded-lg hover:bg-pink-600">Done</button>
+        </div>
+      </div>
     </div>
   )
 }

@@ -1,12 +1,14 @@
 import { useMemo, useRef, useState, useEffect, useCallback } from 'react'
 import { useInfiniteQuery, useQueryClient } from '@tanstack/react-query'
-import { Heart, FolderPlus, Trash2, X, Image as ImageIcon, UserPlus, Search } from 'lucide-react'
+import { Heart, FolderPlus, Trash2, X, Image as ImageIcon, UserPlus, Search, Tag as TagIcon, ChevronDown } from 'lucide-react'
 import api from '../api/client'
 import { mediaApi, uploadApi } from '../api/collections'
 import { Lightbox, MediaItem } from '../components/media'
 import CollectionPicker from '../components/CollectionPicker'
 import PersonSelectModal from '../components/PersonSelectModal'
-import type { MediaFileResponse, PersonSummary } from '../types'
+import TagSelectModal from '../components/TagSelectModal'
+import { useTags } from '../hooks/useTags'
+import type { MediaFileResponse, PersonSummary, TagResponse } from '../types'
 
 interface LibraryPageData {
   content: MediaFileResponse[]
@@ -28,6 +30,10 @@ export default function LibraryPage() {
   const [q, setQ] = useState('')
   const [activeQ, setActiveQ] = useState('')
   const [type, setType] = useState<'' | 'IMAGE' | 'VIDEO'>('')
+  const [tagFilter, setTagFilter] = useState<TagResponse | null>(null)
+  const [showTagMenu, setShowTagMenu] = useState(false)
+  const [tagModal, setTagModal] = useState<string[] | null>(null)
+  const { data: allTags = [] } = useTags()
   const [selectedMedia, setSelectedMedia] = useState<MediaFileResponse | null>(null)
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
   const [picker, setPicker] = useState<string[] | null>(null) // ids to add
@@ -35,9 +41,9 @@ export default function LibraryPage() {
   const [deleting, setDeleting] = useState(false)
   const qc = useQueryClient()
 
-  const filtered = !!activeQ || !!type
+  const filtered = !!activeQ || !!type || !!tagFilter
   const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading } = useInfiniteQuery({
-    queryKey: ['library', fav, activeQ, type],
+    queryKey: ['library', fav, activeQ, type, tagFilter?.id],
     queryFn: ({ pageParam = 0 }) =>
       api.get<LibraryPageData>(
         filtered ? '/api/media-files/search' : '/api/media-files/library',
@@ -46,7 +52,8 @@ export default function LibraryPage() {
           favorite: fav || undefined,
           q: activeQ || undefined,
           type: type || undefined,
-          inclDetails: true, inclPersons: true,
+          tagIds: tagFilter ? [tagFilter.id] : undefined,
+          inclDetails: true, inclPersons: true, inclTags: true,
         } })
         .then(r => r.data),
     initialPageParam: 0,
@@ -110,6 +117,14 @@ export default function LibraryPage() {
     setDeleting(false)
   }
 
+  const handleTagLabel = async (tag: TagResponse) => {
+    if (!tagModal) return
+    await mediaApi.tagBatch(tagModal, tag.id)
+    setTagModal(null)
+    setSelectedIds(new Set())
+    invalidate()
+  }
+
   const handleTagPerson = async (person: PersonSummary) => {
     if (!personModal) return
     await mediaApi.addPersonBatch(personModal, person.id)
@@ -155,6 +170,34 @@ export default function LibraryPage() {
               className="absolute right-1.5 top-1/2 -translate-y-1/2 text-slate-300 hover:text-slate-500 p-0.5"><X size={12} /></button>
           )}
         </div>
+        {/* Label filter */}
+        <div className="relative">
+          <button onClick={() => setShowTagMenu(v => !v)}
+            className={`flex items-center gap-1.5 h-8 px-3 rounded-full text-xs font-medium transition-all border ${
+              tagFilter ? 'text-white border-transparent' : 'bg-white border-slate-200 text-slate-500 hover:border-pink-300'
+            }`}
+            style={tagFilter ? { background: tagFilter.color || '#ec4899' } : undefined}>
+            <TagIcon size={12} />{tagFilter ? tagFilter.name : 'Label'}<ChevronDown size={11} />
+          </button>
+          {showTagMenu && (
+            <>
+              <div className="fixed inset-0 z-10" onClick={() => setShowTagMenu(false)} />
+              <div className="absolute left-0 top-10 z-20 bg-white rounded-xl shadow-lg border border-slate-100 py-1.5 w-44 max-h-72 overflow-y-auto">
+                <button onClick={() => { setTagFilter(null); setShowTagMenu(false) }}
+                  className={`flex items-center w-full px-4 py-2.5 text-sm transition-colors ${!tagFilter ? 'text-pink-500 bg-pink-50/50' : 'text-slate-700 hover:bg-slate-50'}`}>
+                  All labels
+                </button>
+                {allTags.map(t => (
+                  <button key={t.id} onClick={() => { setTagFilter(t); setShowTagMenu(false) }}
+                    className={`flex items-center gap-2 w-full px-4 py-2.5 text-sm transition-colors ${tagFilter?.id === t.id ? 'text-pink-500 bg-pink-50/50' : 'text-slate-700 hover:bg-slate-50'}`}>
+                    <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ background: t.color || '#94a3b8' }} />{t.name}
+                  </button>
+                ))}
+                {allTags.length === 0 && <p className="px-4 py-2 text-xs text-slate-400">Chưa có label</p>}
+              </div>
+            </>
+          )}
+        </div>
         <div className="flex bg-slate-100 rounded-full p-0.5 text-xs">
           {(['', 'IMAGE', 'VIDEO'] as const).map(t => (
             <button key={t || 'all'} onClick={() => setType(t)}
@@ -179,6 +222,10 @@ export default function LibraryPage() {
             <button onClick={() => setPersonModal(idsArr())} title="Tag person"
               className="p-1.5 rounded text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors">
               <UserPlus size={14} />
+            </button>
+            <button onClick={() => setTagModal(idsArr())} title="Add label"
+              className="p-1.5 rounded text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors">
+              <TagIcon size={14} />
             </button>
             <button onClick={handleDelete} disabled={deleting} title="Delete files"
               className="p-1.5 rounded text-rose-400 hover:text-rose-600 hover:bg-rose-50 disabled:opacity-50 transition-colors">
@@ -224,6 +271,11 @@ export default function LibraryPage() {
       <div ref={sentinelRef} className="h-10 flex items-center justify-center">
         {isFetchingNextPage && <span className="text-xs text-slate-400 animate-pulse">Loading more...</span>}
       </div>
+
+      {tagModal && (
+        <TagSelectModal title={`Label ${tagModal.length} file(s) as...`}
+          onSelect={handleTagLabel} onClose={() => setTagModal(null)} />
+      )}
 
       {personModal && (
         <PersonSelectModal title={`Tag ${personModal.length} file(s) with...`}

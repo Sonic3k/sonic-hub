@@ -394,7 +394,7 @@ function PersonPhotosTab({ personId }: { personId: string }) {
     queryKey: ['media', 'person', personId, activeQ],
     queryFn: ({ pageParam = 0 }) =>
       api.get('/api/media-files/search', { params: {
-        personId, q: activeQ || undefined, page: pageParam, size: 100, inclDetails: true, inclPersons: true,
+        personId, q: activeQ || undefined, page: pageParam, size: 100, inclDetails: true, inclPersons: true, inclTags: true,
       } }).then(r => r.data as { content: MediaFileResponse[]; number: number; last: boolean; totalElements: number }),
     initialPageParam: 0,
     getNextPageParam: last => (last.last ? undefined : last.number + 1),
