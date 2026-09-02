@@ -62,7 +62,7 @@ function Breadcrumb({ items, onNavigate }: { items: { id: string; name: string }
         <div key={item.id} className="flex items-center gap-1 shrink-0">
           <ChevronRight size={10} className="text-slate-300" />
           <button onClick={() => i < items.length - 1 ? onNavigate(item.id) : null}
-            className={`transition-colors font-medium whitespace-nowrap ${
+            className={`transition-colors font-medium whitespace-nowrap max-w-[160px] truncate ${
               i === items.length - 1 ? 'text-slate-800' : 'text-slate-400 hover:text-pink-500'
             }`}>{item.name}</button>
         </div>
@@ -354,8 +354,8 @@ export default function CollectionsPage() {
             <Breadcrumb items={breadcrumb} onNavigate={navigate} />
           </>
         )}
-        <div className="flex items-center gap-3">
-          <h1 className="text-lg md:text-xl font-semibold text-slate-800 flex-1">
+        <div className="flex items-center gap-2 md:gap-3 flex-wrap gap-y-2">
+          <h1 className="text-lg md:text-xl font-semibold text-slate-800 flex-1 min-w-[110px] truncate">
             {currentId ? (current?.name ?? '') : 'Collections'}
           </h1>
           {!selectMode && <>
@@ -365,7 +365,7 @@ export default function CollectionsPage() {
             <input value={collQ} onChange={e => setCollQ(e.target.value)}
               onKeyDown={e => { if (e.key === 'Escape') setCollQ('') }}
               placeholder="Find collection..."
-              className="pl-8 pr-3 h-9 text-xs bg-white border border-slate-200 rounded-full outline-none focus:border-pink-300 w-32 md:w-48" />
+              className="pl-8 pr-3 h-9 text-xs bg-white border border-slate-200 rounded-full outline-none focus:border-pink-300 w-28 md:w-48" />
             {collMatches.length > 0 && (
               <>
                 <div className="fixed inset-0 z-10" onClick={() => setCollQ('')} />
@@ -579,16 +579,21 @@ export default function CollectionsPage() {
         </div>
       )}
 
-      {currentId && collections.length === 0 && media.length === 0 && (
+      {!isLoading && collections.length === 0 && media.length === 0 && (
         <div className="text-center py-12">
           <FolderOpen size={36} className="mx-auto text-slate-200 mb-2" strokeWidth={1} />
-          <p className="text-sm text-slate-400">Empty collection</p>
-        </div>
-      )}
-      {!currentId && collections.length === 0 && media.length === 0 && !isLoading && (
-        <div className="text-center py-12">
-          <FolderOpen size={36} className="mx-auto text-slate-200 mb-2" strokeWidth={1} />
-          <p className="text-sm text-slate-400">No collections yet</p>
+          <p className="text-sm text-slate-500 font-medium">{currentId ? 'Collection này còn trống' : 'Chưa có collection nào'}</p>
+          <p className="text-xs text-slate-400 mt-1 hidden md:block">Kéo thả ảnh hoặc cả folder vào trang này, hoặc:</p>
+          <div className="flex items-center justify-center gap-2 mt-3">
+            <button onClick={() => addPhotosRef.current?.click()}
+              className="flex items-center gap-1.5 text-xs bg-pink-500 text-white px-3.5 py-2 rounded-full hover:bg-pink-600 active:scale-95 transition-all">
+              <ImagePlus size={13} />Add photos
+            </button>
+            <button onClick={() => setShowNewCollection(true)}
+              className="flex items-center gap-1.5 text-xs bg-white border border-slate-200 text-slate-600 px-3.5 py-2 rounded-full hover:border-pink-300 hover:text-pink-500 active:scale-95 transition-all">
+              <FolderPlus size={13} />New collection
+            </button>
+          </div>
         </div>
       )}
 

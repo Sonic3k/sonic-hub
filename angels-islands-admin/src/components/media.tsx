@@ -77,6 +77,7 @@ export function Lightbox({ media, allMedia, collectionId, onClose, onNavigate, o
   onChanged: (m: MediaFileResponse) => void; onAddTo: (mediaId: string) => void
 }) {
   const [showInfo, setShowInfo] = useState(false)
+  const [coverDone, setCoverDone] = useState(false)
   const idx = allMedia.findIndex(m => m.id === media.id)
   const prev = idx > 0 ? allMedia[idx - 1] : null
   const next = idx < allMedia.length - 1 ? allMedia[idx + 1] : null
@@ -133,18 +134,18 @@ export function Lightbox({ media, allMedia, collectionId, onClose, onNavigate, o
           <span className="text-white/40 text-xs tabular-nums mr-1">{idx + 1} / {allMedia.length}</span>
           <button title={media.isFavorite ? 'Unfavorite' : 'Favorite'}
             onClick={async () => onChanged(await mediaApi.patch(media.id, { isFavorite: !media.isFavorite }))}
-            className={`p-2 rounded-full transition-colors ${media.isFavorite ? 'text-pink-400' : 'text-white/60 hover:text-white hover:bg-white/10'}`}>
+            className={`p-2.5 md:p-2 rounded-full transition-colors ${media.isFavorite ? 'text-pink-400' : 'text-white/60 hover:text-white hover:bg-white/10'}`}>
             <Heart size={19} fill={media.isFavorite ? 'currentColor' : 'none'} />
           </button>
           <button title="Add to collection" onClick={() => onAddTo(media.id)}
-            className="p-2 rounded-full text-white/60 hover:text-white hover:bg-white/10 transition-colors">
+            className="p-2.5 md:p-2 rounded-full text-white/60 hover:text-white hover:bg-white/10 transition-colors">
             <FolderPlus size={19} />
           </button>
           {collectionId && (
             <button title="Set as collection cover"
-              onClick={async () => { await mediaApi.setAsCover(collectionId, media.id) }}
-              className="p-2 rounded-full text-white/60 hover:text-white hover:bg-white/10 transition-colors">
-              <ImageIcon size={19} />
+              onClick={async () => { await mediaApi.setAsCover(collectionId, media.id); setCoverDone(true); setTimeout(() => setCoverDone(false), 1500) }}
+              className={`p-2.5 md:p-2 rounded-full transition-colors ${coverDone ? 'text-green-400' : 'text-white/60 hover:text-white hover:bg-white/10'}`}>
+              {coverDone ? <Check size={19} /> : <ImageIcon size={19} />}
             </button>
           )}
           <button onClick={() => setShowInfo(!showInfo)}
