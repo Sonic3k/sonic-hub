@@ -202,6 +202,16 @@ function InfoContent({ media, cameraStr, settingsStr, exif, vid, onChanged }: {
   const { data: allPersons = [] } = usePersons()
   const { data: allTags = [] } = useTags()
   const [addingTag, setAddingTag] = useState(false)
+  const [editingDate, setEditingDate] = useState(false)
+  const [dateDraft, setDateDraft] = useState('')
+
+  const saveDate = async () => {
+    setEditingDate(false)
+    if (!dateDraft) return
+    const current = (media.dateTaken || media.effectiveDate || '').slice(0, 16)
+    if (dateDraft === current) return
+    onChanged(await mediaApi.patch(media.id, { dateTaken: dateDraft }))
+  }
   const taggedTagIds = new Set((media.tags || []).map(t => t.id))
   const [editingCaption, setEditingCaption] = useState(false)
   const [captionDraft, setCaptionDraft] = useState('')
@@ -290,15 +300,28 @@ function InfoContent({ media, cameraStr, settingsStr, exif, vid, onChanged }: {
           )}
         </div>
       </InfoSection>
-      {/* Date */}
-      {(media.dateTaken || media.effectiveDate) && (
-        <InfoSection icon={<Clock size={15} />} title="Date">
-          <p className="text-white/80 text-sm">{fmtDate(media.dateTaken || media.effectiveDate)}</p>
-          {media.dateTaken && media.uploadedAt && media.dateTaken !== media.uploadedAt && (
-            <p className="text-white/30 text-[11px] mt-0.5">Uploaded {fmtDate(media.uploadedAt)}</p>
-          )}
-        </InfoSection>
-      )}
+      {/* Date — click to correct (scans / missing EXIF) */}
+      <InfoSection icon={<Clock size={15} />} title="Date">
+        {editingDate ? (
+          <input type="datetime-local" autoFocus value={dateDraft}
+            onChange={e => setDateDraft(e.target.value)}
+            onBlur={saveDate}
+            onKeyDown={e => { if (e.key === 'Enter') saveDate(); if (e.key === 'Escape') setEditingDate(false) }}
+            className="bg-white/5 border border-white/10 rounded-lg px-2.5 py-1.5 text-sm text-white/90 outline-none focus:border-pink-400/50 [color-scheme:dark]" />
+        ) : (
+          <p onClick={() => { setDateDraft((media.dateTaken || media.effectiveDate || '').slice(0, 16)); setEditingDate(true) }}
+            title="Bấm để sửa ngày giờ (ảnh scan / thiếu EXIF)"
+            className={`text-sm cursor-text rounded px-0.5 -mx-0.5 hover:bg-white/5 inline-flex items-center gap-2 ${
+              media.dateTaken || media.effectiveDate ? 'text-white/80' : 'text-white/25 italic'
+            }`}>
+            {media.dateTaken || media.effectiveDate ? fmtDate(media.dateTaken || media.effectiveDate) : 'Set date...'}
+            {media.timezone && <span className="text-white/25 text-[10px] not-italic">{media.timezone}</span>}
+          </p>
+        )}
+        {media.dateTaken && media.uploadedAt && media.dateTaken !== media.uploadedAt && (
+          <p className="text-white/30 text-[11px] mt-0.5">Uploaded {fmtDate(media.uploadedAt)}</p>
+        )}
+      </InfoSection>
 
       {/* Camera & EXIF */}
       {(cameraStr || settingsStr) && (

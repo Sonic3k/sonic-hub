@@ -23,20 +23,22 @@ export interface TreeResponse {
 export const uploadApi = {
   createTree: (data: TreeRequest) => api.post<TreeResponse>('/api/collections/create-tree', data).then(r => r.data),
   /** Upload 1 file. collectionId → path thật trong B2 theo cây collection + auto-link. */
-  uploadFile: (file: File, personId?: string, collectionId?: string) => {
+  uploadFile: (file: File, personId?: string, collectionId?: string, allowDuplicate?: boolean) => {
     const form = new FormData()
     form.append('file', file)
     if (personId) form.append('personId', personId)
     if (collectionId) form.append('collectionId', collectionId)
     if (file.lastModified) form.append('lastModified', String(file.lastModified))
-    return api.post('/api/media-files/upload', form, { headers: { 'Content-Type': 'multipart/form-data' } }).then(r => r.data)
+    if (allowDuplicate) form.append('allowDuplicate', 'true')
+    return api.post<{ duplicate: boolean; media?: MediaFileResponse; existing?: MediaFileResponse }>(
+      '/api/media-files/upload', form, { headers: { 'Content-Type': 'multipart/form-data' } }).then(r => r.data)
   },
   deleteMedia: (ids: string[]) =>
     api.post('/api/media-files/delete-batch', ids).then(r => r.data),
 }
 
 export const mediaApi = {
-  patch: (id: string, data: { caption?: string; isFavorite?: boolean }) =>
+  patch: (id: string, data: { caption?: string; isFavorite?: boolean; dateTaken?: string }) =>
     api.patch<MediaFileResponse>(`/api/media-files/${id}`, data).then(r => r.data),
   favoriteBatch: (ids: string[], value: boolean) =>
     api.post('/api/media-files/batch/favorite', { ids, value }).then(r => r.data),

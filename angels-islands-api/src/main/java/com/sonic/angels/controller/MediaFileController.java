@@ -109,12 +109,13 @@ public class MediaFileController {
     }
 
     @PostMapping("/upload")
-    public MediaFileDto.Response upload(@RequestParam("file") MultipartFile file,
+    public Map<String, Object> upload(@RequestParam("file") MultipartFile file,
         @RequestParam(value = "personId", required = false) UUID personId,
         @RequestParam(value = "collectionId", required = false) UUID collectionId,
         @RequestParam(value = "subFolder", required = false) String subFolder,
-        @RequestParam(value = "lastModified", required = false) Long lastModified) throws IOException {
-        return mediaFileService.uploadAndReturn(file, personId, collectionId, subFolder, lastModified);
+        @RequestParam(value = "lastModified", required = false) Long lastModified,
+        @RequestParam(value = "allowDuplicate", defaultValue = "false") boolean allowDuplicate) throws IOException {
+        return mediaFileService.uploadAsMap(file, personId, collectionId, subFolder, lastModified, allowDuplicate);
     }
 
     @PatchMapping("/{id}")

@@ -75,13 +75,45 @@ public class MediaFileService {
     public MediaFile findById(UUID id) { return mediaFileRepository.findById(id).orElseThrow(() -> new RuntimeException("MediaFile not found: " + id)); }
     public List<MediaFile> findByPersonId(UUID personId) { return mediaFileRepository.findByPersonId(personId); }
 
-    public MediaFileDto.Response uploadAndReturn(MultipartFile file, UUID personId, UUID collectionId,
-                                                 String subFolder, Long lastModified) throws IOException {
-        return mapper.toMediaFileResponse(upload(file, personId, collectionId, subFolder, lastModified));
+    /** Result of an upload attempt: either saved media, or the duplicate it collided with. */
+    public record UploadOutcome(MediaFile media, MediaFile duplicateOf) {}
+
+    public java.util.Map<String, Object> uploadAsMap(MultipartFile file, UUID personId, UUID collectionId,
+                                                     String subFolder, Long lastModified, boolean allowDuplicate) throws IOException {
+        UploadOutcome o = uploadChecked(file, personId, collectionId, subFolder, lastModified, allowDuplicate);
+        if (o.duplicateOf() != null)
+            return java.util.Map.of("duplicate", true,
+                "existing", mapper.toMediaFileResponse(o.duplicateOf(), MediaFileDto.Includes.none()));
+        return java.util.Map.of("duplicate", false, "media", mapper.toMediaFileResponse(o.media()));
+    }
+
+    public UploadOutcome uploadChecked(MultipartFile file, UUID personId, UUID collectionId,
+                                       String subFolder, Long lastModified, boolean allowDuplicate) throws IOException {
+        String hash = sha256(file);
+        if (!allowDuplicate) {
+            var existing = mediaFileRepository.findFirstByContentHash(hash);
+            if (existing.isPresent()) return new UploadOutcome(null, existing.get());
+        }
+        MediaFile saved = upload(file, personId, collectionId, subFolder, lastModified, hash);
+        return new UploadOutcome(saved, null);
+    }
+
+    private String sha256(MultipartFile file) throws IOException {
+        try (java.io.InputStream is = file.getInputStream()) {
+            var md = java.security.MessageDigest.getInstance("SHA-256");
+            byte[] buf = new byte[8192];
+            int n;
+            while ((n = is.read(buf)) > 0) md.update(buf, 0, n);
+            StringBuilder sb = new StringBuilder(64);
+            for (byte b : md.digest()) sb.append(String.format("%02x", b));
+            return sb.toString();
+        } catch (java.security.NoSuchAlgorithmException e) {
+            throw new IOException(e);
+        }
     }
 
     public MediaFile upload(MultipartFile file, UUID personId, UUID collectionId,
-                            String subFolder, Long lastModified) throws IOException {
+                            String subFolder, Long lastModified, String contentHash) throws IOException {
         // Real folder path: collection tree > legacy subFolder > monthly library bucket
         String dir;
         if (collectionId != null) {
@@ -96,6 +128,7 @@ public class MediaFileService {
 
         // Extract metadata BEFORE upload (consumes stream)
         MediaFile mf = new MediaFile();
+        mf.setContentHash(contentHash);
         mf.setFileName(file.getOriginalFilename());
         mf.setFileType(isVideo(file.getContentType()) ? MediaFile.FileType.VIDEO : MediaFile.FileType.IMAGE);
         mf.setFileSize(file.getSize());
@@ -234,6 +267,11 @@ public class MediaFileService {
         MediaFile mf = findById(id);
         if (req.getCaption() != null) mf.setCaption(req.getCaption().isBlank() ? null : req.getCaption());
         if (req.getIsFavorite() != null) mf.setIsFavorite(req.getIsFavorite());
+        if (req.getDateTaken() != null && !req.getDateTaken().isBlank()) {
+            String v = req.getDateTaken().trim();
+            if (v.length() == 16) v = v + ":00"; // datetime-local gives yyyy-MM-ddTHH:mm
+            mf.setDateTaken(LocalDateTime.parse(v)); // effectiveDate recomputed by @PreUpdate
+        }
         return mapper.toMediaFileResponse(mediaFileRepository.save(mf));
     }
 
@@ -999,6 +1037,17 @@ public class MediaFileService {
             scanned++;
             try (java.io.InputStream is = storageService.downloadStream(m.getStorageKey())) {
                 extractMetadataFromStream(is, m);
+                if (m.getContentHash() == null) {
+                    try (java.io.InputStream hs = storageService.downloadStream(m.getStorageKey())) {
+                        var md = java.security.MessageDigest.getInstance("SHA-256");
+                        byte[] buf = new byte[8192];
+                        int n;
+                        while ((n = hs.read(buf)) > 0) md.update(buf, 0, n);
+                        StringBuilder hex = new StringBuilder(64);
+                        for (byte b : md.digest()) hex.append(String.format("%02x", b));
+                        m.setContentHash(hex.toString());
+                    } catch (Exception ignored) {}
+                }
                 if (m.getTimezone() == null) m.setTimezone("+07:00");
                 if (m.getUploadedAt() == null) m.setUploadedAt(LocalDateTime.now(PHOTO_ZONE));
                 m.getTags().add(classifiedTag);

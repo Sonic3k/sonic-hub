@@ -1,13 +1,13 @@
 import { useState, useEffect, useRef } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { ArrowLeft, Brain, MessageSquare, User, Pencil, Save, X, Plus, Trash2, Upload, Image as ImageIcon, FolderOpen, FolderPlus, UserMinus, Bot } from 'lucide-react'
-import { Button, Input, Textarea, Modal } from '../components/ui'
+import { Button, Input, Textarea, Modal, Select } from '../components/ui'
 import { usePerson, useUpdatePerson } from '../hooks/usePersons'
 import { useFacts, useEpisodes, useChapters, useTraits, useArchives } from '../hooks/useMemory'
 import { personsApi } from '../api/persons'
 import { memoryApi } from '../api/memory'
 import { useMutation, useQuery, useInfiniteQuery, useQueryClient } from '@tanstack/react-query'
-import type { PersonRequest, RelationshipType, ContactPlatform, ContactRequest, MediaFileResponse, CollectionResponse, ChatArchiveResponse } from '../types'
+import type { PersonRequest, RelationshipType, ContactPlatform, ContactRequest, MediaFileResponse, CollectionResponse, ChatArchiveResponse, ChapterResponse, TraitResponse, FactResponse, EpisodeResponse, ChapterRequest, TraitRequest, FactRequest, EpisodeRequest } from '../types'
 import api from '../api/client'
 import { mediaApi, uploadApi, collectionBrowseApi, collectionsApi } from '../api/collections'
 import { Lightbox, MediaItem } from '../components/media'
@@ -38,6 +38,20 @@ export default function PersonDetailPage() {
   const { data: archives = [] } = useArchives(pid)
   const [tab, setTab] = useState<Tab>('info')
   const [viewerArchive, setViewerArchive] = useState<ChatArchiveResponse | null>(null)
+  const [memForm, setMemForm] = useState<{ kind: 'chapter' | 'trait' | 'fact' | 'episode'; item?: ChapterResponse | TraitResponse | FactResponse | EpisodeResponse } | null>(null)
+
+  const invalidateMemory = (kind: string) => {
+    const key = { chapter: 'chapters', trait: 'traits', fact: 'facts', episode: 'episodes' }[kind]
+    queryClient.invalidateQueries({ queryKey: [key, pid] })
+  }
+  const deleteMemItem = async (kind: 'chapter' | 'trait' | 'fact' | 'episode', id: string, label: string) => {
+    if (!confirm(`Xóa ${label}?`)) return
+    if (kind === 'chapter') await memoryApi.deleteChapter(pid, id)
+    if (kind === 'trait') await memoryApi.deleteTrait(pid, id)
+    if (kind === 'fact') await memoryApi.deleteFact(pid, id)
+    if (kind === 'episode') await memoryApi.deleteEpisode(pid, id)
+    invalidateMemory(kind)
+  }
   const wasExtracting = useRef(false)
   useEffect(() => {
     const extracting = archives.some(a => a.extractionStatus === 'EXTRACTING')
@@ -153,6 +167,12 @@ export default function PersonDetailPage() {
 
       {tab === 'companion' && <CompanionTab personId={pid} personName={person.displayName || person.name} />}
 
+      {memForm && (
+        <MemoryFormModal personId={pid} kind={memForm.kind} item={memForm.item}
+          onSaved={() => { invalidateMemory(memForm.kind); setMemForm(null) }}
+          onClose={() => setMemForm(null)} />
+      )}
+
       {viewerArchive && (
         <ChatViewer personId={pid} archive={viewerArchive}
           personName={person.displayName || person.name}
@@ -253,12 +273,22 @@ export default function PersonDetailPage() {
 
       {tab === 'memory' && (
         <div className="space-y-6">
-          {chapters.length > 0 && (
+          {(
             <section>
-              <h3 className="text-sm font-semibold text-slate-600 mb-3">Life Chapters</h3>
+              <div className="flex items-center gap-2 mb-3">
+                <h3 className="text-sm font-semibold text-slate-600">Life Chapters</h3>
+                <button onClick={() => setMemForm({ kind: 'chapter' })}
+                  className="flex items-center gap-1 text-[11px] text-pink-500 hover:bg-pink-50 px-2 py-1 rounded transition-colors">
+                  <Plus size={11} />Add
+                </button>
+              </div>
               <div className="space-y-2">{chapters.map(c => (
-                <div key={c.id} className="bg-white rounded-lg p-4 border border-slate-100">
-                  <div className="flex items-center gap-2 mb-1">
+                <div key={c.id} className="relative group bg-white rounded-lg p-4 border border-slate-100">
+                  <span className="absolute top-2.5 right-2.5 flex items-center gap-0.5 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
+                    <button onClick={() => setMemForm({ kind: 'chapter', item: c })} className="p-1 text-slate-300 hover:text-pink-500 rounded transition-colors"><Pencil size={12} /></button>
+                    <button onClick={() => deleteMemItem('chapter', c.id, `chapter "${c.period}"`)} className="p-1 text-slate-300 hover:text-rose-500 rounded transition-colors"><X size={12} /></button>
+                  </span>
+                  <div className="flex items-center gap-2 mb-1 pr-14">
                     <span className="text-xs font-mono text-pink-500">{c.period}</span>
                     {c.sentiment && <span className="text-xs px-1.5 py-0.5 rounded bg-slate-50 text-slate-500">{c.sentiment}</span>}
                   </div>
@@ -268,12 +298,22 @@ export default function PersonDetailPage() {
               ))}</div>
             </section>
           )}
-          {traits.length > 0 && (
+          {(
             <section>
-              <h3 className="text-sm font-semibold text-slate-600 mb-3">Personality Traits</h3>
+              <div className="flex items-center gap-2 mb-3">
+                <h3 className="text-sm font-semibold text-slate-600">Personality Traits</h3>
+                <button onClick={() => setMemForm({ kind: 'trait' })}
+                  className="flex items-center gap-1 text-[11px] text-pink-500 hover:bg-pink-50 px-2 py-1 rounded transition-colors">
+                  <Plus size={11} />Add
+                </button>
+              </div>
               <div className="space-y-2">{traits.map(t => (
-                <div key={t.id} className="bg-white rounded-lg px-4 py-2.5 border border-slate-100">
-                  <div className="flex items-center gap-2 flex-wrap">
+                <div key={t.id} className="relative group bg-white rounded-lg px-4 py-2.5 border border-slate-100">
+                  <span className="absolute top-2.5 right-2.5 flex items-center gap-0.5 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
+                    <button onClick={() => setMemForm({ kind: 'trait', item: t })} className="p-1 text-slate-300 hover:text-pink-500 rounded transition-colors"><Pencil size={12} /></button>
+                    <button onClick={() => deleteMemItem('trait', t.id, `trait "${t.trait}"`)} className="p-1 text-slate-300 hover:text-rose-500 rounded transition-colors"><X size={12} /></button>
+                  </span>
+                  <div className="flex items-center gap-2 flex-wrap pr-14">
                     <span className="text-xs px-2 py-0.5 rounded-full bg-purple-50 text-purple-600 font-medium">{t.trait}</span>
                     {t.period && <span className="text-[11px] text-slate-300">{t.period}</span>}
                   </div>
@@ -283,27 +323,47 @@ export default function PersonDetailPage() {
               ))}</div>
             </section>
           )}
-          {facts.length > 0 && (
+          {(
             <section>
-              <h3 className="text-sm font-semibold text-slate-600 mb-3">Facts</h3>
+              <div className="flex items-center gap-2 mb-3">
+                <h3 className="text-sm font-semibold text-slate-600">Facts</h3>
+                <button onClick={() => setMemForm({ kind: 'fact' })}
+                  className="flex items-center gap-1 text-[11px] text-pink-500 hover:bg-pink-50 px-2 py-1 rounded transition-colors">
+                  <Plus size={11} />Add
+                </button>
+              </div>
               <div className="bg-white rounded-lg border border-slate-100 divide-y divide-slate-50">
                 {facts.map(f => (
-                  <div key={f.id} className="px-3 md:px-4 py-2.5 flex flex-wrap items-baseline gap-1.5 md:gap-3">
+                  <div key={f.id} className="group px-3 md:px-4 py-2.5 flex flex-wrap items-baseline gap-1.5 md:gap-3">
                     <span className="text-xs text-slate-400 w-20 shrink-0">{f.category}</span>
                     <span className="text-xs font-medium text-slate-600">{f.key}:</span>
                     <span className="text-xs text-slate-700">{f.value}</span>
-                    {f.period && <span className="text-xs text-slate-300 ml-auto">{f.period}</span>}
+                    <span className="ml-auto flex items-center gap-1.5">
+                      {f.period && <span className="text-xs text-slate-300">{f.period}</span>}
+                      <button onClick={() => setMemForm({ kind: 'fact', item: f })} className="p-1 text-slate-300 hover:text-pink-500 rounded transition-colors opacity-100 md:opacity-0 md:group-hover:opacity-100"><Pencil size={12} /></button>
+                      <button onClick={() => deleteMemItem('fact', f.id, `fact "${f.key}"`)} className="p-1 text-slate-300 hover:text-rose-500 rounded transition-colors opacity-100 md:opacity-0 md:group-hover:opacity-100"><X size={12} /></button>
+                    </span>
                   </div>
                 ))}
               </div>
             </section>
           )}
-          {episodes.length > 0 && (
+          {(
             <section>
-              <h3 className="text-sm font-semibold text-slate-600 mb-3">Episodes</h3>
+              <div className="flex items-center gap-2 mb-3">
+                <h3 className="text-sm font-semibold text-slate-600">Episodes</h3>
+                <button onClick={() => setMemForm({ kind: 'episode' })}
+                  className="flex items-center gap-1 text-[11px] text-pink-500 hover:bg-pink-50 px-2 py-1 rounded transition-colors">
+                  <Plus size={11} />Add
+                </button>
+              </div>
               <div className="space-y-2">{episodes.map(e => (
-                <div key={e.id} className="bg-white rounded-lg p-4 border border-slate-100">
-                  <p className="text-sm text-slate-700">{e.summary}</p>
+                <div key={e.id} className="relative group bg-white rounded-lg p-4 border border-slate-100">
+                  <span className="absolute top-2.5 right-2.5 flex items-center gap-0.5 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
+                    <button onClick={() => setMemForm({ kind: 'episode', item: e })} className="p-1 text-slate-300 hover:text-pink-500 rounded transition-colors"><Pencil size={12} /></button>
+                    <button onClick={() => deleteMemItem('episode', e.id, `episode này`)} className="p-1 text-slate-300 hover:text-rose-500 rounded transition-colors"><X size={12} /></button>
+                  </span>
+                  <p className="text-sm text-slate-700 pr-14">{e.summary}</p>
                   <div className="flex gap-2 mt-2">
                     {e.emotion && <span className="text-xs px-1.5 py-0.5 rounded bg-blue-50 text-blue-500">{e.emotion}</span>}
                     {e.importance && <span className="text-xs text-slate-300">importance: {e.importance}/10</span>}
@@ -314,7 +374,7 @@ export default function PersonDetailPage() {
             </section>
           )}
           {facts.length === 0 && episodes.length === 0 && chapters.length === 0 && traits.length === 0 && (
-            <p className="text-sm text-slate-400">No memories yet. Import chat archives to extract memories.</p>
+            <p className="text-sm text-slate-400">Chưa có memory nào — bấm Extract ở tab Chat Archives, hoặc thêm tay bằng nút + Add ở từng mục.</p>
           )}
         </div>
       )}
@@ -558,5 +618,107 @@ function PersonPhotosTab({ personId }: { personId: string }) {
           onAddTo={id => setPicker([id])} />
       )}
     </div>
+  )
+}
+
+
+// ── Memory add/edit modal (facts / traits / episodes / chapters) ─────────────
+
+const FACT_CATEGORIES = ['basic', 'preference', 'habit', 'work', 'family', 'hobby']
+
+function MemoryFormModal({ personId, kind, item, onSaved, onClose }: {
+  personId: string
+  kind: 'chapter' | 'trait' | 'fact' | 'episode'
+  item?: ChapterResponse | TraitResponse | FactResponse | EpisodeResponse
+  onSaved: () => void
+  onClose: () => void
+}) {
+  const editing = !!item
+  const [f, setF] = useState<Record<string, string | number | undefined>>(() => {
+    if (kind === 'fact') { const x = item as FactResponse | undefined; return { category: x?.category || 'basic', key: x?.key || '', value: x?.value || '', period: x?.period || '', confidence: x?.confidence ?? 0.8 } }
+    if (kind === 'trait') { const x = item as TraitResponse | undefined; return { trait: x?.trait || '', description: x?.description || '', evidence: x?.evidence || '', period: x?.period || '' } }
+    if (kind === 'episode') { const x = item as EpisodeResponse | undefined; return { summary: x?.summary || '', emotion: x?.emotion || '', importance: x?.importance ?? 5, occurredAt: x?.occurredAt ? String(x.occurredAt).slice(0, 10) : '' } }
+    const x = item as ChapterResponse | undefined; return { period: x?.period || '', title: x?.title || '', summary: x?.summary || '', sentiment: x?.sentiment || '' }
+  })
+  const [saving, setSaving] = useState(false)
+  const set = (k: string, v: string | number) => setF(p => ({ ...p, [k]: v }))
+
+
+  const valid = kind === 'fact' ? !!(f.key && f.value)
+    : kind === 'trait' ? !!f.trait
+    : kind === 'episode' ? !!f.summary
+    : !!f.period
+
+  const save = async () => {
+    if (!valid || saving) return
+    setSaving(true)
+    try {
+      if (kind === 'fact') {
+        const data: FactRequest = { category: String(f.category), key: String(f.key), value: String(f.value), period: String(f.period), confidence: Number(f.confidence) }
+        editing ? await memoryApi.updateFact(personId, item!.id, data) : await memoryApi.createFact(personId, data)
+      } else if (kind === 'trait') {
+        const data: TraitRequest = { trait: String(f.trait), description: String(f.description), evidence: String(f.evidence), period: String(f.period) }
+        editing ? await memoryApi.updateTrait(personId, item!.id, data) : await memoryApi.createTrait(personId, data)
+      } else if (kind === 'episode') {
+        const data: EpisodeRequest = { summary: String(f.summary), emotion: String(f.emotion), importance: Number(f.importance), occurredAt: f.occurredAt ? `${f.occurredAt}T00:00:00` : undefined }
+        editing ? await memoryApi.updateEpisode(personId, item!.id, data) : await memoryApi.createEpisode(personId, data)
+      } else {
+        const data: ChapterRequest = { period: String(f.period), title: String(f.title), summary: String(f.summary), sentiment: String(f.sentiment) }
+        editing ? await memoryApi.updateChapter(personId, item!.id, data) : await memoryApi.createChapter(personId, data)
+      }
+      onSaved()
+    } catch { alert('Save failed') }
+    setSaving(false)
+  }
+
+  const titles = { fact: 'Fact', trait: 'Trait', episode: 'Episode', chapter: 'Life Chapter' }
+
+  return (
+    <Modal title={`${editing ? 'Edit' : 'Add'} ${titles[kind]}`} onClose={onClose}>
+      <div className="space-y-3">
+        {kind === 'fact' && <>
+          <Select label="Category" value={String(f.category)} onChange={e => set('category', e.target.value)}>
+            {FACT_CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
+          </Select>
+          <Input label="Key *" value={String(f.key)} onChange={e => set('key', e.target.value)} placeholder="truong_hoc, mon_an_thich..." />
+          <Input label="Value *" value={String(f.value)} onChange={e => set('value', e.target.value)} placeholder="THPT Chu Văn An" />
+          <Input label="Period" value={String(f.period)} onChange={e => set('period', e.target.value)} placeholder="2010 hoặc 2009-2011, trống = luôn đúng" />
+          <div>
+            <label className="block text-xs font-medium text-slate-500 mb-1">Confidence · {Number(f.confidence).toFixed(2)}</label>
+            <input type="range" min={0.1} max={1} step={0.05} value={Number(f.confidence)}
+              onChange={e => set('confidence', parseFloat(e.target.value))} className="w-full accent-pink-500" />
+          </div>
+        </>}
+        {kind === 'trait' && <>
+          <Input label="Trait *" value={String(f.trait)} onChange={e => set('trait', e.target.value)} placeholder="nhõng nhẽo, chu đáo..." />
+          <Textarea label="Description" rows={2} value={String(f.description)} onChange={e => set('description', e.target.value)} />
+          <Textarea label="Evidence" rows={2} value={String(f.evidence)} onChange={e => set('evidence', e.target.value)} placeholder='Câu chat trích nguyên văn làm bằng chứng' />
+          <Input label="Period" value={String(f.period)} onChange={e => set('period', e.target.value)} placeholder="2010" />
+        </>}
+        {kind === 'episode' && <>
+          <Textarea label="Summary *" rows={3} value={String(f.summary)} onChange={e => set('summary', e.target.value)}
+            placeholder="1-2 câu, đọc lại sau 10 năm vẫn hiểu" />
+          <div className="grid grid-cols-2 gap-3">
+            <Input label="Emotion" value={String(f.emotion)} onChange={e => set('emotion', e.target.value)} placeholder="vui, buồn, nhớ..." />
+            <Input label="Ngày" type="date" value={String(f.occurredAt)} onChange={e => set('occurredAt', e.target.value)} />
+          </div>
+          <div>
+            <label className="block text-xs font-medium text-slate-500 mb-1">Importance · {f.importance}/10</label>
+            <input type="range" min={1} max={10} step={1} value={Number(f.importance)}
+              onChange={e => set('importance', parseInt(e.target.value))} className="w-full accent-pink-500" />
+          </div>
+        </>}
+        {kind === 'chapter' && <>
+          <Input label="Period *" value={String(f.period)} onChange={e => set('period', e.target.value)} placeholder="2009-2011" />
+          <Input label="Title" value={String(f.title)} onChange={e => set('title', e.target.value)} placeholder="Thời cấp 3" />
+          <Textarea label="Summary" rows={3} value={String(f.summary)} onChange={e => set('summary', e.target.value)} />
+          <Input label="Sentiment" value={String(f.sentiment)} onChange={e => set('sentiment', e.target.value)} placeholder="warm, romantic, tense..." />
+        </>}
+        <div className="flex justify-end gap-2 pt-1">
+          <Button variant="ghost" onClick={onClose}>Cancel</Button>
+          <Button onClick={save} disabled={!valid || saving}>{saving ? 'Saving...' : 'Save'}</Button>
+        </div>
+      </div>
+    </Modal>
   )
 }

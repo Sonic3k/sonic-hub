@@ -85,6 +85,10 @@ public class MediaFile extends BaseEntity {
     @Column(name = "effective_date")
     private LocalDateTime effectiveDate;
 
+    /** SHA-256 of file bytes — duplicate detection. Not unique: user may intentionally keep clones. */
+    @Column(name = "content_hash", length = 64)
+    private String contentHash;
+
     @Column(name = "latitude")
     private Double latitude;
 
@@ -259,4 +263,6 @@ public class MediaFile extends BaseEntity {
     public void setPersons(Set<Person> persons) { this.persons = persons; }
     public Set<Tag> getTags() { return tags; }
     public void setTags(Set<Tag> tags) { this.tags = tags; }
+    public String getContentHash() { return contentHash; }
+    public void setContentHash(String contentHash) { this.contentHash = contentHash; }
 }

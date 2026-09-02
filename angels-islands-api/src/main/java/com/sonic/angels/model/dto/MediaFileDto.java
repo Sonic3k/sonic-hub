@@ -14,9 +14,10 @@ public class MediaFileDto {
     }
 
     public static class UpdateRequest {
-        private String caption; private Boolean isFavorite;
+        private String caption; private Boolean isFavorite; private String dateTaken;
         public String getCaption() { return caption; } public void setCaption(String v) { this.caption = v; }
         public Boolean getIsFavorite() { return isFavorite; } public void setIsFavorite(Boolean v) { this.isFavorite = v; }
+        public String getDateTaken() { return dateTaken; } public void setDateTaken(String v) { this.dateTaken = v; }
     }
 
     public static class FavoriteBatchRequest {

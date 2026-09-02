@@ -39,6 +39,17 @@ public class MemoryController {
         return mapper.toFactResponse(factRepo.save(f));
     }
 
+    @PutMapping("/facts/{id}")
+    public MemoryDto.FactResponse updateFact(@PathVariable UUID personId, @PathVariable UUID id, @RequestBody MemoryDto.FactRequest req) {
+        Fact f = factRepo.findById(id).orElseThrow();
+        if (req.getCategory() != null) f.setCategory(req.getCategory());
+        if (req.getKey() != null) f.setKey(req.getKey());
+        if (req.getValue() != null) f.setValue(req.getValue());
+        if (req.getPeriod() != null) f.setPeriod(req.getPeriod().isBlank() ? null : req.getPeriod());
+        if (req.getConfidence() != null) f.setConfidence(req.getConfidence());
+        return mapper.toFactResponse(factRepo.save(f));
+    }
+
     @DeleteMapping("/facts/{id}")
     public ResponseEntity<Void> deleteFact(@PathVariable UUID id) { factRepo.deleteById(id); return ResponseEntity.noContent().build(); }
 
@@ -50,6 +61,16 @@ public class MemoryController {
         Episode e = new Episode(); e.setPerson(personRepo.findById(personId).orElseThrow());
         e.setSummary(req.getSummary()); e.setEmotion(req.getEmotion());
         e.setImportance(req.getImportance()); e.setOccurredAt(req.getOccurredAt());
+        return mapper.toEpisodeResponse(episodeRepo.save(e));
+    }
+
+    @PutMapping("/episodes/{id}")
+    public MemoryDto.EpisodeResponse updateEpisode(@PathVariable UUID personId, @PathVariable UUID id, @RequestBody MemoryDto.EpisodeRequest req) {
+        Episode e = episodeRepo.findById(id).orElseThrow();
+        if (req.getSummary() != null) e.setSummary(req.getSummary());
+        if (req.getEmotion() != null) e.setEmotion(req.getEmotion().isBlank() ? null : req.getEmotion());
+        if (req.getImportance() != null) e.setImportance(req.getImportance());
+        if (req.getOccurredAt() != null) e.setOccurredAt(req.getOccurredAt());
         return mapper.toEpisodeResponse(episodeRepo.save(e));
     }
 
@@ -67,6 +88,17 @@ public class MemoryController {
         return mapper.toChapterResponse(chapterRepo.save(c));
     }
 
+    @PutMapping("/chapters/{id}")
+    public MemoryDto.ChapterResponse updateChapter(@PathVariable UUID personId, @PathVariable UUID id, @RequestBody MemoryDto.ChapterRequest req) {
+        LifeChapter c = chapterRepo.findById(id).orElseThrow();
+        if (req.getPeriod() != null) c.setPeriod(req.getPeriod());
+        if (req.getTitle() != null) c.setTitle(req.getTitle().isBlank() ? null : req.getTitle());
+        if (req.getSummary() != null) c.setSummary(req.getSummary().isBlank() ? null : req.getSummary());
+        if (req.getSentiment() != null) c.setSentiment(req.getSentiment().isBlank() ? null : req.getSentiment());
+        if (req.getSortOrder() != null) c.setSortOrder(req.getSortOrder());
+        return mapper.toChapterResponse(chapterRepo.save(c));
+    }
+
     @DeleteMapping("/chapters/{id}")
     public ResponseEntity<Void> deleteChapter(@PathVariable UUID id) { chapterRepo.deleteById(id); return ResponseEntity.noContent().build(); }
 
@@ -78,6 +110,16 @@ public class MemoryController {
         PersonalityTrait t = new PersonalityTrait(); t.setPerson(personRepo.findById(personId).orElseThrow());
         t.setTrait(req.getTrait()); t.setDescription(req.getDescription());
         t.setEvidence(req.getEvidence()); t.setPeriod(req.getPeriod());
+        return mapper.toTraitResponse(traitRepo.save(t));
+    }
+
+    @PutMapping("/traits/{id}")
+    public MemoryDto.TraitResponse updateTrait(@PathVariable UUID personId, @PathVariable UUID id, @RequestBody MemoryDto.TraitRequest req) {
+        PersonalityTrait t = traitRepo.findById(id).orElseThrow();
+        if (req.getTrait() != null) t.setTrait(req.getTrait());
+        if (req.getDescription() != null) t.setDescription(req.getDescription().isBlank() ? null : req.getDescription());
+        if (req.getEvidence() != null) t.setEvidence(req.getEvidence().isBlank() ? null : req.getEvidence());
+        if (req.getPeriod() != null) t.setPeriod(req.getPeriod().isBlank() ? null : req.getPeriod());
         return mapper.toTraitResponse(traitRepo.save(t));
     }
 
