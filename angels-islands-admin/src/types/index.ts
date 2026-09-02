@@ -45,6 +45,7 @@ export interface MediaFileResponse {
   persons?: { id: string; name: string; displayName?: string; avatarUrl?: string }[]
   takenBy?: { id: string; name: string; displayName?: string; avatarUrl?: string }
   mediaSource?: string
+  fileExtension?: string
   tags?: TagResponse[]
   // Image EXIF
   imageDetail?: {

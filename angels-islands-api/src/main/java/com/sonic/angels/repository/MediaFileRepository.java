@@ -36,6 +36,15 @@ public interface MediaFileRepository extends JpaRepository<MediaFile, UUID> {
     @Query("SELECT m FROM MediaFile m LEFT JOIN FETCH m.imageDetail WHERE m.mediaSource IS NULL")
     List<MediaFile> findSourcelessWithDetail();
 
+    @Modifying
+    @Query(value = "UPDATE media_files SET file_extension = LOWER((regexp_match(file_name, '\\.([A-Za-z0-9]{1,15})$'))[1]) " +
+        "WHERE file_extension IS NULL AND file_name ~ '\\.[A-Za-z0-9]{1,15}$'", nativeQuery = true)
+    int backfillFileExtension();
+
+    @Query(value = "SELECT file_extension, COUNT(*) FROM media_files WHERE file_extension IS NOT NULL " +
+        "GROUP BY file_extension ORDER BY COUNT(*) DESC", nativeQuery = true)
+    List<Object[]> countByExtension();
+
     /** One-shot migration: retire the legacy ORIGINAL default (null now means unknown). */
     @org.springframework.data.jpa.repository.Modifying
     @Query(value = "UPDATE media_files SET media_source = NULL WHERE media_source = 'ORIGINAL'", nativeQuery = true)
@@ -60,6 +69,7 @@ public interface MediaFileRepository extends JpaRepository<MediaFile, UUID> {
         " AND (:orientation IS NULL OR m.orientation = :orientation)" +
         " AND (:category IS NULL OR m.mediaCategory = :category)" +
         " AND (:source IS NULL OR m.mediaSource = :source)" +
+        " AND (:ext IS NULL OR m.fileExtension = :ext)" +
         " AND (:favorite IS NULL OR m.isFavorite = :favorite)" +
         " AND (:featured IS NULL OR m.isFeatured = :featured)" +
         " AND (:hasGps IS NULL OR (:hasGps = true AND m.latitude IS NOT NULL) OR (:hasGps = false AND m.latitude IS NULL))" +
@@ -85,6 +95,7 @@ public interface MediaFileRepository extends JpaRepository<MediaFile, UUID> {
         @Param("orientation") MediaFile.Orientation orientation,
         @Param("category") MediaFile.MediaCategory category,
         @Param("source") String source,
+        @Param("ext") String ext,
         @Param("favorite") Boolean favorite,
         @Param("featured") Boolean featured,
         @Param("hasGps") Boolean hasGps,
@@ -110,6 +121,7 @@ public interface MediaFileRepository extends JpaRepository<MediaFile, UUID> {
         @Param("orientation") MediaFile.Orientation orientation,
         @Param("category") MediaFile.MediaCategory category,
         @Param("source") String source,
+        @Param("ext") String ext,
         @Param("favorite") Boolean favorite,
         @Param("featured") Boolean featured,
         @Param("hasGps") Boolean hasGps,

@@ -99,6 +99,7 @@ public class DtoMapper {
         }
 
         if (m.getMediaSource() != null) r.setMediaSource(m.getMediaSource());
+        r.setFileExtension(m.getFileExtension());
 
         if (inc.persons() && m.getTakenBy() != null)
             r.setTakenBy(toPersonSummary(m.getTakenBy()));

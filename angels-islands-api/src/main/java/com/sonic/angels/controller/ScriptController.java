@@ -32,6 +32,12 @@ public class ScriptController {
         return mediaFileService.backfillMediaSource();
     }
 
+    /** Derive file_extension from file_name for every row missing it — one native UPDATE, instant. */
+    @PostMapping("/backfill-file-extension")
+    public Map<String, Object> backfillFileExtension() {
+        return mediaFileService.backfillFileExtension();
+    }
+
     /** One-shot migration: NULL out the legacy 'ORIGINAL' default so null = unknown. */
     @PostMapping("/clear-original-source")
     @Transactional

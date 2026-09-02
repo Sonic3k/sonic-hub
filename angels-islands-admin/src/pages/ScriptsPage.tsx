@@ -143,6 +143,9 @@ export default function ScriptsPage() {
   const backfill = useScript(
     () => api.post('/api/scripts/backfill-media-source').then((r: { data: unknown }) => r.data),
     'Backfill mediaSource from data already in the DB?')
+  const backfillExt = useScript(
+    () => api.post('/api/scripts/backfill-file-extension').then((r: { data: unknown }) => r.data),
+    'Derive file extension from file name for all rows missing it?')
   const clearOriginal = useScript(
     () => api.post('/api/scripts/clear-original-source').then((r: { data: unknown }) => r.data),
     'NULL out every legacy ORIGINAL mediaSource? (one-shot migration)')
@@ -158,6 +161,10 @@ export default function ScriptsPage() {
         <ScriptCard title="Backfill media source (DB-only, instant)"
           description="Fills mediaSource where it's still empty using the fileName + EXIF already stored in the DB — no B2 downloads. Run this right after detection rules improve (e.g. today's iPhone/Facebook fixes)."
           onRun={backfill.run} running={backfill.running} result={backfill.result} />
+
+        <ScriptCard title="Backfill file extension (one SQL, instant)"
+          description="Derives file_extension (jpg, heic, mp4...) from file_name for every row missing it — single native UPDATE, no downloads. New uploads set it automatically; this covers everything already in the library."
+          onRun={backfillExt.run} running={backfillExt.running} result={backfillExt.result} />
 
         <ScriptCard title="Clear legacy ORIGINAL source" danger
           description="One-shot migration: sets mediaSource = NULL where it still says ORIGINAL (from the retired enum era). Null now means 'unknown'. Run once, then Backfill above re-detects real sources."

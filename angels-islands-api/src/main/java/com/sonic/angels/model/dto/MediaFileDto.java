@@ -52,6 +52,8 @@ public class MediaFileDto {
     public static class Response {
         private PersonDto.Summary takenBy;
         private String mediaSource;
+        private String fileExtension;
+        public String getFileExtension() { return fileExtension; } public void setFileExtension(String v) { this.fileExtension = v; }
         public PersonDto.Summary getTakenBy() { return takenBy; } public void setTakenBy(PersonDto.Summary v) { this.takenBy = v; }
         public String getMediaSource() { return mediaSource; } public void setMediaSource(String v) { this.mediaSource = v; }
 

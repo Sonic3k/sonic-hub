@@ -101,6 +101,26 @@ public class MediaFileService {
         return new UploadOutcome(saved, null);
     }
 
+    /** Lowercase alnum extension (1-15 chars) after the last dot, or null. */
+    static String extOf(String fileName) {
+        if (fileName == null) return null;
+        var m2 = java.util.regex.Pattern.compile(".*\\.([A-Za-z0-9]{1,15})$").matcher(fileName);
+        return m2.matches() ? m2.group(1).toLowerCase() : null;
+    }
+
+    /** One native UPDATE derives file_extension from file_name for every row missing it. */
+    @org.springframework.transaction.annotation.Transactional
+    public java.util.Map<String, Object> backfillFileExtension() {
+        int updated = mediaFileRepository.backfillFileExtension();
+        java.util.Map<String, Long> byExt = new java.util.LinkedHashMap<>();
+        for (Object[] row : mediaFileRepository.countByExtension())
+            byExt.put(String.valueOf(row[0]), ((Number) row[1]).longValue());
+        java.util.Map<String, Object> out = new java.util.LinkedHashMap<>();
+        out.put("updated", updated);
+        out.put("byExtension", byExt);
+        return out;
+    }
+
     /** Fill mediaSource for rows where it's still null, using ONLY data already in the DB
      *  (fileName + extracted EXIF camera/lens/software) — no B2 download. Safe to re-run
      *  anytime, e.g. right after the detection rules get smarter. */
@@ -199,6 +219,7 @@ public class MediaFileService {
         MediaFile mf = new MediaFile();
         mf.setContentHash(contentHash);
         mf.setFileName(file.getOriginalFilename());
+        mf.setFileExtension(extOf(file.getOriginalFilename()));
         mf.setMediaSource(detectSourceFromName(file.getOriginalFilename()));
         if (takenByPersonId != null) personRepository.findById(takenByPersonId).ifPresent(mf::setTakenBy);
         mf.setFileType(isVideo(file.getContentType()) ? MediaFile.FileType.VIDEO : MediaFile.FileType.IMAGE);
@@ -268,7 +289,7 @@ public class MediaFileService {
     public org.springframework.data.domain.Page<MediaFileDto.Response> search(
             String type, String orientation, String category,
             Boolean favorite, Boolean featured, Boolean hasGps,
-            UUID personId, UUID takenById, String source, UUID collectionId,
+            UUID personId, UUID takenById, String source, String ext, UUID collectionId,
             List<UUID> tagIds, List<String> tagNames,
             List<UUID> excludeTagIds, List<String> excludeTagNames,
             String q, boolean random, int page, int size,
@@ -278,6 +299,7 @@ public class MediaFileService {
         MediaFile.Orientation ori = parseEnum(orientation, MediaFile.Orientation.class);
         MediaFile.MediaCategory cat = parseEnum(category, MediaFile.MediaCategory.class);
         String src = source != null && !source.isBlank() ? source.trim().toUpperCase().replace(' ', '_') : null;
+        String extN = ext != null && !ext.isBlank() ? ext.trim().toLowerCase().replaceFirst("^\\.", "") : null;
 
         boolean hasInclude = notEmpty(tagIds) || notEmpty(tagNames);
         boolean hasExclude = notEmpty(excludeTagIds) || notEmpty(excludeTagNames);
@@ -301,7 +323,7 @@ public class MediaFileService {
 
         if (random) {
             var rows = mediaFileRepository.searchRandom(
-                ft, ori, cat, src, favorite, featured, hasGps,
+                ft, ori, cat, src, extN, favorite, featured, hasGps,
                 hasPerson, safePerson, hasTakenBy, safeTakenBy, hasCollection, safeCollection,
                 hasInclude, safeTagIds, safeTagNames,
                 hasExclude, safeExcludeIds, safeExcludeNames,
@@ -317,7 +339,7 @@ public class MediaFileService {
             : org.springframework.data.domain.Sort.by(sb).descending();
 
         return mediaFileRepository.searchSorted(
-                ft, ori, cat, src, favorite, featured, hasGps,
+                ft, ori, cat, src, extN, favorite, featured, hasGps,
                 hasPerson, safePerson, hasTakenBy, safeTakenBy, hasCollection, safeCollection,
                 hasInclude, safeTagIds, safeTagNames,
                 hasExclude, safeExcludeIds, safeExcludeNames,

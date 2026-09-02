@@ -88,6 +88,10 @@ public class MediaFile extends BaseEntity {
     @Column(name = "effective_date")
     private LocalDateTime effectiveDate;
 
+    /** Lowercase extension without the dot (jpg, heic, mp4...). Null when the name has none. */
+    @Column(name = "file_extension", length = 16)
+    private String fileExtension;
+
     /** SHA-256 of file bytes — duplicate detection. Not unique: user may intentionally keep clones. */
     @Column(name = "content_hash", length = 64)
     private String contentHash;
@@ -282,4 +286,6 @@ public class MediaFile extends BaseEntity {
     public void setTakenBy(Person takenBy) { this.takenBy = takenBy; }
     public String getMediaSource() { return mediaSource; }
     public void setMediaSource(String mediaSource) { this.mediaSource = mediaSource; }
+    public String getFileExtension() { return fileExtension; }
+    public void setFileExtension(String fileExtension) { this.fileExtension = fileExtension; }
 }

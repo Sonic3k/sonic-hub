@@ -73,6 +73,7 @@ public class MediaFileController {
         @RequestParam(required = false) UUID personId,
         @RequestParam(required = false) UUID takenById,
         @RequestParam(required = false) String source,
+        @RequestParam(required = false) String ext,
         @RequestParam(required = false) UUID collectionId,
         @RequestParam(required = false) List<UUID> tagIds,
         @RequestParam(required = false) List<String> tagNames,
@@ -88,7 +89,7 @@ public class MediaFileController {
         @RequestParam(defaultValue = "false") boolean inclPersons,
         @RequestParam(defaultValue = "false") boolean inclTags) {
         return mediaFileService.search(type, orientation, category, favorite, featured, hasGps,
-            personId, takenById, source, collectionId, tagIds, tagNames, excludeTagIds, excludeTagNames,
+            personId, takenById, source, ext, collectionId, tagIds, tagNames, excludeTagIds, excludeTagNames,
             q, random, page, size, sortBy, sortDir,
             new MediaFileDto.Includes(inclDetails, inclPersons, inclTags));
     }
