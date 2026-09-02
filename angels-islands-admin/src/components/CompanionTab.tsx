@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { Bot, Send, Trash2, Save, ChevronDown, Sparkles } from 'lucide-react'
+import { Bot, Send, Trash2, Save, ChevronDown, Sparkles, Eye, X } from 'lucide-react'
 import api from '../api/client'
 
 interface CompanionConfig {
@@ -23,6 +23,17 @@ interface MsgPage { content: CompMsg[]; number: number; last: boolean }
 export default function CompanionTab({ personId, personName }: { personId: string; personName: string }) {
   const qc = useQueryClient()
   const [showTgHelp, setShowTgHelp] = useState(false)
+  const [preview, setPreview] = useState<string | null>(null)
+  const [previewLoading, setPreviewLoading] = useState(false)
+
+  const openPreview = async () => {
+    setPreviewLoading(true)
+    try {
+      const r = await api.get<{ prompt: string }>(`/api/persons/${personId}/companion/persona-preview`)
+      setPreview(r.data.prompt)
+    } catch { alert('Preview failed') }
+    setPreviewLoading(false)
+  }
   const [form, setForm] = useState<CompanionConfig | null>(null)
   const [input, setInput] = useState('')
   const [sending, setSending] = useState(false)
@@ -99,7 +110,12 @@ export default function CompanionTab({ personId, personName }: { personId: strin
       {/* ── Config ── */}
       <div className="bg-white rounded-2xl border border-slate-100 p-4 space-y-3.5">
         <div className="flex items-center justify-between">
-          <h2 className="text-sm font-semibold text-slate-800 flex items-center gap-1.5"><Bot size={15} className="text-pink-400" />Companion</h2>
+          <h2 className="text-sm font-semibold text-slate-800 flex items-center gap-1.5"><Bot size={15} className="text-pink-400" />Companion
+            <button onClick={openPreview} disabled={previewLoading} title="Xem nguyên văn persona prompt gửi cho model"
+              className="text-slate-300 hover:text-pink-500 p-1 rounded transition-colors disabled:opacity-50">
+              <Eye size={14} />
+            </button>
+          </h2>
           <button onClick={() => set('enabled', !form.enabled)}
             className={`relative w-10 h-6 rounded-full transition-colors ${form.enabled ? 'bg-pink-500' : 'bg-slate-200'}`}>
             <span className={`absolute top-0.5 w-5 h-5 rounded-full bg-white shadow transition-all ${form.enabled ? 'left-[18px]' : 'left-0.5'}`} />
@@ -265,6 +281,22 @@ export default function CompanionTab({ personId, personName }: { personId: strin
           </button>
         </div>
       </div>
+
+      {preview !== null && (
+        <div className="fixed inset-0 z-[60] flex items-end md:items-center justify-center">
+          <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => setPreview(null)} />
+          <div className="relative bg-white rounded-t-2xl md:rounded-xl shadow-xl w-full md:max-w-2xl md:mx-4 p-5 flex flex-col max-h-[85dvh]">
+            <div className="flex items-center justify-between mb-2">
+              <div>
+                <h3 className="text-sm font-semibold text-slate-800">Persona prompt</h3>
+                <p className="text-[11px] text-slate-400">Nguyên văn system prompt gửi cho model mỗi lượt chat (mẫu sống 15 dòng thay đổi ngẫu nhiên mỗi lượt)</p>
+              </div>
+              <button onClick={() => setPreview(null)} className="p-1.5 text-slate-400 hover:text-slate-600 rounded-full hover:bg-slate-100"><X size={16} /></button>
+            </div>
+            <pre className="flex-1 overflow-y-auto text-[11px] leading-relaxed text-slate-600 bg-slate-50 border border-slate-100 rounded-lg p-3 whitespace-pre-wrap font-mono">{preview}</pre>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

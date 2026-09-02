@@ -63,6 +63,11 @@ public class CompanionController {
             .map(this::msgDto);
     }
 
+    @GetMapping("/persons/{personId}/companion/persona-preview")
+    public Map<String, String> personaPreview(@PathVariable UUID personId) {
+        return Map.of("prompt", companionService.previewPersona(personId));
+    }
+
     @PostMapping("/persons/{personId}/companion/analyze-style")
     public Map<String, String> analyzeStyle(@PathVariable UUID personId) throws Exception {
         return Map.of("styleProfile", companionService.analyzeStyle(personId));

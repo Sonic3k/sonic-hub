@@ -170,6 +170,12 @@ public class CompanionService {
         return reply.trim();
     }
 
+    /** Exact system prompt the companion would use right now — for UI reference. */
+    public String previewPersona(UUID personId) {
+        Person person = personRepo.findById(personId).orElseThrow(() -> new RuntimeException("Person not found"));
+        return buildSystemPrompt(person, getOrDefault(personId));
+    }
+
     // ── Style analysis ───────────────────────────────────────────────────────
 
     /**
