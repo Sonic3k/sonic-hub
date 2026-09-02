@@ -1130,8 +1130,8 @@ public class MediaFileService {
 
     // ── Rescan metadata from B2 storage (fixes files uploaded before this pipeline) ──
 
-    public java.util.Map<String, Object> rescanMetadataBatch(int batchSize, boolean force, int page) {
-        var pageable = org.springframework.data.domain.PageRequest.of(Math.max(0, page), batchSize);
+    public java.util.Map<String, Object> rescanMetadataBatch(int batchSize, boolean force, int pageNo) {
+        var pageable = org.springframework.data.domain.PageRequest.of(Math.max(0, pageNo), batchSize);
         var page = force
                 ? mediaFileRepository.findByStorageKeyIsNotNull(pageable)
                 : mediaFileRepository.findUnscanned(pageable);

@@ -34,8 +34,8 @@ public class GeocodingService {
      * @param batchSize number of files per batch
      * @param force if true, re-geocode all files with lat/lng (overwrites existing)
      */
-    public Map<String, Object> geocodeBatch(int batchSize, boolean force, int page) {
-        var pageable = PageRequest.of(Math.max(0, page), batchSize);
+    public Map<String, Object> geocodeBatch(int batchSize, boolean force, int pageNo) {
+        var pageable = PageRequest.of(Math.max(0, pageNo), batchSize);
         Page<MediaFile> page = force
                 ? mediaFileRepository.findWithLatLng(pageable)
                 : mediaFileRepository.findWithLatLngNoLocation(pageable);
