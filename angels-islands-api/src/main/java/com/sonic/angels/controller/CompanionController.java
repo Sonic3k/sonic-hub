@@ -50,6 +50,7 @@ public class CompanionController {
         incoming.setUseMemory(req.useMemory);
         incoming.setUseChatStyle(req.useChatStyle);
         incoming.setExtraPrompt(req.extraPrompt);
+        incoming.setStyleProfile(req.styleProfile);
         return toDto(companionService.upsert(personId, incoming));
     }
 
@@ -60,6 +61,11 @@ public class CompanionController {
         return messageRepo.findByPersonId(personId,
                 PageRequest.of(page, Math.min(size, 200), Sort.by(Sort.Direction.DESC, "createdAt")))
             .map(this::msgDto);
+    }
+
+    @PostMapping("/persons/{personId}/companion/analyze-style")
+    public Map<String, String> analyzeStyle(@PathVariable UUID personId) throws Exception {
+        return Map.of("styleProfile", companionService.analyzeStyle(personId));
     }
 
     @PostMapping("/persons/{personId}/companion/chat")
@@ -84,6 +90,7 @@ public class CompanionController {
         m.put("useMemory", c.getUseMemory());
         m.put("useChatStyle", c.getUseChatStyle());
         m.put("extraPrompt", c.getExtraPrompt());
+        m.put("styleProfile", c.getStyleProfile());
         m.put("providerConfigured", companionService.isProviderConfigured(c.getProvider()));
         m.put("telegramConfigured", telegramToken != null && !telegramToken.isBlank());
         return m;
@@ -109,6 +116,7 @@ public class CompanionController {
         public Boolean useMemory;
         public Boolean useChatStyle;
         public String extraPrompt;
+        public String styleProfile;
     }
 
     public static class ChatRequest { public String message; }

@@ -22,4 +22,8 @@ public interface ChatMessageRepository extends JpaRepository<ChatMessage, UUID> 
     /** Random sample of one side's lines across all archives of a person — style reference for the companion. */
     @Query("SELECT m FROM ChatMessage m WHERE m.chatArchive.person.id = :personId AND m.senderType = :senderType ORDER BY FUNCTION('RANDOM')")
     List<ChatMessage> sampleByPersonAndSender(UUID personId, com.sonic.angels.model.entity.ChatMessage.SenderType senderType, org.springframework.data.domain.Pageable pageable);
+
+    /** All messages (both sides) of a person across archives, global chronological-ish order. */
+    @Query("SELECT m FROM ChatMessage m WHERE m.chatArchive.person.id = :personId ORDER BY m.chatArchive.id, m.seq")
+    List<ChatMessage> findAllByPersonOrdered(UUID personId);
 }

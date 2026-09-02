@@ -128,6 +128,7 @@ public class CompanionService {
         if (incoming.getUseMemory() != null) c.setUseMemory(incoming.getUseMemory());
         if (incoming.getUseChatStyle() != null) c.setUseChatStyle(incoming.getUseChatStyle());
         if (incoming.getExtraPrompt() != null) c.setExtraPrompt(incoming.getExtraPrompt().isBlank() ? null : incoming.getExtraPrompt());
+        if (incoming.getStyleProfile() != null) c.setStyleProfile(incoming.getStyleProfile().isBlank() ? null : incoming.getStyleProfile());
         return configRepo.save(c);
     }
 
@@ -169,12 +170,103 @@ public class CompanionService {
         return reply.trim();
     }
 
+    // ── Style analysis ───────────────────────────────────────────────────────
+
+    /**
+     * One-shot analysis of the person's real chat: voice (xưng hô, teencode,
+     * emoticon, câu cửa miệng) AND interaction patterns (cách đối đáp, tempo,
+     * phản ứng đặc trưng). Samples evenly-spaced conversation windows so both
+     * sides and every era are represented. Result stored on CompanionConfig.
+     */
+    public String analyzeStyle(UUID personId) throws Exception {
+        Person person = personRepo.findById(personId).orElseThrow(() -> new RuntimeException("Person not found"));
+        String name = person.getDisplayName() != null ? person.getDisplayName() : person.getName();
+        String selfName = personRepo.findByIsSelfTrue()
+            .map(p -> p.getDisplayName() != null ? p.getDisplayName() : p.getName())
+            .orElse("Tôi");
+
+        List<ChatMessage> all = chatMessageRepo.findAllByPersonOrdered(personId);
+        if (all.isEmpty()) throw new RuntimeException("No chat archives to analyze — import chat first");
+
+        // 10 evenly spaced windows × 40 consecutive messages (covers every era, keeps reply pairs intact)
+        int windowSize = 40, windows = Math.min(10, Math.max(1, all.size() / windowSize));
+        StringBuilder sample = new StringBuilder();
+        for (int w = 0; w < windows; w++) {
+            int start = windows == 1 ? 0 : (int) ((long) w * (all.size() - windowSize) / Math.max(1, windows - 1));
+            sample.append("--- đoạn ").append(w + 1).append(" ---
+");
+            for (int i = start; i < Math.min(start + windowSize, all.size()); i++) {
+                ChatMessage m = all.get(i);
+                String who = m.getSenderType() == ChatMessage.SenderType.SELF ? selfName : name;
+                sample.append(who).append(": ").append(m.getContent()).append('
+');
+            }
+        }
+
+        String system = "Bạn là nhà phân tích văn phong chat tiếng Việt (thời Yahoo 2008-2012, teencode)."
+            + " Phân tích cách "" + name + "" nhắn tin trong các đoạn chat thật với "" + selfName + "" dưới đây."
+            + " CHỈ dựa vào bằng chứng trong mẫu, trích nguyên văn khi nêu ví dụ. Trả về đúng các mục sau, gọn và cụ thể:
+"
+            + "## Xưng hô
+(" + name + " xưng gì, gọi " + selfName + " là gì, các biến thể)
+"
+            + "## Giọng chữ
+(teencode/viết tắt đặc trưng liệt kê nguyên văn, có dấu hay không, emoticon/ký hiệu hay dùng, độ dài tin điển hình)
+"
+            + "## Câu cửa miệng
+(5-10 câu/cụm trích nguyên văn hay lặp lại)
+"
+            + "## Cách đối đáp
+(mở chuyện thế nào, phản ứng khi bị trêu/được hỏi thăm/đối phương im lặng, có hay hỏi ngược lại không, nhắn 1 tin dài hay nhiều tin ngắn liên tiếp, cách kết thúc chat)
+"
+            + "## Thái độ tổng thể
+(1-2 câu)";
+
+        String profile = route(getOrDefaultForAnalysis(personId), system,
+            List.of(Map.of("role", "user", "content", sample.toString())), 2500);
+        if (profile == null || profile.isBlank()) throw new RuntimeException("Empty analysis");
+
+        CompanionConfig cfg = configRepo.findByPersonId(personId).orElseGet(() -> {
+            CompanionConfig n = new CompanionConfig();
+            n.setPerson(person);
+            return n;
+        });
+        cfg.setStyleProfile(profile.trim());
+        configRepo.save(cfg);
+        return profile.trim();
+    }
+
+    /** Provider for analysis: person's configured provider if usable, else any configured one. */
+    private CompanionConfig getOrDefaultForAnalysis(UUID personId) {
+        CompanionConfig cfg = configRepo.findByPersonId(personId).orElse(null);
+        if (cfg != null && isProviderConfigured(cfg.getProvider())) return cfg;
+        CompanionConfig tmp = new CompanionConfig();
+        for (CompanionConfig.Provider p : CompanionConfig.Provider.values()) {
+            if (isProviderConfigured(p)) {
+                tmp.setProvider(p);
+                tmp.setModel(switch (p) {
+                    case CLAUDE -> "claude-sonnet-4-6";
+                    case DEEPSEEK -> "deepseek-chat";
+                    case OPENAI -> "gpt-4o-mini";
+                    case TOGETHER -> "meta-llama/Llama-3.3-70B-Instruct-Turbo";
+                });
+                tmp.setTemperature(0.4f);
+                return tmp;
+            }
+        }
+        throw new RuntimeException("No LLM provider configured on the service");
+    }
+
     private String route(CompanionConfig cfg, String system, List<Map<String, String>> messages) throws Exception {
+        return route(cfg, system, messages, 1500);
+    }
+
+    private String route(CompanionConfig cfg, String system, List<Map<String, String>> messages, int maxTokens) throws Exception {
         return switch (cfg.getProvider()) {
-            case CLAUDE -> anthropic.chat(cfg.getModel(), system, messages, 1500, cfg.getTemperature());
-            case OPENAI -> openAiCompat.chat("https://api.openai.com/v1", openaiKey, cfg.getModel(), system, messages, 1500, cfg.getTemperature());
-            case DEEPSEEK -> openAiCompat.chat("https://api.deepseek.com", deepseekKey, cfg.getModel(), system, messages, 1500, cfg.getTemperature());
-            case TOGETHER -> openAiCompat.chat("https://api.together.xyz/v1", togetherKey, cfg.getModel(), system, messages, 1500, cfg.getTemperature());
+            case CLAUDE -> anthropic.chat(cfg.getModel(), system, messages, maxTokens, cfg.getTemperature());
+            case OPENAI -> openAiCompat.chat("https://api.openai.com/v1", openaiKey, cfg.getModel(), system, messages, maxTokens, cfg.getTemperature());
+            case DEEPSEEK -> openAiCompat.chat("https://api.deepseek.com", deepseekKey, cfg.getModel(), system, messages, maxTokens, cfg.getTemperature());
+            case TOGETHER -> openAiCompat.chat("https://api.together.xyz/v1", togetherKey, cfg.getModel(), system, messages, maxTokens, cfg.getTemperature());
         };
     }
 
@@ -232,10 +324,15 @@ public class CompanionService {
         }
 
         if (Boolean.TRUE.equals(cfg.getUseChatStyle())) {
+            boolean hasProfile = cfg.getStyleProfile() != null && !cfg.getStyleProfile().isBlank();
+            if (hasProfile) {
+                sb.append("\n## Hồ sơ giọng văn & cách đối đáp của bạn (tuân thủ chặt)\n")
+                  .append(cfg.getStyleProfile().trim()).append('\n');
+            }
             List<ChatMessage> sample = chatMessageRepo.sampleByPersonAndSender(
-                person.getId(), ChatMessage.SenderType.PERSON, PageRequest.of(0, 40));
+                person.getId(), ChatMessage.SenderType.PERSON, PageRequest.of(0, hasProfile ? 15 : 40));
             if (!sample.isEmpty()) {
-                sb.append("\n## Giọng nhắn tin thật của bạn (trích từ chat cũ — bắt chước cách xưng hô, teencode, nhịp câu)\n");
+                sb.append("\n## Vài dòng nhắn thật của bạn làm mẫu sống\n");
                 sample.forEach(m -> sb.append("- ").append(m.getContent()).append('\n'));
             }
         }

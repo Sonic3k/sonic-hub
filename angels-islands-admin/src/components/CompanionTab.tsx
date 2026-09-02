@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { Bot, Send, Trash2, Save, ChevronDown } from 'lucide-react'
+import { Bot, Send, Trash2, Save, ChevronDown, Sparkles } from 'lucide-react'
 import api from '../api/client'
 
 interface CompanionConfig {
@@ -12,6 +12,7 @@ interface CompanionConfig {
   useMemory: boolean
   useChatStyle: boolean
   extraPrompt?: string | null
+  styleProfile?: string | null
   providerConfigured: boolean
   telegramConfigured?: boolean
 }
@@ -48,6 +49,18 @@ export default function CompanionTab({ personId, personName }: { personId: strin
   const save = useMutation({
     mutationFn: (f: CompanionConfig) => api.put(`/api/persons/${personId}/companion`, f).then(r => r.data),
     onSuccess: (data: CompanionConfig) => { setForm(data); qc.invalidateQueries({ queryKey: ['companion-config', personId] }) },
+  })
+
+  const analyze = useMutation({
+    mutationFn: () => api.post<{ styleProfile: string }>(`/api/persons/${personId}/companion/analyze-style`).then(r => r.data),
+    onSuccess: data => {
+      setForm(f => (f ? { ...f, styleProfile: data.styleProfile } : f))
+      qc.invalidateQueries({ queryKey: ['companion-config', personId] })
+    },
+    onError: (e: unknown) => {
+      const err = e as { response?: { data?: { message?: string } } }
+      alert(err.response?.data?.message || 'Analyze failed')
+    },
   })
 
   const clear = useMutation({
@@ -149,6 +162,20 @@ export default function CompanionTab({ personId, personName }: { personId: strin
             className={`flex-1 text-xs px-2 py-1.5 rounded-full border transition-colors ${form.useChatStyle ? 'bg-pink-50 border-pink-200 text-pink-600' : 'bg-white border-slate-200 text-slate-400'}`}>
             Chat style
           </button>
+        </div>
+
+        <div>
+          <div className="flex items-center justify-between">
+            <label className="text-[10px] uppercase tracking-widest text-slate-400 font-semibold">Style profile</label>
+            <button onClick={() => analyze.mutate()} disabled={analyze.isPending}
+              className="flex items-center gap-1 text-[11px] text-pink-500 hover:bg-pink-50 px-2 py-1 rounded transition-colors disabled:opacity-50">
+              <Sparkles size={11} />{analyze.isPending ? 'Analyzing...' : form.styleProfile ? 'Re-analyze' : 'Analyze'}
+            </button>
+          </div>
+          <textarea rows={form.styleProfile ? 7 : 2} value={form.styleProfile || ''}
+            onChange={e => set('styleProfile', e.target.value)}
+            placeholder="Chưa có — bấm Analyze để phân tích giọng văn & cách đối đáp từ chat archives (tự chạy sau mỗi lần Extract memories). Sửa tay được, nhớ Save."
+            className="mt-1 w-full px-3 py-2 text-[11px] leading-relaxed border rounded-lg border-slate-200 focus:border-pink-400 outline-none resize-y font-mono" />
         </div>
 
         <div>

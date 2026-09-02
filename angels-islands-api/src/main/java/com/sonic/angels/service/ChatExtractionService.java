@@ -34,17 +34,20 @@ public class ChatExtractionService {
     private final FactRepository factRepo;
     private final EpisodeRepository episodeRepo;
     private final AnthropicClient llm;
+    private final CompanionService companionService;
     private final ObjectMapper om = new ObjectMapper();
 
     public ChatExtractionService(ChatArchiveRepository archiveRepo, ChatMessageRepository messageRepo,
                                  PersonRepository personRepo, FactRepository factRepo,
-                                 EpisodeRepository episodeRepo, AnthropicClient llm) {
+                                 EpisodeRepository episodeRepo, AnthropicClient llm,
+                                 CompanionService companionService) {
         this.archiveRepo = archiveRepo;
         this.messageRepo = messageRepo;
         this.personRepo = personRepo;
         this.factRepo = factRepo;
         this.episodeRepo = episodeRepo;
         this.llm = llm;
+        this.companionService = companionService;
     }
 
     public boolean isLlmConfigured() { return llm.isConfigured(); }
@@ -61,6 +64,14 @@ public class ChatExtractionService {
             archive.setExtractionStatus(ChatArchive.ExtractionStatus.DONE);
             archiveRepo.save(archive);
             log.info("Extraction DONE for archive {}: {} facts, {} episodes", archiveId, saved[0], saved[1]);
+
+            // Best-effort: refresh voice/interaction style profile from all archives
+            try {
+                companionService.analyzeStyle(archive.getPerson().getId());
+                log.info("Style profile refreshed for person {}", archive.getPerson().getId());
+            } catch (Exception e) {
+                log.warn("Style analysis skipped: {}", e.getMessage());
+            }
         } catch (Exception e) {
             log.error("Extraction FAILED for archive {}", archiveId, e);
             archive.setExtractionStatus(ChatArchive.ExtractionStatus.ERROR);

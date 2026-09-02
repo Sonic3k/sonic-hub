@@ -47,6 +47,10 @@ public class CompanionConfig extends BaseEntity {
     @Column(name = "extra_prompt", columnDefinition = "TEXT")
     private String extraPrompt;
 
+    /** LLM-analyzed voice & interaction profile (xưng hô, teencode, câu cửa miệng, cách đối đáp). Editable by hand. */
+    @Column(name = "style_profile", columnDefinition = "TEXT")
+    private String styleProfile;
+
     public UUID getId() { return id; }
     public Person getPerson() { return person; }
     public void setPerson(Person person) { this.person = person; }
@@ -66,4 +70,6 @@ public class CompanionConfig extends BaseEntity {
     public void setUseChatStyle(Boolean useChatStyle) { this.useChatStyle = useChatStyle; }
     public String getExtraPrompt() { return extraPrompt; }
     public void setExtraPrompt(String extraPrompt) { this.extraPrompt = extraPrompt; }
+    public String getStyleProfile() { return styleProfile; }
+    public void setStyleProfile(String styleProfile) { this.styleProfile = styleProfile; }
 }
