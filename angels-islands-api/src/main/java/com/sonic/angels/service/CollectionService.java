@@ -44,9 +44,16 @@ public class CollectionService {
 
     // ── Root collection ──────────────────────────────────────────────────────
 
+    /** System root collection — self-healing: created on first touch, no seeder needed. */
     public Collection getRoot() {
         return collectionRepository.findByNameAndParentIsNull("Angels Islands")
-            .orElseThrow(() -> new RuntimeException("Root collection 'Angels Islands' not found. App not initialized."));
+            .orElseGet(() -> {
+                Collection root = new Collection();
+                root.setName("Angels Islands");
+                root.setSlug("angels-islands");
+                root.setDescription("System root");
+                return collectionRepository.save(root);
+            });
     }
 
     public UUID getRootId() { return getRoot().getId(); }

@@ -188,8 +188,15 @@ export default function CollectionsPage() {
 
     // Folders become sub-collections of where you are (root screen = system root)
     if (folders.length) await enqueueFolderGroups(folders, currentId ?? undefined)
-    // Loose files go straight into the current collection (root screen = system root)
-    if (loose.length && effectiveId) queue.enqueue(loose.map(file => ({ file, collectionId: effectiveId, personId: tagAsPerson?.id, takenByPersonId: byPerson?.id })))
+    // Loose files go straight into the current collection (root screen = system root).
+    // effectiveId may still be null if the root query hasn't resolved (drop right after page load) — fetch it, never swallow.
+    if (loose.length) {
+      let target = effectiveId
+      if (!target) {
+        try { target = (await collectionBrowseApi.getRoot()).id } catch { alert('Không xác định được collection gốc — thử lại sau giây lát'); return }
+      }
+      queue.enqueue(loose.map(file => ({ file, collectionId: target!, personId: tagAsPerson?.id, takenByPersonId: byPerson?.id })))
+    }
   }
 
   const dragProps = {
