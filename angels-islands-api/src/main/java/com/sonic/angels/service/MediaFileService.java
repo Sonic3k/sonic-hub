@@ -112,7 +112,10 @@ public class MediaFileService {
 
         if (base.startsWith("fb_img_")) return "FACEBOOK";              // FB app save (Android)
         if (base.startsWith("received_")) return "FACEBOOK";            // Messenger download
-        if (base.endsWith("_n") || base.endsWith("_o")) return "FACEBOOK"; // FB CDN suffixes
+        // FB CDN size token _n/_o — at the END or MID-name (saves often append a photo id:
+        // 41430092_228290911368925_..._n_228290904702259.jpg). Digit-run guard kills false positives.
+        boolean fbToken = base.endsWith("_n") || base.endsWith("_o") || base.contains("_n_") || base.contains("_o_");
+        if (fbToken && base.matches(".*\\d{8,}.*")) return "FACEBOOK";
         if (base.matches("img-\\d{8}-wa\\d+.*")) return "WHATSAPP";     // IMG-20190912-WA0001
         if (base.matches("vid-\\d{8}-wa\\d+.*")) return "WHATSAPP";
         if (base.startsWith("videoplayback")) return "YOUTUBE";         // classic YT download name
@@ -131,7 +134,8 @@ public class MediaFileService {
         if (software.contains("instagram")) return "INSTAGRAM";
         String make = d.getCameraMake() != null ? d.getCameraMake() : "";
         String model = d.getCameraModel() != null ? d.getCameraModel() : "";
-        String combined = (make + " " + model).toLowerCase();
+        String lens = d.getLensModel() != null ? d.getLensModel() : "";
+        String combined = (make + " " + model + " " + lens).toLowerCase();
         if (combined.isBlank()) return null;
         if (combined.contains("apple") || combined.contains("iphone")) return "IPHONE";
         if (combined.contains("nokia")) return "NOKIA";
