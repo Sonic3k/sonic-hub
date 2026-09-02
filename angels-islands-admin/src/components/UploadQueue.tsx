@@ -8,6 +8,7 @@ export interface QueueTask {
   file: File
   collectionId?: string
   personId?: string
+  takenByPersonId?: string
   /** display label, defaults to file.name */
   label?: string
 }
@@ -32,7 +33,7 @@ export function useUploadQueue(onSettled?: () => void) {
       if (!next) break
       next.status = 'uploading'; sync()
       try {
-        const res = await uploadApi.uploadFile(next.file, next.personId, next.collectionId, next.allowDuplicate)
+        const res = await uploadApi.uploadFile(next.file, next.personId, next.collectionId, next.allowDuplicate, next.takenByPersonId)
         if (res.duplicate) {
           next.status = 'duplicate'
           next.existing = res.existing

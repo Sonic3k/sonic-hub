@@ -1,6 +1,6 @@
 import { useMemo, useRef, useState, useEffect, useCallback } from 'react'
 import { useInfiniteQuery, useQueryClient } from '@tanstack/react-query'
-import { Heart, FolderPlus, Trash2, X, Image as ImageIcon, UserPlus, Search, Tag as TagIcon, ChevronDown } from 'lucide-react'
+import { Heart, FolderPlus, Trash2, X, Image as ImageIcon, UserPlus, Search, Tag as TagIcon, ChevronDown, Camera } from 'lucide-react'
 import api from '../api/client'
 import { mediaApi, uploadApi } from '../api/collections'
 import { Lightbox, MediaItem } from '../components/media'
@@ -33,6 +33,7 @@ export default function LibraryPage() {
   const [tagFilter, setTagFilter] = useState<TagResponse | null>(null)
   const [showTagMenu, setShowTagMenu] = useState(false)
   const [tagModal, setTagModal] = useState<string[] | null>(null)
+  const [takenByModal, setTakenByModal] = useState<string[] | null>(null)
   const { data: allTags = [] } = useTags()
   const [selectedMedia, setSelectedMedia] = useState<MediaFileResponse | null>(null)
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
@@ -115,6 +116,14 @@ export default function LibraryPage() {
       invalidate()
     } catch { alert('Delete failed') }
     setDeleting(false)
+  }
+
+  const handleTakenBy = async (person: PersonSummary) => {
+    if (!takenByModal) return
+    await mediaApi.takenByBatch(takenByModal, person.id)
+    setTakenByModal(null)
+    setSelectedIds(new Set())
+    invalidate()
   }
 
   const handleTagLabel = async (tag: TagResponse) => {
@@ -223,6 +232,10 @@ export default function LibraryPage() {
               className="p-1.5 rounded text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors">
               <UserPlus size={14} />
             </button>
+            <button onClick={() => setTakenByModal(idsArr())} title="Set người chụp"
+              className="p-1.5 rounded text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors">
+              <Camera size={14} />
+            </button>
             <button onClick={() => setTagModal(idsArr())} title="Add label"
               className="p-1.5 rounded text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors">
               <TagIcon size={14} />
@@ -271,6 +284,11 @@ export default function LibraryPage() {
       <div ref={sentinelRef} className="h-10 flex items-center justify-center">
         {isFetchingNextPage && <span className="text-xs text-slate-400 animate-pulse">Loading more...</span>}
       </div>
+
+      {takenByModal && (
+        <PersonSelectModal title={`Người chụp ${takenByModal.length} file(s)...`}
+          onSelect={handleTakenBy} onClose={() => setTakenByModal(null)} />
+      )}
 
       {tagModal && (
         <TagSelectModal title={`Label ${tagModal.length} file(s) as...`}

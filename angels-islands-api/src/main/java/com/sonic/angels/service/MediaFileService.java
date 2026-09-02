@@ -10,6 +10,7 @@ import com.drew.metadata.png.PngDirectory;
 import com.drew.metadata.webp.WebpDirectory;
 import com.sonic.angels.model.dto.MediaFileDto;
 import com.sonic.angels.model.entity.MediaFile;
+import com.sonic.angels.model.entity.Person;
 import com.sonic.angels.model.entity.MediaImageDetail;
 import com.sonic.angels.model.entity.MediaVideoDetail;
 import com.sonic.angels.model.entity.Tag;
@@ -81,8 +82,8 @@ public class MediaFileService {
     public record UploadOutcome(MediaFile media, MediaFile duplicateOf) {}
 
     public java.util.Map<String, Object> uploadAsMap(MultipartFile file, UUID personId, UUID collectionId,
-                                                     String subFolder, Long lastModified, boolean allowDuplicate) throws IOException {
-        UploadOutcome o = uploadChecked(file, personId, collectionId, subFolder, lastModified, allowDuplicate);
+                                                     String subFolder, Long lastModified, boolean allowDuplicate, UUID takenByPersonId) throws IOException {
+        UploadOutcome o = uploadChecked(file, personId, collectionId, subFolder, lastModified, allowDuplicate, takenByPersonId);
         if (o.duplicateOf() != null)
             return java.util.Map.of("duplicate", true,
                 "existing", mapper.toMediaFileResponse(o.duplicateOf(), MediaFileDto.Includes.none()));
@@ -90,14 +91,23 @@ public class MediaFileService {
     }
 
     public UploadOutcome uploadChecked(MultipartFile file, UUID personId, UUID collectionId,
-                                       String subFolder, Long lastModified, boolean allowDuplicate) throws IOException {
+                                       String subFolder, Long lastModified, boolean allowDuplicate, UUID takenByPersonId) throws IOException {
         String hash = sha256(file);
         if (!allowDuplicate) {
             var existing = mediaFileRepository.findFirstByContentHash(hash);
             if (existing.isPresent()) return new UploadOutcome(null, existing.get());
         }
-        MediaFile saved = upload(file, personId, collectionId, subFolder, lastModified, hash);
+        MediaFile saved = upload(file, personId, collectionId, subFolder, lastModified, hash, takenByPersonId);
         return new UploadOutcome(saved, null);
+    }
+
+    /** "..._n" (extension stripped) is the classic Facebook CDN suffix. */
+    static MediaFile.MediaSource detectSource(String fileName) {
+        if (fileName == null) return MediaFile.MediaSource.ORIGINAL;
+        String base = fileName;
+        int dot = base.lastIndexOf('.');
+        if (dot > 0) base = base.substring(0, dot);
+        return base.endsWith("_n") ? MediaFile.MediaSource.FACEBOOK : MediaFile.MediaSource.ORIGINAL;
     }
 
     private String sha256(MultipartFile file) throws IOException {
@@ -115,7 +125,7 @@ public class MediaFileService {
     }
 
     public MediaFile upload(MultipartFile file, UUID personId, UUID collectionId,
-                            String subFolder, Long lastModified, String contentHash) throws IOException {
+                            String subFolder, Long lastModified, String contentHash, UUID takenByPersonId) throws IOException {
         // Real folder path: collection tree > legacy subFolder > monthly library bucket
         String dir;
         if (collectionId != null) {
@@ -132,6 +142,8 @@ public class MediaFileService {
         MediaFile mf = new MediaFile();
         mf.setContentHash(contentHash);
         mf.setFileName(file.getOriginalFilename());
+        mf.setMediaSource(detectSource(file.getOriginalFilename()));
+        if (takenByPersonId != null) personRepository.findById(takenByPersonId).ifPresent(mf::setTakenBy);
         mf.setFileType(isVideo(file.getContentType()) ? MediaFile.FileType.VIDEO : MediaFile.FileType.IMAGE);
         mf.setFileSize(file.getSize());
         mf.setMimeType(file.getContentType());
@@ -198,7 +210,7 @@ public class MediaFileService {
     public org.springframework.data.domain.Page<MediaFileDto.Response> search(
             String type, String orientation, String category,
             Boolean favorite, Boolean featured, Boolean hasGps,
-            UUID personId, UUID collectionId,
+            UUID personId, UUID takenById, String source, UUID collectionId,
             List<UUID> tagIds, List<String> tagNames,
             List<UUID> excludeTagIds, List<String> excludeTagNames,
             String q, boolean random, int page, int size,
@@ -207,6 +219,7 @@ public class MediaFileService {
         MediaFile.FileType ft = parseEnum(type, MediaFile.FileType.class);
         MediaFile.Orientation ori = parseEnum(orientation, MediaFile.Orientation.class);
         MediaFile.MediaCategory cat = parseEnum(category, MediaFile.MediaCategory.class);
+        MediaFile.MediaSource src = parseEnum(source, MediaFile.MediaSource.class);
 
         boolean hasInclude = notEmpty(tagIds) || notEmpty(tagNames);
         boolean hasExclude = notEmpty(excludeTagIds) || notEmpty(excludeTagNames);
@@ -219,8 +232,10 @@ public class MediaFileService {
         List<String> safeExcludeNames = excludeTagNames != null ? excludeTagNames : List.of();
 
         boolean hasPerson = personId != null;
+        boolean hasTakenBy = takenById != null;
         boolean hasCollection = collectionId != null;
         UUID safePerson = hasPerson ? personId : NIL_UUID;
+        UUID safeTakenBy = hasTakenBy ? takenById : NIL_UUID;
         UUID safeCollection = hasCollection ? collectionId : NIL_UUID;
 
         int safeSize = size > 0 && size <= 500 ? size : 60;
@@ -228,8 +243,8 @@ public class MediaFileService {
 
         if (random) {
             var rows = mediaFileRepository.searchRandom(
-                ft, ori, cat, favorite, featured, hasGps,
-                hasPerson, safePerson, hasCollection, safeCollection,
+                ft, ori, cat, src, favorite, featured, hasGps,
+                hasPerson, safePerson, hasTakenBy, safeTakenBy, hasCollection, safeCollection,
                 hasInclude, safeTagIds, safeTagNames,
                 hasExclude, safeExcludeIds, safeExcludeNames,
                 hasQuery, query,
@@ -244,8 +259,8 @@ public class MediaFileService {
             : org.springframework.data.domain.Sort.by(sb).descending();
 
         return mediaFileRepository.searchSorted(
-                ft, ori, cat, favorite, featured, hasGps,
-                hasPerson, safePerson, hasCollection, safeCollection,
+                ft, ori, cat, src, favorite, featured, hasGps,
+                hasPerson, safePerson, hasTakenBy, safeTakenBy, hasCollection, safeCollection,
                 hasInclude, safeTagIds, safeTagNames,
                 hasExclude, safeExcludeIds, safeExcludeNames,
                 hasQuery, query,
@@ -275,6 +290,14 @@ public class MediaFileService {
             if (v.length() == 16) v = v + ":00"; // datetime-local gives yyyy-MM-ddTHH:mm
             mf.setDateTaken(LocalDateTime.parse(v)); // effectiveDate recomputed by @PreUpdate
         }
+        if (req.getTakenByPersonId() != null) {
+            if (req.getTakenByPersonId().equals(NIL_UUID)) mf.setTakenBy(null);
+            else personRepository.findById(req.getTakenByPersonId()).ifPresent(mf::setTakenBy);
+        }
+        if (req.getMediaSource() != null) {
+            var src = parseEnum(req.getMediaSource(), MediaFile.MediaSource.class);
+            if (src != null) mf.setMediaSource(src);
+        }
         return mapper.toMediaFileResponse(mediaFileRepository.save(mf));
     }
 
@@ -284,6 +307,22 @@ public class MediaFileService {
             try {
                 MediaFile mf = findById(id);
                 mf.setIsFavorite(value);
+                mediaFileRepository.save(mf);
+                count++;
+            } catch (Exception ignored) {}
+        }
+        return count;
+    }
+
+    public int takenByBatch(List<UUID> ids, UUID personId) {
+        Person person = personId != null && !personId.equals(NIL_UUID)
+            ? personRepository.findById(personId).orElse(null) : null;
+        if (personId != null && !personId.equals(NIL_UUID) && person == null) return 0;
+        int count = 0;
+        for (UUID id : ids) {
+            try {
+                MediaFile mf = findById(id);
+                mf.setTakenBy(person);
                 mediaFileRepository.save(mf);
                 count++;
             } catch (Exception ignored) {}
@@ -1057,6 +1096,7 @@ public class MediaFileService {
                     } catch (Exception ignored) {}
                 }
                 if (m.getTimezone() == null) m.setTimezone("+07:00");
+                if (m.getMediaSource() == null) m.setMediaSource(detectSource(m.getFileName()));
                 if (m.getUploadedAt() == null) m.setUploadedAt(LocalDateTime.now(PHOTO_ZONE));
                 m.getTags().add(classifiedTag);
                 mediaFileRepository.save(m);

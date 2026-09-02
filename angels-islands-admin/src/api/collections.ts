@@ -23,13 +23,14 @@ export interface TreeResponse {
 export const uploadApi = {
   createTree: (data: TreeRequest) => api.post<TreeResponse>('/api/collections/create-tree', data).then(r => r.data),
   /** Upload 1 file. collectionId → path thật trong B2 theo cây collection + auto-link. */
-  uploadFile: (file: File, personId?: string, collectionId?: string, allowDuplicate?: boolean) => {
+  uploadFile: (file: File, personId?: string, collectionId?: string, allowDuplicate?: boolean, takenByPersonId?: string) => {
     const form = new FormData()
     form.append('file', file)
     if (personId) form.append('personId', personId)
     if (collectionId) form.append('collectionId', collectionId)
     if (file.lastModified) form.append('lastModified', String(file.lastModified))
     if (allowDuplicate) form.append('allowDuplicate', 'true')
+    if (takenByPersonId) form.append('takenByPersonId', takenByPersonId)
     return api.post<{ duplicate: boolean; media?: MediaFileResponse; existing?: MediaFileResponse }>(
       '/api/media-files/upload', form, { headers: { 'Content-Type': 'multipart/form-data' } }).then(r => r.data)
   },
@@ -38,7 +39,7 @@ export const uploadApi = {
 }
 
 export const mediaApi = {
-  patch: (id: string, data: { caption?: string; isFavorite?: boolean; dateTaken?: string }) =>
+  patch: (id: string, data: { caption?: string; isFavorite?: boolean; dateTaken?: string; takenByPersonId?: string; mediaSource?: string }) =>
     api.patch<MediaFileResponse>(`/api/media-files/${id}`, data).then(r => r.data),
   favoriteBatch: (ids: string[], value: boolean) =>
     api.post('/api/media-files/batch/favorite', { ids, value }).then(r => r.data),
@@ -56,6 +57,8 @@ export const mediaApi = {
     api.post('/api/media-files/batch/tags', { ids, tagId }).then(r => r.data),
   untagBatch: (ids: string[], tagId: string) =>
     api.delete('/api/media-files/batch/tags', { data: { ids, tagId } }).then(r => r.data),
+  takenByBatch: (ids: string[], personId: string) =>
+    api.post('/api/media-files/batch/taken-by', { ids, personId }).then(r => r.data),
   addPersonBatch: (ids: string[], personId: string) =>
     api.post('/api/media-files/batch/persons', { ids, personId }).then(r => r.data),
   removePersonBatch: (ids: string[], personId: string) =>

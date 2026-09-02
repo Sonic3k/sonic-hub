@@ -51,12 +51,15 @@ public interface MediaFileRepository extends JpaRepository<MediaFile, UUID> {
         " WHERE (:type IS NULL OR m.fileType = :type)" +
         " AND (:orientation IS NULL OR m.orientation = :orientation)" +
         " AND (:category IS NULL OR m.mediaCategory = :category)" +
+        " AND (:source IS NULL OR m.mediaSource = :source)" +
         " AND (:favorite IS NULL OR m.isFavorite = :favorite)" +
         " AND (:featured IS NULL OR m.isFeatured = :featured)" +
         " AND (:hasGps IS NULL OR (:hasGps = true AND m.latitude IS NOT NULL) OR (:hasGps = false AND m.latitude IS NULL))" +
         " AND (:hasPerson = false" +
         "   OR EXISTS (SELECT 1 FROM MediaFile mp JOIN mp.persons pp WHERE mp.id = m.id AND pp.id = :personId)" +
         "   OR EXISTS (SELECT 1 FROM Collection cc JOIN cc.mediaFiles cm JOIN cc.persons cp WHERE cm.id = m.id AND cp.id = :personId))" +
+        " AND (:hasTakenBy = false OR EXISTS (" +
+        "   SELECT 1 FROM MediaFile mtb WHERE mtb.id = m.id AND mtb.takenBy.id = :takenById))" +
         " AND (:hasCollection = false OR EXISTS (" +
         "   SELECT 1 FROM Collection col JOIN col.mediaFiles colm WHERE col.id = :collectionId AND colm.id = m.id))" +
         " AND (:hasInclude = false OR EXISTS (" +
@@ -73,11 +76,14 @@ public interface MediaFileRepository extends JpaRepository<MediaFile, UUID> {
         @Param("type") MediaFile.FileType type,
         @Param("orientation") MediaFile.Orientation orientation,
         @Param("category") MediaFile.MediaCategory category,
+        @Param("source") MediaFile.MediaSource source,
         @Param("favorite") Boolean favorite,
         @Param("featured") Boolean featured,
         @Param("hasGps") Boolean hasGps,
         @Param("hasPerson") boolean hasPerson,
         @Param("personId") UUID personId,
+        @Param("hasTakenBy") boolean hasTakenBy,
+        @Param("takenById") UUID takenById,
         @Param("hasCollection") boolean hasCollection,
         @Param("collectionId") UUID collectionId,
         @Param("hasInclude") boolean hasInclude,
@@ -95,11 +101,14 @@ public interface MediaFileRepository extends JpaRepository<MediaFile, UUID> {
         @Param("type") MediaFile.FileType type,
         @Param("orientation") MediaFile.Orientation orientation,
         @Param("category") MediaFile.MediaCategory category,
+        @Param("source") MediaFile.MediaSource source,
         @Param("favorite") Boolean favorite,
         @Param("featured") Boolean featured,
         @Param("hasGps") Boolean hasGps,
         @Param("hasPerson") boolean hasPerson,
         @Param("personId") UUID personId,
+        @Param("hasTakenBy") boolean hasTakenBy,
+        @Param("takenById") UUID takenById,
         @Param("hasCollection") boolean hasCollection,
         @Param("collectionId") UUID collectionId,
         @Param("hasInclude") boolean hasInclude,

@@ -43,6 +43,8 @@ export interface MediaFileResponse {
   latitude?: number; longitude?: number; displayedAddress?: string; timezone?: string
   duration?: number; isAnimated?: boolean; isFavorite?: boolean; isFeatured?: boolean
   persons?: { id: string; name: string; displayName?: string; avatarUrl?: string }[]
+  takenBy?: { id: string; name: string; displayName?: string; avatarUrl?: string }
+  mediaSource?: string
   tags?: TagResponse[]
   // Image EXIF
   imageDetail?: {

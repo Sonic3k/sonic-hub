@@ -3,6 +3,7 @@ import { ChevronRight, ChevronLeft, Image, ArrowLeft, Camera, MapPin, FileText, 
 import { mediaApi } from '../api/collections'
 import { usePersons } from '../hooks/usePersons'
 import { useTags } from '../hooks/useTags'
+import { Camera as CameraIcon } from 'lucide-react'
 import type { MediaFileResponse } from '../types'
 
 export function fmtDate(d?: string) {
@@ -202,6 +203,7 @@ function InfoContent({ media, cameraStr, settingsStr, exif, vid, onChanged }: {
   const { data: allPersons = [] } = usePersons()
   const { data: allTags = [] } = useTags()
   const [addingTag, setAddingTag] = useState(false)
+  const [settingTakenBy, setSettingTakenBy] = useState(false)
   const [editingDate, setEditingDate] = useState(false)
   const [dateDraft, setDateDraft] = useState('')
 
@@ -269,6 +271,46 @@ function InfoContent({ media, cameraStr, settingsStr, exif, vid, onChanged }: {
               + Tag
             </button>
           )}
+        </div>
+      </InfoSection>
+
+      {/* Taken by + Source */}
+      <InfoSection icon={<CameraIcon size={15} />} title="Taken by · Source">
+        <div className="flex flex-wrap items-center gap-1.5">
+          {media.takenBy && !settingTakenBy ? (
+            <span className="flex items-center gap-1 bg-white/10 text-white/80 text-xs pl-2 pr-1 py-1 rounded-full">
+              📷 {media.takenBy.displayName || media.takenBy.name}
+              <button onClick={async () => onChanged(await mediaApi.patch(media.id, { takenByPersonId: '00000000-0000-0000-0000-000000000000' }))}
+                className="text-white/40 hover:text-white p-0.5"><X size={11} /></button>
+            </span>
+          ) : settingTakenBy ? (
+            <select autoFocus
+              onChange={async e => { if (e.target.value) onChanged(await mediaApi.patch(media.id, { takenByPersonId: e.target.value })); setSettingTakenBy(false) }}
+              onBlur={() => setSettingTakenBy(false)}
+              className="bg-[#222] text-white/80 text-xs rounded-full px-2 py-1 outline-none border border-white/10">
+              <option value="">Ai chụp?</option>
+              {allPersons.map(p => <option key={p.id} value={p.id}>{p.displayName || p.name}</option>)}
+            </select>
+          ) : (
+            <button onClick={() => setSettingTakenBy(true)}
+              className="text-white/40 hover:text-white/80 text-xs border border-dashed border-white/20 rounded-full px-2.5 py-1 transition-colors">
+              + Người chụp
+            </button>
+          )}
+          <select value={media.mediaSource || 'ORIGINAL'}
+            onChange={async e => onChanged(await mediaApi.patch(media.id, { mediaSource: e.target.value }))}
+            className={`text-xs rounded-full px-2 py-1 outline-none border transition-colors ${
+              (media.mediaSource || 'ORIGINAL') === 'ORIGINAL'
+                ? 'bg-white/5 text-white/50 border-white/10'
+                : 'bg-blue-500/20 text-blue-300 border-blue-400/30'
+            }`}>
+            <option value="ORIGINAL" className="bg-[#222]">Original</option>
+            <option value="FACEBOOK" className="bg-[#222]">Facebook</option>
+            <option value="YOUTUBE" className="bg-[#222]">Youtube</option>
+            <option value="PHOTOBUCKET" className="bg-[#222]">Photobucket</option>
+            <option value="FLICKR" className="bg-[#222]">Flickr</option>
+            <option value="INSTAGRAM" className="bg-[#222]">Instagram</option>
+          </select>
         </div>
       </InfoSection>
 

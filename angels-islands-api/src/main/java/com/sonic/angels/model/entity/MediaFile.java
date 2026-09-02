@@ -92,6 +92,16 @@ public class MediaFile extends BaseEntity {
     @Column(name = "content_hash", length = 64)
     private String contentHash;
 
+    /** Who TOOK this photo/video — distinct from persons (who appears in it). */
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "taken_by_person_id")
+    private Person takenBy;
+
+    /** Provenance: original shot vs downloaded from a platform. Filename "..._n" => FACEBOOK. */
+    @Enumerated(EnumType.STRING)
+    @Column(name = "media_source")
+    private MediaSource mediaSource;
+
     @Column(name = "latitude")
     private Double latitude;
 
@@ -143,6 +153,7 @@ public class MediaFile extends BaseEntity {
     public enum FileType { IMAGE, VIDEO }
     public enum MediaCategory { REGULAR, COVER, BANNER, AVATAR, SCREENSHOT, MEMORY }
     public enum Orientation { HORIZONTAL, VERTICAL, SQUARE }
+    public enum MediaSource { ORIGINAL, FACEBOOK, YOUTUBE, PHOTOBUCKET, FLICKR, INSTAGRAM }
     public enum StorageProvider { B2, FLICKR, GOOGLE_DRIVE, S3, EXTERNAL }
 
     // ── Methods ──────────────────────────────────────────────────────────────
@@ -268,4 +279,8 @@ public class MediaFile extends BaseEntity {
     public void setTags(Set<Tag> tags) { this.tags = tags; }
     public String getContentHash() { return contentHash; }
     public void setContentHash(String contentHash) { this.contentHash = contentHash; }
+    public Person getTakenBy() { return takenBy; }
+    public void setTakenBy(Person takenBy) { this.takenBy = takenBy; }
+    public MediaSource getMediaSource() { return mediaSource; }
+    public void setMediaSource(MediaSource mediaSource) { this.mediaSource = mediaSource; }
 }

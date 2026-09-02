@@ -9,12 +9,16 @@ public class MediaFileDto {
 
     /** Which relationships to populate on Response. Default none (slim); consumers opt in per-call. */
     public record Includes(boolean details, boolean persons, boolean tags) {
+        // takenBy rides the persons flag (single lazy FK, still a query per row on lists)
         public static Includes none() { return new Includes(false, false, false); }
         public static Includes all()  { return new Includes(true, true, true); }
     }
 
     public static class UpdateRequest {
         private String caption; private Boolean isFavorite; private String dateTaken;
+        private UUID takenByPersonId; private String mediaSource;
+        public UUID getTakenByPersonId() { return takenByPersonId; } public void setTakenByPersonId(UUID v) { this.takenByPersonId = v; }
+        public String getMediaSource() { return mediaSource; } public void setMediaSource(String v) { this.mediaSource = v; }
         public String getCaption() { return caption; } public void setCaption(String v) { this.caption = v; }
         public Boolean getIsFavorite() { return isFavorite; } public void setIsFavorite(Boolean v) { this.isFavorite = v; }
         public String getDateTaken() { return dateTaken; } public void setDateTaken(String v) { this.dateTaken = v; }
@@ -46,6 +50,11 @@ public class MediaFileDto {
     }
 
     public static class Response {
+        private PersonDto.Summary takenBy;
+        private String mediaSource;
+        public PersonDto.Summary getTakenBy() { return takenBy; } public void setTakenBy(PersonDto.Summary v) { this.takenBy = v; }
+        public String getMediaSource() { return mediaSource; } public void setMediaSource(String v) { this.mediaSource = v; }
+
         private UUID id; private String fileName; private MediaFile.FileType fileType;
         private MediaFile.MediaCategory mediaCategory; private MediaFile.Orientation orientation;
         private Long fileSize; private Integer width; private Integer height; private Float aspectRatio;

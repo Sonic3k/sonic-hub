@@ -98,6 +98,11 @@ public class DtoMapper {
             r.setVideoDetail(d);
         }
 
+        if (m.getMediaSource() != null) r.setMediaSource(m.getMediaSource().name());
+
+        if (inc.persons() && m.getTakenBy() != null)
+            r.setTakenBy(toPersonSummary(m.getTakenBy()));
+
         if (inc.persons() && m.getPersons() != null && !m.getPersons().isEmpty())
             r.setPersons(m.getPersons().stream().map(this::toPersonSummary).collect(java.util.stream.Collectors.toSet()));
 
