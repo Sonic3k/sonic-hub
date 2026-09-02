@@ -116,7 +116,6 @@ public class MediaFileService {
         if (base.matches("img-\\d{8}-wa\\d+.*")) return "WHATSAPP";     // IMG-20190912-WA0001
         if (base.matches("vid-\\d{8}-wa\\d+.*")) return "WHATSAPP";
         if (base.startsWith("videoplayback")) return "YOUTUBE";         // classic YT download name
-        if (base.matches("photo_\\d{4}-\\d{2}-\\d{2}_\\d{2}-\\d{2}-\\d{2}.*")) return "TELEGRAM";
         if (ext.equals("heic") || ext.equals("heif")) return "IPHONE";  // in-practice Apple-only
         if (base.startsWith("dsc") || base.startsWith("dscf") || base.startsWith("dscn")
             || base.matches("p1\\d{6}.*") || base.startsWith("gopr") || base.startsWith("sam_"))
