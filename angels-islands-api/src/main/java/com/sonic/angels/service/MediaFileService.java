@@ -270,7 +270,6 @@ public class MediaFileService {
     }
 
     @Transactional(readOnly = true)
-    @Transactional(readOnly = true)
     public List<MediaFileDto.TimelineBucket> timelineIndex(String tz) {
         String zone = tz == null || tz.isBlank() ? "Asia/Ho_Chi_Minh" : tz;
         return mediaFileRepository.timelineIndex(zone).stream()
@@ -279,6 +278,7 @@ public class MediaFileService {
             .toList();
     }
 
+    @Transactional(readOnly = true)
     public org.springframework.data.domain.Page<MediaFileDto.Response> library(int page, int size, Boolean favorite, MediaFileDto.Includes inc) {
         var pageable = org.springframework.data.domain.PageRequest.of(page, size,
             org.springframework.data.domain.Sort.by(org.springframework.data.domain.Sort.Direction.DESC, "effectiveDate"));
