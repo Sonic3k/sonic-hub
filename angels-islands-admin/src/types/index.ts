@@ -90,13 +90,20 @@ export interface ProblemResponse {
   resolvedAt?: string; createdAt?: string; noteCount?: number
 }
 export interface ProblemRequest { title?: string; description?: string; status?: string }
+export type NoteKind = 'JOURNAL' | 'ARTICLE'
+export type NoteStatus = 'DRAFT' | 'PUBLISHED'
 export interface JournalNoteResponse {
   id: string; title?: string; content: string; mood?: string
   createdAt?: string; updatedAt?: string
   tags?: TagResponse[]; problems?: ProblemResponse[]
+  // article face
+  kind?: NoteKind; slug?: string; excerpt?: string; coverMedia?: MediaFileResponse
+  category?: string; status?: NoteStatus; publishedAt?: string
 }
 export interface JournalNoteRequest {
   title?: string; content?: string; mood?: string; problemIds?: string[]; tagIds?: string[]
+  kind?: NoteKind; slug?: string; excerpt?: string; coverMediaId?: string; clearCover?: boolean
+  category?: string; status?: NoteStatus; publishedAt?: string
 }
 
 export interface Paged<T> { content: T[]; totalElements: number; totalPages: number; number: number; last: boolean }

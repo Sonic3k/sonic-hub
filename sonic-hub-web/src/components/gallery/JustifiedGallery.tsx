@@ -13,15 +13,17 @@ interface Props {
   /** Known container width. Pass it when many galleries share one column so
       rows are laid out on first render (no post-mount height jump). */
   width?: number;
+  /** Target row height; defaults to a viewport-based value. */
+  rowHeight?: number;
 }
 
 /* Rows of photographs at their own proportions. The grid holds no colour of
    its own: hairline gaps, no borders, no hover chrome — only the favourite
    heart, and only when it is true. */
-export default function JustifiedGallery({ items, onOpen, gap = 4, width: given }: Props) {
+export default function JustifiedGallery({ items, onOpen, gap = 4, width: given, rowHeight }: Props) {
   const { ref, width: measured } = useContainerWidth<HTMLDivElement>();
   const width = given ?? measured;
-  const rows = useJustifiedLayout(items, width, gap);
+  const rows = useJustifiedLayout(items, width, gap, rowHeight);
   const indexOf = useMemo(() => new Map(items.map((m, i) => [m.id, i])), [items]);
   const dpr = Math.min(typeof window !== 'undefined' ? window.devicePixelRatio || 1 : 1, 2);
 

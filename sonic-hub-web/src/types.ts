@@ -106,3 +106,20 @@ export interface ChatArchive {
 
 /** One month of the timeline, newest first. */
 export interface TimelineBucket { year: number; month: number; count: number }
+
+/** A published JournalNote wearing its article face. */
+export interface Article {
+  id: string;
+  kind: 'JOURNAL' | 'ARTICLE';
+  status: 'DRAFT' | 'PUBLISHED';
+  title?: string | null;
+  slug?: string | null;
+  excerpt?: string | null;
+  content: string;
+  category?: string | null;
+  coverMedia?: MediaFile | null;
+  publishedAt?: string | null;
+  createdAt?: string | null;
+  updatedAt?: string | null;
+  tags?: TagRef[];
+}

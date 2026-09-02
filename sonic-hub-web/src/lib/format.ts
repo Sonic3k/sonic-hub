@@ -55,3 +55,10 @@ export const PLATFORM: Record<string, string> = {
 };
 export const relationLabel = (t: string | null | undefined) => (t ? RELATIONSHIP[t] ?? t : null);
 export const platformLabel = (t: string | null | undefined) => (t ? PLATFORM[t] ?? t : null);
+
+/** Rough reading time from HTML: Vietnamese reads at roughly 200 words a minute. */
+export function readingMinutes(html: string | null | undefined) {
+  if (!html) return null;
+  const words = html.replace(/<[^>]+>/g, ' ').replace(/&[a-z#0-9]+;/gi, ' ').trim().split(/\s+/).filter(Boolean).length;
+  return Math.max(1, Math.round(words / 200));
+}
