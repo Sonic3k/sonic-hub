@@ -2,8 +2,9 @@ import api from './client'
 import type { JournalNoteResponse, JournalNoteRequest, ProblemResponse, ProblemRequest, Paged } from '../types'
 
 export const journalApi = {
-  notes: (params: { page?: number; size?: number; q?: string; problemId?: string; tagId?: string }) =>
+  notes: (params: { page?: number; size?: number; q?: string; kind?: string; status?: string; category?: string; problemId?: string; tagId?: string }) =>
     api.get<Paged<JournalNoteResponse>>('/api/journal/notes', { params }).then(r => r.data),
+  categories: () => api.get<string[]>('/api/journal/categories').then(r => r.data),
   createNote: (data: JournalNoteRequest) =>
     api.post<JournalNoteResponse>('/api/journal/notes', data).then(r => r.data),
   updateNote: (id: string, data: JournalNoteRequest) =>

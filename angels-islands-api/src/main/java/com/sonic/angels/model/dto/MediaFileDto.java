@@ -14,6 +14,9 @@ public class MediaFileDto {
         public static Includes all()  { return new Includes(true, true, true); }
     }
 
+    /** One month of the timeline: how many files, newest bucket first. */
+    public record TimelineBucket(int year, int month, long count) {}
+
     public static class UpdateRequest {
         private String caption; private Boolean isFavorite; private String dateTaken;
         private UUID takenByPersonId; private String mediaSource;

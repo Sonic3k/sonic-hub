@@ -10,17 +10,37 @@ public class JournalDto {
     public static class NoteRequest {
         private String title; private String content; private String mood;
         private List<UUID> problemIds; private List<UUID> tagIds;
+        // article face — all optional; absent fields are left untouched on update
+        private String kind; private String slug; private String excerpt; private UUID coverMediaId;
+        private Boolean clearCover; private String category; private String status; private LocalDateTime publishedAt;
         public String getTitle() { return title; } public void setTitle(String v) { this.title = v; }
         public String getContent() { return content; } public void setContent(String v) { this.content = v; }
         public String getMood() { return mood; } public void setMood(String v) { this.mood = v; }
         public List<UUID> getProblemIds() { return problemIds; } public void setProblemIds(List<UUID> v) { this.problemIds = v; }
         public List<UUID> getTagIds() { return tagIds; } public void setTagIds(List<UUID> v) { this.tagIds = v; }
+        public String getKind() { return kind; } public void setKind(String v) { this.kind = v; }
+        public String getSlug() { return slug; } public void setSlug(String v) { this.slug = v; }
+        public String getExcerpt() { return excerpt; } public void setExcerpt(String v) { this.excerpt = v; }
+        public UUID getCoverMediaId() { return coverMediaId; } public void setCoverMediaId(UUID v) { this.coverMediaId = v; }
+        public Boolean getClearCover() { return clearCover; } public void setClearCover(Boolean v) { this.clearCover = v; }
+        public String getCategory() { return category; } public void setCategory(String v) { this.category = v; }
+        public String getStatus() { return status; } public void setStatus(String v) { this.status = v; }
+        public LocalDateTime getPublishedAt() { return publishedAt; } public void setPublishedAt(LocalDateTime v) { this.publishedAt = v; }
     }
 
     public static class NoteResponse {
         private UUID id; private String title; private String content; private String mood;
         private LocalDateTime createdAt; private LocalDateTime updatedAt;
         private Set<TagDto.Response> tags; private List<ProblemResponse> problems;
+        private String kind; private String slug; private String excerpt; private MediaFileDto.Response coverMedia;
+        private String category; private String status; private LocalDateTime publishedAt;
+        public String getKind() { return kind; } public void setKind(String v) { this.kind = v; }
+        public String getSlug() { return slug; } public void setSlug(String v) { this.slug = v; }
+        public String getExcerpt() { return excerpt; } public void setExcerpt(String v) { this.excerpt = v; }
+        public MediaFileDto.Response getCoverMedia() { return coverMedia; } public void setCoverMedia(MediaFileDto.Response v) { this.coverMedia = v; }
+        public String getCategory() { return category; } public void setCategory(String v) { this.category = v; }
+        public String getStatus() { return status; } public void setStatus(String v) { this.status = v; }
+        public LocalDateTime getPublishedAt() { return publishedAt; } public void setPublishedAt(LocalDateTime v) { this.publishedAt = v; }
         public UUID getId() { return id; } public void setId(UUID v) { this.id = v; }
         public String getTitle() { return title; } public void setTitle(String v) { this.title = v; }
         public String getContent() { return content; } public void setContent(String v) { this.content = v; }

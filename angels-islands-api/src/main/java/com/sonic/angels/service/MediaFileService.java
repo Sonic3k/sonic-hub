@@ -270,6 +270,15 @@ public class MediaFileService {
     }
 
     @Transactional(readOnly = true)
+    @Transactional(readOnly = true)
+    public List<MediaFileDto.TimelineBucket> timelineIndex(String tz) {
+        String zone = tz == null || tz.isBlank() ? "Asia/Ho_Chi_Minh" : tz;
+        return mediaFileRepository.timelineIndex(zone).stream()
+            .map(r -> new MediaFileDto.TimelineBucket(
+                ((Number) r[0]).intValue(), ((Number) r[1]).intValue(), ((Number) r[2]).longValue()))
+            .toList();
+    }
+
     public org.springframework.data.domain.Page<MediaFileDto.Response> library(int page, int size, Boolean favorite, MediaFileDto.Includes inc) {
         var pageable = org.springframework.data.domain.PageRequest.of(page, size,
             org.springframework.data.domain.Sort.by(org.springframework.data.domain.Sort.Direction.DESC, "effectiveDate"));
@@ -334,9 +343,13 @@ public class MediaFileService {
         }
 
         String sb = sortBy != null && SORT_WHITELIST.contains(sortBy) ? sortBy : "effectiveDate";
-        var sort = "asc".equalsIgnoreCase(sortDir)
-            ? org.springframework.data.domain.Sort.by(sb).ascending()
-            : org.springframework.data.domain.Sort.by(sb).descending();
+        // Undated rows sink to the end in either direction (Postgres would put
+        // NULLs first on DESC), and the id tiebreak keeps pages disjoint when
+        // many files share a timestamp — the web timeline pages by offset.
+        var primary = "asc".equalsIgnoreCase(sortDir)
+            ? org.springframework.data.domain.Sort.Order.asc(sb).nullsLast()
+            : org.springframework.data.domain.Sort.Order.desc(sb).nullsLast();
+        var sort = org.springframework.data.domain.Sort.by(primary, org.springframework.data.domain.Sort.Order.desc("id"));
 
         return mediaFileRepository.searchSorted(
                 ft, ori, cat, src, extN, favorite, featured, hasGps,

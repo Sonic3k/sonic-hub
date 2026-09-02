@@ -48,6 +48,12 @@ public class MediaFileController {
         return mediaFileService.findAllDto(new MediaFileDto.Includes(inclDetails, inclPersons, inclTags));
     }
 
+    /** Month buckets for the timeline scrubber; months cut in {@code tz} (default Vietnam). */
+    @GetMapping("/timeline-index")
+    public List<MediaFileDto.TimelineBucket> timelineIndex(@RequestParam(required = false) String tz) {
+        return mediaFileService.timelineIndex(tz);
+    }
+
     @GetMapping("/library")
     public org.springframework.data.domain.Page<MediaFileDto.Response> library(
         @RequestParam(defaultValue = "0") int page,
