@@ -288,13 +288,13 @@ function InfoContent({ media, cameraStr, settingsStr, exif, vid, onChanged }: {
               onChange={async e => { if (e.target.value) onChanged(await mediaApi.patch(media.id, { takenByPersonId: e.target.value })); setSettingTakenBy(false) }}
               onBlur={() => setSettingTakenBy(false)}
               className="bg-[#222] text-white/80 text-xs rounded-full px-2 py-1 outline-none border border-white/10">
-              <option value="">Ai chụp?</option>
+              <option value="">Who took it?</option>
               {allPersons.map(p => <option key={p.id} value={p.id}>{p.displayName || p.name}</option>)}
             </select>
           ) : (
             <button onClick={() => setSettingTakenBy(true)}
               className="text-white/40 hover:text-white/80 text-xs border border-dashed border-white/20 rounded-full px-2.5 py-1 transition-colors">
-              + Người chụp
+              + Photographer
             </button>
           )}
           {media.mediaSource ? (
@@ -304,7 +304,7 @@ function InfoContent({ media, cameraStr, settingsStr, exif, vid, onChanged }: {
                 className="text-blue-300/60 hover:text-blue-200 p-0.5"><X size={11} /></button>
             </span>
           ) : (
-            <input list="media-source-suggestions" placeholder="+ Nguồn"
+            <input list="media-source-suggestions" placeholder="+ Source"
               onKeyDown={async e => {
                 if (e.key === 'Enter') {
                   const v = (e.target as HTMLInputElement).value.trim()
@@ -361,7 +361,7 @@ function InfoContent({ media, cameraStr, settingsStr, exif, vid, onChanged }: {
             className="bg-white/5 border border-white/10 rounded-lg px-2.5 py-1.5 text-sm text-white/90 outline-none focus:border-pink-400/50 [color-scheme:dark]" />
         ) : (
           <p onClick={() => { setDateDraft((media.dateTaken || media.effectiveDate || '').slice(0, 16)); setEditingDate(true) }}
-            title="Bấm để sửa ngày giờ (ảnh scan / thiếu EXIF)"
+            title="Click to edit date/time (scans / missing EXIF)"
             className={`text-sm cursor-text rounded px-0.5 -mx-0.5 hover:bg-white/5 inline-flex items-center gap-2 ${
               media.dateTaken || media.effectiveDate ? 'text-white/80' : 'text-white/25 italic'
             }`}>

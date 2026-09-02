@@ -208,7 +208,7 @@ export default function CollectionsPage() {
     try {
       await collectionsApi.update(id, { parentId: targetId })
       qc.invalidateQueries({ queryKey: ['collections'] })
-    } catch { alert('Không move được (move vào chính con cháu của nó?)') }
+    } catch { alert('Move failed (into its own descendant?)') }
   }
 
   const handleDrop = async (e: React.DragEvent) => {
@@ -227,7 +227,7 @@ export default function CollectionsPage() {
     if (loose.length) {
       let target = effectiveId
       if (!target) {
-        try { target = (await collectionBrowseApi.getRoot()).id } catch { alert('Không xác định được collection gốc — thử lại sau giây lát'); return }
+        try { target = (await collectionBrowseApi.getRoot()).id } catch { alert('Could not resolve the root collection — try again in a moment'); return }
       }
       queue.enqueue(loose.map(file => ({ file, collectionId: target!, personId: tagAsPerson?.id, takenByPersonId: byPerson?.id })))
     }
@@ -416,16 +416,16 @@ export default function CollectionsPage() {
           <div className="bg-white rounded-2xl shadow-xl border-2 border-dashed border-pink-400 px-8 py-6 flex flex-col items-center gap-2 mx-4">
             <UploadCloud size={28} className="text-pink-500" />
             <p className="text-sm font-semibold text-slate-800 text-center">
-              {currentId && current ? `Thả vào “${current.name}”` : 'Thả vào Collections'}
+              {currentId && current ? `Drop into “${current.name}”` : 'Drop into Collections'}
             </p>
             <p className="text-[11px] text-slate-400 text-center">
-              {currentId ? 'File vào thẳng đây · folder thành sub-collection' : 'Ảnh vào root · folder thành collection mới'}
+              {currentId ? 'Files land right here · folders become sub-collections' : 'Files go to root · folders become new collections'}
             </p>
             {(tagAsPerson || byPerson) && (
               <p className="text-[11px] text-pink-500 font-medium">
-                {tagAsPerson && `Sẽ tag: ${tagAsPerson.displayName || tagAsPerson.name}`}
+                {tagAsPerson && `Will tag: ${tagAsPerson.displayName || tagAsPerson.name}`}
                 {tagAsPerson && byPerson && ' · '}
-                {byPerson && `Người chụp: ${byPerson.displayName || byPerson.name}`}
+                {byPerson && `Taken by: ${byPerson.displayName || byPerson.name}`}
               </p>
             )}
           </div>
@@ -506,7 +506,7 @@ export default function CollectionsPage() {
           </div>
           {/* Taken-by upload context */}
           <div className="relative">
-            <button onClick={() => setShowByMenu(v => !v)} title="Mọi upload sẽ set người chụp này"
+            <button onClick={() => setShowByMenu(v => !v)} title="Every upload will set this photographer"
               className={`flex items-center gap-1.5 h-9 px-3 rounded-full text-xs font-medium transition-all border ${
                 byPerson ? 'bg-pink-50 border-pink-200 text-pink-600' : 'bg-white border-slate-200 text-slate-500 hover:border-pink-300 hover:text-pink-500'
               }`}>
@@ -671,7 +671,7 @@ export default function CollectionsPage() {
                     className="p-1.5 rounded text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors">
                     <UserPlus size={14} />
                   </button>
-                  <button onClick={() => setTakenByModal(selectedList())} title="Set người chụp (taken by)"
+                  <button onClick={() => setTakenByModal(selectedList())} title="Set photographer (taken by)"
                     className="p-1.5 rounded text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors">
                     <Camera size={14} />
                   </button>
@@ -724,8 +724,8 @@ export default function CollectionsPage() {
       {!isLoading && collections.length === 0 && media.length === 0 && (
         <div className="text-center py-12">
           <FolderOpen size={36} className="mx-auto text-slate-200 mb-2" strokeWidth={1} />
-          <p className="text-sm text-slate-500 font-medium">{currentId ? 'Collection này còn trống' : 'Chưa có collection nào'}</p>
-          <p className="text-xs text-slate-400 mt-1 hidden md:block">Kéo thả ảnh hoặc cả folder vào trang này, hoặc:</p>
+          <p className="text-sm text-slate-500 font-medium">{currentId ? 'This collection is empty' : 'No collections yet'}</p>
+          <p className="text-xs text-slate-400 mt-1 hidden md:block">Drag photos or whole folders anywhere on this page, or:</p>
           <div className="flex items-center justify-center gap-2 mt-3">
             <button onClick={() => addPhotosRef.current?.click()}
               className="flex items-center gap-1.5 text-xs bg-pink-500 text-white px-3.5 py-2 rounded-full hover:bg-pink-600 active:scale-95 transition-all">
@@ -821,7 +821,7 @@ export default function CollectionsPage() {
 
       {/* Taken-by batch */}
       {takenByModal && (
-        <PersonSelectModal title={`Người chụp ${takenByModal.length} file(s)...`}
+        <PersonSelectModal title={`Photographer for ${takenByModal.length} file(s)...`}
           onSelect={handleTakenByBatch} onClose={() => setTakenByModal(null)} />
       )}
 
@@ -906,12 +906,12 @@ function ManageTagsModal({ collectionName, activeIds, onToggle, onClose }: {
               </button>
             )
           })}
-          {tags.length === 0 && <p className="text-xs text-slate-400">Chưa có label nào — tạo bên dưới</p>}
+          {tags.length === 0 && <p className="text-xs text-slate-400">No labels yet — create one below</p>}
         </div>
         <div className="flex items-center gap-2 pt-3 border-t border-slate-100 mb-3">
           <Plus size={14} className="text-slate-300 shrink-0" />
           <input className="flex-1 px-2 py-1.5 text-sm border rounded-lg border-slate-200 focus:border-pink-400 outline-none"
-            placeholder="Label mới (vd: Travel, Family)..."
+            placeholder="New label (e.g. Travel, Family)..."
             value={newName} onChange={e => setNewName(e.target.value)}
             onKeyDown={e => e.key === 'Enter' && handleCreate()} />
           {newName.trim() && (

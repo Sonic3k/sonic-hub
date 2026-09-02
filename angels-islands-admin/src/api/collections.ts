@@ -22,7 +22,7 @@ export interface TreeResponse {
 
 export const uploadApi = {
   createTree: (data: TreeRequest) => api.post<TreeResponse>('/api/collections/create-tree', data).then(r => r.data),
-  /** Upload 1 file. collectionId → path thật trong B2 theo cây collection + auto-link. */
+  /** Upload one file. collectionId → real B2 path following the collection tree + auto-link. */
   uploadFile: (file: File, personId?: string, collectionId?: string, allowDuplicate?: boolean, takenByPersonId?: string) => {
     const form = new FormData()
     form.append('file', file)

@@ -54,12 +54,12 @@ export default function TagSelectModal({ title, onSelect, onClose }: {
         <h3 className="text-sm font-semibold text-slate-800 mb-3">{title}</h3>
         <div className="flex flex-wrap gap-1.5 mb-4 max-h-60 overflow-y-auto">
           {tags.map(t => <TagChip key={t.id} tag={t} onClick={() => onSelect(t)} />)}
-          {tags.length === 0 && <p className="text-xs text-slate-400">Chưa có tag nào — tạo cái đầu tiên bên dưới</p>}
+          {tags.length === 0 && <p className="text-xs text-slate-400">No tags yet — create the first one below</p>}
         </div>
         <div className="flex items-center gap-2 pt-3 border-t border-slate-100">
           <Plus size={14} className="text-slate-300 shrink-0" />
           <input className="flex-1 px-2 py-1.5 text-sm border rounded-lg border-slate-200 focus:border-pink-400 outline-none"
-            placeholder="Tag mới (vd: Travel, Family)..."
+            placeholder="New tag (e.g. Travel, Family)..."
             value={newName} onChange={e => setNewName(e.target.value)}
             onKeyDown={e => e.key === 'Enter' && handleCreate()} />
           {newName.trim() && (

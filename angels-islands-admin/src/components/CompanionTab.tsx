@@ -111,7 +111,7 @@ export default function CompanionTab({ personId, personName }: { personId: strin
       <div className="order-2 lg:order-1 bg-white rounded-2xl border border-slate-100 p-4 space-y-3.5">
         <div className="flex items-center justify-between">
           <h2 className="text-sm font-semibold text-slate-800 flex items-center gap-1.5"><Bot size={15} className="text-pink-400" />Companion
-            <button onClick={openPreview} disabled={previewLoading} title="Xem nguyên văn persona prompt gửi cho model"
+            <button onClick={openPreview} disabled={previewLoading} title="View the exact persona prompt sent to the model"
               className="text-slate-300 hover:text-pink-500 p-1 rounded transition-colors disabled:opacity-50">
               <Eye size={14} />
             </button>
@@ -190,14 +190,14 @@ export default function CompanionTab({ personId, personName }: { personId: strin
           </div>
           <textarea rows={form.styleProfile ? 7 : 2} value={form.styleProfile || ''}
             onChange={e => set('styleProfile', e.target.value)}
-            placeholder="Chưa có — bấm Analyze để phân tích giọng văn & cách đối đáp từ chat archives (tự chạy sau mỗi lần Extract memories). Sửa tay được, nhớ Save."
+            placeholder="Empty — hit Analyze to profile voice & reply style from the chat archives (also runs after every Extract memories). Hand-editable, remember to Save."
             className="mt-1 w-full px-3 py-2 text-[11px] leading-relaxed border rounded-lg border-slate-200 focus:border-pink-400 outline-none resize-y font-mono" />
         </div>
 
         <div>
           <label className="text-[10px] uppercase tracking-widest text-slate-400 font-semibold">Extra prompt</label>
           <textarea rows={3} value={form.extraPrompt || ''} onChange={e => set('extraPrompt', e.target.value)}
-            placeholder="Tinh chỉnh thêm (tuỳ chọn)..."
+            placeholder="Extra tuning (optional)..."
             className="mt-1 w-full px-3 py-2 text-xs border rounded-lg border-slate-200 focus:border-pink-400 outline-none resize-none" />
         </div>
 
@@ -213,7 +213,7 @@ export default function CompanionTab({ personId, personName }: { personId: strin
               Telegram
               <span className={`normal-case tracking-normal text-[10px] px-1.5 py-0.5 rounded-full ${
                 form.telegramConfigured ? 'bg-green-50 text-green-600' : 'bg-slate-100 text-slate-400'
-              }`}>{form.telegramConfigured ? 'bot đã cấu hình' : 'chưa cấu hình'}</span>
+              }`}>{form.telegramConfigured ? 'bot configured' : 'not configured'}</span>
             </span>
             <ChevronDown size={13} className={`text-slate-300 transition-transform ${showTgHelp ? 'rotate-180' : ''}`} />
           </button>
@@ -221,13 +221,13 @@ export default function CompanionTab({ personId, personName }: { personId: strin
             <div className="mt-2 text-[11px] text-slate-500 leading-relaxed space-y-1.5">
               {!form.telegramConfigured && (
                 <>
-                  <p><b className="text-slate-700">1.</b> Telegram → nhắn <code className="bg-slate-100 px-1 rounded">@BotFather</code> → <code className="bg-slate-100 px-1 rounded">/newbot</code> → đặt tên → copy token.</p>
-                  <p><b className="text-slate-700">2.</b> Railway → service <b>angels-islands-api</b> → Variables → thêm <code className="bg-slate-100 px-1 rounded">TELEGRAM_COMPANION_BOT_TOKEN</code> = token → service tự redeploy.</p>
-                  <p className="text-amber-600">Lưu ý: tạo bot MỚI, đừng dùng lại token bot của sonic-hub-connector (hai service cùng poll một token sẽ giành tin nhắn của nhau).</p>
+                  <p><b className="text-slate-700">1.</b> Telegram → message <code className="bg-slate-100 px-1 rounded">@BotFather</code> → <code className="bg-slate-100 px-1 rounded">/newbot</code> → name it → copy the token.</p>
+                  <p><b className="text-slate-700">2.</b> Railway → service <b>angels-islands-api</b> → Variables → add <code className="bg-slate-100 px-1 rounded">TELEGRAM_COMPANION_BOT_TOKEN</code> = token → the service redeploys itself.</p>
+                  <p className="text-amber-600">Note: create a NEW bot — do not reuse the sonic-hub-connector token (two services polling one token steal each other’s updates).</p>
                 </>
               )}
-              <p><b className="text-slate-700">{form.telegramConfigured ? 'Dùng:' : '3. Dùng:'}</b> mở bot → <code className="bg-slate-100 px-1 rounded">/companions</code> xem danh sách → <code className="bg-slate-100 px-1 rounded">/talk {personName}</code> → nhắn bình thường. <code className="bg-slate-100 px-1 rounded">/who</code> để biết đang nhắn với ai.</p>
-              <p className="text-slate-400">Lịch sử chat chung một dòng với khung chat bên cạnh — nhắn ở đâu cũng nối tiếp nhau.</p>
+              <p><b className="text-slate-700">{form.telegramConfigured ? 'Use:' : '3. Use:'}</b> open the bot → <code className="bg-slate-100 px-1 rounded">/companions</code> lists them → <code className="bg-slate-100 px-1 rounded">/talk {personName}</code> → chat normally. <code className="bg-slate-100 px-1 rounded">/who</code> shows who you are talking to.</p>
+              <p className="text-slate-400">History is shared with the chat panel here — messages from either side continue one thread.</p>
             </div>
           )}
         </div>
@@ -244,7 +244,7 @@ export default function CompanionTab({ personId, personName }: { personId: strin
         <div className="flex-1 overflow-y-auto px-4 py-3 space-y-1">
           {messages.length === 0 && (
             <p className="text-center text-sm text-slate-300 py-10">
-              {form.enabled ? 'Nhắn gì đó đi...' : 'Bật companion rồi Save để bắt đầu'}
+              {form.enabled ? 'Say something...' : 'Enable the companion and Save to start'}
             </p>
           )}
           {messages.map((m, i) => {
@@ -273,7 +273,7 @@ export default function CompanionTab({ personId, personName }: { personId: strin
           <input value={input} onChange={e => setInput(e.target.value)}
             onKeyDown={e => e.key === 'Enter' && send()}
             disabled={!form.enabled}
-            placeholder={form.enabled ? `Nhắn cho ${personName}...` : 'Companion đang tắt'}
+            placeholder={form.enabled ? `Nhắn cho ${personName}...` : 'Companion is off'}
             className="flex-1 px-3.5 py-2.5 text-sm bg-slate-50 border border-slate-200 rounded-full outline-none focus:border-pink-300 disabled:opacity-50" />
           <button onClick={send} disabled={!form.enabled || sending || !input.trim()}
             className="p-2.5 bg-pink-500 text-white rounded-full hover:bg-pink-600 disabled:opacity-40 transition-colors">
@@ -289,7 +289,7 @@ export default function CompanionTab({ personId, personName }: { personId: strin
             <div className="flex items-center justify-between mb-2">
               <div>
                 <h3 className="text-sm font-semibold text-slate-800">Persona prompt</h3>
-                <p className="text-[11px] text-slate-400">Nguyên văn system prompt gửi cho model mỗi lượt chat (mẫu sống 15 dòng thay đổi ngẫu nhiên mỗi lượt)</p>
+                <p className="text-[11px] text-slate-400">The exact system prompt sent every turn (the 15 live sample lines re-randomize each turn)</p>
               </div>
               <button onClick={() => setPreview(null)} className="p-1.5 text-slate-400 hover:text-slate-600 rounded-full hover:bg-slate-100"><X size={16} /></button>
             </div>

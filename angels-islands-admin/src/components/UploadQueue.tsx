@@ -111,18 +111,18 @@ export function UploadQueuePanel({ items, busy, onRetry, onClear, onSkipDup, onK
       <div className="flex items-center justify-between px-4 py-2.5">
         <p className="text-xs font-semibold text-slate-700">
           {busy ? `Uploading ${done + errors + dups.length}/${items.length}...`
-            : dups.length ? `${dups.length} trùng — chọn xử lý`
+            : dups.length ? `${dups.length} duplicate(s) — choose action`
             : errors ? `Done · ${errors} failed`
             : `Uploaded ${done} file${done !== 1 ? 's' : ''}`}
         </p>
         <div className="flex items-center gap-1">
           {!busy && dups.length > 1 && (
             <>
-              <button onClick={() => onKeepDup()} title="Upload tất cả bản trùng thành bản mới"
+              <button onClick={() => onKeepDup()} title="Upload all duplicates as new copies"
                 className="flex items-center gap-1 px-2 py-1 text-[11px] font-medium text-amber-600 hover:bg-amber-50 rounded transition-colors">
                 <Copy size={11} />Keep all
               </button>
-              <button onClick={() => onSkipDup()} title="Bỏ qua tất cả bản trùng"
+              <button onClick={() => onSkipDup()} title="Skip all duplicates"
                 className="flex items-center gap-1 px-2 py-1 text-[11px] font-medium text-slate-500 hover:bg-slate-100 rounded transition-colors">
                 <CopyX size={11} />Skip all
               </button>
@@ -155,13 +155,13 @@ export function UploadQueuePanel({ items, busy, onRetry, onClear, onSkipDup, onK
             )}
             <span className={`truncate flex-1 ${i.status === 'error' ? 'text-rose-400' : i.status === 'duplicate' ? 'text-amber-700' : 'text-slate-500'}`}>
               {i.label || i.file.name}
-              {i.status === 'duplicate' && <span className="text-amber-500/80"> · đã có</span>}
+              {i.status === 'duplicate' && <span className="text-amber-500/80"> · already exists</span>}
             </span>
             {i.status === 'duplicate' && (
               <span className="flex items-center gap-0.5 shrink-0">
-                <button onClick={() => onKeepDup(i.id)} title="Vẫn upload (giữ cả hai)"
+                <button onClick={() => onKeepDup(i.id)} title="Upload anyway (keep both)"
                   className="p-1 text-amber-600 hover:bg-amber-100 rounded transition-colors"><Copy size={12} /></button>
-                <button onClick={() => onSkipDup(i.id)} title="Bỏ qua"
+                <button onClick={() => onSkipDup(i.id)} title="Skip"
                   className="p-1 text-slate-400 hover:bg-slate-200 rounded transition-colors"><X size={12} /></button>
               </span>
             )}

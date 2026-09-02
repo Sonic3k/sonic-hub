@@ -202,7 +202,7 @@ export default function LibraryPage() {
                     <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ background: t.color || '#94a3b8' }} />{t.name}
                   </button>
                 ))}
-                {allTags.length === 0 && <p className="px-4 py-2 text-xs text-slate-400">Chưa có label</p>}
+                {allTags.length === 0 && <p className="px-4 py-2 text-xs text-slate-400">No labels yet</p>}
               </div>
             </>
           )}
@@ -232,7 +232,7 @@ export default function LibraryPage() {
               className="p-1.5 rounded text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors">
               <UserPlus size={14} />
             </button>
-            <button onClick={() => setTakenByModal(idsArr())} title="Set người chụp"
+            <button onClick={() => setTakenByModal(idsArr())} title="Set photographer"
               className="p-1.5 rounded text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors">
               <Camera size={14} />
             </button>
@@ -286,7 +286,7 @@ export default function LibraryPage() {
       </div>
 
       {takenByModal && (
-        <PersonSelectModal title={`Người chụp ${takenByModal.length} file(s)...`}
+        <PersonSelectModal title={`Photographer for ${takenByModal.length} file(s)...`}
           onSelect={handleTakenBy} onClose={() => setTakenByModal(null)} />
       )}
 

@@ -74,7 +74,7 @@ export default function PersonsPage() {
         <Modal title="New Person" onClose={() => setShowForm(false)}>
           <div className="space-y-3">
             <Input label="Name *" value={form.name} onChange={e => set('name', e.target.value)} autoFocus required />
-            <Input label="Display Name" value={form.displayName} onChange={e => set('displayName', e.target.value)} placeholder="Tên hiển thị" />
+            <Input label="Display Name" value={form.displayName} onChange={e => set('displayName', e.target.value)} placeholder="Display name" />
             <Input label="Nickname" value={form.nickname} onChange={e => set('nickname', e.target.value)} />
             <Input label="Date of Birth" type="date" value={form.dateOfBirth} onChange={e => set('dateOfBirth', e.target.value)} />
             <div className="space-y-1">
@@ -86,8 +86,8 @@ export default function PersonsPage() {
             </div>
             <Input label="Period" value={form.period} onChange={e => set('period', e.target.value)} placeholder="2010-2013" />
             <Input label="First Met" type="date" value={form.firstMet} onChange={e => set('firstMet', e.target.value)} />
-            <Textarea label="How We Met" value={form.howWeMet} onChange={e => set('howWeMet', e.target.value)} rows={2} placeholder="Gặp nhau ở đâu, hoàn cảnh gì..." />
-            <Input label="Song" value={form.song} onChange={e => set('song', e.target.value)} placeholder="Bài hát gắn liền" />
+            <Textarea label="How We Met" value={form.howWeMet} onChange={e => set('howWeMet', e.target.value)} rows={2} placeholder="Where and how you met..." />
+            <Input label="Song" value={form.song} onChange={e => set('song', e.target.value)} placeholder="The song tied to her" />
             <Textarea label="Bio" value={form.bio} onChange={e => set('bio', e.target.value)} rows={3} />
             <label className="flex items-center gap-2 cursor-pointer">
               <input type="checkbox" checked={form.isSelf} onChange={e => setForm(f => ({ ...f, isSelf: e.target.checked }))}

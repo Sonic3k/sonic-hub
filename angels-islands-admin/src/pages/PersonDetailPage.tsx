@@ -45,7 +45,7 @@ export default function PersonDetailPage() {
     queryClient.invalidateQueries({ queryKey: [key, pid] })
   }
   const deleteMemItem = async (kind: 'chapter' | 'trait' | 'fact' | 'episode', id: string, label: string) => {
-    if (!confirm(`Xóa ${label}?`)) return
+    if (!confirm(`Delete ${label}?`)) return
     if (kind === 'chapter') await memoryApi.deleteChapter(pid, id)
     if (kind === 'trait') await memoryApi.deleteTrait(pid, id)
     if (kind === 'fact') await memoryApi.deleteFact(pid, id)
@@ -259,9 +259,9 @@ export default function PersonDetailPage() {
               </select>
             </div>
             <Input label="Identifier *" value={contactForm.identifier} onChange={e => setContactForm(f => ({ ...f, identifier: e.target.value }))}
-              placeholder="nick yahoo, link fb, số đt..." autoFocus />
+              placeholder="yahoo nick, fb link, phone number..." autoFocus />
             <Input label="Display Name" value={contactForm.displayName || ''} onChange={e => setContactForm(f => ({ ...f, displayName: e.target.value }))}
-              placeholder="Tên hiển thị trên platform" />
+              placeholder="Display name on that platform" />
             <Input label="Notes" value={contactForm.notes || ''} onChange={e => setContactForm(f => ({ ...f, notes: e.target.value }))} />
             <div className="flex justify-end gap-2 pt-2">
               <Button variant="ghost" onClick={() => setShowContactForm(false)}>Cancel</Button>
@@ -361,7 +361,7 @@ export default function PersonDetailPage() {
                 <div key={e.id} className="relative group bg-white rounded-lg p-4 border border-slate-100">
                   <span className="absolute top-2.5 right-2.5 flex items-center gap-0.5 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
                     <button onClick={() => setMemForm({ kind: 'episode', item: e })} className="p-1 text-slate-300 hover:text-pink-500 rounded transition-colors"><Pencil size={12} /></button>
-                    <button onClick={() => deleteMemItem('episode', e.id, `episode này`)} className="p-1 text-slate-300 hover:text-rose-500 rounded transition-colors"><X size={12} /></button>
+                    <button onClick={() => deleteMemItem('episode', e.id, `this episode`)} className="p-1 text-slate-300 hover:text-rose-500 rounded transition-colors"><X size={12} /></button>
                   </span>
                   <p className="text-sm text-slate-700 pr-14">{e.summary}</p>
                   <div className="flex gap-2 mt-2">
@@ -374,7 +374,7 @@ export default function PersonDetailPage() {
             </section>
           )}
           {facts.length === 0 && episodes.length === 0 && chapters.length === 0 && traits.length === 0 && (
-            <p className="text-sm text-slate-400">Chưa có memory nào — bấm Extract ở tab Chat Archives, hoặc thêm tay bằng nút + Add ở từng mục.</p>
+            <p className="text-sm text-slate-400">No memories yet — hit Extract on the Chat Archives tab, or add manually with + Add in each section.</p>
           )}
         </div>
       )}
@@ -439,7 +439,7 @@ export default function PersonDetailPage() {
 }
 
 
-// ── Photos tab: collections + toàn bộ ảnh của person ─────────────────────────
+// ── Photos tab: collections + all media of this person ──────────────────────
 
 function PersonPhotosTab({ personId }: { personId: string }) {
   const qc = useQueryClient()
@@ -520,7 +520,7 @@ function PersonPhotosTab({ personId }: { personId: string }) {
 
   return (
     <div>
-      {/* Collections của person */}
+      {/* Person's collections */}
       <div className="flex items-center gap-2 mb-2.5">
         <h2 className="text-[10px] uppercase tracking-widest text-slate-400 font-semibold">Collections · {collections.length}</h2>
         <button onClick={() => setLinkPicker(true)}
@@ -681,8 +681,8 @@ function MemoryFormModal({ personId, kind, item, onSaved, onClose }: {
             {FACT_CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
           </Select>
           <Input label="Key *" value={String(f.key)} onChange={e => set('key', e.target.value)} placeholder="truong_hoc, mon_an_thich..." />
-          <Input label="Value *" value={String(f.value)} onChange={e => set('value', e.target.value)} placeholder="THPT Chu Văn An" />
-          <Input label="Period" value={String(f.period)} onChange={e => set('period', e.target.value)} placeholder="2010 hoặc 2009-2011, trống = luôn đúng" />
+          <Input label="Value *" value={String(f.value)} onChange={e => set('value', e.target.value)} placeholder="Chu Van An High School" />
+          <Input label="Period" value={String(f.period)} onChange={e => set('period', e.target.value)} placeholder="2010 or 2009-2011, empty = always true" />
           <div>
             <label className="block text-xs font-medium text-slate-500 mb-1">Confidence · {Number(f.confidence).toFixed(2)}</label>
             <input type="range" min={0.1} max={1} step={0.05} value={Number(f.confidence)}
@@ -690,17 +690,17 @@ function MemoryFormModal({ personId, kind, item, onSaved, onClose }: {
           </div>
         </>}
         {kind === 'trait' && <>
-          <Input label="Trait *" value={String(f.trait)} onChange={e => set('trait', e.target.value)} placeholder="nhõng nhẽo, chu đáo..." />
+          <Input label="Trait *" value={String(f.trait)} onChange={e => set('trait', e.target.value)} placeholder="clingy, thoughtful..." />
           <Textarea label="Description" rows={2} value={String(f.description)} onChange={e => set('description', e.target.value)} />
-          <Textarea label="Evidence" rows={2} value={String(f.evidence)} onChange={e => set('evidence', e.target.value)} placeholder='Câu chat trích nguyên văn làm bằng chứng' />
+          <Textarea label="Evidence" rows={2} value={String(f.evidence)} onChange={e => set('evidence', e.target.value)} placeholder='Verbatim chat line as evidence' />
           <Input label="Period" value={String(f.period)} onChange={e => set('period', e.target.value)} placeholder="2010" />
         </>}
         {kind === 'episode' && <>
           <Textarea label="Summary *" rows={3} value={String(f.summary)} onChange={e => set('summary', e.target.value)}
-            placeholder="1-2 câu, đọc lại sau 10 năm vẫn hiểu" />
+            placeholder="1-2 sentences you will still understand in 10 years" />
           <div className="grid grid-cols-2 gap-3">
-            <Input label="Emotion" value={String(f.emotion)} onChange={e => set('emotion', e.target.value)} placeholder="vui, buồn, nhớ..." />
-            <Input label="Ngày" type="date" value={String(f.occurredAt)} onChange={e => set('occurredAt', e.target.value)} />
+            <Input label="Emotion" value={String(f.emotion)} onChange={e => set('emotion', e.target.value)} placeholder="happy, sad, longing..." />
+            <Input label="Date" type="date" value={String(f.occurredAt)} onChange={e => set('occurredAt', e.target.value)} />
           </div>
           <div>
             <label className="block text-xs font-medium text-slate-500 mb-1">Importance · {f.importance}/10</label>
@@ -710,7 +710,7 @@ function MemoryFormModal({ personId, kind, item, onSaved, onClose }: {
         </>}
         {kind === 'chapter' && <>
           <Input label="Period *" value={String(f.period)} onChange={e => set('period', e.target.value)} placeholder="2009-2011" />
-          <Input label="Title" value={String(f.title)} onChange={e => set('title', e.target.value)} placeholder="Thời cấp 3" />
+          <Input label="Title" value={String(f.title)} onChange={e => set('title', e.target.value)} placeholder="High-school years" />
           <Textarea label="Summary" rows={3} value={String(f.summary)} onChange={e => set('summary', e.target.value)} />
           <Input label="Sentiment" value={String(f.sentiment)} onChange={e => set('sentiment', e.target.value)} placeholder="warm, romantic, tense..." />
         </>}
