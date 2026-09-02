@@ -34,12 +34,18 @@ public class AnthropicClient {
 
     /** One-shot completion: system + single user message → assistant text. */
     public String complete(String system, String user, int maxTokens) throws Exception {
-        Map<String, Object> body = Map.of(
-            "model", model,
-            "max_tokens", maxTokens,
-            "system", system,
-            "messages", List.of(Map.of("role", "user", "content", user))
-        );
+        return chat(model, system, List.of(Map.of("role", "user", "content", user)), maxTokens, null);
+    }
+
+    /** Multi-turn chat with explicit model/temperature (companion engine). */
+    public String chat(String chatModel, String system, List<Map<String, String>> messages,
+                       int maxTokens, Float temperature) throws Exception {
+        Map<String, Object> body = new java.util.HashMap<>();
+        body.put("model", chatModel);
+        body.put("max_tokens", maxTokens);
+        body.put("system", system);
+        body.put("messages", messages);
+        if (temperature != null) body.put("temperature", temperature);
         HttpRequest req = HttpRequest.newBuilder()
             .uri(URI.create("https://api.anthropic.com/v1/messages"))
             .timeout(Duration.ofSeconds(180))

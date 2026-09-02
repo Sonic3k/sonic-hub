@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import { ArrowLeft, Brain, MessageSquare, User, Pencil, Save, X, Plus, Trash2, Upload, Image as ImageIcon, FolderOpen, FolderPlus, UserMinus } from 'lucide-react'
+import { ArrowLeft, Brain, MessageSquare, User, Pencil, Save, X, Plus, Trash2, Upload, Image as ImageIcon, FolderOpen, FolderPlus, UserMinus, Bot } from 'lucide-react'
 import { Button, Input, Textarea, Modal } from '../components/ui'
 import { usePerson, useUpdatePerson } from '../hooks/usePersons'
 import { useFacts, useEpisodes, useChapters, useTraits, useArchives } from '../hooks/useMemory'
@@ -13,6 +13,7 @@ import { mediaApi, uploadApi, collectionBrowseApi, collectionsApi } from '../api
 import { Lightbox, MediaItem } from '../components/media'
 import CollectionPicker from '../components/CollectionPicker'
 import ChatViewer from '../components/ChatViewer'
+import CompanionTab from '../components/CompanionTab'
 
 const REL_LABELS: Record<RelationshipType, string> = {
   CRUSH: '💗 Crush', GIRLFRIEND: '❤️ Girlfriend', FRIEND: '🤝 Friend',
@@ -21,7 +22,7 @@ const REL_LABELS: Record<RelationshipType, string> = {
 
 const CONTACT_PLATFORMS: ContactPlatform[] = ['YAHOO', 'FACEBOOK', 'ZALO', 'TELEGRAM', 'SMS', 'PHONE', 'BLOG', 'INSTAGRAM', 'TIKTOK', 'OTHER']
 
-type Tab = 'info' | 'photos' | 'memory' | 'chat'
+type Tab = 'info' | 'photos' | 'memory' | 'chat' | 'companion'
 
 export default function PersonDetailPage() {
   const { id } = useParams<{ id: string }>()
@@ -100,6 +101,7 @@ export default function PersonDetailPage() {
     { key: 'photos', label: 'Photos', icon: ImageIcon },
     { key: 'memory', label: 'Memory', icon: Brain },
     { key: 'chat', label: 'Chat Archives', icon: MessageSquare },
+    { key: 'companion', label: 'Companion', icon: Bot },
   ]
 
   const infoFields: { label: string; key: string; value?: string }[] = [
@@ -148,6 +150,8 @@ export default function PersonDetailPage() {
       </div>
 
       {tab === 'photos' && <PersonPhotosTab personId={pid} />}
+
+      {tab === 'companion' && <CompanionTab personId={pid} personName={person.displayName || person.name} />}
 
       {viewerArchive && (
         <ChatViewer personId={pid} archive={viewerArchive}
