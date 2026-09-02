@@ -2,6 +2,8 @@ name: ci
 on:
   push:
     branches: [main]
+permissions:
+  contents: write
 jobs:
   api-compile:
     runs-on: ubuntu-latest
@@ -9,7 +11,18 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-java@v4
         with: { distribution: temurin, java-version: '17', cache: maven }
-      - run: mvn -B -q -f angels-islands-api/pom.xml compile
+      - run: mvn -B -f angels-islands-api/pom.xml compile 2>&1 | tee /tmp/mvn.log; exit ${PIPESTATUS[0]}
+        shell: bash
+      - name: Post compile errors as commit comment
+        if: failure()
+        env: { GH_TOKEN: '${{ github.token }}' }
+        run: |
+          ERRS=$(grep -E '^\[ERROR\]' /tmp/mvn.log | head -50)
+          [ -z "$ERRS" ] && ERRS="(no [ERROR] lines captured — see run)"
+          gh api "repos/${{ github.repository }}/commits/${{ github.sha }}/comments" -f body="CI api-compile failed:
+          \`\`\`
+          $ERRS
+          \`\`\`"
   admin-build:
     runs-on: ubuntu-latest
     steps:
