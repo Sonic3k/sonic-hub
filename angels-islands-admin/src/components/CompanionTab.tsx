@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { Bot, Send, Trash2, Save } from 'lucide-react'
+import { Bot, Send, Trash2, Save, ChevronDown } from 'lucide-react'
 import api from '../api/client'
 
 interface CompanionConfig {
@@ -13,6 +13,7 @@ interface CompanionConfig {
   useChatStyle: boolean
   extraPrompt?: string | null
   providerConfigured: boolean
+  telegramConfigured?: boolean
 }
 interface ProviderInfo { provider: string; configured: boolean; models: { id: string; name: string }[] }
 interface CompMsg { id: string; role: 'USER' | 'ASSISTANT'; channel: string; content: string; createdAt?: string }
@@ -20,6 +21,7 @@ interface MsgPage { content: CompMsg[]; number: number; last: boolean }
 
 export default function CompanionTab({ personId, personName }: { personId: string; personName: string }) {
   const qc = useQueryClient()
+  const [showTgHelp, setShowTgHelp] = useState(false)
   const [form, setForm] = useState<CompanionConfig | null>(null)
   const [input, setInput] = useState('')
   const [sending, setSending] = useState(false)
@@ -160,6 +162,32 @@ export default function CompanionTab({ personId, personName }: { personId: strin
           className="w-full flex items-center justify-center gap-1.5 px-4 py-2 text-sm bg-pink-500 text-white rounded-lg hover:bg-pink-600 disabled:opacity-50">
           <Save size={14} />{save.isPending ? 'Saving...' : 'Save'}
         </button>
+
+        {/* ── Telegram setup ── */}
+        <div className="border-t border-slate-100 pt-3">
+          <button onClick={() => setShowTgHelp(v => !v)} className="w-full flex items-center justify-between">
+            <span className="text-[10px] uppercase tracking-widest text-slate-400 font-semibold flex items-center gap-1.5">
+              Telegram
+              <span className={`normal-case tracking-normal text-[10px] px-1.5 py-0.5 rounded-full ${
+                form.telegramConfigured ? 'bg-green-50 text-green-600' : 'bg-slate-100 text-slate-400'
+              }`}>{form.telegramConfigured ? 'bot đã cấu hình' : 'chưa cấu hình'}</span>
+            </span>
+            <ChevronDown size={13} className={`text-slate-300 transition-transform ${showTgHelp ? 'rotate-180' : ''}`} />
+          </button>
+          {showTgHelp && (
+            <div className="mt-2 text-[11px] text-slate-500 leading-relaxed space-y-1.5">
+              {!form.telegramConfigured && (
+                <>
+                  <p><b className="text-slate-700">1.</b> Telegram → nhắn <code className="bg-slate-100 px-1 rounded">@BotFather</code> → <code className="bg-slate-100 px-1 rounded">/newbot</code> → đặt tên → copy token.</p>
+                  <p><b className="text-slate-700">2.</b> Railway → service <b>angels-islands-api</b> → Variables → thêm <code className="bg-slate-100 px-1 rounded">TELEGRAM_COMPANION_BOT_TOKEN</code> = token → service tự redeploy.</p>
+                  <p className="text-amber-600">Lưu ý: tạo bot MỚI, đừng dùng lại token bot của sonic-hub-connector (hai service cùng poll một token sẽ giành tin nhắn của nhau).</p>
+                </>
+              )}
+              <p><b className="text-slate-700">{form.telegramConfigured ? 'Dùng:' : '3. Dùng:'}</b> mở bot → <code className="bg-slate-100 px-1 rounded">/companions</code> xem danh sách → <code className="bg-slate-100 px-1 rounded">/talk {personName}</code> → nhắn bình thường. <code className="bg-slate-100 px-1 rounded">/who</code> để biết đang nhắn với ai.</p>
+              <p className="text-slate-400">Lịch sử chat chung một dòng với khung chat bên cạnh — nhắn ở đâu cũng nối tiếp nhau.</p>
+            </div>
+          )}
+        </div>
       </div>
 
       {/* ── Chat ── */}

@@ -22,10 +22,13 @@ public class CompanionController {
 
     private final CompanionService companionService;
     private final CompanionMessageRepository messageRepo;
+    private final String telegramToken;
 
-    public CompanionController(CompanionService companionService, CompanionMessageRepository messageRepo) {
+    public CompanionController(CompanionService companionService, CompanionMessageRepository messageRepo,
+                               @org.springframework.beans.factory.annotation.Value("${telegram.companion-bot-token}") String telegramToken) {
         this.companionService = companionService;
         this.messageRepo = messageRepo;
+        this.telegramToken = telegramToken;
     }
 
     @GetMapping("/companion/providers")
@@ -82,6 +85,7 @@ public class CompanionController {
         m.put("useChatStyle", c.getUseChatStyle());
         m.put("extraPrompt", c.getExtraPrompt());
         m.put("providerConfigured", companionService.isProviderConfigured(c.getProvider()));
+        m.put("telegramConfigured", telegramToken != null && !telegramToken.isBlank());
         return m;
     }
 
