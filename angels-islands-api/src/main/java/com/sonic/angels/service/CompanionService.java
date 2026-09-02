@@ -199,34 +199,22 @@ public class CompanionService {
         StringBuilder sample = new StringBuilder();
         for (int w = 0; w < windows; w++) {
             int start = windows == 1 ? 0 : (int) ((long) w * (all.size() - windowSize) / Math.max(1, windows - 1));
-            sample.append("--- đoạn ").append(w + 1).append(" ---
-");
+            sample.append("--- đoạn ").append(w + 1).append(" ---\n");
             for (int i = start; i < Math.min(start + windowSize, all.size()); i++) {
                 ChatMessage m = all.get(i);
                 String who = m.getSenderType() == ChatMessage.SenderType.SELF ? selfName : name;
-                sample.append(who).append(": ").append(m.getContent()).append('
-');
+                sample.append(who).append(": ").append(m.getContent()).append('\n');
             }
         }
 
         String system = "Bạn là nhà phân tích văn phong chat tiếng Việt (thời Yahoo 2008-2012, teencode)."
-            + " Phân tích cách "" + name + "" nhắn tin trong các đoạn chat thật với "" + selfName + "" dưới đây."
-            + " CHỈ dựa vào bằng chứng trong mẫu, trích nguyên văn khi nêu ví dụ. Trả về đúng các mục sau, gọn và cụ thể:
-"
-            + "## Xưng hô
-(" + name + " xưng gì, gọi " + selfName + " là gì, các biến thể)
-"
-            + "## Giọng chữ
-(teencode/viết tắt đặc trưng liệt kê nguyên văn, có dấu hay không, emoticon/ký hiệu hay dùng, độ dài tin điển hình)
-"
-            + "## Câu cửa miệng
-(5-10 câu/cụm trích nguyên văn hay lặp lại)
-"
-            + "## Cách đối đáp
-(mở chuyện thế nào, phản ứng khi bị trêu/được hỏi thăm/đối phương im lặng, có hay hỏi ngược lại không, nhắn 1 tin dài hay nhiều tin ngắn liên tiếp, cách kết thúc chat)
-"
-            + "## Thái độ tổng thể
-(1-2 câu)";
+            + " Phân tích cách \"" + name + "\" nhắn tin trong các đoạn chat thật với \"" + selfName + "\" dưới đây."
+            + " CHỈ dựa vào bằng chứng trong mẫu, trích nguyên văn khi nêu ví dụ. Trả về đúng các mục sau, gọn và cụ thể:\n"
+            + "## Xưng hô\n(" + name + " xưng gì, gọi " + selfName + " là gì, các biến thể)\n"
+            + "## Giọng chữ\n(teencode/viết tắt đặc trưng liệt kê nguyên văn, có dấu hay không, emoticon/ký hiệu hay dùng, độ dài tin điển hình)\n"
+            + "## Câu cửa miệng\n(5-10 câu/cụm trích nguyên văn hay lặp lại)\n"
+            + "## Cách đối đáp\n(mở chuyện thế nào, phản ứng khi bị trêu/được hỏi thăm/đối phương im lặng, có hay hỏi ngược lại không, nhắn 1 tin dài hay nhiều tin ngắn liên tiếp, cách kết thúc chat)\n"
+            + "## Thái độ tổng thể\n(1-2 câu)";
 
         String profile = route(getOrDefaultForAnalysis(personId), system,
             List.of(Map.of("role", "user", "content", sample.toString())), 2500);
