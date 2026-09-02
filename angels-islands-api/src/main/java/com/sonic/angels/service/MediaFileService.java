@@ -157,6 +157,7 @@ public class MediaFileService {
 
         if (collectionId != null) {
             collectionService.addMedia(collectionId, saved.getId());
+            collectionService.setCoverIfMissing(collectionId, saved);
         }
         return saved;
     }

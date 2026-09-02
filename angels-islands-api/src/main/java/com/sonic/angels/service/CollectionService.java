@@ -163,6 +163,17 @@ public class CollectionService {
         collectionRepository.save(c);
     }
 
+    /** First IMAGE uploaded into a cover-less collection becomes its cover automatically.
+     *  Videos are skipped (card thumbnails are CDN image resizes). Explicit set-cover always wins later. */
+    public void setCoverIfMissing(UUID collectionId, MediaFile mf) {
+        if (mf.getFileType() != MediaFile.FileType.IMAGE) return;
+        Collection c = findById(collectionId);
+        if (c.getThumbnailMediaFile() == null) {
+            c.setThumbnailMediaFile(mf);
+            collectionRepository.save(c);
+        }
+    }
+
     public int addMediaBatch(UUID collectionId, List<UUID> mediaIds) {
         Collection c = findById(collectionId);
         List<MediaFile> files = mediaFileRepository.findAllById(mediaIds);
