@@ -17,10 +17,23 @@ import { Lightbox, MediaItem } from '../components/media'
 
 // ── Collection Card ──────────────────────────────────────────────────────────
 
-function CollectionCard({ collection, onClick }: { collection: CollectionResponse; onClick: () => void }) {
+function CollectionCard({ collection, onClick, dragging, isDropTarget, onDragStartCard, onDragEndCard, onDragOverCard, onDragLeaveCard, onDropCard }: {
+  collection: CollectionResponse; onClick: () => void
+  dragging?: boolean; isDropTarget?: boolean
+  onDragStartCard?: () => void; onDragEndCard?: () => void
+  onDragOverCard?: (e: React.DragEvent) => void; onDragLeaveCard?: () => void; onDropCard?: (e: React.DragEvent) => void
+}) {
   return (
     <div onClick={onClick}
-      className="group cursor-pointer bg-white rounded-2xl border border-slate-100 overflow-hidden hover:shadow-lg hover:shadow-pink-100/50 hover:-translate-y-0.5 active:scale-[0.98] transition-all duration-200">
+      draggable
+      onDragStart={e => { e.dataTransfer.effectAllowed = 'move'; e.dataTransfer.setData('text/plain', collection.id); onDragStartCard?.() }}
+      onDragEnd={onDragEndCard}
+      onDragOver={onDragOverCard}
+      onDragLeave={onDragLeaveCard}
+      onDrop={onDropCard}
+      className={`group cursor-pointer bg-white rounded-2xl border overflow-hidden hover:shadow-lg hover:shadow-pink-100/50 hover:-translate-y-0.5 active:scale-[0.98] transition-all duration-200 ${
+        isDropTarget ? 'border-pink-400 ring-2 ring-pink-300 scale-[1.02]' : 'border-slate-100'
+      } ${dragging ? 'opacity-40' : ''}`}>
       <div className="aspect-[4/3] bg-gradient-to-br from-slate-50 to-slate-100 flex items-center justify-center relative overflow-hidden">
         {collection.thumbnailUrl ? (
           <img src={collection.thumbnailUrl} alt={collection.name} className="w-full h-full object-cover" loading="lazy" />
@@ -65,17 +78,29 @@ function CollectionCard({ collection, onClick }: { collection: CollectionRespons
 
 // ── Breadcrumb ───────────────────────────────────────────────────────────────
 
-function Breadcrumb({ items, onNavigate }: { items: { id: string; name: string }[]; onNavigate: (id: string | null) => void }) {
+function Breadcrumb({ items, onNavigate, dropActive, onDropTo }: {
+  items: { id: string; name: string }[]; onNavigate: (id: string | null) => void
+  dropActive?: boolean; onDropTo?: (id: string | null) => void
+}) {
+  const [over, setOver] = useState<string | 'ALL' | null>(null)
+  const crumbDrop = (key: string | 'ALL', id: string | null) => dropActive ? {
+    onDragOver: (e: React.DragEvent) => { e.preventDefault(); e.stopPropagation(); e.dataTransfer.dropEffect = 'move'; setOver(key) },
+    onDragLeave: () => setOver(o => (o === key ? null : o)),
+    onDrop: (e: React.DragEvent) => { e.preventDefault(); e.stopPropagation(); setOver(null); onDropTo?.(id) },
+  } : {}
   return (
     <div className="flex items-center gap-1 text-xs overflow-x-auto scroll-snap-x pb-1 mb-4 -mx-1 px-1">
-      <button onClick={() => onNavigate(null)}
-        className="text-slate-400 hover:text-pink-500 active:text-pink-600 transition-colors font-medium shrink-0">All</button>
+      <button onClick={() => onNavigate(null)} {...crumbDrop('ALL', null)}
+        className={`transition-colors font-medium shrink-0 rounded px-1 ${
+          over === 'ALL' ? 'bg-pink-100 text-pink-600 ring-1 ring-pink-300' : 'text-slate-400 hover:text-pink-500 active:text-pink-600'
+        }`}>All</button>
       {items.map((item, i) => (
         <div key={item.id} className="flex items-center gap-1 shrink-0">
           <ChevronRight size={10} className="text-slate-300" />
-          <button onClick={() => i < items.length - 1 ? onNavigate(item.id) : null}
-            className={`transition-colors font-medium whitespace-nowrap max-w-[160px] truncate ${
-              i === items.length - 1 ? 'text-slate-800' : 'text-slate-400 hover:text-pink-500'
+          <button onClick={() => i < items.length - 1 ? onNavigate(item.id) : null} {...crumbDrop(item.id, item.id)}
+            className={`transition-colors font-medium whitespace-nowrap max-w-[160px] truncate rounded px-1 ${
+              over === item.id ? 'bg-pink-100 text-pink-600 ring-1 ring-pink-300'
+                : i === items.length - 1 ? 'text-slate-800' : 'text-slate-400 hover:text-pink-500'
             }`}>{item.name}</button>
         </div>
       ))}
@@ -177,6 +202,15 @@ export default function CollectionsPage() {
     qc.invalidateQueries({ queryKey: ['collections'] })
   }
 
+  const moveCollectionTo = async (id: string, targetId: string) => {
+    setDragCollId(null); setDropTargetId(null)
+    if (id === targetId) return
+    try {
+      await collectionsApi.update(id, { parentId: targetId })
+      qc.invalidateQueries({ queryKey: ['collections'] })
+    } catch { alert('Không move được (move vào chính con cháu của nó?)') }
+  }
+
   const handleDrop = async (e: React.DragEvent) => {
     e.preventDefault()
     dragDepth.current = 0
@@ -243,6 +277,8 @@ export default function CollectionsPage() {
   const [tagAsPerson, setTagAsPerson] = useState<PersonSummary | null>(null) // upload context: tag person
   const [showTagAsMenu, setShowTagAsMenu] = useState(false)
   const [byPerson, setByPerson] = useState<PersonSummary | null>(null)       // upload context: photographer
+  const [dragCollId, setDragCollId] = useState<string | null>(null)          // collection card being dragged
+  const [dropTargetId, setDropTargetId] = useState<string | null>(null)      // card / crumb highlighted as drop target
   const [showByMenu, setShowByMenu] = useState(false)
   const [showCollMenu, setShowCollMenu] = useState(false)
   const [renameOpen, setRenameOpen] = useState(false)
@@ -404,7 +440,13 @@ export default function CollectionsPage() {
             }} className="flex items-center gap-1 text-xs text-slate-400 active:text-pink-500 mb-2">
               <ArrowLeft size={12} />Back
             </button>
-            <Breadcrumb items={breadcrumb} onNavigate={navigate} />
+            <Breadcrumb items={breadcrumb} onNavigate={navigate}
+            dropActive={!!dragCollId}
+            onDropTo={async id => {
+              if (!dragCollId) return
+              const target = id ?? rootInfo?.id ?? (await collectionBrowseApi.getRoot()).id
+              moveCollectionTo(dragCollId, target)
+            }} />
           </>
         )}
         <div className="flex items-center gap-2 md:gap-3 flex-wrap gap-y-2">
@@ -562,9 +604,16 @@ export default function CollectionsPage() {
       {collections.length > 0 && (
         <div className="mb-6">
           {currentId && <h2 className="text-[10px] uppercase tracking-widest text-slate-400 font-semibold mb-2.5">Folders</h2>}
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-4">
+          <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-7 gap-2 md:gap-3">
             {collections.map((c: CollectionResponse) => (
-              <CollectionCard key={c.id} collection={c} onClick={() => navigate(c.id)} />
+              <CollectionCard key={c.id} collection={c} onClick={() => navigate(c.id)}
+                dragging={dragCollId === c.id}
+                isDropTarget={dropTargetId === c.id && dragCollId !== c.id}
+                onDragStartCard={() => setDragCollId(c.id)}
+                onDragEndCard={() => { setDragCollId(null); setDropTargetId(null) }}
+                onDragOverCard={e => { if (dragCollId && dragCollId !== c.id) { e.preventDefault(); e.stopPropagation(); e.dataTransfer.dropEffect = 'move'; setDropTargetId(c.id) } }}
+                onDragLeaveCard={() => setDropTargetId(t => (t === c.id ? null : t))}
+                onDropCard={e => { if (dragCollId && dragCollId !== c.id) { e.preventDefault(); e.stopPropagation(); moveCollectionTo(dragCollId, c.id) } }} />
             ))}
           </div>
         </div>
