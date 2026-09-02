@@ -101,19 +101,35 @@ public class MediaFileService {
         return new UploadOutcome(saved, null);
     }
 
-    /** "..._n" (extension stripped) is the classic Facebook CDN suffix. Null = no signal. */
+    /** Filename fingerprints — each pattern is app-specific and near-zero false positive. Null = no signal. */
     static String detectSourceFromName(String fileName) {
         if (fileName == null) return null;
-        String base = fileName;
+        String lower = fileName.toLowerCase();
+        String base = lower;
         int dot = base.lastIndexOf('.');
+        String ext = dot > 0 ? base.substring(dot + 1) : "";
         if (dot > 0) base = base.substring(0, dot);
-        return base.endsWith("_n") ? "FACEBOOK" : null;
+
+        if (base.startsWith("fb_img_")) return "FACEBOOK";              // FB app save (Android)
+        if (base.startsWith("received_")) return "FACEBOOK";            // Messenger download
+        if (base.endsWith("_n") || base.endsWith("_o")) return "FACEBOOK"; // FB CDN suffixes
+        if (base.matches("img-\\d{8}-wa\\d+.*")) return "WHATSAPP";     // IMG-20190912-WA0001
+        if (base.matches("vid-\\d{8}-wa\\d+.*")) return "WHATSAPP";
+        if (base.startsWith("videoplayback")) return "YOUTUBE";         // classic YT download name
+        if (base.matches("photo_\\d{4}-\\d{2}-\\d{2}_\\d{2}-\\d{2}-\\d{2}.*")) return "TELEGRAM";
+        if (ext.equals("heic") || ext.equals("heif")) return "IPHONE";  // in-practice Apple-only
+        if (base.startsWith("dsc") || base.startsWith("dscf") || base.startsWith("dscn")
+            || base.matches("p1\\d{6}.*") || base.startsWith("gopr") || base.startsWith("sam_"))
+            return "DIGITAL_CAMERA";                                     // Nikon/Sony/Fuji/Panasonic/GoPro/Samsung cam
+        return null;
     }
 
-    /** EXIF camera make → IPHONE / NOKIA / DIGITAL_CAMERA. Null when no make. */
+    /** EXIF signals: Software=Instagram beats camera make; make/model → IPHONE / NOKIA / DIGITAL_CAMERA. */
     static String detectSourceFromCamera(MediaFile mf) {
         var d = mf.getImageDetail();
         if (d == null) return null;
+        String software = d.getSoftware() != null ? d.getSoftware().toLowerCase() : "";
+        if (software.contains("instagram")) return "INSTAGRAM";
         String make = d.getCameraMake() != null ? d.getCameraMake() : "";
         String model = d.getCameraModel() != null ? d.getCameraModel() : "";
         String combined = (make + " " + model).toLowerCase();
@@ -853,6 +869,16 @@ public class MediaFileService {
             // ── QuickTime creationdate (iPhone): local time + real offset — highest-priority video date ──
             try {
                 for (var dir : metadata.getDirectories()) {
+                    if (dir.getClass().getSimpleName().contains("QuickTimeMetadata")) {
+                        // com.apple.quicktime.make / .model — provenance for videos (no EXIF there)
+                        if (mediaFile.getMediaSource() == null) {
+                            String qtMake = "";
+                            try { qtMake = (dir.getString(com.drew.metadata.mov.metadata.QuickTimeMetadataDirectory.TAG_MAKE) + " "
+                                          + dir.getString(com.drew.metadata.mov.metadata.QuickTimeMetadataDirectory.TAG_MODEL)).toLowerCase(); } catch (Exception ig) {}
+                            if (qtMake.contains("apple") || qtMake.contains("iphone")) mediaFile.setMediaSource("IPHONE");
+                            else if (qtMake.contains("nokia")) mediaFile.setMediaSource("NOKIA");
+                        }
+                    }
                     if (dir.getClass().getSimpleName().contains("QuickTimeMetadata")
                             && dir.containsTag(com.drew.metadata.mov.metadata.QuickTimeMetadataDirectory.TAG_CREATION_DATE)) {
                         java.time.OffsetDateTime odt = parseQtCreationDate(
