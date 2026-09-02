@@ -98,7 +98,7 @@ public class DtoMapper {
             r.setVideoDetail(d);
         }
 
-        if (m.getMediaSource() != null) r.setMediaSource(m.getMediaSource().name());
+        if (m.getMediaSource() != null) r.setMediaSource(m.getMediaSource());
 
         if (inc.persons() && m.getTakenBy() != null)
             r.setTakenBy(toPersonSummary(m.getTakenBy()));

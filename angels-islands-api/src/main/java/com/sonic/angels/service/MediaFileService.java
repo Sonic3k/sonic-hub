@@ -101,13 +101,26 @@ public class MediaFileService {
         return new UploadOutcome(saved, null);
     }
 
-    /** "..._n" (extension stripped) is the classic Facebook CDN suffix. */
-    static MediaFile.MediaSource detectSource(String fileName) {
-        if (fileName == null) return MediaFile.MediaSource.ORIGINAL;
+    /** "..._n" (extension stripped) is the classic Facebook CDN suffix. Null = no signal. */
+    static String detectSourceFromName(String fileName) {
+        if (fileName == null) return null;
         String base = fileName;
         int dot = base.lastIndexOf('.');
         if (dot > 0) base = base.substring(0, dot);
-        return base.endsWith("_n") ? MediaFile.MediaSource.FACEBOOK : MediaFile.MediaSource.ORIGINAL;
+        return base.endsWith("_n") ? "FACEBOOK" : null;
+    }
+
+    /** EXIF camera make → IPHONE / NOKIA / DIGITAL_CAMERA. Null when no make. */
+    static String detectSourceFromCamera(MediaFile mf) {
+        var d = mf.getImageDetail();
+        if (d == null) return null;
+        String make = d.getCameraMake() != null ? d.getCameraMake() : "";
+        String model = d.getCameraModel() != null ? d.getCameraModel() : "";
+        String combined = (make + " " + model).toLowerCase();
+        if (combined.isBlank()) return null;
+        if (combined.contains("apple") || combined.contains("iphone")) return "IPHONE";
+        if (combined.contains("nokia")) return "NOKIA";
+        return "DIGITAL_CAMERA";
     }
 
     private String sha256(MultipartFile file) throws IOException {
@@ -142,7 +155,7 @@ public class MediaFileService {
         MediaFile mf = new MediaFile();
         mf.setContentHash(contentHash);
         mf.setFileName(file.getOriginalFilename());
-        mf.setMediaSource(detectSource(file.getOriginalFilename()));
+        mf.setMediaSource(detectSourceFromName(file.getOriginalFilename()));
         if (takenByPersonId != null) personRepository.findById(takenByPersonId).ifPresent(mf::setTakenBy);
         mf.setFileType(isVideo(file.getContentType()) ? MediaFile.FileType.VIDEO : MediaFile.FileType.IMAGE);
         mf.setFileSize(file.getSize());
@@ -156,6 +169,7 @@ public class MediaFileService {
         }
 
         extractMetadata(file, mf);
+        if (mf.getMediaSource() == null) mf.setMediaSource(detectSourceFromCamera(mf));
         if (mf.getTimezone() == null) mf.setTimezone("+07:00");
 
         // Upload to B2
@@ -219,7 +233,7 @@ public class MediaFileService {
         MediaFile.FileType ft = parseEnum(type, MediaFile.FileType.class);
         MediaFile.Orientation ori = parseEnum(orientation, MediaFile.Orientation.class);
         MediaFile.MediaCategory cat = parseEnum(category, MediaFile.MediaCategory.class);
-        MediaFile.MediaSource src = parseEnum(source, MediaFile.MediaSource.class);
+        String src = source != null && !source.isBlank() ? source.trim().toUpperCase().replace(' ', '_') : null;
 
         boolean hasInclude = notEmpty(tagIds) || notEmpty(tagNames);
         boolean hasExclude = notEmpty(excludeTagIds) || notEmpty(excludeTagNames);
@@ -295,8 +309,8 @@ public class MediaFileService {
             else personRepository.findById(req.getTakenByPersonId()).ifPresent(mf::setTakenBy);
         }
         if (req.getMediaSource() != null) {
-            var src = parseEnum(req.getMediaSource(), MediaFile.MediaSource.class);
-            if (src != null) mf.setMediaSource(src);
+            String v = req.getMediaSource().trim().toUpperCase().replace(' ', '_');
+            mf.setMediaSource(v.isEmpty() ? null : v);
         }
         return mapper.toMediaFileResponse(mediaFileRepository.save(mf));
     }
@@ -1096,7 +1110,8 @@ public class MediaFileService {
                     } catch (Exception ignored) {}
                 }
                 if (m.getTimezone() == null) m.setTimezone("+07:00");
-                if (m.getMediaSource() == null) m.setMediaSource(detectSource(m.getFileName()));
+                if (m.getMediaSource() == null) m.setMediaSource(detectSourceFromName(m.getFileName()));
+                if (m.getMediaSource() == null) m.setMediaSource(detectSourceFromCamera(m));
                 if (m.getUploadedAt() == null) m.setUploadedAt(LocalDateTime.now(PHOTO_ZONE));
                 m.getTags().add(classifiedTag);
                 mediaFileRepository.save(m);

@@ -297,20 +297,29 @@ function InfoContent({ media, cameraStr, settingsStr, exif, vid, onChanged }: {
               + Người chụp
             </button>
           )}
-          <select value={media.mediaSource || 'ORIGINAL'}
-            onChange={async e => onChanged(await mediaApi.patch(media.id, { mediaSource: e.target.value }))}
-            className={`text-xs rounded-full px-2 py-1 outline-none border transition-colors ${
-              (media.mediaSource || 'ORIGINAL') === 'ORIGINAL'
-                ? 'bg-white/5 text-white/50 border-white/10'
-                : 'bg-blue-500/20 text-blue-300 border-blue-400/30'
-            }`}>
-            <option value="ORIGINAL" className="bg-[#222]">Original</option>
-            <option value="FACEBOOK" className="bg-[#222]">Facebook</option>
-            <option value="YOUTUBE" className="bg-[#222]">Youtube</option>
-            <option value="PHOTOBUCKET" className="bg-[#222]">Photobucket</option>
-            <option value="FLICKR" className="bg-[#222]">Flickr</option>
-            <option value="INSTAGRAM" className="bg-[#222]">Instagram</option>
-          </select>
+          {media.mediaSource ? (
+            <span className="flex items-center gap-1 bg-blue-500/20 text-blue-300 border border-blue-400/30 text-xs pl-2 pr-1 py-1 rounded-full">
+              {media.mediaSource}
+              <button onClick={async () => onChanged(await mediaApi.patch(media.id, { mediaSource: ' ' }))}
+                className="text-blue-300/60 hover:text-blue-200 p-0.5"><X size={11} /></button>
+            </span>
+          ) : (
+            <input list="media-source-suggestions" placeholder="+ Nguồn"
+              onKeyDown={async e => {
+                if (e.key === 'Enter') {
+                  const v = (e.target as HTMLInputElement).value.trim()
+                  if (v) onChanged(await mediaApi.patch(media.id, { mediaSource: v }))
+                }
+              }}
+              onBlur={async e => {
+                const v = e.target.value.trim()
+                if (v) onChanged(await mediaApi.patch(media.id, { mediaSource: v }))
+              }}
+              className="w-24 bg-transparent text-white/50 placeholder-white/30 text-xs border border-dashed border-white/20 rounded-full px-2.5 py-1 outline-none focus:border-white/40" />
+          )}
+          <datalist id="media-source-suggestions">
+            {['FACEBOOK', 'INSTAGRAM', 'YOUTUBE', 'FLICKR', 'PHOTOBUCKET', 'ZALO', 'IPHONE', 'NOKIA', 'DIGITAL_CAMERA'].map(v => <option key={v} value={v} />)}
+          </datalist>
         </div>
       </InfoSection>
 
