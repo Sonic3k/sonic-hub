@@ -1,13 +1,14 @@
 import { useCallback, useMemo } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { useInfiniteQuery, useQuery } from '@tanstack/react-query';
-import { ChevronRight, Folder } from 'lucide-react';
+import { ChevronRight } from 'lucide-react';
 import { api } from '../../api/angels';
-import { cdn } from '../../api/client';
+import FolderCard from '../../components/FolderCard';
 import JustifiedGallery from '../../components/gallery/JustifiedGallery';
 import Lightbox from '../../components/gallery/Lightbox';
 import useInfiniteScroll from '../../hooks/useInfiniteScroll';
 import useLightboxRoute from '../../hooks/useLightboxRoute';
+import PhotosNav from './PhotosNav';
 import { plural } from '../../lib/format';
 import type { Collection, MediaFile } from '../../types';
 
@@ -57,6 +58,7 @@ export default function FolderPage() {
 
   return (
     <div>
+      <PhotosNav inFolder={!!id} />
       <nav className="flex flex-wrap items-center gap-1 text-[13px] text-ink2" aria-label="Đường dẫn">
         <Link to="/photos" className="hover:text-ink">Ảnh</Link>
         {(crumbQ.data ?? []).slice(0, -1).map(c => (
@@ -94,22 +96,5 @@ export default function FolderPage() {
         <Lightbox items={items} index={lb.index} onIndex={lb.goTo} onClose={lb.close} onReachEnd={loadMore} />
       )}
     </div>
-  );
-}
-
-function FolderCard({ c }: { c: Collection }) {
-  const bits = [plural(c.childrenCount || null, 'thư mục'), plural(c.mediaCount ?? null, 'ảnh')].filter(Boolean);
-  return (
-    <Link to={`/photos/f/${c.id}`} className="group block">
-      <div className="aspect-[4/3] overflow-hidden rounded-xl bg-raise">
-        {c.thumbnailUrl
-          ? <img src={cdn(c.thumbnailUrl, 640)} alt="" loading="lazy" className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.03]" />
-          : <div className="flex h-full w-full items-center justify-center text-ink2"><Folder className="h-8 w-8" strokeWidth={1.5} /></div>}
-      </div>
-      <div className="px-0.5 pt-2">
-        <div className="truncate text-[14px] font-semibold leading-snug">{c.name}</div>
-        <div className="text-[12.5px] text-ink2">{bits.join(' · ') || '\u00A0'}</div>
-      </div>
-    </Link>
   );
 }

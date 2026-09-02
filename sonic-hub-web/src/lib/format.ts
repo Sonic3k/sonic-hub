@@ -4,6 +4,9 @@ export const TZ = 'Asia/Ho_Chi_Minh';
 
 export function parseUtc(s: string | null | undefined): Date | null {
   if (!s) return null;
+  // A bare date (LocalDate, e.g. firstMet) has no instant; pin it to midday so
+  // it lands on the same calendar day in any zone.
+  if (/^\d{4}-\d{2}-\d{2}$/.test(s)) return new Date(s + 'T12:00:00Z');
   const d = new Date(/Z$|[+-]\d\d:\d\d$/.test(s) ? s : s + 'Z');
   return Number.isNaN(d.getTime()) ? null : d;
 }
@@ -32,3 +35,23 @@ export function fmtDuration(sec: number | null | undefined) {
 }
 
 export const plural = (n: number | null | undefined, word: string) => n == null ? null : `${n.toLocaleString('vi-VN')} ${word}`;
+
+/** "YYYY-MM" of a UTC timestamp, cut in Vietnam time; null when undated. */
+export function monthKey(s: string | null | undefined): string | null {
+  const d = parseUtc(s);
+  if (!d) return null;
+  const parts = new Intl.DateTimeFormat('en-CA', { timeZone: TZ, year: 'numeric', month: '2-digit' }).formatToParts(d);
+  const y = parts.find(p => p.type === 'year')?.value, m = parts.find(p => p.type === 'month')?.value;
+  return y && m ? `${y}-${m}` : null;
+}
+
+export const monthLabel = (year: number, month: number) => `Tháng ${month} ${year}`;
+
+export const RELATIONSHIP: Record<string, string> = {
+  CRUSH: 'Crush', GIRLFRIEND: 'Người yêu', EX: 'Người cũ', FRIEND: 'Bạn', ACQUAINTANCE: 'Quen', PEN_PAL: 'Bạn thư', ONLINE_FRIEND: 'Bạn mạng',
+};
+export const PLATFORM: Record<string, string> = {
+  YAHOO: 'Yahoo! Messenger', FACEBOOK: 'Facebook', SMS: 'Tin nhắn SMS', ZALO: 'Zalo', TELEGRAM: 'Telegram', BLOG: 'Blog', OTHER: 'Khác',
+};
+export const relationLabel = (t: string | null | undefined) => (t ? RELATIONSHIP[t] ?? t : null);
+export const platformLabel = (t: string | null | undefined) => (t ? PLATFORM[t] ?? t : null);

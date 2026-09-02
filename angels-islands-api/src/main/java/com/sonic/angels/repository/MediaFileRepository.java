@@ -115,6 +115,16 @@ public interface MediaFileRepository extends JpaRepository<MediaFile, UUID> {
         @Param("query") String query,
         Pageable pageable);
 
+    // ── Timeline index: how many files fall in each month, newest first ──────
+    // effective_date holds UTC in a naive column; months are cut in the caller's
+    // zone so the scrubber agrees with what the web shows. Counts the same rows
+    // as an unfiltered search, so summing newer buckets gives a page offset.
+    @Query(value =
+        "SELECT CAST(EXTRACT(YEAR FROM t) AS int) AS y, CAST(EXTRACT(MONTH FROM t) AS int) AS m, COUNT(*) AS c" +
+        " FROM (SELECT (effective_date AT TIME ZONE 'UTC') AT TIME ZONE :tz AS t FROM media_files WHERE effective_date IS NOT NULL) x" +
+        " GROUP BY 1, 2 ORDER BY 1 DESC, 2 DESC", nativeQuery = true)
+    List<Object[]> timelineIndex(@Param("tz") String tz);
+
     @Query("SELECT m FROM MediaFile m" + SEARCH_WHERE + " ORDER BY FUNCTION('RANDOM')")
     List<MediaFile> searchRandom(
         @Param("type") MediaFile.FileType type,

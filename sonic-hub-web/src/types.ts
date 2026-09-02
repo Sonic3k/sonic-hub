@@ -58,15 +58,51 @@ export interface MediaFile {
   gpsLongitude?: number | null;
 }
 
+export type RelationshipType = 'CRUSH' | 'GIRLFRIEND' | 'EX' | 'FRIEND' | 'ACQUAINTANCE' | 'PEN_PAL' | 'ONLINE_FRIEND';
+
 export interface Person {
   id: string;
   name: string;
+  displayName?: string | null;
   nickname?: string | null;
-  isSelf?: boolean;
+  relationshipType?: RelationshipType | string | null;
+  period?: string | null;
+  isSelf?: boolean | null;
+  isFavorite?: boolean | null;
+  isFeatured?: boolean | null;
   avatarUrl?: string | null;
+  song?: string | null;
+}
+
+export interface PersonDetail extends Person {
+  alternativeName?: string | null;
+  dateOfBirth?: string | null;
+  bio?: string | null;
+  firstMet?: string | null;
+  howWeMet?: string | null;
   coverUrl?: string | null;
   bannerUrl?: string | null;
-  relationshipType?: string | null;
-  period?: string | null;
-  bio?: string | null;
+  tags?: TagRef[];
+  contacts?: { id: string; platform: string; identifier: string; displayName?: string | null }[];
+  totalCollections?: number | null;
+  totalMediaFiles?: number | null;
+  totalChatArchives?: number | null;
+  totalFacts?: number | null;
+  totalEpisodes?: number | null;
 }
+
+export type ChatPlatform = 'YAHOO' | 'FACEBOOK' | 'SMS' | 'ZALO' | 'TELEGRAM' | 'BLOG' | 'OTHER';
+
+export interface ChatArchive {
+  id: string;
+  platform: ChatPlatform | string;
+  title?: string | null;
+  messageCount?: number | null;
+  dateFrom?: string | null;
+  dateTo?: string | null;
+  extractionStatus?: string | null;
+  createdAt?: string | null;
+}
+
+/** One month of the timeline, newest first. */
+export interface TimelineBucket { year: number; month: number; count: number }
