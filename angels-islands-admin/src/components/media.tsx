@@ -52,7 +52,7 @@ export function MediaItem({ media, onClick, selected, onSelect, selectMode }: {
       )}
       {/* Select checkbox — visible on hover or when in select mode */}
       <div className={`absolute top-1.5 left-1.5 transition-opacity ${
-        selected || selectMode ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'
+        selected || selectMode ? 'opacity-100' : 'opacity-60 md:opacity-0 md:group-hover:opacity-100'
       }`}>
         <button onClick={e => { e.stopPropagation(); onSelect(media.id) }}
           className={`w-6 h-6 rounded-full flex items-center justify-center transition-all ${

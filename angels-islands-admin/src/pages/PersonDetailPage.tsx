@@ -138,7 +138,7 @@ export default function PersonDetailPage() {
         </div>
       </div>
 
-      <div className="flex gap-1 mb-6 border-b border-slate-100 overflow-x-auto">
+      <div className="flex gap-1 mb-6 border-b border-slate-100 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
         {tabs.map(t => (
           <button key={t.key} onClick={() => setTab(t.key)}
             className={`flex items-center gap-1.5 px-3 md:px-4 py-2.5 text-xs md:text-sm shrink-0 font-medium border-b-2 transition-colors ${
@@ -336,13 +336,13 @@ export default function PersonDetailPage() {
           {archives.length === 0 && !importChat.isPending ? <p className="text-sm text-slate-400">No chat archives.</p> : (
             archives.map(a => (
               <div key={a.id} className="bg-white rounded-lg p-4 border border-slate-100">
-                <div className="flex items-center justify-between">
-                  <div onClick={() => setViewerArchive(a)} className="cursor-pointer min-w-0 hover:opacity-70 transition-opacity">
-                    <span className="text-xs font-medium px-2 py-0.5 rounded bg-slate-100 text-slate-600">{a.platform}</span>
-                    {a.title && <span className="text-sm text-slate-700 ml-2">{a.title}</span>}
-                    <span className="text-[11px] text-pink-400 ml-2">Read →</span>
+                <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:justify-between">
+                  <div onClick={() => setViewerArchive(a)} className="cursor-pointer min-w-0 flex items-center gap-2 hover:opacity-70 transition-opacity">
+                    <span className="text-xs font-medium px-2 py-0.5 rounded bg-slate-100 text-slate-600 shrink-0">{a.platform}</span>
+                    {a.title && <span className="text-sm text-slate-700 truncate min-w-0">{a.title}</span>}
+                    <span className="text-[11px] text-pink-400 shrink-0">Read →</span>
                   </div>
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-2 self-end sm:self-auto shrink-0">
                     <span className={`text-xs px-2 py-0.5 rounded-full ${
                       a.extractionStatus === 'DONE' ? 'bg-green-50 text-green-600' :
                       a.extractionStatus === 'ERROR' ? 'bg-red-50 text-red-600' :
@@ -360,7 +360,7 @@ export default function PersonDetailPage() {
                 </div>
                 <div className="flex gap-4 mt-2 text-xs text-slate-400">
                   {a.messageCount && <span>{a.messageCount} messages</span>}
-                  {a.dateFrom && <span>{a.dateFrom} → {a.dateTo}</span>}
+                  {a.dateFrom && <span>{String(a.dateFrom).slice(0, 10)} → {String(a.dateTo).slice(0, 10)}</span>}
                 </div>
               </div>
             ))
@@ -476,7 +476,7 @@ function PersonPhotosTab({ personId }: { personId: string }) {
                 <p className="text-[10px] text-slate-400">{c.mediaCount || 0} files</p>
               </div>
               <button onClick={() => unlinkCollection(c)} title="Remove from person"
-                className="absolute top-1.5 right-1.5 w-6 h-6 rounded-full bg-black/40 hover:bg-rose-500 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                className="absolute top-1.5 right-1.5 w-6 h-6 rounded-full bg-black/40 hover:bg-rose-500 text-white flex items-center justify-center opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
                 <X size={12} />
               </button>
             </div>
@@ -487,10 +487,12 @@ function PersonPhotosTab({ personId }: { personId: string }) {
       {/* Photos */}
       <div className="flex items-center gap-2 mb-2.5 flex-wrap">
         <h2 className="text-[10px] uppercase tracking-widest text-slate-400 font-semibold">Photos & Videos · {total}</h2>
-        <input value={q} onChange={e => setQ(e.target.value)}
-          onKeyDown={e => { if (e.key === 'Enter') setActiveQ(q.trim()); if (e.key === 'Escape') { setQ(''); setActiveQ('') } }}
-          placeholder="Search..."
-          className="px-3 py-1 text-xs bg-white border border-slate-200 rounded-full outline-none focus:border-pink-300 w-32 md:w-44" />
+        {!selectMode && (
+          <input value={q} onChange={e => setQ(e.target.value)}
+            onKeyDown={e => { if (e.key === 'Enter') setActiveQ(q.trim()); if (e.key === 'Escape') { setQ(''); setActiveQ('') } }}
+            placeholder="Search..."
+            className="px-3 py-1 text-xs bg-white border border-slate-200 rounded-full outline-none focus:border-pink-300 w-32 md:w-44" />
+        )}
         {selectMode && (
           <div className="ml-auto flex items-center gap-1 flex-wrap justify-end">
             <span className="text-xs text-pink-500 font-medium mr-1">{selectedIds.size} selected</span>

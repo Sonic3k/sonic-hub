@@ -108,7 +108,7 @@ export default function CompanionTab({ personId, personName }: { personId: strin
   return (
     <div className="grid lg:grid-cols-[340px_1fr] gap-5 items-start">
       {/* ── Config ── */}
-      <div className="bg-white rounded-2xl border border-slate-100 p-4 space-y-3.5">
+      <div className="order-2 lg:order-1 bg-white rounded-2xl border border-slate-100 p-4 space-y-3.5">
         <div className="flex items-center justify-between">
           <h2 className="text-sm font-semibold text-slate-800 flex items-center gap-1.5"><Bot size={15} className="text-pink-400" />Companion
             <button onClick={openPreview} disabled={previewLoading} title="Xem nguyên văn persona prompt gửi cho model"
@@ -234,7 +234,7 @@ export default function CompanionTab({ personId, personName }: { personId: strin
       </div>
 
       {/* ── Chat ── */}
-      <div className="bg-white rounded-2xl border border-slate-100 flex flex-col h-[70dvh]">
+      <div className="order-1 lg:order-2 bg-white rounded-2xl border border-slate-100 flex flex-col h-[62dvh] lg:h-[70dvh]">
         <div className="flex items-center justify-between px-4 py-3 border-b border-slate-100">
           <p className="text-sm font-semibold text-slate-800">{personName}</p>
           <button onClick={() => { if (confirm('Clear all companion messages?')) clear.mutate() }}

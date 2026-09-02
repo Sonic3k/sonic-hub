@@ -64,7 +64,7 @@ export default function ChatViewer({ personId, archive, personName, onClose }: {
           <input value={q} onChange={e => setQ(e.target.value)}
             onKeyDown={e => { if (e.key === 'Enter') submitSearch(); if (e.key === 'Escape') { setQ(''); setActiveQ('') } }}
             placeholder="Search in chat..."
-            className="pl-8 pr-7 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-full outline-none focus:border-pink-300 w-36 md:w-52" />
+            className="pl-8 pr-7 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-full outline-none focus:border-pink-300 w-28 md:w-52" />
           {activeQ && (
             <button onClick={() => { setQ(''); setActiveQ('') }}
               className="absolute right-1.5 top-1/2 -translate-y-1/2 text-slate-300 hover:text-slate-500 p-0.5"><X size={12} /></button>

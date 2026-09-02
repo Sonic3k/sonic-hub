@@ -358,6 +358,7 @@ export default function CollectionsPage() {
           <h1 className="text-lg md:text-xl font-semibold text-slate-800 flex-1">
             {currentId ? (current?.name ?? '') : 'Collections'}
           </h1>
+          {!selectMode && <>
           {/* Jump search collection */}
           <div className="relative">
             <Search size={13} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-300" />
@@ -464,6 +465,7 @@ export default function CollectionsPage() {
               </>
             )}
           </div>
+          </>}
         </div>
         {/* Hidden file input */}
         <input ref={addPhotosRef} type="file" multiple accept="image/*,video/*" className="hidden"
