@@ -286,6 +286,16 @@ public class CompanionService {
         sb.append(", đang nhắn tin với người thân quen cũ.\n");
         if (person.getRelationshipType() != null)
             sb.append("Mối quan hệ giữa hai người: ").append(person.getRelationshipType().name().toLowerCase()).append(".\n");
+        if (person.getDateOfBirth() != null) sb.append("Sinh nhật của bạn: ").append(person.getDateOfBirth()).append(".\n");
+        if (person.getPeriod() != null) sb.append("Giai đoạn hai người thân nhất: ").append(person.getPeriod()).append(".\n");
+        if (person.getFirstMet() != null || person.getHowWeMet() != null) {
+            sb.append("Hai người quen nhau");
+            if (person.getFirstMet() != null) sb.append(" từ ").append(person.getFirstMet());
+            if (person.getHowWeMet() != null) sb.append(", ").append(person.getHowWeMet());
+            sb.append(".\n");
+        }
+        if (person.getSong() != null) sb.append("Bài hát gắn với hai người: ").append(person.getSong()).append(".\n");
+        if (person.getBio() != null) sb.append("Vài nét về bạn: ").append(person.getBio()).append("\n");
 
         if (Boolean.TRUE.equals(cfg.getUseMemory())) {
             List<Fact> facts = new ArrayList<>(factRepo.findByPersonId(person.getId()));
@@ -303,18 +313,25 @@ public class CompanionService {
             List<PersonalityTrait> traits = traitRepo.findByPersonId(person.getId());
             if (!traits.isEmpty()) {
                 sb.append("\n## Tính cách\n");
-                traits.stream().limit(15).forEach(t ->
-                    sb.append("- ").append(t.getTrait())
-                      .append(t.getDescription() != null ? ": " + t.getDescription() : "").append('\n'));
+                traits.stream().limit(15).forEach(t -> {
+                    sb.append("- ").append(t.getTrait());
+                    if (t.getDescription() != null) sb.append(": ").append(t.getDescription());
+                    if (t.getPeriod() != null) sb.append(" (").append(t.getPeriod()).append(')');
+                    if (t.getEvidence() != null) sb.append(" — vd: \"").append(t.getEvidence()).append('"');
+                    sb.append('\n');
+                });
             }
 
             List<LifeChapter> chapters = chapterRepo.findByPersonIdOrderBySortOrderAsc(person.getId());
             if (!chapters.isEmpty()) {
                 sb.append("\n## Các giai đoạn\n");
-                chapters.stream().limit(10).forEach(ch ->
+                chapters.stream().limit(10).forEach(ch -> {
                     sb.append("- ").append(ch.getPeriod() != null ? ch.getPeriod() + " — " : "")
-                      .append(ch.getTitle())
-                      .append(ch.getSummary() != null ? ": " + ch.getSummary() : "").append('\n'));
+                      .append(ch.getTitle());
+                    if (ch.getSummary() != null) sb.append(": ").append(ch.getSummary());
+                    if (ch.getSentiment() != null) sb.append(" [không khí: ").append(ch.getSentiment()).append(']');
+                    sb.append('\n');
+                });
             }
 
             List<Episode> episodes = new ArrayList<>(episodeRepo.findByPersonIdOrderByOccurredAtDesc(person.getId()));
@@ -323,9 +340,12 @@ public class CompanionService {
                 a.getImportance() != null ? a.getImportance() : 0));
             if (!episodes.isEmpty()) {
                 sb.append("\n## Kỷ niệm chung đáng nhớ\n");
-                episodes.stream().limit(15).forEach(e ->
+                episodes.stream().limit(15).forEach(e -> {
                     sb.append("- ").append(e.getOccurredAt() != null ? e.getOccurredAt().toLocalDate() + ": " : "")
-                      .append(e.getSummary()).append('\n'));
+                      .append(e.getSummary());
+                    if (e.getEmotion() != null) sb.append(" (cảm xúc: ").append(e.getEmotion()).append(')');
+                    sb.append('\n');
+                });
             }
         }
 

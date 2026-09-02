@@ -271,8 +271,15 @@ export default function PersonDetailPage() {
           {traits.length > 0 && (
             <section>
               <h3 className="text-sm font-semibold text-slate-600 mb-3">Personality Traits</h3>
-              <div className="flex flex-wrap gap-2">{traits.map(t => (
-                <span key={t.id} className="text-xs px-2.5 py-1 rounded-full bg-purple-50 text-purple-600" title={t.description || ''}>{t.trait}</span>
+              <div className="space-y-2">{traits.map(t => (
+                <div key={t.id} className="bg-white rounded-lg px-4 py-2.5 border border-slate-100">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <span className="text-xs px-2 py-0.5 rounded-full bg-purple-50 text-purple-600 font-medium">{t.trait}</span>
+                    {t.period && <span className="text-[11px] text-slate-300">{t.period}</span>}
+                  </div>
+                  {t.description && <p className="text-xs text-slate-600 mt-1">{t.description}</p>}
+                  {t.evidence && <p className="text-[11px] text-slate-400 italic mt-0.5">"{t.evidence}"</p>}
+                </div>
               ))}</div>
             </section>
           )}
@@ -300,7 +307,7 @@ export default function PersonDetailPage() {
                   <div className="flex gap-2 mt-2">
                     {e.emotion && <span className="text-xs px-1.5 py-0.5 rounded bg-blue-50 text-blue-500">{e.emotion}</span>}
                     {e.importance && <span className="text-xs text-slate-300">importance: {e.importance}/10</span>}
-                    {e.occurredAt && <span className="text-xs text-slate-300 ml-auto">{new Date(e.occurredAt.endsWith('Z') ? e.occurredAt : e.occurredAt + 'Z').toLocaleDateString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh' })}</span>}
+                    {e.occurredAt && <span className="text-xs text-slate-300 ml-auto">{String(e.occurredAt).slice(0, 10)}</span>}
                   </div>
                 </div>
               ))}</div>
