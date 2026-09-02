@@ -1,3 +1,37 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* ── Palettes. One attribute on <html> swaps the whole site. ─────────────
+   main   Rosé Pine — reading, Angels, everything that is words.
+   photos light neutral — an achromatic room so the photographs set the colour. */
+:root, [data-theme='main'] {
+  --bg: #191724;
+  --sur: #1F1D2E;
+  --raise: #26233A;
+  --ink: #E0DEF4;
+  --ink-2: #908CAA;
+  --line: #26233A;
+  --accent: #EBBCBA;
+  color-scheme: dark;
+}
+[data-theme='photos'] {
+  --bg: #F5F5F4;
+  --sur: #FFFFFF;
+  --raise: #EAE9E6;
+  --ink: #1C1917;
+  --ink-2: #78716C;
+  --line: #E7E5E4;
+  --accent: #B4637A;
+  color-scheme: light;
+}
+
+html { -webkit-text-size-adjust: 100%; }
+body {
+  @apply bg-bg text-ink font-body antialiased;
+  transition: background-color .25s ease, color .25s ease;
+  min-height: 100dvh;
+}
+img, video { display: block; }
+button { font: inherit; color: inherit; }
+::selection { background: var(--accent); color: var(--bg); }
