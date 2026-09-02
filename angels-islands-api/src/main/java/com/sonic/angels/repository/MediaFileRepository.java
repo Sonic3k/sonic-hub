@@ -33,6 +33,14 @@ public interface MediaFileRepository extends JpaRepository<MediaFile, UUID> {
 
     java.util.Optional<MediaFile> findFirstByContentHash(String contentHash);
 
+    @Query("SELECT m FROM MediaFile m LEFT JOIN FETCH m.imageDetail WHERE m.mediaSource IS NULL")
+    List<MediaFile> findSourcelessWithDetail();
+
+    /** One-shot migration: retire the legacy ORIGINAL default (null now means unknown). */
+    @org.springframework.data.jpa.repository.Modifying
+    @Query(value = "UPDATE media_files SET media_source = NULL WHERE media_source = 'ORIGINAL'", nativeQuery = true)
+    int clearOriginalSource();
+
     @Query("SELECT m FROM MediaFile m WHERE m.latitude IS NOT NULL AND m.longitude IS NOT NULL ORDER BY m.effectiveDate DESC")
     List<MediaFile> findGeotagged();
 

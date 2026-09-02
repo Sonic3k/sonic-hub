@@ -28,14 +28,16 @@ public class MediaFileController {
 
     @PostMapping("/rescan-batch")
     public Map<String, Object> rescanBatch(@RequestParam(defaultValue = "20") int batchSize,
+        @RequestParam(defaultValue = "0") int page,
                                            @RequestParam(defaultValue = "false") boolean force) {
-        return mediaFileService.rescanMetadataBatch(batchSize, force);
+        return mediaFileService.rescanMetadataBatch(batchSize, force, page);
     }
 
     @PostMapping("/geocode-batch")
     public Map<String, Object> geocodeBatch(@RequestParam(defaultValue = "20") int batchSize,
+        @RequestParam(defaultValue = "0") int page,
                                             @RequestParam(defaultValue = "false") boolean force) {
-        return geocodingService.geocodeBatch(batchSize, force);
+        return geocodingService.geocodeBatch(batchSize, force, page);
     }
 
     @GetMapping

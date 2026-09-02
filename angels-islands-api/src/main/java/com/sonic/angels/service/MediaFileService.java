@@ -101,6 +101,31 @@ public class MediaFileService {
         return new UploadOutcome(saved, null);
     }
 
+    /** Fill mediaSource for rows where it's still null, using ONLY data already in the DB
+     *  (fileName + extracted EXIF camera/lens/software) — no B2 download. Safe to re-run
+     *  anytime, e.g. right after the detection rules get smarter. */
+    @org.springframework.transaction.annotation.Transactional
+    public java.util.Map<String, Object> backfillMediaSource() {
+        var rows = mediaFileRepository.findSourcelessWithDetail();
+        int updated = 0;
+        java.util.Map<String, Integer> bySource = new java.util.TreeMap<>();
+        for (MediaFile m : rows) {
+            String src = detectSourceFromName(m.getFileName());
+            if (src == null) src = detectSourceFromCamera(m);
+            if (src != null) {
+                m.setMediaSource(src);
+                mediaFileRepository.save(m);
+                updated++;
+                bySource.merge(src, 1, Integer::sum);
+            }
+        }
+        java.util.Map<String, Object> out = new java.util.LinkedHashMap<>();
+        out.put("scanned", rows.size());
+        out.put("updated", updated);
+        out.put("bySource", bySource);
+        return out;
+    }
+
     /** Filename fingerprints — each pattern is app-specific and near-zero false positive. Null = no signal. */
     static String detectSourceFromName(String fileName) {
         if (fileName == null) return null;
@@ -1105,8 +1130,8 @@ public class MediaFileService {
 
     // ── Rescan metadata from B2 storage (fixes files uploaded before this pipeline) ──
 
-    public java.util.Map<String, Object> rescanMetadataBatch(int batchSize, boolean force) {
-        var pageable = org.springframework.data.domain.PageRequest.of(0, batchSize);
+    public java.util.Map<String, Object> rescanMetadataBatch(int batchSize, boolean force, int page) {
+        var pageable = org.springframework.data.domain.PageRequest.of(Math.max(0, page), batchSize);
         var page = force
                 ? mediaFileRepository.findByStorageKeyIsNotNull(pageable)
                 : mediaFileRepository.findUnscanned(pageable);
