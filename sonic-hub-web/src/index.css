@@ -3,17 +3,18 @@
 @tailwind utilities;
 
 /* ── Palettes. One attribute on <html> swaps the whole site. ─────────────
-   main   Rosé Pine — reading, Angels, everything that is words.
-   photos light neutral — an achromatic room so the photographs set the colour. */
+   main   Rosé Pine Dawn — reading, Angels, everything that is words.
+   photos light neutral — an achromatic room so the photographs set the colour.
+   The accent is Dawn's "love" in both rooms: dark enough to read at 13px. */
 :root, [data-theme='main'] {
-  --bg: #191724;
-  --sur: #1F1D2E;
-  --raise: #26233A;
-  --ink: #E0DEF4;
-  --ink-2: #908CAA;
-  --line: #26233A;
-  --accent: #EBBCBA;
-  color-scheme: dark;
+  --bg: #FAF4ED;
+  --sur: #FFFAF3;
+  --raise: #F2E9E1;
+  --ink: #575279;
+  --ink-2: #797593;
+  --line: #DFDAD9;
+  --accent: #B4637A;
+  color-scheme: light;
 }
 [data-theme='photos'] {
   --bg: #F5F5F4;
@@ -34,7 +35,7 @@ body {
 }
 img, video { display: block; }
 button { font: inherit; color: inherit; }
-::selection { background: var(--accent); color: var(--bg); }
+::selection { background: var(--accent); color: #fff; }
 
 /* ── Article body (TipTap HTML) ─────────────────────────────────────────────
    Body copy in Manrope, headings in the display face, the accent only on

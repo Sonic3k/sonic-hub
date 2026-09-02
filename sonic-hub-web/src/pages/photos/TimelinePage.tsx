@@ -12,7 +12,8 @@ import PhotosNav from './PhotosNav';
 import TimelineScrubber, { type MonthRef } from './TimelineScrubber';
 
 const PAGE = 60;
-const HEAD_OFFSET = 72;   // px from the top of the viewport where a month header "counts"
+/** Where a month header "counts": just under the sticky site header. */
+const headOffset = () => (document.querySelector('header')?.getBoundingClientRect().height ?? 56) + 16;
 
 interface Section { key: string; label: string; items: MediaFile[] }
 
@@ -99,7 +100,7 @@ export default function TimelinePage() {
       let best: string | null = null, bestTop = -Infinity;
       for (const h of heads) {
         const t = h.getBoundingClientRect().top;
-        if (t <= HEAD_OFFSET + 8 && t > bestTop) { bestTop = t; best = h.dataset.month ?? null; }
+        if (t <= headOffset() + 8 && t > bestTop) { bestTop = t; best = h.dataset.month ?? null; }
       }
       setActive(best ?? heads[0]?.dataset.month ?? null);
     };
@@ -120,7 +121,7 @@ export default function TimelinePage() {
     if (!target) return;
     const el = document.querySelector<HTMLElement>(`[data-month="${target}"]`);
     if (!el) return;                                   // window not loaded yet; runs again when sections change
-    window.scrollTo({ top: el.getBoundingClientRect().top + window.scrollY - HEAD_OFFSET });
+    window.scrollTo({ top: el.getBoundingClientRect().top + window.scrollY - headOffset() });
     setTarget(null);
   }, [target, sections]);
 

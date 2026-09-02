@@ -33,6 +33,8 @@ export default function HomePage() {
 
   return (
     <div className="space-y-12">
+      <p className="max-w-[34em] text-[16px] leading-relaxed text-ink2">Ghi lại những gì tôi thích: ảnh cũ, game, bóng đá, và vài người từng quen.</p>
+
       <section>
         <H title="Mới viết" to="/articles" label="Tất cả bài viết" />
         {latest.data?.content.length ? (

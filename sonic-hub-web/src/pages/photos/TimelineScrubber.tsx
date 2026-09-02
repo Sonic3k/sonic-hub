@@ -66,7 +66,7 @@ export default function TimelineScrubber({ months, activeKey, onJump }: Props) {
   return (
     <div
       ref={railRef}
-      className="fixed bottom-6 right-1.5 top-24 z-20 flex w-9 select-none flex-col touch-none md:right-3 md:w-11"
+      className="fixed bottom-6 right-1.5 top-28 z-20 flex w-9 select-none flex-col touch-none md:right-3 md:top-20 md:w-11"
       onPointerMove={onMove}
       onPointerLeave={() => { setHover(null); dragging.current = false; }}
       onPointerDown={e => { dragging.current = true; (e.target as HTMLElement).setPointerCapture?.(e.pointerId); onMove(e); const m = monthAt(e.clientY); if (m) onJump(m.key); }}
