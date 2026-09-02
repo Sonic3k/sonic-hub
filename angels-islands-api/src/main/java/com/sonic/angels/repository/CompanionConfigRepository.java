@@ -12,4 +12,8 @@ public interface CompanionConfigRepository extends JpaRepository<CompanionConfig
 
     @Query("SELECT c FROM CompanionConfig c JOIN FETCH c.person WHERE c.enabled = true")
     List<CompanionConfig> findAllEnabled();
+
+    @org.springframework.data.jpa.repository.Modifying
+    @org.springframework.transaction.annotation.Transactional
+    void deleteByPersonId(UUID personId);
 }

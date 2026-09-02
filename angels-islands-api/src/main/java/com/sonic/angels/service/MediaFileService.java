@@ -32,6 +32,8 @@ import java.util.UUID;
 @Transactional
 public class MediaFileService {
 
+    private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(MediaFileService.class);
+
     // All photos assumed taken in Vietnam timezone
     private static final ZoneId PHOTO_ZONE = ZoneId.of("Asia/Ho_Chi_Minh");
 
@@ -351,13 +353,18 @@ public class MediaFileService {
         mf.getPersons().clear();
         mf.getTags().clear();
         mediaFileRepository.save(mf);
-        // Remove from all collections (no back-ref on MediaFile)
+        // Remove from all collections + any cover reference (FK would block the delete)
         mediaFileRepository.removeFromAllCollections(id);
-        // Delete from storage
-        if (mf.getStorageProvider() == MediaFile.StorageProvider.B2 && mf.getStorageKey() != null) {
-            storageService.delete(mf.getStorageKey());
-        }
+        collectionService.clearCoverRefs(id);
+        // DB row first, storage after — a failed B2 delete leaves harmless garbage,
+        // the old order (B2 first) could destroy the file and then fail the DB delete
+        String storageKey = mf.getStorageKey();
+        MediaFile.StorageProvider provider = mf.getStorageProvider();
         mediaFileRepository.delete(mf);
+        if (provider == MediaFile.StorageProvider.B2 && storageKey != null) {
+            try { storageService.delete(storageKey); }
+            catch (Exception e) { log.warn("B2 delete failed for {} (orphan file left): {}", storageKey, e.getMessage()); }
+        }
     }
 
     public int deleteBatch(List<UUID> ids) {

@@ -156,11 +156,12 @@ public class CollectionService {
 
     // ── Media management ─────────────────────────────────────────────────────
 
+    public void clearCoverRefs(UUID mediaId) { collectionRepository.clearThumbnailRefs(mediaId); }
+
     public void addMedia(UUID collectionId, UUID mediaId) {
-        Collection c = findById(collectionId);
-        MediaFile m = mediaFileRepository.findById(mediaId).orElseThrow(() -> new RuntimeException("MediaFile not found: " + mediaId));
-        c.getMediaFiles().add(m);
-        collectionRepository.save(c);
+        if (!collectionRepository.existsById(collectionId)) throw new RuntimeException("Collection not found: " + collectionId);
+        if (!mediaFileRepository.existsById(mediaId)) throw new RuntimeException("MediaFile not found: " + mediaId);
+        collectionRepository.linkMedia(collectionId, mediaId);
     }
 
     /** First IMAGE uploaded into a cover-less collection becomes its cover automatically.

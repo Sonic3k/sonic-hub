@@ -8,7 +8,10 @@ import java.util.HashSet;
 import java.util.Set;
 
 @Entity
-@Table(name = "media_files")
+@Table(name = "media_files", indexes = {
+    @Index(name = "idx_media_content_hash", columnList = "content_hash"),
+    @Index(name = "idx_media_effective_date", columnList = "effective_date")
+})
 public class MediaFile extends BaseEntity {
 
     @Id

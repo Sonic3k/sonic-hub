@@ -3,9 +3,12 @@ package com.sonic.angels.service;
 import com.sonic.angels.model.dto.PersonDto;
 import com.sonic.angels.model.entity.Person;
 import com.sonic.angels.model.entity.PersonContact;
+import com.sonic.angels.repository.CompanionConfigRepository;
+import com.sonic.angels.repository.CompanionMessageRepository;
 import com.sonic.angels.repository.PersonContactRepository;
 import com.sonic.angels.repository.PersonRepository;
 import com.sonic.angels.repository.TagRepository;
+import com.sonic.angels.repository.TelegramCompanionSessionRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -22,12 +25,22 @@ public class PersonService {
     private final TagRepository tagRepository;
     private final DtoMapper mapper;
 
+    private final CompanionMessageRepository companionMessageRepository;
+    private final CompanionConfigRepository companionConfigRepository;
+    private final TelegramCompanionSessionRepository telegramSessionRepository;
+
     public PersonService(PersonRepository personRepository, PersonContactRepository contactRepository,
-                         TagRepository tagRepository, DtoMapper mapper) {
+                         TagRepository tagRepository, DtoMapper mapper,
+                         CompanionMessageRepository companionMessageRepository,
+                         CompanionConfigRepository companionConfigRepository,
+                         TelegramCompanionSessionRepository telegramSessionRepository) {
         this.personRepository = personRepository;
         this.contactRepository = contactRepository;
         this.tagRepository = tagRepository;
         this.mapper = mapper;
+        this.companionMessageRepository = companionMessageRepository;
+        this.companionConfigRepository = companionConfigRepository;
+        this.telegramSessionRepository = telegramSessionRepository;
     }
 
     // ── Queries ──────────────────────────────────────────────────────────────
@@ -61,6 +74,14 @@ public class PersonService {
     }
 
     public void delete(UUID id) {
+        // Companion tables + Telegram sessions have no cascade from Person
+        companionMessageRepository.deleteByPersonId(id);
+        companionConfigRepository.deleteByPersonId(id);
+        telegramSessionRepository.deleteByPersonId(id);
+        // Person is inverse side of media/collection person joins — clear by hand
+        personRepository.clearMediaLinks(id);
+        personRepository.clearCollectionLinks(id);
+        // Entity cascade handles contacts, archives(+messages), facts, episodes, chapters, traits
         personRepository.deleteById(id);
     }
 
