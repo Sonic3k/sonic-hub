@@ -1,5 +1,5 @@
 import { NavLink } from 'react-router-dom'
-import { Users, Image, FolderOpen, Tag, Brain, X, Heart, Upload, Map, Wrench } from 'lucide-react'
+import { Users, Image, FolderOpen, Tag, Brain, X, Heart, Upload, Map, Wrench, NotebookPen } from 'lucide-react'
 import clsx from 'clsx'
 
 const navItems = [
@@ -10,6 +10,7 @@ const navItems = [
   { to: '/tags', label: 'Tags', icon: Tag },
   { to: '/upload', label: 'Upload', icon: Upload },
   { to: '/memory', label: 'Memory', icon: Brain },
+  { to: '/journal', label: 'Journal', icon: NotebookPen },
   { to: '/scripts', label: 'Scripts', icon: Wrench },
 ]
 

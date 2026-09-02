@@ -35,3 +35,13 @@ body {
     padding-bottom: calc(env(safe-area-inset-bottom) + 12px);
   }
 }
+
+/* ── Journal rich text ── */
+.journal-editor p { margin: 0.35rem 0; }
+.journal-editor h2, .journal-content h2 { font-size: 1rem; font-weight: 600; color: #334155; margin: 0.7rem 0 0.3rem; }
+.journal-editor blockquote, .journal-content blockquote { border-left: 3px solid #f9a8d4; padding-left: 0.75rem; color: #64748b; margin: 0.5rem 0; }
+.journal-editor ul, .journal-content ul { list-style: disc; padding-left: 1.25rem; margin: 0.35rem 0; }
+.journal-editor img, .journal-content img, .journal-img { border-radius: 0.75rem; margin: 0.5rem 0; max-width: 100%; }
+.journal-content p { margin: 0.35rem 0; }
+.journal-content strong { font-weight: 600; }
+.journal-editor p.is-editor-empty:first-child::before { content: attr(data-placeholder); color: #cbd5e1; float: left; height: 0; pointer-events: none; }

@@ -84,3 +84,19 @@ export interface ChapterRequest { period: string; title?: string; summary?: stri
 
 export interface TraitResponse { id: string; trait: string; description?: string; evidence?: string; period?: string; createdAt?: string }
 export interface TraitRequest { trait: string; description?: string; evidence?: string; period?: string }
+
+export interface ProblemResponse {
+  id: string; title: string; description?: string; status: string
+  resolvedAt?: string; createdAt?: string; noteCount?: number
+}
+export interface ProblemRequest { title?: string; description?: string; status?: string }
+export interface JournalNoteResponse {
+  id: string; title?: string; content: string; mood?: string
+  createdAt?: string; updatedAt?: string
+  tags?: TagResponse[]; problems?: ProblemResponse[]
+}
+export interface JournalNoteRequest {
+  title?: string; content?: string; mood?: string; problemIds?: string[]; tagIds?: string[]
+}
+
+export interface Paged<T> { content: T[]; totalElements: number; totalPages: number; number: number; last: boolean }
