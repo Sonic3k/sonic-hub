@@ -846,7 +846,7 @@ export default function CollectionsPage() {
       )}
 
       {/* Upload queue */}
-      <UploadQueuePanel items={queue.items} busy={queue.busy} onRetry={queue.retryFailed} onClear={queue.clear} onSkipDup={queue.skipDuplicate} onKeepDup={queue.keepDuplicate} />
+      <UploadQueuePanel items={queue.items} busy={queue.busy} onStart={queue.startUpload} onRemove={queue.removeItem} onRetry={queue.retryFailed} onClear={queue.clear} onSkipDup={queue.skipDuplicate} onKeepDup={queue.keepDuplicate} />
 
       {/* Media detail lightbox */}
       {selectedMedia && (
