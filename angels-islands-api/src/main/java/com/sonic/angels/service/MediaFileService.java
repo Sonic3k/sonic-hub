@@ -94,7 +94,11 @@ public class MediaFileService {
                                        String subFolder, Long lastModified, boolean allowDuplicate, UUID takenByPersonId) throws IOException {
         String hash = sha256(file);
         if (!allowDuplicate) {
-            var existing = mediaFileRepository.findFirstByContentHash(hash);
+            // Scope: the destination collection. The same photo living in two albums is intentional;
+            // only the same content re-landing in the SAME collection is a duplicate worth flagging.
+            var existing = collectionId != null
+                ? mediaFileRepository.findInCollectionByHash(collectionId, hash).stream().findFirst()
+                : mediaFileRepository.findFirstByContentHash(hash);
             if (existing.isPresent()) return new UploadOutcome(null, existing.get());
         }
         MediaFile saved = upload(file, personId, collectionId, subFolder, lastModified, hash, takenByPersonId);
@@ -185,6 +189,30 @@ public class MediaFileService {
         if (combined.contains("apple") || combined.contains("iphone")) return "IPHONE";
         if (combined.contains("nokia")) return "NOKIA";
         return "DIGITAL_CAMERA";
+    }
+
+    /** Resume pre-flight: names (+size match) already present in the collection — no bytes needed. */
+    @org.springframework.transaction.annotation.Transactional(readOnly = true)
+    public java.util.List<String> checkExisting(UUID collectionId, java.util.List<MediaFileDto.FileProbe> files) {
+        if (collectionId == null || files == null || files.isEmpty()) return java.util.List.of();
+        java.util.Map<String, java.util.Set<Long>> want = new java.util.HashMap<>();
+        for (var f : files) {
+            if (f.getFileName() == null) continue;
+            want.computeIfAbsent(f.getFileName(), k -> new java.util.HashSet<>())
+                .add(f.getFileSize() == null ? -1L : f.getFileSize());
+        }
+        java.util.List<String> hits = new java.util.ArrayList<>();
+        java.util.List<String> names = new java.util.ArrayList<>(want.keySet());
+        for (int i = 0; i < names.size(); i += 500) {
+            var chunk = names.subList(i, Math.min(i + 500, names.size()));
+            for (MediaFile m : mediaFileRepository.findInCollectionByNames(collectionId, chunk)) {
+                var sizes = want.get(m.getFileName());
+                if (sizes != null && (sizes.contains(-1L)
+                        || (m.getFileSize() != null && sizes.contains(m.getFileSize()))))
+                    hits.add(m.getFileName());
+            }
+        }
+        return hits;
     }
 
     private String sha256(MultipartFile file) throws IOException {

@@ -23,6 +23,9 @@ export interface TreeResponse {
 export const uploadApi = {
   createTree: (data: TreeRequest) => api.post<TreeResponse>('/api/collections/create-tree', data).then(r => r.data),
   /** Upload one file. collectionId → real B2 path following the collection tree + auto-link. */
+  checkExisting: (collectionId: string, files: { fileName: string; fileSize: number }[]) =>
+    api.post<{ existing: string[] }>('/api/media-files/check-existing', { collectionId, files })
+      .then(r => r.data.existing),
   uploadFile: (file: File, personId?: string, collectionId?: string, allowDuplicate?: boolean, takenByPersonId?: string) => {
     const form = new FormData()
     form.append('file', file)

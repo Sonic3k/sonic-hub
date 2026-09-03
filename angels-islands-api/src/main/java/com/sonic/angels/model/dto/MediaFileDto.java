@@ -39,6 +39,18 @@ public class MediaFileDto {
         public UUID getPersonId() { return personId; } public void setPersonId(UUID v) { this.personId = v; }
     }
 
+    public static class FileProbe {
+        private String fileName; private Long fileSize;
+        public String getFileName() { return fileName; } public void setFileName(String v) { this.fileName = v; }
+        public Long getFileSize() { return fileSize; } public void setFileSize(Long v) { this.fileSize = v; }
+    }
+
+    public static class CheckExistingRequest {
+        private UUID collectionId; private java.util.List<FileProbe> files;
+        public UUID getCollectionId() { return collectionId; } public void setCollectionId(UUID v) { this.collectionId = v; }
+        public java.util.List<FileProbe> getFiles() { return files; } public void setFiles(java.util.List<FileProbe> v) { this.files = v; }
+    }
+
     public static class TagBatchRequest {
         private java.util.List<UUID> ids; private UUID tagId;
         public java.util.List<UUID> getIds() { return ids; } public void setIds(java.util.List<UUID> v) { this.ids = v; }

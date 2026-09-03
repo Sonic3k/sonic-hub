@@ -33,6 +33,14 @@ public interface MediaFileRepository extends JpaRepository<MediaFile, UUID> {
 
     java.util.Optional<MediaFile> findFirstByContentHash(String contentHash);
 
+    /** Duplicate scope = destination collection, not the whole library. */
+    @Query("SELECT m FROM Collection c JOIN c.mediaFiles m WHERE c.id = :collectionId AND m.contentHash = :hash")
+    List<MediaFile> findInCollectionByHash(@Param("collectionId") UUID collectionId, @Param("hash") String hash);
+
+    /** Pre-flight resume check: which of these names already live in this collection. */
+    @Query("SELECT m FROM Collection c JOIN c.mediaFiles m WHERE c.id = :collectionId AND m.fileName IN :names")
+    List<MediaFile> findInCollectionByNames(@Param("collectionId") UUID collectionId, @Param("names") java.util.Collection<String> names);
+
     @Query("SELECT m FROM MediaFile m LEFT JOIN FETCH m.imageDetail WHERE m.mediaSource IS NULL")
     List<MediaFile> findSourcelessWithDetail();
 

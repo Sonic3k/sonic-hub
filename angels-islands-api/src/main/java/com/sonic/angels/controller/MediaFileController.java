@@ -119,6 +119,12 @@ public class MediaFileController {
         return mediaFileService.findDtoByPersonId(personId, new MediaFileDto.Includes(inclDetails, inclPersons, inclTags));
     }
 
+    /** Pre-flight for folder resume: which of these files already exist here (name + size). */
+    @PostMapping("/check-existing")
+    public Map<String, Object> checkExisting(@RequestBody MediaFileDto.CheckExistingRequest req) {
+        return Map.of("existing", mediaFileService.checkExisting(req.getCollectionId(), req.getFiles()));
+    }
+
     @PostMapping("/upload")
     public Map<String, Object> upload(@RequestParam("file") MultipartFile file,
         @RequestParam(value = "personId", required = false) UUID personId,

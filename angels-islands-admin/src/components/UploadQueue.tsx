@@ -57,13 +57,41 @@ export function useUploadQueue(onSettled?: () => void) {
     for (let i = 0; i < spawn; i++) void worker()
   }, [worker])
 
+  /** Pre-flight: mark tasks whose (name, size) already exist in their target collection
+   *  as duplicates BEFORE any bytes move — this is what makes re-dropping a half-done
+   *  folder instant. Content-hash on the server stays as the second net. */
+  const preflight = useCallback(async (items: QueueItem[]) => {
+    const byCollection = new Map<string, QueueItem[]>()
+    for (const i of items) {
+      if (i.collectionId && !i.allowDuplicate) {
+        const arr = byCollection.get(i.collectionId) || []
+        arr.push(i); byCollection.set(i.collectionId, arr)
+      }
+    }
+    await Promise.all(Array.from(byCollection.entries()).map(async ([cid, group]) => {
+      try {
+        const existing = new Set(await uploadApi.checkExisting(cid,
+          group.map(g => ({ fileName: g.file.name, fileSize: g.file.size }))))
+        for (const g of group) {
+          if (existing.has(g.file.name) && g.status === 'pending') {
+            g.status = 'duplicate'
+            g.existing = { fileName: g.file.name }
+          }
+        }
+      } catch { /* pre-flight is best-effort; server hash check still guards */ }
+    }))
+    sync()
+  }, [])
+
   const enqueue = useCallback((tasks: QueueTask[]) => {
     if (!tasks.length) return
-    queueRef.current.push(...tasks.map(t => ({
+    const items: QueueItem[] = tasks.map(t => ({
       ...t, id: Math.random().toString(36).slice(2), status: 'pending' as const,
-    })))
-    sync(); kick()
-  }, [kick])
+    }))
+    queueRef.current.push(...items)
+    sync()
+    void preflight(items).finally(kick)
+  }, [kick, preflight])
 
   const skipDuplicate = useCallback((id?: string) => {
     queueRef.current = id
