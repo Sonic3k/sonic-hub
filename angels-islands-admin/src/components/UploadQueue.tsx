@@ -145,12 +145,12 @@ type PanelProps = {
   onSkipDup: (id?: string) => void; onKeepDup: (id?: string) => void
 }
 
-function Row({ i, onRemove, onSkipDup, onKeepDup }: {
-  i: QueueItem; onRemove: (id: string) => void
+function Row({ i, roomy, onRemove, onSkipDup, onKeepDup }: {
+  i: QueueItem; roomy?: boolean; onRemove: (id: string) => void
   onSkipDup: (id?: string) => void; onKeepDup: (id?: string) => void
 }) {
   return (
-    <div className={`flex items-center gap-2 text-[11px] ${i.status === 'duplicate' ? 'bg-amber-50/60 -mx-1.5 px-1.5 py-1 rounded-lg' : ''}`}>
+    <div className={`flex items-center gap-2 ${roomy ? 'text-xs py-0.5' : 'text-[11px]'} ${i.status === 'duplicate' ? 'bg-amber-50/60 -mx-1.5 px-1.5 py-1 rounded-lg' : ''}`}>
       {i.status === 'done' && <Check size={11} className="text-emerald-500 shrink-0" />}
       {i.status === 'error' && <AlertCircle size={11} className="text-rose-400 shrink-0" />}
       {i.status === 'uploading' && <span className="w-[11px] h-[11px] shrink-0 rounded-full border-2 border-pink-400 border-t-transparent animate-spin" />}
@@ -168,14 +168,14 @@ function Row({ i, onRemove, onSkipDup, onKeepDup }: {
       {i.status === 'duplicate' && (
         <span className="flex items-center gap-0.5 shrink-0">
           <button onClick={() => onKeepDup(i.id)} title="Upload anyway (keep both)"
-            className="p-1 text-amber-600 hover:bg-amber-100 rounded transition-colors"><Copy size={12} /></button>
+            className="p-1.5 text-amber-600 hover:bg-amber-100 rounded transition-colors"><Copy size={13} /></button>
           <button onClick={() => onSkipDup(i.id)} title="Skip"
-            className="p-1 text-slate-400 hover:bg-slate-200 rounded transition-colors"><X size={12} /></button>
+            className="p-1.5 text-slate-400 hover:bg-slate-200 rounded transition-colors"><X size={13} /></button>
         </span>
       )}
       {i.status === 'review' && (
         <button onClick={() => onRemove(i.id)} title="Remove from batch"
-          className="p-1 text-slate-300 hover:text-rose-400 rounded transition-colors shrink-0"><X size={12} /></button>
+          className="p-1.5 text-slate-300 hover:text-rose-400 rounded transition-colors shrink-0"><X size={13} /></button>
       )}
     </div>
   )
@@ -191,12 +191,14 @@ export function UploadQueuePanel(props: PanelProps) {
   const done = items.filter(i => i.status === 'done').length
   const errors = items.filter(i => i.status === 'error').length
   const settled = done + errors + dups.length
-  const pct = Math.round(((settled + (busy ? 0 : review)) / items.length) * 100)
+  const uploadTotal = items.length - review
+  const showBar = busy || done + errors > 0
+  const pct = uploadTotal > 0 ? Math.round((settled / uploadTotal) * 100) : 0
 
-  const headline = review > 0
-    ? `${review} file${review !== 1 ? 's' : ''} ready${dups.length ? ` · ${dups.length} duplicate(s)` : ''}`
-    : busy
-      ? `Uploading ${settled}/${items.length}...`
+  const headline = busy
+    ? `Uploading ${settled}/${uploadTotal}...${review > 0 ? ` · ${review} more ready` : ''}`
+    : review > 0
+      ? `${review} file${review !== 1 ? 's' : ''} ready${dups.length ? ` · ${dups.length} duplicate(s)` : ''}`
       : dups.length
         ? `${dups.length} duplicate(s) — choose action`
         : errors ? `Done · ${errors} failed` : `Uploaded ${done} file${done !== 1 ? 's' : ''}`
@@ -221,6 +223,12 @@ export function UploadQueuePanel(props: PanelProps) {
           </button>
         </>
       )}
+      {review > 0 && (
+        <button onClick={onClear} title="Discard this batch (uploads in progress keep running)"
+          className="px-2 py-1 text-[11px] font-medium text-slate-400 hover:text-rose-500 hover:bg-rose-50 rounded transition-colors">
+          Cancel
+        </button>
+      )}
       {!busy && errors > 0 && (
         <button onClick={onRetry}
           className="flex items-center gap-1 px-2 py-1 text-[11px] font-medium text-slate-500 hover:bg-slate-100 rounded transition-colors">
@@ -241,6 +249,7 @@ export function UploadQueuePanel(props: PanelProps) {
       <div className="fixed inset-0 z-[70] flex items-end md:items-center justify-center">
         <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => setExpanded(false)} />
         <div className="relative bg-white rounded-t-2xl md:rounded-2xl shadow-xl w-full md:max-w-2xl md:mx-4 flex flex-col max-h-[88dvh]">
+          <div className="flex justify-center pt-2 md:hidden"><div className="w-10 h-1 rounded-full bg-slate-200" /></div>
           <div className="p-4 md:p-5 border-b border-slate-100">
             <div className="flex items-center justify-between gap-3">
               <p className="text-sm font-semibold text-slate-700 flex items-center gap-2">
@@ -250,13 +259,15 @@ export function UploadQueuePanel(props: PanelProps) {
                 <Minimize2 size={15} />
               </button>
             </div>
-            <div className="h-1 bg-slate-100 rounded-full mt-3 overflow-hidden">
-              <div className="h-full bg-pink-400 transition-all duration-300" style={{ width: `${pct}%` }} />
-            </div>
+            {showBar && (
+              <div className="h-1 bg-slate-100 rounded-full mt-3 overflow-hidden">
+                <div className="h-full bg-pink-400 transition-all duration-300" style={{ width: `${pct}%` }} />
+              </div>
+            )}
             <div className="mt-3">{bulkAndControls}</div>
           </div>
           <div className="flex-1 overflow-y-auto p-4 md:p-5 space-y-1.5">
-            {items.map(i => <Row key={i.id} i={i} onRemove={props.onRemove} onSkipDup={onSkipDup} onKeepDup={onKeepDup} />)}
+            {items.map(i => <Row key={i.id} i={i} roomy onRemove={props.onRemove} onSkipDup={onSkipDup} onKeepDup={onKeepDup} />)}
           </div>
         </div>
       </div>
@@ -272,9 +283,11 @@ export function UploadQueuePanel(props: PanelProps) {
           <Maximize2 size={13} />
         </button>
       </div>
-      <div className="h-0.5 bg-slate-100 rounded-full mb-2 overflow-hidden">
-        <div className="h-full bg-pink-400 transition-all duration-300" style={{ width: `${pct}%` }} />
-      </div>
+      {showBar && (
+        <div className="h-0.5 bg-slate-100 rounded-full mb-2 overflow-hidden">
+          <div className="h-full bg-pink-400 transition-all duration-300" style={{ width: `${pct}%` }} />
+        </div>
+      )}
       <div className="mb-2">{bulkAndControls}</div>
       <div className="max-h-36 overflow-y-auto space-y-1">
         {items.slice(0, 60).map(i => <Row key={i.id} i={i} onRemove={props.onRemove} onSkipDup={onSkipDup} onKeepDup={onKeepDup} />)}

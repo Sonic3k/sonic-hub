@@ -419,7 +419,7 @@ export default function CollectionsPage() {
               {currentId && current ? `Drop into “${current.name}”` : 'Drop into Collections'}
             </p>
             <p className="text-[11px] text-slate-400 text-center">
-              {currentId ? 'Files land right here · folders become sub-collections' : 'Files go to root · folders become new collections'}
+              {currentId ? 'Files land right here · folders become sub-collections · review before upload' : 'Files go to root · folders become new collections · review before upload'}
             </p>
             {(tagAsPerson || byPerson) && (
               <p className="text-[11px] text-pink-500 font-medium">
