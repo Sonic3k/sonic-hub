@@ -138,7 +138,7 @@
   .bezel .screen { background: #1a1a1a; border-radius: 14px; padding: 12px; box-shadow: inset 0 0 60px rgba(0,0,0,.8); }
   .bezel .glass { aspect-ratio: 16/10; background: #F5F1FA; border-radius: 6px; display: grid; place-items: center; text-align: center; color: #5B4A72; padding: 20px; }
   .bezel .glass b { display: block; font-size: 20px; color: #7B1FA2; margin-bottom: 6px; }
-  .bezel .label { position: absolute; bottom: 14px; left: 50%; transform: translateX(-50%); font-size: 12px; color: #6B675D; }
+  .bezel .label { position: absolute; bottom: 14px; left: 50%; transform: translateX(-50%); font-size: 12px; color: #6B675D; white-space: nowrap; max-width: 90%; overflow: hidden; text-overflow: ellipsis; }
   .bezel .close { position: absolute; top: -14px; right: -14px; width: 36px; height: 36px; border-radius: 50%; border: 0; background: #15161A; color: #fff; cursor: pointer; }
 
   /* ── Mobile ── */
@@ -151,7 +151,7 @@
     .rail { left: 0; } .rail .years button { min-width: 52px; }
     main { left: 0; bottom: 64px; } .room { padding: 20px 16px 40px; }
     .today { grid-template-columns: 1fr; } .doors { grid-template-columns: 1fr 1fr; } .notes { grid-template-columns: 1fr; }
-    .bezel { padding: 14px 14px 30px; border-radius: 18px; } .bezel .glass { aspect-ratio: 4/5; }
+    .bezel { padding: 14px 14px 34px; border-radius: 18px; } .bezel .label { bottom: 10px; font-size: 11px; } .bezel .glass { aspect-ratio: 4/5; }
   }
   @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
   ::view-transition-old(room), ::view-transition-new(room) { animation-duration: .28s; }
