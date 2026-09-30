@@ -1,0 +1,155 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Sonic Hub — Rạp phim</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;800&display=swap" rel="stylesheet">
+<style>
+  /* ═══ PORTAL · RẠP PHIM ═══  Cinematic: your memories as a screening room.
+     Full-bleed backdrop from the chosen year, velvet red + marquee gold.
+     Year column = a vertical film strip whose frames are that year's photos.
+     Reader = an old bulging-screen TV. */
+  .pt { --bar-h: 66px; --dock-w: 92px; --years-w: 124px; --pad-t: 0px; --pad-x: 44px;
+    --bg: #09090C; --s1: #141419; --s2: #1D1D24; --line: #2A2A33; --text: #F4F2EE; --muted: #9C99A8; --red: #E0364F; --gold: #F2C572;
+    font-family: "Be Vietnam Pro", system-ui, sans-serif; color: var(--text); }
+  body.pt { background: var(--bg); }
+  .pt .bar { background: linear-gradient(var(--bg) 20%, rgba(9,9,12,.0)); }
+  .pt .bar .brand { font-weight: 800; font-size: 18px; letter-spacing: .22em; display: flex; align-items: center; gap: 10px; }
+  .pt .bar .brand::before { content: ""; width: 12px; height: 12px; border-radius: 50%; background: var(--red); box-shadow: 0 0 14px var(--red); }
+  .pt .bar .search { display: flex; align-items: center; gap: 10px; min-width: 300px; padding: 10px 16px; border-radius: 999px; border: 1px solid rgba(255,255,255,.12); background: rgba(255,255,255,.07); color: var(--muted); backdrop-filter: blur(10px); }
+  .pt .bar .random { display: flex; align-items: center; gap: 8px; padding: 10px 16px; border-radius: 999px; border: 1px solid rgba(242,197,114,.4); background: rgba(242,197,114,.1); color: var(--gold); font-weight: 600; }
+
+  .pt .dock { gap: 2px; padding-top: 18px; }
+  .pt .dock button { width: 100%; padding: 12px 0; color: var(--muted); position: relative; transition: color .2s; }
+  .pt .dock button::before { content: ""; position: absolute; left: 0; top: 18%; bottom: 18%; width: 3px; border-radius: 0 3px 3px 0; background: var(--red); transform: scaleY(0); transition: transform .2s; }
+  .pt .dock .lbl { font-size: 12px; font-weight: 600; }
+  .pt .dock button:hover { color: var(--text); }
+  .pt .dock button[aria-current="true"] { color: var(--text); } .pt .dock button[aria-current="true"]::before { transform: scaleY(1); }
+  .pt .dock button[aria-current="true"] .ico { color: var(--red); }
+
+  /* film strip */
+  .pt .years { background: #050507; border-left: 1px solid #1A1A20; }
+  .pt .years-in { padding: 12px 24px; gap: 10px; }
+  .pt .years-in::before, .pt .years-in::after { content: ""; position: absolute; top: 0; bottom: 0; width: 9px; background: repeating-linear-gradient(to bottom, #2A2A33 0 9px, transparent 9px 20px); border-radius: 2px; }
+  .pt .years-in::before { left: 8px; } .pt .years-in::after { right: 8px; }
+  .pt .years button { display: block; }
+  .pt .frame { display: block; position: relative; aspect-ratio: 4/3; border-radius: 3px; overflow: hidden; background: var(--t, none) center/cover, #17171D; border: 2px solid #000;
+    filter: grayscale(.85) brightness(.5); transition: filter .25s, box-shadow .25s; }
+  .pt .frame em { position: absolute; left: 6px; bottom: 4px; font-style: normal; font-weight: 800; font-size: 14px; color: #fff; text-shadow: 0 1px 6px rgba(0,0,0,.8); }
+  .pt .years button:hover .frame { filter: grayscale(.3) brightness(.8); }
+  .pt .years button[aria-pressed="true"] .frame { filter: none; box-shadow: 0 0 0 2px var(--gold), 0 0 22px rgba(242,197,114,.35); }
+  .pt .years button[aria-pressed="true"] .frame em { color: var(--gold); font-size: 17px; }
+
+  .pt .room { padding-top: 0; }
+  .pt .room > section { animation: fade .45s ease; } @keyframes fade { from { opacity: 0; } }
+  .pt .eyebrow { margin: 0 0 12px; font-size: 12px; font-weight: 600; letter-spacing: .2em; text-transform: uppercase; color: var(--gold); }
+  .pt h1 { margin: 0 0 12px; font-weight: 800; font-size: clamp(40px, 5.6vw, 76px); line-height: .98; letter-spacing: -0.03em; }
+  .pt .yr { color: var(--gold); }
+  .pt .lede { margin: 0 0 24px; font-size: 18px; color: #CFCCD6; max-width: 46ch; }
+  .pt h2.sec { margin: 38px 0 14px; font-size: 20px; font-weight: 800; }
+  .pt .head { padding-top: 34px; }
+
+  /* home hero = full-bleed backdrop */
+  .pt .home .hero { margin: 0 calc(-1 * var(--pad-x)); min-height: 66vh; display: flex; align-items: flex-end; padding: 0 var(--pad-x) 46px;
+    background: linear-gradient(to top, var(--bg) 1%, rgba(9,9,12,.25) 55%, rgba(9,9,12,.55)), linear-gradient(to right, rgba(9,9,12,.9), rgba(9,9,12,.1) 65%), var(--img) center/cover; }
+  .pt .actions { display: flex; gap: 12px; flex-wrap: wrap; }
+  .pt .btn { border: 0; border-radius: 6px; padding: 13px 24px; font-weight: 700; font-size: 16px; background: rgba(255,255,255,.16); color: #fff; backdrop-filter: blur(8px); }
+  .pt .btn.primary { background: #fff; color: #09090C; display: flex; align-items: center; gap: 10px; }
+  .pt .btn.primary::before { content: ""; border-left: 12px solid #09090C; border-top: 7px solid transparent; border-bottom: 7px solid transparent; }
+  .pt .btn:hover { filter: brightness(1.1); }
+  .pt .moments { display: grid; grid-template-columns: 1.4fr 1fr 1fr; gap: 16px; margin-top: 8px; }
+  .pt .moment { background: var(--s1); border: 1px solid var(--line); border-radius: 10px; padding: 18px; }
+  .pt .moment h3 { margin: 0 0 12px; font-size: 13px; font-weight: 600; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); }
+  .pt .thumbs { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; } .pt .thumbs img { width: 100%; aspect-ratio: 16/10; object-fit: cover; border-radius: 4px; display: block; }
+  .pt blockquote { margin: 0; font-size: 19px; line-height: 1.45; font-weight: 500; } .pt blockquote::before { content: "“"; color: var(--red); font-size: 34px; line-height: 0; vertical-align: -12px; margin-right: 2px; }
+  .pt cite { display: block; margin-top: 10px; font-style: normal; font-size: 13px; color: var(--muted); }
+  .pt .m-note .t { margin: 0 0 6px; font-size: 18px; font-weight: 800; } .pt .m-note .d { margin: 0; font-size: 14px; color: var(--muted); line-height: 1.55; }
+  .pt .more { margin-top: 14px; border: 0; background: none; padding: 0; color: var(--gold); font-weight: 600; font-size: 14px; }
+  .pt .doors { display: grid; grid-template-columns: repeat(5, 1fr); gap: 14px; }
+  .pt .door { position: relative; aspect-ratio: 2/3; border: 0; border-radius: 8px; overflow: hidden; padding: 16px; display: flex; flex-direction: column; justify-content: flex-end; text-align: left; transition: transform .25s;
+    background: linear-gradient(to top, rgba(0,0,0,.85), transparent 60%), var(--p); box-shadow: 0 16px 34px rgba(0,0,0,.45); }
+  .pt .door:hover { transform: scale(1.04); }
+  .pt .d-photos { --p: linear-gradient(160deg, #E0364F, #5A1030); } .pt .d-journal { --p: linear-gradient(160deg, #3A6FF2, #121C4A); } .pt .d-angels { --p: linear-gradient(160deg, #C653B8, #3A1240); }
+  .pt .d-fantasy { --p: linear-gradient(160deg, #1D8F5A, #0B2A1E); } .pt .d-games { --p: linear-gradient(160deg, #F29F3F, #4A2208); }
+  .pt .door b { font-size: 22px; font-weight: 800; } .pt .door span { font-size: 13px; color: #D9D6E0; }
+  .pt .door.off::after { content: "Sắp chiếu"; position: absolute; top: 12px; left: 12px; padding: 4px 10px; border-radius: 3px; background: var(--red); font-size: 11px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; }
+  .pt .door-art { display: none; }
+
+  .pt .folders { display: flex; gap: 12px; overflow-x: auto; padding-bottom: 8px; }
+  .pt .folder { flex: 0 0 240px; border: 0; background: none; padding: 0; text-align: left; position: relative; }
+  .pt .folder-art { display: block; aspect-ratio: 16/9; border-radius: 6px; overflow: hidden; } .pt .folder-art img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform .3s; }
+  .pt .folder:hover img { transform: scale(1.06); }
+  .pt .folder b { position: absolute; left: 12px; bottom: 30px; font-size: 18px; font-weight: 800; text-shadow: 0 2px 12px rgba(0,0,0,.8); } .pt .folder span { display: block; margin-top: 6px; font-size: 13px; color: var(--muted); }
+  .pt .jg-item.cine { border-radius: 4px; background: var(--s1); transition: transform .25s; } .pt .jg-item.cine:hover { transform: scale(1.02); z-index: 2; }
+
+  .pt .notes { display: flex; flex-direction: column; } .pt .notes.others { opacity: .75; }
+  .pt .note { display: grid; grid-template-columns: 110px 1fr; gap: 6px 24px; padding: 20px 0; border-bottom: 1px solid var(--line); counter-increment: ep; }
+  .pt .notes { counter-reset: ep; }
+  .pt .note::before { content: counter(ep, decimal-leading-zero); grid-row: 1 / 4; font-size: 64px; font-weight: 800; line-height: 1; color: transparent; -webkit-text-stroke: 1.5px #4A4A56; }
+  .pt .note-meta { display: flex; gap: 10px; font-size: 13px; color: var(--muted); } .pt .note-year { color: var(--gold); font-weight: 600; }
+  .pt .note h3 { margin: 0; font-size: 22px; font-weight: 800; } .pt .note p { margin: 0; color: #C3C0CC; line-height: 1.6; max-width: 70ch; }
+  .pt .chips { display: flex; gap: 6px; grid-column: 2; } .pt .chip { font-size: 12px; padding: 3px 10px; border-radius: 3px; background: var(--s2); color: var(--muted); } .pt .chip.problem { background: rgba(224,54,79,.18); color: #FF8A9A; }
+
+  .pt .people { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 14px; }
+  .pt .person { position: relative; border: 0; padding: 0; background: none; text-align: left; border-radius: 8px; overflow: hidden; transition: transform .25s; }
+  .pt .person-art { display: block; aspect-ratio: 2/3; } .pt .person-art img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .pt .person::after { content: ""; position: absolute; inset: 0; background: linear-gradient(to top, rgba(0,0,0,.85), transparent 55%); }
+  .pt .person > b, .pt .person > span:not(.person-art) { position: absolute; left: 12px; right: 12px; z-index: 1; } .pt .person > b { bottom: 30px; font-size: 18px; font-weight: 800; } .pt .person > span:not(.person-art) { bottom: 10px; font-size: 12px; color: #CFCCD6; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .pt .person.dim { filter: grayscale(1) brightness(.6); } .pt .person:hover { transform: scale(1.04); filter: none; }
+  .pt .readers { display: flex; gap: 12px; flex-wrap: wrap; }
+  .pt .reader-btn { display: flex; align-items: center; gap: 10px; border: 1px solid var(--line); border-left: 4px solid var(--tone); background: var(--s1); padding: 13px 18px; border-radius: 6px; font-weight: 600; }
+  .pt .reader-btn i { display: none; }
+
+  .pt .empty { display: grid; grid-template-columns: 1.3fr 1fr; gap: 28px; align-items: center; background: var(--s1); border: 1px solid var(--line); border-radius: 10px; padding: 22px; }
+  .pt .empty-art { aspect-ratio: 16/9; border-radius: 6px; position: relative; overflow: hidden; background: repeating-linear-gradient(90deg, #14422E 0 60px, #175236 60px 120px); }
+  .pt .empty-art::before { content: ""; position: absolute; left: 50%; top: 0; bottom: 0; width: 2px; background: rgba(255,255,255,.55); }
+  .pt .empty-art::after { content: "SẮP CHIẾU"; position: absolute; inset: 0; display: grid; place-items: center; font-weight: 800; font-size: 28px; letter-spacing: .3em; color: #fff; text-shadow: 0 2px 20px rgba(0,0,0,.6); }
+  .pt .empty-txt h3 { margin: 0 0 8px; font-size: 28px; font-weight: 800; } .pt .empty-txt p { margin: 0; color: var(--muted); line-height: 1.6; }
+  .pt .shelf { display: grid; grid-template-columns: repeat(5, 1fr); gap: 14px; }
+  .pt .game { position: relative; aspect-ratio: 2/3; border-radius: 8px; padding: 14px; display: flex; flex-direction: column; justify-content: flex-end; overflow: hidden;
+    background: linear-gradient(to top, rgba(0,0,0,.85), transparent 60%), linear-gradient(160deg, hsl(calc(var(--i) * 60 + 200) 55% 45%), hsl(calc(var(--i) * 60 + 230) 45% 14%)); }
+  .pt .game b { font-size: 18px; font-weight: 800; } .pt .game span { font-size: 12px; color: #CFCCD6; }
+  .pt .game-art::after { content: "Sắp chiếu"; position: absolute; top: 10px; left: 10px; padding: 3px 8px; border-radius: 3px; background: var(--red); font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: .08em; }
+
+  .pt .palette { background: rgba(0,0,0,.6); backdrop-filter: blur(4px); }
+  .pt .palette-box { background: var(--s1); border: 1px solid var(--line); border-radius: 10px; overflow: hidden; box-shadow: 0 40px 100px rgba(0,0,0,.7); }
+  .pt .palette input { padding: 18px 20px; font-size: 19px; background: var(--s2); color: var(--text); } .pt .palette ul { padding: 8px; }
+  .pt .palette li { padding: 11px 12px; border-radius: 6px; } .pt .palette li small { color: var(--muted); } .pt .palette li.sel, .pt .palette li:hover { background: var(--s2); }
+  .pt .reader { background: rgba(0,0,0,.75); }
+  .tv { width: min(640px, 94vw); padding: 26px 26px 64px; border-radius: 30px; position: relative; background: linear-gradient(#2E2C33, #19181D); box-shadow: inset 0 2px 0 rgba(255,255,255,.08), 0 40px 90px rgba(0,0,0,.7); }
+  .tv .scr { aspect-ratio: 4/3; border-radius: 42px / 32px; overflow: hidden; background: radial-gradient(ellipse at center, #26334F, #0A0E19 75%); box-shadow: inset 0 0 60px rgba(0,0,0,.9); position: relative; display: grid; place-items: center; text-align: center; padding: 30px; }
+  .tv .scr::after { content: ""; position: absolute; inset: 0; background: repeating-linear-gradient(rgba(255,255,255,.035) 0 1px, transparent 1px 3px); pointer-events: none; }
+  .tv .scr b { display: block; font-size: 28px; font-weight: 800; color: #fff; text-shadow: 0 0 18px var(--tone); margin-bottom: 8px; }
+  .tv .scr p { margin: 0; color: #B9C2DA; line-height: 1.5; }
+  .tv .knobs { position: absolute; right: 30px; bottom: 16px; display: flex; gap: 14px; } .tv .knobs i { width: 30px; height: 30px; border-radius: 50%; background: radial-gradient(circle at 35% 30%, #6B6873, #2A282E); display: block; }
+  .tv small { position: absolute; left: 32px; bottom: 22px; font-weight: 800; letter-spacing: .2em; font-size: 12px; color: #6E6B77; }
+
+  @media (max-width: 860px) {
+    .pt { --years-w-m: 64px; --pad-x: 16px; }
+    .pt .bar .search { min-width: 0; padding: 10px; } .pt .bar .random { padding: 10px; } .pt .bar .brand { font-size: 14px; }
+    .pt .dock { background: rgba(9,9,12,.95); border-top: 1px solid var(--line); } .pt .dock button { padding: 6px 0; } .pt .dock button::before { left: 20%; right: 20%; top: 0; bottom: auto; width: auto; height: 3px; transform: scaleX(0); } .pt .dock button[aria-current="true"]::before { transform: scaleX(1); } .pt .dock .lbl { font-size: 10px; }
+    .pt .years-in { padding: 8px 14px; } .pt .years-in::before { left: 3px; width: 6px; } .pt .years-in::after { right: 3px; width: 6px; } .pt .frame em { font-size: 11px; left: 4px; }
+    .pt .home .hero { min-height: 58vh; } .pt .moments, .pt .empty { grid-template-columns: 1fr; } .pt .doors, .pt .shelf { grid-template-columns: repeat(3, 1fr); } .pt .note { grid-template-columns: 1fr; } .pt .note::before { display: none; } .pt .chips { grid-column: 1; }
+  }
+  @media (prefers-reduced-motion: reduce) { .pt .room > section { animation: none; } }
+</style>
+</head>
+<body>
+<div id="app"></div>
+<script src="assets/photos.js"></script>
+<script src="assets/justified.js"></script>
+<script src="assets/data.js"></script>
+<script src="assets/portal-engine.js"></script>
+<script>
+  Portal({
+    brand: 'SONIC HUB',
+    justify: { rowHeight: 250, gap: 6, cls: 'cine' },
+    yearItem: (y, m) => `<span class="frame" style="--t:${m.thumb ? `url('${m.thumb}')` : 'none'}"><em><span class="full">${y}</span><span class="short">${m.short}</span></em></span>`,
+    lede: (y) => `Đêm nay chiếu lại đúng ngày này năm ${y} — ảnh, tin nhắn, và những trang đã viết.`,
+    device: (name, tone) => `<div class="tv" style="--tone:${tone}"><div class="scr"><div><b>${name}</b><p>Phòng đọc riêng — phục dựng đúng thời đó.<br>Sẽ design sau.</p></div></div><div class="knobs"><i></i><i></i></div><small>SONIC</small></div>`,
+  });
+</script>
+</body>
+</html>
