@@ -1,0 +1,288 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Sonic Hub — Lưu bút</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Patrick+Hand&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  /* ═══ SET A · LƯU BÚT ═══
+     Language: handmade. A 2005 school notebook — vở ô ly grid, spiral binding,
+     washi tape, polaroids, blue ballpoint ink, gel-pen accents, highlighter.
+     Timeline: year divider tabs sticking out of the notebook's right edge.
+     Rooms: sticky-note flags on the top edge. Home: a handwritten table of contents. */
+  :root {
+    --desk: #ECE9FA; --page: #FFFFFF; --grid-thin: #E6EFFA; --grid-bold: #CADFF4; --margin: rgba(242,110,150,.55);
+    --ink: #2A3561; --ink-2: #6B7396; --pink: #FF6FA8; --purple: #9C7BFF; --mint: #37C9A7; --yellow: #FFE45C; --sky: #6CB8FF; --peach: #FFB38A;
+    --hand: "Patrick Hand", "Comic Sans MS", cursive; --body: Nunito, system-ui, sans-serif;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; min-height: 100svh; background: var(--desk) radial-gradient(rgba(120,100,200,.10) 1px, transparent 1px) 0 0/18px 18px; color: var(--ink); font-family: var(--body); font-size: 17px; line-height: 1.6; -webkit-font-smoothing: antialiased; }
+  a { color: inherit; text-decoration: none; } button { font: inherit; color: inherit; }
+  :focus-visible { outline: 3px dashed var(--purple); outline-offset: 3px; }
+  .hand { font-family: var(--hand); }
+
+  /* ── The notebook ── */
+  .book { position: relative; max-width: 1180px; margin: 84px auto 60px; margin-right: max(64px, calc((100vw - 1180px) / 2)); min-height: 780px;
+    background-color: var(--page); border-radius: 6px 18px 18px 6px; box-shadow: 0 2px 0 #E2E0EE, 0 30px 70px rgba(70,60,140,.18);
+    background-image: linear-gradient(90deg, transparent 70px, var(--margin) 70px 72px, transparent 72px),
+      linear-gradient(var(--grid-bold) 1px, transparent 1px), linear-gradient(var(--grid-thin) 1px, transparent 1px), linear-gradient(90deg, var(--grid-thin) 1px, transparent 1px);
+    background-size: 100% 100%, 100% 32px, 100% 8px, 8px 100%; }
+  .spiral { position: absolute; left: -16px; top: 22px; bottom: 22px; width: 40px; display: flex; flex-direction: column; justify-content: space-between; overflow: hidden; pointer-events: none; }
+  .spiral i { display: block; height: 11px; border-radius: 8px; background: linear-gradient(#F4F5F9, #A9AEBE 55%, #D9DCE6); box-shadow: 0 2px 2px rgba(0,0,0,.18); }
+  .spiral i::after { content: ""; display: block; width: 9px; height: 9px; border-radius: 50%; background: #3A3F55; margin: 1px 0 0 27px; }
+
+  /* Room flags (sticky notes on the top edge) */
+  .flags { position: absolute; top: -52px; left: 96px; display: flex; gap: 10px; z-index: 3; }
+  .flag { border: 0; cursor: pointer; font-family: var(--hand); font-size: 20px; padding: 10px 18px 22px; border-radius: 3px 3px 0 0; box-shadow: 0 -2px 6px rgba(0,0,0,.06);
+    transform: translateY(14px) rotate(var(--r, 0deg)); transition: transform .18s; opacity: .82; }
+  .flag:hover { transform: translateY(6px) rotate(var(--r, 0deg)); }
+  .flag[aria-current="true"] { transform: translateY(-2px) rotate(0deg); opacity: 1; box-shadow: 0 -4px 12px rgba(0,0,0,.10); }
+
+  /* Year divider tabs (the vertical timeline) */
+  .tabs { position: absolute; top: 34px; right: -56px; display: flex; flex-direction: column; gap: 5px; z-index: 2; }
+  .tab { border: 0; cursor: pointer; width: 62px; padding: 3px 10px 3px 16px; text-align: right; font-family: var(--hand); font-size: 17px; line-height: 1.5;
+    border-radius: 0 12px 12px 0; box-shadow: 2px 2px 0 rgba(0,0,0,.06); transform: translateX(0); transition: transform .15s; }
+  .tab:hover { transform: translateX(5px); }
+  .tab[aria-pressed="true"] { transform: translateX(12px); font-size: 21px; box-shadow: 3px 3px 0 rgba(0,0,0,.10); }
+  .tab .s { display: none; }
+
+  .page { position: relative; padding: 40px 70px 60px 104px; }
+  .page h1 { font-family: var(--hand); font-weight: 400; font-size: 52px; line-height: 1; margin: 0 0 4px; color: var(--ink); }
+  .page .sub { margin: 0 0 30px; color: var(--ink-2); }
+  .page h2 { font-family: var(--hand); font-weight: 400; font-size: 30px; margin: 36px 0 14px; }
+
+  /* Paper bits */
+  .tape { position: absolute; width: 92px; height: 24px; opacity: .85; transform: rotate(var(--r, -4deg));
+    background: var(--c, var(--pink)) repeating-linear-gradient(45deg, rgba(255,255,255,.38) 0 6px, transparent 6px 12px); box-shadow: 0 1px 2px rgba(0,0,0,.08); }
+  .polaroid { position: relative; background: #fff; padding: 10px 10px 36px; box-shadow: 0 8px 18px rgba(40,40,90,.18); transform: rotate(var(--r, 0deg)); }
+  .polaroid img { display: block; width: 100%; aspect-ratio: 1; object-fit: cover; }
+  .polaroid span { position: absolute; left: 12px; right: 12px; bottom: 7px; font-family: var(--hand); font-size: 18px; color: var(--ink); }
+  .sticky { position: relative; background: #FFF3A6; padding: 22px 20px 26px; box-shadow: 0 10px 20px rgba(90,80,20,.16); transform: rotate(var(--r, 1.5deg)); font-family: var(--hand); font-size: 21px; line-height: 1.35; }
+  .hl { background: linear-gradient(transparent 55%, var(--yellow) 55%); padding: 0 2px; }
+  .ul { text-decoration: underline wavy var(--pink); text-underline-offset: 5px; }
+
+  /* Home */
+  .spread { display: grid; grid-template-columns: 1.1fr .9fr; gap: 44px; align-items: start; }
+  .polaroids { position: relative; height: 380px; }
+  .polaroids .polaroid { position: absolute; width: 230px; }
+  .toc { list-style: none; margin: 0; padding: 0; font-family: var(--hand); font-size: 24px; }
+  .toc li button { display: flex; width: 100%; align-items: baseline; gap: 10px; background: none; border: 0; cursor: pointer; padding: 3px 0; text-align: left; }
+  .toc li button:hover .t { color: var(--pink); }
+  .toc .dots { flex: 1; border-bottom: 2px dotted var(--ink-2); transform: translateY(-6px); opacity: .5; }
+  .toc .n { color: var(--ink-2); font-size: 20px; }
+  .toc .off { opacity: .5; }
+
+  /* Photos */
+  .pockets { display: flex; gap: 22px; flex-wrap: wrap; margin-bottom: 8px; }
+  .pocket { position: relative; width: 170px; padding-top: 46px; cursor: pointer; }
+  .pocket img { position: absolute; top: 0; left: 18px; width: 134px; height: 96px; object-fit: cover; border: 4px solid #fff; box-shadow: 0 4px 10px rgba(0,0,0,.15); transform: rotate(-4deg); }
+  .pocket .env { position: relative; height: 92px; border-radius: 4px; background: var(--c); box-shadow: 0 6px 14px rgba(40,40,90,.14); display: flex; align-items: flex-end; padding: 8px 12px; font-family: var(--hand); font-size: 20px; }
+  .pocket .env::before { content: ""; position: absolute; top: 0; left: 0; right: 0; height: 40px; background: linear-gradient(160deg, rgba(255,255,255,.35) 50%, transparent 50%), linear-gradient(200deg, rgba(255,255,255,.35) 50%, transparent 50%); background-size: 50% 100%; background-position: left, right; background-repeat: no-repeat; }
+  .pocket .env small { margin-left: auto; font-size: 15px; opacity: .75; }
+  .jg-item.pasted { margin: 0; background: #fff; padding: 5px; box-shadow: 0 5px 12px rgba(40,40,90,.15); }
+  .jg-item.pasted img { width: 100%; height: 100%; object-fit: cover; display: block; }
+
+  /* Journal */
+  .entry { display: grid; grid-template-columns: 0 1fr; margin: 0 0 30px; position: relative; }
+  .entry .date { position: absolute; left: -96px; width: 84px; text-align: right; font-family: var(--hand); font-size: 20px; color: var(--pink); line-height: 1.2; top: 4px; }
+  .entry h3 { font-family: var(--hand); font-weight: 400; font-size: 30px; margin: 0 0 4px; line-height: 1.15; }
+  .entry p { margin: 0 0 8px; max-width: 66ch; }
+  .entry .meta { font-size: 14px; color: var(--ink-2); }
+  .entry .meta b { font-weight: 700; }
+
+  /* Angels = lưu bút pages */
+  .lbs { display: grid; grid-template-columns: repeat(auto-fill, minmax(290px, 1fr)); gap: 30px; }
+  .lb { position: relative; background: #fff; border-radius: 6px; padding: 22px 22px 18px; border: 2px solid var(--c); box-shadow: 6px 6px 0 var(--c); transform: rotate(var(--r, 0deg)); }
+  .lb .polaroid { position: absolute; right: -14px; top: -22px; width: 104px; padding: 6px 6px 22px; }
+  .lb .polaroid span { font-size: 14px; bottom: 3px; left: 8px; }
+  .lb h3 { font-family: var(--hand); font-weight: 400; font-size: 32px; margin: 0 0 10px; color: var(--c-ink, var(--ink)); padding-right: 90px; }
+  .lb dl { margin: 0; display: grid; grid-template-columns: auto 1fr; gap: 2px 10px; font-size: 14px; }
+  .lb dt { color: var(--ink-2); } .lb dd { margin: 0; font-family: var(--hand); font-size: 19px; line-height: 1.25; border-bottom: 1px dashed #D5DAEA; }
+  .lb .read { display: flex; gap: 8px; margin-top: 14px; flex-wrap: wrap; }
+  .lb .read button { border: 0; cursor: pointer; font-family: var(--hand); font-size: 17px; padding: 3px 12px; border-radius: 999px; color: #fff; transform: rotate(-2deg); }
+  .lb.dim { opacity: .55; }
+
+  /* Fantasy = sticker album */
+  .album { display: grid; grid-template-columns: repeat(6, 1fr); gap: 16px; }
+  .slot { aspect-ratio: 3/4; border: 2px dashed #B9C3E3; border-radius: 10px; background: rgba(255,255,255,.7); display: flex; flex-direction: column; align-items: center; justify-content: flex-end; padding-bottom: 10px; position: relative; font-size: 13px; color: var(--ink-2); }
+  .slot::before { content: ""; position: absolute; top: 22%; width: 34%; aspect-ratio: 1; border-radius: 50%; background: #E3E8F6; }
+  .slot::after { content: ""; position: absolute; top: 46%; width: 62%; height: 22%; border-radius: 40px 40px 6px 6px; background: #E3E8F6; }
+  .slot b { position: relative; z-index: 1; font-family: var(--hand); font-size: 18px; color: var(--ink); font-weight: 400; }
+
+  /* Games = tickets */
+  .tickets { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 18px; }
+  .ticket { position: relative; padding: 18px 22px; border-radius: 10px; background: var(--c); font-family: var(--hand); font-size: 22px;
+    -webkit-mask: radial-gradient(circle 10px at 0 50%, transparent 98%, #000) , radial-gradient(circle 10px at 100% 50%, transparent 98%, #000); -webkit-mask-composite: source-in; mask-composite: intersect; }
+  .ticket small { display: block; font-family: var(--body); font-size: 13px; opacity: .75; }
+
+  /* Reader overlay */
+  .overlay { position: fixed; inset: 0; background: rgba(60,50,120,.35); display: none; align-items: center; justify-content: center; z-index: 50; padding: 20px; }
+  .overlay.open { display: flex; }
+  .overlay .sticky { max-width: 420px; font-size: 24px; }
+  .overlay .sticky small { display: block; font-family: var(--body); font-size: 14px; color: var(--ink-2); margin-top: 10px; }
+
+  @media (max-width: 860px) {
+    body { font-size: 16px; }
+    .book { margin: 22px 50px 92px 10px; min-height: 0; border-radius: 6px 14px 14px 6px; }
+    .spiral { display: none; }
+    .flags { position: fixed; top: auto; bottom: 0; left: 0; right: 0; justify-content: space-between; gap: 2px; padding: 8px 6px calc(8px + env(safe-area-inset-bottom)); background: rgba(236,233,250,.92); backdrop-filter: blur(8px); }
+    .flag { font-size: 15px; padding: 7px 8px; border-radius: 6px; transform: none !important; flex: 1; }
+    .flag[aria-current="true"] { box-shadow: 0 0 0 2px var(--ink); }
+    .tabs { right: -42px; top: 16px; gap: 3px; }
+    .tab { width: 44px; padding: 2px 6px 2px 8px; font-size: 14px; } .tab[aria-pressed="true"] { font-size: 16px; transform: translateX(6px); }
+    .tab .f { display: none; } .tab .s { display: inline; }
+    .page { padding: 26px 16px 36px 26px; } .book { background-size: 100% 100%, 100% 32px, 100% 8px, 8px 100%; background-image: linear-gradient(var(--grid-bold) 1px, transparent 1px), linear-gradient(var(--grid-thin) 1px, transparent 1px), linear-gradient(90deg, var(--grid-thin) 1px, transparent 1px); background-size: 100% 32px, 100% 8px, 8px 100%; }
+    .page h1 { font-size: 38px; }
+    .spread { grid-template-columns: 1fr; gap: 20px; } .polaroids { height: 300px; } .polaroids .polaroid { width: 170px; }
+    .entry .date { position: static; width: auto; text-align: left; } .entry { display: block; }
+    .album { grid-template-columns: repeat(3, 1fr); gap: 10px; }
+    .lb .polaroid { right: -6px; }
+  }
+  @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+</head>
+<body>
+<div class="book" id="book">
+  <div class="spiral" id="spiral" aria-hidden="true"></div>
+  <nav class="flags" id="flags" aria-label="Các mục"></nav>
+  <nav class="tabs" id="tabs" aria-label="Năm"></nav>
+  <main class="page" id="page"></main>
+</div>
+<div class="overlay" id="overlay"><div class="sticky" id="overlayNote"></div></div>
+
+<script src="assets/photos.js"></script>
+<script src="assets/justified.js"></script>
+<script src="assets/data.js"></script>
+<script>
+  const D = window.SH_DATA;
+  const state = { room: 'home', year: 2010 };
+  const ROOMS = [
+    { id: 'home', label: 'Mục lục', c: '#FFF3A6', r: '-2deg' },
+    { id: 'photos', label: 'Ảnh', c: '#FFD1E3', r: '1.5deg' },
+    { id: 'journal', label: 'Nhật ký', c: '#D6CCFF', r: '-1deg' },
+    { id: 'angels', label: 'Lưu bút', c: '#C9F1E6', r: '2deg' },
+    { id: 'fantasy', label: 'Bóng đá', c: '#CFE6FF', r: '-1.5deg' },
+    { id: 'games', label: 'Game', c: '#FFDCC8', r: '1deg' },
+  ];
+  const TAB_COLORS = ['#FFD1E3', '#D6CCFF', '#C9F1E6', '#CFE6FF', '#FFDCC8', '#FFF3A6'];
+  const PEN = ['#FF6FA8', '#9C7BFF', '#37C9A7', '#6CB8FF', '#FF9A6B'];
+
+  // spiral rings
+  const spiral = document.getElementById('spiral');
+  for (let i = 0; i < 34; i++) spiral.appendChild(document.createElement('i'));
+
+  // flags
+  const flags = document.getElementById('flags');
+  ROOMS.forEach(r => {
+    const b = document.createElement('button'); b.className = 'flag'; b.dataset.room = r.id; b.textContent = r.label;
+    b.style.background = r.c; b.style.setProperty('--r', r.r); b.onclick = () => go(r.id); flags.appendChild(b);
+  });
+
+  // year tabs — oldest first, like a diary
+  const tabs = document.getElementById('tabs');
+  D.YEARS.forEach((y, i) => {
+    const b = document.createElement('button'); b.className = 'tab'; b.dataset.year = y;
+    b.innerHTML = `<span class="f">${y}</span><span class="s">'${String(y).slice(2)}</span>`;
+    b.style.background = TAB_COLORS[i % TAB_COLORS.length]; b.onclick = () => setYear(y); tabs.appendChild(b);
+  });
+
+  function go(room) { state.room = room; render(); window.scrollTo({ top: 0 }); }
+  function setYear(y) { state.year = y; render(); }
+
+  const tapes = ['#FF9EC4', '#B9A6FF', '#8FE3CC', '#9CCBFF', '#FFC29E'];
+  const polaroid = (p, cap, r, extra = '') => `<div class="polaroid" style="--r:${r}; ${extra}"><img src="${p.src}" alt=""><span>${cap}</span></div>`;
+
+  const V = {
+    home() {
+      const y = state.year, ph = D.photosOf(D.nearestYear(y)).slice(0, 3), who = D.peopleOf(y)[0], note = D.notesOf(y)[0] || D.NOTES[3];
+      const counts = { photos: D.photos.length, journal: D.NOTES.length, angels: D.PEOPLE.length };
+      return `<h1>Ngày này năm ${y}</h1><p class="sub">${D.todayVN()} — lật tab năm bên phải để sang năm khác, cả cuốn sổ lật theo.</p>
+      <div class="spread">
+        <div class="polaroids">
+          ${ph[0] ? polaroid(ph[0], ph[0].caption, '-6deg', 'left:0; top:20px;') : ''}
+          ${ph[1] ? polaroid(ph[1], ph[1].caption, '4deg', 'left:180px; top:0;') : ''}
+          ${ph[2] ? polaroid(ph[2], ph[2].caption, '-2deg', 'left:110px; top:150px; z-index:2;') : ''}
+          <span class="tape" style="left:60px; top:10px; --c:${tapes[0]}; --r:-18deg"></span>
+          <span class="tape" style="left:250px; top:-8px; --c:${tapes[2]}; --r:12deg"></span>
+        </div>
+        <div>
+          <div class="sticky" style="--r:1.8deg; margin-bottom:26px">
+            <span class="tape" style="left:38%; top:-12px; --c:${tapes[1]}; --r:-3deg"></span>
+            ${who ? who.name : 'bichtran_9x'} (Yahoo, 23:14):<br>“mai thi xong roi di choi nhe. t mua ve rap quoc gia roi”
+          </div>
+          <h2 style="margin-top:0">Mục lục</h2>
+          <ol class="toc">
+            <li><button data-go="photos"><span class="t">Ảnh</span><span class="dots"></span><span class="n">${counts.photos} tấm</span></button></li>
+            <li><button data-go="journal"><span class="t">Nhật ký — <span class="hl">${note.title}</span></span><span class="dots"></span><span class="n">${counts.journal} bài</span></button></li>
+            <li><button data-go="angels"><span class="t">Lưu bút</span><span class="dots"></span><span class="n">${counts.angels} người</span></button></li>
+            <li class="off"><button data-go="fantasy"><span class="t">Album bóng đá</span><span class="dots"></span><span class="n">chưa dán</span></button></li>
+            <li class="off"><button data-go="games"><span class="t">Game</span><span class="dots"></span><span class="n">trống</span></button></li>
+          </ol>
+        </div>
+      </div>`;
+    },
+    photos() {
+      const list = D.photosOf(state.year);
+      return `<h1>Ảnh · ${state.year}</h1><p class="sub">${list.length ? list.length + ' tấm dán trong năm này.' : 'Năm này chưa dán tấm nào — lật sang tab khác nhé.'}</p>
+      <div class="pockets">${D.FOLDERS.map(([n, c], i) => `<div class="pocket" style="--c:${TAB_COLORS[i % 6]}"><img src="${D.photos[(i * 7) % 40].src}" alt=""><div class="env">${n}<small>${c}</small></div></div>`).join('')}</div>
+      <h2>Tất cả ảnh</h2><div id="jg"></div>`;
+    },
+    journal() {
+      const list = D.notesOf(state.year), show = list.length ? list : D.NOTES;
+      return `<h1>Nhật ký</h1><p class="sub">${list.length ? 'Những trang viết năm ' + state.year + '.' : 'Năm ' + state.year + ' chưa viết gì — đây là mọi trang.'} Ngày ghi ở lề đỏ, như hồi đi học.</p>
+      ${show.map(n => `<article class="entry"><div class="date">${n.year}<br>${n.mood || ''}</div><div><h3>${n.title}</h3><p>${n.body}</p>
+        <div class="meta">${n.problem ? `<span class="hl"><b>Vấn đề:</b> ${n.problem}</span> · ` : ''}${n.tags.map(t => `<span class="ul">${t}</span>`).join(' ')}</div></div></article>`).join('')}`;
+    },
+    angels() {
+      const y = state.year;
+      return `<h1>Lưu bút</h1><p class="sub">Mỗi người một trang, đúng kiểu sổ lưu bút cuối cấp. Người của năm ${y} được tô đậm.</p>
+      <div class="lbs">${D.PEOPLE.map((p, k) => {
+        const on = y >= p.from && y <= p.to, c = PEN[k % PEN.length];
+        return `<article class="lb ${on ? '' : 'dim'}" style="--c:${c}; --c-ink:${c}; --r:${k % 2 ? '1deg' : '-1deg'}">
+          ${polaroid(D.photos[(k * 5 + 3) % 40], p.name.split(' ').pop(), k % 2 ? '5deg' : '-5deg')}
+          <h3>${p.name}</h3>
+          <dl><dt>Quen nhau</dt><dd>${p.from}${p.to !== p.from ? ' – ' + p.to : ''}</dd><dt>Thích</dt><dd>${p.like}</dd><dt>Kỷ niệm</dt><dd>${p.memory}</dd></dl>
+          <div class="read">${p.via.split(' · ').map(v => `<button data-reader="${v}" style="background:${v === 'Yahoo' ? '#7B1FA2' : v === 'Nokia' ? '#2E6FDB' : v === 'Facebook' ? '#1877F2' : v === 'Zalo' ? '#0068FF' : '#229ED9'}">Đọc ${v}</button>`).join('')}</div>
+        </article>`; }).join('')}</div>`;
+    },
+    fantasy() {
+      return `<h1>Album cầu thủ</h1><p class="sub">Mùa ${state.year}/${String(state.year + 1).slice(2)} — album đã mua, sticker chưa bóc. Dữ liệu về là dán.</p>
+      <div class="album">${Array.from({ length: 18 }, (_, i) => `<div class="slot"><b>#${String(i + 1).padStart(2, '0')}</b>chưa dán</div>`).join('')}</div>`;
+    },
+    games() {
+      return `<h1>Game</h1><p class="sub">Vé vào cửa những trò đã chơi, đang chơi, và sẽ tự làm. Chưa xé vé nào.</p>
+      <div class="tickets">${['Trò tự làm #1', 'Memory', 'Đua xe đạp', 'Ô chữ', 'Sắp có'].map((g, i) => `<div class="ticket" style="--c:${TAB_COLORS[i % 6]}">${g}<small>vé số ${String(i + 1).padStart(3, '0')} · chưa chơi</small></div>`).join('')}</div>`;
+    },
+  };
+
+  const pageEl = document.getElementById('page');
+  function render() {
+    document.querySelectorAll('.flag').forEach(f => f.setAttribute('aria-current', String(f.dataset.room === state.room)));
+    document.querySelectorAll('.tab').forEach(t => t.setAttribute('aria-pressed', String(+t.dataset.year === state.year)));
+    pageEl.innerHTML = V[state.room]();
+    pageEl.querySelectorAll('[data-go]').forEach(b => b.onclick = () => go(b.dataset.go));
+    pageEl.querySelectorAll('[data-reader]').forEach(b => b.onclick = () => openReader(b.dataset.reader));
+    if (state.room === 'photos') {
+      const list = D.photosOf(state.year);
+      if (list.length) SH.justify(document.getElementById('jg'), list, { rowHeight: 200, gap: 12, render: (p) => { const f = document.createElement('figure'); f.className = 'jg-item pasted'; f.innerHTML = `<img src="${p.src}" alt="${p.caption}" loading="lazy">`; return f; } });
+    }
+  }
+
+  const ov = document.getElementById('overlay');
+  function openReader(v) {
+    document.getElementById('overlayNote').innerHTML = `Phòng đọc ${v}<small>Mỗi nền tảng sẽ có một phòng đọc riêng, design sau. Tờ note này chỉ đánh dấu chỗ cửa.</small>`;
+    ov.classList.add('open');
+  }
+  ov.onclick = () => ov.classList.remove('open');
+
+  addEventListener('keydown', e => {
+    if (e.key === 'Escape') ov.classList.remove('open');
+    if (e.key === 'ArrowDown' && state.year < D.YEARS.at(-1)) { e.preventDefault(); setYear(state.year + 1); }
+    if (e.key === 'ArrowUp' && state.year > D.YEARS[0]) { e.preventDefault(); setYear(state.year - 1); }
+  });
+  render();
+</script>
+</body>
+</html>

@@ -23,7 +23,7 @@ SH.justify = function (container, photos, opts = {}) {
       row.push(p); rowRatio += p.ratio;
       const h = (width - gap * (row.length - 1)) / rowRatio;
       if (h <= rowHeight * (1 - tolerance) || i === photos.length - 1) {
-        rows.push({ items: row, height: Math.min(h, rowHeight * (1 + tolerance)) });
+        rows.push({ items: row, height: Math.min(h, i === photos.length - 1 ? rowHeight : rowHeight * (1 + tolerance)) });
         row = []; rowRatio = 0;
       } else if (h <= rowHeight) {
         rows.push({ items: row, height: h });

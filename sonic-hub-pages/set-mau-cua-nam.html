@@ -1,0 +1,253 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Sonic Hub — Màu của năm</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;800&display=swap" rel="stylesheet">
+<style>
+  /* ═══ SET C · MÀU CỦA NĂM ═══
+     Language: soft & emotional. Every year has a color (in production: the
+     dominant color of that year's photos). The whole interface is tinted by the
+     chosen year — blurred color fields, glass cards, round friendly shapes,
+     Be Vietnam Pro. Timeline: one continuous color ribbon, newest on top. */
+  :root { --bg: #F6F6F9; --ink: #1C1C28; --ink-2: #6E6E80; --glass: rgba(255,255,255,.62); --glass-edge: rgba(255,255,255,.8);
+    --year: #F4845F; --year-2: #E86A92; --ribbon-w: 128px; --font: "Be Vietnam Pro", system-ui, sans-serif; }
+  * { box-sizing: border-box; }
+  body { margin: 0; min-height: 100svh; background: var(--bg); color: var(--ink); font-family: var(--font); -webkit-font-smoothing: antialiased; overflow-x: hidden; }
+  a { color: inherit; text-decoration: none; } button { font: inherit; color: inherit; }
+  :focus-visible { outline: 3px solid var(--year); outline-offset: 3px; }
+
+  /* Color fields */
+  .field { position: fixed; border-radius: 50%; filter: blur(90px); opacity: .55; pointer-events: none; transition: background 1s ease; z-index: 0; }
+  .field.a { width: 62vw; height: 62vw; top: -22vw; right: -12vw; background: var(--year); }
+  .field.b { width: 46vw; height: 46vw; bottom: -18vw; left: 8vw; background: var(--year-2); opacity: .4; }
+
+  /* Ribbon (vertical timeline) */
+  .ribbon { position: fixed; top: 0; left: 0; bottom: 0; width: var(--ribbon-w); z-index: 5; padding: 92px 0 28px; }
+  .ribbon .band { position: absolute; left: 30px; top: 92px; bottom: 28px; width: 12px; border-radius: 999px; box-shadow: inset 0 0 0 1px rgba(255,255,255,.5); }
+  .ribbon .ys { position: relative; height: 100%; display: flex; flex-direction: column; justify-content: space-between; }
+  .ribbon button { position: relative; border: 0; background: none; cursor: pointer; text-align: left; padding: 0 0 0 58px; font-size: 13px; font-weight: 500; color: var(--ink-2); line-height: 1; height: 16px; }
+  .ribbon button::before { content: ""; position: absolute; left: 33px; top: 50%; width: 6px; height: 6px; margin-top: -3px; border-radius: 50%; background: rgba(255,255,255,.9); opacity: 0; transition: opacity .2s; }
+  .ribbon button:hover { color: var(--ink); } .ribbon button:hover::before { opacity: 1; }
+  .ribbon button[aria-pressed="true"] { color: var(--ink); font-weight: 800; font-size: 17px; }
+  .ribbon button[aria-pressed="true"]::before { opacity: 1; left: 25px; width: 22px; height: 22px; margin-top: -11px; background: #fff; box-shadow: 0 0 0 4px var(--year), 0 6px 18px rgba(0,0,0,.18); }
+  .ribbon button .s { display: none; }
+
+  .app { position: relative; z-index: 2; margin-left: var(--ribbon-w); padding: 22px 40px 70px 20px; max-width: calc(var(--ribbon-w) + 1200px); }
+  .top { display: flex; align-items: center; gap: 20px; margin-bottom: 30px; }
+  .brand { font-weight: 800; font-size: 20px; letter-spacing: -0.03em; }
+  .brand span { display: inline-block; width: 10px; height: 10px; border-radius: 50%; background: var(--year); margin-left: 4px; transition: background .6s; }
+  .pills { display: flex; gap: 4px; padding: 5px; background: var(--glass); border: 1px solid var(--glass-edge); border-radius: 999px; backdrop-filter: blur(18px); box-shadow: 0 8px 30px rgba(30,30,60,.06); overflow-x: auto; scrollbar-width: none; }
+  .pills button { border: 0; background: none; cursor: pointer; padding: 9px 16px; border-radius: 999px; font-size: 14px; font-weight: 600; color: var(--ink-2); white-space: nowrap; transition: background .3s, color .3s; }
+  .pills button[aria-current="true"] { background: var(--year); color: #fff; box-shadow: 0 6px 16px color-mix(in srgb, var(--year) 45%, transparent); }
+
+  .glass { background: var(--glass); border: 1px solid var(--glass-edge); border-radius: 28px; backdrop-filter: blur(18px); box-shadow: 0 16px 50px rgba(30,30,60,.08); }
+  h1.greet { font-size: clamp(40px, 5.2vw, 72px); font-weight: 800; letter-spacing: -0.045em; line-height: 1; margin: 0 0 10px; }
+  .lede { font-size: 18px; color: var(--ink-2); margin: 0 0 30px; }
+  .lede .sw { display: inline-block; vertical-align: -5px; margin-right: 10px; width: 22px; height: 22px; border-radius: 50%; background: var(--year); box-shadow: 0 0 0 4px rgba(255,255,255,.8); }
+  h2 { font-size: 20px; font-weight: 800; letter-spacing: -0.02em; margin: 34px 0 14px; }
+
+  /* Home */
+  .hero { display: grid; grid-template-columns: 1.45fr 1fr; gap: 20px; }
+  .memory { position: relative; border-radius: 28px; overflow: hidden; min-height: 380px; box-shadow: 0 24px 60px rgba(30,30,60,.16); }
+  .memory img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+  .memory .cap { position: absolute; left: 18px; bottom: 18px; right: 18px; display: flex; justify-content: space-between; align-items: flex-end; color: #fff; }
+  .memory .cap b { font-size: 26px; font-weight: 800; letter-spacing: -0.02em; text-shadow: 0 2px 14px rgba(0,0,0,.35); }
+  .memory .cap span { background: rgba(255,255,255,.25); backdrop-filter: blur(10px); padding: 6px 12px; border-radius: 999px; font-size: 13px; font-weight: 600; }
+  .side { display: flex; flex-direction: column; gap: 20px; }
+  .side .glass { padding: 20px; }
+  .side h3 { margin: 0 0 12px; font-size: 13px; font-weight: 600; color: var(--ink-2); }
+  .stories { display: flex; gap: 14px; overflow-x: auto; }
+  .story { border: 0; background: none; cursor: pointer; text-align: center; flex: 0 0 auto; }
+  .story .ring { width: 72px; height: 72px; border-radius: 50%; padding: 3px; background: conic-gradient(var(--year), var(--year-2), var(--year)); }
+  .story .ring img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; border: 3px solid #fff; display: block; }
+  .story small { display: block; font-size: 12px; font-weight: 600; margin-top: 6px; }
+  .bubble { position: relative; background: #fff; border-radius: 20px 20px 20px 6px; padding: 14px 16px; font-size: 16px; line-height: 1.45; box-shadow: 0 6px 20px rgba(30,30,60,.06); }
+  .bubble small { display: block; color: var(--ink-2); font-size: 12px; margin-top: 6px; }
+  .tiles { display: grid; grid-template-columns: repeat(5, 1fr); gap: 16px; }
+  .tile { border: 0; cursor: pointer; text-align: left; padding: 18px; border-radius: 24px; min-height: 130px; color: #fff; display: flex; flex-direction: column; justify-content: flex-end; box-shadow: 0 14px 34px rgba(30,30,60,.12); transition: transform .2s; }
+  .tile:hover { transform: translateY(-3px) scale(1.01); }
+  .tile b { font-size: 19px; font-weight: 800; letter-spacing: -0.02em; } .tile span { font-size: 13px; opacity: .9; }
+  .tile.off { filter: saturate(.35); opacity: .75; }
+
+  /* Photos */
+  .stacks { display: flex; gap: 26px; overflow-x: auto; padding: 8px 4px 18px; }
+  .pile { position: relative; flex: 0 0 170px; height: 150px; cursor: pointer; border: 0; background: none; padding: 0; text-align: left; }
+  .pile img { position: absolute; inset: 0 0 34px 0; width: 100%; height: calc(100% - 34px); object-fit: cover; border-radius: 18px; box-shadow: 0 10px 24px rgba(30,30,60,.14); }
+  .pile img:nth-child(1) { transform: rotate(-6deg) translate(-6px, 4px); opacity: .7; } .pile img:nth-child(2) { transform: rotate(4deg) translate(6px, 2px); opacity: .85; }
+  .pile b { position: absolute; bottom: 8px; left: 4px; font-size: 15px; font-weight: 800; } .pile span { position: absolute; bottom: 9px; right: 4px; font-size: 12px; color: var(--ink-2); }
+  .jg-item.soft { margin: 0; overflow: hidden; border-radius: 16px; background: rgba(255,255,255,.5); box-shadow: 0 8px 20px rgba(30,30,60,.08); }
+  .jg-item.soft img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform .4s; }
+  .jg-item.soft:hover img { transform: scale(1.04); }
+
+  /* Journal */
+  .notes { columns: 2; column-gap: 20px; }
+  .note { break-inside: avoid; margin: 0 0 20px; padding: 22px; }
+  .note .mood { display: inline-flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 600; color: var(--ink-2); }
+  .note .mood i { width: 12px; height: 12px; border-radius: 50%; background: var(--c); display: inline-block; }
+  .note h3 { font-size: 22px; font-weight: 800; letter-spacing: -0.02em; margin: 10px 0 8px; line-height: 1.2; }
+  .note p { margin: 0; font-size: 16px; line-height: 1.6; color: #3A3A4A; }
+  .note .chips { margin-top: 14px; display: flex; gap: 6px; flex-wrap: wrap; }
+  .note .chips span { font-size: 12px; font-weight: 600; padding: 5px 10px; border-radius: 999px; background: rgba(255,255,255,.8); }
+  .note .chips span.p { background: var(--year); color: #fff; }
+
+  /* Angels */
+  .ppl { display: flex; gap: 22px; flex-wrap: wrap; }
+  .ppl .story .ring { width: 104px; height: 104px; }
+  .ppl .story.dim .ring { background: #D8D8E2; } .ppl .story.dim img { filter: grayscale(.8); opacity: .8; }
+  .profile { display: grid; grid-template-columns: 240px 1fr; gap: 24px; padding: 22px; margin-top: 24px; align-items: center; }
+  .profile img { width: 100%; aspect-ratio: 1; object-fit: cover; border-radius: 24px; }
+  .profile h3 { font-size: 34px; font-weight: 800; letter-spacing: -0.03em; margin: 0 0 4px; }
+  .profile p { margin: 0 0 6px; color: #3A3A4A; } .profile p b { color: var(--ink); }
+  .rooms { display: flex; gap: 10px; margin-top: 14px; flex-wrap: wrap; }
+  .rooms button { border: 0; cursor: pointer; padding: 10px 16px; border-radius: 999px; color: #fff; font-weight: 600; font-size: 14px; box-shadow: 0 8px 18px rgba(30,30,60,.12); }
+
+  /* Fantasy / Games */
+  .soon { display: grid; grid-template-columns: 1.2fr 1fr; gap: 20px; }
+  .soon .glass { padding: 26px; }
+  .pitch { aspect-ratio: 16/10; border-radius: 22px; background: linear-gradient(160deg, #7ED6A5, #3FAF7E); position: relative; overflow: hidden; box-shadow: inset 0 0 0 3px rgba(255,255,255,.5); }
+  .pitch::before { content: ""; position: absolute; left: 50%; top: 0; bottom: 0; width: 3px; background: rgba(255,255,255,.6); }
+  .pitch::after { content: ""; position: absolute; left: 50%; top: 50%; width: 90px; height: 90px; margin: -45px 0 0 -45px; border-radius: 50%; border: 3px solid rgba(255,255,255,.6); }
+  .blobs { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+  .blob { aspect-ratio: 1; border-radius: 32% 68% 55% 45% / 45% 40% 60% 55%; display: grid; place-items: center; color: #fff; font-weight: 800; font-size: 15px; box-shadow: 0 14px 30px rgba(30,30,60,.12); text-align: center; padding: 10px; }
+
+  .overlay { position: fixed; inset: 0; background: rgba(28,28,40,.35); backdrop-filter: blur(6px); display: none; align-items: center; justify-content: center; z-index: 50; padding: 20px; }
+  .overlay.open { display: flex; }
+  .overlay .glass { max-width: 440px; padding: 28px; background: rgba(255,255,255,.85); }
+  .overlay h4 { margin: 0 0 8px; font-size: 26px; font-weight: 800; letter-spacing: -0.02em; } .overlay p { margin: 0; color: var(--ink-2); line-height: 1.55; }
+
+  @media (max-width: 860px) {
+    :root { --ribbon-w: 44px; }
+    .ribbon { padding: 70px 0 96px; } .ribbon .band { left: 16px; top: 70px; bottom: 96px; width: 10px; }
+    .ribbon button { padding-left: 0; color: transparent; font-size: 1px; } .ribbon button::before { left: 18px; }
+    .ribbon button[aria-pressed="true"] { color: var(--ink); font-size: 11px; padding-left: 0; }
+    .ribbon button[aria-pressed="true"]::before { left: 11px; width: 20px; height: 20px; margin-top: -10px; }
+    .ribbon button[aria-pressed="true"] .s { display: block; position: absolute; left: 34px; top: 50%; transform: translateY(-50%); background: var(--ink); color: #fff; padding: 3px 6px; border-radius: 8px; font-size: 11px; }
+    .ribbon button[aria-pressed="true"] .f { display: none; }
+    .app { padding: 16px 14px 110px 12px; }
+    .top { margin-bottom: 20px; }
+    .pills { position: fixed; left: 10px; right: 10px; bottom: calc(12px + env(safe-area-inset-bottom)); z-index: 20; }
+    .pills button { padding: 9px 12px; font-size: 13px; }
+    .hero, .soon, .profile { grid-template-columns: 1fr; } .memory { min-height: 280px; }
+    .tiles { grid-template-columns: 1fr 1fr; } .notes { columns: 1; } .profile img { max-width: 200px; }
+  }
+  @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+</head>
+<body>
+<div class="field a" aria-hidden="true"></div><div class="field b" aria-hidden="true"></div>
+<aside class="ribbon" aria-label="Màu của từng năm"><div class="band" id="band"></div><div class="ys" id="ys"></div></aside>
+<div class="app">
+  <header class="top"><div class="brand">sonic hub<span></span></div><nav class="pills" id="pills" aria-label="Các phòng"></nav></header>
+  <main id="page"></main>
+</div>
+<div class="overlay" id="overlay"><div class="glass" id="overlayCard"></div></div>
+
+<script src="assets/photos.js"></script>
+<script src="assets/justified.js"></script>
+<script src="assets/data.js"></script>
+<script>
+  const D = window.SH_DATA;
+  const state = { room: 'home', year: 2010 };
+  // In production each color comes from the year's photos (dominant hue). Hand-picked here.
+  const YC = { 2008: '#F7B267', 2009: '#F79D84', 2010: '#F4845F', 2011: '#E86A92', 2012: '#C46BAE', 2013: '#9C6ADE', 2014: '#7A7FE8', 2015: '#5B9DF0', 2016: '#47B5E6',
+    2017: '#3CC4C0', 2018: '#48C9A0', 2019: '#7DCB7A', 2020: '#9CC65E', 2021: '#D0BF4E', 2022: '#F2B84B', 2023: '#F5A25D', 2024: '#EF8A78', 2025: '#E07BA8', 2026: '#B889E6' };
+  const ROOMS = [['home', 'Hôm nay'], ['photos', 'Ảnh'], ['journal', 'Nhật ký'], ['angels', 'Angels'], ['fantasy', 'Bóng đá'], ['games', 'Game']];
+
+  const desc = D.YEARS.slice().reverse();
+  document.getElementById('band').style.background = `linear-gradient(to bottom, ${desc.map((y, i) => `${YC[y]} ${Math.round(i / (desc.length - 1) * 100)}%`).join(', ')})`;
+  const ys = document.getElementById('ys');
+  desc.forEach(y => { const b = document.createElement('button'); b.dataset.year = y; b.innerHTML = `<span class="f">${y}</span><span class="s">${y}</span>`; b.onclick = () => setYear(y); ys.appendChild(b); });
+  const pills = document.getElementById('pills');
+  ROOMS.forEach(([id, label]) => { const b = document.createElement('button'); b.dataset.room = id; b.textContent = label; b.onclick = () => go(id); pills.appendChild(b); });
+
+  function go(room) { state.room = room; render(); window.scrollTo({ top: 0, behavior: 'smooth' }); }
+  function setYear(y) { state.year = y; render(); }
+  const greeting = () => { const h = new Date().getHours(); return h < 11 ? 'Chào buổi sáng' : h < 14 ? 'Chào buổi trưa' : h < 18 ? 'Chào buổi chiều' : 'Chào buổi tối'; };
+  const ring = (p, k, size) => `<img src="${D.photos[(k * 5 + 3) % 40].src}" alt="">`;
+
+  const V = {
+    home() {
+      const y = state.year, ph = D.photosOf(D.nearestYear(y)), ppl = D.peopleOf(y), note = D.notesOf(y)[0] || D.NOTES[3];
+      const tile = (id, name, sub, a, b, off) => `<button class="tile ${off ? 'off' : ''}" data-go="${id}" style="background:linear-gradient(145deg, ${a}, ${b})"><b>${name}</b><span>${sub}</span></button>`;
+      return `<h1 class="greet">${greeting()}.</h1>
+      <p class="lede"><span class="sw"></span>${D.todayVN()} — và năm ${y} có màu này.</p>
+      <div class="hero">
+        <div class="memory"><img src="${ph[0].src}" alt=""><div class="cap"><b>Ngày này, ${y}</b><span>${ph[0].caption} · ${ph.length} ảnh</span></div></div>
+        <div class="side">
+          <div class="glass"><h3>Người của năm ${y}</h3><div class="stories">${(ppl.length ? ppl : D.PEOPLE.slice(0, 3)).map(p => `<button class="story" data-go="angels"><div class="ring">${ring(p, D.PEOPLE.indexOf(p))}</div><small>${p.name}</small></button>`).join('')}</div></div>
+          <div class="glass"><h3>Một dòng năm ấy</h3><div class="bubble">mai thi xong roi di choi nhe. t mua ve rap quoc gia roi<small>Yahoo · 23:14 · ${y}</small></div></div>
+          <div class="glass"><h3>Ghi chép</h3><div style="font-weight:800; font-size:18px; letter-spacing:-.02em">${note.title}</div><div style="color:var(--ink-2); font-size:14px; margin-top:4px">${note.tags.join(' · ')}</div></div>
+        </div>
+      </div>
+      <h2>Các phòng</h2>
+      <div class="tiles">
+        ${tile('photos', 'Ảnh', D.photos.length + ' tấm', YC[2010], YC[2012])}
+        ${tile('journal', 'Nhật ký', D.NOTES.length + ' bài', YC[2013], YC[2015])}
+        ${tile('angels', 'Angels', D.PEOPLE.length + ' người', YC[2024], YC[2025])}
+        ${tile('fantasy', 'Bóng đá', 'sắp có', YC[2018], YC[2019], true)}
+        ${tile('games', 'Game', 'sắp có', YC[2021], YC[2023], true)}
+      </div>`;
+    },
+    photos() {
+      const list = D.photosOf(state.year);
+      return `<h1 class="greet">Ảnh năm ${state.year}</h1><p class="lede"><span class="sw"></span>${list.length ? list.length + ' tấm — màu của năm được lấy từ chính những tấm này.' : 'Năm này chưa có ảnh nào.'}</p>
+      <div class="stacks">${D.FOLDERS.map(([n, c], i) => `<button class="pile"><img src="${D.photos[(i * 7 + 2) % 40].src}" alt=""><img src="${D.photos[(i * 7 + 1) % 40].src}" alt=""><img src="${D.photos[(i * 7) % 40].src}" alt=""><b>${n}</b><span>${c}</span></button>`).join('')}</div>
+      <div id="jg"></div>`;
+    },
+    journal() {
+      const list = D.notesOf(state.year), others = D.NOTES.filter(n => n.year !== state.year);
+      const card = (n) => `<article class="glass note" style="--c:${YC[n.year]}"><span class="mood"><i></i>${n.year} · ${n.mood || ''}</span><h3>${n.title}</h3><p>${n.body}</p>
+        <div class="chips">${n.problem ? `<span class="p">${n.problem}</span>` : ''}${n.tags.map(t => `<span>${t}</span>`).join('')}</div></article>`;
+      return `<h1 class="greet">Nhật ký</h1><p class="lede"><span class="sw"></span>${list.length ? 'Những gì đã viết năm ' + state.year + '.' : 'Năm ' + state.year + ' chưa viết gì.'}</p>
+      ${list.length ? `<div class="notes">${list.map(card).join('')}</div>` : ''}
+      <h2>Từ các năm khác</h2><div class="notes" style="opacity:.8">${others.map(card).join('')}</div>`;
+    },
+    angels() {
+      const y = state.year, p = D.peopleOf(y)[0] || D.PEOPLE[0], k = D.PEOPLE.indexOf(p);
+      const tone = { Yahoo: '#7B1FA2', Nokia: '#2E6FDB', Facebook: '#1877F2', Zalo: '#0068FF', Telegram: '#229ED9' };
+      return `<h1 class="greet">Angels</h1><p class="lede"><span class="sw"></span>Mỗi người một vòng tròn màu năm quen nhau.</p>
+      <div class="ppl">${D.PEOPLE.map((x, i) => `<button class="story ${y >= x.from && y <= x.to ? '' : 'dim'}" data-year="${x.from}" style="--year:${YC[x.from]}; --year-2:${YC[x.to]}"><div class="ring">${ring(x, i)}</div><small>${x.name}</small></button>`).join('')}</div>
+      <div class="glass profile"><img src="${D.photos[(k * 5 + 3) % 40].src}" alt="">
+        <div><h3>${p.name}</h3><p>${p.from}${p.to !== p.from ? '–' + p.to : ''}</p><p><b>Thích:</b> ${p.like}</p><p><b>Kỷ niệm:</b> ${p.memory}</p>
+          <div class="rooms">${p.via.split(' · ').map(v => `<button data-reader="${v}" style="background:${tone[v] || '#555'}">Đọc ${v}</button>`).join('')}</div></div></div>`;
+    },
+    fantasy() {
+      return `<h1 class="greet">Bóng đá</h1><p class="lede"><span class="sw"></span>Mùa ${state.year}/${String(state.year + 1).slice(2)} — sân đã kẻ, chờ đội bóng về.</p>
+      <div class="soon"><div class="pitch"></div><div class="glass"><h2 style="margin-top:0">Sắp có</h2><p style="color:var(--ink-2); line-height:1.6; margin:0">Đội hình, điểm số và bảng xếp hạng Fantasy sẽ nằm ở đây, cùng trục thời gian với ảnh và ký ức — xem được mùa 2010 cạnh ảnh 2010.</p></div></div>`;
+    },
+    games() {
+      return `<h1 class="greet">Game</h1><p class="lede"><span class="sw"></span>Những trò đã chơi, đang chơi, và sẽ tự làm.</p>
+      <div class="blobs">${['Trò tự làm #1', 'Memory', 'Mood run', 'Ô chữ', 'Đua xe', 'Sắp có'].map((g, i) => `<div class="blob" style="background:linear-gradient(145deg, ${YC[2008 + i * 3]}, ${YC[2009 + i * 3]})">${g}</div>`).join('')}</div>`;
+    },
+  };
+
+  const pageEl = document.getElementById('page');
+  function render() {
+    const c = YC[state.year], c2 = YC[Math.min(2026, state.year + 2)];
+    document.documentElement.style.setProperty('--year', c); document.documentElement.style.setProperty('--year-2', c2);
+    document.querySelectorAll('.ribbon button').forEach(b => b.setAttribute('aria-pressed', String(+b.dataset.year === state.year)));
+    document.querySelectorAll('.pills button').forEach(b => b.setAttribute('aria-current', String(b.dataset.room === state.room)));
+    pageEl.innerHTML = V[state.room]();
+    pageEl.querySelectorAll('[data-go]').forEach(b => b.onclick = () => go(b.dataset.go));
+    pageEl.querySelectorAll('[data-reader]').forEach(b => b.onclick = () => openReader(b.dataset.reader));
+    pageEl.querySelectorAll('.ppl [data-year]').forEach(b => b.onclick = () => setYear(+b.dataset.year));
+    if (state.room === 'photos') {
+      const list = D.photosOf(state.year);
+      if (list.length) SH.justify(document.getElementById('jg'), list, { rowHeight: 240, gap: 12, render: (p) => { const f = document.createElement('figure'); f.className = 'jg-item soft'; f.innerHTML = `<img src="${p.src}" alt="${p.caption}" loading="lazy">`; return f; } });
+    }
+  }
+  const ov = document.getElementById('overlay');
+  function openReader(v) { document.getElementById('overlayCard').innerHTML = `<h4>Phòng đọc ${v}</h4><p>Mỗi nền tảng sẽ có một phòng đọc riêng, phục dựng đúng thời đó. Cửa này mở vào đó — design sau.</p>`; ov.classList.add('open'); }
+  ov.onclick = () => ov.classList.remove('open');
+  addEventListener('keydown', e => {
+    if (e.key === 'Escape') ov.classList.remove('open');
+    if (e.key === 'ArrowUp' && state.year < 2026) { e.preventDefault(); setYear(state.year + 1); }
+    if (e.key === 'ArrowDown' && state.year > 2008) { e.preventDefault(); setYear(state.year - 1); }
+  });
+  render();
+</script>
+</body>
+</html>
