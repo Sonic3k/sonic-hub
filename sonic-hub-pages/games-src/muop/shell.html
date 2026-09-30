@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<meta name="theme-color" content="#120C2C">
+<title>Mướp và Mười Hai Ngọn Đèn</title>
+<style>
+  /* ── Mướp và Mười Hai Ngọn Đèn ──
+     Demo game #1 for Sonic Hub Pages: a modern-retro platformer, 12 levels across one day
+     (morning meadow → sunset desert → aurora night). Levels 4, 8 and 12 are mazes.
+     Everything is generated in code: pixel art, the Vietnamese pixel font, music and sounds. */
+  :root { box-sizing: border-box; --ui: rgba(24,16,34,.5); --edge: rgba(246,231,200,.5); --on: rgba(255,196,107,.55); }
+  *, *::before, *::after { box-sizing: inherit; }
+  html, body { height: 100%; margin: 0; background: #0B0812; overflow: hidden; }
+  body { touch-action: none; -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; overscroll-behavior: none; -webkit-tap-highlight-color: transparent; font-family: system-ui, sans-serif; }
+  #stage { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; }
+  body.portrait #stage { bottom: calc(env(safe-area-inset-bottom, 0px) + 230px); top: env(safe-area-inset-top, 0px); }
+  #rotate { position: fixed; left: 0; right: 0; bottom: calc(env(safe-area-inset-bottom, 0px) + 196px); text-align: center; color: rgba(255,244,220,.45); font: 600 12px/1.3 system-ui, sans-serif; display: none; pointer-events: none; }
+  body.portrait.touch #rotate { display: block; }
+  canvas { display: block; image-rendering: pixelated; image-rendering: crisp-edges; }
+  #touch { position: fixed; inset: 0; pointer-events: none; }
+  body.touch #touch { pointer-events: auto; }
+  #touch [data-btn] { position: absolute; display: none; transition: opacity .2s; align-items: center; justify-content: center; background: var(--ui); border: 2px solid var(--edge); color: #FFF4DC; }
+  body.touch.playing #touch [data-btn="pad"], body.touch.playing #touch [data-btn="jump"], body.touch.playing #touch [data-btn="pause"] { display: flex; }
+  body.touch.playing.has-dash #touch [data-btn="dash"] { display: flex; }
+  body.touch.playing.maze #touch [data-btn="map"] { display: flex; }
+  #touch svg { width: 46%; height: 46%; fill: currentColor; pointer-events: none; }
+  .pad { left: calc(env(safe-area-inset-left, 0px) + 16px); bottom: calc(env(safe-area-inset-bottom, 0px) + 16px); width: 164px; height: 80px; border-radius: 40px; gap: 0; }
+  .pad span { flex: 1; height: 100%; display: flex; align-items: center; justify-content: center; border-radius: 38px; }
+  .pad span svg { width: 40%; height: 40%; }
+  .pad.l span.l, .pad.r span.r { background: var(--on); }
+  .jump { right: calc(env(safe-area-inset-right, 0px) + 20px); bottom: calc(env(safe-area-inset-bottom, 0px) + 20px); width: 86px; height: 86px; border-radius: 50%; }
+  .dash { right: calc(env(safe-area-inset-right, 0px) + 116px); bottom: calc(env(safe-area-inset-bottom, 0px) + 26px); width: 62px; height: 62px; border-radius: 50%; }
+  .mini { top: calc(env(safe-area-inset-top, 0px) + 8px); width: 44px; height: 44px; border-radius: 12px; }
+  .pause { right: calc(env(safe-area-inset-right, 0px) + 10px); }
+  .map { right: calc(env(safe-area-inset-right, 0px) + 62px); }
+  #touch .on { background: var(--on); }
+  body.portrait .pad { width: 184px; height: 92px; bottom: calc(env(safe-area-inset-bottom, 0px) + 36px); }
+  body.portrait .jump { width: 100px; height: 100px; bottom: calc(env(safe-area-inset-bottom, 0px) + 40px); }
+  body.portrait .dash { width: 70px; height: 70px; right: calc(env(safe-area-inset-right, 0px) + 20px); bottom: calc(env(safe-area-inset-bottom, 0px) + 156px); }
+  #home { position: fixed; left: calc(env(safe-area-inset-left, 0px) + 12px); top: calc(env(safe-area-inset-top, 0px) + 10px); color: rgba(255,244,220,.7); font: 600 13px/1 system-ui, sans-serif; text-decoration: none; padding: 8px 10px; border-radius: 8px; display: none; }
+  body.at-title #home { display: block; }
+  #home:hover, #home:focus-visible { color: #FFF4DC; background: rgba(255,255,255,.08); outline: none; }
+  @media (prefers-reduced-motion: reduce) { #touch [data-btn] { transition: none; } }
+</style>
+</head>
+<body>
+<div id="safe" style="position:fixed;inset:0;visibility:hidden;pointer-events:none;padding:env(safe-area-inset-top,0px) env(safe-area-inset-right,0px) env(safe-area-inset-bottom,0px) env(safe-area-inset-left,0px)"></div>
+<div id="stage"><canvas id="game" width="448" height="256" aria-label="Mướp và Mười Hai Ngọn Đèn — trò chơi"></canvas></div>
+<div id="touch">
+  <div data-btn="pad" class="pad"><span class="l"><svg viewBox="0 0 10 10"><path d="M7 1 2 5l5 4z"/></svg></span><span class="r"><svg viewBox="0 0 10 10"><path d="M3 1l5 4-5 4z"/></svg></span></div>
+  <div data-btn="jump" class="jump" aria-label="Nhảy"><svg viewBox="0 0 10 10"><path d="M5 1.5 9 7H1z"/></svg></div>
+  <div data-btn="dash" class="dash" aria-label="Lướt"><svg viewBox="0 0 10 10"><path d="M1 3h4V1l4 4-4 4V7H1z"/></svg></div>
+  <div data-btn="pause" class="mini pause" aria-label="Tạm dừng"><svg viewBox="0 0 10 10"><path d="M2 1h2v8H2zM6 1h2v8H6z"/></svg></div>
+  <div data-btn="map" class="mini map" aria-label="Bản đồ"><svg viewBox="0 0 10 10"><path d="M1 2l2.5-1 3 1L9 1v7l-2.5 1-3-1L1 9zM3.5 2v6l3 1V3z"/></svg></div>
+</div>
+<div id="rotate">Xoay ngang điện thoại để nhìn rộng hơn</div>
+<a id="home" href="index.html">‹ Sonic Hub Pages</a>
+<script>
+/*__JS__*/
+boot();
+</script>
+</body>
+</html>
