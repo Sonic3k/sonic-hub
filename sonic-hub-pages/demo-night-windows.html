@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Sonic Hub — Night Windows</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@500;700;800&family=Inter:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  /* ── Direction 2: Night Windows ──
+     A building at night. Every lit window is a photo; the ink is deep navy, not black,
+     and the light is tungsten, not neon. The memorable device: the facade itself,
+     lit floor by floor as you scroll, with a floor directory for the sections. */
+  :root { --ink: #0F1720; --ink-2: #16222E; --mortar: #223140; --glass: #0A1219;
+    --tungsten: #F4C86A; --tungsten-2: #C99A3C; --text: #E9E4D8; --muted: #8C97A3; }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--ink); color: var(--text); font-family: Inter, system-ui, sans-serif; -webkit-font-smoothing: antialiased; }
+  a { color: inherit; text-decoration: none; }
+  :focus-visible { outline: 2px solid var(--tungsten); outline-offset: 3px; }
+
+  header { position: fixed; inset: 0 0 auto 0; z-index: 30; display: flex; align-items: center; justify-content: space-between; padding: 22px 30px; mix-blend-mode: difference; }
+  .brand { font-family: Syne, sans-serif; font-weight: 800; font-size: 20px; letter-spacing: -0.02em; }
+  .brand span { color: var(--tungsten); }
+  header nav { display: flex; gap: 22px; font-size: 14px; color: var(--muted); }
+
+  .hero { min-height: 100svh; display: grid; grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr); align-items: center; gap: 40px; padding: 110px 30px 60px; }
+  .hero h1 { font-family: Syne, sans-serif; font-weight: 800; font-size: clamp(44px, 7.4vw, 112px); line-height: .92; letter-spacing: -0.04em; margin: 0 0 24px; }
+  .hero h1 em { font-style: normal; color: var(--tungsten); }
+  .hero p { font-size: 17px; line-height: 1.6; color: var(--muted); max-width: 46ch; margin: 0 0 30px; }
+  .hero .cta { display: inline-flex; align-items: center; gap: 10px; background: var(--tungsten); color: #1A1400; font-weight: 600; padding: 14px 20px; border-radius: 999px; font-size: 14px; }
+  .hero .cta:hover { background: #FFD97A; }
+
+  /* The facade */
+  .facade { display: grid; grid-template-columns: repeat(6, 1fr); gap: 10px; padding: 14px; background: var(--mortar); border-radius: 6px;
+    box-shadow: 0 40px 80px rgba(0,0,0,.5), inset 0 0 0 1px rgba(255,255,255,.04); }
+  .win { aspect-ratio: 3 / 4; background: var(--glass); border-radius: 3px; overflow: hidden; position: relative; }
+  .win img { width: 100%; height: 100%; object-fit: cover; display: block; opacity: 0; transform: scale(1.06); filter: sepia(.35) saturate(.8); transition: opacity .9s ease, transform 1.2s ease; }
+  .win::after { content: ""; position: absolute; inset: 0; box-shadow: inset 0 0 0 2px rgba(0,0,0,.35); }
+  .win.lit img { opacity: 1; transform: scale(1); }
+  .win.lit { box-shadow: 0 0 24px rgba(244,200,106,.25); }
+  .win.big { grid-column: span 2; grid-row: span 2; aspect-ratio: auto; }
+
+  /* Floor directory */
+  .directory { padding: 40px 30px 80px; max-width: 1180px; margin: 0 auto; }
+  .directory h2 { font-family: Syne, sans-serif; font-weight: 700; font-size: 14px; color: var(--muted); margin: 0 0 18px; letter-spacing: .02em; }
+  .floors { border-top: 1px solid var(--mortar); }
+  .floor { display: grid; grid-template-columns: 90px 1fr auto; gap: 24px; align-items: center; padding: 28px 0; border-bottom: 1px solid var(--mortar); transition: background .2s; }
+  .floor:hover { background: var(--ink-2); margin: 0 -18px; padding-left: 18px; padding-right: 18px; }
+  .floor .num { font-family: Syne, sans-serif; font-weight: 800; font-size: 42px; letter-spacing: -0.04em; color: var(--tungsten-2); line-height: 1; }
+  .floor h3 { margin: 0 0 4px; font-family: Syne, sans-serif; font-weight: 700; font-size: 24px; letter-spacing: -0.02em; }
+  .floor p { margin: 0; color: var(--muted); line-height: 1.5; max-width: 62ch; }
+  .floor .state { font-size: 13px; color: var(--muted); white-space: nowrap; }
+  .floor .state.on { color: var(--tungsten); }
+
+  /* Gallery band */
+  .band { padding: 0 30px 80px; }
+  .band .jg-item { margin: 0; overflow: hidden; border-radius: 4px; background: var(--glass); }
+  .band .jg-item img { width: 100%; height: 100%; object-fit: cover; display: block; filter: saturate(.9); }
+  footer { padding: 30px; color: var(--muted); font-size: 13px; border-top: 1px solid var(--mortar); }
+
+  @media (max-width: 860px) {
+    header nav { display: none; }
+    .hero { grid-template-columns: 1fr; padding: 96px 18px 40px; gap: 28px; }
+    .facade { grid-template-columns: repeat(4, 1fr); gap: 6px; padding: 8px; }
+    .directory { padding: 30px 18px 60px; } .floor { grid-template-columns: 56px 1fr; } .floor .state { grid-column: 2; }
+    .floor .num { font-size: 30px; } .band { padding: 0 12px 60px; }
+  }
+  @media (prefers-reduced-motion: reduce) { .win img { transition: none; } }
+</style>
+</head>
+<body>
+<header>
+  <a class="brand" href="#">Sonic<span>·</span>Hub</a>
+  <nav><a href="#">Photos</a><a href="#">Journal</a><a href="#">Angels</a><a href="#">Fantasy</a><a href="#">Games</a></nav>
+</header>
+
+<section class="hero">
+  <div>
+    <h1>Mỗi cửa sổ<br>một <em>đêm</em> đã qua</h1>
+    <p>Nhà kho ký ức của một người sinh năm 90: ảnh, bài viết, đội bóng, game, và những cô gái từng đi ngang. Cuộn xuống — các tầng sẽ sáng dần.</p>
+    <a class="cta" href="#floors">Lên tầng ảnh</a>
+  </div>
+  <div class="facade" id="facade" aria-hidden="true"></div>
+</section>
+
+<section class="directory" id="floors" aria-label="Danh mục tầng">
+  <h2>Bảng chỉ dẫn tầng</h2>
+  <div class="floors">
+    <a class="floor" href="#gallery"><span class="num">5</span><div><h3>Photos</h3><p>Justified gallery theo folder, timeline theo năm, tone trung tính để ảnh tự lên tiếng.</p></div><span class="state on">đang sáng</span></a>
+    <a class="floor" href="#"><span class="num">4</span><div><h3>Journal</h3><p>Sở thích, suy nghĩ, những vấn đề đang theo dõi. Chữ dễ đọc, ảnh dán ngay giữa dòng.</p></div><span class="state on">đang sáng</span></a>
+    <a class="floor" href="#"><span class="num">3</span><div><h3>Angels</h3><p>Từng người một tầng riêng: ảnh, kỷ niệm, và phòng đọc chat mô phỏng đúng Yahoo, Facebook, Nokia.</p></div><span class="state on">đang sáng</span></a>
+    <a class="floor" href="#"><span class="num">2</span><div><h3>Fantasy Football</h3><p>Các đội bóng và số liệu mùa giải. Tầng này đang chờ dọn vào.</p></div><span class="state">chưa bật đèn</span></a>
+    <a class="floor" href="#"><span class="num">1</span><div><h3>Games</h3><p>Những trò đã chơi, đang chơi, và sẽ tự làm.</p></div><span class="state">chưa bật đèn</span></a>
+  </div>
+</section>
+
+<section class="band" id="gallery" aria-label="Ảnh gần đây"><div id="jg"></div></section>
+<footer>Night Windows — direction 2 of 5.</footer>
+
+<script src="assets/photos.js"></script>
+<script src="assets/justified.js"></script>
+<script>
+  const P = window.SH_PHOTOS;
+  const facade = document.getElementById('facade');
+  const slots = 18;
+  for (let i = 0; i < slots; i++) {
+    const d = document.createElement('div');
+    d.className = 'win' + (i === 4 ? ' big' : '');
+    d.innerHTML = `<img src="${P[i % P.length].src}" alt="" loading="eager">`;
+    facade.appendChild(d);
+  }
+  // Light the windows one by one after paint — the one orchestrated moment on this page.
+  const wins = [...facade.children];
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  wins.forEach((w, i) => setTimeout(() => w.classList.add('lit'), reduce ? 0 : 250 + i * 140));
+  // Gently re-light on scroll so the facade feels alive without a hover-on-everything effect.
+  addEventListener('scroll', () => {
+    const y = scrollY;
+    wins.forEach((w, i) => { if (!reduce && ((i * 97 + Math.floor(y / 220)) % 11 === 0)) { w.classList.remove('lit'); setTimeout(() => w.classList.add('lit'), 700); } });
+  }, { passive: true });
+
+  const render = (p) => { const f = document.createElement('figure'); f.className = 'jg-item'; f.innerHTML = `<img src="${p.src}" alt="${p.caption}" loading="lazy">`; return f; };
+  SH.justify(document.getElementById('jg'), P.slice(0, 22), { rowHeight: 300, gap: 8, render });
+</script>
+</body>
+</html>

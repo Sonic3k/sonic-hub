@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Sonic Hub — Zine</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;700;900&family=Manrope:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  /* ── Direction 3: Zine ──
+     For the writing side. Born-1990 energy: stickers, a ticker, one loud lilac
+     and one loud lime — on a cool white page where 18px body text is the point.
+     The memorable device: the article grid is a pinboard of rotated stickers. */
+  :root { --page: #F6F7FB; --ink: #15151A; --muted: #62636E; --line: #E1E3EA;
+    --lilac: #7A5CFF; --lime: #C9FF3F; --pink: #FF5FA2; --sky: #59C3FF; }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--page); color: var(--ink); font-family: Manrope, system-ui, sans-serif; font-size: 18px; line-height: 1.6; -webkit-font-smoothing: antialiased; }
+  a { color: inherit; text-decoration: none; }
+  :focus-visible { outline: 3px solid var(--lilac); outline-offset: 3px; }
+
+  .ticker { background: var(--ink); color: var(--lime); font-family: Unbounded, sans-serif; font-weight: 700; font-size: 13px; overflow: hidden; white-space: nowrap; padding: 10px 0; }
+  .ticker span { display: inline-block; padding-right: 48px; animation: tick 28s linear infinite; }
+  @keyframes tick { to { transform: translateX(-50%); } }
+
+  .top { display: flex; align-items: center; justify-content: space-between; padding: 22px 32px; }
+  .brand { font-family: Unbounded, sans-serif; font-weight: 900; font-size: 22px; letter-spacing: -0.03em; }
+  .brand i { display: inline-block; width: 14px; height: 14px; background: var(--pink); border-radius: 50%; margin-left: 6px; vertical-align: middle; }
+  .top nav { display: flex; gap: 6px; }
+  .top nav a { padding: 8px 14px; border-radius: 999px; font-weight: 700; font-size: 14px; border: 2px solid transparent; }
+  .top nav a:hover { border-color: var(--ink); }
+  .top nav a.on { background: var(--ink); color: #fff; }
+
+  .lead { padding: 30px 32px 10px; display: grid; grid-template-columns: 1.2fr .8fr; gap: 40px; align-items: end; }
+  .lead h1 { font-family: Unbounded, sans-serif; font-weight: 900; font-size: clamp(38px, 6.2vw, 92px); line-height: .95; letter-spacing: -0.04em; margin: 0; }
+  .lead h1 mark { background: linear-gradient(transparent 55%, var(--lime) 55%); color: inherit; }
+  .lead p { margin: 0; color: var(--muted); font-size: 19px; max-width: 42ch; }
+
+  /* Pinboard */
+  .board { position: relative; padding: 40px 32px 70px; display: grid; grid-template-columns: repeat(12, 1fr); gap: 22px; }
+  .card { background: #fff; border: 2px solid var(--ink); border-radius: 18px; padding: 22px; box-shadow: 8px 8px 0 var(--ink); position: relative; transition: transform .15s; }
+  .card:hover { transform: translate(-2px, -2px) rotate(0deg) !important; box-shadow: 12px 12px 0 var(--ink); }
+  .card h2 { font-family: Unbounded, sans-serif; font-weight: 700; font-size: 26px; line-height: 1.1; letter-spacing: -0.03em; margin: 12px 0 10px; }
+  .card p { margin: 0; color: var(--muted); font-size: 16px; }
+  .card .sticker { position: absolute; top: -14px; right: 18px; font-family: Unbounded, sans-serif; font-weight: 700; font-size: 12px; padding: 6px 12px; border-radius: 999px; border: 2px solid var(--ink); transform: rotate(6deg); }
+  .card .meta { font-size: 13px; color: var(--muted); }
+  .card img { width: 100%; border-radius: 10px; display: block; margin-top: 14px; border: 2px solid var(--ink); }
+  .c1 { grid-column: span 7; transform: rotate(-1.2deg); } .c1 .sticker { background: var(--lime); }
+  .c2 { grid-column: span 5; transform: rotate(1.4deg); } .c2 .sticker { background: var(--pink); color: #fff; }
+  .c3 { grid-column: span 4; transform: rotate(.8deg); } .c3 .sticker { background: var(--sky); }
+  .c4 { grid-column: span 4; transform: rotate(-.9deg); background: var(--lilac); color: #fff; } .c4 p { color: #E7E1FF; } .c4 .sticker { background: #fff; }
+  .c5 { grid-column: span 4; transform: rotate(1.1deg); } .c5 .sticker { background: var(--lime); }
+
+  /* Reading sample — the real reason for the palette */
+  .read { max-width: 68ch; margin: 0 auto; padding: 20px 32px 90px; }
+  .read h3 { font-family: Unbounded, sans-serif; font-weight: 700; font-size: 32px; letter-spacing: -0.03em; line-height: 1.1; margin: 0 0 8px; }
+  .read .by { color: var(--muted); font-size: 15px; margin-bottom: 26px; }
+  .read p { margin: 0 0 1.2em; }
+  .read figure { margin: 26px -20px; } .read figure img { width: 100%; border-radius: 14px; display: block; }
+  .read figure figcaption { font-size: 14px; color: var(--muted); margin-top: 8px; padding: 0 20px; }
+  .read blockquote { margin: 26px 0; padding: 4px 0 4px 22px; border-left: 6px solid var(--lime); font-weight: 700; font-size: 22px; line-height: 1.35; }
+  footer { padding: 26px 32px 50px; color: var(--muted); font-size: 14px; border-top: 2px solid var(--line); }
+
+  @media (max-width: 900px) {
+    .top { padding: 16px 18px; } .top nav { display: none; }
+    .lead { grid-template-columns: 1fr; gap: 14px; padding: 22px 18px 6px; }
+    .board { grid-template-columns: 1fr; padding: 30px 18px 50px; } .board .card { grid-column: auto; }
+    .read { padding: 10px 18px 70px; } .read figure { margin: 22px 0; } .read figure figcaption { padding: 0; }
+  }
+  @media (prefers-reduced-motion: reduce) { .ticker span { animation: none; } .card { transition: none; } }
+</style>
+</head>
+<body>
+<div class="ticker" aria-hidden="true"><span>Bóng đá · Game · Máy ảnh phim · Nhạc 2000s · Hà Nội · Du lịch · Cà phê · Code · Ký ức · Bóng đá · Game · Máy ảnh phim · Nhạc 2000s · Hà Nội · Du lịch · Cà phê · Code · Ký ức · </span></div>
+<header class="top">
+  <a class="brand" href="#">Sonic Hub<i></i></a>
+  <nav><a class="on" href="#">Journal</a><a href="#">Photos</a><a href="#">Angels</a><a href="#">Fantasy</a><a href="#">Games</a></nav>
+</header>
+
+<section class="lead">
+  <h1>Viết ra <mark>ngay</mark>, sắp xếp sau.</h1>
+  <p>Bài dài về sở thích, bài ngắn xả một cơn stress, một câu ghim lại giữa đêm. Mỗi thứ một tờ dán lên bảng.</p>
+</section>
+
+<section class="board" aria-label="Bài viết">
+  <article class="card c1"><span class="sticker">Bóng đá</span><div class="meta">Chủ nhật, 27/9</div><h2>Xem lại chung kết 2005 sau 20 năm: Liverpool có xứng đáng không?</h2><p>Câu trả lời ngắn: có. Câu trả lời dài mất 2.400 chữ và một cốc cà phê.</p><img src="https://picsum.photos/seed/zine1/1200/560" alt=""></article>
+  <article class="card c2"><span class="sticker">Stress</span><div class="meta">Thứ tư, đêm</div><h2>Ba dòng viết cho đỡ nặng đầu</h2><p>Không cần tiêu đề, không cần ai đọc. Note này link vào vấn đề "Deadline Q4" — để tuần sau nhìn lại còn nhớ mình đã qua thế nào.</p></article>
+  <article class="card c3"><span class="sticker">Máy ảnh</span><div class="meta">Tuần trước</div><h2>Đem Nokia N73 đi chụp lại Hồ Tây</h2><p>Nhiễu như xưa, và đẹp như xưa.</p></article>
+  <article class="card c4"><span class="sticker">Game</span><div class="meta">Đang viết</div><h2>Tự làm một trò nhỏ trong 30 ngày</h2><p>Nhật ký dev: ngày 12, có nhân vật chạy được rồi.</p></article>
+  <article class="card c5"><span class="sticker">Nhạc</span><div class="meta">Playlist</div><h2>20 bài Yahoo status năm 2009</h2><p>Bài nào từng là dòng status của bạn?</p></article>
+</section>
+
+<section class="read" aria-label="Mẫu trang đọc">
+  <h3>Đem Nokia N73 đi chụp lại Hồ Tây</h3>
+  <div class="by">Journal · Máy ảnh · 6 phút đọc</div>
+  <p>Cái máy vẫn còn lên nguồn. Đó là tin tốt duy nhất trong buổi sáng, vì pin chỉ chịu được đúng bốn mươi phút, và bốn mươi phút đó tôi đã dùng để đi bộ vòng quanh chỗ hồ ngày xưa hay ngồi.</p>
+  <figure><img src="https://picsum.photos/seed/zine2/1400/900" alt=""><figcaption>Cùng góc, cùng máy, cách nhau mười bảy năm.</figcaption></figure>
+  <p>Ảnh ra nhiễu, mờ, lệch màu về phía xanh. Nhưng đúng là cái nhiễu đó — không phải filter nào giả được — làm cho tấm ảnh trông giống ký ức hơn là giống thực tại.</p>
+  <blockquote>Máy cũ không chụp lại được cảnh cũ, nhưng nó chụp lại được cách mình từng nhìn.</blockquote>
+  <p>Đoạn này dài thêm để test độ đọc: 18px Manrope trên nền xanh trắng rất nhạt, dòng dưới 70 ký tự, giãn dòng 1.6. Không kem, không nâu, không cảm giác báo cũ. Đủ sáng để đọc ban ngày, đủ dịu để đọc lúc mười hai giờ đêm.</p>
+</section>
+<footer>Zine — direction 3 of 5.</footer>
+</body>
+</html>

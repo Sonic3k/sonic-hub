@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Sonic Hub Pages — design demos</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;800&display=swap" rel="stylesheet">
+<style>
+  :root { --bg: #F2F2EF; --ink: #1B1B1A; --muted: #6C6C68; --line: #D9D8D2; }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--ink); font-family: Manrope, system-ui, sans-serif; -webkit-font-smoothing: antialiased; }
+  a { color: inherit; text-decoration: none; }
+  :focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; }
+  header { padding: 40px 32px 20px; max-width: 1240px; margin: 0 auto; }
+  header h1 { margin: 0 0 8px; font-size: clamp(28px, 3.6vw, 44px); font-weight: 800; letter-spacing: -0.035em; }
+  header p { margin: 0; color: var(--muted); max-width: 64ch; line-height: 1.55; }
+  .demos { max-width: 1240px; margin: 0 auto; padding: 10px 32px 80px; display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 22px; }
+  .demo { display: grid; grid-template-rows: auto 1fr; border: 1px solid var(--line); border-radius: 14px; overflow: hidden; background: #fff; transition: transform .15s, box-shadow .15s; }
+  .demo:hover { transform: translateY(-2px); box-shadow: 0 18px 40px rgba(0,0,0,.08); }
+  .swatch { height: 150px; display: grid; grid-template-columns: 2fr 1fr 1fr; }
+  .swatch i { display: block; }
+  .demo .txt { padding: 18px 20px 20px; }
+  .demo .txt h2 { margin: 0 0 6px; font-size: 20px; font-weight: 800; letter-spacing: -0.025em; }
+  .demo .txt p { margin: 0 0 10px; color: var(--muted); font-size: 14px; line-height: 1.5; }
+  .demo .txt small { color: var(--muted); font-size: 12px; }
+  footer { max-width: 1240px; margin: 0 auto; padding: 0 32px 50px; color: var(--muted); font-size: 13px; line-height: 1.6; }
+  @media (max-width: 720px) { header, .demos, footer { padding-left: 18px; padding-right: 18px; } .demos { grid-template-columns: 1fr; } }
+  @media (prefers-reduced-motion: reduce) { .demo { transition: none; } }
+</style>
+</head>
+<body>
+<header>
+  <h1>Sonic Hub — 5 hướng thiết kế</h1>
+  <p>Mỗi demo là một trang tĩnh độc lập (HTML + CSS + JS thuần), đặt cược vào một thứ đáng nhớ duy nhất. Ảnh mẫu từ picsum; thuật toán justified gallery dùng chung trong <code>assets/justified.js</code>.</p>
+</header>
+
+<main class="demos">
+  <a class="demo" href="demo-contact-sheet.html">
+    <div class="swatch"><i style="background:#E9E7E2"></i><i style="background:#1F1F1D"></i><i style="background:#2C4A6E"></i></div>
+    <div class="txt"><h2>1 · Contact Sheet</h2><p>Giấy xám bảo tàng, mực than. Dải năm khổng lồ kéo được để lọc cả thư viện; ảnh là màu sắc duy nhất trên trang.</p><small>Photo-first · nền sáng trung tính · Manrope + Newsreader</small></div>
+  </a>
+  <a class="demo" href="demo-night-windows.html">
+    <div class="swatch"><i style="background:#0F1720"></i><i style="background:#223140"></i><i style="background:#F4C86A"></i></div>
+    <div class="txt"><h2>2 · Night Windows</h2><p>Một tòa nhà về đêm, mỗi cửa sổ sáng là một tấm ảnh, sáng dần khi tải trang. Bảng chỉ dẫn tầng làm menu.</p><small>Cinematic · navy + tungsten · Syne + Inter</small></div>
+  </a>
+  <a class="demo" href="demo-zine.html">
+    <div class="swatch"><i style="background:#F6F7FB"></i><i style="background:#7A5CFF"></i><i style="background:#C9FF3F"></i></div>
+    <div class="txt"><h2>3 · Zine</h2><p>Cho phần viết: bảng ghim sticker xoay nhẹ, ticker sở thích, và trang đọc 18px trên nền trắng xanh — dễ đọc, không kem, không nâu.</p><small>Articles · sinh năm 90 · Unbounded + Manrope</small></div>
+  </a>
+  <a class="demo" href="demo-messenger.html">
+    <div class="swatch"><i style="background:#ECEAF3"></i><i style="background:#7B1FA2"></i><i style="background:#2E6FDB"></i></div>
+    <div class="txt"><h2>4 · Messenger</h2><p>Cửa sổ Yahoo! Messenger 2009 phát lại một đoạn chat, cạnh hộp thư Nokia. Lời hứa "mỗi nền tảng một phòng đọc" thành hình.</p><small>Angels · lavender · Instrument Sans</small></div>
+  </a>
+  <a class="demo" href="demo-hub-os.html">
+    <div class="swatch"><i style="background:#0F2B30"></i><i style="background:#F4F6F5"></i><i style="background:#F1D9A7"></i></div>
+    <div class="txt"><h2>5 · Hub OS</h2><p>Cả hub là một màn hình desktop: mỗi mục một cửa sổ kéo thả được, dock làm nav, ⌘K tìm mọi thứ. Mục trống có chỗ chờ.</p><small>Everything-hub · sea-glass + sand · Space Grotesk</small></div>
+  </a>
+</main>
+<footer>Cách dùng: chọn hướng ưng, hoặc lấy từng thiết bị đáng nhớ (dải năm, mặt tiền cửa sổ, bảng ghim, cửa sổ Yahoo, ⌘K) ghép vào một hệ. Port sang React ở <code>sonic-hub-web</code> sau khi chốt.</footer>
+</body>
+</html>

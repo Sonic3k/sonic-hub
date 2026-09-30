@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Sonic Hub — Hub OS</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  /* ── Direction 5: Hub OS ──
+     The hub as a desktop: every section is an app in its own window, the dock is the
+     nav, and ⌘K opens a command palette. Sea-glass ink with a sand highlight.
+     The memorable device: windows you can actually drag around. */
+  :root { --desk: #0F2B30; --desk-2: #123A40; --sand: #F1D9A7; --glass: rgba(255,255,255,.06); --edge: rgba(255,255,255,.12);
+    --text: #E6F1F0; --muted: #8FB1B3; --win: #F4F6F5; --win-ink: #16302F; --win-muted: #5F7876; }
+  * { box-sizing: border-box; }
+  body { margin: 0; min-height: 100svh; background: radial-gradient(120% 90% at 20% 0%, var(--desk-2), var(--desk) 60%); color: var(--text);
+    font-family: "Space Grotesk", system-ui, sans-serif; overflow-x: hidden; -webkit-font-smoothing: antialiased; }
+  a { color: inherit; text-decoration: none; }
+  :focus-visible { outline: 2px solid var(--sand); outline-offset: 3px; }
+
+  .menubar { display: flex; align-items: center; gap: 18px; padding: 10px 18px; font-size: 13px; background: var(--glass); border-bottom: 1px solid var(--edge); backdrop-filter: blur(10px); }
+  .menubar b { font-weight: 700; } .menubar .k { margin-left: auto; color: var(--muted); }
+  .menubar kbd { font: inherit; background: var(--glass); border: 1px solid var(--edge); border-radius: 5px; padding: 1px 6px; }
+
+  .desk { position: relative; height: calc(100svh - 41px - 84px); min-height: 640px; }
+  .win { position: absolute; width: min(480px, 92vw); background: var(--win); color: var(--win-ink); border-radius: 12px; overflow: hidden;
+    box-shadow: 0 30px 80px rgba(0,0,0,.45), 0 0 0 1px rgba(255,255,255,.08); transition: box-shadow .15s; }
+  .win.active { box-shadow: 0 40px 100px rgba(0,0,0,.6), 0 0 0 1px var(--sand); z-index: 5; }
+  .win .tb { display: flex; align-items: center; gap: 10px; padding: 10px 12px; background: #E7ECEA; cursor: grab; user-select: none; font-size: 13px; font-weight: 700; }
+  .win .tb:active { cursor: grabbing; }
+  .win .tb .lights { display: flex; gap: 6px; } .win .tb .lights i { width: 11px; height: 11px; border-radius: 50%; display: block; background: #C9D3D0; }
+  .win .tb .lights i:first-child { background: #F08A7E; }
+  .win .body { padding: 14px; font-size: 14px; color: var(--win-muted); line-height: 1.5; }
+  .win .body h2 { margin: 0 0 6px; font-size: 20px; color: var(--win-ink); letter-spacing: -0.02em; }
+  .win .body p { margin: 0 0 10px; }
+  .strip { display: grid; grid-template-columns: repeat(4, 1fr); gap: 5px; margin-top: 8px; } .strip img { width: 100%; aspect-ratio: 1; object-fit: cover; border-radius: 6px; display: block; }
+  .today { display: flex; align-items: baseline; gap: 12px; } .today b { font-size: 44px; color: var(--win-ink); letter-spacing: -0.04em; line-height: 1; } .today span { font-size: 13px; }
+  .row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #E1E7E4; color: var(--win-ink); font-size: 14px; }
+  .row small { color: var(--win-muted); }
+  .empty-app { border: 1px dashed #C4D0CC; border-radius: 8px; padding: 22px; text-align: center; color: var(--win-muted); }
+
+  .dock { position: fixed; left: 50%; bottom: 14px; transform: translateX(-50%); display: flex; gap: 8px; padding: 8px; background: var(--glass); border: 1px solid var(--edge); border-radius: 18px; backdrop-filter: blur(16px); }
+  .dock button { appearance: none; border: 0; background: rgba(255,255,255,.08); color: var(--text); font: inherit; font-size: 13px; font-weight: 500; padding: 10px 14px; border-radius: 12px; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 4px; min-width: 76px; }
+  .dock button i { width: 28px; height: 28px; border-radius: 9px; display: block; }
+  .dock button:hover { background: rgba(255,255,255,.16); }
+  .dock button.open::after { content: ""; width: 4px; height: 4px; border-radius: 50%; background: var(--sand); }
+
+  .palette { position: fixed; inset: 0; display: none; align-items: flex-start; justify-content: center; padding-top: 14vh; background: rgba(5,20,22,.55); z-index: 50; }
+  .palette.open { display: flex; }
+  .palette .box { width: min(560px, 92vw); background: var(--win); color: var(--win-ink); border-radius: 14px; overflow: hidden; box-shadow: 0 40px 100px rgba(0,0,0,.6); }
+  .palette input { width: 100%; border: 0; padding: 16px 18px; font: inherit; font-size: 17px; outline: none; background: #fff; }
+  .palette ul { list-style: none; margin: 0; padding: 8px; max-height: 320px; overflow: auto; }
+  .palette li { padding: 10px 12px; border-radius: 8px; display: flex; justify-content: space-between; font-size: 14px; cursor: pointer; }
+  .palette li small { color: var(--win-muted); } .palette li:hover, .palette li.sel { background: #E7ECEA; }
+
+  @media (max-width: 760px) {
+    .desk { height: auto; min-height: 0; padding: 14px 12px 120px; display: grid; gap: 14px; }
+    .win { position: static !important; width: 100%; } .win .tb { cursor: default; }
+    .menubar .k { display: none; } .dock button { min-width: 58px; padding: 8px 10px; font-size: 11px; }
+  }
+</style>
+</head>
+<body>
+<div class="menubar"><b>Sonic Hub</b><span>Photos</span><span>Journal</span><span>Angels</span><span class="k">Bấm <kbd>⌘</kbd><kbd>K</kbd> để tìm bất cứ thứ gì</span></div>
+
+<main class="desk" id="desk">
+  <section class="win" data-app="photos" style="left:4%; top:6%"><div class="tb"><span class="lights"><i></i><i></i><i></i></span>Photos — Hồ Tây 2018</div>
+    <div class="body"><h2>Justified gallery theo folder</h2><p>Tone trung tính, mỗi hàng đầy chiều ngang, ảnh giữ đúng tỉ lệ. Kéo cửa sổ này đi chỗ khác thử.</p><div class="strip" id="strip"></div></div></section>
+  <section class="win" data-app="today" style="left:46%; top:10%; width:min(360px,92vw)"><div class="tb"><span class="lights"><i></i><i></i><i></i></span>Ngày này năm xưa</div>
+    <div class="body"><div class="today"><b>2011</b><span>30 tháng 9 · Yahoo, 23:14</span></div><p style="margin-top:10px">"mai thi xong roi di choi nhe. t mua ve rap quoc gia roi" — 3 tấm ảnh và 41 dòng chat cùng ngày.</p></div></section>
+  <section class="win" data-app="journal" style="left:52%; top:44%"><div class="tb"><span class="lights"><i></i><i></i><i></i></span>Journal</div>
+    <div class="body"><h2>Đang theo dõi</h2><div class="row">Deadline Q4 <small>7 note · đang xử lý</small></div><div class="row">Ngủ muộn <small>12 note · theo dõi</small></div><div class="row">Chạy 5k <small>3 note · xong</small></div></div></section>
+  <section class="win" data-app="fantasy" style="left:8%; top:58%; width:min(380px,92vw)"><div class="tb"><span class="lights"><i></i><i></i><i></i></span>Fantasy Football</div>
+    <div class="body"><div class="empty-app">Mùa giải chưa nạp dữ liệu. Cửa sổ này mở sẵn để đội bóng có chỗ về.</div></div></section>
+</main>
+
+<nav class="dock" aria-label="Ứng dụng">
+  <button data-open="photos" class="open"><i style="background:#F1D9A7"></i>Photos</button>
+  <button data-open="journal" class="open"><i style="background:#9FD8CB"></i>Journal</button>
+  <button data-open="angels"><i style="background:#F3A6C3"></i>Angels</button>
+  <button data-open="fantasy" class="open"><i style="background:#8FB1B3"></i>Fantasy</button>
+  <button data-open="games"><i style="background:#C9B7F5"></i>Games</button>
+</nav>
+
+<div class="palette" id="palette" role="dialog" aria-label="Tìm">
+  <div class="box"><input id="q" placeholder="Tìm ảnh, bài viết, người, vấn đề..." autocomplete="off">
+    <ul id="results"></ul></div>
+</div>
+
+<script src="assets/photos.js"></script>
+<script>
+  document.getElementById('strip').innerHTML = window.SH_PHOTOS.slice(0, 8).map(p => `<img src="${p.src}" alt="">`).join('');
+
+  // Draggable windows (desktop only) — the one interaction that sells the metaphor.
+  const desk = document.getElementById('desk');
+  let drag = null;
+  document.querySelectorAll('.win .tb').forEach(tb => {
+    tb.addEventListener('pointerdown', e => {
+      if (matchMedia('(max-width: 760px)').matches) return;
+      const win = tb.parentElement; document.querySelectorAll('.win').forEach(w => w.classList.remove('active')); win.classList.add('active');
+      const r = win.getBoundingClientRect(), d = desk.getBoundingClientRect();
+      drag = { win, dx: e.clientX - r.left, dy: e.clientY - r.top, d }; tb.setPointerCapture(e.pointerId);
+    });
+    tb.addEventListener('pointermove', e => { if (!drag) return;
+      const x = Math.max(0, Math.min(e.clientX - drag.d.left - drag.dx, drag.d.width - 120));
+      const y = Math.max(0, Math.min(e.clientY - drag.d.top - drag.dy, drag.d.height - 60));
+      drag.win.style.left = x + 'px'; drag.win.style.top = y + 'px'; });
+    tb.addEventListener('pointerup', () => drag = null);
+  });
+
+  // Dock toggles windows.
+  document.querySelectorAll('.dock button').forEach(b => b.onclick = () => {
+    const app = b.dataset.open; const win = document.querySelector(`.win[data-app="${app}"]`);
+    if (!win) { openPalette(app === 'angels' ? 'Angels' : 'Games'); return; }
+    const hidden = win.style.display === 'none'; win.style.display = hidden ? '' : 'none'; b.classList.toggle('open', hidden);
+  });
+
+  // ⌘K palette
+  const pal = document.getElementById('palette'), q = document.getElementById('q'), res = document.getElementById('results');
+  const index = [['Hồ Tây 2018', 'Folder · 48 ảnh'], ['Bích Trân', 'Angel · 2009–2012'], ['Deadline Q4', 'Problem · 7 note'], ['Xem lại chung kết 2005', 'Journal · Bóng đá'], ['Tam Đảo', 'Folder · 31 ảnh'], ['Yahoo 2010', 'Chat archive · 6.212 dòng'], ['Games', 'App · đang trống']];
+  function openPalette(prefill = '') { pal.classList.add('open'); q.value = prefill; q.focus(); list(); }
+  function list() { const v = q.value.toLowerCase(); res.innerHTML = index.filter(([n]) => n.toLowerCase().includes(v)).map(([n, d], i) => `<li class="${i === 0 ? 'sel' : ''}">${n}<small>${d}</small></li>`).join('') || '<li><small>Không có kết quả</small></li>'; }
+  q.addEventListener('input', list);
+  addEventListener('keydown', e => { if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') { e.preventDefault(); openPalette(); } if (e.key === 'Escape') pal.classList.remove('open'); });
+  pal.addEventListener('click', e => { if (e.target === pal) pal.classList.remove('open'); });
+  document.querySelector('.menubar .k').style.cursor = 'pointer'; document.querySelector('.menubar .k').onclick = () => openPalette();
+</script>
+</body>
+</html>
