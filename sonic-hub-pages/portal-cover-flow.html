@@ -12,8 +12,6 @@
      Year column = an album list, one cover per year. Reader = an iPod classic. */
   .pt { --bar-h: 70px; --dock-w: 104px; --years-w: 150px; --pad-t: 22px; --pad-x: 40px;
     --text: #F2F2F4; --muted: #8C8C94; --blue: #4DA3FF; --card-a: #242428; --card-b: #141416; --line: #2E2E33;
-    --u-surface: linear-gradient(var(--card-a), var(--card-b)); --u-text: var(--text); --u-muted: var(--muted); --u-accent: var(--blue); --u-radius: 14px; --u-radius-img: 6px;
-    --u-shadow: inset 0 1px 0 rgba(255,255,255,.07), 0 12px 30px rgba(0,0,0,.45); --u-line: #34343A; --u-blur: 0px; --u-hero: #fff; --u-hero-muted: var(--muted); --u-dot-ring: #0D0D10;
     font-family: Inter, system-ui, sans-serif; color: var(--text); }
   body.pt { background: radial-gradient(ellipse 90% 70% at 50% 0%, #2B2B30 0%, #0D0D10 60%, #000 100%) fixed; }
 
@@ -50,10 +48,7 @@
   .pt h2.sec { margin: 34px 0 14px; font-size: 18px; font-weight: 700; }
   .pt .moment, .pt .note, .pt .empty, .pt .folder, .pt .game { background: linear-gradient(var(--card-a), var(--card-b)); border: 1px solid var(--line); border-radius: 14px; box-shadow: inset 0 1px 0 rgba(255,255,255,.07), 0 12px 30px rgba(0,0,0,.4); }
 
-  /* home: the day's photos as a Cover Flow */
-  .pt .h2-hero { grid-template-columns: 1fr; gap: 0; min-height: 0; text-align: center; }
-  .pt .h2-story { margin: 0 auto 22px; } .pt .h2-hero .actions, .pt .h2-who { justify-content: center; }
-  .pt .card { border: 1px solid var(--line); }
+  /* home: cover flow */
   .pt .home .hero { text-align: center; }
   .pt .home .actions { justify-content: center; }
   .pt .actions { display: flex; gap: 12px; flex-wrap: wrap; }
@@ -146,7 +141,7 @@
 <script src="assets/photos.js"></script>
 <script src="assets/justified.js"></script>
 <script src="assets/data.js"></script>
-<script src="assets/portal-engine-v2.js"></script>
+<script src="assets/portal-engine.js"></script>
 <script>
   Portal({
     brand: 'Sonic Hub',
@@ -158,18 +153,18 @@
       if (state.room !== 'home') return;
       const D = window.SH_DATA, y = D.nearestYear(state.year);
       const list = D.photosOf(y).concat(D.photos.filter(p => p.year !== y)).slice(0, 9);
-      const slot = app.querySelector('.h2-photo'), cf = document.createElement('div'); cf.className = 'cf';
+      const hero = app.querySelector('.home .hero'), cf = document.createElement('div'); cf.className = 'cf';
       cf.innerHTML = list.map((p, i) => `<button type="button" class="cover" data-i="${i}" aria-label="${p.caption}"><img src="${p.src}" alt=""></button>`).join('') + '<p class="cf-cap"></p>';
-      slot.replaceWith(cf);
+      hero.appendChild(cf);
       const covers = [...cf.querySelectorAll('.cover')], narrow = matchMedia('(max-width: 860px)').matches;
       let cur = Math.min(2, list.length - 1);
       const lay = () => {
         covers.forEach((c, i) => { const d = i - cur, s = Math.sign(d), a = Math.abs(d), gap = narrow ? 105 : 150, step = narrow ? 42 : 64;
           c.style.transform = d === 0 ? 'translateX(-50%) translateZ(90px)' : `translateX(calc(-50% + ${s * (gap + (a - 1) * step)}px)) rotateY(${-s * 62}deg)`;
           c.style.zIndex = 20 - a; c.classList.toggle('on', d === 0); });
-        cf.querySelector('.cf-cap').innerHTML = `<b>${list[cur].caption}</b> · ${list[cur].year} · <span style="opacity:.7">bấm để xem</span>`;
+        cf.querySelector('.cf-cap').innerHTML = `<b>${list[cur].caption}</b> · ${list[cur].year}`;
       };
-      covers.forEach(c => c.onclick = () => { const i = +c.dataset.i; if (i === cur) window.PortalAPI.openViewer(list, cur); else { cur = i; lay(); } });
+      covers.forEach(c => c.onclick = () => { cur = +c.dataset.i; lay(); });
       lay();
     },
   });

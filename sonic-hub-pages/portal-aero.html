@@ -15,13 +15,11 @@
     --navy: #0A3764; --muted: #3F6E96; --blue: #1E88FF;
     --glass: linear-gradient(180deg, rgba(255,255,255,.9) 0%, rgba(255,255,255,.66) 49%, rgba(255,255,255,.46) 51%, rgba(255,255,255,.6) 100%);
     --glass-edge: 0 10px 26px rgba(0,70,160,.18), inset 0 1px 0 #fff, inset 0 0 0 1px rgba(120,190,255,.3);
-    --u-surface: var(--glass); --u-text: var(--navy); --u-muted: var(--muted); --u-accent: var(--blue); --u-radius: 16px; --u-radius-img: 12px;
-    --u-shadow: var(--glass-edge); --u-line: rgba(255,255,255,.75); --u-blur: 10px; --u-hero: #fff; --u-hero-muted: rgba(255,255,255,.92); --u-dot-ring: rgba(255,255,255,.85);
     font-family: Mulish, system-ui, sans-serif; color: var(--navy); }
   body.pt { background: linear-gradient(180deg, #0C73E0 0%, #3A9EFF 35%, #8ED3FF 70%, #D4F1FF 100%) fixed; }
   .aero { position: fixed; inset: 0; pointer-events: none; z-index: 0; overflow: hidden; }
-  .aero .flare { position: absolute; top: -160px; left: -140px; width: 480px; height: 480px; border-radius: 50%; background: radial-gradient(circle, rgba(255,255,255,.8) 0 5%, rgba(255,255,255,.22) 18%, transparent 60%); }
-  .aero .swoosh { position: absolute; left: -10%; top: 30%; width: 120%; height: 260px; opacity: .55; }
+  .aero .flare { position: absolute; top: -140px; left: -120px; width: 520px; height: 520px; border-radius: 50%; background: radial-gradient(circle, rgba(255,255,255,.95) 0 6%, rgba(255,255,255,.35) 18%, transparent 60%); }
+  .aero .swoosh { position: absolute; left: -10%; top: 30%; width: 120%; height: 260px; }
   .aero svg.hills { position: absolute; left: 0; right: 0; bottom: 0; width: 100%; height: 36vh; }
   .aero .bub { position: absolute; border-radius: 50%; background: radial-gradient(circle at 32% 28%, rgba(255,255,255,.95) 0 9%, rgba(255,255,255,.2) 24%, rgba(255,255,255,.06) 60%, rgba(255,255,255,.45) 100%); box-shadow: inset 0 0 0 1px rgba(255,255,255,.7); animation: up 16s ease-in-out infinite; }
   @keyframes up { 50% { transform: translateY(-30px) translateX(10px); } }
@@ -59,8 +57,6 @@
   @keyframes ripple { from { transform: scale(.4); opacity: 1; } to { transform: scale(1.6); opacity: 0; } }
 
   .pt .stage { z-index: 1; }
-  .pt .card { border: 1px solid rgba(255,255,255,.95); }
-  .pt .h2-story, .pt .pv-memory, .pt .h2-who span, .pt .tl-item time, .pt .back, .pt .btn.ghost { text-shadow: 0 1px 2px rgba(0,50,120,.55); font-weight: 700; }
   .pt .room > section { animation: shine .5s ease; } @keyframes shine { from { opacity: 0; transform: translateY(12px); } }
   .pt .eyebrow { display: inline-block; margin: 0 0 12px; padding: 5px 14px; border-radius: 999px; font-weight: 800; font-size: 13px; background: var(--glass); box-shadow: var(--glass-edge); color: var(--navy); }
   .pt h1 { margin: 0 0 10px; font-weight: 900; font-size: clamp(40px, 5.4vw, 70px); line-height: 1.02; letter-spacing: -0.03em; color: #fff; text-shadow: 0 2px 3px rgba(0,50,120,.45), 0 0 30px rgba(255,255,255,.35); }
@@ -153,13 +149,13 @@
     <path d="M0 150 C 300 60 560 70 820 130 S 1260 110 1440 70 V300 H0Z" fill="url(#h1)"/>
     <path d="M0 220 C 380 130 760 170 1040 200 S 1330 180 1440 160 V300 H0Z" fill="url(#h2)"/>
     <path d="M120 128 C 330 70 560 76 760 118" stroke="#fff" stroke-opacity=".55" stroke-width="5" fill="none" stroke-linecap="round"/></svg>
-  <i class="bub" style="left:62%; top:10%; width:26px; height:26px"></i><i class="bub" style="left:84%; top:58%; width:44px; height:44px; animation-delay:-7s"></i>
+  <i class="bub" style="left:30%; top:22%; width:46px; height:46px"></i><i class="bub" style="left:56%; top:12%; width:24px; height:24px; animation-delay:-5s"></i><i class="bub" style="left:74%; top:40%; width:70px; height:70px; animation-delay:-9s"></i><i class="bub" style="left:12%; top:56%; width:30px; height:30px; animation-delay:-2s"></i>
 </div>
 <div id="app"></div>
 <script src="assets/photos.js"></script>
 <script src="assets/justified.js"></script>
 <script src="assets/data.js"></script>
-<script src="assets/portal-engine-v2.js"></script>
+<script src="assets/portal-engine.js"></script>
 <script>
   Portal({
     brand: 'Sonic Hub',
