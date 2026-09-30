@@ -17,11 +17,19 @@ window.SH_DATA = (() => {
     { year: 2009, title: 'Ngày đầu có máy ảnh', body: 'Chụp 214 tấm trong một buổi chiều. Giữ lại 9. Đến giờ vẫn còn 9 tấm đó.', tags: ['Máy ảnh'], mood: 'vui' },
   ];
   const FOLDERS = [['Hồ Tây', 48], ['Tam Đảo', 31], ['Đà Lạt', 77], ['Bãi Sau', 22], ['Phố cổ', 19]];
+  const CHAT = [
+    ['them', '21:14', 'e di hoc ve chua'], ['self', '21:14', 'vua ve, met qua. hom nay ss ktra toan'],
+    ['them', '21:15', 'lam dc k?'], ['self', '21:15', 'dc 7 diem chac. con a?'],
+    ['them', '21:16', 'a lam het roi hehe. chieu mai di HTay k'], ['self', '21:17', 'di gi, mua ma'],
+    ['them', '21:17', 'mua thi cang di :))'], ['self', '21:18', 'dien. thoi dc, 4h nhe'],
+  ];
+  const TIMES = ['09:12', '10:46', '11:03', '14:09', '14:10', '16:32', '17:05', '19:48'];
+  const timeOf = (p) => TIMES[p.id % TIMES.length];
   const photos = window.SH_PHOTOS || [];
   const photosOf = (y) => photos.filter(p => p.year === y);
   const nearestYear = (y) => photosOf(y).length ? y : YEARS.slice().sort((a, b) => Math.abs(a - y) - Math.abs(b - y)).find(v => photosOf(v).length);
   const peopleOf = (y) => PEOPLE.filter(p => y >= p.from && y <= p.to);
   const notesOf = (y) => NOTES.filter(n => n.year === y);
   const todayVN = () => new Date().toLocaleDateString('vi-VN', { weekday: 'long', day: 'numeric', month: 'long' });
-  return { YEARS, PEOPLE, NOTES, FOLDERS, photos, photosOf, nearestYear, peopleOf, notesOf, todayVN };
+  return { YEARS, PEOPLE, NOTES, FOLDERS, CHAT, timeOf, photos, photosOf, nearestYear, peopleOf, notesOf, todayVN };
 })();

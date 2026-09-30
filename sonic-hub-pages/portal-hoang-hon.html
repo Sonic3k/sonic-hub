@@ -1,0 +1,165 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Sonic Hub — Hoàng hôn</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  /* ═══ PORTAL · HOÀNG HÔN ═══  Time of day = time of life. 2026 is a sunny
+     afternoon; stepping back through the years the sky slides into golden hour,
+     sunset, then dusk, and the sun sinks behind the rooftops. Year column = the
+     sun's path on a frosted strip. */
+  .pt { --bar-h: 72px; --dock-w: 108px; --years-w: 118px; --pad-t: 28px; --pad-x: 40px;
+    --sky-top: #F6A96B; --sky-mid: #FFC98E; --sky-bot: #FFE3B0; --sun: #FFC66B; --roof: #6B4F6E; --hero-ink: #2E2340; --hero-muted: rgba(46,35,64,.7);
+    --ink: #2E2340; --muted: #6D5F7E; --coral: #FF7A59; --frost: rgba(255,255,255,.72);
+    --u-surface: var(--frost); --u-text: var(--ink); --u-muted: var(--muted); --u-accent: var(--coral); --u-radius: 22px; --u-radius-img: 16px;
+    --u-shadow: 0 14px 34px rgba(80,40,60,.12); --u-line: rgba(255,255,255,.6); --u-blur: 12px; --u-hero: var(--hero-ink); --u-hero-muted: var(--hero-muted); --u-dot-ring: rgba(255,255,255,.75);
+    font-family: Montserrat, system-ui, sans-serif; color: var(--ink); }
+  body.pt { background: linear-gradient(180deg, var(--sky-top) 0%, var(--sky-mid) 55%, var(--sky-bot) 100%) fixed; transition: background .8s; }
+  .horizon { position: fixed; inset: 0; pointer-events: none; z-index: 0; overflow: hidden; }
+  .horizon .sun { position: absolute; right: 22%; width: 150px; height: 150px; border-radius: 50%; top: var(--sun-y, 30%); background: radial-gradient(circle at 45% 40%, #FFF6D8, var(--sun) 60%); box-shadow: 0 0 80px var(--sun), 0 0 200px color-mix(in srgb, var(--sun) 50%, transparent); transition: top 1s cubic-bezier(.3,.8,.3,1), background .8s, box-shadow .8s; }
+  .horizon .cloud { position: absolute; height: 26px; border-radius: 999px; background: rgba(255,255,255,.35); filter: blur(2px); }
+  .horizon svg { position: absolute; left: 0; right: 0; bottom: 0; width: 100%; height: 24vh; }
+  .horizon svg path { fill: var(--roof); transition: fill .8s; }
+
+  .pt .bar .brand { font-weight: 800; font-size: 22px; letter-spacing: -0.02em; color: var(--hero-ink); display: flex; align-items: center; gap: 10px; transition: color .8s; }
+  .pt .bar .brand::before { content: ""; width: 18px; height: 18px; border-radius: 50%; background: var(--sun); box-shadow: 0 0 12px var(--sun); }
+  .pt .bar .search, .pt .bar .random { display: flex; align-items: center; gap: 10px; padding: 11px 18px; border-radius: 999px; border: 1px solid rgba(255,255,255,.7); background: var(--frost); color: var(--muted); backdrop-filter: blur(12px); font-weight: 600; }
+  .pt .bar .search { min-width: 310px; } .pt .bar .random { color: var(--coral); }
+
+  .pt .dock { gap: 6px; margin: 10px 0 10px 14px; bottom: 20px; height: auto; border-radius: 30px; background: var(--frost); backdrop-filter: blur(12px); box-shadow: 0 10px 30px rgba(80,40,60,.12); width: calc(var(--dock-w) - 24px); padding: 12px 0; }
+  .pt .dock button { width: 72px; padding: 10px 0 8px; border-radius: 20px; color: var(--muted); transition: background .3s, color .3s; }
+  .pt .dock .lbl { font-size: 12px; font-weight: 600; }
+  .pt .dock button:hover { color: var(--ink); }
+  .pt .dock button[aria-current="true"] { background: var(--coral); color: #fff; box-shadow: 0 8px 18px rgba(255,122,89,.35); }
+
+  /* sun path */
+  .pt .years { margin: 10px 14px 20px 0; }
+  .pt .years-in { padding: 18px 0 22px; justify-content: space-between; border-radius: 30px; background: var(--frost); backdrop-filter: blur(12px); box-shadow: 0 10px 30px rgba(80,40,60,.12); min-height: calc(100% - 30px); }
+  .pt .years-in::before { content: ""; position: absolute; left: 30px; top: 22px; bottom: 26px; width: 4px; border-radius: 2px; background: linear-gradient(#6EC3F4, #F6A96B 38%, #E9738C 70%, #4B2E5E); }
+  .pt .years button { display: flex; align-items: center; min-height: 24px; padding-left: 50px; color: var(--muted); font-size: 13px; font-weight: 600; }
+  .pt .dot { position: absolute; left: 28px; top: 50%; width: 8px; height: 8px; margin-top: -4px; border-radius: 50%; background: #fff; box-shadow: 0 0 0 2px rgba(46,35,64,.12); }
+  .pt .years button:hover { color: var(--ink); }
+  .pt .years button[aria-pressed="true"] { color: var(--ink); font-weight: 800; font-size: 16px; }
+  .pt .years button[aria-pressed="true"] .dot { left: 19px; width: 26px; height: 26px; margin-top: -13px; background: radial-gradient(circle at 40% 38%, #FFF6D8, var(--sun) 65%); box-shadow: 0 0 14px var(--sun), 0 0 34px var(--sun); }
+
+  .pt .stage { z-index: 1; }
+  .pt .h2-story, .pt .pv-memory { font-weight: 500; }
+  .pt .room > section { animation: warm .6s ease; } @keyframes warm { from { opacity: 0; transform: translateY(10px); } }
+  .pt .eyebrow { margin: 0 0 10px; font-weight: 700; font-size: 14px; letter-spacing: .04em; color: var(--hero-muted); transition: color .8s; }
+  .pt h1 { margin: 0 0 12px; font-weight: 800; font-size: clamp(40px, 5.4vw, 70px); line-height: 1.02; letter-spacing: -0.035em; color: var(--hero-ink); transition: color .8s; }
+  .pt .yr { color: var(--coral); }
+  .pt .lede { margin: 0 0 24px; font-size: 18px; font-weight: 500; color: var(--hero-muted); transition: color .8s; }
+  .pt h2.sec { margin: 38px 0 14px; font-size: 20px; font-weight: 800; color: var(--hero-ink); transition: color .8s; }
+  .pt .moment, .pt .note, .pt .empty, .pt .folder, .pt .game { background: var(--frost); border: 1px solid rgba(255,255,255,.75); border-radius: 22px; backdrop-filter: blur(12px); box-shadow: 0 14px 34px rgba(80,40,60,.12); }
+  .pt .actions { display: flex; gap: 12px; flex-wrap: wrap; }
+  .pt .btn { border: 1px solid rgba(255,255,255,.8); border-radius: 999px; padding: 12px 22px; font-weight: 700; font-size: 15px; background: var(--frost); color: var(--ink); backdrop-filter: blur(10px); }
+  .pt .btn.primary { border: 0; background: linear-gradient(90deg, #FF9A5C, var(--coral)); color: #fff; box-shadow: 0 10px 24px rgba(255,122,89,.4); }
+  .pt .moments { display: grid; grid-template-columns: 1.35fr 1fr 1fr; gap: 18px; margin-top: 28px; }
+  .pt .moment { padding: 18px; } .pt .moment h3 { margin: 0 0 12px; font-size: 13px; font-weight: 700; color: var(--muted); letter-spacing: .02em; }
+  .pt .thumbs { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; } .pt .thumbs img { width: 100%; aspect-ratio: 4/5; object-fit: cover; border-radius: 14px; }
+  .pt blockquote { margin: 0; font-size: 17px; line-height: 1.5; font-weight: 500; } .pt cite { display: block; margin-top: 10px; font-style: normal; font-size: 13px; color: var(--muted); }
+  .pt .m-note .t { margin: 0 0 6px; font-size: 18px; font-weight: 800; } .pt .m-note .d { margin: 0; color: var(--muted); font-size: 14px; line-height: 1.6; }
+  .pt .more { margin-top: 14px; border: 0; background: none; padding: 0; color: var(--coral); font-weight: 700; }
+  .pt .doors { display: grid; grid-template-columns: repeat(5, 1fr); gap: 16px; }
+  .pt .door { position: relative; overflow: hidden; border: 0; border-radius: 22px; padding: 18px; min-height: 150px; display: flex; flex-direction: column; justify-content: flex-end; text-align: left; color: #fff; background: var(--g); box-shadow: 0 14px 30px rgba(80,40,60,.18); transition: transform .3s; }
+  .pt .door:hover { transform: translateY(-3px); }
+  .pt .d-photos { --g: linear-gradient(160deg, #FFB36B, #FF7A59); } .pt .d-journal { --g: linear-gradient(160deg, #F6A0B8, #C9608C); } .pt .d-angels { --g: linear-gradient(160deg, #B98CE0, #6A4C93); }
+  .pt .d-fantasy { --g: linear-gradient(160deg, #8FC9E8, #4F84B5); } .pt .d-games { --g: linear-gradient(160deg, #6E5A94, #2E2350); }
+  .pt .door-art { position: absolute; top: -20px; right: -20px; width: 90px; height: 90px; border-radius: 50%; background: radial-gradient(circle, rgba(255,246,216,.55), transparent 65%); }
+  .pt .door b { font-size: 21px; font-weight: 800; } .pt .door span { font-size: 13px; opacity: .9; font-weight: 500; } .pt .door.off { filter: saturate(.5); opacity: .8; }
+
+  .pt .folders { display: flex; gap: 16px; overflow-x: auto; padding: 4px 2px 14px; }
+  .pt .folder { flex: 0 0 190px; padding: 10px; text-align: left; } .pt .folder-art img { width: 100%; aspect-ratio: 4/3; object-fit: cover; border-radius: 14px; display: block; margin-bottom: 8px; }
+  .pt .folder b { display: block; font-size: 15px; font-weight: 700; } .pt .folder span { font-size: 12px; color: var(--muted); }
+  .pt .jg-item.dusk { border-radius: 14px; box-shadow: 0 10px 24px rgba(80,40,60,.18); }
+
+  .pt .notes { columns: 2; column-gap: 18px; } .pt .notes.others { opacity: .85; }
+  .pt .note { break-inside: avoid; margin-bottom: 18px; padding: 20px; }
+  .pt .note-meta { display: flex; gap: 10px; font-size: 12px; font-weight: 700; } .pt .note-year { color: var(--coral); } .pt .note-mood { color: var(--muted); }
+  .pt .note h3 { margin: 10px 0 6px; font-size: 21px; font-weight: 800; line-height: 1.25; } .pt .note p { margin: 0; line-height: 1.7; color: #4A3D5C; font-size: 15px; }
+  .pt .chips { display: flex; gap: 6px; margin-top: 12px; flex-wrap: wrap; } .pt .chip { padding: 4px 12px; border-radius: 999px; background: rgba(255,255,255,.8); font-size: 12px; font-weight: 600; } .pt .chip.problem { background: var(--coral); color: #fff; }
+
+  .pt .people { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 24px; }
+  .pt .person { border: 0; background: none; display: flex; flex-direction: column; align-items: center; gap: 6px; }
+  .pt .person-art { width: 122px; height: 122px; border-radius: 50%; padding: 4px; background: linear-gradient(160deg, #FFD08A, var(--coral), #C9608C); box-shadow: 0 12px 26px rgba(80,40,60,.22); }
+  .pt .person-art img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; border: 3px solid #fff; display: block; }
+  .pt .person b { font-size: 16px; font-weight: 800; color: var(--hero-ink); transition: color .8s; } .pt .person span { font-size: 12px; color: var(--hero-muted); transition: color .8s; }
+  .pt .person.dim { opacity: .5; filter: grayscale(.6); }
+  .pt .readers { display: flex; gap: 12px; flex-wrap: wrap; }
+  .pt .reader-btn { display: flex; align-items: center; gap: 10px; border: 1px solid rgba(255,255,255,.8); background: var(--frost); padding: 12px 20px; border-radius: 999px; font-weight: 700; color: var(--ink); backdrop-filter: blur(10px); }
+  .pt .reader-btn i { width: 10px; height: 10px; border-radius: 50%; background: var(--tone); }
+
+  .pt .empty { display: grid; grid-template-columns: 1.2fr 1fr; gap: 24px; align-items: center; padding: 22px; }
+  .pt .empty-art { aspect-ratio: 16/10; border-radius: 16px; position: relative; overflow: hidden; background: linear-gradient(rgba(255,200,120,.35), transparent 40%), repeating-linear-gradient(90deg, #6FB36A 0 50px, #62A65D 50px 100px); }
+  .pt .empty-art::before { content: ""; position: absolute; left: 50%; top: 0; bottom: 0; width: 3px; background: rgba(255,255,255,.75); }
+  .pt .empty-art::after { content: ""; position: absolute; left: 50%; top: 50%; width: 80px; height: 80px; margin: -40px; border-radius: 50%; border: 3px solid rgba(255,255,255,.75); }
+  .pt .empty-txt h3 { margin: 0 0 8px; font-size: 26px; font-weight: 800; } .pt .empty-txt p { margin: 0; color: var(--muted); line-height: 1.65; }
+  .pt .shelf { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 18px; }
+  .pt .game { padding: 16px; } .pt .game-art { display: block; aspect-ratio: 16/10; border-radius: 14px; margin-bottom: 12px; background: linear-gradient(160deg, hsl(calc(var(--i) * 40 + 10) 90% 72%), hsl(calc(var(--i) * 40 + 320) 55% 50%)); }
+  .pt .game b { display: block; font-size: 15px; font-weight: 800; } .pt .game span { font-size: 12px; color: var(--muted); }
+
+  .pt .palette { background: rgba(46,35,64,.25); backdrop-filter: blur(6px); }
+  .pt .palette-box { background: rgba(255,255,255,.92); border-radius: 22px; overflow: hidden; box-shadow: 0 30px 70px rgba(80,40,60,.3); }
+  .pt .palette input { padding: 18px 22px; font-size: 18px; font-weight: 600; background: transparent; color: var(--ink); border-bottom: 1px solid rgba(46,35,64,.08); } .pt .palette ul { padding: 8px; }
+  .pt .palette li { padding: 11px 14px; border-radius: 14px; font-weight: 600; } .pt .palette li small { color: var(--muted); } .pt .palette li.sel, .pt .palette li:hover { background: #FFF0E6; }
+  .pt .reader { background: rgba(46,35,64,.3); backdrop-filter: blur(6px); }
+  .sill { width: min(500px, 92vw); border-radius: 26px; padding: 16px; background: rgba(255,255,255,.85); box-shadow: 0 30px 80px rgba(80,40,60,.35); }
+  .sill .view { border-radius: 16px; min-height: 280px; position: relative; overflow: hidden; display: grid; place-items: center; text-align: center; padding: 26px; background: linear-gradient(var(--sky-top), var(--sky-mid) 60%, var(--sky-bot)); color: var(--hero-ink); }
+  .sill .view::before { content: ""; position: absolute; left: 50%; bottom: -40px; width: 120px; height: 120px; margin-left: -60px; border-radius: 50%; background: var(--sun); box-shadow: 0 0 60px var(--sun); opacity: .8; }
+  .sill .view div { position: relative; } .sill .view b { display: block; font-size: 24px; font-weight: 800; margin-bottom: 8px; } .sill .view p { margin: 0; line-height: 1.6; }
+
+  @media (max-width: 860px) {
+    .pt { --years-w-m: 62px; --dock-h-m: 76px; }
+    .pt .bar .search { min-width: 0; padding: 10px; } .pt .bar .random { padding: 10px; } .horizon .sun { width: 90px; height: 90px; right: 26%; }
+    .pt .dock { margin: 0; width: auto; border-radius: 22px 22px 0 0; bottom: 0; height: var(--dock-h-m); padding: 6px; } .pt .dock button { width: auto; padding: 6px 0; border-radius: 14px; } .pt .dock .lbl { font-size: 10px; }
+    .pt .years { margin: 8px 6px 8px 0; } .pt .years-in { border-radius: 22px; } .pt .years-in::before { left: 14px; } .pt .years button { padding-left: 26px; font-size: 11px; } .pt .dot { left: 12px; }
+    .pt .years button[aria-pressed="true"] { font-size: 12px; } .pt .years button[aria-pressed="true"] .dot { left: 5px; width: 20px; height: 20px; margin-top: -10px; }
+    .pt .moments, .pt .empty { grid-template-columns: 1fr; } .pt .doors { grid-template-columns: 1fr 1fr; } .pt .notes { columns: 1; }
+  }
+  @media (prefers-reduced-motion: reduce) { .pt .room > section { animation: none; } body.pt, .horizon .sun { transition: none; } }
+</style>
+</head>
+<body>
+<div class="horizon" aria-hidden="true">
+  <div class="sun"></div>
+  <div class="cloud" style="top:18%; left:12%; width:170px"></div><div class="cloud" style="top:26%; left:52%; width:120px"></div><div class="cloud" style="top:14%; right:8%; width:90px"></div>
+  <svg viewBox="0 0 1440 240" preserveAspectRatio="none"><path d="M0 240 V150 h40 v-30 h36 v40 h30 v-70 h24 v-14 h14 v14 h20 v80 h44 v-50 h38 v-24 h30 v74 h26 v-96 h18 v-12 h12 v12 h22 v106 h40 v-40 h54 v-30 h28 v60 h36 v-86 h30 v96 h44 v-60 h20 c 20 -40 60 -40 80 0 v70 h30 v-104 h26 v-16 h14 v16 h22 v120 h40 v-54 h46 v-28 h30 v82 h36 v-74 h28 v74 h44 v-110 h24 v110 h38 v-46 h40 v-36 h30 v82 h60 V240 Z"/></svg>
+</div>
+<div id="app"></div>
+<script src="assets/photos.js"></script>
+<script src="assets/justified.js"></script>
+<script src="assets/data.js"></script>
+<script src="assets/portal-engine-v2.js"></script>
+<script>
+  const STOPS = [
+    [0.00, ['#6EC3F4', '#BDE5F7', '#FFE9B5'], '#FFE08A', '#8C7A96'],
+    [0.35, ['#F6A96B', '#FFC98E', '#FFE3B0'], '#FFC66B', '#7A5A78'],
+    [0.70, ['#6A4C93', '#E9738C', '#FFB38A'], '#FF8A5B', '#3F2B52'],
+    [1.00, ['#1B1B3A', '#4B2E5E', '#E0707A'], '#FF6B4A', '#1C1330'],
+  ];
+  const hex = (h) => [1, 3, 5].map(i => parseInt(h.slice(i, i + 2), 16));
+  const mix = (a, b, t) => '#' + hex(a).map((v, i) => Math.round(v + (hex(b)[i] - v) * t).toString(16).padStart(2, '0')).join('');
+  function sky(t) {
+    let k = 0; while (k < STOPS.length - 2 && t > STOPS[k + 1][0]) k++;
+    const [t0, s0, sun0, r0] = STOPS[k], [t1, s1, sun1, r1] = STOPS[k + 1], u = (t - t0) / (t1 - t0);
+    return { top: mix(s0[0], s1[0], u), mid: mix(s0[1], s1[1], u), bot: mix(s0[2], s1[2], u), sun: mix(sun0, sun1, u), roof: mix(r0, r1, u) };
+  }
+  Portal({
+    brand: 'sonic hub',
+    justify: { rowHeight: 225, gap: 12, cls: 'dusk' },
+    lede: (y) => y === 2026 ? 'Chiều nay.' : `Đúng ngày này, năm ${y} — lúc trời ${y <= 2014 ? 'đã chạng vạng' : y <= 2020 ? 'đang hoàng hôn' : 'còn nắng'}.`,
+    yearItem: (y, m) => `<span class="dot"></span><span class="full">${y}</span><span class="short">${m.short}</span>`,
+    device: (name, tone) => `<div class="sill"><div class="view"><div><b style="color:${tone}">${name}</b><p>Phòng đọc riêng, phục dựng đúng thời đó.<br>Sẽ design sau.</p></div></div></div>`,
+    onRender(state) {
+      const t = (2026 - state.year) / 18, c = sky(t), r = document.body.style;
+      r.setProperty('--sky-top', c.top); r.setProperty('--sky-mid', c.mid); r.setProperty('--sky-bot', c.bot);
+      r.setProperty('--sun', c.sun); r.setProperty('--roof', c.roof); r.setProperty('--sun-y', (10 + t * 58) + '%');
+      const dark = t > 0.55; r.setProperty('--hero-ink', dark ? '#FFF6EC' : '#2E2340'); r.setProperty('--hero-muted', dark ? 'rgba(255,246,236,.78)' : 'rgba(46,35,64,.7)');
+    },
+  });
+</script>
+</body>
+</html>
