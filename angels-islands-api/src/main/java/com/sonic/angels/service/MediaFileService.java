@@ -326,7 +326,7 @@ public class MediaFileService {
     public org.springframework.data.domain.Page<MediaFileDto.Response> search(
             String type, String orientation, String category,
             Boolean favorite, Boolean featured, Boolean hasGps,
-            UUID personId, UUID takenById, String source, String ext, UUID collectionId,
+            UUID personId, UUID takenById, String source, String ext, java.time.LocalDate from, java.time.LocalDate to, UUID collectionId,
             List<UUID> tagIds, List<String> tagNames,
             List<UUID> excludeTagIds, List<String> excludeTagNames,
             String q, boolean random, int page, int size,
@@ -337,6 +337,10 @@ public class MediaFileService {
         MediaFile.MediaCategory cat = parseEnum(category, MediaFile.MediaCategory.class);
         String src = source != null && !source.isBlank() ? source.trim().toUpperCase().replace(' ', '_') : null;
         String extN = ext != null && !ext.isBlank() ? ext.trim().toLowerCase().replaceFirst("^\\.", "") : null;
+        // Date window on effectiveDate: from inclusive, to exclusive — dummies keep Postgres from guessing param types for nulls.
+        java.time.LocalDateTime EPOCH = java.time.LocalDateTime.of(1970, 1, 1, 0, 0);
+        boolean hasFrom = from != null, hasTo = to != null;
+        java.time.LocalDateTime fromDt = hasFrom ? from.atStartOfDay() : EPOCH, toDt = hasTo ? to.atStartOfDay() : EPOCH;
 
         boolean hasInclude = notEmpty(tagIds) || notEmpty(tagNames);
         boolean hasExclude = notEmpty(excludeTagIds) || notEmpty(excludeTagNames);
@@ -360,7 +364,7 @@ public class MediaFileService {
 
         if (random) {
             var rows = mediaFileRepository.searchRandom(
-                ft, ori, cat, src, extN, favorite, featured, hasGps,
+                ft, ori, cat, src, extN, hasFrom, fromDt, hasTo, toDt, favorite, featured, hasGps,
                 hasPerson, safePerson, hasTakenBy, safeTakenBy, hasCollection, safeCollection,
                 hasInclude, safeTagIds, safeTagNames,
                 hasExclude, safeExcludeIds, safeExcludeNames,
@@ -380,7 +384,7 @@ public class MediaFileService {
         var sort = org.springframework.data.domain.Sort.by(primary, org.springframework.data.domain.Sort.Order.desc("id"));
 
         return mediaFileRepository.searchSorted(
-                ft, ori, cat, src, extN, favorite, featured, hasGps,
+                ft, ori, cat, src, extN, hasFrom, fromDt, hasTo, toDt, favorite, featured, hasGps,
                 hasPerson, safePerson, hasTakenBy, safeTakenBy, hasCollection, safeCollection,
                 hasInclude, safeTagIds, safeTagNames,
                 hasExclude, safeExcludeIds, safeExcludeNames,

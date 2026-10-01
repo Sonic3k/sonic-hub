@@ -78,6 +78,8 @@ public interface MediaFileRepository extends JpaRepository<MediaFile, UUID> {
         " AND (:category IS NULL OR m.mediaCategory = :category)" +
         " AND (:source IS NULL OR m.mediaSource = :source)" +
         " AND (:ext IS NULL OR m.fileExtension = :ext)" +
+        " AND (:hasFrom = false OR m.effectiveDate >= :fromDate)" +
+        " AND (:hasTo = false OR m.effectiveDate < :toDate)" +
         " AND (:favorite IS NULL OR m.isFavorite = :favorite)" +
         " AND (:featured IS NULL OR m.isFeatured = :featured)" +
         " AND (:hasGps IS NULL OR (:hasGps = true AND m.latitude IS NOT NULL) OR (:hasGps = false AND m.latitude IS NULL))" +
@@ -104,6 +106,10 @@ public interface MediaFileRepository extends JpaRepository<MediaFile, UUID> {
         @Param("category") MediaFile.MediaCategory category,
         @Param("source") String source,
         @Param("ext") String ext,
+        @Param("hasFrom") boolean hasFrom,
+        @Param("fromDate") java.time.LocalDateTime fromDate,
+        @Param("hasTo") boolean hasTo,
+        @Param("toDate") java.time.LocalDateTime toDate,
         @Param("favorite") Boolean favorite,
         @Param("featured") Boolean featured,
         @Param("hasGps") Boolean hasGps,
@@ -140,6 +146,10 @@ public interface MediaFileRepository extends JpaRepository<MediaFile, UUID> {
         @Param("category") MediaFile.MediaCategory category,
         @Param("source") String source,
         @Param("ext") String ext,
+        @Param("hasFrom") boolean hasFrom,
+        @Param("fromDate") java.time.LocalDateTime fromDate,
+        @Param("hasTo") boolean hasTo,
+        @Param("toDate") java.time.LocalDateTime toDate,
         @Param("favorite") Boolean favorite,
         @Param("featured") Boolean featured,
         @Param("hasGps") Boolean hasGps,
