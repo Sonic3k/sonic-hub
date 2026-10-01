@@ -1,0 +1,65 @@
+import { get } from './client';
+import type { Collection, MediaFile, Note, Paged, Person, Tag, TimelineBucket } from '../types';
+import { isoDay, addDays } from '../lib/date';
+
+export interface Search {
+  type?: 'IMAGE' | 'VIDEO'; favorite?: boolean; featured?: boolean; personId?: string; collectionId?: string;
+  tagIds?: string[]; tagNames?: string[]; q?: string; from?: string; to?: string; random?: boolean;
+  page?: number; size?: number; sortBy?: string; sortDir?: 'asc' | 'desc'; inclPersons?: boolean; inclTags?: boolean;
+}
+
+export const hub = {
+  timeline: () => get<TimelineBucket[]>('/media-files/timeline-index', { tz: 'Asia/Ho_Chi_Minh' }),
+  search: (p: Search) => get<Paged<MediaFile>>('/media-files/search', p as Record<string, string | number | boolean | string[] | undefined>),
+  persons: () => get<Person[]>('/persons'),
+  tags: () => get<Tag[]>('/tags'),
+  albums: async () => {
+    const root = await get<Collection>('/collections/root', { inclChildrenCount: true, inclMediaCount: true });
+    return get<Collection[]>(`/collections/${root.id}/children`, { inclChildrenCount: true, inclMediaCount: true });
+  },
+  notes: (p: { kind?: string; status?: string; tagId?: string; q?: string; page?: number; size?: number }) => get<Paged<Note>>('/journal/notes', p),
+};
+
+/* ── Composite reads the cosmos needs ─────────────────────────────────────── */
+
+/** Photos of one calendar day; widens to the month, then the year, so a galaxy is never empty. */
+export async function dayOf(year: number, month: number, day: number): Promise<{ scope: 'day' | 'month' | 'year'; items: MediaFile[] }> {
+  const d = new Date(year, month - 1, day);
+  const exact = await hub.search({ from: isoDay(d), to: isoDay(addDays(d, 1)), size: 24, sortBy: 'effectiveDate', sortDir: 'asc', inclPersons: true });
+  if (exact.content.length) return { scope: 'day', items: exact.content };
+  const m0 = new Date(year, month - 1, 1), m1 = new Date(year, month, 1);
+  const inMonth = await hub.search({ from: isoDay(m0), to: isoDay(m1), size: 12, random: true, inclPersons: true });
+  if (inMonth.content.length) return { scope: 'month', items: inMonth.content };
+  const inYear = await hub.search({ from: `${year}-01-01`, to: `${year + 1}-01-01`, size: 12, random: true, inclPersons: true });
+  return { scope: 'year', items: inYear.content };
+}
+
+/** A random real day of `year` that has photos: random populated month → random photo → its day. */
+export async function randomDay(year: number, buckets: TimelineBucket[]): Promise<{ month: number; day: number } | null> {
+  const months = buckets.filter(b => b.year === year && b.count > 0);
+  if (!months.length) return null;
+  const pick = months[Math.floor(Math.random() * months.length)];
+  const r = await hub.search({ from: isoDay(new Date(year, pick.month - 1, 1)), to: isoDay(new Date(year, pick.month, 1)), size: 1, random: true });
+  const iso = r.content[0]?.effectiveDate;
+  if (!iso) return { month: pick.month, day: 1 };
+  return { month: Number(iso.slice(5, 7)), day: Number(iso.slice(8, 10)) };
+}
+
+/** Years mentioned by a person's period string ("2009–2012", "2015", "2016 - nay"). */
+export function yearsOf(p: Person): [number, number] | null {
+  const nums = (p.period ?? '').match(/(19|20)\d{2}/g)?.map(Number);
+  if (!nums?.length) return null;
+  const end = /nay|now|present/i.test(p.period ?? '') ? new Date().getFullYear() : nums[nums.length - 1];
+  return [nums[0], end];
+}
+export const peopleOfYear = (persons: Person[], y: number) =>
+  persons.filter(p => !p.isSelf).filter(p => { const r = yearsOf(p); return r ? y >= r[0] && y <= r[1] : false; });
+
+/** Tags ranked by how much lives in them (one cheap count query per tag). */
+export async function tagWorlds(limit = 10): Promise<(Tag & { count: number })[]> {
+  const tags = await hub.tags();
+  const counted = await Promise.all(tags.slice(0, 40).map(async t => {
+    try { return { ...t, count: (await hub.search({ tagIds: [t.id], size: 1 })).totalElements }; } catch { return { ...t, count: 0 }; }
+  }));
+  return counted.filter(t => t.count > 0).sort((a, b) => b.count - a.count).slice(0, limit);
+}

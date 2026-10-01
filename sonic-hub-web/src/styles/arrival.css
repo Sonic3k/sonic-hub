@@ -1,0 +1,15 @@
+/* Landing pads on the far side of a warp — each app will grow its own design here. */
+.arrival { position: fixed; inset: 0; overflow: auto; display: grid; place-items: center; padding: 40px 24px; animation: fadein .8s ease; }
+.arr-in { max-width: 620px; }
+.arr-k { margin: 0 0 12px; font-size: 12px; font-weight: 700; letter-spacing: .24em; text-transform: uppercase; opacity: .6; }
+.arrival h1 { margin: 0 0 18px; font-size: clamp(40px, 6vw, 72px); font-weight: 300; line-height: 1.05; letter-spacing: -.02em; }
+.arrival h1 em { font-style: normal; opacity: .55; }
+.arr-line { margin: 0 0 12px; font-size: 19px; line-height: 1.6; }
+.arr-next { margin: 0 0 30px; font-size: 15px; opacity: .65; }
+.arr-back { font-weight: 600; border-bottom: 1px solid currentColor; padding-bottom: 2px; }
+.arrival-photos { background: #0E0E10; color: #F2EFE9; }
+.arrival-journal { background: #FBFAF7; color: #23211F; font-family: Georgia, 'Times New Roman', serif; }
+.arrival-journal .arr-k, .arrival-journal .arr-back { font-family: Quicksand, system-ui, sans-serif; }
+.arrival-angels { background: radial-gradient(circle at 30% 20%, #3A1A3E, #120814 70%); color: #FFE8F4; }
+.arrival-games { background: #120E24; color: #E3D6FF; }
+.arrival-football { background: #0C2414; color: #DFF5D8; }

@@ -1,34 +1,32 @@
-import { Route, Routes } from 'react-router-dom';
-import Shell from './components/layout/Shell';
-import FolderPage from './pages/photos/FolderPage';
-import TimelinePage from './pages/photos/TimelinePage';
-import AngelsPage from './pages/angels/AngelsPage';
-import PersonPage from './pages/angels/PersonPage';
-import ChatReaderPage from './pages/angels/ChatReaderPage';
-import Placeholder from './pages/Placeholder';
-import HomePage from './pages/HomePage';
-import ArticlesPage from './pages/articles/ArticlesPage';
-import ArticlePage from './pages/articles/ArticlePage';
+import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { WarpProvider } from './cosmos/Warp';
+import Portal from './pages/Portal';
+import Section from './pages/Section';
+import TagWorld from './pages/TagWorld';
+import Arrival from './pages/Arrival';
+
+const qc = new QueryClient({ defaultOptions: { queries: { retry: 1, refetchOnWindowFocus: false } } });
 
 export default function App() {
   return (
-    <Routes>
-      <Route element={<Shell />}>
-        <Route index element={<HomePage />} />
-        <Route path="/photos" element={<FolderPage />} />
-        <Route path="/photos/timeline" element={<TimelinePage />} />
-        <Route path="/photos/f/:id" element={<FolderPage />} />
-        <Route path="/articles" element={<ArticlesPage />} />
-        <Route path="/articles/:slug" element={<ArticlePage />} />
-        <Route path="/angels" element={<AngelsPage />} />
-        <Route path="/angels/:id" element={<PersonPage tab="photos" />} />
-        <Route path="/angels/:id/folders" element={<PersonPage tab="folders" />} />
-        <Route path="/angels/:id/chats" element={<PersonPage tab="chats" />} />
-        <Route path="/angels/:id/chats/:archiveId" element={<ChatReaderPage />} />
-        <Route path="/games" element={<ArticlesPage fixedCategory="Game" title="Game" />} />
-        <Route path="/football" element={<ArticlesPage fixedCategory="Bóng đá" title="Bóng đá" note="Football fantasy — mục này sẽ có phần riêng về các đội bóng. Hiện tại là bài viết gắn mục Bóng đá." />} />
-        <Route path="*" element={<Placeholder title="Không có trang này" note="Đường dẫn không tồn tại." />} />
-      </Route>
-    </Routes>
+    <QueryClientProvider client={qc}>
+      <WarpProvider>
+        <BrowserRouter>
+          <Routes>
+            <Route path="/" element={<Portal />} />
+            <Route path="/s/:id" element={<Section />} />
+            <Route path="/t/:name" element={<TagWorld />} />
+            <Route path="/photos" element={<Arrival app="photos" />} />
+            <Route path="/journal" element={<Arrival app="journal" />} />
+            <Route path="/journal/:slug" element={<Arrival app="journal" />} />
+            <Route path="/angels" element={<Arrival app="angels" />} />
+            <Route path="/games" element={<Arrival app="games" />} />
+            <Route path="/football" element={<Arrival app="football" />} />
+            <Route path="*" element={<Navigate to="/" replace />} />
+          </Routes>
+        </BrowserRouter>
+      </WarpProvider>
+    </QueryClientProvider>
   );
 }
