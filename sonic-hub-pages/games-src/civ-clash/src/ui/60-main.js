@@ -119,6 +119,7 @@ function cycleSpeed() { SET.speed = SPEED_ORDER[(SPEED_ORDER.indexOf(SET.speed) 
 /* input */
 document.addEventListener('click', e => {
   SFX.init();
+  if (DRAG.justDragged) { DRAG.justDragged = false; return; }
   const act = e.target.closest('[data-act]'), touch = e.pointerType === 'touch' || matchMedia('(pointer: coarse)').matches;
   if (act) return action(act.dataset.act, act);
   const hire = e.target.closest('[data-hire]'); if (hire) { if (!hire.disabled) humanBuy(+hire.dataset.hire); return; }
@@ -182,4 +183,50 @@ document.addEventListener('keydown', e => {
   else if (k === 'h') helpSheet();
 });
 addEventListener('resize', () => { updateMode(); if (UI.screen === 'match' && S && !UI.busy) renderMatch(); else if (UI.screen === 'menu') renderMenu(); });
-updateMode(); installCivStyles(); installTableArt(); go('menu');
+updateMode(); installCivStyles(); installMaterials(); installTableArt(); go('menu');
+
+/* drag a card up onto the chart (or onto an enemy camp) to play it; a sideways swipe scrolls the hand */
+const DRAG = { uid: null, x0: 0, y0: 0, on: false, ghost: null, el: null, pid: null, ok: false, justDragged: false };
+function overTable(y) { const h = $('#hand').getBoundingClientRect(); return y < h.top - 6; }
+function startDrag(e) {
+  DRAG.on = true; UI.sel = DRAG.uid; UI.hoverT = null; clearAim();
+  try { DRAG.el.setPointerCapture(e.pointerId); } catch (_) { }
+  renderMatch();
+  const c = selCard(); if (!c) { DRAG.on = false; return; }
+  const g = document.createElement('div'); g.className = 'drag-ghost'; g.innerHTML = cardHTML(c, { size: 'lg' });
+  $('#fx-layer').appendChild(g); DRAG.ghost = g; document.documentElement.classList.add('dragging'); hideTip(); hideZoom(); SFX.play('card');
+  moveDrag(e);
+}
+function moveDrag(e) {
+  const k = mobile() ? 0.66 : 0.72;
+  DRAG.ghost.style.transform = `translate(${e.clientX}px,${e.clientY}px) translate(-50%,-62%) scale(${k}) rotate(-3deg)`;
+  const c = selCard(); if (!c) return;
+  const under = document.elementFromPoint(e.clientX, e.clientY), camp = under && under.closest('.camp'), opps = opponents(S, S.players[0]);
+  if (needsTarget(c)) {
+    let t = camp ? +camp.dataset.pid : null; if (!(t && S.players[t] && S.players[t].alive)) t = opps.length === 1 && overTable(e.clientY) ? opps[0].id : null;
+    if (t !== UI.hoverT) { UI.hoverT = t; $$('.camp').forEach(el => el.classList.toggle('hot', +el.dataset.pid === t)); renderPreview(); renderAction(); renderStage(); }
+  } else {
+    const ok = overTable(e.clientY); $('#stage').classList.toggle('drop-ok', ok);
+    if (ok !== DRAG.ok) { DRAG.ok = ok; renderPreview(); }
+  }
+}
+function endDrag(e) {
+  const c = selCard(), ok = overTable(e.clientY);
+  if (DRAG.ghost) DRAG.ghost.remove(); DRAG.ghost = null; DRAG.on = false; DRAG.ok = false;
+  document.documentElement.classList.remove('dragging'); $('#stage').classList.remove('drop-ok');
+  DRAG.justDragged = true; setTimeout(() => (DRAG.justDragged = false), 60);
+  if (!c) return;
+  if (ok && (!needsTarget(c) || selTarget(c) != null)) return humanPlay(c.uid, needsTarget(c) ? selTarget(c) : null);
+  renderMatch();
+}
+document.addEventListener('pointerdown', e => {
+  const el = e.target.closest('#hand .card.playable'); if (!el || !isMyTurn() || e.button > 0) return;
+  Object.assign(DRAG, { uid: +el.dataset.uid, x0: e.clientX, y0: e.clientY, on: false, el, pid: e.pointerId });
+});
+document.addEventListener('pointermove', e => {
+  if (DRAG.uid == null || e.pointerId !== DRAG.pid) return;
+  if (!DRAG.on) { const dx = e.clientX - DRAG.x0, dy = e.clientY - DRAG.y0; if (dy < -14 && Math.abs(dy) >= Math.abs(dx) * 0.6 && isMyTurn()) startDrag(e); else if (Math.abs(dx) > 14 && Math.abs(dy) < 10) DRAG.uid = null; return; }
+  e.preventDefault(); moveDrag(e);
+}, { passive: false });
+document.addEventListener('pointerup', e => { if (DRAG.on && e.pointerId === DRAG.pid) endDrag(e); DRAG.uid = null; });
+document.addEventListener('pointercancel', () => { if (DRAG.on) { if (DRAG.ghost) DRAG.ghost.remove(); DRAG.ghost = null; DRAG.on = false; document.documentElement.classList.remove('dragging'); $('#stage').classList.remove('drop-ok'); renderMatch(); } DRAG.uid = null; });
