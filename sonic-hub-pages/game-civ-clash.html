@@ -709,6 +709,16 @@ function ageUp(S, A, ev) {
   log(S, 'aged', { pid: A.id });
 }
 
+/* ── Preview: play the card on a copy of the match and report what would change for each player ── */
+function previewPlay(S, pid, uid, tid) {
+  const C = structuredClone(S); C.quiet = true;
+  const snap = p => ({ hp: p.hp, walls: wallTotal(p), wonder: (wonderOf(p) || { dur: 0 }).dur, gold: p.gold, hand: p.hand.length, alive: p.alive, structs: p.structs.length });
+  const before = C.players.map(snap);
+  const ev = playCard(C, pid, uid, tid);
+  if (!ev) return null;
+  return { target: ev.target, players: C.players.map((p, i) => { const a = snap(p), b = before[i]; return { hp: a.hp - b.hp, walls: a.walls - b.walls, wonder: a.wonder - b.wonder, gold: a.gold - b.gold, hand: a.hand - b.hand, structs: a.structs - b.structs, dies: b.alive && !a.alive }; }) };
+}
+
 /* ── AI: one-ply card evaluation with sensible targeting ── */
 function strength(X) { return (X.hp / X.maxHP) * 10 + wallTotal(X) * 0.6 + (wonderOf(X) ? 5 : 0); }
 function threatOf(S, P, X, leader) {
@@ -772,12 +782,15 @@ function cardValue(S, P, card, T) {
   if (opp.some(X => wonderOf(X)) && !card.steps.some(s => s.raze)) v -= 2;
   return v;
 }
+/* difficulty only changes how much noise the AI adds to its own judgement; balance runs use 'hard' */
+const AI_NOISE = { easy: 3.2, normal: 1.1, hard: 0.15 };
 function bestPlay(S, P) {
+  const noise = AI_NOISE[P.skill] != null ? AI_NOISE[P.skill] : 0.15;
   let best = null;
   for (const card of P.hand) {
     const targets = needsTarget(card) ? opponents(S, P) : [null];
     for (const T of targets) {
-      const v = cardValue(S, P, card, T) + rnd(S) * 0.15;
+      const v = cardValue(S, P, card, T) + rnd(S) * noise;
       if (!best || v > best.v) best = { card, target: T ? T.id : null, v };
     }
   }
@@ -785,6 +798,7 @@ function bestPlay(S, P) {
 }
 function aiBuy(S, P) {
   if (S.flags.bought) return null;
+  if (P.skill === 'easy' && rnd(S) < 0.5) return null;
   let best = null;
   S.market.forEach((card, i) => {
     if (!card) return;
@@ -896,6 +910,8 @@ const SFX = {
     this.init(); if (!this.ctx) return;
     switch (name) {
       case 'click': this.noise(0, 0.03, 0.05, 2500); break;
+      case 'whoosh': this.noise(0, 0.18, 0.05, 1200); break;
+      case 'crown': [523, 659, 784, 1047].forEach((f, i) => this.tone(f, i * 0.1, 0.45, 'triangle', 0.08)); break;
       case 'card': this.noise(0, 0.08, 0.07, 1800); this.tone(660, 0.02, 0.06, 'triangle', 0.04); break;
       case 'hit': this.noise(0, 0.12, 0.14, 700); this.tone(140, 0, 0.18, 'square', 0.06, -60); break;
       case 'wall': this.noise(0, 0.25, 0.12, 300, 'lowpass'); this.tone(90, 0, 0.3, 'sine', 0.2, -30); break;

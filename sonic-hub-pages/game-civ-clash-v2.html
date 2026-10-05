@@ -1,0 +1,1749 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Medieval Mayhem</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Alegreya+SC:wght@500;700;800&family=Alegreya+Sans:wght@400;500;700;800&family=Alegreya:wght@700;800&display=swap" rel="stylesheet">
+<style>/* ── Medieval Mayhem · table UI ──
+   A lapis war-table under portolan rhumb lines; vellum cards framed in each civilization's own pattern. */
+:root{
+  --lapis-0:#0d2244;--lapis-1:#15325e;--lapis-2:#1e4479;--lapis-3:#2b5a97;
+  --gold:#e3b44c;--gold-hi:#f6d989;--gold-lo:#9b7420;
+  --vellum:#f8f0de;--vellum-2:#eedfbf;--vellum-3:#e1cda2;--ink:#2a2333;--ink-2:#544a5e;--ink-3:#857a8a;
+  --verm:#d2442e;--mal:#2b9467;--amethyst:#6a3fb0;--steel:#475a75;
+  --f-ui:'Alegreya Sans','Segoe UI',system-ui,sans-serif;--f-sc:'Alegreya SC',Georgia,serif;--f-num:'Alegreya',Georgia,serif;
+  --shadow-1:0 2px 0 rgba(0,0,0,.18),0 10px 26px rgba(3,10,26,.45);
+  --cw:150px;--ch:212px;
+  box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);
+}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*,*::before,*::after{box-sizing:border-box}
+html,body{margin:0;height:100%;background:var(--lapis-0)}
+body{font-family:var(--f-ui);color:var(--vellum);-webkit-font-smoothing:antialiased;overflow:hidden}
+button{font:inherit;color:inherit}
+.hidden{display:none!important}
+#app{position:relative;height:100%;overflow:hidden;background:radial-gradient(120% 95% at 50% 44%,var(--lapis-3) 0%,var(--lapis-2) 28%,var(--lapis-1) 60%,var(--lapis-0) 100%)}
+#app::before{content:'';position:absolute;inset:0;background:var(--rhumb) center 46%/2000px 2000px no-repeat;opacity:.6;pointer-events:none}
+.screen{position:relative;height:100%;z-index:1}
+:focus-visible{outline:2px solid var(--gold-hi);outline-offset:2px}
+
+/* buttons */
+.btn{font-family:var(--f-sc);font-weight:700;font-size:17px;letter-spacing:.01em;border:0;border-radius:11px;padding:10px 20px;min-height:46px;cursor:pointer;color:#2b1d05;
+  background:linear-gradient(#f7dc8f,#e3b44c 55%,#c9952f);box-shadow:inset 0 1px 0 rgba(255,255,255,.65),0 2px 0 #8a6516,0 8px 18px rgba(0,0,0,.35)}
+.btn:hover{filter:brightness(1.06)}.btn:active{transform:translateY(1px)}
+.btn.ghost{background:rgba(255,255,255,.07);color:var(--vellum);box-shadow:inset 0 0 0 1px rgba(246,217,137,.38)}
+.btn.small{font-size:15px;min-height:40px;padding:7px 14px}
+.icon-btn{width:44px;height:44px;border-radius:12px;border:0;display:grid;place-items:center;cursor:pointer;color:var(--vellum);background:rgba(255,255,255,.07);box-shadow:inset 0 0 0 1px rgba(246,217,137,.25)}
+.icon-btn:hover{background:rgba(255,255,255,.13)}
+.icon-btn svg{width:22px;height:22px}
+
+/* ── cards ── */
+.card{--w:var(--cw);--h:var(--ch);--s:28px;position:relative;width:var(--w);height:var(--h);border-radius:12px;padding:6px;flex:0 0 auto;user-select:none;
+  background-color:var(--civ);background-image:var(--motif);color:var(--ink);box-shadow:0 0 0 1px rgba(0,0,0,.5),0 7px 18px rgba(4,10,26,.5)}
+.card .cb{height:100%;border-radius:8px;display:flex;flex-direction:column;overflow:hidden;background:linear-gradient(180deg,var(--vellum),var(--vellum-2));box-shadow:inset 0 0 0 1px rgba(0,0,0,.2)}
+.card .cn{display:flex;align-items:center;gap:5px;min-height:30px;padding:4px 6px 4px 6px;background:linear-gradient(90deg,var(--civ-deep),var(--civ));color:#fff;
+  font-family:var(--f-sc);font-weight:700;font-size:13.5px;line-height:1.05;text-shadow:0 1px 0 rgba(0,0,0,.45)}
+.card .cn span{flex:1;min-width:0}
+.card .ca{height:36%;margin:6px 6px 0;border-radius:6px;display:flex;flex-wrap:wrap;align-content:center;justify-content:center;gap:3px;padding:4px;
+  background-color:var(--civ-wash);background-image:var(--motif-soft);box-shadow:inset 0 0 0 1px rgba(0,0,0,.09)}
+.card .ca .sym{width:var(--s);height:var(--s);filter:drop-shadow(0 1px 1px rgba(0,0,0,.3))}
+.card .ct{flex:1;display:flex;align-items:center;justify-content:center;text-align:center;padding:5px 8px 2px;font-size:12.5px;line-height:1.24}
+.card .cf{display:flex;justify-content:space-between;gap:6px;padding:2px 7px 5px;font-family:var(--f-sc);font-size:11px;color:var(--ink-3)}
+.card .seal{flex:0 0 auto;width:20px;height:20px;border-radius:50%;display:grid;place-items:center;font-style:normal;font-family:var(--f-num);font-size:12px;font-weight:800;color:#3a2306;background:radial-gradient(circle at 40% 35%,#fbe39c,#d9a73e);box-shadow:0 1px 2px rgba(0,0,0,.5)}
+.card .seal svg{width:18px;height:18px}
+.card.sig .cb{box-shadow:inset 0 0 0 2px var(--gold),inset 0 0 0 3px rgba(0,0,0,.15)}
+.card.imp{background-color:#4a2783;background-image:var(--motif-gold)}
+.card.imp .cn{background:linear-gradient(90deg,#3a1b70,#7445bd)}
+.card.imp .cb{background:linear-gradient(180deg,#fcf7ff,#eadcf6)}
+.card.age{background-color:#55299a;background-image:var(--motif-gold);box-shadow:0 0 0 1px rgba(0,0,0,.5),0 0 22px rgba(246,217,137,.6),0 7px 18px rgba(4,10,26,.5)}
+.card.age .cn{background:linear-gradient(90deg,#3a1b70,#7445bd)}
+.card.age .cb{background:radial-gradient(circle at 50% 30%,#fff8da,#f3d57f 58%,#dcaa42)}
+.card.age .ca{background:none;box-shadow:none}
+.card.merc .cn{background:linear-gradient(90deg,#4d3f27,#7a6542)}
+.card.sm{--w:104px;--h:148px;--s:20px;padding:4px;border-radius:10px}
+.card.sm .cn{font-size:11.5px;min-height:24px;padding:3px 5px}.card.sm .ct span{display:-webkit-box;-webkit-line-clamp:5;-webkit-box-orient:vertical;overflow:hidden}
+#zoom{position:fixed;z-index:85;pointer-events:none;filter:drop-shadow(0 18px 30px rgba(0,0,0,.55))}.card.sm .ct{font-size:10.5px;padding:3px 5px 1px}.card.sm .cf{font-size:9.5px;padding:1px 5px 3px}.card.sm .ca{margin:4px 4px 0}
+.card.lg{--w:214px;--h:302px;--s:40px;padding:8px;border-radius:15px}
+.card.lg .cn{font-size:17px;min-height:38px;padding:6px 9px}.card.lg .ct{font-size:15.5px;padding:8px 12px 4px}.card.lg .cf{font-size:13px;padding:3px 10px 7px}.card.lg .ca{margin:8px 8px 0}
+.cost{position:absolute;left:50%;bottom:-11px;transform:translateX(-50%);white-space:nowrap;font-family:var(--f-num);font-weight:800;font-size:13px;padding:2px 10px;border-radius:999px;color:#fff;background:#6d5c3e;box-shadow:0 0 0 2px var(--vellum),0 2px 5px rgba(0,0,0,.5)}
+.cost.ok{background:#b8871f}
+.cback{display:inline-block;width:12px;height:17px;border-radius:2.5px;margin-right:-5px;background-color:var(--civ);background-image:var(--motif);box-shadow:0 0 0 1px rgba(0,0,0,.45),inset 0 0 0 1px rgba(255,255,255,.35)}
+
+/* keywords: same hue as the symbol of that resource */
+.kw{font-weight:800}.k-dmg{color:#b3261e}.k-hp{color:#1f7a3a}.k-gold{color:#946300}.k-card{color:#3646a8}.k-wall{color:#475a75}.k-play{color:#6a3fb0}.k-aoe{color:#c4470f}.k-pierce{color:#0b6a50}.k-steal{color:#a3306d}.k-raze{color:#7a4a20}
+
+/* ── match layout ── */
+#screen-match{display:flex;flex-direction:column}
+#topbar{flex:0 0 auto;height:56px;display:flex;align-items:center;gap:10px;padding:0 14px;background:linear-gradient(180deg,rgba(5,14,30,.6),rgba(5,14,30,0))}
+.tb-mid{flex:1;display:flex;align-items:center;justify-content:center;gap:8px;min-width:0}
+.tb-right{display:flex;gap:8px;align-items:center}
+.pill{font-family:var(--f-sc);font-weight:700;font-size:15px;padding:6px 14px;border-radius:999px;background:rgba(255,255,255,.08);box-shadow:inset 0 0 0 1px rgba(246,217,137,.25);white-space:nowrap}
+.pill.gold{background:linear-gradient(#f7dc8f,#e3b44c);color:#2b1d05;box-shadow:none}
+.pips{display:flex;gap:5px;padding:0 4px}.pip{width:12px;height:12px;border-radius:50%;background:radial-gradient(circle at 40% 35%,#fff3c4,#e3b44c);box-shadow:0 0 9px rgba(246,217,137,.85)}
+.speed{min-width:58px;height:44px;border:0;border-radius:12px;cursor:pointer;font-family:var(--f-sc);font-weight:700;background:rgba(255,255,255,.07);box-shadow:inset 0 0 0 1px rgba(246,217,137,.25)}
+.mob-only{display:none!important}
+#table{flex:1;min-height:0;display:grid;gap:12px;padding:6px 18px 0;
+  grid-template-columns:262px minmax(0,1fr) 340px;grid-template-rows:auto minmax(0,1fr) auto;
+  grid-template-areas:"opps opps opps" "events stage market" "me hand hand"}
+#opps{grid-area:opps;display:flex;justify-content:center;gap:14px}
+#opps .camp{flex:0 1 330px}#opps.n1 .camp{flex-basis:440px}
+
+/* camps */
+.camp{position:relative;min-width:0;border-radius:15px;color:var(--ink);background:linear-gradient(180deg,rgba(250,243,227,.98),rgba(237,222,190,.98));box-shadow:var(--shadow-1);transition:box-shadow .2s,transform .2s}
+.camp-banner{display:flex;align-items:center;gap:8px;min-height:38px;padding:5px 10px;border-radius:15px 15px 0 0;color:#fff;background-color:var(--civ);background-image:var(--motif);font-family:var(--f-sc);font-weight:700}
+.camp-banner .crest{flex:0 0 auto;filter:drop-shadow(0 1px 1px rgba(0,0,0,.4))}
+.cname{font-size:18px;text-shadow:0 1px 0 rgba(0,0,0,.45);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.csub{font-size:14px;opacity:.85}
+.relic{margin-left:auto;font-family:var(--f-ui);font-weight:700;font-size:12.5px;padding:2px 9px;border-radius:999px;background:rgba(0,0,0,.28);white-space:nowrap;cursor:help}
+.flag{font-family:var(--f-ui);font-size:12px;font-weight:800;padding:2px 9px;border-radius:999px;background:var(--gold-hi);color:#2b1d05}
+.flag.out{background:#333;color:#fff}
+.relic.mine-relic{margin:0;background:rgba(106,63,176,.12);color:#4a2783}
+.camp-body{display:flex;align-items:center;gap:10px;padding:8px 10px 10px}
+.hpgem{--p:100;position:relative;flex:0 0 auto;width:58px;height:58px;border-radius:50%;display:grid;place-items:center;cursor:help;
+  background:conic-gradient(var(--verm) calc(var(--p)*1%),rgba(60,30,30,.16) 0)}
+.hpgem::before{content:'';position:absolute;inset:5px;border-radius:50%;background:radial-gradient(circle at 40% 32%,#fffbf1,#efdfbc);box-shadow:inset 0 0 0 1px rgba(0,0,0,.14)}
+.hpgem b{position:relative;font-family:var(--f-num);font-size:25px;line-height:1;color:#7c1d12}
+.hpgem small{position:absolute;bottom:7px;font-family:var(--f-num);font-weight:700;font-size:10.5px;color:var(--ink-3)}
+.works{flex:1;min-width:0;display:flex;flex-wrap:wrap;gap:5px;align-items:center}
+.works .none{font-size:13px;color:var(--ink-3)}
+.work{position:relative;display:inline-grid;place-items:center;min-width:34px;height:32px;padding:0 6px;border-radius:6px;cursor:help;font-family:var(--f-num);font-weight:800;font-size:16px;color:#2d2a26;
+  background:linear-gradient(#d8d0c0,#ada18c);box-shadow:inset 0 -3px 0 rgba(0,0,0,.2),inset 0 1px 0 rgba(255,255,255,.5),0 1px 2px rgba(0,0,0,.4)}
+.work.thorns{background:linear-gradient(#c9b9a6,#8f7a63);color:#fff}
+.work.sacred{background:linear-gradient(#f4ead0,#d5bf88)}
+.work.regen{background:linear-gradient(#cfdcc4,#93a982)}
+.work.income{background:linear-gradient(#f7e3a2,#d1a63e)}
+.work.fortress{background:linear-gradient(#bdb3a5,#7f7465);color:#fff}
+.work.wonder{display:inline-flex;gap:4px;padding:0 8px;background:linear-gradient(#ffe9a6,#e0b14b)}
+.work.wonder em{font-style:normal;font-size:11px;font-weight:700;padding:0 5px;border-radius:999px;background:#5a3a08;color:#ffe9a6}
+.stash{display:flex;flex-direction:column;align-items:flex-end;gap:5px;flex:0 0 auto}
+.coin{display:inline-flex;align-items:center;gap:4px;font-family:var(--f-num);font-weight:800;font-size:16px;color:#6b4a00;cursor:help}
+.coin .sym{width:20px;height:20px}
+.backs{display:inline-flex;align-items:center;font-size:13px;color:var(--ink-2);cursor:help}.backs b{margin-left:9px}
+.tag{display:inline-flex;align-items:center;gap:4px;font-size:12.5px;font-weight:700;padding:1px 8px 1px 2px;border-radius:999px;background:rgba(106,63,176,.12);color:#4a2783;cursor:help}
+.tag .sym{width:16px;height:16px}.tag.hot{background:#6a3fb0;color:#fff}.tag.imp{background:linear-gradient(90deg,#3a1b70,#7445bd);color:#ffe9a6}
+.tokens{display:flex;flex-wrap:wrap;gap:5px;padding:0 10px 8px}
+.token{font-size:12.5px;font-weight:700;padding:2px 9px;border-radius:999px;background:#1f4e79;color:#fff;cursor:help}.token.camel{background:#a8743a}
+.camp.turn{box-shadow:0 0 0 2px var(--gold-hi),0 0 28px rgba(246,217,137,.45),var(--shadow-1)}
+.camp.targetable{cursor:crosshair;box-shadow:0 0 0 3px #ff8a66,0 0 26px rgba(255,138,102,.55),var(--shadow-1)}
+.camp.targetable.hot{transform:translateY(-4px);box-shadow:0 0 0 4px #ffb199,0 0 34px rgba(255,138,102,.75),var(--shadow-1)}
+.camp.out{filter:grayscale(.9) brightness(.72)}
+.camp.hit{animation:shake .35s}
+@keyframes shake{0%,100%{transform:none}25%{transform:translateX(-6px)}50%{transform:translateX(6px)}75%{transform:translateX(-3px)}}
+.chips{position:absolute;left:50%;top:-13px;transform:translateX(-50%);display:flex;gap:4px;z-index:6;pointer-events:none;white-space:nowrap}
+.chip{font-family:var(--f-num);font-weight:800;font-size:13.5px;padding:2px 9px;border-radius:999px;box-shadow:0 3px 8px rgba(0,0,0,.4)}
+.chip.dmg{background:#ffe0d6;color:#9e2312}.chip.heal{background:#d9f2e3;color:#16613b}.chip.gold{background:#fff0c2;color:#6f4f00}.chip.wall{background:#e1e8f2;color:#344866}.chip.card{background:#e2e5fb;color:#2a3796}.chip.ko{background:#9e2312;color:#fff}
+.floats{position:absolute;inset:0;pointer-events:none;display:grid;place-items:center;z-index:7}
+.float{position:absolute;font-family:var(--f-num);font-weight:800;font-size:30px;white-space:nowrap;text-shadow:0 2px 0 rgba(0,0,0,.3),0 0 12px rgba(255,255,255,.7);animation:floatup 1.5s ease-out forwards}
+.float.dmg{color:#c42a17}.float.heal{color:#1f8a4c}.float.wall{color:#3c5170;font-size:23px}.float.gold{color:#9a6a00;font-size:22px}.float.info{color:#5b2a96;font-size:21px}.float.big{font-size:40px}
+@keyframes floatup{0%{transform:translateY(10px) scale(.6);opacity:0}15%{transform:none scale(1.1);opacity:1}100%{transform:translateY(-48px);opacity:0}}
+
+/* centre of the table */
+#events{grid-area:events;align-self:center;display:flex;flex-direction:column;gap:10px}
+.ev{border-radius:13px;padding:10px 13px;color:var(--ink);background:linear-gradient(180deg,var(--vellum),var(--vellum-2));box-shadow:var(--shadow-1)}
+.ev .when{font-size:13px;font-weight:700;color:var(--ink-3)}
+.ev h4{margin:1px 0 3px;font-family:var(--f-sc);font-size:19px;line-height:1.1}
+.ev p{margin:0;font-size:14px;line-height:1.3}
+.ev.now{border-left:5px solid var(--verm)}.ev.next{border-left:5px solid var(--steel);opacity:.9}
+.ev.flip{animation:flip .55s ease-out}
+@keyframes flip{0%{transform:perspective(600px) rotateY(80deg);opacity:0}100%{transform:none;opacity:1}}
+.ev-warn{font-size:13px;font-weight:700;padding:6px 10px;border-radius:10px;background:#7c1d12;color:#ffe3d9}
+#stage{grid-area:stage;position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:0}
+#stage .rose{position:absolute;width:min(48vh,380px);aspect-ratio:1;background:var(--rose) center/contain no-repeat;opacity:.55;pointer-events:none}
+#stage-card{position:relative;min-height:10px;display:flex;justify-content:center}
+.stage-fit{transform-origin:top center}
+#stage-card .card.pop{animation:pop .3s ease-out}
+@keyframes pop{from{transform:scale(.82);opacity:.2}to{transform:none;opacity:1}}
+#stage-caption{position:relative;margin-top:10px;font-family:var(--f-sc);font-weight:700;font-size:17px;color:var(--gold-hi);text-shadow:0 1px 0 #061226;min-height:24px;text-align:center}
+#market{grid-area:market;align-self:center;border-radius:15px;padding:10px 12px 12px;background:rgba(8,22,46,.5);box-shadow:inset 0 0 0 1px rgba(246,217,137,.22)}
+#market h3{margin:0 0 8px;font-family:var(--f-sc);font-size:19px;color:var(--gold-hi)}
+.mk-row{display:flex;gap:8px;justify-content:space-between;padding-bottom:12px}
+.mk-item{border:0;padding:0;background:none;cursor:default;border-radius:10px}
+.mk-item.can{cursor:pointer}.mk-item.can .card{box-shadow:0 0 0 2px var(--gold-hi),0 0 18px rgba(246,217,137,.5)}
+.mk-item.can:hover .card{transform:translateY(-4px)}
+.mk-note{margin:2px 0 0;font-size:13px;color:#d8e1f1;line-height:1.3}
+#me{grid-area:me;align-self:end;padding-bottom:12px}
+.camp.mine .camp-body{display:grid;grid-template-columns:auto 1fr;grid-template-areas:"hp stash" "works works";gap:8px 10px}
+.camp.mine .hpgem{grid-area:hp;width:68px;height:68px}.camp.mine .hpgem b{font-size:29px}
+.camp.mine .stash{grid-area:stash;align-items:flex-start}.camp.mine .works{grid-area:works}
+.camp.mine .piles{padding:0 10px 10px}
+.piles{display:flex;gap:6px}
+.pile{border:0;cursor:pointer;font-family:var(--f-ui);font-weight:700;font-size:13px;padding:5px 10px;border-radius:9px;color:var(--ink);background:rgba(0,0,0,.07);box-shadow:inset 0 0 0 1px rgba(0,0,0,.12);min-height:34px}
+.pile:hover{background:rgba(0,0,0,.12)}
+#handzone{grid-area:hand;position:relative;align-self:end}
+#prompt{text-align:center;font-family:var(--f-sc);font-weight:700;font-size:17px;color:var(--gold-hi);min-height:26px;text-shadow:0 1px 0 #061226}
+#hand{position:relative;display:flex;justify-content:center;align-items:flex-end;height:246px;padding:0 20px 12px}
+#hand .card{margin:0 -16px;transform:translateY(var(--y,0)) rotate(var(--rot,0deg));transform-origin:50% 115%;transition:transform .16s ease,box-shadow .16s ease,filter .16s}
+#hand .card.playable{cursor:pointer}
+#hand .card.playable:hover,#hand .card.playable:focus-visible{transform:translateY(-30px) scale(1.07);z-index:5}
+#hand .card.sel{transform:translateY(-46px) scale(1.1);z-index:6;box-shadow:0 0 0 2px var(--gold-hi),0 0 30px rgba(246,217,137,.75),0 14px 30px rgba(0,0,0,.55)}
+#hand .card.dim{filter:saturate(.7) brightness(.86)}
+.hand-empty{align-self:center;color:#c9d4ea;font-style:italic}
+
+/* drawer, sheets, tooltips, coach, banner */
+.drawer{position:absolute;top:56px;right:0;bottom:0;width:330px;z-index:30;padding:16px;overflow:auto;transform:translateX(105%);transition:transform .25s ease;
+  background:linear-gradient(180deg,rgba(14,32,62,.98),rgba(9,23,47,.99));box-shadow:-14px 0 32px rgba(0,0,0,.4)}
+.drawer.open{transform:none}
+.drawer h3{margin:0 0 10px;font-family:var(--f-sc);font-size:20px;color:var(--gold-hi)}
+.log{list-style:none;margin:0;padding:0}.log li{padding:7px 0;border-bottom:1px solid rgba(246,217,137,.12);font-size:14.5px;line-height:1.35;color:#dbe3f2}.log li.r{color:var(--gold-hi);font-family:var(--f-sc);font-weight:700}
+.log .kw{filter:brightness(1.6) saturate(.9)}
+.sheet-wrap{position:fixed;inset:0;z-index:60;display:grid;place-items:center;padding:18px;background:rgba(4,11,25,.66)}
+.sheet-panel{width:min(780px,100%);max-height:88dvh;overflow:auto;border-radius:18px;padding:20px 22px;color:var(--ink);background:linear-gradient(180deg,var(--vellum),var(--vellum-2));box-shadow:0 26px 70px rgba(0,0,0,.6)}
+.sheet-panel h2{margin:0 0 6px;font-family:var(--f-sc);font-size:30px;line-height:1.1;color:#3a1f12}
+.sheet-panel h3{margin:16px 0 6px;font-family:var(--f-sc);font-size:19px;color:#3a1f12}
+.sheet-panel p{line-height:1.45;font-size:15.5px;margin:6px 0}
+.muted{color:var(--ink-3)}
+.row{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}.row.center{justify-content:center}
+.sheet-panel .btn.ghost{color:var(--ink);background:rgba(0,0,0,.05);box-shadow:inset 0 0 0 1px rgba(0,0,0,.18)}
+.seg{display:inline-flex;border-radius:12px;padding:3px;background:rgba(0,0,0,.07);gap:3px}
+.seg button{border:0;cursor:pointer;min-height:40px;padding:6px 14px;border-radius:9px;background:none;font-weight:700;color:var(--ink-2)}
+.seg button.on{background:#fff;color:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,.25)}
+.set-row{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 0;border-bottom:1px solid rgba(0,0,0,.08)}
+.set-row b{display:block}.set-row span{font-size:14px;color:var(--ink-3)}
+.relics{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:10px}
+.relic-pick{text-align:left;border:0;cursor:pointer;border-radius:14px;padding:14px;color:var(--ink);background:linear-gradient(#fff8e6,#f0dcaa);box-shadow:inset 0 0 0 1px rgba(155,116,32,.5),0 3px 0 #b88e36}
+.relic-pick:hover{transform:translateY(-3px)}
+.relic-pick b{display:block;font-family:var(--f-sc);font-size:19px;color:#5a2f12}.relic-pick span{font-size:14.5px;line-height:1.35}
+.legend{display:grid;grid-template-columns:repeat(2,1fr);gap:8px 18px;margin:8px 0}
+.legend div{display:grid;grid-template-columns:30px 1fr;gap:2px 8px;align-items:start;font-size:14px}.legend .sym{width:28px;height:28px}.legend b{align-self:center}.legend span{grid-column:2;color:var(--ink-2);line-height:1.3}
+.decklist{columns:2;column-gap:18px;margin:6px 0}.decklist div{break-inside:avoid;display:flex;justify-content:space-between;gap:8px;padding:4px 0;border-bottom:1px dotted rgba(0,0,0,.15);font-size:14.5px}
+.tip{position:fixed;z-index:90;max-width:290px;padding:8px 11px;border-radius:10px;font-size:14px;line-height:1.35;color:var(--ink);background:#fffaf0;box-shadow:0 12px 28px rgba(0,0,0,.45);pointer-events:none}
+.coach{position:fixed;inset:0;z-index:70;pointer-events:none}
+.coach .spot{position:fixed;border-radius:16px;box-shadow:0 0 0 9999px rgba(4,11,25,.62);transition:all .3s ease}
+.coach .bubble{position:fixed;width:min(360px,calc(100vw - 24px));padding:14px 16px;border-radius:15px;color:var(--ink);background:#fffaf0;box-shadow:0 18px 44px rgba(0,0,0,.55);pointer-events:auto}
+.coach .bubble .btn.ghost{color:var(--ink);background:rgba(0,0,0,.05);box-shadow:inset 0 0 0 1px rgba(0,0,0,.22)}
+.coach .bubble h4{margin:0 0 4px;font-family:var(--f-sc);font-size:19px;color:#3a1f12}.coach .bubble p{margin:0 0 10px;font-size:15px;line-height:1.4}
+.coach .bubble .row{margin-top:6px;justify-content:space-between;align-items:center}
+.coach .step{font-size:13px;color:var(--ink-3)}
+#banner{position:fixed;left:50%;top:40%;transform:translate(-50%,-50%);z-index:50;text-align:center;pointer-events:none;opacity:0;width:min(92vw,760px)}
+#banner .bt{font-family:var(--f-sc);font-weight:800;font-size:clamp(32px,5.4vw,58px);line-height:1.05;color:var(--gold-hi);text-shadow:0 3px 0 #3a2a06,0 0 36px rgba(0,0,0,.75)}
+#banner .bs{margin-top:6px;font-size:18px;color:#fff;text-shadow:0 2px 8px #000}
+#banner .bs .kw{color:#ffd76a}
+#banner.show{animation:bannerIn var(--bdur,1.9s) ease-out}
+@keyframes bannerIn{0%{opacity:0;transform:translate(-50%,-40%)}12%{opacity:1;transform:translate(-50%,-50%)}78%{opacity:1}100%{opacity:0}}
+#fx-layer{position:fixed;inset:0;z-index:45;pointer-events:none}
+#fx-arrows{position:fixed;inset:0;width:100%;height:100%;z-index:44;pointer-events:none}
+.arrow{fill:none;stroke-width:5;stroke-linecap:round;filter:drop-shadow(0 2px 3px rgba(0,0,0,.5))}
+.arrow.dmg{stroke:#ff7a5c}.arrow.raze{stroke:#e0a35a}.arrow.steal{stroke:#e46fae}.arrow.aim{stroke:#ffd27a;stroke-dasharray:10 9}
+
+/* ── menu ── */
+#screen-menu{display:grid;place-items:center;padding:24px}
+.menu{display:flex;flex-direction:column;align-items:center;text-align:center}
+.menu-title{margin:0;font-family:var(--f-sc);font-weight:800;font-size:clamp(48px,8.5vw,104px);line-height:.95;color:var(--gold-hi);text-shadow:0 4px 0 #4a3408,0 0 42px rgba(0,0,0,.6)}
+.menu-sub{margin:10px 0 0;font-size:19px;color:#dbe4f3;max-width:34ch}
+.menu-fan{position:relative;height:250px;width:min(720px,94vw);margin:20px 0 10px}
+.menu-fan .card{position:absolute;left:50%;top:10px;margin-left:calc(var(--cw) / -2);transform:translateX(var(--x)) translateY(var(--y)) rotate(var(--rot));transform-origin:50% 120%;animation:deal .7s cubic-bezier(.2,.8,.2,1) both;animation-delay:var(--d)}
+@keyframes deal{from{transform:translateX(0) translateY(60px) rotate(0);opacity:0}}
+.menu-actions{display:flex;flex-direction:column;gap:10px;width:min(340px,90vw)}
+.menu-foot{margin-top:16px;font-size:14px;color:#aebbd4}
+
+/* ── civ select ── */
+#screen-select{display:grid;grid-template-columns:minmax(0,1fr) 440px;grid-template-rows:auto minmax(0,1fr);gap:0 18px;padding:0 18px 18px}
+.sel-top{grid-column:1/-1;display:flex;align-items:center;gap:12px;height:62px}
+.sel-top h2{margin:0;font-family:var(--f-sc);font-size:26px;color:var(--gold-hi);flex:1}
+.sel-list{overflow:auto;padding:2px 6px 20px 2px}
+.region h3{margin:14px 0 8px;font-family:var(--f-sc);font-size:19px;color:var(--gold-hi)}
+.civ-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
+.civ-tile{position:relative;height:86px;border:0;border-radius:13px;cursor:pointer;text-align:left;color:#fff;padding:9px 10px;display:flex;align-items:flex-end;gap:8px;
+  background-color:var(--civ);background-image:var(--motif);box-shadow:0 0 0 1px rgba(0,0,0,.45),0 6px 14px rgba(2,8,22,.45);transition:transform .15s}
+.civ-tile:hover{transform:translateY(-2px)}
+.civ-tile.on{box-shadow:0 0 0 3px var(--gold-hi),0 0 24px rgba(246,217,137,.55)}
+.civ-tile .crest{flex:0 0 auto;filter:drop-shadow(0 1px 1px rgba(0,0,0,.5))}
+.civ-tile .nm{font-family:var(--f-sc);font-weight:700;font-size:16.5px;line-height:1.05;text-shadow:0 1px 0 rgba(0,0,0,.55)}
+.civ-tile .hp{position:absolute;top:7px;right:9px;font-family:var(--f-num);font-weight:800;font-size:14px;padding:0 7px;border-radius:999px;background:rgba(0,0,0,.32)}
+.sel-detail{overflow:auto;border-radius:18px;color:var(--ink);background:linear-gradient(180deg,var(--vellum),var(--vellum-2));box-shadow:var(--shadow-1);display:flex;flex-direction:column}
+.sd-hero{display:flex;gap:14px;align-items:center;padding:18px;color:#fff;border-radius:18px 18px 0 0;background-color:var(--civ);background-image:var(--motif)}
+.sd-hero h2{margin:0;font-family:var(--f-sc);font-size:34px;line-height:1;text-shadow:0 2px 0 rgba(0,0,0,.4)}
+.sd-hero p{margin:4px 0 0;font-size:15.5px;opacity:.95}
+.sd-body{padding:4px 18px 10px;flex:1}
+.sd-body h3{margin:14px 0 8px;font-family:var(--f-sc);font-size:18px;color:#3a1f12}
+.sd-cards{display:flex;gap:10px;flex-wrap:wrap}
+.sd-stats{display:flex;gap:16px;flex-wrap:wrap;font-size:15px;margin-top:10px}.sd-stats b{font-family:var(--f-num);font-size:20px}
+.mix{display:flex;flex-wrap:wrap;gap:6px 12px}.mix span{display:inline-flex;align-items:center;gap:3px;font-weight:700;font-size:14px}.mix .sym{width:22px;height:22px}
+.sd-foot{position:sticky;bottom:0;padding:12px 18px;background:linear-gradient(180deg,rgba(238,223,191,0),var(--vellum-2) 30%);display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.sd-foot .seg{background:rgba(0,0,0,.08)}
+
+/* ── phones ── */
+@media (max-width:820px){
+  :root{--cw:112px;--ch:162px}
+  .card:not(.lg):not(.sm) .ca{height:29%}.card:not(.lg):not(.sm) .ct{font-size:10.5px;padding:3px 5px 1px}.card:not(.lg):not(.sm) .ct span{display:-webkit-box;-webkit-line-clamp:6;-webkit-box-orient:vertical;overflow:hidden}
+  .mob-only{display:grid!important}.desk-only{display:none!important}
+  #topbar{height:52px;padding:0 8px;gap:6px}.pill{font-size:13.5px;padding:5px 10px}.speed{display:none}.tb-mid{justify-content:flex-start;gap:5px}
+  #table{grid-template-columns:minmax(0,1fr);grid-template-rows:auto minmax(0,1fr) auto auto;grid-template-areas:"opps" "stage" "me" "hand";gap:8px;padding:4px 8px 0}
+  #events,#market{display:none}
+  #opps{gap:6px}#opps .camp{flex:1 1 0}
+  #opps .camp-banner{min-height:30px;padding:3px 7px;gap:5px}#opps .cname{font-size:14px}#opps .relic,#opps .flag{display:none}
+  #opps .camp-body{padding:5px 7px 7px;gap:6px;flex-wrap:wrap}
+  #opps .hpgem{width:42px;height:42px}#opps .hpgem b{font-size:18px}#opps .hpgem small{display:none}
+  #opps .work{min-width:24px;height:24px;font-size:13px;padding:0 4px}
+  #opps .stash{flex-direction:row;align-items:center;gap:6px}#opps .tag{font-size:11px}
+  #opps .tokens{padding:0 7px 6px}
+  #stage .rose{width:min(36vh,240px)}
+  .card.lg{--w:150px;--h:212px;--s:28px;padding:6px}.card.lg .cn{font-size:13.5px;min-height:30px}.card.lg .ct{font-size:12.5px;padding:5px 8px 2px}.card.lg .cf{font-size:11px}
+  #me{padding-bottom:0}#me .camp-banner{min-height:30px;padding:3px 9px}#me .relic,#me .csub{display:none}
+  .camp.mine .camp-body{grid-template-columns:auto auto minmax(0,1fr);grid-template-areas:"hp stash works";padding:6px 8px 8px;gap:8px}
+  .camp.mine .hpgem{width:46px;height:46px}.camp.mine .hpgem b{font-size:20px}.camp.mine .hpgem small{display:none}.camp.mine .piles{display:none}
+  #handzone{padding-bottom:calc(6px + env(safe-area-inset-bottom,0px))}
+  #prompt{font-size:14px;min-height:20px}
+  #hand{justify-content:flex-start;overflow-x:auto;overflow-y:visible;height:196px;padding:28px 12px 8px;gap:8px;scroll-snap-type:x proximity}
+  #hand .card{margin:0;transform:none;scroll-snap-align:center}
+  #hand .card.playable:hover{transform:none}
+  #hand .card.sel{transform:translateY(-26px)}
+  .drawer{top:52px;width:100%}
+  .sheet-wrap{place-items:end center;padding:0}
+  .sheet-panel{border-radius:20px 20px 0 0;max-height:88dvh;padding:18px 16px calc(18px + env(safe-area-inset-bottom,0px))}
+  .relics{grid-template-columns:1fr}.legend{grid-template-columns:1fr}.decklist{columns:1}
+  #screen-select{grid-template-columns:minmax(0,1fr);grid-template-rows:auto auto minmax(0,1fr);padding:0 10px 10px}
+  .sel-list{max-height:none}
+  .civ-grid{grid-template-columns:repeat(auto-fill,minmax(130px,1fr))}
+  .sel-detail{overflow:visible}
+  #screen-select{overflow:auto}
+  .menu-fan{height:190px}.menu-fan .card{--cw:112px}
+}
+@media (min-width:821px) and (max-height:820px){:root{--cw:136px;--ch:192px}#hand{height:222px}#hand .card{margin:0 -14px}.camp-body{padding:6px 10px 8px}.hpgem{width:52px;height:52px}.camp.mine .hpgem{width:60px;height:60px}#topbar{height:50px}}
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;transition-duration:.01ms!important}}
+</style>
+</head>
+<body>
+<div id="app">
+  <section id="screen-menu" class="screen"></section>
+  <section id="screen-select" class="screen hidden"></section>
+  <section id="screen-match" class="screen hidden">
+    <header id="topbar"></header>
+    <div id="table">
+      <div id="opps"></div>
+      <aside id="events"></aside>
+      <div id="stage"><div class="rose"></div><div id="stage-card"></div><div id="stage-caption"></div></div>
+      <aside id="market"></aside>
+      <div id="me"></div>
+      <div id="handzone"><div id="prompt"></div><div id="hand"></div></div>
+    </div>
+    <aside id="chronicle" class="drawer" aria-label="Chronicle"></aside>
+  </section>
+  <svg id="fx-arrows" aria-hidden="true"></svg>
+  <div id="fx-layer" aria-hidden="true"></div>
+  <div id="sheet" class="sheet-wrap hidden"></div>
+  <div id="tip" class="tip hidden" role="tooltip"></div>
+  <div id="coach" class="coach hidden"></div>
+  <div id="banner" aria-live="polite"></div>
+</div>
+<script>
+'use strict';
+/* ── Medieval Mayhem ──
+   Demo game #4 for Sonic Hub Pages: a light card brawl where every medieval civilization has its own deck.
+   Cards speak in symbols; shared symbols recur across decks, some belong to a few civs, some to one.
+   The engine is pure (state S, seeded RNG, no DOM) so sim.js can play thousands of AI games to balance it. */
+const clamp = (v, a, b) => (v < a ? a : v > b ? b : v);
+function rnd(S) {
+  let t = (S.rs = (S.rs + 0x6D2B79F5) >>> 0);
+  t = Math.imul(t ^ (t >>> 15), t | 1);
+  t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+  return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+}
+const pick = (S, arr) => arr[Math.floor(rnd(S) * arr.length)];
+function wpick(S, entries) {
+  let tot = 0; for (const e of entries) tot += Math.max(0, e[1]);
+  if (tot <= 0) return entries[0][0];
+  let r = rnd(S) * tot;
+  for (const e of entries) { r -= Math.max(0, e[1]); if (r <= 0) return e[0]; }
+  return entries[entries.length - 1][0];
+}
+function shuffled(S, arr) { const a = arr.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(rnd(S) * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; }
+const fmtN = n => String(Math.round(n)).replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const sumObj = o => Object.values(o).reduce((a, b) => a + b, 0);
+
+/* ── Content. Nothing here is a rule about regions: symbols go wherever history puts them. ── */
+const START_HAND = 3;
+/* each symbol resolves into steps; a card resolves its symbols left to right */
+const SYM = {
+  A: { name: 'Strike', desc: 'Deal 1 damage (walls take it first).', steps: [{ dmg: 1, basic: 1 }] },
+  W: { name: 'Wall', desc: 'The card stays in play as a structure: 1 durability per wall icon.', steps: [] },
+  H: { name: 'Heal', desc: 'Heal 1 HP.', steps: [{ heal: 1 }] },
+  M: { name: 'Extra play', desc: 'Play another card.', steps: [{ plays: 1 }] },
+  D: { name: 'Draw', desc: 'Draw 1 card.', steps: [{ draw: 1 }] },
+  G: { name: 'Gold', desc: 'Gain 1 gold to hire mercenaries.', steps: [{ gold: 1 }] },
+  R: { name: 'Raze', desc: "Destroy the opponent's biggest structure (a wonder loses 2 durability).", steps: [{ raze: 1 }] },
+  S: { name: 'Steal', desc: "Steal 1 random card from an opponent's hand.", steps: [{ steal: 1 }] },
+  C: { name: 'Convert', desc: "Convert the opponent's biggest structure to your side.", steps: [{ convert: 1 }] },
+  K: { name: 'Cavalry', desc: 'Deal 2 damage. Camels block it.', steps: [{ dmg: 2, cav: 1 }] },
+  E: { name: 'Elephant', desc: 'Destroy a structure, then deal 1 damage.', steps: [{ raze: 1 }, { dmg: 1 }] },
+  L: { name: 'Camel', desc: 'Deal 1 damage and set up a camel guard: the next cavalry attack on you is cancelled (horses fear camels).', steps: [{ dmg: 1 }, { token: 'camel' }] },
+  B: { name: 'Ranged', desc: 'Deal 1 damage over the walls, straight to HP.', steps: [{ dmg: 1, pierce: 1 }] },
+  F: { name: 'Gunpowder', desc: 'Deal 1 damage to every opponent.', steps: [{ dmg: 1, all: 1 }] },
+  Y: { name: 'Eagle', desc: 'Deal 1 damage, or 2 damage if the opponent has no walls.', steps: [{ dmg: 1, eagle: 1 }] },
+  N: { name: 'Ship', desc: 'Raid: steal 1 card, then deal 1 damage.', steps: [{ steal: 1 }, { dmg: 1 }] },
+};
+const SYM_ORDER = 'AKEBLYFNRSCWHMDG';
+const COMMON_NAMES = {
+  A: 'Militia', AA: 'Swordsmen', AAA: 'Shock Troops', AM: 'Skirmish', AAM: 'Assault', AD: 'Outriders', AH: 'Spearmen',
+  W: 'Palisade', WW: 'Stone Wall', WWW: 'Fortress', WH: 'Watch Tower',
+  H: 'Provisions', HH: 'Healer', HD: 'Monastery', MD: 'Messenger', MM: 'Forced March', D: 'Scouting', DD: 'Scholars',
+  G: 'Merchant', GG: 'Gold Mine', GD: 'Market Day', R: 'Battering Ram', S: 'Spy', C: 'Monk',
+  K: 'Cavalry', KM: 'Light Cavalry', KK: 'Heavy Cavalry', E: 'War Elephant', EA: 'Elephant Charge', L: 'Camel Riders', LG: 'Caravan',
+  B: 'Archers', BB: 'Arrow Volley', BM: 'Horse Archers', F: 'Fire Lances', FF: 'Bombards', Y: 'Eagle Warriors', YM: 'Eagle Scouts', N: 'Warship', NM: 'Landing Party',
+};
+/* signature cards: steps written by hand. wall kinds: regen (+1 per turn), sacred (heals owner each turn), thorns (hitting it hurts), fortress (raze removes only 1), wonder */
+const UNIQUE = {
+  greatwall: { name: "Great Wall", icons: 'WWWW', text: "A wall with 4 durability.", wall: 4 },
+  exam: { name: "Imperial Exams", icons: 'DDG', text: "Draw 2 cards and gain 1 gold.", steps: [{ draw: 2 }, { gold: 1 }] },
+  samurai: { name: "Samurai", icons: 'AA', text: "Deal 2 damage, or 3 damage if the opponent has no walls.", steps: [{ dmg: 2, samurai: 1 }] },
+  kamikaze: { name: "Divine Wind", icons: 'D', text: "Until your next turn, every attack against you is cancelled. Draw 1 card.", steps: [{ token: 'immune' }, { draw: 1 }] },
+  hwacha: { name: "Hwacha", icons: 'FF', text: "Deal 1 damage to every opponent, twice.", steps: [{ dmg: 1, all: 1 }, { dmg: 1, all: 1 }] },
+  tripitaka: { name: "Tripitaka Koreana", icons: 'DDDM', text: "Draw 3 cards and play another card.", steps: [{ draw: 3 }, { plays: 1 }] },
+  ironcav: { name: "Iron Pagoda", icons: 'KA', text: "Iron-clad cavalry: deal 3 damage. Camels block it.", steps: [{ dmg: 3, cav: 1 }] },
+  thunder: { name: "Thunder Crash Bomb", icons: 'RF', text: "Destroy a structure, then deal 1 damage to every opponent.", steps: [{ raze: 1 }, { dmg: 1, all: 1 }] },
+  stakes: { name: "Bạch Đằng Stakes", icons: 'W', text: "Until your next turn, the first opponent who damages you takes 2 damage.", steps: [{ token: 'trap' }] },
+  proclaim: { name: "Call to Arms", icons: 'HHDD', text: "Heal 2 HP and draw 2 cards.", steps: [{ heal: 2 }, { draw: 2 }] },
+  caravan: { name: "Desert Caravan", icons: 'LGD', text: "Deal 1 damage, set up a camel guard, gain 1 gold and draw 1 card.", steps: [{ dmg: 1 }, { token: 'camel' }, { gold: 1 }, { draw: 1 }] },
+  baghdad: { name: "Baghdad Hospital", icons: 'HHH', text: "Heal 3 HP.", steps: [{ heal: 3 }] },
+  immortals: { name: "Immortals", icons: 'WW', text: "A wall with 2 durability that regains 1 durability on each of your turns (max 3).", wall: 2, kind: 'regen' },
+  sasanian: { name: "Sasanian Elephants", icons: 'EE', text: "Destroy two structures and deal 2 damage.", steps: [{ raze: 1 }, { dmg: 1 }, { raze: 1 }, { dmg: 1 }] },
+  urban: { name: "Urban's Bombard", icons: 'RR', text: "Destroy every structure of one opponent, then deal 1 damage.", steps: [{ raze: 9 }, { dmg: 1 }] },
+  mansa: { name: "Mansa Musa's Pilgrimage", icons: 'GGG', text: "Gain 3 gold; your next hire this turn is free.", steps: [{ gold: 3 }, { buyFree: 1 }] },
+  sankore: { name: "University of Sankore", icons: 'DDH', text: "Draw 2 cards and heal 1 HP.", steps: [{ draw: 2 }, { heal: 1 }] },
+  lalibela: { name: "Churches of Lalibela", icons: 'WWW', text: "A wall with 3 durability; while it stands you heal 1 HP on each of your turns.", wall: 3, kind: 'sacred' },
+  shotel: { name: "Shotel Warriors", icons: 'AAM', text: "Deal 2 damage and play another card.", steps: [{ dmg: 2 }, { plays: 1 }] },
+  arrowrain: { name: "Arrow Storm", icons: 'BB', text: "Deal 1 damage over the walls to every opponent.", steps: [{ dmg: 1, pierce: 1, all: 1 }] },
+  feint: { name: "Feigned Retreat", icons: 'RKA', text: "Lure them out: destroy a structure, then deal 2 damage.", steps: [{ raze: 1 }, { dmg: 2 }] },
+  scourge: { name: "Scourge of God", icons: 'FS', text: "Every opponent discards a random card and takes 1 damage.", steps: [{ discard: 1, all: 1 }, { dmg: 1, all: 1 }] },
+  aquileia: { name: "Sack of Aquileia", icons: 'SS', text: "Steal 2 cards from one opponent.", steps: [{ steal: 2 }] },
+  twocourts: { name: "Dual Administration", icons: 'GGDM', text: "Gain 2 gold, draw 1 card and play another card.", steps: [{ gold: 2 }, { draw: 1 }, { plays: 1 }] },
+  ordo: { name: "Ordo Camp", icons: 'WWH', text: "A wall with 2 durability; heal 1 HP.", wall: 2, steps: [{ heal: 1 }] },
+  longbow: { name: "Longbow Volley", icons: 'BB', text: "Deal 2 damage over the walls.", steps: [{ dmg: 2, pierce: 1 }] },
+  charter: { name: "Magna Carta", icons: 'GGH', text: "Gain 2 gold, heal 1 HP and draw 1 card.", steps: [{ gold: 2 }, { heal: 1 }, { draw: 1 }] },
+  woad: { name: "Woad Raiders", icons: 'AAA', text: "Deal 3 damage; you lose 1 HP.", steps: [{ dmg: 3 }, { self: 1 }] },
+  ambush: { name: "Highland Ambush", icons: 'FD', text: "Deal 1 damage to every opponent and draw 1 card.", steps: [{ dmg: 1, all: 1 }, { draw: 1 }] },
+  paladin: { name: "Paladins", icons: 'KK', text: "Deal 4 damage. Camels block it.", steps: [{ dmg: 4, cav: 1 }] },
+  charlemagne: { name: "Charlemagne", icons: 'HHW', text: "Heal 2 HP; all your structures gain 1 durability.", steps: [{ heal: 2 }, { fortify: 1 }] },
+  berserk: { name: "Berserkers", icons: 'AAH', text: "Deal 2 damage and heal 1 HP.", steps: [{ dmg: 2 }, { heal: 1 }] },
+  lindisfarne: { name: "Raid on Lindisfarne", icons: 'NS', text: "Steal 1 card from every opponent, then deal 1 damage.", steps: [{ steal: 1, all: 1 }, { dmg: 1 }] },
+  teutonic: { name: "Teutonic Knights", icons: 'WWA', text: "A spiked wall with 2 durability: whoever hits it takes 1 damage.", wall: 2, kind: 'thorns' },
+  marienburg: { name: "Marienburg Castle", icons: 'WWWW', text: "A wall with 4 durability.", wall: 4 },
+  horde: { name: "Barbarian Horde", icons: 'MMD', text: "Play 2 more cards and draw 1 card.", steps: [{ plays: 2 }, { draw: 1 }] },
+  sackrome: { name: "Sack of Rome", icons: 'RSA', text: "Destroy a structure, steal 1 card and deal 1 damage.", steps: [{ raze: 1 }, { steal: 1 }, { dmg: 1 }] },
+  conquist: { name: "Conquistadors", icons: 'BB', text: "Guns and horses: deal 2 damage over the walls.", steps: [{ dmg: 2, pierce: 1 }] },
+  reconq: { name: "Reconquista", icons: 'FH', text: "Deal 1 damage to every opponent and heal 1 HP.", steps: [{ dmg: 1, all: 1 }, { heal: 1 }] },
+  caravel: { name: "Caravel", icons: 'NDM', text: "Steal 1 card, draw 1 card and play another card.", steps: [{ steal: 1 }, { draw: 1 }, { plays: 1 }] },
+  indiaroute: { name: "Sea Route to India", icons: 'GGGM', text: "Gain 3 gold and play another card.", steps: [{ gold: 3 }, { plays: 1 }] },
+  theodosius: { name: "Theodosian Walls", icons: 'WWW', text: "A wall with 3 durability that regains 1 durability on each of your turns (max 4).", wall: 3, kind: 'regen' },
+  greekfire: { name: "Greek Fire", icons: 'RAA', text: "Destroy a structure, then deal 2 damage.", steps: [{ raze: 1 }, { dmg: 2 }] },
+  sacrifice: { name: "Sacrifice", icons: 'DDM', text: "Lose 1 HP, draw 2 cards and play another card.", steps: [{ self: 1 }, { draw: 2 }, { plays: 1 }] },
+  flowerwar: { name: "Flower War", icons: 'SY', text: "Take captives: steal 1 card, then deal 1 damage (2 damage if they have no walls).", steps: [{ steal: 1 }, { dmg: 1, eagle: 1 }] },
+  chichen: { name: "Chichén Itzá", icons: 'WWW', text: "Wonder with 3 durability plus 1 per opponent; it takes hits before your walls. If it still stands at the start of your third turn after building it, you win. Raze, elephants and bombards remove 2 durability.", wonder: 1 },
+  calendar: { name: "Maya Calendar", icons: 'DDH', text: "Draw 2 cards and heal 1 HP.", steps: [{ draw: 2 }, { heal: 1 }] },
+  incaroad: { name: "Inca Road", icons: 'MDD', text: "Play another card and draw 2 cards.", steps: [{ plays: 1 }, { draw: 2 }] },
+  sacsay: { name: "Sacsayhuamán", icons: 'WWW', text: "A wall with 3 durability made of giant stones: razing only removes 1 durability.", wall: 3, kind: 'fortress' },
+  angkor: { name: "Angkor Wat", icons: 'WWW', text: "Wonder with 3 durability plus 1 per opponent; it takes hits before your walls. If it still stands at the start of your third turn after building it, you win. Raze, elephants and bombards remove 2 durability.", wonder: 1 },
+  baray: { name: "Baray Reservoir", icons: 'HHG', text: "Heal 2 HP and gain 1 gold.", steps: [{ heal: 2 }, { gold: 1 }] },
+  armoredel: { name: "Armored Elephants", icons: 'EE', text: "Destroy two structures and deal 2 damage.", steps: [{ raze: 1 }, { dmg: 1 }, { raze: 1 }, { dmg: 1 }] },
+  cholafleet: { name: "Chola Fleet", icons: 'NF', text: "Deal 1 damage to every opponent, then steal 1 card.", steps: [{ dmg: 1, all: 1 }, { steal: 1 }] },
+  akinji: { name: "Akinji Raiders", icons: 'SK', text: "Steal 1 card, then cavalry: deal 2 damage (camels block it).", steps: [{ steal: 1 }, { dmg: 2, cav: 1 }] },
+  genitour: { name: "Genitours", icons: 'BGM', text: "Mounted javelins: deal 1 damage over the walls, gain 1 gold and play another card.", steps: [{ dmg: 1, pierce: 1 }, { gold: 1 }, { plays: 1 }] },
+  kasbah: { name: "Kasbah", icons: 'WWWG', text: "A citadel with 3 durability; gain 1 gold.", wall: 3, steps: [{ gold: 1 }] },
+  malacca: { name: "Strait of Malacca", icons: 'GG', text: "Tolls on the strait: take 1 gold from every opponent and gain 1 gold.", steps: [{ tribute: 1 }, { gold: 1 }] },
+  karambit: { name: "Karambit Warriors", icons: 'AADM', text: "Deal 2 damage, draw 1 card and play another card.", steps: [{ dmg: 2 }, { draw: 1 }, { plays: 1 }] },
+  wagenburg: { name: "Wagenburg", icons: 'BWW', text: "A wagon fort with 2 durability: whoever hits it takes 1 damage. Deal 1 damage over the walls.", wall: 2, kind: 'thorns', steps: [{ dmg: 1, pierce: 1 }] },
+  kutnahora: { name: "Silver of Kutná Hora", icons: 'GGD', text: "Gain 2 gold and draw 1 card.", steps: [{ gold: 2 }, { draw: 1 }] },
+  grunwald: { name: "Charge at Grunwald", icons: 'KAH', text: "Cavalry: deal 3 damage (camels block it); heal 1 HP.", steps: [{ dmg: 3, cav: 1 }, { heal: 1 }] },
+  szlachta: { name: "Szlachta Privileges", icons: 'GGH', text: "Gain 2 gold and heal 1 HP.", steps: [{ gold: 2 }, { heal: 1 }] },
+  leitis: { name: "Leitis", icons: 'KB', text: "Riders who cut through armour: deal 2 damage over the walls (camels block it).", steps: [{ dmg: 2, pierce: 1, cav: 1 }] },
+  hillforts: { name: "Hill Forts", icons: 'WWWD', text: "A fort with 3 durability; draw 1 card.", wall: 3, steps: [{ draw: 1 }] },
+  konnik: { name: "Konnik", icons: 'KA', text: "Cavalry: deal 2 damage (camels block it), then the rider fights on foot for 1 damage.", steps: [{ dmg: 2, cav: 1 }, { dmg: 1 }] },
+  krepost: { name: "Krepost", icons: 'WW', text: "A small fortress with 2 durability that regains 1 durability on each of your turns (max 3).", wall: 2, kind: 'regen' },
+  druzhina: { name: "Druzhina", icons: 'AAF', text: "Deal 2 damage to one opponent and 1 damage to every other opponent.", steps: [{ dmg: 2 }, { dmg: 1, others: 1 }] },
+  detinets: { name: "Detinets", icons: 'WWWH', text: "A stone citadel with 3 durability; heal 1 HP.", wall: 3, steps: [{ heal: 1 }] },
+  recurve: { name: "Recurve Bows", icons: 'BM', text: "Deal 1 damage over the walls to every opponent, then play another card.", steps: [{ dmg: 1, pierce: 1, all: 1 }, { plays: 1 }] },
+  blackarmy: { name: "Black Army", icons: 'G', text: "Matthias Corvinus pays his mercenaries: gain 1 gold; your next hire this turn is free.", steps: [{ gold: 1 }, { buyFree: 1 }] },
+};
+/* civs: hp2 (duel) and hp4 (3–4 players) come from tune.js (AI vs AI); deck = 24 cards; group only helps browsing */
+const CIVS = {
+  chinese: { name: "Chinese", group: "East Asia", color: '#b3261e', charge: 'sun', hp2: 15, hp4: 12, style: "Gunpowder, great walls, imperial exams", deck: 'A3 AA1 AM2 F3 FF1 W2 WW1 WH1 H2 HD1 DD1 G1 R1 AA1 C1 +greatwall +exam' },
+  japanese: { name: "Japanese", group: "East Asia", color: '#c0392b', charge: 'disc', hp2: 13, hp4: 15, style: "Samurai strikes, the Divine Wind shields", deck: 'A5 AA2 AM2 AAM1 K1 B2 W2 WH1 H2 HH1 D1 MD1 G1 +samurai +kamikaze' },
+  koreans: { name: "Koreans", group: "East Asia", color: '#2b6cb0', charge: 'knot', hp2: 18, hp4: 13, style: "Rocket carts, sturdy walls, card draw", deck: 'A3 AA3 AM2 F3 B2 W1 WW1 WH1 H2 HH1 D1 G1 R1 +hwacha +tripitaka' },
+  jurchens: { name: "Jurchens", group: "East Asia", color: '#3d4f5c', charge: 'axe', hp2: 10, hp4: 13, style: "Iron cavalry and thunder bombs", deck: 'A5 AA2 AM1 AAM1 K2 KM1 KK1 F1 W2 WH1 H2 D1 G1 R1 +ironcav +thunder' },
+  daiviet: { name: "Đại Việt", group: "Southeast Asia", color: '#b8860b', charge: 'star', hp2: 17, hp4: 13, style: "Crossbows, elephants, the Bạch Đằng stakes", deck: 'A4 AA2 AM1 AD1 B3 BB1 E2 W2 WW1 WH1 H2 HH1 D1 +stakes +proclaim' },
+  khmer: { name: "Khmer", group: "Southeast Asia", color: '#8a5a2b', charge: 'temple', hp2: 12, hp4: 13, style: "War elephants and Angkor Wat", deck: 'A4 AA1 AM1 E2 EA1 B1 W2 WW1 WH1 H2 HH1 D1 G2 C1 R1 +angkor +baray' },
+  indians: { name: "Indians", group: "South Asia", color: '#d97706', charge: 'wheel', hp2: 11, hp4: 11, style: "Armored elephants and the Chola fleet", deck: 'A4 AA2 AM1 E2 EA2 N1 L1 W2 WH1 H2 HH1 D1 C1 R1 +armoredel +cholafleet' },
+  arabs: { name: "Arabs", group: "Middle East & Africa", color: '#1f7a4d', charge: 'crescent', hp2: 11, hp4: 11, style: "Camels, caravans, medicine", deck: 'A4 AM1 L3 LG1 K1 W2 WH1 H2 HH2 HD1 C1 G1 GD1 S1 +caravan +baghdad' },
+  persians: { name: "Persians", group: "Middle East & Africa", color: '#6b2d8f', charge: 'sun', hp2: 11, hp4: 11, style: "Elephants, camels and the Immortals", deck: 'A4 AA1 AM1 E2 EA1 L2 K1 W2 WH1 H2 HH1 D1 G1 R1 C1 +immortals +sasanian' },
+  turks: { name: "Turks", group: "Middle East & Africa", color: '#a51c30', charge: 'crescent', hp2: 14, hp4: 12, style: "Great bombards, Janissaries, gunpowder", deck: 'A4 AA1 AM2 F2 FF1 L1 K1 W2 WH1 H2 D1 G2 R2 +urban +akinji' },
+  malians: { name: "Malians", group: "Middle East & Africa", color: '#c08a1e', charge: 'disc', hp2: 8, hp4: 10, style: "Gold, mercenaries, camels", deck: 'A4 AM2 L2 LG1 G2 GG1 W2 WH1 H2 HH1 D1 S1 K1 AA1 +mansa +sankore' },
+  ethiopians: { name: "Ethiopians", group: "Middle East & Africa", color: '#2f7d32', charge: 'cross', hp2: 15, hp4: 12, style: "Healing rock churches, Shotel warriors", deck: 'A5 AA1 AM1 E1 L1 B1 W2 WW1 WH1 H2 HH2 HD1 C1 D1 G1 +lalibela +shotel' },
+  mongols: { name: "Mongols", group: "Steppe", color: '#1f6f8b', charge: 'horse', hp2: 13, hp4: 14, style: "Relentless horse archers, feigned retreats", deck: 'A3 AM2 B3 BM3 K1 KM1 MD1 W1 WH1 H2 D1 S1 G1 R1 +arrowrain +feint' },
+  huns: { name: "Huns", group: "Steppe", color: '#7a3b12', charge: 'bow', hp2: 17, hp4: 15, style: "Ravage, plunder, horse archers", deck: 'A4 AA1 AM2 AAM1 B2 BM2 K1 KM1 S2 W1 WH1 H2 D1 R1 +scourge +aquileia' },
+  khitans: { name: "Khitans", group: "Steppe", color: '#4a6b3a', charge: 'bow', hp2: 10, hp4: 12, style: "Rich dual courts, nomad camps", deck: 'A4 AM1 B2 BM2 K2 KM1 W2 WH1 H2 HH1 D1 G2 R1 +twocourts +ordo' },
+  britons: { name: "Britons", group: "Europe", color: '#9b1c1c', charge: 'tower', hp2: 17, hp4: 16, style: "Longbows that shoot over walls", deck: 'A3 AM1 B5 BB3 K1 W2 WW1 WH1 H2 HH1 D1 R1 +longbow +charter' },
+  celts: { name: "Celts", group: "Europe", color: '#1d6b45', charge: 'knot', hp2: 11, hp4: 14, style: "Frenzied infantry, ambushes", deck: 'A5 AA3 AM2 AAM1 AD1 AH1 W2 WH1 H2 HH1 D1 S1 R1 +woad +ambush' },
+  franks: { name: "Franks", group: "Europe", color: '#1f4e9c', charge: 'fleur', hp2: 12, hp4: 14, style: "Knights and castles", deck: 'A4 AA1 AM1 K3 KK1 KM1 W2 WW1 WH1 H2 HH1 C1 D1 G1 R1 +paladin +charlemagne' },
+  vikings: { name: "Vikings", group: "Europe", color: '#33506b', charge: 'ship', hp2: 14, hp4: 14, style: "Longship raids, berserkers", deck: 'A4 AA2 AM2 AAM1 N3 NM1 S1 W2 WH1 H2 HH1 D1 G1 +berserk +lindisfarne' },
+  teutons: { name: "Teutons", group: "Europe", color: '#2d2d2d', charge: 'cross', hp2: 17, hp4: 13, style: "Spiked walls, heavy knights", deck: 'A3 AA2 K2 KK1 W3 WW2 WWW1 WH1 H2 HH1 C1 D1 R1 G1 +teutonic +marienburg' },
+  goths: { name: "Goths", group: "Europe", color: '#5b4636', charge: 'axe', hp2: 11, hp4: 14, style: "Human waves, the Sack of Rome", deck: 'A5 AA2 AM3 AAM1 MM1 AD1 W2 WH1 H3 D1 S1 R1 +horde +sackrome' },
+  spanish: { name: "Spanish", group: "Europe", color: '#b45309', charge: 'tower', hp2: 12, hp4: 12, style: "Conquistadors, gold, Reconquista", deck: 'A3 AA1 AM1 AH1 K2 KM1 B1 W2 WW1 WH1 H2 C1 D1 G2 GD1 R1 +conquist +reconq' },
+  portuguese: { name: "Portuguese", group: "Europe", color: '#0e5e6f', charge: 'quinas', hp2: 12, hp4: 13, style: "Caravels and sea trade", deck: 'A3 AA1 AM2 N2 NM1 B1 W2 WH1 H2 HH1 D1 MD1 G2 BB1 FF1 +caravel +indiaroute' },
+  byzantines: { name: "Byzantines", group: "Europe", color: '#5b2a86', charge: 'cross', hp2: 13, hp4: 12, style: "Theodosian Walls, Greek fire, cataphracts", deck: 'A3 AA1 AM1 K2 W3 WW2 WH1 H2 HH2 HD1 C1 D1 G1 R1 +theodosius +greekfire' },
+  aztecs: { name: "Aztecs", group: "Americas", color: '#0f766e', charge: 'eagle', hp2: 9, hp4: 13, style: "Sacrifice and Eagle warriors", deck: 'A4 AA2 AM1 AAM1 Y3 YM1 B1 S1 W1 WH1 H2 HH1 D1 G1 C1 +sacrifice +flowerwar' },
+  mayans: { name: "Mayans", group: "Americas", color: '#2e7d5b', charge: 'pyramid', hp2: 12, hp4: 13, style: "Chichén Itzá and archers", deck: 'A4 AM1 Y2 B2 BB1 W2 WW1 WH1 H2 HH1 D1 DD1 G1 R1 C1 +chichen +calendar' },
+  incas: { name: "Incas", group: "Americas", color: '#c2410c', charge: 'sun', hp2: 13, hp4: 13, style: "Swift Inca roads, stone fortresses", deck: 'A3 AA2 AM2 MD1 B2 BB1 Y1 W2 WW1 WH1 H2 HH1 D1 S1 R1 +incaroad +sacsay' },
+  berbers: { name: "Berbers", group: "Middle East & Africa", color: '#a6763f', charge: 'palm', hp2: 9, hp4: 10, style: "Desert camel raiders, fast and elusive", deck: 'A2 AM2 L3 LG1 K1 KM1 B2 W2 WH1 H2 HH1 D1 G1 S1 R1 +genitour +kasbah' },
+  malay: { name: "Malay", group: "Southeast Asia", color: '#9c2a6f', charge: 'kris', hp2: 10, hp4: 12, style: "Masters of the straits: fleets, trade tolls, swarming infantry", deck: 'A3 AA1 AM2 AAM1 N2 NM1 E1 W2 WH1 H2 HH1 D1 G2 S1 R1 +malacca +karambit' },
+  bohemians: { name: "Bohemians", group: "Eastern Europe", color: '#5a6e8c', charge: 'chalice', hp2: 17, hp4: 13, style: "Hussite wagon forts and early gunpowder", deck: 'A3 AA2 AM1 F1 BB1 B2 W2 WW1 WH1 H2 HH1 D1 G2 R1 C1 +wagenburg +kutnahora' },
+  poles: { name: "Poles", group: "Eastern Europe", color: '#d22f45', charge: 'eagle', hp2: 9, hp4: 12, style: "Heavy cavalry and noble privileges", deck: 'A4 AA1 AM1 K2 KK1 KM1 W2 WW1 WH1 H2 HH1 D1 G2 R1 C1 +grunwald +szlachta' },
+  lithuanians: { name: "Lithuanians", group: "Eastern Europe", color: '#5b8c1a', charge: 'columns', hp2: 12, hp4: 14, style: "Armour-piercing riders and hill forts", deck: 'A4 AA1 AM1 K2 KM2 B1 W2 WW1 WH1 H2 HH1 D1 G1 S1 R1 +leitis +hillforts' },
+  bulgarians: { name: "Bulgarians", group: "Eastern Europe", color: '#3c7a64', charge: 'crown', hp2: 11, hp4: 14, style: "Konnik riders and small fortresses", deck: 'A4 AA2 AM1 AAM1 K2 KM1 W2 WW1 WH1 H2 HH1 D1 G1 S1 R1 +konnik +krepost' },
+  slavs: { name: "Slavs", group: "Eastern Europe", color: '#8b2a1a', charge: 'trident', hp2: 11, hp4: 12, style: "Boyars, druzhina and stone citadels of the Rus", deck: 'A4 AA1 AM1 K2 KK1 KM1 W2 WW1 WH1 H2 HH1 C2 D1 G1 R1 +druzhina +detinets' },
+  magyars: { name: "Magyars", group: "Eastern Europe", color: '#b5452c', charge: 'doublecross', hp2: 10, hp4: 13, style: "Hussars, recurve bows and the Black Army", deck: 'A3 AM2 K2 KM2 B2 BM2 W1 WH1 H2 HH1 D1 G1 S1 R1 +recurve +blackarmy' },
+};
+const CIV_ORDER = Object.keys(CIVS);
+const GROUPS = ['East Asia', 'Southeast Asia', 'South Asia', 'Middle East & Africa', 'Steppe', 'Europe', 'Eastern Europe', 'Americas'];
+/* the mercenary market: neutral cards anyone can hire with gold */
+const MERCS = [
+  { id: 'genoa', name: "Genoese Crossbowmen", icons: 'BBM', cost: 2, n: 2 },
+  { id: 'crusader', name: "Crusaders", icons: 'KAM', cost: 2, n: 2 },
+  { id: 'engineer', name: "Siege Engineers", icons: 'RWWM', cost: 2, n: 2 },
+  { id: 'trebuchet', name: "Trebuchet", icons: 'RR', cost: 3, n: 1, steps: [{ raze: 1 }, { raze: 1 }] },
+  { id: 'physician', name: "Physician", icons: 'HHHD', cost: 2, n: 2 },
+  { id: 'venetian', name: "Venetian Merchants", icons: 'GGDM', cost: 1, n: 2 },
+  { id: 'varangian', name: "Varangian Guard", icons: 'KKWW', cost: 3, n: 1 },
+  { id: 'cuman', name: "Cuman Horse Archers", icons: 'BBM', cost: 2, n: 2 },
+  { id: 'assassin', name: "Hashashin", icons: 'BBB', cost: 3, n: 1, text: 'Deal 3 damage over the walls.', steps: [{ dmg: 3, pierce: 1 }] },
+  { id: 'envoy', name: "Envoy", icons: 'SSM', cost: 2, n: 1 },
+  { id: 'templar', name: "Knights Templar", icons: 'CKH', cost: 3, n: 1 },
+  { id: 'gunners', name: "Hungarian Gunners", icons: 'FFF', cost: 3, n: 1 },
+  { id: 'warel', name: "Hired Elephants", icons: 'EA', cost: 2, n: 1 },
+  { id: 'bedouin', name: "Bedouin Camels", icons: 'LLM', cost: 2, n: 1 },
+];
+/* events: one per round, the next one is always visible */
+const EVENTS = [
+  { id: 'plague', name: 'Plague', text: 'Everyone loses 1 HP.' },
+  { id: 'harvest', name: 'Harvest', text: 'Everyone heals 1 HP.' },
+  { id: 'silkroad', name: 'Silk Road Open', text: 'Everyone gains 1 gold.' },
+  { id: 'winter', name: 'Harsh Winter', text: 'Every structure loses 1 durability.' },
+  { id: 'fair', name: 'Great Fair', text: 'The market restocks 3 new cards; hiring costs 1 less gold this round.' },
+  { id: 'feast', name: 'Spring Festival', text: 'Everyone draws 1 card.' },
+  { id: 'revolt', name: 'Peasant Revolt', text: 'Whoever has the most HP loses 1 HP.' },
+  { id: 'crusade', name: 'Crusade', text: 'This round every Strike icon deals 1 extra damage.' },
+  { id: 'monsoon', name: 'Monsoon', text: 'No one can build structures this round.' },
+  { id: 'flood', name: 'Flood', text: 'Everyone discards 1 random card.' },
+  { id: 'eclipse', name: 'Eclipse', text: 'Everyone passes 1 random card to the next player.' },
+  { id: 'bells', name: 'Church Bells', text: 'Whoever has the least HP heals 2 HP.' },
+];
+/* relics: pick 1 of 3 at the start */
+const RELICS = {
+  joyeuse: { name: 'Joyeuse', text: 'Your first damaging card each turn deals 1 extra damage.' },
+  grail:   { name: 'Holy Grail', text: 'Your first healing card each turn heals 1 extra HP.' },
+  scone:   { name: 'Stone of Scone', text: 'Your structures get 1 extra durability when built.' },
+  compass: { name: 'Compass', text: 'At the start of your turn, if you hold 1 card or fewer, draw 1 extra card.' },
+  seal:    { name: "Merchant's Seal", text: 'Hiring costs 1 less gold (minimum 1). Start with 1 gold.' },
+  jade:    { name: 'Imperial Jade', text: 'Your max HP is 2 higher.' },
+  horn:    { name: 'War Horn', text: 'While you have 4 HP or less, your attacks deal 1 extra damage.' },
+  banner:  { name: 'Holy Banner', text: 'The first time you drop to 0 HP, rise again with 3 HP.' },
+  shroud:  { name: 'Holy Mantle', text: 'Each round, the first attack against you deals 1 less damage.' },
+  mint:    { name: 'Royal Mint', text: 'Gain 1 gold at the start of each of your turns.' },
+};
+const RELIC_IDS = Object.keys(RELICS);
+
+/* ── Imperial Age: one age-up per game, the same for everyone.
+   At the start of your RULES.ageTurn-th turn an "Imperial Age" card is put into your hand. Playing it costs your
+   play for that turn (no gold): your civ's Imperial cards are shuffled into your deck (or one goes straight to
+   your hand) and your civ's age-up bonus resolves. The card can't be stolen, discarded or passed. ── */
+const RULES = { ageTurn: 7 };
+const IMPERIAL = {
+  chinese:    { bonus: { text: 'Bonus: draw 2 cards.', steps: [{ draw: 2 }] }, cards: [{ name: 'Chu Ko Nu', icons: 'BBA' }, { name: 'Fire Arrow Rockets', icons: 'FFM' }, { name: 'Forbidden City', icons: 'WWWH' }] },
+  japanese:   { bonus: { text: 'Bonus: Kensei goes straight to your hand.', fetch: 0 }, cards: [{ name: 'Kensei', icons: 'AAA', text: 'Deal 3 damage, or 4 damage if the opponent has no walls.', steps: [{ dmg: 3, samurai: 1 }] }, { name: 'Atakebune', icons: 'NFA' }, { name: 'Yumi Archers', icons: 'BBM' }] },
+  koreans:    { bonus: { text: 'Bonus: Singijeon goes straight to your hand.', fetch: 0 }, cards: [{ name: 'Singijeon', icons: 'FFF' }, { name: 'War Wagons', icons: 'BWW' }, { name: 'Chongtong Cannons', icons: 'RFA' }] },
+  jurchens:   { bonus: { text: 'Bonus: thunder bombs deal 1 damage to every opponent.', steps: [{ dmg: 1, all: 1 }] }, cards: [{ name: 'Grenadiers', icons: 'FFA' }, { name: 'Fire Lancers', icons: 'KF' }, { name: 'Elite Iron Pagoda', icons: 'KKA', text: 'Deal 5 damage. Camels block it.', steps: [{ dmg: 5, cav: 1 }] }] },
+  daiviet:    { bonus: { text: 'Bonus: set the Bạch Đằng stakes: until your next turn, the first opponent who damages you takes 2 damage.', steps: [{ token: 'trap' }] }, cards: [{ name: 'Thần Cơ Hand Cannons', icons: 'FBA' }, { name: 'Rattan Archers', icons: 'BBW' }, { name: 'Elephant Corps', icons: 'EEA' }] },
+  khmer:      { bonus: { text: 'No bonus.' }, cards: [{ name: 'Ballista Elephants', icons: 'EEB' }, { name: 'Angkor Thom', icons: 'WWWW', wall: 4, kind: 'sacred', text: 'A wall with 4 durability; while it stands you heal 1 HP on each of your turns.', steps: [] }, { name: 'Naga Fleet', icons: 'NNM' }] },
+  indians:    { bonus: { text: 'Bonus: gain 2 gold.', steps: [{ gold: 2 }] }, cards: [{ name: 'Urumi Swordsmen', icons: 'AAAM' }, { name: 'Imperial Camels', icons: 'LLA' }, { name: 'Thirisadai', icons: 'NNF' }] },
+  arabs:      { bonus: { text: 'Bonus: Mamluks go straight to your hand.', fetch: 0 }, cards: [{ name: 'Mamluks', icons: 'LKA' }, { name: 'House of Wisdom', icons: 'DDHH' }, { name: 'Counterweight Trebuchet', icons: 'RRA' }] },
+  persians:   { bonus: { text: 'Bonus: gain 2 gold.', steps: [{ gold: 2 }] }, cards: [{ name: 'Elite War Elephants', icons: 'EEA' }, { name: 'Savar Cavalry', icons: 'KKH' }, { name: 'Kamandaran', icons: 'BBG' }] },
+  turks:      { bonus: { text: 'Bonus: Janissaries go straight to your hand.', fetch: 0 }, cards: [{ name: 'Janissaries', icons: 'AAFM', text: 'Deal 2 damage, deal 1 damage to every opponent, then play another card.', steps: [{ dmg: 2 }, { dmg: 1, all: 1 }, { plays: 1 }] }, { name: 'Great Bombards', icons: 'RRF' }, { name: 'Sipahis', icons: 'KKM' }] },
+  malians:    { bonus: { text: 'Bonus: gain 3 gold.', steps: [{ gold: 3 }] }, cards: [{ name: 'Gbeto Warriors', icons: 'BAAM' }, { name: 'Farimba Cavalry', icons: 'KKA' }, { name: 'Libraries of Timbuktu', icons: 'DDDH' }] },
+  ethiopians: { bonus: { text: 'Bonus: heal 3 HP.', steps: [{ heal: 3 }] }, cards: [{ name: 'Elite Shotel Warriors', icons: 'AAAM' }, { name: 'Torsion Engines', icons: 'RRF' }, { name: 'Royal Heirs', icons: 'DDM' }] },
+  mongols:    { bonus: { text: 'Bonus: play another card.', steps: [{ plays: 1 }] }, cards: [{ name: 'Elite Mangudai', icons: 'BBBM' }, { name: 'Steppe Lancers', icons: 'KKM' }, { name: 'Siege Drill', icons: 'RRA' }] },
+  huns:       { bonus: { text: 'Bonus: every opponent discards a random card.', steps: [{ discard: 1, all: 1 }] }, cards: [{ name: 'Tarkans', icons: 'KRR' }, { name: 'Elite Horse Archers', icons: 'BBM' }, { name: 'Marauders', icons: 'SSA' }] },
+  khitans:    { bonus: { text: 'Bonus: gain 2 gold and draw 1 card.', steps: [{ gold: 2 }, { draw: 1 }] }, cards: [{ name: 'Liao Dao', icons: 'AAAH' }, { name: 'Mounted Trebuchets', icons: 'RRM' }, { name: 'Ordo Cavalry', icons: 'KBM' }] },
+  britons:    { bonus: { text: 'Bonus: Elite Longbowmen go straight to your hand.', fetch: 0 }, cards: [{ name: 'Elite Longbowmen', icons: 'BBB', text: 'Deal 3 damage over the walls.', steps: [{ dmg: 3, pierce: 1 }] }, { name: 'Warwolf Trebuchet', icons: 'RRA' }, { name: 'Yeomen', icons: 'BBD' }] },
+  celts:      { bonus: { text: 'Bonus: draw 1 card and play another card.', steps: [{ draw: 1 }, { plays: 1 }] }, cards: [{ name: 'Elite Woad Raiders', icons: 'AAAM' }, { name: 'Siege Onagers', icons: 'RRF' }, { name: 'Highland Clans', icons: 'AAH' }] },
+  franks:     { bonus: { text: 'Bonus: heal 1 HP; your structures gain 1 durability.', steps: [{ heal: 1 }, { fortify: 1 }] }, cards: [{ name: 'Paladin Charge', icons: 'KKA', text: 'Deal 5 damage. Camels block it.', steps: [{ dmg: 5, cav: 1 }] }, { name: 'Throwing Axemen', icons: 'AAB' }, { name: 'Castle Keep', icons: 'WWWW' }] },
+  vikings:    { bonus: { text: 'Bonus: steal 1 card from every opponent.', steps: [{ steal: 1, all: 1 }] }, cards: [{ name: 'Elite Berserkers', icons: 'AAAH' }, { name: 'Longboat Fleet', icons: 'NNF' }, { name: 'Chieftains', icons: 'SSM' }] },
+  teutons:    { bonus: { text: 'No bonus.' }, cards: [{ name: 'Elite Teutonic Knights', icons: 'KWWW', wall: 3, kind: 'thorns', text: 'Deal 2 damage (camels block it); stays in play as a spiked wall with 3 durability.', steps: [{ dmg: 2, cav: 1 }] }, { name: 'Elite Halberdiers', icons: 'AAAW' }, { name: 'Ironclad Rams', icons: 'RRW' }] },
+  goths:      { bonus: { text: 'Bonus: play 2 more cards.', steps: [{ plays: 2 }] }, cards: [{ name: 'Huskarls', icons: 'AAAB' }, { name: 'Perfusion', icons: 'AAMM' }, { name: 'Sack of the Imperial City', icons: 'RSA' }] },
+  spanish:    { bonus: { text: 'Bonus: gain 2 gold.', steps: [{ gold: 2 }] }, cards: [{ name: 'Treasure Fleet', icons: 'GGGD' }, { name: 'Jinetes', icons: 'KKM' }, { name: 'Missionaries', icons: 'CHH' }] },
+  portuguese: { bonus: { text: 'Bonus: the Carrack goes straight to your hand.', fetch: 0 }, cards: [{ name: 'Carrack', icons: 'NNF' }, { name: 'Feitoria', icons: 'WWG', wall: 2, kind: 'income', text: 'A trading post with 2 durability; while it stands you gain 1 gold on each of your turns.', steps: [] }, { name: 'Organ Gun', icons: 'FFA' }] },
+  byzantines: { bonus: { text: 'Bonus: heal 2 HP.', steps: [{ heal: 2 }] }, cards: [{ name: 'Cataphracts', icons: 'KKH' }, { name: 'Dromon Fleet', icons: 'FFM' }, { name: 'Varangian Axemen', icons: 'AAAW' }] },
+  aztecs:     { bonus: { text: 'Bonus: sacrifice 1 HP to draw 2 cards and play another card.', steps: [{ self: 1 }, { draw: 2 }, { plays: 1 }] }, cards: [{ name: 'Jaguar Warriors', icons: 'AAAY' }, { name: 'Elite Eagle Warriors', icons: 'YYM' }, { name: 'Garland Wars', icons: 'AAS' }] },
+  mayans:     { bonus: { text: 'No bonus.' }, cards: [{ name: 'Plumed Archers', icons: 'BBY' }, { name: 'El Dorado', icons: 'HHHW' }, { name: 'Obsidian Arrows', icons: 'BBBM' }] },
+  incas:      { bonus: { text: 'Bonus: heal 2 HP and gain 1 gold.', steps: [{ heal: 2 }, { gold: 1 }] }, cards: [{ name: 'Kamayuks', icons: 'KAA' }, { name: 'Slingers', icons: 'BBA' }, { name: 'Fabric Shields', icons: 'WWWH' }] },
+  berbers:    { bonus: { text: 'Bonus: gain 1 gold and play another card.', steps: [{ gold: 1 }, { plays: 1 }] }, cards: [{ name: 'Camel Archers', icons: 'LBB' }, { name: 'Elite Genitours', icons: 'BBM' }, { name: 'Almoravid Fleet', icons: 'NNA' }] },
+  malay:       { bonus: { text: 'Bonus: the Jong Fleet goes straight to your hand.', fetch: 0 }, cards: [{ name: 'Jong Fleet', icons: 'NNF' }, { name: 'Elite Karambit Warriors', icons: 'AAAM' }, { name: 'Majapahit Elephants', icons: 'EEA' }] },
+  bohemians:   { bonus: { text: 'Bonus: wagenburg tactics: your structures gain 1 durability and you draw 1 card.', steps: [{ fortify: 1 }, { draw: 1 }] }, cards: [{ name: 'Houfnice', icons: 'RRF' }, { name: 'Píšťala Handgunners', icons: 'BBA' }, { name: "Žižka's Wagon Column", icons: 'BBWW' }] },
+  poles:       { bonus: { text: 'Bonus: gain 2 gold.', steps: [{ gold: 2 }] }, cards: [{ name: 'Winged Hussars', icons: 'KKM' }, { name: 'Obuch Guards', icons: 'RAA' }, { name: 'Folwark Estates', icons: 'WWG', wall: 2, kind: 'income', text: 'Farmsteads with 2 durability; while they stand you gain 1 gold on each of your turns.', steps: [] }] },
+  lithuanians: { bonus: { text: 'Bonus: heal 2 HP and draw 1 card.', steps: [{ heal: 2 }, { draw: 1 }] }, cards: [{ name: 'Elite Leitis', icons: 'KBA', text: 'Deal 3 damage over the walls (camels block it).', steps: [{ dmg: 3, pierce: 1, cav: 1 }] }, { name: 'Tower Shields', icons: 'AAWW' }, { name: "Vytautas' Host", icons: 'KKM' }] },
+  bulgarians:  { bonus: { text: 'Bonus: play another card.', steps: [{ plays: 1 }] }, cards: [{ name: 'Elite Konniks', icons: 'KAA', text: 'Cavalry: deal 3 damage (camels block it), then the riders fight on foot for 1 damage.', steps: [{ dmg: 3, cav: 1 }, { dmg: 1 }] }, { name: "Krum's Victory", icons: 'RHH' }, { name: 'Stirrup Lancers', icons: 'KKM' }] },
+  slavs:       { bonus: { text: 'Bonus: heal 2 HP.', steps: [{ heal: 2 }] }, cards: [{ name: 'Elite Boyars', icons: 'KKW' }, { name: 'Orthodoxy', icons: 'CHH' }, { name: 'Route to the Greeks', icons: 'GGDM' }] },
+  magyars:     { bonus: { text: 'Bonus: gain 2 gold.', steps: [{ gold: 2 }] }, cards: [{ name: 'Corvinian Hussars', icons: 'KKA' }, { name: 'Recurve Archers', icons: 'BBM' }, { name: 'Black Army Veterans', icons: 'AAAM' }] },
+};
+
+/* ── Engine: draw 1, play 1; symbols do the rest ── */
+function cardFromIcons(icons) {
+  const steps = []; let wall = 0;
+  for (const ch of icons) { if (ch === 'W') wall++; else for (const s of SYM[ch].steps) steps.push({ ...s }); }
+  return { steps, wall };
+}
+function makeCard(S, base) { return { uid: S.nextUid++, ...base }; }
+function buildDeck(S, civ) {
+  const C = CIVS[civ], out = [];
+  for (const tok of C.deck.split(/\s+/)) {
+    if (tok[0] === '+') {
+      const id = tok.slice(1), U = UNIQUE[id];
+      const fromIcons = U.steps ? { steps: U.steps.map(s => ({ ...s })), wall: U.wall || 0 } : { steps: [], wall: U.wall || 0 };
+      out.push(makeCard(S, { name: U.name, icons: U.icons, text: U.text, civ, unique: id, steps: fromIcons.steps, wall: fromIcons.wall, kind: U.kind || (U.wonder ? 'wonder' : null), wonder: !!U.wonder }));
+    } else {
+      const m = tok.match(/^([A-Z]+)(\d+)$/);
+      for (let k = 0; k < +m[2]; k++) { const c = cardFromIcons(m[1]); out.push(makeCard(S, { name: COMMON_NAMES[m[1]] || SYM[m[1][0]].name, icons: m[1], civ, steps: c.steps, wall: c.wall })); }
+    }
+  }
+  return out;
+}
+function buildMercs(S) {
+  const out = [];
+  for (const M of MERCS) for (let k = 0; k < M.n; k++) {
+    const c = M.steps ? { steps: M.steps.map(s => ({ ...s })), wall: (M.icons.match(/W/g) || []).length } : cardFromIcons(M.icons);
+    out.push(makeCard(S, { name: M.name, icons: M.icons, text: M.text, civ: 'merc', merc: M.id, cost: M.cost, steps: c.steps, wall: c.wall }));
+  }
+  return shuffled(S, out);
+}
+function newPlayer(S, civ, id, ai) {
+  const hp = S.duel ? CIVS[civ].hp2 : CIVS[civ].hp4;
+  return { id, civ, ai: !!ai, hp, maxHP: hp, deck: shuffled(S, buildDeck(S, civ)), hand: [], discard: [], structs: [], gold: 0, relic: null, relicOffer: null,
+    tokens: { camel: 0, immune: false, trap: false }, alive: true, turns: 0, aged: false, ageGiven: false, hich: false, bannerUsed: false, shroudRound: 0, stats: { dmg: 0, played: 0, bought: 0, kills: 0 } };
+}
+function newGame(o) {
+  const S = { v: 1, seed: o.seed >>> 0, rs: o.seed >>> 0, nextUid: 1, players: [], turn: 0, round: 1, plays: 0, flags: {}, mod: {}, event: null, eventNext: null, eventDeck: [], mercs: [], market: [], log: [], winner: null, started: false };
+  S.duel = o.civs.length === 2;
+  S.players = o.civs.map((c, i) => newPlayer(S, c, i, o.ai ? o.ai[i] : i > 0));
+  S.mercs = buildMercs(S);
+  S.market = [0, 1, 2].map(() => S.mercs.pop() || null);
+  S.eventDeck = shuffled(S, EVENTS.map(e => e.id));
+  S.eventNext = drawEvent(S);
+  for (const P of S.players) { draw(S, P, START_HAND + (P.id > 0 ? 1 : 0), true); P.relicOffer = shuffled(S, RELIC_IDS).slice(0, 3); }
+  return S;
+}
+function drawEvent(S) { if (!S.eventDeck.length) S.eventDeck = shuffled(S, EVENTS.map(e => e.id)); return S.eventDeck.pop(); }
+const EVENT_BY = Object.fromEntries(EVENTS.map(e => [e.id, e]));
+function chooseRelic(S, pid, id) {
+  const P = S.players[pid];
+  if (P.relic || !P.relicOffer.includes(id)) return false;
+  P.relic = id;
+  if (id === 'jade') { P.maxHP += 2; P.hp += 2; }
+  if (id === 'seal') P.gold += 1;
+  return true;
+}
+function startGame(S) { S.started = true; S.turn = 0; beginTurn(S, true); }
+
+/* ── helpers ── */
+const cur = S => S.players[S.turn];
+const opponents = (S, P) => S.players.filter(X => X.alive && X.id !== P.id);
+const walls = X => X.structs.filter(s => s.kind !== 'wonder');
+const wallTotal = X => walls(X).reduce((a, s) => a + s.dur, 0);
+const hasWalls = X => walls(X).length > 0;
+const wonderOf = X => X.structs.find(s => s.kind === 'wonder');
+function log(S, k, x) { if (S.quiet) return; S.log.push({ k, round: S.round, ...x }); if (S.log.length > 400) S.log.splice(0, 100); }
+function draw(S, P, n, quiet) {
+  let got = 0;
+  for (let k = 0; k < n; k++) {
+    if (!P.deck.length) {
+      if (!P.discard.length) break;
+      P.deck = shuffled(S, P.discard); P.discard = [];
+      if (!quiet) { log(S, 'fatigue', { pid: P.id }); loseHP(S, P, 1, null, null, true); if (!P.alive) return got; }
+    }
+    P.hand.push(P.deck.pop()); got++;
+  }
+  return got;
+}
+function heal(S, P, n) { const before = P.hp; P.hp = Math.min(P.maxHP, P.hp + n); return P.hp - before; }
+function loseHP(S, X, n, ev, by, quiet) {
+  if (n <= 0 || !X.alive) return;
+  X.hp -= n;
+  if (ev) ev.fx.push({ k: 'hp', t: X.id, n: -n });
+  if (by && by !== X) by.stats.dmg += n;
+  if (X.hp <= 0) {
+    if (X.relic === 'banner' && !X.bannerUsed) { X.bannerUsed = true; X.hp = 3; log(S, 'banner', { pid: X.id }); if (ev) ev.fx.push({ k: 'banner', t: X.id }); }
+    else { X.alive = false; X.hp = 0; for (const st of X.structs) X.discard.push(st.card); X.structs = []; if (by && by !== X) by.stats.kills++; log(S, 'out', { pid: X.id, by: by ? by.id : null }); if (ev) ev.fx.push({ k: 'out', t: X.id }); }
+  }
+  if (X.alive && X.hp <= 3 && !X.hich) { X.hich = true; draw(S, X, 2, true); log(S, 'hich', { pid: X.id }); if (ev) ev.fx.push({ k: 'hich', t: X.id }); }
+}
+function destroyStruct(S, X, st, ev) {
+  X.structs = X.structs.filter(s => s !== st);
+  X.discard.push(st.card);
+  if (ev) ev.fx.push({ k: 'razed', t: X.id, name: st.card.name });
+}
+function dealDamage(S, A, X, n, opt, ev) {
+  if (!X || !X.alive || n <= 0) return;
+  if (X.tokens.immune) { ev.fx.push({ k: 'immune', t: X.id }); return; }
+  if (opt.cav && X.tokens.camel > 0) { X.tokens.camel--; ev.fx.push({ k: 'camel', t: X.id }); return; }
+  if (X.relic === 'shroud' && X.shroudRound !== S.round) { X.shroudRound = S.round; n -= 1; ev.fx.push({ k: 'shroud', t: X.id }); if (n <= 0) return; }
+  const trap = X.tokens.trap; if (trap) X.tokens.trap = false;
+  let left = n, thorns = false;
+  const W = wonderOf(X);
+  if (!opt.pierce && W) { const hit = Math.min(W.dur, left); W.dur -= hit; left -= hit; ev.fx.push({ k: 'wonderhit', t: X.id, left: W.dur }); if (W.dur <= 0) destroyStruct(S, X, W, ev); }
+  if (!opt.pierce) {
+    while (left > 0) {
+      const ws = walls(X).sort((a, b) => a.dur - b.dur);
+      if (!ws.length) break;
+      const w = ws[0], hit = Math.min(w.dur, left);
+      w.dur -= hit; left -= hit;
+      if (w.kind === 'thorns') thorns = true;
+      ev.fx.push({ k: 'wall', t: X.id, n: hit });
+      if (w.dur <= 0) destroyStruct(S, X, w, ev);
+    }
+  }
+  if (left > 0) loseHP(S, X, left, ev, A);
+  if (thorns && A.alive) { ev.fx.push({ k: 'thorns', t: A.id }); loseHP(S, A, 1, ev, X); }
+  if (trap && A.alive) { ev.fx.push({ k: 'trap', t: A.id }); loseHP(S, A, 2, ev, X); }
+}
+function razeOne(S, A, T, ev) {
+  if (!T || !T.alive) return;
+  const W = wonderOf(T);
+  if (W) { W.dur -= 2; ev.fx.push({ k: 'wonderhit', t: T.id, left: Math.max(0, W.dur) }); if (W.dur <= 0) destroyStruct(S, T, W, ev); return; }
+  const ws = walls(T).sort((a, b) => b.dur - a.dur);
+  if (!ws.length) return;
+  const w = ws[0];
+  if (w.kind === 'fortress' && w.dur > 1) { w.dur--; ev.fx.push({ k: 'wall', t: T.id, n: 1 }); return; }
+  destroyStruct(S, T, w, ev);
+}
+
+/* ── playing ── */
+const stepNeedsTarget = s => (s.dmg && !s.all) || s.raze || (s.steal && !s.all) || s.convert;
+const needsTarget = card => card.steps.some(stepNeedsTarget);
+function resolveStep(S, A, s, T, ev) {
+  if (!A.alive) return;
+  if (s.dmg) {
+    const xs = s.all ? opponents(S, A) : s.others ? opponents(S, A).filter(X => X !== T) : (T && T.alive ? [T] : []);
+    for (const X of xs) {
+      let n = s.dmg;
+      if (s.basic && S.mod.crusade) n++;
+      if ((s.samurai || s.eagle) && !hasWalls(X)) n++;
+      if (A.relic === 'joyeuse' && !S.flags.joy) { n++; S.flags.joy = true; }
+      if (A.relic === 'horn' && A.hp <= 4) n++;
+      dealDamage(S, A, X, n, { pierce: !!s.pierce, cav: !!s.cav }, ev);
+    }
+  }
+  if (s.heal) { let n = s.heal; if (A.relic === 'grail' && !S.flags.grail) { n++; S.flags.grail = true; } const h = heal(S, A, n); if (h) ev.fx.push({ k: 'hp', t: A.id, n: h }); }
+  if (s.plays) S.plays += s.plays;
+  if (s.draw) draw(S, A, s.draw);
+  if (s.gold) { A.gold += s.gold; ev.fx.push({ k: 'gold', t: A.id, n: s.gold }); }
+  if (s.raze) for (let k = 0; k < s.raze; k++) { if (!T || (!T.structs.length)) break; razeOne(S, A, T, ev); }
+  if (s.steal) for (const X of (s.all ? opponents(S, A) : T ? [T] : [])) for (let k = 0; k < s.steal; k++) { const c = takeRandom(S, X); if (!c) break; A.hand.push(c); ev.fx.push({ k: 'steal', t: X.id, by: A.id }); }
+  if (s.convert && T) { const ws = walls(T).sort((a, b) => b.dur - a.dur); if (ws.length) { const w = ws[0]; T.structs = T.structs.filter(x => x !== w); A.structs.push(w); ev.fx.push({ k: 'convert', t: T.id, by: A.id, name: w.card.name }); } }
+  if (s.token === 'camel') A.tokens.camel++;
+  if (s.token === 'immune') A.tokens.immune = true;
+  if (s.token === 'trap') A.tokens.trap = true;
+  if (s.self) loseHP(S, A, s.self, ev, null);
+  if (s.discard) for (const X of opponents(S, A)) { const c = takeRandom(S, X); if (c) { X.discard.push(c); ev.fx.push({ k: 'discard', t: X.id }); } }
+  if (s.tribute) for (const X of opponents(S, A)) if (X.gold > 0) { X.gold--; A.gold++; ev.fx.push({ k: 'gold', t: A.id, n: 1 }); ev.fx.push({ k: 'tribute', t: X.id }); }
+  if (s.ageup) ageUp(S, A, ev);
+  if (s.buyFree) S.flags.buyFree = true;
+  if (s.fortify) for (const w of walls(A)) w.dur += s.fortify;
+}
+function playCard(S, pid, uid, tid) {
+  if (S.winner != null || S.turn !== pid || S.plays <= 0) return null;
+  const A = S.players[pid], i = A.hand.findIndex(c => c.uid === uid);
+  if (i < 0) return null;
+  const card = A.hand.splice(i, 1)[0];
+  let T = tid != null ? S.players[tid] : null;
+  if (needsTarget(card) && (!T || !T.alive || T === A)) { const o = opponents(S, A); T = o.length ? o[0] : null; }
+  S.plays--; A.stats.played++;
+  const ev = { k: 'play', pid, card, target: T ? T.id : null, fx: [] };
+  for (const s of card.steps) resolveStep(S, A, s, T, ev);
+  if (A.alive && (card.wall > 0 || card.wonder)) {
+    if (S.mod.monsoon) { A.discard.push(card); ev.fx.push({ k: 'rained', t: A.id }); }
+    else if (card.wonder) { const dur = 3 + opponents(S, A).length; A.structs.push({ card, kind: 'wonder', dur, cap: dur, age: 0 }); }
+    else { const dur = card.wall + (A.relic === 'scone' ? 1 : 0); A.structs.push({ card, kind: card.kind || 'wall', dur, cap: dur + 1 }); }
+  } else if (!card.age) A.discard.push(card);
+  log(S, 'play', { pid, card: card.name, target: ev.target, fx: ev.fx.slice(0, 12) });
+  checkWinner(S);
+  return ev;
+}
+function marketCost(S, P, card) {
+  if (!card) return 99;
+  if (S.flags.buyFree) return 0;
+  let c = card.cost - (S.mod.fair ? 1 : 0) - (P.relic === 'seal' ? 1 : 0);
+  return Math.max(1, c);
+}
+function buy(S, pid, idx) {
+  const P = S.players[pid], card = S.market[idx];
+  if (S.turn !== pid || S.flags.bought || !card || S.winner != null) return false;
+  const cost = marketCost(S, P, card);
+  if (P.gold < cost) return false;
+  P.gold -= cost; S.flags.bought = true; S.flags.buyFree = false; P.stats.bought++;
+  P.hand.push(card);
+  S.market[idx] = S.mercs.pop() || null;
+  log(S, 'buy', { pid, card: card.name, cost });
+  return true;
+}
+function checkWinner(S) {
+  const alive = S.players.filter(p => p.alive);
+  if (alive.length === 1) S.winner = alive[0].id;
+  else if (!alive.length) S.winner = -1;
+}
+function beginTurn(S, first) {
+  const P = cur(S);
+  P.tokens.immune = false; P.tokens.trap = false;
+  S.plays = 1; S.flags = {};
+  for (const st of P.structs.slice()) {
+    if (st.kind === 'wonder') { st.age++; if (st.age >= 3) { S.winner = P.id; S.wonderWin = true; log(S, 'wonder', { pid: P.id, name: st.card.name }); return; } }
+    if (st.kind === 'regen' && st.dur < st.cap) st.dur++;
+    if (st.kind === 'sacred') heal(S, P, 1);
+    if (st.kind === 'income') P.gold++;
+  }
+  if (P.relic === 'mint') P.gold++;
+  if (!first) draw(S, P, P.hand.length ? 1 : 2);
+  if (P.relic === 'compass' && P.hand.length <= 1) draw(S, P, 1);
+  P.turns++;
+  if (!P.ageGiven && P.turns >= RULES.ageTurn && IMPERIAL[P.civ]) { P.ageGiven = true; P.hand.push(makeAgeCard(S, P)); log(S, 'agecard', { pid: P.id }); }
+  checkWinner(S);
+}
+function endTurn(S) {
+  if (S.winner != null) return;
+  const n = S.players.length;
+  let i = S.turn, wrapped = false;
+  do { i = (i + 1) % n; if (i === 0) wrapped = true; } while (!S.players[i].alive);
+  S.turn = i;
+  if (wrapped) { S.round++; startRound(S); if (S.winner != null) return; }
+  if (S.round > 40) { const alive = S.players.filter(p => p.alive).sort((a, b) => b.hp - a.hp); S.winner = alive[0].id; S.timeUp = true; return; }
+  if (!S.players[S.turn].alive) { endTurn(S); return; }
+  beginTurn(S, false);
+}
+function startRound(S) {
+  S.mod = {};
+  S.event = S.eventNext; S.eventNext = drawEvent(S);
+  const alive = S.players.filter(p => p.alive), ev = { k: 'event', fx: [] };
+  if (S.round >= 16) { for (const P of alive) loseHP(S, P, 1, ev, null); log(S, 'attrition', {}); checkWinner(S); if (S.winner != null) return; }
+  switch (S.event) {
+    case 'plague': for (const P of alive) loseHP(S, P, 1, ev, null); break;
+    case 'harvest': for (const P of alive) heal(S, P, 1); break;
+    case 'silkroad': for (const P of alive) P.gold++; break;
+    case 'winter': for (const P of alive) for (const w of walls(P)) { w.dur--; if (w.dur <= 0) destroyStruct(S, P, w, ev); } break;
+    case 'fair': for (let k = 0; k < 3; k++) { if (S.market[k]) S.mercs.unshift(S.market[k]); S.market[k] = S.mercs.pop() || null; } S.mod.fair = true; break;
+    case 'feast': for (const P of alive) draw(S, P, 1); break;
+    case 'revolt': { const top = Math.max(...alive.map(p => p.hp)); for (const P of alive) if (P.hp === top) loseHP(S, P, 1, ev, null); break; }
+    case 'crusade': S.mod.crusade = true; break;
+    case 'monsoon': S.mod.monsoon = true; break;
+    case 'flood': for (const P of alive) { const c = takeRandom(S, P); if (c) P.discard.push(c); } break;
+    case 'eclipse': { const gifts = alive.map(P => takeRandom(S, P)); alive.forEach((P, k) => { const g = gifts[(k - 1 + alive.length) % alive.length]; if (g) P.hand.push(g); }); break; }
+    case 'bells': { const low = Math.min(...alive.map(p => p.hp)); for (const P of alive) if (P.hp === low) heal(S, P, 2); break; }
+  }
+  log(S, 'event', { id: S.event, fx: ev.fx });
+  checkWinner(S);
+}
+/* readable text for any card */
+const SYM_TXT = {
+  A: n => `Deal ${n} damage.`, H: n => `Heal ${n} HP.`, M: n => (n === 1 ? 'Play another card.' : `Play ${n} more cards.`), D: n => (n === 1 ? 'Draw 1 card.' : `Draw ${n} cards.`), G: n => `Gain ${n} gold.`,
+  R: n => (n === 1 ? "Destroy the opponent's biggest structure." : `Destroy ${n} of the opponent's structures.`), S: n => (n === 1 ? 'Steal 1 random card from an opponent.' : `Steal ${n} random cards from an opponent.`),
+  C: () => "Convert the opponent's biggest structure to your side.", K: n => `Cavalry: deal ${2 * n} damage (camels block it).`,
+  E: n => (n === 1 ? 'Elephant: destroy a structure, then deal 1 damage.' : `Elephants: destroy ${n} structures and deal ${n} damage.`),
+  L: n => `Deal ${n} damage and set up a camel guard: the next cavalry attack on you is cancelled.`, B: n => `Deal ${n} damage over the walls.`,
+  F: n => (n === 1 ? 'Deal 1 damage to every opponent.' : `Deal 1 damage to every opponent, ${n} times.`),
+  Y: n => (n === 1 ? 'Deal 1 damage, or 2 damage if the opponent has no walls.' : `Deal ${n} damage, 1 extra damage per hit if the opponent has no walls.`),
+  N: n => `Raid: steal ${n} card${n > 1 ? 's' : ''}, then deal ${n} damage.`,
+};
+function cardText(card) {
+  if (card.text) return card.text;
+  const cnt = {};
+  for (const ch of card.icons) cnt[ch] = (cnt[ch] || 0) + 1;
+  const parts = Object.keys(cnt).filter(ch => ch !== 'W').map(ch => SYM_TXT[ch](cnt[ch]));
+  if (cnt.W) parts.push(`Stays in play as a structure with ${cnt.W} durability.`);
+  return parts.join(' ');
+}
+
+/* ── Imperial Age ── */
+function takeRandom(S, X) { const loose = X.hand.filter(c => !c.bound); if (!loose.length) return null; const c = loose[Math.floor(rnd(S) * loose.length)]; X.hand.splice(X.hand.indexOf(c), 1); return c; }
+function imperialCards(S, civ) {
+  return IMPERIAL[civ].cards.map(d => {
+    const c = d.steps ? { steps: d.steps.map(s => ({ ...s })), wall: d.wall || 0 } : cardFromIcons(d.icons);
+    return makeCard(S, { name: d.name, icons: d.icons, text: d.text, civ, imperial: true, steps: c.steps, wall: d.wall != null ? d.wall : c.wall, kind: d.kind || null });
+  });
+}
+function ageText(civ) { const I = IMPERIAL[civ]; return `Advance to the Imperial Age: your ${I.cards.length} Imperial cards join your deck. ${I.bonus.text}`; }
+function makeAgeCard(S, P) { return makeCard(S, { name: 'Imperial Age', icons: '', civ: P.civ, age: true, bound: true, steps: [{ ageup: 1 }], wall: 0, text: ageText(P.civ) }); }
+function ageUp(S, A, ev) {
+  if (A.aged) return;
+  A.aged = true; A.agedRound = S.round;
+  const I = IMPERIAL[A.civ];
+  imperialCards(S, A.civ).forEach((c, i) => { if (I.bonus.fetch === i) A.hand.push(c); else A.deck.splice(Math.floor(rnd(S) * (A.deck.length + 1)), 0, c); });
+  ev.fx.push({ k: 'age', t: A.id });
+  for (const s of I.bonus.steps || []) resolveStep(S, A, { ...s }, null, ev);
+  log(S, 'aged', { pid: A.id });
+}
+
+/* ── Preview: play the card on a copy of the match and report what would change for each player ── */
+function previewPlay(S, pid, uid, tid) {
+  const C = structuredClone(S); C.quiet = true;
+  const snap = p => ({ hp: p.hp, walls: wallTotal(p), wonder: (wonderOf(p) || { dur: 0 }).dur, gold: p.gold, hand: p.hand.length, alive: p.alive, structs: p.structs.length });
+  const before = C.players.map(snap);
+  const ev = playCard(C, pid, uid, tid);
+  if (!ev) return null;
+  return { target: ev.target, players: C.players.map((p, i) => { const a = snap(p), b = before[i]; return { hp: a.hp - b.hp, walls: a.walls - b.walls, wonder: a.wonder - b.wonder, gold: a.gold - b.gold, hand: a.hand - b.hand, structs: a.structs - b.structs, dies: b.alive && !a.alive }; }) };
+}
+
+/* ── AI: one-ply card evaluation with sensible targeting ── */
+function strength(X) { return (X.hp / X.maxHP) * 10 + wallTotal(X) * 0.6 + (wonderOf(X) ? 5 : 0); }
+function threatOf(S, P, X, leader) {
+  let t = 1;
+  const opp = opponents(S, P);
+  if (opp.length > 1) { const avg = opp.reduce((a, o) => a + strength(o), 0) / opp.length; t *= 1 + clamp((strength(X) - avg) / Math.max(4, avg), -0.3, 0.4); }
+  else if (X === leader) t *= 1.15;
+  if (X.hp <= 3) t *= 1.4;
+  const W = wonderOf(X); if (W) t *= 1.6;
+  return t;
+}
+const AI_AGE = { base: 4 };
+function ageValue(S, P) {
+  if (P.aged) return -5;
+  if (P.agePolicy === 'never') return -100;
+  if (P.agePolicy === 'asap') return 100;
+  const I = IMPERIAL[P.civ];
+  return AI_AGE.base + (I.bonus.steps ? cardValue(S, P, { steps: I.bonus.steps, wall: 0 }, null) : 0) + (I.bonus.fetch != null ? 1.2 : 0);
+}
+function cardValue(S, P, card, T) {
+  if (card.age) return ageValue(S, P);
+  const opp = opponents(S, P);
+  if (!opp.length) return 0;
+  const leader = opp.reduce((a, b) => (b.hp + wallTotal(b) > a.hp + wallTotal(a) ? b : a));
+  let v = 0;
+  for (const s of card.steps) {
+    if (s.dmg) {
+      const xs = s.all ? opp : s.others ? opp.filter(X => X !== T) : T ? [T] : [];
+      for (const X of xs) {
+        let n = s.dmg + (s.basic && S.mod.crusade ? 1 : 0) + ((s.samurai || s.eagle) && !hasWalls(X) ? 1 : 0) + (P.relic === 'horn' && P.hp <= 4 ? 1 : 0) + (P.relic === 'joyeuse' && !S.flags.joy ? 1 : 0);
+        if (X.tokens.immune) continue;
+        if (s.cav && X.tokens.camel) { v += 0.3; continue; }
+        const W = !s.pierce && wonderOf(X), toWonder = W ? Math.min(n, W.dur) : 0;
+        const wt = s.pierce ? 0 : wallTotal(X), toWall = Math.min(n - toWonder, wt), toHP = n - toWonder - toWall;
+        let val = toHP * threatOf(S, P, X, leader) + toWall * 0.55 + toWonder * (2 + W && W.age >= 2 ? 3 : 2) + (W && toWonder >= W.dur ? 6 : 0);
+        if (toHP >= X.hp && !(X.relic === 'banner' && !X.bannerUsed)) val += 7;
+        if (X.tokens.trap) val -= 2;
+        if (walls(X).some(w => w.kind === 'thorns') && !s.pierce) val -= 0.6;
+        v += val;
+      }
+    }
+    if (s.heal) v += Math.min(s.heal, P.maxHP - P.hp) * (P.hp <= 4 ? 1.5 : 0.75);
+    if (s.plays) v += P.hand.length > 1 ? 0.9 * s.plays : 0;
+    if (s.draw) v += 0.6 * s.draw * (P.hand.length > 5 ? 0.4 : 1);
+    if (s.gold) { const cheap = Math.min(...S.market.filter(Boolean).map(c => marketCost(S, P, c)), 9); v += 0.45 * s.gold + (P.gold < cheap && P.gold + s.gold >= cheap ? 0.4 : 0); }
+    if (s.raze && T) { const W = wonderOf(T); if (W) v += 9 * s.raze; else { const ws = walls(T).sort((a, b) => b.dur - a.dur); v += ws.length ? ws.slice(0, s.raze).reduce((a, w) => a + 0.75 * w.dur, 0) : -0.2; } }
+    if (s.steal) for (const X of (s.all ? opp : T ? [T] : [])) v += Math.min(s.steal, X.hand.filter(c => !c.bound).length) * 0.8;
+    if (s.tribute) v += 0.8 * opp.filter(X => X.gold > 0).length;
+    if (s.convert && T) { const ws = walls(T).sort((a, b) => b.dur - a.dur); v += ws.length ? 1.3 * ws[0].dur : -0.2; }
+    if (s.token === 'camel') v += opp.some(X => /K/.test(CIVS[X.civ].deck)) ? 0.8 : 0.35;
+    if (s.token === 'immune') v += 1.3 + (P.hp <= 4 ? 2 : 0);
+    if (s.token === 'trap') v += P.tokens.trap ? 0 : 1.4;
+    if (s.self) v -= s.self * (P.hp <= 3 ? 3 : P.hp <= 5 ? 1.5 : 0.8);
+    if (s.discard) v += 0.5 * opp.filter(X => X.hand.length).length;
+    if (s.buyFree) v += S.market.some(c => c && c.cost >= 2) ? 1.3 : 0.3;
+    if (s.fortify) v += 0.6 * s.fortify * walls(P).length;
+  }
+  if (card.wall && !S.mod.monsoon) v += card.wall * 0.8 * (walls(P).length >= 3 ? 0.6 : 1) + ({ regen: 0.8, sacred: 1.6, thorns: 0.7, fortress: 0.6, income: 1.4 }[card.kind] || 0);
+  if (card.wonder && !S.mod.monsoon) v += wonderOf(P) ? -1 : 4 - opp.length * 0.5;
+  // answer an enemy wonder before anything else
+  if (opp.some(X => wonderOf(X)) && !card.steps.some(s => s.raze)) v -= 2;
+  return v;
+}
+/* difficulty only changes how much noise the AI adds to its own judgement; balance runs use 'hard' */
+const AI_NOISE = { easy: 3.2, normal: 1.1, hard: 0.15 };
+function bestPlay(S, P) {
+  const noise = AI_NOISE[P.skill] != null ? AI_NOISE[P.skill] : 0.15;
+  let best = null;
+  for (const card of P.hand) {
+    const targets = needsTarget(card) ? opponents(S, P) : [null];
+    for (const T of targets) {
+      const v = cardValue(S, P, card, T) + rnd(S) * noise;
+      if (!best || v > best.v) best = { card, target: T ? T.id : null, v };
+    }
+  }
+  return best;
+}
+function aiBuy(S, P) {
+  if (S.flags.bought) return null;
+  if (P.skill === 'easy' && rnd(S) < 0.5) return null;
+  let best = null;
+  S.market.forEach((card, i) => {
+    if (!card) return;
+    const cost = marketCost(S, P, card);
+    if (P.gold < cost) return;
+    const targets = needsTarget(card) ? opponents(S, P) : [null];
+    const v = Math.max(...targets.map(T => cardValue(S, P, card, T))) - cost * 0.55;
+    if (v > 0.6 && (!best || v > best.v)) best = { i, v };
+  });
+  return best ? best.i : null;
+}
+function aiRelic(S, P) {
+  const deck = CIVS[P.civ].deck;
+  const count = re => (deck.match(re) || []).length;
+  const score = {
+    joyeuse: 2 + count(/A/g) * 0.1, grail: 1 + count(/H/g) * 0.35, scone: 1 + count(/W/g) * 0.25, compass: 1.8 + count(/D/g) * 0.1,
+    seal: 1 + count(/G/g) * 0.4, jade: 2.6, horn: 2.2, banner: 2.7, shroud: 2.3, mint: 1.2 + count(/G/g) * 0.3,
+  };
+  return P.relicOffer.slice().sort((a, b) => score[b] - score[a])[0];
+}
+function aiAct(S, pid) {
+  const P = S.players[pid];
+  const b = aiBuy(S, P);
+  if (b != null) return { kind: 'buy', idx: b };
+  if (S.plays > 0 && P.hand.length) { const best = bestPlay(S, P); if (best) return { kind: 'play', uid: best.card.uid, target: best.target }; }
+  return { kind: 'end' };
+}
+
+/* ── Art drawn in code: symbol badges, heraldic crests ── */
+const SYM_STYLE = {
+  A: ['#b3261e', '<path d="M6 18L16 8M14 6l4 0 0 4M5 15l4 4M7 17l-2 2" stroke="#fff" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>'],
+  W: ['#56657d', '<path d="M5 19V9h3v3h2.5V9h3v3H16V9h3v10z" fill="#fff"/>'],
+  H: ['#2e7d32', '<path d="M12 5v14M5 12h14" stroke="#fff" stroke-width="3.4" stroke-linecap="round"/>'],
+  M: ['#6a3fb0', '<path d="M13.5 3L6 13.5h5L9.5 21 18 10h-5z" fill="#fff"/>'],
+  D: ['#3f51b5', '<rect x="7" y="5" width="10" height="14" rx="1.6" fill="none" stroke="#fff" stroke-width="2"/><path d="M12 9v6M9 12h6" stroke="#fff" stroke-width="2" stroke-linecap="round"/>'],
+  G: ['#b8860b', '<circle cx="12" cy="12" r="6.6" fill="none" stroke="#fff" stroke-width="2.2"/><path d="M12 8.5v7M10 10.5h3.4M10 13.5h4" stroke="#fff" stroke-width="1.6" stroke-linecap="round"/>'],
+  R: ['#7a4a20', '<path d="M5 15l7-7 3 3-7 7zM13 7l2-2 4 4-2 2" fill="#fff"/><path d="M4 20h8" stroke="#fff" stroke-width="2" stroke-linecap="round"/>'],
+  S: ['#a3306d', '<path d="M8 19v-6l-2-3 1.5-1 2.5 2.5V5.5a1.2 1.2 0 0 1 2.4 0V11V4.5a1.2 1.2 0 0 1 2.4 0V11V5.5a1.2 1.2 0 0 1 2.4 0V12c0 4-2 7-5 7z" fill="#fff"/>'],
+  C: ['#6d5bb0', '<circle cx="12" cy="7" r="3.2" fill="none" stroke="#fff" stroke-width="1.8"/><path d="M12 10.5V20M8.5 13.5h7" stroke="#fff" stroke-width="2.2" stroke-linecap="round"/>'],
+  K: ['#9b1c1c', '<path d="M6 20c.5-5 2.5-8 5.5-9l1.5-5 2 2 3-1-1 4 2.5 3-1.8 1.8-2.7-1.8c-1 3-2 5-4.5 6z" fill="#fff"/>'],
+  E: ['#55626b', '<path d="M4 15c0-5 3.5-8 8-8 4 0 7 2.5 7 6v6h-2.5v-3.5h-2V19H12v-3.5c-1 .6-2.6.7-3.6.2-.4 2-.2 3.3.8 4.3-2.5 0-4.7-1.8-5.2-5z" fill="#fff"/><circle cx="16" cy="11" r=".9" fill="#55626b"/>'],
+  L: ['#b07a3c', '<path d="M5 19l1-6c0-2 1.5-3 3-3l1.5-2.5L12 10h1l1.5-3 2 .5 1.5 2 1.5 1-1.5 1-1-.5L16 13v6h-1.6v-4.5l-2 .5-1.4 4H9.5l.6-4.6L7 14.5 6.6 19z" fill="#fff"/>'],
+  B: ['#2f6b3a', '<path d="M7 4c7 3 7 13 0 16" fill="none" stroke="#fff" stroke-width="2"/><path d="M7 4v16" stroke="#fff" stroke-width="1"/><path d="M5 12h14M16.5 9.5L19 12l-2.5 2.5" fill="none" stroke="#fff" stroke-width="1.9" stroke-linecap="round"/>'],
+  F: ['#d9541a', '<path d="M12 3.5c3.5 3 6 6 6 9.8a6 6 0 0 1-12 0c0-1.9.9-3.5 2-4.8.1 1.6 1 2.8 2.3 3-.5-2.5.3-5.3 1.7-8z" fill="#fff"/>'],
+  Y: ['#0f766e', '<path d="M3 10l6 1.5L12 6l3 5.5L21 10l-4 4.5 1 4-6-2.5-6 2.5 1-4z" fill="#fff"/>'],
+  N: ['#1f4e79', '<path d="M12 4v11M12 4l6 9h-6M4 16h16l-2.5 3.5h-11z" fill="#fff" stroke="#fff" stroke-width="1.2" stroke-linejoin="round"/>'],
+};
+function symBadge(ch, size = 30) {
+  const [bg, glyph] = SYM_STYLE[ch];
+  return `<svg viewBox="0 0 24 24" width="${size}" height="${size}" class="sym" aria-label="${SYM[ch].name}" role="img"><circle cx="12" cy="12" r="11.4" fill="${bg}" stroke="rgba(0,0,0,.35)" stroke-width="1"/><circle cx="12" cy="12" r="10" fill="none" stroke="rgba(255,255,255,.35)" stroke-width=".8"/>${glyph}</svg>`;
+}
+const CHARGES = {
+  sun: '<circle cx="20" cy="17" r="5.5" fill="#f2c94c"/>' + Array.from({ length: 10 }, (_, i) => { const a = i * Math.PI / 5; return `<path d="M${20 + Math.cos(a) * 7.5} ${17 + Math.sin(a) * 7.5}L${20 + Math.cos(a) * 10} ${17 + Math.sin(a) * 10}" stroke="#f2c94c" stroke-width="1.8" stroke-linecap="round"/>`; }).join(''),
+  disc: '<circle cx="20" cy="17" r="7" fill="#fff"/><circle cx="20" cy="17" r="4.2" fill="currentColor"/>',
+  knot: '<path d="M14 11c6 0 6 12 12 12M26 11c-6 0-6 12-12 12M13 17h14" fill="none" stroke="#f2e6c9" stroke-width="2.2"/>',
+  axe: '<path d="M20 8v20" stroke="#e8e2d0" stroke-width="2.2"/><path d="M20 10c-6 0-8 4-8 7 3-1 5-1 8 1z" fill="#e8e2d0"/>',
+  star: '<path d="M20 7l2.6 7.4H30l-6 4.6 2.3 7.3L20 22l-6.3 4.3 2.3-7.3-6-4.6h7.4z" fill="#f2c94c"/>',
+  temple: '<path d="M11 26h18M13 26V18h14v8M15 18v-4h10v4M17 14v-3h6v3M20 11V7" stroke="#f2e6c9" stroke-width="1.8" fill="none"/>',
+  wheel: '<circle cx="20" cy="17" r="7.5" fill="none" stroke="#f2e6c9" stroke-width="1.8"/>' + Array.from({ length: 8 }, (_, i) => { const a = i * Math.PI / 4; return `<path d="M20 17L${20 + Math.cos(a) * 7.5} ${17 + Math.sin(a) * 7.5}" stroke="#f2e6c9" stroke-width="1.3"/>`; }).join(''),
+  crescent: '<path d="M23 9a8.5 8.5 0 1 0 0 16 7 7 0 1 1 0-16z" fill="#f2e6c9"/><path d="M26.5 14l.9 2.4 2.5.1-2 1.5.7 2.4-2.1-1.4-2.1 1.4.7-2.4-2-1.5 2.5-.1z" fill="#f2e6c9"/>',
+  cross: '<path d="M20 8v20M12 15h16" stroke="#f2e6c9" stroke-width="3.4"/>',
+  horse: '<path d="M13 27c.6-6 3-9.5 6.4-10.5l1.6-5.5 2.2 2.2 3.4-1.1-1.1 4.5 3 3.3-2 2-3.1-2c-1.1 3.4-2.3 5.6-5 7z" fill="#f2e6c9"/>',
+  bow: '<path d="M15 8c9 4 9 15 0 19" fill="none" stroke="#f2e6c9" stroke-width="2.2"/><path d="M15 8v19M11 17.5h17" stroke="#f2e6c9" stroke-width="1.6"/>',
+  tower: '<path d="M14 27V13h2v-3h2.5v3h3v-3H24v3h2v14z" fill="#f2e6c9"/><path d="M18.6 27v-5h2.8v5" fill="currentColor"/>',
+  fleur: '<path d="M20 7c-3 3-3 7 0 10 3-3 3-7 0-10zM20 17c-2-4-8-5-9-1 2-1 5 0 6 3M20 17c2-4 8-5 9-1-2-1-5 0-6 3M15 21h10M20 17v11" fill="#f2c94c" stroke="#f2c94c" stroke-width="1.1" stroke-linejoin="round"/>',
+  ship: '<path d="M20 8v12M20 8l7 10h-7M11 21h18l-3 5H14z" fill="#f2e6c9"/>',
+  quinas: [[20, 11], [15, 17], [20, 17], [25, 17], [20, 23]].map(([x, y]) => `<circle cx="${x}" cy="${y}" r="2.4" fill="#f2e6c9"/>`).join(''),
+  eagle: '<path d="M10 14l7 1.6L20 10l3 5.6 7-1.6-4.8 5 1.2 4.8-6.4-2.8-6.4 2.8 1.2-4.8z" fill="#f2e6c9"/>',
+  pyramid: '<path d="M10 27h20M12 27l3-4h10l3 4M15 23l2-4h6l2 4M17 19l2-4h2l2 4" fill="none" stroke="#f2e6c9" stroke-width="1.6"/>',
+  palm: '<path d="M20 28.5V15" stroke="#f2e6c9" stroke-width="2.2"/><path d="M20 15c-3-4-8-4.5-10.5-2.2 4.2-.3 7.6.8 10.5 2.2zM20 15c3-4 8-4.5 10.5-2.2-4.2-.3-7.6.8-10.5 2.2zM20 15c-.8-4.3-3.6-7.4-7.2-7.6 3 1.8 5.2 4.3 7.2 7.6zM20 15c.8-4.3 3.6-7.4 7.2-7.6-3 1.8-5.2 4.3-7.2 7.6z" fill="#f2e6c9"/>',
+  kris: '<path d="M20 30v-5M16.5 25h7M20 25c-2.2-1.8 2.2-3.8 0-5.8s2.2-3.8 0-5.8 1.2-3 0-5.4c-1.4 2.2-3 3.3-1 5.4s-2.2 3.8 0 5.8-2.2 3.8 0 5.8z" fill="#f2e6c9"/>',
+  chalice: '<path d="M13 9h14c0 6-3 9.2-7 9.6S13 15 13 9zM19 18.4h2V25h-2zM15 27.5h10l-1.6-2.6h-6.8z" fill="#f2c94c"/>',
+  columns: '<path d="M12 27h16M14 27V16.5h2.5V13h7v3.5H26V27M16.5 16.5h7M18.5 27v-5h3v5" stroke="#f2c94c" stroke-width="2" fill="none"/>',
+  crown: '<path d="M11 25h18l1.6-12-5.6 4.6L20 9l-5 8.6L9.4 13z" fill="#f2c94c"/><path d="M11 27h18" stroke="#f2c94c" stroke-width="2"/>',
+  trident: '<path d="M20 7v20M13 10v7.5c0 3.2 3 5.5 7 5.5s7-2.3 7-5.5V10" stroke="#f2c94c" stroke-width="2.2" fill="none" stroke-linecap="round"/><path d="M17 27h6" stroke="#f2c94c" stroke-width="2.2"/>',
+  doublecross: '<path d="M20 7v21M15.5 12h9M13 17.5h14" stroke="#f2e6c9" stroke-width="3"/>',
+};
+function crest(civ, size = 44) {
+  const C = CIVS[civ];
+  const shield = 'M5 4h30v15c0 10-7.5 15.5-15 18.5C12.5 34.5 5 29 5 19z';
+  return `<svg viewBox="0 0 40 40" width="${size}" height="${size}" class="crest" style="color:${C.color}" aria-hidden="true"><path d="${shield}" fill="${C.color}" stroke="#1d1209" stroke-width="1.6"/><path d="M7 6h26v6H7z" fill="rgba(255,255,255,.14)"/>${CHARGES[C.charge] || ''}</svg>`;
+}
+function mercCrest(size = 44) {
+  return `<svg viewBox="0 0 40 40" width="${size}" height="${size}" class="crest" aria-hidden="true"><path d="M5 4h30v15c0 10-7.5 15.5-15 18.5C12.5 34.5 5 29 5 19z" fill="#6b5a3a" stroke="#1d1209" stroke-width="1.6"/><circle cx="20" cy="17" r="7" fill="#e6c25a" stroke="#8a6a1a"/><path d="M20 12.5v9M17.5 15h4.5M17.5 18.5h5" stroke="#6b4a10" stroke-width="1.5"/></svg>`;
+}
+
+function crownSVG(size = 28) {
+  return `<svg viewBox="0 0 24 24" width="${size}" height="${size}" class="sym" aria-label="Imperial Age" role="img"><circle cx="12" cy="12" r="11.4" fill="#6a3fb0" stroke="rgba(0,0,0,.35)" stroke-width="1"/><path d="M5.5 16.2h13l1.2-8.2-4.2 3.3L12 5.8l-3.5 5.5-4.2-3.3z" fill="#f2c94c"/><path d="M5.5 18.2h13" stroke="#f2c94c" stroke-width="1.6"/></svg>`;
+}
+
+/* ── Sounds: drums, horns and steel, synthesized with WebAudio ── */
+const SFX = {
+  ctx: null, on: true,
+  init() { if (this.ctx) { if (this.ctx.state === 'suspended') this.ctx.resume(); return; } try { const AC = window.AudioContext || window.webkitAudioContext; if (AC) this.ctx = new AC(); } catch (e) { } },
+  tone(f, t0, dur, type = 'sine', vol = 0.12, slide = 0) {
+    const c = this.ctx, o = c.createOscillator(), g = c.createGain(), t = c.currentTime + t0;
+    o.type = type; o.frequency.setValueAtTime(f, t); if (slide) o.frequency.exponentialRampToValueAtTime(Math.max(30, f + slide), t + dur);
+    g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(vol, t + 0.01); g.gain.exponentialRampToValueAtTime(0.0008, t + dur);
+    o.connect(g); g.connect(c.destination); o.start(t); o.stop(t + dur + 0.02);
+  },
+  noise(t0, dur, vol = 0.1, freq = 900, type = 'highpass') {
+    const c = this.ctx, n = Math.floor(c.sampleRate * dur), b = c.createBuffer(1, n, c.sampleRate), d = b.getChannelData(0);
+    for (let i = 0; i < n; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / n, 2);
+    const s = c.createBufferSource(), f = c.createBiquadFilter(), g = c.createGain(), t = c.currentTime + t0;
+    f.type = type; f.frequency.value = freq; g.gain.value = vol; s.buffer = b; s.connect(f); f.connect(g); g.connect(c.destination); s.start(t);
+  },
+  play(name) {
+    if (!this.on) return;
+    this.init(); if (!this.ctx) return;
+    switch (name) {
+      case 'click': this.noise(0, 0.03, 0.05, 2500); break;
+      case 'whoosh': this.noise(0, 0.18, 0.05, 1200); break;
+      case 'crown': [523, 659, 784, 1047].forEach((f, i) => this.tone(f, i * 0.1, 0.45, 'triangle', 0.08)); break;
+      case 'card': this.noise(0, 0.08, 0.07, 1800); this.tone(660, 0.02, 0.06, 'triangle', 0.04); break;
+      case 'hit': this.noise(0, 0.12, 0.14, 700); this.tone(140, 0, 0.18, 'square', 0.06, -60); break;
+      case 'wall': this.noise(0, 0.25, 0.12, 300, 'lowpass'); this.tone(90, 0, 0.3, 'sine', 0.2, -30); break;
+      case 'heal': [523, 784].forEach((f, i) => this.tone(f, i * 0.07, 0.25, 'sine', 0.07)); break;
+      case 'turn': this.tone(392, 0, 0.18, 'triangle', 0.07); this.tone(523, 0.12, 0.25, 'triangle', 0.07); break;
+      case 'quill': this.noise(0, 0.09, 0.05, 3500); break;
+      case 'coin': [1318, 1760].forEach((f, i) => this.tone(f, i * 0.06, 0.12, 'triangle', 0.06)); break;
+      case 'bad': this.tone(196, 0, 0.18, 'sawtooth', 0.04, -40); break;
+      case 'drum': [0, 0.18, 0.36, 0.48].forEach(t => { this.tone(70, t, 0.22, 'sine', 0.35, -30); this.noise(t, 0.08, 0.08, 400, 'lowpass'); }); break;
+      case 'horn': this.tone(196, 0, 0.9, 'sawtooth', 0.05); this.tone(294, 0.05, 0.85, 'sawtooth', 0.035); this.tone(392, 0.5, 0.6, 'triangle', 0.04); break;
+      case 'clash': for (let i = 0; i < 4; i++) { this.noise(i * 0.09, 0.12, 0.12, 3000); this.tone(1200 + i * 230, i * 0.09, 0.15, 'square', 0.02); } break;
+      case 'age': [262, 330, 392, 523, 659].forEach((f, i) => this.tone(f, i * 0.12, 0.5, 'triangle', 0.08)); this.tone(131, 0, 1.2, 'sawtooth', 0.03); break;
+      case 'win': [392, 523, 659, 784, 1046].forEach((f, i) => this.tone(f, i * 0.14, 0.6, 'triangle', 0.09)); break;
+      case 'lose': [392, 349, 311, 262].forEach((f, i) => this.tone(f, i * 0.28, 0.6, 'triangle', 0.09)); break;
+    }
+  },
+};
+
+/* ── Civilization motifs. Every civ wears a pattern from its own culture in its own colours.
+   Tiles are small SVGs turned into CSS variables (--motif on the civ colour, --motif-soft on vellum),
+   so cards, camps, banners and card backs all share one look per civ. ── */
+const MOTIF_TILES = {
+  cloud: (a) => [36, 24, `<path d="M3 17c0-4 5-5 7-2 0-5 8-6 9-1 2-3 8-2 7 3" fill="none" stroke="${a}" stroke-width="1.5" stroke-linecap="round"/><path d="M10 15c1-2 3-2 3 0" fill="none" stroke="${a}" stroke-width="1.1"/><circle cx="30" cy="6" r="1.3" fill="${a}"/>`],
+  seigaiha: (a, b) => [24, 12, ['0,0', '24,0', '12,6', '0,12', '24,12'].map(p => { const [x, y] = p.split(','); return `<circle cx="${x}" cy="${y}" r="11" fill="${b}" stroke="${a}" stroke-width="1"/><circle cx="${x}" cy="${y}" r="7.5" fill="none" stroke="${a}" stroke-width="1"/><circle cx="${x}" cy="${y}" r="4" fill="none" stroke="${a}" stroke-width="1"/>`; }).join('')],
+  lattice: (a) => [24, 24, `<path d="M0 12h24M12 0v24" stroke="${a}" stroke-width="1"/><rect x="7" y="7" width="10" height="10" fill="none" stroke="${a}" stroke-width="1.2"/><path d="M7 7L4 4M17 7l3-3M7 17l-3 3M17 17l3 3" stroke="${a}" stroke-width=".8"/>`],
+  drum: (a) => [40, 40, `<circle cx="20" cy="20" r="15" fill="none" stroke="${a}" stroke-width="1"/><circle cx="20" cy="20" r="10.5" fill="none" stroke="${a}" stroke-width=".8" stroke-dasharray="1.5 2"/><path d="M20 12.5l1.6 5 5-1.6-3.4 3.6 3.4 3.6-5-1.6-1.6 5-1.6-5-5 1.6 3.4-3.6-3.4-3.6 5 1.6z" fill="${a}"/><path d="M2 2l3 2M38 38l-3-2M38 2l-3 2M2 38l3-2" stroke="${a}" stroke-width="1"/>`],
+  naga: (a) => [20, 14, `<path d="M0 14c0-6 4-10 10-10s10 4 10 10M-10 7c0-6 4-10 10-10s10 4 10 10M10 7c0-6 4-10 10-10s10 4 10 10" fill="none" stroke="${a}" stroke-width="1.1"/>`],
+  kawung: (a) => [24, 24, `<g fill="none" stroke="${a}" stroke-width="1.1"><ellipse cx="12" cy="5.5" rx="3.6" ry="5"/><ellipse cx="12" cy="18.5" rx="3.6" ry="5"/><ellipse cx="5.5" cy="12" rx="5" ry="3.6"/><ellipse cx="18.5" cy="12" rx="5" ry="3.6"/></g><circle cx="12" cy="12" r="1.2" fill="${a}"/>`],
+  jali: (a) => [24, 24, `<path d="M12 0l12 12-12 12L0 12z" fill="none" stroke="${a}" stroke-width="1"/><circle cx="12" cy="12" r="4.5" fill="none" stroke="${a}" stroke-width="1"/><circle cx="12" cy="12" r="1.3" fill="${a}"/>`],
+  girih: (a) => [28, 28, `<g fill="none" stroke="${a}" stroke-width="1.1"><rect x="8" y="8" width="12" height="12"/><rect x="8" y="8" width="12" height="12" transform="rotate(45 14 14)"/></g><path d="M0 14h4.5M23.5 14H28M14 0v4.5M14 23.5V28" stroke="${a}" stroke-width="1.1"/>`],
+  arabesque: (a) => [28, 24, `<path d="M0 16c6-9 10-9 14 0s8 9 14 0" fill="none" stroke="${a}" stroke-width="1.2"/><path d="M14 16c-2.5-4.5 2-7 4.5-4.5M0 16c2.5 4.5-2 7-4.5 4.5M28 16c2.5 4.5-2 7-4.5 4.5" fill="none" stroke="${a}" stroke-width="1"/><circle cx="7" cy="9" r="1.2" fill="${a}"/>`],
+  iznik: (a) => [28, 28, `<path d="M14 21c-4-1-6-5-5-10 2 2 3.2 2 5-1 1.8 3 3 3 5 1 1 5-1 9-5 10z" fill="${a}"/><path d="M14 21v6M14 25c-3-1-5 0-6 2M14 25c3-1 5 0 6 2" fill="none" stroke="${a}" stroke-width="1"/>`],
+  zellige: (a) => [28, 28, `<path d="M14 5l2.6 6.4L23 14l-6.4 2.6L14 23l-2.6-6.4L5 14l6.4-2.6z" fill="none" stroke="${a}" stroke-width="1.1"/><circle cx="14" cy="14" r="2" fill="${a}"/><path d="M0 0l4 4M28 0l-4 4M0 28l4-4M28 28l-4-4" stroke="${a}" stroke-width="1"/>`],
+  bogolan: (a) => [32, 30, `<path d="M0 8l4-4 4 4 4-4 4 4 4-4 4 4 4-4 4 4" fill="none" stroke="${a}" stroke-width="1.5"/><g fill="${a}"><circle cx="4" cy="17" r="1.5"/><circle cx="12" cy="17" r="1.5"/><circle cx="20" cy="17" r="1.5"/><circle cx="28" cy="17" r="1.5"/></g><path d="M2 25h6M12 25h6M22 25h6" stroke="${a}" stroke-width="1.5"/>`],
+  tibeb: (a) => [24, 24, `<path d="M12 2l7 10-7 10-7-10z" fill="none" stroke="${a}" stroke-width="1.1"/><path d="M12 8v8M8 12h8" stroke="${a}" stroke-width="1.1"/><circle cx="0" cy="12" r="1.2" fill="${a}"/><circle cx="24" cy="12" r="1.2" fill="${a}"/>`],
+  felt: (a) => [32, 22, `<path d="M16 19c0-6-4-10-8-8s-2 6 1 5M16 19c0-6 4-10 8-8s2 6-1 5" fill="none" stroke="${a}" stroke-width="1.5" stroke-linecap="round"/><path d="M0 3h32" stroke="${a}" stroke-width=".7" stroke-dasharray="2 2"/>`],
+  cloisonne: (a, b) => [20, 24, `<path d="M0 6h6v6h8V6h6M0 18h6v-6M14 12v6h6M10 18v6" fill="none" stroke="${a}" stroke-width="1.3"/><rect x="7" y="7" width="6" height="4" fill="${b}"/>`],
+  knot: (a) => [24, 24, `<path d="M0 12c6-8 12-8 12 0s6 8 12 0M0 12c6 8 12 8 12 0s6-8 12 0" fill="none" stroke="${a}" stroke-width="1.5"/>`],
+  interlace: (a, b) => [28, 20, `<path d="M0 10c5-8 9-8 14 0s9 8 14 0" fill="none" stroke="${a}" stroke-width="3.2"/><path d="M0 10c5-8 9-8 14 0s9 8 14 0" fill="none" stroke="${b}" stroke-width="1"/>`],
+  fleur: (a) => [24, 24, `<path d="M12 0L24 12 12 24 0 12z" fill="none" stroke="${a}" stroke-width=".8"/><path d="M12 7c-1.4 1.6-1.4 3.4 0 5 1.4-1.6 1.4-3.4 0-5zM12 12c-1-2-4-2.4-4.4-.6 1-.4 2.4 0 3 1.4M12 12c1-2 4-2.4 4.4-.6-1-.4-2.4 0-3 1.4M10 13.4h4M12 12v4" fill="${a}" stroke="${a}" stroke-width=".6"/>`],
+  tracery: (a) => [24, 24, `<g fill="none" stroke="${a}" stroke-width="1"><circle cx="12" cy="7.5" r="4.5"/><circle cx="12" cy="16.5" r="4.5"/><circle cx="7.5" cy="12" r="4.5"/><circle cx="16.5" cy="12" r="4.5"/></g><path d="M0 0h24v24H0z" fill="none" stroke="${a}" stroke-width=".6"/>`],
+  azulejo: (a) => [24, 24, `<rect width="24" height="24" fill="none" stroke="${a}" stroke-width=".8"/><circle cx="12" cy="12" r="5" fill="none" stroke="${a}" stroke-width="1.1"/><path d="M12 7v10M7 12h10" stroke="${a}" stroke-width=".7"/><path d="M0 6a6 6 0 0 0 6-6M18 0a6 6 0 0 0 6 6M24 18a6 6 0 0 0-6 6M6 24a6 6 0 0 0-6-6" fill="none" stroke="${a}" stroke-width="1"/>`],
+  mudejar: (a) => [24, 24, `<path d="M0 6h24M0 18h24M6 0v24M18 0v24" stroke="${a}" stroke-width=".8"/><rect x="9" y="9" width="6" height="6" transform="rotate(45 12 12)" fill="${a}"/>`],
+  diaper: (a) => [20, 20, `<path d="M10 0l10 10-10 10L0 10z" fill="none" stroke="${a}" stroke-width=".9"/><circle cx="10" cy="10" r="1.6" fill="${a}"/>`],
+  mosaic: (a, b) => [16, 16, `<rect x="1" y="1" width="6" height="6" fill="${a}"/><rect x="9" y="9" width="6" height="6" fill="${a}"/><rect x="9" y="1" width="6" height="6" fill="${b}"/><rect x="1" y="9" width="6" height="6" fill="${b}"/>`],
+  stitch: (a) => [24, 24, [[12, 4], [8, 8], [16, 8], [4, 12], [20, 12], [8, 16], [16, 16], [12, 20], [12, 12]].map(([x, y]) => `<path d="M${x - 1.6} ${y - 1.6}l3.2 3.2m0-3.2l-3.2 3.2" stroke="${a}" stroke-width="1.1"/>`).join('')],
+  tulip: (a) => [24, 24, `<path d="M12 4c-3 3-3 6 0 9 3-3 3-6 0-9zM12 13c-2-2-6-2-7 0 2 0 4 1 5 3M12 13c2-2 6-2 7 0-2 0-4 1-5 3" fill="${a}"/><path d="M12 13v8" stroke="${a}" stroke-width="1"/>`],
+  sash: (a) => [24, 12, `<path d="M0 6l6-6 6 6-6 6zM12 6l6-6 6 6-6 6z" fill="none" stroke="${a}" stroke-width="1"/><path d="M6 3v6M3 6h6M18 3v6M15 6h6" stroke="${a}" stroke-width=".8"/>`],
+  wycinanki: (a) => [28, 28, Array.from({ length: 8 }, (_, i) => `<ellipse cx="14" cy="7.5" rx="2.2" ry="5" fill="${a}" transform="rotate(${i * 45} 14 14)"/>`).join('') + `<circle cx="14" cy="14" r="2.4" fill="none" stroke="${a}"/>`],
+  fret: (a) => [24, 16, `<path d="M0 14h7V5h9v6h-4V8" fill="none" stroke="${a}" stroke-width="1.6"/><path d="M16 14h8" stroke="${a}" stroke-width="1.6"/>`],
+  tocapu: (a) => [16, 16, `<rect x="1" y="1" width="14" height="14" fill="none" stroke="${a}" stroke-width="1"/><path d="M4 4h8v8H4z" fill="none" stroke="${a}" stroke-width=".8"/><circle cx="8" cy="8" r="1.4" fill="${a}"/>`],
+  brass: (a) => [20, 20, `<circle cx="10" cy="10" r="3" fill="none" stroke="${a}" stroke-width="1"/><circle cx="0" cy="0" r="2" fill="${a}"/><circle cx="20" cy="20" r="2" fill="${a}"/>`],
+};
+const CIV_MOTIF = {
+  chinese: 'cloud', japanese: 'seigaiha', koreans: 'lattice', jurchens: 'felt', khitans: 'cloud', daiviet: 'drum', khmer: 'naga', malay: 'kawung', indians: 'jali',
+  arabs: 'girih', persians: 'arabesque', turks: 'iznik', berbers: 'zellige', malians: 'bogolan', ethiopians: 'tibeb', mongols: 'felt', huns: 'cloisonne',
+  britons: 'diaper', celts: 'knot', franks: 'fleur', vikings: 'interlace', teutons: 'tracery', goths: 'cloisonne', spanish: 'mudejar', portuguese: 'azulejo',
+  byzantines: 'mosaic', bohemians: 'tracery', poles: 'wycinanki', lithuanians: 'sash', bulgarians: 'stitch', slavs: 'stitch', magyars: 'tulip',
+  aztecs: 'fret', mayans: 'fret', incas: 'tocapu',
+};
+const MOTIF_NAMES = { cloud: 'cloud scrolls', seigaiha: 'seigaiha waves', lattice: 'window lattice', drum: 'Đông Sơn drum', naga: 'naga scales', kawung: 'kawung batik',
+  jali: 'jali screen', girih: 'girih stars', arabesque: 'arabesque vines', iznik: 'Iznik tulips', zellige: 'zellige stars', bogolan: 'bògòlan mudcloth', tibeb: 'tibeb weave',
+  felt: 'felt horn scrolls', cloisonne: 'garnet cloisonné', knot: 'knotwork', interlace: 'ribbon interlace', fleur: 'fleur-de-lis', tracery: 'Gothic tracery', azulejo: 'azulejo tiles',
+  mudejar: 'Mudéjar lattice', diaper: 'heraldic diaper', mosaic: 'gold mosaic', stitch: 'cross-stitch', tulip: 'folk tulips', sash: 'woven sash', wycinanki: 'paper-cut flowers',
+  fret: 'step-fret', tocapu: 'tocapu squares', brass: 'brass studs' };
+/* colour helpers */
+function hexRgb(h) { const n = parseInt(h.slice(1), 16); return [n >> 16, (n >> 8) & 255, n & 255]; }
+function mix(h1, h2, t) { const a = hexRgb(h1), b = hexRgb(h2); return '#' + a.map((v, i) => Math.round(v + (b[i] - v) * t).toString(16).padStart(2, '0')).join(''); }
+function rgba(h, a) { const [r, g, b] = hexRgb(h); return `rgba(${r},${g},${b},${a})`; }
+function tileURL(name, a, b) {
+  const [w, h, inner] = MOTIF_TILES[name](a, b);
+  const svg = `<svg xmlns='http://www.w3.org/2000/svg' width='${w}' height='${h}' viewBox='0 0 ${w} ${h}'>${inner.replace(/"/g, "'")}</svg>`;
+  return `url("data:image/svg+xml,${encodeURIComponent(svg)}")`;
+}
+function installCivStyles() {
+  let css = '';
+  const add = (cls, color, motif) => {
+    const light = mix(color, '#ffffff', 0.42), deep = mix(color, '#000000', 0.38);
+    css += `.${cls}{--civ:${color};--civ-deep:${deep};--civ-light:${light};--civ-wash:${rgba(color, 0.12)};--motif:${tileURL(motif, rgba('#ffffff', 0.38), rgba('#ffffff', 0.08))};--motif-soft:${tileURL(motif, rgba(color, 0.2), 'none')};--motif-gold:${tileURL(motif, rgba('#f2cf73', 0.55), rgba('#f2cf73', 0.1))}}\n`;
+  };
+  for (const c of CIV_ORDER) add('civ-' + c, CIVS[c].color, CIV_MOTIF[c] || 'diaper');
+  add('civ-merc', '#7a6542', 'brass');
+  const el = document.createElement('style'); el.id = 'civ-styles'; el.textContent = css; document.head.appendChild(el);
+}
+
+/* ── View: table art, components and rendering for the new UI ── */
+const $ = s => document.querySelector(s), $$ = s => [...document.querySelectorAll(s)];
+const UI = { screen: 'menu', sel: null, hoverT: null, busy: false, last: null, view: null, round: 1, drawer: false, n: 2, civ: null, opps: 'random', tutorial: null };
+const ICON = {
+  menu: '<svg viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>',
+  scroll: '<svg viewBox="0 0 24 24"><path d="M6 4h11a3 3 0 0 1 0 6h-1v8a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2zM16 4a3 3 0 0 0-3 3v3M8 9h4M8 13h5M8 16h4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+  help: '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M9.5 9.5a2.5 2.5 0 1 1 3.5 2.3c-.8.4-1 1-1 1.7M12 16.8v.2" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/></svg>',
+  event: '<svg viewBox="0 0 24 24"><path d="M7 3h10M7 21h10M8 3c0 5 8 5 8 9s-8 4-8 9M16 3c0 5-8 5-8 9s8 4 8 9" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>',
+  market: '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M12 8v8M9.5 10h4M9.5 14h5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>',
+  back: '<svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+};
+const svgURL = svg => `url("data:image/svg+xml,${encodeURIComponent(svg)}")`;
+function installTableArt() {
+  const L = [], c = 1000;
+  for (let i = 0; i < 32; i++) { const a = i * Math.PI / 16, main = i % 4 === 0; L.push(`<path d='M${c} ${c}L${(c + Math.cos(a) * 1400).toFixed(0)} ${(c + Math.sin(a) * 1400).toFixed(0)}' stroke='rgba(246,217,137,${main ? .22 : .1})' stroke-width='${main ? 1.6 : 1}'/>`); }
+  for (let k = 0; k < 8; k++) { const a = k * Math.PI / 4 + Math.PI / 8, x = c + Math.cos(a) * 660, y = c + Math.sin(a) * 660; for (let i = 0; i < 16; i++) { const b = i * Math.PI / 8; L.push(`<path d='M${x.toFixed(0)} ${y.toFixed(0)}l${(Math.cos(b) * 900).toFixed(0)} ${(Math.sin(b) * 900).toFixed(0)}' stroke='rgba(246,217,137,.05)'/>`); } }
+  const rhumb = `<svg xmlns='http://www.w3.org/2000/svg' width='2000' height='2000' viewBox='0 0 2000 2000'>${L.join('')}<circle cx='1000' cy='1000' r='660' fill='none' stroke='rgba(246,217,137,.09)' stroke-width='1.5'/></svg>`;
+  const star = (n, r1, r2, rot) => Array.from({ length: n * 2 }, (_, i) => { const r = i % 2 ? r2 : r1, a = i * Math.PI / n + rot - Math.PI / 2; return `${(100 + Math.cos(a) * r).toFixed(1)},${(100 + Math.sin(a) * r).toFixed(1)}`; }).join(' ');
+  const rose = `<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 200'><circle cx='100' cy='100' r='94' fill='none' stroke='rgba(246,217,137,.5)' stroke-width='1.2'/><circle cx='100' cy='100' r='86' fill='none' stroke='rgba(246,217,137,.3)' stroke-dasharray='2 4'/><polygon points='${star(8, 72, 12, Math.PI / 8)}' fill='rgba(246,217,137,.16)'/><polygon points='${star(4, 94, 15, 0)}' fill='rgba(246,217,137,.36)' stroke='rgba(246,217,137,.7)' stroke-width='.8'/><circle cx='100' cy='100' r='6' fill='rgba(246,217,137,.8)'/></svg>`;
+  document.documentElement.style.setProperty('--rhumb', svgURL(rhumb));
+  document.documentElement.style.setProperty('--rose', svgURL(rose));
+}
+
+/* keywords share the colour of the symbol for that resource */
+const KW_RE = /\b(?:(over the walls)|([Ee]very opponent|[Ee]very other opponent|[Ee]veryone)|([Pp]lay another card|[Pp]lay \d+ more cards)|(\d+ (?:extra |less )?damage|damage)|(\d+ (?:extra )?HP|max HP|HP|[Hh]eals?)|(\d+ (?:extra |less )?gold|gold)|(\d+ (?:random |extra )?cards?|another card|a random card|a card|cards?)|(\d+ (?:extra )?durability|durability|walls?|structures?|[Ww]onders?)|([Ss]teal|stolen)|([Dd]estroy|destroyed))\b/g;
+const KW_CLS = ['pierce', 'aoe', 'play', 'dmg', 'hp', 'gold', 'card', 'wall', 'steal', 'raze'];
+function kw(text) { return esc(text).replace(KW_RE, (...m) => `<b class="kw k-${KW_CLS[m.slice(1, 11).findIndex(x => x !== undefined)]}">${m[0]}</b>`); }
+
+const isMyTurn = () => S && S.turn === 0 && S.winner == null && !UI.busy;
+const selCard = () => (S && UI.sel != null ? S.players[0].hand.find(c => c.uid === UI.sel) : null);
+const civNameOf = pid => (pid === 0 ? 'You' : CIVS[S.players[pid].civ].name);
+const civObjOf = pid => (pid === 0 ? 'you' : CIVS[S.players[pid].civ].name);
+const typeOf = c => (c.age ? 'Imperial Age' : c.imperial ? 'Imperial' : c.unique ? 'Signature' : c.civ === 'merc' ? 'Mercenary' : 'Common');
+function cardHTML(card, o = {}) {
+  const kind = card.age ? 'age' : card.imperial ? 'imp' : card.unique ? 'sig' : card.civ === 'merc' ? 'merc' : '';
+  const size = o.size || '';
+  const syms = card.age ? crownSVG(size === 'lg' ? 70 : size === 'sm' ? 36 : 50) : [...card.icons].map(ch => symBadge(ch, 28)).join('');
+  const seal = card.age || card.imperial ? `<i class="seal">${crownSVG(18)}</i>` : card.unique ? '<i class="seal">★</i>' : card.civ === 'merc' ? `<i class="seal">${card.cost}</i>` : '';
+  const merc = card.civ === 'merc';
+  return `<div class="card ${size} ${kind} ${merc ? 'civ-merc' : 'civ-' + card.civ} ${o.cls || ''}" data-uid="${card.uid || ''}" ${o.attrs || ''} style="${o.style || ''}">
+<div class="cb"><div class="cn">${merc ? mercCrest(17) : crest(card.civ, 17)}<span>${esc(card.name)}</span>${seal}</div><div class="ca">${syms}</div><div class="ct"><span>${kw(cardText(card))}</span></div><div class="cf"><span>${typeOf(card)}</span><span>${merc ? '' : esc(CIVS[card.civ].name)}</span></div></div>${o.cost != null ? `<div class="cost${o.afford ? ' ok' : ''}">${o.cost} gold</div>` : ''}</div>`;
+}
+function workHTML(st) {
+  if (st.kind === 'wonder') return `<span class="work wonder" data-tip="${esc(st.card.name)}: ${st.dur} durability. Its builder wins if it still stands in ${Math.max(0, 3 - st.age)} turn(s).">${symBadge('W', 16)}<b>${st.dur}</b><em>${Math.max(0, 3 - st.age)}</em></span>`;
+  const note = { regen: 'regains 1 durability each turn', sacred: 'heals its owner 1 HP each turn', thorns: 'whoever hits it takes 1 damage', fortress: 'raze removes only 1 durability', income: 'gives its owner 1 gold each turn' }[st.kind];
+  return `<span class="work ${st.kind || ''}" data-tip="${esc(st.card.name)}: ${st.dur} durability${note ? '; ' + note : ''}.">${st.dur}</span>`;
+}
+function dispHP(P) { return UI.view && UI.view[P.id] != null ? UI.view[P.id] : P.hp; }
+function campHTML(P, mine) {
+  const C = CIVS[P.civ], hp = Math.max(0, dispHP(P)), acting = S.turn === P.id && S.winner == null;
+  const tgt = !mine && P.alive && UI.sel != null && isMyTurn() && needsTarget(selCard() || { steps: [] }) && opponents(S, S.players[0]).length > 1;
+  const age = !P.ageGiven ? `<span class="tag" data-tip="The Imperial Age card arrives at the start of turn ${RULES.ageTurn}.">${crownSVG(16)} in ${Math.max(1, RULES.ageTurn - P.turns)}</span>`
+    : !P.aged ? `<span class="tag hot" data-tip="Holds the Imperial Age card.">${crownSVG(16)} ready</span>` : `<span class="tag imp" data-tip="In the Imperial Age.">${crownSVG(16)} Imperial</span>`;
+  const toks = [];
+  if (P.tokens.camel) toks.push(`<span class="token camel" data-tip="Camel guard: the next cavalry attack against this camp is cancelled.">Camel guard${P.tokens.camel > 1 ? ' ×' + P.tokens.camel : ''}</span>`);
+  if (P.tokens.immune) toks.push('<span class="token" data-tip="Divine Wind: every attack against this camp is cancelled until its next turn.">Divine Wind</span>');
+  if (P.tokens.trap) toks.push('<span class="token" data-tip="Bạch Đằng stakes: the first opponent to deal damage here takes 2 damage.">Stakes set</span>');
+  const piles = `<div class="piles"><button class="pile" data-act="deck" data-tip="Cards left to draw">Deck ${P.deck.length}</button><button class="pile" data-act="discard" data-tip="Cards already played or lost">Discard ${P.discard.length}</button></div>`;
+  const right = mine ? '' : `<span class="backs" data-tip="${P.hand.length} cards in hand">${'<i class="cback"></i>'.repeat(Math.min(P.hand.length, 6))}<b>${P.hand.length}</b></span>`;
+  return `<section class="camp civ-${P.civ}${mine ? ' mine' : ''}${acting ? ' turn' : ''}${P.alive ? '' : ' out'}${tgt ? ' targetable' : ''}${tgt && UI.hoverT === P.id ? ' hot' : ''}" id="camp-${P.id}" data-pid="${P.id}">
+<header class="camp-banner">${crest(P.civ, mine ? 30 : 27)}<span class="cname">${mine ? 'You' : esc(C.name)}</span>${mine ? `<span class="csub">${esc(C.name)}</span>` : ''}${acting ? '<span class="flag">acting</span>' : ''}${P.alive ? '' : '<span class="flag out">defeated</span>'}${P.relic && !mine ? `<span class="relic" data-tip="${esc(RELICS[P.relic].name)}: ${esc(RELICS[P.relic].text)}">${esc(RELICS[P.relic].name)}</span>` : ''}</header>
+<div class="camp-body"><div class="hpgem" style="--p:${Math.round(hp / P.maxHP * 100)}" data-tip="${hp} of ${P.maxHP} HP"><b>${hp}</b><small>/${P.maxHP}</small></div>
+<div class="works">${P.structs.map(workHTML).join('') || '<span class="none">No walls</span>'}</div>
+<div class="stash"><span class="coin" data-tip="Gold hires mercenaries at the market.">${symBadge('G', 20)}<b>${P.gold}</b></span>${right}${age}${mine && P.relic ? `<span class="relic mine-relic" data-tip="${esc(RELICS[P.relic].name)}: ${esc(RELICS[P.relic].text)}">${esc(RELICS[P.relic].name)}</span>` : ''}</div></div>
+${mine ? piles : ''}${toks.length ? `<div class="tokens">${toks.join('')}</div>` : ''}<div class="chips"></div><div class="floats"></div></section>`;
+}
+function renderTopbar() {
+  const me = isMyTurn(), who = S.winner != null ? '' : S.turn === 0 ? 'Your turn' : `${CIVS[cur(S).civ].name} to play`;
+  $('#topbar').innerHTML = `<button class="icon-btn" data-act="pause" aria-label="Menu" data-tip="Menu (Esc)">${ICON.menu}</button>
+<div class="tb-mid"><span class="pill">Round ${S.round}</span>${who ? `<span class="pill ${S.turn === 0 ? 'gold' : ''}">${who}</span>` : ''}${me && S.plays > 0 ? `<span class="pips" data-tip="Plays left this turn">${'<i class="pip"></i>'.repeat(S.plays)}</span>` : ''}</div>
+<div class="tb-right"><button class="icon-btn mob-only" data-act="events" aria-label="Events" data-tip="Events">${ICON.event}</button><button class="icon-btn mob-only" data-act="market" aria-label="Market" data-tip="Mercenary Market">${ICON.market}</button>
+<button class="speed" data-act="speed" data-tip="Animation speed (S)">${SPEEDS[SET.speed].label}</button><button class="icon-btn" data-act="chronicle" aria-label="Chronicle" data-tip="Chronicle (L)">${ICON.scroll}</button><button class="icon-btn desk-only" data-act="help" aria-label="How to play" data-tip="How to play (H)">${ICON.help}</button></div>`;
+}
+function eventsHTML() {
+  const E = S.event ? EVENT_BY[S.event] : null, N = EVENT_BY[S.eventNext];
+  return `<div class="ev now${UI.flipEvent ? ' flip' : ''}"><div class="when">This round</div><h4>${E ? esc(E.name) : 'Peace'}</h4><p>${E ? kw(E.text) : 'No event yet. Events start in round 2.'}</p></div>
+<div class="ev next"><div class="when">Next round</div><h4>${esc(N.name)}</h4><p>${kw(N.text)}</p></div>${S.round >= 14 ? `<div class="ev-warn">${S.round >= 16 ? 'The war drags on: everyone loses 1 HP each round.' : 'From round 16 everyone loses 1 HP each round.'}</div>` : ''}`;
+}
+function marketHTML() {
+  const me = S.players[0], mine = isMyTurn() && !S.flags.bought;
+  return `<h3>Mercenary Market</h3><div class="mk-row">${S.market.map((c, i) => { if (!c) return '<div class="card sm civ-merc"><div class="cb"><div class="ct">Sold out</div></div></div>'; const cost = marketCost(S, me, c), ok = mine && me.gold >= cost; return `<button class="mk-item${ok ? ' can' : ''}" data-mi="${i}" ${ok ? '' : 'tabindex="-1"'} aria-label="Hire ${esc(c.name)} for ${cost} gold">${cardHTML(c, { size: 'sm', cost, afford: ok })}</button>`; }).join('')}</div>
+<p class="mk-note">${S.turn === 0 && S.flags.bought ? 'You already hired this turn.' : `Hire 1 card per turn with <b class="kw k-gold">gold</b>; it goes straight to your hand.`}${S.mod.fair ? ' Great Fair: 1 cheaper this round.' : ''}${S.turn === 0 && S.flags.buyFree ? ' Your next hire is free.' : ''}</p>`;
+}
+function renderHand() {
+  const me = S.players[0], n = me.hand.length, mid = (n - 1) / 2, mine = isMyTurn();
+  const spread = Math.min(4.2, 30 / Math.max(1, n));
+  $('#hand').innerHTML = me.hand.map((c, i) => cardHTML(c, { cls: (mine ? 'playable' : 'dim') + (UI.sel === c.uid ? ' sel' : ''), attrs: `tabindex="${mine ? 0 : -1}" role="button" aria-label="${esc(c.name)}: ${esc(cardText(c))}"`, style: `--rot:${((i - mid) * spread).toFixed(2)}deg;--y:${(Math.abs(i - mid) ** 2 * 2.4).toFixed(1)}px;z-index:${i + 1}` })).join('') || '<div class="hand-empty">No cards in hand</div>';
+}
+function renderStage() {
+  const c = selCard();
+  if (c && isMyTurn()) {
+    const multi = needsTarget(c) && opponents(S, S.players[0]).length > 1;
+    $('#stage-card').innerHTML = `<div class="stage-fit">${cardHTML(c, { size: 'lg' })}</div>`; fitStage();
+    $('#stage-caption').textContent = multi ? (UI.hoverT != null ? `Aim at ${CIVS[S.players[UI.hoverT].civ].name}` : 'Choose an enemy camp') : 'Click the card again to play it';
+    return;
+  }
+  const L = UI.last;
+  $('#stage-card').innerHTML = L ? `<div class="stage-fit">${cardHTML(L.card, { size: 'lg', cls: L.fresh ? 'pop' : '' })}</div>` : ''; fitStage();
+  if (L) L.fresh = false;
+  $('#stage-caption').textContent = L ? `${civNameOf(L.pid)} ${L.pid === 0 ? 'played' : 'plays'} ${L.card.name}${L.target != null ? ' on ' + civObjOf(L.target) : ''}` : '';
+}
+function stageScale() { const st = $('#stage'); const h = mobile() ? 212 : 302; return Math.max(0.45, Math.min(1, (st.clientHeight - 44) / h)); }
+function fitStage() { const f = $('#stage-card .stage-fit'), sc = $('#stage-card'); if (!f) { sc.style.height = ''; return; } const s = stageScale(); f.style.transform = `scale(${s})`; sc.style.height = Math.round(f.firstElementChild.offsetHeight * s) + 'px'; }
+function renderPrompt() {
+  let t = '';
+  if (S.winner == null) {
+    if (S.turn !== 0) t = `${CIVS[cur(S).civ].name} is playing…`;
+    else if (UI.busy) t = '';
+    else if (UI.sel != null) t = '';
+    else if (UI.sel != null) { const c = selCard(); t = c && needsTarget(c) && opponents(S, S.players[0]).length > 1 ? 'Click an enemy camp to aim it, or click the card again to cancel' : 'Click the card again to play it'; }
+    else t = S.plays > 1 ? `Your turn: play ${S.plays} cards` : 'Your turn: pick a card';
+  }
+  $('#prompt').textContent = t;
+}
+function renderChronicle() {
+  $('#chronicle').innerHTML = `<h3>Chronicle</h3><ul class="log">${S.log.slice(-60).reverse().map(e => { const t = logLine(e); return t ? `<li class="${e.k === 'event' ? 'r' : ''}">${t}</li>` : ''; }).join('')}</ul>`;
+}
+function logLine(e) {
+  switch (e.k) {
+    case 'play': return `${esc(civNameOf(e.pid))} played <b>${esc(e.card)}</b>${e.target != null ? ' on ' + esc(civObjOf(e.target)) : ''}`;
+    case 'buy': return `${esc(civNameOf(e.pid))} hired <b>${esc(e.card)}</b> for <b class="kw k-gold">${e.cost} gold</b>`;
+    case 'event': return `Round ${e.round}: ${esc(EVENT_BY[e.id].name)}`;
+    case 'out': return `<b>${esc(civNameOf(e.pid))}</b> ${e.pid === 0 ? 'were' : 'was'} defeated`;
+    case 'hich': return `${esc(civNameOf(e.pid))} ${e.pid === 0 ? 'are' : 'is'} in danger and drew 2 extra cards`;
+    case 'banner': return `The Holy Banner raised ${esc(civObjOf(e.pid))} again`;
+    case 'fatigue': return `${esc(civNameOf(e.pid))} reshuffled the deck and lost 1 HP to exhaustion`;
+    case 'wonder': return `<b>${esc(civNameOf(e.pid))}</b> completed ${esc(e.name)}`;
+    case 'attrition': return 'The war drags on: everyone lost 1 HP';
+    case 'agecard': return e.pid === 0 ? 'Your Imperial Age card arrived' : `${esc(civNameOf(e.pid))} can now reach the Imperial Age`;
+    case 'aged': return `<b>${esc(civNameOf(e.pid))}</b> ${e.pid === 0 ? 'advanced' : 'advanced'} to the Imperial Age`;
+  }
+  return '';
+}
+function renderPreview() {
+  $$('.camp .chips').forEach(el => (el.innerHTML = ''));
+  const c = selCard(); if (!c || !isMyTurn()) return;
+  const opps = opponents(S, S.players[0]);
+  const tid = needsTarget(c) ? (UI.hoverT != null ? UI.hoverT : opps.length === 1 ? opps[0].id : null) : null;
+  if (needsTarget(c) && tid == null) return;
+  const pv = previewPlay(S, 0, c.uid, tid); if (!pv) return;
+  pv.players.forEach((d, i) => {
+    const out = [], hand = i === 0 ? d.hand + 1 : d.hand;
+    if (d.dies) out.push(['ko', 'Defeated']);
+    if (d.hp) out.push([d.hp < 0 ? 'dmg' : 'heal', `${d.hp > 0 ? '+' : ''}${d.hp} HP`]);
+    if (d.wonder) out.push(['wall', `wonder ${d.wonder}`]);
+    if (d.walls) out.push(['wall', `${d.walls > 0 ? '+' : ''}${d.walls} wall`]);
+    if (d.gold) out.push(['gold', `${d.gold > 0 ? '+' : ''}${d.gold} gold`]);
+    if (hand) out.push(['card', `${hand > 0 ? '+' : ''}${hand} card${Math.abs(hand) > 1 ? 's' : ''}`]);
+    const el = document.querySelector(`#camp-${i} .chips`); if (el) el.innerHTML = out.map(([k, t]) => `<span class="chip ${k}">${t}</span>`).join('');
+  });
+}
+function renderMatch() {
+  if (!S) return;
+  renderTopbar();
+  const opps = S.players.slice(1);
+  $('#opps').className = 'n' + opps.length;
+  $('#opps').innerHTML = opps.map(P => campHTML(P, false)).join('');
+  $('#me').innerHTML = campHTML(S.players[0], true);
+  $('#events').innerHTML = eventsHTML(); UI.flipEvent = false;
+  $('#market').innerHTML = marketHTML();
+  renderHand(); renderStage(); renderPrompt(); renderPreview();
+  if (UI.drawer) renderChronicle();
+}
+
+/* tooltips: hover on desktop, press-and-hold on touch */
+const TIP = { el: null, timer: null };
+function showTip(el) {
+  const t = $('#tip'); t.innerHTML = kw(el.dataset.tip); t.classList.remove('hidden');
+  const r = el.getBoundingClientRect(), w = t.offsetWidth, h = t.offsetHeight;
+  let x = Math.min(Math.max(8, r.left + r.width / 2 - w / 2), innerWidth - w - 8), y = r.top - h - 8;
+  if (y < 8) y = r.bottom + 8;
+  t.style.left = x + 'px'; t.style.top = y + 'px'; TIP.el = el;
+}
+function hideTip() { $('#tip').classList.add('hidden'); TIP.el = null; }
+document.addEventListener('pointerover', e => { if (e.pointerType === 'touch') return; const el = e.target.closest('[data-tip]'); if (el) showTip(el); else if (TIP.el) hideTip(); });
+document.addEventListener('pointerdown', e => { clearTimeout(TIP.timer); if (e.pointerType !== 'touch') return; const el = e.target.closest('[data-tip]'); if (el) TIP.timer = setTimeout(() => showTip(el), 420); });
+document.addEventListener('pointerup', () => { clearTimeout(TIP.timer); if (TIP.el && matchMedia('(pointer: coarse)').matches) setTimeout(hideTip, 1600); });
+document.addEventListener('scroll', hideTip, true);
+
+/* small cards (market, civ select) open at full size on hover or press-and-hold */
+function showZoom(c) {
+  let z = $('#zoom'); if (!z) { z = document.createElement('div'); z.id = 'zoom'; document.body.appendChild(z); }
+  z.innerHTML = c.outerHTML.replace(/class="card sm /, 'class="card lg ').replace(/<div class="cost[^"]*">[^<]*<\/div>/, '');
+  const r = c.getBoundingClientRect(), w = 214, h = 302;
+  let x = r.left - w - 14; if (x < 8) x = r.right + 14; if (x + w > innerWidth - 8) x = Math.max(8, innerWidth / 2 - w / 2);
+  z.style.left = x + 'px'; z.style.top = Math.min(Math.max(8, r.top + r.height / 2 - h / 2), innerHeight - h - 8) + 'px'; z.classList.remove('hidden');
+}
+function hideZoom() { const z = $('#zoom'); if (z) z.classList.add('hidden'); }
+document.addEventListener('pointerover', e => { if (e.pointerType === 'touch') return; const c = e.target.closest('.card.sm'); if (c) showZoom(c); else hideZoom(); });
+document.addEventListener('pointerdown', e => { if (e.pointerType !== 'touch') return; const c = e.target.closest('.card.sm'); if (c) TIP.zoomTimer = setTimeout(() => showZoom(c), 420); });
+document.addEventListener('pointerup', () => { clearTimeout(TIP.zoomTimer); setTimeout(hideZoom, 1400); });
+
+/* ── Motion: every action travels across the table, from cause to effect ── */
+const SPEEDS = { slow: { label: '½×', f: 1.6 }, normal: { label: '1×', f: 1 }, fast: { label: '2×', f: 0.5 }, instant: { label: 'Max', f: 0.08 } };
+const SPEED_ORDER = ['normal', 'fast', 'instant', 'slow'];
+const REDUCED = matchMedia('(prefers-reduced-motion: reduce)').matches;
+const D = ms => Math.round(ms * SPEEDS[SET.speed].f * (REDUCED ? 0.25 : 1));
+const wait = ms => new Promise(r => setTimeout(r, ms));
+const mobile = () => innerWidth <= 820;
+function stageRect() {
+  const s = $('#stage').getBoundingClientRect(), k = stageScale(), w = (mobile() ? 150 : 214) * k, h = (mobile() ? 212 : 302) * k;
+  return { left: s.left + s.width / 2 - w / 2, top: s.top + s.height / 2 - h / 2 - 14, width: w, height: h };
+}
+async function flyCard(card, from, to, dur) {
+  if (!from || !to || dur < 40) return;
+  const box = document.createElement('div'); box.innerHTML = cardHTML(card, { size: 'lg' });
+  const el = box.firstElementChild; Object.assign(el.style, { position: 'fixed', left: '0', top: '0', margin: '0' });
+  $('#fx-layer').appendChild(el);
+  const w = el.offsetWidth, h = el.offsetHeight, s0 = Math.max(0.25, Math.min(from.width / w, from.height / h)), s1 = Math.min(1, to.width / w, to.height / h);
+  const p0 = `translate(${from.left + from.width / 2 - w / 2}px,${from.top + from.height / 2 - h / 2}px) scale(${s0}) rotate(-5deg)`;
+  const p1 = `translate(${to.left + to.width / 2 - w / 2}px,${to.top + to.height / 2 - h / 2}px) scale(${s1}) rotate(0deg)`;
+  SFX.play('whoosh');
+  await el.animate([{ transform: p0, opacity: 0.85 }, { transform: p1, opacity: 1 }], { duration: dur, easing: 'cubic-bezier(.2,.8,.2,1)', fill: 'forwards' }).finished.catch(() => {});
+  el.remove();
+}
+function arrow(from, to, kind, dur) {
+  if (!from || !to || dur < 40) return;
+  const svg = $('#fx-arrows'), x1 = from.left + from.width / 2, y1 = from.top + from.height / 2, x2 = to.left + to.width / 2, y2 = to.top + to.height / 2;
+  const p = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+  p.setAttribute('d', `M${x1} ${y1} Q${(x1 + x2) / 2 + (x2 > x1 ? -40 : 40)} ${Math.min(y1, y2) - 70} ${x2} ${y2}`);
+  p.setAttribute('class', 'arrow ' + kind); svg.appendChild(p);
+  const len = p.getTotalLength(); p.style.strokeDasharray = len; p.style.strokeDashoffset = len;
+  p.animate([{ strokeDashoffset: len }, { strokeDashoffset: 0 }], { duration: dur, easing: 'ease-out', fill: 'forwards' });
+  setTimeout(() => p.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 300, fill: 'forwards' }).finished.then(() => p.remove()), dur + D(450));
+}
+let aimPath = null;
+function aim(from, x, y) {
+  if (!from) return clearAim();
+  if (!aimPath) { aimPath = document.createElementNS('http://www.w3.org/2000/svg', 'path'); aimPath.setAttribute('class', 'arrow aim'); $('#fx-arrows').appendChild(aimPath); }
+  const x1 = from.left + from.width / 2, y1 = from.top + 10;
+  aimPath.setAttribute('d', `M${x1} ${y1} Q${(x1 + x) / 2} ${Math.min(y1, y) - 80} ${x} ${y}`);
+}
+function clearAim() { if (aimPath) { aimPath.remove(); aimPath = null; } }
+const FX_TEXT = {
+  hp: f => (f.n < 0 ? ['−' + -f.n, 'dmg'] : ['+' + f.n, 'heal']), wall: f => [`−${f.n} wall`, 'wall'], razed: f => [`${f.name} falls`, 'wall'],
+  camel: () => ['Camels block!', 'info'], immune: () => ['Divine Wind!', 'info'], shroud: () => ['Mantle −1', 'info'], trap: () => ['Stakes!', 'dmg'],
+  thorns: () => ['Spikes!', 'dmg'], steal: () => ['Card stolen', 'info'], convert: f => [`Lost ${f.name}`, 'info'], gold: f => [`+${f.n} gold`, 'gold'],
+  out: () => ['Defeated', 'dmg big'], hich: () => ['In danger: +2 cards', 'heal'], banner: () => ['Holy Banner!', 'heal'], wonderhit: f => [`Wonder ${f.left}`, 'wall'],
+  discard: () => ['−1 card', 'info'], rained: () => ['Monsoon: no building', 'info'], age: () => ['Imperial Age!', 'gold big'], tribute: () => ['−1 gold', 'gold'],
+};
+function floatAt(pid, text, cls) {
+  const box = document.querySelector(`#camp-${pid} .floats`); if (!box) return;
+  const d = document.createElement('div'); d.className = 'float ' + cls; d.textContent = text; box.appendChild(d);
+  setTimeout(() => d.remove(), 1600);
+}
+function setShownHP(pid) {
+  const g = document.querySelector(`#camp-${pid} .hpgem`); if (!g || !UI.view) return;
+  const P = S.players[pid], hp = Math.max(0, UI.view[pid]);
+  g.querySelector('b').textContent = hp; g.style.setProperty('--p', Math.round(hp / P.maxHP * 100));
+}
+function shake(pid) { const el = document.getElementById('camp-' + pid); if (el) { el.classList.remove('hit'); void el.offsetWidth; el.classList.add('hit'); } }
+async function animatePlay(ev, pid, from) {
+  await flyCard(ev.card, from, stageRect(), D(430));
+  UI.last = { card: ev.card, pid, target: ev.target, fresh: true }; UI.sel = null; UI.hoverT = null;
+  renderMatch();
+  if (ev.card.wonder) banner(`${civNameOf(pid)} ${pid === 0 ? 'begin' : 'begins'} ${ev.card.name}`, pid === 0 ? 'Keep it standing for 3 turns to win' : 'Bring it down within 3 turns or they win', 2200);
+  await wait(D(300));
+  const src = $('#stage-card .card') ? $('#stage-card .card').getBoundingClientRect() : stageRect(), hit = new Set();
+  for (const f of ev.fx) {
+    const t = f.t, camp = document.getElementById('camp-' + t);
+    if (camp && t !== pid && !hit.has(t) && ['hp', 'wall', 'razed', 'wonderhit', 'steal', 'discard', 'convert', 'camel', 'immune', 'shroud', 'tribute'].includes(f.k)) {
+      hit.add(t); arrow(src, camp.getBoundingClientRect(), ['steal', 'discard', 'convert', 'tribute'].includes(f.k) ? 'steal' : ['razed', 'wonderhit'].includes(f.k) ? 'raze' : 'dmg', D(320)); await wait(D(260));
+    }
+    if (f.k === 'hp' && UI.view) { UI.view[t] = (UI.view[t] != null ? UI.view[t] : S.players[t].hp) + f.n; setShownHP(t); }
+    const m = FX_TEXT[f.k]; if (m) { const [txt, cls] = m(f); floatAt(t, txt, cls); }
+    if (f.k === 'hp') { SFX.play(f.n < 0 ? 'hit' : 'heal'); if (f.n < 0) shake(t); }
+    else if (['wall', 'razed', 'wonderhit'].includes(f.k)) SFX.play('wall');
+    if (f.k === 'age') { SFX.play('crown'); banner(`${civNameOf(t)} ${t === 0 ? 'advance' : 'advances'} to the Imperial Age`, IMPERIAL[S.players[t].civ].bonus.text, 2300); }
+    await wait(D(190));
+  }
+  UI.view = null; await wait(D(260));
+  renderMatch();
+}
+async function animateBuy(card, pid, from) {
+  const to = pid === 0 ? $('#hand').getBoundingClientRect() : document.getElementById('camp-' + pid)?.getBoundingClientRect();
+  const dest = to && pid === 0 ? { left: to.left + to.width / 2 - 60, top: to.top + 30, width: 120, height: 170 } : to;
+  await flyCard(card, from, dest, D(520));
+  floatAt(pid, 'Hired ' + card.name, 'gold');
+}
+function banner(title, sub, dur = 1900) {
+  const b = $('#banner'); b.innerHTML = `<div class="bt">${esc(title)}</div>${sub ? `<div class="bs">${kw(sub)}</div>` : ''}`;
+  b.style.setProperty('--bdur', Math.max(900, D(dur)) + 'ms'); b.classList.remove('show'); void b.offsetWidth; b.classList.add('show');
+}
+function openSheet(html, lock) { const s = $('#sheet'); s.innerHTML = `<div class="sheet-panel" role="dialog" aria-modal="true">${html}</div>`; s.classList.remove('hidden'); s.dataset.lock = lock ? '1' : ''; hideTip(); const f = s.querySelector('button'); if (f) f.focus({ preventScroll: true }); }
+function closeSheet() { const s = $('#sheet'); s.classList.add('hidden'); s.innerHTML = ''; s.dataset.lock = ''; }
+
+/* ── Screens and sheets: menu, civilization select, relics, settings, help, deck, results ── */
+function sigCards(civ) { return CIVS[civ].deck.split(/\s+/).filter(t => t[0] === '+').map(t => { const id = t.slice(1), U = UNIQUE[id]; return { uid: 0, name: U.name, icons: U.icons, text: U.text, civ, unique: id, steps: [] }; }); }
+function impCards(civ) { return IMPERIAL[civ].cards.map(d => ({ uid: 0, name: d.name, icons: d.icons, text: d.text, civ, imperial: true, steps: [] })); }
+function deckMix(civ) { const n = {}; for (const c of buildDeck({ nextUid: 1 }, civ)) for (const ch of c.icons) n[ch] = (n[ch] || 0) + 1; return Object.entries(n).sort((a, b) => b[1] - a[1]); }
+function statsLine() { const all = Object.values(SET.stats); const g = all.reduce((a, r) => a + r[1], 0), w = all.reduce((a, r) => a + r[0], 0); return g ? `You have won ${w} of ${g} matches.` : 'New here? Learn to play takes about five minutes.'; }
+function renderMenu() {
+  const count = mobile() ? 3 : 5, mid = (count - 1) / 2, picks = shuffled({ rs: (Date.now() & 0xffffff) >>> 0 }, CIV_ORDER).slice(0, count);
+  const fan = picks.map((c, i) => { const k = i - mid; return cardHTML(sigCards(c)[0], { style: `--x:${k * (mobile() ? 84 : 112)}px;--y:${Math.abs(k) * 16}px;--rot:${k * 7}deg;--d:${120 + i * 90}ms` }); }).join('');
+  $('#screen-menu').innerHTML = `<div class="menu"><h1 class="menu-title">Medieval Mayhem</h1><p class="menu-sub">Thirty-five civilizations, one deck each. Draw a card, play a card, outlast every rival.</p>
+<div class="menu-fan" aria-hidden="true">${fan}</div>
+<div class="menu-actions">${SET.tutorialDone ? '' : '<button class="btn" data-act="tutorial">Learn to play</button>'}<button class="btn${SET.tutorialDone ? '' : ' ghost'}" data-act="quick">Quick match</button><button class="btn ghost" data-act="choose">Choose a civilization</button>${SET.tutorialDone ? '<button class="btn ghost" data-act="tutorial">Replay the tutorial</button>' : ''}<button class="btn ghost" data-act="settings">Settings</button></div>
+<p class="menu-foot">${statsLine()}</p></div>`;
+}
+function renderSelect() {
+  const civ = UI.civ, C = CIVS[civ], hpOf = c => (UI.n === 2 ? CIVS[c].hp2 : CIVS[c].hp4), rec = SET.stats[civ];
+  const list = GROUPS.map(g => `<div class="region"><h3>${esc(g)}</h3><div class="civ-grid">${CIV_ORDER.filter(c => CIVS[c].group === g).map(c => `<button class="civ-tile civ-${c}${c === civ ? ' on' : ''}" data-civ="${c}" aria-pressed="${c === civ}">${crest(c, 36)}<span class="nm">${esc(CIVS[c].name)}</span><span class="hp" data-tip="Starting HP ${UI.n === 2 ? 'in a duel' : 'at a 3–4 player table'}">${hpOf(c)}</span></button>`).join('')}</div></div>`).join('');
+  $('#screen-select').innerHTML = `<div class="sel-top"><button class="icon-btn" data-act="menu" aria-label="Back to the menu">${ICON.back}</button><h2>Choose your civilization</h2><button class="btn ghost small" data-act="random-civ">Random</button></div>
+<div class="sel-list">${list}</div>
+<div class="sel-detail civ-${civ}"><div class="sd-hero">${crest(civ, 72)}<div><h2>${esc(C.name)}</h2><p>${esc(C.style)}</p></div></div>
+<div class="sd-body"><div class="sd-stats"><span><b class="kw k-hp">${C.hp2}</b> HP in a duel</span><span><b class="kw k-hp">${C.hp4}</b> HP at a bigger table</span>${rec ? `<span>Won <b>${rec[0]}</b> of ${rec[1]}</span>` : ''}</div>
+<h3>Signature cards</h3><div class="sd-cards">${sigCards(civ).map(c => cardHTML(c, { size: 'sm' })).join('')}</div>
+<h3>Imperial Age</h3><p>${kw(IMPERIAL[civ].bonus.text)}</p><div class="sd-cards">${impCards(civ).map(c => cardHTML(c, { size: 'sm' })).join('')}</div>
+<h3>The 24-card deck</h3><div class="mix">${deckMix(civ).map(([ch, k]) => `<span data-tip="${esc(SYM[ch].name)}: ${esc(SYM[ch].desc)}">${symBadge(ch, 22)}${k}</span>`).join('')}</div>
+<p class="muted">Card frames use ${MOTIF_NAMES[CIV_MOTIF[civ]]}.</p></div>
+<div class="sd-foot"><div class="seg" role="group" aria-label="Players">${[2, 3, 4].map(n => `<button class="${UI.n === n ? 'on' : ''}" data-n="${n}">${n === 2 ? 'Duel' : n + ' players'}</button>`).join('')}</div><div class="seg" role="group" aria-label="Difficulty">${['easy', 'normal', 'hard'].map(d => `<button class="${SET.difficulty === d ? 'on' : ''}" data-diff="${d}">${d[0].toUpperCase() + d.slice(1)}</button>`).join('')}</div><button class="btn" data-act="start">To battle</button></div></div>`;
+}
+function relicSheet() {
+  const P = S.players[0];
+  openSheet(`<h2>Choose a relic</h2><p class="muted">It stays with you all match. Three are drawn at random every time.</p><div class="relics">${P.relicOffer.map(id => `<button class="relic-pick" data-relic="${id}"><b>${esc(RELICS[id].name)}</b><span>${kw(RELICS[id].text)}</span></button>`).join('')}</div>
+<p class="muted">Facing ${S.players.slice(1).map(o => `${esc(CIVS[o.civ].name)} (${esc(RELICS[o.relic].name)})`).join(', ')}.</p>`, true);
+}
+function settingsSheet() {
+  const seg = (key, opts) => `<div class="seg">${opts.map(([v, l]) => `<button class="${SET[key] === v ? 'on' : ''}" data-set="${key}" data-val="${v}">${l}</button>`).join('')}</div>`;
+  openSheet(`<h2>Settings</h2>
+<div class="set-row"><div><b>Difficulty</b><span>How sharp the computer plays. Applies from the next match.</span></div>${seg('difficulty', [['easy', 'Easy'], ['normal', 'Normal'], ['hard', 'Hard']])}</div>
+<div class="set-row"><div><b>Animation speed</b><span>Max skips almost all motion.</span></div>${seg('speed', [['slow', '½×'], ['normal', '1×'], ['fast', '2×'], ['instant', 'Max']])}</div>
+<div class="set-row"><div><b>Sound</b><span>Card, hit and fanfare effects.</span></div>${seg('sound', [[true, 'On'], [false, 'Off']])}</div>
+<div class="set-row"><div><b>Tutorial</b><span>Show the guided first match again.</span></div><button class="btn ghost small" data-act="tutorial-reset">Reset</button></div>
+<div class="row"><button class="btn" data-act="close">Done</button></div>`);
+}
+function pauseSheet() {
+  openSheet(`<h2>Paused</h2><div class="row"><button class="btn" data-act="close">Resume</button><button class="btn ghost mob-only" data-act="deck">Your deck</button><button class="btn ghost" data-act="help">How to play</button><button class="btn ghost" data-act="settings">Settings</button><button class="btn ghost" data-act="concede">Leave match</button></div>`);
+}
+function helpSheet() {
+  openSheet(`<h2>How to play</h2>
+<p>Each player brings their civilization's own deck. On your turn you <b>draw 1 card and play 1</b>; with an empty hand you draw 2. A card does what its symbols say, from left to right. The last realm with HP left wins.</p>
+<p>Coloured words show the kind of effect: <b class="kw k-dmg">damage</b>, <b class="kw k-hp">HP</b>, <b class="kw k-gold">gold</b>, <b class="kw k-card">cards</b>, <b class="kw k-wall">walls</b>, <b class="kw k-play">play another card</b>, <b class="kw k-aoe">every opponent</b>, <b class="kw k-pierce">over the walls</b>, <b class="kw k-steal">steal</b>, <b class="kw k-raze">destroy</b>.</p>
+<div class="legend">${SYM_ORDER.split('').map(ch => `<div>${symBadge(ch, 28)}<b>${esc(SYM[ch].name)}</b><span>${kw(SYM[ch].desc)}</span></div>`).join('')}</div>
+<h3>Around the table</h3>
+<p><b>Walls</b> stand in front of your camp and take damage first. <b>Events</b> hit everyone each round, and the next one is always shown. The <b>Mercenary Market</b> sells one card per turn for gold; it joins your deck. Your <b>relic</b> is a small bonus picked at the start.</p>
+<p><b>Imperial Age</b>: at the start of your ${RULES.ageTurn}th turn a card arrives that adds your civilization's three Imperial cards to your deck, plus its own bonus. <b>Wonders</b> win the game if they survive three turns. The first time you fall to 3 HP or less you draw 2 cards, and from round 16 everyone loses 1 HP each round.</p>
+<h3>Controls</h3><p>Click a card to see what it does, click it again to play. For a card that needs a target, point at an enemy camp and click it. Keys: <b>1–9</b> pick a card, <b>Enter</b> play, <b>Tab</b> switch target, <b>Esc</b> cancel, <b>L</b> chronicle, <b>S</b> speed.</p>
+<div class="row"><button class="btn" data-act="close">Close</button></div>`);
+}
+function deckSheet(which) {
+  const P = S.players[0], list = which === 'deck' ? P.deck : P.discard, n = {};
+  for (const c of list) { const k = c.name + '|' + typeOf(c); n[k] = (n[k] || 0) + 1; }
+  const rows = Object.entries(n).sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0])).map(([k, v]) => { const [name, type] = k.split('|'); return `<div><span>${esc(name)}${type !== 'Common' ? ` <span class="muted">(${type})</span>` : ''}</span><b>${v}</b></div>`; }).join('');
+  openSheet(`<h2>${which === 'deck' ? 'Your deck' : 'Your discard pile'}</h2><p class="muted">${which === 'deck' ? `${P.deck.length} cards left to draw, shown by name, not in draw order. When it runs out your discard pile is shuffled back in and you lose 1 HP.` : `${P.discard.length} cards played or lost so far.`}</p><div class="decklist">${rows || '<p class="muted">Empty.</p>'}</div><div class="row"><button class="btn" data-act="close">Close</button></div>`);
+}
+function resultsSheet() {
+  const me = S.players[0], W = S.winner != null && S.winner >= 0 ? S.players[S.winner] : null, win = S.winner === 0;
+  const why = S.wonderWin ? 'by completing a wonder' : S.timeUp ? 'with the most HP after 40 rounds' : 'as the last realm standing';
+  openSheet(`<div class="civ-${(W || me).civ}" style="text-align:center"><div style="display:flex;justify-content:center">${crest((W || me).civ, 84)}</div>
+<h2>${win ? 'Victory' : me.alive ? 'Defeat' : 'You were defeated'}</h2><p>${W ? `${W.id === 0 ? 'You win' : esc(CIVS[W.civ].name) + ' win'} ${why}.` : `Still standing: ${S.players.filter(p => p.alive).map(p => esc(CIVS[p.civ].name)).join(', ')}.`}</p>
+<div class="sd-stats" style="justify-content:center"><span>Damage dealt <b>${me.stats.dmg}</b></span><span>Cards played <b>${me.stats.played}</b></span><span>Mercenaries <b>${me.stats.bought}</b></span><span>Rounds <b>${S.round}</b></span></div>
+<div class="row center"><button class="btn" data-act="again">Play again</button><button class="btn ghost" data-act="choose">Choose another civilization</button><button class="btn ghost" data-act="menu">Main menu</button></div></div>`, true);
+}
+function mobileSheet(which) { openSheet((which === 'events' ? `<h2>Events</h2>${eventsHTML()}` : `<div id="market-sheet">${marketHTML()}</div>`) + '<div class="row"><button class="btn" data-act="close">Close</button></div>'); }
+
+/* ── Learn to play: a real duel with a coach that lights up one part of the table at a time.
+   show: when the step appears ('now' or a game moment); until: 'next' (button) or the action that completes it. ── */
+const TUTORIAL = [
+  { show: 'now', until: 'next', target: '#opps .camp', title: 'Welcome to the war table', text: 'You lead the Franks against the Japanese. Each turn you draw 1 card and play 1. Bring their HP to 0 to win.' },
+  { show: 'now', until: 'next', target: '#hand', title: 'Your hand', text: 'A card does what its symbols say, left to right. The coloured words tell you the kind of effect: damage, HP, gold, cards, walls.' },
+  { show: 'now', until: 'select', target: '#hand', title: 'Pick a card', text: 'Click any card to see what it would do. Nothing happens until you confirm.' },
+  { show: 'now', until: 'play', target: '#stage-card', title: 'See before you play', text: 'The tags above the camps show the result in advance. Click the same card again to play it.' },
+  { show: 'turn', until: 'next', target: '#me .camp', title: 'Your camp', text: 'The ring is your HP. Walls you build stand next to it and take damage before your HP does.' },
+  { show: 'now', until: 'next', target: '#events', title: 'Events', text: 'Each round an event hits everyone, and the next one is always shown, so you can plan for it.', wide: true },
+  { show: 'now', until: 'next', target: '#market', title: 'Mercenaries', text: 'Gold hires one mercenary per turn. The card goes straight to your hand and joins your deck.', wide: true },
+  { show: 'agecard', until: 'next', target: '#hand', title: 'The Imperial Age', text: 'Turn 7 brings this card. Playing it adds your civilization\'s three Imperial cards to your deck, plus a bonus.' },
+  { show: 'now', until: 'next', target: '#table', title: 'That is the whole game', text: 'Outlast the Japanese to finish the lesson. Every other civilization is waiting in Choose a civilization.' },
+];
+function startTutorial() { UI.tutorial = { i: 0, live: false }; coachShow(); }
+function coachShow() {
+  const T = UI.tutorial; if (!T) return;
+  let st = TUTORIAL[T.i];
+  while (st && st.wide && mobile()) { T.i++; st = TUTORIAL[T.i]; }
+  if (!st) return endTutorial();
+  if (st.show !== 'now' && !T.live) { $('#coach').classList.add('hidden'); return; }
+  const el = document.querySelector(st.target); if (!el) { $('#coach').classList.add('hidden'); return; }
+  const r = el.getBoundingClientRect(), pad = 8, bw = Math.min(360, innerWidth - 24);
+  const below = r.bottom + 190 < innerHeight, bx = Math.min(Math.max(12, r.left + r.width / 2 - bw / 2), innerWidth - bw - 12);
+  const by = st.target === '#table' ? Math.max(12, r.top + 12) : below ? r.bottom + pad + 10 : Math.max(12, r.top - pad - 180);
+  $('#coach').innerHTML = `<div class="spot" style="left:${r.left - pad}px;top:${r.top - pad}px;width:${r.width + pad * 2}px;height:${r.height + pad * 2}px"></div>
+<div class="bubble" style="left:${bx}px;top:${by}px"><h4>${esc(st.title)}</h4><p>${kw(st.text)}</p><div class="row"><span class="step">Step ${T.i + 1} of ${TUTORIAL.length}</span><span>${st.until === 'next' ? '<button class="btn small" data-act="coach-next">Next</button>' : '<span class="step">Your move</span>'} <button class="btn ghost small" data-act="coach-skip">Skip lesson</button></span></div></div>`;
+  $('#coach').classList.remove('hidden'); T.shown = true;
+}
+function coachEvent(name) {
+  const T = UI.tutorial; if (!T) return; const st = TUTORIAL[T.i]; if (!st) return;
+  if (!T.shown && st.show === name) { T.live = true; return setTimeout(coachShow, D(300) + 120); }
+  if (T.shown && st.until === name) coachNext();
+}
+function coachNext() { const T = UI.tutorial; if (!T) return; T.i++; T.shown = false; T.live = false; $('#coach').classList.add('hidden'); setTimeout(coachShow, 140); }
+function endTutorial() { UI.tutorial = null; $('#coach').classList.add('hidden'); SET.tutorialDone = true; saveSettings(); }
+addEventListener('resize', () => { if (UI.tutorial && UI.tutorial.shown) coachShow(); });
+
+/* ── Controller: screens, match flow with motion, input ── */
+const STORE = 'mayhem.v2';
+const SET = (() => { const d = { difficulty: 'normal', speed: 'normal', sound: true, tutorialDone: false, n: 2, civ: 'franks', stats: {} }; try { return Object.assign(d, JSON.parse(localStorage.getItem(STORE) || '{}')); } catch (e) { return d; } })();
+function saveSettings() { try { localStorage.setItem(STORE, JSON.stringify(SET)); } catch (e) { } }
+let S = null;
+UI.n = SET.n; UI.civ = CIVS[SET.civ] ? SET.civ : 'franks'; SFX.on = SET.sound;
+function go(screen) {
+  UI.screen = screen; closeSheet(); clearAim(); hideTip();
+  for (const id of ['menu', 'select', 'match']) $('#screen-' + id).classList.toggle('hidden', id !== screen);
+  if (screen === 'menu') renderMenu(); else if (screen === 'select') renderSelect();
+}
+function newMatch(o = {}) {
+  const civ = o.civ || UI.civ, n = o.n || UI.n, seed = o.tutorial ? 20261005 : (Date.now() ^ Math.floor(Math.random() * 1e9)) >>> 0;
+  const others = o.opps || shuffled({ rs: seed }, CIV_ORDER.filter(c => c !== civ)).slice(0, n - 1);
+  S = newGame({ seed, civs: [civ, ...others], ai: [false, ...others.map(() => true)] });
+  for (const P of S.players.slice(1)) { P.skill = o.tutorial ? 'easy' : SET.difficulty; chooseRelic(S, P.id, aiRelic(S, P)); }
+  Object.assign(UI, { sel: null, hoverT: null, last: null, view: null, busy: false, finished: false, round: 1, drawer: false, tutorial: null, lastSetup: o });
+  $('#chronicle').classList.remove('open');
+  go('match'); renderMatch();
+  if (o.tutorial) { chooseRelic(S, 0, 'jade'); beginMatch(); startTutorial(); } else relicSheet();
+}
+function beginMatch() { closeSheet(); startGame(S); renderMatch(); banner('Round 1', 'You go first; every opponent starts with 1 extra card'); SFX.play('turn'); }
+
+/* the human */
+function onHandCard(uid) {
+  if (!isMyTurn()) return;
+  const c = S.players[0].hand.find(x => x.uid === uid); if (!c) return;
+  if (UI.sel !== uid) { UI.sel = uid; UI.hoverT = null; clearAim(); SFX.play('click'); renderMatch(); coachEvent('select'); return; }
+  const opps = opponents(S, S.players[0]);
+  if (needsTarget(c)) { if (opps.length === 1) return humanPlay(uid, opps[0].id); if (UI.hoverT != null) return humanPlay(uid, UI.hoverT); UI.sel = null; clearAim(); return renderMatch(); }
+  humanPlay(uid, null);
+}
+function aiming() { const c = selCard(); return !!(c && isMyTurn() && needsTarget(c) && opponents(S, S.players[0]).length > 1); }
+function onCamp(pid, touch) {
+  if (!aiming() || pid === 0 || !S.players[pid].alive) return;
+  if (touch && UI.hoverT !== pid) return setAimTarget(pid);
+  humanPlay(UI.sel, pid);
+}
+function setAimTarget(pid) {
+  if (UI.hoverT === pid) return;
+  UI.hoverT = pid;
+  $$('.camp.targetable').forEach(el => el.classList.toggle('hot', +el.dataset.pid === pid));
+  renderStage(); renderPreview();
+}
+async function humanPlay(uid, tid) {
+  const el = document.querySelector(`#hand .card[data-uid="${uid}"]`), from = el ? el.getBoundingClientRect() : null;
+  UI.busy = true; clearAim(); UI.view = S.players.map(p => p.hp);
+  const ev = playCard(S, 0, uid, tid);
+  if (!ev) { UI.busy = false; UI.view = null; return renderMatch(); }
+  coachEvent('play');
+  await animatePlay(ev, 0, from);
+  UI.busy = false;
+  if (S.winner != null || !S.players[0].alive) return finish();
+  if (S.plays > 0 && S.players[0].hand.length) return renderMatch();
+  nextTurn();
+}
+async function humanBuy(i) {
+  if (!isMyTurn()) return;
+  const card = S.market[i], el = document.querySelector(`.mk-item[data-mi="${i}"]`), from = el ? el.getBoundingClientRect() : null;
+  if (!card || !buy(S, 0, i)) return;
+  closeSheet(); UI.busy = true; SFX.play('coin'); renderMatch();
+  await animateBuy(card, 0, from);
+  UI.busy = false; renderMatch(); coachEvent('buy');
+}
+/* turns */
+async function nextTurn() {
+  UI.busy = true; UI.sel = null; renderMatch(); await wait(D(380));
+  const round = S.round; endTurn(S);
+  if (S.round !== round && S.winner == null) await roundStart();
+  if (S.winner != null || !S.players[0].alive) return finish();
+  if (S.turn === 0) return myTurnStart();
+  return aiTurn();
+}
+async function roundStart() {
+  UI.flipEvent = true; renderMatch(); SFX.play('quill');
+  const E = EVENT_BY[S.event]; banner(`Round ${S.round}`, `${E.name}: ${E.text}`, 2000);
+  await wait(D(1100));
+}
+function myTurnStart() {
+  UI.busy = false; UI.sel = null; renderMatch(); SFX.play('turn');
+  const me = S.players[0];
+  coachEvent('turn');
+  if (me.ageGiven && !me.aged && me.turns === RULES.ageTurn) { banner('The Imperial Age', 'Your Imperial Age card has arrived', 2000); coachEvent('agecard'); }
+  if (!me.hand.length) nextTurn();
+}
+async function aiTurn() {
+  const pid = S.turn, P = S.players[pid];
+  renderMatch(); await wait(D(500));
+  for (let guard = 0; guard < 30 && S.winner == null && S.turn === pid; guard++) {
+    const a = aiAct(S, pid);
+    if (a.kind === 'buy') {
+      const card = S.market[a.idx], el = document.querySelector(`.mk-item[data-mi="${a.idx}"]`), from = el ? el.getBoundingClientRect() : document.getElementById('stage').getBoundingClientRect();
+      if (buy(S, pid, a.idx)) { SFX.play('coin'); renderMatch(); await animateBuy(card, pid, from); renderMatch(); await wait(D(200)); continue; }
+    }
+    if (a.kind === 'play') {
+      const camp = document.getElementById('camp-' + pid), from = camp ? camp.getBoundingClientRect() : null;
+      UI.view = S.players.map(p => p.hp);
+      const ev = playCard(S, pid, a.uid, a.target);
+      if (ev) { await animatePlay(ev, pid, from); if (S.winner != null || !S.players[0].alive) return finish(); if (S.plays > 0 && P.hand.length && P.alive) continue; }
+      else UI.view = null;
+    }
+    break;
+  }
+  if (S.winner != null || !S.players[0].alive) return finish();
+  return nextTurn();
+}
+function finish() {
+  if (UI.finished) return; UI.finished = true; UI.busy = true; renderMatch();
+  const me = S.players[0], win = S.winner === 0, r = SET.stats[me.civ] || [0, 0];
+  if (!UI.lastSetup.tutorial) { r[1]++; if (win) r[0]++; SET.stats[me.civ] = r; }
+  if (UI.tutorial) endTutorial();
+  saveSettings();
+  setTimeout(() => { SFX.play(win ? 'win' : 'lose'); resultsSheet(); }, D(700) + 400);
+}
+function toggleChronicle(force) { UI.drawer = force != null ? force : !UI.drawer; $('#chronicle').classList.toggle('open', UI.drawer); if (UI.drawer) renderChronicle(); }
+function cycleSpeed() { SET.speed = SPEED_ORDER[(SPEED_ORDER.indexOf(SET.speed) + 1) % SPEED_ORDER.length]; saveSettings(); if (S) renderTopbar(); }
+
+/* input */
+document.addEventListener('click', e => {
+  SFX.init();
+  const act = e.target.closest('[data-act]'), touch = e.pointerType === 'touch' || matchMedia('(pointer: coarse)').matches;
+  if (act) return action(act.dataset.act, act);
+  const t = e.target.closest('.civ-tile, [data-n], [data-diff], [data-set], .relic-pick, .mk-item, #hand .card, .camp');
+  if (!t) { if (e.target.id === 'sheet' && !$('#sheet').dataset.lock) closeSheet(); return; }
+  if (t.classList.contains('civ-tile')) { UI.civ = t.dataset.civ; SET.civ = UI.civ; saveSettings(); SFX.play('click'); const y = $('.sel-list').scrollTop; renderSelect(); $('.sel-list').scrollTop = y; return; }
+  if (t.dataset.n) { UI.n = +t.dataset.n; SET.n = UI.n; saveSettings(); const y = $('.sel-list').scrollTop; renderSelect(); $('.sel-list').scrollTop = y; return; }
+  if (t.dataset.diff) { SET.difficulty = t.dataset.diff; saveSettings(); const y = $('.sel-list').scrollTop; renderSelect(); $('.sel-list').scrollTop = y; return; }
+  if (t.dataset.set) { const v = t.dataset.val; SET[t.dataset.set] = v === 'true' ? true : v === 'false' ? false : v; SFX.on = SET.sound; saveSettings(); settingsSheet(); if (S && UI.screen === 'match') renderTopbar(); return; }
+  if (t.classList.contains('relic-pick')) { chooseRelic(S, 0, t.dataset.relic); return beginMatch(); }
+  if (t.classList.contains('mk-item')) { if (t.classList.contains('can')) humanBuy(+t.dataset.mi); return; }
+  if (t.matches('#hand .card')) return onHandCard(+t.dataset.uid);
+  if (t.classList.contains('camp')) return onCamp(+t.dataset.pid, touch);
+});
+function action(a, el) {
+  switch (a) {
+    case 'tutorial': return newMatch({ civ: 'franks', n: 2, opps: ['japanese'], tutorial: true });
+    case 'quick': return newMatch({ civ: UI.civ, n: UI.n });
+    case 'choose': return go('select');
+    case 'menu': return go('menu');
+    case 'start': return newMatch({ civ: UI.civ, n: UI.n });
+    case 'again': return newMatch(UI.lastSetup.tutorial ? { civ: UI.civ, n: UI.n } : UI.lastSetup);
+    case 'random-civ': UI.civ = CIV_ORDER[Math.floor(Math.random() * CIV_ORDER.length)]; SET.civ = UI.civ; saveSettings(); return renderSelect();
+    case 'settings': return settingsSheet();
+    case 'tutorial-reset': SET.tutorialDone = false; saveSettings(); return settingsSheet();
+    case 'pause': return pauseSheet();
+    case 'help': return helpSheet();
+    case 'close': closeSheet(); return UI.screen === 'menu' ? renderMenu() : null;
+    case 'concede': UI.tutorial = null; $('#coach').classList.add('hidden'); return go('menu');
+    case 'chronicle': return toggleChronicle();
+    case 'speed': return cycleSpeed();
+    case 'deck': return deckSheet('deck');
+    case 'discard': return deckSheet('discard');
+    case 'events': return mobileSheet('events');
+    case 'market': return mobileSheet('market');
+    case 'coach-next': return coachNext();
+    case 'coach-skip': return endTutorial();
+  }
+}
+document.addEventListener('pointermove', e => {
+  if (!aiming() || e.pointerType === 'touch') return;
+  const camp = e.target.closest('.camp.targetable');
+  setAimTarget(camp ? +camp.dataset.pid : null);
+  const cardEl = document.querySelector(`#hand .card[data-uid="${UI.sel}"]`);
+  if (camp) { const r = camp.getBoundingClientRect(); aim(cardEl && cardEl.getBoundingClientRect(), r.left + r.width / 2, r.top + r.height / 2); }
+  else aim(cardEl && cardEl.getBoundingClientRect(), e.clientX, e.clientY);
+});
+document.addEventListener('keydown', e => {
+  if (UI.screen !== 'match' || !S) return;
+  const sheetOpen = !$('#sheet').classList.contains('hidden');
+  if (e.key === 'Escape') { if (sheetOpen) { if (!$('#sheet').dataset.lock) closeSheet(); return; } if (UI.sel != null) { UI.sel = null; UI.hoverT = null; clearAim(); return renderMatch(); } return pauseSheet(); }
+  if (sheetOpen) return;
+  const k = e.key.toLowerCase();
+  if (/^[1-9]$/.test(e.key)) { const c = S.players[0].hand[+e.key - 1]; if (c) onHandCard(c.uid); }
+  else if (e.key === 'Enter' && UI.sel != null) { e.preventDefault(); onHandCard(UI.sel); }
+  else if (e.key === 'Tab' && aiming()) { e.preventDefault(); const o = opponents(S, S.players[0]).map(p => p.id), i = o.indexOf(UI.hoverT); UI.hoverT = null; setAimTarget(o[(i + 1) % o.length]); clearAim(); }
+  else if (k === 'l') toggleChronicle();
+  else if (k === 's') cycleSpeed();
+  else if (k === 'h') helpSheet();
+});
+addEventListener('resize', () => { if (UI.screen === 'match' && S && !UI.busy) renderMatch(); });
+installCivStyles(); installTableArt(); go('menu');
+
+</script>
+</body>
+</html>

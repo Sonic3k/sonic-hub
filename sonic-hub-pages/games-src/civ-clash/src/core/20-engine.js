@@ -290,3 +290,13 @@ function ageUp(S, A, ev) {
   for (const s of I.bonus.steps || []) resolveStep(S, A, { ...s }, null, ev);
   log(S, 'aged', { pid: A.id });
 }
+
+/* ── Preview: play the card on a copy of the match and report what would change for each player ── */
+function previewPlay(S, pid, uid, tid) {
+  const C = structuredClone(S); C.quiet = true;
+  const snap = p => ({ hp: p.hp, walls: wallTotal(p), wonder: (wonderOf(p) || { dur: 0 }).dur, gold: p.gold, hand: p.hand.length, alive: p.alive, structs: p.structs.length });
+  const before = C.players.map(snap);
+  const ev = playCard(C, pid, uid, tid);
+  if (!ev) return null;
+  return { target: ev.target, players: C.players.map((p, i) => { const a = snap(p), b = before[i]; return { hp: a.hp - b.hp, walls: a.walls - b.walls, wonder: a.wonder - b.wonder, gold: a.gold - b.gold, hand: a.hand - b.hand, structs: a.structs - b.structs, dies: b.alive && !a.alive }; }) };
+}
