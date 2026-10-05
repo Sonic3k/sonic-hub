@@ -13,7 +13,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
-/** Bulk chat importer. Always requires the admin token (see AdminTokenFilter). */
+/** Bulk chat importer. Needs the admin token only when ADMIN_TOKEN is set (see AdminTokenFilter). */
 @RestController
 @RequestMapping("/api/import")
 public class ImportController {

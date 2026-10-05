@@ -9,10 +9,7 @@ import org.springframework.web.context.request.ServletRequestAttributes;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 
-/**
- * Single shared admin token (ADMIN_TOKEN). When it is not set the API behaves as before
- * (everything open) except the importer, which refuses to run without it.
- */
+/** Optional shared admin token (ADMIN_TOKEN). When it is not set the API is open, as before. */
 @Component
 public class AdminAuth {
 

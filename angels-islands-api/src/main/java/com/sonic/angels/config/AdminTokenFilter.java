@@ -10,6 +10,7 @@ import java.io.IOException;
 import java.util.regex.Pattern;
 
 /**
+ * Off unless ADMIN_TOKEN is set (then the API is open, importer included).
  * With ADMIN_TOKEN set: every write needs the token, and so do reads of private data
  * (chat archives, memory, contacts, companion, journal problems, imports).
  * Photos, collections, tags, persons and journal notes stay public for sonic-hub-web.
@@ -35,14 +36,9 @@ public class AdminTokenFilter extends OncePerRequestFilter {
         String method = req.getMethod();
         if ("OPTIONS".equalsIgnoreCase(method)) { chain.doFilter(req, res); return; }
 
-        String path = path(req);
-        boolean importPath = path.equals("/api/import") || path.startsWith("/api/import/");
+        if (!auth.isConfigured()) { chain.doFilter(req, res); return; }
 
-        if (!auth.isConfigured()) {
-            if (importPath) { deny(res, 503, "ADMIN_TOKEN is not set on the server"); return; }
-            chain.doFilter(req, res);
-            return;
-        }
+        String path = path(req);
 
         if (auth.matches(auth.tokenFrom(req))) {
             req.setAttribute(AdminAuth.REQUEST_ATTR, Boolean.TRUE);
