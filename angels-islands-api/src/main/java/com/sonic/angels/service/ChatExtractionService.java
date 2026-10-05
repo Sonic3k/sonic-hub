@@ -55,8 +55,8 @@ public class ChatExtractionService {
 
     @Async
     public void extractAsync(UUID archiveId) {
-        ChatArchive archive = archiveRepo.findWithPerson(archiveId).orElse(null);
-        if (archive == null) { log.warn("Extraction: archive {} not found", archiveId); return; }
+        ChatArchive archive = archiveRepo.findWithPerson(archiveId).orElse(null);   // inner join: other chats (no person) never extract
+        if (archive == null) { log.warn("Extraction: archive {} not found or not linked to a person", archiveId); return; }
 
         archive.setExtractionStatus(ChatArchive.ExtractionStatus.EXTRACTING);
         archiveRepo.save(archive);

@@ -48,6 +48,18 @@ public class ImportController {
         return importService.finalizeArchive(archiveId, body);
     }
 
+    @DeleteMapping("/archives/{archiveId}")
+    public Map<String, Object> deleteArchive(@PathVariable UUID archiveId) {
+        return Map.of("archiveId", archiveId, "deletedMessages", importService.deleteArchive(archiveId));
+    }
+
+    /** Writings by the angels and other friends, kept as journal notes with their author. */
+    @PostMapping("/writings")
+    public List<ImportDto.WritingResult> writings(@RequestBody List<ImportDto.WritingIn> body,
+                                                  @RequestParam(defaultValue = "false") boolean overwrite) {
+        return importService.importWritings(body, overwrite);
+    }
+
     @PostMapping("/raw/check")
     public List<ImportDto.RawCheckResult> rawCheck(@RequestBody List<ImportDto.RawFileRef> body) {
         return importService.checkRaw(body);

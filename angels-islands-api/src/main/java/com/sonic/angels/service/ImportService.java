@@ -49,6 +49,7 @@ public class ImportService {
     private final ChatAttachmentRepository attachmentRepo;
     private final ImportSourceRepository sourceRepo;
     private final AppSettingRepository settingRepo;
+    private final JournalNoteRepository noteRepo;
     private final StorageService storage;
     private final TransactionTemplate newTx;
     private volatile String rawFolderCache;
@@ -56,7 +57,7 @@ public class ImportService {
     public ImportService(PersonRepository personRepo, CollectionRepository collectionRepo,
                          ChatArchiveRepository archiveRepo, ChatMessageRepository messageRepo,
                          ChatAttachmentRepository attachmentRepo, ImportSourceRepository sourceRepo,
-                         AppSettingRepository settingRepo, StorageService storage,
+                         AppSettingRepository settingRepo, JournalNoteRepository noteRepo, StorageService storage,
                          PlatformTransactionManager txManager) {
         this.personRepo = personRepo;
         this.collectionRepo = collectionRepo;
@@ -65,6 +66,7 @@ public class ImportService {
         this.attachmentRepo = attachmentRepo;
         this.sourceRepo = sourceRepo;
         this.settingRepo = settingRepo;
+        this.noteRepo = noteRepo;
         this.storage = storage;
         this.newTx = new TransactionTemplate(txManager);
         this.newTx.setPropagationBehavior(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
@@ -171,17 +173,28 @@ public class ImportService {
 
     // ── Archives ─────────────────────────────────────────────────────────────
 
+    /**
+     * An angel's archive maps by (person, externalKey). An other chat (no person) maps by
+     * (counterpartKey, externalKey), so it is found again even after it was linked to someone by hand.
+     */
     @Transactional
     public ImportDto.ArchiveResult upsertArchive(ImportDto.ArchiveUpsert req) {
-        Person p = personRepo.findBySlug(nz(req.getPersonSlug()).trim())
-            .orElseThrow(() -> new ImportException(404, "unknown person slug: " + req.getPersonSlug()));
+        String slug = trim(req.getPersonSlug());
+        String cpKey = trim(req.getCounterpartKey());
+        Person p = null;
+        if (slug != null) {
+            p = personRepo.findBySlug(slug).orElseThrow(() -> new ImportException(404, "unknown person slug: " + req.getPersonSlug()));
+        } else if (cpKey == null || cpKey.length() > 80 || blank(req.getCounterpart())) {
+            throw new ImportException(400, "personSlug, or counterpartKey (<= 80) + counterpart, is required");
+        }
         String key = trim(req.getExternalKey());
         if (key == null || key.length() > 200) throw new ImportException(400, "externalKey missing or too long");
         ChatArchive.Platform platform;
         try { platform = ChatArchive.Platform.valueOf(nz(req.getPlatform()).trim().toUpperCase(Locale.ROOT)); }
         catch (IllegalArgumentException e) { throw new ImportException(400, "unknown platform " + req.getPlatform()); }
 
-        ChatArchive a = archiveRepo.findByPersonIdAndExternalKey(p.getId(), key).orElse(null);
+        ChatArchive a = p != null ? archiveRepo.findByPersonIdAndExternalKey(p.getId(), key).orElse(null)
+                                  : archiveRepo.findFirstByCounterpartKeyAndExternalKey(cpKey, key).orElse(null);
         boolean created = a == null;
         if (created) {
             a = new ChatArchive();
@@ -189,6 +202,10 @@ public class ImportService {
             a.setExternalKey(key);
             a.setMessageCount(0);
             a.setExtractionStatus(ChatArchive.ExtractionStatus.PENDING);
+        }
+        if (p == null) {
+            a.setCounterpartKey(cpKey);
+            if (created || blank(a.getCounterpart())) a.setCounterpart(cut(req.getCounterpart().trim(), 200));  // a rename by hand wins
         }
         a.setPlatform(platform);
         if (!blank(req.getTitle())) a.setTitle(cut(req.getTitle().trim(), 255));
@@ -200,6 +217,79 @@ public class ImportService {
         r.setCreated(created);
         r.setStoredMessages(created ? 0 : messageRepo.countByChatArchiveId(a.getId()));
         return r;
+    }
+
+    /** Remove an imported archive the importer no longer produces (e.g. a thread that got a new key). */
+    @Transactional
+    public int deleteArchive(UUID archiveId) {
+        ChatArchive a = archiveRepo.findById(archiveId)
+            .orElseThrow(() -> new ImportException(404, "archive not found: " + archiveId));
+        if (a.getExternalKey() == null) throw new ImportException(400, "only imported archives can be deleted here");
+        int n = messageRepo.deleteByArchiveId(archiveId);
+        archiveRepo.delete(a);
+        return n;
+    }
+
+    // ── Writings ─────────────────────────────────────────────────────────────
+
+    /**
+     * Journal notes written by someone else (an angel's story, a friend's Facebook note), keyed by externalKey.
+     * A note that is already here is left as it is (hand edits win) unless overwrite is set.
+     */
+    @Transactional
+    public List<ImportDto.WritingResult> importWritings(List<ImportDto.WritingIn> items, boolean overwrite) {
+        if (items == null) items = List.of();
+        if (items.size() > 500) throw new ImportException(413, "at most 500 writings per request");
+        List<ImportDto.WritingResult> out = new ArrayList<>();
+        for (ImportDto.WritingIn w : items) {
+            String key = trim(w.getExternalKey());
+            if (key == null || key.length() > 200) throw new ImportException(400, "writing externalKey missing or too long");
+            if (blank(w.getContent())) throw new ImportException(400, "writing " + key + " has no content");
+            ImportDto.WritingResult r = new ImportDto.WritingResult();
+            r.setExternalKey(key);
+            Person author = null;
+            String slug = trim(w.getAuthorSlug());
+            if (slug != null) {
+                author = personRepo.findBySlug(slug).orElse(null);
+                if (author == null) r.getWarnings().add("unknown author slug " + slug + " (kept as a name only)");
+            }
+            LocalDateTime written = blank(w.getWrittenAt()) ? null : parseTimestamp(w.getWrittenAt());
+            String authorName = cut(trim(w.getAuthorName()), 200);
+            String title = cut(trim(w.getTitle()), 255);
+            String source = cut(trim(w.getSource()), 500);
+            String mood = cut(trim(w.getMood()), 255);
+
+            JournalNote n = noteRepo.findByExternalKey(key).orElse(null);
+            String action;
+            if (n == null) {
+                n = new JournalNote();
+                n.setExternalKey(key);
+                n.setKind(JournalNote.Kind.JOURNAL);
+                n.setStatus(JournalNote.Status.DRAFT);
+                n.setTitle(title); n.setContent(w.getContent()); n.setMood(mood);
+                n.setAuthorPerson(author); n.setAuthorName(authorName); n.setWrittenAt(written); n.setSource(source);
+                action = "created";
+            } else if (overwrite) {
+                boolean same = Objects.equals(n.getTitle(), title) && Objects.equals(n.getContent(), w.getContent())
+                    && Objects.equals(n.getAuthorName(), authorName) && Objects.equals(n.getWrittenAt(), written)
+                    && Objects.equals(n.getSource(), source)
+                    && Objects.equals(n.getAuthorPerson() == null ? null : n.getAuthorPerson().getId(), author == null ? null : author.getId());
+                n.setTitle(title); n.setContent(w.getContent());
+                if (mood != null) n.setMood(mood);
+                n.setAuthorPerson(author); n.setAuthorName(authorName); n.setWrittenAt(written); n.setSource(source);
+                action = same ? "unchanged" : "updated";
+            } else if (n.getAuthorPerson() == null && author != null && Objects.equals(n.getAuthorName(), authorName)) {
+                n.setAuthorPerson(author);   // imported before that angel existed: link now, nothing else changes
+                action = "linked";
+            } else {
+                action = "kept";      // it was imported with every field set: what differs now was changed by hand
+            }
+            if (!action.equals("kept")) n = noteRepo.save(n);
+            r.setNoteId(n.getId());
+            r.setAction(action);
+            out.add(r);
+        }
+        return out;
     }
 
     /** Insert new messages, update changed ones, leave identical ones alone. */
@@ -384,7 +474,9 @@ public class ImportService {
     public ImportDto.Status status() {
         ImportDto.Status s = new ImportDto.Status();
         s.setStorageConfigured(storage.isConfigured());
-        List<ChatArchive> archives = archiveRepo.findAllOfImportedPersons();
+        // an other chat linked to a person by hand is still the others step's archive, not the person's
+        List<ChatArchive> archives = archiveRepo.findAllOfImportedPersons().stream()
+            .filter(a -> a.getCounterpartKey() == null).toList();
         Map<UUID, Long> stored = new HashMap<>();
         List<UUID> ids = archives.stream().map(ChatArchive::getId).toList();
         for (int i = 0; i < ids.size(); i += 500)
@@ -409,6 +501,31 @@ public class ImportService {
             s.getPersons().add(ps);
         }
         s.getPersons().sort(Comparator.comparing(ImportDto.PersonStatus::getSlug));
+        List<ChatArchive> others = archiveRepo.findOthers().stream().filter(a -> a.getCounterpartKey() != null).toList();
+        Map<UUID, Long> storedOthers = new HashMap<>();
+        List<UUID> oids = others.stream().map(ChatArchive::getId).toList();
+        for (int i = 0; i < oids.size(); i += 500)
+            for (Object[] row : messageRepo.countByArchiveIds(oids.subList(i, Math.min(oids.size(), i + 500))))
+                storedOthers.put((UUID) row[0], ((Number) row[1]).longValue());
+        Map<String, ImportDto.OtherStatus> byKey = new TreeMap<>();
+        for (ChatArchive a : others) {
+            ImportDto.OtherStatus os = byKey.computeIfAbsent(a.getCounterpartKey(), k -> {
+                ImportDto.OtherStatus x = new ImportDto.OtherStatus();
+                x.setCounterpartKey(k);
+                return x;
+            });
+            if (os.getCounterpart() == null) os.setCounterpart(a.getCounterpart());
+            ImportDto.ArchiveStatus as = new ImportDto.ArchiveStatus();
+            as.setId(a.getId());
+            as.setExternalKey(a.getExternalKey());
+            as.setPlatform(a.getPlatform().name());
+            as.setTitle(a.getTitle());
+            as.setMessageCount(a.getMessageCount());
+            as.setStoredMessages(storedOthers.getOrDefault(a.getId(), 0L));
+            os.getArchives().add(as);
+        }
+        s.getOthers().addAll(byKey.values());
+        s.setWritings(noteRepo.countByExternalKeyIsNotNull());
         for (Object[] row : sourceRepo.totalsByLabel()) {
             ImportDto.RawLabelStatus r = new ImportDto.RawLabelStatus();
             r.setLabel((String) row[0]);

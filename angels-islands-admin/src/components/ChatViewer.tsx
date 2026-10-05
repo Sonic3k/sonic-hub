@@ -11,6 +11,13 @@ interface ChatMsg {
   content: string
   timestamp?: string
   seq?: number
+  kind?: string
+  timePrecision?: 'SECOND' | 'MINUTE' | 'GROUP' | 'DAY'
+}
+
+/* What an empty bubble held (other chats keep text only, so the photo itself is not there). */
+const KIND_LABEL: Record<string, string> = {
+  PHOTO: 'photo', VIDEO: 'video', AUDIO: 'voice message', FILE: 'file', GIF: 'GIF', STICKER: 'sticker',
 }
 interface MsgPage { content: ChatMsg[]; number: number; last: boolean; totalElements: number }
 
@@ -29,8 +36,9 @@ function timeLabel(iso?: string) {
   return asUtc(iso).toLocaleTimeString('vi-VN', { timeZone: TZ, hour: '2-digit', minute: '2-digit' })
 }
 
+/** personId: an angel's archive; leave it out for an other chat (not linked to anyone). */
 export default function ChatViewer({ personId, archive, personName, onClose }: {
-  personId: string
+  personId?: string
   archive: ChatArchiveResponse
   personName: string
   onClose: () => void
@@ -41,7 +49,7 @@ export default function ChatViewer({ personId, archive, personName, onClose }: {
   const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading } = useInfiniteQuery({
     queryKey: ['chat-messages', archive.id, activeQ],
     queryFn: ({ pageParam = 0 }) =>
-      api.get<MsgPage>(`/api/persons/${personId}/chat-archives/${archive.id}/messages`, {
+      api.get<MsgPage>(personId ? `/api/persons/${personId}/chat-archives/${archive.id}/messages` : `/api/chat-archives/${archive.id}/messages`, {
         params: { page: pageParam, size: 200, q: activeQ || undefined },
       }).then(r => r.data),
     initialPageParam: 0,
@@ -112,10 +120,14 @@ export default function ChatViewer({ personId, archive, personName, onClose }: {
                       ? 'bg-pink-500 text-white rounded-br-md'
                       : 'bg-white border border-slate-100 text-slate-700 rounded-bl-md'
                   }`}>
-                    {m.content}
-                    <span className={`block text-[9px] mt-0.5 text-right ${isSelf ? 'text-pink-100/80' : 'text-slate-300'}`}>
-                      {timeLabel(m.timestamp)}
-                    </span>
+                    {m.content || (m.kind && KIND_LABEL[m.kind]
+                      ? <span className={`italic ${isSelf ? 'text-pink-100' : 'text-slate-400'}`}>({KIND_LABEL[m.kind]})</span>
+                      : null)}
+                    {m.timePrecision !== 'DAY' && (
+                      <span className={`block text-[9px] mt-0.5 text-right ${isSelf ? 'text-pink-100/80' : 'text-slate-300'}`}>
+                        {timeLabel(m.timestamp)}
+                      </span>
+                    )}
                   </div>
                 </div>
               </div>

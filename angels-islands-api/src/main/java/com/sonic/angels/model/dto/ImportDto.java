@@ -53,10 +53,14 @@ public class ImportDto {
 
     // ── Archives & messages ──────────────────────────────────────────────────
 
+    /** personSlug for an angel's archive; or, for an other chat (linked to nobody), counterpartKey + counterpart. */
     public static class ArchiveUpsert {
         private String personSlug; private String externalKey; private String platform; private String title;
+        private String counterpartKey; private String counterpart;
         private List<String> sources = new ArrayList<>();
         public String getPersonSlug() { return personSlug; } public void setPersonSlug(String v) { this.personSlug = v; }
+        public String getCounterpartKey() { return counterpartKey; } public void setCounterpartKey(String v) { this.counterpartKey = v; }
+        public String getCounterpart() { return counterpart; } public void setCounterpart(String v) { this.counterpart = v; }
         public String getExternalKey() { return externalKey; } public void setExternalKey(String v) { this.externalKey = v; }
         public String getPlatform() { return platform; } public void setPlatform(String v) { this.platform = v; }
         public String getTitle() { return title; } public void setTitle(String v) { this.title = v; }
@@ -165,6 +169,44 @@ public class ImportDto {
         public int getLinkedAttachments() { return linkedAttachments; } public void setLinkedAttachments(int v) { this.linkedAttachments = v; }
     }
 
+    // ── Writings (journal notes written by someone else) ─────────────────────
+
+    public static class WritingIn {
+        /** Stable id, e.g. "writing:huyen-dieu:story-by-me/gio". */
+        private String externalKey;
+        /** Angel who wrote it (Person.slug); null for someone who is not in Persons. */
+        private String authorSlug;
+        /** Name as shown ("Huyền Diệu", "Nguyễn Phương Linh"). */
+        private String authorName;
+        private String title;
+        /** HTML. */
+        private String content;
+        /** ISO-8601 UTC, when it was written (or the file was last saved). */
+        private String writtenAt;
+        /** Where it came from ("Mushroom Hill/Huyen Dieu/.../Gio.doc", "Facebook note"). */
+        private String source;
+        private String mood;
+        public String getExternalKey() { return externalKey; } public void setExternalKey(String v) { this.externalKey = v; }
+        public String getAuthorSlug() { return authorSlug; } public void setAuthorSlug(String v) { this.authorSlug = v; }
+        public String getAuthorName() { return authorName; } public void setAuthorName(String v) { this.authorName = v; }
+        public String getTitle() { return title; } public void setTitle(String v) { this.title = v; }
+        public String getContent() { return content; } public void setContent(String v) { this.content = v; }
+        public String getWrittenAt() { return writtenAt; } public void setWrittenAt(String v) { this.writtenAt = v; }
+        public String getSource() { return source; } public void setSource(String v) { this.source = v; }
+        public String getMood() { return mood; } public void setMood(String v) { this.mood = v; }
+    }
+
+    public static class WritingResult {
+        private String externalKey; private UUID noteId;
+        /** created | updated | linked (author angel found now) | kept (exists, hand edits left alone) | unchanged */
+        private String action;
+        private List<String> warnings = new ArrayList<>();
+        public String getExternalKey() { return externalKey; } public void setExternalKey(String v) { this.externalKey = v; }
+        public UUID getNoteId() { return noteId; } public void setNoteId(UUID v) { this.noteId = v; }
+        public String getAction() { return action; } public void setAction(String v) { this.action = v; }
+        public List<String> getWarnings() { return warnings; } public void setWarnings(List<String> v) { this.warnings = v; }
+    }
+
     // ── Status ───────────────────────────────────────────────────────────────
 
     public static class ArchiveStatus {
@@ -187,6 +229,15 @@ public class ImportDto {
         public List<ArchiveStatus> getArchives() { return archives; } public void setArchives(List<ArchiveStatus> v) { this.archives = v; }
     }
 
+    /** Imported other chats of one counterpart. */
+    public static class OtherStatus {
+        private String counterpartKey; private String counterpart;
+        private List<ArchiveStatus> archives = new ArrayList<>();
+        public String getCounterpartKey() { return counterpartKey; } public void setCounterpartKey(String v) { this.counterpartKey = v; }
+        public String getCounterpart() { return counterpart; } public void setCounterpart(String v) { this.counterpart = v; }
+        public List<ArchiveStatus> getArchives() { return archives; } public void setArchives(List<ArchiveStatus> v) { this.archives = v; }
+    }
+
     public static class RawLabelStatus {
         private String label; private long files; private long bytes;
         public String getLabel() { return label; } public void setLabel(String v) { this.label = v; }
@@ -197,10 +248,15 @@ public class ImportDto {
     public static class Status {
         private boolean storageConfigured;
         private List<PersonStatus> persons = new ArrayList<>();
+        private List<OtherStatus> others = new ArrayList<>();
+        private long writings;
         private List<RawLabelStatus> raw = new ArrayList<>();
         private long attachments; private long attachmentsWithFile; private long attachmentsStored;
         public boolean isStorageConfigured() { return storageConfigured; } public void setStorageConfigured(boolean v) { this.storageConfigured = v; }
         public List<PersonStatus> getPersons() { return persons; } public void setPersons(List<PersonStatus> v) { this.persons = v; }
+        public List<OtherStatus> getOthers() { return others; } public void setOthers(List<OtherStatus> v) { this.others = v; }
+        /** Journal notes that came from the importer (writings by the angels and others). */
+        public long getWritings() { return writings; } public void setWritings(long v) { this.writings = v; }
         public List<RawLabelStatus> getRaw() { return raw; } public void setRaw(List<RawLabelStatus> v) { this.raw = v; }
         public long getAttachments() { return attachments; } public void setAttachments(long v) { this.attachments = v; }
         public long getAttachmentsWithFile() { return attachmentsWithFile; } public void setAttachmentsWithFile(long v) { this.attachmentsWithFile = v; }

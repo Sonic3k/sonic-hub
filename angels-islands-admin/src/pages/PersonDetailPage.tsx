@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import { ArrowLeft, Brain, MessageSquare, User, Pencil, Save, X, Plus, Trash2, Upload, Image as ImageIcon, FolderOpen, FolderPlus, UserMinus, Bot } from 'lucide-react'
+import { ArrowLeft, Brain, MessageSquare, User, Pencil, Save, X, Plus, Trash2, Upload, Image as ImageIcon, FolderOpen, FolderPlus, UserMinus, Bot, Feather } from 'lucide-react'
 import { Button, Input, Textarea, Modal, Select } from '../components/ui'
 import { usePerson, useUpdatePerson } from '../hooks/usePersons'
 import { useFacts, useEpisodes, useChapters, useTraits, useArchives } from '../hooks/useMemory'
@@ -14,6 +14,8 @@ import { Lightbox, MediaItem } from '../components/media'
 import CollectionPicker from '../components/CollectionPicker'
 import ChatViewer from '../components/ChatViewer'
 import CompanionTab from '../components/CompanionTab'
+import NoteBody from '../components/NoteBody'
+import { journalApi } from '../api/journal'
 
 const REL_LABELS: Record<RelationshipType, string> = {
   CRUSH: '💗 Crush', GIRLFRIEND: '❤️ Girlfriend', FRIEND: '🤝 Friend',
@@ -22,7 +24,7 @@ const REL_LABELS: Record<RelationshipType, string> = {
 
 const CONTACT_PLATFORMS: ContactPlatform[] = ['YAHOO', 'FACEBOOK', 'ZALO', 'TELEGRAM', 'SMS', 'PHONE', 'BLOG', 'INSTAGRAM', 'TIKTOK', 'OTHER']
 
-type Tab = 'info' | 'photos' | 'memory' | 'chat' | 'companion'
+type Tab = 'info' | 'photos' | 'memory' | 'chat' | 'writings' | 'companion'
 
 export default function PersonDetailPage() {
   const { id } = useParams<{ id: string }>()
@@ -115,6 +117,7 @@ export default function PersonDetailPage() {
     { key: 'photos', label: 'Photos', icon: ImageIcon },
     { key: 'memory', label: 'Memory', icon: Brain },
     { key: 'chat', label: 'Chat Archives', icon: MessageSquare },
+    { key: 'writings', label: 'Writings', icon: Feather },
     { key: 'companion', label: 'Companion', icon: Bot },
   ]
 
@@ -164,6 +167,8 @@ export default function PersonDetailPage() {
       </div>
 
       {tab === 'photos' && <PersonPhotosTab personId={pid} />}
+
+      {tab === 'writings' && <PersonWritingsTab personId={pid} />}
 
       {tab === 'companion' && <CompanionTab personId={pid} personName={person.displayName || person.name} />}
 
@@ -438,6 +443,41 @@ export default function PersonDetailPage() {
   )
 }
 
+
+// ── Writings tab: journal notes this person wrote (stories, notes, blog posts) ─
+function PersonWritingsTab({ personId }: { personId: string }) {
+  const q = useInfiniteQuery({
+    queryKey: ['journal-notes', 'author', personId],
+    queryFn: ({ pageParam = 0 }) => journalApi.notes({ page: pageParam, size: 20, authorId: personId }),
+    getNextPageParam: last => (last.last ? undefined : last.number + 1),
+    initialPageParam: 0,
+  })
+  const notes = (q.data?.pages || []).flatMap(p => p.content)
+  const total = q.data?.pages?.[0]?.totalElements ?? 0
+  return (
+    <div className="space-y-3 max-w-3xl">
+      <p className="text-xs text-slate-400">{q.isLoading ? 'Loading...' : `${total} writing(s) — they also show in Journal, by author.`}</p>
+      {!q.isLoading && notes.length === 0 && <p className="text-sm text-slate-400">Nothing written by them yet.</p>}
+      {notes.map(n => (
+        <article key={n.id} className="bg-white rounded-2xl border border-slate-100 p-4 md:p-5">
+          <div className="flex items-center gap-2 mb-1">
+            <time className="text-[11px] text-slate-400 font-mono">{String(n.writtenAt || n.createdAt || '').slice(0, 10)}</time>
+            {n.mood && <span className="text-[11px] px-2 py-0.5 rounded-full bg-violet-50 text-violet-500">{n.mood}</span>}
+          </div>
+          {n.title && <h3 className="text-sm font-semibold text-slate-800 mb-1">{n.title}</h3>}
+          <NoteBody html={n.content} />
+          {n.source && <p className="mt-2 text-[10px] text-slate-300 truncate" title={n.source}>{n.source}</p>}
+        </article>
+      ))}
+      {q.hasNextPage && (
+        <button onClick={() => q.fetchNextPage()} disabled={q.isFetchingNextPage}
+          className="w-full py-2.5 text-xs text-slate-400 hover:text-pink-500 transition-colors">
+          {q.isFetchingNextPage ? 'Loading...' : 'Load more'}
+        </button>
+      )}
+    </div>
+  )
+}
 
 // ── Photos tab: collections + all media of this person ──────────────────────
 

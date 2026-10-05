@@ -10,6 +10,8 @@ import java.util.List;
 @Entity
 @Table(name = "chat_archives", uniqueConstraints = {
     @UniqueConstraint(name = "uk_chat_archive_person_ext", columnNames = {"person_id", "external_key"})
+}, indexes = {
+    @Index(name = "idx_chat_archive_counterpart", columnList = "counterpart_key")
 })
 public class ChatArchive extends BaseEntity {
 
@@ -17,10 +19,19 @@ public class ChatArchive extends BaseEntity {
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
+    /** Null for "other chats": conversations kept for reading that are not linked to anyone in Persons. */
     @JsonIgnore
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "person_id", nullable = false)
+    @JoinColumn(name = "person_id")
     private Person person;
+
+    /** Who an other-chat was with, as shown ("Thu Hà Trần"). */
+    @Column(name = "counterpart", length = 200)
+    private String counterpart;
+
+    /** Groups one counterpart's archives across platforms ("thu-ha-tran"); stays set if the archive is later linked to a person. */
+    @Column(name = "counterpart_key", length = 80)
+    private String counterpartKey;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "platform", nullable = false)
@@ -68,6 +79,10 @@ public class ChatArchive extends BaseEntity {
     public void setId(UUID id) { this.id = id; }
     public Person getPerson() { return person; }
     public void setPerson(Person person) { this.person = person; }
+    public String getCounterpart() { return counterpart; }
+    public void setCounterpart(String counterpart) { this.counterpart = counterpart; }
+    public String getCounterpartKey() { return counterpartKey; }
+    public void setCounterpartKey(String counterpartKey) { this.counterpartKey = counterpartKey; }
     public Platform getPlatform() { return platform; }
     public void setPlatform(Platform platform) { this.platform = platform; }
     public String getTitle() { return title; }

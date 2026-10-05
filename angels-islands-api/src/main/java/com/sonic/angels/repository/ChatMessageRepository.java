@@ -37,6 +37,11 @@ public interface ChatMessageRepository extends JpaRepository<ChatMessage, UUID> 
     @Query("DELETE FROM ChatMessage m WHERE m.id IN :ids")
     int deleteByIds(java.util.Collection<UUID> ids);
 
+    /** Bulk delete; their attachments go with them (ON DELETE CASCADE). */
+    @org.springframework.data.jpa.repository.Modifying
+    @Query("DELETE FROM ChatMessage m WHERE m.chatArchive.id = :archiveId")
+    int deleteByArchiveId(UUID archiveId);
+
     Page<ChatMessage> findByChatArchiveIdAndContentContainingIgnoreCase(UUID archiveId, String q, Pageable pageable);
     long countByChatArchiveId(UUID archiveId);
 

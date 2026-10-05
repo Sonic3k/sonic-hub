@@ -10,6 +10,12 @@ public class ChatArchiveDto {
         private Integer messageCount; private LocalDateTime dateFrom; private LocalDateTime dateTo;
         private ChatArchive.ExtractionStatus extractionStatus; private LocalDateTime createdAt;
         private String externalKey; private String sources;
+        /** Other chats: who it was with and the group key; personId is set once an archive is linked to someone. */
+        private String counterpart; private String counterpartKey; private UUID personId; private String personName;
+        public String getCounterpart() { return counterpart; } public void setCounterpart(String v) { this.counterpart = v; }
+        public String getCounterpartKey() { return counterpartKey; } public void setCounterpartKey(String v) { this.counterpartKey = v; }
+        public UUID getPersonId() { return personId; } public void setPersonId(UUID v) { this.personId = v; }
+        public String getPersonName() { return personName; } public void setPersonName(String v) { this.personName = v; }
         public String getExternalKey() { return externalKey; } public void setExternalKey(String v) { this.externalKey = v; }
         public String getSources() { return sources; } public void setSources(String v) { this.sources = v; }
         public UUID getId() { return id; } public void setId(UUID v) { this.id = v; }
@@ -20,6 +26,14 @@ public class ChatArchiveDto {
         public LocalDateTime getDateTo() { return dateTo; } public void setDateTo(LocalDateTime v) { this.dateTo = v; }
         public ChatArchive.ExtractionStatus getExtractionStatus() { return extractionStatus; } public void setExtractionStatus(ChatArchive.ExtractionStatus v) { this.extractionStatus = v; }
         public LocalDateTime getCreatedAt() { return createdAt; } public void setCreatedAt(LocalDateTime v) { this.createdAt = v; }
+    }
+
+    /** PATCH /api/chat-archives/{id}: link an other-chat to a person (or unlink it) and/or rename its counterpart. */
+    public static class ArchivePatch {
+        private UUID personId; private Boolean unlink; private String counterpart;
+        public UUID getPersonId() { return personId; } public void setPersonId(UUID v) { this.personId = v; }
+        public Boolean getUnlink() { return unlink; } public void setUnlink(Boolean v) { this.unlink = v; }
+        public String getCounterpart() { return counterpart; } public void setCounterpart(String v) { this.counterpart = v; }
     }
 
     public static class ImportResult {

@@ -13,6 +13,15 @@ public class JournalDto {
         // article face — all optional; absent fields are left untouched on update
         private String kind; private String slug; private String excerpt; private UUID coverMediaId;
         private Boolean clearCover; private String category; private String status; private LocalDateTime publishedAt;
+        // written by someone else — all optional; absent fields are left untouched on update
+        private UUID authorPersonId; private String authorName; private Boolean clearAuthor;
+        private LocalDateTime writtenAt; private Boolean clearWrittenAt; private String source;
+        public UUID getAuthorPersonId() { return authorPersonId; } public void setAuthorPersonId(UUID v) { this.authorPersonId = v; }
+        public String getAuthorName() { return authorName; } public void setAuthorName(String v) { this.authorName = v; }
+        public Boolean getClearAuthor() { return clearAuthor; } public void setClearAuthor(Boolean v) { this.clearAuthor = v; }
+        public LocalDateTime getWrittenAt() { return writtenAt; } public void setWrittenAt(LocalDateTime v) { this.writtenAt = v; }
+        public Boolean getClearWrittenAt() { return clearWrittenAt; } public void setClearWrittenAt(Boolean v) { this.clearWrittenAt = v; }
+        public String getSource() { return source; } public void setSource(String v) { this.source = v; }
         public String getTitle() { return title; } public void setTitle(String v) { this.title = v; }
         public String getContent() { return content; } public void setContent(String v) { this.content = v; }
         public String getMood() { return mood; } public void setMood(String v) { this.mood = v; }
@@ -34,6 +43,15 @@ public class JournalDto {
         private Set<TagDto.Response> tags; private List<ProblemResponse> problems;
         private String kind; private String slug; private String excerpt; private MediaFileDto.Response coverMedia;
         private String category; private String status; private LocalDateTime publishedAt;
+        private UUID authorPersonId; private String authorPersonName; private String authorName;
+        private LocalDateTime writtenAt; private String source; private String externalKey;
+        public UUID getAuthorPersonId() { return authorPersonId; } public void setAuthorPersonId(UUID v) { this.authorPersonId = v; }
+        /** Display name of authorPerson. */
+        public String getAuthorPersonName() { return authorPersonName; } public void setAuthorPersonName(String v) { this.authorPersonName = v; }
+        public String getAuthorName() { return authorName; } public void setAuthorName(String v) { this.authorName = v; }
+        public LocalDateTime getWrittenAt() { return writtenAt; } public void setWrittenAt(LocalDateTime v) { this.writtenAt = v; }
+        public String getSource() { return source; } public void setSource(String v) { this.source = v; }
+        public String getExternalKey() { return externalKey; } public void setExternalKey(String v) { this.externalKey = v; }
         public String getKind() { return kind; } public void setKind(String v) { this.kind = v; }
         public String getSlug() { return slug; } public void setSlug(String v) { this.slug = v; }
         public String getExcerpt() { return excerpt; } public void setExcerpt(String v) { this.excerpt = v; }
@@ -49,6 +67,13 @@ public class JournalDto {
         public LocalDateTime getUpdatedAt() { return updatedAt; } public void setUpdatedAt(LocalDateTime v) { this.updatedAt = v; }
         public Set<TagDto.Response> getTags() { return tags; } public void setTags(Set<TagDto.Response> v) { this.tags = v; }
         public List<ProblemResponse> getProblems() { return problems; } public void setProblems(List<ProblemResponse> v) { this.problems = v; }
+    }
+
+    public static class AuthorCount {
+        private UUID personId; private String name; private long notes;
+        public UUID getPersonId() { return personId; } public void setPersonId(UUID v) { this.personId = v; }
+        public String getName() { return name; } public void setName(String v) { this.name = v; }
+        public long getNotes() { return notes; } public void setNotes(long v) { this.notes = v; }
     }
 
     public static class ProblemRequest {
