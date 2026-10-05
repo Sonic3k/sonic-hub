@@ -29,9 +29,11 @@ public class ChatImportService {
     // "11:52:27 PM hypersonic3k: hi em" / "23:52:27 hypersonic3k: hi em"
     private static final Pattern MESSAGE_EN = Pattern.compile("^(\\d{1,2}:\\d{2}:\\d{2} [AP]M) ([^:\\n]+?):[ \\t]?(.*)$");
     private static final Pattern MESSAGE_VI = Pattern.compile("^(\\d{1,2}:\\d{2}:\\d{2}) ([^:\\n]+?):[ \\t]?(.*)$");
-    // Yahoo emoticon HTML fragment: ' alt=':\">' src="https://s.yimg.com/..." ...>
+    // Yahoo emoticons survive as an <img> tail, in two attribute orders:
+    //   ' alt=':">' src="https://s.yimg.com/..." border=0 data-emoticon='true'>
+    //   " border=0 alt="8->" src="http://mail.yimg.com/..." data-emoticon="true">
     private static final Pattern EMOTICON_FRAGMENT = Pattern.compile(
-        "['\"]?\\s*alt=['\"]([^'\"]+)['\"]\\s+src=['\"]https://s\\.yimg\\.com/[^'\"]+['\"]\\s*border=0\\s*data-emoticon=['\"]true['\"]\\s*>");
+        "['\"]?\\s*(?:border=0\\s+)?alt=(['\"])(.*?)\\1\\s+src=['\"][^'\"]*['\"]\\s*(?:border=0\\s*)?data-emoticon=['\"]true['\"]\\s*>");
     // Standard HTML tags
     private static final Pattern HTML_TAG = Pattern.compile("<[^>]+>");
 
@@ -196,7 +198,7 @@ public class ChatImportService {
             for (int i = 0; i < s.lines.size(); i++) {
                 String[] l = s.lines.get(i);
                 String content = HTML_TAG.matcher(cleanEmoticons(l[2])).replaceAll("");
-                content = org.springframework.web.util.HtmlUtils.htmlUnescape(content).replaceAll("[ \\t]+", " ").trim();
+                content = org.springframework.web.util.HtmlUtils.htmlUnescape(content).replaceAll("[ \\t]+", " ").strip();
                 LocalDateTime utc = stamps[i].atZone(LOCAL_ZONE).withZoneSameInstant(java.time.ZoneOffset.UTC).toLocalDateTime();
                 msgs.add(new ParsedMessage(l[1], content, utc, side(l[1], selfIdentifiers, personIdentifiers)));
             }
@@ -231,7 +233,7 @@ public class ChatImportService {
 
     private String cleanEmoticons(String content) {
         // Replace Yahoo emoticon HTML fragments with their alt text (emoticon code)
-        return EMOTICON_FRAGMENT.matcher(content).replaceAll(" $1 ");
+        return EMOTICON_FRAGMENT.matcher(content).replaceAll(" $2 ");
     }
 
     private Set<String> getPersonIdentifiers(Person person) {
