@@ -14,8 +14,38 @@ public class CollectionController {
 
     private final CollectionService collectionService;
 
-    public CollectionController(CollectionService collectionService) {
+    private final com.sonic.angels.repository.CollectionRepository collectionRepository;
+
+    public CollectionController(CollectionService collectionService, com.sonic.angels.repository.CollectionRepository collectionRepository) {
         this.collectionService = collectionService;
+        this.collectionRepository = collectionRepository;
+    }
+
+    /** How many photos in the album (and sub-albums when deep) carry each tag. */
+    @GetMapping("/{id}/tag-stats")
+    public java.util.Map<String, Object> tagStats(@PathVariable UUID id, @RequestParam(defaultValue = "true") boolean deep) {
+        long total = collectionRepository.countMediaInTree(id, deep);
+        List<java.util.Map<String, Object>> tags = collectionRepository.tagCountsInTree(id, deep).stream()
+            .map(r -> java.util.Map.<String, Object>of("tagId", r[0], "count", ((Number) r[1]).longValue())).toList();
+        return java.util.Map.of("total", total, "tags", tags);
+    }
+
+    /** Tag every photo in the album; the album itself carries the tag too. */
+    @PostMapping("/{id}/media-tags/{tagId}")
+    @org.springframework.transaction.annotation.Transactional
+    public java.util.Map<String, Object> tagAllMedia(@PathVariable UUID id, @PathVariable UUID tagId, @RequestParam(defaultValue = "true") boolean deep) {
+        int n = collectionRepository.tagAllMedia(id, deep, tagId);
+        collectionRepository.addAlbumTag(id, tagId);
+        return java.util.Map.of("affected", n);
+    }
+
+    /** Remove the tag from every photo in the album, and from the album. */
+    @DeleteMapping("/{id}/media-tags/{tagId}")
+    @org.springframework.transaction.annotation.Transactional
+    public java.util.Map<String, Object> untagAllMedia(@PathVariable UUID id, @PathVariable UUID tagId, @RequestParam(defaultValue = "true") boolean deep) {
+        int n = collectionRepository.untagAllMedia(id, deep, tagId);
+        collectionRepository.removeAlbumTag(id, tagId);
+        return java.util.Map.of("affected", n);
     }
 
     @GetMapping

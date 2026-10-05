@@ -27,6 +27,14 @@ public class TagController {
         return mapper.toTagResponse(tagService.save(t));
     }
 
+    @GetMapping("/stats")
+    public List<java.util.Map<String, Object>> stats() { return tagService.stats(); }
+
+    @PutMapping("/{id}")
+    public TagDto.Response update(@PathVariable UUID id, @RequestBody TagDto.Request req) {
+        return mapper.toTagResponse(tagService.update(id, req.getName(), req.getColor()));
+    }
+
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(@PathVariable UUID id) { tagService.delete(id); return ResponseEntity.noContent().build(); }
 }
