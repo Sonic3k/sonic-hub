@@ -27,7 +27,7 @@ export default function Justified({ items, rowHeight = 236, gap = 12, onOpen }: 
       {rows.map((r, ri) => (
         <div key={ri} className="jg-row" style={{ display: 'flex', gap, marginBottom: ri === rows.length - 1 ? 0 : gap }}>
           {r.items.map(({ m, i }) => (
-            <figure key={m.id} className="jg-item cosmo" style={{ height: r.h, width: r.h * ratio(m), flex: '0 0 auto' }} onClick={() => onOpen(i)}>
+            <figure key={m.id} className="jg-item zoom" style={{ height: r.h, width: r.h * ratio(m), flex: '0 0 auto' }} onClick={() => onOpen(i)}>
               <img src={cdn(m.thumbnailUrl ?? m.cdnUrl, r.h * ratio(m))} alt={m.caption ?? ''} loading="lazy" decoding="async" />
             </figure>
           ))}

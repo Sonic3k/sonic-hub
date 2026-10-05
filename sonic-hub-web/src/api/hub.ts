@@ -1,5 +1,5 @@
 import { get } from './client';
-import type { Collection, MediaFile, Note, Paged, Person, Tag, TimelineBucket } from '../types';
+import type { ChatArchive, ChatMessage, Collection, MediaFile, Note, Paged, Person, Tag, TimelineBucket } from '../types';
 import { isoDay, addDays } from '../lib/date';
 
 export interface Search {
@@ -17,8 +17,28 @@ export const hub = {
     const root = await get<Collection>('/collections/root', { inclChildrenCount: true, inclMediaCount: true });
     return get<Collection[]>(`/collections/${root.id}/children`, { inclChildrenCount: true, inclMediaCount: true });
   },
-  notes: (p: { kind?: string; status?: string; tagId?: string; q?: string; page?: number; size?: number }) => get<Paged<Note>>('/journal/notes', p),
+  notes: (p: { kind?: string; status?: string; category?: string; tagId?: string; q?: string; page?: number; size?: number }) => get<Paged<Note>>('/journal/notes', p),
+  noteBySlug: (slug: string) => get<Note>(`/journal/notes/slug/${encodeURIComponent(slug)}`),
+  noteById: (id: string) => get<Note>(`/journal/notes/${id}`),
+  categories: () => get<string[]>('/journal/categories'),
+  archives: (personId: string) => get<ChatArchive[]>(`/persons/${personId}/chat-archives`),
+  messages: (personId: string, archiveId: string, page: number, size: number) => get<Paged<ChatMessage>>(`/persons/${personId}/chat-archives/${archiveId}/messages`, { page, size }),
+  total: async (p: Search) => (await hub.search({ ...p, size: 1 })).totalElements,
 };
+
+/** One real line from an old conversation: a random archive, a random spot, the longest of a few lines there. */
+export async function randomLine(people: Person[]): Promise<{ text: string; who: string; platform: string; at?: string | null } | null> {
+  for (const p of [...people].sort(() => Math.random() - .5).slice(0, 3)) {
+    const archives = (await hub.archives(p.id).catch(() => [] as ChatArchive[])).filter(a => a.messageCount > 0);
+    if (!archives.length) continue;
+    const a = archives[Math.floor(Math.random() * archives.length)], size = 6;
+    const page = Math.floor(Math.random() * Math.max(1, Math.floor(a.messageCount / size)));
+    const msgs = (await hub.messages(p.id, a.id, page, size).catch(() => null))?.content ?? [];
+    const best = msgs.filter(m => m.content && m.content.length > 8 && m.content.length < 220).sort((x, y) => y.content.length - x.content.length)[0];
+    if (best) return { text: best.content, who: best.sender, platform: a.platform, at: best.timestamp };
+  }
+  return null;
+}
 
 /* ── Composite reads the cosmos needs ─────────────────────────────────────── */
 

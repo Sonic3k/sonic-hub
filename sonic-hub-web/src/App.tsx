@@ -1,7 +1,10 @@
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import Portal from './pages/Portal';
-import Arrival from './pages/Arrival';
+import Shell from './components/Shell';
+import Home from './pages/Home';
+import Journal from './pages/Journal';
+import Post from './pages/Post';
+import Soon from './pages/Soon';
 
 const qc = new QueryClient({ defaultOptions: { queries: { retry: 1, refetchOnWindowFocus: false } } });
 
@@ -10,16 +13,17 @@ export default function App() {
     <QueryClientProvider client={qc}>
       <BrowserRouter>
         <Routes>
-          <Route path="/" element={<Portal />} />
-          <Route path="/r/:room" element={<Portal />} />
-          <Route path="/t/:tag" element={<Portal />} />
-          <Route path="/photos" element={<Arrival app="photos" />} />
-          <Route path="/journal" element={<Arrival app="journal" />} />
-          <Route path="/journal/:slug" element={<Arrival app="journal" />} />
-          <Route path="/angels" element={<Arrival app="angels" />} />
-          <Route path="/games" element={<Arrival app="games" />} />
-          <Route path="/football" element={<Arrival app="football" />} />
-          <Route path="*" element={<Navigate to="/" replace />} />
+          <Route element={<Shell />}>
+            <Route index element={<Home />} />
+            <Route path="journal" element={<Journal />} />
+            <Route path="journal/id/:id" element={<Post />} />
+            <Route path="journal/:slug" element={<Post />} />
+            <Route path="photos" element={<Soon title="Ảnh" line="Kho ảnh đầy đủ — album, dòng thời gian, bản đồ — đang được thiết kế ở bước tiếp theo." />} />
+            <Route path="angels" element={<Soon title="Angels" line="Mỗi người một câu chuyện — đang được thiết kế ở bước tiếp theo." />} />
+            <Route path="games" element={<Soon title="Game" line="Kệ game — đang được thiết kế ở bước tiếp theo." />} />
+            <Route path="football" element={<Soon title="Bóng đá" line="Chưa cấu hình địa chỉ trang Fantasy (VITE_FOOTBALL_URL)." />} />
+            <Route path="*" element={<Navigate to="/" replace />} />
+          </Route>
         </Routes>
       </BrowserRouter>
     </QueryClientProvider>
