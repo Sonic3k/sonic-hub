@@ -56,7 +56,7 @@ export default function Home() {
       <section className="lanes">
         <div>
           <div className="block">
-            <div className="hd"><h2>Tháng {month}, {year}</h2><span>{fmt(monthCount)} ảnh</span><Link to="/photos" style={{ ['--c' as string]: 'var(--photo)' }}>Mở trong kho ảnh</Link></div>
+            <div className="hd"><h2>Tháng {month}, {year}</h2><span>{fmt(monthCount)} ảnh</span><Link to={`/photos?year=${year}&month=${month}`} style={{ ['--c' as string]: 'var(--photo)' }}>Mở trong kho ảnh</Link></div>
             {monthQ.data?.content.length ? <Justified items={monthQ.data.content} rowHeight={168} gap={8} onOpen={(i) => setViewer({ items: monthQ.data!.content, i })} /> : <div className="card empty">Tháng này chưa có ảnh.</div>}
           </div>
           {featured && <div className="block">
@@ -75,15 +75,15 @@ export default function Home() {
         </aside>
       </section>
 
-      {!!albums.data?.length && <section><div className="hd"><h2>Album</h2><span>{albums.data.length} album</span><Link to="/photos" style={{ ['--c' as string]: 'var(--photo)' }}>Tất cả album</Link></div>
-        <div className="albums">{albums.data.slice(0, 6).map(a => <Link key={a.id} className="album" to={`/photos?album=${a.id}`}><div className="cov">{a.thumbnailUrl ? <img src={cdn(a.thumbnailUrl, 400)} alt="" /> : <div className="ph" style={{ width: '100%', height: '100%' }} />}</div><b>{a.name}</b><span>{fmt(a.mediaCount ?? 0)} ảnh</span></Link>)}</div></section>}
+      {!!albums.data?.length && <section><div className="hd"><h2>Album</h2><span>{albums.data.length} album</span><Link to="/photos/albums" style={{ ['--c' as string]: 'var(--photo)' }}>Tất cả album</Link></div>
+        <div className="albums">{albums.data.slice(0, 6).map(a => <Link key={a.id} className="album" to={`/photos/albums/${a.id}`}><div className="cov">{a.thumbnailUrl ? <img src={cdn(a.thumbnailUrl, 400)} alt="" /> : <div className="ph" style={{ width: '100%', height: '100%' }} />}</div><b>{a.name}</b><span>{fmt(a.mediaCount ?? 0)} ảnh</span></Link>)}</div></section>}
 
       <section className="duo">
         <div><div className="hd"><h2>Angels</h2><span>{(persons.data ?? []).filter(p => !p.isSelf).length} người</span><Link to="/angels" style={{ ['--c' as string]: 'var(--angels)' }}>Vào Angels</Link></div>
           <div className="people">{(persons.data ?? []).filter(p => !p.isSelf).sort((a, b) => Number(!!b.isFeatured) - Number(!!a.isFeatured)).slice(0, 6).map(p => (
             <Link key={p.id} className="person" to="/angels">{p.avatarUrl ? <img src={cdn(p.avatarUrl, 200)} alt="" /> : <span className="letter-ph">{nameOf(p).slice(0, 1)}</span>}<b>{nameOf(p)}</b><span>{p.period ?? ''}</span></Link>))}</div></div>
         {!!regions.data?.length && <div><div className="hd"><h2>Vùng</h2><span>theo tag</span></div>
-          <div className="regions">{regions.data.map(r => <Link key={r.id} className="region" to={`/photos?tag=${encodeURIComponent(r.name)}`} style={{ paddingLeft: 12 }}><span className="dot" style={{ width: 8, height: 8, borderRadius: '50%', background: r.color || 'var(--ink3)' }} />{r.name}<small>{fmt(r.count)}</small></Link>)}</div></div>}
+          <div className="regions">{regions.data.map(r => <Link key={r.id} className="region" to={`/tags/${encodeURIComponent(r.name)}`} style={{ paddingLeft: 12 }}><span className="dot" style={{ width: 8, height: 8, borderRadius: '50%', background: r.color || 'var(--ink3)' }} />{r.name}<small>{fmt(r.count)}</small></Link>)}</div></div>}
       </section>
       {viewer && <Viewer items={viewer.items} start={viewer.i} onClose={() => setViewer(null)} />}
     </div>

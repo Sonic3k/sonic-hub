@@ -12,6 +12,7 @@ export interface MediaFile {
   dateTaken?: string | null; effectiveDate?: string | null; latitude?: number | null; longitude?: number | null;
   displayedAddress?: string | null; timezone?: string | null; mediaSource?: string | null; fileExtension?: string | null;
   persons?: PersonRef[] | null; tags?: TagRef[] | null; takenBy?: PersonRef | null;
+  imageDetail?: { cameraMake?: string | null; cameraModel?: string | null; lensModel?: string | null; iso?: number | null; focalLength?: string | number | null; aperture?: string | number | null; shutterSpeed?: string | null } | null;
 }
 
 export interface Person {
@@ -36,3 +37,5 @@ export interface TimelineBucket { year: number; month: number; count: number }
 
 export interface ChatArchive { id: string; platform: string; title?: string | null; messageCount: number; dateFrom?: string | null; dateTo?: string | null }
 export interface ChatMessage { id: string; sender: string; content: string; timestamp?: string | null; seq?: number | null }
+
+export interface TagStats { id: string; name: string; color?: string | null; mediaCount: number; albumCount: number; noteCount: number }

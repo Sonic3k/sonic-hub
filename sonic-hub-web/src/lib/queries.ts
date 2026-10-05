@@ -7,7 +7,9 @@ const T = 10 * 60_000;
 export const useTimeline = () => useQuery({ queryKey: ['timeline'], queryFn: hub.timeline, staleTime: T });
 export const usePersons = () => useQuery({ queryKey: ['persons'], queryFn: hub.persons, staleTime: T });
 export const useAlbums = () => useQuery({ queryKey: ['albums'], queryFn: hub.albums, staleTime: T });
-export const useRegions = () => useQuery({ queryKey: ['regions'], queryFn: () => tagWorlds(8), staleTime: T });
+export const useRegions = (limit = 8) => useQuery({ queryKey: ['regions', limit], queryFn: () => tagWorlds(limit), staleTime: T });
+export const useTagStats = () => useQuery({ queryKey: ['tag-stats'], queryFn: hub.tagStats, staleTime: T });
+export const useAllAlbums = () => useQuery({ queryKey: ['albums-all'], queryFn: hub.allAlbums, staleTime: T });
 /** Everything written, newest first, drafts left out. */
 export const useNotes = () => useQuery({ queryKey: ['notes', 'all'], staleTime: T, queryFn: async () => (await hub.notes({ size: 300 })).content.filter(n => n.status !== 'DRAFT').sort((a, b) => noteDate(b).localeCompare(noteDate(a))) });
 export const useLibraryCounts = () => useQuery({ queryKey: ['library-counts'], staleTime: T, queryFn: async () => {

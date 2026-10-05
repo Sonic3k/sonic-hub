@@ -1,5 +1,5 @@
 import { get } from './client';
-import type { ChatArchive, ChatMessage, Collection, MediaFile, Note, Paged, Person, Tag, TimelineBucket } from '../types';
+import type { ChatArchive, ChatMessage, Collection, MediaFile, Note, Paged, Person, Tag, TagStats, TimelineBucket } from '../types';
 import { isoDay, addDays } from '../lib/date';
 
 export interface Search {
@@ -24,6 +24,11 @@ export const hub = {
   archives: (personId: string) => get<ChatArchive[]>(`/persons/${personId}/chat-archives`),
   messages: (personId: string, archiveId: string, page: number, size: number) => get<Paged<ChatMessage>>(`/persons/${personId}/chat-archives/${archiveId}/messages`, { page, size }),
   total: async (p: Search) => (await hub.search({ ...p, size: 1 })).totalElements,
+  tagStats: () => get<TagStats[]>('/tags/stats'),
+  allAlbums: () => get<Collection[]>('/collections/all', { inclMediaCount: true, inclChildrenCount: true, inclTags: true }),
+  albumMedia: (id: string, sortDir: 'asc' | 'desc' = 'asc') => get<MediaFile[]>(`/collections/${id}/media`, { sort: 'effectiveDate', sortDir, inclDetails: true, inclPersons: true, inclTags: true }),
+  breadcrumb: (id: string) => get<Collection[]>(`/collections/${id}/breadcrumb`),
+  media: (id: string) => get<MediaFile>(`/media-files/${id}`),
 };
 
 /** One real line from an old conversation: a random archive, a random spot, the longest of a few lines there. */
@@ -75,11 +80,8 @@ export function yearsOf(p: Person): [number, number] | null {
 export const peopleOfYear = (persons: Person[], y: number) =>
   persons.filter(p => !p.isSelf).filter(p => { const r = yearsOf(p); return r ? y >= r[0] && y <= r[1] : false; });
 
-/** Tags ranked by how much lives in them (one cheap count query per tag). */
+/** Tags ranked by how much lives in them — one call. */
 export async function tagWorlds(limit = 10): Promise<(Tag & { count: number })[]> {
-  const tags = await hub.tags();
-  const counted = await Promise.all(tags.slice(0, 40).map(async t => {
-    try { return { ...t, count: (await hub.search({ tagIds: [t.id], size: 1 })).totalElements }; } catch { return { ...t, count: 0 }; }
-  }));
-  return counted.filter(t => t.count > 0).sort((a, b) => b.count - a.count).slice(0, limit);
+  const stats = await hub.tagStats();
+  return stats.filter(t => t.mediaCount > 0).sort((a, b) => b.mediaCount - a.mediaCount).slice(0, limit).map(t => ({ id: t.id, name: t.name, color: t.color, count: t.mediaCount }));
 }

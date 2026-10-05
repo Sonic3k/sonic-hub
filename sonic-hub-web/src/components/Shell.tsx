@@ -1,14 +1,15 @@
 /* The frame every page shares: top bar, a sidebar that follows context, the page. */
 import { Link, NavLink, Outlet, useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import { randomDay } from '../api/hub';
-import { counts, fmt, noteDate, useAlbums, useLibraryCounts, useNotes, useRegions, useTimeline } from '../lib/queries';
+import Search from './Search';
+import { counts, fmt, noteDate, useAlbums, useLibraryCounts, useNotes, usePersons, useRegions, useTimeline } from '../lib/queries';
 
 const FOOTBALL = import.meta.env.VITE_FOOTBALL_URL;
 const TABS: [string, string, string][] = [['Hôm nay', '/', '--photo'], ['Ảnh', '/photos', '--photo'], ['Nhật ký', '/journal', '--journal'], ['Angels', '/angels', '--angels'], ['Bóng đá', '/football', '--football'], ['Game', '/games', '--games']];
 
 export default function Shell() {
   const loc = useLocation(), nav = useNavigate(), tl = useTimeline();
-  const reading = /^\/journal\/.+/.test(loc.pathname), inJournal = loc.pathname.startsWith('/journal');
+  const reading = /^\/journal\/.+/.test(loc.pathname), inJournal = loc.pathname.startsWith('/journal'), inPhotos = /^\/(photos|tags)/.test(loc.pathname);
   const random = async () => {
     const years = Object.keys(counts(tl.data ?? [])).map(Number); if (!years.length) return;
     const y = years[Math.floor(Math.random() * years.length)], r = await randomDay(y, tl.data ?? []).catch(() => null);
@@ -18,14 +19,14 @@ export default function Shell() {
     <>
       <header className="top"><div className="top-in">
         <Link className="logo" to="/">Sonic Hub</Link>
-        <div className="search"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7" /><path d="M20 20l-4-4" /></svg>Tìm ảnh, người, bài viết, năm…</div>
+        <Search />
         <nav className="tabs">{TABS.map(([n, to, c]) => to === '/football' && FOOTBALL
           ? <a key={to} href={FOOTBALL} style={{ ['--c' as string]: `var(${c})` }}><i />{n}</a>
           : <NavLink key={to} to={to} end={to === '/'} className={({ isActive }) => (isActive ? 'on' : '')} style={{ ['--c' as string]: `var(${c})` }}><i />{n}</NavLink>)}</nav>
         <button className="rand" type="button" onClick={random}>Một ngày bất kỳ</button>
       </div></header>
       <div className={`frame ${reading ? 'reading' : ''}`}>
-        <aside className="side">{inJournal ? <JournalSide /> : <HomeSide />}</aside>
+        <aside className="side">{inJournal ? <JournalSide /> : inPhotos ? <PhotosSide /> : <HomeSide />}</aside>
         <main><Outlet /></main>
       </div>
     </>
@@ -41,13 +42,13 @@ function HomeSide() {
       <h4>Thư viện</h4>
       <Link className={!active ? 'on' : ''} to="/">Hôm nay</Link>
       <Link to="/photos">Tất cả ảnh<small>{fmt(total)}</small></Link>
-      <Link to="/photos">Album<small>{albums.data?.length ?? ''}</small></Link>
-      <Link to="/photos">Yêu thích<small>{lib.data ? fmt(lib.data.fav) : ''}</small></Link>
-      <Link to="/photos">Video<small>{lib.data ? fmt(lib.data.vid) : ''}</small></Link>
+      <Link to="/photos/albums">Album<small>{albums.data?.length ?? ''}</small></Link>
+      <Link to="/photos?fav=1">Yêu thích<small>{lib.data ? fmt(lib.data.fav) : ''}</small></Link>
+      <Link to="/photos?type=VIDEO">Video<small>{lib.data ? fmt(lib.data.vid) : ''}</small></Link>
       {years.length > 0 && <h4>Năm</h4>}
       {years.map(y => <Link key={y} to={`/?y=${y}`} className={y === active ? 'on' : ''}>{y}<span className="bar"><b style={{ width: `${Math.round(c[y] / max * 100)}%` }} /></span><small>{fmt(c[y])}</small></Link>)}
       {!!regions.data?.length && <h4>Vùng</h4>}
-      {regions.data?.map(r => <Link key={r.id} to={`/photos?tag=${encodeURIComponent(r.name)}`}><span className="dot" style={{ ['--c' as string]: r.color || 'var(--ink3)' }} />{r.name}<small>{fmt(r.count)}</small></Link>)}
+      {regions.data?.map(r => <Link key={r.id} to={`/tags/${encodeURIComponent(r.name)}`}><span className="dot" style={{ ['--c' as string]: r.color || 'var(--ink3)' }} />{r.name}<small>{fmt(r.count)}</small></Link>)}
     </>
   );
 }
@@ -69,6 +70,28 @@ function JournalSide() {
       {Object.entries(byCat).sort((a, b) => b[1] - a[1]).map(([n, v]) => <Link key={n} to={`/journal?cat=${encodeURIComponent(n)}`} className={cat === n ? 'on' : ''}>{n}<small>{v}</small></Link>)}
       {years.length > 0 && <h4>Năm</h4>}
       {years.map(y => <Link key={y} to={`/journal?year=${y}`} className={y === year ? 'on' : ''}>{y}<span className="bar" style={{ ['--c' as string]: 'var(--journal)' }}><b style={{ width: `${Math.round(byYear[y] / max * 100)}%` }} /></span><small>{byYear[y]}</small></Link>)}
+    </>
+  );
+}
+
+function PhotosSide() {
+  const tl = useTimeline(), albums = useAlbums(), lib = useLibraryCounts(), regions = useRegions(12), persons = usePersons(), loc = useLocation(), [sp] = useSearchParams();
+  const c = counts(tl.data ?? []), years = Object.keys(c).map(Number).sort((a, b) => b - a), max = Math.max(1, ...Object.values(c)), total = Object.values(c).reduce((a, b) => a + b, 0);
+  const y = Number(sp.get('year')), path = loc.pathname, plainAll = path === '/photos' && !sp.toString().replace(/(^|&)p=[^&]*/, '');
+  const people = (persons.data ?? []).filter(p => !p.isSelf).sort((a, b) => Number(!!b.isFeatured) - Number(!!a.isFeatured)).slice(0, 8);
+  return (
+    <>
+      <h4>Thư viện</h4>
+      <Link to="/photos" className={plainAll ? 'on' : ''}>Tất cả ảnh<small>{fmt(total)}</small></Link>
+      <Link to="/photos/albums" className={path.startsWith('/photos/albums') ? 'on' : ''}>Album<small>{albums.data?.length ?? ''}</small></Link>
+      <Link to="/photos?fav=1" className={sp.get('fav') === '1' ? 'on' : ''}>Yêu thích<small>{lib.data ? fmt(lib.data.fav) : ''}</small></Link>
+      <Link to="/photos?type=VIDEO" className={sp.get('type') === 'VIDEO' ? 'on' : ''}>Video<small>{lib.data ? fmt(lib.data.vid) : ''}</small></Link>
+      {years.length > 0 && <h4>Năm</h4>}
+      {years.map(yr => <Link key={yr} to={`/photos?year=${yr}`} className={yr === y ? 'on' : ''}>{yr}<span className="bar"><b style={{ width: `${Math.round(c[yr] / max * 100)}%` }} /></span><small>{fmt(c[yr])}</small></Link>)}
+      {!!regions.data?.length && <h4>Vùng</h4>}
+      {regions.data?.map(r => <Link key={r.id} to={`/tags/${encodeURIComponent(r.name)}`} className={path === `/tags/${encodeURIComponent(r.name)}` || decodeURIComponent(path) === `/tags/${r.name}` ? 'on' : ''}><span className="dot" style={{ ['--c' as string]: r.color || 'var(--ink3)' }} />{r.name}<small>{fmt(r.count)}</small></Link>)}
+      {people.length > 0 && <h4>Người</h4>}
+      {people.map(p => <Link key={p.id} to={`/photos?person=${p.id}`} className={sp.get('person') === p.id ? 'on' : ''}>{p.displayName || p.name}</Link>)}
     </>
   );
 }
