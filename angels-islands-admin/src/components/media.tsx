@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from 'react'
 import { ChevronRight, ChevronLeft, Image, ArrowLeft, Camera, MapPin, FileText, Clock, Film, Info, X, Check, FolderPlus, Heart, ImageIcon, Users } from 'lucide-react'
 import { mediaApi } from '../api/collections'
 import { usePersons } from '../hooks/usePersons'
-import { useTags } from '../hooks/useTags'
+import { TagToggle } from './TagPanel'
 import { Camera as CameraIcon } from 'lucide-react'
 import type { MediaFileResponse } from '../types'
 
@@ -201,8 +201,6 @@ function InfoContent({ media, cameraStr, settingsStr, exif, vid, onChanged }: {
   onChanged: (m: MediaFileResponse) => void
 }) {
   const { data: allPersons = [] } = usePersons()
-  const { data: allTags = [] } = useTags()
-  const [addingTag, setAddingTag] = useState(false)
   const [settingTakenBy, setSettingTakenBy] = useState(false)
   const [editingDate, setEditingDate] = useState(false)
   const [dateDraft, setDateDraft] = useState('')
@@ -214,7 +212,6 @@ function InfoContent({ media, cameraStr, settingsStr, exif, vid, onChanged }: {
     if (dateDraft === current) return
     onChanged(await mediaApi.patch(media.id, { dateTaken: dateDraft }))
   }
-  const taggedTagIds = new Set((media.tags || []).map(t => t.id))
   const [editingCaption, setEditingCaption] = useState(false)
   const [captionDraft, setCaptionDraft] = useState('')
   const [addingPerson, setAddingPerson] = useState(false)
@@ -255,22 +252,7 @@ function InfoContent({ media, cameraStr, settingsStr, exif, vid, onChanged }: {
                 className="opacity-70 hover:opacity-100 p-0.5"><X size={11} /></button>
             </span>
           ))}
-          {addingTag ? (
-            <select autoFocus
-              onChange={async e => { if (e.target.value) onChanged(await mediaApi.addTag(media.id, e.target.value)); setAddingTag(false) }}
-              onBlur={() => setAddingTag(false)}
-              className="bg-[#222] text-white/80 text-xs rounded-full px-2 py-1 outline-none border border-white/10">
-              <option value="">Choose...</option>
-              {allTags.filter(t => !taggedTagIds.has(t.id)).map(t => (
-                <option key={t.id} value={t.id}>{t.name}</option>
-              ))}
-            </select>
-          ) : (
-            <button onClick={() => setAddingTag(true)}
-              className="text-white/40 hover:text-white/80 text-xs border border-dashed border-white/20 rounded-full px-2.5 py-1 transition-colors">
-              + Tag
-            </button>
-          )}
+          <TagToggle media={media} onChanged={onChanged} />
         </div>
       </InfoSection>
 

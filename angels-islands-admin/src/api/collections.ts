@@ -84,3 +84,10 @@ export const collectionBrowseApi = {
   getBreadcrumb: (id: string) => api.get<CollectionResponse[]>(`/api/collections/${id}/breadcrumb`).then(r => r.data),
   getCollectionMedia: (id: string, sort?: string, sortDir?: string) => api.get(`/api/collections/${id}/media`, { params: { sort, sortDir, inclDetails: true, inclPersons: true, inclTags: true } }).then(r => r.data),
 }
+
+/** Whole-album tagging: every photo in the album (and its sub-albums when deep). */
+export const albumTagsApi = {
+  stats: (id: string, deep: boolean) => api.get<{ total: number; tags: { tagId: string; count: number }[] }>(`/api/collections/${id}/tag-stats`, { params: { deep } }).then(r => r.data),
+  tagAll: (id: string, tagId: string, deep: boolean) => api.post<{ affected: number }>(`/api/collections/${id}/media-tags/${tagId}`, null, { params: { deep } }).then(r => r.data),
+  untagAll: (id: string, tagId: string, deep: boolean) => api.delete<{ affected: number }>(`/api/collections/${id}/media-tags/${tagId}`, { params: { deep } }).then(r => r.data),
+}

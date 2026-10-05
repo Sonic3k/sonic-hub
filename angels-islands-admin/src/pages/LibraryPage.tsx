@@ -6,7 +6,7 @@ import { mediaApi, uploadApi } from '../api/collections'
 import { Lightbox, MediaItem } from '../components/media'
 import CollectionPicker from '../components/CollectionPicker'
 import PersonSelectModal from '../components/PersonSelectModal'
-import TagSelectModal from '../components/TagSelectModal'
+import { SelectionTagsSheet } from '../components/TagPanel'
 import { useTags } from '../hooks/useTags'
 import type { MediaFileResponse, PersonSummary, TagResponse } from '../types'
 
@@ -126,13 +126,6 @@ export default function LibraryPage() {
     invalidate()
   }
 
-  const handleTagLabel = async (tag: TagResponse) => {
-    if (!tagModal) return
-    await mediaApi.tagBatch(tagModal, tag.id)
-    setTagModal(null)
-    setSelectedIds(new Set())
-    invalidate()
-  }
 
   const handleTagPerson = async (person: PersonSummary) => {
     if (!personModal) return
@@ -291,8 +284,7 @@ export default function LibraryPage() {
       )}
 
       {tagModal && (
-        <TagSelectModal title={`Label ${tagModal.length} file(s) as...`}
-          onSelect={handleTagLabel} onClose={() => setTagModal(null)} />
+        <SelectionTagsSheet media={items.filter(m => tagModal.includes(m.id))} onClose={() => setTagModal(null)} onChanged={() => qc.invalidateQueries()} />
       )}
 
       {personModal && (

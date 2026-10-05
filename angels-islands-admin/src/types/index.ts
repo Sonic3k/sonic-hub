@@ -33,6 +33,7 @@ export interface ContactRequest { platform: string; identifier: string; displayN
 
 export interface TagResponse { id: string; name: string; color?: string; description?: string }
 export interface TagRequest { name: string; color?: string; description?: string }
+export interface TagStats { id: string; name: string; color?: string; mediaCount: number; albumCount: number; noteCount: number }
 
 export interface MediaFileResponse {
   id: string; fileName: string; fileType: 'IMAGE' | 'VIDEO'; mediaCategory?: string

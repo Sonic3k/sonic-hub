@@ -5,13 +5,11 @@ import { FolderOpen, ChevronRight, Image, ArrowLeft, Trash2, X, Plus, FolderPlus
 import { collectionBrowseApi, uploadApi, collectionsApi, mediaApi } from '../api/collections'
 import CollectionPicker from '../components/CollectionPicker'
 import PersonSelectModal from '../components/PersonSelectModal'
-import TagSelectModal from '../components/TagSelectModal'
-import { useTags } from '../hooks/useTags'
-import { tagsApi } from '../api/tags'
+import { AlbumTagsSheet, SelectionTagsSheet } from '../components/TagPanel'
 import { usePersons } from '../hooks/usePersons'
 import { collectDroppedFiles, groupDropped } from '../lib/dropUpload'
 import { useUploadQueue, UploadQueuePanel, type QueueTask } from '../components/UploadQueue'
-import type { CollectionResponse, MediaFileResponse, PersonSummary, TagResponse } from '../types'
+import type { CollectionResponse, MediaFileResponse, PersonSummary } from '../types'
 import { Lightbox, MediaItem } from '../components/media'
 
 
@@ -318,21 +316,7 @@ export default function CollectionsPage() {
     invalidateAll()
   }
 
-  const handleTagBatch = async (tag: TagResponse) => {
-    if (!tagModal) return
-    await mediaApi.tagBatch(tagModal, tag.id)
-    setTagModal(null)
-    setSelectedIds(new Set())
-    invalidateAll()
-  }
 
-  const handleToggleTagOnCollection = async (tagId: string) => {
-    if (!currentId || !current) return
-    const ids = new Set((current.tags || []).map(t => t.id))
-    if (ids.has(tagId)) ids.delete(tagId); else ids.add(tagId)
-    await collectionsApi.update(currentId, { tagIds: Array.from(ids) })
-    invalidateAll()
-  }
 
   const handleTagPersonBatch = async (person: PersonSummary) => {
     if (!personModal) return
@@ -557,7 +541,7 @@ export default function CollectionsPage() {
                     </button>
                     <button onClick={() => { setManageTagsOpen(true); setShowCollMenu(false) }}
                       className="flex items-center gap-2.5 w-full px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 active:bg-slate-100 transition-colors">
-                      <Tag size={16} className="text-slate-400" />Manage labels
+                      <Tag size={16} className="text-slate-400" />Tags
                     </button>
                     <button onClick={() => { setShowCollMenu(false); handleDeleteCollection() }}
                       className="flex items-center gap-2.5 w-full px-4 py-2.5 text-sm text-rose-500 hover:bg-rose-50 active:bg-rose-100 transition-colors">
@@ -827,16 +811,12 @@ export default function CollectionsPage() {
 
       {/* Tag label batch */}
       {tagModal && (
-        <TagSelectModal title={`Label ${tagModal.length} file(s) as...`}
-          onSelect={handleTagBatch} onClose={() => setTagModal(null)} />
+        <SelectionTagsSheet media={(media as MediaFileResponse[]).filter(m => tagModal.includes(m.id))} onClose={() => setTagModal(null)} onChanged={invalidateAll} />
       )}
 
       {/* Manage labels on collection */}
-      {manageTagsOpen && current && (
-        <ManageTagsModal collectionName={current.name}
-          activeIds={(current.tags || []).map(t => t.id)}
-          onToggle={handleToggleTagOnCollection}
-          onClose={() => setManageTagsOpen(false)} />
+      {manageTagsOpen && current && currentId && (
+        <AlbumTagsSheet collectionId={currentId} name={current.name} onClose={() => setManageTagsOpen(false)} onChanged={invalidateAll} />
       )}
 
       {/* Tag person batch */}
@@ -856,73 +836,6 @@ export default function CollectionsPage() {
           onChanged={m => { setSelectedMedia(m); invalidateAll() }}
           onAddTo={id => setPicker({ mode: 'add', ids: [id] })} />
       )}
-    </div>
-  )
-}
-
-
-// ── Manage labels modal (toggle tags on a collection) ────────────────────────
-
-function ManageTagsModal({ collectionName, activeIds, onToggle, onClose }: {
-  collectionName: string; activeIds: string[]
-  onToggle: (tagId: string) => void; onClose: () => void
-}) {
-  const { data: tags = [] } = useTags()
-  const [newName, setNewName] = useState('')
-  const [creating, setCreating] = useState(false)
-  const qc = useQueryClient()
-  const active = new Set(activeIds)
-  const PALETTE = ['#ec4899', '#8b5cf6', '#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#14b8a6', '#6366f1']
-
-  const handleCreate = async () => {
-    const name = newName.trim()
-    if (!name || creating) return
-    setCreating(true)
-    try {
-      const created = await tagsApi.create({ name, color: PALETTE[tags.length % PALETTE.length] })
-      qc.invalidateQueries({ queryKey: ['tags'] })
-      onToggle(created.id)
-      setNewName('')
-    } finally { setCreating(false) }
-  }
-
-  return (
-    <div className="fixed inset-0 z-50 flex items-end md:items-center justify-center">
-      <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={onClose} />
-      <div className="relative bg-white rounded-t-2xl md:rounded-xl shadow-xl w-full md:max-w-sm md:mx-4 p-5">
-        <div className="flex justify-center pt-0 pb-3 md:hidden"><div className="w-10 h-1 rounded-full bg-slate-200" /></div>
-        <h3 className="text-sm font-semibold text-slate-800 mb-3">Labels for "{collectionName}"</h3>
-        <div className="flex flex-wrap gap-1.5 mb-4 max-h-60 overflow-y-auto">
-          {tags.map(t => {
-            const isOn = active.has(t.id)
-            return (
-              <button key={t.id} onClick={() => onToggle(t.id)}
-                className={`inline-flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-full border transition-colors active:scale-95 ${
-                  isOn ? 'text-white border-transparent' : 'bg-white border-slate-200 text-slate-600 hover:border-pink-300'
-                }`}
-                style={isOn ? { background: t.color || '#ec4899' } : undefined}>
-                {!isOn && <span className="w-2 h-2 rounded-full" style={{ background: t.color || '#94a3b8' }} />}
-                {t.name}
-              </button>
-            )
-          })}
-          {tags.length === 0 && <p className="text-xs text-slate-400">No labels yet — create one below</p>}
-        </div>
-        <div className="flex items-center gap-2 pt-3 border-t border-slate-100 mb-3">
-          <Plus size={14} className="text-slate-300 shrink-0" />
-          <input className="flex-1 px-2 py-1.5 text-sm border rounded-lg border-slate-200 focus:border-pink-400 outline-none"
-            placeholder="New label (e.g. Travel, Family)..."
-            value={newName} onChange={e => setNewName(e.target.value)}
-            onKeyDown={e => e.key === 'Enter' && handleCreate()} />
-          {newName.trim() && (
-            <button onClick={handleCreate} disabled={creating}
-              className="text-xs text-pink-500 font-medium px-2 py-1.5 hover:bg-pink-50 rounded disabled:opacity-50">Create</button>
-          )}
-        </div>
-        <div className="flex justify-end">
-          <button onClick={onClose} className="px-4 py-2 text-sm bg-pink-500 text-white rounded-lg hover:bg-pink-600">Done</button>
-        </div>
-      </div>
     </div>
   )
 }
