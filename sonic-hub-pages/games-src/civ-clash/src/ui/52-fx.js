@@ -54,9 +54,10 @@ function floatAt(pid, text, cls) {
   setTimeout(() => d.remove(), 1600);
 }
 function setShownHP(pid) {
-  const g = document.querySelector(`#camp-${pid} .hpseal`); if (!g || !UI.view) return;
-  const hp = Math.max(0, UI.view[pid]);
-  g.querySelector('b').textContent = hp; g.classList.toggle('low', hp <= 3);
+  const camp = document.getElementById('camp-' + pid); if (!camp || !UI.view) return;
+  const P = S.players[pid], hp = Math.max(0, UI.view[pid]), tag = camp.querySelector('.hptag'), bar = camp.querySelector('.hpbar i');
+  if (tag) { tag.querySelector('b').textContent = hp; tag.classList.toggle('low', hp <= 3); }
+  if (bar) bar.style.width = Math.max(0, Math.round(hp / P.maxHP * 100)) + '%';
 }
 function shake(pid) { const el = document.getElementById('camp-' + pid); if (el) { el.classList.remove('hit'); void el.offsetWidth; el.classList.add('hit'); } }
 async function animatePlay(ev, pid, from) {
@@ -88,8 +89,25 @@ async function animateBuy(card, pid, from) {
   floatAt(pid, 'Hired ' + card.name, 'gold');
 }
 function banner(title, sub, dur = 1900) {
-  const b = $('#banner'); b.innerHTML = `<div class="bt">${esc(title)}</div>${sub ? `<div class="bs">${kw(sub)}</div>` : ''}`;
+  const b = $('#banner'); b.innerHTML = `<div class="ribbon"><div class="bt">${esc(title)}</div>${sub ? `<div class="bs">${kw(sub)}</div>` : ''}</div>`;
   b.style.setProperty('--bdur', Math.max(900, D(dur)) + 'ms'); b.classList.remove('show'); void b.offsetWidth; b.classList.add('show');
 }
 function openSheet(html, lock) { const s = $('#sheet'); s.innerHTML = `<div class="sheet-panel" role="dialog" aria-modal="true">${html}</div>`; s.classList.remove('hidden'); s.dataset.lock = lock ? '1' : ''; hideTip(); const f = s.querySelector('button'); if (f) f.focus({ preventScroll: true }); }
 function closeSheet() { const s = $('#sheet'); s.classList.add('hidden'); s.innerHTML = ''; s.dataset.lock = ''; }
+
+/* the herald: every new round stops the table and reads out its event before anything else happens */
+function herald(round, eventId, nextId, note) {
+  return new Promise(resolve => {
+    const E = eventId ? EVENT_BY[eventId] : null, N = nextId ? EVENT_BY[nextId] : null;
+    const el = document.createElement('div'); el.className = 'herald'; el.setAttribute('role', 'dialog'); el.setAttribute('aria-label', `Round ${round}`);
+    el.innerHTML = `<div class="hscroll"><div class="hround">Round ${round}</div><svg class="hart" viewBox="0 0 48 48" aria-hidden="true">${EVENT_ART[E ? E.id : 'peace']}</svg>
+<h2>${E ? esc(E.name) : 'A quiet start'}</h2><p class="heff">${E ? kw(E.text) : 'No event this round. Events begin next round.'}</p>${note ? `<p class="hnote">${kw(note)}</p>` : ''}
+${N ? `<div class="hnext"><span>Next round</span><b>${esc(N.name)}</b><em>${kw(N.text)}</em></div>` : ''}<div class="htap">Tap to continue</div></div>`;
+    document.getElementById('app').appendChild(el);
+    SFX.play('quill');
+    let done = false;
+    const close = () => { if (done) return; done = true; el.classList.add('out'); setTimeout(() => { el.remove(); resolve(); }, 260); };
+    el.addEventListener('click', close);
+    setTimeout(close, Math.max(1400, D(2600)));
+  });
+}

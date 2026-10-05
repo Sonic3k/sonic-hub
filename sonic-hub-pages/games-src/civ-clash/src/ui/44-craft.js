@@ -77,3 +77,26 @@ function installMaterials() {
   for (const [f, svg] of Object.entries(CORNERS)) css += `.fam-${f}{--corner:${u(`<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'>${svg.replace(/"/g, "'")}</svg>`)}}\n`;
   const el = document.createElement('style'); el.id = 'family-styles'; el.textContent = css; document.head.appendChild(el);
 }
+
+/* HP said plainly: a label, the number, the maximum, and a bar under the banner */
+function hpTag(P, hp, mini) {
+  const low = hp <= 3 && P.alive ? ' low' : '';
+  return `<span class="hptag${low}${mini ? ' mini' : ''}" data-tip="${hp} of ${P.maxHP} HP. At 0 this realm falls."><small>HP</small><b>${hp}</b><i>/${P.maxHP}</i></span>`;
+}
+function hpBar(P, hp) { return `<div class="hpbar"><i style="width:${Math.max(0, Math.round(hp / P.maxHP * 100))}%"></i></div>`; }
+/* event emblems for the round herald, drawn in iron-gall ink with a little vermilion */
+const EVENT_ART = {
+  plague: '<path d="M14 26c0-7 4.5-12 10-12s10 5 10 12c0 4-2 7-5 8l-1 6h-8l-1-6c-3-1-5-4-5-8z" fill="#5a4636"/><path d="M24 30l14 8-14-1z" fill="#3a2618"/><circle cx="19.5" cy="25" r="3" fill="#e9d9b4" stroke="#3a2618"/><circle cx="28.5" cy="25" r="3" fill="#e9d9b4" stroke="#3a2618"/><path d="M15 16c3-6 15-6 18 0" fill="none" stroke="#3a2618" stroke-width="2"/>',
+  harvest: '<path d="M24 42V12M24 42l-8-26M24 42l8-26" stroke="#7a5a12" stroke-width="2"/><g fill="#c9962f" stroke="#7a5a12" stroke-width=".8">' + [12, 17, 22].map(y => `<ellipse cx="24" cy="${y}" rx="2.2" ry="3.4"/><ellipse cx="${16 + (y - 12) * 0.25}" cy="${y + 4}" rx="2" ry="3.2" transform="rotate(-18 ${16 + (y - 12) * 0.25} ${y + 4})"/><ellipse cx="${32 - (y - 12) * 0.25}" cy="${y + 4}" rx="2" ry="3.2" transform="rotate(18 ${32 - (y - 12) * 0.25} ${y + 4})"/>`).join('') + '</g><path d="M17 33h14" stroke="#a4301d" stroke-width="3"/>',
+  silkroad: '<path d="M8 38l2-11c0-4 3-6 6-6l3-5 3 5h2l3-6 4 1 3 4 3 2-3 2-2-1-3 4v11h-3v-8l-4 1-3 7h-3l1-8-6-3-1 11z" fill="#9c7040" stroke="#3a2618" stroke-width="1.1"/><path d="M4 42h40" stroke="#a4301d" stroke-width="1.6" stroke-dasharray="3 3"/>',
+  winter: '<g stroke="#2a4b77" stroke-width="2.2" stroke-linecap="round">' + [0, 60, 120].map(a => `<path d="M24 6v36M24 12l-4-4M24 12l4-4M24 36l-4 4M24 36l4 4" transform="rotate(${a} 24 24)"/>`).join('') + '</g>',
+  fair: '<path d="M8 22l16-14 16 14z" fill="#a4301d" stroke="#3a2618" stroke-width="1.2"/><path d="M14 17l4 5M24 8v14M34 17l-4 5" stroke="#efe0bf" stroke-width="2"/><path d="M10 22h28v18H10z" fill="#e2cfa4" stroke="#3a2618" stroke-width="1.2"/><path d="M20 40V30h8v10" fill="#5a4636"/>',
+  feast: '<path d="M14 10h12l-1 10a5 5 0 0 1-10 0z" fill="#c9962f" stroke="#3a2618" stroke-width="1.2"/><path d="M20 25v9M15 36h10" stroke="#3a2618" stroke-width="2"/><ellipse cx="33" cy="33" rx="9" ry="5" fill="#b07a3c" stroke="#3a2618" stroke-width="1.2"/><path d="M28 32c2-1 4-1 6 0M30 35c2-1 4-1 6 0" stroke="#3a2618" stroke-width=".9" fill="none"/>',
+  revolt: '<path d="M14 42V14M8 14v-6M14 14V6M20 14v-6M8 14h12" stroke="#3a2618" stroke-width="2.2" stroke-linecap="round" fill="none"/><path d="M32 42V20" stroke="#5a4636" stroke-width="3"/><path d="M32 6c5 4 6 8 3 12h-6c-3-4-1-8 3-12z" fill="#d9541a"/><path d="M32 10c2 2 3 4 1 6h-2c-1-2-1-4 1-6z" fill="#f4c04a"/>',
+  crusade: '<path d="M10 8h28v14c0 11-7 17-14 20-7-3-14-9-14-20z" fill="#efe0bf" stroke="#3a2618" stroke-width="1.6"/><path d="M24 12v26M14 22h20" stroke="#a4301d" stroke-width="4"/>',
+  monsoon: '<path d="M10 24a8 8 0 0 1 8-8 10 10 0 0 1 19 2 6 6 0 0 1 1 12H14a6 6 0 0 1-4-6z" fill="#7d8796" stroke="#3a2618" stroke-width="1.2"/><path d="M15 34l-2 6M23 34l-2 6M31 34l-2 6M19 36l-1 3M27 36l-1 3" stroke="#2a4b77" stroke-width="2" stroke-linecap="round"/>',
+  flood: '<path d="M4 20c4-4 8-4 12 0s8 4 12 0 8-4 12 0 6 3 6 3M4 29c4-4 8-4 12 0s8 4 12 0 8-4 12 0 6 3 6 3M4 38c4-4 8-4 12 0s8 4 12 0 8-4 12 0 6 3 6 3" fill="none" stroke="#2a4b77" stroke-width="2.6" stroke-linecap="round"/><path d="M18 14l6-8 6 8z" fill="#a4301d"/>',
+  eclipse: '<circle cx="24" cy="24" r="16" fill="#e9b949" stroke="#7a5a12" stroke-width="1.4"/>' + Array.from({ length: 12 }, (_, i) => { const a = i * Math.PI / 6; return `<path d="M${(24 + Math.cos(a) * 18).toFixed(1)} ${(24 + Math.sin(a) * 18).toFixed(1)}L${(24 + Math.cos(a) * 22).toFixed(1)} ${(24 + Math.sin(a) * 22).toFixed(1)}" stroke="#7a5a12" stroke-width="1.6"/>`; }).join('') + '<circle cx="28" cy="22" r="14" fill="#2b2118"/>',
+  bells: '<path d="M24 6v4M14 34c2-4 2-8 2-12a8 8 0 0 1 16 0c0 4 0 8 2 12z" fill="#c9962f" stroke="#3a2618" stroke-width="1.4"/><path d="M11 34h26" stroke="#3a2618" stroke-width="2.4" stroke-linecap="round"/><circle cx="24" cy="38" r="3" fill="#5a4636"/><path d="M6 18c-2 3-2 7 0 10M42 18c2 3 2 7 0 10" fill="none" stroke="#a4301d" stroke-width="1.6" stroke-linecap="round"/>',
+  peace: '<path d="M24 40c-9-5-14-11-14-18a7 7 0 0 1 14-3 7 7 0 0 1 14 3c0 7-5 13-14 18z" fill="none" stroke="#a4301d" stroke-width="2"/><path d="M10 44h28" stroke="#3a2618" stroke-width="1.4"/>',
+};
