@@ -54,9 +54,9 @@ function floatAt(pid, text, cls) {
   setTimeout(() => d.remove(), 1600);
 }
 function setShownHP(pid) {
-  const g = document.querySelector(`#camp-${pid} .hpgem`); if (!g || !UI.view) return;
-  const P = S.players[pid], hp = Math.max(0, UI.view[pid]);
-  g.querySelector('b').textContent = hp; g.style.setProperty('--p', Math.round(hp / P.maxHP * 100));
+  const g = document.querySelector(`#camp-${pid} .hpseal`); if (!g || !UI.view) return;
+  const hp = Math.max(0, UI.view[pid]);
+  g.querySelector('b').textContent = hp; g.classList.toggle('low', hp <= 3);
 }
 function shake(pid) { const el = document.getElementById('camp-' + pid); if (el) { el.classList.remove('hit'); void el.offsetWidth; el.classList.add('hit'); } }
 async function animatePlay(ev, pid, from) {

@@ -11,14 +11,15 @@ const ICON = {
 };
 const svgURL = svg => `url("data:image/svg+xml,${encodeURIComponent(svg)}")`;
 function installTableArt() {
+  /* a portolan chart in iron-gall ink and vermilion, drawn once */
   const L = [], c = 1000;
-  for (let i = 0; i < 32; i++) { const a = i * Math.PI / 16, main = i % 4 === 0; L.push(`<path d='M${c} ${c}L${(c + Math.cos(a) * 1400).toFixed(0)} ${(c + Math.sin(a) * 1400).toFixed(0)}' stroke='rgba(246,217,137,${main ? .22 : .1})' stroke-width='${main ? 1.6 : 1}'/>`); }
-  for (let k = 0; k < 8; k++) { const a = k * Math.PI / 4 + Math.PI / 8, x = c + Math.cos(a) * 660, y = c + Math.sin(a) * 660; for (let i = 0; i < 16; i++) { const b = i * Math.PI / 8; L.push(`<path d='M${x.toFixed(0)} ${y.toFixed(0)}l${(Math.cos(b) * 900).toFixed(0)} ${(Math.sin(b) * 900).toFixed(0)}' stroke='rgba(246,217,137,.05)'/>`); } }
-  const rhumb = `<svg xmlns='http://www.w3.org/2000/svg' width='2000' height='2000' viewBox='0 0 2000 2000'>${L.join('')}<circle cx='1000' cy='1000' r='660' fill='none' stroke='rgba(246,217,137,.09)' stroke-width='1.5'/></svg>`;
+  for (let i = 0; i < 32; i++) { const a = i * Math.PI / 16, main = i % 4 === 0, red = i % 8 === 4; L.push(`<path d='M${c} ${c}L${(c + Math.cos(a) * 1400).toFixed(0)} ${(c + Math.sin(a) * 1400).toFixed(0)}' stroke='${red ? 'rgba(160,45,25,.42)' : main ? 'rgba(70,45,20,.42)' : 'rgba(70,45,20,.2)'}' stroke-width='${main ? 1.5 : 1}'/>`); }
+  for (let k = 0; k < 8; k++) { const a = k * Math.PI / 4 + Math.PI / 8, x = c + Math.cos(a) * 640, y = c + Math.sin(a) * 640; for (let i = 0; i < 16; i++) { const b = i * Math.PI / 8; L.push(`<path d='M${x.toFixed(0)} ${y.toFixed(0)}l${(Math.cos(b) * 900).toFixed(0)} ${(Math.sin(b) * 900).toFixed(0)}' stroke='rgba(70,45,20,.1)'/>`); } }
+  const rhumb = `<svg xmlns='http://www.w3.org/2000/svg' width='2000' height='2000' viewBox='0 0 2000 2000'>${L.join('')}<circle cx='1000' cy='1000' r='640' fill='none' stroke='rgba(70,45,20,.18)' stroke-width='1.5'/></svg>`;
   const star = (n, r1, r2, rot) => Array.from({ length: n * 2 }, (_, i) => { const r = i % 2 ? r2 : r1, a = i * Math.PI / n + rot - Math.PI / 2; return `${(100 + Math.cos(a) * r).toFixed(1)},${(100 + Math.sin(a) * r).toFixed(1)}`; }).join(' ');
-  const rose = `<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 200'><circle cx='100' cy='100' r='94' fill='none' stroke='rgba(246,217,137,.5)' stroke-width='1.2'/><circle cx='100' cy='100' r='86' fill='none' stroke='rgba(246,217,137,.3)' stroke-dasharray='2 4'/><polygon points='${star(8, 72, 12, Math.PI / 8)}' fill='rgba(246,217,137,.16)'/><polygon points='${star(4, 94, 15, 0)}' fill='rgba(246,217,137,.36)' stroke='rgba(246,217,137,.7)' stroke-width='.8'/><circle cx='100' cy='100' r='6' fill='rgba(246,217,137,.8)'/></svg>`;
-  document.documentElement.style.setProperty('--rhumb', svgURL(rhumb));
-  document.documentElement.style.setProperty('--rose', svgURL(rose));
+  const rose = `<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 200'><circle cx='100' cy='100' r='94' fill='none' stroke='rgba(70,45,20,.55)' stroke-width='1.4'/><circle cx='100' cy='100' r='88' fill='none' stroke='rgba(160,45,25,.5)' stroke-width='1' stroke-dasharray='3 3'/><polygon points='${star(8, 70, 11, Math.PI / 8)}' fill='rgba(70,45,20,.18)' stroke='rgba(70,45,20,.45)' stroke-width='.6'/><polygon points='${star(4, 92, 14, 0)}' fill='rgba(160,45,25,.32)' stroke='rgba(90,30,15,.7)' stroke-width='.9'/><path d='M100 6l-6 16h12z' fill='rgba(160,45,25,.7)'/><circle cx='100' cy='100' r='6' fill='rgba(201,162,74,.9)' stroke='rgba(70,45,20,.7)'/></svg>`;
+  const rule = `<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 420 14'><path d='M0 7h185M235 7h185' stroke='rgba(236,209,139,.7)' stroke-width='1.2'/><path d='M210 1l7 6-7 6-7-6z' fill='rgba(236,209,139,.9)'/><circle cx='193' cy='7' r='2' fill='rgba(236,209,139,.8)'/><circle cx='227' cy='7' r='2' fill='rgba(236,209,139,.8)'/></svg>`;
+  for (const [k, v] of [['--rhumb', rhumb], ['--rose', rose], ['--rhumb-rule', rule]]) document.documentElement.style.setProperty(k, svgURL(v));
 }
 
 /* keywords share the colour of the symbol for that resource */
@@ -32,44 +33,37 @@ const civNameOf = pid => (pid === 0 ? 'You' : CIVS[S.players[pid].civ].name);
 const civObjOf = pid => (pid === 0 ? 'you' : CIVS[S.players[pid].civ].name);
 const typeOf = c => (c.age ? 'Imperial Age' : c.imperial ? 'Imperial' : c.unique ? 'Signature' : c.civ === 'merc' ? 'Mercenary' : 'Common');
 function cardHTML(card, o = {}) {
-  const kind = card.age ? 'age' : card.imperial ? 'imp' : card.unique ? 'sig' : card.civ === 'merc' ? 'merc' : '';
+  const merc = card.civ === 'merc', type = card.age ? 'age' : card.imperial ? 'imp' : card.unique ? 'sig' : merc ? 'merc' : 'com';
   const size = o.size || '';
-  const syms = card.age ? crownSVG(size === 'lg' ? 70 : size === 'sm' ? 36 : 50) : [...card.icons].map(ch => symBadge(ch, 28)).join('');
-  const seal = card.age || card.imperial ? `<i class="seal">${crownSVG(18)}</i>` : card.unique ? '<i class="seal">★</i>' : card.civ === 'merc' ? `<i class="seal">${card.cost}</i>` : '';
-  const merc = card.civ === 'merc';
-  return `<div class="card ${size} ${kind} ${merc ? 'civ-merc' : 'civ-' + card.civ} ${o.cls || ''}" data-uid="${card.uid || ''}" ${o.attrs || ''} style="${o.style || ''}">
-<div class="cb"><div class="cn">${merc ? mercCrest(17) : crest(card.civ, 17)}<span>${esc(card.name)}</span>${seal}</div><div class="ca">${syms}</div><div class="ct"><span>${kw(cardText(card))}</span></div><div class="cf"><span>${typeOf(card)}</span><span>${merc ? '' : esc(CIVS[card.civ].name)}</span></div></div>${o.cost != null ? `<div class="cost${o.afford ? ' ok' : ''}">${o.cost} gold</div>` : ''}</div>`;
+  const syms = card.age ? crownSVG(size === 'lg' ? 66 : size === 'sm' ? 36 : 50) : [...card.icons].map(ch => symBadge(ch, 30)).join('');
+  const seal = type === 'sig' ? `<i class="seal" title="Signature card">${crest(card.civ, 22)}</i>` : type === 'imp' || type === 'age' ? `<i class="seal crown" title="Imperial card">${crownSVG(24)}</i>` : type === 'merc' && o.cost == null ? `<i class="seal coin" title="Mercenary">${card.cost}</i>` : '';
+  return `<div class="card ${size} t-${type} fam-${merc ? 'merc' : CIV_FAMILY[card.civ]} civ-${merc ? 'merc' : card.civ} ${o.cls || ''}" data-uid="${card.uid || ''}" ${o.attrs || ''} style="${o.style || ''}"><div class="cf"><div class="cb"><div class="cn"><span>${esc(card.name)}</span></div><div class="ca">${syms}</div><div class="ct"><span>${kw(cardText(card))}</span></div></div></div><i class="corner c1"></i><i class="corner c2"></i>${seal}${o.cost != null ? `<div class="cost${o.afford ? ' ok' : ''}">${o.cost} gold</div>` : ''}</div>`;
 }
-function workHTML(st) {
-  if (st.kind === 'wonder') return `<span class="work wonder" data-tip="${esc(st.card.name)}: ${st.dur} durability. Its builder wins if it still stands in ${Math.max(0, 3 - st.age)} turn(s).">${symBadge('W', 16)}<b>${st.dur}</b><em>${Math.max(0, 3 - st.age)}</em></span>`;
-  const note = { regen: 'regains 1 durability each turn', sacred: 'heals its owner 1 HP each turn', thorns: 'whoever hits it takes 1 damage', fortress: 'raze removes only 1 durability', income: 'gives its owner 1 gold each turn' }[st.kind];
-  return `<span class="work ${st.kind || ''}" data-tip="${esc(st.card.name)}: ${st.dur} durability${note ? '; ' + note : ''}.">${st.dur}</span>`;
-}
+function workHTML(st) { return buildHTML(st); }
 function dispHP(P) { return UI.view && UI.view[P.id] != null ? UI.view[P.id] : P.hp; }
 function campHTML(P, mine) {
   const C = CIVS[P.civ], hp = Math.max(0, dispHP(P)), acting = S.turn === P.id && S.winner == null;
   const tgt = !mine && P.alive && UI.sel != null && isMyTurn() && needsTarget(selCard() || { steps: [] }) && opponents(S, S.players[0]).length > 1;
-  const age = !P.ageGiven ? `<span class="tag" data-tip="The Imperial Age card arrives at the start of turn ${RULES.ageTurn}.">${crownSVG(16)} in ${Math.max(1, RULES.ageTurn - P.turns)}</span>`
-    : !P.aged ? `<span class="tag hot" data-tip="Holds the Imperial Age card.">${crownSVG(16)} ready</span>` : `<span class="tag imp" data-tip="In the Imperial Age.">${crownSVG(16)} Imperial</span>`;
   const toks = [];
   if (P.tokens.camel) toks.push(`<span class="token camel" data-tip="Camel guard: the next cavalry attack against this camp is cancelled.">Camel guard${P.tokens.camel > 1 ? ' ×' + P.tokens.camel : ''}</span>`);
   if (P.tokens.immune) toks.push('<span class="token" data-tip="Divine Wind: every attack against this camp is cancelled until its next turn.">Divine Wind</span>');
   if (P.tokens.trap) toks.push('<span class="token" data-tip="Bạch Đằng stakes: the first opponent to deal damage here takes 2 damage.">Stakes set</span>');
-  const piles = `<div class="piles"><button class="pile" data-act="deck" data-tip="Cards left to draw">Deck ${P.deck.length}</button><button class="pile" data-act="discard" data-tip="Cards already played or lost">Discard ${P.discard.length}</button></div>`;
-  const right = mine ? '' : `<span class="backs" data-tip="${P.hand.length} cards in hand">${'<i class="cback"></i>'.repeat(Math.min(P.hand.length, 6))}<b>${P.hand.length}</b></span>`;
-  return `<section class="camp civ-${P.civ}${mine ? ' mine' : ''}${acting ? ' turn' : ''}${P.alive ? '' : ' out'}${tgt ? ' targetable' : ''}${tgt && UI.hoverT === P.id ? ' hot' : ''}" id="camp-${P.id}" data-pid="${P.id}">
-<header class="camp-banner">${crest(P.civ, mine ? 30 : 27)}<span class="cname">${mine ? 'You' : esc(C.name)}</span>${mine ? `<span class="csub">${esc(C.name)}</span>` : ''}${acting ? '<span class="flag">acting</span>' : ''}${P.alive ? '' : '<span class="flag out">defeated</span>'}${P.relic && !mine ? `<span class="relic" data-tip="${esc(RELICS[P.relic].name)}: ${esc(RELICS[P.relic].text)}">${esc(RELICS[P.relic].name)}</span>` : ''}</header>
-<div class="camp-body"><div class="hpgem" style="--p:${Math.round(hp / P.maxHP * 100)}" data-tip="${hp} of ${P.maxHP} HP"><b>${hp}</b><small>/${P.maxHP}</small></div>
-<div class="works">${P.structs.map(workHTML).join('') || '<span class="none">No walls</span>'}</div>
-<div class="stash"><span class="coin" data-tip="Gold hires mercenaries at the market.">${symBadge('G', 20)}<b>${P.gold}</b></span>${right}${age}${mine && P.relic ? `<span class="relic mine-relic" data-tip="${esc(RELICS[P.relic].name)}: ${esc(RELICS[P.relic].text)}">${esc(RELICS[P.relic].name)}</span>` : ''}</div></div>
-${mine ? piles : ''}${toks.length ? `<div class="tokens">${toks.join('')}</div>` : ''}<div class="chips"></div><div class="floats"></div></section>`;
+  const age = !P.ageGiven ? `<span class="agem" data-tip="The Imperial Age card arrives at the start of turn ${RULES.ageTurn}.">${crownSVG(17)}in ${Math.max(1, RULES.ageTurn - P.turns)}</span>`
+    : !P.aged ? `<span class="agem hot" data-tip="Holds the Imperial Age card.">${crownSVG(17)}ready</span>` : `<span class="agem imp" data-tip="In the Imperial Age.">${crownSVG(17)}Imperial</span>`;
+  const hand = mine ? '' : `<span class="backs" data-tip="${P.hand.length} cards in hand">${'<i class="cback"></i>'.repeat(Math.min(P.hand.length, 6))}<b>${P.hand.length}</b></span>`;
+  const relic = P.relic ? `<span class="relic" data-tip="${esc(RELICS[P.relic].name)}: ${esc(RELICS[P.relic].text)}">${esc(RELICS[P.relic].name)}</span>` : '';
+  return `<section class="camp fam-${CIV_FAMILY[P.civ]} civ-${P.civ}${mine ? ' mine' : ''}${acting ? ' turn' : ''}${P.alive ? '' : ' out'}${tgt ? ' targetable' : ''}${tgt && UI.hoverT === P.id ? ' hot' : ''}" id="camp-${P.id}" data-pid="${P.id}" aria-label="${mine ? 'You, ' : ''}${esc(C.name)}: ${hp} HP">
+<header class="camp-banner">${crest(P.civ, mine ? 34 : 30)}<span class="cname">${esc(C.name)}</span>${mine ? '<span class="you">you</span>' : ''}${acting && !mine ? '<span class="flag">acting</span>' : ''}${P.alive ? '' : '<span class="flag out">defeated</span>'}</header>${sealHP(P, hp)}
+<div class="camp-body"><div class="defs"><span class="lbl">Defenses</span><div class="row">${P.structs.map(buildHTML).join('') || '<span class="none">None standing</span>'}</div></div>
+<div class="stash"><span class="coin" data-tip="Gold hires mercenaries at the market.">${symBadge('G', 21)}<b>${P.gold}</b></span>${hand}${age}${relic}</div></div>
+${mine ? `<div class="piles"><button class="pile" data-act="deck" data-tip="Cards left to draw">Deck ${P.deck.length}</button><button class="pile" data-act="discard" data-tip="Cards already played or lost">Discard ${P.discard.length}</button></div>` : ''}${toks.length ? `<div class="tokens">${toks.join('')}</div>` : ''}<div class="chips"></div><div class="floats"></div></section>`;
 }
 function renderTopbar() {
-  const me = isMyTurn(), who = S.winner != null ? '' : S.turn === 0 ? 'Your turn' : `${CIVS[cur(S).civ].name} to play`;
+  const me = isMyTurn(), E = S.event ? EVENT_BY[S.event] : null, who = S.winner != null ? '' : S.turn === 0 ? 'Your turn' : `${CIVS[cur(S).civ].name} to play`;
   $('#topbar').innerHTML = `<button class="icon-btn" data-act="pause" aria-label="Menu" data-tip="Menu (Esc)">${ICON.menu}</button>
-<div class="tb-mid"><span class="pill">Round ${S.round}</span>${who ? `<span class="pill ${S.turn === 0 ? 'gold' : ''}">${who}</span>` : ''}${me && S.plays > 0 ? `<span class="pips" data-tip="Plays left this turn">${'<i class="pip"></i>'.repeat(S.plays)}</span>` : ''}</div>
-<div class="tb-right"><button class="icon-btn mob-only" data-act="events" aria-label="Events" data-tip="Events">${ICON.event}${UI.eventSeen !== S.round && S.event ? '<i class="badge dot"></i>' : ''}</button><button class="icon-btn mob-only" data-act="market" aria-label="Market" data-tip="Mercenary Market">${ICON.market}${canHire() ? `<i class="badge">${canHire()}</i>` : ''}</button>
-<button class="speed" data-act="speed" data-tip="Animation speed (S)">${SPEEDS[SET.speed].label}</button><button class="icon-btn" data-act="chronicle" aria-label="Chronicle" data-tip="Chronicle (L)">${ICON.scroll}</button><button class="icon-btn desk-only" data-act="help" aria-label="How to play" data-tip="How to play (H)">${ICON.help}</button></div>`;
+<div class="tb-mid"><button class="evchip mob-only" data-act="events" aria-label="Events"><small>Round ${S.round}</small><b>${E ? esc(E.name) : 'Peace'}</b>${UI.eventSeen !== S.round && S.event ? '<i class="badge"></i>' : ''}</button><span class="pill desk-only">Round ${S.round}</span>${who ? `<span class="pill desk-only ${S.turn === 0 ? 'you' : ''}">${who}</span>` : ''}${me && S.plays > 0 ? `<span class="pips" data-tip="Plays left this turn">${'<i class="pip"></i>'.repeat(S.plays)}</span>` : ''}</div>
+<div class="tb-right"><button class="icon-btn mob-only" data-act="market" aria-label="Mercenary Market" data-tip="Mercenary Market">${ICON.market}${canHire() ? `<i class="badge">${canHire()}</i>` : ''}</button>
+<button class="speed desk-only" data-act="speed" data-tip="Animation speed (S)">${SPEEDS[SET.speed].label}</button><button class="icon-btn" data-act="chronicle" aria-label="Chronicle" data-tip="Chronicle (L)">${ICON.scroll}</button><button class="icon-btn desk-only" data-act="help" aria-label="How to play" data-tip="How to play (H)">${ICON.help}</button></div>`;
 }
 function eventsHTML() {
   const E = S.event ? EVENT_BY[S.event] : null, N = EVENT_BY[S.eventNext];
@@ -83,12 +77,11 @@ function marketHTML() {
 }
 function renderHand() {
   const me = S.players[0], n = me.hand.length, mid = (n - 1) / 2, mine = isMyTurn(), compact = mobile();
-  const hand = $('#hand'), W = hand.clientWidth - (compact ? 20 : 40), w = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--cw')) || 150;
-  let gap = compact ? 6 : -14;
-  if (n > 1 && n * w + (n - 1) * gap > W) gap = Math.max(-(w - (compact ? 46 : 64)), (W - n * w) / (n - 1));
-  const spread = compact ? 0 : Math.min(4.2, 30 / Math.max(1, n));
-  hand.style.justifyContent = n * w + (n - 1) * gap > W + 4 ? 'flex-start' : 'center';
-  hand.innerHTML = me.hand.map((c, i) => cardHTML(c, { cls: (mine ? 'playable' : 'dim') + (UI.sel === c.uid ? ' sel' : ''), attrs: `tabindex="${mine ? 0 : -1}" role="button" aria-label="${esc(c.name)}: ${esc(cardText(c))}"`, style: `--rot:${((i - mid) * spread).toFixed(2)}deg;--y:${compact ? 0 : (Math.abs(i - mid) ** 2 * 2.4).toFixed(1)}px;z-index:${UI.sel === c.uid ? 50 : i + 1};margin-left:${i ? gap.toFixed(1) : 0}px` })).join('') || '<div class="hand-empty">No cards in hand</div>';
+  const hand = $('#hand'), w = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--cw')) || 150;
+  let gap = 0, spread = 0;
+  if (!compact) { const W = hand.clientWidth - 40; gap = -14; if (n > 1 && n * w + (n - 1) * gap > W) gap = Math.max(-(w - 64), (W - n * w) / (n - 1)); spread = Math.min(4.2, 30 / Math.max(1, n)); hand.style.justifyContent = 'center'; }
+  else hand.style.justifyContent = '';
+  hand.innerHTML = me.hand.map((c, i) => cardHTML(c, { cls: (mine ? 'playable' : 'dim') + (UI.sel === c.uid ? ' sel' : ''), attrs: `tabindex="${mine ? 0 : -1}" role="button" aria-label="${esc(c.name)}: ${esc(cardText(c))}"`, style: compact ? '' : `--rot:${((i - mid) * spread).toFixed(2)}deg;--y:${(Math.abs(i - mid) ** 2 * 2.4).toFixed(1)}px;z-index:${UI.sel === c.uid ? 50 : i + 1};margin-left:${i ? gap.toFixed(1) : 0}px` })).join('') || '<div class="hand-empty">No cards in hand</div>';
 }
 function renderStage() {
   const c = selCard();
@@ -112,7 +105,7 @@ function renderAction() {
   if (S.turn !== 0) { el.innerHTML = `<span class="hint">${esc(CIVS[cur(S).civ].name)} is playing…</span>`; return; }
   if (UI.busy) { el.innerHTML = ''; return; }
   const c = selCard();
-  if (!c) { el.innerHTML = `<span class="hint">${S.plays > 1 ? `Your turn: play ${S.plays} cards` : 'Your turn: pick a card'}</span>`; return; }
+  if (!c) { el.innerHTML = `<span class="hint">${S.plays > 1 ? `Your turn: play ${S.plays} cards` : mobile() ? 'Your turn: drag a card up, or tap to read it' : 'Your turn: drag a card onto the chart'}</span>`; return; }
   const land = document.documentElement.classList.contains('land'), t = selTarget(c);
   const label = !needsTarget(c) ? (land ? 'Play' : `Play ${c.name}`) : t != null ? `${land ? 'On' : 'Play on'} ${CIVS[S.players[t].civ].name}` : (land ? 'Pick a camp' : 'Tap an enemy camp');
   el.innerHTML = `<button class="btn ghost small" data-act="cancel-sel">Cancel</button><button class="btn" data-act="play-sel"${needsTarget(c) && t == null ? ' disabled' : ''}>${esc(label)}</button>`;
@@ -171,6 +164,7 @@ function renderMatch() {
 /* tooltips: hover on desktop, press-and-hold on touch */
 const TIP = { el: null, timer: null };
 function showTip(el) {
+  if (document.documentElement.classList.contains('dragging')) return;
   const t = $('#tip'); t.innerHTML = kw(el.dataset.tip); t.classList.remove('hidden');
   const r = el.getBoundingClientRect(), w = t.offsetWidth, h = t.offsetHeight;
   let x = Math.min(Math.max(8, r.left + r.width / 2 - w / 2), innerWidth - w - 8), y = r.top - h - 8;
@@ -202,9 +196,9 @@ function campMiniHTML(P) {
   const C = CIVS[P.civ], hp = Math.max(0, dispHP(P)), acting = S.turn === P.id && S.winner == null, W = wonderOf(P);
   const tgt = P.alive && UI.sel != null && isMyTurn() && needsTarget(selCard() || { steps: [] }) && opponents(S, S.players[0]).length > 1;
   const dots = [P.tokens.camel ? '<i class="camel"></i>' : '', P.tokens.immune ? '<i></i>' : '', P.tokens.trap ? '<i></i>' : ''].join('');
-  return `<section class="camp mini civ-${P.civ}${acting ? ' turn' : ''}${P.alive ? '' : ' out'}${tgt ? ' targetable' : ''}${tgt && UI.hoverT === P.id ? ' hot' : ''}" id="camp-${P.id}" data-pid="${P.id}" aria-label="${esc(C.name)}: ${hp} HP">
-<header class="camp-banner">${crest(P.civ, 20)}<span class="cname">${esc(C.name)}</span></header>
-<div class="mini-body"><div class="hpgem" style="--p:${Math.round(hp / P.maxHP * 100)}"><b>${hp}</b></div><div class="mini-stats">
-<span>${symBadge('W', 15)}${wallTotal(P)}${W ? ` <span class="wd">+${W.dur}</span>` : ''}</span><span>${symBadge('G', 15)}${P.gold}</span><span><i class="cback"></i>${P.hand.length}</span>${ageMini(P)}</div></div>
+  const wall = `<svg class="bi" viewBox="0 0 24 24" aria-hidden="true">${BUILD.castle}</svg>`;
+  return `<section class="camp mini fam-${CIV_FAMILY[P.civ]} civ-${P.civ}${acting ? ' turn' : ''}${P.alive ? '' : ' out'}${tgt ? ' targetable' : ''}${tgt && UI.hoverT === P.id ? ' hot' : ''}" id="camp-${P.id}" data-pid="${P.id}" aria-label="${esc(C.name)}: ${hp} HP">
+<header class="camp-banner">${crest(P.civ, 22)}<span class="cname">${esc(C.name)}</span></header>
+<div class="mini-body">${sealHP(P, hp)}<div class="mini-stats"><span data-tip="Defenses: total durability">${wall}${wallTotal(P)}${W ? ` +${W.dur}` : ''}</span><span>${symBadge('G', 16)}${P.gold}</span><span><i class="cback"></i>${P.hand.length}</span>${ageMini(P)}</div></div>
 ${dots ? `<div class="dots">${dots}</div>` : ''}<div class="chips"></div><div class="floats"></div></section>`;
 }

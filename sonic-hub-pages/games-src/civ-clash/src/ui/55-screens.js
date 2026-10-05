@@ -6,22 +6,22 @@ function statsLine() { const all = Object.values(SET.stats); const g = all.reduc
 function renderMenu() {
   const count = mobile() ? 3 : 5, mid = (count - 1) / 2, picks = shuffled({ rs: (Date.now() & 0xffffff) >>> 0 }, CIV_ORDER).slice(0, count);
   const fan = picks.map((c, i) => { const k = i - mid; return cardHTML(sigCards(c)[0], { style: `--x:${k * (mobile() ? 84 : 112)}px;--y:${Math.abs(k) * 16}px;--rot:${k * 7}deg;--d:${120 + i * 90}ms` }); }).join('');
-  $('#screen-menu').innerHTML = `<div class="menu"><h1 class="menu-title">Medieval Mayhem</h1><p class="menu-sub">Thirty-five civilizations, one deck each. Draw a card, play a card, outlast every rival.</p>
+  $('#screen-menu').innerHTML = `<div class="menu"><h1 class="menu-title">Medieval Mayhem</h1><div class="menu-rule" aria-hidden="true"></div><p class="menu-sub">Thirty-five civilizations, one deck each. Draw a card, play a card, outlast every rival.</p>
 <div class="menu-fan" aria-hidden="true">${fan}</div>
 <div class="menu-actions">${SET.tutorialDone ? '' : '<button class="btn" data-act="tutorial">Learn to play</button>'}<button class="btn${SET.tutorialDone ? '' : ' ghost'}" data-act="quick">Quick match</button><button class="btn ghost" data-act="choose">Choose a civilization</button>${SET.tutorialDone ? '<button class="btn ghost" data-act="tutorial">Replay the tutorial</button>' : ''}<button class="btn ghost" data-act="settings">Settings</button></div>
 <p class="menu-foot">${statsLine()}</p></div>`;
 }
 function renderSelect() {
   const civ = UI.civ, C = CIVS[civ], hpOf = c => (UI.n === 2 ? CIVS[c].hp2 : CIVS[c].hp4), rec = SET.stats[civ];
-  const list = GROUPS.map(g => `<div class="region"><h3>${esc(g)}</h3><div class="civ-grid">${CIV_ORDER.filter(c => CIVS[c].group === g).map(c => `<button class="civ-tile civ-${c}${c === civ ? ' on' : ''}" data-civ="${c}" aria-pressed="${c === civ}">${crest(c, 36)}<span class="nm">${esc(CIVS[c].name)}</span><span class="hp" data-tip="Starting HP ${UI.n === 2 ? 'in a duel' : 'at a 3–4 player table'}">${hpOf(c)}</span></button>`).join('')}</div></div>`).join('');
+  const list = GROUPS.map(g => `<div class="region"><h3>${esc(g)}</h3><div class="civ-grid">${CIV_ORDER.filter(c => CIVS[c].group === g).map(c => `<button class="civ-tile fam-${CIV_FAMILY[c]} civ-${c}${c === civ ? ' on' : ''}" data-civ="${c}" aria-pressed="${c === civ}">${crest(c, 36)}<span class="nm">${esc(CIVS[c].name)}</span><span class="hp" data-tip="Starting HP ${UI.n === 2 ? 'in a duel' : 'at a 3–4 player table'}">${hpOf(c)}</span></button>`).join('')}</div></div>`).join('');
   $('#screen-select').innerHTML = `<div class="sel-top"><button class="icon-btn" data-act="menu" aria-label="Back to the menu">${ICON.back}</button><h2>Choose your civilization</h2><button class="btn ghost small" data-act="random-civ">Random</button></div>
 <div class="sel-list">${list}</div>
-<div class="sel-detail civ-${civ}"><div class="sd-hero">${crest(civ, 72)}<div><h2>${esc(C.name)}</h2><p>${esc(C.style)}</p></div></div>
+<div class="sel-detail fam-${CIV_FAMILY[civ]} civ-${civ}"><div class="sd-hero">${crest(civ, 72)}<div><h2>${esc(C.name)}</h2><p>${esc(C.style)}</p></div></div>
 <div class="sd-body"><div class="sd-stats"><span><b class="kw k-hp">${C.hp2}</b> HP in a duel</span><span><b class="kw k-hp">${C.hp4}</b> HP at a bigger table</span>${rec ? `<span>Won <b>${rec[0]}</b> of ${rec[1]}</span>` : ''}</div>
 <h3>Signature cards</h3><div class="sd-cards">${sigCards(civ).map(c => cardHTML(c, { size: 'sm' })).join('')}</div>
 <h3>Imperial Age</h3><p>${kw(IMPERIAL[civ].bonus.text)}</p><div class="sd-cards">${impCards(civ).map(c => cardHTML(c, { size: 'sm' })).join('')}</div>
 <h3>The 24-card deck</h3><div class="mix">${deckMix(civ).map(([ch, k]) => `<span data-tip="${esc(SYM[ch].name)}: ${esc(SYM[ch].desc)}">${symBadge(ch, 22)}${k}</span>`).join('')}</div>
-<p class="muted">Card frames use ${MOTIF_NAMES[CIV_MOTIF[civ]]}.</p></div>
+<p class="muted">Cards and camp styled after ${FAMILY_NAMES[CIV_FAMILY[civ]]}, with ${MOTIF_NAMES[CIV_MOTIF[civ]]}.</p></div>
 <div class="sd-foot"><div class="seg" role="group" aria-label="Players">${[2, 3, 4].map(n => `<button class="${UI.n === n ? 'on' : ''}" data-n="${n}">${n === 2 ? 'Duel' : n + ' players'}</button>`).join('')}</div><div class="seg" role="group" aria-label="Difficulty">${['easy', 'normal', 'hard'].map(d => `<button class="${SET.difficulty === d ? 'on' : ''}" data-diff="${d}">${d[0].toUpperCase() + d.slice(1)}</button>`).join('')}</div><button class="btn" data-act="start">To battle</button></div></div>`;
 }
 function relicSheet() {
@@ -50,7 +50,7 @@ function helpSheet() {
 <h3>Around the table</h3>
 <p><b>Walls</b> stand in front of your camp and take damage first. <b>Events</b> hit everyone each round, and the next one is always shown. The <b>Mercenary Market</b> sells one card per turn for gold; it joins your deck. Your <b>relic</b> is a small bonus picked at the start.</p>
 <p><b>Imperial Age</b>: at the start of your ${RULES.ageTurn}th turn a card arrives that adds your civilization's three Imperial cards to your deck, plus its own bonus. <b>Wonders</b> win the game if they survive three turns. The first time you fall to 3 HP or less you draw 2 cards, and from round 16 everyone loses 1 HP each round.</p>
-<h3>Controls</h3><p>Tap or click a card to see it large with its result on every camp, then press <b>Play</b>. For a card that needs a target, tap an enemy camp first. Tap any camp at other times to inspect it. Small cards open at full size when you hover or press and hold them.</p><p>Keys: <b>1–9</b> pick a card, <b>Enter</b> play, <b>Tab</b> switch target, <b>Esc</b> cancel, <b>L</b> chronicle, <b>S</b> speed, <b>H</b> help.</p>
+<h3>Controls</h3><p><b>Drag</b> a card onto the chart to play it, or onto an enemy camp to aim it. Or tap or click a card to read it large with its result on every camp, then press <b>Play</b>; for a card that needs a target, tap an enemy camp first. Tap any camp at other times to inspect it. Small cards open at full size when you hover or press and hold them.</p><p>Keys: <b>1–9</b> pick a card, <b>Enter</b> play, <b>Tab</b> switch target, <b>Esc</b> cancel, <b>L</b> chronicle, <b>S</b> speed, <b>H</b> help.</p>
 <div class="row"><button class="btn" data-act="close">Close</button></div>`);
 }
 function deckSheet(which) {
@@ -79,10 +79,10 @@ function campSheet(pid) {
   const note = { regen: 'regains 1 durability each turn', sacred: 'heals its owner 1 HP each turn', thorns: 'whoever hits it takes 1 damage', fortress: 'raze removes only 1 durability', income: 'gives its owner 1 gold each turn' };
   const plays = S.log.filter(e => e.k === 'play' && e.pid === pid).slice(-5).reverse();
   const toks = [P.tokens.camel ? 'Camel guard: the next cavalry attack against this camp is cancelled.' : '', P.tokens.immune ? 'Divine Wind: every attack against this camp is cancelled until its next turn.' : '', P.tokens.trap ? 'Bạch Đằng stakes: the first opponent to deal damage here takes 2 damage.' : ''].filter(Boolean);
-  openSheet(`<div class="camp-sheet civ-${P.civ}"><div class="hdr">${crest(P.civ, 56)}<div><h2>${pid === 0 ? 'You' : esc(C.name)}</h2><p>${esc(C.style)}</p></div></div>
+  openSheet(`<div class="camp-sheet fam-${CIV_FAMILY[P.civ]} civ-${P.civ}"><div class="hdr">${crest(P.civ, 56)}<div><h2>${pid === 0 ? 'You' : esc(C.name)}</h2><p>${esc(C.style)}</p></div></div>
 <div class="sd-stats"><span><b class="kw k-hp">${Math.max(0, P.hp)}</b> of ${P.maxHP} HP</span><span><b class="kw k-gold">${P.gold}</b> gold</span><span><b class="kw k-card">${P.hand.length}</b> cards in hand</span><span><b>${P.deck.length}</b> in deck</span></div>
 ${P.relic ? `<p><b>${esc(RELICS[P.relic].name)}</b>: ${kw(RELICS[P.relic].text)}</p>` : ''}
-<h3>Walls and buildings</h3>${P.structs.length ? `<div class="ws">${P.structs.map(st => `<div>${workHTML(st)}<span>${esc(st.card.name)}${st.kind === 'wonder' ? `: wins in ${Math.max(0, 3 - st.age)} turn(s) unless destroyed` : note[st.kind] ? ': ' + note[st.kind] : ''}</span></div>`).join('')}</div>` : '<p class="muted">None standing.</p>'}
+<h3>Defenses</h3>${P.structs.length ? `<div class="ws">${P.structs.map(st => `<div>${buildHTML(st)}<span>${esc(st.card.name)}${st.kind === 'wonder' ? `: wins in ${Math.max(0, 3 - st.age)} turn(s) unless destroyed` : note[st.kind] ? ': ' + note[st.kind] : ''}</span></div>`).join('')}</div>` : '<p class="muted">None standing.</p>'}
 ${toks.length ? `<h3>Effects</h3><ul>${toks.map(t => `<li>${kw(t)}</li>`).join('')}</ul>` : ''}
 <h3>Imperial Age</h3><p>${!P.ageGiven ? `The card arrives in ${Math.max(1, RULES.ageTurn - P.turns)} turn(s).` : !P.aged ? 'Holds the Imperial Age card.' : 'In the Imperial Age.'} ${kw(I.bonus.text)}</p>
 <div class="sd-cards">${impCards(P.civ).map(c => cardHTML(c, { size: 'sm' })).join('')}</div>

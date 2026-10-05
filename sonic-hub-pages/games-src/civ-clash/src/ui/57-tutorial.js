@@ -3,9 +3,9 @@
 const TUTORIAL = [
   { show: 'now', until: 'next', target: '#opps .camp', title: 'Welcome to the war table', text: 'You lead the Franks against the Japanese. Each turn you draw 1 card and play 1. Bring their HP to 0 to win.' },
   { show: 'now', until: 'next', target: '#hand', title: 'Your hand', text: 'A card does what its symbols say, left to right. The coloured words tell you the kind of effect: damage, HP, gold, cards, walls.' },
-  { show: 'now', until: 'select', target: '#hand', title: 'Pick a card', text: 'Tap or click any card to see what it would do. Nothing happens until you confirm.' },
+  { show: 'now', until: 'select', target: '#hand', title: 'Pick a card', text: 'Tap or click a card to read it large. You can also drag a card straight onto the chart to play it.' },
   { show: 'now', until: 'play', target: '#stage-card', title: 'See before you play', text: 'The tags above the camps show the result in advance. Press Play below to confirm.' },
-  { show: 'turn', until: 'next', target: '#me .camp', title: 'Your camp', text: 'The ring is your HP. Walls you build stand next to it and take damage before your HP does.' },
+  { show: 'turn', until: 'next', target: '#me .camp', title: 'Your camp', text: 'The wax seal is your HP. The buildings under Defenses take damage before your HP does; the number on each is how much more it can absorb.' },
   { show: 'now', until: 'next', target: '#events', title: 'Events', text: 'Each round an event hits everyone, and the next one is always shown, so you can plan for it.', wide: true },
   { show: 'now', until: 'next', target: '#market', title: 'Mercenaries', text: 'Gold hires one mercenary per turn. The card goes straight to your hand and joins your deck.', wide: true },
   { show: 'agecard', until: 'next', target: '#hand', title: 'The Imperial Age', text: 'Turn 7 brings this card. Playing it adds your civilization\'s three Imperial cards to your deck, plus a bonus.' },
