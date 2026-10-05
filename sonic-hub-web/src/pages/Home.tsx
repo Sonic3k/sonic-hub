@@ -81,7 +81,7 @@ export default function Home() {
       <section className="duo">
         <div><div className="hd"><h2>Angels</h2><span>{(persons.data ?? []).filter(p => !p.isSelf).length} người</span><Link to="/angels" style={{ ['--c' as string]: 'var(--angels)' }}>Vào Angels</Link></div>
           <div className="people">{(persons.data ?? []).filter(p => !p.isSelf).sort((a, b) => Number(!!b.isFeatured) - Number(!!a.isFeatured)).slice(0, 6).map(p => (
-            <Link key={p.id} className="person" to="/angels">{p.avatarUrl ? <img src={cdn(p.avatarUrl, 200)} alt="" /> : <span className="letter-ph">{nameOf(p).slice(0, 1)}</span>}<b>{nameOf(p)}</b><span>{p.period ?? ''}</span></Link>))}</div></div>
+            <Link key={p.id} className="person" to={`/angels/${p.id}`}>{p.avatarUrl ? <img src={cdn(p.avatarUrl, 200)} alt="" /> : <span className="letter-ph">{nameOf(p).slice(0, 1)}</span>}<b>{nameOf(p)}</b><span>{p.period ?? ''}</span></Link>))}</div></div>
         {!!regions.data?.length && <div><div className="hd"><h2>Vùng</h2><span>theo tag</span></div>
           <div className="regions">{regions.data.map(r => <Link key={r.id} className="region" to={`/tags/${encodeURIComponent(r.name)}`} style={{ paddingLeft: 12 }}><span className="dot" style={{ width: 8, height: 8, borderRadius: '50%', background: r.color || 'var(--ink3)' }} />{r.name}<small>{fmt(r.count)}</small></Link>)}</div></div>}
       </section>

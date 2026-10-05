@@ -39,3 +39,13 @@ export interface ChatArchive { id: string; platform: string; title?: string | nu
 export interface ChatMessage { id: string; sender: string; content: string; timestamp?: string | null; seq?: number | null }
 
 export interface TagStats { id: string; name: string; color?: string | null; mediaCount: number; albumCount: number; noteCount: number }
+
+export interface PersonDetail extends Person {
+  alternativeName?: string | null; dateOfBirth?: string | null; bio?: string | null; firstMet?: string | null; howWeMet?: string | null;
+  coverUrl?: string | null; bannerUrl?: string | null; tags?: TagRef[] | null;
+  totalCollections?: number | null; totalMediaFiles?: number | null; totalChatArchives?: number | null; totalFacts?: number | null; totalEpisodes?: number | null;
+}
+export interface Fact { id: string; category?: string | null; key?: string | null; value?: string | null; period?: string | null; confidence?: number | null }
+export interface Episode { id: string; summary: string; emotion?: string | null; importance?: number | null; occurredAt?: string | null }
+export interface Chapter { id: string; period?: string | null; title?: string | null; summary?: string | null; sentiment?: string | null; sortOrder?: number | null }
+export interface Trait { id: string; trait: string; description?: string | null; evidence?: string | null; period?: string | null }

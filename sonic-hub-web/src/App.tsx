@@ -8,6 +8,7 @@ import Soon from './pages/Soon';
 import Photos from './pages/Photos';
 import { AlbumPage, AlbumsIndex } from './pages/Albums';
 import Region from './pages/Region';
+import { AngelsIndex, ChatReader, PersonPage } from './pages/Angels';
 
 const qc = new QueryClient({ defaultOptions: { queries: { retry: 1, refetchOnWindowFocus: false } } });
 
@@ -25,7 +26,9 @@ export default function App() {
             <Route path="photos/albums" element={<AlbumsIndex />} />
             <Route path="photos/albums/:id" element={<AlbumPage />} />
             <Route path="tags/:name" element={<Region />} />
-            <Route path="angels" element={<Soon title="Angels" line="Mỗi người một câu chuyện — đang được thiết kế ở bước tiếp theo." />} />
+            <Route path="angels" element={<AngelsIndex />} />
+            <Route path="angels/:id" element={<PersonPage />} />
+            <Route path="angels/:id/chat/:archiveId" element={<ChatReader />} />
             <Route path="games" element={<Soon title="Game" line="Kệ game — đang được thiết kế ở bước tiếp theo." />} />
             <Route path="football" element={<Soon title="Bóng đá" line="Chưa cấu hình địa chỉ trang Fantasy (VITE_FOOTBALL_URL)." />} />
             <Route path="*" element={<Navigate to="/" replace />} />

@@ -300,3 +300,72 @@ a.chip.on { background: #E6EEF9; color: var(--journal); font-weight: 600; }
   .viewer.with-info .v-strip { display: none; } .v-nav { display: none; }
   .finput { min-width: 0; width: 100%; margin-left: 0; } .ptitle .sortbtn { margin-left: 0; }
 }
+
+/* ═══ Angels — the same frame in a softer, blush light ═══ */
+body { transition: background-color .8s ease; }
+body.mood-angels { --bg: #F7EDEB; --soft: #F2E2DF; --line: #EBD8D4; --card: #FFFCFB; background: var(--bg); }
+body.mood-angels .top { background: rgba(255,251,250,.94); }
+body.mood-angels .progress { background: var(--angels); }
+body.mood-angels .kicker, body.mood-angels .when { color: var(--angels); }
+.side .aside-person { gap: 10px; }
+.aside-person img, .aside-person .av-ph { width: 24px; height: 24px; border-radius: 50%; object-fit: cover; flex: 0 0 auto; }
+.aside-person .av-ph { display: grid; place-items: center; font-size: 11px; font-weight: 600; color: var(--angels); background: #FDE7EC; }
+.aside-person .ap-n { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.angels-list { display: flex; flex-direction: column; }
+.arow { display: grid; grid-template-columns: 120px minmax(0, 1fr) 132px; gap: 24px; align-items: center; padding: 20px 8px; border-bottom: 1px solid var(--line); border-radius: 10px; transition: background .4s; }
+.arow:first-child { border-top: 1px solid var(--line); }
+.arow:hover { background: var(--card); }
+.ayrs { font-size: 13.5px; font-weight: 600; color: var(--angels); }
+.amid { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.aname { font-family: var(--serif); font-size: 28px; font-weight: 500; line-height: 1.2; letter-spacing: -.01em; }
+.anick { font-family: var(--serif); font-style: italic; color: var(--ink2); }
+.arel { font-size: 13px; color: var(--ink3); }
+.aimg { width: 132px; height: 165px; border-radius: 8px; overflow: hidden; background: var(--soft); }
+.aimg img { width: 100%; height: 100%; object-fit: cover; transition: transform .8s; } .arow:hover .aimg img { transform: scale(1.04); }
+.aimg .letter-ph { border-radius: 0; font-size: 40px; }
+.story .back { display: inline-block; margin-bottom: 18px; }
+.story-name { margin: 4px 0 8px; font-family: var(--serif); font-size: clamp(44px, 5.4vw, 72px); font-weight: 500; line-height: 1.02; letter-spacing: -.03em; }
+.story-meta { margin: 0 0 6px; font-size: 13.5px; letter-spacing: .04em; color: var(--ink3); text-transform: uppercase; }
+.story-song { margin: 0 0 28px; font-family: var(--serif); font-style: italic; color: var(--ink2); }
+.story .cover { margin: 0 0 32px; } .story .cover img { width: 100%; aspect-ratio: 16/9; object-fit: cover; border-radius: 10px; }
+.story-intro { margin-bottom: 12px; }
+.story .prose { max-width: 680px; }
+.chapter { margin: 40px 0 0; }
+.chapter .when { margin-bottom: 6px; font-size: 12.5px; font-weight: 600; letter-spacing: .12em; text-transform: uppercase; }
+.chapter h2 { margin: 0 0 10px; font-family: var(--serif); font-size: 28px; font-weight: 500; line-height: 1.25; letter-spacing: -.01em; }
+.chapter-photos { margin: 8px 0 0; }
+.episodes { list-style: none; margin: 0; padding: 0 0 0 18px; border-left: 2px solid color-mix(in srgb, var(--angels) 30%, transparent); }
+.episodes li { position: relative; padding: 0 0 22px 18px; }
+.episodes li::before { content: ""; position: absolute; left: -26px; top: 6px; width: 10px; height: 10px; border-radius: 50%; background: var(--bg); border: 2px solid var(--angels); }
+.episodes li.big::before { background: var(--angels); }
+.episodes time { display: block; font-size: 12.5px; font-weight: 600; color: var(--angels); }
+.episodes p { margin: 4px 0 0; font-family: var(--serif); font-size: 17.5px; line-height: 1.6; }
+.episodes li.big p { font-size: 19px; font-weight: 500; }
+.emo { display: inline-block; margin-top: 6px; padding: 2px 10px; border-radius: 999px; background: #FDE7EC; color: var(--angels); font-size: 12px; font-weight: 500; }
+.chatlist { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 12px; }
+.chatcard { display: flex; flex-direction: column; gap: 4px; padding: 16px; transition: border-color .3s, transform .3s; }
+.chatcard:hover { border-color: color-mix(in srgb, var(--angels) 40%, transparent); transform: translateY(-2px); }
+.plat { align-self: flex-start; padding: 2px 9px; border-radius: 999px; background: #FDE7EC; color: var(--angels); font-size: 11.5px; font-weight: 600; letter-spacing: .04em; }
+.chatcard b { font-size: 15px; } .chatcard small { font-size: 12.5px; color: var(--ink3); }
+.hush-note { margin: 32px 0; color: var(--ink3); font-style: italic; }
+.story .pn { margin-top: 48px; }
+.transcript-page { max-width: 860px; }
+.transcript { display: flex; flex-direction: column; gap: 3px; padding: 8px 0 24px; }
+.day-sep { display: flex; justify-content: center; margin: 22px 0 10px; }
+.day-sep span { padding: 4px 12px; border-radius: 999px; background: var(--soft); font-size: 12px; font-weight: 500; color: var(--ink2); }
+.msg { display: flex; flex-direction: column; max-width: 72%; }
+.msg.them { align-self: flex-start; } .msg.me { align-self: flex-end; align-items: flex-end; }
+.msg .who { margin: 8px 12px 2px; font-size: 11.5px; font-weight: 600; color: var(--ink3); }
+.msg p { margin: 0; padding: 8px 12px; border-radius: 16px; font-size: 15px; line-height: 1.45; background: var(--card); border: 1px solid var(--line); white-space: pre-wrap; overflow-wrap: anywhere; }
+.msg.me p { background: #FBE0E6; border-color: transparent; }
+.msg.them:not(.cont) p { border-top-left-radius: 6px; } .msg.me:not(.cont) p { border-top-right-radius: 6px; }
+.msg time { margin-left: 10px; font-size: 11px; color: var(--ink3); white-space: nowrap; }
+.msg mark { background: #FFE58A; border-radius: 3px; padding: 0 1px; }
+@media (max-width: 860px) {
+  .arow { grid-template-columns: minmax(0, 1fr) 96px; gap: 14px; } .ayrs { grid-column: 1 / -1; margin-bottom: -10px; }
+  .aimg { width: 96px; height: 120px; } .aname { font-size: 23px; } .msg { max-width: 86%; }
+}
+.facts { margin: 0; font-size: 13.5px; line-height: 1.45; }
+.facts div { display: grid; grid-template-columns: 88px minmax(0, 1fr); gap: 10px; padding: 8px 0; border-top: 1px solid var(--line); }
+.facts div:first-child { border-top: 0; padding-top: 0; }
+.facts dt { color: var(--ink3); } .facts dd { margin: 0; color: var(--ink); overflow-wrap: anywhere; }

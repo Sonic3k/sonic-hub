@@ -1,5 +1,5 @@
 import { get } from './client';
-import type { ChatArchive, ChatMessage, Collection, MediaFile, Note, Paged, Person, Tag, TagStats, TimelineBucket } from '../types';
+import type { Chapter, ChatArchive, ChatMessage, Collection, Episode, Fact, MediaFile, Note, Paged, Person, PersonDetail, Tag, TagStats, TimelineBucket, Trait } from '../types';
 import { isoDay, addDays } from '../lib/date';
 
 export interface Search {
@@ -22,7 +22,12 @@ export const hub = {
   noteById: (id: string) => get<Note>(`/journal/notes/${id}`),
   categories: () => get<string[]>('/journal/categories'),
   archives: (personId: string) => get<ChatArchive[]>(`/persons/${personId}/chat-archives`),
-  messages: (personId: string, archiveId: string, page: number, size: number) => get<Paged<ChatMessage>>(`/persons/${personId}/chat-archives/${archiveId}/messages`, { page, size }),
+  messages: (personId: string, archiveId: string, page: number, size: number, q?: string) => get<Paged<ChatMessage>>(`/persons/${personId}/chat-archives/${archiveId}/messages`, { page, size, q }),
+  person: (id: string) => get<PersonDetail>(`/persons/${id}`),
+  facts: (id: string) => get<Fact[]>(`/persons/${id}/memory/facts`),
+  episodes: (id: string) => get<Episode[]>(`/persons/${id}/memory/episodes`),
+  chapters: (id: string) => get<Chapter[]>(`/persons/${id}/memory/chapters`),
+  traits: (id: string) => get<Trait[]>(`/persons/${id}/memory/traits`),
   total: async (p: Search) => (await hub.search({ ...p, size: 1 })).totalElements,
   tagStats: () => get<TagStats[]>('/tags/stats'),
   allAlbums: () => get<Collection[]>('/collections/all', { inclMediaCount: true, inclChildrenCount: true, inclTags: true }),
@@ -68,6 +73,13 @@ export async function randomDay(year: number, buckets: TimelineBucket[]): Promis
   const iso = r.content[0]?.effectiveDate;
   if (!iso) return { month: pick.month, day: 1 };
   return { month: Number(iso.slice(5, 7)), day: Number(iso.slice(8, 10)) };
+}
+
+/** Years in any period string: "2009–2012", "Mùa hè 2010", "2016 - nay". */
+export function periodYears(period?: string | null): [number, number] | null {
+  const nums = (period ?? '').match(/(19|20)\d{2}/g)?.map(Number);
+  if (!nums?.length) return null;
+  return [nums[0], /nay|now|present/i.test(period ?? '') ? new Date().getFullYear() : nums[nums.length - 1]];
 }
 
 /** Years mentioned by a person's period string ("2009–2012", "2015", "2016 - nay"). */

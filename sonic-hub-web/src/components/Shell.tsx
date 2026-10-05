@@ -2,6 +2,9 @@
 import { Link, NavLink, Outlet, useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import { randomDay } from '../api/hub';
 import Search from './Search';
+import { useEffect } from 'react';
+import { angelsOrdered } from '../pages/Angels';
+import { cdn } from '../api/client';
 import { counts, fmt, noteDate, useAlbums, useLibraryCounts, useNotes, usePersons, useRegions, useTimeline } from '../lib/queries';
 
 const FOOTBALL = import.meta.env.VITE_FOOTBALL_URL;
@@ -9,7 +12,9 @@ const TABS: [string, string, string][] = [['Hôm nay', '/', '--photo'], ['Ảnh'
 
 export default function Shell() {
   const loc = useLocation(), nav = useNavigate(), tl = useTimeline();
-  const reading = /^\/journal\/.+/.test(loc.pathname), inJournal = loc.pathname.startsWith('/journal'), inPhotos = /^\/(photos|tags)/.test(loc.pathname);
+  const reading = /^\/journal\/.+/.test(loc.pathname), inJournal = loc.pathname.startsWith('/journal'), inPhotos = /^\/(photos|tags)/.test(loc.pathname), inAngels = loc.pathname.startsWith('/angels');
+  /* Angels changes the light of the whole page, softly */
+  useEffect(() => { document.body.classList.toggle('mood-angels', inAngels); }, [inAngels]);
   const random = async () => {
     const years = Object.keys(counts(tl.data ?? [])).map(Number); if (!years.length) return;
     const y = years[Math.floor(Math.random() * years.length)], r = await randomDay(y, tl.data ?? []).catch(() => null);
@@ -26,7 +31,7 @@ export default function Shell() {
         <button className="rand" type="button" onClick={random}>Một ngày bất kỳ</button>
       </div></header>
       <div className={`frame ${reading ? 'reading' : ''}`}>
-        <aside className="side">{inJournal ? <JournalSide /> : inPhotos ? <PhotosSide /> : <HomeSide />}</aside>
+        <aside className="side">{inJournal ? <JournalSide /> : inPhotos ? <PhotosSide /> : inAngels ? <AngelsSide /> : <HomeSide />}</aside>
         <main><Outlet /></main>
       </div>
     </>
@@ -92,6 +97,20 @@ function PhotosSide() {
       {regions.data?.map(r => <Link key={r.id} to={`/tags/${encodeURIComponent(r.name)}`} className={path === `/tags/${encodeURIComponent(r.name)}` || decodeURIComponent(path) === `/tags/${r.name}` ? 'on' : ''}><span className="dot" style={{ ['--c' as string]: r.color || 'var(--ink3)' }} />{r.name}<small>{fmt(r.count)}</small></Link>)}
       {people.length > 0 && <h4>Người</h4>}
       {people.map(p => <Link key={p.id} to={`/photos?person=${p.id}`} className={sp.get('person') === p.id ? 'on' : ''}>{p.displayName || p.name}</Link>)}
+    </>
+  );
+}
+
+function AngelsSide() {
+  const persons = usePersons(), loc = useLocation(), list = angelsOrdered(persons.data ?? []);
+  return (
+    <>
+      <h4>Angels</h4>
+      <Link to="/angels" className={loc.pathname === '/angels' ? 'on' : ''}>Tất cả<small>{list.length}</small></Link>
+      <h4>Theo thời gian</h4>
+      {list.map(p => <Link key={p.id} to={`/angels/${p.id}`} className={`aside-person ${loc.pathname.startsWith(`/angels/${p.id}`) ? 'on' : ''}`}>
+        {p.avatarUrl ? <img src={cdn(p.avatarUrl, 60)} alt="" /> : <span className="av-ph">{(p.displayName || p.name).slice(0, 1)}</span>}
+        <span className="ap-n">{p.displayName || p.name}</span><small>{p.period ?? ''}</small></Link>)}
     </>
   );
 }
