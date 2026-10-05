@@ -2,7 +2,7 @@
    At the start of your RULES.ageTurn-th turn an "Imperial Age" card is put into your hand. Playing it costs your
    play for that turn (no gold): your civ's Imperial cards are shuffled into your deck (or one goes straight to
    your hand) and your civ's age-up bonus resolves. The card can't be stolen, discarded or passed. ── */
-const RULES = { ageTurn: 5 };
+const RULES = { ageTurn: 7 };
 const IMPERIAL = {
   chinese:    { bonus: { text: 'Bonus: draw 2 cards.', steps: [{ draw: 2 }] }, cards: [{ name: 'Chu Ko Nu', icons: 'BBA' }, { name: 'Fire Arrow Rockets', icons: 'FFM' }, { name: 'Forbidden City', icons: 'WWWH' }] },
   japanese:   { bonus: { text: 'Bonus: Kensei goes straight to your hand.', fetch: 0 }, cards: [{ name: 'Kensei', icons: 'AAA', text: 'Deal 3 damage, or 4 damage if the opponent has no walls.', steps: [{ dmg: 3, samurai: 1 }] }, { name: 'Atakebune', icons: 'NFA' }, { name: 'Yumi Archers', icons: 'BBM' }] },

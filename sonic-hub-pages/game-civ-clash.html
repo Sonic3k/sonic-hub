@@ -289,28 +289,28 @@ const UNIQUE = {
 /* civs: hp2 (duel) and hp4 (3–4 players) come from tune.js (AI vs AI); deck = 24 cards; group only helps browsing */
 const CIVS = {
   chinese: { name: "Chinese", group: "East Asia", color: '#b3261e', charge: 'sun', hp2: 15, hp4: 12, style: "Gunpowder, great walls, imperial exams", deck: 'A3 AA1 AM2 F3 FF1 W2 WW1 WH1 H2 HD1 DD1 G1 R1 AA1 C1 +greatwall +exam' },
-  japanese: { name: "Japanese", group: "East Asia", color: '#c0392b', charge: 'disc', hp2: 13, hp4: 14, style: "Samurai strikes, the Divine Wind shields", deck: 'A5 AA2 AM2 AAM1 K1 B2 W2 WH1 H2 HH1 D1 MD1 G1 +samurai +kamikaze' },
+  japanese: { name: "Japanese", group: "East Asia", color: '#c0392b', charge: 'disc', hp2: 13, hp4: 15, style: "Samurai strikes, the Divine Wind shields", deck: 'A5 AA2 AM2 AAM1 K1 B2 W2 WH1 H2 HH1 D1 MD1 G1 +samurai +kamikaze' },
   koreans: { name: "Koreans", group: "East Asia", color: '#2b6cb0', charge: 'knot', hp2: 18, hp4: 13, style: "Rocket carts, sturdy walls, card draw", deck: 'A3 AA3 AM2 F3 B2 W1 WW1 WH1 H2 HH1 D1 G1 R1 +hwacha +tripitaka' },
   jurchens: { name: "Jurchens", group: "East Asia", color: '#3d4f5c', charge: 'axe', hp2: 10, hp4: 13, style: "Iron cavalry and thunder bombs", deck: 'A5 AA2 AM1 AAM1 K2 KM1 KK1 F1 W2 WH1 H2 D1 G1 R1 +ironcav +thunder' },
   daiviet: { name: "Đại Việt", group: "Southeast Asia", color: '#b8860b', charge: 'star', hp2: 17, hp4: 13, style: "Crossbows, elephants, the Bạch Đằng stakes", deck: 'A4 AA2 AM1 AD1 B3 BB1 E2 W2 WW1 WH1 H2 HH1 D1 +stakes +proclaim' },
   khmer: { name: "Khmer", group: "Southeast Asia", color: '#8a5a2b', charge: 'temple', hp2: 12, hp4: 13, style: "War elephants and Angkor Wat", deck: 'A4 AA1 AM1 E2 EA1 B1 W2 WW1 WH1 H2 HH1 D1 G2 C1 R1 +angkor +baray' },
-  indians: { name: "Indians", group: "South Asia", color: '#d97706', charge: 'wheel', hp2: 10, hp4: 11, style: "Armored elephants and the Chola fleet", deck: 'A4 AA2 AM1 E2 EA2 N1 L1 W2 WH1 H2 HH1 D1 C1 R1 +armoredel +cholafleet' },
+  indians: { name: "Indians", group: "South Asia", color: '#d97706', charge: 'wheel', hp2: 11, hp4: 11, style: "Armored elephants and the Chola fleet", deck: 'A4 AA2 AM1 E2 EA2 N1 L1 W2 WH1 H2 HH1 D1 C1 R1 +armoredel +cholafleet' },
   arabs: { name: "Arabs", group: "Middle East & Africa", color: '#1f7a4d', charge: 'crescent', hp2: 11, hp4: 11, style: "Camels, caravans, medicine", deck: 'A4 AM1 L3 LG1 K1 W2 WH1 H2 HH2 HD1 C1 G1 GD1 S1 +caravan +baghdad' },
   persians: { name: "Persians", group: "Middle East & Africa", color: '#6b2d8f', charge: 'sun', hp2: 11, hp4: 11, style: "Elephants, camels and the Immortals", deck: 'A4 AA1 AM1 E2 EA1 L2 K1 W2 WH1 H2 HH1 D1 G1 R1 C1 +immortals +sasanian' },
-  turks: { name: "Turks", group: "Middle East & Africa", color: '#a51c30', charge: 'crescent', hp2: 14, hp4: 13, style: "Great bombards, Janissaries, gunpowder", deck: 'A4 AA1 AM2 F2 FF1 L1 K1 W2 WH1 H2 D1 G2 R2 +urban +akinji' },
-  malians: { name: "Malians", group: "Middle East & Africa", color: '#c08a1e', charge: 'disc', hp2: 8, hp4: 9, style: "Gold, mercenaries, camels", deck: 'A4 AM2 L2 LG1 G2 GG1 W2 WH1 H2 HH1 D1 S1 K1 AA1 +mansa +sankore' },
+  turks: { name: "Turks", group: "Middle East & Africa", color: '#a51c30', charge: 'crescent', hp2: 14, hp4: 12, style: "Great bombards, Janissaries, gunpowder", deck: 'A4 AA1 AM2 F2 FF1 L1 K1 W2 WH1 H2 D1 G2 R2 +urban +akinji' },
+  malians: { name: "Malians", group: "Middle East & Africa", color: '#c08a1e', charge: 'disc', hp2: 8, hp4: 10, style: "Gold, mercenaries, camels", deck: 'A4 AM2 L2 LG1 G2 GG1 W2 WH1 H2 HH1 D1 S1 K1 AA1 +mansa +sankore' },
   ethiopians: { name: "Ethiopians", group: "Middle East & Africa", color: '#2f7d32', charge: 'cross', hp2: 15, hp4: 12, style: "Healing rock churches, Shotel warriors", deck: 'A5 AA1 AM1 E1 L1 B1 W2 WW1 WH1 H2 HH2 HD1 C1 D1 G1 +lalibela +shotel' },
-  mongols: { name: "Mongols", group: "Steppe", color: '#1f6f8b', charge: 'horse', hp2: 12, hp4: 14, style: "Relentless horse archers, feigned retreats", deck: 'A3 AM2 B3 BM3 K1 KM1 MD1 W1 WH1 H2 D1 S1 G1 R1 +arrowrain +feint' },
+  mongols: { name: "Mongols", group: "Steppe", color: '#1f6f8b', charge: 'horse', hp2: 13, hp4: 14, style: "Relentless horse archers, feigned retreats", deck: 'A3 AM2 B3 BM3 K1 KM1 MD1 W1 WH1 H2 D1 S1 G1 R1 +arrowrain +feint' },
   huns: { name: "Huns", group: "Steppe", color: '#7a3b12', charge: 'bow', hp2: 17, hp4: 15, style: "Ravage, plunder, horse archers", deck: 'A4 AA1 AM2 AAM1 B2 BM2 K1 KM1 S2 W1 WH1 H2 D1 R1 +scourge +aquileia' },
   khitans: { name: "Khitans", group: "Steppe", color: '#4a6b3a', charge: 'bow', hp2: 10, hp4: 12, style: "Rich dual courts, nomad camps", deck: 'A4 AM1 B2 BM2 K2 KM1 W2 WH1 H2 HH1 D1 G2 R1 +twocourts +ordo' },
-  britons: { name: "Britons", group: "Europe", color: '#9b1c1c', charge: 'tower', hp2: 17, hp4: 15, style: "Longbows that shoot over walls", deck: 'A3 AM1 B4 BB2 AD1 K1 W2 WW1 WH1 H2 HH1 D1 G1 R1 +longbow +charter' },
+  britons: { name: "Britons", group: "Europe", color: '#9b1c1c', charge: 'tower', hp2: 17, hp4: 16, style: "Longbows that shoot over walls", deck: 'A3 AM1 B5 BB3 K1 W2 WW1 WH1 H2 HH1 D1 R1 +longbow +charter' },
   celts: { name: "Celts", group: "Europe", color: '#1d6b45', charge: 'knot', hp2: 11, hp4: 14, style: "Frenzied infantry, ambushes", deck: 'A5 AA3 AM2 AAM1 AD1 AH1 W2 WH1 H2 HH1 D1 S1 R1 +woad +ambush' },
   franks: { name: "Franks", group: "Europe", color: '#1f4e9c', charge: 'fleur', hp2: 12, hp4: 14, style: "Knights and castles", deck: 'A4 AA1 AM1 K3 KK1 KM1 W2 WW1 WH1 H2 HH1 C1 D1 G1 R1 +paladin +charlemagne' },
-  vikings: { name: "Vikings", group: "Europe", color: '#33506b', charge: 'ship', hp2: 13, hp4: 14, style: "Longship raids, berserkers", deck: 'A4 AA2 AM2 AAM1 N3 NM1 S1 W2 WH1 H2 HH1 D1 G1 +berserk +lindisfarne' },
+  vikings: { name: "Vikings", group: "Europe", color: '#33506b', charge: 'ship', hp2: 14, hp4: 14, style: "Longship raids, berserkers", deck: 'A4 AA2 AM2 AAM1 N3 NM1 S1 W2 WH1 H2 HH1 D1 G1 +berserk +lindisfarne' },
   teutons: { name: "Teutons", group: "Europe", color: '#2d2d2d', charge: 'cross', hp2: 17, hp4: 13, style: "Spiked walls, heavy knights", deck: 'A3 AA2 K2 KK1 W3 WW2 WWW1 WH1 H2 HH1 C1 D1 R1 G1 +teutonic +marienburg' },
-  goths: { name: "Goths", group: "Europe", color: '#5b4636', charge: 'axe', hp2: 11, hp4: 13, style: "Human waves, the Sack of Rome", deck: 'A5 AA2 AM3 AAM1 MM1 AD1 W2 WH1 H3 D1 S1 R1 +horde +sackrome' },
-  spanish: { name: "Spanish", group: "Europe", color: '#b45309', charge: 'tower', hp2: 11, hp4: 12, style: "Conquistadors, gold, Reconquista", deck: 'A3 AA1 AM1 AH1 K2 KM1 B1 W2 WW1 WH1 H2 C1 D1 G2 GD1 R1 +conquist +reconq' },
-  portuguese: { name: "Portuguese", group: "Europe", color: '#0e5e6f', charge: 'quinas', hp2: 12, hp4: 12, style: "Caravels and sea trade", deck: 'A3 AA1 AM2 N2 NM1 B1 W2 WH1 H2 HH1 D1 MD1 G2 BB1 FF1 +caravel +indiaroute' },
+  goths: { name: "Goths", group: "Europe", color: '#5b4636', charge: 'axe', hp2: 11, hp4: 14, style: "Human waves, the Sack of Rome", deck: 'A5 AA2 AM3 AAM1 MM1 AD1 W2 WH1 H3 D1 S1 R1 +horde +sackrome' },
+  spanish: { name: "Spanish", group: "Europe", color: '#b45309', charge: 'tower', hp2: 12, hp4: 12, style: "Conquistadors, gold, Reconquista", deck: 'A3 AA1 AM1 AH1 K2 KM1 B1 W2 WW1 WH1 H2 C1 D1 G2 GD1 R1 +conquist +reconq' },
+  portuguese: { name: "Portuguese", group: "Europe", color: '#0e5e6f', charge: 'quinas', hp2: 12, hp4: 13, style: "Caravels and sea trade", deck: 'A3 AA1 AM2 N2 NM1 B1 W2 WH1 H2 HH1 D1 MD1 G2 BB1 FF1 +caravel +indiaroute' },
   byzantines: { name: "Byzantines", group: "Europe", color: '#5b2a86', charge: 'cross', hp2: 13, hp4: 12, style: "Theodosian Walls, Greek fire, cataphracts", deck: 'A3 AA1 AM1 K2 W3 WW2 WH1 H2 HH2 HD1 C1 D1 G1 R1 +theodosius +greekfire' },
   aztecs: { name: "Aztecs", group: "Americas", color: '#0f766e', charge: 'eagle', hp2: 9, hp4: 13, style: "Sacrifice and Eagle warriors", deck: 'A4 AA2 AM1 AAM1 Y3 YM1 B1 S1 W1 WH1 H2 HH1 D1 G1 C1 +sacrifice +flowerwar' },
   mayans: { name: "Mayans", group: "Americas", color: '#2e7d5b', charge: 'pyramid', hp2: 12, hp4: 13, style: "Chichén Itzá and archers", deck: 'A4 AM1 Y2 B2 BB1 W2 WW1 WH1 H2 HH1 D1 DD1 G1 R1 C1 +chichen +calendar' },
@@ -322,7 +322,7 @@ const CIVS = {
   lithuanians: { name: "Lithuanians", group: "Eastern Europe", color: '#5b8c1a', charge: 'columns', hp2: 12, hp4: 14, style: "Armour-piercing riders and hill forts", deck: 'A4 AA1 AM1 K2 KM2 B1 W2 WW1 WH1 H2 HH1 D1 G1 S1 R1 +leitis +hillforts' },
   bulgarians: { name: "Bulgarians", group: "Eastern Europe", color: '#3c7a64', charge: 'crown', hp2: 11, hp4: 14, style: "Konnik riders and small fortresses", deck: 'A4 AA2 AM1 AAM1 K2 KM1 W2 WW1 WH1 H2 HH1 D1 G1 S1 R1 +konnik +krepost' },
   slavs: { name: "Slavs", group: "Eastern Europe", color: '#8b2a1a', charge: 'trident', hp2: 11, hp4: 12, style: "Boyars, druzhina and stone citadels of the Rus", deck: 'A4 AA1 AM1 K2 KK1 KM1 W2 WW1 WH1 H2 HH1 C2 D1 G1 R1 +druzhina +detinets' },
-  magyars: { name: "Magyars", group: "Eastern Europe", color: '#b5452c', charge: 'doublecross', hp2: 10, hp4: 12, style: "Hussars, recurve bows and the Black Army", deck: 'A3 AM2 K2 KM2 B2 BM2 W1 WH1 H2 HH1 D1 G1 S1 R1 +recurve +blackarmy' },
+  magyars: { name: "Magyars", group: "Eastern Europe", color: '#b5452c', charge: 'doublecross', hp2: 10, hp4: 13, style: "Hussars, recurve bows and the Black Army", deck: 'A3 AM2 K2 KM2 B2 BM2 W1 WH1 H2 HH1 D1 G1 S1 R1 +recurve +blackarmy' },
 };
 const CIV_ORDER = Object.keys(CIVS);
 const GROUPS = ['East Asia', 'Southeast Asia', 'South Asia', 'Middle East & Africa', 'Steppe', 'Europe', 'Eastern Europe', 'Americas'];
@@ -377,7 +377,7 @@ const RELIC_IDS = Object.keys(RELICS);
    At the start of your RULES.ageTurn-th turn an "Imperial Age" card is put into your hand. Playing it costs your
    play for that turn (no gold): your civ's Imperial cards are shuffled into your deck (or one goes straight to
    your hand) and your civ's age-up bonus resolves. The card can't be stolen, discarded or passed. ── */
-const RULES = { ageTurn: 5 };
+const RULES = { ageTurn: 7 };
 const IMPERIAL = {
   chinese:    { bonus: { text: 'Bonus: draw 2 cards.', steps: [{ draw: 2 }] }, cards: [{ name: 'Chu Ko Nu', icons: 'BBA' }, { name: 'Fire Arrow Rockets', icons: 'FFM' }, { name: 'Forbidden City', icons: 'WWWH' }] },
   japanese:   { bonus: { text: 'Bonus: Kensei goes straight to your hand.', fetch: 0 }, cards: [{ name: 'Kensei', icons: 'AAA', text: 'Deal 3 damage, or 4 damage if the opponent has no walls.', steps: [{ dmg: 3, samurai: 1 }] }, { name: 'Atakebune', icons: 'NFA' }, { name: 'Yumi Archers', icons: 'BBM' }] },
