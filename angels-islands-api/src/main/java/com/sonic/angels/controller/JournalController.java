@@ -1,11 +1,13 @@
 package com.sonic.angels.controller;
 
+import com.sonic.angels.config.AdminAuth;
 import com.sonic.angels.model.dto.JournalDto;
 import com.sonic.angels.model.entity.JournalNote;
 import com.sonic.angels.model.entity.Problem;
 import com.sonic.angels.model.dto.MediaFileDto;
 import com.sonic.angels.repository.JournalNoteRepository;
 import com.sonic.angels.repository.MediaFileRepository;
+import com.sonic.angels.repository.PersonRepository;
 import com.sonic.angels.repository.ProblemRepository;
 import com.sonic.angels.repository.TagRepository;
 import com.sonic.angels.service.DtoMapper;
@@ -33,18 +35,24 @@ public class JournalController {
     private final ProblemRepository problemRepo;
     private final TagRepository tagRepo;
     private final MediaFileRepository mediaRepo;
+    private final PersonRepository personRepo;
+    private final AdminAuth auth;
     private final DtoMapper mapper;
 
     public JournalController(JournalNoteRepository noteRepo, ProblemRepository problemRepo,
-                             TagRepository tagRepo, MediaFileRepository mediaRepo, DtoMapper mapper) {
+                             TagRepository tagRepo, MediaFileRepository mediaRepo, PersonRepository personRepo,
+                             AdminAuth auth, DtoMapper mapper) {
         this.noteRepo = noteRepo; this.problemRepo = problemRepo;
-        this.tagRepo = tagRepo; this.mediaRepo = mediaRepo; this.mapper = mapper;
+        this.tagRepo = tagRepo; this.mediaRepo = mediaRepo; this.personRepo = personRepo;
+        this.auth = auth; this.mapper = mapper;
     }
 
     // ── Notes ────────────────────────────────────────────────────────────────
 
     /** kind=JOURNAL|ARTICLE, status=DRAFT|PUBLISHED and category narrow the list; the web asks for
-     *  kind=ARTICLE&status=PUBLISHED, the admin usually asks for nothing. */
+     *  kind=ARTICLE&status=PUBLISHED, the admin usually asks for nothing.
+     *  author=me (Ngoc Anh's own) | others (written by someone else) | a name; authorId = one person's writings.
+     *  Once ADMIN_TOKEN is set, callers without it only ever see published articles. */
     @GetMapping("/notes")
     public Page<JournalDto.NoteResponse> notes(@RequestParam(defaultValue = "0") int page,
                                                @RequestParam(defaultValue = "20") int size,
@@ -53,20 +61,59 @@ public class JournalController {
                                                @RequestParam(required = false) String status,
                                                @RequestParam(required = false) String category,
                                                @RequestParam(required = false) UUID problemId,
-                                               @RequestParam(required = false) UUID tagId) {
-        String query = q != null && !q.isBlank() ? q.trim() : null;
-        return noteRepo.search(query,
-                parseEnum(kind, JournalNote.Kind.class), parseEnum(status, JournalNote.Status.class),
-                category != null && !category.isBlank() ? category.trim() : null,
+                                               @RequestParam(required = false) UUID tagId,
+                                               @RequestParam(required = false) String author,
+                                               @RequestParam(required = false) UUID authorId) {
+        String query = q != null && !q.isBlank() ? "%" + q.trim().toLowerCase() + "%" : "";
+        JournalNote.Kind k = parseEnum(kind, JournalNote.Kind.class);
+        JournalNote.Status st = parseEnum(status, JournalNote.Status.class);
+        if (!auth.isAdminRequest()) { k = JournalNote.Kind.ARTICLE; st = JournalNote.Status.PUBLISHED; }
+        int authorMode = 0;
+        String authorName = "";
+        if (authorId != null) authorMode = 3;
+        else if (author != null && !author.isBlank()) {
+            String a = author.trim();
+            if (a.equalsIgnoreCase("me")) authorMode = 1;
+            else if (a.equalsIgnoreCase("others")) authorMode = 2;
+            else { authorMode = 4; authorName = a.toLowerCase(); }
+        }
+        return noteRepo.search(query, k, st,
+                category != null && !category.isBlank() ? category.trim() : "",
                 problemId != null, problemId != null ? problemId : NIL_UUID,
                 tagId != null, tagId != null ? tagId : NIL_UUID,
+                authorMode, authorId != null ? authorId : NIL_UUID, authorName,
                 PageRequest.of(page, Math.min(size, 100)))
             .map(this::toNoteResponse);
     }
 
     @GetMapping("/notes/{id}")
-    public JournalDto.NoteResponse note(@PathVariable UUID id) {
-        return toNoteResponse(noteRepo.findById(id).orElseThrow());
+    public ResponseEntity<JournalDto.NoteResponse> note(@PathVariable UUID id) {
+        return noteRepo.findById(id)
+            .filter(n -> auth.isAdminRequest() || (n.getKind() == JournalNote.Kind.ARTICLE && n.getStatus() == JournalNote.Status.PUBLISHED))
+            .map(n -> ResponseEntity.ok(toNoteResponse(n)))
+            .orElseGet(() -> ResponseEntity.notFound().build());
+    }
+
+    /** Who wrote the notes Ngoc Anh did not write, with how many each — for the author filter. */
+    @GetMapping("/authors")
+    public List<JournalDto.AuthorCount> authors() {
+        if (!auth.isAdminRequest()) return List.of();
+        java.util.Map<String, JournalDto.AuthorCount> byKey = new java.util.LinkedHashMap<>();
+        for (Object[] row : noteRepo.authorCounts()) {
+            UUID pid = (UUID) row[0];
+            String name = pid != null ? (row[1] != null ? (String) row[1] : (String) row[2]) : (String) row[3];
+            String key = pid != null ? pid.toString() : "name:" + (name == null ? "" : name.toLowerCase());
+            JournalDto.AuthorCount c = byKey.computeIfAbsent(key, x -> {
+                JournalDto.AuthorCount a = new JournalDto.AuthorCount();
+                a.setPersonId(pid); a.setName(name);
+                return a;
+            });
+            c.setNotes(c.getNotes() + ((Number) row[4]).longValue());
+        }
+        return byKey.values().stream()
+            .sorted(java.util.Comparator.comparingLong(JournalDto.AuthorCount::getNotes).reversed()
+                .thenComparing(a -> a.getName() == null ? "" : a.getName()))
+            .toList();
     }
 
     /** Public read for the web: only a published article answers to its slug. */
@@ -125,6 +172,15 @@ public class JournalController {
         }
         if (req.getPublishedAt() != null) n.setPublishedAt(req.getPublishedAt());
 
+        // ── written by someone else ──
+        // clearAuthor first, then whatever is given: {clearAuthor, authorName} = a name only, no person
+        if (Boolean.TRUE.equals(req.getClearAuthor())) { n.setAuthorPerson(null); n.setAuthorName(null); }
+        if (req.getAuthorPersonId() != null) n.setAuthorPerson(personRepo.findById(req.getAuthorPersonId()).orElse(null));
+        if (req.getAuthorName() != null) n.setAuthorName(req.getAuthorName().isBlank() ? null : req.getAuthorName().trim());
+        if (Boolean.TRUE.equals(req.getClearWrittenAt())) n.setWrittenAt(null);
+        else if (req.getWrittenAt() != null) n.setWrittenAt(req.getWrittenAt());
+        if (req.getSource() != null) n.setSource(req.getSource().isBlank() ? null : req.getSource().trim());
+
         if (n.getKind() == JournalNote.Kind.ARTICLE) {
             String wanted = req.getSlug() != null && !req.getSlug().isBlank() ? slugify(req.getSlug()) : null;
             if (wanted != null && !wanted.equals(n.getSlug())) n.setSlug(uniqueSlug(wanted, n));
@@ -168,6 +224,12 @@ public class JournalController {
         r.setKind(n.getKind().name()); r.setSlug(n.getSlug()); r.setExcerpt(n.getExcerpt());
         r.setCategory(n.getCategory()); r.setStatus(n.getStatus().name()); r.setPublishedAt(n.getPublishedAt());
         if (n.getCoverMedia() != null) r.setCoverMedia(mapper.toMediaFileResponse(n.getCoverMedia(), MediaFileDto.Includes.none()));
+        if (n.getAuthorPerson() != null) {
+            r.setAuthorPersonId(n.getAuthorPerson().getId());
+            r.setAuthorPersonName(n.getAuthorPerson().getDisplayName() != null ? n.getAuthorPerson().getDisplayName() : n.getAuthorPerson().getName());
+        }
+        r.setAuthorName(n.getAuthorName()); r.setWrittenAt(n.getWrittenAt());
+        r.setSource(n.getSource()); r.setExternalKey(n.getExternalKey());
         return r;
     }
 

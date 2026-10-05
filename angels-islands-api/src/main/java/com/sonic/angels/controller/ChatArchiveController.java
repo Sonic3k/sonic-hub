@@ -51,7 +51,7 @@ public class ChatArchiveController {
             org.springframework.data.domain.Sort.by("seq").ascending());
         if (q != null && !q.isBlank())
             return messageRepo.findByChatArchiveIdAndContentContainingIgnoreCase(archiveId, q.trim(), pageable);
-        return messageRepo.findByChatArchiveId(archiveId, pageable);
+        return messageRepo.findVisibleByArchive(archiveId, ChatMessage.Kind.EMPTY, pageable);
     }
 
     @PostMapping("/import/yahoo")

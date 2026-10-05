@@ -119,6 +119,9 @@ public class DtoMapper {
         r.setId(a.getId()); r.setPlatform(a.getPlatform()); r.setTitle(a.getTitle());
         r.setMessageCount(a.getMessageCount()); r.setDateFrom(a.getDateFrom()); r.setDateTo(a.getDateTo());
         r.setExtractionStatus(a.getExtractionStatus()); r.setCreatedAt(a.getCreatedAt());
+        r.setExternalKey(a.getExternalKey()); r.setSources(a.getSources());
+        r.setCounterpart(a.getCounterpart()); r.setCounterpartKey(a.getCounterpartKey());
+        if (a.getPerson() != null) r.setPersonId(a.getPerson().getId());   // id only: no lazy load
         return r;
     }
 

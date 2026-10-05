@@ -1,6 +1,8 @@
 package com.sonic.angels.model.entity;
 
 import jakarta.persistence.*;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
@@ -61,6 +63,32 @@ public class JournalNote extends BaseEntity {
     @Column(name = "published_at")
     private java.time.LocalDateTime publishedAt;
 
+    // ── Written by someone else ──────────────────────────────────────────────
+    // A note Ngoc Anh did not write: an angel's story, a friend's Facebook note.
+    // Both author fields null = his own note.
+
+    /** The angel who wrote it (deleting that person keeps the note, authorName still says who). */
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "author_person_id")
+    @OnDelete(action = OnDeleteAction.SET_NULL)
+    private Person authorPerson;
+
+    /** Author as shown; the only author field for someone who is not in Persons. */
+    @Column(name = "author_name", length = 200)
+    private String authorName;
+
+    /** When it was written (createdAt is when it got here). */
+    @Column(name = "written_at")
+    private java.time.LocalDateTime writtenAt;
+
+    /** Where the text came from ("Mushroom Hill/Huyen Dieu/.../Gio.doc"). */
+    @Column(name = "source", length = 500)
+    private String source;
+
+    /** Importer's stable id; null for notes written in the admin. */
+    @Column(name = "external_key", length = 200, unique = true)
+    private String externalKey;
+
     @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(name = "journal_note_problems",
         joinColumns = @JoinColumn(name = "note_id"),
@@ -95,6 +123,16 @@ public class JournalNote extends BaseEntity {
     public void setStatus(Status status) { this.status = status; }
     public java.time.LocalDateTime getPublishedAt() { return publishedAt; }
     public void setPublishedAt(java.time.LocalDateTime publishedAt) { this.publishedAt = publishedAt; }
+    public Person getAuthorPerson() { return authorPerson; }
+    public void setAuthorPerson(Person authorPerson) { this.authorPerson = authorPerson; }
+    public String getAuthorName() { return authorName; }
+    public void setAuthorName(String authorName) { this.authorName = authorName; }
+    public java.time.LocalDateTime getWrittenAt() { return writtenAt; }
+    public void setWrittenAt(java.time.LocalDateTime writtenAt) { this.writtenAt = writtenAt; }
+    public String getSource() { return source; }
+    public void setSource(String source) { this.source = source; }
+    public String getExternalKey() { return externalKey; }
+    public void setExternalKey(String externalKey) { this.externalKey = externalKey; }
     public Set<Problem> getProblems() { return problems; }
     public void setProblems(Set<Problem> problems) { this.problems = problems; }
     public Set<Tag> getTags() { return tags; }

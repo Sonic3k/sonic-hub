@@ -72,6 +72,9 @@ export interface CollectionRequest { name?: string; description?: string; parent
 export interface ChatArchiveResponse {
   id: string; platform: Platform; title?: string; messageCount?: number
   dateFrom?: string; dateTo?: string; extractionStatus: ExtractionStatus; createdAt: string
+  externalKey?: string; sources?: string
+  // other chats (not linked to anyone in Persons)
+  counterpart?: string; counterpartKey?: string; personId?: string; personName?: string
 }
 
 export interface FactResponse { id: string; category: string; key: string; value: string; period?: string; confidence?: number; createdAt?: string }
@@ -100,11 +103,17 @@ export interface JournalNoteResponse {
   // article face
   kind?: NoteKind; slug?: string; excerpt?: string; coverMedia?: MediaFileResponse
   category?: string; status?: NoteStatus; publishedAt?: string
+  // written by someone else (both author fields empty = my own note)
+  authorPersonId?: string; authorPersonName?: string; authorName?: string
+  writtenAt?: string; source?: string; externalKey?: string
 }
 export interface JournalNoteRequest {
   title?: string; content?: string; mood?: string; problemIds?: string[]; tagIds?: string[]
   kind?: NoteKind; slug?: string; excerpt?: string; coverMediaId?: string; clearCover?: boolean
   category?: string; status?: NoteStatus; publishedAt?: string
+  authorPersonId?: string; authorName?: string; clearAuthor?: boolean
+  writtenAt?: string; clearWrittenAt?: boolean; source?: string
 }
+export interface JournalAuthor { personId?: string; name?: string; notes: number }
 
 export interface Paged<T> { content: T[]; totalElements: number; totalPages: number; number: number; last: boolean }

@@ -1,13 +1,16 @@
 import { useMemo, useRef, useState } from 'react'
+import { Link } from 'react-router-dom'
 import { useInfiniteQuery, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useEditor, EditorContent, type Editor } from '@tiptap/react'
 import StarterKit from '@tiptap/starter-kit'
 import Image from '@tiptap/extension-image'
 import Placeholder from '@tiptap/extension-placeholder'
-import { NotebookPen, Bold, Italic, List as ListIcon, Quote, Heading2, ImagePlus, Loader2, Pencil, X, Plus, Tag as TagIcon, AlertCircle, Search, Newspaper } from 'lucide-react'
+import { NotebookPen, Bold, Italic, List as ListIcon, Quote, Heading2, ImagePlus, Loader2, Pencil, X, Plus, Tag as TagIcon, AlertCircle, Search, Newspaper, Feather, UserRound } from 'lucide-react'
 import { journalApi } from '../api/journal'
 import { uploadApi } from '../api/collections'
 import TagSelectModal, { TagChip } from '../components/TagSelectModal'
+import PersonSelectModal from '../components/PersonSelectModal'
+import NoteBody from '../components/NoteBody'
 import type { JournalNoteResponse, NoteKind, NoteStatus, ProblemResponse, TagResponse } from '../types'
 
 const STATUS_COLORS: Record<string, string> = {
@@ -29,6 +32,8 @@ const utcToLocalInput = (iso?: string) => {
   return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}T${p(d.getHours())}:${p(d.getMinutes())}`
 }
 const localInputToUtc = (v: string) => (v ? new Date(v).toISOString().slice(0, 19) : undefined)
+
+const authorOf = (n: JournalNoteResponse) => n.authorPersonName || n.authorName || ''
 
 // ── Rich editor (TipTap) with paste/drop image upload straight to B2 ─────────
 function useJournalEditor() {
@@ -170,14 +175,26 @@ export default function JournalPage() {
   const [showTagPick, setShowTagPick] = useState(false)
   const [showProblemPick, setShowProblemPick] = useState(false)
   const [saving, setSaving] = useState(false)
+  // written by someone else
+  const [authorFilter, setAuthorFilter] = useState('')
+  const [showAuthor, setShowAuthor] = useState(false)
+  const [author, setAuthor] = useState<{ id?: string; name: string } | null>(null)
+  const [authorName, setAuthorName] = useState('')
+  const [writtenAt, setWrittenAt] = useState('')
+  const [source, setSource] = useState('')
+  const [pickAuthor, setPickAuthor] = useState(false)
   const fileRef = useRef<HTMLInputElement>(null)
   const qc = useQueryClient()
   const { editor, uploading, insertUpload } = useJournalEditor()
 
   const { data: categories = [] } = useQuery({ queryKey: ['journal-categories'], queryFn: journalApi.categories })
+  const { data: authors = [] } = useQuery({ queryKey: ['journal-authors'], queryFn: journalApi.authors })
+  const authorParams = authorFilter.startsWith('id:') ? { authorId: authorFilter.slice(3) }
+    : authorFilter.startsWith('name:') ? { author: authorFilter.slice(5) }
+    : authorFilter ? { author: authorFilter } : {}
   const notesQ = useInfiniteQuery({
-    queryKey: ['journal-notes', activeQ, problemFilter?.id, kindFilter],
-    queryFn: ({ pageParam = 0 }) => journalApi.notes({ page: pageParam, size: 20, q: activeQ || undefined, problemId: problemFilter?.id, kind: kindFilter || undefined }),
+    queryKey: ['journal-notes', activeQ, problemFilter?.id, kindFilter, authorFilter],
+    queryFn: ({ pageParam = 0 }) => journalApi.notes({ page: pageParam, size: 20, q: activeQ || undefined, problemId: problemFilter?.id, kind: kindFilter || undefined, ...authorParams }),
     getNextPageParam: last => (last.last ? undefined : last.number + 1),
     initialPageParam: 0,
   })
@@ -187,6 +204,7 @@ export default function JournalPage() {
   const resetComposer = () => {
     setEditingId(null); setTitle(''); setMood(''); setNoteTags([]); setNoteProblems([])
     setSlug(''); setSlugTouched(false); setExcerpt(''); setCategory(''); setStatus('DRAFT'); setPublishedAt(''); setCover(null)
+    setShowAuthor(false); setAuthor(null); setAuthorName(''); setWrittenAt(''); setSource('')
     editor?.commands.setContent('')
   }
 
@@ -210,6 +228,12 @@ export default function JournalPage() {
       const data = {
         title, content, mood, tagIds: noteTags.map(t => t.id), problemIds: noteProblems.map(p => p.id),
         kind,
+        // written by someone else: a person, or just a name; nothing = my own note
+        clearAuthor: true,
+        ...(author?.id ? { authorPersonId: author.id, authorName: authorName.trim() || author.name }
+          : authorName.trim() ? { authorName: authorName.trim() } : {}),
+        ...(writtenAt ? { writtenAt: localInputToUtc(writtenAt) } : { clearWrittenAt: true }),
+        source,
         ...(kind === 'ARTICLE' ? {
           slug: slug || undefined, excerpt, category, status, publishedAt: localInputToUtc(publishedAt),
           coverMediaId: cover?.id, clearCover: !cover,
@@ -221,6 +245,7 @@ export default function JournalPage() {
       qc.invalidateQueries({ queryKey: ['journal-notes'] })
       qc.invalidateQueries({ queryKey: ['problems'] })
       qc.invalidateQueries({ queryKey: ['journal-categories'] })
+      qc.invalidateQueries({ queryKey: ['journal-authors'] })
     } catch { alert('Save failed') }
     setSaving(false)
   }
@@ -233,6 +258,9 @@ export default function JournalPage() {
     setPublishedAt(utcToLocalInput(n.publishedAt))
     setCover(n.coverMedia ? { id: n.coverMedia.id, url: n.coverMedia.thumbnailUrl || n.coverMedia.cdnUrl || '' } : null)
     setNoteTags(n.tags || []); setNoteProblems(n.problems || [])
+    setAuthor(n.authorPersonId ? { id: n.authorPersonId, name: n.authorPersonName || '' } : null)
+    setAuthorName(n.authorName || ''); setWrittenAt(utcToLocalInput(n.writtenAt)); setSource(n.source || '')
+    setShowAuthor(!!(n.authorPersonId || n.authorName || n.writtenAt || n.source))
     editor?.commands.setContent(n.content)
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
@@ -317,6 +345,36 @@ export default function JournalPage() {
                 </div>
               </div>
             )}
+            {kind === 'JOURNAL' && (showAuthor ? (
+              <div className="mb-3 grid gap-2 text-xs bg-slate-50/70 border border-slate-100 rounded-lg p-2.5">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <Feather size={12} className="text-slate-400" />
+                  <span className="text-slate-500">Written by</span>
+                  {author?.id
+                    ? <span className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-pink-50 text-pink-600 border border-pink-100">
+                        <UserRound size={10} />{author.name || 'person'}
+                        <button onClick={() => setAuthor(null)} className="opacity-60 hover:opacity-100">×</button>
+                      </span>
+                    : <button onClick={() => setPickAuthor(true)} className="text-slate-500 hover:text-pink-500 border border-slate-200 hover:border-pink-300 rounded-full px-2 py-0.5">Pick a person</button>}
+                  <input value={authorName} onChange={e => setAuthorName(e.target.value)} placeholder={author?.id ? 'Shown name (optional)' : 'or a name'}
+                    className="w-40 border border-slate-200 rounded-lg px-2 h-7 outline-none focus:border-pink-300 bg-white" />
+                  <button onClick={() => { setShowAuthor(false); setAuthor(null); setAuthorName(''); setWrittenAt(''); setSource('') }}
+                    className="ml-auto text-slate-400 hover:text-slate-600" title="My own note">×</button>
+                </div>
+                <div className="flex items-center gap-2 flex-wrap">
+                  <span className="text-slate-500 w-16">Written on</span>
+                  <input type="datetime-local" value={writtenAt} onChange={e => setWrittenAt(e.target.value)}
+                    className="border border-slate-200 rounded-lg px-2 h-7 outline-none focus:border-pink-300 text-slate-600 bg-white" />
+                  <input value={source} onChange={e => setSource(e.target.value)} placeholder="Source (file, Facebook note...)"
+                    className="flex-1 min-w-[160px] border border-slate-200 rounded-lg px-2 h-7 outline-none focus:border-pink-300 bg-white" />
+                </div>
+              </div>
+            ) : (
+              <button onClick={() => setShowAuthor(true)}
+                className="mb-2 flex items-center gap-1 text-[11px] text-slate-400 hover:text-pink-500">
+                <Feather size={11} />Written by someone else?
+              </button>
+            ))}
             <EditorToolbar editor={editor} uploading={uploading}
               onPickImage={() => fileRef.current?.click()} />
             <EditorContent editor={editor} />
@@ -365,6 +423,17 @@ export default function JournalPage() {
                 placeholder="Search notes..."
                 className="pl-8 pr-3 h-8 text-xs bg-white border border-slate-200 rounded-full outline-none focus:border-pink-300 w-44" />
             </div>
+            <select value={authorFilter} onChange={e => setAuthorFilter(e.target.value)}
+              className="h-8 text-xs bg-white border border-slate-200 rounded-full px-2.5 outline-none focus:border-pink-300 text-slate-600 max-w-[190px]">
+              <option value="">All authors</option>
+              <option value="me">My own notes</option>
+              <option value="others">Written by others</option>
+              {authors.map(a => (
+                <option key={a.personId || 'n:' + a.name} value={a.personId ? `id:${a.personId}` : `name:${a.name}`}>
+                  {a.name} ({a.notes})
+                </option>
+              ))}
+            </select>
             {problemFilter && (
               <span className={`flex items-center gap-1 text-[11px] px-2 py-1 rounded-full border ${statusCls(problemFilter.status)}`}>
                 <AlertCircle size={10} />{problemFilter.title}
@@ -382,7 +451,10 @@ export default function JournalPage() {
                   <button onClick={() => deleteNote(n)} className="p-1.5 text-slate-300 hover:text-rose-500 rounded transition-colors"><X size={13} /></button>
                 </span>
                 <div className="flex items-center gap-2 flex-wrap mb-1.5 pr-14">
-                  <time className="text-[11px] text-slate-400 font-mono">{fmtDay(n.kind === 'ARTICLE' ? (n.publishedAt || n.createdAt) : n.createdAt)}</time>
+                  <time className="text-[11px] text-slate-400 font-mono">{fmtDay(n.writtenAt || (n.kind === 'ARTICLE' ? (n.publishedAt || n.createdAt) : n.createdAt))}</time>
+                  {authorOf(n) && (n.authorPersonId
+                    ? <Link to={`/persons/${n.authorPersonId}`} className="flex items-center gap-1 text-[11px] px-2 py-0.5 rounded-full bg-pink-50 text-pink-600 hover:bg-pink-100"><Feather size={10} />{authorOf(n)}</Link>
+                    : <span className="flex items-center gap-1 text-[11px] px-2 py-0.5 rounded-full bg-amber-50 text-amber-700"><Feather size={10} />{authorOf(n)}</span>)}
                   {n.kind === 'ARTICLE' && (
                     <>
                       <span className="flex items-center gap-1 text-[11px] px-2 py-0.5 rounded-full bg-indigo-50 text-indigo-500"><Newspaper size={10} />{n.category || 'Article'}</span>
@@ -403,8 +475,8 @@ export default function JournalPage() {
                 </div>
                 {n.title && <h3 className="text-sm font-semibold text-slate-800 mb-1">{n.title}</h3>}
                 {n.kind === 'ARTICLE' && n.excerpt && <p className="text-xs text-slate-500 italic mb-2">{n.excerpt}</p>}
-                <div className="journal-content text-sm text-slate-700 leading-relaxed"
-                  dangerouslySetInnerHTML={{ __html: n.content }} />
+                <NoteBody html={n.content} />
+                {n.source && <p className="mt-2 text-[10px] text-slate-300 truncate" title={n.source}>{n.source}</p>}
               </article>
             ))}
             {notes.length === 0 && !notesQ.isLoading && (
@@ -439,6 +511,11 @@ export default function JournalPage() {
         <TagSelectModal title="Tag this note"
           onSelect={t => { setNoteTags(ts => (ts.some(x => x.id === t.id) ? ts : [...ts, t])); setShowTagPick(false) }}
           onClose={() => setShowTagPick(false)} />
+      )}
+      {pickAuthor && (
+        <PersonSelectModal title="Who wrote this?"
+          onSelect={p => { setAuthor({ id: p.id, name: p.displayName || p.name }); setPickAuthor(false) }}
+          onClose={() => setPickAuthor(false)} />
       )}
       {showProblemPick && (
         <ProblemSelectModal

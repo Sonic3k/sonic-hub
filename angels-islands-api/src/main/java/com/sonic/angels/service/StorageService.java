@@ -25,6 +25,8 @@ public class StorageService {
     @Value("${storage.b2.bucket}") private String bucket;
     @Value("${storage.cdn-base-url}") private String cdnBaseUrl;
     @Value("${storage.prefix}") private String prefix;
+    /** Path-style URLs for S3-compatible test servers; B2 itself works either way. */
+    @Value("${storage.b2.path-style:false}") private boolean pathStyle;
 
     private S3Client s3Client;
 
@@ -35,6 +37,7 @@ public class StorageService {
             .endpointOverride(URI.create(endpoint))
             .region(Region.of(region))
             .credentialsProvider(StaticCredentialsProvider.create(AwsBasicCredentials.create(keyId, appKey)))
+            .forcePathStyle(pathStyle)
             .build();
     }
 
@@ -58,6 +61,20 @@ public class StorageService {
             PutObjectRequest.builder().bucket(bucket).key(fullKey)
                 .contentType(contentType).contentLength((long) data.length).build(),
             RequestBody.fromBytes(data)
+        );
+        return fullKey;
+    }
+
+    public boolean isConfigured() { return s3Client != null; }
+
+    /** Streams a known-length body straight to the bucket; returns the full object key. */
+    public String upload(java.io.InputStream data, long size, String storageKey, String contentType) {
+        if (s3Client == null) throw new IllegalStateException("Storage not configured");
+        String fullKey = prefix + "/" + storageKey;
+        s3Client.putObject(
+            PutObjectRequest.builder().bucket(bucket).key(fullKey)
+                .contentType(contentType).contentLength(size).build(),
+            RequestBody.fromInputStream(data, size)
         );
         return fullKey;
     }

@@ -8,17 +8,30 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Entity
-@Table(name = "chat_archives")
+@Table(name = "chat_archives", uniqueConstraints = {
+    @UniqueConstraint(name = "uk_chat_archive_person_ext", columnNames = {"person_id", "external_key"})
+}, indexes = {
+    @Index(name = "idx_chat_archive_counterpart", columnList = "counterpart_key")
+})
 public class ChatArchive extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
+    /** Null for "other chats": conversations kept for reading that are not linked to anyone in Persons. */
     @JsonIgnore
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "person_id", nullable = false)
+    @JoinColumn(name = "person_id")
     private Person person;
+
+    /** Who an other-chat was with, as shown ("Thu Hà Trần"). */
+    @Column(name = "counterpart", length = 200)
+    private String counterpart;
+
+    /** Groups one counterpart's archives across platforms ("thu-ha-tran"); stays set if the archive is later linked to a person. */
+    @Column(name = "counterpart_key", length = 80)
+    private String counterpartKey;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "platform", nullable = false)
@@ -30,6 +43,7 @@ public class ChatArchive extends BaseEntity {
     @Column(name = "raw_content", columnDefinition = "TEXT")
     private String rawContent;
 
+    /** Visible messages (EMPTY ones are stored but not counted). */
     @Column(name = "message_count")
     private Integer messageCount;
 
@@ -38,6 +52,14 @@ public class ChatArchive extends BaseEntity {
 
     @Column(name = "date_to")
     private LocalDateTime dateTo;
+
+    /** Importer's thread key (e.g. "fb:bichtran_10205025642513093", "yahoo:globus_chrysanthemum"); null for manual uploads. */
+    @Column(name = "external_key", length = 200)
+    private String externalKey;
+
+    /** Comma-separated provenance labels of the messages (e.g. "fb-dyi-2023,fb-dyi-2022,fb-2016-dump"). */
+    @Column(name = "sources", length = 500)
+    private String sources;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "extraction_status")
@@ -57,6 +79,10 @@ public class ChatArchive extends BaseEntity {
     public void setId(UUID id) { this.id = id; }
     public Person getPerson() { return person; }
     public void setPerson(Person person) { this.person = person; }
+    public String getCounterpart() { return counterpart; }
+    public void setCounterpart(String counterpart) { this.counterpart = counterpart; }
+    public String getCounterpartKey() { return counterpartKey; }
+    public void setCounterpartKey(String counterpartKey) { this.counterpartKey = counterpartKey; }
     public Platform getPlatform() { return platform; }
     public void setPlatform(Platform platform) { this.platform = platform; }
     public String getTitle() { return title; }
@@ -69,6 +95,10 @@ public class ChatArchive extends BaseEntity {
     public void setDateFrom(LocalDateTime dateFrom) { this.dateFrom = dateFrom; }
     public LocalDateTime getDateTo() { return dateTo; }
     public void setDateTo(LocalDateTime dateTo) { this.dateTo = dateTo; }
+    public String getExternalKey() { return externalKey; }
+    public void setExternalKey(String externalKey) { this.externalKey = externalKey; }
+    public String getSources() { return sources; }
+    public void setSources(String sources) { this.sources = sources; }
     public ExtractionStatus getExtractionStatus() { return extractionStatus; }
     public void setExtractionStatus(ExtractionStatus extractionStatus) { this.extractionStatus = extractionStatus; }
     public List<ChatMessage> getMessages() { return messages; }

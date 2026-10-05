@@ -1,5 +1,6 @@
 package com.sonic.angels.controller;
 
+import com.sonic.angels.config.AdminAuth;
 import com.sonic.angels.model.dto.PersonDto;
 import com.sonic.angels.service.PersonService;
 import org.springframework.http.ResponseEntity;
@@ -12,16 +13,22 @@ import java.util.UUID;
 public class PersonController {
 
     private final PersonService personService;
+    private final AdminAuth adminAuth;
 
-    public PersonController(PersonService personService) {
+    public PersonController(PersonService personService, AdminAuth adminAuth) {
         this.personService = personService;
+        this.adminAuth = adminAuth;
     }
 
     @GetMapping
     public List<PersonDto.Summary> findAll() { return personService.findAll(); }
 
     @GetMapping("/{id}")
-    public PersonDto.DetailResponse findById(@PathVariable UUID id) { return personService.findById(id); }
+    public PersonDto.DetailResponse findById(@PathVariable UUID id) {
+        PersonDto.DetailResponse d = personService.findById(id);
+        if (!adminAuth.isAdminRequest()) d.setContacts(List.of()); // phone numbers / handles are private
+        return d;
+    }
 
     @PostMapping
     public PersonDto.DetailResponse create(@RequestBody PersonDto.Request req) { return personService.create(req); }

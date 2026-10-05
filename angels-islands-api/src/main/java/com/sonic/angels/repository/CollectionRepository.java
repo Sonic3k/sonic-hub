@@ -64,4 +64,13 @@ public interface CollectionRepository extends JpaRepository<Collection, UUID> {
     @Query(value = "DELETE FROM collection_tags WHERE collection_id = :rootId AND tag_id = :tagId", nativeQuery = true)
     void removeAlbumTag(UUID rootId, UUID tagId);
     Optional<Collection> findByNameAndParentIsNull(String name);
+
+    List<Collection> findByParentIdAndName(UUID parentId, String name);
+
+    /** Insert-if-absent person link (Collection owns collection_persons). Returns rows inserted. */
+    @org.springframework.data.jpa.repository.Modifying
+    @Query(value = "INSERT INTO collection_persons(collection_id, person_id) " +
+        "SELECT :collectionId, :personId WHERE NOT EXISTS " +
+        "(SELECT 1 FROM collection_persons WHERE collection_id = :collectionId AND person_id = :personId)", nativeQuery = true)
+    int linkPerson(UUID collectionId, UUID personId);
 }
