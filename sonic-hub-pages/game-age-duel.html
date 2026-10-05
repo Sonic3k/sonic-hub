@@ -1,0 +1,1669 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#1a110b">
+<title>Lên Đời</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Alegreya:wght@400;500;700&family=Grenze+Gotisch:wght@500;700&display=swap" rel="stylesheet">
+<style>
+  /* ── Lên Đời ── a war table at night: an inked vellum map on dark walnut, leather and brass for the orders. */
+  :root { box-sizing: border-box; color-scheme: dark; padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px);
+    --text: #f1e4c6; --muted: #c4ad84; --gold: #c9a24a; --gold2: #f0d68a; --ink: #3a2715; --parch: #f1e4c2; --red: #9e1b1b;
+    --serif: Alegreya, "Iowan Old Style", Georgia, serif; --goth: "Grenze Gotisch", Alegreya, Georgia, serif; }
+  html { scroll-padding-top: env(safe-area-inset-top, 0px); -webkit-text-size-adjust: 100%; }
+  *, *::before, *::after { box-sizing: inherit; }
+  body { margin: 0; min-height: 100vh; color: var(--text); font: 16px/1.5 var(--serif); background-color: #140d08;
+    background-image: radial-gradient(1100px 640px at 45% 18%, rgba(255,186,104,.16), transparent 72%), repeating-linear-gradient(91deg, rgba(255,235,200,.022) 0 2px, transparent 2px 11px), linear-gradient(#251810, #110a05 900px); background-repeat: no-repeat, repeat, no-repeat; }
+  button { font: inherit; color: inherit; cursor: pointer; } button:disabled { cursor: not-allowed; opacity: .45; }
+  :focus-visible { outline: 2px solid var(--gold2); outline-offset: 2px; }
+  .muted { color: var(--muted); } .small { font-size: 13px; }
+  .topbar { max-width: 1440px; margin: 0 auto; padding: 10px 14px 0; display: flex; align-items: center; gap: 8px; font-size: 14px; }
+  .topbar .home { color: var(--muted); text-decoration: none; padding: 6px 8px; border-radius: 4px; } .no-home .home { display: none; }
+  .topbar .game { font: 24px/1 var(--goth); color: var(--gold2); } .topbar .sp { flex: 1; }
+  .tbtn { min-height: 34px; padding: 4px 12px; border-radius: 6px; border: 1px solid #6b4a26; background: rgba(60,40,24,.6); color: var(--text); font-size: 14px; }
+  .tbtn:hover { background: rgba(90,60,34,.8); }
+
+  /* HUD */
+  .hud { max-width: 1440px; margin: 10px auto 0; display: grid; grid-template-columns: auto 1fr auto auto auto; gap: 18px; align-items: center; padding: 10px 18px; border-radius: 12px;
+    background: linear-gradient(#3b291b, #2a1c12); border: 1px solid #70502a; box-shadow: inset 0 0 0 3px #1a110a, inset 0 0 0 4px rgba(201,162,74,.35), 0 10px 30px rgba(0,0,0,.45); }
+  .side { display: flex; align-items: center; gap: 10px; } .side b { display: block; font: 24px/1.05 var(--goth); color: var(--gold2); } .side span { font-size: 14px; color: var(--muted); }
+  .side.foe b { font-size: 19px; color: var(--text); }
+  .ress { display: flex; flex-wrap: wrap; gap: 6px 16px; justify-content: center; }
+  .res { display: flex; align-items: center; gap: 6px; } .res b { font-size: 20px; font-variant-numeric: tabular-nums; } .res small { font-size: 13px; color: #a7c98a; } .res small em { color: #ffb38a; font-style: normal; }
+  .ri { width: 22px; height: 22px; display: block; } .ri-wrap { display: inline-grid; place-items: center; width: 30px; height: 30px; border-radius: 50%; background: radial-gradient(circle at 40% 35%, #f6ead0, #cdb17a); box-shadow: inset 0 -2px 0 rgba(0,0,0,.25); }
+  .when { text-align: center; } .when b { display: block; font: 22px/1.1 var(--goth); color: var(--gold2); } .when span { font-size: 13px; color: var(--muted); }
+  .goals { display: grid; gap: 4px; font-size: 13px; color: var(--muted); } .goals > div { display: flex; align-items: center; gap: 8px; }
+  .relicbar { display: inline-flex; gap: 3px; } .relicbar i { width: 9px; height: 9px; transform: rotate(45deg); border: 1px solid #8a6a3a; background: #2a1c12; } .relicbar i.on { background: var(--gold2); border-color: #fff3c4; box-shadow: 0 0 6px rgba(240,214,138,.6); }
+  .wonderflag { color: #ffb38a; }
+
+  /* table */
+  .table { max-width: 1440px; margin: 14px auto 0; padding: 0 14px; display: grid; grid-template-columns: minmax(0, 1fr) 400px; gap: 18px; align-items: start; }
+  .mapwrap { position: relative; }
+  .map { display: block; width: 100%; height: auto; filter: drop-shadow(0 18px 36px rgba(0,0,0,.6)); }
+  .land { transition: fill-opacity .3s; } .border { fill: none; stroke: var(--ink); stroke-width: 2.4; stroke-linejoin: round; }
+  .ink { stroke: var(--ink); stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; } .deco { opacity: .7; }
+  .ink-text { font: 600 15px var(--goth); fill: var(--ink); } .cartouche { font-size: 22px; opacity: .8; }
+  .rlabel { font: 700 13.5px var(--serif); fill: var(--ink); } .bt { font: 700 14px var(--serif); fill: #fff; text-anchor: middle; } .vcount { font: 700 14px var(--serif); fill: var(--ink); }
+  .banner.stale { opacity: .5; } .flag { stroke: var(--ink); }
+  .arrow { fill: none; stroke-width: 3.4; stroke-linecap: round; stroke-dasharray: 10 7; } .a0 { stroke: var(--c0); animation: march 1.2s linear infinite; } .a1 { stroke: var(--c1); } .past { opacity: .6; stroke-dasharray: 3 7; }
+  @keyframes march { to { stroke-dashoffset: -34; } }
+  .clash { animation: clash 1.4s ease-out 1; } @keyframes clash { 0% { transform-box: fill-box; opacity: 0; } 30% { opacity: 1; } }
+  .hit { fill: transparent; stroke: transparent; cursor: pointer; outline: none; } .hit:hover { fill: rgba(255,240,200,.1); }
+  .hit.sel { stroke: var(--gold); stroke-width: 4.5; fill: rgba(255,230,160,.1); } .hit:focus-visible { stroke: var(--gold2); stroke-width: 5; }
+  .hit.target { fill: rgba(255,214,120,.2); stroke: #e8c25a; stroke-width: 3.5; stroke-dasharray: 12 8; animation: march 1.2s linear infinite; } .hit.chosen { fill: rgba(255,214,120,.4); } .hit.from { stroke: var(--c0); stroke-width: 4; }
+  .legend { position: absolute; left: 3%; bottom: 6.5%; display: flex; gap: 12px; flex-wrap: wrap; font-size: 12.5px; color: var(--ink); pointer-events: none; }
+  .legend span { display: inline-flex; align-items: center; gap: 5px; } .lg { width: 13px; height: 13px; border: 1px solid var(--ink); display: inline-block; } .lg.own { background: var(--c0); opacity: .55; } .lg.foe { background: var(--c1); opacity: .55; }
+  .lg.fog { background: repeating-linear-gradient(35deg, rgba(40,26,12,.6) 0 2px, rgba(60,40,20,.25) 2px 6px); } .lg.near { background: repeating-linear-gradient(35deg, rgba(40,26,12,.25) 0 1px, transparent 1px 6px); }
+
+  /* order panel */
+  .panel { background: linear-gradient(#35251a, #261a11); border: 1px solid #70502a; border-radius: 12px; padding: 16px 16px 8px; box-shadow: inset 0 0 0 3px #1a110a, inset 0 0 0 4px rgba(201,162,74,.3), 0 14px 34px rgba(0,0,0,.5);
+    max-height: calc(100vh - 210px); overflow: auto; position: sticky; top: 10px; }
+  .phead h2 { margin: 0; font: 32px/1.05 var(--goth); color: var(--gold2); } .phead .note { margin: 6px 0 0; font-size: 14px; color: var(--muted); }
+  .own { display: inline-block; margin-top: 4px; font-size: 13px; padding: 1px 10px; border-radius: 10px; background: #4a3420; color: var(--muted); } .own.o0 { background: var(--c0); color: #fff; } .own.o1 { background: var(--c1); color: #fff; }
+  .psec { border-top: 1px solid rgba(201,162,74,.28); margin-top: 12px; padding-top: 12px; } .psec h3 { margin: 0 0 8px; font-size: 16px; color: var(--gold2); } .psec h3 em { font-weight: 400; font-style: normal; color: #ffb38a; font-size: 14px; } .psec p { margin: 4px 0; }
+  .howto { margin-top: 12px; padding: 12px 14px; border-radius: 8px; background: rgba(241,228,194,.08); border: 1px dashed rgba(201,162,74,.5); font-size: 14.5px; } .howto p { margin: 6px 0; }
+  .btn { min-height: 38px; padding: 6px 14px; border-radius: 7px; border: 1px solid #8a6a3a; background: linear-gradient(#5a3d22, #3e2a17); color: var(--text); font-weight: 500; box-shadow: inset 0 1px 0 rgba(255,235,190,.15); }
+  .btn:hover:not(:disabled) { background: linear-gradient(#6b4a2a, #4a321b); }
+  .btn.primary { background: linear-gradient(#e2bf62, #a77d26); color: #1d1209; border-color: #f0d68a; font-weight: 700; } .btn.primary:hover:not(:disabled) { background: linear-gradient(#f0cf74, #b88a2e); }
+  .btn.on { background: #6a4a22; box-shadow: inset 0 0 0 2px var(--gold); } .btn.danger { background: linear-gradient(#c43a2e, #8a1515); border-color: #e07a6a; }
+  .row2 { display: flex; gap: 8px; margin-top: 10px; } .row2 .btn { flex: 1; }
+  .jrow, .trow { display: grid; grid-template-columns: auto 1fr auto; gap: 10px; align-items: center; padding: 7px 0; border-bottom: 1px dashed rgba(201,162,74,.18); }
+  .jn, .tn { display: flex; flex-direction: column; } .jn small, .tn small { color: var(--muted); font-size: 13px; line-height: 1.35; } .tn b { font-size: 16px; }
+  .ti { display: grid; place-items: center; width: 40px; height: 40px; border-radius: 50%; background: radial-gradient(circle at 40% 35%, #f6ead0, #cdb17a); }
+  .step { display: inline-flex; align-items: center; gap: 6px; } .step b { min-width: 22px; text-align: center; font-size: 18px; }
+  .step button { width: 36px; height: 36px; border-radius: 50%; border: 1px solid #8a6a3a; background: linear-gradient(#5a3d22, #3e2a17); color: var(--text); font-size: 20px; line-height: 1; }
+  .costs { display: flex; flex-wrap: wrap; gap: 2px 10px; margin-top: 3px; font-size: 14px; } .costs em { font-style: normal; color: var(--muted); font-size: 13px; } .cost { display: inline-flex; align-items: center; gap: 3px; } .cost .ri { width: 17px; height: 17px; }
+  .uchips { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 10px; } .uchip { display: inline-flex; align-items: center; gap: 4px; padding: 2px 10px 2px 4px; border-radius: 14px; background: rgba(241,228,194,.9); color: var(--ink); font-size: 14px; font-weight: 500; }
+  .brow { display: grid; grid-template-columns: 1fr auto; gap: 10px; align-items: center; padding: 8px 0; border-bottom: 1px dashed rgba(201,162,74,.18); } .brow small { display: block; color: var(--muted); font-size: 13px; line-height: 1.35; } .brow .btn { max-width: 150px; font-size: 13.5px; } .done { color: #a7c98a; font-size: 14px; }
+  .tabs { display: flex; gap: 4px; margin-bottom: 8px; } .tabs button { flex: 1; min-height: 38px; border: 1px solid #6b4a26; background: transparent; color: var(--muted); border-radius: 7px 7px 0 0; border-bottom-color: var(--gold); }
+  .tabs button[aria-selected="true"] { background: rgba(201,162,74,.18); color: var(--gold2); font-weight: 700; border-color: var(--gold); border-bottom-color: transparent; }
+  .agecard { padding: 12px 14px; border-radius: 10px; background: linear-gradient(#f3e5c4, #e3cd9a); color: var(--ink); margin-bottom: 8px; display: grid; gap: 4px; } .agecard.on { box-shadow: 0 0 0 3px var(--gold); }
+  .agename { font: 15px var(--goth); color: var(--red); } .agecard b { font: 26px/1 var(--goth); } .agecard small { color: #5a4326; } .agecard .btn { justify-self: start; margin-top: 4px; }
+  .mycards { display: grid; gap: 6px; margin-top: 10px; } .minicard { padding: 6px 10px; border-radius: 6px; background: rgba(241,228,194,.1); border: 1px solid rgba(201,162,74,.35); font-size: 13.5px; } .minicard small { display: block; color: var(--muted); }
+  .forecast { margin-top: 12px; padding: 10px 12px; border-radius: 8px; background: rgba(241,228,194,.1); border-left: 4px solid var(--muted); } .forecast p { margin: 2px 0 0; font-size: 14.5px; }
+  .forecast.win, .forecast.free { border-color: #7fbf5a; } .forecast.edge { border-color: #d6c25a; } .forecast.even { border-color: #e8964a; } .forecast.lose { border-color: #e2504c; }
+  .orders ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; } .orders li { display: flex; justify-content: space-between; gap: 8px; align-items: center; font-size: 14px; padding: 4px 0 4px 10px; border-left: 3px solid var(--gold); }
+  .orders li button { width: 30px; height: 30px; border-radius: 50%; border: 1px solid #8a6a3a; background: #3e2a17; color: var(--text); }
+  .sealbar { position: sticky; bottom: 0; z-index: 30; display: flex; justify-content: center; padding: 12px 14px calc(12px + env(safe-area-inset-bottom, 0px)); background: linear-gradient(rgba(17,10,5,0), rgba(17,10,5,.9) 45%); }
+  .seal { min-height: 56px; min-width: 240px; padding: 8px 40px 10px; border: 0; border-radius: 40px; font: 30px/1 var(--goth); color: #f8e3c2; text-shadow: 0 -1px 0 rgba(0,0,0,.45);
+    background: radial-gradient(circle at 32% 28%, #e0644f, #a71e1e 58%, #6e1010); box-shadow: inset 0 2px 0 rgba(255,255,255,.25), inset 0 -5px 10px rgba(0,0,0,.35), 0 0 0 3px rgba(110,16,16,.45), 0 10px 24px rgba(0,0,0,.55); }
+  .seal small { display: block; font: 13px var(--serif); opacity: .85; margin-top: 2px; } .seal:hover { filter: brightness(1.08); } .seal:active { transform: translateY(1px); } .seal.small { min-height: 46px; min-width: 0; font-size: 24px; padding: 6px 28px 8px; }
+
+  /* modals */
+  .overlay { position: fixed; inset: 0; z-index: 80; display: grid; place-items: center; padding: 16px; background: rgba(8,4,2,.7); }
+  .modal { width: min(660px, 100%); max-height: 100%; overflow: auto; padding: 24px 26px; border-radius: 12px; color: var(--ink); background: radial-gradient(circle at 50% 30%, #f6ead0, #e6d2a3 80%, #d2b67c); box-shadow: 0 0 0 1px #8a6a3a, 0 0 0 6px rgba(201,162,74,.25), 0 30px 80px rgba(0,0,0,.7); }
+  .modal h2 { margin: 0; font: 44px/1 var(--goth); color: #7a1414; } .modal .sub { margin: 6px 0 14px; color: #5a4326; }
+  .chron { list-style: none; margin: 0 0 12px; padding: 0; display: grid; gap: 8px; } .chron li { padding: 6px 0 6px 14px; border-left: 4px solid #a99272; font-size: 15.5px; }
+  .chron li.win { border-color: #3f7a2a; } .chron li.loss { border-color: #a71e1e; } .chron li.age { border-color: var(--gold); font-weight: 700; }
+  .gain { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; font-weight: 700; } .gain .ri { width: 18px; height: 18px; }
+  .cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; } .card { display: flex; flex-direction: column; gap: 8px; text-align: left; padding: 16px 14px; min-height: 210px; border-radius: 12px; color: var(--ink);
+    background: linear-gradient(#fbf3df, #ead8ab); border: 2px solid #8a6a3a; box-shadow: inset 0 0 0 4px #fbf3df, inset 0 0 0 5px rgba(138,106,58,.5); }
+  .card:hover { transform: translateY(-3px); box-shadow: inset 0 0 0 4px #fbf3df, inset 0 0 0 5px var(--gold), 0 10px 20px rgba(0,0,0,.25); } .card b { font: 26px/1.05 var(--goth); color: #4a2a10; } .card.civ { border-color: #a71e1e; } .cn { font-size: 13px; color: #8a6a3a; }
+  .modal.end { text-align: center; } .modal.end .crest { margin: 0 auto 8px; display: block; } .modal.won h2 { color: #3f6a1f; }
+  .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 10px; margin: 8px 0 16px; text-align: left; } .stats span { display: block; font-size: 13px; color: #5a4326; } .stats b { font-size: 22px; }
+  #toast { position: fixed; left: 50%; bottom: 96px; z-index: 90; transform: translate(-50%, 12px); opacity: 0; transition: opacity .2s, transform .2s; pointer-events: none; padding: 9px 18px; border-radius: 22px; font-size: 15px; background: #2a1c12; border: 1px solid var(--gold); color: var(--text); max-width: calc(100vw - 24px); text-align: center; }
+  #toast.show { opacity: 1; transform: translate(-50%, 0); } #toast.bad { border-color: #e2504c; }
+
+  /* title */
+  .hero { text-align: center; padding: 26px 16px 6px; } .logo { margin: 0; font: clamp(76px, 13vw, 150px)/0.95 var(--goth); background: linear-gradient(180deg, #fff6d2, #f0d68a 40%, #b7862a 58%, #f3d98f 80%, #fff3c4); -webkit-background-clip: text; background-clip: text; color: transparent;
+    filter: drop-shadow(0 3px 0 #3a2410) drop-shadow(0 12px 26px rgba(0,0,0,.65)); }
+  .hero p { max-width: 58ch; margin: 10px auto 0; color: var(--muted); font-size: 18px; }
+  .sheet { max-width: 1200px; margin: 18px auto 0; padding: 18px 20px; border-radius: 12px; background: linear-gradient(#35251a, #261a11); border: 1px solid #70502a; box-shadow: inset 0 0 0 3px #1a110a, inset 0 0 0 4px rgba(201,162,74,.3), 0 14px 34px rgba(0,0,0,.45); }
+  .sheet h2 { margin: 0 0 12px; font: 30px var(--goth); color: var(--gold2); }
+  .civs { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 14px; }
+  .civ { display: flex; flex-direction: column; gap: 8px; text-align: left; padding: 14px; border-radius: 12px; color: var(--ink); background: linear-gradient(#f6ead0, #e3cd9a); border: 2px solid #8a6a3a; }
+  .civ.on { box-shadow: 0 0 0 3px var(--gold2), 0 0 0 7px var(--cc), 0 10px 24px rgba(0,0,0,.4); } .ch { display: flex; gap: 10px; align-items: center; } .ch b { display: block; font: 30px/1 var(--goth); color: #3a2410; } .ch small { color: #6a5030; }
+  .cd { font-size: 15px; } .cb span { display: block; font-size: 13.5px; padding-left: 14px; position: relative; color: #4a3520; } .cb span::before { content: ''; position: absolute; left: 2px; top: 8px; width: 6px; height: 6px; transform: rotate(45deg); background: var(--cc); }
+  .uu { display: flex; gap: 6px; align-items: flex-start; font-size: 13.5px; padding-top: 6px; border-top: 1px dashed rgba(138,106,58,.6); }
+  .opts { display: flex; flex-wrap: wrap; gap: 18px 36px; margin-top: 16px; } .opts h3 { margin: 0 0 6px; color: var(--gold2); font-size: 16px; }
+  .seg { display: flex; flex-wrap: wrap; gap: 6px; } .seg button { min-height: 38px; padding: 4px 14px; border-radius: 19px; border: 1px solid #8a6a3a; background: #2e1f14; color: var(--text); } .seg button[aria-pressed="true"] { background: var(--gold); color: #1d1209; font-weight: 700; }
+  .go { display: flex; justify-content: space-between; align-items: center; gap: 16px; flex-wrap: wrap; margin-top: 18px; padding-top: 16px; border-top: 1px solid rgba(201,162,74,.28); } .go .muted { max-width: 60ch; }
+  .resume { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; } .resume > div { flex: 1; min-width: 200px; } .resume b { display: block; font-size: 18px; } .resume span { color: var(--muted); }
+  .credit { max-width: 1200px; margin: 22px auto 40px; padding: 0 16px; color: var(--muted); font-size: 13px; text-align: center; }
+
+  @media (max-width: 960px) {
+    .hud { grid-template-columns: 1fr auto; gap: 8px 12px; margin: 8px 8px 0; padding: 10px 12px; } .ress { grid-column: 1 / -1; order: 3; justify-content: space-between; } .goals { grid-column: 1 / -1; order: 4; grid-template-columns: 1fr 1fr; } .side.foe { display: none; }
+    .side b { font-size: 20px; } .res b { font-size: 17px; } .ri-wrap { width: 26px; height: 26px; } .ri { width: 19px; height: 19px; }
+    .table { grid-template-columns: 1fr; padding: 0 6px; gap: 12px; } .panel { max-height: none; position: static; } .legend { display: none; }
+    .cards { grid-template-columns: 1fr; } .card { min-height: 0; } .seal { min-width: 200px; font-size: 26px; } .topbar .game { display: none; }
+    .tbtn { white-space: nowrap; font-size: 13px; padding: 4px 9px; }
+  }
+  @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } }
+</style>
+</head>
+<body>
+<div id="app"></div>
+<div id="modal"></div>
+<div id="toast" role="status" aria-live="polite"></div>
+<script>
+'use strict';
+/* ── Lên Đời ──
+   Demo game #3 for Sonic Hub Pages: a turn-based duel of medieval civilizations (400–1500) on a small map.
+   Both sides give orders in secret, then the orders are revealed and resolved at the same time.
+   The engine keeps the whole match in one plain object S (seeded RNG, no DOM), so sim.js can pit AIs against each other. */
+const clamp = (v, a, b) => (v < a ? a : v > b ? b : v);
+function rnd(S) {
+  let t = (S.rs = (S.rs + 0x6D2B79F5) >>> 0);
+  t = Math.imul(t ^ (t >>> 15), t | 1);
+  t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+  return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+}
+const pick = (S, arr) => arr[Math.floor(rnd(S) * arr.length)];
+function wpick(S, entries) {
+  let tot = 0; for (const e of entries) tot += Math.max(0, e[1]);
+  if (tot <= 0) return entries[0][0];
+  let r = rnd(S) * tot;
+  for (const e of entries) { r -= Math.max(0, e[1]); if (r <= 0) return e[0]; }
+  return entries[entries.length - 1][0];
+}
+function shuffled(S, arr) { const a = arr.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(rnd(S) * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; }
+const fmtN = n => String(Math.round(n)).replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const sumObj = o => Object.values(o).reduce((a, b) => a + b, 0);
+
+/* ── Rules data: ages, units, buildings, techs, age cards, civilizations, the map ── */
+const MAX_TURNS = 40;
+const RELIC_WIN = 10, WONDER_HOLD = 4, CAP_HP = 120, WALL_HP = 80;
+const RES = ['food', 'wood', 'gold'];
+const RES_NAME = { food: 'Lương thực', wood: 'Gỗ', gold: 'Vàng' };
+const SEASONS = ['Xuân', 'Hạ', 'Thu', 'Đông'];
+const AGES = [null,
+  { name: 'Đời 1', title: 'Thời Bóng Tối', cap: 20, prod: 2, builds: 1 },
+  { name: 'Đời 2', title: 'Thời Phong Kiến', cap: 35, prod: 2, builds: 1, cost: { food: 350 } },
+  { name: 'Đời 3', title: 'Thời Lâu Đài', cap: 55, prod: 3, builds: 2, cost: { food: 550, gold: 250 } },
+  { name: 'Đời 4', title: 'Thời Đế Quốc', cap: 75, prod: 4, builds: 2, cost: { food: 800, gold: 600 } },
+];
+const GATHER = { food: 8, wood: 8, gold: 7 };
+const VILL_COST = { food: 25 };
+
+/* cls drives the counter table; vs on a unit overrides its row */
+const UNITS = {
+  spear:  { name: 'Giáo binh', str: 3, cost: { food: 20, wood: 15 }, age: 1, bld: 'barracks', kill: 0.5, cls: 'inf', desc: 'Rẻ, khắc chế kỵ binh. Yếu trước cung thủ.' },
+  archer: { name: 'Cung thủ', str: 3.5, cost: { wood: 20, gold: 25 }, age: 2, bld: 'range', kill: 0.7, cls: 'rng', desc: 'Bắn hạ bộ binh. Bị kỵ binh xé nát.' },
+  cav:    { name: 'Kỵ binh', str: 5.5, cost: { food: 45, gold: 35 }, age: 2, bld: 'stable', kill: 1.2, cls: 'cav', move: 2, desc: 'Đi 2 vùng một lượt, giỏi cướp dân và đánh cung thủ. Sợ giáo.' },
+  siege:  { name: 'Xe công thành', str: 1.5, cost: { wood: 80, gold: 50 }, age: 3, bld: 'workshop', kill: 0.1, cls: 'sie', desc: 'Yếu ngoài trận, nhưng là thứ duy nhất phá nổi thành và lâu đài.' },
+  thanhduc:  { name: 'Quân Thánh Dực', str: 5, cost: { food: 40, gold: 30 }, age: 3, bld: 'castle', kill: 0.6, cls: 'inf', vs: { rng: 1.1 }, civ: 'daiviet', desc: 'Cấm quân tinh nhuệ: chặn kỵ như giáo, chịu được tên.' },
+  kyxa:      { name: 'Kỵ xạ', str: 4.6, cost: { wood: 30, gold: 40 }, age: 2, bld: 'stable', kill: 1.0, cls: 'hrc', move: 2, civ: 'mongol', desc: 'Vừa phi vừa bắn: đi 2 vùng, giáo binh khó bắt.' },
+  catafract: { name: 'Kỵ binh giáp trụ', str: 6.5, cost: { food: 60, gold: 60 }, age: 3, bld: 'castle', kill: 1.0, cls: 'hcv', civ: 'byzantine', desc: 'Kỵ binh nặng chuyên phá đội hình bộ binh.' },
+  paladin:   { name: 'Hiệp sĩ thánh chiến', str: 8, cost: { food: 70, gold: 60 }, age: 3, bld: 'castle', kill: 1.3, cls: 'cav', move: 2, civ: 'frank', desc: 'Kỵ binh mạnh nhất trận, vẫn sợ rừng giáo.' },
+};
+const UNIT_ORDER = ['spear', 'archer', 'cav', 'siege', 'thanhduc', 'kyxa', 'catafract', 'paladin'];
+const VS = {
+  inf: { inf: 1, rng: 0.7, cav: 2.4, sie: 1.4, hrc: 1.1, hcv: 1.6 },
+  rng: { inf: 1.7, rng: 1, cav: 0.6, sie: 0.6, hrc: 0.9, hcv: 0.7 },
+  cav: { inf: 0.5, rng: 2.1, cav: 1, sie: 2, hrc: 1.6, hcv: 0.9 },
+  sie: { inf: 0.5, rng: 0.5, cav: 0.5, sie: 1, hrc: 0.4, hcv: 0.5 },
+  hrc: { inf: 1.5, rng: 1.2, cav: 0.9, sie: 1.2, hrc: 1, hcv: 0.8 },
+  hcv: { inf: 1.5, rng: 1.6, cav: 1.1, sie: 2, hrc: 1.2, hcv: 1 },
+};
+const MOUNTED = new Set(['cav', 'hrc', 'hcv']);
+
+const BUILDINGS = {
+  barracks: { name: 'Trại lính', cost: { wood: 75 }, age: 1, where: 'capital', max: 2, desc: 'Luyện giáo binh, 2 quân mỗi lượt.' },
+  range:    { name: 'Trường bắn', cost: { wood: 100 }, age: 2, where: 'capital', max: 2, desc: 'Luyện cung thủ.' },
+  stable:   { name: 'Chuồng ngựa', cost: { wood: 100 }, age: 2, where: 'capital', max: 2, desc: 'Luyện kỵ binh.' },
+  workshop: { name: 'Xưởng công thành', cost: { wood: 150 }, age: 3, where: 'capital', max: 1, desc: 'Đóng xe công thành.' },
+  walls:    { name: 'Tường thành', cost: { wood: 150 }, age: 2, where: 'capital', max: 1, desc: `Kinh thành thêm ${WALL_HP} độ bền, phòng thủ +30%; quân thường gần như không phá nổi tường.` },
+  castle:   { name: 'Lâu đài', cost: { wood: 100, gold: 350 }, age: 3, where: 'own', max: 2, desc: 'Phòng thủ 25 cho vùng, luyện quân đặc biệt. Chỉ xe công thành mới đánh sập.' },
+  tower:    { name: 'Tháp canh', cost: { wood: 60, gold: 30 }, age: 2, where: 'own', perRegion: 2, desc: 'Phòng thủ +7 cho vùng, bắn kẻ đi cướp.' },
+  town:     { name: 'Thị trấn', cost: { wood: 200, gold: 100 }, age: 2, where: 'home', max: 2, desc: 'Luyện thêm 2 dân/lượt, +5 dân số tối đa, phòng thủ +8.' },
+  wonder:   { name: 'Kỳ quan', cost: { wood: 900, gold: 900 }, age: 4, where: 'capital', max: 1, desc: `Xây 2 lượt. Đứng vững ${WONDER_HOLD} lượt sau khi xong là thắng.` },
+};
+const TECHS = {
+  plow:  { name: 'Cày bừa', cost: { wood: 75 }, age: 2, desc: 'Lương thực +20%.', eff: { gather: { food: 0.2 } } },
+  saw:   { name: 'Cưa xẻ', cost: { food: 75 }, age: 2, desc: 'Gỗ +20%.', eff: { gather: { wood: 0.2 } } },
+  mine:  { name: 'Khai mỏ', cost: { food: 100, wood: 50 }, age: 2, desc: 'Vàng +20%.', eff: { gather: { gold: 0.2 } } },
+  forge: { name: 'Rèn binh khí', cost: { food: 150, gold: 75 }, age: 2, desc: 'Mọi quân +12%.', eff: { str: 0.12 } },
+  armor: { name: 'Giáp trụ', cost: { food: 250, gold: 150 }, age: 3, desc: 'Mọi quân +12%.', eff: { str: 0.12 } },
+  wheel: { name: 'Xe cút kít', cost: { food: 200, wood: 100 }, age: 3, desc: 'Mọi nguồn lợi +15%.', eff: { gather: { food: 0.15, wood: 0.15, gold: 0.15 } } },
+};
+const CARDS = {
+  tax:       { age: 2, name: 'Thuế ruộng', desc: 'Lương thực +15%.', eff: { gather: { food: 0.15 } } },
+  levy:      { age: 2, name: 'Quân dịch', desc: 'Giáo binh và cung thủ rẻ hơn 25%.', eff: { cheap: { spear: 0.25, archer: 0.25 } } },
+  spies:     { age: 2, name: 'Mạng lưới do thám', desc: 'Mỗi lượt do thám thêm 1 nơi; thấy rõ quân địch ở các vùng giáp ranh.', eff: { scouts: 1, sharp: 1 } },
+  smith:     { age: 3, name: 'Lò rèn hoàng gia', desc: 'Mọi quân +10%.', eff: { str: 0.1 } },
+  masonry:   { age: 3, name: 'Thành đá', desc: 'Tháp, lâu đài, tường thành mạnh thêm 50%.', eff: { fort: 0.5 } },
+  academy:   { age: 3, name: 'Học viện', desc: 'Lên Đời 4 và nghiên cứu rẻ hơn 30%.', eff: { cheapRes: 0.3 } },
+  wonders:   { age: 4, name: 'Công trình vĩ đại', desc: 'Kỳ quan rẻ hơn 30% và xây xong trong 1 lượt.', eff: { cheapWonder: 0.3, fastWonder: 1 } },
+  imperial:  { age: 4, name: 'Quân đội đế quốc', desc: 'Mọi quân +15%; mỗi xưởng luyện thêm 1 quân/lượt.', eff: { str: 0.15, prod: 1 } },
+  trebuchet: { age: 4, name: 'Máy bắn đá', desc: 'Xe công thành phá thành gấp đôi và mạnh thêm 50%.', eff: { trebuchet: 1 } },
+  dv2: { age: 2, civ: 'daiviet', name: 'Ngụ binh ư nông', desc: 'Quân đóng ở đất nhà tự làm ruộng: mỗi quân +2 lương thực/lượt.', eff: { soldierFarm: 2 } },
+  dv3: { age: 3, civ: 'daiviet', name: 'Hịch tướng sĩ', desc: 'Phòng thủ trên đất nhà +25%; dân trong kinh thành cùng giữ thành.', eff: { homeDef: 0.25, militia: 1 } },
+  dv4: { age: 4, civ: 'daiviet', name: 'Hào khí Đông A', desc: 'Mọi quân +15%; mỗi lượt giữ Tu viện được 2 điểm thánh tích.', eff: { str: 0.15, relicX: 1 } },
+  mg2: { age: 2, civ: 'mongol', name: 'Đại thảo nguyên', desc: 'Kỵ binh, kỵ xạ rẻ hơn 20%; cướp được thêm 50%.', eff: { cheap: { cav: 0.2, kyxa: 0.2 }, plunder: 0.5 } },
+  mg3: { age: 3, civ: 'mongol', name: 'Giả thua', desc: 'Thua trận vẫn rút về được một nửa quân.', eff: { retreat: 0.5 } },
+  mg4: { age: 4, civ: 'mongol', name: 'Vó ngựa thần tốc', desc: 'Quân cưỡi ngựa đi 3 vùng một lượt và mạnh thêm 10%.', eff: { cavMove: 1, cavStr: 0.1 } },
+  bz2: { age: 2, civ: 'byzantine', name: 'Vàng Constantinople', desc: 'Vàng +25%.', eff: { gather: { gold: 0.25 } } },
+  bz3: { age: 3, civ: 'byzantine', name: 'Lửa Hy Lạp', desc: 'Phòng thủ ở kinh thành và vùng có tháp, lâu đài +40%.', eff: { fortDef: 0.4 } },
+  bz4: { age: 4, civ: 'byzantine', name: 'Hoàng kim', desc: 'Kỳ quan rẻ hơn 40%; vàng +20%.', eff: { cheapWonder: 0.4, gather: { gold: 0.2 } } },
+  fr2: { age: 2, civ: 'frank', name: 'Lãnh chúa phong kiến', desc: 'Lâu đài rẻ hơn 30%; quân cưỡi ngựa +10%.', eff: { cheapCastle: 0.3, cavStr: 0.1 } },
+  fr3: { age: 3, civ: 'frank', name: 'Thánh chiến', desc: 'Mỗi lượt giữ Tu viện được thêm 1 điểm thánh tích; hiệp sĩ +15%.', eff: { relicX: 1, uuStr: 0.15 } },
+  fr4: { age: 4, civ: 'frank', name: 'Hiệp sĩ đạo', desc: 'Quân cưỡi ngựa +20%.', eff: { cavStr: 0.2 } },
+};
+const CIVS = {
+  daiviet: {
+    name: 'Đại Việt', era: 'nhà Trần, 1225–1400', capital: 'Thăng Long', color: '#b3261e', light: '#e8b93a', uu: 'thanhduc',
+    desc: 'Lấy thủ làm công. Quân địch vào đất Việt hao mòn từng lượt, dân sơ tán khi bị cướp, rồi phản công.',
+    bonus: ['Vườn không nhà trống: quân địch trên đất nhà mất 8% mỗi lượt, cướp được ít hơn một nửa', 'Phòng thủ trên đất nhà +15%', 'Kỵ binh đắt hơn 20%'],
+    mods: { homeDef: 0.15, attrition: 0.08, evac: 0.5, costMul: { cav: 1.2 } }, ai: { rush: 0.8, boom: 2, turtle: 2.5, relic: 1.5 },
+  },
+  mongol: {
+    name: 'Mông Cổ', era: 'đế quốc Mông Cổ, 1206–1368', capital: 'Karakorum', color: '#1f7a6d', light: '#eef3f2', uu: 'kyxa',
+    desc: 'Kỵ binh như gió. Có kỵ xạ ngay từ Đời 2, lấy cướp phá nuôi quân, nhưng không giỏi giữ thành.',
+    bonus: ['Kỵ xạ (quân đặc biệt) luyện ở chuồng ngựa từ Đời 2', 'Mỗi dân địch bị giết đem về 12 lương thực, 8 vàng', 'Phòng thủ −15%; tháp và tường đắt gấp rưỡi'],
+    mods: { plunderBase: 1, defPen: 0.15, costMul: { tower: 1.5, walls: 1.5 } }, ai: { rush: 3, boom: 1, turtle: 0.3, relic: 1 },
+  },
+  byzantine: {
+    name: 'Đông La Mã', era: 'Byzantium, 395–1453', capital: 'Constantinople', color: '#6b2d8f', light: '#e8c25a', uu: 'catafract',
+    desc: 'Tường thành kiên cố, kho vàng đầy. Giữ chắc nhà rồi nhắm tới kỳ quan.',
+    bonus: ['Tháp, lâu đài, tường thành mạnh thêm 30%', 'Giáo binh rẻ hơn 25%', 'Kỳ quan rẻ hơn 15%'],
+    mods: { fort: 0.3, cheap: { spear: 0.25 }, cheapWonder: 0.15 }, ai: { rush: 0.5, boom: 1.5, turtle: 3, relic: 1.5 },
+  },
+  frank: {
+    name: 'Frank', era: 'vương quốc Frank, 481–987', capital: 'Aachen', color: '#1f4e9c', light: '#f1d36b', uu: 'paladin',
+    desc: 'Hiệp sĩ nặng giáp và lâu đài rẻ. Một cú đấm kỵ binh ở Đời 3 có thể kết thúc ván đấu.',
+    bonus: ['Quân cưỡi ngựa +15%', 'Lâu đài rẻ hơn 25%', 'Lương thực +10%'],
+    mods: { cavStr: 0.15, cheapCastle: 0.25, gather: { food: 0.1 } }, ai: { rush: 1.5, boom: 2, turtle: 1, relic: 2 },
+  },
+};
+const CIV_ORDER = ['daiviet', 'mongol', 'byzantine', 'frank'];
+
+/* the map: 9 regions, west (side 0) to east (side 1). Gold only in the middle and a little at each capital. */
+const REGIONS = {
+  c0: { kind: 'capital', side: 0, name: 'Kinh thành' },
+  f0: { kind: 'farm', side: 0, name: 'Đồng lúa' },
+  w0: { kind: 'forest', side: 0, name: 'Rừng' },
+  n:  { kind: 'gold', name: 'Mỏ vàng Bắc', terrain: 'hill', note: 'Đồi cao: cung thủ +25%. Đứng trên đồi nhìn xa thêm một vùng.' },
+  m:  { kind: 'relic', name: 'Tu viện', terrain: 'walls', note: `Tường đá: bên giữ +20%. Đóng quân ở đây mỗi lượt được 12 vàng; từ Đời 3 (có thầy tu) được thêm 1 điểm thánh tích, đủ ${RELIC_WIN} điểm là thắng.` },
+  s:  { kind: 'gold', name: 'Mỏ vàng Nam', terrain: 'ford', note: 'Bến sông: bên giữ +20%.' },
+  f1: { kind: 'farm', side: 1, name: 'Đồng lúa' },
+  w1: { kind: 'forest', side: 1, name: 'Rừng' },
+  c1: { kind: 'capital', side: 1, name: 'Kinh thành' },
+};
+const REGION_IDS = Object.keys(REGIONS);
+const ADJ = {
+  c0: ['f0', 'w0'], f0: ['c0', 'w0', 'n', 'm'], w0: ['c0', 'f0', 'm', 's'],
+  n: ['f0', 'm', 'f1'], m: ['f0', 'w0', 'n', 's', 'f1', 'w1'], s: ['w0', 'm', 'w1'],
+  f1: ['c1', 'w1', 'n', 'm'], w1: ['c1', 'f1', 'm', 's'], c1: ['f1', 'w1'],
+};
+const TERRAIN_DEF = { walls: 0.2, ford: 0.2 };
+/* villager jobs: a region can host more than one (the capital has fields and a small gold seam) */
+const JOBS = {
+  c0: { region: 'c0', res: 'food', slots: 6 }, c0g: { region: 'c0', res: 'gold', slots: 3, reserve: 450 },
+  f0: { region: 'f0', res: 'food', slots: 10 }, w0: { region: 'w0', res: 'wood', slots: 10 },
+  n: { region: 'n', res: 'gold', slots: 8 }, s: { region: 's', res: 'gold', slots: 8 },
+  f1: { region: 'f1', res: 'food', slots: 10 }, w1: { region: 'w1', res: 'wood', slots: 10 },
+  c1: { region: 'c1', res: 'food', slots: 6 }, c1g: { region: 'c1', res: 'gold', slots: 3, reserve: 450 },
+};
+const JOB_IDS = Object.keys(JOBS);
+const homeOf = side => side === 0 ? ['c0', 'f0', 'w0'] : ['c1', 'f1', 'w1'];
+const capOf = side => (side === 0 ? 'c0' : 'c1');
+/* geometry for the board (viewBox 1000×640): shared vertices so borders line up */
+const PTS = { 1: [24, 170], 2: [196, 128], 3: [214, 318], 4: [198, 506], 5: [24, 466], 6: [262, 40], 7: [436, 52], 8: [424, 236], 9: [432, 322], 10: [420, 404], 11: [444, 596], 12: [268, 604], 13: [566, 44], 14: [578, 240], 15: [570, 320], 16: [584, 408], 17: [558, 600], 18: [742, 48], 19: [806, 130], 20: [790, 318], 21: [804, 510], 22: [736, 602], 23: [976, 172], 24: [976, 466] };
+const POLY = { c0: [1, 2, 3, 4, 5], f0: [2, 6, 7, 8, 9, 3], w0: [3, 9, 10, 11, 12, 4], n: [7, 13, 14, 8], m: [8, 14, 15, 16, 10, 9], s: [10, 16, 17, 11], f1: [13, 18, 19, 20, 15, 14], w1: [15, 20, 21, 22, 17, 16], c1: [19, 23, 24, 21, 20] };
+const CENTER = { c0: [112, 318], f0: [322, 186], w0: [322, 466], n: [500, 138], m: [500, 322], s: [500, 506], f1: [678, 186], w1: [678, 466], c1: [888, 318] };
+
+/* ── Engine: orders are planned in secret by both sides, then resolved together ── */
+const ok = (msg, x) => ({ ok: true, msg: msg || '', ...x });
+const no = msg => ({ ok: false, msg });
+const total = st => { let n = 0; for (const t in st) n += st[t] > 0 ? st[t] : 0; return n; };
+const clean = st => { for (const t in st) if (!(st[t] > 0)) delete st[t]; return st; };
+const addTo = (st, u) => { for (const t in u) if (u[t] > 0) st[t] = (st[t] || 0) + u[t]; return st; };
+const emptyOrders = () => ({ train: {}, builds: [], research: null, researchCost: null, moves: [], scouts: [] });
+const seasonOf = t => SEASONS[(t - 1) % 4];
+const yearOf = t => Math.floor((t - 1) / 4) + 1;
+const turnLabel = t => `Năm ${yearOf(t)}, ${seasonOf(t).toLowerCase()}`;
+function canAfford(P, c) { for (const r in c) if ((P.res[r] || 0) < c[r]) return false; return true; }
+function pay(P, c) { for (const r in c) P.res[r] -= c[r]; }
+function refund(P, c) { for (const r in c) P.res[r] += c[r]; }
+const costText = c => RES.filter(r => c[r]).map(r => `${c[r]} ${RES_NAME[r].toLowerCase()}`).join(', ');
+
+function newSide(civ, side) {
+  return {
+    civ, side, res: { food: 200, wood: 175, gold: 80 }, age: 1, cards: [], techs: [],
+    bld: { barracks: 0, range: 0, stable: 0, workshop: 0, walls: 0 }, castles: {}, towers: {}, towns: {},
+    jobs: {}, idle: 0, goldLeft: {}, army: {}, orders: emptyOrders(), pendingCard: null,
+    capHP: CAP_HP, relic: 0, wonder: null, intel: {}, capIntel: null, vis: {}, ai: null,
+    stats: { kills: 0, lost: 0, villsKilled: 0, villsLost: 0, battlesWon: 0, battlesLost: 0 },
+  };
+}
+function newGame(o) {
+  const S = { v: 1, seed: o.seed >>> 0, rs: o.seed >>> 0, turn: 1, owner: {}, sides: [newSide(o.civ0, 0), newSide(o.civ1, 1)], diff: o.diff || 1, report: null, winner: null, over: null, history: [] };
+  for (const r of REGION_IDS) S.owner[r] = REGIONS[r].side == null ? null : REGIONS[r].side;
+  for (const i of [0, 1]) {
+    const P = S.sides[i], c = capOf(i);
+    P.jobs[c] = 4; P.jobs[i === 0 ? 'w0' : 'w1'] = 2; P.goldLeft[c + 'g'] = JOBS[c + 'g'].reserve;
+    if (o['ai' + i]) P.ai = { strat: o['ai' + i] === true ? null : o['ai' + i] };
+  }
+  for (const i of [0, 1]) updateVision(S, i, []);
+  return S;
+}
+
+/* ── modifiers ── */
+function modsOf(S, i) {
+  const P = S.sides[i];
+  const M = { gather: { food: 0, wood: 0, gold: 0 }, str: 0, cavStr: 0, uuStr: 0, cheap: {}, costMul: {}, fort: 0, fortDef: 0, homeDef: 0, defPen: 0, attrition: 0, evac: 0, plunderBase: 0, plunder: 0, scouts: 1, sharp: 0, cheapRes: 0, cheapWonder: 0, fastWonder: 0, cheapCastle: 0, prod: 0, trebuchet: 0, soldierFarm: 0, militia: 0, relicX: 0, retreat: 0, cavMove: 0 };
+  const add = e => {
+    if (!e) return;
+    for (const k in e) {
+      if (k === 'gather') for (const r in e.gather) M.gather[r] += e.gather[r];
+      else if (k === 'cheap') for (const u in e.cheap) M.cheap[u] = (M.cheap[u] || 0) + e.cheap[u];
+      else if (k === 'costMul') for (const u in e.costMul) M.costMul[u] = (M.costMul[u] || 1) * e.costMul[u];
+      else M[k] = (M[k] || 0) + e[k];
+    }
+  };
+  add(CIVS[P.civ].mods);
+  for (const id of P.techs) add(TECHS[id].eff);
+  for (const id of P.cards) add(CARDS[id].eff);
+  return M;
+}
+function costOf(S, i, kind, what) {
+  const P = S.sides[i], M = modsOf(S, i);
+  let base, mul = 1;
+  if (kind === 'vill') base = VILL_COST;
+  else if (kind === 'unit') { base = UNITS[what].cost; mul = (1 - (M.cheap[what] || 0)) * (M.costMul[what] || 1); }
+  else if (kind === 'bld') { base = BUILDINGS[what].cost; mul = M.costMul[what] || 1; if (what === 'castle') mul *= 1 - M.cheapCastle; if (what === 'wonder') mul *= 1 - M.cheapWonder; }
+  else if (kind === 'tech') { base = TECHS[what].cost; mul = 1 - M.cheapRes; }
+  else if (kind === 'age') { base = AGES[P.age + 1].cost; mul = 1 - M.cheapRes; }
+  const out = {};
+  for (const r in base) out[r] = Math.round(base[r] * mul);
+  return out;
+}
+
+/* ── counting ── */
+const villCount = P => sumObj(P.jobs) + P.idle;
+const armyCount = P => { let n = 0; for (const r in P.army) n += total(P.army[r]); return n; };
+const castleCount = P => Object.values(P.castles).filter(h => h > 0).length;
+const townCount = P => Object.values(P.towns).filter(Boolean).length;
+const popCap = (S, i) => AGES[S.sides[i].age].cap + 5 * townCount(S.sides[i]);
+const popNow = (S, i) => { const P = S.sides[i]; return villCount(P) + armyCount(P) + sumObj(P.orders.train); };
+const jobsIn = (P, r) => { let n = 0; for (const j in P.jobs) if (JOBS[j].region === r) n += P.jobs[j]; return n; };
+function prodCap(S, i, what) {
+  const P = S.sides[i], M = modsOf(S, i), per = AGES[P.age].prod + M.prod;
+  if (what === 'vill') return (P.orders.research === 'age' ? 0 : 2) + 2 * townCount(P);
+  const U = UNITS[what];
+  if (!U || (U.civ && U.civ !== P.civ) || P.age < U.age) return 0;
+  if (U.bld === 'castle') return 2 * castleCount(P);
+  return (P.bld[U.bld] || 0) * per;
+}
+const unitsFor = (S, i) => UNIT_ORDER.filter(t => !UNITS[t].civ || UNITS[t].civ === S.sides[i].civ);
+
+/* ── planning API (the player's UI and the AI both use these) ── */
+function planTrain(S, i, what, delta) {
+  const P = S.sides[i], O = P.orders, cur = O.train[what] || 0;
+  const cost = what === 'vill' ? costOf(S, i, 'vill') : costOf(S, i, 'unit', what);
+  if (delta < 0) { if (!cur) return no(''); refund(P, cost); if (cur - 1) O.train[what] = cur - 1; else delete O.train[what]; return ok(); }
+  const cap = prodCap(S, i, what);
+  if (cur + 1 > cap) return no(cap ? `Mỗi lượt chỉ luyện được ${cap}.` : what === 'vill' ? 'Nhà chính đang bận lên đời.' : `Cần ${BUILDINGS[UNITS[what].bld].name.toLowerCase()} trước.`);
+  if (popNow(S, i) + 1 > popCap(S, i)) return no(`Đã chạm dân số tối đa ${popCap(S, i)}. Lên đời hoặc xây thị trấn để nuôi thêm.`);
+  if (!canAfford(P, cost)) return no(`Thiếu tài nguyên: cần ${costText(cost)}.`);
+  pay(P, cost); O.train[what] = cur + 1;
+  return ok();
+}
+function planResearch(S, i, id) {
+  const P = S.sides[i], O = P.orders;
+  if (O.research) { refund(P, O.researchCost); const was = O.research; O.research = null; O.researchCost = null; if (id == null || id === was) return ok('Đã hủy nghiên cứu.'); }
+  let cost;
+  if (id === 'age') {
+    if (P.age >= 4) return no('Đã ở đời cao nhất.');
+    if ((O.train.vill || 0) > 2 * townCount(P)) return no('Nhà chính đang luyện dân; bớt dân trước khi lên đời.');
+    cost = costOf(S, i, 'age');
+  } else {
+    const T = TECHS[id];
+    if (!T || P.techs.includes(id)) return no('Đã có rồi.');
+    if (P.age < T.age) return no(`Cần ${AGES[T.age].name}.`);
+    cost = costOf(S, i, 'tech', id);
+  }
+  if (!canAfford(P, cost)) return no(`Thiếu tài nguyên: cần ${costText(cost)}.`);
+  pay(P, cost); O.research = id; O.researchCost = cost;
+  return ok();
+}
+function buildCheck(S, i, kind, r) {
+  const P = S.sides[i], B = BUILDINGS[kind], O = P.orders, cap = capOf(i);
+  if (P.age < B.age) return `Cần ${AGES[B.age].name}`;
+  if (O.builds.length >= AGES[P.age].builds) return `Mỗi lượt chỉ xây được ${AGES[P.age].builds} công trình`;
+  const queued = O.builds.filter(b => b.kind === kind);
+  if (B.where === 'capital' && r !== cap) return 'Chỉ xây ở kinh thành';
+  if (B.where !== 'capital') {
+    if (S.owner[r] !== i) return 'Chỉ xây ở vùng mình đang giữ';
+    if (REGIONS[r].kind === 'capital' && r !== cap) return 'Không xây được ở đây';
+    if (B.where === 'home' && (r === cap || REGIONS[r].kind === 'relic')) return 'Thị trấn phải ở vùng ngoài kinh thành, không phải Tu viện';
+  }
+  if (kind === 'tower' && (P.towers[r] || 0) + queued.filter(b => b.region === r).length >= B.perRegion) return 'Vùng này đủ tháp rồi';
+  if (kind === 'castle') { if (P.castles[r] > 0 || queued.some(b => b.region === r)) return 'Vùng này có lâu đài rồi'; if (castleCount(P) + queued.length >= B.max) return 'Đủ lâu đài rồi'; }
+  if (kind === 'town') { if (P.towns[r] || queued.some(b => b.region === r)) return 'Vùng này có thị trấn rồi'; if (townCount(P) + queued.length >= B.max) return 'Đủ thị trấn rồi'; }
+  if (['barracks', 'range', 'stable', 'workshop', 'walls'].includes(kind) && (P.bld[kind] || 0) + queued.length >= B.max) return 'Đủ rồi';
+  if (kind === 'wonder' && (P.wonder || queued.length)) return 'Chỉ có một kỳ quan';
+  if (!canAfford(P, costOf(S, i, 'bld', kind))) return `Thiếu tài nguyên: cần ${costText(costOf(S, i, 'bld', kind))}`;
+  return '';
+}
+function planBuild(S, i, kind, r) {
+  const why = buildCheck(S, i, kind, r);
+  if (why) return no(why + '.');
+  const cost = costOf(S, i, 'bld', kind);
+  pay(S.sides[i], cost);
+  S.sides[i].orders.builds.push({ kind, region: r, cost });
+  return ok();
+}
+function cancelBuild(S, i, idx) { const O = S.sides[i].orders, b = O.builds[idx]; if (!b) return no(''); refund(S.sides[i], b.cost); O.builds.splice(idx, 1); return ok(); }
+function availableAt(S, i, r) {
+  const st = { ...(S.sides[i].army[r] || {}) };
+  for (const mv of S.sides[i].orders.moves) if (mv.from === r) for (const t in mv.units) st[t] = (st[t] || 0) - mv.units[t];
+  return clean(st);
+}
+function moveRange(S, i, units) {
+  const keys = Object.keys(units).filter(t => units[t] > 0);
+  return keys.length && keys.every(t => MOUNTED.has(UNITS[t].cls)) ? 2 + modsOf(S, i).cavMove : 1;
+}
+function pathsFrom(S, i, from, range) {
+  const out = { [from]: [from] }, q = [from];
+  while (q.length) {
+    const r = q.shift();
+    if (out[r].length - 1 >= range) continue;
+    for (const a of ADJ[r]) if (!out[a]) { out[a] = out[r].concat(a); q.push(a); }
+  }
+  delete out[from];
+  return out;
+}
+function planMove(S, i, from, to, units) {
+  const av = availableAt(S, i, from), u = {};
+  for (const t in units) { const k = Math.min(units[t] | 0, av[t] || 0); if (k > 0) u[t] = k; }
+  if (!total(u)) return no('Chọn ít nhất một đơn vị.');
+  const paths = pathsFrom(S, i, from, moveRange(S, i, u));
+  if (!paths[to]) return no('Không tới được vùng đó trong một lượt.');
+  S.sides[i].orders.moves.push({ from, to, units: u, path: paths[to] });
+  return ok();
+}
+function cancelMove(S, i, idx) { const O = S.sides[i].orders; if (!O.moves[idx]) return no(''); O.moves.splice(idx, 1); return ok(); }
+function planScout(S, i, r) {
+  const O = S.sides[i].orders, k = O.scouts.indexOf(r);
+  if (k >= 0) { O.scouts.splice(k, 1); return ok(); }
+  const max = modsOf(S, i).scouts;
+  if (O.scouts.length >= max) { if (max === 1) { O.scouts = [r]; return ok(); } return no(`Mỗi lượt do thám tối đa ${max} nơi.`); }
+  O.scouts.push(r); return ok();
+}
+function jobOpen(S, i, job) {
+  const J = JOBS[job], r = J.region;
+  if (REGIONS[r].kind === 'capital' && r !== capOf(i)) return false;
+  if (S.owner[r] !== null && S.owner[r] !== i) return false;
+  if (J.reserve != null && (S.sides[i].goldLeft[job] || 0) <= 0) return false;
+  return true;
+}
+function setJob(S, i, job, delta) {
+  const P = S.sides[i], cur = P.jobs[job] || 0;
+  if (delta > 0) {
+    if (P.idle <= 0) return no('Không còn dân rảnh. Bớt dân ở chỗ khác trước.');
+    if (!jobOpen(S, i, job)) return no('Không đưa dân tới đây được.');
+    if (cur >= JOBS[job].slots) return no('Hết chỗ làm.');
+    P.idle--; P.jobs[job] = cur + 1;
+  } else {
+    if (cur <= 0) return no('');
+    P.jobs[job] = cur - 1; if (!P.jobs[job]) delete P.jobs[job]; P.idle++;
+  }
+  return ok();
+}
+function cardOptions(S, i, age) {
+  const civ = S.sides[i].civ;
+  const gen = Object.keys(CARDS).filter(k => CARDS[k].age === age && !CARDS[k].civ);
+  const mine = Object.keys(CARDS).find(k => CARDS[k].age === age && CARDS[k].civ === civ);
+  return [mine].concat(shuffled(S, gen).slice(0, 2)).filter(Boolean);
+}
+function chooseCard(S, i, id) {
+  const P = S.sides[i];
+  if (!P.pendingCard || !P.pendingCard.includes(id)) return no('');
+  P.cards.push(id); P.pendingCard = null;
+  return ok(`Đã chọn: ${CARDS[id].name}.`);
+}
+
+/* ── combat ── */
+const clsOf = t => UNITS[t].cls;
+function vsMult(t, e) { const U = UNITS[t]; return (U.vs && U.vs[clsOf(e)] != null) ? U.vs[clsOf(e)] : VS[clsOf(t)][clsOf(e)]; }
+function unitStr(S, i, t, r) {
+  const U = UNITS[t], M = modsOf(S, i);
+  let s = U.str * (1 + M.str + (MOUNTED.has(U.cls) ? M.cavStr : 0) + (U.civ ? M.uuStr : 0));
+  if (t === 'archer' && REGIONS[r] && REGIONS[r].terrain === 'hill') s *= 1.25;
+  if (t === 'siege' && M.trebuchet) s *= 1.5;
+  return s;
+}
+function stackPower(S, i, st, enemy, r) {
+  const eTot = total(enemy);
+  let p = 0;
+  for (const t in st) {
+    if (!(st[t] > 0)) continue;
+    let mult = 1;
+    if (eTot > 0) { mult = 0; for (const e in enemy) if (enemy[e] > 0) mult += (enemy[e] / eTot) * vsMult(t, e); }
+    p += st[t] * unitStr(S, i, t, r) * mult;
+  }
+  return p;
+}
+function fortPower(S, d, r, attSt, attSide) {
+  const P = S.sides[d], M = modsOf(S, d);
+  let p = (P.towers[r] || 0) * 7 + (P.castles[r] > 0 ? 25 : 0) + (P.towns[r] ? 8 : 0);
+  if (r !== capOf(d)) p += jobsIn(P, r) * 0.5;
+  if (r === capOf(d)) {
+    const garrison = jobsIn(P, r) + P.idle;
+    p += (10 + garrison * (M.militia ? 1 : 0.4)) * (P.bld.walls ? 1.3 : 1);
+  }
+  p *= 1 + M.fort + ((r === capOf(d) || P.towers[r] || P.castles[r]) ? M.fortDef : 0);
+  const sieges = attSt.siege || 0;
+  return Math.max(0, p - sieges * 6 * (modsOf(S, attSide).trebuchet ? 2 : 1));
+}
+function defMul(S, d, r) {
+  const M = modsOf(S, d), R = REGIONS[r];
+  let m = 1 + (R.terrain ? TERRAIN_DEF[R.terrain] || 0 : 0) - M.defPen;
+  if (homeOf(d).includes(r)) m += M.homeDef;
+  return m;
+}
+/* Lanchester's square law: the winner keeps sqrt(1 − q²) of its army, q = loser power / winner power */
+function applyLoss(st, frac) {
+  const lost = {};
+  for (const t in st) { const k = Math.min(st[t], Math.round(st[t] * frac + 1e-9)); if (k > 0) { lost[t] = k; st[t] -= k; } }
+  clean(st);
+  return lost;
+}
+function fight(S, r, a, aSt, d, dSt, opts = {}) {
+  const forts = opts.forts ? fortPower(S, d, r, aSt, a) : 0;
+  const pa = stackPower(S, a, aSt, dSt, r);
+  const pd = stackPower(S, d, dSt, aSt, r) * (opts.def ? defMul(S, d, r) : 1) + forts;
+  const before = [{ ...aSt }, { ...dSt }];
+  let winner, lossA, lossD;
+  const q = Math.min(pa, pd) / Math.max(pa, pd, 1e-9);
+  const lw = q > 0.97 ? 0.85 : 1 - Math.sqrt(Math.max(0, 1 - q * q));
+  if (pa > pd * 1.0001) { winner = a; lossA = applyLoss(aSt, lw); lossD = applyLoss(dSt, 1); }
+  else { winner = d; lossD = applyLoss(dSt, lw); lossA = applyLoss(aSt, q > 0.97 ? 0.85 : 1); }
+  return { r, a, d, pa, pd, forts, winner, before, lossA, lossD, field: !!opts.field };
+}
+
+/* ── the turn ── */
+function resolveTurn(S) {
+  const R = { turn: S.turn, label: turnLabel(S.turn), ev: [], moves: [[], []], battles: [], raided: [{}, {}], scouts: [S.sides[0].orders.scouts.slice(), S.sides[1].orders.scouts.slice()] };
+  const own0 = { ...S.owner };
+  const E = (k, x) => R.ev.push({ k, ...x });
+  // 1. everyone marches out
+  const groups = [[], []];
+  for (const i of [0, 1]) {
+    const P = S.sides[i];
+    for (const mv of P.orders.moves) {
+      const st = P.army[mv.from] || {}, u = {};
+      for (const t in mv.units) { const k = Math.min(mv.units[t], st[t] || 0); if (k > 0) { u[t] = k; st[t] -= k; } }
+      clean(st);
+      if (total(u)) { groups[i].push({ path: mv.path, units: u, from: mv.from }); R.moves[i].push({ path: mv.path.slice(), n: total(u), units: { ...u } }); }
+    }
+  }
+  // 2. armies crossing the same road in opposite directions meet halfway
+  const edgeKey = (x, y) => x + '>' + y;
+  const byEdge = [{}, {}];
+  for (const i of [0, 1]) for (const g of groups[i]) (byEdge[i][edgeKey(g.path[0], g.path[1])] = byEdge[i][edgeKey(g.path[0], g.path[1])] || []).push(g);
+  for (const k in byEdge[0]) {
+    const [x, y] = k.split('>'), rev = edgeKey(y, x);
+    if (!byEdge[1][rev]) continue;
+    const g0 = byEdge[0][k], g1 = byEdge[1][rev];
+    const s0 = {}, s1 = {};
+    g0.forEach(g => addTo(s0, g.units)); g1.forEach(g => addTo(s1, g.units));
+    if (!total(s0) || !total(s1)) continue;
+    const res = fight(S, x, 0, s0, 1, s1, { field: true });
+    res.where = [x, y];
+    R.battles.push(res); E('battle', { b: res });
+    scoreBattle(S, res);
+    // shrink groups to survivors; the loser turns back home
+    const share = (gs, after) => { const pool = { ...after }; for (const g of gs) { const u = {}; for (const t in g.units) { const k = Math.min(g.units[t], pool[t] || 0); if (k) { u[t] = k; pool[t] -= k; } } g.units = u; } };
+    share(g0, s0); share(g1, s1);
+    const loserGroups = res.winner === 0 ? g1 : g0;
+    for (const g of loserGroups) { g.path = [g.path[0]]; }
+  }
+  // 3. arrive (multi-step marches stop at a region still held by enemy troops)
+  const arrived = [{}, {}];
+  for (const i of [0, 1]) for (const g of groups[i]) {
+    if (!total(g.units)) continue;
+    let dest = g.path[g.path.length - 1];
+    for (let k = 1; k < g.path.length - 1; k++) { const mid = g.path[k]; if (total(S.sides[1 - i].army[mid] || {})) { dest = mid; break; } }
+    const P = S.sides[i];
+    P.army[dest] = addTo(P.army[dest] || {}, g.units);
+    arrived[i][dest] = true;
+  }
+  // 4. battles where both sides stand, or where an army walks into enemy forts
+  for (const r of REGION_IDS) {
+    const st0 = S.sides[0].army[r] || {}, st1 = S.sides[1].army[r] || {};
+    const has0 = total(st0) > 0, has1 = total(st1) > 0;
+    const fortsOf = d => !!(S.sides[d].towers[r] || S.sides[d].castles[r] > 0 || S.sides[d].towns[r] || r === capOf(d) || jobsIn(S.sides[d], r) > 0);
+    let d = null;
+    if (has0 && has1) d = own0[r];
+    else if (has0 && own0[r] === 1 && fortsOf(1)) d = 1;
+    else if (has1 && own0[r] === 0 && fortsOf(0)) d = 0;
+    else continue;
+    if (d === null) {
+      const res = fight(S, r, 0, st0, 1, st1, {});
+      R.battles.push(res); E('battle', { b: res }); scoreBattle(S, res);
+      retreat(S, res.winner === 0 ? 1 : 0, r, res.winner === 0 ? st1 : st0, R);
+    } else {
+      const a = 1 - d, aSt = S.sides[a].army[r] || {}, dSt = S.sides[d].army[r] || (S.sides[d].army[r] = {});
+      const res = fight(S, r, a, aSt, d, dSt, { def: true, forts: fortsOf(d) });
+      R.battles.push(res); E('battle', { b: res }); scoreBattle(S, res);
+      if (res.winner === d) retreat(S, a, r, aSt, R);
+      else {
+        retreat(S, d, r, dSt, R);
+        const P = S.sides[d], sieges = aSt.siege || 0, hit = sieges * (modsOf(S, a).trebuchet ? 2 : 1);
+        if (P.castles[r] > 0) { P.castles[r] -= hit; if (P.castles[r] <= 0) { delete P.castles[r]; E('razed', { side: d, r, what: 'castle' }); } }
+        if (P.towers[r] && !(P.castles[r] > 0)) { E('razed', { side: d, r, what: 'tower', n: P.towers[r] }); delete P.towers[r]; }
+      }
+    }
+    clean(S.sides[0].army[r] || {}); clean(S.sides[1].army[r] || {});
+  }
+  // 5. raids on workers, sieges on capitals
+  for (const r of REGION_IDS) for (const a of [0, 1]) {
+    const st = S.sides[a].army[r] || {}, d = 1 - a, P = S.sides[d];
+    if (!total(st) || total(S.sides[d].army[r] || {})) continue;
+    const workers = jobsIn(P, r) + (r === capOf(d) ? P.idle : 0);
+    if (workers > 0) {
+      const Md = modsOf(S, d);
+      let kills = 0;
+      for (const t in st) kills += st[t] * UNITS[t].kill;
+      kills = Math.min(Math.round(workers * 0.75), Math.round(kills));
+      if (homeOf(d).includes(r)) kills = Math.round(kills * (1 - Md.evac));
+      if (r === capOf(d)) kills = Math.round(kills * 0.3);
+      if (kills > 0) {
+        loseWorkers(S, d, r, kills);
+        S.sides[a].stats.villsKilled += kills; P.stats.villsLost += kills;
+        const Ma = modsOf(S, a);
+        let loot = null;
+        if (Ma.plunderBase) { loot = { food: Math.round(kills * 12 * (1 + Ma.plunder)), gold: Math.round(kills * 8 * (1 + Ma.plunder)) }; refund(S.sides[a], loot); }
+        E('raid', { side: a, r, kills, loot });
+      }
+      R.raided[d][r] = true;
+      // survivors run home
+      for (const j in P.jobs) if (JOBS[j].region === r && r !== capOf(d)) { P.idle += P.jobs[j]; delete P.jobs[j]; }
+    }
+    if (r === capOf(d)) {
+      const sieges = st.siege || 0, other = total(st) - sieges;
+      const dmg = Math.round(sieges * 18 * (modsOf(S, a).trebuchet ? 2 : 1) + other * 0.6 * (P.bld.walls ? 0.35 : 1));
+      if (dmg > 0) { P.capHP -= dmg; E('siege', { side: a, r, dmg, hp: Math.max(0, P.capHP) }); }
+    }
+  }
+  // 6. who holds what
+  for (const r of REGION_IDS) {
+    if (REGIONS[r].kind === 'capital') continue;
+    const h0 = total(S.sides[0].army[r] || {}) > 0, h1 = total(S.sides[1].army[r] || {}) > 0;
+    if (h0 === h1) continue;
+    const w = h0 ? 0 : 1, l = 1 - w;
+    if (S.owner[r] === w) continue;
+    if (S.sides[l].castles[r] > 0) continue;
+    if (S.owner[r] === l) { const P = S.sides[l]; delete P.towers[r]; delete P.towns[r]; for (const j in P.jobs) if (JOBS[j].region === r) { P.idle += P.jobs[j]; delete P.jobs[j]; } }
+    S.owner[r] = w;
+    E('capture', { side: w, r, from: own0[r] });
+  }
+  // 7. the relic
+  const mo = S.owner.m;
+  if (mo !== null && total(S.sides[mo].army.m || {}) > 0) {
+    S.sides[mo].res.gold += 12;
+    if (S.sides[mo].age >= 3) { const pts = 1 + modsOf(S, mo).relicX; S.sides[mo].relic += pts; E('relic', { side: mo, pts, total: S.sides[mo].relic }); }
+  }
+  // 8. work, training, building, research
+  for (const i of [0, 1]) {
+    const P = S.sides[i], M = modsOf(S, i), O = P.orders;
+    const diff = P.ai && S.sides[1 - i].ai == null ? S.diff : 1;
+    const got = { food: 0, wood: 0, gold: 0 };
+    for (const j in P.jobs) {
+      const J = JOBS[j], r = J.region;
+      if (R.raided[i][r] && r !== capOf(i)) continue;
+      let g = P.jobs[j] * GATHER[J.res] * (1 + M.gather[J.res]) * diff;
+      if (J.reserve != null) { g = Math.min(g, P.goldLeft[j] || 0); P.goldLeft[j] = (P.goldLeft[j] || 0) - g; if (P.goldLeft[j] <= 0) { P.idle += P.jobs[j]; delete P.jobs[j]; E('depleted', { side: i, r }); } }
+      got[J.res] += g;
+    }
+    if (M.soldierFarm) for (const r of homeOf(i)) got.food += total(P.army[r] || {}) * M.soldierFarm;
+    for (const r of RES) { got[r] = Math.round(got[r]); P.res[r] += got[r]; }
+    R['got' + i] = got;
+    const cap = capOf(i);
+    for (const t in O.train) {
+      if (t === 'vill') { for (let k = 0; k < O.train.vill; k++) autoPlace(S, i); }
+      else P.army[cap] = addTo(P.army[cap] || {}, { [t]: O.train[t] });
+    }
+    if (sumObj(O.train)) E('trained', { side: i, units: { ...O.train } });
+    for (const b of O.builds) {
+      if (b.kind === 'tower') { if (S.owner[b.region] !== i) { refund(P, b.cost); continue; } P.towers[b.region] = (P.towers[b.region] || 0) + 1; }
+      else if (b.kind === 'castle') { if (S.owner[b.region] !== i) { refund(P, b.cost); continue; } P.castles[b.region] = 4; }
+      else if (b.kind === 'town') { if (S.owner[b.region] !== i) { refund(P, b.cost); continue; } P.towns[b.region] = true; }
+      else if (b.kind === 'walls') { P.bld.walls = 1; P.capHP += WALL_HP; }
+      else if (b.kind === 'wonder') P.wonder = { left: M.fastWonder ? 0 : 1, held: 0 };
+      else P.bld[b.kind] = (P.bld[b.kind] || 0) + 1;
+      E('built', { side: i, kind: b.kind, r: b.region });
+    }
+    if (O.research === 'age') { P.age++; P.pendingCard = cardOptions(S, i, P.age); E('age', { side: i, age: P.age }); }
+    else if (O.research) { P.techs.push(O.research); E('tech', { side: i, id: O.research }); }
+  }
+  // 9. the land fights back, walls get mended, wonders rise
+  for (const d of [0, 1]) {
+    const Md = modsOf(S, d), a = 1 - d;
+    if (Md.attrition) for (const r of homeOf(d)) {
+      const st = S.sides[a].army[r];
+      if (!st || !total(st)) continue;
+      const lost = {};
+      for (const t in st) { const x = st[t] * Md.attrition; let k = Math.floor(x); if (rnd(S) < x - k) k++; if (k > 0) { lost[t] = k; st[t] -= k; } }
+      clean(st);
+      if (total(lost)) { E('attrition', { side: a, r, lost }); S.sides[a].stats.lost += total(lost); }
+    }
+    const P = S.sides[d], maxHP = CAP_HP + (P.bld.walls ? WALL_HP : 0);
+    if (!total(S.sides[a].army[capOf(d)] || {})) P.capHP = Math.min(maxHP, P.capHP + 12);
+    if (P.wonder && P.capHP > 0) { if (P.wonder.left > 0) P.wonder.left--; else P.wonder.held++; if (P.wonder.left === 0 && P.wonder.held === 0) E('wonder', { side: d }); }
+  }
+  // 10. victory
+  const collapsed = i => S.turn >= 8 && villCount(S.sides[i]) < 4 && armyCount(S.sides[i]) === 0;
+  for (const i of [0, 1]) if (collapsed(i) && S.sides[i].capHP > 0) { S.sides[i].capHP = 0; E('collapse', { side: i }); }
+  const lost0 = S.sides[0].capHP <= 0, lost1 = S.sides[1].capHP <= 0;
+  let win = null, how = '';
+  if (lost0 || lost1) { win = lost0 && lost1 ? -1 : lost0 ? 1 : 0; how = 'capital'; }
+  else {
+    const rel = [0, 1].filter(i => S.sides[i].relic >= RELIC_WIN), won = [0, 1].filter(i => S.sides[i].wonder && S.sides[i].wonder.held >= WONDER_HOLD);
+    if (rel.length) { win = rel.length > 1 ? (S.sides[0].relic >= S.sides[1].relic ? 0 : 1) : rel[0]; how = 'relic'; }
+    else if (won.length) { win = won[0]; how = 'wonder'; }
+    else if (S.turn >= MAX_TURNS) { const sc = [0, 1].map(i => scoreOf(S, i)); win = sc[0] === sc[1] ? -1 : sc[0] > sc[1] ? 0 : 1; how = 'time'; }
+  }
+  for (const i of [0, 1]) { updateVision(S, i, R.scouts[i]); S.sides[i].orders = emptyOrders(); }
+  S.history.push({ turn: S.turn, power: [armyValue(S, 0), armyValue(S, 1)], vills: [villCount(S.sides[0]), villCount(S.sides[1])] });
+  S.report = R;
+  if (win !== null) { S.winner = win; S.over = { how, turn: S.turn }; return R; }
+  S.turn++;
+  return R;
+}
+function scoreBattle(S, res) {
+  const W = S.sides[res.winner], L = S.sides[res.winner === res.a ? res.d : res.a];
+  W.stats.battlesWon++; L.stats.battlesLost++;
+  S.sides[res.a].stats.lost += total(res.lossA); S.sides[res.d].stats.lost += total(res.lossD);
+  S.sides[res.a].stats.kills += total(res.lossD); S.sides[res.d].stats.kills += total(res.lossA);
+}
+/* the beaten side's survivors (if any) fall back towards home; the rest are lost */
+function retreat(S, side, r, st, R) {
+  if (!total(st)) return;
+  const M = modsOf(S, side);
+  const keepFrac = Math.min(1, 0.2 + M.retreat + (Object.keys(st).every(t => MOUNTED.has(UNITS[t].cls)) ? 0.2 : 0));
+  const seen = { [r]: true }, q = [r];
+  let to = null;
+  while (q.length && !to) {
+    const x = q.shift();
+    for (const y of ADJ[x]) {
+      if (seen[y]) continue; seen[y] = true;
+      if (S.owner[y] === side && !total(S.sides[1 - side].army[y] || {})) { to = y; break; }
+      q.push(y);
+    }
+  }
+  const keep = {};
+  for (const t in st) { const k = Math.floor(st[t] * keepFrac); if (k > 0) keep[t] = k; }
+  for (const t in st) delete st[t];
+  if (to && total(keep)) { S.sides[side].army[to] = addTo(S.sides[side].army[to] || {}, keep); R.ev.push({ k: 'retreat', side, from: r, to, units: keep }); }
+}
+function loseWorkers(S, d, r, kills) {
+  const P = S.sides[d];
+  let left = kills;
+  for (const j of Object.keys(P.jobs)) {
+    if (JOBS[j].region !== r || left <= 0) continue;
+    const k = Math.min(P.jobs[j], left); P.jobs[j] -= k; left -= k; if (!P.jobs[j]) delete P.jobs[j];
+  }
+  if (left > 0 && r === capOf(d)) { const k = Math.min(P.idle, left); P.idle -= k; }
+}
+function autoPlace(S, i) {
+  const P = S.sides[i], c = capOf(i), home = homeOf(i);
+  for (const j of [c, home[1], home[2], c + 'g']) if (jobOpen(S, i, j) && (P.jobs[j] || 0) < JOBS[j].slots) { P.jobs[j] = (P.jobs[j] || 0) + 1; return; }
+  P.idle++;
+}
+const armyValue = (S, i) => { let v = 0; for (const r in S.sides[i].army) for (const t in S.sides[i].army[r]) v += S.sides[i].army[r][t] * UNITS[t].str; return Math.round(v); };
+const scoreOf = (S, i) => { const P = S.sides[i]; return P.relic * 30 + Math.max(0, P.capHP) + armyValue(S, i) * 2 + villCount(P) * 5 + P.age * 50; };
+
+/* ── fog of war ── */
+function updateVision(S, i, scouts) {
+  const P = S.sides[i], F = S.sides[1 - i], M = modsOf(S, i);
+  const full = new Set();
+  for (const r of REGION_IDS) if (S.owner[r] === i || total(P.army[r] || {}) || jobsIn(P, r) || P.towers[r] || P.castles[r] > 0 || P.towns[r]) full.add(r);
+  const near = new Set();
+  for (const r of full) for (const a of ADJ[r]) if (!full.has(a)) near.add(a);
+  for (const r of scouts || []) { full.add(r); near.delete(r); }
+  if (total(P.army.n || {})) for (const a of ADJ.n) for (const b of ADJ[a]) if (!full.has(b)) near.add(b);
+  for (const r of REGION_IDS) {
+    const v = full.has(r) ? 'full' : near.has(r) ? (M.sharp ? 'full' : 'near') : 'fog';
+    P.vis[r] = v;
+    if (v === 'fog') continue;
+    const st = F.army[r] || {}, prev = P.intel[r] || {};
+    P.intel[r] = {
+      turn: S.turn, exact: v === 'full', n: total(st), units: v === 'full' ? { ...st } : prev.units && prev.n === total(st) ? prev.units : null,
+      vills: v === 'full' ? jobsIn(F, r) : null, towers: F.towers[r] || 0, castle: F.castles[r] > 0, town: !!F.towns[r],
+    };
+  }
+  const fc = capOf(1 - i);
+  if (P.vis[fc] === 'full') P.capIntel = { turn: S.turn, bld: { ...F.bld }, castles: castleCount(F), towns: townCount(F), techs: F.techs.slice(), vills: villCount(F), hp: F.capHP, army: total(F.army[fc] || {}) };
+}
+/* what a side believes about an enemy stack: exact, approximate, or remembered */
+function enemySeen(S, i, r) {
+  const I = S.sides[i].intel[r];
+  if (!I) return null;
+  return { ...I, age: S.turn - I.turn };
+}
+function forecast(S, i, from, to, units) {
+  const I = enemySeen(S, i, to), foe = 1 - i;
+  const defending = S.owner[to] === foe;
+  let dSt = null, guess = false;
+  if (I && I.age <= 1 && I.units) dSt = I.units;
+  else if (I && I.age <= 1 && I.n === 0) dSt = {};
+  else if (I && I.age <= 1 && I.n) { dSt = { spear: I.n }; guess = true; }
+  const towers = I ? I.towers * 7 + (I.castle ? 25 : 0) + (I.town ? 8 : 0) : 0;
+  const capBase = to === capOf(foe) ? 14 : 0;
+  if (!dSt && !defending) return { kind: 'unknown', text: 'Chưa rõ quân địch ở đó. Do thám trước sẽ chắc ăn hơn.' };
+  if (!dSt) return { kind: 'unknown', text: 'Đất địch, không rõ phòng thủ. Do thám trước sẽ chắc ăn hơn.' };
+  const pa = stackPower(S, i, units, dSt, to);
+  const pd = stackPower(S, foe, dSt, units, to) * (defending ? defMul(S, foe, to) : 1) + (defending ? towers + capBase : 0);
+  const q = pa / Math.max(pd, 0.01);
+  const old = I.age ? ` (tin từ ${I.age} lượt trước)` : '';
+  if (!total(dSt) && !towers && !capBase) return { kind: 'free', text: `Không thấy quân địch${old}.` };
+  const kind = q > 1.6 ? 'win' : q > 1.1 ? 'edge' : q > 0.9 ? 'even' : 'lose';
+  const T = { win: 'Thắng chắc', edge: 'Nhỉnh hơn', even: 'Ngang ngửa, thắng thua khó nói', lose: 'Dễ thua' }[kind];
+  return { kind, text: `${T}${guess ? ' (chỉ đoán theo quân số)' : ''}${old}.` };
+}
+
+/* ── AI: plays with its own fog of war (no peeking), one of four plans, and reacts to what it scouts ── */
+const AI_STRATS = {
+  rush:   { name: 'Đánh sớm',     vill: [10, 15, 22, 28], ageAt: [0, 10, 15, 22], mil: [0.6, 0.6, 0.55, 0.5], attack: 1.0, raid: 1, towers: 0, walls: 0, towns: 0, wonder: 0, relic: 0.6, early: 1 },
+  boom:   { name: 'Phát triển',   vill: [13, 24, 34, 42], ageAt: [0, 12, 22, 31], mil: [0.08, 0.25, 0.5, 0.6], attack: 1.2, raid: 0, towers: 1, walls: 0, towns: 2, wonder: 0, relic: 0.8, early: 0 },
+  turtle: { name: 'Phòng thủ',    vill: [12, 22, 32, 40], ageAt: [0, 11, 20, 28], mil: [0.25, 0.3, 0.4, 0.35], attack: 1.4, raid: 0, towers: 2, walls: 1, towns: 1, wonder: 1, relic: 1.6, early: 0 },
+  relic:  { name: 'Giữ thánh địa', vill: [12, 20, 30, 36], ageAt: [0, 11, 20, 30], mil: [0.4, 0.45, 0.5, 0.5], attack: 1.1, raid: 0, towers: 1, walls: 0, towns: 1, wonder: 0, relic: 2, early: 0 },
+};
+const simplePower = st => { let p = 0; for (const t in st) p += (st[t] || 0) * UNITS[t].str; return p; };
+function knownEnemy(S, me, r, maxAge) {
+  const I = enemySeen(S, me, r);
+  if (!I || I.age > maxAge) return null;
+  if (I.units) return { units: I.units, p: simplePower(I.units) * (1 + 0.15 * I.age) };
+  return { units: null, p: (I.n || 0) * 4.2 * (1 + 0.15 * I.age) };
+}
+function enemyComp(S, me) {
+  const c = {};
+  for (const r of REGION_IDS) { const I = enemySeen(S, me, r); if (I && I.age <= 4 && I.units) addTo(c, I.units); }
+  const CI = S.sides[me].capIntel;
+  if (CI && S.turn - CI.turn <= 6) { if (CI.bld.stable) c.cav = (c.cav || 0) + 2 * CI.bld.stable; if (CI.bld.range) c.archer = (c.archer || 0) + 2 * CI.bld.range; if (CI.bld.barracks && !c.spear) c.spear = 1; }
+  return c;
+}
+function enemyTotalEstimate(S, me) {
+  let seen = 0;
+  for (const r of REGION_IDS) { const k = knownEnemy(S, me, r, 3); if (k) seen += k.p; }
+  return Math.max(seen, Math.max(0, S.turn - 3) * 1.3 * S.sides[1 - me].age);
+}
+function threatMap(S, me) {
+  const out = {};
+  for (const r of REGION_IDS) {
+    const k = knownEnemy(S, me, r, 1);
+    if (!k || !k.p) continue;
+    const mounted = k.units ? Object.keys(k.units).length > 0 && Object.keys(k.units).every(t => MOUNTED.has(UNITS[t].cls)) : false;
+    const reach = pathsFrom(S, 1 - me, r, mounted ? 2 : 1);
+    out[r] = (out[r] || 0) + k.p;
+    for (const x in reach) out[x] = (out[x] || 0) + k.p * (reach[x].length > 2 ? 0.5 : 0.85);
+  }
+  return out;
+}
+function defenseAt(S, me, r) {
+  const P = S.sides[me];
+  let p = simplePower(P.army[r] || {}) + (P.towers[r] || 0) * 7 + (P.castles[r] > 0 ? 25 : 0) + (P.towns[r] ? 8 : 0);
+  if (r === capOf(me)) p += (10 + (jobsIn(P, r) + P.idle) * 0.4) * (P.bld.walls ? 1.3 : 1);
+  return p;
+}
+const myPower = (S, me) => { let p = 0; for (const r in S.sides[me].army) p += simplePower(S.sides[me].army[r]); return p; };
+
+function aiPlan(S, me) {
+  const P = S.sides[me];
+  if (!P.ai.strat) P.ai.strat = wpick(S, Object.entries(CIVS[P.civ].ai));
+  const st = AI_STRATS[P.ai.strat];
+  if (P.pendingCard) chooseCard(S, me, aiCard(S, me, st));
+  const T = threatMap(S, me);
+  aiResearch(S, me, st, T);
+  aiJobs(S, me, st, T);
+  aiBuilds(S, me, st, T);
+  aiTrain(S, me, st, T);
+  aiMoves(S, me, st, T);
+  aiScout(S, me, st);
+}
+function aiCard(S, me, st) {
+  const opts = S.sides[me].pendingCard;
+  const pref = { rush: ['civ', 'levy', 'spies', 'smith', 'imperial', 'trebuchet'], boom: ['tax', 'civ', 'academy', 'smith', 'imperial'], turtle: ['civ', 'masonry', 'academy', 'wonders', 'tax'], relic: ['civ', 'spies', 'smith', 'imperial', 'masonry'] }[S.sides[me].ai.strat];
+  for (const p of pref) { const hit = opts.find(o => (p === 'civ' ? !!CARDS[o].civ : o === p)); if (hit) return hit; }
+  return opts[0];
+}
+function aiResearch(S, me, st, T) {
+  const P = S.sides[me];
+  const danger = (T[capOf(me)] || 0) > defenseAt(S, me, capOf(me)) * 0.9;
+  P.ai.saving = null;
+  if (P.age < 4 && villCount(P) >= st.ageAt[P.age] && !danger) {
+    const c = costOf(S, me, 'age');
+    if (canAfford(P, c)) { planResearch(S, me, 'age'); return; }
+    const close = RES.every(r => (P.res[r] || 0) >= (c[r] || 0) * 0.5);
+    P.ai.saving = close ? c : Object.fromEntries(Object.entries(c).map(([r, v]) => [r, Math.round(v * 0.5)]));
+    return;
+  }
+  const prefs = P.age >= 3 ? ['armor', 'wheel', 'forge', 'mine', 'plow', 'saw'] : (P.ai.strat === 'boom' || P.ai.strat === 'turtle') ? ['plow', 'saw', 'mine', 'forge'] : ['forge', 'plow', 'mine', 'saw'];
+  for (const id of prefs) {
+    if (P.techs.includes(id) || P.age < TECHS[id].age) continue;
+    const c = costOf(S, me, 'tech', id);
+    if (RES.every(r => (P.res[r] || 0) >= (c[r] || 0) * 1.6)) { planResearch(S, me, id); return; }
+  }
+}
+function aiJobs(S, me, st, T) {
+  const P = S.sides[me], cap = capOf(me), home = homeOf(me);
+  for (const j in P.jobs) { P.idle += P.jobs[j]; delete P.jobs[j]; }
+  const V = P.idle;
+  let w = P.age === 1 ? { food: 0.62, wood: 0.38, gold: 0 } : P.age === 2 ? { food: 0.45, wood: 0.3, gold: 0.25 } : { food: 0.4, wood: 0.25, gold: 0.35 };
+  if (P.age === 1 && villCount(P) >= st.ageAt[1] - 3) w = { food: 0.75, wood: 0.25, gold: 0 };
+  if (P.age >= 3 && st.wonder) w = { food: 0.22, wood: 0.38, gold: 0.4 };
+  const stock = P.res, sum = stock.food + stock.wood + stock.gold + 1;
+  for (const r of RES) if (stock[r] / sum > 0.55 && w[r] > 0.15) { w[r] -= 0.1; const o = RES.filter(x => x !== r); w[o[0]] += 0.05; w[o[1]] += 0.05; }
+  const backup = myPower(S, me) * 0.6;
+  const safe = r => r === cap || (T[r] || 0) <= defenseAt(S, me, r) + (P.jobs[r] || 0) * 0.5 + backup;
+  const mids = ['n', 's'].filter(r => jobOpen(S, me, r) && safe(r)).sort((a, b) => (S.owner[b] === me) - (S.owner[a] === me) || (P.towers[b] || 0) - (P.towers[a] || 0));
+  const lists = { food: [cap, home[1]], wood: [home[2]], gold: [cap + 'g', ...mids] };
+  const want = { food: Math.round(V * w.food), wood: Math.round(V * w.wood) };
+  want.gold = Math.max(0, V - want.food - want.wood);
+  const fill = (res, n) => {
+    for (const j of lists[res]) {
+      if (n <= 0) break;
+      if (!jobOpen(S, me, j) || !safe(JOBS[j].region)) continue;
+      const room = JOBS[j].slots - (P.jobs[j] || 0), k = Math.min(room, n, P.idle);
+      if (k > 0) { P.jobs[j] = (P.jobs[j] || 0) + k; P.idle -= k; n -= k; }
+    }
+    return n;
+  };
+  let spill = 0;
+  for (const r of ['gold', 'wood', 'food']) spill += fill(r, want[r]);
+  for (const r of ['food', 'wood', 'gold']) if (spill > 0) spill = fill(r, spill);
+}
+function desiredUnits(S, me) {
+  const P = S.sides[me], comp = enemyComp(S, me), tot = total(comp);
+  const out = [];
+  for (const t of unitsFor(S, me)) {
+    const U = UNITS[t];
+    if (t === 'siege' || P.age < U.age) continue;
+    if (U.bld === 'castle' && !castleCount(P)) continue;
+    let eff = 1;
+    if (tot) { eff = 0; for (const e in comp) eff += comp[e] / tot * vsMult(t, e); }
+    const c = costOf(S, me, 'unit', t), price = (c.food || 0) + (c.wood || 0) + (c.gold || 0) * 1.25;
+    let v = U.str * eff / price * 100;
+    if (U.civ) v *= 1.15;
+    if (P.ai.strat === 'rush' && MOUNTED.has(U.cls)) v *= 1.15;
+    if (!tot && t === 'spear' && P.age >= 2) v *= 0.8;
+    out.push([t, v]);
+  }
+  return out.sort((a, b) => b[1] - a[1]).map(x => x[0]);
+}
+function aiBuilds(S, me, st, T) {
+  const P = S.sides[me], cap = capOf(me), home = homeOf(me), age = P.age, B = k => P.bld[k] || 0;
+  const danger = Object.keys(T).some(r => homeOf(me).includes(r) && T[r] > defenseAt(S, me, r));
+  const tries = [];
+  if (!B('barracks') && (st.early || S.turn >= 3 || danger)) tries.push(['barracks', cap]);
+  if (age >= 2) {
+    if (st.walls && !B('walls')) tries.push(['walls', cap]);
+    for (const t of desiredUnits(S, me).filter(t => UNITS[t].bld !== 'castle').slice(0, 2)) { const b = UNITS[t].bld; if (B(b) < (age >= 3 ? 2 : 1)) tries.push([b, cap]); }
+    if (townCount(P) < st.towns) tries.push(['town', S.owner[home[1]] === me ? home[1] : home[2]]);
+    if (st.towers) for (const r of [home[1], home[2], 'n', 's', 'm']) if (S.owner[r] === me && (P.towers[r] || 0) < st.towers && (jobsIn(P, r) > 0 || (r === 'm' && st.relic > 1))) tries.push(['tower', r]);
+  }
+  if (age >= 3) {
+    if (castleCount(P) < 1) tries.push(['castle', st.relic > 1 && S.owner.m === me ? 'm' : cap]);
+    else if (castleCount(P) < 2 && S.owner.m === me && !(P.castles.m > 0) && (st.relic > 1 || P.ai.strat === 'turtle')) tries.push(['castle', 'm']);
+    if (P.ai.siege && !B('workshop')) tries.push(['workshop', cap]);
+  }
+  if (age >= 4 && st.wonder && !P.wonder) tries.push(['wonder', cap]);
+  for (const [k, r] of tries) {
+    if (P.orders.builds.length >= AGES[age].builds) break;
+    const c = costOf(S, me, 'bld', k);
+    if (P.ai.saving && RES.some(x => c[x] && P.ai.saving[x] && P.res[x] - c[x] < P.ai.saving[x]) && k !== 'barracks') continue;
+    if (!buildCheck(S, me, k, r)) planBuild(S, me, k, r);
+  }
+}
+function aiTrain(S, me, st, T) {
+  const P = S.sides[me], age = P.age, cap = capOf(me);
+  const reserve = P.ai.saving || {};
+  const keep = r => reserve[r] || 0;
+  const valued = REGION_IDS.filter(r => r === cap || jobsIn(P, r) > 0);
+  const gap = Math.max(0, ...valued.map(r => (T[r] || 0) - defenseAt(S, me, r)));
+  const foeWonder = S.sides[1 - me].wonder, foeRelic = S.sides[1 - me].relic;
+  const occupied = homeOf(me).some(r => S.owner[r] === 1 - me || (knownEnemy(S, me, r, 1) || { p: 0 }).p > 0);
+  const pressure = gap > 0 || occupied || foeWonder || foeRelic >= RELIC_WIN - 4;
+  // villagers first (unless the enemy is at the gates)
+  const wantV = P.idle > 1 ? 0 : st.vill[age - 1] - villCount(P);
+  for (let k = 0; k < Math.min(prodCap(S, me, 'vill'), wantV); k++) {
+    if (gap > 0 && k >= 1) break;
+    if (P.res.food - VILL_COST.food < keep('food') && !pressure) break;
+    if (!planTrain(S, me, 'vill', 1).ok) break;
+  }
+  // siege when we mean to finish the job
+  const eTot = enemyTotalEstimate(S, me);
+  const maxed = popNow(S, me) >= popCap(S, me) * 0.8;
+  P.ai.siege = age >= 3 && (myPower(S, me) > eTot * 1.1 || maxed || foeWonder || P.ai.strat === 'rush');
+  if (P.ai.siege && prodCap(S, me, 'siege')) { const have = Object.values(P.army).reduce((a, s2) => a + (s2.siege || 0), 0); for (let k = have; k < 4; k++) if (!planTrain(S, me, 'siege', 1).ok) break; }
+  // soldiers
+  const share = pressure ? 1 : age === 1 ? st.mil[0] : Math.max(st.mil[age - 1], P.ai.strat === 'boom' && age === 2 ? 0.5 : 0.85);
+  const budget = {}; for (const r of RES) budget[r] = Math.max(0, (P.res[r] - keep(r)) * share);
+  const types = desiredUnits(S, me).filter(t => prodCap(S, me, t) > 0);
+  if (!types.length) return;
+  let progress = true, spent = { food: 0, wood: 0, gold: 0 };
+  while (progress) {
+    progress = false;
+    for (const t of types.slice(0, 3)) {
+      const c = costOf(S, me, 'unit', t);
+      if (RES.some(r => (c[r] || 0) + spent[r] > budget[r] + 0.01)) continue;
+      if (planTrain(S, me, t, 1).ok) { for (const r in c) spent[r] += c[r]; progress = true; }
+    }
+  }
+}
+function stepToward(S, me, from, to, units) {
+  const range = moveRange(S, me, units), paths = pathsFrom(S, me, from, 8);
+  const full = paths[to];
+  if (!full) return false;
+  const dest = full[Math.min(range, full.length - 1)];
+  return planMove(S, me, from, dest, units).ok;
+}
+function aiMoves(S, me, st, T) {
+  const P = S.sides[me], cap = capOf(me), foe = 1 - me, F = S.sides[foe];
+  const stacks = Object.keys(P.army).filter(r => total(availableAt(S, me, r)) > 0);
+  if (!stacks.length) return;
+  const pow = myPower(S, me);
+  const moveAll = to => { for (const r of stacks) if (r !== to) stepToward(S, me, r, to, availableAt(S, me, r)); };
+  // 1. defend what matters
+  const valued = REGION_IDS.filter(r => r === cap || jobsIn(P, r) > 0 || P.towns[r] || (r === 'm' && S.owner.m === me && st.relic >= 1));
+  let worst = null, worstGap = 0;
+  for (const r of valued) { const g = (T[r] || 0) - defenseAt(S, me, r); if (g > worstGap) { worstGap = g; worst = r; } }
+  if (worst) {
+    if (pow + defenseAt(S, me, worst) - simplePower(P.army[worst] || {}) >= (T[worst] || 0) * 0.8) moveAll(worst);
+    else moveAll(cap);
+    return;
+  }
+  // 2. strike
+  const eTot = enemyTotalEstimate(S, me);
+  const cands = [];
+  for (const r of REGION_IDS) {
+    if (S.owner[r] === me && !(r === 'm')) continue;
+    if (homeOf(me).includes(r) && S.owner[r] === foe) { const k = knownEnemy(S, me, r, 2); cands.push({ r, def: (k ? k.p : eTot * 0.4) + 2, value: 30 }); continue; }
+    const k = knownEnemy(S, me, r, 2), I = enemySeen(S, me, r);
+    let def = k ? k.p : eTot * 0.5;
+    if (I && I.age <= 3) def += I.towers * 7 + (I.castle ? 25 : 0) + (I.town ? 8 : 0);
+    if (S.owner[r] === foe) def *= 1 + (REGIONS[r].terrain ? TERRAIN_DEF[REGIONS[r].terrain] || 0 : 0);
+    let value = 0;
+    if (r === capOf(foe)) {
+      const sieges = Object.values(P.army).reduce((a, s2) => a + (s2.siege || 0), 0);
+      if (!sieges && !F.wonder) continue;
+      def += 16 * (P.capIntel && P.capIntel.bld.walls ? 1.3 : 1);
+      value = 10 + (F.wonder ? 60 : 0) + sieges * 2 + (sieges >= 2 && myPower(S, me) >= eTot * 2 ? 40 : 0);
+    } else if (r === 'm') {
+      if (S.owner.m === me && total(P.army.m || {})) continue;
+      value = 4 + st.relic * 5 + (F.relic >= RELIC_WIN - 4 ? 40 : 0);
+    } else if (REGIONS[r].kind === 'gold') value = 4 + (I && I.vills ? I.vills * 2 : 0);
+    else value = (I && I.vills ? I.vills * 2.5 : 2) + (st.raid ? 3 : 0);
+    cands.push({ r, def, value });
+  }
+  cands.sort((a, b) => b.value / (b.def + 5) - a.value / (a.def + 5));
+  const maxed = popNow(S, me) >= popCap(S, me) * 0.85;
+  const desperate = F.wonder || F.relic >= RELIC_WIN - 3;
+  const need = desperate ? 0.75 : maxed ? Math.min(st.attack, 0.95) : st.attack;
+  const target = cands.find(c => pow >= need * c.def && pow > 6);
+  if (target) {
+    const guard = st.raid ? 0 : 0.25;
+    const holdM = S.owner.m === me && P.age >= 3 && target.r !== 'm';
+    for (const r of stacks) {
+      const av = availableAt(S, me, r);
+      const keepFrac = r === 'm' && holdM ? 0.5 : r === cap && guard ? guard : 0;
+      if (keepFrac && total(av) > 3) { const send = {}; for (const t in av) send[t] = Math.floor(av[t] * (1 - keepFrac)); if (total(send)) stepToward(S, me, r, target.r, send); }
+      else if (r !== target.r && !(r === 'm' && holdM)) stepToward(S, me, r, target.r, av);
+    }
+    P.ai.target = target.r;
+    return;
+  }
+  // 3. raiders slip out (mounted only) — always worth it while the enemy army sits on the monastery
+  const foeCamped = (knownEnemy(S, me, 'm', 1) || { p: 0 }).p > 8 && S.owner.m === foe;
+  if (st.raid || P.civ === 'mongol' || foeCamped) {
+    for (const r of stacks) {
+      const av = availableAt(S, me, r), mounted = {};
+      for (const t in av) if (MOUNTED.has(UNITS[t].cls)) mounted[t] = av[t];
+      if (total(mounted) < 3) continue;
+      const prey = REGION_IDS.filter(x => { const I = enemySeen(S, me, x); return S.owner[x] === foe && REGIONS[x].kind !== 'capital' && (!I || (I.age <= 3 && !(I.n > 0) && I.towers < 2)); });
+      if (prey.length) { stepToward(S, me, r, prey[0], mounted); }
+    }
+  }
+  // 4. hold the monastery or stage at the front
+  if (S.owner.m === me && total(P.army.m || {}) && (st.relic >= 1 || P.age >= 3)) { for (const r of stacks) { const av = availableAt(S, me, r); if (total(av) && r !== 'm' && r !== cap) stepToward(S, me, r, 'm', av); } return; }
+  const front = st.relic >= 1 && pow >= (knownEnemy(S, me, 'm', 2) || { p: eTot * 0.4 }).p * 1.2 ? 'm' : (st.early ? homeOf(me)[1] : cap);
+  for (const r of stacks) { const av = availableAt(S, me, r); if (total(av) && r !== front) stepToward(S, me, r, front, av); }
+}
+function aiScout(S, me, st) {
+  const P = S.sides[me], fc = capOf(1 - me);
+  if (!P.capIntel || S.turn - P.capIntel.turn >= 4) { planScout(S, me, fc); return; }
+  const t = P.ai.target;
+  if (t && P.vis[t] !== 'full') { planScout(S, me, t); return; }
+  const cands = ['m', 'n', 's', homeOf(1 - me)[1], homeOf(1 - me)[2]].filter(r => P.vis[r] !== 'full');
+  if (cands.length) planScout(S, me, cands[S.turn % cands.length]);
+}
+
+/* ── Art drawn in code: the parchment map, ink icons, heraldry ── */
+const INK = '#3a2715';
+/* borders wander like a hand-drawn map; each shared edge is generated once so neighbours match exactly */
+const EDGE_CACHE = {};
+function edgePts(a, b) {
+  const lo = Math.min(a, b), hi = Math.max(a, b), key = lo + '-' + hi;
+  if (!EDGE_CACHE[key]) {
+    let s = lo * 7919 + hi * 104729;
+    const R = () => { s = (s * 1103515245 + 12345) % 2147483648; return s / 2147483648; };
+    const [p, q] = [PTS[lo], PTS[hi]], dx = q[0] - p[0], dy = q[1] - p[1], len = Math.hypot(dx, dy), nx = -dy / len, ny = dx / len;
+    const n = Math.max(3, Math.round(len / 28)), amp = Math.min(13, len * 0.07), pts = [];
+    for (let k = 1; k < n; k++) { const t = k / n, off = (R() * 2 - 1) * amp * Math.sin(Math.PI * t); pts.push([p[0] + dx * t + nx * off, p[1] + dy * t + ny * off]); }
+    EDGE_CACHE[key] = pts;
+  }
+  return a < b ? EDGE_CACHE[key] : EDGE_CACHE[key].slice().reverse();
+}
+function polyPath(r) {
+  const ids = POLY[r];
+  let d = `M${PTS[ids[0]][0]} ${PTS[ids[0]][1]}`;
+  for (let k = 0; k < ids.length; k++) {
+    const a = ids[k], b = ids[(k + 1) % ids.length];
+    for (const [x, y] of edgePts(a, b)) d += ` L${x.toFixed(1)} ${y.toFixed(1)}`;
+    d += ` L${PTS[b][0]} ${PTS[b][1]}`;
+  }
+  return d + ' Z';
+}
+function crest(civ, size = 40) {
+  const C = CIVS[civ];
+  const shield = 'M4 3h32v16c0 10-8 16-16 19C12 35 4 29 4 19z';
+  const charge = {
+    daiviet: `<circle cx="20" cy="15" r="5.2" fill="#f2c94c"/>${Array.from({ length: 8 }, (_, i) => { const a = i * Math.PI / 4; return `<path d="M${20 + Math.cos(a) * 7} ${15 + Math.sin(a) * 7}L${20 + Math.cos(a) * 9.6} ${15 + Math.sin(a) * 9.6}" stroke="#f2c94c" stroke-width="1.6" stroke-linecap="round"/>`; }).join('')}<path d="M9 27c2.5-2 5-2 7.5 0s5 2 7.5 0 5-2 7.5 0" fill="none" stroke="#f2c94c" stroke-width="1.5"/>`,
+    mongol: `<path d="M20 6v24" stroke="#f4f1e6" stroke-width="1.6"/><circle cx="20" cy="9" r="2.6" fill="#f4f1e6"/>${[-5, -2.5, 0, 2.5, 5].map(d => `<path d="M20 12c${d * 0.4} 4 ${d} 9 ${d * 1.2} 14" fill="none" stroke="#f4f1e6" stroke-width="1.3" stroke-linecap="round"/>`).join('')}`,
+    byzantine: `<path d="M20 7v22M11 18h18" stroke="#f2c94c" stroke-width="2.4"/>${[[13.5, 13], [26.5, 13], [13.5, 24], [26.5, 24]].map(([x, y]) => `<text x="${x}" y="${y + 2}" font-family="Alegreya,Georgia,serif" font-weight="700" font-size="7" text-anchor="middle" fill="#f2c94c">Β</text>`).join('')}`,
+    frank: `<path d="M20 7c-3 3-3 7 0 10 3-3 3-7 0-10zM20 17c-2-4-8-5-9-1 2-1 5 0 6 3M20 17c2-4 8-5 9-1-2-1-5 0-6 3M15 21h10M20 17v12" fill="#f2c94c" stroke="#f2c94c" stroke-width="1.1" stroke-linejoin="round"/>`,
+  }[civ];
+  return `<svg viewBox="0 0 40 40" width="${size}" height="${size}" class="crest" aria-hidden="true"><path d="${shield}" fill="${C.color}" stroke="#1d1209" stroke-width="1.6"/><path d="${shield}" fill="url(#crestGloss)" opacity=".55"/>${charge}</svg>`;
+}
+const RES_ICON = {
+  food: `<svg viewBox="0 0 20 20" class="ri" aria-hidden="true"><path d="M10 18V7" stroke="#8a6416" stroke-width="1.4"/>${[[7, 0], [5, 3.2], [8.4, 3.6], [3.6, 6.6], [7.2, 7.2]].map(([y, dx]) => `<ellipse cx="${10 - 2.4 - dx * 0.2}" cy="${y + 1}" rx="1.9" ry="3" transform="rotate(-28 ${10 - 2.4} ${y + 1})" fill="#e7b73c" stroke="#8a6416" stroke-width=".7"/><ellipse cx="${10 + 2.4 + dx * 0.2}" cy="${y + 1}" rx="1.9" ry="3" transform="rotate(28 ${10 + 2.4} ${y + 1})" fill="#e7b73c" stroke="#8a6416" stroke-width=".7"/>`).join('')}</svg>`,
+  wood: `<svg viewBox="0 0 20 20" class="ri" aria-hidden="true"><rect x="2.5" y="8" width="15" height="7" rx="3.5" fill="#9b6a3b" stroke="#5a3a1c" stroke-width="1"/><ellipse cx="16" cy="11.5" rx="2.6" ry="3.4" fill="#d9b07a" stroke="#5a3a1c" stroke-width="1"/><circle cx="16" cy="11.5" r="1.1" fill="none" stroke="#9b6a3b" stroke-width=".7"/><path d="M5 10.5h7M6 13h5" stroke="#5a3a1c" stroke-width=".7"/></svg>`,
+  gold: `<svg viewBox="0 0 20 20" class="ri" aria-hidden="true"><ellipse cx="8" cy="13" rx="5.5" ry="3" fill="#f2c94c" stroke="#8a6416" stroke-width="1"/><ellipse cx="8" cy="11" rx="5.5" ry="3" fill="#ffd966" stroke="#8a6416" stroke-width="1"/><ellipse cx="13" cy="8.5" rx="5" ry="2.8" fill="#ffe08a" stroke="#8a6416" stroke-width="1"/></svg>`,
+  pop: `<svg viewBox="0 0 20 20" class="ri" aria-hidden="true"><circle cx="10" cy="6" r="3.2" fill="#d8c3a0" stroke="#5a3a1c"/><path d="M4 18c.5-5 3-7 6-7s5.5 2 6 7z" fill="#d8c3a0" stroke="#5a3a1c"/></svg>`,
+};
+function unitIcon(t, size = 22) {
+  const cls = UNITS[t].cls, s = '#2b1a0d';
+  const body = {
+    inf: `<path d="M6 21l11-17" stroke="${s}" stroke-width="1.6"/><path d="M15.5 2.5l3.2-.8-.8 3.2z" fill="${s}"/><circle cx="9" cy="8" r="2.4" fill="none" stroke="${s}" stroke-width="1.4"/><path d="M5 20c.5-4 2-7 4-7s3.4 2 4 6" fill="none" stroke="${s}" stroke-width="1.4"/><path d="M11 11.5l5 1.5v5l-5 1.5z" fill="${s}" opacity=".85"/>`,
+    rng: `<path d="M7 3c8 4 8 14 0 18" fill="none" stroke="${s}" stroke-width="1.6"/><path d="M7 3v18" stroke="${s}" stroke-width=".8"/><path d="M4 12h15M16.5 10l2.5 2-2.5 2" fill="none" stroke="${s}" stroke-width="1.4"/>`,
+    cav: `<path d="M4 20c1-5 3-8 6-9l2-5 2 2 3-1-1 4 3 3-2 2-3-2c-1 3-2 5-5 6z" fill="${s}"/><circle cx="14.5" cy="7.5" r=".9" fill="#f1e4c6"/>`,
+    sie: `<rect x="3" y="11" width="15" height="5" rx="1" fill="${s}"/><path d="M18 13.5h3" stroke="${s}" stroke-width="2.4"/><circle cx="7" cy="18.5" r="2.2" fill="none" stroke="${s}" stroke-width="1.4"/><circle cx="14" cy="18.5" r="2.2" fill="none" stroke="${s}" stroke-width="1.4"/><path d="M4 11l3-5h7l3 5" fill="none" stroke="${s}" stroke-width="1.4"/>`,
+    hrc: `<path d="M3 21c1-4 3-7 6-8l2-4 2 2 3-1-1 4 3 3-2 2-3-2c-1 3-2 4-5 5z" fill="${s}"/><path d="M13 2c5 2 5 8 0 10" fill="none" stroke="${s}" stroke-width="1.3"/>`,
+    hcv: `<path d="M3 21c1-5 3-8 6-9l2-5 2 2 3-1-1 4 3 3-2 2-3-2c-1 3-2 5-5 6z" fill="${s}"/><path d="M8 12h7" stroke="#f2c94c" stroke-width="1.4"/><rect x="9" y="3" width="4" height="4" fill="${s}"/>`,
+  }[cls];
+  return `<svg viewBox="0 0 22 22" width="${size}" height="${size}" class="ui-ico" aria-hidden="true">${body}</svg>`;
+}
+/* little ink drawings for each kind of land */
+function landArt(r, x, y) {
+  const k = REGIONS[r].kind;
+  if (k === 'capital') return `<g transform="translate(${x - 26} ${y - 30})" class="ink"><path d="M4 44V18h8v-6h6v6h16v-6h6v6h8v26z" fill="#e9d8ae"/><path d="M4 44V18h8v-6h6v6h16v-6h6v6h8v26z M22 44V32a4 4 0 0 1 8 0v12 M4 18h48 M12 12v-4 M40 12v-4" fill="none"/><path d="M26 12V-4" /><path d="M26 -4h14l-4 4 4 4H26" class="flag" fill="${S ? CIVS[S.sides[r === 'c0' ? 0 : 1].civ].color : '#a22'}"/></g>`;
+  if (k === 'farm') return `<g transform="translate(${x - 34} ${y - 8})" class="ink">${[0, 8, 16, 24].map(d => `<path d="M${d} ${14 + d * 0.15}q18 -6 36 0" fill="none"/>`).join('')}${[8, 26, 44].map(d => `<g transform="translate(${d} 2)"><path d="M3 12V0M0 4l3 2 3-2M0 8l3 2 3-2" fill="none"/></g>`).join('')}</g>`;
+  if (k === 'forest') return `<g transform="translate(${x - 34} ${y - 22})" class="ink">${[[0, 14], [16, 4], [32, 12], [48, 6], [22, 20]].map(([dx, dy]) => `<g transform="translate(${dx} ${dy})"><path d="M8 0l8 14H0z" fill="#9db28a"/><path d="M8 0l8 14H0z M8 14v6" fill="none"/></g>`).join('')}</g>`;
+  if (k === 'gold') return `<g transform="translate(${x - 28} ${y - 18})" class="ink">${REGIONS[r].terrain === 'hill' ? '<path d="M-8 26q18-26 36-6q14-14 30 6" fill="#d8c08c"/><path d="M-8 26q18-26 36-6q14-14 30 6" fill="none"/>' : '<path d="M-14 28q10-6 20 0t20 0 20 0 20 0" fill="none" stroke="#3d6f9a"/>'}<path d="M14 22a10 10 0 0 1 20 0z" fill="#3a2715"/><circle cx="30" cy="16" r="3" fill="#f2c94c"/><circle cx="36" cy="20" r="2.4" fill="#f2c94c"/><path d="M8 10l10 10M18 10l-4 4" fill="none"/></g>`;
+  if (k === 'relic') return `<g transform="translate(${x - 24} ${y - 34})" class="ink"><path d="M6 44V22l18-12 18 12v22z" fill="#e9d8ae"/><path d="M6 44V22l18-12 18 12v22z M24 10V-2M19 2h10 M18 44V32a6 6 0 0 1 12 0v12" fill="none"/><circle cx="24" cy="24" r="3" fill="none"/></g>`;
+  return '';
+}
+function mapDefs() {
+  return `<defs>
+    <radialGradient id="vellum" cx="50%" cy="45%" r="75%"><stop offset="0" stop-color="#f1e4c2"/><stop offset=".7" stop-color="#e3cf9f"/><stop offset="1" stop-color="#c8ac74"/></radialGradient>
+    <filter id="rough" x="-5%" y="-5%" width="110%" height="110%"><feTurbulence type="fractalNoise" baseFrequency=".035" numOctaves="2" seed="4"/><feDisplacementMap in="SourceGraphic" scale="3.2"/></filter>
+    <filter id="paper"><feTurbulence type="fractalNoise" baseFrequency=".9" numOctaves="3" seed="9" result="n"/><feColorMatrix in="n" type="matrix" values="0 0 0 0 .35  0 0 0 0 .24  0 0 0 0 .12  0 0 0 .09 0"/><feComposite in2="SourceGraphic" operator="in"/></filter>
+    <pattern id="fog" width="8" height="8" patternUnits="userSpaceOnUse" patternTransform="rotate(35)"><rect width="8" height="8" fill="rgba(90,62,30,.13)"/><path d="M0 0v8" stroke="rgba(58,39,21,.34)" stroke-width="1.5"/></pattern>
+    <pattern id="haze" width="10" height="10" patternUnits="userSpaceOnUse" patternTransform="rotate(35)"><path d="M0 0v10" stroke="rgba(58,39,21,.15)" stroke-width="1"/></pattern>
+    <marker id="ah0" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="var(--c0)"/></marker>
+    <marker id="ah1" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="var(--c1)"/></marker>
+    <linearGradient id="crestGloss" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".55"/><stop offset=".45" stop-color="#fff" stop-opacity="0"/></linearGradient>
+  </defs>`;
+}
+function compassRose(x, y, s) {
+  return `<g transform="translate(${x} ${y}) scale(${s})" class="ink deco"><circle r="26" fill="none"/><circle r="20" fill="none" stroke-dasharray="2 3"/><path d="M0 -34L5 -5 0 0-5 -5zM0 34L5 5 0 0-5 5z" fill="#3a2715"/><path d="M-34 0L-5 5 0 0-5 -5zM34 0L5 5 0 0 5 -5z" fill="#e9d8ae"/><text y="-38" text-anchor="middle" class="ink-text">B</text></g>`;
+}
+
+/* ── Sounds: drums, horns and steel, synthesized with WebAudio ── */
+const SFX = {
+  ctx: null, on: true,
+  init() { if (this.ctx) { if (this.ctx.state === 'suspended') this.ctx.resume(); return; } try { const AC = window.AudioContext || window.webkitAudioContext; if (AC) this.ctx = new AC(); } catch (e) { } },
+  tone(f, t0, dur, type = 'sine', vol = 0.12, slide = 0) {
+    const c = this.ctx, o = c.createOscillator(), g = c.createGain(), t = c.currentTime + t0;
+    o.type = type; o.frequency.setValueAtTime(f, t); if (slide) o.frequency.exponentialRampToValueAtTime(Math.max(30, f + slide), t + dur);
+    g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(vol, t + 0.01); g.gain.exponentialRampToValueAtTime(0.0008, t + dur);
+    o.connect(g); g.connect(c.destination); o.start(t); o.stop(t + dur + 0.02);
+  },
+  noise(t0, dur, vol = 0.1, freq = 900, type = 'highpass') {
+    const c = this.ctx, n = Math.floor(c.sampleRate * dur), b = c.createBuffer(1, n, c.sampleRate), d = b.getChannelData(0);
+    for (let i = 0; i < n; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / n, 2);
+    const s = c.createBufferSource(), f = c.createBiquadFilter(), g = c.createGain(), t = c.currentTime + t0;
+    f.type = type; f.frequency.value = freq; g.gain.value = vol; s.buffer = b; s.connect(f); f.connect(g); g.connect(c.destination); s.start(t);
+  },
+  play(name) {
+    if (!this.on) return;
+    this.init(); if (!this.ctx) return;
+    switch (name) {
+      case 'click': this.noise(0, 0.03, 0.05, 2500); break;
+      case 'quill': this.noise(0, 0.09, 0.05, 3500); break;
+      case 'coin': [1318, 1760].forEach((f, i) => this.tone(f, i * 0.06, 0.12, 'triangle', 0.06)); break;
+      case 'bad': this.tone(196, 0, 0.18, 'sawtooth', 0.04, -40); break;
+      case 'drum': [0, 0.18, 0.36, 0.48].forEach(t => { this.tone(70, t, 0.22, 'sine', 0.35, -30); this.noise(t, 0.08, 0.08, 400, 'lowpass'); }); break;
+      case 'horn': this.tone(196, 0, 0.9, 'sawtooth', 0.05); this.tone(294, 0.05, 0.85, 'sawtooth', 0.035); this.tone(392, 0.5, 0.6, 'triangle', 0.04); break;
+      case 'clash': for (let i = 0; i < 4; i++) { this.noise(i * 0.09, 0.12, 0.12, 3000); this.tone(1200 + i * 230, i * 0.09, 0.15, 'square', 0.02); } break;
+      case 'age': [262, 330, 392, 523, 659].forEach((f, i) => this.tone(f, i * 0.12, 0.5, 'triangle', 0.08)); this.tone(131, 0, 1.2, 'sawtooth', 0.03); break;
+      case 'win': [392, 523, 659, 784, 1046].forEach((f, i) => this.tone(f, i * 0.14, 0.6, 'triangle', 0.09)); break;
+      case 'lose': [392, 349, 311, 262].forEach((f, i) => this.tone(f, i * 0.28, 0.6, 'triangle', 0.09)); break;
+    }
+  },
+};
+
+/* ── UI: the war table. Map on the left, orders on the right, the chronicle after each reveal ── */
+const UI = { sel: 'c0', mode: null, capTab: 'train', pick: { civ: 'daiviet', foe: 'random', diff: 1 }, confirm: null };
+let META = null, S = null;
+const $ = s => document.querySelector(s);
+const ME = 0, FOE = 1;
+const civOf = i => CIVS[S.sides[i].civ];
+const rname = r => REGIONS[r].kind === 'capital' ? civOf(r === 'c0' ? 0 : 1).capital : REGIONS[r].name + (REGIONS[r].side === 1 ? ' địch' : '');
+const unitName = t => UNITS[t].name;
+const stackText = st => UNIT_ORDER.filter(t => st[t] > 0).map(t => `${st[t]} ${unitName(t).toLowerCase()}`).join(', ') || 'không ai';
+const costHTML = c => RES.filter(r => c[r]).map(r => `<span class="cost">${RES_ICON[r]}${c[r]}</span>`).join('');
+function incomeOf(i) {
+  const P = S.sides[i], M = modsOf(S, i), g = { food: 0, wood: 0, gold: 0 };
+  for (const j in P.jobs) { const J = JOBS[j]; let v = P.jobs[j] * GATHER[J.res] * (1 + M.gather[J.res]); if (J.reserve != null) v = Math.min(v, P.goldLeft[j] || 0); g[J.res] += v; }
+  if (M.soldierFarm) for (const r of homeOf(i)) g.food += total(P.army[r] || {}) * M.soldierFarm;
+  if (S.owner.m === i && total(P.army.m || {})) g.gold += 12;
+  for (const r of RES) g[r] = Math.round(g[r]);
+  return g;
+}
+
+/* ── shell ── */
+function render() {
+  if (!S) { renderTitle(); return; }
+  document.body.className = 'in-game';
+  $('#app').innerHTML = `${topbarHTML()}${hudHTML()}
+    <div class="table" style="--c0:${civOf(ME).color};--c1:${civOf(FOE).color}">
+      <div class="mapwrap">${mapSVG()}${legendHTML()}</div>
+      <aside class="panel" aria-label="Mệnh lệnh">${panelHTML()}</aside>
+    </div>
+    <div class="sealbar"><button class="seal" data-a="commit">${S.over ? 'Ván đã kết thúc' : 'Lật bài'}<small>${S.over ? '' : 'hai bên cùng ra lệnh'}</small></button></div>`;
+}
+function topbarHTML() {
+  return `<div class="topbar"><a class="home" href="index.html">‹ Sonic Hub Pages</a><span class="game">Lên Đời</span><span class="sp"></span>
+    ${S ? '<button class="tbtn" data-a="help">Cách chơi</button><button class="tbtn" data-a="home">Lưu và thoát</button>' : ''}
+    <button class="tbtn" data-a="sound" aria-label="${META.sound ? 'Tắt âm thanh' : 'Bật âm thanh'}">${META.sound ? 'Âm thanh: bật' : 'Âm thanh: tắt'}</button></div>`;
+}
+function hudHTML() {
+  const P = S.sides[ME], F = S.sides[FOE], inc = incomeOf(ME), M = modsOf(S, ME);
+  const res = RES.map(r => `<div class="res"><span class="ri-wrap">${RES_ICON[r]}</span><b>${fmtN(P.res[r])}</b><small>+${inc[r]}</small></div>`).join('');
+  const relic = (i) => `<span class="relicbar" title="Thánh tích ${S.sides[i].relic}/${RELIC_WIN}">${Array.from({ length: RELIC_WIN }, (_, k) => `<i class="${k < S.sides[i].relic ? 'on' : ''}"></i>`).join('')}</span>`;
+  const wonder = i => S.sides[i].wonder ? `<span class="wonderflag">Kỳ quan: ${S.sides[i].wonder.left > 0 ? 'đang xây' : `đứng ${S.sides[i].wonder.held}/${WONDER_HOLD} lượt`}</span>` : '';
+  return `<header class="hud" style="--c0:${civOf(ME).color};--c1:${civOf(FOE).color}">
+    <div class="side me">${crest(P.civ, 44)}<div><b>${civOf(ME).name}</b><span>${AGES[P.age].name}, ${AGES[P.age].title.toLowerCase()}</span></div></div>
+    <div class="ress">${res}<div class="res"><span class="ri-wrap">${RES_ICON.pop}</span><b>${popNow(S, ME)}/${popCap(S, ME)}</b><small>${villCount(P)} dân${P.idle ? `, <em>${P.idle} rảnh</em>` : ''}</small></div></div>
+    <div class="when"><b>${turnLabel(S.turn)}</b><span>Lượt ${S.turn}/${MAX_TURNS}</span></div>
+    <div class="goals"><div><span>Thánh tích ta</span>${relic(ME)}${wonder(ME)}</div><div><span>Thánh tích địch</span>${relic(FOE)}${wonder(FOE)}</div></div>
+    <div class="side foe">${crest(F.civ, 36)}<div><b>${civOf(FOE).name}</b><span>${AGES[F.age].name}${S.sides[FOE].ai ? `, máy ${['', 'dễ', 'vừa', 'khó'][S.diff < 1 ? 1 : S.diff > 1 ? 3 : 2]}` : ''}</span></div></div>
+  </header>`;
+}
+function legendHTML() {
+  return `<div class="legend"><span><i class="lg own"></i>Đất ta</span><span><i class="lg foe"></i>Đất địch</span><span><i class="lg fog"></i>Chưa thấy</span><span><i class="lg near"></i>Thấy lờ mờ</span></div>`;
+}
+
+/* ── the map ── */
+function banner(x, y, color, text, cls = '') {
+  return `<g class="banner ${cls}" transform="translate(${x} ${y})"><path d="M0 2V-36" stroke="#2b1a0d" stroke-width="2.4"/><circle cy="-38" r="2.4" fill="#c9a24a"/><path d="M1 -35h30l-7 8 7 8H1z" fill="${color}" stroke="#1d1209" stroke-width="1.2"/><text x="13" y="-22" class="bt">${text}</text></g>`;
+}
+function arrowPath(path, side) {
+  const pts = path.map(r => CENTER[r]);
+  let d = `M${pts[0][0]} ${pts[0][1]}`;
+  for (let k = 1; k < pts.length; k++) {
+    const [x0, y0] = pts[k - 1], [x1, y1] = pts[k], mx = (x0 + x1) / 2, my = (y0 + y1) / 2, nx = -(y1 - y0), ny = x1 - x0, l = Math.hypot(nx, ny) || 1;
+    const bend = side === 0 ? 26 : -26;
+    d += ` Q${mx + nx / l * bend} ${my + ny / l * bend} ${k === pts.length - 1 ? x1 - (x1 - x0) * 0.16 : x1} ${k === pts.length - 1 ? y1 - (y1 - y0) * 0.16 : y1}`;
+  }
+  return d;
+}
+function mapSVG() {
+  const P = S.sides[ME], F = S.sides[FOE], R = S.report;
+  const mv = UI.mode && UI.mode.kind === 'move' ? UI.mode : null;
+  const reach = mv ? pathsFrom(S, ME, mv.from, moveRange(S, ME, mv.units)) : null;
+  let s = `<svg viewBox="0 0 1000 640" class="map" role="img" aria-label="Bản đồ chiến trường" style="--c0:${civOf(ME).color};--c1:${civOf(FOE).color}">${mapDefs()}
+    <rect x="4" y="4" width="992" height="632" rx="16" fill="url(#vellum)"/><rect x="4" y="4" width="992" height="632" rx="16" filter="url(#paper)"/>
+    ${compassRose(84, 74, 1)}
+    <g class="ink deco">${[0, 1, 2].map(k => `<path d="M${880 + k * 22} ${560 + (k % 2) * 14}l18-30 18 30" fill="#d8c08c"/>`).join('')}${[0, 1].map(k => `<path d="M${850 + k * 40} ${80 + k * 12}q12-8 24 0t24 0" fill="none"/>`).join('')}</g>
+    <text x="500" y="626" class="ink-text cartouche" text-anchor="middle">Bản đồ vùng biên</text>`;
+  for (const r of REGION_IDS) {
+    const own = S.owner[r];
+    const fill = own === 0 ? 'var(--c0)' : own === 1 ? 'var(--c1)' : 'none';
+    s += `<path d="${polyPath(r)}" class="land" fill="${fill}" fill-opacity="${own === null ? 0 : 0.15}"/>`;
+  }
+  for (const r of REGION_IDS) s += landArt(r, CENTER[r][0], CENTER[r][1] - 10);
+  for (const r of REGION_IDS) {
+    const v = P.vis[r];
+    if (v === 'fog') s += `<path d="${polyPath(r)}" fill="url(#fog)" class="fogfill"/>`;
+    else if (v === 'near') s += `<path d="${polyPath(r)}" fill="url(#haze)"/>`;
+  }
+  for (const r of REGION_IDS) s += `<path d="${polyPath(r)}" class="border" filter="url(#rough)"/>`;
+  // labels, forts, workers, troops
+  for (const r of REGION_IDS) {
+    const [x, y] = CENTER[r], v = P.vis[r], I = enemySeen(S, ME, r);
+    const label = rname(r);
+    s += `<g class="ribbon" transform="translate(${x} ${y + 46})"><path d="M${-label.length * 3.9 - 14} -11h${label.length * 7.8 + 28}l-6 11 6 11h${-(label.length * 7.8 + 28)}l6-11z" fill="#efe1bb" stroke="${INK}" stroke-width="1"/><text y="5" text-anchor="middle" class="rlabel">${esc(label)}</text></g>`;
+    const forts = [];
+    const tw = (who, n) => { for (let k = 0; k < n; k++) forts.push(`<path transform="translate(${forts.length * 13} 0)" d="M0 0v-16h3v-3h2v3h2v-3h2v3h2v16z" fill="${who === 0 ? 'var(--c0)' : 'var(--c1)'}" stroke="${INK}" stroke-width="1"/>`); };
+    tw(0, P.towers[r] || 0); if (v !== 'fog' && I) tw(1, I.towers || 0);
+    if (P.castles[r] > 0 || (I && I.castle && v !== 'fog')) forts.push(`<path transform="translate(${forts.length * 13} 0)" d="M0 0v-14h4v-6h4v6h4v-6h4v6h4v14z" fill="${P.castles[r] > 0 ? 'var(--c0)' : 'var(--c1)'}" stroke="${INK}" stroke-width="1"/>`);
+    if (P.towns[r] || (I && I.town && v !== 'fog')) forts.push(`<path transform="translate(${forts.length * 13 + 4} 0)" d="M0 0v-10l7-6 7 6v10z" fill="${P.towns[r] ? 'var(--c0)' : 'var(--c1)'}" stroke="${INK}" stroke-width="1"/>`);
+    if (forts.length) s += `<g transform="translate(${x + 30} ${y - 28})">${forts.join('')}</g>`;
+    const myV = jobsIn(P, r) + (r === 'c0' ? P.idle : 0);
+    if (myV) s += `<g class="vbadge" transform="translate(${x - 74} ${y + 6})"><circle r="12" fill="#efe1bb" stroke="${INK}"/><circle cy="-4" r="3" fill="${INK}"/><path d="M-5 5c0-4 2-6 5-6s5 2 5 6z" fill="${INK}"/><text x="16" y="5" class="vcount">${myV}</text></g>`;
+    if (I && v === 'full' && I.vills) s += `<g class="vbadge foe" transform="translate(${x + 52} ${y + 6})"><circle r="10" fill="#efe1bb" stroke="${INK}"/><circle cy="-3" r="2.5" fill="var(--c1)"/><path d="M-4 4c0-3 2-5 4-5s4 2 4 5z" fill="var(--c1)"/><text x="14" y="4" class="vcount">${I.vills}</text></g>`;
+    const mine = total(P.army[r] || {});
+    if (mine) s += banner(x - 32, y + 26, 'var(--c0)', mine);
+    if (I && I.n && v !== 'fog' && I.age === 0) s += banner(x + 20, y + 26, 'var(--c1)', I.exact ? I.n : '~' + Math.max(5, Math.round(I.n / 5) * 5));
+    else if (I && I.n && I.age > 0 && I.age <= 4) s += banner(x + 20, y + 26, 'var(--c1)', '?', 'stale');
+    if (S.sides[ME].orders.scouts.includes(r)) s += `<g transform="translate(${x - 8} ${y - 70})" class="eye"><path d="M-14 0q14-12 28 0q-14 12-28 0z" fill="#efe1bb" stroke="${INK}" stroke-width="1.4"/><circle r="4" fill="${INK}"/></g>`;
+  }
+  // last turn: where swords met
+  if (R) for (const b of R.battles) {
+    const [x, y] = b.where ? [(CENTER[b.where[0]][0] + CENTER[b.where[1]][0]) / 2, (CENTER[b.where[0]][1] + CENTER[b.where[1]][1]) / 2] : CENTER[b.r];
+    s += `<g class="clash" transform="translate(${x + (b.where ? 0 : 52)} ${y - 44})"><circle r="15" fill="${b.winner === ME ? 'var(--c0)' : 'var(--c1)'}" stroke="${INK}" stroke-width="1.4"/><path d="M-7 -7L7 7M7 -7L-7 7" stroke="#f1e4c6" stroke-width="2.6" stroke-linecap="round"/></g>`;
+  }
+  // orders
+  for (const m of S.sides[ME].orders.moves) s += `<path d="${arrowPath(m.path, 0)}" class="arrow a0" marker-end="url(#ah0)"/>`;
+  if (R) for (const m of R.moves[FOE]) if (m.path.some(r => P.vis[r] !== 'fog')) s += `<path d="${arrowPath(m.path, 1)}" class="arrow a1 past" marker-end="url(#ah1)"/>`;
+  // hit areas on top
+  for (const r of REGION_IDS) {
+    const target = reach && reach[r];
+    s += `<path d="${polyPath(r)}" class="hit${UI.sel === r ? ' sel' : ''}${target ? ' target' : ''}${mv && r === mv.from ? ' from' : ''}${mv && mv.to === r ? ' chosen' : ''}" data-a="region" data-r="${r}" tabindex="0" role="button" aria-label="${esc(rname(r))}"/>`;
+  }
+  return s + '</svg>';
+}
+
+/* ── the order panel ── */
+function panelHTML() {
+  if (S.over) return endPanelHTML();
+  if (UI.mode && UI.mode.kind === 'move') return movePanelHTML();
+  const r = UI.sel, P = S.sides[ME], own = S.owner[r], R = REGIONS[r];
+  const ownTxt = own === ME ? 'Đất ta' : own === FOE ? `Đất ${civOf(FOE).name}` : 'Vùng trung lập';
+  let h = `<div class="phead"><h2>${esc(rname(r))}</h2><span class="own ${own === ME ? 'o0' : own === FOE ? 'o1' : ''}">${ownTxt}</span>${R.note ? `<p class="note">${esc(R.note)}</p>` : ''}</div>`;
+  if (!META.helped) h += `<div class="howto"><b>Cách chơi</b><p>Mỗi lượt bạn và đối thủ cùng ra lệnh bí mật: phân dân đi làm, luyện quân ở kinh thành, xây dựng, cho quân hành quân, cử người do thám. Bấm <b>Lật bài</b>: lệnh hai bên cùng chạy một lúc.</p><p>Quân luyện xong mới xuất hiện ở kinh thành vào cuối lượt, nên phải đoán trước. Giáo khắc kỵ, kỵ khắc cung, cung khắc giáo. Vàng chỉ có ở giữa bản đồ.</p><p>Thắng khi phá được kinh thành địch, giữ Tu viện đủ ${RELIC_WIN} điểm thánh tích, hoặc giữ Kỳ quan ${WONDER_HOLD} lượt.</p><button class="btn" data-a="helped">Đã hiểu</button></div>`;
+  if (r === capOf(ME)) h += capitalHTML();
+  h += jobsHTML(r) + armyHTML(r) + intelHTML(r);
+  if (r !== capOf(ME) && own === ME) h += regionBuildHTML(r);
+  h += scoutHTML(r) + ordersHTML();
+  return h;
+}
+function jobsHTML(r) {
+  const P = S.sides[ME], jobs = JOB_IDS.filter(j => JOBS[j].region === r);
+  if (!jobs.length) return '';
+  const rows = jobs.map(j => {
+    const J = JOBS[j], open = jobOpen(S, ME, j), n = P.jobs[j] || 0;
+    const left = J.reserve != null ? `, mỏ còn ${Math.round(P.goldLeft[j] || 0)}` : '';
+    return `<div class="jrow"><span class="ri-wrap">${RES_ICON[J.res]}</span><span class="jn">${J.res === 'food' ? 'Làm ruộng' : J.res === 'wood' ? 'Đốn gỗ' : 'Đào vàng'}<small>${J.slots} chỗ, ${Math.round(GATHER[J.res] * (1 + modsOf(S, ME).gather[J.res]))}/người/lượt${left}</small></span>
+      <span class="step"><button data-a="job" data-x="${j}" data-d="-1" ${n ? '' : 'disabled'} aria-label="Bớt dân">−</button><b>${n}</b><button data-a="job" data-x="${j}" data-d="1" ${open && P.idle && n < J.slots ? '' : 'disabled'} aria-label="Thêm dân">+</button></span></div>`;
+  }).join('');
+  const closed = jobs.every(j => !jobOpen(S, ME, j)) && !jobs.some(j => P.jobs[j]);
+  return `<section class="psec"><h3>Dân đi làm${P.idle ? ` <em>(${P.idle} dân rảnh ở kinh thành)</em>` : ''}</h3>${closed ? '<p class="muted">Đất địch: dân ta chưa vào làm được. Đem quân chiếm trước.</p>' : rows}</section>`;
+}
+function armyHTML(r) {
+  const P = S.sides[ME], st = P.army[r] || {}, av = availableAt(S, ME, r);
+  if (!total(st)) return '';
+  const rows = UNIT_ORDER.filter(t => st[t]).map(t => `<span class="uchip">${unitIcon(t, 18)}${st[t]} ${unitName(t).toLowerCase()}</span>`).join('');
+  return `<section class="psec"><h3>Quân ta ở đây</h3><div class="uchips">${rows}</div>
+    ${total(av) ? `<button class="btn primary" data-a="move" data-r="${r}">Hành quân</button>` : '<p class="muted">Cả đạo quân đã nhận lệnh đi rồi.</p>'}</section>`;
+}
+function intelHTML(r) {
+  const I = enemySeen(S, ME, r), v = S.sides[ME].vis[r];
+  if (S.owner[r] === ME && (!I || !I.n)) return '';
+  let t;
+  if (v === 'fog') t = I && I.n ? `Lần cuối thấy ${I.n} quân địch, cách đây ${I.age} lượt.` : 'Mù mịt. Cử người do thám để biết.';
+  else if (!I || !I.n) t = v === 'full' ? 'Không có quân địch.' : 'Không thấy quân địch (nhìn từ xa).';
+  else if (I.exact) t = `Quân địch: ${stackText(I.units)}.`;
+  else t = `Có khoảng ${Math.max(5, Math.round(I.n / 5) * 5)} quân địch, không rõ binh chủng. Do thám để biết rõ.`;
+  const extra = I && v !== 'fog' ? [I.vills ? `${I.vills} dân địch đang làm` : '', I.towers ? `${I.towers} tháp canh` : '', I.castle ? 'một lâu đài' : '', I.town ? 'một thị trấn' : ''].filter(Boolean).join(', ') : '';
+  return `<section class="psec"><h3>Tình báo</h3><p>${esc(t)}${extra ? ` Thấy ${extra}.` : ''}</p></section>`;
+}
+function scoutHTML(r) {
+  if (r === capOf(ME)) return '';
+  const on = S.sides[ME].orders.scouts.includes(r);
+  return `<section class="psec"><button class="btn ${on ? 'on' : ''}" data-a="scout" data-r="${r}">${on ? 'Đã cử người do thám vùng này' : 'Cử người do thám vùng này'}</button><p class="muted small">Cuối lượt sẽ thấy rõ mọi thứ ở đó${r === capOf(FOE) ? ', cả công trình và số dân trong kinh thành địch' : ''}. Mỗi lượt do thám ${modsOf(S, ME).scouts} nơi.</p></section>`;
+}
+function regionBuildHTML(r) {
+  const opts = ['tower', 'town', 'castle'].filter(k => !(k === 'town' && REGIONS[r].kind === 'relic'));
+  return `<section class="psec"><h3>Xây ở đây</h3>${opts.map(k => buildRow(k, r)).join('')}</section>`;
+}
+function buildRow(k, r) {
+  const B = BUILDINGS[k], why = buildCheck(S, ME, k, r), q = S.sides[ME].orders.builds.findIndex(b => b.kind === k && b.region === r);
+  return `<div class="brow"><div><b>${B.name}</b><small>${esc(B.desc)}</small><span class="costs">${costHTML(costOf(S, ME, 'bld', k))}</span></div>
+    ${q >= 0 ? `<button class="btn on" data-a="unbuild" data-i="${q}">Đang xây, hủy</button>` : `<button class="btn" data-a="build" data-x="${k}" data-r="${r}" ${why ? 'disabled' : ''} title="${esc(why)}">${why ? esc(why.startsWith('Thiếu') ? 'Chưa đủ tài nguyên' : why) : 'Xây'}</button>`}</div>`;
+}
+function capitalHTML() {
+  const P = S.sides[ME], tabs = [['train', 'Luyện quân'], ['build', 'Xây dựng'], ['research', 'Nghiên cứu']];
+  let body = '';
+  if (UI.capTab === 'train') {
+    const row = (what, name, cost, cap, desc, extra = '') => {
+      const n = P.orders.train[what] || 0, can = cap > 0;
+      return `<div class="trow"><span class="ti">${what === 'vill' ? `<span class="ri-wrap">${RES_ICON.pop}</span>` : unitIcon(what, 26)}</span><div class="tn"><b>${name}</b><small>${esc(desc)}</small><span class="costs">${costHTML(cost)}${extra}</span></div>
+        <span class="step"><button data-a="train" data-x="${what}" data-d="-1" ${n ? '' : 'disabled'} aria-label="Bớt">−</button><b>${n}</b><button data-a="train" data-x="${what}" data-d="1" ${can ? '' : 'disabled'} aria-label="Thêm">+</button></span></div>`;
+    };
+    body += row('vill', 'Dân', costOf(S, ME, 'vill'), prodCap(S, ME, 'vill'), P.orders.research === 'age' ? 'Nhà chính đang lên đời, không luyện dân được.' : 'Dân mới tự vào làm ở chỗ trống gần nhà.', ` <em>tối đa ${prodCap(S, ME, 'vill')}/lượt</em>`);
+    for (const t of unitsFor(S, ME)) {
+      const U = UNITS[t], cap = prodCap(S, ME, t);
+      const why = P.age < U.age ? `Cần ${AGES[U.age].name}` : !cap ? `Cần ${BUILDINGS[U.bld].name.toLowerCase()}` : '';
+      body += row(t, U.name + (U.civ ? ' ★' : ''), costOf(S, ME, 'unit', t), cap, why || U.desc, why ? '' : ` <em>tối đa ${cap}/lượt</em>`);
+    }
+    body += `<p class="muted small">Quân luyện xong xuất hiện ở kinh thành cuối lượt. Dân số ${popNow(S, ME)}/${popCap(S, ME)}.</p>`;
+  } else if (UI.capTab === 'build') {
+    for (const k of ['barracks', 'range', 'stable', 'workshop', 'walls', 'tower', 'castle', 'wonder']) body += buildRow(k, capOf(ME));
+    body += `<p class="muted small">Mỗi lượt xây được ${AGES[P.age].builds} công trình. Tháp canh, lâu đài, thị trấn còn xây được ở các vùng ta đang giữ.</p>`;
+  } else {
+    if (P.age < 4) {
+      const A = AGES[P.age + 1], on = P.orders.research === 'age';
+      body += `<div class="agecard ${on ? 'on' : ''}"><span class="agename">${A.name}</span><b>${A.title}</b><small>Mở quân mới, công trình mới, và chọn một lá bài chiến lược. Lượt lên đời nhà chính không luyện dân.</small><span class="costs">${costHTML(costOf(S, ME, 'age'))}</span>
+        <button class="btn ${on ? 'on' : 'primary'}" data-a="research" data-x="age">${on ? 'Đang lên đời, hủy' : 'Lên đời'}</button></div>`;
+    }
+    for (const id in TECHS) {
+      const T = TECHS[id], have = P.techs.includes(id), on = P.orders.research === id;
+      body += `<div class="brow"><div><b>${T.name}</b><small>${esc(T.desc)}${P.age < T.age ? ` Cần ${AGES[T.age].name}.` : ''}</small><span class="costs">${costHTML(costOf(S, ME, 'tech', id))}</span></div>
+        ${have ? '<span class="done">Đã có</span>' : `<button class="btn ${on ? 'on' : ''}" data-a="research" data-x="${id}" ${P.age < T.age ? 'disabled' : ''}>${on ? 'Đang nghiên cứu, hủy' : 'Nghiên cứu'}</button>`}</div>`;
+    }
+    body += '<p class="muted small">Mỗi lượt nghiên cứu một thứ.</p>';
+    if (P.cards.length) body += `<div class="mycards">${P.cards.map(c => `<span class="minicard"><b>${CARDS[c].name}</b><small>${esc(CARDS[c].desc)}</small></span>`).join('')}</div>`;
+  }
+  return `<section class="psec cap"><div class="tabs" role="tablist">${tabs.map(([k, l]) => `<button role="tab" data-a="captab" data-x="${k}" aria-selected="${UI.capTab === k}">${l}</button>`).join('')}</div>${body}</section>`;
+}
+function movePanelHTML() {
+  const mv = UI.mode, av = availableAt(S, ME, mv.from);
+  const rows = UNIT_ORDER.filter(t => av[t]).map(t => `<div class="jrow">${unitIcon(t, 22)}<span class="jn">${unitName(t)}<small>có ${av[t]}</small></span>
+    <span class="step"><button data-a="mvu" data-x="${t}" data-d="-1" ${mv.units[t] ? '' : 'disabled'}>−</button><b>${mv.units[t] || 0}</b><button data-a="mvu" data-x="${t}" data-d="1" ${(mv.units[t] || 0) < av[t] ? '' : 'disabled'}>+</button></span></div>`).join('');
+  const range = moveRange(S, ME, mv.units);
+  let fc = '';
+  if (mv.to) { const f = forecast(S, ME, mv.from, mv.to, mv.units); fc = `<div class="forecast ${f.kind}"><b>Đến ${esc(rname(mv.to))}</b><p>${esc(f.text)}</p></div>`; }
+  return `<div class="phead"><h2>Hành quân từ ${esc(rname(mv.from))}</h2><p class="note">${range > 1 ? `Toàn quân cưỡi ngựa: đi được ${range} vùng.` : 'Đi được 1 vùng. Chỉ toàn quân cưỡi ngựa mới đi xa hơn.'} Bấm vùng sáng trên bản đồ để chọn nơi đến.</p></div>
+    <section class="psec">${rows}<div class="row2"><button class="btn" data-a="mvall">Tất cả</button><button class="btn" data-a="mvmounted">Chỉ quân ngựa</button></div></section>
+    ${fc}
+    <div class="row2"><button class="btn" data-a="mvcancel">Thôi</button><button class="btn primary" data-a="mvok" ${mv.to && total(mv.units) ? '' : 'disabled'}>Ra lệnh hành quân</button></div>`;
+}
+function ordersHTML() {
+  const O = S.sides[ME].orders, items = [];
+  O.moves.forEach((m, i) => items.push(`<li><span>Hành quân ${esc(rname(m.from))} → ${esc(rname(m.to))}: ${stackText(m.units)}</span><button data-a="unmove" data-i="${i}" aria-label="Hủy">×</button></li>`));
+  for (const t in O.train) items.push(`<li><span>Luyện ${O.train[t]} ${t === 'vill' ? 'dân' : unitName(t).toLowerCase()}</span><button data-a="untrain" data-x="${t}" aria-label="Bớt">×</button></li>`);
+  O.builds.forEach((b, i) => items.push(`<li><span>Xây ${BUILDINGS[b.kind].name.toLowerCase()} ở ${esc(rname(b.region))}</span><button data-a="unbuild" data-i="${i}" aria-label="Hủy">×</button></li>`));
+  if (O.research) items.push(`<li><span>${O.research === 'age' ? `Lên ${AGES[S.sides[ME].age + 1].name}` : `Nghiên cứu ${TECHS[O.research].name.toLowerCase()}`}</span><button data-a="research" data-x="${O.research}" aria-label="Hủy">×</button></li>`);
+  O.scouts.forEach(r => items.push(`<li><span>Do thám ${esc(rname(r))}</span><button data-a="scout" data-r="${r}" aria-label="Hủy">×</button></li>`));
+  return `<section class="psec orders"><h3>Lệnh lượt này</h3>${items.length ? `<ul>${items.join('')}</ul>` : '<p class="muted">Chưa có lệnh nào. Chọn một vùng trên bản đồ để bắt đầu.</p>'}</section>`;
+}
+function endPanelHTML() {
+  return `<div class="phead"><h2>${S.winner === ME ? 'Chiến thắng' : S.winner === FOE ? 'Thất bại' : 'Hòa'}</h2></div><section class="psec"><button class="btn primary" data-a="newgame">Ván mới</button></section>`;
+}
+
+/* ── chronicle ── */
+function chronicle(R) {
+  const out = [], nm = i => (i === ME ? 'Quân ta' : `Quân ${civOf(FOE).name}`);
+  const P = S.sides[ME];
+  for (const e of R.ev) {
+    if (e.k === 'battle') {
+      const b = e.b, where = b.where ? `giữa đường ${rname(b.where[0])} và ${rname(b.where[1])}` : rname(b.r);
+      const mineIdx = b.a === ME ? 'A' : 'D', mineBefore = b.a === ME ? b.before[0] : b.before[1], foeBefore = b.a === ME ? b.before[1] : b.before[0];
+      const myLoss = b.a === ME ? b.lossA : b.lossD, foeLoss = b.a === ME ? b.lossD : b.lossA;
+      const forts = b.forts && b.d === FOE ? ' cùng tháp lũy' : b.forts && b.d === ME ? ' (ta có tháp lũy giữ)' : '';
+      out.push({ k: b.winner === ME ? 'win' : 'loss', t: `Trận ${where}: ta ${total(mineBefore) ? stackText(mineBefore) : 'chỉ có tháp lũy và dân'}, địch ${stackText(foeBefore)}${forts}. ${b.winner === ME ? 'Ta thắng' : 'Ta thua'}; ta mất ${total(myLoss) || 'không ai'}, địch mất ${total(foeLoss)}.` });
+    } else if (e.k === 'raid') out.push({ k: e.side === ME ? 'win' : 'loss', t: e.side === ME ? `Quân ta tập kích ${rname(e.r)}, ${e.kills} dân địch thiệt mạng${e.loot ? `, thu ${e.loot.food} lương thực và ${e.loot.gold} vàng` : ''}.` : `Quân ${civOf(FOE).name} tập kích ${rname(e.r)}: ${e.kills} dân ta thiệt mạng, số còn lại chạy về kinh thành.` });
+    else if (e.k === 'siege') out.push({ k: e.side === ME ? 'win' : 'loss', t: e.side === ME ? `Ta công phá ${rname(capOf(FOE))}: thành mất ${e.dmg} độ bền, còn ${e.hp}.` : `${rname(capOf(ME))} bị công: thành mất ${e.dmg} độ bền, còn ${e.hp}.` });
+    else if (e.k === 'capture') { if (P.vis[e.r] !== 'fog') out.push({ k: e.side === ME ? 'win' : 'loss', t: e.side === ME ? `Ta chiếm ${rname(e.r)}.` : `${civOf(FOE).name} chiếm ${rname(e.r)}.` }); }
+    else if (e.k === 'relic') out.push({ k: e.side === ME ? 'win' : 'loss', t: `${e.side === ME ? 'Thầy tu của ta' : `Thầy tu ${civOf(FOE).name}`} mang thánh tích về: ${e.total}/${RELIC_WIN}.` });
+    else if (e.k === 'age') out.push({ k: 'age', t: e.side === ME ? `Ta bước sang ${AGES[e.age].name}, ${AGES[e.age].title.toLowerCase()}!` : `${civOf(FOE).name} đã lên ${AGES[e.age].name}.` });
+    else if (e.k === 'built' && e.side === ME) out.push({ k: 'info', t: `Xây xong ${BUILDINGS[e.kind].name.toLowerCase()}${e.kind === 'tower' || e.kind === 'castle' || e.kind === 'town' ? ` ở ${rname(e.r)}` : ''}.` });
+    else if (e.k === 'tech' && e.side === ME) out.push({ k: 'info', t: `Nghiên cứu xong ${TECHS[e.id].name.toLowerCase()}.` });
+    else if (e.k === 'trained' && e.side === ME) out.push({ k: 'info', t: `Luyện xong ${Object.entries(e.units).map(([t, n]) => `${n} ${t === 'vill' ? 'dân' : unitName(t).toLowerCase()}`).join(', ')}.` });
+    else if (e.k === 'attrition') out.push({ k: e.side === ME ? 'loss' : 'win', t: e.side === ME ? `Vườn không nhà trống: quân ta hao ${total(e.lost)} người trên đất địch.` : `Vườn không nhà trống: quân ${civOf(FOE).name} hao ${total(e.lost)} người trên đất ta.` });
+    else if (e.k === 'retreat' && e.side === ME) out.push({ k: 'info', t: `Tàn quân (${stackText(e.units)}) rút về ${rname(e.to)}.` });
+    else if (e.k === 'razed') out.push({ k: e.side === ME ? 'loss' : 'win', t: `${e.what === 'castle' ? 'Lâu đài' : 'Tháp canh'} ${e.side === ME ? 'của ta' : 'địch'} ở ${rname(e.r)} bị phá.` });
+    else if (e.k === 'depleted' && e.side === ME) out.push({ k: 'info', t: 'Mỏ vàng gần kinh thành đã cạn. Vàng giờ chỉ còn ở giữa bản đồ.' });
+    else if (e.k === 'wonder') out.push({ k: e.side === ME ? 'win' : 'loss', t: `${e.side === ME ? 'Kỳ quan của ta' : `Kỳ quan của ${civOf(FOE).name}`} đã xây xong! Đứng vững ${WONDER_HOLD} lượt là thắng.` });
+    else if (e.k === 'collapse') out.push({ k: e.side === ME ? 'loss' : 'win', t: e.side === ME ? 'Không còn quân, dân tan tác: vương quốc sụp đổ.' : `${civOf(FOE).name} không còn quân, dân tan tác.` });
+  }
+  return out;
+}
+function reportHTML(R) {
+  const lines = chronicle(R), g = R['got' + ME];
+  return `<div class="modal scroll" role="dialog" aria-labelledby="ct"><h2 id="ct">Biên niên sử</h2><p class="sub">${R.label}</p>
+    <ul class="chron">${lines.length ? lines.map(l => `<li class="${l.k}">${esc(l.t)}</li>`).join('') : '<li class="info">Một mùa yên ả.</li>'}</ul>
+    <p class="gain">Thu hoạch: ${RES.map(r => `${RES_ICON[r]} +${g[r]}`).join(' ')}</p>
+    <button class="seal small" data-a="closechron">${S.over ? 'Xem kết cục' : 'Sang mùa mới'}</button></div>`;
+}
+function cardHTML() {
+  const P = S.sides[ME];
+  return `<div class="modal" role="dialog" aria-labelledby="cd"><h2 id="cd">${AGES[P.age].name}: ${AGES[P.age].title}</h2><p class="sub">Chọn một lá bài chiến lược. Lá này theo bạn tới cuối ván.</p>
+    <div class="cards">${P.pendingCard.map(id => { const C = CARDS[id]; return `<button class="card ${C.civ ? 'civ' : ''}" data-a="card" data-x="${id}"><span class="cn">${C.civ ? `${CIVS[C.civ].name}` : 'Chung'}</span><b>${C.name}</b><span>${esc(C.desc)}</span></button>`; }).join('')}</div></div>`;
+}
+function endHTML() {
+  const win = S.winner === ME, P = S.sides[ME], F = S.sides[FOE];
+  const how = { capital: win ? `Kinh thành ${civOf(FOE).capital} đã thất thủ.` : `${civOf(ME).capital} đã thất thủ.`, relic: win ? `Ta giữ Tu viện đủ ${RELIC_WIN} điểm thánh tích.` : `${civOf(FOE).name} giữ Tu viện đủ ${RELIC_WIN} điểm thánh tích.`, wonder: win ? 'Kỳ quan của ta đứng vững.' : `Kỳ quan của ${civOf(FOE).name} đứng vững.`, time: 'Hết thời gian, phân định bằng điểm.' }[S.over.how];
+  return `<div class="modal end ${win ? 'won' : 'lost'}" role="dialog" aria-labelledby="et">${crest(P.civ, 64)}<h2 id="et">${S.winner === -1 ? 'Bất phân thắng bại' : win ? 'Chiến thắng' : 'Thất bại'}</h2><p class="sub">${how} ${turnLabel(S.turn)}.</p>
+    <div class="stats"><div><span>Trận thắng/thua</span><b>${P.stats.battlesWon}/${P.stats.battlesLost}</b></div><div><span>Quân địch hạ</span><b>${P.stats.kills}</b></div><div><span>Dân địch hạ</span><b>${P.stats.villsKilled}</b></div><div><span>Dân ta mất</span><b>${P.stats.villsLost}</b></div><div><span>Đối thủ chơi kiểu</span><b>${F.ai ? AI_STRATS[F.ai.strat].name : '?'}</b></div></div>
+    <button class="seal small" data-a="newgame">Ván mới</button></div>`;
+}
+function showModal(html) { $('#modal').innerHTML = `<div class="overlay">${html}</div>`; const b = $('#modal button'); if (b) b.focus({ preventScroll: true }); }
+function closeModal() { $('#modal').innerHTML = ''; }
+
+/* ── title ── */
+function renderTitle() {
+  document.body.className = 'at-title';
+  const p = UI.pick, run = META.run;
+  $('#app').innerHTML = `${topbarHTML()}
+    <header class="hero"><h1 class="logo">Lên Đời</h1><p>Đế chế trên bàn cờ, năm 400–1500. Hai bên ra lệnh cùng lúc trong bí mật, rồi cùng lật bài.</p></header>
+    ${run ? `<section class="sheet"><h2>Ván đang dở</h2><div class="resume">${crest(run.sides[0].civ, 40)}<div><b>${CIVS[run.sides[0].civ].name} đấu ${CIVS[run.sides[1].civ].name}</b><span>${turnLabel(run.turn)}, ${AGES[run.sides[0].age].name}</span></div><button class="seal small" data-a="resume">Vào lại</button><button class="btn ${UI.confirm === 'abandon' ? 'danger' : ''}" data-a="abandon">${UI.confirm === 'abandon' ? 'Chắc chưa? Bỏ ván' : 'Bỏ ván này'}</button></div></section>` : ''}
+    <section class="sheet"><h2>Chọn nền văn minh</h2>
+      <div class="civs">${CIV_ORDER.map(c => { const C = CIVS[c], U = UNITS[C.uu]; return `<button class="civ ${p.civ === c ? 'on' : ''}" data-a="pickciv" data-x="${c}" aria-pressed="${p.civ === c}" style="--cc:${C.color}">
+        <span class="ch">${crest(c, 52)}<span><b>${C.name}</b><small>${C.era}</small></span></span><span class="cd">${esc(C.desc)}</span>
+        <span class="cb">${C.bonus.map(b => `<span>${esc(b)}</span>`).join('')}</span><span class="uu">${unitIcon(C.uu, 20)} ${U.name}: ${esc(U.desc)}</span></button>`; }).join('')}</div>
+      <div class="opts"><div><h3>Đối thủ</h3><div class="seg">${['random', ...CIV_ORDER].map(c => `<button data-a="pickfoe" data-x="${c}" aria-pressed="${p.foe === c}">${c === 'random' ? 'Ngẫu nhiên' : CIVS[c].name}</button>`).join('')}</div></div>
+      <div><h3>Độ khó</h3><div class="seg">${[[0.85, 'Dễ'], [1, 'Vừa'], [1.2, 'Khó']].map(([d, l]) => `<button data-a="pickdiff" data-x="${d}" aria-pressed="${p.diff === d}">${l}</button>`).join('')}</div></div></div>
+      <div class="go"><span class="muted">Máy chọn bí mật một trong bốn lối chơi: đánh sớm, phát triển, phòng thủ, giữ thánh địa. Do thám để đoán ra.</span><button class="seal" data-a="start">Xuất quân<small>bắt đầu ván mới</small></button></div>
+    </section>
+    <section class="sheet"><h2>Chiến tích</h2><p class="muted">${META.games ? `Đã chơi ${META.games} ván, thắng ${META.wins}.` : 'Chưa có ván nào.'}${Object.keys(META.byCiv || {}).length ? ' ' + Object.entries(META.byCiv).map(([c, v]) => `${CIVS[c].name}: ${v.w}/${v.g}`).join(', ') + '.' : ''}</p></section>
+    <footer class="credit">Demo game của Sonic Hub Pages. Lấy cảm hứng từ tinh thần Age of Empires II; luật chơi, hình vẽ và âm thanh đều làm mới bằng code.</footer>`;
+}
+
+/* ── Controller ── */
+const SAVE_KEY = 'len-doi.v1';
+function freshMeta() { return { v: 1, sound: true, helped: false, games: 0, wins: 0, byCiv: {}, run: null }; }
+function loadMeta() { try { const m = JSON.parse(localStorage.getItem(SAVE_KEY)); if (m && m.v === 1) return Object.assign(freshMeta(), m); } catch (e) { } return freshMeta(); }
+function persist() { META.run = S && !S.over ? S : null; try { localStorage.setItem(SAVE_KEY, JSON.stringify(META)); } catch (e) { } }
+let toastT = 0;
+function toast(msg, good = true) { if (!msg) return; const t = $('#toast'); t.textContent = msg; t.className = 'show ' + (good ? 'good' : 'bad'); clearTimeout(toastT); toastT = setTimeout(() => { t.className = ''; }, 2600); }
+
+function onRegion(r) {
+  if (UI.mode && UI.mode.kind === 'move') {
+    const reach = pathsFrom(S, ME, UI.mode.from, moveRange(S, ME, UI.mode.units));
+    if (reach[r]) { UI.mode.to = r; SFX.play('click'); render(); return; }
+    if (r === UI.mode.from) { UI.mode = null; render(); return; }
+    toast('Vùng đó quá xa với đạo quân này.', false); return;
+  }
+  UI.sel = r; SFX.play('click'); render();
+}
+function checkMoveTarget() { if (UI.mode && UI.mode.to && !pathsFrom(S, ME, UI.mode.from, moveRange(S, ME, UI.mode.units))[UI.mode.to]) UI.mode.to = null; }
+function onClick(e) {
+  const el = e.target.closest('[data-a]');
+  if (!el || el.disabled) return;
+  SFX.init();
+  const a = el.dataset.a, x = el.dataset.x, r = el.dataset.r;
+  let res = null;
+  switch (a) {
+    case 'region': onRegion(r); return;
+    case 'job': res = setJob(S, ME, x, +el.dataset.d); break;
+    case 'train': res = planTrain(S, ME, x, +el.dataset.d); break;
+    case 'untrain': res = planTrain(S, ME, x, -1); break;
+    case 'build': res = planBuild(S, ME, x, r); break;
+    case 'unbuild': res = cancelBuild(S, ME, +el.dataset.i); break;
+    case 'research': res = planResearch(S, ME, S.sides[ME].orders.research === x ? null : x); break;
+    case 'scout': res = planScout(S, ME, r); break;
+    case 'captab': UI.capTab = x; SFX.play('click'); render(); return;
+    case 'move': UI.mode = { kind: 'move', from: r, units: { ...availableAt(S, ME, r) }, to: null }; SFX.play('click'); render(); return;
+    case 'mvu': { const av = availableAt(S, ME, UI.mode.from); UI.mode.units[x] = clamp((UI.mode.units[x] || 0) + +el.dataset.d, 0, av[x] || 0); checkMoveTarget(); render(); return; }
+    case 'mvall': UI.mode.units = { ...availableAt(S, ME, UI.mode.from) }; checkMoveTarget(); render(); return;
+    case 'mvmounted': { const av = availableAt(S, ME, UI.mode.from); UI.mode.units = {}; for (const t in av) if (MOUNTED.has(UNITS[t].cls)) UI.mode.units[t] = av[t]; checkMoveTarget(); render(); return; }
+    case 'mvcancel': UI.mode = null; render(); return;
+    case 'mvok': res = planMove(S, ME, UI.mode.from, UI.mode.to, UI.mode.units); if (res.ok) { UI.mode = null; res.msg = 'Quân đã nhận lệnh.'; } break;
+    case 'unmove': res = cancelMove(S, ME, +el.dataset.i); break;
+    case 'commit': commit(); return;
+    case 'closechron': afterChronicle(); return;
+    case 'card': { const rr = chooseCard(S, ME, x); closeModal(); SFX.play('quill'); persist(); render(); toast(rr.msg); return; }
+    case 'helped': META.helped = true; persist(); render(); return;
+    case 'help': META.helped = false; UI.mode = null; render(); return;
+    case 'sound': META.sound = !META.sound; SFX.on = META.sound; persist(); render(); return;
+    case 'home': persist(); S = null; UI.mode = null; closeModal(); render(); window.scrollTo({ top: 0 }); return;
+    case 'newgame': closeModal(); S = null; persist(); render(); window.scrollTo({ top: 0 }); return;
+    case 'pickciv': UI.pick.civ = x; SFX.play('click'); render(); return;
+    case 'pickfoe': UI.pick.foe = x; SFX.play('click'); render(); return;
+    case 'pickdiff': UI.pick.diff = +x; SFX.play('click'); render(); return;
+    case 'start': startGame(); return;
+    case 'resume': S = META.run; UI.sel = 'c0'; UI.mode = null; render(); if (S.sides[ME].pendingCard) showModal(cardHTML()); return;
+    case 'abandon': if (UI.confirm !== 'abandon') { UI.confirm = 'abandon'; render(); return; } UI.confirm = null; META.run = null; try { localStorage.setItem(SAVE_KEY, JSON.stringify(META)); } catch (e2) { } render(); return;
+  }
+  if (res) {
+    if (!res.ok && res.msg) toast(res.msg, false); else if (res.ok && res.msg) toast(res.msg);
+    SFX.play(res.ok ? (a === 'train' || a === 'build' || a === 'research' ? 'coin' : 'quill') : 'bad');
+    if (res.ok) persist();
+    render();
+  }
+}
+function onKey(e) {
+  const t = e.target;
+  if ((e.key === 'Enter' || e.key === ' ') && t.getAttribute && t.getAttribute('data-a') === 'region') { e.preventDefault(); onRegion(t.getAttribute('data-r')); return; }
+  if (e.key === 'Escape' && S) { if (UI.mode) { UI.mode = null; render(); } else if ($('#modal .overlay') && !S.sides[ME].pendingCard) afterChronicle(); }
+}
+function startGame() {
+  const foe = UI.pick.foe === 'random' ? CIV_ORDER[Math.floor(Math.random() * CIV_ORDER.length)] : UI.pick.foe;
+  const seed = (Date.now() ^ Math.floor(Math.random() * 1e9)) >>> 0;
+  S = newGame({ seed, civ0: UI.pick.civ, civ1: foe, ai1: true, diff: UI.pick.diff });
+  aiPlan(S, FOE);
+  UI.sel = 'c0'; UI.mode = null; UI.capTab = 'train';
+  persist(); render(); window.scrollTo({ top: 0 }); SFX.play('horn');
+}
+function commit() {
+  if (S.over) return;
+  SFX.play('drum');
+  const R = resolveTurn(S);
+  if (!S.over) aiPlan(S, FOE);
+  UI.mode = null;
+  persist(); render();
+  if (R.battles.length) setTimeout(() => SFX.play('clash'), 450);
+  if (R.ev.some(e => e.k === 'age' && e.side === ME)) setTimeout(() => SFX.play('age'), 700);
+  showModal(reportHTML(R));
+}
+function afterChronicle() {
+  closeModal();
+  if (S.over) {
+    if (!S.counted) { S.counted = true; META.games++; if (S.winner === ME) META.wins++; const b = META.byCiv[S.sides[ME].civ] || { g: 0, w: 0 }; b.g++; if (S.winner === ME) b.w++; META.byCiv[S.sides[ME].civ] = b; persist(); }
+    render(); showModal(endHTML()); SFX.play(S.winner === ME ? 'win' : 'lose'); return;
+  }
+  if (S.sides[ME].pendingCard) showModal(cardHTML());
+}
+function boot() {
+  META = loadMeta(); SFX.on = META.sound !== false;
+  if (!/game-age-duel\.html$/.test(location.pathname) || /claude/.test(location.hostname)) document.documentElement.classList.add('no-home');
+  document.addEventListener('click', onClick);
+  document.addEventListener('keydown', onKey);
+  render();
+}
+
+boot();
+</script>
+</body>
+</html>

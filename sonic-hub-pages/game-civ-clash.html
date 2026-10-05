@@ -1,0 +1,1066 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Medieval Mayhem — Sonic Hub</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Alegreya:wght@400;500;700;800&family=Grenze+Gotisch:wght@600;800&display=swap" rel="stylesheet">
+<style>
+:root{--parch:#f4e8cb;--parch2:#e8d5aa;--ink:#2a1c11;--muted:#7a6248;--gold:#d4a23a;--line:rgba(42,28,17,.25);--serif:'Alegreya',Georgia,serif;--goth:'Grenze Gotisch','Alegreya',Georgia,serif;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*,*::before,*::after{box-sizing:border-box}
+html,body{margin:0;min-height:100%}
+body{font-family:var(--serif);color:var(--parch);background:#1a0f08 radial-gradient(ellipse at 50% 25%,#4a2c1a 0%,#24150c 60%,#140b06 100%) fixed}
+body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:-1;background:repeating-linear-gradient(92deg,rgba(255,255,255,.018) 0 2px,transparent 2px 9px),repeating-linear-gradient(88deg,rgba(0,0,0,.05) 0 1px,transparent 1px 13px)}
+.top{display:flex;align-items:center;gap:10px;padding:8px 16px;border-bottom:1px solid rgba(212,162,58,.25);background:rgba(0,0,0,.25);position:relative;z-index:2}
+.top a{color:var(--parch2);text-decoration:none;font-size:14px;opacity:.8}
+.top h1{font-family:var(--goth);font-weight:800;font-size:24px;margin:0;color:var(--gold);flex:1}
+.btn{font-family:var(--serif);font-weight:700;font-size:14px;padding:7px 14px;border-radius:8px;border:1px solid #8a6a2a;background:linear-gradient(#e7c66b,#b98a2c);color:#2a1a08;cursor:pointer;box-shadow:0 2px 0 #5a4010,0 3px 8px rgba(0,0,0,.3)}
+.btn:hover{filter:brightness(1.06)}.btn.ghost{background:transparent;color:var(--parch2);border-color:rgba(232,213,170,.35);box-shadow:none}
+.btn.big{font-size:18px;padding:11px 26px}.top .btn{font-size:13px;padding:5px 10px}
+.hidden{display:none!important}
+#setup{max-width:1180px;margin:0 auto;padding:18px 16px 40px}
+.hero{text-align:center;margin:6px 0 16px}
+.hero h1{font-family:var(--goth);font-size:clamp(38px,6vw,64px);margin:0;color:var(--gold);text-shadow:0 2px 0 #3a2208,0 6px 24px rgba(0,0,0,.5)}
+.hero p{margin:4px auto 0;max-width:620px;color:var(--parch2);font-size:17px}
+.setup-grid{display:grid;grid-template-columns:1.35fr 1fr;gap:18px;align-items:start}
+.pick,.detail{background:linear-gradient(#f6ebcf,#ead8ad);color:var(--ink);border-radius:12px;padding:14px 16px;box-shadow:0 0 0 1px #5a3a1a,0 10px 30px rgba(0,0,0,.45)}
+.seg{display:flex;gap:6px;align-items:center;margin-bottom:8px;flex-wrap:wrap}.seg span{font-weight:700;margin-right:6px}
+.seg button{font-family:var(--serif);font-size:14px;padding:6px 12px;border-radius:20px;border:1px solid var(--line);background:#fff8e6;cursor:pointer;color:var(--ink)}
+.seg button.on{background:var(--ink);color:var(--parch);border-color:var(--ink)}
+.grp h4,.detail h4{margin:10px 0 6px;font-size:12px;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted)}
+.tiles{display:flex;flex-wrap:wrap;gap:6px}
+.tile{display:flex;align-items:center;gap:6px;padding:4px 10px 4px 5px;border-radius:22px;border:1px solid var(--line);background:#fffaf0;cursor:pointer;font-family:var(--serif);font-size:15px;color:var(--ink)}
+.tile em{font-style:normal;font-size:12px;color:var(--muted);background:rgba(0,0,0,.06);border-radius:8px;padding:0 6px}
+.tile.on{border-color:var(--civ);box-shadow:0 0 0 2px var(--civ) inset;background:#fff}
+.detail{position:sticky;top:12px;border-top:6px solid var(--civ)}
+.d-head{display:flex;gap:12px;align-items:center}.d-head h2{margin:0;font-family:var(--goth);font-size:34px;color:var(--civ)}.d-head p{margin:2px 0}.d-hp b{font-size:20px}
+.d-uniques{display:flex;gap:12px;flex-wrap:wrap;padding:6px 0 4px 6px}
+.d-mix{display:flex;flex-wrap:wrap;gap:8px}.d-mix span{display:inline-flex;align-items:center;gap:3px;font-size:14px}
+.d-opp{color:var(--muted);font-size:14px}
+.d-actions{display:flex;gap:10px;align-items:center;margin-top:10px}.d-actions .btn.ghost,.row .btn.ghost{color:var(--ink);border-color:var(--line)}
+.card{position:relative;width:128px;min-height:176px;border-radius:10px;background:linear-gradient(170deg,#fffaf0,#f1e2bd 70%,#e6d09f);color:var(--ink);box-shadow:0 0 0 1px rgba(0,0,0,.35),0 0 0 3px var(--civ),0 6px 14px rgba(0,0,0,.4);display:flex;flex-direction:column;flex:0 0 auto;user-select:none}
+.card.unique{background:linear-gradient(170deg,#fff6dc,#f3dc9e 70%,#e3c473);box-shadow:0 0 0 1px rgba(0,0,0,.35),0 0 0 3px var(--civ),0 0 0 5px #d4a23a,0 6px 14px rgba(0,0,0,.4)}
+.card.merc{box-shadow:0 0 0 1px rgba(0,0,0,.35),0 0 0 3px #8a7350,0 6px 14px rgba(0,0,0,.4)}
+.c-head{display:flex;align-items:center;gap:4px;padding:5px 6px 4px;background:var(--civ);color:#fff;border-radius:9px 9px 0 0;min-height:30px}
+.c-name{font-weight:800;font-size:13px;line-height:1.05;text-shadow:0 1px 0 rgba(0,0,0,.35)}
+.c-syms{display:flex;flex-wrap:wrap;justify-content:center;gap:2px;padding:8px 4px 4px}
+.c-text{font-size:11.5px;line-height:1.22;padding:2px 7px 8px;color:#3d2c1c;text-align:center}
+.c-star{position:absolute;top:-8px;right:-6px;width:20px;height:20px;border-radius:50%;background:#d4a23a;color:#3a2208;font-size:12px;display:grid;place-items:center;box-shadow:0 1px 3px rgba(0,0,0,.5)}
+.c-cost{position:absolute;bottom:-11px;left:50%;transform:translateX(-50%);height:22px;padding:0 10px;border-radius:11px;background:#7d6a4a;color:#fff;font-weight:800;font-size:12.5px;display:flex;align-items:center;white-space:nowrap;box-shadow:0 0 0 2px #f4e8cb,0 2px 4px rgba(0,0,0,.5)}.c-cost.ok{background:#c8961e}
+.card.empty{display:grid;place-items:center;color:var(--muted);--civ:#5a4a35;font-style:italic}
+.card.big{width:168px;min-height:220px}.card.big .c-name{font-size:15px}.card.big .c-text{font-size:13px}
+.card.pop{animation:pop .35s ease-out}
+@keyframes pop{from{transform:translateY(26px) scale(.7) rotate(-4deg);opacity:0}to{transform:none;opacity:1}}
+.d-uniques .card{width:150px}
+#game{display:grid;grid-template-columns:minmax(0,1fr) 230px;grid-template-areas:"opps chron" "mid chron" "mine chron" "hand hand";gap:10px;padding:10px 14px 14px;max-width:1400px;margin:0 auto}
+.opps{grid-area:opps;display:grid;gap:10px}.opps.n1{grid-template-columns:minmax(0,560px);justify-content:center}.opps.n2{grid-template-columns:repeat(2,minmax(0,1fr))}.opps.n3{grid-template-columns:repeat(3,minmax(0,1fr))}
+.seat{position:relative;background:linear-gradient(#f5e9cc,#e7d3a6);color:var(--ink);border-radius:12px;padding:8px 10px;box-shadow:0 0 0 1px #4a2e14,0 8px 20px rgba(0,0,0,.4);border-left:6px solid var(--civ);transition:box-shadow .2s,transform .2s}
+.seat.turn{box-shadow:0 0 0 2px var(--gold),0 0 22px rgba(212,162,58,.55),0 8px 20px rgba(0,0,0,.4)}
+.seat.out{filter:grayscale(.85) brightness(.75)}
+.seat.targetable{cursor:crosshair;box-shadow:0 0 0 3px #e0442f,0 0 24px rgba(224,68,47,.6);animation:pulse 1s infinite alternate}
+@keyframes pulse{to{transform:translateY(-3px)}}
+.seat.shake{animation:shake .35s}
+@keyframes shake{0%,100%{transform:none}25%{transform:translateX(-5px)}50%{transform:translateX(5px)}75%{transform:translateX(-3px)}}
+.s-top{display:flex;align-items:center;gap:8px}
+.s-id{flex:1;min-width:0}.s-name{font-weight:800;font-size:17px;color:var(--civ);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.s-sub{font-size:12.5px;color:var(--muted)}
+.s-hp{text-align:right;min-width:74px}.s-hp b{font-size:30px;line-height:1;color:#7e1d14;font-family:var(--goth)}.s-hp small{color:var(--muted);font-size:13px}
+.hpbar{height:5px;background:rgba(0,0,0,.12);border-radius:3px;margin-top:3px;overflow:hidden}.hpbar div{height:100%;background:linear-gradient(90deg,#b3261e,#e0563f);transition:width .4s}
+.s-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:4px;font-size:13px;min-height:22px}
+.gold{display:inline-flex;align-items:center;gap:3px}.gold b{font-size:15px}
+.backs{display:inline-flex;align-items:center}.backs i{width:11px;height:16px;border-radius:2px;background:linear-gradient(135deg,#7a2e1d,#4a1a10);border:1px solid #d4a23a;margin-right:-4px}.backs em{font-style:normal;margin-left:8px;color:var(--muted)}
+.tok{display:inline-flex;align-items:center;gap:3px;font-size:12px;background:rgba(0,0,0,.06);border-radius:10px;padding:1px 7px 1px 2px}.tok.hot{background:#1f4e79;color:#fff;padding:1px 8px}
+.turn-tag,.out-tag{margin-left:auto;font-size:11px;letter-spacing:1px;text-transform:uppercase;padding:1px 8px;border-radius:8px;font-weight:800}.turn-tag{background:var(--gold);color:#2a1a08}.out-tag{background:#333;color:#fff}
+.s-structs{display:flex;flex-wrap:wrap;gap:5px;margin-top:6px;min-height:26px}.s-structs .none{font-size:12px;color:var(--muted);font-style:italic;align-self:center}
+.st{display:inline-flex;align-items:center;gap:4px;background:#fff8e6;border:1px solid #9a8a6a;border-radius:6px;padding:2px 7px 2px 3px;font-size:12px;box-shadow:0 2px 0 #9a8a6a}
+.st b{font-size:15px}.st i{font-size:10.5px;color:var(--muted)}
+.st.wonder{background:linear-gradient(#ffe9a8,#e7c25a);border-color:#8a6a1a;padding:2px 8px}.st.wonder i{color:#5a3a08;font-weight:700}
+.floats{position:absolute;inset:0;pointer-events:none;display:flex;justify-content:center;align-items:center;z-index:5}
+.float{position:absolute;font-family:var(--goth);font-size:28px;font-weight:800;animation:floatup 1.6s ease-out forwards;text-shadow:0 2px 0 rgba(0,0,0,.35),0 0 10px rgba(255,255,255,.6);white-space:nowrap}
+.float.dmg{color:#c2261a}.float.heal{color:#2e7d32}.float.wall{color:#3d4f6b;font-size:22px}.float.gold{color:#a87a10;font-size:20px}.float.info{color:#5b2a86;font-size:20px}.float.big{font-size:38px}
+@keyframes floatup{0%{transform:translateY(10px) scale(.7);opacity:0}15%{transform:translateY(0) scale(1.1);opacity:1}100%{transform:translateY(-46px) scale(1);opacity:0}}
+.mid{grid-area:mid;display:grid;grid-template-columns:210px minmax(0,1fr) auto;gap:10px;align-items:stretch}
+#events{display:flex;flex-direction:column;gap:6px}
+.ev-now,.ev-next{background:rgba(244,232,203,.95);color:var(--ink);border-radius:10px;padding:7px 10px;box-shadow:0 0 0 1px #4a2e14}
+.ev-now{border-top:4px solid #a3261c}.ev-next{opacity:.85;border-top:4px solid #56657d}
+.ev-now small,.ev-next small{display:block;font-size:10.5px;letter-spacing:1.4px;text-transform:uppercase;color:var(--muted)}.ev-now b,.ev-next b{font-size:16px}.ev-now p,.ev-next p{margin:2px 0 0;font-size:12.5px;line-height:1.25}
+.ev-warn{font-size:12px;background:#7e1d14;color:#fff;border-radius:8px;padding:4px 8px}
+#arena{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;min-height:250px;border-radius:16px;background:radial-gradient(ellipse at center,rgba(244,232,203,.12),rgba(0,0,0,.18) 70%);box-shadow:inset 0 0 0 1px rgba(212,162,58,.25)}
+.played-by{font-weight:700;color:var(--parch);font-size:15px;text-shadow:0 1px 0 #000}.arena-hint{color:var(--parch2);opacity:.7;font-style:italic}
+#market{background:rgba(0,0,0,.25);border-radius:12px;padding:6px 10px 8px;box-shadow:inset 0 0 0 1px rgba(212,162,58,.25)}
+#market h3,.chronbox h3{margin:0 0 8px;font-family:var(--goth);color:var(--gold);font-size:20px;font-weight:600}
+.m-cards{display:flex;gap:10px;padding:6px 4px 14px 6px}.m-cards .c-text{padding-bottom:16px}.me-mini{display:none}
+.kw{font-weight:800}.k-dmg{color:#b3261e}.k-hp{color:#23772f}.k-gold{color:#9a6a00}.k-card{color:#3646a8}.k-wall{color:#475a75}.k-play{color:#6a3fb0}.k-aoe{color:#c94a12}.k-pierce{color:#0f6b52}.k-steal{color:#a3306d}.k-raze{color:#7a4a20}
+#chron .k-gold,#status .k-gold,.m-note .k-gold{color:#f0c050}#status .k-hp{color:#8fd694}#status .k-wall{color:#b8c7dc}
+.legend-key{font-size:14px;line-height:1.7}.m-cards .card{width:112px;min-height:160px}.m-cards .c-text{font-size:10.5px}
+.card.buyable{cursor:pointer;transition:transform .15s}.card.buyable:hover{transform:translateY(-4px)}
+.m-note{margin:8px 0 0;font-size:12px;color:var(--parch2);opacity:.85;max-width:360px}
+#mine{grid-area:mine}#mine .seat{padding:8px 12px}
+.handbar{grid-area:hand}#status{text-align:center;font-weight:700;color:var(--gold);min-height:30px;font-size:17px;display:flex;justify-content:center;align-items:center;gap:10px}
+#hand{display:flex;gap:12px;justify-content:center;padding:14px 8px 8px;overflow-x:auto;min-height:200px}
+#hand .card{transition:transform .15s,box-shadow .15s}#hand .card.playable{cursor:pointer}#hand .card.playable:hover{transform:translateY(-10px) rotate(-1deg)}
+#hand .card.chosen{transform:translateY(-14px);box-shadow:0 0 0 1px rgba(0,0,0,.35),0 0 0 3px #e0442f,0 0 20px rgba(224,68,47,.7)}
+#hand .card:not(.playable){filter:saturate(.75) brightness(.92)}
+.hand-empty{color:var(--parch2);opacity:.7;font-style:italic;align-self:center}
+.chronbox{grid-area:chron;background:rgba(0,0,0,.25);border-radius:12px;padding:8px 12px;box-shadow:inset 0 0 0 1px rgba(212,162,58,.2);align-self:start}
+#chron{list-style:none;margin:0;padding:0;font-size:13px;line-height:1.3}#chron li{padding:4px 0;border-bottom:1px dashed rgba(232,213,170,.18);color:var(--parch2)}#chron li:first-child{color:#fff}
+#banner{position:fixed;left:50%;top:22%;transform:translateX(-50%);pointer-events:none;text-align:center;opacity:0;z-index:20;width:min(90vw,700px)}
+#banner b{display:block;font-family:var(--goth);font-size:clamp(30px,5vw,52px);color:var(--gold);text-shadow:0 3px 0 #2a1a08,0 0 30px rgba(0,0,0,.8)}#banner span{display:block;color:#fff;font-size:17px;text-shadow:0 2px 6px #000;margin-top:4px}
+#banner.show{animation:bannerIn 2.4s ease-out}
+@keyframes bannerIn{0%{opacity:0;transform:translate(-50%,10px)}12%{opacity:1;transform:translate(-50%,0)}75%{opacity:1}100%{opacity:0}}
+.modal{position:fixed;inset:0;background:rgba(10,5,2,.72);display:grid;place-items:center;z-index:30;padding:16px}
+.sheet{max-width:720px;width:100%;max-height:88vh;overflow:auto;background:linear-gradient(#f7ecd2,#ead7ab);color:var(--ink);border-radius:14px;padding:18px 22px;box-shadow:0 0 0 1px #4a2e14,0 20px 60px rgba(0,0,0,.6)}
+.sheet h2{font-family:var(--goth);font-size:32px;margin:0 0 6px;color:#7e1d14}
+.muted{color:var(--muted)}.small{font-size:13px}
+.relics{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:12px 0}
+.relic{text-align:left;font-family:var(--serif);cursor:pointer;border-radius:12px;border:1px solid #8a6a2a;background:linear-gradient(#fff8e2,#f0d896);padding:12px;color:var(--ink);box-shadow:0 3px 0 #8a6a2a}.relic:hover{transform:translateY(-3px)}
+.relic b{display:block;font-size:18px;color:#7e1d14}.relic span{font-size:14px}
+.legend{display:grid;grid-template-columns:repeat(2,1fr);gap:6px 14px;margin:10px 0}.legend div{display:grid;grid-template-columns:30px auto;column-gap:6px;font-size:13.5px}.legend b{align-self:center}.legend span{grid-column:2;color:#4a3826}
+.row{display:flex;gap:10px;justify-content:center;margin-top:14px;flex-wrap:wrap}
+.end{text-align:center}.end h2{font-size:46px}.end.win h2{color:#a87a10}.stats{display:flex;gap:14px;justify-content:center;flex-wrap:wrap;font-size:14px;color:#4a3826}.stats b{font-size:18px;color:var(--ink)}
+@media (max-width:980px){#game{grid-template-columns:minmax(0,1fr);grid-template-areas:"opps" "mid" "mine" "hand" "chron"}.mid{grid-template-columns:1fr}#events{flex-direction:row;flex-wrap:wrap}.ev-now,.ev-next{flex:1 1 200px}#arena{min-height:200px}.m-cards{overflow-x:auto;padding-bottom:6px}.setup-grid{grid-template-columns:1fr}.detail{position:static}}
+@media (max-width:640px){
+.top{padding:6px 10px;gap:6px}.top h1{font-size:17px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}.top a{display:none}.top .btn{font-size:12px;padding:4px 7px}
+#game{padding:6px 6px 0;gap:6px}
+.opps.n2{grid-template-columns:1fr 1fr}.opps.n3{grid-template-columns:1fr 1fr 1fr}.opps{gap:6px}
+.seat{padding:5px 6px;border-left-width:4px;border-radius:9px}.s-top{gap:4px}.s-top .crest{width:24px;height:24px}.s-sub{display:none}.s-name{font-size:13px}
+.s-hp{min-width:0}.s-hp b{font-size:21px}.s-hp small{font-size:11px}.s-row{gap:4px;margin-top:2px;font-size:11px;min-height:18px}.backs i{display:none}.backs em{margin-left:2px}.backs em::before{content:'🂠 '}
+.turn-tag,.out-tag{font-size:9px;padding:0 5px;letter-spacing:.5px}.tok{font-size:10px}.tok svg{display:none}
+.s-structs{gap:3px;margin-top:3px;min-height:18px}.st{padding:1px 4px 1px 2px;font-size:11px}.st span,.st i{display:none}.st b{font-size:13px}.st svg{width:13px;height:13px}.s-structs .none{font-size:10.5px}
+.opps.n2 .hp-u,.opps.n3 .hp-u{display:none}.opps.n1 .s-sub,#mine .s-sub{display:block}.opps.n1 .s-top .crest,#mine .s-top .crest{width:34px;height:34px}.opps.n1 .st span,#mine .st span{display:inline}
+#events{gap:6px}.ev-now,.ev-next{padding:5px 8px;flex-basis:140px}.ev-now b,.ev-next b{font-size:14px}.ev-now p,.ev-next p{font-size:11.5px}
+#arena{min-height:0;padding:6px 0}.card.big{width:118px;min-height:150px}.card.big .c-name{font-size:12.5px}.card.big .c-text{font-size:10.5px}
+#market{padding:4px 8px 4px}#market h3{font-size:17px;margin:0 0 2px}.m-cards .card{width:100px;min-height:138px}.m-note{font-size:11px;margin-top:2px}
+.handbar{position:sticky;bottom:0;z-index:12;margin:0 -6px;padding:4px 6px calc(6px + env(safe-area-inset-bottom,0px));background:linear-gradient(rgba(20,11,6,0),rgba(20,11,6,.97) 22%)}
+#status{font-size:14px;min-height:22px;flex-wrap:wrap;gap:2px 10px}.me-mini{display:inline;color:var(--parch);font-weight:500;font-size:13px}#hand{justify-content:flex-start;gap:8px;padding:10px 4px 4px;min-height:0}
+.card{width:106px;min-height:150px}.c-name{font-size:12px}.c-text{font-size:10.5px}.c-syms svg{width:24px;height:24px}
+.chronbox{margin-bottom:10px}.relics,.legend{grid-template-columns:1fr}.sheet{padding:14px}
+}
+</style>
+</head>
+<body>
+<header class="top"><a href="index.html">‹ Sonic Hub Pages</a><h1>Medieval Mayhem</h1><button class="btn ghost" id="rulesBtn">Rules</button><button class="btn ghost" id="soundBtn">Sound: on</button><button class="btn ghost" id="newBtn">New game</button></header>
+<section id="setup"></section>
+<section id="game" class="hidden">
+  <div id="opps" class="opps"></div>
+  <div class="mid"><div id="events"></div><div id="arena"></div><div id="market"></div></div>
+  <div id="mine"></div>
+  <div class="handbar"><div id="status"></div><div id="hand"></div></div>
+  <aside class="chronbox"><h3>Chronicle</h3><ul id="chron"></ul></aside>
+</section>
+<div id="modal" class="modal hidden"></div>
+<div id="banner"></div>
+<script>
+'use strict';
+/* ── Medieval Mayhem ──
+   Demo game #4 for Sonic Hub Pages: a light card brawl where every medieval civilization has its own deck.
+   Cards speak in symbols; shared symbols recur across decks, some belong to a few civs, some to one.
+   The engine is pure (state S, seeded RNG, no DOM) so sim.js can play thousands of AI games to balance it. */
+const clamp = (v, a, b) => (v < a ? a : v > b ? b : v);
+function rnd(S) {
+  let t = (S.rs = (S.rs + 0x6D2B79F5) >>> 0);
+  t = Math.imul(t ^ (t >>> 15), t | 1);
+  t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+  return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+}
+const pick = (S, arr) => arr[Math.floor(rnd(S) * arr.length)];
+function wpick(S, entries) {
+  let tot = 0; for (const e of entries) tot += Math.max(0, e[1]);
+  if (tot <= 0) return entries[0][0];
+  let r = rnd(S) * tot;
+  for (const e of entries) { r -= Math.max(0, e[1]); if (r <= 0) return e[0]; }
+  return entries[entries.length - 1][0];
+}
+function shuffled(S, arr) { const a = arr.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(rnd(S) * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; }
+const fmtN = n => String(Math.round(n)).replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const sumObj = o => Object.values(o).reduce((a, b) => a + b, 0);
+
+/* ── Content. Nothing here is a rule about regions: symbols go wherever history puts them. ── */
+const START_HAND = 3;
+/* each symbol resolves into steps; a card resolves its symbols left to right */
+const SYM = {
+  A: { name: 'Strike', desc: 'Deal 1 damage (walls take it first).', steps: [{ dmg: 1, basic: 1 }] },
+  W: { name: 'Wall', desc: 'The card stays in play as a structure: 1 durability per wall icon.', steps: [] },
+  H: { name: 'Heal', desc: 'Heal 1 HP.', steps: [{ heal: 1 }] },
+  M: { name: 'Extra play', desc: 'Play another card.', steps: [{ plays: 1 }] },
+  D: { name: 'Draw', desc: 'Draw 1 card.', steps: [{ draw: 1 }] },
+  G: { name: 'Gold', desc: 'Gain 1 gold to hire mercenaries.', steps: [{ gold: 1 }] },
+  R: { name: 'Raze', desc: "Destroy the opponent's biggest structure (a wonder loses 2 durability).", steps: [{ raze: 1 }] },
+  S: { name: 'Steal', desc: "Steal 1 random card from an opponent's hand.", steps: [{ steal: 1 }] },
+  C: { name: 'Convert', desc: "Convert the opponent's biggest structure to your side.", steps: [{ convert: 1 }] },
+  K: { name: 'Cavalry', desc: 'Deal 2 damage. Camels block it.', steps: [{ dmg: 2, cav: 1 }] },
+  E: { name: 'Elephant', desc: 'Destroy a structure, then deal 1 damage.', steps: [{ raze: 1 }, { dmg: 1 }] },
+  L: { name: 'Camel', desc: 'Deal 1 damage and set up a camel guard: the next cavalry attack on you is cancelled (horses fear camels).', steps: [{ dmg: 1 }, { token: 'camel' }] },
+  B: { name: 'Ranged', desc: 'Deal 1 damage over the walls, straight to HP.', steps: [{ dmg: 1, pierce: 1 }] },
+  F: { name: 'Gunpowder', desc: 'Deal 1 damage to every opponent.', steps: [{ dmg: 1, all: 1 }] },
+  Y: { name: 'Eagle', desc: 'Deal 1 damage, or 2 damage if the opponent has no walls.', steps: [{ dmg: 1, eagle: 1 }] },
+  N: { name: 'Ship', desc: 'Raid: steal 1 card, then deal 1 damage.', steps: [{ steal: 1 }, { dmg: 1 }] },
+};
+const SYM_ORDER = 'AKEBLYFNRSCWHMDG';
+const COMMON_NAMES = {
+  A: 'Militia', AA: 'Swordsmen', AAA: 'Shock Troops', AM: 'Skirmish', AAM: 'Assault', AD: 'Outriders', AH: 'Spearmen',
+  W: 'Palisade', WW: 'Stone Wall', WWW: 'Fortress', WH: 'Watch Tower',
+  H: 'Provisions', HH: 'Healer', HD: 'Monastery', MD: 'Messenger', MM: 'Forced March', D: 'Scouting', DD: 'Scholars',
+  G: 'Merchant', GG: 'Gold Mine', GD: 'Market Day', R: 'Battering Ram', S: 'Spy', C: 'Monk',
+  K: 'Cavalry', KM: 'Light Cavalry', KK: 'Heavy Cavalry', E: 'War Elephant', EA: 'Elephant Charge', L: 'Camel Riders', LG: 'Caravan',
+  B: 'Archers', BB: 'Arrow Volley', BM: 'Horse Archers', F: 'Fire Lances', FF: 'Bombards', Y: 'Eagle Warriors', YM: 'Eagle Scouts', N: 'Warship', NM: 'Landing Party',
+};
+/* signature cards: steps written by hand. wall kinds: regen (+1 per turn), sacred (heals owner each turn), thorns (hitting it hurts), fortress (raze removes only 1), wonder */
+const UNIQUE = {
+  greatwall: { name: "Great Wall", icons: 'WWWW', text: "A wall with 4 durability.", wall: 4 },
+  exam: { name: "Imperial Exams", icons: 'DDG', text: "Draw 2 cards and gain 1 gold.", steps: [{ draw: 2 }, { gold: 1 }] },
+  samurai: { name: "Samurai", icons: 'AA', text: "Deal 2 damage, or 3 damage if the opponent has no walls.", steps: [{ dmg: 2, samurai: 1 }] },
+  kamikaze: { name: "Divine Wind", icons: 'D', text: "Until your next turn, every attack against you is cancelled. Draw 1 card.", steps: [{ token: 'immune' }, { draw: 1 }] },
+  hwacha: { name: "Hwacha", icons: 'FF', text: "Deal 1 damage to every opponent, twice.", steps: [{ dmg: 1, all: 1 }, { dmg: 1, all: 1 }] },
+  tripitaka: { name: "Tripitaka Koreana", icons: 'DDDM', text: "Draw 3 cards and play another card.", steps: [{ draw: 3 }, { plays: 1 }] },
+  ironcav: { name: "Iron Pagoda", icons: 'KA', text: "Iron-clad cavalry: deal 3 damage. Camels block it.", steps: [{ dmg: 3, cav: 1 }] },
+  thunder: { name: "Thunder Crash Bomb", icons: 'RF', text: "Destroy a structure, then deal 1 damage to every opponent.", steps: [{ raze: 1 }, { dmg: 1, all: 1 }] },
+  stakes: { name: "Bạch Đằng Stakes", icons: 'W', text: "Until your next turn, the first opponent who damages you takes 2 damage.", steps: [{ token: 'trap' }] },
+  proclaim: { name: "Call to Arms", icons: 'HHDD', text: "Heal 2 HP and draw 2 cards.", steps: [{ heal: 2 }, { draw: 2 }] },
+  caravan: { name: "Desert Caravan", icons: 'LGD', text: "Deal 1 damage, set up a camel guard, gain 1 gold and draw 1 card.", steps: [{ dmg: 1 }, { token: 'camel' }, { gold: 1 }, { draw: 1 }] },
+  baghdad: { name: "Baghdad Hospital", icons: 'HHH', text: "Heal 3 HP.", steps: [{ heal: 3 }] },
+  immortals: { name: "Immortals", icons: 'WW', text: "A wall with 2 durability that regains 1 durability on each of your turns (max 3).", wall: 2, kind: 'regen' },
+  sasanian: { name: "Sasanian Elephants", icons: 'EE', text: "Destroy two structures and deal 2 damage.", steps: [{ raze: 1 }, { dmg: 1 }, { raze: 1 }, { dmg: 1 }] },
+  urban: { name: "Urban's Bombard", icons: 'RR', text: "Destroy every structure of one opponent, then deal 1 damage.", steps: [{ raze: 9 }, { dmg: 1 }] },
+  janissary: { name: "Janissaries", icons: 'AAM', text: "Deal 2 damage and play another card.", steps: [{ dmg: 2 }, { plays: 1 }] },
+  mansa: { name: "Mansa Musa's Pilgrimage", icons: 'GGG', text: "Gain 3 gold; your next hire this turn is free.", steps: [{ gold: 3 }, { buyFree: 1 }] },
+  sankore: { name: "University of Sankore", icons: 'DDH', text: "Draw 2 cards and heal 1 HP.", steps: [{ draw: 2 }, { heal: 1 }] },
+  lalibela: { name: "Churches of Lalibela", icons: 'WWW', text: "A wall with 3 durability; while it stands you heal 1 HP on each of your turns.", wall: 3, kind: 'sacred' },
+  shotel: { name: "Shotel Warriors", icons: 'AAM', text: "Deal 2 damage and play another card.", steps: [{ dmg: 2 }, { plays: 1 }] },
+  arrowrain: { name: "Arrow Storm", icons: 'BB', text: "Deal 1 damage over the walls to every opponent.", steps: [{ dmg: 1, pierce: 1, all: 1 }] },
+  feint: { name: "Feigned Retreat", icons: 'RKA', text: "Lure them out: destroy a structure, then deal 2 damage.", steps: [{ raze: 1 }, { dmg: 2 }] },
+  scourge: { name: "Scourge of God", icons: 'FS', text: "Every opponent discards a random card and takes 1 damage.", steps: [{ discard: 1, all: 1 }, { dmg: 1, all: 1 }] },
+  aquileia: { name: "Sack of Aquileia", icons: 'SS', text: "Steal 2 cards from one opponent.", steps: [{ steal: 2 }] },
+  twocourts: { name: "Dual Administration", icons: 'GGDM', text: "Gain 2 gold, draw 1 card and play another card.", steps: [{ gold: 2 }, { draw: 1 }, { plays: 1 }] },
+  ordo: { name: "Ordo Camp", icons: 'WWH', text: "A wall with 2 durability; heal 1 HP.", wall: 2, steps: [{ heal: 1 }] },
+  longbow: { name: "Longbow Volley", icons: 'BB', text: "Deal 2 damage over the walls.", steps: [{ dmg: 2, pierce: 1 }] },
+  charter: { name: "Magna Carta", icons: 'GGH', text: "Gain 2 gold, heal 1 HP and draw 1 card.", steps: [{ gold: 2 }, { heal: 1 }, { draw: 1 }] },
+  woad: { name: "Woad Raiders", icons: 'AAA', text: "Deal 3 damage; you lose 1 HP.", steps: [{ dmg: 3 }, { self: 1 }] },
+  ambush: { name: "Highland Ambush", icons: 'FD', text: "Deal 1 damage to every opponent and draw 1 card.", steps: [{ dmg: 1, all: 1 }, { draw: 1 }] },
+  paladin: { name: "Paladins", icons: 'KK', text: "Deal 4 damage. Camels block it.", steps: [{ dmg: 4, cav: 1 }] },
+  charlemagne: { name: "Charlemagne", icons: 'HHW', text: "Heal 2 HP; all your structures gain 1 durability.", steps: [{ heal: 2 }, { fortify: 1 }] },
+  berserk: { name: "Berserkers", icons: 'AAH', text: "Deal 2 damage and heal 1 HP.", steps: [{ dmg: 2 }, { heal: 1 }] },
+  lindisfarne: { name: "Raid on Lindisfarne", icons: 'NS', text: "Steal 1 card from every opponent, then deal 1 damage.", steps: [{ steal: 1, all: 1 }, { dmg: 1 }] },
+  teutonic: { name: "Teutonic Knights", icons: 'WWA', text: "A spiked wall with 2 durability: whoever hits it takes 1 damage.", wall: 2, kind: 'thorns' },
+  marienburg: { name: "Marienburg Castle", icons: 'WWWW', text: "A wall with 4 durability.", wall: 4 },
+  horde: { name: "Barbarian Horde", icons: 'MMD', text: "Play 2 more cards and draw 1 card.", steps: [{ plays: 2 }, { draw: 1 }] },
+  sackrome: { name: "Sack of Rome", icons: 'RSA', text: "Destroy a structure, steal 1 card and deal 1 damage.", steps: [{ raze: 1 }, { steal: 1 }, { dmg: 1 }] },
+  conquist: { name: "Conquistadors", icons: 'BB', text: "Guns and horses: deal 2 damage over the walls.", steps: [{ dmg: 2, pierce: 1 }] },
+  reconq: { name: "Reconquista", icons: 'FH', text: "Deal 1 damage to every opponent and heal 1 HP.", steps: [{ dmg: 1, all: 1 }, { heal: 1 }] },
+  caravel: { name: "Caravel", icons: 'NDM', text: "Steal 1 card, draw 1 card and play another card.", steps: [{ steal: 1 }, { draw: 1 }, { plays: 1 }] },
+  indiaroute: { name: "Sea Route to India", icons: 'GGGM', text: "Gain 3 gold and play another card.", steps: [{ gold: 3 }, { plays: 1 }] },
+  theodosius: { name: "Theodosian Walls", icons: 'WWW', text: "A wall with 3 durability that regains 1 durability on each of your turns (max 4).", wall: 3, kind: 'regen' },
+  greekfire: { name: "Greek Fire", icons: 'RAA', text: "Destroy a structure, then deal 2 damage.", steps: [{ raze: 1 }, { dmg: 2 }] },
+  sacrifice: { name: "Sacrifice", icons: 'DDM', text: "Lose 1 HP, draw 2 cards and play another card.", steps: [{ self: 1 }, { draw: 2 }, { plays: 1 }] },
+  flowerwar: { name: "Flower War", icons: 'SY', text: "Take captives: steal 1 card, then deal 1 damage (2 damage if they have no walls).", steps: [{ steal: 1 }, { dmg: 1, eagle: 1 }] },
+  chichen: { name: "Chichén Itzá", icons: 'WWW', text: "Wonder with 3 durability plus 1 per opponent; it takes hits before your walls. If it still stands at the start of your third turn after building it, you win. Raze, elephants and bombards remove 2 durability.", wonder: 1 },
+  calendar: { name: "Maya Calendar", icons: 'DDH', text: "Draw 2 cards and heal 1 HP.", steps: [{ draw: 2 }, { heal: 1 }] },
+  incaroad: { name: "Inca Road", icons: 'MDD', text: "Play another card and draw 2 cards.", steps: [{ plays: 1 }, { draw: 2 }] },
+  sacsay: { name: "Sacsayhuamán", icons: 'WWW', text: "A wall with 3 durability made of giant stones: razing only removes 1 durability.", wall: 3, kind: 'fortress' },
+  angkor: { name: "Angkor Wat", icons: 'WWW', text: "Wonder with 3 durability plus 1 per opponent; it takes hits before your walls. If it still stands at the start of your third turn after building it, you win. Raze, elephants and bombards remove 2 durability.", wonder: 1 },
+  baray: { name: "Baray Reservoir", icons: 'HHG', text: "Heal 2 HP and gain 1 gold.", steps: [{ heal: 2 }, { gold: 1 }] },
+  armoredel: { name: "Armored Elephants", icons: 'EE', text: "Destroy two structures and deal 2 damage.", steps: [{ raze: 1 }, { dmg: 1 }, { raze: 1 }, { dmg: 1 }] },
+  cholafleet: { name: "Chola Fleet", icons: 'NF', text: "Deal 1 damage to every opponent, then steal 1 card.", steps: [{ dmg: 1, all: 1 }, { steal: 1 }] },
+};
+/* civs: hp2 (duel) and hp4 (3–4 players) come from tune.js (AI vs AI); deck = 24 cards; group only helps browsing */
+const CIVS = {
+  chinese: { name: "Chinese", group: "East Asia", color: '#b3261e', charge: 'sun', hp2: 14, hp4: 12, style: "Gunpowder, great walls, imperial exams", deck: 'A3 AA1 AM2 F3 FF1 W2 WW1 WH1 H2 HD1 DD1 G1 R1 AA1 C1 +greatwall +exam' },
+  japanese: { name: "Japanese", group: "East Asia", color: '#c0392b', charge: 'disc', hp2: 12, hp4: 14, style: "Samurai strikes, the Divine Wind shields", deck: 'A5 AA2 AM2 AAM1 K1 B2 W2 WH1 H2 HH1 D1 MD1 G1 +samurai +kamikaze' },
+  koreans: { name: "Koreans", group: "East Asia", color: '#2b6cb0', charge: 'knot', hp2: 15, hp4: 13, style: "Rocket carts, sturdy walls, card draw", deck: 'A3 AA3 AM2 F3 B2 W1 WW1 WH1 H2 HH1 D1 G1 R1 +hwacha +tripitaka' },
+  jurchens: { name: "Jurchens", group: "East Asia", color: '#3d4f5c', charge: 'axe', hp2: 9, hp4: 13, style: "Iron cavalry and thunder bombs", deck: 'A5 AA2 AM1 AAM1 K2 KM1 KK1 F1 W2 WH1 H2 D1 G1 R1 +ironcav +thunder' },
+  daiviet: { name: "Đại Việt", group: "Southeast Asia", color: '#b8860b', charge: 'star', hp2: 15, hp4: 14, style: "Crossbows, elephants, the Bạch Đằng stakes", deck: 'A4 AA2 AM1 AD1 B3 BB1 E2 W2 WW1 WH1 H2 HH1 D1 +stakes +proclaim' },
+  khmer: { name: "Khmer", group: "Southeast Asia", color: '#8a5a2b', charge: 'temple', hp2: 9, hp4: 12, style: "War elephants and Angkor Wat", deck: 'A4 AA1 AM1 E2 EA1 B1 W2 WW1 WH1 H2 HH1 D1 G2 C1 R1 +angkor +baray' },
+  indians: { name: "Indians", group: "South Asia", color: '#d97706', charge: 'wheel', hp2: 12, hp4: 12, style: "Armored elephants and the Chola fleet", deck: 'A4 AA2 AM1 E2 EA2 N1 L1 W2 WH1 H2 HH1 D1 C1 R1 +armoredel +cholafleet' },
+  arabs: { name: "Arabs", group: "Middle East & Africa", color: '#1f7a4d', charge: 'crescent', hp2: 10, hp4: 11, style: "Camels, caravans, medicine", deck: 'A4 AM1 L3 LG1 K1 W2 WH1 H2 HH2 HD1 C1 G1 GD1 S1 +caravan +baghdad' },
+  persians: { name: "Persians", group: "Middle East & Africa", color: '#6b2d8f', charge: 'sun', hp2: 13, hp4: 12, style: "Elephants, camels and the Immortals", deck: 'A4 AA1 AM1 E2 EA1 L2 K1 W2 WH1 H2 HH1 D1 G1 R1 C1 +immortals +sasanian' },
+  turks: { name: "Turks", group: "Middle East & Africa", color: '#a51c30', charge: 'crescent', hp2: 14, hp4: 12, style: "Great bombards, Janissaries, gunpowder", deck: 'A4 AA1 AM2 F2 FF1 L1 K1 W2 WH1 H2 D1 G2 R2 +urban +janissary' },
+  malians: { name: "Malians", group: "Middle East & Africa", color: '#c08a1e', charge: 'disc', hp2: 10, hp4: 11, style: "Gold, mercenaries, camels", deck: 'A4 AM2 L2 LG1 G2 GG1 W2 WH1 H2 HH1 D1 S1 K1 AA1 +mansa +sankore' },
+  ethiopians: { name: "Ethiopians", group: "Middle East & Africa", color: '#2f7d32', charge: 'cross', hp2: 14, hp4: 11, style: "Healing rock churches, Shotel warriors", deck: 'A5 AA1 AM1 E1 L1 B1 W2 WW1 WH1 H2 HH2 HD1 C1 D1 G1 +lalibela +shotel' },
+  mongols: { name: "Mongols", group: "Steppe", color: '#1f6f8b', charge: 'horse', hp2: 14, hp4: 14, style: "Relentless horse archers, feigned retreats", deck: 'A3 AM2 B3 BM3 K1 KM1 MD1 W1 WH1 H2 D1 S1 G1 R1 +arrowrain +feint' },
+  huns: { name: "Huns", group: "Steppe", color: '#7a3b12', charge: 'bow', hp2: 13, hp4: 14, style: "Ravage, plunder, horse archers", deck: 'A4 AA1 AM2 AAM1 B2 BM2 K1 KM1 S2 W1 WH1 H2 D1 R1 +scourge +aquileia' },
+  khitans: { name: "Khitans", group: "Steppe", color: '#4a6b3a', charge: 'bow', hp2: 11, hp4: 12, style: "Rich dual courts, nomad camps", deck: 'A4 AM1 B2 BM2 K2 KM1 W2 WH1 H2 HH1 D1 G2 R1 +twocourts +ordo' },
+  britons: { name: "Britons", group: "Europe", color: '#9b1c1c', charge: 'tower', hp2: 14, hp4: 14, style: "Longbows that shoot over walls", deck: 'A3 AM1 B4 BB2 AD1 K1 W2 WW1 WH1 H2 HH1 D1 G1 R1 +longbow +charter' },
+  celts: { name: "Celts", group: "Europe", color: '#1d6b45', charge: 'knot', hp2: 11, hp4: 15, style: "Frenzied infantry, ambushes", deck: 'A5 AA3 AM2 AAM1 AD1 AH1 W2 WH1 H2 HH1 D1 S1 R1 +woad +ambush' },
+  franks: { name: "Franks", group: "Europe", color: '#1f4e9c', charge: 'fleur', hp2: 9, hp4: 13, style: "Knights and castles", deck: 'A4 AA1 AM1 K3 KK1 KM1 W2 WW1 WH1 H2 HH1 C1 D1 G1 R1 +paladin +charlemagne' },
+  vikings: { name: "Vikings", group: "Europe", color: '#33506b', charge: 'ship', hp2: 11, hp4: 14, style: "Longship raids, berserkers", deck: 'A4 AA2 AM2 AAM1 N3 NM1 S1 W2 WH1 H2 HH1 D1 G1 +berserk +lindisfarne' },
+  teutons: { name: "Teutons", group: "Europe", color: '#2d2d2d', charge: 'cross', hp2: 14, hp4: 12, style: "Spiked walls, heavy knights", deck: 'A3 AA2 K2 KK1 W3 WW2 WWW1 WH1 H2 HH1 C1 D1 R1 G1 +teutonic +marienburg' },
+  goths: { name: "Goths", group: "Europe", color: '#5b4636', charge: 'axe', hp2: 11, hp4: 14, style: "Human waves, the Sack of Rome", deck: 'A5 AA2 AM3 AAM1 MM1 AD1 W2 WH1 H3 D1 S1 R1 +horde +sackrome' },
+  spanish: { name: "Spanish", group: "Europe", color: '#b45309', charge: 'tower', hp2: 13, hp4: 13, style: "Conquistadors, gold, Reconquista", deck: 'A3 AA1 AM1 AH1 K2 KM1 B1 W2 WW1 WH1 H2 C1 D1 G2 GD1 R1 +conquist +reconq' },
+  portuguese: { name: "Portuguese", group: "Europe", color: '#0e5e6f', charge: 'quinas', hp2: 10, hp4: 12, style: "Caravels and sea trade", deck: 'A3 AA1 AM2 N2 NM1 B1 W2 WH1 H2 HH1 D1 MD1 G2 BB1 FF1 +caravel +indiaroute' },
+  byzantines: { name: "Byzantines", group: "Europe", color: '#5b2a86', charge: 'cross', hp2: 15, hp4: 13, style: "Theodosian Walls, Greek fire, cataphracts", deck: 'A3 AA1 AM1 K2 W3 WW2 WH1 H2 HH2 HD1 C1 D1 G1 R1 +theodosius +greekfire' },
+  aztecs: { name: "Aztecs", group: "Americas", color: '#0f766e', charge: 'eagle', hp2: 10, hp4: 14, style: "Sacrifice and Eagle warriors", deck: 'A4 AA2 AM1 AAM1 Y3 YM1 B1 S1 W1 WH1 H2 HH1 D1 G1 C1 +sacrifice +flowerwar' },
+  mayans: { name: "Mayans", group: "Americas", color: '#2e7d5b', charge: 'pyramid', hp2: 9, hp4: 13, style: "Chichén Itzá and archers", deck: 'A4 AM1 Y2 B2 BB1 W2 WW1 WH1 H2 HH1 D1 DD1 G1 R1 C1 +chichen +calendar' },
+  incas: { name: "Incas", group: "Americas", color: '#c2410c', charge: 'sun', hp2: 15, hp4: 14, style: "Swift Inca roads, stone fortresses", deck: 'A3 AA2 AM2 MD1 B2 BB1 Y1 W2 WW1 WH1 H2 HH1 D1 S1 R1 +incaroad +sacsay' },
+};
+const CIV_ORDER = Object.keys(CIVS);
+const GROUPS = ['East Asia', 'Southeast Asia', 'South Asia', 'Middle East & Africa', 'Steppe', 'Europe', 'Americas'];
+/* the mercenary market: neutral cards anyone can hire with gold */
+const MERCS = [
+  { id: 'genoa', name: "Genoese Crossbowmen", icons: 'BBM', cost: 2, n: 2 },
+  { id: 'crusader', name: "Crusaders", icons: 'KAM', cost: 2, n: 2 },
+  { id: 'engineer', name: "Siege Engineers", icons: 'RWWM', cost: 2, n: 2 },
+  { id: 'trebuchet', name: "Trebuchet", icons: 'RR', cost: 3, n: 1, steps: [{ raze: 1 }, { raze: 1 }] },
+  { id: 'physician', name: "Physician", icons: 'HHHD', cost: 2, n: 2 },
+  { id: 'venetian', name: "Venetian Merchants", icons: 'GGDM', cost: 1, n: 2 },
+  { id: 'varangian', name: "Varangian Guard", icons: 'KKWW', cost: 3, n: 1 },
+  { id: 'cuman', name: "Cuman Horse Archers", icons: 'BBM', cost: 2, n: 2 },
+  { id: 'assassin', name: "Hashashin", icons: 'BBB', cost: 3, n: 1, text: 'Deal 3 damage over the walls.', steps: [{ dmg: 3, pierce: 1 }] },
+  { id: 'envoy', name: "Envoy", icons: 'SSM', cost: 2, n: 1 },
+  { id: 'templar', name: "Knights Templar", icons: 'CKH', cost: 3, n: 1 },
+  { id: 'gunners', name: "Hungarian Gunners", icons: 'FFF', cost: 3, n: 1 },
+  { id: 'warel', name: "Hired Elephants", icons: 'EA', cost: 2, n: 1 },
+  { id: 'bedouin', name: "Bedouin Camels", icons: 'LLM', cost: 2, n: 1 },
+];
+/* events: one per round, the next one is always visible */
+const EVENTS = [
+  { id: 'plague', name: 'Plague', text: 'Everyone loses 1 HP.' },
+  { id: 'harvest', name: 'Harvest', text: 'Everyone heals 1 HP.' },
+  { id: 'silkroad', name: 'Silk Road Open', text: 'Everyone gains 1 gold.' },
+  { id: 'winter', name: 'Harsh Winter', text: 'Every structure loses 1 durability.' },
+  { id: 'fair', name: 'Great Fair', text: 'The market restocks 3 new cards; hiring costs 1 less gold this round.' },
+  { id: 'feast', name: 'Spring Festival', text: 'Everyone draws 1 card.' },
+  { id: 'revolt', name: 'Peasant Revolt', text: 'Whoever has the most HP loses 1 HP.' },
+  { id: 'crusade', name: 'Crusade', text: 'This round every Strike icon deals 1 extra damage.' },
+  { id: 'monsoon', name: 'Monsoon', text: 'No one can build structures this round.' },
+  { id: 'flood', name: 'Flood', text: 'Everyone discards 1 random card.' },
+  { id: 'eclipse', name: 'Eclipse', text: 'Everyone passes 1 random card to the next player.' },
+  { id: 'bells', name: 'Church Bells', text: 'Whoever has the least HP heals 2 HP.' },
+];
+/* relics: pick 1 of 3 at the start */
+const RELICS = {
+  joyeuse: { name: 'Joyeuse', text: 'Your first damaging card each turn deals 1 extra damage.' },
+  grail:   { name: 'Holy Grail', text: 'Your first healing card each turn heals 1 extra HP.' },
+  scone:   { name: 'Stone of Scone', text: 'Your structures get 1 extra durability when built.' },
+  compass: { name: 'Compass', text: 'At the start of your turn, if you hold 1 card or fewer, draw 1 extra card.' },
+  seal:    { name: "Merchant's Seal", text: 'Hiring costs 1 less gold (minimum 1). Start with 1 gold.' },
+  jade:    { name: 'Imperial Jade', text: 'Your max HP is 2 higher.' },
+  horn:    { name: 'War Horn', text: 'While you have 4 HP or less, your attacks deal 1 extra damage.' },
+  banner:  { name: 'Holy Banner', text: 'The first time you drop to 0 HP, rise again with 3 HP.' },
+  shroud:  { name: 'Holy Mantle', text: 'Each round, the first attack against you deals 1 less damage.' },
+  mint:    { name: 'Royal Mint', text: 'Gain 1 gold at the start of each of your turns.' },
+};
+const RELIC_IDS = Object.keys(RELICS);
+
+/* ── Engine: draw 1, play 1; symbols do the rest ── */
+function cardFromIcons(icons) {
+  const steps = []; let wall = 0;
+  for (const ch of icons) { if (ch === 'W') wall++; else for (const s of SYM[ch].steps) steps.push({ ...s }); }
+  return { steps, wall };
+}
+function makeCard(S, base) { return { uid: S.nextUid++, ...base }; }
+function buildDeck(S, civ) {
+  const C = CIVS[civ], out = [];
+  for (const tok of C.deck.split(/\s+/)) {
+    if (tok[0] === '+') {
+      const id = tok.slice(1), U = UNIQUE[id];
+      const fromIcons = U.steps ? { steps: U.steps.map(s => ({ ...s })), wall: U.wall || 0 } : { steps: [], wall: U.wall || 0 };
+      out.push(makeCard(S, { name: U.name, icons: U.icons, text: U.text, civ, unique: id, steps: fromIcons.steps, wall: fromIcons.wall, kind: U.kind || (U.wonder ? 'wonder' : null), wonder: !!U.wonder }));
+    } else {
+      const m = tok.match(/^([A-Z]+)(\d+)$/);
+      for (let k = 0; k < +m[2]; k++) { const c = cardFromIcons(m[1]); out.push(makeCard(S, { name: COMMON_NAMES[m[1]] || SYM[m[1][0]].name, icons: m[1], civ, steps: c.steps, wall: c.wall })); }
+    }
+  }
+  return out;
+}
+function buildMercs(S) {
+  const out = [];
+  for (const M of MERCS) for (let k = 0; k < M.n; k++) {
+    const c = M.steps ? { steps: M.steps.map(s => ({ ...s })), wall: (M.icons.match(/W/g) || []).length } : cardFromIcons(M.icons);
+    out.push(makeCard(S, { name: M.name, icons: M.icons, text: M.text, civ: 'merc', merc: M.id, cost: M.cost, steps: c.steps, wall: c.wall }));
+  }
+  return shuffled(S, out);
+}
+function newPlayer(S, civ, id, ai) {
+  const hp = S.duel ? CIVS[civ].hp2 : CIVS[civ].hp4;
+  return { id, civ, ai: !!ai, hp, maxHP: hp, deck: shuffled(S, buildDeck(S, civ)), hand: [], discard: [], structs: [], gold: 0, relic: null, relicOffer: null,
+    tokens: { camel: 0, immune: false, trap: false }, alive: true, hich: false, bannerUsed: false, shroudRound: 0, stats: { dmg: 0, played: 0, bought: 0, kills: 0 } };
+}
+function newGame(o) {
+  const S = { v: 1, seed: o.seed >>> 0, rs: o.seed >>> 0, nextUid: 1, players: [], turn: 0, round: 1, plays: 0, flags: {}, mod: {}, event: null, eventNext: null, eventDeck: [], mercs: [], market: [], log: [], winner: null, started: false };
+  S.duel = o.civs.length === 2;
+  S.players = o.civs.map((c, i) => newPlayer(S, c, i, o.ai ? o.ai[i] : i > 0));
+  S.mercs = buildMercs(S);
+  S.market = [0, 1, 2].map(() => S.mercs.pop() || null);
+  S.eventDeck = shuffled(S, EVENTS.map(e => e.id));
+  S.eventNext = drawEvent(S);
+  for (const P of S.players) { draw(S, P, START_HAND + (P.id > 0 ? 1 : 0), true); P.relicOffer = shuffled(S, RELIC_IDS).slice(0, 3); }
+  return S;
+}
+function drawEvent(S) { if (!S.eventDeck.length) S.eventDeck = shuffled(S, EVENTS.map(e => e.id)); return S.eventDeck.pop(); }
+const EVENT_BY = Object.fromEntries(EVENTS.map(e => [e.id, e]));
+function chooseRelic(S, pid, id) {
+  const P = S.players[pid];
+  if (P.relic || !P.relicOffer.includes(id)) return false;
+  P.relic = id;
+  if (id === 'jade') { P.maxHP += 2; P.hp += 2; }
+  if (id === 'seal') P.gold += 1;
+  return true;
+}
+function startGame(S) { S.started = true; S.turn = 0; beginTurn(S, true); }
+
+/* ── helpers ── */
+const cur = S => S.players[S.turn];
+const opponents = (S, P) => S.players.filter(X => X.alive && X.id !== P.id);
+const walls = X => X.structs.filter(s => s.kind !== 'wonder');
+const wallTotal = X => walls(X).reduce((a, s) => a + s.dur, 0);
+const hasWalls = X => walls(X).length > 0;
+const wonderOf = X => X.structs.find(s => s.kind === 'wonder');
+function log(S, k, x) { if (S.quiet) return; S.log.push({ k, round: S.round, ...x }); if (S.log.length > 400) S.log.splice(0, 100); }
+function draw(S, P, n, quiet) {
+  let got = 0;
+  for (let k = 0; k < n; k++) {
+    if (!P.deck.length) {
+      if (!P.discard.length) break;
+      P.deck = shuffled(S, P.discard); P.discard = [];
+      if (!quiet) { log(S, 'fatigue', { pid: P.id }); loseHP(S, P, 1, null, null, true); if (!P.alive) return got; }
+    }
+    P.hand.push(P.deck.pop()); got++;
+  }
+  return got;
+}
+function heal(S, P, n) { const before = P.hp; P.hp = Math.min(P.maxHP, P.hp + n); return P.hp - before; }
+function loseHP(S, X, n, ev, by, quiet) {
+  if (n <= 0 || !X.alive) return;
+  X.hp -= n;
+  if (ev) ev.fx.push({ k: 'hp', t: X.id, n: -n });
+  if (by && by !== X) by.stats.dmg += n;
+  if (X.hp <= 0) {
+    if (X.relic === 'banner' && !X.bannerUsed) { X.bannerUsed = true; X.hp = 3; log(S, 'banner', { pid: X.id }); if (ev) ev.fx.push({ k: 'banner', t: X.id }); }
+    else { X.alive = false; X.hp = 0; for (const st of X.structs) X.discard.push(st.card); X.structs = []; if (by && by !== X) by.stats.kills++; log(S, 'out', { pid: X.id, by: by ? by.id : null }); if (ev) ev.fx.push({ k: 'out', t: X.id }); }
+  }
+  if (X.alive && X.hp <= 3 && !X.hich) { X.hich = true; draw(S, X, 2, true); log(S, 'hich', { pid: X.id }); if (ev) ev.fx.push({ k: 'hich', t: X.id }); }
+}
+function destroyStruct(S, X, st, ev) {
+  X.structs = X.structs.filter(s => s !== st);
+  X.discard.push(st.card);
+  if (ev) ev.fx.push({ k: 'razed', t: X.id, name: st.card.name });
+}
+function dealDamage(S, A, X, n, opt, ev) {
+  if (!X || !X.alive || n <= 0) return;
+  if (X.tokens.immune) { ev.fx.push({ k: 'immune', t: X.id }); return; }
+  if (opt.cav && X.tokens.camel > 0) { X.tokens.camel--; ev.fx.push({ k: 'camel', t: X.id }); return; }
+  if (X.relic === 'shroud' && X.shroudRound !== S.round) { X.shroudRound = S.round; n -= 1; ev.fx.push({ k: 'shroud', t: X.id }); if (n <= 0) return; }
+  const trap = X.tokens.trap; if (trap) X.tokens.trap = false;
+  let left = n, thorns = false;
+  const W = wonderOf(X);
+  if (!opt.pierce && W) { const hit = Math.min(W.dur, left); W.dur -= hit; left -= hit; ev.fx.push({ k: 'wonderhit', t: X.id, left: W.dur }); if (W.dur <= 0) destroyStruct(S, X, W, ev); }
+  if (!opt.pierce) {
+    while (left > 0) {
+      const ws = walls(X).sort((a, b) => a.dur - b.dur);
+      if (!ws.length) break;
+      const w = ws[0], hit = Math.min(w.dur, left);
+      w.dur -= hit; left -= hit;
+      if (w.kind === 'thorns') thorns = true;
+      ev.fx.push({ k: 'wall', t: X.id, n: hit });
+      if (w.dur <= 0) destroyStruct(S, X, w, ev);
+    }
+  }
+  if (left > 0) loseHP(S, X, left, ev, A);
+  if (thorns && A.alive) { ev.fx.push({ k: 'thorns', t: A.id }); loseHP(S, A, 1, ev, X); }
+  if (trap && A.alive) { ev.fx.push({ k: 'trap', t: A.id }); loseHP(S, A, 2, ev, X); }
+}
+function razeOne(S, A, T, ev) {
+  if (!T || !T.alive) return;
+  const W = wonderOf(T);
+  if (W) { W.dur -= 2; ev.fx.push({ k: 'wonderhit', t: T.id, left: Math.max(0, W.dur) }); if (W.dur <= 0) destroyStruct(S, T, W, ev); return; }
+  const ws = walls(T).sort((a, b) => b.dur - a.dur);
+  if (!ws.length) return;
+  const w = ws[0];
+  if (w.kind === 'fortress' && w.dur > 1) { w.dur--; ev.fx.push({ k: 'wall', t: T.id, n: 1 }); return; }
+  destroyStruct(S, T, w, ev);
+}
+
+/* ── playing ── */
+const stepNeedsTarget = s => (s.dmg && !s.all) || s.raze || (s.steal && !s.all) || s.convert;
+const needsTarget = card => card.steps.some(stepNeedsTarget);
+function resolveStep(S, A, s, T, ev) {
+  if (!A.alive) return;
+  if (s.dmg) {
+    const xs = s.all ? opponents(S, A) : (T && T.alive ? [T] : []);
+    for (const X of xs) {
+      let n = s.dmg;
+      if (s.basic && S.mod.crusade) n++;
+      if ((s.samurai || s.eagle) && !hasWalls(X)) n++;
+      if (A.relic === 'joyeuse' && !S.flags.joy) { n++; S.flags.joy = true; }
+      if (A.relic === 'horn' && A.hp <= 4) n++;
+      dealDamage(S, A, X, n, { pierce: !!s.pierce, cav: !!s.cav }, ev);
+    }
+  }
+  if (s.heal) { let n = s.heal; if (A.relic === 'grail' && !S.flags.grail) { n++; S.flags.grail = true; } const h = heal(S, A, n); if (h) ev.fx.push({ k: 'hp', t: A.id, n: h }); }
+  if (s.plays) S.plays += s.plays;
+  if (s.draw) draw(S, A, s.draw);
+  if (s.gold) { A.gold += s.gold; ev.fx.push({ k: 'gold', t: A.id, n: s.gold }); }
+  if (s.raze) for (let k = 0; k < s.raze; k++) { if (!T || (!T.structs.length)) break; razeOne(S, A, T, ev); }
+  if (s.steal) for (const X of (s.all ? opponents(S, A) : T ? [T] : [])) for (let k = 0; k < s.steal; k++) { if (!X.hand.length) break; const c = X.hand.splice(Math.floor(rnd(S) * X.hand.length), 1)[0]; A.hand.push(c); ev.fx.push({ k: 'steal', t: X.id, by: A.id }); }
+  if (s.convert && T) { const ws = walls(T).sort((a, b) => b.dur - a.dur); if (ws.length) { const w = ws[0]; T.structs = T.structs.filter(x => x !== w); A.structs.push(w); ev.fx.push({ k: 'convert', t: T.id, by: A.id, name: w.card.name }); } }
+  if (s.token === 'camel') A.tokens.camel++;
+  if (s.token === 'immune') A.tokens.immune = true;
+  if (s.token === 'trap') A.tokens.trap = true;
+  if (s.self) loseHP(S, A, s.self, ev, null);
+  if (s.discard) for (const X of opponents(S, A)) if (X.hand.length) { X.discard.push(X.hand.splice(Math.floor(rnd(S) * X.hand.length), 1)[0]); ev.fx.push({ k: 'discard', t: X.id }); }
+  if (s.buyFree) S.flags.buyFree = true;
+  if (s.fortify) for (const w of walls(A)) w.dur++;
+}
+function playCard(S, pid, uid, tid) {
+  if (S.winner != null || S.turn !== pid || S.plays <= 0) return null;
+  const A = S.players[pid], i = A.hand.findIndex(c => c.uid === uid);
+  if (i < 0) return null;
+  const card = A.hand.splice(i, 1)[0];
+  let T = tid != null ? S.players[tid] : null;
+  if (needsTarget(card) && (!T || !T.alive || T === A)) { const o = opponents(S, A); T = o.length ? o[0] : null; }
+  S.plays--; A.stats.played++;
+  const ev = { k: 'play', pid, card, target: T ? T.id : null, fx: [] };
+  for (const s of card.steps) resolveStep(S, A, s, T, ev);
+  if (A.alive && (card.wall > 0 || card.wonder)) {
+    if (S.mod.monsoon) { A.discard.push(card); ev.fx.push({ k: 'rained', t: A.id }); }
+    else if (card.wonder) { const dur = 3 + opponents(S, A).length; A.structs.push({ card, kind: 'wonder', dur, cap: dur, age: 0 }); }
+    else { const dur = card.wall + (A.relic === 'scone' ? 1 : 0); A.structs.push({ card, kind: card.kind || 'wall', dur, cap: dur + 1 }); }
+  } else A.discard.push(card);
+  log(S, 'play', { pid, card: card.name, target: ev.target, fx: ev.fx.slice(0, 12) });
+  checkWinner(S);
+  return ev;
+}
+function marketCost(S, P, card) {
+  if (!card) return 99;
+  if (S.flags.buyFree) return 0;
+  let c = card.cost - (S.mod.fair ? 1 : 0) - (P.relic === 'seal' ? 1 : 0);
+  return Math.max(1, c);
+}
+function buy(S, pid, idx) {
+  const P = S.players[pid], card = S.market[idx];
+  if (S.turn !== pid || S.flags.bought || !card || S.winner != null) return false;
+  const cost = marketCost(S, P, card);
+  if (P.gold < cost) return false;
+  P.gold -= cost; S.flags.bought = true; S.flags.buyFree = false; P.stats.bought++;
+  P.hand.push(card);
+  S.market[idx] = S.mercs.pop() || null;
+  log(S, 'buy', { pid, card: card.name, cost });
+  return true;
+}
+function checkWinner(S) {
+  const alive = S.players.filter(p => p.alive);
+  if (alive.length === 1) S.winner = alive[0].id;
+  else if (!alive.length) S.winner = -1;
+}
+function beginTurn(S, first) {
+  const P = cur(S);
+  P.tokens.immune = false; P.tokens.trap = false;
+  S.plays = 1; S.flags = {};
+  for (const st of P.structs.slice()) {
+    if (st.kind === 'wonder') { st.age++; if (st.age >= 3) { S.winner = P.id; S.wonderWin = true; log(S, 'wonder', { pid: P.id, name: st.card.name }); return; } }
+    if (st.kind === 'regen' && st.dur < st.cap) st.dur++;
+    if (st.kind === 'sacred') heal(S, P, 1);
+  }
+  if (P.relic === 'mint') P.gold++;
+  if (!first) draw(S, P, P.hand.length ? 1 : 2);
+  if (P.relic === 'compass' && P.hand.length <= 1) draw(S, P, 1);
+  checkWinner(S);
+}
+function endTurn(S) {
+  if (S.winner != null) return;
+  const n = S.players.length;
+  let i = S.turn, wrapped = false;
+  do { i = (i + 1) % n; if (i === 0) wrapped = true; } while (!S.players[i].alive);
+  S.turn = i;
+  if (wrapped) { S.round++; startRound(S); if (S.winner != null) return; }
+  if (S.round > 40) { const alive = S.players.filter(p => p.alive).sort((a, b) => b.hp - a.hp); S.winner = alive[0].id; S.timeUp = true; return; }
+  if (!S.players[S.turn].alive) { endTurn(S); return; }
+  beginTurn(S, false);
+}
+function startRound(S) {
+  S.mod = {};
+  S.event = S.eventNext; S.eventNext = drawEvent(S);
+  const alive = S.players.filter(p => p.alive), ev = { k: 'event', fx: [] };
+  if (S.round >= 16) { for (const P of alive) loseHP(S, P, 1, ev, null); log(S, 'attrition', {}); checkWinner(S); if (S.winner != null) return; }
+  switch (S.event) {
+    case 'plague': for (const P of alive) loseHP(S, P, 1, ev, null); break;
+    case 'harvest': for (const P of alive) heal(S, P, 1); break;
+    case 'silkroad': for (const P of alive) P.gold++; break;
+    case 'winter': for (const P of alive) for (const w of walls(P)) { w.dur--; if (w.dur <= 0) destroyStruct(S, P, w, ev); } break;
+    case 'fair': for (let k = 0; k < 3; k++) { if (S.market[k]) S.mercs.unshift(S.market[k]); S.market[k] = S.mercs.pop() || null; } S.mod.fair = true; break;
+    case 'feast': for (const P of alive) draw(S, P, 1); break;
+    case 'revolt': { const top = Math.max(...alive.map(p => p.hp)); for (const P of alive) if (P.hp === top) loseHP(S, P, 1, ev, null); break; }
+    case 'crusade': S.mod.crusade = true; break;
+    case 'monsoon': S.mod.monsoon = true; break;
+    case 'flood': for (const P of alive) if (P.hand.length) P.discard.push(P.hand.splice(Math.floor(rnd(S) * P.hand.length), 1)[0]); break;
+    case 'eclipse': { const gifts = alive.map(P => P.hand.length ? P.hand.splice(Math.floor(rnd(S) * P.hand.length), 1)[0] : null); alive.forEach((P, k) => { const g = gifts[(k - 1 + alive.length) % alive.length]; if (g) P.hand.push(g); }); break; }
+    case 'bells': { const low = Math.min(...alive.map(p => p.hp)); for (const P of alive) if (P.hp === low) heal(S, P, 2); break; }
+  }
+  log(S, 'event', { id: S.event, fx: ev.fx });
+  checkWinner(S);
+}
+/* readable text for any card */
+const SYM_TXT = {
+  A: n => `Deal ${n} damage.`, H: n => `Heal ${n} HP.`, M: n => (n === 1 ? 'Play another card.' : `Play ${n} more cards.`), D: n => (n === 1 ? 'Draw 1 card.' : `Draw ${n} cards.`), G: n => `Gain ${n} gold.`,
+  R: n => (n === 1 ? "Destroy the opponent's biggest structure." : `Destroy ${n} of the opponent's structures.`), S: n => (n === 1 ? 'Steal 1 random card from an opponent.' : `Steal ${n} random cards from an opponent.`),
+  C: () => "Convert the opponent's biggest structure to your side.", K: n => `Cavalry: deal ${2 * n} damage (camels block it).`,
+  E: n => (n === 1 ? 'Elephant: destroy a structure, then deal 1 damage.' : `Elephants: destroy ${n} structures and deal ${n} damage.`),
+  L: n => `Deal ${n} damage and set up a camel guard: the next cavalry attack on you is cancelled.`, B: n => `Deal ${n} damage over the walls.`,
+  F: n => (n === 1 ? 'Deal 1 damage to every opponent.' : `Deal 1 damage to every opponent, ${n} times.`),
+  Y: n => (n === 1 ? 'Deal 1 damage, or 2 damage if the opponent has no walls.' : `Deal ${n} damage, 1 extra damage per hit if the opponent has no walls.`),
+  N: n => `Raid: steal ${n} card${n > 1 ? 's' : ''}, then deal ${n} damage.`,
+};
+function cardText(card) {
+  if (card.text) return card.text;
+  const cnt = {};
+  for (const ch of card.icons) cnt[ch] = (cnt[ch] || 0) + 1;
+  const parts = Object.keys(cnt).filter(ch => ch !== 'W').map(ch => SYM_TXT[ch](cnt[ch]));
+  if (cnt.W) parts.push(`Stays in play as a structure with ${cnt.W} durability.`);
+  return parts.join(' ');
+}
+
+/* ── AI: one-ply card evaluation with sensible targeting ── */
+function strength(X) { return (X.hp / X.maxHP) * 10 + wallTotal(X) * 0.6 + (wonderOf(X) ? 5 : 0); }
+function threatOf(S, P, X, leader) {
+  let t = 1;
+  const opp = opponents(S, P);
+  if (opp.length > 1) { const avg = opp.reduce((a, o) => a + strength(o), 0) / opp.length; t *= 1 + clamp((strength(X) - avg) / Math.max(4, avg), -0.3, 0.4); }
+  else if (X === leader) t *= 1.15;
+  if (X.hp <= 3) t *= 1.4;
+  const W = wonderOf(X); if (W) t *= 1.6;
+  return t;
+}
+function cardValue(S, P, card, T) {
+  const opp = opponents(S, P);
+  if (!opp.length) return 0;
+  const leader = opp.reduce((a, b) => (b.hp + wallTotal(b) > a.hp + wallTotal(a) ? b : a));
+  let v = 0;
+  for (const s of card.steps) {
+    if (s.dmg) {
+      const xs = s.all ? opp : T ? [T] : [];
+      for (const X of xs) {
+        let n = s.dmg + (s.basic && S.mod.crusade ? 1 : 0) + ((s.samurai || s.eagle) && !hasWalls(X) ? 1 : 0) + (P.relic === 'horn' && P.hp <= 4 ? 1 : 0) + (P.relic === 'joyeuse' && !S.flags.joy ? 1 : 0);
+        if (X.tokens.immune) continue;
+        if (s.cav && X.tokens.camel) { v += 0.3; continue; }
+        const W = !s.pierce && wonderOf(X), toWonder = W ? Math.min(n, W.dur) : 0;
+        const wt = s.pierce ? 0 : wallTotal(X), toWall = Math.min(n - toWonder, wt), toHP = n - toWonder - toWall;
+        let val = toHP * threatOf(S, P, X, leader) + toWall * 0.55 + toWonder * (2 + W && W.age >= 2 ? 3 : 2) + (W && toWonder >= W.dur ? 6 : 0);
+        if (toHP >= X.hp && !(X.relic === 'banner' && !X.bannerUsed)) val += 7;
+        if (X.tokens.trap) val -= 2;
+        if (walls(X).some(w => w.kind === 'thorns') && !s.pierce) val -= 0.6;
+        v += val;
+      }
+    }
+    if (s.heal) v += Math.min(s.heal, P.maxHP - P.hp) * (P.hp <= 4 ? 1.5 : 0.75);
+    if (s.plays) v += P.hand.length > 1 ? 0.9 * s.plays : 0;
+    if (s.draw) v += 0.6 * s.draw * (P.hand.length > 5 ? 0.4 : 1);
+    if (s.gold) { const cheap = Math.min(...S.market.filter(Boolean).map(c => marketCost(S, P, c)), 9); v += 0.45 * s.gold + (P.gold < cheap && P.gold + s.gold >= cheap ? 0.4 : 0); }
+    if (s.raze && T) { const W = wonderOf(T); if (W) v += 9 * s.raze; else { const ws = walls(T).sort((a, b) => b.dur - a.dur); v += ws.length ? ws.slice(0, s.raze).reduce((a, w) => a + 0.75 * w.dur, 0) : -0.2; } }
+    if (s.steal) for (const X of (s.all ? opp : T ? [T] : [])) v += Math.min(s.steal, X.hand.length) * 0.8;
+    if (s.convert && T) { const ws = walls(T).sort((a, b) => b.dur - a.dur); v += ws.length ? 1.3 * ws[0].dur : -0.2; }
+    if (s.token === 'camel') v += opp.some(X => /K/.test(CIVS[X.civ].deck)) ? 0.8 : 0.35;
+    if (s.token === 'immune') v += 1.3 + (P.hp <= 4 ? 2 : 0);
+    if (s.token === 'trap') v += P.tokens.trap ? 0 : 1.4;
+    if (s.self) v -= s.self * (P.hp <= 3 ? 3 : P.hp <= 5 ? 1.5 : 0.8);
+    if (s.discard) v += 0.5 * opp.filter(X => X.hand.length).length;
+    if (s.buyFree) v += S.market.some(c => c && c.cost >= 2) ? 1.3 : 0.3;
+    if (s.fortify) v += 0.6 * walls(P).length;
+  }
+  if (card.wall && !S.mod.monsoon) v += card.wall * 0.8 * (walls(P).length >= 3 ? 0.6 : 1) + ({ regen: 0.8, sacred: 1.6, thorns: 0.7, fortress: 0.6 }[card.kind] || 0);
+  if (card.wonder && !S.mod.monsoon) v += wonderOf(P) ? -1 : 4 - opp.length * 0.5;
+  // answer an enemy wonder before anything else
+  if (opp.some(X => wonderOf(X)) && !card.steps.some(s => s.raze)) v -= 2;
+  return v;
+}
+function bestPlay(S, P) {
+  let best = null;
+  for (const card of P.hand) {
+    const targets = needsTarget(card) ? opponents(S, P) : [null];
+    for (const T of targets) {
+      const v = cardValue(S, P, card, T) + rnd(S) * 0.15;
+      if (!best || v > best.v) best = { card, target: T ? T.id : null, v };
+    }
+  }
+  return best;
+}
+function aiBuy(S, P) {
+  if (S.flags.bought) return null;
+  let best = null;
+  S.market.forEach((card, i) => {
+    if (!card) return;
+    const cost = marketCost(S, P, card);
+    if (P.gold < cost) return;
+    const targets = needsTarget(card) ? opponents(S, P) : [null];
+    const v = Math.max(...targets.map(T => cardValue(S, P, card, T))) - cost * 0.55;
+    if (v > 0.6 && (!best || v > best.v)) best = { i, v };
+  });
+  return best ? best.i : null;
+}
+function aiRelic(S, P) {
+  const deck = CIVS[P.civ].deck;
+  const count = re => (deck.match(re) || []).length;
+  const score = {
+    joyeuse: 2 + count(/A/g) * 0.1, grail: 1 + count(/H/g) * 0.35, scone: 1 + count(/W/g) * 0.25, compass: 1.8 + count(/D/g) * 0.1,
+    seal: 1 + count(/G/g) * 0.4, jade: 2.6, horn: 2.2, banner: 2.7, shroud: 2.3, mint: 1.2 + count(/G/g) * 0.3,
+  };
+  return P.relicOffer.slice().sort((a, b) => score[b] - score[a])[0];
+}
+function aiAct(S, pid) {
+  const P = S.players[pid];
+  const b = aiBuy(S, P);
+  if (b != null) return { kind: 'buy', idx: b };
+  if (S.plays > 0 && P.hand.length) { const best = bestPlay(S, P); if (best) return { kind: 'play', uid: best.card.uid, target: best.target }; }
+  return { kind: 'end' };
+}
+
+/* ── Art drawn in code: symbol badges, heraldic crests ── */
+const SYM_STYLE = {
+  A: ['#b3261e', '<path d="M6 18L16 8M14 6l4 0 0 4M5 15l4 4M7 17l-2 2" stroke="#fff" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>'],
+  W: ['#56657d', '<path d="M5 19V9h3v3h2.5V9h3v3H16V9h3v10z" fill="#fff"/>'],
+  H: ['#2e7d32', '<path d="M12 5v14M5 12h14" stroke="#fff" stroke-width="3.4" stroke-linecap="round"/>'],
+  M: ['#6a3fb0', '<path d="M13.5 3L6 13.5h5L9.5 21 18 10h-5z" fill="#fff"/>'],
+  D: ['#3f51b5', '<rect x="7" y="5" width="10" height="14" rx="1.6" fill="none" stroke="#fff" stroke-width="2"/><path d="M12 9v6M9 12h6" stroke="#fff" stroke-width="2" stroke-linecap="round"/>'],
+  G: ['#b8860b', '<circle cx="12" cy="12" r="6.6" fill="none" stroke="#fff" stroke-width="2.2"/><path d="M12 8.5v7M10 10.5h3.4M10 13.5h4" stroke="#fff" stroke-width="1.6" stroke-linecap="round"/>'],
+  R: ['#7a4a20', '<path d="M5 15l7-7 3 3-7 7zM13 7l2-2 4 4-2 2" fill="#fff"/><path d="M4 20h8" stroke="#fff" stroke-width="2" stroke-linecap="round"/>'],
+  S: ['#a3306d', '<path d="M8 19v-6l-2-3 1.5-1 2.5 2.5V5.5a1.2 1.2 0 0 1 2.4 0V11V4.5a1.2 1.2 0 0 1 2.4 0V11V5.5a1.2 1.2 0 0 1 2.4 0V12c0 4-2 7-5 7z" fill="#fff"/>'],
+  C: ['#6d5bb0', '<circle cx="12" cy="7" r="3.2" fill="none" stroke="#fff" stroke-width="1.8"/><path d="M12 10.5V20M8.5 13.5h7" stroke="#fff" stroke-width="2.2" stroke-linecap="round"/>'],
+  K: ['#9b1c1c', '<path d="M6 20c.5-5 2.5-8 5.5-9l1.5-5 2 2 3-1-1 4 2.5 3-1.8 1.8-2.7-1.8c-1 3-2 5-4.5 6z" fill="#fff"/>'],
+  E: ['#55626b', '<path d="M4 15c0-5 3.5-8 8-8 4 0 7 2.5 7 6v6h-2.5v-3.5h-2V19H12v-3.5c-1 .6-2.6.7-3.6.2-.4 2-.2 3.3.8 4.3-2.5 0-4.7-1.8-5.2-5z" fill="#fff"/><circle cx="16" cy="11" r=".9" fill="#55626b"/>'],
+  L: ['#b07a3c', '<path d="M5 19l1-6c0-2 1.5-3 3-3l1.5-2.5L12 10h1l1.5-3 2 .5 1.5 2 1.5 1-1.5 1-1-.5L16 13v6h-1.6v-4.5l-2 .5-1.4 4H9.5l.6-4.6L7 14.5 6.6 19z" fill="#fff"/>'],
+  B: ['#2f6b3a', '<path d="M7 4c7 3 7 13 0 16" fill="none" stroke="#fff" stroke-width="2"/><path d="M7 4v16" stroke="#fff" stroke-width="1"/><path d="M5 12h14M16.5 9.5L19 12l-2.5 2.5" fill="none" stroke="#fff" stroke-width="1.9" stroke-linecap="round"/>'],
+  F: ['#d9541a', '<path d="M12 3.5c3.5 3 6 6 6 9.8a6 6 0 0 1-12 0c0-1.9.9-3.5 2-4.8.1 1.6 1 2.8 2.3 3-.5-2.5.3-5.3 1.7-8z" fill="#fff"/>'],
+  Y: ['#0f766e', '<path d="M3 10l6 1.5L12 6l3 5.5L21 10l-4 4.5 1 4-6-2.5-6 2.5 1-4z" fill="#fff"/>'],
+  N: ['#1f4e79', '<path d="M12 4v11M12 4l6 9h-6M4 16h16l-2.5 3.5h-11z" fill="#fff" stroke="#fff" stroke-width="1.2" stroke-linejoin="round"/>'],
+};
+function symBadge(ch, size = 30) {
+  const [bg, glyph] = SYM_STYLE[ch];
+  return `<svg viewBox="0 0 24 24" width="${size}" height="${size}" class="sym" aria-label="${SYM[ch].name}" role="img"><circle cx="12" cy="12" r="11.4" fill="${bg}" stroke="rgba(0,0,0,.35)" stroke-width="1"/><circle cx="12" cy="12" r="10" fill="none" stroke="rgba(255,255,255,.35)" stroke-width=".8"/>${glyph}</svg>`;
+}
+const CHARGES = {
+  sun: '<circle cx="20" cy="17" r="5.5" fill="#f2c94c"/>' + Array.from({ length: 10 }, (_, i) => { const a = i * Math.PI / 5; return `<path d="M${20 + Math.cos(a) * 7.5} ${17 + Math.sin(a) * 7.5}L${20 + Math.cos(a) * 10} ${17 + Math.sin(a) * 10}" stroke="#f2c94c" stroke-width="1.8" stroke-linecap="round"/>`; }).join(''),
+  disc: '<circle cx="20" cy="17" r="7" fill="#fff"/><circle cx="20" cy="17" r="4.2" fill="currentColor"/>',
+  knot: '<path d="M14 11c6 0 6 12 12 12M26 11c-6 0-6 12-12 12M13 17h14" fill="none" stroke="#f2e6c9" stroke-width="2.2"/>',
+  axe: '<path d="M20 8v20" stroke="#e8e2d0" stroke-width="2.2"/><path d="M20 10c-6 0-8 4-8 7 3-1 5-1 8 1z" fill="#e8e2d0"/>',
+  star: '<path d="M20 7l2.6 7.4H30l-6 4.6 2.3 7.3L20 22l-6.3 4.3 2.3-7.3-6-4.6h7.4z" fill="#f2c94c"/>',
+  temple: '<path d="M11 26h18M13 26V18h14v8M15 18v-4h10v4M17 14v-3h6v3M20 11V7" stroke="#f2e6c9" stroke-width="1.8" fill="none"/>',
+  wheel: '<circle cx="20" cy="17" r="7.5" fill="none" stroke="#f2e6c9" stroke-width="1.8"/>' + Array.from({ length: 8 }, (_, i) => { const a = i * Math.PI / 4; return `<path d="M20 17L${20 + Math.cos(a) * 7.5} ${17 + Math.sin(a) * 7.5}" stroke="#f2e6c9" stroke-width="1.3"/>`; }).join(''),
+  crescent: '<path d="M23 9a8.5 8.5 0 1 0 0 16 7 7 0 1 1 0-16z" fill="#f2e6c9"/><path d="M26.5 14l.9 2.4 2.5.1-2 1.5.7 2.4-2.1-1.4-2.1 1.4.7-2.4-2-1.5 2.5-.1z" fill="#f2e6c9"/>',
+  cross: '<path d="M20 8v20M12 15h16" stroke="#f2e6c9" stroke-width="3.4"/>',
+  horse: '<path d="M13 27c.6-6 3-9.5 6.4-10.5l1.6-5.5 2.2 2.2 3.4-1.1-1.1 4.5 3 3.3-2 2-3.1-2c-1.1 3.4-2.3 5.6-5 7z" fill="#f2e6c9"/>',
+  bow: '<path d="M15 8c9 4 9 15 0 19" fill="none" stroke="#f2e6c9" stroke-width="2.2"/><path d="M15 8v19M11 17.5h17" stroke="#f2e6c9" stroke-width="1.6"/>',
+  tower: '<path d="M14 27V13h2v-3h2.5v3h3v-3H24v3h2v14z" fill="#f2e6c9"/><path d="M18.6 27v-5h2.8v5" fill="currentColor"/>',
+  fleur: '<path d="M20 7c-3 3-3 7 0 10 3-3 3-7 0-10zM20 17c-2-4-8-5-9-1 2-1 5 0 6 3M20 17c2-4 8-5 9-1-2-1-5 0-6 3M15 21h10M20 17v11" fill="#f2c94c" stroke="#f2c94c" stroke-width="1.1" stroke-linejoin="round"/>',
+  ship: '<path d="M20 8v12M20 8l7 10h-7M11 21h18l-3 5H14z" fill="#f2e6c9"/>',
+  quinas: [[20, 11], [15, 17], [20, 17], [25, 17], [20, 23]].map(([x, y]) => `<circle cx="${x}" cy="${y}" r="2.4" fill="#f2e6c9"/>`).join(''),
+  eagle: '<path d="M10 14l7 1.6L20 10l3 5.6 7-1.6-4.8 5 1.2 4.8-6.4-2.8-6.4 2.8 1.2-4.8z" fill="#f2e6c9"/>',
+  pyramid: '<path d="M10 27h20M12 27l3-4h10l3 4M15 23l2-4h6l2 4M17 19l2-4h2l2 4" fill="none" stroke="#f2e6c9" stroke-width="1.6"/>',
+};
+function crest(civ, size = 44) {
+  const C = CIVS[civ];
+  const shield = 'M5 4h30v15c0 10-7.5 15.5-15 18.5C12.5 34.5 5 29 5 19z';
+  return `<svg viewBox="0 0 40 40" width="${size}" height="${size}" class="crest" style="color:${C.color}" aria-hidden="true"><path d="${shield}" fill="${C.color}" stroke="#1d1209" stroke-width="1.6"/><path d="M7 6h26v6H7z" fill="rgba(255,255,255,.14)"/>${CHARGES[C.charge] || ''}</svg>`;
+}
+function mercCrest(size = 44) {
+  return `<svg viewBox="0 0 40 40" width="${size}" height="${size}" class="crest" aria-hidden="true"><path d="M5 4h30v15c0 10-7.5 15.5-15 18.5C12.5 34.5 5 29 5 19z" fill="#6b5a3a" stroke="#1d1209" stroke-width="1.6"/><circle cx="20" cy="17" r="7" fill="#e6c25a" stroke="#8a6a1a"/><path d="M20 12.5v9M17.5 15h4.5M17.5 18.5h5" stroke="#6b4a10" stroke-width="1.5"/></svg>`;
+}
+
+/* ── Sounds: drums, horns and steel, synthesized with WebAudio ── */
+const SFX = {
+  ctx: null, on: true,
+  init() { if (this.ctx) { if (this.ctx.state === 'suspended') this.ctx.resume(); return; } try { const AC = window.AudioContext || window.webkitAudioContext; if (AC) this.ctx = new AC(); } catch (e) { } },
+  tone(f, t0, dur, type = 'sine', vol = 0.12, slide = 0) {
+    const c = this.ctx, o = c.createOscillator(), g = c.createGain(), t = c.currentTime + t0;
+    o.type = type; o.frequency.setValueAtTime(f, t); if (slide) o.frequency.exponentialRampToValueAtTime(Math.max(30, f + slide), t + dur);
+    g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(vol, t + 0.01); g.gain.exponentialRampToValueAtTime(0.0008, t + dur);
+    o.connect(g); g.connect(c.destination); o.start(t); o.stop(t + dur + 0.02);
+  },
+  noise(t0, dur, vol = 0.1, freq = 900, type = 'highpass') {
+    const c = this.ctx, n = Math.floor(c.sampleRate * dur), b = c.createBuffer(1, n, c.sampleRate), d = b.getChannelData(0);
+    for (let i = 0; i < n; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / n, 2);
+    const s = c.createBufferSource(), f = c.createBiquadFilter(), g = c.createGain(), t = c.currentTime + t0;
+    f.type = type; f.frequency.value = freq; g.gain.value = vol; s.buffer = b; s.connect(f); f.connect(g); g.connect(c.destination); s.start(t);
+  },
+  play(name) {
+    if (!this.on) return;
+    this.init(); if (!this.ctx) return;
+    switch (name) {
+      case 'click': this.noise(0, 0.03, 0.05, 2500); break;
+      case 'card': this.noise(0, 0.08, 0.07, 1800); this.tone(660, 0.02, 0.06, 'triangle', 0.04); break;
+      case 'hit': this.noise(0, 0.12, 0.14, 700); this.tone(140, 0, 0.18, 'square', 0.06, -60); break;
+      case 'wall': this.noise(0, 0.25, 0.12, 300, 'lowpass'); this.tone(90, 0, 0.3, 'sine', 0.2, -30); break;
+      case 'heal': [523, 784].forEach((f, i) => this.tone(f, i * 0.07, 0.25, 'sine', 0.07)); break;
+      case 'turn': this.tone(392, 0, 0.18, 'triangle', 0.07); this.tone(523, 0.12, 0.25, 'triangle', 0.07); break;
+      case 'quill': this.noise(0, 0.09, 0.05, 3500); break;
+      case 'coin': [1318, 1760].forEach((f, i) => this.tone(f, i * 0.06, 0.12, 'triangle', 0.06)); break;
+      case 'bad': this.tone(196, 0, 0.18, 'sawtooth', 0.04, -40); break;
+      case 'drum': [0, 0.18, 0.36, 0.48].forEach(t => { this.tone(70, t, 0.22, 'sine', 0.35, -30); this.noise(t, 0.08, 0.08, 400, 'lowpass'); }); break;
+      case 'horn': this.tone(196, 0, 0.9, 'sawtooth', 0.05); this.tone(294, 0.05, 0.85, 'sawtooth', 0.035); this.tone(392, 0.5, 0.6, 'triangle', 0.04); break;
+      case 'clash': for (let i = 0; i < 4; i++) { this.noise(i * 0.09, 0.12, 0.12, 3000); this.tone(1200 + i * 230, i * 0.09, 0.15, 'square', 0.02); } break;
+      case 'age': [262, 330, 392, 523, 659].forEach((f, i) => this.tone(f, i * 0.12, 0.5, 'triangle', 0.08)); this.tone(131, 0, 1.2, 'sawtooth', 0.03); break;
+      case 'win': [392, 523, 659, 784, 1046].forEach((f, i) => this.tone(f, i * 0.14, 0.6, 'triangle', 0.09)); break;
+      case 'lose': [392, 349, 311, 262].forEach((f, i) => this.tone(f, i * 0.28, 0.6, 'triangle', 0.09)); break;
+    }
+  },
+};
+
+/* ── Rendering ── */
+const $ = s => document.querySelector(s);
+const civName = pid => (pid === 0 ? 'You' : CIVS[S.players[pid].civ].name);
+const civObj = pid => (pid === 0 ? 'you' : CIVS[S.players[pid].civ].name);
+/* keyword colours: the same colour as the symbol for that resource, so a long game can be read at a glance */
+const KW_RE = /\b(?:(over the walls)|([Ee]very opponent|[Ee]veryone)|([Pp]lay another card|[Pp]lay \d+ more cards)|(\d+ (?:extra |less )?damage|damage)|(\d+ (?:extra )?HP|max HP|HP|[Hh]eals?)|(\d+ (?:extra |less )?gold|gold)|(\d+ (?:random |extra )?cards?|another card|a random card|a card|cards?)|(\d+ (?:extra )?durability|durability|walls?|structures?|[Ww]onders?)|([Ss]teal|stolen)|([Dd]estroy|destroyed))\b/g;
+const KW_CLS = ['pierce', 'aoe', 'play', 'dmg', 'hp', 'gold', 'card', 'wall', 'steal', 'raze'];
+function kw(text) { return esc(text).replace(KW_RE, (...m) => `<b class="kw k-${KW_CLS[m.slice(1, 11).findIndex(x => x !== undefined)]}">${m[0]}</b>`); }
+function cardHTML(card, o = {}) {
+  const civ = card.civ === 'merc' ? null : CIVS[card.civ];
+  const cls = ['card', card.unique ? 'unique' : '', card.civ === 'merc' ? 'merc' : '', o.cls || ''].join(' ');
+  const syms = [...card.icons].map(ch => symBadge(ch, o.small ? 22 : 28)).join('');
+  return `<div class="${cls}" data-uid="${card.uid || ''}" ${o.attrs || ''} style="--civ:${civ ? civ.color : '#6b5a3a'}">
+    <div class="c-head">${civ ? crest(card.civ, 18) : mercCrest(18)}<span class="c-name">${esc(card.name)}</span></div>
+    <div class="c-syms">${syms}</div>
+    <div class="c-text">${kw(cardText(card))}</div>
+    ${o.cost != null ? `<div class="c-cost${o.afford ? ' ok' : ''}">${o.cost} gold</div>` : ''}${card.unique ? '<div class="c-star" title="Signature card of this civilization">★</div>' : ''}
+  </div>`;
+}
+function structHTML(st) {
+  if (st.kind === 'wonder') return `<div class="st wonder" title="${esc(cardText(st.card))}"><b>${st.dur}</b><span>${esc(st.card.name)}</span><i>${Math.max(0, 3 - st.age)} turns to win</i></div>`;
+  const tag = { regen: 'regrows', sacred: 'heals', thorns: 'spiked', fortress: 'giant stones' }[st.kind] || '';
+  return `<div class="st" title="${esc(st.card.name)}${tag ? ' (' + tag + ')' : ''}">${symBadge('W', 16)}<b>${st.dur}</b><span>${esc(st.card.name)}</span>${tag ? `<i>${tag}</i>` : ''}</div>`;
+}
+function tokensHTML(P) {
+  const t = [];
+  if (P.tokens.camel) t.push(`<span class="tok" title="The next cavalry attack against this player is cancelled">${symBadge('L', 16)} camel guard${P.tokens.camel > 1 ? ' ×' + P.tokens.camel : ''}</span>`);
+  if (P.tokens.immune) t.push('<span class="tok hot" title="Every attack is cancelled until their next turn">Divine Wind</span>');
+  if (P.tokens.trap) t.push('<span class="tok hot" title="The first opponent to deal damage takes 2 damage">Bạch Đằng stakes</span>');
+  return t.join('');
+}
+function seatHTML(P, me) {
+  const C = CIVS[P.civ], turn = S.turn === P.id && S.winner == null;
+  const tgt = UI.targeting && !me && P.alive ? ' targetable' : '';
+  const hpPct = Math.max(0, P.hp / P.maxHP * 100);
+  const backs = me ? '' : `<span class="backs" title="${P.hand.length} cards in hand">${'<i></i>'.repeat(Math.min(P.hand.length, 8))}<em>${P.hand.length}</em></span>`;
+  return `<div class="seat${me ? ' me' : ''}${turn ? ' turn' : ''}${P.alive ? '' : ' out'}${tgt}" id="seat-${P.id}" data-pid="${P.id}" style="--civ:${C.color}">
+    <div class="s-top">${crest(P.civ, me ? 46 : 40)}
+      <div class="s-id"><div class="s-name">${me ? 'You · ' : ''}${esc(C.name)}</div><div class="s-sub">${P.relic ? esc(RELICS[P.relic].name) : ''}</div></div>
+      <div class="s-hp" title="HP"><b>${P.hp}</b><small>/${P.maxHP}<span class="hp-u"> HP</span></small><div class="hpbar"><div style="width:${hpPct}%"></div></div></div>
+    </div>
+    <div class="s-row"><span class="gold" title="Gold">${symBadge('G', 18)}<b>${P.gold}</b></span>${backs}${tokensHTML(P)}${turn ? '<span class="turn-tag">acting</span>' : ''}${P.alive ? '' : '<span class="out-tag">defeated</span>'}</div>
+    <div class="s-structs">${P.structs.map(structHTML).join('') || '<span class="none">No structures</span>'}</div>
+    <div class="floats"></div>
+  </div>`;
+}
+function renderGame() {
+  const me = S.players[0], myTurn = S.turn === 0 && S.winner == null && !UI.busy;
+  const opps = S.players.slice(1);
+  $('#opps').className = 'opps n' + opps.length;
+  $('#opps').innerHTML = opps.map(P => seatHTML(P, false)).join('');
+  $('#mine').innerHTML = seatHTML(me, true);
+  const E = S.event ? EVENT_BY[S.event] : null, N = EVENT_BY[S.eventNext];
+  $('#events').innerHTML = `<div class="ev-now"><small>Event · round ${S.round}</small><b>${E ? esc(E.name) : 'Peace'}</b><p>${E ? kw(E.text) : 'No event yet.'}</p></div>
+    <div class="ev-next"><small>Next round</small><b>${esc(N.name)}</b><p>${kw(N.text)}</p></div>${S.round >= 14 ? `<div class="ev-warn">${S.round >= 16 ? 'The war drags on: everyone loses 1 HP each round' : 'From round 16 everyone loses 1 HP each round'}</div>` : ''}`;
+  const lp = UI.last;
+  $('#arena').innerHTML = lp ? `<div class="played-by">${esc(civName(lp.pid))}${lp.target != null ? ' ▸ ' + esc(civObj(lp.target)) : ''}</div>${cardHTML(lp.card, { cls: 'big pop' })}` : `<div class="arena-hint">${S.turn === 0 ? 'Pick a card from your hand' : ''}</div>`;
+  $('#market').innerHTML = `<h3>Mercenary Market</h3><div class="m-cards">${S.market.map((c, i) => { if (!c) return '<div class="card empty">Sold out</div>'; const cost = marketCost(S, me, c), ok = myTurn && !S.flags.bought && me.gold >= cost; return cardHTML(c, { small: 1, cost, afford: ok, attrs: `data-mi="${i}"`, cls: ok ? 'buyable' : '' }); }).join('')}</div>
+    <p class="m-note">${S.flags.bought && S.turn === 0 ? 'Already hired this turn' : 'Hire 1 card per turn with <b class="kw k-gold">gold</b>; it goes straight to your hand'}${S.mod.fair ? ' · Great Fair: 1 cheaper' : ''}${S.flags.buyFree && S.turn === 0 ? ' · this hire is free' : ''}</p>`;
+  $('#hand').innerHTML = me.hand.map(c => cardHTML(c, { cls: myTurn ? 'playable' + (UI.targeting === c.uid ? ' chosen' : '') : '' })).join('') || '<div class="hand-empty">No cards in hand</div>';
+  const mini = `<span class="me-mini"><b class="kw k-hp">${me.hp}/${me.maxHP} HP</b> · <b class="kw k-gold">${me.gold} gold</b>${walls(me).length ? ` · <b class="kw k-wall">${wallTotal(me)} walls</b>` : ''}</span>`;
+  $('#status').innerHTML = mini + (S.winner != null ? '' : UI.targeting ? 'Choose an opponent to target <button class="btn ghost" id="cancelTarget">Cancel</button>' : myTurn ? `Your turn${S.plays > 1 ? ` · ${S.plays} plays left` : ''}` : `${esc(civName(S.turn))} is playing…`);
+  $('#chron').innerHTML = S.log.slice(-9).reverse().map(e => `<li>${logLine(e)}</li>`).join('');
+}
+function logLine(e) {
+  switch (e.k) {
+    case 'play': return `${esc(civName(e.pid))} ▸ <b>${esc(e.card)}</b>${e.target != null ? ' → ' + esc(civObj(e.target)) : ''}`;
+    case 'buy': return `${esc(civName(e.pid))} hired <b>${esc(e.card)}</b> for <b class="kw k-gold">${e.cost} gold</b>`;
+    case 'event': return `Round ${e.round}: <b>${esc(EVENT_BY[e.id].name)}</b>`;
+    case 'out': return `<b>${esc(civName(e.pid))}</b> ${e.pid === 0 ? 'were' : 'is'} defeated`;
+    case 'hich': return `${esc(civName(e.pid))} in danger: drew 2 extra cards`;
+    case 'banner': return `The Holy Banner raised ${esc(civObj(e.pid))} again`;
+    case 'fatigue': return `${esc(civName(e.pid))} reshuffled the deck: exhausted, −1 HP`;
+    case 'wonder': return `<b>${esc(civName(e.pid))}</b> completed ${esc(e.name)}`;
+    case 'attrition': return 'The war drags on: everyone −1 HP';
+  }
+  return '';
+}
+const FX_TEXT = {
+  hp: f => (f.n < 0 ? ['−' + -f.n, 'dmg'] : ['+' + f.n, 'heal']), wall: f => [`−${f.n} wall`, 'wall'], razed: f => [`${f.name} falls`, 'wall'],
+  camel: () => ['Camels block!', 'info'], immune: () => ['Divine Wind!', 'info'], shroud: () => ['Mantle −1', 'info'], trap: () => ['Stakes!', 'dmg'],
+  thorns: () => ['Spikes!', 'dmg'], steal: () => ['Card stolen', 'info'], convert: f => [`Lost ${f.name}`, 'info'], gold: f => [`+${f.n} gold`, 'gold'],
+  out: () => ['Defeated!', 'dmg big'], hich: () => ['In danger: +2 cards', 'heal'], banner: () => ['Holy Banner!', 'heal'], wonderhit: f => [`Wonder ${f.left}`, 'wall'],
+  discard: () => ['−1 card', 'info'], rained: () => ['Monsoon: no building', 'info'],
+};
+function floatText(pid, text, cls, delay) {
+  setTimeout(() => {
+    const box = document.querySelector(`#seat-${pid} .floats`); if (!box) return;
+    const d = document.createElement('div'); d.className = 'float ' + cls; d.textContent = text; box.appendChild(d);
+    setTimeout(() => d.remove(), 1700);
+  }, delay);
+}
+function showFx(fx) {
+  let t = 0; const snd = new Set();
+  for (const f of fx) {
+    const m = FX_TEXT[f.k]; if (!m) continue;
+    const [text, cls] = m(f);
+    floatText(f.t, text, cls, t); t += 140;
+    if (f.k === 'hp') snd.add(f.n < 0 ? 'hit' : 'heal'); else if (f.k === 'wall' || f.k === 'razed' || f.k === 'wonderhit') snd.add('wall');
+    if (f.k === 'hp' && f.n < 0) { const el = document.querySelector(`#seat-${f.t}`); if (el) { el.classList.remove('shake'); void el.offsetWidth; el.classList.add('shake'); } }
+  }
+  [...snd].forEach((s, i) => setTimeout(() => SFX.play(s), 120 + i * 90));
+}
+function banner(text, sub) {
+  const b = $('#banner'); b.innerHTML = `<b>${esc(text)}</b>${sub ? `<span>${kw(sub)}</span>` : ''}`;
+  b.classList.remove('show'); void b.offsetWidth; b.classList.add('show');
+}
+
+/* ── Flow: setup → relic → turns → end ── */
+let S = null;
+const UI = { n: 2, civ: 'daiviet', targeting: null, busy: false, last: null, round: 1 };
+const STORE = 'civclash.v2';
+const prefs = (() => { try { return JSON.parse(localStorage.getItem(STORE)) || {}; } catch (e) { return {}; } })();
+function savePrefs() { try { localStorage.setItem(STORE, JSON.stringify(prefs)); } catch (e) { } }
+if (prefs.n) UI.n = prefs.n; if (prefs.civ && CIVS[prefs.civ]) UI.civ = prefs.civ; if (prefs.sound === false) SFX.on = false;
+function modal(html) { const m = $('#modal'); m.innerHTML = `<div class="sheet">${html}</div>`; m.classList.remove('hidden'); }
+function closeModal() { $('#modal').classList.add('hidden'); $('#modal').innerHTML = ''; }
+function deckMix(civ) {
+  const cnt = {};
+  for (const c of buildDeck({ nextUid: 1 }, civ)) for (const ch of c.icons) cnt[ch] = (cnt[ch] || 0) + 1;
+  return Object.entries(cnt).sort((a, b) => b[1] - a[1]);
+}
+function renderSetup() {
+  const hp = c => (UI.n === 2 ? CIVS[c].hp2 : CIVS[c].hp4), C = CIVS[UI.civ], rec = (prefs.wins || {})[UI.civ];
+  const uniques = C.deck.split(/\s+/).filter(t => t[0] === '+').map(t => { const id = t.slice(1), U = UNIQUE[id]; return { uid: 0, name: U.name, icons: U.icons, text: U.text, civ: UI.civ, unique: id, steps: [] }; });
+  $('#setup').innerHTML = `<div class="hero"><h1>Medieval Mayhem</h1><p>Every civilization fights with its own deck. Draw 1, play 1: the last realm standing wins.</p></div>
+  <div class="setup-grid">
+    <div class="pick">
+      <div class="seg"><span>Players</span>${[2, 3, 4].map(n => `<button class="${UI.n === n ? 'on' : ''}" data-n="${n}">${n === 2 ? 'Duel' : n + ' players'}</button>`).join('')}</div>
+      ${GROUPS.map(g => `<div class="grp"><h4>${esc(g)}</h4><div class="tiles">${CIV_ORDER.filter(c => CIVS[c].group === g).map(c => `<button class="tile${c === UI.civ ? ' on' : ''}" data-civ="${c}" style="--civ:${CIVS[c].color}" title="${esc(CIVS[c].style)}">${crest(c, 30)}<span>${esc(CIVS[c].name)}</span><em>${hp(c)} HP</em></button>`).join('')}</div></div>`).join('')}
+    </div>
+    <div class="detail" style="--civ:${C.color}">
+      <div class="d-head">${crest(UI.civ, 64)}<div><h2>${esc(C.name)}</h2><p>${esc(C.style)}</p><p class="d-hp">Starting <b class="kw k-hp">${hp(UI.civ)} HP</b> ${UI.n === 2 ? 'in a duel' : 'at a 3–4 player table'}${rec ? ` · won ${rec[0]} of ${rec[1]}` : ''}</p></div></div>
+      <h4>Signature cards</h4><div class="d-uniques">${uniques.map(u => cardHTML(u, { small: 1 })).join('')}</div>
+      <h4>The 24-card deck</h4><div class="d-mix">${deckMix(UI.civ).map(([ch, k]) => `<span title="${esc(SYM[ch].name)}: ${esc(SYM[ch].desc)}">${symBadge(ch, 22)}<b>×${k}</b></span>`).join('')}</div>
+      <p class="d-opp">Opponents: ${UI.n - 1} random civilization${UI.n > 2 ? 's' : ''} played by the computer</p>
+      <div class="d-actions"><button class="btn big" id="go">To battle</button><button class="btn ghost" id="randCiv">Random civ</button></div>
+    </div>
+  </div>`;
+}
+function showScreen(id) { for (const s of ['setup', 'game']) $('#' + s).classList.toggle('hidden', s !== id); }
+function newMatch() {
+  SFX.init();
+  prefs.n = UI.n; prefs.civ = UI.civ; savePrefs();
+  const seed = (Date.now() ^ Math.floor(Math.random() * 1e9)) >>> 0, R = { rs: seed };
+  const others = shuffled(R, CIV_ORDER.filter(c => c !== UI.civ)).slice(0, UI.n - 1);
+  S = newGame({ seed, civs: [UI.civ, ...others], ai: [false, ...others.map(() => true)] });
+  for (const P of S.players.slice(1)) chooseRelic(S, P.id, aiRelic(S, P));
+  UI.last = null; UI.targeting = null; UI.busy = false; UI.round = 1;
+  showScreen('game'); renderGame();
+  const P = S.players[0];
+  modal(`<h2>Choose a relic</h2><p class="muted">Your relic stays with you all game. Three are drawn at random each match.</p><div class="relics">${P.relicOffer.map(id => `<button class="relic" data-relic="${id}"><b>${esc(RELICS[id].name)}</b><span>${kw(RELICS[id].text)}</span></button>`).join('')}</div>
+    <p class="muted small">Opponents: ${S.players.slice(1).map(o => `${esc(CIVS[o.civ].name)} (${esc(RELICS[o.relic].name)})`).join(', ')}</p>`);
+}
+function beginPlay(relic) {
+  chooseRelic(S, 0, relic); closeModal(); startGame(S); renderGame();
+  banner('Round 1', 'You go first; every opponent starts with 1 extra card'); SFX.play('turn');
+  if (window.__auto) setTimeout(autoHuman, 300);
+}
+/* human */
+function handPlay(uid) {
+  if (S.turn !== 0 || UI.busy || S.winner != null) return;
+  const card = S.players[0].hand.find(c => c.uid === uid); if (!card) return;
+  if (needsTarget(card)) {
+    const opps = opponents(S, S.players[0]);
+    if (opps.length > 1) { UI.targeting = UI.targeting === uid ? null : uid; renderGame(); return; }
+    return doPlay(uid, opps.length ? opps[0].id : null);
+  }
+  doPlay(uid, null);
+}
+function doPlay(uid, tid) {
+  const ev = playCard(S, 0, uid, tid);
+  UI.targeting = null;
+  if (!ev) { renderGame(); return; }
+  UI.last = { card: ev.card, pid: 0, target: ev.target };
+  SFX.play('card'); renderGame(); showFx(ev.fx); afterHuman();
+}
+function doBuy(i) {
+  if (S.turn !== 0 || UI.busy) return;
+  const card = S.market[i];
+  if (buy(S, 0, i)) { SFX.play('coin'); renderGame(); floatText(0, 'Hired ' + card.name, 'gold', 0); }
+}
+function afterHuman() {
+  if (S.winner != null || !S.players[0].alive) { UI.busy = true; setTimeout(endScreen, 1100); return; }
+  const me = S.players[0];
+  if (S.plays > 0 && me.hand.length) { renderGame(); if (window.__auto) setTimeout(autoHuman, 250); return; }
+  UI.busy = true; renderGame();
+  setTimeout(() => { endTurn(S); afterTurnChange(); }, 700);
+}
+function autoHuman() {
+  if (S.turn !== 0 || S.winner != null) return;
+  const a = aiAct(S, 0);
+  if (a.kind === 'buy') { doBuy(a.idx); setTimeout(autoHuman, 200); }
+  else if (a.kind === 'play') doPlay(a.uid, a.target);
+  else afterHuman();
+}
+/* turns */
+function afterTurnChange() {
+  if (S.winner != null) { renderGame(); setTimeout(endScreen, 900); return; }
+  if (S.round !== UI.round) { UI.round = S.round; const E = EVENT_BY[S.event]; banner(`Round ${S.round}: ${E.name}`, E.text); }
+  if (S.turn === 0) {
+    UI.busy = false; renderGame(); SFX.play('turn');
+    if (!S.players[0].hand.length) { afterHuman(); return; }
+    if (window.__auto) setTimeout(autoHuman, 300);
+    return;
+  }
+  renderGame(); setTimeout(aiStep, window.__fast ? 30 : 750);
+}
+function aiStep() {
+  if (S.winner != null) { setTimeout(endScreen, 600); return; }
+  const pid = S.turn, P = S.players[pid], wait = window.__fast ? 30 : 950;
+  const a = aiAct(S, pid);
+  if (a.kind === 'buy') { const card = S.market[a.idx]; if (buy(S, pid, a.idx)) { SFX.play('coin'); renderGame(); floatText(pid, 'Hired ' + card.name, 'gold', 0); setTimeout(aiStep, wait); return; } }
+  let ok = false;
+  if (a.kind === 'play') { const ev = playCard(S, pid, a.uid, a.target); if (ev) { ok = true; UI.last = { card: ev.card, pid, target: ev.target }; SFX.play('card'); renderGame(); showFx(ev.fx); } }
+  if (S.winner != null || !S.players[0].alive) { setTimeout(endScreen, 1100); return; }
+  if (!ok || S.plays <= 0 || !P.hand.length || !P.alive) setTimeout(() => { endTurn(S); afterTurnChange(); }, wait);
+  else setTimeout(aiStep, wait);
+}
+function endScreen() {
+  if (!S || $('#modal .end')) return;
+  const me = S.players[0], W = S.winner != null && S.winner >= 0 ? S.players[S.winner] : null, win = S.winner === 0;
+  prefs.wins = prefs.wins || {}; const r = prefs.wins[me.civ] || [0, 0]; r[1]++; if (win) r[0]++; prefs.wins[me.civ] = r; savePrefs();
+  SFX.play(win ? 'win' : 'lose');
+  const reason = S.wonderWin ? 'wonder completed' : S.timeUp ? '40 rounds passed, most HP wins' : 'last realm standing';
+  modal(`<div class="end ${win ? 'win' : 'lose'}">${W ? crest(W.civ, 76) : crest(me.civ, 76)}
+    <h2>${win ? 'Victory!' : me.alive ? 'Defeat' : 'You were defeated'}</h2>
+    <p>${W ? `${W.id === 0 ? 'You win' : esc(CIVS[W.civ].name) + ' win'} · ${reason}` : `Still standing: ${S.players.filter(p => p.alive).map(p => esc(CIVS[p.civ].name)).join(', ')}`}</p>
+    <div class="stats"><span>Damage dealt <b>${me.stats.dmg}</b></span><span>Cards played <b>${me.stats.played}</b></span><span>Mercenaries hired <b>${me.stats.bought}</b></span><span>Rounds <b>${S.round}</b></span></div>
+    <div class="row"><button class="btn big" data-act="again">Play again</button><button class="btn ghost" data-act="setup">Choose another civ</button></div></div>`);
+}
+function rulesModal() {
+  modal(`<h2>How to play</h2>
+  <p>Each player holds their own civilization's deck. On your turn <b>draw 1 card, then play 1 card</b>; with an empty hand you draw 2. A card does what its symbols say, left to right. The last player with HP left wins.</p>
+  <p class="legend-key">Card texts colour their keywords: <b class="kw k-dmg">damage</b> · <b class="kw k-hp">HP</b> · <b class="kw k-gold">gold</b> · <b class="kw k-card">cards</b> · <b class="kw k-wall">walls</b> · <b class="kw k-play">play another card</b> · <b class="kw k-aoe">every opponent</b> · <b class="kw k-pierce">over the walls</b> · <b class="kw k-steal">steal</b> · <b class="kw k-raze">destroy</b></p>
+  <div class="legend">${SYM_ORDER.split('').map(ch => `<div>${symBadge(ch, 26)}<b>${esc(SYM[ch].name)}</b><span>${kw(SYM[ch].desc)}</span></div>`).join('')}</div>
+  <p><b>Walls</b> soak up damage before it reaches your HP. <b>Cards with ★</b> are a civilization's signature cards. <b>Events</b>: one hits everyone each round, and the next one is always shown in advance. <b>Mercenary Market</b>: hire 1 card per turn with gold; it goes to your hand and joins your deck. <b>Relics</b>: pick 1 of 3 when the match starts.</p>
+  <p><b>Wonders</b> (Angkor Wat, Chichén Itzá) win the game if they still stand at the start of their builder's third turn, so the whole table has to pile on. The first time you fall to 3 HP or less you draw 2 extra cards. From round 16 everyone loses 1 HP each round.</p>
+  <p class="muted small">Each civilization's starting HP is tuned with hundreds of thousands of AI-vs-AI games, separately for duels and for 3–4 player tables: every civ wins about 46–52% of duels and its fair share (±3 points) at bigger tables.</p>
+  <div class="row"><button class="btn" data-act="close">Close</button></div>`);
+}
+/* wiring */
+document.addEventListener('click', e => {
+  const t = e.target.closest('button, .card, .seat'); if (!t) return;
+  SFX.init();
+  if (t.dataset.n) { UI.n = +t.dataset.n; SFX.play('click'); renderSetup(); return; }
+  if (t.dataset.civ) { UI.civ = t.dataset.civ; SFX.play('click'); renderSetup(); return; }
+  if (t.id === 'randCiv') { UI.civ = CIV_ORDER[Math.floor(Math.random() * CIV_ORDER.length)]; renderSetup(); return; }
+  if (t.id === 'go') { newMatch(); return; }
+  if (t.dataset.relic) { beginPlay(t.dataset.relic); return; }
+  if (t.id === 'cancelTarget') { UI.targeting = null; renderGame(); return; }
+  if (t.id === 'rulesBtn') { rulesModal(); return; }
+  if (t.id === 'soundBtn') { SFX.on = !SFX.on; prefs.sound = SFX.on; savePrefs(); t.textContent = SFX.on ? 'Sound: on' : 'Sound: off'; return; }
+  if (t.id === 'newBtn') { if (S && S.winner == null && S.started && !$('#modal .end')) { modal('<h2>Abandon this game?</h2><p>It will not count.</p><div class="row"><button class="btn" data-act="setup">Abandon and choose again</button><button class="btn ghost" data-act="close">Keep playing</button></div>'); return; } closeModal(); S = null; showScreen('setup'); renderSetup(); return; }
+  if (t.dataset.act === 'close') { closeModal(); return; }
+  if (t.dataset.act === 'again') { closeModal(); newMatch(); return; }
+  if (t.dataset.act === 'setup') { closeModal(); S = null; showScreen('setup'); renderSetup(); return; }
+  if (t.classList.contains('seat') && t.classList.contains('targetable') && UI.targeting) { doPlay(UI.targeting, +t.dataset.pid); return; }
+  if (t.classList.contains('card') && t.closest('#hand') && t.classList.contains('playable')) { handPlay(+t.dataset.uid); return; }
+  if (t.classList.contains('card') && t.closest('#market') && t.classList.contains('buyable')) { doBuy(+t.dataset.mi); return; }
+});
+document.addEventListener('keydown', e => { if (e.key === 'Escape') { if (UI.targeting) { UI.targeting = null; renderGame(); } else if (!$('#modal .relics') && !$('#modal .end')) closeModal(); } });
+$('#soundBtn').textContent = SFX.on ? 'Sound: on' : 'Sound: off';
+renderSetup();
+
+</script>
+</body>
+</html>
