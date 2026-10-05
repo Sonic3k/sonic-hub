@@ -3,18 +3,17 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Sonic Hub — Giấy & Angels</title>
+<title>Sonic Hub — Paper & Angels</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Literata:ital,wght@0,400;0,500;0,600;1,300;1,400;1,500&family=Be+Vietnam+Pro:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
   /* ═══════════════════════════════════════════════════════════════════════════
-     PAPER · with an evening mood for Angels
+     PAPER · with a blush mood for Angels
      Daytime: warm matte paper, ink-brown text, a reading serif, photos laid on
-     the page like prints. Angels: the same paper under a desk lamp in the
-     evening — warmer, dimmer at the edges, a faded-rose accent, photos faded
-     like 2009 prints that regain their colour when you look closely.
-     Colours are registered custom properties so the change of light is a
-     slow, continuous transition rather than a cut.
+     the page like prints. A right-hand rail keeps a few random memories in view
+     so wide screens never feel empty. Angels: the light turns to a soft blush —
+     intimate and present-day, not antique. Colours are registered custom
+     properties so the change of mood is one slow continuous transition.
      ═══════════════════════════════════════════════════════════════════════════ */
   @property --paper  { syntax: '<color>'; inherits: true; initial-value: #F4F0E8; }
   @property --ink    { syntax: '<color>'; inherits: true; initial-value: #2A2621; }
@@ -22,117 +21,127 @@
   @property --ink3   { syntax: '<color>'; inherits: true; initial-value: #8E8577; }
   @property --accent { syntax: '<color>'; inherits: true; initial-value: #33507A; }
   @property --rule   { syntax: '<color>'; inherits: true; initial-value: rgba(42,38,33,.14); }
+  @property --tint   { syntax: '<color>'; inherits: true; initial-value: rgba(51,80,122,.06); }
 
-  :root { --paper: #F4F0E8; --ink: #2A2621; --ink2: #5F574D; --ink3: #8E8577; --accent: #33507A; --rule: rgba(42,38,33,.14);
-    --serif: Literata, Georgia, serif; --sans: "Be Vietnam Pro", system-ui, sans-serif; --ease: cubic-bezier(.25,.6,.2,1);
-    --fade: sepia(.28) saturate(.72) contrast(.9) brightness(1.04); }
-  body.evening { --paper: #E5D5BC; --ink: #3A281F; --ink2: #6A4E3F; --ink3: #93766A; --accent: #A25A5A; --rule: rgba(58,40,31,.2); }
+  :root { --paper: #F4F0E8; --ink: #2A2621; --ink2: #5F574D; --ink3: #8E8577; --accent: #33507A; --rule: rgba(42,38,33,.14); --tint: rgba(51,80,122,.06);
+    --serif: Literata, Georgia, serif; --sans: "Be Vietnam Pro", system-ui, sans-serif; --ease: cubic-bezier(.25,.6,.2,1); }
+  body.blush { --paper: #F5E9E7; --ink: #2B1F24; --ink2: #5F4950; --ink3: #95818A; --accent: #C2506D; --rule: rgba(43,31,36,.12); --tint: rgba(194,80,109,.07); }
 
   *, *::before, *::after { box-sizing: border-box; }
   html { -webkit-text-size-adjust: 100%; }
   body { margin: 0; background: var(--paper); color: var(--ink); font-family: var(--serif); font-size: 19px; line-height: 1.75; -webkit-font-smoothing: antialiased;
-    transition: --paper 1.8s var(--ease), --ink 1.8s var(--ease), --ink2 1.8s var(--ease), --ink3 1.8s var(--ease), --accent 1.8s var(--ease), --rule 1.8s var(--ease); }
+    transition: --paper 1.6s var(--ease), --ink 1.6s var(--ease), --ink2 1.6s var(--ease), --ink3 1.6s var(--ease), --accent 1.6s var(--ease), --rule 1.6s var(--ease), --tint 1.6s var(--ease); }
   a { color: inherit; text-decoration: none; }
+  button { font: inherit; color: inherit; background: none; border: 0; padding: 0; cursor: pointer; }
   ::selection { background: color-mix(in srgb, var(--accent) 22%, transparent); }
 
-  /* paper grain + the evening lamp */
-  .grain { position: fixed; inset: 0; z-index: 50; pointer-events: none; opacity: .09; mix-blend-mode: multiply; transition: opacity 1.8s var(--ease);
+  /* paper grain; in Angels a soft blush glow instead of a lamp */
+  .grain { position: fixed; inset: 0; z-index: 50; pointer-events: none; opacity: .08; mix-blend-mode: multiply;
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .5 0 0 0 0 .45 0 0 0 0 .4 0 0 0 .55 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E"); }
-  body.evening .grain { opacity: .14; }
-  .lamp { position: fixed; inset: 0; z-index: 0; pointer-events: none; opacity: 0; transition: opacity 2.2s var(--ease);
-    background: radial-gradient(ellipse 62% 54% at 50% 26%, rgba(255,238,206,.55), rgba(255,230,190,0) 64%), radial-gradient(ellipse 120% 100% at 50% 40%, rgba(60,36,22,0) 58%, rgba(60,36,22,.26) 100%); }
-  body.evening .lamp { opacity: 1; }
+  .glow { position: fixed; inset: 0; z-index: 0; pointer-events: none; opacity: 0; transition: opacity 1.8s var(--ease);
+    background: radial-gradient(ellipse 55% 45% at 18% 8%, rgba(255,205,218,.55), transparent 70%), radial-gradient(ellipse 50% 45% at 92% 90%, rgba(255,222,200,.45), transparent 70%); }
+  body.blush .glow { opacity: 1; }
 
   /* top bar */
-  .bar { position: sticky; top: 0; z-index: 40; display: flex; align-items: baseline; gap: 34px; max-width: 1120px; margin: 0 auto; padding: 22px 28px 14px; background: linear-gradient(var(--paper) 70%, transparent); }
+  .bar { position: relative; z-index: 40; display: flex; align-items: baseline; gap: 34px; max-width: 1180px; margin: 0 auto; padding: 22px 32px 14px; }
   .mark { font-family: var(--serif); font-style: italic; font-weight: 500; font-size: 23px; letter-spacing: -.01em; margin-right: auto; }
   .nav { display: flex; gap: 22px; font-family: var(--sans); font-size: 14px; letter-spacing: .02em; color: var(--ink2); }
   .nav a { white-space: nowrap; padding-bottom: 3px; border-bottom: 1.5px solid transparent; transition: color .4s, border-color .4s; }
   .nav a:hover { color: var(--ink); }
   .nav a[aria-current="page"] { color: var(--ink); border-color: var(--accent); }
 
-  /* page frame + entrance */
-  main { position: relative; z-index: 1; max-width: 1120px; margin: 0 auto; padding: 30px 28px 120px; }
-  .page { animation: enter 1.1s var(--ease) both; }
-  body.evening .page { animation-duration: 1.6s; }
+  /* frame: reading column + a rail of random memories */
+  main { position: relative; z-index: 1; max-width: 1180px; margin: 0 auto; padding: 30px 32px 120px; }
+  .page { display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: 72px; align-items: start; animation: enter 1s var(--ease) both; }
   @keyframes enter { from { opacity: 0; transform: translateY(10px); } }
-  .col { max-width: 680px; margin-left: 180px; }
-  .col.head { max-width: 900px; }
+  .read { min-width: 0; }
+  .text { max-width: 660px; }
   .eyebrow { margin: 0 0 14px; font-family: var(--sans); font-size: 12.5px; font-weight: 600; letter-spacing: .16em; text-transform: uppercase; color: var(--accent); }
-  h1 { margin: 0 0 16px; font-weight: 500; font-size: clamp(40px, 5vw, 60px); line-height: 1.08; letter-spacing: -.02em; }
-  .lede { margin: 0 0 40px; font-size: 21px; line-height: 1.6; color: var(--ink2); }
+  h1 { margin: 0 0 16px; font-weight: 500; font-size: clamp(40px, 4.6vw, 58px); line-height: 1.08; letter-spacing: -.02em; }
+  .lede { margin: 0 0 36px; font-size: 21px; line-height: 1.6; color: var(--ink2); }
   .more { font-family: var(--sans); font-size: 14.5px; font-weight: 500; color: var(--accent); border-bottom: 1px solid color-mix(in srgb, var(--accent) 40%, transparent); padding-bottom: 1px; }
   .more:hover { border-color: var(--accent); }
-  .rule { height: 1px; background: var(--rule); margin: 56px 0 40px; border: 0; }
 
   /* photos: prints on paper */
-  .prints { margin: 6px 0 48px; }
-  .jg-item { margin: 0; position: relative; overflow: hidden; border-radius: 1px; background: color-mix(in srgb, var(--ink) 6%, transparent); }
-  .jg-item img { width: 100%; height: 100%; object-fit: cover; display: block; transition: filter 1s var(--ease); }
-  .faded .jg-item img, .faded img.f { filter: var(--fade); }
-  .faded .jg-item:hover img, .faded img.f:hover, .toc a:hover img.f { filter: none; }
-  .develop .jg-item img, img.develop { animation: develop 2.4s var(--ease) backwards; animation-delay: calc(var(--k, 0) * .14s + .3s); }
-  @keyframes develop { from { opacity: 0; filter: brightness(1.9) contrast(.35) sepia(.5) blur(1.5px); } 45% { opacity: 1; } }
+  .prints { margin: 4px 0 46px; }
+  .jg-item { margin: 0; position: relative; overflow: hidden; border-radius: 2px; background: color-mix(in srgb, var(--ink) 6%, transparent); }
+  .jg-item img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform 1.2s var(--ease); }
+  .jg-item:hover img { transform: scale(1.03); }
+  .soft .jg-item img, img.soft { animation: soft 1.6s var(--ease) backwards; animation-delay: calc(var(--k, 0) * .12s + .2s); }
+  @keyframes soft { from { opacity: 0; filter: blur(8px); } }
+
+  /* the rail */
+  .rail { position: sticky; top: 28px; display: flex; flex-direction: column; gap: 34px; padding-top: 6px; }
+  .rail h3 { display: flex; justify-content: space-between; align-items: baseline; margin: 0 0 12px; font-family: var(--sans); font-size: 12px; font-weight: 600; letter-spacing: .16em; text-transform: uppercase; color: var(--ink3); }
+  .rail h3 button { font-size: 12px; letter-spacing: .06em; text-transform: none; color: var(--accent); font-weight: 500; }
+  .rail h3 button:hover { text-decoration: underline; text-underline-offset: 3px; }
+  .rail figure { margin: 0; }
+  .rail .print img { width: 100%; aspect-ratio: 4/5; object-fit: cover; border-radius: 2px; display: block; }
+  .rail .print figcaption { margin-top: 10px; font-family: var(--sans); font-size: 13px; line-height: 1.5; color: var(--ink2); }
+  .rail .print figcaption b { display: block; font-weight: 500; color: var(--ink); }
+  .rail .line { margin: 0; font-size: 18px; line-height: 1.55; }
+  .rail .line small { display: block; margin-top: 8px; font-family: var(--sans); font-size: 12.5px; color: var(--ink3); }
+  .chips { display: flex; flex-wrap: wrap; gap: 8px; }
+  .chip { font-family: var(--sans); font-size: 13.5px; padding: 5px 12px; border-radius: 999px; background: var(--tint); color: var(--ink); transition: background .4s; }
+  a.chip:hover { background: color-mix(in srgb, var(--accent) 16%, transparent); }
+  .facts { margin: 0; font-family: var(--sans); font-size: 14px; line-height: 1.5; }
+  .facts div { display: grid; grid-template-columns: 82px 1fr; gap: 10px; padding: 9px 0; border-top: 1px solid var(--rule); }
+  .facts dt { color: var(--ink3); } .facts dd { margin: 0; color: var(--ink); }
+  .swap { animation: swap .8s var(--ease) both; } @keyframes swap { from { opacity: 0; transform: translateY(6px); } }
 
   /* daytime: a note */
   .note h2 { margin: 0 0 10px; font-size: 28px; font-weight: 500; line-height: 1.25; }
   .note p { margin: 0 0 16px; }
-  .bridge { margin-top: 42px; font-style: italic; color: var(--ink2); }
-  .bridge a { font-style: normal; }
 
-  /* Angels: the table of contents */
-  .title-it { font-style: italic; font-weight: 300; font-size: clamp(48px, 6.6vw, 84px); letter-spacing: -.02em; }
-  .toc { list-style: none; margin: 10px 0 0; padding: 0; counter-reset: ch; }
-  .toc li { border-top: 1px solid var(--rule); }
-  .toc li:last-child { border-bottom: 1px solid var(--rule); }
-  .toc a { display: grid; grid-template-columns: 54px 1fr 84px; gap: 24px; align-items: center; padding: 22px 6px; transition: background .6s var(--ease); }
-  .toc a:hover { background: color-mix(in srgb, var(--accent) 6%, transparent); }
-  .num { font-family: var(--sans); font-size: 13px; font-weight: 600; letter-spacing: .14em; color: var(--accent); }
-  .line { display: flex; align-items: baseline; gap: 14px; }
-  .who { font-style: italic; font-weight: 400; font-size: 32px; line-height: 1.15; }
-  .dots { flex: 1; border-bottom: 1.5px dotted var(--rule); transform: translateY(-7px); }
-  .yrs { font-family: var(--sans); font-size: 14px; letter-spacing: .06em; color: var(--ink2); white-space: nowrap; }
-  .gist { margin: 4px 0 0; font-size: 17px; color: var(--ink2); }
-  .via { font-family: var(--sans); font-size: 12.5px; letter-spacing: .06em; color: var(--ink3); }
-  .toc img.f { width: 84px; height: 104px; object-fit: cover; border-radius: 1px; transition: filter 1s var(--ease); }
+  /* Angels: the list of people */
+  .people { list-style: none; margin: 8px 0 0; padding: 0; }
+  .people li { border-top: 1px solid var(--rule); }
+  .people li:last-child { border-bottom: 1px solid var(--rule); }
+  .people a { display: grid; grid-template-columns: 112px minmax(0, 1fr) 120px; gap: 28px; align-items: center; padding: 22px 0; transition: background .5s var(--ease); }
+  .people a:hover { background: var(--tint); }
+  .yrs { font-family: var(--sans); font-size: 13.5px; font-weight: 500; letter-spacing: .04em; color: var(--accent); }
+  .who { display: block; font-weight: 500; font-size: 30px; line-height: 1.2; letter-spacing: -.01em; }
+  .gist { display: block; margin-top: 4px; font-size: 17px; line-height: 1.5; color: var(--ink2); }
+  .via { display: block; margin-top: 6px; font-family: var(--sans); font-size: 12.5px; letter-spacing: .05em; color: var(--ink3); }
+  .people img { width: 120px; height: 150px; object-fit: cover; border-radius: 2px; transition: transform .8s var(--ease); }
+  .people a:hover img { transform: scale(1.03); }
 
   /* Angels: a chapter */
-  .back { display: inline-block; margin-bottom: 34px; font-family: var(--sans); font-size: 14px; color: var(--ink2); }
+  .back { display: inline-block; margin-bottom: 30px; font-family: var(--sans); font-size: 14px; color: var(--ink2); }
   .back:hover { color: var(--ink); }
-  .name { margin: 0; font-style: italic; font-weight: 300; font-size: clamp(60px, 9vw, 112px); line-height: 1; letter-spacing: -.03em; }
-  .meta { margin: 18px 0 6px; font-family: var(--sans); font-size: 13.5px; letter-spacing: .1em; text-transform: uppercase; color: var(--ink3); }
-  .song { margin: 0 0 44px; font-style: italic; color: var(--ink2); }
-  .song::before { content: "♪"; font-style: normal; margin-right: 10px; color: var(--accent); }
-  .hero-print { margin: 0 0 54px; }
-  .hero-print img { width: 100%; aspect-ratio: 16/8; object-fit: cover; border-radius: 1px; display: block; }
+  .name { margin: 0; font-weight: 500; font-size: clamp(56px, 7vw, 92px); line-height: 1; letter-spacing: -.03em; }
+  .meta { margin: 18px 0 6px; font-family: var(--sans); font-size: 13.5px; letter-spacing: .08em; text-transform: uppercase; color: var(--ink3); }
+  .song { margin: 0 0 40px; color: var(--ink2); }
+  .song::before { content: "♪"; margin-right: 10px; color: var(--accent); }
+  .hero-print { margin: 0 0 50px; }
+  .hero-print img { width: 100%; aspect-ratio: 16/9; object-fit: cover; border-radius: 2px; display: block; }
   .hero-print figcaption { margin-top: 10px; font-family: var(--sans); font-size: 13px; color: var(--ink3); }
-  .moment { display: grid; grid-template-columns: 180px minmax(0, 680px); margin: 0 0 30px; }
-  .when { padding-top: 7px; font-family: var(--sans); font-size: 12.5px; font-weight: 500; letter-spacing: .12em; text-transform: uppercase; color: var(--ink3); }
+  .moment { margin: 0 0 34px; }
+  .when { margin-bottom: 6px; font-family: var(--sans); font-size: 12.5px; font-weight: 600; letter-spacing: .12em; text-transform: uppercase; color: var(--accent); }
   .moment h2 { margin: 0 0 10px; font-size: 26px; font-weight: 500; line-height: 1.3; }
   .moment p { margin: 0 0 16px; }
-  .letter { margin: 8px 0 26px; padding: 6px 0 6px 24px; border-left: 2px solid color-mix(in srgb, var(--accent) 60%, transparent); }
-  .letter p { margin: 0 0 6px; font-style: italic; }
-  .letter time, .letter b { font-family: var(--sans); font-style: normal; font-size: 12.5px; letter-spacing: .06em; }
-  .letter time { color: var(--ink3); margin-right: 10px; } .letter b { font-weight: 600; color: var(--accent); margin-right: 8px; }
-  .wide { margin: 8px 0 52px; }
-  .end { margin: 70px 0 18px; text-align: center; font-family: var(--sans); font-size: 12.5px; letter-spacing: .24em; text-transform: uppercase; color: var(--ink3); }
-  .next { display: block; text-align: center; font-size: 22px; }
-  .next i { font-weight: 400; } .next small { display: block; font-family: var(--sans); font-size: 12.5px; letter-spacing: .14em; text-transform: uppercase; color: var(--accent); margin-bottom: 4px; }
+  .chat { margin: 10px 0 24px; display: flex; flex-direction: column; gap: 8px; max-width: 520px; }
+  .chat p { margin: 0; padding: 10px 16px; border-radius: 16px; font-family: var(--sans); font-size: 15.5px; line-height: 1.5; background: var(--tint); width: fit-content; }
+  .chat p.me { align-self: flex-end; background: color-mix(in srgb, var(--accent) 14%, transparent); }
+  .chat time { display: block; font-size: 11.5px; color: var(--ink3); margin-bottom: 2px; }
+  .end { margin: 64px 0 16px; font-family: var(--sans); font-size: 12.5px; letter-spacing: .2em; text-transform: uppercase; color: var(--ink3); }
+  .next { display: inline-block; font-size: 24px; font-weight: 500; }
+  .next small { display: block; font-family: var(--sans); font-size: 12.5px; font-weight: 600; letter-spacing: .12em; text-transform: uppercase; color: var(--accent); }
 
+  @media (max-width: 1080px) { .page { grid-template-columns: 1fr; gap: 56px; } .rail { position: static; display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); } }
   @media (max-width: 860px) {
     body { font-size: 18px; }
     .bar { gap: 14px; padding: 16px 18px 12px; flex-wrap: wrap; } .nav { gap: 16px; overflow-x: auto; width: 100%; scrollbar-width: none; font-size: 13.5px; }
-    main { padding: 18px 18px 90px; } .col { margin-left: 0; }
-    .moment { grid-template-columns: 1fr; } .when { padding: 0 0 4px; }
-    .toc a { grid-template-columns: 30px 1fr 64px; gap: 14px; } .who { font-size: 25px; } .toc img.f { width: 64px; height: 80px; } .dots { display: none; }
-    .line { flex-direction: column; align-items: flex-start; gap: 0; } .yrs { font-size: 12.5px; }
-    .lede { font-size: 19px; }
+    main { padding: 18px 18px 90px; } .lede { font-size: 19px; }
+    .people a { grid-template-columns: minmax(0, 1fr) 84px; gap: 16px; } .people .yrs { grid-column: 1 / -1; margin-bottom: -10px; }
+    .people img { width: 84px; height: 105px; } .who { font-size: 25px; }
+    .rail { grid-template-columns: 1fr; }
   }
   @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } }
 </style>
 </head>
 <body>
-<div class="lamp" aria-hidden="true"></div>
+<div class="glow" aria-hidden="true"></div>
 <div class="grain" aria-hidden="true"></div>
 <header class="bar">
   <a class="mark" href="#day">Sonic Hub</a>
@@ -147,113 +156,113 @@
 <script src="assets/data.js"></script>
 <script>
   const D = window.SH_DATA, main = document.getElementById('main');
-  const ROMAN = ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII'];
   const yrs = (p) => p.from === p.to ? `${p.from}` : `${p.from} — ${p.to}`;
-  const pick = (from, to, n, skip = 0) => D.photos.filter(p => p.year >= from && p.year <= to).slice(skip, skip + n);
+  const inYears = (from, to) => D.photos.filter(p => p.year >= from && p.year <= to);
+  const any = (arr) => arr[Math.floor(Math.random() * arr.length)];
+  const LINES = [
+    { t: 'mai thi xong roi di choi nhe. t mua ve rap quoc gia roi', who: 'Bích Trân', when: 'Yahoo · 23:14, tháng 5 năm 2010', ch: 1 },
+    { t: 'sáng mai Tam Đảo sương dày lắm, nhớ mang áo khoác nhé', who: 'Linh', when: 'Facebook · 21:02, tháng 11 năm 2013', ch: 2 },
+    { t: 'tàu chạy rồi, ngủ đi, sáng mai tới Huế t gọi', who: 'Hà My', when: 'Facebook · 22:40, tháng 3 năm 2015', ch: 3 },
+    { t: 'hoàng hôn ở đây đẹp ghê, ước gì có ai chụp hộ', who: 'Quỳnh', when: 'Zalo · 17:48, tháng 7 năm 2017', ch: 4 },
+  ];
 
-  function prints(el, list, opts = {}) {
-    SH.justify(el, list, { rowHeight: opts.h || 230, gap: 6, render: (p) => {
+  function prints(el, list, h = 230) {
+    SH.justify(el, list, { rowHeight: h, gap: 6, render: (p) => {
       const f = document.createElement('figure'); f.className = 'jg-item'; f.innerHTML = `<img src="${p.src}" alt="${p.caption || ''}" loading="lazy">`; return f; } });
     el.querySelectorAll('.jg-item').forEach((f, k) => f.style.setProperty('--k', k));
   }
+  /* a rail block that can reshuffle itself */
+  function block(title, render) {
+    const sec = document.createElement('section'), body = document.createElement('div');
+    sec.innerHTML = `<h3><span>${title}</span><button type="button">Đổi</button></h3>`; sec.appendChild(body);
+    const draw = () => { body.innerHTML = render(); body.classList.remove('swap'); void body.offsetWidth; body.classList.add('swap'); };
+    sec.querySelector('button').onclick = draw; draw(); return sec;
+  }
+  const printBlock = (pool, label) => () => { const p = any(pool); return `<figure class="print"><img src="${p.src}" alt=""><figcaption><b>${p.caption || 'Không chú thích'}</b>${label(p)}</figcaption></figure>`; };
+  const lineBlock = (pool) => () => { const l = any(pool); return `<p class="line">“${l.t}”<small>${l.who} · ${l.when}</small></p>`; };
 
-  /* ── daytime: the ordinary paper page ── */
+  /* ── daytime ── */
   function day() {
-    const ph = D.photosOf(2010).concat(D.photosOf(2009)).slice(0, 7), note = D.NOTES[0];
-    main.innerHTML = `<article class="page">
-      <div class="col">
-        <p class="eyebrow">${D.todayVN()}</p>
-        <h1>Ngày này năm 2010</h1>
-        <p class="lede">Bảy tấm ảnh và một trang nhật ký, mười sáu năm trước.</p>
-      </div>
-      <div class="prints develop" id="p1"></div>
-      <div class="col note">
-        <p class="eyebrow">Nhật ký năm ấy</p>
-        <h2>${note.title}</h2>
-        <p>${note.body} Tối nào cũng có một dòng mới, ngắn thôi, nhưng đọc lại thì nhớ ra cả một buổi tối: ai đang online, bài hát nào đang mở, cái quạt kêu ở góc phòng.</p>
-        <a class="more" href="#day">Đọc tiếp</a>
-        <p class="bridge">Năm ấy có Bích Trân. <a class="more" href="#ch-1">Mở chương của em</a></p>
-      </div>
-    </article>`;
-    prints(document.getElementById('p1'), ph, { h: 240 });
+    const ph = D.photosOf(2010).concat(D.photosOf(2009)).slice(0, 6), note = D.NOTES[0];
+    main.innerHTML = `<div class="page"><article class="read">
+        <div class="text"><p class="eyebrow">${D.todayVN()}</p><h1>Ngày này năm 2010</h1><p class="lede">Sáu tấm ảnh và một trang nhật ký, mười sáu năm trước.</p></div>
+        <div class="prints soft" id="p1"></div>
+        <div class="text note"><p class="eyebrow">Nhật ký năm ấy</p><h2>${note.title}</h2>
+          <p>${note.body} Tối nào cũng có một dòng mới, ngắn thôi, nhưng đọc lại thì nhớ ra cả một buổi tối: ai đang online, bài hát nào đang mở, cái quạt kêu ở góc phòng.</p>
+          <a class="more" href="#day">Đọc tiếp</a></div>
+      </article><aside class="rail" id="rail"></aside></div>`;
+    prints(document.getElementById('p1'), ph, 240);
+    const rail = document.getElementById('rail');
+    rail.appendChild(block('Một tấm ngẫu nhiên', printBlock(D.photos, p => `Năm ${p.year}`)));
+    rail.appendChild(block('Một dòng tin nhắn', lineBlock(LINES)));
+    const s = document.createElement('section'); s.innerHTML = `<h3><span>Năm ấy có</span></h3><div class="chips"><a class="chip" href="#ch-1">Bích Trân</a></div>`; rail.appendChild(s);
   }
 
-  /* ── Angels: the table of contents ── */
+  /* ── Angels: people ── */
   function index() {
-    main.innerHTML = `<article class="page">
-      <div class="col head">
-        <p class="eyebrow">Angels</p>
-        <h1 class="title-it">Những chương đã qua</h1>
-        <p class="lede">Sáu người, mười ba năm. Mỗi người một chương.</p>
-      </div>
-      <ol class="toc faded">${D.PEOPLE.map((p, i) => `
-        <li><a href="#ch-${i + 1}">
-          <span class="num">${ROMAN[i]}</span>
-          <span>
-            <span class="line"><span class="who">${p.name}</span><span class="dots"></span><span class="yrs">${yrs(p)}</span></span>
-            <p class="gist">${p.memory}. <span class="via">${p.via}</span></p>
-          </span>
-          <img class="f develop" style="--k:${i}" src="${pick(p.from, p.to + 1, 1)[0]?.src || D.photos[i * 5].src}" alt="">
-        </a></li>`).join('')}
-      </ol>
-    </article>`;
+    main.innerHTML = `<div class="page"><article class="read">
+        <div class="text"><p class="eyebrow">Angels</p><h1>Những người đã đi qua</h1><p class="lede">Sáu người, mười ba năm. Mỗi người một câu chuyện.</p></div>
+        <ol class="people">${D.PEOPLE.map((p, i) => `
+          <li><a href="#ch-${i + 1}">
+            <span class="yrs">${yrs(p)}</span>
+            <span><span class="who">${p.name}</span><span class="gist">${p.memory}.</span><span class="via">${p.via}</span></span>
+            <img class="soft" style="--k:${i}" src="${(inYears(p.from, p.to + 1)[0] || D.photos[i * 5]).src}" alt="">
+          </a></li>`).join('')}
+        </ol>
+      </article><aside class="rail" id="rail"></aside></div>`;
+    const rail = document.getElementById('rail');
+    rail.appendChild(block('Một khoảnh khắc', () => {
+      const i = Math.floor(Math.random() * D.PEOPLE.length), p = D.PEOPLE[i], ph = any(inYears(p.from, p.to + 1).length ? inYears(p.from, p.to + 1) : D.photos);
+      return `<figure class="print"><img src="${ph.src}" alt=""><figcaption><b>${p.name} · ${yrs(p)}</b>${p.memory}. <a class="more" href="#ch-${i + 1}">Mở chuyện</a></figcaption></figure>`; }));
+    rail.appendChild(block('Một dòng tin nhắn', lineBlock(LINES)));
   }
 
-  /* ── Angels: one chapter ── */
+  /* ── Angels: one person ── */
   function chapter(i) {
-    const p = D.PEOPLE[i] || D.PEOPLE[0], all = pick(2009, 2012, 12), next = D.PEOPLE[i + 1];
-    const full = i === 0;
-    main.innerHTML = `<article class="page faded">
-      <div class="col head"><a class="back" href="#angels">← Mục lục</a>
-        <p class="eyebrow">Chương ${ROMAN[i]}</p>
-        <h1 class="name">${p.name}</h1>
-        <p class="meta">${yrs(p)} · ${p.via}</p>
-        <p class="song">Một Thời Đã Xa</p>
-      </div>
-      <figure class="hero-print"><img class="develop" src="${(all[1] || D.photos[3]).src}" alt=""><figcaption>Hồ Tây, một chiều tháng Mười Hai.</figcaption></figure>
-      ${full ? `
-      <section class="moment"><div class="when">Tháng 9, 2009</div><div>
-        <h2>Một cái nick Yahoo</h2>
-        <p>Em vào phòng chat của trường lúc gần nửa đêm, nick là một dãy chữ thường không dấu. Câu đầu tiên em gõ là hỏi bài tập xác suất. Câu thứ hai là hỏi anh có biết bài Westlife nào buồn nhất không.</p>
-      </div></section>
-      <section class="moment"><div class="when">Tháng 12, 2009</div><div>
-        <h2>Hồ Tây dưới mưa</h2>
-        <p>Đi bộ một vòng Hồ Tây, mưa phùn suốt từ Thanh Niên tới Quảng An. Không ai mang ô. Về ốm ba ngày, và đến giờ vẫn thấy là đáng.</p>
-      </div></section>
-      <div class="prints wide develop" id="p2"></div>
-      <section class="moment"><div class="when">Tháng 5, 2010</div><div>
-        <h2>Mùa thi</h2>
-        <div class="letter">
-          <p><time>23:14</time><b>Bích Trân</b>mai thi xong roi di choi nhe</p>
-          <p><time>23:15</time><b>Anh</b>di dau</p>
-          <p><time>23:15</time><b>Bích Trân</b>rap quoc gia. t mua ve roi :)</p>
+    const p = D.PEOPLE[i] || D.PEOPLE[0], all = inYears(2009, 2012), next = D.PEOPLE[i + 1], full = i === 0;
+    main.innerHTML = `<div class="page"><article class="read">
+        <div class="text"><a class="back" href="#angels">← Angels</a>
+          <p class="eyebrow">${yrs(p)}</p><h1 class="name">${p.name}</h1>
+          <p class="meta">${p.via}</p><p class="song">Một Thời Đã Xa</p></div>
+        <figure class="hero-print"><img class="soft" src="${(all[1] || D.photos[3]).src}" alt=""><figcaption>Hồ Tây, một chiều tháng Mười Hai.</figcaption></figure>
+        <div class="text">${full ? `
+          <section class="moment"><div class="when">Tháng 9, 2009</div><h2>Một cái nick Yahoo</h2>
+            <p>Em vào phòng chat của trường lúc gần nửa đêm, nick là một dãy chữ thường không dấu. Câu đầu tiên em gõ là hỏi bài tập xác suất. Câu thứ hai là hỏi anh có biết bài Westlife nào buồn nhất không.</p></section>
+          <section class="moment"><div class="when">Tháng 12, 2009</div><h2>Hồ Tây dưới mưa</h2>
+            <p>Đi bộ một vòng Hồ Tây, mưa phùn suốt từ Thanh Niên tới Quảng An. Không ai mang ô. Về ốm ba ngày, và đến giờ vẫn thấy là đáng.</p></section>
         </div>
-        <p>Phim gì thì không còn nhớ. Chỉ nhớ vé là em mua, và em đến sớm hai mươi phút.</p>
-      </div></section>
-      <section class="moment"><div class="when">Tết 2011</div><div>
-        <h2>Tin nhắn lúc không giờ ba phút</h2>
-        <p>Chiếc Nokia rung đúng lúc pháo hoa vừa tắt. Một tin nhắn dài, phải bấm “xem tiếp” hai lần mới hết.</p>
-      </div></section>
-      <div class="prints wide develop" id="p3"></div>
-      <section class="moment"><div class="when">Mùa hè 2012</div><div>
-        <h2>Khép lại</h2>
-        <p>Không có cãi nhau. Chỉ là mỗi người đi một hướng, và những buổi tối online thưa dần rồi thôi.</p>
-      </div></section>` : `
-      <section class="moment"><div class="when">${p.from}</div><div>
-        <h2>${p.memory}</h2>
-        <p>Chương này chưa được viết. Những gì đã có trong kho — ảnh, tin nhắn, ghi chép — sẽ được xếp vào đây theo đúng thứ tự thời gian.</p>
-      </div></section>`}
-      <p class="end">Hết chương ${ROMAN[i]}</p>
-      ${next ? `<a class="next" href="#ch-${i + 2}"><small>Chương ${ROMAN[i + 1]}</small><i>${next.name}</i> →</a>` : `<a class="next" href="#angels"><small>Mục lục</small>Về đầu</a>`}
-    </article>`;
-    if (full) { prints(document.getElementById('p2'), all.slice(2, 6), { h: 250 }); prints(document.getElementById('p3'), all.slice(6, 9), { h: 260 }); }
+        <div class="prints soft" id="p2"></div>
+        <div class="text">
+          <section class="moment"><div class="when">Tháng 5, 2010</div><h2>Mùa thi</h2>
+            <div class="chat"><p><time>23:14</time>mai thi xong roi di choi nhe</p><p class="me"><time>23:15</time>di dau</p><p><time>23:15</time>rap quoc gia. t mua ve roi :)</p></div>
+            <p>Phim gì thì không còn nhớ. Chỉ nhớ vé là em mua, và em đến sớm hai mươi phút.</p></section>
+          <section class="moment"><div class="when">Tết 2011</div><h2>Tin nhắn lúc không giờ ba phút</h2>
+            <p>Chiếc Nokia rung đúng lúc pháo hoa vừa tắt. Một tin nhắn dài, phải bấm “xem tiếp” hai lần mới hết.</p></section>
+        </div>
+        <div class="prints soft" id="p3"></div>
+        <div class="text">
+          <section class="moment"><div class="when">Mùa hè 2012</div><h2>Khép lại</h2>
+            <p>Không có cãi nhau. Chỉ là mỗi người đi một hướng, và những buổi tối online thưa dần rồi thôi.</p></section>` : `
+          <section class="moment"><div class="when">${p.from}</div><h2>${p.memory}</h2>
+            <p>Câu chuyện này chưa được viết. Những gì đã có trong kho — ảnh, tin nhắn, ghi chép — sẽ được xếp vào đây theo đúng thứ tự thời gian.</p></section>`}
+          <p class="end">Hết</p>
+          ${next ? `<a class="next" href="#ch-${i + 2}"><small>Tiếp theo</small>${next.name} →</a>` : `<a class="next" href="#angels"><small>Angels</small>Về danh sách</a>`}
+        </div>
+      </article><aside class="rail" id="rail"></aside></div>`;
+    if (full) { prints(document.getElementById('p2'), all.slice(2, 5), 250); prints(document.getElementById('p3'), all.slice(5, 8), 250); }
+    const rail = document.getElementById('rail'), facts = document.createElement('section');
+    facts.innerHTML = `<h3><span>Về ${p.name}</span></h3><dl class="facts">
+      <div><dt>Gặp nhau</dt><dd>${p.from}</dd></div><div><dt>Qua</dt><dd>${p.via}</dd></div><div><dt>Thích</dt><dd>${p.like}</dd></div><div><dt>Bài hát</dt><dd>Một Thời Đã Xa</dd></div><div><dt>Nhớ nhất</dt><dd>${p.memory}</dd></div></dl>`;
+    rail.appendChild(facts);
+    rail.appendChild(block('Một tấm ngẫu nhiên', printBlock(inYears(p.from, p.to + 1).length ? inYears(p.from, p.to + 1) : D.photos, ph => `Năm ${ph.year}`)));
+    rail.appendChild(block('Một dòng tin nhắn', lineBlock(LINES.filter(l => l.ch === i + 1).length ? LINES.filter(l => l.ch === i + 1) : LINES)));
   }
 
-  /* ── tiny router: the light changes when you enter Angels ── */
+  /* ── tiny router: Angels changes the mood ── */
   function route() {
-    const h = location.hash.slice(1) || 'day', evening = h === 'angels' || h.startsWith('ch-');
-    document.body.classList.toggle('evening', evening);
-    document.querySelectorAll('#nav a').forEach(a => a.setAttribute('aria-current', (evening ? a.dataset.k === 'angels' : a.dataset.k === 'day') ? 'page' : 'false'));
+    const h = location.hash.slice(1) || 'day', blush = h === 'angels' || h.startsWith('ch-');
+    document.body.classList.toggle('blush', blush);
+    document.querySelectorAll('#nav a').forEach(a => a.setAttribute('aria-current', (blush ? a.dataset.k === 'angels' : a.dataset.k === 'day') ? 'page' : 'false'));
     if (h === 'angels') index(); else if (h.startsWith('ch-')) chapter(Math.max(0, +h.slice(3) - 1)); else day();
     window.scrollTo({ top: 0 });
   }
