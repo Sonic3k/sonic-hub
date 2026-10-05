@@ -35,6 +35,7 @@ function settingsSheet() {
 <div class="set-row"><div><b>Difficulty</b><span>How sharp the computer plays. Applies from the next match.</span></div>${seg('difficulty', [['easy', 'Easy'], ['normal', 'Normal'], ['hard', 'Hard']])}</div>
 <div class="set-row"><div><b>Animation speed</b><span>Max skips almost all motion.</span></div>${seg('speed', [['slow', '½×'], ['normal', '1×'], ['fast', '2×'], ['instant', 'Max']])}</div>
 <div class="set-row"><div><b>Sound</b><span>Card, hit and fanfare effects.</span></div>${seg('sound', [[true, 'On'], [false, 'Off']])}</div>
+${navigator.vibrate ? `<div class="set-row"><div><b>Vibration</b><span>A short buzz when your turn starts or you are hit.</span></div>${seg('haptics', [[true, 'On'], [false, 'Off']])}</div>` : ''}
 <div class="set-row"><div><b>Tutorial</b><span>Show the guided first match again.</span></div><button class="btn ghost small" data-act="tutorial-reset">Reset</button></div>
 <div class="row"><button class="btn" data-act="close">Done</button></div>`);
 }
@@ -49,7 +50,7 @@ function helpSheet() {
 <h3>Around the table</h3>
 <p><b>Walls</b> stand in front of your camp and take damage first. <b>Events</b> hit everyone each round, and the next one is always shown. The <b>Mercenary Market</b> sells one card per turn for gold; it joins your deck. Your <b>relic</b> is a small bonus picked at the start.</p>
 <p><b>Imperial Age</b>: at the start of your ${RULES.ageTurn}th turn a card arrives that adds your civilization's three Imperial cards to your deck, plus its own bonus. <b>Wonders</b> win the game if they survive three turns. The first time you fall to 3 HP or less you draw 2 cards, and from round 16 everyone loses 1 HP each round.</p>
-<h3>Controls</h3><p>Click a card to see what it does, click it again to play. For a card that needs a target, point at an enemy camp and click it. Keys: <b>1–9</b> pick a card, <b>Enter</b> play, <b>Tab</b> switch target, <b>Esc</b> cancel, <b>L</b> chronicle, <b>S</b> speed.</p>
+<h3>Controls</h3><p>Tap or click a card to see it large with its result on every camp, then press <b>Play</b>. For a card that needs a target, tap an enemy camp first. Tap any camp at other times to inspect it. Small cards open at full size when you hover or press and hold them.</p><p>Keys: <b>1–9</b> pick a card, <b>Enter</b> play, <b>Tab</b> switch target, <b>Esc</b> cancel, <b>L</b> chronicle, <b>S</b> speed, <b>H</b> help.</p>
 <div class="row"><button class="btn" data-act="close">Close</button></div>`);
 }
 function deckSheet(which) {
@@ -66,4 +67,25 @@ function resultsSheet() {
 <div class="sd-stats" style="justify-content:center"><span>Damage dealt <b>${me.stats.dmg}</b></span><span>Cards played <b>${me.stats.played}</b></span><span>Mercenaries <b>${me.stats.bought}</b></span><span>Rounds <b>${S.round}</b></span></div>
 <div class="row center"><button class="btn" data-act="again">Play again</button><button class="btn ghost" data-act="choose">Choose another civilization</button><button class="btn ghost" data-act="menu">Main menu</button></div></div>`, true);
 }
-function mobileSheet(which) { openSheet((which === 'events' ? `<h2>Events</h2>${eventsHTML()}` : `<div id="market-sheet">${marketHTML()}</div>`) + '<div class="row"><button class="btn" data-act="close">Close</button></div>'); }
+function mobileSheet(which) {
+  if (which === 'events') { UI.eventSeen = S.round; renderTopbar(); return openSheet(`<h2>Events</h2>${eventsHTML()}<div class="row"><button class="btn" data-act="close">Close</button></div>`); }
+  const me = S.players[0], mine = isMyTurn() && !S.flags.bought;
+  openSheet(`<div class="market-sheet"><h2>Mercenary Market</h2><p class="muted">You have <b class="kw k-gold">${me.gold} gold</b>. ${S.turn !== 0 ? 'You can hire on your turn.' : S.flags.bought ? 'You already hired this turn.' : 'Hire 1 card per turn; it goes straight to your hand.'}</p>
+<div class="mk-big">${S.market.map((c, i) => { if (!c) return ''; const cost = marketCost(S, me, c), ok = mine && me.gold >= cost; return `<div class="mk-col">${cardHTML(c)}<button class="btn small${ok ? '' : ' ghost'}" data-hire="${i}"${ok ? '' : ' disabled'}>Hire for ${cost} gold</button></div>`; }).join('')}</div>
+<div class="row center"><button class="btn ghost" data-act="close">Close</button></div></div>`);
+}
+function campSheet(pid) {
+  const P = S.players[pid], C = CIVS[P.civ], W = wonderOf(P), I = IMPERIAL[P.civ];
+  const note = { regen: 'regains 1 durability each turn', sacred: 'heals its owner 1 HP each turn', thorns: 'whoever hits it takes 1 damage', fortress: 'raze removes only 1 durability', income: 'gives its owner 1 gold each turn' };
+  const plays = S.log.filter(e => e.k === 'play' && e.pid === pid).slice(-5).reverse();
+  const toks = [P.tokens.camel ? 'Camel guard: the next cavalry attack against this camp is cancelled.' : '', P.tokens.immune ? 'Divine Wind: every attack against this camp is cancelled until its next turn.' : '', P.tokens.trap ? 'Bạch Đằng stakes: the first opponent to deal damage here takes 2 damage.' : ''].filter(Boolean);
+  openSheet(`<div class="camp-sheet civ-${P.civ}"><div class="hdr">${crest(P.civ, 56)}<div><h2>${pid === 0 ? 'You' : esc(C.name)}</h2><p>${esc(C.style)}</p></div></div>
+<div class="sd-stats"><span><b class="kw k-hp">${Math.max(0, P.hp)}</b> of ${P.maxHP} HP</span><span><b class="kw k-gold">${P.gold}</b> gold</span><span><b class="kw k-card">${P.hand.length}</b> cards in hand</span><span><b>${P.deck.length}</b> in deck</span></div>
+${P.relic ? `<p><b>${esc(RELICS[P.relic].name)}</b>: ${kw(RELICS[P.relic].text)}</p>` : ''}
+<h3>Walls and buildings</h3>${P.structs.length ? `<div class="ws">${P.structs.map(st => `<div>${workHTML(st)}<span>${esc(st.card.name)}${st.kind === 'wonder' ? `: wins in ${Math.max(0, 3 - st.age)} turn(s) unless destroyed` : note[st.kind] ? ': ' + note[st.kind] : ''}</span></div>`).join('')}</div>` : '<p class="muted">None standing.</p>'}
+${toks.length ? `<h3>Effects</h3><ul>${toks.map(t => `<li>${kw(t)}</li>`).join('')}</ul>` : ''}
+<h3>Imperial Age</h3><p>${!P.ageGiven ? `The card arrives in ${Math.max(1, RULES.ageTurn - P.turns)} turn(s).` : !P.aged ? 'Holds the Imperial Age card.' : 'In the Imperial Age.'} ${kw(I.bonus.text)}</p>
+<div class="sd-cards">${impCards(P.civ).map(c => cardHTML(c, { size: 'sm' })).join('')}</div>
+<h3>Last cards played</h3>${plays.length ? `<ul>${plays.map(e => `<li>Round ${e.round}: <b>${esc(e.card)}</b>${e.target != null ? ' on ' + esc(civObjOf(e.target)) : ''}</li>`).join('')}</ul>` : '<p class="muted">Nothing yet.</p>'}
+<div class="row"><button class="btn" data-act="close">Close</button></div></div>`);
+}

@@ -1,6 +1,6 @@
 /* ── Controller: screens, match flow with motion, input ── */
 const STORE = 'mayhem.v2';
-const SET = (() => { const d = { difficulty: 'normal', speed: 'normal', sound: true, tutorialDone: false, n: 2, civ: 'franks', stats: {} }; try { return Object.assign(d, JSON.parse(localStorage.getItem(STORE) || '{}')); } catch (e) { return d; } })();
+const SET = (() => { const d = { difficulty: 'normal', speed: 'normal', sound: true, haptics: true, tutorialDone: false, n: 2, civ: 'franks', stats: {} }; try { return Object.assign(d, JSON.parse(localStorage.getItem(STORE) || '{}')); } catch (e) { return d; } })();
 function saveSettings() { try { localStorage.setItem(STORE, JSON.stringify(SET)); } catch (e) { } }
 let S = null;
 UI.n = SET.n; UI.civ = CIVS[SET.civ] ? SET.civ : 'franks'; SFX.on = SET.sound;
@@ -32,7 +32,8 @@ function onHandCard(uid) {
 }
 function aiming() { const c = selCard(); return !!(c && isMyTurn() && needsTarget(c) && opponents(S, S.players[0]).length > 1); }
 function onCamp(pid, touch) {
-  if (!aiming() || pid === 0 || !S.players[pid].alive) return;
+  if (!aiming()) return campSheet(pid);
+  if (pid === 0 || !S.players[pid].alive) return;
   if (touch && UI.hoverT !== pid) return setAimTarget(pid);
   humanPlay(UI.sel, pid);
 }
@@ -40,7 +41,7 @@ function setAimTarget(pid) {
   if (UI.hoverT === pid) return;
   UI.hoverT = pid;
   $$('.camp.targetable').forEach(el => el.classList.toggle('hot', +el.dataset.pid === pid));
-  renderStage(); renderPreview();
+  renderStage(); renderPreview(); renderAction();
 }
 async function humanPlay(uid, tid) {
   const el = document.querySelector(`#hand .card[data-uid="${uid}"]`), from = el ? el.getBoundingClientRect() : null;
@@ -56,7 +57,7 @@ async function humanPlay(uid, tid) {
 }
 async function humanBuy(i) {
   if (!isMyTurn()) return;
-  const card = S.market[i], el = document.querySelector(`.mk-item[data-mi="${i}"]`), from = el ? el.getBoundingClientRect() : null;
+  const card = S.market[i], el = document.querySelector(`[data-hire="${i}"]`) || document.querySelector(`.mk-item[data-mi="${i}"]`), from = el ? el.closest('.mk-col, .mk-item').getBoundingClientRect() : null;
   if (!card || !buy(S, 0, i)) return;
   closeSheet(); UI.busy = true; SFX.play('coin'); renderMatch();
   await animateBuy(card, 0, from);
@@ -77,7 +78,7 @@ async function roundStart() {
   await wait(D(1100));
 }
 function myTurnStart() {
-  UI.busy = false; UI.sel = null; renderMatch(); SFX.play('turn');
+  UI.busy = false; UI.sel = null; renderMatch(); SFX.play('turn'); buzz(20);
   const me = S.players[0];
   coachEvent('turn');
   if (me.ageGiven && !me.aged && me.turns === RULES.ageTurn) { banner('The Imperial Age', 'Your Imperial Age card has arrived', 2000); coachEvent('agecard'); }
@@ -120,6 +121,7 @@ document.addEventListener('click', e => {
   SFX.init();
   const act = e.target.closest('[data-act]'), touch = e.pointerType === 'touch' || matchMedia('(pointer: coarse)').matches;
   if (act) return action(act.dataset.act, act);
+  const hire = e.target.closest('[data-hire]'); if (hire) { if (!hire.disabled) humanBuy(+hire.dataset.hire); return; }
   const t = e.target.closest('.civ-tile, [data-n], [data-diff], [data-set], .relic-pick, .mk-item, #hand .card, .camp');
   if (!t) { if (e.target.id === 'sheet' && !$('#sheet').dataset.lock) closeSheet(); return; }
   if (t.classList.contains('civ-tile')) { UI.civ = t.dataset.civ; SET.civ = UI.civ; saveSettings(); SFX.play('click'); const y = $('.sel-list').scrollTop; renderSelect(); $('.sel-list').scrollTop = y; return; }
@@ -153,6 +155,8 @@ function action(a, el) {
     case 'events': return mobileSheet('events');
     case 'market': return mobileSheet('market');
     case 'coach-next': return coachNext();
+    case 'cancel-sel': UI.sel = null; UI.hoverT = null; clearAim(); return renderMatch();
+    case 'play-sel': { const c = selCard(); if (!c) return; const t = selTarget(c); if (needsTarget(c) && t == null) return; return humanPlay(c.uid, t); }
     case 'coach-skip': return endTutorial();
   }
 }
@@ -177,5 +181,5 @@ document.addEventListener('keydown', e => {
   else if (k === 's') cycleSpeed();
   else if (k === 'h') helpSheet();
 });
-addEventListener('resize', () => { if (UI.screen === 'match' && S && !UI.busy) renderMatch(); });
-installCivStyles(); installTableArt(); go('menu');
+addEventListener('resize', () => { updateMode(); if (UI.screen === 'match' && S && !UI.busy) renderMatch(); else if (UI.screen === 'menu') renderMenu(); });
+updateMode(); installCivStyles(); installTableArt(); go('menu');

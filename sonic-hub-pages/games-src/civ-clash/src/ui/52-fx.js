@@ -4,7 +4,9 @@ const SPEED_ORDER = ['normal', 'fast', 'instant', 'slow'];
 const REDUCED = matchMedia('(prefers-reduced-motion: reduce)').matches;
 const D = ms => Math.round(ms * SPEEDS[SET.speed].f * (REDUCED ? 0.25 : 1));
 const wait = ms => new Promise(r => setTimeout(r, ms));
-const mobile = () => innerWidth <= 820;
+const mobile = () => document.documentElement.classList.contains('compact');
+function updateMode() { const h = document.documentElement, compact = innerWidth <= 820 || innerHeight <= 520; h.classList.toggle('compact', compact); h.classList.toggle('land', compact && innerWidth > innerHeight); }
+const buzz = ms => { if (SET.haptics && navigator.vibrate) navigator.vibrate(ms); };
 function stageRect() {
   const s = $('#stage').getBoundingClientRect(), k = stageScale(), w = (mobile() ? 150 : 214) * k, h = (mobile() ? 212 : 302) * k;
   return { left: s.left + s.width / 2 - w / 2, top: s.top + s.height / 2 - h / 2 - 14, width: w, height: h };
@@ -71,7 +73,7 @@ async function animatePlay(ev, pid, from) {
     }
     if (f.k === 'hp' && UI.view) { UI.view[t] = (UI.view[t] != null ? UI.view[t] : S.players[t].hp) + f.n; setShownHP(t); }
     const m = FX_TEXT[f.k]; if (m) { const [txt, cls] = m(f); floatAt(t, txt, cls); }
-    if (f.k === 'hp') { SFX.play(f.n < 0 ? 'hit' : 'heal'); if (f.n < 0) shake(t); }
+    if (f.k === 'hp') { SFX.play(f.n < 0 ? 'hit' : 'heal'); if (f.n < 0) { shake(t); if (t === 0) buzz(35); } }
     else if (['wall', 'razed', 'wonderhit'].includes(f.k)) SFX.play('wall');
     if (f.k === 'age') { SFX.play('crown'); banner(`${civNameOf(t)} ${t === 0 ? 'advance' : 'advances'} to the Imperial Age`, IMPERIAL[S.players[t].civ].bonus.text, 2300); }
     await wait(D(190));
