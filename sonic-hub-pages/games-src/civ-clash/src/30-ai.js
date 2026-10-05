@@ -1,5 +1,5 @@
 /* ── AI: one-ply card evaluation with sensible targeting ── */
-function strength(X) { return (X.hp / X.maxHP) * 10 + wallTotal(X) * 0.6 + X.hand.length * 0.4 + (wonderOf(X) ? 5 : 0); }
+function strength(X) { return (X.hp / X.maxHP) * 10 + wallTotal(X) * 0.6 + (wonderOf(X) ? 5 : 0); }
 function threatOf(S, P, X, leader) {
   let t = 1;
   const opp = opponents(S, P);
@@ -35,7 +35,7 @@ function cardValue(S, P, card, T) {
     if (s.draw) v += 0.6 * s.draw * (P.hand.length > 5 ? 0.4 : 1);
     if (s.gold) { const cheap = Math.min(...S.market.filter(Boolean).map(c => marketCost(S, P, c)), 9); v += 0.45 * s.gold + (P.gold < cheap && P.gold + s.gold >= cheap ? 0.4 : 0); }
     if (s.raze && T) { const W = wonderOf(T); if (W) v += 9 * s.raze; else { const ws = walls(T).sort((a, b) => b.dur - a.dur); v += ws.length ? ws.slice(0, s.raze).reduce((a, w) => a + 0.75 * w.dur, 0) : -0.2; } }
-    if (s.steal && T) v += Math.min(s.steal, T.hand.length) * 0.8;
+    if (s.steal) for (const X of (s.all ? opp : T ? [T] : [])) v += Math.min(s.steal, X.hand.length) * 0.8;
     if (s.convert && T) { const ws = walls(T).sort((a, b) => b.dur - a.dur); v += ws.length ? 1.3 * ws[0].dur : -0.2; }
     if (s.token === 'camel') v += opp.some(X => /K/.test(CIVS[X.civ].deck)) ? 0.8 : 0.35;
     if (s.token === 'immune') v += 1.3 + (P.hp <= 4 ? 2 : 0);

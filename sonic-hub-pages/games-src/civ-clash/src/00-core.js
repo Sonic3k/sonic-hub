@@ -1,5 +1,5 @@
 'use strict';
-/* ── Hỗn Chiến Trung Cổ ──
+/* ── Medieval Mayhem ──
    Demo game #4 for Sonic Hub Pages: a light card brawl where every medieval civilization has its own deck.
    Cards speak in symbols; shared symbols recur across decks, some belong to a few civs, some to one.
    The engine is pure (state S, seeded RNG, no DOM) so sim.js can play thousands of AI games to balance it. */

@@ -1,9 +1,9 @@
 <!doctype html>
-<html lang="vi">
+<html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Hỗn Chiến Trung Cổ — Sonic Hub</title>
+<title>Medieval Mayhem — Sonic Hub</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Alegreya:wght@400;500;700;800&family=Grenze+Gotisch:wght@600;800&display=swap" rel="stylesheet">
@@ -91,7 +91,10 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:-1;ba
 .played-by{font-weight:700;color:var(--parch);font-size:15px;text-shadow:0 1px 0 #000}.arena-hint{color:var(--parch2);opacity:.7;font-style:italic}
 #market{background:rgba(0,0,0,.25);border-radius:12px;padding:6px 10px 8px;box-shadow:inset 0 0 0 1px rgba(212,162,58,.25)}
 #market h3,.chronbox h3{margin:0 0 8px;font-family:var(--goth);color:var(--gold);font-size:20px;font-weight:600}
-.m-cards{display:flex;gap:10px;padding:6px 4px 14px 6px}.m-cards .c-text{padding-bottom:16px}.me-mini{display:none}.m-cards .card{width:112px;min-height:160px}.m-cards .c-text{font-size:10.5px}
+.m-cards{display:flex;gap:10px;padding:6px 4px 14px 6px}.m-cards .c-text{padding-bottom:16px}.me-mini{display:none}
+.kw{font-weight:800}.k-dmg{color:#b3261e}.k-hp{color:#23772f}.k-gold{color:#9a6a00}.k-card{color:#3646a8}.k-wall{color:#475a75}.k-play{color:#6a3fb0}.k-aoe{color:#c94a12}.k-pierce{color:#0f6b52}.k-steal{color:#a3306d}.k-raze{color:#7a4a20}
+#chron .k-gold,#status .k-gold,.m-note .k-gold{color:#f0c050}#status .k-hp{color:#8fd694}#status .k-wall{color:#b8c7dc}
+.legend-key{font-size:14px;line-height:1.7}.m-cards .card{width:112px;min-height:160px}.m-cards .c-text{font-size:10.5px}
 .card.buyable{cursor:pointer;transition:transform .15s}.card.buyable:hover{transform:translateY(-4px)}
 .m-note{margin:8px 0 0;font-size:12px;color:var(--parch2);opacity:.85;max-width:360px}
 #mine{grid-area:mine}#mine .seat{padding:8px 12px}
@@ -126,7 +129,7 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:-1;ba
 .s-hp{min-width:0}.s-hp b{font-size:21px}.s-hp small{font-size:11px}.s-row{gap:4px;margin-top:2px;font-size:11px;min-height:18px}.backs i{display:none}.backs em{margin-left:2px}.backs em::before{content:'🂠 '}
 .turn-tag,.out-tag{font-size:9px;padding:0 5px;letter-spacing:.5px}.tok{font-size:10px}.tok svg{display:none}
 .s-structs{gap:3px;margin-top:3px;min-height:18px}.st{padding:1px 4px 1px 2px;font-size:11px}.st span,.st i{display:none}.st b{font-size:13px}.st svg{width:13px;height:13px}.s-structs .none{font-size:10.5px}
-.opps.n1 .s-sub,#mine .s-sub{display:block}.opps.n1 .s-top .crest,#mine .s-top .crest{width:34px;height:34px}.opps.n1 .st span,#mine .st span{display:inline}
+.opps.n2 .hp-u,.opps.n3 .hp-u{display:none}.opps.n1 .s-sub,#mine .s-sub{display:block}.opps.n1 .s-top .crest,#mine .s-top .crest{width:34px;height:34px}.opps.n1 .st span,#mine .st span{display:inline}
 #events{gap:6px}.ev-now,.ev-next{padding:5px 8px;flex-basis:140px}.ev-now b,.ev-next b{font-size:14px}.ev-now p,.ev-next p{font-size:11.5px}
 #arena{min-height:0;padding:6px 0}.card.big{width:118px;min-height:150px}.card.big .c-name{font-size:12.5px}.card.big .c-text{font-size:10.5px}
 #market{padding:4px 8px 4px}#market h3{font-size:17px;margin:0 0 2px}.m-cards .card{width:100px;min-height:138px}.m-note{font-size:11px;margin-top:2px}
@@ -138,14 +141,14 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:-1;ba
 </style>
 </head>
 <body>
-<header class="top"><a href="index.html">‹ Sonic Hub Pages</a><h1>Hỗn Chiến Trung Cổ</h1><button class="btn ghost" id="rulesBtn">Luật chơi</button><button class="btn ghost" id="soundBtn">Âm thanh: bật</button><button class="btn ghost" id="newBtn">Ván mới</button></header>
+<header class="top"><a href="index.html">‹ Sonic Hub Pages</a><h1>Medieval Mayhem</h1><button class="btn ghost" id="rulesBtn">Rules</button><button class="btn ghost" id="soundBtn">Sound: on</button><button class="btn ghost" id="newBtn">New game</button></header>
 <section id="setup"></section>
 <section id="game" class="hidden">
   <div id="opps" class="opps"></div>
   <div class="mid"><div id="events"></div><div id="arena"></div><div id="market"></div></div>
   <div id="mine"></div>
   <div class="handbar"><div id="status"></div><div id="hand"></div></div>
-  <aside class="chronbox"><h3>Biên niên</h3><ul id="chron"></ul></aside>
+  <aside class="chronbox"><h3>Chronicle</h3><ul id="chron"></ul></aside>
 </section>
 <div id="modal" class="modal hidden"></div>
 <div id="banner"></div>

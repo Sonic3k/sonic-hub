@@ -62,7 +62,7 @@ const walls = X => X.structs.filter(s => s.kind !== 'wonder');
 const wallTotal = X => walls(X).reduce((a, s) => a + s.dur, 0);
 const hasWalls = X => walls(X).length > 0;
 const wonderOf = X => X.structs.find(s => s.kind === 'wonder');
-function log(S, k, x) { S.log.push({ k, round: S.round, ...x }); if (S.log.length > 400) S.log.splice(0, 100); }
+function log(S, k, x) { if (S.quiet) return; S.log.push({ k, round: S.round, ...x }); if (S.log.length > 400) S.log.splice(0, 100); }
 function draw(S, P, n, quiet) {
   let got = 0;
   for (let k = 0; k < n; k++) {
@@ -128,7 +128,7 @@ function razeOne(S, A, T, ev) {
 }
 
 /* ── playing ── */
-const stepNeedsTarget = s => (s.dmg && !s.all) || s.raze || s.steal || s.convert;
+const stepNeedsTarget = s => (s.dmg && !s.all) || s.raze || (s.steal && !s.all) || s.convert;
 const needsTarget = card => card.steps.some(stepNeedsTarget);
 function resolveStep(S, A, s, T, ev) {
   if (!A.alive) return;
@@ -148,7 +148,7 @@ function resolveStep(S, A, s, T, ev) {
   if (s.draw) draw(S, A, s.draw);
   if (s.gold) { A.gold += s.gold; ev.fx.push({ k: 'gold', t: A.id, n: s.gold }); }
   if (s.raze) for (let k = 0; k < s.raze; k++) { if (!T || (!T.structs.length)) break; razeOne(S, A, T, ev); }
-  if (s.steal) for (let k = 0; k < s.steal; k++) { if (!T || !T.hand.length) break; const c = T.hand.splice(Math.floor(rnd(S) * T.hand.length), 1)[0]; A.hand.push(c); ev.fx.push({ k: 'steal', t: T.id, by: A.id }); }
+  if (s.steal) for (const X of (s.all ? opponents(S, A) : T ? [T] : [])) for (let k = 0; k < s.steal; k++) { if (!X.hand.length) break; const c = X.hand.splice(Math.floor(rnd(S) * X.hand.length), 1)[0]; A.hand.push(c); ev.fx.push({ k: 'steal', t: X.id, by: A.id }); }
   if (s.convert && T) { const ws = walls(T).sort((a, b) => b.dur - a.dur); if (ws.length) { const w = ws[0]; T.structs = T.structs.filter(x => x !== w); A.structs.push(w); ev.fx.push({ k: 'convert', t: T.id, by: A.id, name: w.card.name }); } }
   if (s.token === 'camel') A.tokens.camel++;
   if (s.token === 'immune') A.tokens.immune = true;
@@ -170,7 +170,7 @@ function playCard(S, pid, uid, tid) {
   for (const s of card.steps) resolveStep(S, A, s, T, ev);
   if (A.alive && (card.wall > 0 || card.wonder)) {
     if (S.mod.monsoon) { A.discard.push(card); ev.fx.push({ k: 'rained', t: A.id }); }
-    else if (card.wonder) A.structs.push({ card, kind: 'wonder', dur: 4, cap: 4, age: 0 });
+    else if (card.wonder) { const dur = 3 + opponents(S, A).length; A.structs.push({ card, kind: 'wonder', dur, cap: dur, age: 0 }); }
     else { const dur = card.wall + (A.relic === 'scone' ? 1 : 0); A.structs.push({ card, kind: card.kind || 'wall', dur, cap: dur + 1 }); }
   } else A.discard.push(card);
   log(S, 'play', { pid, card: card.name, target: ev.target, fx: ev.fx.slice(0, 12) });
@@ -248,20 +248,20 @@ function startRound(S) {
 }
 /* readable text for any card */
 const SYM_TXT = {
-  A: n => `Gây ${n} sát thương.`, H: n => `Hồi ${n} máu.`, M: n => (n === 1 ? 'Đánh thêm một lá.' : `Đánh thêm ${n} lá.`), D: n => `Rút ${n} lá.`, G: n => `Nhận ${n} vàng.`,
-  R: n => (n === 1 ? 'Phá sập công trình lớn nhất của đối thủ.' : `Phá sập ${n} công trình của đối thủ.`), S: n => `Cướp ${n} lá ngẫu nhiên của đối thủ.`,
-  C: () => 'Kéo công trình lớn nhất của đối thủ về phe mình.', K: n => `Kỵ binh: gây ${2 * n} sát thương (lạc đà chặn được).`,
-  E: n => (n === 1 ? 'Voi phá sập một công trình rồi gây 1 sát thương.' : `Voi phá sập ${n} công trình, gây ${n} sát thương.`),
-  L: n => `Gây ${n} sát thương, dựng chốt lạc đà: đòn kỵ binh kế tiếp nhắm vào bạn bị hủy.`, B: n => `Gây ${n} sát thương bay qua tường.`,
-  F: n => (n === 1 ? 'Gây 1 sát thương cho mọi đối thủ.' : `Gây 1 sát thương cho mọi đối thủ, ${n} lần.`),
-  Y: n => (n === 1 ? 'Gây 1 sát thương; đối thủ không có tường thì gây 2.' : `Gây ${n} sát thương; đối thủ không có tường thì mỗi đòn thêm 1.`),
-  N: n => `Đổ bộ: cướp ${n} lá rồi gây ${n} sát thương.`,
+  A: n => `Deal ${n} damage.`, H: n => `Heal ${n} HP.`, M: n => (n === 1 ? 'Play another card.' : `Play ${n} more cards.`), D: n => (n === 1 ? 'Draw 1 card.' : `Draw ${n} cards.`), G: n => `Gain ${n} gold.`,
+  R: n => (n === 1 ? "Destroy the opponent's biggest structure." : `Destroy ${n} of the opponent's structures.`), S: n => (n === 1 ? 'Steal 1 random card from an opponent.' : `Steal ${n} random cards from an opponent.`),
+  C: () => "Convert the opponent's biggest structure to your side.", K: n => `Cavalry: deal ${2 * n} damage (camels block it).`,
+  E: n => (n === 1 ? 'Elephant: destroy a structure, then deal 1 damage.' : `Elephants: destroy ${n} structures and deal ${n} damage.`),
+  L: n => `Deal ${n} damage and set up a camel guard: the next cavalry attack on you is cancelled.`, B: n => `Deal ${n} damage over the walls.`,
+  F: n => (n === 1 ? 'Deal 1 damage to every opponent.' : `Deal 1 damage to every opponent, ${n} times.`),
+  Y: n => (n === 1 ? 'Deal 1 damage, or 2 damage if the opponent has no walls.' : `Deal ${n} damage, 1 extra damage per hit if the opponent has no walls.`),
+  N: n => `Raid: steal ${n} card${n > 1 ? 's' : ''}, then deal ${n} damage.`,
 };
 function cardText(card) {
   if (card.text) return card.text;
   const cnt = {};
   for (const ch of card.icons) cnt[ch] = (cnt[ch] || 0) + 1;
   const parts = Object.keys(cnt).filter(ch => ch !== 'W').map(ch => SYM_TXT[ch](cnt[ch]));
-  if (cnt.W) parts.push(`Ở lại làm công trình ${cnt.W} độ bền.`);
+  if (cnt.W) parts.push(`Stays in play as a structure with ${cnt.W} durability.`);
   return parts.join(' ');
 }

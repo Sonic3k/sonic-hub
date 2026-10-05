@@ -1,7 +1,11 @@
 /* ── Rendering ── */
 const $ = s => document.querySelector(s);
-const civName = pid => (pid === 0 ? 'Bạn' : CIVS[S.players[pid].civ].name);
-const civObj = pid => (pid === 0 ? 'bạn' : CIVS[S.players[pid].civ].name);
+const civName = pid => (pid === 0 ? 'You' : CIVS[S.players[pid].civ].name);
+const civObj = pid => (pid === 0 ? 'you' : CIVS[S.players[pid].civ].name);
+/* keyword colours: the same colour as the symbol for that resource, so a long game can be read at a glance */
+const KW_RE = /\b(?:(over the walls)|([Ee]very opponent|[Ee]veryone)|([Pp]lay another card|[Pp]lay \d+ more cards)|(\d+ (?:extra |less )?damage|damage)|(\d+ (?:extra )?HP|max HP|HP|[Hh]eals?)|(\d+ (?:extra |less )?gold|gold)|(\d+ (?:random |extra )?cards?|another card|a random card|a card|cards?)|(\d+ (?:extra )?durability|durability|walls?|structures?|[Ww]onders?)|([Ss]teal|stolen)|([Dd]estroy|destroyed))\b/g;
+const KW_CLS = ['pierce', 'aoe', 'play', 'dmg', 'hp', 'gold', 'card', 'wall', 'steal', 'raze'];
+function kw(text) { return esc(text).replace(KW_RE, (...m) => `<b class="kw k-${KW_CLS[m.slice(1, 11).findIndex(x => x !== undefined)]}">${m[0]}</b>`); }
 function cardHTML(card, o = {}) {
   const civ = card.civ === 'merc' ? null : CIVS[card.civ];
   const cls = ['card', card.unique ? 'unique' : '', card.civ === 'merc' ? 'merc' : '', o.cls || ''].join(' ');
@@ -9,34 +13,34 @@ function cardHTML(card, o = {}) {
   return `<div class="${cls}" data-uid="${card.uid || ''}" ${o.attrs || ''} style="--civ:${civ ? civ.color : '#6b5a3a'}">
     <div class="c-head">${civ ? crest(card.civ, 18) : mercCrest(18)}<span class="c-name">${esc(card.name)}</span></div>
     <div class="c-syms">${syms}</div>
-    <div class="c-text">${esc(cardText(card))}</div>
-    ${o.cost != null ? `<div class="c-cost${o.afford ? ' ok' : ''}">${o.cost} vàng</div>` : ''}${card.unique ? '<div class="c-star" title="Lá riêng của văn minh">★</div>' : ''}
+    <div class="c-text">${kw(cardText(card))}</div>
+    ${o.cost != null ? `<div class="c-cost${o.afford ? ' ok' : ''}">${o.cost} gold</div>` : ''}${card.unique ? '<div class="c-star" title="Signature card of this civilization">★</div>' : ''}
   </div>`;
 }
 function structHTML(st) {
-  if (st.kind === 'wonder') return `<div class="st wonder" title="${esc(cardText(st.card))}"><b>${st.dur}</b><span>${esc(st.card.name.replace('Kỳ quan ', ''))}</span><i>còn ${Math.max(0, 3 - st.age)} lượt</i></div>`;
-  const tag = { regen: 'tự hồi', sacred: 'hồi máu', thorns: 'có gai', fortress: 'đá khổng lồ' }[st.kind] || '';
+  if (st.kind === 'wonder') return `<div class="st wonder" title="${esc(cardText(st.card))}"><b>${st.dur}</b><span>${esc(st.card.name)}</span><i>${Math.max(0, 3 - st.age)} turns to win</i></div>`;
+  const tag = { regen: 'regrows', sacred: 'heals', thorns: 'spiked', fortress: 'giant stones' }[st.kind] || '';
   return `<div class="st" title="${esc(st.card.name)}${tag ? ' (' + tag + ')' : ''}">${symBadge('W', 16)}<b>${st.dur}</b><span>${esc(st.card.name)}</span>${tag ? `<i>${tag}</i>` : ''}</div>`;
 }
 function tokensHTML(P) {
   const t = [];
-  if (P.tokens.camel) t.push(`<span class="tok" title="Đòn kỵ binh kế tiếp nhắm vào đây bị hủy">${symBadge('L', 16)} chốt lạc đà${P.tokens.camel > 1 ? ' ×' + P.tokens.camel : ''}</span>`);
-  if (P.tokens.immune) t.push('<span class="tok hot" title="Mọi đòn vô hiệu tới lượt sau">Bão thần</span>');
-  if (P.tokens.trap) t.push('<span class="tok hot" title="Kẻ đầu tiên gây sát thương mất 2 máu">Cọc Bạch Đằng</span>');
+  if (P.tokens.camel) t.push(`<span class="tok" title="The next cavalry attack against this player is cancelled">${symBadge('L', 16)} camel guard${P.tokens.camel > 1 ? ' ×' + P.tokens.camel : ''}</span>`);
+  if (P.tokens.immune) t.push('<span class="tok hot" title="Every attack is cancelled until their next turn">Divine Wind</span>');
+  if (P.tokens.trap) t.push('<span class="tok hot" title="The first opponent to deal damage takes 2 damage">Bạch Đằng stakes</span>');
   return t.join('');
 }
 function seatHTML(P, me) {
   const C = CIVS[P.civ], turn = S.turn === P.id && S.winner == null;
   const tgt = UI.targeting && !me && P.alive ? ' targetable' : '';
   const hpPct = Math.max(0, P.hp / P.maxHP * 100);
-  const backs = me ? '' : `<span class="backs" title="${P.hand.length} lá trên tay">${'<i></i>'.repeat(Math.min(P.hand.length, 8))}<em>${P.hand.length}</em></span>`;
+  const backs = me ? '' : `<span class="backs" title="${P.hand.length} cards in hand">${'<i></i>'.repeat(Math.min(P.hand.length, 8))}<em>${P.hand.length}</em></span>`;
   return `<div class="seat${me ? ' me' : ''}${turn ? ' turn' : ''}${P.alive ? '' : ' out'}${tgt}" id="seat-${P.id}" data-pid="${P.id}" style="--civ:${C.color}">
     <div class="s-top">${crest(P.civ, me ? 46 : 40)}
-      <div class="s-id"><div class="s-name">${me ? 'Bạn · ' : ''}${esc(C.name)}</div><div class="s-sub">${P.relic ? esc(RELICS[P.relic].name) : ''}</div></div>
-      <div class="s-hp" title="Máu"><b>${P.hp}</b><small>/${P.maxHP}</small><div class="hpbar"><div style="width:${hpPct}%"></div></div></div>
+      <div class="s-id"><div class="s-name">${me ? 'You · ' : ''}${esc(C.name)}</div><div class="s-sub">${P.relic ? esc(RELICS[P.relic].name) : ''}</div></div>
+      <div class="s-hp" title="HP"><b>${P.hp}</b><small>/${P.maxHP}<span class="hp-u"> HP</span></small><div class="hpbar"><div style="width:${hpPct}%"></div></div></div>
     </div>
-    <div class="s-row"><span class="gold" title="Vàng">${symBadge('G', 18)}<b>${P.gold}</b></span>${backs}${tokensHTML(P)}${turn ? '<span class="turn-tag">đang đi</span>' : ''}${P.alive ? '' : '<span class="out-tag">bại trận</span>'}</div>
-    <div class="s-structs">${P.structs.map(structHTML).join('') || '<span class="none">Chưa có công trình</span>'}</div>
+    <div class="s-row"><span class="gold" title="Gold">${symBadge('G', 18)}<b>${P.gold}</b></span>${backs}${tokensHTML(P)}${turn ? '<span class="turn-tag">acting</span>' : ''}${P.alive ? '' : '<span class="out-tag">defeated</span>'}</div>
+    <div class="s-structs">${P.structs.map(structHTML).join('') || '<span class="none">No structures</span>'}</div>
     <div class="floats"></div>
   </div>`;
 }
@@ -47,37 +51,37 @@ function renderGame() {
   $('#opps').innerHTML = opps.map(P => seatHTML(P, false)).join('');
   $('#mine').innerHTML = seatHTML(me, true);
   const E = S.event ? EVENT_BY[S.event] : null, N = EVENT_BY[S.eventNext];
-  $('#events').innerHTML = `<div class="ev-now"><small>Thời cuộc · vòng ${S.round}</small><b>${E ? esc(E.name) : 'Thái bình'}</b><p>${E ? esc(E.text) : 'Chưa có biến cố nào.'}</p></div>
-    <div class="ev-next"><small>Vòng sau</small><b>${esc(N.name)}</b><p>${esc(N.text)}</p></div>${S.round >= 14 ? `<div class="ev-warn">${S.round >= 16 ? 'Chiến tranh kéo dài: mỗi vòng mọi người mất 1 máu' : 'Từ vòng 16, mỗi vòng mọi người mất 1 máu'}</div>` : ''}`;
+  $('#events').innerHTML = `<div class="ev-now"><small>Event · round ${S.round}</small><b>${E ? esc(E.name) : 'Peace'}</b><p>${E ? kw(E.text) : 'No event yet.'}</p></div>
+    <div class="ev-next"><small>Next round</small><b>${esc(N.name)}</b><p>${kw(N.text)}</p></div>${S.round >= 14 ? `<div class="ev-warn">${S.round >= 16 ? 'The war drags on: everyone loses 1 HP each round' : 'From round 16 everyone loses 1 HP each round'}</div>` : ''}`;
   const lp = UI.last;
-  $('#arena').innerHTML = lp ? `<div class="played-by">${esc(civName(lp.pid))} ${lp.target != null ? '▸ ' + esc(civObj(lp.target)) : ''}</div>${cardHTML(lp.card, { cls: 'big pop' })}` : `<div class="arena-hint">${S.turn === 0 ? 'Chọn một lá trên tay để đánh' : ''}</div>`;
-  $('#market').innerHTML = `<h3>Chợ đánh thuê</h3><div class="m-cards">${S.market.map((c, i) => c ? cardHTML(c, { small: 1, cost: marketCost(S, me, c), afford: myTurn && !S.flags.bought && me.gold >= marketCost(S, me, c), attrs: `data-mi="${i}"`, cls: myTurn && !S.flags.bought && me.gold >= marketCost(S, me, c) ? 'buyable' : '' }) : '<div class="card empty">Hết lính</div>').join('')}</div>
-    <p class="m-note">${S.flags.bought && S.turn === 0 ? 'Đã thuê lính lượt này' : 'Mỗi lượt thuê 1 lá, vào thẳng tay bạn'}${S.mod.fair ? ' · Hội chợ: rẻ hơn 1' : ''}${S.flags.buyFree && S.turn === 0 ? ' · Lần thuê này miễn phí' : ''}</p>`;
-  $('#hand').innerHTML = me.hand.map(c => cardHTML(c, { cls: myTurn ? 'playable' + (UI.targeting === c.uid ? ' chosen' : '') : '' })).join('') || '<div class="hand-empty">Hết bài trên tay</div>';
-  const mini = `<span class="me-mini">Máu ${me.hp}/${me.maxHP} · ${me.gold} vàng${walls(me).length ? ' · tường ' + wallTotal(me) : ''}</span>`;
-  $('#status').innerHTML = mini + (S.winner != null ? '' : UI.targeting ? 'Chọn đối thủ để nhắm <button class="btn ghost" id="cancelTarget">Hủy</button>' : myTurn ? `Lượt của bạn${S.plays > 1 ? ` · còn ${S.plays} lượt đánh` : ''}` : `Lượt của ${esc(civName(S.turn))}…`);
+  $('#arena').innerHTML = lp ? `<div class="played-by">${esc(civName(lp.pid))}${lp.target != null ? ' ▸ ' + esc(civObj(lp.target)) : ''}</div>${cardHTML(lp.card, { cls: 'big pop' })}` : `<div class="arena-hint">${S.turn === 0 ? 'Pick a card from your hand' : ''}</div>`;
+  $('#market').innerHTML = `<h3>Mercenary Market</h3><div class="m-cards">${S.market.map((c, i) => { if (!c) return '<div class="card empty">Sold out</div>'; const cost = marketCost(S, me, c), ok = myTurn && !S.flags.bought && me.gold >= cost; return cardHTML(c, { small: 1, cost, afford: ok, attrs: `data-mi="${i}"`, cls: ok ? 'buyable' : '' }); }).join('')}</div>
+    <p class="m-note">${S.flags.bought && S.turn === 0 ? 'Already hired this turn' : 'Hire 1 card per turn with <b class="kw k-gold">gold</b>; it goes straight to your hand'}${S.mod.fair ? ' · Great Fair: 1 cheaper' : ''}${S.flags.buyFree && S.turn === 0 ? ' · this hire is free' : ''}</p>`;
+  $('#hand').innerHTML = me.hand.map(c => cardHTML(c, { cls: myTurn ? 'playable' + (UI.targeting === c.uid ? ' chosen' : '') : '' })).join('') || '<div class="hand-empty">No cards in hand</div>';
+  const mini = `<span class="me-mini"><b class="kw k-hp">${me.hp}/${me.maxHP} HP</b> · <b class="kw k-gold">${me.gold} gold</b>${walls(me).length ? ` · <b class="kw k-wall">${wallTotal(me)} walls</b>` : ''}</span>`;
+  $('#status').innerHTML = mini + (S.winner != null ? '' : UI.targeting ? 'Choose an opponent to target <button class="btn ghost" id="cancelTarget">Cancel</button>' : myTurn ? `Your turn${S.plays > 1 ? ` · ${S.plays} plays left` : ''}` : `${esc(civName(S.turn))} is playing…`);
   $('#chron').innerHTML = S.log.slice(-9).reverse().map(e => `<li>${logLine(e)}</li>`).join('');
 }
 function logLine(e) {
   switch (e.k) {
-    case 'play': return `${esc(civName(e.pid))} đánh <b>${esc(e.card)}</b>${e.target != null ? ' vào ' + esc(civObj(e.target)) : ''}`;
-    case 'buy': return `${esc(civName(e.pid))} thuê <b>${esc(e.card)}</b> (${e.cost} vàng)`;
-    case 'event': return `Vòng ${e.round}: <b>${esc(EVENT_BY[e.id].name)}</b>`;
-    case 'out': return `<b>${esc(civName(e.pid))}</b> bại trận`;
-    case 'hich': return `${esc(civName(e.pid))} lâm nguy, rút thêm 2 lá`;
-    case 'banner': return `Cờ thánh giúp ${esc(civObj(e.pid))} đứng dậy`;
-    case 'fatigue': return `${esc(civName(e.pid))} xáo lại bộ bài, kiệt sức mất 1 máu`;
-    case 'wonder': return `<b>${esc(civName(e.pid))}</b> hoàn thành ${esc(e.name)}`;
-    case 'attrition': return 'Chiến tranh kéo dài, mọi người mất 1 máu';
+    case 'play': return `${esc(civName(e.pid))} ▸ <b>${esc(e.card)}</b>${e.target != null ? ' → ' + esc(civObj(e.target)) : ''}`;
+    case 'buy': return `${esc(civName(e.pid))} hired <b>${esc(e.card)}</b> for <b class="kw k-gold">${e.cost} gold</b>`;
+    case 'event': return `Round ${e.round}: <b>${esc(EVENT_BY[e.id].name)}</b>`;
+    case 'out': return `<b>${esc(civName(e.pid))}</b> ${e.pid === 0 ? 'were' : 'is'} defeated`;
+    case 'hich': return `${esc(civName(e.pid))} in danger: drew 2 extra cards`;
+    case 'banner': return `The Holy Banner raised ${esc(civObj(e.pid))} again`;
+    case 'fatigue': return `${esc(civName(e.pid))} reshuffled the deck: exhausted, −1 HP`;
+    case 'wonder': return `<b>${esc(civName(e.pid))}</b> completed ${esc(e.name)}`;
+    case 'attrition': return 'The war drags on: everyone −1 HP';
   }
   return '';
 }
 const FX_TEXT = {
-  hp: f => (f.n < 0 ? ['−' + -f.n, 'dmg'] : ['+' + f.n, 'heal']), wall: f => [`−${f.n} tường`, 'wall'], razed: f => [`Sập ${f.name}`, 'wall'],
-  camel: () => ['Lạc đà chặn!', 'info'], immune: () => ['Bão thần chặn!', 'info'], shroud: () => ['Áo choàng −1', 'info'], trap: () => ['Trúng cọc!', 'dmg'],
-  thorns: () => ['Gai đâm!', 'dmg'], steal: () => ['Bị cướp 1 lá', 'info'], convert: f => [`Mất ${f.name}`, 'info'], gold: f => [`+${f.n} vàng`, 'gold'],
-  out: () => ['Bại trận!', 'dmg big'], hich: () => ['Lâm nguy: +2 lá', 'heal'], banner: () => ['Cờ thánh!', 'heal'], wonderhit: f => [`Kỳ quan còn ${f.left}`, 'wall'],
-  discard: () => ['Mất 1 lá', 'info'], rained: () => ['Mưa: không dựng được', 'info'],
+  hp: f => (f.n < 0 ? ['−' + -f.n, 'dmg'] : ['+' + f.n, 'heal']), wall: f => [`−${f.n} wall`, 'wall'], razed: f => [`${f.name} falls`, 'wall'],
+  camel: () => ['Camels block!', 'info'], immune: () => ['Divine Wind!', 'info'], shroud: () => ['Mantle −1', 'info'], trap: () => ['Stakes!', 'dmg'],
+  thorns: () => ['Spikes!', 'dmg'], steal: () => ['Card stolen', 'info'], convert: f => [`Lost ${f.name}`, 'info'], gold: f => [`+${f.n} gold`, 'gold'],
+  out: () => ['Defeated!', 'dmg big'], hich: () => ['In danger: +2 cards', 'heal'], banner: () => ['Holy Banner!', 'heal'], wonderhit: f => [`Wonder ${f.left}`, 'wall'],
+  discard: () => ['−1 card', 'info'], rained: () => ['Monsoon: no building', 'info'],
 };
 function floatText(pid, text, cls, delay) {
   setTimeout(() => {
@@ -87,7 +91,7 @@ function floatText(pid, text, cls, delay) {
   }, delay);
 }
 function showFx(fx) {
-  let t = 0, snd = new Set();
+  let t = 0; const snd = new Set();
   for (const f of fx) {
     const m = FX_TEXT[f.k]; if (!m) continue;
     const [text, cls] = m(f);
@@ -98,6 +102,6 @@ function showFx(fx) {
   [...snd].forEach((s, i) => setTimeout(() => SFX.play(s), 120 + i * 90));
 }
 function banner(text, sub) {
-  const b = $('#banner'); b.innerHTML = `<b>${esc(text)}</b>${sub ? `<span>${esc(sub)}</span>` : ''}`;
+  const b = $('#banner'); b.innerHTML = `<b>${esc(text)}</b>${sub ? `<span>${kw(sub)}</span>` : ''}`;
   b.classList.remove('show'); void b.offsetWidth; b.classList.add('show');
 }

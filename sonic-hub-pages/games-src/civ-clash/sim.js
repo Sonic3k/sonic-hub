@@ -3,6 +3,7 @@ const fs = require('fs'), vm = require('vm'), path = require('path');
 for (const f of ['00-core.js', '10-data.js', '20-engine.js', '30-ai.js']) vm.runInThisContext(fs.readFileSync(path.join(__dirname, 'src', f), 'utf8'), { filename: f });
 function play(seed, civs) {
   const S = newGame({ seed, civs, ai: civs.map(() => true) });
+  S.quiet = true;
   for (const P of S.players) chooseRelic(S, P.id, aiRelic(S, P));
   startGame(S);
   let guard = 0;
