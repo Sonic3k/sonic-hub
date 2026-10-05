@@ -1,0 +1,264 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Sonic Hub — Giấy & Angels</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Literata:ital,wght@0,400;0,500;0,600;1,300;1,400;1,500&family=Be+Vietnam+Pro:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  /* ═══════════════════════════════════════════════════════════════════════════
+     PAPER · with an evening mood for Angels
+     Daytime: warm matte paper, ink-brown text, a reading serif, photos laid on
+     the page like prints. Angels: the same paper under a desk lamp in the
+     evening — warmer, dimmer at the edges, a faded-rose accent, photos faded
+     like 2009 prints that regain their colour when you look closely.
+     Colours are registered custom properties so the change of light is a
+     slow, continuous transition rather than a cut.
+     ═══════════════════════════════════════════════════════════════════════════ */
+  @property --paper  { syntax: '<color>'; inherits: true; initial-value: #F4F0E8; }
+  @property --ink    { syntax: '<color>'; inherits: true; initial-value: #2A2621; }
+  @property --ink2   { syntax: '<color>'; inherits: true; initial-value: #5F574D; }
+  @property --ink3   { syntax: '<color>'; inherits: true; initial-value: #8E8577; }
+  @property --accent { syntax: '<color>'; inherits: true; initial-value: #33507A; }
+  @property --rule   { syntax: '<color>'; inherits: true; initial-value: rgba(42,38,33,.14); }
+
+  :root { --paper: #F4F0E8; --ink: #2A2621; --ink2: #5F574D; --ink3: #8E8577; --accent: #33507A; --rule: rgba(42,38,33,.14);
+    --serif: Literata, Georgia, serif; --sans: "Be Vietnam Pro", system-ui, sans-serif; --ease: cubic-bezier(.25,.6,.2,1);
+    --fade: sepia(.28) saturate(.72) contrast(.9) brightness(1.04); }
+  body.evening { --paper: #E5D5BC; --ink: #3A281F; --ink2: #6A4E3F; --ink3: #93766A; --accent: #A25A5A; --rule: rgba(58,40,31,.2); }
+
+  *, *::before, *::after { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body { margin: 0; background: var(--paper); color: var(--ink); font-family: var(--serif); font-size: 19px; line-height: 1.75; -webkit-font-smoothing: antialiased;
+    transition: --paper 1.8s var(--ease), --ink 1.8s var(--ease), --ink2 1.8s var(--ease), --ink3 1.8s var(--ease), --accent 1.8s var(--ease), --rule 1.8s var(--ease); }
+  a { color: inherit; text-decoration: none; }
+  ::selection { background: color-mix(in srgb, var(--accent) 22%, transparent); }
+
+  /* paper grain + the evening lamp */
+  .grain { position: fixed; inset: 0; z-index: 50; pointer-events: none; opacity: .09; mix-blend-mode: multiply; transition: opacity 1.8s var(--ease);
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .5 0 0 0 0 .45 0 0 0 0 .4 0 0 0 .55 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E"); }
+  body.evening .grain { opacity: .14; }
+  .lamp { position: fixed; inset: 0; z-index: 0; pointer-events: none; opacity: 0; transition: opacity 2.2s var(--ease);
+    background: radial-gradient(ellipse 62% 54% at 50% 26%, rgba(255,238,206,.55), rgba(255,230,190,0) 64%), radial-gradient(ellipse 120% 100% at 50% 40%, rgba(60,36,22,0) 58%, rgba(60,36,22,.26) 100%); }
+  body.evening .lamp { opacity: 1; }
+
+  /* top bar */
+  .bar { position: sticky; top: 0; z-index: 40; display: flex; align-items: baseline; gap: 34px; max-width: 1120px; margin: 0 auto; padding: 22px 28px 14px; background: linear-gradient(var(--paper) 70%, transparent); }
+  .mark { font-family: var(--serif); font-style: italic; font-weight: 500; font-size: 23px; letter-spacing: -.01em; margin-right: auto; }
+  .nav { display: flex; gap: 22px; font-family: var(--sans); font-size: 14px; letter-spacing: .02em; color: var(--ink2); }
+  .nav a { white-space: nowrap; padding-bottom: 3px; border-bottom: 1.5px solid transparent; transition: color .4s, border-color .4s; }
+  .nav a:hover { color: var(--ink); }
+  .nav a[aria-current="page"] { color: var(--ink); border-color: var(--accent); }
+
+  /* page frame + entrance */
+  main { position: relative; z-index: 1; max-width: 1120px; margin: 0 auto; padding: 30px 28px 120px; }
+  .page { animation: enter 1.1s var(--ease) both; }
+  body.evening .page { animation-duration: 1.6s; }
+  @keyframes enter { from { opacity: 0; transform: translateY(10px); } }
+  .col { max-width: 680px; margin-left: 180px; }
+  .col.head { max-width: 900px; }
+  .eyebrow { margin: 0 0 14px; font-family: var(--sans); font-size: 12.5px; font-weight: 600; letter-spacing: .16em; text-transform: uppercase; color: var(--accent); }
+  h1 { margin: 0 0 16px; font-weight: 500; font-size: clamp(40px, 5vw, 60px); line-height: 1.08; letter-spacing: -.02em; }
+  .lede { margin: 0 0 40px; font-size: 21px; line-height: 1.6; color: var(--ink2); }
+  .more { font-family: var(--sans); font-size: 14.5px; font-weight: 500; color: var(--accent); border-bottom: 1px solid color-mix(in srgb, var(--accent) 40%, transparent); padding-bottom: 1px; }
+  .more:hover { border-color: var(--accent); }
+  .rule { height: 1px; background: var(--rule); margin: 56px 0 40px; border: 0; }
+
+  /* photos: prints on paper */
+  .prints { margin: 6px 0 48px; }
+  .jg-item { margin: 0; position: relative; overflow: hidden; border-radius: 1px; background: color-mix(in srgb, var(--ink) 6%, transparent); }
+  .jg-item img { width: 100%; height: 100%; object-fit: cover; display: block; transition: filter 1s var(--ease); }
+  .faded .jg-item img, .faded img.f { filter: var(--fade); }
+  .faded .jg-item:hover img, .faded img.f:hover, .toc a:hover img.f { filter: none; }
+  .develop .jg-item img, img.develop { animation: develop 2.4s var(--ease) backwards; animation-delay: calc(var(--k, 0) * .14s + .3s); }
+  @keyframes develop { from { opacity: 0; filter: brightness(1.9) contrast(.35) sepia(.5) blur(1.5px); } 45% { opacity: 1; } }
+
+  /* daytime: a note */
+  .note h2 { margin: 0 0 10px; font-size: 28px; font-weight: 500; line-height: 1.25; }
+  .note p { margin: 0 0 16px; }
+  .bridge { margin-top: 42px; font-style: italic; color: var(--ink2); }
+  .bridge a { font-style: normal; }
+
+  /* Angels: the table of contents */
+  .title-it { font-style: italic; font-weight: 300; font-size: clamp(48px, 6.6vw, 84px); letter-spacing: -.02em; }
+  .toc { list-style: none; margin: 10px 0 0; padding: 0; counter-reset: ch; }
+  .toc li { border-top: 1px solid var(--rule); }
+  .toc li:last-child { border-bottom: 1px solid var(--rule); }
+  .toc a { display: grid; grid-template-columns: 54px 1fr 84px; gap: 24px; align-items: center; padding: 22px 6px; transition: background .6s var(--ease); }
+  .toc a:hover { background: color-mix(in srgb, var(--accent) 6%, transparent); }
+  .num { font-family: var(--sans); font-size: 13px; font-weight: 600; letter-spacing: .14em; color: var(--accent); }
+  .line { display: flex; align-items: baseline; gap: 14px; }
+  .who { font-style: italic; font-weight: 400; font-size: 32px; line-height: 1.15; }
+  .dots { flex: 1; border-bottom: 1.5px dotted var(--rule); transform: translateY(-7px); }
+  .yrs { font-family: var(--sans); font-size: 14px; letter-spacing: .06em; color: var(--ink2); white-space: nowrap; }
+  .gist { margin: 4px 0 0; font-size: 17px; color: var(--ink2); }
+  .via { font-family: var(--sans); font-size: 12.5px; letter-spacing: .06em; color: var(--ink3); }
+  .toc img.f { width: 84px; height: 104px; object-fit: cover; border-radius: 1px; transition: filter 1s var(--ease); }
+
+  /* Angels: a chapter */
+  .back { display: inline-block; margin-bottom: 34px; font-family: var(--sans); font-size: 14px; color: var(--ink2); }
+  .back:hover { color: var(--ink); }
+  .name { margin: 0; font-style: italic; font-weight: 300; font-size: clamp(60px, 9vw, 112px); line-height: 1; letter-spacing: -.03em; }
+  .meta { margin: 18px 0 6px; font-family: var(--sans); font-size: 13.5px; letter-spacing: .1em; text-transform: uppercase; color: var(--ink3); }
+  .song { margin: 0 0 44px; font-style: italic; color: var(--ink2); }
+  .song::before { content: "♪"; font-style: normal; margin-right: 10px; color: var(--accent); }
+  .hero-print { margin: 0 0 54px; }
+  .hero-print img { width: 100%; aspect-ratio: 16/8; object-fit: cover; border-radius: 1px; display: block; }
+  .hero-print figcaption { margin-top: 10px; font-family: var(--sans); font-size: 13px; color: var(--ink3); }
+  .moment { display: grid; grid-template-columns: 180px minmax(0, 680px); margin: 0 0 30px; }
+  .when { padding-top: 7px; font-family: var(--sans); font-size: 12.5px; font-weight: 500; letter-spacing: .12em; text-transform: uppercase; color: var(--ink3); }
+  .moment h2 { margin: 0 0 10px; font-size: 26px; font-weight: 500; line-height: 1.3; }
+  .moment p { margin: 0 0 16px; }
+  .letter { margin: 8px 0 26px; padding: 6px 0 6px 24px; border-left: 2px solid color-mix(in srgb, var(--accent) 60%, transparent); }
+  .letter p { margin: 0 0 6px; font-style: italic; }
+  .letter time, .letter b { font-family: var(--sans); font-style: normal; font-size: 12.5px; letter-spacing: .06em; }
+  .letter time { color: var(--ink3); margin-right: 10px; } .letter b { font-weight: 600; color: var(--accent); margin-right: 8px; }
+  .wide { margin: 8px 0 52px; }
+  .end { margin: 70px 0 18px; text-align: center; font-family: var(--sans); font-size: 12.5px; letter-spacing: .24em; text-transform: uppercase; color: var(--ink3); }
+  .next { display: block; text-align: center; font-size: 22px; }
+  .next i { font-weight: 400; } .next small { display: block; font-family: var(--sans); font-size: 12.5px; letter-spacing: .14em; text-transform: uppercase; color: var(--accent); margin-bottom: 4px; }
+
+  @media (max-width: 860px) {
+    body { font-size: 18px; }
+    .bar { gap: 14px; padding: 16px 18px 12px; flex-wrap: wrap; } .nav { gap: 16px; overflow-x: auto; width: 100%; scrollbar-width: none; font-size: 13.5px; }
+    main { padding: 18px 18px 90px; } .col { margin-left: 0; }
+    .moment { grid-template-columns: 1fr; } .when { padding: 0 0 4px; }
+    .toc a { grid-template-columns: 30px 1fr 64px; gap: 14px; } .who { font-size: 25px; } .toc img.f { width: 64px; height: 80px; } .dots { display: none; }
+    .line { flex-direction: column; align-items: flex-start; gap: 0; } .yrs { font-size: 12.5px; }
+    .lede { font-size: 19px; }
+  }
+  @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } }
+</style>
+</head>
+<body>
+<div class="lamp" aria-hidden="true"></div>
+<div class="grain" aria-hidden="true"></div>
+<header class="bar">
+  <a class="mark" href="#day">Sonic Hub</a>
+  <nav class="nav" id="nav">
+    <a href="#day" data-k="day">Hôm nay</a><a href="#day" data-k="photos">Ảnh</a><a href="#day" data-k="journal">Nhật ký</a><a href="#angels" data-k="angels">Angels</a><a href="#day" data-k="football">Bóng đá</a><a href="#day" data-k="games">Game</a>
+  </nav>
+</header>
+<main id="main"></main>
+
+<script src="assets/photos.js"></script>
+<script src="assets/justified.js"></script>
+<script src="assets/data.js"></script>
+<script>
+  const D = window.SH_DATA, main = document.getElementById('main');
+  const ROMAN = ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII'];
+  const yrs = (p) => p.from === p.to ? `${p.from}` : `${p.from} — ${p.to}`;
+  const pick = (from, to, n, skip = 0) => D.photos.filter(p => p.year >= from && p.year <= to).slice(skip, skip + n);
+
+  function prints(el, list, opts = {}) {
+    SH.justify(el, list, { rowHeight: opts.h || 230, gap: 6, render: (p) => {
+      const f = document.createElement('figure'); f.className = 'jg-item'; f.innerHTML = `<img src="${p.src}" alt="${p.caption || ''}" loading="lazy">`; return f; } });
+    el.querySelectorAll('.jg-item').forEach((f, k) => f.style.setProperty('--k', k));
+  }
+
+  /* ── daytime: the ordinary paper page ── */
+  function day() {
+    const ph = D.photosOf(2010).concat(D.photosOf(2009)).slice(0, 7), note = D.NOTES[0];
+    main.innerHTML = `<article class="page">
+      <div class="col">
+        <p class="eyebrow">${D.todayVN()}</p>
+        <h1>Ngày này năm 2010</h1>
+        <p class="lede">Bảy tấm ảnh và một trang nhật ký, mười sáu năm trước.</p>
+      </div>
+      <div class="prints develop" id="p1"></div>
+      <div class="col note">
+        <p class="eyebrow">Nhật ký năm ấy</p>
+        <h2>${note.title}</h2>
+        <p>${note.body} Tối nào cũng có một dòng mới, ngắn thôi, nhưng đọc lại thì nhớ ra cả một buổi tối: ai đang online, bài hát nào đang mở, cái quạt kêu ở góc phòng.</p>
+        <a class="more" href="#day">Đọc tiếp</a>
+        <p class="bridge">Năm ấy có Bích Trân. <a class="more" href="#ch-1">Mở chương của em</a></p>
+      </div>
+    </article>`;
+    prints(document.getElementById('p1'), ph, { h: 240 });
+  }
+
+  /* ── Angels: the table of contents ── */
+  function index() {
+    main.innerHTML = `<article class="page">
+      <div class="col head">
+        <p class="eyebrow">Angels</p>
+        <h1 class="title-it">Những chương đã qua</h1>
+        <p class="lede">Sáu người, mười ba năm. Mỗi người một chương.</p>
+      </div>
+      <ol class="toc faded">${D.PEOPLE.map((p, i) => `
+        <li><a href="#ch-${i + 1}">
+          <span class="num">${ROMAN[i]}</span>
+          <span>
+            <span class="line"><span class="who">${p.name}</span><span class="dots"></span><span class="yrs">${yrs(p)}</span></span>
+            <p class="gist">${p.memory}. <span class="via">${p.via}</span></p>
+          </span>
+          <img class="f develop" style="--k:${i}" src="${pick(p.from, p.to + 1, 1)[0]?.src || D.photos[i * 5].src}" alt="">
+        </a></li>`).join('')}
+      </ol>
+    </article>`;
+  }
+
+  /* ── Angels: one chapter ── */
+  function chapter(i) {
+    const p = D.PEOPLE[i] || D.PEOPLE[0], all = pick(2009, 2012, 12), next = D.PEOPLE[i + 1];
+    const full = i === 0;
+    main.innerHTML = `<article class="page faded">
+      <div class="col head"><a class="back" href="#angels">← Mục lục</a>
+        <p class="eyebrow">Chương ${ROMAN[i]}</p>
+        <h1 class="name">${p.name}</h1>
+        <p class="meta">${yrs(p)} · ${p.via}</p>
+        <p class="song">Một Thời Đã Xa</p>
+      </div>
+      <figure class="hero-print"><img class="develop" src="${(all[1] || D.photos[3]).src}" alt=""><figcaption>Hồ Tây, một chiều tháng Mười Hai.</figcaption></figure>
+      ${full ? `
+      <section class="moment"><div class="when">Tháng 9, 2009</div><div>
+        <h2>Một cái nick Yahoo</h2>
+        <p>Em vào phòng chat của trường lúc gần nửa đêm, nick là một dãy chữ thường không dấu. Câu đầu tiên em gõ là hỏi bài tập xác suất. Câu thứ hai là hỏi anh có biết bài Westlife nào buồn nhất không.</p>
+      </div></section>
+      <section class="moment"><div class="when">Tháng 12, 2009</div><div>
+        <h2>Hồ Tây dưới mưa</h2>
+        <p>Đi bộ một vòng Hồ Tây, mưa phùn suốt từ Thanh Niên tới Quảng An. Không ai mang ô. Về ốm ba ngày, và đến giờ vẫn thấy là đáng.</p>
+      </div></section>
+      <div class="prints wide develop" id="p2"></div>
+      <section class="moment"><div class="when">Tháng 5, 2010</div><div>
+        <h2>Mùa thi</h2>
+        <div class="letter">
+          <p><time>23:14</time><b>Bích Trân</b>mai thi xong roi di choi nhe</p>
+          <p><time>23:15</time><b>Anh</b>di dau</p>
+          <p><time>23:15</time><b>Bích Trân</b>rap quoc gia. t mua ve roi :)</p>
+        </div>
+        <p>Phim gì thì không còn nhớ. Chỉ nhớ vé là em mua, và em đến sớm hai mươi phút.</p>
+      </div></section>
+      <section class="moment"><div class="when">Tết 2011</div><div>
+        <h2>Tin nhắn lúc không giờ ba phút</h2>
+        <p>Chiếc Nokia rung đúng lúc pháo hoa vừa tắt. Một tin nhắn dài, phải bấm “xem tiếp” hai lần mới hết.</p>
+      </div></section>
+      <div class="prints wide develop" id="p3"></div>
+      <section class="moment"><div class="when">Mùa hè 2012</div><div>
+        <h2>Khép lại</h2>
+        <p>Không có cãi nhau. Chỉ là mỗi người đi một hướng, và những buổi tối online thưa dần rồi thôi.</p>
+      </div></section>` : `
+      <section class="moment"><div class="when">${p.from}</div><div>
+        <h2>${p.memory}</h2>
+        <p>Chương này chưa được viết. Những gì đã có trong kho — ảnh, tin nhắn, ghi chép — sẽ được xếp vào đây theo đúng thứ tự thời gian.</p>
+      </div></section>`}
+      <p class="end">Hết chương ${ROMAN[i]}</p>
+      ${next ? `<a class="next" href="#ch-${i + 2}"><small>Chương ${ROMAN[i + 1]}</small><i>${next.name}</i> →</a>` : `<a class="next" href="#angels"><small>Mục lục</small>Về đầu</a>`}
+    </article>`;
+    if (full) { prints(document.getElementById('p2'), all.slice(2, 6), { h: 250 }); prints(document.getElementById('p3'), all.slice(6, 9), { h: 260 }); }
+  }
+
+  /* ── tiny router: the light changes when you enter Angels ── */
+  function route() {
+    const h = location.hash.slice(1) || 'day', evening = h === 'angels' || h.startsWith('ch-');
+    document.body.classList.toggle('evening', evening);
+    document.querySelectorAll('#nav a').forEach(a => a.setAttribute('aria-current', (evening ? a.dataset.k === 'angels' : a.dataset.k === 'day') ? 'page' : 'false'));
+    if (h === 'angels') index(); else if (h.startsWith('ch-')) chapter(Math.max(0, +h.slice(3) - 1)); else day();
+    window.scrollTo({ top: 0 });
+  }
+  addEventListener('hashchange', route);
+  route();
+</script>
+</body>
+</html>
