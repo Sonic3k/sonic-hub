@@ -7,20 +7,26 @@ import type { ChatArchiveResponse } from '../types'
 interface ChatMsg {
   id: string
   sender: string
-  senderType: 'SELF' | 'PERSON'
+  senderType: 'SELF' | 'PERSON' | 'OTHER' | 'SYSTEM'
   content: string
   timestamp?: string
   seq?: number
 }
 interface MsgPage { content: ChatMsg[]; number: number; last: boolean; totalElements: number }
 
+/* Chat timestamps are UTC (no "Z" on the wire); everyone in these chats lived in Vietnam. */
+const TZ = 'Asia/Ho_Chi_Minh'
+const asUtc = (iso: string) => new Date(/[zZ]|[+-]\d\d:\d\d$/.test(iso) ? iso : iso + 'Z')
+function dayKey(iso?: string) {
+  return iso ? asUtc(iso).toLocaleDateString('sv-SE', { timeZone: TZ }) : ''
+}
 function dayLabel(iso?: string) {
   if (!iso) return ''
-  return new Date(iso).toLocaleDateString('vi-VN', { weekday: 'long', day: '2-digit', month: '2-digit', year: 'numeric' })
+  return asUtc(iso).toLocaleDateString('vi-VN', { timeZone: TZ, weekday: 'long', day: '2-digit', month: '2-digit', year: 'numeric' })
 }
 function timeLabel(iso?: string) {
   if (!iso) return ''
-  return new Date(iso).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })
+  return asUtc(iso).toLocaleTimeString('vi-VN', { timeZone: TZ, hour: '2-digit', minute: '2-digit' })
 }
 
 export default function ChatViewer({ personId, archive, personName, onClose }: {
@@ -85,20 +91,22 @@ export default function ChatViewer({ personId, archive, personName, onClose }: {
 
           {messages.map((m, i) => {
             const prev = messages[i - 1]
-            const day = (m.timestamp || '').slice(0, 10)
-            const newDay = !searching && day !== (prev?.timestamp || '').slice(0, 10)
+            const day = dayKey(m.timestamp)
+            const newDay = !searching && day !== dayKey(prev?.timestamp)
             const isSelf = m.senderType === 'SELF'
-            const sameSender = !newDay && prev?.senderType === m.senderType
+            const sameSender = !newDay && prev?.senderType === m.senderType && prev?.sender === m.sender
+            const showName = m.senderType === 'OTHER' && !sameSender
             return (
               <div key={m.id}>
-                {(newDay || (searching && day !== (prev?.timestamp || '').slice(0, 10))) && (
+                {(newDay || (searching && day !== dayKey(prev?.timestamp))) && (
                   <div className="flex justify-center py-3">
                     <span className="text-[10px] text-slate-400 bg-white border border-slate-100 rounded-full px-3 py-1 capitalize">
                       {dayLabel(m.timestamp)}
                     </span>
                   </div>
                 )}
-                <div className={`flex ${isSelf ? 'justify-end' : 'justify-start'} ${sameSender ? 'mt-0.5' : 'mt-2.5'}`}>
+                {showName && <p className="text-[10px] text-slate-400 mt-2.5 mb-0.5 ml-1">{m.sender}</p>}
+                <div className={`flex ${isSelf ? 'justify-end' : 'justify-start'} ${sameSender || showName ? 'mt-0.5' : 'mt-2.5'}`}>
                   <div className={`max-w-[78%] px-3.5 py-2 text-sm leading-relaxed whitespace-pre-wrap break-words rounded-2xl ${
                     isSelf
                       ? 'bg-pink-500 text-white rounded-br-md'

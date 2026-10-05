@@ -1,6 +1,7 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import AppLayout from './components/layout/AppLayout'
+import AdminTokenGate from './components/AdminTokenGate'
 import PersonsPage from './pages/PersonsPage'
 import PersonDetailPage from './pages/PersonDetailPage'
 import CollectionsPage from './pages/CollectionsPage'
@@ -19,6 +20,7 @@ const queryClient = new QueryClient({
 export default function App() {
   return (
     <QueryClientProvider client={queryClient}>
+      <AdminTokenGate>
       <BrowserRouter>
         <Routes>
           <Route element={<AppLayout />}>
@@ -35,6 +37,7 @@ export default function App() {
           </Route>
         </Routes>
       </BrowserRouter>
+      </AdminTokenGate>
     </QueryClientProvider>
   )
 }
