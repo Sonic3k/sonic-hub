@@ -12,6 +12,12 @@ import org.springframework.stereotype.Repository;
 public interface PersonRepository extends JpaRepository<Person, UUID> {
     java.util.Optional<Person> findByIsSelfTrue();
 
+    java.util.Optional<Person> findBySlug(String slug);
+
+    java.util.List<Person> findBySlugIsNull();
+
+    java.util.List<Person> findBySlugIsNotNull();
+
     /** Person is the inverse side of these ManyToMany joins — Hibernate won't clean them on delete. */
     @Modifying
     @Query(value = "DELETE FROM media_file_persons WHERE person_id = :personId", nativeQuery = true)

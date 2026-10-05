@@ -19,6 +19,10 @@ public class Person extends BaseEntity {
     @Column(name = "name", nullable = false)
     private String name;
 
+    /** Stable key the chat importer maps by (e.g. "bus-49"); null for people added by hand. */
+    @Column(name = "slug", unique = true, length = 80)
+    private String slug;
+
     @Column(name = "display_name")
     private String displayName;
 
@@ -134,6 +138,8 @@ public class Person extends BaseEntity {
     public void setId(UUID id) { this.id = id; }
     public String getName() { return name; }
     public void setName(String name) { this.name = name; }
+    public String getSlug() { return slug; }
+    public void setSlug(String slug) { this.slug = slug; }
     public String getDisplayName() { return displayName; }
     public void setDisplayName(String displayName) { this.displayName = displayName; }
     public String getAlternativeName() { return alternativeName; }

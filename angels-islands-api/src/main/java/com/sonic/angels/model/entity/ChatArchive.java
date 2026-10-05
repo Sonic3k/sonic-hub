@@ -8,7 +8,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Entity
-@Table(name = "chat_archives")
+@Table(name = "chat_archives", uniqueConstraints = {
+    @UniqueConstraint(name = "uk_chat_archive_person_ext", columnNames = {"person_id", "external_key"})
+})
 public class ChatArchive extends BaseEntity {
 
     @Id
@@ -30,6 +32,7 @@ public class ChatArchive extends BaseEntity {
     @Column(name = "raw_content", columnDefinition = "TEXT")
     private String rawContent;
 
+    /** Visible messages (EMPTY ones are stored but not counted). */
     @Column(name = "message_count")
     private Integer messageCount;
 
@@ -38,6 +41,14 @@ public class ChatArchive extends BaseEntity {
 
     @Column(name = "date_to")
     private LocalDateTime dateTo;
+
+    /** Importer's thread key (e.g. "fb:bichtran_10205025642513093", "yahoo:globus_chrysanthemum"); null for manual uploads. */
+    @Column(name = "external_key", length = 200)
+    private String externalKey;
+
+    /** Comma-separated provenance labels of the messages (e.g. "fb-dyi-2023,fb-dyi-2022,fb-2016-dump"). */
+    @Column(name = "sources", length = 500)
+    private String sources;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "extraction_status")
@@ -69,6 +80,10 @@ public class ChatArchive extends BaseEntity {
     public void setDateFrom(LocalDateTime dateFrom) { this.dateFrom = dateFrom; }
     public LocalDateTime getDateTo() { return dateTo; }
     public void setDateTo(LocalDateTime dateTo) { this.dateTo = dateTo; }
+    public String getExternalKey() { return externalKey; }
+    public void setExternalKey(String externalKey) { this.externalKey = externalKey; }
+    public String getSources() { return sources; }
+    public void setSources(String sources) { this.sources = sources; }
     public ExtractionStatus getExtractionStatus() { return extractionStatus; }
     public void setExtractionStatus(ExtractionStatus extractionStatus) { this.extractionStatus = extractionStatus; }
     public List<ChatMessage> getMessages() { return messages; }

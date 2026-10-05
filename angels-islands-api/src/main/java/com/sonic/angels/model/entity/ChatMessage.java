@@ -8,6 +8,8 @@ import java.time.LocalDateTime;
 @Entity
 @Table(name = "chat_messages", indexes = {
     @Index(name = "idx_chatmsg_archive_ts", columnList = "chat_archive_id, timestamp")
+}, uniqueConstraints = {
+    @UniqueConstraint(name = "uk_chatmsg_archive_ext", columnNames = {"chat_archive_id", "external_id"})
 })
 public class ChatMessage {
 
@@ -30,6 +32,7 @@ public class ChatMessage {
     @Column(name = "content", columnDefinition = "TEXT", nullable = false)
     private String content;
 
+    /** UTC. */
     @Column(name = "timestamp")
     private LocalDateTime timestamp;
 
@@ -37,7 +40,35 @@ public class ChatMessage {
     @Column(name = "seq")
     private Integer seq;
 
-    public enum SenderType { SELF, PERSON }
+    /** Importer's stable id, unique within the archive; makes re-imports idempotent. Null for manual uploads. */
+    @Column(name = "external_id", length = 64)
+    private String externalId;
+
+    /** Null on rows from the original Yahoo upload (all plain text). */
+    @Enumerated(EnumType.STRING)
+    @Column(name = "kind", length = 16)
+    private Kind kind;
+
+    /** How exact the timestamp is: Facebook 2016 dump only has one time per message group, wall posts only a day. */
+    @Enumerated(EnumType.STRING)
+    @Column(name = "time_precision", length = 16)
+    private TimePrecision timePrecision;
+
+    /** Comma-separated source labels this message was found in (e.g. "fb-dyi-2023,fb-2016-dump"). */
+    @Column(name = "sources", length = 300)
+    private String sources;
+
+    /** Facebook reactions, e.g. "😍Vu Ngoc Anh". */
+    @Column(name = "reactions", length = 1000)
+    private String reactions;
+
+    /** Wall comment → externalId of the post it belongs to. */
+    @Column(name = "reply_to_external_id", length = 64)
+    private String replyToExternalId;
+
+    public enum SenderType { SELF, PERSON, OTHER, SYSTEM }
+    public enum Kind { TEXT, EMPTY, PHOTO, VIDEO, AUDIO, FILE, GIF, STICKER, POST, COMMENT, OTHER }
+    public enum TimePrecision { SECOND, MINUTE, GROUP, DAY }
 
     public ChatMessage() {}
 
@@ -55,4 +86,16 @@ public class ChatMessage {
     public void setTimestamp(LocalDateTime timestamp) { this.timestamp = timestamp; }
     public Integer getSeq() { return seq; }
     public void setSeq(Integer seq) { this.seq = seq; }
+    public String getExternalId() { return externalId; }
+    public void setExternalId(String externalId) { this.externalId = externalId; }
+    public Kind getKind() { return kind; }
+    public void setKind(Kind kind) { this.kind = kind; }
+    public TimePrecision getTimePrecision() { return timePrecision; }
+    public void setTimePrecision(TimePrecision timePrecision) { this.timePrecision = timePrecision; }
+    public String getSources() { return sources; }
+    public void setSources(String sources) { this.sources = sources; }
+    public String getReactions() { return reactions; }
+    public void setReactions(String reactions) { this.reactions = reactions; }
+    public String getReplyToExternalId() { return replyToExternalId; }
+    public void setReplyToExternalId(String replyToExternalId) { this.replyToExternalId = replyToExternalId; }
 }

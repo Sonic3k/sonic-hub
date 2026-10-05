@@ -9,6 +9,9 @@ public class ChatArchiveDto {
         private UUID id; private ChatArchive.Platform platform; private String title;
         private Integer messageCount; private LocalDateTime dateFrom; private LocalDateTime dateTo;
         private ChatArchive.ExtractionStatus extractionStatus; private LocalDateTime createdAt;
+        private String externalKey; private String sources;
+        public String getExternalKey() { return externalKey; } public void setExternalKey(String v) { this.externalKey = v; }
+        public String getSources() { return sources; } public void setSources(String v) { this.sources = v; }
         public UUID getId() { return id; } public void setId(UUID v) { this.id = v; }
         public ChatArchive.Platform getPlatform() { return platform; } public void setPlatform(ChatArchive.Platform v) { this.platform = v; }
         public String getTitle() { return title; } public void setTitle(String v) { this.title = v; }

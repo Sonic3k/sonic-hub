@@ -27,6 +27,7 @@ public class ChatExtractionService {
     private static final Logger log = LoggerFactory.getLogger(ChatExtractionService.class);
     private static final DateTimeFormatter LINE_FMT = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
     private static final int CHUNK_CHARS = 9000;
+    private static final java.time.ZoneId VN = java.time.ZoneId.of("Asia/Ho_Chi_Minh");
 
     private final ChatArchiveRepository archiveRepo;
     private final ChatMessageRepository messageRepo;
@@ -86,7 +87,9 @@ public class ChatExtractionService {
             .map(p -> p.getDisplayName() != null ? p.getDisplayName() : p.getName())
             .orElse("Tôi");
 
-        List<ChatMessage> messages = messageRepo.findByChatArchiveIdOrderBySeqAsc(archive.getId());
+        List<ChatMessage> messages = messageRepo.findByChatArchiveIdOrderBySeqAsc(archive.getId()).stream()
+            .filter(m -> m.getContent() != null && !m.getContent().isBlank()) // EMPTY rows carry no words
+            .toList();
         if (messages.isEmpty()) return new int[]{0, 0};
 
         // ── Chunk by original order ──────────────────────────────────────────
@@ -202,8 +205,11 @@ public class ChatExtractionService {
     private String renderChunk(List<ChatMessage> chunk, String selfName, String personName) {
         StringBuilder sb = new StringBuilder("Đoạn chat:\n");
         for (ChatMessage m : chunk) {
-            String who = m.getSenderType() == ChatMessage.SenderType.SELF ? selfName : personName;
-            String ts = m.getTimestamp() != null ? m.getTimestamp().format(LINE_FMT) : "";
+            String who = m.getSenderType() == ChatMessage.SenderType.SELF ? selfName
+                : m.getSenderType() == ChatMessage.SenderType.PERSON ? personName : m.getSender();
+            // stored as UTC; the people were in Vietnam, so show their local clock
+            String ts = m.getTimestamp() != null
+                ? m.getTimestamp().atZone(java.time.ZoneOffset.UTC).withZoneSameInstant(VN).format(LINE_FMT) : "";
             sb.append('[').append(ts).append("] ").append(who).append(": ").append(m.getContent()).append('\n');
         }
         return sb.toString();

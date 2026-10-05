@@ -202,7 +202,9 @@ public class CompanionService {
             sample.append("--- đoạn ").append(w + 1).append(" ---\n");
             for (int i = start; i < Math.min(start + windowSize, all.size()); i++) {
                 ChatMessage m = all.get(i);
-                String who = m.getSenderType() == ChatMessage.SenderType.SELF ? selfName : name;
+                if (m.getContent() == null || m.getContent().isBlank()) continue;
+                String who = m.getSenderType() == ChatMessage.SenderType.SELF ? selfName
+                    : m.getSenderType() == ChatMessage.SenderType.PERSON ? name : m.getSender();
                 sample.append(who).append(": ").append(m.getContent()).append('\n');
             }
         }
