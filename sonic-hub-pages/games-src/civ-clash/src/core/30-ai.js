@@ -61,12 +61,15 @@ function cardValue(S, P, card, T) {
   if (opp.some(X => wonderOf(X)) && !card.steps.some(s => s.raze)) v -= 2;
   return v;
 }
+/* difficulty only changes how much noise the AI adds to its own judgement; balance runs use 'hard' */
+const AI_NOISE = { easy: 3.2, normal: 1.1, hard: 0.15 };
 function bestPlay(S, P) {
+  const noise = AI_NOISE[P.skill] != null ? AI_NOISE[P.skill] : 0.15;
   let best = null;
   for (const card of P.hand) {
     const targets = needsTarget(card) ? opponents(S, P) : [null];
     for (const T of targets) {
-      const v = cardValue(S, P, card, T) + rnd(S) * 0.15;
+      const v = cardValue(S, P, card, T) + rnd(S) * noise;
       if (!best || v > best.v) best = { card, target: T ? T.id : null, v };
     }
   }
@@ -74,6 +77,7 @@ function bestPlay(S, P) {
 }
 function aiBuy(S, P) {
   if (S.flags.bought) return null;
+  if (P.skill === 'easy' && rnd(S) < 0.5) return null;
   let best = null;
   S.market.forEach((card, i) => {
     if (!card) return;

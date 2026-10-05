@@ -3,160 +3,405 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Medieval Mayhem — Sonic Hub</title>
+<title>Medieval Mayhem</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Alegreya:wght@400;500;700;800&family=Grenze+Gotisch:wght@600;800&display=swap" rel="stylesheet">
-<style>
-:root{--parch:#f4e8cb;--parch2:#e8d5aa;--ink:#2a1c11;--muted:#7a6248;--gold:#d4a23a;--line:rgba(42,28,17,.25);--serif:'Alegreya',Georgia,serif;--goth:'Grenze Gotisch','Alegreya',Georgia,serif;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+<link href="https://fonts.googleapis.com/css2?family=Alegreya+SC:wght@500;700;800&family=Alegreya+Sans:wght@400;500;700;800&family=Alegreya:wght@700;800&display=swap" rel="stylesheet">
+<style>/* ── Medieval Mayhem · table UI ──
+   A lapis war-table under portolan rhumb lines; vellum cards framed in each civilization's own pattern. */
+:root{
+  --lapis-0:#0d2244;--lapis-1:#15325e;--lapis-2:#1e4479;--lapis-3:#2b5a97;
+  --gold:#e3b44c;--gold-hi:#f6d989;--gold-lo:#9b7420;
+  --vellum:#f8f0de;--vellum-2:#eedfbf;--vellum-3:#e1cda2;--ink:#2a2333;--ink-2:#544a5e;--ink-3:#857a8a;
+  --verm:#d2442e;--mal:#2b9467;--amethyst:#6a3fb0;--steel:#475a75;
+  --f-ui:'Alegreya Sans','Segoe UI',system-ui,sans-serif;--f-sc:'Alegreya SC',Georgia,serif;--f-num:'Alegreya',Georgia,serif;
+  --shadow-1:0 2px 0 rgba(0,0,0,.18),0 10px 26px rgba(3,10,26,.45);
+  --cw:150px;--ch:212px;
+  box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);
+}
 html{scroll-padding-top:env(safe-area-inset-top,0px)}
 *,*::before,*::after{box-sizing:border-box}
-html,body{margin:0;min-height:100%}
-body{font-family:var(--serif);color:var(--parch);background:#1a0f08 radial-gradient(ellipse at 50% 25%,#4a2c1a 0%,#24150c 60%,#140b06 100%) fixed}
-body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:-1;background:repeating-linear-gradient(92deg,rgba(255,255,255,.018) 0 2px,transparent 2px 9px),repeating-linear-gradient(88deg,rgba(0,0,0,.05) 0 1px,transparent 1px 13px)}
-.top{display:flex;align-items:center;gap:10px;padding:8px 16px;border-bottom:1px solid rgba(212,162,58,.25);background:rgba(0,0,0,.25);position:relative;z-index:2}
-.top a{color:var(--parch2);text-decoration:none;font-size:14px;opacity:.8}
-.top h1{font-family:var(--goth);font-weight:800;font-size:24px;margin:0;color:var(--gold);flex:1}
-.btn{font-family:var(--serif);font-weight:700;font-size:14px;padding:7px 14px;border-radius:8px;border:1px solid #8a6a2a;background:linear-gradient(#e7c66b,#b98a2c);color:#2a1a08;cursor:pointer;box-shadow:0 2px 0 #5a4010,0 3px 8px rgba(0,0,0,.3)}
-.btn:hover{filter:brightness(1.06)}.btn.ghost{background:transparent;color:var(--parch2);border-color:rgba(232,213,170,.35);box-shadow:none}
-.btn.big{font-size:18px;padding:11px 26px}.top .btn{font-size:13px;padding:5px 10px}
+html,body{margin:0;height:100%;background:var(--lapis-0)}
+body{font-family:var(--f-ui);color:var(--vellum);-webkit-font-smoothing:antialiased;overflow:hidden}
+button{font:inherit;color:inherit}
 .hidden{display:none!important}
-#setup{max-width:1180px;margin:0 auto;padding:18px 16px 40px}
-.hero{text-align:center;margin:6px 0 16px}
-.hero h1{font-family:var(--goth);font-size:clamp(38px,6vw,64px);margin:0;color:var(--gold);text-shadow:0 2px 0 #3a2208,0 6px 24px rgba(0,0,0,.5)}
-.hero p{margin:4px auto 0;max-width:620px;color:var(--parch2);font-size:17px}
-.setup-grid{display:grid;grid-template-columns:1.35fr 1fr;gap:18px;align-items:start}
-.pick,.detail{background:linear-gradient(#f6ebcf,#ead8ad);color:var(--ink);border-radius:12px;padding:14px 16px;box-shadow:0 0 0 1px #5a3a1a,0 10px 30px rgba(0,0,0,.45)}
-.seg{display:flex;gap:6px;align-items:center;margin-bottom:8px;flex-wrap:wrap}.seg span{font-weight:700;margin-right:6px}
-.seg button{font-family:var(--serif);font-size:14px;padding:6px 12px;border-radius:20px;border:1px solid var(--line);background:#fff8e6;cursor:pointer;color:var(--ink)}
-.seg button.on{background:var(--ink);color:var(--parch);border-color:var(--ink)}
-.grp h4,.detail h4{margin:10px 0 6px;font-size:12px;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted)}
-.tiles{display:flex;flex-wrap:wrap;gap:6px}
-.tile{display:flex;align-items:center;gap:6px;padding:4px 10px 4px 5px;border-radius:22px;border:1px solid var(--line);background:#fffaf0;cursor:pointer;font-family:var(--serif);font-size:15px;color:var(--ink)}
-.tile em{font-style:normal;font-size:12px;color:var(--muted);background:rgba(0,0,0,.06);border-radius:8px;padding:0 6px}
-.tile.on{border-color:var(--civ);box-shadow:0 0 0 2px var(--civ) inset;background:#fff}
-.detail{position:sticky;top:12px;border-top:6px solid var(--civ)}
-.d-head{display:flex;gap:12px;align-items:center}.d-head h2{margin:0;font-family:var(--goth);font-size:34px;color:var(--civ)}.d-head p{margin:2px 0}.d-hp b{font-size:20px}
-.d-uniques{display:flex;gap:12px;flex-wrap:wrap;padding:6px 0 4px 6px}
-.d-mix{display:flex;flex-wrap:wrap;gap:8px}.d-mix span{display:inline-flex;align-items:center;gap:3px;font-size:14px}
-.d-opp{color:var(--muted);font-size:14px}
-.d-actions{display:flex;gap:10px;align-items:center;margin-top:10px}.d-actions .btn.ghost,.row .btn.ghost{color:var(--ink);border-color:var(--line)}
-.card{position:relative;width:128px;min-height:176px;border-radius:10px;background:linear-gradient(170deg,#fffaf0,#f1e2bd 70%,#e6d09f);color:var(--ink);box-shadow:0 0 0 1px rgba(0,0,0,.35),0 0 0 3px var(--civ),0 6px 14px rgba(0,0,0,.4);display:flex;flex-direction:column;flex:0 0 auto;user-select:none}
-.card.unique{background:linear-gradient(170deg,#fff6dc,#f3dc9e 70%,#e3c473);box-shadow:0 0 0 1px rgba(0,0,0,.35),0 0 0 3px var(--civ),0 0 0 5px #d4a23a,0 6px 14px rgba(0,0,0,.4)}
-.card.merc{box-shadow:0 0 0 1px rgba(0,0,0,.35),0 0 0 3px #8a7350,0 6px 14px rgba(0,0,0,.4)}
-.c-head{display:flex;align-items:center;gap:4px;padding:5px 6px 4px;background:var(--civ);color:#fff;border-radius:9px 9px 0 0;min-height:30px}
-.c-name{font-weight:800;font-size:13px;line-height:1.05;text-shadow:0 1px 0 rgba(0,0,0,.35)}
-.c-syms{display:flex;flex-wrap:wrap;justify-content:center;gap:2px;padding:8px 4px 4px}
-.c-text{font-size:11.5px;line-height:1.22;padding:2px 7px 8px;color:#3d2c1c;text-align:center}
-.c-star{position:absolute;top:-8px;right:-6px;width:20px;height:20px;border-radius:50%;background:#d4a23a;color:#3a2208;font-size:12px;display:grid;place-items:center;box-shadow:0 1px 3px rgba(0,0,0,.5)}
-.c-cost{position:absolute;bottom:-11px;left:50%;transform:translateX(-50%);height:22px;padding:0 10px;border-radius:11px;background:#7d6a4a;color:#fff;font-weight:800;font-size:12.5px;display:flex;align-items:center;white-space:nowrap;box-shadow:0 0 0 2px #f4e8cb,0 2px 4px rgba(0,0,0,.5)}.c-cost.ok{background:#c8961e}
-.card.empty{display:grid;place-items:center;color:var(--muted);--civ:#5a4a35;font-style:italic}
-.card.big{width:168px;min-height:220px}.card.big .c-name{font-size:15px}.card.big .c-text{font-size:13px}
-.card.pop{animation:pop .35s ease-out}
-@keyframes pop{from{transform:translateY(26px) scale(.7) rotate(-4deg);opacity:0}to{transform:none;opacity:1}}
-.d-uniques .card{width:150px}
-#game{display:grid;grid-template-columns:minmax(0,1fr) 230px;grid-template-areas:"opps chron" "mid chron" "mine chron" "hand hand";gap:10px;padding:10px 14px 14px;max-width:1400px;margin:0 auto}
-.opps{grid-area:opps;display:grid;gap:10px}.opps.n1{grid-template-columns:minmax(0,560px);justify-content:center}.opps.n2{grid-template-columns:repeat(2,minmax(0,1fr))}.opps.n3{grid-template-columns:repeat(3,minmax(0,1fr))}
-.seat{position:relative;background:linear-gradient(#f5e9cc,#e7d3a6);color:var(--ink);border-radius:12px;padding:8px 10px;box-shadow:0 0 0 1px #4a2e14,0 8px 20px rgba(0,0,0,.4);border-left:6px solid var(--civ);transition:box-shadow .2s,transform .2s}
-.seat.turn{box-shadow:0 0 0 2px var(--gold),0 0 22px rgba(212,162,58,.55),0 8px 20px rgba(0,0,0,.4)}
-.seat.out{filter:grayscale(.85) brightness(.75)}
-.seat.targetable{cursor:crosshair;box-shadow:0 0 0 3px #e0442f,0 0 24px rgba(224,68,47,.6);animation:pulse 1s infinite alternate}
-@keyframes pulse{to{transform:translateY(-3px)}}
-.seat.shake{animation:shake .35s}
-@keyframes shake{0%,100%{transform:none}25%{transform:translateX(-5px)}50%{transform:translateX(5px)}75%{transform:translateX(-3px)}}
-.s-top{display:flex;align-items:center;gap:8px}
-.s-id{flex:1;min-width:0}.s-name{font-weight:800;font-size:17px;color:var(--civ);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.s-sub{font-size:12.5px;color:var(--muted)}
-.s-hp{text-align:right;min-width:74px}.s-hp b{font-size:30px;line-height:1;color:#7e1d14;font-family:var(--goth)}.s-hp small{color:var(--muted);font-size:13px}
-.hpbar{height:5px;background:rgba(0,0,0,.12);border-radius:3px;margin-top:3px;overflow:hidden}.hpbar div{height:100%;background:linear-gradient(90deg,#b3261e,#e0563f);transition:width .4s}
-.s-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:4px;font-size:13px;min-height:22px}
-.gold{display:inline-flex;align-items:center;gap:3px}.gold b{font-size:15px}
-.backs{display:inline-flex;align-items:center}.backs i{width:11px;height:16px;border-radius:2px;background:linear-gradient(135deg,#7a2e1d,#4a1a10);border:1px solid #d4a23a;margin-right:-4px}.backs em{font-style:normal;margin-left:8px;color:var(--muted)}
-.tok{display:inline-flex;align-items:center;gap:3px;font-size:12px;background:rgba(0,0,0,.06);border-radius:10px;padding:1px 7px 1px 2px}.tok.hot{background:#1f4e79;color:#fff;padding:1px 8px}
-.turn-tag,.out-tag{margin-left:auto;font-size:11px;letter-spacing:1px;text-transform:uppercase;padding:1px 8px;border-radius:8px;font-weight:800}.turn-tag{background:var(--gold);color:#2a1a08}.out-tag{background:#333;color:#fff}
-.s-structs{display:flex;flex-wrap:wrap;gap:5px;margin-top:6px;min-height:26px}.s-structs .none{font-size:12px;color:var(--muted);font-style:italic;align-self:center}
-.st{display:inline-flex;align-items:center;gap:4px;background:#fff8e6;border:1px solid #9a8a6a;border-radius:6px;padding:2px 7px 2px 3px;font-size:12px;box-shadow:0 2px 0 #9a8a6a}
-.st b{font-size:15px}.st i{font-size:10.5px;color:var(--muted)}
-.st.wonder{background:linear-gradient(#ffe9a8,#e7c25a);border-color:#8a6a1a;padding:2px 8px}.st.wonder i{color:#5a3a08;font-weight:700}
-.floats{position:absolute;inset:0;pointer-events:none;display:flex;justify-content:center;align-items:center;z-index:5}
-.float{position:absolute;font-family:var(--goth);font-size:28px;font-weight:800;animation:floatup 1.6s ease-out forwards;text-shadow:0 2px 0 rgba(0,0,0,.35),0 0 10px rgba(255,255,255,.6);white-space:nowrap}
-.float.dmg{color:#c2261a}.float.heal{color:#2e7d32}.float.wall{color:#3d4f6b;font-size:22px}.float.gold{color:#a87a10;font-size:20px}.float.info{color:#5b2a86;font-size:20px}.float.big{font-size:38px}
-@keyframes floatup{0%{transform:translateY(10px) scale(.7);opacity:0}15%{transform:translateY(0) scale(1.1);opacity:1}100%{transform:translateY(-46px) scale(1);opacity:0}}
-.mid{grid-area:mid;display:grid;grid-template-columns:210px minmax(0,1fr) auto;gap:10px;align-items:stretch}
-#events{display:flex;flex-direction:column;gap:6px}
-.ev-now,.ev-next{background:rgba(244,232,203,.95);color:var(--ink);border-radius:10px;padding:7px 10px;box-shadow:0 0 0 1px #4a2e14}
-.ev-now{border-top:4px solid #a3261c}.ev-next{opacity:.85;border-top:4px solid #56657d}
-.ev-now small,.ev-next small{display:block;font-size:10.5px;letter-spacing:1.4px;text-transform:uppercase;color:var(--muted)}.ev-now b,.ev-next b{font-size:16px}.ev-now p,.ev-next p{margin:2px 0 0;font-size:12.5px;line-height:1.25}
-.ev-warn{font-size:12px;background:#7e1d14;color:#fff;border-radius:8px;padding:4px 8px}
-#arena{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;min-height:250px;border-radius:16px;background:radial-gradient(ellipse at center,rgba(244,232,203,.12),rgba(0,0,0,.18) 70%);box-shadow:inset 0 0 0 1px rgba(212,162,58,.25)}
-.played-by{font-weight:700;color:var(--parch);font-size:15px;text-shadow:0 1px 0 #000}.arena-hint{color:var(--parch2);opacity:.7;font-style:italic}
-#market{background:rgba(0,0,0,.25);border-radius:12px;padding:6px 10px 8px;box-shadow:inset 0 0 0 1px rgba(212,162,58,.25)}
-#market h3,.chronbox h3{margin:0 0 8px;font-family:var(--goth);color:var(--gold);font-size:20px;font-weight:600}
-.m-cards{display:flex;gap:10px;padding:6px 4px 14px 6px}.m-cards .c-text{padding-bottom:16px}.me-mini{display:none}
-.kw{font-weight:800}.k-dmg{color:#b3261e}.k-hp{color:#23772f}.k-gold{color:#9a6a00}.k-card{color:#3646a8}.k-wall{color:#475a75}.k-play{color:#6a3fb0}.k-aoe{color:#c94a12}.k-pierce{color:#0f6b52}.k-steal{color:#a3306d}.k-raze{color:#7a4a20}
-#chron .k-gold,#status .k-gold,.m-note .k-gold{color:#f0c050}#status .k-hp{color:#8fd694}#status .k-wall{color:#b8c7dc}
-.legend-key{font-size:14px;line-height:1.7}
-.card.imperial{background:linear-gradient(170deg,#fbf4ff,#ecdcf4 70%,#dcc3ea);box-shadow:0 0 0 1px rgba(0,0,0,.35),0 0 0 3px var(--civ),0 0 0 5px #6a3fb0,0 6px 14px rgba(0,0,0,.4)}
-.c-imp{position:absolute;top:-10px;left:50%;transform:translateX(-50%);background:#6a3fb0;color:#fff;font-size:10px;letter-spacing:1px;text-transform:uppercase;padding:1px 8px;border-radius:8px;font-weight:800;box-shadow:0 1px 3px rgba(0,0,0,.5);white-space:nowrap}
-.card.agecard{background:radial-gradient(circle at 50% 30%,#fff6cf,#f2d27a 58%,#d9a83f);box-shadow:0 0 0 1px rgba(0,0,0,.35),0 0 0 3px #8a6a1a,0 0 20px rgba(242,201,76,.75),0 6px 14px rgba(0,0,0,.4)}
-.card.agecard .c-head{background:linear-gradient(90deg,#5a2f9c,#8a5ac9)}.card.agecard .c-text{color:#3a2408}
-.imp-tag svg{vertical-align:-3px}.tok.imp{background:#6a3fb0}.d-bonus{margin:0 0 8px;font-size:14px}.m-cards .card{width:112px;min-height:160px}.m-cards .c-text{font-size:10.5px}
-.card.buyable{cursor:pointer;transition:transform .15s}.card.buyable:hover{transform:translateY(-4px)}
-.m-note{margin:8px 0 0;font-size:12px;color:var(--parch2);opacity:.85;max-width:360px}
-#mine{grid-area:mine}#mine .seat{padding:8px 12px}
-.handbar{grid-area:hand}#status{text-align:center;font-weight:700;color:var(--gold);min-height:30px;font-size:17px;display:flex;justify-content:center;align-items:center;gap:10px}
-#hand{display:flex;gap:12px;justify-content:center;padding:14px 8px 8px;overflow-x:auto;min-height:200px}
-#hand .card{transition:transform .15s,box-shadow .15s}#hand .card.playable{cursor:pointer}#hand .card.playable:hover{transform:translateY(-10px) rotate(-1deg)}
-#hand .card.chosen{transform:translateY(-14px);box-shadow:0 0 0 1px rgba(0,0,0,.35),0 0 0 3px #e0442f,0 0 20px rgba(224,68,47,.7)}
-#hand .card:not(.playable){filter:saturate(.75) brightness(.92)}
-.hand-empty{color:var(--parch2);opacity:.7;font-style:italic;align-self:center}
-.chronbox{grid-area:chron;background:rgba(0,0,0,.25);border-radius:12px;padding:8px 12px;box-shadow:inset 0 0 0 1px rgba(212,162,58,.2);align-self:start}
-#chron{list-style:none;margin:0;padding:0;font-size:13px;line-height:1.3}#chron li{padding:4px 0;border-bottom:1px dashed rgba(232,213,170,.18);color:var(--parch2)}#chron li:first-child{color:#fff}
-#banner{position:fixed;left:50%;top:22%;transform:translateX(-50%);pointer-events:none;text-align:center;opacity:0;z-index:20;width:min(90vw,700px)}
-#banner .bt{display:block;font-family:var(--goth);font-size:clamp(30px,5vw,52px);color:var(--gold);text-shadow:0 3px 0 #2a1a08,0 0 30px rgba(0,0,0,.8)}#banner span{display:block;color:#fff;font-size:17px;text-shadow:0 2px 6px #000;margin-top:4px}#banner .kw{color:#ffd76a}
-#banner.show{animation:bannerIn 2.4s ease-out}
-@keyframes bannerIn{0%{opacity:0;transform:translate(-50%,10px)}12%{opacity:1;transform:translate(-50%,0)}75%{opacity:1}100%{opacity:0}}
-.modal{position:fixed;inset:0;background:rgba(10,5,2,.72);display:grid;place-items:center;z-index:30;padding:16px}
-.sheet{max-width:720px;width:100%;max-height:88vh;overflow:auto;background:linear-gradient(#f7ecd2,#ead7ab);color:var(--ink);border-radius:14px;padding:18px 22px;box-shadow:0 0 0 1px #4a2e14,0 20px 60px rgba(0,0,0,.6)}
-.sheet h2{font-family:var(--goth);font-size:32px;margin:0 0 6px;color:#7e1d14}
-.muted{color:var(--muted)}.small{font-size:13px}
-.relics{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:12px 0}
-.relic{text-align:left;font-family:var(--serif);cursor:pointer;border-radius:12px;border:1px solid #8a6a2a;background:linear-gradient(#fff8e2,#f0d896);padding:12px;color:var(--ink);box-shadow:0 3px 0 #8a6a2a}.relic:hover{transform:translateY(-3px)}
-.relic b{display:block;font-size:18px;color:#7e1d14}.relic span{font-size:14px}
-.legend{display:grid;grid-template-columns:repeat(2,1fr);gap:6px 14px;margin:10px 0}.legend div{display:grid;grid-template-columns:30px auto;column-gap:6px;font-size:13.5px}.legend b{align-self:center}.legend span{grid-column:2;color:#4a3826}
-.row{display:flex;gap:10px;justify-content:center;margin-top:14px;flex-wrap:wrap}
-.end{text-align:center}.end h2{font-size:46px}.end.win h2{color:#a87a10}.stats{display:flex;gap:14px;justify-content:center;flex-wrap:wrap;font-size:14px;color:#4a3826}.stats b{font-size:18px;color:var(--ink)}
-@media (max-width:980px){#game{grid-template-columns:minmax(0,1fr);grid-template-areas:"opps" "mid" "mine" "hand" "chron"}.mid{grid-template-columns:1fr}#events{flex-direction:row;flex-wrap:wrap}.ev-now,.ev-next{flex:1 1 200px}#arena{min-height:200px}.m-cards{overflow-x:auto;padding-bottom:6px}.setup-grid{grid-template-columns:1fr}.detail{position:static}}
-@media (max-width:640px){
-.top{padding:6px 10px;gap:6px}.top h1{font-size:17px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}.top a{display:none}.top .btn{font-size:12px;padding:4px 7px}
-#game{padding:6px 6px 0;gap:6px}
-.opps.n2{grid-template-columns:1fr 1fr}.opps.n3{grid-template-columns:1fr 1fr 1fr}.opps{gap:6px}
-.seat{padding:5px 6px;border-left-width:4px;border-radius:9px}.s-top{gap:4px}.s-top .crest{width:24px;height:24px}.s-sub{display:none}.s-name{font-size:13px}
-.s-hp{min-width:0}.s-hp b{font-size:21px}.s-hp small{font-size:11px}.s-row{gap:4px;margin-top:2px;font-size:11px;min-height:18px}.backs i{display:none}.backs em{margin-left:2px}.backs em::before{content:'🂠 '}
-.turn-tag,.out-tag{font-size:9px;padding:0 5px;letter-spacing:.5px}.tok{font-size:10px}.tok svg{display:none}
-.s-structs{gap:3px;margin-top:3px;min-height:18px}.st{padding:1px 4px 1px 2px;font-size:11px}.st span,.st i{display:none}.st b{font-size:13px}.st svg{width:13px;height:13px}.s-structs .none{font-size:10.5px}
-.opps.n2 .hp-u,.opps.n3 .hp-u{display:none}.opps.n1 .s-sub,#mine .s-sub{display:block}.opps.n1 .s-top .crest,#mine .s-top .crest{width:34px;height:34px}.opps.n1 .st span,#mine .st span{display:inline}
-#events{gap:6px}.ev-now,.ev-next{padding:5px 8px;flex-basis:140px}.ev-now b,.ev-next b{font-size:14px}.ev-now p,.ev-next p{font-size:11.5px}
-#arena{min-height:0;padding:6px 0}.card.big{width:118px;min-height:150px}.card.big .c-name{font-size:12.5px}.card.big .c-text{font-size:10.5px}
-#market{padding:4px 8px 4px}#market h3{font-size:17px;margin:0 0 2px}.m-cards .card{width:100px;min-height:138px}.m-note{font-size:11px;margin-top:2px}
-.handbar{position:sticky;bottom:0;z-index:12;margin:0 -6px;padding:4px 6px calc(6px + env(safe-area-inset-bottom,0px));background:linear-gradient(rgba(20,11,6,0),rgba(20,11,6,.97) 22%)}
-#status{font-size:14px;min-height:22px;flex-wrap:wrap;gap:2px 10px}.me-mini{display:inline;color:var(--parch);font-weight:500;font-size:13px}#hand{justify-content:flex-start;gap:8px;padding:10px 4px 4px;min-height:0}
-.card{width:106px;min-height:150px}.c-name{font-size:12px}.c-text{font-size:10.5px}.c-syms svg{width:24px;height:24px}
-.chronbox{margin-bottom:10px}.relics,.legend{grid-template-columns:1fr}.sheet{padding:14px}
-}
+#app{position:relative;height:100%;overflow:hidden;background:radial-gradient(120% 95% at 50% 44%,var(--lapis-3) 0%,var(--lapis-2) 28%,var(--lapis-1) 60%,var(--lapis-0) 100%)}
+#app::before{content:'';position:absolute;inset:0;background:var(--rhumb) center 46%/2000px 2000px no-repeat;opacity:.6;pointer-events:none}
+.screen{position:relative;height:100%;z-index:1}
+:focus-visible{outline:2px solid var(--gold-hi);outline-offset:2px}
+
+/* buttons */
+.btn{font-family:var(--f-sc);font-weight:700;font-size:17px;letter-spacing:.01em;border:0;border-radius:11px;padding:10px 20px;min-height:46px;cursor:pointer;color:#2b1d05;
+  background:linear-gradient(#f7dc8f,#e3b44c 55%,#c9952f);box-shadow:inset 0 1px 0 rgba(255,255,255,.65),0 2px 0 #8a6516,0 8px 18px rgba(0,0,0,.35)}
+.btn:hover{filter:brightness(1.06)}.btn:active{transform:translateY(1px)}
+.btn.ghost{background:rgba(255,255,255,.07);color:var(--vellum);box-shadow:inset 0 0 0 1px rgba(246,217,137,.38)}
+.btn.small{font-size:15px;min-height:40px;padding:7px 14px}
+.icon-btn{width:44px;height:44px;border-radius:12px;border:0;display:grid;place-items:center;cursor:pointer;color:var(--vellum);background:rgba(255,255,255,.07);box-shadow:inset 0 0 0 1px rgba(246,217,137,.25)}
+.icon-btn:hover{background:rgba(255,255,255,.13)}
+.icon-btn svg{width:22px;height:22px}
+
+/* ── cards ── */
+.card{--w:var(--cw);--h:var(--ch);--s:28px;position:relative;width:var(--w);height:var(--h);border-radius:12px;padding:6px;flex:0 0 auto;user-select:none;
+  background-color:var(--civ);background-image:var(--motif);color:var(--ink);box-shadow:0 0 0 1px rgba(0,0,0,.5),0 7px 18px rgba(4,10,26,.5)}
+.card .cb{height:100%;border-radius:8px;display:flex;flex-direction:column;overflow:hidden;background:linear-gradient(180deg,var(--vellum),var(--vellum-2));box-shadow:inset 0 0 0 1px rgba(0,0,0,.2)}
+.card .cn{display:flex;align-items:center;gap:5px;min-height:30px;padding:4px 6px 4px 6px;background:linear-gradient(90deg,var(--civ-deep),var(--civ));color:#fff;
+  font-family:var(--f-sc);font-weight:700;font-size:13.5px;line-height:1.05;text-shadow:0 1px 0 rgba(0,0,0,.45)}
+.card .cn span{flex:1;min-width:0}
+.card .ca{height:36%;margin:6px 6px 0;border-radius:6px;display:flex;flex-wrap:wrap;align-content:center;justify-content:center;gap:3px;padding:4px;
+  background-color:var(--civ-wash);background-image:var(--motif-soft);box-shadow:inset 0 0 0 1px rgba(0,0,0,.09)}
+.card .ca .sym{width:var(--s);height:var(--s);filter:drop-shadow(0 1px 1px rgba(0,0,0,.3))}
+.card .ct{flex:1;display:flex;align-items:center;justify-content:center;text-align:center;padding:5px 8px 2px;font-size:12.5px;line-height:1.24}
+.card .cf{display:flex;justify-content:space-between;gap:6px;padding:2px 7px 5px;font-family:var(--f-sc);font-size:11px;color:var(--ink-3)}
+.card .seal{flex:0 0 auto;width:20px;height:20px;border-radius:50%;display:grid;place-items:center;font-style:normal;font-family:var(--f-num);font-size:12px;font-weight:800;color:#3a2306;background:radial-gradient(circle at 40% 35%,#fbe39c,#d9a73e);box-shadow:0 1px 2px rgba(0,0,0,.5)}
+.card .seal svg{width:18px;height:18px}
+.card.sig .cb{box-shadow:inset 0 0 0 2px var(--gold),inset 0 0 0 3px rgba(0,0,0,.15)}
+.card.imp{background-color:#4a2783;background-image:var(--motif-gold)}
+.card.imp .cn{background:linear-gradient(90deg,#3a1b70,#7445bd)}
+.card.imp .cb{background:linear-gradient(180deg,#fcf7ff,#eadcf6)}
+.card.age{background-color:#55299a;background-image:var(--motif-gold);box-shadow:0 0 0 1px rgba(0,0,0,.5),0 0 22px rgba(246,217,137,.6),0 7px 18px rgba(4,10,26,.5)}
+.card.age .cn{background:linear-gradient(90deg,#3a1b70,#7445bd)}
+.card.age .cb{background:radial-gradient(circle at 50% 30%,#fff8da,#f3d57f 58%,#dcaa42)}
+.card.age .ca{background:none;box-shadow:none}
+.card.merc .cn{background:linear-gradient(90deg,#4d3f27,#7a6542)}
+.card.sm{--w:104px;--h:148px;--s:20px;padding:4px;border-radius:10px}
+.card.sm .cn{font-size:11.5px;min-height:24px;padding:3px 5px}.card.sm .ct span{display:-webkit-box;-webkit-line-clamp:5;-webkit-box-orient:vertical;overflow:hidden}
+#zoom{position:fixed;z-index:85;pointer-events:none;filter:drop-shadow(0 18px 30px rgba(0,0,0,.55))}.card.sm .ct{font-size:10.5px;padding:3px 5px 1px}.card.sm .cf{font-size:9.5px;padding:1px 5px 3px}.card.sm .ca{margin:4px 4px 0}
+.card.lg{--w:214px;--h:302px;--s:40px;padding:8px;border-radius:15px}
+.card.lg .cn{font-size:17px;min-height:38px;padding:6px 9px}.card.lg .ct{font-size:15.5px;padding:8px 12px 4px}.card.lg .cf{font-size:13px;padding:3px 10px 7px}.card.lg .ca{margin:8px 8px 0}
+.cost{position:absolute;left:50%;bottom:-11px;transform:translateX(-50%);white-space:nowrap;font-family:var(--f-num);font-weight:800;font-size:13px;padding:2px 10px;border-radius:999px;color:#fff;background:#6d5c3e;box-shadow:0 0 0 2px var(--vellum),0 2px 5px rgba(0,0,0,.5)}
+.cost.ok{background:#b8871f}
+.cback{display:inline-block;width:12px;height:17px;border-radius:2.5px;margin-right:-5px;background-color:var(--civ);background-image:var(--motif);box-shadow:0 0 0 1px rgba(0,0,0,.45),inset 0 0 0 1px rgba(255,255,255,.35)}
+
+/* keywords: same hue as the symbol of that resource */
+.kw{font-weight:800}.k-dmg{color:#b3261e}.k-hp{color:#1f7a3a}.k-gold{color:#946300}.k-card{color:#3646a8}.k-wall{color:#475a75}.k-play{color:#6a3fb0}.k-aoe{color:#c4470f}.k-pierce{color:#0b6a50}.k-steal{color:#a3306d}.k-raze{color:#7a4a20}
+
+/* ── match layout ── */
+#screen-match{display:flex;flex-direction:column}
+#topbar{flex:0 0 auto;height:56px;display:flex;align-items:center;gap:10px;padding:0 14px;background:linear-gradient(180deg,rgba(5,14,30,.6),rgba(5,14,30,0))}
+.tb-mid{flex:1;display:flex;align-items:center;justify-content:center;gap:8px;min-width:0}
+.tb-right{display:flex;gap:8px;align-items:center}
+.pill{font-family:var(--f-sc);font-weight:700;font-size:15px;padding:6px 14px;border-radius:999px;background:rgba(255,255,255,.08);box-shadow:inset 0 0 0 1px rgba(246,217,137,.25);white-space:nowrap}
+.pill.gold{background:linear-gradient(#f7dc8f,#e3b44c);color:#2b1d05;box-shadow:none}
+.pips{display:flex;gap:5px;padding:0 4px}.pip{width:12px;height:12px;border-radius:50%;background:radial-gradient(circle at 40% 35%,#fff3c4,#e3b44c);box-shadow:0 0 9px rgba(246,217,137,.85)}
+.speed{min-width:58px;height:44px;border:0;border-radius:12px;cursor:pointer;font-family:var(--f-sc);font-weight:700;background:rgba(255,255,255,.07);box-shadow:inset 0 0 0 1px rgba(246,217,137,.25)}
+.mob-only{display:none!important}
+#table{flex:1;min-height:0;display:grid;gap:12px;padding:6px 18px 0;
+  grid-template-columns:262px minmax(0,1fr) 340px;grid-template-rows:auto minmax(0,1fr) auto auto;
+  grid-template-areas:"opps opps opps" "events stage market" "me act act" "me hand hand"}
+#opps{grid-area:opps;display:flex;justify-content:center;gap:14px}
+#opps .camp{flex:0 1 330px}#opps.n1 .camp{flex-basis:440px}
+
+/* camps */
+.camp{position:relative;min-width:0;border-radius:15px;color:var(--ink);background:linear-gradient(180deg,rgba(250,243,227,.98),rgba(237,222,190,.98));box-shadow:var(--shadow-1);transition:box-shadow .2s,transform .2s}
+.camp-banner{display:flex;align-items:center;gap:8px;min-height:38px;padding:5px 10px;border-radius:15px 15px 0 0;color:#fff;background-color:var(--civ);background-image:var(--motif);font-family:var(--f-sc);font-weight:700}
+.camp-banner .crest{flex:0 0 auto;filter:drop-shadow(0 1px 1px rgba(0,0,0,.4))}
+.cname{font-size:18px;text-shadow:0 1px 0 rgba(0,0,0,.45);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.csub{font-size:14px;opacity:.85}
+.relic{margin-left:auto;font-family:var(--f-ui);font-weight:700;font-size:12.5px;padding:2px 9px;border-radius:999px;background:rgba(0,0,0,.28);white-space:nowrap;cursor:help}
+.flag{font-family:var(--f-ui);font-size:12px;font-weight:800;padding:2px 9px;border-radius:999px;background:var(--gold-hi);color:#2b1d05}
+.flag.out{background:#333;color:#fff}
+.relic.mine-relic{margin:0;background:rgba(106,63,176,.12);color:#4a2783}
+.camp-body{display:flex;align-items:center;gap:10px;padding:8px 10px 10px}
+.hpgem{--p:100;position:relative;flex:0 0 auto;width:58px;height:58px;border-radius:50%;display:grid;place-items:center;cursor:help;
+  background:conic-gradient(var(--verm) calc(var(--p)*1%),rgba(60,30,30,.16) 0)}
+.hpgem::before{content:'';position:absolute;inset:5px;border-radius:50%;background:radial-gradient(circle at 40% 32%,#fffbf1,#efdfbc);box-shadow:inset 0 0 0 1px rgba(0,0,0,.14)}
+.hpgem b{position:relative;font-family:var(--f-num);font-size:25px;line-height:1;color:#7c1d12}
+.hpgem small{position:absolute;bottom:7px;font-family:var(--f-num);font-weight:700;font-size:10.5px;color:var(--ink-3)}
+.works{flex:1;min-width:0;display:flex;flex-wrap:wrap;gap:5px;align-items:center}
+.works .none{font-size:13px;color:var(--ink-3)}
+.work{position:relative;display:inline-grid;place-items:center;min-width:34px;height:32px;padding:0 6px;border-radius:6px;cursor:help;font-family:var(--f-num);font-weight:800;font-size:16px;color:#2d2a26;
+  background:linear-gradient(#d8d0c0,#ada18c);box-shadow:inset 0 -3px 0 rgba(0,0,0,.2),inset 0 1px 0 rgba(255,255,255,.5),0 1px 2px rgba(0,0,0,.4)}
+.work.thorns{background:linear-gradient(#c9b9a6,#8f7a63);color:#fff}
+.work.sacred{background:linear-gradient(#f4ead0,#d5bf88)}
+.work.regen{background:linear-gradient(#cfdcc4,#93a982)}
+.work.income{background:linear-gradient(#f7e3a2,#d1a63e)}
+.work.fortress{background:linear-gradient(#bdb3a5,#7f7465);color:#fff}
+.work.wonder{display:inline-flex;gap:4px;padding:0 8px;background:linear-gradient(#ffe9a6,#e0b14b)}
+.work.wonder em{font-style:normal;font-size:11px;font-weight:700;padding:0 5px;border-radius:999px;background:#5a3a08;color:#ffe9a6}
+.stash{display:flex;flex-direction:column;align-items:flex-end;gap:5px;flex:0 0 auto}
+.coin{display:inline-flex;align-items:center;gap:4px;font-family:var(--f-num);font-weight:800;font-size:16px;color:#6b4a00;cursor:help}
+.coin .sym{width:20px;height:20px}
+.backs{display:inline-flex;align-items:center;font-size:13px;color:var(--ink-2);cursor:help}.backs b{margin-left:9px}
+.tag{display:inline-flex;align-items:center;gap:4px;font-size:12.5px;font-weight:700;padding:1px 8px 1px 2px;border-radius:999px;background:rgba(106,63,176,.12);color:#4a2783;cursor:help}
+.tag .sym{width:16px;height:16px}.tag.hot{background:#6a3fb0;color:#fff}.tag.imp{background:linear-gradient(90deg,#3a1b70,#7445bd);color:#ffe9a6}
+.tokens{display:flex;flex-wrap:wrap;gap:5px;padding:0 10px 8px}
+.token{font-size:12.5px;font-weight:700;padding:2px 9px;border-radius:999px;background:#1f4e79;color:#fff;cursor:help}.token.camel{background:#a8743a}
+.camp.turn{box-shadow:0 0 0 2px var(--gold-hi),0 0 28px rgba(246,217,137,.45),var(--shadow-1)}
+.camp.targetable{cursor:crosshair;box-shadow:0 0 0 3px #ff8a66,0 0 26px rgba(255,138,102,.55),var(--shadow-1)}
+.camp.targetable.hot{transform:translateY(-4px);box-shadow:0 0 0 4px #ffb199,0 0 34px rgba(255,138,102,.75),var(--shadow-1)}
+.camp.out{filter:grayscale(.9) brightness(.72)}
+.camp.hit{animation:shake .35s}
+@keyframes shake{0%,100%{transform:none}25%{transform:translateX(-6px)}50%{transform:translateX(6px)}75%{transform:translateX(-3px)}}
+.chips{position:absolute;left:50%;top:-13px;transform:translateX(-50%);display:flex;gap:4px;z-index:6;pointer-events:none;white-space:nowrap}
+.chip{font-family:var(--f-num);font-weight:800;font-size:13.5px;padding:2px 9px;border-radius:999px;box-shadow:0 3px 8px rgba(0,0,0,.4)}
+.chip.dmg{background:#ffe0d6;color:#9e2312}.chip.heal{background:#d9f2e3;color:#16613b}.chip.gold{background:#fff0c2;color:#6f4f00}.chip.wall{background:#e1e8f2;color:#344866}.chip.card{background:#e2e5fb;color:#2a3796}.chip.ko{background:#9e2312;color:#fff}
+.floats{position:absolute;inset:0;pointer-events:none;display:grid;place-items:center;z-index:7}
+.float{position:absolute;font-family:var(--f-num);font-weight:800;font-size:30px;white-space:nowrap;text-shadow:0 2px 0 rgba(0,0,0,.3),0 0 12px rgba(255,255,255,.7);animation:floatup 1.5s ease-out forwards}
+.float.dmg{color:#c42a17}.float.heal{color:#1f8a4c}.float.wall{color:#3c5170;font-size:23px}.float.gold{color:#9a6a00;font-size:22px}.float.info{color:#5b2a96;font-size:21px}.float.big{font-size:40px}
+@keyframes floatup{0%{transform:translateY(10px) scale(.6);opacity:0}15%{transform:none scale(1.1);opacity:1}100%{transform:translateY(-48px);opacity:0}}
+
+/* centre of the table */
+#events{grid-area:events;align-self:center;display:flex;flex-direction:column;gap:10px}
+.ev{border-radius:13px;padding:10px 13px;color:var(--ink);background:linear-gradient(180deg,var(--vellum),var(--vellum-2));box-shadow:var(--shadow-1)}
+.ev .when{font-size:13px;font-weight:700;color:var(--ink-3)}
+.ev h4{margin:1px 0 3px;font-family:var(--f-sc);font-size:19px;line-height:1.1}
+.ev p{margin:0;font-size:14px;line-height:1.3}
+.ev.now{border-left:5px solid var(--verm)}.ev.next{border-left:5px solid var(--steel);opacity:.9}
+.ev.flip{animation:flip .55s ease-out}
+@keyframes flip{0%{transform:perspective(600px) rotateY(80deg);opacity:0}100%{transform:none;opacity:1}}
+.ev-warn{font-size:13px;font-weight:700;padding:6px 10px;border-radius:10px;background:#7c1d12;color:#ffe3d9}
+#stage{grid-area:stage;position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:0}
+#stage .rose{position:absolute;width:min(48vh,380px);aspect-ratio:1;background:var(--rose) center/contain no-repeat;opacity:.55;pointer-events:none}
+#stage-card{position:relative;min-height:10px;display:flex;justify-content:center}
+.stage-fit{transform-origin:top center}
+#stage-card .card.pop{animation:pop .3s ease-out}
+@keyframes pop{from{transform:scale(.82);opacity:.2}to{transform:none;opacity:1}}
+#stage-caption{position:relative;margin-top:10px;font-family:var(--f-sc);font-weight:700;font-size:17px;color:var(--gold-hi);text-shadow:0 1px 0 #061226;min-height:24px;text-align:center}
+#market{grid-area:market;align-self:center;border-radius:15px;padding:10px 12px 12px;background:rgba(8,22,46,.5);box-shadow:inset 0 0 0 1px rgba(246,217,137,.22)}
+#market h3{margin:0 0 8px;font-family:var(--f-sc);font-size:19px;color:var(--gold-hi)}
+.mk-row{display:flex;gap:8px;justify-content:space-between;padding-bottom:12px}
+.mk-item{border:0;padding:0;background:none;cursor:default;border-radius:10px}
+.mk-item.can{cursor:pointer}.mk-item.can .card{box-shadow:0 0 0 2px var(--gold-hi),0 0 18px rgba(246,217,137,.5)}
+.mk-item.can:hover .card{transform:translateY(-4px)}
+.mk-note{margin:2px 0 0;font-size:13px;color:#d8e1f1;line-height:1.3}
+#me{grid-area:me;align-self:end;padding-bottom:12px}
+#prompt{grid-area:act}
+.camp.mine .camp-body{display:grid;grid-template-columns:auto 1fr;grid-template-areas:"hp stash" "works works";gap:8px 10px}
+.camp.mine .hpgem{grid-area:hp;width:68px;height:68px}.camp.mine .hpgem b{font-size:29px}
+.camp.mine .stash{grid-area:stash;align-items:flex-start}.camp.mine .works{grid-area:works}
+.camp.mine .piles{padding:0 10px 10px}
+.piles{display:flex;gap:6px}
+.pile{border:0;cursor:pointer;font-family:var(--f-ui);font-weight:700;font-size:13px;padding:5px 10px;border-radius:9px;color:var(--ink);background:rgba(0,0,0,.07);box-shadow:inset 0 0 0 1px rgba(0,0,0,.12);min-height:34px}
+.pile:hover{background:rgba(0,0,0,.12)}
+#handzone{grid-area:hand;position:relative;align-self:end}
+.actionbar{position:relative;z-index:60;display:flex;align-items:center;justify-content:center;gap:10px;min-height:50px}
+.actionbar .btn{white-space:nowrap}
+.agem{display:inline-flex;align-items:center;gap:2px;padding:0 6px 0 1px;border-radius:999px;background:rgba(106,63,176,.12);color:#4a2783}.agem.hot{background:#6a3fb0;color:#fff}.agem.imp{background:linear-gradient(90deg,#3a1b70,#7445bd);padding:0 3px}
+.actionbar .hint{font-family:var(--f-sc);font-weight:700;font-size:17px;color:var(--gold-hi);text-shadow:0 1px 0 #061226;text-align:center}
+.actionbar .btn{min-width:120px}
+.btn:disabled{opacity:.55;cursor:default;filter:grayscale(.35)}
+#hand{position:relative;display:flex;justify-content:center;align-items:flex-end;height:246px;padding:0 20px 12px}
+#hand .card{margin:0;transform:translateY(var(--y,0)) rotate(var(--rot,0deg));transform-origin:50% 115%;transition:transform .16s ease,box-shadow .16s ease,filter .16s}
+#hand .card.playable{cursor:pointer}
+#hand .card.playable:hover,#hand .card.playable:focus-visible{transform:translateY(-30px) scale(1.07);z-index:5}
+#hand .card.sel{transform:translateY(-26px) scale(1.06);z-index:6;box-shadow:0 0 0 2px var(--gold-hi),0 0 30px rgba(246,217,137,.75),0 14px 30px rgba(0,0,0,.55)}
+#hand .card.dim{filter:saturate(.7) brightness(.86)}
+.hand-empty{align-self:center;color:#c9d4ea;font-style:italic}
+
+/* drawer, sheets, tooltips, coach, banner */
+.drawer{position:absolute;top:56px;right:0;bottom:0;width:330px;z-index:30;padding:16px;overflow:auto;transform:translateX(105%);transition:transform .25s ease;
+  background:linear-gradient(180deg,rgba(14,32,62,.98),rgba(9,23,47,.99));box-shadow:-14px 0 32px rgba(0,0,0,.4)}
+.drawer.open{transform:none}
+.drawer h3{margin:0 0 10px;font-family:var(--f-sc);font-size:20px;color:var(--gold-hi)}
+.log{list-style:none;margin:0;padding:0}.log li{padding:7px 0;border-bottom:1px solid rgba(246,217,137,.12);font-size:14.5px;line-height:1.35;color:#dbe3f2}.log li.r{color:var(--gold-hi);font-family:var(--f-sc);font-weight:700}
+.log .kw{filter:brightness(1.6) saturate(.9)}
+.sheet-wrap{position:fixed;inset:0;z-index:60;display:grid;place-items:center;padding:18px;background:rgba(4,11,25,.66)}
+.sheet-panel{width:min(780px,100%);max-height:88dvh;overflow:auto;border-radius:18px;padding:20px 22px;color:var(--ink);background:linear-gradient(180deg,var(--vellum),var(--vellum-2));box-shadow:0 26px 70px rgba(0,0,0,.6)}
+.sheet-panel h2{margin:0 0 6px;font-family:var(--f-sc);font-size:30px;line-height:1.1;color:#3a1f12}
+.sheet-panel h3{margin:16px 0 6px;font-family:var(--f-sc);font-size:19px;color:#3a1f12}
+.sheet-panel p{line-height:1.45;font-size:15.5px;margin:6px 0}
+.muted{color:var(--ink-3)}
+.row{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}.row.center{justify-content:center}
+.sheet-panel .btn.ghost{color:var(--ink);background:rgba(0,0,0,.05);box-shadow:inset 0 0 0 1px rgba(0,0,0,.18)}
+.seg{display:inline-flex;border-radius:12px;padding:3px;background:rgba(0,0,0,.07);gap:3px}
+.seg button{border:0;cursor:pointer;min-height:40px;padding:6px 14px;border-radius:9px;background:none;font-weight:700;color:var(--ink-2)}
+.seg button.on{background:#fff;color:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,.25)}
+.set-row{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 0;border-bottom:1px solid rgba(0,0,0,.08)}
+.set-row b{display:block}.set-row span{font-size:14px;color:var(--ink-3)}
+.relics{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:10px}
+.relic-pick{text-align:left;border:0;cursor:pointer;border-radius:14px;padding:14px;color:var(--ink);background:linear-gradient(#fff8e6,#f0dcaa);box-shadow:inset 0 0 0 1px rgba(155,116,32,.5),0 3px 0 #b88e36}
+.relic-pick:hover{transform:translateY(-3px)}
+.relic-pick b{display:block;font-family:var(--f-sc);font-size:19px;color:#5a2f12}.relic-pick span{font-size:14.5px;line-height:1.35}
+.legend{display:grid;grid-template-columns:repeat(2,1fr);gap:8px 18px;margin:8px 0}
+.legend div{display:grid;grid-template-columns:30px 1fr;gap:2px 8px;align-items:start;font-size:14px}.legend .sym{width:28px;height:28px}.legend b{align-self:center}.legend span{grid-column:2;color:var(--ink-2);line-height:1.3}
+.decklist{columns:2;column-gap:18px;margin:6px 0}.decklist div{break-inside:avoid;display:flex;justify-content:space-between;gap:8px;padding:4px 0;border-bottom:1px dotted rgba(0,0,0,.15);font-size:14.5px}
+.tip{position:fixed;z-index:90;max-width:290px;padding:8px 11px;border-radius:10px;font-size:14px;line-height:1.35;color:var(--ink);background:#fffaf0;box-shadow:0 12px 28px rgba(0,0,0,.45);pointer-events:none}
+.coach{position:fixed;inset:0;z-index:70;pointer-events:none}
+.coach .spot{position:fixed;border-radius:16px;box-shadow:0 0 0 9999px rgba(4,11,25,.62);transition:all .3s ease}
+.coach .bubble{position:fixed;width:min(360px,calc(100vw - 24px));padding:14px 16px;border-radius:15px;color:var(--ink);background:#fffaf0;box-shadow:0 18px 44px rgba(0,0,0,.55);pointer-events:auto}
+.coach .bubble .btn.ghost{color:var(--ink);background:rgba(0,0,0,.05);box-shadow:inset 0 0 0 1px rgba(0,0,0,.22)}
+.coach .bubble h4{margin:0 0 4px;font-family:var(--f-sc);font-size:19px;color:#3a1f12}.coach .bubble p{margin:0 0 10px;font-size:15px;line-height:1.4}
+.coach .bubble .row{margin-top:6px;justify-content:space-between;align-items:center}
+.coach .step{font-size:13px;color:var(--ink-3)}
+#banner{position:fixed;left:50%;top:40%;transform:translate(-50%,-50%);z-index:50;text-align:center;pointer-events:none;opacity:0;width:min(92vw,760px)}
+#banner .bt{font-family:var(--f-sc);font-weight:800;font-size:clamp(32px,5.4vw,58px);line-height:1.05;color:var(--gold-hi);text-shadow:0 3px 0 #3a2a06,0 0 36px rgba(0,0,0,.75)}
+#banner .bs{margin-top:6px;font-size:18px;color:#fff;text-shadow:0 2px 8px #000}
+#banner .bs .kw{color:#ffd76a}
+#banner.show{animation:bannerIn var(--bdur,1.9s) ease-out}
+@keyframes bannerIn{0%{opacity:0;transform:translate(-50%,-40%)}12%{opacity:1;transform:translate(-50%,-50%)}78%{opacity:1}100%{opacity:0}}
+#fx-layer{position:fixed;inset:0;z-index:45;pointer-events:none}
+#fx-arrows{position:fixed;inset:0;width:100%;height:100%;z-index:44;pointer-events:none}
+.arrow{fill:none;stroke-width:5;stroke-linecap:round;filter:drop-shadow(0 2px 3px rgba(0,0,0,.5))}
+.arrow.dmg{stroke:#ff7a5c}.arrow.raze{stroke:#e0a35a}.arrow.steal{stroke:#e46fae}.arrow.aim{stroke:#ffd27a;stroke-dasharray:10 9}
+
+/* ── menu ── */
+#screen-menu{display:grid;place-items:center;padding:24px}
+.menu{display:flex;flex-direction:column;align-items:center;text-align:center}
+.menu-title{margin:0;font-family:var(--f-sc);font-weight:800;font-size:clamp(48px,8.5vw,104px);line-height:.95;color:var(--gold-hi);text-shadow:0 4px 0 #4a3408,0 0 42px rgba(0,0,0,.6)}
+.menu-sub{margin:10px 0 0;font-size:19px;color:#dbe4f3;max-width:34ch}
+.menu-fan{position:relative;height:250px;width:min(720px,94vw);margin:20px 0 10px}
+.menu-fan .card{position:absolute;left:50%;top:10px;margin-left:calc(var(--cw) / -2);transform:translateX(var(--x)) translateY(var(--y)) rotate(var(--rot));transform-origin:50% 120%;animation:deal .7s cubic-bezier(.2,.8,.2,1) both;animation-delay:var(--d)}
+@keyframes deal{from{transform:translateX(0) translateY(60px) rotate(0);opacity:0}}
+.menu-actions{display:flex;flex-direction:column;gap:10px;width:min(340px,90vw)}
+.menu-foot{margin-top:16px;font-size:14px;color:#aebbd4}
+
+/* ── civ select ── */
+#screen-select{display:grid;grid-template-columns:minmax(0,1fr) 440px;grid-template-rows:auto minmax(0,1fr);gap:0 18px;padding:0 18px 18px}
+.sel-top{grid-column:1/-1;display:flex;align-items:center;gap:12px;height:62px}
+.sel-top h2{margin:0;font-family:var(--f-sc);font-size:26px;color:var(--gold-hi);flex:1}
+.sel-list{overflow:auto;padding:2px 6px 20px 2px}
+.region h3{margin:14px 0 8px;font-family:var(--f-sc);font-size:19px;color:var(--gold-hi)}
+.civ-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
+.civ-tile{position:relative;height:86px;border:0;border-radius:13px;cursor:pointer;text-align:left;color:#fff;padding:9px 10px;display:flex;align-items:flex-end;gap:8px;
+  background-color:var(--civ);background-image:var(--motif);box-shadow:0 0 0 1px rgba(0,0,0,.45),0 6px 14px rgba(2,8,22,.45);transition:transform .15s}
+.civ-tile:hover{transform:translateY(-2px)}
+.civ-tile.on{box-shadow:0 0 0 3px var(--gold-hi),0 0 24px rgba(246,217,137,.55)}
+.civ-tile .crest{flex:0 0 auto;filter:drop-shadow(0 1px 1px rgba(0,0,0,.5))}
+.civ-tile .nm{font-family:var(--f-sc);font-weight:700;font-size:16.5px;line-height:1.05;text-shadow:0 1px 0 rgba(0,0,0,.55)}
+.civ-tile .hp{position:absolute;top:7px;right:9px;font-family:var(--f-num);font-weight:800;font-size:14px;padding:0 7px;border-radius:999px;background:rgba(0,0,0,.32)}
+.sel-detail{overflow:auto;border-radius:18px;color:var(--ink);background:linear-gradient(180deg,var(--vellum),var(--vellum-2));box-shadow:var(--shadow-1);display:flex;flex-direction:column}
+.sd-hero{display:flex;gap:14px;align-items:center;padding:18px;color:#fff;border-radius:18px 18px 0 0;background-color:var(--civ);background-image:var(--motif)}
+.sd-hero h2{margin:0;font-family:var(--f-sc);font-size:34px;line-height:1;text-shadow:0 2px 0 rgba(0,0,0,.4)}
+.sd-hero p{margin:4px 0 0;font-size:15.5px;opacity:.95}
+.sd-body{padding:4px 18px 10px;flex:1}
+.sd-body h3{margin:14px 0 8px;font-family:var(--f-sc);font-size:18px;color:#3a1f12}
+.sd-cards{display:flex;gap:10px;flex-wrap:wrap}
+.sd-stats{display:flex;gap:16px;flex-wrap:wrap;font-size:15px;margin-top:10px}.sd-stats b{font-family:var(--f-num);font-size:20px}
+.mix{display:flex;flex-wrap:wrap;gap:6px 12px}.mix span{display:inline-flex;align-items:center;gap:3px;font-weight:700;font-size:14px}.mix .sym{width:22px;height:22px}
+.sd-foot{position:sticky;bottom:0;padding:12px 18px;background:linear-gradient(180deg,rgba(238,223,191,0),var(--vellum-2) 30%);display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.sd-foot .seg{background:rgba(0,0,0,.08)}
+
+/* ── phones ── */
+/* ── phones (portrait or sideways): html.compact is set from JS ── */
+  html.compact{--cw:112px;--ch:162px}
+  html.compact .card:not(.lg):not(.sm) .ca{height:29%}
+  html.compact .card:not(.lg):not(.sm) .ct{font-size:10.5px;padding:3px 5px 1px}
+  html.compact .card:not(.lg):not(.sm) .ct span{display:-webkit-box;-webkit-line-clamp:6;-webkit-box-orient:vertical;overflow:hidden}
+  html.compact .mob-only{display:grid!important}
+  html.compact .desk-only{display:none!important}
+  html.compact #topbar{height:52px;padding:0 8px;gap:6px}
+  html.compact .pill{font-size:13.5px;padding:5px 10px}
+  html.compact .speed{display:none}
+  html.compact .tb-mid{justify-content:flex-start;gap:5px}
+  html.compact #table{grid-template-columns:minmax(0,1fr);grid-template-rows:auto minmax(0,1fr) auto auto auto;grid-template-areas:"opps" "stage" "me" "act" "hand";gap:6px;padding:4px 8px 0}
+  html.compact #events,html.compact #market{display:none}
+  html.compact #opps{gap:6px}
+  html.compact #opps .camp{flex:1 1 0}
+  html.compact #opps .camp-banner{min-height:30px;padding:3px 7px;gap:5px}
+  html.compact #opps .cname{font-size:14px}
+  html.compact #opps .relic,html.compact #opps .flag{display:none}
+  html.compact #opps .camp-body{padding:5px 7px 7px;gap:6px;flex-wrap:wrap}
+  html.compact #opps .hpgem{width:42px;height:42px}
+  html.compact #opps .hpgem b{font-size:18px}
+  html.compact #opps .hpgem small{display:none}
+  html.compact #opps .work{min-width:24px;height:24px;font-size:13px;padding:0 4px}
+  html.compact #opps .stash{flex-direction:row;align-items:center;gap:6px}
+  html.compact #opps .tag{font-size:11px}
+  html.compact #opps .tokens{padding:0 7px 6px}
+  html.compact #stage .rose{width:min(36vh,240px)}
+  html.compact .card.lg{--w:150px;--h:212px;--s:28px;padding:6px}
+  html.compact .card.lg .cn{font-size:13.5px;min-height:30px}
+  html.compact .card.lg .ct{font-size:12.5px;padding:5px 8px 2px}
+  html.compact .card.lg .cf{font-size:11px}
+  html.compact #me{padding-bottom:0}
+  html.compact #me .camp-banner{min-height:30px;padding:3px 9px}
+  html.compact #me .relic,html.compact #me .csub{display:none}
+  html.compact .camp.mine .camp-body{grid-template-columns:auto auto minmax(0,1fr);grid-template-areas:"hp stash works";padding:6px 8px 8px;gap:8px}
+  html.compact .camp.mine .hpgem{width:46px;height:46px}
+  html.compact .camp.mine .hpgem b{font-size:20px}
+  html.compact .camp.mine .hpgem small{display:none}
+  html.compact .camp.mine .piles{display:none}
+  html.compact #handzone{padding-bottom:calc(6px + env(safe-area-inset-bottom,0px))}
+  html.compact .actionbar{min-height:48px}html.compact .actionbar .hint{font-size:15px}html.compact .actionbar .btn{min-height:44px;font-size:16px}
+  html.compact #hand{overflow-x:auto;overflow-y:visible;height:190px;padding:24px 10px 8px}
+  html.compact #hand .card{transform:none}
+  html.compact #hand .card.playable:hover{transform:none}
+  html.compact #hand .card.sel{transform:translateY(-26px)}
+  html.compact .drawer{top:52px;width:100%}
+  html.compact .sheet-wrap{place-items:end center;padding:0}
+  html.compact .sheet-panel{border-radius:20px 20px 0 0;max-height:88dvh;padding:18px 16px calc(18px + env(safe-area-inset-bottom,0px))}
+  html.compact .relics{grid-template-columns:1fr}
+  html.compact .legend{grid-template-columns:1fr}
+  html.compact .decklist{columns:1}
+  html.compact #screen-select{grid-template-columns:minmax(0,1fr);grid-template-rows:auto auto minmax(0,1fr);padding:0 10px 10px}
+  html.compact .sel-list{max-height:none}
+  html.compact .civ-grid{grid-template-columns:repeat(auto-fill,minmax(130px,1fr))}
+  html.compact .sel-detail{overflow:visible}
+  html.compact #screen-select{overflow:auto}
+  html.compact .menu-fan{height:190px}
+  html.compact .menu-fan .card{--cw:112px}
+@media (max-height:820px){html:not(.compact){--cw:136px;--ch:192px}html:not(.compact) #hand{height:222px}html:not(.compact) .camp-body{padding:6px 10px 8px}html:not(.compact) .hpgem{width:52px;height:52px}html:not(.compact) .camp.mine .hpgem{width:60px;height:60px}html:not(.compact) #topbar{height:50px}}
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;transition-duration:.01ms!important}}
+
+/* compact enemy camps for crowded tables on phones; tap any camp to inspect it */
+.camp.mini .camp-banner{min-height:28px;padding:3px 8px;gap:5px}.camp.mini .cname{font-size:14px}
+.mini-body{display:flex;align-items:center;gap:7px;padding:6px 8px 7px}
+.camp.mini .hpgem{width:40px;height:40px}.camp.mini .hpgem b{font-size:17px}.camp.mini .hpgem small{display:none}
+.mini-stats{display:grid;grid-template-columns:repeat(2,auto);gap:3px 9px;font-family:var(--f-num);font-weight:800;font-size:13.5px;color:var(--ink-2)}
+.mini-stats span{display:inline-flex;align-items:center;gap:3px;white-space:nowrap}.mini-stats .sym{width:15px;height:15px}.mini-stats .cback{margin-right:2px}
+.mini-stats .wd{color:#7a5208}
+.dots{position:absolute;right:6px;top:34px;display:flex;gap:3px}.dots i{width:8px;height:8px;border-radius:50%;background:#1f4e79;box-shadow:0 0 0 1.5px #fff}.dots i.camel{background:#a8743a}
+.camp-sheet .works{margin:6px 0}.camp-sheet .ws{display:flex;flex-direction:column;gap:6px;margin:8px 0}.camp-sheet .ws div{display:flex;gap:10px;align-items:center;font-size:15px}
+.camp-sheet .hdr{display:flex;align-items:center;gap:12px;padding:14px;border-radius:14px;color:#fff;background-color:var(--civ);background-image:var(--motif);margin-bottom:8px}
+.camp-sheet .hdr h2{color:#fff;margin:0}.camp-sheet .hdr p{margin:2px 0 0;opacity:.9}
+.camp-sheet ul{margin:6px 0;padding-left:18px}.camp-sheet li{margin:3px 0;font-size:15px}
+.market-sheet .mk-big{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}.market-sheet .mk-col{display:flex;flex-direction:column;align-items:center;gap:16px}
+.icon-btn{position:relative}.icon-btn .badge{position:absolute;top:-4px;right:-4px;min-width:18px;height:18px;padding:0 5px;border-radius:999px;font-size:11.5px;font-weight:800;line-height:18px;color:#2b1d05;background:var(--gold-hi);box-shadow:0 0 0 2px var(--lapis-1)}
+.icon-btn .badge.dot{min-width:11px;width:11px;height:11px;padding:0;background:#ff8a66}
+html,body{overscroll-behavior:none}
+#app{height:100dvh}
+#table,#topbar,#hand,.camp,.mk-item,.btn,.icon-btn{touch-action:manipulation}
+#screen-match{-webkit-user-select:none;user-select:none}
+/* phones held sideways: enemies stacked on the left, the stage in the middle, you on the right, the hand along the bottom */
+html.compact.land{--cw:80px;--ch:114px}
+@media (max-height:700px) and (orientation:portrait){html.compact{--cw:100px;--ch:146px}html.compact #hand{height:172px;padding-top:20px}html.compact .actionbar{min-height:46px}html.compact #opps .camp-banner{min-height:26px}}
+html.compact.land #topbar{height:42px}
+html.compact.land #table{grid-template-columns:206px minmax(0,1fr) 216px;grid-template-rows:minmax(0,1fr) auto;grid-template-areas:"opps stage me" "hand hand act";gap:6px;padding:2px 10px 0}
+html.compact.land .actionbar{align-self:center;flex-wrap:wrap}
+html.compact.land #opps{flex-direction:column;justify-content:flex-start;gap:5px;overflow:auto}
+html.compact.land .camp.mini .hpgem{width:32px;height:32px}html.compact.land .camp.mini .hpgem b{font-size:14px}html.compact.land .mini-stats{grid-template-columns:repeat(4,auto);gap:2px 7px;font-size:12.5px}html.compact.land .dots{top:28px}
+html.compact.land #opps .camp{flex:0 0 auto}
+html.compact.land #me{align-self:end}
+html.compact.land .camp.mine .camp-body{grid-template-columns:auto 1fr;grid-template-areas:"hp stash" "works works"}
+html.compact.land #hand{height:126px;padding:8px 10px 4px}html.compact.land #hand .card.sel{transform:translateY(-8px)}
+html.compact.land .actionbar{min-height:44px;gap:6px}html.compact.land .actionbar .btn{min-width:0;font-size:14px;padding:6px 12px}html.compact.land .actionbar .hint{font-size:13.5px}
+html.compact.land .camp.mine .hpgem{width:40px;height:40px}html.compact.land .camp.mine .hpgem b{font-size:17px}html.compact.land #me .camp-body{padding:4px 8px 6px;gap:4px 8px}html.compact.land .camp.mini .mini-body{padding:4px 7px 5px}html.compact.land .camp.mini .camp-banner{min-height:24px;padding:2px 7px}
+html.compact.land .card .ct{font-size:9.5px}html.compact.land .card .cn{font-size:11px;min-height:24px}html.compact.land .card .cf{display:none}
+html.compact.land .card.lg{--w:120px;--h:170px}html.compact.land .card .ca{margin:3px 3px 0}html.compact.land .card{padding:4px}html.compact.land .card .ct span{-webkit-line-clamp:5}
+
+/* sideways phones: each enemy camp becomes one strip, name on the left, numbers on the right */
+html.compact.land .camp.mini{display:flex;align-items:stretch;border-radius:12px}
+html.compact.land .camp.mini .camp-banner{flex:0 0 78px;flex-direction:column;align-items:flex-start;justify-content:center;gap:1px;border-radius:12px 0 0 12px;padding:4px 7px}
+html.compact.land .camp.mini .cname{font-size:12.5px;max-width:100%}
+html.compact.land .camp.mini .mini-body{flex:1;min-width:0;padding:4px 7px;gap:6px}
+html.compact.land .mini-stats{grid-template-columns:repeat(2,auto);gap:1px 8px}
+html.compact.land .camp.mini .chips{top:-10px}
 </style>
 </head>
 <body>
-<header class="top"><a href="index.html">‹ Sonic Hub Pages</a><h1>Medieval Mayhem</h1><button class="btn ghost" id="rulesBtn">Rules</button><button class="btn ghost" id="soundBtn">Sound: on</button><button class="btn ghost" id="newBtn">New game</button></header>
-<section id="setup"></section>
-<section id="game" class="hidden">
-  <div id="opps" class="opps"></div>
-  <div class="mid"><div id="events"></div><div id="arena"></div><div id="market"></div></div>
-  <div id="mine"></div>
-  <div class="handbar"><div id="status"></div><div id="hand"></div></div>
-  <aside class="chronbox"><h3>Chronicle</h3><ul id="chron"></ul></aside>
-</section>
-<div id="modal" class="modal hidden"></div>
-<div id="banner"></div>
+<div id="app">
+  <section id="screen-menu" class="screen"></section>
+  <section id="screen-select" class="screen hidden"></section>
+  <section id="screen-match" class="screen hidden">
+    <header id="topbar"></header>
+    <div id="table">
+      <div id="opps"></div>
+      <aside id="events"></aside>
+      <div id="stage"><div class="rose"></div><div id="stage-card"></div><div id="stage-caption"></div></div>
+      <aside id="market"></aside>
+      <div id="me"></div>
+      <div id="prompt" class="actionbar"></div>
+      <div id="handzone"><div id="hand"></div></div>
+    </div>
+    <aside id="chronicle" class="drawer" aria-label="Chronicle"></aside>
+  </section>
+  <svg id="fx-arrows" aria-hidden="true"></svg>
+  <div id="fx-layer" aria-hidden="true"></div>
+  <div id="sheet" class="sheet-wrap hidden"></div>
+  <div id="tip" class="tip hidden" role="tooltip"></div>
+  <div id="coach" class="coach hidden"></div>
+  <div id="banner" aria-live="polite"></div>
+</div>
 <script>
 'use strict';
 /* ── Medieval Mayhem ──
@@ -709,6 +954,16 @@ function ageUp(S, A, ev) {
   log(S, 'aged', { pid: A.id });
 }
 
+/* ── Preview: play the card on a copy of the match and report what would change for each player ── */
+function previewPlay(S, pid, uid, tid) {
+  const C = structuredClone(S); C.quiet = true;
+  const snap = p => ({ hp: p.hp, walls: wallTotal(p), wonder: (wonderOf(p) || { dur: 0 }).dur, gold: p.gold, hand: p.hand.length, alive: p.alive, structs: p.structs.length });
+  const before = C.players.map(snap);
+  const ev = playCard(C, pid, uid, tid);
+  if (!ev) return null;
+  return { target: ev.target, players: C.players.map((p, i) => { const a = snap(p), b = before[i]; return { hp: a.hp - b.hp, walls: a.walls - b.walls, wonder: a.wonder - b.wonder, gold: a.gold - b.gold, hand: a.hand - b.hand, structs: a.structs - b.structs, dies: b.alive && !a.alive }; }) };
+}
+
 /* ── AI: one-ply card evaluation with sensible targeting ── */
 function strength(X) { return (X.hp / X.maxHP) * 10 + wallTotal(X) * 0.6 + (wonderOf(X) ? 5 : 0); }
 function threatOf(S, P, X, leader) {
@@ -772,12 +1027,15 @@ function cardValue(S, P, card, T) {
   if (opp.some(X => wonderOf(X)) && !card.steps.some(s => s.raze)) v -= 2;
   return v;
 }
+/* difficulty only changes how much noise the AI adds to its own judgement; balance runs use 'hard' */
+const AI_NOISE = { easy: 3.2, normal: 1.1, hard: 0.15 };
 function bestPlay(S, P) {
+  const noise = AI_NOISE[P.skill] != null ? AI_NOISE[P.skill] : 0.15;
   let best = null;
   for (const card of P.hand) {
     const targets = needsTarget(card) ? opponents(S, P) : [null];
     for (const T of targets) {
-      const v = cardValue(S, P, card, T) + rnd(S) * 0.15;
+      const v = cardValue(S, P, card, T) + rnd(S) * noise;
       if (!best || v > best.v) best = { card, target: T ? T.id : null, v };
     }
   }
@@ -785,6 +1043,7 @@ function bestPlay(S, P) {
 }
 function aiBuy(S, P) {
   if (S.flags.bought) return null;
+  if (P.skill === 'easy' && rnd(S) < 0.5) return null;
   let best = null;
   S.market.forEach((card, i) => {
     if (!card) return;
@@ -896,6 +1155,8 @@ const SFX = {
     this.init(); if (!this.ctx) return;
     switch (name) {
       case 'click': this.noise(0, 0.03, 0.05, 2500); break;
+      case 'whoosh': this.noise(0, 0.18, 0.05, 1200); break;
+      case 'crown': [523, 659, 784, 1047].forEach((f, i) => this.tone(f, i * 0.1, 0.45, 'triangle', 0.08)); break;
       case 'card': this.noise(0, 0.08, 0.07, 1800); this.tone(660, 0.02, 0.06, 'triangle', 0.04); break;
       case 'hit': this.noise(0, 0.12, 0.14, 700); this.tone(140, 0, 0.18, 'square', 0.06, -60); break;
       case 'wall': this.noise(0, 0.25, 0.12, 300, 'lowpass'); this.tone(90, 0, 0.3, 'sine', 0.2, -30); break;
@@ -914,277 +1175,693 @@ const SFX = {
   },
 };
 
-/* ── Rendering ── */
-const $ = s => document.querySelector(s);
-const civName = pid => (pid === 0 ? 'You' : CIVS[S.players[pid].civ].name);
-const civObj = pid => (pid === 0 ? 'you' : CIVS[S.players[pid].civ].name);
-/* keyword colours: the same colour as the symbol for that resource, so a long game can be read at a glance */
-const KW_RE = /\b(?:(over the walls)|([Ee]very opponent|[Ee]veryone)|([Pp]lay another card|[Pp]lay \d+ more cards)|(\d+ (?:extra |less )?damage|damage)|(\d+ (?:extra )?HP|max HP|HP|[Hh]eals?)|(\d+ (?:extra |less )?gold|gold)|(\d+ (?:random |extra )?cards?|another card|a random card|a card|cards?)|(\d+ (?:extra )?durability|durability|walls?|structures?|[Ww]onders?)|([Ss]teal|stolen)|([Dd]estroy|destroyed))\b/g;
+/* ── Civilization motifs. Every civ wears a pattern from its own culture in its own colours.
+   Tiles are small SVGs turned into CSS variables (--motif on the civ colour, --motif-soft on vellum),
+   so cards, camps, banners and card backs all share one look per civ. ── */
+const MOTIF_TILES = {
+  cloud: (a) => [36, 24, `<path d="M3 17c0-4 5-5 7-2 0-5 8-6 9-1 2-3 8-2 7 3" fill="none" stroke="${a}" stroke-width="1.5" stroke-linecap="round"/><path d="M10 15c1-2 3-2 3 0" fill="none" stroke="${a}" stroke-width="1.1"/><circle cx="30" cy="6" r="1.3" fill="${a}"/>`],
+  seigaiha: (a, b) => [24, 12, ['0,0', '24,0', '12,6', '0,12', '24,12'].map(p => { const [x, y] = p.split(','); return `<circle cx="${x}" cy="${y}" r="11" fill="${b}" stroke="${a}" stroke-width="1"/><circle cx="${x}" cy="${y}" r="7.5" fill="none" stroke="${a}" stroke-width="1"/><circle cx="${x}" cy="${y}" r="4" fill="none" stroke="${a}" stroke-width="1"/>`; }).join('')],
+  lattice: (a) => [24, 24, `<path d="M0 12h24M12 0v24" stroke="${a}" stroke-width="1"/><rect x="7" y="7" width="10" height="10" fill="none" stroke="${a}" stroke-width="1.2"/><path d="M7 7L4 4M17 7l3-3M7 17l-3 3M17 17l3 3" stroke="${a}" stroke-width=".8"/>`],
+  drum: (a) => [40, 40, `<circle cx="20" cy="20" r="15" fill="none" stroke="${a}" stroke-width="1"/><circle cx="20" cy="20" r="10.5" fill="none" stroke="${a}" stroke-width=".8" stroke-dasharray="1.5 2"/><path d="M20 12.5l1.6 5 5-1.6-3.4 3.6 3.4 3.6-5-1.6-1.6 5-1.6-5-5 1.6 3.4-3.6-3.4-3.6 5 1.6z" fill="${a}"/><path d="M2 2l3 2M38 38l-3-2M38 2l-3 2M2 38l3-2" stroke="${a}" stroke-width="1"/>`],
+  naga: (a) => [20, 14, `<path d="M0 14c0-6 4-10 10-10s10 4 10 10M-10 7c0-6 4-10 10-10s10 4 10 10M10 7c0-6 4-10 10-10s10 4 10 10" fill="none" stroke="${a}" stroke-width="1.1"/>`],
+  kawung: (a) => [24, 24, `<g fill="none" stroke="${a}" stroke-width="1.1"><ellipse cx="12" cy="5.5" rx="3.6" ry="5"/><ellipse cx="12" cy="18.5" rx="3.6" ry="5"/><ellipse cx="5.5" cy="12" rx="5" ry="3.6"/><ellipse cx="18.5" cy="12" rx="5" ry="3.6"/></g><circle cx="12" cy="12" r="1.2" fill="${a}"/>`],
+  jali: (a) => [24, 24, `<path d="M12 0l12 12-12 12L0 12z" fill="none" stroke="${a}" stroke-width="1"/><circle cx="12" cy="12" r="4.5" fill="none" stroke="${a}" stroke-width="1"/><circle cx="12" cy="12" r="1.3" fill="${a}"/>`],
+  girih: (a) => [28, 28, `<g fill="none" stroke="${a}" stroke-width="1.1"><rect x="8" y="8" width="12" height="12"/><rect x="8" y="8" width="12" height="12" transform="rotate(45 14 14)"/></g><path d="M0 14h4.5M23.5 14H28M14 0v4.5M14 23.5V28" stroke="${a}" stroke-width="1.1"/>`],
+  arabesque: (a) => [28, 24, `<path d="M0 16c6-9 10-9 14 0s8 9 14 0" fill="none" stroke="${a}" stroke-width="1.2"/><path d="M14 16c-2.5-4.5 2-7 4.5-4.5M0 16c2.5 4.5-2 7-4.5 4.5M28 16c2.5 4.5-2 7-4.5 4.5" fill="none" stroke="${a}" stroke-width="1"/><circle cx="7" cy="9" r="1.2" fill="${a}"/>`],
+  iznik: (a) => [28, 28, `<path d="M14 21c-4-1-6-5-5-10 2 2 3.2 2 5-1 1.8 3 3 3 5 1 1 5-1 9-5 10z" fill="${a}"/><path d="M14 21v6M14 25c-3-1-5 0-6 2M14 25c3-1 5 0 6 2" fill="none" stroke="${a}" stroke-width="1"/>`],
+  zellige: (a) => [28, 28, `<path d="M14 5l2.6 6.4L23 14l-6.4 2.6L14 23l-2.6-6.4L5 14l6.4-2.6z" fill="none" stroke="${a}" stroke-width="1.1"/><circle cx="14" cy="14" r="2" fill="${a}"/><path d="M0 0l4 4M28 0l-4 4M0 28l4-4M28 28l-4-4" stroke="${a}" stroke-width="1"/>`],
+  bogolan: (a) => [32, 30, `<path d="M0 8l4-4 4 4 4-4 4 4 4-4 4 4 4-4 4 4" fill="none" stroke="${a}" stroke-width="1.5"/><g fill="${a}"><circle cx="4" cy="17" r="1.5"/><circle cx="12" cy="17" r="1.5"/><circle cx="20" cy="17" r="1.5"/><circle cx="28" cy="17" r="1.5"/></g><path d="M2 25h6M12 25h6M22 25h6" stroke="${a}" stroke-width="1.5"/>`],
+  tibeb: (a) => [24, 24, `<path d="M12 2l7 10-7 10-7-10z" fill="none" stroke="${a}" stroke-width="1.1"/><path d="M12 8v8M8 12h8" stroke="${a}" stroke-width="1.1"/><circle cx="0" cy="12" r="1.2" fill="${a}"/><circle cx="24" cy="12" r="1.2" fill="${a}"/>`],
+  felt: (a) => [32, 22, `<path d="M16 19c0-6-4-10-8-8s-2 6 1 5M16 19c0-6 4-10 8-8s2 6-1 5" fill="none" stroke="${a}" stroke-width="1.5" stroke-linecap="round"/><path d="M0 3h32" stroke="${a}" stroke-width=".7" stroke-dasharray="2 2"/>`],
+  cloisonne: (a, b) => [20, 24, `<path d="M0 6h6v6h8V6h6M0 18h6v-6M14 12v6h6M10 18v6" fill="none" stroke="${a}" stroke-width="1.3"/><rect x="7" y="7" width="6" height="4" fill="${b}"/>`],
+  knot: (a) => [24, 24, `<path d="M0 12c6-8 12-8 12 0s6 8 12 0M0 12c6 8 12 8 12 0s6-8 12 0" fill="none" stroke="${a}" stroke-width="1.5"/>`],
+  interlace: (a, b) => [28, 20, `<path d="M0 10c5-8 9-8 14 0s9 8 14 0" fill="none" stroke="${a}" stroke-width="3.2"/><path d="M0 10c5-8 9-8 14 0s9 8 14 0" fill="none" stroke="${b}" stroke-width="1"/>`],
+  fleur: (a) => [24, 24, `<path d="M12 0L24 12 12 24 0 12z" fill="none" stroke="${a}" stroke-width=".8"/><path d="M12 7c-1.4 1.6-1.4 3.4 0 5 1.4-1.6 1.4-3.4 0-5zM12 12c-1-2-4-2.4-4.4-.6 1-.4 2.4 0 3 1.4M12 12c1-2 4-2.4 4.4-.6-1-.4-2.4 0-3 1.4M10 13.4h4M12 12v4" fill="${a}" stroke="${a}" stroke-width=".6"/>`],
+  tracery: (a) => [24, 24, `<g fill="none" stroke="${a}" stroke-width="1"><circle cx="12" cy="7.5" r="4.5"/><circle cx="12" cy="16.5" r="4.5"/><circle cx="7.5" cy="12" r="4.5"/><circle cx="16.5" cy="12" r="4.5"/></g><path d="M0 0h24v24H0z" fill="none" stroke="${a}" stroke-width=".6"/>`],
+  azulejo: (a) => [24, 24, `<rect width="24" height="24" fill="none" stroke="${a}" stroke-width=".8"/><circle cx="12" cy="12" r="5" fill="none" stroke="${a}" stroke-width="1.1"/><path d="M12 7v10M7 12h10" stroke="${a}" stroke-width=".7"/><path d="M0 6a6 6 0 0 0 6-6M18 0a6 6 0 0 0 6 6M24 18a6 6 0 0 0-6 6M6 24a6 6 0 0 0-6-6" fill="none" stroke="${a}" stroke-width="1"/>`],
+  mudejar: (a) => [24, 24, `<path d="M0 6h24M0 18h24M6 0v24M18 0v24" stroke="${a}" stroke-width=".8"/><rect x="9" y="9" width="6" height="6" transform="rotate(45 12 12)" fill="${a}"/>`],
+  diaper: (a) => [20, 20, `<path d="M10 0l10 10-10 10L0 10z" fill="none" stroke="${a}" stroke-width=".9"/><circle cx="10" cy="10" r="1.6" fill="${a}"/>`],
+  mosaic: (a, b) => [16, 16, `<rect x="1" y="1" width="6" height="6" fill="${a}"/><rect x="9" y="9" width="6" height="6" fill="${a}"/><rect x="9" y="1" width="6" height="6" fill="${b}"/><rect x="1" y="9" width="6" height="6" fill="${b}"/>`],
+  stitch: (a) => [24, 24, [[12, 4], [8, 8], [16, 8], [4, 12], [20, 12], [8, 16], [16, 16], [12, 20], [12, 12]].map(([x, y]) => `<path d="M${x - 1.6} ${y - 1.6}l3.2 3.2m0-3.2l-3.2 3.2" stroke="${a}" stroke-width="1.1"/>`).join('')],
+  tulip: (a) => [24, 24, `<path d="M12 4c-3 3-3 6 0 9 3-3 3-6 0-9zM12 13c-2-2-6-2-7 0 2 0 4 1 5 3M12 13c2-2 6-2 7 0-2 0-4 1-5 3" fill="${a}"/><path d="M12 13v8" stroke="${a}" stroke-width="1"/>`],
+  sash: (a) => [24, 12, `<path d="M0 6l6-6 6 6-6 6zM12 6l6-6 6 6-6 6z" fill="none" stroke="${a}" stroke-width="1"/><path d="M6 3v6M3 6h6M18 3v6M15 6h6" stroke="${a}" stroke-width=".8"/>`],
+  wycinanki: (a) => [28, 28, Array.from({ length: 8 }, (_, i) => `<ellipse cx="14" cy="7.5" rx="2.2" ry="5" fill="${a}" transform="rotate(${i * 45} 14 14)"/>`).join('') + `<circle cx="14" cy="14" r="2.4" fill="none" stroke="${a}"/>`],
+  fret: (a) => [24, 16, `<path d="M0 14h7V5h9v6h-4V8" fill="none" stroke="${a}" stroke-width="1.6"/><path d="M16 14h8" stroke="${a}" stroke-width="1.6"/>`],
+  tocapu: (a) => [16, 16, `<rect x="1" y="1" width="14" height="14" fill="none" stroke="${a}" stroke-width="1"/><path d="M4 4h8v8H4z" fill="none" stroke="${a}" stroke-width=".8"/><circle cx="8" cy="8" r="1.4" fill="${a}"/>`],
+  brass: (a) => [20, 20, `<circle cx="10" cy="10" r="3" fill="none" stroke="${a}" stroke-width="1"/><circle cx="0" cy="0" r="2" fill="${a}"/><circle cx="20" cy="20" r="2" fill="${a}"/>`],
+};
+const CIV_MOTIF = {
+  chinese: 'cloud', japanese: 'seigaiha', koreans: 'lattice', jurchens: 'felt', khitans: 'cloud', daiviet: 'drum', khmer: 'naga', malay: 'kawung', indians: 'jali',
+  arabs: 'girih', persians: 'arabesque', turks: 'iznik', berbers: 'zellige', malians: 'bogolan', ethiopians: 'tibeb', mongols: 'felt', huns: 'cloisonne',
+  britons: 'diaper', celts: 'knot', franks: 'fleur', vikings: 'interlace', teutons: 'tracery', goths: 'cloisonne', spanish: 'mudejar', portuguese: 'azulejo',
+  byzantines: 'mosaic', bohemians: 'tracery', poles: 'wycinanki', lithuanians: 'sash', bulgarians: 'stitch', slavs: 'stitch', magyars: 'tulip',
+  aztecs: 'fret', mayans: 'fret', incas: 'tocapu',
+};
+const MOTIF_NAMES = { cloud: 'cloud scrolls', seigaiha: 'seigaiha waves', lattice: 'window lattice', drum: 'Đông Sơn drum', naga: 'naga scales', kawung: 'kawung batik',
+  jali: 'jali screen', girih: 'girih stars', arabesque: 'arabesque vines', iznik: 'Iznik tulips', zellige: 'zellige stars', bogolan: 'bògòlan mudcloth', tibeb: 'tibeb weave',
+  felt: 'felt horn scrolls', cloisonne: 'garnet cloisonné', knot: 'knotwork', interlace: 'ribbon interlace', fleur: 'fleur-de-lis', tracery: 'Gothic tracery', azulejo: 'azulejo tiles',
+  mudejar: 'Mudéjar lattice', diaper: 'heraldic diaper', mosaic: 'gold mosaic', stitch: 'cross-stitch', tulip: 'folk tulips', sash: 'woven sash', wycinanki: 'paper-cut flowers',
+  fret: 'step-fret', tocapu: 'tocapu squares', brass: 'brass studs' };
+/* colour helpers */
+function hexRgb(h) { const n = parseInt(h.slice(1), 16); return [n >> 16, (n >> 8) & 255, n & 255]; }
+function mix(h1, h2, t) { const a = hexRgb(h1), b = hexRgb(h2); return '#' + a.map((v, i) => Math.round(v + (b[i] - v) * t).toString(16).padStart(2, '0')).join(''); }
+function rgba(h, a) { const [r, g, b] = hexRgb(h); return `rgba(${r},${g},${b},${a})`; }
+function tileURL(name, a, b) {
+  const [w, h, inner] = MOTIF_TILES[name](a, b);
+  const svg = `<svg xmlns='http://www.w3.org/2000/svg' width='${w}' height='${h}' viewBox='0 0 ${w} ${h}'>${inner.replace(/"/g, "'")}</svg>`;
+  return `url("data:image/svg+xml,${encodeURIComponent(svg)}")`;
+}
+function installCivStyles() {
+  let css = '';
+  const add = (cls, color, motif) => {
+    const light = mix(color, '#ffffff', 0.42), deep = mix(color, '#000000', 0.38);
+    css += `.${cls}{--civ:${color};--civ-deep:${deep};--civ-light:${light};--civ-wash:${rgba(color, 0.12)};--motif:${tileURL(motif, rgba('#ffffff', 0.38), rgba('#ffffff', 0.08))};--motif-soft:${tileURL(motif, rgba(color, 0.2), 'none')};--motif-gold:${tileURL(motif, rgba('#f2cf73', 0.55), rgba('#f2cf73', 0.1))}}\n`;
+  };
+  for (const c of CIV_ORDER) add('civ-' + c, CIVS[c].color, CIV_MOTIF[c] || 'diaper');
+  add('civ-merc', '#7a6542', 'brass');
+  const el = document.createElement('style'); el.id = 'civ-styles'; el.textContent = css; document.head.appendChild(el);
+}
+
+/* ── View: table art, components and rendering for the new UI ── */
+const $ = s => document.querySelector(s), $$ = s => [...document.querySelectorAll(s)];
+const UI = { screen: 'menu', sel: null, hoverT: null, busy: false, last: null, view: null, round: 1, drawer: false, n: 2, civ: null, opps: 'random', tutorial: null };
+const ICON = {
+  menu: '<svg viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>',
+  scroll: '<svg viewBox="0 0 24 24"><path d="M6 4h11a3 3 0 0 1 0 6h-1v8a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2zM16 4a3 3 0 0 0-3 3v3M8 9h4M8 13h5M8 16h4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+  help: '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M9.5 9.5a2.5 2.5 0 1 1 3.5 2.3c-.8.4-1 1-1 1.7M12 16.8v.2" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/></svg>',
+  event: '<svg viewBox="0 0 24 24"><path d="M7 3h10M7 21h10M8 3c0 5 8 5 8 9s-8 4-8 9M16 3c0 5-8 5-8 9s8 4 8 9" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>',
+  market: '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M12 8v8M9.5 10h4M9.5 14h5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>',
+  back: '<svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+};
+const svgURL = svg => `url("data:image/svg+xml,${encodeURIComponent(svg)}")`;
+function installTableArt() {
+  const L = [], c = 1000;
+  for (let i = 0; i < 32; i++) { const a = i * Math.PI / 16, main = i % 4 === 0; L.push(`<path d='M${c} ${c}L${(c + Math.cos(a) * 1400).toFixed(0)} ${(c + Math.sin(a) * 1400).toFixed(0)}' stroke='rgba(246,217,137,${main ? .22 : .1})' stroke-width='${main ? 1.6 : 1}'/>`); }
+  for (let k = 0; k < 8; k++) { const a = k * Math.PI / 4 + Math.PI / 8, x = c + Math.cos(a) * 660, y = c + Math.sin(a) * 660; for (let i = 0; i < 16; i++) { const b = i * Math.PI / 8; L.push(`<path d='M${x.toFixed(0)} ${y.toFixed(0)}l${(Math.cos(b) * 900).toFixed(0)} ${(Math.sin(b) * 900).toFixed(0)}' stroke='rgba(246,217,137,.05)'/>`); } }
+  const rhumb = `<svg xmlns='http://www.w3.org/2000/svg' width='2000' height='2000' viewBox='0 0 2000 2000'>${L.join('')}<circle cx='1000' cy='1000' r='660' fill='none' stroke='rgba(246,217,137,.09)' stroke-width='1.5'/></svg>`;
+  const star = (n, r1, r2, rot) => Array.from({ length: n * 2 }, (_, i) => { const r = i % 2 ? r2 : r1, a = i * Math.PI / n + rot - Math.PI / 2; return `${(100 + Math.cos(a) * r).toFixed(1)},${(100 + Math.sin(a) * r).toFixed(1)}`; }).join(' ');
+  const rose = `<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 200'><circle cx='100' cy='100' r='94' fill='none' stroke='rgba(246,217,137,.5)' stroke-width='1.2'/><circle cx='100' cy='100' r='86' fill='none' stroke='rgba(246,217,137,.3)' stroke-dasharray='2 4'/><polygon points='${star(8, 72, 12, Math.PI / 8)}' fill='rgba(246,217,137,.16)'/><polygon points='${star(4, 94, 15, 0)}' fill='rgba(246,217,137,.36)' stroke='rgba(246,217,137,.7)' stroke-width='.8'/><circle cx='100' cy='100' r='6' fill='rgba(246,217,137,.8)'/></svg>`;
+  document.documentElement.style.setProperty('--rhumb', svgURL(rhumb));
+  document.documentElement.style.setProperty('--rose', svgURL(rose));
+}
+
+/* keywords share the colour of the symbol for that resource */
+const KW_RE = /\b(?:(over the walls)|([Ee]very opponent|[Ee]very other opponent|[Ee]veryone)|([Pp]lay another card|[Pp]lay \d+ more cards)|(\d+ (?:extra |less )?damage|damage)|(\d+ (?:extra )?HP|max HP|HP|[Hh]eals?)|(\d+ (?:extra |less )?gold|gold)|(\d+ (?:random |extra )?cards?|another card|a random card|a card|cards?)|(\d+ (?:extra )?durability|durability|walls?|structures?|[Ww]onders?)|([Ss]teal|stolen)|([Dd]estroy|destroyed))\b/g;
 const KW_CLS = ['pierce', 'aoe', 'play', 'dmg', 'hp', 'gold', 'card', 'wall', 'steal', 'raze'];
 function kw(text) { return esc(text).replace(KW_RE, (...m) => `<b class="kw k-${KW_CLS[m.slice(1, 11).findIndex(x => x !== undefined)]}">${m[0]}</b>`); }
+
+const isMyTurn = () => S && S.turn === 0 && S.winner == null && !UI.busy;
+const selCard = () => (S && UI.sel != null ? S.players[0].hand.find(c => c.uid === UI.sel) : null);
+const civNameOf = pid => (pid === 0 ? 'You' : CIVS[S.players[pid].civ].name);
+const civObjOf = pid => (pid === 0 ? 'you' : CIVS[S.players[pid].civ].name);
+const typeOf = c => (c.age ? 'Imperial Age' : c.imperial ? 'Imperial' : c.unique ? 'Signature' : c.civ === 'merc' ? 'Mercenary' : 'Common');
 function cardHTML(card, o = {}) {
-  const civ = card.civ === 'merc' ? null : CIVS[card.civ];
-  const cls = ['card', card.unique ? 'unique' : '', card.imperial ? 'imperial' : '', card.age ? 'agecard' : '', card.civ === 'merc' ? 'merc' : '', o.cls || ''].join(' ');
-  const syms = card.age ? crownSVG(o.small ? 34 : 44) : [...card.icons].map(ch => symBadge(ch, o.small ? 22 : 28)).join('');
-  return `<div class="${cls}" data-uid="${card.uid || ''}" ${o.attrs || ''} style="--civ:${civ ? civ.color : '#6b5a3a'}">
-    <div class="c-head">${civ ? crest(card.civ, 18) : mercCrest(18)}<span class="c-name">${esc(card.name)}</span></div>
-    <div class="c-syms">${syms}</div>
-    <div class="c-text">${kw(cardText(card))}</div>
-    ${o.cost != null ? `<div class="c-cost${o.afford ? ' ok' : ''}">${o.cost} gold</div>` : ''}${card.unique ? '<div class="c-star" title="Signature card of this civilization">★</div>' : ''}${card.imperial ? '<div class="c-imp" title="Imperial Age card">Imperial</div>' : ''}
-  </div>`;
+  const kind = card.age ? 'age' : card.imperial ? 'imp' : card.unique ? 'sig' : card.civ === 'merc' ? 'merc' : '';
+  const size = o.size || '';
+  const syms = card.age ? crownSVG(size === 'lg' ? 70 : size === 'sm' ? 36 : 50) : [...card.icons].map(ch => symBadge(ch, 28)).join('');
+  const seal = card.age || card.imperial ? `<i class="seal">${crownSVG(18)}</i>` : card.unique ? '<i class="seal">★</i>' : card.civ === 'merc' ? `<i class="seal">${card.cost}</i>` : '';
+  const merc = card.civ === 'merc';
+  return `<div class="card ${size} ${kind} ${merc ? 'civ-merc' : 'civ-' + card.civ} ${o.cls || ''}" data-uid="${card.uid || ''}" ${o.attrs || ''} style="${o.style || ''}">
+<div class="cb"><div class="cn">${merc ? mercCrest(17) : crest(card.civ, 17)}<span>${esc(card.name)}</span>${seal}</div><div class="ca">${syms}</div><div class="ct"><span>${kw(cardText(card))}</span></div><div class="cf"><span>${typeOf(card)}</span><span>${merc ? '' : esc(CIVS[card.civ].name)}</span></div></div>${o.cost != null ? `<div class="cost${o.afford ? ' ok' : ''}">${o.cost} gold</div>` : ''}</div>`;
 }
-function structHTML(st) {
-  if (st.kind === 'wonder') return `<div class="st wonder" title="${esc(cardText(st.card))}"><b>${st.dur}</b><span>${esc(st.card.name)}</span><i>${Math.max(0, 3 - st.age)} turns to win</i></div>`;
-  const tag = { regen: 'regrows', sacred: 'heals', thorns: 'spiked', fortress: 'giant stones' }[st.kind] || '';
-  return `<div class="st" title="${esc(st.card.name)}${tag ? ' (' + tag + ')' : ''}">${symBadge('W', 16)}<b>${st.dur}</b><span>${esc(st.card.name)}</span>${tag ? `<i>${tag}</i>` : ''}</div>`;
+function workHTML(st) {
+  if (st.kind === 'wonder') return `<span class="work wonder" data-tip="${esc(st.card.name)}: ${st.dur} durability. Its builder wins if it still stands in ${Math.max(0, 3 - st.age)} turn(s).">${symBadge('W', 16)}<b>${st.dur}</b><em>${Math.max(0, 3 - st.age)}</em></span>`;
+  const note = { regen: 'regains 1 durability each turn', sacred: 'heals its owner 1 HP each turn', thorns: 'whoever hits it takes 1 damage', fortress: 'raze removes only 1 durability', income: 'gives its owner 1 gold each turn' }[st.kind];
+  return `<span class="work ${st.kind || ''}" data-tip="${esc(st.card.name)}: ${st.dur} durability${note ? '; ' + note : ''}.">${st.dur}</span>`;
 }
-function tokensHTML(P) {
-  const t = [];
-  if (P.tokens.camel) t.push(`<span class="tok" title="The next cavalry attack against this player is cancelled">${symBadge('L', 16)} camel guard${P.tokens.camel > 1 ? ' ×' + P.tokens.camel : ''}</span>`);
-  if (P.tokens.immune) t.push('<span class="tok hot" title="Every attack is cancelled until their next turn">Divine Wind</span>');
-  if (P.tokens.trap) t.push('<span class="tok hot" title="The first opponent to deal damage takes 2 damage">Bạch Đằng stakes</span>');
-  return t.join('');
+function dispHP(P) { return UI.view && UI.view[P.id] != null ? UI.view[P.id] : P.hp; }
+function campHTML(P, mine) {
+  const C = CIVS[P.civ], hp = Math.max(0, dispHP(P)), acting = S.turn === P.id && S.winner == null;
+  const tgt = !mine && P.alive && UI.sel != null && isMyTurn() && needsTarget(selCard() || { steps: [] }) && opponents(S, S.players[0]).length > 1;
+  const age = !P.ageGiven ? `<span class="tag" data-tip="The Imperial Age card arrives at the start of turn ${RULES.ageTurn}.">${crownSVG(16)} in ${Math.max(1, RULES.ageTurn - P.turns)}</span>`
+    : !P.aged ? `<span class="tag hot" data-tip="Holds the Imperial Age card.">${crownSVG(16)} ready</span>` : `<span class="tag imp" data-tip="In the Imperial Age.">${crownSVG(16)} Imperial</span>`;
+  const toks = [];
+  if (P.tokens.camel) toks.push(`<span class="token camel" data-tip="Camel guard: the next cavalry attack against this camp is cancelled.">Camel guard${P.tokens.camel > 1 ? ' ×' + P.tokens.camel : ''}</span>`);
+  if (P.tokens.immune) toks.push('<span class="token" data-tip="Divine Wind: every attack against this camp is cancelled until its next turn.">Divine Wind</span>');
+  if (P.tokens.trap) toks.push('<span class="token" data-tip="Bạch Đằng stakes: the first opponent to deal damage here takes 2 damage.">Stakes set</span>');
+  const piles = `<div class="piles"><button class="pile" data-act="deck" data-tip="Cards left to draw">Deck ${P.deck.length}</button><button class="pile" data-act="discard" data-tip="Cards already played or lost">Discard ${P.discard.length}</button></div>`;
+  const right = mine ? '' : `<span class="backs" data-tip="${P.hand.length} cards in hand">${'<i class="cback"></i>'.repeat(Math.min(P.hand.length, 6))}<b>${P.hand.length}</b></span>`;
+  return `<section class="camp civ-${P.civ}${mine ? ' mine' : ''}${acting ? ' turn' : ''}${P.alive ? '' : ' out'}${tgt ? ' targetable' : ''}${tgt && UI.hoverT === P.id ? ' hot' : ''}" id="camp-${P.id}" data-pid="${P.id}">
+<header class="camp-banner">${crest(P.civ, mine ? 30 : 27)}<span class="cname">${mine ? 'You' : esc(C.name)}</span>${mine ? `<span class="csub">${esc(C.name)}</span>` : ''}${acting ? '<span class="flag">acting</span>' : ''}${P.alive ? '' : '<span class="flag out">defeated</span>'}${P.relic && !mine ? `<span class="relic" data-tip="${esc(RELICS[P.relic].name)}: ${esc(RELICS[P.relic].text)}">${esc(RELICS[P.relic].name)}</span>` : ''}</header>
+<div class="camp-body"><div class="hpgem" style="--p:${Math.round(hp / P.maxHP * 100)}" data-tip="${hp} of ${P.maxHP} HP"><b>${hp}</b><small>/${P.maxHP}</small></div>
+<div class="works">${P.structs.map(workHTML).join('') || '<span class="none">No walls</span>'}</div>
+<div class="stash"><span class="coin" data-tip="Gold hires mercenaries at the market.">${symBadge('G', 20)}<b>${P.gold}</b></span>${right}${age}${mine && P.relic ? `<span class="relic mine-relic" data-tip="${esc(RELICS[P.relic].name)}: ${esc(RELICS[P.relic].text)}">${esc(RELICS[P.relic].name)}</span>` : ''}</div></div>
+${mine ? piles : ''}${toks.length ? `<div class="tokens">${toks.join('')}</div>` : ''}<div class="chips"></div><div class="floats"></div></section>`;
 }
-function seatHTML(P, me) {
-  const C = CIVS[P.civ], turn = S.turn === P.id && S.winner == null;
-  const tgt = UI.targeting && !me && P.alive ? ' targetable' : '';
-  const hpPct = Math.max(0, P.hp / P.maxHP * 100);
-  const backs = me ? '' : `<span class="backs" title="${P.hand.length} cards in hand">${'<i></i>'.repeat(Math.min(P.hand.length, 8))}<em>${P.hand.length}</em></span>`;
-  return `<div class="seat${me ? ' me' : ''}${turn ? ' turn' : ''}${P.alive ? '' : ' out'}${tgt}" id="seat-${P.id}" data-pid="${P.id}" style="--civ:${C.color}">
-    <div class="s-top">${crest(P.civ, me ? 46 : 40)}
-      <div class="s-id"><div class="s-name">${me ? 'You · ' : ''}${esc(C.name)}${P.aged ? ` <span class="imp-tag" title="Imperial Age">${crownSVG(16)}</span>` : ''}</div><div class="s-sub">${P.relic ? esc(RELICS[P.relic].name) : ''}</div></div>
-      <div class="s-hp" title="HP"><b>${P.hp}</b><small>/${P.maxHP}<span class="hp-u"> HP</span></small><div class="hpbar"><div style="width:${hpPct}%"></div></div></div>
-    </div>
-    <div class="s-row"><span class="gold" title="Gold">${symBadge('G', 18)}<b>${P.gold}</b></span>${backs}${!P.ageGiven ? `<span class="tok" title="The Imperial Age card arrives at the start of turn ${RULES.ageTurn}">${crownSVG(14)} in ${Math.max(1, RULES.ageTurn - P.turns)}</span>` : !P.aged ? '<span class="tok hot imp" title="Holds the Imperial Age card">Imperial ready</span>' : ''}${tokensHTML(P)}${turn ? '<span class="turn-tag">acting</span>' : ''}${P.alive ? '' : '<span class="out-tag">defeated</span>'}</div>
-    <div class="s-structs">${P.structs.map(structHTML).join('') || '<span class="none">No structures</span>'}</div>
-    <div class="floats"></div>
-  </div>`;
+function renderTopbar() {
+  const me = isMyTurn(), who = S.winner != null ? '' : S.turn === 0 ? 'Your turn' : `${CIVS[cur(S).civ].name} to play`;
+  $('#topbar').innerHTML = `<button class="icon-btn" data-act="pause" aria-label="Menu" data-tip="Menu (Esc)">${ICON.menu}</button>
+<div class="tb-mid"><span class="pill">Round ${S.round}</span>${who ? `<span class="pill ${S.turn === 0 ? 'gold' : ''}">${who}</span>` : ''}${me && S.plays > 0 ? `<span class="pips" data-tip="Plays left this turn">${'<i class="pip"></i>'.repeat(S.plays)}</span>` : ''}</div>
+<div class="tb-right"><button class="icon-btn mob-only" data-act="events" aria-label="Events" data-tip="Events">${ICON.event}${UI.eventSeen !== S.round && S.event ? '<i class="badge dot"></i>' : ''}</button><button class="icon-btn mob-only" data-act="market" aria-label="Market" data-tip="Mercenary Market">${ICON.market}${canHire() ? `<i class="badge">${canHire()}</i>` : ''}</button>
+<button class="speed" data-act="speed" data-tip="Animation speed (S)">${SPEEDS[SET.speed].label}</button><button class="icon-btn" data-act="chronicle" aria-label="Chronicle" data-tip="Chronicle (L)">${ICON.scroll}</button><button class="icon-btn desk-only" data-act="help" aria-label="How to play" data-tip="How to play (H)">${ICON.help}</button></div>`;
 }
-function renderGame() {
-  const me = S.players[0], myTurn = S.turn === 0 && S.winner == null && !UI.busy;
-  const opps = S.players.slice(1);
-  $('#opps').className = 'opps n' + opps.length;
-  $('#opps').innerHTML = opps.map(P => seatHTML(P, false)).join('');
-  $('#mine').innerHTML = seatHTML(me, true);
+function eventsHTML() {
   const E = S.event ? EVENT_BY[S.event] : null, N = EVENT_BY[S.eventNext];
-  $('#events').innerHTML = `<div class="ev-now"><small>Event · round ${S.round}</small><b>${E ? esc(E.name) : 'Peace'}</b><p>${E ? kw(E.text) : 'No event yet.'}</p></div>
-    <div class="ev-next"><small>Next round</small><b>${esc(N.name)}</b><p>${kw(N.text)}</p></div>${S.round >= 14 ? `<div class="ev-warn">${S.round >= 16 ? 'The war drags on: everyone loses 1 HP each round' : 'From round 16 everyone loses 1 HP each round'}</div>` : ''}`;
-  const lp = UI.last;
-  $('#arena').innerHTML = lp ? `<div class="played-by">${esc(civName(lp.pid))}${lp.target != null ? ' ▸ ' + esc(civObj(lp.target)) : ''}</div>${cardHTML(lp.card, { cls: 'big pop' })}` : `<div class="arena-hint">${S.turn === 0 ? 'Pick a card from your hand' : ''}</div>`;
-  $('#market').innerHTML = `<h3>Mercenary Market</h3><div class="m-cards">${S.market.map((c, i) => { if (!c) return '<div class="card empty">Sold out</div>'; const cost = marketCost(S, me, c), ok = myTurn && !S.flags.bought && me.gold >= cost; return cardHTML(c, { small: 1, cost, afford: ok, attrs: `data-mi="${i}"`, cls: ok ? 'buyable' : '' }); }).join('')}</div>
-    <p class="m-note">${S.flags.bought && S.turn === 0 ? 'Already hired this turn' : 'Hire 1 card per turn with <b class="kw k-gold">gold</b>; it goes straight to your hand'}${S.mod.fair ? ' · Great Fair: 1 cheaper' : ''}${S.flags.buyFree && S.turn === 0 ? ' · this hire is free' : ''}</p>`;
-  $('#hand').innerHTML = me.hand.map(c => cardHTML(c, { cls: myTurn ? 'playable' + (UI.targeting === c.uid ? ' chosen' : '') : '' })).join('') || '<div class="hand-empty">No cards in hand</div>';
-  const mini = `<span class="me-mini"><b class="kw k-hp">${me.hp}/${me.maxHP} HP</b> · <b class="kw k-gold">${me.gold} gold</b>${walls(me).length ? ` · <b class="kw k-wall">${wallTotal(me)} walls</b>` : ''}</span>`;
-  $('#status').innerHTML = mini + (S.winner != null ? '' : UI.targeting ? 'Choose an opponent to target <button class="btn ghost" id="cancelTarget">Cancel</button>' : myTurn ? `Your turn${S.plays > 1 ? ` · ${S.plays} plays left` : ''}` : `${esc(civName(S.turn))} is playing…`);
-  $('#chron').innerHTML = S.log.slice(-9).reverse().map(e => `<li>${logLine(e)}</li>`).join('');
+  return `<div class="ev now${UI.flipEvent ? ' flip' : ''}"><div class="when">This round</div><h4>${E ? esc(E.name) : 'Peace'}</h4><p>${E ? kw(E.text) : 'No event yet. Events start in round 2.'}</p></div>
+<div class="ev next"><div class="when">Next round</div><h4>${esc(N.name)}</h4><p>${kw(N.text)}</p></div>${S.round >= 14 ? `<div class="ev-warn">${S.round >= 16 ? 'The war drags on: everyone loses 1 HP each round.' : 'From round 16 everyone loses 1 HP each round.'}</div>` : ''}`;
+}
+function marketHTML() {
+  const me = S.players[0], mine = isMyTurn() && !S.flags.bought;
+  return `<h3>Mercenary Market</h3><div class="mk-row">${S.market.map((c, i) => { if (!c) return '<div class="card sm civ-merc"><div class="cb"><div class="ct">Sold out</div></div></div>'; const cost = marketCost(S, me, c), ok = mine && me.gold >= cost; return `<button class="mk-item${ok ? ' can' : ''}" data-mi="${i}" ${ok ? '' : 'tabindex="-1"'} aria-label="Hire ${esc(c.name)} for ${cost} gold">${cardHTML(c, { size: 'sm', cost, afford: ok })}</button>`; }).join('')}</div>
+<p class="mk-note">${S.turn === 0 && S.flags.bought ? 'You already hired this turn.' : `Hire 1 card per turn with <b class="kw k-gold">gold</b>; it goes straight to your hand.`}${S.mod.fair ? ' Great Fair: 1 cheaper this round.' : ''}${S.turn === 0 && S.flags.buyFree ? ' Your next hire is free.' : ''}</p>`;
+}
+function renderHand() {
+  const me = S.players[0], n = me.hand.length, mid = (n - 1) / 2, mine = isMyTurn(), compact = mobile();
+  const hand = $('#hand'), W = hand.clientWidth - (compact ? 20 : 40), w = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--cw')) || 150;
+  let gap = compact ? 6 : -14;
+  if (n > 1 && n * w + (n - 1) * gap > W) gap = Math.max(-(w - (compact ? 46 : 64)), (W - n * w) / (n - 1));
+  const spread = compact ? 0 : Math.min(4.2, 30 / Math.max(1, n));
+  hand.style.justifyContent = n * w + (n - 1) * gap > W + 4 ? 'flex-start' : 'center';
+  hand.innerHTML = me.hand.map((c, i) => cardHTML(c, { cls: (mine ? 'playable' : 'dim') + (UI.sel === c.uid ? ' sel' : ''), attrs: `tabindex="${mine ? 0 : -1}" role="button" aria-label="${esc(c.name)}: ${esc(cardText(c))}"`, style: `--rot:${((i - mid) * spread).toFixed(2)}deg;--y:${compact ? 0 : (Math.abs(i - mid) ** 2 * 2.4).toFixed(1)}px;z-index:${UI.sel === c.uid ? 50 : i + 1};margin-left:${i ? gap.toFixed(1) : 0}px` })).join('') || '<div class="hand-empty">No cards in hand</div>';
+}
+function renderStage() {
+  const c = selCard();
+  if (c && isMyTurn()) {
+    const multi = needsTarget(c) && opponents(S, S.players[0]).length > 1;
+    $('#stage-card').innerHTML = `<div class="stage-fit">${cardHTML(c, { size: 'lg' })}</div>`; fitStage();
+    $('#stage-caption').textContent = multi && UI.hoverT == null ? 'Choose an enemy camp' : multi ? `Aim at ${CIVS[S.players[UI.hoverT].civ].name}` : 'Press Play to confirm';
+    return;
+  }
+  const L = UI.last;
+  $('#stage-card').innerHTML = L ? `<div class="stage-fit">${cardHTML(L.card, { size: 'lg', cls: L.fresh ? 'pop' : '' })}</div>` : ''; fitStage();
+  if (L) L.fresh = false;
+  $('#stage-caption').textContent = L ? `${civNameOf(L.pid)} ${L.pid === 0 ? 'played' : 'plays'} ${L.card.name}${L.target != null ? ' on ' + civObjOf(L.target) : ''}` : '';
+}
+function stageScale() { const st = $('#stage'); const h = mobile() ? 212 : 302; return Math.max(0.45, Math.min(1, (st.clientHeight - 44) / h)); }
+function fitStage() { const f = $('#stage-card .stage-fit'), sc = $('#stage-card'); if (!f) { sc.style.height = ''; return; } const s = stageScale(); f.style.transform = `scale(${s})`; sc.style.height = Math.round(f.firstElementChild.offsetHeight * s) + 'px'; }
+function selTarget(c) { const opps = opponents(S, S.players[0]); return !needsTarget(c) ? null : opps.length === 1 ? opps[0].id : UI.hoverT; }
+function renderAction() {
+  const el = $('#prompt');
+  if (S.winner != null) { el.innerHTML = ''; return; }
+  if (S.turn !== 0) { el.innerHTML = `<span class="hint">${esc(CIVS[cur(S).civ].name)} is playing…</span>`; return; }
+  if (UI.busy) { el.innerHTML = ''; return; }
+  const c = selCard();
+  if (!c) { el.innerHTML = `<span class="hint">${S.plays > 1 ? `Your turn: play ${S.plays} cards` : 'Your turn: pick a card'}</span>`; return; }
+  const land = document.documentElement.classList.contains('land'), t = selTarget(c);
+  const label = !needsTarget(c) ? (land ? 'Play' : `Play ${c.name}`) : t != null ? `${land ? 'On' : 'Play on'} ${CIVS[S.players[t].civ].name}` : (land ? 'Pick a camp' : 'Tap an enemy camp');
+  el.innerHTML = `<button class="btn ghost small" data-act="cancel-sel">Cancel</button><button class="btn" data-act="play-sel"${needsTarget(c) && t == null ? ' disabled' : ''}>${esc(label)}</button>`;
+}
+function renderChronicle() {
+  $('#chronicle').innerHTML = `<h3>Chronicle</h3><ul class="log">${S.log.slice(-60).reverse().map(e => { const t = logLine(e); return t ? `<li class="${e.k === 'event' ? 'r' : ''}">${t}</li>` : ''; }).join('')}</ul>`;
 }
 function logLine(e) {
   switch (e.k) {
-    case 'play': return `${esc(civName(e.pid))} ▸ <b>${esc(e.card)}</b>${e.target != null ? ' → ' + esc(civObj(e.target)) : ''}`;
-    case 'buy': return `${esc(civName(e.pid))} hired <b>${esc(e.card)}</b> for <b class="kw k-gold">${e.cost} gold</b>`;
-    case 'event': return `Round ${e.round}: <b>${esc(EVENT_BY[e.id].name)}</b>`;
-    case 'out': return `<b>${esc(civName(e.pid))}</b> ${e.pid === 0 ? 'were' : 'is'} defeated`;
-    case 'hich': return `${esc(civName(e.pid))} in danger: drew 2 extra cards`;
-    case 'banner': return `The Holy Banner raised ${esc(civObj(e.pid))} again`;
-    case 'fatigue': return `${esc(civName(e.pid))} reshuffled the deck: exhausted, −1 HP`;
-    case 'wonder': return `<b>${esc(civName(e.pid))}</b> completed ${esc(e.name)}`;
-    case 'attrition': return 'The war drags on: everyone −1 HP';
-    case 'agecard': return e.pid === 0 ? 'The <b>Imperial Age</b> card is in your hand' : `${esc(civName(e.pid))} can now reach the Imperial Age`;
-    case 'aged': return `<b>${esc(civName(e.pid))}</b> ${e.pid === 0 ? 'advance' : 'advances'} to the Imperial Age`;
+    case 'play': return `${esc(civNameOf(e.pid))} played <b>${esc(e.card)}</b>${e.target != null ? ' on ' + esc(civObjOf(e.target)) : ''}`;
+    case 'buy': return `${esc(civNameOf(e.pid))} hired <b>${esc(e.card)}</b> for <b class="kw k-gold">${e.cost} gold</b>`;
+    case 'event': return `Round ${e.round}: ${esc(EVENT_BY[e.id].name)}`;
+    case 'out': return `<b>${esc(civNameOf(e.pid))}</b> ${e.pid === 0 ? 'were' : 'was'} defeated`;
+    case 'hich': return `${esc(civNameOf(e.pid))} ${e.pid === 0 ? 'are' : 'is'} in danger and drew 2 extra cards`;
+    case 'banner': return `The Holy Banner raised ${esc(civObjOf(e.pid))} again`;
+    case 'fatigue': return `${esc(civNameOf(e.pid))} reshuffled the deck and lost 1 HP to exhaustion`;
+    case 'wonder': return `<b>${esc(civNameOf(e.pid))}</b> completed ${esc(e.name)}`;
+    case 'attrition': return 'The war drags on: everyone lost 1 HP';
+    case 'agecard': return e.pid === 0 ? 'Your Imperial Age card arrived' : `${esc(civNameOf(e.pid))} can now reach the Imperial Age`;
+    case 'aged': return `<b>${esc(civNameOf(e.pid))}</b> ${e.pid === 0 ? 'advanced' : 'advanced'} to the Imperial Age`;
   }
   return '';
 }
+function renderPreview() {
+  $$('.camp .chips').forEach(el => (el.innerHTML = ''));
+  const c = selCard(); if (!c || !isMyTurn()) return;
+  const opps = opponents(S, S.players[0]);
+  const tid = needsTarget(c) ? (UI.hoverT != null ? UI.hoverT : opps.length === 1 ? opps[0].id : null) : null;
+  if (needsTarget(c) && tid == null) return;
+  const pv = previewPlay(S, 0, c.uid, tid); if (!pv) return;
+  pv.players.forEach((d, i) => {
+    const out = [], hand = i === 0 ? d.hand + 1 : d.hand;
+    if (d.dies) out.push(['ko', 'Defeated']);
+    if (d.hp) out.push([d.hp < 0 ? 'dmg' : 'heal', `${d.hp > 0 ? '+' : ''}${d.hp} HP`]);
+    if (d.wonder) out.push(['wall', `wonder ${d.wonder}`]);
+    if (d.walls) out.push(['wall', `${d.walls > 0 ? '+' : ''}${d.walls} wall`]);
+    if (d.gold) out.push(['gold', `${d.gold > 0 ? '+' : ''}${d.gold} gold`]);
+    if (hand) out.push(['card', `${hand > 0 ? '+' : ''}${hand} card${Math.abs(hand) > 1 ? 's' : ''}`]);
+    const el = document.querySelector(`#camp-${i} .chips`); if (el) el.innerHTML = out.map(([k, t]) => `<span class="chip ${k}">${t}</span>`).join('');
+  });
+}
+function renderMatch() {
+  if (!S) return;
+  renderTopbar();
+  const opps = S.players.slice(1);
+  $('#opps').className = 'n' + opps.length;
+  const mini = mobile() && (opps.length > 1 || document.documentElement.classList.contains('land'));
+  $('#opps').innerHTML = opps.map(P => (mini ? campMiniHTML(P) : campHTML(P, false))).join('');
+  $('#me').innerHTML = campHTML(S.players[0], true);
+  $('#events').innerHTML = eventsHTML(); UI.flipEvent = false;
+  $('#market').innerHTML = marketHTML();
+  renderHand(); renderStage(); renderAction(); renderPreview();
+  if (UI.drawer) renderChronicle();
+}
+
+/* tooltips: hover on desktop, press-and-hold on touch */
+const TIP = { el: null, timer: null };
+function showTip(el) {
+  const t = $('#tip'); t.innerHTML = kw(el.dataset.tip); t.classList.remove('hidden');
+  const r = el.getBoundingClientRect(), w = t.offsetWidth, h = t.offsetHeight;
+  let x = Math.min(Math.max(8, r.left + r.width / 2 - w / 2), innerWidth - w - 8), y = r.top - h - 8;
+  if (y < 8) y = r.bottom + 8;
+  t.style.left = x + 'px'; t.style.top = y + 'px'; TIP.el = el;
+}
+function hideTip() { $('#tip').classList.add('hidden'); TIP.el = null; }
+document.addEventListener('pointerover', e => { if (e.pointerType === 'touch') return; const el = e.target.closest('[data-tip]'); if (el) showTip(el); else if (TIP.el) hideTip(); });
+document.addEventListener('pointerdown', e => { clearTimeout(TIP.timer); if (e.pointerType !== 'touch') return; const el = e.target.closest('[data-tip]'); if (el) TIP.timer = setTimeout(() => showTip(el), 420); });
+document.addEventListener('pointerup', () => { clearTimeout(TIP.timer); if (TIP.el && matchMedia('(pointer: coarse)').matches) setTimeout(hideTip, 1600); });
+document.addEventListener('scroll', hideTip, true);
+
+/* small cards (market, civ select) open at full size on hover or press-and-hold */
+function showZoom(c) {
+  let z = $('#zoom'); if (!z) { z = document.createElement('div'); z.id = 'zoom'; document.body.appendChild(z); }
+  z.innerHTML = c.outerHTML.replace(/class="card sm /, 'class="card lg ').replace(/<div class="cost[^"]*">[^<]*<\/div>/, '');
+  const r = c.getBoundingClientRect(), w = 214, h = 302;
+  let x = r.left - w - 14; if (x < 8) x = r.right + 14; if (x + w > innerWidth - 8) x = Math.max(8, innerWidth / 2 - w / 2);
+  z.style.left = x + 'px'; z.style.top = Math.min(Math.max(8, r.top + r.height / 2 - h / 2), innerHeight - h - 8) + 'px'; z.classList.remove('hidden');
+}
+function hideZoom() { const z = $('#zoom'); if (z) z.classList.add('hidden'); }
+document.addEventListener('pointerover', e => { if (e.pointerType === 'touch') return; const c = e.target.closest('.card.sm'); if (c) showZoom(c); else hideZoom(); });
+document.addEventListener('pointerdown', e => { if (e.pointerType !== 'touch') return; const c = e.target.closest('.card.sm'); if (c) TIP.zoomTimer = setTimeout(() => showZoom(c), 420); });
+document.addEventListener('pointerup', () => { clearTimeout(TIP.zoomTimer); setTimeout(hideZoom, 1400); });
+
+function canHire() { if (!isMyTurn() || S.flags.bought) return 0; const me = S.players[0]; return S.market.filter(c => c && me.gold >= marketCost(S, me, c)).length; }
+function ageMini(P) { return !P.ageGiven ? `<span class="agem" data-tip="Imperial Age card in ${Math.max(1, RULES.ageTurn - P.turns)} turn(s)">${crownSVG(15)}${Math.max(1, RULES.ageTurn - P.turns)}</span>` : !P.aged ? `<span class="agem hot" data-tip="Holds the Imperial Age card">${crownSVG(15)}!</span>` : `<span class="agem imp" data-tip="In the Imperial Age">${crownSVG(15)}</span>`; }
+function campMiniHTML(P) {
+  const C = CIVS[P.civ], hp = Math.max(0, dispHP(P)), acting = S.turn === P.id && S.winner == null, W = wonderOf(P);
+  const tgt = P.alive && UI.sel != null && isMyTurn() && needsTarget(selCard() || { steps: [] }) && opponents(S, S.players[0]).length > 1;
+  const dots = [P.tokens.camel ? '<i class="camel"></i>' : '', P.tokens.immune ? '<i></i>' : '', P.tokens.trap ? '<i></i>' : ''].join('');
+  return `<section class="camp mini civ-${P.civ}${acting ? ' turn' : ''}${P.alive ? '' : ' out'}${tgt ? ' targetable' : ''}${tgt && UI.hoverT === P.id ? ' hot' : ''}" id="camp-${P.id}" data-pid="${P.id}" aria-label="${esc(C.name)}: ${hp} HP">
+<header class="camp-banner">${crest(P.civ, 20)}<span class="cname">${esc(C.name)}</span></header>
+<div class="mini-body"><div class="hpgem" style="--p:${Math.round(hp / P.maxHP * 100)}"><b>${hp}</b></div><div class="mini-stats">
+<span>${symBadge('W', 15)}${wallTotal(P)}${W ? ` <span class="wd">+${W.dur}</span>` : ''}</span><span>${symBadge('G', 15)}${P.gold}</span><span><i class="cback"></i>${P.hand.length}</span>${ageMini(P)}</div></div>
+${dots ? `<div class="dots">${dots}</div>` : ''}<div class="chips"></div><div class="floats"></div></section>`;
+}
+/* ── Motion: every action travels across the table, from cause to effect ── */
+const SPEEDS = { slow: { label: '½×', f: 1.6 }, normal: { label: '1×', f: 1 }, fast: { label: '2×', f: 0.5 }, instant: { label: 'Max', f: 0.08 } };
+const SPEED_ORDER = ['normal', 'fast', 'instant', 'slow'];
+const REDUCED = matchMedia('(prefers-reduced-motion: reduce)').matches;
+const D = ms => Math.round(ms * SPEEDS[SET.speed].f * (REDUCED ? 0.25 : 1));
+const wait = ms => new Promise(r => setTimeout(r, ms));
+const mobile = () => document.documentElement.classList.contains('compact');
+function updateMode() { const h = document.documentElement, compact = innerWidth <= 820 || innerHeight <= 520; h.classList.toggle('compact', compact); h.classList.toggle('land', compact && innerWidth > innerHeight); }
+const buzz = ms => { if (SET.haptics && navigator.vibrate) navigator.vibrate(ms); };
+function stageRect() {
+  const s = $('#stage').getBoundingClientRect(), k = stageScale(), w = (mobile() ? 150 : 214) * k, h = (mobile() ? 212 : 302) * k;
+  return { left: s.left + s.width / 2 - w / 2, top: s.top + s.height / 2 - h / 2 - 14, width: w, height: h };
+}
+async function flyCard(card, from, to, dur) {
+  if (!from || !to || dur < 40) return;
+  const box = document.createElement('div'); box.innerHTML = cardHTML(card, { size: 'lg' });
+  const el = box.firstElementChild; Object.assign(el.style, { position: 'fixed', left: '0', top: '0', margin: '0' });
+  $('#fx-layer').appendChild(el);
+  const w = el.offsetWidth, h = el.offsetHeight, s0 = Math.max(0.25, Math.min(from.width / w, from.height / h)), s1 = Math.min(1, to.width / w, to.height / h);
+  const p0 = `translate(${from.left + from.width / 2 - w / 2}px,${from.top + from.height / 2 - h / 2}px) scale(${s0}) rotate(-5deg)`;
+  const p1 = `translate(${to.left + to.width / 2 - w / 2}px,${to.top + to.height / 2 - h / 2}px) scale(${s1}) rotate(0deg)`;
+  SFX.play('whoosh');
+  await el.animate([{ transform: p0, opacity: 0.85 }, { transform: p1, opacity: 1 }], { duration: dur, easing: 'cubic-bezier(.2,.8,.2,1)', fill: 'forwards' }).finished.catch(() => {});
+  el.remove();
+}
+function arrow(from, to, kind, dur) {
+  if (!from || !to || dur < 40) return;
+  const svg = $('#fx-arrows'), x1 = from.left + from.width / 2, y1 = from.top + from.height / 2, x2 = to.left + to.width / 2, y2 = to.top + to.height / 2;
+  const p = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+  p.setAttribute('d', `M${x1} ${y1} Q${(x1 + x2) / 2 + (x2 > x1 ? -40 : 40)} ${Math.min(y1, y2) - 70} ${x2} ${y2}`);
+  p.setAttribute('class', 'arrow ' + kind); svg.appendChild(p);
+  const len = p.getTotalLength(); p.style.strokeDasharray = len; p.style.strokeDashoffset = len;
+  p.animate([{ strokeDashoffset: len }, { strokeDashoffset: 0 }], { duration: dur, easing: 'ease-out', fill: 'forwards' });
+  setTimeout(() => p.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 300, fill: 'forwards' }).finished.then(() => p.remove()), dur + D(450));
+}
+let aimPath = null;
+function aim(from, x, y) {
+  if (!from) return clearAim();
+  if (!aimPath) { aimPath = document.createElementNS('http://www.w3.org/2000/svg', 'path'); aimPath.setAttribute('class', 'arrow aim'); $('#fx-arrows').appendChild(aimPath); }
+  const x1 = from.left + from.width / 2, y1 = from.top + 10;
+  aimPath.setAttribute('d', `M${x1} ${y1} Q${(x1 + x) / 2} ${Math.min(y1, y) - 80} ${x} ${y}`);
+}
+function clearAim() { if (aimPath) { aimPath.remove(); aimPath = null; } }
 const FX_TEXT = {
   hp: f => (f.n < 0 ? ['−' + -f.n, 'dmg'] : ['+' + f.n, 'heal']), wall: f => [`−${f.n} wall`, 'wall'], razed: f => [`${f.name} falls`, 'wall'],
   camel: () => ['Camels block!', 'info'], immune: () => ['Divine Wind!', 'info'], shroud: () => ['Mantle −1', 'info'], trap: () => ['Stakes!', 'dmg'],
   thorns: () => ['Spikes!', 'dmg'], steal: () => ['Card stolen', 'info'], convert: f => [`Lost ${f.name}`, 'info'], gold: f => [`+${f.n} gold`, 'gold'],
-  out: () => ['Defeated!', 'dmg big'], hich: () => ['In danger: +2 cards', 'heal'], banner: () => ['Holy Banner!', 'heal'], wonderhit: f => [`Wonder ${f.left}`, 'wall'],
+  out: () => ['Defeated', 'dmg big'], hich: () => ['In danger: +2 cards', 'heal'], banner: () => ['Holy Banner!', 'heal'], wonderhit: f => [`Wonder ${f.left}`, 'wall'],
   discard: () => ['−1 card', 'info'], rained: () => ['Monsoon: no building', 'info'], age: () => ['Imperial Age!', 'gold big'], tribute: () => ['−1 gold', 'gold'],
 };
-function floatText(pid, text, cls, delay) {
-  setTimeout(() => {
-    const box = document.querySelector(`#seat-${pid} .floats`); if (!box) return;
-    const d = document.createElement('div'); d.className = 'float ' + cls; d.textContent = text; box.appendChild(d);
-    setTimeout(() => d.remove(), 1700);
-  }, delay);
+function floatAt(pid, text, cls) {
+  const box = document.querySelector(`#camp-${pid} .floats`); if (!box) return;
+  const d = document.createElement('div'); d.className = 'float ' + cls; d.textContent = text; box.appendChild(d);
+  setTimeout(() => d.remove(), 1600);
 }
-function showFx(fx) {
-  let t = 0; const snd = new Set();
-  for (const f of fx) {
-    const m = FX_TEXT[f.k]; if (!m) continue;
-    const [text, cls] = m(f);
-    floatText(f.t, text, cls, t); t += 140;
-    if (f.k === 'hp') snd.add(f.n < 0 ? 'hit' : 'heal'); else if (f.k === 'wall' || f.k === 'razed' || f.k === 'wonderhit') snd.add('wall');
-    if (f.k === 'hp' && f.n < 0) { const el = document.querySelector(`#seat-${f.t}`); if (el) { el.classList.remove('shake'); void el.offsetWidth; el.classList.add('shake'); } }
+function setShownHP(pid) {
+  const g = document.querySelector(`#camp-${pid} .hpgem`); if (!g || !UI.view) return;
+  const P = S.players[pid], hp = Math.max(0, UI.view[pid]);
+  g.querySelector('b').textContent = hp; g.style.setProperty('--p', Math.round(hp / P.maxHP * 100));
+}
+function shake(pid) { const el = document.getElementById('camp-' + pid); if (el) { el.classList.remove('hit'); void el.offsetWidth; el.classList.add('hit'); } }
+async function animatePlay(ev, pid, from) {
+  await flyCard(ev.card, from, stageRect(), D(430));
+  UI.last = { card: ev.card, pid, target: ev.target, fresh: true }; UI.sel = null; UI.hoverT = null;
+  renderMatch();
+  if (ev.card.wonder) banner(`${civNameOf(pid)} ${pid === 0 ? 'begin' : 'begins'} ${ev.card.name}`, pid === 0 ? 'Keep it standing for 3 turns to win' : 'Bring it down within 3 turns or they win', 2200);
+  await wait(D(300));
+  const src = $('#stage-card .card') ? $('#stage-card .card').getBoundingClientRect() : stageRect(), hit = new Set();
+  for (const f of ev.fx) {
+    const t = f.t, camp = document.getElementById('camp-' + t);
+    if (camp && t !== pid && !hit.has(t) && ['hp', 'wall', 'razed', 'wonderhit', 'steal', 'discard', 'convert', 'camel', 'immune', 'shroud', 'tribute'].includes(f.k)) {
+      hit.add(t); arrow(src, camp.getBoundingClientRect(), ['steal', 'discard', 'convert', 'tribute'].includes(f.k) ? 'steal' : ['razed', 'wonderhit'].includes(f.k) ? 'raze' : 'dmg', D(320)); await wait(D(260));
+    }
+    if (f.k === 'hp' && UI.view) { UI.view[t] = (UI.view[t] != null ? UI.view[t] : S.players[t].hp) + f.n; setShownHP(t); }
+    const m = FX_TEXT[f.k]; if (m) { const [txt, cls] = m(f); floatAt(t, txt, cls); }
+    if (f.k === 'hp') { SFX.play(f.n < 0 ? 'hit' : 'heal'); if (f.n < 0) { shake(t); if (t === 0) buzz(35); } }
+    else if (['wall', 'razed', 'wonderhit'].includes(f.k)) SFX.play('wall');
+    if (f.k === 'age') { SFX.play('crown'); banner(`${civNameOf(t)} ${t === 0 ? 'advance' : 'advances'} to the Imperial Age`, IMPERIAL[S.players[t].civ].bonus.text, 2300); }
+    await wait(D(190));
   }
-  [...snd].forEach((s, i) => setTimeout(() => SFX.play(s), 120 + i * 90));
+  UI.view = null; await wait(D(260));
+  renderMatch();
 }
-function banner(text, sub) {
-  const b = $('#banner'); b.innerHTML = `<div class="bt">${esc(text)}</div>${sub ? `<span>${kw(sub)}</span>` : ''}`;
-  b.classList.remove('show'); void b.offsetWidth; b.classList.add('show');
+async function animateBuy(card, pid, from) {
+  const to = pid === 0 ? $('#hand').getBoundingClientRect() : document.getElementById('camp-' + pid)?.getBoundingClientRect();
+  const dest = to && pid === 0 ? { left: to.left + to.width / 2 - 60, top: to.top + 30, width: 120, height: 170 } : to;
+  await flyCard(card, from, dest, D(520));
+  floatAt(pid, 'Hired ' + card.name, 'gold');
+}
+function banner(title, sub, dur = 1900) {
+  const b = $('#banner'); b.innerHTML = `<div class="bt">${esc(title)}</div>${sub ? `<div class="bs">${kw(sub)}</div>` : ''}`;
+  b.style.setProperty('--bdur', Math.max(900, D(dur)) + 'ms'); b.classList.remove('show'); void b.offsetWidth; b.classList.add('show');
+}
+function openSheet(html, lock) { const s = $('#sheet'); s.innerHTML = `<div class="sheet-panel" role="dialog" aria-modal="true">${html}</div>`; s.classList.remove('hidden'); s.dataset.lock = lock ? '1' : ''; hideTip(); const f = s.querySelector('button'); if (f) f.focus({ preventScroll: true }); }
+function closeSheet() { const s = $('#sheet'); s.classList.add('hidden'); s.innerHTML = ''; s.dataset.lock = ''; }
+
+/* ── Screens and sheets: menu, civilization select, relics, settings, help, deck, results ── */
+function sigCards(civ) { return CIVS[civ].deck.split(/\s+/).filter(t => t[0] === '+').map(t => { const id = t.slice(1), U = UNIQUE[id]; return { uid: 0, name: U.name, icons: U.icons, text: U.text, civ, unique: id, steps: [] }; }); }
+function impCards(civ) { return IMPERIAL[civ].cards.map(d => ({ uid: 0, name: d.name, icons: d.icons, text: d.text, civ, imperial: true, steps: [] })); }
+function deckMix(civ) { const n = {}; for (const c of buildDeck({ nextUid: 1 }, civ)) for (const ch of c.icons) n[ch] = (n[ch] || 0) + 1; return Object.entries(n).sort((a, b) => b[1] - a[1]); }
+function statsLine() { const all = Object.values(SET.stats); const g = all.reduce((a, r) => a + r[1], 0), w = all.reduce((a, r) => a + r[0], 0); return g ? `You have won ${w} of ${g} matches.` : 'New here? Learn to play takes about five minutes.'; }
+function renderMenu() {
+  const count = mobile() ? 3 : 5, mid = (count - 1) / 2, picks = shuffled({ rs: (Date.now() & 0xffffff) >>> 0 }, CIV_ORDER).slice(0, count);
+  const fan = picks.map((c, i) => { const k = i - mid; return cardHTML(sigCards(c)[0], { style: `--x:${k * (mobile() ? 84 : 112)}px;--y:${Math.abs(k) * 16}px;--rot:${k * 7}deg;--d:${120 + i * 90}ms` }); }).join('');
+  $('#screen-menu').innerHTML = `<div class="menu"><h1 class="menu-title">Medieval Mayhem</h1><p class="menu-sub">Thirty-five civilizations, one deck each. Draw a card, play a card, outlast every rival.</p>
+<div class="menu-fan" aria-hidden="true">${fan}</div>
+<div class="menu-actions">${SET.tutorialDone ? '' : '<button class="btn" data-act="tutorial">Learn to play</button>'}<button class="btn${SET.tutorialDone ? '' : ' ghost'}" data-act="quick">Quick match</button><button class="btn ghost" data-act="choose">Choose a civilization</button>${SET.tutorialDone ? '<button class="btn ghost" data-act="tutorial">Replay the tutorial</button>' : ''}<button class="btn ghost" data-act="settings">Settings</button></div>
+<p class="menu-foot">${statsLine()}</p></div>`;
+}
+function renderSelect() {
+  const civ = UI.civ, C = CIVS[civ], hpOf = c => (UI.n === 2 ? CIVS[c].hp2 : CIVS[c].hp4), rec = SET.stats[civ];
+  const list = GROUPS.map(g => `<div class="region"><h3>${esc(g)}</h3><div class="civ-grid">${CIV_ORDER.filter(c => CIVS[c].group === g).map(c => `<button class="civ-tile civ-${c}${c === civ ? ' on' : ''}" data-civ="${c}" aria-pressed="${c === civ}">${crest(c, 36)}<span class="nm">${esc(CIVS[c].name)}</span><span class="hp" data-tip="Starting HP ${UI.n === 2 ? 'in a duel' : 'at a 3–4 player table'}">${hpOf(c)}</span></button>`).join('')}</div></div>`).join('');
+  $('#screen-select').innerHTML = `<div class="sel-top"><button class="icon-btn" data-act="menu" aria-label="Back to the menu">${ICON.back}</button><h2>Choose your civilization</h2><button class="btn ghost small" data-act="random-civ">Random</button></div>
+<div class="sel-list">${list}</div>
+<div class="sel-detail civ-${civ}"><div class="sd-hero">${crest(civ, 72)}<div><h2>${esc(C.name)}</h2><p>${esc(C.style)}</p></div></div>
+<div class="sd-body"><div class="sd-stats"><span><b class="kw k-hp">${C.hp2}</b> HP in a duel</span><span><b class="kw k-hp">${C.hp4}</b> HP at a bigger table</span>${rec ? `<span>Won <b>${rec[0]}</b> of ${rec[1]}</span>` : ''}</div>
+<h3>Signature cards</h3><div class="sd-cards">${sigCards(civ).map(c => cardHTML(c, { size: 'sm' })).join('')}</div>
+<h3>Imperial Age</h3><p>${kw(IMPERIAL[civ].bonus.text)}</p><div class="sd-cards">${impCards(civ).map(c => cardHTML(c, { size: 'sm' })).join('')}</div>
+<h3>The 24-card deck</h3><div class="mix">${deckMix(civ).map(([ch, k]) => `<span data-tip="${esc(SYM[ch].name)}: ${esc(SYM[ch].desc)}">${symBadge(ch, 22)}${k}</span>`).join('')}</div>
+<p class="muted">Card frames use ${MOTIF_NAMES[CIV_MOTIF[civ]]}.</p></div>
+<div class="sd-foot"><div class="seg" role="group" aria-label="Players">${[2, 3, 4].map(n => `<button class="${UI.n === n ? 'on' : ''}" data-n="${n}">${n === 2 ? 'Duel' : n + ' players'}</button>`).join('')}</div><div class="seg" role="group" aria-label="Difficulty">${['easy', 'normal', 'hard'].map(d => `<button class="${SET.difficulty === d ? 'on' : ''}" data-diff="${d}">${d[0].toUpperCase() + d.slice(1)}</button>`).join('')}</div><button class="btn" data-act="start">To battle</button></div></div>`;
+}
+function relicSheet() {
+  const P = S.players[0];
+  openSheet(`<h2>Choose a relic</h2><p class="muted">It stays with you all match. Three are drawn at random every time.</p><div class="relics">${P.relicOffer.map(id => `<button class="relic-pick" data-relic="${id}"><b>${esc(RELICS[id].name)}</b><span>${kw(RELICS[id].text)}</span></button>`).join('')}</div>
+<p class="muted">Facing ${S.players.slice(1).map(o => `${esc(CIVS[o.civ].name)} (${esc(RELICS[o.relic].name)})`).join(', ')}.</p>`, true);
+}
+function settingsSheet() {
+  const seg = (key, opts) => `<div class="seg">${opts.map(([v, l]) => `<button class="${SET[key] === v ? 'on' : ''}" data-set="${key}" data-val="${v}">${l}</button>`).join('')}</div>`;
+  openSheet(`<h2>Settings</h2>
+<div class="set-row"><div><b>Difficulty</b><span>How sharp the computer plays. Applies from the next match.</span></div>${seg('difficulty', [['easy', 'Easy'], ['normal', 'Normal'], ['hard', 'Hard']])}</div>
+<div class="set-row"><div><b>Animation speed</b><span>Max skips almost all motion.</span></div>${seg('speed', [['slow', '½×'], ['normal', '1×'], ['fast', '2×'], ['instant', 'Max']])}</div>
+<div class="set-row"><div><b>Sound</b><span>Card, hit and fanfare effects.</span></div>${seg('sound', [[true, 'On'], [false, 'Off']])}</div>
+${navigator.vibrate ? `<div class="set-row"><div><b>Vibration</b><span>A short buzz when your turn starts or you are hit.</span></div>${seg('haptics', [[true, 'On'], [false, 'Off']])}</div>` : ''}
+<div class="set-row"><div><b>Tutorial</b><span>Show the guided first match again.</span></div><button class="btn ghost small" data-act="tutorial-reset">Reset</button></div>
+<div class="row"><button class="btn" data-act="close">Done</button></div>`);
+}
+function pauseSheet() {
+  openSheet(`<h2>Paused</h2><div class="row"><button class="btn" data-act="close">Resume</button><button class="btn ghost mob-only" data-act="deck">Your deck</button><button class="btn ghost" data-act="help">How to play</button><button class="btn ghost" data-act="settings">Settings</button><button class="btn ghost" data-act="concede">Leave match</button></div>`);
+}
+function helpSheet() {
+  openSheet(`<h2>How to play</h2>
+<p>Each player brings their civilization's own deck. On your turn you <b>draw 1 card and play 1</b>; with an empty hand you draw 2. A card does what its symbols say, from left to right. The last realm with HP left wins.</p>
+<p>Coloured words show the kind of effect: <b class="kw k-dmg">damage</b>, <b class="kw k-hp">HP</b>, <b class="kw k-gold">gold</b>, <b class="kw k-card">cards</b>, <b class="kw k-wall">walls</b>, <b class="kw k-play">play another card</b>, <b class="kw k-aoe">every opponent</b>, <b class="kw k-pierce">over the walls</b>, <b class="kw k-steal">steal</b>, <b class="kw k-raze">destroy</b>.</p>
+<div class="legend">${SYM_ORDER.split('').map(ch => `<div>${symBadge(ch, 28)}<b>${esc(SYM[ch].name)}</b><span>${kw(SYM[ch].desc)}</span></div>`).join('')}</div>
+<h3>Around the table</h3>
+<p><b>Walls</b> stand in front of your camp and take damage first. <b>Events</b> hit everyone each round, and the next one is always shown. The <b>Mercenary Market</b> sells one card per turn for gold; it joins your deck. Your <b>relic</b> is a small bonus picked at the start.</p>
+<p><b>Imperial Age</b>: at the start of your ${RULES.ageTurn}th turn a card arrives that adds your civilization's three Imperial cards to your deck, plus its own bonus. <b>Wonders</b> win the game if they survive three turns. The first time you fall to 3 HP or less you draw 2 cards, and from round 16 everyone loses 1 HP each round.</p>
+<h3>Controls</h3><p>Tap or click a card to see it large with its result on every camp, then press <b>Play</b>. For a card that needs a target, tap an enemy camp first. Tap any camp at other times to inspect it. Small cards open at full size when you hover or press and hold them.</p><p>Keys: <b>1–9</b> pick a card, <b>Enter</b> play, <b>Tab</b> switch target, <b>Esc</b> cancel, <b>L</b> chronicle, <b>S</b> speed, <b>H</b> help.</p>
+<div class="row"><button class="btn" data-act="close">Close</button></div>`);
+}
+function deckSheet(which) {
+  const P = S.players[0], list = which === 'deck' ? P.deck : P.discard, n = {};
+  for (const c of list) { const k = c.name + '|' + typeOf(c); n[k] = (n[k] || 0) + 1; }
+  const rows = Object.entries(n).sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0])).map(([k, v]) => { const [name, type] = k.split('|'); return `<div><span>${esc(name)}${type !== 'Common' ? ` <span class="muted">(${type})</span>` : ''}</span><b>${v}</b></div>`; }).join('');
+  openSheet(`<h2>${which === 'deck' ? 'Your deck' : 'Your discard pile'}</h2><p class="muted">${which === 'deck' ? `${P.deck.length} cards left to draw, shown by name, not in draw order. When it runs out your discard pile is shuffled back in and you lose 1 HP.` : `${P.discard.length} cards played or lost so far.`}</p><div class="decklist">${rows || '<p class="muted">Empty.</p>'}</div><div class="row"><button class="btn" data-act="close">Close</button></div>`);
+}
+function resultsSheet() {
+  const me = S.players[0], W = S.winner != null && S.winner >= 0 ? S.players[S.winner] : null, win = S.winner === 0;
+  const why = S.wonderWin ? 'by completing a wonder' : S.timeUp ? 'with the most HP after 40 rounds' : 'as the last realm standing';
+  openSheet(`<div class="civ-${(W || me).civ}" style="text-align:center"><div style="display:flex;justify-content:center">${crest((W || me).civ, 84)}</div>
+<h2>${win ? 'Victory' : me.alive ? 'Defeat' : 'You were defeated'}</h2><p>${W ? `${W.id === 0 ? 'You win' : esc(CIVS[W.civ].name) + ' win'} ${why}.` : `Still standing: ${S.players.filter(p => p.alive).map(p => esc(CIVS[p.civ].name)).join(', ')}.`}</p>
+<div class="sd-stats" style="justify-content:center"><span>Damage dealt <b>${me.stats.dmg}</b></span><span>Cards played <b>${me.stats.played}</b></span><span>Mercenaries <b>${me.stats.bought}</b></span><span>Rounds <b>${S.round}</b></span></div>
+<div class="row center"><button class="btn" data-act="again">Play again</button><button class="btn ghost" data-act="choose">Choose another civilization</button><button class="btn ghost" data-act="menu">Main menu</button></div></div>`, true);
+}
+function mobileSheet(which) {
+  if (which === 'events') { UI.eventSeen = S.round; renderTopbar(); return openSheet(`<h2>Events</h2>${eventsHTML()}<div class="row"><button class="btn" data-act="close">Close</button></div>`); }
+  const me = S.players[0], mine = isMyTurn() && !S.flags.bought;
+  openSheet(`<div class="market-sheet"><h2>Mercenary Market</h2><p class="muted">You have <b class="kw k-gold">${me.gold} gold</b>. ${S.turn !== 0 ? 'You can hire on your turn.' : S.flags.bought ? 'You already hired this turn.' : 'Hire 1 card per turn; it goes straight to your hand.'}</p>
+<div class="mk-big">${S.market.map((c, i) => { if (!c) return ''; const cost = marketCost(S, me, c), ok = mine && me.gold >= cost; return `<div class="mk-col">${cardHTML(c)}<button class="btn small${ok ? '' : ' ghost'}" data-hire="${i}"${ok ? '' : ' disabled'}>Hire for ${cost} gold</button></div>`; }).join('')}</div>
+<div class="row center"><button class="btn ghost" data-act="close">Close</button></div></div>`);
+}
+function campSheet(pid) {
+  const P = S.players[pid], C = CIVS[P.civ], W = wonderOf(P), I = IMPERIAL[P.civ];
+  const note = { regen: 'regains 1 durability each turn', sacred: 'heals its owner 1 HP each turn', thorns: 'whoever hits it takes 1 damage', fortress: 'raze removes only 1 durability', income: 'gives its owner 1 gold each turn' };
+  const plays = S.log.filter(e => e.k === 'play' && e.pid === pid).slice(-5).reverse();
+  const toks = [P.tokens.camel ? 'Camel guard: the next cavalry attack against this camp is cancelled.' : '', P.tokens.immune ? 'Divine Wind: every attack against this camp is cancelled until its next turn.' : '', P.tokens.trap ? 'Bạch Đằng stakes: the first opponent to deal damage here takes 2 damage.' : ''].filter(Boolean);
+  openSheet(`<div class="camp-sheet civ-${P.civ}"><div class="hdr">${crest(P.civ, 56)}<div><h2>${pid === 0 ? 'You' : esc(C.name)}</h2><p>${esc(C.style)}</p></div></div>
+<div class="sd-stats"><span><b class="kw k-hp">${Math.max(0, P.hp)}</b> of ${P.maxHP} HP</span><span><b class="kw k-gold">${P.gold}</b> gold</span><span><b class="kw k-card">${P.hand.length}</b> cards in hand</span><span><b>${P.deck.length}</b> in deck</span></div>
+${P.relic ? `<p><b>${esc(RELICS[P.relic].name)}</b>: ${kw(RELICS[P.relic].text)}</p>` : ''}
+<h3>Walls and buildings</h3>${P.structs.length ? `<div class="ws">${P.structs.map(st => `<div>${workHTML(st)}<span>${esc(st.card.name)}${st.kind === 'wonder' ? `: wins in ${Math.max(0, 3 - st.age)} turn(s) unless destroyed` : note[st.kind] ? ': ' + note[st.kind] : ''}</span></div>`).join('')}</div>` : '<p class="muted">None standing.</p>'}
+${toks.length ? `<h3>Effects</h3><ul>${toks.map(t => `<li>${kw(t)}</li>`).join('')}</ul>` : ''}
+<h3>Imperial Age</h3><p>${!P.ageGiven ? `The card arrives in ${Math.max(1, RULES.ageTurn - P.turns)} turn(s).` : !P.aged ? 'Holds the Imperial Age card.' : 'In the Imperial Age.'} ${kw(I.bonus.text)}</p>
+<div class="sd-cards">${impCards(P.civ).map(c => cardHTML(c, { size: 'sm' })).join('')}</div>
+<h3>Last cards played</h3>${plays.length ? `<ul>${plays.map(e => `<li>Round ${e.round}: <b>${esc(e.card)}</b>${e.target != null ? ' on ' + esc(civObjOf(e.target)) : ''}</li>`).join('')}</ul>` : '<p class="muted">Nothing yet.</p>'}
+<div class="row"><button class="btn" data-act="close">Close</button></div></div>`);
 }
 
-/* ── Flow: setup → relic → turns → end ── */
+/* ── Learn to play: a real duel with a coach that lights up one part of the table at a time.
+   show: when the step appears ('now' or a game moment); until: 'next' (button) or the action that completes it. ── */
+const TUTORIAL = [
+  { show: 'now', until: 'next', target: '#opps .camp', title: 'Welcome to the war table', text: 'You lead the Franks against the Japanese. Each turn you draw 1 card and play 1. Bring their HP to 0 to win.' },
+  { show: 'now', until: 'next', target: '#hand', title: 'Your hand', text: 'A card does what its symbols say, left to right. The coloured words tell you the kind of effect: damage, HP, gold, cards, walls.' },
+  { show: 'now', until: 'select', target: '#hand', title: 'Pick a card', text: 'Tap or click any card to see what it would do. Nothing happens until you confirm.' },
+  { show: 'now', until: 'play', target: '#stage-card', title: 'See before you play', text: 'The tags above the camps show the result in advance. Press Play below to confirm.' },
+  { show: 'turn', until: 'next', target: '#me .camp', title: 'Your camp', text: 'The ring is your HP. Walls you build stand next to it and take damage before your HP does.' },
+  { show: 'now', until: 'next', target: '#events', title: 'Events', text: 'Each round an event hits everyone, and the next one is always shown, so you can plan for it.', wide: true },
+  { show: 'now', until: 'next', target: '#market', title: 'Mercenaries', text: 'Gold hires one mercenary per turn. The card goes straight to your hand and joins your deck.', wide: true },
+  { show: 'agecard', until: 'next', target: '#hand', title: 'The Imperial Age', text: 'Turn 7 brings this card. Playing it adds your civilization\'s three Imperial cards to your deck, plus a bonus.' },
+  { show: 'now', until: 'next', target: '#table', title: 'That is the whole game', text: 'Outlast the Japanese to finish the lesson. Every other civilization is waiting in Choose a civilization.' },
+];
+function startTutorial() { UI.tutorial = { i: 0, live: false }; coachShow(); }
+function coachShow() {
+  const T = UI.tutorial; if (!T) return;
+  let st = TUTORIAL[T.i];
+  while (st && st.wide && mobile()) { T.i++; st = TUTORIAL[T.i]; }
+  if (!st) return endTutorial();
+  if (st.show !== 'now' && !T.live) { $('#coach').classList.add('hidden'); return; }
+  const el = document.querySelector(st.target); if (!el) { $('#coach').classList.add('hidden'); return; }
+  const r = el.getBoundingClientRect(), pad = 8, bw = Math.min(360, innerWidth - 24);
+  const below = r.bottom + 190 < innerHeight, bx = Math.min(Math.max(12, r.left + r.width / 2 - bw / 2), innerWidth - bw - 12);
+  const by = st.target === '#table' ? Math.max(12, r.top + 12) : below ? r.bottom + pad + 10 : Math.max(12, r.top - pad - 180);
+  $('#coach').innerHTML = `<div class="spot" style="left:${r.left - pad}px;top:${r.top - pad}px;width:${r.width + pad * 2}px;height:${r.height + pad * 2}px"></div>
+<div class="bubble" style="left:${bx}px;top:${by}px"><h4>${esc(st.title)}</h4><p>${kw(st.text)}</p><div class="row"><span class="step">Step ${T.i + 1} of ${TUTORIAL.length}</span><span>${st.until === 'next' ? '<button class="btn small" data-act="coach-next">Next</button>' : '<span class="step">Your move</span>'} <button class="btn ghost small" data-act="coach-skip">Skip lesson</button></span></div></div>`;
+  $('#coach').classList.remove('hidden'); T.shown = true;
+}
+function coachEvent(name) {
+  const T = UI.tutorial; if (!T) return; const st = TUTORIAL[T.i]; if (!st) return;
+  if (!T.shown && st.show === name) { T.live = true; return setTimeout(coachShow, D(300) + 120); }
+  if (T.shown && st.until === name) coachNext();
+}
+function coachNext() { const T = UI.tutorial; if (!T) return; T.i++; T.shown = false; T.live = false; $('#coach').classList.add('hidden'); setTimeout(coachShow, 140); }
+function endTutorial() { UI.tutorial = null; $('#coach').classList.add('hidden'); SET.tutorialDone = true; saveSettings(); }
+addEventListener('resize', () => { if (UI.tutorial && UI.tutorial.shown) coachShow(); });
+
+/* ── Controller: screens, match flow with motion, input ── */
+const STORE = 'mayhem.v2';
+const SET = (() => { const d = { difficulty: 'normal', speed: 'normal', sound: true, haptics: true, tutorialDone: false, n: 2, civ: 'franks', stats: {} }; try { return Object.assign(d, JSON.parse(localStorage.getItem(STORE) || '{}')); } catch (e) { return d; } })();
+function saveSettings() { try { localStorage.setItem(STORE, JSON.stringify(SET)); } catch (e) { } }
 let S = null;
-const UI = { n: 2, civ: 'daiviet', targeting: null, busy: false, last: null, round: 1 };
-const STORE = 'civclash.v2';
-const prefs = (() => { try { return JSON.parse(localStorage.getItem(STORE)) || {}; } catch (e) { return {}; } })();
-function savePrefs() { try { localStorage.setItem(STORE, JSON.stringify(prefs)); } catch (e) { } }
-if (prefs.n) UI.n = prefs.n; if (prefs.civ && CIVS[prefs.civ]) UI.civ = prefs.civ; if (prefs.sound === false) SFX.on = false;
-function modal(html) { const m = $('#modal'); m.innerHTML = `<div class="sheet">${html}</div>`; m.classList.remove('hidden'); }
-function closeModal() { $('#modal').classList.add('hidden'); $('#modal').innerHTML = ''; }
-function deckMix(civ) {
-  const cnt = {};
-  for (const c of buildDeck({ nextUid: 1 }, civ)) for (const ch of c.icons) cnt[ch] = (cnt[ch] || 0) + 1;
-  return Object.entries(cnt).sort((a, b) => b[1] - a[1]);
+UI.n = SET.n; UI.civ = CIVS[SET.civ] ? SET.civ : 'franks'; SFX.on = SET.sound;
+function go(screen) {
+  UI.screen = screen; closeSheet(); clearAim(); hideTip();
+  for (const id of ['menu', 'select', 'match']) $('#screen-' + id).classList.toggle('hidden', id !== screen);
+  if (screen === 'menu') renderMenu(); else if (screen === 'select') renderSelect();
 }
-function renderSetup() {
-  const hp = c => (UI.n === 2 ? CIVS[c].hp2 : CIVS[c].hp4), C = CIVS[UI.civ], rec = (prefs.wins || {})[UI.civ];
-  const uniques = C.deck.split(/\s+/).filter(t => t[0] === '+').map(t => { const id = t.slice(1), U = UNIQUE[id]; return { uid: 0, name: U.name, icons: U.icons, text: U.text, civ: UI.civ, unique: id, steps: [] }; });
-  $('#setup').innerHTML = `<div class="hero"><h1>Medieval Mayhem</h1><p>Every civilization fights with its own deck. Draw 1, play 1: the last realm standing wins.</p></div>
-  <div class="setup-grid">
-    <div class="pick">
-      <div class="seg"><span>Players</span>${[2, 3, 4].map(n => `<button class="${UI.n === n ? 'on' : ''}" data-n="${n}">${n === 2 ? 'Duel' : n + ' players'}</button>`).join('')}</div>
-      ${GROUPS.map(g => `<div class="grp"><h4>${esc(g)}</h4><div class="tiles">${CIV_ORDER.filter(c => CIVS[c].group === g).map(c => `<button class="tile${c === UI.civ ? ' on' : ''}" data-civ="${c}" style="--civ:${CIVS[c].color}" title="${esc(CIVS[c].style)}">${crest(c, 30)}<span>${esc(CIVS[c].name)}</span><em>${hp(c)} HP</em></button>`).join('')}</div></div>`).join('')}
-    </div>
-    <div class="detail" style="--civ:${C.color}">
-      <div class="d-head">${crest(UI.civ, 64)}<div><h2>${esc(C.name)}</h2><p>${esc(C.style)}</p><p class="d-hp">Starting <b class="kw k-hp">${hp(UI.civ)} HP</b> ${UI.n === 2 ? 'in a duel' : 'at a 3–4 player table'}${rec ? ` · won ${rec[0]} of ${rec[1]}` : ''}</p></div></div>
-      <h4>Signature cards</h4><div class="d-uniques">${uniques.map(u => cardHTML(u, { small: 1 })).join('')}</div>
-      <h4>Imperial Age</h4><p class="d-bonus">${kw(IMPERIAL[UI.civ].bonus.text)}</p><div class="d-uniques">${IMPERIAL[UI.civ].cards.map(d => cardHTML({ uid: 0, name: d.name, icons: d.icons, text: d.text, civ: UI.civ, imperial: true, steps: [] }, { small: 1 })).join('')}</div>
-      <h4>The 24-card deck</h4><div class="d-mix">${deckMix(UI.civ).map(([ch, k]) => `<span title="${esc(SYM[ch].name)}: ${esc(SYM[ch].desc)}">${symBadge(ch, 22)}<b>×${k}</b></span>`).join('')}</div>
-      <p class="d-opp">Opponents: ${UI.n - 1} random civilization${UI.n > 2 ? 's' : ''} played by the computer</p>
-      <div class="d-actions"><button class="btn big" id="go">To battle</button><button class="btn ghost" id="randCiv">Random civ</button></div>
-    </div>
-  </div>`;
+function newMatch(o = {}) {
+  const civ = o.civ || UI.civ, n = o.n || UI.n, seed = o.tutorial ? 20261005 : (Date.now() ^ Math.floor(Math.random() * 1e9)) >>> 0;
+  const others = o.opps || shuffled({ rs: seed }, CIV_ORDER.filter(c => c !== civ)).slice(0, n - 1);
+  S = newGame({ seed, civs: [civ, ...others], ai: [false, ...others.map(() => true)] });
+  for (const P of S.players.slice(1)) { P.skill = o.tutorial ? 'easy' : SET.difficulty; chooseRelic(S, P.id, aiRelic(S, P)); }
+  Object.assign(UI, { sel: null, hoverT: null, last: null, view: null, busy: false, finished: false, round: 1, drawer: false, tutorial: null, lastSetup: o });
+  $('#chronicle').classList.remove('open');
+  go('match'); renderMatch();
+  if (o.tutorial) { chooseRelic(S, 0, 'jade'); beginMatch(); startTutorial(); } else relicSheet();
 }
-function showScreen(id) { for (const s of ['setup', 'game']) $('#' + s).classList.toggle('hidden', s !== id); }
-function newMatch() {
-  SFX.init();
-  prefs.n = UI.n; prefs.civ = UI.civ; savePrefs();
-  const seed = (Date.now() ^ Math.floor(Math.random() * 1e9)) >>> 0, R = { rs: seed };
-  const others = shuffled(R, CIV_ORDER.filter(c => c !== UI.civ)).slice(0, UI.n - 1);
-  S = newGame({ seed, civs: [UI.civ, ...others], ai: [false, ...others.map(() => true)] });
-  for (const P of S.players.slice(1)) chooseRelic(S, P.id, aiRelic(S, P));
-  UI.last = null; UI.targeting = null; UI.busy = false; UI.round = 1;
-  showScreen('game'); renderGame();
-  const P = S.players[0];
-  modal(`<h2>Choose a relic</h2><p class="muted">Your relic stays with you all game. Three are drawn at random each match.</p><div class="relics">${P.relicOffer.map(id => `<button class="relic" data-relic="${id}"><b>${esc(RELICS[id].name)}</b><span>${kw(RELICS[id].text)}</span></button>`).join('')}</div>
-    <p class="muted small">Opponents: ${S.players.slice(1).map(o => `${esc(CIVS[o.civ].name)} (${esc(RELICS[o.relic].name)})`).join(', ')}</p>`);
+function beginMatch() { closeSheet(); startGame(S); renderMatch(); banner('Round 1', 'You go first; every opponent starts with 1 extra card'); SFX.play('turn'); }
+
+/* the human */
+function onHandCard(uid) {
+  if (!isMyTurn()) return;
+  const c = S.players[0].hand.find(x => x.uid === uid); if (!c) return;
+  if (UI.sel !== uid) { UI.sel = uid; UI.hoverT = null; clearAim(); SFX.play('click'); renderMatch(); coachEvent('select'); return; }
+  const opps = opponents(S, S.players[0]);
+  if (needsTarget(c)) { if (opps.length === 1) return humanPlay(uid, opps[0].id); if (UI.hoverT != null) return humanPlay(uid, UI.hoverT); UI.sel = null; clearAim(); return renderMatch(); }
+  humanPlay(uid, null);
 }
-function beginPlay(relic) {
-  chooseRelic(S, 0, relic); closeModal(); startGame(S); renderGame();
-  banner('Round 1', 'You go first; every opponent starts with 1 extra card'); SFX.play('turn');
-  if (window.__auto) setTimeout(autoHuman, 300);
+function aiming() { const c = selCard(); return !!(c && isMyTurn() && needsTarget(c) && opponents(S, S.players[0]).length > 1); }
+function onCamp(pid, touch) {
+  if (!aiming()) return campSheet(pid);
+  if (pid === 0 || !S.players[pid].alive) return;
+  if (touch && UI.hoverT !== pid) return setAimTarget(pid);
+  humanPlay(UI.sel, pid);
 }
-/* human */
-function handPlay(uid) {
-  if (S.turn !== 0 || UI.busy || S.winner != null) return;
-  const card = S.players[0].hand.find(c => c.uid === uid); if (!card) return;
-  if (needsTarget(card)) {
-    const opps = opponents(S, S.players[0]);
-    if (opps.length > 1) { UI.targeting = UI.targeting === uid ? null : uid; renderGame(); return; }
-    return doPlay(uid, opps.length ? opps[0].id : null);
-  }
-  doPlay(uid, null);
+function setAimTarget(pid) {
+  if (UI.hoverT === pid) return;
+  UI.hoverT = pid;
+  $$('.camp.targetable').forEach(el => el.classList.toggle('hot', +el.dataset.pid === pid));
+  renderStage(); renderPreview(); renderAction();
 }
-function doPlay(uid, tid) {
+async function humanPlay(uid, tid) {
+  const el = document.querySelector(`#hand .card[data-uid="${uid}"]`), from = el ? el.getBoundingClientRect() : null;
+  UI.busy = true; clearAim(); UI.view = S.players.map(p => p.hp);
   const ev = playCard(S, 0, uid, tid);
-  UI.targeting = null;
-  if (!ev) { renderGame(); return; }
-  UI.last = { card: ev.card, pid: 0, target: ev.target };
-  SFX.play('card'); renderGame(); showFx(ev.fx); afterHuman();
+  if (!ev) { UI.busy = false; UI.view = null; return renderMatch(); }
+  coachEvent('play');
+  await animatePlay(ev, 0, from);
+  UI.busy = false;
+  if (S.winner != null || !S.players[0].alive) return finish();
+  if (S.plays > 0 && S.players[0].hand.length) return renderMatch();
+  nextTurn();
 }
-function doBuy(i) {
-  if (S.turn !== 0 || UI.busy) return;
-  const card = S.market[i];
-  if (buy(S, 0, i)) { SFX.play('coin'); renderGame(); floatText(0, 'Hired ' + card.name, 'gold', 0); }
-}
-function afterHuman() {
-  if (S.winner != null || !S.players[0].alive) { UI.busy = true; setTimeout(endScreen, 1100); return; }
-  const me = S.players[0];
-  if (S.plays > 0 && me.hand.length) { renderGame(); if (window.__auto) setTimeout(autoHuman, 250); return; }
-  UI.busy = true; renderGame();
-  setTimeout(() => { endTurn(S); afterTurnChange(); }, 700);
-}
-function autoHuman() {
-  if (S.turn !== 0 || S.winner != null) return;
-  const a = aiAct(S, 0);
-  if (a.kind === 'buy') { doBuy(a.idx); setTimeout(autoHuman, 200); }
-  else if (a.kind === 'play') doPlay(a.uid, a.target);
-  else afterHuman();
+async function humanBuy(i) {
+  if (!isMyTurn()) return;
+  const card = S.market[i], el = document.querySelector(`[data-hire="${i}"]`) || document.querySelector(`.mk-item[data-mi="${i}"]`), from = el ? el.closest('.mk-col, .mk-item').getBoundingClientRect() : null;
+  if (!card || !buy(S, 0, i)) return;
+  closeSheet(); UI.busy = true; SFX.play('coin'); renderMatch();
+  await animateBuy(card, 0, from);
+  UI.busy = false; renderMatch(); coachEvent('buy');
 }
 /* turns */
-function afterTurnChange() {
-  if (S.winner != null) { renderGame(); setTimeout(endScreen, 900); return; }
-  let roundBanner = false;
-  if (S.round !== UI.round) { UI.round = S.round; const E = EVENT_BY[S.event]; banner(`Round ${S.round}: ${E.name}`, E.text); roundBanner = true; }
-  if (S.turn === 0) {
-    UI.busy = false; renderGame(); SFX.play('turn');
-    const me = S.players[0];
-    if (me.ageGiven && !me.aged && me.turns === RULES.ageTurn) setTimeout(() => banner('The Imperial Age', 'Play the Imperial Age card when you are ready'), roundBanner ? 1500 : 0);
-    if (!S.players[0].hand.length) { afterHuman(); return; }
-    if (window.__auto) setTimeout(autoHuman, 300);
-    return;
+async function nextTurn() {
+  UI.busy = true; UI.sel = null; renderMatch(); await wait(D(380));
+  const round = S.round; endTurn(S);
+  if (S.round !== round && S.winner == null) await roundStart();
+  if (S.winner != null || !S.players[0].alive) return finish();
+  if (S.turn === 0) return myTurnStart();
+  return aiTurn();
+}
+async function roundStart() {
+  UI.flipEvent = true; renderMatch(); SFX.play('quill');
+  const E = EVENT_BY[S.event]; banner(`Round ${S.round}`, `${E.name}: ${E.text}`, 2000);
+  await wait(D(1100));
+}
+function myTurnStart() {
+  UI.busy = false; UI.sel = null; renderMatch(); SFX.play('turn'); buzz(20);
+  const me = S.players[0];
+  coachEvent('turn');
+  if (me.ageGiven && !me.aged && me.turns === RULES.ageTurn) { banner('The Imperial Age', 'Your Imperial Age card has arrived', 2000); coachEvent('agecard'); }
+  if (!me.hand.length) nextTurn();
+}
+async function aiTurn() {
+  const pid = S.turn, P = S.players[pid];
+  renderMatch(); await wait(D(500));
+  for (let guard = 0; guard < 30 && S.winner == null && S.turn === pid; guard++) {
+    const a = aiAct(S, pid);
+    if (a.kind === 'buy') {
+      const card = S.market[a.idx], el = document.querySelector(`.mk-item[data-mi="${a.idx}"]`), from = el ? el.getBoundingClientRect() : document.getElementById('stage').getBoundingClientRect();
+      if (buy(S, pid, a.idx)) { SFX.play('coin'); renderMatch(); await animateBuy(card, pid, from); renderMatch(); await wait(D(200)); continue; }
+    }
+    if (a.kind === 'play') {
+      const camp = document.getElementById('camp-' + pid), from = camp ? camp.getBoundingClientRect() : null;
+      UI.view = S.players.map(p => p.hp);
+      const ev = playCard(S, pid, a.uid, a.target);
+      if (ev) { await animatePlay(ev, pid, from); if (S.winner != null || !S.players[0].alive) return finish(); if (S.plays > 0 && P.hand.length && P.alive) continue; }
+      else UI.view = null;
+    }
+    break;
   }
-  renderGame(); setTimeout(aiStep, window.__fast ? 30 : 750);
+  if (S.winner != null || !S.players[0].alive) return finish();
+  return nextTurn();
 }
-function aiStep() {
-  if (S.winner != null) { setTimeout(endScreen, 600); return; }
-  const pid = S.turn, P = S.players[pid], wait = window.__fast ? 30 : 950;
-  const a = aiAct(S, pid);
-  if (a.kind === 'buy') { const card = S.market[a.idx]; if (buy(S, pid, a.idx)) { SFX.play('coin'); renderGame(); floatText(pid, 'Hired ' + card.name, 'gold', 0); setTimeout(aiStep, wait); return; } }
-  let ok = false;
-  if (a.kind === 'play') { const ev = playCard(S, pid, a.uid, a.target); if (ev) { ok = true; UI.last = { card: ev.card, pid, target: ev.target }; SFX.play('card'); renderGame(); showFx(ev.fx); } }
-  if (S.winner != null || !S.players[0].alive) { setTimeout(endScreen, 1100); return; }
-  if (!ok || S.plays <= 0 || !P.hand.length || !P.alive) setTimeout(() => { endTurn(S); afterTurnChange(); }, wait);
-  else setTimeout(aiStep, wait);
+function finish() {
+  if (UI.finished) return; UI.finished = true; UI.busy = true; renderMatch();
+  const me = S.players[0], win = S.winner === 0, r = SET.stats[me.civ] || [0, 0];
+  if (!UI.lastSetup.tutorial) { r[1]++; if (win) r[0]++; SET.stats[me.civ] = r; }
+  if (UI.tutorial) endTutorial();
+  saveSettings();
+  setTimeout(() => { SFX.play(win ? 'win' : 'lose'); resultsSheet(); }, D(700) + 400);
 }
-function endScreen() {
-  if (!S || $('#modal .end')) return;
-  const me = S.players[0], W = S.winner != null && S.winner >= 0 ? S.players[S.winner] : null, win = S.winner === 0;
-  prefs.wins = prefs.wins || {}; const r = prefs.wins[me.civ] || [0, 0]; r[1]++; if (win) r[0]++; prefs.wins[me.civ] = r; savePrefs();
-  SFX.play(win ? 'win' : 'lose');
-  const reason = S.wonderWin ? 'wonder completed' : S.timeUp ? '40 rounds passed, most HP wins' : 'last realm standing';
-  modal(`<div class="end ${win ? 'win' : 'lose'}">${W ? crest(W.civ, 76) : crest(me.civ, 76)}
-    <h2>${win ? 'Victory!' : me.alive ? 'Defeat' : 'You were defeated'}</h2>
-    <p>${W ? `${W.id === 0 ? 'You win' : esc(CIVS[W.civ].name) + ' win'} · ${reason}` : `Still standing: ${S.players.filter(p => p.alive).map(p => esc(CIVS[p.civ].name)).join(', ')}`}</p>
-    <div class="stats"><span>Damage dealt <b>${me.stats.dmg}</b></span><span>Cards played <b>${me.stats.played}</b></span><span>Mercenaries hired <b>${me.stats.bought}</b></span><span>Rounds <b>${S.round}</b></span></div>
-    <div class="row"><button class="btn big" data-act="again">Play again</button><button class="btn ghost" data-act="setup">Choose another civ</button></div></div>`);
-}
-function rulesModal() {
-  modal(`<h2>How to play</h2>
-  <p>Each player holds their own civilization's deck. On your turn <b>draw 1 card, then play 1 card</b>; with an empty hand you draw 2. A card does what its symbols say, left to right. The last player with HP left wins.</p>
-  <p class="legend-key">Card texts colour their keywords: <b class="kw k-dmg">damage</b> · <b class="kw k-hp">HP</b> · <b class="kw k-gold">gold</b> · <b class="kw k-card">cards</b> · <b class="kw k-wall">walls</b> · <b class="kw k-play">play another card</b> · <b class="kw k-aoe">every opponent</b> · <b class="kw k-pierce">over the walls</b> · <b class="kw k-steal">steal</b> · <b class="kw k-raze">destroy</b></p>
-  <div class="legend">${SYM_ORDER.split('').map(ch => `<div>${symBadge(ch, 26)}<b>${esc(SYM[ch].name)}</b><span>${kw(SYM[ch].desc)}</span></div>`).join('')}</div>
-  <p><b>Walls</b> soak up damage before it reaches your HP. <b>Cards with ★</b> are a civilization's signature cards. <b>Events</b>: one hits everyone each round, and the next one is always shown in advance. <b>Mercenary Market</b>: hire 1 card per turn with gold; it goes to your hand and joins your deck. <b>Relics</b>: pick 1 of 3 when the match starts.</p>
-  <p><b>Imperial Age</b>: at the start of your ${RULES.ageTurn}th turn an Imperial Age card arrives in your hand. Playing it costs your play for that turn, but no gold: your civilization's three Imperial cards join your deck and its age-up bonus happens at once (some civs get gold, cards, an attack, or a card straight to hand). Nobody can steal or discard it.</p>
-  <p><b>Wonders</b> (Angkor Wat, Chichén Itzá) win the game if they still stand at the start of their builder's third turn, so the whole table has to pile on. The first time you fall to 3 HP or less you draw 2 extra cards. From round 16 everyone loses 1 HP each round.</p>
-  <p class="muted small">Each civilization's starting HP is tuned with hundreds of thousands of AI-vs-AI games, separately for duels and for 3–4 player tables: every civ wins roughly 46–54% of duels and close to its fair share at bigger tables.</p>
-  <div class="row"><button class="btn" data-act="close">Close</button></div>`);
-}
-/* wiring */
+function toggleChronicle(force) { UI.drawer = force != null ? force : !UI.drawer; $('#chronicle').classList.toggle('open', UI.drawer); if (UI.drawer) renderChronicle(); }
+function cycleSpeed() { SET.speed = SPEED_ORDER[(SPEED_ORDER.indexOf(SET.speed) + 1) % SPEED_ORDER.length]; saveSettings(); if (S) renderTopbar(); }
+
+/* input */
 document.addEventListener('click', e => {
-  const t = e.target.closest('button, .card, .seat'); if (!t) return;
   SFX.init();
-  if (t.dataset.n) { UI.n = +t.dataset.n; SFX.play('click'); renderSetup(); return; }
-  if (t.dataset.civ) { UI.civ = t.dataset.civ; SFX.play('click'); renderSetup(); return; }
-  if (t.id === 'randCiv') { UI.civ = CIV_ORDER[Math.floor(Math.random() * CIV_ORDER.length)]; renderSetup(); return; }
-  if (t.id === 'go') { newMatch(); return; }
-  if (t.dataset.relic) { beginPlay(t.dataset.relic); return; }
-  if (t.id === 'cancelTarget') { UI.targeting = null; renderGame(); return; }
-  if (t.id === 'rulesBtn') { rulesModal(); return; }
-  if (t.id === 'soundBtn') { SFX.on = !SFX.on; prefs.sound = SFX.on; savePrefs(); t.textContent = SFX.on ? 'Sound: on' : 'Sound: off'; return; }
-  if (t.id === 'newBtn') { if (S && S.winner == null && S.started && !$('#modal .end')) { modal('<h2>Abandon this game?</h2><p>It will not count.</p><div class="row"><button class="btn" data-act="setup">Abandon and choose again</button><button class="btn ghost" data-act="close">Keep playing</button></div>'); return; } closeModal(); S = null; showScreen('setup'); renderSetup(); return; }
-  if (t.dataset.act === 'close') { closeModal(); return; }
-  if (t.dataset.act === 'again') { closeModal(); newMatch(); return; }
-  if (t.dataset.act === 'setup') { closeModal(); S = null; showScreen('setup'); renderSetup(); return; }
-  if (t.classList.contains('seat') && t.classList.contains('targetable') && UI.targeting) { doPlay(UI.targeting, +t.dataset.pid); return; }
-  if (t.classList.contains('card') && t.closest('#hand') && t.classList.contains('playable')) { handPlay(+t.dataset.uid); return; }
-  if (t.classList.contains('card') && t.closest('#market') && t.classList.contains('buyable')) { doBuy(+t.dataset.mi); return; }
+  const act = e.target.closest('[data-act]'), touch = e.pointerType === 'touch' || matchMedia('(pointer: coarse)').matches;
+  if (act) return action(act.dataset.act, act);
+  const hire = e.target.closest('[data-hire]'); if (hire) { if (!hire.disabled) humanBuy(+hire.dataset.hire); return; }
+  const t = e.target.closest('.civ-tile, [data-n], [data-diff], [data-set], .relic-pick, .mk-item, #hand .card, .camp');
+  if (!t) { if (e.target.id === 'sheet' && !$('#sheet').dataset.lock) closeSheet(); return; }
+  if (t.classList.contains('civ-tile')) { UI.civ = t.dataset.civ; SET.civ = UI.civ; saveSettings(); SFX.play('click'); const y = $('.sel-list').scrollTop; renderSelect(); $('.sel-list').scrollTop = y; return; }
+  if (t.dataset.n) { UI.n = +t.dataset.n; SET.n = UI.n; saveSettings(); const y = $('.sel-list').scrollTop; renderSelect(); $('.sel-list').scrollTop = y; return; }
+  if (t.dataset.diff) { SET.difficulty = t.dataset.diff; saveSettings(); const y = $('.sel-list').scrollTop; renderSelect(); $('.sel-list').scrollTop = y; return; }
+  if (t.dataset.set) { const v = t.dataset.val; SET[t.dataset.set] = v === 'true' ? true : v === 'false' ? false : v; SFX.on = SET.sound; saveSettings(); settingsSheet(); if (S && UI.screen === 'match') renderTopbar(); return; }
+  if (t.classList.contains('relic-pick')) { chooseRelic(S, 0, t.dataset.relic); return beginMatch(); }
+  if (t.classList.contains('mk-item')) { if (t.classList.contains('can')) humanBuy(+t.dataset.mi); return; }
+  if (t.matches('#hand .card')) return onHandCard(+t.dataset.uid);
+  if (t.classList.contains('camp')) return onCamp(+t.dataset.pid, touch);
 });
-document.addEventListener('keydown', e => { if (e.key === 'Escape') { if (UI.targeting) { UI.targeting = null; renderGame(); } else if (!$('#modal .relics') && !$('#modal .end')) closeModal(); } });
-$('#soundBtn').textContent = SFX.on ? 'Sound: on' : 'Sound: off';
-renderSetup();
+function action(a, el) {
+  switch (a) {
+    case 'tutorial': return newMatch({ civ: 'franks', n: 2, opps: ['japanese'], tutorial: true });
+    case 'quick': return newMatch({ civ: UI.civ, n: UI.n });
+    case 'choose': return go('select');
+    case 'menu': return go('menu');
+    case 'start': return newMatch({ civ: UI.civ, n: UI.n });
+    case 'again': return newMatch(UI.lastSetup.tutorial ? { civ: UI.civ, n: UI.n } : UI.lastSetup);
+    case 'random-civ': UI.civ = CIV_ORDER[Math.floor(Math.random() * CIV_ORDER.length)]; SET.civ = UI.civ; saveSettings(); return renderSelect();
+    case 'settings': return settingsSheet();
+    case 'tutorial-reset': SET.tutorialDone = false; saveSettings(); return settingsSheet();
+    case 'pause': return pauseSheet();
+    case 'help': return helpSheet();
+    case 'close': closeSheet(); return UI.screen === 'menu' ? renderMenu() : null;
+    case 'concede': UI.tutorial = null; $('#coach').classList.add('hidden'); return go('menu');
+    case 'chronicle': return toggleChronicle();
+    case 'speed': return cycleSpeed();
+    case 'deck': return deckSheet('deck');
+    case 'discard': return deckSheet('discard');
+    case 'events': return mobileSheet('events');
+    case 'market': return mobileSheet('market');
+    case 'coach-next': return coachNext();
+    case 'cancel-sel': UI.sel = null; UI.hoverT = null; clearAim(); return renderMatch();
+    case 'play-sel': { const c = selCard(); if (!c) return; const t = selTarget(c); if (needsTarget(c) && t == null) return; return humanPlay(c.uid, t); }
+    case 'coach-skip': return endTutorial();
+  }
+}
+document.addEventListener('pointermove', e => {
+  if (!aiming() || e.pointerType === 'touch') return;
+  const camp = e.target.closest('.camp.targetable');
+  setAimTarget(camp ? +camp.dataset.pid : null);
+  const cardEl = document.querySelector(`#hand .card[data-uid="${UI.sel}"]`);
+  if (camp) { const r = camp.getBoundingClientRect(); aim(cardEl && cardEl.getBoundingClientRect(), r.left + r.width / 2, r.top + r.height / 2); }
+  else aim(cardEl && cardEl.getBoundingClientRect(), e.clientX, e.clientY);
+});
+document.addEventListener('keydown', e => {
+  if (UI.screen !== 'match' || !S) return;
+  const sheetOpen = !$('#sheet').classList.contains('hidden');
+  if (e.key === 'Escape') { if (sheetOpen) { if (!$('#sheet').dataset.lock) closeSheet(); return; } if (UI.sel != null) { UI.sel = null; UI.hoverT = null; clearAim(); return renderMatch(); } return pauseSheet(); }
+  if (sheetOpen) return;
+  const k = e.key.toLowerCase();
+  if (/^[1-9]$/.test(e.key)) { const c = S.players[0].hand[+e.key - 1]; if (c) onHandCard(c.uid); }
+  else if (e.key === 'Enter' && UI.sel != null) { e.preventDefault(); onHandCard(UI.sel); }
+  else if (e.key === 'Tab' && aiming()) { e.preventDefault(); const o = opponents(S, S.players[0]).map(p => p.id), i = o.indexOf(UI.hoverT); UI.hoverT = null; setAimTarget(o[(i + 1) % o.length]); clearAim(); }
+  else if (k === 'l') toggleChronicle();
+  else if (k === 's') cycleSpeed();
+  else if (k === 'h') helpSheet();
+});
+addEventListener('resize', () => { updateMode(); if (UI.screen === 'match' && S && !UI.busy) renderMatch(); else if (UI.screen === 'menu') renderMenu(); });
+updateMode(); installCivStyles(); installTableArt(); go('menu');
 
 </script>
 </body>

@@ -19,6 +19,8 @@ const SFX = {
     this.init(); if (!this.ctx) return;
     switch (name) {
       case 'click': this.noise(0, 0.03, 0.05, 2500); break;
+      case 'whoosh': this.noise(0, 0.18, 0.05, 1200); break;
+      case 'crown': [523, 659, 784, 1047].forEach((f, i) => this.tone(f, i * 0.1, 0.45, 'triangle', 0.08)); break;
       case 'card': this.noise(0, 0.08, 0.07, 1800); this.tone(660, 0.02, 0.06, 'triangle', 0.04); break;
       case 'hit': this.noise(0, 0.12, 0.14, 700); this.tone(140, 0, 0.18, 'square', 0.06, -60); break;
       case 'wall': this.noise(0, 0.25, 0.12, 300, 'lowpass'); this.tone(90, 0, 0.3, 'sine', 0.2, -30); break;

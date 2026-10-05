@@ -1,6 +1,6 @@
 // node sim.js [games-per-pair] [--tune] — AI vs AI: 1v1 round robin and 4-player free-for-all.
 const fs = require('fs'), vm = require('vm'), path = require('path');
-for (const f of ['00-core.js', '10-data.js', '15-imperial.js', '20-engine.js', '30-ai.js']) vm.runInThisContext(fs.readFileSync(path.join(__dirname, 'src', f), 'utf8'), { filename: f });
+for (const f of ['00-core.js', '10-data.js', '15-imperial.js', '20-engine.js', '30-ai.js']) vm.runInThisContext(fs.readFileSync(path.join(__dirname, 'src', 'core', f), 'utf8'), { filename: f });
 function play(seed, civs) {
   const S = newGame({ seed, civs, ai: civs.map(() => true) });
   S.quiet = true;
