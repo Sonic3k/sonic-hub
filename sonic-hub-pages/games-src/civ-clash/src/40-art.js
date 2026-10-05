@@ -39,6 +39,13 @@ const CHARGES = {
   quinas: [[20, 11], [15, 17], [20, 17], [25, 17], [20, 23]].map(([x, y]) => `<circle cx="${x}" cy="${y}" r="2.4" fill="#f2e6c9"/>`).join(''),
   eagle: '<path d="M10 14l7 1.6L20 10l3 5.6 7-1.6-4.8 5 1.2 4.8-6.4-2.8-6.4 2.8 1.2-4.8z" fill="#f2e6c9"/>',
   pyramid: '<path d="M10 27h20M12 27l3-4h10l3 4M15 23l2-4h6l2 4M17 19l2-4h2l2 4" fill="none" stroke="#f2e6c9" stroke-width="1.6"/>',
+  palm: '<path d="M20 28.5V15" stroke="#f2e6c9" stroke-width="2.2"/><path d="M20 15c-3-4-8-4.5-10.5-2.2 4.2-.3 7.6.8 10.5 2.2zM20 15c3-4 8-4.5 10.5-2.2-4.2-.3-7.6.8-10.5 2.2zM20 15c-.8-4.3-3.6-7.4-7.2-7.6 3 1.8 5.2 4.3 7.2 7.6zM20 15c.8-4.3 3.6-7.4 7.2-7.6-3 1.8-5.2 4.3-7.2 7.6z" fill="#f2e6c9"/>',
+  kris: '<path d="M20 30v-5M16.5 25h7M20 25c-2.2-1.8 2.2-3.8 0-5.8s2.2-3.8 0-5.8 1.2-3 0-5.4c-1.4 2.2-3 3.3-1 5.4s-2.2 3.8 0 5.8-2.2 3.8 0 5.8z" fill="#f2e6c9"/>',
+  chalice: '<path d="M13 9h14c0 6-3 9.2-7 9.6S13 15 13 9zM19 18.4h2V25h-2zM15 27.5h10l-1.6-2.6h-6.8z" fill="#f2c94c"/>',
+  columns: '<path d="M12 27h16M14 27V16.5h2.5V13h7v3.5H26V27M16.5 16.5h7M18.5 27v-5h3v5" stroke="#f2c94c" stroke-width="2" fill="none"/>',
+  crown: '<path d="M11 25h18l1.6-12-5.6 4.6L20 9l-5 8.6L9.4 13z" fill="#f2c94c"/><path d="M11 27h18" stroke="#f2c94c" stroke-width="2"/>',
+  trident: '<path d="M20 7v20M13 10v7.5c0 3.2 3 5.5 7 5.5s7-2.3 7-5.5V10" stroke="#f2c94c" stroke-width="2.2" fill="none" stroke-linecap="round"/><path d="M17 27h6" stroke="#f2c94c" stroke-width="2.2"/>',
+  doublecross: '<path d="M20 7v21M15.5 12h9M13 17.5h14" stroke="#f2e6c9" stroke-width="3"/>',
 };
 function crest(civ, size = 44) {
   const C = CIVS[civ];
@@ -47,4 +54,8 @@ function crest(civ, size = 44) {
 }
 function mercCrest(size = 44) {
   return `<svg viewBox="0 0 40 40" width="${size}" height="${size}" class="crest" aria-hidden="true"><path d="M5 4h30v15c0 10-7.5 15.5-15 18.5C12.5 34.5 5 29 5 19z" fill="#6b5a3a" stroke="#1d1209" stroke-width="1.6"/><circle cx="20" cy="17" r="7" fill="#e6c25a" stroke="#8a6a1a"/><path d="M20 12.5v9M17.5 15h4.5M17.5 18.5h5" stroke="#6b4a10" stroke-width="1.5"/></svg>`;
+}
+
+function crownSVG(size = 28) {
+  return `<svg viewBox="0 0 24 24" width="${size}" height="${size}" class="sym" aria-label="Imperial Age" role="img"><circle cx="12" cy="12" r="11.4" fill="#6a3fb0" stroke="rgba(0,0,0,.35)" stroke-width="1"/><path d="M5.5 16.2h13l1.2-8.2-4.2 3.3L12 5.8l-3.5 5.5-4.2-3.3z" fill="#f2c94c"/><path d="M5.5 18.2h13" stroke="#f2c94c" stroke-width="1.6"/></svg>`;
 }

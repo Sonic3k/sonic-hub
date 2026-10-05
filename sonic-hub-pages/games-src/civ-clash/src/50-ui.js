@@ -8,13 +8,13 @@ const KW_CLS = ['pierce', 'aoe', 'play', 'dmg', 'hp', 'gold', 'card', 'wall', 's
 function kw(text) { return esc(text).replace(KW_RE, (...m) => `<b class="kw k-${KW_CLS[m.slice(1, 11).findIndex(x => x !== undefined)]}">${m[0]}</b>`); }
 function cardHTML(card, o = {}) {
   const civ = card.civ === 'merc' ? null : CIVS[card.civ];
-  const cls = ['card', card.unique ? 'unique' : '', card.civ === 'merc' ? 'merc' : '', o.cls || ''].join(' ');
-  const syms = [...card.icons].map(ch => symBadge(ch, o.small ? 22 : 28)).join('');
+  const cls = ['card', card.unique ? 'unique' : '', card.imperial ? 'imperial' : '', card.age ? 'agecard' : '', card.civ === 'merc' ? 'merc' : '', o.cls || ''].join(' ');
+  const syms = card.age ? crownSVG(o.small ? 34 : 44) : [...card.icons].map(ch => symBadge(ch, o.small ? 22 : 28)).join('');
   return `<div class="${cls}" data-uid="${card.uid || ''}" ${o.attrs || ''} style="--civ:${civ ? civ.color : '#6b5a3a'}">
     <div class="c-head">${civ ? crest(card.civ, 18) : mercCrest(18)}<span class="c-name">${esc(card.name)}</span></div>
     <div class="c-syms">${syms}</div>
     <div class="c-text">${kw(cardText(card))}</div>
-    ${o.cost != null ? `<div class="c-cost${o.afford ? ' ok' : ''}">${o.cost} gold</div>` : ''}${card.unique ? '<div class="c-star" title="Signature card of this civilization">★</div>' : ''}
+    ${o.cost != null ? `<div class="c-cost${o.afford ? ' ok' : ''}">${o.cost} gold</div>` : ''}${card.unique ? '<div class="c-star" title="Signature card of this civilization">★</div>' : ''}${card.imperial ? '<div class="c-imp" title="Imperial Age card">Imperial</div>' : ''}
   </div>`;
 }
 function structHTML(st) {
@@ -36,10 +36,10 @@ function seatHTML(P, me) {
   const backs = me ? '' : `<span class="backs" title="${P.hand.length} cards in hand">${'<i></i>'.repeat(Math.min(P.hand.length, 8))}<em>${P.hand.length}</em></span>`;
   return `<div class="seat${me ? ' me' : ''}${turn ? ' turn' : ''}${P.alive ? '' : ' out'}${tgt}" id="seat-${P.id}" data-pid="${P.id}" style="--civ:${C.color}">
     <div class="s-top">${crest(P.civ, me ? 46 : 40)}
-      <div class="s-id"><div class="s-name">${me ? 'You · ' : ''}${esc(C.name)}</div><div class="s-sub">${P.relic ? esc(RELICS[P.relic].name) : ''}</div></div>
+      <div class="s-id"><div class="s-name">${me ? 'You · ' : ''}${esc(C.name)}${P.aged ? ` <span class="imp-tag" title="Imperial Age">${crownSVG(16)}</span>` : ''}</div><div class="s-sub">${P.relic ? esc(RELICS[P.relic].name) : ''}</div></div>
       <div class="s-hp" title="HP"><b>${P.hp}</b><small>/${P.maxHP}<span class="hp-u"> HP</span></small><div class="hpbar"><div style="width:${hpPct}%"></div></div></div>
     </div>
-    <div class="s-row"><span class="gold" title="Gold">${symBadge('G', 18)}<b>${P.gold}</b></span>${backs}${tokensHTML(P)}${turn ? '<span class="turn-tag">acting</span>' : ''}${P.alive ? '' : '<span class="out-tag">defeated</span>'}</div>
+    <div class="s-row"><span class="gold" title="Gold">${symBadge('G', 18)}<b>${P.gold}</b></span>${backs}${!P.ageGiven ? `<span class="tok" title="The Imperial Age card arrives at the start of turn ${RULES.ageTurn}">${crownSVG(14)} in ${Math.max(1, RULES.ageTurn - P.turns)}</span>` : !P.aged ? '<span class="tok hot imp" title="Holds the Imperial Age card">Imperial ready</span>' : ''}${tokensHTML(P)}${turn ? '<span class="turn-tag">acting</span>' : ''}${P.alive ? '' : '<span class="out-tag">defeated</span>'}</div>
     <div class="s-structs">${P.structs.map(structHTML).join('') || '<span class="none">No structures</span>'}</div>
     <div class="floats"></div>
   </div>`;
@@ -73,6 +73,8 @@ function logLine(e) {
     case 'fatigue': return `${esc(civName(e.pid))} reshuffled the deck: exhausted, −1 HP`;
     case 'wonder': return `<b>${esc(civName(e.pid))}</b> completed ${esc(e.name)}`;
     case 'attrition': return 'The war drags on: everyone −1 HP';
+    case 'agecard': return e.pid === 0 ? 'The <b>Imperial Age</b> card is in your hand' : `${esc(civName(e.pid))} can now reach the Imperial Age`;
+    case 'aged': return `<b>${esc(civName(e.pid))}</b> ${e.pid === 0 ? 'advance' : 'advances'} to the Imperial Age`;
   }
   return '';
 }
@@ -81,7 +83,7 @@ const FX_TEXT = {
   camel: () => ['Camels block!', 'info'], immune: () => ['Divine Wind!', 'info'], shroud: () => ['Mantle −1', 'info'], trap: () => ['Stakes!', 'dmg'],
   thorns: () => ['Spikes!', 'dmg'], steal: () => ['Card stolen', 'info'], convert: f => [`Lost ${f.name}`, 'info'], gold: f => [`+${f.n} gold`, 'gold'],
   out: () => ['Defeated!', 'dmg big'], hich: () => ['In danger: +2 cards', 'heal'], banner: () => ['Holy Banner!', 'heal'], wonderhit: f => [`Wonder ${f.left}`, 'wall'],
-  discard: () => ['−1 card', 'info'], rained: () => ['Monsoon: no building', 'info'],
+  discard: () => ['−1 card', 'info'], rained: () => ['Monsoon: no building', 'info'], age: () => ['Imperial Age!', 'gold big'], tribute: () => ['−1 gold', 'gold'],
 };
 function floatText(pid, text, cls, delay) {
   setTimeout(() => {
@@ -102,6 +104,6 @@ function showFx(fx) {
   [...snd].forEach((s, i) => setTimeout(() => SFX.play(s), 120 + i * 90));
 }
 function banner(text, sub) {
-  const b = $('#banner'); b.innerHTML = `<b>${esc(text)}</b>${sub ? `<span>${kw(sub)}</span>` : ''}`;
+  const b = $('#banner'); b.innerHTML = `<div class="bt">${esc(text)}</div>${sub ? `<span>${kw(sub)}</span>` : ''}`;
   b.classList.remove('show'); void b.offsetWidth; b.classList.add('show');
 }

@@ -43,7 +43,7 @@ for (let it = 0; it <= iters; it++) {
     if (sm) { if (last[c].m === -sm) last[c].m = 0; else { CIVS[c].hp4 = clamp(CIVS[c].hp4 + sm, 6, 17); last[c].m = sm; } }
   }
   // keep the overall HP level anchored so games stay short: shift everyone when the average drifts
-  for (const [key, target] of [['hp2', 11.5], ['hp4', 12.5]]) {
+  for (const [key, target] of [['hp2', 12], ['hp4', 13]]) {
     const k = Math.round(ids.reduce((s, c) => s + CIVS[c][key], 0) / ids.length - target);
     if (k) for (const c of ids) CIVS[c][key] = clamp(CIVS[c][key] - k, 6, 17);
   }

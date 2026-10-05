@@ -30,7 +30,7 @@ function buildMercs(S) {
 function newPlayer(S, civ, id, ai) {
   const hp = S.duel ? CIVS[civ].hp2 : CIVS[civ].hp4;
   return { id, civ, ai: !!ai, hp, maxHP: hp, deck: shuffled(S, buildDeck(S, civ)), hand: [], discard: [], structs: [], gold: 0, relic: null, relicOffer: null,
-    tokens: { camel: 0, immune: false, trap: false }, alive: true, hich: false, bannerUsed: false, shroudRound: 0, stats: { dmg: 0, played: 0, bought: 0, kills: 0 } };
+    tokens: { camel: 0, immune: false, trap: false }, alive: true, turns: 0, aged: false, ageGiven: false, hich: false, bannerUsed: false, shroudRound: 0, stats: { dmg: 0, played: 0, bought: 0, kills: 0 } };
 }
 function newGame(o) {
   const S = { v: 1, seed: o.seed >>> 0, rs: o.seed >>> 0, nextUid: 1, players: [], turn: 0, round: 1, plays: 0, flags: {}, mod: {}, event: null, eventNext: null, eventDeck: [], mercs: [], market: [], log: [], winner: null, started: false };
@@ -133,7 +133,7 @@ const needsTarget = card => card.steps.some(stepNeedsTarget);
 function resolveStep(S, A, s, T, ev) {
   if (!A.alive) return;
   if (s.dmg) {
-    const xs = s.all ? opponents(S, A) : (T && T.alive ? [T] : []);
+    const xs = s.all ? opponents(S, A) : s.others ? opponents(S, A).filter(X => X !== T) : (T && T.alive ? [T] : []);
     for (const X of xs) {
       let n = s.dmg;
       if (s.basic && S.mod.crusade) n++;
@@ -148,15 +148,17 @@ function resolveStep(S, A, s, T, ev) {
   if (s.draw) draw(S, A, s.draw);
   if (s.gold) { A.gold += s.gold; ev.fx.push({ k: 'gold', t: A.id, n: s.gold }); }
   if (s.raze) for (let k = 0; k < s.raze; k++) { if (!T || (!T.structs.length)) break; razeOne(S, A, T, ev); }
-  if (s.steal) for (const X of (s.all ? opponents(S, A) : T ? [T] : [])) for (let k = 0; k < s.steal; k++) { if (!X.hand.length) break; const c = X.hand.splice(Math.floor(rnd(S) * X.hand.length), 1)[0]; A.hand.push(c); ev.fx.push({ k: 'steal', t: X.id, by: A.id }); }
+  if (s.steal) for (const X of (s.all ? opponents(S, A) : T ? [T] : [])) for (let k = 0; k < s.steal; k++) { const c = takeRandom(S, X); if (!c) break; A.hand.push(c); ev.fx.push({ k: 'steal', t: X.id, by: A.id }); }
   if (s.convert && T) { const ws = walls(T).sort((a, b) => b.dur - a.dur); if (ws.length) { const w = ws[0]; T.structs = T.structs.filter(x => x !== w); A.structs.push(w); ev.fx.push({ k: 'convert', t: T.id, by: A.id, name: w.card.name }); } }
   if (s.token === 'camel') A.tokens.camel++;
   if (s.token === 'immune') A.tokens.immune = true;
   if (s.token === 'trap') A.tokens.trap = true;
   if (s.self) loseHP(S, A, s.self, ev, null);
-  if (s.discard) for (const X of opponents(S, A)) if (X.hand.length) { X.discard.push(X.hand.splice(Math.floor(rnd(S) * X.hand.length), 1)[0]); ev.fx.push({ k: 'discard', t: X.id }); }
+  if (s.discard) for (const X of opponents(S, A)) { const c = takeRandom(S, X); if (c) { X.discard.push(c); ev.fx.push({ k: 'discard', t: X.id }); } }
+  if (s.tribute) for (const X of opponents(S, A)) if (X.gold > 0) { X.gold--; A.gold++; ev.fx.push({ k: 'gold', t: A.id, n: 1 }); ev.fx.push({ k: 'tribute', t: X.id }); }
+  if (s.ageup) ageUp(S, A, ev);
   if (s.buyFree) S.flags.buyFree = true;
-  if (s.fortify) for (const w of walls(A)) w.dur++;
+  if (s.fortify) for (const w of walls(A)) w.dur += s.fortify;
 }
 function playCard(S, pid, uid, tid) {
   if (S.winner != null || S.turn !== pid || S.plays <= 0) return null;
@@ -172,7 +174,7 @@ function playCard(S, pid, uid, tid) {
     if (S.mod.monsoon) { A.discard.push(card); ev.fx.push({ k: 'rained', t: A.id }); }
     else if (card.wonder) { const dur = 3 + opponents(S, A).length; A.structs.push({ card, kind: 'wonder', dur, cap: dur, age: 0 }); }
     else { const dur = card.wall + (A.relic === 'scone' ? 1 : 0); A.structs.push({ card, kind: card.kind || 'wall', dur, cap: dur + 1 }); }
-  } else A.discard.push(card);
+  } else if (!card.age) A.discard.push(card);
   log(S, 'play', { pid, card: card.name, target: ev.target, fx: ev.fx.slice(0, 12) });
   checkWinner(S);
   return ev;
@@ -207,10 +209,13 @@ function beginTurn(S, first) {
     if (st.kind === 'wonder') { st.age++; if (st.age >= 3) { S.winner = P.id; S.wonderWin = true; log(S, 'wonder', { pid: P.id, name: st.card.name }); return; } }
     if (st.kind === 'regen' && st.dur < st.cap) st.dur++;
     if (st.kind === 'sacred') heal(S, P, 1);
+    if (st.kind === 'income') P.gold++;
   }
   if (P.relic === 'mint') P.gold++;
   if (!first) draw(S, P, P.hand.length ? 1 : 2);
   if (P.relic === 'compass' && P.hand.length <= 1) draw(S, P, 1);
+  P.turns++;
+  if (!P.ageGiven && P.turns >= RULES.ageTurn && IMPERIAL[P.civ]) { P.ageGiven = true; P.hand.push(makeAgeCard(S, P)); log(S, 'agecard', { pid: P.id }); }
   checkWinner(S);
 }
 function endTurn(S) {
@@ -239,8 +244,8 @@ function startRound(S) {
     case 'revolt': { const top = Math.max(...alive.map(p => p.hp)); for (const P of alive) if (P.hp === top) loseHP(S, P, 1, ev, null); break; }
     case 'crusade': S.mod.crusade = true; break;
     case 'monsoon': S.mod.monsoon = true; break;
-    case 'flood': for (const P of alive) if (P.hand.length) P.discard.push(P.hand.splice(Math.floor(rnd(S) * P.hand.length), 1)[0]); break;
-    case 'eclipse': { const gifts = alive.map(P => P.hand.length ? P.hand.splice(Math.floor(rnd(S) * P.hand.length), 1)[0] : null); alive.forEach((P, k) => { const g = gifts[(k - 1 + alive.length) % alive.length]; if (g) P.hand.push(g); }); break; }
+    case 'flood': for (const P of alive) { const c = takeRandom(S, P); if (c) P.discard.push(c); } break;
+    case 'eclipse': { const gifts = alive.map(P => takeRandom(S, P)); alive.forEach((P, k) => { const g = gifts[(k - 1 + alive.length) % alive.length]; if (g) P.hand.push(g); }); break; }
     case 'bells': { const low = Math.min(...alive.map(p => p.hp)); for (const P of alive) if (P.hp === low) heal(S, P, 2); break; }
   }
   log(S, 'event', { id: S.event, fx: ev.fx });
@@ -264,4 +269,24 @@ function cardText(card) {
   const parts = Object.keys(cnt).filter(ch => ch !== 'W').map(ch => SYM_TXT[ch](cnt[ch]));
   if (cnt.W) parts.push(`Stays in play as a structure with ${cnt.W} durability.`);
   return parts.join(' ');
+}
+
+/* ── Imperial Age ── */
+function takeRandom(S, X) { const loose = X.hand.filter(c => !c.bound); if (!loose.length) return null; const c = loose[Math.floor(rnd(S) * loose.length)]; X.hand.splice(X.hand.indexOf(c), 1); return c; }
+function imperialCards(S, civ) {
+  return IMPERIAL[civ].cards.map(d => {
+    const c = d.steps ? { steps: d.steps.map(s => ({ ...s })), wall: d.wall || 0 } : cardFromIcons(d.icons);
+    return makeCard(S, { name: d.name, icons: d.icons, text: d.text, civ, imperial: true, steps: c.steps, wall: d.wall != null ? d.wall : c.wall, kind: d.kind || null });
+  });
+}
+function ageText(civ) { const I = IMPERIAL[civ]; return `Advance to the Imperial Age: your ${I.cards.length} Imperial cards join your deck. ${I.bonus.text}`; }
+function makeAgeCard(S, P) { return makeCard(S, { name: 'Imperial Age', icons: '', civ: P.civ, age: true, bound: true, steps: [{ ageup: 1 }], wall: 0, text: ageText(P.civ) }); }
+function ageUp(S, A, ev) {
+  if (A.aged) return;
+  A.aged = true; A.agedRound = S.round;
+  const I = IMPERIAL[A.civ];
+  imperialCards(S, A.civ).forEach((c, i) => { if (I.bonus.fetch === i) A.hand.push(c); else A.deck.splice(Math.floor(rnd(S) * (A.deck.length + 1)), 0, c); });
+  ev.fx.push({ k: 'age', t: A.id });
+  for (const s of I.bonus.steps || []) resolveStep(S, A, { ...s }, null, ev);
+  log(S, 'aged', { pid: A.id });
 }
