@@ -24,6 +24,7 @@ function renderSetup() {
     <div class="detail" style="--civ:${C.color}">
       <div class="d-head">${crest(UI.civ, 64)}<div><h2>${esc(C.name)}</h2><p>${esc(C.style)}</p><p class="d-hp">Starting <b class="kw k-hp">${hp(UI.civ)} HP</b> ${UI.n === 2 ? 'in a duel' : 'at a 3–4 player table'}${rec ? ` · won ${rec[0]} of ${rec[1]}` : ''}</p></div></div>
       <h4>Signature cards</h4><div class="d-uniques">${uniques.map(u => cardHTML(u, { small: 1 })).join('')}</div>
+      <h4>Imperial Age</h4><p class="d-bonus">${kw(IMPERIAL[UI.civ].bonus.text)}</p><div class="d-uniques">${IMPERIAL[UI.civ].cards.map(d => cardHTML({ uid: 0, name: d.name, icons: d.icons, text: d.text, civ: UI.civ, imperial: true, steps: [] }, { small: 1 })).join('')}</div>
       <h4>The 24-card deck</h4><div class="d-mix">${deckMix(UI.civ).map(([ch, k]) => `<span title="${esc(SYM[ch].name)}: ${esc(SYM[ch].desc)}">${symBadge(ch, 22)}<b>×${k}</b></span>`).join('')}</div>
       <p class="d-opp">Opponents: ${UI.n - 1} random civilization${UI.n > 2 ? 's' : ''} played by the computer</p>
       <div class="d-actions"><button class="btn big" id="go">To battle</button><button class="btn ghost" id="randCiv">Random civ</button></div>
@@ -89,9 +90,12 @@ function autoHuman() {
 /* turns */
 function afterTurnChange() {
   if (S.winner != null) { renderGame(); setTimeout(endScreen, 900); return; }
-  if (S.round !== UI.round) { UI.round = S.round; const E = EVENT_BY[S.event]; banner(`Round ${S.round}: ${E.name}`, E.text); }
+  let roundBanner = false;
+  if (S.round !== UI.round) { UI.round = S.round; const E = EVENT_BY[S.event]; banner(`Round ${S.round}: ${E.name}`, E.text); roundBanner = true; }
   if (S.turn === 0) {
     UI.busy = false; renderGame(); SFX.play('turn');
+    const me = S.players[0];
+    if (me.ageGiven && !me.aged && me.turns === RULES.ageTurn) setTimeout(() => banner('The Imperial Age', 'Play the Imperial Age card when you are ready'), roundBanner ? 1500 : 0);
     if (!S.players[0].hand.length) { afterHuman(); return; }
     if (window.__auto) setTimeout(autoHuman, 300);
     return;
@@ -127,8 +131,9 @@ function rulesModal() {
   <p class="legend-key">Card texts colour their keywords: <b class="kw k-dmg">damage</b> · <b class="kw k-hp">HP</b> · <b class="kw k-gold">gold</b> · <b class="kw k-card">cards</b> · <b class="kw k-wall">walls</b> · <b class="kw k-play">play another card</b> · <b class="kw k-aoe">every opponent</b> · <b class="kw k-pierce">over the walls</b> · <b class="kw k-steal">steal</b> · <b class="kw k-raze">destroy</b></p>
   <div class="legend">${SYM_ORDER.split('').map(ch => `<div>${symBadge(ch, 26)}<b>${esc(SYM[ch].name)}</b><span>${kw(SYM[ch].desc)}</span></div>`).join('')}</div>
   <p><b>Walls</b> soak up damage before it reaches your HP. <b>Cards with ★</b> are a civilization's signature cards. <b>Events</b>: one hits everyone each round, and the next one is always shown in advance. <b>Mercenary Market</b>: hire 1 card per turn with gold; it goes to your hand and joins your deck. <b>Relics</b>: pick 1 of 3 when the match starts.</p>
+  <p><b>Imperial Age</b>: at the start of your ${RULES.ageTurn}th turn an Imperial Age card arrives in your hand. Playing it costs your play for that turn, but no gold: your civilization's three Imperial cards join your deck and its age-up bonus happens at once (some civs get gold, cards, an attack, or a card straight to hand). Nobody can steal or discard it.</p>
   <p><b>Wonders</b> (Angkor Wat, Chichén Itzá) win the game if they still stand at the start of their builder's third turn, so the whole table has to pile on. The first time you fall to 3 HP or less you draw 2 extra cards. From round 16 everyone loses 1 HP each round.</p>
-  <p class="muted small">Each civilization's starting HP is tuned with hundreds of thousands of AI-vs-AI games, separately for duels and for 3–4 player tables: every civ wins about 46–52% of duels and its fair share (±3 points) at bigger tables.</p>
+  <p class="muted small">Each civilization's starting HP is tuned with hundreds of thousands of AI-vs-AI games, separately for duels and for 3–4 player tables: every civ wins roughly 46–54% of duels and close to its fair share at bigger tables.</p>
   <div class="row"><button class="btn" data-act="close">Close</button></div>`);
 }
 /* wiring */

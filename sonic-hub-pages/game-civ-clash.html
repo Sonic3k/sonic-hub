@@ -94,7 +94,12 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:-1;ba
 .m-cards{display:flex;gap:10px;padding:6px 4px 14px 6px}.m-cards .c-text{padding-bottom:16px}.me-mini{display:none}
 .kw{font-weight:800}.k-dmg{color:#b3261e}.k-hp{color:#23772f}.k-gold{color:#9a6a00}.k-card{color:#3646a8}.k-wall{color:#475a75}.k-play{color:#6a3fb0}.k-aoe{color:#c94a12}.k-pierce{color:#0f6b52}.k-steal{color:#a3306d}.k-raze{color:#7a4a20}
 #chron .k-gold,#status .k-gold,.m-note .k-gold{color:#f0c050}#status .k-hp{color:#8fd694}#status .k-wall{color:#b8c7dc}
-.legend-key{font-size:14px;line-height:1.7}.m-cards .card{width:112px;min-height:160px}.m-cards .c-text{font-size:10.5px}
+.legend-key{font-size:14px;line-height:1.7}
+.card.imperial{background:linear-gradient(170deg,#fbf4ff,#ecdcf4 70%,#dcc3ea);box-shadow:0 0 0 1px rgba(0,0,0,.35),0 0 0 3px var(--civ),0 0 0 5px #6a3fb0,0 6px 14px rgba(0,0,0,.4)}
+.c-imp{position:absolute;top:-10px;left:50%;transform:translateX(-50%);background:#6a3fb0;color:#fff;font-size:10px;letter-spacing:1px;text-transform:uppercase;padding:1px 8px;border-radius:8px;font-weight:800;box-shadow:0 1px 3px rgba(0,0,0,.5);white-space:nowrap}
+.card.agecard{background:radial-gradient(circle at 50% 30%,#fff6cf,#f2d27a 58%,#d9a83f);box-shadow:0 0 0 1px rgba(0,0,0,.35),0 0 0 3px #8a6a1a,0 0 20px rgba(242,201,76,.75),0 6px 14px rgba(0,0,0,.4)}
+.card.agecard .c-head{background:linear-gradient(90deg,#5a2f9c,#8a5ac9)}.card.agecard .c-text{color:#3a2408}
+.imp-tag svg{vertical-align:-3px}.tok.imp{background:#6a3fb0}.d-bonus{margin:0 0 8px;font-size:14px}.m-cards .card{width:112px;min-height:160px}.m-cards .c-text{font-size:10.5px}
 .card.buyable{cursor:pointer;transition:transform .15s}.card.buyable:hover{transform:translateY(-4px)}
 .m-note{margin:8px 0 0;font-size:12px;color:var(--parch2);opacity:.85;max-width:360px}
 #mine{grid-area:mine}#mine .seat{padding:8px 12px}
@@ -107,7 +112,7 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:-1;ba
 .chronbox{grid-area:chron;background:rgba(0,0,0,.25);border-radius:12px;padding:8px 12px;box-shadow:inset 0 0 0 1px rgba(212,162,58,.2);align-self:start}
 #chron{list-style:none;margin:0;padding:0;font-size:13px;line-height:1.3}#chron li{padding:4px 0;border-bottom:1px dashed rgba(232,213,170,.18);color:var(--parch2)}#chron li:first-child{color:#fff}
 #banner{position:fixed;left:50%;top:22%;transform:translateX(-50%);pointer-events:none;text-align:center;opacity:0;z-index:20;width:min(90vw,700px)}
-#banner b{display:block;font-family:var(--goth);font-size:clamp(30px,5vw,52px);color:var(--gold);text-shadow:0 3px 0 #2a1a08,0 0 30px rgba(0,0,0,.8)}#banner span{display:block;color:#fff;font-size:17px;text-shadow:0 2px 6px #000;margin-top:4px}
+#banner .bt{display:block;font-family:var(--goth);font-size:clamp(30px,5vw,52px);color:var(--gold);text-shadow:0 3px 0 #2a1a08,0 0 30px rgba(0,0,0,.8)}#banner span{display:block;color:#fff;font-size:17px;text-shadow:0 2px 6px #000;margin-top:4px}#banner .kw{color:#ffd76a}
 #banner.show{animation:bannerIn 2.4s ease-out}
 @keyframes bannerIn{0%{opacity:0;transform:translate(-50%,10px)}12%{opacity:1;transform:translate(-50%,0)}75%{opacity:1}100%{opacity:0}}
 .modal{position:fixed;inset:0;background:rgba(10,5,2,.72);display:grid;place-items:center;z-index:30;padding:16px}
@@ -225,7 +230,6 @@ const UNIQUE = {
   immortals: { name: "Immortals", icons: 'WW', text: "A wall with 2 durability that regains 1 durability on each of your turns (max 3).", wall: 2, kind: 'regen' },
   sasanian: { name: "Sasanian Elephants", icons: 'EE', text: "Destroy two structures and deal 2 damage.", steps: [{ raze: 1 }, { dmg: 1 }, { raze: 1 }, { dmg: 1 }] },
   urban: { name: "Urban's Bombard", icons: 'RR', text: "Destroy every structure of one opponent, then deal 1 damage.", steps: [{ raze: 9 }, { dmg: 1 }] },
-  janissary: { name: "Janissaries", icons: 'AAM', text: "Deal 2 damage and play another card.", steps: [{ dmg: 2 }, { plays: 1 }] },
   mansa: { name: "Mansa Musa's Pilgrimage", icons: 'GGG', text: "Gain 3 gold; your next hire this turn is free.", steps: [{ gold: 3 }, { buyFree: 1 }] },
   sankore: { name: "University of Sankore", icons: 'DDH', text: "Draw 2 cards and heal 1 HP.", steps: [{ draw: 2 }, { heal: 1 }] },
   lalibela: { name: "Churches of Lalibela", icons: 'WWW', text: "A wall with 3 durability; while it stands you heal 1 HP on each of your turns.", wall: 3, kind: 'sacred' },
@@ -264,39 +268,64 @@ const UNIQUE = {
   baray: { name: "Baray Reservoir", icons: 'HHG', text: "Heal 2 HP and gain 1 gold.", steps: [{ heal: 2 }, { gold: 1 }] },
   armoredel: { name: "Armored Elephants", icons: 'EE', text: "Destroy two structures and deal 2 damage.", steps: [{ raze: 1 }, { dmg: 1 }, { raze: 1 }, { dmg: 1 }] },
   cholafleet: { name: "Chola Fleet", icons: 'NF', text: "Deal 1 damage to every opponent, then steal 1 card.", steps: [{ dmg: 1, all: 1 }, { steal: 1 }] },
+  akinji: { name: "Akinji Raiders", icons: 'SK', text: "Steal 1 card, then cavalry: deal 2 damage (camels block it).", steps: [{ steal: 1 }, { dmg: 2, cav: 1 }] },
+  genitour: { name: "Genitours", icons: 'BGM', text: "Mounted javelins: deal 1 damage over the walls, gain 1 gold and play another card.", steps: [{ dmg: 1, pierce: 1 }, { gold: 1 }, { plays: 1 }] },
+  kasbah: { name: "Kasbah", icons: 'WWWG', text: "A citadel with 3 durability; gain 1 gold.", wall: 3, steps: [{ gold: 1 }] },
+  malacca: { name: "Strait of Malacca", icons: 'GG', text: "Tolls on the strait: take 1 gold from every opponent and gain 1 gold.", steps: [{ tribute: 1 }, { gold: 1 }] },
+  karambit: { name: "Karambit Warriors", icons: 'AADM', text: "Deal 2 damage, draw 1 card and play another card.", steps: [{ dmg: 2 }, { draw: 1 }, { plays: 1 }] },
+  wagenburg: { name: "Wagenburg", icons: 'BWW', text: "A wagon fort with 2 durability: whoever hits it takes 1 damage. Deal 1 damage over the walls.", wall: 2, kind: 'thorns', steps: [{ dmg: 1, pierce: 1 }] },
+  kutnahora: { name: "Silver of Kutná Hora", icons: 'GGD', text: "Gain 2 gold and draw 1 card.", steps: [{ gold: 2 }, { draw: 1 }] },
+  grunwald: { name: "Charge at Grunwald", icons: 'KAH', text: "Cavalry: deal 3 damage (camels block it); heal 1 HP.", steps: [{ dmg: 3, cav: 1 }, { heal: 1 }] },
+  szlachta: { name: "Szlachta Privileges", icons: 'GGH', text: "Gain 2 gold and heal 1 HP.", steps: [{ gold: 2 }, { heal: 1 }] },
+  leitis: { name: "Leitis", icons: 'KB', text: "Riders who cut through armour: deal 2 damage over the walls (camels block it).", steps: [{ dmg: 2, pierce: 1, cav: 1 }] },
+  hillforts: { name: "Hill Forts", icons: 'WWWD', text: "A fort with 3 durability; draw 1 card.", wall: 3, steps: [{ draw: 1 }] },
+  konnik: { name: "Konnik", icons: 'KA', text: "Cavalry: deal 2 damage (camels block it), then the rider fights on foot for 1 damage.", steps: [{ dmg: 2, cav: 1 }, { dmg: 1 }] },
+  krepost: { name: "Krepost", icons: 'WW', text: "A small fortress with 2 durability that regains 1 durability on each of your turns (max 3).", wall: 2, kind: 'regen' },
+  druzhina: { name: "Druzhina", icons: 'AAF', text: "Deal 2 damage to one opponent and 1 damage to every other opponent.", steps: [{ dmg: 2 }, { dmg: 1, others: 1 }] },
+  detinets: { name: "Detinets", icons: 'WWWH', text: "A stone citadel with 3 durability; heal 1 HP.", wall: 3, steps: [{ heal: 1 }] },
+  recurve: { name: "Recurve Bows", icons: 'BM', text: "Deal 1 damage over the walls to every opponent, then play another card.", steps: [{ dmg: 1, pierce: 1, all: 1 }, { plays: 1 }] },
+  blackarmy: { name: "Black Army", icons: 'G', text: "Matthias Corvinus pays his mercenaries: gain 1 gold; your next hire this turn is free.", steps: [{ gold: 1 }, { buyFree: 1 }] },
 };
 /* civs: hp2 (duel) and hp4 (3–4 players) come from tune.js (AI vs AI); deck = 24 cards; group only helps browsing */
 const CIVS = {
-  chinese: { name: "Chinese", group: "East Asia", color: '#b3261e', charge: 'sun', hp2: 14, hp4: 12, style: "Gunpowder, great walls, imperial exams", deck: 'A3 AA1 AM2 F3 FF1 W2 WW1 WH1 H2 HD1 DD1 G1 R1 AA1 C1 +greatwall +exam' },
-  japanese: { name: "Japanese", group: "East Asia", color: '#c0392b', charge: 'disc', hp2: 12, hp4: 14, style: "Samurai strikes, the Divine Wind shields", deck: 'A5 AA2 AM2 AAM1 K1 B2 W2 WH1 H2 HH1 D1 MD1 G1 +samurai +kamikaze' },
-  koreans: { name: "Koreans", group: "East Asia", color: '#2b6cb0', charge: 'knot', hp2: 15, hp4: 13, style: "Rocket carts, sturdy walls, card draw", deck: 'A3 AA3 AM2 F3 B2 W1 WW1 WH1 H2 HH1 D1 G1 R1 +hwacha +tripitaka' },
-  jurchens: { name: "Jurchens", group: "East Asia", color: '#3d4f5c', charge: 'axe', hp2: 9, hp4: 13, style: "Iron cavalry and thunder bombs", deck: 'A5 AA2 AM1 AAM1 K2 KM1 KK1 F1 W2 WH1 H2 D1 G1 R1 +ironcav +thunder' },
-  daiviet: { name: "Đại Việt", group: "Southeast Asia", color: '#b8860b', charge: 'star', hp2: 15, hp4: 14, style: "Crossbows, elephants, the Bạch Đằng stakes", deck: 'A4 AA2 AM1 AD1 B3 BB1 E2 W2 WW1 WH1 H2 HH1 D1 +stakes +proclaim' },
-  khmer: { name: "Khmer", group: "Southeast Asia", color: '#8a5a2b', charge: 'temple', hp2: 9, hp4: 12, style: "War elephants and Angkor Wat", deck: 'A4 AA1 AM1 E2 EA1 B1 W2 WW1 WH1 H2 HH1 D1 G2 C1 R1 +angkor +baray' },
-  indians: { name: "Indians", group: "South Asia", color: '#d97706', charge: 'wheel', hp2: 12, hp4: 12, style: "Armored elephants and the Chola fleet", deck: 'A4 AA2 AM1 E2 EA2 N1 L1 W2 WH1 H2 HH1 D1 C1 R1 +armoredel +cholafleet' },
-  arabs: { name: "Arabs", group: "Middle East & Africa", color: '#1f7a4d', charge: 'crescent', hp2: 10, hp4: 11, style: "Camels, caravans, medicine", deck: 'A4 AM1 L3 LG1 K1 W2 WH1 H2 HH2 HD1 C1 G1 GD1 S1 +caravan +baghdad' },
-  persians: { name: "Persians", group: "Middle East & Africa", color: '#6b2d8f', charge: 'sun', hp2: 13, hp4: 12, style: "Elephants, camels and the Immortals", deck: 'A4 AA1 AM1 E2 EA1 L2 K1 W2 WH1 H2 HH1 D1 G1 R1 C1 +immortals +sasanian' },
-  turks: { name: "Turks", group: "Middle East & Africa", color: '#a51c30', charge: 'crescent', hp2: 14, hp4: 12, style: "Great bombards, Janissaries, gunpowder", deck: 'A4 AA1 AM2 F2 FF1 L1 K1 W2 WH1 H2 D1 G2 R2 +urban +janissary' },
-  malians: { name: "Malians", group: "Middle East & Africa", color: '#c08a1e', charge: 'disc', hp2: 10, hp4: 11, style: "Gold, mercenaries, camels", deck: 'A4 AM2 L2 LG1 G2 GG1 W2 WH1 H2 HH1 D1 S1 K1 AA1 +mansa +sankore' },
-  ethiopians: { name: "Ethiopians", group: "Middle East & Africa", color: '#2f7d32', charge: 'cross', hp2: 14, hp4: 11, style: "Healing rock churches, Shotel warriors", deck: 'A5 AA1 AM1 E1 L1 B1 W2 WW1 WH1 H2 HH2 HD1 C1 D1 G1 +lalibela +shotel' },
-  mongols: { name: "Mongols", group: "Steppe", color: '#1f6f8b', charge: 'horse', hp2: 14, hp4: 14, style: "Relentless horse archers, feigned retreats", deck: 'A3 AM2 B3 BM3 K1 KM1 MD1 W1 WH1 H2 D1 S1 G1 R1 +arrowrain +feint' },
-  huns: { name: "Huns", group: "Steppe", color: '#7a3b12', charge: 'bow', hp2: 13, hp4: 14, style: "Ravage, plunder, horse archers", deck: 'A4 AA1 AM2 AAM1 B2 BM2 K1 KM1 S2 W1 WH1 H2 D1 R1 +scourge +aquileia' },
-  khitans: { name: "Khitans", group: "Steppe", color: '#4a6b3a', charge: 'bow', hp2: 11, hp4: 12, style: "Rich dual courts, nomad camps", deck: 'A4 AM1 B2 BM2 K2 KM1 W2 WH1 H2 HH1 D1 G2 R1 +twocourts +ordo' },
-  britons: { name: "Britons", group: "Europe", color: '#9b1c1c', charge: 'tower', hp2: 14, hp4: 14, style: "Longbows that shoot over walls", deck: 'A3 AM1 B4 BB2 AD1 K1 W2 WW1 WH1 H2 HH1 D1 G1 R1 +longbow +charter' },
-  celts: { name: "Celts", group: "Europe", color: '#1d6b45', charge: 'knot', hp2: 11, hp4: 15, style: "Frenzied infantry, ambushes", deck: 'A5 AA3 AM2 AAM1 AD1 AH1 W2 WH1 H2 HH1 D1 S1 R1 +woad +ambush' },
-  franks: { name: "Franks", group: "Europe", color: '#1f4e9c', charge: 'fleur', hp2: 9, hp4: 13, style: "Knights and castles", deck: 'A4 AA1 AM1 K3 KK1 KM1 W2 WW1 WH1 H2 HH1 C1 D1 G1 R1 +paladin +charlemagne' },
-  vikings: { name: "Vikings", group: "Europe", color: '#33506b', charge: 'ship', hp2: 11, hp4: 14, style: "Longship raids, berserkers", deck: 'A4 AA2 AM2 AAM1 N3 NM1 S1 W2 WH1 H2 HH1 D1 G1 +berserk +lindisfarne' },
-  teutons: { name: "Teutons", group: "Europe", color: '#2d2d2d', charge: 'cross', hp2: 14, hp4: 12, style: "Spiked walls, heavy knights", deck: 'A3 AA2 K2 KK1 W3 WW2 WWW1 WH1 H2 HH1 C1 D1 R1 G1 +teutonic +marienburg' },
-  goths: { name: "Goths", group: "Europe", color: '#5b4636', charge: 'axe', hp2: 11, hp4: 14, style: "Human waves, the Sack of Rome", deck: 'A5 AA2 AM3 AAM1 MM1 AD1 W2 WH1 H3 D1 S1 R1 +horde +sackrome' },
-  spanish: { name: "Spanish", group: "Europe", color: '#b45309', charge: 'tower', hp2: 13, hp4: 13, style: "Conquistadors, gold, Reconquista", deck: 'A3 AA1 AM1 AH1 K2 KM1 B1 W2 WW1 WH1 H2 C1 D1 G2 GD1 R1 +conquist +reconq' },
-  portuguese: { name: "Portuguese", group: "Europe", color: '#0e5e6f', charge: 'quinas', hp2: 10, hp4: 12, style: "Caravels and sea trade", deck: 'A3 AA1 AM2 N2 NM1 B1 W2 WH1 H2 HH1 D1 MD1 G2 BB1 FF1 +caravel +indiaroute' },
-  byzantines: { name: "Byzantines", group: "Europe", color: '#5b2a86', charge: 'cross', hp2: 15, hp4: 13, style: "Theodosian Walls, Greek fire, cataphracts", deck: 'A3 AA1 AM1 K2 W3 WW2 WH1 H2 HH2 HD1 C1 D1 G1 R1 +theodosius +greekfire' },
-  aztecs: { name: "Aztecs", group: "Americas", color: '#0f766e', charge: 'eagle', hp2: 10, hp4: 14, style: "Sacrifice and Eagle warriors", deck: 'A4 AA2 AM1 AAM1 Y3 YM1 B1 S1 W1 WH1 H2 HH1 D1 G1 C1 +sacrifice +flowerwar' },
-  mayans: { name: "Mayans", group: "Americas", color: '#2e7d5b', charge: 'pyramid', hp2: 9, hp4: 13, style: "Chichén Itzá and archers", deck: 'A4 AM1 Y2 B2 BB1 W2 WW1 WH1 H2 HH1 D1 DD1 G1 R1 C1 +chichen +calendar' },
-  incas: { name: "Incas", group: "Americas", color: '#c2410c', charge: 'sun', hp2: 15, hp4: 14, style: "Swift Inca roads, stone fortresses", deck: 'A3 AA2 AM2 MD1 B2 BB1 Y1 W2 WW1 WH1 H2 HH1 D1 S1 R1 +incaroad +sacsay' },
+  chinese: { name: "Chinese", group: "East Asia", color: '#b3261e', charge: 'sun', hp2: 15, hp4: 12, style: "Gunpowder, great walls, imperial exams", deck: 'A3 AA1 AM2 F3 FF1 W2 WW1 WH1 H2 HD1 DD1 G1 R1 AA1 C1 +greatwall +exam' },
+  japanese: { name: "Japanese", group: "East Asia", color: '#c0392b', charge: 'disc', hp2: 13, hp4: 14, style: "Samurai strikes, the Divine Wind shields", deck: 'A5 AA2 AM2 AAM1 K1 B2 W2 WH1 H2 HH1 D1 MD1 G1 +samurai +kamikaze' },
+  koreans: { name: "Koreans", group: "East Asia", color: '#2b6cb0', charge: 'knot', hp2: 18, hp4: 13, style: "Rocket carts, sturdy walls, card draw", deck: 'A3 AA3 AM2 F3 B2 W1 WW1 WH1 H2 HH1 D1 G1 R1 +hwacha +tripitaka' },
+  jurchens: { name: "Jurchens", group: "East Asia", color: '#3d4f5c', charge: 'axe', hp2: 10, hp4: 13, style: "Iron cavalry and thunder bombs", deck: 'A5 AA2 AM1 AAM1 K2 KM1 KK1 F1 W2 WH1 H2 D1 G1 R1 +ironcav +thunder' },
+  daiviet: { name: "Đại Việt", group: "Southeast Asia", color: '#b8860b', charge: 'star', hp2: 17, hp4: 13, style: "Crossbows, elephants, the Bạch Đằng stakes", deck: 'A4 AA2 AM1 AD1 B3 BB1 E2 W2 WW1 WH1 H2 HH1 D1 +stakes +proclaim' },
+  khmer: { name: "Khmer", group: "Southeast Asia", color: '#8a5a2b', charge: 'temple', hp2: 12, hp4: 13, style: "War elephants and Angkor Wat", deck: 'A4 AA1 AM1 E2 EA1 B1 W2 WW1 WH1 H2 HH1 D1 G2 C1 R1 +angkor +baray' },
+  indians: { name: "Indians", group: "South Asia", color: '#d97706', charge: 'wheel', hp2: 10, hp4: 11, style: "Armored elephants and the Chola fleet", deck: 'A4 AA2 AM1 E2 EA2 N1 L1 W2 WH1 H2 HH1 D1 C1 R1 +armoredel +cholafleet' },
+  arabs: { name: "Arabs", group: "Middle East & Africa", color: '#1f7a4d', charge: 'crescent', hp2: 11, hp4: 11, style: "Camels, caravans, medicine", deck: 'A4 AM1 L3 LG1 K1 W2 WH1 H2 HH2 HD1 C1 G1 GD1 S1 +caravan +baghdad' },
+  persians: { name: "Persians", group: "Middle East & Africa", color: '#6b2d8f', charge: 'sun', hp2: 11, hp4: 11, style: "Elephants, camels and the Immortals", deck: 'A4 AA1 AM1 E2 EA1 L2 K1 W2 WH1 H2 HH1 D1 G1 R1 C1 +immortals +sasanian' },
+  turks: { name: "Turks", group: "Middle East & Africa", color: '#a51c30', charge: 'crescent', hp2: 14, hp4: 13, style: "Great bombards, Janissaries, gunpowder", deck: 'A4 AA1 AM2 F2 FF1 L1 K1 W2 WH1 H2 D1 G2 R2 +urban +akinji' },
+  malians: { name: "Malians", group: "Middle East & Africa", color: '#c08a1e', charge: 'disc', hp2: 8, hp4: 9, style: "Gold, mercenaries, camels", deck: 'A4 AM2 L2 LG1 G2 GG1 W2 WH1 H2 HH1 D1 S1 K1 AA1 +mansa +sankore' },
+  ethiopians: { name: "Ethiopians", group: "Middle East & Africa", color: '#2f7d32', charge: 'cross', hp2: 15, hp4: 12, style: "Healing rock churches, Shotel warriors", deck: 'A5 AA1 AM1 E1 L1 B1 W2 WW1 WH1 H2 HH2 HD1 C1 D1 G1 +lalibela +shotel' },
+  mongols: { name: "Mongols", group: "Steppe", color: '#1f6f8b', charge: 'horse', hp2: 12, hp4: 14, style: "Relentless horse archers, feigned retreats", deck: 'A3 AM2 B3 BM3 K1 KM1 MD1 W1 WH1 H2 D1 S1 G1 R1 +arrowrain +feint' },
+  huns: { name: "Huns", group: "Steppe", color: '#7a3b12', charge: 'bow', hp2: 17, hp4: 15, style: "Ravage, plunder, horse archers", deck: 'A4 AA1 AM2 AAM1 B2 BM2 K1 KM1 S2 W1 WH1 H2 D1 R1 +scourge +aquileia' },
+  khitans: { name: "Khitans", group: "Steppe", color: '#4a6b3a', charge: 'bow', hp2: 10, hp4: 12, style: "Rich dual courts, nomad camps", deck: 'A4 AM1 B2 BM2 K2 KM1 W2 WH1 H2 HH1 D1 G2 R1 +twocourts +ordo' },
+  britons: { name: "Britons", group: "Europe", color: '#9b1c1c', charge: 'tower', hp2: 17, hp4: 15, style: "Longbows that shoot over walls", deck: 'A3 AM1 B4 BB2 AD1 K1 W2 WW1 WH1 H2 HH1 D1 G1 R1 +longbow +charter' },
+  celts: { name: "Celts", group: "Europe", color: '#1d6b45', charge: 'knot', hp2: 11, hp4: 14, style: "Frenzied infantry, ambushes", deck: 'A5 AA3 AM2 AAM1 AD1 AH1 W2 WH1 H2 HH1 D1 S1 R1 +woad +ambush' },
+  franks: { name: "Franks", group: "Europe", color: '#1f4e9c', charge: 'fleur', hp2: 12, hp4: 14, style: "Knights and castles", deck: 'A4 AA1 AM1 K3 KK1 KM1 W2 WW1 WH1 H2 HH1 C1 D1 G1 R1 +paladin +charlemagne' },
+  vikings: { name: "Vikings", group: "Europe", color: '#33506b', charge: 'ship', hp2: 13, hp4: 14, style: "Longship raids, berserkers", deck: 'A4 AA2 AM2 AAM1 N3 NM1 S1 W2 WH1 H2 HH1 D1 G1 +berserk +lindisfarne' },
+  teutons: { name: "Teutons", group: "Europe", color: '#2d2d2d', charge: 'cross', hp2: 17, hp4: 13, style: "Spiked walls, heavy knights", deck: 'A3 AA2 K2 KK1 W3 WW2 WWW1 WH1 H2 HH1 C1 D1 R1 G1 +teutonic +marienburg' },
+  goths: { name: "Goths", group: "Europe", color: '#5b4636', charge: 'axe', hp2: 11, hp4: 13, style: "Human waves, the Sack of Rome", deck: 'A5 AA2 AM3 AAM1 MM1 AD1 W2 WH1 H3 D1 S1 R1 +horde +sackrome' },
+  spanish: { name: "Spanish", group: "Europe", color: '#b45309', charge: 'tower', hp2: 11, hp4: 12, style: "Conquistadors, gold, Reconquista", deck: 'A3 AA1 AM1 AH1 K2 KM1 B1 W2 WW1 WH1 H2 C1 D1 G2 GD1 R1 +conquist +reconq' },
+  portuguese: { name: "Portuguese", group: "Europe", color: '#0e5e6f', charge: 'quinas', hp2: 12, hp4: 12, style: "Caravels and sea trade", deck: 'A3 AA1 AM2 N2 NM1 B1 W2 WH1 H2 HH1 D1 MD1 G2 BB1 FF1 +caravel +indiaroute' },
+  byzantines: { name: "Byzantines", group: "Europe", color: '#5b2a86', charge: 'cross', hp2: 13, hp4: 12, style: "Theodosian Walls, Greek fire, cataphracts", deck: 'A3 AA1 AM1 K2 W3 WW2 WH1 H2 HH2 HD1 C1 D1 G1 R1 +theodosius +greekfire' },
+  aztecs: { name: "Aztecs", group: "Americas", color: '#0f766e', charge: 'eagle', hp2: 9, hp4: 13, style: "Sacrifice and Eagle warriors", deck: 'A4 AA2 AM1 AAM1 Y3 YM1 B1 S1 W1 WH1 H2 HH1 D1 G1 C1 +sacrifice +flowerwar' },
+  mayans: { name: "Mayans", group: "Americas", color: '#2e7d5b', charge: 'pyramid', hp2: 12, hp4: 13, style: "Chichén Itzá and archers", deck: 'A4 AM1 Y2 B2 BB1 W2 WW1 WH1 H2 HH1 D1 DD1 G1 R1 C1 +chichen +calendar' },
+  incas: { name: "Incas", group: "Americas", color: '#c2410c', charge: 'sun', hp2: 13, hp4: 13, style: "Swift Inca roads, stone fortresses", deck: 'A3 AA2 AM2 MD1 B2 BB1 Y1 W2 WW1 WH1 H2 HH1 D1 S1 R1 +incaroad +sacsay' },
+  berbers: { name: "Berbers", group: "Middle East & Africa", color: '#a6763f', charge: 'palm', hp2: 9, hp4: 10, style: "Desert camel raiders, fast and elusive", deck: 'A2 AM2 L3 LG1 K1 KM1 B2 W2 WH1 H2 HH1 D1 G1 S1 R1 +genitour +kasbah' },
+  malay: { name: "Malay", group: "Southeast Asia", color: '#9c2a6f', charge: 'kris', hp2: 10, hp4: 12, style: "Masters of the straits: fleets, trade tolls, swarming infantry", deck: 'A3 AA1 AM2 AAM1 N2 NM1 E1 W2 WH1 H2 HH1 D1 G2 S1 R1 +malacca +karambit' },
+  bohemians: { name: "Bohemians", group: "Eastern Europe", color: '#5a6e8c', charge: 'chalice', hp2: 17, hp4: 13, style: "Hussite wagon forts and early gunpowder", deck: 'A3 AA2 AM1 F1 BB1 B2 W2 WW1 WH1 H2 HH1 D1 G2 R1 C1 +wagenburg +kutnahora' },
+  poles: { name: "Poles", group: "Eastern Europe", color: '#d22f45', charge: 'eagle', hp2: 9, hp4: 12, style: "Heavy cavalry and noble privileges", deck: 'A4 AA1 AM1 K2 KK1 KM1 W2 WW1 WH1 H2 HH1 D1 G2 R1 C1 +grunwald +szlachta' },
+  lithuanians: { name: "Lithuanians", group: "Eastern Europe", color: '#5b8c1a', charge: 'columns', hp2: 12, hp4: 14, style: "Armour-piercing riders and hill forts", deck: 'A4 AA1 AM1 K2 KM2 B1 W2 WW1 WH1 H2 HH1 D1 G1 S1 R1 +leitis +hillforts' },
+  bulgarians: { name: "Bulgarians", group: "Eastern Europe", color: '#3c7a64', charge: 'crown', hp2: 11, hp4: 14, style: "Konnik riders and small fortresses", deck: 'A4 AA2 AM1 AAM1 K2 KM1 W2 WW1 WH1 H2 HH1 D1 G1 S1 R1 +konnik +krepost' },
+  slavs: { name: "Slavs", group: "Eastern Europe", color: '#8b2a1a', charge: 'trident', hp2: 11, hp4: 12, style: "Boyars, druzhina and stone citadels of the Rus", deck: 'A4 AA1 AM1 K2 KK1 KM1 W2 WW1 WH1 H2 HH1 C2 D1 G1 R1 +druzhina +detinets' },
+  magyars: { name: "Magyars", group: "Eastern Europe", color: '#b5452c', charge: 'doublecross', hp2: 10, hp4: 12, style: "Hussars, recurve bows and the Black Army", deck: 'A3 AM2 K2 KM2 B2 BM2 W1 WH1 H2 HH1 D1 G1 S1 R1 +recurve +blackarmy' },
 };
 const CIV_ORDER = Object.keys(CIVS);
-const GROUPS = ['East Asia', 'Southeast Asia', 'South Asia', 'Middle East & Africa', 'Steppe', 'Europe', 'Americas'];
+const GROUPS = ['East Asia', 'Southeast Asia', 'South Asia', 'Middle East & Africa', 'Steppe', 'Europe', 'Eastern Europe', 'Americas'];
 /* the mercenary market: neutral cards anyone can hire with gold */
 const MERCS = [
   { id: 'genoa', name: "Genoese Crossbowmen", icons: 'BBM', cost: 2, n: 2 },
@@ -344,6 +373,49 @@ const RELICS = {
 };
 const RELIC_IDS = Object.keys(RELICS);
 
+/* ── Imperial Age: one age-up per game, the same for everyone.
+   At the start of your RULES.ageTurn-th turn an "Imperial Age" card is put into your hand. Playing it costs your
+   play for that turn (no gold): your civ's Imperial cards are shuffled into your deck (or one goes straight to
+   your hand) and your civ's age-up bonus resolves. The card can't be stolen, discarded or passed. ── */
+const RULES = { ageTurn: 5 };
+const IMPERIAL = {
+  chinese:    { bonus: { text: 'Bonus: draw 2 cards.', steps: [{ draw: 2 }] }, cards: [{ name: 'Chu Ko Nu', icons: 'BBA' }, { name: 'Fire Arrow Rockets', icons: 'FFM' }, { name: 'Forbidden City', icons: 'WWWH' }] },
+  japanese:   { bonus: { text: 'Bonus: Kensei goes straight to your hand.', fetch: 0 }, cards: [{ name: 'Kensei', icons: 'AAA', text: 'Deal 3 damage, or 4 damage if the opponent has no walls.', steps: [{ dmg: 3, samurai: 1 }] }, { name: 'Atakebune', icons: 'NFA' }, { name: 'Yumi Archers', icons: 'BBM' }] },
+  koreans:    { bonus: { text: 'Bonus: Singijeon goes straight to your hand.', fetch: 0 }, cards: [{ name: 'Singijeon', icons: 'FFF' }, { name: 'War Wagons', icons: 'BWW' }, { name: 'Chongtong Cannons', icons: 'RFA' }] },
+  jurchens:   { bonus: { text: 'Bonus: thunder bombs deal 1 damage to every opponent.', steps: [{ dmg: 1, all: 1 }] }, cards: [{ name: 'Grenadiers', icons: 'FFA' }, { name: 'Fire Lancers', icons: 'KF' }, { name: 'Elite Iron Pagoda', icons: 'KKA', text: 'Deal 5 damage. Camels block it.', steps: [{ dmg: 5, cav: 1 }] }] },
+  daiviet:    { bonus: { text: 'Bonus: set the Bạch Đằng stakes: until your next turn, the first opponent who damages you takes 2 damage.', steps: [{ token: 'trap' }] }, cards: [{ name: 'Thần Cơ Hand Cannons', icons: 'FBA' }, { name: 'Rattan Archers', icons: 'BBW' }, { name: 'Elephant Corps', icons: 'EEA' }] },
+  khmer:      { bonus: { text: 'No bonus.' }, cards: [{ name: 'Ballista Elephants', icons: 'EEB' }, { name: 'Angkor Thom', icons: 'WWWW', wall: 4, kind: 'sacred', text: 'A wall with 4 durability; while it stands you heal 1 HP on each of your turns.', steps: [] }, { name: 'Naga Fleet', icons: 'NNM' }] },
+  indians:    { bonus: { text: 'Bonus: gain 2 gold.', steps: [{ gold: 2 }] }, cards: [{ name: 'Urumi Swordsmen', icons: 'AAAM' }, { name: 'Imperial Camels', icons: 'LLA' }, { name: 'Thirisadai', icons: 'NNF' }] },
+  arabs:      { bonus: { text: 'Bonus: Mamluks go straight to your hand.', fetch: 0 }, cards: [{ name: 'Mamluks', icons: 'LKA' }, { name: 'House of Wisdom', icons: 'DDHH' }, { name: 'Counterweight Trebuchet', icons: 'RRA' }] },
+  persians:   { bonus: { text: 'Bonus: gain 2 gold.', steps: [{ gold: 2 }] }, cards: [{ name: 'Elite War Elephants', icons: 'EEA' }, { name: 'Savar Cavalry', icons: 'KKH' }, { name: 'Kamandaran', icons: 'BBG' }] },
+  turks:      { bonus: { text: 'Bonus: Janissaries go straight to your hand.', fetch: 0 }, cards: [{ name: 'Janissaries', icons: 'AAFM', text: 'Deal 2 damage, deal 1 damage to every opponent, then play another card.', steps: [{ dmg: 2 }, { dmg: 1, all: 1 }, { plays: 1 }] }, { name: 'Great Bombards', icons: 'RRF' }, { name: 'Sipahis', icons: 'KKM' }] },
+  malians:    { bonus: { text: 'Bonus: gain 3 gold.', steps: [{ gold: 3 }] }, cards: [{ name: 'Gbeto Warriors', icons: 'BAAM' }, { name: 'Farimba Cavalry', icons: 'KKA' }, { name: 'Libraries of Timbuktu', icons: 'DDDH' }] },
+  ethiopians: { bonus: { text: 'Bonus: heal 3 HP.', steps: [{ heal: 3 }] }, cards: [{ name: 'Elite Shotel Warriors', icons: 'AAAM' }, { name: 'Torsion Engines', icons: 'RRF' }, { name: 'Royal Heirs', icons: 'DDM' }] },
+  mongols:    { bonus: { text: 'Bonus: play another card.', steps: [{ plays: 1 }] }, cards: [{ name: 'Elite Mangudai', icons: 'BBBM' }, { name: 'Steppe Lancers', icons: 'KKM' }, { name: 'Siege Drill', icons: 'RRA' }] },
+  huns:       { bonus: { text: 'Bonus: every opponent discards a random card.', steps: [{ discard: 1, all: 1 }] }, cards: [{ name: 'Tarkans', icons: 'KRR' }, { name: 'Elite Horse Archers', icons: 'BBM' }, { name: 'Marauders', icons: 'SSA' }] },
+  khitans:    { bonus: { text: 'Bonus: gain 2 gold and draw 1 card.', steps: [{ gold: 2 }, { draw: 1 }] }, cards: [{ name: 'Liao Dao', icons: 'AAAH' }, { name: 'Mounted Trebuchets', icons: 'RRM' }, { name: 'Ordo Cavalry', icons: 'KBM' }] },
+  britons:    { bonus: { text: 'Bonus: Elite Longbowmen go straight to your hand.', fetch: 0 }, cards: [{ name: 'Elite Longbowmen', icons: 'BBB', text: 'Deal 3 damage over the walls.', steps: [{ dmg: 3, pierce: 1 }] }, { name: 'Warwolf Trebuchet', icons: 'RRA' }, { name: 'Yeomen', icons: 'BBD' }] },
+  celts:      { bonus: { text: 'Bonus: draw 1 card and play another card.', steps: [{ draw: 1 }, { plays: 1 }] }, cards: [{ name: 'Elite Woad Raiders', icons: 'AAAM' }, { name: 'Siege Onagers', icons: 'RRF' }, { name: 'Highland Clans', icons: 'AAH' }] },
+  franks:     { bonus: { text: 'Bonus: heal 1 HP; your structures gain 1 durability.', steps: [{ heal: 1 }, { fortify: 1 }] }, cards: [{ name: 'Paladin Charge', icons: 'KKA', text: 'Deal 5 damage. Camels block it.', steps: [{ dmg: 5, cav: 1 }] }, { name: 'Throwing Axemen', icons: 'AAB' }, { name: 'Castle Keep', icons: 'WWWW' }] },
+  vikings:    { bonus: { text: 'Bonus: steal 1 card from every opponent.', steps: [{ steal: 1, all: 1 }] }, cards: [{ name: 'Elite Berserkers', icons: 'AAAH' }, { name: 'Longboat Fleet', icons: 'NNF' }, { name: 'Chieftains', icons: 'SSM' }] },
+  teutons:    { bonus: { text: 'No bonus.' }, cards: [{ name: 'Elite Teutonic Knights', icons: 'KWWW', wall: 3, kind: 'thorns', text: 'Deal 2 damage (camels block it); stays in play as a spiked wall with 3 durability.', steps: [{ dmg: 2, cav: 1 }] }, { name: 'Elite Halberdiers', icons: 'AAAW' }, { name: 'Ironclad Rams', icons: 'RRW' }] },
+  goths:      { bonus: { text: 'Bonus: play 2 more cards.', steps: [{ plays: 2 }] }, cards: [{ name: 'Huskarls', icons: 'AAAB' }, { name: 'Perfusion', icons: 'AAMM' }, { name: 'Sack of the Imperial City', icons: 'RSA' }] },
+  spanish:    { bonus: { text: 'Bonus: gain 2 gold.', steps: [{ gold: 2 }] }, cards: [{ name: 'Treasure Fleet', icons: 'GGGD' }, { name: 'Jinetes', icons: 'KKM' }, { name: 'Missionaries', icons: 'CHH' }] },
+  portuguese: { bonus: { text: 'Bonus: the Carrack goes straight to your hand.', fetch: 0 }, cards: [{ name: 'Carrack', icons: 'NNF' }, { name: 'Feitoria', icons: 'WWG', wall: 2, kind: 'income', text: 'A trading post with 2 durability; while it stands you gain 1 gold on each of your turns.', steps: [] }, { name: 'Organ Gun', icons: 'FFA' }] },
+  byzantines: { bonus: { text: 'Bonus: heal 2 HP.', steps: [{ heal: 2 }] }, cards: [{ name: 'Cataphracts', icons: 'KKH' }, { name: 'Dromon Fleet', icons: 'FFM' }, { name: 'Varangian Axemen', icons: 'AAAW' }] },
+  aztecs:     { bonus: { text: 'Bonus: sacrifice 1 HP to draw 2 cards and play another card.', steps: [{ self: 1 }, { draw: 2 }, { plays: 1 }] }, cards: [{ name: 'Jaguar Warriors', icons: 'AAAY' }, { name: 'Elite Eagle Warriors', icons: 'YYM' }, { name: 'Garland Wars', icons: 'AAS' }] },
+  mayans:     { bonus: { text: 'No bonus.' }, cards: [{ name: 'Plumed Archers', icons: 'BBY' }, { name: 'El Dorado', icons: 'HHHW' }, { name: 'Obsidian Arrows', icons: 'BBBM' }] },
+  incas:      { bonus: { text: 'Bonus: heal 2 HP and gain 1 gold.', steps: [{ heal: 2 }, { gold: 1 }] }, cards: [{ name: 'Kamayuks', icons: 'KAA' }, { name: 'Slingers', icons: 'BBA' }, { name: 'Fabric Shields', icons: 'WWWH' }] },
+  berbers:    { bonus: { text: 'Bonus: gain 1 gold and play another card.', steps: [{ gold: 1 }, { plays: 1 }] }, cards: [{ name: 'Camel Archers', icons: 'LBB' }, { name: 'Elite Genitours', icons: 'BBM' }, { name: 'Almoravid Fleet', icons: 'NNA' }] },
+  malay:       { bonus: { text: 'Bonus: the Jong Fleet goes straight to your hand.', fetch: 0 }, cards: [{ name: 'Jong Fleet', icons: 'NNF' }, { name: 'Elite Karambit Warriors', icons: 'AAAM' }, { name: 'Majapahit Elephants', icons: 'EEA' }] },
+  bohemians:   { bonus: { text: 'Bonus: wagenburg tactics: your structures gain 1 durability and you draw 1 card.', steps: [{ fortify: 1 }, { draw: 1 }] }, cards: [{ name: 'Houfnice', icons: 'RRF' }, { name: 'Píšťala Handgunners', icons: 'BBA' }, { name: "Žižka's Wagon Column", icons: 'BBWW' }] },
+  poles:       { bonus: { text: 'Bonus: gain 2 gold.', steps: [{ gold: 2 }] }, cards: [{ name: 'Winged Hussars', icons: 'KKM' }, { name: 'Obuch Guards', icons: 'RAA' }, { name: 'Folwark Estates', icons: 'WWG', wall: 2, kind: 'income', text: 'Farmsteads with 2 durability; while they stand you gain 1 gold on each of your turns.', steps: [] }] },
+  lithuanians: { bonus: { text: 'Bonus: heal 2 HP and draw 1 card.', steps: [{ heal: 2 }, { draw: 1 }] }, cards: [{ name: 'Elite Leitis', icons: 'KBA', text: 'Deal 3 damage over the walls (camels block it).', steps: [{ dmg: 3, pierce: 1, cav: 1 }] }, { name: 'Tower Shields', icons: 'AAWW' }, { name: "Vytautas' Host", icons: 'KKM' }] },
+  bulgarians:  { bonus: { text: 'Bonus: play another card.', steps: [{ plays: 1 }] }, cards: [{ name: 'Elite Konniks', icons: 'KAA', text: 'Cavalry: deal 3 damage (camels block it), then the riders fight on foot for 1 damage.', steps: [{ dmg: 3, cav: 1 }, { dmg: 1 }] }, { name: "Krum's Victory", icons: 'RHH' }, { name: 'Stirrup Lancers', icons: 'KKM' }] },
+  slavs:       { bonus: { text: 'Bonus: heal 2 HP.', steps: [{ heal: 2 }] }, cards: [{ name: 'Elite Boyars', icons: 'KKW' }, { name: 'Orthodoxy', icons: 'CHH' }, { name: 'Route to the Greeks', icons: 'GGDM' }] },
+  magyars:     { bonus: { text: 'Bonus: gain 2 gold.', steps: [{ gold: 2 }] }, cards: [{ name: 'Corvinian Hussars', icons: 'KKA' }, { name: 'Recurve Archers', icons: 'BBM' }, { name: 'Black Army Veterans', icons: 'AAAM' }] },
+};
+
 /* ── Engine: draw 1, play 1; symbols do the rest ── */
 function cardFromIcons(icons) {
   const steps = []; let wall = 0;
@@ -376,7 +448,7 @@ function buildMercs(S) {
 function newPlayer(S, civ, id, ai) {
   const hp = S.duel ? CIVS[civ].hp2 : CIVS[civ].hp4;
   return { id, civ, ai: !!ai, hp, maxHP: hp, deck: shuffled(S, buildDeck(S, civ)), hand: [], discard: [], structs: [], gold: 0, relic: null, relicOffer: null,
-    tokens: { camel: 0, immune: false, trap: false }, alive: true, hich: false, bannerUsed: false, shroudRound: 0, stats: { dmg: 0, played: 0, bought: 0, kills: 0 } };
+    tokens: { camel: 0, immune: false, trap: false }, alive: true, turns: 0, aged: false, ageGiven: false, hich: false, bannerUsed: false, shroudRound: 0, stats: { dmg: 0, played: 0, bought: 0, kills: 0 } };
 }
 function newGame(o) {
   const S = { v: 1, seed: o.seed >>> 0, rs: o.seed >>> 0, nextUid: 1, players: [], turn: 0, round: 1, plays: 0, flags: {}, mod: {}, event: null, eventNext: null, eventDeck: [], mercs: [], market: [], log: [], winner: null, started: false };
@@ -479,7 +551,7 @@ const needsTarget = card => card.steps.some(stepNeedsTarget);
 function resolveStep(S, A, s, T, ev) {
   if (!A.alive) return;
   if (s.dmg) {
-    const xs = s.all ? opponents(S, A) : (T && T.alive ? [T] : []);
+    const xs = s.all ? opponents(S, A) : s.others ? opponents(S, A).filter(X => X !== T) : (T && T.alive ? [T] : []);
     for (const X of xs) {
       let n = s.dmg;
       if (s.basic && S.mod.crusade) n++;
@@ -494,15 +566,17 @@ function resolveStep(S, A, s, T, ev) {
   if (s.draw) draw(S, A, s.draw);
   if (s.gold) { A.gold += s.gold; ev.fx.push({ k: 'gold', t: A.id, n: s.gold }); }
   if (s.raze) for (let k = 0; k < s.raze; k++) { if (!T || (!T.structs.length)) break; razeOne(S, A, T, ev); }
-  if (s.steal) for (const X of (s.all ? opponents(S, A) : T ? [T] : [])) for (let k = 0; k < s.steal; k++) { if (!X.hand.length) break; const c = X.hand.splice(Math.floor(rnd(S) * X.hand.length), 1)[0]; A.hand.push(c); ev.fx.push({ k: 'steal', t: X.id, by: A.id }); }
+  if (s.steal) for (const X of (s.all ? opponents(S, A) : T ? [T] : [])) for (let k = 0; k < s.steal; k++) { const c = takeRandom(S, X); if (!c) break; A.hand.push(c); ev.fx.push({ k: 'steal', t: X.id, by: A.id }); }
   if (s.convert && T) { const ws = walls(T).sort((a, b) => b.dur - a.dur); if (ws.length) { const w = ws[0]; T.structs = T.structs.filter(x => x !== w); A.structs.push(w); ev.fx.push({ k: 'convert', t: T.id, by: A.id, name: w.card.name }); } }
   if (s.token === 'camel') A.tokens.camel++;
   if (s.token === 'immune') A.tokens.immune = true;
   if (s.token === 'trap') A.tokens.trap = true;
   if (s.self) loseHP(S, A, s.self, ev, null);
-  if (s.discard) for (const X of opponents(S, A)) if (X.hand.length) { X.discard.push(X.hand.splice(Math.floor(rnd(S) * X.hand.length), 1)[0]); ev.fx.push({ k: 'discard', t: X.id }); }
+  if (s.discard) for (const X of opponents(S, A)) { const c = takeRandom(S, X); if (c) { X.discard.push(c); ev.fx.push({ k: 'discard', t: X.id }); } }
+  if (s.tribute) for (const X of opponents(S, A)) if (X.gold > 0) { X.gold--; A.gold++; ev.fx.push({ k: 'gold', t: A.id, n: 1 }); ev.fx.push({ k: 'tribute', t: X.id }); }
+  if (s.ageup) ageUp(S, A, ev);
   if (s.buyFree) S.flags.buyFree = true;
-  if (s.fortify) for (const w of walls(A)) w.dur++;
+  if (s.fortify) for (const w of walls(A)) w.dur += s.fortify;
 }
 function playCard(S, pid, uid, tid) {
   if (S.winner != null || S.turn !== pid || S.plays <= 0) return null;
@@ -518,7 +592,7 @@ function playCard(S, pid, uid, tid) {
     if (S.mod.monsoon) { A.discard.push(card); ev.fx.push({ k: 'rained', t: A.id }); }
     else if (card.wonder) { const dur = 3 + opponents(S, A).length; A.structs.push({ card, kind: 'wonder', dur, cap: dur, age: 0 }); }
     else { const dur = card.wall + (A.relic === 'scone' ? 1 : 0); A.structs.push({ card, kind: card.kind || 'wall', dur, cap: dur + 1 }); }
-  } else A.discard.push(card);
+  } else if (!card.age) A.discard.push(card);
   log(S, 'play', { pid, card: card.name, target: ev.target, fx: ev.fx.slice(0, 12) });
   checkWinner(S);
   return ev;
@@ -553,10 +627,13 @@ function beginTurn(S, first) {
     if (st.kind === 'wonder') { st.age++; if (st.age >= 3) { S.winner = P.id; S.wonderWin = true; log(S, 'wonder', { pid: P.id, name: st.card.name }); return; } }
     if (st.kind === 'regen' && st.dur < st.cap) st.dur++;
     if (st.kind === 'sacred') heal(S, P, 1);
+    if (st.kind === 'income') P.gold++;
   }
   if (P.relic === 'mint') P.gold++;
   if (!first) draw(S, P, P.hand.length ? 1 : 2);
   if (P.relic === 'compass' && P.hand.length <= 1) draw(S, P, 1);
+  P.turns++;
+  if (!P.ageGiven && P.turns >= RULES.ageTurn && IMPERIAL[P.civ]) { P.ageGiven = true; P.hand.push(makeAgeCard(S, P)); log(S, 'agecard', { pid: P.id }); }
   checkWinner(S);
 }
 function endTurn(S) {
@@ -585,8 +662,8 @@ function startRound(S) {
     case 'revolt': { const top = Math.max(...alive.map(p => p.hp)); for (const P of alive) if (P.hp === top) loseHP(S, P, 1, ev, null); break; }
     case 'crusade': S.mod.crusade = true; break;
     case 'monsoon': S.mod.monsoon = true; break;
-    case 'flood': for (const P of alive) if (P.hand.length) P.discard.push(P.hand.splice(Math.floor(rnd(S) * P.hand.length), 1)[0]); break;
-    case 'eclipse': { const gifts = alive.map(P => P.hand.length ? P.hand.splice(Math.floor(rnd(S) * P.hand.length), 1)[0] : null); alive.forEach((P, k) => { const g = gifts[(k - 1 + alive.length) % alive.length]; if (g) P.hand.push(g); }); break; }
+    case 'flood': for (const P of alive) { const c = takeRandom(S, P); if (c) P.discard.push(c); } break;
+    case 'eclipse': { const gifts = alive.map(P => takeRandom(S, P)); alive.forEach((P, k) => { const g = gifts[(k - 1 + alive.length) % alive.length]; if (g) P.hand.push(g); }); break; }
     case 'bells': { const low = Math.min(...alive.map(p => p.hp)); for (const P of alive) if (P.hp === low) heal(S, P, 2); break; }
   }
   log(S, 'event', { id: S.event, fx: ev.fx });
@@ -612,6 +689,26 @@ function cardText(card) {
   return parts.join(' ');
 }
 
+/* ── Imperial Age ── */
+function takeRandom(S, X) { const loose = X.hand.filter(c => !c.bound); if (!loose.length) return null; const c = loose[Math.floor(rnd(S) * loose.length)]; X.hand.splice(X.hand.indexOf(c), 1); return c; }
+function imperialCards(S, civ) {
+  return IMPERIAL[civ].cards.map(d => {
+    const c = d.steps ? { steps: d.steps.map(s => ({ ...s })), wall: d.wall || 0 } : cardFromIcons(d.icons);
+    return makeCard(S, { name: d.name, icons: d.icons, text: d.text, civ, imperial: true, steps: c.steps, wall: d.wall != null ? d.wall : c.wall, kind: d.kind || null });
+  });
+}
+function ageText(civ) { const I = IMPERIAL[civ]; return `Advance to the Imperial Age: your ${I.cards.length} Imperial cards join your deck. ${I.bonus.text}`; }
+function makeAgeCard(S, P) { return makeCard(S, { name: 'Imperial Age', icons: '', civ: P.civ, age: true, bound: true, steps: [{ ageup: 1 }], wall: 0, text: ageText(P.civ) }); }
+function ageUp(S, A, ev) {
+  if (A.aged) return;
+  A.aged = true; A.agedRound = S.round;
+  const I = IMPERIAL[A.civ];
+  imperialCards(S, A.civ).forEach((c, i) => { if (I.bonus.fetch === i) A.hand.push(c); else A.deck.splice(Math.floor(rnd(S) * (A.deck.length + 1)), 0, c); });
+  ev.fx.push({ k: 'age', t: A.id });
+  for (const s of I.bonus.steps || []) resolveStep(S, A, { ...s }, null, ev);
+  log(S, 'aged', { pid: A.id });
+}
+
 /* ── AI: one-ply card evaluation with sensible targeting ── */
 function strength(X) { return (X.hp / X.maxHP) * 10 + wallTotal(X) * 0.6 + (wonderOf(X) ? 5 : 0); }
 function threatOf(S, P, X, leader) {
@@ -623,14 +720,23 @@ function threatOf(S, P, X, leader) {
   const W = wonderOf(X); if (W) t *= 1.6;
   return t;
 }
+const AI_AGE = { base: 4 };
+function ageValue(S, P) {
+  if (P.aged) return -5;
+  if (P.agePolicy === 'never') return -100;
+  if (P.agePolicy === 'asap') return 100;
+  const I = IMPERIAL[P.civ];
+  return AI_AGE.base + (I.bonus.steps ? cardValue(S, P, { steps: I.bonus.steps, wall: 0 }, null) : 0) + (I.bonus.fetch != null ? 1.2 : 0);
+}
 function cardValue(S, P, card, T) {
+  if (card.age) return ageValue(S, P);
   const opp = opponents(S, P);
   if (!opp.length) return 0;
   const leader = opp.reduce((a, b) => (b.hp + wallTotal(b) > a.hp + wallTotal(a) ? b : a));
   let v = 0;
   for (const s of card.steps) {
     if (s.dmg) {
-      const xs = s.all ? opp : T ? [T] : [];
+      const xs = s.all ? opp : s.others ? opp.filter(X => X !== T) : T ? [T] : [];
       for (const X of xs) {
         let n = s.dmg + (s.basic && S.mod.crusade ? 1 : 0) + ((s.samurai || s.eagle) && !hasWalls(X) ? 1 : 0) + (P.relic === 'horn' && P.hp <= 4 ? 1 : 0) + (P.relic === 'joyeuse' && !S.flags.joy ? 1 : 0);
         if (X.tokens.immune) continue;
@@ -649,7 +755,8 @@ function cardValue(S, P, card, T) {
     if (s.draw) v += 0.6 * s.draw * (P.hand.length > 5 ? 0.4 : 1);
     if (s.gold) { const cheap = Math.min(...S.market.filter(Boolean).map(c => marketCost(S, P, c)), 9); v += 0.45 * s.gold + (P.gold < cheap && P.gold + s.gold >= cheap ? 0.4 : 0); }
     if (s.raze && T) { const W = wonderOf(T); if (W) v += 9 * s.raze; else { const ws = walls(T).sort((a, b) => b.dur - a.dur); v += ws.length ? ws.slice(0, s.raze).reduce((a, w) => a + 0.75 * w.dur, 0) : -0.2; } }
-    if (s.steal) for (const X of (s.all ? opp : T ? [T] : [])) v += Math.min(s.steal, X.hand.length) * 0.8;
+    if (s.steal) for (const X of (s.all ? opp : T ? [T] : [])) v += Math.min(s.steal, X.hand.filter(c => !c.bound).length) * 0.8;
+    if (s.tribute) v += 0.8 * opp.filter(X => X.gold > 0).length;
     if (s.convert && T) { const ws = walls(T).sort((a, b) => b.dur - a.dur); v += ws.length ? 1.3 * ws[0].dur : -0.2; }
     if (s.token === 'camel') v += opp.some(X => /K/.test(CIVS[X.civ].deck)) ? 0.8 : 0.35;
     if (s.token === 'immune') v += 1.3 + (P.hp <= 4 ? 2 : 0);
@@ -657,9 +764,9 @@ function cardValue(S, P, card, T) {
     if (s.self) v -= s.self * (P.hp <= 3 ? 3 : P.hp <= 5 ? 1.5 : 0.8);
     if (s.discard) v += 0.5 * opp.filter(X => X.hand.length).length;
     if (s.buyFree) v += S.market.some(c => c && c.cost >= 2) ? 1.3 : 0.3;
-    if (s.fortify) v += 0.6 * walls(P).length;
+    if (s.fortify) v += 0.6 * s.fortify * walls(P).length;
   }
-  if (card.wall && !S.mod.monsoon) v += card.wall * 0.8 * (walls(P).length >= 3 ? 0.6 : 1) + ({ regen: 0.8, sacred: 1.6, thorns: 0.7, fortress: 0.6 }[card.kind] || 0);
+  if (card.wall && !S.mod.monsoon) v += card.wall * 0.8 * (walls(P).length >= 3 ? 0.6 : 1) + ({ regen: 0.8, sacred: 1.6, thorns: 0.7, fortress: 0.6, income: 1.4 }[card.kind] || 0);
   if (card.wonder && !S.mod.monsoon) v += wonderOf(P) ? -1 : 4 - opp.length * 0.5;
   // answer an enemy wonder before anything else
   if (opp.some(X => wonderOf(X)) && !card.steps.some(s => s.raze)) v -= 2;
@@ -747,6 +854,13 @@ const CHARGES = {
   quinas: [[20, 11], [15, 17], [20, 17], [25, 17], [20, 23]].map(([x, y]) => `<circle cx="${x}" cy="${y}" r="2.4" fill="#f2e6c9"/>`).join(''),
   eagle: '<path d="M10 14l7 1.6L20 10l3 5.6 7-1.6-4.8 5 1.2 4.8-6.4-2.8-6.4 2.8 1.2-4.8z" fill="#f2e6c9"/>',
   pyramid: '<path d="M10 27h20M12 27l3-4h10l3 4M15 23l2-4h6l2 4M17 19l2-4h2l2 4" fill="none" stroke="#f2e6c9" stroke-width="1.6"/>',
+  palm: '<path d="M20 28.5V15" stroke="#f2e6c9" stroke-width="2.2"/><path d="M20 15c-3-4-8-4.5-10.5-2.2 4.2-.3 7.6.8 10.5 2.2zM20 15c3-4 8-4.5 10.5-2.2-4.2-.3-7.6.8-10.5 2.2zM20 15c-.8-4.3-3.6-7.4-7.2-7.6 3 1.8 5.2 4.3 7.2 7.6zM20 15c.8-4.3 3.6-7.4 7.2-7.6-3 1.8-5.2 4.3-7.2 7.6z" fill="#f2e6c9"/>',
+  kris: '<path d="M20 30v-5M16.5 25h7M20 25c-2.2-1.8 2.2-3.8 0-5.8s2.2-3.8 0-5.8 1.2-3 0-5.4c-1.4 2.2-3 3.3-1 5.4s-2.2 3.8 0 5.8-2.2 3.8 0 5.8z" fill="#f2e6c9"/>',
+  chalice: '<path d="M13 9h14c0 6-3 9.2-7 9.6S13 15 13 9zM19 18.4h2V25h-2zM15 27.5h10l-1.6-2.6h-6.8z" fill="#f2c94c"/>',
+  columns: '<path d="M12 27h16M14 27V16.5h2.5V13h7v3.5H26V27M16.5 16.5h7M18.5 27v-5h3v5" stroke="#f2c94c" stroke-width="2" fill="none"/>',
+  crown: '<path d="M11 25h18l1.6-12-5.6 4.6L20 9l-5 8.6L9.4 13z" fill="#f2c94c"/><path d="M11 27h18" stroke="#f2c94c" stroke-width="2"/>',
+  trident: '<path d="M20 7v20M13 10v7.5c0 3.2 3 5.5 7 5.5s7-2.3 7-5.5V10" stroke="#f2c94c" stroke-width="2.2" fill="none" stroke-linecap="round"/><path d="M17 27h6" stroke="#f2c94c" stroke-width="2.2"/>',
+  doublecross: '<path d="M20 7v21M15.5 12h9M13 17.5h14" stroke="#f2e6c9" stroke-width="3"/>',
 };
 function crest(civ, size = 44) {
   const C = CIVS[civ];
@@ -755,6 +869,10 @@ function crest(civ, size = 44) {
 }
 function mercCrest(size = 44) {
   return `<svg viewBox="0 0 40 40" width="${size}" height="${size}" class="crest" aria-hidden="true"><path d="M5 4h30v15c0 10-7.5 15.5-15 18.5C12.5 34.5 5 29 5 19z" fill="#6b5a3a" stroke="#1d1209" stroke-width="1.6"/><circle cx="20" cy="17" r="7" fill="#e6c25a" stroke="#8a6a1a"/><path d="M20 12.5v9M17.5 15h4.5M17.5 18.5h5" stroke="#6b4a10" stroke-width="1.5"/></svg>`;
+}
+
+function crownSVG(size = 28) {
+  return `<svg viewBox="0 0 24 24" width="${size}" height="${size}" class="sym" aria-label="Imperial Age" role="img"><circle cx="12" cy="12" r="11.4" fill="#6a3fb0" stroke="rgba(0,0,0,.35)" stroke-width="1"/><path d="M5.5 16.2h13l1.2-8.2-4.2 3.3L12 5.8l-3.5 5.5-4.2-3.3z" fill="#f2c94c"/><path d="M5.5 18.2h13" stroke="#f2c94c" stroke-width="1.6"/></svg>`;
 }
 
 /* ── Sounds: drums, horns and steel, synthesized with WebAudio ── */
@@ -806,13 +924,13 @@ const KW_CLS = ['pierce', 'aoe', 'play', 'dmg', 'hp', 'gold', 'card', 'wall', 's
 function kw(text) { return esc(text).replace(KW_RE, (...m) => `<b class="kw k-${KW_CLS[m.slice(1, 11).findIndex(x => x !== undefined)]}">${m[0]}</b>`); }
 function cardHTML(card, o = {}) {
   const civ = card.civ === 'merc' ? null : CIVS[card.civ];
-  const cls = ['card', card.unique ? 'unique' : '', card.civ === 'merc' ? 'merc' : '', o.cls || ''].join(' ');
-  const syms = [...card.icons].map(ch => symBadge(ch, o.small ? 22 : 28)).join('');
+  const cls = ['card', card.unique ? 'unique' : '', card.imperial ? 'imperial' : '', card.age ? 'agecard' : '', card.civ === 'merc' ? 'merc' : '', o.cls || ''].join(' ');
+  const syms = card.age ? crownSVG(o.small ? 34 : 44) : [...card.icons].map(ch => symBadge(ch, o.small ? 22 : 28)).join('');
   return `<div class="${cls}" data-uid="${card.uid || ''}" ${o.attrs || ''} style="--civ:${civ ? civ.color : '#6b5a3a'}">
     <div class="c-head">${civ ? crest(card.civ, 18) : mercCrest(18)}<span class="c-name">${esc(card.name)}</span></div>
     <div class="c-syms">${syms}</div>
     <div class="c-text">${kw(cardText(card))}</div>
-    ${o.cost != null ? `<div class="c-cost${o.afford ? ' ok' : ''}">${o.cost} gold</div>` : ''}${card.unique ? '<div class="c-star" title="Signature card of this civilization">★</div>' : ''}
+    ${o.cost != null ? `<div class="c-cost${o.afford ? ' ok' : ''}">${o.cost} gold</div>` : ''}${card.unique ? '<div class="c-star" title="Signature card of this civilization">★</div>' : ''}${card.imperial ? '<div class="c-imp" title="Imperial Age card">Imperial</div>' : ''}
   </div>`;
 }
 function structHTML(st) {
@@ -834,10 +952,10 @@ function seatHTML(P, me) {
   const backs = me ? '' : `<span class="backs" title="${P.hand.length} cards in hand">${'<i></i>'.repeat(Math.min(P.hand.length, 8))}<em>${P.hand.length}</em></span>`;
   return `<div class="seat${me ? ' me' : ''}${turn ? ' turn' : ''}${P.alive ? '' : ' out'}${tgt}" id="seat-${P.id}" data-pid="${P.id}" style="--civ:${C.color}">
     <div class="s-top">${crest(P.civ, me ? 46 : 40)}
-      <div class="s-id"><div class="s-name">${me ? 'You · ' : ''}${esc(C.name)}</div><div class="s-sub">${P.relic ? esc(RELICS[P.relic].name) : ''}</div></div>
+      <div class="s-id"><div class="s-name">${me ? 'You · ' : ''}${esc(C.name)}${P.aged ? ` <span class="imp-tag" title="Imperial Age">${crownSVG(16)}</span>` : ''}</div><div class="s-sub">${P.relic ? esc(RELICS[P.relic].name) : ''}</div></div>
       <div class="s-hp" title="HP"><b>${P.hp}</b><small>/${P.maxHP}<span class="hp-u"> HP</span></small><div class="hpbar"><div style="width:${hpPct}%"></div></div></div>
     </div>
-    <div class="s-row"><span class="gold" title="Gold">${symBadge('G', 18)}<b>${P.gold}</b></span>${backs}${tokensHTML(P)}${turn ? '<span class="turn-tag">acting</span>' : ''}${P.alive ? '' : '<span class="out-tag">defeated</span>'}</div>
+    <div class="s-row"><span class="gold" title="Gold">${symBadge('G', 18)}<b>${P.gold}</b></span>${backs}${!P.ageGiven ? `<span class="tok" title="The Imperial Age card arrives at the start of turn ${RULES.ageTurn}">${crownSVG(14)} in ${Math.max(1, RULES.ageTurn - P.turns)}</span>` : !P.aged ? '<span class="tok hot imp" title="Holds the Imperial Age card">Imperial ready</span>' : ''}${tokensHTML(P)}${turn ? '<span class="turn-tag">acting</span>' : ''}${P.alive ? '' : '<span class="out-tag">defeated</span>'}</div>
     <div class="s-structs">${P.structs.map(structHTML).join('') || '<span class="none">No structures</span>'}</div>
     <div class="floats"></div>
   </div>`;
@@ -871,6 +989,8 @@ function logLine(e) {
     case 'fatigue': return `${esc(civName(e.pid))} reshuffled the deck: exhausted, −1 HP`;
     case 'wonder': return `<b>${esc(civName(e.pid))}</b> completed ${esc(e.name)}`;
     case 'attrition': return 'The war drags on: everyone −1 HP';
+    case 'agecard': return e.pid === 0 ? 'The <b>Imperial Age</b> card is in your hand' : `${esc(civName(e.pid))} can now reach the Imperial Age`;
+    case 'aged': return `<b>${esc(civName(e.pid))}</b> ${e.pid === 0 ? 'advance' : 'advances'} to the Imperial Age`;
   }
   return '';
 }
@@ -879,7 +999,7 @@ const FX_TEXT = {
   camel: () => ['Camels block!', 'info'], immune: () => ['Divine Wind!', 'info'], shroud: () => ['Mantle −1', 'info'], trap: () => ['Stakes!', 'dmg'],
   thorns: () => ['Spikes!', 'dmg'], steal: () => ['Card stolen', 'info'], convert: f => [`Lost ${f.name}`, 'info'], gold: f => [`+${f.n} gold`, 'gold'],
   out: () => ['Defeated!', 'dmg big'], hich: () => ['In danger: +2 cards', 'heal'], banner: () => ['Holy Banner!', 'heal'], wonderhit: f => [`Wonder ${f.left}`, 'wall'],
-  discard: () => ['−1 card', 'info'], rained: () => ['Monsoon: no building', 'info'],
+  discard: () => ['−1 card', 'info'], rained: () => ['Monsoon: no building', 'info'], age: () => ['Imperial Age!', 'gold big'], tribute: () => ['−1 gold', 'gold'],
 };
 function floatText(pid, text, cls, delay) {
   setTimeout(() => {
@@ -900,7 +1020,7 @@ function showFx(fx) {
   [...snd].forEach((s, i) => setTimeout(() => SFX.play(s), 120 + i * 90));
 }
 function banner(text, sub) {
-  const b = $('#banner'); b.innerHTML = `<b>${esc(text)}</b>${sub ? `<span>${kw(sub)}</span>` : ''}`;
+  const b = $('#banner'); b.innerHTML = `<div class="bt">${esc(text)}</div>${sub ? `<span>${kw(sub)}</span>` : ''}`;
   b.classList.remove('show'); void b.offsetWidth; b.classList.add('show');
 }
 
@@ -930,6 +1050,7 @@ function renderSetup() {
     <div class="detail" style="--civ:${C.color}">
       <div class="d-head">${crest(UI.civ, 64)}<div><h2>${esc(C.name)}</h2><p>${esc(C.style)}</p><p class="d-hp">Starting <b class="kw k-hp">${hp(UI.civ)} HP</b> ${UI.n === 2 ? 'in a duel' : 'at a 3–4 player table'}${rec ? ` · won ${rec[0]} of ${rec[1]}` : ''}</p></div></div>
       <h4>Signature cards</h4><div class="d-uniques">${uniques.map(u => cardHTML(u, { small: 1 })).join('')}</div>
+      <h4>Imperial Age</h4><p class="d-bonus">${kw(IMPERIAL[UI.civ].bonus.text)}</p><div class="d-uniques">${IMPERIAL[UI.civ].cards.map(d => cardHTML({ uid: 0, name: d.name, icons: d.icons, text: d.text, civ: UI.civ, imperial: true, steps: [] }, { small: 1 })).join('')}</div>
       <h4>The 24-card deck</h4><div class="d-mix">${deckMix(UI.civ).map(([ch, k]) => `<span title="${esc(SYM[ch].name)}: ${esc(SYM[ch].desc)}">${symBadge(ch, 22)}<b>×${k}</b></span>`).join('')}</div>
       <p class="d-opp">Opponents: ${UI.n - 1} random civilization${UI.n > 2 ? 's' : ''} played by the computer</p>
       <div class="d-actions"><button class="btn big" id="go">To battle</button><button class="btn ghost" id="randCiv">Random civ</button></div>
@@ -995,9 +1116,12 @@ function autoHuman() {
 /* turns */
 function afterTurnChange() {
   if (S.winner != null) { renderGame(); setTimeout(endScreen, 900); return; }
-  if (S.round !== UI.round) { UI.round = S.round; const E = EVENT_BY[S.event]; banner(`Round ${S.round}: ${E.name}`, E.text); }
+  let roundBanner = false;
+  if (S.round !== UI.round) { UI.round = S.round; const E = EVENT_BY[S.event]; banner(`Round ${S.round}: ${E.name}`, E.text); roundBanner = true; }
   if (S.turn === 0) {
     UI.busy = false; renderGame(); SFX.play('turn');
+    const me = S.players[0];
+    if (me.ageGiven && !me.aged && me.turns === RULES.ageTurn) setTimeout(() => banner('The Imperial Age', 'Play the Imperial Age card when you are ready'), roundBanner ? 1500 : 0);
     if (!S.players[0].hand.length) { afterHuman(); return; }
     if (window.__auto) setTimeout(autoHuman, 300);
     return;
@@ -1033,8 +1157,9 @@ function rulesModal() {
   <p class="legend-key">Card texts colour their keywords: <b class="kw k-dmg">damage</b> · <b class="kw k-hp">HP</b> · <b class="kw k-gold">gold</b> · <b class="kw k-card">cards</b> · <b class="kw k-wall">walls</b> · <b class="kw k-play">play another card</b> · <b class="kw k-aoe">every opponent</b> · <b class="kw k-pierce">over the walls</b> · <b class="kw k-steal">steal</b> · <b class="kw k-raze">destroy</b></p>
   <div class="legend">${SYM_ORDER.split('').map(ch => `<div>${symBadge(ch, 26)}<b>${esc(SYM[ch].name)}</b><span>${kw(SYM[ch].desc)}</span></div>`).join('')}</div>
   <p><b>Walls</b> soak up damage before it reaches your HP. <b>Cards with ★</b> are a civilization's signature cards. <b>Events</b>: one hits everyone each round, and the next one is always shown in advance. <b>Mercenary Market</b>: hire 1 card per turn with gold; it goes to your hand and joins your deck. <b>Relics</b>: pick 1 of 3 when the match starts.</p>
+  <p><b>Imperial Age</b>: at the start of your ${RULES.ageTurn}th turn an Imperial Age card arrives in your hand. Playing it costs your play for that turn, but no gold: your civilization's three Imperial cards join your deck and its age-up bonus happens at once (some civs get gold, cards, an attack, or a card straight to hand). Nobody can steal or discard it.</p>
   <p><b>Wonders</b> (Angkor Wat, Chichén Itzá) win the game if they still stand at the start of their builder's third turn, so the whole table has to pile on. The first time you fall to 3 HP or less you draw 2 extra cards. From round 16 everyone loses 1 HP each round.</p>
-  <p class="muted small">Each civilization's starting HP is tuned with hundreds of thousands of AI-vs-AI games, separately for duels and for 3–4 player tables: every civ wins about 46–52% of duels and its fair share (±3 points) at bigger tables.</p>
+  <p class="muted small">Each civilization's starting HP is tuned with hundreds of thousands of AI-vs-AI games, separately for duels and for 3–4 player tables: every civ wins roughly 46–54% of duels and close to its fair share at bigger tables.</p>
   <div class="row"><button class="btn" data-act="close">Close</button></div>`);
 }
 /* wiring */
