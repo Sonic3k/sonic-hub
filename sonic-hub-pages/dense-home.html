@@ -1,0 +1,195 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Sonic Hub — Dense home</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&family=Literata:wght@500&display=swap" rel="stylesheet">
+<style>
+  /* A full home: an archive that feels like an archive. Small type, tight spacing,
+     the whole width used, many rows, photos in every block — density first. */
+  :root { --bg: #F7F6F2; --card: #FFFFFF; --line: #E8E5DD; --ink: #1D1C1A; --ink2: #57544D; --ink3: #8E8A80;
+    --photo: #E9A100; --journal: #2E7FD6; --angels: #EF5B78; --football: #23A35E; --games: #7B61FF;
+    --sans: "Be Vietnam Pro", system-ui, sans-serif; --serif: Literata, Georgia, serif; }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--ink); font-family: var(--sans); font-size: 14.5px; line-height: 1.5; -webkit-font-smoothing: antialiased; }
+  a { color: inherit; text-decoration: none; } img { display: block; }
+  button { font: inherit; color: inherit; background: none; border: 0; padding: 0; cursor: pointer; }
+
+  /* top bar */
+  .top { position: sticky; top: 0; z-index: 10; display: flex; align-items: center; gap: 22px; height: 60px; padding: 0 22px; background: rgba(255,255,255,.92); backdrop-filter: blur(10px); border-bottom: 1px solid var(--line); }
+  .logo { font-family: var(--serif); font-weight: 500; font-size: 20px; letter-spacing: -.01em; white-space: nowrap; }
+  .search { flex: 0 1 420px; min-width: 0; display: flex; align-items: center; gap: 8px; height: 38px; padding: 0 12px; border-radius: 8px; background: #F1EFE9; color: var(--ink3); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .search svg { flex: 0 0 auto; }
+  .search svg { width: 16px; height: 16px; stroke: currentColor; fill: none; stroke-width: 2; }
+  .tabs { display: flex; gap: 4px; margin-left: auto; }
+  .tabs a { display: flex; align-items: center; gap: 7px; padding: 7px 11px; border-radius: 8px; font-weight: 500; color: var(--ink2); white-space: nowrap; }
+  .tabs a i { width: 8px; height: 8px; border-radius: 50%; background: var(--c); }
+  .tabs a.on { background: #F1EFE9; color: var(--ink); }
+  .tabs a:hover { color: var(--ink); }
+  .rand { padding: 8px 12px; border-radius: 8px; background: var(--ink); color: #fff; font-weight: 600; white-space: nowrap; }
+
+  /* frame */
+  .frame { display: grid; grid-template-columns: 210px minmax(0, 1fr); }
+  .side { position: sticky; top: 60px; height: calc(100vh - 60px); overflow-y: auto; padding: 18px 14px 30px 22px; border-right: 1px solid var(--line); scrollbar-width: thin; }
+  .side h4 { margin: 18px 0 6px; font-size: 11.5px; font-weight: 600; letter-spacing: .1em; text-transform: uppercase; color: var(--ink3); }
+  .side h4:first-child { margin-top: 0; }
+  .side a { display: flex; align-items: center; gap: 8px; padding: 4px 6px; border-radius: 6px; font-size: 13.5px; color: var(--ink2); }
+  .side a:hover { background: #EFEDE6; color: var(--ink); }
+  .side a.on { background: #EAE7DF; color: var(--ink); font-weight: 600; }
+  .side a small { margin-left: auto; font-size: 12px; color: var(--ink3); }
+  .side .bar { flex: 0 0 auto; width: 38px; height: 4px; border-radius: 2px; background: #E6E2D8; overflow: hidden; }
+  .side .bar b { display: block; height: 100%; background: var(--photo); opacity: .75; }
+  .side .dot { width: 8px; height: 8px; border-radius: 50%; flex: 0 0 auto; }
+  main { min-width: 0; padding: 18px 22px 60px; }
+
+  /* section heads */
+  .hd { display: flex; align-items: baseline; gap: 10px; margin: 26px 0 10px; }
+  .hd:first-child { margin-top: 0; }
+  .hd h2 { margin: 0; font-size: 17px; font-weight: 700; letter-spacing: -.01em; }
+  .hd span { font-size: 13px; color: var(--ink3); }
+  .hd a { margin-left: auto; font-size: 13px; font-weight: 600; color: var(--c, var(--journal)); }
+
+  /* this day across the years */
+  .years { display: grid; grid-auto-flow: column; grid-auto-columns: 150px; gap: 10px; overflow-x: auto; padding-bottom: 6px; scrollbar-width: thin; }
+  .ycard { position: relative; border-radius: 10px; overflow: hidden; aspect-ratio: 4/5; background: #ddd; }
+  .ycard img { width: 100%; height: 100%; object-fit: cover; transition: transform .6s; }
+  .ycard:hover img { transform: scale(1.04); }
+  .ycard::after { content: ""; position: absolute; inset: 0; background: linear-gradient(transparent 50%, rgba(0,0,0,.6)); }
+  .ycard b { position: absolute; left: 10px; bottom: 26px; z-index: 1; color: #fff; font-size: 19px; font-weight: 700; }
+  .ycard span { position: absolute; left: 10px; bottom: 9px; z-index: 1; color: rgba(255,255,255,.85); font-size: 12px; }
+  .ycard.now { outline: 3px solid var(--photo); outline-offset: -3px; }
+
+  /* the month in photos + a side stack */
+  .split { display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: 18px; align-items: start; }
+  .filters { display: flex; gap: 6px; margin: 0 0 10px; overflow-x: auto; scrollbar-width: none; }
+  .filters a { white-space: nowrap; padding: 5px 11px; border-radius: 999px; font-size: 13px; font-weight: 500; background: #EFEDE6; color: var(--ink2); }
+  .filters a.on { background: var(--ink); color: #fff; }
+  .masonry { column-count: 4; column-gap: 8px; }
+  .masonry figure { margin: 0 0 8px; break-inside: avoid; position: relative; border-radius: 8px; overflow: hidden; }
+  .masonry img { width: 100%; height: auto; }
+  .masonry figcaption { position: absolute; left: 8px; bottom: 6px; color: #fff; font-size: 11.5px; font-weight: 500; text-shadow: 0 1px 4px rgba(0,0,0,.6); opacity: 0; transition: opacity .3s; }
+  .masonry figure:hover figcaption { opacity: 1; }
+  .stack { display: flex; flex-direction: column; gap: 12px; position: sticky; top: 76px; }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 14px; }
+  .card h3 { display: flex; align-items: center; gap: 7px; margin: 0 0 10px; font-size: 12px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--ink3); }
+  .card h3 i { width: 8px; height: 8px; border-radius: 50%; background: var(--c); }
+  .card h3 button { margin-left: auto; font-size: 12px; font-weight: 600; letter-spacing: 0; text-transform: none; color: var(--c); }
+  .bubble { display: inline-block; padding: 9px 13px; border-radius: 14px 14px 14px 4px; background: #FDE7EC; font-size: 14px; }
+  .meta { margin-top: 6px; font-size: 12px; color: var(--ink3); }
+  .note-t { margin: 0 0 4px; font-family: var(--serif); font-size: 17px; font-weight: 500; line-height: 1.35; }
+  .note-d { margin: 0; font-size: 13.5px; color: var(--ink2); }
+  .who { display: flex; align-items: center; gap: 10px; }
+  .who img { width: 42px; height: 42px; border-radius: 50%; object-fit: cover; }
+  .who b { display: block; font-size: 14.5px; } .who span { font-size: 12.5px; color: var(--ink3); }
+  .rnd img { width: 100%; aspect-ratio: 4/3; object-fit: cover; border-radius: 6px; margin-bottom: 8px; }
+
+  /* albums */
+  .albums { display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: 12px; }
+  .album .cov { display: grid; grid-template-columns: 2fr 1fr; grid-template-rows: 1fr 1fr; gap: 3px; aspect-ratio: 4/3; border-radius: 10px; overflow: hidden; }
+  .album .cov img { width: 100%; height: 100%; object-fit: cover; }
+  .album .cov img:first-child { grid-row: 1 / 3; }
+  .album b { display: block; margin-top: 7px; font-size: 14px; } .album span { font-size: 12.5px; color: var(--ink3); }
+
+  /* writing + people */
+  .two { display: grid; grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr); gap: 18px; align-items: start; }
+  .posts { display: flex; flex-direction: column; gap: 10px; }
+  .post { display: grid; grid-template-columns: 112px minmax(0, 1fr); gap: 14px; align-items: start; padding: 10px; border-radius: 10px; background: var(--card); border: 1px solid var(--line); }
+  .post img { width: 112px; height: 84px; object-fit: cover; border-radius: 6px; }
+  .post h4 { margin: 0 0 3px; font-family: var(--serif); font-size: 16.5px; font-weight: 500; line-height: 1.35; }
+  .post p { margin: 0 0 6px; font-size: 13.5px; color: var(--ink2); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+  .post .tags { display: flex; gap: 6px; font-size: 12px; color: var(--ink3); }
+  .post .tags em { font-style: normal; color: var(--journal); font-weight: 500; }
+  .people { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+  .person { text-align: center; padding: 12px 6px; border-radius: 10px; background: var(--card); border: 1px solid var(--line); }
+  .person img { width: 64px; height: 64px; margin: 0 auto 6px; border-radius: 50%; object-fit: cover; box-shadow: 0 0 0 2px #fff, 0 0 0 4px var(--angels); }
+  .person b { display: block; font-size: 13.5px; } .person span { font-size: 12px; color: var(--ink3); }
+
+  /* regions */
+  .regions { display: flex; flex-wrap: wrap; gap: 8px; }
+  .region { display: flex; align-items: center; gap: 8px; padding: 6px 12px 6px 6px; border-radius: 999px; background: var(--card); border: 1px solid var(--line); font-weight: 500; font-size: 13.5px; }
+  .region img { width: 26px; height: 26px; border-radius: 50%; object-fit: cover; }
+  .region small { color: var(--ink3); font-weight: 400; }
+
+  @media (max-width: 1100px) { .split, .two { grid-template-columns: 1fr; } .stack { position: static; display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); } .masonry { column-count: 3; } }
+  @media (max-width: 760px) {
+    .frame { grid-template-columns: 1fr; } .side { display: none; } .tabs { display: none; } .search { flex: 1; } .top { gap: 12px; padding: 0 14px; }
+    main { padding: 14px 12px 50px; } .years { grid-auto-columns: 112px; } .masonry { column-count: 2; } .people { grid-template-columns: repeat(3, 1fr); }
+    .post { grid-template-columns: 88px minmax(0, 1fr); } .post img { width: 88px; height: 70px; }
+  }
+</style>
+</head>
+<body>
+<header class="top">
+  <a class="logo" href="#">Sonic Hub</a>
+  <div class="search"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg>Tìm ảnh, người, bài viết, năm…</div>
+  <nav class="tabs" id="tabs"></nav>
+  <button class="rand" type="button">Một ngày bất kỳ</button>
+</header>
+<div class="frame">
+  <aside class="side" id="side"></aside>
+  <main id="main"></main>
+</div>
+<script src="assets/data.js"></script>
+<script>
+  const D = window.SH_DATA, pic = (seed, w, h) => `https://picsum.photos/seed/${seed}/${w}/${h}`;
+  const SECTIONS = [['Hôm nay', '--photo', 1], ['Ảnh', '--photo'], ['Nhật ký', '--journal'], ['Angels', '--angels'], ['Bóng đá', '--football'], ['Game', '--games']];
+  document.getElementById('tabs').innerHTML = SECTIONS.map(([n, c, on]) => `<a href="#" class="${on ? 'on' : ''}" style="--c:var(${c})"><i></i>${n}</a>`).join('');
+  const YEARS = Array.from({ length: 19 }, (_, i) => 2026 - i), COUNT = (y) => 40 + ((y * 37) % 11) * 61 + (y % 3) * 17;
+  const REGIONS = [['Family', '#EF5B78', 418], ['Hà Nội', '#2E7FD6', 377], ['FC Westlife', '#23A35E', 241], ['onthi.com', '#7B61FF', 152], ['Du lịch', '#E9A100', 289], ['Tết', '#E5533D', 196], ['Lớp 12A', '#1BA9B5', 128], ['Sinh nhật', '#C2410C', 93]];
+  const maxC = Math.max(...YEARS.map(COUNT));
+  document.getElementById('side').innerHTML = `
+    <h4>Thư viện</h4>
+    <a class="on" href="#">Hôm nay</a><a href="#">Tất cả ảnh <small>10.374</small></a><a href="#">Album <small>86</small></a><a href="#">Yêu thích <small>412</small></a><a href="#">Video <small>238</small></a><a href="#">Bản đồ <small>3.910</small></a>
+    <h4>Năm</h4>
+    ${YEARS.map(y => `<a href="#" class="${y === 2010 ? 'on' : ''}">${y}<span class="bar"><b style="width:${Math.round(COUNT(y) / maxC * 100)}%"></b></span><small>${COUNT(y)}</small></a>`).join('')}
+    <h4>Vùng</h4>
+    ${REGIONS.map(([n, c, k]) => `<a href="#"><span class="dot" style="background:${c}"></span>${n}<small>${k}</small></a>`).join('')}`;
+
+  const masonry = Array.from({ length: 28 }, (_, i) => { const r = [[4, 5], [3, 2], [1, 1], [4, 3], [2, 3], [16, 9], [3, 4]][i % 7]; return `<figure><img src="${pic('m' + i, r[0] * 120, r[1] * 120)}" alt=""><figcaption>${['Hồ Tây', 'Phố cổ', 'Tam Đảo', 'Lớp 12A', 'Nhà bà ngoại', 'Ga Hà Nội'][i % 6]} · ${3 + (i % 27)}/10/2010</figcaption></figure>`; }).join('');
+  const albums = [['Hồ Tây', 248], ['Đà Lạt 2016', 177], ['Tam Đảo', 131], ['Lớp 12A', 96], ['Tết các năm', 312], ['Phố cổ', 64], ['Sinh nhật', 93], ['Bãi Sau', 58]];
+  const posts = [
+    ['Đem Nokia N73 đi chụp lại Hồ Tây', 'Nhiều như xưa, và đẹp như xưa. Cái máy vẫn lên nguồn — pin chịu đúng bốn mươi phút, đủ cho một vòng hồ.', '12/4/2025', 'Kỷ niệm', 'Hà Nội'],
+    ['Xem lại chung kết 2005 sau 20 năm', 'Câu trả lời ngắn: có, Liverpool xứng đáng. Câu trả lời dài mất 2.400 chữ và một cốc cà phê.', '25/5/2024', 'Bóng đá', 'FC Westlife'],
+    ['Ngày đầu có máy ảnh', 'Chụp 214 tấm trong một buổi chiều. Giữ lại 9. Đến giờ vẫn còn 9 tấm đó, và tấm nào cũng nhớ.', '9/10/2016', 'Ảnh', 'Family'],
+    ['Ba dòng cho đỡ nặng đầu', 'Không cần ai đọc. Chỉ cần viết ra. Link vào vấn đề đang theo dõi để tuần sau nhìn lại.', '2/9/2026', 'Nhật ký', 'Deadline Q4'],
+  ];
+  document.getElementById('main').innerHTML = `
+    <div class="hd"><h2>Ngày này các năm</h2><span>5 tháng 10 · 19 năm</span><a href="#" style="--c:var(--photo)">Xem tất cả</a></div>
+    <div class="years">${YEARS.map(y => `<a class="ycard ${y === 2010 ? 'now' : ''}" href="#"><img src="${pic('y' + y, 300, 375)}" alt=""><b>${y}</b><span>${COUNT(y) % 23 + 3} ảnh</span></a>`).join('')}</div>
+
+    <div class="split">
+      <section>
+        <div class="hd"><h2>Tháng 10, 2010</h2><span>86 ảnh · 4 video</span><a href="#" style="--c:var(--photo)">Mở trong kho ảnh</a></div>
+        <div class="filters"><a class="on" href="#">Tất cả</a><a href="#">Ảnh</a><a href="#">Video</a><a href="#">Yêu thích</a><a href="#">Có Bích Trân</a></div>
+        <div class="masonry">${masonry}</div>
+      </section>
+      <aside class="stack">
+        <div class="card" style="--c:var(--angels)"><h3><i></i>Một dòng tin nhắn<button>Đổi</button></h3><span class="bubble">mai thi xong roi di choi nhe. t mua ve rap quoc gia roi</span><div class="meta">Bích Trân · Yahoo · 23:14, 5/10/2010</div></div>
+        <div class="card" style="--c:var(--journal)"><h3><i></i>Nhật ký năm ấy</h3><p class="note-t">Status Yahoo tối nay</p><p class="note-d">Tối nào cũng đổi status một lần, như viết nhật ký cho cả danh sách bạn bè đọc.</p></div>
+        <div class="card" style="--c:var(--angels)"><h3><i></i>Năm ấy có</h3><div class="who"><img src="${pic('face1', 200, 200)}" alt=""><div><b>Bích Trân</b><span>2009 — 2012 · Yahoo · Nokia</span></div></div></div>
+        <div class="card rnd" style="--c:var(--photo)"><h3><i></i>Một tấm ngẫu nhiên<button>Đổi</button></h3><img src="${pic('rnd7', 400, 300)}" alt=""><div class="meta">Đà Lạt sương · 14/2/2016</div></div>
+        <div class="card" style="--c:var(--football)"><h3><i></i>Bóng đá</h3><p class="note-d"><b style="color:var(--ink)">Gameweek 7</b> · 64 điểm · hạng 12.408</p></div>
+      </aside>
+    </div>
+
+    <div class="hd"><h2>Album</h2><span>86 album</span><a href="#" style="--c:var(--photo)">Tất cả album</a></div>
+    <div class="albums">${albums.map(([n, k], i) => `<a class="album" href="#"><div class="cov"><img src="${pic('a' + i, 400, 300)}" alt=""><img src="${pic('b' + i, 200, 150)}" alt=""><img src="${pic('c' + i, 200, 150)}" alt=""></div><b>${n}</b><span>${k} ảnh</span></a>`).join('')}</div>
+
+    <div class="two">
+      <section>
+        <div class="hd"><h2>Bài viết mới</h2><span>${D.NOTES.length + 38} bài</span><a href="#" style="--c:var(--journal)">Vào Nhật ký</a></div>
+        <div class="posts">${posts.map(([t, d, dt, cat, tag], i) => `<a class="post" href="#"><img src="${pic('p' + i, 300, 220)}" alt=""><div><h4>${t}</h4><p>${d}</p><div class="tags"><span>${dt}</span>·<em>${cat}</em>·<span>${tag}</span></div></div></a>`).join('')}</div>
+      </section>
+      <section>
+        <div class="hd"><h2>Angels</h2><span>6 người</span><a href="#" style="--c:var(--angels)">Vào Angels</a></div>
+        <div class="people">${D.PEOPLE.map((p, i) => `<a class="person" href="#"><img src="${pic('face' + i, 200, 200)}" alt=""><b>${p.name}</b><span>${p.from}${p.to !== p.from ? '–' + p.to : ''}</span></a>`).join('')}</div>
+      </section>
+    </div>
+
+    <div class="hd"><h2>Vùng</h2><span>theo tag</span></div>
+    <div class="regions">${REGIONS.map(([n, c, k], i) => `<a class="region" href="#" style="border-color:${c}55"><img src="${pic('r' + i, 80, 80)}" alt="">${n}<small>${k}</small></a>`).join('')}</div>`;
+</script>
+</body>
+</html>
