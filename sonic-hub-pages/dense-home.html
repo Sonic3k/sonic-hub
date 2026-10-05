@@ -3,193 +3,375 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Sonic Hub — Dense home</title>
+<title>Sonic Hub — Library portal</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&family=Literata:wght@500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&family=Literata:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
 <style>
-  /* A full home: an archive that feels like an archive. Small type, tight spacing,
-     the whole width used, many rows, photos in every block — density first. */
-  :root { --bg: #F7F6F2; --card: #FFFFFF; --line: #E8E5DD; --ink: #1D1C1A; --ink2: #57544D; --ink3: #8E8A80;
+  /* ═══════════════════════════════════════════════════════════════════════════
+     LIBRARY PORTAL v2 — structure first, not density.
+     One spacing scale (4·8·12·16·24·32·48·64), content capped at a readable
+     width, one focal block per page, every block earns its place.
+     Pages: home · journal list · reading an article — one frame for all three.
+     ═══════════════════════════════════════════════════════════════════════════ */
+  :root {
+    --bg: #F7F6F2; --card: #FFFFFF; --line: #E8E5DD; --soft: #F0EEE8; --ink: #1D1C1A; --ink2: #57544D; --ink3: #8E8A80;
     --photo: #E9A100; --journal: #2E7FD6; --angels: #EF5B78; --football: #23A35E; --games: #7B61FF;
-    --sans: "Be Vietnam Pro", system-ui, sans-serif; --serif: Literata, Georgia, serif; }
+    --sans: "Be Vietnam Pro", system-ui, sans-serif; --serif: Literata, Georgia, serif;
+    --r: 10px; --wrap: 1240px;
+  }
   * { box-sizing: border-box; }
+  html { scroll-padding-top: 84px; }
   body { margin: 0; background: var(--bg); color: var(--ink); font-family: var(--sans); font-size: 14.5px; line-height: 1.5; -webkit-font-smoothing: antialiased; }
   a { color: inherit; text-decoration: none; } img { display: block; }
   button { font: inherit; color: inherit; background: none; border: 0; padding: 0; cursor: pointer; }
 
-  /* top bar */
-  .top { position: sticky; top: 0; z-index: 10; display: flex; align-items: center; gap: 22px; height: 60px; padding: 0 22px; background: rgba(255,255,255,.92); backdrop-filter: blur(10px); border-bottom: 1px solid var(--line); }
+  /* ── top bar ── */
+  .top { position: sticky; top: 0; z-index: 20; height: 60px; background: rgba(255,255,255,.94); backdrop-filter: blur(10px); border-bottom: 1px solid var(--line); }
+  .top-in { display: flex; align-items: center; gap: 24px; height: 100%; padding: 0 24px; }
   .logo { font-family: var(--serif); font-weight: 500; font-size: 20px; letter-spacing: -.01em; white-space: nowrap; }
-  .search { flex: 0 1 420px; min-width: 0; display: flex; align-items: center; gap: 8px; height: 38px; padding: 0 12px; border-radius: 8px; background: #F1EFE9; color: var(--ink3); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .search svg { flex: 0 0 auto; }
-  .search svg { width: 16px; height: 16px; stroke: currentColor; fill: none; stroke-width: 2; }
+  .search { flex: 0 1 400px; min-width: 0; display: flex; align-items: center; gap: 8px; height: 38px; padding: 0 12px; border-radius: 8px; background: var(--soft); color: var(--ink3); white-space: nowrap; overflow: hidden; }
+  .search svg { flex: 0 0 auto; width: 16px; height: 16px; stroke: currentColor; fill: none; stroke-width: 2; }
   .tabs { display: flex; gap: 4px; margin-left: auto; }
-  .tabs a { display: flex; align-items: center; gap: 7px; padding: 7px 11px; border-radius: 8px; font-weight: 500; color: var(--ink2); white-space: nowrap; }
+  .tabs a { display: flex; align-items: center; gap: 7px; padding: 7px 11px; border-radius: 8px; font-weight: 500; color: var(--ink2); white-space: nowrap; transition: background .2s, color .2s; }
   .tabs a i { width: 8px; height: 8px; border-radius: 50%; background: var(--c); }
-  .tabs a.on { background: #F1EFE9; color: var(--ink); }
-  .tabs a:hover { color: var(--ink); }
+  .tabs a:hover { color: var(--ink); background: var(--soft); }
+  .tabs a.on { background: var(--soft); color: var(--ink); }
   .rand { padding: 8px 12px; border-radius: 8px; background: var(--ink); color: #fff; font-weight: 600; white-space: nowrap; }
+  .progress { position: fixed; top: 59px; left: 0; z-index: 21; height: 2px; width: 0; background: var(--journal); transition: width .1s linear; }
 
-  /* frame */
-  .frame { display: grid; grid-template-columns: 210px minmax(0, 1fr); }
-  .side { position: sticky; top: 60px; height: calc(100vh - 60px); overflow-y: auto; padding: 18px 14px 30px 22px; border-right: 1px solid var(--line); scrollbar-width: thin; }
-  .side h4 { margin: 18px 0 6px; font-size: 11.5px; font-weight: 600; letter-spacing: .1em; text-transform: uppercase; color: var(--ink3); }
+  /* ── frame: contextual sidebar + content ── */
+  .frame { display: grid; grid-template-columns: 232px minmax(0, 1fr); }
+  body[data-page="post"] .frame { grid-template-columns: minmax(0, 1fr); }
+  body[data-page="post"] .side { display: none; }
+  .side { position: sticky; top: 60px; height: calc(100vh - 60px); overflow-y: auto; padding: 24px 16px 32px 24px; border-right: 1px solid var(--line); scrollbar-width: thin; }
+  .side h4 { margin: 24px 0 8px; font-size: 11.5px; font-weight: 600; letter-spacing: .1em; text-transform: uppercase; color: var(--ink3); }
   .side h4:first-child { margin-top: 0; }
-  .side a { display: flex; align-items: center; gap: 8px; padding: 4px 6px; border-radius: 6px; font-size: 13.5px; color: var(--ink2); }
-  .side a:hover { background: #EFEDE6; color: var(--ink); }
+  .side a { display: flex; align-items: center; gap: 8px; padding: 5px 8px; border-radius: 6px; font-size: 13.5px; color: var(--ink2); transition: background .15s; }
+  .side a:hover { background: var(--soft); color: var(--ink); }
   .side a.on { background: #EAE7DF; color: var(--ink); font-weight: 600; }
-  .side a small { margin-left: auto; font-size: 12px; color: var(--ink3); }
-  .side .bar { flex: 0 0 auto; width: 38px; height: 4px; border-radius: 2px; background: #E6E2D8; overflow: hidden; }
-  .side .bar b { display: block; height: 100%; background: var(--photo); opacity: .75; }
+  .side a small { margin-left: auto; font-size: 12px; color: var(--ink3); font-variant-numeric: tabular-nums; }
+  .side .bar { flex: 0 0 auto; width: 36px; height: 4px; border-radius: 2px; background: #E6E2D8; overflow: hidden; }
+  .side .bar b { display: block; height: 100%; background: var(--c, var(--photo)); opacity: .8; }
   .side .dot { width: 8px; height: 8px; border-radius: 50%; flex: 0 0 auto; }
-  main { min-width: 0; padding: 18px 22px 60px; }
+  main { min-width: 0; }
+  .wrap { max-width: var(--wrap); margin: 0 auto; padding: 32px 32px 64px; }
+  .page { animation: enter .5s ease both; } @keyframes enter { from { opacity: 0; transform: translateY(6px); } }
 
-  /* section heads */
-  .hd { display: flex; align-items: baseline; gap: 10px; margin: 26px 0 10px; }
-  .hd:first-child { margin-top: 0; }
-  .hd h2 { margin: 0; font-size: 17px; font-weight: 700; letter-spacing: -.01em; }
+  /* ── section heads (one style everywhere) ── */
+  .hd { display: flex; align-items: baseline; gap: 12px; margin: 0 0 16px; }
+  .hd h2 { margin: 0; font-size: 18px; font-weight: 700; letter-spacing: -.01em; }
   .hd span { font-size: 13px; color: var(--ink3); }
   .hd a { margin-left: auto; font-size: 13px; font-weight: 600; color: var(--c, var(--journal)); }
+  .hd a:hover { text-decoration: underline; text-underline-offset: 3px; }
+  section + section, .block + .block { margin-top: 48px; }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: var(--r); }
 
-  /* this day across the years */
-  .years { display: grid; grid-auto-flow: column; grid-auto-columns: 150px; gap: 10px; overflow-x: auto; padding-bottom: 6px; scrollbar-width: thin; }
-  .ycard { position: relative; border-radius: 10px; overflow: hidden; aspect-ratio: 4/5; background: #ddd; }
+  /* ── home: the focal block ── */
+  .focus { display: grid; grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr); gap: 24px; }
+  .today { overflow: hidden; display: flex; flex-direction: column; }
+  .today .img { position: relative; aspect-ratio: 16/10; overflow: hidden; }
+  .today .img img { width: 100%; height: 100%; object-fit: cover; transition: transform .8s; }
+  .today:hover .img img { transform: scale(1.02); }
+  .today .img .badge { position: absolute; left: 16px; top: 16px; padding: 5px 10px; border-radius: 999px; background: rgba(255,255,255,.92); font-size: 12.5px; font-weight: 600; }
+  .today .body { padding: 20px 24px 24px; }
+  .today .kicker { margin: 0 0 4px; font-size: 12.5px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--photo); }
+  .today h1 { margin: 0 0 8px; font-size: 28px; line-height: 1.2; font-weight: 700; letter-spacing: -.02em; }
+  .today p { margin: 0; color: var(--ink2); }
+  .today .row { display: flex; align-items: center; gap: 16px; margin-top: 16px; flex-wrap: wrap; }
+  .thumbs { display: flex; gap: 6px; } .thumbs img { width: 52px; height: 52px; object-fit: cover; border-radius: 6px; }
+  .pill { display: inline-flex; align-items: center; gap: 8px; padding: 4px 12px 4px 4px; border-radius: 999px; background: var(--soft); font-size: 13px; font-weight: 500; }
+  .pill img { width: 26px; height: 26px; border-radius: 50%; object-fit: cover; }
+  .years { display: grid; grid-template-columns: repeat(3, 1fr); grid-template-rows: auto repeat(3, minmax(0, 1fr)); gap: 10px; }
+  .years .hd { grid-column: 1 / -1; margin: 0; }
+  .ycard { position: relative; border-radius: 8px; overflow: hidden; min-height: 96px; }
   .ycard img { width: 100%; height: 100%; object-fit: cover; transition: transform .6s; }
-  .ycard:hover img { transform: scale(1.04); }
-  .ycard::after { content: ""; position: absolute; inset: 0; background: linear-gradient(transparent 50%, rgba(0,0,0,.6)); }
-  .ycard b { position: absolute; left: 10px; bottom: 26px; z-index: 1; color: #fff; font-size: 19px; font-weight: 700; }
-  .ycard span { position: absolute; left: 10px; bottom: 9px; z-index: 1; color: rgba(255,255,255,.85); font-size: 12px; }
-  .ycard.now { outline: 3px solid var(--photo); outline-offset: -3px; }
+  .ycard:hover img { transform: scale(1.05); }
+  .ycard::after { content: ""; position: absolute; inset: 0; background: linear-gradient(transparent 40%, rgba(0,0,0,.6)); }
+  .ycard b { position: absolute; left: 10px; bottom: 22px; z-index: 1; color: #fff; font-size: 16px; font-weight: 700; }
+  .ycard span { position: absolute; left: 10px; bottom: 6px; z-index: 1; color: rgba(255,255,255,.85); font-size: 11.5px; }
 
-  /* the month in photos + a side stack */
-  .split { display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: 18px; align-items: start; }
-  .filters { display: flex; gap: 6px; margin: 0 0 10px; overflow-x: auto; scrollbar-width: none; }
-  .filters a { white-space: nowrap; padding: 5px 11px; border-radius: 999px; font-size: 13px; font-weight: 500; background: #EFEDE6; color: var(--ink2); }
-  .filters a.on { background: var(--ink); color: #fff; }
-  .masonry { column-count: 4; column-gap: 8px; }
-  .masonry figure { margin: 0 0 8px; break-inside: avoid; position: relative; border-radius: 8px; overflow: hidden; }
-  .masonry img { width: 100%; height: auto; }
-  .masonry figcaption { position: absolute; left: 8px; bottom: 6px; color: #fff; font-size: 11.5px; font-weight: 500; text-shadow: 0 1px 4px rgba(0,0,0,.6); opacity: 0; transition: opacity .3s; }
-  .masonry figure:hover figcaption { opacity: 1; }
-  .stack { display: flex; flex-direction: column; gap: 12px; position: sticky; top: 76px; }
-  .card { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 14px; }
-  .card h3 { display: flex; align-items: center; gap: 7px; margin: 0 0 10px; font-size: 12px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--ink3); }
-  .card h3 i { width: 8px; height: 8px; border-radius: 50%; background: var(--c); }
-  .card h3 button { margin-left: auto; font-size: 12px; font-weight: 600; letter-spacing: 0; text-transform: none; color: var(--c); }
+  /* ── home: two lanes ── */
+  .lanes { display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: 32px; align-items: start; }
+  .jg-item { margin: 0; overflow: hidden; border-radius: 6px; background: var(--soft); }
+  .jg-item img { width: 100%; height: 100%; object-fit: cover; transition: transform .6s; }
+  .jg-item:hover img { transform: scale(1.03); }
+  .rail { position: sticky; top: 84px; display: flex; flex-direction: column; gap: 16px; }
+  .rail .card { padding: 16px; }
+  .rail h3 { display: flex; align-items: center; gap: 8px; margin: 0 0 12px; font-size: 12px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--ink3); }
+  .rail h3 i { width: 8px; height: 8px; border-radius: 50%; background: var(--c); }
+  .rail h3 button { margin-left: auto; font-size: 12px; font-weight: 600; letter-spacing: 0; text-transform: none; color: var(--c); }
   .bubble { display: inline-block; padding: 9px 13px; border-radius: 14px 14px 14px 4px; background: #FDE7EC; font-size: 14px; }
-  .meta { margin-top: 6px; font-size: 12px; color: var(--ink3); }
-  .note-t { margin: 0 0 4px; font-family: var(--serif); font-size: 17px; font-weight: 500; line-height: 1.35; }
-  .note-d { margin: 0; font-size: 13.5px; color: var(--ink2); }
-  .who { display: flex; align-items: center; gap: 10px; }
-  .who img { width: 42px; height: 42px; border-radius: 50%; object-fit: cover; }
-  .who b { display: block; font-size: 14.5px; } .who span { font-size: 12.5px; color: var(--ink3); }
-  .rnd img { width: 100%; aspect-ratio: 4/3; object-fit: cover; border-radius: 6px; margin-bottom: 8px; }
+  .meta { margin-top: 8px; font-size: 12.5px; color: var(--ink3); }
+  .rail .pic { width: 100%; aspect-ratio: 4/3; object-fit: cover; border-radius: 6px; }
 
-  /* albums */
-  .albums { display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: 12px; }
-  .album .cov { display: grid; grid-template-columns: 2fr 1fr; grid-template-rows: 1fr 1fr; gap: 3px; aspect-ratio: 4/3; border-radius: 10px; overflow: hidden; }
-  .album .cov img { width: 100%; height: 100%; object-fit: cover; }
-  .album .cov img:first-child { grid-row: 1 / 3; }
-  .album b { display: block; margin-top: 7px; font-size: 14px; } .album span { font-size: 12.5px; color: var(--ink3); }
+  /* posts — the same card on home and in the journal */
+  .featured { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); overflow: hidden; }
+  .featured img { width: 100%; height: 100%; min-height: 240px; object-fit: cover; }
+  .featured .body { padding: 24px; display: flex; flex-direction: column; justify-content: center; }
+  .cat { display: inline-block; font-size: 12px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: var(--journal); }
+  .featured h3 { margin: 8px 0 8px; font-family: var(--serif); font-size: 26px; font-weight: 600; line-height: 1.25; letter-spacing: -.01em; }
+  .featured p { margin: 0 0 12px; font-family: var(--serif); font-size: 16.5px; line-height: 1.6; color: var(--ink2); }
+  .by { font-size: 12.5px; color: var(--ink3); }
+  .posts { display: flex; flex-direction: column; }
+  .post { display: grid; grid-template-columns: minmax(0, 1fr) 120px; gap: 20px; padding: 16px 0; border-bottom: 1px solid var(--line); }
+  .post:first-child { padding-top: 0; }
+  .post h4 { margin: 4px 0 4px; font-family: var(--serif); font-size: 18px; font-weight: 600; line-height: 1.35; }
+  .post p { margin: 0 0 6px; font-size: 14px; color: var(--ink2); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+  .post img { width: 120px; height: 90px; object-fit: cover; border-radius: 6px; }
+  .post:hover h4 { color: var(--journal); }
 
-  /* writing + people */
-  .two { display: grid; grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr); gap: 18px; align-items: start; }
-  .posts { display: flex; flex-direction: column; gap: 10px; }
-  .post { display: grid; grid-template-columns: 112px minmax(0, 1fr); gap: 14px; align-items: start; padding: 10px; border-radius: 10px; background: var(--card); border: 1px solid var(--line); }
-  .post img { width: 112px; height: 84px; object-fit: cover; border-radius: 6px; }
-  .post h4 { margin: 0 0 3px; font-family: var(--serif); font-size: 16.5px; font-weight: 500; line-height: 1.35; }
-  .post p { margin: 0 0 6px; font-size: 13.5px; color: var(--ink2); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
-  .post .tags { display: flex; gap: 6px; font-size: 12px; color: var(--ink3); }
-  .post .tags em { font-style: normal; color: var(--journal); font-weight: 500; }
-  .people { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
-  .person { text-align: center; padding: 12px 6px; border-radius: 10px; background: var(--card); border: 1px solid var(--line); }
-  .person img { width: 64px; height: 64px; margin: 0 auto 6px; border-radius: 50%; object-fit: cover; box-shadow: 0 0 0 2px #fff, 0 0 0 4px var(--angels); }
-  .person b { display: block; font-size: 13.5px; } .person span { font-size: 12px; color: var(--ink3); }
-
-  /* regions */
+  /* home: albums, people, regions */
+  .albums { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 16px; }
+  .album .cov { aspect-ratio: 1; border-radius: 8px; overflow: hidden; } .album .cov img { width: 100%; height: 100%; object-fit: cover; transition: transform .6s; }
+  .album:hover .cov img { transform: scale(1.04); }
+  .album b { display: block; margin-top: 8px; font-size: 14px; } .album span { font-size: 12.5px; color: var(--ink3); }
+  .duo { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 32px; }
+  .people { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 12px; }
+  .person { text-align: center; } .person img { width: 100%; aspect-ratio: 1; border-radius: 50%; object-fit: cover; margin-bottom: 6px; box-shadow: 0 0 0 2px var(--bg), 0 0 0 4px color-mix(in srgb, var(--angels) 55%, transparent); }
+  .person b { display: block; font-size: 13px; } .person span { font-size: 11.5px; color: var(--ink3); }
   .regions { display: flex; flex-wrap: wrap; gap: 8px; }
-  .region { display: flex; align-items: center; gap: 8px; padding: 6px 12px 6px 6px; border-radius: 999px; background: var(--card); border: 1px solid var(--line); font-weight: 500; font-size: 13.5px; }
-  .region img { width: 26px; height: 26px; border-radius: 50%; object-fit: cover; }
-  .region small { color: var(--ink3); font-weight: 400; }
+  .region { display: flex; align-items: center; gap: 8px; padding: 5px 12px 5px 5px; border-radius: 999px; background: var(--card); border: 1px solid var(--line); font-weight: 500; font-size: 13.5px; }
+  .region img { width: 26px; height: 26px; border-radius: 50%; object-fit: cover; } .region small { color: var(--ink3); font-weight: 400; }
 
-  @media (max-width: 1100px) { .split, .two { grid-template-columns: 1fr; } .stack { position: static; display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); } .masonry { column-count: 3; } }
-  @media (max-width: 760px) {
-    .frame { grid-template-columns: 1fr; } .side { display: none; } .tabs { display: none; } .search { flex: 1; } .top { gap: 12px; padding: 0 14px; }
-    main { padding: 14px 12px 50px; } .years { grid-auto-columns: 112px; } .masonry { column-count: 2; } .people { grid-template-columns: repeat(3, 1fr); }
-    .post { grid-template-columns: 88px minmax(0, 1fr); } .post img { width: 88px; height: 70px; }
+  /* ── journal list ── */
+  .ptitle { display: flex; align-items: flex-end; gap: 16px; margin-bottom: 24px; }
+  .ptitle h1 { margin: 0; font-size: 32px; font-weight: 700; letter-spacing: -.02em; line-height: 1.1; }
+  .ptitle span { color: var(--ink3); padding-bottom: 4px; }
+  .seg { display: inline-flex; gap: 2px; padding: 3px; margin-left: auto; border-radius: 9px; background: var(--soft); }
+  .seg a { padding: 6px 12px; border-radius: 7px; font-size: 13px; font-weight: 500; color: var(--ink2); }
+  .seg a.on { background: var(--card); color: var(--ink); box-shadow: 0 1px 2px rgba(0,0,0,.06); }
+  .month { position: sticky; top: 60px; z-index: 2; margin: 32px 0 4px; padding: 8px 0; background: var(--bg); font-size: 12.5px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--ink3); border-bottom: 1px solid var(--line); }
+  .heat { display: grid; grid-template-columns: repeat(26, 1fr); gap: 3px; }
+  .heat i { aspect-ratio: 1; border-radius: 2px; background: #ECE9E1; }
+  .heat i.l1 { background: #CFE0F5; } .heat i.l2 { background: #8DB8E8; } .heat i.l3 { background: var(--journal); }
+  .chips { display: flex; flex-wrap: wrap; gap: 6px; }
+  .chip { padding: 4px 10px; border-radius: 999px; background: var(--soft); font-size: 12.5px; color: var(--ink2); }
+  .chip:hover { background: #E6EEF9; color: var(--journal); }
+  .cats a { display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid var(--line); font-size: 13.5px; }
+  .cats a:last-child { border-bottom: 0; } .cats small { color: var(--ink3); }
+
+  /* ── reading an article ── */
+  .reader { display: grid; grid-template-columns: minmax(0, 720px) 248px; gap: 64px; justify-content: center; padding: 40px 32px 64px; }
+  .back { display: inline-block; margin-bottom: 24px; font-size: 13.5px; font-weight: 500; color: var(--ink2); }
+  .back:hover { color: var(--journal); }
+  .article h1 { margin: 8px 0 12px; font-family: var(--serif); font-size: 42px; font-weight: 600; line-height: 1.18; letter-spacing: -.02em; }
+  .dek { margin: 0 0 20px; font-family: var(--serif); font-size: 20px; line-height: 1.55; color: var(--ink2); }
+  .byline { display: flex; align-items: center; gap: 12px; padding: 14px 0; margin-bottom: 28px; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); font-size: 13px; color: var(--ink2); }
+  .byline img { width: 34px; height: 34px; border-radius: 50%; object-fit: cover; }
+  .byline b { color: var(--ink); font-weight: 600; } .byline .sep { color: var(--line); }
+  .cover { margin: 0 0 32px; } .cover img { width: 100%; aspect-ratio: 16/9; object-fit: cover; border-radius: 8px; }
+  .cover figcaption, .inrow figcaption { margin-top: 8px; font-size: 12.5px; color: var(--ink3); }
+  .prose { font-family: var(--serif); font-size: 19px; line-height: 1.75; color: #24221F; }
+  .prose p { margin: 0 0 22px; }
+  .prose h2 { margin: 44px 0 14px; font-family: var(--sans); font-size: 22px; font-weight: 700; letter-spacing: -.01em; line-height: 1.3; }
+  .prose blockquote { margin: 28px 0; padding: 4px 0 4px 20px; border-left: 3px solid var(--journal); font-style: italic; color: var(--ink2); }
+  .prose a { color: var(--journal); border-bottom: 1px solid color-mix(in srgb, var(--journal) 35%, transparent); }
+  .inrow { margin: 32px 0; } .inrow .jg { margin-right: -96px; }
+  .chat { display: flex; flex-direction: column; gap: 8px; margin: 24px 0 28px; padding: 16px; border-radius: var(--r); background: var(--card); border: 1px solid var(--line); font-family: var(--sans); font-size: 15px; }
+  .chat p { margin: 0; padding: 8px 12px; border-radius: 14px 14px 14px 4px; background: var(--soft); width: fit-content; max-width: 85%; }
+  .chat p.me { align-self: flex-end; border-radius: 14px 14px 4px 14px; background: #E6EEF9; }
+  .chat time { display: block; font-size: 11px; color: var(--ink3); }
+  .endtags { display: flex; flex-wrap: wrap; gap: 8px; padding-top: 24px; margin-top: 36px; border-top: 1px solid var(--line); }
+  .pn { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 32px; }
+  .pn a { padding: 16px; border-radius: var(--r); border: 1px solid var(--line); background: var(--card); }
+  .pn small { display: block; font-size: 12px; color: var(--ink3); margin-bottom: 4px; } .pn b { font-family: var(--serif); font-weight: 600; font-size: 16.5px; line-height: 1.35; }
+  .pn a:last-child { text-align: right; } .pn a:hover b { color: var(--journal); }
+  .aside { position: sticky; top: 92px; align-self: start; display: flex; flex-direction: column; gap: 28px; padding-top: 52px; }
+  .aside h5 { margin: 0 0 10px; font-size: 11.5px; font-weight: 600; letter-spacing: .1em; text-transform: uppercase; color: var(--ink3); }
+  .toc { display: flex; flex-direction: column; border-left: 2px solid var(--line); }
+  .toc a { margin-left: -2px; padding: 5px 0 5px 14px; border-left: 2px solid transparent; font-size: 13.5px; color: var(--ink2); transition: color .2s, border-color .2s; }
+  .toc a.on { border-color: var(--journal); color: var(--ink); font-weight: 600; }
+  .sameday { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; } .sameday img { width: 100%; aspect-ratio: 1; object-fit: cover; border-radius: 4px; }
+  .after { max-width: 1048px; margin: 0 auto; padding: 0 32px 64px; }
+  .cards3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
+  .mini { overflow: hidden; } .mini img { width: 100%; aspect-ratio: 16/10; object-fit: cover; } .mini div { padding: 14px 16px 16px; }
+  .mini h4 { margin: 4px 0 0; font-family: var(--serif); font-size: 17px; font-weight: 600; line-height: 1.35; }
+
+  @media (max-width: 1180px) { .lanes { grid-template-columns: 1fr; } .rail { position: static; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); } .albums { grid-template-columns: repeat(3, minmax(0, 1fr)); } .reader { grid-template-columns: minmax(0, 720px); } .aside { display: none; } .inrow .jg { margin-right: 0; } }
+  @media (max-width: 860px) {
+    .years { grid-template-rows: auto; } .ycard { aspect-ratio: 4/3; min-height: 0; }
+    .frame { grid-template-columns: 1fr; } .side { display: none; } .tabs { display: none; } .search { flex: 1; } .top-in { gap: 12px; padding: 0 14px; }
+    .wrap { padding: 20px 16px 48px; } .focus, .duo, .featured { grid-template-columns: 1fr; } .rail { grid-template-columns: 1fr; }
+    .people { grid-template-columns: repeat(3, minmax(0, 1fr)); } .cards3 { grid-template-columns: 1fr; } .post { grid-template-columns: minmax(0, 1fr) 88px; } .post img { width: 88px; height: 72px; }
+    .reader { padding: 24px 16px 48px; } .article h1 { font-size: 32px; } .prose { font-size: 18px; } .after { padding: 0 16px 48px; } .pn { grid-template-columns: 1fr; } .pn a:last-child { text-align: left; }
+    .ptitle { flex-wrap: wrap; } .seg { margin-left: 0; }
   }
 </style>
 </head>
-<body>
-<header class="top">
-  <a class="logo" href="#">Sonic Hub</a>
+<body data-page="home">
+<header class="top"><div class="top-in">
+  <a class="logo" href="#home">Sonic Hub</a>
   <div class="search"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg>Tìm ảnh, người, bài viết, năm…</div>
   <nav class="tabs" id="tabs"></nav>
   <button class="rand" type="button">Một ngày bất kỳ</button>
-</header>
-<div class="frame">
-  <aside class="side" id="side"></aside>
-  <main id="main"></main>
-</div>
+</div></header>
+<div class="progress" id="progress"></div>
+<div class="frame"><aside class="side" id="side"></aside><main id="main"></main></div>
+
+<script src="assets/justified.js"></script>
 <script src="assets/data.js"></script>
 <script>
-  const D = window.SH_DATA, pic = (seed, w, h) => `https://picsum.photos/seed/${seed}/${w}/${h}`;
-  const SECTIONS = [['Hôm nay', '--photo', 1], ['Ảnh', '--photo'], ['Nhật ký', '--journal'], ['Angels', '--angels'], ['Bóng đá', '--football'], ['Game', '--games']];
-  document.getElementById('tabs').innerHTML = SECTIONS.map(([n, c, on]) => `<a href="#" class="${on ? 'on' : ''}" style="--c:var(${c})"><i></i>${n}</a>`).join('');
-  const YEARS = Array.from({ length: 19 }, (_, i) => 2026 - i), COUNT = (y) => 40 + ((y * 37) % 11) * 61 + (y % 3) * 17;
-  const REGIONS = [['Family', '#EF5B78', 418], ['Hà Nội', '#2E7FD6', 377], ['FC Westlife', '#23A35E', 241], ['onthi.com', '#7B61FF', 152], ['Du lịch', '#E9A100', 289], ['Tết', '#E5533D', 196], ['Lớp 12A', '#1BA9B5', 128], ['Sinh nhật', '#C2410C', 93]];
-  const maxC = Math.max(...YEARS.map(COUNT));
-  document.getElementById('side').innerHTML = `
-    <h4>Thư viện</h4>
-    <a class="on" href="#">Hôm nay</a><a href="#">Tất cả ảnh <small>10.374</small></a><a href="#">Album <small>86</small></a><a href="#">Yêu thích <small>412</small></a><a href="#">Video <small>238</small></a><a href="#">Bản đồ <small>3.910</small></a>
-    <h4>Năm</h4>
-    ${YEARS.map(y => `<a href="#" class="${y === 2010 ? 'on' : ''}">${y}<span class="bar"><b style="width:${Math.round(COUNT(y) / maxC * 100)}%"></b></span><small>${COUNT(y)}</small></a>`).join('')}
-    <h4>Vùng</h4>
-    ${REGIONS.map(([n, c, k]) => `<a href="#"><span class="dot" style="background:${c}"></span>${n}<small>${k}</small></a>`).join('')}`;
-
-  const masonry = Array.from({ length: 28 }, (_, i) => { const r = [[4, 5], [3, 2], [1, 1], [4, 3], [2, 3], [16, 9], [3, 4]][i % 7]; return `<figure><img src="${pic('m' + i, r[0] * 120, r[1] * 120)}" alt=""><figcaption>${['Hồ Tây', 'Phố cổ', 'Tam Đảo', 'Lớp 12A', 'Nhà bà ngoại', 'Ga Hà Nội'][i % 6]} · ${3 + (i % 27)}/10/2010</figcaption></figure>`; }).join('');
-  const albums = [['Hồ Tây', 248], ['Đà Lạt 2016', 177], ['Tam Đảo', 131], ['Lớp 12A', 96], ['Tết các năm', 312], ['Phố cổ', 64], ['Sinh nhật', 93], ['Bãi Sau', 58]];
-  const posts = [
-    ['Đem Nokia N73 đi chụp lại Hồ Tây', 'Nhiều như xưa, và đẹp như xưa. Cái máy vẫn lên nguồn — pin chịu đúng bốn mươi phút, đủ cho một vòng hồ.', '12/4/2025', 'Kỷ niệm', 'Hà Nội'],
-    ['Xem lại chung kết 2005 sau 20 năm', 'Câu trả lời ngắn: có, Liverpool xứng đáng. Câu trả lời dài mất 2.400 chữ và một cốc cà phê.', '25/5/2024', 'Bóng đá', 'FC Westlife'],
-    ['Ngày đầu có máy ảnh', 'Chụp 214 tấm trong một buổi chiều. Giữ lại 9. Đến giờ vẫn còn 9 tấm đó, và tấm nào cũng nhớ.', '9/10/2016', 'Ảnh', 'Family'],
-    ['Ba dòng cho đỡ nặng đầu', 'Không cần ai đọc. Chỉ cần viết ra. Link vào vấn đề đang theo dõi để tuần sau nhìn lại.', '2/9/2026', 'Nhật ký', 'Deadline Q4'],
+  const D = window.SH_DATA, $ = (id) => document.getElementById(id);
+  const pic = (seed, w, h) => `https://picsum.photos/seed/${seed}/${w}/${h}`;
+  const YEARS = Array.from({ length: 19 }, (_, i) => 2026 - i), COUNT = (y) => 40 + ((y * 37) % 11) * 61 + (y % 3) * 17, MAXC = Math.max(...YEARS.map(COUNT));
+  const REGIONS = [['Family', '#EF5B78', 418], ['Hà Nội', '#2E7FD6', 377], ['FC Westlife', '#23A35E', 241], ['Du lịch', '#E9A100', 289], ['onthi.com', '#7B61FF', 152], ['Tết', '#E5533D', 196], ['Lớp 12A', '#1BA9B5', 128]];
+  const POSTS = [
+    { id: 1, t: 'Đem Nokia N73 đi chụp lại Hồ Tây', d: 'Nhiều như xưa, và đẹp như xưa. Cái máy vẫn lên nguồn — pin chịu đúng bốn mươi phút, đủ cho một vòng hồ.', date: '12 tháng 4, 2025', m: 'Tháng 4, 2025', cat: 'Kỷ niệm', tags: ['Hà Nội', 'Nokia'], min: 7 },
+    { id: 2, t: 'Xem lại chung kết 2005 sau 20 năm', d: 'Câu trả lời ngắn: có, Liverpool xứng đáng. Câu trả lời dài mất 2.400 chữ và một cốc cà phê.', date: '25 tháng 5, 2024', m: 'Tháng 5, 2024', cat: 'Bóng đá', tags: ['FC Westlife'], min: 11 },
+    { id: 3, t: 'Ngày đầu có máy ảnh', d: 'Chụp 214 tấm trong một buổi chiều. Giữ lại 9. Đến giờ vẫn còn 9 tấm đó, và tấm nào cũng nhớ vì sao giữ.', date: '9 tháng 10, 2016', m: 'Tháng 10, 2016', cat: 'Ảnh', tags: ['Family'], min: 5 },
+    { id: 4, t: 'Ba dòng cho đỡ nặng đầu', d: 'Không cần ai đọc. Chỉ cần viết ra. Link vào vấn đề đang theo dõi để tuần sau nhìn lại.', date: '2 tháng 9, 2026', m: 'Tháng 9, 2026', cat: 'Ghi chép', tags: ['Deadline Q4'], min: 2 },
+    { id: 5, t: 'Một mùa Tết ở nhà bà ngoại', d: 'Bánh chưng luộc từ chiều ba mươi, cả nhà ngồi canh nồi, kể chuyện từ năm bà còn đi dạy.', date: '1 tháng 2, 2025', m: 'Tháng 2, 2025', cat: 'Gia đình', tags: ['Tết', 'Family'], min: 6 },
+    { id: 6, t: 'onthi.com và những đêm luyện đề', d: 'Diễn đàn mở tới hai giờ sáng, ai cũng hỏi cùng một bài hình không gian.', date: '18 tháng 6, 2024', m: 'Tháng 6, 2024', cat: 'Kỷ niệm', tags: ['onthi.com'], min: 8 },
   ];
-  document.getElementById('main').innerHTML = `
-    <div class="hd"><h2>Ngày này các năm</h2><span>5 tháng 10 · 19 năm</span><a href="#" style="--c:var(--photo)">Xem tất cả</a></div>
-    <div class="years">${YEARS.map(y => `<a class="ycard ${y === 2010 ? 'now' : ''}" href="#"><img src="${pic('y' + y, 300, 375)}" alt=""><b>${y}</b><span>${COUNT(y) % 23 + 3} ảnh</span></a>`).join('')}</div>
+  const TABS = [['Hôm nay', '--photo', 'home'], ['Ảnh', '--photo', 'photos'], ['Nhật ký', '--journal', 'journal'], ['Angels', '--angels', 'angels'], ['Bóng đá', '--football', 'football'], ['Game', '--games', 'games']];
+  const photosFor = (key, n) => Array.from({ length: n }, (_, i) => { const r = [[4, 3], [3, 4], [16, 9], [1, 1], [3, 2], [2, 3], [5, 4]][(i * 3 + key.length) % 7]; return { src: pic(key + i, r[0] * 160, r[1] * 160), ratio: r[0] / r[1], caption: '' }; });
+  const justify = (el, list, h) => SH.justify(el, list, { rowHeight: h, gap: 8, render: (p) => { const f = document.createElement('figure'); f.className = 'jg-item'; f.innerHTML = `<img src="${p.src}" alt="">`; return f; } });
 
-    <div class="split">
-      <section>
-        <div class="hd"><h2>Tháng 10, 2010</h2><span>86 ảnh · 4 video</span><a href="#" style="--c:var(--photo)">Mở trong kho ảnh</a></div>
-        <div class="filters"><a class="on" href="#">Tất cả</a><a href="#">Ảnh</a><a href="#">Video</a><a href="#">Yêu thích</a><a href="#">Có Bích Trân</a></div>
-        <div class="masonry">${masonry}</div>
+  /* ── sidebars change with context ── */
+  function sideHome() {
+    return `<h4>Thư viện</h4><a class="on" href="#home">Hôm nay</a><a href="#home">Tất cả ảnh<small>10.374</small></a><a href="#home">Album<small>86</small></a><a href="#home">Yêu thích<small>412</small></a><a href="#home">Video<small>238</small></a>
+      <h4>Năm</h4>${YEARS.map(y => `<a href="#home" class="${y === 2010 ? 'on' : ''}">${y}<span class="bar"><b style="width:${Math.round(COUNT(y) / MAXC * 100)}%"></b></span><small>${COUNT(y)}</small></a>`).join('')}
+      <h4>Vùng</h4>${REGIONS.map(([n, c, k]) => `<a href="#home"><span class="dot" style="background:${c}"></span>${n}<small>${k}</small></a>`).join('')}`;
+  }
+  function sideJournal() {
+    const yrs = [2026, 2025, 2024, 2023, 2022, 2021, 2019, 2016, 2012, 2010, 2009];
+    return `<h4>Nhật ký</h4><a class="on" href="#journal">Tất cả<small>44</small></a><a href="#journal">Bài viết<small>31</small></a><a href="#journal">Ghi chép<small>13</small></a><a href="#journal">Nháp<small>5</small></a>
+      <h4>Chuyên mục</h4>${[['Kỷ niệm', 14], ['Bóng đá', 7], ['Ảnh', 6], ['Gia đình', 5], ['Ghi chép', 12]].map(([n, k]) => `<a href="#journal">${n}<small>${k}</small></a>`).join('')}
+      <h4>Năm</h4>${yrs.map((y, i) => `<a href="#journal">${y}<span class="bar" style="--c:var(--journal)"><b style="width:${[60, 90, 70, 40, 30, 20, 25, 35, 15, 30, 20][i]}%"></b></span><small>${[6, 9, 7, 4, 3, 2, 3, 4, 1, 3, 2][i]}</small></a>`).join('')}`;
+  }
+
+  /* ── HOME: one focal block, then a few purposeful lanes ── */
+  function home() {
+    $('side').innerHTML = sideHome();
+    $('main').innerHTML = `<div class="wrap page">
+      <section class="focus">
+        <a class="card today" href="#home">
+          <div class="img"><img src="${pic('today2010', 1280, 800)}" alt=""><span class="badge">6 ảnh · 1 trang nhật ký</span></div>
+          <div class="body"><p class="kicker">Ngày này năm 2010</p><h1>Thứ Ba, 5 tháng 10, 2010</h1>
+            <p>Hồ Tây buổi chiều, lớp học thêm, và một dòng status Yahoo lúc 23:14.</p>
+            <div class="row"><div class="thumbs">${[1, 2, 3, 4].map(i => `<img src="${pic('t' + i, 200, 200)}" alt="">`).join('')}</div>
+              <span class="pill"><img src="${pic('face0', 120, 120)}" alt="">Bích Trân</span></div></div>
+        </a>
+        <div class="years"><div class="hd"><h2>Ngày này các năm</h2><a href="#home" style="--c:var(--photo)">Tất cả</a></div>
+          ${[2025, 2024, 2023, 2021, 2019, 2016, 2014, 2012, 2009].map(y => `<a class="ycard" href="#home"><img src="${pic('y' + y, 400, 300)}" alt=""><b>${y}</b><span>${COUNT(y) % 23 + 3} ảnh</span></a>`).join('')}</div>
       </section>
-      <aside class="stack">
-        <div class="card" style="--c:var(--angels)"><h3><i></i>Một dòng tin nhắn<button>Đổi</button></h3><span class="bubble">mai thi xong roi di choi nhe. t mua ve rap quoc gia roi</span><div class="meta">Bích Trân · Yahoo · 23:14, 5/10/2010</div></div>
-        <div class="card" style="--c:var(--journal)"><h3><i></i>Nhật ký năm ấy</h3><p class="note-t">Status Yahoo tối nay</p><p class="note-d">Tối nào cũng đổi status một lần, như viết nhật ký cho cả danh sách bạn bè đọc.</p></div>
-        <div class="card" style="--c:var(--angels)"><h3><i></i>Năm ấy có</h3><div class="who"><img src="${pic('face1', 200, 200)}" alt=""><div><b>Bích Trân</b><span>2009 — 2012 · Yahoo · Nokia</span></div></div></div>
-        <div class="card rnd" style="--c:var(--photo)"><h3><i></i>Một tấm ngẫu nhiên<button>Đổi</button></h3><img src="${pic('rnd7', 400, 300)}" alt=""><div class="meta">Đà Lạt sương · 14/2/2016</div></div>
-        <div class="card" style="--c:var(--football)"><h3><i></i>Bóng đá</h3><p class="note-d"><b style="color:var(--ink)">Gameweek 7</b> · 64 điểm · hạng 12.408</p></div>
-      </aside>
-    </div>
 
-    <div class="hd"><h2>Album</h2><span>86 album</span><a href="#" style="--c:var(--photo)">Tất cả album</a></div>
-    <div class="albums">${albums.map(([n, k], i) => `<a class="album" href="#"><div class="cov"><img src="${pic('a' + i, 400, 300)}" alt=""><img src="${pic('b' + i, 200, 150)}" alt=""><img src="${pic('c' + i, 200, 150)}" alt=""></div><b>${n}</b><span>${k} ảnh</span></a>`).join('')}</div>
-
-    <div class="two">
-      <section>
-        <div class="hd"><h2>Bài viết mới</h2><span>${D.NOTES.length + 38} bài</span><a href="#" style="--c:var(--journal)">Vào Nhật ký</a></div>
-        <div class="posts">${posts.map(([t, d, dt, cat, tag], i) => `<a class="post" href="#"><img src="${pic('p' + i, 300, 220)}" alt=""><div><h4>${t}</h4><p>${d}</p><div class="tags"><span>${dt}</span>·<em>${cat}</em>·<span>${tag}</span></div></div></a>`).join('')}</div>
+      <section class="lanes">
+        <div>
+          <div class="block"><div class="hd"><h2>Tháng 10, 2010</h2><span>86 ảnh</span><a href="#home" style="--c:var(--photo)">Mở trong kho ảnh</a></div><div id="month"></div></div>
+          <div class="block"><div class="hd"><h2>Viết gần đây</h2><span>44 bài</span><a href="#journal">Vào Nhật ký</a></div>
+            <a class="card featured" href="#post-1"><img src="${pic('cover1', 900, 640)}" alt=""><div class="body"><span class="cat">${POSTS[0].cat}</span><h3>${POSTS[0].t}</h3><p>${POSTS[0].d}</p><span class="by">${POSTS[0].date} · ${POSTS[0].min} phút đọc</span></div></a>
+            <div class="posts" style="margin-top:16px">${POSTS.slice(1, 4).map(p => postRow(p)).join('')}</div></div>
+        </div>
+        <aside class="rail">
+          <div class="card" style="--c:var(--angels)"><h3><i></i>Một dòng tin nhắn<button>Đổi</button></h3><span class="bubble">mai thi xong roi di choi nhe. t mua ve rap quoc gia roi</span><div class="meta">Bích Trân · Yahoo · 23:14</div></div>
+          <div class="card" style="--c:var(--photo)"><h3><i></i>Một tấm ngẫu nhiên<button>Đổi</button></h3><img class="pic" src="${pic('rnd7', 480, 360)}" alt=""><div class="meta">Đà Lạt · 14 tháng 2, 2016</div></div>
+          <div class="card" style="--c:var(--football)"><h3><i></i>Fantasy tuần này</h3><div style="font-size:22px;font-weight:700">64 điểm</div><div class="meta">Gameweek 7 · hạng 12.408</div></div>
+        </aside>
       </section>
-      <section>
-        <div class="hd"><h2>Angels</h2><span>6 người</span><a href="#" style="--c:var(--angels)">Vào Angels</a></div>
-        <div class="people">${D.PEOPLE.map((p, i) => `<a class="person" href="#"><img src="${pic('face' + i, 200, 200)}" alt=""><b>${p.name}</b><span>${p.from}${p.to !== p.from ? '–' + p.to : ''}</span></a>`).join('')}</div>
-      </section>
-    </div>
 
-    <div class="hd"><h2>Vùng</h2><span>theo tag</span></div>
-    <div class="regions">${REGIONS.map(([n, c, k], i) => `<a class="region" href="#" style="border-color:${c}55"><img src="${pic('r' + i, 80, 80)}" alt="">${n}<small>${k}</small></a>`).join('')}</div>`;
+      <section><div class="hd"><h2>Album</h2><span>86 album</span><a href="#home" style="--c:var(--photo)">Tất cả album</a></div>
+        <div class="albums">${[['Hồ Tây', 248], ['Đà Lạt 2016', 177], ['Tam Đảo', 131], ['Lớp 12A', 96], ['Tết các năm', 312], ['Phố cổ', 64]].map(([n, k], i) => `<a class="album" href="#home"><div class="cov"><img src="${pic('al' + i, 400, 400)}" alt=""></div><b>${n}</b><span>${k} ảnh</span></a>`).join('')}</div></section>
+
+      <section class="duo">
+        <div><div class="hd"><h2>Angels</h2><span>6 người</span><a href="#home" style="--c:var(--angels)">Vào Angels</a></div>
+          <div class="people">${D.PEOPLE.map((p, i) => `<a class="person" href="#home"><img src="${pic('face' + i, 200, 200)}" alt=""><b>${p.name}</b><span>${p.from}${p.to !== p.from ? '–' + p.to : ''}</span></a>`).join('')}</div></div>
+        <div><div class="hd"><h2>Vùng</h2><span>theo tag</span></div>
+          <div class="regions">${REGIONS.map(([n, c, k], i) => `<a class="region" href="#home"><img src="${pic('rg' + i, 80, 80)}" alt="">${n}<small>${k}</small></a>`).join('')}</div></div>
+      </section>
+    </div>`;
+    justify($('month'), photosFor('mo', 13), 168);
+  }
+  const postRow = (p) => `<a class="post" href="#post-${p.id}"><div><span class="cat">${p.cat}</span><h4>${p.t}</h4><p>${p.d}</p><span class="by">${p.date} · ${p.min} phút đọc</span></div><img src="${pic('pc' + p.id, 300, 220)}" alt=""></a>`;
+
+  /* ── JOURNAL: a list you can scan, grouped by month ── */
+  function journal() {
+    $('side').innerHTML = sideJournal();
+    const groups = {}; POSTS.slice(1).forEach(p => (groups[p.m] = groups[p.m] || []).push(p));
+    const heat = Array.from({ length: 182 }, (_, i) => { const v = (i * 7919) % 13; return `<i class="${v > 11 ? 'l3' : v > 9 ? 'l2' : v > 6 ? 'l1' : ''}"></i>`; }).join('');
+    $('main').innerHTML = `<div class="wrap page">
+      <div class="ptitle"><h1>Nhật ký</h1><span>44 bài · từ 2009</span><div class="seg"><a class="on" href="#journal">Tất cả</a><a href="#journal">Bài viết</a><a href="#journal">Ghi chép</a></div></div>
+      <section class="lanes">
+        <div>
+          <a class="card featured" href="#post-1"><img src="${pic('cover1', 900, 640)}" alt=""><div class="body"><span class="cat">Mới nhất · ${POSTS[0].cat}</span><h3>${POSTS[0].t}</h3><p>${POSTS[0].d}</p><span class="by">${POSTS[0].date} · ${POSTS[0].min} phút đọc</span></div></a>
+          ${Object.entries(groups).map(([m, ps]) => `<div class="month">${m}</div><div class="posts">${ps.map(postRow).join('')}</div>`).join('')}
+        </div>
+        <aside class="rail">
+          <div class="card" style="--c:var(--journal)"><h3><i></i>Lịch viết 2025 – 2026</h3><div class="heat">${heat}</div><div class="meta">31 ngày có viết trong 6 tháng qua</div></div>
+          <div class="card" style="--c:var(--journal)"><h3><i></i>Thẻ</h3><div class="chips">${['Hà Nội', 'Family', 'FC Westlife', 'Tết', 'Nokia', 'onthi.com', 'Deadline Q4', 'Bóng đá'].map(t => `<a class="chip" href="#journal">${t}</a>`).join('')}</div></div>
+          <div class="card" style="--c:var(--journal)"><h3><i></i>Đọc lại một bài cũ<button>Đổi</button></h3><a href="#post-3" style="font-family:var(--serif);font-size:17px;font-weight:600;line-height:1.35">${POSTS[2].t}</a><div class="meta">${POSTS[2].date}</div></div>
+        </aside>
+      </section>
+    </div>`;
+  }
+
+  /* ── READING: a calm column, the memories of that day beside it ── */
+  function post(id) {
+    const p = POSTS.find(x => x.id === id) || POSTS[0], i = POSTS.indexOf(p), prev = POSTS[i + 1], next = POSTS[i - 1];
+    $('main').innerHTML = `<div class="page">
+      <div class="reader">
+        <article class="article">
+          <a class="back" href="#journal">← Nhật ký</a><br>
+          <span class="cat">${p.cat}</span>
+          <h1>${p.t}</h1>
+          <p class="dek">${p.d}</p>
+          <div class="byline"><img src="${pic('me', 120, 120)}" alt=""><b>Ngọc Anh</b><span class="sep">|</span><span>${p.date}</span><span class="sep">|</span><span>${p.min} phút đọc</span></div>
+          <figure class="cover"><img src="${pic('cover' + p.id, 1440, 810)}" alt=""><figcaption>Hồ Tây nhìn từ đường Thanh Niên, chụp bằng Nokia N73.</figcaption></figure>
+          <div class="prose">
+            <p>Cái Nokia N73 nằm trong ngăn kéo gần mười lăm năm. Sạc qua đêm, sáng ra màn hình sáng lên với logo hai bàn tay quen thuộc, rồi đứng im ở màn hình chờ như chưa từng có quãng thời gian nào trôi qua.</p>
+            <h2 id="s1">Bốn mươi phút pin</h2>
+            <p>Pin chỉ còn giữ được khoảng bốn mươi phút. Vừa đủ cho một vòng Hồ Tây nếu đi bộ nhanh và không dừng lại quá lâu ở chỗ nào. Ống kính 3.2 megapixel, màu hơi ngả vàng, và cái độ trễ nửa giây sau mỗi lần bấm — thứ mà ngày xưa ai cũng quen.</p>
+            <blockquote>Máy ảnh cũ không chụp lại được ngày xưa. Nhưng nó nhắc mình ngày xưa mình đã nhìn mọi thứ chậm như thế nào.</blockquote>
+            <h2 id="s2">Những chỗ cũ</h2>
+            <p>Đường Thanh Niên vẫn vậy, chỉ có hàng quán đổi tên. Cái ghế đá chỗ gần chùa Trấn Quốc vẫn còn. Tôi chụp lại đúng góc đã chụp năm 2010, rồi đặt hai tấm cạnh nhau.</p>
+            <div class="inrow"><div id="inrow"></div><figcaption>Trái: 2010. Giữa và phải: 2025 — cùng một góc, cùng một chiếc máy.</figcaption></div>
+            <p>Khác nhau nhiều nhất không phải cảnh vật, mà là ánh sáng: năm 2010 chụp lúc chiều muộn, còn hôm nay trời trưa gắt.</p>
+            <h2 id="s3">Một tin nhắn cũ trong máy</h2>
+            <p>Lục hộp thư đến, vẫn còn vài tin nhắn từ hồi đó. Có một cuộc nói chuyện ngắn từ tháng 5 năm 2010:</p>
+            <div class="chat"><p><time>23:14 · Bích Trân</time>mai thi xong roi di choi nhe</p><p class="me"><time>23:15</time>di dau</p><p><time>23:15 · Bích Trân</time>rap quoc gia. t mua ve roi :)</p></div>
+            <p>Đọc lại thấy buồn cười vì cái cách mình gõ không dấu, viết tắt, và luôn kết thúc bằng một cái mặt cười.</p>
+            <h2 id="s4">Có nên giữ lại?</h2>
+            <p>Có. Không phải để dùng, mà để thỉnh thoảng sạc lên, đi một vòng hồ, và nhớ lại cảm giác chờ nửa giây sau mỗi lần bấm máy. <a href="#post-3">Ngày đầu có máy ảnh</a> cũng bắt đầu y như thế.</p>
+          </div>
+          <div class="endtags">${p.tags.concat(['Hồ Tây']).map(t => `<a class="chip" href="#journal">${t}</a>`).join('')}</div>
+          <div class="pn">${prev ? `<a href="#post-${prev.id}"><small>← Bài trước</small><b>${prev.t}</b></a>` : '<span></span>'}${next ? `<a href="#post-${next.id}"><small>Bài sau →</small><b>${next.t}</b></a>` : '<span></span>'}</div>
+        </article>
+        <aside class="aside">
+          <div><h5>Trong bài</h5><nav class="toc" id="toc"><a href="#s1" data-s="s1">Bốn mươi phút pin</a><a href="#s2" data-s="s2">Những chỗ cũ</a><a href="#s3" data-s="s3">Một tin nhắn cũ trong máy</a><a href="#s4" data-s="s4">Có nên giữ lại?</a></nav></div>
+          <div><h5>Ảnh ngày ${p.date}</h5><div class="sameday">${[1, 2, 3, 4, 5, 6].map(k => `<img src="${pic('sd' + k, 200, 200)}" alt="">`).join('')}</div></div>
+          <div><h5>Nhắc đến</h5><span class="pill"><img src="${pic('face0', 120, 120)}" alt="">Bích Trân</span></div>
+          <div><h5>Vùng</h5><div class="chips"><a class="chip" href="#home">Hà Nội</a><a class="chip" href="#home">Hồ Tây</a></div></div>
+        </aside>
+      </div>
+      <div class="after"><div class="hd"><h2>Cùng năm ${p.date.slice(-4)}</h2><a href="#journal">Tất cả bài</a></div>
+        <div class="cards3">${POSTS.filter(x => x.id !== p.id).slice(0, 3).map(x => `<a class="card mini" href="#post-${x.id}"><img src="${pic('pc' + x.id, 600, 375)}" alt=""><div><span class="cat">${x.cat}</span><h4>${x.t}</h4><div class="by" style="margin-top:6px">${x.date}</div></div></a>`).join('')}</div></div>
+    </div>`;
+    justify($('inrow'), [{ src: pic('old2010', 640, 480), ratio: 4 / 3 }, { src: pic('new2025a', 640, 480), ratio: 4 / 3 }, { src: pic('new2025b', 480, 640), ratio: 3 / 4 }], 230);
+    const links = [...document.querySelectorAll('#toc a')];
+    links.forEach(a => a.onclick = (e) => { e.preventDefault(); $(a.dataset.s).scrollIntoView({ behavior: 'smooth' }); });
+
+  }
+
+  /* ── router + reading progress ── */
+  function route() {
+    const h = location.hash.slice(1) || 'home', page = h.startsWith('post-') ? 'post' : h === 'journal' ? 'journal' : 'home';
+    document.body.dataset.page = page;
+    $('tabs').innerHTML = TABS.map(([n, c, k]) => `<a href="#${k === 'journal' ? 'journal' : 'home'}" class="${(page === 'home' && k === 'home') || (page !== 'home' && k === 'journal') ? 'on' : ''}" style="--c:var(${c})"><i></i>${n}</a>`).join('');
+    if (page === 'post') post(+h.slice(5)); else if (page === 'journal') journal(); else home();
+    window.scrollTo({ top: 0 }); progress();
+  }
+  function progress() {
+    const bar = $('progress');
+    if (document.body.dataset.page !== 'post') { bar.style.width = '0'; return; }
+    const a = document.querySelector('.article'); if (!a) return;
+    const r = a.getBoundingClientRect(), total = a.offsetHeight - innerHeight + 160;
+    bar.style.width = Math.max(0, Math.min(100, (-r.top + 100) / total * 100)) + '%';
+    const heads = [...document.querySelectorAll('.prose h2')], cur = heads.filter(h => h.getBoundingClientRect().top < 140).pop();
+    document.querySelectorAll('#toc a').forEach(a => a.classList.toggle('on', !!cur && a.dataset.s === cur.id));
+  }
+  addEventListener('scroll', progress, { passive: true });
+  addEventListener('hashchange', route);
+  route();
 </script>
 </body>
 </html>
