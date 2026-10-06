@@ -18,16 +18,17 @@
     <div id="table">
       <div id="opps"></div>
       <aside id="events"></aside>
-      <div id="stage"><div class="rose"></div><div id="stage-card"></div><div id="stage-caption"></div></div>
+      <div id="stage"><div class="rose"></div><div class="dropglow"></div><div id="stage-card"></div><div id="stage-caption"></div></div>
       <aside id="market"></aside>
       <div id="me"></div>
       <div id="prompt" class="actionbar"></div>
-      <div id="handzone"><div id="hand"></div></div>
+      <div id="handzone"><button class="hand-nav prev" data-act="hand-prev" aria-label="Scroll the hand left" tabindex="-1">‹</button><div id="hand"></div><button class="hand-nav next" data-act="hand-next" aria-label="Scroll the hand right" tabindex="-1">›</button></div>
     </div>
     <aside id="chronicle" class="drawer" aria-label="Chronicle"></aside>
   </section>
   <svg id="fx-arrows" aria-hidden="true"></svg>
   <div id="fx-layer" aria-hidden="true"></div>
+  <div id="drag-ghost" aria-hidden="true"></div>
   <div id="codex" class="codex hidden" role="dialog" aria-label="Codex"></div>
   <div id="sheet" class="sheet-wrap hidden"></div>
   <div id="tip" class="tip hidden" role="tooltip"></div>

@@ -166,13 +166,13 @@ button{font:inherit;color:inherit}
 .token{font-size:12.5px;font-weight:700;padding:1px 9px;border-radius:2px;background:#2a4b77;color:#f6ebcf;cursor:help}.token.camel{background:#9c7040}
 .camp.turn{box-shadow:inset 0 0 0 1px rgba(43,33,24,.75),inset 0 0 0 3px rgba(247,238,215,.65),0 0 0 2px var(--gold-hi),0 0 30px rgba(236,209,139,.55),0 10px 24px rgba(0,0,0,.5)}
 .camp.targetable{cursor:crosshair;outline:3px dashed rgba(214,90,60,.95);outline-offset:4px}
-.camp.targetable.hot{transform:translateY(-4px);outline-style:solid;outline-color:#e26a4a;box-shadow:inset 0 0 0 1px rgba(43,33,24,.75),0 0 36px rgba(226,106,74,.7),0 10px 24px rgba(0,0,0,.5)}
+.camp.targetable.hot{outline-style:solid;outline-color:#e26a4a;box-shadow:inset 0 0 0 1px rgba(43,33,24,.75),0 0 36px rgba(226,106,74,.7),0 10px 24px rgba(0,0,0,.5)}
 .camp.out{filter:grayscale(.9) brightness(.7)}
 .camp.hit{animation:shake .35s}
 @keyframes shake{0%,100%{transform:none}25%{transform:translateX(-6px)}50%{transform:translateX(6px)}75%{transform:translateX(-3px)}}
 .chips{position:absolute;left:50%;top:-14px;transform:translateX(-50%);display:flex;gap:4px;z-index:6;pointer-events:none;white-space:nowrap}
 .chip{font-weight:800;font-size:13.5px;padding:2px 9px;border-radius:3px;box-shadow:0 0 0 1px rgba(43,33,24,.6),0 3px 8px rgba(0,0,0,.45)}
-.chip.dmg{background:#f6d9cc;color:#8a2412}.chip.heal{background:#d6ead1;color:#255b24}.chip.gold{background:#f4e3a8;color:#5f4708}.chip.wall{background:#e0e2e6;color:#3c4452}.chip.card{background:#dfe1f2;color:#28316c}.chip.ko{background:#8a2412;color:#fff}
+.chip.dmg{background:#f6d9cc;color:#8a2412}.chip.heal{background:#d6ead1;color:#255b24}.chip.gold{background:#f4e3a8;color:#5f4708}.chip.wall{background:#e0e2e6;color:#3c4452}.chip.cards{background:#dfe1f2;color:#28316c}.chip.ko{background:#8a2412;color:#fff}
 .floats{position:absolute;inset:0;pointer-events:none;display:grid;place-items:center;z-index:7}
 .float{position:absolute;font-weight:800;font-size:31px;white-space:nowrap;text-shadow:0 2px 0 rgba(0,0,0,.35),0 0 12px rgba(255,240,210,.8);animation:floatup 1.5s ease-out forwards}
 .float.dmg{color:#a82814}.float.heal{color:#2d6f2a}.float.wall{color:#3f4756;font-size:23px}.float.gold{color:#7c5b06;font-size:22px}.float.info{color:#4c2c7a;font-size:21px}.float.big{font-size:40px}
@@ -181,10 +181,11 @@ button{font:inherit;color:inherit}
 #stage{grid-area:stage;position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:0}
 #stage::before{content:'';position:absolute;inset:2% 1%;border-radius:4px;transform:rotate(-.5deg);
   background:var(--rose) center/min(62%,300px) no-repeat,var(--rhumb) center/1500px no-repeat,var(--vellum-tex),linear-gradient(180deg,#eedfbc,#dcc89c);
-  box-shadow:inset 0 0 60px rgba(120,70,25,.48),inset 0 0 8px rgba(70,40,15,.65),0 16px 36px rgba(0,0,0,.55);transition:box-shadow .2s}
-#stage.drop-ok::before{box-shadow:inset 0 0 0 3px rgba(164,48,29,.75),inset 0 0 70px rgba(236,180,90,.55),0 16px 36px rgba(0,0,0,.55)}
+  box-shadow:inset 0 0 60px rgba(120,70,25,.48),inset 0 0 8px rgba(70,40,15,.65),0 16px 36px rgba(0,0,0,.55);will-change:transform}
+#stage .dropglow{position:absolute;inset:2% 1%;border-radius:4px;transform:rotate(-.5deg);pointer-events:none;opacity:0;transition:opacity .15s ease;will-change:opacity;box-shadow:inset 0 0 0 3px rgba(164,48,29,.8),inset 0 0 70px rgba(236,180,90,.6)}
+#stage.holding .dropglow{opacity:.3}#stage.drop-ok .dropglow{opacity:1}
 #stage .rose{display:none}
-#stage-card{position:relative;min-height:10px;display:flex;justify-content:center}
+#stage-card{position:relative;min-height:10px;display:flex;justify-content:center;transition:opacity .15s}
 .stage-fit{transform-origin:top center}
 #stage-card .card.pop{animation:pop .3s ease-out}
 @keyframes pop{from{transform:scale(.82);opacity:.2}to{transform:none;opacity:1}}
@@ -205,7 +206,7 @@ button{font:inherit;color:inherit}
 #market h3{margin:0 0 10px;font-family:var(--f-head);font-weight:400;font-size:21px;color:var(--gold-hi);text-shadow:0 1px 0 #000}
 .mk-row{display:flex;gap:8px;justify-content:space-between;padding-bottom:12px}
 .mk-item{border:0;padding:0;background:none;cursor:default}
-.mk-item.can{cursor:pointer}.mk-item.can .card{filter:drop-shadow(0 0 10px rgba(236,209,139,.75)) drop-shadow(0 6px 8px rgba(14,7,0,.55))}@media (hover:hover) and (pointer:fine){.mk-item.can:hover .card{transform:translateY(-4px)}}
+.mk-item.can{cursor:pointer}.mk-item.can .card{filter:drop-shadow(0 0 10px rgba(236,209,139,.75)) drop-shadow(0 6px 8px rgba(14,7,0,.55))}
 .mk-note{margin:4px 0 0;font-size:13.5px;line-height:1.3;color:#e8d8b4}
 .mk-note .kw{color:var(--gold-hi)}
 #me{grid-area:me;align-self:end;padding-bottom:12px}
@@ -217,17 +218,29 @@ button{font:inherit;color:inherit}
 .actionbar{position:relative;z-index:60;display:flex;align-items:center;justify-content:center;gap:10px;min-height:50px}
 .actionbar .hint{font-family:var(--f-head);font-size:19px;color:var(--gold-hi);text-align:center;text-shadow:0 1px 0 #000,0 0 12px rgba(0,0,0,.6)}
 .actionbar .btn{white-space:nowrap;min-width:120px}
-#handzone{grid-area:hand;position:relative;align-self:end}
-#hand{position:relative;display:flex;justify-content:center;align-items:flex-end;height:248px;padding:0 20px 14px}
-#hand .card{margin:0;transform:translateY(var(--y,0)) rotate(var(--rot,0deg));transform-origin:50% 115%;transition:transform .16s ease,filter .16s ease,opacity .16s}
+/* the hand: one straight row, as in Photo Studio. A native scroller that settles on a card; nothing moves on hover, a chosen card
+   rises 8px; the ghost of a drag is a copy of the card on its own GPU layer */
+#handzone{grid-area:hand;position:relative;align-self:end;min-width:0}
+#hand{position:relative;display:flex;align-items:flex-end;gap:20px;overflow-x:auto;overflow-y:hidden;scroll-snap-type:x proximity;scrollbar-width:none;overscroll-behavior-x:contain;padding:22px 20px 14px;touch-action:pan-x}
+#hand::-webkit-scrollbar{display:none}
+#handzone.over #hand{padding-left:54px;padding-right:54px;-webkit-mask-image:linear-gradient(90deg,transparent 0,#000 50px,#000 calc(100% - 50px),transparent);mask-image:linear-gradient(90deg,transparent 0,#000 50px,#000 calc(100% - 50px),transparent)}
+#hand>.card:first-child{margin-left:auto}#hand>.card:last-child{margin-right:auto}
+#hand .card{scroll-snap-align:center;transition:transform .2s cubic-bezier(.2,.9,.3,1.2),opacity .15s;-webkit-touch-callout:none}
 #hand .card.playable{cursor:grab}
-@media (hover:hover) and (pointer:fine){#hand .card.playable:hover,#hand .card.playable:focus-visible{transform:translateY(-30px) scale(1.06);z-index:40!important}}
-#hand .card.sel{transform:translateY(-24px) scale(1.06);z-index:50!important;filter:drop-shadow(0 0 2px var(--gold-hi)) drop-shadow(0 0 16px rgba(236,209,139,.85)) drop-shadow(0 10px 14px rgba(0,0,0,.55))}
+#hand .card.sel{transform:translateY(-8px);filter:drop-shadow(0 0 1.5px #fff3c8) drop-shadow(0 0 2.5px var(--gold-hi)) drop-shadow(0 0 12px rgba(236,209,139,.95))}
 #hand .card.dim{filter:saturate(.7) brightness(.82) drop-shadow(0 6px 8px rgba(14,7,0,.55))}
-.hand-empty{align-self:center;font-style:italic;color:#d9c8a2}
-.drag-ghost{position:fixed;left:0;top:0;z-index:75;pointer-events:none;transform-origin:50% 60%}
-html.dragging #hand .card.sel{opacity:.35}
-html.dragging,html.dragging *{cursor:grabbing!important}
+#hand .card.drag-src{opacity:.35;transform:none;cursor:grabbing}
+.hand-empty{align-self:center;margin:auto;font-style:italic;color:#d9c8a2}
+.hand-nav{display:none;position:absolute;top:50%;z-index:2;width:38px;height:38px;margin-top:-15px;padding:0;border:0;border-radius:50%;place-items:center;cursor:pointer;font-size:26px;line-height:1;color:var(--gold-hi);
+  background:radial-gradient(circle at 40% 35%,#5c3b22,#2c1a0d);box-shadow:inset 0 0 0 1.5px var(--gold),0 2px 6px rgba(0,0,0,.55)}
+#handzone.over .hand-nav{display:grid}
+.hand-nav.prev{left:6px}.hand-nav.next{right:6px}
+.hand-nav:disabled{opacity:.3;cursor:default}
+#drag-ghost{position:fixed;left:0;top:0;z-index:75;pointer-events:none;display:none;transform-origin:0 0;will-change:transform}
+#drag-ghost.on{display:block}
+#drag-ghost .card{margin:0;filter:drop-shadow(0 16px 18px rgba(14,7,0,.55));animation:pickup .14s ease-out}
+@keyframes pickup{from{transform:scale(1.25) rotate(3deg)}}
+#stage.holding #stage-card{opacity:.35}
 
 /* drawer, sheets, tooltips, coach, banner */
 .drawer{position:absolute;top:54px;right:0;bottom:0;width:340px;z-index:30;padding:16px 18px;overflow:auto;transform:translateX(105%);transition:transform .25s ease;color:var(--ink);
@@ -250,7 +263,7 @@ html.dragging,html.dragging *{cursor:grabbing!important}
 .set-row>div>b{display:block;font-family:var(--f-head);font-weight:400;font-size:18px}.set-row>div>span{font-size:14.5px;color:var(--ink-3)}
 .relics{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:10px}
 .relic-pick{text-align:left;border:0;cursor:pointer;border-radius:3px;padding:14px;color:var(--ink);background:var(--vellum-tex),linear-gradient(#fbf3de,#ead7ab);box-shadow:inset 0 0 0 1px rgba(43,33,24,.6),inset 0 0 0 3px rgba(201,162,74,.6),0 4px 0 #8c7448,0 8px 16px rgba(0,0,0,.3)}
-@media (hover:hover) and (pointer:fine){.relic-pick:hover{transform:translateY(-3px)}}
+@media (hover:hover) and (pointer:fine){.relic-pick:hover{filter:brightness(1.04)}}
 .relic-pick>b{display:block;font-family:var(--f-head);font-weight:400;font-size:20px;color:var(--rubric)}.relic-pick>span{display:block;font-size:15px;line-height:1.35}
 .legend{display:grid;grid-template-columns:repeat(2,1fr);gap:8px 18px;margin:8px 0}
 .legend div{display:grid;grid-template-columns:30px 1fr;gap:2px 8px;font-size:15px}.legend .sym{width:28px;height:28px}.legend>div>b{align-self:center;font-family:var(--f-head);font-weight:400;font-size:17px}.legend>div>span{grid-column:2;color:var(--ink-2);line-height:1.3}
@@ -293,8 +306,8 @@ html.dragging,html.dragging *{cursor:grabbing!important}
 .region h3{margin:16px 0 8px;font-family:var(--f-head);font-weight:400;font-size:21px;color:var(--gold-hi);text-shadow:0 1px 0 #000}
 .civ-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(156px,1fr));gap:12px}
 .civ-tile{position:relative;height:92px;border:0;cursor:pointer;text-align:left;color:#fbeed2;padding:9px 10px;display:flex;align-items:flex-end;gap:8px;border-radius:4px;
-  background-color:var(--civ-deep);background-image:var(--motif);box-shadow:inset 0 0 0 1px rgba(255,228,170,.4),inset 0 0 0 2px rgba(0,0,0,.5),0 6px 14px rgba(0,0,0,.5);transition:transform .15s}
-@media (hover:hover) and (pointer:fine){.civ-tile:hover{transform:translateY(-2px)}}
+  background-color:var(--civ-deep);background-image:var(--motif);box-shadow:inset 0 0 0 1px rgba(255,228,170,.4),inset 0 0 0 2px rgba(0,0,0,.5),0 6px 14px rgba(0,0,0,.5)}
+@media (hover:hover) and (pointer:fine){.civ-tile:hover{filter:brightness(1.1)}}
 .civ-tile.on{box-shadow:inset 0 0 0 1px rgba(255,228,170,.6),0 0 0 3px var(--gold-hi),0 0 26px rgba(236,209,139,.55)}
 .civ-tile .crest{flex:0 0 auto;filter:drop-shadow(0 2px 2px rgba(0,0,0,.5))}
 .civ-tile .nm{font-family:var(--f-head);font-size:18px;line-height:1.02;text-shadow:0 1px 0 rgba(0,0,0,.6)}
@@ -340,7 +353,7 @@ html.compact .cname{font-size:17px}
 html.compact .hpseal{width:54px;height:54px}html.compact .hpseal b{font-size:20px}html.compact .hpseal small{bottom:11px;font-size:9.5px}
 html.compact .camp-banner{min-height:36px;padding-right:62px}
 html.compact .bld{width:34px;height:32px}html.compact .bld svg{width:27px;height:27px}
-html.compact #stage::before{inset:1% 0}
+html.compact #stage::before,html.compact #stage .dropglow{inset:1% 0}
 html.compact .card.lg{--w:156px;--h:220px;--s:31px}html.compact .card.lg .cn{font-size:14px}html.compact .card.lg .ct{font-size:13px;padding:5px 9px 12px}
 html.compact #stage-caption{font-size:15px;margin-top:8px}
 html.compact #me{padding-bottom:0}
@@ -349,11 +362,8 @@ html.compact .camp.mine .defs .lbl{font-size:12px;margin-bottom:1px}
 html.compact .camp.mine .stash{flex-direction:row;align-items:center;gap:8px}
 html.compact .camp.mine .relic,html.compact .piles{display:none}
 html.compact .actionbar{min-height:48px}html.compact .actionbar .hint{font-size:16px}html.compact .actionbar .btn{min-height:44px;font-size:17px}
-html.compact #hand{justify-content:flex-start;align-items:center;overflow-x:auto;overflow-y:hidden;scroll-snap-type:none;overscroll-behavior-x:contain;gap:10px;height:auto;min-height:calc(var(--ch) + 24px);padding:12px 16px;touch-action:pan-x;
+html.compact #hand{align-items:center;gap:12px;min-height:calc(var(--ch) + 28px);padding:18px 16px 10px;
   -webkit-mask-image:linear-gradient(90deg,transparent,#000 14px,#000 calc(100% - 14px),transparent);mask-image:linear-gradient(90deg,transparent,#000 14px,#000 calc(100% - 14px),transparent)}
-html.compact #hand .card{transform:none!important;transition:filter .15s ease}
-html.compact #hand>.card:first-child{margin-left:auto}html.compact #hand>.card:last-child{margin-right:auto}
-html.compact #hand .card.sel{filter:drop-shadow(0 0 1.5px #fff3c8) drop-shadow(0 0 2.5px var(--gold-hi)) drop-shadow(0 0 12px rgba(236,209,139,.95))}
 html.compact #handzone{padding-bottom:calc(4px + env(safe-area-inset-bottom,0px))}
 html.compact .drawer{top:52px;width:100%}
 html.compact .sheet-wrap{place-items:end center;padding:0}
@@ -373,12 +383,13 @@ html.compact.land #opps{flex-direction:column;justify-content:flex-start;gap:6px
 html.compact.land #opps .camp{flex:0 0 auto}
 html.compact.land #me{align-self:end}
 html.compact.land .camp.mine .camp-body{flex-wrap:wrap}
-html.compact.land #hand{height:128px;min-height:0;padding:7px 10px}
+html.compact.land #hand{height:128px;min-height:0;padding:11px 10px 3px}
 html.compact.land .card .ct{font-size:9.5px}html.compact.land .card .cn{font-size:11px;margin:4px 4px 0;padding:2px 5px}html.compact.land .card .ca{margin:3px 5px 0}
 html.compact.land .card.lg{--w:118px;--h:166px}
+html.compact.land :is(#hand,#drag-ghost) .card:not(.sm):not(.lg){--s:18px}
 html.compact.land .actionbar{align-self:center;flex-wrap:wrap;gap:6px}html.compact.land .actionbar .btn{min-width:0;font-size:15px;padding:6px 12px}
 html.compact.land .camp.mini{display:flex;align-items:stretch}html.compact.land .camp.mini .camp-banner{flex:0 0 92px;min-height:0;border-radius:5px 0 0 5px;flex-direction:column;align-items:flex-start;justify-content:center;gap:1px;padding:4px 7px}html.compact.land .camp.mini .cname{font-size:13px;max-width:100%}html.compact.land .camp.mini .hpseal{width:38px;height:38px}html.compact.land .camp.mini .hpseal b{font-size:15px}html.compact.land .mini-stats{gap:1px 8px;font-size:12.5px}
-@media (max-height:820px){html:not(.compact){--cw:136px;--ch:192px}html:not(.compact) #hand{height:226px}html:not(.compact) #topbar{height:50px}}
+@media (max-height:820px){html:not(.compact){--cw:136px;--ch:192px}html:not(.compact) #topbar{height:50px}}
 @media (prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;transition-duration:.01ms!important}}
 
 /* ── round herald: the table stops and the event is read out ── */
@@ -537,15 +548,15 @@ html.compact.land .camp.mine .hptag{padding:2px 7px 3px}html.compact.land .camp.
 html.compact .cx-tabs,html.compact .cx-body{width:calc(100% - 12px)}
 html.compact.land .camp.mine .medal{width:21px;height:21px}
 /* phone hand: long card text ends in an ellipsis instead of being cut mid-line (the full text is one tap away) */
-html.compact #hand .card:not(.sm):not(.lg) .ct{min-height:0;overflow:hidden}
-html.compact #hand .card:not(.sm):not(.lg) .ct span{display:-webkit-box;-webkit-line-clamp:4;-webkit-box-orient:vertical;overflow:hidden}
-html.compact:not(.land) #hand .card:not(.sm):not(.lg){--s:27px}
-html.compact:not(.land) #hand .card:not(.sm):not(.lg) .ct{font-size:12px;line-height:1.2;padding:4px 7px 10px}
-html.compact:not(.land) #hand .card:not(.sm):not(.lg) .cn{font-size:13px}
-html.compact:not(.land) #hand .card:not(.sm):not(.lg) .ca{height:auto;min-height:36px;padding:3px 0}
-html.compact #hand .card.t-sig:not(.sm):not(.lg) .ct,html.compact #hand .card.t-imp:not(.sm):not(.lg) .ct,html.compact #hand .card.t-age:not(.sm):not(.lg) .ct{padding-bottom:15px}
-html.compact:not(.land) #hand .card:not(.sm):not(.lg) .seal{width:24px;height:24px;bottom:-10px}html.compact:not(.land) #hand .card:not(.sm):not(.lg) .seal .crest{width:17px;height:17px}html.compact:not(.land) #hand .card:not(.sm):not(.lg) .seal.crown svg{width:19px;height:19px}
-html.compact #hand .card.t-sig:not(.sm):not(.lg) .ct span,html.compact #hand .card.t-imp:not(.sm):not(.lg) .ct span,html.compact #hand .card.t-age:not(.sm):not(.lg) .ct span{-webkit-line-clamp:3}
+html.compact :is(#hand,#drag-ghost) .card:not(.sm):not(.lg) .ct{min-height:0;overflow:hidden}
+html.compact :is(#hand,#drag-ghost) .card:not(.sm):not(.lg) .ct span{display:-webkit-box;-webkit-line-clamp:4;-webkit-box-orient:vertical;overflow:hidden}
+html.compact:not(.land) :is(#hand,#drag-ghost) .card:not(.sm):not(.lg){--s:27px}
+html.compact:not(.land) :is(#hand,#drag-ghost) .card:not(.sm):not(.lg) .ct{font-size:12px;line-height:1.2;padding:4px 7px 10px}
+html.compact:not(.land) :is(#hand,#drag-ghost) .card:not(.sm):not(.lg) .cn{font-size:13px}
+html.compact:not(.land) :is(#hand,#drag-ghost) .card:not(.sm):not(.lg) .ca{height:auto;min-height:36px;padding:3px 0}
+html.compact :is(#hand,#drag-ghost) .card.t-sig:not(.sm):not(.lg) .ct,html.compact :is(#hand,#drag-ghost) .card.t-imp:not(.sm):not(.lg) .ct,html.compact :is(#hand,#drag-ghost) .card.t-age:not(.sm):not(.lg) .ct{padding-bottom:15px}
+html.compact:not(.land) :is(#hand,#drag-ghost) .card:not(.sm):not(.lg) .seal{width:24px;height:24px;bottom:-10px}html.compact:not(.land) :is(#hand,#drag-ghost) .card:not(.sm):not(.lg) .seal .crest{width:17px;height:17px}html.compact:not(.land) :is(#hand,#drag-ghost) .card:not(.sm):not(.lg) .seal.crown svg{width:19px;height:19px}
+html.compact :is(#hand,#drag-ghost) .card.t-sig:not(.sm):not(.lg) .ct span,html.compact :is(#hand,#drag-ghost) .card.t-imp:not(.sm):not(.lg) .ct span,html.compact :is(#hand,#drag-ghost) .card.t-age:not(.sm):not(.lg) .ct span{-webkit-line-clamp:3}
 </style>
 </head>
 <body>
@@ -557,16 +568,17 @@ html.compact #hand .card.t-sig:not(.sm):not(.lg) .ct span,html.compact #hand .ca
     <div id="table">
       <div id="opps"></div>
       <aside id="events"></aside>
-      <div id="stage"><div class="rose"></div><div id="stage-card"></div><div id="stage-caption"></div></div>
+      <div id="stage"><div class="rose"></div><div class="dropglow"></div><div id="stage-card"></div><div id="stage-caption"></div></div>
       <aside id="market"></aside>
       <div id="me"></div>
       <div id="prompt" class="actionbar"></div>
-      <div id="handzone"><div id="hand"></div></div>
+      <div id="handzone"><button class="hand-nav prev" data-act="hand-prev" aria-label="Scroll the hand left" tabindex="-1">‹</button><div id="hand"></div><button class="hand-nav next" data-act="hand-next" aria-label="Scroll the hand right" tabindex="-1">›</button></div>
     </div>
     <aside id="chronicle" class="drawer" aria-label="Chronicle"></aside>
   </section>
   <svg id="fx-arrows" aria-hidden="true"></svg>
   <div id="fx-layer" aria-hidden="true"></div>
+  <div id="drag-ghost" aria-hidden="true"></div>
   <div id="codex" class="codex hidden" role="dialog" aria-label="Codex"></div>
   <div id="sheet" class="sheet-wrap hidden"></div>
   <div id="tip" class="tip hidden" role="tooltip"></div>
@@ -1587,6 +1599,10 @@ const KW_RE = /\b(?:(over the walls)|([Ee]very opponent|[Ee]very other opponent|
 const KW_CLS = ['pierce', 'aoe', 'play', 'dmg', 'hp', 'gold', 'card', 'wall', 'steal', 'raze'];
 function kw(text) { return esc(text).replace(KW_RE, (...m) => `<b class="kw k-${KW_CLS[m.slice(1, 11).findIndex(x => x !== undefined)]}">${m[0]}</b>`); }
 
+/* a region of the table is rewritten only when its markup changes, so nothing under the pointer is rebuilt for nothing
+   (anything that edits a region in place, like the HP count-down, calls forget() so the next render rewrites it) */
+function put(el, html) { if (typeof el === 'string') el = $(el); if (!el || el._html === html) return false; el.innerHTML = html; el._html = html; return true; }
+function forget(el) { if (el) el._html = null; }
 const isMyTurn = () => S && S.turn === 0 && S.winner == null && !UI.busy;
 const selCard = () => (S && UI.sel != null ? S.players[0].hand.find(c => c.uid === UI.sel) : null);
 const civNameOf = pid => (pid === 0 ? 'You' : CIVS[S.players[pid].civ].name);
@@ -1603,7 +1619,6 @@ function workHTML(st) { return buildHTML(st); }
 function dispHP(P) { return UI.view && UI.view[P.id] != null ? UI.view[P.id] : P.hp; }
 function campHTML(P, mine) {
   const C = CIVS[P.civ], hp = Math.max(0, dispHP(P)), acting = S.turn === P.id && S.winner == null;
-  const tgt = !mine && P.alive && UI.sel != null && isMyTurn() && needsTarget(selCard() || { steps: [] }) && opponents(S, S.players[0]).length > 1;
   const info = [];
   info.push(`<span class="coin" data-tip="Gold hires mercenaries at the market.">${symBadge('G', 20)}<b>${P.gold}</b></span>`);
   if (!mine) info.push(`<span class="backs" data-tip="${P.hand.length} cards in hand">${'<i class="cback"></i>'.repeat(Math.min(P.hand.length, 5))}<b>${P.hand.length}</b></span>`);
@@ -1611,17 +1626,17 @@ function campHTML(P, mine) {
     : `<span class="agem hot" data-tip="Holds the Imperial Age card.">${crownSVG(16)}ready</span>`);
   if (P.relic) info.push(`<span class="relic" data-tip="${esc(RELICS[P.relic].name)}: ${esc(RELICS[P.relic].text)}">${esc(RELICS[P.relic].name)}</span>`);
   if (mine) info.push(`<span class="piles"><button class="pile" data-act="deck" data-tip="Cards left to draw">Deck ${P.deck.length}</button><button class="pile" data-act="discard" data-tip="Cards already played or lost">Discard ${P.discard.length}</button></span>`);
-  return `<section class="camp fam-${CIV_FAMILY[P.civ]} civ-${P.civ}${mine ? ' mine' : ''}${acting ? ' turn' : ''}${P.alive ? '' : ' out'}${tgt ? ' targetable' : ''}${tgt && UI.hoverT === P.id ? ' hot' : ''}" id="camp-${P.id}" data-pid="${P.id}" aria-label="${mine ? 'You, ' : ''}${esc(C.name)}: ${hp} of ${P.maxHP} HP">
+  return `<section class="camp fam-${CIV_FAMILY[P.civ]} civ-${P.civ}${mine ? ' mine' : ''}${acting ? ' turn' : ''}${P.alive ? '' : ' out'}" id="camp-${P.id}" data-pid="${P.id}" aria-label="${mine ? 'You, ' : ''}${esc(C.name)}: ${hp} of ${P.maxHP} HP">
 <header class="camp-banner">${crest(P.civ, mine ? 32 : 28)}<span class="cname">${esc(C.name)}</span>${mine ? '<span class="you">you</span>' : ''}${acting && !mine ? '<span class="flag">acting</span>' : ''}${P.alive ? '' : '<span class="flag out">defeated</span>'}<span class="medals">${medalsOf(P)}</span>${hpTag(P, hp)}</header>${hpBar(P, hp)}
 <div class="camp-info"><div class="defs"><span class="lbl">Defenses</span>${P.structs.map(buildHTML).join('') || '<span class="none">none</span>'}</div><div class="stash">${info.join('')}</div></div>
 <div class="chips"></div><div class="floats"></div></section>`;
 }
 function renderTopbar() {
   const me = isMyTurn(), E = S.event ? EVENT_BY[S.event] : null, who = S.winner != null ? '' : S.turn === 0 ? 'Your turn' : `${CIVS[cur(S).civ].name} to play`;
-  $('#topbar').innerHTML = `<button class="icon-btn" data-act="pause" aria-label="Menu" data-tip="Menu (Esc)">${ICON.menu}</button>
+  put('#topbar', `<button class="icon-btn" data-act="pause" aria-label="Menu" data-tip="Menu (Esc)">${ICON.menu}</button>
 <div class="tb-mid"><button class="evchip mob-only" data-act="events" aria-label="Events"><small>Round ${S.round}</small><b>${E ? esc(E.name) : 'Peace'}</b>${UI.eventSeen !== S.round && S.event ? '<i class="badge"></i>' : ''}</button><span class="pill desk-only">Round ${S.round}</span>${who ? `<span class="pill desk-only ${S.turn === 0 ? 'you' : ''}">${who}</span>` : ''}${me && S.plays > 0 ? `<span class="pips" data-tip="Plays left this turn">${'<i class="pip"></i>'.repeat(S.plays)}</span>` : ''}</div>
 <div class="tb-right"><button class="icon-btn mob-only" data-act="market" aria-label="Mercenary Market" data-tip="Mercenary Market">${ICON.market}${canHire() ? `<i class="badge">${canHire()}</i>` : ''}</button>
-<button class="speed desk-only" data-act="speed" data-tip="Animation speed (S)">${SPEEDS[SET.speed].label}</button><button class="icon-btn" data-act="codex" aria-label="Codex" data-tip="Codex: civilizations, cards, symbols and rules (C)">${ICON.book}</button><button class="icon-btn" data-act="chronicle" aria-label="Chronicle" data-tip="Chronicle (L)">${ICON.scroll}</button></div>`;
+<button class="speed desk-only" data-act="speed" data-tip="Animation speed (S)">${SPEEDS[SET.speed].label}</button><button class="icon-btn" data-act="codex" aria-label="Codex" data-tip="Codex: civilizations, cards, symbols and rules (C)">${ICON.book}</button><button class="icon-btn" data-act="chronicle" aria-label="Chronicle" data-tip="Chronicle (L)">${ICON.scroll}</button></div>`);
 }
 function eventsHTML() {
   const E = S.event ? EVENT_BY[S.event] : null, N = EVENT_BY[S.eventNext];
@@ -1634,21 +1649,35 @@ function marketHTML() {
 <p class="mk-note">${S.turn === 0 && S.flags.bought ? 'You already hired this turn.' : `Hire 1 card per turn with <b class="kw k-gold">gold</b>; it goes straight to your hand.`}${S.mod.fair ? ' Great Fair: 1 cheaper this round.' : ''}${S.turn === 0 && S.flags.buyFree ? ' Your next hire is free.' : ''}</p>`;
 }
 function renderHand() {
-  /* the hand is rebuilt only when its cards change, so a scrolled hand stays where the player left it */
-  const me = S.players[0], n = me.hand.length, mid = (n - 1) / 2, mine = isMyTurn(), compact = mobile(), hand = $('#hand');
-  const key = `${S.seed}|${compact ? 'c' + innerWidth + 'x' + innerHeight : 'd' + hand.clientWidth}|${mine ? 1 : 0}|${me.hand.map(c => c.uid).join(',')}`;
-  if (hand.dataset.key === key) {
-    for (const el of hand.children) if (el.dataset.uid) { const on = +el.dataset.uid === UI.sel; el.classList.toggle('sel', on); if (!compact) el.style.zIndex = on ? 50 : +el.dataset.i + 1; }
-    return;
+  /* one straight row on every screen, like Photo Studio's hand. It is rebuilt only when its cards change, so a scrolled hand
+     stays where the player left it; choosing a card only moves a class */
+  const me = S.players[0], mine = isMyTurn(), hand = $('#hand');
+  const key = `${S.seed}|${innerWidth}x${innerHeight}|${mine ? 1 : 0}|${me.hand.map(c => c.uid).join(',')}`;
+  if (hand.dataset.key !== key) {
+    const keep = hand.scrollLeft;
+    hand.innerHTML = me.hand.map((c, i) => cardHTML(c, { cls: mine ? 'playable' : 'dim', attrs: `data-i="${i}" tabindex="0" role="button" aria-label="${esc(c.name)}: ${esc(cardText(c))}"` })).join('') || '<div class="hand-empty">No cards in hand</div>';
+    hand.dataset.key = key;
+    if (mobile()) fitHandText(hand);
+    hand.scrollLeft = keep;
+    markHand(); handNav(); return;
   }
-  const w = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--cw')) || 150, keep = hand.scrollLeft;
-  let gap = 0, spread = 0;
-  if (!compact) { const W = hand.clientWidth - 40; gap = -14; if (n > 1 && n * w + (n - 1) * gap > W) gap = Math.max(-(w - 64), (W - n * w) / (n - 1)); spread = Math.min(4.2, 30 / Math.max(1, n)); hand.style.justifyContent = 'center'; }
-  else hand.style.justifyContent = '';
-  hand.innerHTML = me.hand.map((c, i) => cardHTML(c, { cls: (mine ? 'playable' : 'dim') + (UI.sel === c.uid ? ' sel' : ''), attrs: `data-i="${i}" tabindex="0" role="button" aria-label="${esc(c.name)}: ${esc(cardText(c))}"`, style: compact ? '' : `--rot:${((i - mid) * spread).toFixed(2)}deg;--y:${(Math.abs(i - mid) ** 2 * 2.4).toFixed(1)}px;z-index:${UI.sel === c.uid ? 50 : i + 1};margin-left:${i ? gap.toFixed(1) : 0}px` })).join('') || '<div class="hand-empty">No cards in hand</div>';
-  hand.dataset.key = key;
-  if (compact) { hand.scrollLeft = keep; fitHandText(hand); }
+  markHand();
 }
+function markHand() { for (const el of $('#hand').children) if (el.dataset.uid) el.classList.toggle('sel', +el.dataset.uid === UI.sel); }
+/* heavier redraws wait until the frame that shows the touch has been painted */
+let LATER = null;
+function later(fn) { if (LATER) { LATER.fn = fn; return; } LATER = { fn }; requestAnimationFrame(() => setTimeout(() => { const f = LATER.fn; LATER = null; f(); }, 0)); }
+/* desktop: when the row is wider than its space, arrows at its ends move it one card at a time */
+function handNav() {
+  const h = $('#hand'), z = $('#handzone');
+  if (mobile()) { z.classList.remove('over'); return; }
+  const max = h.scrollWidth - h.clientWidth, over = max > 2;
+  z.classList.toggle('over', over);
+  if (!over) return;
+  z.querySelector('.hand-nav.prev').disabled = h.scrollLeft <= 2;
+  z.querySelector('.hand-nav.next').disabled = h.scrollLeft >= max - 2;
+}
+function handStep(dir) { const h = $('#hand'), c = h.querySelector('.card'); if (c) h.scrollBy({ left: dir * (c.offsetWidth + 20), behavior: 'smooth' }); }
 /* phone hand cards show as many lines of text as fit (a long name or a seal leaves less room); the rest ends in an ellipsis */
 function fitHandText(hand) {
   for (const ct of hand.querySelectorAll('.card .ct')) {
@@ -1660,34 +1689,40 @@ function fitHandText(hand) {
   }
 }
 function renderStage() {
-  const c = selCard();
+  /* the card is rewritten only when it is a different card; a fresh play by someone else pops in */
+  const c = selCard(), L = UI.last, sc = $('#stage-card');
+  let html = '', cap = '', pop = false;
   if (c && isMyTurn()) {
     const multi = needsTarget(c) && opponents(S, S.players[0]).length > 1;
-    $('#stage-card').innerHTML = `<div class="stage-fit">${cardHTML(c, { size: 'lg' })}</div>`; fitStage();
-    $('#stage-caption').textContent = multi && UI.hoverT == null ? 'Choose an enemy camp' : multi ? `Aim at ${CIVS[S.players[UI.hoverT].civ].name}` : 'Press Play to confirm';
-    return;
+    html = `<div class="stage-fit">${cardHTML(c, { size: 'lg' })}</div>`;
+    cap = multi && UI.hoverT == null ? 'Choose an enemy camp' : multi ? `Aim at ${CIVS[S.players[UI.hoverT].civ].name}` : 'Press Play to confirm';
+  } else if (L) {
+    html = `<div class="stage-fit">${cardHTML(L.card, { size: 'lg' })}</div>`;
+    cap = `${civNameOf(L.pid)} ${L.pid === 0 ? 'played' : 'plays'} ${L.card.name}${L.target != null ? ' on ' + civObjOf(L.target) : ''}`;
+    pop = L.fresh; L.fresh = false;
   }
-  const L = UI.last;
-  $('#stage-card').innerHTML = L ? `<div class="stage-fit">${cardHTML(L.card, { size: 'lg', cls: L.fresh ? 'pop' : '' })}</div>` : ''; fitStage();
-  if (L) L.fresh = false;
-  $('#stage-caption').textContent = L ? `${civNameOf(L.pid)} ${L.pid === 0 ? 'played' : 'plays'} ${L.card.name}${L.target != null ? ' on ' + civObjOf(L.target) : ''}` : '';
+  const changed = put(sc, html), h = $('#stage').clientHeight;
+  if (changed || +sc.dataset.h !== h) { fitStage(); sc.dataset.h = h; }
+  if (changed && pop && sc.querySelector('.card')) sc.querySelector('.card').classList.add('pop');
+  const ce = $('#stage-caption'); if (ce.textContent !== cap) ce.textContent = cap;
 }
 function stageScale() { const st = $('#stage'); const h = mobile() ? 212 : 302; return Math.max(0.45, Math.min(1, (st.clientHeight - 44) / h)); }
 function fitStage() { const f = $('#stage-card .stage-fit'), sc = $('#stage-card'); if (!f) { sc.style.height = ''; return; } const s = stageScale(); f.style.transform = `scale(${s})`; sc.style.height = Math.round(f.firstElementChild.offsetHeight * s) + 'px'; }
 function selTarget(c) { const opps = opponents(S, S.players[0]); return !needsTarget(c) ? null : opps.length === 1 ? opps[0].id : UI.hoverT; }
-function renderAction() {
-  const el = $('#prompt');
-  if (S.winner != null) { el.innerHTML = ''; return; }
-  if (S.turn !== 0) { el.innerHTML = `<span class="hint">${esc(CIVS[cur(S).civ].name)} is playing…</span>`; return; }
-  if (UI.busy) { el.innerHTML = ''; return; }
+function renderAction() { put('#prompt', actionHTML()); }
+function actionHTML() {
+  if (S.winner != null) return '';
+  if (S.turn !== 0) return `<span class="hint">${esc(CIVS[cur(S).civ].name)} is playing…</span>`;
+  if (UI.busy) return '';
+  if (DRAG.on) return `<span class="hint">${DRAG.zone && DRAG.zone.camps ? 'Drop it on an enemy camp' : 'Drop it on the chart to play it'}</span>`;
   const c = selCard();
-  if (!c) { el.innerHTML = `<span class="hint">${S.plays > 1 ? `Your turn: play ${S.plays} cards` : mobile() ? 'Your turn: tap a card to choose it' : 'Your turn: click a card, or drag it onto the chart'}</span>`; return; }
+  if (!c) return `<span class="hint">${S.plays > 1 ? `Your turn: play ${S.plays} cards` : mobile() ? 'Your turn: tap a card to choose it' : 'Your turn: click a card, or drag it onto the chart'}</span>`;
   const land = document.documentElement.classList.contains('land'), t = selTarget(c);
   const label = !needsTarget(c) ? (land ? 'Play' : `Play ${c.name}`) : t != null ? `${land ? 'On' : 'Play on'} ${CIVS[S.players[t].civ].name}` : (land ? 'Pick a camp' : 'Tap an enemy camp');
-  el.innerHTML = `<button class="icon-btn info" data-act="card-info" aria-label="Card details" data-tip="Card details (I)">${ICON.info}</button><button class="btn ghost small" data-act="cancel-sel">Cancel</button><button class="btn" data-act="play-sel"${needsTarget(c) && t == null ? ' disabled' : ''}>${esc(label)}</button>`;
+  return `<button class="icon-btn info" data-act="card-info" aria-label="Card details" data-tip="Card details (I)">${ICON.info}</button><button class="btn ghost small" data-act="cancel-sel">Cancel</button><button class="btn" data-act="play-sel"${needsTarget(c) && t == null ? ' disabled' : ''}>${esc(label)}</button>`;
 }
 function renderChronicle() {
-  $('#chronicle').innerHTML = `<h3>Chronicle</h3><ul class="log">${S.log.slice(-60).reverse().map(e => { const t = logLine(e); return t ? `<li class="${e.k === 'event' ? 'r' : ''}">${t}</li>` : ''; }).join('')}</ul>`;
+  put('#chronicle', `<h3>Chronicle</h3><ul class="log">${S.log.slice(-60).reverse().map(e => { const t = logLine(e); return t ? `<li class="${e.k === 'event' ? 'r' : ''}">${t}</li>` : ''; }).join('')}</ul>`);
 }
 function logLine(e) {
   switch (e.k) {
@@ -1706,73 +1741,85 @@ function logLine(e) {
   return '';
 }
 function renderPreview() {
-  $$('.camp .chips').forEach(el => (el.innerHTML = ''));
-  const c = selCard(); if (!c || !isMyTurn()) return;
-  const opps = opponents(S, S.players[0]);
-  const tid = needsTarget(c) ? (UI.hoverT != null ? UI.hoverT : opps.length === 1 ? opps[0].id : null) : null;
-  if (needsTarget(c) && tid == null) return;
-  const pv = previewPlay(S, 0, c.uid, tid); if (!pv) return;
-  pv.players.forEach((d, i) => {
-    const out = [], hand = i === 0 ? d.hand + 1 : d.hand;
-    if (d.dies) out.push(['ko', 'Defeated']);
-    if (d.hp) out.push([d.hp < 0 ? 'dmg' : 'heal', `${d.hp > 0 ? '+' : ''}${d.hp} HP`]);
-    if (d.wonder) out.push(['wall', `wonder ${d.wonder}`]);
-    if (d.walls) out.push(['wall', `${d.walls > 0 ? '+' : ''}${d.walls} wall`]);
-    if (d.gold) out.push(['gold', `${d.gold > 0 ? '+' : ''}${d.gold} gold`]);
-    if (hand) out.push(['card', `${hand > 0 ? '+' : ''}${hand} card${Math.abs(hand) > 1 ? 's' : ''}`]);
-    const el = document.querySelector(`#camp-${i} .chips`); if (el) el.innerHTML = out.map(([k, t]) => `<span class="chip ${k}">${t}</span>`).join('');
-  });
+  /* the result tags above each camp for the chosen card (and target) */
+  const want = {}, c = selCard();
+  if (c && isMyTurn()) {
+    const opps = opponents(S, S.players[0]);
+    const tid = needsTarget(c) ? (UI.hoverT != null ? UI.hoverT : opps.length === 1 ? opps[0].id : null) : null;
+    const pv = needsTarget(c) && tid == null ? null : previewPlay(S, 0, c.uid, tid);
+    if (pv) pv.players.forEach((d, i) => {
+      const out = [], hand = i === 0 ? d.hand + 1 : d.hand;
+      if (d.dies) out.push(['ko', 'Defeated']);
+      if (d.hp) out.push([d.hp < 0 ? 'dmg' : 'heal', `${d.hp > 0 ? '+' : ''}${d.hp} HP`]);
+      if (d.wonder) out.push(['wall', `wonder ${d.wonder}`]);
+      if (d.walls) out.push(['wall', `${d.walls > 0 ? '+' : ''}${d.walls} wall`]);
+      if (d.gold) out.push(['gold', `${d.gold > 0 ? '+' : ''}${d.gold} gold`]);
+      if (hand) out.push(['cards', `${hand > 0 ? '+' : ''}${hand} card${Math.abs(hand) > 1 ? 's' : ''}`]);   /* not 'card': that class is a whole card */
+      want[i] = out.map(([k, t]) => `<span class="chip ${k}">${t}</span>`).join('');
+    });
+  }
+  for (const el of $$('.camp .chips')) put(el, want[el.parentElement.dataset.pid] || '');
+}
+/* aiming marks are classes on the camps, so choosing a card or a target never rebuilds a camp */
+function syncCampMarks() {
+  const on = aiming();
+  for (const el of $$('#opps .camp')) { const pid = +el.dataset.pid, t = on && S.players[pid].alive; el.classList.toggle('targetable', t); el.classList.toggle('hot', t && UI.hoverT === pid); }
 }
 function renderMatch() {
   if (!S) return;
   renderTopbar();
-  const opps = S.players.slice(1);
-  $('#opps').className = 'n' + opps.length;
+  const opps = S.players.slice(1), o = $('#opps'), cls = 'n' + opps.length;
+  if (o.className !== cls) o.className = cls;
   const mini = mobile() && (opps.length > 1 || document.documentElement.classList.contains('land'));
-  $('#opps').innerHTML = opps.map(P => (mini ? campMiniHTML(P) : campHTML(P, false))).join('');
-  $('#me').innerHTML = campHTML(S.players[0], true);
-  $('#events').innerHTML = eventsHTML(); UI.flipEvent = false;
-  $('#market').innerHTML = marketHTML();
-  renderHand(); renderStage(); renderAction(); renderPreview();
+  put(o, opps.map(P => (mini ? campMiniHTML(P) : campHTML(P, false))).join(''));
+  put('#me', campHTML(S.players[0], true));
+  put('#events', eventsHTML()); UI.flipEvent = false;
+  put('#market', marketHTML());
+  renderSelection();
   if (UI.drawer) renderChronicle();
 }
+/* what a choice changes: the hand's marks, the chart, the action bar, the result tags, the aiming marks */
+function renderSelection() { if (!S) return; renderHand(); renderStage(); renderAction(); renderPreview(); syncCampMarks(); }
 
-/* tooltips: hover on desktop, press-and-hold on touch */
-const TIP = { el: null, timer: null };
+/* tooltips: with a mouse, only once the pointer has rested on the same thing for half a second, and gone the moment it leaves;
+   on touch, a press-and-hold that a scroll or a drag cancels. Nothing else pops up on hover */
+const TIP = { el: null, timer: null, over: null, press: null };
 function showTip(el) {
-  if (document.documentElement.classList.contains('dragging')) return;
+  if (DRAG.on || !el.isConnected) return;
   const t = $('#tip'); t.innerHTML = kw(el.dataset.tip); t.classList.remove('hidden');
   const r = el.getBoundingClientRect(), w = t.offsetWidth, h = t.offsetHeight;
   let x = Math.min(Math.max(8, r.left + r.width / 2 - w / 2), innerWidth - w - 8), y = r.top - h - 8;
   if (y < 8) y = r.bottom + 8;
   t.style.left = x + 'px'; t.style.top = y + 'px'; TIP.el = el;
 }
-function hideTip() { $('#tip').classList.add('hidden'); TIP.el = null; }
+function hideTip() { clearTimeout(TIP.timer); if (TIP.el) $('#tip').classList.add('hidden'); TIP.el = null; }
 const FINE = matchMedia('(hover: hover) and (pointer: fine)');
-document.addEventListener('pointerover', e => { if (e.pointerType === 'touch' || !FINE.matches) return; const el = e.target.closest('[data-tip]'); if (el) showTip(el); else if (TIP.el) hideTip(); });
-document.addEventListener('pointerdown', e => { clearTimeout(TIP.timer); if (e.pointerType !== 'touch') return; const el = e.target.closest('[data-tip]'); if (el) TIP.timer = setTimeout(() => showTip(el), 420); });
-document.addEventListener('pointerup', () => { clearTimeout(TIP.timer); if (TIP.el && matchMedia('(pointer: coarse)').matches) setTimeout(hideTip, 1600); });
+document.addEventListener('pointerover', e => {
+  if (e.pointerType === 'touch' || !FINE.matches) return;
+  const el = e.target.closest('[data-tip]');
+  if (el === TIP.over) return;
+  TIP.over = el; hideTip();
+  if (el && !e.buttons) TIP.timer = setTimeout(() => { if (TIP.over === el) showTip(el); }, 500);
+});
+document.addEventListener('pointerout', e => { if (e.pointerType !== 'touch' && !e.relatedTarget) { TIP.over = null; hideTip(); } });
+document.addEventListener('pointerdown', e => {
+  hideTip(); TIP.press = null;
+  if (e.pointerType !== 'touch') return;
+  const el = e.target.closest('[data-tip]');
+  if (el) { TIP.press = { x: e.clientX, y: e.clientY }; TIP.timer = setTimeout(() => showTip(el), 450); }
+});
+document.addEventListener('pointermove', e => { if (TIP.press && Math.hypot(e.clientX - TIP.press.x, e.clientY - TIP.press.y) > 10) { clearTimeout(TIP.timer); TIP.press = null; } }, { passive: true });
+document.addEventListener('pointerup', () => { clearTimeout(TIP.timer); TIP.press = null; if (TIP.el && !FINE.matches) setTimeout(hideTip, 1600); });
+document.addEventListener('pointercancel', () => { clearTimeout(TIP.timer); TIP.press = null; });
 document.addEventListener('scroll', hideTip, true);
-
-/* small cards (market, civ select) open at full size on hover or press-and-hold */
-function showZoom(c) {
-  let z = $('#zoom'); if (!z) { z = document.createElement('div'); z.id = 'zoom'; document.body.appendChild(z); }
-  z.innerHTML = c.outerHTML.replace(/class="card sm /, 'class="card lg ').replace(/<div class="cost[^"]*">[^<]*<\/div>/, '');
-  const r = c.getBoundingClientRect(), w = 214, h = 302;
-  let x = r.left - w - 14; if (x < 8) x = r.right + 14; if (x + w > innerWidth - 8) x = Math.max(8, innerWidth / 2 - w / 2);
-  z.style.left = x + 'px'; z.style.top = Math.min(Math.max(8, r.top + r.height / 2 - h / 2), innerHeight - h - 8) + 'px'; z.classList.remove('hidden');
-}
 function hideZoom() { const z = $('#zoom'); if (z) z.classList.add('hidden'); }
-document.addEventListener('pointerover', e => { if (e.pointerType === 'touch' || !FINE.matches) return; const c = e.target.closest('.card.sm'); if (c) showZoom(c); else hideZoom(); });
-document.addEventListener('pointerup', () => { clearTimeout(TIP.zoomTimer); setTimeout(hideZoom, 1400); });
 
 function canHire() { if (!isMyTurn() || S.flags.bought) return 0; const me = S.players[0]; return S.market.filter(c => c && me.gold >= marketCost(S, me, c)).length; }
 function ageMini(P) { return !P.ageGiven ? `<span class="agem" data-tip="Imperial Age card in ${Math.max(1, RULES.ageTurn - P.turns)} turn(s)">${crownSVG(15)}${Math.max(1, RULES.ageTurn - P.turns)}</span>` : !P.aged ? `<span class="agem hot" data-tip="Holds the Imperial Age card">${crownSVG(15)}!</span>` : `<span class="agem imp" data-tip="In the Imperial Age">${crownSVG(15)}</span>`; }
 function campMiniHTML(P) {
   const C = CIVS[P.civ], hp = Math.max(0, dispHP(P)), acting = S.turn === P.id && S.winner == null, W = wonderOf(P);
-  const tgt = P.alive && UI.sel != null && isMyTurn() && needsTarget(selCard() || { steps: [] }) && opponents(S, S.players[0]).length > 1;
   const wall = `<svg class="bi" viewBox="0 0 24 24" aria-hidden="true">${BUILD.castle}</svg>`, medals = medalsOf(P);
-  return `<section class="camp mini fam-${CIV_FAMILY[P.civ]} civ-${P.civ}${acting ? ' turn' : ''}${P.alive ? '' : ' out'}${tgt ? ' targetable' : ''}${tgt && UI.hoverT === P.id ? ' hot' : ''}" id="camp-${P.id}" data-pid="${P.id}" aria-label="${esc(C.name)}: ${hp} of ${P.maxHP} HP">
+  return `<section class="camp mini fam-${CIV_FAMILY[P.civ]} civ-${P.civ}${acting ? ' turn' : ''}${P.alive ? '' : ' out'}" id="camp-${P.id}" data-pid="${P.id}" aria-label="${esc(C.name)}: ${hp} of ${P.maxHP} HP">
 <header class="camp-banner">${crest(P.civ, 20)}<span class="cname">${esc(C.name)}</span></header>${hpBar(P, hp)}
 <div class="mini-body">${hpTag(P, hp, true)}${medals ? `<span class="mmedals">${medals}</span>` : ''}<div class="mini-stats"><span data-tip="Defenses: total durability">${wall}${wallTotal(P)}${W ? ` +${W.dur}` : ''}</span><span>${symBadge('G', 15)}${P.gold}</span><span><i class="cback"></i>${P.hand.length}</span>${P.aged ? '' : ageMini(P)}</div></div>
 <div class="chips"></div><div class="floats"></div></section>`;
@@ -1835,15 +1882,17 @@ function floatAt(pid, text, cls) {
 }
 function setShownHP(pid) {
   const camp = document.getElementById('camp-' + pid); if (!camp || !UI.view) return;
+  forget(camp.parentElement);
   const P = S.players[pid], hp = Math.max(0, UI.view[pid]), tag = camp.querySelector('.hptag'), bar = camp.querySelector('.hpbar i');
   if (tag) { tag.querySelector('b').textContent = hp; tag.classList.toggle('low', hp <= 3); }
   if (bar) bar.style.width = Math.max(0, Math.round(hp / P.maxHP * 100)) + '%';
 }
 function shake(pid) { const el = document.getElementById('camp-' + pid); if (el) { el.classList.remove('hit'); void el.offsetWidth; el.classList.add('hit'); } }
-async function animatePlay(ev, pid, from) {
-  await flyCard(ev.card, from, stageRect(), D(430));
-  UI.last = { card: ev.card, pid, target: ev.target, fresh: true }; UI.sel = null; UI.hoverT = null;
-  renderMatch();
+async function animatePlay(ev, pid, from, landed) {
+  /* landed: the player dropped the card and it already glided onto the chart, so it does not fly again */
+  if (!landed) await flyCard(ev.card, from, stageRect(), D(430));
+  UI.last = { card: ev.card, pid, target: ev.target, fresh: !landed }; UI.sel = null; UI.hoverT = null;
+  renderMatch(); if (landed) dropGhost();
   if (ev.card.wonder) banner(`${civNameOf(pid)} ${pid === 0 ? 'begin' : 'begins'} ${ev.card.name}`, pid === 0 ? 'Keep it standing for 3 turns to win' : 'Bring it down within 3 turns or they win', 2200);
   await wait(D(300));
   const src = $('#stage-card .card') ? $('#stage-card .card').getBoundingClientRect() : stageRect(), hit = new Set();
@@ -2142,7 +2191,7 @@ function codexRules() {
   return `<h3>The basics</h3><p>Each player brings their civilization's own 24-card deck. On your turn you <b>draw 1 card and play 1</b>; with an empty hand you draw 2. A card does what its symbols say, from left to right. Bring every rival to 0 HP to win.</p>
 <h3>Around the table</h3><p><b>Defenses</b> stand in front of a camp and take damage before its HP; ranged attacks shoot over them. <b>Events</b> hit everyone each round from round 2, and the next one is always shown. The <b>Mercenary Market</b> sells one card per turn for gold; it goes straight to your hand. Your <b>relic</b> is a small bonus picked before each match.</p>
 <h3>Imperial Age, wonders and the long war</h3><p>At the start of your ${RULES.ageTurn}th turn the <b>Imperial Age</b> card arrives. Playing it uses your play for the turn: your civilization's three Imperial cards join your deck and its bonus fires. A <b>wonder</b> wins the game if it still stands at the start of your third turn after building it. The first time you drop to 3 HP or less you draw 2 cards. From round 16 everyone loses 1 HP each round.</p>
-<h3>Controls</h3><p>Tap a card to choose it: it shows large on the chart, the tags above each camp show the result, and <b>Play</b> confirms. Tap the chosen card again, or ⓘ, to read it in full. <b>Drag</b> a card up onto the chart to play it straight away, or onto an enemy camp to aim it. Tap any camp to inspect it, and tap the card on the chart to read it.</p><p class="muted">Keys: 1–9 choose a card, Enter play, I details, Tab switch target, Esc cancel, C codex, L chronicle, S speed, H rules.</p>
+<h3>Controls</h3><p>Tap a card to choose it: it shows large on the chart, the tags above each camp show the result, and <b>Play</b> confirms. Tap the chosen card again, or ⓘ, to read it in full. <b>Drag</b> a card to play it straight away: hold it for a moment or pull it up, then drop it on the chart, or on an enemy camp to aim it; let go anywhere else and it goes back to your hand. Swipe the hand sideways to see the rest. Tap any camp to inspect it, and tap the card on the chart to read it.</p><p class="muted">Keys: 1–9 choose a card, Enter play, I details, Tab switch target, Esc cancel, C codex, L chronicle, S speed, H rules.</p>
 <h3>Defenses <span class="cx-sub">the number on each is how much more damage it can absorb</span></h3><div class="cx-list">${bld.map(([k, n, t]) => `<div class="cx-ev"><span class="bld"><svg viewBox="0 0 24 24" aria-hidden="true">${BUILD[k]}</svg></span><div><b>${n}</b><p>${kw(t[0].toUpperCase() + t.slice(1))}.</p></div></div>`).join('')}</div>
 <h3>Status markers <span class="cx-sub">round badges beside HP</span></h3><div class="cx-list">${['crown', 'camel', 'wind', 'stakes'].map(m => `<div class="cx-ev"><span class="medal">${medalSVG(m)}</span><div><p>${kw(MEDAL_TIP[m])}</p></div></div>`).join('')}</div>
 <h3>Events <span class="cx-sub">${EVENTS.length} in the deck</span></h3><div class="cx-list">${EVENTS.map(E => `<div class="cx-ev"><svg class="evart" viewBox="0 0 48 48" aria-hidden="true">${EVENT_ART[E.id]}</svg><div><b>${esc(E.name)}</b><p>${kw(E.text)}</p></div></div>`).join('')}</div>
@@ -2214,11 +2263,12 @@ async function beginMatch() { closeSheet(); startGame(S); UI.busy = true; render
 
 /* the human */
 function onHandCard(uid) {
-  /* first tap chooses a card, the next one opens it in full; playing takes the Play button or a drag */
+  /* first tap chooses a card (only classes move), the next one opens it in full; playing takes the Play button or a drag */
   const c = S.players[0].hand.find(x => x.uid === uid); if (!c) return;
   if (!isMyTurn() || UI.sel === uid) return cardSheet(c, { hand: true });
-  UI.sel = uid; UI.hoverT = null; clearAim(); SFX.play('click'); renderMatch(); coachEvent('select');
+  UI.sel = uid; UI.hoverT = null; markHand(); SFX.play('click'); buzz(8); later(renderSelection); coachEvent('select');
 }
+function unselect() { UI.sel = null; UI.hoverT = null; markHand(); buzz(6); later(renderSelection); }
 function aiming() { const c = selCard(); return !!(c && isMyTurn() && needsTarget(c) && opponents(S, S.players[0]).length > 1); }
 function onCamp(pid, touch) {
   if (!aiming()) return campSheet(pid);
@@ -2228,17 +2278,15 @@ function onCamp(pid, touch) {
 }
 function setAimTarget(pid) {
   if (UI.hoverT === pid) return;
-  UI.hoverT = pid;
-  $$('.camp.targetable').forEach(el => el.classList.toggle('hot', +el.dataset.pid === pid));
-  renderStage(); renderPreview(); renderAction();
+  UI.hoverT = pid; renderSelection();
 }
-async function humanPlay(uid, tid) {
+async function humanPlay(uid, tid, landed) {
   const el = document.querySelector(`#hand .card[data-uid="${uid}"]`), from = el ? el.getBoundingClientRect() : null;
-  UI.busy = true; clearAim(); UI.view = S.players.map(p => p.hp);
+  UI.busy = true; UI.view = S.players.map(p => p.hp);
   const ev = playCard(S, 0, uid, tid);
-  if (!ev) { UI.busy = false; UI.view = null; return renderMatch(); }
+  if (!ev) { UI.busy = false; UI.view = null; if (landed) dropGhost(); return renderMatch(); }
   coachEvent('play');
-  await animatePlay(ev, 0, from);
+  await animatePlay(ev, 0, from, landed);
   UI.busy = false;
   if (S.winner != null || !S.players[0].alive) return finish();
   if (S.plays > 0 && S.players[0].hand.length) return renderMatch();
@@ -2309,7 +2357,7 @@ function cycleSpeed() { SET.speed = SPEED_ORDER[(SPEED_ORDER.indexOf(SET.speed) 
 /* input */
 document.addEventListener('click', e => {
   SFX.init();
-  if (DRAG.justDragged) { DRAG.justDragged = false; return; }
+  if (performance.now() - DRAG.droppedAt < 450 && e.target.closest('#hand, #stage, .camp')) return;   /* the click that follows a drop is not a tap */
   const act = e.target.closest('[data-act]'), touch = e.pointerType === 'touch' || matchMedia('(pointer: coarse)').matches;
   if (act) return action(act.dataset.act, act);
   const hire = e.target.closest('[data-hire]'); if (hire) { if (!hire.disabled) humanBuy(+hire.dataset.hire); return; }
@@ -2345,7 +2393,9 @@ function action(a, el) {
     case 'codex-play': closeCodex(); UI.civ = el.dataset.civ; SET.civ = UI.civ; saveSettings(); UI.selView = 'detail'; return go('select');
     case 'cx-filter': CODEX.filter = el.dataset.f; return renderCodex(true);
     case 'card-info': { const c = selCard(); if (c) cardSheet(c, { hand: true }); return; }
-    case 'play-card': { const uid = +el.dataset.uid, c = S && S.players[0].hand.find(x => x.uid === uid); closeSheet(); if (!c || !isMyTurn()) return; UI.sel = uid; const t = selTarget(c); if (needsTarget(c) && t == null) { UI.hoverT = null; return renderMatch(); } return humanPlay(uid, t); }
+    case 'play-card': { const uid = +el.dataset.uid, c = S && S.players[0].hand.find(x => x.uid === uid); closeSheet(); if (!c || !isMyTurn()) return; UI.sel = uid; const t = selTarget(c); if (needsTarget(c) && t == null) { UI.hoverT = null; return renderSelection(); } return humanPlay(uid, t); }
+    case 'hand-prev': return handStep(-1);
+    case 'hand-next': return handStep(1);
     case 'settings': return settingsSheet();
     case 'tutorial-reset': SET.tutorialDone = false; saveSettings(); return settingsSheet();
     case 'pause': return pauseSheet();
@@ -2359,25 +2409,22 @@ function action(a, el) {
     case 'events': return mobileSheet('events');
     case 'market': return mobileSheet('market');
     case 'coach-next': return coachNext();
-    case 'cancel-sel': UI.sel = null; UI.hoverT = null; clearAim(); return renderMatch();
+    case 'cancel-sel': return unselect();
     case 'play-sel': { const c = selCard(); if (!c) return; const t = selTarget(c); if (needsTarget(c) && t == null) return; return humanPlay(c.uid, t); }
     case 'coach-skip': return endTutorial();
   }
 }
-document.addEventListener('pointermove', e => {
-  if (!aiming() || e.pointerType === 'touch') return;
-  const camp = e.target.closest('.camp.targetable');
-  setAimTarget(camp ? +camp.dataset.pid : null);
-  const cardEl = document.querySelector(`#hand .card[data-uid="${UI.sel}"]`);
-  if (camp) { const r = camp.getBoundingClientRect(); aim(cardEl && cardEl.getBoundingClientRect(), r.left + r.width / 2, r.top + r.height / 2); }
-  else aim(cardEl && cardEl.getBoundingClientRect(), e.clientX, e.clientY);
+/* aiming with a mouse: the camp under the pointer becomes the target, and stays it until another camp is pointed at */
+document.addEventListener('pointerover', e => {
+  if (e.pointerType === 'touch' || DRAG.on || !aiming()) return;
+  const camp = e.target.closest('.camp.targetable'); if (camp) setAimTarget(+camp.dataset.pid);
 });
 function rerenderSelect() { const l = $('.sel-list'), d = $('.sel-detail'), ly = l ? l.scrollTop : 0, dy = d ? d.scrollTop : 0, sy = $('#screen-select').scrollTop; renderSelect(); if ($('.sel-list')) $('.sel-list').scrollTop = ly; if ($('.sel-detail')) $('.sel-detail').scrollTop = dy; $('#screen-select').scrollTop = sy; }
 document.addEventListener('keydown', e => {
   if (CODEX.open) { if (e.key === 'Escape') { if (!$('#sheet').classList.contains('hidden')) closeSheet(); else action('codex-back'); } return; }
   if (UI.screen !== 'match' || !S) return;
   const sheetOpen = !$('#sheet').classList.contains('hidden');
-  if (e.key === 'Escape') { if (sheetOpen) { if (!$('#sheet').dataset.lock) closeSheet(); return; } if (UI.sel != null) { UI.sel = null; UI.hoverT = null; clearAim(); return renderMatch(); } return pauseSheet(); }
+  if (e.key === 'Escape') { if (sheetOpen) { if (!$('#sheet').dataset.lock) closeSheet(); return; } if (UI.sel != null) return unselect(); return pauseSheet(); }
   if (sheetOpen) return;
   const k = e.key.toLowerCase();
   if (/^[1-9]$/.test(e.key)) { const c = S.players[0].hand[+e.key - 1]; if (c) onHandCard(c.uid); }
@@ -2389,61 +2436,105 @@ document.addEventListener('keydown', e => {
   else if (k === 's') cycleSpeed();
   else if (k === 'h') action('rules');
 });
-addEventListener('resize', () => { updateMode(); if (UI.screen === 'match' && S && !UI.busy) renderMatch(); else if (UI.screen === 'menu') renderMenu(); });
-UI.selView = 'list';
-updateMode(); installCivStyles(); installMaterials(); installTableArt(); installSymbolSprites(); go('menu');
-
-/* drag a card up onto the chart (or onto an enemy camp) to play it; a sideways swipe scrolls the hand */
-const DRAG = { uid: null, x0: 0, y0: 0, on: false, ghost: null, el: null, pid: null, ok: false, justDragged: false };
-function overTable(y) { const h = $('#hand').getBoundingClientRect(); return y < h.top - 6; }
-function startDrag(e) {
-  DRAG.on = true; UI.sel = DRAG.uid; UI.hoverT = null; clearAim();
-  try { DRAG.el.setPointerCapture(e.pointerId); } catch (_) { }
-  renderMatch();
-  const c = selCard(); if (!c) { DRAG.on = false; return; }
-  const g = document.createElement('div'); g.className = 'drag-ghost'; g.innerHTML = cardHTML(c, { size: 'lg' });
-  $('#fx-layer').appendChild(g); DRAG.ghost = g; document.documentElement.classList.add('dragging'); hideTip(); hideZoom(); SFX.play('card');
-  moveDrag(e);
+/* drag a card onto the chart, or onto an enemy camp, to play it — Photo Studio's model. Hold it a moment or pull it up to pick it
+   up; a sideways swipe scrolls the hand. One ghost card, made once and moved on the GPU; where the drop zones are is measured
+   once, when the card is picked up, and nothing on the table is rebuilt while it moves */
+const DRAG = { uid: null, el: null, pid: null, mouse: false, x0: 0, y0: 0, lx: 0, ly: 0, hold: 0, on: false, back: false, ox: 0, oy: 0, w: 0, k: 0.8, zone: null, ok: false, t: null, droppedAt: 0 };
+const TILT = -3 * Math.PI / 180;
+function ghostAt(x, y) {
+  /* the point where the card was grabbed stays under the pointer while the ghost tilts and shrinks about its corner */
+  const k = DRAG.k, c = Math.cos(TILT), s = Math.sin(TILT), gx = DRAG.ox * k, gy = DRAG.oy * k;
+  $('#drag-ghost').style.transform = `translate3d(${(x - (gx * c - gy * s)).toFixed(1)}px,${(y - (gx * s + gy * c)).toFixed(1)}px,0) rotate(-3deg) scale(${k})`;
 }
-function moveDrag(e) {
-  const k = mobile() ? 0.66 : 0.72;
-  DRAG.ghost.style.transform = `translate(${e.clientX}px,${e.clientY}px) translate(-50%,-62%) scale(${k}) rotate(-3deg)`;
-  const c = selCard(); if (!c) return;
-  const under = document.elementFromPoint(e.clientX, e.clientY), camp = under && under.closest('.camp'), opps = opponents(S, S.players[0]);
-  if (needsTarget(c)) {
-    let t = camp ? +camp.dataset.pid : null; if (!(t && S.players[t] && S.players[t].alive)) t = opps.length === 1 && overTable(e.clientY) ? opps[0].id : null;
-    if (t !== UI.hoverT) { UI.hoverT = t; $$('.camp').forEach(el => el.classList.toggle('hot', +el.dataset.pid === t)); renderPreview(); renderAction(); renderStage(); }
-  } else {
-    const ok = overTable(e.clientY); $('#stage').classList.toggle('drop-ok', ok);
-    if (ok !== DRAG.ok) { DRAG.ok = ok; renderPreview(); }
+function ghostTo(r, ms, ease) {
+  const g = $('#drag-ghost'); g.style.transition = `transform ${ms}ms ${ease}`;
+  g.style.transform = `translate3d(${r.left.toFixed(1)}px,${r.top.toFixed(1)}px,0) rotate(0deg) scale(${(r.width / DRAG.w).toFixed(4)})`;
+  return wait(ms + 16);
+}
+function dropGhost() { const g = $('#drag-ghost'); g.classList.remove('on'); g.style.transition = ''; g.innerHTML = ''; }
+/* where a dropped card settles: on the chart, over the copy already shown there if it is this card */
+function landingRect(c) { const cur = $('#stage-card .card'); return cur && +cur.dataset.uid === c.uid ? cur.getBoundingClientRect() : stageRect(); }
+function beginDrag(x, y) {
+  clearTimeout(DRAG.hold);
+  const c = S.players[0].hand.find(h => h.uid === DRAG.uid);
+  if (!c || !isMyTurn() || !DRAG.el.isConnected) { DRAG.uid = null; return; }
+  /* every position is read before anything is written: the card, and the drop zones (above the hand for most cards, the enemy
+     camps when there is a choice of target) */
+  const r = DRAG.el.getBoundingClientRect(), opps = opponents(S, S.players[0]), aim = needsTarget(c);
+  DRAG.w = DRAG.el.offsetWidth; DRAG.ox = DRAG.x0 - r.left; DRAG.oy = DRAG.y0 - r.top;
+  DRAG.zone = { top: $('#hand').getBoundingClientRect().top - 6, solo: aim && opps.length === 1 ? opps[0].id : null,
+    camps: aim && opps.length > 1 ? opps.map(P => ({ pid: P.id, r: document.getElementById('camp-' + P.id).getBoundingClientRect() })) : null };
+  DRAG.on = true; DRAG.ok = false; DRAG.t = null; UI.sel = c.uid; UI.hoverT = null;
+  try { DRAG.el.setPointerCapture(DRAG.pid); } catch (_) { }
+  /* the ghost: a copy of the card itself, tilted and a little smaller, rising off the hand */
+  const g = $('#drag-ghost');
+  g.innerHTML = DRAG.el.outerHTML;
+  const gc = g.firstElementChild; gc.classList.remove('sel', 'playable', 'drag-src'); gc.removeAttribute('tabindex'); gc.removeAttribute('role'); gc.style.transformOrigin = `${DRAG.ox}px ${DRAG.oy}px`;
+  g.style.transition = ''; ghostAt(x, y); g.classList.add('on');
+  DRAG.el.classList.add('drag-src'); $('#stage').classList.add('holding');
+  hideTip(); SFX.play('card'); buzz(12);
+  later(() => { if (!DRAG.on) return; markHand(); renderAction(); renderPreview(); syncCampMarks(); coachEvent('select'); });
+}
+function dragMove(x, y) {
+  ghostAt(x, y);
+  const Z = DRAG.zone; let ok, t = null;
+  if (Z.camps) { const hit = Z.camps.find(q => x >= q.r.left && x <= q.r.right && y >= q.r.top && y <= q.r.bottom); t = hit ? hit.pid : null; ok = t != null; }
+  else { ok = y < Z.top; t = ok ? Z.solo : null; }
+  if (ok === DRAG.ok && t === DRAG.t) return;
+  DRAG.ok = ok; DRAG.t = t; UI.hoverT = t;
+  $('#stage').classList.toggle('drop-ok', ok && !Z.camps);
+  renderPreview(); syncCampMarks();
+}
+async function endDrag(x, y, cancelled) {
+  const uid = UI.sel, c = S.players[0].hand.find(h => h.uid === uid);
+  if (!cancelled) dragMove(x, y);
+  const ok = !cancelled && DRAG.ok && c && (!needsTarget(c) || DRAG.t != null), t = DRAG.t;
+  DRAG.on = false; DRAG.back = true; DRAG.droppedAt = performance.now();
+  $('#stage').classList.remove('drop-ok', 'holding');
+  if (ok) {
+    /* it glides onto the chart and is played from there */
+    UI.busy = true; buzz(14);
+    await ghostTo(landingRect(c), 180, 'ease-out');
+    DRAG.back = false;
+    return humanPlay(uid, needsTarget(c) ? t : null, true);
   }
-}
-function endDrag(e) {
-  const c = selCard(), ok = overTable(e.clientY);
-  if (DRAG.ghost) DRAG.ghost.remove(); DRAG.ghost = null; DRAG.on = false; DRAG.ok = false;
-  document.documentElement.classList.remove('dragging'); $('#stage').classList.remove('drop-ok');
-  DRAG.justDragged = true; setTimeout(() => (DRAG.justDragged = false), 60);
-  if (!c) return;
-  if (ok && (!needsTarget(c) || selTarget(c) != null)) return humanPlay(c.uid, needsTarget(c) ? selTarget(c) : null);
-  renderMatch();
+  /* anywhere else: it slides back into the hand and stays chosen */
+  const src = document.querySelector(`#hand .card[data-uid="${uid}"]`);
+  if (src) { const r = src.getBoundingClientRect(); await ghostTo({ left: r.left, top: r.top - 8, width: r.width }, 200, 'ease-in'); src.classList.remove('drag-src'); }
+  dropGhost(); DRAG.back = false;
+  renderSelection();
 }
 document.addEventListener('pointerdown', e => {
+  if (DRAG.on || DRAG.back) return;
   const el = e.target.closest('#hand .card.playable'); if (!el || !isMyTurn() || e.button > 0) return;
-  Object.assign(DRAG, { uid: +el.dataset.uid, x0: e.clientX, y0: e.clientY, on: false, el, pid: e.pointerId });
+  clearTimeout(DRAG.hold);
+  Object.assign(DRAG, { uid: +el.dataset.uid, el, pid: e.pointerId, mouse: e.pointerType === 'mouse', x0: e.clientX, y0: e.clientY, lx: e.clientX, ly: e.clientY });
+  if (!DRAG.mouse) DRAG.hold = setTimeout(() => { if (DRAG.uid != null && !DRAG.on) beginDrag(DRAG.lx, DRAG.ly); }, 240);
 });
 document.addEventListener('pointermove', e => {
   if (DRAG.uid == null || e.pointerId !== DRAG.pid) return;
   if (!DRAG.on) {
-    /* sideways is a scroll of the hand; only a clearly upward pull picks the card up */
+    /* a finger: a pull up (or down) of 10px picks the card up, a sideways move of 18px is a scroll; a mouse: any 6px move */
+    DRAG.lx = e.clientX; DRAG.ly = e.clientY;
     const dx = e.clientX - DRAG.x0, dy = e.clientY - DRAG.y0;
-    if (Math.abs(dx) > 10 && Math.abs(dx) >= Math.abs(dy)) { DRAG.uid = null; return; }
-    if (dy < -22 && -dy > Math.abs(dx) * 1.5 && isMyTurn()) startDrag(e);
+    if (DRAG.mouse ? Math.hypot(dx, dy) > 6 : Math.abs(dy) > 10 && Math.abs(dy) > Math.abs(dx) * 0.8) beginDrag(e.clientX, e.clientY);
+    else if (Math.hypot(dx, dy) > 18) { clearTimeout(DRAG.hold); DRAG.uid = null; }
     return;
   }
-  e.preventDefault(); moveDrag(e);
+  e.preventDefault(); dragMove(e.clientX, e.clientY);
 }, { passive: false });
-document.addEventListener('pointerup', e => { if (DRAG.on && e.pointerId === DRAG.pid) endDrag(e); DRAG.uid = null; });
-document.addEventListener('pointercancel', () => { if (DRAG.on) { if (DRAG.ghost) DRAG.ghost.remove(); DRAG.ghost = null; DRAG.on = false; document.documentElement.classList.remove('dragging'); $('#stage').classList.remove('drop-ok'); renderMatch(); } DRAG.uid = null; });
+document.addEventListener('pointerup', e => { if (e.pointerId !== DRAG.pid) return; clearTimeout(DRAG.hold); if (DRAG.on) endDrag(e.clientX, e.clientY); DRAG.uid = null; });
+document.addEventListener('pointercancel', e => { if (e.pointerId !== DRAG.pid) return; clearTimeout(DRAG.hold); if (DRAG.on) endDrag(0, 0, true); DRAG.uid = null; });
+/* while a card is held the page never scrolls under it (only gestures that start on the hand can hold a card) */
+$('#hand').addEventListener('touchmove', e => { if (DRAG.on) e.preventDefault(); }, { passive: false });
+document.addEventListener('contextmenu', e => { if (e.target.closest('#hand .card')) e.preventDefault(); });
+/* the hand row: a mouse wheel scrolls it sideways when it is wider than its space, and the arrows follow the scroll */
+$('#hand').addEventListener('wheel', e => { const h = e.currentTarget; if (mobile() || h.scrollWidth <= h.clientWidth + 2 || Math.abs(e.deltaX) >= Math.abs(e.deltaY)) return; e.preventDefault(); h.scrollLeft += e.deltaY; }, { passive: false });
+$('#hand').addEventListener('scroll', () => { if (!mobile()) handNav(); }, { passive: true });
+
+addEventListener('resize', () => { updateMode(); if (UI.screen === 'match' && S && !UI.busy) renderMatch(); else if (UI.screen === 'menu') renderMenu(); });
+UI.selView = 'list';
+updateMode(); installCivStyles(); installMaterials(); installTableArt(); installSymbolSprites(); go('menu');
 
 </script>
 </body>
