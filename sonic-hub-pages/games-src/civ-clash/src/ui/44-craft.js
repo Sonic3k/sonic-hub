@@ -100,3 +100,30 @@ const EVENT_ART = {
   bells: '<path d="M24 6v4M14 34c2-4 2-8 2-12a8 8 0 0 1 16 0c0 4 0 8 2 12z" fill="#c9962f" stroke="#3a2618" stroke-width="1.4"/><path d="M11 34h26" stroke="#3a2618" stroke-width="2.4" stroke-linecap="round"/><circle cx="24" cy="38" r="3" fill="#5a4636"/><path d="M6 18c-2 3-2 7 0 10M42 18c2 3 2 7 0 10" fill="none" stroke="#a4301d" stroke-width="1.6" stroke-linecap="round"/>',
   peace: '<path d="M24 40c-9-5-14-11-14-18a7 7 0 0 1 14-3 7 7 0 0 1 14 3c0 7-5 13-14 18z" fill="none" stroke="#a4301d" stroke-width="2"/><path d="M10 44h28" stroke="#3a2618" stroke-width="1.4"/>',
 };
+
+/* status markers: round medallions beside HP, so they never read as buildings */
+const MEDAL_ART = {
+  camel: ['#9c7040', SYM_STYLE.L[1]],
+  wind: ['#2a4b77', '<path d="M4 9.5h9.5a2.8 2.8 0 1 0-2.8-2.8M4 13.5h12.5a2.8 2.8 0 1 1-2.8 2.8M4 17.2h6" stroke="#fff" stroke-width="1.9" fill="none" stroke-linecap="round"/>'],
+  stakes: ['#7c1d12', '<path d="M7 19.5l2.6-12.8L11 10M12.2 19.5V6l1.4 3.2M17.4 19.5L15 7.4l-.9 3.4" stroke="#fff" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/><path d="M4.5 19.5h15" stroke="#fff" stroke-width="1.6" stroke-linecap="round"/>'],
+};
+const MEDAL_TIP = {
+  crown: 'Imperial Age: this realm has reached it, and its three Imperial cards are in its deck.',
+  camel: 'Camel guard: the next cavalry attack against this camp is cancelled.',
+  wind: 'Divine Wind: every attack against this camp is cancelled until its next turn.',
+  stakes: 'Bạch Đằng stakes: the first opponent to deal damage here takes 2 damage.',
+};
+function medalSVG(kind) {
+  if (kind === 'crown') return crownSVG(24);
+  const [bg, glyph] = MEDAL_ART[kind];
+  return `<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="11.4" fill="${bg}" stroke="#24180c" stroke-opacity=".8" stroke-width=".9"/><circle cx="12" cy="12" r="10.15" fill="none" stroke="#d2ad57" stroke-width="1.15"/>${glyph.replace(/#fff/g, '#f6ebcf')}</svg>`;
+}
+function medal(kind, n) { return `<span class="medal m-${kind}" data-tip="${esc(MEDAL_TIP[kind])}" aria-label="${esc(MEDAL_TIP[kind])}">${medalSVG(kind)}${n > 1 ? `<b>${n}</b>` : ''}</span>`; }
+function medalsOf(P) {
+  const m = [];
+  if (P.tokens.camel) m.push(medal('camel', P.tokens.camel));
+  if (P.tokens.immune) m.push(medal('wind'));
+  if (P.tokens.trap) m.push(medal('stakes'));
+  if (P.aged) m.push(medal('crown'));
+  return m.join('');
+}

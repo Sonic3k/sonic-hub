@@ -5,7 +5,7 @@ function saveSettings() { try { localStorage.setItem(STORE, JSON.stringify(SET))
 let S = null;
 UI.n = SET.n; UI.civ = CIVS[SET.civ] ? SET.civ : 'franks'; SFX.on = SET.sound;
 function go(screen) {
-  UI.screen = screen; closeSheet(); clearAim(); hideTip();
+  UI.screen = screen; closeSheet(); clearAim(); hideTip(); if (CODEX.open) closeCodex();
   for (const id of ['menu', 'select', 'match']) $('#screen-' + id).classList.toggle('hidden', id !== screen);
   if (screen === 'menu') renderMenu(); else if (screen === 'select') renderSelect();
 }
@@ -23,12 +23,10 @@ async function beginMatch() { closeSheet(); startGame(S); UI.busy = true; render
 
 /* the human */
 function onHandCard(uid) {
-  if (!isMyTurn()) return;
+  /* first tap chooses a card, the next one opens it in full; playing takes the Play button or a drag */
   const c = S.players[0].hand.find(x => x.uid === uid); if (!c) return;
-  if (UI.sel !== uid) { UI.sel = uid; UI.hoverT = null; clearAim(); SFX.play('click'); renderMatch(); coachEvent('select'); return; }
-  const opps = opponents(S, S.players[0]);
-  if (needsTarget(c)) { if (opps.length === 1) return humanPlay(uid, opps[0].id); if (UI.hoverT != null) return humanPlay(uid, UI.hoverT); UI.sel = null; clearAim(); return renderMatch(); }
-  humanPlay(uid, null);
+  if (!isMyTurn() || UI.sel === uid) return cardSheet(c, { hand: true });
+  UI.sel = uid; UI.hoverT = null; clearAim(); SFX.play('click'); renderMatch(); coachEvent('select');
 }
 function aiming() { const c = selCard(); return !!(c && isMyTurn() && needsTarget(c) && opponents(S, S.players[0]).length > 1); }
 function onCamp(pid, touch) {
@@ -65,7 +63,7 @@ async function humanBuy(i) {
 }
 /* turns */
 async function nextTurn() {
-  UI.busy = true; UI.sel = null; renderMatch(); await wait(D(380));
+  UI.busy = true; UI.sel = null; renderMatch(); await wait(D(380)); await holdForOverlay();
   const round = S.round; endTurn(S);
   if (S.round !== round && S.winner == null) await roundStart();
   if (S.winner != null || !S.players[0].alive) return finish();
@@ -88,6 +86,7 @@ async function aiTurn() {
   const pid = S.turn, P = S.players[pid];
   renderMatch(); await wait(D(500));
   for (let guard = 0; guard < 30 && S.winner == null && S.turn === pid; guard++) {
+    await holdForOverlay();
     const a = aiAct(S, pid);
     if (a.kind === 'buy') {
       const card = S.market[a.idx], el = document.querySelector(`.mk-item[data-mi="${a.idx}"]`), from = el ? el.getBoundingClientRect() : document.getElementById('stage').getBoundingClientRect();
@@ -123,11 +122,13 @@ document.addEventListener('click', e => {
   const act = e.target.closest('[data-act]'), touch = e.pointerType === 'touch' || matchMedia('(pointer: coarse)').matches;
   if (act) return action(act.dataset.act, act);
   const hire = e.target.closest('[data-hire]'); if (hire) { if (!hire.disabled) humanBuy(+hire.dataset.hire); return; }
+  const cref = e.target.closest('[data-cref]'); if (cref) { const r = cref.dataset.cref; return cardSheet(staticCard(r), { hire: r.startsWith('mk:') ? +r.slice(3) : null }); }
+  if (e.target.closest('#stage-card .card')) { const sel = isMyTurn() && selCard(), c = sel || (UI.last && UI.last.card); if (c) cardSheet(c, { hand: !!sel }); return; }
   const t = e.target.closest('.civ-tile, [data-n], [data-diff], [data-set], .relic-pick, .mk-item, #hand .card, .camp');
   if (!t) { if (e.target.id === 'sheet' && !$('#sheet').dataset.lock) closeSheet(); return; }
-  if (t.classList.contains('civ-tile')) { UI.civ = t.dataset.civ; SET.civ = UI.civ; saveSettings(); SFX.play('click'); const y = $('.sel-list').scrollTop; renderSelect(); $('.sel-list').scrollTop = y; return; }
-  if (t.dataset.n) { UI.n = +t.dataset.n; SET.n = UI.n; saveSettings(); const y = $('.sel-list').scrollTop; renderSelect(); $('.sel-list').scrollTop = y; return; }
-  if (t.dataset.diff) { SET.difficulty = t.dataset.diff; saveSettings(); const y = $('.sel-list').scrollTop; renderSelect(); $('.sel-list').scrollTop = y; return; }
+  if (t.classList.contains('civ-tile')) { UI.civ = t.dataset.civ; SET.civ = UI.civ; saveSettings(); SFX.play('click'); if (mobile()) { UI.selScroll = $('#screen-select').scrollTop; UI.selView = 'detail'; renderSelect(); $('#screen-select').scrollTop = 0; return; } return rerenderSelect(); }
+  if (t.dataset.n) { UI.n = +t.dataset.n; SET.n = UI.n; saveSettings(); return rerenderSelect(); }
+  if (t.dataset.diff) { SET.difficulty = t.dataset.diff; saveSettings(); return rerenderSelect(); }
   if (t.dataset.set) { const v = t.dataset.val; SET[t.dataset.set] = v === 'true' ? true : v === 'false' ? false : v; SFX.on = SET.sound; saveSettings(); settingsSheet(); if (S && UI.screen === 'match') renderTopbar(); return; }
   if (t.classList.contains('relic-pick')) { chooseRelic(S, 0, t.dataset.relic); return beginMatch(); }
   if (t.classList.contains('mk-item')) { if (t.classList.contains('can')) humanBuy(+t.dataset.mi); return; }
@@ -138,11 +139,22 @@ function action(a, el) {
   switch (a) {
     case 'tutorial': return newMatch({ civ: 'franks', n: 2, opps: ['japanese'], tutorial: true });
     case 'quick': return newMatch({ civ: UI.civ, n: UI.n });
-    case 'choose': return go('select');
+    case 'choose': UI.selView = 'list'; return go('select');
     case 'menu': return go('menu');
     case 'start': return newMatch({ civ: UI.civ, n: UI.n });
     case 'again': return newMatch(UI.lastSetup.tutorial ? { civ: UI.civ, n: UI.n } : UI.lastSetup);
-    case 'random-civ': UI.civ = CIV_ORDER[Math.floor(Math.random() * CIV_ORDER.length)]; SET.civ = UI.civ; saveSettings(); return renderSelect();
+    case 'random-civ': UI.civ = CIV_ORDER[Math.floor(Math.random() * CIV_ORDER.length)]; SET.civ = UI.civ; saveSettings(); if (mobile()) { UI.selView = 'detail'; renderSelect(); $('#screen-select').scrollTop = 0; return; } return rerenderSelect();
+    case 'sel-list': UI.selView = 'list'; renderSelect(); $('#screen-select').scrollTop = UI.selScroll || 0; return;
+    case 'codex': closeSheet(); return openCodex('civs', { civ: S && UI.screen === 'match' ? S.players[0].civ : null });
+    case 'rules': closeSheet(); return openCodex('rules');
+    case 'codex-back': if (CODEX.tab === 'civs' && CODEX.civ) { CODEX.civ = null; return renderCodex(); } return closeCodex();
+    case 'codex-close': return closeCodex();
+    case 'codex-tab': CODEX.tab = el.dataset.tab; return renderCodex();
+    case 'codex-civ': closeSheet(); return openCodex('civs', { civ: el.dataset.civ });
+    case 'codex-play': closeCodex(); UI.civ = el.dataset.civ; SET.civ = UI.civ; saveSettings(); UI.selView = 'detail'; return go('select');
+    case 'cx-filter': CODEX.filter = el.dataset.f; return renderCodex(true);
+    case 'card-info': { const c = selCard(); if (c) cardSheet(c, { hand: true }); return; }
+    case 'play-card': { const uid = +el.dataset.uid, c = S && S.players[0].hand.find(x => x.uid === uid); closeSheet(); if (!c || !isMyTurn()) return; UI.sel = uid; const t = selTarget(c); if (needsTarget(c) && t == null) { UI.hoverT = null; return renderMatch(); } return humanPlay(uid, t); }
     case 'settings': return settingsSheet();
     case 'tutorial-reset': SET.tutorialDone = false; saveSettings(); return settingsSheet();
     case 'pause': return pauseSheet();
@@ -169,21 +181,26 @@ document.addEventListener('pointermove', e => {
   if (camp) { const r = camp.getBoundingClientRect(); aim(cardEl && cardEl.getBoundingClientRect(), r.left + r.width / 2, r.top + r.height / 2); }
   else aim(cardEl && cardEl.getBoundingClientRect(), e.clientX, e.clientY);
 });
+function rerenderSelect() { const l = $('.sel-list'), d = $('.sel-detail'), ly = l ? l.scrollTop : 0, dy = d ? d.scrollTop : 0, sy = $('#screen-select').scrollTop; renderSelect(); if ($('.sel-list')) $('.sel-list').scrollTop = ly; if ($('.sel-detail')) $('.sel-detail').scrollTop = dy; $('#screen-select').scrollTop = sy; }
 document.addEventListener('keydown', e => {
+  if (CODEX.open) { if (e.key === 'Escape') { if (!$('#sheet').classList.contains('hidden')) closeSheet(); else action('codex-back'); } return; }
   if (UI.screen !== 'match' || !S) return;
   const sheetOpen = !$('#sheet').classList.contains('hidden');
   if (e.key === 'Escape') { if (sheetOpen) { if (!$('#sheet').dataset.lock) closeSheet(); return; } if (UI.sel != null) { UI.sel = null; UI.hoverT = null; clearAim(); return renderMatch(); } return pauseSheet(); }
   if (sheetOpen) return;
   const k = e.key.toLowerCase();
   if (/^[1-9]$/.test(e.key)) { const c = S.players[0].hand[+e.key - 1]; if (c) onHandCard(c.uid); }
-  else if (e.key === 'Enter' && UI.sel != null) { e.preventDefault(); onHandCard(UI.sel); }
+  else if (e.key === 'Enter' && UI.sel != null) { e.preventDefault(); action('play-sel'); }
+  else if (k === 'i' && UI.sel != null) action('card-info');
+  else if (k === 'c') action('codex');
   else if (e.key === 'Tab' && aiming()) { e.preventDefault(); const o = opponents(S, S.players[0]).map(p => p.id), i = o.indexOf(UI.hoverT); UI.hoverT = null; setAimTarget(o[(i + 1) % o.length]); clearAim(); }
   else if (k === 'l') toggleChronicle();
   else if (k === 's') cycleSpeed();
-  else if (k === 'h') helpSheet();
+  else if (k === 'h') action('rules');
 });
 addEventListener('resize', () => { updateMode(); if (UI.screen === 'match' && S && !UI.busy) renderMatch(); else if (UI.screen === 'menu') renderMenu(); });
-updateMode(); installCivStyles(); installMaterials(); installTableArt(); go('menu');
+UI.selView = 'list';
+updateMode(); installCivStyles(); installMaterials(); installTableArt(); installSymbolSprites(); go('menu');
 
 /* drag a card up onto the chart (or onto an enemy camp) to play it; a sideways swipe scrolls the hand */
 const DRAG = { uid: null, x0: 0, y0: 0, on: false, ghost: null, el: null, pid: null, ok: false, justDragged: false };
@@ -225,7 +242,13 @@ document.addEventListener('pointerdown', e => {
 });
 document.addEventListener('pointermove', e => {
   if (DRAG.uid == null || e.pointerId !== DRAG.pid) return;
-  if (!DRAG.on) { const dx = e.clientX - DRAG.x0, dy = e.clientY - DRAG.y0; if (dy < -14 && Math.abs(dy) >= Math.abs(dx) * 0.6 && isMyTurn()) startDrag(e); else if (Math.abs(dx) > 14 && Math.abs(dy) < 10) DRAG.uid = null; return; }
+  if (!DRAG.on) {
+    /* sideways is a scroll of the hand; only a clearly upward pull picks the card up */
+    const dx = e.clientX - DRAG.x0, dy = e.clientY - DRAG.y0;
+    if (Math.abs(dx) > 10 && Math.abs(dx) >= Math.abs(dy)) { DRAG.uid = null; return; }
+    if (dy < -22 && -dy > Math.abs(dx) * 1.5 && isMyTurn()) startDrag(e);
+    return;
+  }
   e.preventDefault(); moveDrag(e);
 }, { passive: false });
 document.addEventListener('pointerup', e => { if (DRAG.on && e.pointerId === DRAG.pid) endDrag(e); DRAG.uid = null; });

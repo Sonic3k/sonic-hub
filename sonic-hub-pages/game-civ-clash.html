@@ -202,7 +202,7 @@ button{font:inherit;color:inherit}
 #market h3{margin:0 0 10px;font-family:var(--f-head);font-weight:400;font-size:21px;color:var(--gold-hi);text-shadow:0 1px 0 #000}
 .mk-row{display:flex;gap:8px;justify-content:space-between;padding-bottom:12px}
 .mk-item{border:0;padding:0;background:none;cursor:default}
-.mk-item.can{cursor:pointer}.mk-item.can .card{filter:drop-shadow(0 0 10px rgba(236,209,139,.75)) drop-shadow(0 6px 8px rgba(14,7,0,.55))}.mk-item.can:hover .card{transform:translateY(-4px)}
+.mk-item.can{cursor:pointer}.mk-item.can .card{filter:drop-shadow(0 0 10px rgba(236,209,139,.75)) drop-shadow(0 6px 8px rgba(14,7,0,.55))}@media (hover:hover) and (pointer:fine){.mk-item.can:hover .card{transform:translateY(-4px)}}
 .mk-note{margin:4px 0 0;font-size:13.5px;line-height:1.3;color:#e8d8b4}
 .mk-note .kw{color:var(--gold-hi)}
 #me{grid-area:me;align-self:end;padding-bottom:12px}
@@ -218,8 +218,8 @@ button{font:inherit;color:inherit}
 #hand{position:relative;display:flex;justify-content:center;align-items:flex-end;height:248px;padding:0 20px 14px}
 #hand .card{margin:0;transform:translateY(var(--y,0)) rotate(var(--rot,0deg));transform-origin:50% 115%;transition:transform .16s ease,filter .16s ease,opacity .16s}
 #hand .card.playable{cursor:grab}
-#hand .card.playable:hover,#hand .card.playable:focus-visible{transform:translateY(-30px) scale(1.06);z-index:40!important}
-#hand .card.sel{transform:translateY(-24px) scale(1.06);z-index:50!important;filter:drop-shadow(0 0 0 2px var(--gold-hi)) drop-shadow(0 0 16px rgba(236,209,139,.85)) drop-shadow(0 10px 14px rgba(0,0,0,.55))}
+@media (hover:hover) and (pointer:fine){#hand .card.playable:hover,#hand .card.playable:focus-visible{transform:translateY(-30px) scale(1.06);z-index:40!important}}
+#hand .card.sel{transform:translateY(-24px) scale(1.06);z-index:50!important;filter:drop-shadow(0 0 2px var(--gold-hi)) drop-shadow(0 0 16px rgba(236,209,139,.85)) drop-shadow(0 10px 14px rgba(0,0,0,.55))}
 #hand .card.dim{filter:saturate(.7) brightness(.82) drop-shadow(0 6px 8px rgba(14,7,0,.55))}
 .hand-empty{align-self:center;font-style:italic;color:#d9c8a2}
 .drag-ghost{position:fixed;left:0;top:0;z-index:75;pointer-events:none;transform-origin:50% 60%}
@@ -247,7 +247,7 @@ html.dragging,html.dragging *{cursor:grabbing!important}
 .set-row>div>b{display:block;font-family:var(--f-head);font-weight:400;font-size:18px}.set-row>div>span{font-size:14.5px;color:var(--ink-3)}
 .relics{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:10px}
 .relic-pick{text-align:left;border:0;cursor:pointer;border-radius:3px;padding:14px;color:var(--ink);background:var(--vellum-tex),linear-gradient(#fbf3de,#ead7ab);box-shadow:inset 0 0 0 1px rgba(43,33,24,.6),inset 0 0 0 3px rgba(201,162,74,.6),0 4px 0 #8c7448,0 8px 16px rgba(0,0,0,.3)}
-.relic-pick:hover{transform:translateY(-3px)}
+@media (hover:hover) and (pointer:fine){.relic-pick:hover{transform:translateY(-3px)}}
 .relic-pick>b{display:block;font-family:var(--f-head);font-weight:400;font-size:20px;color:var(--rubric)}.relic-pick>span{display:block;font-size:15px;line-height:1.35}
 .legend{display:grid;grid-template-columns:repeat(2,1fr);gap:8px 18px;margin:8px 0}
 .legend div{display:grid;grid-template-columns:30px 1fr;gap:2px 8px;font-size:15px}.legend .sym{width:28px;height:28px}.legend>div>b{align-self:center;font-family:var(--f-head);font-weight:400;font-size:17px}.legend>div>span{grid-column:2;color:var(--ink-2);line-height:1.3}
@@ -291,7 +291,7 @@ html.dragging,html.dragging *{cursor:grabbing!important}
 .civ-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(156px,1fr));gap:12px}
 .civ-tile{position:relative;height:92px;border:0;cursor:pointer;text-align:left;color:#fbeed2;padding:9px 10px;display:flex;align-items:flex-end;gap:8px;border-radius:4px;
   background-color:var(--civ-deep);background-image:var(--motif);box-shadow:inset 0 0 0 1px rgba(255,228,170,.4),inset 0 0 0 2px rgba(0,0,0,.5),0 6px 14px rgba(0,0,0,.5);transition:transform .15s}
-.civ-tile:hover{transform:translateY(-2px)}
+@media (hover:hover) and (pointer:fine){.civ-tile:hover{transform:translateY(-2px)}}
 .civ-tile.on{box-shadow:inset 0 0 0 1px rgba(255,228,170,.6),0 0 0 3px var(--gold-hi),0 0 26px rgba(236,209,139,.55)}
 .civ-tile .crest{flex:0 0 auto;filter:drop-shadow(0 2px 2px rgba(0,0,0,.5))}
 .civ-tile .nm{font-family:var(--f-head);font-size:18px;line-height:1.02;text-shadow:0 1px 0 rgba(0,0,0,.6)}
@@ -346,10 +346,11 @@ html.compact .camp.mine .defs .lbl{font-size:12px;margin-bottom:1px}
 html.compact .camp.mine .stash{flex-direction:row;align-items:center;gap:8px}
 html.compact .camp.mine .relic,html.compact .piles{display:none}
 html.compact .actionbar{min-height:48px}html.compact .actionbar .hint{font-size:16px}html.compact .actionbar .btn{min-height:44px;font-size:17px}
-html.compact #hand{justify-content:flex-start;overflow-x:auto;overflow-y:visible;scroll-snap-type:x mandatory;gap:10px;height:auto;padding:12px 16px 8px;touch-action:pan-x;
+html.compact #hand{justify-content:flex-start;align-items:center;overflow-x:auto;overflow-y:hidden;scroll-snap-type:none;overscroll-behavior-x:contain;gap:10px;height:auto;min-height:calc(var(--ch) + 24px);padding:12px 16px;touch-action:pan-x;
   -webkit-mask-image:linear-gradient(90deg,transparent,#000 14px,#000 calc(100% - 14px),transparent);mask-image:linear-gradient(90deg,transparent,#000 14px,#000 calc(100% - 14px),transparent)}
-html.compact #hand .card{transform:none;scroll-snap-align:center}
-html.compact #hand .card.sel{transform:translateY(-10px)}
+html.compact #hand .card{transform:none!important;transition:filter .15s ease}
+html.compact #hand>.card:first-child{margin-left:auto}html.compact #hand>.card:last-child{margin-right:auto}
+html.compact #hand .card.sel{filter:drop-shadow(0 0 1.5px #fff3c8) drop-shadow(0 0 2.5px var(--gold-hi)) drop-shadow(0 0 12px rgba(236,209,139,.95))}
 html.compact #handzone{padding-bottom:calc(4px + env(safe-area-inset-bottom,0px))}
 html.compact .drawer{top:52px;width:100%}
 html.compact .sheet-wrap{place-items:end center;padding:0}
@@ -358,17 +359,18 @@ html.compact .relics,html.compact .legend{grid-template-columns:1fr}html.compact
 html.compact #screen-select{grid-template-columns:minmax(0,1fr);grid-template-rows:auto auto auto;padding:0 10px 10px;overflow:auto}
 html.compact .civ-grid{grid-template-columns:repeat(auto-fill,minmax(136px,1fr))}
 html.compact .sel-detail{overflow:visible}
-html.compact .menu-fan{height:200px}html.compact .menu-fan .card{--cw:118px;--ch:168px}
+html.compact #screen-menu{padding:14px 16px;overflow:auto}html.compact .menu-title{font-size:46px}html.compact .menu-sub{font-size:17px}
+html.compact .menu-fan{height:172px;margin:12px 0 10px}html.compact .menu-fan .card{--cw:104px;--ch:148px;--s:24px}html.compact .menu-fan .card .ct{font-size:11px}html.compact .menu-fan .card .cn{font-size:12px}
 @media (max-height:700px) and (orientation:portrait){html.compact{--cw:112px;--ch:160px}html.compact .card.lg{--w:136px;--h:192px}html.compact .hpseal{width:48px;height:48px}}
 /* sideways phones: enemy strips left, chart centre, you and the action bar right, hand along the bottom */
 html.compact.land{--cw:82px;--ch:114px}
 html.compact.land #topbar{height:44px}
-html.compact.land #table{grid-template-columns:206px minmax(0,1fr) 222px;grid-template-rows:minmax(0,1fr) auto;grid-template-areas:"opps stage me" "hand hand act";gap:6px;padding:4px 10px 0}
+html.compact.land #table{grid-template-columns:206px minmax(0,1fr) 248px;grid-template-rows:minmax(0,1fr) auto;grid-template-areas:"opps stage me" "hand hand act";gap:6px;padding:4px 10px 0}
 html.compact.land #opps{flex-direction:column;justify-content:flex-start;gap:6px;overflow:auto;padding-top:6px}
 html.compact.land #opps .camp{flex:0 0 auto}
 html.compact.land #me{align-self:end}
 html.compact.land .camp.mine .camp-body{flex-wrap:wrap}
-html.compact.land #hand{height:124px;padding:6px 10px 3px}
+html.compact.land #hand{height:128px;min-height:0;padding:7px 10px}
 html.compact.land .card .ct{font-size:9.5px}html.compact.land .card .cn{font-size:11px;margin:4px 4px 0;padding:2px 5px}html.compact.land .card .ca{margin:3px 5px 0}
 html.compact.land .card.lg{--w:118px;--h:166px}
 html.compact.land .actionbar{align-self:center;flex-wrap:wrap;gap:6px}html.compact.land .actionbar .btn{min-width:0;font-size:15px;padding:6px 12px}
@@ -422,6 +424,115 @@ html.compact .camp-banner{min-height:34px}
 html.compact.land .camp.mini .mini-body{padding:3px 5px}
 
 .camp.mine .cname{font-size:19px}.camp.mine .hptag{padding:3px 8px 4px}
+
+/* camps keep their height whether or not a building stands */
+.camp-info .defs{min-height:34px}
+html.compact .camp-info .defs{min-height:32px}
+/* round status medallions beside HP (buildings stay square) */
+.medals{margin-left:auto;display:flex;align-items:center;gap:4px}
+.camp-banner .hptag{margin-left:6px}
+.medal{position:relative;display:inline-grid;place-items:center;width:28px;height:28px;flex:0 0 auto;cursor:help;filter:drop-shadow(0 1px 2px rgba(0,0,0,.5))}
+.medal svg{width:100%;height:100%}
+.medal b{position:absolute;right:-5px;bottom:-4px;min-width:16px;height:16px;padding:0 4px;border-radius:8px;font-size:11px;font-weight:800;line-height:16px;text-align:center;color:#2a1a06;background:var(--gold-hi);box-shadow:0 0 0 1.5px #2a1a06}
+html.compact .medal{width:25px;height:25px}
+.mmedals{position:absolute;right:4px;top:-11px;z-index:3;display:flex;gap:2px}.mmedals .medal{width:18px;height:18px}.mmedals .medal b{display:none}
+/* action bar: card details */
+.actionbar .icon-btn.info{flex:0 0 auto}
+/* menu: two quiet buttons side by side */
+.menu-row{display:flex;gap:12px}.menu-row .btn{flex:1}
+
+/* ── card sheet: one card in full ── */
+.card-sheet{display:grid;grid-template-columns:auto minmax(0,1fr);gap:22px;align-items:start}
+.cs-card{display:flex;justify-content:center;padding-bottom:12px}
+.cs-kind{display:flex;flex-wrap:wrap;align-items:baseline;gap:6px 10px;font-size:15px;color:var(--ink-2);line-height:1.35}
+.card-sheet h3{margin:14px 0 4px}
+.cs-eff{font-size:19px;line-height:1.4;margin:2px 0 6px!important}
+.cs-note{font-size:15px!important;color:var(--ink-2);margin:4px 0!important}
+.cs-syms>div{display:grid;grid-template-columns:32px 1fr;gap:0 10px;margin:8px 0}
+.cs-syms .sym{width:30px;height:30px;grid-row:span 2}
+.cs-syms>div>b{font-family:var(--f-head);font-weight:400;font-size:18px;line-height:1.1}
+.cs-syms span{font-size:14.5px;color:var(--ink-2);line-height:1.3}
+html.compact .card-sheet{grid-template-columns:1fr;gap:6px}
+html.compact .cs-card .card.lg{--w:168px;--h:237px;--s:33px}html.compact .cs-card .card.lg .cn{font-size:15px}html.compact .cs-card .card.lg .ct{font-size:13.5px;padding:6px 10px 13px}
+/* tags and civ chips shared by the sheet and the codex */
+.cx-tag{display:inline-block;font-family:var(--f-text);font-size:11px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;padding:1px 6px;border-radius:2px;margin-left:8px;vertical-align:3px;color:#fbeed2;background:#6b5843}
+.cs-kind .cx-tag{margin-left:0}
+.cx-tag.sig{background:#9a7424}.cx-tag.imp{background:#5a3a8a;color:#ffe9a6}.cx-tag.merc{background:#4f3f27}
+.cx-users{display:flex;flex-wrap:wrap;gap:6px;margin:6px 0 2px}
+.civchip{display:inline-flex;align-items:center;gap:4px;min-height:30px;padding:2px 9px 2px 4px;border:0;border-radius:999px;cursor:pointer;font:inherit;font-size:13.5px;font-weight:700;color:#fbeed2;background-color:var(--civ-deep);background-image:var(--motif);box-shadow:inset 0 0 0 1px rgba(255,228,170,.35)}
+.civchip .crest{width:18px;height:18px}.civchip em{font-style:normal;opacity:.85;font-weight:800}
+
+/* ── codex ── */
+.codex{position:fixed;inset:0;z-index:58;display:flex;flex-direction:column;padding-top:env(safe-area-inset-top,0px);background:var(--oak-tex),linear-gradient(180deg,#3d2817,#2b1c10)}
+.cx-top{flex:0 0 auto;display:flex;align-items:center;gap:12px;height:56px;padding:0 12px;background:var(--leather-tex),linear-gradient(180deg,#432a18,#2a1a0e);box-shadow:inset 0 -1px 0 rgba(236,209,139,.4),0 4px 14px rgba(0,0,0,.5)}
+.cx-top h2{margin:0;flex:1;min-width:0;font-family:var(--f-head);font-weight:400;font-size:25px;color:var(--gold-hi);text-shadow:0 2px 0 #000;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cx-tabs{flex:0 0 auto;display:flex;gap:4px;padding:10px 10px 0;overflow-x:auto;scrollbar-width:none}
+.cx-tabs button{flex:1 0 auto;min-height:44px;padding:6px 14px;border:0;border-radius:4px 4px 0 0;cursor:pointer;font-family:var(--f-head);font-size:17px;color:var(--gold-hi);background:rgba(0,0,0,.3);box-shadow:inset 0 0 0 1px rgba(236,209,139,.2)}
+.cx-tabs button.on{color:var(--rubric);background:var(--vellum-tex),linear-gradient(var(--vel-hi),var(--vel-hi));box-shadow:none}
+.cx-body{flex:1;min-height:0;overflow:auto;overscroll-behavior:contain;margin:0 10px calc(10px + env(safe-area-inset-bottom,0px));padding:14px 18px 28px;border-radius:0 0 4px 4px;color:var(--ink);
+  background:var(--vellum-tex),linear-gradient(180deg,var(--vel-hi),var(--vel));box-shadow:inset 0 0 0 1px rgba(43,33,24,.5),inset 0 0 50px rgba(130,80,30,.22),0 14px 30px rgba(0,0,0,.5)}
+.cx-body h3{margin:18px 0 6px;font-family:var(--f-head);font-weight:400;font-size:22px;color:var(--rubric)}
+.cx-body p{line-height:1.45;font-size:16px;margin:6px 0}
+.cx-body .region h3{color:var(--rubric);text-shadow:none}
+.cx-lead{font-size:16.5px!important;color:var(--ink-2)}
+.cx-sub{font-family:var(--f-text);font-size:13.5px;color:var(--ink-3);margin-left:4px}
+.cx-note{font-size:14px!important;color:var(--ink-3);margin:0 0 4px!important}
+.cx-empty{font-style:italic;color:var(--ink-3)}
+.cx-list{display:flex;flex-direction:column}
+.cx-row{display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:12px;width:100%;padding:10px 4px;border:0;border-bottom:1px solid rgba(43,33,24,.14);background:none;color:var(--ink);text-align:left;font:inherit;cursor:pointer}
+@media (hover:hover) and (pointer:fine){.cx-row:hover{background:rgba(164,48,29,.06)}}
+.cx-syms{display:flex;flex-wrap:wrap;gap:2px;width:74px}
+.sy{display:inline-block;width:23px;height:23px;background-size:contain;background-repeat:no-repeat}
+.cx-main>b{display:block;font-family:var(--f-head);font-weight:400;font-size:18px;line-height:1.15}
+.cx-main em{display:block;margin-top:2px;font-style:normal;font-size:14.5px;line-height:1.3;color:var(--ink-2)}
+.cx-x{font-weight:800;font-size:14px;color:var(--ink-3);white-space:nowrap;text-align:right}
+.cx-search{position:sticky;top:-14px;z-index:2;margin:-14px -18px 6px;padding:12px 18px 10px;background:var(--vellum-tex),linear-gradient(var(--vel-hi),var(--vel-hi));box-shadow:0 6px 10px -8px rgba(43,33,24,.5)}
+.cx-search input{display:block;width:100%;min-height:46px;padding:9px 14px;border:0;border-radius:4px;font:inherit;font-size:16px;color:var(--ink);background:#fdf8ea;box-shadow:inset 0 0 0 1px rgba(43,33,24,.4),inset 0 2px 4px rgba(43,33,24,.12)}
+.chipf{display:flex;flex-wrap:wrap;gap:6px;margin-top:9px}
+.chipf button{min-height:36px;padding:4px 12px;border:0;border-radius:999px;cursor:pointer;font:inherit;font-size:14.5px;font-weight:700;color:var(--ink-2);background:rgba(43,33,24,.08);box-shadow:inset 0 0 0 1px rgba(43,33,24,.25)}
+.chipf button.on{color:#fbecc9;background:linear-gradient(#b8452b,#8b2c1b);box-shadow:inset 0 0 0 1px rgba(255,222,160,.5)}
+.cx-sym{display:grid;grid-template-columns:44px minmax(0,1fr);gap:12px;padding:12px 2px;border-bottom:1px solid rgba(43,33,24,.14)}
+.cx-sym>.sym{width:40px;height:40px}
+.cx-sym>div>b,.cx-ev>div>b,.cx-relic>b{font-family:var(--f-head);font-weight:400;font-size:19px}
+.cx-sym p,.cx-ev p,.cx-relic p{margin:2px 0!important;font-size:15px!important;color:var(--ink-2)}
+.cx-ev{display:grid;grid-template-columns:46px minmax(0,1fr);align-items:center;gap:12px;padding:9px 2px;border-bottom:1px solid rgba(43,33,24,.14)}
+.cx-ev .evart{width:44px;height:44px}.cx-ev .medal{width:34px;height:34px;justify-self:center}.cx-ev .bld{justify-self:center}
+.cx-relic{padding:9px 2px;border-bottom:1px solid rgba(43,33,24,.14)}
+.cx-live{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin:10px 0 2px;font-weight:700;color:var(--ink-2)}
+.cx-civ .sd-hero{margin:-14px -18px 0}
+.cx-civ .sd-body{padding:4px 0 6px}
+.cx-civ .sd-cards{gap:10px}
+html.compact .cx-top{height:52px}html.compact .cx-top h2{font-size:22px}
+html.compact .cx-tabs{padding:8px 6px 0}html.compact .cx-tabs button{padding:6px 10px;font-size:15.5px}
+html.compact .cx-body{margin:0 6px calc(6px + env(safe-area-inset-bottom,0px));padding:12px 14px 24px}
+html.compact .cx-search{top:-12px;margin:-12px -14px 6px;padding:10px 14px 8px}
+html.compact .cx-civ .sd-hero{margin:-12px -14px 0}
+html.compact .cx-syms{width:56px}html.compact .sy{width:19px;height:19px}
+html.compact .civ-grid{gap:9px}
+
+/* ── civilization select on phones: the list, then a full page for the chosen civilization ── */
+html.compact #screen-select{display:block;padding:0 10px 0}
+html.compact .sel-top{position:sticky;top:0;z-index:4;margin:0 -10px;padding:0 10px;height:58px;background:var(--leather-tex),linear-gradient(180deg,#432a18,#2a1a0e);box-shadow:0 4px 12px rgba(0,0,0,.45)}
+html.compact .sel-top h2{font-size:22px}
+html.compact #screen-select.detail .sel-list{display:none}
+html.compact #screen-select:not(.detail) .sel-detail{display:none}
+html.compact .sel-list{padding:0 0 24px}
+html.compact .sel-detail{margin:12px 0 0}
+html.compact .sd-foot{padding:10px 12px calc(12px + env(safe-area-inset-bottom,0px));gap:8px}
+html.compact .sd-foot .seg{flex:1 1 auto}html.compact .sd-foot .seg button{flex:1;padding:6px 8px;min-height:42px}
+html.compact .sd-foot .btn{flex:1 1 auto}
+
+/* sideways phones: the player's banner keeps its name (the 'you' tag is implied by the right-hand column) */
+html.compact.land .camp.mine .you{display:none}
+html.compact.land .camp.mine .camp-banner{gap:5px;padding:3px 6px}
+html.compact.land .camp.mine .crest{width:24px;height:24px}
+html.compact.land .camp.mine .cname{font-size:15px}
+html.compact.land .camp.mine .hptag{padding:2px 7px 3px}html.compact.land .camp.mine .hptag b{font-size:17px}
+/* the codex reads as a column on wide screens */
+.cx-tabs,.cx-body{width:min(1040px,calc(100% - 20px));margin-left:auto;margin-right:auto}
+.cx-body{margin-top:0}
+html.compact .cx-tabs,html.compact .cx-body{width:calc(100% - 12px)}
+html.compact.land .camp.mine .medal{width:21px;height:21px}
 </style>
 </head>
 <body>
@@ -443,6 +554,7 @@ html.compact.land .camp.mini .mini-body{padding:3px 5px}
   </section>
   <svg id="fx-arrows" aria-hidden="true"></svg>
   <div id="fx-layer" aria-hidden="true"></div>
+  <div id="codex" class="codex hidden" role="dialog" aria-label="Codex"></div>
   <div id="sheet" class="sheet-wrap hidden"></div>
   <div id="tip" class="tip hidden" role="tooltip"></div>
   <div id="coach" class="coach hidden"></div>
@@ -1286,6 +1398,7 @@ function installCivStyles() {
   };
   for (const c of CIV_ORDER) add('civ-' + c, CIVS[c].color, CIV_MOTIF[c] || 'diaper');
   add('civ-merc', '#7a6542', 'brass');
+  add('civ-neutral', '#6b5843', 'diaper');
   const el = document.createElement('style'); el.id = 'civ-styles'; el.textContent = css; document.head.appendChild(el);
 }
 
@@ -1392,6 +1505,33 @@ const EVENT_ART = {
   peace: '<path d="M24 40c-9-5-14-11-14-18a7 7 0 0 1 14-3 7 7 0 0 1 14 3c0 7-5 13-14 18z" fill="none" stroke="#a4301d" stroke-width="2"/><path d="M10 44h28" stroke="#3a2618" stroke-width="1.4"/>',
 };
 
+/* status markers: round medallions beside HP, so they never read as buildings */
+const MEDAL_ART = {
+  camel: ['#9c7040', SYM_STYLE.L[1]],
+  wind: ['#2a4b77', '<path d="M4 9.5h9.5a2.8 2.8 0 1 0-2.8-2.8M4 13.5h12.5a2.8 2.8 0 1 1-2.8 2.8M4 17.2h6" stroke="#fff" stroke-width="1.9" fill="none" stroke-linecap="round"/>'],
+  stakes: ['#7c1d12', '<path d="M7 19.5l2.6-12.8L11 10M12.2 19.5V6l1.4 3.2M17.4 19.5L15 7.4l-.9 3.4" stroke="#fff" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/><path d="M4.5 19.5h15" stroke="#fff" stroke-width="1.6" stroke-linecap="round"/>'],
+};
+const MEDAL_TIP = {
+  crown: 'Imperial Age: this realm has reached it, and its three Imperial cards are in its deck.',
+  camel: 'Camel guard: the next cavalry attack against this camp is cancelled.',
+  wind: 'Divine Wind: every attack against this camp is cancelled until its next turn.',
+  stakes: 'Bạch Đằng stakes: the first opponent to deal damage here takes 2 damage.',
+};
+function medalSVG(kind) {
+  if (kind === 'crown') return crownSVG(24);
+  const [bg, glyph] = MEDAL_ART[kind];
+  return `<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="11.4" fill="${bg}" stroke="#24180c" stroke-opacity=".8" stroke-width=".9"/><circle cx="12" cy="12" r="10.15" fill="none" stroke="#d2ad57" stroke-width="1.15"/>${glyph.replace(/#fff/g, '#f6ebcf')}</svg>`;
+}
+function medal(kind, n) { return `<span class="medal m-${kind}" data-tip="${esc(MEDAL_TIP[kind])}" aria-label="${esc(MEDAL_TIP[kind])}">${medalSVG(kind)}${n > 1 ? `<b>${n}</b>` : ''}</span>`; }
+function medalsOf(P) {
+  const m = [];
+  if (P.tokens.camel) m.push(medal('camel', P.tokens.camel));
+  if (P.tokens.immune) m.push(medal('wind'));
+  if (P.tokens.trap) m.push(medal('stakes'));
+  if (P.aged) m.push(medal('crown'));
+  return m.join('');
+}
+
 /* ── View: table art, components and rendering for the new UI ── */
 const $ = s => document.querySelector(s), $$ = s => [...document.querySelectorAll(s)];
 const UI = { screen: 'menu', sel: null, hoverT: null, busy: false, last: null, view: null, round: 1, drawer: false, n: 2, civ: null, opps: 'random', tutorial: null };
@@ -1402,6 +1542,9 @@ const ICON = {
   event: '<svg viewBox="0 0 24 24"><path d="M7 3h10M7 21h10M8 3c0 5 8 5 8 9s-8 4-8 9M16 3c0 5-8 5-8 9s8 4 8 9" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>',
   market: '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M12 8v8M9.5 10h4M9.5 14h5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>',
   back: '<svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+  close: '<svg viewBox="0 0 24 24"><path d="M6.5 6.5l11 11M17.5 6.5l-11 11" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>',
+  book: '<svg viewBox="0 0 24 24"><path d="M12 6.6C10 5.1 7.5 4.6 4 4.9v13c3.5-.3 6 .2 8 1.7 2-1.5 4.5-2 8-1.7v-13c-3.5-.3-6 .2-8 1.7zM12 6.6v13" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>',
+  info: '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M12 11v6M12 7.6v.2" stroke="currentColor" stroke-width="2.3" stroke-linecap="round"/></svg>',
 };
 const svgURL = svg => `url("data:image/svg+xml,${encodeURIComponent(svg)}")`;
 function installTableArt() {
@@ -1431,7 +1574,7 @@ function cardHTML(card, o = {}) {
   const size = o.size || '';
   const syms = card.age ? crownSVG(size === 'lg' ? 66 : size === 'sm' ? 36 : 50) : [...card.icons].map(ch => symBadge(ch, 30)).join('');
   const seal = type === 'sig' ? `<i class="seal" title="Signature card">${crest(card.civ, 22)}</i>` : type === 'imp' || type === 'age' ? `<i class="seal crown" title="Imperial card">${crownSVG(24)}</i>` : type === 'merc' && o.cost == null ? `<i class="seal coin" title="Mercenary">${card.cost}</i>` : '';
-  return `<div class="card ${size} t-${type} fam-${merc ? 'merc' : CIV_FAMILY[card.civ]} civ-${merc ? 'merc' : card.civ} ${o.cls || ''}" data-uid="${card.uid || ''}" ${o.attrs || ''} style="${o.style || ''}"><div class="cf"><div class="cb"><div class="cn"><span>${esc(card.name)}</span></div><div class="ca">${syms}</div><div class="ct"><span>${kw(cardText(card))}</span></div></div></div><i class="corner c1"></i><i class="corner c2"></i>${seal}${o.cost != null ? `<div class="cost${o.afford ? ' ok' : ''}">${o.cost} gold</div>` : ''}</div>`;
+  return `<div class="card ${size} t-${type} fam-${merc ? 'merc' : CIV_FAMILY[card.civ] || 'plain'} civ-${merc ? 'merc' : card.civ} ${o.cls || ''}" data-uid="${card.uid || ''}" ${o.attrs || ''} style="${o.style || ''}"><div class="cf"><div class="cb"><div class="cn"><span>${esc(card.name)}</span></div><div class="ca">${syms}</div><div class="ct"><span>${kw(cardText(card))}</span></div></div></div><i class="corner c1"></i><i class="corner c2"></i>${seal}${o.cost != null ? `<div class="cost${o.afford ? ' ok' : ''}">${o.cost} gold</div>` : ''}</div>`;
 }
 function workHTML(st) { return buildHTML(st); }
 function dispHP(P) { return UI.view && UI.view[P.id] != null ? UI.view[P.id] : P.hp; }
@@ -1441,15 +1584,12 @@ function campHTML(P, mine) {
   const info = [];
   info.push(`<span class="coin" data-tip="Gold hires mercenaries at the market.">${symBadge('G', 20)}<b>${P.gold}</b></span>`);
   if (!mine) info.push(`<span class="backs" data-tip="${P.hand.length} cards in hand">${'<i class="cback"></i>'.repeat(Math.min(P.hand.length, 5))}<b>${P.hand.length}</b></span>`);
-  info.push(!P.ageGiven ? `<span class="agem" data-tip="The Imperial Age card arrives at the start of turn ${RULES.ageTurn}.">${crownSVG(16)}in ${Math.max(1, RULES.ageTurn - P.turns)}</span>`
-    : !P.aged ? `<span class="agem hot" data-tip="Holds the Imperial Age card.">${crownSVG(16)}ready</span>` : `<span class="agem imp" data-tip="In the Imperial Age.">${crownSVG(16)}Imperial</span>`);
+  if (!P.aged) info.push(!P.ageGiven ? `<span class="agem" data-tip="The Imperial Age card arrives at the start of turn ${RULES.ageTurn}.">${crownSVG(16)}in ${Math.max(1, RULES.ageTurn - P.turns)}</span>`
+    : `<span class="agem hot" data-tip="Holds the Imperial Age card.">${crownSVG(16)}ready</span>`);
   if (P.relic) info.push(`<span class="relic" data-tip="${esc(RELICS[P.relic].name)}: ${esc(RELICS[P.relic].text)}">${esc(RELICS[P.relic].name)}</span>`);
-  if (P.tokens.camel) info.push(`<span class="token camel" data-tip="Camel guard: the next cavalry attack against this camp is cancelled.">Camel guard${P.tokens.camel > 1 ? ' ×' + P.tokens.camel : ''}</span>`);
-  if (P.tokens.immune) info.push('<span class="token" data-tip="Divine Wind: every attack against this camp is cancelled until its next turn.">Divine Wind</span>');
-  if (P.tokens.trap) info.push('<span class="token" data-tip="Bạch Đằng stakes: the first opponent to deal damage here takes 2 damage.">Stakes set</span>');
   if (mine) info.push(`<span class="piles"><button class="pile" data-act="deck" data-tip="Cards left to draw">Deck ${P.deck.length}</button><button class="pile" data-act="discard" data-tip="Cards already played or lost">Discard ${P.discard.length}</button></span>`);
   return `<section class="camp fam-${CIV_FAMILY[P.civ]} civ-${P.civ}${mine ? ' mine' : ''}${acting ? ' turn' : ''}${P.alive ? '' : ' out'}${tgt ? ' targetable' : ''}${tgt && UI.hoverT === P.id ? ' hot' : ''}" id="camp-${P.id}" data-pid="${P.id}" aria-label="${mine ? 'You, ' : ''}${esc(C.name)}: ${hp} of ${P.maxHP} HP">
-<header class="camp-banner">${crest(P.civ, mine ? 32 : 28)}<span class="cname">${esc(C.name)}</span>${mine ? '<span class="you">you</span>' : ''}${acting && !mine ? '<span class="flag">acting</span>' : ''}${P.alive ? '' : '<span class="flag out">defeated</span>'}${hpTag(P, hp)}</header>${hpBar(P, hp)}
+<header class="camp-banner">${crest(P.civ, mine ? 32 : 28)}<span class="cname">${esc(C.name)}</span>${mine ? '<span class="you">you</span>' : ''}${acting && !mine ? '<span class="flag">acting</span>' : ''}${P.alive ? '' : '<span class="flag out">defeated</span>'}<span class="medals">${medalsOf(P)}</span>${hpTag(P, hp)}</header>${hpBar(P, hp)}
 <div class="camp-info"><div class="defs"><span class="lbl">Defenses</span>${P.structs.map(buildHTML).join('') || '<span class="none">none</span>'}</div><div class="stash">${info.join('')}</div></div>
 <div class="chips"></div><div class="floats"></div></section>`;
 }
@@ -1458,7 +1598,7 @@ function renderTopbar() {
   $('#topbar').innerHTML = `<button class="icon-btn" data-act="pause" aria-label="Menu" data-tip="Menu (Esc)">${ICON.menu}</button>
 <div class="tb-mid"><button class="evchip mob-only" data-act="events" aria-label="Events"><small>Round ${S.round}</small><b>${E ? esc(E.name) : 'Peace'}</b>${UI.eventSeen !== S.round && S.event ? '<i class="badge"></i>' : ''}</button><span class="pill desk-only">Round ${S.round}</span>${who ? `<span class="pill desk-only ${S.turn === 0 ? 'you' : ''}">${who}</span>` : ''}${me && S.plays > 0 ? `<span class="pips" data-tip="Plays left this turn">${'<i class="pip"></i>'.repeat(S.plays)}</span>` : ''}</div>
 <div class="tb-right"><button class="icon-btn mob-only" data-act="market" aria-label="Mercenary Market" data-tip="Mercenary Market">${ICON.market}${canHire() ? `<i class="badge">${canHire()}</i>` : ''}</button>
-<button class="speed desk-only" data-act="speed" data-tip="Animation speed (S)">${SPEEDS[SET.speed].label}</button><button class="icon-btn" data-act="chronicle" aria-label="Chronicle" data-tip="Chronicle (L)">${ICON.scroll}</button><button class="icon-btn desk-only" data-act="help" aria-label="How to play" data-tip="How to play (H)">${ICON.help}</button></div>`;
+<button class="speed desk-only" data-act="speed" data-tip="Animation speed (S)">${SPEEDS[SET.speed].label}</button><button class="icon-btn" data-act="codex" aria-label="Codex" data-tip="Codex: civilizations, cards, symbols and rules (C)">${ICON.book}</button><button class="icon-btn" data-act="chronicle" aria-label="Chronicle" data-tip="Chronicle (L)">${ICON.scroll}</button></div>`;
 }
 function eventsHTML() {
   const E = S.event ? EVENT_BY[S.event] : null, N = EVENT_BY[S.eventNext];
@@ -1471,12 +1611,20 @@ function marketHTML() {
 <p class="mk-note">${S.turn === 0 && S.flags.bought ? 'You already hired this turn.' : `Hire 1 card per turn with <b class="kw k-gold">gold</b>; it goes straight to your hand.`}${S.mod.fair ? ' Great Fair: 1 cheaper this round.' : ''}${S.turn === 0 && S.flags.buyFree ? ' Your next hire is free.' : ''}</p>`;
 }
 function renderHand() {
-  const me = S.players[0], n = me.hand.length, mid = (n - 1) / 2, mine = isMyTurn(), compact = mobile();
-  const hand = $('#hand'), w = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--cw')) || 150;
+  /* the hand is rebuilt only when its cards change, so a scrolled hand stays where the player left it */
+  const me = S.players[0], n = me.hand.length, mid = (n - 1) / 2, mine = isMyTurn(), compact = mobile(), hand = $('#hand');
+  const key = `${S.seed}|${compact ? 'c' : 'd' + hand.clientWidth}|${mine ? 1 : 0}|${me.hand.map(c => c.uid).join(',')}`;
+  if (hand.dataset.key === key) {
+    for (const el of hand.children) if (el.dataset.uid) { const on = +el.dataset.uid === UI.sel; el.classList.toggle('sel', on); if (!compact) el.style.zIndex = on ? 50 : +el.dataset.i + 1; }
+    return;
+  }
+  const w = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--cw')) || 150, keep = hand.scrollLeft;
   let gap = 0, spread = 0;
   if (!compact) { const W = hand.clientWidth - 40; gap = -14; if (n > 1 && n * w + (n - 1) * gap > W) gap = Math.max(-(w - 64), (W - n * w) / (n - 1)); spread = Math.min(4.2, 30 / Math.max(1, n)); hand.style.justifyContent = 'center'; }
   else hand.style.justifyContent = '';
-  hand.innerHTML = me.hand.map((c, i) => cardHTML(c, { cls: (mine ? 'playable' : 'dim') + (UI.sel === c.uid ? ' sel' : ''), attrs: `tabindex="${mine ? 0 : -1}" role="button" aria-label="${esc(c.name)}: ${esc(cardText(c))}"`, style: compact ? '' : `--rot:${((i - mid) * spread).toFixed(2)}deg;--y:${(Math.abs(i - mid) ** 2 * 2.4).toFixed(1)}px;z-index:${UI.sel === c.uid ? 50 : i + 1};margin-left:${i ? gap.toFixed(1) : 0}px` })).join('') || '<div class="hand-empty">No cards in hand</div>';
+  hand.innerHTML = me.hand.map((c, i) => cardHTML(c, { cls: (mine ? 'playable' : 'dim') + (UI.sel === c.uid ? ' sel' : ''), attrs: `data-i="${i}" tabindex="0" role="button" aria-label="${esc(c.name)}: ${esc(cardText(c))}"`, style: compact ? '' : `--rot:${((i - mid) * spread).toFixed(2)}deg;--y:${(Math.abs(i - mid) ** 2 * 2.4).toFixed(1)}px;z-index:${UI.sel === c.uid ? 50 : i + 1};margin-left:${i ? gap.toFixed(1) : 0}px` })).join('') || '<div class="hand-empty">No cards in hand</div>';
+  hand.dataset.key = key;
+  if (compact) hand.scrollLeft = keep;
 }
 function renderStage() {
   const c = selCard();
@@ -1500,10 +1648,10 @@ function renderAction() {
   if (S.turn !== 0) { el.innerHTML = `<span class="hint">${esc(CIVS[cur(S).civ].name)} is playing…</span>`; return; }
   if (UI.busy) { el.innerHTML = ''; return; }
   const c = selCard();
-  if (!c) { el.innerHTML = `<span class="hint">${S.plays > 1 ? `Your turn: play ${S.plays} cards` : mobile() ? 'Your turn: drag a card up, or tap to read it' : 'Your turn: drag a card onto the chart'}</span>`; return; }
+  if (!c) { el.innerHTML = `<span class="hint">${S.plays > 1 ? `Your turn: play ${S.plays} cards` : mobile() ? 'Your turn: tap a card to choose it' : 'Your turn: click a card, or drag it onto the chart'}</span>`; return; }
   const land = document.documentElement.classList.contains('land'), t = selTarget(c);
   const label = !needsTarget(c) ? (land ? 'Play' : `Play ${c.name}`) : t != null ? `${land ? 'On' : 'Play on'} ${CIVS[S.players[t].civ].name}` : (land ? 'Pick a camp' : 'Tap an enemy camp');
-  el.innerHTML = `<button class="btn ghost small" data-act="cancel-sel">Cancel</button><button class="btn" data-act="play-sel"${needsTarget(c) && t == null ? ' disabled' : ''}>${esc(label)}</button>`;
+  el.innerHTML = `<button class="icon-btn info" data-act="card-info" aria-label="Card details" data-tip="Card details (I)">${ICON.info}</button><button class="btn ghost small" data-act="cancel-sel">Cancel</button><button class="btn" data-act="play-sel"${needsTarget(c) && t == null ? ' disabled' : ''}>${esc(label)}</button>`;
 }
 function renderChronicle() {
   $('#chronicle').innerHTML = `<h3>Chronicle</h3><ul class="log">${S.log.slice(-60).reverse().map(e => { const t = logLine(e); return t ? `<li class="${e.k === 'event' ? 'r' : ''}">${t}</li>` : ''; }).join('')}</ul>`;
@@ -1567,7 +1715,8 @@ function showTip(el) {
   t.style.left = x + 'px'; t.style.top = y + 'px'; TIP.el = el;
 }
 function hideTip() { $('#tip').classList.add('hidden'); TIP.el = null; }
-document.addEventListener('pointerover', e => { if (e.pointerType === 'touch') return; const el = e.target.closest('[data-tip]'); if (el) showTip(el); else if (TIP.el) hideTip(); });
+const FINE = matchMedia('(hover: hover) and (pointer: fine)');
+document.addEventListener('pointerover', e => { if (e.pointerType === 'touch' || !FINE.matches) return; const el = e.target.closest('[data-tip]'); if (el) showTip(el); else if (TIP.el) hideTip(); });
 document.addEventListener('pointerdown', e => { clearTimeout(TIP.timer); if (e.pointerType !== 'touch') return; const el = e.target.closest('[data-tip]'); if (el) TIP.timer = setTimeout(() => showTip(el), 420); });
 document.addEventListener('pointerup', () => { clearTimeout(TIP.timer); if (TIP.el && matchMedia('(pointer: coarse)').matches) setTimeout(hideTip, 1600); });
 document.addEventListener('scroll', hideTip, true);
@@ -1581,8 +1730,7 @@ function showZoom(c) {
   z.style.left = x + 'px'; z.style.top = Math.min(Math.max(8, r.top + r.height / 2 - h / 2), innerHeight - h - 8) + 'px'; z.classList.remove('hidden');
 }
 function hideZoom() { const z = $('#zoom'); if (z) z.classList.add('hidden'); }
-document.addEventListener('pointerover', e => { if (e.pointerType === 'touch') return; const c = e.target.closest('.card.sm'); if (c) showZoom(c); else hideZoom(); });
-document.addEventListener('pointerdown', e => { if (e.pointerType !== 'touch') return; const c = e.target.closest('.card.sm'); if (c) TIP.zoomTimer = setTimeout(() => showZoom(c), 420); });
+document.addEventListener('pointerover', e => { if (e.pointerType === 'touch' || !FINE.matches) return; const c = e.target.closest('.card.sm'); if (c) showZoom(c); else hideZoom(); });
 document.addEventListener('pointerup', () => { clearTimeout(TIP.zoomTimer); setTimeout(hideZoom, 1400); });
 
 function canHire() { if (!isMyTurn() || S.flags.bought) return 0; const me = S.players[0]; return S.market.filter(c => c && me.gold >= marketCost(S, me, c)).length; }
@@ -1590,12 +1738,11 @@ function ageMini(P) { return !P.ageGiven ? `<span class="agem" data-tip="Imperia
 function campMiniHTML(P) {
   const C = CIVS[P.civ], hp = Math.max(0, dispHP(P)), acting = S.turn === P.id && S.winner == null, W = wonderOf(P);
   const tgt = P.alive && UI.sel != null && isMyTurn() && needsTarget(selCard() || { steps: [] }) && opponents(S, S.players[0]).length > 1;
-  const dots = [P.tokens.camel ? '<i class="camel"></i>' : '', P.tokens.immune ? '<i></i>' : '', P.tokens.trap ? '<i></i>' : ''].join('');
-  const wall = `<svg class="bi" viewBox="0 0 24 24" aria-hidden="true">${BUILD.castle}</svg>`;
+  const wall = `<svg class="bi" viewBox="0 0 24 24" aria-hidden="true">${BUILD.castle}</svg>`, medals = medalsOf(P);
   return `<section class="camp mini fam-${CIV_FAMILY[P.civ]} civ-${P.civ}${acting ? ' turn' : ''}${P.alive ? '' : ' out'}${tgt ? ' targetable' : ''}${tgt && UI.hoverT === P.id ? ' hot' : ''}" id="camp-${P.id}" data-pid="${P.id}" aria-label="${esc(C.name)}: ${hp} of ${P.maxHP} HP">
 <header class="camp-banner">${crest(P.civ, 20)}<span class="cname">${esc(C.name)}</span></header>${hpBar(P, hp)}
-<div class="mini-body">${hpTag(P, hp, true)}<div class="mini-stats"><span data-tip="Defenses: total durability">${wall}${wallTotal(P)}${W ? ` +${W.dur}` : ''}</span><span>${symBadge('G', 15)}${P.gold}</span><span><i class="cback"></i>${P.hand.length}</span>${ageMini(P)}</div></div>
-${dots ? `<div class="dots">${dots}</div>` : ''}<div class="chips"></div><div class="floats"></div></section>`;
+<div class="mini-body">${hpTag(P, hp, true)}${medals ? `<span class="mmedals">${medals}</span>` : ''}<div class="mini-stats"><span data-tip="Defenses: total durability">${wall}${wallTotal(P)}${W ? ` +${W.dur}` : ''}</span><span>${symBadge('G', 15)}${P.gold}</span><span><i class="cback"></i>${P.hand.length}</span>${P.aged ? '' : ageMini(P)}</div></div>
+<div class="chips"></div><div class="floats"></div></section>`;
 }
 
 /* ── Motion: every action travels across the table, from cause to effect ── */
@@ -1713,8 +1860,8 @@ ${N ? `<div class="hnext"><span>Next round</span><b>${esc(N.name)}</b><em>${kw(N
 }
 
 /* ── Screens and sheets: menu, civilization select, relics, settings, help, deck, results ── */
-function sigCards(civ) { return CIVS[civ].deck.split(/\s+/).filter(t => t[0] === '+').map(t => { const id = t.slice(1), U = UNIQUE[id]; return { uid: 0, name: U.name, icons: U.icons, text: U.text, civ, unique: id, steps: [] }; }); }
-function impCards(civ) { return IMPERIAL[civ].cards.map(d => ({ uid: 0, name: d.name, icons: d.icons, text: d.text, civ, imperial: true, steps: [] })); }
+function sigCards(civ) { return CIVS[civ].deck.split(/\s+/).filter(t => t[0] === '+').map(t => staticCard(`sig:${civ}:${t.slice(1)}`)); }
+function impCards(civ) { return IMPERIAL[civ].cards.map((d, i) => staticCard(`imp:${civ}:${i}`)); }
 function deckMix(civ) { const n = {}; for (const c of buildDeck({ nextUid: 1 }, civ)) for (const ch of c.icons) n[ch] = (n[ch] || 0) + 1; return Object.entries(n).sort((a, b) => b[1] - a[1]); }
 function statsLine() { const all = Object.values(SET.stats); const g = all.reduce((a, r) => a + r[1], 0), w = all.reduce((a, r) => a + r[0], 0); return g ? `You have won ${w} of ${g} matches.` : 'New here? Learn to play takes about five minutes.'; }
 function renderMenu() {
@@ -1722,20 +1869,17 @@ function renderMenu() {
   const fan = picks.map((c, i) => { const k = i - mid; return cardHTML(sigCards(c)[0], { style: `--x:${k * (mobile() ? 84 : 112)}px;--y:${Math.abs(k) * 16}px;--rot:${k * 7}deg;--d:${120 + i * 90}ms` }); }).join('');
   $('#screen-menu').innerHTML = `<div class="menu"><h1 class="menu-title">Medieval Mayhem</h1><div class="menu-rule" aria-hidden="true"></div><p class="menu-sub">Thirty-five civilizations, one deck each. Draw a card, play a card, outlast every rival.</p>
 <div class="menu-fan" aria-hidden="true">${fan}</div>
-<div class="menu-actions">${SET.tutorialDone ? '' : '<button class="btn" data-act="tutorial">Learn to play</button>'}<button class="btn${SET.tutorialDone ? '' : ' ghost'}" data-act="quick">Quick match</button><button class="btn ghost" data-act="choose">Choose a civilization</button>${SET.tutorialDone ? '<button class="btn ghost" data-act="tutorial">Replay the tutorial</button>' : ''}<button class="btn ghost" data-act="settings">Settings</button></div>
+<div class="menu-actions">${SET.tutorialDone ? '' : '<button class="btn" data-act="tutorial">Learn to play</button>'}<button class="btn${SET.tutorialDone ? '' : ' ghost'}" data-act="quick">Quick match</button><button class="btn ghost" data-act="choose">Choose a civilization</button>${SET.tutorialDone ? '<button class="btn ghost" data-act="tutorial">Replay the tutorial</button>' : ''}<div class="menu-row"><button class="btn ghost" data-act="codex">Codex</button><button class="btn ghost" data-act="settings">Settings</button></div></div>
 <p class="menu-foot">${statsLine()}</p></div>`;
 }
 function renderSelect() {
-  const civ = UI.civ, C = CIVS[civ], hpOf = c => (UI.n === 2 ? CIVS[c].hp2 : CIVS[c].hp4), rec = SET.stats[civ];
+  /* phones: the list, then a full page for the chosen civilization; wider screens: both side by side */
+  const civ = UI.civ, hpOf = c => (UI.n === 2 ? CIVS[c].hp2 : CIVS[c].hp4), detail = mobile() && UI.selView === 'detail', scr = $('#screen-select');
   const list = GROUPS.map(g => `<div class="region"><h3>${esc(g)}</h3><div class="civ-grid">${CIV_ORDER.filter(c => CIVS[c].group === g).map(c => `<button class="civ-tile fam-${CIV_FAMILY[c]} civ-${c}${c === civ ? ' on' : ''}" data-civ="${c}" aria-pressed="${c === civ}">${crest(c, 36)}<span class="nm">${esc(CIVS[c].name)}</span><span class="hp" data-tip="Starting HP ${UI.n === 2 ? 'in a duel' : 'at a 3–4 player table'}">${hpOf(c)}</span></button>`).join('')}</div></div>`).join('');
-  $('#screen-select').innerHTML = `<div class="sel-top"><button class="icon-btn" data-act="menu" aria-label="Back to the menu">${ICON.back}</button><h2>Choose your civilization</h2><button class="btn ghost small" data-act="random-civ">Random</button></div>
+  scr.classList.toggle('detail', detail);
+  scr.innerHTML = `<div class="sel-top"><button class="icon-btn" data-act="${detail ? 'sel-list' : 'menu'}" aria-label="${detail ? 'All civilizations' : 'Back to the menu'}">${ICON.back}</button><h2>${detail ? 'Your civilization' : 'Choose your civilization'}</h2><button class="btn ghost small" data-act="random-civ">Random</button></div>
 <div class="sel-list">${list}</div>
-<div class="sel-detail fam-${CIV_FAMILY[civ]} civ-${civ}"><div class="sd-hero">${crest(civ, 72)}<div><h2>${esc(C.name)}</h2><p>${esc(C.style)}</p></div></div>
-<div class="sd-body"><div class="sd-stats"><span><b class="kw k-hp">${C.hp2}</b> HP in a duel</span><span><b class="kw k-hp">${C.hp4}</b> HP at a bigger table</span>${rec ? `<span>Won <b>${rec[0]}</b> of ${rec[1]}</span>` : ''}</div>
-<h3>Signature cards</h3><div class="sd-cards">${sigCards(civ).map(c => cardHTML(c, { size: 'sm' })).join('')}</div>
-<h3>Imperial Age</h3><p>${kw(IMPERIAL[civ].bonus.text)}</p><div class="sd-cards">${impCards(civ).map(c => cardHTML(c, { size: 'sm' })).join('')}</div>
-<h3>The 24-card deck</h3><div class="mix">${deckMix(civ).map(([ch, k]) => `<span data-tip="${esc(SYM[ch].name)}: ${esc(SYM[ch].desc)}">${symBadge(ch, 22)}${k}</span>`).join('')}</div>
-<p class="muted">Cards and camp styled after ${FAMILY_NAMES[CIV_FAMILY[civ]]}, with ${MOTIF_NAMES[CIV_MOTIF[civ]]}.</p></div>
+<div class="sel-detail fam-${CIV_FAMILY[civ]} civ-${civ}">${civDetailHTML(civ, 'select')}
 <div class="sd-foot"><div class="seg" role="group" aria-label="Players">${[2, 3, 4].map(n => `<button class="${UI.n === n ? 'on' : ''}" data-n="${n}">${n === 2 ? 'Duel' : n + ' players'}</button>`).join('')}</div><div class="seg" role="group" aria-label="Difficulty">${['easy', 'normal', 'hard'].map(d => `<button class="${SET.difficulty === d ? 'on' : ''}" data-diff="${d}">${d[0].toUpperCase() + d.slice(1)}</button>`).join('')}</div><button class="btn" data-act="start">To battle</button></div></div>`;
 }
 function relicSheet() {
@@ -1754,19 +1898,9 @@ ${navigator.vibrate ? `<div class="set-row"><div><b>Vibration</b><span>A short b
 <div class="row"><button class="btn" data-act="close">Done</button></div>`);
 }
 function pauseSheet() {
-  openSheet(`<h2>Paused</h2><div class="row"><button class="btn" data-act="close">Resume</button><button class="btn ghost mob-only" data-act="deck">Your deck</button><button class="btn ghost" data-act="help">How to play</button><button class="btn ghost" data-act="settings">Settings</button><button class="btn ghost" data-act="concede">Leave match</button></div>`);
+  openSheet(`<h2>Paused</h2><div class="row"><button class="btn" data-act="close">Resume</button><button class="btn ghost mob-only" data-act="deck">Your deck</button><button class="btn ghost" data-act="codex">Codex and rules</button><button class="btn ghost" data-act="settings">Settings</button><button class="btn ghost" data-act="concede">Leave match</button></div>`);
 }
-function helpSheet() {
-  openSheet(`<h2>How to play</h2>
-<p>Each player brings their civilization's own deck. On your turn you <b>draw 1 card and play 1</b>; with an empty hand you draw 2. A card does what its symbols say, from left to right. The last realm with HP left wins.</p>
-<p>Coloured words show the kind of effect: <b class="kw k-dmg">damage</b>, <b class="kw k-hp">HP</b>, <b class="kw k-gold">gold</b>, <b class="kw k-card">cards</b>, <b class="kw k-wall">walls</b>, <b class="kw k-play">play another card</b>, <b class="kw k-aoe">every opponent</b>, <b class="kw k-pierce">over the walls</b>, <b class="kw k-steal">steal</b>, <b class="kw k-raze">destroy</b>.</p>
-<div class="legend">${SYM_ORDER.split('').map(ch => `<div>${symBadge(ch, 28)}<b>${esc(SYM[ch].name)}</b><span>${kw(SYM[ch].desc)}</span></div>`).join('')}</div>
-<h3>Around the table</h3>
-<p><b>Walls</b> stand in front of your camp and take damage first. <b>Events</b> hit everyone each round, and the next one is always shown. The <b>Mercenary Market</b> sells one card per turn for gold; it joins your deck. Your <b>relic</b> is a small bonus picked at the start.</p>
-<p><b>Imperial Age</b>: at the start of your ${RULES.ageTurn}th turn a card arrives that adds your civilization's three Imperial cards to your deck, plus its own bonus. <b>Wonders</b> win the game if they survive three turns. The first time you fall to 3 HP or less you draw 2 cards, and from round 16 everyone loses 1 HP each round.</p>
-<h3>Controls</h3><p><b>Drag</b> a card onto the chart to play it, or onto an enemy camp to aim it. Or tap or click a card to read it large with its result on every camp, then press <b>Play</b>; for a card that needs a target, tap an enemy camp first. Tap any camp at other times to inspect it. Small cards open at full size when you hover or press and hold them.</p><p>Keys: <b>1–9</b> pick a card, <b>Enter</b> play, <b>Tab</b> switch target, <b>Esc</b> cancel, <b>L</b> chronicle, <b>S</b> speed, <b>H</b> help.</p>
-<div class="row"><button class="btn" data-act="close">Close</button></div>`);
-}
+function helpSheet() { closeSheet(); openCodex('rules'); }
 function deckSheet(which) {
   const P = S.players[0], list = which === 'deck' ? P.deck : P.discard, n = {};
   for (const c of list) { const k = c.name + '|' + typeOf(c); n[k] = (n[k] || 0) + 1; }
@@ -1785,37 +1919,217 @@ function mobileSheet(which) {
   if (which === 'events') { UI.eventSeen = S.round; renderTopbar(); return openSheet(`<h2>Events</h2>${eventsHTML()}<div class="row"><button class="btn" data-act="close">Close</button></div>`); }
   const me = S.players[0], mine = isMyTurn() && !S.flags.bought;
   openSheet(`<div class="market-sheet"><h2>Mercenary Market</h2><p class="muted">You have <b class="kw k-gold">${me.gold} gold</b>. ${S.turn !== 0 ? 'You can hire on your turn.' : S.flags.bought ? 'You already hired this turn.' : 'Hire 1 card per turn; it goes straight to your hand.'}</p>
-<div class="mk-big">${S.market.map((c, i) => { if (!c) return ''; const cost = marketCost(S, me, c), ok = mine && me.gold >= cost; return `<div class="mk-col">${cardHTML(c)}<button class="btn small${ok ? '' : ' ghost'}" data-hire="${i}"${ok ? '' : ' disabled'}>Hire for ${cost} gold</button></div>`; }).join('')}</div>
+<div class="mk-big">${S.market.map((c, i) => { if (!c) return ''; const cost = marketCost(S, me, c), ok = mine && me.gold >= cost; return `<div class="mk-col">${cardHTML(c, { attrs: `data-cref="mk:${i}" role="button" tabindex="0"` })}<button class="btn small${ok ? '' : ' ghost'}" data-hire="${i}"${ok ? '' : ' disabled'}>Hire for ${cost} gold</button></div>`; }).join('')}</div>
 <div class="row center"><button class="btn ghost" data-act="close">Close</button></div></div>`);
 }
 function campSheet(pid) {
   const P = S.players[pid], C = CIVS[P.civ], W = wonderOf(P), I = IMPERIAL[P.civ];
   const note = { regen: 'regains 1 durability each turn', sacred: 'heals its owner 1 HP each turn', thorns: 'whoever hits it takes 1 damage', fortress: 'raze removes only 1 durability', income: 'gives its owner 1 gold each turn' };
   const plays = S.log.filter(e => e.k === 'play' && e.pid === pid).slice(-5).reverse();
-  const toks = [P.tokens.camel ? 'Camel guard: the next cavalry attack against this camp is cancelled.' : '', P.tokens.immune ? 'Divine Wind: every attack against this camp is cancelled until its next turn.' : '', P.tokens.trap ? 'Bạch Đằng stakes: the first opponent to deal damage here takes 2 damage.' : ''].filter(Boolean);
+  const toks = [P.tokens.camel ? 'camel' : '', P.tokens.immune ? 'wind' : '', P.tokens.trap ? 'stakes' : ''].filter(Boolean);
   openSheet(`<div class="camp-sheet fam-${CIV_FAMILY[P.civ]} civ-${P.civ}"><div class="hdr">${crest(P.civ, 56)}<div><h2>${pid === 0 ? 'You' : esc(C.name)}</h2><p>${esc(C.style)}</p></div></div>
 <div class="sd-stats"><span><b class="kw k-hp">${Math.max(0, P.hp)}</b> of ${P.maxHP} HP</span><span><b class="kw k-gold">${P.gold}</b> gold</span><span><b class="kw k-card">${P.hand.length}</b> cards in hand</span><span><b>${P.deck.length}</b> in deck</span></div>
 ${P.relic ? `<p><b>${esc(RELICS[P.relic].name)}</b>: ${kw(RELICS[P.relic].text)}</p>` : ''}
 <h3>Defenses</h3>${P.structs.length ? `<div class="ws">${P.structs.map(st => `<div>${buildHTML(st)}<span>${esc(st.card.name)}${st.kind === 'wonder' ? `: wins in ${Math.max(0, 3 - st.age)} turn(s) unless destroyed` : note[st.kind] ? ': ' + note[st.kind] : ''}</span></div>`).join('')}</div>` : '<p class="muted">None standing.</p>'}
-${toks.length ? `<h3>Effects</h3><ul>${toks.map(t => `<li>${kw(t)}</li>`).join('')}</ul>` : ''}
+${toks.length ? `<h3>Effects</h3><div class="cx-list">${toks.map(t => `<div class="cx-ev"><span class="medal">${medalSVG(t)}</span><div><p>${kw(MEDAL_TIP[t])}</p></div></div>`).join('')}</div>` : ''}
 <h3>Imperial Age</h3><p>${!P.ageGiven ? `The card arrives in ${Math.max(1, RULES.ageTurn - P.turns)} turn(s).` : !P.aged ? 'Holds the Imperial Age card.' : 'In the Imperial Age.'} ${kw(I.bonus.text)}</p>
-<div class="sd-cards">${impCards(P.civ).map(c => cardHTML(c, { size: 'sm' })).join('')}</div>
+<div class="sd-cards">${impCards(P.civ).map(c => cardHTML(c, { size: 'sm', attrs: `data-cref="${c.ref}" role="button" tabindex="0"` })).join('')}</div>
 <h3>Last cards played</h3>${plays.length ? `<ul>${plays.map(e => `<li>Round ${e.round}: <b>${esc(e.card)}</b>${e.target != null ? ' on ' + esc(civObjOf(e.target)) : ''}</li>`).join('')}</ul>` : '<p class="muted">Nothing yet.</p>'}
-<div class="row"><button class="btn" data-act="close">Close</button></div></div>`);
+<div class="row"><button class="btn" data-act="close">Close</button><button class="btn ghost" data-act="codex-civ" data-civ="${P.civ}">Full deck and details</button></div></div>`);
 }
+
+/* ── Codex: every civilization, card, symbol and rule, readable in and out of a match.
+   Also the card sheet: the full story of one card (what it does, each symbol, who owns it). ── */
+const CODEX = { open: false, tab: 'civs', civ: null, q: '', filter: 'all' };
+
+/* symbol icons as CSS sprites, so long lists stay light */
+function symSVG(ch) {
+  return `<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><circle cx='12' cy='12' r='11.4' fill='${SYM_PIG[ch]}' stroke='#24180c' stroke-opacity='.8' stroke-width='.9'/><circle cx='12' cy='12' r='10.15' fill='none' stroke='#d2ad57' stroke-width='1.15'/>${SYM_STYLE[ch][1].replace(/#fff/g, '#f6ebcf')}</svg>`;
+}
+function installSymbolSprites() {
+  let css = '';
+  for (const ch of SYM_ORDER) css += `.sy-${ch}{background-image:${svgURL(symSVG(ch))}}\n`;
+  css += `.sy-crown{background-image:${svgURL(crownSVG(24).replace('<svg ', "<svg xmlns='http://www.w3.org/2000/svg' "))}}\n`;
+  const el = document.createElement('style'); el.id = 'symbol-sprites'; el.textContent = css; document.head.appendChild(el);
+}
+const symIcons = icons => [...icons].map(ch => `<i class="sy sy-${ch}" title="${SYM[ch].name}"></i>`).join('');
+
+/* any card outside a live hand is rebuilt from a short reference: com:civ:icons, sig:civ:id, imp:civ:index, merc:id, age:civ */
+function staticCard(ref) {
+  const [kind, a, b] = ref.split(':');
+  if (kind === 'com') { const c = cardFromIcons(b); return { uid: 0, ref, name: COMMON_NAMES[b] || SYM[b[0]].name, icons: b, civ: a, steps: c.steps, wall: c.wall }; }
+  if (kind === 'sig') { const U = UNIQUE[b]; return { uid: 0, ref, name: U.name, icons: U.icons, text: U.text, civ: a, unique: b, steps: (U.steps || []).map(s => ({ ...s })), wall: U.wall || 0, kind: U.kind || (U.wonder ? 'wonder' : null), wonder: !!U.wonder }; }
+  if (kind === 'imp') { const d = IMPERIAL[a].cards[+b], c = d.steps ? { steps: d.steps.map(s => ({ ...s })), wall: d.wall || 0 } : cardFromIcons(d.icons); return { uid: 0, ref, name: d.name, icons: d.icons, text: d.text, civ: a, imperial: true, steps: c.steps, wall: d.wall != null ? d.wall : c.wall, kind: d.kind || null }; }
+  if (kind === 'merc') { const M = MERCS.find(m => m.id === a), c = M.steps ? { steps: M.steps.map(s => ({ ...s })), wall: (M.icons.match(/W/g) || []).length } : cardFromIcons(M.icons); return { uid: 0, ref, name: M.name, icons: M.icons, text: M.text, civ: 'merc', merc: a, cost: M.cost, steps: c.steps, wall: c.wall }; }
+  if (kind === 'age') return { uid: 0, ref, name: 'Imperial Age', icons: '', civ: a, age: true, bound: true, steps: [{ ageup: 1 }], wall: 0, text: ageText(a) };
+  if (kind === 'mk') return S && S.market[+a];
+  return null;
+}
+let COMMON_IN = null;
+function commonIn() {
+  if (COMMON_IN) return COMMON_IN;
+  COMMON_IN = {};
+  for (const civ of CIV_ORDER) for (const tok of CIVS[civ].deck.split(/\s+/)) {
+    if (tok[0] === '+') continue;
+    const m = tok.match(/^([A-Z]+)(\d+)$/), o = COMMON_IN[m[1]] || (COMMON_IN[m[1]] = {});
+    o[civ] = (o[civ] || 0) + +m[2];
+  }
+  return COMMON_IN;
+}
+const MIX = {};
+const mixOf = civ => MIX[civ] || (MIX[civ] = Object.fromEntries(deckMix(civ)));
+const symbolUsers = ch => CIV_ORDER.map(civ => [civ, mixOf(civ)[ch] || 0]).filter(x => x[1]).sort((a, b) => b[1] - a[1]);
+const cardKind = c => (c.age ? 'age' : c.imperial ? 'imp' : c.unique ? 'sig' : c.civ === 'merc' ? 'merc' : 'com');
+const KIND_TAG = { age: ['imp', 'Imperial Age'], imp: ['imp', 'Imperial'], sig: ['sig', 'Signature'], merc: ['merc', 'Mercenary'], com: ['com', 'Common'] };
+const KIND_NOTE = { regen: 'It regains 1 durability on each of your turns.', sacred: 'While it stands you heal 1 HP on each of your turns.', thorns: 'Whoever hits it takes 1 damage.', fortress: 'Razing removes only 1 durability from it.', income: 'While it stands you gain 1 gold on each of your turns.' };
+function civChip(civ, n) { return `<button class="civchip civ-${civ}" data-act="codex-civ" data-civ="${civ}">${crest(civ, 18)}<span>${esc(CIVS[civ].name)}</span>${n ? `<em>×${n}</em>` : ''}</button>`; }
+function symGroups(icons) { const g = []; for (const ch of icons) { const last = g[g.length - 1]; if (last && last[0] === ch) last[1]++; else g.push([ch, 1]); } return g; }
+
+/* ── the card sheet ── */
+function cardSheet(card, ctx = {}) {
+  if (!card) return;
+  hideZoom(); hideTip();
+  const k = cardKind(card), [tagCls, tagText] = KIND_TAG[k];
+  const who = k === 'age' ? `Arrives at the start of turn ${RULES.ageTurn}. It can't be stolen, discarded or passed, and leaves play once used.`
+    : k === 'imp' ? `Imperial card of the ${CIVS[card.civ].name}. It joins their deck when they reach the Imperial Age.`
+    : k === 'sig' ? `Signature card of the ${CIVS[card.civ].name}. Only their deck has it.`
+    : k === 'merc' ? `Hired at the Mercenary Market for ${card.cost} gold. Anyone can hire it.`
+    : `Shared by ${Object.keys(commonIn()[card.icons] || {}).length} of the ${CIV_ORDER.length} civilizations.`;
+  const notes = [];
+  if (card.wonder) notes.push('A wonder has 3 durability plus 1 per opponent and takes hits before your walls. If it still stands at the start of your third turn after building it, you win. Raze, elephants and bombards remove 2 durability from it.');
+  else if (card.wall > 0) notes.push(`Structures stand in front of your camp and take damage before your HP.${card.kind && KIND_NOTE[card.kind] && !card.text ? ' ' + KIND_NOTE[card.kind] : ''}`);
+  if (needsTarget(card)) notes.push('With several opponents you choose which camp it hits.');
+  const groups = symGroups(card.icons || '');
+  let found = '';
+  if (k === 'com') { const users = Object.entries(commonIn()[card.icons] || {}).sort((a, b) => b[1] - a[1]); found = users.length > 12 ? `<p class="muted">In ${users.length} of ${CIV_ORDER.length} decks.</p>` : `<div class="cx-users">${users.map(([c, n]) => civChip(c, n)).join('')}</div>`; }
+  else if (k === 'sig' || k === 'imp' || k === 'age') found = `<div class="cx-users">${civChip(card.civ)}</div>`;
+  const mine = ctx.hand && S && isMyTurn() && S.players[0].hand.some(c => c.uid === card.uid);
+  const multi = mine && needsTarget(card) && opponents(S, S.players[0]).length > 1;
+  const btns = [];
+  if (mine) btns.push(`<button class="btn" data-act="play-card" data-uid="${card.uid}">${multi ? 'Choose a target' : 'Play ' + esc(card.name)}</button>`);
+  if (ctx.hire != null && S) { const cost = marketCost(S, S.players[0], card), ok = isMyTurn() && !S.flags.bought && S.players[0].gold >= cost; btns.push(`<button class="btn${ok ? '' : ' ghost'}" data-hire="${ctx.hire}"${ok ? '' : ' disabled'}>Hire for ${cost} gold</button>`); }
+  btns.push('<button class="btn ghost" data-act="close">Close</button>');
+  openSheet(`<div class="card-sheet"><div class="cs-card">${cardHTML(card, { size: 'lg' })}</div><div class="cs-body">
+<div class="cs-kind"><span class="cx-tag ${tagCls}">${tagText}</span><span>${esc(who)}</span></div>
+<h3>What it does</h3><p class="cs-eff">${kw(cardText(card))}</p>${notes.map(n => `<p class="cs-note">${kw(n)}</p>`).join('')}
+${groups.length ? `<h3>Symbols, left to right</h3><div class="cs-syms">${groups.map(([ch, n]) => `<div>${symBadge(ch, 30)}<b>${esc(SYM[ch].name)}${n > 1 ? ' ×' + n : ''}</b><span>${kw(SYM[ch].desc)}</span></div>`).join('')}</div>` : ''}
+${found ? `<h3>Found in</h3>${found}` : ''}
+<div class="row">${btns.join('')}</div></div></div>`);
+}
+
+/* ── one civilization, used by the codex and the civilization select ── */
+function deckRows(civ) {
+  const map = new Map();
+  for (const tok of CIVS[civ].deck.split(/\s+/)) {
+    if (tok[0] === '+') { map.set(`sig:${civ}:${tok.slice(1)}`, 1); continue; }
+    const m = tok.match(/^([A-Z]+)(\d+)$/), ref = `com:${civ}:${m[1]}`;
+    map.set(ref, (map.get(ref) || 0) + +m[2]);
+  }
+  const all = [...map];
+  return [...all.filter(([r]) => r.startsWith('sig:')), ...all.filter(([r]) => r.startsWith('com:'))];
+}
+function cardRow(card, extra) {
+  const k = cardKind(card), tag = k === 'com' ? '' : `<span class="cx-tag ${KIND_TAG[k][0]}">${KIND_TAG[k][1]}</span>`;
+  return `<button class="cx-row" data-cref="${card.ref}"><span class="cx-syms">${k === 'age' ? '<i class="sy sy-crown"></i>' : symIcons(card.icons)}</span><span class="cx-main"><b>${esc(card.name)}${tag}</b><em>${kw(cardText(card))}</em></span>${extra ? `<span class="cx-x">${extra}</span>` : ''}</button>`;
+}
+function civDetailHTML(civ, mode) {
+  const C = CIVS[civ], rec = SET.stats[civ], I = IMPERIAL[civ], P0 = S && UI.screen === 'match' ? S.players[0] : null;
+  const live = mode === 'match' && P0 && P0.civ === civ ? `<div class="cx-live"><span>In this match</span><button class="pile" data-act="deck">Deck ${P0.deck.length}</button><span class="pile">Hand ${P0.hand.length}</span><button class="pile" data-act="discard">Discard ${P0.discard.length}</button></div>` : '';
+  const small = c => cardHTML(c, { size: 'sm', attrs: `data-cref="${c.ref}" role="button" tabindex="0" aria-label="${esc(c.name)}: details"` });
+  return `<div class="sd-hero">${crest(civ, 72)}<div><h2>${esc(C.name)}</h2><p>${esc(C.style)}</p></div></div>
+<div class="sd-body"><div class="sd-stats"><span><b class="kw k-hp">${C.hp2}</b> HP in a duel</span><span><b class="kw k-hp">${C.hp4}</b> HP at a bigger table</span>${rec ? `<span>You won <b>${rec[0]}</b> of ${rec[1]}</span>` : ''}</div>${live}
+<h3>Signature cards</h3><div class="sd-cards">${sigCards(civ).map(small).join('')}</div>
+<h3>Imperial Age</h3><p>At the start of turn ${RULES.ageTurn} the Imperial Age card arrives. Playing it adds these three cards to the deck. ${kw(I.bonus.text)}</p><div class="sd-cards">${impCards(civ).map(small).join('')}</div>
+<h3>Full deck <span class="cx-sub">24 cards · tap one for details</span></h3><div class="cx-list">${deckRows(civ).map(([ref, n]) => cardRow(staticCard(ref), '×' + n)).join('')}</div>
+<h3>Symbols in this deck</h3><div class="mix">${deckMix(civ).map(([ch, n]) => `<span data-tip="${esc(SYM[ch].name)}: ${esc(SYM[ch].desc)}">${symBadge(ch, 22)}${n}</span>`).join('')}</div>
+<p class="muted">Cards and camp styled after ${FAMILY_NAMES[CIV_FAMILY[civ]]}, with ${MOTIF_NAMES[CIV_MOTIF[civ]]}.</p>
+${mode === 'codex' ? `<div class="row"><button class="btn" data-act="codex-play" data-civ="${civ}">Play this civilization</button></div>` : ''}</div>`;
+}
+
+/* ── the codex overlay ── */
+function openCodex(tab = 'civs', o = {}) {
+  Object.assign(CODEX, { open: true, tab, civ: o.civ !== undefined ? o.civ : CODEX.civ });
+  hideTip(); hideZoom(); clearAim();
+  $('#codex').classList.remove('hidden'); renderCodex();
+}
+function closeCodex() { CODEX.open = false; $('#codex').classList.add('hidden'); $('#codex').innerHTML = ''; }
+function renderCodex(keepScroll) {
+  const T = CODEX, el = $('#codex'), old = el.querySelector('.cx-body'), y = keepScroll && old ? old.scrollTop : 0;
+  const tabs = [['civs', 'Civilizations'], ['cards', 'Cards'], ['symbols', 'Symbols'], ['rules', 'Rules']];
+  const inCiv = T.tab === 'civs' && T.civ;
+  const body = T.tab === 'civs' ? (inCiv ? `<div class="cx-civ civ-${T.civ} fam-${CIV_FAMILY[T.civ]}">${civDetailHTML(T.civ, UI.screen === 'match' ? 'match' : 'codex')}</div>` : codexCivList())
+    : T.tab === 'cards' ? codexCards() : T.tab === 'symbols' ? codexSymbols() : codexRules();
+  el.innerHTML = `<header class="cx-top"><button class="icon-btn" data-act="codex-back" aria-label="${inCiv ? 'All civilizations' : 'Close the codex'}">${inCiv ? ICON.back : ICON.close}</button><h2>${inCiv ? esc(CIVS[T.civ].name) : 'Codex'}</h2></header>
+<nav class="cx-tabs" role="tablist">${tabs.map(([k, l]) => `<button role="tab" class="${T.tab === k ? 'on' : ''}" aria-selected="${T.tab === k}" data-act="codex-tab" data-tab="${k}">${l}</button>`).join('')}</nav>
+<div class="cx-body">${body}</div>`;
+  el.querySelector('.cx-body').scrollTop = y;
+}
+function codexCivList() {
+  const mine = S && UI.screen === 'match' ? S.players.map(p => p.civ) : [];
+  return `<p class="cx-lead">Thirty-five civilizations, each with its own 24-card deck, two signature cards and three Imperial cards. Tap one to see everything it plays.</p>` +
+    GROUPS.map(g => `<div class="region"><h3>${esc(g)}</h3><div class="civ-grid">${CIV_ORDER.filter(c => CIVS[c].group === g).map(c => `<button class="civ-tile fam-${CIV_FAMILY[c]} civ-${c}" data-act="codex-civ" data-civ="${c}">${crest(c, 36)}<span class="nm">${esc(CIVS[c].name)}</span>${mine.includes(c) ? `<span class="hp">${c === mine[0] ? 'You' : 'Rival'}</span>` : ''}</button>`).join('')}</div></div>`).join('');
+}
+function allCards() {
+  if (allCards.cache) return allCards.cache;
+  const out = [];
+  for (const key of Object.keys(COMMON_NAMES)) if (commonIn()[key]) out.push(staticCard(`com:neutral:${key}`));
+  for (const civ of CIV_ORDER) out.push(...sigCards(civ));
+  for (const civ of CIV_ORDER) out.push(...impCards(civ));
+  for (const M of MERCS) out.push(staticCard('merc:' + M.id));
+  return (allCards.cache = out);
+}
+const cardOwner = c => (cardKind(c) === 'com' ? `${Object.keys(commonIn()[c.icons]).length} decks` : cardKind(c) === 'merc' ? `${c.cost} gold` : CIVS[c.civ].name);
+function codexCards() {
+  const kinds = [['all', 'All'], ['com', 'Common'], ['sig', 'Signature'], ['imp', 'Imperial'], ['merc', 'Mercenary']];
+  return `<div class="cx-search"><input id="cx-q" type="search" placeholder="Search a card, an effect or a civilization" value="${esc(CODEX.q)}" autocomplete="off" enterkeyhint="search" aria-label="Search cards"><div class="chipf" role="group" aria-label="Card type">${kinds.map(([k, l]) => `<button class="${CODEX.filter === k ? 'on' : ''}" data-act="cx-filter" data-f="${k}">${l}</button>`).join('')}</div></div><div id="cx-results">${codexCardResults()}</div>`;
+}
+function codexCardResults() {
+  const q = CODEX.q.trim().toLowerCase(), f = CODEX.filter;
+  const words = c => [c.name, cardText(c), cardOwner(c), KIND_TAG[cardKind(c)][1], ...[...(c.icons || '')].map(ch => SYM[ch].name)].join(' ').toLowerCase();
+  const groups = [['com', 'Common cards', 'Shared by many decks; the same card works the same for everyone.'], ['sig', 'Signature cards', 'Two per civilization, found only in its deck.'], ['imp', 'Imperial cards', 'Three per civilization, added when it reaches the Imperial Age.'], ['merc', 'Mercenaries', 'Hired at the market with gold; anyone can buy them.']];
+  let total = 0;
+  const html = groups.filter(([k]) => f === 'all' || f === k).map(([k, title, note]) => {
+    const score = c => (!q ? 1 : c.name.toLowerCase().includes(q) ? 3 : [...(c.icons || '')].some(ch => SYM[ch].name.toLowerCase().includes(q)) ? 2 : words(c).includes(q) ? 1 : 0);
+    const list = allCards().filter(c => cardKind(c) === k).map((c, i) => [c, score(c), i]).filter(x => x[1] > 0).sort((a, b) => b[1] - a[1] || a[2] - b[2]).map(x => x[0]);
+    total += list.length;
+    return list.length ? `<h3>${title} <span class="cx-sub">${list.length}</span></h3><p class="cx-note">${note}</p><div class="cx-list">${list.map(c => cardRow(c, esc(cardOwner(c)))).join('')}</div>` : '';
+  }).join('');
+  return total ? html : `<p class="cx-empty">No card matches “${esc(CODEX.q)}”.</p>`;
+}
+function codexSymbols() {
+  const legend = [['dmg', 'damage'], ['hp', 'HP'], ['gold', 'gold'], ['card', 'cards'], ['wall', 'walls'], ['play', 'play another card'], ['aoe', 'every opponent'], ['pierce', 'over the walls'], ['steal', 'steal'], ['raze', 'destroy']].map(([k, t]) => `<b class="kw k-${k}">${t}</b>`).join(', ');
+  return `<p class="cx-lead">Every card is built from these symbols and resolves them from left to right. Coloured words on cards follow the same colours: ${legend}.</p><div class="cx-list">${SYM_ORDER.split('').map(ch => {
+    const users = symbolUsers(ch);
+    const who = users.length === CIV_ORDER.length ? '<span class="muted">Every civilization uses it.</span>' : users.length > 18 ? `<span class="muted">Used by ${users.length} civilizations.</span>` : users.map(([c, n]) => civChip(c, n)).join('');
+    return `<div class="cx-sym">${symBadge(ch, 40)}<div><b>${esc(SYM[ch].name)}</b><p>${kw(SYM[ch].desc)}</p><div class="cx-users">${who}</div></div></div>`;
+  }).join('')}</div>`;
+}
+function codexRules() {
+  const bld = [['wall', 'Wall', 'absorbs damage before HP'], ['palisade', 'Palisade or wagon fort', 'a light wall'], ['tower', 'Tower', 'a wall'], ['castle', 'Castle or fortress', 'a heavy wall'], ['spikes', 'Spiked wall', 'whoever hits it takes 1 damage'], ['church', 'Church', 'heals its owner 1 HP each turn'], ['regen', 'Self-repairing wall', 'regains 1 durability each turn'], ['stall', 'Trading post', 'gives its owner 1 gold each turn'], ['wonder', 'Wonder', 'wins the game if it survives three turns']];
+  return `<h3>The basics</h3><p>Each player brings their civilization's own 24-card deck. On your turn you <b>draw 1 card and play 1</b>; with an empty hand you draw 2. A card does what its symbols say, from left to right. Bring every rival to 0 HP to win.</p>
+<h3>Around the table</h3><p><b>Defenses</b> stand in front of a camp and take damage before its HP; ranged attacks shoot over them. <b>Events</b> hit everyone each round from round 2, and the next one is always shown. The <b>Mercenary Market</b> sells one card per turn for gold; it goes straight to your hand. Your <b>relic</b> is a small bonus picked before each match.</p>
+<h3>Imperial Age, wonders and the long war</h3><p>At the start of your ${RULES.ageTurn}th turn the <b>Imperial Age</b> card arrives. Playing it uses your play for the turn: your civilization's three Imperial cards join your deck and its bonus fires. A <b>wonder</b> wins the game if it still stands at the start of your third turn after building it. The first time you drop to 3 HP or less you draw 2 cards. From round 16 everyone loses 1 HP each round.</p>
+<h3>Controls</h3><p>Tap a card to choose it: it shows large on the chart, the tags above each camp show the result, and <b>Play</b> confirms. Tap the chosen card again, or ⓘ, to read it in full. <b>Drag</b> a card up onto the chart to play it straight away, or onto an enemy camp to aim it. Tap any camp to inspect it, and tap the card on the chart to read it.</p><p class="muted">Keys: 1–9 choose a card, Enter play, I details, Tab switch target, Esc cancel, C codex, L chronicle, S speed, H rules.</p>
+<h3>Defenses <span class="cx-sub">the number on each is how much more damage it can absorb</span></h3><div class="cx-list">${bld.map(([k, n, t]) => `<div class="cx-ev"><span class="bld"><svg viewBox="0 0 24 24" aria-hidden="true">${BUILD[k]}</svg></span><div><b>${n}</b><p>${kw(t[0].toUpperCase() + t.slice(1))}.</p></div></div>`).join('')}</div>
+<h3>Status markers <span class="cx-sub">round badges beside HP</span></h3><div class="cx-list">${['crown', 'camel', 'wind', 'stakes'].map(m => `<div class="cx-ev"><span class="medal">${medalSVG(m)}</span><div><p>${kw(MEDAL_TIP[m])}</p></div></div>`).join('')}</div>
+<h3>Events <span class="cx-sub">${EVENTS.length} in the deck</span></h3><div class="cx-list">${EVENTS.map(E => `<div class="cx-ev"><svg class="evart" viewBox="0 0 48 48" aria-hidden="true">${EVENT_ART[E.id]}</svg><div><b>${esc(E.name)}</b><p>${kw(E.text)}</p></div></div>`).join('')}</div>
+<h3>Relics <span class="cx-sub">pick 1 of 3 before each match</span></h3><div class="cx-list">${RELIC_IDS.map(id => `<div class="cx-relic"><b>${esc(RELICS[id].name)}</b><p>${kw(RELICS[id].text)}</p></div>`).join('')}</div>`;
+}
+document.addEventListener('input', e => { if (e.target.id === 'cx-q') { CODEX.q = e.target.value; $('#cx-results').innerHTML = codexCardResults(); } });
+async function holdForOverlay() { while (CODEX.open) await wait(250); }
 
 /* ── Learn to play: a real duel with a coach that lights up one part of the table at a time.
    show: when the step appears ('now' or a game moment); until: 'next' (button) or the action that completes it. ── */
 const TUTORIAL = [
   { show: 'now', until: 'next', target: '#opps .camp', title: 'Welcome to the war table', text: 'You lead the Franks against the Japanese. Each turn you draw 1 card and play 1. Bring their HP to 0 to win.' },
   { show: 'now', until: 'next', target: '#hand', title: 'Your hand', text: 'A card does what its symbols say, left to right. The coloured words tell you the kind of effect: damage, HP, gold, cards, walls.' },
-  { show: 'now', until: 'select', target: '#hand', title: 'Pick a card', text: 'Tap or click a card to read it large. You can also drag a card straight onto the chart to play it.' },
+  { show: 'now', until: 'select', target: '#hand', title: 'Pick a card', text: 'Tap a card to choose it: it shows large on the chart with its result on every camp. Tap it again to read it in full, or drag it up to play it at once.' },
   { show: 'now', until: 'play', target: '#stage-card', title: 'See before you play', text: 'The tags above the camps show the result in advance. Press Play below to confirm.' },
-  { show: 'turn', until: 'next', target: '#me .camp', title: 'Your camp', text: 'The wax seal is your HP. The buildings under Defenses take damage before your HP does; the number on each is how much more it can absorb.' },
+  { show: 'turn', until: 'next', target: '#me .camp', title: 'Your camp', text: 'Your HP is the red tag on your banner, with the bar under it. The buildings under Defenses take damage before your HP does; the number on each is how much more it can absorb. Round badges beside HP are effects, like the Imperial crown.' },
   { show: 'now', until: 'next', target: '#events', title: 'Events', text: 'Each round an event hits everyone, and the next one is always shown, so you can plan for it.', wide: true },
   { show: 'now', until: 'next', target: '#market', title: 'Mercenaries', text: 'Gold hires one mercenary per turn. The card goes straight to your hand and joins your deck.', wide: true },
   { show: 'agecard', until: 'next', target: '#hand', title: 'The Imperial Age', text: 'Turn 7 brings this card. Playing it adds your civilization\'s three Imperial cards to your deck, plus a bonus.' },
-  { show: 'now', until: 'next', target: '#table', title: 'That is the whole game', text: 'Outlast the Japanese to finish the lesson. Every other civilization is waiting in Choose a civilization.' },
+  { show: 'now', until: 'next', target: '#table', title: 'That is the whole game', text: 'Outlast the Japanese to finish the lesson. The book icon opens the Codex: every civilization, card, symbol and rule.' },
 ];
 function startTutorial() { UI.tutorial = { i: 0, live: false }; coachShow(); }
 /* (newMatch arms the tutorial; beginMatch shows the first step once the round-one herald has gone) */
@@ -1849,7 +2163,7 @@ function saveSettings() { try { localStorage.setItem(STORE, JSON.stringify(SET))
 let S = null;
 UI.n = SET.n; UI.civ = CIVS[SET.civ] ? SET.civ : 'franks'; SFX.on = SET.sound;
 function go(screen) {
-  UI.screen = screen; closeSheet(); clearAim(); hideTip();
+  UI.screen = screen; closeSheet(); clearAim(); hideTip(); if (CODEX.open) closeCodex();
   for (const id of ['menu', 'select', 'match']) $('#screen-' + id).classList.toggle('hidden', id !== screen);
   if (screen === 'menu') renderMenu(); else if (screen === 'select') renderSelect();
 }
@@ -1867,12 +2181,10 @@ async function beginMatch() { closeSheet(); startGame(S); UI.busy = true; render
 
 /* the human */
 function onHandCard(uid) {
-  if (!isMyTurn()) return;
+  /* first tap chooses a card, the next one opens it in full; playing takes the Play button or a drag */
   const c = S.players[0].hand.find(x => x.uid === uid); if (!c) return;
-  if (UI.sel !== uid) { UI.sel = uid; UI.hoverT = null; clearAim(); SFX.play('click'); renderMatch(); coachEvent('select'); return; }
-  const opps = opponents(S, S.players[0]);
-  if (needsTarget(c)) { if (opps.length === 1) return humanPlay(uid, opps[0].id); if (UI.hoverT != null) return humanPlay(uid, UI.hoverT); UI.sel = null; clearAim(); return renderMatch(); }
-  humanPlay(uid, null);
+  if (!isMyTurn() || UI.sel === uid) return cardSheet(c, { hand: true });
+  UI.sel = uid; UI.hoverT = null; clearAim(); SFX.play('click'); renderMatch(); coachEvent('select');
 }
 function aiming() { const c = selCard(); return !!(c && isMyTurn() && needsTarget(c) && opponents(S, S.players[0]).length > 1); }
 function onCamp(pid, touch) {
@@ -1909,7 +2221,7 @@ async function humanBuy(i) {
 }
 /* turns */
 async function nextTurn() {
-  UI.busy = true; UI.sel = null; renderMatch(); await wait(D(380));
+  UI.busy = true; UI.sel = null; renderMatch(); await wait(D(380)); await holdForOverlay();
   const round = S.round; endTurn(S);
   if (S.round !== round && S.winner == null) await roundStart();
   if (S.winner != null || !S.players[0].alive) return finish();
@@ -1932,6 +2244,7 @@ async function aiTurn() {
   const pid = S.turn, P = S.players[pid];
   renderMatch(); await wait(D(500));
   for (let guard = 0; guard < 30 && S.winner == null && S.turn === pid; guard++) {
+    await holdForOverlay();
     const a = aiAct(S, pid);
     if (a.kind === 'buy') {
       const card = S.market[a.idx], el = document.querySelector(`.mk-item[data-mi="${a.idx}"]`), from = el ? el.getBoundingClientRect() : document.getElementById('stage').getBoundingClientRect();
@@ -1967,11 +2280,13 @@ document.addEventListener('click', e => {
   const act = e.target.closest('[data-act]'), touch = e.pointerType === 'touch' || matchMedia('(pointer: coarse)').matches;
   if (act) return action(act.dataset.act, act);
   const hire = e.target.closest('[data-hire]'); if (hire) { if (!hire.disabled) humanBuy(+hire.dataset.hire); return; }
+  const cref = e.target.closest('[data-cref]'); if (cref) { const r = cref.dataset.cref; return cardSheet(staticCard(r), { hire: r.startsWith('mk:') ? +r.slice(3) : null }); }
+  if (e.target.closest('#stage-card .card')) { const sel = isMyTurn() && selCard(), c = sel || (UI.last && UI.last.card); if (c) cardSheet(c, { hand: !!sel }); return; }
   const t = e.target.closest('.civ-tile, [data-n], [data-diff], [data-set], .relic-pick, .mk-item, #hand .card, .camp');
   if (!t) { if (e.target.id === 'sheet' && !$('#sheet').dataset.lock) closeSheet(); return; }
-  if (t.classList.contains('civ-tile')) { UI.civ = t.dataset.civ; SET.civ = UI.civ; saveSettings(); SFX.play('click'); const y = $('.sel-list').scrollTop; renderSelect(); $('.sel-list').scrollTop = y; return; }
-  if (t.dataset.n) { UI.n = +t.dataset.n; SET.n = UI.n; saveSettings(); const y = $('.sel-list').scrollTop; renderSelect(); $('.sel-list').scrollTop = y; return; }
-  if (t.dataset.diff) { SET.difficulty = t.dataset.diff; saveSettings(); const y = $('.sel-list').scrollTop; renderSelect(); $('.sel-list').scrollTop = y; return; }
+  if (t.classList.contains('civ-tile')) { UI.civ = t.dataset.civ; SET.civ = UI.civ; saveSettings(); SFX.play('click'); if (mobile()) { UI.selScroll = $('#screen-select').scrollTop; UI.selView = 'detail'; renderSelect(); $('#screen-select').scrollTop = 0; return; } return rerenderSelect(); }
+  if (t.dataset.n) { UI.n = +t.dataset.n; SET.n = UI.n; saveSettings(); return rerenderSelect(); }
+  if (t.dataset.diff) { SET.difficulty = t.dataset.diff; saveSettings(); return rerenderSelect(); }
   if (t.dataset.set) { const v = t.dataset.val; SET[t.dataset.set] = v === 'true' ? true : v === 'false' ? false : v; SFX.on = SET.sound; saveSettings(); settingsSheet(); if (S && UI.screen === 'match') renderTopbar(); return; }
   if (t.classList.contains('relic-pick')) { chooseRelic(S, 0, t.dataset.relic); return beginMatch(); }
   if (t.classList.contains('mk-item')) { if (t.classList.contains('can')) humanBuy(+t.dataset.mi); return; }
@@ -1982,11 +2297,22 @@ function action(a, el) {
   switch (a) {
     case 'tutorial': return newMatch({ civ: 'franks', n: 2, opps: ['japanese'], tutorial: true });
     case 'quick': return newMatch({ civ: UI.civ, n: UI.n });
-    case 'choose': return go('select');
+    case 'choose': UI.selView = 'list'; return go('select');
     case 'menu': return go('menu');
     case 'start': return newMatch({ civ: UI.civ, n: UI.n });
     case 'again': return newMatch(UI.lastSetup.tutorial ? { civ: UI.civ, n: UI.n } : UI.lastSetup);
-    case 'random-civ': UI.civ = CIV_ORDER[Math.floor(Math.random() * CIV_ORDER.length)]; SET.civ = UI.civ; saveSettings(); return renderSelect();
+    case 'random-civ': UI.civ = CIV_ORDER[Math.floor(Math.random() * CIV_ORDER.length)]; SET.civ = UI.civ; saveSettings(); if (mobile()) { UI.selView = 'detail'; renderSelect(); $('#screen-select').scrollTop = 0; return; } return rerenderSelect();
+    case 'sel-list': UI.selView = 'list'; renderSelect(); $('#screen-select').scrollTop = UI.selScroll || 0; return;
+    case 'codex': closeSheet(); return openCodex('civs', { civ: S && UI.screen === 'match' ? S.players[0].civ : null });
+    case 'rules': closeSheet(); return openCodex('rules');
+    case 'codex-back': if (CODEX.tab === 'civs' && CODEX.civ) { CODEX.civ = null; return renderCodex(); } return closeCodex();
+    case 'codex-close': return closeCodex();
+    case 'codex-tab': CODEX.tab = el.dataset.tab; return renderCodex();
+    case 'codex-civ': closeSheet(); return openCodex('civs', { civ: el.dataset.civ });
+    case 'codex-play': closeCodex(); UI.civ = el.dataset.civ; SET.civ = UI.civ; saveSettings(); UI.selView = 'detail'; return go('select');
+    case 'cx-filter': CODEX.filter = el.dataset.f; return renderCodex(true);
+    case 'card-info': { const c = selCard(); if (c) cardSheet(c, { hand: true }); return; }
+    case 'play-card': { const uid = +el.dataset.uid, c = S && S.players[0].hand.find(x => x.uid === uid); closeSheet(); if (!c || !isMyTurn()) return; UI.sel = uid; const t = selTarget(c); if (needsTarget(c) && t == null) { UI.hoverT = null; return renderMatch(); } return humanPlay(uid, t); }
     case 'settings': return settingsSheet();
     case 'tutorial-reset': SET.tutorialDone = false; saveSettings(); return settingsSheet();
     case 'pause': return pauseSheet();
@@ -2013,21 +2339,26 @@ document.addEventListener('pointermove', e => {
   if (camp) { const r = camp.getBoundingClientRect(); aim(cardEl && cardEl.getBoundingClientRect(), r.left + r.width / 2, r.top + r.height / 2); }
   else aim(cardEl && cardEl.getBoundingClientRect(), e.clientX, e.clientY);
 });
+function rerenderSelect() { const l = $('.sel-list'), d = $('.sel-detail'), ly = l ? l.scrollTop : 0, dy = d ? d.scrollTop : 0, sy = $('#screen-select').scrollTop; renderSelect(); if ($('.sel-list')) $('.sel-list').scrollTop = ly; if ($('.sel-detail')) $('.sel-detail').scrollTop = dy; $('#screen-select').scrollTop = sy; }
 document.addEventListener('keydown', e => {
+  if (CODEX.open) { if (e.key === 'Escape') { if (!$('#sheet').classList.contains('hidden')) closeSheet(); else action('codex-back'); } return; }
   if (UI.screen !== 'match' || !S) return;
   const sheetOpen = !$('#sheet').classList.contains('hidden');
   if (e.key === 'Escape') { if (sheetOpen) { if (!$('#sheet').dataset.lock) closeSheet(); return; } if (UI.sel != null) { UI.sel = null; UI.hoverT = null; clearAim(); return renderMatch(); } return pauseSheet(); }
   if (sheetOpen) return;
   const k = e.key.toLowerCase();
   if (/^[1-9]$/.test(e.key)) { const c = S.players[0].hand[+e.key - 1]; if (c) onHandCard(c.uid); }
-  else if (e.key === 'Enter' && UI.sel != null) { e.preventDefault(); onHandCard(UI.sel); }
+  else if (e.key === 'Enter' && UI.sel != null) { e.preventDefault(); action('play-sel'); }
+  else if (k === 'i' && UI.sel != null) action('card-info');
+  else if (k === 'c') action('codex');
   else if (e.key === 'Tab' && aiming()) { e.preventDefault(); const o = opponents(S, S.players[0]).map(p => p.id), i = o.indexOf(UI.hoverT); UI.hoverT = null; setAimTarget(o[(i + 1) % o.length]); clearAim(); }
   else if (k === 'l') toggleChronicle();
   else if (k === 's') cycleSpeed();
-  else if (k === 'h') helpSheet();
+  else if (k === 'h') action('rules');
 });
 addEventListener('resize', () => { updateMode(); if (UI.screen === 'match' && S && !UI.busy) renderMatch(); else if (UI.screen === 'menu') renderMenu(); });
-updateMode(); installCivStyles(); installMaterials(); installTableArt(); go('menu');
+UI.selView = 'list';
+updateMode(); installCivStyles(); installMaterials(); installTableArt(); installSymbolSprites(); go('menu');
 
 /* drag a card up onto the chart (or onto an enemy camp) to play it; a sideways swipe scrolls the hand */
 const DRAG = { uid: null, x0: 0, y0: 0, on: false, ghost: null, el: null, pid: null, ok: false, justDragged: false };
@@ -2069,7 +2400,13 @@ document.addEventListener('pointerdown', e => {
 });
 document.addEventListener('pointermove', e => {
   if (DRAG.uid == null || e.pointerId !== DRAG.pid) return;
-  if (!DRAG.on) { const dx = e.clientX - DRAG.x0, dy = e.clientY - DRAG.y0; if (dy < -14 && Math.abs(dy) >= Math.abs(dx) * 0.6 && isMyTurn()) startDrag(e); else if (Math.abs(dx) > 14 && Math.abs(dy) < 10) DRAG.uid = null; return; }
+  if (!DRAG.on) {
+    /* sideways is a scroll of the hand; only a clearly upward pull picks the card up */
+    const dx = e.clientX - DRAG.x0, dy = e.clientY - DRAG.y0;
+    if (Math.abs(dx) > 10 && Math.abs(dx) >= Math.abs(dy)) { DRAG.uid = null; return; }
+    if (dy < -22 && -dy > Math.abs(dx) * 1.5 && isMyTurn()) startDrag(e);
+    return;
+  }
   e.preventDefault(); moveDrag(e);
 }, { passive: false });
 document.addEventListener('pointerup', e => { if (DRAG.on && e.pointerId === DRAG.pid) endDrag(e); DRAG.uid = null; });
