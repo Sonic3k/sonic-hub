@@ -73,6 +73,7 @@ async function roundStart() {
   UI.flipEvent = true; UI.eventSeen = S.round; renderMatch();
   const note = S.round >= 16 ? 'The war drags on: everyone lost 1 HP.' : S.round >= 14 ? `From round 16 everyone loses 1 HP each round.` : '';
   await herald(S.round, S.event, S.eventNext, note);
+  await roundMoves(S.moves);
 }
 function myTurnStart() {
   UI.busy = false; UI.sel = null; renderMatch(); SFX.play('turn'); buzz(20);
