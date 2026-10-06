@@ -61,9 +61,66 @@ function setShownHP(pid) {
   if (bar) bar.style.width = Math.max(0, Math.round(hp / P.maxHP * 100)) + '%';
 }
 function shake(pid) { const el = document.getElementById('camp-' + pid); if (el) { el.classList.remove('hit'); void el.offsetWidth; el.classList.add('hit'); } }
+/* ── cards and buildings changing hands: the taken card turns up face up where it was, with a tag saying what happened,
+   then travels to where it goes (a hand, a camp's Defenses, or the discard) ── */
+const MOVE_TAG = {
+  steal: (by, t) => (by === 0 ? `Stolen from ${civNameOf(t)}` : `Stolen by ${civNameOf(by)}`),
+  convert: (by, t) => (by === 0 ? `Converted from ${civNameOf(t)}` : `Converted by ${civNameOf(by)}`),
+  discard: () => 'Discarded',
+  pass: (to) => `Passed to ${to === 0 ? 'you' : civNameOf(to)}`,
+};
+/* where things stood before the table was redrawn: your hand's cards, and every camp's buildings */
+function snapSpots() {
+  const hand = {}, blds = {};
+  for (const el of $$('#hand .card[data-uid]')) hand[el.dataset.uid] = el.getBoundingClientRect();
+  for (const camp of $$('.camp[data-pid]')) { const m = blds[camp.dataset.pid] = {}; for (const b of camp.querySelectorAll('.bld')) m[(b.dataset.tip || '').split(':')[0]] = b.getBoundingClientRect(); }
+  return { hand, blds };
+}
+function campSpot(pid, sel) { const camp = document.getElementById('camp-' + pid); if (!camp) return null; const el = sel && camp.querySelector(sel); return (el || camp).getBoundingClientRect(); }
+function handSpot(pid, card, snap) {
+  if (pid !== 0) return campSpot(pid, '.backs, .cback');
+  if (snap && card && snap.hand[card.uid]) return snap.hand[card.uid];
+  const h = $('#hand').getBoundingClientRect(); return { left: h.left + h.width / 2 - 50, top: h.top + 14, width: 100, height: 140 };
+}
+async function moveScene(f, snap) {
+  const k = f.k, by = f.by != null ? f.by : f.to, tall = k !== 'convert';
+  const box = document.createElement('div'); box.className = 'mv' + (tall ? '' : ' mv-bld');
+  box.innerHTML = (tall ? cardHTML(f.card, { size: 'lg' }) : `<span class="bld big"><svg viewBox="0 0 24 24" aria-hidden="true">${BUILD[buildOf(f.st)]}</svg><b>${f.st.dur}</b></span><span class="mv-name">${esc(f.name)}</span>`)
+    + `<span class="mv-tag ${k}">${esc(MOVE_TAG[k](by, f.t))}</span>`;
+  Object.assign(box.style, { position: 'fixed', left: '0', top: '0' });
+  $('#fx-layer').appendChild(box);
+  const w = box.offsetWidth, h = box.offsetHeight;
+  /* from: where it was taken; to: where it goes (an element already drawn there stays hidden until the card lands on it) */
+  const from = tall ? handSpot(f.t, f.card, snap) : (snap.blds[f.t] && snap.blds[f.t][f.name]) || campSpot(f.t, '.defs, .mini-stats');
+  let land = null, to = null;
+  if (k === 'steal' || k === 'pass') { land = by === 0 ? document.querySelector(`#hand .card[data-uid="${f.card.uid}"]`) : null; to = land ? land.getBoundingClientRect() : handSpot(by, null); }
+  else if (k === 'convert') { const camp = document.getElementById('camp-' + by); land = camp && [...camp.querySelectorAll('.bld')].find(b => (b.dataset.tip || '').startsWith(f.name + ':')); to = land ? land.getBoundingClientRect() : campSpot(by, '.defs, .mini-stats'); }
+  if (land) land.style.visibility = 'hidden';
+  /* the showcase: a readable size, pulled a little toward the chart and kept on screen */
+  const showW = mobile() ? 118 : 146, s1 = tall ? showW / w : 1.25, st = $('#stage').getBoundingClientRect();
+  const fx = from.left + from.width / 2, fy = from.top + from.height / 2;
+  let cx = fx + (st.left + st.width / 2 - fx) * 0.35, cy = fy + (st.top + st.height / 2 - fy) * 0.35;
+  cx = Math.min(Math.max(cx, w * s1 / 2 + 8), innerWidth - w * s1 / 2 - 8); cy = Math.min(Math.max(cy, h * s1 / 2 + 8), innerHeight - h * s1 / 2 - 8);
+  const at = (x, y, s, r = 0) => `translate(${(x - w / 2).toFixed(1)}px,${(y - h / 2).toFixed(1)}px) scale(${s.toFixed(3)}) rotate(${r}deg)`;
+  const s0 = Math.max(0.15, Math.min(from.width / w, from.height / h));
+  SFX.play('whoosh');
+  await box.animate([{ transform: at(fx, fy, s0, -6), opacity: 0.3 }, { transform: at(cx, cy, s1), opacity: 1 }], { duration: D(260), easing: 'cubic-bezier(.2,.8,.2,1)', fill: 'forwards' }).finished.catch(() => {});
+  await wait(D(520));
+  const end = to ? at(to.left + to.width / 2, to.top + to.height / 2, Math.max(0.15, Math.min(to.width / w, to.height / h)))
+    : at(cx, cy + 46, s1 * 0.8, 4);   /* discarded: it sinks away where it was shown */
+  await box.animate([{ transform: at(cx, cy, s1), opacity: 1 }, { transform: end, opacity: to ? 0.95 : 0 }], { duration: D(to ? 420 : 360), easing: 'cubic-bezier(.5,0,.3,1)', fill: 'forwards' }).finished.catch(() => {});
+  if (land) { land.style.visibility = ''; land.animate([{ transform: 'scale(1.12)' }, { transform: 'none' }], { duration: 220, easing: 'ease-out' }); }
+  box.remove();
+}
+/* the round's event moved cards (Flood, Eclipse): every player's card shows at once */
+async function roundMoves(moves) {
+  if (!moves || !moves.length || D(500) < 120) return;
+  await Promise.all(moves.map((m, i) => wait(i * 90).then(() => moveScene(m, { hand: {}, blds: {} })).catch(e => console.error('[scene]', e))));
+}
 async function animatePlay(ev, pid, from, landed) {
   /* landed: the player dropped the card and it already glided onto the chart, so it does not fly again */
   if (!landed) await flyCard(ev.card, from, stageRect(), D(430));
+  const snap = snapSpots();
   UI.last = { card: ev.card, pid, target: ev.target, fresh: !landed }; UI.sel = null; UI.hoverT = null;
   renderMatch(); if (landed) dropGhost();
   if (ev.card.wonder) banner(`${civNameOf(pid)} ${pid === 0 ? 'begin' : 'begins'} ${ev.card.name}`, pid === 0 ? 'Keep it standing for 3 turns to win' : 'Bring it down within 3 turns or they win', 2200);
@@ -75,7 +132,9 @@ async function animatePlay(ev, pid, from, landed) {
       hit.add(t); arrow(src, camp.getBoundingClientRect(), ['steal', 'discard', 'convert', 'tribute'].includes(f.k) ? 'steal' : ['razed', 'wonderhit'].includes(f.k) ? 'raze' : 'dmg', D(320)); await wait(D(260));
     }
     if (f.k === 'hp' && UI.view) { UI.view[t] = (UI.view[t] != null ? UI.view[t] : S.players[t].hp) + f.n; setShownHP(t); }
-    const m = FX_TEXT[f.k]; if (m) { const [txt, cls] = m(f); floatAt(t, txt, cls); }
+    const scene = ['steal', 'convert', 'discard'].includes(f.k) && (f.card || f.st) && D(500) >= 120;
+    if (scene) { try { await moveScene(f, snap); } catch (e) { console.error('[scene]', e); } }   /* a scene is only a picture: it never stops the game */
+    const m = !scene && FX_TEXT[f.k]; if (m) { const [txt, cls] = m(f); floatAt(t, txt, cls); }
     if (f.k === 'hp') { SFX.play(f.n < 0 ? 'hit' : 'heal'); if (f.n < 0) { shake(t); if (t === 0) buzz(35); } }
     else if (['wall', 'razed', 'wonderhit'].includes(f.k)) SFX.play('wall');
     if (f.k === 'age') { SFX.play('crown'); banner(`${civNameOf(t)} ${t === 0 ? 'advance' : 'advances'} to the Imperial Age`, IMPERIAL[S.players[t].civ].bonus.text, 2300); }
@@ -103,8 +162,8 @@ function herald(round, eventId, nextId, note) {
     const E = eventId ? EVENT_BY[eventId] : null, N = nextId ? EVENT_BY[nextId] : null;
     const el = document.createElement('div'); el.className = 'herald'; el.setAttribute('role', 'dialog'); el.setAttribute('aria-label', `Round ${round}`);
     el.innerHTML = `<div class="hscroll"><div class="hround">Round ${round}</div><svg class="hart" viewBox="0 0 48 48" aria-hidden="true">${EVENT_ART[E ? E.id : 'peace']}</svg>
-<h2>${E ? esc(E.name) : 'A quiet start'}</h2><p class="heff">${E ? kw(E.text) : 'No event this round. Events begin next round.'}</p>${note ? `<p class="hnote">${kw(note)}</p>` : ''}
-${N ? `<div class="hnext"><span>Next round</span><b>${esc(N.name)}</b><em>${kw(N.text)}</em></div>` : ''}<div class="htap">Tap to continue</div></div>`;
+<h2>${E ? esc(E.name) : 'A quiet start'}</h2>${E ? eventGlyphs(E.id, 32, 'hgl') : ''}<p class="heff">${E ? kw(E.text) : 'No event this round. Events begin next round.'}</p>${note ? `<p class="hnote">${kw(note)}</p>` : ''}
+${N ? `<div class="hnext"><span>Next round</span><b>${esc(N.name)}${eventGlyphs(N.id, 20)}</b><em>${kw(N.text)}</em></div>` : ''}<div class="htap">Tap to continue</div></div>`;
     document.getElementById('app').appendChild(el);
     SFX.play('quill');
     let done = false;

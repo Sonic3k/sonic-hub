@@ -40,7 +40,7 @@ button{font:inherit;color:inherit}
 .mob-only{display:none!important}
 
 /* ── cards: a manuscript leaf inside its civilization's frame ── */
-.card{--w:var(--cw);--h:var(--ch);--s:30px;position:relative;width:var(--w);height:var(--h);flex:0 0 auto;user-select:none;color:var(--ink);filter:drop-shadow(0 6px 8px rgba(14,7,0,.55))}
+.card{--w:var(--cw);--h:var(--ch);--s:calc(var(--w) * .2);position:relative;width:var(--w);height:var(--h);flex:0 0 auto;user-select:none;color:var(--ink);filter:drop-shadow(0 6px 8px rgba(14,7,0,.55))}
 .card .cf{position:absolute;inset:0;padding:6px;border-radius:7px;background-color:var(--civ-deep);background-image:var(--motif);
   box-shadow:inset 0 0 0 1px rgba(255,228,170,.38),inset 0 0 0 2px rgba(0,0,0,.55)}
 .card .cb{position:relative;height:100%;display:flex;flex-direction:column;border-radius:4px;overflow:hidden;
@@ -51,6 +51,7 @@ button{font:inherit;color:inherit}
 .card .ca{height:35%;margin:5px 9px 0;display:flex;flex-wrap:wrap;align-content:center;justify-content:center;gap:3px;border-radius:2px;
   background-color:var(--civ-wash);background-image:var(--motif-soft);box-shadow:inset 0 0 0 1px rgba(201,162,74,.85),inset 0 0 0 2px rgba(247,238,215,.75),inset 0 0 0 3px rgba(43,33,24,.22)}
 .card .ca .sym{width:var(--s);height:var(--s);filter:drop-shadow(0 1px 1px rgba(0,0,0,.35))}
+.card.t-age .ca .sym{width:calc(var(--w) * .32);height:calc(var(--w) * .32)}   /* the Imperial Age crown, the same share of the card on every size */
 .card .ct{flex:1;display:flex;align-items:center;justify-content:center;text-align:center;padding:5px 9px 11px;font-size:13px;line-height:1.24}
 .card .corner{position:absolute;z-index:2;width:21px;height:21px;background:var(--corner) center/contain no-repeat;pointer-events:none}
 .card .c1{left:0;top:0}.card .c2{right:0;top:0;transform:scaleX(-1)}
@@ -87,11 +88,11 @@ button{font:inherit;color:inherit}
 .fam-andes .cf,.fam-andes .cb{clip-path:polygon(7% 0,93% 0,100% 100%,0 100%)}.fam-andes .cn{margin:7px 15px 0}
 .fam-icon .corner,.fam-islamic .corner,.fam-temple .corner,.fam-sahel .corner,.fam-andes .corner,.fam-sino .corner{top:auto;bottom:0}.fam-icon .c2,.fam-islamic .c2,.fam-temple .c2,.fam-sahel .c2,.fam-andes .c2,.fam-sino .c2{transform:scale(-1,-1)}.fam-icon .c1,.fam-islamic .c1,.fam-temple .c1,.fam-sahel .c1,.fam-andes .c1,.fam-sino .c1{transform:scaleY(-1)}
 /* sizes */
-.card.sm{--w:112px;--h:158px;--s:22px}.card.sm .cf{padding:4px}.card.sm .cn{font-size:11.5px;margin:5px 5px 0;padding:3px 6px}.card.sm .ca{margin:4px 6px 0}
+.card.sm{--w:112px;--h:158px}.card.sm .cf{padding:4px}.card.sm .cn{font-size:11.5px;margin:5px 5px 0;padding:3px 6px}.card.sm .ca{margin:4px 6px 0}
 .card.sm .ct{font-size:10.5px;padding:3px 6px 9px}.card.sm .ct span{display:-webkit-box;-webkit-line-clamp:5;-webkit-box-orient:vertical;overflow:hidden}
 .card.sm .corner{width:14px;height:14px}.card.sm .seal{width:22px;height:22px;bottom:-6px;font-size:12px}.card.sm .seal .crest{width:15px;height:15px}.card.sm .seal svg{width:17px;height:17px}
 .card.sm.fam-sino .cf{padding:var(--roof) 4px 4px}.card.sm.fam-sino .ct span{-webkit-line-clamp:4}.card.sm.fam-icon .cn,.card.sm.fam-islamic .cn,.card.sm.fam-temple .cn,.card.sm.fam-sahel .cn{margin-top:12px}
-.card.lg{--w:214px;--h:302px;--s:42px}.card.lg .cf{padding:8px}.card.lg .cn{font-size:18.5px;margin:9px 9px 0;padding:6px 12px}.card.lg .ca{margin:8px 12px 0}
+.card.lg{--w:214px;--h:302px}.card.lg .cf{padding:8px}.card.lg .cn{font-size:18.5px;margin:9px 9px 0;padding:6px 12px}.card.lg .ca{margin:8px 12px 0}
 .card.lg .ct{font-size:16px;padding:8px 13px 16px}.card.lg .corner{width:28px;height:28px}.card.lg .seal{width:40px;height:40px;bottom:-10px}.card.lg .seal .crest{width:28px;height:28px}.card.lg .seal svg{width:30px;height:30px}
 .card.lg.fam-sino .cf{padding:var(--roof) 8px 8px}.card.lg.fam-icon .cn,.card.lg.fam-islamic .cn{margin-top:24px}.card.lg.fam-temple .cn,.card.lg.fam-sahel .cn{margin-top:20px}
 .cost{position:absolute;left:50%;bottom:-12px;transform:translateX(-50%);z-index:4;white-space:nowrap;font-weight:800;font-size:13px;padding:1px 10px;border-radius:3px;color:#3a2706;
@@ -274,6 +275,15 @@ button{font:inherit;color:inherit}
 #banner.show{animation:bannerIn var(--bdur,1.9s) ease-out}
 @keyframes bannerIn{0%{opacity:0;transform:translate(-50%,-40%)}12%{opacity:1;transform:translate(-50%,-50%)}78%{opacity:1}100%{opacity:0}}
 #fx-layer{position:fixed;inset:0;z-index:45;pointer-events:none}
+/* a card changing hands: it turns up face up with a tag saying what happened, then goes where it goes */
+.mv{pointer-events:none;transform-origin:50% 50%;will-change:transform,opacity}
+.mv .card{margin:0}
+.mv-tag{position:absolute;left:50%;top:-10px;transform:translate(-50%,-100%);white-space:nowrap;font-weight:800;font-size:19px;line-height:1.15;padding:4px 14px 5px;border-radius:4px;color:#fbe7c6;background:#7a2c5b;box-shadow:0 0 0 1.5px rgba(255,228,170,.55),0 8px 18px rgba(0,0,0,.55)}
+.mv-tag.convert{background:#574789}.mv-tag.discard{background:#5a4636}.mv-tag.pass{background:#2a4b77}
+.mv-bld{display:flex;flex-direction:column;align-items:center;gap:6px;padding:6px}
+.bld.big{width:62px;height:58px;background:var(--vel-hi);box-shadow:inset 0 0 0 1px rgba(43,33,24,.35),0 8px 18px rgba(0,0,0,.5)}.bld.big svg{width:50px;height:50px}.bld.big b{right:-8px;bottom:-8px;min-width:24px;height:24px;line-height:24px;font-size:15px}
+.mv-name{font-family:var(--f-head);font-size:17px;white-space:nowrap;padding:2px 10px;border-radius:3px;color:var(--ink);background:var(--vellum-tex),var(--vel-hi);box-shadow:inset 0 0 0 1px rgba(43,33,24,.5),0 4px 10px rgba(0,0,0,.45)}
+.mv-bld .mv-tag{top:-6px;font-size:14px;padding:3px 10px 4px}.mv-bld .mv-name{font-size:14px}
 #fx-arrows{position:fixed;inset:0;width:100%;height:100%;z-index:44;pointer-events:none}
 .arrow{fill:none;stroke-width:4.5;stroke-linecap:round;filter:drop-shadow(0 2px 2px rgba(0,0,0,.45))}
 .arrow.dmg{stroke:#b5321c}.arrow.raze{stroke:#7a4a20}.arrow.steal{stroke:#7a2c5b}.arrow.aim{stroke:#a4301d;stroke-dasharray:10 9}
@@ -345,13 +355,13 @@ html.compact .hpseal{width:54px;height:54px}html.compact .hpseal b{font-size:20p
 html.compact .camp-banner{min-height:36px;padding-right:62px}
 html.compact .bld{width:34px;height:32px}html.compact .bld svg{width:27px;height:27px}
 html.compact #stage::before,html.compact #stage .dropglow{inset:1% 0}
-html.compact .card.lg{--w:156px;--h:220px;--s:31px}html.compact .card.lg .cn{font-size:14px}html.compact .card.lg .ct{font-size:13px;padding:5px 9px 12px}
+html.compact .card.lg{--w:156px;--h:220px}html.compact .card.lg .cn{font-size:14px}html.compact .card.lg .ct{font-size:13px;padding:5px 9px 12px}
 html.compact #stage-caption{font-size:15px;margin-top:8px}
 html.compact #me{padding-bottom:0}
 html.compact .camp.mine .camp-body{padding:6px 10px 8px;gap:8px}
 html.compact .camp.mine .defs .lbl{font-size:12px;margin-bottom:1px}
 html.compact .camp.mine .stash{flex-direction:row;align-items:center;gap:8px}
-html.compact .camp.mine .relic,html.compact .piles{display:none}
+html.compact .piles{display:none}
 html.compact .actionbar{min-height:48px}html.compact .actionbar .hint{font-size:16px}html.compact .actionbar .btn{min-height:44px;font-size:17px}
 html.compact #hand{align-items:center;gap:12px;min-height:calc(var(--ch) + 28px);padding:18px 16px 10px;
   -webkit-mask-image:linear-gradient(90deg,transparent,#000 14px,#000 calc(100% - 14px),transparent);mask-image:linear-gradient(90deg,transparent,#000 14px,#000 calc(100% - 14px),transparent)}
@@ -364,7 +374,7 @@ html.compact #screen-select{grid-template-columns:minmax(0,1fr);grid-template-ro
 html.compact .civ-grid{grid-template-columns:repeat(auto-fill,minmax(136px,1fr))}
 html.compact .sel-detail{overflow:visible}
 html.compact #screen-menu{padding:14px 16px;overflow:auto}html.compact .menu-title{font-size:46px}html.compact .menu-sub{font-size:17px}
-html.compact .menu-fan{height:172px;margin:12px 0 10px}html.compact .menu-fan .card{--cw:104px;--ch:148px;--s:24px}html.compact .menu-fan .card .ct{font-size:11px}html.compact .menu-fan .card .cn{font-size:12px}
+html.compact .menu-fan{height:172px;margin:12px 0 10px}html.compact .menu-fan .card{--cw:104px;--ch:148px}html.compact .menu-fan .card .ct{font-size:11px}html.compact .menu-fan .card .cn{font-size:12px}
 @media (max-height:700px) and (orientation:portrait){html.compact{--cw:112px;--ch:160px}html.compact .card.lg{--w:136px;--h:192px}html.compact .hpseal{width:48px;height:48px}}
 /* sideways phones: enemy strips left, chart centre, you and the action bar right, hand along the bottom */
 html.compact.land{--cw:82px;--ch:114px}
@@ -377,7 +387,6 @@ html.compact.land .camp.mine .camp-body{flex-wrap:wrap}
 html.compact.land #hand{height:128px;min-height:0;padding:11px 10px 3px}
 html.compact.land .card .ct{font-size:9.5px}html.compact.land .card .cn{font-size:11px;margin:4px 4px 0;padding:2px 5px}html.compact.land .card .ca{margin:3px 5px 0}
 html.compact.land .card.lg{--w:118px;--h:166px}
-html.compact.land :is(#hand,#drag-ghost) .card:not(.sm):not(.lg){--s:18px}
 html.compact.land .actionbar{align-self:center;flex-wrap:wrap;gap:6px}html.compact.land .actionbar .btn{min-width:0;font-size:15px;padding:6px 12px}
 html.compact.land .camp.mini{display:flex;align-items:stretch}html.compact.land .camp.mini .camp-banner{flex:0 0 92px;min-height:0;border-radius:5px 0 0 5px;flex-direction:column;align-items:flex-start;justify-content:center;gap:1px;padding:4px 7px}html.compact.land .camp.mini .cname{font-size:13px;max-width:100%}html.compact.land .camp.mini .hpseal{width:38px;height:38px}html.compact.land .camp.mini .hpseal b{font-size:15px}html.compact.land .mini-stats{gap:1px 8px;font-size:12.5px}
 @media (max-height:820px){html:not(.compact){--cw:136px;--ch:192px}html:not(.compact) #topbar{height:50px}}
@@ -423,7 +432,7 @@ html.compact.land .camp.mini{display:flex;align-items:stretch}html.compact.land 
 .camp.mini .mini-body{display:flex;align-items:center;gap:6px;padding:5px 6px 6px}
 .hptag.mini{flex-direction:column;align-items:center;gap:0;padding:2px 7px;margin:0}.hptag.mini small{font-size:10px}.hptag.mini b{font-size:17px}.hptag.mini i{display:none}
 html.compact .camp-info{gap:6px 10px;padding:6px 8px 7px}
-html.compact .camp-info .relic{display:none}
+html.compact .camp-info .relic{padding:0;background:none;box-shadow:none}html.compact .camp-info .relic .rn{display:none}
 html.compact .hptag b{font-size:19px}
 html.compact .camp-banner{min-height:34px}
 html.compact.land .camp.mini .mini-body{padding:3px 5px}
@@ -441,6 +450,11 @@ html.compact .camp-info .defs{min-height:32px}
 .medal b{position:absolute;right:-5px;bottom:-4px;min-width:16px;height:16px;padding:0 4px;border-radius:8px;font-size:11px;font-weight:800;line-height:16px;text-align:center;color:#2a1a06;background:var(--gold-hi);box-shadow:0 0 0 1.5px #2a1a06}
 html.compact .medal{width:25px;height:25px}
 .mmedals{position:absolute;right:4px;top:-11px;z-index:3;display:flex;gap:2px}.mmedals .medal{width:18px;height:18px}.mmedals .medal b{display:none}
+/* guards in the Defenses row: round, the height of a building, a count when there are several */
+.camp-info .defs .medal.guard{width:36px;height:36px}
+html.compact .camp-info .defs .medal.guard{width:31px;height:31px}
+html.compact .camp-info .defs.has-guard .lbl{display:none}
+.mini-stats .medal.guard{width:17px;height:17px;margin-left:3px;filter:none}.mini-stats .medal.guard b{right:-4px;bottom:-4px;min-width:12px;height:12px;padding:0 2px;font-size:9px;line-height:12px}
 /* action bar: card details */
 .actionbar .icon-btn.info{flex:0 0 auto}
 /* menu: two quiet buttons side by side */
@@ -458,7 +472,7 @@ html.compact .medal{width:25px;height:25px}
 .cs-syms>div>b{font-family:var(--f-head);font-weight:400;font-size:18px;line-height:1.1}
 .cs-syms span{font-size:14.5px;color:var(--ink-2);line-height:1.3}
 html.compact .card-sheet{grid-template-columns:1fr;gap:6px}
-html.compact .cs-card .card.lg{--w:168px;--h:237px;--s:33px}html.compact .cs-card .card.lg .cn{font-size:15px}html.compact .cs-card .card.lg .ct{font-size:13.5px;padding:6px 10px 13px}
+html.compact .cs-card .card.lg{--w:168px;--h:237px}html.compact .cs-card .card.lg .cn{font-size:15px}html.compact .cs-card .card.lg .ct{font-size:13.5px;padding:6px 10px 13px}
 /* tags and civ chips shared by the sheet and the codex */
 .cx-tag{display:inline-block;font-family:var(--f-text);font-size:11px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;padding:1px 6px;border-radius:2px;margin-left:8px;vertical-align:3px;color:#fbeed2;background:#6b5843}
 .cs-kind .cx-tag{margin-left:0}
@@ -541,10 +555,28 @@ html.compact.land .camp.mine .medal{width:21px;height:21px}
 /* phone hand: long card text ends in an ellipsis instead of being cut mid-line (the full text is one tap away) */
 html.compact :is(#hand,#drag-ghost) .card:not(.sm):not(.lg) .ct{min-height:0;overflow:hidden}
 html.compact :is(#hand,#drag-ghost) .card:not(.sm):not(.lg) .ct span{display:-webkit-box;-webkit-line-clamp:4;-webkit-box-orient:vertical;overflow:hidden}
-html.compact:not(.land) :is(#hand,#drag-ghost) .card:not(.sm):not(.lg){--s:27px}
 html.compact:not(.land) :is(#hand,#drag-ghost) .card:not(.sm):not(.lg) .ct{font-size:12px;line-height:1.2;padding:4px 7px 10px}
 html.compact:not(.land) :is(#hand,#drag-ghost) .card:not(.sm):not(.lg) .cn{font-size:13px}
-html.compact:not(.land) :is(#hand,#drag-ghost) .card:not(.sm):not(.lg) .ca{height:auto;min-height:36px;padding:3px 0}
 html.compact :is(#hand,#drag-ghost) .card.t-sig:not(.sm):not(.lg) .ct,html.compact :is(#hand,#drag-ghost) .card.t-imp:not(.sm):not(.lg) .ct,html.compact :is(#hand,#drag-ghost) .card.t-age:not(.sm):not(.lg) .ct{padding-bottom:15px}
 html.compact:not(.land) :is(#hand,#drag-ghost) .card:not(.sm):not(.lg) .seal{width:24px;height:24px;bottom:-10px}html.compact:not(.land) :is(#hand,#drag-ghost) .card:not(.sm):not(.lg) .seal .crest{width:17px;height:17px}html.compact:not(.land) :is(#hand,#drag-ghost) .card:not(.sm):not(.lg) .seal.crown svg{width:19px;height:19px}
 html.compact :is(#hand,#drag-ghost) .card.t-sig:not(.sm):not(.lg) .ct span,html.compact :is(#hand,#drag-ghost) .card.t-imp:not(.sm):not(.lg) .ct span,html.compact :is(#hand,#drag-ghost) .card.t-age:not(.sm):not(.lg) .ct span{-webkit-line-clamp:3}
+
+/* ── event and relic glyphs: the card symbols, with a badge (+1 / −1 / ↻), a red bar (barred), or a red HP tag (who) ── */
+.glyphs{display:inline-flex;align-items:center;gap:2px;vertical-align:middle;flex:0 0 auto}
+.glyphs .gl{display:block;flex:0 0 auto;filter:drop-shadow(0 1px 1px rgba(0,0,0,.35))}
+.pill.round{display:inline-flex;align-items:center;gap:9px;padding-top:3px;padding-bottom:3px}
+.evchip .evt{display:flex;flex-direction:column;align-items:flex-start;min-width:0;max-width:100%}
+.evchip small{display:flex;align-items:center;gap:6px}.evchip b{display:block;max-width:100%}
+.ev h4{display:flex;align-items:center;gap:8px}.ev h4 .glyphs{margin-left:auto}
+.ev-warn{display:flex;align-items:center;gap:8px}
+.hscroll .hgl{display:flex;justify-content:center;gap:4px;margin:2px 0 8px}
+.hnext b{display:inline-flex;align-items:center;gap:7px}
+.relic{display:inline-flex;align-items:center;gap:5px}
+.relic-pick .rgl{display:flex;gap:4px;margin-bottom:8px}
+.cx-ev>div>.glyphs{margin-left:9px;vertical-align:-5px}
+.cx-relic>.glyphs{margin-right:10px;vertical-align:-6px}
+.camp-sheet p .glyphs,.sheet-panel p.muted .glyphs{vertical-align:-4px}
+.gl-legend{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px 20px;margin:8px 0 6px}
+.gl-legend>div{display:flex;align-items:center;gap:10px;font-size:14.5px;line-height:1.3;color:var(--ink-2)}
+.gl-legend .glyphs{flex:0 0 66px}
+html.compact .gl-legend{grid-template-columns:1fr}

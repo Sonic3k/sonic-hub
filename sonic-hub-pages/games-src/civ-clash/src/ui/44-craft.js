@@ -111,7 +111,8 @@ const EVENT_ART = {
   peace: '<path d="M24 40c-9-5-14-11-14-18a7 7 0 0 1 14-3 7 7 0 0 1 14 3c0 7-5 13-14 18z" fill="none" stroke="#a4301d" stroke-width="2"/><path d="M10 44h28" stroke="#3a2618" stroke-width="1.4"/>',
 };
 
-/* status markers: round medallions beside HP, so they never read as buildings */
+/* status markers, all round so they never read as buildings: the Imperial crown beside HP; the guards a camp has set up
+   (camel guard, Divine Wind, Bạch Đằng stakes) stand with its buildings in the Defenses row */
 const MEDAL_ART = {
   camel: ['#9c7040', SYM_STYLE.L[1]],
   wind: ['#2a4b77', '<path d="M4 9.5h9.5a2.8 2.8 0 1 0-2.8-2.8M4 13.5h12.5a2.8 2.8 0 1 1-2.8 2.8M4 17.2h6" stroke="#fff" stroke-width="1.9" fill="none" stroke-linecap="round"/>'],
@@ -128,12 +129,12 @@ function medalSVG(kind) {
   const [bg, glyph] = MEDAL_ART[kind];
   return `<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="11.4" fill="${bg}" stroke="#24180c" stroke-opacity=".8" stroke-width=".9"/><circle cx="12" cy="12" r="10.15" fill="none" stroke="#d2ad57" stroke-width="1.15"/>${glyph.replace(/#fff/g, '#f6ebcf')}</svg>`;
 }
-function medal(kind, n) { return `<span class="medal m-${kind}" data-tip="${esc(MEDAL_TIP[kind])}" aria-label="${esc(MEDAL_TIP[kind])}">${medalSVG(kind)}${n > 1 ? `<b>${n}</b>` : ''}</span>`; }
-function medalsOf(P) {
+function medal(kind, n, cls) { return `<span class="medal m-${kind}${cls ? ' ' + cls : ''}" data-tip="${esc(MEDAL_TIP[kind])}" aria-label="${esc(MEDAL_TIP[kind])}">${medalSVG(kind)}${n > 1 ? `<b>${n}</b>` : ''}</span>`; }
+function medalsOf(P) { return P.aged ? medal('crown') : ''; }
+function guardsOf(P) {
   const m = [];
-  if (P.tokens.camel) m.push(medal('camel', P.tokens.camel));
-  if (P.tokens.immune) m.push(medal('wind'));
-  if (P.tokens.trap) m.push(medal('stakes'));
-  if (P.aged) m.push(medal('crown'));
+  if (P.tokens.camel) m.push(medal('camel', P.tokens.camel, 'guard'));
+  if (P.tokens.immune) m.push(medal('wind', 0, 'guard'));
+  if (P.tokens.trap) m.push(medal('stakes', 0, 'guard'));
   return m.join('');
 }

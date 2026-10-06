@@ -49,7 +49,7 @@ button{font:inherit;color:inherit}
 .mob-only{display:none!important}
 
 /* ── cards: a manuscript leaf inside its civilization's frame ── */
-.card{--w:var(--cw);--h:var(--ch);--s:30px;position:relative;width:var(--w);height:var(--h);flex:0 0 auto;user-select:none;color:var(--ink);filter:drop-shadow(0 6px 8px rgba(14,7,0,.55))}
+.card{--w:var(--cw);--h:var(--ch);--s:calc(var(--w) * .2);position:relative;width:var(--w);height:var(--h);flex:0 0 auto;user-select:none;color:var(--ink);filter:drop-shadow(0 6px 8px rgba(14,7,0,.55))}
 .card .cf{position:absolute;inset:0;padding:6px;border-radius:7px;background-color:var(--civ-deep);background-image:var(--motif);
   box-shadow:inset 0 0 0 1px rgba(255,228,170,.38),inset 0 0 0 2px rgba(0,0,0,.55)}
 .card .cb{position:relative;height:100%;display:flex;flex-direction:column;border-radius:4px;overflow:hidden;
@@ -60,6 +60,7 @@ button{font:inherit;color:inherit}
 .card .ca{height:35%;margin:5px 9px 0;display:flex;flex-wrap:wrap;align-content:center;justify-content:center;gap:3px;border-radius:2px;
   background-color:var(--civ-wash);background-image:var(--motif-soft);box-shadow:inset 0 0 0 1px rgba(201,162,74,.85),inset 0 0 0 2px rgba(247,238,215,.75),inset 0 0 0 3px rgba(43,33,24,.22)}
 .card .ca .sym{width:var(--s);height:var(--s);filter:drop-shadow(0 1px 1px rgba(0,0,0,.35))}
+.card.t-age .ca .sym{width:calc(var(--w) * .32);height:calc(var(--w) * .32)}   /* the Imperial Age crown, the same share of the card on every size */
 .card .ct{flex:1;display:flex;align-items:center;justify-content:center;text-align:center;padding:5px 9px 11px;font-size:13px;line-height:1.24}
 .card .corner{position:absolute;z-index:2;width:21px;height:21px;background:var(--corner) center/contain no-repeat;pointer-events:none}
 .card .c1{left:0;top:0}.card .c2{right:0;top:0;transform:scaleX(-1)}
@@ -96,11 +97,11 @@ button{font:inherit;color:inherit}
 .fam-andes .cf,.fam-andes .cb{clip-path:polygon(7% 0,93% 0,100% 100%,0 100%)}.fam-andes .cn{margin:7px 15px 0}
 .fam-icon .corner,.fam-islamic .corner,.fam-temple .corner,.fam-sahel .corner,.fam-andes .corner,.fam-sino .corner{top:auto;bottom:0}.fam-icon .c2,.fam-islamic .c2,.fam-temple .c2,.fam-sahel .c2,.fam-andes .c2,.fam-sino .c2{transform:scale(-1,-1)}.fam-icon .c1,.fam-islamic .c1,.fam-temple .c1,.fam-sahel .c1,.fam-andes .c1,.fam-sino .c1{transform:scaleY(-1)}
 /* sizes */
-.card.sm{--w:112px;--h:158px;--s:22px}.card.sm .cf{padding:4px}.card.sm .cn{font-size:11.5px;margin:5px 5px 0;padding:3px 6px}.card.sm .ca{margin:4px 6px 0}
+.card.sm{--w:112px;--h:158px}.card.sm .cf{padding:4px}.card.sm .cn{font-size:11.5px;margin:5px 5px 0;padding:3px 6px}.card.sm .ca{margin:4px 6px 0}
 .card.sm .ct{font-size:10.5px;padding:3px 6px 9px}.card.sm .ct span{display:-webkit-box;-webkit-line-clamp:5;-webkit-box-orient:vertical;overflow:hidden}
 .card.sm .corner{width:14px;height:14px}.card.sm .seal{width:22px;height:22px;bottom:-6px;font-size:12px}.card.sm .seal .crest{width:15px;height:15px}.card.sm .seal svg{width:17px;height:17px}
 .card.sm.fam-sino .cf{padding:var(--roof) 4px 4px}.card.sm.fam-sino .ct span{-webkit-line-clamp:4}.card.sm.fam-icon .cn,.card.sm.fam-islamic .cn,.card.sm.fam-temple .cn,.card.sm.fam-sahel .cn{margin-top:12px}
-.card.lg{--w:214px;--h:302px;--s:42px}.card.lg .cf{padding:8px}.card.lg .cn{font-size:18.5px;margin:9px 9px 0;padding:6px 12px}.card.lg .ca{margin:8px 12px 0}
+.card.lg{--w:214px;--h:302px}.card.lg .cf{padding:8px}.card.lg .cn{font-size:18.5px;margin:9px 9px 0;padding:6px 12px}.card.lg .ca{margin:8px 12px 0}
 .card.lg .ct{font-size:16px;padding:8px 13px 16px}.card.lg .corner{width:28px;height:28px}.card.lg .seal{width:40px;height:40px;bottom:-10px}.card.lg .seal .crest{width:28px;height:28px}.card.lg .seal svg{width:30px;height:30px}
 .card.lg.fam-sino .cf{padding:var(--roof) 8px 8px}.card.lg.fam-icon .cn,.card.lg.fam-islamic .cn{margin-top:24px}.card.lg.fam-temple .cn,.card.lg.fam-sahel .cn{margin-top:20px}
 .cost{position:absolute;left:50%;bottom:-12px;transform:translateX(-50%);z-index:4;white-space:nowrap;font-weight:800;font-size:13px;padding:1px 10px;border-radius:3px;color:#3a2706;
@@ -283,6 +284,15 @@ button{font:inherit;color:inherit}
 #banner.show{animation:bannerIn var(--bdur,1.9s) ease-out}
 @keyframes bannerIn{0%{opacity:0;transform:translate(-50%,-40%)}12%{opacity:1;transform:translate(-50%,-50%)}78%{opacity:1}100%{opacity:0}}
 #fx-layer{position:fixed;inset:0;z-index:45;pointer-events:none}
+/* a card changing hands: it turns up face up with a tag saying what happened, then goes where it goes */
+.mv{pointer-events:none;transform-origin:50% 50%;will-change:transform,opacity}
+.mv .card{margin:0}
+.mv-tag{position:absolute;left:50%;top:-10px;transform:translate(-50%,-100%);white-space:nowrap;font-weight:800;font-size:19px;line-height:1.15;padding:4px 14px 5px;border-radius:4px;color:#fbe7c6;background:#7a2c5b;box-shadow:0 0 0 1.5px rgba(255,228,170,.55),0 8px 18px rgba(0,0,0,.55)}
+.mv-tag.convert{background:#574789}.mv-tag.discard{background:#5a4636}.mv-tag.pass{background:#2a4b77}
+.mv-bld{display:flex;flex-direction:column;align-items:center;gap:6px;padding:6px}
+.bld.big{width:62px;height:58px;background:var(--vel-hi);box-shadow:inset 0 0 0 1px rgba(43,33,24,.35),0 8px 18px rgba(0,0,0,.5)}.bld.big svg{width:50px;height:50px}.bld.big b{right:-8px;bottom:-8px;min-width:24px;height:24px;line-height:24px;font-size:15px}
+.mv-name{font-family:var(--f-head);font-size:17px;white-space:nowrap;padding:2px 10px;border-radius:3px;color:var(--ink);background:var(--vellum-tex),var(--vel-hi);box-shadow:inset 0 0 0 1px rgba(43,33,24,.5),0 4px 10px rgba(0,0,0,.45)}
+.mv-bld .mv-tag{top:-6px;font-size:14px;padding:3px 10px 4px}.mv-bld .mv-name{font-size:14px}
 #fx-arrows{position:fixed;inset:0;width:100%;height:100%;z-index:44;pointer-events:none}
 .arrow{fill:none;stroke-width:4.5;stroke-linecap:round;filter:drop-shadow(0 2px 2px rgba(0,0,0,.45))}
 .arrow.dmg{stroke:#b5321c}.arrow.raze{stroke:#7a4a20}.arrow.steal{stroke:#7a2c5b}.arrow.aim{stroke:#a4301d;stroke-dasharray:10 9}
@@ -354,13 +364,13 @@ html.compact .hpseal{width:54px;height:54px}html.compact .hpseal b{font-size:20p
 html.compact .camp-banner{min-height:36px;padding-right:62px}
 html.compact .bld{width:34px;height:32px}html.compact .bld svg{width:27px;height:27px}
 html.compact #stage::before,html.compact #stage .dropglow{inset:1% 0}
-html.compact .card.lg{--w:156px;--h:220px;--s:31px}html.compact .card.lg .cn{font-size:14px}html.compact .card.lg .ct{font-size:13px;padding:5px 9px 12px}
+html.compact .card.lg{--w:156px;--h:220px}html.compact .card.lg .cn{font-size:14px}html.compact .card.lg .ct{font-size:13px;padding:5px 9px 12px}
 html.compact #stage-caption{font-size:15px;margin-top:8px}
 html.compact #me{padding-bottom:0}
 html.compact .camp.mine .camp-body{padding:6px 10px 8px;gap:8px}
 html.compact .camp.mine .defs .lbl{font-size:12px;margin-bottom:1px}
 html.compact .camp.mine .stash{flex-direction:row;align-items:center;gap:8px}
-html.compact .camp.mine .relic,html.compact .piles{display:none}
+html.compact .piles{display:none}
 html.compact .actionbar{min-height:48px}html.compact .actionbar .hint{font-size:16px}html.compact .actionbar .btn{min-height:44px;font-size:17px}
 html.compact #hand{align-items:center;gap:12px;min-height:calc(var(--ch) + 28px);padding:18px 16px 10px;
   -webkit-mask-image:linear-gradient(90deg,transparent,#000 14px,#000 calc(100% - 14px),transparent);mask-image:linear-gradient(90deg,transparent,#000 14px,#000 calc(100% - 14px),transparent)}
@@ -373,7 +383,7 @@ html.compact #screen-select{grid-template-columns:minmax(0,1fr);grid-template-ro
 html.compact .civ-grid{grid-template-columns:repeat(auto-fill,minmax(136px,1fr))}
 html.compact .sel-detail{overflow:visible}
 html.compact #screen-menu{padding:14px 16px;overflow:auto}html.compact .menu-title{font-size:46px}html.compact .menu-sub{font-size:17px}
-html.compact .menu-fan{height:172px;margin:12px 0 10px}html.compact .menu-fan .card{--cw:104px;--ch:148px;--s:24px}html.compact .menu-fan .card .ct{font-size:11px}html.compact .menu-fan .card .cn{font-size:12px}
+html.compact .menu-fan{height:172px;margin:12px 0 10px}html.compact .menu-fan .card{--cw:104px;--ch:148px}html.compact .menu-fan .card .ct{font-size:11px}html.compact .menu-fan .card .cn{font-size:12px}
 @media (max-height:700px) and (orientation:portrait){html.compact{--cw:112px;--ch:160px}html.compact .card.lg{--w:136px;--h:192px}html.compact .hpseal{width:48px;height:48px}}
 /* sideways phones: enemy strips left, chart centre, you and the action bar right, hand along the bottom */
 html.compact.land{--cw:82px;--ch:114px}
@@ -386,7 +396,6 @@ html.compact.land .camp.mine .camp-body{flex-wrap:wrap}
 html.compact.land #hand{height:128px;min-height:0;padding:11px 10px 3px}
 html.compact.land .card .ct{font-size:9.5px}html.compact.land .card .cn{font-size:11px;margin:4px 4px 0;padding:2px 5px}html.compact.land .card .ca{margin:3px 5px 0}
 html.compact.land .card.lg{--w:118px;--h:166px}
-html.compact.land :is(#hand,#drag-ghost) .card:not(.sm):not(.lg){--s:18px}
 html.compact.land .actionbar{align-self:center;flex-wrap:wrap;gap:6px}html.compact.land .actionbar .btn{min-width:0;font-size:15px;padding:6px 12px}
 html.compact.land .camp.mini{display:flex;align-items:stretch}html.compact.land .camp.mini .camp-banner{flex:0 0 92px;min-height:0;border-radius:5px 0 0 5px;flex-direction:column;align-items:flex-start;justify-content:center;gap:1px;padding:4px 7px}html.compact.land .camp.mini .cname{font-size:13px;max-width:100%}html.compact.land .camp.mini .hpseal{width:38px;height:38px}html.compact.land .camp.mini .hpseal b{font-size:15px}html.compact.land .mini-stats{gap:1px 8px;font-size:12.5px}
 @media (max-height:820px){html:not(.compact){--cw:136px;--ch:192px}html:not(.compact) #topbar{height:50px}}
@@ -432,7 +441,7 @@ html.compact.land .camp.mini{display:flex;align-items:stretch}html.compact.land 
 .camp.mini .mini-body{display:flex;align-items:center;gap:6px;padding:5px 6px 6px}
 .hptag.mini{flex-direction:column;align-items:center;gap:0;padding:2px 7px;margin:0}.hptag.mini small{font-size:10px}.hptag.mini b{font-size:17px}.hptag.mini i{display:none}
 html.compact .camp-info{gap:6px 10px;padding:6px 8px 7px}
-html.compact .camp-info .relic{display:none}
+html.compact .camp-info .relic{padding:0;background:none;box-shadow:none}html.compact .camp-info .relic .rn{display:none}
 html.compact .hptag b{font-size:19px}
 html.compact .camp-banner{min-height:34px}
 html.compact.land .camp.mini .mini-body{padding:3px 5px}
@@ -450,6 +459,11 @@ html.compact .camp-info .defs{min-height:32px}
 .medal b{position:absolute;right:-5px;bottom:-4px;min-width:16px;height:16px;padding:0 4px;border-radius:8px;font-size:11px;font-weight:800;line-height:16px;text-align:center;color:#2a1a06;background:var(--gold-hi);box-shadow:0 0 0 1.5px #2a1a06}
 html.compact .medal{width:25px;height:25px}
 .mmedals{position:absolute;right:4px;top:-11px;z-index:3;display:flex;gap:2px}.mmedals .medal{width:18px;height:18px}.mmedals .medal b{display:none}
+/* guards in the Defenses row: round, the height of a building, a count when there are several */
+.camp-info .defs .medal.guard{width:36px;height:36px}
+html.compact .camp-info .defs .medal.guard{width:31px;height:31px}
+html.compact .camp-info .defs.has-guard .lbl{display:none}
+.mini-stats .medal.guard{width:17px;height:17px;margin-left:3px;filter:none}.mini-stats .medal.guard b{right:-4px;bottom:-4px;min-width:12px;height:12px;padding:0 2px;font-size:9px;line-height:12px}
 /* action bar: card details */
 .actionbar .icon-btn.info{flex:0 0 auto}
 /* menu: two quiet buttons side by side */
@@ -467,7 +481,7 @@ html.compact .medal{width:25px;height:25px}
 .cs-syms>div>b{font-family:var(--f-head);font-weight:400;font-size:18px;line-height:1.1}
 .cs-syms span{font-size:14.5px;color:var(--ink-2);line-height:1.3}
 html.compact .card-sheet{grid-template-columns:1fr;gap:6px}
-html.compact .cs-card .card.lg{--w:168px;--h:237px;--s:33px}html.compact .cs-card .card.lg .cn{font-size:15px}html.compact .cs-card .card.lg .ct{font-size:13.5px;padding:6px 10px 13px}
+html.compact .cs-card .card.lg{--w:168px;--h:237px}html.compact .cs-card .card.lg .cn{font-size:15px}html.compact .cs-card .card.lg .ct{font-size:13.5px;padding:6px 10px 13px}
 /* tags and civ chips shared by the sheet and the codex */
 .cx-tag{display:inline-block;font-family:var(--f-text);font-size:11px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;padding:1px 6px;border-radius:2px;margin-left:8px;vertical-align:3px;color:#fbeed2;background:#6b5843}
 .cs-kind .cx-tag{margin-left:0}
@@ -550,13 +564,31 @@ html.compact.land .camp.mine .medal{width:21px;height:21px}
 /* phone hand: long card text ends in an ellipsis instead of being cut mid-line (the full text is one tap away) */
 html.compact :is(#hand,#drag-ghost) .card:not(.sm):not(.lg) .ct{min-height:0;overflow:hidden}
 html.compact :is(#hand,#drag-ghost) .card:not(.sm):not(.lg) .ct span{display:-webkit-box;-webkit-line-clamp:4;-webkit-box-orient:vertical;overflow:hidden}
-html.compact:not(.land) :is(#hand,#drag-ghost) .card:not(.sm):not(.lg){--s:27px}
 html.compact:not(.land) :is(#hand,#drag-ghost) .card:not(.sm):not(.lg) .ct{font-size:12px;line-height:1.2;padding:4px 7px 10px}
 html.compact:not(.land) :is(#hand,#drag-ghost) .card:not(.sm):not(.lg) .cn{font-size:13px}
-html.compact:not(.land) :is(#hand,#drag-ghost) .card:not(.sm):not(.lg) .ca{height:auto;min-height:36px;padding:3px 0}
 html.compact :is(#hand,#drag-ghost) .card.t-sig:not(.sm):not(.lg) .ct,html.compact :is(#hand,#drag-ghost) .card.t-imp:not(.sm):not(.lg) .ct,html.compact :is(#hand,#drag-ghost) .card.t-age:not(.sm):not(.lg) .ct{padding-bottom:15px}
 html.compact:not(.land) :is(#hand,#drag-ghost) .card:not(.sm):not(.lg) .seal{width:24px;height:24px;bottom:-10px}html.compact:not(.land) :is(#hand,#drag-ghost) .card:not(.sm):not(.lg) .seal .crest{width:17px;height:17px}html.compact:not(.land) :is(#hand,#drag-ghost) .card:not(.sm):not(.lg) .seal.crown svg{width:19px;height:19px}
 html.compact :is(#hand,#drag-ghost) .card.t-sig:not(.sm):not(.lg) .ct span,html.compact :is(#hand,#drag-ghost) .card.t-imp:not(.sm):not(.lg) .ct span,html.compact :is(#hand,#drag-ghost) .card.t-age:not(.sm):not(.lg) .ct span{-webkit-line-clamp:3}
+
+/* ── event and relic glyphs: the card symbols, with a badge (+1 / −1 / ↻), a red bar (barred), or a red HP tag (who) ── */
+.glyphs{display:inline-flex;align-items:center;gap:2px;vertical-align:middle;flex:0 0 auto}
+.glyphs .gl{display:block;flex:0 0 auto;filter:drop-shadow(0 1px 1px rgba(0,0,0,.35))}
+.pill.round{display:inline-flex;align-items:center;gap:9px;padding-top:3px;padding-bottom:3px}
+.evchip .evt{display:flex;flex-direction:column;align-items:flex-start;min-width:0;max-width:100%}
+.evchip small{display:flex;align-items:center;gap:6px}.evchip b{display:block;max-width:100%}
+.ev h4{display:flex;align-items:center;gap:8px}.ev h4 .glyphs{margin-left:auto}
+.ev-warn{display:flex;align-items:center;gap:8px}
+.hscroll .hgl{display:flex;justify-content:center;gap:4px;margin:2px 0 8px}
+.hnext b{display:inline-flex;align-items:center;gap:7px}
+.relic{display:inline-flex;align-items:center;gap:5px}
+.relic-pick .rgl{display:flex;gap:4px;margin-bottom:8px}
+.cx-ev>div>.glyphs{margin-left:9px;vertical-align:-5px}
+.cx-relic>.glyphs{margin-right:10px;vertical-align:-6px}
+.camp-sheet p .glyphs,.sheet-panel p.muted .glyphs{vertical-align:-4px}
+.gl-legend{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px 20px;margin:8px 0 6px}
+.gl-legend>div{display:flex;align-items:center;gap:10px;font-size:14.5px;line-height:1.3;color:var(--ink-2)}
+.gl-legend .glyphs{flex:0 0 66px}
+html.compact .gl-legend{grid-template-columns:1fr}
 </style>
 </head>
 <body>
@@ -994,13 +1026,13 @@ function resolveStep(S, A, s, T, ev) {
   if (s.draw) draw(S, A, s.draw);
   if (s.gold) { A.gold += s.gold; ev.fx.push({ k: 'gold', t: A.id, n: s.gold }); }
   if (s.raze) for (let k = 0; k < s.raze; k++) { if (!T || (!T.structs.length)) break; razeOne(S, A, T, ev); }
-  if (s.steal) for (const X of (s.all ? opponents(S, A) : T ? [T] : [])) for (let k = 0; k < s.steal; k++) { const c = takeRandom(S, X); if (!c) break; A.hand.push(c); ev.fx.push({ k: 'steal', t: X.id, by: A.id }); }
-  if (s.convert && T) { const ws = walls(T).sort((a, b) => b.dur - a.dur); if (ws.length) { const w = ws[0]; T.structs = T.structs.filter(x => x !== w); A.structs.push(w); ev.fx.push({ k: 'convert', t: T.id, by: A.id, name: w.card.name }); } }
+  if (s.steal) for (const X of (s.all ? opponents(S, A) : T ? [T] : [])) for (let k = 0; k < s.steal; k++) { const c = takeRandom(S, X); if (!c) break; A.hand.push(c); ev.fx.push({ k: 'steal', t: X.id, by: A.id, card: c }); }
+  if (s.convert && T) { const ws = walls(T).sort((a, b) => b.dur - a.dur); if (ws.length) { const w = ws[0]; T.structs = T.structs.filter(x => x !== w); A.structs.push(w); ev.fx.push({ k: 'convert', t: T.id, by: A.id, name: w.card.name, st: w }); } }
   if (s.token === 'camel') A.tokens.camel++;
   if (s.token === 'immune') A.tokens.immune = true;
   if (s.token === 'trap') A.tokens.trap = true;
   if (s.self) loseHP(S, A, s.self, ev, null);
-  if (s.discard) for (const X of opponents(S, A)) { const c = takeRandom(S, X); if (c) { X.discard.push(c); ev.fx.push({ k: 'discard', t: X.id }); } }
+  if (s.discard) for (const X of opponents(S, A)) { const c = takeRandom(S, X); if (c) { X.discard.push(c); ev.fx.push({ k: 'discard', t: X.id, card: c }); } }
   if (s.tribute) for (const X of opponents(S, A)) if (X.gold > 0) { X.gold--; A.gold++; ev.fx.push({ k: 'gold', t: A.id, n: 1 }); ev.fx.push({ k: 'tribute', t: X.id }); }
   if (s.ageup) ageUp(S, A, ev);
   if (s.buyFree) S.flags.buyFree = true;
@@ -1076,7 +1108,7 @@ function endTurn(S) {
   beginTurn(S, false);
 }
 function startRound(S) {
-  S.mod = {};
+  S.mod = {}; S.moves = [];   /* cards the round's event moved, for the table to show */
   S.event = S.eventNext; S.eventNext = drawEvent(S);
   const alive = S.players.filter(p => p.alive), ev = { k: 'event', fx: [] };
   if (S.round >= 16) { for (const P of alive) loseHP(S, P, 1, ev, null); log(S, 'attrition', {}); checkWinner(S); if (S.winner != null) return; }
@@ -1090,8 +1122,8 @@ function startRound(S) {
     case 'revolt': { const top = Math.max(...alive.map(p => p.hp)); for (const P of alive) if (P.hp === top) loseHP(S, P, 1, ev, null); break; }
     case 'crusade': S.mod.crusade = true; break;
     case 'monsoon': S.mod.monsoon = true; break;
-    case 'flood': for (const P of alive) { const c = takeRandom(S, P); if (c) P.discard.push(c); } break;
-    case 'eclipse': { const gifts = alive.map(P => takeRandom(S, P)); alive.forEach((P, k) => { const g = gifts[(k - 1 + alive.length) % alive.length]; if (g) P.hand.push(g); }); break; }
+    case 'flood': for (const P of alive) { const c = takeRandom(S, P); if (c) { P.discard.push(c); S.moves.push({ k: 'discard', t: P.id, card: c }); } } break;
+    case 'eclipse': { const gifts = alive.map(P => takeRandom(S, P)); alive.forEach((P, k) => { const g = gifts[(k - 1 + alive.length) % alive.length]; if (g) P.hand.push(g); if (gifts[k]) S.moves.push({ k: 'pass', t: P.id, to: alive[(k + 1) % alive.length].id, card: gifts[k] }); }); break; }
     case 'bells': { const low = Math.min(...alive.map(p => p.hp)); for (const P of alive) if (P.hp === low) heal(S, P, 2); break; }
   }
   log(S, 'event', { id: S.event, fx: ev.fx });
@@ -1540,7 +1572,8 @@ const EVENT_ART = {
   peace: '<path d="M24 40c-9-5-14-11-14-18a7 7 0 0 1 14-3 7 7 0 0 1 14 3c0 7-5 13-14 18z" fill="none" stroke="#a4301d" stroke-width="2"/><path d="M10 44h28" stroke="#3a2618" stroke-width="1.4"/>',
 };
 
-/* status markers: round medallions beside HP, so they never read as buildings */
+/* status markers, all round so they never read as buildings: the Imperial crown beside HP; the guards a camp has set up
+   (camel guard, Divine Wind, Bạch Đằng stakes) stand with its buildings in the Defenses row */
 const MEDAL_ART = {
   camel: ['#9c7040', SYM_STYLE.L[1]],
   wind: ['#2a4b77', '<path d="M4 9.5h9.5a2.8 2.8 0 1 0-2.8-2.8M4 13.5h12.5a2.8 2.8 0 1 1-2.8 2.8M4 17.2h6" stroke="#fff" stroke-width="1.9" fill="none" stroke-linecap="round"/>'],
@@ -1557,15 +1590,98 @@ function medalSVG(kind) {
   const [bg, glyph] = MEDAL_ART[kind];
   return `<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="11.4" fill="${bg}" stroke="#24180c" stroke-opacity=".8" stroke-width=".9"/><circle cx="12" cy="12" r="10.15" fill="none" stroke="#d2ad57" stroke-width="1.15"/>${glyph.replace(/#fff/g, '#f6ebcf')}</svg>`;
 }
-function medal(kind, n) { return `<span class="medal m-${kind}" data-tip="${esc(MEDAL_TIP[kind])}" aria-label="${esc(MEDAL_TIP[kind])}">${medalSVG(kind)}${n > 1 ? `<b>${n}</b>` : ''}</span>`; }
-function medalsOf(P) {
+function medal(kind, n, cls) { return `<span class="medal m-${kind}${cls ? ' ' + cls : ''}" data-tip="${esc(MEDAL_TIP[kind])}" aria-label="${esc(MEDAL_TIP[kind])}">${medalSVG(kind)}${n > 1 ? `<b>${n}</b>` : ''}</span>`; }
+function medalsOf(P) { return P.aged ? medal('crown') : ''; }
+function guardsOf(P) {
   const m = [];
-  if (P.tokens.camel) m.push(medal('camel', P.tokens.camel));
-  if (P.tokens.immune) m.push(medal('wind'));
-  if (P.tokens.trap) m.push(medal('stakes'));
-  if (P.aged) m.push(medal('crown'));
+  if (P.tokens.camel) m.push(medal('camel', P.tokens.camel, 'guard'));
+  if (P.tokens.immune) m.push(medal('wind', 0, 'guard'));
+  if (P.tokens.trap) m.push(medal('stakes', 0, 'guard'));
   return m.join('');
 }
+
+/* ── Glyphs for events and relics, built from the card symbols so a seasoned player reads them at a glance ──
+   A plain roundel is something everyone gets now: one green plus per HP healed, one red minus per HP lost, one coin per gold.
+   A corner badge changes a kind of effect: +1 / −1, or ↻ for every turn. A red bar across means it is barred this round.
+   A red HP tag says who it hits: ▲ the most HP, ▼ the least (or, on a relic, while your HP is low). */
+const GLYPH_ART = {
+  heal: ['#3b7739', SYM_STYLE.H[1]],
+  hurt: ['#8f1f17', '<path d="M6 12h12" stroke="#fff" stroke-width="3.6" stroke-linecap="round"/>'],
+  gold: ['#a07a1c', SYM_STYLE.G[1]],
+  draw: ['#323d79', SYM_STYLE.D[1]],
+  wall: ['#666d78', SYM_STYLE.W[1]],
+  strike: ['#a8331f', SYM_STYLE.A[1]],
+  discard: ['#323d79', '<rect x="7" y="5" width="10" height="14" rx="1.6" fill="none" stroke="#fff" stroke-width="2"/><path d="M9.2 12h5.6" stroke="#fff" stroke-width="2.2" stroke-linecap="round"/>'],
+  pass: ['#323d79', '<rect x="4.6" y="6" width="8.6" height="12" rx="1.4" fill="none" stroke="#fff" stroke-width="1.8"/><path d="M11.6 12h7.6M16.4 9.1l2.9 2.9-2.9 2.9" fill="none" stroke="#fff" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/>'],
+  shield: ['#46566b', '<path d="M12 4.6l6 2.2v4.6c0 4-2.6 6.6-6 8.1-3.4-1.5-6-4.1-6-8.1V6.8z" fill="none" stroke="#fff" stroke-width="2" stroke-linejoin="round"/>'],
+  market: ['#a07a1c', '<path d="M4.6 12.6L11.6 5.6H18.4V12.4L11.4 19.4z" fill="none" stroke="#fff" stroke-width="2" stroke-linejoin="round"/><circle cx="15.2" cy="8.8" r="1.6" fill="#fff"/><path d="M9.6 13.4l2.2-2.2M11.4 15.2l2.2-2.2" stroke="#fff" stroke-width="1.5" stroke-linecap="round"/>'],
+  hpmax: ['#9f2a1c', '<text x="12" y="15.6" text-anchor="middle" font-family="Alegreya,Georgia,serif" font-weight="800" font-size="10" fill="#fff">HP</text>'],
+  revive: ['#3b7739', '<path d="M12 19.5V9M7.6 12.8L12 8.4l4.4 4.4" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/><path d="M7 5.4h10" stroke="#fff" stroke-width="2" stroke-linecap="round"/>'],
+};
+const GLYPH_NAME = { heal: 'heal', hurt: 'lose HP', gold: 'gold', draw: 'draw', wall: 'structures', strike: 'Strike', discard: 'discard a card', pass: 'pass a card', shield: 'damage taken', market: 'hiring', hpmax: 'max HP', revive: 'rise again' };
+const CREAM = '#f6ebcf';
+function glyphSVG(g, size) {
+  if (g.tag) {
+    /* who it hits: a red HP tag with ▲ (the most HP) or ▼ (the least) */
+    const up = g.tag === 'most';
+    return `<svg class="gl tag" viewBox="0 0 30 26" width="${(size * 30 / 26).toFixed(1)}" height="${size}" aria-hidden="true"><rect x="1" y="5" width="28" height="16" rx="3.5" fill="#9f2a1c" stroke="#55120a" stroke-width="1"/><text x="10.6" y="16.8" text-anchor="middle" font-family="Alegreya,Georgia,serif" font-weight="800" font-size="9.6" fill="#fde9c8">HP</text><path d="${up ? 'M20.6 16.4L24 10.6l3.4 5.8z' : 'M20.6 10.6L24 16.4l3.4-5.8z'}" fill="#fde9c8"/></svg>`;
+  }
+  const [bg, art] = GLYPH_ART[g.k], wide = g.badge != null || g.turn;
+  let s = `<g transform="translate(.5 .5)"><circle cx="12" cy="12" r="11.4" fill="${bg}" stroke="#24180c" stroke-opacity=".8" stroke-width=".9"/><circle cx="12" cy="12" r="10.15" fill="none" stroke="#d2ad57" stroke-width="1.15"/>${art.replace(/#fff/g, CREAM)}`;
+  if (g.ban) s += '<circle cx="12" cy="12" r="10.4" fill="none" stroke="#e0412b" stroke-width="1.8"/><path d="M4.9 19.1L19.1 4.9" stroke="#2a0d07" stroke-width="3.8" stroke-linecap="round"/><path d="M4.9 19.1L19.1 4.9" stroke="#e0412b" stroke-width="2.2" stroke-linecap="round"/>';
+  s += '</g>';
+  if (g.badge != null) {
+    const plus = String(g.badge).startsWith('+'), txt = String(g.badge).replace('-', '−');
+    s += `<rect x="15.2" y="15.4" width="13.6" height="10.2" rx="5.1" fill="${plus ? '#2e6a2c' : /^\d/.test(txt) ? '#5a4636' : '#8a2412'}" stroke="${CREAM}" stroke-width="1"/><text x="22" y="23.3" text-anchor="middle" font-family="Alegreya,Georgia,serif" font-weight="800" font-size="8.4" fill="#fbefd6">${txt}</text>`;
+  } else if (g.turn) {
+    s += `<circle cx="22.4" cy="19.6" r="6.3" fill="#5a3a8a" stroke="${CREAM}" stroke-width="1"/><path d="M19.46 17.9A3.4 3.4 0 1 1 21.3 22.9" fill="none" stroke="#fbefd6" stroke-width="1.7" stroke-linecap="round"/><path d="M18.5 21.9l3.6-1.2-.9 3.5z" fill="#fbefd6"/>`;
+  }
+  const vw = wide ? 29 : 25, vh = wide ? 26 : 25;
+  return `<svg class="gl" viewBox="0 0 ${vw} ${vh}" width="${(size * vw / 25).toFixed(1)}" height="${(size * vh / 25).toFixed(1)}" aria-hidden="true">${s}</svg>`;
+}
+function glyphRow(list, size, cls) { return list && list.length ? `<span class="glyphs${cls ? ' ' + cls : ''}" aria-hidden="true">${list.map(g => glyphSVG(g, size)).join('')}</span>` : ''; }
+const EVENT_GLYPHS = {
+  plague: [{ k: 'hurt' }],
+  harvest: [{ k: 'heal' }],
+  silkroad: [{ k: 'gold' }],
+  winter: [{ k: 'wall', badge: '-1' }],
+  fair: [{ k: 'market', badge: '-1' }],
+  feast: [{ k: 'draw' }],
+  revolt: [{ tag: 'most' }, { k: 'hurt' }],
+  crusade: [{ k: 'strike', badge: '+1' }],
+  monsoon: [{ k: 'wall', ban: true }],
+  flood: [{ k: 'discard' }],
+  eclipse: [{ k: 'pass' }],
+  bells: [{ tag: 'least' }, { k: 'heal' }, { k: 'heal' }],
+  attrition: [{ k: 'hurt' }],
+};
+const RELIC_GLYPHS = {
+  joyeuse: [{ k: 'strike', badge: '+1' }],
+  grail: [{ k: 'heal', badge: '+1' }],
+  scone: [{ k: 'wall', badge: '+1' }],
+  compass: [{ k: 'draw', turn: true }],
+  seal: [{ k: 'market', badge: '-1' }, { k: 'gold' }],
+  jade: [{ k: 'hpmax', badge: '+2' }],
+  horn: [{ tag: 'least' }, { k: 'strike', badge: '+1' }],
+  banner: [{ k: 'revive', badge: '3' }],
+  shroud: [{ k: 'shield', badge: '-1' }],
+  mint: [{ k: 'gold', turn: true }],
+};
+function eventGlyphs(id, size, cls) { return glyphRow(EVENT_GLYPHS[id], size, cls); }
+function relicGlyphs(id, size, cls) { return glyphRow(RELIC_GLYPHS[id], size, cls); }
+/* the key, in the Codex: one line per mark */
+const GLYPH_LEGEND = [
+  [[{ k: 'heal' }, { k: 'heal' }], 'One green plus per HP healed.'],
+  [[{ k: 'hurt' }], 'One red minus per HP lost (not a Strike: walls do not stop it).'],
+  [[{ k: 'gold' }, { k: 'draw' }], 'Gain 1 gold; draw 1 card.'],
+  [[{ k: 'discard' }, { k: 'pass' }], 'Discard 1 random card; pass 1 random card to the next player.'],
+  [[{ k: 'wall', badge: '-1' }, { k: 'strike', badge: '+1' }], 'A badge changes that effect: structures lose 1 durability; each Strike deals 1 extra damage.'],
+  [[{ k: 'wall', ban: true }], 'A red bar: not allowed this round (here, building structures).'],
+  [[{ k: 'gold', turn: true }], 'Every turn.'],
+  [[{ tag: 'most' }, { tag: 'least' }], 'Only whoever has the most HP, or the least (on a relic: while your HP is low).'],
+  [[{ k: 'market', badge: '-1' }, { k: 'shield', badge: '-1' }], 'Hiring costs 1 less; attacks against you deal 1 less.'],
+  [[{ k: 'hpmax', badge: '+2' }, { k: 'revive', badge: '3' }], 'Max HP 2 higher; rise again with 3 HP.'],
+];
 
 /* ── View: table art, components and rendering for the new UI ── */
 const $ = s => document.querySelector(s), $$ = s => [...document.querySelectorAll(s)];
@@ -1611,7 +1727,7 @@ const typeOf = c => (c.age ? 'Imperial Age' : c.imperial ? 'Imperial' : c.unique
 function cardHTML(card, o = {}) {
   const merc = card.civ === 'merc', type = card.age ? 'age' : card.imperial ? 'imp' : card.unique ? 'sig' : merc ? 'merc' : 'com';
   const size = o.size || '';
-  const syms = card.age ? crownSVG(size === 'lg' ? 66 : size === 'sm' ? 36 : 50) : [...card.icons].map(ch => symBadge(ch, 30)).join('');
+  const syms = card.age ? crownSVG(size === 'lg' ? 66 : size === 'sm' ? 36 : 50) : [...(card.icons || '')].filter(ch => SYM_STYLE[ch]).map(ch => symBadge(ch, 30)).join('');
   const seal = type === 'sig' ? `<i class="seal" title="Signature card">${crest(card.civ, 22)}</i>` : type === 'imp' || type === 'age' ? `<i class="seal crown" title="Imperial card">${crownSVG(24)}</i>` : type === 'merc' && o.cost == null ? `<i class="seal coin" title="Mercenary">${card.cost}</i>` : '';
   return `<div class="card ${size} t-${type} fam-${merc ? 'merc' : CIV_FAMILY[card.civ] || 'plain'} civ-${merc ? 'merc' : card.civ} ${o.cls || ''}" data-uid="${card.uid || ''}" ${o.attrs || ''} style="${o.style || ''}"><div class="cf"><div class="cb"><div class="cn"><span>${esc(card.name)}</span></div><div class="ca">${syms}</div><div class="ct"><span>${kw(cardText(card))}</span></div></div></div><i class="corner c1"></i><i class="corner c2"></i>${seal}${o.cost != null ? `<div class="cost${o.afford ? ' ok' : ''}">${o.cost} gold</div>` : ''}</div>`;
 }
@@ -1624,24 +1740,29 @@ function campHTML(P, mine) {
   if (!mine) info.push(`<span class="backs" data-tip="${P.hand.length} cards in hand">${'<i class="cback"></i>'.repeat(Math.min(P.hand.length, 5))}<b>${P.hand.length}</b></span>`);
   if (!P.aged) info.push(!P.ageGiven ? `<span class="agem" data-tip="The Imperial Age card arrives at the start of turn ${RULES.ageTurn}.">${crownSVG(16)}in ${Math.max(1, RULES.ageTurn - P.turns)}</span>`
     : `<span class="agem hot" data-tip="Holds the Imperial Age card.">${crownSVG(16)}ready</span>`);
-  if (P.relic) info.push(`<span class="relic" data-tip="${esc(RELICS[P.relic].name)}: ${esc(RELICS[P.relic].text)}">${esc(RELICS[P.relic].name)}</span>`);
+  if (P.relic) info.push(`<span class="relic" data-tip="${esc(RELICS[P.relic].name)}: ${esc(RELICS[P.relic].text)}">${relicGlyphs(P.relic, 19)}<span class="rn">${esc(RELICS[P.relic].name)}</span></span>`);
   if (mine) info.push(`<span class="piles"><button class="pile" data-act="deck" data-tip="Cards left to draw">Deck ${P.deck.length}</button><button class="pile" data-act="discard" data-tip="Cards already played or lost">Discard ${P.discard.length}</button></span>`);
   return `<section class="camp fam-${CIV_FAMILY[P.civ]} civ-${P.civ}${mine ? ' mine' : ''}${acting ? ' turn' : ''}${P.alive ? '' : ' out'}" id="camp-${P.id}" data-pid="${P.id}" aria-label="${mine ? 'You, ' : ''}${esc(C.name)}: ${hp} of ${P.maxHP} HP">
 <header class="camp-banner">${crest(P.civ, mine ? 32 : 28)}<span class="cname">${esc(C.name)}</span>${mine ? '<span class="you">you</span>' : ''}${acting && !mine ? '<span class="flag">acting</span>' : ''}${P.alive ? '' : '<span class="flag out">defeated</span>'}<span class="medals">${medalsOf(P)}</span>${hpTag(P, hp)}</header>${hpBar(P, hp)}
-<div class="camp-info"><div class="defs"><span class="lbl">Defenses</span>${P.structs.map(buildHTML).join('') || '<span class="none">none</span>'}</div><div class="stash">${info.join('')}</div></div>
+<div class="camp-info">${defsHTML(P)}<div class="stash">${info.join('')}</div></div>
 <div class="chips"></div><div class="floats"></div></section>`;
+}
+/* the Defenses row: buildings, then the round guard tokens; on a phone the label gives way once a token is there */
+function defsHTML(P) {
+  const b = P.structs.map(buildHTML).join(''), g = guardsOf(P);
+  return `<div class="defs${g ? ' has-guard' : ''}"><span class="lbl">Defenses</span>${b}${g}${b || g ? '' : '<span class="none">none</span>'}</div>`;
 }
 function renderTopbar() {
   const me = isMyTurn(), E = S.event ? EVENT_BY[S.event] : null, who = S.winner != null ? '' : S.turn === 0 ? 'Your turn' : `${CIVS[cur(S).civ].name} to play`;
   put('#topbar', `<button class="icon-btn" data-act="pause" aria-label="Menu" data-tip="Menu (Esc)">${ICON.menu}</button>
-<div class="tb-mid"><button class="evchip mob-only" data-act="events" aria-label="Events"><small>Round ${S.round}</small><b>${E ? esc(E.name) : 'Peace'}</b>${UI.eventSeen !== S.round && S.event ? '<i class="badge"></i>' : ''}</button><span class="pill desk-only">Round ${S.round}</span>${who ? `<span class="pill desk-only ${S.turn === 0 ? 'you' : ''}">${who}</span>` : ''}${me && S.plays > 0 ? `<span class="pips" data-tip="Plays left this turn">${'<i class="pip"></i>'.repeat(S.plays)}</span>` : ''}</div>
+<div class="tb-mid"><button class="evchip mob-only" data-act="events" aria-label="Events"><span class="evt"><small>Round ${S.round}${E ? eventGlyphs(E.id, 17) : ''}</small><b>${E ? esc(E.name) : 'Peace'}</b></span>${UI.eventSeen !== S.round && S.event ? '<i class="badge"></i>' : ''}</button><span class="pill desk-only round"${E ? ` data-tip="${esc(E.name)}: ${esc(E.text)}"` : ''}>Round ${S.round}${E ? eventGlyphs(E.id, 22) : ''}</span>${who ? `<span class="pill desk-only ${S.turn === 0 ? 'you' : ''}">${who}</span>` : ''}${me && S.plays > 0 ? `<span class="pips" data-tip="Plays left this turn">${'<i class="pip"></i>'.repeat(S.plays)}</span>` : ''}</div>
 <div class="tb-right"><button class="icon-btn mob-only" data-act="market" aria-label="Mercenary Market" data-tip="Mercenary Market">${ICON.market}${canHire() ? `<i class="badge">${canHire()}</i>` : ''}</button>
 <button class="speed desk-only" data-act="speed" data-tip="Animation speed (S)">${SPEEDS[SET.speed].label}</button><button class="icon-btn" data-act="codex" aria-label="Codex" data-tip="Codex: civilizations, cards, symbols and rules (C)">${ICON.book}</button><button class="icon-btn" data-act="chronicle" aria-label="Chronicle" data-tip="Chronicle (L)">${ICON.scroll}</button></div>`);
 }
 function eventsHTML() {
   const E = S.event ? EVENT_BY[S.event] : null, N = EVENT_BY[S.eventNext];
-  return `<div class="ev now${UI.flipEvent ? ' flip' : ''}"><div class="when">This round</div><h4>${E ? esc(E.name) : 'Peace'}</h4><p>${E ? kw(E.text) : 'No event yet. Events start in round 2.'}</p></div>
-<div class="ev next"><div class="when">Next round</div><h4>${esc(N.name)}</h4><p>${kw(N.text)}</p></div>${S.round >= 14 ? `<div class="ev-warn">${S.round >= 16 ? 'The war drags on: everyone loses 1 HP each round.' : 'From round 16 everyone loses 1 HP each round.'}</div>` : ''}`;
+  return `<div class="ev now${UI.flipEvent ? ' flip' : ''}"><div class="when">This round</div><h4>${E ? esc(E.name) : 'Peace'}${E ? eventGlyphs(E.id, 25) : ''}</h4><p>${E ? kw(E.text) : 'No event yet. Events start in round 2.'}</p></div>
+<div class="ev next"><div class="when">Next round</div><h4>${esc(N.name)}${eventGlyphs(N.id, 25)}</h4><p>${kw(N.text)}</p></div>${S.round >= 14 ? `<div class="ev-warn">${eventGlyphs('attrition', 18)}${S.round >= 16 ? 'The war drags on: everyone loses 1 HP each round.' : 'From round 16 everyone loses 1 HP each round.'}</div>` : ''}`;
 }
 function marketHTML() {
   const me = S.players[0], mine = isMyTurn() && !S.flags.bought;
@@ -1821,7 +1942,7 @@ function campMiniHTML(P) {
   const wall = `<svg class="bi" viewBox="0 0 24 24" aria-hidden="true">${BUILD.castle}</svg>`, medals = medalsOf(P);
   return `<section class="camp mini fam-${CIV_FAMILY[P.civ]} civ-${P.civ}${acting ? ' turn' : ''}${P.alive ? '' : ' out'}" id="camp-${P.id}" data-pid="${P.id}" aria-label="${esc(C.name)}: ${hp} of ${P.maxHP} HP">
 <header class="camp-banner">${crest(P.civ, 20)}<span class="cname">${esc(C.name)}</span></header>${hpBar(P, hp)}
-<div class="mini-body">${hpTag(P, hp, true)}${medals ? `<span class="mmedals">${medals}</span>` : ''}<div class="mini-stats"><span data-tip="Defenses: total durability">${wall}${wallTotal(P)}${W ? ` +${W.dur}` : ''}</span><span>${symBadge('G', 15)}${P.gold}</span><span><i class="cback"></i>${P.hand.length}</span>${P.aged ? '' : ageMini(P)}</div></div>
+<div class="mini-body">${hpTag(P, hp, true)}${medals ? `<span class="mmedals">${medals}</span>` : ''}<div class="mini-stats"><span data-tip="Defenses: total durability">${wall}${wallTotal(P)}${W ? ` +${W.dur}` : ''}${guardsOf(P)}</span><span>${symBadge('G', 15)}${P.gold}</span><span><i class="cback"></i>${P.hand.length}</span>${P.aged ? '' : ageMini(P)}</div></div>
 <div class="chips"></div><div class="floats"></div></section>`;
 }
 
@@ -1888,9 +2009,66 @@ function setShownHP(pid) {
   if (bar) bar.style.width = Math.max(0, Math.round(hp / P.maxHP * 100)) + '%';
 }
 function shake(pid) { const el = document.getElementById('camp-' + pid); if (el) { el.classList.remove('hit'); void el.offsetWidth; el.classList.add('hit'); } }
+/* ── cards and buildings changing hands: the taken card turns up face up where it was, with a tag saying what happened,
+   then travels to where it goes (a hand, a camp's Defenses, or the discard) ── */
+const MOVE_TAG = {
+  steal: (by, t) => (by === 0 ? `Stolen from ${civNameOf(t)}` : `Stolen by ${civNameOf(by)}`),
+  convert: (by, t) => (by === 0 ? `Converted from ${civNameOf(t)}` : `Converted by ${civNameOf(by)}`),
+  discard: () => 'Discarded',
+  pass: (to) => `Passed to ${to === 0 ? 'you' : civNameOf(to)}`,
+};
+/* where things stood before the table was redrawn: your hand's cards, and every camp's buildings */
+function snapSpots() {
+  const hand = {}, blds = {};
+  for (const el of $$('#hand .card[data-uid]')) hand[el.dataset.uid] = el.getBoundingClientRect();
+  for (const camp of $$('.camp[data-pid]')) { const m = blds[camp.dataset.pid] = {}; for (const b of camp.querySelectorAll('.bld')) m[(b.dataset.tip || '').split(':')[0]] = b.getBoundingClientRect(); }
+  return { hand, blds };
+}
+function campSpot(pid, sel) { const camp = document.getElementById('camp-' + pid); if (!camp) return null; const el = sel && camp.querySelector(sel); return (el || camp).getBoundingClientRect(); }
+function handSpot(pid, card, snap) {
+  if (pid !== 0) return campSpot(pid, '.backs, .cback');
+  if (snap && card && snap.hand[card.uid]) return snap.hand[card.uid];
+  const h = $('#hand').getBoundingClientRect(); return { left: h.left + h.width / 2 - 50, top: h.top + 14, width: 100, height: 140 };
+}
+async function moveScene(f, snap) {
+  const k = f.k, by = f.by != null ? f.by : f.to, tall = k !== 'convert';
+  const box = document.createElement('div'); box.className = 'mv' + (tall ? '' : ' mv-bld');
+  box.innerHTML = (tall ? cardHTML(f.card, { size: 'lg' }) : `<span class="bld big"><svg viewBox="0 0 24 24" aria-hidden="true">${BUILD[buildOf(f.st)]}</svg><b>${f.st.dur}</b></span><span class="mv-name">${esc(f.name)}</span>`)
+    + `<span class="mv-tag ${k}">${esc(MOVE_TAG[k](by, f.t))}</span>`;
+  Object.assign(box.style, { position: 'fixed', left: '0', top: '0' });
+  $('#fx-layer').appendChild(box);
+  const w = box.offsetWidth, h = box.offsetHeight;
+  /* from: where it was taken; to: where it goes (an element already drawn there stays hidden until the card lands on it) */
+  const from = tall ? handSpot(f.t, f.card, snap) : (snap.blds[f.t] && snap.blds[f.t][f.name]) || campSpot(f.t, '.defs, .mini-stats');
+  let land = null, to = null;
+  if (k === 'steal' || k === 'pass') { land = by === 0 ? document.querySelector(`#hand .card[data-uid="${f.card.uid}"]`) : null; to = land ? land.getBoundingClientRect() : handSpot(by, null); }
+  else if (k === 'convert') { const camp = document.getElementById('camp-' + by); land = camp && [...camp.querySelectorAll('.bld')].find(b => (b.dataset.tip || '').startsWith(f.name + ':')); to = land ? land.getBoundingClientRect() : campSpot(by, '.defs, .mini-stats'); }
+  if (land) land.style.visibility = 'hidden';
+  /* the showcase: a readable size, pulled a little toward the chart and kept on screen */
+  const showW = mobile() ? 118 : 146, s1 = tall ? showW / w : 1.25, st = $('#stage').getBoundingClientRect();
+  const fx = from.left + from.width / 2, fy = from.top + from.height / 2;
+  let cx = fx + (st.left + st.width / 2 - fx) * 0.35, cy = fy + (st.top + st.height / 2 - fy) * 0.35;
+  cx = Math.min(Math.max(cx, w * s1 / 2 + 8), innerWidth - w * s1 / 2 - 8); cy = Math.min(Math.max(cy, h * s1 / 2 + 8), innerHeight - h * s1 / 2 - 8);
+  const at = (x, y, s, r = 0) => `translate(${(x - w / 2).toFixed(1)}px,${(y - h / 2).toFixed(1)}px) scale(${s.toFixed(3)}) rotate(${r}deg)`;
+  const s0 = Math.max(0.15, Math.min(from.width / w, from.height / h));
+  SFX.play('whoosh');
+  await box.animate([{ transform: at(fx, fy, s0, -6), opacity: 0.3 }, { transform: at(cx, cy, s1), opacity: 1 }], { duration: D(260), easing: 'cubic-bezier(.2,.8,.2,1)', fill: 'forwards' }).finished.catch(() => {});
+  await wait(D(520));
+  const end = to ? at(to.left + to.width / 2, to.top + to.height / 2, Math.max(0.15, Math.min(to.width / w, to.height / h)))
+    : at(cx, cy + 46, s1 * 0.8, 4);   /* discarded: it sinks away where it was shown */
+  await box.animate([{ transform: at(cx, cy, s1), opacity: 1 }, { transform: end, opacity: to ? 0.95 : 0 }], { duration: D(to ? 420 : 360), easing: 'cubic-bezier(.5,0,.3,1)', fill: 'forwards' }).finished.catch(() => {});
+  if (land) { land.style.visibility = ''; land.animate([{ transform: 'scale(1.12)' }, { transform: 'none' }], { duration: 220, easing: 'ease-out' }); }
+  box.remove();
+}
+/* the round's event moved cards (Flood, Eclipse): every player's card shows at once */
+async function roundMoves(moves) {
+  if (!moves || !moves.length || D(500) < 120) return;
+  await Promise.all(moves.map((m, i) => wait(i * 90).then(() => moveScene(m, { hand: {}, blds: {} })).catch(e => console.error('[scene]', e))));
+}
 async function animatePlay(ev, pid, from, landed) {
   /* landed: the player dropped the card and it already glided onto the chart, so it does not fly again */
   if (!landed) await flyCard(ev.card, from, stageRect(), D(430));
+  const snap = snapSpots();
   UI.last = { card: ev.card, pid, target: ev.target, fresh: !landed }; UI.sel = null; UI.hoverT = null;
   renderMatch(); if (landed) dropGhost();
   if (ev.card.wonder) banner(`${civNameOf(pid)} ${pid === 0 ? 'begin' : 'begins'} ${ev.card.name}`, pid === 0 ? 'Keep it standing for 3 turns to win' : 'Bring it down within 3 turns or they win', 2200);
@@ -1902,7 +2080,9 @@ async function animatePlay(ev, pid, from, landed) {
       hit.add(t); arrow(src, camp.getBoundingClientRect(), ['steal', 'discard', 'convert', 'tribute'].includes(f.k) ? 'steal' : ['razed', 'wonderhit'].includes(f.k) ? 'raze' : 'dmg', D(320)); await wait(D(260));
     }
     if (f.k === 'hp' && UI.view) { UI.view[t] = (UI.view[t] != null ? UI.view[t] : S.players[t].hp) + f.n; setShownHP(t); }
-    const m = FX_TEXT[f.k]; if (m) { const [txt, cls] = m(f); floatAt(t, txt, cls); }
+    const scene = ['steal', 'convert', 'discard'].includes(f.k) && (f.card || f.st) && D(500) >= 120;
+    if (scene) { try { await moveScene(f, snap); } catch (e) { console.error('[scene]', e); } }   /* a scene is only a picture: it never stops the game */
+    const m = !scene && FX_TEXT[f.k]; if (m) { const [txt, cls] = m(f); floatAt(t, txt, cls); }
     if (f.k === 'hp') { SFX.play(f.n < 0 ? 'hit' : 'heal'); if (f.n < 0) { shake(t); if (t === 0) buzz(35); } }
     else if (['wall', 'razed', 'wonderhit'].includes(f.k)) SFX.play('wall');
     if (f.k === 'age') { SFX.play('crown'); banner(`${civNameOf(t)} ${t === 0 ? 'advance' : 'advances'} to the Imperial Age`, IMPERIAL[S.players[t].civ].bonus.text, 2300); }
@@ -1930,8 +2110,8 @@ function herald(round, eventId, nextId, note) {
     const E = eventId ? EVENT_BY[eventId] : null, N = nextId ? EVENT_BY[nextId] : null;
     const el = document.createElement('div'); el.className = 'herald'; el.setAttribute('role', 'dialog'); el.setAttribute('aria-label', `Round ${round}`);
     el.innerHTML = `<div class="hscroll"><div class="hround">Round ${round}</div><svg class="hart" viewBox="0 0 48 48" aria-hidden="true">${EVENT_ART[E ? E.id : 'peace']}</svg>
-<h2>${E ? esc(E.name) : 'A quiet start'}</h2><p class="heff">${E ? kw(E.text) : 'No event this round. Events begin next round.'}</p>${note ? `<p class="hnote">${kw(note)}</p>` : ''}
-${N ? `<div class="hnext"><span>Next round</span><b>${esc(N.name)}</b><em>${kw(N.text)}</em></div>` : ''}<div class="htap">Tap to continue</div></div>`;
+<h2>${E ? esc(E.name) : 'A quiet start'}</h2>${E ? eventGlyphs(E.id, 32, 'hgl') : ''}<p class="heff">${E ? kw(E.text) : 'No event this round. Events begin next round.'}</p>${note ? `<p class="hnote">${kw(note)}</p>` : ''}
+${N ? `<div class="hnext"><span>Next round</span><b>${esc(N.name)}${eventGlyphs(N.id, 20)}</b><em>${kw(N.text)}</em></div>` : ''}<div class="htap">Tap to continue</div></div>`;
     document.getElementById('app').appendChild(el);
     SFX.play('quill');
     let done = false;
@@ -1966,8 +2146,8 @@ function renderSelect() {
 }
 function relicSheet() {
   const P = S.players[0];
-  openSheet(`<h2>Choose a relic</h2><p class="muted">It stays with you all match. Three are drawn at random every time.</p><div class="relics">${P.relicOffer.map(id => `<button class="relic-pick" data-relic="${id}"><b>${esc(RELICS[id].name)}</b><span>${kw(RELICS[id].text)}</span></button>`).join('')}</div>
-<p class="muted">Facing ${S.players.slice(1).map(o => `${esc(CIVS[o.civ].name)} (${esc(RELICS[o.relic].name)})`).join(', ')}.</p>`, true);
+  openSheet(`<h2>Choose a relic</h2><p class="muted">It stays with you all match. Three are drawn at random every time.</p><div class="relics">${P.relicOffer.map(id => `<button class="relic-pick" data-relic="${id}">${relicGlyphs(id, 30, 'rgl')}<b>${esc(RELICS[id].name)}</b><span>${kw(RELICS[id].text)}</span></button>`).join('')}</div>
+<p class="muted">Facing ${S.players.slice(1).map(o => `${esc(CIVS[o.civ].name)} (${relicGlyphs(o.relic, 16)} ${esc(RELICS[o.relic].name)})`).join(', ')}.</p>`, true);
 }
 function settingsSheet() {
   const seg = (key, opts) => `<div class="seg">${opts.map(([v, l]) => `<button class="${SET[key] === v ? 'on' : ''}" data-set="${key}" data-val="${v}">${l}</button>`).join('')}</div>`;
@@ -2011,7 +2191,7 @@ function campSheet(pid) {
   const toks = [P.tokens.camel ? 'camel' : '', P.tokens.immune ? 'wind' : '', P.tokens.trap ? 'stakes' : ''].filter(Boolean);
   openSheet(`<div class="camp-sheet fam-${CIV_FAMILY[P.civ]} civ-${P.civ}"><div class="hdr">${crest(P.civ, 56)}<div><h2>${pid === 0 ? 'You' : esc(C.name)}</h2><p>${esc(C.style)}</p></div></div>
 <div class="sd-stats"><span><b class="kw k-hp">${Math.max(0, P.hp)}</b> of ${P.maxHP} HP</span><span><b class="kw k-gold">${P.gold}</b> gold</span><span><b class="kw k-card">${P.hand.length}</b> cards in hand</span><span><b>${P.deck.length}</b> in deck</span></div>
-${P.relic ? `<p><b>${esc(RELICS[P.relic].name)}</b>: ${kw(RELICS[P.relic].text)}</p>` : ''}
+${P.relic ? `<p>${relicGlyphs(P.relic, 20)} <b>${esc(RELICS[P.relic].name)}</b>: ${kw(RELICS[P.relic].text)}</p>` : ''}
 <h3>Defenses</h3>${P.structs.length ? `<div class="ws">${P.structs.map(st => `<div>${buildHTML(st)}<span>${esc(st.card.name)}${st.kind === 'wonder' ? `: wins in ${Math.max(0, 3 - st.age)} turn(s) unless destroyed` : note[st.kind] ? ': ' + note[st.kind] : ''}</span></div>`).join('')}</div>` : '<p class="muted">None standing.</p>'}
 ${toks.length ? `<h3>Effects</h3><div class="cx-list">${toks.map(t => `<div class="cx-ev"><span class="medal">${medalSVG(t)}</span><div><p>${kw(MEDAL_TIP[t])}</p></div></div>`).join('')}</div>` : ''}
 <h3>Imperial Age</h3><p>${!P.ageGiven ? `The card arrives in ${Math.max(1, RULES.ageTurn - P.turns)} turn(s).` : !P.aged ? 'Holds the Imperial Age card.' : 'In the Imperial Age.'} ${kw(I.bonus.text)}</p>
@@ -2193,9 +2373,10 @@ function codexRules() {
 <h3>Imperial Age, wonders and the long war</h3><p>At the start of your ${RULES.ageTurn}th turn the <b>Imperial Age</b> card arrives. Playing it uses your play for the turn: your civilization's three Imperial cards join your deck and its bonus fires. A <b>wonder</b> wins the game if it still stands at the start of your third turn after building it. The first time you drop to 3 HP or less you draw 2 cards. From round 16 everyone loses 1 HP each round.</p>
 <h3>Controls</h3><p>Tap a card to choose it: it shows large on the chart, the tags above each camp show the result, and <b>Play</b> confirms. Tap the chosen card again, or ⓘ, to read it in full. <b>Drag</b> a card to play it straight away: hold it for a moment or pull it up, then drop it on the chart, or on an enemy camp to aim it; let go anywhere else and it goes back to your hand. Swipe the hand sideways to see the rest. Tap any camp to inspect it, and tap the card on the chart to read it.</p><p class="muted">Keys: 1–9 choose a card, Enter play, I details, Tab switch target, Esc cancel, C codex, L chronicle, S speed, H rules.</p>
 <h3>Defenses <span class="cx-sub">the number on each is how much more damage it can absorb</span></h3><div class="cx-list">${bld.map(([k, n, t]) => `<div class="cx-ev"><span class="bld"><svg viewBox="0 0 24 24" aria-hidden="true">${BUILD[k]}</svg></span><div><b>${n}</b><p>${kw(t[0].toUpperCase() + t.slice(1))}.</p></div></div>`).join('')}</div>
-<h3>Status markers <span class="cx-sub">round badges beside HP</span></h3><div class="cx-list">${['crown', 'camel', 'wind', 'stakes'].map(m => `<div class="cx-ev"><span class="medal">${medalSVG(m)}</span><div><p>${kw(MEDAL_TIP[m])}</p></div></div>`).join('')}</div>
-<h3>Events <span class="cx-sub">${EVENTS.length} in the deck</span></h3><div class="cx-list">${EVENTS.map(E => `<div class="cx-ev"><svg class="evart" viewBox="0 0 48 48" aria-hidden="true">${EVENT_ART[E.id]}</svg><div><b>${esc(E.name)}</b><p>${kw(E.text)}</p></div></div>`).join('')}</div>
-<h3>Relics <span class="cx-sub">pick 1 of 3 before each match</span></h3><div class="cx-list">${RELIC_IDS.map(id => `<div class="cx-relic"><b>${esc(RELICS[id].name)}</b><p>${kw(RELICS[id].text)}</p></div>`).join('')}</div>`;
+<h3>Status markers <span class="cx-sub">the crown beside HP; guards stand in the Defenses row</span></h3><div class="cx-list">${['crown', 'camel', 'wind', 'stakes'].map(m => `<div class="cx-ev"><span class="medal">${medalSVG(m)}</span><div><p>${kw(MEDAL_TIP[m])}</p></div></div>`).join('')}</div>
+<h3>Reading events and relics <span class="cx-sub">their glyphs use the card symbols</span></h3><div class="gl-legend">${GLYPH_LEGEND.map(([g, t]) => `<div>${glyphRow(g, 24)}<span>${kw(t)}</span></div>`).join('')}</div>
+<h3>Events <span class="cx-sub">${EVENTS.length} in the deck</span></h3><div class="cx-list">${EVENTS.map(E => `<div class="cx-ev"><svg class="evart" viewBox="0 0 48 48" aria-hidden="true">${EVENT_ART[E.id]}</svg><div><b>${esc(E.name)}</b>${eventGlyphs(E.id, 22)}<p>${kw(E.text)}</p></div></div>`).join('')}</div>
+<h3>Relics <span class="cx-sub">pick 1 of 3 before each match</span></h3><div class="cx-list">${RELIC_IDS.map(id => `<div class="cx-relic">${relicGlyphs(id, 22)}<b>${esc(RELICS[id].name)}</b><p>${kw(RELICS[id].text)}</p></div>`).join('')}</div>`;
 }
 document.addEventListener('input', e => { if (e.target.id === 'cx-q') { CODEX.q = e.target.value; $('#cx-results').innerHTML = codexCardResults(); } });
 async function holdForOverlay() { while (CODEX.open) await wait(250); }
@@ -2207,7 +2388,7 @@ const TUTORIAL = [
   { show: 'now', until: 'next', target: '#hand', title: 'Your hand', text: 'A card does what its symbols say, left to right. The coloured words tell you the kind of effect: damage, HP, gold, cards, walls.' },
   { show: 'now', until: 'select', target: '#hand', title: 'Pick a card', text: 'Tap a card to choose it: it shows large on the chart with its result on every camp. Tap it again to read it in full, or drag it up to play it at once.' },
   { show: 'now', until: 'play', target: '#stage-card', title: 'See before you play', text: 'The tags above the camps show the result in advance. Press Play below to confirm.' },
-  { show: 'turn', until: 'next', target: '#me .camp', title: 'Your camp', text: 'Your HP is the red tag on your banner, with the bar under it. The buildings under Defenses take damage before your HP does; the number on each is how much more it can absorb. Round badges beside HP are effects, like the Imperial crown.' },
+  { show: 'turn', until: 'next', target: '#me .camp', title: 'Your camp', text: 'Your HP is the red tag on your banner, with the bar under it. The buildings under Defenses take damage before your HP does; the number on each is how much more it can absorb. Round tokens there are guards, like a camel guard, and the crown beside HP marks the Imperial Age.' },
   { show: 'now', until: 'next', target: '#events', title: 'Events', text: 'Each round an event hits everyone, and the next one is always shown, so you can plan for it.', wide: true },
   { show: 'now', until: 'next', target: '#market', title: 'Mercenaries', text: 'Gold hires one mercenary per turn. The card goes straight to your hand and joins your deck.', wide: true },
   { show: 'agecard', until: 'next', target: '#hand', title: 'The Imperial Age', text: 'Turn 7 brings this card. Playing it adds your civilization\'s three Imperial cards to your deck, plus a bonus.' },
@@ -2313,6 +2494,7 @@ async function roundStart() {
   UI.flipEvent = true; UI.eventSeen = S.round; renderMatch();
   const note = S.round >= 16 ? 'The war drags on: everyone lost 1 HP.' : S.round >= 14 ? `From round 16 everyone loses 1 HP each round.` : '';
   await herald(S.round, S.event, S.eventNext, note);
+  await roundMoves(S.moves);
 }
 function myTurnStart() {
   UI.busy = false; UI.sel = null; renderMatch(); SFX.play('turn'); buzz(20);

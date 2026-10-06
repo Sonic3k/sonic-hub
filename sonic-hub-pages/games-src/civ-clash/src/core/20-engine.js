@@ -148,13 +148,13 @@ function resolveStep(S, A, s, T, ev) {
   if (s.draw) draw(S, A, s.draw);
   if (s.gold) { A.gold += s.gold; ev.fx.push({ k: 'gold', t: A.id, n: s.gold }); }
   if (s.raze) for (let k = 0; k < s.raze; k++) { if (!T || (!T.structs.length)) break; razeOne(S, A, T, ev); }
-  if (s.steal) for (const X of (s.all ? opponents(S, A) : T ? [T] : [])) for (let k = 0; k < s.steal; k++) { const c = takeRandom(S, X); if (!c) break; A.hand.push(c); ev.fx.push({ k: 'steal', t: X.id, by: A.id }); }
-  if (s.convert && T) { const ws = walls(T).sort((a, b) => b.dur - a.dur); if (ws.length) { const w = ws[0]; T.structs = T.structs.filter(x => x !== w); A.structs.push(w); ev.fx.push({ k: 'convert', t: T.id, by: A.id, name: w.card.name }); } }
+  if (s.steal) for (const X of (s.all ? opponents(S, A) : T ? [T] : [])) for (let k = 0; k < s.steal; k++) { const c = takeRandom(S, X); if (!c) break; A.hand.push(c); ev.fx.push({ k: 'steal', t: X.id, by: A.id, card: c }); }
+  if (s.convert && T) { const ws = walls(T).sort((a, b) => b.dur - a.dur); if (ws.length) { const w = ws[0]; T.structs = T.structs.filter(x => x !== w); A.structs.push(w); ev.fx.push({ k: 'convert', t: T.id, by: A.id, name: w.card.name, st: w }); } }
   if (s.token === 'camel') A.tokens.camel++;
   if (s.token === 'immune') A.tokens.immune = true;
   if (s.token === 'trap') A.tokens.trap = true;
   if (s.self) loseHP(S, A, s.self, ev, null);
-  if (s.discard) for (const X of opponents(S, A)) { const c = takeRandom(S, X); if (c) { X.discard.push(c); ev.fx.push({ k: 'discard', t: X.id }); } }
+  if (s.discard) for (const X of opponents(S, A)) { const c = takeRandom(S, X); if (c) { X.discard.push(c); ev.fx.push({ k: 'discard', t: X.id, card: c }); } }
   if (s.tribute) for (const X of opponents(S, A)) if (X.gold > 0) { X.gold--; A.gold++; ev.fx.push({ k: 'gold', t: A.id, n: 1 }); ev.fx.push({ k: 'tribute', t: X.id }); }
   if (s.ageup) ageUp(S, A, ev);
   if (s.buyFree) S.flags.buyFree = true;
@@ -230,7 +230,7 @@ function endTurn(S) {
   beginTurn(S, false);
 }
 function startRound(S) {
-  S.mod = {};
+  S.mod = {}; S.moves = [];   /* cards the round's event moved, for the table to show */
   S.event = S.eventNext; S.eventNext = drawEvent(S);
   const alive = S.players.filter(p => p.alive), ev = { k: 'event', fx: [] };
   if (S.round >= 16) { for (const P of alive) loseHP(S, P, 1, ev, null); log(S, 'attrition', {}); checkWinner(S); if (S.winner != null) return; }
@@ -244,8 +244,8 @@ function startRound(S) {
     case 'revolt': { const top = Math.max(...alive.map(p => p.hp)); for (const P of alive) if (P.hp === top) loseHP(S, P, 1, ev, null); break; }
     case 'crusade': S.mod.crusade = true; break;
     case 'monsoon': S.mod.monsoon = true; break;
-    case 'flood': for (const P of alive) { const c = takeRandom(S, P); if (c) P.discard.push(c); } break;
-    case 'eclipse': { const gifts = alive.map(P => takeRandom(S, P)); alive.forEach((P, k) => { const g = gifts[(k - 1 + alive.length) % alive.length]; if (g) P.hand.push(g); }); break; }
+    case 'flood': for (const P of alive) { const c = takeRandom(S, P); if (c) { P.discard.push(c); S.moves.push({ k: 'discard', t: P.id, card: c }); } } break;
+    case 'eclipse': { const gifts = alive.map(P => takeRandom(S, P)); alive.forEach((P, k) => { const g = gifts[(k - 1 + alive.length) % alive.length]; if (g) P.hand.push(g); if (gifts[k]) S.moves.push({ k: 'pass', t: P.id, to: alive[(k + 1) % alive.length].id, card: gifts[k] }); }); break; }
     case 'bells': { const low = Math.min(...alive.map(p => p.hp)); for (const P of alive) if (P.hp === low) heal(S, P, 2); break; }
   }
   log(S, 'event', { id: S.event, fx: ev.fx });
