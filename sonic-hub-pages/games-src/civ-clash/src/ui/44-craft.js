@@ -115,12 +115,12 @@ const EVENT_ART = {
    (camel guard, Divine Wind, Bạch Đằng stakes) stand with its buildings in the Defenses row */
 const MEDAL_ART = {
   camel: ['#9c7040', SYM_STYLE.L[1]],
-  wind: ['#2a4b77', '<path d="M4 9.5h9.5a2.8 2.8 0 1 0-2.8-2.8M4 13.5h12.5a2.8 2.8 0 1 1-2.8 2.8M4 17.2h6" stroke="#fff" stroke-width="1.9" fill="none" stroke-linecap="round"/>'],
-  stakes: ['#7c1d12', '<path d="M7 19.5l2.6-12.8L11 10M12.2 19.5V6l1.4 3.2M17.4 19.5L15 7.4l-.9 3.4" stroke="#fff" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/><path d="M4.5 19.5h15" stroke="#fff" stroke-width="1.6" stroke-linecap="round"/>'],
+  wind: ['#2a4b77', SYM_STYLE.V[1]],   /* the same mark as the Divine Wind symbol on the card */
+  stakes: ['#7c1d12', SYM_STYLE.T[1]],   /* the same mark as the Stakes symbol on the card */
 };
 const MEDAL_TIP = {
   crown: 'Imperial Age: this realm has reached it, and its three Imperial cards are in its deck.',
-  camel: 'Camel guard: the next cavalry attack against this camp is cancelled.',
+  camel: 'Camel guard: the next cavalry hit against this camp (one Cavalry symbol) is cancelled; each camel stops one hit.',
   wind: 'Divine Wind: every attack against this camp is cancelled until its next turn.',
   stakes: 'Bạch Đằng stakes: the first opponent to deal damage here takes 2 damage.',
 };

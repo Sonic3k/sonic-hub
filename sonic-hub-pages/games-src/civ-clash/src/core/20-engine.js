@@ -261,6 +261,8 @@ const SYM_TXT = {
   F: n => (n === 1 ? 'Deal 1 damage to every opponent.' : `Deal 1 damage to every opponent, ${n} times.`),
   Y: n => (n === 1 ? 'Deal 1 damage, or 2 damage if the opponent has no walls.' : `Deal ${n} damage, 1 extra damage per hit if the opponent has no walls.`),
   N: n => `Raid: steal ${n} card${n > 1 ? 's' : ''}, then deal ${n} damage.`,
+  T: () => 'Set the Bạch Đằng stakes: until your next turn, the first opponent who damages you takes 2 damage.',
+  V: () => 'Until your next turn, every attack against you is cancelled.',
 };
 function cardText(card) {
   if (card.text) return card.text;

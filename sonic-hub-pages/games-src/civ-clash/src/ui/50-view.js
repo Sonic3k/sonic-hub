@@ -36,8 +36,8 @@ function put(el, html) { if (typeof el === 'string') el = $(el); if (!el || el._
 function forget(el) { if (el) el._html = null; }
 const isMyTurn = () => S && S.turn === 0 && S.winner == null && !UI.busy;
 const selCard = () => (S && UI.sel != null ? S.players[0].hand.find(c => c.uid === UI.sel) : null);
-const civNameOf = pid => (pid === 0 ? 'You' : CIVS[S.players[pid].civ].name);
-const civObjOf = pid => (pid === 0 ? 'you' : CIVS[S.players[pid].civ].name);
+const civNameOf = pid => nameOf(pid);
+const civObjOf = pid => (pid === 0 ? 'you' : nameOf(pid));
 const typeOf = c => (c.age ? 'Imperial Age' : c.imperial ? 'Imperial' : c.unique ? 'Signature' : c.civ === 'merc' ? 'Mercenary' : 'Common');
 function cardHTML(card, o = {}) {
   const merc = card.civ === 'merc', type = card.age ? 'age' : card.imperial ? 'imp' : card.unique ? 'sig' : merc ? 'merc' : 'com';
@@ -53,12 +53,11 @@ function campHTML(P, mine) {
   const info = [];
   info.push(`<span class="coin" data-tip="Gold hires mercenaries at the market.">${symBadge('G', 20)}<b>${P.gold}</b></span>`);
   if (!mine) info.push(`<span class="backs" data-tip="${P.hand.length} cards in hand">${'<i class="cback"></i>'.repeat(Math.min(P.hand.length, 5))}<b>${P.hand.length}</b></span>`);
-  if (!P.aged) info.push(!P.ageGiven ? `<span class="agem" data-tip="The Imperial Age card arrives at the start of turn ${RULES.ageTurn}.">${crownSVG(16)}in ${Math.max(1, RULES.ageTurn - P.turns)}</span>`
-    : `<span class="agem hot" data-tip="Holds the Imperial Age card.">${crownSVG(16)}ready</span>`);
+  if (P.ageGiven && !P.aged) info.push(`<span class="agem hot" data-tip="Holds the Imperial Age card.">${crownSVG(16)}ready</span>`);
   if (P.relic) info.push(`<span class="relic" data-tip="${esc(RELICS[P.relic].name)}: ${esc(RELICS[P.relic].text)}">${relicGlyphs(P.relic, 19)}<span class="rn">${esc(RELICS[P.relic].name)}</span></span>`);
   if (mine) info.push(`<span class="piles"><button class="pile" data-act="deck" data-tip="Cards left to draw">Deck ${P.deck.length}</button><button class="pile" data-act="discard" data-tip="Cards already played or lost">Discard ${P.discard.length}</button></span>`);
-  return `<section class="camp fam-${CIV_FAMILY[P.civ]} civ-${P.civ}${mine ? ' mine' : ''}${acting ? ' turn' : ''}${P.alive ? '' : ' out'}" id="camp-${P.id}" data-pid="${P.id}" aria-label="${mine ? 'You, ' : ''}${esc(C.name)}: ${hp} of ${P.maxHP} HP">
-<header class="camp-banner">${crest(P.civ, mine ? 32 : 28)}<span class="cname">${esc(C.name)}</span>${mine ? '<span class="you">you</span>' : ''}${acting && !mine ? '<span class="flag">acting</span>' : ''}${P.alive ? '' : '<span class="flag out">defeated</span>'}<span class="medals">${medalsOf(P)}</span>${hpTag(P, hp)}</header>${hpBar(P, hp)}
+  return `<section class="camp fam-${CIV_FAMILY[P.civ]} civ-${P.civ}${mine ? ' mine' : ''}${acting ? ' turn' : ''}${P.alive ? '' : ' out'}" id="camp-${P.id}" data-pid="${P.id}" aria-label="${esc(nameOf(P.id))}, ${esc(C.name)}: ${hp} of ${P.maxHP} HP">
+<header class="camp-banner">${crest(P.civ, mine ? 32 : 28)}<span class="cname" data-tip="${esc(C.name)}">${esc(nameOf(P.id))}</span>${acting && !mine ? '<span class="flag">acting</span>' : ''}${P.alive ? '' : '<span class="flag out">defeated</span>'}<span class="medals">${medalsOf(P)}</span>${hpTag(P, hp)}</header>${hpBar(P, hp)}
 <div class="camp-info">${defsHTML(P)}<div class="stash">${info.join('')}</div></div>
 <div class="chips"></div><div class="floats"></div></section>`;
 }
@@ -67,12 +66,19 @@ function defsHTML(P) {
   const b = P.structs.map(buildHTML).join(''), g = guardsOf(P);
   return `<div class="defs${g ? ' has-guard' : ''}"><span class="lbl">Defenses</span>${b}${g}${b || g ? '' : '<span class="none">none</span>'}</div>`;
 }
+/* the Imperial Age card comes to every player in the same round, so one clock in the header says when */
+function ageClock() {
+  const n = RULES.ageTurn - S.round;
+  if (S.winner != null || n < 0) return '';
+  const tip = n > 0 ? `Every player's Imperial Age card arrives in round ${RULES.ageTurn}, ${n} round${n > 1 ? 's' : ''} from now.` : "Every player's Imperial Age card arrives this round.";
+  return `<span class="agecount" data-tip="${tip}" aria-label="${tip}">${crownSVG(22)}${n > 0 ? `<span class="desk-only">Imperial Age</span><b>in ${n}</b><span class="desk-only">round${n > 1 ? 's' : ''}</span>` : `<b class="mob-only">now</b><span class="desk-only">Imperial Age this round</span>`}</span>`;
+}
 function renderTopbar() {
-  const me = isMyTurn(), E = S.event ? EVENT_BY[S.event] : null, who = S.winner != null ? '' : S.turn === 0 ? 'Your turn' : `${CIVS[cur(S).civ].name} to play`;
+  const me = isMyTurn(), E = S.event ? EVENT_BY[S.event] : null, who = S.winner != null ? '' : S.turn === 0 ? 'Your turn' : `${nameOf(S.turn)} to play`;
   put('#topbar', `<button class="icon-btn" data-act="pause" aria-label="Menu" data-tip="Menu (Esc)">${ICON.menu}</button>
-<div class="tb-mid"><button class="evchip mob-only" data-act="events" aria-label="Events"><span class="evt"><small>Round ${S.round}${E ? eventGlyphs(E.id, 17) : ''}</small><b>${E ? esc(E.name) : 'Peace'}</b></span>${UI.eventSeen !== S.round && S.event ? '<i class="badge"></i>' : ''}</button><span class="pill desk-only round"${E ? ` data-tip="${esc(E.name)}: ${esc(E.text)}"` : ''}>Round ${S.round}${E ? eventGlyphs(E.id, 22) : ''}</span>${who ? `<span class="pill desk-only ${S.turn === 0 ? 'you' : ''}">${who}</span>` : ''}${me && S.plays > 0 ? `<span class="pips" data-tip="Plays left this turn">${'<i class="pip"></i>'.repeat(S.plays)}</span>` : ''}</div>
+<div class="tb-mid"><button class="evchip mob-only" data-act="events" aria-label="Events"><span class="evt"><small>Round ${S.round}${E ? eventGlyphs(E.id, 17) : ''}</small><b>${E ? esc(E.name) : 'Peace'}</b></span>${UI.eventSeen !== S.round && S.event ? '<i class="badge"></i>' : ''}</button><span class="pill desk-only round"${E ? ` data-tip="${esc(E.name)}: ${esc(E.text)}"` : ''}>Round ${S.round}${E ? eventGlyphs(E.id, 22) : ''}</span>${who ? `<span class="pill desk-only ${S.turn === 0 ? 'you' : ''}">${who}</span>` : ''}${me && S.plays > 0 ? `<span class="pips" data-tip="Plays left this turn">${'<i class="pip"></i>'.repeat(S.plays)}</span>` : ''}${ageClock()}</div>
 <div class="tb-right"><button class="icon-btn mob-only" data-act="market" aria-label="Mercenary Market" data-tip="Mercenary Market">${ICON.market}${canHire() ? `<i class="badge">${canHire()}</i>` : ''}</button>
-<button class="speed desk-only" data-act="speed" data-tip="Animation speed (S)">${SPEEDS[SET.speed].label}</button><button class="icon-btn" data-act="codex" aria-label="Codex" data-tip="Codex: civilizations, cards, symbols and rules (C)">${ICON.book}</button><button class="icon-btn" data-act="chronicle" aria-label="Chronicle" data-tip="Chronicle (L)">${ICON.scroll}</button></div>`);
+<button class="speed desk-only" data-act="speed" data-tip="Animation speed (S)">${SPEEDS[SET.speed].label}</button><button class="icon-btn" data-act="chronicle" aria-label="Chronicle" data-tip="Chronicle (L)">${ICON.scroll}</button></div>`);
 }
 function eventsHTML() {
   const E = S.event ? EVENT_BY[S.event] : null, N = EVENT_BY[S.eventNext];
@@ -131,7 +137,7 @@ function renderStage() {
   if (c && isMyTurn()) {
     const multi = needsTarget(c) && opponents(S, S.players[0]).length > 1;
     html = `<div class="stage-fit">${cardHTML(c, { size: 'lg' })}</div>`;
-    cap = multi && UI.hoverT == null ? 'Choose an enemy camp' : multi ? `Aim at ${CIVS[S.players[UI.hoverT].civ].name}` : 'Press Play to confirm';
+    cap = multi && UI.hoverT == null ? 'Choose an enemy camp' : multi ? `Aim at ${nameOf(UI.hoverT)}` : 'Press Play to confirm';
   } else if (L) {
     html = `<div class="stage-fit">${cardHTML(L.card, { size: 'lg' })}</div>`;
     cap = `${civNameOf(L.pid)} ${L.pid === 0 ? 'played' : 'plays'} ${L.card.name}${L.target != null ? ' on ' + civObjOf(L.target) : ''}`;
@@ -148,13 +154,13 @@ function selTarget(c) { const opps = opponents(S, S.players[0]); return !needsTa
 function renderAction() { put('#prompt', actionHTML()); }
 function actionHTML() {
   if (S.winner != null) return '';
-  if (S.turn !== 0) return `<span class="hint">${esc(CIVS[cur(S).civ].name)} is playing…</span>`;
+  if (S.turn !== 0) return `<span class="hint">${esc(nameOf(S.turn))} is playing…</span>`;
   if (UI.busy) return '';
   if (DRAG.on) return `<span class="hint">${DRAG.zone && DRAG.zone.camps ? 'Drop it on an enemy camp' : 'Drop it on the chart to play it'}</span>`;
   const c = selCard();
   if (!c) return `<span class="hint">${S.plays > 1 ? `Your turn: play ${S.plays} cards` : mobile() ? 'Your turn: tap a card to choose it' : 'Your turn: click a card, or drag it onto the chart'}</span>`;
   const land = document.documentElement.classList.contains('land'), t = selTarget(c);
-  const label = !needsTarget(c) ? (land ? 'Play' : `Play ${c.name}`) : t != null ? `${land ? 'On' : 'Play on'} ${CIVS[S.players[t].civ].name}` : (land ? 'Pick a camp' : 'Tap an enemy camp');
+  const label = !needsTarget(c) ? (land ? 'Play' : `Play ${c.name}`) : t != null ? `${land ? 'On' : 'Play on'} ${nameOf(t)}` : (land ? 'Pick a camp' : 'Tap an enemy camp');
   return `<button class="icon-btn info" data-act="card-info" aria-label="Card details" data-tip="Card details (I)">${ICON.info}</button><button class="btn ghost small" data-act="cancel-sel">Cancel</button><button class="btn" data-act="play-sel"${needsTarget(c) && t == null ? ' disabled' : ''}>${esc(label)}</button>`;
 }
 function renderChronicle() {
@@ -251,12 +257,12 @@ document.addEventListener('scroll', hideTip, true);
 function hideZoom() { const z = $('#zoom'); if (z) z.classList.add('hidden'); }
 
 function canHire() { if (!isMyTurn() || S.flags.bought) return 0; const me = S.players[0]; return S.market.filter(c => c && me.gold >= marketCost(S, me, c)).length; }
-function ageMini(P) { return !P.ageGiven ? `<span class="agem" data-tip="Imperial Age card in ${Math.max(1, RULES.ageTurn - P.turns)} turn(s)">${crownSVG(15)}${Math.max(1, RULES.ageTurn - P.turns)}</span>` : !P.aged ? `<span class="agem hot" data-tip="Holds the Imperial Age card">${crownSVG(15)}!</span>` : `<span class="agem imp" data-tip="In the Imperial Age">${crownSVG(15)}</span>`; }
+function ageMini(P) { return !P.ageGiven ? '' : !P.aged ? `<span class="agem hot" data-tip="Holds the Imperial Age card">${crownSVG(15)}!</span>` : `<span class="agem imp" data-tip="In the Imperial Age">${crownSVG(15)}</span>`; }
 function campMiniHTML(P) {
   const C = CIVS[P.civ], hp = Math.max(0, dispHP(P)), acting = S.turn === P.id && S.winner == null, W = wonderOf(P);
   const wall = `<svg class="bi" viewBox="0 0 24 24" aria-hidden="true">${BUILD.castle}</svg>`, medals = medalsOf(P);
-  return `<section class="camp mini fam-${CIV_FAMILY[P.civ]} civ-${P.civ}${acting ? ' turn' : ''}${P.alive ? '' : ' out'}" id="camp-${P.id}" data-pid="${P.id}" aria-label="${esc(C.name)}: ${hp} of ${P.maxHP} HP">
-<header class="camp-banner">${crest(P.civ, 20)}<span class="cname">${esc(C.name)}</span></header>${hpBar(P, hp)}
+  return `<section class="camp mini fam-${CIV_FAMILY[P.civ]} civ-${P.civ}${acting ? ' turn' : ''}${P.alive ? '' : ' out'}" id="camp-${P.id}" data-pid="${P.id}" aria-label="${esc(nameOf(P.id))}, ${esc(C.name)}: ${hp} of ${P.maxHP} HP">
+<header class="camp-banner">${crest(P.civ, 20)}<span class="cname" data-tip="${esc(C.name)}">${esc(nameOf(P.id))}</span></header>${hpBar(P, hp)}
 <div class="mini-body">${hpTag(P, hp, true)}${medals ? `<span class="mmedals">${medals}</span>` : ''}<div class="mini-stats"><span data-tip="Defenses: total durability">${wall}${wallTotal(P)}${W ? ` +${W.dur}` : ''}${guardsOf(P)}</span><span>${symBadge('G', 15)}${P.gold}</span><span><i class="cback"></i>${P.hand.length}</span>${P.aged ? '' : ageMini(P)}</div></div>
 <div class="chips"></div><div class="floats"></div></section>`;
 }

@@ -5,11 +5,11 @@ const TUTORIAL = [
   { show: 'now', until: 'next', target: '#hand', title: 'Your hand', text: 'A card does what its symbols say, left to right. The coloured words tell you the kind of effect: damage, HP, gold, cards, walls.' },
   { show: 'now', until: 'select', target: '#hand', title: 'Pick a card', text: 'Tap a card to choose it: it shows large on the chart with its result on every camp. Tap it again to read it in full, or drag it up to play it at once.' },
   { show: 'now', until: 'play', target: '#stage-card', title: 'See before you play', text: 'The tags above the camps show the result in advance. Press Play below to confirm.' },
-  { show: 'turn', until: 'next', target: '#me .camp', title: 'Your camp', text: 'Your HP is the red tag on your banner, with the bar under it. The buildings under Defenses take damage before your HP does; the number on each is how much more it can absorb. Round tokens there are guards, like a camel guard, and the crown beside HP marks the Imperial Age.' },
+  { show: 'turn', until: 'next', target: '#me .camp', title: 'Your camp', text: 'Your HP is the red tag on your banner, with the bar under it. The buildings under Defenses take damage before your HP does; the number on each is how much more it can absorb. Round tokens there are guards, like a camel guard, and the crown beside HP marks the Imperial Age. Your name at the table is You; the computer players are named after famous leaders of their civilization.' },
   { show: 'now', until: 'next', target: '#events', title: 'Events', text: 'Each round an event hits everyone, and the next one is always shown, so you can plan for it.', wide: true },
   { show: 'now', until: 'next', target: '#market', title: 'Mercenaries', text: 'Gold hires one mercenary per turn. The card goes straight to your hand and joins your deck.', wide: true },
   { show: 'agecard', until: 'next', target: '#hand', title: 'The Imperial Age', text: 'Turn 7 brings this card. Playing it adds your civilization\'s three Imperial cards to your deck, plus a bonus.' },
-  { show: 'now', until: 'next', target: '#table', title: 'That is the whole game', text: 'Outlast the Japanese to finish the lesson. The book icon opens the Codex: every civilization, card, symbol and rule.' },
+  { show: 'now', until: 'next', target: '#table', title: 'That is the whole game', text: 'Outlast the Japanese to finish the lesson. The menu (top left) opens the Codex: every civilization, card, symbol and rule. The crown at the top counts the rounds to the Imperial Age.' },
 ];
 function startTutorial() { UI.tutorial = { i: 0, live: false }; coachShow(); }
 /* (newMatch arms the tutorial; beginMatch shows the first step once the round-one herald has gone) */
