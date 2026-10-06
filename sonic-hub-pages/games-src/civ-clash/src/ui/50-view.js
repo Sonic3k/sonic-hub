@@ -44,19 +44,20 @@ function dispHP(P) { return UI.view && UI.view[P.id] != null ? UI.view[P.id] : P
 function campHTML(P, mine) {
   const C = CIVS[P.civ], hp = Math.max(0, dispHP(P)), acting = S.turn === P.id && S.winner == null;
   const tgt = !mine && P.alive && UI.sel != null && isMyTurn() && needsTarget(selCard() || { steps: [] }) && opponents(S, S.players[0]).length > 1;
-  const toks = [];
-  if (P.tokens.camel) toks.push(`<span class="token camel" data-tip="Camel guard: the next cavalry attack against this camp is cancelled.">Camel guard${P.tokens.camel > 1 ? ' ×' + P.tokens.camel : ''}</span>`);
-  if (P.tokens.immune) toks.push('<span class="token" data-tip="Divine Wind: every attack against this camp is cancelled until its next turn.">Divine Wind</span>');
-  if (P.tokens.trap) toks.push('<span class="token" data-tip="Bạch Đằng stakes: the first opponent to deal damage here takes 2 damage.">Stakes set</span>');
-  const age = !P.ageGiven ? `<span class="agem" data-tip="The Imperial Age card arrives at the start of turn ${RULES.ageTurn}.">${crownSVG(17)}in ${Math.max(1, RULES.ageTurn - P.turns)}</span>`
-    : !P.aged ? `<span class="agem hot" data-tip="Holds the Imperial Age card.">${crownSVG(17)}ready</span>` : `<span class="agem imp" data-tip="In the Imperial Age.">${crownSVG(17)}Imperial</span>`;
-  const hand = mine ? '' : `<span class="backs" data-tip="${P.hand.length} cards in hand">${'<i class="cback"></i>'.repeat(Math.min(P.hand.length, 6))}<b>${P.hand.length}</b></span>`;
-  const relic = P.relic ? `<span class="relic" data-tip="${esc(RELICS[P.relic].name)}: ${esc(RELICS[P.relic].text)}">${esc(RELICS[P.relic].name)}</span>` : '';
-  return `<section class="camp fam-${CIV_FAMILY[P.civ]} civ-${P.civ}${mine ? ' mine' : ''}${acting ? ' turn' : ''}${P.alive ? '' : ' out'}${tgt ? ' targetable' : ''}${tgt && UI.hoverT === P.id ? ' hot' : ''}" id="camp-${P.id}" data-pid="${P.id}" aria-label="${mine ? 'You, ' : ''}${esc(C.name)}: ${hp} HP">
-<header class="camp-banner">${crest(P.civ, mine ? 34 : 30)}<span class="cname">${esc(C.name)}</span>${mine ? '<span class="you">you</span>' : ''}${acting && !mine ? '<span class="flag">acting</span>' : ''}${P.alive ? '' : '<span class="flag out">defeated</span>'}</header>${sealHP(P, hp)}
-<div class="camp-body"><div class="defs"><span class="lbl">Defenses</span><div class="row">${P.structs.map(buildHTML).join('') || '<span class="none">None standing</span>'}</div></div>
-<div class="stash"><span class="coin" data-tip="Gold hires mercenaries at the market.">${symBadge('G', 21)}<b>${P.gold}</b></span>${hand}${age}${relic}</div></div>
-${mine ? `<div class="piles"><button class="pile" data-act="deck" data-tip="Cards left to draw">Deck ${P.deck.length}</button><button class="pile" data-act="discard" data-tip="Cards already played or lost">Discard ${P.discard.length}</button></div>` : ''}${toks.length ? `<div class="tokens">${toks.join('')}</div>` : ''}<div class="chips"></div><div class="floats"></div></section>`;
+  const info = [];
+  info.push(`<span class="coin" data-tip="Gold hires mercenaries at the market.">${symBadge('G', 20)}<b>${P.gold}</b></span>`);
+  if (!mine) info.push(`<span class="backs" data-tip="${P.hand.length} cards in hand">${'<i class="cback"></i>'.repeat(Math.min(P.hand.length, 5))}<b>${P.hand.length}</b></span>`);
+  info.push(!P.ageGiven ? `<span class="agem" data-tip="The Imperial Age card arrives at the start of turn ${RULES.ageTurn}.">${crownSVG(16)}in ${Math.max(1, RULES.ageTurn - P.turns)}</span>`
+    : !P.aged ? `<span class="agem hot" data-tip="Holds the Imperial Age card.">${crownSVG(16)}ready</span>` : `<span class="agem imp" data-tip="In the Imperial Age.">${crownSVG(16)}Imperial</span>`);
+  if (P.relic) info.push(`<span class="relic" data-tip="${esc(RELICS[P.relic].name)}: ${esc(RELICS[P.relic].text)}">${esc(RELICS[P.relic].name)}</span>`);
+  if (P.tokens.camel) info.push(`<span class="token camel" data-tip="Camel guard: the next cavalry attack against this camp is cancelled.">Camel guard${P.tokens.camel > 1 ? ' ×' + P.tokens.camel : ''}</span>`);
+  if (P.tokens.immune) info.push('<span class="token" data-tip="Divine Wind: every attack against this camp is cancelled until its next turn.">Divine Wind</span>');
+  if (P.tokens.trap) info.push('<span class="token" data-tip="Bạch Đằng stakes: the first opponent to deal damage here takes 2 damage.">Stakes set</span>');
+  if (mine) info.push(`<span class="piles"><button class="pile" data-act="deck" data-tip="Cards left to draw">Deck ${P.deck.length}</button><button class="pile" data-act="discard" data-tip="Cards already played or lost">Discard ${P.discard.length}</button></span>`);
+  return `<section class="camp fam-${CIV_FAMILY[P.civ]} civ-${P.civ}${mine ? ' mine' : ''}${acting ? ' turn' : ''}${P.alive ? '' : ' out'}${tgt ? ' targetable' : ''}${tgt && UI.hoverT === P.id ? ' hot' : ''}" id="camp-${P.id}" data-pid="${P.id}" aria-label="${mine ? 'You, ' : ''}${esc(C.name)}: ${hp} of ${P.maxHP} HP">
+<header class="camp-banner">${crest(P.civ, mine ? 32 : 28)}<span class="cname">${esc(C.name)}</span>${mine ? '<span class="you">you</span>' : ''}${acting && !mine ? '<span class="flag">acting</span>' : ''}${P.alive ? '' : '<span class="flag out">defeated</span>'}${hpTag(P, hp)}</header>${hpBar(P, hp)}
+<div class="camp-info"><div class="defs"><span class="lbl">Defenses</span>${P.structs.map(buildHTML).join('') || '<span class="none">none</span>'}</div><div class="stash">${info.join('')}</div></div>
+<div class="chips"></div><div class="floats"></div></section>`;
 }
 function renderTopbar() {
   const me = isMyTurn(), E = S.event ? EVENT_BY[S.event] : null, who = S.winner != null ? '' : S.turn === 0 ? 'Your turn' : `${CIVS[cur(S).civ].name} to play`;
@@ -197,8 +198,8 @@ function campMiniHTML(P) {
   const tgt = P.alive && UI.sel != null && isMyTurn() && needsTarget(selCard() || { steps: [] }) && opponents(S, S.players[0]).length > 1;
   const dots = [P.tokens.camel ? '<i class="camel"></i>' : '', P.tokens.immune ? '<i></i>' : '', P.tokens.trap ? '<i></i>' : ''].join('');
   const wall = `<svg class="bi" viewBox="0 0 24 24" aria-hidden="true">${BUILD.castle}</svg>`;
-  return `<section class="camp mini fam-${CIV_FAMILY[P.civ]} civ-${P.civ}${acting ? ' turn' : ''}${P.alive ? '' : ' out'}${tgt ? ' targetable' : ''}${tgt && UI.hoverT === P.id ? ' hot' : ''}" id="camp-${P.id}" data-pid="${P.id}" aria-label="${esc(C.name)}: ${hp} HP">
-<header class="camp-banner">${crest(P.civ, 22)}<span class="cname">${esc(C.name)}</span></header>
-<div class="mini-body">${sealHP(P, hp)}<div class="mini-stats"><span data-tip="Defenses: total durability">${wall}${wallTotal(P)}${W ? ` +${W.dur}` : ''}</span><span>${symBadge('G', 16)}${P.gold}</span><span><i class="cback"></i>${P.hand.length}</span>${ageMini(P)}</div></div>
+  return `<section class="camp mini fam-${CIV_FAMILY[P.civ]} civ-${P.civ}${acting ? ' turn' : ''}${P.alive ? '' : ' out'}${tgt ? ' targetable' : ''}${tgt && UI.hoverT === P.id ? ' hot' : ''}" id="camp-${P.id}" data-pid="${P.id}" aria-label="${esc(C.name)}: ${hp} of ${P.maxHP} HP">
+<header class="camp-banner">${crest(P.civ, 20)}<span class="cname">${esc(C.name)}</span></header>${hpBar(P, hp)}
+<div class="mini-body">${hpTag(P, hp, true)}<div class="mini-stats"><span data-tip="Defenses: total durability">${wall}${wallTotal(P)}${W ? ` +${W.dur}` : ''}</span><span>${symBadge('G', 15)}${P.gold}</span><span><i class="cback"></i>${P.hand.length}</span>${ageMini(P)}</div></div>
 ${dots ? `<div class="dots">${dots}</div>` : ''}<div class="chips"></div><div class="floats"></div></section>`;
 }

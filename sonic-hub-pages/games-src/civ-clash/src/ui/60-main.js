@@ -17,9 +17,9 @@ function newMatch(o = {}) {
   Object.assign(UI, { sel: null, hoverT: null, last: null, view: null, busy: false, finished: false, round: 1, drawer: false, tutorial: null, lastSetup: o });
   $('#chronicle').classList.remove('open');
   go('match'); renderMatch();
-  if (o.tutorial) { chooseRelic(S, 0, 'jade'); beginMatch(); startTutorial(); } else relicSheet();
+  if (o.tutorial) { chooseRelic(S, 0, 'jade'); UI.tutorial = { i: 0, live: false }; beginMatch(); } else relicSheet();
 }
-function beginMatch() { closeSheet(); startGame(S); renderMatch(); banner('Round 1', 'You go first; every opponent starts with 1 extra card'); SFX.play('turn'); }
+async function beginMatch() { closeSheet(); startGame(S); UI.busy = true; renderMatch(); await herald(1, null, S.eventNext, 'You go first; every opponent starts with 1 extra card.'); UI.busy = false; renderMatch(); SFX.play('turn'); coachShow && UI.tutorial && coachShow(); }
 
 /* the human */
 function onHandCard(uid) {
@@ -73,9 +73,9 @@ async function nextTurn() {
   return aiTurn();
 }
 async function roundStart() {
-  UI.flipEvent = true; renderMatch(); SFX.play('quill');
-  const E = EVENT_BY[S.event]; banner(`Round ${S.round}`, `${E.name}: ${E.text}`, 2000);
-  await wait(D(1100));
+  UI.flipEvent = true; UI.eventSeen = S.round; renderMatch();
+  const note = S.round >= 16 ? 'The war drags on: everyone lost 1 HP.' : S.round >= 14 ? `From round 16 everyone loses 1 HP each round.` : '';
+  await herald(S.round, S.event, S.eventNext, note);
 }
 function myTurnStart() {
   UI.busy = false; UI.sel = null; renderMatch(); SFX.play('turn'); buzz(20);

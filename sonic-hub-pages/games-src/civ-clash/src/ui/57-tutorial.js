@@ -12,6 +12,7 @@ const TUTORIAL = [
   { show: 'now', until: 'next', target: '#table', title: 'That is the whole game', text: 'Outlast the Japanese to finish the lesson. Every other civilization is waiting in Choose a civilization.' },
 ];
 function startTutorial() { UI.tutorial = { i: 0, live: false }; coachShow(); }
+/* (newMatch arms the tutorial; beginMatch shows the first step once the round-one herald has gone) */
 function coachShow() {
   const T = UI.tutorial; if (!T) return;
   let st = TUTORIAL[T.i];
