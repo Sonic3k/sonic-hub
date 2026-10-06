@@ -79,7 +79,7 @@ function marketHTML() {
 function renderHand() {
   /* the hand is rebuilt only when its cards change, so a scrolled hand stays where the player left it */
   const me = S.players[0], n = me.hand.length, mid = (n - 1) / 2, mine = isMyTurn(), compact = mobile(), hand = $('#hand');
-  const key = `${S.seed}|${compact ? 'c' : 'd' + hand.clientWidth}|${mine ? 1 : 0}|${me.hand.map(c => c.uid).join(',')}`;
+  const key = `${S.seed}|${compact ? 'c' + innerWidth + 'x' + innerHeight : 'd' + hand.clientWidth}|${mine ? 1 : 0}|${me.hand.map(c => c.uid).join(',')}`;
   if (hand.dataset.key === key) {
     for (const el of hand.children) if (el.dataset.uid) { const on = +el.dataset.uid === UI.sel; el.classList.toggle('sel', on); if (!compact) el.style.zIndex = on ? 50 : +el.dataset.i + 1; }
     return;
@@ -90,7 +90,17 @@ function renderHand() {
   else hand.style.justifyContent = '';
   hand.innerHTML = me.hand.map((c, i) => cardHTML(c, { cls: (mine ? 'playable' : 'dim') + (UI.sel === c.uid ? ' sel' : ''), attrs: `data-i="${i}" tabindex="0" role="button" aria-label="${esc(c.name)}: ${esc(cardText(c))}"`, style: compact ? '' : `--rot:${((i - mid) * spread).toFixed(2)}deg;--y:${(Math.abs(i - mid) ** 2 * 2.4).toFixed(1)}px;z-index:${UI.sel === c.uid ? 50 : i + 1};margin-left:${i ? gap.toFixed(1) : 0}px` })).join('') || '<div class="hand-empty">No cards in hand</div>';
   hand.dataset.key = key;
-  if (compact) hand.scrollLeft = keep;
+  if (compact) { hand.scrollLeft = keep; fitHandText(hand); }
+}
+/* phone hand cards show as many lines of text as fit (a long name or a seal leaves less room); the rest ends in an ellipsis */
+function fitHandText(hand) {
+  for (const ct of hand.querySelectorAll('.card .ct')) {
+    const sp = ct.firstElementChild; if (!sp) continue;
+    const cs = getComputedStyle(ct), lh = parseFloat(getComputedStyle(sp).lineHeight) || parseFloat(cs.fontSize) * 1.2;
+    const sealed = !!ct.closest('.card').querySelector('.seal');
+    const room = ct.clientHeight - parseFloat(cs.paddingTop) - (sealed ? parseFloat(cs.paddingBottom) : 3);
+    sp.style.webkitLineClamp = Math.max(1, Math.floor((room + 1) / lh));
+  }
 }
 function renderStage() {
   const c = selCard();

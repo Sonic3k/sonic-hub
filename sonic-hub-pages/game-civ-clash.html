@@ -86,20 +86,23 @@ button{font:inherit;color:inherit}
 .fam-folk .cn{outline:1.5px dashed rgba(255,238,205,.75);outline-offset:-4px}.fam-folk .cf{border-radius:4px}
 .fam-islamic .cf,.fam-islamic .cb{clip-path:polygon(0 11%,12% 7.4%,28% 4.6%,42% 1.8%,50% 0,58% 1.8%,72% 4.6%,88% 7.4%,100% 11%,100% 100%,0 100%)}.fam-islamic .cn{margin-top:19px}
 .fam-steppe .cf{background-image:var(--motif),var(--leather-tex)}.fam-steppe .cb{outline:1.5px dashed rgba(110,70,30,.5);outline-offset:-8px}
-.fam-scroll .cf{padding:13px 4px;border-radius:3px}.fam-scroll .cb{border-radius:1px}.fam-scroll .cn{background:linear-gradient(#2e231a,#120b06);color:#ecd18b}
+/* East Asian group: a tiled roof over the card, upturned eaves, ridge with end ornaments; the card body is the hall beneath, its name on a dark lacquered board */
+.fam-sino .cf{--roof:calc(var(--h) * .125);padding:var(--roof) 6px 6px;-webkit-mask:var(--roof-mask) top/100% var(--roof) no-repeat,linear-gradient(#000,#000) bottom/100% calc(100% - var(--roof) + 1px) no-repeat;mask:var(--roof-mask) top/100% var(--roof) no-repeat,linear-gradient(#000,#000) bottom/100% calc(100% - var(--roof) + 1px) no-repeat}
+.fam-sino .cf::before{content:'';position:absolute;left:0;right:0;top:0;height:var(--roof);background:var(--roof-art) center/100% 100% no-repeat;pointer-events:none;z-index:1}
+.fam-sino .cb{border-radius:1px}.fam-sino .ca{height:31%}.fam-sino .cn{background:linear-gradient(#2e231a,#120b06);color:#ecd18b;box-shadow:inset 0 0 0 1px rgba(214,180,95,.75),0 1px 2px rgba(0,0,0,.4)}
 .fam-temple .cf,.fam-temple .cb{clip-path:polygon(0 7%,15% 7%,15% 4.4%,30% 4.4%,30% 2%,42% 2%,42% 0,58% 0,58% 2%,70% 2%,70% 4.4%,85% 4.4%,85% 7%,100% 7%,100% 100%,0 100%)}.fam-temple .cn{margin-top:16px}
 .fam-sahel .cf,.fam-sahel .cb{clip-path:polygon(0 6%,7% 6%,9% 0,11% 6%,29% 6%,31% 0,33% 6%,48% 6%,50% 0,52% 6%,67% 6%,69% 0,71% 6%,89% 6%,91% 0,93% 6%,100% 6%,100% 100%,0 100%)}.fam-sahel .cf{background-color:#8f5d32}.fam-sahel .cn{margin-top:15px}
 .fam-codex .cf{padding:8px;border-radius:3px;box-shadow:inset 0 0 0 2px #1d1108,inset 0 0 0 4px #d6a03e}.fam-codex .cn{background:#d6a03e;color:#2a1908;text-shadow:none}
 .fam-andes .cf,.fam-andes .cb{clip-path:polygon(7% 0,93% 0,100% 100%,0 100%)}.fam-andes .cn{margin:7px 15px 0}
-.fam-icon .corner,.fam-islamic .corner,.fam-temple .corner,.fam-sahel .corner,.fam-andes .corner{top:auto;bottom:0}.fam-icon .c2,.fam-islamic .c2,.fam-temple .c2,.fam-sahel .c2,.fam-andes .c2{transform:scale(-1,-1)}.fam-icon .c1,.fam-islamic .c1,.fam-temple .c1,.fam-sahel .c1,.fam-andes .c1{transform:scaleY(-1)}
+.fam-icon .corner,.fam-islamic .corner,.fam-temple .corner,.fam-sahel .corner,.fam-andes .corner,.fam-sino .corner{top:auto;bottom:0}.fam-icon .c2,.fam-islamic .c2,.fam-temple .c2,.fam-sahel .c2,.fam-andes .c2,.fam-sino .c2{transform:scale(-1,-1)}.fam-icon .c1,.fam-islamic .c1,.fam-temple .c1,.fam-sahel .c1,.fam-andes .c1,.fam-sino .c1{transform:scaleY(-1)}
 /* sizes */
 .card.sm{--w:112px;--h:158px;--s:22px}.card.sm .cf{padding:4px}.card.sm .cn{font-size:11.5px;margin:5px 5px 0;padding:3px 6px}.card.sm .ca{margin:4px 6px 0}
 .card.sm .ct{font-size:10.5px;padding:3px 6px 9px}.card.sm .ct span{display:-webkit-box;-webkit-line-clamp:5;-webkit-box-orient:vertical;overflow:hidden}
 .card.sm .corner{width:14px;height:14px}.card.sm .seal{width:22px;height:22px;bottom:-6px;font-size:12px}.card.sm .seal .crest{width:15px;height:15px}.card.sm .seal svg{width:17px;height:17px}
-.card.sm.fam-scroll .cf{padding:9px 3px}.card.sm.fam-icon .cn,.card.sm.fam-islamic .cn,.card.sm.fam-temple .cn,.card.sm.fam-sahel .cn{margin-top:12px}
+.card.sm.fam-sino .cf{padding:var(--roof) 4px 4px}.card.sm.fam-sino .ct span{-webkit-line-clamp:4}.card.sm.fam-icon .cn,.card.sm.fam-islamic .cn,.card.sm.fam-temple .cn,.card.sm.fam-sahel .cn{margin-top:12px}
 .card.lg{--w:214px;--h:302px;--s:42px}.card.lg .cf{padding:8px}.card.lg .cn{font-size:18.5px;margin:9px 9px 0;padding:6px 12px}.card.lg .ca{margin:8px 12px 0}
 .card.lg .ct{font-size:16px;padding:8px 13px 16px}.card.lg .corner{width:28px;height:28px}.card.lg .seal{width:40px;height:40px;bottom:-10px}.card.lg .seal .crest{width:28px;height:28px}.card.lg .seal svg{width:30px;height:30px}
-.card.lg.fam-scroll .cf{padding:18px 6px}.card.lg.fam-icon .cn,.card.lg.fam-islamic .cn{margin-top:24px}.card.lg.fam-temple .cn,.card.lg.fam-sahel .cn{margin-top:20px}
+.card.lg.fam-sino .cf{padding:var(--roof) 8px 8px}.card.lg.fam-icon .cn,.card.lg.fam-islamic .cn{margin-top:24px}.card.lg.fam-temple .cn,.card.lg.fam-sahel .cn{margin-top:20px}
 .cost{position:absolute;left:50%;bottom:-12px;transform:translateX(-50%);z-index:4;white-space:nowrap;font-weight:800;font-size:13px;padding:1px 10px;border-radius:3px;color:#3a2706;
   background:linear-gradient(#f2d98e,#c9a24a);box-shadow:inset 0 0 0 1px #7a5a18,0 2px 4px rgba(0,0,0,.5)}
 .cost:not(.ok){filter:grayscale(.6) brightness(.85)}
@@ -533,6 +536,16 @@ html.compact.land .camp.mine .hptag{padding:2px 7px 3px}html.compact.land .camp.
 .cx-body{margin-top:0}
 html.compact .cx-tabs,html.compact .cx-body{width:calc(100% - 12px)}
 html.compact.land .camp.mine .medal{width:21px;height:21px}
+/* phone hand: long card text ends in an ellipsis instead of being cut mid-line (the full text is one tap away) */
+html.compact #hand .card:not(.sm):not(.lg) .ct{min-height:0;overflow:hidden}
+html.compact #hand .card:not(.sm):not(.lg) .ct span{display:-webkit-box;-webkit-line-clamp:4;-webkit-box-orient:vertical;overflow:hidden}
+html.compact:not(.land) #hand .card:not(.sm):not(.lg){--s:27px}
+html.compact:not(.land) #hand .card:not(.sm):not(.lg) .ct{font-size:12px;line-height:1.2;padding:4px 7px 10px}
+html.compact:not(.land) #hand .card:not(.sm):not(.lg) .cn{font-size:13px}
+html.compact:not(.land) #hand .card:not(.sm):not(.lg) .ca{height:auto;min-height:36px;padding:3px 0}
+html.compact #hand .card.t-sig:not(.sm):not(.lg) .ct,html.compact #hand .card.t-imp:not(.sm):not(.lg) .ct,html.compact #hand .card.t-age:not(.sm):not(.lg) .ct{padding-bottom:15px}
+html.compact:not(.land) #hand .card:not(.sm):not(.lg) .seal{width:24px;height:24px;bottom:-10px}html.compact:not(.land) #hand .card:not(.sm):not(.lg) .seal .crest{width:17px;height:17px}html.compact:not(.land) #hand .card:not(.sm):not(.lg) .seal.crown svg{width:19px;height:19px}
+html.compact #hand .card.t-sig:not(.sm):not(.lg) .ct span,html.compact #hand .card.t-imp:not(.sm):not(.lg) .ct span,html.compact #hand .card.t-age:not(.sm):not(.lg) .ct span{-webkit-line-clamp:3}
 </style>
 </head>
 <body>
@@ -1412,12 +1425,12 @@ const CIV_FAMILY = {
   bohemians: 'folk', poles: 'folk', lithuanians: 'folk', magyars: 'folk',
   arabs: 'islamic', persians: 'islamic', turks: 'islamic', berbers: 'islamic',
   mongols: 'steppe', huns: 'steppe', khitans: 'steppe', jurchens: 'steppe',
-  chinese: 'scroll', japanese: 'scroll', koreans: 'scroll',
-  indians: 'temple', khmer: 'temple', daiviet: 'temple', malay: 'temple',
+  chinese: 'sino', japanese: 'sino', koreans: 'sino', daiviet: 'sino',
+  indians: 'temple', khmer: 'temple', malay: 'temple',
   malians: 'sahel', aztecs: 'codex', mayans: 'codex', incas: 'andes',
 };
 const FAMILY_NAMES = { gothic: 'a Gothic manuscript', knot: 'insular knotwork', icon: 'a Byzantine icon', folk: 'Central European folk embroidery', islamic: 'Islamic tilework',
-  steppe: 'steppe felt and leather', scroll: 'an East Asian scroll mount', temple: 'temple stonework', sahel: 'Sahelian mud architecture', codex: 'a Mesoamerican codex', andes: 'Andean stonework', merc: 'a mercenary\'s brass' };
+  steppe: 'steppe felt and leather', sino: 'an East Asian tiled roof', temple: 'temple stonework', sahel: 'Sahelian mud architecture', codex: 'a Mesoamerican codex', andes: 'Andean stonework', merc: 'a mercenary\'s brass' };
 /* corner ornaments, one per family (gold leaf on the frame) */
 const CORNERS = {
   gothic: '<path d="M2 22C2 10 10 2 22 2" fill="none" stroke="#d8b45c" stroke-width="2"/><path d="M6 15c3-1 4-4 3-7M9 9c3 0 5 2 6 5" fill="none" stroke="#b9361f" stroke-width="1.4"/><circle cx="15" cy="15" r="2" fill="#d8b45c"/>',
@@ -1426,7 +1439,7 @@ const CORNERS = {
   folk: '<path d="M8 4h4v4h4v4h-4v4H8v-4H4V8h4z" fill="#b9361f"/><path d="M18 2h3v3h-3zM2 18h3v3H2z" fill="#2b2118"/>',
   islamic: '<path d="M11 1l2.6 6.4L20 10l-6.4 2.6L11 19l-2.6-6.4L2 10l6.4-2.6z" fill="#e8c96e" stroke="#7a5a12" stroke-width=".8"/><circle cx="11" cy="10" r="2" fill="#2a6f86"/>',
   steppe: '<path d="M4 20c0-8 4-14 11-14 4 0 6 3 5 6s-5 3-6 0" fill="none" stroke="#e2c070" stroke-width="2" stroke-linecap="round"/>',
-  scroll: '<path d="M3 13c0-5 3-8 7-8 3 0 5 2 5 5 0 2-2 3-3 2s0-3 1-2" fill="none" stroke="#e2c070" stroke-width="1.8" stroke-linecap="round"/><path d="M3 20h17" stroke="#e2c070" stroke-width="1.2"/>',
+  sino: '<path d="M3 19c0-4 3-6.5 6.5-5.4C9.8 9.6 14.6 8 17.6 11c2-1.6 5-.4 5 2.4" fill="none" stroke="#e2c070" stroke-width="1.8" stroke-linecap="round"/><path d="M9.5 13.6c.9 1.9 3 2.2 4.2.4M3 22.5h12" fill="none" stroke="#e2c070" stroke-width="1.3" stroke-linecap="round"/>',
   temple: '<path d="M12 3c-3 3-3 7 0 10 3-3 3-7 0-10zM12 13c-3-2-8-1-9 2 3 0 6 0 9 1M12 13c3-2 8-1 9 2-3 0-6 0-9 1" fill="#e2c070"/>',
   sahel: '<path d="M3 21V9l3-6 3 6v12M11 21V5l3-3 3 3v16" fill="#c8915a" stroke="#5a3418" stroke-width="1.1"/><path d="M4 12h3M12 9h3M12 14h3" stroke="#5a3418" stroke-width="1.2"/>',
   codex: '<path d="M2 20h7v-7h7V6h6" fill="none" stroke="#e8c96e" stroke-width="2.2"/><circle cx="19" cy="17" r="2.6" fill="#1f6d6a" stroke="#e8c96e"/>',
@@ -1477,6 +1490,16 @@ function installMaterials() {
   const leather = `<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200'><filter id='l'><feTurbulence type='fractalNoise' baseFrequency='.55' numOctaves='2' seed='5' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 .1 0 0 0 0 .06 0 0 0 0 .03 0 0 0 .8 -.2'/></filter><rect width='200' height='200' filter='url(#l)'/></svg>`;
   const R = document.documentElement.style;
   R.setProperty('--vellum-tex', u(vellum)); R.setProperty('--oak-tex', u(oak)); R.setProperty('--leather-tex', u(leather));
+  /* East Asian tiled roof: ridge with end knobs, hips sweeping down, eave corners turned up, tile channels, gilded eave board */
+  const D = 'M0 44V17C0 15 .6 14 1.4 13.6C6 19 13 21.6 22 21C31 20.2 38.5 14 43.6 7.4L43 2.4C44.4 .6 46.6 .8 47.6 2.8L48 5H152L152.4 2.8C153.4 .8 155.6 .6 157 2.4L156.4 7.4C161.5 14 169 20.2 178 21C187 21.6 194 19 198.6 13.6C199.4 14 200 15 200 17V44Z';
+  const roof = `<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 44' preserveAspectRatio='none'><defs><clipPath id='r'><path d='${D}'/></clipPath>`
+    + `<linearGradient id='g' x1='0' y1='0' x2='0' y2='1'><stop offset='0' stop-color='#7a736c'/><stop offset='.55' stop-color='#4b4540'/><stop offset='1' stop-color='#2a2521'/></linearGradient>`
+    + `<pattern id='t' width='5.5' height='44' patternUnits='userSpaceOnUse'><rect width='1.6' height='44' fill='#fff' fill-opacity='.14'/><rect x='1.6' width='.9' height='44' fill='#000' fill-opacity='.45'/></pattern></defs>`
+    + `<g clip-path='url(#r)'><rect width='200' height='44' fill='url(#g)'/><rect y='7' width='200' height='30' fill='url(#t)'/><rect y='37' width='200' height='7' fill='#1c130c'/><path d='M0 36.7H200' stroke='#d6b45f' stroke-width='1.1'/>`
+    + `<rect x='44' y='2.6' width='112' height='5.4' fill='#2a221d'/><path d='M45 3.1H155' stroke='#d6b45f' stroke-width='.8'/></g>`
+    + `<path d='M3 15.6C8 20.4 14 22.4 22 22C31 21.3 38.4 15.6 44.6 8.2M197 15.6C192 20.4 186 22.4 178 22C169 21.3 161.6 15.6 155.4 8.2' fill='none' stroke='#a39789' stroke-width='1.6'/>`
+    + `<path d='M1.6 14C3 15.6 4.6 17 6.4 18M198.4 14C197 15.6 195.4 17 193.6 18M43.4 2.6C44.6 1 46.4 1 47.4 2.8M156.6 2.6C155.4 1 153.6 1 152.6 2.8' fill='none' stroke='#d6b45f' stroke-width='1.5' stroke-linecap='round'/></svg>`;
+  R.setProperty('--roof-art', u(roof)); R.setProperty('--roof-mask', u(`<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 44' preserveAspectRatio='none'><path d='${D}'/></svg>`));
   let css = '';
   for (const [f, svg] of Object.entries(CORNERS)) css += `.fam-${f}{--corner:${u(`<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'>${svg.replace(/"/g, "'")}</svg>`)}}\n`;
   const el = document.createElement('style'); el.id = 'family-styles'; el.textContent = css; document.head.appendChild(el);
@@ -1613,7 +1636,7 @@ function marketHTML() {
 function renderHand() {
   /* the hand is rebuilt only when its cards change, so a scrolled hand stays where the player left it */
   const me = S.players[0], n = me.hand.length, mid = (n - 1) / 2, mine = isMyTurn(), compact = mobile(), hand = $('#hand');
-  const key = `${S.seed}|${compact ? 'c' : 'd' + hand.clientWidth}|${mine ? 1 : 0}|${me.hand.map(c => c.uid).join(',')}`;
+  const key = `${S.seed}|${compact ? 'c' + innerWidth + 'x' + innerHeight : 'd' + hand.clientWidth}|${mine ? 1 : 0}|${me.hand.map(c => c.uid).join(',')}`;
   if (hand.dataset.key === key) {
     for (const el of hand.children) if (el.dataset.uid) { const on = +el.dataset.uid === UI.sel; el.classList.toggle('sel', on); if (!compact) el.style.zIndex = on ? 50 : +el.dataset.i + 1; }
     return;
@@ -1624,7 +1647,17 @@ function renderHand() {
   else hand.style.justifyContent = '';
   hand.innerHTML = me.hand.map((c, i) => cardHTML(c, { cls: (mine ? 'playable' : 'dim') + (UI.sel === c.uid ? ' sel' : ''), attrs: `data-i="${i}" tabindex="0" role="button" aria-label="${esc(c.name)}: ${esc(cardText(c))}"`, style: compact ? '' : `--rot:${((i - mid) * spread).toFixed(2)}deg;--y:${(Math.abs(i - mid) ** 2 * 2.4).toFixed(1)}px;z-index:${UI.sel === c.uid ? 50 : i + 1};margin-left:${i ? gap.toFixed(1) : 0}px` })).join('') || '<div class="hand-empty">No cards in hand</div>';
   hand.dataset.key = key;
-  if (compact) hand.scrollLeft = keep;
+  if (compact) { hand.scrollLeft = keep; fitHandText(hand); }
+}
+/* phone hand cards show as many lines of text as fit (a long name or a seal leaves less room); the rest ends in an ellipsis */
+function fitHandText(hand) {
+  for (const ct of hand.querySelectorAll('.card .ct')) {
+    const sp = ct.firstElementChild; if (!sp) continue;
+    const cs = getComputedStyle(ct), lh = parseFloat(getComputedStyle(sp).lineHeight) || parseFloat(cs.fontSize) * 1.2;
+    const sealed = !!ct.closest('.card').querySelector('.seal');
+    const room = ct.clientHeight - parseFloat(cs.paddingTop) - (sealed ? parseFloat(cs.paddingBottom) : 3);
+    sp.style.webkitLineClamp = Math.max(1, Math.floor((room + 1) / lh));
+  }
 }
 function renderStage() {
   const c = selCard();

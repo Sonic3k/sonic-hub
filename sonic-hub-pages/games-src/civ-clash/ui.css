@@ -77,20 +77,23 @@ button{font:inherit;color:inherit}
 .fam-folk .cn{outline:1.5px dashed rgba(255,238,205,.75);outline-offset:-4px}.fam-folk .cf{border-radius:4px}
 .fam-islamic .cf,.fam-islamic .cb{clip-path:polygon(0 11%,12% 7.4%,28% 4.6%,42% 1.8%,50% 0,58% 1.8%,72% 4.6%,88% 7.4%,100% 11%,100% 100%,0 100%)}.fam-islamic .cn{margin-top:19px}
 .fam-steppe .cf{background-image:var(--motif),var(--leather-tex)}.fam-steppe .cb{outline:1.5px dashed rgba(110,70,30,.5);outline-offset:-8px}
-.fam-scroll .cf{padding:13px 4px;border-radius:3px}.fam-scroll .cb{border-radius:1px}.fam-scroll .cn{background:linear-gradient(#2e231a,#120b06);color:#ecd18b}
+/* East Asian group: a tiled roof over the card, upturned eaves, ridge with end ornaments; the card body is the hall beneath, its name on a dark lacquered board */
+.fam-sino .cf{--roof:calc(var(--h) * .125);padding:var(--roof) 6px 6px;-webkit-mask:var(--roof-mask) top/100% var(--roof) no-repeat,linear-gradient(#000,#000) bottom/100% calc(100% - var(--roof) + 1px) no-repeat;mask:var(--roof-mask) top/100% var(--roof) no-repeat,linear-gradient(#000,#000) bottom/100% calc(100% - var(--roof) + 1px) no-repeat}
+.fam-sino .cf::before{content:'';position:absolute;left:0;right:0;top:0;height:var(--roof);background:var(--roof-art) center/100% 100% no-repeat;pointer-events:none;z-index:1}
+.fam-sino .cb{border-radius:1px}.fam-sino .ca{height:31%}.fam-sino .cn{background:linear-gradient(#2e231a,#120b06);color:#ecd18b;box-shadow:inset 0 0 0 1px rgba(214,180,95,.75),0 1px 2px rgba(0,0,0,.4)}
 .fam-temple .cf,.fam-temple .cb{clip-path:polygon(0 7%,15% 7%,15% 4.4%,30% 4.4%,30% 2%,42% 2%,42% 0,58% 0,58% 2%,70% 2%,70% 4.4%,85% 4.4%,85% 7%,100% 7%,100% 100%,0 100%)}.fam-temple .cn{margin-top:16px}
 .fam-sahel .cf,.fam-sahel .cb{clip-path:polygon(0 6%,7% 6%,9% 0,11% 6%,29% 6%,31% 0,33% 6%,48% 6%,50% 0,52% 6%,67% 6%,69% 0,71% 6%,89% 6%,91% 0,93% 6%,100% 6%,100% 100%,0 100%)}.fam-sahel .cf{background-color:#8f5d32}.fam-sahel .cn{margin-top:15px}
 .fam-codex .cf{padding:8px;border-radius:3px;box-shadow:inset 0 0 0 2px #1d1108,inset 0 0 0 4px #d6a03e}.fam-codex .cn{background:#d6a03e;color:#2a1908;text-shadow:none}
 .fam-andes .cf,.fam-andes .cb{clip-path:polygon(7% 0,93% 0,100% 100%,0 100%)}.fam-andes .cn{margin:7px 15px 0}
-.fam-icon .corner,.fam-islamic .corner,.fam-temple .corner,.fam-sahel .corner,.fam-andes .corner{top:auto;bottom:0}.fam-icon .c2,.fam-islamic .c2,.fam-temple .c2,.fam-sahel .c2,.fam-andes .c2{transform:scale(-1,-1)}.fam-icon .c1,.fam-islamic .c1,.fam-temple .c1,.fam-sahel .c1,.fam-andes .c1{transform:scaleY(-1)}
+.fam-icon .corner,.fam-islamic .corner,.fam-temple .corner,.fam-sahel .corner,.fam-andes .corner,.fam-sino .corner{top:auto;bottom:0}.fam-icon .c2,.fam-islamic .c2,.fam-temple .c2,.fam-sahel .c2,.fam-andes .c2,.fam-sino .c2{transform:scale(-1,-1)}.fam-icon .c1,.fam-islamic .c1,.fam-temple .c1,.fam-sahel .c1,.fam-andes .c1,.fam-sino .c1{transform:scaleY(-1)}
 /* sizes */
 .card.sm{--w:112px;--h:158px;--s:22px}.card.sm .cf{padding:4px}.card.sm .cn{font-size:11.5px;margin:5px 5px 0;padding:3px 6px}.card.sm .ca{margin:4px 6px 0}
 .card.sm .ct{font-size:10.5px;padding:3px 6px 9px}.card.sm .ct span{display:-webkit-box;-webkit-line-clamp:5;-webkit-box-orient:vertical;overflow:hidden}
 .card.sm .corner{width:14px;height:14px}.card.sm .seal{width:22px;height:22px;bottom:-6px;font-size:12px}.card.sm .seal .crest{width:15px;height:15px}.card.sm .seal svg{width:17px;height:17px}
-.card.sm.fam-scroll .cf{padding:9px 3px}.card.sm.fam-icon .cn,.card.sm.fam-islamic .cn,.card.sm.fam-temple .cn,.card.sm.fam-sahel .cn{margin-top:12px}
+.card.sm.fam-sino .cf{padding:var(--roof) 4px 4px}.card.sm.fam-sino .ct span{-webkit-line-clamp:4}.card.sm.fam-icon .cn,.card.sm.fam-islamic .cn,.card.sm.fam-temple .cn,.card.sm.fam-sahel .cn{margin-top:12px}
 .card.lg{--w:214px;--h:302px;--s:42px}.card.lg .cf{padding:8px}.card.lg .cn{font-size:18.5px;margin:9px 9px 0;padding:6px 12px}.card.lg .ca{margin:8px 12px 0}
 .card.lg .ct{font-size:16px;padding:8px 13px 16px}.card.lg .corner{width:28px;height:28px}.card.lg .seal{width:40px;height:40px;bottom:-10px}.card.lg .seal .crest{width:28px;height:28px}.card.lg .seal svg{width:30px;height:30px}
-.card.lg.fam-scroll .cf{padding:18px 6px}.card.lg.fam-icon .cn,.card.lg.fam-islamic .cn{margin-top:24px}.card.lg.fam-temple .cn,.card.lg.fam-sahel .cn{margin-top:20px}
+.card.lg.fam-sino .cf{padding:var(--roof) 8px 8px}.card.lg.fam-icon .cn,.card.lg.fam-islamic .cn{margin-top:24px}.card.lg.fam-temple .cn,.card.lg.fam-sahel .cn{margin-top:20px}
 .cost{position:absolute;left:50%;bottom:-12px;transform:translateX(-50%);z-index:4;white-space:nowrap;font-weight:800;font-size:13px;padding:1px 10px;border-radius:3px;color:#3a2706;
   background:linear-gradient(#f2d98e,#c9a24a);box-shadow:inset 0 0 0 1px #7a5a18,0 2px 4px rgba(0,0,0,.5)}
 .cost:not(.ok){filter:grayscale(.6) brightness(.85)}
@@ -524,3 +527,13 @@ html.compact.land .camp.mine .hptag{padding:2px 7px 3px}html.compact.land .camp.
 .cx-body{margin-top:0}
 html.compact .cx-tabs,html.compact .cx-body{width:calc(100% - 12px)}
 html.compact.land .camp.mine .medal{width:21px;height:21px}
+/* phone hand: long card text ends in an ellipsis instead of being cut mid-line (the full text is one tap away) */
+html.compact #hand .card:not(.sm):not(.lg) .ct{min-height:0;overflow:hidden}
+html.compact #hand .card:not(.sm):not(.lg) .ct span{display:-webkit-box;-webkit-line-clamp:4;-webkit-box-orient:vertical;overflow:hidden}
+html.compact:not(.land) #hand .card:not(.sm):not(.lg){--s:27px}
+html.compact:not(.land) #hand .card:not(.sm):not(.lg) .ct{font-size:12px;line-height:1.2;padding:4px 7px 10px}
+html.compact:not(.land) #hand .card:not(.sm):not(.lg) .cn{font-size:13px}
+html.compact:not(.land) #hand .card:not(.sm):not(.lg) .ca{height:auto;min-height:36px;padding:3px 0}
+html.compact #hand .card.t-sig:not(.sm):not(.lg) .ct,html.compact #hand .card.t-imp:not(.sm):not(.lg) .ct,html.compact #hand .card.t-age:not(.sm):not(.lg) .ct{padding-bottom:15px}
+html.compact:not(.land) #hand .card:not(.sm):not(.lg) .seal{width:24px;height:24px;bottom:-10px}html.compact:not(.land) #hand .card:not(.sm):not(.lg) .seal .crest{width:17px;height:17px}html.compact:not(.land) #hand .card:not(.sm):not(.lg) .seal.crown svg{width:19px;height:19px}
+html.compact #hand .card.t-sig:not(.sm):not(.lg) .ct span,html.compact #hand .card.t-imp:not(.sm):not(.lg) .ct span,html.compact #hand .card.t-age:not(.sm):not(.lg) .ct span{-webkit-line-clamp:3}
