@@ -16,9 +16,11 @@ const SYM_STYLE = {
   F: ['#d9541a', '<path d="M12 3.5c3.5 3 6 6 6 9.8a6 6 0 0 1-12 0c0-1.9.9-3.5 2-4.8.1 1.6 1 2.8 2.3 3-.5-2.5.3-5.3 1.7-8z" fill="#fff"/>'],
   Y: ['#0f766e', '<path d="M3 10l6 1.5L12 6l3 5.5L21 10l-4 4.5 1 4-6-2.5-6 2.5 1-4z" fill="#fff"/>'],
   N: ['#1f4e79', '<path d="M12 4v11M12 4l6 9h-6M4 16h16l-2.5 3.5h-11z" fill="#fff" stroke="#fff" stroke-width="1.2" stroke-linejoin="round"/>'],
+  T: ['#7c1d12', '<path d="M7 19.5l2.6-12.8L11 10M12.2 19.5V6l1.4 3.2M17.4 19.5L15 7.4l-.9 3.4" stroke="#fff" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/><path d="M4.5 19.5h15" stroke="#fff" stroke-width="1.6" stroke-linecap="round"/>'],
+  V: ['#2a4b77', '<path d="M4 9.5h9.5a2.8 2.8 0 1 0-2.8-2.8M4 13.5h12.5a2.8 2.8 0 1 1-2.8 2.8M4 17.2h6" stroke="#fff" stroke-width="1.9" fill="none" stroke-linecap="round"/>'],
 };
 /* painted roundels: pigment disc, gold leaf ring, ink outline, cream glyph */
-const SYM_PIG = { A: '#a8331f', K: '#861c1f', E: '#5a6164', B: '#3a6b4f', L: '#9c7040', Y: '#2d6a63', F: '#b9501f', N: '#2a4b77', R: '#6a4224', S: '#7a2c5b', C: '#574789', W: '#666d78', H: '#3b7739', M: '#5a3a8a', D: '#323d79', G: '#a07a1c' };
+const SYM_PIG = { T: '#7c1d12', V: '#2a4b77', A: '#a8331f', K: '#861c1f', E: '#5a6164', B: '#3a6b4f', L: '#9c7040', Y: '#2d6a63', F: '#b9501f', N: '#2a4b77', R: '#6a4224', S: '#7a2c5b', C: '#574789', W: '#666d78', H: '#3b7739', M: '#5a3a8a', D: '#323d79', G: '#a07a1c' };
 function symBadge(ch, size = 30) {
   const glyph = SYM_STYLE[ch][1].replace(/#fff/g, '#f6ebcf');
   return `<svg viewBox="0 0 24 24" width="${size}" height="${size}" class="sym" aria-label="${SYM[ch].name}" role="img"><circle cx="12" cy="12" r="11.4" fill="${SYM_PIG[ch]}" stroke="#24180c" stroke-opacity=".8" stroke-width=".9"/><circle cx="12" cy="12" r="10.15" fill="none" stroke="#d2ad57" stroke-width="1.15"/><circle cx="12" cy="12" r="9.3" fill="none" stroke="#000" stroke-opacity=".22" stroke-width=".8"/><path d="M5 9.2a7.8 7.8 0 0 1 10.6-5" stroke="#fff6dc" stroke-opacity=".28" stroke-width="2" fill="none" stroke-linecap="round"/>${glyph}</svg>`;

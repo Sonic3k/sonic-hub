@@ -335,6 +335,7 @@ button{font:inherit;color:inherit}
 .sd-foot{position:sticky;bottom:0;padding:12px 20px 16px;display:flex;gap:10px;align-items:center;flex-wrap:wrap;background:linear-gradient(180deg,rgba(238,224,191,0),var(--vel) 30%)}
 .camp-sheet .hdr{display:flex;align-items:center;gap:12px;padding:14px;margin-bottom:8px;color:#fbeed2;background-color:var(--civ-deep);background-image:var(--motif)}
 .camp-sheet .hdr h2{color:#fbeed2;margin:0}.camp-sheet .hdr p{margin:2px 0 0;font-style:italic}
+.camp-sheet .hdr p.civline{margin:1px 0 3px;font-style:normal;font-family:var(--f-head);font-size:19px;letter-spacing:.02em;color:var(--gold-hi)}
 .camp-sheet .ws{display:flex;flex-direction:column;gap:9px;margin:8px 0}.camp-sheet .ws div{display:flex;gap:14px;align-items:center;font-size:15.5px}
 .camp-sheet ul{margin:6px 0;padding-left:18px}.camp-sheet li{margin:3px 0;font-size:15.5px}
 .market-sheet .mk-big{display:flex;gap:12px;justify-content:center;flex-wrap:wrap}.market-sheet .mk-col{display:flex;flex-direction:column;align-items:center;gap:18px}
@@ -589,6 +590,11 @@ html.compact :is(#hand,#drag-ghost) .card.t-sig:not(.sm):not(.lg) .ct span,html.
 .gl-legend>div{display:flex;align-items:center;gap:10px;font-size:14.5px;line-height:1.3;color:var(--ink-2)}
 .gl-legend .glyphs{flex:0 0 66px}
 html.compact .gl-legend{grid-template-columns:1fr}
+
+/* the Imperial Age clock in the header: the same round for every player */
+.agecount{display:inline-flex;align-items:center;gap:6px;white-space:nowrap;font-family:var(--f-head);font-size:16px;color:var(--gold-hi);padding:3px 11px 3px 4px;border-radius:999px;background:rgba(58,30,100,.55);box-shadow:inset 0 0 0 1px rgba(236,209,139,.35)}
+.agecount .sym{width:22px;height:22px;flex:0 0 auto}.agecount b{font-weight:400}
+html.compact .agecount{gap:4px;font-size:15px;padding:2px 9px 2px 3px}html.compact .agecount .sym{width:21px;height:21px}
 </style>
 </head>
 <body>
@@ -663,8 +669,10 @@ const SYM = {
   F: { name: 'Gunpowder', desc: 'Deal 1 damage to every opponent.', steps: [{ dmg: 1, all: 1 }] },
   Y: { name: 'Eagle', desc: 'Deal 1 damage, or 2 damage if the opponent has no walls.', steps: [{ dmg: 1, eagle: 1 }] },
   N: { name: 'Ship', desc: 'Raid: steal 1 card, then deal 1 damage.', steps: [{ steal: 1 }, { dmg: 1 }] },
+  T: { name: 'Stakes', desc: 'Set the Bạch Đằng stakes: until your next turn, the first opponent who damages you takes 2 damage.', steps: [{ token: 'trap' }] },
+  V: { name: 'Divine Wind', desc: 'Until your next turn, every attack against you is cancelled.', steps: [{ token: 'immune' }] },
 };
-const SYM_ORDER = 'AKEBLYFNRSCWHMDG';
+const SYM_ORDER = 'AKEBLYFNRSCTVWHMDG';
 const COMMON_NAMES = {
   A: 'Militia', AA: 'Swordsmen', AAA: 'Shock Troops', AM: 'Skirmish', AAM: 'Assault', AD: 'Outriders', AH: 'Spearmen',
   W: 'Palisade', WW: 'Stone Wall', WWW: 'Fortress', WH: 'Watch Tower',
@@ -678,12 +686,12 @@ const UNIQUE = {
   greatwall: { name: "Great Wall", icons: 'WWWW', text: "A wall with 4 durability.", wall: 4 },
   exam: { name: "Imperial Exams", icons: 'DDG', text: "Draw 2 cards and gain 1 gold.", steps: [{ draw: 2 }, { gold: 1 }] },
   samurai: { name: "Samurai", icons: 'AA', text: "Deal 2 damage, or 3 damage if the opponent has no walls.", steps: [{ dmg: 2, samurai: 1 }] },
-  kamikaze: { name: "Divine Wind", icons: 'D', text: "Until your next turn, every attack against you is cancelled. Draw 1 card.", steps: [{ token: 'immune' }, { draw: 1 }] },
+  kamikaze: { name: "Divine Wind", icons: 'VD', text: "Until your next turn, every attack against you is cancelled. Draw 1 card.", steps: [{ token: 'immune' }, { draw: 1 }] },
   hwacha: { name: "Hwacha", icons: 'FF', text: "Deal 1 damage to every opponent, twice.", steps: [{ dmg: 1, all: 1 }, { dmg: 1, all: 1 }] },
   tripitaka: { name: "Tripitaka Koreana", icons: 'DDDM', text: "Draw 3 cards and play another card.", steps: [{ draw: 3 }, { plays: 1 }] },
   ironcav: { name: "Iron Pagoda", icons: 'KA', text: "Iron-clad cavalry: deal 3 damage. Camels block it.", steps: [{ dmg: 3, cav: 1 }] },
   thunder: { name: "Thunder Crash Bomb", icons: 'RF', text: "Destroy a structure, then deal 1 damage to every opponent.", steps: [{ raze: 1 }, { dmg: 1, all: 1 }] },
-  stakes: { name: "Bạch Đằng Stakes", icons: 'W', text: "Until your next turn, the first opponent who damages you takes 2 damage.", steps: [{ token: 'trap' }] },
+  stakes: { name: "Bạch Đằng Stakes", icons: 'T', text: "Until your next turn, the first opponent who damages you takes 2 damage.", steps: [{ token: 'trap' }] },
   proclaim: { name: "Call to Arms", icons: 'HHDD', text: "Heal 2 HP and draw 2 cards.", steps: [{ heal: 2 }, { draw: 2 }] },
   caravan: { name: "Desert Caravan", icons: 'LGD', text: "Deal 1 damage, set up a camel guard, gain 1 gold and draw 1 card.", steps: [{ dmg: 1 }, { token: 'camel' }, { gold: 1 }, { draw: 1 }] },
   baghdad: { name: "Baghdad Hospital", icons: 'HHH', text: "Heal 3 HP.", steps: [{ heal: 3 }] },
@@ -1139,6 +1147,8 @@ const SYM_TXT = {
   F: n => (n === 1 ? 'Deal 1 damage to every opponent.' : `Deal 1 damage to every opponent, ${n} times.`),
   Y: n => (n === 1 ? 'Deal 1 damage, or 2 damage if the opponent has no walls.' : `Deal ${n} damage, 1 extra damage per hit if the opponent has no walls.`),
   N: n => `Raid: steal ${n} card${n > 1 ? 's' : ''}, then deal ${n} damage.`,
+  T: () => 'Set the Bạch Đằng stakes: until your next turn, the first opponent who damages you takes 2 damage.',
+  V: () => 'Until your next turn, every attack against you is cancelled.',
 };
 function cardText(card) {
   if (card.text) return card.text;
@@ -1305,9 +1315,11 @@ const SYM_STYLE = {
   F: ['#d9541a', '<path d="M12 3.5c3.5 3 6 6 6 9.8a6 6 0 0 1-12 0c0-1.9.9-3.5 2-4.8.1 1.6 1 2.8 2.3 3-.5-2.5.3-5.3 1.7-8z" fill="#fff"/>'],
   Y: ['#0f766e', '<path d="M3 10l6 1.5L12 6l3 5.5L21 10l-4 4.5 1 4-6-2.5-6 2.5 1-4z" fill="#fff"/>'],
   N: ['#1f4e79', '<path d="M12 4v11M12 4l6 9h-6M4 16h16l-2.5 3.5h-11z" fill="#fff" stroke="#fff" stroke-width="1.2" stroke-linejoin="round"/>'],
+  T: ['#7c1d12', '<path d="M7 19.5l2.6-12.8L11 10M12.2 19.5V6l1.4 3.2M17.4 19.5L15 7.4l-.9 3.4" stroke="#fff" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/><path d="M4.5 19.5h15" stroke="#fff" stroke-width="1.6" stroke-linecap="round"/>'],
+  V: ['#2a4b77', '<path d="M4 9.5h9.5a2.8 2.8 0 1 0-2.8-2.8M4 13.5h12.5a2.8 2.8 0 1 1-2.8 2.8M4 17.2h6" stroke="#fff" stroke-width="1.9" fill="none" stroke-linecap="round"/>'],
 };
 /* painted roundels: pigment disc, gold leaf ring, ink outline, cream glyph */
-const SYM_PIG = { A: '#a8331f', K: '#861c1f', E: '#5a6164', B: '#3a6b4f', L: '#9c7040', Y: '#2d6a63', F: '#b9501f', N: '#2a4b77', R: '#6a4224', S: '#7a2c5b', C: '#574789', W: '#666d78', H: '#3b7739', M: '#5a3a8a', D: '#323d79', G: '#a07a1c' };
+const SYM_PIG = { T: '#7c1d12', V: '#2a4b77', A: '#a8331f', K: '#861c1f', E: '#5a6164', B: '#3a6b4f', L: '#9c7040', Y: '#2d6a63', F: '#b9501f', N: '#2a4b77', R: '#6a4224', S: '#7a2c5b', C: '#574789', W: '#666d78', H: '#3b7739', M: '#5a3a8a', D: '#323d79', G: '#a07a1c' };
 function symBadge(ch, size = 30) {
   const glyph = SYM_STYLE[ch][1].replace(/#fff/g, '#f6ebcf');
   return `<svg viewBox="0 0 24 24" width="${size}" height="${size}" class="sym" aria-label="${SYM[ch].name}" role="img"><circle cx="12" cy="12" r="11.4" fill="${SYM_PIG[ch]}" stroke="#24180c" stroke-opacity=".8" stroke-width=".9"/><circle cx="12" cy="12" r="10.15" fill="none" stroke="#d2ad57" stroke-width="1.15"/><circle cx="12" cy="12" r="9.3" fill="none" stroke="#000" stroke-opacity=".22" stroke-width=".8"/><path d="M5 9.2a7.8 7.8 0 0 1 10.6-5" stroke="#fff6dc" stroke-opacity=".28" stroke-width="2" fill="none" stroke-linecap="round"/>${glyph}</svg>`;
@@ -1576,12 +1588,12 @@ const EVENT_ART = {
    (camel guard, Divine Wind, Bạch Đằng stakes) stand with its buildings in the Defenses row */
 const MEDAL_ART = {
   camel: ['#9c7040', SYM_STYLE.L[1]],
-  wind: ['#2a4b77', '<path d="M4 9.5h9.5a2.8 2.8 0 1 0-2.8-2.8M4 13.5h12.5a2.8 2.8 0 1 1-2.8 2.8M4 17.2h6" stroke="#fff" stroke-width="1.9" fill="none" stroke-linecap="round"/>'],
-  stakes: ['#7c1d12', '<path d="M7 19.5l2.6-12.8L11 10M12.2 19.5V6l1.4 3.2M17.4 19.5L15 7.4l-.9 3.4" stroke="#fff" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/><path d="M4.5 19.5h15" stroke="#fff" stroke-width="1.6" stroke-linecap="round"/>'],
+  wind: ['#2a4b77', SYM_STYLE.V[1]],   /* the same mark as the Divine Wind symbol on the card */
+  stakes: ['#7c1d12', SYM_STYLE.T[1]],   /* the same mark as the Stakes symbol on the card */
 };
 const MEDAL_TIP = {
   crown: 'Imperial Age: this realm has reached it, and its three Imperial cards are in its deck.',
-  camel: 'Camel guard: the next cavalry attack against this camp is cancelled.',
+  camel: 'Camel guard: the next cavalry hit against this camp (one Cavalry symbol) is cancelled; each camel stops one hit.',
   wind: 'Divine Wind: every attack against this camp is cancelled until its next turn.',
   stakes: 'Bạch Đằng stakes: the first opponent to deal damage here takes 2 damage.',
 };
@@ -1683,6 +1695,59 @@ const GLYPH_LEGEND = [
   [[{ k: 'hpmax', badge: '+2' }, { k: 'revive', badge: '3' }], 'Max HP 2 higher; rise again with 3 HP.'],
 ];
 
+/* ── Who sits at the table: you are "You"; each computer player is a famous king, queen, leader or general of its civilization,
+   drawn at random for the match ── */
+const LEADERS = {
+  chinese: ['Tang Taizong', 'Wu Zetian', 'Song Taizu', 'Yue Fei', 'Hongwu Emperor', 'Zheng He'],
+  japanese: ['Oda Nobunaga', 'Minamoto Yoshitsune', 'Takeda Shingen', 'Uesugi Kenshin', 'Toyotomi Hideyoshi', 'Tokugawa Ieyasu'],
+  koreans: ['Yi Sun-sin', 'King Sejong', 'Gwanggaeto', 'Wang Geon', 'Eulji Mundeok', 'Yi Seong-gye'],
+  jurchens: ['Wanyan Aguda', 'Wanyan Wuqimai', 'Wanyan Wuzhu', 'Wanyan Liang', 'Jin Shizong'],
+  daiviet: ['Trần Hưng Đạo', 'Lý Thường Kiệt', 'Lê Lợi', 'Ngô Quyền', 'Lý Thái Tổ', 'Trần Nhân Tông', 'Lê Thánh Tông'],
+  khmer: ['Jayavarman II', 'Indravarman I', 'Yasovarman I', 'Suryavarman II', 'Jayavarman VII'],
+  indians: ['Harsha', 'Rajaraja Chola', 'Rajendra Chola', 'Prithviraj Chauhan', 'Krishnadevaraya', 'Rani Durgavati'],
+  arabs: ['Khalid ibn al-Walid', 'Harun al-Rashid', 'Abd al-Rahman III', 'Saladin', 'Baibars'],
+  persians: ['Shapur II', 'Bahram Gur', 'Khosrow I', 'Yazdegerd III', 'Ismail I'],
+  turks: ['Tughril Beg', 'Alp Arslan', 'Osman I', 'Bayezid I', 'Mehmed II', 'Selim I'],
+  malians: ['Sundiata Keita', 'Mansa Musa', 'Mansa Sulayman', 'Sunni Ali', 'Askia Muhammad'],
+  ethiopians: ['Ezana', 'Lalibela', 'Yekuno Amlak', 'Amda Seyon', 'Zara Yaqob'],
+  mongols: ['Genghis Khan', 'Kublai Khan', 'Ögedei Khan', 'Batu Khan', 'Subutai', 'Jebe'],
+  huns: ['Attila', 'Bleda', 'Ruga', 'Uldin', 'Ellac', 'Dengizich'],
+  khitans: ['Abaoji', 'Yelü Deguang', 'Xiao Yanyan', 'Yelü Xiuge', 'Yelü Dashi'],
+  britons: ['Alfred the Great', 'Æthelstan', 'Harold Godwinson', 'Richard Lionheart', 'Edward I', 'Henry V'],
+  celts: ['Brian Boru', 'Kenneth MacAlpin', 'Llywelyn the Great', 'William Wallace', 'Robert the Bruce', 'Owain Glyndŵr'],
+  franks: ['Clovis I', 'Charles Martel', 'Pepin the Short', 'Charlemagne', 'Philip Augustus', 'Joan of Arc'],
+  vikings: ['Ragnar Lothbrok', 'Ivar the Boneless', 'Erik the Red', 'Olaf Tryggvason', 'Cnut the Great', 'Harald Hardrada'],
+  teutons: ['Henry the Fowler', 'Otto the Great', 'Conrad II', 'Barbarossa', 'Hermann von Salza'],
+  goths: ['Fritigern', 'Alaric I', 'Athaulf', 'Euric', 'Theodoric the Great', 'Totila'],
+  spanish: ['El Cid', 'Alfonso VI', 'James I of Aragon', 'Isabella I', 'Ferdinand II', 'Gonzalo de Córdoba'],
+  portuguese: ['Afonso Henriques', 'John I', 'Nuno Álvares', 'Henry the Navigator', 'Manuel I', 'Vasco da Gama'],
+  byzantines: ['Justinian I', 'Belisarius', 'Narses', 'Heraclius', 'Basil II', 'Alexios Komnenos'],
+  aztecs: ['Itzcoatl', 'Tlacaelel', 'Moctezuma I', 'Nezahualcoyotl', 'Ahuitzotl', 'Cuauhtémoc'],
+  mayans: ['Pakal the Great', 'Lady Six Sky', 'Yax Nuun Ahiin', "Jasaw Chan K'awiil", "K'uk' Bahlam"],
+  incas: ['Viracocha Inca', 'Pachacuti', 'Topa Inca', 'Huayna Capac', 'Huáscar', 'Atahualpa'],
+  berbers: ['Dihya', 'Tariq ibn Ziyad', 'Yusuf ibn Tashfin', 'Ibn Tumart', "Abd al-Mu'min", 'Yaqub al-Mansur'],
+  malay: ['Raden Wijaya', 'Gajah Mada', 'Hayam Wuruk', 'Parameswara', 'Mansur Shah', 'Hang Tuah'],
+  bohemians: ['Wenceslaus I', 'Ottokar II', 'Charles IV', 'Jan Žižka', 'Prokop the Great', 'George of Poděbrady'],
+  poles: ['Mieszko I', 'Bolesław the Brave', 'Casimir the Great', 'Jadwiga', 'Władysław Jagiełło'],
+  lithuanians: ['Mindaugas', 'Gediminas', 'Algirdas', 'Kęstutis', 'Vytautas the Great', 'Jogaila'],
+  bulgarians: ['Krum', 'Boris I', 'Simeon the Great', 'Tsar Samuel', 'Kaloyan', 'Ivan Asen II'],
+  slavs: ['Sviatoslav I', 'Vladimir the Great', 'Yaroslav the Wise', 'Alexander Nevsky', 'Dmitry Donskoy', 'Ivan III'],
+  magyars: ['Árpád', 'Stephen I', 'Ladislaus I', 'Béla IV', 'John Hunyadi', 'Matthias Corvinus'],
+};
+/* a leader for each computer player, fixed for the match (from its seed), never the same name twice at one table */
+function nameTable(S, seed) {
+  let x = (seed >>> 0) || 1;
+  const rnd = () => ((x = (x * 1103515245 + 12345) >>> 0) / 4294967296);
+  const used = new Set();
+  S.players.forEach((P, i) => {
+    if (i === 0) { P.name = 'You'; return; }
+    const pool = (LEADERS[P.civ] || [CIVS[P.civ].name]).filter(n => !used.has(n));
+    P.name = pool[Math.floor(rnd() * pool.length)] || CIVS[P.civ].name;
+    used.add(P.name);
+  });
+}
+const nameOf = pid => (S.players[pid].name || (pid === 0 ? 'You' : CIVS[S.players[pid].civ].name));
+
 /* ── View: table art, components and rendering for the new UI ── */
 const $ = s => document.querySelector(s), $$ = s => [...document.querySelectorAll(s)];
 const UI = { screen: 'menu', sel: null, hoverT: null, busy: false, last: null, view: null, round: 1, drawer: false, n: 2, civ: null, opps: 'random', tutorial: null };
@@ -1721,8 +1786,8 @@ function put(el, html) { if (typeof el === 'string') el = $(el); if (!el || el._
 function forget(el) { if (el) el._html = null; }
 const isMyTurn = () => S && S.turn === 0 && S.winner == null && !UI.busy;
 const selCard = () => (S && UI.sel != null ? S.players[0].hand.find(c => c.uid === UI.sel) : null);
-const civNameOf = pid => (pid === 0 ? 'You' : CIVS[S.players[pid].civ].name);
-const civObjOf = pid => (pid === 0 ? 'you' : CIVS[S.players[pid].civ].name);
+const civNameOf = pid => nameOf(pid);
+const civObjOf = pid => (pid === 0 ? 'you' : nameOf(pid));
 const typeOf = c => (c.age ? 'Imperial Age' : c.imperial ? 'Imperial' : c.unique ? 'Signature' : c.civ === 'merc' ? 'Mercenary' : 'Common');
 function cardHTML(card, o = {}) {
   const merc = card.civ === 'merc', type = card.age ? 'age' : card.imperial ? 'imp' : card.unique ? 'sig' : merc ? 'merc' : 'com';
@@ -1738,12 +1803,11 @@ function campHTML(P, mine) {
   const info = [];
   info.push(`<span class="coin" data-tip="Gold hires mercenaries at the market.">${symBadge('G', 20)}<b>${P.gold}</b></span>`);
   if (!mine) info.push(`<span class="backs" data-tip="${P.hand.length} cards in hand">${'<i class="cback"></i>'.repeat(Math.min(P.hand.length, 5))}<b>${P.hand.length}</b></span>`);
-  if (!P.aged) info.push(!P.ageGiven ? `<span class="agem" data-tip="The Imperial Age card arrives at the start of turn ${RULES.ageTurn}.">${crownSVG(16)}in ${Math.max(1, RULES.ageTurn - P.turns)}</span>`
-    : `<span class="agem hot" data-tip="Holds the Imperial Age card.">${crownSVG(16)}ready</span>`);
+  if (P.ageGiven && !P.aged) info.push(`<span class="agem hot" data-tip="Holds the Imperial Age card.">${crownSVG(16)}ready</span>`);
   if (P.relic) info.push(`<span class="relic" data-tip="${esc(RELICS[P.relic].name)}: ${esc(RELICS[P.relic].text)}">${relicGlyphs(P.relic, 19)}<span class="rn">${esc(RELICS[P.relic].name)}</span></span>`);
   if (mine) info.push(`<span class="piles"><button class="pile" data-act="deck" data-tip="Cards left to draw">Deck ${P.deck.length}</button><button class="pile" data-act="discard" data-tip="Cards already played or lost">Discard ${P.discard.length}</button></span>`);
-  return `<section class="camp fam-${CIV_FAMILY[P.civ]} civ-${P.civ}${mine ? ' mine' : ''}${acting ? ' turn' : ''}${P.alive ? '' : ' out'}" id="camp-${P.id}" data-pid="${P.id}" aria-label="${mine ? 'You, ' : ''}${esc(C.name)}: ${hp} of ${P.maxHP} HP">
-<header class="camp-banner">${crest(P.civ, mine ? 32 : 28)}<span class="cname">${esc(C.name)}</span>${mine ? '<span class="you">you</span>' : ''}${acting && !mine ? '<span class="flag">acting</span>' : ''}${P.alive ? '' : '<span class="flag out">defeated</span>'}<span class="medals">${medalsOf(P)}</span>${hpTag(P, hp)}</header>${hpBar(P, hp)}
+  return `<section class="camp fam-${CIV_FAMILY[P.civ]} civ-${P.civ}${mine ? ' mine' : ''}${acting ? ' turn' : ''}${P.alive ? '' : ' out'}" id="camp-${P.id}" data-pid="${P.id}" aria-label="${esc(nameOf(P.id))}, ${esc(C.name)}: ${hp} of ${P.maxHP} HP">
+<header class="camp-banner">${crest(P.civ, mine ? 32 : 28)}<span class="cname" data-tip="${esc(C.name)}">${esc(nameOf(P.id))}</span>${acting && !mine ? '<span class="flag">acting</span>' : ''}${P.alive ? '' : '<span class="flag out">defeated</span>'}<span class="medals">${medalsOf(P)}</span>${hpTag(P, hp)}</header>${hpBar(P, hp)}
 <div class="camp-info">${defsHTML(P)}<div class="stash">${info.join('')}</div></div>
 <div class="chips"></div><div class="floats"></div></section>`;
 }
@@ -1752,12 +1816,19 @@ function defsHTML(P) {
   const b = P.structs.map(buildHTML).join(''), g = guardsOf(P);
   return `<div class="defs${g ? ' has-guard' : ''}"><span class="lbl">Defenses</span>${b}${g}${b || g ? '' : '<span class="none">none</span>'}</div>`;
 }
+/* the Imperial Age card comes to every player in the same round, so one clock in the header says when */
+function ageClock() {
+  const n = RULES.ageTurn - S.round;
+  if (S.winner != null || n < 0) return '';
+  const tip = n > 0 ? `Every player's Imperial Age card arrives in round ${RULES.ageTurn}, ${n} round${n > 1 ? 's' : ''} from now.` : "Every player's Imperial Age card arrives this round.";
+  return `<span class="agecount" data-tip="${tip}" aria-label="${tip}">${crownSVG(22)}${n > 0 ? `<span class="desk-only">Imperial Age</span><b>in ${n}</b><span class="desk-only">round${n > 1 ? 's' : ''}</span>` : `<b class="mob-only">now</b><span class="desk-only">Imperial Age this round</span>`}</span>`;
+}
 function renderTopbar() {
-  const me = isMyTurn(), E = S.event ? EVENT_BY[S.event] : null, who = S.winner != null ? '' : S.turn === 0 ? 'Your turn' : `${CIVS[cur(S).civ].name} to play`;
+  const me = isMyTurn(), E = S.event ? EVENT_BY[S.event] : null, who = S.winner != null ? '' : S.turn === 0 ? 'Your turn' : `${nameOf(S.turn)} to play`;
   put('#topbar', `<button class="icon-btn" data-act="pause" aria-label="Menu" data-tip="Menu (Esc)">${ICON.menu}</button>
-<div class="tb-mid"><button class="evchip mob-only" data-act="events" aria-label="Events"><span class="evt"><small>Round ${S.round}${E ? eventGlyphs(E.id, 17) : ''}</small><b>${E ? esc(E.name) : 'Peace'}</b></span>${UI.eventSeen !== S.round && S.event ? '<i class="badge"></i>' : ''}</button><span class="pill desk-only round"${E ? ` data-tip="${esc(E.name)}: ${esc(E.text)}"` : ''}>Round ${S.round}${E ? eventGlyphs(E.id, 22) : ''}</span>${who ? `<span class="pill desk-only ${S.turn === 0 ? 'you' : ''}">${who}</span>` : ''}${me && S.plays > 0 ? `<span class="pips" data-tip="Plays left this turn">${'<i class="pip"></i>'.repeat(S.plays)}</span>` : ''}</div>
+<div class="tb-mid"><button class="evchip mob-only" data-act="events" aria-label="Events"><span class="evt"><small>Round ${S.round}${E ? eventGlyphs(E.id, 17) : ''}</small><b>${E ? esc(E.name) : 'Peace'}</b></span>${UI.eventSeen !== S.round && S.event ? '<i class="badge"></i>' : ''}</button><span class="pill desk-only round"${E ? ` data-tip="${esc(E.name)}: ${esc(E.text)}"` : ''}>Round ${S.round}${E ? eventGlyphs(E.id, 22) : ''}</span>${who ? `<span class="pill desk-only ${S.turn === 0 ? 'you' : ''}">${who}</span>` : ''}${me && S.plays > 0 ? `<span class="pips" data-tip="Plays left this turn">${'<i class="pip"></i>'.repeat(S.plays)}</span>` : ''}${ageClock()}</div>
 <div class="tb-right"><button class="icon-btn mob-only" data-act="market" aria-label="Mercenary Market" data-tip="Mercenary Market">${ICON.market}${canHire() ? `<i class="badge">${canHire()}</i>` : ''}</button>
-<button class="speed desk-only" data-act="speed" data-tip="Animation speed (S)">${SPEEDS[SET.speed].label}</button><button class="icon-btn" data-act="codex" aria-label="Codex" data-tip="Codex: civilizations, cards, symbols and rules (C)">${ICON.book}</button><button class="icon-btn" data-act="chronicle" aria-label="Chronicle" data-tip="Chronicle (L)">${ICON.scroll}</button></div>`);
+<button class="speed desk-only" data-act="speed" data-tip="Animation speed (S)">${SPEEDS[SET.speed].label}</button><button class="icon-btn" data-act="chronicle" aria-label="Chronicle" data-tip="Chronicle (L)">${ICON.scroll}</button></div>`);
 }
 function eventsHTML() {
   const E = S.event ? EVENT_BY[S.event] : null, N = EVENT_BY[S.eventNext];
@@ -1816,7 +1887,7 @@ function renderStage() {
   if (c && isMyTurn()) {
     const multi = needsTarget(c) && opponents(S, S.players[0]).length > 1;
     html = `<div class="stage-fit">${cardHTML(c, { size: 'lg' })}</div>`;
-    cap = multi && UI.hoverT == null ? 'Choose an enemy camp' : multi ? `Aim at ${CIVS[S.players[UI.hoverT].civ].name}` : 'Press Play to confirm';
+    cap = multi && UI.hoverT == null ? 'Choose an enemy camp' : multi ? `Aim at ${nameOf(UI.hoverT)}` : 'Press Play to confirm';
   } else if (L) {
     html = `<div class="stage-fit">${cardHTML(L.card, { size: 'lg' })}</div>`;
     cap = `${civNameOf(L.pid)} ${L.pid === 0 ? 'played' : 'plays'} ${L.card.name}${L.target != null ? ' on ' + civObjOf(L.target) : ''}`;
@@ -1833,13 +1904,13 @@ function selTarget(c) { const opps = opponents(S, S.players[0]); return !needsTa
 function renderAction() { put('#prompt', actionHTML()); }
 function actionHTML() {
   if (S.winner != null) return '';
-  if (S.turn !== 0) return `<span class="hint">${esc(CIVS[cur(S).civ].name)} is playing…</span>`;
+  if (S.turn !== 0) return `<span class="hint">${esc(nameOf(S.turn))} is playing…</span>`;
   if (UI.busy) return '';
   if (DRAG.on) return `<span class="hint">${DRAG.zone && DRAG.zone.camps ? 'Drop it on an enemy camp' : 'Drop it on the chart to play it'}</span>`;
   const c = selCard();
   if (!c) return `<span class="hint">${S.plays > 1 ? `Your turn: play ${S.plays} cards` : mobile() ? 'Your turn: tap a card to choose it' : 'Your turn: click a card, or drag it onto the chart'}</span>`;
   const land = document.documentElement.classList.contains('land'), t = selTarget(c);
-  const label = !needsTarget(c) ? (land ? 'Play' : `Play ${c.name}`) : t != null ? `${land ? 'On' : 'Play on'} ${CIVS[S.players[t].civ].name}` : (land ? 'Pick a camp' : 'Tap an enemy camp');
+  const label = !needsTarget(c) ? (land ? 'Play' : `Play ${c.name}`) : t != null ? `${land ? 'On' : 'Play on'} ${nameOf(t)}` : (land ? 'Pick a camp' : 'Tap an enemy camp');
   return `<button class="icon-btn info" data-act="card-info" aria-label="Card details" data-tip="Card details (I)">${ICON.info}</button><button class="btn ghost small" data-act="cancel-sel">Cancel</button><button class="btn" data-act="play-sel"${needsTarget(c) && t == null ? ' disabled' : ''}>${esc(label)}</button>`;
 }
 function renderChronicle() {
@@ -1936,12 +2007,12 @@ document.addEventListener('scroll', hideTip, true);
 function hideZoom() { const z = $('#zoom'); if (z) z.classList.add('hidden'); }
 
 function canHire() { if (!isMyTurn() || S.flags.bought) return 0; const me = S.players[0]; return S.market.filter(c => c && me.gold >= marketCost(S, me, c)).length; }
-function ageMini(P) { return !P.ageGiven ? `<span class="agem" data-tip="Imperial Age card in ${Math.max(1, RULES.ageTurn - P.turns)} turn(s)">${crownSVG(15)}${Math.max(1, RULES.ageTurn - P.turns)}</span>` : !P.aged ? `<span class="agem hot" data-tip="Holds the Imperial Age card">${crownSVG(15)}!</span>` : `<span class="agem imp" data-tip="In the Imperial Age">${crownSVG(15)}</span>`; }
+function ageMini(P) { return !P.ageGiven ? '' : !P.aged ? `<span class="agem hot" data-tip="Holds the Imperial Age card">${crownSVG(15)}!</span>` : `<span class="agem imp" data-tip="In the Imperial Age">${crownSVG(15)}</span>`; }
 function campMiniHTML(P) {
   const C = CIVS[P.civ], hp = Math.max(0, dispHP(P)), acting = S.turn === P.id && S.winner == null, W = wonderOf(P);
   const wall = `<svg class="bi" viewBox="0 0 24 24" aria-hidden="true">${BUILD.castle}</svg>`, medals = medalsOf(P);
-  return `<section class="camp mini fam-${CIV_FAMILY[P.civ]} civ-${P.civ}${acting ? ' turn' : ''}${P.alive ? '' : ' out'}" id="camp-${P.id}" data-pid="${P.id}" aria-label="${esc(C.name)}: ${hp} of ${P.maxHP} HP">
-<header class="camp-banner">${crest(P.civ, 20)}<span class="cname">${esc(C.name)}</span></header>${hpBar(P, hp)}
+  return `<section class="camp mini fam-${CIV_FAMILY[P.civ]} civ-${P.civ}${acting ? ' turn' : ''}${P.alive ? '' : ' out'}" id="camp-${P.id}" data-pid="${P.id}" aria-label="${esc(nameOf(P.id))}, ${esc(C.name)}: ${hp} of ${P.maxHP} HP">
+<header class="camp-banner">${crest(P.civ, 20)}<span class="cname" data-tip="${esc(C.name)}">${esc(nameOf(P.id))}</span></header>${hpBar(P, hp)}
 <div class="mini-body">${hpTag(P, hp, true)}${medals ? `<span class="mmedals">${medals}</span>` : ''}<div class="mini-stats"><span data-tip="Defenses: total durability">${wall}${wallTotal(P)}${W ? ` +${W.dur}` : ''}${guardsOf(P)}</span><span>${symBadge('G', 15)}${P.gold}</span><span><i class="cback"></i>${P.hand.length}</span>${P.aged ? '' : ageMini(P)}</div></div>
 <div class="chips"></div><div class="floats"></div></section>`;
 }
@@ -2147,7 +2218,7 @@ function renderSelect() {
 function relicSheet() {
   const P = S.players[0];
   openSheet(`<h2>Choose a relic</h2><p class="muted">It stays with you all match. Three are drawn at random every time.</p><div class="relics">${P.relicOffer.map(id => `<button class="relic-pick" data-relic="${id}">${relicGlyphs(id, 30, 'rgl')}<b>${esc(RELICS[id].name)}</b><span>${kw(RELICS[id].text)}</span></button>`).join('')}</div>
-<p class="muted">Facing ${S.players.slice(1).map(o => `${esc(CIVS[o.civ].name)} (${relicGlyphs(o.relic, 16)} ${esc(RELICS[o.relic].name)})`).join(', ')}.</p>`, true);
+<p class="muted">Facing ${S.players.slice(1).map(o => `<b>${esc(nameOf(o.id))}</b> (${esc(CIVS[o.civ].name)}, ${relicGlyphs(o.relic, 16)} ${esc(RELICS[o.relic].name)})`).join(', ')}.</p>`, true);
 }
 function settingsSheet() {
   const seg = (key, opts) => `<div class="seg">${opts.map(([v, l]) => `<button class="${SET[key] === v ? 'on' : ''}" data-set="${key}" data-val="${v}">${l}</button>`).join('')}</div>`;
@@ -2173,7 +2244,7 @@ function resultsSheet() {
   const me = S.players[0], W = S.winner != null && S.winner >= 0 ? S.players[S.winner] : null, win = S.winner === 0;
   const why = S.wonderWin ? 'by completing a wonder' : S.timeUp ? 'with the most HP after 40 rounds' : 'as the last realm standing';
   openSheet(`<div class="civ-${(W || me).civ}" style="text-align:center"><div style="display:flex;justify-content:center">${crest((W || me).civ, 84)}</div>
-<h2>${win ? 'Victory' : me.alive ? 'Defeat' : 'You were defeated'}</h2><p>${W ? `${W.id === 0 ? 'You win' : esc(CIVS[W.civ].name) + ' win'} ${why}.` : `Still standing: ${S.players.filter(p => p.alive).map(p => esc(CIVS[p.civ].name)).join(', ')}.`}</p>
+<h2>${win ? 'Victory' : me.alive ? 'Defeat' : 'You were defeated'}</h2><p>${W ? `${W.id === 0 ? 'You win' : `${esc(nameOf(W.id))} of the ${esc(CIVS[W.civ].name)} wins`} ${why}.` : `Still standing: ${S.players.filter(p => p.alive).map(p => esc(nameOf(p.id))).join(', ')}.`}</p>
 <div class="sd-stats" style="justify-content:center"><span>Damage dealt <b>${me.stats.dmg}</b></span><span>Cards played <b>${me.stats.played}</b></span><span>Mercenaries <b>${me.stats.bought}</b></span><span>Rounds <b>${S.round}</b></span></div>
 <div class="row center"><button class="btn" data-act="again">Play again</button><button class="btn ghost" data-act="choose">Choose another civilization</button><button class="btn ghost" data-act="menu">Main menu</button></div></div>`, true);
 }
@@ -2189,12 +2260,12 @@ function campSheet(pid) {
   const note = { regen: 'regains 1 durability each turn', sacred: 'heals its owner 1 HP each turn', thorns: 'whoever hits it takes 1 damage', fortress: 'raze removes only 1 durability', income: 'gives its owner 1 gold each turn' };
   const plays = S.log.filter(e => e.k === 'play' && e.pid === pid).slice(-5).reverse();
   const toks = [P.tokens.camel ? 'camel' : '', P.tokens.immune ? 'wind' : '', P.tokens.trap ? 'stakes' : ''].filter(Boolean);
-  openSheet(`<div class="camp-sheet fam-${CIV_FAMILY[P.civ]} civ-${P.civ}"><div class="hdr">${crest(P.civ, 56)}<div><h2>${pid === 0 ? 'You' : esc(C.name)}</h2><p>${esc(C.style)}</p></div></div>
+  openSheet(`<div class="camp-sheet fam-${CIV_FAMILY[P.civ]} civ-${P.civ}"><div class="hdr">${crest(P.civ, 56)}<div><h2>${esc(nameOf(pid))}</h2><p class="civline">${esc(C.name)}</p><p>${esc(C.style)}</p></div></div>
 <div class="sd-stats"><span><b class="kw k-hp">${Math.max(0, P.hp)}</b> of ${P.maxHP} HP</span><span><b class="kw k-gold">${P.gold}</b> gold</span><span><b class="kw k-card">${P.hand.length}</b> cards in hand</span><span><b>${P.deck.length}</b> in deck</span></div>
 ${P.relic ? `<p>${relicGlyphs(P.relic, 20)} <b>${esc(RELICS[P.relic].name)}</b>: ${kw(RELICS[P.relic].text)}</p>` : ''}
 <h3>Defenses</h3>${P.structs.length ? `<div class="ws">${P.structs.map(st => `<div>${buildHTML(st)}<span>${esc(st.card.name)}${st.kind === 'wonder' ? `: wins in ${Math.max(0, 3 - st.age)} turn(s) unless destroyed` : note[st.kind] ? ': ' + note[st.kind] : ''}</span></div>`).join('')}</div>` : '<p class="muted">None standing.</p>'}
 ${toks.length ? `<h3>Effects</h3><div class="cx-list">${toks.map(t => `<div class="cx-ev"><span class="medal">${medalSVG(t)}</span><div><p>${kw(MEDAL_TIP[t])}</p></div></div>`).join('')}</div>` : ''}
-<h3>Imperial Age</h3><p>${!P.ageGiven ? `The card arrives in ${Math.max(1, RULES.ageTurn - P.turns)} turn(s).` : !P.aged ? 'Holds the Imperial Age card.' : 'In the Imperial Age.'} ${kw(I.bonus.text)}</p>
+<h3>Imperial Age</h3><p>${!P.ageGiven ? `The card arrives in round ${RULES.ageTurn}, the same round for every player.` : !P.aged ? 'Holds the Imperial Age card.' : 'In the Imperial Age.'} ${kw(I.bonus.text)}</p>
 <div class="sd-cards">${impCards(P.civ).map(c => cardHTML(c, { size: 'sm', attrs: `data-cref="${c.ref}" role="button" tabindex="0"` })).join('')}</div>
 <h3>Last cards played</h3>${plays.length ? `<ul>${plays.map(e => `<li>Round ${e.round}: <b>${esc(e.card)}</b>${e.target != null ? ' on ' + esc(civObjOf(e.target)) : ''}</li>`).join('')}</ul>` : '<p class="muted">Nothing yet.</p>'}
 <div class="row"><button class="btn" data-act="close">Close</button><button class="btn ghost" data-act="codex-civ" data-civ="${P.civ}">Full deck and details</button></div></div>`);
@@ -2388,11 +2459,11 @@ const TUTORIAL = [
   { show: 'now', until: 'next', target: '#hand', title: 'Your hand', text: 'A card does what its symbols say, left to right. The coloured words tell you the kind of effect: damage, HP, gold, cards, walls.' },
   { show: 'now', until: 'select', target: '#hand', title: 'Pick a card', text: 'Tap a card to choose it: it shows large on the chart with its result on every camp. Tap it again to read it in full, or drag it up to play it at once.' },
   { show: 'now', until: 'play', target: '#stage-card', title: 'See before you play', text: 'The tags above the camps show the result in advance. Press Play below to confirm.' },
-  { show: 'turn', until: 'next', target: '#me .camp', title: 'Your camp', text: 'Your HP is the red tag on your banner, with the bar under it. The buildings under Defenses take damage before your HP does; the number on each is how much more it can absorb. Round tokens there are guards, like a camel guard, and the crown beside HP marks the Imperial Age.' },
+  { show: 'turn', until: 'next', target: '#me .camp', title: 'Your camp', text: 'Your HP is the red tag on your banner, with the bar under it. The buildings under Defenses take damage before your HP does; the number on each is how much more it can absorb. Round tokens there are guards, like a camel guard, and the crown beside HP marks the Imperial Age. Your name at the table is You; the computer players are named after famous leaders of their civilization.' },
   { show: 'now', until: 'next', target: '#events', title: 'Events', text: 'Each round an event hits everyone, and the next one is always shown, so you can plan for it.', wide: true },
   { show: 'now', until: 'next', target: '#market', title: 'Mercenaries', text: 'Gold hires one mercenary per turn. The card goes straight to your hand and joins your deck.', wide: true },
   { show: 'agecard', until: 'next', target: '#hand', title: 'The Imperial Age', text: 'Turn 7 brings this card. Playing it adds your civilization\'s three Imperial cards to your deck, plus a bonus.' },
-  { show: 'now', until: 'next', target: '#table', title: 'That is the whole game', text: 'Outlast the Japanese to finish the lesson. The book icon opens the Codex: every civilization, card, symbol and rule.' },
+  { show: 'now', until: 'next', target: '#table', title: 'That is the whole game', text: 'Outlast the Japanese to finish the lesson. The menu (top left) opens the Codex: every civilization, card, symbol and rule. The crown at the top counts the rounds to the Imperial Age.' },
 ];
 function startTutorial() { UI.tutorial = { i: 0, live: false }; coachShow(); }
 /* (newMatch arms the tutorial; beginMatch shows the first step once the round-one herald has gone) */
@@ -2434,6 +2505,7 @@ function newMatch(o = {}) {
   const civ = o.civ || UI.civ, n = o.n || UI.n, seed = o.tutorial ? 20261005 : (Date.now() ^ Math.floor(Math.random() * 1e9)) >>> 0;
   const others = o.opps || shuffled({ rs: seed }, CIV_ORDER.filter(c => c !== civ)).slice(0, n - 1);
   S = newGame({ seed, civs: [civ, ...others], ai: [false, ...others.map(() => true)] });
+  nameTable(S, seed);
   for (const P of S.players.slice(1)) { P.skill = o.tutorial ? 'easy' : SET.difficulty; chooseRelic(S, P.id, aiRelic(S, P)); }
   Object.assign(UI, { sel: null, hoverT: null, last: null, view: null, busy: false, finished: false, round: 1, drawer: false, tutorial: null, lastSetup: o });
   $('#chronicle').classList.remove('open');

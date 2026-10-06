@@ -18,8 +18,10 @@ const SYM = {
   F: { name: 'Gunpowder', desc: 'Deal 1 damage to every opponent.', steps: [{ dmg: 1, all: 1 }] },
   Y: { name: 'Eagle', desc: 'Deal 1 damage, or 2 damage if the opponent has no walls.', steps: [{ dmg: 1, eagle: 1 }] },
   N: { name: 'Ship', desc: 'Raid: steal 1 card, then deal 1 damage.', steps: [{ steal: 1 }, { dmg: 1 }] },
+  T: { name: 'Stakes', desc: 'Set the Bạch Đằng stakes: until your next turn, the first opponent who damages you takes 2 damage.', steps: [{ token: 'trap' }] },
+  V: { name: 'Divine Wind', desc: 'Until your next turn, every attack against you is cancelled.', steps: [{ token: 'immune' }] },
 };
-const SYM_ORDER = 'AKEBLYFNRSCWHMDG';
+const SYM_ORDER = 'AKEBLYFNRSCTVWHMDG';
 const COMMON_NAMES = {
   A: 'Militia', AA: 'Swordsmen', AAA: 'Shock Troops', AM: 'Skirmish', AAM: 'Assault', AD: 'Outriders', AH: 'Spearmen',
   W: 'Palisade', WW: 'Stone Wall', WWW: 'Fortress', WH: 'Watch Tower',
@@ -33,12 +35,12 @@ const UNIQUE = {
   greatwall: { name: "Great Wall", icons: 'WWWW', text: "A wall with 4 durability.", wall: 4 },
   exam: { name: "Imperial Exams", icons: 'DDG', text: "Draw 2 cards and gain 1 gold.", steps: [{ draw: 2 }, { gold: 1 }] },
   samurai: { name: "Samurai", icons: 'AA', text: "Deal 2 damage, or 3 damage if the opponent has no walls.", steps: [{ dmg: 2, samurai: 1 }] },
-  kamikaze: { name: "Divine Wind", icons: 'D', text: "Until your next turn, every attack against you is cancelled. Draw 1 card.", steps: [{ token: 'immune' }, { draw: 1 }] },
+  kamikaze: { name: "Divine Wind", icons: 'VD', text: "Until your next turn, every attack against you is cancelled. Draw 1 card.", steps: [{ token: 'immune' }, { draw: 1 }] },
   hwacha: { name: "Hwacha", icons: 'FF', text: "Deal 1 damage to every opponent, twice.", steps: [{ dmg: 1, all: 1 }, { dmg: 1, all: 1 }] },
   tripitaka: { name: "Tripitaka Koreana", icons: 'DDDM', text: "Draw 3 cards and play another card.", steps: [{ draw: 3 }, { plays: 1 }] },
   ironcav: { name: "Iron Pagoda", icons: 'KA', text: "Iron-clad cavalry: deal 3 damage. Camels block it.", steps: [{ dmg: 3, cav: 1 }] },
   thunder: { name: "Thunder Crash Bomb", icons: 'RF', text: "Destroy a structure, then deal 1 damage to every opponent.", steps: [{ raze: 1 }, { dmg: 1, all: 1 }] },
-  stakes: { name: "Bạch Đằng Stakes", icons: 'W', text: "Until your next turn, the first opponent who damages you takes 2 damage.", steps: [{ token: 'trap' }] },
+  stakes: { name: "Bạch Đằng Stakes", icons: 'T', text: "Until your next turn, the first opponent who damages you takes 2 damage.", steps: [{ token: 'trap' }] },
   proclaim: { name: "Call to Arms", icons: 'HHDD', text: "Heal 2 HP and draw 2 cards.", steps: [{ heal: 2 }, { draw: 2 }] },
   caravan: { name: "Desert Caravan", icons: 'LGD', text: "Deal 1 damage, set up a camel guard, gain 1 gold and draw 1 card.", steps: [{ dmg: 1 }, { token: 'camel' }, { gold: 1 }, { draw: 1 }] },
   baghdad: { name: "Baghdad Hospital", icons: 'HHH', text: "Heal 3 HP.", steps: [{ heal: 3 }] },
