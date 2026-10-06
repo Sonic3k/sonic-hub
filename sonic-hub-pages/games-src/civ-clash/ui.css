@@ -77,20 +77,23 @@ button{font:inherit;color:inherit}
 .fam-folk .cn{outline:1.5px dashed rgba(255,238,205,.75);outline-offset:-4px}.fam-folk .cf{border-radius:4px}
 .fam-islamic .cf,.fam-islamic .cb{clip-path:polygon(0 11%,12% 7.4%,28% 4.6%,42% 1.8%,50% 0,58% 1.8%,72% 4.6%,88% 7.4%,100% 11%,100% 100%,0 100%)}.fam-islamic .cn{margin-top:19px}
 .fam-steppe .cf{background-image:var(--motif),var(--leather-tex)}.fam-steppe .cb{outline:1.5px dashed rgba(110,70,30,.5);outline-offset:-8px}
-.fam-scroll .cf{padding:13px 4px;border-radius:3px}.fam-scroll .cb{border-radius:1px}.fam-scroll .cn{background:linear-gradient(#2e231a,#120b06);color:#ecd18b}
+/* East Asian group: a tiled roof over the card, upturned eaves, ridge with end ornaments; the card body is the hall beneath, its name on a dark lacquered board */
+.fam-sino .cf{--roof:calc(var(--h) * .125);padding:var(--roof) 6px 6px;-webkit-mask:var(--roof-mask) top/100% var(--roof) no-repeat,linear-gradient(#000,#000) bottom/100% calc(100% - var(--roof) + 1px) no-repeat;mask:var(--roof-mask) top/100% var(--roof) no-repeat,linear-gradient(#000,#000) bottom/100% calc(100% - var(--roof) + 1px) no-repeat}
+.fam-sino .cf::before{content:'';position:absolute;left:0;right:0;top:0;height:var(--roof);background:var(--roof-art) center/100% 100% no-repeat;pointer-events:none;z-index:1}
+.fam-sino .cb{border-radius:1px}.fam-sino .ca{height:31%}.fam-sino .cn{background:linear-gradient(#2e231a,#120b06);color:#ecd18b;box-shadow:inset 0 0 0 1px rgba(214,180,95,.75),0 1px 2px rgba(0,0,0,.4)}
 .fam-temple .cf,.fam-temple .cb{clip-path:polygon(0 7%,15% 7%,15% 4.4%,30% 4.4%,30% 2%,42% 2%,42% 0,58% 0,58% 2%,70% 2%,70% 4.4%,85% 4.4%,85% 7%,100% 7%,100% 100%,0 100%)}.fam-temple .cn{margin-top:16px}
 .fam-sahel .cf,.fam-sahel .cb{clip-path:polygon(0 6%,7% 6%,9% 0,11% 6%,29% 6%,31% 0,33% 6%,48% 6%,50% 0,52% 6%,67% 6%,69% 0,71% 6%,89% 6%,91% 0,93% 6%,100% 6%,100% 100%,0 100%)}.fam-sahel .cf{background-color:#8f5d32}.fam-sahel .cn{margin-top:15px}
 .fam-codex .cf{padding:8px;border-radius:3px;box-shadow:inset 0 0 0 2px #1d1108,inset 0 0 0 4px #d6a03e}.fam-codex .cn{background:#d6a03e;color:#2a1908;text-shadow:none}
 .fam-andes .cf,.fam-andes .cb{clip-path:polygon(7% 0,93% 0,100% 100%,0 100%)}.fam-andes .cn{margin:7px 15px 0}
-.fam-icon .corner,.fam-islamic .corner,.fam-temple .corner,.fam-sahel .corner,.fam-andes .corner{top:auto;bottom:0}.fam-icon .c2,.fam-islamic .c2,.fam-temple .c2,.fam-sahel .c2,.fam-andes .c2{transform:scale(-1,-1)}.fam-icon .c1,.fam-islamic .c1,.fam-temple .c1,.fam-sahel .c1,.fam-andes .c1{transform:scaleY(-1)}
+.fam-icon .corner,.fam-islamic .corner,.fam-temple .corner,.fam-sahel .corner,.fam-andes .corner,.fam-sino .corner{top:auto;bottom:0}.fam-icon .c2,.fam-islamic .c2,.fam-temple .c2,.fam-sahel .c2,.fam-andes .c2,.fam-sino .c2{transform:scale(-1,-1)}.fam-icon .c1,.fam-islamic .c1,.fam-temple .c1,.fam-sahel .c1,.fam-andes .c1,.fam-sino .c1{transform:scaleY(-1)}
 /* sizes */
 .card.sm{--w:112px;--h:158px;--s:22px}.card.sm .cf{padding:4px}.card.sm .cn{font-size:11.5px;margin:5px 5px 0;padding:3px 6px}.card.sm .ca{margin:4px 6px 0}
 .card.sm .ct{font-size:10.5px;padding:3px 6px 9px}.card.sm .ct span{display:-webkit-box;-webkit-line-clamp:5;-webkit-box-orient:vertical;overflow:hidden}
 .card.sm .corner{width:14px;height:14px}.card.sm .seal{width:22px;height:22px;bottom:-6px;font-size:12px}.card.sm .seal .crest{width:15px;height:15px}.card.sm .seal svg{width:17px;height:17px}
-.card.sm.fam-scroll .cf{padding:9px 3px}.card.sm.fam-icon .cn,.card.sm.fam-islamic .cn,.card.sm.fam-temple .cn,.card.sm.fam-sahel .cn{margin-top:12px}
+.card.sm.fam-sino .cf{padding:var(--roof) 4px 4px}.card.sm.fam-sino .ct span{-webkit-line-clamp:4}.card.sm.fam-icon .cn,.card.sm.fam-islamic .cn,.card.sm.fam-temple .cn,.card.sm.fam-sahel .cn{margin-top:12px}
 .card.lg{--w:214px;--h:302px;--s:42px}.card.lg .cf{padding:8px}.card.lg .cn{font-size:18.5px;margin:9px 9px 0;padding:6px 12px}.card.lg .ca{margin:8px 12px 0}
 .card.lg .ct{font-size:16px;padding:8px 13px 16px}.card.lg .corner{width:28px;height:28px}.card.lg .seal{width:40px;height:40px;bottom:-10px}.card.lg .seal .crest{width:28px;height:28px}.card.lg .seal svg{width:30px;height:30px}
-.card.lg.fam-scroll .cf{padding:18px 6px}.card.lg.fam-icon .cn,.card.lg.fam-islamic .cn{margin-top:24px}.card.lg.fam-temple .cn,.card.lg.fam-sahel .cn{margin-top:20px}
+.card.lg.fam-sino .cf{padding:var(--roof) 8px 8px}.card.lg.fam-icon .cn,.card.lg.fam-islamic .cn{margin-top:24px}.card.lg.fam-temple .cn,.card.lg.fam-sahel .cn{margin-top:20px}
 .cost{position:absolute;left:50%;bottom:-12px;transform:translateX(-50%);z-index:4;white-space:nowrap;font-weight:800;font-size:13px;padding:1px 10px;border-radius:3px;color:#3a2706;
   background:linear-gradient(#f2d98e,#c9a24a);box-shadow:inset 0 0 0 1px #7a5a18,0 2px 4px rgba(0,0,0,.5)}
 .cost:not(.ok){filter:grayscale(.6) brightness(.85)}
@@ -154,13 +157,13 @@ button{font:inherit;color:inherit}
 .token{font-size:12.5px;font-weight:700;padding:1px 9px;border-radius:2px;background:#2a4b77;color:#f6ebcf;cursor:help}.token.camel{background:#9c7040}
 .camp.turn{box-shadow:inset 0 0 0 1px rgba(43,33,24,.75),inset 0 0 0 3px rgba(247,238,215,.65),0 0 0 2px var(--gold-hi),0 0 30px rgba(236,209,139,.55),0 10px 24px rgba(0,0,0,.5)}
 .camp.targetable{cursor:crosshair;outline:3px dashed rgba(214,90,60,.95);outline-offset:4px}
-.camp.targetable.hot{transform:translateY(-4px);outline-style:solid;outline-color:#e26a4a;box-shadow:inset 0 0 0 1px rgba(43,33,24,.75),0 0 36px rgba(226,106,74,.7),0 10px 24px rgba(0,0,0,.5)}
+.camp.targetable.hot{outline-style:solid;outline-color:#e26a4a;box-shadow:inset 0 0 0 1px rgba(43,33,24,.75),0 0 36px rgba(226,106,74,.7),0 10px 24px rgba(0,0,0,.5)}
 .camp.out{filter:grayscale(.9) brightness(.7)}
 .camp.hit{animation:shake .35s}
 @keyframes shake{0%,100%{transform:none}25%{transform:translateX(-6px)}50%{transform:translateX(6px)}75%{transform:translateX(-3px)}}
 .chips{position:absolute;left:50%;top:-14px;transform:translateX(-50%);display:flex;gap:4px;z-index:6;pointer-events:none;white-space:nowrap}
 .chip{font-weight:800;font-size:13.5px;padding:2px 9px;border-radius:3px;box-shadow:0 0 0 1px rgba(43,33,24,.6),0 3px 8px rgba(0,0,0,.45)}
-.chip.dmg{background:#f6d9cc;color:#8a2412}.chip.heal{background:#d6ead1;color:#255b24}.chip.gold{background:#f4e3a8;color:#5f4708}.chip.wall{background:#e0e2e6;color:#3c4452}.chip.card{background:#dfe1f2;color:#28316c}.chip.ko{background:#8a2412;color:#fff}
+.chip.dmg{background:#f6d9cc;color:#8a2412}.chip.heal{background:#d6ead1;color:#255b24}.chip.gold{background:#f4e3a8;color:#5f4708}.chip.wall{background:#e0e2e6;color:#3c4452}.chip.cards{background:#dfe1f2;color:#28316c}.chip.ko{background:#8a2412;color:#fff}
 .floats{position:absolute;inset:0;pointer-events:none;display:grid;place-items:center;z-index:7}
 .float{position:absolute;font-weight:800;font-size:31px;white-space:nowrap;text-shadow:0 2px 0 rgba(0,0,0,.35),0 0 12px rgba(255,240,210,.8);animation:floatup 1.5s ease-out forwards}
 .float.dmg{color:#a82814}.float.heal{color:#2d6f2a}.float.wall{color:#3f4756;font-size:23px}.float.gold{color:#7c5b06;font-size:22px}.float.info{color:#4c2c7a;font-size:21px}.float.big{font-size:40px}
@@ -169,10 +172,11 @@ button{font:inherit;color:inherit}
 #stage{grid-area:stage;position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:0}
 #stage::before{content:'';position:absolute;inset:2% 1%;border-radius:4px;transform:rotate(-.5deg);
   background:var(--rose) center/min(62%,300px) no-repeat,var(--rhumb) center/1500px no-repeat,var(--vellum-tex),linear-gradient(180deg,#eedfbc,#dcc89c);
-  box-shadow:inset 0 0 60px rgba(120,70,25,.48),inset 0 0 8px rgba(70,40,15,.65),0 16px 36px rgba(0,0,0,.55);transition:box-shadow .2s}
-#stage.drop-ok::before{box-shadow:inset 0 0 0 3px rgba(164,48,29,.75),inset 0 0 70px rgba(236,180,90,.55),0 16px 36px rgba(0,0,0,.55)}
+  box-shadow:inset 0 0 60px rgba(120,70,25,.48),inset 0 0 8px rgba(70,40,15,.65),0 16px 36px rgba(0,0,0,.55);will-change:transform}
+#stage .dropglow{position:absolute;inset:2% 1%;border-radius:4px;transform:rotate(-.5deg);pointer-events:none;opacity:0;transition:opacity .15s ease;will-change:opacity;box-shadow:inset 0 0 0 3px rgba(164,48,29,.8),inset 0 0 70px rgba(236,180,90,.6)}
+#stage.holding .dropglow{opacity:.3}#stage.drop-ok .dropglow{opacity:1}
 #stage .rose{display:none}
-#stage-card{position:relative;min-height:10px;display:flex;justify-content:center}
+#stage-card{position:relative;min-height:10px;display:flex;justify-content:center;transition:opacity .15s}
 .stage-fit{transform-origin:top center}
 #stage-card .card.pop{animation:pop .3s ease-out}
 @keyframes pop{from{transform:scale(.82);opacity:.2}to{transform:none;opacity:1}}
@@ -193,7 +197,7 @@ button{font:inherit;color:inherit}
 #market h3{margin:0 0 10px;font-family:var(--f-head);font-weight:400;font-size:21px;color:var(--gold-hi);text-shadow:0 1px 0 #000}
 .mk-row{display:flex;gap:8px;justify-content:space-between;padding-bottom:12px}
 .mk-item{border:0;padding:0;background:none;cursor:default}
-.mk-item.can{cursor:pointer}.mk-item.can .card{filter:drop-shadow(0 0 10px rgba(236,209,139,.75)) drop-shadow(0 6px 8px rgba(14,7,0,.55))}@media (hover:hover) and (pointer:fine){.mk-item.can:hover .card{transform:translateY(-4px)}}
+.mk-item.can{cursor:pointer}.mk-item.can .card{filter:drop-shadow(0 0 10px rgba(236,209,139,.75)) drop-shadow(0 6px 8px rgba(14,7,0,.55))}
 .mk-note{margin:4px 0 0;font-size:13.5px;line-height:1.3;color:#e8d8b4}
 .mk-note .kw{color:var(--gold-hi)}
 #me{grid-area:me;align-self:end;padding-bottom:12px}
@@ -205,17 +209,29 @@ button{font:inherit;color:inherit}
 .actionbar{position:relative;z-index:60;display:flex;align-items:center;justify-content:center;gap:10px;min-height:50px}
 .actionbar .hint{font-family:var(--f-head);font-size:19px;color:var(--gold-hi);text-align:center;text-shadow:0 1px 0 #000,0 0 12px rgba(0,0,0,.6)}
 .actionbar .btn{white-space:nowrap;min-width:120px}
-#handzone{grid-area:hand;position:relative;align-self:end}
-#hand{position:relative;display:flex;justify-content:center;align-items:flex-end;height:248px;padding:0 20px 14px}
-#hand .card{margin:0;transform:translateY(var(--y,0)) rotate(var(--rot,0deg));transform-origin:50% 115%;transition:transform .16s ease,filter .16s ease,opacity .16s}
+/* the hand: one straight row, as in Photo Studio. A native scroller that settles on a card; nothing moves on hover, a chosen card
+   rises 8px; the ghost of a drag is a copy of the card on its own GPU layer */
+#handzone{grid-area:hand;position:relative;align-self:end;min-width:0}
+#hand{position:relative;display:flex;align-items:flex-end;gap:20px;overflow-x:auto;overflow-y:hidden;scroll-snap-type:x proximity;scrollbar-width:none;overscroll-behavior-x:contain;padding:22px 20px 14px;touch-action:pan-x}
+#hand::-webkit-scrollbar{display:none}
+#handzone.over #hand{padding-left:54px;padding-right:54px;-webkit-mask-image:linear-gradient(90deg,transparent 0,#000 50px,#000 calc(100% - 50px),transparent);mask-image:linear-gradient(90deg,transparent 0,#000 50px,#000 calc(100% - 50px),transparent)}
+#hand>.card:first-child{margin-left:auto}#hand>.card:last-child{margin-right:auto}
+#hand .card{scroll-snap-align:center;transition:transform .2s cubic-bezier(.2,.9,.3,1.2),opacity .15s;-webkit-touch-callout:none}
 #hand .card.playable{cursor:grab}
-@media (hover:hover) and (pointer:fine){#hand .card.playable:hover,#hand .card.playable:focus-visible{transform:translateY(-30px) scale(1.06);z-index:40!important}}
-#hand .card.sel{transform:translateY(-24px) scale(1.06);z-index:50!important;filter:drop-shadow(0 0 2px var(--gold-hi)) drop-shadow(0 0 16px rgba(236,209,139,.85)) drop-shadow(0 10px 14px rgba(0,0,0,.55))}
+#hand .card.sel{transform:translateY(-8px);filter:drop-shadow(0 0 1.5px #fff3c8) drop-shadow(0 0 2.5px var(--gold-hi)) drop-shadow(0 0 12px rgba(236,209,139,.95))}
 #hand .card.dim{filter:saturate(.7) brightness(.82) drop-shadow(0 6px 8px rgba(14,7,0,.55))}
-.hand-empty{align-self:center;font-style:italic;color:#d9c8a2}
-.drag-ghost{position:fixed;left:0;top:0;z-index:75;pointer-events:none;transform-origin:50% 60%}
-html.dragging #hand .card.sel{opacity:.35}
-html.dragging,html.dragging *{cursor:grabbing!important}
+#hand .card.drag-src{opacity:.35;transform:none;cursor:grabbing}
+.hand-empty{align-self:center;margin:auto;font-style:italic;color:#d9c8a2}
+.hand-nav{display:none;position:absolute;top:50%;z-index:2;width:38px;height:38px;margin-top:-15px;padding:0;border:0;border-radius:50%;place-items:center;cursor:pointer;font-size:26px;line-height:1;color:var(--gold-hi);
+  background:radial-gradient(circle at 40% 35%,#5c3b22,#2c1a0d);box-shadow:inset 0 0 0 1.5px var(--gold),0 2px 6px rgba(0,0,0,.55)}
+#handzone.over .hand-nav{display:grid}
+.hand-nav.prev{left:6px}.hand-nav.next{right:6px}
+.hand-nav:disabled{opacity:.3;cursor:default}
+#drag-ghost{position:fixed;left:0;top:0;z-index:75;pointer-events:none;display:none;transform-origin:0 0;will-change:transform}
+#drag-ghost.on{display:block}
+#drag-ghost .card{margin:0;filter:drop-shadow(0 16px 18px rgba(14,7,0,.55));animation:pickup .14s ease-out}
+@keyframes pickup{from{transform:scale(1.25) rotate(3deg)}}
+#stage.holding #stage-card{opacity:.35}
 
 /* drawer, sheets, tooltips, coach, banner */
 .drawer{position:absolute;top:54px;right:0;bottom:0;width:340px;z-index:30;padding:16px 18px;overflow:auto;transform:translateX(105%);transition:transform .25s ease;color:var(--ink);
@@ -238,7 +254,7 @@ html.dragging,html.dragging *{cursor:grabbing!important}
 .set-row>div>b{display:block;font-family:var(--f-head);font-weight:400;font-size:18px}.set-row>div>span{font-size:14.5px;color:var(--ink-3)}
 .relics{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:10px}
 .relic-pick{text-align:left;border:0;cursor:pointer;border-radius:3px;padding:14px;color:var(--ink);background:var(--vellum-tex),linear-gradient(#fbf3de,#ead7ab);box-shadow:inset 0 0 0 1px rgba(43,33,24,.6),inset 0 0 0 3px rgba(201,162,74,.6),0 4px 0 #8c7448,0 8px 16px rgba(0,0,0,.3)}
-@media (hover:hover) and (pointer:fine){.relic-pick:hover{transform:translateY(-3px)}}
+@media (hover:hover) and (pointer:fine){.relic-pick:hover{filter:brightness(1.04)}}
 .relic-pick>b{display:block;font-family:var(--f-head);font-weight:400;font-size:20px;color:var(--rubric)}.relic-pick>span{display:block;font-size:15px;line-height:1.35}
 .legend{display:grid;grid-template-columns:repeat(2,1fr);gap:8px 18px;margin:8px 0}
 .legend div{display:grid;grid-template-columns:30px 1fr;gap:2px 8px;font-size:15px}.legend .sym{width:28px;height:28px}.legend>div>b{align-self:center;font-family:var(--f-head);font-weight:400;font-size:17px}.legend>div>span{grid-column:2;color:var(--ink-2);line-height:1.3}
@@ -281,8 +297,8 @@ html.dragging,html.dragging *{cursor:grabbing!important}
 .region h3{margin:16px 0 8px;font-family:var(--f-head);font-weight:400;font-size:21px;color:var(--gold-hi);text-shadow:0 1px 0 #000}
 .civ-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(156px,1fr));gap:12px}
 .civ-tile{position:relative;height:92px;border:0;cursor:pointer;text-align:left;color:#fbeed2;padding:9px 10px;display:flex;align-items:flex-end;gap:8px;border-radius:4px;
-  background-color:var(--civ-deep);background-image:var(--motif);box-shadow:inset 0 0 0 1px rgba(255,228,170,.4),inset 0 0 0 2px rgba(0,0,0,.5),0 6px 14px rgba(0,0,0,.5);transition:transform .15s}
-@media (hover:hover) and (pointer:fine){.civ-tile:hover{transform:translateY(-2px)}}
+  background-color:var(--civ-deep);background-image:var(--motif);box-shadow:inset 0 0 0 1px rgba(255,228,170,.4),inset 0 0 0 2px rgba(0,0,0,.5),0 6px 14px rgba(0,0,0,.5)}
+@media (hover:hover) and (pointer:fine){.civ-tile:hover{filter:brightness(1.1)}}
 .civ-tile.on{box-shadow:inset 0 0 0 1px rgba(255,228,170,.6),0 0 0 3px var(--gold-hi),0 0 26px rgba(236,209,139,.55)}
 .civ-tile .crest{flex:0 0 auto;filter:drop-shadow(0 2px 2px rgba(0,0,0,.5))}
 .civ-tile .nm{font-family:var(--f-head);font-size:18px;line-height:1.02;text-shadow:0 1px 0 rgba(0,0,0,.6)}
@@ -328,7 +344,7 @@ html.compact .cname{font-size:17px}
 html.compact .hpseal{width:54px;height:54px}html.compact .hpseal b{font-size:20px}html.compact .hpseal small{bottom:11px;font-size:9.5px}
 html.compact .camp-banner{min-height:36px;padding-right:62px}
 html.compact .bld{width:34px;height:32px}html.compact .bld svg{width:27px;height:27px}
-html.compact #stage::before{inset:1% 0}
+html.compact #stage::before,html.compact #stage .dropglow{inset:1% 0}
 html.compact .card.lg{--w:156px;--h:220px;--s:31px}html.compact .card.lg .cn{font-size:14px}html.compact .card.lg .ct{font-size:13px;padding:5px 9px 12px}
 html.compact #stage-caption{font-size:15px;margin-top:8px}
 html.compact #me{padding-bottom:0}
@@ -337,11 +353,8 @@ html.compact .camp.mine .defs .lbl{font-size:12px;margin-bottom:1px}
 html.compact .camp.mine .stash{flex-direction:row;align-items:center;gap:8px}
 html.compact .camp.mine .relic,html.compact .piles{display:none}
 html.compact .actionbar{min-height:48px}html.compact .actionbar .hint{font-size:16px}html.compact .actionbar .btn{min-height:44px;font-size:17px}
-html.compact #hand{justify-content:flex-start;align-items:center;overflow-x:auto;overflow-y:hidden;scroll-snap-type:none;overscroll-behavior-x:contain;gap:10px;height:auto;min-height:calc(var(--ch) + 24px);padding:12px 16px;touch-action:pan-x;
+html.compact #hand{align-items:center;gap:12px;min-height:calc(var(--ch) + 28px);padding:18px 16px 10px;
   -webkit-mask-image:linear-gradient(90deg,transparent,#000 14px,#000 calc(100% - 14px),transparent);mask-image:linear-gradient(90deg,transparent,#000 14px,#000 calc(100% - 14px),transparent)}
-html.compact #hand .card{transform:none!important;transition:filter .15s ease}
-html.compact #hand>.card:first-child{margin-left:auto}html.compact #hand>.card:last-child{margin-right:auto}
-html.compact #hand .card.sel{filter:drop-shadow(0 0 1.5px #fff3c8) drop-shadow(0 0 2.5px var(--gold-hi)) drop-shadow(0 0 12px rgba(236,209,139,.95))}
 html.compact #handzone{padding-bottom:calc(4px + env(safe-area-inset-bottom,0px))}
 html.compact .drawer{top:52px;width:100%}
 html.compact .sheet-wrap{place-items:end center;padding:0}
@@ -361,12 +374,13 @@ html.compact.land #opps{flex-direction:column;justify-content:flex-start;gap:6px
 html.compact.land #opps .camp{flex:0 0 auto}
 html.compact.land #me{align-self:end}
 html.compact.land .camp.mine .camp-body{flex-wrap:wrap}
-html.compact.land #hand{height:128px;min-height:0;padding:7px 10px}
+html.compact.land #hand{height:128px;min-height:0;padding:11px 10px 3px}
 html.compact.land .card .ct{font-size:9.5px}html.compact.land .card .cn{font-size:11px;margin:4px 4px 0;padding:2px 5px}html.compact.land .card .ca{margin:3px 5px 0}
 html.compact.land .card.lg{--w:118px;--h:166px}
+html.compact.land :is(#hand,#drag-ghost) .card:not(.sm):not(.lg){--s:18px}
 html.compact.land .actionbar{align-self:center;flex-wrap:wrap;gap:6px}html.compact.land .actionbar .btn{min-width:0;font-size:15px;padding:6px 12px}
 html.compact.land .camp.mini{display:flex;align-items:stretch}html.compact.land .camp.mini .camp-banner{flex:0 0 92px;min-height:0;border-radius:5px 0 0 5px;flex-direction:column;align-items:flex-start;justify-content:center;gap:1px;padding:4px 7px}html.compact.land .camp.mini .cname{font-size:13px;max-width:100%}html.compact.land .camp.mini .hpseal{width:38px;height:38px}html.compact.land .camp.mini .hpseal b{font-size:15px}html.compact.land .mini-stats{gap:1px 8px;font-size:12.5px}
-@media (max-height:820px){html:not(.compact){--cw:136px;--ch:192px}html:not(.compact) #hand{height:226px}html:not(.compact) #topbar{height:50px}}
+@media (max-height:820px){html:not(.compact){--cw:136px;--ch:192px}html:not(.compact) #topbar{height:50px}}
 @media (prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;transition-duration:.01ms!important}}
 
 /* ── round herald: the table stops and the event is read out ── */
@@ -524,3 +538,13 @@ html.compact.land .camp.mine .hptag{padding:2px 7px 3px}html.compact.land .camp.
 .cx-body{margin-top:0}
 html.compact .cx-tabs,html.compact .cx-body{width:calc(100% - 12px)}
 html.compact.land .camp.mine .medal{width:21px;height:21px}
+/* phone hand: long card text ends in an ellipsis instead of being cut mid-line (the full text is one tap away) */
+html.compact :is(#hand,#drag-ghost) .card:not(.sm):not(.lg) .ct{min-height:0;overflow:hidden}
+html.compact :is(#hand,#drag-ghost) .card:not(.sm):not(.lg) .ct span{display:-webkit-box;-webkit-line-clamp:4;-webkit-box-orient:vertical;overflow:hidden}
+html.compact:not(.land) :is(#hand,#drag-ghost) .card:not(.sm):not(.lg){--s:27px}
+html.compact:not(.land) :is(#hand,#drag-ghost) .card:not(.sm):not(.lg) .ct{font-size:12px;line-height:1.2;padding:4px 7px 10px}
+html.compact:not(.land) :is(#hand,#drag-ghost) .card:not(.sm):not(.lg) .cn{font-size:13px}
+html.compact:not(.land) :is(#hand,#drag-ghost) .card:not(.sm):not(.lg) .ca{height:auto;min-height:36px;padding:3px 0}
+html.compact :is(#hand,#drag-ghost) .card.t-sig:not(.sm):not(.lg) .ct,html.compact :is(#hand,#drag-ghost) .card.t-imp:not(.sm):not(.lg) .ct,html.compact :is(#hand,#drag-ghost) .card.t-age:not(.sm):not(.lg) .ct{padding-bottom:15px}
+html.compact:not(.land) :is(#hand,#drag-ghost) .card:not(.sm):not(.lg) .seal{width:24px;height:24px;bottom:-10px}html.compact:not(.land) :is(#hand,#drag-ghost) .card:not(.sm):not(.lg) .seal .crest{width:17px;height:17px}html.compact:not(.land) :is(#hand,#drag-ghost) .card:not(.sm):not(.lg) .seal.crown svg{width:19px;height:19px}
+html.compact :is(#hand,#drag-ghost) .card.t-sig:not(.sm):not(.lg) .ct span,html.compact :is(#hand,#drag-ghost) .card.t-imp:not(.sm):not(.lg) .ct span,html.compact :is(#hand,#drag-ghost) .card.t-age:not(.sm):not(.lg) .ct span{-webkit-line-clamp:3}

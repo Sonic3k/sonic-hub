@@ -55,15 +55,17 @@ function floatAt(pid, text, cls) {
 }
 function setShownHP(pid) {
   const camp = document.getElementById('camp-' + pid); if (!camp || !UI.view) return;
+  forget(camp.parentElement);
   const P = S.players[pid], hp = Math.max(0, UI.view[pid]), tag = camp.querySelector('.hptag'), bar = camp.querySelector('.hpbar i');
   if (tag) { tag.querySelector('b').textContent = hp; tag.classList.toggle('low', hp <= 3); }
   if (bar) bar.style.width = Math.max(0, Math.round(hp / P.maxHP * 100)) + '%';
 }
 function shake(pid) { const el = document.getElementById('camp-' + pid); if (el) { el.classList.remove('hit'); void el.offsetWidth; el.classList.add('hit'); } }
-async function animatePlay(ev, pid, from) {
-  await flyCard(ev.card, from, stageRect(), D(430));
-  UI.last = { card: ev.card, pid, target: ev.target, fresh: true }; UI.sel = null; UI.hoverT = null;
-  renderMatch();
+async function animatePlay(ev, pid, from, landed) {
+  /* landed: the player dropped the card and it already glided onto the chart, so it does not fly again */
+  if (!landed) await flyCard(ev.card, from, stageRect(), D(430));
+  UI.last = { card: ev.card, pid, target: ev.target, fresh: !landed }; UI.sel = null; UI.hoverT = null;
+  renderMatch(); if (landed) dropGhost();
   if (ev.card.wonder) banner(`${civNameOf(pid)} ${pid === 0 ? 'begin' : 'begins'} ${ev.card.name}`, pid === 0 ? 'Keep it standing for 3 turns to win' : 'Bring it down within 3 turns or they win', 2200);
   await wait(D(300));
   const src = $('#stage-card .card') ? $('#stage-card .card').getBoundingClientRect() : stageRect(), hit = new Set();

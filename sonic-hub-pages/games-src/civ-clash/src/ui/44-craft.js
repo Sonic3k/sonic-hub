@@ -8,12 +8,12 @@ const CIV_FAMILY = {
   bohemians: 'folk', poles: 'folk', lithuanians: 'folk', magyars: 'folk',
   arabs: 'islamic', persians: 'islamic', turks: 'islamic', berbers: 'islamic',
   mongols: 'steppe', huns: 'steppe', khitans: 'steppe', jurchens: 'steppe',
-  chinese: 'scroll', japanese: 'scroll', koreans: 'scroll',
-  indians: 'temple', khmer: 'temple', daiviet: 'temple', malay: 'temple',
+  chinese: 'sino', japanese: 'sino', koreans: 'sino', daiviet: 'sino',
+  indians: 'temple', khmer: 'temple', malay: 'temple',
   malians: 'sahel', aztecs: 'codex', mayans: 'codex', incas: 'andes',
 };
 const FAMILY_NAMES = { gothic: 'a Gothic manuscript', knot: 'insular knotwork', icon: 'a Byzantine icon', folk: 'Central European folk embroidery', islamic: 'Islamic tilework',
-  steppe: 'steppe felt and leather', scroll: 'an East Asian scroll mount', temple: 'temple stonework', sahel: 'Sahelian mud architecture', codex: 'a Mesoamerican codex', andes: 'Andean stonework', merc: 'a mercenary\'s brass' };
+  steppe: 'steppe felt and leather', sino: 'an East Asian tiled roof', temple: 'temple stonework', sahel: 'Sahelian mud architecture', codex: 'a Mesoamerican codex', andes: 'Andean stonework', merc: 'a mercenary\'s brass' };
 /* corner ornaments, one per family (gold leaf on the frame) */
 const CORNERS = {
   gothic: '<path d="M2 22C2 10 10 2 22 2" fill="none" stroke="#d8b45c" stroke-width="2"/><path d="M6 15c3-1 4-4 3-7M9 9c3 0 5 2 6 5" fill="none" stroke="#b9361f" stroke-width="1.4"/><circle cx="15" cy="15" r="2" fill="#d8b45c"/>',
@@ -22,7 +22,7 @@ const CORNERS = {
   folk: '<path d="M8 4h4v4h4v4h-4v4H8v-4H4V8h4z" fill="#b9361f"/><path d="M18 2h3v3h-3zM2 18h3v3H2z" fill="#2b2118"/>',
   islamic: '<path d="M11 1l2.6 6.4L20 10l-6.4 2.6L11 19l-2.6-6.4L2 10l6.4-2.6z" fill="#e8c96e" stroke="#7a5a12" stroke-width=".8"/><circle cx="11" cy="10" r="2" fill="#2a6f86"/>',
   steppe: '<path d="M4 20c0-8 4-14 11-14 4 0 6 3 5 6s-5 3-6 0" fill="none" stroke="#e2c070" stroke-width="2" stroke-linecap="round"/>',
-  scroll: '<path d="M3 13c0-5 3-8 7-8 3 0 5 2 5 5 0 2-2 3-3 2s0-3 1-2" fill="none" stroke="#e2c070" stroke-width="1.8" stroke-linecap="round"/><path d="M3 20h17" stroke="#e2c070" stroke-width="1.2"/>',
+  sino: '<path d="M3 19c0-4 3-6.5 6.5-5.4C9.8 9.6 14.6 8 17.6 11c2-1.6 5-.4 5 2.4" fill="none" stroke="#e2c070" stroke-width="1.8" stroke-linecap="round"/><path d="M9.5 13.6c.9 1.9 3 2.2 4.2.4M3 22.5h12" fill="none" stroke="#e2c070" stroke-width="1.3" stroke-linecap="round"/>',
   temple: '<path d="M12 3c-3 3-3 7 0 10 3-3 3-7 0-10zM12 13c-3-2-8-1-9 2 3 0 6 0 9 1M12 13c3-2 8-1 9 2-3 0-6 0-9 1" fill="#e2c070"/>',
   sahel: '<path d="M3 21V9l3-6 3 6v12M11 21V5l3-3 3 3v16" fill="#c8915a" stroke="#5a3418" stroke-width="1.1"/><path d="M4 12h3M12 9h3M12 14h3" stroke="#5a3418" stroke-width="1.2"/>',
   codex: '<path d="M2 20h7v-7h7V6h6" fill="none" stroke="#e8c96e" stroke-width="2.2"/><circle cx="19" cy="17" r="2.6" fill="#1f6d6a" stroke="#e8c96e"/>',
@@ -73,6 +73,16 @@ function installMaterials() {
   const leather = `<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200'><filter id='l'><feTurbulence type='fractalNoise' baseFrequency='.55' numOctaves='2' seed='5' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 .1 0 0 0 0 .06 0 0 0 0 .03 0 0 0 .8 -.2'/></filter><rect width='200' height='200' filter='url(#l)'/></svg>`;
   const R = document.documentElement.style;
   R.setProperty('--vellum-tex', u(vellum)); R.setProperty('--oak-tex', u(oak)); R.setProperty('--leather-tex', u(leather));
+  /* East Asian tiled roof: ridge with end knobs, hips sweeping down, eave corners turned up, tile channels, gilded eave board */
+  const D = 'M0 44V17C0 15 .6 14 1.4 13.6C6 19 13 21.6 22 21C31 20.2 38.5 14 43.6 7.4L43 2.4C44.4 .6 46.6 .8 47.6 2.8L48 5H152L152.4 2.8C153.4 .8 155.6 .6 157 2.4L156.4 7.4C161.5 14 169 20.2 178 21C187 21.6 194 19 198.6 13.6C199.4 14 200 15 200 17V44Z';
+  const roof = `<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 44' preserveAspectRatio='none'><defs><clipPath id='r'><path d='${D}'/></clipPath>`
+    + `<linearGradient id='g' x1='0' y1='0' x2='0' y2='1'><stop offset='0' stop-color='#7a736c'/><stop offset='.55' stop-color='#4b4540'/><stop offset='1' stop-color='#2a2521'/></linearGradient>`
+    + `<pattern id='t' width='5.5' height='44' patternUnits='userSpaceOnUse'><rect width='1.6' height='44' fill='#fff' fill-opacity='.14'/><rect x='1.6' width='.9' height='44' fill='#000' fill-opacity='.45'/></pattern></defs>`
+    + `<g clip-path='url(#r)'><rect width='200' height='44' fill='url(#g)'/><rect y='7' width='200' height='30' fill='url(#t)'/><rect y='37' width='200' height='7' fill='#1c130c'/><path d='M0 36.7H200' stroke='#d6b45f' stroke-width='1.1'/>`
+    + `<rect x='44' y='2.6' width='112' height='5.4' fill='#2a221d'/><path d='M45 3.1H155' stroke='#d6b45f' stroke-width='.8'/></g>`
+    + `<path d='M3 15.6C8 20.4 14 22.4 22 22C31 21.3 38.4 15.6 44.6 8.2M197 15.6C192 20.4 186 22.4 178 22C169 21.3 161.6 15.6 155.4 8.2' fill='none' stroke='#a39789' stroke-width='1.6'/>`
+    + `<path d='M1.6 14C3 15.6 4.6 17 6.4 18M198.4 14C197 15.6 195.4 17 193.6 18M43.4 2.6C44.6 1 46.4 1 47.4 2.8M156.6 2.6C155.4 1 153.6 1 152.6 2.8' fill='none' stroke='#d6b45f' stroke-width='1.5' stroke-linecap='round'/></svg>`;
+  R.setProperty('--roof-art', u(roof)); R.setProperty('--roof-mask', u(`<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 44' preserveAspectRatio='none'><path d='${D}'/></svg>`));
   let css = '';
   for (const [f, svg] of Object.entries(CORNERS)) css += `.fam-${f}{--corner:${u(`<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'>${svg.replace(/"/g, "'")}</svg>`)}}\n`;
   const el = document.createElement('style'); el.id = 'family-styles'; el.textContent = css; document.head.appendChild(el);

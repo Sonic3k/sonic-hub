@@ -23,11 +23,12 @@ async function beginMatch() { closeSheet(); startGame(S); UI.busy = true; render
 
 /* the human */
 function onHandCard(uid) {
-  /* first tap chooses a card, the next one opens it in full; playing takes the Play button or a drag */
+  /* first tap chooses a card (only classes move), the next one opens it in full; playing takes the Play button or a drag */
   const c = S.players[0].hand.find(x => x.uid === uid); if (!c) return;
   if (!isMyTurn() || UI.sel === uid) return cardSheet(c, { hand: true });
-  UI.sel = uid; UI.hoverT = null; clearAim(); SFX.play('click'); renderMatch(); coachEvent('select');
+  UI.sel = uid; UI.hoverT = null; markHand(); SFX.play('click'); buzz(8); later(renderSelection); coachEvent('select');
 }
+function unselect() { UI.sel = null; UI.hoverT = null; markHand(); buzz(6); later(renderSelection); }
 function aiming() { const c = selCard(); return !!(c && isMyTurn() && needsTarget(c) && opponents(S, S.players[0]).length > 1); }
 function onCamp(pid, touch) {
   if (!aiming()) return campSheet(pid);
@@ -37,17 +38,15 @@ function onCamp(pid, touch) {
 }
 function setAimTarget(pid) {
   if (UI.hoverT === pid) return;
-  UI.hoverT = pid;
-  $$('.camp.targetable').forEach(el => el.classList.toggle('hot', +el.dataset.pid === pid));
-  renderStage(); renderPreview(); renderAction();
+  UI.hoverT = pid; renderSelection();
 }
-async function humanPlay(uid, tid) {
+async function humanPlay(uid, tid, landed) {
   const el = document.querySelector(`#hand .card[data-uid="${uid}"]`), from = el ? el.getBoundingClientRect() : null;
-  UI.busy = true; clearAim(); UI.view = S.players.map(p => p.hp);
+  UI.busy = true; UI.view = S.players.map(p => p.hp);
   const ev = playCard(S, 0, uid, tid);
-  if (!ev) { UI.busy = false; UI.view = null; return renderMatch(); }
+  if (!ev) { UI.busy = false; UI.view = null; if (landed) dropGhost(); return renderMatch(); }
   coachEvent('play');
-  await animatePlay(ev, 0, from);
+  await animatePlay(ev, 0, from, landed);
   UI.busy = false;
   if (S.winner != null || !S.players[0].alive) return finish();
   if (S.plays > 0 && S.players[0].hand.length) return renderMatch();
@@ -118,7 +117,7 @@ function cycleSpeed() { SET.speed = SPEED_ORDER[(SPEED_ORDER.indexOf(SET.speed) 
 /* input */
 document.addEventListener('click', e => {
   SFX.init();
-  if (DRAG.justDragged) { DRAG.justDragged = false; return; }
+  if (performance.now() - DRAG.droppedAt < 450 && e.target.closest('#hand, #stage, .camp')) return;   /* the click that follows a drop is not a tap */
   const act = e.target.closest('[data-act]'), touch = e.pointerType === 'touch' || matchMedia('(pointer: coarse)').matches;
   if (act) return action(act.dataset.act, act);
   const hire = e.target.closest('[data-hire]'); if (hire) { if (!hire.disabled) humanBuy(+hire.dataset.hire); return; }
@@ -154,7 +153,9 @@ function action(a, el) {
     case 'codex-play': closeCodex(); UI.civ = el.dataset.civ; SET.civ = UI.civ; saveSettings(); UI.selView = 'detail'; return go('select');
     case 'cx-filter': CODEX.filter = el.dataset.f; return renderCodex(true);
     case 'card-info': { const c = selCard(); if (c) cardSheet(c, { hand: true }); return; }
-    case 'play-card': { const uid = +el.dataset.uid, c = S && S.players[0].hand.find(x => x.uid === uid); closeSheet(); if (!c || !isMyTurn()) return; UI.sel = uid; const t = selTarget(c); if (needsTarget(c) && t == null) { UI.hoverT = null; return renderMatch(); } return humanPlay(uid, t); }
+    case 'play-card': { const uid = +el.dataset.uid, c = S && S.players[0].hand.find(x => x.uid === uid); closeSheet(); if (!c || !isMyTurn()) return; UI.sel = uid; const t = selTarget(c); if (needsTarget(c) && t == null) { UI.hoverT = null; return renderSelection(); } return humanPlay(uid, t); }
+    case 'hand-prev': return handStep(-1);
+    case 'hand-next': return handStep(1);
     case 'settings': return settingsSheet();
     case 'tutorial-reset': SET.tutorialDone = false; saveSettings(); return settingsSheet();
     case 'pause': return pauseSheet();
@@ -168,25 +169,22 @@ function action(a, el) {
     case 'events': return mobileSheet('events');
     case 'market': return mobileSheet('market');
     case 'coach-next': return coachNext();
-    case 'cancel-sel': UI.sel = null; UI.hoverT = null; clearAim(); return renderMatch();
+    case 'cancel-sel': return unselect();
     case 'play-sel': { const c = selCard(); if (!c) return; const t = selTarget(c); if (needsTarget(c) && t == null) return; return humanPlay(c.uid, t); }
     case 'coach-skip': return endTutorial();
   }
 }
-document.addEventListener('pointermove', e => {
-  if (!aiming() || e.pointerType === 'touch') return;
-  const camp = e.target.closest('.camp.targetable');
-  setAimTarget(camp ? +camp.dataset.pid : null);
-  const cardEl = document.querySelector(`#hand .card[data-uid="${UI.sel}"]`);
-  if (camp) { const r = camp.getBoundingClientRect(); aim(cardEl && cardEl.getBoundingClientRect(), r.left + r.width / 2, r.top + r.height / 2); }
-  else aim(cardEl && cardEl.getBoundingClientRect(), e.clientX, e.clientY);
+/* aiming with a mouse: the camp under the pointer becomes the target, and stays it until another camp is pointed at */
+document.addEventListener('pointerover', e => {
+  if (e.pointerType === 'touch' || DRAG.on || !aiming()) return;
+  const camp = e.target.closest('.camp.targetable'); if (camp) setAimTarget(+camp.dataset.pid);
 });
 function rerenderSelect() { const l = $('.sel-list'), d = $('.sel-detail'), ly = l ? l.scrollTop : 0, dy = d ? d.scrollTop : 0, sy = $('#screen-select').scrollTop; renderSelect(); if ($('.sel-list')) $('.sel-list').scrollTop = ly; if ($('.sel-detail')) $('.sel-detail').scrollTop = dy; $('#screen-select').scrollTop = sy; }
 document.addEventListener('keydown', e => {
   if (CODEX.open) { if (e.key === 'Escape') { if (!$('#sheet').classList.contains('hidden')) closeSheet(); else action('codex-back'); } return; }
   if (UI.screen !== 'match' || !S) return;
   const sheetOpen = !$('#sheet').classList.contains('hidden');
-  if (e.key === 'Escape') { if (sheetOpen) { if (!$('#sheet').dataset.lock) closeSheet(); return; } if (UI.sel != null) { UI.sel = null; UI.hoverT = null; clearAim(); return renderMatch(); } return pauseSheet(); }
+  if (e.key === 'Escape') { if (sheetOpen) { if (!$('#sheet').dataset.lock) closeSheet(); return; } if (UI.sel != null) return unselect(); return pauseSheet(); }
   if (sheetOpen) return;
   const k = e.key.toLowerCase();
   if (/^[1-9]$/.test(e.key)) { const c = S.players[0].hand[+e.key - 1]; if (c) onHandCard(c.uid); }
@@ -198,58 +196,102 @@ document.addEventListener('keydown', e => {
   else if (k === 's') cycleSpeed();
   else if (k === 'h') action('rules');
 });
-addEventListener('resize', () => { updateMode(); if (UI.screen === 'match' && S && !UI.busy) renderMatch(); else if (UI.screen === 'menu') renderMenu(); });
-UI.selView = 'list';
-updateMode(); installCivStyles(); installMaterials(); installTableArt(); installSymbolSprites(); go('menu');
-
-/* drag a card up onto the chart (or onto an enemy camp) to play it; a sideways swipe scrolls the hand */
-const DRAG = { uid: null, x0: 0, y0: 0, on: false, ghost: null, el: null, pid: null, ok: false, justDragged: false };
-function overTable(y) { const h = $('#hand').getBoundingClientRect(); return y < h.top - 6; }
-function startDrag(e) {
-  DRAG.on = true; UI.sel = DRAG.uid; UI.hoverT = null; clearAim();
-  try { DRAG.el.setPointerCapture(e.pointerId); } catch (_) { }
-  renderMatch();
-  const c = selCard(); if (!c) { DRAG.on = false; return; }
-  const g = document.createElement('div'); g.className = 'drag-ghost'; g.innerHTML = cardHTML(c, { size: 'lg' });
-  $('#fx-layer').appendChild(g); DRAG.ghost = g; document.documentElement.classList.add('dragging'); hideTip(); hideZoom(); SFX.play('card');
-  moveDrag(e);
+/* drag a card onto the chart, or onto an enemy camp, to play it — Photo Studio's model. Hold it a moment or pull it up to pick it
+   up; a sideways swipe scrolls the hand. One ghost card, made once and moved on the GPU; where the drop zones are is measured
+   once, when the card is picked up, and nothing on the table is rebuilt while it moves */
+const DRAG = { uid: null, el: null, pid: null, mouse: false, x0: 0, y0: 0, lx: 0, ly: 0, hold: 0, on: false, back: false, ox: 0, oy: 0, w: 0, k: 0.8, zone: null, ok: false, t: null, droppedAt: 0 };
+const TILT = -3 * Math.PI / 180;
+function ghostAt(x, y) {
+  /* the point where the card was grabbed stays under the pointer while the ghost tilts and shrinks about its corner */
+  const k = DRAG.k, c = Math.cos(TILT), s = Math.sin(TILT), gx = DRAG.ox * k, gy = DRAG.oy * k;
+  $('#drag-ghost').style.transform = `translate3d(${(x - (gx * c - gy * s)).toFixed(1)}px,${(y - (gx * s + gy * c)).toFixed(1)}px,0) rotate(-3deg) scale(${k})`;
 }
-function moveDrag(e) {
-  const k = mobile() ? 0.66 : 0.72;
-  DRAG.ghost.style.transform = `translate(${e.clientX}px,${e.clientY}px) translate(-50%,-62%) scale(${k}) rotate(-3deg)`;
-  const c = selCard(); if (!c) return;
-  const under = document.elementFromPoint(e.clientX, e.clientY), camp = under && under.closest('.camp'), opps = opponents(S, S.players[0]);
-  if (needsTarget(c)) {
-    let t = camp ? +camp.dataset.pid : null; if (!(t && S.players[t] && S.players[t].alive)) t = opps.length === 1 && overTable(e.clientY) ? opps[0].id : null;
-    if (t !== UI.hoverT) { UI.hoverT = t; $$('.camp').forEach(el => el.classList.toggle('hot', +el.dataset.pid === t)); renderPreview(); renderAction(); renderStage(); }
-  } else {
-    const ok = overTable(e.clientY); $('#stage').classList.toggle('drop-ok', ok);
-    if (ok !== DRAG.ok) { DRAG.ok = ok; renderPreview(); }
+function ghostTo(r, ms, ease) {
+  const g = $('#drag-ghost'); g.style.transition = `transform ${ms}ms ${ease}`;
+  g.style.transform = `translate3d(${r.left.toFixed(1)}px,${r.top.toFixed(1)}px,0) rotate(0deg) scale(${(r.width / DRAG.w).toFixed(4)})`;
+  return wait(ms + 16);
+}
+function dropGhost() { const g = $('#drag-ghost'); g.classList.remove('on'); g.style.transition = ''; g.innerHTML = ''; }
+/* where a dropped card settles: on the chart, over the copy already shown there if it is this card */
+function landingRect(c) { const cur = $('#stage-card .card'); return cur && +cur.dataset.uid === c.uid ? cur.getBoundingClientRect() : stageRect(); }
+function beginDrag(x, y) {
+  clearTimeout(DRAG.hold);
+  const c = S.players[0].hand.find(h => h.uid === DRAG.uid);
+  if (!c || !isMyTurn() || !DRAG.el.isConnected) { DRAG.uid = null; return; }
+  /* every position is read before anything is written: the card, and the drop zones (above the hand for most cards, the enemy
+     camps when there is a choice of target) */
+  const r = DRAG.el.getBoundingClientRect(), opps = opponents(S, S.players[0]), aim = needsTarget(c);
+  DRAG.w = DRAG.el.offsetWidth; DRAG.ox = DRAG.x0 - r.left; DRAG.oy = DRAG.y0 - r.top;
+  DRAG.zone = { top: $('#hand').getBoundingClientRect().top - 6, solo: aim && opps.length === 1 ? opps[0].id : null,
+    camps: aim && opps.length > 1 ? opps.map(P => ({ pid: P.id, r: document.getElementById('camp-' + P.id).getBoundingClientRect() })) : null };
+  DRAG.on = true; DRAG.ok = false; DRAG.t = null; UI.sel = c.uid; UI.hoverT = null;
+  try { DRAG.el.setPointerCapture(DRAG.pid); } catch (_) { }
+  /* the ghost: a copy of the card itself, tilted and a little smaller, rising off the hand */
+  const g = $('#drag-ghost');
+  g.innerHTML = DRAG.el.outerHTML;
+  const gc = g.firstElementChild; gc.classList.remove('sel', 'playable', 'drag-src'); gc.removeAttribute('tabindex'); gc.removeAttribute('role'); gc.style.transformOrigin = `${DRAG.ox}px ${DRAG.oy}px`;
+  g.style.transition = ''; ghostAt(x, y); g.classList.add('on');
+  DRAG.el.classList.add('drag-src'); $('#stage').classList.add('holding');
+  hideTip(); SFX.play('card'); buzz(12);
+  later(() => { if (!DRAG.on) return; markHand(); renderAction(); renderPreview(); syncCampMarks(); coachEvent('select'); });
+}
+function dragMove(x, y) {
+  ghostAt(x, y);
+  const Z = DRAG.zone; let ok, t = null;
+  if (Z.camps) { const hit = Z.camps.find(q => x >= q.r.left && x <= q.r.right && y >= q.r.top && y <= q.r.bottom); t = hit ? hit.pid : null; ok = t != null; }
+  else { ok = y < Z.top; t = ok ? Z.solo : null; }
+  if (ok === DRAG.ok && t === DRAG.t) return;
+  DRAG.ok = ok; DRAG.t = t; UI.hoverT = t;
+  $('#stage').classList.toggle('drop-ok', ok && !Z.camps);
+  renderPreview(); syncCampMarks();
+}
+async function endDrag(x, y, cancelled) {
+  const uid = UI.sel, c = S.players[0].hand.find(h => h.uid === uid);
+  if (!cancelled) dragMove(x, y);
+  const ok = !cancelled && DRAG.ok && c && (!needsTarget(c) || DRAG.t != null), t = DRAG.t;
+  DRAG.on = false; DRAG.back = true; DRAG.droppedAt = performance.now();
+  $('#stage').classList.remove('drop-ok', 'holding');
+  if (ok) {
+    /* it glides onto the chart and is played from there */
+    UI.busy = true; buzz(14);
+    await ghostTo(landingRect(c), 180, 'ease-out');
+    DRAG.back = false;
+    return humanPlay(uid, needsTarget(c) ? t : null, true);
   }
-}
-function endDrag(e) {
-  const c = selCard(), ok = overTable(e.clientY);
-  if (DRAG.ghost) DRAG.ghost.remove(); DRAG.ghost = null; DRAG.on = false; DRAG.ok = false;
-  document.documentElement.classList.remove('dragging'); $('#stage').classList.remove('drop-ok');
-  DRAG.justDragged = true; setTimeout(() => (DRAG.justDragged = false), 60);
-  if (!c) return;
-  if (ok && (!needsTarget(c) || selTarget(c) != null)) return humanPlay(c.uid, needsTarget(c) ? selTarget(c) : null);
-  renderMatch();
+  /* anywhere else: it slides back into the hand and stays chosen */
+  const src = document.querySelector(`#hand .card[data-uid="${uid}"]`);
+  if (src) { const r = src.getBoundingClientRect(); await ghostTo({ left: r.left, top: r.top - 8, width: r.width }, 200, 'ease-in'); src.classList.remove('drag-src'); }
+  dropGhost(); DRAG.back = false;
+  renderSelection();
 }
 document.addEventListener('pointerdown', e => {
+  if (DRAG.on || DRAG.back) return;
   const el = e.target.closest('#hand .card.playable'); if (!el || !isMyTurn() || e.button > 0) return;
-  Object.assign(DRAG, { uid: +el.dataset.uid, x0: e.clientX, y0: e.clientY, on: false, el, pid: e.pointerId });
+  clearTimeout(DRAG.hold);
+  Object.assign(DRAG, { uid: +el.dataset.uid, el, pid: e.pointerId, mouse: e.pointerType === 'mouse', x0: e.clientX, y0: e.clientY, lx: e.clientX, ly: e.clientY });
+  if (!DRAG.mouse) DRAG.hold = setTimeout(() => { if (DRAG.uid != null && !DRAG.on) beginDrag(DRAG.lx, DRAG.ly); }, 240);
 });
 document.addEventListener('pointermove', e => {
   if (DRAG.uid == null || e.pointerId !== DRAG.pid) return;
   if (!DRAG.on) {
-    /* sideways is a scroll of the hand; only a clearly upward pull picks the card up */
+    /* a finger: a pull up (or down) of 10px picks the card up, a sideways move of 18px is a scroll; a mouse: any 6px move */
+    DRAG.lx = e.clientX; DRAG.ly = e.clientY;
     const dx = e.clientX - DRAG.x0, dy = e.clientY - DRAG.y0;
-    if (Math.abs(dx) > 10 && Math.abs(dx) >= Math.abs(dy)) { DRAG.uid = null; return; }
-    if (dy < -22 && -dy > Math.abs(dx) * 1.5 && isMyTurn()) startDrag(e);
+    if (DRAG.mouse ? Math.hypot(dx, dy) > 6 : Math.abs(dy) > 10 && Math.abs(dy) > Math.abs(dx) * 0.8) beginDrag(e.clientX, e.clientY);
+    else if (Math.hypot(dx, dy) > 18) { clearTimeout(DRAG.hold); DRAG.uid = null; }
     return;
   }
-  e.preventDefault(); moveDrag(e);
+  e.preventDefault(); dragMove(e.clientX, e.clientY);
 }, { passive: false });
-document.addEventListener('pointerup', e => { if (DRAG.on && e.pointerId === DRAG.pid) endDrag(e); DRAG.uid = null; });
-document.addEventListener('pointercancel', () => { if (DRAG.on) { if (DRAG.ghost) DRAG.ghost.remove(); DRAG.ghost = null; DRAG.on = false; document.documentElement.classList.remove('dragging'); $('#stage').classList.remove('drop-ok'); renderMatch(); } DRAG.uid = null; });
+document.addEventListener('pointerup', e => { if (e.pointerId !== DRAG.pid) return; clearTimeout(DRAG.hold); if (DRAG.on) endDrag(e.clientX, e.clientY); DRAG.uid = null; });
+document.addEventListener('pointercancel', e => { if (e.pointerId !== DRAG.pid) return; clearTimeout(DRAG.hold); if (DRAG.on) endDrag(0, 0, true); DRAG.uid = null; });
+/* while a card is held the page never scrolls under it (only gestures that start on the hand can hold a card) */
+$('#hand').addEventListener('touchmove', e => { if (DRAG.on) e.preventDefault(); }, { passive: false });
+document.addEventListener('contextmenu', e => { if (e.target.closest('#hand .card')) e.preventDefault(); });
+/* the hand row: a mouse wheel scrolls it sideways when it is wider than its space, and the arrows follow the scroll */
+$('#hand').addEventListener('wheel', e => { const h = e.currentTarget; if (mobile() || h.scrollWidth <= h.clientWidth + 2 || Math.abs(e.deltaX) >= Math.abs(e.deltaY)) return; e.preventDefault(); h.scrollLeft += e.deltaY; }, { passive: false });
+$('#hand').addEventListener('scroll', () => { if (!mobile()) handNav(); }, { passive: true });
+
+addEventListener('resize', () => { updateMode(); if (UI.screen === 'match' && S && !UI.busy) renderMatch(); else if (UI.screen === 'menu') renderMenu(); });
+UI.selView = 'list';
+updateMode(); installCivStyles(); installMaterials(); installTableArt(); installSymbolSprites(); go('menu');

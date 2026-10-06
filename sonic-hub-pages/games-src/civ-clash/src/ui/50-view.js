@@ -30,6 +30,10 @@ const KW_RE = /\b(?:(over the walls)|([Ee]very opponent|[Ee]very other opponent|
 const KW_CLS = ['pierce', 'aoe', 'play', 'dmg', 'hp', 'gold', 'card', 'wall', 'steal', 'raze'];
 function kw(text) { return esc(text).replace(KW_RE, (...m) => `<b class="kw k-${KW_CLS[m.slice(1, 11).findIndex(x => x !== undefined)]}">${m[0]}</b>`); }
 
+/* a region of the table is rewritten only when its markup changes, so nothing under the pointer is rebuilt for nothing
+   (anything that edits a region in place, like the HP count-down, calls forget() so the next render rewrites it) */
+function put(el, html) { if (typeof el === 'string') el = $(el); if (!el || el._html === html) return false; el.innerHTML = html; el._html = html; return true; }
+function forget(el) { if (el) el._html = null; }
 const isMyTurn = () => S && S.turn === 0 && S.winner == null && !UI.busy;
 const selCard = () => (S && UI.sel != null ? S.players[0].hand.find(c => c.uid === UI.sel) : null);
 const civNameOf = pid => (pid === 0 ? 'You' : CIVS[S.players[pid].civ].name);
@@ -46,7 +50,6 @@ function workHTML(st) { return buildHTML(st); }
 function dispHP(P) { return UI.view && UI.view[P.id] != null ? UI.view[P.id] : P.hp; }
 function campHTML(P, mine) {
   const C = CIVS[P.civ], hp = Math.max(0, dispHP(P)), acting = S.turn === P.id && S.winner == null;
-  const tgt = !mine && P.alive && UI.sel != null && isMyTurn() && needsTarget(selCard() || { steps: [] }) && opponents(S, S.players[0]).length > 1;
   const info = [];
   info.push(`<span class="coin" data-tip="Gold hires mercenaries at the market.">${symBadge('G', 20)}<b>${P.gold}</b></span>`);
   if (!mine) info.push(`<span class="backs" data-tip="${P.hand.length} cards in hand">${'<i class="cback"></i>'.repeat(Math.min(P.hand.length, 5))}<b>${P.hand.length}</b></span>`);
@@ -54,17 +57,17 @@ function campHTML(P, mine) {
     : `<span class="agem hot" data-tip="Holds the Imperial Age card.">${crownSVG(16)}ready</span>`);
   if (P.relic) info.push(`<span class="relic" data-tip="${esc(RELICS[P.relic].name)}: ${esc(RELICS[P.relic].text)}">${esc(RELICS[P.relic].name)}</span>`);
   if (mine) info.push(`<span class="piles"><button class="pile" data-act="deck" data-tip="Cards left to draw">Deck ${P.deck.length}</button><button class="pile" data-act="discard" data-tip="Cards already played or lost">Discard ${P.discard.length}</button></span>`);
-  return `<section class="camp fam-${CIV_FAMILY[P.civ]} civ-${P.civ}${mine ? ' mine' : ''}${acting ? ' turn' : ''}${P.alive ? '' : ' out'}${tgt ? ' targetable' : ''}${tgt && UI.hoverT === P.id ? ' hot' : ''}" id="camp-${P.id}" data-pid="${P.id}" aria-label="${mine ? 'You, ' : ''}${esc(C.name)}: ${hp} of ${P.maxHP} HP">
+  return `<section class="camp fam-${CIV_FAMILY[P.civ]} civ-${P.civ}${mine ? ' mine' : ''}${acting ? ' turn' : ''}${P.alive ? '' : ' out'}" id="camp-${P.id}" data-pid="${P.id}" aria-label="${mine ? 'You, ' : ''}${esc(C.name)}: ${hp} of ${P.maxHP} HP">
 <header class="camp-banner">${crest(P.civ, mine ? 32 : 28)}<span class="cname">${esc(C.name)}</span>${mine ? '<span class="you">you</span>' : ''}${acting && !mine ? '<span class="flag">acting</span>' : ''}${P.alive ? '' : '<span class="flag out">defeated</span>'}<span class="medals">${medalsOf(P)}</span>${hpTag(P, hp)}</header>${hpBar(P, hp)}
 <div class="camp-info"><div class="defs"><span class="lbl">Defenses</span>${P.structs.map(buildHTML).join('') || '<span class="none">none</span>'}</div><div class="stash">${info.join('')}</div></div>
 <div class="chips"></div><div class="floats"></div></section>`;
 }
 function renderTopbar() {
   const me = isMyTurn(), E = S.event ? EVENT_BY[S.event] : null, who = S.winner != null ? '' : S.turn === 0 ? 'Your turn' : `${CIVS[cur(S).civ].name} to play`;
-  $('#topbar').innerHTML = `<button class="icon-btn" data-act="pause" aria-label="Menu" data-tip="Menu (Esc)">${ICON.menu}</button>
+  put('#topbar', `<button class="icon-btn" data-act="pause" aria-label="Menu" data-tip="Menu (Esc)">${ICON.menu}</button>
 <div class="tb-mid"><button class="evchip mob-only" data-act="events" aria-label="Events"><small>Round ${S.round}</small><b>${E ? esc(E.name) : 'Peace'}</b>${UI.eventSeen !== S.round && S.event ? '<i class="badge"></i>' : ''}</button><span class="pill desk-only">Round ${S.round}</span>${who ? `<span class="pill desk-only ${S.turn === 0 ? 'you' : ''}">${who}</span>` : ''}${me && S.plays > 0 ? `<span class="pips" data-tip="Plays left this turn">${'<i class="pip"></i>'.repeat(S.plays)}</span>` : ''}</div>
 <div class="tb-right"><button class="icon-btn mob-only" data-act="market" aria-label="Mercenary Market" data-tip="Mercenary Market">${ICON.market}${canHire() ? `<i class="badge">${canHire()}</i>` : ''}</button>
-<button class="speed desk-only" data-act="speed" data-tip="Animation speed (S)">${SPEEDS[SET.speed].label}</button><button class="icon-btn" data-act="codex" aria-label="Codex" data-tip="Codex: civilizations, cards, symbols and rules (C)">${ICON.book}</button><button class="icon-btn" data-act="chronicle" aria-label="Chronicle" data-tip="Chronicle (L)">${ICON.scroll}</button></div>`;
+<button class="speed desk-only" data-act="speed" data-tip="Animation speed (S)">${SPEEDS[SET.speed].label}</button><button class="icon-btn" data-act="codex" aria-label="Codex" data-tip="Codex: civilizations, cards, symbols and rules (C)">${ICON.book}</button><button class="icon-btn" data-act="chronicle" aria-label="Chronicle" data-tip="Chronicle (L)">${ICON.scroll}</button></div>`);
 }
 function eventsHTML() {
   const E = S.event ? EVENT_BY[S.event] : null, N = EVENT_BY[S.eventNext];
@@ -77,50 +80,80 @@ function marketHTML() {
 <p class="mk-note">${S.turn === 0 && S.flags.bought ? 'You already hired this turn.' : `Hire 1 card per turn with <b class="kw k-gold">gold</b>; it goes straight to your hand.`}${S.mod.fair ? ' Great Fair: 1 cheaper this round.' : ''}${S.turn === 0 && S.flags.buyFree ? ' Your next hire is free.' : ''}</p>`;
 }
 function renderHand() {
-  /* the hand is rebuilt only when its cards change, so a scrolled hand stays where the player left it */
-  const me = S.players[0], n = me.hand.length, mid = (n - 1) / 2, mine = isMyTurn(), compact = mobile(), hand = $('#hand');
-  const key = `${S.seed}|${compact ? 'c' : 'd' + hand.clientWidth}|${mine ? 1 : 0}|${me.hand.map(c => c.uid).join(',')}`;
-  if (hand.dataset.key === key) {
-    for (const el of hand.children) if (el.dataset.uid) { const on = +el.dataset.uid === UI.sel; el.classList.toggle('sel', on); if (!compact) el.style.zIndex = on ? 50 : +el.dataset.i + 1; }
-    return;
+  /* one straight row on every screen, like Photo Studio's hand. It is rebuilt only when its cards change, so a scrolled hand
+     stays where the player left it; choosing a card only moves a class */
+  const me = S.players[0], mine = isMyTurn(), hand = $('#hand');
+  const key = `${S.seed}|${innerWidth}x${innerHeight}|${mine ? 1 : 0}|${me.hand.map(c => c.uid).join(',')}`;
+  if (hand.dataset.key !== key) {
+    const keep = hand.scrollLeft;
+    hand.innerHTML = me.hand.map((c, i) => cardHTML(c, { cls: mine ? 'playable' : 'dim', attrs: `data-i="${i}" tabindex="0" role="button" aria-label="${esc(c.name)}: ${esc(cardText(c))}"` })).join('') || '<div class="hand-empty">No cards in hand</div>';
+    hand.dataset.key = key;
+    if (mobile()) fitHandText(hand);
+    hand.scrollLeft = keep;
+    markHand(); handNav(); return;
   }
-  const w = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--cw')) || 150, keep = hand.scrollLeft;
-  let gap = 0, spread = 0;
-  if (!compact) { const W = hand.clientWidth - 40; gap = -14; if (n > 1 && n * w + (n - 1) * gap > W) gap = Math.max(-(w - 64), (W - n * w) / (n - 1)); spread = Math.min(4.2, 30 / Math.max(1, n)); hand.style.justifyContent = 'center'; }
-  else hand.style.justifyContent = '';
-  hand.innerHTML = me.hand.map((c, i) => cardHTML(c, { cls: (mine ? 'playable' : 'dim') + (UI.sel === c.uid ? ' sel' : ''), attrs: `data-i="${i}" tabindex="0" role="button" aria-label="${esc(c.name)}: ${esc(cardText(c))}"`, style: compact ? '' : `--rot:${((i - mid) * spread).toFixed(2)}deg;--y:${(Math.abs(i - mid) ** 2 * 2.4).toFixed(1)}px;z-index:${UI.sel === c.uid ? 50 : i + 1};margin-left:${i ? gap.toFixed(1) : 0}px` })).join('') || '<div class="hand-empty">No cards in hand</div>';
-  hand.dataset.key = key;
-  if (compact) hand.scrollLeft = keep;
+  markHand();
+}
+function markHand() { for (const el of $('#hand').children) if (el.dataset.uid) el.classList.toggle('sel', +el.dataset.uid === UI.sel); }
+/* heavier redraws wait until the frame that shows the touch has been painted */
+let LATER = null;
+function later(fn) { if (LATER) { LATER.fn = fn; return; } LATER = { fn }; requestAnimationFrame(() => setTimeout(() => { const f = LATER.fn; LATER = null; f(); }, 0)); }
+/* desktop: when the row is wider than its space, arrows at its ends move it one card at a time */
+function handNav() {
+  const h = $('#hand'), z = $('#handzone');
+  if (mobile()) { z.classList.remove('over'); return; }
+  const max = h.scrollWidth - h.clientWidth, over = max > 2;
+  z.classList.toggle('over', over);
+  if (!over) return;
+  z.querySelector('.hand-nav.prev').disabled = h.scrollLeft <= 2;
+  z.querySelector('.hand-nav.next').disabled = h.scrollLeft >= max - 2;
+}
+function handStep(dir) { const h = $('#hand'), c = h.querySelector('.card'); if (c) h.scrollBy({ left: dir * (c.offsetWidth + 20), behavior: 'smooth' }); }
+/* phone hand cards show as many lines of text as fit (a long name or a seal leaves less room); the rest ends in an ellipsis */
+function fitHandText(hand) {
+  for (const ct of hand.querySelectorAll('.card .ct')) {
+    const sp = ct.firstElementChild; if (!sp) continue;
+    const cs = getComputedStyle(ct), lh = parseFloat(getComputedStyle(sp).lineHeight) || parseFloat(cs.fontSize) * 1.2;
+    const sealed = !!ct.closest('.card').querySelector('.seal');
+    const room = ct.clientHeight - parseFloat(cs.paddingTop) - (sealed ? parseFloat(cs.paddingBottom) : 3);
+    sp.style.webkitLineClamp = Math.max(1, Math.floor((room + 1) / lh));
+  }
 }
 function renderStage() {
-  const c = selCard();
+  /* the card is rewritten only when it is a different card; a fresh play by someone else pops in */
+  const c = selCard(), L = UI.last, sc = $('#stage-card');
+  let html = '', cap = '', pop = false;
   if (c && isMyTurn()) {
     const multi = needsTarget(c) && opponents(S, S.players[0]).length > 1;
-    $('#stage-card').innerHTML = `<div class="stage-fit">${cardHTML(c, { size: 'lg' })}</div>`; fitStage();
-    $('#stage-caption').textContent = multi && UI.hoverT == null ? 'Choose an enemy camp' : multi ? `Aim at ${CIVS[S.players[UI.hoverT].civ].name}` : 'Press Play to confirm';
-    return;
+    html = `<div class="stage-fit">${cardHTML(c, { size: 'lg' })}</div>`;
+    cap = multi && UI.hoverT == null ? 'Choose an enemy camp' : multi ? `Aim at ${CIVS[S.players[UI.hoverT].civ].name}` : 'Press Play to confirm';
+  } else if (L) {
+    html = `<div class="stage-fit">${cardHTML(L.card, { size: 'lg' })}</div>`;
+    cap = `${civNameOf(L.pid)} ${L.pid === 0 ? 'played' : 'plays'} ${L.card.name}${L.target != null ? ' on ' + civObjOf(L.target) : ''}`;
+    pop = L.fresh; L.fresh = false;
   }
-  const L = UI.last;
-  $('#stage-card').innerHTML = L ? `<div class="stage-fit">${cardHTML(L.card, { size: 'lg', cls: L.fresh ? 'pop' : '' })}</div>` : ''; fitStage();
-  if (L) L.fresh = false;
-  $('#stage-caption').textContent = L ? `${civNameOf(L.pid)} ${L.pid === 0 ? 'played' : 'plays'} ${L.card.name}${L.target != null ? ' on ' + civObjOf(L.target) : ''}` : '';
+  const changed = put(sc, html), h = $('#stage').clientHeight;
+  if (changed || +sc.dataset.h !== h) { fitStage(); sc.dataset.h = h; }
+  if (changed && pop && sc.querySelector('.card')) sc.querySelector('.card').classList.add('pop');
+  const ce = $('#stage-caption'); if (ce.textContent !== cap) ce.textContent = cap;
 }
 function stageScale() { const st = $('#stage'); const h = mobile() ? 212 : 302; return Math.max(0.45, Math.min(1, (st.clientHeight - 44) / h)); }
 function fitStage() { const f = $('#stage-card .stage-fit'), sc = $('#stage-card'); if (!f) { sc.style.height = ''; return; } const s = stageScale(); f.style.transform = `scale(${s})`; sc.style.height = Math.round(f.firstElementChild.offsetHeight * s) + 'px'; }
 function selTarget(c) { const opps = opponents(S, S.players[0]); return !needsTarget(c) ? null : opps.length === 1 ? opps[0].id : UI.hoverT; }
-function renderAction() {
-  const el = $('#prompt');
-  if (S.winner != null) { el.innerHTML = ''; return; }
-  if (S.turn !== 0) { el.innerHTML = `<span class="hint">${esc(CIVS[cur(S).civ].name)} is playing…</span>`; return; }
-  if (UI.busy) { el.innerHTML = ''; return; }
+function renderAction() { put('#prompt', actionHTML()); }
+function actionHTML() {
+  if (S.winner != null) return '';
+  if (S.turn !== 0) return `<span class="hint">${esc(CIVS[cur(S).civ].name)} is playing…</span>`;
+  if (UI.busy) return '';
+  if (DRAG.on) return `<span class="hint">${DRAG.zone && DRAG.zone.camps ? 'Drop it on an enemy camp' : 'Drop it on the chart to play it'}</span>`;
   const c = selCard();
-  if (!c) { el.innerHTML = `<span class="hint">${S.plays > 1 ? `Your turn: play ${S.plays} cards` : mobile() ? 'Your turn: tap a card to choose it' : 'Your turn: click a card, or drag it onto the chart'}</span>`; return; }
+  if (!c) return `<span class="hint">${S.plays > 1 ? `Your turn: play ${S.plays} cards` : mobile() ? 'Your turn: tap a card to choose it' : 'Your turn: click a card, or drag it onto the chart'}</span>`;
   const land = document.documentElement.classList.contains('land'), t = selTarget(c);
   const label = !needsTarget(c) ? (land ? 'Play' : `Play ${c.name}`) : t != null ? `${land ? 'On' : 'Play on'} ${CIVS[S.players[t].civ].name}` : (land ? 'Pick a camp' : 'Tap an enemy camp');
-  el.innerHTML = `<button class="icon-btn info" data-act="card-info" aria-label="Card details" data-tip="Card details (I)">${ICON.info}</button><button class="btn ghost small" data-act="cancel-sel">Cancel</button><button class="btn" data-act="play-sel"${needsTarget(c) && t == null ? ' disabled' : ''}>${esc(label)}</button>`;
+  return `<button class="icon-btn info" data-act="card-info" aria-label="Card details" data-tip="Card details (I)">${ICON.info}</button><button class="btn ghost small" data-act="cancel-sel">Cancel</button><button class="btn" data-act="play-sel"${needsTarget(c) && t == null ? ' disabled' : ''}>${esc(label)}</button>`;
 }
 function renderChronicle() {
-  $('#chronicle').innerHTML = `<h3>Chronicle</h3><ul class="log">${S.log.slice(-60).reverse().map(e => { const t = logLine(e); return t ? `<li class="${e.k === 'event' ? 'r' : ''}">${t}</li>` : ''; }).join('')}</ul>`;
+  put('#chronicle', `<h3>Chronicle</h3><ul class="log">${S.log.slice(-60).reverse().map(e => { const t = logLine(e); return t ? `<li class="${e.k === 'event' ? 'r' : ''}">${t}</li>` : ''; }).join('')}</ul>`);
 }
 function logLine(e) {
   switch (e.k) {
@@ -139,73 +172,85 @@ function logLine(e) {
   return '';
 }
 function renderPreview() {
-  $$('.camp .chips').forEach(el => (el.innerHTML = ''));
-  const c = selCard(); if (!c || !isMyTurn()) return;
-  const opps = opponents(S, S.players[0]);
-  const tid = needsTarget(c) ? (UI.hoverT != null ? UI.hoverT : opps.length === 1 ? opps[0].id : null) : null;
-  if (needsTarget(c) && tid == null) return;
-  const pv = previewPlay(S, 0, c.uid, tid); if (!pv) return;
-  pv.players.forEach((d, i) => {
-    const out = [], hand = i === 0 ? d.hand + 1 : d.hand;
-    if (d.dies) out.push(['ko', 'Defeated']);
-    if (d.hp) out.push([d.hp < 0 ? 'dmg' : 'heal', `${d.hp > 0 ? '+' : ''}${d.hp} HP`]);
-    if (d.wonder) out.push(['wall', `wonder ${d.wonder}`]);
-    if (d.walls) out.push(['wall', `${d.walls > 0 ? '+' : ''}${d.walls} wall`]);
-    if (d.gold) out.push(['gold', `${d.gold > 0 ? '+' : ''}${d.gold} gold`]);
-    if (hand) out.push(['card', `${hand > 0 ? '+' : ''}${hand} card${Math.abs(hand) > 1 ? 's' : ''}`]);
-    const el = document.querySelector(`#camp-${i} .chips`); if (el) el.innerHTML = out.map(([k, t]) => `<span class="chip ${k}">${t}</span>`).join('');
-  });
+  /* the result tags above each camp for the chosen card (and target) */
+  const want = {}, c = selCard();
+  if (c && isMyTurn()) {
+    const opps = opponents(S, S.players[0]);
+    const tid = needsTarget(c) ? (UI.hoverT != null ? UI.hoverT : opps.length === 1 ? opps[0].id : null) : null;
+    const pv = needsTarget(c) && tid == null ? null : previewPlay(S, 0, c.uid, tid);
+    if (pv) pv.players.forEach((d, i) => {
+      const out = [], hand = i === 0 ? d.hand + 1 : d.hand;
+      if (d.dies) out.push(['ko', 'Defeated']);
+      if (d.hp) out.push([d.hp < 0 ? 'dmg' : 'heal', `${d.hp > 0 ? '+' : ''}${d.hp} HP`]);
+      if (d.wonder) out.push(['wall', `wonder ${d.wonder}`]);
+      if (d.walls) out.push(['wall', `${d.walls > 0 ? '+' : ''}${d.walls} wall`]);
+      if (d.gold) out.push(['gold', `${d.gold > 0 ? '+' : ''}${d.gold} gold`]);
+      if (hand) out.push(['cards', `${hand > 0 ? '+' : ''}${hand} card${Math.abs(hand) > 1 ? 's' : ''}`]);   /* not 'card': that class is a whole card */
+      want[i] = out.map(([k, t]) => `<span class="chip ${k}">${t}</span>`).join('');
+    });
+  }
+  for (const el of $$('.camp .chips')) put(el, want[el.parentElement.dataset.pid] || '');
+}
+/* aiming marks are classes on the camps, so choosing a card or a target never rebuilds a camp */
+function syncCampMarks() {
+  const on = aiming();
+  for (const el of $$('#opps .camp')) { const pid = +el.dataset.pid, t = on && S.players[pid].alive; el.classList.toggle('targetable', t); el.classList.toggle('hot', t && UI.hoverT === pid); }
 }
 function renderMatch() {
   if (!S) return;
   renderTopbar();
-  const opps = S.players.slice(1);
-  $('#opps').className = 'n' + opps.length;
+  const opps = S.players.slice(1), o = $('#opps'), cls = 'n' + opps.length;
+  if (o.className !== cls) o.className = cls;
   const mini = mobile() && (opps.length > 1 || document.documentElement.classList.contains('land'));
-  $('#opps').innerHTML = opps.map(P => (mini ? campMiniHTML(P) : campHTML(P, false))).join('');
-  $('#me').innerHTML = campHTML(S.players[0], true);
-  $('#events').innerHTML = eventsHTML(); UI.flipEvent = false;
-  $('#market').innerHTML = marketHTML();
-  renderHand(); renderStage(); renderAction(); renderPreview();
+  put(o, opps.map(P => (mini ? campMiniHTML(P) : campHTML(P, false))).join(''));
+  put('#me', campHTML(S.players[0], true));
+  put('#events', eventsHTML()); UI.flipEvent = false;
+  put('#market', marketHTML());
+  renderSelection();
   if (UI.drawer) renderChronicle();
 }
+/* what a choice changes: the hand's marks, the chart, the action bar, the result tags, the aiming marks */
+function renderSelection() { if (!S) return; renderHand(); renderStage(); renderAction(); renderPreview(); syncCampMarks(); }
 
-/* tooltips: hover on desktop, press-and-hold on touch */
-const TIP = { el: null, timer: null };
+/* tooltips: with a mouse, only once the pointer has rested on the same thing for half a second, and gone the moment it leaves;
+   on touch, a press-and-hold that a scroll or a drag cancels. Nothing else pops up on hover */
+const TIP = { el: null, timer: null, over: null, press: null };
 function showTip(el) {
-  if (document.documentElement.classList.contains('dragging')) return;
+  if (DRAG.on || !el.isConnected) return;
   const t = $('#tip'); t.innerHTML = kw(el.dataset.tip); t.classList.remove('hidden');
   const r = el.getBoundingClientRect(), w = t.offsetWidth, h = t.offsetHeight;
   let x = Math.min(Math.max(8, r.left + r.width / 2 - w / 2), innerWidth - w - 8), y = r.top - h - 8;
   if (y < 8) y = r.bottom + 8;
   t.style.left = x + 'px'; t.style.top = y + 'px'; TIP.el = el;
 }
-function hideTip() { $('#tip').classList.add('hidden'); TIP.el = null; }
+function hideTip() { clearTimeout(TIP.timer); if (TIP.el) $('#tip').classList.add('hidden'); TIP.el = null; }
 const FINE = matchMedia('(hover: hover) and (pointer: fine)');
-document.addEventListener('pointerover', e => { if (e.pointerType === 'touch' || !FINE.matches) return; const el = e.target.closest('[data-tip]'); if (el) showTip(el); else if (TIP.el) hideTip(); });
-document.addEventListener('pointerdown', e => { clearTimeout(TIP.timer); if (e.pointerType !== 'touch') return; const el = e.target.closest('[data-tip]'); if (el) TIP.timer = setTimeout(() => showTip(el), 420); });
-document.addEventListener('pointerup', () => { clearTimeout(TIP.timer); if (TIP.el && matchMedia('(pointer: coarse)').matches) setTimeout(hideTip, 1600); });
+document.addEventListener('pointerover', e => {
+  if (e.pointerType === 'touch' || !FINE.matches) return;
+  const el = e.target.closest('[data-tip]');
+  if (el === TIP.over) return;
+  TIP.over = el; hideTip();
+  if (el && !e.buttons) TIP.timer = setTimeout(() => { if (TIP.over === el) showTip(el); }, 500);
+});
+document.addEventListener('pointerout', e => { if (e.pointerType !== 'touch' && !e.relatedTarget) { TIP.over = null; hideTip(); } });
+document.addEventListener('pointerdown', e => {
+  hideTip(); TIP.press = null;
+  if (e.pointerType !== 'touch') return;
+  const el = e.target.closest('[data-tip]');
+  if (el) { TIP.press = { x: e.clientX, y: e.clientY }; TIP.timer = setTimeout(() => showTip(el), 450); }
+});
+document.addEventListener('pointermove', e => { if (TIP.press && Math.hypot(e.clientX - TIP.press.x, e.clientY - TIP.press.y) > 10) { clearTimeout(TIP.timer); TIP.press = null; } }, { passive: true });
+document.addEventListener('pointerup', () => { clearTimeout(TIP.timer); TIP.press = null; if (TIP.el && !FINE.matches) setTimeout(hideTip, 1600); });
+document.addEventListener('pointercancel', () => { clearTimeout(TIP.timer); TIP.press = null; });
 document.addEventListener('scroll', hideTip, true);
-
-/* small cards (market, civ select) open at full size on hover or press-and-hold */
-function showZoom(c) {
-  let z = $('#zoom'); if (!z) { z = document.createElement('div'); z.id = 'zoom'; document.body.appendChild(z); }
-  z.innerHTML = c.outerHTML.replace(/class="card sm /, 'class="card lg ').replace(/<div class="cost[^"]*">[^<]*<\/div>/, '');
-  const r = c.getBoundingClientRect(), w = 214, h = 302;
-  let x = r.left - w - 14; if (x < 8) x = r.right + 14; if (x + w > innerWidth - 8) x = Math.max(8, innerWidth / 2 - w / 2);
-  z.style.left = x + 'px'; z.style.top = Math.min(Math.max(8, r.top + r.height / 2 - h / 2), innerHeight - h - 8) + 'px'; z.classList.remove('hidden');
-}
 function hideZoom() { const z = $('#zoom'); if (z) z.classList.add('hidden'); }
-document.addEventListener('pointerover', e => { if (e.pointerType === 'touch' || !FINE.matches) return; const c = e.target.closest('.card.sm'); if (c) showZoom(c); else hideZoom(); });
-document.addEventListener('pointerup', () => { clearTimeout(TIP.zoomTimer); setTimeout(hideZoom, 1400); });
 
 function canHire() { if (!isMyTurn() || S.flags.bought) return 0; const me = S.players[0]; return S.market.filter(c => c && me.gold >= marketCost(S, me, c)).length; }
 function ageMini(P) { return !P.ageGiven ? `<span class="agem" data-tip="Imperial Age card in ${Math.max(1, RULES.ageTurn - P.turns)} turn(s)">${crownSVG(15)}${Math.max(1, RULES.ageTurn - P.turns)}</span>` : !P.aged ? `<span class="agem hot" data-tip="Holds the Imperial Age card">${crownSVG(15)}!</span>` : `<span class="agem imp" data-tip="In the Imperial Age">${crownSVG(15)}</span>`; }
 function campMiniHTML(P) {
   const C = CIVS[P.civ], hp = Math.max(0, dispHP(P)), acting = S.turn === P.id && S.winner == null, W = wonderOf(P);
-  const tgt = P.alive && UI.sel != null && isMyTurn() && needsTarget(selCard() || { steps: [] }) && opponents(S, S.players[0]).length > 1;
   const wall = `<svg class="bi" viewBox="0 0 24 24" aria-hidden="true">${BUILD.castle}</svg>`, medals = medalsOf(P);
-  return `<section class="camp mini fam-${CIV_FAMILY[P.civ]} civ-${P.civ}${acting ? ' turn' : ''}${P.alive ? '' : ' out'}${tgt ? ' targetable' : ''}${tgt && UI.hoverT === P.id ? ' hot' : ''}" id="camp-${P.id}" data-pid="${P.id}" aria-label="${esc(C.name)}: ${hp} of ${P.maxHP} HP">
+  return `<section class="camp mini fam-${CIV_FAMILY[P.civ]} civ-${P.civ}${acting ? ' turn' : ''}${P.alive ? '' : ' out'}" id="camp-${P.id}" data-pid="${P.id}" aria-label="${esc(C.name)}: ${hp} of ${P.maxHP} HP">
 <header class="camp-banner">${crest(P.civ, 20)}<span class="cname">${esc(C.name)}</span></header>${hpBar(P, hp)}
 <div class="mini-body">${hpTag(P, hp, true)}${medals ? `<span class="mmedals">${medals}</span>` : ''}<div class="mini-stats"><span data-tip="Defenses: total durability">${wall}${wallTotal(P)}${W ? ` +${W.dur}` : ''}</span><span>${symBadge('G', 15)}${P.gold}</span><span><i class="cback"></i>${P.hand.length}</span>${P.aged ? '' : ageMini(P)}</div></div>
 <div class="chips"></div><div class="floats"></div></section>`;
