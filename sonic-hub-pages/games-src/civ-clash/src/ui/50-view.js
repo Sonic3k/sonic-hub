@@ -8,6 +8,9 @@ const ICON = {
   event: '<svg viewBox="0 0 24 24"><path d="M7 3h10M7 21h10M8 3c0 5 8 5 8 9s-8 4-8 9M16 3c0 5-8 5-8 9s8 4 8 9" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>',
   market: '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M12 8v8M9.5 10h4M9.5 14h5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>',
   back: '<svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+  close: '<svg viewBox="0 0 24 24"><path d="M6.5 6.5l11 11M17.5 6.5l-11 11" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>',
+  book: '<svg viewBox="0 0 24 24"><path d="M12 6.6C10 5.1 7.5 4.6 4 4.9v13c3.5-.3 6 .2 8 1.7 2-1.5 4.5-2 8-1.7v-13c-3.5-.3-6 .2-8 1.7zM12 6.6v13" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>',
+  info: '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M12 11v6M12 7.6v.2" stroke="currentColor" stroke-width="2.3" stroke-linecap="round"/></svg>',
 };
 const svgURL = svg => `url("data:image/svg+xml,${encodeURIComponent(svg)}")`;
 function installTableArt() {
@@ -37,7 +40,7 @@ function cardHTML(card, o = {}) {
   const size = o.size || '';
   const syms = card.age ? crownSVG(size === 'lg' ? 66 : size === 'sm' ? 36 : 50) : [...card.icons].map(ch => symBadge(ch, 30)).join('');
   const seal = type === 'sig' ? `<i class="seal" title="Signature card">${crest(card.civ, 22)}</i>` : type === 'imp' || type === 'age' ? `<i class="seal crown" title="Imperial card">${crownSVG(24)}</i>` : type === 'merc' && o.cost == null ? `<i class="seal coin" title="Mercenary">${card.cost}</i>` : '';
-  return `<div class="card ${size} t-${type} fam-${merc ? 'merc' : CIV_FAMILY[card.civ]} civ-${merc ? 'merc' : card.civ} ${o.cls || ''}" data-uid="${card.uid || ''}" ${o.attrs || ''} style="${o.style || ''}"><div class="cf"><div class="cb"><div class="cn"><span>${esc(card.name)}</span></div><div class="ca">${syms}</div><div class="ct"><span>${kw(cardText(card))}</span></div></div></div><i class="corner c1"></i><i class="corner c2"></i>${seal}${o.cost != null ? `<div class="cost${o.afford ? ' ok' : ''}">${o.cost} gold</div>` : ''}</div>`;
+  return `<div class="card ${size} t-${type} fam-${merc ? 'merc' : CIV_FAMILY[card.civ] || 'plain'} civ-${merc ? 'merc' : card.civ} ${o.cls || ''}" data-uid="${card.uid || ''}" ${o.attrs || ''} style="${o.style || ''}"><div class="cf"><div class="cb"><div class="cn"><span>${esc(card.name)}</span></div><div class="ca">${syms}</div><div class="ct"><span>${kw(cardText(card))}</span></div></div></div><i class="corner c1"></i><i class="corner c2"></i>${seal}${o.cost != null ? `<div class="cost${o.afford ? ' ok' : ''}">${o.cost} gold</div>` : ''}</div>`;
 }
 function workHTML(st) { return buildHTML(st); }
 function dispHP(P) { return UI.view && UI.view[P.id] != null ? UI.view[P.id] : P.hp; }
@@ -47,15 +50,12 @@ function campHTML(P, mine) {
   const info = [];
   info.push(`<span class="coin" data-tip="Gold hires mercenaries at the market.">${symBadge('G', 20)}<b>${P.gold}</b></span>`);
   if (!mine) info.push(`<span class="backs" data-tip="${P.hand.length} cards in hand">${'<i class="cback"></i>'.repeat(Math.min(P.hand.length, 5))}<b>${P.hand.length}</b></span>`);
-  info.push(!P.ageGiven ? `<span class="agem" data-tip="The Imperial Age card arrives at the start of turn ${RULES.ageTurn}.">${crownSVG(16)}in ${Math.max(1, RULES.ageTurn - P.turns)}</span>`
-    : !P.aged ? `<span class="agem hot" data-tip="Holds the Imperial Age card.">${crownSVG(16)}ready</span>` : `<span class="agem imp" data-tip="In the Imperial Age.">${crownSVG(16)}Imperial</span>`);
+  if (!P.aged) info.push(!P.ageGiven ? `<span class="agem" data-tip="The Imperial Age card arrives at the start of turn ${RULES.ageTurn}.">${crownSVG(16)}in ${Math.max(1, RULES.ageTurn - P.turns)}</span>`
+    : `<span class="agem hot" data-tip="Holds the Imperial Age card.">${crownSVG(16)}ready</span>`);
   if (P.relic) info.push(`<span class="relic" data-tip="${esc(RELICS[P.relic].name)}: ${esc(RELICS[P.relic].text)}">${esc(RELICS[P.relic].name)}</span>`);
-  if (P.tokens.camel) info.push(`<span class="token camel" data-tip="Camel guard: the next cavalry attack against this camp is cancelled.">Camel guard${P.tokens.camel > 1 ? ' ×' + P.tokens.camel : ''}</span>`);
-  if (P.tokens.immune) info.push('<span class="token" data-tip="Divine Wind: every attack against this camp is cancelled until its next turn.">Divine Wind</span>');
-  if (P.tokens.trap) info.push('<span class="token" data-tip="Bạch Đằng stakes: the first opponent to deal damage here takes 2 damage.">Stakes set</span>');
   if (mine) info.push(`<span class="piles"><button class="pile" data-act="deck" data-tip="Cards left to draw">Deck ${P.deck.length}</button><button class="pile" data-act="discard" data-tip="Cards already played or lost">Discard ${P.discard.length}</button></span>`);
   return `<section class="camp fam-${CIV_FAMILY[P.civ]} civ-${P.civ}${mine ? ' mine' : ''}${acting ? ' turn' : ''}${P.alive ? '' : ' out'}${tgt ? ' targetable' : ''}${tgt && UI.hoverT === P.id ? ' hot' : ''}" id="camp-${P.id}" data-pid="${P.id}" aria-label="${mine ? 'You, ' : ''}${esc(C.name)}: ${hp} of ${P.maxHP} HP">
-<header class="camp-banner">${crest(P.civ, mine ? 32 : 28)}<span class="cname">${esc(C.name)}</span>${mine ? '<span class="you">you</span>' : ''}${acting && !mine ? '<span class="flag">acting</span>' : ''}${P.alive ? '' : '<span class="flag out">defeated</span>'}${hpTag(P, hp)}</header>${hpBar(P, hp)}
+<header class="camp-banner">${crest(P.civ, mine ? 32 : 28)}<span class="cname">${esc(C.name)}</span>${mine ? '<span class="you">you</span>' : ''}${acting && !mine ? '<span class="flag">acting</span>' : ''}${P.alive ? '' : '<span class="flag out">defeated</span>'}<span class="medals">${medalsOf(P)}</span>${hpTag(P, hp)}</header>${hpBar(P, hp)}
 <div class="camp-info"><div class="defs"><span class="lbl">Defenses</span>${P.structs.map(buildHTML).join('') || '<span class="none">none</span>'}</div><div class="stash">${info.join('')}</div></div>
 <div class="chips"></div><div class="floats"></div></section>`;
 }
@@ -64,7 +64,7 @@ function renderTopbar() {
   $('#topbar').innerHTML = `<button class="icon-btn" data-act="pause" aria-label="Menu" data-tip="Menu (Esc)">${ICON.menu}</button>
 <div class="tb-mid"><button class="evchip mob-only" data-act="events" aria-label="Events"><small>Round ${S.round}</small><b>${E ? esc(E.name) : 'Peace'}</b>${UI.eventSeen !== S.round && S.event ? '<i class="badge"></i>' : ''}</button><span class="pill desk-only">Round ${S.round}</span>${who ? `<span class="pill desk-only ${S.turn === 0 ? 'you' : ''}">${who}</span>` : ''}${me && S.plays > 0 ? `<span class="pips" data-tip="Plays left this turn">${'<i class="pip"></i>'.repeat(S.plays)}</span>` : ''}</div>
 <div class="tb-right"><button class="icon-btn mob-only" data-act="market" aria-label="Mercenary Market" data-tip="Mercenary Market">${ICON.market}${canHire() ? `<i class="badge">${canHire()}</i>` : ''}</button>
-<button class="speed desk-only" data-act="speed" data-tip="Animation speed (S)">${SPEEDS[SET.speed].label}</button><button class="icon-btn" data-act="chronicle" aria-label="Chronicle" data-tip="Chronicle (L)">${ICON.scroll}</button><button class="icon-btn desk-only" data-act="help" aria-label="How to play" data-tip="How to play (H)">${ICON.help}</button></div>`;
+<button class="speed desk-only" data-act="speed" data-tip="Animation speed (S)">${SPEEDS[SET.speed].label}</button><button class="icon-btn" data-act="codex" aria-label="Codex" data-tip="Codex: civilizations, cards, symbols and rules (C)">${ICON.book}</button><button class="icon-btn" data-act="chronicle" aria-label="Chronicle" data-tip="Chronicle (L)">${ICON.scroll}</button></div>`;
 }
 function eventsHTML() {
   const E = S.event ? EVENT_BY[S.event] : null, N = EVENT_BY[S.eventNext];
@@ -77,12 +77,20 @@ function marketHTML() {
 <p class="mk-note">${S.turn === 0 && S.flags.bought ? 'You already hired this turn.' : `Hire 1 card per turn with <b class="kw k-gold">gold</b>; it goes straight to your hand.`}${S.mod.fair ? ' Great Fair: 1 cheaper this round.' : ''}${S.turn === 0 && S.flags.buyFree ? ' Your next hire is free.' : ''}</p>`;
 }
 function renderHand() {
-  const me = S.players[0], n = me.hand.length, mid = (n - 1) / 2, mine = isMyTurn(), compact = mobile();
-  const hand = $('#hand'), w = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--cw')) || 150;
+  /* the hand is rebuilt only when its cards change, so a scrolled hand stays where the player left it */
+  const me = S.players[0], n = me.hand.length, mid = (n - 1) / 2, mine = isMyTurn(), compact = mobile(), hand = $('#hand');
+  const key = `${S.seed}|${compact ? 'c' : 'd' + hand.clientWidth}|${mine ? 1 : 0}|${me.hand.map(c => c.uid).join(',')}`;
+  if (hand.dataset.key === key) {
+    for (const el of hand.children) if (el.dataset.uid) { const on = +el.dataset.uid === UI.sel; el.classList.toggle('sel', on); if (!compact) el.style.zIndex = on ? 50 : +el.dataset.i + 1; }
+    return;
+  }
+  const w = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--cw')) || 150, keep = hand.scrollLeft;
   let gap = 0, spread = 0;
   if (!compact) { const W = hand.clientWidth - 40; gap = -14; if (n > 1 && n * w + (n - 1) * gap > W) gap = Math.max(-(w - 64), (W - n * w) / (n - 1)); spread = Math.min(4.2, 30 / Math.max(1, n)); hand.style.justifyContent = 'center'; }
   else hand.style.justifyContent = '';
-  hand.innerHTML = me.hand.map((c, i) => cardHTML(c, { cls: (mine ? 'playable' : 'dim') + (UI.sel === c.uid ? ' sel' : ''), attrs: `tabindex="${mine ? 0 : -1}" role="button" aria-label="${esc(c.name)}: ${esc(cardText(c))}"`, style: compact ? '' : `--rot:${((i - mid) * spread).toFixed(2)}deg;--y:${(Math.abs(i - mid) ** 2 * 2.4).toFixed(1)}px;z-index:${UI.sel === c.uid ? 50 : i + 1};margin-left:${i ? gap.toFixed(1) : 0}px` })).join('') || '<div class="hand-empty">No cards in hand</div>';
+  hand.innerHTML = me.hand.map((c, i) => cardHTML(c, { cls: (mine ? 'playable' : 'dim') + (UI.sel === c.uid ? ' sel' : ''), attrs: `data-i="${i}" tabindex="0" role="button" aria-label="${esc(c.name)}: ${esc(cardText(c))}"`, style: compact ? '' : `--rot:${((i - mid) * spread).toFixed(2)}deg;--y:${(Math.abs(i - mid) ** 2 * 2.4).toFixed(1)}px;z-index:${UI.sel === c.uid ? 50 : i + 1};margin-left:${i ? gap.toFixed(1) : 0}px` })).join('') || '<div class="hand-empty">No cards in hand</div>';
+  hand.dataset.key = key;
+  if (compact) hand.scrollLeft = keep;
 }
 function renderStage() {
   const c = selCard();
@@ -106,10 +114,10 @@ function renderAction() {
   if (S.turn !== 0) { el.innerHTML = `<span class="hint">${esc(CIVS[cur(S).civ].name)} is playing…</span>`; return; }
   if (UI.busy) { el.innerHTML = ''; return; }
   const c = selCard();
-  if (!c) { el.innerHTML = `<span class="hint">${S.plays > 1 ? `Your turn: play ${S.plays} cards` : mobile() ? 'Your turn: drag a card up, or tap to read it' : 'Your turn: drag a card onto the chart'}</span>`; return; }
+  if (!c) { el.innerHTML = `<span class="hint">${S.plays > 1 ? `Your turn: play ${S.plays} cards` : mobile() ? 'Your turn: tap a card to choose it' : 'Your turn: click a card, or drag it onto the chart'}</span>`; return; }
   const land = document.documentElement.classList.contains('land'), t = selTarget(c);
   const label = !needsTarget(c) ? (land ? 'Play' : `Play ${c.name}`) : t != null ? `${land ? 'On' : 'Play on'} ${CIVS[S.players[t].civ].name}` : (land ? 'Pick a camp' : 'Tap an enemy camp');
-  el.innerHTML = `<button class="btn ghost small" data-act="cancel-sel">Cancel</button><button class="btn" data-act="play-sel"${needsTarget(c) && t == null ? ' disabled' : ''}>${esc(label)}</button>`;
+  el.innerHTML = `<button class="icon-btn info" data-act="card-info" aria-label="Card details" data-tip="Card details (I)">${ICON.info}</button><button class="btn ghost small" data-act="cancel-sel">Cancel</button><button class="btn" data-act="play-sel"${needsTarget(c) && t == null ? ' disabled' : ''}>${esc(label)}</button>`;
 }
 function renderChronicle() {
   $('#chronicle').innerHTML = `<h3>Chronicle</h3><ul class="log">${S.log.slice(-60).reverse().map(e => { const t = logLine(e); return t ? `<li class="${e.k === 'event' ? 'r' : ''}">${t}</li>` : ''; }).join('')}</ul>`;
@@ -173,7 +181,8 @@ function showTip(el) {
   t.style.left = x + 'px'; t.style.top = y + 'px'; TIP.el = el;
 }
 function hideTip() { $('#tip').classList.add('hidden'); TIP.el = null; }
-document.addEventListener('pointerover', e => { if (e.pointerType === 'touch') return; const el = e.target.closest('[data-tip]'); if (el) showTip(el); else if (TIP.el) hideTip(); });
+const FINE = matchMedia('(hover: hover) and (pointer: fine)');
+document.addEventListener('pointerover', e => { if (e.pointerType === 'touch' || !FINE.matches) return; const el = e.target.closest('[data-tip]'); if (el) showTip(el); else if (TIP.el) hideTip(); });
 document.addEventListener('pointerdown', e => { clearTimeout(TIP.timer); if (e.pointerType !== 'touch') return; const el = e.target.closest('[data-tip]'); if (el) TIP.timer = setTimeout(() => showTip(el), 420); });
 document.addEventListener('pointerup', () => { clearTimeout(TIP.timer); if (TIP.el && matchMedia('(pointer: coarse)').matches) setTimeout(hideTip, 1600); });
 document.addEventListener('scroll', hideTip, true);
@@ -187,8 +196,7 @@ function showZoom(c) {
   z.style.left = x + 'px'; z.style.top = Math.min(Math.max(8, r.top + r.height / 2 - h / 2), innerHeight - h - 8) + 'px'; z.classList.remove('hidden');
 }
 function hideZoom() { const z = $('#zoom'); if (z) z.classList.add('hidden'); }
-document.addEventListener('pointerover', e => { if (e.pointerType === 'touch') return; const c = e.target.closest('.card.sm'); if (c) showZoom(c); else hideZoom(); });
-document.addEventListener('pointerdown', e => { if (e.pointerType !== 'touch') return; const c = e.target.closest('.card.sm'); if (c) TIP.zoomTimer = setTimeout(() => showZoom(c), 420); });
+document.addEventListener('pointerover', e => { if (e.pointerType === 'touch' || !FINE.matches) return; const c = e.target.closest('.card.sm'); if (c) showZoom(c); else hideZoom(); });
 document.addEventListener('pointerup', () => { clearTimeout(TIP.zoomTimer); setTimeout(hideZoom, 1400); });
 
 function canHire() { if (!isMyTurn() || S.flags.bought) return 0; const me = S.players[0]; return S.market.filter(c => c && me.gold >= marketCost(S, me, c)).length; }
@@ -196,10 +204,9 @@ function ageMini(P) { return !P.ageGiven ? `<span class="agem" data-tip="Imperia
 function campMiniHTML(P) {
   const C = CIVS[P.civ], hp = Math.max(0, dispHP(P)), acting = S.turn === P.id && S.winner == null, W = wonderOf(P);
   const tgt = P.alive && UI.sel != null && isMyTurn() && needsTarget(selCard() || { steps: [] }) && opponents(S, S.players[0]).length > 1;
-  const dots = [P.tokens.camel ? '<i class="camel"></i>' : '', P.tokens.immune ? '<i></i>' : '', P.tokens.trap ? '<i></i>' : ''].join('');
-  const wall = `<svg class="bi" viewBox="0 0 24 24" aria-hidden="true">${BUILD.castle}</svg>`;
+  const wall = `<svg class="bi" viewBox="0 0 24 24" aria-hidden="true">${BUILD.castle}</svg>`, medals = medalsOf(P);
   return `<section class="camp mini fam-${CIV_FAMILY[P.civ]} civ-${P.civ}${acting ? ' turn' : ''}${P.alive ? '' : ' out'}${tgt ? ' targetable' : ''}${tgt && UI.hoverT === P.id ? ' hot' : ''}" id="camp-${P.id}" data-pid="${P.id}" aria-label="${esc(C.name)}: ${hp} of ${P.maxHP} HP">
 <header class="camp-banner">${crest(P.civ, 20)}<span class="cname">${esc(C.name)}</span></header>${hpBar(P, hp)}
-<div class="mini-body">${hpTag(P, hp, true)}<div class="mini-stats"><span data-tip="Defenses: total durability">${wall}${wallTotal(P)}${W ? ` +${W.dur}` : ''}</span><span>${symBadge('G', 15)}${P.gold}</span><span><i class="cback"></i>${P.hand.length}</span>${ageMini(P)}</div></div>
-${dots ? `<div class="dots">${dots}</div>` : ''}<div class="chips"></div><div class="floats"></div></section>`;
+<div class="mini-body">${hpTag(P, hp, true)}${medals ? `<span class="mmedals">${medals}</span>` : ''}<div class="mini-stats"><span data-tip="Defenses: total durability">${wall}${wallTotal(P)}${W ? ` +${W.dur}` : ''}</span><span>${symBadge('G', 15)}${P.gold}</span><span><i class="cback"></i>${P.hand.length}</span>${P.aged ? '' : ageMini(P)}</div></div>
+<div class="chips"></div><div class="floats"></div></section>`;
 }

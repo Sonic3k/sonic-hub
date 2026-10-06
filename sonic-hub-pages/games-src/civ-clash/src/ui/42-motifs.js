@@ -62,5 +62,6 @@ function installCivStyles() {
   };
   for (const c of CIV_ORDER) add('civ-' + c, CIVS[c].color, CIV_MOTIF[c] || 'diaper');
   add('civ-merc', '#7a6542', 'brass');
+  add('civ-neutral', '#6b5843', 'diaper');
   const el = document.createElement('style'); el.id = 'civ-styles'; el.textContent = css; document.head.appendChild(el);
 }
