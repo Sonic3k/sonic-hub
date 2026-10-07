@@ -1,0 +1,60 @@
+/* ── Africa: desert riders and kasbahs, Sahel gold, highland churches, monsoon ports, the Land of the Bow and the walled cities of the forest ── */
+Object.assign(UNITS, {
+  /* Berbers */
+  genitours:          { name: 'Genitours', sym: 'cavalry ranged', lore: 'Zenata light horsemen with javelins; Spain named its own light cavalry, the jinetes, after them.' },
+  eliteGenitours:     { name: 'Elite Genitours', sym: 'cavalry ranged ranged' },
+  kasbah:             { name: 'Kasbah', sym: 'wall wall wall gold', lore: 'Fortified citadels of mud brick guarding the oases and the caravan roads.' },
+  maghrebiCamels:     { name: 'Maghrebi Camels', sym: 'camel heal', lore: 'Hardy camels of the Maghreb that could cross the Sahara on little water.' },
+  tuaregRaiders:      { name: 'Tuareg Raiders', sym: 'camel raid', lore: 'Veiled riders of the Sahara who taxed or plundered every caravan.' },
+  /* Malians */
+  sofa:               { name: 'Sofa', sym: 'ranged ranged bodyguard', lore: 'Mande foot soldiers with javelins and hide shields.' },
+  eliteSofa:          { name: 'Elite Sofa', sym: 'ranged ranged ranged bodyguard' },
+  mansaMusa:          { name: 'Mansa Musa\'s Hajj', sym: 'gold gold gold', lore: 'In 1324 Mansa Musa travelled to Mecca with so much gold that its price fell in Cairo for a decade.' },
+  sankore:            { name: 'Sankore University', sym: 'draw draw heal', lore: 'Timbuktu\'s mosque and university, with libraries of manuscripts from across the Islamic world.' },
+  /* Ethiopians */
+  shotel:             { name: 'Shotel Warriors', sym: 'strike strike play', lore: 'Warriors with the sickle-shaped shotel, which hooked around an enemy\'s shield.' },
+  eliteShotel:        { name: 'Elite Shotel Warriors', sym: 'strike strike strike play' },
+  lalibela:           { name: 'Churches of Lalibela', sym: 'heal heal wall wall wall countdown countdown countdown countdown', lore: 'Eleven churches cut down into the living rock: King Lalibela\'s New Jerusalem.' },
+  /* Swahili */
+  dhows:              { name: 'Dhows', sym: 'ship gold play', lore: 'Sewn-plank ships that rode the monsoon between Kilwa, Arabia and India.' },
+  monsoonFleet:       { name: 'Monsoon Fleet', sym: 'ship ship gold draw', lore: 'Fleets that sailed north on one monsoon and home on the next.' },
+  husuniKubwa:        { name: 'Husuni Kubwa', sym: 'wall wall heal gold', lore: 'The palace of the sultans of Kilwa, with its pools and courts above the sea.' },
+  kilwaCoinage:       { name: 'Kilwa Coinage', sym: 'gold gold draw', lore: 'Copper and silver coins struck at Kilwa, used all along the coast.' },
+  /* Nubians */
+  pupilSmiters:       { name: 'Pupil Smiters', sym: 'snipe longranged longranged', lore: 'Nubian archers so deadly at Dongola in 652 that the Arabs called them the pupil smiters.' },
+  elitePupilSmiters:  { name: 'Elite Pupil Smiters', sym: 'snipe longranged longranged longranged' },
+  baqt:               { name: 'The Baqt', sym: 'gold draw heal', lore: 'The treaty of 652 that kept the peace between Nubia and Egypt for six centuries.' },
+  /* Yoruba */
+  oyoCavalry:         { name: 'Oyo Cavalry', sym: 'cavalry spy', lore: 'The horsemen of Oyo, who rode out across the savanna for tribute and captives.' },
+  eliteOyoCavalry:    { name: 'Elite Oyo Cavalry', sym: 'cavalry cavalry spy' },
+  esoWarriors:        { name: 'Eso Warriors', sym: 'strike strike raid', lore: 'The Eso, Oyo\'s seventy war chiefs, sworn to win or never come home.' },
+  iyaWalls:           { name: 'Iya Walls', sym: 'wall wall trap draw', lore: 'Ditches and earthen ramparts like Sungbo\'s Eredo, a hundred miles of rampart around Ijebu.' },
+  ifa:                { name: 'Ifá Divination', sym: 'draw draw play', lore: 'The verses of Ifá, consulted before every war and every king.' },
+  talkingDrums:       { name: 'Talking Drums', sym: 'play draw', lore: 'Drums that spoke in the tones of Yoruba itself, sending orders faster than any runner.' },
+});
+Object.assign(CIVS, {
+  berbers: { name: 'Berbers', group: 'Africa', color: '#a6763f', charge: 'palm', hp2: 12, hp4: 12,
+    style: 'Genitours, camel riders and the kasbahs of the desert',
+    deck: { genitours: 3, camelArcher: 1, maghrebiCamels: 1, tuaregRaiders: 1, cavalry: 3, lightCavalry: 1, skirmishers: 1, spearmen: 2, swordsmen: 1, militia: 3, kasbah: 1, palisade: 1, watchTower: 1, madrasa: 1, healer: 1, merchant: 2 },
+    imperial: { eliteGenitours: 1, camelArcher: 1, kasbah: 1, maghrebiCamels: 1, camelRiders: 1 }, age: 'gold heal' },
+  malians: { name: 'Malians', group: 'Africa', color: '#c08a1e', charge: 'disc', hp2: 14, hp4: 13,
+    style: 'Gold beyond measure, mounted nobles and the scholars of Timbuktu',
+    deck: { sofa: 3, cavalry: 2, knights: 1, archers: 2, skirmishers: 1, spearmen: 2, militia: 3, swordsmen: 1, camelRiders: 1, mansaMusa: 1, sankore: 1, stoneWall: 1, watchTower: 1, madrasa: 1, healer: 1, merchant: 2 },
+    imperial: { eliteSofa: 1, mansaMusa: 1, knights: 1, castle: 1, crossbowmen: 1 }, age: 'gold gold' },
+  ethiopians: { name: 'Ethiopians', group: 'Africa', color: '#2f7d32', charge: 'cross', hp2: 12, hp4: 13,
+    style: 'Shotel warriors, highland archers and the rock churches of Lalibela',
+    deck: { shotel: 2, archers: 3, skirmishers: 1, spearmen: 2, swordsmen: 2, militia: 4, cavalry: 1, mangonel: 1, castle: 1, stoneWall: 1, watchTower: 1, monastery: 2, healer: 1, merchant: 1, messenger: 1 },
+    imperial: { lalibela: 1, eliteShotel: 1, crossbowmen: 1, mangonel: 1, menAtArms: 1 }, age: 'heal heal' },
+  swahili: { name: 'Swahili', group: 'Africa', color: '#1b7f8c', charge: 'dhow', hp2: 11, hp4: 13,
+    style: 'Monsoon trade, dhows and the coral palaces of Kilwa',
+    deck: { dhows: 3, warship: 2, spearmen: 2, swordsmen: 2, militia: 2, archers: 2, skirmishers: 1, crossbowmen: 1, husuniKubwa: 1, stoneWall: 1, palisade: 1, watchTower: 1, kilwaCoinage: 1, madrasa: 1, healer: 1, messenger: 1, merchant: 1 },
+    imperial: { monsoonFleet: 1, husuniKubwa: 1, crossbowmen: 1, menAtArms: 1, castle: 1 }, age: 'gold draw' },
+  nubians: { name: 'Nubians', group: 'Africa', color: '#7a4a1f', charge: 'bow', hp2: 16, hp4: 15,
+    style: 'The pupil smiters: archers of the Land of the Bow',
+    deck: { pupilSmiters: 3, archers: 2, skirmishers: 1, spearmen: 2, swordsmen: 2, militia: 2, cavalry: 2, knights: 1, camelRiders: 1, baqt: 1, castle: 1, stoneWall: 1, watchTower: 1, monastery: 1, healer: 1, messenger: 1, warship: 1 },
+    imperial: { elitePupilSmiters: 1, crossbowmen: 1, knights: 1, castle: 1, camelRiders: 1 }, age: 'heal draw' },
+  yoruba: { name: 'Yoruba', group: 'Africa', color: '#2c3e8f', charge: 'doubleaxe', hp2: 15, hp4: 14,
+    style: 'Oyo cavalry, earthwork walls and the verses of Ifá',
+    deck: { oyoCavalry: 3, esoWarriors: 2, archers: 2, skirmishers: 1, spearmen: 2, swordsmen: 2, militia: 2, cavalry: 2, iyaWalls: 2, watchTower: 1, ifa: 1, shrine: 1, healer: 1, merchant: 1, talkingDrums: 1 },
+    imperial: { eliteOyoCavalry: 1, iyaWalls: 1, knights: 1, archers: 1, esoWarriors: 1 }, age: 'gold draw' },
+});
