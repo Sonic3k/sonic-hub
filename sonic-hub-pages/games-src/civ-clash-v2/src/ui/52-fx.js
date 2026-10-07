@@ -44,7 +44,7 @@ function clearAim() { if (aimPath) { aimPath.remove(); aimPath = null; } }
 const FX_TEXT = {
   hp: f => (f.n < 0 ? ['−' + -f.n, 'dmg'] : ['+' + f.n, 'heal']), struct: f => [`${f.name} −${f.n}`, 'wall'], razed: f => [`${f.name} falls`, 'wall'],
   block: f => [`${GUARD_NAME[f.guard]} blocks!`, 'info'], storm: () => ['Storm: cancelled', 'info'], shroud: () => ['Mantle −1', 'info'], trap: () => ['Trap! −1', 'dmg'],
-  snipe: f => [`${GUARD_NAME[f.guard]} killed`, 'info'], miss: f => [f.why === 'flank' ? 'No flank past structures' : f.why === 'siege' ? 'No structure to hit' : 'No guard', 'info'],
+  snipe: f => [f.guard === 'trap' ? 'Trap disarmed' : `${GUARD_NAME[f.guard]} killed`, 'info'], miss: f => [f.why === 'flank' ? 'No flank past structures' : f.why === 'siege' ? 'No structure to hit' : f.why === 'snipe' ? 'No guard or Trap' : 'No guard', 'info'],
   guard: f => [`+${GUARD_NAME[f.guard]}`, 'info'], trapset: () => ['Trap set', 'info'], stormset: () => ['Storm until next turn', 'info'],
   steal: () => ['Card stolen', 'info'], monk: () => ['Card converted', 'info'], gold: f => [`+${f.n} gold`, 'gold'], raid: () => ['Raided: −1 gold', 'gold'],
   built: f => [f.wonder ? `${f.name} begun` : `+${f.name}`, 'wall'],

@@ -9,7 +9,7 @@ function statsLine() { const all = Object.values(SET.stats); const g = all.reduc
 function renderMenu() {
   const count = mobile() ? 3 : 5, mid = (count - 1) / 2, picks = shuffled({ rs: (Date.now() & 0xffffff) >>> 0 }, CIV_ORDER).slice(0, count);
   const fan = picks.map((c, i) => { const k = i - mid; return cardHTML(ownUnits(c)[0], { style: `--x:${k * (mobile() ? 84 : 112)}px;--y:${Math.abs(k) * 16}px;--rot:${k * 7}deg;--d:${120 + i * 90}ms` }); }).join('');
-  $('#screen-menu').innerHTML = `<div class="menu"><h1 class="menu-title">Medieval Mayhem II</h1><div class="menu-rule" aria-hidden="true"></div><p class="menu-sub">${civCountWord()} civilizations, each a deck of its own units. Every effect is in the symbols. Draw a card, play a card, outlast every rival.</p>
+  $('#screen-menu').innerHTML = `<div class="menu"><h1 class="menu-title">Medieval Mayhem II</h1><div class="menu-rule" aria-hidden="true"></div><p class="menu-sub">${civCountWord()} civilizations from ${GROUPS.length} regions, each a deck of its own units. Every effect is in the symbols. Draw a card, play a card, outlast every rival.</p>
 <div class="menu-fan" aria-hidden="true">${fan}</div>
 <div class="menu-actions">${SET.tutorialDone ? '' : '<button class="btn" data-act="tutorial">Learn to play</button>'}<button class="btn${SET.tutorialDone ? '' : ' ghost'}" data-act="quick">Quick match</button><button class="btn ghost" data-act="choose">Choose a civilization</button>${SET.tutorialDone ? '<button class="btn ghost" data-act="tutorial">Replay the tutorial</button>' : ''}<div class="menu-row"><button class="btn ghost" data-act="codex">Codex</button><button class="btn ghost" data-act="settings">Settings</button></div></div>
 <p class="menu-foot">${statsLine()}</p></div>`;

@@ -30,7 +30,7 @@ const SYM = {
   P: { id: 'catapult', name: 'Catapult', target: 1, siege: 'big',
     desc: 'The target\'s biggest structure loses 2 durability. It never touches HP.', word: n => (n === 1 ? 'Their biggest structure loses 2 durability' : `${cap(times(n))}: their biggest structure loses 2 durability`) },
   Z: { id: 'snipe', name: 'Snipe', target: 1,
-    desc: 'Kills 1 random guard of the target.', word: n => (n === 1 ? 'Kill a random guard' : `Kill ${n} random guards`) },
+    desc: 'Kills 1 random guard of the target, or disarms one of their Traps.', word: n => (n === 1 ? 'Kill a random guard or Trap' : `Kill ${n} random guards or Traps`) },
   J: { id: 'raid', name: 'Raid', target: 1,
     desc: 'You gain 1 gold, and the target loses 1 gold if they have any.', word: n => (n === 1 ? 'Raid: gain 1 gold, they lose 1 if they have any' : `Raid ${times(n)}: gain 1 gold each time, they lose 1 if they have any`) },
   S: { id: 'spy', name: 'Spy', target: 1,

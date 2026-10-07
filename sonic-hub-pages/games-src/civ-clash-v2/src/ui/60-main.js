@@ -48,7 +48,8 @@ async function humanPlay(uid, tid, landed) {
   /* a Monk: look at the target's hand first and pick the card to take */
   if (card && card.icons.includes('C')) {
     const T = needsTarget(card) && tid != null ? S.players[tid] : opponents(S, S.players[0])[0], loose = T ? T.hand.filter(c => !c.bound) : [];
-    if (loose.length) { renderAction(); opt.pick = await monkPick(T, loose); }
+    /* a dragged Monk has already glided onto the chart: lift it away so the choice is in plain view, then it flies in after the pick */
+    if (loose.length) { if (landed) { dropGhost(); landed = false; } renderAction(); opt.pick = await monkPick(T, loose); }
   }
   UI.view = S.players.map(p => p.hp);
   const ev = playCard(S, 0, uid, tid, opt);

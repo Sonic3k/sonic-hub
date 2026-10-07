@@ -121,13 +121,16 @@ function siege(S, A, X, mode, ev) {
   ev.fx.push({ k: 'struct', t: X.id, n: 2, name: st.card.name, left: Math.max(0, st.dur), wonder: st.wonder, siege: 1 });
   if (st.dur <= 0) destroyStruct(S, X, st, ev);
 }
-function killGuard(S, X, ev, quiet) {
-  const kinds = ['bodyguard', 'camel', 'mantlet'].filter(g => X.guards[g] > 0);
-  if (!kinds.length) { if (!quiet) ev.fx.push({ k: 'miss', t: X.id, why: 'guard' }); return false; }
+/* kill 1 random guard; a Snipe (traps) can take out a set Trap the same way, one token among all of them */
+function killGuard(S, X, ev, quiet, traps) {
+  const pool = { bodyguard: X.guards.bodyguard, camel: X.guards.camel, mantlet: X.guards.mantlet, trap: traps ? X.traps.trap : 0 };
+  const kinds = Object.keys(pool).filter(g => pool[g] > 0);
+  if (!kinds.length) { if (!quiet) ev.fx.push({ k: 'miss', t: X.id, why: traps ? 'snipe' : 'guard' }); return false; }
   let g;
-  if (S.virtual) g = kinds.sort((a, b) => X.guards[b] - X.guards[a])[0];
-  else { let r = Math.floor(rnd(S) * guardCount(X)); for (const k of ['bodyguard', 'camel', 'mantlet']) { if (r < X.guards[k]) { g = k; break; } r -= X.guards[k]; } }
-  X.guards[g]--; ev.fx.push({ k: 'snipe', t: X.id, guard: g });
+  if (S.virtual) g = kinds.sort((a, b) => pool[b] - pool[a])[0];
+  else { let r = Math.floor(rnd(S) * kinds.reduce((a, k) => a + pool[k], 0)); for (const k of kinds) { if (r < pool[k]) { g = k; break; } r -= pool[k]; } }
+  if (g === 'trap') X.traps.trap--; else X.guards[g]--;
+  ev.fx.push({ k: 'snipe', t: X.id, guard: g });
   return true;
 }
 function stealCard(S, A, X, ev, how) {
@@ -154,7 +157,7 @@ function resolveSym(S, A, ch, T, ev) {
     case 'N': if (hit(S, A, T, sym.hit, ev) === 'hit') stealCard(S, A, T, ev, 'steal'); return;
     case 'R': siege(S, A, T, 'front', ev); return;
     case 'P': siege(S, A, T, 'big', ev); return;
-    case 'Z': if (!T || !T.alive) return; if (T.traps.storm) { ev.fx.push({ k: 'storm', t: T.id }); return; } killGuard(S, T, ev); return;
+    case 'Z': if (!T || !T.alive) return; if (T.traps.storm) { ev.fx.push({ k: 'storm', t: T.id }); return; } killGuard(S, T, ev, false, true); return;
     case 'J':
       if (!T || !T.alive) return;
       if (T.traps.storm) { ev.fx.push({ k: 'storm', t: T.id }); return; }

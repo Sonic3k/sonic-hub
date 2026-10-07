@@ -2,15 +2,15 @@
    Every civilization belongs to a design family from its own visual culture; the family decides the card
    silhouette, frame, corner ornaments and name plate. The civ then adds its own pattern, colours and crest. */
 const CIV_FAMILY = {
-  britons: 'gothic', franks: 'gothic', teutons: 'gothic', spanish: 'gothic', portuguese: 'gothic',
-  celts: 'knot', vikings: 'knot', goths: 'knot',
-  byzantines: 'icon', slavs: 'icon', bulgarians: 'icon', ethiopians: 'icon',
+  britons: 'gothic', franks: 'gothic', teutons: 'gothic', spanish: 'gothic', portuguese: 'gothic', italians: 'gothic', normans: 'gothic', burgundians: 'gothic',
+  celts: 'knot', vikings: 'knot', goths: 'knot', saxons: 'knot',
+  byzantines: 'icon', slavs: 'icon', bulgarians: 'icon', ethiopians: 'icon', armenians: 'icon', georgians: 'icon', nubians: 'icon',
   bohemians: 'folk', poles: 'folk', lithuanians: 'folk', magyars: 'folk',
-  arabs: 'islamic', persians: 'islamic', turks: 'islamic', berbers: 'islamic',
-  mongols: 'steppe', huns: 'steppe', khitans: 'steppe', jurchens: 'steppe',
-  chinese: 'sino', japanese: 'sino', koreans: 'sino', daiviet: 'sino',
-  indians: 'temple', khmer: 'temple', malay: 'temple',
-  malians: 'sahel', aztecs: 'codex', mayans: 'codex', incas: 'andes',
+  arabs: 'islamic', persians: 'islamic', turks: 'islamic', berbers: 'islamic', hindustanis: 'islamic', swahili: 'islamic',
+  mongols: 'steppe', huns: 'steppe', khitans: 'steppe', jurchens: 'steppe', tatars: 'steppe', cumans: 'steppe',
+  chinese: 'sino', japanese: 'sino', koreans: 'sino', daiviet: 'sino', dali: 'sino', tanguts: 'sino',
+  khmer: 'temple', malay: 'temple', pagan: 'temple', bengalis: 'temple', chola: 'temple', gurjaras: 'temple', tibetans: 'temple',
+  malians: 'sahel', yoruba: 'sahel', aztecs: 'codex', maya: 'codex', mississippians: 'codex', inca: 'andes',
 };
 const FAMILY_NAMES = { gothic: 'a Gothic manuscript', knot: 'insular knotwork', icon: 'a Byzantine icon', folk: 'Central European folk embroidery', islamic: 'Islamic tilework',
   steppe: 'steppe felt and leather', sino: 'an East Asian tiled roof', temple: 'temple stonework', sahel: 'Sahelian mud architecture', codex: 'a Mesoamerican codex', andes: 'Andean stonework', merc: 'a mercenary\'s brass' };

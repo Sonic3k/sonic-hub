@@ -32,19 +32,42 @@ const MOTIF_TILES = {
   fret: (a) => [24, 16, `<path d="M0 14h7V5h9v6h-4V8" fill="none" stroke="${a}" stroke-width="1.6"/><path d="M16 14h8" stroke="${a}" stroke-width="1.6"/>`],
   tocapu: (a) => [16, 16, `<rect x="1" y="1" width="14" height="14" fill="none" stroke="${a}" stroke-width="1"/><path d="M4 4h8v8H4z" fill="none" stroke="${a}" stroke-width=".8"/><circle cx="8" cy="8" r="1.4" fill="${a}"/>`],
   brass: (a) => [20, 20, `<circle cx="10" cy="10" r="3" fill="none" stroke="${a}" stroke-width="1"/><circle cx="0" cy="0" r="2" fill="${a}"/><circle cx="20" cy="20" r="2" fill="${a}"/>`],
+  zharan: (a) => [24, 24, `<g fill="${a}"><circle cx="12" cy="12" r="2.1"/>${[0, 60, 120, 180, 240, 300].map(d => `<circle cx="${(12 + 5.4 * Math.cos(d * Math.PI / 180)).toFixed(1)}" cy="${(12 + 5.4 * Math.sin(d * Math.PI / 180)).toFixed(1)}" r="1.3"/>`).join('')}<circle cx="0" cy="0" r="1"/><circle cx="24" cy="24" r="1"/><circle cx="24" cy="0" r="1"/><circle cx="0" cy="24" r="1"/></g>`],
+  endless: (a) => [24, 24, `<path d="M12 2l10 10-10 10L2 12z" fill="none" stroke="${a}" stroke-width="1.1"/><path d="M7 7l10 10M17 7L7 17" stroke="${a}" stroke-width="1"/>`],
+  script: (a) => [28, 28, `<path d="M5 6h8M9 6v9M5 11h8M6 15l3 3 4-3M17 8h6M20 8v5M17 13h7M18 17l2.5 4 3-4M6 22h5M8.5 22v4" stroke="${a}" stroke-width="1.15" fill="none" stroke-linecap="round"/>`],
+  kanote: (a) => [28, 20, `<path d="M0 14c4-8 10-8 14-2s10 6 14-2" fill="none" stroke="${a}" stroke-width="1.2"/><path d="M14 12c-1-4 2-7 5-6M7 9c1-3 4-4 6-2" fill="none" stroke="${a}" stroke-width="1"/><circle cx="21" cy="5" r="1.2" fill="${a}"/>`],
+  kantha: (a) => [24, 24, `<path d="M0 4h24M0 12h24M0 20h24" stroke="${a}" stroke-width="1" stroke-dasharray="2 2"/><circle cx="12" cy="8" r="1.7" fill="none" stroke="${a}"/><circle cx="0" cy="16" r="1.7" fill="none" stroke="${a}"/><circle cx="24" cy="16" r="1.7" fill="none" stroke="${a}"/>`],
+  kolam: (a) => [24, 24, `<g fill="${a}"><circle cx="6" cy="6" r="1"/><circle cx="18" cy="6" r="1"/><circle cx="6" cy="18" r="1"/><circle cx="18" cy="18" r="1"/><circle cx="12" cy="12" r="1"/></g><path d="M12 3.5c4.7 0 8.5 3.8 8.5 8.5s-3.8 8.5-8.5 8.5-8.5-3.8-8.5-8.5 3.8-8.5 8.5-8.5zM12 3.5c-2 3-2 5.5 0 8.5s2 5.5 0 8.5" fill="none" stroke="${a}" stroke-width="1"/>`],
+  bandhani: (a) => [20, 20, `<g fill="none" stroke="${a}" stroke-width="1"><circle cx="5" cy="5" r="1.7"/><circle cx="15" cy="15" r="1.7"/></g><g fill="${a}"><circle cx="15" cy="5" r=".9"/><circle cx="5" cy="15" r=".9"/><circle cx="5" cy="5" r=".5"/><circle cx="15" cy="15" r=".5"/></g>`],
+  khachkar: (a) => [24, 24, `<path d="M12 4v15M6 10h12" stroke="${a}" stroke-width="1.3"/><g fill="none" stroke="${a}" stroke-width="1"><circle cx="12" cy="3.4" r="1.6"/><circle cx="5.4" cy="10" r="1.6"/><circle cx="18.6" cy="10" r="1.6"/></g><path d="M0 22.5c4-3 8-3 12 0s8 3 12 0" fill="none" stroke="${a}" stroke-width=".9"/>`],
+  borjgali: (a) => [28, 28, `<g fill="none" stroke="${a}" stroke-width="1.2" stroke-linecap="round"><path d="M14 14c0-2.4 1.3-4.2 3.6-5.2" transform="rotate(0.0 14 14)"/><path d="M14 14c0-2.4 1.3-4.2 3.6-5.2" transform="rotate(51.4 14 14)"/><path d="M14 14c0-2.4 1.3-4.2 3.6-5.2" transform="rotate(102.9 14 14)"/><path d="M14 14c0-2.4 1.3-4.2 3.6-5.2" transform="rotate(154.3 14 14)"/><path d="M14 14c0-2.4 1.3-4.2 3.6-5.2" transform="rotate(205.7 14 14)"/><path d="M14 14c0-2.4 1.3-4.2 3.6-5.2" transform="rotate(257.1 14 14)"/><path d="M14 14c0-2.4 1.3-4.2 3.6-5.2" transform="rotate(308.6 14 14)"/></g><circle cx="14" cy="14" r="1.3" fill="${a}"/>`],
+  cosmati: (a, b) => [24, 24, `<rect x="2" y="2" width="20" height="20" fill="none" stroke="${a}" stroke-width="1"/><circle cx="12" cy="12" r="5" fill="none" stroke="${a}" stroke-width="1"/><path d="M2 2l5 5M22 2l-5 5M2 22l5-5M22 22l-5-5" stroke="${a}" stroke-width="1"/><rect x="10" y="10" width="4" height="4" transform="rotate(45 12 12)" fill="${b}"/>`],
+  chevron: (a) => [20, 12, `<path d="M0 10l5-6 5 6 5-6 5 6" fill="none" stroke="${a}" stroke-width="1.5"/><path d="M0 4.5l5-3.5 5 3.5 5-3.5 5 3.5" fill="none" stroke="${a}" stroke-width=".7"/>`],
+  carved: (a) => [24, 24, `<circle cx="12" cy="12" r="5" fill="none" stroke="${a}" stroke-width="1.1"/><path d="M12 7v10M7 12h10M8.5 8.5l7 7M15.5 8.5l-7 7" stroke="${a}" stroke-width=".8"/><path d="M0 1h24M0 23h24" stroke="${a}" stroke-width="1" stroke-dasharray="3 2"/>`],
+  adire: (a) => [24, 24, `<circle cx="6" cy="6" r="4" fill="none" stroke="${a}" stroke-width="1"/><circle cx="6" cy="6" r="1.6" fill="${a}"/><path d="M14 15h8M14 18h8M14 21h8" stroke="${a}" stroke-width="1"/><path d="M14 3l4 4 4-4M2 15l4 4 4-4" fill="none" stroke="${a}" stroke-width="1"/>`],
+  spiral: (a) => [24, 24, `<path d="M12 12a1 1 0 1 1 2 0 3 3 0 1 1-6 0 5 5 0 1 1 10 0 7 7 0 1 1-14 0" fill="none" stroke="${a}" stroke-width="1.1"/>`],
 };
 const CIV_MOTIF = {
-  chinese: 'cloud', japanese: 'seigaiha', koreans: 'lattice', jurchens: 'felt', khitans: 'cloud', daiviet: 'drum', khmer: 'naga', malay: 'kawung', indians: 'jali',
-  arabs: 'girih', persians: 'arabesque', turks: 'iznik', berbers: 'zellige', malians: 'bogolan', ethiopians: 'tibeb', mongols: 'felt', huns: 'cloisonne',
-  britons: 'diaper', celts: 'knot', franks: 'fleur', vikings: 'interlace', teutons: 'tracery', goths: 'cloisonne', spanish: 'mudejar', portuguese: 'azulejo',
-  byzantines: 'mosaic', bohemians: 'tracery', poles: 'wycinanki', lithuanians: 'sash', bulgarians: 'stitch', slavs: 'stitch', magyars: 'tulip',
-  aztecs: 'fret', mayans: 'fret', incas: 'tocapu',
+  chinese: 'cloud', japanese: 'seigaiha', koreans: 'lattice', jurchens: 'felt', dali: 'zharan', tibetans: 'endless', tanguts: 'script',
+  daiviet: 'drum', khmer: 'naga', malay: 'kawung', pagan: 'kanote',
+  bengalis: 'kantha', hindustanis: 'jali', chola: 'kolam', gurjaras: 'bandhani',
+  mongols: 'felt', huns: 'cloisonne', khitans: 'cloud', tatars: 'arabesque', cumans: 'felt',
+  arabs: 'girih', turks: 'iznik', persians: 'arabesque', armenians: 'khachkar', georgians: 'borjgali',
+  bohemians: 'tracery', poles: 'wycinanki', lithuanians: 'sash', bulgarians: 'stitch', slavs: 'stitch', magyars: 'tulip',
+  byzantines: 'mosaic', italians: 'cosmati', spanish: 'mudejar', portuguese: 'azulejo',
+  teutons: 'tracery', goths: 'cloisonne', vikings: 'interlace', saxons: 'knot', normans: 'chevron',
+  britons: 'diaper', celts: 'knot', franks: 'fleur', burgundians: 'tracery',
+  berbers: 'zellige', malians: 'bogolan', ethiopians: 'tibeb', swahili: 'carved', nubians: 'tibeb', yoruba: 'adire',
+  aztecs: 'fret', maya: 'fret', inca: 'tocapu', mississippians: 'spiral',
 };
 const MOTIF_NAMES = { cloud: 'cloud scrolls', seigaiha: 'seigaiha waves', lattice: 'window lattice', drum: 'Đông Sơn drum', naga: 'naga scales', kawung: 'kawung batik',
   jali: 'jali screen', girih: 'girih stars', arabesque: 'arabesque vines', iznik: 'Iznik tulips', zellige: 'zellige stars', bogolan: 'bògòlan mudcloth', tibeb: 'tibeb weave',
   felt: 'felt horn scrolls', cloisonne: 'garnet cloisonné', knot: 'knotwork', interlace: 'ribbon interlace', fleur: 'fleur-de-lis', tracery: 'Gothic tracery', azulejo: 'azulejo tiles',
   mudejar: 'Mudéjar lattice', diaper: 'heraldic diaper', mosaic: 'gold mosaic', stitch: 'cross-stitch', tulip: 'folk tulips', sash: 'woven sash', wycinanki: 'paper-cut flowers',
-  fret: 'step-fret', tocapu: 'tocapu squares', brass: 'brass studs' };
+  fret: 'step-fret', tocapu: 'tocapu squares', brass: 'brass studs',
+  zharan: 'Bai tie-dye', endless: 'endless knots', script: 'Tangut script', kanote: 'kanote scrolls', kantha: 'kantha stitching', kolam: 'kolam loops',
+  bandhani: 'bandhani dots', khachkar: 'khachkar lace', borjgali: 'borjgali suns', cosmati: 'Cosmati inlay', chevron: 'Romanesque chevrons', carved: 'carved doors',
+  adire: 'adire indigo', spiral: 'shell gorget spirals' };
 /* colour helpers */
 function hexRgb(h) { const n = parseInt(h.slice(1), 16); return [n >> 16, (n >> 8) & 255, n & 255]; }
 function mix(h1, h2, t) { const a = hexRgb(h1), b = hexRgb(h2); return '#' + a.map((v, i) => Math.round(v + (b[i] - v) * t).toString(16).padStart(2, '0')).join(''); }
