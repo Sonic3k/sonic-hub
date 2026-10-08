@@ -44,17 +44,19 @@ public class MediaFileService {
     private final com.sonic.angels.repository.PersonRepository personRepository;
     private final TagRepository tagRepository;
     private final DtoMapper mapper;
+    private final StoragePurger storagePurger;
 
     public MediaFileService(MediaFileRepository mediaFileRepository, StorageService storageService,
                             CollectionService collectionService,
                             com.sonic.angels.repository.PersonRepository personRepository,
-                            TagRepository tagRepository, DtoMapper mapper) {
+                            TagRepository tagRepository, DtoMapper mapper, StoragePurger storagePurger) {
         this.mediaFileRepository = mediaFileRepository;
         this.storageService = storageService;
         this.collectionService = collectionService;
         this.personRepository = personRepository;
         this.tagRepository = tagRepository;
         this.mapper = mapper;
+        this.storagePurger = storagePurger;
     }
 
     // ── Queries (return DTOs) ────────────────────────────────────────────────
@@ -512,6 +514,28 @@ public class MediaFileService {
     }
 
     public void delete(UUID id) {
+        String storageKey = deleteRow(id);
+        if (storageKey != null) storagePurger.purgeAfterCommit(List.of(storageKey));
+    }
+
+    /** One transaction for the whole batch; the B2 files go only after it has committed, so a batch that fails
+     *  (e.g. a photo still used as someone's avatar) rolls back with every file still in place. */
+    public int deleteBatch(List<UUID> ids) {
+        int count = 0;
+        List<String> storageKeys = new java.util.ArrayList<>();
+        for (UUID id : ids) {
+            try {
+                String storageKey = deleteRow(id);
+                if (storageKey != null) storageKeys.add(storageKey);
+                count++;
+            } catch (Exception ignored) {}
+        }
+        storagePurger.purgeAfterCommit(storageKeys);
+        return count;
+    }
+
+    /** Drops the database row and its links; returns the B2 key to delete once this commits (null when none). */
+    private String deleteRow(UUID id) {
         MediaFile mf = findById(id);
         // Clear join tables
         mf.getPersons().clear();
@@ -520,23 +544,12 @@ public class MediaFileService {
         // Remove from all collections + any cover reference (FK would block the delete)
         mediaFileRepository.removeFromAllCollections(id);
         collectionService.clearCoverRefs(id);
-        // DB row first, storage after — a failed B2 delete leaves harmless garbage,
-        // the old order (B2 first) could destroy the file and then fail the DB delete
         String storageKey = mf.getStorageKey();
         MediaFile.StorageProvider provider = mf.getStorageProvider();
         mediaFileRepository.delete(mf);
-        if (provider == MediaFile.StorageProvider.B2 && storageKey != null) {
-            try { storageService.delete(storageKey); }
-            catch (Exception e) { log.warn("B2 delete failed for {} (orphan file left): {}", storageKey, e.getMessage()); }
-        }
-    }
-
-    public int deleteBatch(List<UUID> ids) {
-        int count = 0;
-        for (UUID id : ids) {
-            try { delete(id); count++; } catch (Exception ignored) {}
-        }
-        return count;
+        // no provider = an early upload, before the column existed: those files are on B2 too (see buildCdnUrl)
+        boolean onB2 = provider == null || provider == MediaFile.StorageProvider.B2;
+        return onB2 && storageKey != null ? storageKey : null;
     }
 
     public String buildCdnUrl(MediaFile mf) {
