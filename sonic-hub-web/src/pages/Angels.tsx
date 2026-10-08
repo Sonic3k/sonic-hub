@@ -4,7 +4,7 @@ import { Link, useParams } from 'react-router-dom';
 import { useInfiniteQuery, useQuery } from '@tanstack/react-query';
 import { hub, periodYears, randomLine } from '../api/hub';
 import { cdn } from '../api/client';
-import type { Person } from '../types';
+import type { ChatMessage, Person } from '../types';
 import { fmt, usePersons } from '../lib/queries';
 import { dayMonthYear, longDay, timeOf } from '../lib/date';
 import { fold } from '../lib/text';
@@ -174,7 +174,9 @@ export function ChatReader() {
     queryFn: ({ pageParam }) => hub.messages(id, archiveId, pageParam, 200, dq || undefined), getNextPageParam: (last) => (last.last ? undefined : last.number + 1) });
   const msgs = inf.data?.pages.flatMap(x => x.content) ?? [], total = inf.data?.pages[0]?.totalElements ?? 0;
   const names = useMemo(() => [p?.name, p?.displayName, p?.nickname, p?.alternativeName].filter(Boolean).map(x => fold(x!)), [p]);
-  const isThem = (sender: string) => names.some(n => fold(sender).includes(n) || n.includes(fold(sender)));
+  /* who wrote it: the side stored at import time; guessing from the name only for messages that have none
+     (a phone-book name, a number or a Facebook name rarely matches the name shown on the page) */
+  const isThem = (m: ChatMessage) => (m.senderType ? m.senderType !== 'SELF' : names.some(n => fold(m.sender).includes(n) || n.includes(fold(m.sender))));
   const more = useCallback(() => { if (inf.hasNextPage && !inf.isFetchingNextPage) inf.fetchNextPage(); }, [inf]);
   const mark = (text: string) => { if (!dq) return text; const i = fold(text).indexOf(fold(dq)); return i < 0 ? text : <>{text.slice(0, i)}<mark>{text.slice(i, i + dq.length)}</mark>{text.slice(i + dq.length)}</>; };
   return (
@@ -187,7 +189,7 @@ export function ChatReader() {
         {inf.isLoading && <div className="card empty">Đang mở cuộc trò chuyện…</div>}
         {!inf.isLoading && !msgs.length && <div className="card empty">{dq ? 'Không có tin nhắn nào khớp.' : 'Kho này chưa có tin nhắn.'}</div>}
         {msgs.map((m, i) => {
-          const day = (m.timestamp ?? '').slice(0, 10), prevM = msgs[i - 1], newDay = !prevM || (prevM.timestamp ?? '').slice(0, 10) !== day, them = isThem(m.sender), cont = !newDay && prevM && prevM.sender === m.sender;
+          const day = (m.timestamp ?? '').slice(0, 10), prevM = msgs[i - 1], newDay = !prevM || (prevM.timestamp ?? '').slice(0, 10) !== day, them = isThem(m), cont = !newDay && prevM && prevM.sender === m.sender;
           return (
             <Fragment key={m.id}>
               {newDay && day && <div className="day-sep"><span>{longDay(+day.slice(0, 4), +day.slice(5, 7), +day.slice(8, 10))}</span></div>}

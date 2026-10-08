@@ -36,7 +36,7 @@ export interface Note {
 export interface TimelineBucket { year: number; month: number; count: number }
 
 export interface ChatArchive { id: string; platform: string; title?: string | null; messageCount: number; dateFrom?: string | null; dateTo?: string | null }
-export interface ChatMessage { id: string; sender: string; content: string; timestamp?: string | null; seq?: number | null }
+export interface ChatMessage { id: string; sender: string; senderType?: 'SELF' | 'PERSON' | 'OTHER' | 'SYSTEM' | null; content: string; timestamp?: string | null; seq?: number | null }
 
 export interface TagStats { id: string; name: string; color?: string | null; mediaCount: number; albumCount: number; noteCount: number }
 
