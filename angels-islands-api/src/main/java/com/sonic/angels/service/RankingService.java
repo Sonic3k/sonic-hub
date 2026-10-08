@@ -42,6 +42,25 @@ public class RankingService {
         return d;
     }
 
+    /** Every list of one board with its rows, oldest first. Metrics are the heavy part: only when asked for. */
+    @Transactional(readOnly = true)
+    public List<RankingDto.Detail> board(String board, boolean metrics) {
+        Map<UUID, List<RankingEntry>> rows = new HashMap<>();
+        for (RankingEntry e : entryRepo.findByBoardWithPerson(board))
+            rows.computeIfAbsent(e.getRanking().getId(), k -> new ArrayList<>()).add(e);
+        return rankingRepo.findByBoardOrderByTakenOnAscPeriodAsc(board).stream().map(r -> {
+            List<RankingEntry> es = rows.getOrDefault(r.getId(), List.of());
+            RankingDto.Detail d = new RankingDto.Detail();
+            fill(d, r, es.size());
+            d.setEntries(es.stream().map(e -> {
+                RankingDto.Entry x = entry(new RankingDto.Entry(), e);
+                if (!metrics) x.setMetrics(null);
+                return x;
+            }).toList());
+            return d;
+        }).toList();
+    }
+
     /** Every row this person has, in every ranking, with the ranking's header. */
     @Transactional(readOnly = true)
     public List<RankingDto.PersonEntry> forPerson(UUID personId) {

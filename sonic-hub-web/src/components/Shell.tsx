@@ -107,6 +107,7 @@ function AngelsSide() {
     <>
       <h4>Angels</h4>
       <Link to="/angels" className={loc.pathname === '/angels' ? 'on' : ''}>Tất cả<small>{list.length}</small></Link>
+      <Link to="/angels/rankings" className={loc.pathname === '/angels/rankings' ? 'on' : ''}>Bảng xếp hạng</Link>
       <h4>Theo thời gian</h4>
       {list.map(p => <Link key={p.id} to={`/angels/${p.id}`} className={`aside-person ${loc.pathname.startsWith(`/angels/${p.id}`) ? 'on' : ''}`}>
         {p.avatarUrl ? <img src={cdn(p.avatarUrl, 60)} alt="" /> : <span className="av-ph">{(p.displayName || p.name).slice(0, 1)}</span>}

@@ -24,6 +24,12 @@ public class RankingController {
     @GetMapping("/api/rankings/{id}")
     public RankingDto.Detail get(@PathVariable UUID id) { return rankingService.get(id); }
 
+    /** All lists of one board with their rows (the web's rankings page); ?metrics=true adds each row's columns. */
+    @GetMapping("/api/rankings/board/{board}")
+    public List<RankingDto.Detail> board(@PathVariable String board, @RequestParam(defaultValue = "false") boolean metrics) {
+        return rankingService.board(board, metrics);
+    }
+
     @GetMapping("/api/persons/{personId}/rankings")
     public List<RankingDto.PersonEntry> forPerson(@PathVariable UUID personId) { return rankingService.forPerson(personId); }
 

@@ -55,6 +55,13 @@ export interface RankingSummary {
   id: string; board: string; period: string; variant?: string | null; title?: string | null; takenOn?: string | null;
   source?: string | null; columns?: string[] | null; entryCount: number;
 }
+/** One row of a ranking (board endpoint: metrics only when asked for). */
+export interface RankingEntry {
+  id: string; personId?: string | null; personName?: string | null; label: string; rank?: number | null; points?: number | null;
+  period?: string | null; metrics?: Record<string, unknown> | null; note?: string | null;
+}
+/** A whole list with its rows, as GET /rankings/board/{board} returns them. */
+export interface RankingDetail extends RankingSummary { entries: RankingEntry[] }
 /** One person's row in one ranking. */
 export interface PersonRanking {
   id: string; personId?: string | null; label: string; rank?: number | null; points?: number | null; period?: string | null;

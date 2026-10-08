@@ -44,7 +44,8 @@ export function AngelsIndex() {
   const first = list.map(startOf).filter(y => y < 9999)[0];
   return (
     <div className="wrap page">
-      <div className="ptitle"><h1>Những người đã đi qua</h1><span>{list.length} người{first ? ` · từ ${first}` : ''}</span></div>
+      <div className="ptitle"><h1>Những người đã đi qua</h1><span>{list.length} người{first ? ` · từ ${first}` : ''}</span>
+        <Link className="sortbtn" to="/angels/rankings">Bảng xếp hạng</Link></div>
       <section className="lanes">
         <div className="angels-list">
           {persons.isLoading && <div className="card empty">Đang mở…</div>}
