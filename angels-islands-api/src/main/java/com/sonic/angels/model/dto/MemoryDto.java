@@ -6,6 +6,8 @@ import java.time.LocalDateTime;
 public class MemoryDto {
 
     public static class FactRequest {
+        private String source;
+        public String getSource() { return source; } public void setSource(String v) { this.source = v; }
         private String category; private String key; private String value; private String period; private Float confidence;
         public String getCategory() { return category; } public void setCategory(String v) { this.category = v; }
         public String getKey() { return key; } public void setKey(String v) { this.key = v; }
@@ -21,6 +23,8 @@ public class MemoryDto {
     }
 
     public static class EpisodeRequest {
+        private String source;
+        public String getSource() { return source; } public void setSource(String v) { this.source = v; }
         private String summary; private String emotion; private Integer importance; private LocalDateTime occurredAt;
         public String getSummary() { return summary; } public void setSummary(String v) { this.summary = v; }
         public String getEmotion() { return emotion; } public void setEmotion(String v) { this.emotion = v; }
@@ -34,6 +38,8 @@ public class MemoryDto {
     }
 
     public static class ChapterRequest {
+        private String source;
+        public String getSource() { return source; } public void setSource(String v) { this.source = v; }
         private String period; private String title; private String summary; private String sentiment; private Integer sortOrder;
         public String getPeriod() { return period; } public void setPeriod(String v) { this.period = v; }
         public String getTitle() { return title; } public void setTitle(String v) { this.title = v; }
@@ -48,6 +54,8 @@ public class MemoryDto {
     }
 
     public static class TraitRequest {
+        private String source;
+        public String getSource() { return source; } public void setSource(String v) { this.source = v; }
         private String trait; private String description; private String evidence; private String period;
         public String getTrait() { return trait; } public void setTrait(String v) { this.trait = v; }
         public String getDescription() { return description; } public void setDescription(String v) { this.description = v; }
@@ -58,5 +66,15 @@ public class MemoryDto {
         private UUID id; private LocalDateTime createdAt;
         public UUID getId() { return id; } public void setId(UUID v) { this.id = v; }
         public LocalDateTime getCreatedAt() { return createdAt; } public void setCreatedAt(LocalDateTime v) { this.createdAt = v; }
+    }
+
+    /** Replaces every memory item of one source for one person; a list left out (null) is not touched. */
+    public static class SourceImport {
+        private java.util.List<ChapterRequest> chapters; private java.util.List<FactRequest> facts;
+        private java.util.List<TraitRequest> traits; private java.util.List<EpisodeRequest> episodes;
+        public java.util.List<ChapterRequest> getChapters() { return chapters; } public void setChapters(java.util.List<ChapterRequest> v) { this.chapters = v; }
+        public java.util.List<FactRequest> getFacts() { return facts; } public void setFacts(java.util.List<FactRequest> v) { this.facts = v; }
+        public java.util.List<TraitRequest> getTraits() { return traits; } public void setTraits(java.util.List<TraitRequest> v) { this.traits = v; }
+        public java.util.List<EpisodeRequest> getEpisodes() { return episodes; } public void setEpisodes(java.util.List<EpisodeRequest> v) { this.episodes = v; }
     }
 }

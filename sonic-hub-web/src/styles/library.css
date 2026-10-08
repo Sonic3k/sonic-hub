@@ -369,3 +369,34 @@ body.mood-angels .kicker, body.mood-angels .when { color: var(--angels); }
 .facts div { display: grid; grid-template-columns: 88px minmax(0, 1fr); gap: 10px; padding: 8px 0; border-top: 1px solid var(--line); }
 .facts div:first-child { border-top: 0; padding-top: 0; }
 .facts dt { color: var(--ink3); } .facts dd { margin: 0; color: var(--ink); overflow-wrap: anywhere; }
+
+  /* ── a person's numbers: chat analysis + ranking sheets ── */
+  .chapter.gap { padding: 14px 18px; border-left: 3px solid var(--line); background: var(--soft); border-radius: 0 var(--r) var(--r) 0; }
+  .chapter.gap h2 { font-size: 20px; color: var(--ink2); }
+  .chapter.gap .prose { color: var(--ink2); font-style: italic; }
+  .block.notes ul.prose { padding-left: 1.2em; }
+  .block.notes .prose li { margin: 6px 0; font-family: var(--serif); font-size: 16.5px; line-height: 1.6; }
+  .block.notes .hd + ul { margin-bottom: 28px; }
+  .numbers .ngroup { margin: 0 0 28px; }
+  .nstats { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 12px; margin: 0 0 18px; }
+  .nstats div { padding: 12px 14px; background: var(--card); border: 1px solid var(--line); border-radius: var(--r); }
+  .nstats dt { font-size: 12px; letter-spacing: .04em; color: var(--ink3); }
+  .nstats dd { margin: 2px 0 0; font-size: 20px; font-weight: 600; color: var(--ink); }
+  .nstats dd small { display: block; margin-top: 2px; font-size: 12px; font-weight: 400; color: var(--ink3); }
+  .nchart { margin: 0 0 18px; }
+  .nchart figcaption { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 16px; margin-bottom: 6px; font-size: 13px; font-weight: 600; color: var(--ink2); }
+  .nchart .hint { font-weight: 400; color: var(--ink3); }
+  .nchart .legend { display: inline-flex; flex-wrap: wrap; gap: 4px 12px; font-weight: 400; color: var(--ink2); }
+  .nchart .legend span, .ntip span { display: inline-flex; align-items: center; gap: 5px; }
+  .nchart .legend i, .ntip i { width: 9px; height: 9px; border-radius: 2px; display: inline-block; }
+  .nchart-box { position: relative; }
+  .nchart svg { display: block; width: 100%; height: auto; overflow: visible; }
+  .nchart .axis { stroke: var(--line); stroke-width: 1; }
+  .nchart .grid { stroke: var(--line); stroke-width: 1; stroke-dasharray: 3 4; }
+  .nchart .tick { font-size: 11px; fill: var(--ink3); }
+  .ntip { position: absolute; top: 0; display: flex; flex-wrap: wrap; gap: 2px 10px; max-width: 300px;
+          padding: 6px 10px; border-radius: 8px; background: var(--ink); color: #fff; font-size: 12px; white-space: nowrap; pointer-events: none; z-index: 2; }
+  .nchips p { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin: 0 0 10px; }
+  .nchips .nlabel { margin-right: 4px; font-size: 12.5px; font-weight: 600; color: var(--ink3); }
+  @media (max-width: 640px) { .nstats { grid-template-columns: repeat(2, minmax(0, 1fr)); } .nstats dd { font-size: 17px; }
+    .nchart .tick { font-size: 21px; } /* the charts scale down to the phone width: keep their labels readable */ }

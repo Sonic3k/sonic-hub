@@ -38,6 +38,10 @@ public class Fact extends BaseEntity {
     @Column(name = "source_archive_id")
     private UUID sourceArchiveId;
 
+    /** Where this memory came from: null = typed in by hand, "analysis" = the chat analysis import. */
+    @Column(name = "source", length = 40)
+    private String source;
+
     public Fact() {}
 
     public UUID getId() { return id; }
@@ -56,4 +60,6 @@ public class Fact extends BaseEntity {
     public void setConfidence(Float confidence) { this.confidence = confidence; }
     public UUID getSourceArchiveId() { return sourceArchiveId; }
     public void setSourceArchiveId(UUID sourceArchiveId) { this.sourceArchiveId = sourceArchiveId; }
+    public String getSource() { return source; }
+    public void setSource(String source) { this.source = source; }
 }

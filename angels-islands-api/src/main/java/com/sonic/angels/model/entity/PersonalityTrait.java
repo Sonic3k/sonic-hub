@@ -31,6 +31,10 @@ public class PersonalityTrait extends BaseEntity {
     @Column(name = "period")
     private String period;
 
+    /** Where this memory came from: null = typed in by hand, "analysis" = the chat analysis import. */
+    @Column(name = "source", length = 40)
+    private String source;
+
     public PersonalityTrait() {}
 
     public UUID getId() { return id; }
@@ -45,4 +49,6 @@ public class PersonalityTrait extends BaseEntity {
     public void setEvidence(String evidence) { this.evidence = evidence; }
     public String getPeriod() { return period; }
     public void setPeriod(String period) { this.period = period; }
+    public String getSource() { return source; }
+    public void setSource(String source) { this.source = source; }
 }

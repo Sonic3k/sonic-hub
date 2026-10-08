@@ -37,6 +37,10 @@ public class Episode extends BaseEntity {
     @Column(name = "source_archive_id")
     private UUID sourceArchiveId;
 
+    /** Where this memory came from: null = typed in by hand, "analysis" = the chat analysis import. */
+    @Column(name = "source", length = 40)
+    private String source;
+
     public Episode() {}
 
     public UUID getId() { return id; }
@@ -53,4 +57,6 @@ public class Episode extends BaseEntity {
     public void setOccurredAt(LocalDateTime occurredAt) { this.occurredAt = occurredAt; }
     public UUID getSourceArchiveId() { return sourceArchiveId; }
     public void setSourceArchiveId(UUID sourceArchiveId) { this.sourceArchiveId = sourceArchiveId; }
+    public String getSource() { return source; }
+    public void setSource(String source) { this.source = source; }
 }

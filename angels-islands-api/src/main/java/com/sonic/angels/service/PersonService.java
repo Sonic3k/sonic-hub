@@ -28,12 +28,14 @@ public class PersonService {
     private final CompanionMessageRepository companionMessageRepository;
     private final CompanionConfigRepository companionConfigRepository;
     private final TelegramCompanionSessionRepository telegramSessionRepository;
+    private final com.sonic.angels.repository.RankingEntryRepository rankingEntryRepository;
 
     public PersonService(PersonRepository personRepository, PersonContactRepository contactRepository,
                          TagRepository tagRepository, DtoMapper mapper,
                          CompanionMessageRepository companionMessageRepository,
                          CompanionConfigRepository companionConfigRepository,
-                         TelegramCompanionSessionRepository telegramSessionRepository) {
+                         TelegramCompanionSessionRepository telegramSessionRepository,
+                         com.sonic.angels.repository.RankingEntryRepository rankingEntryRepository) {
         this.personRepository = personRepository;
         this.contactRepository = contactRepository;
         this.tagRepository = tagRepository;
@@ -41,6 +43,7 @@ public class PersonService {
         this.companionMessageRepository = companionMessageRepository;
         this.companionConfigRepository = companionConfigRepository;
         this.telegramSessionRepository = telegramSessionRepository;
+        this.rankingEntryRepository = rankingEntryRepository;
     }
 
     // ── Queries ──────────────────────────────────────────────────────────────
@@ -81,6 +84,8 @@ public class PersonService {
         // Person is inverse side of media/collection person joins — clear by hand
         personRepository.clearMediaLinks(id);
         personRepository.clearCollectionLinks(id);
+        // their rows in old rankings stay, as the nick written in the sheet
+        rankingEntryRepository.detachPerson(id);
         // Entity cascade handles contacts, archives(+messages), facts, episodes, chapters, traits
         personRepository.deleteById(id);
     }

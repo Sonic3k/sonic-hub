@@ -45,7 +45,18 @@ export interface PersonDetail extends Person {
   coverUrl?: string | null; bannerUrl?: string | null; tags?: TagRef[] | null;
   totalCollections?: number | null; totalMediaFiles?: number | null; totalChatArchives?: number | null; totalFacts?: number | null; totalEpisodes?: number | null;
 }
-export interface Fact { id: string; category?: string | null; key?: string | null; value?: string | null; period?: string | null; confidence?: number | null }
-export interface Episode { id: string; summary: string; emotion?: string | null; importance?: number | null; occurredAt?: string | null }
-export interface Chapter { id: string; period?: string | null; title?: string | null; summary?: string | null; sentiment?: string | null; sortOrder?: number | null }
-export interface Trait { id: string; trait: string; description?: string | null; evidence?: string | null; period?: string | null }
+export interface Fact { id: string; category?: string | null; key?: string | null; value?: string | null; period?: string | null; confidence?: number | null; source?: string | null }
+export interface Episode { id: string; summary: string; emotion?: string | null; importance?: number | null; occurredAt?: string | null; source?: string | null }
+export interface Chapter { id: string; period?: string | null; title?: string | null; summary?: string | null; sentiment?: string | null; sortOrder?: number | null; source?: string | null }
+export interface Trait { id: string; trait: string; description?: string | null; evidence?: string | null; period?: string | null; source?: string | null }
+
+/** A ranked list at one moment (relationship sheet, fb association month, Moments, chat activity). */
+export interface RankingSummary {
+  id: string; board: string; period: string; variant?: string | null; title?: string | null; takenOn?: string | null;
+  source?: string | null; columns?: string[] | null; entryCount: number;
+}
+/** One person's row in one ranking. */
+export interface PersonRanking {
+  id: string; personId?: string | null; label: string; rank?: number | null; points?: number | null; period?: string | null;
+  metrics?: Record<string, unknown> | null; note?: string | null; ranking: RankingSummary;
+}
