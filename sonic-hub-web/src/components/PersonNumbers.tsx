@@ -13,7 +13,9 @@ const PLATFORMS = [
 const ACCENT = 'var(--angels)';
 const PLATFORM_NAME: Record<string, string> = { facebook: 'Facebook', yahoo: 'Yahoo', sms: 'SMS', 'facebook-wall': 'tường FB' };
 
-/* Sheet columns worth showing, with the meaning they had in the sheet. Anything else stays in the data. */
+/* Sheet columns worth showing, with the meaning they had in the sheet. Anything else stays in the data.
+   The sheet's message columns (m.mess, fb.mess, yahoo…) are rough guesses written by hand, so they are left out:
+   the real counts come from the imported chats (chat-activity, above). */
 const METRICS: [string[], string, string?][] = [
   [['meet'], 'Gặp nhau', 'lần'],
   [['pic chung'], 'Ảnh chung'],
