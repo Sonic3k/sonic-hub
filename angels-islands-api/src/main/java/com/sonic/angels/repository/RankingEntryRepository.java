@@ -19,6 +19,10 @@ public interface RankingEntryRepository extends JpaRepository<RankingEntry, UUID
     @Query("SELECT e FROM RankingEntry e LEFT JOIN FETCH e.person WHERE e.ranking.id = :rankingId ORDER BY e.sortOrder")
     List<RankingEntry> findByRankingWithPerson(@Param("rankingId") UUID rankingId);
 
+    /** Every row of every list of one board, in one query (the overview page reads a whole board at once). */
+    @Query("SELECT e FROM RankingEntry e JOIN FETCH e.ranking r LEFT JOIN FETCH e.person WHERE r.board = :board ORDER BY e.sortOrder")
+    List<RankingEntry> findByBoardWithPerson(@Param("board") String board);
+
     /** A person being deleted keeps their rows in old rankings, as a nick only. */
     @Modifying
     @Query("UPDATE RankingEntry e SET e.person = NULL WHERE e.person.id = :personId")
