@@ -1,11 +1,39 @@
 import api from './client'
 import type { CollectionResponse, CollectionRequest, MediaFileResponse } from '../types'
 
+/** What "Delete collection + photos" would do (nothing is changed by asking). */
+export interface DeletePreview {
+  id: string
+  name: string
+  path: string
+  albums: number
+  photos: number
+  toDelete: number
+  toDeleteBytes: number
+  keptInOtherAlbums: number
+  keptInUse: number
+  inUse: { mediaId: string; fileName: string; usedAs: string }[]
+}
+
+export interface DeleteResult {
+  albumsDeleted: number
+  photosDeleted: number
+  keptInOtherAlbums: number
+  keptInUse: number
+  storageDeleted: number
+  storageFailed: number
+}
+
 export const collectionsApi = {
   getAll: () => api.get<CollectionResponse[]>('/api/collections').then(r => r.data),
   create: (data: CollectionRequest) => api.post<CollectionResponse>('/api/collections', data).then(r => r.data),
   update: (id: string, data: CollectionRequest) => api.put<CollectionResponse>(`/api/collections/${id}`, data).then(r => r.data),
+  /** The album and its sub-albums only — their photos stay in the library. */
   delete: (id: string) => api.delete(`/api/collections/${id}`),
+  deletePreview: (id: string) => api.get<DeletePreview>(`/api/collections/${id}/delete-preview`).then(r => r.data),
+  /** The album, its sub-albums and their photos (database, then B2). */
+  deleteWithMedia: (id: string) =>
+    api.delete<DeleteResult>(`/api/collections/${id}`, { params: { withMedia: true } }).then(r => r.data),
 }
 
 export interface TreeRequest {

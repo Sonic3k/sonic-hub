@@ -2,6 +2,7 @@ package com.sonic.angels.controller;
 
 import com.sonic.angels.model.dto.CollectionDto;
 import com.sonic.angels.model.dto.MediaFileDto;
+import com.sonic.angels.service.CollectionDeleteService;
 import com.sonic.angels.service.CollectionService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -13,11 +14,14 @@ import java.util.UUID;
 public class CollectionController {
 
     private final CollectionService collectionService;
+    private final CollectionDeleteService collectionDeleteService;
 
     private final com.sonic.angels.repository.CollectionRepository collectionRepository;
 
-    public CollectionController(CollectionService collectionService, com.sonic.angels.repository.CollectionRepository collectionRepository) {
+    public CollectionController(CollectionService collectionService, CollectionDeleteService collectionDeleteService,
+                                com.sonic.angels.repository.CollectionRepository collectionRepository) {
         this.collectionService = collectionService;
+        this.collectionDeleteService = collectionDeleteService;
         this.collectionRepository = collectionRepository;
     }
 
@@ -92,8 +96,24 @@ public class CollectionController {
     @PutMapping("/{id}")
     public CollectionDto.Response update(@PathVariable UUID id, @RequestBody CollectionDto.Request req) { return collectionService.update(id, req); }
 
+    /** What "delete with photos" would do: albums, photos to delete, photos kept and why. Changes nothing. */
+    @GetMapping("/{id}/delete-preview")
+    public CollectionDeleteService.Preview deletePreview(@PathVariable UUID id) { return collectionDeleteService.preview(id); }
+
+    /** withMedia=false: the album and its sub-albums go, their photos stay in the library.
+     *  withMedia=true: their photos go too (database, then B2) — except photos that are also in albums outside
+     *  this one, or in use as an avatar / cover / banner / journal cover: those are only taken out. */
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> delete(@PathVariable UUID id) { collectionService.delete(id); return ResponseEntity.noContent().build(); }
+    public ResponseEntity<?> delete(@PathVariable UUID id, @RequestParam(defaultValue = "false") boolean withMedia) {
+        if (withMedia) return ResponseEntity.ok(collectionDeleteService.deleteWithMedia(id));
+        collectionService.delete(id);
+        return ResponseEntity.noContent().build();
+    }
+
+    @ExceptionHandler(CollectionDeleteService.Refused.class)
+    public ResponseEntity<java.util.Map<String, String>> deleteRefused(CollectionDeleteService.Refused e) {
+        return ResponseEntity.status(e.status()).body(java.util.Map.of("error", e.getMessage()));
+    }
 
     // ── Media ────────────────────────────────────────────────────────────────
 

@@ -5,6 +5,7 @@ import { FolderOpen, ChevronRight, Image, ArrowLeft, Trash2, X, Plus, FolderPlus
 import { collectionBrowseApi, uploadApi, collectionsApi, mediaApi } from '../api/collections'
 import CollectionPicker from '../components/CollectionPicker'
 import PersonSelectModal from '../components/PersonSelectModal'
+import DeleteAlbumModal from '../components/DeleteAlbumModal'
 import { AlbumTagsSheet, SelectionTagsSheet } from '../components/TagPanel'
 import { usePersons } from '../hooks/usePersons'
 import { collectDroppedFiles, groupDropped } from '../lib/dropUpload'
@@ -282,6 +283,7 @@ export default function CollectionsPage() {
   const [renameOpen, setRenameOpen] = useState(false)
   const [renameDraft, setRenameDraft] = useState('')
   const [personsOpen, setPersonsOpen] = useState(false)
+  const [deleteTreeOpen, setDeleteTreeOpen] = useState(false)
   const { data: allPersons = [] } = usePersons()
 
   const selectedList = () => Array.from(selectedIds)
@@ -526,7 +528,7 @@ export default function CollectionsPage() {
               {showCollMenu && (
                 <>
                   <div className="fixed inset-0 z-10" onClick={() => setShowCollMenu(false)} />
-                  <div className="absolute right-0 top-11 z-20 bg-white rounded-xl shadow-lg border border-slate-100 py-1.5 w-48">
+                  <div className="absolute right-0 top-11 z-20 bg-white rounded-xl shadow-lg border border-slate-100 py-1.5 w-56">
                     <button onClick={() => { setRenameDraft(current?.name || ''); setRenameOpen(true); setShowCollMenu(false) }}
                       className="flex items-center gap-2.5 w-full px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 active:bg-slate-100 transition-colors">
                       <Pencil size={16} className="text-slate-400" />Rename
@@ -546,6 +548,10 @@ export default function CollectionsPage() {
                     <button onClick={() => { setShowCollMenu(false); handleDeleteCollection() }}
                       className="flex items-center gap-2.5 w-full px-4 py-2.5 text-sm text-rose-500 hover:bg-rose-50 active:bg-rose-100 transition-colors">
                       <Trash2 size={16} className="text-rose-300" />Delete collection
+                    </button>
+                    <button onClick={() => { setShowCollMenu(false); setDeleteTreeOpen(true) }}
+                      className="flex items-center gap-2.5 w-full whitespace-nowrap text-left px-4 py-2.5 text-sm font-medium text-rose-600 hover:bg-rose-50 active:bg-rose-100 transition-colors">
+                      <Trash2 size={16} className="text-rose-500" />Delete collection + photos
                     </button>
                   </div>
                 </>
@@ -761,6 +767,18 @@ export default function CollectionsPage() {
             </div>
           </div>
         </div>
+      )}
+
+      {/* Delete collection + photos */}
+      {deleteTreeOpen && currentId && (
+        <DeleteAlbumModal collectionId={currentId}
+          onClose={() => setDeleteTreeOpen(false)}
+          onDeleted={() => {
+            setDeleteTreeOpen(false)
+            navigate(breadcrumb.length > 1 ? breadcrumb[breadcrumb.length - 2].id : null)
+            // refresh once the page has left the deleted album, so nothing refetches an album that is gone
+            setTimeout(() => qc.invalidateQueries(), 0)
+          }} />
       )}
 
       {/* Manage persons modal */}
