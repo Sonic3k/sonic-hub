@@ -12,15 +12,15 @@ import java.util.regex.Pattern;
 /**
  * Off unless ADMIN_TOKEN is set (then the API is open, importer included).
  * With ADMIN_TOKEN set: every write needs the token, and so do reads of private data
- * (chat archives, other chats, memory, contacts, companion, journal problems, imports).
+ * (chat archives, other chats, memory, rankings, contacts, companion, journal problems, imports).
  * Photos, collections, tags and persons stay public for sonic-hub-web; journal notes answer only
  * with published articles to callers without the token (JournalController).
  */
 public class AdminTokenFilter extends OncePerRequestFilter {
 
     private static final Pattern PRIVATE_READ = Pattern.compile(
-        "^/api/(persons/[^/]+/(chat-archives|memory|contacts|companion)(/.*)?" +
-        "|companion(/.*)?|chat-archives(/.*)?|chat-attachments(/.*)?|journal/(problems|authors)(/.*)?|import(/.*)?)$");
+        "^/api/(persons/[^/]+/(chat-archives|memory|contacts|companion|rankings)(/.*)?" +
+        "|companion(/.*)?|chat-archives(/.*)?|chat-attachments(/.*)?|journal/(problems|authors)(/.*)?|import(/.*)?|rankings(/.*)?)$");
 
     private final AdminAuth auth;
 

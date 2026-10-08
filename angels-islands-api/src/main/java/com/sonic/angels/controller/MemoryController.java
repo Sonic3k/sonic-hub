@@ -19,13 +19,22 @@ public class MemoryController {
     private final PersonalityTraitRepository traitRepo;
     private final PersonRepository personRepo;
     private final DtoMapper mapper;
+    private final com.sonic.angels.service.MemoryImportService memoryImport;
 
     public MemoryController(FactRepository factRepo, EpisodeRepository episodeRepo,
                             LifeChapterRepository chapterRepo, PersonalityTraitRepository traitRepo,
-                            PersonRepository personRepo, DtoMapper mapper) {
+                            PersonRepository personRepo, DtoMapper mapper,
+                            com.sonic.angels.service.MemoryImportService memoryImport) {
         this.factRepo = factRepo; this.episodeRepo = episodeRepo;
         this.chapterRepo = chapterRepo; this.traitRepo = traitRepo;
-        this.personRepo = personRepo; this.mapper = mapper;
+        this.personRepo = personRepo; this.mapper = mapper; this.memoryImport = memoryImport;
+    }
+
+    /** Replace everything one source wrote for this person (e.g. "analysis"); memory typed in by hand is never touched. */
+    @PutMapping("/sources/{source}")
+    public java.util.Map<String, Object> replaceSource(@PathVariable UUID personId, @PathVariable String source,
+                                                       @RequestBody MemoryDto.SourceImport req) {
+        return memoryImport.replace(personId, source, req);
     }
 
     @GetMapping("/facts")
@@ -35,7 +44,7 @@ public class MemoryController {
     public MemoryDto.FactResponse createFact(@PathVariable UUID personId, @RequestBody MemoryDto.FactRequest req) {
         Fact f = new Fact(); f.setPerson(personRepo.findById(personId).orElseThrow());
         f.setCategory(req.getCategory()); f.setKey(req.getKey()); f.setValue(req.getValue());
-        f.setPeriod(req.getPeriod()); f.setConfidence(req.getConfidence());
+        f.setPeriod(req.getPeriod()); f.setConfidence(req.getConfidence()); f.setSource(req.getSource());
         return mapper.toFactResponse(factRepo.save(f));
     }
 
@@ -47,6 +56,7 @@ public class MemoryController {
         if (req.getValue() != null) f.setValue(req.getValue());
         if (req.getPeriod() != null) f.setPeriod(req.getPeriod().isBlank() ? null : req.getPeriod());
         if (req.getConfidence() != null) f.setConfidence(req.getConfidence());
+        if (req.getSource() != null) f.setSource(req.getSource().isBlank() ? null : req.getSource());
         return mapper.toFactResponse(factRepo.save(f));
     }
 
@@ -60,7 +70,7 @@ public class MemoryController {
     public MemoryDto.EpisodeResponse createEpisode(@PathVariable UUID personId, @RequestBody MemoryDto.EpisodeRequest req) {
         Episode e = new Episode(); e.setPerson(personRepo.findById(personId).orElseThrow());
         e.setSummary(req.getSummary()); e.setEmotion(req.getEmotion());
-        e.setImportance(req.getImportance()); e.setOccurredAt(req.getOccurredAt());
+        e.setImportance(req.getImportance()); e.setOccurredAt(req.getOccurredAt()); e.setSource(req.getSource());
         return mapper.toEpisodeResponse(episodeRepo.save(e));
     }
 
@@ -71,6 +81,7 @@ public class MemoryController {
         if (req.getEmotion() != null) e.setEmotion(req.getEmotion().isBlank() ? null : req.getEmotion());
         if (req.getImportance() != null) e.setImportance(req.getImportance());
         if (req.getOccurredAt() != null) e.setOccurredAt(req.getOccurredAt());
+        if (req.getSource() != null) e.setSource(req.getSource().isBlank() ? null : req.getSource());
         return mapper.toEpisodeResponse(episodeRepo.save(e));
     }
 
@@ -84,7 +95,7 @@ public class MemoryController {
     public MemoryDto.ChapterResponse createChapter(@PathVariable UUID personId, @RequestBody MemoryDto.ChapterRequest req) {
         LifeChapter c = new LifeChapter(); c.setPerson(personRepo.findById(personId).orElseThrow());
         c.setPeriod(req.getPeriod()); c.setTitle(req.getTitle()); c.setSummary(req.getSummary());
-        c.setSentiment(req.getSentiment()); c.setSortOrder(req.getSortOrder());
+        c.setSentiment(req.getSentiment()); c.setSortOrder(req.getSortOrder()); c.setSource(req.getSource());
         return mapper.toChapterResponse(chapterRepo.save(c));
     }
 
@@ -96,6 +107,7 @@ public class MemoryController {
         if (req.getSummary() != null) c.setSummary(req.getSummary().isBlank() ? null : req.getSummary());
         if (req.getSentiment() != null) c.setSentiment(req.getSentiment().isBlank() ? null : req.getSentiment());
         if (req.getSortOrder() != null) c.setSortOrder(req.getSortOrder());
+        if (req.getSource() != null) c.setSource(req.getSource().isBlank() ? null : req.getSource());
         return mapper.toChapterResponse(chapterRepo.save(c));
     }
 
@@ -109,7 +121,7 @@ public class MemoryController {
     public MemoryDto.TraitResponse createTrait(@PathVariable UUID personId, @RequestBody MemoryDto.TraitRequest req) {
         PersonalityTrait t = new PersonalityTrait(); t.setPerson(personRepo.findById(personId).orElseThrow());
         t.setTrait(req.getTrait()); t.setDescription(req.getDescription());
-        t.setEvidence(req.getEvidence()); t.setPeriod(req.getPeriod());
+        t.setEvidence(req.getEvidence()); t.setPeriod(req.getPeriod()); t.setSource(req.getSource());
         return mapper.toTraitResponse(traitRepo.save(t));
     }
 
@@ -120,6 +132,7 @@ public class MemoryController {
         if (req.getDescription() != null) t.setDescription(req.getDescription().isBlank() ? null : req.getDescription());
         if (req.getEvidence() != null) t.setEvidence(req.getEvidence().isBlank() ? null : req.getEvidence());
         if (req.getPeriod() != null) t.setPeriod(req.getPeriod().isBlank() ? null : req.getPeriod());
+        if (req.getSource() != null) t.setSource(req.getSource().isBlank() ? null : req.getSource());
         return mapper.toTraitResponse(traitRepo.save(t));
     }
 

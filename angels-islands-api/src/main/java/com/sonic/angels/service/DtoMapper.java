@@ -130,7 +130,7 @@ public class DtoMapper {
         MemoryDto.FactResponse r = new MemoryDto.FactResponse();
         r.setId(f.getId()); r.setCategory(f.getCategory()); r.setKey(f.getKey()); r.setValue(f.getValue());
         r.setPeriod(f.getPeriod()); r.setConfidence(f.getConfidence());
-        r.setSourceArchiveId(f.getSourceArchiveId()); r.setCreatedAt(f.getCreatedAt());
+        r.setSourceArchiveId(f.getSourceArchiveId()); r.setCreatedAt(f.getCreatedAt()); r.setSource(f.getSource());
         return r;
     }
 
@@ -138,7 +138,7 @@ public class DtoMapper {
     public MemoryDto.EpisodeResponse toEpisodeResponse(Episode e) {
         MemoryDto.EpisodeResponse r = new MemoryDto.EpisodeResponse();
         r.setId(e.getId()); r.setSummary(e.getSummary()); r.setEmotion(e.getEmotion());
-        r.setImportance(e.getImportance()); r.setOccurredAt(e.getOccurredAt()); r.setCreatedAt(e.getCreatedAt());
+        r.setImportance(e.getImportance()); r.setOccurredAt(e.getOccurredAt()); r.setCreatedAt(e.getCreatedAt()); r.setSource(e.getSource());
         return r;
     }
 
@@ -147,7 +147,7 @@ public class DtoMapper {
         MemoryDto.ChapterResponse r = new MemoryDto.ChapterResponse();
         r.setId(c.getId()); r.setPeriod(c.getPeriod()); r.setTitle(c.getTitle());
         r.setSummary(c.getSummary()); r.setSentiment(c.getSentiment());
-        r.setSortOrder(c.getSortOrder()); r.setCreatedAt(c.getCreatedAt());
+        r.setSortOrder(c.getSortOrder()); r.setCreatedAt(c.getCreatedAt()); r.setSource(c.getSource());
         return r;
     }
 
@@ -155,7 +155,7 @@ public class DtoMapper {
     public MemoryDto.TraitResponse toTraitResponse(PersonalityTrait t) {
         MemoryDto.TraitResponse r = new MemoryDto.TraitResponse();
         r.setId(t.getId()); r.setTrait(t.getTrait()); r.setDescription(t.getDescription());
-        r.setEvidence(t.getEvidence()); r.setPeriod(t.getPeriod()); r.setCreatedAt(t.getCreatedAt());
+        r.setEvidence(t.getEvidence()); r.setPeriod(t.getPeriod()); r.setCreatedAt(t.getCreatedAt()); r.setSource(t.getSource());
         return r;
     }
 

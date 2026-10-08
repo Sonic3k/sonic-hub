@@ -1,5 +1,5 @@
 import { get } from './client';
-import type { Chapter, ChatArchive, ChatMessage, Collection, Episode, Fact, MediaFile, Note, Paged, Person, PersonDetail, Tag, TagStats, TimelineBucket, Trait } from '../types';
+import type { Chapter, ChatArchive, ChatMessage, Collection, Episode, Fact, MediaFile, Note, Paged, Person, PersonDetail, PersonRanking, Tag, TagStats, TimelineBucket, Trait } from '../types';
 import { isoDay, addDays } from '../lib/date';
 
 export interface Search {
@@ -28,6 +28,7 @@ export const hub = {
   episodes: (id: string) => get<Episode[]>(`/persons/${id}/memory/episodes`),
   chapters: (id: string) => get<Chapter[]>(`/persons/${id}/memory/chapters`),
   traits: (id: string) => get<Trait[]>(`/persons/${id}/memory/traits`),
+  rankings: (id: string) => get<PersonRanking[]>(`/persons/${id}/rankings`),
   total: async (p: Search) => (await hub.search({ ...p, size: 1 })).totalElements,
   tagStats: () => get<TagStats[]>('/tags/stats'),
   allAlbums: () => get<Collection[]>('/collections/all', { inclMediaCount: true, inclChildrenCount: true, inclTags: true }),

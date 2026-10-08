@@ -34,6 +34,10 @@ public class LifeChapter extends BaseEntity {
     @Column(name = "sort_order")
     private Integer sortOrder;
 
+    /** Where this memory came from: null = typed in by hand, "analysis" = the chat analysis import. */
+    @Column(name = "source", length = 40)
+    private String source;
+
     public LifeChapter() {}
 
     public UUID getId() { return id; }
@@ -50,4 +54,6 @@ public class LifeChapter extends BaseEntity {
     public void setSentiment(String sentiment) { this.sentiment = sentiment; }
     public Integer getSortOrder() { return sortOrder; }
     public void setSortOrder(Integer sortOrder) { this.sortOrder = sortOrder; }
+    public String getSource() { return source; }
+    public void setSource(String source) { this.source = source; }
 }

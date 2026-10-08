@@ -10,6 +10,7 @@ import { dayMonthYear, longDay, timeOf } from '../lib/date';
 import { fold } from '../lib/text';
 import Justified from '../components/Justified';
 import { Sentinel, useViewer } from '../components/PhotoGroups';
+import PersonNumbers from '../components/PersonNumbers';
 
 const T = 10 * 60_000;
 const nameOf = (p: Person) => p.displayName || p.name;
@@ -78,6 +79,7 @@ export function PersonPage() {
   const chapters = useQuery({ queryKey: ['chapters', id], queryFn: () => hub.chapters(id), staleTime: T });
   const traits = useQuery({ queryKey: ['traits', id], queryFn: () => hub.traits(id), staleTime: T });
   const archives = useQuery({ queryKey: ['archives', id], queryFn: () => hub.archives(id), staleTime: T });
+  const rankings = useQuery({ queryKey: ['rankings', id], queryFn: () => hub.rankings(id), staleTime: T });
   const photos = useQuery({ queryKey: ['person-photos', id], staleTime: T, queryFn: () => hub.search({ personId: id, size: 30, sortBy: 'effectiveDate', sortDir: 'asc', inclPersons: true, inclTags: true }) });
   const items = photos.data?.content ?? [], viewer = useViewer(items);
   const openById = (mid: string) => { const i = items.findIndex(m => m.id === mid); if (i >= 0) viewer.open(i); };
@@ -85,6 +87,9 @@ export function PersonPage() {
   const platforms = [...new Set((archives.data ?? []).map(a => a.platform))];
   const chs = [...(chapters.data ?? [])].sort((a, b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0));
   const eps = [...(episodes.data ?? [])].sort((a, b) => (a.occurredAt ?? '').localeCompare(b.occurredAt ?? ''));
+  // notes from the chat analysis read as a list in the story; the side card keeps the short facts
+  const analysis = (facts.data ?? []).filter(f => f.source === 'analysis'), shortFacts = (facts.data ?? []).filter(f => f.source !== 'analysis');
+  const notes = analysis.filter(f => f.category === 'analysis-note'), style = analysis.filter(f => f.category === 'analysis-style');
   const cover = p?.coverUrl || p?.bannerUrl || items.find(m => m.isFeatured)?.cdnUrl || items[0]?.cdnUrl;
   if (person.isLoading) return <div className="wrap page"><div className="card empty">Đang mở câu chuyện…</div></div>;
   if (!p) return <div className="wrap page"><Link className="back" to="/angels">← Angels</Link><h1>Không tìm thấy người này</h1></div>;
@@ -103,12 +108,21 @@ export function PersonPage() {
           {intro && <div className="prose story-intro">{intro.split(/\n{2,}/).map((t, i) => <p key={i}>{t}</p>)}</div>}
 
           {chs.map(c => (
-            <section key={c.id} className="chapter">
+            <section key={c.id} className={c.sentiment === 'gap' ? 'chapter gap' : 'chapter'}>
               {c.period && <div className="when">{c.period}</div>}
               {c.title && <h2>{c.title}</h2>}
               {c.summary && <div className="prose">{c.summary.split(/\n{2,}/).map((t, i) => <p key={i}>{t}</p>)}</div>}
-              <ChapterPhotos personId={id} period={c.period} onOpen={openById} />
+              {c.sentiment !== 'gap' && <ChapterPhotos personId={id} period={c.period} onOpen={openById} />}
             </section>))}
+
+          {(notes.length > 0 || style.length > 0) && <section className="block notes">
+            {notes.length > 0 && <><div className="hd"><h2>Ghi chép</h2><span>{notes.length}</span></div>
+              <ul className="prose">{notes.map(f => <li key={f.id}>{f.value}</li>)}</ul></>}
+            {style.length > 0 && <><div className="hd"><h2>Cách hai người nói chuyện</h2></div>
+              <ul className="prose">{style.map(f => <li key={f.id}>{f.value}</li>)}</ul></>}
+          </section>}
+
+          <PersonNumbers entries={rankings.data ?? []} name={nameOf(p)} />
 
           {eps.length > 0 && <section className="block"><div className="hd"><h2>Những khoảnh khắc</h2><span>{eps.length}</span></div>
             <ol className="episodes">{eps.map(e => (
@@ -136,7 +150,7 @@ export function PersonPage() {
               {p.firstMet && <div><dt>Gặp nhau</dt><dd>{dayMonthYear(p.firstMet)}</dd></div>}
               {p.dateOfBirth && <div><dt>Sinh nhật</dt><dd>{new Date(p.dateOfBirth).toLocaleDateString('vi-VN', { day: 'numeric', month: 'long' })}</dd></div>}
               {p.song && <div><dt>Bài hát</dt><dd>{p.song}</dd></div>}
-              {(facts.data ?? []).slice(0, 8).map(f => <div key={f.id}><dt>{f.key || f.category}</dt><dd>{f.value}</dd></div>)}
+              {shortFacts.slice(0, 8).map(f => <div key={f.id}><dt>{f.key || f.category}</dt><dd>{f.value}</dd></div>)}
               {p.totalMediaFiles != null && <div><dt>Ảnh</dt><dd>{fmt(p.totalMediaFiles)}</dd></div>}
             </dl></div>
           {!!traits.data?.length && <div className="card" style={{ ['--c' as string]: 'var(--angels)' }}><h3><i />Tính cách</h3>
