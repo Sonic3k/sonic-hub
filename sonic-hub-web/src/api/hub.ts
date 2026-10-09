@@ -92,8 +92,10 @@ export function yearsOf(p: Person): [number, number] | null {
   const end = /nay|now|present/i.test(p.period ?? '') ? new Date().getFullYear() : nums[nums.length - 1];
   return [nums[0], end];
 }
+/** An Angel: not yourself, type ANGEL (or not given a type yet). Friends and others are not listed as Angels. */
+export const isAngel = (p: Person) => !p.isSelf && (!p.relationshipType || p.relationshipType === 'ANGEL');
 export const peopleOfYear = (persons: Person[], y: number) =>
-  persons.filter(p => !p.isSelf).filter(p => { const r = yearsOf(p); return r ? y >= r[0] && y <= r[1] : false; });
+  persons.filter(isAngel).filter(p => { const r = yearsOf(p); return r ? y >= r[0] && y <= r[1] : false; });
 
 /** Tags ranked by how much lives in them — one call. */
 export async function tagWorlds(limit = 10): Promise<(Tag & { count: number })[]> {

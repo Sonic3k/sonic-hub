@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import { hub, dayOf, peopleOfYear, randomLine } from '../api/hub';
+import { hub, dayOf, isAngel, peopleOfYear, randomLine } from '../api/hub';
 import { cdn, pic } from '../api/client';
 import type { MediaFile, Person } from '../types';
 import { counts, excerptOf, fmt, noteDate, noteHref, readMinutes, useAlbums, useNotes, usePersons, useRegions, useTimeline } from '../lib/queries';
@@ -69,7 +69,7 @@ export default function Home() {
           </div>}
         </div>
         <aside className="rail">
-          <ChatCard people={people.length ? people : (persons.data ?? []).filter(p => !p.isSelf)} />
+          <ChatCard people={people.length ? people : (persons.data ?? []).filter(isAngel)} />
           <RandomPhoto onOpen={(m) => setViewer({ items: [m], i: 0 })} />
           {FOOTBALL && <div className="card" style={{ ['--c' as string]: 'var(--football)' }}><h3><i />Bóng đá</h3><a href={FOOTBALL} style={{ fontWeight: 600 }}>Mở Fantasy Football →</a></div>}
         </aside>
@@ -79,8 +79,8 @@ export default function Home() {
         <div className="albums">{albums.data.slice(0, 6).map(a => <Link key={a.id} className="album" to={`/photos/albums/${a.id}`}><div className="cov">{a.thumbnailUrl ? <img src={cdn(a.thumbnailUrl, 400)} alt="" /> : <div className="ph" style={{ width: '100%', height: '100%' }} />}</div><b>{a.name}</b><span>{fmt(a.mediaCount ?? 0)} ảnh</span></Link>)}</div></section>}
 
       <section className="duo">
-        <div><div className="hd"><h2>Angels</h2><span>{(persons.data ?? []).filter(p => !p.isSelf).length} người</span><Link to="/angels" style={{ ['--c' as string]: 'var(--angels)' }}>Vào Angels</Link></div>
-          <div className="people">{(persons.data ?? []).filter(p => !p.isSelf).sort((a, b) => Number(!!b.isFeatured) - Number(!!a.isFeatured)).slice(0, 6).map(p => (
+        <div><div className="hd"><h2>Angels</h2><span>{(persons.data ?? []).filter(isAngel).length} người</span><Link to="/angels" style={{ ['--c' as string]: 'var(--angels)' }}>Vào Angels</Link></div>
+          <div className="people">{(persons.data ?? []).filter(isAngel).sort((a, b) => Number(!!b.isFeatured) - Number(!!a.isFeatured)).slice(0, 6).map(p => (
             <Link key={p.id} className="person" to={`/angels/${p.id}`}>{p.avatarUrl ? <img src={cdn(p.avatarUrl, 200)} alt="" /> : <span className="letter-ph">{nameOf(p).slice(0, 1)}</span>}<b>{nameOf(p)}</b><span>{p.period ?? ''}</span></Link>))}</div></div>
         {!!regions.data?.length && <div><div className="hd"><h2>Vùng</h2><span>theo tag</span></div>
           <div className="regions">{regions.data.map(r => <Link key={r.id} className="region" to={`/tags/${encodeURIComponent(r.name)}`} style={{ paddingLeft: 12 }}><span className="dot" style={{ width: 8, height: 8, borderRadius: '50%', background: r.color || 'var(--ink3)' }} />{r.name}<small>{fmt(r.count)}</small></Link>)}</div></div>}
