@@ -2,7 +2,7 @@
 import { Fragment, useCallback, useEffect, useMemo, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { useInfiniteQuery, useQuery } from '@tanstack/react-query';
-import { hub, periodYears, randomLine } from '../api/hub';
+import { hub, isAngel, periodYears, randomLine } from '../api/hub';
 import { cdn, pic } from '../api/client';
 import type { ChatMessage, Person } from '../types';
 import { fmt, usePersons } from '../lib/queries';
@@ -18,7 +18,7 @@ const nameOf = (p: Person) => p.displayName || p.name;
 const REL: Record<string, string> = { ANGEL: '', OTHER: 'khác', GIRLFRIEND: 'người yêu', EX: 'người cũ', EX_GIRLFRIEND: 'người yêu cũ', CRUSH: 'thầm thương', LOVER: 'người thương', FRIEND: 'bạn', CLOSE_FRIEND: 'bạn thân', FAMILY: 'gia đình' };
 const rel = (r?: string | null) => (r ? REL[r] ?? r.toLowerCase().replace(/_/g, ' ') : '');
 const startOf = (p: Person) => periodYears(p.period)?.[0] ?? 9999;
-export const angelsOrdered = (all: Person[]) => all.filter(p => !p.isSelf).sort((a, b) => startOf(a) - startOf(b) || nameOf(a).localeCompare(nameOf(b)));
+export const angelsOrdered = (all: Person[]) => all.filter(isAngel).sort((a, b) => startOf(a) - startOf(b) || nameOf(a).localeCompare(nameOf(b)));
 
 /** A face for a person: their avatar, else a photo they are in. */
 function Face({ p, w }: { p: Person; w: number }) {
