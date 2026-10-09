@@ -29,7 +29,7 @@ export default function LibraryPage() {
   const [fav, setFav] = useState(false)
   const [q, setQ] = useState('')
   const [activeQ, setActiveQ] = useState('')
-  const [type, setType] = useState<'' | 'IMAGE' | 'VIDEO' | 'FLASH'>('')
+  const [type, setType] = useState<'' | 'IMAGE' | 'VIDEO' | 'FLASH' | 'AUDIO'>('')
   const [tagFilter, setTagFilter] = useState<TagResponse | null>(null)
   const [showTagMenu, setShowTagMenu] = useState(false)
   const [tagModal, setTagModal] = useState<string[] | null>(null)
@@ -201,10 +201,10 @@ export default function LibraryPage() {
           )}
         </div>
         <div className="flex bg-slate-100 rounded-full p-0.5 text-xs">
-          {(['', 'IMAGE', 'VIDEO', 'FLASH'] as const).map(t => (
+          {(['', 'IMAGE', 'VIDEO', 'FLASH', 'AUDIO'] as const).map(t => (
             <button key={t || 'all'} onClick={() => setType(t)}
               className={`px-2.5 py-1 rounded-full transition-colors ${type === t ? 'bg-white text-slate-800 shadow-sm font-medium' : 'text-slate-500'}`}>
-              {t === '' ? 'All types' : t === 'IMAGE' ? 'Photos' : t === 'VIDEO' ? 'Videos' : 'Flash'}
+              {t === '' ? 'All types' : t === 'IMAGE' ? 'Photos' : t === 'VIDEO' ? 'Videos' : t === 'FLASH' ? 'Flash' : 'Audio'}
             </button>
           ))}
         </div>

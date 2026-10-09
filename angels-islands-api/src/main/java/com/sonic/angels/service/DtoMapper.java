@@ -12,12 +12,17 @@ public class DtoMapper {
 
     public DtoMapper(StorageService storageService) { this.storageService = storageService; }
 
-    /** The picture of a file: itself, or its poster when the file is not an image (a Flash card; none without one). */
+    /** The picture of a file: itself, or its poster when the file is not an image (a Flash card, a recording; none
+     *  without one). */
     public String imageUrl(MediaFile m) {
         if (m == null) return null;
         if (m.getPosterStorageKey() != null) return storageService.buildCdnUrl(m.getPosterStorageKey());
-        if (m.getFileType() == MediaFile.FileType.FLASH) return null;
+        if (noPicture(m)) return null;
         return storageService.buildCdnUrl(m.getStorageKey(), m.getStorageProvider());
+    }
+
+    private static boolean noPicture(MediaFile m) {
+        return m.getFileType() == MediaFile.FileType.FLASH || m.getFileType() == MediaFile.FileType.AUDIO;
     }
 
     // ── Tag ──────────────────────────────────────────────────────────────────
@@ -79,9 +84,9 @@ public class DtoMapper {
         r.setDisplayedAddress(m.getDisplayedAddress());
         r.setTimezone(m.getTimezone());
         r.setCdnUrl(storageService.buildCdnUrl(m.getStorageKey(), m.getStorageProvider()));
-        // a poster stands in for a file that is not an image (a Flash card); a card without one has no thumbnail
+        // a poster stands in for a file that is not an image (a Flash card, a recording); without one there is no thumbnail
         if (m.getPosterStorageKey() != null) r.setThumbnailUrl(storageService.buildThumbnailUrl(m.getPosterStorageKey(), 300));
-        else if (m.getFileType() == MediaFile.FileType.FLASH) r.setThumbnailUrl(null);
+        else if (noPicture(m)) r.setThumbnailUrl(null);
         else r.setThumbnailUrl(m.getStorageKey() != null ? storageService.buildThumbnailUrl(m.getStorageKey(), 300) : null);
         r.setPosterUrl(m.getPosterStorageKey() != null ? storageService.buildCdnUrl(m.getPosterStorageKey()) : null);
         r.setSoundtrackUrl(m.getSoundtrackStorageKey() != null ? storageService.buildCdnUrl(m.getSoundtrackStorageKey()) : null);

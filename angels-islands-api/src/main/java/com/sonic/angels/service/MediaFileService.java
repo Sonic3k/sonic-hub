@@ -266,7 +266,7 @@ public class MediaFileService {
 
         if (type == MediaFile.FileType.FLASH) {
             try (java.io.InputStream in = file.getInputStream()) { readSwfHeader(in, mf); } catch (Exception ignored) {}
-        } else extractMetadata(file, mf);
+        } else if (type != MediaFile.FileType.AUDIO) extractMetadata(file, mf);   // a recording has nothing an image reader reads
         if (mf.getMediaSource() == null) mf.setMediaSource(detectSourceFromCamera(mf));
         if (mf.getTimezone() == null) mf.setTimezone("+07:00");
 
@@ -1232,7 +1232,7 @@ public class MediaFileService {
 
         for (MediaFile m : files) {
             scanned++;
-            if (m.getFileType() == MediaFile.FileType.FLASH) {      // nothing an image reader can read
+            if (m.getFileType() == MediaFile.FileType.FLASH || m.getFileType() == MediaFile.FileType.AUDIO) {   // nothing an image reader can read
                 m.getTags().add(classifiedTag);
                 mediaFileRepository.save(m);
                 updated++;
@@ -1281,11 +1281,14 @@ public class MediaFileService {
     // ── Flash cards: .swf files played on the web by an emulator, with a poster and an optional soundtrack ──
 
     static final String FLASH_MIME = "application/x-shockwave-flash";
+    /** Recordings (a song, a voice message, a radio show) — kept as files that play on the web, shown by a poster. */
+    static final java.util.Set<String> AUDIO_EXT = java.util.Set.of("mp3", "m4a", "aac", "wav", "ogg", "oga", "opus", "flac");
 
     static MediaFile.FileType fileTypeOf(String contentType, String fileName) {
         String ext = extOf(fileName);
         if ("swf".equals(ext) || FLASH_MIME.equals(contentType) || "application/vnd.adobe.flash.movie".equals(contentType))
             return MediaFile.FileType.FLASH;
+        if ((contentType != null && contentType.startsWith("audio/")) || AUDIO_EXT.contains(ext)) return MediaFile.FileType.AUDIO;
         return contentType != null && contentType.startsWith("video/") ? MediaFile.FileType.VIDEO : MediaFile.FileType.IMAGE;
     }
 

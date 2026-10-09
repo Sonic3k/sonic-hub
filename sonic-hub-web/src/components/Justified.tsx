@@ -28,8 +28,10 @@ export default function Justified({ items, rowHeight = 236, gap = 12, onOpen }: 
         <div key={ri} className="jg-row" style={{ display: 'flex', gap, marginBottom: ri === rows.length - 1 ? 0 : gap }}>
           {r.items.map(({ m, i }) => (
             <figure key={m.id} className="jg-item zoom" style={{ height: r.h, width: r.h * ratio(m), flex: '0 0 auto' }} onClick={() => onOpen(i)}>
-              {pic(m) ? <img src={cdn(pic(m), r.h * ratio(m))} alt={m.caption ?? ''} loading="lazy" decoding="async" /> : <span className="jg-ph">Thiệp Flash</span>}
+              {pic(m) ? <img src={cdn(pic(m), r.h * ratio(m))} alt={m.caption ?? ''} loading="lazy" decoding="async" /> : <span className="jg-ph">{m.fileType === 'AUDIO' ? 'Ghi âm' : 'Thiệp Flash'}</span>}
               {m.fileType === 'FLASH' && <span className="jg-badge">▶ Flash</span>}
+              {m.fileType === 'AUDIO' && <span className="jg-badge">♪ Ghi âm</span>}
+              {m.fileType === 'VIDEO' && m.posterUrl && <span className="jg-badge">▶ Video</span>}
             </figure>
           ))}
         </div>

@@ -37,10 +37,10 @@ export interface TagRequest { name: string; color?: string; description?: string
 export interface TagStats { id: string; name: string; color?: string; mediaCount: number; albumCount: number; noteCount: number }
 
 export interface MediaFileResponse {
-  id: string; fileName: string; fileType: 'IMAGE' | 'VIDEO' | 'FLASH'; mediaCategory?: string
+  id: string; fileName: string; fileType: 'IMAGE' | 'VIDEO' | 'FLASH' | 'AUDIO'; mediaCategory?: string
   fileSize?: number; width?: number; height?: number; orientation?: string; aspectRatio?: number
   mimeType?: string; caption?: string; cdnUrl?: string; thumbnailUrl?: string
-  /** FLASH: the still shown for the card (also its thumbnailUrl) and the music played with it */
+  /** FLASH / AUDIO / VIDEO: the still shown for the file (also its thumbnailUrl); FLASH: the music played with it */
   posterUrl?: string; soundtrackUrl?: string
   dateTaken?: string; fileDateCreated?: string; fileDateModified?: string
   effectiveDate?: string; uploadedAt?: string
