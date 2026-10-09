@@ -14,7 +14,8 @@ import PersonNumbers from '../components/PersonNumbers';
 
 const T = 10 * 60_000;
 const nameOf = (p: Person) => p.displayName || p.name;
-const REL: Record<string, string> = { GIRLFRIEND: 'người yêu', EX: 'người cũ', EX_GIRLFRIEND: 'người yêu cũ', CRUSH: 'thầm thương', LOVER: 'người thương', FRIEND: 'bạn', CLOSE_FRIEND: 'bạn thân', FAMILY: 'gia đình' };
+/* ANGEL is not written out: these pages are the Angels. OTHER marks someone who is not one. */
+const REL: Record<string, string> = { ANGEL: '', OTHER: 'khác', GIRLFRIEND: 'người yêu', EX: 'người cũ', EX_GIRLFRIEND: 'người yêu cũ', CRUSH: 'thầm thương', LOVER: 'người thương', FRIEND: 'bạn', CLOSE_FRIEND: 'bạn thân', FAMILY: 'gia đình' };
 const rel = (r?: string | null) => (r ? REL[r] ?? r.toLowerCase().replace(/_/g, ' ') : '');
 const startOf = (p: Person) => periodYears(p.period)?.[0] ?? 9999;
 export const angelsOrdered = (all: Person[]) => all.filter(p => !p.isSelf).sort((a, b) => startOf(a) - startOf(b) || nameOf(a).localeCompare(nameOf(b)));

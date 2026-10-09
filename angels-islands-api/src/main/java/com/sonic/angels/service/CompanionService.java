@@ -268,14 +268,24 @@ public class CompanionService {
 
     // ── Persona builder ──────────────────────────────────────────────────────
 
+    /** ANGEL and OTHER are his own groupings, not a relationship the persona can act on (the facts and chapters say
+     *  what it was), so they are left out. */
+    private static String relationshipLine(Person.RelationshipType t) {
+        if (t == null) return null;
+        return switch (t) {
+            case ANGEL, OTHER -> null;
+            default -> t.name().toLowerCase().replace('_', ' ');
+        };
+    }
+
     private String buildSystemPrompt(Person person, CompanionConfig cfg) {
         String name = person.getDisplayName() != null ? person.getDisplayName() : person.getName();
         StringBuilder sb = new StringBuilder();
         sb.append("Bạn là ").append(name);
         if (person.getNickname() != null) sb.append(" (").append(person.getNickname()).append(")");
         sb.append(", đang nhắn tin với người thân quen cũ.\n");
-        if (person.getRelationshipType() != null)
-            sb.append("Mối quan hệ giữa hai người: ").append(person.getRelationshipType().name().toLowerCase()).append(".\n");
+        String rel = relationshipLine(person.getRelationshipType());
+        if (rel != null) sb.append("Mối quan hệ giữa hai người: ").append(rel).append(".\n");
         if (person.getDateOfBirth() != null) sb.append("Sinh nhật của bạn: ").append(person.getDateOfBirth()).append(".\n");
         if (person.getPeriod() != null) sb.append("Giai đoạn hai người thân nhất: ").append(person.getPeriod()).append(".\n");
         if (person.getFirstMet() != null || person.getHowWeMet() != null) {
