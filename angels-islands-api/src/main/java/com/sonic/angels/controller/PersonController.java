@@ -23,6 +23,12 @@ public class PersonController {
     @GetMapping
     public List<PersonDto.Summary> findAll() { return personService.findAll(); }
 
+    /** The relationship types this API stores, so a client can check before using one (e.g. ANGEL). */
+    @GetMapping("/relationship-types")
+    public List<String> relationshipTypes() {
+        return java.util.Arrays.stream(com.sonic.angels.model.entity.Person.RelationshipType.values()).map(Enum::name).toList();
+    }
+
     @GetMapping("/{id}")
     public PersonDto.DetailResponse findById(@PathVariable UUID id) {
         PersonDto.DetailResponse d = personService.findById(id);

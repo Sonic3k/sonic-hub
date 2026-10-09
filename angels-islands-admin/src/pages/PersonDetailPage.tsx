@@ -16,11 +16,8 @@ import ChatViewer from '../components/ChatViewer'
 import CompanionTab from '../components/CompanionTab'
 import NoteBody from '../components/NoteBody'
 import { journalApi } from '../api/journal'
+import { REL_LABELS, relOptions } from '../lib/relationship'
 
-const REL_LABELS: Record<RelationshipType, string> = {
-  CRUSH: '💗 Crush', GIRLFRIEND: '❤️ Girlfriend', FRIEND: '🤝 Friend',
-  EX: '💔 Ex', ACQUAINTANCE: '👋 Acquaintance', PEN_PAL: '✉️ Pen Pal', ONLINE_FRIEND: '💬 Online Friend',
-}
 
 const CONTACT_PLATFORMS: ContactPlatform[] = ['YAHOO', 'FACEBOOK', 'ZALO', 'TELEGRAM', 'SMS', 'PHONE', 'BLOG', 'INSTAGRAM', 'TIKTOK', 'OTHER']
 
@@ -216,7 +213,7 @@ export default function PersonDetailPage() {
             <label className="block text-xs font-medium text-slate-600">Relationship</label>
             <select className="w-full px-3 py-2.5 text-sm border rounded-lg border-slate-200 bg-white"
               value={form.relationshipType} onChange={e => set('relationshipType', e.target.value)}>
-              {Object.entries(REL_LABELS).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
+              {relOptions(form.relationshipType as RelationshipType).map(k => <option key={k} value={k}>{REL_LABELS[k]}</option>)}
             </select>
           </div>
           <Input label="Period" value={form.period} onChange={e => set('period', e.target.value)} placeholder="2010-2013" />

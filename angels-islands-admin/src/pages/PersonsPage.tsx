@@ -4,11 +4,8 @@ import { Plus, Heart, Star } from 'lucide-react'
 import { Button, Modal, Input, Textarea } from '../components/ui'
 import { usePersons, useCreatePerson } from '../hooks/usePersons'
 import type { PersonSummary, PersonRequest, RelationshipType } from '../types'
+import { REL_LABELS, relOptions } from '../lib/relationship'
 
-const REL_LABELS: Record<RelationshipType, string> = {
-  CRUSH: '💗 Crush', GIRLFRIEND: '❤️ Girlfriend', FRIEND: '🤝 Friend',
-  EX: '💔 Ex', ACQUAINTANCE: '👋 Acquaintance', PEN_PAL: '✉️ Pen Pal', ONLINE_FRIEND: '💬 Online Friend',
-}
 
 const emptyForm = { name: '', displayName: '', nickname: '', dateOfBirth: '', relationshipType: 'FRIEND' as RelationshipType, period: '', firstMet: '', howWeMet: '', song: '', bio: '', isSelf: false }
 
@@ -81,7 +78,7 @@ export default function PersonsPage() {
               <label className="block text-xs font-medium text-slate-600">Relationship</label>
               <select className="w-full px-3 py-2.5 text-sm border rounded-lg border-slate-200 bg-white"
                 value={form.relationshipType} onChange={e => set('relationshipType', e.target.value)}>
-                {Object.entries(REL_LABELS).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
+                {relOptions(form.relationshipType).map(k => <option key={k} value={k}>{REL_LABELS[k]}</option>)}
               </select>
             </div>
             <Input label="Period" value={form.period} onChange={e => set('period', e.target.value)} placeholder="2010-2013" />
