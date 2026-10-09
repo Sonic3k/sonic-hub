@@ -6,14 +6,14 @@
   --gold:#d6a73e;--gold-hi:#f4d68b;--gold-lo:#8a6417;--blood:#a8261b;
   --f-head:'Metamorphous',Georgia,serif;--f-text:'Alegreya Sans',system-ui,-apple-system,sans-serif;
   --cw:150px;--ch:212px;
-  box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);
+  box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);color-scheme:dark;
 }
 *,*::before,*::after{box-sizing:border-box}
 html,body{margin:0;height:100%;background:#121016;overscroll-behavior:none}
 body{font-family:var(--f-text);color:var(--parch);-webkit-font-smoothing:antialiased;overflow:hidden}
 button{font:inherit;color:inherit}
 .hidden{display:none!important}
-#app{position:relative;height:100dvh;overflow:hidden;background:
+#app{position:relative;height:100%;overflow:hidden;background:
   radial-gradient(ellipse 38% 46% at 6% 0%,rgba(255,150,60,.30),rgba(255,150,60,0) 70%),
   radial-gradient(ellipse 38% 46% at 94% 0%,rgba(255,150,60,.30),rgba(255,150,60,0) 70%),
   radial-gradient(ellipse 70% 55% at 50% 52%,rgba(255,190,120,.10),rgba(255,190,120,0) 70%),
