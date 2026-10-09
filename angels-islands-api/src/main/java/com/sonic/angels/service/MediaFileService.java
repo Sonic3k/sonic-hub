@@ -252,9 +252,10 @@ public class MediaFileService {
         mf.setFileExtension(extOf(file.getOriginalFilename()));
         mf.setMediaSource(detectSourceFromName(file.getOriginalFilename()));
         if (takenByPersonId != null) personRepository.findById(takenByPersonId).ifPresent(mf::setTakenBy);
-        mf.setFileType(isVideo(file.getContentType()) ? MediaFile.FileType.VIDEO : MediaFile.FileType.IMAGE);
+        MediaFile.FileType type = fileTypeOf(file.getContentType(), file.getOriginalFilename());
+        mf.setFileType(type);
         mf.setFileSize(file.getSize());
-        mf.setMimeType(file.getContentType());
+        mf.setMimeType(type == MediaFile.FileType.FLASH ? FLASH_MIME : file.getContentType());
         mf.setUploadedAt(LocalDateTime.now(PHOTO_ZONE));
 
         // Browser file.lastModified = epoch ms instant → store as VN wall-clock
@@ -263,7 +264,9 @@ public class MediaFileService {
                 java.time.Instant.ofEpochMilli(lastModified), PHOTO_ZONE));
         }
 
-        extractMetadata(file, mf);
+        if (type == MediaFile.FileType.FLASH) {
+            try (java.io.InputStream in = file.getInputStream()) { readSwfHeader(in, mf); } catch (Exception ignored) {}
+        } else extractMetadata(file, mf);
         if (mf.getMediaSource() == null) mf.setMediaSource(detectSourceFromCamera(mf));
         if (mf.getTimezone() == null) mf.setTimezone("+07:00");
 
@@ -514,8 +517,7 @@ public class MediaFileService {
     }
 
     public void delete(UUID id) {
-        String storageKey = deleteRow(id);
-        if (storageKey != null) storagePurger.purgeAfterCommit(List.of(storageKey));
+        storagePurger.purgeAfterCommit(deleteRow(id));
     }
 
     /** One transaction for the whole batch; the B2 files go only after it has committed, so a batch that fails
@@ -525,8 +527,7 @@ public class MediaFileService {
         List<String> storageKeys = new java.util.ArrayList<>();
         for (UUID id : ids) {
             try {
-                String storageKey = deleteRow(id);
-                if (storageKey != null) storageKeys.add(storageKey);
+                storageKeys.addAll(deleteRow(id));
                 count++;
             } catch (Exception ignored) {}
         }
@@ -534,8 +535,9 @@ public class MediaFileService {
         return count;
     }
 
-    /** Drops the database row and its links; returns the B2 key to delete once this commits (null when none). */
-    private String deleteRow(UUID id) {
+    /** Drops the database row and its links; returns the B2 keys to delete once this commits (the file, its poster
+     *  and soundtrack; none when the file is not on B2). */
+    private List<String> deleteRow(UUID id) {
         MediaFile mf = findById(id);
         // Clear join tables
         mf.getPersons().clear();
@@ -544,12 +546,12 @@ public class MediaFileService {
         // Remove from all collections + any cover reference (FK would block the delete)
         mediaFileRepository.removeFromAllCollections(id);
         collectionService.clearCoverRefs(id);
-        String storageKey = mf.getStorageKey();
+        List<String> keys = mf.storageKeys();
         MediaFile.StorageProvider provider = mf.getStorageProvider();
         mediaFileRepository.delete(mf);
         // no provider = an early upload, before the column existed: those files are on B2 too (see buildCdnUrl)
         boolean onB2 = provider == null || provider == MediaFile.StorageProvider.B2;
-        return onB2 && storageKey != null ? storageKey : null;
+        return onB2 ? keys : List.of();
     }
 
     public String buildCdnUrl(MediaFile mf) {
@@ -1230,6 +1232,12 @@ public class MediaFileService {
 
         for (MediaFile m : files) {
             scanned++;
+            if (m.getFileType() == MediaFile.FileType.FLASH) {      // nothing an image reader can read
+                m.getTags().add(classifiedTag);
+                mediaFileRepository.save(m);
+                updated++;
+                continue;
+            }
             try (java.io.InputStream is = storageService.downloadStream(m.getStorageKey())) {
                 extractMetadataFromStream(is, m);
                 if (m.getContentHash() == null) {
@@ -1268,6 +1276,122 @@ public class MediaFileService {
 
     private boolean isVideo(String contentType) {
         return contentType != null && contentType.startsWith("video/");
+    }
+
+    // ── Flash cards: .swf files played on the web by an emulator, with a poster and an optional soundtrack ──
+
+    static final String FLASH_MIME = "application/x-shockwave-flash";
+
+    static MediaFile.FileType fileTypeOf(String contentType, String fileName) {
+        String ext = extOf(fileName);
+        if ("swf".equals(ext) || FLASH_MIME.equals(contentType) || "application/vnd.adobe.flash.movie".equals(contentType))
+            return MediaFile.FileType.FLASH;
+        return contentType != null && contentType.startsWith("video/") ? MediaFile.FileType.VIDEO : MediaFile.FileType.IMAGE;
+    }
+
+    /** Stage size from the SWF header: "FWS" plain, "CWS" zlib after the first 8 bytes; "ZWS" (LZMA) is left without
+     *  a size. The size is what the web needs to lay the card out before the emulator has loaded it. */
+    static void readSwfHeader(java.io.InputStream in, MediaFile mf) throws IOException {
+        byte[] head = in.readNBytes(8);
+        if (head.length < 8) return;
+        String sig = new String(head, 0, 3, java.nio.charset.StandardCharsets.US_ASCII);
+        byte[] body;
+        if ("FWS".equals(sig)) body = in.readNBytes(32);
+        else if ("CWS".equals(sig)) {
+            java.util.zip.Inflater inf = new java.util.zip.Inflater();
+            try {
+                inf.setInput(in.readNBytes(4096));
+                byte[] out = new byte[32];
+                body = java.util.Arrays.copyOf(out, inf.inflate(out));
+            } catch (java.util.zip.DataFormatException e) {
+                return;
+            } finally {
+                inf.end();
+            }
+        } else return;
+        if (body.length < 1) return;
+        int nbits = (body[0] & 0xff) >>> 3;
+        if (body.length < (5 + 4 * nbits + 7) / 8) return;
+        long[] v = new long[4];
+        int bit = 5;
+        for (int k = 0; k < 4; k++) {
+            long x = 0;
+            for (int j = 0; j < nbits; j++, bit++) x = (x << 1) | ((body[bit >>> 3] >>> (7 - (bit & 7))) & 1);
+            if (nbits > 0 && (x >>> (nbits - 1)) == 1) x -= 1L << nbits;   // signed twips
+            v[k] = x;
+        }
+        int width = (int) Math.round((v[1] - v[0]) / 20.0), height = (int) Math.round((v[3] - v[2]) / 20.0);
+        if (width > 0 && height > 0 && width < 10000 && height < 10000) {
+            mf.setWidth(width);
+            mf.setHeight(height);
+            mf.calculateOrientation();
+        }
+    }
+
+    public List<String> fileTypes() {
+        return java.util.Arrays.stream(MediaFile.FileType.values()).map(Enum::name).toList();
+    }
+
+    /** The image shown for a card in grids and as its thumbnail. Stored beside the card, named by its content, so a
+     *  new poster never comes out of the CDN cache as the old one. */
+    public MediaFileDto.Response setPoster(UUID id, MultipartFile file) throws IOException {
+        MediaFile mf = findById(id);
+        String ct = file.getContentType();
+        if (ct == null || !ct.startsWith("image/")) throw new IllegalArgumentException("A poster must be an image, not " + ct);
+        String ext = extOf(file.getOriginalFilename());
+        String key = besideFile(mf, baseOf(mf) + ".poster." + shortHash(file) + "." + (ext != null ? ext : "jpg"));
+        String old = mf.getPosterStorageKey();
+        mf.setPosterStorageKey(storageService.upload(file, key));
+        mediaFileRepository.save(mf);
+        if (old != null && !old.equals(mf.getPosterStorageKey())) storagePurger.purgeAfterCommit(List.of(old));
+        return mapper.toMediaFileResponse(mf);
+    }
+
+    /** Music for a card whose own player used to play it beside the movie (the movie itself has none). Stored beside
+     *  the card and named by it and by the content, like the poster. */
+    public MediaFileDto.Response setSoundtrack(UUID id, MultipartFile file) throws IOException {
+        MediaFile mf = findById(id);
+        String ct = file.getContentType();
+        if (ct == null || !ct.startsWith("audio/")) throw new IllegalArgumentException("A soundtrack must be audio, not " + ct);
+        String ext = extOf(file.getOriginalFilename());
+        String key = besideFile(mf, baseOf(mf) + ".soundtrack." + shortHash(file) + "." + (ext != null ? ext : "mp3"));
+        String old = mf.getSoundtrackStorageKey();
+        mf.setSoundtrackStorageKey(storageService.upload(file, key));
+        mediaFileRepository.save(mf);
+        if (old != null && !old.equals(mf.getSoundtrackStorageKey())) storagePurger.purgeAfterCommit(List.of(old));
+        return mapper.toMediaFileResponse(mf);
+    }
+
+    /** A Flash card as bytes for the emulator on the web, which fetches it and so needs CORS (the API has it). */
+    @Transactional(readOnly = true)
+    public MediaFile flashCard(UUID id) {
+        MediaFile mf = findById(id);
+        if (mf.getFileType() != MediaFile.FileType.FLASH || mf.getStorageKey() == null) return null;
+        return mf;
+    }
+
+    public java.io.InputStream download(MediaFile mf) { return storageService.downloadStream(mf.getStorageKey()); }
+
+    private String besideFile(MediaFile mf, String name) { return join(dirOf(storageService.withoutPrefix(mf.getStorageKey())), name); }
+    private static String dirOf(String key) { return key == null || !key.contains("/") ? "" : key.substring(0, key.lastIndexOf('/')); }
+    private static String join(String dir, String name) { return dir == null || dir.isBlank() ? name : dir + "/" + name; }
+    private static String baseOf(MediaFile mf) {
+        String n = mf.getStorageKey() == null ? "file" : mf.getStorageKey().substring(mf.getStorageKey().lastIndexOf('/') + 1);
+        int dot = n.lastIndexOf('.');
+        return dot > 0 ? n.substring(0, dot) : n;
+    }
+    private static String shortHash(MultipartFile file) throws IOException {
+        try (java.io.InputStream in = file.getInputStream()) {
+            var md = java.security.MessageDigest.getInstance("SHA-256");
+            byte[] buf = new byte[8192];
+            int n;
+            while ((n = in.read(buf)) > 0) md.update(buf, 0, n);
+            StringBuilder hex = new StringBuilder();
+            for (byte b : md.digest()) hex.append(String.format("%02x", b));
+            return hex.substring(0, 8);
+        } catch (java.security.NoSuchAlgorithmException e) {
+            throw new IllegalStateException(e);
+        }
     }
 
 }

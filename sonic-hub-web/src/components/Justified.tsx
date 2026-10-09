@@ -1,7 +1,7 @@
 /* The demo's justified gallery as a component: rows fill the width, every photo keeps its ratio. */
 import { useEffect, useRef, useState } from 'react';
 import type { MediaFile } from '../types';
-import { cdn } from '../api/client';
+import { cdn, pic } from '../api/client';
 
 const ratio = (m: MediaFile) => m.aspectRatio || (m.width && m.height ? m.width / m.height : 1.5);
 
@@ -28,7 +28,8 @@ export default function Justified({ items, rowHeight = 236, gap = 12, onOpen }: 
         <div key={ri} className="jg-row" style={{ display: 'flex', gap, marginBottom: ri === rows.length - 1 ? 0 : gap }}>
           {r.items.map(({ m, i }) => (
             <figure key={m.id} className="jg-item zoom" style={{ height: r.h, width: r.h * ratio(m), flex: '0 0 auto' }} onClick={() => onOpen(i)}>
-              <img src={cdn(m.thumbnailUrl ?? m.cdnUrl, r.h * ratio(m))} alt={m.caption ?? ''} loading="lazy" decoding="async" />
+              {pic(m) ? <img src={cdn(pic(m), r.h * ratio(m))} alt={m.caption ?? ''} loading="lazy" decoding="async" /> : <span className="jg-ph">Thiệp Flash</span>}
+              {m.fileType === 'FLASH' && <span className="jg-badge">▶ Flash</span>}
             </figure>
           ))}
         </div>

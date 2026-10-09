@@ -38,6 +38,10 @@ export function MediaItem({ media, onClick, selected, onSelect, selectMode }: {
         {media.fileType === 'VIDEO' && media.cdnUrl ? (
           <video src={`${media.cdnUrl}#t=0.5`} preload="metadata" muted playsInline
             className="w-full h-full object-cover pointer-events-none" />
+        ) : media.fileType === 'FLASH' ? (
+          media.thumbnailUrl
+            ? <img src={media.thumbnailUrl} alt={media.fileName} className="w-full h-full object-cover" loading="lazy" />
+            : <div className="w-full h-full flex flex-col items-center justify-center gap-1 text-slate-400 text-[10px]"><Film size={20} strokeWidth={1} />Flash</div>
         ) : (media.thumbnailUrl || media.cdnUrl) ? (
           <img src={media.thumbnailUrl || media.cdnUrl} alt={media.fileName} className="w-full h-full object-cover" loading="lazy" />
         ) : (
@@ -51,6 +55,9 @@ export function MediaItem({ media, onClick, selected, onSelect, selectMode }: {
         <div className="absolute bottom-1 right-1 bg-black/60 text-white text-[9px] px-1 rounded">
           {fmtDuration(media.duration) || '▶'}
         </div>
+      )}
+      {media.fileType === 'FLASH' && (
+        <div className="absolute bottom-1 right-1 bg-black/60 text-white text-[9px] px-1 rounded">▶ Flash</div>
       )}
       {/* Select checkbox — visible on hover or when in select mode */}
       <div className={`absolute top-1.5 left-1.5 transition-opacity ${
@@ -116,6 +123,15 @@ export function Lightbox({ media, allMedia, collectionId, onClose, onNavigate, o
           media.fileType === 'VIDEO' ? (
             <video key={media.id} src={media.cdnUrl} controls autoPlay playsInline
               className="max-w-full max-h-full object-contain select-none p-2" />
+          ) : media.fileType === 'FLASH' ? (
+            /* the card itself plays on the web site (Ruffle); here its poster, its music and the .swf */
+            <div className="flex flex-col items-center gap-3 p-2 max-w-full max-h-full">
+              {media.posterUrl
+                ? <img src={media.posterUrl} alt={media.fileName} className="max-w-full max-h-[75vh] object-contain select-none" />
+                : <div className="text-white/40 text-sm">Flash card — no poster yet</div>}
+              {media.soundtrackUrl && <audio key={media.id} src={media.soundtrackUrl} controls className="w-72 max-w-full" />}
+              <a href={media.cdnUrl} target="_blank" rel="noreferrer" className="text-xs text-white/50 hover:text-white underline">Flash card (.swf) · plays on the web site</a>
+            </div>
           ) : (
             <img src={media.cdnUrl} alt={media.fileName}
               className="max-w-full max-h-full object-contain select-none p-2" />

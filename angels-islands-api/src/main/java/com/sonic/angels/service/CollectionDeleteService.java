@@ -59,7 +59,8 @@ public class CollectionDeleteService {
         public int status() { return status; }
     }
 
-    private record Photo(UUID id, String fileName, long size, String storageKey, boolean onB2, boolean elsewhere) {}
+    /** keys: the file on B2 and what belongs to it (a Flash card's poster and soundtrack). */
+    private record Photo(UUID id, String fileName, long size, List<String> keys, boolean onB2, boolean elsewhere) {}
 
     private record Plan(UUID id, String name, String path, Map<Integer, List<UUID>> albumsByDepth, List<Photo> photos,
                         Map<UUID, String> inUse) {
@@ -99,7 +100,7 @@ public class CollectionDeleteService {
     private Object[] deleteRows(UUID id) {
         Plan p = plan(id);
         List<Photo> photos = p.toDelete();
-        List<String> keys = photos.stream().filter(Photo::onB2).map(Photo::storageKey).filter(Objects::nonNull).toList();
+        List<String> keys = photos.stream().filter(Photo::onB2).flatMap(ph -> ph.keys().stream()).filter(Objects::nonNull).toList();
         int photosDeleted = 0;
         List<UUID> ids = photos.stream().map(Photo::id).toList();
         for (int i = 0; i < ids.size(); i += CHUNK) {
@@ -140,14 +141,17 @@ public class CollectionDeleteService {
             byDepth.computeIfAbsent(rs.getInt("depth"), k -> new ArrayList<>()).add(rs.getObject("id", UUID.class));
         });
         List<Photo> photos = jdbc.query(TREE +
-            "SELECT m.id, m.file_name, COALESCE(m.file_size, 0) AS file_size, m.storage_key, m.storage_provider, " +
+            "SELECT m.id, m.file_name, COALESCE(m.file_size, 0) AS file_size, m.storage_key, m.poster_storage_key, " +
+            "m.soundtrack_storage_key, m.storage_provider, " +
             "EXISTS (SELECT 1 FROM collection_media o WHERE o.media_file_id = m.id " +
             "        AND o.collection_id NOT IN (SELECT id FROM tree)) AS elsewhere " +
             "FROM media_files m JOIN tm ON tm.id = m.id",
             Map.of("id", id), (rs, n) -> {
                 String provider = rs.getString("storage_provider");
+                List<String> keys = java.util.stream.Stream.of(rs.getString("storage_key"), rs.getString("poster_storage_key"),
+                    rs.getString("soundtrack_storage_key")).filter(Objects::nonNull).toList();
                 return new Photo(rs.getObject("id", UUID.class), rs.getString("file_name"), rs.getLong("file_size"),
-                    rs.getString("storage_key"), provider == null || "B2".equals(provider), rs.getBoolean("elsewhere"));
+                    keys, provider == null || "B2".equals(provider), rs.getBoolean("elsewhere"));
             });
         Map<UUID, String> inUse = new LinkedHashMap<>();
         jdbc.query(TREE +

@@ -293,6 +293,20 @@ a.chip.on { background: #E6EEF9; color: var(--journal); font-weight: 600; }
 .vi-row b { display: flex; flex-wrap: wrap; gap: 4px 10px; font-weight: 500; font-size: 14px; } .vi-row b small { width: 100%; font-weight: 400; font-size: 12.5px; color: rgba(255,255,255,.55); }
 .vi-row a { color: #9CC3F2; } .vi-tags .chip { background: rgba(255,255,255,.1); color: #EDEBE6; }
 .v-strip { bottom: 14px; } .viewer.with-info .v-strip { left: calc((100% - 340px) / 2); }
+/* Flash cards: Ruffle plays the .swf in a black box shaped like the card, the music (if any) under it */
+.v-stage { container-type: size; }
+.v-flash { --h: 92cqh; width: min(92cqw, calc(var(--h) * var(--ar))); display: flex; flex-direction: column; align-items: center; gap: 10px; }
+.v-flash:has(.v-flash-audio) { --h: calc(92cqh - 46px); }
+.v-flash-box { position: relative; width: 100%; aspect-ratio: var(--ar); background: #000; border-radius: 4px; overflow: hidden; box-shadow: 0 20px 80px rgba(0,0,0,.5); }
+.v-flash-box ruffle-player { display: block; width: 100%; height: 100%; }
+.v-flash-audio { width: min(420px, 100%); height: 36px; }
+.v-flash-err { position: absolute; inset: 0; display: grid; place-items: center; margin: 0; color: rgba(255,255,255,.7); font-size: 14px; }
+.v-strip-ph { display: grid; place-items: center; flex: 0 0 auto; width: 48px; height: 48px; border-radius: 4px; background: rgba(255,255,255,.14); color: #fff; font-size: 15px; opacity: .45; cursor: pointer; }
+.v-strip-ph.on { opacity: 1; box-shadow: 0 0 0 2px #fff; }
+.jg-item { position: relative; }
+.jg-ph { display: grid; place-items: center; width: 100%; height: 100%; color: var(--ink3); font-size: 13px; }
+.jg-badge { position: absolute; left: 8px; bottom: 8px; padding: 3px 8px; border-radius: 999px; background: rgba(0,0,0,.58); color: #fff; font-size: 11.5px; font-weight: 600; pointer-events: none; }
+.sr-ph { display: grid; place-items: center; aspect-ratio: 1; border-radius: 4px; background: var(--soft); color: var(--ink3); font-size: 13px; }
 @media (max-width: 860px) {
   .search-pop { position: fixed; left: 8px; right: 8px; top: 64px; min-width: 0; }
   .viewer.with-info .v-stage { right: 0; bottom: 45%; } .viewer.with-info .v-top { right: 16px; }

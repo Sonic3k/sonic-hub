@@ -304,7 +304,7 @@ public class CollectionService {
             r.setParentName(c.getParent().getName());
         }
         if (c.getThumbnailMediaFile() != null)
-            r.setThumbnailUrl(storageService.buildCdnUrl(c.getThumbnailMediaFile().getStorageKey(), c.getThumbnailMediaFile().getStorageProvider()));
+            r.setThumbnailUrl(mapper.imageUrl(c.getThumbnailMediaFile()));
         if (inc.childrenCount())
             r.setChildrenCount((int) collectionRepository.countByParentId(c.getId()));
         if (inc.mediaCount())

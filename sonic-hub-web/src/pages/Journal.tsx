@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
-import { cdn } from '../api/client';
+import { cdn, pic } from '../api/client';
 import { excerptOf, noteDate, noteHref, readMinutes, useNotes } from '../lib/queries';
 import { dayMonthYear, isoDay, monthLabel } from '../lib/date';
 import { PostRow } from './Home';
@@ -30,7 +30,7 @@ export default function Journal() {
           {notes.isLoading && <div className="card empty">Đang mở nhật ký…</div>}
           {!notes.isLoading && !list.length && <div className="card empty">Chưa có bài nào ở đây.</div>}
           {featured && <Link className="card featured" to={noteHref(featured)}>
-            {featured.coverMedia ? <img src={cdn(featured.coverMedia.cdnUrl, 900)} alt="" /> : <div className="ph" />}
+            {pic(featured.coverMedia) ? <img src={cdn(pic(featured.coverMedia, true), 900)} alt="" /> : <div className="ph" />}
             <div className="body"><span className="cat">Mới nhất{featured.category ? ` · ${featured.category}` : ''}</span><h3>{featured.title || 'Không tiêu đề'}</h3><p>{excerptOf(featured)}</p><span className="by">{dayMonthYear(noteDate(featured))} · {readMinutes(featured)} phút đọc</span></div>
           </Link>}
           {groups.map(([m, ps]) => <div key={m}><div className="month">{m}</div><div className="posts">{ps.map(n => <PostRow key={n.id} n={n} />)}</div></div>)}

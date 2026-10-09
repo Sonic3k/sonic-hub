@@ -28,6 +28,14 @@ public class MediaFile extends BaseEntity {
     @Column(name = "storage_provider")
     private StorageProvider storageProvider = StorageProvider.B2;
 
+    /** A still image shown in place of a file that is not an image itself (a Flash card), stored on B2 beside it. */
+    @Column(name = "poster_storage_key", length = 1024)
+    private String posterStorageKey;
+
+    /** Music that plays with the file, for a Flash card whose player used to play it from outside the movie. */
+    @Column(name = "soundtrack_storage_key", length = 1024)
+    private String soundtrackStorageKey;
+
     @Column(name = "video_provider")
     private String videoProvider;
 
@@ -154,7 +162,7 @@ public class MediaFile extends BaseEntity {
 
     // ── Enums ────────────────────────────────────────────────────────────────
 
-    public enum FileType { IMAGE, VIDEO }
+    public enum FileType { IMAGE, VIDEO, FLASH }
     public enum MediaCategory { REGULAR, COVER, BANNER, AVATAR, SCREENSHOT, MEMORY }
     public enum Orientation { HORIZONTAL, VERTICAL, SQUARE }
     public enum StorageProvider { B2, FLICKR, GOOGLE_DRIVE, S3, EXTERNAL }
@@ -221,6 +229,14 @@ public class MediaFile extends BaseEntity {
     public void setStorageKey(String storageKey) { this.storageKey = storageKey; }
     public StorageProvider getStorageProvider() { return storageProvider; }
     public void setStorageProvider(StorageProvider storageProvider) { this.storageProvider = storageProvider; }
+    public String getPosterStorageKey() { return posterStorageKey; }
+    public void setPosterStorageKey(String posterStorageKey) { this.posterStorageKey = posterStorageKey; }
+    public String getSoundtrackStorageKey() { return soundtrackStorageKey; }
+    public void setSoundtrackStorageKey(String soundtrackStorageKey) { this.soundtrackStorageKey = soundtrackStorageKey; }
+    /** The B2 keys of this file and what belongs to it (poster, soundtrack): what has to go when it is deleted. */
+    public java.util.List<String> storageKeys() {
+        return java.util.stream.Stream.of(storageKey, posterStorageKey, soundtrackStorageKey).filter(java.util.Objects::nonNull).toList();
+    }
     public String getVideoProvider() { return videoProvider; }
     public void setVideoProvider(String videoProvider) { this.videoProvider = videoProvider; }
     public String getVideoId() { return videoId; }

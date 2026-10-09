@@ -13,6 +13,8 @@ function qs(params?: Params): string {
   return s ? `?${s}` : '';
 }
 
+export const apiUrl = (path: string) => `${API}/api${path}`;
+
 export async function get<T>(path: string, params?: Params): Promise<T> {
   const r = await fetch(`${API}/api${path}${qs(params)}`, { headers: { Accept: 'application/json' } });
   if (!r.ok) throw new Error(`${r.status} ${path}`);
@@ -27,4 +29,12 @@ export function cdn(url: string | null | undefined, width?: number): string {
   if (!width) return clean;
   const w = WIDTHS.find(b => width * (window.devicePixelRatio > 1 ? 1.5 : 1) <= b) ?? 1920;
   return `${clean}?width=${w}`;
+}
+
+/* The picture of a media file: its thumbnail, or with full the file itself (cdn() sizes either). A Flash card is
+   shown by its poster; a card without one has no picture (''). */
+export function pic(m: { fileType?: string; cdnUrl?: string | null; thumbnailUrl?: string | null; posterUrl?: string | null } | null | undefined, full = false): string {
+  if (!m) return '';
+  if (m.fileType === 'FLASH') return m.posterUrl ?? '';
+  return (full ? m.cdnUrl : m.thumbnailUrl ?? m.cdnUrl) ?? '';
 }

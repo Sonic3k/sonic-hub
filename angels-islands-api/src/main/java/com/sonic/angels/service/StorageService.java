@@ -42,6 +42,8 @@ public class StorageService {
     }
 
     public String withPrefix(String storageKey) { return prefix + "/" + storageKey; }
+    /** The key as upload() takes it: a full key without the "<prefix>/" in front. */
+    public String withoutPrefix(String fullKey) { return fullKey != null && fullKey.startsWith(prefix + "/") ? fullKey.substring(prefix.length() + 1) : fullKey; }
 
     public String upload(MultipartFile file, String storageKey) throws IOException {
         if (s3Client == null) throw new IllegalStateException("Storage not configured");
