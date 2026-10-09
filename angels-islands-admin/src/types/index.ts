@@ -1,5 +1,5 @@
 /** ANGEL / FRIEND / OTHER are the types to pick; the older ones stay until every person has moved off them. */
-export type RelationshipType = 'ANGEL' | 'FRIEND' | 'OTHER' | 'CRUSH' | 'GIRLFRIEND' | 'EX' | 'ACQUAINTANCE' | 'PEN_PAL' | 'ONLINE_FRIEND'
+export type RelationshipType = 'ANGEL' | 'FRIEND' | 'OTHER'
 export type Platform = 'YAHOO' | 'FACEBOOK' | 'SMS' | 'ZALO' | 'TELEGRAM' | 'BLOG' | 'OTHER'
 export type ContactPlatform = 'YAHOO' | 'FACEBOOK' | 'ZALO' | 'TELEGRAM' | 'SMS' | 'PHONE' | 'BLOG' | 'INSTAGRAM' | 'TIKTOK' | 'OTHER'
 export type ExtractionStatus = 'PENDING' | 'EXTRACTING' | 'DONE' | 'ERROR'
