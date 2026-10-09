@@ -54,6 +54,10 @@ public class ImportService {
     private final TransactionTemplate newTx;
     private volatile String rawFolderCache;
 
+    /** For the tags a writing comes with (optional so tests can build the service without it). */
+    @org.springframework.beans.factory.annotation.Autowired(required = false)
+    private com.sonic.angels.repository.TagRepository tagRepo;
+
     public ImportService(PersonRepository personRepo, CollectionRepository collectionRepo,
                          ChatArchiveRepository archiveRepo, ChatMessageRepository messageRepo,
                          ChatAttachmentRepository attachmentRepo, ImportSourceRepository sourceRepo,
@@ -283,6 +287,25 @@ public class ImportService {
                 action = "linked";
             } else {
                 action = "kept";      // it was imported with every field set: what differs now was changed by hand
+            }
+            String series = cut(trim(w.getSeries()), 200);
+            if (series != null && (!action.equals("kept") || n.getSeries() == null)) {
+                if (!Objects.equals(n.getSeries(), series) || !Objects.equals(n.getSeriesOrder(), w.getSeriesOrder())) {
+                    n.setSeries(series); n.setSeriesOrder(w.getSeriesOrder());
+                    if (action.equals("kept") || action.equals("unchanged")) action = "updated";
+                }
+            }
+            if (w.getTags() != null && tagRepo != null && !action.equals("kept")) {
+                for (String tn : w.getTags()) {
+                    String name = trim(tn);
+                    if (name == null) continue;
+                    if (n.getTags().stream().anyMatch(t -> t.getName().equalsIgnoreCase(name))) continue;
+                    com.sonic.angels.model.entity.Tag tag = tagRepo.findByName(name).orElseGet(() -> {
+                        com.sonic.angels.model.entity.Tag t = new com.sonic.angels.model.entity.Tag(); t.setName(name); return tagRepo.save(t);
+                    });
+                    n.getTags().add(tag);
+                    if (action.equals("unchanged")) action = "updated";
+                }
             }
             if (!action.equals("kept")) n = noteRepo.save(n);
             r.setNoteId(n.getId());

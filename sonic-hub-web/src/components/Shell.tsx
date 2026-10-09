@@ -1,18 +1,19 @@
 /* The frame every page shares: top bar, a sidebar that follows context, the page. */
 import { Link, NavLink, Outlet, useLocation, useNavigate, useSearchParams } from 'react-router-dom';
-import { randomDay } from '../api/hub';
+import { hub, randomDay } from '../api/hub';
 import Search from './Search';
-import { useEffect } from 'react';
+import { Fragment, useEffect } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { angelsOrdered } from '../pages/Angels';
 import { cdn } from '../api/client';
 import { counts, fmt, noteDate, useAlbums, useLibraryCounts, useNotes, usePersons, useRegions, useTimeline } from '../lib/queries';
 
 const FOOTBALL = import.meta.env.VITE_FOOTBALL_URL;
-const TABS: [string, string, string][] = [['Hôm nay', '/', '--photo'], ['Ảnh', '/photos', '--photo'], ['Nhật ký', '/journal', '--journal'], ['Angels', '/angels', '--angels'], ['Bóng đá', '/football', '--football'], ['Game', '/games', '--games']];
+const TABS: [string, string, string][] = [['Hôm nay', '/', '--photo'], ['Ảnh', '/photos', '--photo'], ['Nhật ký', '/journal', '--journal'], ['Angels', '/angels', '--angels'], ['Diễn đàn', '/forum', '--forum'], ['Bóng đá', '/football', '--football'], ['Game', '/games', '--games']];
 
 export default function Shell() {
   const loc = useLocation(), nav = useNavigate(), tl = useTimeline();
-  const reading = /^\/journal\/.+/.test(loc.pathname), inJournal = loc.pathname.startsWith('/journal'), inPhotos = /^\/(photos|tags)/.test(loc.pathname), inAngels = loc.pathname.startsWith('/angels');
+  const reading = /^\/journal\/.+/.test(loc.pathname), inJournal = loc.pathname.startsWith('/journal'), inPhotos = /^\/(photos|tags)/.test(loc.pathname), inAngels = loc.pathname.startsWith('/angels'), inForum = loc.pathname.startsWith('/forum');
   /* Angels changes the light of the whole page, softly */
   useEffect(() => { document.body.classList.toggle('mood-angels', inAngels); }, [inAngels]);
   const random = async () => {
@@ -31,7 +32,7 @@ export default function Shell() {
         <button className="rand" type="button" onClick={random}>Một ngày bất kỳ</button>
       </div></header>
       <div className={`frame ${reading ? 'reading' : ''}`}>
-        <aside className="side">{inJournal ? <JournalSide /> : inPhotos ? <PhotosSide /> : inAngels ? <AngelsSide /> : <HomeSide />}</aside>
+        <aside className="side">{inJournal ? <JournalSide /> : inPhotos ? <PhotosSide /> : inAngels ? <AngelsSide /> : inForum ? <ForumSide /> : <HomeSide />}</aside>
         <main><Outlet /></main>
       </div>
     </>
@@ -112,6 +113,36 @@ function AngelsSide() {
       {list.map(p => <Link key={p.id} to={`/angels/${p.id}`} className={`aside-person ${loc.pathname.startsWith(`/angels/${p.id}`) ? 'on' : ''}`}>
         {p.avatarUrl ? <img src={cdn(p.avatarUrl, 60)} alt="" /> : <span className="av-ph">{(p.displayName || p.name).slice(0, 1)}</span>}
         <span className="ap-n">{p.displayName || p.name}</span><small>{p.period ?? ''}</small></Link>)}
+    </>
+  );
+}
+
+function ForumSide() {
+  const loc = useLocation(), [sp] = useSearchParams();
+  const m = /^\/forum\/(?!t\/)([^/]+)/.exec(loc.pathname), forums = useQuery({ queryKey: ['forums'], queryFn: hub.forums, staleTime: 600_000 });
+  const key = m?.[1] ?? forums.data?.[0]?.key ?? '';
+  const boards = useQuery({ queryKey: ['forum-boards', key], queryFn: () => hub.forumBoards(key), enabled: !!key, staleTime: 600_000 });
+  const active = sp.get('board') ?? '', tab = sp.get('tab') ?? '';
+  /* boards grouped under their top box: "Kỷ niệm - Ước mơ / Tâm sự - lưu bút" sits under "Kỷ niệm - Ước mơ" */
+  const groups: Record<string, { n: number; subs: { board: string; name: string; n: number }[] }> = {};
+  (boards.data ?? []).forEach(b => {
+    const [top, ...rest] = (b.board || 'Khác').split(' / '), g = (groups[top] ??= { n: 0, subs: [] });
+    g.n += b.threadCount;
+    if (rest.length) g.subs.push({ board: b.board, name: rest.join(' / '), n: b.threadCount });
+  });
+  const total = (boards.data ?? []).reduce((a, b) => a + b.threadCount, 0);
+  const to = (board: string) => `/forum/${key}${board ? `?board=${encodeURIComponent(board)}` : ''}`;
+  return (
+    <>
+      <h4>Diễn đàn</h4>
+      {(forums.data ?? []).map(f => <Link key={f.key} to={`/forum/${f.key}`} className={f.key === key && !active && !tab ? 'on' : ''}>{f.name}<small>{fmt(f.threadCount)}</small></Link>)}
+      {key && <Link to={`/forum/${key}?tab=members`} className={tab === 'members' ? 'on' : ''}>Thành viên</Link>}
+      {total > 0 && <h4>Box</h4>}
+      {Object.entries(groups).sort((a, b) => b[1].n - a[1].n).map(([top, g]) => (
+        <Fragment key={top}>
+          <Link to={to(top)} className={active === top ? 'on' : ''}>{top}<small>{g.n}</small></Link>
+          {g.subs.sort((a, b) => b.n - a.n).map(s => <Link key={s.board} to={to(s.board)} className={`sub ${active === s.board ? 'on' : ''}`}>{s.name}<small>{s.n}</small></Link>)}
+        </Fragment>))}
     </>
   );
 }

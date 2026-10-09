@@ -58,4 +58,5 @@ public interface JournalNoteRepository extends JpaRepository<JournalNote, UUID> 
     List<String> categories(@Param("kind") JournalNote.Kind kind);
 
     long countByProblemsId(UUID problemId);
+    java.util.List<com.sonic.angels.model.entity.JournalNote> findBySeries(String series);
 }

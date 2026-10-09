@@ -56,6 +56,7 @@ public class DtoMapper {
         if (p.getAvatarMediaFile() != null) d.setAvatarUrl(imageUrl(p.getAvatarMediaFile()));
         if (p.getCoverMediaFile() != null) d.setCoverUrl(imageUrl(p.getCoverMediaFile()));
         if (p.getBannerMediaFile() != null) d.setBannerUrl(imageUrl(p.getBannerMediaFile()));
+        if (p.getTags() != null) d.setTags(p.getTags().stream().map(this::toTagResponse).collect(java.util.stream.Collectors.toSet()));
         if (p.getContacts() != null) {
             d.setContacts(p.getContacts().stream().map(this::toContactResponse).toList());
         }

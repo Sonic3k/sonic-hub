@@ -186,6 +186,13 @@ public class ImportDto {
         /** Where it came from ("Mushroom Hill/Huyen Dieu/.../Gio.doc", "Facebook note"). */
         private String source;
         private String mood;
+        /** A series it is a part of, and which part. */
+        private String series; private Integer seriesOrder;
+        /** Tag names to put on it (made when missing); tags already on the note stay. */
+        private List<String> tags;
+        public String getSeries() { return series; } public void setSeries(String v) { this.series = v; }
+        public Integer getSeriesOrder() { return seriesOrder; } public void setSeriesOrder(Integer v) { this.seriesOrder = v; }
+        public List<String> getTags() { return tags; } public void setTags(List<String> v) { this.tags = v; }
         public String getExternalKey() { return externalKey; } public void setExternalKey(String v) { this.externalKey = v; }
         public String getAuthorSlug() { return authorSlug; } public void setAuthorSlug(String v) { this.authorSlug = v; }
         public String getAuthorName() { return authorName; } public void setAuthorName(String v) { this.authorName = v; }

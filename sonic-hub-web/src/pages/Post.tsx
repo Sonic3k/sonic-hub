@@ -14,6 +14,8 @@ export default function Post() {
   const { slug, id } = useParams(), persons = usePersons(), notes = useNotes();
   const q = useQuery({ queryKey: ['note', slug ?? id], queryFn: () => (slug ? hub.noteBySlug(slug) : hub.noteById(id!)), staleTime: T });
   const n = q.data, date = n ? noteDate(n) : '', day = date ? new Date(+date.slice(0, 4), +date.slice(5, 7) - 1, +date.slice(8, 10)) : null;
+  const series = useQuery({ queryKey: ['series', n?.series], queryFn: () => hub.seriesParts(n!.series!), enabled: !!n?.series, staleTime: T });
+  const parts = series.data ?? [], pi = n ? parts.findIndex(x => x.id === n.id) : -1, partHref = (x: { id: string; slug?: string | null }) => (x.slug ? `/journal/${x.slug}` : `/journal/id/${x.id}`);
   const same = useQuery({ queryKey: ['sameday', date.slice(0, 10)], enabled: !!day, staleTime: T, queryFn: () => hub.search({ from: isoDay(day!), to: isoDay(addDays(day!, 1)), size: 6, type: 'IMAGE' }) });
   const prose = useRef<HTMLDivElement>(null), article = useRef<HTMLElement>(null);
   const [toc, setToc] = useState<{ id: string; text: string }[]>([]), [active, setActive] = useState(''), [progress, setProgress] = useState(0);
@@ -56,9 +58,15 @@ export default function Post() {
           <span className="cat">{n.category || (n.kind === 'ARTICLE' ? 'Bài viết' : 'Ghi chép')}</span>
           <h1>{n.title || dayMonthYear(date)}</h1>
           {n.excerpt && <p className="dek">{n.excerpt}</p>}
-          <div className="byline">{self?.avatarUrl && <img src={cdn(self.avatarUrl, 80)} alt="" />}<b>{self ? self.displayName || self.name : 'Sonic'}</b><span className="sep">|</span><span>{dayMonthYear(date)}</span><span className="sep">|</span><span>{readMinutes(n)} phút đọc</span></div>
+          {n.series && <Link className="series-tag" to={`/journal/series?name=${encodeURIComponent(n.series)}`}>{n.series}{pi >= 0 ? ` · phần ${pi + 1}/${parts.length}` : ''}</Link>}
+          <div className="byline">{n.authorPersonId || n.authorName
+            ? <>{n.authorPersonId ? <Link to={`/angels/${n.authorPersonId}`}><b>{n.authorPersonName || n.authorName}</b></Link> : <b>{n.authorName}</b>}<span className="sep">|</span><span>{dayMonthYear(n.writtenAt || date)}</span></>
+            : <>{self?.avatarUrl && <img src={cdn(self.avatarUrl, 80)} alt="" />}<b>{self ? self.displayName || self.name : 'Sonic'}</b><span className="sep">|</span><span>{dayMonthYear(date)}</span></>}
+            <span className="sep">|</span><span>{readMinutes(n)} phút đọc</span></div>
           {n.coverMedia && <figure className="cover"><img className="zoom" src={cdn(pic(n.coverMedia, true), 1440)} alt="" onClick={() => setViewer({ items: [n.coverMedia!], i: 0 })} />{n.coverMedia.caption && <figcaption>{n.coverMedia.caption}</figcaption>}</figure>}
           <div className="prose" ref={prose} dangerouslySetInnerHTML={{ __html: n.content }} />
+          {pi >= 0 && <div className="pn series-pn">{pi > 0 ? <Link to={partHref(parts[pi - 1])}><small>← Phần trước</small><b>{parts[pi - 1].title}</b></Link> : <span />}
+            {pi < parts.length - 1 ? <Link to={partHref(parts[pi + 1])}><small>Phần tiếp →</small><b>{parts[pi + 1].title}</b></Link> : <span />}</div>}
           {!!n.tags?.length && <div className="endtags">{n.tags.map(t => <Link key={t.id} className="chip" to={`/journal?tag=${encodeURIComponent(t.name)}`}>{t.name}</Link>)}</div>}
           <div className="pn">{older ? <Link to={noteHref(older)}><small>← Bài trước</small><b>{older.title || excerptOf(older, 50)}</b></Link> : <span />}{newer ? <Link to={noteHref(newer)}><small>Bài sau →</small><b>{newer.title || excerptOf(newer, 50)}</b></Link> : <span />}</div>
         </article>

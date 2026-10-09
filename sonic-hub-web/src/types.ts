@@ -33,7 +33,24 @@ export interface Note {
   id: string; title?: string | null; content: string; mood?: string | null; createdAt?: string | null; updatedAt?: string | null;
   kind?: 'JOURNAL' | 'ARTICLE' | string | null; status?: 'DRAFT' | 'PUBLISHED' | string | null; slug?: string | null; excerpt?: string | null;
   category?: string | null; publishedAt?: string | null; coverMedia?: MediaFile | null; tags?: TagRef[] | null;
+  /** written by someone else: the person on the portal and/or the name, and when it was written */
+  authorPersonId?: string | null; authorPersonName?: string | null; authorName?: string | null; writtenAt?: string | null; source?: string | null;
+  series?: string | null; seriesOrder?: number | null;
 }
+
+export interface SeriesPart { id: string; title?: string | null; seriesOrder?: number | null; slug?: string | null; authorPersonId?: string | null; authorPersonName?: string | null; authorName?: string | null; writtenAt?: string | null }
+
+/* ── old forums (onthi.com…) ── */
+export interface ForumPerson { id: string; name: string; displayName?: string | null; avatarUrl?: string | null; isSelf: boolean }
+export interface Forum { key: string; name: string; url?: string | null; description?: string | null; threadCount: number; postCount: number; memberCount: number; firstPostAt?: string | null; lastPostAt?: string | null }
+export interface ForumBoard { board: string; threadCount: number; postCount: number; lastPostAt?: string | null }
+export interface ForumThread { id: string; title: string; board?: string | null; startedAt?: string | null; lastPostAt?: string | null; postCount: number; starterNick?: string | null; starter?: ForumPerson | null; people: ForumPerson[] }
+export interface ForumPost { id: string; sortOrder: number; authorNick: string; person?: ForumPerson | null; postedAt?: string | null; title?: string | null; contentHtml?: string | null }
+export interface ForumThreadDetail { id: string; forumKey: string; forumName: string; title: string; board?: string | null; startedAt?: string | null; lastPostAt?: string | null; postCount: number; captured?: string[] | null; posts: ForumPost[] }
+export interface ForumPostHit { id: string; threadId: string; threadTitle: string; forumKey: string; board?: string | null; authorNick: string; person?: ForumPerson | null; postedAt?: string | null; title?: string | null; snippet: string }
+export interface ForumMember { id: string; nick: string; displayName?: string | null; joinedAt?: string | null; intro?: string | null; awards?: { title: string; points: number }[] | null; topicCount?: number | null; replyCount?: number | null; person?: ForumPerson | null; postCount: number }
+export interface ForumPage<T> { content: T[]; totalElements: number; page: number; size: number }
+export interface PersonForum { forumKey: string; forumName: string; postCount: number; threadCount: number; firstAt?: string | null; lastAt?: string | null; nicks: string }
 
 export interface TimelineBucket { year: number; month: number; count: number }
 

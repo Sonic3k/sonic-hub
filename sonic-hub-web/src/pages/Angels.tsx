@@ -10,6 +10,7 @@ import { dayMonthYear, longDay, timeOf } from '../lib/date';
 import { fold } from '../lib/text';
 import Justified from '../components/Justified';
 import { Sentinel, useViewer } from '../components/PhotoGroups';
+import { PostHits } from './Forum';
 import PersonNumbers from '../components/PersonNumbers';
 
 const T = 10 * 60_000;
@@ -82,6 +83,9 @@ export function PersonPage() {
   const traits = useQuery({ queryKey: ['traits', id], queryFn: () => hub.traits(id), staleTime: T });
   const archives = useQuery({ queryKey: ['archives', id], queryFn: () => hub.archives(id), staleTime: T });
   const rankings = useQuery({ queryKey: ['rankings', id], queryFn: () => hub.rankings(id), staleTime: T });
+  const writings = useQuery({ queryKey: ['writings', id], queryFn: () => hub.notes({ authorId: id, size: 50 }), staleTime: T });
+  const forums = useQuery({ queryKey: ['person-forums', id], queryFn: () => hub.personForums(id).catch(() => []), staleTime: T });
+  const forumPosts = useQuery({ queryKey: ['person-forum-posts', id], queryFn: () => hub.personForumPosts(id, 0, 8).catch(() => null), staleTime: T, enabled: !!forums.data?.length });
   const photos = useQuery({ queryKey: ['person-photos', id], staleTime: T, queryFn: () => hub.search({ personId: id, size: 30, sortBy: 'effectiveDate', sortDir: 'asc', inclPersons: true, inclTags: true }) });
   const items = photos.data?.content ?? [], viewer = useViewer(items);
   const openById = (mid: string) => { const i = items.findIndex(m => m.id === mid); if (i >= 0) viewer.open(i); };
@@ -135,6 +139,17 @@ export function PersonPage() {
 
           {items.length > 0 && <section className="block"><div className="hd"><h2>Ảnh cùng nhau</h2><span>{fmt(photos.data?.totalElements ?? items.length)}</span><Link to={`/photos?person=${id}`} style={{ ['--c' as string]: 'var(--angels)' }}>Xem tất cả</Link></div>
             <Justified items={items} rowHeight={180} gap={6} onOpen={viewer.open} /></section>}
+
+          {!!writings.data?.content.length && <section className="block"><div className="hd"><h2>Bài viết</h2><span>{writings.data.totalElements}</span></div>
+            <ol className="writings">{[...writings.data.content].sort((a, b) => (a.writtenAt ?? a.createdAt ?? '').localeCompare(b.writtenAt ?? b.createdAt ?? '')).map(w => (
+              <li key={w.id}><Link to={w.slug ? `/journal/${w.slug}` : `/journal/id/${w.id}`}><b>{w.title || 'Không tiêu đề'}</b>
+                <small>{[dayMonthYear(w.writtenAt ?? w.createdAt), w.series].filter(Boolean).join(' · ')}</small></Link></li>))}</ol></section>}
+
+          {!!forums.data?.length && <section className="block"><div className="hd"><h2>Trên diễn đàn</h2>
+            <span>{forums.data.map(f => `${f.forumName}: ${fmt(f.postCount)} bài`).join(' · ')}</span>
+            {forums.data.map(f => <Link key={f.forumKey} to={`/forum/${f.forumKey}?tab=posts&person=${id}`} style={{ ['--c' as string]: 'var(--forum)' }}>Xem tất cả</Link>)}</div>
+            <p className="hush-note">{forums.data.map(f => `${f.nicks}${f.firstAt ? ` · ${dayMonthYear(f.firstAt)} – ${dayMonthYear(f.lastAt)}` : ''}`).join(' · ')}</p>
+            {forumPosts.data && <PostHits rows={forumPosts.data.content} showPerson={false} />}</section>}
 
           {!!archives.data?.length && <section className="block"><div className="hd"><h2>Tin nhắn</h2><span>{archives.data.length} kho</span></div>
             <div className="chatlist">{archives.data.map(a => (
