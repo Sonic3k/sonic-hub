@@ -143,6 +143,39 @@ public class MediaFileController {
         return mediaFileService.updateMedia(id, req);
     }
 
+    /** The kinds of file this API stores (FLASH = .swf cards played on the web), so a client can check before uploading. */
+    @GetMapping("/types")
+    public List<String> types() { return mediaFileService.fileTypes(); }
+
+    /** Poster of a card: the still shown in grids and as its thumbnail (multipart "file", an image). */
+    @PostMapping("/{id}/poster")
+    public MediaFileDto.Response poster(@PathVariable UUID id, @RequestParam("file") MultipartFile file) throws IOException {
+        return mediaFileService.setPoster(id, file);
+    }
+
+    /** Music that plays with a card (multipart "file", audio). */
+    @PostMapping("/{id}/soundtrack")
+    public MediaFileDto.Response soundtrack(@PathVariable UUID id, @RequestParam("file") MultipartFile file) throws IOException {
+        return mediaFileService.setSoundtrack(id, file);
+    }
+
+    /** A Flash card's .swf for the emulator on the web, which fetches it (cross-origin, so through the API with CORS). */
+    @GetMapping("/{id}/flash")
+    public ResponseEntity<org.springframework.core.io.InputStreamResource> flash(@PathVariable UUID id) {
+        var mf = mediaFileService.flashCard(id);
+        if (mf == null) return ResponseEntity.notFound().build();
+        var r = ResponseEntity.ok()
+            .contentType(org.springframework.http.MediaType.parseMediaType("application/x-shockwave-flash"))
+            .cacheControl(org.springframework.http.CacheControl.maxAge(java.time.Duration.ofDays(30)).cachePublic());
+        if (mf.getFileSize() != null) r = r.contentLength(mf.getFileSize());
+        return r.body(new org.springframework.core.io.InputStreamResource(mediaFileService.download(mf)));
+    }
+
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ResponseEntity<Map<String, String>> bad(IllegalArgumentException e) {
+        return ResponseEntity.badRequest().body(Map.of("error", String.valueOf(e.getMessage())));
+    }
+
     @PostMapping("/batch/favorite")
     public Map<String, Integer> favoriteBatch(@RequestBody MediaFileDto.FavoriteBatchRequest req) {
         int updated = mediaFileService.favoriteBatch(req.getIds(), req.isValue());

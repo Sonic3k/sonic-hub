@@ -3,7 +3,7 @@ import { Fragment, useCallback, useEffect, useMemo, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { useInfiniteQuery, useQuery } from '@tanstack/react-query';
 import { hub, periodYears, randomLine } from '../api/hub';
-import { cdn } from '../api/client';
+import { cdn, pic } from '../api/client';
 import type { ChatMessage, Person } from '../types';
 import { fmt, usePersons } from '../lib/queries';
 import { dayMonthYear, longDay, timeOf } from '../lib/date';
@@ -22,7 +22,7 @@ export const angelsOrdered = (all: Person[]) => all.filter(p => !p.isSelf).sort(
 /** A face for a person: their avatar, else a photo they are in. */
 function Face({ p, w }: { p: Person; w: number }) {
   const q = useQuery({ queryKey: ['face', p.id], enabled: !p.avatarUrl, staleTime: T, queryFn: async () => (await hub.search({ personId: p.id, size: 1, random: true, type: 'IMAGE' })).content[0] ?? null });
-  const src = p.avatarUrl ? cdn(p.avatarUrl, w) : q.data ? cdn(q.data.thumbnailUrl ?? q.data.cdnUrl, w) : '';
+  const src = p.avatarUrl ? cdn(p.avatarUrl, w) : q.data ? cdn(pic(q.data), w) : '';
   return src ? <img src={src} alt="" /> : <span className="letter-ph">{nameOf(p).slice(0, 1)}</span>;
 }
 
@@ -91,7 +91,7 @@ export function PersonPage() {
   // notes from the chat analysis read as a list in the story; the side card keeps the short facts
   const analysis = (facts.data ?? []).filter(f => f.source === 'analysis'), shortFacts = (facts.data ?? []).filter(f => f.source !== 'analysis');
   const notes = analysis.filter(f => f.category === 'analysis-note'), style = analysis.filter(f => f.category === 'analysis-style');
-  const cover = p?.coverUrl || p?.bannerUrl || items.find(m => m.isFeatured)?.cdnUrl || items[0]?.cdnUrl;
+  const cover = p?.coverUrl || p?.bannerUrl || pic(items.find(m => m.isFeatured), true) || pic(items[0], true);
   if (person.isLoading) return <div className="wrap page"><div className="card empty">Đang mở câu chuyện…</div></div>;
   if (!p) return <div className="wrap page"><Link className="back" to="/angels">← Angels</Link><h1>Không tìm thấy người này</h1></div>;
   const intro = p.howWeMet || p.bio;
@@ -105,7 +105,7 @@ export function PersonPage() {
           <h1 className="story-name">{nameOf(p)}</h1>
           <p className="story-meta">{[p.alternativeName, p.nickname && p.nickname !== nameOf(p) ? `“${p.nickname}”` : '', rel(p.relationshipType), platforms.join(' · ')].filter(Boolean).join(' · ')}</p>
           {p.song && <p className="story-song">♪ {p.song}</p>}
-          {cover && <figure className="cover"><img className="zoom" src={cdn(cover, 1440)} alt="" onClick={() => items[0] && viewer.open(Math.max(0, items.findIndex(m => m.cdnUrl === cover)))} /></figure>}
+          {cover && <figure className="cover"><img className="zoom" src={cdn(cover, 1440)} alt="" onClick={() => items[0] && viewer.open(Math.max(0, items.findIndex(m => pic(m, true) === cover)))} /></figure>}
           {intro && <div className="prose story-intro">{intro.split(/\n{2,}/).map((t, i) => <p key={i}>{t}</p>)}</div>}
 
           {chs.map(c => (

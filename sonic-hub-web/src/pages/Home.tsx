@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { hub, dayOf, peopleOfYear, randomLine } from '../api/hub';
-import { cdn } from '../api/client';
+import { cdn, pic } from '../api/client';
 import type { MediaFile, Person } from '../types';
 import { counts, excerptOf, fmt, noteDate, noteHref, readMinutes, useAlbums, useNotes, usePersons, useRegions, useTimeline } from '../lib/queries';
 import { dayMonthYear, isoDay, longDay, yearOf } from '../lib/date';
@@ -35,14 +35,14 @@ export default function Home() {
     <div className="wrap page" key={`${year}-${month}-${day}`}>
       <section className="focus">
         <div className="card today">
-          {items[0] ? <div className="img zoom" onClick={() => setViewer({ items, i: 0 })}><img src={cdn(items[0].cdnUrl, 1280)} alt={items[0].caption ?? ''} /><span className="badge">{items.length} ảnh{yearNote ? ' · 1 trang viết' : ''}</span></div>
+          {items[0] ? <div className="img zoom" onClick={() => setViewer({ items, i: 0 })}><img src={cdn(pic(items[0], true), 1280)} alt={items[0].caption ?? ''} /><span className="badge">{items.length} ảnh{yearNote ? ' · 1 trang viết' : ''}</span></div>
             : <div className="img ph">{dayQ.isLoading || !ready ? 'Đang tìm lại ngày ấy…' : 'Chưa có ảnh'}</div>}
           <div className="body">
             <p className="kicker">{kicker}</p>
             <h1>{title}</h1>
             <p>{items[0]?.caption || (yearNote ? `${yearNote.title || 'Một trang viết'} — ${excerptOf(yearNote, 90)}` : scope === 'day' ? `${items.length} khoảnh khắc trong ngày.` : 'Ngày ấy không có tấm nào, đây là quanh thời điểm đó.')}</p>
             <div className="row">
-              {items.length > 1 && <div className="thumbs">{items.slice(1, 5).map((m, k) => <img key={m.id} className="zoom" src={cdn(m.thumbnailUrl ?? m.cdnUrl, 160)} alt="" onClick={() => setViewer({ items, i: k + 1 })} />)}</div>}
+              {items.length > 1 && <div className="thumbs">{items.slice(1, 5).map((m, k) => <img key={m.id} className="zoom" src={cdn(pic(m), 160)} alt="" onClick={() => setViewer({ items, i: k + 1 })} />)}</div>}
               {people.slice(0, 2).map(p => <span key={p.id} className="pill">{p.avatarUrl ? <img src={cdn(p.avatarUrl, 80)} alt="" /> : null}{nameOf(p)}</span>)}
             </div>
           </div>
@@ -62,7 +62,7 @@ export default function Home() {
           {featured && <div className="block">
             <div className="hd"><h2>Viết gần đây</h2><span>{written.length} bài</span><Link to="/journal">Vào Nhật ký</Link></div>
             <Link className="card featured" to={noteHref(featured)}>
-              {featured.coverMedia ? <img src={cdn(featured.coverMedia.cdnUrl, 900)} alt="" /> : <div className="ph" />}
+              {featured.coverMedia ? <img src={cdn(pic(featured.coverMedia, true), 900)} alt="" /> : <div className="ph" />}
               <div className="body"><span className="cat">{featured.category || (featured.kind === 'ARTICLE' ? 'Bài viết' : 'Ghi chép')}</span><h3>{featured.title || 'Không tiêu đề'}</h3><p>{excerptOf(featured)}</p><span className="by">{dayMonthYear(noteDate(featured))} · {readMinutes(featured)} phút đọc</span></div>
             </Link>
             <div className="posts" style={{ marginTop: 16 }}>{rest.map(n => <PostRow key={n.id} n={n} />)}</div>
@@ -95,7 +95,7 @@ function YearCard({ year, month, count }: { year: number; month: number; count: 
     queryFn: async () => (await hub.search({ from: isoDay(new Date(year, month - 1, 1)), to: isoDay(new Date(year, month, 1)), size: 1, random: true, type: 'IMAGE' })).content[0] ?? null });
   return (
     <Link className={`ycard ${q.data ? '' : 'ph'}`} to={`/?y=${year}`}>
-      {q.data && <img src={cdn(q.data.thumbnailUrl ?? q.data.cdnUrl, 400)} alt="" />}<b>{year}</b><span>{fmt(count)} ảnh</span>
+      {pic(q.data) && <img src={cdn(pic(q.data), 400)} alt="" />}<b>{year}</b><span>{fmt(count)} ảnh</span>
     </Link>
   );
 }
@@ -104,7 +104,7 @@ export function PostRow({ n }: { n: import('../types').Note }) {
   return (
     <Link className="post" to={noteHref(n)}>
       <div><span className="cat">{n.category || (n.kind === 'ARTICLE' ? 'Bài viết' : 'Ghi chép')}</span><h4>{n.title || 'Không tiêu đề'}</h4><p>{excerptOf(n)}</p><span className="by">{dayMonthYear(noteDate(n))} · {readMinutes(n)} phút đọc</span></div>
-      {n.coverMedia ? <img src={cdn(n.coverMedia.thumbnailUrl ?? n.coverMedia.cdnUrl, 240)} alt="" /> : <span className="noimg" />}
+      {pic(n.coverMedia) ? <img src={cdn(pic(n.coverMedia), 240)} alt="" /> : <span className="noimg" />}
     </Link>
   );
 }
@@ -128,7 +128,7 @@ function RandomPhoto({ onOpen }: { onOpen: (m: MediaFile) => void }) {
   return (
     <div className="card" style={{ ['--c' as string]: 'var(--photo)' }}>
       <h3><i />Một tấm ngẫu nhiên<button type="button" onClick={() => setN(v => v + 1)}>Đổi</button></h3>
-      {m ? <><img className="pic zoom" src={cdn(m.thumbnailUrl ?? m.cdnUrl, 480)} alt="" onClick={() => onOpen(m)} /><div className="meta">{[m.caption, d ? dayMonthYear(d) : ''].filter(Boolean).join(' · ')}</div></> : <div className="pic ph" />}
+      {m ? <><img className="pic zoom" src={cdn(pic(m), 480)} alt="" onClick={() => onOpen(m)} /><div className="meta">{[m.caption, d ? dayMonthYear(d) : ''].filter(Boolean).join(' · ')}</div></> : <div className="pic ph" />}
     </div>
   );
 }

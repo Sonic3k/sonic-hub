@@ -2,7 +2,7 @@ import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { hub } from '../api/hub';
-import { cdn } from '../api/client';
+import { cdn, pic } from '../api/client';
 import type { MediaFile } from '../types';
 import { excerptOf, noteDate, noteHref, plain, readMinutes, useNotes, usePersons } from '../lib/queries';
 import { addDays, dayMonthYear, isoDay } from '../lib/date';
@@ -57,19 +57,19 @@ export default function Post() {
           <h1>{n.title || dayMonthYear(date)}</h1>
           {n.excerpt && <p className="dek">{n.excerpt}</p>}
           <div className="byline">{self?.avatarUrl && <img src={cdn(self.avatarUrl, 80)} alt="" />}<b>{self ? self.displayName || self.name : 'Sonic'}</b><span className="sep">|</span><span>{dayMonthYear(date)}</span><span className="sep">|</span><span>{readMinutes(n)} phút đọc</span></div>
-          {n.coverMedia && <figure className="cover"><img className="zoom" src={cdn(n.coverMedia.cdnUrl, 1440)} alt="" onClick={() => setViewer({ items: [n.coverMedia!], i: 0 })} />{n.coverMedia.caption && <figcaption>{n.coverMedia.caption}</figcaption>}</figure>}
+          {n.coverMedia && <figure className="cover"><img className="zoom" src={cdn(pic(n.coverMedia, true), 1440)} alt="" onClick={() => setViewer({ items: [n.coverMedia!], i: 0 })} />{n.coverMedia.caption && <figcaption>{n.coverMedia.caption}</figcaption>}</figure>}
           <div className="prose" ref={prose} dangerouslySetInnerHTML={{ __html: n.content }} />
           {!!n.tags?.length && <div className="endtags">{n.tags.map(t => <Link key={t.id} className="chip" to={`/journal?tag=${encodeURIComponent(t.name)}`}>{t.name}</Link>)}</div>}
           <div className="pn">{older ? <Link to={noteHref(older)}><small>← Bài trước</small><b>{older.title || excerptOf(older, 50)}</b></Link> : <span />}{newer ? <Link to={noteHref(newer)}><small>Bài sau →</small><b>{newer.title || excerptOf(newer, 50)}</b></Link> : <span />}</div>
         </article>
         <aside className="aside">
           {toc.length > 1 && <div><h5>Trong bài</h5><nav className="toc">{toc.map(t => <a key={t.id} href={`#${t.id}`} className={active === t.id ? 'on' : ''} onClick={(e) => { e.preventDefault(); document.getElementById(t.id)?.scrollIntoView({ behavior: 'smooth' }); }}>{t.text}</a>)}</nav></div>}
-          {!!same.data?.content.length && <div><h5>Ảnh ngày {dayMonthYear(date)}</h5><div className="sameday">{same.data.content.map((m, i) => <img key={m.id} className="zoom" src={cdn(m.thumbnailUrl ?? m.cdnUrl, 200)} alt="" onClick={() => setViewer({ items: same.data!.content, i })} />)}</div></div>}
+          {!!same.data?.content.length && <div><h5>Ảnh ngày {dayMonthYear(date)}</h5><div className="sameday">{same.data.content.map((m, i) => <img key={m.id} className="zoom" src={cdn(pic(m), 200)} alt="" onClick={() => setViewer({ items: same.data!.content, i })} />)}</div></div>}
           {mentioned.length > 0 && <div><h5>Nhắc đến</h5><div className="chips">{mentioned.map(p => <span key={p.id} className="pill">{p.avatarUrl ? <img src={cdn(p.avatarUrl, 80)} alt="" /> : null}{p.displayName || p.name}</span>)}</div></div>}
         </aside>
       </div>
       {sameYear.length > 0 && <div className="after"><div className="hd"><h2>Cùng năm {date.slice(0, 4)}</h2><Link to={`/journal?year=${date.slice(0, 4)}`}>Tất cả bài</Link></div>
-        <div className="cards3">{sameYear.map(x => <Link key={x.id} className="card mini" to={noteHref(x)}>{x.coverMedia ? <img src={cdn(x.coverMedia.cdnUrl, 600)} alt="" /> : <div className="ph" style={{ aspectRatio: '16/10' }} />}<div><span className="cat">{x.category || 'Bài viết'}</span><h4>{x.title || excerptOf(x, 50)}</h4><div className="by" style={{ marginTop: 6 }}>{dayMonthYear(noteDate(x))}</div></div></Link>)}</div></div>}
+        <div className="cards3">{sameYear.map(x => <Link key={x.id} className="card mini" to={noteHref(x)}>{pic(x.coverMedia) ? <img src={cdn(pic(x.coverMedia, true), 600)} alt="" /> : <div className="ph" style={{ aspectRatio: '16/10' }} />}<div><span className="cat">{x.category || 'Bài viết'}</span><h4>{x.title || excerptOf(x, 50)}</h4><div className="by" style={{ marginTop: 6 }}>{dayMonthYear(noteDate(x))}</div></div></Link>)}</div></div>}
       {viewer && <Viewer items={viewer.items} start={viewer.i} onClose={() => setViewer(null)} />}
     </div>
   );

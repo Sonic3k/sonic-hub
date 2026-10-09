@@ -3,6 +3,7 @@ package com.sonic.angels.config;
 import com.sonic.angels.model.entity.ChatArchive;
 import com.sonic.angels.model.entity.ChatAttachment;
 import com.sonic.angels.model.entity.ChatMessage;
+import com.sonic.angels.model.entity.MediaFile;
 import com.sonic.angels.model.entity.PersonContact;
 import jakarta.persistence.EntityManagerFactory;
 import org.slf4j.Logger;
@@ -34,7 +35,8 @@ public class EnumCheckConstraintFixer implements InitializingBean {
         new EnumColumn("chat_messages", "time_precision", ChatMessage.TimePrecision.class),
         new EnumColumn("chat_archives", "platform", ChatArchive.Platform.class),
         new EnumColumn("chat_attachments", "type", ChatAttachment.Type.class),
-        new EnumColumn("person_contacts", "platform", PersonContact.Platform.class)
+        new EnumColumn("person_contacts", "platform", PersonContact.Platform.class),
+        new EnumColumn("media_files", "file_type", MediaFile.FileType.class)
     );
 
     private final JdbcTemplate jdbc;

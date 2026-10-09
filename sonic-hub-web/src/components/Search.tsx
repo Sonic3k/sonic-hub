@@ -3,7 +3,7 @@ import { useEffect, useRef, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { hub } from '../api/hub';
-import { cdn } from '../api/client';
+import { cdn, pic } from '../api/client';
 import { counts, excerptOf, noteHref, useAllAlbums, useNotes, usePersons, useTagStats, useTimeline } from '../lib/queries';
 import { matches } from '../lib/text';
 
@@ -34,7 +34,7 @@ export default function Search() {
           {R.length > 0 && <div className="sg"><h6>Vùng</h6>{R.map(r => <Link key={r.id} className="sr" to={`/tags/${encodeURIComponent(r.name)}`}><span className="dot" style={{ background: r.color || 'var(--ink3)' }} /><b>{r.name}</b><small>{r.mediaCount} ảnh</small></Link>)}</div>}
           {A.length > 0 && <div className="sg"><h6>Album</h6>{A.map(a => <Link key={a.id} className="sr" to={`/photos/albums/${a.id}`}>{a.thumbnailUrl ? <img className="sr-th" src={cdn(a.thumbnailUrl, 80)} alt="" /> : <span className="sr-th ph" />}<b>{a.name}</b><small>{a.mediaCount ?? 0} ảnh</small></Link>)}</div>}
           {N.length > 0 && <div className="sg"><h6>Bài viết</h6>{N.map(n => <Link key={n.id} className="sr" to={noteHref(n)}><b>{n.title || excerptOf(n, 40)}</b><small>{(n.publishedAt ?? n.createdAt ?? '').slice(0, 4)}</small></Link>)}</div>}
-          {ph.length > 0 && <div className="sg"><h6>Ảnh</h6><div className="sr-photos">{ph.map(m => <Link key={m.id} to={`/photos?q=${encodeURIComponent(t)}&p=${m.id}`}><img src={cdn(m.thumbnailUrl ?? m.cdnUrl, 120)} alt="" /></Link>)}</div>
+          {ph.length > 0 && <div className="sg"><h6>Ảnh</h6><div className="sr-photos">{ph.map(m => <Link key={m.id} to={`/photos?q=${encodeURIComponent(t)}&p=${m.id}`}>{pic(m) ? <img src={cdn(pic(m), 120)} alt="" /> : <span className="sr-ph">▶</span>}</Link>)}</div>
             <button type="button" className="sr-all" onClick={submit}>Xem tất cả ảnh khớp “{t}” →</button></div>}
           {photos.isFetching && !ph.length && <p className="sr-note">Đang tìm ảnh…</p>}
           {none && <p className="sr-note">Không thấy gì khớp “{t}”.</p>}

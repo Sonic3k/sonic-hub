@@ -78,6 +78,8 @@ public class MediaFileDto {
         private Integer duration; private Boolean isFavorite; private Boolean isFeatured;
         private String mimeType; private String caption; private String cdnUrl; private String thumbnailUrl;
         private Boolean isAnimated;
+        /** Flash card: the still shown in grids (also its thumbnailUrl) and the music that plays with it. */
+        private String posterUrl; private String soundtrackUrl;
         private LocalDateTime dateTaken; private LocalDateTime fileDateCreated;
         private LocalDateTime fileDateModified; private LocalDateTime effectiveDate; private LocalDateTime uploadedAt;
         private Double latitude; private Double longitude; private String displayedAddress; private String timezone;
@@ -101,6 +103,8 @@ public class MediaFileDto {
         public String getCaption() { return caption; } public void setCaption(String v) { this.caption = v; }
         public String getCdnUrl() { return cdnUrl; } public void setCdnUrl(String v) { this.cdnUrl = v; }
         public String getThumbnailUrl() { return thumbnailUrl; } public void setThumbnailUrl(String v) { this.thumbnailUrl = v; }
+        public String getPosterUrl() { return posterUrl; } public void setPosterUrl(String v) { this.posterUrl = v; }
+        public String getSoundtrackUrl() { return soundtrackUrl; } public void setSoundtrackUrl(String v) { this.soundtrackUrl = v; }
         public Boolean getIsAnimated() { return isAnimated; } public void setIsAnimated(Boolean v) { this.isAnimated = v; }
         public LocalDateTime getDateTaken() { return dateTaken; } public void setDateTaken(LocalDateTime v) { this.dateTaken = v; }
         public LocalDateTime getFileDateCreated() { return fileDateCreated; } public void setFileDateCreated(LocalDateTime v) { this.fileDateCreated = v; }

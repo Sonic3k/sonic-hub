@@ -12,6 +12,14 @@ public class DtoMapper {
 
     public DtoMapper(StorageService storageService) { this.storageService = storageService; }
 
+    /** The picture of a file: itself, or its poster when the file is not an image (a Flash card; none without one). */
+    public String imageUrl(MediaFile m) {
+        if (m == null) return null;
+        if (m.getPosterStorageKey() != null) return storageService.buildCdnUrl(m.getPosterStorageKey());
+        if (m.getFileType() == MediaFile.FileType.FLASH) return null;
+        return storageService.buildCdnUrl(m.getStorageKey(), m.getStorageProvider());
+    }
+
     // ── Tag ──────────────────────────────────────────────────────────────────
     public TagDto.Response toTagResponse(Tag t) {
         TagDto.Response r = new TagDto.Response();
@@ -26,7 +34,7 @@ public class DtoMapper {
         s.setNickname(p.getNickname()); s.setRelationshipType(p.getRelationshipType());
         s.setPeriod(p.getPeriod()); s.setIsSelf(p.getIsSelf()); s.setIsFavorite(p.getIsFavorite()); s.setIsFeatured(p.getIsFeatured());
         s.setSong(p.getSong());
-        if (p.getAvatarMediaFile() != null) s.setAvatarUrl(storageService.buildCdnUrl(p.getAvatarMediaFile().getStorageKey(), p.getAvatarMediaFile().getStorageProvider()));
+        if (p.getAvatarMediaFile() != null) s.setAvatarUrl(imageUrl(p.getAvatarMediaFile()));
         return s;
     }
 
@@ -40,9 +48,9 @@ public class DtoMapper {
         d.setDateOfBirth(p.getDateOfBirth()); d.setBio(p.getBio());
         d.setFirstMet(p.getFirstMet()); d.setHowWeMet(p.getHowWeMet());
         d.setCreatedAt(p.getCreatedAt()); d.setUpdatedAt(p.getUpdatedAt());
-        if (p.getAvatarMediaFile() != null) d.setAvatarUrl(storageService.buildCdnUrl(p.getAvatarMediaFile().getStorageKey(), p.getAvatarMediaFile().getStorageProvider()));
-        if (p.getCoverMediaFile() != null) d.setCoverUrl(storageService.buildCdnUrl(p.getCoverMediaFile().getStorageKey(), p.getCoverMediaFile().getStorageProvider()));
-        if (p.getBannerMediaFile() != null) d.setBannerUrl(storageService.buildCdnUrl(p.getBannerMediaFile().getStorageKey(), p.getBannerMediaFile().getStorageProvider()));
+        if (p.getAvatarMediaFile() != null) d.setAvatarUrl(imageUrl(p.getAvatarMediaFile()));
+        if (p.getCoverMediaFile() != null) d.setCoverUrl(imageUrl(p.getCoverMediaFile()));
+        if (p.getBannerMediaFile() != null) d.setBannerUrl(imageUrl(p.getBannerMediaFile()));
         if (p.getContacts() != null) {
             d.setContacts(p.getContacts().stream().map(this::toContactResponse).toList());
         }
@@ -71,7 +79,12 @@ public class DtoMapper {
         r.setDisplayedAddress(m.getDisplayedAddress());
         r.setTimezone(m.getTimezone());
         r.setCdnUrl(storageService.buildCdnUrl(m.getStorageKey(), m.getStorageProvider()));
-        r.setThumbnailUrl(m.getStorageKey() != null ? storageService.buildThumbnailUrl(m.getStorageKey(), 300) : null);
+        // a poster stands in for a file that is not an image (a Flash card); a card without one has no thumbnail
+        if (m.getPosterStorageKey() != null) r.setThumbnailUrl(storageService.buildThumbnailUrl(m.getPosterStorageKey(), 300));
+        else if (m.getFileType() == MediaFile.FileType.FLASH) r.setThumbnailUrl(null);
+        else r.setThumbnailUrl(m.getStorageKey() != null ? storageService.buildThumbnailUrl(m.getStorageKey(), 300) : null);
+        r.setPosterUrl(m.getPosterStorageKey() != null ? storageService.buildCdnUrl(m.getPosterStorageKey()) : null);
+        r.setSoundtrackUrl(m.getSoundtrackStorageKey() != null ? storageService.buildCdnUrl(m.getSoundtrackStorageKey()) : null);
 
         // Image EXIF detail
         if (inc.details() && m.getImageDetail() != null) {
