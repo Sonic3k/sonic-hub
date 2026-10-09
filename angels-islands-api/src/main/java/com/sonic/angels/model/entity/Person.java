@@ -124,12 +124,9 @@ public class Person extends BaseEntity {
 
     // ── Enums ────────────────────────────────────────────────────────────────
 
-    /** ANGEL, FRIEND, OTHER are the types in use. The older ones are kept only until every person has moved off them
-     *  (tools/person_types.mjs), then they go. */
-    public enum RelationshipType {
-        ANGEL, FRIEND, OTHER,
-        CRUSH, GIRLFRIEND, EX, ACQUAINTANCE, PEN_PAL, ONLINE_FRIEND
-    }
+    /** Angel, Friend or Other. (The older types — CRUSH, GIRLFRIEND, EX, ACQUAINTANCE, PEN_PAL, ONLINE_FRIEND — are
+     *  gone; a row still holding one is moved to ANGEL at startup, see EnumCheckConstraintFixer.) */
+    public enum RelationshipType { ANGEL, FRIEND, OTHER }
 
     // ── Constructors ─────────────────────────────────────────────────────────
 

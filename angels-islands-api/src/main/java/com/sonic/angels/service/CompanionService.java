@@ -274,7 +274,7 @@ public class CompanionService {
         if (t == null) return null;
         return switch (t) {
             case ANGEL, OTHER -> null;
-            default -> t.name().toLowerCase().replace('_', ' ');
+            case FRIEND -> "friend";
         };
     }
 

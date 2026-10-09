@@ -22,6 +22,9 @@ import java.util.stream.Collectors;
  * Hibernate writes "CHECK (col IN (...))" for enum columns when it creates them, and ddl-auto=update
  * never widens it, so a new enum value would be rejected by Postgres. Before the app serves requests,
  * widen any such constraint that is missing values.
+ *
+ * A value taken out of an enum is retired here first: rows still holding it are moved to its replacement (a row
+ * Hibernate cannot read back would break every list it is in), then the constraint is narrowed to the enum.
  */
 @Component
 public class EnumCheckConstraintFixer implements InitializingBean {
@@ -39,6 +42,12 @@ public class EnumCheckConstraintFixer implements InitializingBean {
         new EnumColumn("person_contacts", "platform", PersonContact.Platform.class),
         new EnumColumn("media_files", "file_type", MediaFile.FileType.class),
         new EnumColumn("persons", "relationship_type", Person.RelationshipType.class)
+    );
+
+    /** Values taken out of an enum, per table.column, and what rows holding one become. */
+    private static final Map<String, Map<String, String>> RETIRED = Map.of(
+        "persons.relationship_type", Map.of("CRUSH", "ANGEL", "GIRLFRIEND", "ANGEL", "EX", "ANGEL",
+            "ACQUAINTANCE", "ANGEL", "PEN_PAL", "ANGEL", "ONLINE_FRIEND", "ANGEL")
     );
 
     private final JdbcTemplate jdbc;
@@ -61,6 +70,11 @@ public class EnumCheckConstraintFixer implements InitializingBean {
 
     private void fix(EnumColumn c) {
         List<String> values = Arrays.stream(c.type().getEnumConstants()).map(Enum::name).toList();
+        Map<String, String> retired = RETIRED.getOrDefault(c.table() + "." + c.column(), Map.of());
+        for (Map.Entry<String, String> r : retired.entrySet()) {
+            int n = jdbc.update("UPDATE " + c.table() + " SET " + c.column() + " = ? WHERE " + c.column() + " = ?", r.getValue(), r.getKey());
+            if (n > 0) log.info("Moved {} row(s) of {}.{} from retired {} to {}", n, c.table(), c.column(), r.getKey(), r.getValue());
+        }
         List<Map<String, Object>> rows = jdbc.queryForList(
             "SELECT con.conname AS name, pg_get_constraintdef(con.oid) AS def FROM pg_constraint con " +
             "JOIN pg_class rel ON rel.oid = con.conrelid JOIN pg_namespace ns ON ns.oid = rel.relnamespace " +
@@ -70,11 +84,12 @@ public class EnumCheckConstraintFixer implements InitializingBean {
             String def = (String) row.get("def");
             if (def == null || !def.matches("(?s).*\\b" + c.column() + "\\b.*")) continue;
             boolean complete = values.stream().allMatch(v -> def.contains("'" + v + "'"));
-            if (complete) continue;
+            boolean stale = retired.keySet().stream().anyMatch(v -> def.contains("'" + v + "'"));
+            if (complete && !stale) continue;
             String list = values.stream().map(v -> "'" + v + "'").collect(Collectors.joining(", "));
             jdbc.execute("ALTER TABLE " + c.table() + " DROP CONSTRAINT \"" + name + "\"");
             jdbc.execute("ALTER TABLE " + c.table() + " ADD CONSTRAINT \"" + name + "\" CHECK (" + c.column() + " IN (" + list + "))");
-            log.info("Widened {} on {}.{} to {}", name, c.table(), c.column(), values);
+            log.info("{} {} on {}.{} to {}", stale ? "Narrowed" : "Widened", name, c.table(), c.column(), values);
         }
     }
 }
