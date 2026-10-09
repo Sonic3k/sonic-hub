@@ -1,0 +1,1884 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Mayhem Classic</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Metamorphous&family=Alegreya+Sans:ital,wght@0,400;0,500;0,700;0,800;1,400&display=swap" rel="stylesheet">
+<style>/* ── Mayhem Classic · a brawl by torchlight ──
+   A stone cellar lit by two torches, a chalk ring on the floor where cards are played, and four heroes whose decks
+   each wear their own colour and pattern. Seats are parchment plaques; shields in play stand in front of their owner. */
+:root{
+  --ink:#24180f;--ink-2:#57473a;--ink-3:#8a7866;--parch:#f2e5c8;--parch-hi:#fbf3e1;--parch-lo:#dcc8a1;
+  --gold:#d6a73e;--gold-hi:#f4d68b;--gold-lo:#8a6417;--blood:#a8261b;
+  --f-head:'Metamorphous',Georgia,serif;--f-text:'Alegreya Sans',system-ui,-apple-system,sans-serif;
+  --cw:150px;--ch:212px;
+  box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);
+}
+*,*::before,*::after{box-sizing:border-box}
+html,body{margin:0;height:100%;background:#121016;overscroll-behavior:none}
+body{font-family:var(--f-text);color:var(--parch);-webkit-font-smoothing:antialiased;overflow:hidden}
+button{font:inherit;color:inherit}
+.hidden{display:none!important}
+#app{position:relative;height:100dvh;overflow:hidden;background:
+  radial-gradient(ellipse 38% 46% at 6% 0%,rgba(255,150,60,.30),rgba(255,150,60,0) 70%),
+  radial-gradient(ellipse 38% 46% at 94% 0%,rgba(255,150,60,.30),rgba(255,150,60,0) 70%),
+  radial-gradient(ellipse 70% 55% at 50% 52%,rgba(255,190,120,.10),rgba(255,190,120,0) 70%),
+  radial-gradient(ellipse 130% 100% at 50% 50%,rgba(0,0,0,0) 40%,rgba(0,0,0,.65) 100%),
+  var(--stone-tex),linear-gradient(180deg,#2a2530,#17141b)}
+.screen{position:relative;height:100%;z-index:1}
+:focus-visible{outline:2px solid var(--gold-hi);outline-offset:2px}
+#table,#topbar,#hand,.seat,.shc,.btn,.icon-btn{touch-action:manipulation}
+#screen-match{-webkit-user-select:none;user-select:none}
+
+/* buttons: oxblood leather with brass; parchment tags for the quieter ones */
+.btn{font-family:var(--f-head);font-size:18px;line-height:1.1;min-height:46px;padding:10px 22px;border:0;border-radius:8px;cursor:pointer;color:#fdeccc;
+  background:var(--leather-tex),linear-gradient(#b23a2a,#7d2216);text-shadow:0 1px 0 rgba(0,0,0,.5);
+  box-shadow:inset 0 0 0 1px rgba(255,214,150,.65),inset 0 0 0 3px rgba(110,30,18,.9),inset 0 0 0 4px rgba(255,214,150,.3),0 3px 0 #45120a,0 8px 18px rgba(0,0,0,.5)}
+.btn:hover{filter:brightness(1.08)}.btn:active{transform:translateY(1px)}
+.btn.ghost{color:var(--ink);text-shadow:none;background:var(--parch-tex),linear-gradient(#f5ead1,#dcc79c);
+  box-shadow:inset 0 0 0 1px rgba(36,24,15,.65),inset 0 0 0 3px rgba(251,243,225,.7),inset 0 0 0 4px rgba(168,38,27,.3),0 3px 0 #6f5a3a,0 8px 18px rgba(0,0,0,.4)}
+.btn.small{font-size:16px;min-height:40px;padding:7px 15px}
+.btn:disabled{opacity:.55;cursor:default;filter:grayscale(.4)}
+.icon-btn{position:relative;width:44px;height:44px;border:0;border-radius:50%;display:grid;place-items:center;cursor:pointer;color:var(--gold-hi);
+  background:radial-gradient(circle at 40% 35%,#4a3a52,#1d1622);box-shadow:inset 0 0 0 1.5px var(--gold),inset 0 0 0 3.5px rgba(0,0,0,.45),0 2px 5px rgba(0,0,0,.55)}
+.icon-btn svg{width:22px;height:22px}
+.mob-only{display:none!important}
+
+/* ── cards: a painted card in its hero's colour; the symbols run down the left of the picture ── */
+.card{--w:var(--cw);--hh:var(--ch);--s:calc(var(--w) * .19);position:relative;width:var(--w);height:var(--hh);flex:0 0 auto;user-select:none;color:var(--ink);filter:drop-shadow(0 6px 8px rgba(0,0,0,.55))}
+.card .cf{position:absolute;inset:0;border-radius:calc(var(--w) * .08);padding:calc(var(--w) * .045);background-color:var(--h);background-image:var(--pat),linear-gradient(155deg,rgba(255,255,255,.2),rgba(0,0,0,.28));
+  box-shadow:inset 0 0 0 1.5px rgba(0,0,0,.65),inset 0 0 0 3px rgba(255,236,200,.38),inset 0 -8px 14px rgba(0,0,0,.25)}
+.card .cb{position:relative;height:100%;display:flex;flex-direction:column;border-radius:calc(var(--w) * .055);overflow:hidden;
+  background:var(--parch-tex),linear-gradient(180deg,var(--parch-hi),var(--parch) 62%,var(--parch-lo));box-shadow:inset 0 0 0 1px rgba(30,18,10,.75),inset 0 0 18px rgba(120,80,30,.22)}
+.card .cn{position:relative;z-index:1;margin:0;padding:calc(var(--w) * .035) 6px calc(var(--w) * .03) calc(var(--s) + 9px);font-family:var(--f-head);font-size:calc(var(--w) * .092);line-height:1.04;color:#fff4dc;text-shadow:0 1px 0 rgba(0,0,0,.6);
+  background:linear-gradient(90deg,var(--hd),var(--h));box-shadow:inset 0 -1px 0 rgba(0,0,0,.4),0 1px 0 rgba(255,236,200,.45);min-height:calc(var(--w) * .2);display:flex;align-items:center}
+.card .cn span{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.card .cart{position:relative;flex:0 0 47%;margin:0;background:radial-gradient(circle at 56% 48%,var(--hw) 0,var(--hw2) 70%,var(--hw3) 100%);box-shadow:inset 0 -1px 0 rgba(30,18,10,.45)}
+.card .cart svg.art{position:absolute;left:calc(var(--s) * .55);right:0;top:4%;bottom:4%;width:calc(100% - var(--s) * .55);height:92%;color:var(--h);filter:drop-shadow(0 2px 2px rgba(0,0,0,.3))}
+.card .csy{position:absolute;z-index:2;left:calc(var(--w) * .035);top:calc(var(--w) * .035);display:flex;flex-direction:column;gap:calc(var(--w) * .012)}
+.card .csy .sym{width:var(--s);height:var(--s);display:block;filter:drop-shadow(0 1px 1.5px rgba(0,0,0,.45))}
+.card.many .csy{flex-wrap:wrap;max-height:calc(var(--hh) * .62);column-gap:2px}
+.card .ct{flex:1;display:flex;align-items:center;justify-content:center;text-align:center;padding:calc(var(--w) * .03) calc(var(--w) * .06) calc(var(--w) * .05);font-size:calc(var(--w) * .084);line-height:1.22}
+.card .ct span{display:-webkit-box;-webkit-line-clamp:5;-webkit-box-orient:vertical;overflow:hidden}
+.card .ct b{font-weight:800}
+/* Mighty Power: a gilded inner frame and a star seal */
+.card.mighty .cf{background-image:var(--pat),linear-gradient(155deg,rgba(255,240,190,.35),rgba(0,0,0,.2));box-shadow:inset 0 0 0 1.5px rgba(0,0,0,.65),inset 0 0 0 3px #f0cf74,inset 0 0 0 4.5px rgba(80,50,8,.7),inset 0 -8px 14px rgba(0,0,0,.25)}
+.card.mighty .cb{box-shadow:inset 0 0 0 1px rgba(30,18,10,.75),inset 0 0 0 3px rgba(240,207,116,.75),inset 0 0 18px rgba(120,80,30,.22)}
+.card .seal{position:absolute;z-index:3;right:calc(var(--w) * -.03);bottom:calc(var(--w) * -.04);width:calc(var(--w) * .2);height:calc(var(--w) * .2)}
+.card .seal svg{width:100%;height:100%;display:block;filter:drop-shadow(0 2px 3px rgba(0,0,0,.5))}
+.card .ckind{position:absolute;z-index:2;right:6px;bottom:calc(53% - var(--w) * .1);font-family:var(--f-text);font-weight:800;font-size:calc(var(--w) * .062);letter-spacing:.08em;text-transform:uppercase;color:#4b3206;padding:1px 6px;border-radius:3px;background:linear-gradient(#f7e2a3,#e1b955);box-shadow:0 1px 2px rgba(0,0,0,.4)}
+/* sizes */
+.card.sm{--w:108px;--hh:152px}
+.card.lg{--w:214px;--hh:302px}
+.card.xs{--w:84px;--hh:118px}.card.xs .ct{display:none}.card.xs .cart{flex:1}
+.cback{display:inline-block;width:12px;height:17px;border-radius:2px;margin-right:-5px;background:var(--h,#5a3c6a);background-image:var(--pat);box-shadow:0 0 0 1px rgba(0,0,0,.6),inset 0 0 0 1.5px rgba(255,236,200,.4)}
+
+/* keywords take the colour of their symbol */
+.kw{font-weight:800}.k-A{color:#a3221a}.k-S{color:#2f5b86}.k-H{color:#24704a}.k-D{color:#35449a}.k-P{color:#9a6609}.k-M{color:#6b3399}
+
+/* ── the table ── */
+#screen-match{display:flex;flex-direction:column}
+#topbar{flex:0 0 auto;height:54px;display:flex;align-items:center;gap:10px;padding:0 14px;position:relative;z-index:5;
+  background:var(--leather-tex),linear-gradient(180deg,#3a2c40,#1f1824);box-shadow:inset 0 -1px 0 rgba(244,214,139,.38),inset 0 -3px 0 rgba(0,0,0,.35),0 4px 14px rgba(0,0,0,.5)}
+.tb-mid{flex:1;display:flex;align-items:center;justify-content:center;gap:10px;min-width:0}
+.tb-right{display:flex;gap:8px;align-items:center}
+.pill{font-family:var(--f-head);font-size:17px;white-space:nowrap;color:var(--gold-hi);padding:4px 14px;border-radius:4px;background:rgba(0,0,0,.3);box-shadow:inset 0 0 0 1px rgba(244,214,139,.3)}
+.pill.you{color:#fdeccc;background:linear-gradient(#b23a2a,#7d2216);box-shadow:inset 0 0 0 1px rgba(255,214,150,.55)}
+.pips{display:flex;align-items:center;gap:5px;font-weight:800;font-size:14px;color:var(--gold-hi)}.pip{width:20px;height:20px;display:block}
+.speed{min-width:58px;height:44px;border:0;border-radius:22px;cursor:pointer;font-family:var(--f-head);font-size:16px;color:var(--gold-hi);background:radial-gradient(circle at 40% 35%,#4a3a52,#1d1622);box-shadow:inset 0 0 0 1.5px var(--gold),0 2px 5px rgba(0,0,0,.55)}
+#table{flex:1;min-height:0;display:grid;gap:10px 16px;padding:10px 18px 0;
+  grid-template-columns:380px minmax(0,1fr);grid-template-rows:auto minmax(0,1fr) auto auto;
+  grid-template-areas:"opps opps" "stage stage" "me act" "me hand"}
+#opps{grid-area:opps;display:flex;justify-content:center;gap:16px;min-width:0}
+#opps .seat{flex:0 1 360px;min-width:0}#opps.n1 .seat{flex-basis:440px}
+
+/* seats: a parchment plaque under its hero's banner; HP in a heart and a track of ten */
+.seat{position:relative;min-width:0;border-radius:8px;color:var(--ink);background:var(--parch-tex),linear-gradient(180deg,var(--parch-hi),var(--parch));transition:box-shadow .2s,transform .2s,outline-color .2s;
+  box-shadow:inset 0 0 0 1px rgba(36,24,15,.75),inset 0 0 0 3px rgba(251,243,225,.6),inset 0 0 0 4px rgba(0,0,0,.18),0 10px 24px rgba(0,0,0,.55)}
+.seat-banner{position:relative;display:flex;align-items:center;gap:8px;min-height:46px;padding:4px 8px 4px 8px;color:#fff4dc;border-radius:8px 8px 0 0;
+  background-color:var(--h);background-image:var(--pat),linear-gradient(180deg,rgba(255,255,255,.14),rgba(0,0,0,.22));box-shadow:inset 0 -2px 0 rgba(0,0,0,.35),inset 0 0 0 1px rgba(255,236,200,.3)}
+.seat-banner .emb{flex:0 0 auto;width:38px;height:38px;display:grid;place-items:center;border-radius:50%;background:radial-gradient(circle at 40% 35%,var(--hw),var(--hw3));box-shadow:0 0 0 2px rgba(0,0,0,.45),0 0 0 3.5px rgba(255,236,200,.55)}
+.seat-banner .emb svg{width:30px;height:30px;color:var(--h)}
+.sname{display:flex;flex-direction:column;min-width:0;line-height:1}
+.sname b{font-family:var(--f-head);font-weight:400;font-size:20px;text-shadow:0 1px 0 rgba(0,0,0,.55);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sname small{font-size:12.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;opacity:.9;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.flag{flex:0 0 auto;font-weight:800;font-size:12px;padding:1px 8px;border-radius:3px;background:var(--gold-hi);color:#2a1a06}.flag.out{background:#24180f;color:var(--parch)}
+.flag.vanish{background:#2b1450;color:#e8ddf5;box-shadow:inset 0 0 0 1px rgba(232,221,245,.5)}
+.hpheart{margin-left:auto;position:relative;flex:0 0 auto;width:48px;height:44px;display:grid;place-items:center;cursor:help}
+.hpheart svg{position:absolute;inset:0;width:100%;height:100%;filter:drop-shadow(0 2px 2px rgba(0,0,0,.5))}
+.hpheart b{position:relative;margin-top:-3px;font-weight:800;font-size:21px;line-height:1;color:#fff;text-shadow:0 1px 0 rgba(0,0,0,.6)}
+.hpheart.low{animation:throb 1s ease-in-out infinite}
+@keyframes throb{50%{transform:scale(1.1)}}
+.hptrack{display:flex;gap:2px;padding:5px 9px 0}
+.hptrack i{flex:1;height:7px;border-radius:2px;background:rgba(36,24,15,.18);box-shadow:inset 0 1px 1px rgba(0,0,0,.25);transition:background-color .3s}
+.hptrack i.on{background:linear-gradient(180deg,#e2503a,#a4241a);box-shadow:inset 0 1px 0 rgba(255,210,190,.5)}
+.seat-body{display:flex;align-items:flex-end;gap:10px;padding:7px 10px 10px;min-height:96px}
+.shields{flex:1;min-width:0;display:flex;flex-wrap:wrap;align-items:flex-end;gap:7px}
+.shields .none{align-self:center;font-style:italic;font-size:13.5px;color:var(--ink-3)}
+.stash{flex:0 0 auto;display:flex;flex-direction:column;align-items:flex-end;gap:6px}
+.backs{display:inline-flex;align-items:center;font-weight:800;font-size:14px;color:var(--ink-2);cursor:help}.backs b{margin-left:10px}
+.piles{display:flex;gap:6px}
+.pile{border:0;cursor:pointer;font-weight:800;font-size:13px;min-height:30px;padding:3px 9px;border-radius:4px;color:var(--ink-2);background:rgba(36,24,15,.07);box-shadow:inset 0 0 0 1px rgba(36,24,15,.28)}
+.pile:hover{background:rgba(36,24,15,.13)}
+.pile.static{cursor:help}
+.seat.turn{box-shadow:inset 0 0 0 1px rgba(36,24,15,.75),inset 0 0 0 3px rgba(251,243,225,.6),0 0 0 2.5px var(--gold-hi),0 0 30px rgba(244,214,139,.5),0 10px 24px rgba(0,0,0,.55)}
+.seat.targetable{cursor:crosshair;outline:3px dashed rgba(226,96,64,.95);outline-offset:4px}
+.seat.targetable.hot{outline-style:solid;outline-color:#ef6a48;box-shadow:inset 0 0 0 1px rgba(36,24,15,.75),0 0 36px rgba(239,106,72,.7),0 10px 24px rgba(0,0,0,.55)}
+.seat.out{filter:grayscale(.9) brightness(.65)}
+.seat.vanished .seat-body,.seat.vanished .hptrack{opacity:.55}
+.seat.vanished::after{content:'';position:absolute;inset:0;border-radius:8px;pointer-events:none;background:radial-gradient(ellipse at 30% 70%,rgba(90,60,140,.28),rgba(90,60,140,0) 60%),radial-gradient(ellipse at 75% 40%,rgba(90,60,140,.22),rgba(90,60,140,0) 55%)}
+.seat.hit{animation:shake .35s}
+@keyframes shake{0%,100%{transform:none}25%{transform:translateX(-6px)}50%{transform:translateX(6px)}75%{transform:translateX(-3px)}}
+.chips{position:absolute;left:50%;top:-14px;transform:translateX(-50%);display:flex;gap:4px;z-index:6;pointer-events:none;white-space:nowrap}
+.chip{font-weight:800;font-size:13.5px;padding:2px 9px;border-radius:4px;box-shadow:0 0 0 1px rgba(36,24,15,.6),0 3px 8px rgba(0,0,0,.45)}
+.chip.dmg{background:#f8d9cd;color:#8a2412}.chip.heal{background:#d3ecd9;color:#1f5e3a}.chip.shield{background:#dbe5ef;color:#2b4f75}.chip.cards{background:#dfe1f4;color:#2c3878}.chip.ko{background:#8a2412;color:#fff}.chip.info{background:#e9ddf5;color:#4c2780}
+.floats{position:absolute;inset:0;pointer-events:none;display:grid;place-items:center;z-index:7}
+.float{position:absolute;font-weight:800;font-size:31px;white-space:nowrap;text-shadow:0 2px 0 rgba(0,0,0,.35),0 0 12px rgba(255,244,220,.85);animation:floatup 1.5s ease-out forwards}
+.float.dmg{color:#a8261b}.float.heal{color:#22704a}.float.shield{color:#2b4f75;font-size:22px}.float.info{color:#4c2780;font-size:21px}.float.cards{color:#2c3878;font-size:21px}.float.big{font-size:40px}
+@keyframes floatup{0%{transform:translateY(10px) scale(.6);opacity:0}15%{transform:scale(1.1);opacity:1}100%{transform:translateY(-48px);opacity:0}}
+
+/* shields in play: a little card standing in front of its holder, one pip per shield symbol (spent ones cracked) */
+.shc{position:relative;width:58px;height:78px;padding:0;border:0;border-radius:6px;cursor:help;flex:0 0 auto;background-color:var(--h);background-image:var(--pat),linear-gradient(155deg,rgba(255,255,255,.2),rgba(0,0,0,.25));
+  box-shadow:inset 0 0 0 1px rgba(0,0,0,.6),inset 0 0 0 2.5px rgba(255,236,200,.35),0 3px 6px rgba(0,0,0,.4);transition:transform .15s,box-shadow .15s}
+.shc .shc-art{position:absolute;left:3px;right:3px;top:3px;height:46px;border-radius:4px;background:radial-gradient(circle at 50% 45%,var(--hw) 0,var(--hw2) 70%,var(--hw3));box-shadow:inset 0 0 0 1px rgba(30,18,10,.6)}
+.shc .shc-art svg{width:100%;height:100%;display:block;color:var(--h)}
+.shc .shc-pips{position:absolute;left:2px;right:2px;bottom:4px;display:flex;justify-content:center;gap:1px}
+.shc .shc-pips svg{width:17px;height:17px;display:block;filter:drop-shadow(0 1px 1px rgba(0,0,0,.4))}
+.shc .shc-pips svg.used{opacity:.32;filter:grayscale(1)}
+.shc .lent{position:absolute;top:-6px;right:-6px;width:18px;height:18px;border-radius:50%;background:var(--oh,#444);box-shadow:0 0 0 1.5px var(--parch),0 1px 3px rgba(0,0,0,.5)}
+.shc.targetable{cursor:crosshair;outline:2.5px dashed rgba(226,96,64,.95);outline-offset:2px}
+.shc.targetable.hot,.shc.targetable:hover{outline-style:solid;outline-color:#ef6a48;transform:translateY(-3px);box-shadow:0 0 18px rgba(239,106,72,.8),0 3px 6px rgba(0,0,0,.4)}
+.shc.fresh{animation:raise .45s cubic-bezier(.2,.9,.3,1.3)}
+@keyframes raise{from{transform:translateY(-26px) scale(1.25);opacity:0}}
+.shc.cracked{animation:crack .3s}
+@keyframes crack{30%{transform:rotate(-6deg) scale(.94)}60%{transform:rotate(5deg)}}
+
+/* the middle: a chalk ring on the cellar floor */
+#stage{grid-area:stage;position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:0}
+#stage .ring{position:absolute;left:50%;top:50%;width:min(92%,calc(100% * 1.9),560px);aspect-ratio:1.9;transform:translate(-50%,-50%);border-radius:50%;pointer-events:none;
+  background:var(--ring) center/100% 100% no-repeat,radial-gradient(ellipse at 50% 50%,rgba(255,200,130,.16),rgba(255,200,130,0) 70%);opacity:.95}
+#stage .dropglow{position:absolute;left:50%;top:50%;width:min(92%,560px);aspect-ratio:1.9;transform:translate(-50%,-50%);border-radius:50%;pointer-events:none;opacity:0;transition:opacity .15s ease;will-change:opacity;
+  box-shadow:0 0 0 3px rgba(239,106,72,.85),inset 0 0 70px rgba(244,190,110,.55),0 0 40px rgba(244,190,110,.45)}
+#stage.holding .dropglow{opacity:.35}#stage.drop-ok .dropglow{opacity:1}
+#stage-card{position:relative;min-height:10px;display:flex;justify-content:center;transition:opacity .15s}
+.stage-fit{transform-origin:top center}
+#stage-card .card.pop{animation:pop .3s ease-out}
+@keyframes pop{from{transform:scale(.82);opacity:.2}to{transform:none;opacity:1}}
+#stage-caption{position:relative;margin-top:12px;font-family:var(--f-head);font-size:18px;color:var(--gold-hi);min-height:24px;text-align:center;padding:0 12px;text-shadow:0 1px 0 #000,0 0 14px rgba(0,0,0,.8)}
+#stage.holding #stage-card{opacity:.35}
+#me{grid-area:me;align-self:end;padding-bottom:12px}
+#prompt{grid-area:act}
+.actionbar{position:relative;z-index:60;display:flex;align-items:center;justify-content:center;gap:10px;min-height:50px}
+.actionbar .hint{font-family:var(--f-head);font-size:19px;color:var(--gold-hi);text-align:center;text-shadow:0 1px 0 #000,0 0 12px rgba(0,0,0,.7)}
+.actionbar .btn{white-space:nowrap;min-width:120px}
+/* the hand: one straight row; a chosen card rises 8px; a dragged card is a copy on its own layer */
+#handzone{grid-area:hand;position:relative;align-self:end;min-width:0}
+#hand{position:relative;display:flex;align-items:flex-end;gap:18px;overflow-x:auto;overflow-y:hidden;scroll-snap-type:x proximity;scrollbar-width:none;overscroll-behavior-x:contain;padding:22px 20px 14px;touch-action:pan-x}
+#hand::-webkit-scrollbar{display:none}
+#handzone.over #hand{padding-left:54px;padding-right:54px;-webkit-mask-image:linear-gradient(90deg,transparent 0,#000 50px,#000 calc(100% - 50px),transparent);mask-image:linear-gradient(90deg,transparent 0,#000 50px,#000 calc(100% - 50px),transparent)}
+#hand>.card:first-child{margin-left:auto}#hand>.card:last-child{margin-right:auto}
+#hand .card{scroll-snap-align:center;transition:transform .2s cubic-bezier(.2,.9,.3,1.2),opacity .15s;-webkit-touch-callout:none}
+#hand .card.playable{cursor:grab}
+#hand .card.sel{transform:translateY(-8px);filter:drop-shadow(0 0 1.5px #fff3c8) drop-shadow(0 0 3px var(--gold-hi)) drop-shadow(0 0 12px rgba(244,214,139,.95))}
+#hand .card.dim{filter:saturate(.75) brightness(.8) drop-shadow(0 6px 8px rgba(0,0,0,.55))}
+#hand .card.drag-src{opacity:.35;transform:none;cursor:grabbing}
+#hand .card.fresh{animation:drawn .45s cubic-bezier(.2,.9,.3,1.1)}
+@keyframes drawn{from{transform:translateY(40px) scale(.9);opacity:0}}
+.hand-empty{align-self:center;margin:auto;font-style:italic;color:#cdbb98}
+.hand-nav{display:none;position:absolute;top:50%;z-index:2;width:38px;height:38px;margin-top:-15px;padding:0;border:0;border-radius:50%;place-items:center;cursor:pointer;font-size:26px;line-height:1;color:var(--gold-hi);
+  background:radial-gradient(circle at 40% 35%,#4a3a52,#1d1622);box-shadow:inset 0 0 0 1.5px var(--gold),0 2px 6px rgba(0,0,0,.55)}
+#handzone.over .hand-nav{display:grid}
+.hand-nav.prev{left:6px}.hand-nav.next{right:6px}
+.hand-nav:disabled{opacity:.3;cursor:default}
+#drag-ghost{position:fixed;left:0;top:0;z-index:75;pointer-events:none;display:none;transform-origin:0 0;will-change:transform}
+#drag-ghost.on{display:block}
+#drag-ghost .card{margin:0;filter:drop-shadow(0 16px 18px rgba(0,0,0,.55));animation:pickup .14s ease-out}
+@keyframes pickup{from{transform:scale(1.25) rotate(3deg)}}
+
+/* drawer, sheets, tooltip, banner */
+.drawer{position:absolute;top:54px;right:0;bottom:0;width:340px;z-index:30;padding:16px 18px;overflow:auto;transform:translateX(105%);transition:transform .25s ease;color:var(--ink);
+  background:var(--parch-tex),linear-gradient(180deg,var(--parch-hi),var(--parch));box-shadow:inset 1px 0 0 rgba(36,24,15,.5),-14px 0 32px rgba(0,0,0,.5)}
+.drawer.open{transform:none}
+.drawer h3{margin:0 0 10px;font-family:var(--f-head);font-weight:400;font-size:24px;color:var(--blood)}
+.log{list-style:none;margin:0;padding:0}.log li{padding:7px 0;border-bottom:1px solid rgba(36,24,15,.15);font-size:15px;line-height:1.35}.log li.r{font-family:var(--f-head);font-size:16px;color:var(--blood)}
+.sheet-wrap{position:fixed;inset:0;z-index:60;display:grid;place-items:center;padding:18px;background:rgba(10,6,12,.7)}
+.sheet-panel{width:min(780px,100%);max-height:88dvh;overflow:auto;border-radius:6px;padding:22px 24px;color:var(--ink);background:var(--parch-tex),linear-gradient(180deg,var(--parch-hi),var(--parch));
+  box-shadow:inset 0 0 0 1px rgba(36,24,15,.7),inset 0 0 0 4px rgba(251,243,225,.7),inset 0 0 0 5px rgba(168,38,27,.35),inset 0 0 60px rgba(120,80,30,.25),0 28px 70px rgba(0,0,0,.7)}
+.sheet-panel h2{margin:0 0 6px;font-family:var(--f-head);font-weight:400;font-size:30px;line-height:1.05;color:var(--blood)}
+.sheet-panel h3{margin:16px 0 6px;font-family:var(--f-head);font-weight:400;font-size:20px;color:var(--blood)}
+.sheet-panel p{line-height:1.45;font-size:16px;margin:6px 0}
+.muted{color:var(--ink-3)}
+.row{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}.row.center{justify-content:center}
+.seg{display:inline-flex;padding:3px;gap:3px;border-radius:6px;background:rgba(36,24,15,.1);box-shadow:inset 0 0 0 1px rgba(36,24,15,.25)}
+.seg button{border:0;cursor:pointer;min-height:42px;padding:6px 14px;border-radius:4px;background:none;font-weight:800;font-size:15px;color:var(--ink-2)}
+.seg button.on{color:#fdeccc;background:linear-gradient(#b23a2a,#7d2216);box-shadow:inset 0 0 0 1px rgba(255,214,150,.5)}
+.set-row{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:11px 0;border-bottom:1px solid rgba(36,24,15,.14)}
+.set-row>div>b{display:block;font-family:var(--f-head);font-weight:400;font-size:18px}.set-row>div>span{font-size:14.5px;color:var(--ink-3)}
+.decklist{columns:2;column-gap:18px;margin:6px 0}.decklist div{break-inside:avoid;display:flex;justify-content:space-between;gap:8px;padding:4px 0;border-bottom:1px dotted rgba(36,24,15,.25);font-size:15px}
+.tip{position:fixed;z-index:90;max-width:300px;padding:9px 12px;border-radius:5px;font-size:14.5px;line-height:1.35;color:var(--ink);background:var(--parch-tex),#fbf3e1;box-shadow:inset 0 0 0 1px rgba(36,24,15,.6),0 12px 28px rgba(0,0,0,.5);pointer-events:none}
+#banner{position:fixed;left:50%;top:40%;transform:translate(-50%,-50%);z-index:50;text-align:center;pointer-events:none;opacity:0;width:min(92vw,760px)}
+#banner .ribbon{display:inline-block;padding:14px 34px 16px;background:linear-gradient(90deg,rgba(14,8,16,0),rgba(14,8,16,.85) 14%,rgba(14,8,16,.85) 86%,rgba(14,8,16,0));box-shadow:inset 0 1px 0 rgba(244,214,139,.45),inset 0 -1px 0 rgba(244,214,139,.45)}
+#banner .bt{font-family:var(--f-head);font-size:clamp(32px,5.4vw,58px);line-height:1.04;color:var(--gold-hi);text-shadow:0 3px 0 #2a1606,0 0 30px rgba(0,0,0,.85)}
+#banner .bs{margin-top:8px;font-size:19px;color:#fdeccc;text-shadow:0 2px 8px #000}
+#banner.show{animation:bannerIn var(--bdur,1.9s) ease-out}
+@keyframes bannerIn{0%{opacity:0;transform:translate(-50%,-40%)}12%{opacity:1;transform:translate(-50%,-50%)}78%{opacity:1}100%{opacity:0}}
+#fx-layer{position:fixed;inset:0;z-index:45;pointer-events:none}
+.mv{pointer-events:none;transform-origin:50% 50%;will-change:transform,opacity}
+.mv .card{margin:0}
+.mv-tag{position:absolute;left:50%;top:-10px;transform:translate(-50%,-100%);white-space:nowrap;font-weight:800;font-size:18px;line-height:1.15;padding:4px 14px 5px;border-radius:5px;color:#fbe9d0;background:#5d2d8a;box-shadow:0 0 0 1.5px rgba(255,228,170,.55),0 8px 18px rgba(0,0,0,.55)}
+.mv-tag.recall{background:#7a5a12}.mv-tag.charm{background:#2c5fb2}
+#fx-arrows{position:fixed;inset:0;width:100%;height:100%;z-index:44;pointer-events:none}
+.arrow{fill:none;stroke-width:4.5;stroke-linecap:round;filter:drop-shadow(0 2px 2px rgba(0,0,0,.5))}
+.arrow.dmg{stroke:#d0392a}.arrow.break{stroke:#8a5a2b}.arrow.magic{stroke:#8a54d0}.arrow.aim{stroke:#ef6a48;stroke-dasharray:10 9}
+.blastfx{position:fixed;left:0;top:0;width:100%;height:100%;pointer-events:none;z-index:46;background:radial-gradient(circle at var(--x,50%) var(--y,50%),rgba(255,170,60,.55),rgba(255,90,20,.25) 30%,rgba(255,90,20,0) 60%);animation:blast .7s ease-out forwards}
+@keyframes blast{0%{opacity:0}20%{opacity:1}100%{opacity:0}}
+
+/* menu */
+#screen-menu{display:grid;place-items:center;padding:24px}
+.menu{display:flex;flex-direction:column;align-items:center;text-align:center}
+.menu-kicker{font-weight:800;font-size:14px;letter-spacing:.22em;text-transform:uppercase;color:var(--gold)}
+.menu-title{margin:2px 0 0;font-family:var(--f-head);font-weight:400;font-size:clamp(50px,9vw,108px);line-height:.95;color:var(--gold-hi);text-shadow:0 4px 0 #2a1606,0 0 40px rgba(0,0,0,.75)}
+.menu-rule{width:min(420px,70vw);height:14px;margin:10px auto 4px;background:var(--rule) center/contain no-repeat}
+.menu-sub{margin:4px 0 0;font-size:20px;font-style:italic;color:#e9dcc0;max-width:36ch}
+.menu-fan{position:relative;height:262px;width:min(740px,94vw);margin:18px 0 12px}
+.menu-fan .card{position:absolute;left:50%;top:12px;margin-left:calc(var(--cw) / -2);transform:translateX(var(--x)) translateY(var(--y)) rotate(var(--rot));transform-origin:50% 120%;animation:deal .7s cubic-bezier(.2,.8,.2,1) both;animation-delay:var(--d)}
+@keyframes deal{from{transform:translateX(0) translateY(60px) rotate(0);opacity:0}}
+.menu-actions{display:flex;flex-direction:column;gap:12px;width:min(340px,90vw)}
+.menu-row{display:flex;gap:12px}.menu-row .btn{flex:1}
+.menu-foot{margin-top:16px;font-size:15px;font-style:italic;color:#c9b898}
+
+/* hero select */
+#screen-select{display:grid;grid-template-columns:minmax(0,1fr) 470px;grid-template-rows:auto minmax(0,1fr);gap:0 20px;padding:0 20px 20px}
+.sel-top{grid-column:1/-1;display:flex;align-items:center;gap:12px;height:66px}
+.sel-top h2{margin:0;flex:1;font-family:var(--f-head);font-weight:400;font-size:30px;color:var(--gold-hi);text-shadow:0 2px 0 #000}
+.sel-list{overflow:auto;padding:6px 6px 20px 2px}
+.sel-list h3{margin:10px 0 10px;font-family:var(--f-head);font-weight:400;font-size:20px;color:var(--gold-hi);text-shadow:0 1px 0 #000}
+.hero-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:14px}
+.hero-tile{position:relative;min-height:150px;border:0;cursor:pointer;text-align:left;color:#fff4dc;padding:12px;display:flex;flex-direction:column;justify-content:flex-end;gap:2px;border-radius:10px;overflow:hidden;
+  background-color:var(--h);background-image:var(--pat),linear-gradient(160deg,rgba(255,255,255,.16),rgba(0,0,0,.35));box-shadow:inset 0 0 0 1px rgba(255,236,200,.4),inset 0 0 0 2.5px rgba(0,0,0,.5),0 8px 18px rgba(0,0,0,.55)}
+@media (hover:hover) and (pointer:fine){.hero-tile:hover{filter:brightness(1.1)}}
+.hero-tile.on{box-shadow:inset 0 0 0 1px rgba(255,236,200,.6),0 0 0 3px var(--gold-hi),0 0 28px rgba(244,214,139,.55)}
+.hero-tile .big{position:absolute;right:-8px;top:-6px;width:118px;height:118px;opacity:.95;filter:drop-shadow(0 4px 6px rgba(0,0,0,.45))}
+.hero-tile .big svg{width:100%;height:100%;color:var(--hw)}
+.hero-tile .nm{position:relative;font-family:var(--f-head);font-size:23px;line-height:1.02;text-shadow:0 1px 0 rgba(0,0,0,.6)}
+.hero-tile .cl{position:relative;font-size:13px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;opacity:.9}
+.hero-tile .rec{position:absolute;left:10px;top:9px;font-weight:800;font-size:12.5px;padding:1px 8px;border-radius:3px;background:rgba(0,0,0,.35)}
+.sel-note{margin:16px 2px 0;font-size:14.5px;line-height:1.45;color:#cbbb9c;max-width:62ch}
+.sel-detail{overflow:auto;border-radius:6px;color:var(--ink);display:flex;flex-direction:column;background:var(--parch-tex),linear-gradient(180deg,var(--parch-hi),var(--parch));
+  box-shadow:inset 0 0 0 1px rgba(36,24,15,.7),inset 0 0 0 4px rgba(251,243,225,.7),inset 0 0 0 5px rgba(168,38,27,.32),0 14px 34px rgba(0,0,0,.6)}
+.sd-hero{display:flex;gap:14px;align-items:center;padding:18px;color:#fff4dc;background-color:var(--h);background-image:var(--pat),linear-gradient(180deg,rgba(255,255,255,.12),rgba(0,0,0,.25));box-shadow:inset 0 -2px 0 rgba(0,0,0,.35)}
+.sd-hero .emb{flex:0 0 auto;width:74px;height:74px;display:grid;place-items:center;border-radius:50%;background:radial-gradient(circle at 40% 35%,var(--hw),var(--hw3));box-shadow:0 0 0 3px rgba(0,0,0,.45),0 0 0 5px rgba(255,236,200,.55)}
+.sd-hero .emb svg{width:58px;height:58px;color:var(--h)}
+.sd-hero h2{margin:0;font-family:var(--f-head);font-weight:400;font-size:32px;line-height:1;text-shadow:0 2px 0 rgba(0,0,0,.45)}
+.sd-hero .cls{font-weight:800;font-size:13px;letter-spacing:.12em;text-transform:uppercase;opacity:.9}
+.sd-hero p{margin:5px 0 0;font-size:16px;font-style:italic;opacity:.95}
+.sd-body{padding:6px 20px 10px;flex:1}
+.sd-body h3{margin:16px 0 10px;font-family:var(--f-head);font-weight:400;font-size:20px;color:var(--blood)}
+.mix{display:flex;flex-wrap:wrap;gap:6px 14px}.mix span{display:inline-flex;align-items:center;gap:4px;font-weight:800;font-size:15.5px}.mix .sym{width:24px;height:24px}
+.sd-cards{display:flex;gap:12px;flex-wrap:wrap;padding-bottom:8px}
+.sd-cards .cx{position:relative}
+.sd-cards .cx em{position:absolute;right:-4px;top:-6px;z-index:5;font-style:normal;font-weight:800;font-size:13px;padding:1px 7px;border-radius:10px;color:#fff4dc;background:#24180f;box-shadow:0 0 0 1.5px var(--parch)}
+.sd-foot{position:sticky;bottom:0;padding:12px 20px 16px;display:flex;gap:10px;align-items:center;flex-wrap:wrap;background:linear-gradient(180deg,rgba(242,229,200,0),var(--parch) 30%)}
+.sd-stats{display:flex;gap:16px;flex-wrap:wrap;font-size:15.5px;margin-top:12px}.sd-stats b{font-size:21px}
+
+/* card sheet and pickers */
+.card-sheet{display:grid;grid-template-columns:auto minmax(0,1fr);gap:22px;align-items:start}
+.cs-card{display:flex;justify-content:center;padding-bottom:12px}
+.cs-kind{font-size:15px;color:var(--ink-2)}
+.cs-eff{font-size:19px;line-height:1.4;margin:6px 0!important}
+.cs-syms>div{display:grid;grid-template-columns:34px 1fr;gap:0 10px;margin:8px 0}
+.cs-syms .sym{width:32px;height:32px;grid-row:span 2}
+.cs-syms>div>b{font-family:var(--f-head);font-weight:400;font-size:17px;line-height:1.1}
+.cs-syms span{font-size:14.5px;color:var(--ink-2);line-height:1.3}
+.pick-grid{display:flex;flex-wrap:wrap;justify-content:center;gap:16px 12px;margin:14px 0 6px}
+.pick-grid .pick{border:0;padding:0;background:none;cursor:pointer;border-radius:8px;transition:transform .12s ease-out}
+.pick-grid .pick:hover,.pick-grid .pick:focus-visible{transform:translateY(-4px)}
+.seat-sheet .hdr{display:flex;align-items:center;gap:12px;padding:14px;margin:-22px -24px 10px;color:#fff4dc;background-color:var(--h);background-image:var(--pat)}
+.seat-sheet .hdr h2{color:#fff4dc;margin:0}.seat-sheet .hdr p{margin:2px 0 0;font-style:italic}
+.seat-sheet .hdr .emb{width:58px;height:58px;display:grid;place-items:center;border-radius:50%;background:radial-gradient(circle at 40% 35%,var(--hw),var(--hw3));box-shadow:0 0 0 2px rgba(0,0,0,.45),0 0 0 4px rgba(255,236,200,.55)}
+.seat-sheet .hdr .emb svg{width:44px;height:44px;color:var(--h)}
+.seat-sheet ul{margin:6px 0;padding-left:18px}.seat-sheet li{margin:3px 0;font-size:15.5px}
+
+/* codex */
+.codex{position:fixed;inset:0;z-index:58;display:flex;flex-direction:column;padding-top:env(safe-area-inset-top,0px);background:var(--stone-tex),linear-gradient(180deg,#2a2530,#17141b)}
+.cx-top{flex:0 0 auto;display:flex;align-items:center;gap:12px;height:56px;padding:0 12px;background:var(--leather-tex),linear-gradient(180deg,#3a2c40,#1f1824);box-shadow:inset 0 -1px 0 rgba(244,214,139,.38),0 4px 14px rgba(0,0,0,.5)}
+.cx-top h2{margin:0;flex:1;min-width:0;font-family:var(--f-head);font-weight:400;font-size:24px;color:var(--gold-hi);text-shadow:0 2px 0 #000;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cx-tabs{flex:0 0 auto;display:flex;gap:4px;padding:10px 10px 0;overflow-x:auto;scrollbar-width:none;width:min(1040px,calc(100% - 20px));margin:0 auto}
+.cx-tabs button{flex:1 0 auto;min-height:44px;padding:6px 14px;border:0;border-radius:6px 6px 0 0;cursor:pointer;font-family:var(--f-head);font-size:17px;color:var(--gold-hi);background:rgba(0,0,0,.32);box-shadow:inset 0 0 0 1px rgba(244,214,139,.2)}
+.cx-tabs button.on{color:var(--blood);background:var(--parch-tex),linear-gradient(var(--parch-hi),var(--parch-hi));box-shadow:none}
+.cx-body{flex:1;min-height:0;overflow:auto;overscroll-behavior:contain;width:min(1040px,calc(100% - 20px));margin:0 auto calc(10px + env(safe-area-inset-bottom,0px));padding:14px 18px 28px;border-radius:0 0 6px 6px;color:var(--ink);
+  background:var(--parch-tex),linear-gradient(180deg,var(--parch-hi),var(--parch));box-shadow:inset 0 0 0 1px rgba(36,24,15,.5),inset 0 0 50px rgba(120,80,30,.2),0 14px 30px rgba(0,0,0,.55)}
+.cx-body h3{margin:18px 0 6px;font-family:var(--f-head);font-weight:400;font-size:21px;color:var(--blood)}
+.cx-body p,.cx-body li{line-height:1.45;font-size:16px}
+.cx-body ul,.cx-body ol{padding-left:22px}
+.cx-lead{font-size:16.5px!important;color:var(--ink-2)}
+.cx-heroes{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px;margin-top:10px}
+.cx-hero .sd-hero{margin:-14px -18px 0}
+.cx-sym{display:grid;grid-template-columns:46px minmax(0,1fr);gap:12px;padding:12px 2px;border-bottom:1px solid rgba(36,24,15,.14)}
+.cx-sym>.sym{width:42px;height:42px}
+.cx-sym>div>b{font-family:var(--f-head);font-weight:400;font-size:19px}
+.cx-sym p{margin:2px 0!important;font-size:15px!important;color:var(--ink-2)}
+.cx-power{padding:10px 2px;border-bottom:1px solid rgba(36,24,15,.14)}
+.cx-power b{font-family:var(--f-head);font-weight:400;font-size:18px}
+.cx-power p{margin:2px 0!important;font-size:15px!important;color:var(--ink-2)}
+
+/* ── phones (portrait or sideways): html.compact is set from JS ── */
+html.compact{--cw:118px;--ch:166px}
+html.compact .mob-only{display:inline-flex!important}html.compact .desk-only{display:none!important}
+html.compact #topbar{height:52px;padding:0 8px;gap:7px}
+html.compact .tb-mid{justify-content:flex-start;gap:7px}
+html.compact .pill{font-size:15px;padding:3px 10px}
+html.compact .speed{display:none}
+html.compact #table{grid-template-columns:minmax(0,1fr);grid-template-rows:auto minmax(0,1fr) auto auto auto;grid-template-areas:"opps" "stage" "me" "act" "hand";gap:6px;padding:8px 8px 0}
+html.compact #opps{gap:6px}html.compact #opps .seat{flex:1 1 0}
+html.compact .seat-banner{min-height:38px;gap:6px;padding:3px 6px}
+html.compact .seat-banner .emb{width:30px;height:30px}html.compact .seat-banner .emb svg{width:23px;height:23px}
+html.compact .sname b{font-size:16px}html.compact .sname small{font-size:10.5px}
+html.compact .hpheart{width:40px;height:37px}html.compact .hpheart b{font-size:17px}
+html.compact .seat-body{min-height:0;padding:5px 7px 7px;gap:6px}
+html.compact .shc{width:42px;height:58px}html.compact .shc .shc-art{height:32px}html.compact .shc .shc-pips svg{width:13px;height:13px}
+html.compact .card.lg{--w:150px;--hh:212px}
+html.compact #stage-caption{font-size:15px;margin-top:6px}
+html.compact #me{padding-bottom:0}
+html.compact .piles{display:none}
+html.compact .actionbar{min-height:48px}html.compact .actionbar .hint{font-size:16px}html.compact .actionbar .btn{min-height:44px;font-size:17px}
+html.compact #hand{align-items:center;gap:10px;min-height:calc(var(--ch) + 26px);padding:16px 14px 10px;
+  -webkit-mask-image:linear-gradient(90deg,transparent,#000 14px,#000 calc(100% - 14px),transparent);mask-image:linear-gradient(90deg,transparent,#000 14px,#000 calc(100% - 14px),transparent)}
+html.compact #handzone{padding-bottom:calc(4px + env(safe-area-inset-bottom,0px))}
+html.compact .drawer{top:52px;width:100%}
+html.compact .sheet-wrap{place-items:end center;padding:0}
+html.compact .sheet-panel{max-height:88dvh;padding:18px 16px calc(18px + env(safe-area-inset-bottom,0px))}
+html.compact .seat-sheet .hdr{margin:-18px -16px 10px}
+html.compact .decklist{columns:1}
+html.compact .card-sheet{grid-template-columns:1fr;gap:6px}
+html.compact #screen-select{display:block;padding:0 10px 0;overflow:auto}
+html.compact .sel-top{position:sticky;top:0;z-index:4;margin:0 -10px;padding:0 10px;height:58px;background:var(--leather-tex),linear-gradient(180deg,#3a2c40,#1f1824);box-shadow:0 4px 12px rgba(0,0,0,.45)}
+html.compact .sel-top h2{font-size:22px}
+html.compact #screen-select.detail .sel-list{display:none}
+html.compact #screen-select:not(.detail) .sel-detail{display:none}
+html.compact .sel-detail{margin:12px 0 0;overflow:visible}
+html.compact .hero-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+html.compact .hero-tile{min-height:128px}html.compact .hero-tile .big{width:92px;height:92px}html.compact .hero-tile .nm{font-size:19px}
+html.compact .sd-foot{padding:10px 12px calc(12px + env(safe-area-inset-bottom,0px));gap:8px}
+html.compact .sd-foot .seg{flex:1 1 auto}html.compact .sd-foot .seg button{flex:1;padding:6px 8px;min-height:42px}
+html.compact .sd-foot .btn{flex:1 1 auto}
+html.compact #screen-menu{padding:14px 16px;overflow:auto}html.compact .menu-title{font-size:50px}html.compact .menu-sub{font-size:17px}
+html.compact .menu-fan{height:180px;margin:12px 0 10px}html.compact .menu-fan .card{--cw:104px;--ch:146px}
+html.compact .cx-top{height:52px}html.compact .cx-top h2{font-size:21px}
+html.compact .cx-tabs{padding:8px 6px 0;width:calc(100% - 12px)}html.compact .cx-tabs button{padding:6px 10px;font-size:15.5px}
+html.compact .cx-body{width:calc(100% - 12px);padding:12px 14px 24px}
+html.compact .cx-hero .sd-hero{margin:-12px -14px 0}
+@media (max-height:700px) and (orientation:portrait){html.compact{--cw:106px;--ch:150px}html.compact .card.lg{--w:132px;--hh:186px}}
+/* small enemy seats when the table is crowded on a phone */
+.seat.mini .seat-banner{min-height:32px;padding:3px 5px;gap:4px}.seat.mini .seat-banner .emb{width:24px;height:24px}.seat.mini .seat-banner .emb svg{width:19px;height:19px}
+.seat.mini .sname b{font-size:13.5px}.seat.mini .sname small{display:none}.seat.mini .hpheart{width:34px;height:31px}.seat.mini .hpheart b{font-size:15px}
+.seat.mini .hptrack{padding:4px 5px 0;gap:1px}.seat.mini .hptrack i{height:5px}
+.seat.mini .seat-body{padding:4px 5px 5px;gap:4px;align-items:center}
+.seat.mini .shc{width:30px;height:42px;border-radius:4px}.seat.mini .shc .shc-art{height:22px;left:2px;right:2px;top:2px}.seat.mini .shc .shc-pips{bottom:2px}.seat.mini .shc .shc-pips svg{width:9px;height:9px}
+.seat.mini .stash{gap:2px}.seat.mini .backs{font-size:12px}.seat.mini .backs b{margin-left:8px}.seat.mini .shields .none{font-size:11.5px}
+/* sideways phones: enemies down the left, the ring in the middle, you and the action bar on the right, the hand along the bottom */
+html.compact.land{--cw:84px;--ch:118px}
+html.compact.land #topbar{height:44px}
+html.compact.land #table{grid-template-columns:200px minmax(0,1fr) 230px;grid-template-rows:minmax(0,1fr) auto;grid-template-areas:"opps stage me" "hand hand act";gap:6px;padding:4px 10px 0}
+html.compact.land #opps{flex-direction:column;justify-content:flex-start;gap:6px;overflow:auto;padding-top:6px}
+html.compact.land #opps .seat{flex:0 0 auto}
+html.compact.land #me{align-self:end}
+html.compact.land #hand{height:132px;min-height:0;padding:12px 10px 3px}
+html.compact.land .card .ct{font-size:9.5px}
+html.compact.land .card.lg{--w:118px;--hh:166px}
+html.compact.land .actionbar{align-self:center;flex-wrap:wrap;gap:6px}html.compact.land .actionbar .btn{min-width:0;font-size:15px;padding:6px 12px}
+@media (max-height:820px){html:not(.compact){--cw:138px;--ch:194px}html:not(.compact) #topbar{height:50px}}
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;transition-duration:.01ms!important}}
+</style>
+</head>
+<body>
+<div id="app">
+  <section id="screen-menu" class="screen"></section>
+  <section id="screen-select" class="screen hidden"></section>
+  <section id="screen-match" class="screen hidden">
+    <header id="topbar"></header>
+    <div id="table">
+      <div id="opps"></div>
+      <div id="stage"><div class="ring"></div><div class="dropglow"></div><div id="stage-card"></div><div id="stage-caption"></div></div>
+      <div id="me"></div>
+      <div id="prompt" class="actionbar"></div>
+      <div id="handzone"><button class="hand-nav prev" data-act="hand-prev" aria-label="Scroll the hand left" tabindex="-1">‹</button><div id="hand"></div><button class="hand-nav next" data-act="hand-next" aria-label="Scroll the hand right" tabindex="-1">›</button></div>
+    </div>
+    <aside id="chronicle" class="drawer" aria-label="Battle log"></aside>
+  </section>
+  <svg id="fx-arrows" aria-hidden="true"></svg>
+  <div id="fx-layer" aria-hidden="true"></div>
+  <div id="drag-ghost" aria-hidden="true"></div>
+  <div id="codex" class="codex hidden" role="dialog" aria-label="Codex"></div>
+  <div id="sheet" class="sheet-wrap hidden"></div>
+  <div id="tip" class="tip hidden" role="tooltip"></div>
+  <div id="banner" aria-live="polite"></div>
+</div>
+<script>
+'use strict';
+/* ── Mayhem Classic ──
+   The original Dungeon Mayhem rules, played against the computer: every hero is a fixed deck of 28 cards, everyone starts at
+   10 HP, you draw 1 and play 1 each turn, and the symbols on a card do the rest. Heroes, card names and art are our own; each deck
+   follows the card counts and symbols of its class in the original game.
+   The engine is pure (state S, seeded RNG, no DOM) so sim.js and test.js can run it in node. */
+const clamp = (v, a, b) => (v < a ? a : v > b ? b : v);
+function rnd(S) {
+  let t = (S.rs = (S.rs + 0x6D2B79F5) >>> 0);
+  t = Math.imul(t ^ (t >>> 15), t | 1);
+  t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+  return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+}
+const pick = (S, arr) => arr[Math.floor(rnd(S) * arr.length)];
+function shuffled(S, arr) { const a = arr.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(rnd(S) * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; }
+const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const count = (s, ch) => { let n = 0; for (const c of s || '') if (c === ch) n++; return n; };
+
+/* ── The rules in numbers, the five symbols, and the Mighty Powers ── */
+const RULES = { hp: 10, maxHP: 10, startHand: 3, emptyDraw: 2, deckSize: 28, minPlayers: 2, maxPlayers: 4 };
+
+/* every card is a row of symbols, used top to bottom; a Mighty Power card adds the text of its power */
+const SYM = {
+  A: { name: 'Attack', short: 'damage', desc: 'Deals 1 damage. All the attacks on a card go to one target: an opponent, or one of their shields. Damage left after a shield breaks moves on to their next shield, then to them.' },
+  S: { name: 'Shield', short: 'shield', desc: 'The card stays in front of you. Each shield symbol stops 1 damage; when they are all used up the card breaks. While you have a shield, attacks cannot reach your HP.' },
+  H: { name: 'Heal', short: 'heal', desc: 'Heal 1 HP. Nobody goes above 10.' },
+  D: { name: 'Draw', short: 'draw', desc: 'Draw a card.' },
+  P: { name: 'Play again', short: 'play again', desc: 'Play one more card this turn. You must, even if you would rather not.' },
+  M: { name: 'Mighty Power', short: 'mighty', desc: 'A power only this hero has. Do what the card says, then use its other symbols.' },
+};
+const SYM_ORDER = ['A', 'S', 'H', 'D', 'P'];
+
+/* aim: what the player chooses when the card is played
+   'shield'  a shield in front of an opponent      'opp'     an opponent
+   'oppDeck' an opponent whose deck is stolen from  'discard' a card in your own discard pile */
+/* text: the full rule (card sheet, codex); short: what fits on the card */
+const POWERS = {
+  whirl:    { name: 'Whirlwind', aim: null, short: 'Heal 1 per opponent, then deal 1 damage to each opponent.', text: 'Heal 1 for each opponent, then deal 1 damage to each opponent (their shields take it first).' },
+  roar:     { name: 'Battle Cry', aim: null, short: 'Everyone, you too, discards their hand and draws 3.', text: 'Every player, you too, discards their whole hand and draws 3 cards.' },
+  destroy:  { name: 'Break a Shield', aim: 'shield', short: 'Destroy a shield in front of an opponent.', text: 'Destroy one shield in front of an opponent, however much it has left. It goes to its owner\'s discard pile.' },
+  fireball: { name: 'Firestorm', aim: null, short: 'Everyone, you too, takes 3 damage.', text: 'Every player, you too, takes 3 damage. Shields take it first, as with any damage.' },
+  swap:     { name: 'Life Swap', aim: 'opp', short: 'Swap your HP with an opponent\'s.', text: 'Swap your HP with an opponent\'s HP.' },
+  charm:    { name: 'Turncoat', aim: 'shield', short: 'Take an opponent\'s shield. It protects you now.', text: 'Take a shield from in front of an opponent, with any damage it has taken. It protects you now; when it breaks it goes back to its owner\'s discard pile.' },
+  recall:   { name: 'Second Chance', aim: 'discard', short: 'Put a card from your discard pile into your hand.', text: 'Choose any card in your discard pile and put it into your hand.' },
+  purge:    { name: 'Clean Sweep', aim: null, short: 'Destroy every shield in play, yours too.', text: 'Destroy every shield in play, your own included.' },
+  disguise: { name: 'Vanish', aim: null, short: 'Until your next turn, opponents\' cards can\'t touch you or your shields.', text: 'Until the start of your next turn, nothing an opponent plays can affect you or your shields: no attack, no damage, no theft.' },
+  steal:    { name: 'Light Fingers', aim: 'oppDeck', short: 'Play the top card of an opponent\'s deck as your own.', text: 'Take the top card of an opponent\'s deck and play it at once as if it were yours (its play-again symbols count for you). Then it goes to their discard pile; a shield stays in front of you until it breaks.' },
+};
+
+/* ── Heroes: one deck of 28 cards each ──
+   sym: the card's symbols in order (A attack, S shield, H heal, D draw, P play again); power: its Mighty Power, if any.
+   art: the picture on the card (drawn in code), when it is not simply the hero's weapon. */
+const HEROES = {
+  barbarian: {
+    name: 'Korga', title: 'the Bonesplitter', cls: 'Barbarian', color: '#b5322a', deep: '#5c150e', wash: '#f6dccf', ink: '#4a120b', emblem: 'axe', weapon: 'axe',
+    blurb: 'The hardest hitter at the table. Big axes, two loyal hounds, and a howl that empties every hand.',
+    cards: [
+      { id: 'cleave', name: 'Cleave', sym: 'AAA', n: 5 },
+      { id: 'rampage', name: 'Rampage!', sym: 'AAAA', n: 2, art: 'rampage' },
+      { id: 'knuckles', name: 'Knuckle Sandwich', sym: 'AA', n: 2, art: 'fist' },
+      { id: 'skullbash', name: 'Skull Bash', sym: 'AP', n: 2, art: 'helm' },
+      { id: 'hatchets', name: 'Twin Hatchets', sym: 'AA', n: 2, art: 'hatchets' },
+      { id: 'gnasher', name: 'Gnasher', sym: 'SSS', n: 1, art: 'hound' },
+      { id: 'growler', name: 'Growler', sym: 'SSS', n: 1, art: 'hound' },
+      { id: 'buckler', name: 'Studded Buckler', sym: 'SS', n: 1, art: 'buckler' },
+      { id: 'weasels', name: 'Sack of Weasels', sym: 'SD', n: 1, art: 'sack' },
+      { id: 'haunch', name: 'Roast Haunch', sym: 'DDH', n: 1, art: 'meat' },
+      { id: 'showoff', name: 'Show Off', sym: 'HD', n: 2, art: 'flex' },
+      { id: 'rack', name: 'Raid the Rack', sym: 'DD', n: 2, art: 'rack' },
+      { id: 'howl', name: 'Earsplitting Howl', power: 'roar', sym: 'P', n: 2, art: 'howl' },
+      { id: 'tossaside', name: 'Toss Aside', power: 'destroy', sym: 'D', n: 2, art: 'toss' },
+      { id: 'whirlwind', name: 'Whirlwind of Steel', power: 'whirl', sym: '', n: 2, art: 'whirl' },
+    ],
+  },
+  wizard: {
+    name: 'Mirrin', title: 'the Arcane', cls: 'Wizard', color: '#2c5fb2', deep: '#13285a', wash: '#dbe5f7', ink: '#0f2148', emblem: 'hat', weapon: 'bolt',
+    blurb: 'Lightning, fire and tricks that turn a fight around: swap lives, steal a shield, or set the whole room ablaze.',
+    cards: [
+      { id: 'thunderclap', name: 'Thunderclap', sym: 'AAA', n: 4, art: 'bolt' },
+      { id: 'scorch', name: 'Scorching Ray', sym: 'AA', n: 3, art: 'flame' },
+      { id: 'dart', name: 'Arcane Dart', sym: 'AP', n: 3, art: 'dart' },
+      { id: 'tome', name: 'Tome of Secrets', sym: 'DDD', n: 3, art: 'tome' },
+      { id: 'quicken', name: 'Quickened Mind', sym: 'PP', n: 3, art: 'hourglass' },
+      { id: 'glare', name: 'Withering Glare', sym: 'HP', n: 2, art: 'eye' },
+      { id: 'ward', name: 'Ward', sym: 'SD', n: 2, art: 'ward' },
+      { id: 'granite', name: 'Granite Hide', sym: 'SS', n: 1, art: 'rock' },
+      { id: 'doubles', name: 'Phantom Doubles', sym: 'SSS', n: 1, art: 'mirror' },
+      { id: 'beguile', name: 'Beguile', power: 'charm', sym: '', n: 2, art: 'charm' },
+      { id: 'siphon', name: 'Soul Siphon', power: 'swap', sym: '', n: 2, art: 'swap' },
+      { id: 'firestorm', name: 'Firestorm', power: 'fireball', sym: '', n: 2, art: 'fireball' },
+    ],
+  },
+  paladin: {
+    name: 'Ysolde', title: 'the Dawnblade', cls: 'Paladin', color: '#c08a22', deep: '#5e3f0b', wash: '#f8edcc', ink: '#4a3208', emblem: 'sun', weapon: 'sword',
+    blurb: 'Strikes that heal, the sturdiest shields at the table, and a prayer that brings back the card she needs.',
+    cards: [
+      { id: 'fury', name: 'Righteous Fury', sym: 'AAA', n: 2 },
+      { id: 'hammer', name: 'Hammer of Duty', sym: 'AA', n: 4, art: 'hammer' },
+      { id: 'oathstrike', name: 'Oathstrike', sym: 'AP', n: 3, art: 'oath' },
+      { id: 'smite', name: 'Holy Smite', sym: 'AAAH', n: 3, art: 'smite' },
+      { id: 'rally', name: 'Rallying Shout', sym: 'AAH', n: 3, art: 'horn' },
+      { id: 'rebuke', name: 'Stern Rebuke', sym: 'PP', n: 2, art: 'finger' },
+      { id: 'presence', name: 'Inspiring Presence', sym: 'DD', n: 2, art: 'banner' },
+      { id: 'mend', name: 'Mend', sym: 'DDH', n: 1, art: 'hands' },
+      { id: 'riposte', name: 'Riposte', sym: 'SD', n: 2, art: 'parry' },
+      { id: 'aegis', name: 'Aegis of Dawn', sym: 'SSS', n: 2, art: 'aegis' },
+      { id: 'bramble', name: 'Bramble the Warhorse', sym: 'SS', n: 1, art: 'steed' },
+      { id: 'prayer', name: 'Answered Prayer', power: 'recall', sym: 'HH', n: 2, art: 'prayer' },
+      { id: 'purging', name: 'Purging Light', power: 'purge', sym: 'P', n: 1, art: 'purge' },
+    ],
+  },
+  rogue: {
+    name: 'Vex', title: 'the Quickfingered', cls: 'Rogue', color: '#6b3fa3', deep: '#2b1450', wash: '#e8ddf5', ink: '#24103f', emblem: 'mask', weapon: 'knife',
+    blurb: 'Chains of quick knives, a vanishing act, and light fingers that play other people\'s cards.',
+    cards: [
+      { id: 'flurry', name: 'Flurry of Knives', sym: 'AAA', n: 3, art: 'knives3' },
+      { id: 'paired', name: 'Paired Knives', sym: 'AA', n: 4, art: 'knives2' },
+      { id: 'flick', name: 'Flick Knife', sym: 'AP', n: 5 },
+      { id: 'bandolier', name: 'More Knives!', sym: 'DDH', n: 1, art: 'bandolier' },
+      { id: 'tonic', name: 'Swiped Tonic', sym: 'HP', n: 2, art: 'potion' },
+      { id: 'wyvern', name: 'Pet Wyvern', sym: 'SD', n: 2, art: 'wyvern' },
+      { id: 'muscle', name: 'Hired Muscle', sym: 'SS', n: 2, art: 'muscle' },
+      { id: 'grudd', name: 'Grudd the Bouncer', sym: 'SSS', n: 1, art: 'bouncer' },
+      { id: 'cloak', name: 'Smoke Cloak', sym: 'SD', n: 2, art: 'cloak' },
+      { id: 'vanish', name: 'Vanishing Act', power: 'disguise', sym: '', n: 2, art: 'mask' },
+      { id: 'cheapshot', name: 'Cheap Shot', power: 'destroy', sym: 'P', n: 2, art: 'cheap' },
+      { id: 'fingers', name: 'Light Fingers', power: 'steal', sym: '', n: 2, art: 'hand' },
+    ],
+  },
+};
+const HERO_ORDER = ['barbarian', 'wizard', 'paladin', 'rogue'];
+const heroName = h => `${HEROES[h].name} ${HEROES[h].title}`;
+const deckSize = h => HEROES[h].cards.reduce((a, c) => a + c.n, 0);
+/* the symbols across a whole deck, for the hero select screen */
+function deckMix(h) { const n = { A: 0, S: 0, H: 0, D: 0, P: 0, M: 0 }; for (const c of HEROES[h].cards) { for (const ch of c.sym) n[ch] += c.n; if (c.power) n.M += c.n; } return n; }
+
+/* ── Engine: draw 1, play 1, and play again for every lightning ──
+   A turn: draw a card, then play cards until you owe no more plays (you owe 1, plus 1 for every Play again symbol you use).
+   Shield cards stay in front of whoever played them; everything else goes to its owner's discard pile once it has been used.
+   Whenever a hand is empty its owner draws 2 at once; an empty deck is made again from the shuffled discard pile.
+   S.virtual marks a light copy the AI and the previews play cards on: no card is drawn or stolen there (they are only counted),
+   so nothing hidden is revealed. */
+function makeCard(S, hero, d) { return { uid: S.nextUid++, hero, id: d.id, name: d.name, sym: d.sym || '', power: d.power || null, art: d.art || null }; }
+function buildDeck(S, hero) { const out = []; for (const d of HEROES[hero].cards) for (let k = 0; k < d.n; k++) out.push(makeCard(S, hero, d)); return out; }
+function newPlayer(S, hero, id, ai) {
+  return { id, hero, ai: !!ai, skill: 'normal', hp: RULES.hp, maxHP: RULES.maxHP, deck: shuffled(S, buildDeck(S, hero)), hand: [], discard: [], shields: [],
+    alive: true, disguised: false, turns: 0, stats: { dmg: 0, healed: 0, broke: 0, played: 0, kos: 0 } };
+}
+function newGame(o) {
+  const S = { seed: o.seed >>> 0, rs: o.seed >>> 0, nextUid: 1, seq: 1, players: [], turn: 0, round: 1, turnNo: 0, plays: 0, pending: null, log: [], winner: null, started: false };
+  S.players = o.heroes.map((h, i) => newPlayer(S, h, i, o.ai ? o.ai[i] : i > 0));
+  for (const P of S.players) draw(S, P, RULES.startHand);
+  S.first = o.first != null ? o.first : Math.floor(rnd(S) * S.players.length);
+  return S;
+}
+function startGame(S) { S.started = true; S.turn = S.first; beginTurn(S); }
+
+/* ── the table ── */
+const cur = S => S.players[S.turn];
+const opponents = (S, P) => S.players.filter(X => X.alive && X.id !== P.id);
+/* Vanish: until its owner's next turn, nothing an opponent plays can touch them or their shields */
+const immune = (S, P, X) => X.disguised && X.id !== P.id;
+const shieldMax = sh => count(sh.card.sym, 'S');
+const shieldLeft = sh => shieldMax(sh) - sh.dmg;
+const shieldTotal = X => X.shields.reduce((a, sh) => a + shieldLeft(sh), 0);
+function findShield(S, uid) { for (const X of S.players) { const sh = X.shields.find(s => s.card.uid === uid); if (sh) return { X, sh }; } return null; }
+function log(S, k, x) { if (S.quiet || S.virtual) return; S.log.push({ k, round: S.round, ...x }); if (S.log.length > 400) S.log.splice(0, 100); }
+function draw(S, P, n) {
+  if (S.virtual) { P.vdraw = (P.vdraw || 0) + n; return n; }
+  let got = 0;
+  for (let k = 0; k < n; k++) {
+    if (!P.deck.length) { if (!P.discard.length) break; P.deck = shuffled(S, P.discard); P.discard = []; log(S, 'reshuffle', { pid: P.id }); }
+    P.hand.push(P.deck.pop()); got++;
+  }
+  return got;
+}
+const handCount = P => P.hand.length + (P.vdraw || 0);
+function toDiscard(S, owner, card) { S.players[owner].discard.push(card); }
+function heal(S, X, n, ev) {
+  if (n <= 0 || !X.alive) return 0;
+  const before = X.hp; X.hp = Math.min(X.maxHP, X.hp + n);
+  const got = X.hp - before; X.stats.healed += got;
+  ev.fx.push({ k: 'heal', t: X.id, n: got });
+  return got;
+}
+function loseHP(S, X, n, ev, A) {
+  if (n <= 0 || !X.alive) return;
+  const before = X.hp; X.hp -= n;
+  ev.fx.push({ k: 'hp', t: X.id, n: -n, by: A ? A.id : null });
+  if (A && A !== X) A.stats.dmg += Math.min(n, before);
+  if (X.hp <= 0) knockOut(S, X, ev, A);
+}
+function knockOut(S, X, ev, A) {
+  X.alive = false; X.hp = 0; X.disguised = false;
+  for (const sh of X.shields) toDiscard(S, sh.owner, sh.card);   /* a shield taken from someone goes back to its owner */
+  X.shields = [];
+  if (A && A !== X) A.stats.kos++;
+  ev.fx.push({ k: 'out', t: X.id });
+  log(S, 'out', { pid: X.id, by: A ? A.id : null });
+}
+function breakShield(S, X, sh, ev, A) {
+  const i = X.shields.indexOf(sh); if (i < 0) return;
+  X.shields.splice(i, 1);
+  toDiscard(S, sh.owner, sh.card);
+  if (A && A !== X) A.stats.broke++;
+  ev.fx.push({ k: 'broken', t: X.id, uid: sh.card.uid, name: sh.card.name });
+}
+function hurtShield(S, X, sh, n, ev, A) {
+  const take = Math.min(n, shieldLeft(sh));
+  sh.dmg += take;
+  ev.fx.push({ k: 'shield', t: X.id, uid: sh.card.uid, n: take, left: shieldLeft(sh), name: sh.card.name });
+  if (shieldLeft(sh) <= 0) breakShield(S, X, sh, ev, A);
+  return n - take;
+}
+/* damage: into the chosen shield first, then the other shields (the weakest first, so as many break as possible), then HP */
+function damage(S, A, X, n, ev, firstShield) {
+  if (n <= 0 || !X.alive) return;
+  let left = n;
+  if (firstShield != null) { const sh = X.shields.find(s => s.card.uid === firstShield); if (sh) left = hurtShield(S, X, sh, left, ev, A); }
+  while (left > 0 && X.shields.length) {
+    const sh = X.shields.slice().sort((a, b) => shieldLeft(a) - shieldLeft(b) || a.seq - b.seq)[0];
+    left = hurtShield(S, X, sh, left, ev, A);
+  }
+  if (left > 0) loseHP(S, X, left, ev, A);
+}
+function discardHand(S, X) { for (const c of X.hand) X.discard.push(c); X.hand = []; X.vdraw = 0; }
+
+/* ── choices: what a card asks for when it is played ── */
+function aimOf(card) { return count(card.sym, 'A') ? 'attack' : card.power ? POWERS[card.power].aim : null; }
+function choicesFor(S, P, card) {
+  const aim = aimOf(card), opps = opponents(S, P).filter(X => !immune(S, P, X)), out = [];
+  if (aim === 'attack') for (const X of opps) { out.push({ t: X.id }); if (X.shields.length > 1) for (const sh of X.shields) out.push({ t: X.id, sh: sh.card.uid }); }
+  else if (aim === 'shield') { for (const X of opps) for (const sh of X.shields) out.push({ t: X.id, sh: sh.card.uid }); }
+  else if (aim === 'opp') for (const X of opps) out.push({ t: X.id });
+  else if (aim === 'oppDeck') { for (const X of opps) if (X.deck.length + X.discard.length > 0) out.push({ t: X.id }); }
+  else if (aim === 'discard') for (const c of P.discard) out.push({ pick: c.uid });
+  return out.length ? out : [null];
+}
+const sameChoice = (a, b) => (!a && !b) || (a && b && a.t === b.t && a.sh === b.sh && a.pick === b.pick);
+function validChoice(S, P, card, ch) {
+  const all = choicesFor(S, P, card);
+  if (all[0] === null) return true;   /* nothing to aim at: the card is played for its other symbols */
+  if (!ch) return false;
+  /* an attack may name any shield of its target, even when that target has only one */
+  if (aimOf(card) === 'attack' && ch.sh != null) { const f = findShield(S, ch.sh); return !!f && f.X.id === ch.t && all.some(c => c.t === ch.t); }
+  return all.some(c => sameChoice(c, ch));
+}
+
+/* ── playing a card ── */
+function beginTurn(S) {
+  const P = cur(S);
+  P.disguised = false; P.turns++; S.turnNo++; S.plays = 1;
+  draw(S, P, 1);
+  log(S, 'turn', { pid: P.id });
+}
+function playCard(S, pid, uid, ch) {
+  if (S.winner != null || S.turn !== pid || S.pending || S.plays <= 0) return null;
+  const P = S.players[pid]; if (!P.alive) return null;
+  const i = P.hand.findIndex(c => c.uid === uid); if (i < 0) return null;
+  const card = P.hand[i];
+  if (!validChoice(S, P, card, ch)) return null;
+  P.hand.splice(i, 1);
+  S.plays--; P.stats.played++;
+  const ev = { pid, card, ch: ch || null, fx: [] };
+  log(S, 'play', { pid, card: card.name, t: ch && ch.t != null ? ch.t : null });
+  resolveCard(S, P, card, ch || {}, ev, null);
+  afterPlay(S, ev);
+  return ev;
+}
+/* a card taken with Light Fingers is played at once by the thief, with a target of its own */
+function resolvePending(S, ch) {
+  const pd = S.pending; if (!pd || S.winner != null) return null;
+  const P = S.players[pd.pid];
+  if (!validChoice(S, P, pd.card, ch)) return null;
+  S.pending = null;
+  const ev = { pid: P.id, card: pd.card, ch: ch || null, fx: [], stolen: true, from: pd.from };
+  log(S, 'play', { pid: P.id, card: pd.card.name, t: ch && ch.t != null ? ch.t : null, from: pd.from });
+  resolveCard(S, P, pd.card, ch || {}, ev, pd.from);
+  afterPlay(S, ev);
+  return ev;
+}
+function afterPlay(S, ev) {
+  /* an empty hand draws 2 at once (during anyone's turn) */
+  for (const X of S.players) if (X.alive && handCount(X) === 0) { const n = draw(S, X, RULES.emptyDraw); if (n) ev.fx.push({ k: 'refill', t: X.id, n }); }
+  const alive = S.players.filter(X => X.alive);
+  if (alive.length <= 1) { S.winner = alive.length ? alive[0].id : -1; S.pending = null; log(S, 'end', { winner: S.winner }); }
+}
+/* the Mighty Power first, then the symbols top to bottom; then the card goes where it goes */
+function resolveCard(S, P, card, ch, ev, owner) {
+  const own = owner != null ? owner : P.id;
+  if (card.power) power(S, P, card, ch, ev);
+  const a = count(card.sym, 'A');
+  if (a && P.alive) {
+    const X = ch.t != null ? S.players[ch.t] : null;
+    if (X && X.alive && X.id !== P.id && !immune(S, P, X)) { ev.fx.push({ k: 'attack', by: P.id, t: X.id, n: a }); damage(S, P, X, a, ev, ch.sh); }
+    else ev.fx.push({ k: 'miss', t: P.id, why: 'target' });
+  }
+  const s = count(card.sym, 'S');
+  if (s && P.alive) { P.shields.push({ card, dmg: 0, owner: own, seq: S.seq++ }); ev.fx.push({ k: 'raise', t: P.id, uid: card.uid, n: s, name: card.name }); }
+  const h = count(card.sym, 'H'); if (h && P.alive) heal(S, P, h, ev);
+  const d = count(card.sym, 'D'); if (d && P.alive) { const got = draw(S, P, d); ev.fx.push({ k: 'draw', t: P.id, n: got }); }
+  const p = count(card.sym, 'P'); if (p && P.alive) { S.plays += p; ev.fx.push({ k: 'again', t: P.id, n: p }); }
+  if (!(s && P.alive)) toDiscard(S, own, card);
+}
+function power(S, P, card, ch, ev) {
+  switch (card.power) {
+    case 'whirl': {
+      const opps = opponents(S, P);
+      heal(S, P, opps.length, ev);
+      for (const X of opps) if (!immune(S, P, X)) damage(S, P, X, 1, ev); else ev.fx.push({ k: 'immune', t: X.id });
+      break;
+    }
+    case 'roar':
+      for (const X of S.players) {
+        if (!X.alive) continue;
+        if (immune(S, P, X)) { ev.fx.push({ k: 'immune', t: X.id }); continue; }
+        const had = handCount(X); discardHand(S, X); draw(S, X, 3); ev.fx.push({ k: 'roar', t: X.id, had });
+      }
+      break;
+    case 'destroy': case 'charm': {
+      const f = ch.sh != null ? findShield(S, ch.sh) : null;
+      if (!f || f.X === P || immune(S, P, f.X)) { ev.fx.push({ k: 'miss', t: P.id, why: 'shield' }); break; }
+      if (card.power === 'destroy') breakShield(S, f.X, f.sh, ev, P);
+      else { f.X.shields.splice(f.X.shields.indexOf(f.sh), 1); P.shields.push(f.sh); ev.fx.push({ k: 'charm', t: f.X.id, by: P.id, uid: f.sh.card.uid, name: f.sh.card.name }); }
+      break;
+    }
+    case 'fireball':
+      ev.fx.push({ k: 'blast', by: P.id });
+      for (const X of S.players) if (X.alive) { if (immune(S, P, X)) ev.fx.push({ k: 'immune', t: X.id }); else damage(S, P, X, 3, ev); }
+      break;
+    case 'swap': {
+      const X = ch.t != null ? S.players[ch.t] : null;
+      if (!X || !X.alive || X === P || immune(S, P, X)) { ev.fx.push({ k: 'miss', t: P.id, why: 'target' }); break; }
+      const a = P.hp, b = X.hp; P.hp = b; X.hp = a;
+      ev.fx.push({ k: 'swap', t: X.id, by: P.id, from: a, to: b });
+      break;
+    }
+    case 'recall': {
+      const i = ch.pick != null ? P.discard.findIndex(c => c.uid === ch.pick) : -1;
+      if (i < 0) { ev.fx.push({ k: 'miss', t: P.id, why: 'discard' }); break; }
+      const c = P.discard.splice(i, 1)[0]; P.hand.push(c);
+      ev.fx.push({ k: 'recall', t: P.id, card: c });
+      break;
+    }
+    case 'purge':
+      for (const X of S.players) {
+        if (!X.alive || !X.shields.length) continue;
+        if (immune(S, P, X)) { ev.fx.push({ k: 'immune', t: X.id }); continue; }
+        for (const sh of X.shields.slice()) breakShield(S, X, sh, ev, P);
+      }
+      break;
+    case 'disguise': P.disguised = true; ev.fx.push({ k: 'vanish', t: P.id }); break;
+    case 'steal': {
+      const X = ch.t != null ? S.players[ch.t] : null;
+      if (!X || !X.alive || X === P || immune(S, P, X)) { ev.fx.push({ k: 'miss', t: P.id, why: 'target' }); break; }
+      if (S.virtual) { P.vsteal = (P.vsteal || 0) + 1; break; }
+      if (!X.deck.length && X.discard.length) { X.deck = shuffled(S, X.discard); X.discard = []; log(S, 'reshuffle', { pid: X.id }); }
+      if (!X.deck.length) { ev.fx.push({ k: 'miss', t: X.id, why: 'deck' }); break; }
+      const c = X.deck.pop();
+      S.pending = { pid: P.id, card: c, from: X.id };
+      ev.fx.push({ k: 'steal', t: X.id, by: P.id, card: c });
+      break;
+    }
+  }
+}
+/* the turn passes to the left (the next seat); a new round starts when it comes back round to the first player */
+function endTurn(S) {
+  if (S.winner != null) return;
+  S.pending = null;
+  const n = S.players.length;
+  let i = S.turn, wrapped = false;
+  for (let k = 0; k < n; k++) { i = (i + 1) % n; if (i === S.first) wrapped = true; if (S.players[i].alive) break; }
+  if (wrapped) S.round++;
+  S.turn = i;
+  beginTurn(S);
+}
+/* the active player's turn is over when they owe no plays (or cannot play: no card anywhere, or knocked out) */
+function turnOver(S) { const P = cur(S); return S.winner != null || (!S.pending && (S.plays <= 0 || !P.alive || !P.hand.length)); }
+
+/* ── light copies for the AI and the previews ── */
+function liteCopy(S) {
+  const C = { ...S, virtual: true, quiet: true, log: [] };
+  C.players = S.players.map(P => ({ ...P, hand: P.hand.slice(), discard: P.discard.slice(), shields: P.shields.map(sh => ({ ...sh })), stats: { ...P.stats }, vdraw: P.vdraw || 0, vsteal: P.vsteal || 0 }));
+  if (S.pending) C.pending = { ...S.pending };
+  return C;
+}
+/* what a play would change at every seat, for the tags shown above them before you commit */
+function previewPlay(S, pid, uid, ch, pending) {
+  const C = liteCopy(S), before = C.players.map(X => ({ hp: X.hp, sh: shieldTotal(X), uids: X.shields.map(sh => sh.card.uid), hand: handCount(X), alive: X.alive, dis: X.disguised, steal: X.vsteal || 0 }));
+  const ev = pending ? resolvePending(C, ch) : playCard(C, pid, uid, ch);
+  if (!ev) return null;
+  return {
+    ev, winner: C.winner, plays: C.plays,
+    players: C.players.map((X, i) => {
+      const b = before[i], lost = b.uids.filter(u => !X.shields.some(sh => sh.card.uid === u)).length;
+      return { hp: X.hp - b.hp, shield: shieldTotal(X) - b.sh, lost, hand: handCount(X) - b.hand, dies: b.alive && !X.alive, vanish: !b.dis && X.disguised, steal: (X.vsteal || 0) - b.steal };
+    }),
+  };
+}
+
+/* ── AI: it plays each card it could play, with each target, on a light copy of the table and values what changes.
+   A seat is worth its HP (the last few count more), its shields, its cards in hand and a Vanish that is still up. Opponents count
+   against it, the most dangerous one a little more. When a card gives another play it looks one card further. It never sees a
+   hidden card: other hands only by their size, a stolen card only once it is turned up. ── */
+const AI_NOISE = { easy: 2.4, normal: 0.7, hard: 0.04 };
+const AI_DEPTH = { easy: 0, normal: 1, hard: 2 };
+function handWorth(n) { return 0.95 * Math.min(n, 3) + 0.45 * clamp(n - 3, 0, 3) + 0.15 * Math.max(0, n - 6); }
+function seatValue(S, X) {
+  if (!X.alive) return -14;
+  let v = X.hp + 4.5 * (1 - Math.exp(-X.hp / 2.2));
+  for (const sh of X.shields) v += shieldLeft(sh) * 0.85;
+  v += handWorth(handCount(X)) + (X.vsteal || 0) * 1.7;
+  /* a Vanish still up: about one round of the opponents' damage that cannot reach this seat (more when it is close to falling) */
+  if (X.disguised) v += 2.4 + (X.hp <= 4 ? 1.6 : 0);
+  return v;
+}
+/* how much each opponent counts: the strongest a little more, one close to falling more still */
+function oppWeights(S, P) {
+  const opps = opponents(S, P), W = {};
+  const power = X => X.hp + shieldTotal(X) * 0.7 + handCount(X) * 0.3;
+  const avg = opps.reduce((a, X) => a + power(X), 0) / Math.max(1, opps.length);
+  for (const X of opps) W[X.id] = (opps.length > 1 ? 1 + clamp((power(X) - avg) / 12, -0.2, 0.3) : 1) * (X.hp <= 3 ? 1.15 : 1);
+  return W;
+}
+function utility(S, P, W) {
+  const me = S.players[P.id];
+  if (S.winner === P.id) return 1000;
+  if (S.winner === -1) return -60;
+  if (!me.alive) return -500;
+  let u = seatValue(S, me);
+  for (const X of S.players) if (X.id !== P.id) u -= (W[X.id] != null ? W[X.id] : 1) * seatValue(S, X);
+  return u;
+}
+/* a rough worth for a card in hand, used to choose what to bring back from the discard pile */
+function cardWorth(S, P, c) {
+  let v = count(c.sym, 'A') * 1.15 + count(c.sym, 'S') * 0.95 + count(c.sym, 'H') * (P.hp <= 5 ? 1.1 : 0.5) + count(c.sym, 'D') * 0.85 + count(c.sym, 'P') * 0.8;
+  const opps = opponents(S, P);
+  const pw = { whirl: 1 + opps.length * 1.2, roar: 1.4, destroy: 1.6, fireball: 2.6, swap: P.hp <= 5 ? 3.4 : 0.6, charm: 2, recall: 1.8, purge: 1.8, disguise: P.hp <= 5 ? 2.6 : 1.2, steal: 2 };
+  if (c.power) v += pw[c.power] || 1.5;
+  return v;
+}
+function playValue(S, P, card, ch, W, depth, pending) {
+  const C = liteCopy(S);
+  const ev = pending ? resolvePending(C, ch) : playCard(C, P.id, card.uid, ch);
+  if (!ev) return -1e9;
+  let v = utility(C, P, W);
+  if (ch && ch.pick != null) { const c = S.players[P.id].discard.find(x => x.uid === ch.pick); if (c) v += cardWorth(S, P, c) * 0.6; }
+  const me = C.players[P.id];
+  /* another play is owed: it will be the best of the cards known to be in hand; when only cards still to be drawn are left, a play
+     is worth about what an average card brings */
+  if (C.winner == null && me.alive && C.plays > 0) {
+    if (depth > 0 && me.hand.length) { const next = bestPlay(C, me, depth - 1, W, true); if (next) v = next.v; }
+    else if (handCount(me)) v += 1.3 * Math.min(C.plays, handCount(me));
+  }
+  return v;
+}
+function bestPlay(S, P, depth, W, quiet) {
+  W = W || oppWeights(S, P);
+  const noise = quiet ? 0 : AI_NOISE[P.skill] != null ? AI_NOISE[P.skill] : 0.7;
+  let best = null;
+  const seen = new Set();
+  for (const card of P.hand) {
+    const key = card.id;   /* two copies of the same card play the same */
+    if (seen.has(key)) continue; seen.add(key);
+    for (const ch of choicesFor(S, P, card)) {
+      const v = playValue(S, P, card, ch, W, depth) + rnd(S) * noise;
+      if (!best || v > best.v) best = { card, ch, v };
+    }
+  }
+  return best;
+}
+function bestPending(S, P) {
+  const W = oppWeights(S, P), card = S.pending.card, noise = AI_NOISE[P.skill] != null ? AI_NOISE[P.skill] : 0.7;
+  let best = null;
+  for (const ch of choicesFor(S, P, card)) { const v = playValue(S, P, card, ch, W, 1, true) + rnd(S) * noise; if (!best || v > best.v) best = { ch, v }; }
+  return best ? best.ch : null;
+}
+function aiAct(S, pid) {
+  const P = S.players[pid];
+  if (S.pending && S.pending.pid === pid) return { kind: 'pending', ch: bestPending(S, P) };
+  if (S.plays > 0 && P.hand.length) {
+    const b = bestPlay(S, P, AI_DEPTH[P.skill] != null ? AI_DEPTH[P.skill] : 1);
+    if (b) return { kind: 'play', uid: b.card.uid, ch: b.ch };
+  }
+  return { kind: 'end' };
+}
+
+/* ── Art drawn in code: the five symbols, the heroes' colours and patterns, and a picture for every card ──
+   Pictures are 64×64 drawings in ink outline; currentColor is the hero's colour, so one drawing serves every deck. */
+const SYM_PIG = { A: '#b02a1f', S: '#2f5f8f', H: '#24784b', D: '#3a4aa3', P: '#cf8a0e', M: '#6e36a6' };
+const SYM_GLYPH = {
+  A: '<path d="M12 2.8l2.2 3V14h-4.4V5.8z" fill="#fff8e6"/><rect x="6.6" y="13.9" width="10.8" height="2.4" rx="1.2" fill="#fff8e6"/><rect x="10.9" y="16.2" width="2.2" height="3.6" fill="#fff8e6"/><circle cx="12" cy="20.6" r="1.5" fill="#fff8e6"/>',
+  S: '<path d="M12 3.6l6.9 2.6v5.3c0 4.6-3 7.5-6.9 9.1-3.9-1.6-6.9-4.5-6.9-9.1V6.2z" fill="#fff8e6"/><path d="M12 6.3l4.6 1.8v3.6c0 3.1-2 5.1-4.6 6.3" fill="none" stroke="' + SYM_PIG.S + '" stroke-width="1.4" stroke-linecap="round"/>',
+  H: '<path d="M12 19.6c-4.9-3.3-7.9-6.3-7.9-9.7a4.15 4.15 0 0 1 7.9-1.9 4.15 4.15 0 0 1 7.9 1.9c0 3.4-3 6.4-7.9 9.7z" fill="#fff8e6"/>',
+  D: '<rect x="5.6" y="6.4" width="9" height="12.6" rx="1.6" fill="none" stroke="#fff8e6" stroke-width="1.6" transform="rotate(-14 10 12.7)"/><rect x="9.4" y="5" width="9" height="12.6" rx="1.6" fill="#fff8e6"/><path d="M13.9 8.4v5.8M11 11.3h5.8" stroke="' + SYM_PIG.D + '" stroke-width="1.6" stroke-linecap="round"/>',
+  P: '<path d="M13.8 2.8L6.4 13.3h4.8L9.9 21.2l7.8-10.7h-4.9z" fill="#fff8e6"/>',
+  M: '<path d="M12 3.4l2.6 5.5 6 .7-4.5 4.1 1.2 5.9-5.3-3-5.3 3 1.2-5.9-4.5-4.1 6-.7z" fill="#fff8e6"/>',
+};
+function symSVG(ch, size = 30, cls = '') {
+  return `<svg viewBox="0 0 24 24" width="${size}" height="${size}" class="sym ${cls}" role="img" aria-label="${SYM[ch].name}"><circle cx="12" cy="12" r="11.3" fill="${SYM_PIG[ch]}" stroke="#1d120a" stroke-opacity=".85" stroke-width="1"/><circle cx="12" cy="12" r="10" fill="none" stroke="#f1cd70" stroke-width="1.2"/><circle cx="12" cy="12" r="9.1" fill="none" stroke="#000" stroke-opacity=".22" stroke-width=".8"/><path d="M5.2 9a7.6 7.6 0 0 1 10.3-4.9" stroke="#fff6dc" stroke-opacity=".3" stroke-width="2" fill="none" stroke-linecap="round"/>${SYM_GLYPH[ch]}</svg>`;
+}
+const HEART_PATH = 'M24 42C11 33.5 4 26 4 17.5 4 11 9 6.5 14.6 6.5c4 0 7.2 2.2 9.4 5.4 2.2-3.2 5.4-5.4 9.4-5.4C39 6.5 44 11 44 17.5 44 26 37 33.5 24 42z';
+function heartSVG() { return `<svg viewBox="0 0 48 46" aria-hidden="true"><path d="${HEART_PATH}" fill="#b8271c" stroke="#3d0b06" stroke-width="2.2" stroke-linejoin="round"/><path d="M11 13.5c1.6-2.6 4.6-3.8 7.4-2.6" fill="none" stroke="#ffd9cc" stroke-opacity=".65" stroke-width="2.6" stroke-linecap="round"/></svg>`; }
+
+/* ── the drawings ── */
+const OUT = '#21150d', STEEL = '#e3e7ec', STEEL2 = '#a7b0ba', WOOD = '#8c5b2c', GOLD = '#ebc04f', SKIN = '#e9b48c', FUR = '#8e6b49', BONE = '#f0e4ca', PARCH = '#f7ecd3';
+const st = (w = 2.2) => `stroke="${OUT}" stroke-width="${w}" stroke-linejoin="round" stroke-linecap="round"`;
+const shine = (d, w = 1.7) => `<path d="${d}" fill="none" stroke="#fff" stroke-opacity=".7" stroke-width="${w}" stroke-linecap="round"/>`;
+const motion = d => `<path d="${d}" fill="none" stroke="${OUT}" stroke-opacity=".5" stroke-width="2.2" stroke-linecap="round"/>`;
+const glow = (cx, cy, r, op = 0.28) => `<circle cx="${cx}" cy="${cy}" r="${r}" fill="currentColor" opacity="${op}"/>`;
+const rot = (deg, inner, cx = 32, cy = 32, s = 1, flip = false) => `<g transform="translate(${cx} ${cy}) rotate(${deg}) scale(${flip ? -s : s} ${s}) translate(-32 -32)">${inner}</g>`;
+const star4 = (x, y, r, fill = GOLD) => `<path d="M${x} ${y - r}L${x + r * 0.28} ${y - r * 0.28}L${x + r} ${y}L${x + r * 0.28} ${y + r * 0.28}L${x} ${y + r}L${x - r * 0.28} ${y + r * 0.28}L${x - r} ${y}L${x - r * 0.28} ${y - r * 0.28}Z" fill="${fill}"/>`;
+function rays(cx, cy, r1, r2, n, color = GOLD, w = 2.4, op = 0.85) { let s = ''; for (let i = 0; i < n; i++) { const a = i * 2 * Math.PI / n; s += `M${(cx + Math.cos(a) * r1).toFixed(1)} ${(cy + Math.sin(a) * r1).toFixed(1)}L${(cx + Math.cos(a) * r2).toFixed(1)} ${(cy + Math.sin(a) * r2).toFixed(1)}`; } return `<path d="${s}" stroke="${color}" stroke-width="${w}" stroke-linecap="round" opacity="${op}"/>`; }
+function axeG() { return `<rect x="29.6" y="9" width="4.8" height="51" rx="2.4" fill="${WOOD}" ${st(2)}/><path d="M33.5 12.5C43 6.5 56 11 58 27.5C50.5 23.5 42 24.5 33.5 30Z" fill="${STEEL}" ${st()}/><path d="M30.5 13.5C24 11.5 17.5 14.5 14.5 21C20 21.5 25.5 23 30.5 26.5Z" fill="${STEEL2}" ${st(2)}/>${shine('M38 12.3C46 10 53.5 14.5 56 21.5')}<rect x="28.6" y="40" width="6.8" height="11" rx="1.6" fill="currentColor" ${st(1.6)}/><circle cx="32" cy="8.6" r="3" fill="${GOLD}" ${st(1.5)}/>`; }
+function daggerG() { return `<path d="M32 6L35.6 12.5V36.5h-7.2V12.5Z" fill="${STEEL}" ${st(2)}/><path d="M32 10.5V34" stroke="${STEEL2}" stroke-width="1.4"/><rect x="23" y="36" width="18" height="4.6" rx="2.2" fill="${GOLD}" ${st(1.8)}/><rect x="29.6" y="40.6" width="4.8" height="12" rx="1.6" fill="currentColor" ${st(1.7)}/><circle cx="32" cy="55" r="3" fill="${GOLD}" ${st(1.6)}/>`; }
+function swordG() { return `<path d="M32 3L36.6 9.2V40h-9.2V9.2Z" fill="${STEEL}" ${st(2.1)}/><path d="M32 8V37.5" stroke="${STEEL2}" stroke-width="1.6"/><rect x="18.5" y="39.5" width="27" height="5.6" rx="2.6" fill="${GOLD}" ${st(2)}/><rect x="29.3" y="45" width="5.4" height="12" rx="1.6" fill="currentColor" ${st(1.8)}/><circle cx="32" cy="59.4" r="3.6" fill="${GOLD}" ${st(1.8)}/>`; }
+function shieldKite(fill = 'currentColor') { return `<path d="M32 5L53 12.5V30C53 43.5 43.5 53 32 58.5 20.5 53 11 43.5 11 30V12.5Z" fill="${fill}" ${st(2.4)}/><path d="M32 10L48.5 16V30C48.5 40.5 41 48.5 32 53.2 23 48.5 15.5 40.5 15.5 30V16Z" fill="none" stroke="${GOLD}" stroke-width="2"/>`; }
+function handG() { return `<path d="M22 60V40c0-3 4.6-3 4.6 0V14a4.2 4.2 0 0 1 8.4 0v22c0-3.4 6-3.4 6 .6v3c0-3.4 6-3.4 6 .6v9.5C47 57 42 62 35 62H28c-3 0-6-2-6-2z" fill="${SKIN}" ${st(2.2)}/>`; }
+function wolfHead() { return `<path d="M12 56C10 44 14 32 24 25L22 10L31 19C35 17.5 40 17.5 44 19L50 11L51 24C57 28 61 35 59 42L48 43C46 49 40 54 32 56Z" fill="${FUR}" ${st(2.2)}/><path d="M48 43C52 46 56 46 59 42" fill="none" ${st(2)}/><circle cx="44" cy="31" r="2.6" fill="${OUT}"/><circle cx="44.8" cy="30.2" r=".9" fill="#fff"/><circle cx="58.4" cy="39.6" r="2.3" fill="${OUT}"/><path d="M26 22L29 28M47 15l-1 7" stroke="#5b4129" stroke-width="2" stroke-linecap="round"/><path d="M51 43l1.6 3.6 1.6-3" fill="#fff" ${st(1.2)}/>`; }
+const ART = {
+  /* barbarian */
+  axe: () => rot(22, axeG(), 32, 33),
+  rampage: () => rot(22, axeG(), 30, 34, 0.92) + `<path d="M48 8l3 5 4-3-1 5 5 1-4 3 3 4-5-1-1 5-3-4-4 2 1-5-5-2 5-2z" fill="#e2412f" ${st(1.6)}/>` + motion('M6 18l6 3M4 28h7M8 38l6-2'),
+  hatchets: () => rot(-24, axeG(), 25, 35, 0.78) + rot(24, axeG(), 39, 35, 0.78, true),
+  fist: () => `<path d="M16 30h28a7 7 0 0 1 7 7v6a14 14 0 0 1-14 14H28a12 12 0 0 1-12-12z" fill="${SKIN}" ${st()}/><path d="M16 31v-7a5 5 0 0 1 10 0v7M26 30v-9a5 5 0 0 1 10 0v9M36 30v-8a5 5 0 0 1 10 0v8" fill="${SKIN}" ${st()}/><path d="M46 34c4 0 6 2.5 6 6.5" fill="none" ${st(2)}/><rect x="15" y="50" width="30" height="9" rx="3" fill="currentColor" ${st(2)}/>${motion('M4 22l8 3M3 32h9M5 42l8-2')}`,
+  helm: () => `<path d="M13 23C8.5 15 9.5 7.5 13.5 3.5C14.5 10.5 17.5 14.5 22.5 17.5Z" fill="${BONE}" ${st(2)}/><path d="M51 23C55.5 15 54.5 7.5 50.5 3.5C49.5 10.5 46.5 14.5 41.5 17.5Z" fill="${BONE}" ${st(2)}/><path d="M14 41a18 18 0 0 1 36 0v5H14z" fill="${STEEL2}" ${st()}/>${shine('M20 30a14 14 0 0 1 12-7', 2)}<rect x="12" y="44" width="40" height="7.5" rx="2.6" fill="currentColor" ${st(2)}/><path d="M30 29h4v25h-4z" fill="${STEEL}" ${st(1.6)}/><path d="M9 60l5-5M55 60l-5-5M32 63.5V57" stroke="#e2412f" stroke-width="2.8" stroke-linecap="round"/>`,
+  hound: () => wolfHead() + `<path d="M15 47C23 51.5 33 51.5 40 48" stroke="currentColor" stroke-width="6.5" fill="none" stroke-linecap="round"/><path d="M15 47C23 51.5 33 51.5 40 48" stroke="${OUT}" stroke-width="1.2" fill="none" stroke-dasharray="2 4.6"/>` + [[19, 50], [27, 52.2], [35, 51]].map(([x, y]) => `<path d="M${x - 2.2} ${y}l2.2-5 2.2 5z" fill="${STEEL}" ${st(1.1)}/>`).join(''),
+  buckler: () => `<circle cx="32" cy="33" r="24" fill="${STEEL2}" ${st()}/><circle cx="32" cy="33" r="19" fill="currentColor" ${st(1.8)}/><circle cx="32" cy="33" r="6.5" fill="${STEEL}" ${st(1.8)}/>` + Array.from({ length: 8 }, (_, i) => { const a = i * Math.PI / 4; return `<circle cx="${(32 + Math.cos(a) * 21.5).toFixed(1)}" cy="${(33 + Math.sin(a) * 21.5).toFixed(1)}" r="2" fill="${STEEL}" ${st(1.1)}/>`; }).join('') + shine('M16 24a18 18 0 0 1 12-9', 2.2),
+  sack: () => `<path d="M17 28C13 36 11 45 15 52.5C21 59.5 43 59.5 49 52.5C53 45 51 36 47 28Z" fill="#b8925a" ${st()}/><path d="M22 40c4 2 8 2 12 0M28 49c4 1.5 8 1.5 11 0" fill="none" stroke="#7d5f35" stroke-width="1.6" stroke-linecap="round"/><path d="M27.5 27C25.5 19 29.5 10 37 9.5C43.5 9.5 46.5 15 44.5 21C43.5 24.5 40.5 27 38 27Z" fill="#9a6a3c" ${st(2)}/><path d="M31 13l-2-4 4.5 2M42 12.5l2.4-3.4.4 4.6" fill="#9a6a3c" ${st(1.4)}/><circle cx="35" cy="17" r="1.6" fill="${OUT}"/><circle cx="41" cy="17" r="1.6" fill="${OUT}"/><circle cx="38.6" cy="21" r="1.5" fill="#e07a8a"/><rect x="18" y="25" width="28" height="5" rx="2" fill="currentColor" ${st(1.6)}/>`,
+  meat: () => `<path d="M33 40l14 14" stroke="${OUT}" stroke-width="9.5" stroke-linecap="round"/><path d="M33 40l14 14" stroke="${BONE}" stroke-width="6.5" stroke-linecap="round"/><circle cx="46" cy="58" r="4.6" fill="${BONE}" ${st(1.8)}/><circle cx="51" cy="53" r="4.6" fill="${BONE}" ${st(1.8)}/><path d="M33 40C22 48 12 43 11 33C10 20 23 9 36 11C49 13 54 26 48 35C44 40 38 41 33 40Z" fill="#a9572a" ${st()}/><path d="M18 27C20 20 27 15 34 15" fill="none" stroke="#e7a06b" stroke-width="3" stroke-linecap="round"/>${motion('M24 6c-2-2 0-4 0-4M32 6c-2-2 0-4 0-4M40 7c-2-2 0-4 0-4')}`,
+  flex: () => `<path d="M8 54C8 42 12 34 20 31L24 19C26 13 34 13 36 19L34 29C42 27 52 31 54 41C56 51 48 57 38 57H14C10 57 8 56 8 54Z" fill="${SKIN}" ${st()}/><path d="M24 31c4 2 8 2 10 0" fill="none" ${st(1.6)}/><path d="M20 31.5L34 29.5" stroke="currentColor" stroke-width="5"/>${star4(52, 12, 6)}${star4(42, 6, 3.6)}${star4(58, 26, 3.4)}`,
+  rack: () => `<rect x="9" y="12" width="46" height="5" rx="2" fill="${WOOD}" ${st(2)}/><rect x="9" y="50" width="46" height="5" rx="2" fill="${WOOD}" ${st(2)}/><rect x="10" y="12" width="5" height="45" rx="2" fill="${WOOD}" ${st(2)}/><rect x="49" y="12" width="5" height="45" rx="2" fill="${WOOD}" ${st(2)}/>` + rot(0, swordG(), 25, 34, 0.55) + rot(0, axeG(), 39, 34, 0.55),
+  howl: () => `<path d="M14 60C13 48 16 38 22 32L21 18L29 25C31 21 35 15 40 12L44 4L47 13C52 17 55 23 54 29L46 31C45 37 41 44 36 50L36 60Z" fill="${FUR}" ${st()}/><circle cx="38" cy="22" r="2.2" fill="${OUT}"/><path d="M46 31C49 29 52 28 54 29" fill="none" ${st(1.6)}/>` + `<path d="M50 8c4 2 6 5 6.5 9M54 4c5 3 8 7 8.5 13M45 3c2-1 4-1 6 0" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"/>`,
+  toss: () => rot(-28, shieldKite('#c9a46a'), 38, 30, 0.72) + motion('M4 44l14-6M6 54l14-4M10 34l10-4') + `<path d="M38 18l-3 9 5 4-4 9" fill="none" stroke="${OUT}" stroke-width="2.2" stroke-linecap="round"/>`,
+  whirl: () => `<path d="M32 8A24 24 0 1 1 9 38" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" opacity=".55"/><path d="M32 16A16 16 0 1 0 48 34" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" opacity=".45"/>` + rot(-40, axeG(), 22, 26, 0.55) + rot(140, axeG(), 42, 40, 0.55),
+  /* wizard */
+  bolt: () => glow(32, 32, 26, 0.22) + `<path d="M38 3L15 35h13l-6 26 27-36H35l6-22z" fill="${GOLD}" ${st()}/>${shine('M35.5 8.5L21.5 31', 2)}`,
+  flame: () => `<path d="M2 50C14 44 22 40 30 36" stroke="#f08a24" stroke-width="5" stroke-linecap="round" opacity=".7"/><path d="M36 6C40 15 51 21 51 36A15.5 15.5 0 0 1 20 36C20 28.5 24 23 28 19C29 25 32 28 35 29C32 21 33 12 36 6Z" fill="#f08a24" ${st()}/><path d="M36 23C38 29 44.5 32 44.5 40.5A8.6 8.6 0 0 1 27.3 40.5C27.3 35.5 30 32 32 30C33 34 35 35 37 35C35 31 35 27 36 23Z" fill="#ffd25e"/>`,
+  dart: () => `<path d="M6 54C17 47 27 38 37 28" stroke="currentColor" stroke-width="7" stroke-linecap="round" opacity=".35"/><path d="M10 52C19 46 27 39 35 31" stroke="#fff" stroke-width="2" stroke-linecap="round" opacity=".7"/>` + glow(42, 22, 16, 0.25) + `<circle cx="42" cy="22" r="10.5" fill="currentColor" ${st(2)}/><circle cx="42" cy="22" r="5.5" fill="#fff" opacity=".9"/>${star4(15, 38, 4)}${star4(26, 50, 3)}${star4(55, 41, 4)}`,
+  tome: () => glow(32, 18, 18, 0.2) + `<path d="M5 20C13 16 23 16 32 22C41 16 51 16 59 20V54C51 50 41 50 32 56C23 50 13 50 5 54Z" fill="currentColor" ${st()}/><path d="M8 18C15 14 24 14 32 20C40 14 49 14 56 18V50C49 46 40 46 32 52C24 46 15 46 8 50Z" fill="${PARCH}" ${st(1.8)}/><path d="M32 20V52" ${st(1.6)}/><path d="M13 25h12M13 30h13M13 35h10M38 25h13M39 30h12M40 35h10" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>${star4(32, 8, 5)}${star4(20, 6, 2.6)}${star4(45, 9, 3)}`,
+  hourglass: () => glow(32, 32, 22, 0.2) + `<rect x="14" y="6" width="36" height="6" rx="2" fill="${WOOD}" ${st(2)}/><rect x="14" y="52" width="36" height="6" rx="2" fill="${WOOD}" ${st(2)}/><path d="M19 12h26C45 24 36 28 34 32 36 36 45 40 45 52H19C19 40 28 36 30 32 28 28 19 24 19 12Z" fill="#e8f1f7" fill-opacity=".85" ${st(2)}/><path d="M24 18h16C38 23 34 26 32 29 30 26 26 23 24 18zM22 51C23 44 28 41 32 40 36 41 41 44 42 51Z" fill="${GOLD}"/><path d="M32 30v10" stroke="${GOLD}" stroke-width="1.6"/>${motion('M54 20c4 4 4 20 0 24M10 20c-4 4-4 20 0 24')}`,
+  eye: () => `<path d="M4 35C14 21 50 21 60 35C50 49 14 49 4 35Z" fill="#fff" ${st()}/><circle cx="32" cy="35" r="10.5" fill="currentColor" ${st(2)}/><circle cx="32" cy="35" r="4.6" fill="${OUT}"/><circle cx="35" cy="32" r="2" fill="#fff"/><path d="M9 23L27 28M55 23L37 28" stroke="${OUT}" stroke-width="3.6" stroke-linecap="round"/>${motion('M20 54l-3 6M32 55v7M44 54l3 6')}`,
+  ward: () => glow(32, 32, 27, 0.18) + `<circle cx="32" cy="32" r="24" fill="none" stroke="currentColor" stroke-width="3" ${''}/><circle cx="32" cy="32" r="24" fill="none" ${st(1.2)}/><circle cx="32" cy="32" r="17" fill="none" stroke="currentColor" stroke-width="2" stroke-dasharray="4 3"/><path d="M32 13L48 41H16Z" fill="none" stroke="${GOLD}" stroke-width="2.2" stroke-linejoin="round"/><path d="M32 51L16 23H48Z" fill="none" stroke="${GOLD}" stroke-width="2.2" stroke-linejoin="round"/><circle cx="32" cy="32" r="4" fill="${GOLD}" ${st(1.4)}/>`,
+  rock: () => `<path d="M8 50L13 26L26 12L44 14L56 30L54 50L38 57L20 56Z" fill="#9b968e" ${st()}/><path d="M26 12L30 30L13 26M30 30L44 14M30 30L38 57M30 30L56 30M30 30L8 50" fill="none" stroke="#6b665f" stroke-width="1.8"/><path d="M15 30l4 10M46 36l4 8" stroke="#c9c3ba" stroke-width="2" stroke-linecap="round"/>${shine('M18 22l8-8', 2)}`,
+  mirror: () => `<g opacity=".38">${rot(0, `<path d="M32 10a7 7 0 1 1 0 .1zM20 56c0-13 5-22 12-22s12 9 12 22z" fill="currentColor"/>`, 20, 32, 0.9)}</g><g opacity=".38">${rot(0, `<path d="M32 10a7 7 0 1 1 0 .1zM20 56c0-13 5-22 12-22s12 9 12 22z" fill="currentColor"/>`, 44, 32, 0.9)}</g><circle cx="32" cy="17" r="7.5" fill="currentColor" ${st(2)}/><path d="M19 58c0-14 5.5-24 13-24s13 10 13 24z" fill="currentColor" ${st(2)}/><path d="M25 12C27 4 37 4 39 12" fill="none" stroke="${GOLD}" stroke-width="2.4"/>${star4(10, 14, 3.4)}${star4(54, 12, 3.8)}`,
+  charm: () => glow(32, 32, 24, 0.18) + `<path d="M32 54C17 44 9 36 9 26.5 9 19.5 14.5 14.5 21 14.5c4.6 0 8.4 2.6 11 6.2 2.6-3.6 6.4-6.2 11-6.2 6.5 0 12 5 12 12 0 9.5-8 17.5-23 27.5z" fill="#e2558c" ${st()}/><path d="M32 40c-5 0-7-4-5-7s7-3 8 1-2 7-6 6" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round"/>${star4(54, 12, 4.4)}${star4(10, 44, 3.6)}${star4(48, 54, 3)}`,
+  swap: () => `<path d="M22 37C14 31 10 27 10 22c0-3.5 2.6-6 6-6 2.4 0 4.6 1.4 6 3.4 1.4-2 3.6-3.4 6-3.4 3.4 0 6 2.5 6 6 0 5-4 9-12 15z" transform="translate(-3 4)" fill="#d23a2c" ${st(2)}/><path d="M44 49c-8-6-12-10-12-15 0-3.5 2.6-6 6-6 2.4 0 4.6 1.4 6 3.4 1.4-2 3.6-3.4 6-3.4 3.4 0 6 2.5 6 6 0 5-4 9-12 15z" transform="translate(3 -2)" fill="#5f9a54" ${st(2)}/><path d="M34 10c9 0 16 4 18 12" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round"/><path d="M48 18l4.4 5 3.6-5.6" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/><path d="M30 56c-9 0-16-4-18-12" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round"/><path d="M16 48l-4.4-5-3.6 5.6" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>`,
+  fireball: () => `<path d="M32 2l5 12 11-7-2 13 13 1-10 9 9 10-13 1 3 13-11-7-5 12-5-12-11 7 3-13-13-1 9-10-10-9 13-1-2-13 11 7z" fill="#f4a024" ${st(2)}/><circle cx="32" cy="32" r="14" fill="#ffcf4f" ${st(1.8)}/><circle cx="32" cy="32" r="7.5" fill="#fff4c4"/>`,
+  /* paladin */
+  sword: () => rot(35, swordG()),
+  oath: () => rays(32, 30, 18, 29, 12, GOLD, 2.2, 0.55) + rot(0, swordG(), 32, 32, 0.92) + motion('M8 50l8-6M56 50l-8-6'),
+  hammer: () => rot(-30, `<rect x="29.5" y="20" width="5" height="40" rx="2.4" fill="${WOOD}" ${st(2)}/><rect x="14" y="6" width="36" height="17" rx="3" fill="${STEEL}" ${st()}/><rect x="14" y="11" width="36" height="6.5" fill="currentColor" ${st(1.6)}/>${shine('M18 9h12')}<circle cx="32" cy="58" r="3" fill="${GOLD}" ${st(1.5)}/>`),
+  smite: () => rays(32, 32, 14, 30, 16, GOLD, 2.4, 0.75) + rot(35, swordG()),
+  horn: () => `<path d="M8 52C13 32 29 19 49 14L56 27C39 30 25 39 17 56Z" fill="${BONE}" ${st()}/><path d="M20 38l8 9M31 27l6 10" stroke="currentColor" stroke-width="4.5"/><ellipse cx="52.6" cy="20.4" rx="4.4" ry="8" transform="rotate(-24 52.6 20.4)" fill="${GOLD}" ${st(2)}/>${motion('M58 6l3-3M60 16h4M58 30l4 2')}`,
+  finger: () => handG() + `<rect x="22" y="56" width="20" height="7" rx="2" fill="currentColor" ${st(1.8)}/>` + motion('M44 10c4 2 6 5 6 9M22 10c-4 2-6 5-6 9'),
+  banner: () => `<rect x="13" y="4" width="4.6" height="57" rx="2.2" fill="${WOOD}" ${st(2)}/><circle cx="15.3" cy="4.5" r="3" fill="${GOLD}" ${st(1.5)}/><path d="M18 9H55L47 21L55 33H18Z" fill="currentColor" ${st()}/><circle cx="34" cy="21" r="5.5" fill="${GOLD}" ${st(1.6)}/>` + rays(34, 21, 7.5, 10.5, 8, GOLD, 1.8, 1),
+  hands: () => glow(32, 26, 16, 0.3) + `<circle cx="32" cy="26" r="8" fill="${GOLD}" ${st(1.6)}/>${rays(32, 26, 11, 16, 10, GOLD, 2, 0.8)}<path d="M6 40c6 0 12 4 16 9 2 2.4 5 4 10 4M58 40c-6 0-12 4-16 9-2 2.4-5 4-10 4" fill="none" ${st(2)}/><path d="M6 40c6 0 12 4 16 9 2 2.4 5 4 10 4v8H18C10 61 6 54 6 40zM58 40c-6 0-12 4-16 9-2 2.4-5 4-10 4v8h14c8 0 12-7 12-21z" fill="${SKIN}" ${st(2)}/>`,
+  parry: () => rot(-38, swordG(), 34, 30, 0.85) + `<circle cx="22" cy="44" r="14" fill="currentColor" ${st()}/><circle cx="22" cy="44" r="9.5" fill="none" stroke="${GOLD}" stroke-width="1.8"/><circle cx="22" cy="44" r="3.4" fill="${STEEL}" ${st(1.4)}/>` + motion('M44 54c6-2 10-6 12-12'),
+  aegis: () => shieldKite() + `<circle cx="32" cy="29" r="6.5" fill="${GOLD}" ${st(1.6)}/>` + rays(32, 29, 9, 13, 10, GOLD, 2, 1),
+  steed: () => `<path d="M17 60C15 47 17 37 23 29L21 18C20 12 25 8 29 10L33 12C41 10 51 16 55 26C57 32 55 36 51 36L43 34C41 40 39 48 39 60Z" fill="#8a6440" ${st()}/><path d="M29 10C25 16 23 23 23 30C21 37 19 45 17 53" stroke="${OUT}" stroke-width="5" fill="none" stroke-linecap="round"/><path d="M39 16L54 26.5L50 32.5L37 24Z" fill="currentColor" ${st(1.8)}/><circle cx="37" cy="20" r="2.2" fill="${OUT}"/><circle cx="52" cy="32.5" r="1.4" fill="${OUT}"/><path d="M24 40c5 2 11 2 16 0" stroke="${GOLD}" stroke-width="3" fill="none"/>`,
+  prayer: () => rays(32, 26, 14, 30, 14, GOLD, 2.2, 0.7) + `<path d="M31 58V30c0-6-1-12-3-16-2-4-6-3-6 1v20l-6 8c-2 3-1 6 2 7l7 3v5zM33 58V30c0-6 1-12 3-16 2-4 6-3 6 1v20l6 8c2 3 1 6-2 7l-7 3v5z" fill="${SKIN}" ${st(2)}/><rect x="22" y="55" width="20" height="7" rx="2" fill="currentColor" ${st(1.8)}/>`,
+  purge: () => glow(32, 32, 28, 0.25) + rays(32, 32, 10, 30, 16, GOLD, 3, 0.9) + `<circle cx="32" cy="32" r="9" fill="#fff6d0" ${st(1.6)}/>` + [[10, 12, -30], [52, 14, 25], [12, 52, 200], [54, 50, 150]].map(([x, y, r]) => `<path d="M${x - 5} ${y - 4}L${x + 5} ${y - 3}L${x + 2} ${y + 5}Z" transform="rotate(${r} ${x} ${y})" fill="${STEEL2}" ${st(1.4)}/>`).join(''),
+  /* rogue */
+  knife: () => rot(42, daggerG(), 35, 30) + motion('M8 54l8-8M5 43l8-4M17 61l5-7'),
+  knives2: () => rot(28, daggerG(), 27, 32, 0.84) + rot(56, daggerG(), 41, 31, 0.84) + motion('M6 54l8-7M4 44l8-3'),
+  knives3: () => rot(16, daggerG(), 21, 34, 0.74) + rot(40, daggerG(), 33, 30, 0.74) + rot(64, daggerG(), 45, 34, 0.74) + motion('M4 56l7-6M3 46l7-3'),
+  bandolier: () => `<path d="M10 8C22 22 38 42 54 58" stroke="${OUT}" stroke-width="11" stroke-linecap="round"/><path d="M10 8C22 22 38 42 54 58" stroke="#7a4f2a" stroke-width="8" stroke-linecap="round"/>` + [[20, 20], [30, 31.5], [40, 43]].map(([x, y]) => rot(-48, daggerG(), x, y, 0.42)).join('') + `<rect x="44" y="45" width="10" height="9" rx="1.5" transform="rotate(42 49 49.5)" fill="${GOLD}" ${st(1.6)}/>`,
+  potion: () => `<path d="M26 8h12v14c8 3 13 10 13 18a19 19 0 0 1-38 0c0-8 5-15 13-18z" fill="#e8f1f7" fill-opacity=".9" ${st()}/><path d="M15 40a17 17 0 0 0 34 0c0-2-.4-4-1-5.6H16c-.6 1.6-1 3.6-1 5.6z" fill="currentColor"/><path d="M15 40a17 17 0 0 0 34 0" fill="none" ${st(2)}/><rect x="24" y="3" width="16" height="7" rx="2" fill="${WOOD}" ${st(2)}/>${shine('M21 30c-2 3-3 6-3 9', 2.2)}<circle cx="38" cy="45" r="2.2" fill="#fff" opacity=".6"/><circle cx="30" cy="50" r="1.5" fill="#fff" opacity=".6"/>`,
+  wyvern: () => `<path d="M30 38C22 25 12 20 4 20C9 26 10 32 10 38C14 36 19 36 23 40Z" fill="currentColor" opacity=".85" ${st(2)}/><path d="M34 34C40 20 50 14 60 14C56 21 55 28 56 34C51 32 46 33 42 37Z" fill="currentColor" opacity=".85" ${st(2)}/><path d="M18 56C22 46 28 38 36 36C42 35 46 31 48 26L54 24C55 31 50 38 44 40C38 42 32 48 30 56Z" fill="#6c8f4e" ${st()}/><path d="M48 26l2-6 3 4" fill="#6c8f4e" ${st(1.6)}/><circle cx="51" cy="28" r="1.4" fill="${OUT}"/><path d="M18 56c-4 2-8 1-10-2" fill="none" stroke="#6c8f4e" stroke-width="3.4" stroke-linecap="round"/>`,
+  muscle: () => `<circle cx="32" cy="14" r="9" fill="#c98f63" ${st(2)}/><path d="M23 12c3-4 15-4 18 0" fill="none" stroke="currentColor" stroke-width="4.4"/><path d="M28 16h3M33 16h3" stroke="${OUT}" stroke-width="2" stroke-linecap="round"/><path d="M10 60c0-16 9-28 22-28s22 12 22 28z" fill="#5a4a3e" ${st()}/><path d="M14 46c6-4 12-4 18 0 6-4 12-4 18 0l-3 6c-5-3-10-3-15 0-5-3-10-3-15 0z" fill="#c98f63" ${st(2)}/>`,
+  bouncer: () => `<path d="M6 62c0-20 11-34 26-34s26 14 26 34z" fill="#3e3a44" ${st()}/><circle cx="32" cy="18" r="12" fill="#c98f63" ${st()}/><path d="M24 15l6 2M40 15l-6 2" stroke="${OUT}" stroke-width="2.6" stroke-linecap="round"/><path d="M27 25c3-1.5 7-1.5 10 0" fill="none" ${st(2)}/><path d="M12 46c7-5 13-5 20 0 7-5 13-5 20 0l-3 7c-6-4-11-4-17 0-6-4-11-4-17 0z" fill="#c98f63" ${st(2)}/><rect x="22" y="33" width="20" height="5" rx="2" fill="currentColor" ${st(1.4)}/>`,
+  cloak: () => `<path d="M32 6C20 6 14 18 14 30C14 44 10 52 8 59H56C54 52 50 44 50 30C50 18 44 6 32 6Z" fill="currentColor" ${st()}/><path d="M32 16C25 16 21 23 21 31C21 38 26 42 32 42C38 42 43 38 43 31C43 23 39 16 32 16Z" fill="${OUT}"/><circle cx="27.5" cy="31" r="1.9" fill="#ffd25e"/><circle cx="36.5" cy="31" r="1.9" fill="#ffd25e"/><path d="M4 56c4-4 8-2 10-5s6-3 8 0M42 52c3-3 7-3 9 0s6 2 9-2" fill="none" stroke="#b9b2c4" stroke-width="3" stroke-linecap="round" opacity=".85"/>`,
+  mask: () => `<path d="M5 27C13 20 24 22 32 27C40 22 51 20 59 27C59 37 53 43 45 43C39 43 35 39 32 36C29 39 25 43 19 43C11 43 5 37 5 27Z" fill="currentColor" ${st()}/><ellipse cx="20" cy="31" rx="6.5" ry="4.4" fill="${OUT}"/><ellipse cx="44" cy="31" rx="6.5" ry="4.4" fill="${OUT}"/><path d="M5 27C2 30 1 36 3 42M59 27C62 30 63 36 61 42" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"/>${shine('M12 25c4-2 9-2 13 0', 2)}<path d="M10 54c4-4 8-2 11-5s7-2 9 1M34 56c3-3 7-3 9 0s6 2 9-2" fill="none" stroke="#b9b2c4" stroke-width="3" stroke-linecap="round" opacity=".8"/>`,
+  cheap: () => rot(0, shieldKite('#c9a46a'), 26, 36, 0.7) + `<path d="M26 22l-3 8 5 4-4 8 3 7" fill="none" stroke="${OUT}" stroke-width="2.2" stroke-linecap="round"/>` + rot(-140, daggerG(), 44, 26, 0.72),
+  hand: () => `<g transform="rotate(-16 34 24)"><rect x="24" y="4" width="22" height="30" rx="3" fill="currentColor" ${st(2)}/><rect x="27" y="7" width="16" height="24" rx="2" fill="none" stroke="${GOLD}" stroke-width="1.6"/><path d="M35 12l4 7-4 7-4-7z" fill="${GOLD}"/></g><path d="M8 62V46c0-5 3-9 8-11l14-6c3-1 5 2 3 4l-9 6h16c3 0 3 4 0 4H26" fill="${SKIN}" ${st(2)}/><path d="M30 39h12c3 0 3 4 0 4H30M30 43h10c3 0 3 4 0 4H28M28 47h8c3 0 3 4 0 4H20" fill="${SKIN}" ${st(2)}/>`,
+  /* hero emblems */
+  hat: () => `<path d="M9 49C21 44.5 43 44.5 55 49L51 55.5C39 52 25 52 13 55.5Z" fill="currentColor" ${st()}/><path d="M20 47.5C24 34 28 18 41 5C40.5 16 42.5 31 46 47.5Z" fill="currentColor" ${st()}/><path d="M21.6 42.4C28 40.8 38 40.8 45 42.4L45.7 46.4C38 44.8 28 44.8 20.8 46.4Z" fill="${GOLD}" ${st(1.4)}/>${star4(34, 26, 4.6)}${star4(29, 36, 2.8)}${star4(39, 16, 2.6)}`,
+  sun: () => rays(32, 32, 15, 28, 16, GOLD, 3.2, 1) + `<circle cx="32" cy="32" r="13" fill="${GOLD}" ${st()}/><circle cx="32" cy="32" r="8.5" fill="currentColor" ${st(1.6)}/>${shine('M24 26a10 10 0 0 1 6-5', 2)}`,
+};
+/* what a card shows: its own picture, or its hero's weapon */
+function artKey(card) { return card.art && ART[card.art] ? card.art : (HEROES[card.hero] ? HEROES[card.hero].weapon : 'axe'); }
+const ART_CACHE = {};
+function artSVG(key, cls = 'art') { const inner = ART_CACHE[key] || (ART_CACHE[key] = ART[key] ? ART[key]() : ''); return `<svg viewBox="0 0 64 64" class="${cls}" aria-hidden="true">${inner}</svg>`; }
+function emblemSVG(hero) { return artSVG(HEROES[hero].emblem, 'emb-art'); }
+
+/* ── the heroes' colours and patterns, and the cellar's materials ── */
+function mixHex(a, b, t) { const pa = a.match(/\w\w/g).map(h => parseInt(h, 16)), pb = b.match(/\w\w/g).map(h => parseInt(h, 16)); return '#' + pa.map((v, i) => Math.round(v + (pb[i] - v) * t).toString(16).padStart(2, '0')).join(''); }
+const svgURL = svg => `url("data:image/svg+xml,${encodeURIComponent(svg)}")`;
+const PATTERNS = {
+  barbarian: `<svg xmlns='http://www.w3.org/2000/svg' width='46' height='46'><g stroke='rgba(0,0,0,.2)' stroke-width='2.6' stroke-linecap='round'><path d='M8 32L19 10M14 36L25 14M20 40L31 18'/></g><circle cx='38' cy='9' r='1.7' fill='rgba(255,230,200,.2)'/><circle cx='36' cy='38' r='1.2' fill='rgba(255,230,200,.16)'/></svg>`,
+  wizard: `<svg xmlns='http://www.w3.org/2000/svg' width='48' height='48'><path d='M12 5l1.7 4.6L18.3 11l-4.6 1.7L12 17.3l-1.7-4.6L5.7 11l4.6-1.7z' fill='rgba(255,255,255,.2)'/><path d='M35 28l1 2.6 2.6 1-2.6 1-1 2.6-1-2.6-2.6-1 2.6-1z' fill='rgba(255,255,255,.18)'/><circle cx='34' cy='9' r='1.3' fill='rgba(255,255,255,.24)'/><circle cx='14' cy='38' r='1.6' fill='rgba(255,255,255,.18)'/><circle cx='44' cy='44' r='1' fill='rgba(255,255,255,.22)'/></svg>`,
+  paladin: `<svg xmlns='http://www.w3.org/2000/svg' width='40' height='40'><circle cx='20' cy='20' r='3.6' fill='rgba(255,244,210,.2)'/><g stroke='rgba(255,244,210,.18)' stroke-width='1.4' stroke-linecap='round'><path d='M20 11V6M20 29v5M11 20H6M29 20h5M13.6 13.6l-3.4-3.4M26.4 26.4l3.4 3.4M26.4 13.6l3.4-3.4M13.6 26.4l-3.4 3.4'/></g><path d='M0 0h40v40' fill='none' stroke='rgba(0,0,0,.1)' stroke-width='1.2'/></svg>`,
+  rogue: `<svg xmlns='http://www.w3.org/2000/svg' width='28' height='28'><path d='M14 0L28 14L14 28L0 14Z' fill='none' stroke='rgba(0,0,0,.26)' stroke-width='1.4'/><circle cx='14' cy='14' r='1.6' fill='rgba(255,255,255,.16)'/><circle cx='0' cy='0' r='1.2' fill='rgba(255,255,255,.12)'/><circle cx='28' cy='28' r='1.2' fill='rgba(255,255,255,.12)'/></svg>`,
+};
+function installHeroStyles() {
+  let css = '';
+  for (const [id, H] of Object.entries(HEROES)) {
+    const hw2 = mixHex(H.wash, H.color, 0.2), hw3 = mixHex(H.wash, H.color, 0.42);
+    css += `.h-${id}{--h:${H.color};--hd:${H.deep};--hw:${H.wash};--hw2:${hw2};--hw3:${hw3};--pat:${svgURL(PATTERNS[id] || PATTERNS.rogue)}}\n`;
+  }
+  const el = document.createElement('style'); el.id = 'hero-styles'; el.textContent = css; document.head.appendChild(el);
+}
+function installMaterials() {
+  const parch = `<svg xmlns='http://www.w3.org/2000/svg' width='260' height='260'><filter id='f'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3' seed='7' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 .42 0 0 0 0 .3 0 0 0 0 .16 0 0 0 .7 -.12'/></filter><rect width='260' height='260' filter='url(#f)' opacity='.45'/><filter id='g'><feTurbulence type='fractalNoise' baseFrequency='.012' numOctaves='2' seed='3' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 .55 0 0 0 0 .38 0 0 0 0 .18 0 0 0 .9 -.35'/></filter><rect width='260' height='260' filter='url(#g)' opacity='.4'/></svg>`;
+  const stone = `<svg xmlns='http://www.w3.org/2000/svg' width='1800' height='1800'><filter id='s'><feTurbulence type='fractalNoise' baseFrequency='.005' numOctaves='4' seed='19' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 .16 0 0 0 0 .14 0 0 0 0 .18 0 0 0 1.1 -.32'/></filter><rect width='1800' height='1800' filter='url(#s)'/><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.75' numOctaves='2' seed='4' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 .5 -.18'/></filter><rect width='1800' height='1800' filter='url(#n)' opacity='.55'/></svg>`;
+  const leather = `<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200'><filter id='l'><feTurbulence type='fractalNoise' baseFrequency='.55' numOctaves='2' seed='5' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 .08 0 0 0 0 .05 0 0 0 0 .07 0 0 0 .8 -.2'/></filter><rect width='200' height='200' filter='url(#l)'/></svg>`;
+  /* the chalk ring on the floor: two rings and runes between them */
+  const runes = [];
+  for (let i = 0; i < 28; i++) {
+    const a = i * 2 * Math.PI / 28, x = 190 + Math.cos(a) * 176, y = 100 + Math.sin(a) * 89, k = i % 4;
+    const g = ['M-4 -5L0 5L4 -5', 'M-4 5V-5L4 0L-4 5', 'M0 -6V6M-4 -2L4 2', 'M-4 -4H4M0 -4V5M-3 5H3'][k];
+    runes.push(`<path d='${g}' transform='translate(${x.toFixed(1)} ${y.toFixed(1)}) rotate(${(a * 180 / Math.PI + 90).toFixed(0)})' fill='none' stroke='rgba(240,228,205,.42)' stroke-width='1.5' stroke-linecap='round'/>`);
+  }
+  const ring = `<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 380 200'><ellipse cx='190' cy='100' rx='186' ry='96' fill='rgba(0,0,0,.18)'/><ellipse cx='190' cy='100' rx='186' ry='96' fill='none' stroke='rgba(240,228,205,.45)' stroke-width='2.4'/><ellipse cx='190' cy='100' rx='166' ry='82' fill='none' stroke='rgba(240,228,205,.32)' stroke-width='1.6'/><ellipse cx='190' cy='100' rx='120' ry='58' fill='none' stroke='rgba(240,228,205,.14)' stroke-width='1.2' stroke-dasharray='6 8'/>${runes.join('')}</svg>`;
+  const rule = `<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 420 14'><path d='M0 7h185M235 7h185' stroke='rgba(244,214,139,.7)' stroke-width='1.2'/><path d='M210 1l7 6-7 6-7-6z' fill='rgba(244,214,139,.9)'/><circle cx='193' cy='7' r='2' fill='rgba(244,214,139,.8)'/><circle cx='227' cy='7' r='2' fill='rgba(244,214,139,.8)'/></svg>`;
+  const R = document.documentElement.style;
+  R.setProperty('--parch-tex', svgURL(parch)); R.setProperty('--stone-tex', svgURL(stone)); R.setProperty('--leather-tex', svgURL(leather));
+  R.setProperty('--ring', svgURL(ring)); R.setProperty('--rule', svgURL(rule));
+}
+
+/* ── Sounds: steel, shields and spells, synthesized with WebAudio ── */
+const SFX = {
+  ctx: null, on: true,
+  init() { if (this.ctx) { if (this.ctx.state === 'suspended') this.ctx.resume(); return; } try { const AC = window.AudioContext || window.webkitAudioContext; if (AC) this.ctx = new AC(); } catch (e) { } },
+  tone(f, t0, dur, type = 'sine', vol = 0.12, slide = 0) {
+    const c = this.ctx, o = c.createOscillator(), g = c.createGain(), t = c.currentTime + t0;
+    o.type = type; o.frequency.setValueAtTime(f, t); if (slide) o.frequency.exponentialRampToValueAtTime(Math.max(30, f + slide), t + dur);
+    g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(vol, t + 0.01); g.gain.exponentialRampToValueAtTime(0.0008, t + dur);
+    o.connect(g); g.connect(c.destination); o.start(t); o.stop(t + dur + 0.02);
+  },
+  noise(t0, dur, vol = 0.1, freq = 900, type = 'highpass') {
+    const c = this.ctx, n = Math.floor(c.sampleRate * dur), b = c.createBuffer(1, n, c.sampleRate), d = b.getChannelData(0);
+    for (let i = 0; i < n; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / n, 2);
+    const s = c.createBufferSource(), f = c.createBiquadFilter(), g = c.createGain(), t = c.currentTime + t0;
+    f.type = type; f.frequency.value = freq; g.gain.value = vol; s.buffer = b; s.connect(f); f.connect(g); g.connect(c.destination); s.start(t);
+  },
+  play(name) {
+    if (!this.on) return;
+    this.init(); if (!this.ctx) return;
+    switch (name) {
+      case 'click': this.noise(0, 0.03, 0.05, 2500); break;
+      case 'whoosh': this.noise(0, 0.18, 0.05, 1200); break;
+      case 'card': this.noise(0, 0.08, 0.07, 1800); this.tone(660, 0.02, 0.06, 'triangle', 0.04); break;
+      case 'draw': this.noise(0, 0.06, 0.05, 2600); this.tone(880, 0.01, 0.05, 'triangle', 0.03); break;
+      case 'hit': this.noise(0, 0.12, 0.14, 700); this.tone(140, 0, 0.18, 'square', 0.06, -60); break;
+      case 'shield': this.tone(520, 0, 0.22, 'triangle', 0.07, -80); this.tone(1240, 0, 0.12, 'square', 0.02); this.noise(0, 0.05, 0.06, 3000); break;
+      case 'break': for (let i = 0; i < 5; i++) this.noise(i * 0.035, 0.09, 0.09, 2400 + i * 300); this.tone(300, 0, 0.25, 'sawtooth', 0.035, -180); break;
+      case 'raise': this.tone(330, 0, 0.12, 'triangle', 0.06); this.tone(495, 0.08, 0.16, 'triangle', 0.06); break;
+      case 'heal': [523, 784].forEach((f, i) => this.tone(f, i * 0.07, 0.25, 'sine', 0.07)); break;
+      case 'turn': this.tone(392, 0, 0.18, 'triangle', 0.07); this.tone(523, 0.12, 0.25, 'triangle', 0.07); break;
+      case 'magic': [988, 1319, 1568, 1976].forEach((f, i) => this.tone(f, i * 0.05, 0.22, 'sine', 0.04)); break;
+      case 'fire': this.noise(0, 0.6, 0.16, 500, 'lowpass'); this.tone(90, 0, 0.6, 'sawtooth', 0.05, -40); break;
+      case 'roar': this.tone(110, 0, 0.55, 'sawtooth', 0.07, -40); this.tone(165, 0.02, 0.5, 'sawtooth', 0.04, -50); this.noise(0, 0.4, 0.08, 400, 'lowpass'); break;
+      case 'steal': this.tone(1046, 0, 0.08, 'triangle', 0.05); this.tone(784, 0.06, 0.1, 'triangle', 0.05); this.noise(0.02, 0.1, 0.05, 2200); break;
+      case 'vanish': this.noise(0, 0.4, 0.06, 900, 'lowpass'); this.tone(660, 0, 0.4, 'sine', 0.04, -420); break;
+      case 'swap': this.tone(440, 0, 0.18, 'sine', 0.06, 220); this.tone(660, 0.12, 0.18, 'sine', 0.06, -220); break;
+      case 'bad': this.tone(196, 0, 0.18, 'sawtooth', 0.04, -40); break;
+      case 'win': [392, 523, 659, 784, 1046].forEach((f, i) => this.tone(f, i * 0.14, 0.6, 'triangle', 0.09)); break;
+      case 'lose': [392, 349, 311, 262].forEach((f, i) => this.tone(f, i * 0.28, 0.6, 'triangle', 0.09)); break;
+    }
+  },
+};
+
+/* ── View: cards, seats and the table, drawn from the state ── */
+const $ = s => document.querySelector(s), $$ = s => [...document.querySelectorAll(s)];
+const UI = { screen: 'menu', sel: null, aim: null, busy: false, last: null, view: null, drawer: false, n: 2, hero: 'barbarian', known: null, lastSetup: {} };
+const ICON = {
+  menu: '<svg viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>',
+  scroll: '<svg viewBox="0 0 24 24"><path d="M6 4h11a3 3 0 0 1 0 6h-1v8a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2zM16 4a3 3 0 0 0-3 3v3M8 9h4M8 13h5M8 16h4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+  back: '<svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+  info: '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M12 11v6M12 7.6v.2" stroke="currentColor" stroke-width="2.3" stroke-linecap="round"/></svg>',
+  book: '<svg viewBox="0 0 24 24"><path d="M12 6.6C10 5.1 7.5 4.6 4 4.9v13c3.5-.3 6 .2 8 1.7 2-1.5 4.5-2 8-1.7v-13c-3.5-.3-6 .2-8 1.7zM12 6.6v13" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>',
+};
+/* a region is rewritten only when its markup changes, so nothing under the pointer is rebuilt for nothing */
+function put(el, html) { if (typeof el === 'string') el = $(el); if (!el || el._html === html) return false; el.innerHTML = html; el._html = html; return true; }
+function forget(el) { if (el) el._html = null; }
+const isMyTurn = () => S && S.turn === 0 && S.winner == null && !UI.busy && S.players[0].alive;
+const humanPending = () => S && S.pending && S.pending.pid === 0 ? S.pending : null;
+/* the card the player is about to play: the one chosen in hand, or a stolen card that must be played now */
+function selCard() { if (!S) return null; const pd = humanPending(); if (pd) return pd.card; return UI.sel != null ? S.players[0].hand.find(c => c.uid === UI.sel) || null : null; }
+const nameOf = pid => (pid === 0 ? 'You' : HEROES[S.players[pid].hero].name);
+const objOf = pid => (pid === 0 ? 'you' : HEROES[S.players[pid].hero].name);
+
+/* ── card text: built from the symbols, so it always says what the card does ── */
+const kwS = (ch, t) => `<b class="kw k-${ch}">${t}</b>`;
+function symbolText(sym) {
+  const n = ch => count(sym, ch), out = [];
+  if (n('A')) out.push(`Deal ${kwS('A', `${n('A')} damage`)}.`);
+  if (n('S')) out.push(`${kwS('S', `Shield ${n('S')}`)}: stays in front of you.`);
+  if (n('H')) out.push(`${kwS('H', `Heal ${n('H')}`)}.`);
+  if (n('D')) out.push(`${kwS('D', n('D') === 1 ? 'Draw a card' : `Draw ${n('D')} cards`)}.`);
+  if (n('P')) out.push(`${kwS('P', n('P') === 1 ? 'Play another card' : `Play ${n('P')} more cards`)}.`);
+  return out;
+}
+function cardTextHTML(card, full) {
+  const parts = [];
+  if (card.power) parts.push(esc(full ? POWERS[card.power].text : POWERS[card.power].short));
+  return parts.concat(symbolText(card.sym)).join(' ');
+}
+function cardHTML(card, o = {}) {
+  const syms = (card.power ? ['M'] : []).concat([...card.sym].sort((a, b) => SYM_ORDER.indexOf(a) - SYM_ORDER.indexOf(b))).map(ch => symSVG(ch, 30)).join('');
+  const many = card.sym.length + (card.power ? 1 : 0) > 4;
+  return `<div class="card h-${card.hero} ${o.size || ''}${card.power ? ' mighty' : ''}${many ? ' many' : ''} ${o.cls || ''}" data-uid="${card.uid || ''}" ${o.attrs || ''} style="${o.style || ''}"><div class="cf"><div class="cb"><div class="cn"><span>${esc(card.name)}</span></div><div class="cart">${artSVG(artKey(card))}</div><div class="ct"><span>${cardTextHTML(card)}</span></div></div></div><div class="csy">${syms}</div>${card.power ? `<span class="ckind">Mighty</span>` : ''}</div>`;
+}
+/* a card from a deck list (no uid): for menus, the codex and the hero sheet */
+function staticCard(hero, d) { return { uid: 0, hero, id: d.id, name: d.name, sym: d.sym || '', power: d.power || null, art: d.art || null }; }
+
+/* ── seats ── */
+function shieldChipHTML(sh, holder) {
+  const max = shieldMax(sh), left = shieldLeft(sh), lent = sh.owner !== holder.id;
+  const pips = Array.from({ length: max }, (_, i) => symSVG('S', 17, i < left ? '' : 'used')).join('');
+  const tip = `${sh.card.name}: shield ${left} of ${max} left.${lent ? ` Taken from ${objOf(sh.owner)}; it goes back to their discard pile when it breaks.` : ''}`;
+  return `<button class="shc h-${sh.card.hero}" data-sh="${sh.card.uid}" data-pid="${holder.id}" data-tip="${esc(tip)}" aria-label="${esc(tip)}"><span class="shc-art">${artSVG(artKey(sh.card), 'a')}</span><span class="shc-pips">${pips}</span>${lent ? `<i class="lent h-${S.players[sh.owner].hero}" style="background:var(--h)"></i>` : ''}</button>`;
+}
+function dispHP(P) { return UI.view && UI.view[P.id] != null ? UI.view[P.id] : P.hp; }
+function hpParts(P, hp) {
+  const low = hp <= 3 && P.alive ? ' low' : '';
+  return {
+    heart: `<span class="hpheart${low}" data-tip="${hp} of ${P.maxHP} HP. At 0 they are knocked out.">${heartSVG()}<b>${hp}</b></span>`,
+    track: `<div class="hptrack" aria-hidden="true">${Array.from({ length: P.maxHP }, (_, i) => `<i${i < hp ? ' class="on"' : ''}></i>`).join('')}</div>`,
+  };
+}
+function seatHTML(P, mine, mini) {
+  const H = HEROES[P.hero], hp = Math.max(0, dispHP(P)), acting = S.turn === P.id && S.winner == null, { heart, track } = hpParts(P, hp);
+  const shields = P.shields.length ? P.shields.map(sh => shieldChipHTML(sh, P)).join('') : `<span class="none">${mini ? 'No shield' : 'No shields'}</span>`;
+  const stash = mine
+    ? `<span class="piles"><button class="pile" data-act="deck" data-tip="Cards left to draw">Deck ${P.deck.length}</button><button class="pile" data-act="discard" data-tip="Cards already used">Discard ${P.discard.length}</button></span>`
+    : `<span class="backs" data-tip="${P.hand.length} cards in hand">${`<i class="cback h-${P.hero}"></i>`.repeat(Math.min(P.hand.length, mini ? 3 : 5))}<b>${P.hand.length}</b></span>${mini ? '' : `<span class="piles"><span class="pile static" data-tip="Cards left in their deck">Deck ${P.deck.length}</span><span class="pile static" data-tip="Cards in their discard pile">Discard ${P.discard.length}</span></span>`}`;
+  const flags = (acting && !mine ? '<span class="flag">playing</span>' : '') + (P.disguised ? `<span class="flag vanish" data-tip="Vanished: until ${mine ? 'your' : 'their'} next turn no opponent's card can touch ${mine ? 'you' : 'them'} or ${mine ? 'your' : 'their'} shields.">vanished</span>` : '') + (P.alive ? '' : '<span class="flag out">knocked out</span>');
+  return `<section class="seat h-${P.hero}${mine ? ' mine' : ''}${mini ? ' mini' : ''}${acting ? ' turn' : ''}${P.alive ? '' : ' out'}${P.disguised ? ' vanished' : ''}" id="seat-${P.id}" data-pid="${P.id}" aria-label="${esc(nameOf(P.id))}, the ${H.cls}: ${hp} of ${P.maxHP} HP">
+<header class="seat-banner"><span class="emb">${emblemSVG(P.hero)}</span><span class="sname"><b>${esc(mine ? `You · ${H.name}` : mini ? H.name : `${H.name} ${H.title}`)}</b><small>${H.cls}</small></span>${flags}${heart}</header>${track}
+<div class="seat-body"><div class="shields">${shields}</div><div class="stash">${stash}</div></div>
+<div class="chips"></div><div class="floats"></div></section>`;
+}
+
+/* ── the top bar ── */
+function renderTopbar() {
+  const who = S.winner != null ? '' : S.turn === 0 ? 'Your turn' : `${nameOf(S.turn)} is playing`;
+  const owed = S.turn === 0 && S.winner == null ? S.plays + (humanPending() ? 1 : 0) : 0;
+  put('#topbar', `<button class="icon-btn" data-act="pause" aria-label="Menu" data-tip="Menu (Esc)">${ICON.menu}</button>
+<div class="tb-mid"><span class="pill">Round ${S.round}</span>${who ? `<span class="pill ${S.turn === 0 ? 'you' : ''}">${esc(who)}</span>` : ''}${owed > 0 ? `<span class="pips" data-tip="Cards you still have to play this turn">${Array.from({ length: Math.min(owed, 6) }, () => symSVG('P', 20, 'pip')).join('')}${owed > 6 ? `+${owed - 6}` : ''}</span>` : ''}</div>
+<div class="tb-right"><button class="speed desk-only" data-act="speed" data-tip="Animation speed (S)">${SPEEDS[SET.speed].label}</button><button class="icon-btn" data-act="codex" aria-label="Heroes and rules" data-tip="Heroes and rules (H)">${ICON.book}</button><button class="icon-btn" data-act="chronicle" aria-label="Battle log" data-tip="Battle log (L)">${ICON.scroll}</button></div>`);
+}
+
+/* ── the hand: one straight row; rebuilt only when its cards change, so a scrolled hand stays put ── */
+function renderHand() {
+  const me = S.players[0], mine = isMyTurn() && !humanPending(), hand = $('#hand');
+  const key = `${S.seed}|${innerWidth}x${innerHeight}|${mine ? 1 : 0}|${me.hand.map(c => c.uid).join(',')}`;
+  if (hand.dataset.key !== key) {
+    const keep = hand.scrollLeft, known = UI.known || new Set();
+    hand.innerHTML = me.hand.map((c, i) => cardHTML(c, { cls: (mine ? 'playable' : 'dim') + (known.size && !known.has(c.uid) ? ' fresh' : ''), attrs: `data-i="${i}" tabindex="0" role="button" aria-label="${esc(c.name)}"` })).join('') || '<div class="hand-empty">No cards in hand</div>';
+    UI.known = new Set(me.hand.map(c => c.uid));
+    hand.dataset.key = key; hand.scrollLeft = keep;
+    markHand(); handNav(); return;
+  }
+  markHand();
+}
+function markHand() { for (const el of $('#hand').children) if (el.dataset.uid) el.classList.toggle('sel', +el.dataset.uid === UI.sel && !humanPending()); }
+let LATER = null;
+function later(fn) { if (LATER) { LATER.fn = fn; return; } LATER = { fn }; requestAnimationFrame(() => setTimeout(() => { const f = LATER.fn; LATER = null; f(); }, 0)); }
+function handNav() {
+  const h = $('#hand'), z = $('#handzone');
+  if (mobile()) { z.classList.remove('over'); return; }
+  const max = h.scrollWidth - h.clientWidth, over = max > 2;
+  z.classList.toggle('over', over);
+  if (!over) return;
+  z.querySelector('.hand-nav.prev').disabled = h.scrollLeft <= 2;
+  z.querySelector('.hand-nav.next').disabled = h.scrollLeft >= max - 2;
+}
+function handStep(dir) { const h = $('#hand'), c = h.querySelector('.card'); if (c) h.scrollBy({ left: dir * (c.offsetWidth + 18), behavior: 'smooth' }); }
+
+/* ── aiming: which seats and shields the chosen card can be played on ── */
+function aimChoices(c) { const pd = humanPending(); if (!c) return [null]; return choicesFor(S, S.players[0], c); }
+/* the board is aimed at for attacks, shields and opponents; a card from the discard pile is chosen on a sheet */
+function boardAim(c) { const k = c && aimOf(c); return !!k && k !== 'discard' && aimChoices(c)[0] !== null; }
+/* the target the player has picked, or the only one there is */
+function chosenAim(c) {
+  if (!boardAim(c)) return null;
+  if (UI.aim) return UI.aim;
+  const all = aimChoices(c);
+  return all.length === 1 && !(aimOf(c) === 'attack' && S.players[all[0].t].shields.length > 1) ? all[0] : null;
+}
+function aimable(c) {
+  /* seat ids and shield uids that can be aimed at */
+  const seats = new Set(), shields = new Set();
+  if (!boardAim(c)) return { seats, shields };
+  const k = aimOf(c), all = aimChoices(c);
+  for (const ch of all) {
+    if (k === 'shield') shields.add(ch.sh);
+    else { seats.add(ch.t); if (k === 'attack') for (const sh of S.players[ch.t].shields) shields.add(sh.card.uid); }
+  }
+  return { seats, shields };
+}
+function aimLabel(ch) { if (!ch) return ''; if (ch.sh != null) { const f = findShield(S, ch.sh); return f ? `${f.sh.card.name}` : ''; } return objOf(ch.t); }
+function syncTargets() {
+  const c = (isMyTurn() || humanPending()) ? selCard() : null, A = aimable(c), cur = c && chosenAim(c);
+  for (const el of $$('#opps .seat, #me .seat')) { const pid = +el.dataset.pid, t = A.seats.has(pid); el.classList.toggle('targetable', t); el.classList.toggle('hot', t && cur && cur.t === pid && cur.sh == null); }
+  for (const el of $$('.shc')) { const u = +el.dataset.sh, t = A.shields.has(u); el.classList.toggle('targetable', t); el.classList.toggle('hot', t && cur && cur.sh === u); }
+}
+
+/* ── the stage, the action bar and the result tags ── */
+function renderStage() {
+  const c = selCard(), L = UI.last, sc = $('#stage-card');
+  let html = '', cap = '', pop = false;
+  if (c && (isMyTurn() || humanPending())) {
+    html = `<div class="stage-fit">${cardHTML(c, { size: 'lg' })}</div>`;
+    const t = chosenAim(c), k = aimOf(c);
+    cap = humanPending() ? `Stolen from ${objOf(S.pending.from)}: ${boardAim(c) && !t ? (k === 'shield' ? 'choose a shield' : 'choose a target') : 'play it now'}`
+      : boardAim(c) && !t ? (k === 'shield' ? 'Choose a shield in front of an opponent' : k === 'attack' ? 'Choose an opponent, or one of their shields' : 'Choose an opponent')
+      : t ? `On ${aimLabel(t)}` : 'Press Play to use it';
+  } else if (L) {
+    html = `<div class="stage-fit">${cardHTML(L.card, { size: 'lg' })}</div>`;
+    cap = `${nameOf(L.pid)} ${L.pid === 0 ? 'played' : 'plays'} ${L.card.name}${L.stolen ? ` (stolen from ${objOf(L.from)})` : ''}${L.t ? ' on ' + aimLabel(L.t) : ''}`;
+    pop = L.fresh; L.fresh = false;
+  }
+  const changed = put(sc, html), h = $('#stage').clientHeight;
+  if (changed || +sc.dataset.h !== h) { fitStage(); sc.dataset.h = h; }
+  if (changed && pop && sc.querySelector('.card')) sc.querySelector('.card').classList.add('pop');
+  const ce = $('#stage-caption'); if (ce.textContent !== cap) ce.textContent = cap;
+}
+function stageScale() { const st = $('#stage'); const h = mobile() ? (document.documentElement.classList.contains('land') ? 166 : 212) : 302; return Math.max(0.42, Math.min(1, (st.clientHeight - 40) / h)); }
+function fitStage() { const f = $('#stage-card .stage-fit'), sc = $('#stage-card'); if (!f) { sc.style.height = ''; return; } const s = stageScale(); f.style.transform = `scale(${s})`; sc.style.height = Math.round(f.firstElementChild.offsetHeight * s) + 'px'; }
+function renderAction() { put('#prompt', actionHTML()); }
+function actionHTML() {
+  if (S.winner != null) return '';
+  if (S.turn !== 0) return `<span class="hint">${esc(nameOf(S.turn))} is playing…</span>`;
+  if (UI.busy) return '';
+  const pd = humanPending(), c = selCard();
+  if (DRAG.on) return `<span class="hint">${boardAim(c) ? 'Drop it on a target' : 'Drop it in the ring to play it'}</span>`;
+  if (!c) return `<span class="hint">${S.plays > 1 ? `Your turn: play ${S.plays} cards` : mobile() ? 'Your turn: tap a card to choose it' : 'Your turn: click a card, or drag it into the ring'}</span>`;
+  const land = document.documentElement.classList.contains('land'), t = chosenAim(c), need = boardAim(c) && !t;
+  const label = need ? (land ? 'Pick a target' : 'Choose a target') : t ? `${land ? 'On' : 'Play on'} ${aimLabel(t)}` : land ? 'Play' : `Play ${c.name}`;
+  return `<button class="icon-btn info" data-act="card-info" aria-label="Card details" data-tip="Card details (I)">${ICON.info}</button>${pd ? '' : '<button class="btn ghost small" data-act="cancel-sel">Cancel</button>'}<button class="btn" data-act="play-sel"${need ? ' disabled' : ''}>${esc(label)}</button>`;
+}
+function renderPreview() {
+  const want = {}, c = selCard();
+  if (c && (isMyTurn() || humanPending())) {
+    const t = chosenAim(c), pd = humanPending();
+    const ch = boardAim(c) ? t : aimOf(c) === 'discard' ? null : null;
+    const pv = boardAim(c) && !t ? null : aimOf(c) === 'discard' && S.players[0].discard.length ? null : previewPlay(S, 0, c.uid, ch, !!pd);
+    if (pv) pv.players.forEach((d, i) => {
+      const out = [];
+      if (d.dies) out.push(['ko', 'Knocked out']);
+      if (d.hp) out.push([d.hp < 0 ? 'dmg' : 'heal', `${d.hp > 0 ? '+' : ''}${d.hp} HP`]);
+      if (d.shield) out.push(['shield', `shield ${d.shield > 0 ? '+' : '−'}${Math.abs(d.shield)}`]);
+      if (d.lost) out.push(['shield', `${d.lost} shield${d.lost > 1 ? 's' : ''} gone`]);
+      if (d.vanish) out.push(['info', 'Vanished']);
+      if (d.steal) out.push(['info', 'Steals a card']);
+      const hand = i === 0 && !pd ? d.hand + 1 : d.hand;
+      if (hand) out.push(['cards', `${hand > 0 ? '+' : ''}${hand} card${Math.abs(hand) > 1 ? 's' : ''}`]);
+      want[i] = out.map(([k, txt]) => `<span class="chip ${k}">${txt}</span>`).join('');
+    });
+  }
+  for (const el of $$('.seat .chips')) put(el, want[el.parentElement.dataset.pid] || '');
+}
+function renderChronicle() {
+  put('#chronicle', `<h3>Battle log</h3><ul class="log">${S.log.slice(-80).reverse().map(e => { const t = logLine(e); return t ? `<li class="${e.k === 'turn' && e.pid === 0 ? 'r' : ''}">${t}</li>` : ''; }).join('')}</ul>`);
+}
+function logLine(e) {
+  switch (e.k) {
+    case 'play': return `${esc(nameOf(e.pid))} played <b>${esc(e.card)}</b>${e.from != null ? ` (stolen from ${esc(objOf(e.from))})` : ''}${e.t != null ? ' on ' + esc(objOf(e.t)) : ''}`;
+    case 'out': return `<b>${esc(nameOf(e.pid))}</b> ${e.pid === 0 ? 'were' : 'was'} knocked out${e.by != null && e.by !== e.pid ? ` by ${esc(objOf(e.by))}` : ''}`;
+    case 'reshuffle': return `${esc(nameOf(e.pid))} shuffled ${e.pid === 0 ? 'your' : 'their'} discard pile into a new deck`;
+    case 'turn': return e.pid === 0 ? `Round ${e.round}: your turn` : '';
+  }
+  return '';
+}
+function renderMatch() {
+  if (!S) return;
+  renderTopbar();
+  const opps = S.players.slice(1), o = $('#opps'), cls = 'n' + opps.length;
+  if (o.className !== cls) o.className = cls;
+  const mini = mobile() && (opps.length > 1 || document.documentElement.classList.contains('land'));
+  put(o, opps.map(P => seatHTML(P, false, mini)).join(''));
+  put('#me', seatHTML(S.players[0], true, false));
+  renderSelection();
+  if (UI.drawer) renderChronicle();
+}
+function renderSelection() { if (!S) return; renderHand(); renderStage(); renderAction(); renderPreview(); syncTargets(); }
+
+/* ── tooltips: with a mouse after a short rest on the same thing; on touch a press-and-hold ── */
+const TIP = { el: null, timer: null, over: null, press: null };
+function showTip(el) {
+  if (DRAG.on || !el.isConnected) return;
+  const t = $('#tip'); t.innerHTML = esc(el.dataset.tip); t.classList.remove('hidden');
+  const r = el.getBoundingClientRect(), w = t.offsetWidth, h = t.offsetHeight;
+  let x = Math.min(Math.max(8, r.left + r.width / 2 - w / 2), innerWidth - w - 8), y = r.top - h - 8;
+  if (y < 8) y = r.bottom + 8;
+  t.style.left = x + 'px'; t.style.top = y + 'px'; TIP.el = el;
+}
+function hideTip() { clearTimeout(TIP.timer); if (TIP.el) $('#tip').classList.add('hidden'); TIP.el = null; }
+const FINE = matchMedia('(hover: hover) and (pointer: fine)');
+document.addEventListener('pointerover', e => {
+  if (e.pointerType === 'touch' || !FINE.matches) return;
+  const el = e.target.closest('[data-tip]');
+  if (el === TIP.over) return;
+  TIP.over = el; hideTip();
+  if (el && !e.buttons) TIP.timer = setTimeout(() => { if (TIP.over === el) showTip(el); }, 500);
+});
+document.addEventListener('pointerout', e => { if (e.pointerType !== 'touch' && !e.relatedTarget) { TIP.over = null; hideTip(); } });
+document.addEventListener('pointerdown', e => {
+  hideTip(); TIP.press = null;
+  if (e.pointerType !== 'touch') return;
+  const el = e.target.closest('[data-tip]');
+  if (el && !el.closest('#hand')) { TIP.press = { x: e.clientX, y: e.clientY }; TIP.timer = setTimeout(() => showTip(el), 450); }
+});
+document.addEventListener('pointermove', e => { if (TIP.press && Math.hypot(e.clientX - TIP.press.x, e.clientY - TIP.press.y) > 10) { clearTimeout(TIP.timer); TIP.press = null; } }, { passive: true });
+document.addEventListener('pointerup', () => { clearTimeout(TIP.timer); TIP.press = null; if (TIP.el && !FINE.matches) setTimeout(hideTip, 1600); });
+document.addEventListener('pointercancel', () => { clearTimeout(TIP.timer); TIP.press = null; });
+document.addEventListener('scroll', hideTip, true);
+
+/* ── Motion: every play travels from the card to what it touches ── */
+const SPEEDS = { slow: { label: '½×', f: 1.6 }, normal: { label: '1×', f: 1 }, fast: { label: '2×', f: 0.5 }, instant: { label: 'Max', f: 0.08 } };
+const SPEED_ORDER = ['normal', 'fast', 'instant', 'slow'];
+const REDUCED = matchMedia('(prefers-reduced-motion: reduce)').matches;
+const D = ms => Math.round(ms * SPEEDS[SET.speed].f * (REDUCED ? 0.25 : 1));
+const wait = ms => new Promise(r => setTimeout(r, ms));
+const mobile = () => document.documentElement.classList.contains('compact');
+function updateMode() { const h = document.documentElement, compact = innerWidth <= 820 || innerHeight <= 520; h.classList.toggle('compact', compact); h.classList.toggle('land', compact && innerWidth > innerHeight); }
+const buzz = ms => { if (SET.haptics && navigator.vibrate) navigator.vibrate(ms); };
+function stageRect() {
+  const s = $('#stage').getBoundingClientRect(), k = stageScale(), land = document.documentElement.classList.contains('land');
+  const w = (mobile() ? (land ? 118 : 150) : 214) * k, h = (mobile() ? (land ? 166 : 212) : 302) * k;
+  return { left: s.left + s.width / 2 - w / 2, top: s.top + s.height / 2 - h / 2 - 14, width: w, height: h };
+}
+const seatEl = pid => document.getElementById('seat-' + pid);
+function seatRect(pid, sel) { const el = seatEl(pid); if (!el) return null; const sub = sel && el.querySelector(sel); return (sub || el).getBoundingClientRect(); }
+async function flyCard(card, from, to, dur) {
+  if (!from || !to || dur < 40) return;
+  const box = document.createElement('div'); box.innerHTML = cardHTML(card, { size: 'lg' });
+  const el = box.firstElementChild; Object.assign(el.style, { position: 'fixed', left: '0', top: '0', margin: '0' });
+  $('#fx-layer').appendChild(el);
+  const w = el.offsetWidth, h = el.offsetHeight, s0 = Math.max(0.2, Math.min(from.width / w, from.height / h)), s1 = Math.min(1, to.width / w, to.height / h);
+  const p0 = `translate(${from.left + from.width / 2 - w / 2}px,${from.top + from.height / 2 - h / 2}px) scale(${s0}) rotate(-5deg)`;
+  const p1 = `translate(${to.left + to.width / 2 - w / 2}px,${to.top + to.height / 2 - h / 2}px) scale(${s1}) rotate(0deg)`;
+  SFX.play('whoosh');
+  await el.animate([{ transform: p0, opacity: 0.85 }, { transform: p1, opacity: 1 }], { duration: dur, easing: 'cubic-bezier(.2,.8,.2,1)', fill: 'forwards' }).finished.catch(() => {});
+  el.remove();
+}
+function arrow(from, to, kind, dur) {
+  if (!from || !to || dur < 40) return;
+  const svg = $('#fx-arrows'), x1 = from.left + from.width / 2, y1 = from.top + from.height / 2, x2 = to.left + to.width / 2, y2 = to.top + to.height / 2;
+  const p = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+  p.setAttribute('d', `M${x1} ${y1} Q${(x1 + x2) / 2 + (x2 > x1 ? -40 : 40)} ${Math.min(y1, y2) - 70} ${x2} ${y2}`);
+  p.setAttribute('class', 'arrow ' + kind); svg.appendChild(p);
+  const len = p.getTotalLength(); p.style.strokeDasharray = len; p.style.strokeDashoffset = len;
+  p.animate([{ strokeDashoffset: len }, { strokeDashoffset: 0 }], { duration: dur, easing: 'ease-out', fill: 'forwards' });
+  setTimeout(() => p.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 300, fill: 'forwards' }).finished.then(() => p.remove()), dur + D(420));
+}
+let aimPath = null;
+function aimLine(from, x, y) {
+  if (!from) return clearAim();
+  if (!aimPath) { aimPath = document.createElementNS('http://www.w3.org/2000/svg', 'path'); aimPath.setAttribute('class', 'arrow aim'); $('#fx-arrows').appendChild(aimPath); }
+  const x1 = from.left + from.width / 2, y1 = from.top + 10;
+  aimPath.setAttribute('d', `M${x1} ${y1} Q${(x1 + x) / 2} ${Math.min(y1, y) - 80} ${x} ${y}`);
+}
+function clearAim() { if (aimPath) { aimPath.remove(); aimPath = null; } }
+function floatAt(pid, text, cls) {
+  const box = document.querySelector(`#seat-${pid} .floats`); if (!box) return;
+  const d = document.createElement('div'); d.className = 'float ' + cls; d.textContent = text; box.appendChild(d);
+  setTimeout(() => d.remove(), 1600);
+}
+/* HP shown during an animation counts down hit by hit, written straight into the seat (the next full render takes over) */
+function setShownHP(pid) {
+  const el = seatEl(pid); if (!el || !UI.view) return;
+  forget(el.parentElement);
+  const P = S.players[pid], hp = Math.max(0, UI.view[pid]), heart = el.querySelector('.hpheart');
+  if (heart) { heart.querySelector('b').textContent = hp; heart.classList.toggle('low', hp <= 3 && P.alive); }
+  el.querySelectorAll('.hptrack i').forEach((i, k) => i.classList.toggle('on', k < hp));
+}
+function shake(pid) { const el = seatEl(pid); if (el) { el.classList.remove('hit'); void el.offsetWidth; el.classList.add('hit'); } }
+function chipEl(uid) { return document.querySelector(`.shc[data-sh="${uid}"]`); }
+function crackChip(uid, left) {
+  const el = chipEl(uid); if (!el) return;
+  const pips = el.querySelectorAll('.shc-pips svg'); pips.forEach((p, i) => p.classList.toggle('used', i >= left));
+  el.classList.remove('cracked'); void el.offsetWidth; el.classList.add('cracked');
+}
+function breakChip(uid) { const el = chipEl(uid); if (el) el.animate([{ transform: 'none', opacity: 1 }, { transform: 'translateY(10px) rotate(14deg) scale(.7)', opacity: 0 }], { duration: D(360), fill: 'forwards' }); }
+function blastFx(rect) {
+  const d = document.createElement('div'); d.className = 'blastfx';
+  if (rect) { d.style.setProperty('--x', (rect.left + rect.width / 2) + 'px'); d.style.setProperty('--y', (rect.top + rect.height / 2) + 'px'); }
+  $('#fx-layer').appendChild(d); setTimeout(() => d.remove(), 800);
+}
+/* a card changing hands shows face up with a tag saying what happened, then travels to where it goes */
+async function moveScene(card, from, to, tag, kind) {
+  if (D(500) < 120 || !from) return;
+  const box = document.createElement('div'); box.className = 'mv';
+  box.innerHTML = cardHTML(card, { size: 'lg' }) + `<span class="mv-tag ${kind || ''}">${esc(tag)}</span>`;
+  Object.assign(box.style, { position: 'fixed', left: '0', top: '0' });
+  $('#fx-layer').appendChild(box);
+  const w = box.offsetWidth, h = box.offsetHeight, st = $('#stage').getBoundingClientRect();
+  const showW = mobile() ? 118 : 150, s1 = showW / w;
+  const fx = from.left + from.width / 2, fy = from.top + from.height / 2;
+  let cx = fx + (st.left + st.width / 2 - fx) * 0.45, cy = fy + (st.top + st.height / 2 - fy) * 0.45;
+  cx = Math.min(Math.max(cx, w * s1 / 2 + 8), innerWidth - w * s1 / 2 - 8); cy = Math.min(Math.max(cy, h * s1 / 2 + 30), innerHeight - h * s1 / 2 - 8);
+  const at = (x, y, s, r = 0) => `translate(${(x - w / 2).toFixed(1)}px,${(y - h / 2).toFixed(1)}px) scale(${s.toFixed(3)}) rotate(${r}deg)`;
+  const s0 = Math.max(0.15, Math.min(from.width / w, from.height / h));
+  SFX.play('whoosh');
+  await box.animate([{ transform: at(fx, fy, s0, -6), opacity: 0.3 }, { transform: at(cx, cy, s1), opacity: 1 }], { duration: D(280), easing: 'cubic-bezier(.2,.8,.2,1)', fill: 'forwards' }).finished.catch(() => {});
+  await wait(D(560));
+  const end = to ? at(to.left + to.width / 2, to.top + to.height / 2, Math.max(0.15, Math.min(to.width / w, to.height / h))) : at(cx, cy + 40, s1 * 0.8, 4);
+  await box.animate([{ transform: at(cx, cy, s1), opacity: 1 }, { transform: end, opacity: to ? 0.95 : 0 }], { duration: D(380), easing: 'cubic-bezier(.5,0,.3,1)', fill: 'forwards' }).finished.catch(() => {});
+  box.remove();
+}
+const MISS_TEXT = { target: 'No target', shield: 'No shield to hit', discard: 'Nothing to take back', deck: 'No card to steal' };
+async function animatePlay(ev, pid, from, landed) {
+  /* landed: the player dropped the card and it already glided into the ring */
+  if (!landed) await flyCard(ev.card, from, ev.stolen ? null : stageRect(), D(420));
+  const shieldsBefore = new Set($$('.shc').map(el => +el.dataset.sh));
+  UI.last = { card: ev.card, pid, t: ev.ch && (ev.ch.t != null || ev.ch.sh != null) ? ev.ch : null, stolen: ev.stolen, from: ev.from, fresh: !landed };
+  UI.sel = null; UI.aim = null;
+  /* the seats stay as they were while the effects play on them; the hand, the ring and the bar update now */
+  renderTopbar(); renderHand(); renderStage(); renderAction(); renderPreview(); syncTargets();
+  if (landed) dropGhost();
+  SFX.play(ev.card.power ? 'magic' : 'card');
+  await wait(D(260));
+  const src = () => ($('#stage-card .card') ? $('#stage-card .card').getBoundingClientRect() : stageRect());
+  for (const f of ev.fx) {
+    const t = f.t;
+    switch (f.k) {
+      case 'attack': { const ch = ev.ch, c = ch && ch.sh != null && chipEl(ch.sh); arrow(src(), c ? c.getBoundingClientRect() : seatRect(t), 'dmg', D(300)); await wait(D(240)); break; }
+      case 'shield': crackChip(f.uid, f.left); floatAt(t, `shield −${f.n}`, 'shield'); SFX.play('shield'); break;
+      case 'broken': breakChip(f.uid); floatAt(t, `${f.name} breaks`, 'shield'); SFX.play('break'); await wait(D(160)); break;
+      case 'hp': if (UI.view) { UI.view[t] = (UI.view[t] != null ? UI.view[t] : S.players[t].hp) + f.n; setShownHP(t); } floatAt(t, '−' + -f.n, 'dmg'); shake(t); SFX.play('hit'); if (t === 0) buzz(35); break;
+      case 'heal': if (UI.view) { UI.view[t] = Math.min(10, (UI.view[t] != null ? UI.view[t] : S.players[t].hp) + f.n); setShownHP(t); } floatAt(t, f.n ? '+' + f.n : 'full', 'heal'); if (f.n) SFX.play('heal'); break;
+      case 'raise': SFX.play('raise'); break;
+      case 'draw': if (f.n) { floatAt(t, `+${f.n} card${f.n > 1 ? 's' : ''}`, 'cards'); SFX.play('draw'); } break;
+      case 'again': floatAt(t, f.n > 1 ? `play ${f.n} more` : 'play again', 'info'); break;
+      case 'refill': floatAt(t, 'empty hand: +2', 'cards'); SFX.play('draw'); break;
+      case 'roar': floatAt(t, 'new hand of 3', 'cards'); if (t === pid) SFX.play('roar'); await wait(D(120)); break;
+      case 'blast': blastFx(src()); SFX.play('fire'); await wait(D(260)); break;
+      case 'immune': floatAt(t, 'vanished: untouched', 'info'); break;
+      case 'swap': {
+        arrow(seatRect(f.by), seatRect(t), 'magic', D(320)); arrow(seatRect(t), seatRect(f.by), 'magic', D(320)); SFX.play('swap'); await wait(D(300));
+        if (UI.view) { UI.view[f.by] = f.to; UI.view[t] = f.from; setShownHP(f.by); setShownHP(t); }
+        floatAt(f.by, 'HP swapped', 'info'); floatAt(t, 'HP swapped', 'info'); break;
+      }
+      case 'charm': { const r = chipEl(f.uid) ? chipEl(f.uid).getBoundingClientRect() : seatRect(t); arrow(r, seatRect(f.by), 'magic', D(320)); breakChip(f.uid); floatAt(t, 'shield taken', 'info'); SFX.play('magic'); await wait(D(300)); break; }
+      case 'recall': await moveScene(f.card, seatRect(t, '.pile:last-child, .stash'), t === 0 ? $('#hand').getBoundingClientRect() : seatRect(t, '.backs'), 'Back to hand', 'recall'); break;
+      case 'vanish': floatAt(t, 'Vanished!', 'info big'); SFX.play('vanish'); break;
+      case 'steal': SFX.play('steal'); await moveScene(f.card, seatRect(t, '.stash'), stageRect(), `Stolen from ${objOf(t)}`, ''); break;
+      case 'miss': floatAt(t, MISS_TEXT[f.why] || 'No effect', 'info'); SFX.play('bad'); break;
+      case 'out': floatAt(t, 'Knocked out!', 'dmg big'); await wait(D(300)); banner(t === 0 ? 'You are knocked out' : `${nameOf(t)} is knocked out`, '', 1500); break;
+    }
+    await wait(D(170));
+  }
+  UI.view = null; await wait(D(220));
+  renderMatch();
+  for (const el of $$('.shc')) if (!shieldsBefore.has(+el.dataset.sh)) { el.classList.remove('fresh'); void el.offsetWidth; el.classList.add('fresh'); }
+}
+function banner(title, sub, dur = 1900) {
+  const b = $('#banner'); b.innerHTML = `<div class="ribbon"><div class="bt">${esc(title)}</div>${sub ? `<div class="bs">${sub}</div>` : ''}</div>`;
+  b.style.setProperty('--bdur', Math.max(900, D(dur)) + 'ms'); b.classList.remove('show'); void b.offsetWidth; b.classList.add('show');
+}
+function openSheet(html, lock) { const s = $('#sheet'); s.innerHTML = `<div class="sheet-panel" role="dialog" aria-modal="true">${html}</div>`; s.classList.remove('hidden'); s.dataset.lock = lock ? '1' : ''; hideTip(); const f = s.querySelector('button'); if (f) f.focus({ preventScroll: true }); }
+function closeSheet() { const s = $('#sheet'); s.classList.add('hidden'); s.innerHTML = ''; s.dataset.lock = ''; }
+
+/* ── Screens and sheets: menu, hero select, card and seat sheets, pickers, settings, results, codex ── */
+function statsLine() { const all = Object.values(SET.stats); const g = all.reduce((a, r) => a + r[1], 0), w = all.reduce((a, r) => a + r[0], 0); return g ? `You have won ${w} of ${g} brawls.` : 'Draw a card, play a card, be the last hero standing.'; }
+function renderMenu() {
+  const picks = [['barbarian', 'cleave'], ['wizard', 'firestorm'], ['paladin', 'aegis'], ['rogue', 'fingers'], ['barbarian', 'gnasher']];
+  const list = mobile() ? picks.slice(0, 3) : picks, mid = (list.length - 1) / 2;
+  const fan = list.map(([h, id], i) => { const k = i - mid; return cardHTML(staticCard(h, HEROES[h].cards.find(c => c.id === id)), { style: `--x:${k * (mobile() ? 82 : 112)}px;--y:${Math.abs(k) * 16}px;--rot:${k * 7}deg;--d:${120 + i * 90}ms` }); }).join('');
+  $('#screen-menu').innerHTML = `<div class="menu"><div class="menu-kicker">The original Dungeon Mayhem rules</div><h1 class="menu-title">Mayhem Classic</h1><div class="menu-rule" aria-hidden="true"></div><p class="menu-sub">Four heroes, 28 cards each, 10 HP. Draw one, play one, chain the lightning. The last hero standing wins.</p>
+<div class="menu-fan" aria-hidden="true">${fan}</div>
+<div class="menu-actions"><button class="btn" data-act="quick">Quick brawl</button><button class="btn ghost" data-act="choose">Choose a hero</button><div class="menu-row"><button class="btn ghost" data-act="rules">How to play</button><button class="btn ghost" data-act="settings">Settings</button></div></div>
+<p class="menu-foot">${statsLine()}</p></div>`;
+}
+function heroDetailHTML(h, mode) {
+  const H = HEROES[h], mix = deckMix(h), r = SET.stats[h];
+  const order = ['A', 'S', 'H', 'D', 'P', 'M'], names = { A: 'damage', S: 'shield', H: 'heal', D: 'draw', P: 'play again', M: 'Mighty Power cards' };
+  const cards = H.cards.map(d => `<div class="cx" data-cref="${h}:${d.id}" role="button" tabindex="0" aria-label="${esc(d.name)}, ${d.n} in the deck">${cardHTML(staticCard(h, d), { size: 'sm' })}<em>×${d.n}</em></div>`).join('');
+  return `<div class="sd-hero h-${h}"><span class="emb">${emblemSVG(h)}</span><div><div class="cls">${H.cls}</div><h2>${esc(H.name)} ${esc(H.title)}</h2><p>${esc(H.blurb)}</p></div></div>
+<div class="sd-body"><h3>In the deck</h3><div class="mix">${order.filter(k => mix[k]).map(k => `<span data-tip="${mix[k]} ${names[k]} symbol${mix[k] > 1 ? 's' : ''} across the 28 cards">${symSVG(k, 24)}${mix[k]}</span>`).join('')}</div>
+<h3>Mighty Powers</h3>${H.cards.filter(d => d.power).map(d => `<p><b>${esc(d.name)}</b> ×${d.n}: ${esc(POWERS[d.power].text)}${d.sym ? ' ' + symbolText(d.sym).join(' ') : ''}</p>`).join('')}
+<h3>The 28 cards</h3><div class="sd-cards">${cards}</div>${mode === 'select' && r ? `<p class="muted">Your record with ${esc(H.name)}: ${r[0]} won of ${r[1]}.</p>` : ''}</div>`;
+}
+function renderSelect() {
+  const h = UI.hero, detail = mobile() && UI.selView === 'detail', scr = $('#screen-select');
+  const tiles = HERO_ORDER.map(id => { const H = HEROES[id], r = SET.stats[id]; return `<button class="hero-tile h-${id}${id === h ? ' on' : ''}" data-hero="${id}" aria-pressed="${id === h}">${r ? `<span class="rec">${r[0]}/${r[1]}</span>` : ''}<span class="big">${emblemSVG(id)}</span><span class="cl">${H.cls}</span><span class="nm">${esc(H.name)}<br>${esc(H.title)}</span></button>`; }).join('');
+  scr.classList.toggle('detail', detail);
+  scr.innerHTML = `<div class="sel-top"><button class="icon-btn" data-act="${detail ? 'sel-list' : 'menu'}" aria-label="${detail ? 'All heroes' : 'Back to the menu'}">${ICON.back}</button><h2>${detail ? 'Your hero' : 'Choose your hero'}</h2><button class="btn ghost small" data-act="random-hero">Random</button></div>
+<div class="sel-list"><h3>The original four</h3><div class="hero-grid">${tiles}</div><p class="sel-note">Every hero is a fixed deck of 28 cards. The heroes, card names and pictures are our own; each deck is rebuilt after its class in the original game, and the exact card counts are still being checked against the official lists. The two expansions (Battle for Baldur's Gate and Monster Madness) join once their card lists are checked.</p></div>
+<div class="sel-detail h-${h}">${heroDetailHTML(h, 'select')}
+<div class="sd-foot"><div class="seg" role="group" aria-label="Players">${[2, 3, 4].map(n => `<button class="${UI.n === n ? 'on' : ''}" data-n="${n}">${n === 2 ? 'Duel' : n + ' players'}</button>`).join('')}</div><div class="seg" role="group" aria-label="Difficulty">${['easy', 'normal', 'hard'].map(d => `<button class="${SET.difficulty === d ? 'on' : ''}" data-diff="${d}">${d[0].toUpperCase() + d.slice(1)}</button>`).join('')}</div><button class="btn" data-act="start">To the brawl</button></div></div>`;
+}
+function settingsSheet() {
+  const seg = (key, opts) => `<div class="seg">${opts.map(([v, l]) => `<button class="${SET[key] === v ? 'on' : ''}" data-set="${key}" data-val="${v}">${l}</button>`).join('')}</div>`;
+  openSheet(`<h2>Settings</h2>
+<div class="set-row"><div><b>Difficulty</b><span>How sharply the computer plays. From the next brawl.</span></div>${seg('difficulty', [['easy', 'Easy'], ['normal', 'Normal'], ['hard', 'Hard']])}</div>
+<div class="set-row"><div><b>Animation speed</b><span>Max skips almost all motion.</span></div>${seg('speed', [['slow', '½×'], ['normal', '1×'], ['fast', '2×'], ['instant', 'Max']])}</div>
+<div class="set-row"><div><b>Sound</b><span>Steel, shields and spells.</span></div>${seg('sound', [[true, 'On'], [false, 'Off']])}</div>
+${navigator.vibrate ? `<div class="set-row"><div><b>Vibration</b><span>A short buzz when your turn starts or you are hit.</span></div>${seg('haptics', [[true, 'On'], [false, 'Off']])}</div>` : ''}
+<div class="row"><button class="btn" data-act="close">Done</button></div>`);
+}
+function pauseSheet() { openSheet(`<h2>Paused</h2><div class="row"><button class="btn" data-act="close">Resume</button><button class="btn ghost mob-only" data-act="deck">Your deck</button><button class="btn ghost" data-act="codex">Heroes and rules</button><button class="btn ghost" data-act="settings">Settings</button><button class="btn ghost" data-act="concede">Leave the brawl</button></div>`); }
+function deckSheet(which) {
+  const P = S.players[0], list = which === 'deck' ? P.deck : P.discard, n = {};
+  for (const c of list) n[c.name] = (n[c.name] || 0) + 1;
+  const rows = Object.entries(n).sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0])).map(([k, v]) => `<div><span>${esc(k)}</span><b>${v}</b></div>`).join('');
+  openSheet(`<h2>${which === 'deck' ? 'Your deck' : 'Your discard pile'}</h2><p class="muted">${which === 'deck' ? `${P.deck.length} cards left to draw, by name, not in draw order. When it runs out, your discard pile is shuffled into a new deck.` : `${P.discard.length} cards used so far.`}</p><div class="decklist">${rows || '<p class="muted">Empty.</p>'}</div><div class="row"><button class="btn" data-act="close">Close</button></div>`);
+}
+function resultsSheet() {
+  const me = S.players[0], W = S.winner != null && S.winner >= 0 ? S.players[S.winner] : null, win = S.winner === 0, out = S.winner == null && !me.alive;
+  const standing = S.players.filter(p => p.alive).map(p => esc(heroName(p.hero))).join(', ');
+  const line = out ? `You were knocked out. Still standing: ${standing}.` : W ? (W.id === 0 ? `You and ${esc(HEROES[me.hero].name)} are the last hero standing.` : `${esc(heroName(W.hero))} is the last hero standing.`) : 'Everyone left fell at once: it is a tie.';
+  openSheet(`<div style="text-align:center"><div class="sd-hero h-${(W || me).hero}" style="justify-content:center;margin:-22px -24px 12px"><span class="emb">${emblemSVG((W || me).hero)}</span></div>
+<h2>${win ? 'Victory!' : S.winner === -1 ? 'A tie' : out ? 'Knocked out' : 'Defeat'}</h2><p>${line}</p>
+<div class="sd-stats" style="justify-content:center"><span>Damage dealt <b>${me.stats.dmg}</b></span><span>Healed <b>${me.stats.healed}</b></span><span>Shields broken <b>${me.stats.broke}</b></span><span>Cards played <b>${me.stats.played}</b></span><span>Rounds <b>${S.round}</b></span></div>
+<div class="row center"><button class="btn" data-act="again">Play again</button><button class="btn ghost" data-act="choose">Another hero</button><button class="btn ghost" data-act="menu">Main menu</button></div></div>`, true);
+}
+function seatSheet(pid) {
+  const P = S.players[pid], H = HEROES[P.hero];
+  const plays = S.log.filter(e => e.k === 'play' && e.pid === pid).slice(-6).reverse();
+  openSheet(`<div class="seat-sheet h-${P.hero}"><div class="hdr"><span class="emb">${emblemSVG(P.hero)}</span><div><h2>${pid === 0 ? 'You · ' : ''}${esc(heroName(P.hero))}</h2><p>${esc(H.cls)} · ${esc(H.blurb)}</p></div></div>
+<div class="sd-stats"><span><b class="kw k-H">${Math.max(0, P.hp)}</b> of ${P.maxHP} HP</span><span><b class="kw k-S">${shieldTotal(P)}</b> shield</span><span><b class="kw k-D">${P.hand.length}</b> cards in hand</span><span><b>${P.deck.length}</b> in deck</span><span><b>${P.discard.length}</b> discarded</span></div>
+${P.disguised ? `<p><b>Vanished</b>: until ${pid === 0 ? 'your' : 'their'} next turn no opponent's card can touch ${pid === 0 ? 'you' : 'them'}.</p>` : ''}
+<h3>Shields in play</h3>${P.shields.length ? `<div class="sd-cards">${P.shields.map(sh => `<div class="cx" data-cuid="${sh.card.uid}" role="button" tabindex="0">${cardHTML(sh.card, { size: 'sm' })}<em>${shieldLeft(sh)}/${shieldMax(sh)}</em></div>`).join('')}</div>` : '<p class="muted">None: every attack goes straight to HP.</p>'}
+<h3>Last cards played</h3>${plays.length ? `<ul>${plays.map(e => `<li>Round ${e.round}: <b>${esc(e.card)}</b>${e.from != null ? ` (stolen from ${esc(objOf(e.from))})` : ''}${e.t != null ? ' on ' + esc(objOf(e.t)) : ''}</li>`).join('')}</ul>` : '<p class="muted">Nothing yet.</p>'}
+<div class="row"><button class="btn" data-act="close">Close</button><button class="btn ghost" data-act="codex-hero" data-hero="${P.hero}">Full deck</button></div></div>`);
+}
+function cardSheet(card, o = {}) {
+  const H = HEROES[card.hero], syms = (card.power ? ['M'] : []).concat([...card.sym].sort((a, b) => SYM_ORDER.indexOf(a) - SYM_ORDER.indexOf(b)));
+  const n = H.cards.find(d => d.id === card.id), canPlay = o.hand && isMyTurn() && card.uid && S.players[0].hand.some(c => c.uid === card.uid);
+  openSheet(`<div class="card-sheet"><div class="cs-card">${cardHTML(card, { size: 'lg' })}</div><div><div class="cs-kind">${esc(H.cls)} · ${esc(H.name)}${n ? ` · ${n.n} in the deck` : ''}${card.power ? ' · Mighty Power' : ''}</div><h2>${esc(card.name)}</h2>
+<p class="cs-eff">${cardTextHTML(card, true)}</p>
+<div class="cs-syms">${[...new Set(syms)].map(ch => `<div>${symSVG(ch, 32)}<b>${SYM[ch].name}${count(syms.join(''), ch) > 1 ? ` ×${count(syms.join(''), ch)}` : ''}</b><span>${esc(SYM[ch].desc)}</span></div>`).join('')}</div>
+<div class="row">${canPlay ? `<button class="btn" data-act="play-card" data-uid="${card.uid}">Choose it</button>` : ''}<button class="btn ghost" data-act="close">Close</button></div></div></div>`);
+}
+/* Answered Prayer (and a stolen one): pick the card to bring back */
+function discardPick(cards) {
+  return new Promise(resolve => {
+    UI.pickResolve = uid => { UI.pickResolve = null; closeSheet(); resolve(uid); };
+    openSheet(`<h2>Bring a card back</h2><p class="muted">Choose a card from your discard pile. It goes into your hand.</p><div class="pick-grid">${cards.map(c => `<button class="pick" data-pick="${c.uid}" aria-label="Take ${esc(c.name)}">${cardHTML(c, { size: 'sm' })}</button>`).join('')}</div>`, true);
+  });
+}
+
+/* ── codex: the heroes, the rules, the symbols ── */
+const CODEX = { open: false, tab: 'rules', hero: null };
+function openCodex(tab, o = {}) { CODEX.open = true; CODEX.tab = tab || 'rules'; CODEX.hero = o.hero || null; $('#codex').classList.remove('hidden'); renderCodex(); hideTip(); }
+function closeCodex() { CODEX.open = false; $('#codex').classList.add('hidden'); }
+function renderCodex() {
+  const tabs = [['rules', 'How to play'], ['heroes', 'Heroes'], ['symbols', 'Symbols']];
+  let body = '';
+  if (CODEX.tab === 'rules') body = rulesHTML();
+  else if (CODEX.tab === 'symbols') body = `<p class="cx-lead">Every card is a stack of symbols, used from the top down. A Mighty Power card does what it says first, then its symbols.</p>${['A', 'S', 'H', 'D', 'P', 'M'].map(ch => `<div class="cx-sym">${symSVG(ch, 42)}<div><b>${SYM[ch].name}</b><p>${esc(SYM[ch].desc)}</p></div></div>`).join('')}<h3>The Mighty Powers</h3>${Object.entries(POWERS).map(([k, p]) => { const who = HERO_ORDER.filter(h => HEROES[h].cards.some(d => d.power === k)); return `<div class="cx-power"><b>${esc(p.name)}</b> <span class="muted">· ${who.map(h => HEROES[h].cls).join(', ')}</span><p>${esc(p.text)}</p></div>`; }).join('')}`;
+  else if (CODEX.tab === 'heroes') body = CODEX.hero ? `<div class="cx-hero">${heroDetailHTML(CODEX.hero, 'codex')}</div><div class="row"><button class="btn ghost" data-act="codex-heroes">All heroes</button><button class="btn" data-act="codex-play" data-hero="${CODEX.hero}">Play ${esc(HEROES[CODEX.hero].name)}</button></div>`
+    : `<p class="cx-lead">The original four. Each deck is 28 cards; tap a hero for the whole deck.</p><div class="cx-heroes">${HERO_ORDER.map(id => `<button class="hero-tile h-${id}" data-act="codex-hero" data-hero="${id}"><span class="big">${emblemSVG(id)}</span><span class="cl">${HEROES[id].cls}</span><span class="nm">${esc(HEROES[id].name)}<br>${esc(HEROES[id].title)}</span></button>`).join('')}</div>`;
+  $('#codex').innerHTML = `<div class="cx-top"><button class="icon-btn" data-act="codex-back" aria-label="Back">${ICON.back}</button><h2>Heroes and rules</h2></div>
+<div class="cx-tabs" role="tablist">${tabs.map(([k, l]) => `<button class="${CODEX.tab === k ? 'on' : ''}" data-act="codex-tab" data-tab="${k}" role="tab" aria-selected="${CODEX.tab === k}">${l}</button>`).join('')}</div><div class="cx-body">${body}</div>`;
+}
+function rulesHTML() {
+  return `<p class="cx-lead">Two to four heroes brawl in a dungeon. Everyone starts with <b>10 HP</b> and a deck of 28 cards. Knock everyone else out to win.</p>
+<h3>Setting up</h3><ol><li>Each player takes a hero and shuffles its deck.</li><li>Everyone draws <b>3 cards</b>.</li><li>A random player goes first; play passes to the next seat.</li></ol>
+<h3>Your turn</h3><ol><li><b>Draw 1 card.</b></li><li><b>Play 1 card</b> and use every symbol on it, top to bottom.</li><li>Each ${symSVG('P', 18)} <b>Play again</b> means one more card this turn. You must play it, even if you would rather not.</li><li>When you owe no more plays, the turn passes on.</li></ol>
+<h3>Shields</h3><p>A card with ${symSVG('S', 18)} shield symbols stays in front of you. Each shield symbol stops 1 damage. While you have a shield, attacks cannot reach your HP: an attack goes into the shield you aim at (or the weakest), damage left over moves on to the next shield, then to you. A broken shield goes to its owner's discard pile.</p>
+<h3>Attacking</h3><p>All the ${symSVG('A', 18)} attacks on a card go to one target: an opponent, or one of their shields.</p>
+<h3>Running out</h3><p>Whenever your hand is empty you draw 2 cards at once, even in the middle of a turn. When your deck is empty, shuffle your discard pile to make a new one. HP never goes above 10.</p>
+<h3>Knocked out</h3><p>At 0 HP a hero is out. The last hero standing wins. If a card knocks out everyone left at once, it is a tie.</p>
+<h3>About this version</h3><p>The rules are the original Dungeon Mayhem rules. The heroes, card names and pictures are our own; each deck is rebuilt after its class in the original game (Barbarian, Wizard, Paladin, Rogue), and the exact card counts are still being checked against the official lists.</p>`;
+}
+
+/* ── Controller: screens, the flow of a brawl with motion, input ── */
+const STORE = 'mayhem.classic';
+const SET = (() => { const d = { difficulty: 'normal', speed: 'normal', sound: true, haptics: true, n: 2, hero: 'barbarian', stats: {} }; try { return Object.assign(d, JSON.parse(localStorage.getItem(STORE) || '{}')); } catch (e) { return d; } })();
+function saveSettings() { try { localStorage.setItem(STORE, JSON.stringify(SET)); } catch (e) { } }
+let S = null;
+UI.n = SET.n; UI.hero = HEROES[SET.hero] ? SET.hero : 'barbarian'; SFX.on = SET.sound;
+function go(screen) {
+  UI.screen = screen; closeSheet(); clearAim(); hideTip(); if (CODEX.open) closeCodex();
+  for (const id of ['menu', 'select', 'match']) $('#screen-' + id).classList.toggle('hidden', id !== screen);
+  if (screen === 'menu') renderMenu(); else if (screen === 'select') renderSelect();
+}
+function newMatch(o = {}) {
+  const hero = o.hero || UI.hero, n = clamp(o.n || UI.n, 2, 4), seed = (Date.now() ^ Math.floor(Math.random() * 1e9)) >>> 0;
+  const others = shuffled({ rs: seed }, HERO_ORDER.filter(h => h !== hero)).slice(0, n - 1);
+  S = newGame({ seed, heroes: [hero, ...others], ai: [false, ...others.map(() => true)] });
+  for (const P of S.players.slice(1)) P.skill = SET.difficulty;
+  Object.assign(UI, { sel: null, aim: null, last: null, view: null, busy: true, finished: false, drawer: false, known: null, lastSetup: { hero, n } });
+  $('#chronicle').classList.remove('open');
+  go('match');
+  startGame(S); renderMatch();
+  begin();
+}
+async function begin() {
+  const first = S.first;
+  banner(first === 0 ? 'You go first' : `${nameOf(first)} goes first`, first === 0 ? 'Draw 1, play 1. Chain the lightning.' : `${esc(heroName(S.players[first].hero))} opens the brawl.`, 1600);
+  await wait(Math.max(700, D(1500)));
+  if (S.turn === 0) myTurnStart(); else aiTurn();
+}
+
+/* the human */
+function onHandCard(uid) {
+  if (humanPending()) return;
+  const c = S.players[0].hand.find(x => x.uid === uid); if (!c) return;
+  if (!isMyTurn() || UI.sel === uid) return cardSheet(c, { hand: true });
+  UI.sel = uid; UI.aim = null; markHand(); SFX.play('click'); buzz(8); later(renderSelection);
+}
+function unselect() { if (humanPending()) return; UI.sel = null; UI.aim = null; markHand(); buzz(6); later(renderSelection); }
+function choiceFor(pid, sh) {
+  /* what clicking a seat (or one of its shields) means for the chosen card, if it can be aimed there */
+  const c = selCard(); if (!c || !boardAim(c)) return null;
+  const A = aimable(c);
+  if (sh != null) { if (!A.shields.has(sh)) return null; return { t: pid, sh }; }
+  if (!A.seats.has(pid)) return null;
+  return { t: pid };
+}
+function onSeat(pid, touch) {
+  const ch = (isMyTurn() || humanPending()) && choiceFor(pid, null);
+  if (!ch) return seatSheet(pid);
+  aimAt(ch, touch);
+}
+function onShield(uid, pid, touch) {
+  const ch = (isMyTurn() || humanPending()) && choiceFor(pid, uid);
+  if (!ch) { const f = findShield(S, uid); if (f) cardSheet(f.sh.card); return; }
+  aimAt(ch, touch);
+}
+/* with a mouse a click on a target plays at once; on touch the first tap aims and the Play button (or a second tap) plays */
+function aimAt(ch, touch) {
+  const same = UI.aim && sameChoice(UI.aim, ch);
+  UI.aim = ch;
+  if (touch && !same) { SFX.play('click'); renderSelection(); return; }
+  const c = selCard(); if (c) humanPlay(c.uid, ch);
+}
+async function humanPlay(uid, ch, landed) {
+  const pd = humanPending(), card = selCard();
+  if (!card || (!isMyTurn() && !pd)) { if (landed) dropGhost(); return; }
+  const el = !pd && document.querySelector(`#hand .card[data-uid="${card.uid}"]`), from = el ? el.getBoundingClientRect() : null;
+  UI.busy = true; clearAim();
+  if (aimOf(card) === 'discard') {
+    const pile = S.players[0].discard;
+    if (pile.length) { if (landed) { dropGhost(); landed = false; } renderAction(); ch = { pick: await discardPick(pile.slice().reverse()) }; }
+    else ch = null;
+  }
+  if (boardAim(card) && !ch) ch = chosenAim(card);
+  UI.view = S.players.map(p => p.hp);
+  const ev = pd ? resolvePending(S, ch) : playCard(S, 0, card.uid, ch);
+  if (!ev) { UI.busy = false; UI.view = null; if (landed) dropGhost(); SFX.play('bad'); return renderMatch(); }
+  await animatePlay(ev, 0, pd ? null : from, landed);
+  if (S.winner != null || !S.players[0].alive) return finish();
+  UI.busy = false; UI.sel = null; UI.aim = null;
+  if (humanPending()) { renderMatch(); SFX.play('steal'); return; }
+  if (!turnOver(S)) return renderMatch();
+  nextTurn();
+}
+/* turns */
+async function nextTurn() {
+  UI.busy = true; UI.sel = null; UI.aim = null; renderMatch();
+  await wait(D(320));
+  if (S.winner != null) return finish();
+  endTurn(S);
+  if (S.winner != null || !S.players[0].alive) return finish();
+  if (S.turn === 0) return myTurnStart();
+  return aiTurn();
+}
+function myTurnStart() {
+  UI.busy = false; renderMatch(); SFX.play('turn'); buzz(20);
+  if (turnOver(S)) nextTurn();
+}
+async function aiTurn() {
+  const pid = S.turn;
+  renderMatch(); await wait(D(520));
+  for (let guard = 0; guard < 40 && S.winner == null && S.turn === pid; guard++) {
+    if (turnOver(S)) break;
+    const a = aiAct(S, pid);
+    if (a.kind === 'end') break;
+    const from = seatRect(pid);
+    UI.view = S.players.map(p => p.hp);
+    const ev = a.kind === 'pending' ? resolvePending(S, a.ch) : playCard(S, pid, a.uid, a.ch);
+    if (!ev) { UI.view = null; break; }
+    await animatePlay(ev, pid, a.kind === 'pending' ? null : from);
+    if (S.winner != null || !S.players[0].alive) return finish();
+    await wait(D(240));
+  }
+  return nextTurn();
+}
+function finish() {
+  if (UI.finished) return; UI.finished = true; UI.busy = true; UI.sel = null; UI.aim = null; renderMatch();
+  const me = S.players[0], win = S.winner === 0, r = SET.stats[me.hero] || [0, 0];
+  r[1]++; if (win) r[0]++; SET.stats[me.hero] = r; saveSettings();
+  setTimeout(() => { SFX.play(win ? 'win' : 'lose'); resultsSheet(); }, D(700) + 500);
+}
+function toggleChronicle(force) { UI.drawer = force != null ? force : !UI.drawer; $('#chronicle').classList.toggle('open', UI.drawer); if (UI.drawer) renderChronicle(); }
+function cycleSpeed() { SET.speed = SPEED_ORDER[(SPEED_ORDER.indexOf(SET.speed) + 1) % SPEED_ORDER.length]; saveSettings(); if (S) renderTopbar(); }
+
+/* input */
+document.addEventListener('click', e => {
+  SFX.init();
+  if (performance.now() - DRAG.droppedAt < 450 && e.target.closest('#hand, #stage, .seat')) return;   /* the click after a drop is not a tap */
+  const pick = e.target.closest('[data-pick]'); if (pick && UI.pickResolve) return UI.pickResolve(+pick.dataset.pick);
+  const act = e.target.closest('[data-act]'), touch = e.pointerType === 'touch' || matchMedia('(pointer: coarse)').matches;
+  if (act) return action(act.dataset.act, act);
+  const cref = e.target.closest('[data-cref]'); if (cref) { const [h, id] = cref.dataset.cref.split(':'); return cardSheet(staticCard(h, HEROES[h].cards.find(d => d.id === id))); }
+  const cuid = e.target.closest('[data-cuid]'); if (cuid) { const f = findShield(S, +cuid.dataset.cuid); if (f) return cardSheet(f.sh.card); return; }
+  if (e.target.closest('#stage-card .card')) { const c = selCard() || (UI.last && UI.last.card); if (c) cardSheet(c, { hand: !!(UI.sel && !humanPending()) }); return; }
+  const t = e.target.closest('.hero-tile, [data-n], [data-diff], [data-set], #hand .card, .shc, .seat');
+  if (!t) { if (e.target.id === 'sheet' && !$('#sheet').dataset.lock) closeSheet(); return; }
+  if (t.classList.contains('hero-tile') && t.dataset.hero) { UI.hero = t.dataset.hero; SET.hero = UI.hero; saveSettings(); SFX.play('click'); if (mobile()) { UI.selView = 'detail'; renderSelect(); $('#screen-select').scrollTop = 0; return; } return rerenderSelect(); }
+  if (t.dataset.n) { UI.n = +t.dataset.n; SET.n = UI.n; saveSettings(); return rerenderSelect(); }
+  if (t.dataset.diff) { SET.difficulty = t.dataset.diff; saveSettings(); return rerenderSelect(); }
+  if (t.dataset.set) { const v = t.dataset.val; SET[t.dataset.set] = v === 'true' ? true : v === 'false' ? false : v; SFX.on = SET.sound; saveSettings(); settingsSheet(); if (S && UI.screen === 'match') renderTopbar(); return; }
+  if (t.matches('#hand .card')) return onHandCard(+t.dataset.uid);
+  if (t.classList.contains('shc')) return onShield(+t.dataset.sh, +t.dataset.pid, touch);
+  if (t.classList.contains('seat')) return onSeat(+t.dataset.pid, touch);
+});
+function action(a, el) {
+  switch (a) {
+    case 'quick': return newMatch({ hero: UI.hero, n: UI.n });
+    case 'choose': UI.selView = 'list'; return go('select');
+    case 'menu': return go('menu');
+    case 'start': return newMatch({ hero: UI.hero, n: UI.n });
+    case 'again': return newMatch(UI.lastSetup);
+    case 'random-hero': UI.hero = HERO_ORDER[Math.floor(Math.random() * HERO_ORDER.length)]; SET.hero = UI.hero; saveSettings(); if (mobile()) { UI.selView = 'detail'; renderSelect(); $('#screen-select').scrollTop = 0; return; } return rerenderSelect();
+    case 'sel-list': UI.selView = 'list'; renderSelect(); return;
+    case 'rules': closeSheet(); return openCodex('rules');
+    case 'codex': closeSheet(); return openCodex(S && UI.screen === 'match' ? 'heroes' : 'rules', { hero: S && UI.screen === 'match' ? S.players[0].hero : null });
+    case 'codex-tab': CODEX.tab = el.dataset.tab; CODEX.hero = null; return renderCodex();
+    case 'codex-hero': closeSheet(); if (!CODEX.open) return openCodex('heroes', { hero: el.dataset.hero }); CODEX.tab = 'heroes'; CODEX.hero = el.dataset.hero; return renderCodex();
+    case 'codex-heroes': CODEX.hero = null; return renderCodex();
+    case 'codex-back': if (CODEX.tab === 'heroes' && CODEX.hero) { CODEX.hero = null; return renderCodex(); } return closeCodex();
+    case 'codex-play': closeCodex(); UI.hero = el.dataset.hero; SET.hero = UI.hero; saveSettings(); UI.selView = 'detail'; return go('select');
+    case 'card-info': { const c = selCard(); if (c) cardSheet(c, { hand: !humanPending() }); return; }
+    case 'play-card': { const uid = +el.dataset.uid; closeSheet(); if (!isMyTurn() || humanPending()) return; UI.sel = uid; UI.aim = null; return renderSelection(); }
+    case 'hand-prev': return handStep(-1);
+    case 'hand-next': return handStep(1);
+    case 'settings': return settingsSheet();
+    case 'pause': return pauseSheet();
+    case 'close': closeSheet(); return UI.screen === 'menu' ? renderMenu() : null;
+    case 'concede': return go('menu');
+    case 'chronicle': return toggleChronicle();
+    case 'speed': return cycleSpeed();
+    case 'deck': return deckSheet('deck');
+    case 'discard': return deckSheet('discard');
+    case 'cancel-sel': return unselect();
+    case 'play-sel': { const c = selCard(); if (!c) return; const t = chosenAim(c); if (boardAim(c) && !t) return; return humanPlay(c.uid, t); }
+  }
+}
+/* aiming with a mouse: the seat or shield under the pointer is shown as the target while the card is chosen */
+document.addEventListener('pointerover', e => {
+  if (e.pointerType === 'touch' || DRAG.on || !S || UI.screen !== 'match') return;
+  const c = selCard(); if (!c || !boardAim(c) || UI.busy) return;
+  const sh = e.target.closest('.shc.targetable'), seat = !sh && e.target.closest('.seat.targetable');
+  const ch = sh ? { t: +sh.dataset.pid, sh: +sh.dataset.sh } : seat ? { t: +seat.dataset.pid } : null;
+  if (ch && !sameChoice(ch, UI.aim)) { UI.aim = ch; renderStage(); renderAction(); renderPreview(); syncTargets(); }
+});
+function rerenderSelect() { const l = $('.sel-list'), d = $('.sel-detail'), ly = l ? l.scrollTop : 0, dy = d ? d.scrollTop : 0; renderSelect(); if ($('.sel-list')) $('.sel-list').scrollTop = ly; if ($('.sel-detail')) $('.sel-detail').scrollTop = dy; }
+document.addEventListener('keydown', e => {
+  if (CODEX.open) { if (e.key === 'Escape') { if (!$('#sheet').classList.contains('hidden')) closeSheet(); else action('codex-back'); } return; }
+  if (UI.screen !== 'match' || !S) return;
+  const sheetOpen = !$('#sheet').classList.contains('hidden');
+  if (e.key === 'Escape') { if (sheetOpen) { if (!$('#sheet').dataset.lock) closeSheet(); return; } if (UI.sel != null) return unselect(); return pauseSheet(); }
+  if (sheetOpen) return;
+  const k = e.key.toLowerCase();
+  if (/^[1-9]$/.test(e.key)) { const c = S.players[0].hand[+e.key - 1]; if (c) onHandCard(c.uid); }
+  else if (e.key === 'Enter' && selCard()) { e.preventDefault(); action('play-sel'); }
+  else if (k === 'i' && selCard()) action('card-info');
+  else if (k === 'h') action('codex');
+  else if (k === 'l') toggleChronicle();
+  else if (k === 's') cycleSpeed();
+  else if (e.key === 'Tab' && selCard() && boardAim(selCard())) {
+    e.preventDefault();
+    const all = aimChoices(selCard()), i = all.findIndex(ch => sameChoice(ch, UI.aim));
+    UI.aim = all[(i + 1) % all.length]; renderSelection();
+  }
+});
+/* drag a card into the ring, or onto a target, to play it. Hold it a moment (or pull it up) to pick it up; a sideways swipe scrolls
+   the hand. One ghost card on its own layer; the drop zones are measured once, when the card is picked up */
+const DRAG = { uid: null, el: null, pid: null, mouse: false, x0: 0, y0: 0, lx: 0, ly: 0, hold: 0, on: false, back: false, ox: 0, oy: 0, w: 0, k: 0.8, zone: null, ok: false, ch: null, droppedAt: 0 };
+const TILT = -3 * Math.PI / 180;
+function ghostAt(x, y) {
+  const k = DRAG.k, c = Math.cos(TILT), s = Math.sin(TILT), gx = DRAG.ox * k, gy = DRAG.oy * k;
+  $('#drag-ghost').style.transform = `translate3d(${(x - (gx * c - gy * s)).toFixed(1)}px,${(y - (gx * s + gy * c)).toFixed(1)}px,0) rotate(-3deg) scale(${k})`;
+}
+function ghostTo(r, ms, ease) {
+  const g = $('#drag-ghost'); g.style.transition = `transform ${ms}ms ${ease}`;
+  g.style.transform = `translate3d(${r.left.toFixed(1)}px,${r.top.toFixed(1)}px,0) rotate(0deg) scale(${(r.width / DRAG.w).toFixed(4)})`;
+  return wait(ms + 16);
+}
+function dropGhost() { const g = $('#drag-ghost'); g.classList.remove('on'); g.style.transition = ''; g.innerHTML = ''; }
+function landingRect(c) { const cur = $('#stage-card .card'); return cur && +cur.dataset.uid === c.uid ? cur.getBoundingClientRect() : stageRect(); }
+function beginDrag(x, y) {
+  clearTimeout(DRAG.hold);
+  const c = S.players[0].hand.find(h => h.uid === DRAG.uid);
+  if (!c || !isMyTurn() || humanPending() || !DRAG.el.isConnected) { DRAG.uid = null; return; }
+  const r = DRAG.el.getBoundingClientRect(), aimed = boardAim(c), A = aimable(c);
+  DRAG.w = DRAG.el.offsetWidth; DRAG.ox = DRAG.x0 - r.left; DRAG.oy = DRAG.y0 - r.top;
+  DRAG.zone = {
+    top: $('#hand').getBoundingClientRect().top - 6, aimed,
+    shields: aimed ? [...A.shields].map(u => { const el = chipEl(u); return el && { ch: { t: +el.dataset.pid, sh: u }, r: el.getBoundingClientRect() }; }).filter(Boolean) : [],
+    seats: aimed ? [...A.seats].map(pid => ({ ch: { t: pid }, r: seatEl(pid).getBoundingClientRect() })) : [],
+    solo: aimed ? chosenAim(c) : null,
+  };
+  DRAG.on = true; DRAG.ok = false; DRAG.ch = null; UI.sel = c.uid; UI.aim = null;
+  try { DRAG.el.setPointerCapture(DRAG.pid); } catch (_) { }
+  const g = $('#drag-ghost');
+  g.innerHTML = DRAG.el.outerHTML;
+  const gc = g.firstElementChild; gc.classList.remove('sel', 'playable', 'drag-src', 'fresh'); gc.removeAttribute('tabindex'); gc.removeAttribute('role'); gc.style.transformOrigin = `${DRAG.ox}px ${DRAG.oy}px`;
+  g.style.transition = ''; ghostAt(x, y); g.classList.add('on');
+  DRAG.el.classList.add('drag-src'); $('#stage').classList.add('holding');
+  hideTip(); SFX.play('card'); buzz(12);
+  later(() => { if (!DRAG.on) return; markHand(); renderAction(); renderPreview(); syncTargets(); });
+}
+function dragMove(x, y) {
+  ghostAt(x, y);
+  const Z = DRAG.zone, inR = r => x >= r.left && x <= r.right && y >= r.top && y <= r.bottom;
+  let ok = false, ch = null;
+  if (Z.aimed) {
+    const hit = Z.shields.find(q => inR(q.r)) || Z.seats.find(q => inR(q.r));
+    if (hit) { ok = true; ch = hit.ch; }
+    else if (Z.solo && y < Z.top) { ok = true; ch = Z.solo; }
+  } else ok = y < Z.top;
+  if (ok === DRAG.ok && sameChoice(ch, DRAG.ch)) return;
+  DRAG.ok = ok; DRAG.ch = ch; UI.aim = ch;
+  $('#stage').classList.toggle('drop-ok', ok && !ch);
+  renderPreview(); syncTargets();
+}
+async function endDrag(x, y, cancelled) {
+  const uid = UI.sel, c = S.players[0].hand.find(h => h.uid === uid);
+  if (!cancelled) dragMove(x, y);
+  const ok = !cancelled && DRAG.ok && c && (!boardAim(c) || DRAG.ch), ch = DRAG.ch;
+  DRAG.on = false; DRAG.back = true; DRAG.droppedAt = performance.now();
+  $('#stage').classList.remove('drop-ok', 'holding');
+  if (ok) {
+    UI.busy = true; buzz(14);
+    await ghostTo(landingRect(c), 180, 'ease-out');
+    DRAG.back = false;
+    return humanPlay(uid, ch, true);
+  }
+  const src = document.querySelector(`#hand .card[data-uid="${uid}"]`);
+  if (src) { const r = src.getBoundingClientRect(); await ghostTo({ left: r.left, top: r.top - 8, width: r.width }, 200, 'ease-in'); src.classList.remove('drag-src'); }
+  dropGhost(); DRAG.back = false; UI.aim = null;
+  renderSelection();
+}
+document.addEventListener('pointerdown', e => {
+  if (DRAG.on || DRAG.back) return;
+  const el = e.target.closest('#hand .card.playable'); if (!el || !isMyTurn() || e.button > 0) return;
+  clearTimeout(DRAG.hold);
+  Object.assign(DRAG, { uid: +el.dataset.uid, el, pid: e.pointerId, mouse: e.pointerType === 'mouse', x0: e.clientX, y0: e.clientY, lx: e.clientX, ly: e.clientY });
+  if (!DRAG.mouse) DRAG.hold = setTimeout(() => { if (DRAG.uid != null && !DRAG.on) beginDrag(DRAG.lx, DRAG.ly); }, 240);
+});
+document.addEventListener('pointermove', e => {
+  if (DRAG.uid == null || e.pointerId !== DRAG.pid) return;
+  if (!DRAG.on) {
+    DRAG.lx = e.clientX; DRAG.ly = e.clientY;
+    const dx = e.clientX - DRAG.x0, dy = e.clientY - DRAG.y0;
+    if (DRAG.mouse ? Math.hypot(dx, dy) > 6 : Math.abs(dy) > 10 && Math.abs(dy) > Math.abs(dx) * 0.8) beginDrag(e.clientX, e.clientY);
+    else if (Math.hypot(dx, dy) > 18) { clearTimeout(DRAG.hold); DRAG.uid = null; }
+    return;
+  }
+  e.preventDefault(); dragMove(e.clientX, e.clientY);
+}, { passive: false });
+document.addEventListener('pointerup', e => { if (e.pointerId !== DRAG.pid) return; clearTimeout(DRAG.hold); if (DRAG.on) endDrag(e.clientX, e.clientY); DRAG.uid = null; });
+document.addEventListener('pointercancel', e => { if (e.pointerId !== DRAG.pid) return; clearTimeout(DRAG.hold); if (DRAG.on) endDrag(0, 0, true); DRAG.uid = null; });
+$('#hand').addEventListener('touchmove', e => { if (DRAG.on) e.preventDefault(); }, { passive: false });
+document.addEventListener('contextmenu', e => { if (e.target.closest('#hand .card')) e.preventDefault(); });
+$('#hand').addEventListener('wheel', e => { const h = e.currentTarget; if (mobile() || h.scrollWidth <= h.clientWidth + 2 || Math.abs(e.deltaX) >= Math.abs(e.deltaY)) return; e.preventDefault(); h.scrollLeft += e.deltaY; }, { passive: false });
+$('#hand').addEventListener('scroll', () => { if (!mobile()) handNav(); }, { passive: true });
+addEventListener('resize', () => { updateMode(); if (UI.screen === 'match' && S && !UI.busy) renderMatch(); else if (UI.screen === 'menu') renderMenu(); else if (UI.screen === 'select') renderSelect(); });
+UI.selView = 'list';
+updateMode(); installHeroStyles(); installMaterials(); go('menu');
+
+</script>
+</body>
+</html>
