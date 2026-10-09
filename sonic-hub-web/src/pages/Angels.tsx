@@ -6,7 +6,7 @@ import { hub, isAngel, periodYears, randomLine } from '../api/hub';
 import { cdn, pic } from '../api/client';
 import type { ChatMessage, Person } from '../types';
 import { fmt, usePersons } from '../lib/queries';
-import { dayMonthYear, longDay, timeOf } from '../lib/date';
+import { dayMonthYear, longDay, momentDate, timeOf } from '../lib/date';
 import { fold } from '../lib/text';
 import Justified from '../components/Justified';
 import { Sentinel, useViewer } from '../components/PhotoGroups';
@@ -133,7 +133,7 @@ export function PersonPage() {
           {eps.length > 0 && <section className="block"><div className="hd"><h2>Những khoảnh khắc</h2><span>{eps.length}</span></div>
             <ol className="episodes">{eps.map(e => (
               <li key={e.id} className={(e.importance ?? 0) >= 4 ? 'big' : ''}>
-                <time>{e.occurredAt ? dayMonthYear(e.occurredAt) : ''}</time>
+                <time>{momentDate(e.occurredAt)}</time>
                 <p>{e.summary}</p>{e.emotion && <span className="emo">{e.emotion}</span>}
               </li>))}</ol></section>}
 
