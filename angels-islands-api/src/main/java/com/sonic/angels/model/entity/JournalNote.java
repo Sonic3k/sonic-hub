@@ -85,6 +85,13 @@ public class JournalNote extends BaseEntity {
     @Column(name = "source", length = 500)
     private String source;
 
+    /** Notes read in order as one series ("Hoa khôi onthi 2008"); seriesOrder is the part number. */
+    @Column(name = "series", length = 200)
+    private String series;
+
+    @Column(name = "series_order")
+    private Integer seriesOrder;
+
     /** Importer's stable id; null for notes written in the admin. */
     @Column(name = "external_key", length = 200, unique = true)
     private String externalKey;
@@ -131,6 +138,10 @@ public class JournalNote extends BaseEntity {
     public void setWrittenAt(java.time.LocalDateTime writtenAt) { this.writtenAt = writtenAt; }
     public String getSource() { return source; }
     public void setSource(String source) { this.source = source; }
+    public String getSeries() { return series; }
+    public void setSeries(String series) { this.series = series; }
+    public Integer getSeriesOrder() { return seriesOrder; }
+    public void setSeriesOrder(Integer seriesOrder) { this.seriesOrder = seriesOrder; }
     public String getExternalKey() { return externalKey; }
     public void setExternalKey(String externalKey) { this.externalKey = externalKey; }
     public Set<Problem> getProblems() { return problems; }

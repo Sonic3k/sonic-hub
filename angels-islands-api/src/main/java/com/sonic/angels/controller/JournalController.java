@@ -125,6 +125,38 @@ public class JournalController {
             .orElseGet(() -> ResponseEntity.notFound().build());
     }
 
+    /** Every series with its number of parts. */
+    @GetMapping("/series")
+    public List<JournalDto.SeriesSummary> seriesList() {
+        return noteRepo.findAll().stream().filter(n -> n.getSeries() != null)
+            .collect(java.util.stream.Collectors.groupingBy(JournalNote::getSeries)).entrySet().stream().map(e -> {
+                JournalDto.SeriesSummary s = new JournalDto.SeriesSummary();
+                s.setSeries(e.getKey()); s.setParts(e.getValue().size());
+                s.setFirstAt(e.getValue().stream().map(x -> x.getWrittenAt() != null ? x.getWrittenAt() : x.getCreatedAt()).filter(java.util.Objects::nonNull).min(java.util.Comparator.naturalOrder()).orElse(null));
+                s.setLastAt(e.getValue().stream().map(x -> x.getWrittenAt() != null ? x.getWrittenAt() : x.getCreatedAt()).filter(java.util.Objects::nonNull).max(java.util.Comparator.naturalOrder()).orElse(null));
+                return s;
+            }).sorted(java.util.Comparator.comparing(JournalDto.SeriesSummary::getSeries)).toList();
+    }
+
+    /** The parts of one series in order (part number, then date). */
+    @GetMapping("/series/parts")
+    public List<JournalDto.SeriesPart> seriesParts(@RequestParam String name) {
+        return noteRepo.findBySeries(name).stream()
+            .filter(n -> auth.isAdminRequest() || (n.getKind() == JournalNote.Kind.ARTICLE && n.getStatus() == JournalNote.Status.PUBLISHED))
+            .sorted(java.util.Comparator.comparing((JournalNote n) -> n.getSeriesOrder() == null ? Integer.MAX_VALUE : n.getSeriesOrder())
+                .thenComparing(n -> n.getWrittenAt() != null ? n.getWrittenAt() : n.getCreatedAt(), java.util.Comparator.nullsLast(java.util.Comparator.naturalOrder())))
+            .map(n -> {
+                JournalDto.SeriesPart p = new JournalDto.SeriesPart();
+                p.setId(n.getId()); p.setTitle(n.getTitle()); p.setSeriesOrder(n.getSeriesOrder()); p.setSlug(n.getSlug());
+                if (n.getAuthorPerson() != null) {
+                    p.setAuthorPersonId(n.getAuthorPerson().getId());
+                    p.setAuthorPersonName(n.getAuthorPerson().getDisplayName() != null ? n.getAuthorPerson().getDisplayName() : n.getAuthorPerson().getName());
+                }
+                p.setAuthorName(n.getAuthorName()); p.setWrittenAt(n.getWrittenAt());
+                return p;
+            }).toList();
+    }
+
     @GetMapping("/categories")
     public List<String> categories() { return noteRepo.categories(JournalNote.Kind.ARTICLE); }
 
@@ -180,6 +212,8 @@ public class JournalController {
         if (Boolean.TRUE.equals(req.getClearWrittenAt())) n.setWrittenAt(null);
         else if (req.getWrittenAt() != null) n.setWrittenAt(req.getWrittenAt());
         if (req.getSource() != null) n.setSource(req.getSource().isBlank() ? null : req.getSource().trim());
+        if (req.getSeries() != null) n.setSeries(req.getSeries().isBlank() ? null : req.getSeries().trim());
+        if (req.getSeriesOrder() != null) n.setSeriesOrder(req.getSeriesOrder() <= 0 ? null : req.getSeriesOrder());
 
         if (n.getKind() == JournalNote.Kind.ARTICLE) {
             String wanted = req.getSlug() != null && !req.getSlug().isBlank() ? slugify(req.getSlug()) : null;
@@ -230,6 +264,7 @@ public class JournalController {
         }
         r.setAuthorName(n.getAuthorName()); r.setWrittenAt(n.getWrittenAt());
         r.setSource(n.getSource()); r.setExternalKey(n.getExternalKey());
+        r.setSeries(n.getSeries()); r.setSeriesOrder(n.getSeriesOrder());
         return r;
     }
 

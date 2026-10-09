@@ -16,6 +16,9 @@ public class JournalDto {
         // written by someone else — all optional; absent fields are left untouched on update
         private UUID authorPersonId; private String authorName; private Boolean clearAuthor;
         private LocalDateTime writtenAt; private Boolean clearWrittenAt; private String source;
+        private String series; private Integer seriesOrder;
+        public String getSeries() { return series; } public void setSeries(String v) { this.series = v; }
+        public Integer getSeriesOrder() { return seriesOrder; } public void setSeriesOrder(Integer v) { this.seriesOrder = v; }
         public UUID getAuthorPersonId() { return authorPersonId; } public void setAuthorPersonId(UUID v) { this.authorPersonId = v; }
         public String getAuthorName() { return authorName; } public void setAuthorName(String v) { this.authorName = v; }
         public Boolean getClearAuthor() { return clearAuthor; } public void setClearAuthor(Boolean v) { this.clearAuthor = v; }
@@ -45,6 +48,9 @@ public class JournalDto {
         private String category; private String status; private LocalDateTime publishedAt;
         private UUID authorPersonId; private String authorPersonName; private String authorName;
         private LocalDateTime writtenAt; private String source; private String externalKey;
+        private String series; private Integer seriesOrder;
+        public String getSeries() { return series; } public void setSeries(String v) { this.series = v; }
+        public Integer getSeriesOrder() { return seriesOrder; } public void setSeriesOrder(Integer v) { this.seriesOrder = v; }
         public UUID getAuthorPersonId() { return authorPersonId; } public void setAuthorPersonId(UUID v) { this.authorPersonId = v; }
         /** Display name of authorPerson. */
         public String getAuthorPersonName() { return authorPersonName; } public void setAuthorPersonName(String v) { this.authorPersonName = v; }
@@ -93,5 +99,27 @@ public class JournalDto {
         public LocalDateTime getResolvedAt() { return resolvedAt; } public void setResolvedAt(LocalDateTime v) { this.resolvedAt = v; }
         public LocalDateTime getCreatedAt() { return createdAt; } public void setCreatedAt(LocalDateTime v) { this.createdAt = v; }
         public Long getNoteCount() { return noteCount; } public void setNoteCount(Long v) { this.noteCount = v; }
+    }
+
+    /** One part of a series, for the list of parts and the previous / next links. */
+    public static class SeriesPart {
+        private UUID id; private String title; private Integer seriesOrder; private String slug;
+        private UUID authorPersonId; private String authorPersonName; private String authorName; private LocalDateTime writtenAt;
+        public UUID getId() { return id; } public void setId(UUID v) { this.id = v; }
+        public String getTitle() { return title; } public void setTitle(String v) { this.title = v; }
+        public Integer getSeriesOrder() { return seriesOrder; } public void setSeriesOrder(Integer v) { this.seriesOrder = v; }
+        public String getSlug() { return slug; } public void setSlug(String v) { this.slug = v; }
+        public UUID getAuthorPersonId() { return authorPersonId; } public void setAuthorPersonId(UUID v) { this.authorPersonId = v; }
+        public String getAuthorPersonName() { return authorPersonName; } public void setAuthorPersonName(String v) { this.authorPersonName = v; }
+        public String getAuthorName() { return authorName; } public void setAuthorName(String v) { this.authorName = v; }
+        public LocalDateTime getWrittenAt() { return writtenAt; } public void setWrittenAt(LocalDateTime v) { this.writtenAt = v; }
+    }
+
+    public static class SeriesSummary {
+        private String series; private long parts; private LocalDateTime firstAt; private LocalDateTime lastAt;
+        public String getSeries() { return series; } public void setSeries(String v) { this.series = v; }
+        public long getParts() { return parts; } public void setParts(long v) { this.parts = v; }
+        public LocalDateTime getFirstAt() { return firstAt; } public void setFirstAt(LocalDateTime v) { this.firstAt = v; }
+        public LocalDateTime getLastAt() { return lastAt; } public void setLastAt(LocalDateTime v) { this.lastAt = v; }
     }
 }

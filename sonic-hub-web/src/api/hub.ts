@@ -1,5 +1,5 @@
 import { get } from './client';
-import type { Chapter, ChatArchive, ChatMessage, Collection, Episode, Fact, MediaFile, Note, Paged, Person, PersonDetail, PersonRanking, RankingDetail, Tag, TagStats, TimelineBucket, Trait } from '../types';
+import type { Chapter, ChatArchive, ChatMessage, Collection, Episode, Fact, Forum, ForumBoard, ForumMember, ForumPage, ForumPostHit, ForumThread, ForumThreadDetail, MediaFile, Note, Paged, Person, PersonDetail, PersonForum, PersonRanking, RankingDetail, SeriesPart, Tag, TagStats, TimelineBucket, Trait } from '../types';
 import { isoDay, addDays } from '../lib/date';
 
 export interface Search {
@@ -17,7 +17,17 @@ export const hub = {
     const root = await get<Collection>('/collections/root', { inclChildrenCount: true, inclMediaCount: true });
     return get<Collection[]>(`/collections/${root.id}/children`, { inclChildrenCount: true, inclMediaCount: true });
   },
-  notes: (p: { kind?: string; status?: string; category?: string; tagId?: string; q?: string; page?: number; size?: number }) => get<Paged<Note>>('/journal/notes', p),
+  notes: (p: { kind?: string; status?: string; category?: string; tagId?: string; q?: string; page?: number; size?: number; authorId?: string }) => get<Paged<Note>>('/journal/notes', p),
+  seriesParts: (name: string) => get<SeriesPart[]>('/journal/series/parts', { name }),
+  forums: () => get<Forum[]>('/forums'),
+  forum: (key: string) => get<Forum>(`/forums/${key}`),
+  forumBoards: (key: string) => get<ForumBoard[]>(`/forums/${key}/boards`),
+  forumThreads: (key: string, p: { board?: string; q?: string; sort?: string; page?: number; size?: number }) => get<ForumPage<ForumThread>>(`/forums/${key}/threads`, p),
+  forumThread: (id: string) => get<ForumThreadDetail>(`/forum-threads/${id}`),
+  forumPosts: (key: string, p: { q?: string; personId?: string; nick?: string; page?: number; size?: number }) => get<ForumPage<ForumPostHit>>(`/forums/${key}/posts`, p),
+  forumMembers: (key: string) => get<ForumMember[]>(`/forums/${key}/members`),
+  personForums: (id: string) => get<PersonForum[]>(`/persons/${id}/forums`),
+  personForumPosts: (id: string, page = 0, size = 10) => get<ForumPage<ForumPostHit>>(`/persons/${id}/forum-posts`, { page, size }),
   noteBySlug: (slug: string) => get<Note>(`/journal/notes/slug/${encodeURIComponent(slug)}`),
   noteById: (id: string) => get<Note>(`/journal/notes/${id}`),
   categories: () => get<string[]>('/journal/categories'),
