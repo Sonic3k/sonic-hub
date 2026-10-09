@@ -4,6 +4,7 @@ import { createPortal } from 'react-dom';
 import { Link } from 'react-router-dom';
 import { cdn, pic } from '../api/client';
 import FlashCard from './FlashCard';
+import AudioCard from './AudioCard';
 import type { MediaFile } from '../types';
 import { longDay, timeOf } from '../lib/date';
 
@@ -25,12 +26,13 @@ export default function Viewer({ items, start, onClose, onIndex }: { items: Medi
       <div className="v-bg" style={{ backgroundImage: pic(m) ? `url(${cdn(pic(m), 640)})` : undefined }} />
       <div className="v-stage" onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
         onTouchStart={(e) => { x0.current = e.touches[0].clientX; }} onTouchEnd={(e) => { if (x0.current === null) return; const dx = e.changedTouches[0].clientX - x0.current; if (Math.abs(dx) > 50) go(dx < 0 ? 1 : -1); x0.current = null; }}>
-        {m.fileType === 'FLASH' ? <FlashCard key={m.id} m={m} /> : m.fileType === 'VIDEO' ? <video key={m.id} src={m.cdnUrl} controls autoPlay /> : <img key={m.id} src={cdn(m.cdnUrl, 1920)} alt={m.caption ?? ''} />}
+        {m.fileType === 'FLASH' ? <FlashCard key={m.id} m={m} /> : m.fileType === 'AUDIO' ? <AudioCard key={m.id} m={m} />
+          : m.fileType === 'VIDEO' ? <video key={m.id} src={m.cdnUrl} poster={m.posterUrl ?? undefined} controls autoPlay /> : <img key={m.id} src={cdn(m.cdnUrl, 1920)} alt={m.caption ?? ''} />}
         {items.length > 1 && <><button type="button" className="v-nav prev" onClick={() => go(-1)} aria-label="Ảnh trước">‹</button><button type="button" className="v-nav next" onClick={() => go(1)} aria-label="Ảnh sau">›</button></>}
       </div>
       <div className="v-top">
         <span className="v-count">{items.length > 1 ? `${i + 1} / ${items.length}` : ''}</span>
-        <a className="v-btn" href={m.cdnUrl} target="_blank" rel="noreferrer" title={m.fileType === 'FLASH' ? 'Tải thiệp gốc (.swf)' : 'Mở ảnh gốc'}>↗</a>
+        <a className="v-btn" href={m.cdnUrl} target="_blank" rel="noreferrer" title={m.fileType === 'FLASH' ? 'Tải thiệp gốc (.swf)' : m.fileType === 'AUDIO' ? 'Mở bản ghi âm' : m.fileType === 'VIDEO' ? 'Mở video gốc' : 'Mở ảnh gốc'}>↗</a>
         <button type="button" className={`v-btn ${info ? 'on' : ''}`} onClick={() => setInfo(v => !v)} title="Thông tin (i)">i</button>
         <button type="button" className="v-btn" onClick={onClose} title="Đóng (Esc)">✕</button>
       </div>

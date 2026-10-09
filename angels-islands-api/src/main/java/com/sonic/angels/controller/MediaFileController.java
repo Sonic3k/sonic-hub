@@ -143,7 +143,7 @@ public class MediaFileController {
         return mediaFileService.updateMedia(id, req);
     }
 
-    /** The kinds of file this API stores (FLASH = .swf cards played on the web), so a client can check before uploading. */
+    /** The kinds of file this API stores (FLASH = .swf cards played on the web, AUDIO = recordings), so a client can check before uploading. */
     @GetMapping("/types")
     public List<String> types() { return mediaFileService.fileTypes(); }
 

@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react'
-import { ChevronRight, ChevronLeft, Image, ArrowLeft, Camera, MapPin, FileText, Clock, Film, Info, X, Check, FolderPlus, Heart, ImageIcon, Users } from 'lucide-react'
+import { ChevronRight, ChevronLeft, Image, ArrowLeft, Camera, MapPin, FileText, Clock, Film, Info, X, Check, FolderPlus, Heart, ImageIcon, Users, Music } from 'lucide-react'
 import { mediaApi } from '../api/collections'
 import { usePersons } from '../hooks/usePersons'
 import { TagToggle } from './TagPanel'
@@ -35,13 +35,19 @@ export function MediaItem({ media, onClick, selected, onSelect, selectMode }: {
   return (
     <div className="relative cursor-pointer rounded-lg overflow-hidden bg-slate-100 group active:scale-[0.97] transition-transform duration-100">
       <div className="aspect-square" onClick={() => selectMode ? onSelect(media.id) : onClick()}>
-        {media.fileType === 'VIDEO' && media.cdnUrl ? (
+        {media.fileType === 'VIDEO' && media.posterUrl && media.thumbnailUrl ? (
+          <img src={media.thumbnailUrl} alt={media.fileName} className="w-full h-full object-cover" loading="lazy" />
+        ) : media.fileType === 'VIDEO' && media.cdnUrl ? (
           <video src={`${media.cdnUrl}#t=0.5`} preload="metadata" muted playsInline
             className="w-full h-full object-cover pointer-events-none" />
         ) : media.fileType === 'FLASH' ? (
           media.thumbnailUrl
             ? <img src={media.thumbnailUrl} alt={media.fileName} className="w-full h-full object-cover" loading="lazy" />
             : <div className="w-full h-full flex flex-col items-center justify-center gap-1 text-slate-400 text-[10px]"><Film size={20} strokeWidth={1} />Flash</div>
+        ) : media.fileType === 'AUDIO' ? (
+          media.thumbnailUrl
+            ? <img src={media.thumbnailUrl} alt={media.fileName} className="w-full h-full object-cover" loading="lazy" />
+            : <div className="w-full h-full flex flex-col items-center justify-center gap-1 text-slate-400 text-[10px]"><Music size={20} strokeWidth={1} />Audio</div>
         ) : (media.thumbnailUrl || media.cdnUrl) ? (
           <img src={media.thumbnailUrl || media.cdnUrl} alt={media.fileName} className="w-full h-full object-cover" loading="lazy" />
         ) : (
@@ -58,6 +64,9 @@ export function MediaItem({ media, onClick, selected, onSelect, selectMode }: {
       )}
       {media.fileType === 'FLASH' && (
         <div className="absolute bottom-1 right-1 bg-black/60 text-white text-[9px] px-1 rounded">▶ Flash</div>
+      )}
+      {media.fileType === 'AUDIO' && (
+        <div className="absolute bottom-1 right-1 bg-black/60 text-white text-[9px] px-1 rounded">♪ Audio</div>
       )}
       {/* Select checkbox — visible on hover or when in select mode */}
       <div className={`absolute top-1.5 left-1.5 transition-opacity ${
@@ -121,8 +130,15 @@ export function Lightbox({ media, allMedia, collectionId, onClose, onNavigate, o
         {/* Media */}
         {media.cdnUrl ? (
           media.fileType === 'VIDEO' ? (
-            <video key={media.id} src={media.cdnUrl} controls autoPlay playsInline
+            <video key={media.id} src={media.cdnUrl} poster={media.posterUrl} controls autoPlay playsInline
               className="max-w-full max-h-full object-contain select-none p-2" />
+          ) : media.fileType === 'AUDIO' ? (
+            <div className="flex flex-col items-center gap-3 p-2 max-w-full max-h-full">
+              {media.posterUrl
+                ? <img src={media.posterUrl} alt={media.fileName} className="max-w-full max-h-[75vh] object-contain select-none" />
+                : <Music size={64} strokeWidth={1} className="text-white/30" />}
+              <audio key={media.id} src={media.cdnUrl} controls autoPlay className="w-72 max-w-full" />
+            </div>
           ) : media.fileType === 'FLASH' ? (
             /* the card itself plays on the web site (Ruffle); here its poster, its music and the .swf */
             <div className="flex flex-col items-center gap-3 p-2 max-w-full max-h-full">

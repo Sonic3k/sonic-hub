@@ -28,7 +28,8 @@ public class MediaFile extends BaseEntity {
     @Column(name = "storage_provider")
     private StorageProvider storageProvider = StorageProvider.B2;
 
-    /** A still image shown in place of a file that is not an image itself (a Flash card), stored on B2 beside it. */
+    /** A still image shown in place of a file that is not an image itself (a Flash card, a recording, a video's first
+     *  frame), stored on B2 beside it. */
     @Column(name = "poster_storage_key", length = 1024)
     private String posterStorageKey;
 
@@ -162,7 +163,7 @@ public class MediaFile extends BaseEntity {
 
     // ── Enums ────────────────────────────────────────────────────────────────
 
-    public enum FileType { IMAGE, VIDEO, FLASH }
+    public enum FileType { IMAGE, VIDEO, FLASH, AUDIO }
     public enum MediaCategory { REGULAR, COVER, BANNER, AVATAR, SCREENSHOT, MEMORY }
     public enum Orientation { HORIZONTAL, VERTICAL, SQUARE }
     public enum StorageProvider { B2, FLICKR, GOOGLE_DRIVE, S3, EXTERNAL }
