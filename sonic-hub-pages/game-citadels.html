@@ -53,12 +53,24 @@ button{font:inherit;color:inherit}
 .icon-btn svg{width:22px;height:22px}
 .mob-only{display:none!important}
 
-/* ── keywords print in their own colour ── */
-.kw{font-weight:800;white-space:nowrap}
-.kw .ic{width:1.05em;height:1.05em;margin-right:1px}
-.kw-gold{color:#8a5f06}.kw-card{color:#4c3a78}.kw-crown{color:#8a5f06}
-.kw-noble{color:#8a6408}.kw-religious{color:#22508f}.kw-trade{color:#2b6b31}.kw-military{color:#962a20}.kw-unique{color:#65359a}
-.dark .kw-gold,.dark .kw-crown{color:#f4d06a}.dark .kw-card{color:#c9b7f0}.dark .kw-noble{color:#f0cf6c}.dark .kw-religious{color:#9cc0f3}.dark .kw-trade{color:#9fd59a}.dark .kw-military{color:#f29b8f}.dark .kw-unique{color:#d1b0f2}
+/* ── keywords: bold, in their own colour, with their number (district types also wear their gem) ── */
+.kw{font-weight:800}
+.kw .ic{width:.95em;height:.95em;vertical-align:-.13em;margin-right:.1em}
+.k-gold,.k-crown{color:#8b5d00}.k-card{color:#3b3f99}.k-pts{color:#0b6b6f}.k-harm{color:#a3182a}.k-build{color:#3c556b}
+.k-noble{color:#866200}.k-religious{color:#1f5296}.k-trade{color:#2b6b31}.k-military{color:#962a20}.k-unique{color:#6a35a0}
+.k-when,.k-who{color:inherit}
+/* the same words on the dark square: the stage caption, the action bar, the banners */
+#stage-caption .k-gold,.actionbar .hint .k-gold,#banner .bs .k-gold{color:#f4d06a}
+#stage-caption .k-crown,.actionbar .hint .k-crown,#banner .bs .k-crown{color:#f4d06a}
+#stage-caption .k-card,.actionbar .hint .k-card,#banner .bs .k-card{color:#c3c6ff}
+#stage-caption .k-pts,.actionbar .hint .k-pts,#banner .bs .k-pts{color:#8fe0dc}
+#stage-caption .k-harm,.actionbar .hint .k-harm,#banner .bs .k-harm{color:#ff9a8f}
+#stage-caption .k-build,.actionbar .hint .k-build,#banner .bs .k-build{color:#c9d8e6}
+#stage-caption .k-noble,.actionbar .hint .k-noble,#banner .bs .k-noble{color:#f0cf6c}
+#stage-caption .k-religious,.actionbar .hint .k-religious,#banner .bs .k-religious{color:#9cc0f3}
+#stage-caption .k-trade,.actionbar .hint .k-trade,#banner .bs .k-trade{color:#9fd59a}
+#stage-caption .k-military,.actionbar .hint .k-military,#banner .bs .k-military{color:#f29b8f}
+#stage-caption .k-unique,.actionbar .hint .k-unique,#banner .bs .k-unique{color:#d1b0f2}
 
 /* ── cards: a district wears its type's colour, a character the colour it collects for ── */
 .card{--w:var(--cw);--hh:var(--ch);position:relative;width:var(--w);height:var(--hh);flex:0 0 auto;user-select:none;color:var(--ink);filter:drop-shadow(0 5px 7px rgba(0,0,0,.5))}
@@ -272,7 +284,7 @@ button{font:inherit;color:inherit}
 .set-row{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:11px 0;border-bottom:1px solid rgba(36,24,15,.14)}
 .set-row>div>b{display:block;font-family:var(--f-head);font-weight:400;font-size:18px}.set-row>div>span{font-size:14.5px;color:var(--ink-3)}
 .tip{position:fixed;z-index:90;max-width:300px;padding:9px 12px;border-radius:5px;font-size:14.5px;line-height:1.35;color:var(--ink);background:var(--parch-tex),#fbf3e1;box-shadow:inset 0 0 0 1px rgba(36,24,15,.6),0 12px 28px rgba(0,0,0,.5);pointer-events:none}
-.tip b{font-family:var(--f-head);font-weight:400;font-size:16px}
+.tip b:not(.kw){font-family:var(--f-head);font-weight:400;font-size:16px}
 #banner{position:fixed;left:50%;top:40%;transform:translate(-50%,-50%);z-index:50;text-align:center;pointer-events:none;opacity:0;width:min(92vw,760px)}
 #banner .ribbon{display:inline-block;padding:14px 34px 16px;background:linear-gradient(90deg,rgba(10,12,22,0),rgba(10,12,22,.86) 14%,rgba(10,12,22,.86) 86%,rgba(10,12,22,0));box-shadow:inset 0 1px 0 rgba(244,214,139,.45),inset 0 -1px 0 rgba(244,214,139,.45)}
 #banner .bt{font-family:var(--f-head);font-size:clamp(30px,5vw,54px);line-height:1.04;color:var(--gold-hi);text-shadow:0 3px 0 #2a1606,0 0 30px rgba(0,0,0,.85)}
@@ -309,7 +321,7 @@ button{font:inherit;color:inherit}
 .prow.on{background:rgba(214,167,62,.22);box-shadow:inset 0 0 0 2px var(--gold)}
 .prow:disabled{opacity:.5;cursor:default}
 .prow .badge{width:28px;height:28px;font-size:14px}
-.prow b{font-family:var(--f-head);font-weight:400;font-size:18px;flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.prow>b{font-family:var(--f-head);font-weight:400;font-size:18px;flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .prow .stats{flex:0 0 auto;font-size:14.5px}
 .prow .note{font-size:13.5px;color:var(--ink-3);font-weight:700}
 .cityblock{margin:12px 0 4px}
@@ -363,7 +375,7 @@ html.compact .score-table .mt{width:16px;height:19px;font-size:10.5px}
 .set-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:12px}
 .set-tile{position:relative;border:0;cursor:pointer;text-align:left;padding:12px 12px 10px;border-radius:8px;color:var(--ink);display:flex;flex-direction:column;gap:6px;background:var(--parch-tex),linear-gradient(180deg,var(--parch-hi),var(--parch));
   box-shadow:inset 0 0 0 1px rgba(36,24,15,.7),inset 0 0 0 3px rgba(251,243,225,.6),0 8px 18px rgba(0,0,0,.5)}
-.set-tile b{font-family:var(--f-head);font-weight:400;font-size:19px;line-height:1.1;color:var(--blood)}
+.set-tile>b{font-family:var(--f-head);font-weight:400;font-size:19px;line-height:1.1;color:var(--blood)}
 .set-tile span{font-size:14px;line-height:1.3;color:var(--ink-2)}
 .set-tile .dots{display:flex;gap:3px;flex-wrap:wrap}
 .set-tile .dots i{width:24px;height:24px;border-radius:50%;display:grid;place-items:center;background:radial-gradient(circle at 50% 40%,var(--hw),var(--hw3));box-shadow:0 0 0 1.5px var(--h)}
@@ -402,14 +414,14 @@ html.compact .score-table .mt{width:16px;height:19px;font-size:10.5px}
 .cx-item .disc{width:50px;height:50px;border-radius:50%;display:grid;place-items:center;background:radial-gradient(circle at 50% 40%,var(--hw),var(--hw3));box-shadow:0 0 0 2px rgba(0,0,0,.4),0 0 0 3.5px var(--h)}
 .cx-item .disc svg{width:42px;height:42px;color:var(--h)}
 .cx-item.dist .disc{border-radius:8px}
-.cx-item b{font-family:var(--f-head);font-weight:400;font-size:18px}
+.cx-item>div>b:first-child{font-family:var(--f-head);font-weight:400;font-size:18px}
 .cx-item .in{margin-left:6px;font-size:11.5px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;padding:1px 6px;border-radius:3px;color:#fff;background:#3f8f45;vertical-align:2px}
 .cx-item p{margin:2px 0!important;font-size:15px!important;color:var(--ink-2)}
 .cx-basic{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:2px 18px;margin:6px 0 10px}
 .cx-basic div{display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px dotted rgba(36,24,15,.25);font-size:15.5px}
-.cx-basic div b{flex:1}.cx-basic .gem{width:18px;height:18px}
+.cx-basic div>b{flex:1}.cx-basic .gem{width:18px;height:18px}
 .cx-set{padding:12px 2px;border-bottom:1px solid rgba(36,24,15,.14)}
-.cx-set b{font-family:var(--f-head);font-weight:400;font-size:19px;color:var(--blood)}
+.cx-set>b{font-family:var(--f-head);font-weight:400;font-size:19px;color:var(--blood)}
 .cx-set p{margin:3px 0!important;font-size:15px!important}
 
 /* ── phones (portrait or sideways): html.compact is set from JS ── */
@@ -2319,20 +2331,40 @@ const plural = (n, one, many) => `${n} ${n === 1 ? one : many || one + 's'}`;
 function badge(pid) { return `<span class="badge" style="--pc:${PC[pid % PC.length]}">${pid === 0 ? '★' : esc(S.players[pid].name[0])}</span>`; }
 const toneOf = c => { const g = CHAR[c] && CHAR[c].gain; return g ? 't-' + g.type : 't-none'; };
 
-/* ── keywords in card texts: {gold}, {cards}, {noble}… print in their colour (with a small picture in sheets) ── */
-const KW = { gold: ['gold', 'gold', 'gold'], card: ['card', 'card', 'card'], cards: ['card', 'card', 'cards'], crown: ['crown', 'crown', 'crown'] };
-function kw(text, icons) {
-  return esc(text).replace(/\{(\w+)\}/g, (m, k) => {
-    if (TYPES[k]) return `<span class="kw kw-${k}">${icons ? typeGem(k, 14) + ' ' : ''}${TYPES[k].name.toLowerCase()}</span>`;
-    const t = KW[k]; if (!t) return m;
-    return `<span class="kw kw-${t[0]}">${icons ? ic(t[1]) : ''}${t[2]}</span>`;
-  });
+/* ── keywords: the words that carry the rules print bold in their own colour, with the number that goes with them, as in the
+   Mayhem games: gold, cards, points, building, harm (kill, rob, destroy, bewitch…), the crown, and the five district types
+   (these also wear their gem, the one on the cards). Times ("at the end of the game") and characters are bold. Texts may mark
+   words as {gold}, {cards}, {noble}…; the rest is found by its wording. ── */
+const KW_NAMES = CHARACTERS.map(c => c.name).sort((a, b) => b.length - a.length).join('|');
+const KW_RE = new RegExp([
+  '([+]?\\d+ (?:extra )?points?\\b|\\bpoints?\\b|\\bscores? \\d+ more\\b|\\b[Bb]eautif(?:y|ies|ied)\\b)',
+  "([+]?\\d+ (?:extra |more )?gold(?: less| more)?\\b|\\b\\d+ of (?:their |your |its )?gold\\b|\\ball (?:of )?(?:the |its |their |your |its player['’]s )?gold\\b|\\bhalf (?:of )?(?:their |your )?gold\\b|\\b[Gg]old\\b(?! Mine))",
+  '(\\b[Dd]raws? \\d+(?: (?:extra )?cards?)?\\b|[+]?\\d+ (?:extra |random |more |district )?cards?\\b|\\ba (?:random )?card\\b|\\b[Cc]ards?\\b)',
+  '\\b(noble|religious|trade|military|unique)\\b',
+  '\\b(crown)\\b',
+  '(\\b(?:[Kk]ill(?:s|ed)?|[Rr]ob(?:s|bed)?|[Dd]estroy(?:s|ed|ing)?|[Bb]ewitch(?:es|ed)?|[Cc]onfiscat(?:e|es|ed)|[Ss]eiz(?:e|es|ed)|[Ee]xchang(?:e|es|ed)|[Ww]arrants?|[Tt]hreats?)\\b)',
+  '(\\b(?:[Bb]uild(?:s|ing)?|[Bb]uilt)\\b(?: (?:up to )?\\d+(?: districts?)?\\b| limit\\b)?)',
+  '(\\b(?:[Aa]t the end of (?:the game|your turn|the round|this round|each selection phase)|[Oo]nce (?:per|a|in your) turn|[Dd]uring your turn)\\b)',
+  `(\\b(?:the rank \\d character|[Rr]ank \\d|${KW_NAMES})\\b)`,
+].join('|'), 'g');
+const KW_CLASS = ['pts', 'gold', 'card', 'type', 'crown', 'harm', 'build', 'when', 'who'];
+const gemIc = t => typeGem(t, 14).replace('class="gem"', 'class="ic gem"').replace(/aria-label="[^"]*"/, 'aria-hidden="true"');
+const kwB = (cls, html) => `<b class="kw k-${cls}">${html}</b>`;
+function kw(text) {
+  const raw = String(text).replace(/\{(\w+)\}/g, (m, k) => (TYPES[k] ? TYPES[k].name.toLowerCase() : k));
+  let out = '', last = 0;
+  for (const m of raw.matchAll(KW_RE)) {
+    const cls = KW_CLASS[m.slice(1).findIndex(x => x !== undefined)], word = m[0];
+    out += esc(raw.slice(last, m.index)) + (cls === 'type' ? kwB(word, gemIc(word) + esc(word)) : kwB(cls, esc(word)));
+    last = m.index + word.length;
+  }
+  return out + esc(raw.slice(last));
 }
 /* the short texts printed on unique district cards (the full text is in the card's sheet and in the codex) */
 const UNIQUE_SHORT = {
   armory: 'Destroy it to destroy any 1 district.', basilica: '+1 point per district with an odd cost.', capitol: '+3 points with 3 districts of one type.',
   'dragon-gate': 'Scores 2 extra points.', factory: 'Other {unique} districts cost 1 {gold} less.', framework: 'Destroy it to build a district for free.',
-  'gold-mine': 'Take 1 more {gold} when you gather gold.', 'great-wall': 'Rank 8 pays 1 more to touch your other districts.', 'haunted-quarter': 'Counts as any type at the end.',
+  'gold-mine': 'Take 1 more {gold} when you gather gold.', 'great-wall': 'Rank 8 pays 1 more {gold} to touch your other districts.', 'haunted-quarter': 'Counts as any type at the end.',
   'imperial-treasury': '+1 point per {gold} at the end.', 'ivory-tower': '+5 points if it is your only {unique} district.', keep: 'Rank 8 cannot touch it.',
   laboratory: 'Once a turn: discard 1 {card} for 2 {gold}.', library: 'Drawing {cards}: keep them all.', 'map-room': '+1 point per {card} in your hand.',
   monument: 'Counts as 2 districts. Not with 5 or more.', museum: 'Once a turn: 1 {card} under it, +1 point each.', necropolis: 'Build it by destroying a district of yours.',
@@ -2511,12 +2543,12 @@ function stageState() {
   if (sel && needMine() && S.need.kind === 'turn' && !UI.busy) {
     const why = buildReason(sel), cost = buildCost(S.players[0], sel);
     const opts = why ? [] : payOptions(S, 0, sel), other = { cards: 'Pay for it with cards and gold', framework: 'Take down the Framework to build it', necropolis: 'Build it by destroying one of your districts', cardinal: 'Take the gold you lack from a player (Cardinal)' };
-    const cap = why ? esc(why) : opts.some(o => o.pay === 'gold') ? `Build it for ${plural(cost, 'gold', 'gold')}${opts.length > 1 ? ', or pay another way' : ''}` : other[opts[0].pay];
+    const cap = kw(why ? why : opts.some(o => o.pay === 'gold') ? `Build it for ${plural(cost, 'gold', 'gold')}${opts.length > 1 ? ', or pay another way' : ''}` : other[opts[0].pay]);
     return { html: districtHTML(sel, { size: 'lg', cost: sel.cost == null ? null : cost }), cap, key: 'sel' + sel.uid };
   }
   if (S.over && !UI.view) {
     const W = S.players[S.winner];
-    return { html: `<div class="deckpile">${backHTML()}</div>`, cap: `${esc(nameOf(W.id))} ${vb(W.id, 'win', 'wins')} with ${S.scores[W.id].total} points`, key: 'over' };
+    return { html: `<div class="deckpile">${backHTML()}</div>`, cap: kw(`${nameOf(W.id)} ${vb(W.id, 'win', 'wins')} with ${S.scores[W.id].total} points`), key: 'over' };
   }
   if (v.phase === 'select' && S.sel) {
     const nd = S.need, n = nd && nd.kind === 'pick' ? nd.options.length : S.sel.pass.length;
@@ -2527,10 +2559,10 @@ function stageState() {
   const c = v.cur ? v.cur.char : UI.calling;
   if (c && (v.phase === 'turns')) {
     const pid = v.cur ? v.cur.pid : v.revealed[c] != null ? v.revealed[c] : null, mode = v.cur ? v.cur.mode : null;
-    let cap = pid == null ? (v.killed === c ? `${esc(CHAR[c].name)}: killed, silent` : `Nobody is ${theC(c)}`) : `${esc(nameOf(pid))} ${vb(pid, 'are', 'is')} ${theC(c)}`;
-    if (mode === 'bewitched') cap += ` <small>Bewitched: ${pid === 0 ? 'you only gather' : 'only gathers'}; the Witch takes the rest of the turn</small>`;
-    else if (mode === 'resumed') cap = `${esc(nameOf(pid))} ${vb(pid, 'play', 'plays')} as ${theC(c)} <small>The Witch takes over the bewitched turn</small>`;
-    else if (pid === 0) cap += `<small>${esc(turnTip())}</small>`;
+    let cap = kw(pid == null ? (v.killed === c ? `${CHAR[c].name}: killed, silent` : `Nobody is ${theC(c)}`) : `${nameOf(pid)} ${vb(pid, 'are', 'is')} ${theC(c)}`);
+    if (mode === 'bewitched') cap += ` <small>${kw(`Bewitched: ${pid === 0 ? 'you only gather' : 'only gathers'}; the Witch takes the rest of the turn`)}</small>`;
+    else if (mode === 'resumed') cap = `${kw(`${nameOf(pid)} ${vb(pid, 'play', 'plays')} as ${theC(c)}`)} <small>${kw('The Witch takes over the bewitched turn')}</small>`;
+    else if (pid === 0) cap += `<small>${kw(turnTip())}</small>`;
     return { html: charHTML(c, { size: 'lg', cls: pid == null ? 'ghost' : '' }), cap, key: 'char' + c + pid + mode };
   }
   return { html: '', cap: '', key: 'none' };
@@ -2591,7 +2623,7 @@ function turnBar() {
     return `<button class="icon-btn info" data-act="card-info" aria-label="Card details" data-tip="Card details (I)">${ICON.info}</button><button class="btn ghost small" data-act="cancel-sel">Cancel</button><button class="btn" data-act="build-sel"${why ? ' disabled' : ''}>${ic('hammer')}${esc(label)}${!why && opts.length === 1 && opts[0].pay === 'gold' ? ic('gold') : ''}</button>`;
   }
   if (t.mode === 'bewitched') {
-    out.push(`<span class="hint">Bewitched: gather, the Witch does the rest</span>`);
+    out.push(`<span class="hint">${kw('Bewitched: gather, the Witch does the rest')}</span>`);
   }
   if (canGather(S, 0)) {
     const g = 2 + (has(P, 'gold-mine') ? 1 : 0), d = has(P, 'observatory') ? 3 : 2, keepAll = has(P, 'library');
@@ -2632,61 +2664,64 @@ const WHY_GOLD = { gather: '', gain: ' for districts', merchant: ' (Merchant)', 
 const WHY_CARDS = { gather: '', gain: ' for districts', architect: ' (Architect)', scholar: ' (Scholar)', smithy: ' (Smithy)', park: ' (Park)', navigator: ' (Navigator)' };
 function logLine(e) {
   if (e.only != null && e.only !== 0) return '';
-  const N = p => `${badge(p)}<b>${esc(nameOf(p))}</b>`, o = p => esc(objOf(p)), c = x => `<b>${esc(theC(x))}</b>`, d = card => `<b>${esc(card.name)}</b>`;
+  /* names in bold; gold, cards, points, building and harm in their keyword colours; districts in their type's colour with its gem */
+  const N = p => `${badge(p)}<b>${esc(nameOf(p))}</b>`, o = p => esc(objOf(p)), c = x => `<b>${esc(theC(x))}</b>`;
+  const d = card => kwB(card.type, gemIc(card.type) + esc(card.name)), G = n => kwB('gold', plural(n, 'gold', 'gold')), Cd = n => kwB('card', plural(n, 'card'));
+  const H = t => kwB('harm', t), B = t => kwB('build', t), crown = `the ${kwB('crown', 'crown')}`;
   switch (e.k) {
-    case 'round': return `Round ${e.round} · ${esc(nameOf(e.crown))} ${vb(e.crown, 'have', 'has')} the crown${e.faceUp.length ? ` · face up: ${e.faceUp.map(x => esc(CHAR[x].name)).join(', ')}` : ''}`;
+    case 'round': return `Round ${e.round} · ${esc(nameOf(e.crown))} ${vb(e.crown, 'have', 'has')} ${crown}${e.faceUp.length ? ` · face up: ${e.faceUp.map(x => esc(CHAR[x].name)).join(', ')}` : ''}`;
     case 'pick': return `${N(0)} chose ${c(e.char)}`;
     case 'down': return `${N(e.pid)} put a character face down`;
     case 'theater': return `${N(e.pid)} used the Theater to swap characters with ${o(e.target)}`;
     case 'theaterGot': return `${N(0)} now have ${c(e.char)}`;
     case 'theaterPass': return `${N(e.pid)} kept ${vb(e.pid, 'your', 'their')} character (Theater)`;
-    case 'call': return e.pid == null ? (e.killed ? `${c(e.char)} was killed and stays silent` : `Nobody is ${c(e.char)}`) : `${N(e.pid)} ${vb(e.pid, 'are', 'is')} ${c(e.char)}`;
+    case 'call': return e.pid == null ? (e.killed ? `<b>The ${esc(CHAR[e.char].name)}</b> was ${H('killed')} and stays silent` : `Nobody is ${c(e.char)}`) : `${N(e.pid)} ${vb(e.pid, 'are', 'is')} ${c(e.char)}`;
     case 'witchLost': return `The Witch’s spell falls on nobody: nobody is ${c(e.char)}`;
-    case 'rob': return `${N(e.by)} (Thief) ${vb(e.by, 'take', 'takes')} ${plural(e.n, 'gold', 'gold')} from ${o(e.pid)}`;
-    case 'gold': return e.n ? `${N(e.pid)} ${vb(e.pid, e.why === 'gather' ? 'take' : 'gain', e.why === 'gather' ? 'takes' : 'gains')} ${plural(e.n, 'gold', 'gold')}${WHY_GOLD[e.why] || ''}` : '';
-    case 'cards': return e.n ? `${N(e.pid)} ${vb(e.pid, 'gain', 'gains')} ${plural(e.n, 'card')}${WHY_CARDS[e.why] || ''}` : '';
-    case 'crown': return e.why === 'emperor' ? `${N(e.by)} (Emperor) ${vb(e.by, 'give', 'gives')} the crown to ${o(e.pid)}` : e.why === 'advisor' ? `${N(e.by)} ${vb(e.by, 'give', 'gives')} the crown to ${o(e.pid)} (the killed Emperor)` : e.why === 'heir' ? `${N(e.pid)} ${vb(e.pid, 'take', 'takes')} the crown (the killed character’s due)` : `${N(e.pid)} ${vb(e.pid, 'take', 'takes')} the crown`;
-    case 'discard': return `${N(e.pid)} ${vb(e.pid, 'pay', 'pays')} with ${plural(e.n, 'card')} (Thieves’ Den)`;
-    case 'cardinal': return `${N(e.pid)} (Cardinal) ${vb(e.pid, 'take', 'takes')} ${plural(e.n, 'gold', 'gold')} from ${o(e.from)} for ${plural(e.n, 'card')}`;
-    case 'confiscate': return `${N(e.pid)} (Magistrate) ${vb(e.pid, 'confiscate', 'confiscates')} ${possOf(e.from)} ${d(e.card)}${e.refund ? `; ${o(e.from)} ${vb(e.from, 'get', 'gets')} ${plural(e.refund, 'gold', 'gold')} back` : ''}`;
-    case 'build': return e.how === 'confiscated' ? '' : `${N(e.pid)} ${vb(e.pid, 'build', 'builds')} the ${d(e.card)}`;
-    case 'tax': return `${N(e.pid)} ${vb(e.pid, 'pay', 'pays')} 1 gold of tax`;
-    case 'complete': return `${N(e.pid)} ${vb(e.pid, 'complete', 'completes')} a city${e.first ? ' first! The game ends after this round' : ''}`;
-    case 'destroy': return e.why === 'warlord' ? `${N(e.by)} (Warlord) ${vb(e.by, 'destroy', 'destroys')} ${possOf(e.pid)} ${d(e.card)}${e.paid ? ` for ${plural(e.paid, 'gold', 'gold')}` : ''}` : e.why === 'armory' ? (e.by != null ? `${N(e.by)} ${vb(e.by, 'destroy', 'destroys')} ${possOf(e.pid)} ${d(e.card)} with the Armory` : '') : e.why === 'framework' ? `${N(e.pid)} ${vb(e.pid, 'take', 'takes')} down the Framework to build for free` : e.why === 'necropolis' ? `${N(e.pid)} ${vb(e.pid, 'give', 'gives')} up the ${d(e.card)} for the Necropolis` : `${possOf(e.pid)} ${d(e.card)} is destroyed`;
-    case 'bribe': return `${N(e.pid)} ${vb(e.pid, 'pay', 'pays')} the Blackmailer ${plural(e.n, 'gold', 'gold')}`;
+    case 'rob': return `${N(e.by)} (Thief) ${H(vb(e.by, 'rob', 'robs'))} ${o(e.pid)} of ${G(e.n)}`;
+    case 'gold': return e.n ? `${N(e.pid)} ${vb(e.pid, e.why === 'gather' ? 'take' : 'gain', e.why === 'gather' ? 'takes' : 'gains')} ${G(e.n)}${WHY_GOLD[e.why] || ''}` : '';
+    case 'cards': return e.n ? `${N(e.pid)} ${vb(e.pid, 'gain', 'gains')} ${Cd(e.n)}${WHY_CARDS[e.why] || ''}` : '';
+    case 'crown': return e.why === 'emperor' ? `${N(e.by)} (Emperor) ${vb(e.by, 'give', 'gives')} ${crown} to ${o(e.pid)}` : e.why === 'advisor' ? `${N(e.by)} ${vb(e.by, 'give', 'gives')} ${crown} to ${o(e.pid)} (the killed Emperor)` : e.why === 'heir' ? `${N(e.pid)} ${vb(e.pid, 'take', 'takes')} ${crown} (the killed character’s due)` : `${N(e.pid)} ${vb(e.pid, 'take', 'takes')} ${crown}`;
+    case 'discard': return `${N(e.pid)} ${vb(e.pid, 'pay', 'pays')} with ${Cd(e.n)} (Thieves’ Den)`;
+    case 'cardinal': return `${N(e.pid)} (Cardinal) ${vb(e.pid, 'take', 'takes')} ${G(e.n)} from ${o(e.from)} for ${Cd(e.n)}`;
+    case 'confiscate': return `${N(e.pid)} (Magistrate) ${H(vb(e.pid, 'confiscate', 'confiscates'))} ${possOf(e.from)} ${d(e.card)}${e.refund ? `; ${o(e.from)} ${vb(e.from, 'get', 'gets')} ${G(e.refund)} back` : ''}`;
+    case 'build': return e.how === 'confiscated' ? '' : `${N(e.pid)} ${B(vb(e.pid, 'build', 'builds'))} the ${d(e.card)}`;
+    case 'tax': return `${N(e.pid)} ${vb(e.pid, 'pay', 'pays')} ${G(1)} of tax`;
+    case 'complete': return `${N(e.pid)} ${vb(e.pid, 'complete', 'completes')} a city${e.first ? ` first: ${kwB('pts', '+4 points')}. The game ends after this round` : `: ${kwB('pts', '+2 points')}`}`;
+    case 'destroy': return e.why === 'warlord' ? `${N(e.by)} (Warlord) ${H(vb(e.by, 'destroy', 'destroys'))} ${possOf(e.pid)} ${d(e.card)}${e.paid ? ` for ${G(e.paid)}` : ''}` : e.why === 'armory' ? (e.by != null ? `${N(e.by)} ${H(vb(e.by, 'destroy', 'destroys'))} ${possOf(e.pid)} ${d(e.card)} with the Armory` : '') : e.why === 'framework' ? `${N(e.pid)} ${vb(e.pid, 'take', 'takes')} down the Framework to ${B('build')} for free` : e.why === 'necropolis' ? `${N(e.pid)} ${vb(e.pid, 'give', 'gives')} up the ${d(e.card)} for the Necropolis` : `${possOf(e.pid)} ${d(e.card)} is ${H('destroyed')}`;
+    case 'bribe': return `${N(e.pid)} ${vb(e.pid, 'pay', 'pays')} the Blackmailer ${G(e.n)}`;
     case 'refuse': return `${N(e.pid)} ${vb(e.pid, 'refuse', 'refuses')} to pay the Blackmailer`;
-    case 'threat': return e.real ? `${N(e.by)} ${vb(e.by, 'turn', 'turns')} up the threat: it is real! ${o(e.pid)} ${vb(e.pid, 'lose', 'loses')} ${plural(e.n, 'gold', 'gold')}` : `${N(e.by)} ${vb(e.by, 'turn', 'turns')} up the threat: an empty one`;
-    case 'spare': return `${N(e.by)} ${vb(e.by, 'leave', 'leaves')} the threat face down`;
-    case 'bewitch': return `${N(e.pid)} (Witch) ${vb(e.pid, 'bewitch', 'bewitches')} ${c(e.char)}`;
-    case 'bewitchedEnd': return `${N(e.pid)} ${vb(e.pid, 'were', 'was')} bewitched and only ${vb(e.pid, 'gather', 'gathers')}`;
+    case 'threat': return e.real ? `${N(e.by)} ${vb(e.by, 'turn', 'turns')} up the ${H('threat')}: it is real! ${o(e.pid)} ${vb(e.pid, 'lose', 'loses')} ${G(e.n)}` : `${N(e.by)} ${vb(e.by, 'turn', 'turns')} up the ${H('threat')}: an empty one`;
+    case 'spare': return `${N(e.by)} ${vb(e.by, 'leave', 'leaves')} the ${H('threat')} face down`;
+    case 'bewitch': return `${N(e.pid)} (Witch) ${H(vb(e.pid, 'bewitch', 'bewitches'))} ${c(e.char)}`;
+    case 'bewitchedEnd': return `${N(e.pid)} ${vb(e.pid, 'were', 'was')} ${H('bewitched')} and only ${vb(e.pid, 'gather', 'gathers')}`;
     case 'resume': return `${N(e.pid)} (Witch) ${vb(e.pid, 'take', 'takes')} over as ${c(e.char)}`;
-    case 'witchIdle': return `${N(e.pid)} (Witch) ${vb(e.pid, 'bewitch', 'bewitches')} nobody`;
-    case 'kill': return `${N(e.pid)} (Assassin) ${vb(e.pid, 'kill', 'kills')} ${c(e.char)}`;
-    case 'warrants': return `${N(e.pid)} (Magistrate) ${vb(e.pid, 'put', 'puts')} warrants on ${e.chars.map(x => esc(CHAR[x].name)).join(', ')}`;
-    case 'signed': return `Your signed warrant is on ${c(e.char)}`;
-    case 'robNamed': return `${N(e.pid)} (Thief) will rob ${c(e.char)}`;
-    case 'threats': return `${N(e.pid)} (Blackmailer) ${vb(e.pid, 'threaten', 'threatens')} ${e.chars.map(x => esc(CHAR[x].name)).join(' and ')}`;
-    case 'real': return `Your real threat is on ${c(e.char)}`;
-    case 'spy': return `${N(e.pid)} (Spy) ${vb(e.pid, 'name', 'names')} ${esc(TYPES[e.type].name.toLowerCase())} and ${vb(e.pid, 'look', 'looks')} at ${possOf(e.target)} hand: ${e.n} match${e.n === 1 ? '' : 'es'}, ${plural(e.gold, 'gold', 'gold')} and ${plural(e.cards, 'card')} taken`;
-    case 'peek': return `${N(0)} saw ${possOf(e.target)} hand: ${e.hand.length ? e.hand.map(x => esc(x.name)).join(', ') : 'empty'}`;
+    case 'witchIdle': return `${N(e.pid)} (Witch) ${H(vb(e.pid, 'bewitch', 'bewitches'))} nobody`;
+    case 'kill': return `${N(e.pid)} (Assassin) ${H(vb(e.pid, 'kill', 'kills'))} ${c(e.char)}`;
+    case 'warrants': return `${N(e.pid)} (Magistrate) ${vb(e.pid, 'put', 'puts')} ${H('warrants')} on ${e.chars.map(x => esc(CHAR[x].name)).join(', ')}`;
+    case 'signed': return `Your signed ${H('warrant')} is on ${c(e.char)}`;
+    case 'robNamed': return `${N(e.pid)} (Thief) will ${H('rob')} ${c(e.char)}`;
+    case 'threats': return `${N(e.pid)} (Blackmailer) ${vb(e.pid, 'put', 'puts')} ${H('threats')} on ${e.chars.map(x => esc(CHAR[x].name)).join(' and ')}`;
+    case 'real': return `Your real ${H('threat')} is on ${c(e.char)}`;
+    case 'spy': return `${N(e.pid)} (Spy) ${vb(e.pid, 'name', 'names')} ${kwB(e.type, gemIc(e.type) + esc(TYPES[e.type].name.toLowerCase()))} and ${vb(e.pid, 'look', 'looks')} at ${possOf(e.target)} hand: ${e.n} match${e.n === 1 ? '' : 'es'}, ${G(e.gold)} and ${Cd(e.cards)} taken`;
+    case 'peek': return `${N(0)} saw ${possOf(e.target)} hand: ${e.hand.length ? e.hand.map(d).join(', ') : 'empty'}`;
     case 'swapHands': return `${N(e.pid)} (Magician) ${vb(e.pid, 'swap', 'swaps')} hands with ${o(e.target)}`;
-    case 'redraw': return `${N(e.pid)} (Magician) ${vb(e.pid, 'trade', 'trades')} ${plural(e.n, 'card')} with the deck`;
+    case 'redraw': return `${N(e.pid)} (Magician) ${vb(e.pid, 'trade', 'trades')} ${Cd(e.n)} with the deck`;
     case 'wizardEmpty': return `${N(e.pid)} (Wizard) ${vb(e.pid, 'find', 'finds')} ${possOf(e.target)} hand empty`;
     case 'wizardLook': return `${N(e.pid)} (Wizard) ${vb(e.pid, 'look', 'looks')} at ${possOf(e.target)} hand`;
-    case 'wizardTake': return e.build ? `${N(e.pid)} (Wizard) ${vb(e.pid, 'take', 'takes')} the ${d(e.card)} from ${o(e.from)} and ${vb(e.pid, 'build', 'builds')} it` : `${N(e.pid)} (Wizard) ${vb(e.pid, 'take', 'takes')} a card from ${o(e.from)}`;
+    case 'wizardTake': return e.build ? `${N(e.pid)} (Wizard) ${vb(e.pid, 'take', 'takes')} the ${d(e.card)} from ${o(e.from)} and ${B(vb(e.pid, 'build', 'builds'))} it` : `${N(e.pid)} (Wizard) ${vb(e.pid, 'take', 'takes')} ${kwB('card', 'a card')} from ${o(e.from)}`;
     case 'wizardCard': return `${N(0)} took the ${d(e.card)}`;
     case 'seerTook': return `${N(0)} took the ${d(e.card)} from ${o(e.target)}`;
-    case 'seer': return `${N(e.pid)} (Seer) ${vb(e.pid, 'take', 'takes')} a random card from ${e.from.length ? e.from.map(o).join(', ') : 'nobody'}`;
-    case 'seerGave': return `${N(e.pid)} ${vb(e.pid, 'give', 'gives')} a card back to ${e.to.map(o).join(', ')}`;
-    case 'tribute': return `${N(e.pid)} (Emperor) ${vb(e.pid, 'take', 'takes')} ${e.took === 'gold' ? '1 gold' : e.took === 'card' ? 'a card' : 'nothing'} from ${o(e.from)}`;
-    case 'alms': return `${N(e.pid)} (Abbot) ${vb(e.pid, 'take', 'takes')} 1 gold from ${o(e.from)}, the richest`;
-    case 'scholar': return `${N(e.pid)} (Scholar) ${vb(e.pid, 'draw', 'draws')} ${e.n} cards to keep 1`;
-    case 'seize': return `${N(e.pid)} (Marshal) ${vb(e.pid, 'seize', 'seizes')} ${possOf(e.from)} ${d(e.card)} for ${plural(e.paid, 'gold', 'gold')}`;
-    case 'exchange': return `${N(e.pid)} (Diplomat) ${vb(e.pid, 'exchange', 'exchanges')} ${vb(e.pid, 'your', 'their')} ${d(e.gave)} for ${possOf(e.with)} ${d(e.got)}${e.paid ? `, paying ${plural(e.paid, 'gold', 'gold')}` : ''}`;
-    case 'beautify': return `${N(e.pid)} (Artist) ${vb(e.pid, 'beautify', 'beautifies')} ${e.cards.map(d).join(' and ')}`;
-    case 'museum': return `${N(e.pid)} ${vb(e.pid, 'put', 'puts')} a card under the Museum`;
-    case 'killedWas': return `The killed ${esc(CHAR[e.char].name)} was ${o(e.pid)}`;
-    case 'gameEnd': return `The game is over: ${esc(nameOf(e.winner))} ${vb(e.winner, 'win', 'wins')} with ${e.scores[e.winner]} points`;
+    case 'seer': return `${N(e.pid)} (Seer) ${vb(e.pid, 'take', 'takes')} ${kwB('card', 'a random card')} from ${e.from.length ? e.from.map(o).join(', ') : 'nobody'}`;
+    case 'seerGave': return `${N(e.pid)} ${vb(e.pid, 'give', 'gives')} ${kwB('card', 'a card')} back to ${e.to.map(o).join(', ')}`;
+    case 'tribute': return `${N(e.pid)} (Emperor) ${vb(e.pid, 'take', 'takes')} ${e.took === 'gold' ? G(1) : e.took === 'card' ? kwB('card', 'a card') : 'nothing'} from ${o(e.from)}`;
+    case 'alms': return `${N(e.pid)} (Abbot) ${vb(e.pid, 'take', 'takes')} ${G(1)} from ${o(e.from)}, the richest`;
+    case 'scholar': return `${N(e.pid)} (Scholar) ${vb(e.pid, 'draw', 'draws')} ${Cd(e.n)} to keep 1`;
+    case 'seize': return `${N(e.pid)} (Marshal) ${H(vb(e.pid, 'seize', 'seizes'))} ${possOf(e.from)} ${d(e.card)} for ${G(e.paid)}`;
+    case 'exchange': return `${N(e.pid)} (Diplomat) ${vb(e.pid, 'exchange', 'exchanges')} ${vb(e.pid, 'your', 'their')} ${d(e.gave)} for ${possOf(e.with)} ${d(e.got)}${e.paid ? `, paying ${G(e.paid)}` : ''}`;
+    case 'beautify': return `${N(e.pid)} (Artist) ${vb(e.pid, 'beautify', 'beautifies')} ${e.cards.map(d).join(' and ')}: ${kwB('pts', `+1 point${e.cards.length > 1 ? ' each' : ''}`)}`;
+    case 'museum': return `${N(e.pid)} ${vb(e.pid, 'put', 'puts')} ${kwB('card', 'a card')} under the Museum`;
+    case 'killedWas': return `The ${H('killed')} ${esc(CHAR[e.char].name)} was ${o(e.pid)}`;
+    case 'gameEnd': return `The game is over: ${esc(nameOf(e.winner))} ${vb(e.winner, 'win', 'wins')} with ${kwB('pts', plural(e.scores[e.winner], 'point'))}`;
   }
   return '';
 }
@@ -2707,7 +2742,7 @@ function renderSelection() { if (!S) return; renderHand(); renderStage(); render
 const TIP = { el: null, timer: null, over: null, press: null };
 function showTip(el) {
   if (DRAG.on || !el.isConnected) return;
-  const t = $('#tip'); t.innerHTML = esc(el.dataset.tip); t.classList.remove('hidden');
+  const t = $('#tip'); t.innerHTML = kw(el.dataset.tip); t.classList.remove('hidden');
   const r = el.getBoundingClientRect(), w = t.offsetWidth, h = t.offsetHeight;
   let x = Math.min(Math.max(8, r.left + r.width / 2 - w / 2), innerWidth - w - 8), y = r.top - h - 8;
   if (y < 8) y = r.bottom + 8;
@@ -2811,7 +2846,7 @@ function freshTile(pid, uid) {
   if (el) { el.classList.remove('fresh'); void el.offsetWidth; el.classList.add('fresh'); }
 }
 function banner(title, sub, dur = 1900) {
-  const b = $('#banner'); b.innerHTML = `<div class="ribbon"><div class="bt">${esc(title)}</div>${sub ? `<div class="bs">${sub}</div>` : ''}</div>`;
+  const b = $('#banner'); b.innerHTML = `<div class="ribbon"><div class="bt">${esc(title)}</div>${sub ? `<div class="bs">${kw(sub)}</div>` : ''}</div>`;
   b.style.setProperty('--bdur', Math.max(900, D(dur)) + 'ms'); b.classList.remove('show'); void b.offsetWidth; b.classList.add('show');
 }
 function openSheet(html, o = {}) {
@@ -2855,7 +2890,7 @@ const FX = {
   async round(e, commit) {
     UI.killedWas = null; UI.calling = null; commit();
     SFX.play('round');
-    banner(`Round ${e.round}`, `${esc(nameOf(e.crown))} ${vb(e.crown, 'have', 'has')} the crown${e.faceUp.length ? ` · face up: ${e.faceUp.map(c => esc(CHAR[c].name)).join(', ')}` : ''}`, 1700);
+    banner(`Round ${e.round}`, `${nameOf(e.crown)} ${vb(e.crown, 'have', 'has')} the crown${e.faceUp.length ? ` · face up: ${e.faceUp.map(c => CHAR[c].name).join(', ')}` : ''}`, 1700);
     for (const c of e.faceUp) pingMed(c);
     await wait(D(1250));
   },
@@ -2869,14 +2904,14 @@ const FX = {
   async theater(e, commit) {
     SFX.play('swap');
     await Promise.all([flyTokens('back', seatRect(e.pid), seatRect(e.target), 1), flyTokens('back', seatRect(e.target), seatRect(e.pid), 1)]);
-    commit(); banner('The Theater', `${esc(nameOf(e.pid))} ${vb(e.pid, 'swap', 'swaps')} characters with ${esc(objOf(e.target))}`, 1500); await wait(D(900));
+    commit(); banner('The Theater', `${nameOf(e.pid)} ${vb(e.pid, 'swap', 'swaps')} characters with ${objOf(e.target)}`, 1500); await wait(D(900));
   },
-  async theaterGot(e) { if (e.pid === 0) { banner('Your new character', esc(CHAR[e.char].name), 1500); await wait(D(900)); } },
+  async theaterGot(e) { if (e.pid === 0) { banner('Your new character', `You now have ${theC(e.char)}`, 1500); await wait(D(900)); } },
   async call(e, commit) {
     UI.calling = e.char; UI.hint = e.pid != null ? hintOf(e.pid) : '';
     commit(); pingMed(e.char);
     SFX.play('bell', CALL_PITCH[CHAR[e.char].rank]);
-    if (e.pid === 0) { SFX.play('turn'); buzz(20); banner('Your turn', `You are ${esc(theC(e.char))}`, 1400); await wait(D(1000)); }
+    if (e.pid === 0) { SFX.play('turn'); buzz(20); banner('Your turn', `You are ${theC(e.char)}`, 1400); await wait(D(1000)); }
     else await wait(D(e.pid == null ? 620 : 820));
   },
   async witchLost(e) { floatAt(e.pid, 'spell lost', 'info'); await wait(D(500)); },
@@ -2929,7 +2964,7 @@ const FX = {
   async tax(e, commit) { await flyTokens('gold', statRect(e.pid, 'g'), medRect('tax-collector'), 1, { dur: 420 }); SFX.play('coin'); commit(); },
   async complete(e, commit) {
     commit(); SFX.play('crown');
-    banner(e.pid === 0 ? 'Your city is complete!' : `${S.players[e.pid].name} completes a city`, e.first ? 'The game ends at the end of this round' : 'Completed city: +2 points', 2000);
+    banner(e.pid === 0 ? 'Your city is complete!' : `${S.players[e.pid].name} completes a city`, e.first ? 'First to complete: +4 points. The game ends at the end of this round' : 'Completed city: +2 points', 2000);
     await wait(D(1500));
   },
   async destroy(e, commit) {
@@ -2951,9 +2986,9 @@ const FX = {
   async spare(e) { floatAt(e.pid, 'threat stays hidden', 'info'); await wait(D(500)); },
   async bewitch(e, commit) { commit(); pingMed(e.char); SFX.play('magic'); await wait(D(700)); },
   async bewitchedEnd(e) { floatAt(e.pid, 'bewitched', 'info'); await wait(D(500)); },
-  async resume(e, commit) { commit(); pingMed(e.char); SFX.play('magic'); if (e.pid === 0) { banner('Your turn', `As ${esc(theC(e.char))}, by the Witch’s spell`, 1500); SFX.play('turn'); } await wait(D(900)); },
+  async resume(e, commit) { commit(); pingMed(e.char); SFX.play('magic'); if (e.pid === 0) { banner('Your turn', `As ${theC(e.char)}, by the Witch’s spell`, 1500); SFX.play('turn'); } await wait(D(900)); },
   async witchIdle(e) { floatAt(e.pid, 'no spell', 'info'); await wait(D(300)); },
-  async kill(e, commit) { commit(); pingMed(e.char); SFX.play('kill'); if (S.players[0].chars.includes(e.char)) { banner('You are killed', `${esc(CHAR[e.char].name)} skips the turn`, 1600); buzz(60); } await wait(D(800)); },
+  async kill(e, commit) { commit(); pingMed(e.char); SFX.play('kill'); if (S.players[0].chars.includes(e.char)) { banner('You are killed', `Your ${CHAR[e.char].name} skips the whole turn`, 1600); buzz(60); } await wait(D(800)); },
   async warrants(e, commit) { commit(); for (const c of e.chars) pingMed(c); SFX.play('seal'); await wait(D(700)); },
   async robNamed(e, commit) { commit(); pingMed(e.char); SFX.play('seal'); await wait(D(700)); },
   async threats(e, commit) { commit(); for (const c of e.chars) pingMed(c); SFX.play('seal'); await wait(D(700)); },
@@ -3018,13 +3053,13 @@ function ninthMode(n) { return n === 2 ? 'never' : n === 3 || n === 8 ? 'always'
 function setupChars() { const su = UI.setup, set = PRESETS.find(p => p.id === su.set); return set ? charsFor(set, su.n, su.ninth) : null; }
 function renderSetup() {
   const su = UI.setup, set = PRESETS.find(p => p.id === su.set), chars = setupChars(), mode = ninthMode(su.n);
-  const tile = p => `<button class="set-tile${su.set === p.id ? ' on' : ''}" data-set-id="${p.id}" aria-pressed="${su.set === p.id}"><b>${esc(p.name)}</b><span>${esc(p.blurb)}</span><span class="dots">${p.chars.concat(p.ninth ? [p.ninth] : []).map(c => `<i class="${toneOf(c)}">${artSVG(c, '')}</i>`).join('')}</span></button>`;
+  const tile = p => `<button class="set-tile${su.set === p.id ? ' on' : ''}" data-set-id="${p.id}" aria-pressed="${su.set === p.id}"><b>${esc(p.name)}</b><span>${kw(p.blurb)}</span><span class="dots">${p.chars.concat(p.ninth ? [p.ninth] : []).map(c => `<i class="${toneOf(c)}">${artSVG(c, '')}</i>`).join('')}</span></button>`;
   const rnd = `<button class="set-tile${su.set === 'random' ? ' on' : ''}" data-set-id="random" aria-pressed="${su.set === 'random'}"><b>Random</b><span>One character per rank and 14 unique districts, drawn when the game starts.</span><span class="dots">${Array.from({ length: 8 }, () => `<i class="t-none">${artSVG('mask', '')}</i>`).join('')}</span></button>`;
   const ninthNote = mode === 'never' ? 'With 2 players there is no rank 9 character.' : mode === 'always' ? `With ${su.n} players the rank 9 character always plays${set && !set.ninth ? ' (here the ' + CHAR[chars.find(c => CHAR[c].rank === 9)].name + ')' : ''}.` : set && !set.ninth ? 'This set has no rank 9 character for 4 to 7 players.' : '';
   const ninthOn = mode === 'always' || (mode === 'choice' && su.ninth && (!set || set.ninth));
   const ninthSeg = `<div class="seg" role="group" aria-label="Rank 9 character"><button class="${ninthOn ? 'on' : ''}" data-ninth="1"${mode === 'choice' && (!set || set.ninth) ? '' : ' disabled'}>With</button><button class="${ninthOn ? '' : 'on'}" data-ninth="0"${mode === 'choice' && (!set || set.ninth) ? '' : ' disabled'}>Without</button></div>`;
   const ninthRow = ninthNote ? `<p class="muted">${ninthNote}</p>` : '';
-  const detail = set ? `<div class="sd-head"><h2>${esc(set.name)}</h2><p>${esc(set.blurb)}</p></div>
+  const detail = set ? `<div class="sd-head"><h2>${esc(set.name)}</h2><p>${kw(set.blurb)}</p></div>
 <div class="sd-body"><h3>${chars.length} characters</h3><div class="sd-cards">${chars.map(c => charHTML(c, { size: 'sm', attrs: 'role="button" tabindex="0"' })).join('')}</div>${ninthRow}
 <h3>14 unique districts</h3><div class="sd-cards">${set.uniques.map(id => districtHTML(staticDistrict(id), { size: 'sm', attrs: 'role="button" tabindex="0"' })).join('')}</div>
 <p class="muted">With the 54 basic districts: ${TYPE_ORDER.slice(0, 4).map(t => `${BASIC.filter(d => d.type === t).reduce((a, d) => a + d.n, 0)} ${TYPES[t].name.toLowerCase()}`).join(', ')}.</p></div>`
@@ -3066,7 +3101,7 @@ FORMS.pick = {
     const nd = S.need, P = S.players[0], down = nd.op === 'down', two = S.n <= 3;
     const opts = charSort(nd.options);
     const sub = down ? 'It leaves play face down; your rival chooses from the rest.' : two ? `With ${S.n} players you take two characters a round${P.chars.length ? `; you already have ${theC(P.chars[0])}` : ''}.` : nd.op === 'keepPlus' ? 'You are the last to choose: the face-down card is in the pile too.' : `${plural(opts.length, 'character')} left. The rest go on to ${S.n > 3 ? 'the next player' : 'your rival'}.`;
-    return `<h2>${down ? 'Put a character face down' : 'Choose your character'}</h2><p class="muted">${sub}</p>
+    return `<h2>${down ? 'Put a character face down' : 'Choose your character'}</h2><p class="muted">${kw(sub)}</p>
 <div class="pick-grid">${opts.map(c => pickBtn('char', c, charHTML(c, { size: 'md' }), { on: f.char === c })).join('')}</div>
 ${S.sel.faceUp.length ? `<div class="out-row">Face up, out this round: ${S.sel.faceUp.map(c => chipHTML(c)).join('')}</div>` : ''}${P.chars.length ? `<div class="out-row">Yours: ${P.chars.map(c => chipHTML(c)).join('')}</div>` : ''}
 <div class="row end">${okBtn(f.char ? `${down ? 'Put down' : 'Take'} ${esc(theC(f.char))}` : 'Choose one', !!f.char)}</div>`;
@@ -3078,7 +3113,7 @@ FORMS.theater = {
   need: true,
   html(f) {
     const P = S.players[0], opps = S.players.filter(X => X !== P && X.chars.length);
-    return `<h2>The Theater</h2><p>You may swap ${P.chars.length > 1 ? 'one of your characters' : 'your character'} with a rival’s, without looking at theirs first.</p>
+    return `<h2>The Theater</h2><p>${kw(`You may swap ${P.chars.length > 1 ? 'one of your characters' : 'your character'} with a rival’s, without looking at theirs first.`)}</p>
 ${P.chars.length > 1 ? `<h3>Give</h3><div class="pick-grid">${P.chars.map(c => pickBtn('give', c, charHTML(c, { size: 'sm' }), { on: f.give === c })).join('')}</div>` : `<div class="out-row">Yours: ${chipHTML(P.chars[0])}</div>`}
 <h3>Swap with</h3><div class="plist">${opps.map(X => playerRow(X.id, 'target', { on: f.target === X.id, note: X.chars.length > 1 ? 'a random one of their two' : '' })).join('')}</div>
 <div class="row end">${altBtn('Keep mine')}${okBtn(f.target != null ? `Swap with ${esc(objOf(f.target))}` : 'Swap', f.target != null && (P.chars.length < 2 || f.give))}</div>`;
@@ -3091,7 +3126,7 @@ FORMS.keep = {
   need: true,
   html(f) {
     const nd = S.need, sch = nd.why === 'scholar';
-    return `<h2>${sch ? 'The Scholar: keep one card' : 'Keep one card'}</h2><p class="muted">${sch ? 'The others are shuffled back into the deck.' : 'The other goes to the bottom of the deck.'}</p>
+    return `<h2>${sch ? 'The Scholar: keep one card' : 'Keep one card'}</h2><p class="muted">${kw(sch ? 'The other cards are shuffled back into the deck.' : 'The other card goes to the bottom of the deck.')}</p>
 <div class="pick-grid">${nd.cards.map(c => pickBtn('uid', c.uid, districtHTML(c, { size: 'md', cost: c.cost == null ? null : buildCost(S.players[0], c) }), { on: f.uid === c.uid, tag: has(S.players[0], c.id) && !has(S.players[0], 'quarry') ? 'in your city' : '' })).join('')}</div>
 <div class="row end">${okBtn(f.uid ? `Keep the ${esc(nd.cards.find(c => c.uid === f.uid).name)}` : 'Choose one', !!f.uid)}</div>`;
   },
@@ -3102,7 +3137,7 @@ FORMS.bribe = {
   need: true,
   html() {
     const th = S.threats.find(x => x.char === S.cur.char && x.on), B = th.by, P = S.players[0], half = Math.floor(P.gold / 2);
-    return `<h2>A threat from the Blackmailer</h2><p>${esc(nameOf(B))} put a threat on ${esc(theC(S.cur.char))}. Pay half your gold, <b>${plural(half, 'gold', 'gold')}</b>, to have it removed; or refuse. If you refuse, ${esc(objOf(B))} may turn it up: if it is the real threat, you lose all <b>${plural(P.gold, 'gold', 'gold')}</b>. Only one of the two threats is real.</p>
+    return `<h2>A threat from the Blackmailer</h2><p>${kw(`${nameOf(B)} put a threat on ${theC(S.cur.char)}. Pay half your gold, ${plural(half, 'gold', 'gold')}, to have it removed; or refuse. If you refuse, ${objOf(B)} may turn it up: if it is the real threat, you lose all ${plural(P.gold, 'gold', 'gold')}. Only one of the two threats is real.`)}</p>
 <div class="row end">${altBtn('Refuse')}${okBtn(`Pay ${half}${ic('gold')}`, true)}</div>`;
   },
   tap() { }, ok: () => ({ t: 'bribe', pay: true }), alt: () => ({ t: 'bribe', pay: false }),
@@ -3111,7 +3146,7 @@ FORMS.reveal = {
   need: true,
   html() {
     const X = S.need.target, th = S.threats.find(x => x.char === S.cur.char && x.on);
-    return `<h2>${esc(nameOf(X))} refuses to pay</h2><p>Your threat on ${esc(theC(S.cur.char))} is <b>${th.real ? 'the real one' : 'an empty one'}</b>. ${th.real ? `Turn it up and take all ${possOf(X)} gold (${plural(S.players[X].gold, 'gold', 'gold')}).` : 'Turning it up only shows it was empty.'}</p>
+    return `<h2>${esc(nameOf(X))} refuses to pay</h2><p>${kw(`Your threat on ${theC(S.cur.char)} is `)}<b>${th.real ? 'the real one' : 'an empty one'}</b>. ${kw(th.real ? `Turn it up and take all ${possOf(X)} gold (${plural(S.players[X].gold, 'gold', 'gold')}).` : 'Turning it up only shows it was empty.')}</p>
 <div class="row end">${altBtn('Leave it face down')}${okBtn('Turn it up', true)}</div>`;
   },
   tap() { }, ok: () => ({ t: 'reveal', reveal: true }), alt: () => ({ t: 'reveal', reveal: false }),
@@ -3120,7 +3155,7 @@ FORMS.confiscate = {
   need: true,
   html() {
     const nd = S.need;
-    return `<h2>Confiscate the ${esc(nd.card.name)}?</h2><div class="peek">${districtHTML(nd.card, { size: 'md' })}</div><p>${esc(nameOf(nd.builder))} ${vb(nd.builder, 'are', 'is')} ${theC(S.cur.char)}, on your signed warrant, and just paid ${plural(nd.goldPaid, 'gold', 'gold')} for it. Reveal the warrant to take the district into your city for free; ${esc(objOf(nd.builder))} ${vb(nd.builder, 'get', 'gets')} the gold back.</p>
+    return `<h2>Confiscate the ${esc(nd.card.name)}?</h2><div class="peek">${districtHTML(nd.card, { size: 'md' })}</div><p>${kw(`${nameOf(nd.builder)} ${vb(nd.builder, 'are', 'is')} ${theC(S.cur.char)}, on your signed warrant, and just paid ${plural(nd.goldPaid, 'gold', 'gold')} for it. Reveal the warrant to confiscate the district: it goes into your city for free, and ${objOf(nd.builder)} ${vb(nd.builder, 'get', 'gets')} the gold back.`)}</p>
 <div class="row end">${altBtn('Let it be')}${okBtn('Confiscate', true)}</div>`;
   },
   tap() { }, ok: () => ({ t: 'confiscate', take: true }), alt: () => ({ t: 'confiscate', take: false }),
@@ -3131,7 +3166,7 @@ FORMS.wizard = {
     const nd = S.need, P = S.players[0], card = f.uid && nd.cards.find(c => c.uid === f.uid);
     const cost = card ? buildCost(P, card) : 0;
     const why = !card ? '' : card.id === 'secret-vault' ? 'cannot be built' : card.id === 'monument' && cityCount(P) >= 5 ? 'not with 5 districts' : P.gold < cost ? `needs ${cost} gold` : '';
-    return `<h2>${esc(possOf(nd.from)[0].toUpperCase() + possOf(nd.from).slice(1))} hand</h2><p class="muted">Take one card. Build it at once (it does not count toward your limit), or keep it.</p>
+    return `<h2>${esc(possOf(nd.from)[0].toUpperCase() + possOf(nd.from).slice(1))} hand</h2><p class="muted">${kw('Take a card. Build it at once (it does not count toward your building limit), or keep it.')}</p>
 <div class="pick-grid">${nd.cards.map(c => pickBtn('uid', c.uid, districtHTML(c, { size: 'md', cost: c.cost == null ? null : buildCost(P, c) }), { on: f.uid === c.uid })).join('')}</div>
 <div class="row end">${altBtn('Keep it', 'keep').replace('<button', `<button${card ? '' : ' disabled'}`)}${okBtn(card ? (why ? `Build (${why})` : `Build it · ${cost}${ic('gold')}`) : 'Build it', !!card && !why)}</div>`;
   },
@@ -3143,7 +3178,7 @@ FORMS.seer = {
   need: true,
   html(f) {
     const nd = S.need, P = S.players[0], to = nd.to, cur = to[f.i] != null ? to[f.i] : null, given = new Set(Object.values(f.gives));
-    return `<h2>Give a card back</h2><p class="muted">One card from your hand to each player you took from.</p>
+    return `<h2>Give a card back</h2><p class="muted">${kw('Give 1 card from your hand to each player you took from.')}</p>
 <div class="plist">${to.map((x, i) => { const u = f.gives[x], c = u && P.hand.find(h => h.uid === u); return `<button class="prow${i === f.i ? ' on' : ''}" data-f="i" data-v="${i}">${badge(x)}<b>${esc(nameOf(x))}</b><span class="note">${c ? esc(c.name) : i === f.i ? 'choose a card below' : '—'}</span></button>`; }).join('')}</div>
 <div class="pick-grid">${P.hand.map(c => pickBtn('uid', c.uid, districtHTML(c, { size: 'sm' }), { on: cur != null && f.gives[cur] === c.uid, off: given.has(c.uid) && f.gives[cur] !== c.uid, tag: given.has(c.uid) ? esc(nameOf(to.find(x => f.gives[x] === c.uid))) : '' })).join('')}</div>
 <div class="row end">${okBtn('Give them', to.every(x => f.gives[x]))}</div>`;
@@ -3160,7 +3195,7 @@ FORMS.seer = {
 FORMS.heir = {
   need: true,
   html(f) {
-    return `<h2>Give the crown away</h2><p class="muted">Your Emperor was killed, but still gives the crown to another player (taking nothing).</p><div class="plist">${crownTargets(S, 0).map(x => playerRow(x, 'target', { on: f.target === x })).join('')}</div><div class="row end">${okBtn(f.target != null ? `Give it to ${esc(objOf(f.target))}` : 'Give the crown', f.target != null)}</div>`;
+    return `<h2>Give the crown away</h2><p class="muted">${kw('Your Emperor was killed, but still gives the crown to another player (taking nothing).')}</p><div class="plist">${crownTargets(S, 0).map(x => playerRow(x, 'target', { on: f.target === x })).join('')}</div><div class="row end">${okBtn(f.target != null ? `Give it to ${esc(objOf(f.target))}` : 'Give the crown', f.target != null)}</div>`;
   },
   tap(f, k, v) { f.target = +v; }, ok: f => ({ t: 'heir', target: f.target }),
 };
@@ -3178,7 +3213,7 @@ FORMS.name = {
   html(f) {
     const who = S.cur.char, list = S.chars.filter(c => CHAR[c].rank > 1 && c !== who);
     const help = { assassin: 'Its player stays silent and skips the whole turn.', thief: 'When it is called, you take all its player’s gold.', witch: 'Its player only gathers; you finish the turn as that character, with your own gold, hand and city.' }[who];
-    return `<h2>${NAME_TITLE[who]}</h2><p class="muted">${help}</p><div class="pick-grid">${list.map(c => { const why = nameWhy(who, c); return pickBtn('char', c, charHTML(c, { size: 'sm' }), { on: f.char === c, off: !!why, why }); }).join('')}</div>
+    return `<h2>${NAME_TITLE[who]}</h2><p class="muted">${kw(help)}</p><div class="pick-grid">${list.map(c => { const why = nameWhy(who, c); return pickBtn('char', c, charHTML(c, { size: 'sm' }), { on: f.char === c, off: !!why, why }); }).join('')}</div>
 <div class="row end">${okBtn(f.char ? `${NAME_VERB[who]} ${esc(theC(f.char))}` : NAME_VERB[who], !!f.char)}</div>`;
   },
   tap(f, k, v) { if (f.char === v) return 'ok'; f.char = v; },
@@ -3204,7 +3239,7 @@ ${f.chars.length === k ? `<h3>Which ${word[0]} is ${word[1]}?</h3><div class="ty
 FORMS.spy = {
   html(f) {
     const opps = S.players.filter(X => X.id !== 0);
-    return `<h2>The Spy</h2><p class="muted">Name a district type and look at a player’s hand: for each card of that type, take 1 of their gold (while they have any) and draw 1 card.</p>
+    return `<h2>The Spy</h2><p class="muted">${kw('Name a district type and look at a player’s hand: for each card of that type, take 1 of their gold (while they have any) and draw 1 card.')}</p>
 <h3>District type</h3><div class="typepick">${TYPE_ORDER.map(t => `<button class="${f.type === t ? 'on' : ''}" data-f="type" data-v="${t}">${typeGem(t, 20)}${TYPES[t].name}</button>`).join('')}</div>
 <h3>Whose hand</h3><div class="plist">${opps.map(X => playerRow(X.id, 'target', { on: f.target === X.id })).join('')}</div>
 <div class="row end">${okBtn(f.target != null ? `Spy on ${esc(objOf(f.target))}` : 'Spy', f.target != null && !!f.type)}</div>`;
@@ -3216,8 +3251,8 @@ FORMS.magician = {
   html(f) {
     const P = S.players[0], opps = S.players.filter(X => X.id !== 0);
     return `<h2>The Magician</h2><div class="seg" role="group"><button class="${f.mode === 'swap' ? 'on' : ''}" data-f="mode" data-v="swap">Swap hands</button><button class="${f.mode === 'redraw' ? 'on' : ''}" data-f="mode" data-v="redraw">Redraw cards</button></div>
-${f.mode === 'swap' ? `<p class="muted">Swap your whole hand (${plural(P.hand.length, 'card')}) with another player’s.</p><div class="plist">${opps.map(X => playerRow(X.id, 'target', { on: f.target === X.id })).join('')}</div>`
-      : `<p class="muted">Put any of your cards at the bottom of the deck and draw as many.</p><div class="pick-grid">${P.hand.map(c => pickBtn('uid', c.uid, districtHTML(c, { size: 'sm' }), { on: f.uids.includes(c.uid) })).join('') || '<p class="muted">Your hand is empty.</p>'}</div>`}
+${f.mode === 'swap' ? `<p class="muted">${kw(`Swap your whole hand (${plural(P.hand.length, 'card')}) with another player’s.`)}</p><div class="plist">${opps.map(X => playerRow(X.id, 'target', { on: f.target === X.id })).join('')}</div>`
+      : `<p class="muted">${kw('Put any of your cards at the bottom of the deck and draw as many.')}</p><div class="pick-grid">${P.hand.map(c => pickBtn('uid', c.uid, districtHTML(c, { size: 'sm' }), { on: f.uids.includes(c.uid) })).join('') || '<p class="muted">Your hand is empty.</p>'}</div>`}
 <div class="row end">${f.mode === 'swap' ? okBtn(f.target != null ? `Swap with ${esc(objOf(f.target))}` : 'Swap', f.target != null) : okBtn(`Redraw ${plural(f.uids.length, 'card')}`, f.uids.length > 0)}</div>`;
   },
   tap(f, k, v) { if (k === 'mode') f.mode = v; else if (k === 'target') f.target = +v; else { const u = +v, i = f.uids.indexOf(u); if (i >= 0) f.uids.splice(i, 1); else f.uids.push(u); } },
@@ -3228,7 +3263,7 @@ FORMS.players = {
   html(f) {
     const c = S.cur.char, ids = f.ids;
     const T = { wizard: ['The Wizard', 'Look at a player’s hand and take one card: build it at once or keep it. This turn you may also build districts you already have.'], emperor: ['Give the crown', 'Give the crown to another player, and take 1 gold or 1 random card from them.'], abbot: ['Alms', 'The richest player gives you 1 gold.'] }[c];
-    return `<h2>${T[0]}</h2><p class="muted">${T[1]}</p><div class="plist">${ids.map(x => playerRow(x, 'target', { on: f.target === x, off: c === 'wizard' && !S.players[x].hand.length, note: c === 'wizard' && !S.players[x].hand.length ? 'no cards' : '' })).join('')}</div>
+    return `<h2>${T[0]}</h2><p class="muted">${kw(T[1])}</p><div class="plist">${ids.map(x => playerRow(x, 'target', { on: f.target === x, off: c === 'wizard' && !S.players[x].hand.length, note: c === 'wizard' && !S.players[x].hand.length ? 'no cards' : '' })).join('')}</div>
 ${c === 'emperor' ? `<div class="toggle"><span>Take</span><div class="seg"><button class="${f.take === 'gold' ? 'on' : ''}" data-f="take" data-v="gold">1 gold</button><button class="${f.take === 'card' ? 'on' : ''}" data-f="take" data-v="card">1 card</button></div></div>` : ''}
 <div class="row end">${okBtn(f.target != null ? { wizard: `Look at ${possOf(f.target)} hand`, emperor: `Crown ${objOf(f.target)}`, abbot: `Take 1 gold from ${objOf(f.target)}` }[c] : 'Choose a player', f.target != null)}</div>`;
   },
@@ -3237,7 +3272,7 @@ ${c === 'emperor' ? `<div class="toggle"><span>Take</span><div class="seg"><butt
 };
 FORMS.confirm = {
   /* one-step abilities and districts: the Seer, the Scholar, the Navigator, the Smithy */
-  html(f) { return `<h2>${f.title}</h2><p>${f.text}</p><div class="row end">${f.alt ? altBtn(f.alt) : ''}${okBtn(f.label, true)}</div>`; },
+  html(f) { return `<h2>${f.title}</h2><p>${kw(f.text)}</p><div class="row end">${f.alt ? altBtn(f.alt) : ''}${okBtn(f.label, true)}</div>`; },
   tap() { }, ok: f => f.a, alt: f => f.altA,
 };
 /* rank 8 and the Armory: choose a district in a city */
@@ -3268,7 +3303,7 @@ FORMS.city = {
       return pickBtn('uid', e.card.uid, districtHTML(e.card, { size: 'sm', beau: e.beau, mus: e.museum.length }), { on: f.uid === e.card.uid, off: !!why, why, price: o && o.cost != null ? o.cost : null });
     }).join('')}</div></div>`).join('');
     const label = sel ? `${{ warlord: 'Destroy', marshal: 'Seize', armory: 'Destroy' }[f.what]} ${sel.target === 0 ? 'your' : possOf(sel.target)} ${esc(entry(S.players[sel.target], sel.uid).card.name)}${sel.cost != null ? ` · ${sel.cost}${ic('gold')}` : ''}` : 'Choose a district';
-    return `<h2>${title}</h2><p class="muted">${text} You have ${plural(P.gold, 'gold', 'gold')}.</p>${blocks || '<p class="muted">No city has a district yet.</p>'}<div class="row end">${okBtn(label, !!sel)}</div>`;
+    return `<h2>${title}</h2><p class="muted">${kw(`${text} You have ${plural(P.gold, 'gold', 'gold')}.`)}</p>${blocks || '<p class="muted">No city has a district yet.</p>'}<div class="row end">${okBtn(label, !!sel)}</div>`;
   },
   tap(f, k, v) { if (f.uid === +v) return 'ok'; f.uid = +v; },
   ok(f) { const o = cityTargets(f.what).get(f.uid); if (!o) return null; return f.what === 'armory' ? { t: 'armory', target: o.target, uid: o.uid } : { t: 'ability', target: o.target, uid: o.uid }; },
@@ -3282,7 +3317,7 @@ FORMS.diplomat = {
       const o = opts.find(x => x.uid === e.card.uid), why = !f.mine ? '' : !o ? (isComplete(S, X) ? 'completed city' : e.card.id === 'keep' ? 'the Keep' : protectedCity(S, X.id) ? 'the Bishop' : 'not allowed') : o.cost > P.gold ? `need ${o.cost} gold` : '';
       return pickBtn('uid', e.card.uid, districtHTML(e.card, { size: 'sm', beau: e.beau }), { on: f.uid === e.card.uid, off: !f.mine || !!why, why, price: o ? o.cost : null });
     }).join('')}</div></div>`).join('');
-    return `<h2>The Diplomat</h2><p class="muted">Exchange one of your districts with one in another city (not a completed one). If theirs is worth more, pay its owner the difference.</p>
+    return `<h2>The Diplomat</h2><p class="muted">${kw('Exchange one of your districts with one in another city (not a completed one). If theirs is worth more, pay its owner the difference in gold.')}</p>
 <h3>Yours</h3><div class="pick-grid">${P.city.map(e => pickBtn('mine', e.card.uid, districtHTML(e.card, { size: 'sm', beau: e.beau }), { on: f.mine === e.card.uid, off: !mineOK.has(e.card.uid), why: mineOK.has(e.card.uid) ? '' : e.card.id === 'keep' ? 'the Keep' : 'no exchange' })).join('')}</div>
 <h3>Theirs${f.mine ? '' : ' <span class="muted" style="font-family:var(--f-text);font-size:15px">(choose yours first)</span>'}</h3>${theirs}
 <div class="row end">${okBtn(sel ? `Exchange${sel.cost ? ` · ${sel.cost}${ic('gold')}` : ''}` : 'Choose two districts', !!sel)}</div>`;
@@ -3293,7 +3328,7 @@ FORMS.diplomat = {
 FORMS.artist = {
   html(f) {
     const P = S.players[0], max = Math.min(2, P.gold);
-    return `<h2>The Artist</h2><p class="muted">Put 1 of your gold on up to 2 districts: each costs and scores 1 more for the rest of the game. A district is beautified only once. You have ${plural(P.gold, 'gold', 'gold')}.</p>
+    return `<h2>The Artist</h2><p class="muted">${kw(`Put 1 of your gold on up to 2 districts: each costs 1 more and scores +1 point for the rest of the game. A district is beautified only once. You have ${plural(P.gold, 'gold', 'gold')}.`)}</p>
 <div class="pick-grid">${P.city.map(e => pickBtn('uid', e.card.uid, districtHTML(e.card, { size: 'sm', beau: e.beau }), { on: f.uids.includes(e.card.uid), off: !!e.beau || (!f.uids.includes(e.card.uid) && f.uids.length >= max), why: e.beau ? 'beautified' : '' })).join('')}</div>
 <div class="row end">${okBtn(`Beautify ${plural(f.uids.length, 'district')} · ${f.uids.length}${ic('gold')}`, f.uids.length > 0)}</div>`;
   },
@@ -3304,7 +3339,7 @@ FORMS.handpick = {
   /* the Laboratory and the Museum: one card from your hand */
   html(f) {
     const P = S.players[0], lab = f.kind2 === 'lab';
-    return `<h2>${lab ? 'The Laboratory' : 'The Museum'}</h2><p class="muted">${lab ? 'Discard one card from your hand to gain 2 gold.' : 'Put one card from your hand face down under the Museum: 1 extra point at the end for each.'}</p>
+    return `<h2>${lab ? 'The Laboratory' : 'The Museum'}</h2><p class="muted">${kw(lab ? 'Discard 1 card from your hand to gain 2 gold.' : 'Put 1 card from your hand face down under the Museum: 1 extra point at the end of the game for each.')}</p>
 <div class="pick-grid">${P.hand.map(c => pickBtn('uid', c.uid, districtHTML(c, { size: 'sm' }), { on: f.uid === c.uid })).join('')}</div>
 <div class="row end">${okBtn(f.uid ? (lab ? `Discard it for 2${ic('gold')}` : 'Put it under the Museum') : 'Choose a card', !!f.uid)}</div>`;
   },
@@ -3315,7 +3350,7 @@ FORMS.gain = {
   /* the Abbot collects gold and cards in any mix */
   html(f) {
     const n = f.n;
-    return `<h2>Collect for your religious districts</h2><p class="muted">1 gold or 1 card for each of your ${n} religious districts, in any mix.</p>
+    return `<h2>Collect for your religious districts</h2><p class="muted">${kw(`1 gold or 1 card for each of your ${n} religious districts, in any mix.`)}</p>
 <div class="typepick">${Array.from({ length: n + 1 }, (_, g) => `<button class="${f.gold === g ? 'on' : ''}" data-f="gold" data-v="${g}">${g}${ic('gold')} + ${n - g}${ic('card')}</button>`).join('')}</div>
 <div class="row end">${okBtn('Collect', true)}</div>`;
   },
@@ -3328,9 +3363,9 @@ FORMS.pay = {
     const opts = payOptions(S, 0, card), cost = buildCost(P, card), others = P.hand.filter(c => c.uid !== card.uid);
     const lbl = { gold: `Pay ${cost} gold`, cards: 'Pay with cards', framework: 'Take down the Framework', necropolis: 'Destroy one of your districts', cardinal: 'Take the gold you lack' };
     let sub = '';
-    if (f.mode === 'cards') { const need = Math.max(1, cost - P.gold); sub = `<p class="muted">Each card pays 1 gold. Choose ${need === Math.min(cost, others.length) ? need : `${need} to ${Math.min(cost, others.length)}`}: you pay ${cost - f.uids.length} gold.</p><div class="pick-grid">${others.map(c => pickBtn('uid', c.uid, districtHTML(c, { size: 'sm' }), { on: f.uids.includes(c.uid) })).join('')}</div>`; }
+    if (f.mode === 'cards') { const need = Math.max(1, cost - P.gold); sub = `<p class="muted">${kw(`Each card pays 1 gold. Choose ${need === Math.min(cost, others.length) ? need : `${need} to ${Math.min(cost, others.length)}`}: you pay ${plural(cost - f.uids.length, 'gold', 'gold')}.`)}</p><div class="pick-grid">${others.map(c => pickBtn('uid', c.uid, districtHTML(c, { size: 'sm' }), { on: f.uids.includes(c.uid) })).join('')}</div>`; }
     if (f.mode === 'necropolis') sub = `<div class="pick-grid">${P.city.map(e => pickBtn('sac', e.card.uid, districtHTML(e.card, { size: 'sm', beau: e.beau }), { on: f.sac === e.card.uid })).join('')}</div>`;
-    if (f.mode === 'cardinal') { const o = opts.find(x => x.pay === 'cardinal'); sub = `<p class="muted">You lack ${plural(o.short, 'gold', 'gold')}: take it from one player and give them ${plural(o.short, 'card')} from your hand.</p><div class="plist">${S.players.filter(X => X.id !== 0 && X.gold >= o.short).map(X => playerRow(X.id, 'from', { on: f.from === X.id })).join('')}</div><div class="pick-grid">${others.map(c => pickBtn('uid', c.uid, districtHTML(c, { size: 'sm' }), { on: f.uids.includes(c.uid), off: !f.uids.includes(c.uid) && f.uids.length >= o.short })).join('')}</div>`; }
+    if (f.mode === 'cardinal') { const o = opts.find(x => x.pay === 'cardinal'); sub = `<p class="muted">${kw(`You lack ${plural(o.short, 'gold', 'gold')}: take it from one player and give them ${plural(o.short, 'card')} from your hand.`)}</p><div class="plist">${S.players.filter(X => X.id !== 0 && X.gold >= o.short).map(X => playerRow(X.id, 'from', { on: f.from === X.id })).join('')}</div><div class="pick-grid">${others.map(c => pickBtn('uid', c.uid, districtHTML(c, { size: 'sm' }), { on: f.uids.includes(c.uid), off: !f.uids.includes(c.uid) && f.uids.length >= o.short })).join('')}</div>`; }
     return `<h2>Build the ${esc(card.name)}</h2><div class="typepick">${opts.map(o => `<button class="${f.mode === o.pay ? 'on' : ''}" data-f="mode" data-v="${o.pay}">${lbl[o.pay]}</button>`).join('')}</div>${sub}
 <div class="row end">${okBtn('Build', payReady(f, card, opts))}</div>`;
   },
@@ -3398,7 +3433,7 @@ function districtSheet(card, o = {}) {
   const why = inHand ? buildReason(card) : null, uses = o.city && S ? myDistrictUses() : new Set();
   const use = o.city && uses.has(card.id) ? { laboratory: 'use-laboratory', smithy: 'use-smithy', museum: 'use-museum', armory: 'use-armory' }[card.id] : null;
   openSheet(`<div class="char-sheet"><div class="cs-card">${districtHTML(card, { size: 'lg', beau: o.beau, mus: o.mus, cost: inHand && card.cost != null ? buildCost(P, card) : card.cost })}</div><div><div class="cs-kind">${TYPES[d.type].name} district · cost ${d.cost == null ? 'none' : d.cost}${d.type !== 'unique' ? ` · ${d.n} in the deck` : ''}</div><h2>${esc(d.name)}</h2>
-<p class="cs-eff">${d.type === 'unique' ? kw(d.text, true) : `A ${TYPES[d.type].name.toLowerCase()} district: it scores its cost at the end of the game. Characters who collect for ${TYPES[d.type].name.toLowerCase()} districts gain 1 for it each turn.`}</p>
+<p class="cs-eff">${kw(d.type === 'unique' ? d.text : `A ${TYPES[d.type].name.toLowerCase()} district: at the end of the game it scores its cost in points. Characters who collect for ${TYPES[d.type].name.toLowerCase()} districts gain 1 for it each turn.`)}</p>
 ${o.beau ? '<p><span class="status">Beautified: +1 point</span></p>' : ''}${o.mus ? `<p><span class="status">${plural(o.mus, 'card')} under it</span></p>` : ''}
 ${inHand && why ? `<p><span class="status gray">${esc(why)}</span></p>` : ''}
 <div class="row">${inHand && !why ? `<button class="btn" data-act="build-uid" data-uid="${card.uid}">${ic('hammer')}Build it</button>` : ''}${use ? `<button class="btn" data-act="${use}">Use it</button>` : ''}<button class="btn ghost" data-act="close">Close</button></div></div></div>`);
@@ -3427,7 +3462,7 @@ function seatSheet(pid) {
 ${chars ? `<div class="out-row">This round: ${chars}</div>` : ''}
 <h3>${pid === 0 ? 'Your city' : 'City'} · ${cityCnt(city)} of ${S.size}${P.done ? ' · complete' : ''}</h3>
 ${P.city.length ? `<div class="pick-grid" style="justify-content:flex-start">${P.city.map(e => `<div class="pick" data-cref="${e.card.uid}" data-pid="${pid}" role="button" tabindex="0">${districtHTML(e.card, { size: 'sm', beau: e.beau, mus: e.museum.length })}</div>`).join('')}</div>` : '<p class="muted">No districts yet.</p>'}
-<p class="muted">${miss.length ? `Missing for the five-type bonus: ${miss.map(t => TYPES[t].name.toLowerCase()).join(', ')}.` : 'Has all five types: +3 points at the end.'}${protectedCity(S, pid) ? ' Protected by the Bishop this round.' : ''}</p>
+<p class="muted">${kw((miss.length ? `Missing for the five-type bonus (+3 points): ${miss.map(t => TYPES[t].name.toLowerCase()).join(', ')}.` : 'Has all five types: +3 points at the end of the game.') + (protectedCity(S, pid) ? ' Protected by the Bishop this round.' : ''))}</p>
 <div class="row"><button class="btn ghost" data-act="close">Close</button></div>`);
 }
 function peekSheet(p) {
@@ -3447,10 +3482,10 @@ function resultsSheet() {
   const win = S.winner === 0, place = S.standings.indexOf(0) + 1, my = S.scores[0].total;
   const rows = S.standings.map((pid, i) => {
     const sc = S.scores[pid], P = S.players[pid];
-    const lines = [`Districts ${sc.base}`].concat(sc.lines.map(l => `${l.why} +${l.pts}`)).join(' · ') + (sc.hqAs ? ` · the Haunted Quarter counts as ${TYPES[sc.hqAs].name.toLowerCase()}` : '');
-    return `<tr class="${pid === S.winner ? 'win' : ''}"><td class="num">${i + 1}</td><td><div class="who">${badge(pid)}${esc(nameOf(pid))}${S.crown === pid ? ic('crown') : ''}</div><div class="lines">${esc(lines)}</div><div class="city-mini" style="padding:4px 0 0">${P.city.map(e => miniTile({ card: e.card, beau: e.beau, mus: e.museum.length })).join('')}</div></td><td class="num">${sc.total}</td></tr>`;
+    const lines = [`Districts ${kwB('pts', `+${sc.base}`)}`].concat(sc.lines.map(l => `${esc(l.why)} ${kwB('pts', `+${l.pts}`)}`)).join(' · ') + (sc.hqAs ? ` · ${kw(`the Haunted Quarter counts as ${TYPES[sc.hqAs].name.toLowerCase()}`)}` : '');
+    return `<tr class="${pid === S.winner ? 'win' : ''}"><td class="num">${i + 1}</td><td><div class="who">${badge(pid)}${esc(nameOf(pid))}${S.crown === pid ? ic('crown') : ''}</div><div class="lines">${lines}</div><div class="city-mini" style="padding:4px 0 0">${P.city.map(e => miniTile({ card: e.card, beau: e.beau, mus: e.museum.length })).join('')}</div></td><td class="num">${sc.total}</td></tr>`;
   }).join('');
-  openSheet(`<div style="text-align:center"><h2 style="padding:0">${win ? 'Your city is the finest!' : `${esc(S.players[S.winner].name)}’s city wins`}</h2><p>${win ? `You win with ${my} points after ${plural(S.round, 'round')}.` : `You scored ${my} points: ${place === 2 ? 'second' : place === 3 ? 'third' : place + 'th'} of ${S.n}.`}</p></div>
+  openSheet(`<div style="text-align:center"><h2 style="padding:0">${win ? 'Your city is the finest!' : `${esc(S.players[S.winner].name)}’s city wins`}</h2><p>${kw(win ? `You win with ${my} points after ${plural(S.round, 'round')}.` : `You scored ${my} points: ${place === 2 ? 'second' : place === 3 ? 'third' : place + 'th'} of ${S.n}.`)}</p></div>
 <table class="score-table"><tr><th></th><th>Player</th><th style="text-align:right">Points</th></tr>${rows}</table>
 <p class="muted">Ties go to whoever had the highest-ranked character in the last round.</p>
 <div class="row center"><button class="btn" data-act="again">Play again</button><button class="btn ghost" data-act="setup">New game…</button><button class="btn ghost" data-act="menu">Main menu</button></div>`, { lock: true, close: false });
@@ -3465,26 +3500,30 @@ function renderCodex() {
   const inGame = c => S && UI.screen === 'match' && S.chars.includes(c), uInGame = id => S && UI.screen === 'match' && S.uniques.includes(id);
   let body = '';
   if (CODEX.tab === 'rules') body = rulesHTML();
-  else if (CODEX.tab === 'chars') body = `<p class="cx-lead">Three characters share each rank; a game uses one of each.${S && UI.screen === 'match' ? ' The ones in this game are marked.' : ''}</p>` + [1, 2, 3, 4, 5, 6, 7, 8, 9].map(r => `<h3>Rank ${r}</h3><div class="cx-rank">${CHARACTERS.filter(c => c.rank === r).map(c => `<div class="cx-item ${toneOf(c.id)}" data-char="${c.id}" role="button" tabindex="0"><span class="disc">${artSVG(c.id, '')}</span><div><b>${esc(c.name)}</b>${inGame(c.id) ? '<span class="in">in play</span>' : ''}<p>${kw(c.text, true)}</p></div></div>`).join('')}</div>`).join('');
-  else if (CODEX.tab === 'districts') body = `<p class="cx-lead">54 basic districts in four types, and 30 unique ones, 14 of which join each game.</p><h3>Basic districts</h3><div class="cx-basic">${BASIC.map(d => `<div>${typeGem(d.type, 18)}<b>${esc(d.name)}</b><span>cost ${d.cost} · ×${d.n}</span></div>`).join('')}</div>
+  else if (CODEX.tab === 'chars') body = `<p class="cx-lead">Three characters share each rank; a game uses one of each.${S && UI.screen === 'match' ? ' The ones in this game are marked.' : ''}</p><p class="cx-lead">${KW_LEGEND()}</p>` + [1, 2, 3, 4, 5, 6, 7, 8, 9].map(r => `<h3>Rank ${r}</h3><div class="cx-rank">${CHARACTERS.filter(c => c.rank === r).map(c => `<div class="cx-item ${toneOf(c.id)}" data-char="${c.id}" role="button" tabindex="0"><span class="disc">${artSVG(c.id, '')}</span><div><b>${esc(c.name)}</b>${inGame(c.id) ? '<span class="in">in play</span>' : ''}<p>${kw(c.text, true)}</p></div></div>`).join('')}</div>`).join('');
+  else if (CODEX.tab === 'districts') body = `<p class="cx-lead">${kw('54 basic districts in four types (noble, religious, trade, military), and 30 unique ones, 14 of which join each game.')}</p><p class="cx-lead">${KW_LEGEND()}</p><h3>Basic districts</h3><div class="cx-basic">${BASIC.map(d => `<div>${typeGem(d.type, 18)}<b>${esc(d.name)}</b><span>cost ${d.cost} · ×${d.n}</span></div>`).join('')}</div>
 <h3>Unique districts</h3><div class="cx-rank">${UNIQUE.slice().sort((a, b) => (a.cost == null ? 0 : a.cost) - (b.cost == null ? 0 : b.cost) || a.name.localeCompare(b.name)).map(d => `<div class="cx-item dist t-unique" data-dist="${d.id}" role="button" tabindex="0"><span class="disc">${artSVG(d.id, '')}</span><div><b>${esc(d.name)}</b> <span class="muted">· ${d.cost == null ? 'no cost' : 'cost ' + d.cost}</span>${uInGame(d.id) ? '<span class="in">in play</span>' : ''}<p>${kw(d.text, true)}</p></div></div>`).join('')}</div>`;
-  else if (CODEX.tab === 'sets') body = `<p class="cx-lead">The rulebook suggests these sets of characters and unique districts. “First game” uses the eight classic characters.</p>` + PRESETS.map(p => `<div class="cx-set"><b>${esc(p.name)}</b><p>${esc(p.blurb)}</p><p><b style="font-family:var(--f-text);font-size:15px;color:var(--ink)">Characters:</b> ${p.chars.map(c => esc(CHAR[c].name)).join(', ')}${p.ninth ? `; rank 9: ${esc(CHAR[p.ninth].name)}` : ''}.</p><p><b style="font-family:var(--f-text);font-size:15px;color:var(--ink)">Districts:</b> ${p.uniques.map(id => esc(DISTRICT[id].name)).join(', ')}.</p></div>`).join('');
+  else if (CODEX.tab === 'sets') body = `<p class="cx-lead">The rulebook suggests these sets of characters and unique districts. “First game” uses the eight classic characters.</p>` + PRESETS.map(p => `<div class="cx-set"><b>${esc(p.name)}</b><p>${kw(p.blurb)}</p><p><b style="font-family:var(--f-text);font-size:15px;color:var(--ink)">Characters:</b> ${p.chars.map(c => esc(CHAR[c].name)).join(', ')}${p.ninth ? `; rank 9: ${esc(CHAR[p.ninth].name)}` : ''}.</p><p><b style="font-family:var(--f-text);font-size:15px;color:var(--ink)">Districts:</b> ${p.uniques.map(id => esc(DISTRICT[id].name)).join(', ')}.</p></div>`).join('');
   $('#codex').innerHTML = `<div class="cx-top"><button class="icon-btn" data-act="codex-back" aria-label="Back">${ICON.back}</button><h2>Rules and cards</h2></div>
 <div class="cx-tabs" role="tablist">${tabs.map(([k, l]) => `<button class="${CODEX.tab === k ? 'on' : ''}" data-act="codex-tab" data-tab="${k}" role="tab" aria-selected="${CODEX.tab === k}">${l}</button>`).join('')}</div><div class="cx-body">${body}</div>`;
 }
+/* the legend of the coloured words, at the top of the rules and of the card lists */
+const KW_LEGEND = () => `Coloured words mean the same everywhere: ${kwB('gold', 'gold')}, ${kwB('card', 'cards')}, ${kwB('pts', 'points')}, ${kwB('build', 'building')}, ${kwB('harm', 'killing, robbing, destroying, bewitching')}, the ${kwB('crown', 'crown')}, and the district types ${TYPE_ORDER.map(t => kwB(t, gemIc(t) + TYPES[t].name.toLowerCase())).join(', ')}.`;
 function rulesHTML() {
-  return `<p class="cx-lead">Every round each player secretly takes a character. The characters are called in rank order, and on its turn each one gathers gold or cards, builds districts and uses its ability. When someone completes a city of <b>7 districts</b> (<b>8</b> with two or three players), the game ends at the end of that round, and the finest city wins.</p>
-<h3>Setting up</h3><ol><li>Everyone starts with <b>2 gold</b> and <b>4 district cards</b>.</li><li>One player takes the ${kw('{crown}', true)}.</li></ol>
-<h3>1 · Choosing characters</h3><p>The characters are shuffled. With 4 or more players some are put aside <b>face up</b> (they are out this round; the rank 4 character never is), and one is put aside <b>face down</b>. Starting with the crown and going round the table, each player keeps one character in secret and passes the rest on.</p>
-<ul><li><b>2 players:</b> each takes two characters, and from the second pass on, also puts one face down.</li><li><b>3 players:</b> each takes two characters; after the first pass one more card goes face down at random.</li><li><b>7 players with 8 characters, or 8 players with 9:</b> the last player may also take the face-down card.</li></ul>
-<h3>2 · Calling the characters</h3><p>The crown calls the characters from rank 1 up. Whoever has the called character reveals it and takes a turn; if nobody answers, the next one is called.</p>
-<ol><li><b>Gather</b>: take 2 ${kw('{gold}', true)}, or draw 2 ${kw('{cards}', true)}, keep 1 and put the other at the bottom of the deck.</li><li><b>Build</b>: put a district from your hand into your city by paying its cost. Usually one per turn, and never one you already have.</li><li><b>Use the ability</b> of your character, once, at any time in your turn. Characters with a type (${kw('{noble}', true)}, ${kw('{religious}', true)}, ${kw('{trade}', true)}, ${kw('{military}', true)}) gain 1 for each district of that type in your city.</li></ol>
-<h3>Killed, robbed, bewitched</h3><p>A <b>killed</b> character stays silent and skips its whole turn. A <b>robbed</b> one gives all its gold to the Thief as soon as it is called. A <b>bewitched</b> one only gathers, and the Witch plays the rest of its turn.</p>
-<h3>3 · The end of the game</h3><p>When a city is complete, the round is played to its end. Then each player scores:</p>
-<ul><li>the cost of every district in their city (+1 for each beautified one);</li><li><b>3 points</b> for a district of each of the five types;</li><li><b>4 points</b> for the first to complete a city, <b>2 points</b> for anyone else who completed one;</li><li>the bonuses of their unique districts.</li></ul><p>A tie goes to whoever had the highest-ranked character in the last round.</p>
+  return `<p class="cx-lead">${kw('Every round each player secretly takes a character. The characters are called in rank order, and on its turn each one gathers gold or cards, builds districts and uses its ability. When someone completes a city of 7 districts (8 with two or three players), the game ends at the end of that round, and the city with the most points wins.')}</p>
+<p class="cx-lead">${KW_LEGEND()}</p>
+<h3>Setting up</h3><ol><li>${kw('Everyone starts with 2 gold and 4 district cards.')}</li><li>${kw('One player takes the crown.')}</li></ol>
+<h3>1 · Choosing characters</h3><p>${kw('The characters are shuffled. With 4 or more players some are put aside')} <b>face up</b> ${kw('(they are out this round; the rank 4 character never is), and one is put aside')} <b>face down</b>. ${kw('Starting with the crown and going round the table, each player keeps one character in secret and passes the rest on.')}</p>
+<ul><li><b>2 players:</b> ${kw('each takes two characters, and from the second pass on, also puts one face down.')}</li><li><b>3 players:</b> ${kw('each takes two characters; after the first pass one more card goes face down at random.')}</li><li><b>7 players with 8 characters, or 8 players with 9:</b> ${kw('the last player may also take the face-down card.')}</li></ul>
+<h3>2 · Calling the characters</h3><p>${kw('The crown calls the characters from rank 1 up. Whoever has the called character reveals it and takes a turn; if nobody answers, the next one is called.')}</p>
+<ol><li><b>Gather</b>: ${kw('take 2 gold, or draw 2 cards, keep 1 and put the other at the bottom of the deck.')}</li><li>${kw('Build: put a district from your hand into your city by paying its cost in gold. Usually one per turn, and never one you already have.')}</li><li><b>Use the ability</b> ${kw('of your character, once, at any time in your turn. Characters with a type (noble, religious, trade, military) gain 1 gold or card for each district of that type in your city.')}</li></ol>
+<h3>Killed, robbed, bewitched</h3><p>${kw('A killed character stays silent and skips its whole turn. A robbed one gives all its gold to the Thief as soon as it is called. A bewitched one only gathers, and the Witch plays the rest of its turn.')}</p>
+<h3>3 · The end of the game</h3><p>${kw('When a city is complete, the round is played to its end. Then each player scores:')}</p>
+<ul><li>${kw('every district in their city scores its cost in points (+1 point for each beautified one);')}</li><li>${kw('3 points for a district of each of the five types (noble, religious, trade, military, unique);')}</li><li>${kw('4 points for the first to complete a city, 2 points for anyone else who completed one;')}</li><li>${kw('the extra points of their unique districts.')}</li></ul><p>${kw('A tie goes to whoever had the highest-ranked character in the last round.')}</p>
 <h3>Playing here</h3><ul><li>The track at the top shows the characters in calling order: who turned out to have which, the face-up ones, the killed, robbed and bewitched, warrants and threats.</li><li>Tap a rival’s plaque to see their whole city. Tap a card for its full text.</li><li>On your turn: gather with the two buttons, then tap a card in your hand (or drag it up) to build it.</li><li>Keys: <b>1–9</b> choose a card, <b>Enter</b> builds it, <b>E</b> ends the turn, <b>L</b> the chronicle, <b>H</b> this codex, <b>S</b> the speed.</li></ul>
 <h3>About this version</h3><p>The rules are those of Citadels (2016 edition), against computer players. The game’s title, its pictures and its texts are our own.</p>`;
 }
+
 
 /* ── Controller: screens, the flow of a game (the computer players and you), input ── */
 const STORE = 'masks.mortar';
@@ -3576,7 +3615,7 @@ async function humanAct(a, ctx = {}) {
 function finish() {
   if (UI.finished) return; UI.finished = true; UI.busy = true; UI.sel = null; renderMatch();
   const r = SET.record, my = S.scores[0].total; r.played++; if (S.winner === 0) r.won++; r.best = Math.max(r.best || 0, my); saveSettings();
-  banner(S.winner === 0 ? 'Your city wins!' : `${S.players[S.winner].name} wins`, `${S.scores[S.winner].total} points`, 1900);
+  banner(S.winner === 0 ? 'Your city wins!' : `${S.players[S.winner].name} wins`, plural(S.scores[S.winner].total, 'point'), 1900);
   const G = UI.game;
   setTimeout(() => { if (UI.game !== G) return; SFX.play(S.winner === 0 ? 'win' : 'lose'); resultsSheet(); }, D(1300) + 500);
 }

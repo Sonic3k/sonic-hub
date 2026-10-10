@@ -75,7 +75,7 @@ function freshTile(pid, uid) {
   if (el) { el.classList.remove('fresh'); void el.offsetWidth; el.classList.add('fresh'); }
 }
 function banner(title, sub, dur = 1900) {
-  const b = $('#banner'); b.innerHTML = `<div class="ribbon"><div class="bt">${esc(title)}</div>${sub ? `<div class="bs">${sub}</div>` : ''}</div>`;
+  const b = $('#banner'); b.innerHTML = `<div class="ribbon"><div class="bt">${esc(title)}</div>${sub ? `<div class="bs">${kw(sub)}</div>` : ''}</div>`;
   b.style.setProperty('--bdur', Math.max(900, D(dur)) + 'ms'); b.classList.remove('show'); void b.offsetWidth; b.classList.add('show');
 }
 function openSheet(html, o = {}) {
@@ -119,7 +119,7 @@ const FX = {
   async round(e, commit) {
     UI.killedWas = null; UI.calling = null; commit();
     SFX.play('round');
-    banner(`Round ${e.round}`, `${esc(nameOf(e.crown))} ${vb(e.crown, 'have', 'has')} the crown${e.faceUp.length ? ` · face up: ${e.faceUp.map(c => esc(CHAR[c].name)).join(', ')}` : ''}`, 1700);
+    banner(`Round ${e.round}`, `${nameOf(e.crown)} ${vb(e.crown, 'have', 'has')} the crown${e.faceUp.length ? ` · face up: ${e.faceUp.map(c => CHAR[c].name).join(', ')}` : ''}`, 1700);
     for (const c of e.faceUp) pingMed(c);
     await wait(D(1250));
   },
@@ -133,14 +133,14 @@ const FX = {
   async theater(e, commit) {
     SFX.play('swap');
     await Promise.all([flyTokens('back', seatRect(e.pid), seatRect(e.target), 1), flyTokens('back', seatRect(e.target), seatRect(e.pid), 1)]);
-    commit(); banner('The Theater', `${esc(nameOf(e.pid))} ${vb(e.pid, 'swap', 'swaps')} characters with ${esc(objOf(e.target))}`, 1500); await wait(D(900));
+    commit(); banner('The Theater', `${nameOf(e.pid)} ${vb(e.pid, 'swap', 'swaps')} characters with ${objOf(e.target)}`, 1500); await wait(D(900));
   },
-  async theaterGot(e) { if (e.pid === 0) { banner('Your new character', esc(CHAR[e.char].name), 1500); await wait(D(900)); } },
+  async theaterGot(e) { if (e.pid === 0) { banner('Your new character', `You now have ${theC(e.char)}`, 1500); await wait(D(900)); } },
   async call(e, commit) {
     UI.calling = e.char; UI.hint = e.pid != null ? hintOf(e.pid) : '';
     commit(); pingMed(e.char);
     SFX.play('bell', CALL_PITCH[CHAR[e.char].rank]);
-    if (e.pid === 0) { SFX.play('turn'); buzz(20); banner('Your turn', `You are ${esc(theC(e.char))}`, 1400); await wait(D(1000)); }
+    if (e.pid === 0) { SFX.play('turn'); buzz(20); banner('Your turn', `You are ${theC(e.char)}`, 1400); await wait(D(1000)); }
     else await wait(D(e.pid == null ? 620 : 820));
   },
   async witchLost(e) { floatAt(e.pid, 'spell lost', 'info'); await wait(D(500)); },
@@ -193,7 +193,7 @@ const FX = {
   async tax(e, commit) { await flyTokens('gold', statRect(e.pid, 'g'), medRect('tax-collector'), 1, { dur: 420 }); SFX.play('coin'); commit(); },
   async complete(e, commit) {
     commit(); SFX.play('crown');
-    banner(e.pid === 0 ? 'Your city is complete!' : `${S.players[e.pid].name} completes a city`, e.first ? 'The game ends at the end of this round' : 'Completed city: +2 points', 2000);
+    banner(e.pid === 0 ? 'Your city is complete!' : `${S.players[e.pid].name} completes a city`, e.first ? 'First to complete: +4 points. The game ends at the end of this round' : 'Completed city: +2 points', 2000);
     await wait(D(1500));
   },
   async destroy(e, commit) {
@@ -215,9 +215,9 @@ const FX = {
   async spare(e) { floatAt(e.pid, 'threat stays hidden', 'info'); await wait(D(500)); },
   async bewitch(e, commit) { commit(); pingMed(e.char); SFX.play('magic'); await wait(D(700)); },
   async bewitchedEnd(e) { floatAt(e.pid, 'bewitched', 'info'); await wait(D(500)); },
-  async resume(e, commit) { commit(); pingMed(e.char); SFX.play('magic'); if (e.pid === 0) { banner('Your turn', `As ${esc(theC(e.char))}, by the Witch’s spell`, 1500); SFX.play('turn'); } await wait(D(900)); },
+  async resume(e, commit) { commit(); pingMed(e.char); SFX.play('magic'); if (e.pid === 0) { banner('Your turn', `As ${theC(e.char)}, by the Witch’s spell`, 1500); SFX.play('turn'); } await wait(D(900)); },
   async witchIdle(e) { floatAt(e.pid, 'no spell', 'info'); await wait(D(300)); },
-  async kill(e, commit) { commit(); pingMed(e.char); SFX.play('kill'); if (S.players[0].chars.includes(e.char)) { banner('You are killed', `${esc(CHAR[e.char].name)} skips the turn`, 1600); buzz(60); } await wait(D(800)); },
+  async kill(e, commit) { commit(); pingMed(e.char); SFX.play('kill'); if (S.players[0].chars.includes(e.char)) { banner('You are killed', `Your ${CHAR[e.char].name} skips the whole turn`, 1600); buzz(60); } await wait(D(800)); },
   async warrants(e, commit) { commit(); for (const c of e.chars) pingMed(c); SFX.play('seal'); await wait(D(700)); },
   async robNamed(e, commit) { commit(); pingMed(e.char); SFX.play('seal'); await wait(D(700)); },
   async threats(e, commit) { commit(); for (const c of e.chars) pingMed(c); SFX.play('seal'); await wait(D(700)); },

@@ -88,7 +88,7 @@ async function humanAct(a, ctx = {}) {
 function finish() {
   if (UI.finished) return; UI.finished = true; UI.busy = true; UI.sel = null; renderMatch();
   const r = SET.record, my = S.scores[0].total; r.played++; if (S.winner === 0) r.won++; r.best = Math.max(r.best || 0, my); saveSettings();
-  banner(S.winner === 0 ? 'Your city wins!' : `${S.players[S.winner].name} wins`, `${S.scores[S.winner].total} points`, 1900);
+  banner(S.winner === 0 ? 'Your city wins!' : `${S.players[S.winner].name} wins`, plural(S.scores[S.winner].total, 'point'), 1900);
   const G = UI.game;
   setTimeout(() => { if (UI.game !== G) return; SFX.play(S.winner === 0 ? 'win' : 'lose'); resultsSheet(); }, D(1300) + 500);
 }
