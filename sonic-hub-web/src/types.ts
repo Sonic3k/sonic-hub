@@ -61,9 +61,10 @@ export interface TagStats { id: string; name: string; color?: string | null; med
 
 export interface PersonDetail extends Person {
   alternativeName?: string | null; dateOfBirth?: string | null; bio?: string | null; firstMet?: string | null; howWeMet?: string | null;
-  coverUrl?: string | null; bannerUrl?: string | null; tags?: TagRef[] | null;
+  coverUrl?: string | null; bannerUrl?: string | null; tags?: TagRef[] | null; contacts?: Contact[] | null;
   totalCollections?: number | null; totalMediaFiles?: number | null; totalChatArchives?: number | null; totalFacts?: number | null; totalEpisodes?: number | null;
 }
+export interface Contact { id: string; platform: string; identifier: string; displayName?: string | null; notes?: string | null }
 export interface Fact { id: string; category?: string | null; key?: string | null; value?: string | null; period?: string | null; confidence?: number | null; source?: string | null }
 export interface Episode { id: string; summary: string; emotion?: string | null; importance?: number | null; occurredAt?: string | null; source?: string | null }
 export interface Chapter { id: string; period?: string | null; title?: string | null; summary?: string | null; sentiment?: string | null; sortOrder?: number | null; source?: string | null }
