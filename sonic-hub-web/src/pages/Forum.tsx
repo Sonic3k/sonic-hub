@@ -1,4 +1,4 @@
-/* Old forums (onthi.com, saved from the Web Archive): threads by board, a thread read like the forum showed it,
+/* Old forums (onthi.com saved from the Web Archive, V-Westlife from its 2012 backup): threads by board, a thread read like the forum showed it,
    search through every post, the members and who they are among the people here. */
 import { Fragment, useCallback, useEffect, useMemo, useState } from 'react';
 import { Link, Navigate, useParams, useSearchParams } from 'react-router-dom';
@@ -170,7 +170,7 @@ export function ForumThreadPage() {
       <div className="fcrumbs"><Link to={`/forum/${t.forumKey}`}>{t.forumName}</Link>{crumbs.map((c, i) => <Fragment key={i}><span>›</span><Link to={`/forum/${t.forumKey}?board=${encodeURIComponent(crumbs.slice(0, i + 1).join(' / '))}`}>{c}</Link></Fragment>)}</div>
       <h1>{t.title}</h1>
       <p className="fmeta">{fmt(t.postCount)} bài · {dayMonthYear(t.startedAt)}{t.lastPostAt && t.lastPostAt.slice(0, 10) !== (t.startedAt ?? '').slice(0, 10) ? ` – ${dayMonthYear(t.lastPostAt)}` : ''}
-        {cap && <> · lưu từ Web Archive {cap.slice(6, 8)}/{cap.slice(4, 6)}/{cap.slice(0, 4)}</>}</p>
+        {cap && <> · {t.forumKey === 'onthi' ? 'lưu từ Web Archive' : 'bản backup'} {cap.slice(6, 8)}/{cap.slice(4, 6)}/{cap.slice(0, 4)}</>}</p>
       <ol className="fposts">{t.posts.map((p, i) => {
         const day = (p.postedAt ?? '').slice(0, 10), prev = t.posts[i - 1], newDay = !!day && (!prev || (prev.postedAt ?? '').slice(0, 10) !== day);
         const title = p.title && !/^Trả lời:/i.test(p.title) && i > 0 ? p.title : '';
