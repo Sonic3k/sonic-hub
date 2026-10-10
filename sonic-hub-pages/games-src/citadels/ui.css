@@ -43,12 +43,24 @@ button{font:inherit;color:inherit}
 .icon-btn svg{width:22px;height:22px}
 .mob-only{display:none!important}
 
-/* ── keywords print in their own colour ── */
-.kw{font-weight:800;white-space:nowrap}
-.kw .ic{width:1.05em;height:1.05em;margin-right:1px}
-.kw-gold{color:#8a5f06}.kw-card{color:#4c3a78}.kw-crown{color:#8a5f06}
-.kw-noble{color:#8a6408}.kw-religious{color:#22508f}.kw-trade{color:#2b6b31}.kw-military{color:#962a20}.kw-unique{color:#65359a}
-.dark .kw-gold,.dark .kw-crown{color:#f4d06a}.dark .kw-card{color:#c9b7f0}.dark .kw-noble{color:#f0cf6c}.dark .kw-religious{color:#9cc0f3}.dark .kw-trade{color:#9fd59a}.dark .kw-military{color:#f29b8f}.dark .kw-unique{color:#d1b0f2}
+/* ── keywords: bold, in their own colour, with their number (district types also wear their gem) ── */
+.kw{font-weight:800}
+.kw .ic{width:.95em;height:.95em;vertical-align:-.13em;margin-right:.1em}
+.k-gold,.k-crown{color:#8b5d00}.k-card{color:#3b3f99}.k-pts{color:#0b6b6f}.k-harm{color:#a3182a}.k-build{color:#3c556b}
+.k-noble{color:#866200}.k-religious{color:#1f5296}.k-trade{color:#2b6b31}.k-military{color:#962a20}.k-unique{color:#6a35a0}
+.k-when,.k-who{color:inherit}
+/* the same words on the dark square: the stage caption, the action bar, the banners */
+#stage-caption .k-gold,.actionbar .hint .k-gold,#banner .bs .k-gold{color:#f4d06a}
+#stage-caption .k-crown,.actionbar .hint .k-crown,#banner .bs .k-crown{color:#f4d06a}
+#stage-caption .k-card,.actionbar .hint .k-card,#banner .bs .k-card{color:#c3c6ff}
+#stage-caption .k-pts,.actionbar .hint .k-pts,#banner .bs .k-pts{color:#8fe0dc}
+#stage-caption .k-harm,.actionbar .hint .k-harm,#banner .bs .k-harm{color:#ff9a8f}
+#stage-caption .k-build,.actionbar .hint .k-build,#banner .bs .k-build{color:#c9d8e6}
+#stage-caption .k-noble,.actionbar .hint .k-noble,#banner .bs .k-noble{color:#f0cf6c}
+#stage-caption .k-religious,.actionbar .hint .k-religious,#banner .bs .k-religious{color:#9cc0f3}
+#stage-caption .k-trade,.actionbar .hint .k-trade,#banner .bs .k-trade{color:#9fd59a}
+#stage-caption .k-military,.actionbar .hint .k-military,#banner .bs .k-military{color:#f29b8f}
+#stage-caption .k-unique,.actionbar .hint .k-unique,#banner .bs .k-unique{color:#d1b0f2}
 
 /* ── cards: a district wears its type's colour, a character the colour it collects for ── */
 .card{--w:var(--cw);--hh:var(--ch);position:relative;width:var(--w);height:var(--hh);flex:0 0 auto;user-select:none;color:var(--ink);filter:drop-shadow(0 5px 7px rgba(0,0,0,.5))}
@@ -262,7 +274,7 @@ button{font:inherit;color:inherit}
 .set-row{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:11px 0;border-bottom:1px solid rgba(36,24,15,.14)}
 .set-row>div>b{display:block;font-family:var(--f-head);font-weight:400;font-size:18px}.set-row>div>span{font-size:14.5px;color:var(--ink-3)}
 .tip{position:fixed;z-index:90;max-width:300px;padding:9px 12px;border-radius:5px;font-size:14.5px;line-height:1.35;color:var(--ink);background:var(--parch-tex),#fbf3e1;box-shadow:inset 0 0 0 1px rgba(36,24,15,.6),0 12px 28px rgba(0,0,0,.5);pointer-events:none}
-.tip b{font-family:var(--f-head);font-weight:400;font-size:16px}
+.tip b:not(.kw){font-family:var(--f-head);font-weight:400;font-size:16px}
 #banner{position:fixed;left:50%;top:40%;transform:translate(-50%,-50%);z-index:50;text-align:center;pointer-events:none;opacity:0;width:min(92vw,760px)}
 #banner .ribbon{display:inline-block;padding:14px 34px 16px;background:linear-gradient(90deg,rgba(10,12,22,0),rgba(10,12,22,.86) 14%,rgba(10,12,22,.86) 86%,rgba(10,12,22,0));box-shadow:inset 0 1px 0 rgba(244,214,139,.45),inset 0 -1px 0 rgba(244,214,139,.45)}
 #banner .bt{font-family:var(--f-head);font-size:clamp(30px,5vw,54px);line-height:1.04;color:var(--gold-hi);text-shadow:0 3px 0 #2a1606,0 0 30px rgba(0,0,0,.85)}
@@ -299,7 +311,7 @@ button{font:inherit;color:inherit}
 .prow.on{background:rgba(214,167,62,.22);box-shadow:inset 0 0 0 2px var(--gold)}
 .prow:disabled{opacity:.5;cursor:default}
 .prow .badge{width:28px;height:28px;font-size:14px}
-.prow b{font-family:var(--f-head);font-weight:400;font-size:18px;flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.prow>b{font-family:var(--f-head);font-weight:400;font-size:18px;flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .prow .stats{flex:0 0 auto;font-size:14.5px}
 .prow .note{font-size:13.5px;color:var(--ink-3);font-weight:700}
 .cityblock{margin:12px 0 4px}
@@ -353,7 +365,7 @@ html.compact .score-table .mt{width:16px;height:19px;font-size:10.5px}
 .set-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:12px}
 .set-tile{position:relative;border:0;cursor:pointer;text-align:left;padding:12px 12px 10px;border-radius:8px;color:var(--ink);display:flex;flex-direction:column;gap:6px;background:var(--parch-tex),linear-gradient(180deg,var(--parch-hi),var(--parch));
   box-shadow:inset 0 0 0 1px rgba(36,24,15,.7),inset 0 0 0 3px rgba(251,243,225,.6),0 8px 18px rgba(0,0,0,.5)}
-.set-tile b{font-family:var(--f-head);font-weight:400;font-size:19px;line-height:1.1;color:var(--blood)}
+.set-tile>b{font-family:var(--f-head);font-weight:400;font-size:19px;line-height:1.1;color:var(--blood)}
 .set-tile span{font-size:14px;line-height:1.3;color:var(--ink-2)}
 .set-tile .dots{display:flex;gap:3px;flex-wrap:wrap}
 .set-tile .dots i{width:24px;height:24px;border-radius:50%;display:grid;place-items:center;background:radial-gradient(circle at 50% 40%,var(--hw),var(--hw3));box-shadow:0 0 0 1.5px var(--h)}
@@ -392,14 +404,14 @@ html.compact .score-table .mt{width:16px;height:19px;font-size:10.5px}
 .cx-item .disc{width:50px;height:50px;border-radius:50%;display:grid;place-items:center;background:radial-gradient(circle at 50% 40%,var(--hw),var(--hw3));box-shadow:0 0 0 2px rgba(0,0,0,.4),0 0 0 3.5px var(--h)}
 .cx-item .disc svg{width:42px;height:42px;color:var(--h)}
 .cx-item.dist .disc{border-radius:8px}
-.cx-item b{font-family:var(--f-head);font-weight:400;font-size:18px}
+.cx-item>div>b:first-child{font-family:var(--f-head);font-weight:400;font-size:18px}
 .cx-item .in{margin-left:6px;font-size:11.5px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;padding:1px 6px;border-radius:3px;color:#fff;background:#3f8f45;vertical-align:2px}
 .cx-item p{margin:2px 0!important;font-size:15px!important;color:var(--ink-2)}
 .cx-basic{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:2px 18px;margin:6px 0 10px}
 .cx-basic div{display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px dotted rgba(36,24,15,.25);font-size:15.5px}
-.cx-basic div b{flex:1}.cx-basic .gem{width:18px;height:18px}
+.cx-basic div>b{flex:1}.cx-basic .gem{width:18px;height:18px}
 .cx-set{padding:12px 2px;border-bottom:1px solid rgba(36,24,15,.14)}
-.cx-set b{font-family:var(--f-head);font-weight:400;font-size:19px;color:var(--blood)}
+.cx-set>b{font-family:var(--f-head);font-weight:400;font-size:19px;color:var(--blood)}
 .cx-set p{margin:3px 0!important;font-size:15px!important}
 
 /* ── phones (portrait or sideways): html.compact is set from JS ── */

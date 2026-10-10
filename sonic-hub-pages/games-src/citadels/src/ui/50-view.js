@@ -28,20 +28,40 @@ const plural = (n, one, many) => `${n} ${n === 1 ? one : many || one + 's'}`;
 function badge(pid) { return `<span class="badge" style="--pc:${PC[pid % PC.length]}">${pid === 0 ? '★' : esc(S.players[pid].name[0])}</span>`; }
 const toneOf = c => { const g = CHAR[c] && CHAR[c].gain; return g ? 't-' + g.type : 't-none'; };
 
-/* ── keywords in card texts: {gold}, {cards}, {noble}… print in their colour (with a small picture in sheets) ── */
-const KW = { gold: ['gold', 'gold', 'gold'], card: ['card', 'card', 'card'], cards: ['card', 'card', 'cards'], crown: ['crown', 'crown', 'crown'] };
-function kw(text, icons) {
-  return esc(text).replace(/\{(\w+)\}/g, (m, k) => {
-    if (TYPES[k]) return `<span class="kw kw-${k}">${icons ? typeGem(k, 14) + ' ' : ''}${TYPES[k].name.toLowerCase()}</span>`;
-    const t = KW[k]; if (!t) return m;
-    return `<span class="kw kw-${t[0]}">${icons ? ic(t[1]) : ''}${t[2]}</span>`;
-  });
+/* ── keywords: the words that carry the rules print bold in their own colour, with the number that goes with them, as in the
+   Mayhem games: gold, cards, points, building, harm (kill, rob, destroy, bewitch…), the crown, and the five district types
+   (these also wear their gem, the one on the cards). Times ("at the end of the game") and characters are bold. Texts may mark
+   words as {gold}, {cards}, {noble}…; the rest is found by its wording. ── */
+const KW_NAMES = CHARACTERS.map(c => c.name).sort((a, b) => b.length - a.length).join('|');
+const KW_RE = new RegExp([
+  '([+]?\\d+ (?:extra )?points?\\b|\\bpoints?\\b|\\bscores? \\d+ more\\b|\\b[Bb]eautif(?:y|ies|ied)\\b)',
+  "([+]?\\d+ (?:extra |more )?gold(?: less| more)?\\b|\\b\\d+ of (?:their |your |its )?gold\\b|\\ball (?:of )?(?:the |its |their |your |its player['’]s )?gold\\b|\\bhalf (?:of )?(?:their |your )?gold\\b|\\b[Gg]old\\b(?! Mine))",
+  '(\\b[Dd]raws? \\d+(?: (?:extra )?cards?)?\\b|[+]?\\d+ (?:extra |random |more |district )?cards?\\b|\\ba (?:random )?card\\b|\\b[Cc]ards?\\b)',
+  '\\b(noble|religious|trade|military|unique)\\b',
+  '\\b(crown)\\b',
+  '(\\b(?:[Kk]ill(?:s|ed)?|[Rr]ob(?:s|bed)?|[Dd]estroy(?:s|ed|ing)?|[Bb]ewitch(?:es|ed)?|[Cc]onfiscat(?:e|es|ed)|[Ss]eiz(?:e|es|ed)|[Ee]xchang(?:e|es|ed)|[Ww]arrants?|[Tt]hreats?)\\b)',
+  '(\\b(?:[Bb]uild(?:s|ing)?|[Bb]uilt)\\b(?: (?:up to )?\\d+(?: districts?)?\\b| limit\\b)?)',
+  '(\\b(?:[Aa]t the end of (?:the game|your turn|the round|this round|each selection phase)|[Oo]nce (?:per|a|in your) turn|[Dd]uring your turn)\\b)',
+  `(\\b(?:the rank \\d character|[Rr]ank \\d|${KW_NAMES})\\b)`,
+].join('|'), 'g');
+const KW_CLASS = ['pts', 'gold', 'card', 'type', 'crown', 'harm', 'build', 'when', 'who'];
+const gemIc = t => typeGem(t, 14).replace('class="gem"', 'class="ic gem"').replace(/aria-label="[^"]*"/, 'aria-hidden="true"');
+const kwB = (cls, html) => `<b class="kw k-${cls}">${html}</b>`;
+function kw(text) {
+  const raw = String(text).replace(/\{(\w+)\}/g, (m, k) => (TYPES[k] ? TYPES[k].name.toLowerCase() : k));
+  let out = '', last = 0;
+  for (const m of raw.matchAll(KW_RE)) {
+    const cls = KW_CLASS[m.slice(1).findIndex(x => x !== undefined)], word = m[0];
+    out += esc(raw.slice(last, m.index)) + (cls === 'type' ? kwB(word, gemIc(word) + esc(word)) : kwB(cls, esc(word)));
+    last = m.index + word.length;
+  }
+  return out + esc(raw.slice(last));
 }
 /* the short texts printed on unique district cards (the full text is in the card's sheet and in the codex) */
 const UNIQUE_SHORT = {
   armory: 'Destroy it to destroy any 1 district.', basilica: '+1 point per district with an odd cost.', capitol: '+3 points with 3 districts of one type.',
   'dragon-gate': 'Scores 2 extra points.', factory: 'Other {unique} districts cost 1 {gold} less.', framework: 'Destroy it to build a district for free.',
-  'gold-mine': 'Take 1 more {gold} when you gather gold.', 'great-wall': 'Rank 8 pays 1 more to touch your other districts.', 'haunted-quarter': 'Counts as any type at the end.',
+  'gold-mine': 'Take 1 more {gold} when you gather gold.', 'great-wall': 'Rank 8 pays 1 more {gold} to touch your other districts.', 'haunted-quarter': 'Counts as any type at the end.',
   'imperial-treasury': '+1 point per {gold} at the end.', 'ivory-tower': '+5 points if it is your only {unique} district.', keep: 'Rank 8 cannot touch it.',
   laboratory: 'Once a turn: discard 1 {card} for 2 {gold}.', library: 'Drawing {cards}: keep them all.', 'map-room': '+1 point per {card} in your hand.',
   monument: 'Counts as 2 districts. Not with 5 or more.', museum: 'Once a turn: 1 {card} under it, +1 point each.', necropolis: 'Build it by destroying a district of yours.',
@@ -220,12 +240,12 @@ function stageState() {
   if (sel && needMine() && S.need.kind === 'turn' && !UI.busy) {
     const why = buildReason(sel), cost = buildCost(S.players[0], sel);
     const opts = why ? [] : payOptions(S, 0, sel), other = { cards: 'Pay for it with cards and gold', framework: 'Take down the Framework to build it', necropolis: 'Build it by destroying one of your districts', cardinal: 'Take the gold you lack from a player (Cardinal)' };
-    const cap = why ? esc(why) : opts.some(o => o.pay === 'gold') ? `Build it for ${plural(cost, 'gold', 'gold')}${opts.length > 1 ? ', or pay another way' : ''}` : other[opts[0].pay];
+    const cap = kw(why ? why : opts.some(o => o.pay === 'gold') ? `Build it for ${plural(cost, 'gold', 'gold')}${opts.length > 1 ? ', or pay another way' : ''}` : other[opts[0].pay]);
     return { html: districtHTML(sel, { size: 'lg', cost: sel.cost == null ? null : cost }), cap, key: 'sel' + sel.uid };
   }
   if (S.over && !UI.view) {
     const W = S.players[S.winner];
-    return { html: `<div class="deckpile">${backHTML()}</div>`, cap: `${esc(nameOf(W.id))} ${vb(W.id, 'win', 'wins')} with ${S.scores[W.id].total} points`, key: 'over' };
+    return { html: `<div class="deckpile">${backHTML()}</div>`, cap: kw(`${nameOf(W.id)} ${vb(W.id, 'win', 'wins')} with ${S.scores[W.id].total} points`), key: 'over' };
   }
   if (v.phase === 'select' && S.sel) {
     const nd = S.need, n = nd && nd.kind === 'pick' ? nd.options.length : S.sel.pass.length;
@@ -236,10 +256,10 @@ function stageState() {
   const c = v.cur ? v.cur.char : UI.calling;
   if (c && (v.phase === 'turns')) {
     const pid = v.cur ? v.cur.pid : v.revealed[c] != null ? v.revealed[c] : null, mode = v.cur ? v.cur.mode : null;
-    let cap = pid == null ? (v.killed === c ? `${esc(CHAR[c].name)}: killed, silent` : `Nobody is ${theC(c)}`) : `${esc(nameOf(pid))} ${vb(pid, 'are', 'is')} ${theC(c)}`;
-    if (mode === 'bewitched') cap += ` <small>Bewitched: ${pid === 0 ? 'you only gather' : 'only gathers'}; the Witch takes the rest of the turn</small>`;
-    else if (mode === 'resumed') cap = `${esc(nameOf(pid))} ${vb(pid, 'play', 'plays')} as ${theC(c)} <small>The Witch takes over the bewitched turn</small>`;
-    else if (pid === 0) cap += `<small>${esc(turnTip())}</small>`;
+    let cap = kw(pid == null ? (v.killed === c ? `${CHAR[c].name}: killed, silent` : `Nobody is ${theC(c)}`) : `${nameOf(pid)} ${vb(pid, 'are', 'is')} ${theC(c)}`);
+    if (mode === 'bewitched') cap += ` <small>${kw(`Bewitched: ${pid === 0 ? 'you only gather' : 'only gathers'}; the Witch takes the rest of the turn`)}</small>`;
+    else if (mode === 'resumed') cap = `${kw(`${nameOf(pid)} ${vb(pid, 'play', 'plays')} as ${theC(c)}`)} <small>${kw('The Witch takes over the bewitched turn')}</small>`;
+    else if (pid === 0) cap += `<small>${kw(turnTip())}</small>`;
     return { html: charHTML(c, { size: 'lg', cls: pid == null ? 'ghost' : '' }), cap, key: 'char' + c + pid + mode };
   }
   return { html: '', cap: '', key: 'none' };
@@ -300,7 +320,7 @@ function turnBar() {
     return `<button class="icon-btn info" data-act="card-info" aria-label="Card details" data-tip="Card details (I)">${ICON.info}</button><button class="btn ghost small" data-act="cancel-sel">Cancel</button><button class="btn" data-act="build-sel"${why ? ' disabled' : ''}>${ic('hammer')}${esc(label)}${!why && opts.length === 1 && opts[0].pay === 'gold' ? ic('gold') : ''}</button>`;
   }
   if (t.mode === 'bewitched') {
-    out.push(`<span class="hint">Bewitched: gather, the Witch does the rest</span>`);
+    out.push(`<span class="hint">${kw('Bewitched: gather, the Witch does the rest')}</span>`);
   }
   if (canGather(S, 0)) {
     const g = 2 + (has(P, 'gold-mine') ? 1 : 0), d = has(P, 'observatory') ? 3 : 2, keepAll = has(P, 'library');
@@ -341,61 +361,64 @@ const WHY_GOLD = { gather: '', gain: ' for districts', merchant: ' (Merchant)', 
 const WHY_CARDS = { gather: '', gain: ' for districts', architect: ' (Architect)', scholar: ' (Scholar)', smithy: ' (Smithy)', park: ' (Park)', navigator: ' (Navigator)' };
 function logLine(e) {
   if (e.only != null && e.only !== 0) return '';
-  const N = p => `${badge(p)}<b>${esc(nameOf(p))}</b>`, o = p => esc(objOf(p)), c = x => `<b>${esc(theC(x))}</b>`, d = card => `<b>${esc(card.name)}</b>`;
+  /* names in bold; gold, cards, points, building and harm in their keyword colours; districts in their type's colour with its gem */
+  const N = p => `${badge(p)}<b>${esc(nameOf(p))}</b>`, o = p => esc(objOf(p)), c = x => `<b>${esc(theC(x))}</b>`;
+  const d = card => kwB(card.type, gemIc(card.type) + esc(card.name)), G = n => kwB('gold', plural(n, 'gold', 'gold')), Cd = n => kwB('card', plural(n, 'card'));
+  const H = t => kwB('harm', t), B = t => kwB('build', t), crown = `the ${kwB('crown', 'crown')}`;
   switch (e.k) {
-    case 'round': return `Round ${e.round} · ${esc(nameOf(e.crown))} ${vb(e.crown, 'have', 'has')} the crown${e.faceUp.length ? ` · face up: ${e.faceUp.map(x => esc(CHAR[x].name)).join(', ')}` : ''}`;
+    case 'round': return `Round ${e.round} · ${esc(nameOf(e.crown))} ${vb(e.crown, 'have', 'has')} ${crown}${e.faceUp.length ? ` · face up: ${e.faceUp.map(x => esc(CHAR[x].name)).join(', ')}` : ''}`;
     case 'pick': return `${N(0)} chose ${c(e.char)}`;
     case 'down': return `${N(e.pid)} put a character face down`;
     case 'theater': return `${N(e.pid)} used the Theater to swap characters with ${o(e.target)}`;
     case 'theaterGot': return `${N(0)} now have ${c(e.char)}`;
     case 'theaterPass': return `${N(e.pid)} kept ${vb(e.pid, 'your', 'their')} character (Theater)`;
-    case 'call': return e.pid == null ? (e.killed ? `${c(e.char)} was killed and stays silent` : `Nobody is ${c(e.char)}`) : `${N(e.pid)} ${vb(e.pid, 'are', 'is')} ${c(e.char)}`;
+    case 'call': return e.pid == null ? (e.killed ? `<b>The ${esc(CHAR[e.char].name)}</b> was ${H('killed')} and stays silent` : `Nobody is ${c(e.char)}`) : `${N(e.pid)} ${vb(e.pid, 'are', 'is')} ${c(e.char)}`;
     case 'witchLost': return `The Witch’s spell falls on nobody: nobody is ${c(e.char)}`;
-    case 'rob': return `${N(e.by)} (Thief) ${vb(e.by, 'take', 'takes')} ${plural(e.n, 'gold', 'gold')} from ${o(e.pid)}`;
-    case 'gold': return e.n ? `${N(e.pid)} ${vb(e.pid, e.why === 'gather' ? 'take' : 'gain', e.why === 'gather' ? 'takes' : 'gains')} ${plural(e.n, 'gold', 'gold')}${WHY_GOLD[e.why] || ''}` : '';
-    case 'cards': return e.n ? `${N(e.pid)} ${vb(e.pid, 'gain', 'gains')} ${plural(e.n, 'card')}${WHY_CARDS[e.why] || ''}` : '';
-    case 'crown': return e.why === 'emperor' ? `${N(e.by)} (Emperor) ${vb(e.by, 'give', 'gives')} the crown to ${o(e.pid)}` : e.why === 'advisor' ? `${N(e.by)} ${vb(e.by, 'give', 'gives')} the crown to ${o(e.pid)} (the killed Emperor)` : e.why === 'heir' ? `${N(e.pid)} ${vb(e.pid, 'take', 'takes')} the crown (the killed character’s due)` : `${N(e.pid)} ${vb(e.pid, 'take', 'takes')} the crown`;
-    case 'discard': return `${N(e.pid)} ${vb(e.pid, 'pay', 'pays')} with ${plural(e.n, 'card')} (Thieves’ Den)`;
-    case 'cardinal': return `${N(e.pid)} (Cardinal) ${vb(e.pid, 'take', 'takes')} ${plural(e.n, 'gold', 'gold')} from ${o(e.from)} for ${plural(e.n, 'card')}`;
-    case 'confiscate': return `${N(e.pid)} (Magistrate) ${vb(e.pid, 'confiscate', 'confiscates')} ${possOf(e.from)} ${d(e.card)}${e.refund ? `; ${o(e.from)} ${vb(e.from, 'get', 'gets')} ${plural(e.refund, 'gold', 'gold')} back` : ''}`;
-    case 'build': return e.how === 'confiscated' ? '' : `${N(e.pid)} ${vb(e.pid, 'build', 'builds')} the ${d(e.card)}`;
-    case 'tax': return `${N(e.pid)} ${vb(e.pid, 'pay', 'pays')} 1 gold of tax`;
-    case 'complete': return `${N(e.pid)} ${vb(e.pid, 'complete', 'completes')} a city${e.first ? ' first! The game ends after this round' : ''}`;
-    case 'destroy': return e.why === 'warlord' ? `${N(e.by)} (Warlord) ${vb(e.by, 'destroy', 'destroys')} ${possOf(e.pid)} ${d(e.card)}${e.paid ? ` for ${plural(e.paid, 'gold', 'gold')}` : ''}` : e.why === 'armory' ? (e.by != null ? `${N(e.by)} ${vb(e.by, 'destroy', 'destroys')} ${possOf(e.pid)} ${d(e.card)} with the Armory` : '') : e.why === 'framework' ? `${N(e.pid)} ${vb(e.pid, 'take', 'takes')} down the Framework to build for free` : e.why === 'necropolis' ? `${N(e.pid)} ${vb(e.pid, 'give', 'gives')} up the ${d(e.card)} for the Necropolis` : `${possOf(e.pid)} ${d(e.card)} is destroyed`;
-    case 'bribe': return `${N(e.pid)} ${vb(e.pid, 'pay', 'pays')} the Blackmailer ${plural(e.n, 'gold', 'gold')}`;
+    case 'rob': return `${N(e.by)} (Thief) ${H(vb(e.by, 'rob', 'robs'))} ${o(e.pid)} of ${G(e.n)}`;
+    case 'gold': return e.n ? `${N(e.pid)} ${vb(e.pid, e.why === 'gather' ? 'take' : 'gain', e.why === 'gather' ? 'takes' : 'gains')} ${G(e.n)}${WHY_GOLD[e.why] || ''}` : '';
+    case 'cards': return e.n ? `${N(e.pid)} ${vb(e.pid, 'gain', 'gains')} ${Cd(e.n)}${WHY_CARDS[e.why] || ''}` : '';
+    case 'crown': return e.why === 'emperor' ? `${N(e.by)} (Emperor) ${vb(e.by, 'give', 'gives')} ${crown} to ${o(e.pid)}` : e.why === 'advisor' ? `${N(e.by)} ${vb(e.by, 'give', 'gives')} ${crown} to ${o(e.pid)} (the killed Emperor)` : e.why === 'heir' ? `${N(e.pid)} ${vb(e.pid, 'take', 'takes')} ${crown} (the killed character’s due)` : `${N(e.pid)} ${vb(e.pid, 'take', 'takes')} ${crown}`;
+    case 'discard': return `${N(e.pid)} ${vb(e.pid, 'pay', 'pays')} with ${Cd(e.n)} (Thieves’ Den)`;
+    case 'cardinal': return `${N(e.pid)} (Cardinal) ${vb(e.pid, 'take', 'takes')} ${G(e.n)} from ${o(e.from)} for ${Cd(e.n)}`;
+    case 'confiscate': return `${N(e.pid)} (Magistrate) ${H(vb(e.pid, 'confiscate', 'confiscates'))} ${possOf(e.from)} ${d(e.card)}${e.refund ? `; ${o(e.from)} ${vb(e.from, 'get', 'gets')} ${G(e.refund)} back` : ''}`;
+    case 'build': return e.how === 'confiscated' ? '' : `${N(e.pid)} ${B(vb(e.pid, 'build', 'builds'))} the ${d(e.card)}`;
+    case 'tax': return `${N(e.pid)} ${vb(e.pid, 'pay', 'pays')} ${G(1)} of tax`;
+    case 'complete': return `${N(e.pid)} ${vb(e.pid, 'complete', 'completes')} a city${e.first ? ` first: ${kwB('pts', '+4 points')}. The game ends after this round` : `: ${kwB('pts', '+2 points')}`}`;
+    case 'destroy': return e.why === 'warlord' ? `${N(e.by)} (Warlord) ${H(vb(e.by, 'destroy', 'destroys'))} ${possOf(e.pid)} ${d(e.card)}${e.paid ? ` for ${G(e.paid)}` : ''}` : e.why === 'armory' ? (e.by != null ? `${N(e.by)} ${H(vb(e.by, 'destroy', 'destroys'))} ${possOf(e.pid)} ${d(e.card)} with the Armory` : '') : e.why === 'framework' ? `${N(e.pid)} ${vb(e.pid, 'take', 'takes')} down the Framework to ${B('build')} for free` : e.why === 'necropolis' ? `${N(e.pid)} ${vb(e.pid, 'give', 'gives')} up the ${d(e.card)} for the Necropolis` : `${possOf(e.pid)} ${d(e.card)} is ${H('destroyed')}`;
+    case 'bribe': return `${N(e.pid)} ${vb(e.pid, 'pay', 'pays')} the Blackmailer ${G(e.n)}`;
     case 'refuse': return `${N(e.pid)} ${vb(e.pid, 'refuse', 'refuses')} to pay the Blackmailer`;
-    case 'threat': return e.real ? `${N(e.by)} ${vb(e.by, 'turn', 'turns')} up the threat: it is real! ${o(e.pid)} ${vb(e.pid, 'lose', 'loses')} ${plural(e.n, 'gold', 'gold')}` : `${N(e.by)} ${vb(e.by, 'turn', 'turns')} up the threat: an empty one`;
-    case 'spare': return `${N(e.by)} ${vb(e.by, 'leave', 'leaves')} the threat face down`;
-    case 'bewitch': return `${N(e.pid)} (Witch) ${vb(e.pid, 'bewitch', 'bewitches')} ${c(e.char)}`;
-    case 'bewitchedEnd': return `${N(e.pid)} ${vb(e.pid, 'were', 'was')} bewitched and only ${vb(e.pid, 'gather', 'gathers')}`;
+    case 'threat': return e.real ? `${N(e.by)} ${vb(e.by, 'turn', 'turns')} up the ${H('threat')}: it is real! ${o(e.pid)} ${vb(e.pid, 'lose', 'loses')} ${G(e.n)}` : `${N(e.by)} ${vb(e.by, 'turn', 'turns')} up the ${H('threat')}: an empty one`;
+    case 'spare': return `${N(e.by)} ${vb(e.by, 'leave', 'leaves')} the ${H('threat')} face down`;
+    case 'bewitch': return `${N(e.pid)} (Witch) ${H(vb(e.pid, 'bewitch', 'bewitches'))} ${c(e.char)}`;
+    case 'bewitchedEnd': return `${N(e.pid)} ${vb(e.pid, 'were', 'was')} ${H('bewitched')} and only ${vb(e.pid, 'gather', 'gathers')}`;
     case 'resume': return `${N(e.pid)} (Witch) ${vb(e.pid, 'take', 'takes')} over as ${c(e.char)}`;
-    case 'witchIdle': return `${N(e.pid)} (Witch) ${vb(e.pid, 'bewitch', 'bewitches')} nobody`;
-    case 'kill': return `${N(e.pid)} (Assassin) ${vb(e.pid, 'kill', 'kills')} ${c(e.char)}`;
-    case 'warrants': return `${N(e.pid)} (Magistrate) ${vb(e.pid, 'put', 'puts')} warrants on ${e.chars.map(x => esc(CHAR[x].name)).join(', ')}`;
-    case 'signed': return `Your signed warrant is on ${c(e.char)}`;
-    case 'robNamed': return `${N(e.pid)} (Thief) will rob ${c(e.char)}`;
-    case 'threats': return `${N(e.pid)} (Blackmailer) ${vb(e.pid, 'threaten', 'threatens')} ${e.chars.map(x => esc(CHAR[x].name)).join(' and ')}`;
-    case 'real': return `Your real threat is on ${c(e.char)}`;
-    case 'spy': return `${N(e.pid)} (Spy) ${vb(e.pid, 'name', 'names')} ${esc(TYPES[e.type].name.toLowerCase())} and ${vb(e.pid, 'look', 'looks')} at ${possOf(e.target)} hand: ${e.n} match${e.n === 1 ? '' : 'es'}, ${plural(e.gold, 'gold', 'gold')} and ${plural(e.cards, 'card')} taken`;
-    case 'peek': return `${N(0)} saw ${possOf(e.target)} hand: ${e.hand.length ? e.hand.map(x => esc(x.name)).join(', ') : 'empty'}`;
+    case 'witchIdle': return `${N(e.pid)} (Witch) ${H(vb(e.pid, 'bewitch', 'bewitches'))} nobody`;
+    case 'kill': return `${N(e.pid)} (Assassin) ${H(vb(e.pid, 'kill', 'kills'))} ${c(e.char)}`;
+    case 'warrants': return `${N(e.pid)} (Magistrate) ${vb(e.pid, 'put', 'puts')} ${H('warrants')} on ${e.chars.map(x => esc(CHAR[x].name)).join(', ')}`;
+    case 'signed': return `Your signed ${H('warrant')} is on ${c(e.char)}`;
+    case 'robNamed': return `${N(e.pid)} (Thief) will ${H('rob')} ${c(e.char)}`;
+    case 'threats': return `${N(e.pid)} (Blackmailer) ${vb(e.pid, 'put', 'puts')} ${H('threats')} on ${e.chars.map(x => esc(CHAR[x].name)).join(' and ')}`;
+    case 'real': return `Your real ${H('threat')} is on ${c(e.char)}`;
+    case 'spy': return `${N(e.pid)} (Spy) ${vb(e.pid, 'name', 'names')} ${kwB(e.type, gemIc(e.type) + esc(TYPES[e.type].name.toLowerCase()))} and ${vb(e.pid, 'look', 'looks')} at ${possOf(e.target)} hand: ${e.n} match${e.n === 1 ? '' : 'es'}, ${G(e.gold)} and ${Cd(e.cards)} taken`;
+    case 'peek': return `${N(0)} saw ${possOf(e.target)} hand: ${e.hand.length ? e.hand.map(d).join(', ') : 'empty'}`;
     case 'swapHands': return `${N(e.pid)} (Magician) ${vb(e.pid, 'swap', 'swaps')} hands with ${o(e.target)}`;
-    case 'redraw': return `${N(e.pid)} (Magician) ${vb(e.pid, 'trade', 'trades')} ${plural(e.n, 'card')} with the deck`;
+    case 'redraw': return `${N(e.pid)} (Magician) ${vb(e.pid, 'trade', 'trades')} ${Cd(e.n)} with the deck`;
     case 'wizardEmpty': return `${N(e.pid)} (Wizard) ${vb(e.pid, 'find', 'finds')} ${possOf(e.target)} hand empty`;
     case 'wizardLook': return `${N(e.pid)} (Wizard) ${vb(e.pid, 'look', 'looks')} at ${possOf(e.target)} hand`;
-    case 'wizardTake': return e.build ? `${N(e.pid)} (Wizard) ${vb(e.pid, 'take', 'takes')} the ${d(e.card)} from ${o(e.from)} and ${vb(e.pid, 'build', 'builds')} it` : `${N(e.pid)} (Wizard) ${vb(e.pid, 'take', 'takes')} a card from ${o(e.from)}`;
+    case 'wizardTake': return e.build ? `${N(e.pid)} (Wizard) ${vb(e.pid, 'take', 'takes')} the ${d(e.card)} from ${o(e.from)} and ${B(vb(e.pid, 'build', 'builds'))} it` : `${N(e.pid)} (Wizard) ${vb(e.pid, 'take', 'takes')} ${kwB('card', 'a card')} from ${o(e.from)}`;
     case 'wizardCard': return `${N(0)} took the ${d(e.card)}`;
     case 'seerTook': return `${N(0)} took the ${d(e.card)} from ${o(e.target)}`;
-    case 'seer': return `${N(e.pid)} (Seer) ${vb(e.pid, 'take', 'takes')} a random card from ${e.from.length ? e.from.map(o).join(', ') : 'nobody'}`;
-    case 'seerGave': return `${N(e.pid)} ${vb(e.pid, 'give', 'gives')} a card back to ${e.to.map(o).join(', ')}`;
-    case 'tribute': return `${N(e.pid)} (Emperor) ${vb(e.pid, 'take', 'takes')} ${e.took === 'gold' ? '1 gold' : e.took === 'card' ? 'a card' : 'nothing'} from ${o(e.from)}`;
-    case 'alms': return `${N(e.pid)} (Abbot) ${vb(e.pid, 'take', 'takes')} 1 gold from ${o(e.from)}, the richest`;
-    case 'scholar': return `${N(e.pid)} (Scholar) ${vb(e.pid, 'draw', 'draws')} ${e.n} cards to keep 1`;
-    case 'seize': return `${N(e.pid)} (Marshal) ${vb(e.pid, 'seize', 'seizes')} ${possOf(e.from)} ${d(e.card)} for ${plural(e.paid, 'gold', 'gold')}`;
-    case 'exchange': return `${N(e.pid)} (Diplomat) ${vb(e.pid, 'exchange', 'exchanges')} ${vb(e.pid, 'your', 'their')} ${d(e.gave)} for ${possOf(e.with)} ${d(e.got)}${e.paid ? `, paying ${plural(e.paid, 'gold', 'gold')}` : ''}`;
-    case 'beautify': return `${N(e.pid)} (Artist) ${vb(e.pid, 'beautify', 'beautifies')} ${e.cards.map(d).join(' and ')}`;
-    case 'museum': return `${N(e.pid)} ${vb(e.pid, 'put', 'puts')} a card under the Museum`;
-    case 'killedWas': return `The killed ${esc(CHAR[e.char].name)} was ${o(e.pid)}`;
-    case 'gameEnd': return `The game is over: ${esc(nameOf(e.winner))} ${vb(e.winner, 'win', 'wins')} with ${e.scores[e.winner]} points`;
+    case 'seer': return `${N(e.pid)} (Seer) ${vb(e.pid, 'take', 'takes')} ${kwB('card', 'a random card')} from ${e.from.length ? e.from.map(o).join(', ') : 'nobody'}`;
+    case 'seerGave': return `${N(e.pid)} ${vb(e.pid, 'give', 'gives')} ${kwB('card', 'a card')} back to ${e.to.map(o).join(', ')}`;
+    case 'tribute': return `${N(e.pid)} (Emperor) ${vb(e.pid, 'take', 'takes')} ${e.took === 'gold' ? G(1) : e.took === 'card' ? kwB('card', 'a card') : 'nothing'} from ${o(e.from)}`;
+    case 'alms': return `${N(e.pid)} (Abbot) ${vb(e.pid, 'take', 'takes')} ${G(1)} from ${o(e.from)}, the richest`;
+    case 'scholar': return `${N(e.pid)} (Scholar) ${vb(e.pid, 'draw', 'draws')} ${Cd(e.n)} to keep 1`;
+    case 'seize': return `${N(e.pid)} (Marshal) ${H(vb(e.pid, 'seize', 'seizes'))} ${possOf(e.from)} ${d(e.card)} for ${G(e.paid)}`;
+    case 'exchange': return `${N(e.pid)} (Diplomat) ${vb(e.pid, 'exchange', 'exchanges')} ${vb(e.pid, 'your', 'their')} ${d(e.gave)} for ${possOf(e.with)} ${d(e.got)}${e.paid ? `, paying ${G(e.paid)}` : ''}`;
+    case 'beautify': return `${N(e.pid)} (Artist) ${vb(e.pid, 'beautify', 'beautifies')} ${e.cards.map(d).join(' and ')}: ${kwB('pts', `+1 point${e.cards.length > 1 ? ' each' : ''}`)}`;
+    case 'museum': return `${N(e.pid)} ${vb(e.pid, 'put', 'puts')} ${kwB('card', 'a card')} under the Museum`;
+    case 'killedWas': return `The ${H('killed')} ${esc(CHAR[e.char].name)} was ${o(e.pid)}`;
+    case 'gameEnd': return `The game is over: ${esc(nameOf(e.winner))} ${vb(e.winner, 'win', 'wins')} with ${kwB('pts', plural(e.scores[e.winner], 'point'))}`;
   }
   return '';
 }
@@ -416,7 +439,7 @@ function renderSelection() { if (!S) return; renderHand(); renderStage(); render
 const TIP = { el: null, timer: null, over: null, press: null };
 function showTip(el) {
   if (DRAG.on || !el.isConnected) return;
-  const t = $('#tip'); t.innerHTML = esc(el.dataset.tip); t.classList.remove('hidden');
+  const t = $('#tip'); t.innerHTML = kw(el.dataset.tip); t.classList.remove('hidden');
   const r = el.getBoundingClientRect(), w = t.offsetWidth, h = t.offsetHeight;
   let x = Math.min(Math.max(8, r.left + r.width / 2 - w / 2), innerWidth - w - 8), y = r.top - h - 8;
   if (y < 8) y = r.bottom + 8;
