@@ -74,6 +74,9 @@ function ChapterPhotos({ personId, period, onOpen }: { personId: string; period?
   return items.length ? <div className="chapter-photos"><Justified items={items} rowHeight={190} gap={6} onOpen={(i) => onOpen(items[i].id)} /></div> : null;
 }
 
+const CONTACT_ORDER = ['PHONE', 'YAHOO', 'FACEBOOK', 'SMS', 'ZALO'];
+const CONTACT_LABEL: Record<string, string> = { PHONE: 'Điện thoại', YAHOO: 'Yahoo', FACEBOOK: 'Facebook', SMS: 'SMS', ZALO: 'Zalo', TELEGRAM: 'Telegram', BLOG: 'Blog', INSTAGRAM: 'Instagram', TIKTOK: 'TikTok', OTHER: 'Khác' };
+
 export function PersonPage() {
   const { id = '' } = useParams(), persons = usePersons();
   const person = useQuery({ queryKey: ['person', id], queryFn: () => hub.person(id), staleTime: T });
@@ -165,11 +168,16 @@ export function PersonPage() {
           <div className="card" style={{ ['--c' as string]: 'var(--angels)' }}><h3><i />Về {nameOf(p)}</h3>
             <dl className="facts">
               {p.firstMet && <div><dt>Gặp nhau</dt><dd>{dayMonthYear(p.firstMet)}</dd></div>}
-              {p.dateOfBirth && <div><dt>Sinh nhật</dt><dd>{new Date(p.dateOfBirth).toLocaleDateString('vi-VN', { day: 'numeric', month: 'long' })}</dd></div>}
+              {p.dateOfBirth && <div><dt>Sinh nhật</dt><dd>{dayMonthYear(p.dateOfBirth)}</dd></div>}
               {p.song && <div><dt>Bài hát</dt><dd>{p.song}</dd></div>}
               {shortFacts.slice(0, 8).map(f => <div key={f.id}><dt>{f.key || f.category}</dt><dd>{f.value}</dd></div>)}
               {p.totalMediaFiles != null && <div><dt>Ảnh</dt><dd>{fmt(p.totalMediaFiles)}</dd></div>}
             </dl></div>
+          {!!p.contacts?.length && <div className="card" style={{ ['--c' as string]: 'var(--angels)' }}><h3><i />Liên hệ</h3>
+            <dl className="facts">{CONTACT_ORDER.flatMap(k => p.contacts!.filter(c => c.platform === k)).concat(p.contacts.filter(c => !CONTACT_ORDER.includes(c.platform))).map(c => (
+              <div key={c.id}><dt>{CONTACT_LABEL[c.platform] ?? c.platform}</dt>
+                <dd>{c.platform === 'PHONE' ? <a href={`tel:${c.identifier}`}>{c.identifier}</a> : c.platform === 'FACEBOOK' && !/\s/.test(c.identifier) ? <a href={`https://www.facebook.com/${c.identifier}`} target="_blank" rel="noreferrer">{c.displayName || c.identifier}</a> : c.identifier}
+                  {c.notes && <small style={{ display: 'block', opacity: .6 }}>{c.notes}</small>}</dd></div>))}</dl></div>}
           {!!traits.data?.length && <div className="card" style={{ ['--c' as string]: 'var(--angels)' }}><h3><i />Tính cách</h3>
             <div className="chips">{traits.data.map(t => <span key={t.id} className="chip" title={t.description ?? ''}>{t.trait}</span>)}</div></div>}
           <LineCard people={[p]} />
