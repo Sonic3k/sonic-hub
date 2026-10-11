@@ -86,6 +86,31 @@ public class StorageService {
         return s3Client.getObject(GetObjectRequest.builder().bucket(bucket).key(storageKey).build());
     }
 
+    /**
+     * Bytes start..end (inclusive) of an object, for HTTP Range requests (video/audio seeking).
+     * A server that ignores Range sends the whole object; then the unwanted bytes are skipped here.
+     */
+    public java.io.InputStream downloadRange(String storageKey, long start, long end) {
+        if (s3Client == null) throw new IllegalStateException("Storage not configured");
+        software.amazon.awssdk.core.ResponseInputStream<GetObjectResponse> body = s3Client.getObject(
+            GetObjectRequest.builder().bucket(bucket).key(storageKey).range("bytes=" + start + "-" + end).build());
+        if (body.response().contentRange() != null) return body;
+        try { body.skipNBytes(start); }
+        catch (IOException e) { body.abort(); throw new java.io.UncheckedIOException(e); }
+        return new java.io.FilterInputStream(body) {
+            private long left = end - start + 1;
+            @Override public int read() throws IOException {
+                if (left <= 0) return -1;
+                int b = super.read(); if (b >= 0) left--; return b;
+            }
+            @Override public int read(byte[] buf, int off, int len) throws IOException {
+                if (left <= 0) return -1;
+                int n = super.read(buf, off, (int) Math.min(len, left)); if (n > 0) left -= n; return n;
+            }
+            @Override public void close() throws IOException { if (left > 0) body.abort(); super.close(); }
+        };
+    }
+
     public void delete(String storageKey) {
         if (s3Client == null) return;
         s3Client.deleteObject(DeleteObjectRequest.builder().bucket(bucket).key(storageKey).build());

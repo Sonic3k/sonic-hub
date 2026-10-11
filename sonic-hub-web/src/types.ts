@@ -56,6 +56,12 @@ export interface TimelineBucket { year: number; month: number; count: number }
 
 export interface ChatArchive { id: string; platform: string; title?: string | null; messageCount: number; dateFrom?: string | null; dateTo?: string | null }
 export interface ChatMessage { id: string; sender: string; senderType?: 'SELF' | 'PERSON' | 'OTHER' | 'SYSTEM' | null; content: string; timestamp?: string | null; seq?: number | null }
+/** A photo / sticker / video / file / link sent with a chat message; hasFile = its file is stored and served by the API. */
+export interface ChatAttachment {
+  id: string; messageId: string; type: 'PHOTO' | 'VIDEO' | 'AUDIO' | 'FILE' | 'GIF' | 'STICKER' | 'LINK';
+  fileName?: string | null; url?: string | null; hasFile: boolean; contentType?: string | null; sizeBytes?: number | null;
+  timestamp?: string | null; senderType?: ChatMessage['senderType']; seq?: number | null;
+}
 
 export interface TagStats { id: string; name: string; color?: string | null; mediaCount: number; albumCount: number; noteCount: number }
 

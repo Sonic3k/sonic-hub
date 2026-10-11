@@ -13,6 +13,8 @@ import java.util.Optional;
 public interface ChatArchiveRepository extends JpaRepository<ChatArchive, UUID> {
     List<ChatArchive> findByPersonId(UUID personId);
 
+    boolean existsByIdAndPersonId(UUID id, UUID personId);
+
     Optional<ChatArchive> findByPersonIdAndExternalKey(UUID personId, String externalKey);
 
     @Query("SELECT a FROM ChatArchive a JOIN FETCH a.person p WHERE p.slug IS NOT NULL")
