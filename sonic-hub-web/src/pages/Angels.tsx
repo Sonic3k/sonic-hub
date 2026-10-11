@@ -1,10 +1,10 @@
 /* Angels — the people who passed through, each one a story. Same frame, a softer light. */
 import { Fragment, useCallback, useEffect, useMemo, useState } from 'react';
-import { Link, useParams } from 'react-router-dom';
-import { useInfiniteQuery, useQuery } from '@tanstack/react-query';
+import { Link, useParams, useSearchParams } from 'react-router-dom';
+import { useInfiniteQuery, useQueries, useQuery } from '@tanstack/react-query';
 import { hub, isAngel, periodYears, randomLine } from '../api/hub';
 import { cdn, pic } from '../api/client';
-import type { ChatMessage, Person } from '../types';
+import type { ChatAttachment, ChatMessage, Person } from '../types';
 import { fmt, usePersons } from '../lib/queries';
 import { dayMonthYear, longDay, momentDate, timeOf } from '../lib/date';
 import { fold } from '../lib/text';
@@ -12,6 +12,7 @@ import Justified from '../components/Justified';
 import { Sentinel, useViewer } from '../components/PhotoGroups';
 import { PostHits } from './Forum';
 import PersonNumbers from '../components/PersonNumbers';
+import { Attachment, AttachmentGallery, Lightbox, type Shown } from '../components/ChatAttachments';
 
 const T = 10 * 60_000;
 const nameOf = (p: Person) => p.displayName || p.name;
@@ -198,6 +199,17 @@ export function ChatReader() {
   const inf = useInfiniteQuery({ queryKey: ['chat', archiveId, dq], initialPageParam: 0, staleTime: T,
     queryFn: ({ pageParam }) => hub.messages(id, archiveId, pageParam, 200, dq || undefined), getNextPageParam: (last) => (last.last ? undefined : last.number + 1) });
   const msgs = inf.data?.pages.flatMap(x => x.content) ?? [], total = inf.data?.pages[0]?.totalElements ?? 0;
+  const [sp, setSp] = useSearchParams(), media = sp.get('tab') === 'media', [shown, setShown] = useState<Shown | null>(null);
+  const closeShown = useCallback(() => setShown(null), []);
+  const tab = (m: boolean) => { const n = new URLSearchParams(sp); if (m) n.set('tab', 'media'); else n.delete('tab'); setSp(n, { replace: true }); };
+  /* what came with each page of messages, one request per 100 ids */
+  const attPages = useQueries({ queries: (inf.data?.pages ?? []).map(pg => ({ queryKey: ['chat-att', archiveId, dq, pg.number], staleTime: T,
+    queryFn: () => hub.chatAttachments(id, archiveId, pg.content.map(m => m.id)).catch(() => [] as ChatAttachment[]) })) });
+  const atts = useMemo(() => {
+    const by = new Map<string, ChatAttachment[]>();
+    for (const q of attPages) for (const x of q.data ?? []) { const l = by.get(x.messageId); if (l) l.push(x); else by.set(x.messageId, [x]); }
+    return by;
+  }, [attPages]);
   const names = useMemo(() => [p?.name, p?.displayName, p?.nickname, p?.alternativeName].filter(Boolean).map(x => fold(x!)), [p]);
   /* who wrote it: the side stored at import time; guessing from the name only for messages that have none
      (a phone-book name, a number or a Facebook name rarely matches the name shown on the page) */
@@ -209,23 +221,28 @@ export function ChatReader() {
       <Link className="back" to={`/angels/${id}`}>← {p ? nameOf(p) : 'Angels'}</Link>
       <div className="ptitle"><h1>{a?.title || (a && p ? `${a.platform} với ${nameOf(p)}` : 'Tin nhắn')}</h1>
         <span>{a ? `${a.platform} · ${fmt(dq ? total : a.messageCount)} tin nhắn${dq ? ' khớp' : ''}` : ''}</span>
-        <input className="finput" value={q} onChange={e => setQ(e.target.value)} placeholder="Tìm trong cuộc trò chuyện…" /></div>
-      <div className="transcript">
+        <div className="seg"><a className={media ? '' : 'on'} onClick={() => tab(false)}>Tin nhắn</a><a className={media ? 'on' : ''} onClick={() => tab(true)}>Ảnh &amp; file</a></div>
+        {!media && <input className="finput" value={q} onChange={e => setQ(e.target.value)} placeholder="Tìm trong cuộc trò chuyện…" />}</div>
+      {media ? <AttachmentGallery personId={id} archiveId={archiveId} onOpen={setShown} /> : <div className="transcript">
         {inf.isLoading && <div className="card empty">Đang mở cuộc trò chuyện…</div>}
         {!inf.isLoading && !msgs.length && <div className="card empty">{dq ? 'Không có tin nhắn nào khớp.' : 'Kho này chưa có tin nhắn.'}</div>}
         {msgs.map((m, i) => {
           const day = (m.timestamp ?? '').slice(0, 10), prevM = msgs[i - 1], newDay = !prevM || (prevM.timestamp ?? '').slice(0, 10) !== day, them = isThem(m), cont = !newDay && prevM && prevM.sender === m.sender;
+          const att = atts.get(m.id) ?? [], text = !!m.content?.trim() || !att.length;
           return (
             <Fragment key={m.id}>
               {newDay && day && <div className="day-sep"><span>{longDay(+day.slice(0, 4), +day.slice(5, 7), +day.slice(8, 10))}</span></div>}
               <div className={`msg ${them ? 'them' : 'me'} ${cont ? 'cont' : ''}`}>
                 {!cont && <span className="who">{m.sender}</span>}
-                <p>{mark(m.content)}<time>{timeOf(m.timestamp)}</time></p>
+                {text && <p>{mark(m.content)}<time>{timeOf(m.timestamp)}</time></p>}
+                {att.length > 0 && <div className="atts">{att.map(x => <Attachment key={x.id} a={x} onOpen={setShown} />)}
+                  {!text && <time>{timeOf(m.timestamp)}</time>}</div>}
               </div>
             </Fragment>);
         })}
         <Sentinel more={more} active={!!inf.hasNextPage} />
-      </div>
+      </div>}
+      <Lightbox shown={shown} onClose={closeShown} />
     </div>
   );
 }

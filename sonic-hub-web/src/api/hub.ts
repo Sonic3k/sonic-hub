@@ -1,5 +1,5 @@
-import { get } from './client';
-import type { Chapter, ChatArchive, ChatMessage, Collection, Episode, Fact, Forum, ForumBoard, ForumMember, ForumPage, ForumPostHit, ForumThread, ForumThreadDetail, MediaFile, Note, Paged, Person, PersonDetail, PersonForum, PersonRanking, RankingDetail, SeriesPart, Tag, TagStats, TimelineBucket, Trait } from '../types';
+import { apiUrl, get } from './client';
+import type { Chapter, ChatArchive, ChatAttachment, ChatMessage, Collection, Episode, Fact, Forum, ForumBoard, ForumMember, ForumPage, ForumPostHit, ForumThread, ForumThreadDetail, MediaFile, Note, Paged, Person, PersonDetail, PersonForum, PersonRanking, RankingDetail, SeriesPart, Tag, TagStats, TimelineBucket, Trait } from '../types';
 import { isoDay, addDays } from '../lib/date';
 
 export interface Search {
@@ -33,6 +33,18 @@ export const hub = {
   categories: () => get<string[]>('/journal/categories'),
   archives: (personId: string) => get<ChatArchive[]>(`/persons/${personId}/chat-archives`),
   messages: (personId: string, archiveId: string, page: number, size: number, q?: string) => get<Paged<ChatMessage>>(`/persons/${personId}/chat-archives/${archiveId}/messages`, { page, size, q }),
+  /** Attachments of these messages; ids go 100 to a request so the URL stays short. */
+  chatAttachments: async (personId: string, archiveId: string, messageIds: string[]) => {
+    const parts: Promise<ChatAttachment[]>[] = [];
+    for (let i = 0; i < messageIds.length; i += 100)
+      parts.push(get<ChatAttachment[]>(`/persons/${personId}/chat-archives/${archiveId}/attachments`, { messageIds: messageIds.slice(i, i + 100).join(',') }));
+    return (await Promise.all(parts)).flat();
+  },
+  /** One archive's attachments for the gallery; type is comma-separated (PHOTO,GIF). */
+  chatAttachmentsAll: (personId: string, archiveId: string, p: { page?: number; size?: number; type?: string; order?: 'asc' | 'desc' }) =>
+    get<Paged<ChatAttachment>>(`/persons/${personId}/chat-archives/${archiveId}/attachments/all`, p),
+  /** The stored file of an attachment (only when hasFile). */
+  attachmentUrl: (id: string) => apiUrl(`/chat-attachments/${id}/content`),
   person: (id: string) => get<PersonDetail>(`/persons/${id}`),
   facts: (id: string) => get<Fact[]>(`/persons/${id}/memory/facts`),
   episodes: (id: string) => get<Episode[]>(`/persons/${id}/memory/episodes`),

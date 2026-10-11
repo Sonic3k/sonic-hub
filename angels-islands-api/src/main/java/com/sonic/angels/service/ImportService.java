@@ -482,13 +482,14 @@ public class ImportService {
         return r;
     }
 
-    /** [storageKey, contentType, fileName] of an attachment whose file is stored, if any. */
+    /** [storageKey, contentType, fileName, sizeBytes or null] of an attachment whose file is stored, if any. */
     @Transactional(readOnly = true)
     public Optional<String[]> attachmentObject(UUID attachmentId) {
         return attachmentRepo.findById(attachmentId)
             .filter(a -> a.getImportSource() != null)
             .map(a -> new String[]{a.getImportSource().getStorageKey(), a.getImportSource().getContentType(),
-                a.getFileName() != null ? a.getFileName() : "attachment"});
+                a.getFileName() != null ? a.getFileName() : "attachment",
+                a.getImportSource().getSizeBytes() != null ? a.getImportSource().getSizeBytes().toString() : null});
     }
 
     // ── Status ───────────────────────────────────────────────────────────────
