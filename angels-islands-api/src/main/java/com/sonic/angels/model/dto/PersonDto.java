@@ -14,6 +14,8 @@ public class PersonDto {
         private LocalDate dateOfBirth; private String bio; private Person.RelationshipType relationshipType;
         private String period; private LocalDate firstMet; private String howWeMet; private String song;
         private Boolean isSelf; private Boolean isFavorite; private Boolean isFeatured; private Set<UUID> tagIds;
+        /** a photo of the library to show as the person's avatar */
+        private UUID avatarMediaFileId;
 
         public String getName() { return name; } public void setName(String v) { this.name = v; }
         public String getDisplayName() { return displayName; } public void setDisplayName(String v) { this.displayName = v; }
@@ -30,6 +32,7 @@ public class PersonDto {
         public Boolean getIsFavorite() { return isFavorite; } public void setIsFavorite(Boolean v) { this.isFavorite = v; }
         public Boolean getIsFeatured() { return isFeatured; } public void setIsFeatured(Boolean v) { this.isFeatured = v; }
         public Set<UUID> getTagIds() { return tagIds; } public void setTagIds(Set<UUID> v) { this.tagIds = v; }
+        public UUID getAvatarMediaFileId() { return avatarMediaFileId; } public void setAvatarMediaFileId(UUID v) { this.avatarMediaFileId = v; }
     }
 
     public static class Summary {
