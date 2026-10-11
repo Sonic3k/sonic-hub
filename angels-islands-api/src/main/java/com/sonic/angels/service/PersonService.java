@@ -29,6 +29,8 @@ public class PersonService {
     private final CompanionConfigRepository companionConfigRepository;
     private final TelegramCompanionSessionRepository telegramSessionRepository;
     private final com.sonic.angels.repository.RankingEntryRepository rankingEntryRepository;
+    @org.springframework.beans.factory.annotation.Autowired
+    private com.sonic.angels.repository.MediaFileRepository mediaFileRepository;
 
     public PersonService(PersonRepository personRepository, PersonContactRepository contactRepository,
                          TagRepository tagRepository, DtoMapper mapper,
@@ -142,5 +144,8 @@ public class PersonService {
         if (req.getTagIds() != null) {
             p.setTags(new HashSet<>(tagRepository.findAllById(req.getTagIds())));
         }
+        if (req.getAvatarMediaFileId() != null)
+            p.setAvatarMediaFile(mediaFileRepository.findById(req.getAvatarMediaFileId())
+                .orElseThrow(() -> new IllegalArgumentException("Media file not found: " + req.getAvatarMediaFileId())));
     }
 }
