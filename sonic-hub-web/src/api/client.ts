@@ -21,6 +21,21 @@ export async function get<T>(path: string, params?: Params): Promise<T> {
   return r.json() as Promise<T>;
 }
 
+/** POST / PUT / DELETE with a JSON body; the API's {error} becomes the thrown message. */
+export async function send<T>(method: 'POST' | 'PUT' | 'DELETE', path: string, body?: unknown): Promise<T> {
+  const r = await fetch(`${API}/api${path}`, {
+    method, headers: { Accept: 'application/json', ...(body === undefined ? {} : { 'Content-Type': 'application/json' }) },
+    body: body === undefined ? undefined : JSON.stringify(body),
+  });
+  const text = await r.text();
+  if (!r.ok) {
+    let msg = `${r.status} ${path}`;
+    try { msg = (JSON.parse(text) as { error?: string }).error || msg; } catch { /* not JSON */ }
+    throw new Error(msg);
+  }
+  return (text ? JSON.parse(text) : undefined) as T;
+}
+
 /* Bunny resizes on the fly via ?width=; snapping to a few widths keeps the CDN cache small. */
 const WIDTHS = [160, 320, 640, 960, 1280, 1920];
 export function cdn(url: string | null | undefined, width?: number): string {

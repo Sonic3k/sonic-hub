@@ -5,15 +5,20 @@ import Search from './Search';
 import { Fragment, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { angelsOrdered } from '../pages/Angels';
+import { MoneySide } from '../pages/Money';
+import { isOwner } from './money/data';
 import { cdn } from '../api/client';
 import { counts, fmt, noteDate, useAlbums, useLibraryCounts, useNotes, usePersons, useRegions, useTimeline } from '../lib/queries';
 
 const FOOTBALL = import.meta.env.VITE_FOOTBALL_URL;
 const TABS: [string, string, string][] = [['Hôm nay', '/', '--photo'], ['Ảnh', '/photos', '--photo'], ['Nhật ký', '/journal', '--journal'], ['Angels', '/angels', '--angels'], ['Diễn đàn', '/forum', '--forum'], ['Bóng đá', '/football', '--football'], ['Game', '/games', '--games']];
+/* Only on the owner's own browser (set by opening /money once): visitors of the portal never see the money tab. */
+const MONEY_TAB: [string, string, string] = ['Tiền', '/money', '--money'];
 
 export default function Shell() {
   const loc = useLocation(), nav = useNavigate(), tl = useTimeline();
   const reading = /^\/journal\/.+/.test(loc.pathname), inJournal = loc.pathname.startsWith('/journal'), inPhotos = /^\/(photos|tags)/.test(loc.pathname), inAngels = loc.pathname.startsWith('/angels'), inForum = loc.pathname.startsWith('/forum');
+  const inMoney = loc.pathname.startsWith('/money'), tabs = inMoney || isOwner() ? [...TABS, MONEY_TAB] : TABS;
   /* Angels changes the light of the whole page, softly */
   useEffect(() => { document.body.classList.toggle('mood-angels', inAngels); }, [inAngels]);
   const random = async () => {
@@ -26,13 +31,13 @@ export default function Shell() {
       <header className="top"><div className="top-in">
         <Link className="logo" to="/">Sonic Hub</Link>
         <Search />
-        <nav className="tabs">{TABS.map(([n, to, c]) => to === '/football' && FOOTBALL
+        <nav className="tabs">{tabs.map(([n, to, c]) => to === '/football' && FOOTBALL
           ? <a key={to} href={FOOTBALL} style={{ ['--c' as string]: `var(${c})` }}><i />{n}</a>
           : <NavLink key={to} to={to} end={to === '/'} className={({ isActive }) => (isActive ? 'on' : '')} style={{ ['--c' as string]: `var(${c})` }}><i />{n}</NavLink>)}</nav>
         <button className="rand" type="button" onClick={random}>Một ngày bất kỳ</button>
       </div></header>
       <div className={`frame ${reading ? 'reading' : ''}`}>
-        <aside className="side">{inJournal ? <JournalSide /> : inPhotos ? <PhotosSide /> : inAngels ? <AngelsSide /> : inForum ? <ForumSide /> : <HomeSide />}</aside>
+        <aside className="side">{inJournal ? <JournalSide /> : inPhotos ? <PhotosSide /> : inAngels ? <AngelsSide /> : inForum ? <ForumSide /> : inMoney ? <MoneySide /> : <HomeSide />}</aside>
         <main><Outlet /></main>
       </div>
     </>
