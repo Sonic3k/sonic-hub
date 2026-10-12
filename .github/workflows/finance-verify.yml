@@ -5,6 +5,8 @@ on:
   push:
     branches: [ai/finance]
   workflow_dispatch:
+permissions:
+  contents: write
 jobs:
   verify:
     runs-on: ubuntu-latest
@@ -38,7 +40,19 @@ jobs:
           for i in $(seq 1 90); do curl -sf localhost:8080/actuator/health > /dev/null && break; sleep 2; done
           curl -sf localhost:8080/actuator/health || (tail -150 api.log; exit 1)
       - name: Smoke test
-        run: python3 .github/finance_smoke.py
-      - name: API log
+        run: python3 -u .github/finance_smoke.py 2>&1 | tee smoke.log; test ${PIPESTATUS[0]} -eq 0
+      - name: Report as commit comment
         if: always()
-        run: grep -iE "finance|exception|error" api.log | grep -v "DEBUG" | tail -120 || true
+        env: { GH_TOKEN: '${{ github.token }}' }
+        run: |
+          {
+            echo "finance-verify: ${{ job.status }}"
+            echo '```'
+            tail -45 smoke.log 2>/dev/null || echo "(no smoke log)"
+            echo '```'
+            echo 'API log (errors):'
+            echo '```'
+            grep -E "ERROR|Exception|WARN.*[Ff]inance" api.log 2>/dev/null | grep -v DEBUG | tail -25 | cut -c1-400 || true
+            echo '```'
+          } > report.md
+          gh api "repos/${{ github.repository }}/commits/${{ github.sha }}/comments" -F body=@report.md > /dev/null
