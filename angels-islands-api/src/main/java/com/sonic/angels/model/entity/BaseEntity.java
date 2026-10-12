@@ -14,14 +14,17 @@ public abstract class BaseEntity {
 
     @PrePersist
     protected void onCreate() {
-        createdAt = LocalDateTime.now();
-        updatedAt = LocalDateTime.now();
+        createdAt = clock();
+        updatedAt = clock();
     }
 
     @PreUpdate
     protected void onUpdate() {
-        updatedAt = LocalDateTime.now();
+        updatedAt = clock();
     }
+
+    /** The wall clock behind the two stamps: the server's own zone, unless an entity says otherwise. */
+    protected LocalDateTime clock() { return LocalDateTime.now(); }
 
     public LocalDateTime getCreatedAt() { return createdAt; }
     public LocalDateTime getUpdatedAt() { return updatedAt; }

@@ -12,7 +12,7 @@ import java.util.regex.Pattern;
 /**
  * Off unless ADMIN_TOKEN is set (then the API is open, importer included).
  * With ADMIN_TOKEN set: every write needs the token, and so do reads of private data
- * (chat archives, other chats, memory, rankings, contacts, companion, journal problems, imports).
+ * (chat archives, other chats, memory, rankings, contacts, companion, journal problems, imports, finance).
  * Photos, collections, tags and persons stay public for sonic-hub-web; journal notes answer only
  * with published articles to callers without the token (JournalController).
  */
@@ -20,15 +20,18 @@ public class AdminTokenFilter extends OncePerRequestFilter {
 
     private static final Pattern PRIVATE_READ = Pattern.compile(
         "^/api/(persons/[^/]+/(chat-archives|memory|contacts|companion|rankings)(/.*)?" +
-        "|companion(/.*)?|chat-archives(/.*)?|chat-attachments(/.*)?|journal/(problems|authors)(/.*)?|import(/.*)?|rankings(/.*)?)$");
+        "|companion(/.*)?|chat-archives(/.*)?|chat-attachments(/.*)?|journal/(problems|authors)(/.*)?|import(/.*)?|rankings(/.*)?" +
+        "|finance(/.*)?)$");
 
     private final AdminAuth auth;
 
     public AdminTokenFilter(AdminAuth auth) { this.auth = auth; }
 
+    /** The SePay webhook carries its own key (SEPAY_API_KEY), checked by FinanceHookController. */
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) {
-        return !path(request).startsWith("/api/");
+        String p = path(request);
+        return !p.startsWith("/api/") || p.startsWith("/api/finance/hooks/");
     }
 
     @Override
