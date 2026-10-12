@@ -16,6 +16,11 @@ public class PersonDto {
         private Boolean isSelf; private Boolean isFavorite; private Boolean isFeatured; private Set<UUID> tagIds;
         /** a photo of the library to show as the person's avatar */
         private UUID avatarMediaFileId;
+        /** birthday in parts (0 clears one); a full dateOfBirth sets all three */
+        private Integer birthDay; private Integer birthMonth; private Integer birthYear;
+        public Integer getBirthDay() { return birthDay; } public void setBirthDay(Integer v) { this.birthDay = v; }
+        public Integer getBirthMonth() { return birthMonth; } public void setBirthMonth(Integer v) { this.birthMonth = v; }
+        public Integer getBirthYear() { return birthYear; } public void setBirthYear(Integer v) { this.birthYear = v; }
 
         public String getName() { return name; } public void setName(String v) { this.name = v; }
         public String getDisplayName() { return displayName; } public void setDisplayName(String v) { this.displayName = v; }
@@ -55,6 +60,10 @@ public class PersonDto {
 
     public static class DetailResponse extends Summary {
         private String alternativeName; private LocalDate dateOfBirth; private String bio;
+        private Integer birthDay; private Integer birthMonth; private Integer birthYear;
+        public Integer getBirthDay() { return birthDay; } public void setBirthDay(Integer v) { this.birthDay = v; }
+        public Integer getBirthMonth() { return birthMonth; } public void setBirthMonth(Integer v) { this.birthMonth = v; }
+        public Integer getBirthYear() { return birthYear; } public void setBirthYear(Integer v) { this.birthYear = v; }
         private LocalDate firstMet; private String howWeMet; private String coverUrl; private String bannerUrl;
         private Set<TagDto.Response> tags; private List<ContactResponse> contacts;
         private Integer totalCollections; private Integer totalMediaFiles;

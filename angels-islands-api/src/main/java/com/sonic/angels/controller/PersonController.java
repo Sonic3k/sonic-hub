@@ -58,4 +58,9 @@ public class PersonController {
 
     @DeleteMapping("/{personId}/contacts/{contactId}")
     public ResponseEntity<Void> deleteContact(@PathVariable UUID personId, @PathVariable UUID contactId) { personService.deleteContact(contactId); return ResponseEntity.noContent().build(); }
+
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ResponseEntity<java.util.Map<String, String>> bad(IllegalArgumentException e) {
+        return ResponseEntity.status(400).body(java.util.Map.of("error", String.valueOf(e.getMessage())));
+    }
 }

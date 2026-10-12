@@ -35,6 +35,17 @@ public class Person extends BaseEntity {
     @Column(name = "date_of_birth")
     private LocalDate dateOfBirth;
 
+    /** Birthday in parts, for when only some is known (a day and month without the year, or just the year).
+     *  With a full dateOfBirth they always agree with it. */
+    @Column(name = "birth_day")
+    private Integer birthDay;
+
+    @Column(name = "birth_month")
+    private Integer birthMonth;
+
+    @Column(name = "birth_year")
+    private Integer birthYear;
+
     @Column(name = "bio", columnDefinition = "TEXT")
     private String bio;
 
@@ -148,6 +159,12 @@ public class Person extends BaseEntity {
     public void setNickname(String nickname) { this.nickname = nickname; }
     public LocalDate getDateOfBirth() { return dateOfBirth; }
     public void setDateOfBirth(LocalDate dateOfBirth) { this.dateOfBirth = dateOfBirth; }
+    public Integer getBirthDay() { return birthDay; }
+    public void setBirthDay(Integer v) { this.birthDay = v; }
+    public Integer getBirthMonth() { return birthMonth; }
+    public void setBirthMonth(Integer v) { this.birthMonth = v; }
+    public Integer getBirthYear() { return birthYear; }
+    public void setBirthYear(Integer v) { this.birthYear = v; }
     public String getBio() { return bio; }
     public void setBio(String bio) { this.bio = bio; }
     public RelationshipType getRelationshipType() { return relationshipType; }

@@ -169,7 +169,8 @@ export function PersonPage() {
           <div className="card" style={{ ['--c' as string]: 'var(--angels)' }}><h3><i />Về {nameOf(p)}</h3>
             <dl className="facts">
               {p.firstMet && <div><dt>Gặp nhau</dt><dd>{dayMonthYear(p.firstMet)}</dd></div>}
-              {p.dateOfBirth && <div><dt>Sinh nhật</dt><dd>{dayMonthYear(p.dateOfBirth)}</dd></div>}
+              {p.dateOfBirth ? <div><dt>Sinh nhật</dt><dd>{dayMonthYear(p.dateOfBirth)}</dd></div>
+                : (p.birthMonth || p.birthYear) ? <div><dt>Sinh nhật</dt><dd>{[p.birthDay && p.birthMonth ? `${p.birthDay} tháng ${p.birthMonth}` : '', p.birthYear ? `năm ${p.birthYear}` : ''].filter(Boolean).join(', ')}</dd></div> : null}
               {p.song && <div><dt>Bài hát</dt><dd>{p.song}</dd></div>}
               {shortFacts.slice(0, 8).map(f => <div key={f.id}><dt>{f.key || f.category}</dt><dd>{f.value}</dd></div>)}
               {p.totalMediaFiles != null && <div><dt>Ảnh</dt><dd>{fmt(p.totalMediaFiles)}</dd></div>}
