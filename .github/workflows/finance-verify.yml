@@ -41,6 +41,16 @@ jobs:
           curl -sf localhost:8080/actuator/health || (tail -150 api.log; exit 1)
       - name: Smoke test
         run: python3 -u .github/finance_smoke.py 2>&1 | tee smoke.log; test ${PIPESTATUS[0]} -eq 0
+      - name: Share the jar for local UI checks (temporary branch)
+        if: success()
+        run: |
+          mkdir -p /tmp/jar && cd /tmp/jar
+          split -b 45m "$GITHUB_WORKSPACE/angels-islands-api/target/angels-islands-api.jar" api.jar.part-
+          ls -la
+          git init -q && git checkout -q -b tmp/finance-jar
+          git -c user.name=ci -c user.email=ci@localhost add .
+          git -c user.name=ci -c user.email=ci@localhost commit -q -m "temporary: API jar for local UI checks"
+          git push -q -f "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git" tmp/finance-jar
       - name: Report as commit comment
         if: always()
         env: { GH_TOKEN: '${{ github.token }}' }

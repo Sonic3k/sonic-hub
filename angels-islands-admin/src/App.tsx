@@ -13,6 +13,7 @@ import MemoryPage from './pages/MemoryPage'
 import ScriptsPage from './pages/ScriptsPage'
 import JournalPage from './pages/JournalPage'
 import OtherChatsPage from './pages/OtherChatsPage'
+import FinancePage from './pages/FinancePage'
 
 const queryClient = new QueryClient({
   defaultOptions: { queries: { retry: 1, staleTime: 1000 * 30 } },
@@ -36,6 +37,7 @@ export default function App() {
             <Route path="scripts" element={<ScriptsPage />} />
             <Route path="journal" element={<JournalPage />} />
             <Route path="other-chats" element={<OtherChatsPage />} />
+            <Route path="finance" element={<FinancePage />} />
           </Route>
         </Routes>
       </BrowserRouter>
