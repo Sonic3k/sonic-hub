@@ -3,6 +3,11 @@ package com.sonic.angels.config;
 import com.sonic.angels.model.entity.ChatArchive;
 import com.sonic.angels.model.entity.ChatAttachment;
 import com.sonic.angels.model.entity.ChatMessage;
+import com.sonic.angels.model.entity.FinanceAccount;
+import com.sonic.angels.model.entity.FinanceCategory;
+import com.sonic.angels.model.entity.FinanceInbound;
+import com.sonic.angels.model.entity.FinanceRule;
+import com.sonic.angels.model.entity.FinanceTransaction;
 import com.sonic.angels.model.entity.MediaFile;
 import com.sonic.angels.model.entity.Person;
 import com.sonic.angels.model.entity.PersonContact;
@@ -41,7 +46,17 @@ public class EnumCheckConstraintFixer implements InitializingBean {
         new EnumColumn("chat_attachments", "type", ChatAttachment.Type.class),
         new EnumColumn("person_contacts", "platform", PersonContact.Platform.class),
         new EnumColumn("media_files", "file_type", MediaFile.FileType.class),
-        new EnumColumn("persons", "relationship_type", Person.RelationshipType.class)
+        new EnumColumn("persons", "relationship_type", Person.RelationshipType.class),
+        new EnumColumn("finance_accounts", "mode", FinanceAccount.Mode.class),
+        new EnumColumn("finance_categories", "kind", FinanceCategory.Kind.class),
+        new EnumColumn("finance_categories", "budget_group", FinanceCategory.BudgetGroup.class),
+        new EnumColumn("finance_rules", "direction", FinanceRule.Direction.class),
+        new EnumColumn("finance_rules", "origin", FinanceRule.Origin.class),
+        new EnumColumn("finance_transactions", "kind", FinanceTransaction.Kind.class),
+        new EnumColumn("finance_transactions", "source", FinanceTransaction.Source.class),
+        new EnumColumn("finance_transactions", "status", FinanceTransaction.Status.class),
+        new EnumColumn("finance_transactions", "categorized_by", FinanceTransaction.By.class),
+        new EnumColumn("finance_inbound", "status", FinanceInbound.Status.class)
     );
 
     /** Values taken out of an enum, per table.column, and what rows holding one become. */

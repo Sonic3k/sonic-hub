@@ -1,0 +1,44 @@
+name: finance-verify
+# Temporary: builds angels-islands-api on the ai/finance branch, boots it on a real PostgreSQL and runs the
+# finance smoke test. Removed before the branch is merged.
+on:
+  push:
+    branches: [ai/finance]
+  workflow_dispatch:
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: angels_islands
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd pg_isready --health-interval 5s --health-timeout 5s --health-retries 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with: { distribution: temurin, java-version: '17', cache: maven }
+      - name: Build
+        run: mvn -B -f angels-islands-api/pom.xml -DskipTests package 2>&1 | grep -E "ERROR|BUILD|WARN.*finance" | head -80; test ${PIPESTATUS[0]} -eq 0
+      - name: Start API
+        env:
+          PGHOST: localhost
+          PGPORT: '5432'
+          PGDATABASE: angels_islands
+          PGUSER: postgres
+          PGPASSWORD: postgres
+          SEPAY_API_KEY: testkey
+          B2_KEY_ID: dummy
+          B2_APP_KEY: dummy
+        run: |
+          nohup java -jar angels-islands-api/target/angels-islands-api.jar > api.log 2>&1 &
+          for i in $(seq 1 90); do curl -sf localhost:8080/actuator/health > /dev/null && break; sleep 2; done
+          curl -sf localhost:8080/actuator/health || (tail -150 api.log; exit 1)
+      - name: Smoke test
+        run: python3 .github/finance_smoke.py
+      - name: API log
+        if: always()
+        run: grep -iE "finance|exception|error" api.log | grep -v "DEBUG" | tail -120 || true
