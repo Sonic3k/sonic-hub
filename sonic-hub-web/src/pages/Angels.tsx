@@ -17,7 +17,7 @@ import { Attachment, AttachmentGallery, Lightbox, type Shown } from '../componen
 const T = 10 * 60_000;
 const nameOf = (p: Person) => p.displayName || p.name;
 /* ANGEL is not written out: these pages are the Angels. OTHER marks someone who is not one. */
-const REL: Record<string, string> = { ANGEL: '', OTHER: 'khác', FRIEND: 'bạn' };
+const REL: Record<string, string> = { ANGEL: '', OTHER: 'khác', FRIEND: 'bạn', FAMILY: 'gia đình' };
 const rel = (r?: string | null) => (r ? REL[r] ?? r.toLowerCase().replace(/_/g, ' ') : '');
 const startOf = (p: Person) => periodYears(p.period)?.[0] ?? 9999;
 export const angelsOrdered = (all: Person[]) => all.filter(isAngel).sort((a, b) => startOf(a) - startOf(b) || nameOf(a).localeCompare(nameOf(b)));

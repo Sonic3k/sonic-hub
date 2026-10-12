@@ -275,6 +275,7 @@ public class CompanionService {
         return switch (t) {
             case ANGEL, OTHER -> null;
             case FRIEND -> "friend";
+            case FAMILY -> "family member";
         };
     }
 
