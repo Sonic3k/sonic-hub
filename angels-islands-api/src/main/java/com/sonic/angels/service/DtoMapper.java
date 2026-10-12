@@ -51,6 +51,7 @@ public class DtoMapper {
         d.setPeriod(p.getPeriod()); d.setIsSelf(p.getIsSelf()); d.setIsFavorite(p.getIsFavorite()); d.setIsFeatured(p.getIsFeatured());
         d.setSong(p.getSong()); d.setAlternativeName(p.getAlternativeName());
         d.setDateOfBirth(p.getDateOfBirth()); d.setBio(p.getBio());
+        d.setBirthDay(p.getBirthDay()); d.setBirthMonth(p.getBirthMonth()); d.setBirthYear(p.getBirthYear());
         d.setFirstMet(p.getFirstMet()); d.setHowWeMet(p.getHowWeMet());
         d.setCreatedAt(p.getCreatedAt()); d.setUpdatedAt(p.getUpdatedAt());
         if (p.getAvatarMediaFile() != null) d.setAvatarUrl(imageUrl(p.getAvatarMediaFile()));

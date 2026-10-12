@@ -61,7 +61,7 @@ export default function PersonDetailPage() {
     wasExtracting.current = extracting
   }, [archives, pid, queryClient])
   const [editing, setEditing] = useState(false)
-  const [form, setForm] = useState<PersonRequest>({})
+  const [form, setForm] = useState<Record<string, any>>({})
   const [showContactForm, setShowContactForm] = useState(false)
   const [contactForm, setContactForm] = useState<ContactRequest>({ platform: 'YAHOO', identifier: '' })
 
@@ -97,6 +97,8 @@ export default function PersonDetailPage() {
     setForm({
       name: person.name || '', displayName: person.displayName || '', alternativeName: person.alternativeName || '',
       nickname: person.nickname || '', dateOfBirth: person.dateOfBirth || '', bio: person.bio || '',
+      birthDay: person.birthDay ? String(person.birthDay) : '', birthMonth: person.birthMonth ? String(person.birthMonth) : '',
+      birthYear: person.birthYear ? String(person.birthYear) : '',
       relationshipType: person.relationshipType || 'FRIEND', period: person.period || '',
       firstMet: person.firstMet || '', howWeMet: person.howWeMet || '', song: person.song || '',
     })
@@ -104,7 +106,16 @@ export default function PersonDetailPage() {
   }
 
   const saveEdit = () => {
-    updatePerson.mutate(form, { onSuccess: () => setEditing(false) })
+    // a full date wins when it was changed; otherwise the parts are sent (an empty part clears it)
+    const { birthDay, birthMonth, birthYear, ...rest } = form as Record<string, string>
+    const payload: Record<string, unknown> = { ...rest }
+    if (form.dateOfBirth && form.dateOfBirth !== (person.dateOfBirth || '')) {
+      payload.dateOfBirth = form.dateOfBirth
+    } else {
+      delete payload.dateOfBirth
+      payload.birthDay = Number(birthDay) || 0; payload.birthMonth = Number(birthMonth) || 0; payload.birthYear = Number(birthYear) || 0
+    }
+    updatePerson.mutate(payload as PersonRequest, { onSuccess: () => setEditing(false) })
   }
 
   const set = (k: string, v: string) => setForm(f => ({ ...f, [k]: v }))
@@ -123,7 +134,7 @@ export default function PersonDetailPage() {
     { label: 'Display Name', key: 'displayName', value: person.displayName },
     { label: 'Alternative Name', key: 'alternativeName', value: person.alternativeName },
     { label: 'Nickname', key: 'nickname', value: person.nickname },
-    { label: 'Birthday', key: 'dateOfBirth', value: person.dateOfBirth },
+    { label: 'Birthday', key: 'dateOfBirth', value: birthdayText(person) },
     { label: 'Relationship', key: 'relationshipType', value: person.relationshipType ? REL_LABELS[person.relationshipType] : undefined },
     { label: 'Period', key: 'period', value: person.period },
     { label: 'First Met', key: 'firstMet', value: person.firstMet },
@@ -209,6 +220,14 @@ export default function PersonDetailPage() {
           <Input label="Alternative Name" value={form.alternativeName} onChange={e => set('alternativeName', e.target.value)} />
           <Input label="Nickname" value={form.nickname} onChange={e => set('nickname', e.target.value)} />
           <Input label="Birthday" type="date" value={form.dateOfBirth} onChange={e => set('dateOfBirth', e.target.value)} />
+          <div className="space-y-1">
+            <label className="block text-xs font-medium text-slate-600">…or only partly known (day / month / year)</label>
+            <div className="flex gap-2">
+              <input className="w-16 px-2 py-2 text-sm border rounded-lg border-slate-200" inputMode="numeric" placeholder="day" value={form.birthDay} onChange={e => set('birthDay', e.target.value.replace(/\D/g, ''))} />
+              <input className="w-16 px-2 py-2 text-sm border rounded-lg border-slate-200" inputMode="numeric" placeholder="month" value={form.birthMonth} onChange={e => set('birthMonth', e.target.value.replace(/\D/g, ''))} />
+              <input className="w-20 px-2 py-2 text-sm border rounded-lg border-slate-200" inputMode="numeric" placeholder="year" value={form.birthYear} onChange={e => set('birthYear', e.target.value.replace(/\D/g, ''))} />
+            </div>
+          </div>
           <div className="space-y-1">
             <label className="block text-xs font-medium text-slate-600">Relationship</label>
             <select className="w-full px-3 py-2.5 text-sm border rounded-lg border-slate-200 bg-white"
@@ -758,4 +777,11 @@ function MemoryFormModal({ personId, kind, item, onSaved, onClose }: {
       </div>
     </Modal>
   )
+}
+
+/** dd/mm/yyyy, or as much of it as is known (11/1, or just 1990). */
+function birthdayText(p: { dateOfBirth?: string; birthDay?: number | null; birthMonth?: number | null; birthYear?: number | null }) {
+  if (p.dateOfBirth) { const [y, m, d] = p.dateOfBirth.split('-'); return `${+d}/${+m}/${y}` }
+  const dm = p.birthDay && p.birthMonth ? `${p.birthDay}/${p.birthMonth}` : ''
+  return [dm, p.birthYear ? String(p.birthYear) : ''].filter(Boolean).join('/') || undefined
 }

@@ -12,6 +12,9 @@ import com.sonic.angels.repository.TelegramCompanionSessionRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.DateTimeException;
+import java.time.LocalDate;
+import java.time.MonthDay;
 import java.util.HashSet;
 import java.util.List;
 import java.util.UUID;
@@ -124,6 +127,36 @@ public class PersonService {
         contactRepository.deleteById(contactId);
     }
 
+    /** A full date sets all three parts; parts alone (day+month, or a year) are kept as given, and make the full
+     *  date once all three are known. A part that no longer agrees with the full date drops the full date. */
+    static void applyBirthday(Person p, PersonDto.Request req) {
+        if (req.getDateOfBirth() != null) {
+            LocalDate d = req.getDateOfBirth();
+            p.setDateOfBirth(d); p.setBirthDay(d.getDayOfMonth()); p.setBirthMonth(d.getMonthValue()); p.setBirthYear(d.getYear());
+            return;
+        }
+        if (req.getBirthDay() == null && req.getBirthMonth() == null && req.getBirthYear() == null) return;
+        Integer dd = part(req.getBirthDay(), p.getBirthDay()), mm = part(req.getBirthMonth(), p.getBirthMonth()), yy = part(req.getBirthYear(), p.getBirthYear());
+        if (dd != null && (dd < 1 || dd > 31)) throw new IllegalArgumentException("birthDay must be 1-31");
+        if (mm != null && (mm < 1 || mm > 12)) throw new IllegalArgumentException("birthMonth must be 1-12");
+        if (yy != null && (yy < 1900 || yy > 2100)) throw new IllegalArgumentException("birthYear must be 1900-2100");
+        if (dd != null && mm != null) {
+            try { MonthDay.of(mm, dd); } catch (DateTimeException e) { throw new IllegalArgumentException("no such day: " + dd + "/" + mm); }
+        }
+        LocalDate full = null;
+        if (dd != null && mm != null && yy != null) {
+            try { full = LocalDate.of(yy, mm, dd); } catch (DateTimeException e) { throw new IllegalArgumentException("no such date: " + dd + "/" + mm + "/" + yy); }
+        }
+        p.setBirthDay(dd); p.setBirthMonth(mm); p.setBirthYear(yy);
+        p.setDateOfBirth(full);
+    }
+
+    /** null = not sent (keep), 0 = clear */
+    private static Integer part(Integer given, Integer current) {
+        if (given == null) return current;
+        return given == 0 ? null : given;
+    }
+
     // ── Internal ─────────────────────────────────────────────────────────────
 
     private void applyRequest(Person p, PersonDto.Request req) {
@@ -131,7 +164,7 @@ public class PersonService {
         if (req.getDisplayName() != null) p.setDisplayName(req.getDisplayName());
         if (req.getAlternativeName() != null) p.setAlternativeName(req.getAlternativeName());
         if (req.getNickname() != null) p.setNickname(req.getNickname());
-        if (req.getDateOfBirth() != null) p.setDateOfBirth(req.getDateOfBirth());
+        applyBirthday(p, req);
         if (req.getBio() != null) p.setBio(req.getBio());
         if (req.getRelationshipType() != null) p.setRelationshipType(req.getRelationshipType());
         if (req.getPeriod() != null) p.setPeriod(req.getPeriod());

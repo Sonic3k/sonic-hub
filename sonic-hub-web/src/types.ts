@@ -66,7 +66,7 @@ export interface ChatAttachment {
 export interface TagStats { id: string; name: string; color?: string | null; mediaCount: number; albumCount: number; noteCount: number }
 
 export interface PersonDetail extends Person {
-  alternativeName?: string | null; dateOfBirth?: string | null; bio?: string | null; firstMet?: string | null; howWeMet?: string | null;
+  alternativeName?: string | null; dateOfBirth?: string | null; birthDay?: number | null; birthMonth?: number | null; birthYear?: number | null; bio?: string | null; firstMet?: string | null; howWeMet?: string | null;
   coverUrl?: string | null; bannerUrl?: string | null; tags?: TagRef[] | null; contacts?: Contact[] | null;
   totalCollections?: number | null; totalMediaFiles?: number | null; totalChatArchives?: number | null; totalFacts?: number | null; totalEpisodes?: number | null;
 }

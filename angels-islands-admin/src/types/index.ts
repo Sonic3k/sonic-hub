@@ -14,6 +14,7 @@ export interface PersonSummary {
 // Detail response (DetailResponse DTO)
 export interface PersonDetail extends PersonSummary {
   alternativeName?: string; dateOfBirth?: string; bio?: string
+  birthDay?: number | null; birthMonth?: number | null; birthYear?: number | null
   firstMet?: string; howWeMet?: string; coverUrl?: string; bannerUrl?: string
   tags?: TagResponse[]; contacts?: ContactResponse[]
   totalCollections?: number; totalMediaFiles?: number
@@ -25,6 +26,7 @@ export interface PersonDetail extends PersonSummary {
 export interface PersonRequest {
   name?: string; displayName?: string; alternativeName?: string; nickname?: string
   dateOfBirth?: string; bio?: string; relationshipType?: RelationshipType
+  birthDay?: number; birthMonth?: number; birthYear?: number
   period?: string; firstMet?: string; howWeMet?: string; song?: string
   isSelf?: boolean; isFavorite?: boolean; isFeatured?: boolean; tagIds?: number[]
 }
