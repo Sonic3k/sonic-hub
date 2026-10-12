@@ -11,7 +11,7 @@ import java.util.UUID;
 @Entity
 @Table(name = "finance_categories",
     uniqueConstraints = @UniqueConstraint(name = "uk_finance_category_code", columnNames = "code"))
-public class FinanceCategory extends BaseEntity {
+public class FinanceCategory extends FinanceEntity {
 
     public enum Kind { EXPENSE, INCOME }
     public enum BudgetGroup { FIXED, FLEXIBLE, SAVING }

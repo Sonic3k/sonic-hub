@@ -19,7 +19,7 @@ import java.util.UUID;
         @Index(name = "idx_finance_txn_account_occurred", columnList = "account_id, occurred_at"),
         @Index(name = "idx_finance_txn_status", columnList = "status")
     })
-public class FinanceTransaction extends BaseEntity {
+public class FinanceTransaction extends FinanceEntity {
 
     public enum Kind { EXPENSE, INCOME, TRANSFER }
     public enum Source { SEPAY, EMAIL, NOTE, MANUAL, RECONCILE, SYSTEM }

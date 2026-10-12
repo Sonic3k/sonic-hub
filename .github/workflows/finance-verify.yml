@@ -33,6 +33,7 @@ jobs:
           PGUSER: postgres
           PGPASSWORD: postgres
           SEPAY_API_KEY: testkey
+          TZ: Asia/Ho_Chi_Minh
           B2_KEY_ID: dummy
           B2_APP_KEY: dummy
         run: |

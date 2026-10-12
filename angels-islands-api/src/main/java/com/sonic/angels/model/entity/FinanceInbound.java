@@ -9,7 +9,7 @@ import java.util.UUID;
  */
 @Entity
 @Table(name = "finance_inbound", indexes = @Index(name = "idx_finance_inbound_created", columnList = "created_at"))
-public class FinanceInbound extends BaseEntity {
+public class FinanceInbound extends FinanceEntity {
 
     public enum Status { NEW, SAVED, DUPLICATE, IGNORED, FAILED }
 

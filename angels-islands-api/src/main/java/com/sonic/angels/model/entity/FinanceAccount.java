@@ -14,7 +14,7 @@ import java.util.UUID;
  */
 @Entity
 @Table(name = "finance_accounts")
-public class FinanceAccount extends BaseEntity {
+public class FinanceAccount extends FinanceEntity {
 
     public enum Mode { FEED, RECONCILE, POOL }
 

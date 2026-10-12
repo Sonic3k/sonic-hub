@@ -11,7 +11,7 @@ import java.util.UUID;
  */
 @Entity
 @Table(name = "finance_rules")
-public class FinanceRule extends BaseEntity {
+public class FinanceRule extends FinanceEntity {
 
     public enum Direction { ANY, IN, OUT }
     public enum Origin { SEED, USER }

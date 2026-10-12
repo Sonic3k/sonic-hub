@@ -197,4 +197,16 @@ call("PUT", "/api/finance/settings", {"usdRate": 26000})
 boa = {a["name"]: a for a in call("GET", "/api/finance/accounts")}["Bank of America"]["id"]
 call("POST", f"/api/finance/accounts/{boa}/balance", {"balance": 100})
 check(amt(call("GET", "/api/finance/summary")["netWorthVnd"]) == 19300000 + 2600000, "USD balance converted at the manual rate")
+# ── a learned phrase is the words as written, so the next note with them matches ──
+n = call("POST", "/api/finance/notes", {"text": "đồ chơi cho bé", "amount": -420000})
+check(n["status"] == "REVIEW" and n["suggestedKeywords"] == "do choi", f"phrase kept contiguous (got {n['suggestedKeywords']!r})")
+call("PUT", f"/api/finance/transactions/{n['id']}", {"categoryId": cats["mua-sam"]["id"], "learnKeywords": n["suggestedKeywords"]})
+n = call("POST", "/api/finance/notes", {"text": "đồ chơi lego", "amount": -300000})
+check(n["categoryName"] == "Mua sắm" and n["status"] == "OK", "learned phrase matches the next note")
+
+# ── stamps are UTC whatever the server's zone (this run starts the API with TZ=Asia/Ho_Chi_Minh) ──
+last = call("GET", "/api/finance/inbound?size=1")["content"][0]["createdAt"]
+utc_now = datetime.datetime.now(datetime.timezone.utc).replace(tzinfo=None)
+off = abs((utc_now - datetime.datetime.fromisoformat(last[:19])).total_seconds())
+check(off < 3600, f"webhook log stamped in UTC (off by {off:.0f}s)")
 print("\nALL FINANCE CHECKS PASSED")

@@ -54,15 +54,18 @@ public final class FinanceText {
     public static String padded(String text) { return " " + normalize(text) + " "; }
 
     /**
-     * A first guess at the words that identify a counterpart: the first meaningful words of the memo,
-     * bank noise and numbers dropped. "HIGHLANDS COFFEE 123 TRAN DUY HUNG" → "highlands coffee tran".
+     * A first guess at the words that identify a counterpart: the first run of meaningful words in the memo (up to
+     * three, stopping at bank noise or a number), so the phrase appears as it is in the next similar line.
+     * "HIGHLANDS COFFEE 123 TRAN DUY HUNG" → "highlands coffee"; "đồ chơi cho bé" → "do choi";
+     * "NGUYEN VAN A chuyen tien" → "nguyen van a".
      */
     public static String suggestKeywords(String text) {
         String n = normalize(text);
         if (n.isEmpty()) return "";
         List<String> kept = new ArrayList<>();
         for (String w : n.split(" ")) {
-            if (NOISE.contains(w) || w.chars().anyMatch(Character::isDigit)) continue;   // one letter stays: "NGUYEN VAN A"
+            boolean meaningful = !NOISE.contains(w) && w.chars().noneMatch(Character::isDigit);
+            if (!meaningful) { if (kept.isEmpty()) continue; else break; }
             kept.add(w.toLowerCase(Locale.ROOT));
             if (kept.size() == 3) break;
         }
