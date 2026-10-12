@@ -51,7 +51,8 @@ def txns():
 
 
 def find(desc):
-    hits = [t for t in txns() if (t.get("description") or "") == desc]
+    """The transaction itself, not the mirror written on the other account of a transfer."""
+    hits = [t for t in txns() if (t.get("description") or "") == desc and t["source"] != "SYSTEM"]
     check(len(hits) == 1, f"exactly one transaction '{desc}' (found {len(hits)})")
     return hits[0]
 
@@ -93,6 +94,8 @@ check(amt(hl["amount"]) == -35000 and amt(hl["balanceAfter"]) == 1965000, "amoun
 check(find("CONG TY NCS TRA LUONG THANG 10")["categoryName"] == "Lương", "salary by rule")
 atm = find("RUT TIEN ATM 123")
 check(atm["kind"] == "TRANSFER" and atm["transferAccountName"] == "Tiền mặt", "ATM withdrawal moves money to cash")
+mirror = [t for t in txns() if t["source"] == "SYSTEM" and t["description"] == "RUT TIEN ATM 123"]
+check(len(mirror) == 1 and mirror[0]["accountName"] == "Tiền mặt" and amt(mirror[0]["amount"]) == 2000000, "cash side written as a mirror")
 momo_top = find("NAP TIEN VI MOMO 0912")
 check(momo_top["kind"] == "TRANSFER" and momo_top["transferAccountName"] == "MoMo", "top-up moves money to MoMo")
 nva = find("NGUYEN VAN A chuyen tien")
