@@ -135,9 +135,9 @@ public class Person extends BaseEntity {
 
     // ── Enums ────────────────────────────────────────────────────────────────
 
-    /** Angel, Friend or Other. (The older types — CRUSH, GIRLFRIEND, EX, ACQUAINTANCE, PEN_PAL, ONLINE_FRIEND — are
+    /** Angel, Friend, Family or Other. (The older types — CRUSH, GIRLFRIEND, EX, ACQUAINTANCE, PEN_PAL, ONLINE_FRIEND — are
      *  gone; a row still holding one is moved to ANGEL at startup, see EnumCheckConstraintFixer.) */
-    public enum RelationshipType { ANGEL, FRIEND, OTHER }
+    public enum RelationshipType { ANGEL, FRIEND, FAMILY, OTHER }
 
     // ── Constructors ─────────────────────────────────────────────────────────
 
