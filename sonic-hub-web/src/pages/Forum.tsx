@@ -136,6 +136,7 @@ function Members({ forumKey }: { forumKey: string }) {
   const m = useQuery({ queryKey: ['forum-members', forumKey], queryFn: () => hub.forumMembers(forumKey), staleTime: T });
   const [only, setOnly] = useState(true);
   const rows = (m.data ?? []).filter(x => !only || x.person);
+  const postsOf = (personId: string) => `/forum/${forumKey}?tab=posts&person=${personId}`
   if (m.isLoading) return <div className="card empty">Đang tải…</div>;
   return (
     <>
@@ -144,8 +145,15 @@ function Members({ forumKey }: { forumKey: string }) {
         <div key={x.id} className="card fmember">
           <Who p={x.person} nick={x.nick} size={44} />
           <div>
-            <b>{x.nick}</b>{x.person && <> · {x.person.isSelf ? <span>anh</span> : <Link to={`/angels/${x.person.id}`}>{nameOf(x.person)}</Link>}</>}
-            <small>{[x.displayName && x.displayName !== x.nick ? `“${x.displayName}”` : '', x.joinedAt ? `tham gia ${dayMonthYear(x.joinedAt)}` : '', `${fmt(x.postCount)} bài đã lưu`].filter(Boolean).join(' · ')}</small>
+            <b>{x.nick}</b>{x.person && <> · {x.person.isSelf
+              ? <Link to={postsOf(x.person.id)} title="Các bài anh viết ở diễn đàn này">anh</Link>
+              : <Link to={`/angels/${x.person.id}`}>{nameOf(x.person)}</Link>}</>}
+            <small>
+              {[x.displayName && x.displayName !== x.nick ? `“${x.displayName}”` : '', x.joinedAt ? `tham gia ${dayMonthYear(x.joinedAt)}` : ''].filter(Boolean).map(s => `${s} · `).join('')}
+              {x.person && x.postCount > 0
+                ? <Link to={postsOf(x.person.id)}>{fmt(x.postCount)} bài đã lưu</Link>
+                : `${fmt(x.postCount)} bài đã lưu`}
+            </small>
             {x.intro && <p>{x.intro.length > 220 ? `${x.intro.slice(0, 220)}…` : x.intro}</p>}
             {!!x.awards?.length && <p className="fawards">{x.awards.map(a => a.title).join(' · ')}</p>}
           </div>
