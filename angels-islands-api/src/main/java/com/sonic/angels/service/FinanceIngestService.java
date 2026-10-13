@@ -59,8 +59,12 @@ public class FinanceIngestService {
         return process(inboundId);
     }
 
-    /** (Re)process one stored payload. Never throws: a failure is written on the payload itself. */
-    public FinanceInbound.Status process(UUID inboundId) {
+    /**
+     * (Re)process one stored payload. Never throws: a failure is written on the payload itself.
+     * One at a time: the two halves of a move between two own bank accounts arrive together, and the second must
+     * see the first (to pair with it, and so both do not claim the same account).
+     */
+    public synchronized FinanceInbound.Status process(UUID inboundId) {
         try {
             return tx.execute(s -> sepay(inboundId));
         } catch (Exception e) {
