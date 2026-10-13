@@ -266,7 +266,7 @@ public class MediaFileService {
 
         if (type == MediaFile.FileType.FLASH) {
             try (java.io.InputStream in = file.getInputStream()) { readSwfHeader(in, mf); } catch (Exception ignored) {}
-        } else if (type != MediaFile.FileType.AUDIO) extractMetadata(file, mf);   // a recording has nothing an image reader reads
+        } else if (type != MediaFile.FileType.AUDIO && type != MediaFile.FileType.DOCUMENT) extractMetadata(file, mf);   // a recording or a PDF has nothing an image reader reads
         if (mf.getMediaSource() == null) mf.setMediaSource(detectSourceFromCamera(mf));
         if (mf.getTimezone() == null) mf.setTimezone("+07:00");
 
@@ -1232,7 +1232,7 @@ public class MediaFileService {
 
         for (MediaFile m : files) {
             scanned++;
-            if (m.getFileType() == MediaFile.FileType.FLASH || m.getFileType() == MediaFile.FileType.AUDIO) {   // nothing an image reader can read
+            if (m.getFileType() == MediaFile.FileType.FLASH || m.getFileType() == MediaFile.FileType.AUDIO || m.getFileType() == MediaFile.FileType.DOCUMENT) {   // nothing an image reader can read
                 m.getTags().add(classifiedTag);
                 mediaFileRepository.save(m);
                 updated++;
@@ -1289,6 +1289,7 @@ public class MediaFileService {
         if ("swf".equals(ext) || FLASH_MIME.equals(contentType) || "application/vnd.adobe.flash.movie".equals(contentType))
             return MediaFile.FileType.FLASH;
         if ((contentType != null && contentType.startsWith("audio/")) || AUDIO_EXT.contains(ext)) return MediaFile.FileType.AUDIO;
+        if ("pdf".equals(ext) || "application/pdf".equals(contentType)) return MediaFile.FileType.DOCUMENT;
         return contentType != null && contentType.startsWith("video/") ? MediaFile.FileType.VIDEO : MediaFile.FileType.IMAGE;
     }
 

@@ -50,7 +50,7 @@ export function cdn(url: string | null | undefined, width?: number): string {
    recording is shown by its poster (none without one: ''); a video with a poster by that. */
 export function pic(m: { fileType?: string; cdnUrl?: string | null; thumbnailUrl?: string | null; posterUrl?: string | null } | null | undefined, full = false): string {
   if (!m) return '';
-  if (m.fileType === 'FLASH' || m.fileType === 'AUDIO') return m.posterUrl ?? '';
+  if (m.fileType === 'FLASH' || m.fileType === 'AUDIO' || m.fileType === 'DOCUMENT') return m.posterUrl ?? '';
   if (m.fileType === 'VIDEO' && m.posterUrl) return full ? m.posterUrl : m.thumbnailUrl ?? m.posterUrl;
   return (full ? m.cdnUrl : m.thumbnailUrl ?? m.cdnUrl) ?? '';
 }

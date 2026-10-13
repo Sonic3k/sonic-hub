@@ -163,7 +163,8 @@ public class MediaFile extends BaseEntity {
 
     // ── Enums ────────────────────────────────────────────────────────────────
 
-    public enum FileType { IMAGE, VIDEO, FLASH, AUDIO }
+    /** DOCUMENT = a PDF (a magazine, a scan): opened in the browser, shown by its poster (its first page). */
+    public enum FileType { IMAGE, VIDEO, FLASH, AUDIO, DOCUMENT }
     public enum MediaCategory { REGULAR, COVER, BANNER, AVATAR, SCREENSHOT, MEMORY }
     public enum Orientation { HORIZONTAL, VERTICAL, SQUARE }
     public enum StorageProvider { B2, FLICKR, GOOGLE_DRIVE, S3, EXTERNAL }
