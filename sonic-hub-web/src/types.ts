@@ -6,7 +6,7 @@ export interface TagRef { id: string; name: string; color?: string | null }
 export interface PersonRef { id: string; name: string; displayName?: string | null; nickname?: string | null; avatarUrl?: string | null }
 
 export interface MediaFile {
-  id: string; fileName: string; fileType: 'IMAGE' | 'VIDEO' | 'FLASH' | 'AUDIO'; mediaCategory?: string | null; orientation?: string | null;
+  id: string; fileName: string; fileType: 'IMAGE' | 'VIDEO' | 'FLASH' | 'AUDIO' | 'DOCUMENT'; mediaCategory?: string | null; orientation?: string | null;
   width?: number | null; height?: number | null; aspectRatio?: number | null; duration?: number | null;
   isFavorite?: boolean; isFeatured?: boolean; caption?: string | null; cdnUrl: string; thumbnailUrl?: string | null;
   /** FLASH / AUDIO / VIDEO: the still that stands for the file (also its thumbnailUrl); FLASH: the music that plays with it */

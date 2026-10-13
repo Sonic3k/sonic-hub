@@ -826,3 +826,9 @@ a.rk-mcell:hover, .rk-mcell.on { background: #FDE7EC; border-color: color-mix(in
   .mn-toast { bottom: calc(78px + env(safe-area-inset-bottom)); }
 }
 @media (max-width: 640px) { .mn-chart .tick { font-size: 22px; } .mn-chart .cap { font-size: 24px; } .mn-form { grid-template-columns: 1fr; } }
+
+/* a PDF in the viewer: the browser's reader, with a button to open it on its own */
+.v-doc { width: min(1100px, 92vw); height: 86vh; display: flex; flex-direction: column; gap: 10px; align-items: center; }
+.v-doc iframe { flex: 1; width: 100%; border: 0; border-radius: 8px; background: #fff; }
+.v-doc-open { color: #fff; background: rgba(255,255,255,.14); padding: 6px 14px; border-radius: 999px; text-decoration: none; font-size: 14px; }
+.v-doc-open:hover { background: rgba(255,255,255,.24); }

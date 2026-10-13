@@ -22,7 +22,7 @@ public class DtoMapper {
     }
 
     private static boolean noPicture(MediaFile m) {
-        return m.getFileType() == MediaFile.FileType.FLASH || m.getFileType() == MediaFile.FileType.AUDIO;
+        return m.getFileType() == MediaFile.FileType.FLASH || m.getFileType() == MediaFile.FileType.AUDIO || m.getFileType() == MediaFile.FileType.DOCUMENT;
     }
 
     // ── Tag ──────────────────────────────────────────────────────────────────
