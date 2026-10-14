@@ -9,6 +9,7 @@ import com.sonic.angels.repository.PersonContactRepository;
 import com.sonic.angels.repository.PersonRepository;
 import com.sonic.angels.repository.TagRepository;
 import com.sonic.angels.repository.TelegramCompanionSessionRepository;
+import com.sonic.angels.repository.TuViProfileRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -32,6 +33,7 @@ public class PersonService {
     private final CompanionConfigRepository companionConfigRepository;
     private final TelegramCompanionSessionRepository telegramSessionRepository;
     private final com.sonic.angels.repository.RankingEntryRepository rankingEntryRepository;
+    private final TuViProfileRepository tuViProfileRepository;
     @org.springframework.beans.factory.annotation.Autowired
     private com.sonic.angels.repository.MediaFileRepository mediaFileRepository;
 
@@ -40,7 +42,8 @@ public class PersonService {
                          CompanionMessageRepository companionMessageRepository,
                          CompanionConfigRepository companionConfigRepository,
                          TelegramCompanionSessionRepository telegramSessionRepository,
-                         com.sonic.angels.repository.RankingEntryRepository rankingEntryRepository) {
+                         com.sonic.angels.repository.RankingEntryRepository rankingEntryRepository,
+                         TuViProfileRepository tuViProfileRepository) {
         this.personRepository = personRepository;
         this.contactRepository = contactRepository;
         this.tagRepository = tagRepository;
@@ -49,6 +52,7 @@ public class PersonService {
         this.companionConfigRepository = companionConfigRepository;
         this.telegramSessionRepository = telegramSessionRepository;
         this.rankingEntryRepository = rankingEntryRepository;
+        this.tuViProfileRepository = tuViProfileRepository;
     }
 
     // ── Queries ──────────────────────────────────────────────────────────────
@@ -91,6 +95,8 @@ public class PersonService {
         personRepository.clearCollectionLinks(id);
         // their rows in old rankings stay, as the nick written in the sheet
         rankingEntryRepository.detachPerson(id);
+        // their tử vi charts stay, belonging to no one
+        tuViProfileRepository.detachPerson(id);
         // Entity cascade handles contacts, archives(+messages), facts, episodes, chapters, traits
         personRepository.deleteById(id);
     }

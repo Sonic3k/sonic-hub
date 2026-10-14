@@ -32,6 +32,9 @@ public class AnthropicClient {
 
     public boolean isConfigured() { return apiKey != null && !apiKey.isBlank(); }
 
+    /** The model complete() asks (ANTHROPIC_MODEL). */
+    public String getModel() { return model; }
+
     /** One-shot completion: system + single user message → assistant text. */
     public String complete(String system, String user, int maxTokens) throws Exception {
         return chat(model, system, List.of(Map.of("role", "user", "content", user)), maxTokens, null);

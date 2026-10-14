@@ -8,7 +8,10 @@
     "dev": "vite",
     "prebuild": "node scripts/copy-ruffle.mjs",
     "build": "tsc && vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "tuvi:book": "node scripts/tuvi/clean-source.mjs && node scripts/tuvi/build-book.mjs && node scripts/tuvi/make-worksheets.mjs",
+    "tuvi:kb": "node scripts/tuvi/validate-rules.mjs && node scripts/tuvi/validate-supplement.mjs && node scripts/tuvi/build-kb.mjs",
+    "tuvi:test": "node scripts/tuvi/test-engine.mjs"
   },
   "dependencies": {
     "@ruffle-rs/ruffle": "0.7.1",
