@@ -80,7 +80,7 @@ svg { flex: none; }
 
 /* the aqua glossy tab bar (bottom dock on phones, top of the frame on wide screens) */
 .tabs {
-  position: fixed; left: 0; right: 0; bottom: 0; z-index: 40; display: grid; grid-template-columns: repeat(4, 1fr);
+  position: fixed; left: 0; right: 0; bottom: 0; z-index: 40; display: grid; grid-template-columns: repeat(3, 1fr);
   height: calc(var(--tabs-h) + var(--safe-b)); padding-bottom: var(--safe-b);
   background: linear-gradient(#C6E5F7, #8BC9E2 22%, #6FACCB 42%, #3387AB 53%, #006495 56%, #035B89 76%, #055882 92%, #0B5D82);
   box-shadow: 0 -1px 0 #0B4D72, inset 0 1px 0 #E8F6FF, 0 -6px 16px rgba(0, 30, 60, .2);
@@ -155,6 +155,9 @@ svg { flex: none; }
 .bar .r { margin-left: auto; font-size: 12.5px; font-weight: bold; white-space: nowrap; color: #fff; text-decoration: none; }
 .bar a.r:hover { text-decoration: underline; }
 .bar .who { color: var(--name-bar); }
+.bar.ok { background: linear-gradient(#7CC23A 0 50%, #4B8B0F 50% 100%); }
+.bar.no { background: linear-gradient(#E0583B 0 50%, #C90005 50% 100%); }
+.bar .pts { margin-left: auto; }
 .bar.gold { background: linear-gradient(#FFE9A6 0 50%, #FBD163 50% 100%); color: #5A3B00; text-shadow: 0 1px 0 rgba(255, 255, 255, .6); box-shadow: inset 0 0 0 1px #E2B53C; }
 .box > .body { padding: 14px; border: 1px solid var(--post-line); border-top: 0; border-radius: 0 0 6px 6px; background: var(--post); }
 .box.plain > .body { background: #fff; }
@@ -182,7 +185,7 @@ svg { flex: none; }
 .topics .n { color: #000; font-size: 13px; white-space: nowrap; }
 .topics .sub { grid-column: 2 / -1; color: var(--ink-2); font-size: 13px; }
 .lessons > li > a { grid-template-columns: 14px minmax(0, 1fr); }
-.lessons .n { grid-column: 2; color: var(--ink-2); }
+.lessons .n { grid-column: 2; color: var(--ink-2); font-size: 12.5px; }
 .topics .due { color: var(--maroon); font: bold 13px var(--font); white-space: nowrap; }
 .topics .due.zero { color: var(--ink-3); font-weight: normal; }
 
@@ -254,14 +257,16 @@ svg { flex: none; }
 .cal-grid i.l4 { background: #1C5F94; border-color: #124A77; color: #fff; }
 .cal-grid i.today { box-shadow: 0 0 0 2px var(--orange); position: relative; z-index: 1; font-weight: bold; }
 .cal-grid i.blank { background: none; border-color: transparent; }
+.cal-note { margin: 10px 0 0; font-size: 12.5px; color: var(--ink-2); }
 .cal-foot { display: flex; justify-content: space-between; gap: 10px; margin: 10px 0 0; font-size: 12.5px; color: var(--ink-2); }
 
-.riddle .q-head { margin-bottom: 10px; }
-.riddle .q-prompt { font-size: 14.5px; }
-.riddle .q-opt { min-height: 46px; font-size: 14px; }
-.riddle .after { margin-top: 10px; }
-.riddle .after .verdict { margin: 0 0 6px; }
-.riddle .after p { margin: 0 0 8px; font-size: 13.5px; }
+.quick-quiz .bar .r { display: inline-flex; align-items: center; gap: 6px; }
+.quick-quiz .q-head { margin-bottom: 10px; }
+.quick-quiz .q-prompt { font-size: 14.5px; }
+.quick-quiz .q-opt { min-height: 46px; font-size: 14px; }
+.quick-quiz .after { margin-top: 10px; }
+.quick-quiz .after .verdict { margin: 0 0 6px; border-radius: 4px; }
+.quick-quiz .after p { margin: 0 0 8px; font-size: 13.5px; }
 
 .quick { display: none; }
 
@@ -280,14 +285,16 @@ svg { flex: none; }
 .cols-head { display: none; }
 
 /* ───── course ───── */
-.course-info { margin: 12px 0 16px; display: grid; gap: 10px; font-size: 13.5px; }
+.course-info { margin: 4px 0 16px; display: grid; gap: 10px; font-size: 13.5px; }
+.course-info .h1 { margin: -4px 0 0; }
+.course-info .desc { margin: 0; font-size: 14px; }
 .course-info .src { line-height: 1.6; }
 .course-info .src .k { font-weight: bold; color: #000; margin-right: 4px; }
 .course-info .src .sep { color: var(--ink-3); margin: 0 6px; }
 .course-info .prog { display: grid; grid-template-columns: auto 1fr; gap: 10px; align-items: center; }
 .onoff-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding-top: 10px; border-top: 1px dotted var(--post-line); }
 .onoff-row b { color: #000; }
-.onoff { display: inline-flex; border: 1px solid #003C74; border-radius: 4px; overflow: hidden; }
+.onoff { flex: none; display: inline-flex; border: 1px solid #003C74; border-radius: 4px; overflow: hidden; }
 .onoff button { min-width: 54px; min-height: 36px; padding: 0 12px; font: bold 13.5px/1 var(--ui); color: var(--link); background: linear-gradient(#FFFFFF, #ECEBE6 86%, #D6D0C5); }
 .onoff button + button { border-left: 1px solid #003C74; }
 .onoff button[aria-checked="true"] { color: #fff; text-shadow: 0 1px 1px rgba(0, 0, 0, .35); background: linear-gradient(#8DD15A, #5FAF22 50%, #4B9612 50%, #57A51B); }
@@ -305,11 +312,12 @@ svg { flex: none; }
 /* ───── lesson ───── */
 .lesson-head { margin: 0 0 12px; }
 .lesson-head p { margin: 6px 0 0; color: var(--ink-2); max-width: 66ch; }
+.lesson-head p.chap { margin: 0 0 4px; font: bold 13px/1.4 var(--ui); color: var(--ink-2); }
 .strip-tabs { display: flex; margin: 0 0 12px; border-radius: 5px; overflow: hidden; background: linear-gradient(#4E5A66, #2C3640 50%, #151C23 50%, #1F2830); box-shadow: inset 0 1px 0 rgba(255, 255, 255, .2), 0 1px 2px rgba(0, 0, 0, .2); }
 .strip-tabs button { min-height: 40px; padding: 0 16px; color: #fff; font: bold 13.5px/1 Arial, var(--ui); border-right: 1px solid rgba(255, 255, 255, .55); }
 .strip-tabs button[aria-selected="true"] { background: linear-gradient(#7FB5E0, #4C91C9 50%, #2A78B8 50%, #3B86C2); text-shadow: 0 1px 1px rgba(0, 0, 0, .35); }
 .strip-tabs button:hover:not([aria-selected="true"]) { background: rgba(255, 255, 255, .1); }
-.reading-box > .body { background: #fff; padding: 18px 16px 22px; }
+.sheet { padding: 18px 16px 22px; border: 1px solid var(--post-line); border-radius: 6px; background: #fff; }
 .reading { font: 15.5px/1.78 var(--font); max-width: 68ch; color: var(--ink); }
 .reading h2 { font: bold 18.5px/1.35 var(--font); color: var(--link); margin: 1.6em 0 .6em; padding-bottom: 6px; border-bottom: 1px solid var(--line); }
 .reading h2:first-child { margin-top: 0; }
@@ -367,6 +375,7 @@ svg { flex: none; }
 .reply { animation: replyIn .32s cubic-bezier(.2, .8, .3, 1); }
 @keyframes replyIn { from { opacity: 0; transform: translateY(14px); } }
 .reply > .body { padding: 0 0 14px; background: var(--post); }
+.reply > .bar { font-size: 15px; }
 .verdict { display: flex; align-items: center; gap: 10px; margin: 0; padding: 10px 14px; color: #fff; font: bold 15px/1.3 var(--ui); text-shadow: 0 1px 1px rgba(0, 0, 0, .3); }
 .verdict.ok { background: linear-gradient(#77BA34, var(--right-box)); }
 .verdict.no { background: linear-gradient(#D93A1E, var(--wrong)); }
@@ -387,8 +396,6 @@ svg { flex: none; }
 .reply .foot2 { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin: 14px 14px 0; }
 .due-tag { display: inline-grid; gap: 1px; padding: 5px 10px; border: 1px solid #E2B53C; border-radius: 5px; background: linear-gradient(#FFF3C4, #FBD163); color: #5A3B00; font: 12px/1.25 var(--ui); }
 .due-tag b { font-size: 14px; }
-.approved { margin: 12px 14px 0; font-size: 12px; color: var(--ink-3); }
-.approved b { color: #FF00FF; font-weight: bold; }
 
 /* question widgets */
 .q-head { margin-bottom: 16px; }
@@ -418,11 +425,11 @@ svg { flex: none; }
 .q-opt.is-picked { border-color: #2E9BD6; background: var(--cyan-bg); box-shadow: inset 0 0 0 1px #2E9BD6; }
 .q-opt.is-picked .q-key { background: radial-gradient(circle at 40% 35%, #A8E3FF, #2E9BD6 70%); border-color: #1B6FA0; }
 .q-opt.is-picked .q-key::before { color: #fff; }
-.q-opt.is-correct { border-color: #7DB443; background: var(--right-bg); }
+.q-opt.is-correct { border-color: #7DB443; background: var(--right-bg); box-shadow: none; }
 .q-opt.is-correct .q-key { background: linear-gradient(#8DD15A, #4B9612); border-color: #3F7F0C; }
 .q-opt.is-correct .q-key::before { content: "✓"; color: #fff; font-size: 15px; }
 .q-opt.is-correct .q-why { color: var(--right); }
-.q-opt.is-wrong { border-color: #E08A8A; background: var(--wrong-bg); }
+.q-opt.is-wrong { border-color: #E08A8A; background: var(--wrong-bg); box-shadow: none; }
 .q-opt.is-wrong .q-key { background: linear-gradient(#E99B8B, #C32F06); border-color: #8E2204; }
 .q-opt.is-wrong .q-key::before { content: "✗"; color: #fff; font-size: 14px; }
 .q-opt.is-wrong .q-text { text-decoration: line-through; text-decoration-color: rgba(201, 0, 5, .6); color: var(--ink-2); }
@@ -563,17 +570,6 @@ svg { flex: none; }
 .deck-left { text-align: center; color: var(--maroon); font: bold 13.5px var(--font); margin: 0 0 10px; }
 .deck-tip { text-align: center; color: var(--ink-3); font-size: 12.5px; margin: 10px 0 0; }
 
-/* ───── exams list ───── */
-.exam-rows { display: grid; gap: 0; }
-.exam-row { display: grid; gap: 8px; padding: 12px 2px; border-bottom: 1px dotted #BFD2E0; }
-.exam-row:last-child { border-bottom: 0; }
-.exam-row .t { font-weight: bold; color: var(--link); text-decoration: none; }
-.exam-row .st { color: var(--maroon); font-size: 13px; }
-.exam-row .info { font-size: 13.5px; color: #000; }
-.exam-row .info .sep { color: var(--ink-3); margin: 0 6px; }
-.exam-row .last { font-size: 13.5px; }
-.exam-row .last b.no { color: var(--wrong); }
-.exam-row .last b.ok { color: var(--right); }
 
 /* ───── wide screens ───── */
 @media (min-width: 720px) {
@@ -584,7 +580,6 @@ svg { flex: none; }
   .today .act { grid-template-columns: auto 1fr; align-items: center; gap: 14px; }
   .today .act .meta { text-align: left; }
   .done .acts { grid-template-columns: 1fr 1fr; }
-  .exam-row { grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr) minmax(0, .8fr) auto; align-items: center; gap: 14px; }
 }
 @media (min-width: 960px) {
   body { padding-bottom: 28px; }
@@ -607,7 +602,8 @@ svg { flex: none; }
   .home .c-today { grid-area: today; }
   .home .c-main { grid-area: main; }
   .home .c-side { grid-area: side; }
-  .course-wrap { display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: 18px; align-items: start; }
+  .course-wrap { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr); gap: 18px; align-items: start; }
+  .course-wrap .course-info { margin-top: 0; }
   .lesson-wrap { display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: 18px; align-items: start; }
   .lesson-side { display: grid; gap: 16px; position: sticky; top: 16px; }
   .lesson-side .box + .box { margin-top: 0; }
@@ -649,7 +645,7 @@ svg { flex: none; }
 <body>
 <header class="mast" id="mast">
   <div class="mast-in">
-    <a class="brand" href="#/" aria-label="Học, về trang Ôn thi">
+    <a class="brand" href="#/" aria-label="Học, về trang chính">
       <svg class="badge" viewBox="0 0 40 40" aria-hidden="true">
         <defs><linearGradient id="bdg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#8BCBF2"/><stop offset=".48" stop-color="#2E8BCF"/><stop offset=".5" stop-color="#1767A8"/><stop offset="1" stop-color="#2A85C6"/></linearGradient></defs>
         <rect x="1" y="1" width="38" height="38" rx="9" fill="url(#bdg)" stroke="#0D4A7C"/>
@@ -666,10 +662,9 @@ svg { flex: none; }
 </header>
 <div class="frame" id="frame">
   <nav class="tabs" id="nav" aria-label="Điều hướng chính">
-    <a href="#/" data-tab="home"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="5.5" width="16" height="14" rx="2"/><path d="M8 3v5M16 3v5M4 10.5h16M9 15l2 2 4-4"/></svg><span>Ôn thi</span></a>
+    <a href="#/" data-tab="home"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="5.5" width="16" height="14" rx="2"/><path d="M8 3v5M16 3v5M4 10.5h16M9 15l2 2 4-4"/></svg><span>Hôm nay</span></a>
     <a href="#/courses" data-tab="courses"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4.5 4h4v16h-4zM9.5 4h4v16h-4zM14.8 5.2l3.7-1 3.2 15.3-3.7 1z"/></svg><span>Khóa học</span></a>
     <a href="#/flash" data-tab="flash"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="7.5" width="13.5" height="12" rx="1.8"/><path d="M7 7.5V5.8A1.6 1.6 0 0 1 8.6 4.2h10.8A1.6 1.6 0 0 1 21 5.8v9.9a1.6 1.6 0 0 1-1.6 1.6h-2.9"/></svg><span>Thẻ</span></a>
-    <a href="#/exams" data-tab="exams"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="13" r="7.5"/><path d="M12 9v4.2l2.8 2.2M9.5 2.8h5M12 2.8v2.7"/></svg><span>Thi thử</span></a>
   </nav>
   <main id="app"></main>
   <footer class="foot" id="foot">© 2026 Sonic Hub | Góc học của Ngọc Anh (Sonic3k)</footer>
