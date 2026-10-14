@@ -1,34 +1,9 @@
 /* ───────────── Ôn thi — screens ─────────────
-   The app stays the app (same screens, names, flows as the real one); only the skin is the 2007 study forum. */
+   The app stays the app: same screens, features, names and flows as the real one. Only the skin is the 2007 study forum. */
 const appEl = document.getElementById('app');
 const navEl = document.getElementById('nav');
-const mastUser = document.getElementById('mast-user');
-
-// Rank ladder, after the old forum's "từ mầm non đến tiến sĩ". Demo rule: +1 point per answer right at the first try.
-const RANKS = [
-  { name: 'Mầm non', at: 0 },
-  { name: 'Tiểu học', at: 60 },
-  { name: 'THCS', at: 250 },
-  { name: 'THPT', at: 700 },
-  { name: 'Đại học', at: 1500 },
-  { name: 'Thạc sỹ', at: 3000 },
-  { name: 'Tiến sĩ', at: 5000 },
-];
-const ME = { nick: 'Sonic3k', points: 1492 }; // demo seed: 8 points short of the next rank
-const toNext = (r, points) => (r.next ? `Còn ${num(r.next.at - points)} điểm nữa lên ${r.next.name}` : 'Đã lên trình độ cao nhất');
-function rankOf(points) {
-  let i = 0;
-  while (i + 1 < RANKS.length && points >= RANKS[i + 1].at) i++;
-  const cur = RANKS[i];
-  const next = RANKS[i + 1] || null;
-  return { i, cur, next, pct: next ? ((points - cur.at) / (next.at - cur.at)) * 100 : 100 };
-}
 
 const pad = (n) => String(n).padStart(2, '0');
-const dmy = (d) => `${pad(d.getDate())}-${pad(d.getMonth() + 1)}-${d.getFullYear()}`;
-const WEEKDAYS = ['Chủ nhật', 'Thứ Hai', 'Thứ Ba', 'Thứ Tư', 'Thứ Năm', 'Thứ Sáu', 'Thứ Bảy'];
-const dayLine = (d = new Date()) => `${WEEKDAYS[d.getDay()]}, ${dmy(d)}`;
-const num = (n) => Number(n).toLocaleString('vi-VN');
 function greeting() {
   const hr = new Date().getHours();
   return hr < 11 ? 'Chào buổi sáng' : hr < 18 ? 'Chào buổi chiều' : 'Chào buổi tối';
@@ -38,10 +13,8 @@ function greeting() {
 const I = {
   folder: `<svg class="ic" viewBox="0 0 22 18" aria-hidden="true"><path d="M1.5 3.3c0-.8.6-1.4 1.4-1.4h5.2l1.9 1.9h9.1c.8 0 1.4.6 1.4 1.4v10.3c0 .8-.6 1.4-1.4 1.4H2.9c-.8 0-1.4-.6-1.4-1.4z" fill="#D9790F" stroke="#8F4A04" stroke-width=".7"/><rect x="3.6" y="4.4" width="14.8" height="7.4" fill="#E9F6FF" stroke="#7FB2DA" stroke-width=".6"/><path d="M1.5 7.6h19v7.4c0 .8-.6 1.4-1.4 1.4H2.9c-.8 0-1.4-.6-1.4-1.4z" fill="#F59A2A" stroke="#8F4A04" stroke-width=".7"/><path d="M1.9 8.1h18.2v3.1H1.9z" fill="#FFC57A" opacity=".75"/></svg>`,
   house: `<svg class="ic" viewBox="0 0 22 20" aria-hidden="true"><path d="M11 2.2 2.4 9.6h2.2v8.6h12.8V9.6h2.2z" fill="#fff" stroke="#0D4A7C" stroke-width=".9" stroke-linejoin="round"/><path d="M11 1.6 1.6 9.6l1.5 1.3L11 4.2l7.9 6.7 1.5-1.3z" fill="#D9452A" stroke="#7E1E08" stroke-width=".7" stroke-linejoin="round"/><rect x="9.1" y="12.2" width="3.8" height="6" fill="#F59A2A" stroke="#8F4A04" stroke-width=".6"/><rect x="5.8" y="11.6" width="2.4" height="2.4" fill="#BFE3FF" stroke="#0D4A7C" stroke-width=".5"/></svg>`,
-  user: `<svg class="ic" viewBox="0 0 22 20" aria-hidden="true"><circle cx="8" cy="6" r="3.6" fill="#FFD9B9" stroke="#8F4A04" stroke-width=".6"/><path d="M4.3 5.4c.4-2.6 2.2-3.8 4.2-3.6 1.7.2 3.2 1.3 3.2 3.3-1.6-.5-4.8-.9-7.4.3z" fill="#2C5FA8"/><path d="M1.8 17.6c.3-4.4 2.9-6.8 6.2-6.8s5.9 2.4 6.2 6.8z" fill="#47B33A" stroke="#22661A" stroke-width=".6"/><circle cx="15" cy="8" r="3.2" fill="#FFD9B9" stroke="#8F4A04" stroke-width=".6"/><path d="M11.8 7.6c.2-2.3 1.6-3.4 3.4-3.3 1.6.1 2.9 1.2 2.9 3-1.4-.5-4-.6-6.3.3z" fill="#7A3B12"/><path d="M9.6 18.4c.3-4 2.4-6.1 5.4-6.1s5.1 2.1 5.4 6.1z" fill="#E53B3B" stroke="#8E1414" stroke-width=".6"/></svg>`,
   quiz: `<svg class="ic" viewBox="0 0 22 20" aria-hidden="true"><path d="M11 1.6c-5 0-8.8 3.1-8.8 7.1 0 2.3 1.3 4.4 3.4 5.6l-.9 4.1 4.3-2.8c.7.1 1.3.2 2 .2 5 0 8.8-3.1 8.8-7.1S16 1.6 11 1.6z" fill="#4CB43E" stroke="#22661A" stroke-width=".8"/><path d="M8.6 7.1c0-1.3 1-2.2 2.3-2.2s2.3.8 2.3 2c0 1.7-2.2 1.7-2.2 3.4" fill="none" stroke="#fff" stroke-width="1.6" stroke-linecap="round"/><circle cx="11" cy="12.9" r="1" fill="#fff"/></svg>`,
   x: `<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M4 4l8 8M12 4l-8 8"/></svg>`,
-  smile: `<svg class="smile" viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="7.2" fill="#FFD21F" stroke="#B07D00" stroke-width=".8"/><circle cx="8" cy="6" r="5" fill="#FFF09A" opacity=".55"/><circle cx="5.6" cy="6.6" r="1" fill="#5A3B00"/><circle cx="10.4" cy="6.6" r="1" fill="#5A3B00"/><path d="M4.6 9.4c1.8 2.4 5 2.4 6.8 0" fill="none" stroke="#5A3B00" stroke-width="1.1" stroke-linecap="round"/></svg>`,
   clock: `<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10.2" fill="#2E8BCF" stroke="#fff" stroke-width="1.4"/><circle cx="12" cy="12" r="7.6" fill="#EAF6FF"/><path d="M12 7v5.2l3.2 2" fill="none" stroke="#0D4A7C" stroke-width="1.8" stroke-linecap="round"/><path d="M5 8.2a8 8 0 0 1 6-4.4" stroke="#fff" stroke-width="1.2" fill="none" opacity=".7"/></svg>`,
   check: `<svg class="ic" viewBox="0 0 22 18" aria-hidden="true"><circle cx="11" cy="9" r="7.6" fill="#fff" opacity=".22"/><path d="M6.6 9.2l3 3 6-6.2" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>`,
   cross: `<svg class="ic" viewBox="0 0 22 18" aria-hidden="true"><circle cx="11" cy="9" r="7.6" fill="#fff" opacity=".22"/><path d="M7.8 5.8l6.4 6.4M14.2 5.8l-6.4 6.4" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round"/></svg>`,
@@ -60,18 +33,12 @@ function setKeys(fn) {
   if (fn) addEventListener('keydown', fn);
 }
 
-function paintMast() {
-  const r = rankOf(ME.points);
-  mastUser.innerHTML = `<span class="long">${greeting()}, <b>${esc(LEARNER.name)}</b><span class="sep">/</span>${dayLine()}<span class="sep">/</span></span>Trình độ: <b>${r.cur.name}</b>${I.smile}<br class="mobile-only"> <span class="p">(${num(ME.points)} điểm)</span>`;
-}
-
 function screen(html, { tab = null, focus = false } = {}) {
   clearInterval(timer);
   setKeys(null);
   document.body.classList.toggle('focus-on', focus);
   appEl.innerHTML = `<div class="screen${focus ? ' s-focus' : ''}">${html}</div>`;
   $$('a', navEl).forEach((a) => a.classList.toggle('on', a.dataset.tab === tab));
-  paintMast();
   scrollTo(0, 0);
   return appEl.firstElementChild;
 }
@@ -84,7 +51,6 @@ function courseOfItem(itemKey) {
   return (Object.values(CONTENT.courses).find((c) => !c.include && c.items.includes(itemKey)) || Object.values(CONTENT.courses)[0]).key;
 }
 const pctOf = (p) => Math.round((p.learned / p.total) * 100);
-const pts = (earned) => (earned ? '<span class="pts">+1 điểm</span>' : '');
 
 function quickPanel() {
   const counts = dailyCounts();
@@ -101,17 +67,6 @@ function quickPanel() {
 }
 const withQuick = (inner) => `<div class="wrap has-quick">${quickPanel()}<div class="wrap-main">${inner}</div></div>`;
 
-function rankBox() {
-  const r = rankOf(ME.points);
-  return `<section class="box member">${bar('Trình độ', '', I.user)}
-    <div class="body">
-      <div class="mem"><div class="ava" aria-hidden="true"><span>Sonic3k</span></div>
-        <div><p class="who">${esc(LEARNER.name)} (${ME.nick})</p><p class="lvl">Trình độ: <b>${r.cur.name}</b> ${I.smile} <span class="p">(${num(ME.points)} điểm)</span></p></div></div>
-      <div class="xpbar" role="progressbar" aria-label="Điểm tới trình độ tiếp theo" aria-valuenow="${Math.round(r.pct)}" aria-valuemin="0" aria-valuemax="100"><i style="width:${r.pct}%"></i></div>
-      <p class="next">${toNext(r, ME.points)}</p>
-    </div></section>`;
-}
-
 // ───────────── home
 function home() {
   const counts = dailyCounts();
@@ -119,17 +74,20 @@ function home() {
   DAILY.forEach((d) => (byCourse[d.course] = (byCourse[d.course] || 0) + 1));
   const lesson = CONTENT.lessons[LEARNER.continueLesson];
   const enrolled = Object.keys(LEARNER.courses).filter((k) => LEARNER.courses[k].enrolled);
-  const r = rankOf(ME.points);
   const days = heatDays();
+  const week = days.slice(-7);
   const offset = (days[0].day.getDay() + 6) % 7;
   const lvl = (n) => (n === 0 ? '' : n < 8 ? 'l1' : n < 13 ? 'l2' : n < 18 ? 'l3' : 'l4');
   const weakN = LEARNER.weak.length;
-  const el = screen(
+  screen(
     withQuick(`
-    <p class="notice"><b class="c">Chú ý:</b><span>${r.next ? `${toNext(r, ME.points)}. Mỗi câu trả lời đúng được cộng 1 điểm.` : 'Bạn đã ở trình độ cao nhất.'}</span></p>
+    <header class="top">
+      <div><p class="hello">${greeting()}, ${esc(LEARNER.name)}</p><h1 class="h1">${todayLabel()}</h1></div>
+      <div class="pages week" title="7 ngày qua">${week.map((d, i) => `<span class="${i === week.length - 1 ? 'now' : d.n ? 'ok' : ''}" title="${d.label}">${d.n ? '✓' : d.day.getDate()}</span>`).join('')}</div>
+    </header>
     <div class="home">
       <div class="c-today">
-        <section class="box today" aria-label="Ôn hôm nay">${bar('Ôn hôm nay', `<span class="r">${dayLine()}</span>`)}
+        <section class="box today" aria-label="Ôn hôm nay">${bar('Ôn hôm nay')}
           <div class="body">
             <p class="tot">${counts.total} thẻ cần ôn hôm nay (${counts.reviews} ôn lại, ${counts.fresh} mới)</p>
             <div class="lines">${Object.entries(byCourse)
@@ -158,7 +116,6 @@ function home() {
         </section>
       </div>
       <div class="c-side col">
-        ${rankBox()}
         <section class="box weak">${bar('Hay quên')}
           <div class="body">
             <ul class="dlist">${LEARNER.weak
@@ -168,7 +125,6 @@ function home() {
             <a class="xp wide" href="#/learn/weak">Ôn riêng ${weakN > 3 ? `${weakN} thẻ` : 'mấy thẻ'} này</a>
           </div>
         </section>
-        <section class="box quick-quiz">${bar('Quiz', '<span class="r qq-course"></span>', I.quiz)}<div class="body"><div class="qq"></div><div class="after" hidden></div></div></section>
         <section class="box cal">${bar('30 ngày qua')}
           <div class="body">
             <div class="cal-grid">${['T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'CN'].map((d) => `<b>${d}</b>`).join('')}${'<i class="blank"></i>'.repeat(offset)}${days
@@ -182,34 +138,6 @@ function home() {
     </div>`),
     { tab: 'home' },
   );
-  quickQuiz($('.quick-quiz', el));
-}
-
-// A one-question quiz on the home page, drawn from the question bank.
-const QUICK = Object.values(CONTENT.questions).filter((q) => q.type === 'single').map((q) => q.key);
-let quickAt = 0;
-function quickQuiz(box) {
-  const key = QUICK[quickAt % QUICK.length];
-  const q = CONTENT.questions[key];
-  const course = q.courseOnly || courseOfItem(q.item);
-  const card = buildCard({ q: key, course });
-  $('.qq-course', box).innerHTML = `${sb(course)} ${esc(Content.courseShort(course))}`;
-  const after = $('.after', box);
-  after.hidden = true;
-  const ctl = mountQuestion($('.qq', box), card, {
-    onCommit: (input) => {
-      const res = grade(card, input);
-      ctl.reveal(res, input);
-      if (res.correct) ME.points++;
-      after.innerHTML = `<p class="verdict ${res.correct ? 'ok' : 'no'}">${res.correct ? 'Đúng rồi' : 'Chưa đúng'}${pts(res.correct)}</p>${card.feedback.explanation ? `<p>${card.feedback.explanation}</p>` : ''}<button class="xp wide" type="button">Câu tiếp</button>`;
-      after.hidden = false;
-      paintMast();
-      $('button', after).addEventListener('click', () => {
-        quickAt++;
-        quickQuiz(box);
-      });
-    },
-  });
 }
 
 // ───────────── courses
@@ -377,7 +305,6 @@ function learn(kind, arg) {
   else session = dailySession();
   const back = kind === 'lesson' ? `#/lesson/${encodeURIComponent(arg)}` : '#/';
   const title = kind === 'lesson' ? `Quiz: ${CONTENT.lessons[arg].title}` : kind === 'weak' ? 'Hay quên' : 'Ôn hôm nay';
-  const startPoints = ME.points;
   const el = screen(
     `<div class="s-head"><a class="xclose" href="${back}" aria-label="Thoát">${I.x}</a><span class="ttl">${esc(title)}</span><span class="cnt"></span></div>
     <div class="s-pages"><div class="pages" aria-hidden="true"></div></div>
@@ -408,18 +335,15 @@ function learn(kind, arg) {
     const ctl = mountQuestion($('.qbody', qpost), card, {
       onCommit: (input) => {
         const res = session.answer(input);
-        const earned = res.correct && !card.isRequeue;
-        if (earned) ME.points++;
-        paintMast();
         if (card.key.kind === 'flashcard') {
           paintPages();
-          side.innerHTML = `<section class="box reply">${bar(RATING_LABEL[input.rating], pts(earned), res.correct ? I.check : I.cross, res.correct ? ' ok' : ' no')}<div class="body"><div class="foot2"><span class="due-tag"><span>Ôn lại sau</span><b>${res.next}</b></span></div></div></section>`;
+          side.innerHTML = `<section class="box reply">${bar(RATING_LABEL[input.rating], '', res.correct ? I.check : I.cross, res.correct ? ' ok' : ' no')}<div class="body"><div class="foot2"><span class="due-tag"><span>Ôn lại sau</span><b>${res.next}</b></span></div></div></section>`;
           setTimeout(next, 700);
           return;
         }
         ctl.reveal(res, input);
         paintPages();
-        note(card, res, earned);
+        note(card, res);
       },
     });
     setKeys((e) => {
@@ -431,9 +355,9 @@ function learn(kind, arg) {
       if (e.key === ' ' && card.view.type === 'flashcard') (e.preventDefault(), ctl.flip());
     });
   };
-  const note = (card, res, earned) => {
+  const note = (card, res) => {
     const verdict = res.correct ? (res.typo ? 'Đúng rồi, chỉ sai chính tả chút xíu' : 'Đúng rồi') : 'Chưa đúng';
-    side.innerHTML = `<section class="box reply sub-${subOf(card.course)}">${bar(verdict, pts(earned), res.correct ? I.check : I.cross, res.correct ? ' ok' : ' no')}
+    side.innerHTML = `<section class="box reply sub-${subOf(card.course)}">${bar(verdict, '', res.correct ? I.check : I.cross, res.correct ? ' ok' : ' no')}
       <div class="body">
         ${card.feedback.explanation ? `<p class="expl">${card.feedback.explanation}</p>` : ''}
         <div class="summary">${card.feedback.summary}</div>
@@ -448,56 +372,23 @@ function learn(kind, arg) {
   };
   const finish = () => {
     const s = session.summary();
-    const r0 = rankOf(startPoints);
-    const r1 = rankOf(ME.points);
-    const up = r1.i > r0.i;
-    const gained = ME.points - startPoints;
     const done = kind === 'daily' ? 'Xong phần hôm nay' : 'Xong quiz';
     const home = kind === 'lesson' ? ['Về bài học', back] : ['Về trang chính', '#/'];
-    const out = screen(
+    screen(
       `<div class="s-head"><a class="xclose" href="${back}" aria-label="Đóng">${I.x}</a><span class="ttl">${esc(title)}</span><span class="cnt"></span></div>
       <div class="s-layout solo"><section class="box done">${bar(done)}
         <div class="body">
           <p class="big">${s.correct}<small>/${s.total}</small></p><p class="muted" style="margin:0">đúng ngay lần đầu</p>
-          ${gained ? `<p class="cheer"><span class="hl">${up ? `${esc(LEARNER.name)} lên Trình độ ${r1.cur.name} với ${num(ME.points)} điểm!` : `${esc(LEARNER.name)} được cộng ${gained} điểm`}</span></p>` : ''}
-          <div class="rankup"><p class="lv"><span>Trình độ: <b>${r0.cur.name}</b> ${I.smile}</span><span>${num(ME.points)} điểm</span></p>
-            <div class="xpbar"><i style="width:${r0.pct}%"></i></div>
-            <p class="pts">${toNext(r0, startPoints)}</p></div>
           <table class="kv">
             <tr><td>Thẻ mới đã học</td><td>${s.fresh}</td></tr>
             <tr><td>Hỏi lại trong buổi</td><td>${s.again}</td></tr>
             <tr><td>Đúng liền một mạch</td><td>${s.maxCombo} câu</td></tr>
             <tr><td>Ngày mai cần ôn</td><td>${LEARNER.tomorrow} thẻ</td></tr>
           </table>
-          <div class="acts" style="margin-top:16px"><a class="btn" href="${home[1]}"><span class="go"></span>${home[0]}</a>${kind === 'daily' ? '<a class="xp" href="#/flash">Lật thẻ thêm</a>' : ''}</div>
+          <div class="acts"><a class="btn" href="${home[1]}"><span class="go"></span>${home[0]}</a>${kind === 'daily' ? '<a class="xp" href="#/flash">Lật thẻ thêm</a>' : ''}</div>
         </div></section></div>`,
       { focus: true },
     );
-    // The one celebration: the bar fills to the new score; on a rank-up it tops out, the rank name pops, and it starts again.
-    const fill = $('.rankup .xpbar i', out);
-    const name = $('.rankup .lv b', out);
-    const line = $('.rankup .pts', out);
-    const settle = () => {
-      name.textContent = r1.cur.name;
-      line.textContent = toNext(r1, ME.points);
-    };
-    if (reduceMotion()) {
-      settle();
-      fill.style.width = `${r1.pct}%`;
-      return;
-    }
-    requestAnimationFrame(() => requestAnimationFrame(() => (fill.style.width = up ? '100%' : `${r1.pct}%`)));
-    if (up)
-      setTimeout(() => {
-        settle();
-        name.classList.add('pop');
-        fill.style.transition = 'none';
-        fill.style.width = '0%';
-        void fill.offsetWidth;
-        fill.style.transition = '';
-        fill.style.width = `${r1.pct}%`;
-      }, 1000);
-    else setTimeout(settle, 900);
   };
   showCard();
 }
@@ -564,8 +455,6 @@ function flash(courseKey = 'english-all-flashcards') {
       });
   };
   const rate = (r) => {
-    if (r > 1) ME.points++;
-    paintMast();
     deck.rate(r);
     render();
   };
