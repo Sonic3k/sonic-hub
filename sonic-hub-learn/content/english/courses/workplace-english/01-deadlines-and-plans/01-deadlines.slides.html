@@ -9,7 +9,7 @@
   .track .done { height: 100%; border-radius: 9px; animation: fill 1.4s ease-out both; }
   .row { display: grid; grid-template-columns: 9.5em 1fr; gap: 14px; align-items: center; margin: 18px 0; }
   .row b { font-size: 1.05em; }
-  .on .done { width: 50%; background: var(--subject-accent); }
+  .ontrack .done { width: 50%; background: var(--subject-accent); }
   .behind .done { width: 32%; background: var(--subject-bad); }
   .ahead .done { width: 72%; background: var(--subject-good); }
   @keyframes fill { from { width: 0; } }
@@ -33,7 +33,7 @@
 
 <section data-title="Progress">
   <h2>Where are we against the plan?</h2>
-  <div class="row on step"><b>on track</b><div class="track"><div class="plan" style="left:50%"></div><div class="done"></div></div></div>
+  <div class="row ontrack step"><b>on track</b><div class="track"><div class="plan" style="left:50%"></div><div class="done"></div></div></div>
   <div class="row behind step"><b>behind schedule</b><div class="track"><div class="plan" style="left:50%"></div><div class="done"></div></div></div>
   <div class="row ahead step"><b>ahead of schedule</b><div class="track"><div class="plan" style="left:50%"></div><div class="done"></div></div></div>
 </section>
