@@ -1,0 +1,64 @@
+# yaml-language-server: $schema=../../../../_schema/items.schema.json
+title: Work vocabulary
+items:
+  # Declared in Workplace English; reused here with an IELTS example and an IELTS-only question.
+  - ref: en.deadline
+    note: "Writing Task 2 hay dùng ba cụm: **meet / miss / extend** a deadline."
+    examples:
+      - text: Students who miss the {{c1::deadline}} may lose marks.
+        translation: Sinh viên trễ hạn có thể bị trừ điểm.
+    questions:
+      - id: ielts-collocation
+        type: single
+        facet: use
+        course_only: true
+        prompt: "Universities should be flexible when students ___ a deadline because of illness."
+        options:
+          - text: miss
+            correct: true
+            why: "**miss a deadline** = không kịp hạn chót — collocation chuẩn."
+          - text: lose
+            why: Không ai nói "lose a deadline".
+          - text: skip
+            why: skip dùng cho bữa ăn, buổi học (skip a class), không dùng với deadline.
+          - text: pass
+            why: '"pass a deadline" không tự nhiên; người bản xứ nói "the deadline has passed".'
+
+  - id: en.workload
+    kind: vocab
+    term: workload
+    pronunciation: /ˈwɜːk.ləʊd/
+    pos: noun
+    meaning: khối lượng công việc
+    definition: the amount of work that a person or organization has to do
+    tags: [topic:work, ielts:writing]
+    examples:
+      - text: Many employees struggle with a heavy {{c1::workload}}.
+        translation: Nhiều nhân viên vật lộn với khối lượng công việc nặng.
+
+  - id: en.commute
+    kind: vocab
+    term: commute
+    pronunciation: /kəˈmjuːt/
+    pos: noun
+    meaning: quãng đường đi làm hằng ngày (giữa nhà và nơi làm)
+    definition: the journey that you make every day between your home and your workplace
+    tags: [topic:work, ielts:speaking]
+    examples:
+      - text: A long {{c1::commute}} can affect people's health.
+        translation: Đi làm xa mỗi ngày có thể ảnh hưởng đến sức khỏe.
+
+  - id: en.work-life-balance
+    kind: vocab
+    term: work-life balance
+    pronunciation: /ˌwɜːk ˈlaɪf ˌbæl.əns/
+    pos: noun
+    meaning: sự cân bằng giữa công việc và cuộc sống
+    definition: the amount of time you spend working compared with the time you spend with family and on things you enjoy
+    accept: [work life balance]
+    tags: [topic:work, ielts:writing]
+    examples:
+      - text: Flexible hours can improve {{c1::work-life balance}}.
+        translation: Giờ làm linh hoạt có thể cải thiện sự cân bằng giữa công việc và cuộc sống.
+    related:
+      - { id: en.workload, type: see_also }

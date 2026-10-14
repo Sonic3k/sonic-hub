@@ -1,0 +1,135 @@
+# yaml-language-server: $schema=../../../../_schema/items.schema.json
+title: Protecting data in S3
+items:
+  - id: aws.s3.versioning
+    kind: concept
+    front: What does S3 Versioning protect against, and what are its rules?
+    back: |
+      - Keeps **every version** of an object: an overwrite keeps the old version, a delete only adds a *delete marker*.
+      - Once enabled, versioning can be **suspended** but never turned fully off.
+      - Required for **replication** and for **MFA Delete**.
+      - Pair it with a lifecycle rule that expires noncurrent versions to control cost.
+    tags: [service:s3, domain:resilient]
+    questions:
+      - id: accidental-delete
+        type: single
+        prompt: |
+          Users sometimes delete or overwrite important objects by mistake. What is the simplest way
+          to make those objects recoverable?
+        options:
+          - text: Enable S3 Versioning on the bucket
+            correct: true
+            why: Overwrites keep the previous version and deletes only add a delete marker, so everything can be restored.
+          - text: Enable SSE-KMS encryption
+            why: Encryption protects confidentiality; it does nothing against deletes.
+          - text: Enable S3 Transfer Acceleration
+            why: Speeds up long-distance uploads; unrelated to recovery.
+          - text: Turn on S3 Block Public Access
+            why: Stops public exposure, not mistakes by users who already have access.
+
+      - id: turn-off
+        type: true_false
+        prompt: Once versioning is enabled on a bucket, you can turn it **fully off** again.
+        answer: false
+        explanation: A versioned bucket can only be **suspended**; existing versions stay.
+
+  - id: aws.s3.replication
+    kind: concept
+    front: S3 Cross-Region Replication (CRR) — what must be in place, and what does it copy?
+    back: |
+      - **Versioning** must be enabled on both the source and the destination bucket, plus an IAM role S3 can use.
+      - Replicates objects written **after** the rule exists; use **S3 Batch Replication** for existing objects.
+      - Works across accounts and can store replicas in a different storage class.
+      - Use cases: compliance copies far away, lower latency for distant users, disaster recovery.
+      - **Same-Region Replication (SRR)**: the same within one region (log aggregation, prod → test copies).
+    tags: [service:s3, domain:resilient]
+    related:
+      - { id: aws.s3.versioning, type: prerequisite }
+    questions:
+      - id: prerequisite
+        type: single
+        prompt: |
+          You set up CRR from a bucket in us-east-1 to a bucket in eu-west-1, but the replication rule
+          cannot be created. What is the most likely missing piece?
+        options:
+          - text: Versioning is not enabled on both buckets
+            correct: true
+            why: Replication requires versioning on the source and the destination.
+          - text: The two buckets are in different AWS accounts
+            why: CRR works across accounts.
+          - text: The destination bucket uses a different storage class
+            why: Replicas can be stored in any storage class you choose.
+          - text: Default encryption is enabled on the source bucket
+            why: Encrypted objects can be replicated.
+
+      - id: existing-objects
+        type: true_false
+        prompt: After you enable CRR, objects that were already in the bucket are replicated automatically.
+        answer: false
+        explanation: Only new objects are replicated. Use **S3 Batch Replication** for objects that existed before.
+
+  - id: aws.s3.block-public-access
+    kind: concept
+    front: What does S3 Block Public Access do?
+    back: |
+      - An account- or bucket-level guardrail that **overrides** bucket policies and ACLs that would grant public access.
+      - **On by default** for new buckets.
+      - To serve public content, keep the bucket private and put **CloudFront with Origin Access Control (OAC)** in front of it.
+    tags: [service:s3, domain:secure]
+    questions:
+      - id: public-site-images
+        type: single
+        prompt: |
+          A bucket holds images for a public website. The security team wants the **bucket itself to
+          stay private**. What should the architect do?
+        options:
+          - text: Keep Block Public Access on and serve the images through CloudFront with Origin Access Control
+            correct: true
+            why: Only CloudFront can read the bucket; visitors never reach S3 directly.
+          - text: Turn off Block Public Access and add a public-read bucket policy
+            why: It works, but makes the bucket public — exactly what security wants to avoid.
+          - text: Make each object public with object ACLs
+            why: ACLs are disabled by default on new buckets, and this still exposes the objects directly.
+          - text: Generate a presigned URL for every visitor
+            why: Presigned URLs are for temporary private access, impractical for public website images.
+
+  - id: aws.s3.encryption
+    kind: concept
+    front: Which S3 encryption option fits which requirement?
+    back: |
+      - **SSE-S3** — S3 manages the keys; the default for every new object
+      - **SSE-KMS** — keys in AWS KMS: key policies, **CloudTrail audit** of every key use, KMS request quotas apply
+      - **DSSE-KMS** — two layers of KMS encryption for strict compliance
+      - **SSE-C** — you send your own key with every request (HTTPS only); S3 never stores it
+      - **Client-side** — encrypt before the data leaves your application
+    tags: [service:s3, domain:secure]
+    questions:
+      - id: match-requirements
+        type: match
+        prompt: Match each requirement with the encryption option.
+        options:
+          - text: Every use of the key must be auditable in CloudTrail
+            match: SSE-KMS
+          - text: No setup at all — S3 manages the keys
+            match: SSE-S3
+          - text: The company keeps its own keys and supplies one with each request
+            match: SSE-C
+          - text: Data must be encrypted before it leaves the application
+            match: Client-side encryption
+
+      - id: kms-throttling
+        type: single
+        tags: [domain:performance]
+        prompt: |
+          After a busy bucket is switched to SSE-KMS, uploads start failing with **throttling** errors.
+          What is the most likely cause?
+        options:
+          - text: The requests exceed the AWS KMS request quota
+            correct: true
+            why: Every SSE-KMS upload and download calls KMS. Enabling S3 Bucket Keys cuts those calls dramatically.
+          - text: S3 cannot store KMS-encrypted objects larger than 5 GB
+            why: There is no such limit.
+          - text: The KMS key was deleted
+            why: A deleted key causes access-denied errors, not throttling.
+          - text: SSE-KMS requires S3 Transfer Acceleration
+            why: Transfer Acceleration is unrelated to encryption.

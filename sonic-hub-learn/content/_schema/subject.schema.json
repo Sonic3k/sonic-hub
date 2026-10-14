@@ -1,0 +1,44 @@
+{
+  "$id": "subject.schema.json",
+  "title": "subject.yaml",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "string",
+      "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$",
+      "description": "Must equal the folder name."
+    },
+    "title": {
+      "type": "string",
+      "minLength": 1
+    },
+    "prefix": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9]*$",
+      "description": "Item id prefix for this subject, e.g. \"en\" → \"en.deadline\"."
+    },
+    "lang": {
+      "default": "en-US",
+      "description": "BCP-47 language of the content, used for text-to-speech.",
+      "type": "string"
+    },
+    "description": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "sort": {
+      "type": "integer",
+      "minimum": -9007199254740991,
+      "maximum": 9007199254740991
+    }
+  },
+  "required": [
+    "id",
+    "title",
+    "prefix"
+  ],
+  "additionalProperties": false
+}

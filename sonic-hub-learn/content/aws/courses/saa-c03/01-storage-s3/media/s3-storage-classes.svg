@@ -1,0 +1,53 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 400" role="img" aria-labelledby="t d" font-family="Inter, system-ui, sans-serif">
+  <title id="t">S3 storage classes from hot to cold</title>
+  <desc id="d">Seven S3 storage classes ordered from frequently read to almost never read. Storage price falls from left to right while time to first byte grows from milliseconds to hours.</desc>
+  <rect width="720" height="400" rx="18" fill="#0f1b2d"/>
+  <text x="32" y="44" font-size="20" font-weight="700" fill="#e8eef8">S3 storage classes: hot → cold</text>
+  <text x="32" y="68" font-size="13" fill="#9fb0c8">Bar height = relative storage price · label = time to first byte</text>
+
+  <!-- baseline -->
+  <line x1="32" y1="300" x2="688" y2="300" stroke="#2c4366" stroke-width="2"/>
+
+  <g font-size="12" text-anchor="middle">
+    <rect x="44" y="110" width="70" height="190" rx="8" fill="#ff9f1c"/>
+    <text x="79" y="322" fill="#e8eef8" font-weight="700">Standard</text>
+    <text x="79" y="340" fill="#9fb0c8">frequent</text>
+    <text x="79" y="102" fill="#ffcf70">ms</text>
+
+    <rect x="136" y="128" width="70" height="172" rx="8" fill="#f2b33d"/>
+    <text x="171" y="322" fill="#e8eef8" font-weight="700">Intelligent-</text>
+    <text x="171" y="338" fill="#e8eef8" font-weight="700">Tiering</text>
+    <text x="171" y="354" fill="#9fb0c8">auto tiers</text>
+    <text x="171" y="120" fill="#ffcf70">ms</text>
+
+    <rect x="228" y="180" width="70" height="120" rx="8" fill="#e6c35c"/>
+    <text x="263" y="322" fill="#e8eef8" font-weight="700">Standard-IA</text>
+    <text x="263" y="340" fill="#9fb0c8">infrequent</text>
+    <text x="263" y="172" fill="#ffcf70">ms</text>
+
+    <rect x="320" y="204" width="70" height="96" rx="8" fill="#c9cf7a"/>
+    <text x="355" y="322" fill="#e8eef8" font-weight="700">One Zone-IA</text>
+    <text x="355" y="340" fill="#9fb0c8">1 AZ only</text>
+    <text x="355" y="196" fill="#ffcf70">ms</text>
+
+    <rect x="412" y="236" width="70" height="64" rx="8" fill="#8fd1a6"/>
+    <text x="447" y="322" fill="#e8eef8" font-weight="700">Glacier</text>
+    <text x="447" y="338" fill="#e8eef8" font-weight="700">Instant</text>
+    <text x="447" y="354" fill="#9fb0c8">~quarterly</text>
+    <text x="447" y="228" fill="#ffcf70">ms</text>
+
+    <rect x="504" y="256" width="70" height="44" rx="8" fill="#5cbfd1"/>
+    <text x="539" y="322" fill="#e8eef8" font-weight="700">Glacier</text>
+    <text x="539" y="338" fill="#e8eef8" font-weight="700">Flexible</text>
+    <text x="539" y="354" fill="#9fb0c8">rarely</text>
+    <text x="539" y="248" fill="#ffcf70">min – hours</text>
+
+    <rect x="596" y="278" width="70" height="22" rx="6" fill="#4f8de0"/>
+    <text x="631" y="322" fill="#e8eef8" font-weight="700">Glacier Deep</text>
+    <text x="631" y="338" fill="#e8eef8" font-weight="700">Archive</text>
+    <text x="631" y="354" fill="#9fb0c8">almost never</text>
+    <text x="631" y="270" fill="#ffcf70">≤ 12–48 h</text>
+  </g>
+
+  <text x="32" y="386" font-size="12" fill="#9fb0c8">Minimum storage duration: IA classes 30 days · Glacier Instant/Flexible 90 days · Deep Archive 180 days</text>
+</svg>

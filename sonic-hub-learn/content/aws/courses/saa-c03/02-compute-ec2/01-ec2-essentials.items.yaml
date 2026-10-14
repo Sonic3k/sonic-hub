@@ -1,0 +1,105 @@
+# yaml-language-server: $schema=../../../../_schema/items.schema.json
+title: EC2 essentials
+items:
+  - id: aws.ec2.purchasing-options
+    kind: concept
+    front: EC2 purchasing options — which one when?
+    back: |
+      - **On-Demand** — no commitment; short or unpredictable workloads that must not be interrupted
+      - **Savings Plans** — commit to a $/hour spend for 1 or 3 years; Compute Savings Plans also cover Fargate and Lambda
+      - **Reserved Instances** — 1 or 3 years for a specific instance type in a region; steady workloads
+      - **Spot** — up to 90% off, but can be reclaimed with a **2-minute warning**; fault-tolerant, flexible jobs
+      - **Dedicated Hosts** — a whole physical server; per-socket / per-core licenses, compliance
+    tags: [service:ec2, domain:cost]
+    questions:
+      - id: nightly-batch
+        type: single
+        prompt: |
+          A nightly image-processing job can be stopped and resumed at any time and must run as
+          **cheaply as possible**. Which purchasing option fits?
+        options:
+          - text: Spot Instances
+            correct: true
+            why: Deepest discount, and the job tolerates interruptions.
+          - text: Reserved Instances
+            why: A 1–3 year commitment wastes money on a job that runs a few hours a night.
+          - text: On-Demand Instances
+            why: Works, but costs far more than Spot for interruptible work.
+          - text: Dedicated Hosts
+            why: The most expensive option; meant for licensing and compliance needs.
+
+      - id: match-workloads
+        type: match
+        prompt: Match each workload with the purchasing option that fits it best.
+        options:
+          - text: Steady 24/7 workload, a 3-year commitment is fine
+            match: Savings Plans or Reserved Instances
+          - text: Short, unpredictable workload that must not be interrupted
+            match: On-Demand
+          - text: Fault-tolerant batch work at the lowest price
+            match: Spot
+          - text: Software licensed per physical CPU core
+            match: Dedicated Hosts
+
+  - id: aws.ec2.auto-scaling
+    kind: concept
+    front: How does EC2 Auto Scaling keep an application available and right-sized?
+    back: |
+      - An **Auto Scaling group** spreads instances across several AZs within min / desired / max capacity.
+      - **Health checks** (EC2 or ELB) replace unhealthy instances automatically.
+      - Scaling policies: **target tracking** (e.g. keep average CPU at 50%), step, scheduled, predictive.
+    tags: [service:ec2, domain:resilient]
+    questions:
+      - id: target-tracking
+        type: single
+        tags: [domain:performance]
+        prompt: |
+          An application should keep average CPU utilization around 50% as traffic rises and falls
+          during the day. Which scaling policy is the **simplest** to run?
+        options:
+          - text: A target tracking scaling policy
+            correct: true
+            why: You set the target value and Auto Scaling creates and manages the alarms for you.
+          - text: Scheduled scaling
+            why: Follows the clock, not the actual load.
+          - text: Simple scaling with a CloudWatch alarm for each threshold
+            why: Works, but you have to build and tune the alarms yourself.
+          - text: A fixed desired capacity sized for peak traffic
+            why: No scaling at all — you pay for peak capacity all day.
+
+      - id: survive-az
+        type: single
+        prompt: How should an Auto Scaling group be set up so the application survives the loss of one Availability Zone?
+        options:
+          - text: Spread instances across at least two AZs and use ELB health checks
+            correct: true
+            why: If one AZ fails, the group launches replacements in the healthy AZs.
+          - text: Launch the instances in a cluster placement group
+            why: A cluster placement group packs instances into one AZ — the opposite of what you need.
+          - text: Use larger instance types
+            why: A bigger instance still goes down with its AZ.
+          - text: Run only Spot Instances
+            why: A cost decision; it does not add availability.
+
+  - id: aws.ec2.placement-groups
+    kind: concept
+    front: "EC2 placement groups: cluster, spread, partition"
+    back: |
+      - **Cluster** — instances close together in one AZ: lowest latency, highest throughput (HPC)
+      - **Spread** — each instance on distinct hardware, max 7 running instances per AZ per group (a few critical instances)
+      - **Partition** — groups of instances on separate racks, up to 7 partitions per AZ (HDFS, Cassandra, Kafka)
+    tags: [service:ec2, domain:performance]
+    questions:
+      - id: hpc
+        type: single
+        prompt: A tightly coupled HPC job needs the **lowest possible network latency** between its instances. Which placement group?
+        options:
+          - text: Cluster placement group
+            correct: true
+            why: Packs instances close together in one AZ for the fastest network between them.
+          - text: Spread placement group
+            why: Puts each instance on different hardware — more resilient, not lower latency.
+          - text: Partition placement group
+            why: Isolates racks for large distributed systems like Kafka or HDFS.
+          - text: No placement group, with instances spread over several AZs
+            why: Traffic between AZs has higher latency.

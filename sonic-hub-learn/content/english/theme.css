@@ -1,0 +1,32 @@
+/* English: warm paper, ink blue, a marker-yellow highlight for the word being learned. */
+:root {
+  --subject-bg: #f7f4ec;
+  --subject-surface: #fffdf7;
+  --subject-ink: #1f2a44;
+  --subject-muted: #5f6b84;
+  --subject-accent: #2f5bd3;
+  --subject-highlight: #ffe48a;
+  --subject-good: #2e8b57;
+  --subject-bad: #c8463d;
+  --subject-font-display: 'Fraunces', Georgia, serif;
+  --subject-font-body: 'Manrope', system-ui, sans-serif;
+}
+
+.slides section {
+  font-family: var(--subject-font-body);
+  color: var(--subject-ink);
+  background: var(--subject-surface);
+}
+
+.slides h2 {
+  font-family: var(--subject-font-display);
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+.slides mark,
+.term {
+  background: linear-gradient(transparent 55%, var(--subject-highlight) 55%);
+  color: inherit;
+  padding: 0 0.1em;
+}

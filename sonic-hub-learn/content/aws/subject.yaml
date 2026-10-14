@@ -1,0 +1,6 @@
+id: aws
+title: AWS
+prefix: aws
+lang: en-US
+description: Cloud architecture on AWS, aimed at the certification exams.
+sort: 2

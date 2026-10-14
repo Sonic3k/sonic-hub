@@ -1,0 +1,11 @@
+id: workplace-english
+title: Workplace English
+description: Words and patterns for deadlines, meetings and polite requests at work.
+sort: 1
+tags: [goal:work]
+source:
+  type: self
+policy:
+  retention: 0.9
+  new_per_day: 10
+  new_order: course

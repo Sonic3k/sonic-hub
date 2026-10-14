@@ -1,0 +1,55 @@
+<!--
+  Slides: each <section> is one slide; elements with class="step" appear one tap at a time.
+  Styles here are scoped to this deck; the subject's theme.css variables are available.
+-->
+<style>
+  .track { position: relative; height: 18px; border-radius: 9px; background: #e4e1d6; margin: 28px 0 10px; }
+  .track .plan { position: absolute; top: -10px; bottom: -10px; width: 3px; background: var(--subject-ink); }
+  .track .plan::after { content: 'plan'; position: absolute; top: -22px; left: -12px; font-size: 13px; color: var(--subject-muted); }
+  .track .done { height: 100%; border-radius: 9px; animation: fill 1.4s ease-out both; }
+  .row { display: grid; grid-template-columns: 9.5em 1fr; gap: 14px; align-items: center; margin: 18px 0; }
+  .row b { font-size: 1.05em; }
+  .on .done { width: 50%; background: var(--subject-accent); }
+  .behind .done { width: 32%; background: var(--subject-bad); }
+  .ahead .done { width: 72%; background: var(--subject-good); }
+  @keyframes fill { from { width: 0; } }
+  .vs { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+  .card { border: 2px solid var(--subject-ink); border-radius: 14px; padding: 16px 18px; background: var(--subject-bg); }
+  .card h3 { margin: 0 0 6px; }
+  .card p { margin: 6px 0 0; color: var(--subject-muted); }
+  .verbs { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 18px; }
+  .verbs span { padding: 10px 16px; border-radius: 999px; background: var(--subject-bg); border: 2px solid var(--subject-ink); font-weight: 700; }
+</style>
+
+<section data-title="deadline">
+  <h2>A <mark>deadline</mark> is the last moment you can finish</h2>
+  <p>Three verbs do almost all the work:</p>
+  <div class="verbs">
+    <span class="step">meet a deadline — kịp</span>
+    <span class="step">miss a deadline — trễ</span>
+    <span class="step">extend a deadline — gia hạn</span>
+  </div>
+</section>
+
+<section data-title="Progress">
+  <h2>Where are we against the plan?</h2>
+  <div class="row on step"><b>on track</b><div class="track"><div class="plan" style="left:50%"></div><div class="done"></div></div></div>
+  <div class="row behind step"><b>behind schedule</b><div class="track"><div class="plan" style="left:50%"></div><div class="done"></div></div></div>
+  <div class="row ahead step"><b>ahead of schedule</b><div class="track"><div class="plan" style="left:50%"></div><div class="done"></div></div></div>
+</section>
+
+<section data-title="postpone vs put off">
+  <h2>Moving things later</h2>
+  <div class="vs">
+    <div class="card step">
+      <h3>postpone</h3>
+      <em>The launch was postponed until March.</em>
+      <p>Trang trọng · một quyết định có kế hoạch</p>
+    </div>
+    <div class="card step">
+      <h3>put off</h3>
+      <em>Stop putting off the report.</em>
+      <p>Thân mật · thường vì ngại làm</p>
+    </div>
+  </div>
+</section>

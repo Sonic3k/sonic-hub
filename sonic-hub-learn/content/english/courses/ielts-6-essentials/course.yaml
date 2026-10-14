@@ -1,0 +1,12 @@
+id: ielts-6-essentials
+title: IELTS 6.0 Essentials
+description: Core topic vocabulary for IELTS Writing and Speaking around band 6.
+sort: 2
+tags: [goal:ielts, band:6]
+source:
+  type: self
+policy:
+  retention: 0.92
+  new_per_day: 15
+  new_order: course
+  facets: [recognize, recall, use, listen]

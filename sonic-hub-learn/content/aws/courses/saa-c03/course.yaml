@@ -1,0 +1,23 @@
+id: saa-c03
+title: AWS Solutions Architect – Associate (SAA-C03)
+description: Exam-focused notes and scenario questions, organised by service and mapped to the four exam domains.
+sort: 1
+tags: [cert:aws, level:associate]
+source:
+  type: self
+  name: AWS Certified Solutions Architect – Associate (SAA-C03) exam guide
+  url: https://docs.aws.amazon.com/aws-certification/latest/examguides/solutions-architect-associate-03.html
+policy:
+  retention: 0.9
+  new_per_day: 12
+  new_order: course
+# The real exam: 65 questions (50 scored), 130 minutes, pass mark 720/1000 (≈ 72%).
+exam:
+  questions: 65
+  minutes: 130
+  pass_percent: 72
+  domains:
+    - { id: secure, title: Design Secure Architectures, weight: 30, tag: "domain:secure" }
+    - { id: resilient, title: Design Resilient Architectures, weight: 26, tag: "domain:resilient" }
+    - { id: performance, title: Design High-Performing Architectures, weight: 24, tag: "domain:performance" }
+    - { id: cost, title: Design Cost-Optimized Architectures, weight: 20, tag: "domain:cost" }

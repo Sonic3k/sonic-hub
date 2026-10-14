@@ -1,0 +1,12 @@
+id: english-all-flashcards
+title: All English flashcards
+description: Every word and pattern from the English courses in one deck. Answers here count for the source courses too.
+sort: 9
+source:
+  type: self
+policy:
+  new_per_day: 20
+  new_order: random
+  facets: [recognize, recall]
+include:
+  - courses: [workplace-english, ielts-6-essentials]

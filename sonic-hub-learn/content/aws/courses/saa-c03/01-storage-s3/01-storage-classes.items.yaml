@@ -1,0 +1,122 @@
+# yaml-language-server: $schema=../../../../_schema/items.schema.json
+items:
+  - id: aws.s3.storage-classes
+    kind: concept
+    front: Which S3 storage class fits which access pattern?
+    back: |
+      - **Standard** — frequent reads, milliseconds
+      - **Intelligent-Tiering** — unknown or changing pattern; objects move between tiers automatically
+      - **Standard-IA** — infrequent reads, milliseconds; retrieval fee, 30-day minimum
+      - **One Zone-IA** — like Standard-IA in one AZ; only for data you can re-create
+      - **Glacier Instant Retrieval** — read about once a quarter, still milliseconds
+      - **Glacier Flexible Retrieval** — minutes to hours to restore
+      - **Glacier Deep Archive** — cheapest; restore within 12 h (bulk 48 h)
+    image: media/s3-storage-classes.svg
+    tags: [service:s3, domain:cost]
+    questions:
+      - id: audit-logs
+        type: single
+        prompt: |
+          A company must keep audit logs for 7 years. The logs are almost never read, and when an
+          auditor asks for one, waiting up to 2 days is acceptable. Which storage class is the
+          **most cost-effective**?
+        options:
+          - text: S3 Glacier Deep Archive
+            correct: true
+            why: The cheapest class. Standard retrieval within 12 hours, bulk within 48 hours — both fit a 2-day window.
+          - text: S3 Glacier Instant Retrieval
+            why: Pays for millisecond reads the auditors don't need; the 2-day window allows a colder, cheaper class.
+          - text: S3 Standard-IA
+            why: Built for infrequent but immediate access; storage costs many times more than Deep Archive.
+          - text: S3 One Zone-IA
+            why: Still far more expensive than Deep Archive, and a single AZ is a poor home for compliance records.
+        explanation: Long retention + almost never read + hours of waiting is acceptable → **Glacier Deep Archive**.
+
+      - id: quarterly-images
+        type: single
+        prompt: |
+          Medical images are opened about once a quarter, but when a doctor opens one it must load
+          in milliseconds. Which storage class keeps cost **lowest**?
+        options:
+          - text: S3 Glacier Instant Retrieval
+            correct: true
+            why: Archive pricing with millisecond retrieval — made for data read about once a quarter.
+          - text: S3 Glacier Flexible Retrieval
+            why: Restores take minutes to hours, too slow for a doctor waiting on screen.
+          - text: S3 Standard
+            why: Fast, but you pay hot-storage prices for data that is cold most of the time.
+          - text: S3 Glacier Deep Archive
+            why: Restores take up to 12 hours.
+
+      - id: one-zone
+        type: multi
+        prompt: Which **two** statements about S3 One Zone-IA are true?
+        options:
+          - text: Data is stored in a single Availability Zone.
+            correct: true
+            why: That is what makes it cheaper than Standard-IA.
+          - text: It suits data you can re-create if it is lost, such as thumbnails.
+            correct: true
+            why: If the AZ is destroyed the data is gone, so keep only re-creatable data here.
+          - text: It survives the loss of an entire Availability Zone.
+            why: No — with one AZ, losing that AZ means losing the data.
+          - text: Reading an object takes several hours.
+            why: Reads are in milliseconds, like Standard-IA.
+
+  - id: aws.s3.intelligent-tiering
+    kind: concept
+    front: When should you choose S3 Intelligent-Tiering?
+    back: |
+      When the access pattern is **unknown or changes over time**.
+
+      - S3 moves each object between tiers by itself: Frequent → Infrequent after 30 days without access → Archive Instant after 90 days.
+      - **No retrieval fees**; you pay a small monthly monitoring fee per object.
+      - Objects under 128 KB are not monitored and stay billed at the frequent tier.
+    tags: [service:s3, domain:cost]
+    related:
+      - { id: aws.s3.storage-classes, type: see_also }
+    questions:
+      - id: unpredictable
+        type: single
+        prompt: |
+          A data lake's objects have unpredictable access: some are hot for a week and then cold for
+          months, others the reverse. The team wants lower storage cost **without managing lifecycle
+          rules or paying retrieval fees**. What should they use?
+        options:
+          - text: S3 Intelligent-Tiering
+            correct: true
+            why: Moves each object between tiers based on its own access, with no retrieval fees.
+          - text: S3 Standard-IA
+            why: Objects that turn hot again would pay retrieval fees on every read.
+          - text: A lifecycle rule that moves objects to Glacier Flexible Retrieval after 30 days
+            why: A rule cannot know which objects will turn hot again, and restores take minutes to hours.
+          - text: S3 Standard
+            why: Works, but every cold object keeps paying the hot-storage price.
+
+  - id: aws.s3.lifecycle-rules
+    kind: concept
+    front: What can S3 lifecycle rules do?
+    back: |
+      - **Transition** objects to colder classes after N days (per bucket, prefix or tag)
+      - **Expire** objects or noncurrent versions after N days
+      - **Abort incomplete multipart uploads**
+      - Objects must stay **30 days** in Standard before moving to Standard-IA or One Zone-IA
+    tags: [service:s3, domain:cost]
+    related:
+      - { id: aws.s3.storage-classes, type: see_also }
+    questions:
+      - id: seven-days
+        type: true_false
+        prompt: A lifecycle rule can move objects from S3 Standard to S3 Standard-IA after **7 days**.
+        answer: false
+        explanation: Objects must stay at least **30 days** in S3 Standard before a transition to Standard-IA or One Zone-IA.
+
+      - id: waterfall
+        type: order
+        prompt: Put the classes in the order a typical log-retention lifecycle moves data through them.
+        options:
+          - text: S3 Standard
+          - text: S3 Standard-IA
+          - text: S3 Glacier Flexible Retrieval
+          - text: S3 Glacier Deep Archive
+        explanation: Hot → infrequent → archive → deep archive, each step cheaper to store and slower to read.

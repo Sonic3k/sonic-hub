@@ -1,0 +1,47 @@
+<!--
+  Slides: each <section> is one slide; elements with class="step" appear one tap at a time.
+  Styles here are scoped to this deck; the subject's theme.css variables are available.
+-->
+<style>
+  .q { display: flex; gap: 14px; align-items: flex-start; margin: 18px 0; }
+  .q .n { flex: none; width: 34px; height: 34px; border-radius: 50%; display: grid; place-items: center; background: var(--subject-accent); color: var(--subject-bg); font-weight: 800; }
+  .lanes { display: grid; gap: 10px; margin-top: 18px; }
+  .lane { display: grid; grid-template-columns: 8.5em 1fr; gap: 12px; align-items: center; padding: 10px 14px; border-radius: 12px; background: var(--subject-surface); border: 1px solid #2c4366; }
+  .lane .speed { font-family: var(--subject-font-mono); color: var(--subject-highlight); }
+  .chips { display: flex; flex-wrap: wrap; gap: 8px; }
+  .chips span { padding: 6px 10px; border-radius: 8px; background: #22395a; font-size: 0.95em; }
+  .flow { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-top: 22px; }
+  .flow .box { padding: 12px 14px; border-radius: 12px; border: 2px solid var(--subject-accent); background: var(--subject-surface); }
+  .flow .arrow { color: var(--subject-muted); font-family: var(--subject-font-mono); }
+  .flow .box.step { animation: pop 0.45s ease-out both; }
+  @keyframes pop { from { transform: translateY(8px); opacity: 0; } }
+</style>
+
+<section data-title="Two questions">
+  <h2>Two questions pick the class</h2>
+  <div class="q step"><span class="n">1</span><div><b>How often is it read?</b><br>often → Standard · rarely → IA or Glacier</div></div>
+  <div class="q step"><span class="n">2</span><div><b>When it is read, how fast must it come back?</b><br>milliseconds → Standard / IA / Glacier Instant · minutes–hours → Glacier Flexible / Deep Archive</div></div>
+</section>
+
+<section data-title="By retrieval time">
+  <h2>Grouped by time to first byte</h2>
+  <div class="lanes">
+    <div class="lane step"><span class="speed">milliseconds</span><div class="chips"><span>Standard</span><span>Intelligent-Tiering</span><span>Standard-IA</span><span>One Zone-IA</span><span>Glacier Instant</span></div></div>
+    <div class="lane step"><span class="speed">minutes–hours</span><div class="chips"><span>Glacier Flexible Retrieval</span></div></div>
+    <div class="lane step"><span class="speed">≤ 12–48 hours</span><div class="chips"><span>Glacier Deep Archive</span></div></div>
+  </div>
+</section>
+
+<section data-title="Lifecycle">
+  <h2>Let a lifecycle rule move the data</h2>
+  <div class="flow">
+    <div class="box">Standard</div>
+    <span class="arrow step">— 30 d →</span>
+    <div class="box step">Standard-IA</div>
+    <span class="arrow step">— 90 d →</span>
+    <div class="box step">Glacier Flexible</div>
+    <span class="arrow step">— 365 d →</span>
+    <div class="box step">Deep Archive</div>
+  </div>
+  <p class="step">Rule: at least <b>30 days</b> in Standard before moving to an IA class.</p>
+</section>

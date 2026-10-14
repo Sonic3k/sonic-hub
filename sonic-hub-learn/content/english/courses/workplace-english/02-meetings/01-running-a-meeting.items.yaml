@@ -1,0 +1,101 @@
+# yaml-language-server: $schema=../../../../_schema/items.schema.json
+title: Running a meeting
+items:
+  - id: en.agenda
+    kind: vocab
+    term: agenda
+    pronunciation: /əˈdʒen.də/
+    pos: noun
+    meaning: chương trình nghị sự (danh sách nội dung cần bàn trong cuộc họp)
+    definition: a list of the subjects to be discussed at a meeting
+    tags: [topic:work, topic:meetings]
+    examples:
+      - text: The first item on the {{c1::agenda}} is the budget.
+        translation: Nội dung đầu tiên cần bàn là ngân sách.
+
+  - id: en.minutes
+    kind: vocab
+    term: minutes
+    pronunciation: /ˈmɪn.ɪts/
+    pos: noun (plural)
+    meaning: biên bản cuộc họp
+    definition: the official written record of what was said and decided at a meeting
+    tags: [topic:work, topic:meetings]
+    examples:
+      - text: Could you take the {{c1::minutes}} today?
+        translation: Hôm nay bạn ghi biên bản được không?
+
+  - id: en.follow-up
+    kind: vocab
+    term: follow up
+    pronunciation: /ˌfɒl.əʊ ˈʌp/
+    pos: phrasal verb
+    meaning: liên hệ lại, theo dõi tiếp (sau một việc)
+    definition: to find out more or take further action about something
+    accept: [follow-up]
+    tags: [topic:work, topic:meetings]
+    examples:
+      - text: I'll {{c1::follow up}} with the supplier tomorrow.
+        translation: Mai tôi sẽ liên hệ lại với nhà cung cấp.
+
+  - id: en.action-item
+    kind: vocab
+    term: action item
+    pos: noun
+    meaning: đầu việc cần làm (được giao sau cuộc họp)
+    definition: a task that someone has agreed to do as a result of a meeting
+    accept: [action items]
+    tags: [topic:work, topic:meetings]
+    examples:
+      - text: Let's go through the {{c1::action items}} before we finish.
+        translation: Mình rà lại các đầu việc trước khi kết thúc nhé.
+
+  - id: en.wrap-up
+    kind: vocab
+    term: wrap up
+    pronunciation: /ˌræp ˈʌp/
+    pos: phrasal verb
+    meaning: kết thúc, chốt lại
+    definition: to finish something such as a meeting or an agreement
+    tags: [topic:work, topic:meetings]
+    examples:
+      - text: Let's {{c1::wrap up}} — we're out of time.
+        translation: Mình chốt lại nhé — hết giờ rồi.
+
+  - id: en.grammar.polite-requests
+    kind: grammar
+    front: "Polite requests: Could you…? / Would you mind…?"
+    back: |
+      - **Could you + V?** — lịch sự, dùng hằng ngày: *Could you send me the agenda?*
+      - **Would you mind + V-ing?** — lịch sự hơn nữa: *Would you mind opening the window?*
+
+      Trả lời *Would you mind…?* bằng **"No, not at all"** nghĩa là **đồng ý làm** (tôi không phiền gì).
+    pattern: Could you + V? · Would you mind + V-ing?
+    tags: [topic:work, topic:meetings]
+    questions:
+      - id: mind-ing
+        type: single
+        prompt: "Would you mind ___ the window?"
+        options:
+          - text: opening
+            correct: true
+            why: mind luôn đi với V-ing.
+          - text: to open
+            why: mind không đi với to + V.
+          - text: open
+            why: Sau mind cần V-ing, không dùng động từ nguyên mẫu.
+          - text: opened
+            why: Quá khứ phân từ không đứng sau mind trong câu yêu cầu.
+      - id: not-at-all
+        type: true_false
+        prompt: "“Would you mind sending me the file?” — Answering **“No, not at all.”** means you refuse."
+        answer: false
+        explanation: "“No, not at all” = tôi không phiền gì → **đồng ý** gửi file."
+      - id: word-order
+        type: order
+        prompt: Put the words in order to make a polite request.
+        options:
+          - text: Could
+          - text: you
+          - text: send me
+          - text: the agenda?

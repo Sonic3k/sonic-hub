@@ -1,0 +1,131 @@
+# yaml-language-server: $schema=../../../../_schema/items.schema.json
+items:
+  - id: en.deadline
+    kind: vocab
+    term: deadline
+    pronunciation: /ˈded.laɪn/
+    pos: noun
+    meaning: hạn chót
+    definition: a time or day by which something must be done
+    image: media/deadline.svg
+    tags: [topic:work, topic:time]
+    examples:
+      - text: We worked all night to meet the {{c1::deadline}}.
+        translation: Chúng tôi làm cả đêm để kịp hạn chót.
+      - text: The {{c1::deadline}} for applications is Friday.
+        translation: Hạn chót nộp đơn là thứ Sáu.
+    related:
+      - { id: en.postpone, type: see_also }
+
+  - id: en.postpone
+    kind: vocab
+    term: postpone
+    pronunciation: /pəʊstˈpəʊn/
+    pos: verb
+    meaning: hoãn lại, dời sang lúc khác
+    definition: to arrange for an event to happen at a later time than planned
+    accept: [postpones, postponed]
+    tags: [topic:work, topic:time]
+    examples:
+      - text: They {{c1::postponed}} the launch until March.
+        translation: Họ đã dời buổi ra mắt đến tháng Ba.
+    related:
+      - { id: en.put-off, type: synonym }
+
+  - id: en.put-off
+    kind: vocab
+    term: put off
+    pronunciation: /pʊt ˈɒf/
+    pos: phrasal verb
+    meaning: trì hoãn (thường vì ngại làm)
+    definition: to delay doing something, especially because you do not want to do it
+    tags: [topic:work, topic:time]
+    examples:
+      - text: Stop {{c1::putting off}} the report and start writing.
+        translation: Đừng trì hoãn bản báo cáo nữa, bắt tay vào viết đi.
+    related:
+      - { id: en.postpone, type: synonym }
+    questions:
+      - id: register
+        type: single
+        prompt: "Which sentence sounds more natural in a **formal** email to a client?"
+        options:
+          - text: We have postponed the meeting until next Tuesday.
+            correct: true
+            why: postpone là từ trang trọng, đúng giọng email gửi khách hàng.
+          - text: We have put off the meeting until next Tuesday.
+            why: put off thân mật hơn và hay mang ý "ngại làm nên hoãn" — không hợp với email trang trọng.
+        explanation: Cả hai đều là dời lịch, nhưng **postpone** trang trọng còn **put off** thân mật.
+
+  - id: en.on-track
+    kind: vocab
+    term: on track
+    pos: phrase
+    meaning: đúng tiến độ
+    definition: making progress as planned and likely to succeed
+    tags: [topic:work, topic:progress]
+    examples:
+      - text: The project is {{c1::on track}} to finish in June.
+        translation: Dự án đang đúng tiến độ để xong vào tháng Sáu.
+    related:
+      - { id: en.behind-schedule, type: compare }
+      - { id: en.ahead-of-schedule, type: compare }
+
+  - id: en.behind-schedule
+    kind: vocab
+    term: behind schedule
+    pos: phrase
+    meaning: chậm tiến độ, trễ so với kế hoạch
+    definition: later than planned
+    tags: [topic:work, topic:progress]
+    examples:
+      - text: We're two weeks {{c1::behind schedule}}.
+        translation: Chúng ta đang chậm hai tuần so với kế hoạch.
+    related:
+      - { id: en.ahead-of-schedule, type: antonym }
+
+  - id: en.ahead-of-schedule
+    kind: vocab
+    term: ahead of schedule
+    pos: phrase
+    meaning: sớm hơn kế hoạch
+    definition: earlier than planned
+    tags: [topic:work, topic:progress]
+    examples:
+      - text: The bridge was finished {{c1::ahead of schedule}}.
+        translation: Cây cầu được hoàn thành sớm hơn kế hoạch.
+    related:
+      - { id: en.behind-schedule, type: antonym }
+
+  - id: en.grammar.be-supposed-to
+    kind: grammar
+    front: "be supposed to + verb"
+    back: |
+      Diễn tả việc **đã được sắp xếp / được kỳ vọng** sẽ xảy ra.
+
+      - **is/are supposed to** — theo kế hoạch thì sẽ: *The report is supposed to be ready by Friday.*
+      - **was/were supposed to** — lẽ ra phải, nhưng đã **không** xảy ra: *I was supposed to call him, but I forgot.*
+      - **not supposed to** — không được phép (theo quy định): *You're not supposed to park here.*
+    pattern: be (am/is/are/was/were) + supposed to + V
+    tags: [topic:work]
+    examples:
+      - text: The report {{c1::is supposed to}} be ready by Friday.
+        translation: Theo kế hoạch, báo cáo phải xong trước thứ Sáu.
+    questions:
+      - id: past-plan
+        type: single
+        prompt: "I ___ call the client yesterday, but I forgot."
+        options:
+          - text: was supposed to
+            correct: true
+            why: Việc đã được sắp xếp trong quá khứ nhưng không xảy ra → was supposed to.
+          - text: am supposed to
+            why: Thì hiện tại, nhưng câu nói về "yesterday".
+          - text: supposed to
+            why: Thiếu động từ be — luôn cần am/is/are/was/were.
+          - text: was suppose to
+            why: Lỗi chính tả rất hay gặp — phải là suppos**ed**.
+      - id: not-allowed
+        type: cloze
+        prompt: "You {{c1::aren't supposed to|are not supposed to}} park here — it's for deliveries only."
+        explanation: "**not supposed to** = không được phép, theo quy định."

@@ -1,0 +1,1194 @@
+{
+  "$id": "items.schema.json",
+  "title": "<lesson>.items.yaml",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "title": {
+      "description": "Lesson title, when the lesson has no .md file.",
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "items": {
+      "default": [],
+      "type": "array",
+      "items": {
+        "anyOf": [
+          {
+            "type": "object",
+            "properties": {
+              "ref": {
+                "type": "string",
+                "pattern": "^[a-z][a-z0-9]*(?:\\.[a-z0-9]+(?:-[a-z0-9]+)*)+$",
+                "description": "Reuse an item declared in another file or course."
+              },
+              "note": {
+                "description": "Course-specific note (markdown) shown with this item in this course.",
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "examples": {
+                "description": "Examples belong to the course whose file declares them; other courses fall back to them.",
+                "type": "array",
+                "items": {
+                  "anyOf": [
+                    {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "text": {
+                          "type": "string",
+                          "minLength": 1,
+                          "description": "Example sentence; mark the item with {{c1::...}} to enable cloze practice."
+                        },
+                        "translation": {
+                          "description": "Translation in the learner's language.",
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        },
+                        "audio": {
+                          "anyOf": [
+                            {
+                              "type": "string",
+                              "minLength": 1,
+                              "description": "Media file path relative to this file, e.g. \"media/s3-classes.svg\". Images become WebP on sync."
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ]
+                        }
+                      },
+                      "required": [
+                        "text"
+                      ],
+                      "additionalProperties": false
+                    }
+                  ]
+                }
+              },
+              "questions": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$",
+                      "description": "Unique within its item, e.g. \"q1\" or \"scenario-archive\"."
+                    },
+                    "type": {
+                      "type": "string",
+                      "enum": [
+                        "single",
+                        "multi",
+                        "true_false",
+                        "typing",
+                        "cloze",
+                        "order",
+                        "match",
+                        "flashcard"
+                      ],
+                      "description": "single: one correct option · multi: several correct · true_false: uses `answer` · typing: uses `answers` · cloze: blanks in `prompt` with {{c1::answer}} · order: `options` listed in the correct order · match: each option has `match` · flashcard: uses `back`"
+                    },
+                    "facet": {
+                      "description": "Which side of the item this question trains. Default: \"apply\" (vocab: \"use\").",
+                      "type": "string",
+                      "enum": [
+                        "recognize",
+                        "recall",
+                        "use",
+                        "listen",
+                        "apply"
+                      ]
+                    },
+                    "prompt": {
+                      "type": "string",
+                      "minLength": 1,
+                      "description": "The question (markdown). For cloze, the sentence with {{c1::answer}} blanks."
+                    },
+                    "options": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "text": {
+                            "type": "string",
+                            "minLength": 1,
+                            "description": "Option text (markdown)."
+                          },
+                          "correct": {
+                            "description": "Mark the correct option(s) here — never by index.",
+                            "type": "boolean"
+                          },
+                          "why": {
+                            "description": "Why this option is right or wrong; shown after answering.",
+                            "type": [
+                              "string",
+                              "null"
+                            ]
+                          },
+                          "match": {
+                            "description": "match questions only: the right-hand side paired with this option.",
+                            "type": [
+                              "string",
+                              "null"
+                            ]
+                          }
+                        },
+                        "required": [
+                          "text"
+                        ],
+                        "additionalProperties": false
+                      }
+                    },
+                    "answer": {
+                      "description": "true_false only: the correct value.",
+                      "type": "boolean"
+                    },
+                    "answers": {
+                      "description": "typing only: accepted answers, canonical first. Small typos are tolerated automatically.",
+                      "type": "array",
+                      "items": {
+                        "type": "string",
+                        "minLength": 1
+                      }
+                    },
+                    "back": {
+                      "description": "flashcard only: the back of the card (markdown).",
+                      "type": "string"
+                    },
+                    "explanation": {
+                      "description": "Explanation shown after answering (markdown).",
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "image": {
+                      "anyOf": [
+                        {
+                          "type": "string",
+                          "minLength": 1,
+                          "description": "Media file path relative to this file, e.g. \"media/s3-classes.svg\". Images become WebP on sync."
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "audio": {
+                      "anyOf": [
+                        {
+                          "type": "string",
+                          "minLength": 1,
+                          "description": "Media file path relative to this file, e.g. \"media/s3-classes.svg\". Images become WebP on sync."
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "tags": {
+                      "description": "Question tags, e.g. exam domains \"domain:secure\".",
+                      "type": "array",
+                      "items": {
+                        "type": "string",
+                        "pattern": "^[a-z0-9]+(?:[-_.][a-z0-9]+)*(?::[a-z0-9]+(?:[-_.][a-z0-9]+)*)?$",
+                        "description": "Tag, optionally namespaced as \"namespace:value\"."
+                      }
+                    },
+                    "difficulty": {
+                      "type": "integer",
+                      "minimum": 1,
+                      "maximum": 3
+                    },
+                    "course_only": {
+                      "description": "true: only used in the course whose file declares it. Default: shared by every course.",
+                      "type": "boolean"
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "type",
+                    "prompt"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            },
+            "required": [
+              "ref"
+            ],
+            "additionalProperties": false
+          },
+          {
+            "oneOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string",
+                    "pattern": "^[a-z][a-z0-9]*(?:\\.[a-z0-9]+(?:-[a-z0-9]+)*)+$",
+                    "description": "Globally unique item id: the subject prefix, then dot-separated lowercase slugs."
+                  },
+                  "image": {
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "minLength": 1,
+                        "description": "Media file path relative to this file, e.g. \"media/s3-classes.svg\". Images become WebP on sync."
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "audio": {
+                    "description": "Recorded audio. Without it, the browser voice reads the text.",
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "minLength": 1,
+                        "description": "Media file path relative to this file, e.g. \"media/s3-classes.svg\". Images become WebP on sync."
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "tags": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "pattern": "^[a-z0-9]+(?:[-_.][a-z0-9]+)*(?::[a-z0-9]+(?:[-_.][a-z0-9]+)*)?$",
+                      "description": "Tag, optionally namespaced as \"namespace:value\"."
+                    }
+                  },
+                  "examples": {
+                    "description": "Examples belong to the course whose file declares them; other courses fall back to them.",
+                    "type": "array",
+                    "items": {
+                      "anyOf": [
+                        {
+                          "type": "string",
+                          "minLength": 1
+                        },
+                        {
+                          "type": "object",
+                          "properties": {
+                            "text": {
+                              "type": "string",
+                              "minLength": 1,
+                              "description": "Example sentence; mark the item with {{c1::...}} to enable cloze practice."
+                            },
+                            "translation": {
+                              "description": "Translation in the learner's language.",
+                              "type": [
+                                "string",
+                                "null"
+                              ]
+                            },
+                            "audio": {
+                              "anyOf": [
+                                {
+                                  "type": "string",
+                                  "minLength": 1,
+                                  "description": "Media file path relative to this file, e.g. \"media/s3-classes.svg\". Images become WebP on sync."
+                                },
+                                {
+                                  "type": "null"
+                                }
+                              ]
+                            }
+                          },
+                          "required": [
+                            "text"
+                          ],
+                          "additionalProperties": false
+                        }
+                      ]
+                    }
+                  },
+                  "related": {
+                    "description": "Related items: id, or {id, type}.",
+                    "type": "array",
+                    "items": {
+                      "anyOf": [
+                        {
+                          "type": "string",
+                          "pattern": "^[a-z][a-z0-9]*(?:\\.[a-z0-9]+(?:-[a-z0-9]+)*)+$",
+                          "description": "Globally unique item id: the subject prefix, then dot-separated lowercase slugs."
+                        },
+                        {
+                          "type": "object",
+                          "properties": {
+                            "id": {
+                              "type": "string",
+                              "pattern": "^[a-z][a-z0-9]*(?:\\.[a-z0-9]+(?:-[a-z0-9]+)*)+$",
+                              "description": "Globally unique item id: the subject prefix, then dot-separated lowercase slugs."
+                            },
+                            "type": {
+                              "default": "see_also",
+                              "type": "string",
+                              "enum": [
+                                "synonym",
+                                "antonym",
+                                "compare",
+                                "prerequisite",
+                                "see_also",
+                                "collocation",
+                                "word_family"
+                              ]
+                            }
+                          },
+                          "required": [
+                            "id"
+                          ],
+                          "additionalProperties": false
+                        }
+                      ]
+                    }
+                  },
+                  "note": {
+                    "description": "Course-specific note (markdown) shown with this item in this course.",
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  },
+                  "questions": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "string",
+                          "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$",
+                          "description": "Unique within its item, e.g. \"q1\" or \"scenario-archive\"."
+                        },
+                        "type": {
+                          "type": "string",
+                          "enum": [
+                            "single",
+                            "multi",
+                            "true_false",
+                            "typing",
+                            "cloze",
+                            "order",
+                            "match",
+                            "flashcard"
+                          ],
+                          "description": "single: one correct option · multi: several correct · true_false: uses `answer` · typing: uses `answers` · cloze: blanks in `prompt` with {{c1::answer}} · order: `options` listed in the correct order · match: each option has `match` · flashcard: uses `back`"
+                        },
+                        "facet": {
+                          "description": "Which side of the item this question trains. Default: \"apply\" (vocab: \"use\").",
+                          "type": "string",
+                          "enum": [
+                            "recognize",
+                            "recall",
+                            "use",
+                            "listen",
+                            "apply"
+                          ]
+                        },
+                        "prompt": {
+                          "type": "string",
+                          "minLength": 1,
+                          "description": "The question (markdown). For cloze, the sentence with {{c1::answer}} blanks."
+                        },
+                        "options": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "text": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Option text (markdown)."
+                              },
+                              "correct": {
+                                "description": "Mark the correct option(s) here — never by index.",
+                                "type": "boolean"
+                              },
+                              "why": {
+                                "description": "Why this option is right or wrong; shown after answering.",
+                                "type": [
+                                  "string",
+                                  "null"
+                                ]
+                              },
+                              "match": {
+                                "description": "match questions only: the right-hand side paired with this option.",
+                                "type": [
+                                  "string",
+                                  "null"
+                                ]
+                              }
+                            },
+                            "required": [
+                              "text"
+                            ],
+                            "additionalProperties": false
+                          }
+                        },
+                        "answer": {
+                          "description": "true_false only: the correct value.",
+                          "type": "boolean"
+                        },
+                        "answers": {
+                          "description": "typing only: accepted answers, canonical first. Small typos are tolerated automatically.",
+                          "type": "array",
+                          "items": {
+                            "type": "string",
+                            "minLength": 1
+                          }
+                        },
+                        "back": {
+                          "description": "flashcard only: the back of the card (markdown).",
+                          "type": "string"
+                        },
+                        "explanation": {
+                          "description": "Explanation shown after answering (markdown).",
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        },
+                        "image": {
+                          "anyOf": [
+                            {
+                              "type": "string",
+                              "minLength": 1,
+                              "description": "Media file path relative to this file, e.g. \"media/s3-classes.svg\". Images become WebP on sync."
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ]
+                        },
+                        "audio": {
+                          "anyOf": [
+                            {
+                              "type": "string",
+                              "minLength": 1,
+                              "description": "Media file path relative to this file, e.g. \"media/s3-classes.svg\". Images become WebP on sync."
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ]
+                        },
+                        "tags": {
+                          "description": "Question tags, e.g. exam domains \"domain:secure\".",
+                          "type": "array",
+                          "items": {
+                            "type": "string",
+                            "pattern": "^[a-z0-9]+(?:[-_.][a-z0-9]+)*(?::[a-z0-9]+(?:[-_.][a-z0-9]+)*)?$",
+                            "description": "Tag, optionally namespaced as \"namespace:value\"."
+                          }
+                        },
+                        "difficulty": {
+                          "type": "integer",
+                          "minimum": 1,
+                          "maximum": 3
+                        },
+                        "course_only": {
+                          "description": "true: only used in the course whose file declares it. Default: shared by every course.",
+                          "type": "boolean"
+                        }
+                      },
+                      "required": [
+                        "id",
+                        "type",
+                        "prompt"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "kind": {
+                    "type": "string",
+                    "const": "vocab"
+                  },
+                  "term": {
+                    "type": "string",
+                    "minLength": 1,
+                    "description": "The word or phrase being learned."
+                  },
+                  "pronunciation": {
+                    "description": "IPA / pinyin / romaji, e.g. \"/ˈded.laɪn/\".",
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  },
+                  "pos": {
+                    "description": "Part of speech: noun, verb, adjective, adverb, phrase, idiom...",
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  },
+                  "meaning": {
+                    "type": "string",
+                    "minLength": 1,
+                    "description": "Meaning in the learner's language (Vietnamese)."
+                  },
+                  "definition": {
+                    "description": "Definition in the target language.",
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  },
+                  "accept": {
+                    "description": "Other accepted spellings/forms when typing the term.",
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "minLength": 1
+                    }
+                  }
+                },
+                "required": [
+                  "id",
+                  "kind",
+                  "term",
+                  "meaning"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string",
+                    "pattern": "^[a-z][a-z0-9]*(?:\\.[a-z0-9]+(?:-[a-z0-9]+)*)+$",
+                    "description": "Globally unique item id: the subject prefix, then dot-separated lowercase slugs."
+                  },
+                  "image": {
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "minLength": 1,
+                        "description": "Media file path relative to this file, e.g. \"media/s3-classes.svg\". Images become WebP on sync."
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "audio": {
+                    "description": "Recorded audio. Without it, the browser voice reads the text.",
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "minLength": 1,
+                        "description": "Media file path relative to this file, e.g. \"media/s3-classes.svg\". Images become WebP on sync."
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "tags": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "pattern": "^[a-z0-9]+(?:[-_.][a-z0-9]+)*(?::[a-z0-9]+(?:[-_.][a-z0-9]+)*)?$",
+                      "description": "Tag, optionally namespaced as \"namespace:value\"."
+                    }
+                  },
+                  "examples": {
+                    "description": "Examples belong to the course whose file declares them; other courses fall back to them.",
+                    "type": "array",
+                    "items": {
+                      "anyOf": [
+                        {
+                          "type": "string",
+                          "minLength": 1
+                        },
+                        {
+                          "type": "object",
+                          "properties": {
+                            "text": {
+                              "type": "string",
+                              "minLength": 1,
+                              "description": "Example sentence; mark the item with {{c1::...}} to enable cloze practice."
+                            },
+                            "translation": {
+                              "description": "Translation in the learner's language.",
+                              "type": [
+                                "string",
+                                "null"
+                              ]
+                            },
+                            "audio": {
+                              "anyOf": [
+                                {
+                                  "type": "string",
+                                  "minLength": 1,
+                                  "description": "Media file path relative to this file, e.g. \"media/s3-classes.svg\". Images become WebP on sync."
+                                },
+                                {
+                                  "type": "null"
+                                }
+                              ]
+                            }
+                          },
+                          "required": [
+                            "text"
+                          ],
+                          "additionalProperties": false
+                        }
+                      ]
+                    }
+                  },
+                  "related": {
+                    "description": "Related items: id, or {id, type}.",
+                    "type": "array",
+                    "items": {
+                      "anyOf": [
+                        {
+                          "type": "string",
+                          "pattern": "^[a-z][a-z0-9]*(?:\\.[a-z0-9]+(?:-[a-z0-9]+)*)+$",
+                          "description": "Globally unique item id: the subject prefix, then dot-separated lowercase slugs."
+                        },
+                        {
+                          "type": "object",
+                          "properties": {
+                            "id": {
+                              "type": "string",
+                              "pattern": "^[a-z][a-z0-9]*(?:\\.[a-z0-9]+(?:-[a-z0-9]+)*)+$",
+                              "description": "Globally unique item id: the subject prefix, then dot-separated lowercase slugs."
+                            },
+                            "type": {
+                              "default": "see_also",
+                              "type": "string",
+                              "enum": [
+                                "synonym",
+                                "antonym",
+                                "compare",
+                                "prerequisite",
+                                "see_also",
+                                "collocation",
+                                "word_family"
+                              ]
+                            }
+                          },
+                          "required": [
+                            "id"
+                          ],
+                          "additionalProperties": false
+                        }
+                      ]
+                    }
+                  },
+                  "note": {
+                    "description": "Course-specific note (markdown) shown with this item in this course.",
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  },
+                  "questions": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "string",
+                          "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$",
+                          "description": "Unique within its item, e.g. \"q1\" or \"scenario-archive\"."
+                        },
+                        "type": {
+                          "type": "string",
+                          "enum": [
+                            "single",
+                            "multi",
+                            "true_false",
+                            "typing",
+                            "cloze",
+                            "order",
+                            "match",
+                            "flashcard"
+                          ],
+                          "description": "single: one correct option · multi: several correct · true_false: uses `answer` · typing: uses `answers` · cloze: blanks in `prompt` with {{c1::answer}} · order: `options` listed in the correct order · match: each option has `match` · flashcard: uses `back`"
+                        },
+                        "facet": {
+                          "description": "Which side of the item this question trains. Default: \"apply\" (vocab: \"use\").",
+                          "type": "string",
+                          "enum": [
+                            "recognize",
+                            "recall",
+                            "use",
+                            "listen",
+                            "apply"
+                          ]
+                        },
+                        "prompt": {
+                          "type": "string",
+                          "minLength": 1,
+                          "description": "The question (markdown). For cloze, the sentence with {{c1::answer}} blanks."
+                        },
+                        "options": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "text": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Option text (markdown)."
+                              },
+                              "correct": {
+                                "description": "Mark the correct option(s) here — never by index.",
+                                "type": "boolean"
+                              },
+                              "why": {
+                                "description": "Why this option is right or wrong; shown after answering.",
+                                "type": [
+                                  "string",
+                                  "null"
+                                ]
+                              },
+                              "match": {
+                                "description": "match questions only: the right-hand side paired with this option.",
+                                "type": [
+                                  "string",
+                                  "null"
+                                ]
+                              }
+                            },
+                            "required": [
+                              "text"
+                            ],
+                            "additionalProperties": false
+                          }
+                        },
+                        "answer": {
+                          "description": "true_false only: the correct value.",
+                          "type": "boolean"
+                        },
+                        "answers": {
+                          "description": "typing only: accepted answers, canonical first. Small typos are tolerated automatically.",
+                          "type": "array",
+                          "items": {
+                            "type": "string",
+                            "minLength": 1
+                          }
+                        },
+                        "back": {
+                          "description": "flashcard only: the back of the card (markdown).",
+                          "type": "string"
+                        },
+                        "explanation": {
+                          "description": "Explanation shown after answering (markdown).",
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        },
+                        "image": {
+                          "anyOf": [
+                            {
+                              "type": "string",
+                              "minLength": 1,
+                              "description": "Media file path relative to this file, e.g. \"media/s3-classes.svg\". Images become WebP on sync."
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ]
+                        },
+                        "audio": {
+                          "anyOf": [
+                            {
+                              "type": "string",
+                              "minLength": 1,
+                              "description": "Media file path relative to this file, e.g. \"media/s3-classes.svg\". Images become WebP on sync."
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ]
+                        },
+                        "tags": {
+                          "description": "Question tags, e.g. exam domains \"domain:secure\".",
+                          "type": "array",
+                          "items": {
+                            "type": "string",
+                            "pattern": "^[a-z0-9]+(?:[-_.][a-z0-9]+)*(?::[a-z0-9]+(?:[-_.][a-z0-9]+)*)?$",
+                            "description": "Tag, optionally namespaced as \"namespace:value\"."
+                          }
+                        },
+                        "difficulty": {
+                          "type": "integer",
+                          "minimum": 1,
+                          "maximum": 3
+                        },
+                        "course_only": {
+                          "description": "true: only used in the course whose file declares it. Default: shared by every course.",
+                          "type": "boolean"
+                        }
+                      },
+                      "required": [
+                        "id",
+                        "type",
+                        "prompt"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "kind": {
+                    "type": "string",
+                    "const": "grammar"
+                  },
+                  "front": {
+                    "type": "string",
+                    "minLength": 1,
+                    "description": "Front of the card: the rule or question."
+                  },
+                  "back": {
+                    "type": "string",
+                    "minLength": 1,
+                    "description": "Back of the card: the explanation (markdown)."
+                  },
+                  "pattern": {
+                    "description": "Short pattern, e.g. \"have/has + past participle\".",
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  }
+                },
+                "required": [
+                  "id",
+                  "kind",
+                  "front",
+                  "back"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string",
+                    "pattern": "^[a-z][a-z0-9]*(?:\\.[a-z0-9]+(?:-[a-z0-9]+)*)+$",
+                    "description": "Globally unique item id: the subject prefix, then dot-separated lowercase slugs."
+                  },
+                  "image": {
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "minLength": 1,
+                        "description": "Media file path relative to this file, e.g. \"media/s3-classes.svg\". Images become WebP on sync."
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "audio": {
+                    "description": "Recorded audio. Without it, the browser voice reads the text.",
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "minLength": 1,
+                        "description": "Media file path relative to this file, e.g. \"media/s3-classes.svg\". Images become WebP on sync."
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "tags": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "pattern": "^[a-z0-9]+(?:[-_.][a-z0-9]+)*(?::[a-z0-9]+(?:[-_.][a-z0-9]+)*)?$",
+                      "description": "Tag, optionally namespaced as \"namespace:value\"."
+                    }
+                  },
+                  "examples": {
+                    "description": "Examples belong to the course whose file declares them; other courses fall back to them.",
+                    "type": "array",
+                    "items": {
+                      "anyOf": [
+                        {
+                          "type": "string",
+                          "minLength": 1
+                        },
+                        {
+                          "type": "object",
+                          "properties": {
+                            "text": {
+                              "type": "string",
+                              "minLength": 1,
+                              "description": "Example sentence; mark the item with {{c1::...}} to enable cloze practice."
+                            },
+                            "translation": {
+                              "description": "Translation in the learner's language.",
+                              "type": [
+                                "string",
+                                "null"
+                              ]
+                            },
+                            "audio": {
+                              "anyOf": [
+                                {
+                                  "type": "string",
+                                  "minLength": 1,
+                                  "description": "Media file path relative to this file, e.g. \"media/s3-classes.svg\". Images become WebP on sync."
+                                },
+                                {
+                                  "type": "null"
+                                }
+                              ]
+                            }
+                          },
+                          "required": [
+                            "text"
+                          ],
+                          "additionalProperties": false
+                        }
+                      ]
+                    }
+                  },
+                  "related": {
+                    "description": "Related items: id, or {id, type}.",
+                    "type": "array",
+                    "items": {
+                      "anyOf": [
+                        {
+                          "type": "string",
+                          "pattern": "^[a-z][a-z0-9]*(?:\\.[a-z0-9]+(?:-[a-z0-9]+)*)+$",
+                          "description": "Globally unique item id: the subject prefix, then dot-separated lowercase slugs."
+                        },
+                        {
+                          "type": "object",
+                          "properties": {
+                            "id": {
+                              "type": "string",
+                              "pattern": "^[a-z][a-z0-9]*(?:\\.[a-z0-9]+(?:-[a-z0-9]+)*)+$",
+                              "description": "Globally unique item id: the subject prefix, then dot-separated lowercase slugs."
+                            },
+                            "type": {
+                              "default": "see_also",
+                              "type": "string",
+                              "enum": [
+                                "synonym",
+                                "antonym",
+                                "compare",
+                                "prerequisite",
+                                "see_also",
+                                "collocation",
+                                "word_family"
+                              ]
+                            }
+                          },
+                          "required": [
+                            "id"
+                          ],
+                          "additionalProperties": false
+                        }
+                      ]
+                    }
+                  },
+                  "note": {
+                    "description": "Course-specific note (markdown) shown with this item in this course.",
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  },
+                  "questions": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "string",
+                          "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$",
+                          "description": "Unique within its item, e.g. \"q1\" or \"scenario-archive\"."
+                        },
+                        "type": {
+                          "type": "string",
+                          "enum": [
+                            "single",
+                            "multi",
+                            "true_false",
+                            "typing",
+                            "cloze",
+                            "order",
+                            "match",
+                            "flashcard"
+                          ],
+                          "description": "single: one correct option · multi: several correct · true_false: uses `answer` · typing: uses `answers` · cloze: blanks in `prompt` with {{c1::answer}} · order: `options` listed in the correct order · match: each option has `match` · flashcard: uses `back`"
+                        },
+                        "facet": {
+                          "description": "Which side of the item this question trains. Default: \"apply\" (vocab: \"use\").",
+                          "type": "string",
+                          "enum": [
+                            "recognize",
+                            "recall",
+                            "use",
+                            "listen",
+                            "apply"
+                          ]
+                        },
+                        "prompt": {
+                          "type": "string",
+                          "minLength": 1,
+                          "description": "The question (markdown). For cloze, the sentence with {{c1::answer}} blanks."
+                        },
+                        "options": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "text": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Option text (markdown)."
+                              },
+                              "correct": {
+                                "description": "Mark the correct option(s) here — never by index.",
+                                "type": "boolean"
+                              },
+                              "why": {
+                                "description": "Why this option is right or wrong; shown after answering.",
+                                "type": [
+                                  "string",
+                                  "null"
+                                ]
+                              },
+                              "match": {
+                                "description": "match questions only: the right-hand side paired with this option.",
+                                "type": [
+                                  "string",
+                                  "null"
+                                ]
+                              }
+                            },
+                            "required": [
+                              "text"
+                            ],
+                            "additionalProperties": false
+                          }
+                        },
+                        "answer": {
+                          "description": "true_false only: the correct value.",
+                          "type": "boolean"
+                        },
+                        "answers": {
+                          "description": "typing only: accepted answers, canonical first. Small typos are tolerated automatically.",
+                          "type": "array",
+                          "items": {
+                            "type": "string",
+                            "minLength": 1
+                          }
+                        },
+                        "back": {
+                          "description": "flashcard only: the back of the card (markdown).",
+                          "type": "string"
+                        },
+                        "explanation": {
+                          "description": "Explanation shown after answering (markdown).",
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        },
+                        "image": {
+                          "anyOf": [
+                            {
+                              "type": "string",
+                              "minLength": 1,
+                              "description": "Media file path relative to this file, e.g. \"media/s3-classes.svg\". Images become WebP on sync."
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ]
+                        },
+                        "audio": {
+                          "anyOf": [
+                            {
+                              "type": "string",
+                              "minLength": 1,
+                              "description": "Media file path relative to this file, e.g. \"media/s3-classes.svg\". Images become WebP on sync."
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ]
+                        },
+                        "tags": {
+                          "description": "Question tags, e.g. exam domains \"domain:secure\".",
+                          "type": "array",
+                          "items": {
+                            "type": "string",
+                            "pattern": "^[a-z0-9]+(?:[-_.][a-z0-9]+)*(?::[a-z0-9]+(?:[-_.][a-z0-9]+)*)?$",
+                            "description": "Tag, optionally namespaced as \"namespace:value\"."
+                          }
+                        },
+                        "difficulty": {
+                          "type": "integer",
+                          "minimum": 1,
+                          "maximum": 3
+                        },
+                        "course_only": {
+                          "description": "true: only used in the course whose file declares it. Default: shared by every course.",
+                          "type": "boolean"
+                        }
+                      },
+                      "required": [
+                        "id",
+                        "type",
+                        "prompt"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "kind": {
+                    "type": "string",
+                    "const": "concept"
+                  },
+                  "front": {
+                    "type": "string",
+                    "minLength": 1,
+                    "description": "Front of the card: the concept or question."
+                  },
+                  "back": {
+                    "type": "string",
+                    "minLength": 1,
+                    "description": "Back of the card: the explanation (markdown)."
+                  }
+                },
+                "required": [
+                  "id",
+                  "kind",
+                  "front",
+                  "back"
+                ],
+                "additionalProperties": false
+              }
+            ]
+          }
+        ]
+      }
+    }
+  },
+  "additionalProperties": false
+}

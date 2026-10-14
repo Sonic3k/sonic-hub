@@ -1,0 +1,31 @@
+/* AWS: deep navy console, amber accent, monospace for service and API names. */
+:root {
+  --subject-bg: #0f1b2d;
+  --subject-surface: #16263d;
+  --subject-ink: #e8eef8;
+  --subject-muted: #9fb0c8;
+  --subject-accent: #ff9f1c;
+  --subject-highlight: #ffcf70;
+  --subject-good: #3ccf91;
+  --subject-bad: #ff6b6b;
+  --subject-font-display: 'Space Grotesk', system-ui, sans-serif;
+  --subject-font-body: 'Inter', system-ui, sans-serif;
+  --subject-font-mono: 'JetBrains Mono', ui-monospace, monospace;
+}
+
+.slides section {
+  font-family: var(--subject-font-body);
+  color: var(--subject-ink);
+  background: radial-gradient(circle at 85% 0%, #1d3456, var(--subject-bg) 60%);
+}
+
+.slides h2 {
+  font-family: var(--subject-font-display);
+  letter-spacing: -0.02em;
+}
+
+.slides code,
+.service {
+  font-family: var(--subject-font-mono);
+  color: var(--subject-accent);
+}

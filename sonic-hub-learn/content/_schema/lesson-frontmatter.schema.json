@@ -1,0 +1,29 @@
+{
+  "$id": "lesson-frontmatter.schema.json",
+  "title": "<lesson>.md frontmatter",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "title": {
+      "type": "string",
+      "minLength": 1
+    },
+    "summary": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "video": {
+      "description": "Video URL (YouTube unlisted or a direct mp4 link).",
+      "type": [
+        "string",
+        "null"
+      ]
+    }
+  },
+  "required": [
+    "title"
+  ],
+  "additionalProperties": false
+}
