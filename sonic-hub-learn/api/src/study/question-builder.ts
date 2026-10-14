@@ -75,7 +75,7 @@ export function itemSummaryMd(item: ItemData, courseId: number | null, urls: Med
   const example = ex ? `\n\n> ${boldCloze(ex.text)}${ex.translation ? `  \n> _${ex.translation}_` : ''}` : '';
   if (item.vocab) {
     const v = item.vocab;
-    const head = [`**${v.term}**`, v.pronunciation, v.pos ? `_${v.pos}_` : null].filter(Boolean).join(' · ');
+    const head = [`**${v.term}**`, v.pronunciation, v.pos ? `_${v.pos}_` : null].filter(Boolean).join(' ');
     return `${head}\n\n${v.meaning}${v.definition ? `  \n_${v.definition}_` : ''}${example}`;
   }
   const pattern = item.pattern ? `\n\n\`${item.pattern}\`` : '';
@@ -199,6 +199,7 @@ function itemFlashcard(input: BuildInput, summaryMd: string): BuiltQuestion {
     switch (input.facet) {
       case 'recall':
         front = `${v.meaning}${v.pos ? ` _(${v.pos})_` : ''}`;
+        view.vocab = { meaning: v.meaning, pos: v.pos };
         view.imageUrl = urls.url(item.imageKey);
         break;
       case 'use': {
@@ -209,9 +210,11 @@ function itemFlashcard(input: BuildInput, summaryMd: string): BuiltQuestion {
       }
       case 'listen':
         front = '';
+        view.vocab = {};
         break;
       default:
         front = [`**${v.term}**`, v.pronunciation].filter(Boolean).join('  \n');
+        view.vocab = { term: v.term, pronunciation: v.pronunciation, pos: v.pos };
     }
   } else if (input.question) {
     front = urls.text(input.question.promptMd) ?? '';

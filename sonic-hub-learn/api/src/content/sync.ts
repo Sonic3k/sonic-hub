@@ -111,6 +111,7 @@ export async function syncContent(
         prefix: s.data.prefix,
         lang: s.data.lang,
         description: s.data.description ?? null,
+        color: s.data.color ?? null,
         themeCss: text(s.themeCss, s.dir),
         sort: s.data.sort ?? i,
         status: 'active' as const,

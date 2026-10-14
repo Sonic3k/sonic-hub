@@ -6,26 +6,33 @@ import {
   UnprocessableEntityException,
 } from '@nestjs/common';
 import type {
+  AnswerResponse,
   CreateSessionInput,
   ExamResult,
   RatingValue,
   SessionCardView,
   SessionView,
 } from '@learn/shared';
-import { and, asc, eq, isNull, sql } from 'drizzle-orm';
+import { and, asc, eq, inArray, isNull, sql } from 'drizzle-orm';
 import type { AppConfig } from '../config.js';
 import { APP_CONFIG, clockOf, MediaUrls } from '../common/tokens.js';
 import { learningDay, learningDayBounds, type DayClock } from '../common/time.js';
-import { deriveSeed, randomSeed, rng } from '../common/util.js';
+import { deriveSeed, groupBy, randomSeed, rng } from '../common/util.js';
 import { DB, type Db, type DbExecutor } from '../db/db.js';
 import {
   course,
+  courseCard,
   courseEnrollment,
+  reviewChoice,
   studySession,
   studySessionCard,
+  studySessionCardChoice,
   studySessionScope,
 } from '../db/schema.js';
 import { loadCandidates, loadItems, loadUsage } from './loaders.js';
+import { policyOf } from './projection.js';
+import type { AnswerKey } from './question-builder.js';
+import { emptyCard, previewDue } from './scheduler.js';
 import { renderCards, type Rendered } from './render.js';
 import {
   domainOf,
@@ -40,6 +47,36 @@ import {
 
 type SessionRow = typeof studySession.$inferSelect;
 type SessionCardRow = typeof studySessionCard.$inferSelect;
+type ChoiceRow = { sort: number; questionOptionId: number | null; matchedOptionId: number | null; itemId: number | null };
+
+/** The learner's answer, rebuilt from what was stored when grading it. */
+function responseOf(key: AnswerKey, card: SessionCardRow, choices: readonly ChoiceRow[]): AnswerResponse | null {
+  if (card.status === 'pending') return null;
+  const sorted = [...choices].sort((a, b) => a.sort - b.sort);
+  const ref = (c: ChoiceRow) => (c.questionOptionId !== null ? `o${c.questionOptionId}` : `i${c.itemId}`);
+  switch (key.kind) {
+    case 'choice':
+      return { optionIds: sorted.map(ref) };
+    case 'true_false':
+      return card.responseText === null ? null : { value: card.responseText === 'true' };
+    case 'typing':
+      return { text: card.responseText ?? '' };
+    case 'cloze': {
+      const parts = (card.responseText ?? '').split(' | ');
+      return { blanks: Object.fromEntries(Object.keys(key.blanks).map((k, i) => [k, parts[i] ?? ''])) };
+    }
+    case 'order':
+      return { order: sorted.map(ref) };
+    case 'match':
+      return {
+        pairs: Object.fromEntries(
+          sorted.filter((c) => c.questionOptionId !== null && c.matchedOptionId !== null).map((c) => [`o${c.questionOptionId}`, `m${c.matchedOptionId}`]),
+        ),
+      };
+    case 'flashcard':
+      return card.rating ? { rating: card.rating as RatingValue } : null;
+  }
+}
 
 export function isUniqueViolation(e: unknown): boolean {
   const err = e as { code?: string; cause?: { code?: string } };
@@ -252,12 +289,46 @@ export class StudyService {
     return s;
   }
 
-  async view(id: number, db: DbExecutor = this.db): Promise<SessionView> {
+  async view(id: number, db: DbExecutor = this.db, now = new Date()): Promise<SessionView> {
     const s = await this.sessionRow(id, db);
     const cards = await db.select().from(studySessionCard).where(eq(studySessionCard.sessionId, id)).orderBy(asc(studySessionCard.sort));
     const rendered = await renderCards(db, this.urls, cards);
-    const courses = new Map((await db.select({ id: course.id, key: course.key, title: course.title }).from(course)).map((c) => [c.id, c]));
+    const courses = new Map(
+      (
+        await db
+          .select({ id: course.id, key: course.key, title: course.title, algorithm: course.algorithm, retention: course.retention, examDate: course.examDate })
+          .from(course)
+      ).map((c) => [c.id, c]),
+    );
     const revealed = (c: SessionCardRow) => (s.mode === 'exam' ? s.status === 'submitted' : c.status === 'answered');
+
+    // what the learner answered: exam answers still waiting for submit, then logged answers
+    const savedIds = cards.filter((c) => c.status === 'saved').map((c) => c.id);
+    const logIds = cards.filter((c) => c.status === 'answered' && c.reviewLogId !== null).map((c) => c.reviewLogId!);
+    const waiting = groupBy(
+      savedIds.length ? await db.select().from(studySessionCardChoice).where(inArray(studySessionCardChoice.sessionCardId, savedIds)) : [],
+      (c) => c.sessionCardId,
+    );
+    const logged = groupBy(logIds.length ? await db.select().from(reviewChoice).where(inArray(reviewChoice.reviewLogId, logIds)) : [], (c) => c.reviewLogId);
+
+    // pending flashcards: when each self-grade would bring the card back, in the course it is studied in
+    const flash = cards.filter((c) => c.status === 'pending' && rendered.built.get(c.id)?.key.kind === 'flashcard');
+    const memory = new Map(
+      (flash.length
+        ? await db
+            .select()
+            .from(courseCard)
+            .where(inArray(courseCard.itemId, [...new Set(flash.map((c) => c.itemId))]))
+        : []
+      ).map((m) => [`${m.courseId}:${m.itemId}:${m.facet}`, m]),
+    );
+    const ratingDueOf = (c: SessionCardRow): SessionCardView['ratingDue'] => {
+      const policy = courses.get(c.courseId);
+      if (!policy) return null;
+      const fields = memory.get(`${c.courseId}:${c.itemId}:${c.facet}`) ?? emptyCard(now);
+      const due = previewDue(fields, now, policyOf(policy), this.clock);
+      return { 1: due[1].toISOString(), 2: due[2].toISOString(), 3: due[3].toISOString(), 4: due[4].toISOString() };
+    };
 
     const views: SessionCardView[] = [];
     for (const c of cards) {
@@ -278,6 +349,8 @@ export class StudyService {
         question: built.view,
         outcome: answered && revealed(c) ? { correct: c.correct, rating: (c.rating as RatingValue | null) ?? null } : answered ? { correct: null, rating: null } : null,
         feedback: answered && revealed(c) ? built.feedback : null,
+        response: responseOf(built.key, c, c.status === 'saved' ? (waiting.get(c.id) ?? []) : c.reviewLogId !== null ? (logged.get(c.reviewLogId) ?? []) : []),
+        ratingDue: c.status === 'pending' && built.key.kind === 'flashcard' ? ratingDueOf(c) : null,
       });
     }
     const answered = cards.filter((c) => c.status !== 'pending').length;

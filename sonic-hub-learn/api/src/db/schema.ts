@@ -52,6 +52,8 @@ export const subject = pgTable('subject', {
   prefix: text('prefix').notNull().unique(),
   lang: text('lang').notNull(),
   description: text('description'),
+  /** Accent colour in the web app (#RRGGBB). */
+  color: text('color'),
   themeCss: text('theme_css'),
   sort: integer('sort').notNull().default(0),
   status: text('status').$type<EntityStatus>().notNull().default('active'),
@@ -432,6 +434,20 @@ export const itemExposure = pgTable('item_exposure', {
   lastSeenAt: ts('last_seen_at').notNull(),
   seenCount: integer('seen_count').notNull().default(1),
 });
+
+/** Where the learner is in each lesson they opened (for "continue reading"). */
+export const lessonProgress = pgTable(
+  'lesson_progress',
+  {
+    lessonId: integer('lesson_id')
+      .primaryKey()
+      .references(() => lesson.id, { onDelete: 'cascade' }),
+    /** 0–1: how far through the reading (or the slides). */
+    position: doublePrecision('position').notNull().default(0),
+    ...audit,
+  },
+  (t) => [index('lesson_progress_updated_idx').on(t.updatedAt)],
+);
 
 /** Every answer, from any course and any mode. The single source of truth for memory. */
 export const reviewLog = pgTable(

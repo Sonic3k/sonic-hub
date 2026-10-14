@@ -4,7 +4,7 @@ import type { AddressInfo } from 'node:net';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { after, before, describe, test } from 'node:test';
-import { parseCloze, type AnswerInput, type AnswerResult, type SessionCardView, type SessionView } from '@learn/shared';
+import { parseCloze, type AnswerInput, type AnswerResult, type ReadingResponse, type SessionCardView, type SessionView, type StatsView, type SubjectSummary } from '@learn/shared';
 import pg from 'pg';
 import { defaultContentDir, type AppConfig } from '../src/config.js';
 import { checkContent } from '../src/content/check.js';
@@ -53,17 +53,17 @@ async function q<T = Record<string, unknown>>(text: string, params: unknown[] = 
   return (await sqlPool.query(text, params)).rows as T[];
 }
 
-async function api<T>(path: string, body?: unknown): Promise<{ status: number; data: T }> {
+async function api<T>(path: string, body?: unknown, method?: string): Promise<{ status: number; data: T }> {
   const res = await fetch(`${base}/api${path}`, {
-    method: body === undefined ? 'GET' : 'POST',
+    method: method ?? (body === undefined ? 'GET' : 'POST'),
     headers: { 'content-type': 'application/json' },
     body: body === undefined ? undefined : JSON.stringify(body),
   });
   return { status: res.status, data: (await res.json()) as T };
 }
 
-async function ok<T>(path: string, body?: unknown): Promise<T> {
-  const r = await api<T>(path, body);
+async function ok<T>(path: string, body?: unknown, method?: string): Promise<T> {
+  const r = await api<T>(path, body, method);
   assert.ok(r.status < 300, `${path} → ${r.status} ${JSON.stringify(r.data)}`);
   return r.data;
 }
@@ -183,6 +183,12 @@ describe('learn API end to end', { skip: !adminUrl && 'TEST_DATABASE_URL not set
     assert.match(lesson.items[0].imageUrl ?? '', /^http:\/\/media\.test\/learn\//);
   });
 
+  test('subjects carry their colour', async () => {
+    const subjects = await ok<SubjectSummary[]>('/subjects');
+    assert.equal(subjects.find((s) => s.key === 'english')!.color, '#2F55CF');
+    assert.equal(subjects.find((s) => s.key === 'aws')!.color, '#D88400');
+  });
+
   test('daily mixes enrolled courses, and stays the same all day', async () => {
     for (const c of ['workplace-english', 'ielts-6-essentials']) await ok(`/courses/${c}/enrollment`, { enrolled: true });
     const daily = await ok<SessionView>('/daily');
@@ -203,6 +209,23 @@ describe('learn API end to end', { skip: !adminUrl && 'TEST_DATABASE_URL not set
     assert.equal(after.id, before.id);
     const added = after.cards.slice(before.cards.length);
     assert.ok(added.length > 0 && added.every((c) => c.courseKey === 'saa-c03'));
+  });
+
+  test('continue reading: first lesson of an enrolled course, then where the learner stopped', async () => {
+    const start = (await ok<ReadingResponse>('/reading')).reading!;
+    assert.equal(start.position, 0);
+    assert.ok(['workplace-english', 'ielts-6-essentials', 'saa-c03'].includes(start.course.key));
+    const saa = await ok<{ chapters: { lessons: { id: number; hasBody: boolean }[] }[] }>('/courses/saa-c03');
+    const lessonId = saa.chapters[0].lessons.find((l) => l.hasBody)!.id;
+    await ok(`/lessons/${lessonId}/progress`, { position: 0.4 }, 'PUT');
+    const now = (await ok<ReadingResponse>('/reading')).reading!;
+    assert.equal(now.lesson.id, lessonId);
+    assert.equal(now.position, 0.4);
+    assert.equal(now.subjectKey, 'aws');
+    await ok(`/lessons/${lessonId}/progress`, { position: 1 }, 'PUT');
+    assert.equal((await ok<ReadingResponse>('/reading')).reading, null, 'read through, and no other readable lesson follows in the course');
+    assert.equal((await api(`/lessons/${lessonId}/progress`, { position: 2 }, 'PUT')).status, 400);
+    assert.equal((await api('/lessons/999999/progress', { position: 0.5 }, 'PUT')).status, 404);
   });
 
   test('an answer counts for every course that shares the item', async () => {
@@ -291,21 +314,42 @@ describe('learn API end to end', { skip: !adminUrl && 'TEST_DATABASE_URL not set
   test('flashcards are self-graded and wrong shapes are rejected', async () => {
     const deck = await ok<SessionView>('/sessions', { mode: 'flashcard', courseKey: 'english-all-flashcards', size: 3 });
     assert.ok(deck.cards.every((c) => c.question.type === 'flashcard' && c.question.flashcard));
+    for (const c of deck.cards) {
+      const due = c.ratingDue!;
+      assert.ok(due, 'pending flashcards preview each grade');
+      const t = [1, 2, 3, 4].map((r) => Date.parse(due[r as 1 | 2 | 3 | 4]));
+      assert.ok(t[0] <= t[1] && t[1] <= t[2] && t[2] <= t[3], 'a better grade never comes back sooner');
+      if (c.itemKind === 'vocab' && c.facet === 'recognize') assert.ok(c.question.vocab?.term, 'vocab flashcards carry the word');
+    }
     const bad = await api(`/sessions/${deck.id}/answers`, { sessionCardId: deck.cards[0].id });
     assert.equal(bad.status, 400);
     const r = await ok<AnswerResult>(`/sessions/${deck.id}/answers`, { sessionCardId: deck.cards[0].id, rating: 4 });
     assert.equal(r.rating, 4);
+    const after = (await ok<SessionView>(`/sessions/${deck.id}`)).cards.find((c) => c.id === deck.cards[0].id)!;
+    assert.deepEqual(after.response, { rating: 4 });
+    assert.equal(after.ratingDue, null);
   });
 
   test('exam answers are saved blind, then graded by domain on submit', async () => {
     const exam = await ok<SessionView>('/sessions', { mode: 'exam', courseKey: 'saa-c03' });
     assert.ok(exam.deadlineAt);
+    const sent = new Map<number, AnswerInput>();
     for (const [i, card] of exam.cards.entries()) {
-      const r = await ok<AnswerResult>(`/sessions/${exam.id}/answers`, await answerFor(card, i % 2 === 0));
+      const input = await answerFor(card, i % 2 === 0);
+      sent.set(card.id, input);
+      const r = await ok<AnswerResult>(`/sessions/${exam.id}/answers`, input);
       assert.equal(r.saved, true);
       assert.equal(r.feedback, null);
     }
+    const midway = await ok<SessionView>(`/sessions/${exam.id}`);
+    for (const c of midway.cards) {
+      assert.equal(c.status, 'saved');
+      assert.deepEqual(c.outcome, { correct: null, rating: null }, 'still blind before submit');
+      const { sessionCardId: _id, timeMs: _t, ...given } = sent.get(c.id)!;
+      assert.deepEqual(c.response, given, 'the saved answer comes back when revisiting a question');
+    }
     const done = await ok<SessionView>(`/sessions/${exam.id}/submit`, {});
+    assert.ok(done.cards.every((c) => c.response), 'answers stay visible in the review');
     assert.equal(done.status, 'submitted');
     assert.equal(done.exam!.total, exam.cards.length);
     assert.equal(done.exam!.correct, Math.ceil(exam.cards.length / 2));
@@ -368,11 +412,21 @@ describe('learn API end to end', { skip: !adminUrl && 'TEST_DATABASE_URL not set
   });
 
   test('stats and leeches answer', async () => {
-    const stats = await ok<{ today: { reviewed: number }; reviewsByDay: unknown[]; streakDays: number }>('/stats');
+    const stats = await ok<StatsView>('/stats');
     assert.ok(stats.today.reviewed > 0);
     assert.equal(stats.reviewsByDay.length, 30);
     assert.equal(stats.streakDays, 1);
+    assert.equal(stats.bestStreakDays, 1);
+    assert.ok(stats.dueTomorrow >= stats.today.dueRemaining);
     assert.ok(Array.isArray(await ok('/leeches')));
+    // wrong twice on the same facet: it joins the "keeps forgetting" list
+    const quiz = await ok<SessionView>('/sessions', { mode: 'quiz', courseKey: 'workplace-english', scope: { itemKeys: ['en.agenda'] }, facets: ['recognize'] });
+    const first = await ok<AnswerResult>(`/sessions/${quiz.id}/answers`, await answerFor(quiz.cards[0], false));
+    const requeued = (await ok<SessionView>(`/sessions/${quiz.id}`)).cards.find((c) => c.id === first.requeuedCardId)!;
+    await ok<AnswerResult>(`/sessions/${quiz.id}/answers`, await answerFor(requeued, false));
+    const weak = await ok<{ itemKey: string; facet: string; againCount: number }[]>('/leeches?weak=true');
+    const agenda = weak.find((w) => w.itemKey === 'en.agenda' && w.facet === 'recognize');
+    assert.ok(agenda && agenda.againCount >= 2);
     const search = await ok<{ items: { key: string }[] }>('/search?q=deadline');
     assert.equal(search.items[0].key, 'en.deadline');
   });

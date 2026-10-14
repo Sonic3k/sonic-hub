@@ -5,7 +5,7 @@ Content is plain YAML, Markdown and HTML in git. `npm run content:check` validat
 ## Layout
 
 ```
-<subject>/subject.yaml                      id = folder name; prefix for item ids (en, aws)
+<subject>/subject.yaml                      id = folder name; prefix for item ids (en, aws); color for the web app
 <subject>/theme.css                         optional: --subject-* CSS variables for lessons and slides
 <subject>/courses/<course>/course.yaml      id = folder name, globally unique
 <course>/<NN-chapter>/chapter.yaml          chapters can nest

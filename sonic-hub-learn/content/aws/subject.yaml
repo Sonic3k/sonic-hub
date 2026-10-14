@@ -3,4 +3,5 @@ title: AWS
 prefix: aws
 lang: en-US
 description: Cloud architecture on AWS, aimed at the certification exams.
+color: "#D88400"
 sort: 2

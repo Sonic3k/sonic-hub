@@ -29,6 +29,18 @@
         "null"
       ]
     },
+    "color": {
+      "description": "The subject colour in the web app (tabs, dots, progress), e.g. \"#2F55CF\". Dark enough to read on white.",
+      "anyOf": [
+        {
+          "type": "string",
+          "pattern": "^#[0-9a-fA-F]{6}$"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
     "sort": {
       "type": "integer",
       "minimum": -9007199254740991,

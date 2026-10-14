@@ -53,6 +53,8 @@ export interface SubjectSummary {
   title: string;
   description: string | null;
   lang: string;
+  /** Accent colour (#RRGGBB), or null to let the app pick one. */
+  color: string | null;
   courses: CourseSummary[];
 }
 
@@ -83,7 +85,7 @@ export interface ExamConfigView {
 }
 
 export interface CourseDetail extends CourseSummary {
-  subject: { key: string; title: string; lang: string; themeCss: string | null };
+  subject: { key: string; title: string; lang: string; color: string | null; themeCss: string | null };
   policy: {
     algorithm: string;
     retention: number;
@@ -162,6 +164,26 @@ export interface LessonDetail {
   items: ItemView[];
 }
 
+/** The lesson to pick up again: the last one opened, or the next one once that was finished. */
+export interface ReadingView {
+  lesson: { id: number; title: string; summary: string | null };
+  course: { key: string; title: string };
+  chapter: { key: string; title: string };
+  subjectKey: string;
+  /** 0–1 */
+  position: number;
+  updatedAt: string;
+}
+
+export interface ReadingResponse {
+  reading: ReadingView | null;
+}
+
+export interface ReadingProgressInput {
+  /** 0–1: how far through the reading or the slides. */
+  position: number;
+}
+
 export interface SearchResult {
   items: { key: string; kind: ItemKind; label: string; detail: string | null; courses: string[] }[];
   lessons: { id: number; title: string; courseKey: string; courseTitle: string }[];
@@ -194,7 +216,10 @@ export interface QuestionView {
   imageUrl: string | null;
   audioUrl: string | null;
   speak: SpeakView | null;
-  /** Generated vocab questions: the fields to show (others are hidden on purpose). */
+  /**
+   * Vocab questions and vocab flashcards: the fields to show (others are hidden on purpose).
+   * An empty object on a listen card means "play the word, show nothing".
+   */
   vocab: Partial<VocabView> | null;
   options: OptionView[] | null;
   /** match: the right-hand column, shuffled ("m<option id>"). */
@@ -230,6 +255,9 @@ export interface CardMemory {
   lapses: number;
 }
 
+/** What the learner answered, in the shape it was sent. */
+export type AnswerResponse = Pick<AnswerInput, 'optionIds' | 'value' | 'text' | 'blanks' | 'order' | 'pairs' | 'rating'>;
+
 export interface SessionCardView {
   id: number;
   sort: number;
@@ -244,6 +272,10 @@ export interface SessionCardView {
   outcome: { correct: boolean | null; rating: RatingValue | null } | null;
   /** Shown once answered (after submit, for exams). */
   feedback: AnswerFeedback | null;
+  /** The learner's answer once saved or answered (exams show it again when revisiting a question). */
+  response: AnswerResponse | null;
+  /** Pending flashcards: when the card would come back for each self-grade (ISO times). */
+  ratingDue: Record<RatingValue, string> | null;
 }
 
 export interface ExamDomainResult {
@@ -348,6 +380,10 @@ export interface StatsView {
   retention30d: number | null;
   reviewsByDay: { day: string; reviews: number; correct: number }[];
   streakDays: number;
+  /** Longest run of consecutive study days (last 400 days). */
+  bestStreakDays: number;
+  /** Cards (already learned) due by the end of tomorrow's learning day. */
+  dueTomorrow: number;
   leeches: number;
 }
 

@@ -42,3 +42,7 @@ export const EnrollmentBody = z.strictObject({
 export const ExposureBody = z.strictObject({
   itemKeys: z.array(z.string().min(1)).min(1).max(2000),
 });
+
+export const ReadingProgressBody = z.strictObject({
+  position: z.number().min(0).max(1),
+});

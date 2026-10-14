@@ -44,6 +44,8 @@ jobs:
         run: npm run test -w @learn/api
         env:
           TEST_DATABASE_URL: postgresql://learn:learn@localhost:5432/learn
+      - name: Web app (typecheck + build)
+        run: npm run build -w @learn/web
 
   # Loads content into the learn database and uploads media to B2 after every push to main.
   # Needs repository secrets LEARN_DATABASE_URL (Railway Postgres public URL), B2_KEY_ID, B2_APP_KEY.

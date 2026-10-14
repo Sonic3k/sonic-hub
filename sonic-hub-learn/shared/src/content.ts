@@ -190,6 +190,11 @@ export const SubjectFileSchema = z.strictObject({
     .describe('Item id prefix for this subject, e.g. "en" → "en.deadline".'),
   lang: z.string().default('en-US').describe('BCP-47 language of the content, used for text-to-speech.'),
   description: z.string().nullish(),
+  color: z
+    .string()
+    .regex(/^#[0-9a-fA-F]{6}$/)
+    .nullish()
+    .describe('The subject colour in the web app (tabs, dots, progress), e.g. "#2F55CF". Dark enough to read on white.'),
   sort: z.number().int().optional(),
 });
 

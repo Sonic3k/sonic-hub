@@ -4,7 +4,8 @@
   "type": "module",
   "workspaces": [
     "shared",
-    "api"
+    "api",
+    "web"
   ],
   "engines": {
     "node": ">=22.12"
@@ -12,11 +13,13 @@
   "scripts": {
     "build": "npm run build -w @learn/shared && npm run build -w @learn/api",
     "start": "npm run start -w @learn/api",
-    "typecheck": "npm run build -w @learn/shared && npm run typecheck -w @learn/api",
+    "typecheck": "npm run build -w @learn/shared && npm run typecheck -w @learn/api && npm run typecheck -w @learn/web",
     "test": "npm run build && npm run test -w @learn/api",
     "content:check": "npm run build --silent && node api/dist/cli/content.js check",
     "content:sync": "npm run build --silent && node --env-file-if-exists=api/.env api/dist/cli/content.js sync",
     "schema:export": "npm run build -w @learn/shared && node shared/dist/export-json-schema.js content/_schema",
-    "db:generate": "npm run db:generate -w @learn/api"
+    "db:generate": "npm run db:generate -w @learn/api",
+    "build:web": "npm run build -w @learn/shared && npm run build -w @learn/web",
+    "dev:web": "npm run dev -w @learn/web"
   }
 }

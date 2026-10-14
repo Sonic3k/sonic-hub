@@ -1,6 +1,6 @@
 import { Inject, Injectable, NotFoundException } from '@nestjs/common';
 import type { ItemKind, LeechView, StatsView, Facet } from '@learn/shared';
-import { and, asc, eq, inArray, sql } from 'drizzle-orm';
+import { and, asc, eq, gte, inArray, or, sql } from 'drizzle-orm';
 import { addDays, learningDay, learningDayBounds } from '../common/time.js';
 import { DB, type Db } from '../db/db.js';
 import { course, courseCard, courseEnrollment, item, itemVocab, reviewLog } from '../db/schema.js';
@@ -54,6 +54,15 @@ export class StatsService {
     });
     let streakDays = 0;
     for (let d = dayMap.has(day) ? day : addDays(day, -1); dayMap.has(d); d = addDays(d, -1)) streakDays++;
+    let bestStreakDays = 0;
+    let run = 0;
+    let prev: string | null = null;
+    for (const d of byDay.map((x) => x.day)) {
+      run = prev !== null && addDays(prev, 1) === d ? run + 1 : 1;
+      bestStreakDays = Math.max(bestStreakDays, run);
+      prev = d;
+    }
+    const tomorrowEnd = learningDayBounds(addDays(day, 1), clock).end;
 
     const [today] = (
       await this.db.execute(sql`
@@ -83,11 +92,12 @@ export class StatsService {
       ? await this.db
           .select({
             due: sql<number>`count(distinct (${courseCard.itemId}, ${courseCard.facet})) filter (where ${courseCard.state} <> 0 and ${courseCard.due} < ${end.toISOString()})::int`,
+            dueTomorrow: sql<number>`count(distinct (${courseCard.itemId}, ${courseCard.facet})) filter (where ${courseCard.state} <> 0 and ${courseCard.due} < ${tomorrowEnd.toISOString()})::int`,
             leeches: sql<number>`count(distinct (${courseCard.itemId}, ${courseCard.facet})) filter (where ${courseCard.leech})::int`,
           })
           .from(courseCard)
           .where(inArray(courseCard.courseId, ids))
-      : [{ due: 0, leeches: 0 }];
+      : [{ due: 0, dueTomorrow: 0, leeches: 0 }];
 
     return {
       day,
@@ -101,14 +111,21 @@ export class StatsService {
       retention30d: month.n ? Math.round((month.correct / month.n) * 1000) / 1000 : null,
       reviewsByDay,
       streakDays,
+      bestStreakDays: Math.max(bestStreakDays, streakDays),
+      dueTomorrow: extra.dueTomorrow,
       leeches: extra.leeches,
     };
   }
 
-  /** Item facets answered wrong again and again — candidates for rewriting or a better mnemonic. */
-  async leeches(courseKey?: string): Promise<LeechView[]> {
+  /**
+   * Item facets answered wrong again and again — candidates for rewriting or a better mnemonic.
+   * weak: the wider "keeps forgetting" set (also lapsed twice, or wrong twice), the same cards a weak quiz asks.
+   */
+  async leeches(courseKey?: string, opts: { weak?: boolean } = {}): Promise<LeechView[]> {
     const ids = await this.courseIds(courseKey);
     if (!ids.length) return [];
+    const missedTwice = sql`(${courseCard.itemId}, ${courseCard.facet}) in (select item_id, facet from review_log where rating = 1 group by item_id, facet having count(*) >= 2)`;
+    const which = opts.weak ? or(eq(courseCard.leech, true), gte(courseCard.lapses, 2), missedTwice) : eq(courseCard.leech, true);
     const rows = await this.db
       .select({
         courseKey: course.key,
@@ -124,7 +141,7 @@ export class StatsService {
       .innerJoin(course, eq(course.id, courseCard.courseId))
       .innerJoin(item, eq(item.id, courseCard.itemId))
       .leftJoin(itemVocab, eq(itemVocab.itemId, item.id))
-      .where(and(inArray(courseCard.courseId, ids), eq(courseCard.leech, true)))
+      .where(and(inArray(courseCard.courseId, ids), which))
       .orderBy(asc(item.key));
     if (!rows.length) return [];
     const again = await this.db
@@ -149,7 +166,7 @@ export class StatsService {
         againCount: againMap.get(k) ?? 0,
       });
     }
-    return out;
+    return opts.weak ? out.sort((a, b) => b.againCount - a.againCount || b.lapses - a.lapses) : out;
   }
 }
 

@@ -1,7 +1,7 @@
-import { Body, Controller, Get, HttpCode, Inject, Param, ParseIntPipe, Post, Query } from '@nestjs/common';
-import type { AnswerInput, CreateSessionInput, EnrollmentInput } from '@learn/shared';
+import { Body, Controller, Get, HttpCode, Inject, Param, ParseIntPipe, Post, Put, Query } from '@nestjs/common';
+import type { AnswerInput, CreateSessionInput, EnrollmentInput, ReadingProgressInput } from '@learn/shared';
 import { sql } from 'drizzle-orm';
-import { AnswerBody, CreateSessionBody, EnrollmentBody, ExposureBody } from './api-schemas.js';
+import { AnswerBody, CreateSessionBody, EnrollmentBody, ExposureBody, ReadingProgressBody } from './api-schemas.js';
 import { CatalogService } from './catalog/catalog.service.js';
 import { StatsService } from './catalog/stats.service.js';
 import { ZodPipe } from './common/zod-pipe.js';
@@ -57,6 +57,18 @@ export class CatalogController {
   @Get('lessons/:id')
   lesson(@Param('id', ParseIntPipe) id: number) {
     return this.catalog.lesson(id);
+  }
+
+  /** How far the learner got in a lesson (reading scroll or slide), for "continue reading". */
+  @Put('lessons/:id/progress')
+  progress(@Param('id', ParseIntPipe) id: number, @Body(new ZodPipe(ReadingProgressBody)) body: ReadingProgressInput) {
+    return this.catalog.setReadingProgress(id, body.position);
+  }
+
+  /** The lesson to pick up again (null when there is none). */
+  @Get('reading')
+  async reading() {
+    return { reading: await this.catalog.reading() };
   }
 
   @Get('items/:key')
@@ -118,8 +130,9 @@ export class StudyController {
     return this.statsService.stats(courseKey || undefined);
   }
 
+  /** Leech cards; ?weak=true widens it to everything the learner keeps forgetting (what a weak quiz asks). */
   @Get('leeches')
-  leeches(@Query('course') courseKey?: string) {
-    return this.statsService.leeches(courseKey || undefined);
+  leeches(@Query('course') courseKey?: string, @Query('weak') weak?: string) {
+    return this.statsService.leeches(courseKey || undefined, { weak: weak === 'true' });
   }
 }

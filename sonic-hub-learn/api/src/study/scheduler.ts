@@ -1,4 +1,4 @@
-import { createEmptyCard, fsrs, type Card, type FSRS, type Grade, State } from 'ts-fsrs';
+import { createEmptyCard, fsrs, Rating, type Card, type FSRS, type Grade, State } from 'ts-fsrs';
 import { daysUntil, type DayClock } from '../common/time.js';
 
 /** The parts of a course policy that shape a card's schedule. */
@@ -97,6 +97,17 @@ export function replay(reviews: readonly ReviewEvent[], policy: SchedulePolicy, 
   let fields = emptyCard(reviews[0].reviewedAt);
   for (const r of reviews) fields = applyRating(fields, r.rating, r.reviewedAt, policy, clock);
   return fields;
+}
+
+/** When the card would be due next for each grade (shown under flashcard self-grade buttons). */
+export function previewDue(fields: CardFields, at: Date, policy: SchedulePolicy, clock: DayClock): Record<1 | 2 | 3 | 4, Date> {
+  const preview = schedulerFor(policy, at, clock).repeat(toCard(fields), at);
+  return {
+    1: preview[Rating.Again].card.due,
+    2: preview[Rating.Hard].card.due,
+    3: preview[Rating.Good].card.due,
+    4: preview[Rating.Easy].card.due,
+  };
 }
 
 /** Probability of recalling the card right now (1 for cards never reviewed). */

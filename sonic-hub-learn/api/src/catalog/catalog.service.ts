@@ -12,10 +12,11 @@ import {
   type LessonDetail,
   type LessonSummary,
   type MemoryView,
+  type ReadingView,
   type SearchResult,
   type SubjectSummary,
 } from '@learn/shared';
-import { and, asc, eq, ilike, inArray, or, sql } from 'drizzle-orm';
+import { and, asc, desc, eq, ilike, inArray, or, sql } from 'drizzle-orm';
 import { learningDay, learningDayBounds } from '../common/time.js';
 import { MediaUrls } from '../common/tokens.js';
 import { groupBy } from '../common/util.js';
@@ -36,6 +37,7 @@ import {
   itemVocab,
   lesson,
   lessonItem,
+  lessonProgress,
   subject,
   tag,
 } from '../db/schema.js';
@@ -46,6 +48,9 @@ import { retrievability } from '../study/scheduler.js';
 import { StudyService } from '../study/study.service.js';
 
 type CourseRow = typeof course.$inferSelect;
+
+/** A lesson read this far counts as finished; "continue reading" then moves on to the next one. */
+const READ_THROUGH = 0.95;
 
 function escapeLike(q: string): string {
   return q.replace(/[\\%_]/g, (c) => `\\${c}`);
@@ -141,6 +146,7 @@ export class CatalogService {
       title: s.title,
       description: s.description,
       lang: s.lang,
+      color: s.color,
       courses: courses.filter((c) => c.subjectId === s.id).map((c) => summaries.get(c.id)!),
     }));
   }
@@ -203,7 +209,7 @@ export class CatalogService {
 
     return {
       ...summary,
-      subject: { key: s.key, title: s.title, lang: s.lang, themeCss: this.urls.text(s.themeCss) },
+      subject: { key: s.key, title: s.title, lang: s.lang, color: s.color, themeCss: this.urls.text(s.themeCss) },
       policy: {
         algorithm: c.algorithm,
         retention: c.retention,
@@ -441,6 +447,92 @@ export class CatalogService {
       })),
       lessons,
     };
+  }
+
+  /** A course's readable lessons (body or slides) in reading order: chapters depth-first, then lesson order. */
+  private async readingOrder(courseId: number): Promise<number[]> {
+    const chapters = await this.db
+      .select({ id: chapter.id, parentId: chapter.parentId })
+      .from(chapter)
+      .where(and(eq(chapter.courseId, courseId), eq(chapter.status, 'active')))
+      .orderBy(asc(chapter.sort), asc(chapter.id));
+    const lessons = await this.db
+      .select({ id: lesson.id, chapterId: lesson.chapterId })
+      .from(lesson)
+      .where(and(eq(lesson.courseId, courseId), eq(lesson.status, 'active'), or(sql`${lesson.bodyMd} is not null`, sql`${lesson.slidesHtml} is not null`)))
+      .orderBy(asc(lesson.sort), asc(lesson.id));
+    const children = groupBy(chapters, (c) => c.parentId);
+    const lessonsOf = groupBy(lessons, (l) => l.chapterId);
+    const out: number[] = [];
+    const walk = (parentId: number | null) => {
+      for (const ch of children.get(parentId) ?? []) {
+        for (const l of lessonsOf.get(ch.id) ?? []) out.push(l.id);
+        walk(ch.id);
+      }
+    };
+    walk(null);
+    return out;
+  }
+
+  private async readingView(lessonId: number, position: number, updatedAt: Date): Promise<ReadingView | null> {
+    const [row] = await this.db
+      .select({ lesson, chapter, course, subjectKey: subject.key })
+      .from(lesson)
+      .innerJoin(chapter, eq(chapter.id, lesson.chapterId))
+      .innerJoin(course, eq(course.id, lesson.courseId))
+      .innerJoin(subject, eq(subject.id, course.subjectId))
+      .where(and(eq(lesson.id, lessonId), eq(lesson.status, 'active'), eq(course.status, 'active')));
+    if (!row) return null;
+    return {
+      lesson: { id: row.lesson.id, title: row.lesson.title, summary: row.lesson.summary },
+      course: { key: row.course.key, title: row.course.title },
+      chapter: { key: row.chapter.key, title: row.chapter.title },
+      subjectKey: row.subjectKey,
+      position,
+      updatedAt: updatedAt.toISOString(),
+    };
+  }
+
+  /**
+   * The lesson to pick up again: the last one opened; once that was read through, the next one in
+   * its course. Before anything was read: the first lesson of the first enrolled course.
+   */
+  async reading(now = new Date()): Promise<ReadingView | null> {
+    const [last] = await this.db
+      .select({ progress: lessonProgress, courseId: lesson.courseId })
+      .from(lessonProgress)
+      .innerJoin(lesson, and(eq(lesson.id, lessonProgress.lessonId), eq(lesson.status, 'active')))
+      .innerJoin(course, and(eq(course.id, lesson.courseId), eq(course.status, 'active')))
+      .orderBy(desc(lessonProgress.updatedAt))
+      .limit(1);
+    if (last) {
+      if (last.progress.position < READ_THROUGH) return this.readingView(last.progress.lessonId, last.progress.position, last.progress.updatedAt);
+      const order = await this.readingOrder(last.courseId);
+      const nextId = order[order.indexOf(last.progress.lessonId) + 1];
+      if (!nextId) return null;
+      const [started] = await this.db.select().from(lessonProgress).where(eq(lessonProgress.lessonId, nextId));
+      return this.readingView(nextId, started?.position ?? 0, started?.updatedAt ?? last.progress.updatedAt);
+    }
+    const [first] = await this.db
+      .select({ id: course.id })
+      .from(courseEnrollment)
+      .innerJoin(course, and(eq(course.id, courseEnrollment.courseId), eq(course.status, 'active')))
+      .orderBy(asc(course.sort), asc(course.id));
+    if (!first) return null;
+    const [lessonId] = await this.readingOrder(first.id);
+    return lessonId ? this.readingView(lessonId, 0, now) : null;
+  }
+
+  /** Remembers how far the learner got in a lesson. */
+  async setReadingProgress(lessonId: number, position: number, now = new Date()): Promise<{ position: number }> {
+    const [row] = await this.db.select({ id: lesson.id }).from(lesson).where(eq(lesson.id, lessonId));
+    if (!row) throw new NotFoundException(`lesson ${lessonId} not found`);
+    const value = Math.min(Math.max(position, 0), 1);
+    await this.db
+      .insert(lessonProgress)
+      .values({ lessonId, position: value, createdAt: now, updatedAt: now })
+      .onConflictDoUpdate({ target: lessonProgress.lessonId, set: { position: value, updatedAt: now } });
+    return { position: value };
   }
 
   /** Records that the learner read these items (learn / skim); Daily hands them out first. */
