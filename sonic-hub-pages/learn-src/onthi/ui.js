@@ -182,7 +182,7 @@ function course(key) {
   const first = c.chapters[0]?.lessons[0];
   const fresh = Math.min(p.fresh, c.policy?.new_per_day ?? 10);
   const el = screen(
-    withQuick(`
+    `
     <nav class="crumbs" aria-label="Đường dẫn"><a href="#/courses">Khóa học</a><span class="gt">>></span><span class="here">${esc(Content.courseShort(key))}</span></nav>
     <div class="course-wrap sub-${subOf(key)}">
       <div>
@@ -219,7 +219,7 @@ function course(key) {
           .join('')}
         ${!c.chapters.length ? `<p class="muted">Khóa gom không có bài học riêng — học bằng Thẻ, Quiz hoặc Ôn hôm nay.</p>` : ''}
       </div>
-    </div>`),
+    </div>`,
     { tab: 'courses' },
   );
   $$('.onoff button', el).forEach((b) =>
@@ -236,7 +236,7 @@ function lessonView(id) {
   const l = CONTENT.lessons[id];
   const tabs = [l.body && ['read', 'Bài đọc'], l.slides && ['slides', 'Slide'], ['cards', `Thẻ (${l.items.length})`]].filter(Boolean);
   const el = screen(
-    withQuick(`
+    `
     <nav class="crumbs" aria-label="Đường dẫn"><a href="#/courses">Khóa học</a><span class="gt">>></span><a href="#/course/${l.course}">${esc(Content.courseShort(l.course))}</a></nav>
     <div class="lesson-wrap sub-${subOf(l.course)}">
       <div>
@@ -249,7 +249,7 @@ function lessonView(id) {
         <section class="box gold side-quiz">${bar('Quiz phần này', '', I.quiz, ' gold')}<div class="body"><p>Câu hỏi về ${l.items.length} thẻ trong bài. Không cần đọc hết trước.</p><a class="btn wide" href="#/learn/lesson/${encodeURIComponent(id)}"><span class="go"></span>Bắt đầu quiz</a></div></section>
         <section class="box">${bar('Trong bài')}<div class="body"><ul class="dlist">${l.items.map((k) => `<li><span class="row">${esc(Content.label(k))}</span></li>`).join('')}</ul></div></section>
       </aside>
-    </div>`),
+    </div>`,
     { tab: 'courses' },
   );
   const panel = $('#panel', el);
