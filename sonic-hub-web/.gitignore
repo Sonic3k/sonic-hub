@@ -6,3 +6,7 @@ dist/
 *.log
 .DS_Store
 public/ruffle/
+
+# Tử vi: generated worksheets and reports (rebuild with npm run tuvi:book)
+scripts/tuvi/work/
+scripts/tuvi/source/*-report.txt
