@@ -1,6 +1,6 @@
 /* App shell for the installed app: pages open fast and survive a flaky connection.
    Study data (/api) always goes to the network. */
-const CACHE = 'learn-shell-v1';
+const CACHE = 'learn-shell-v2';
 const SHELL = ['/', '/manifest.webmanifest', '/icons/icon-192.png', '/icons/icon-512.png'];
 
 self.addEventListener('install', (e) => {

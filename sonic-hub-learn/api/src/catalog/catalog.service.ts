@@ -523,16 +523,20 @@ export class CatalogService {
     return lessonId ? this.readingView(lessonId, 0, now) : null;
   }
 
-  /** Remembers how far the learner got in a lesson. */
+  /**
+   * Remembers how far the learner got in a lesson: the furthest point, so glancing at the top of a lesson
+   * again does not undo what was read. Opening it still makes it the lesson to continue.
+   */
   async setReadingProgress(lessonId: number, position: number, now = new Date()): Promise<{ position: number }> {
     const [row] = await this.db.select({ id: lesson.id }).from(lesson).where(eq(lesson.id, lessonId));
     if (!row) throw new NotFoundException(`lesson ${lessonId} not found`);
     const value = Math.min(Math.max(position, 0), 1);
-    await this.db
+    const [saved] = await this.db
       .insert(lessonProgress)
       .values({ lessonId, position: value, createdAt: now, updatedAt: now })
-      .onConflictDoUpdate({ target: lessonProgress.lessonId, set: { position: value, updatedAt: now } });
-    return { position: value };
+      .onConflictDoUpdate({ target: lessonProgress.lessonId, set: { position: sql`greatest(${lessonProgress.position}, ${value})`, updatedAt: now } })
+      .returning({ position: lessonProgress.position });
+    return { position: saved.position };
   }
 
   /** Records that the learner read these items (learn / skim); Daily hands them out first. */

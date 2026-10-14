@@ -1,9 +1,9 @@
 import type { RatingValue, SessionCardView, SessionView } from '@learn/shared';
 import { useQuery } from '@tanstack/react-query';
-import { useEffect, useRef, useState, type RefObject } from 'react';
+import { useEffect, useRef, useState, type ReactNode, type RefObject } from 'react';
 import { useNavigate, useParams } from 'react-router';
 import { api, ApiError } from '../api';
-import { Dot, NoteCard, Strip, Waiting } from '../components/Bits';
+import { Bar, NoteCard, SubjectTag } from '../components/Bits';
 import { FlashBack, FlashFront } from '../components/Question';
 import { Screen } from '../components/Screen';
 import { courseShort, subStyle, useCatalog, type Catalog } from '../lib/catalog';
@@ -22,7 +22,7 @@ interface TopHandle {
   flip: () => void;
 }
 
-function TopCard({ card, color, onRate, handle }: { card: SessionCardView; color: string; onRate: (r: RatingValue) => void; handle: RefObject<TopHandle | null> }) {
+function TopCard({ card, color, head, onRate, handle }: { card: SessionCardView; color: string; head: ReactNode; onRate: (r: RatingValue) => void; handle: RefObject<TopHandle | null> }) {
   const ref = useRef<HTMLDivElement>(null);
   const stamps = useRef<Record<SwipeDir, HTMLSpanElement | null>>({ left: null, right: null, up: null });
   const [flipped, setFlipped] = useState(false);
@@ -57,7 +57,7 @@ function TopCard({ card, color, onRate, handle }: { card: SessionCardView; color
   }, [card.id, handle]);
   return (
     <div ref={ref} className={`fcard${flipped ? ' flipped' : ''}`} style={subStyle(color)}>
-      <Faces card={card} />
+      <Faces card={card} head={head} />
       <span className="fstamp left" ref={(e) => void (stamps.current.left = e)}>
         Quên
       </span>
@@ -71,15 +71,21 @@ function TopCard({ card, color, onRate, handle }: { card: SessionCardView; color
   );
 }
 
-function Faces({ card }: { card: SessionCardView }) {
+function Faces({ card, head }: { card: SessionCardView; head: ReactNode }) {
   return (
     <div className="inner">
       <div className="face front">
-        <FlashFront card={card} />
+        <div className="fbar">{head}</div>
+        <div className="fbody">
+          <FlashFront card={card} />
+        </div>
         <span className="hint">Chạm để lật</span>
       </div>
       <div className="face back">
-        <FlashBack card={card} />
+        <div className="fbar">{head}</div>
+        <div className="fbody">
+          <FlashBack card={card} />
+        </div>
       </div>
     </div>
   );
@@ -135,31 +141,40 @@ function Deck({ initial, catalog, onRestart }: { initial: SessionView; catalog: 
     return () => removeEventListener('keydown', onKey);
   });
 
-  const courseColor = catalog.colorOf(view.course?.key ?? '');
   if (!current)
     return (
-      <>
-        <div className="deck-area">
-          <div className="card done-card" style={{ position: 'absolute', inset: 0 }}>
-            <Strip parts={[{ color: courseColor, n: 1 }]} />
-            <h2 className="display" style={{ fontSize: 28 }}>
-              Hết bộ thẻ
-            </h2>
-            <div className="lines">
-              {RATINGS.map((r) => (
-                <div key={r}>
-                  <span>{RATING_LABEL[r]}</span>
-                  <b>{counts[r]}</b>
-                </div>
-              ))}
-            </div>
-            <button className="btn wide" onClick={onRestart}>
+      <div className="deck-area">
+        <section className="box done deck-done">
+          <Bar>Hết bộ thẻ</Bar>
+          <div className="body">
+            <table className="tbl">
+              <tbody>
+                {RATINGS.map((r) => (
+                  <tr key={r}>
+                    <td>{RATING_LABEL[r]}</td>
+                    <td className="num">{counts[r]}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+            <button type="button" className="btn wide" onClick={onRestart}>
+              <span className="go" />
               Học lại bộ này
             </button>
           </div>
-        </div>
+        </section>
+      </div>
+    );
+
+  const headOf = (card: SessionCardView) => {
+    const course = catalog.course(card.courseKey);
+    return (
+      <>
+        <SubjectTag subject={catalog.subjectOf(card.courseKey)} />
+        <span>{courseShort(course?.title ?? view.course?.title ?? '')}</span>
       </>
     );
+  };
 
   return (
     <>
@@ -168,19 +183,21 @@ function Deck({ initial, catalog, onRestart }: { initial: SessionView; catalog: 
           const depth = visible.indexOf(card);
           const color = catalog.colorOf(card.courseKey);
           return depth === 0 ? (
-            <TopCard key={card.id} card={card} color={color} onRate={(r) => rate(card, r)} handle={top} />
+            <TopCard key={card.id} card={card} color={color} head={headOf(card)} onRate={(r) => rate(card, r)} handle={top} />
           ) : (
             <div key={card.id} className={`fcard under-${depth}`} style={subStyle(color)} aria-hidden="true">
-              <Faces card={card} />
+              <Faces card={card} head={headOf(card)} />
             </div>
           );
         })}
       </div>
       <div className="deck-actions">
-        <p className="deck-left">{error ?? `Còn ${pending.length} thẻ`}</p>
+        <p className={`deck-left${error ? ' err' : ''}`} aria-live="polite">
+          {error ?? `Còn ${pending.length} thẻ`}
+        </p>
         <div className="q-rate">
           {RATINGS.map((r) => (
-            <button key={r} className="q-rate-btn" data-rating={r} onClick={() => press(r)}>
+            <button key={r} type="button" className="q-rate-btn" data-rating={r} onClick={() => press(r)}>
               <span className="q-rate-label">{RATING_LABEL[r]}</span>
               <span className="q-rate-next">{untilLabel(current.ratingDue?.[r]) || RATING_FALLBACK[r]}</span>
             </button>
@@ -191,13 +208,26 @@ function Deck({ initial, catalog, onRestart }: { initial: SessionView; catalog: 
   );
 }
 
+/** While the deck is dealt: one card-sized placeholder. */
+function DeckWaiting() {
+  return (
+    <div className="deck-area wait" aria-busy="true" aria-label="Đang tải">
+      <div className="box">
+        <div className="bar" />
+        <div className="body" />
+      </div>
+    </div>
+  );
+}
+
 export function Flash() {
   const { key, sessionId } = useParams();
   const navigate = useNavigate();
-  const { catalog, isPending } = useCatalog();
+  const { catalog, isPending, error: catalogError, refetch: refetchCatalog } = useCatalog();
   const creating = useRef<string | null>(null);
   const [error, setError] = useState<unknown>(null);
-  const chipsRef = useRef<HTMLDivElement>(null);
+  const [attempt, setAttempt] = useState(0);
+  const barRef = useRef<HTMLDivElement>(null);
 
   // /flash: open the first course being studied
   useEffect(() => {
@@ -218,37 +248,51 @@ export function Flash() {
         setError(e);
         creating.current = null;
       });
-  }, [key, sessionId, navigate]);
+  }, [key, sessionId, navigate, attempt]);
 
   const id = sessionId ? Number(sessionId) : null;
   const q = useQuery({ queryKey: ['session', id], queryFn: () => api.session(id!), enabled: id !== null, staleTime: 0, gcTime: 0 });
 
+  // keep the chosen deck in view on the sideways-scrolling bar
   useEffect(() => {
-    chipsRef.current?.querySelector('[aria-pressed="true"]')?.scrollIntoView({ inline: 'center', block: 'nearest' });
+    const bar = barRef.current;
+    const on = bar?.querySelector<HTMLElement>('[aria-pressed="true"]');
+    if (bar && on && bar.scrollWidth > bar.clientWidth) bar.scrollLeft = on.offsetLeft - (bar.clientWidth - on.offsetWidth) / 2;
   }, [key, isPending]);
 
+  const noCatalog = !isPending && !catalog.all.length;
+  const empty = error instanceof ApiError && error.status === 422;
+
   return (
-    <Screen tab="flash">
-      <header className="top">
-        <div>
-          <h1 className="display h1">Thẻ</h1>
-          <p className="muted small" style={{ margin: '4px 0 0' }}>
-            Chạm để lật. Vuốt phải là nhớ, trái là quên, lên là dễ.
-          </p>
-        </div>
-      </header>
-      <div className="deck-chips" ref={chipsRef}>
-        {catalog.all.map((c) => (
-          <button key={c.key} aria-pressed={c.key === key} onClick={() => c.key !== key && navigate(`/flash/${c.key}`)}>
-            <Dot color={catalog.colorOf(c.key)} />
-            {courseShort(c.title)}
-          </button>
-        ))}
+    <Screen tab="flash" quick>
+      <div className="page-head">
+        <h1 className="h1">Thẻ</h1>
+        <p className="muted small">Chạm để lật. Vuốt phải là nhớ, trái là quên, lên là dễ.</p>
       </div>
-      {error ? (
-        <div className="deck-area" style={{ height: 'auto' }}>
-          <NoteCard error={!(error instanceof ApiError && error.status === 422)}>
-            {error instanceof ApiError && error.status === 422 ? 'Khóa này chưa có thẻ nào để lật.' : error instanceof ApiError ? error.message : 'Có lỗi xảy ra.'}
+      {catalog.all.length > 0 && (
+        <div className="sortbar" role="group" aria-label="Chọn bộ thẻ" ref={barRef}>
+          <span className="k">Bộ thẻ:</span>
+          {catalog.all.map((c) => (
+            <button key={c.key} type="button" aria-pressed={c.key === key} onClick={() => c.key !== key && navigate(`/flash/${c.key}`)}>
+              <span>{courseShort(c.title)}</span>
+            </button>
+          ))}
+        </div>
+      )}
+      {catalogError && !catalog.all.length ? (
+        <div className="deck-note">
+          <NoteCard error action={<button className="btn" onClick={() => refetchCatalog()}>Thử lại</button>}>
+            {catalogError.message}
+          </NoteCard>
+        </div>
+      ) : noCatalog ? (
+        <div className="deck-note">
+          <NoteCard>Chưa có khóa học nào để lật thẻ.</NoteCard>
+        </div>
+      ) : error ? (
+        <div className="deck-note">
+          <NoteCard error={!empty} action={empty ? undefined : <button className="btn" onClick={() => setAttempt((n) => n + 1)}>Thử lại</button>}>
+            {empty ? 'Khóa này chưa có thẻ nào để lật.' : error instanceof ApiError ? error.message : 'Có lỗi xảy ra.'}
           </NoteCard>
         </div>
       ) : q.data ? (
@@ -262,13 +306,13 @@ export function Flash() {
           }}
         />
       ) : q.error ? (
-        <NoteCard error action={<button className="btn" onClick={() => q.refetch()}>Thử lại</button>}>
-          {q.error.message}
-        </NoteCard>
-      ) : (
-        <div className="deck-area">
-          <Waiting tall />
+        <div className="deck-note">
+          <NoteCard error action={<button className="btn" onClick={() => q.refetch()}>Thử lại</button>}>
+            {q.error.message}
+          </NoteCard>
         </div>
+      ) : (
+        <DeckWaiting />
       )}
     </Screen>
   );

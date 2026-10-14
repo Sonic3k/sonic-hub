@@ -19,3 +19,9 @@ export const RATINGS: RatingValue[] = [1, 2, 3, 4];
 
 /** The learner's name in greetings (one learner per deployment). */
 export const LEARNER_NAME = import.meta.env.VITE_LEARNER_NAME ?? 'Ngọc Anh';
+
+/** The learner's nickname, shown next to the name in the footer (empty to leave it out). */
+export const LEARNER_NICK: string = import.meta.env.VITE_LEARNER_NICK ?? 'Sonic3k';
+
+/** The app's name: masthead, page title, installed app. */
+export const APP_NAME = 'Ôn Bài';

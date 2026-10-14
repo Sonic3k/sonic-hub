@@ -14,7 +14,7 @@ export interface SlideDeckApi {
   goto(i: number): void;
 }
 
-export function mountSlides(host: HTMLElement, slidesHtml: string, themeCss: string | null, onChange?: (s: SlideState) => void): SlideDeckApi {
+export function mountSlides(host: HTMLElement, slidesHtml: string, themeCss: string | null, onChange?: (s: SlideState) => void, extraCss = ''): SlideDeckApi {
   const theme = (themeCss ?? '').replace(/:root/g, ':host').replace(/\.slides\s+section/g, 'section').replace(/\.slides\s+/g, '');
   const shadow = host.shadowRoot ?? host.attachShadow({ mode: 'open' });
   shadow.innerHTML = `<style>${theme}
@@ -28,6 +28,7 @@ export function mountSlides(host: HTMLElement, slidesHtml: string, themeCss: str
     .step.is-shown { opacity: 1; transform: none; }
     .step:not(.is-shown), .step:not(.is-shown) * { animation-play-state: paused !important; }
     @media (prefers-reduced-motion: reduce) { section, .step { transition: none; } }
+    ${extraCss}
   </style><div class="deck">${slidesHtml}</div>`;
   const sections = [...shadow.querySelectorAll<HTMLElement>('section')];
   let si = 0;

@@ -222,6 +222,8 @@ describe('learn API end to end', { skip: !adminUrl && 'TEST_DATABASE_URL not set
     assert.equal(now.lesson.id, lessonId);
     assert.equal(now.position, 0.4);
     assert.equal(now.subjectKey, 'aws');
+    await ok(`/lessons/${lessonId}/progress`, { position: 0.1 }, 'PUT');
+    assert.equal((await ok<ReadingResponse>('/reading')).reading!.position, 0.4, 'opening the lesson again at the top keeps the furthest point');
     await ok(`/lessons/${lessonId}/progress`, { position: 1 }, 'PUT');
     assert.equal((await ok<ReadingResponse>('/reading')).reading, null, 'read through, and no other readable lesson follows in the course');
     assert.equal((await api(`/lessons/${lessonId}/progress`, { position: 2 }, 'PUT')).status, 400);
