@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import java.util.UUID;
 import jakarta.persistence.*;
 import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -45,6 +46,35 @@ public class Person extends BaseEntity {
 
     @Column(name = "birth_year")
     private Integer birthYear;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "gender", length = 10)
+    private Gender gender;
+
+    /** The clock time of birth, when known — what the Mystic readings (tử vi, chiêm tinh…) are set up from. */
+    @Column(name = "birth_time")
+    private LocalTime birthTime;
+
+    /** the time is a guess ("a little after nine") */
+    @Column(name = "birth_time_approx")
+    private Boolean birthTimeApprox = false;
+
+    /** IANA zone of the birthplace's clocks, e.g. Asia/Ho_Chi_Minh */
+    @Column(name = "birth_time_zone", length = 64)
+    private String birthTimeZone;
+
+    /** the clock's offset from UTC at that moment, in minutes (worked out from the zone unless set) */
+    @Column(name = "birth_utc_offset_minutes")
+    private Integer birthUtcOffsetMinutes;
+
+    @Column(name = "birth_place")
+    private String birthPlace;
+
+    @Column(name = "birth_latitude")
+    private Double birthLatitude;
+
+    @Column(name = "birth_longitude")
+    private Double birthLongitude;
 
     @Column(name = "bio", columnDefinition = "TEXT")
     private String bio;
@@ -139,6 +169,8 @@ public class Person extends BaseEntity {
      *  gone; a row still holding one is moved to ANGEL at startup, see EnumCheckConstraintFixer.) */
     public enum RelationshipType { ANGEL, FRIEND, FAMILY, OTHER }
 
+    public enum Gender { MALE, FEMALE }
+
     // ── Constructors ─────────────────────────────────────────────────────────
 
     public Person() {}
@@ -165,6 +197,22 @@ public class Person extends BaseEntity {
     public void setBirthMonth(Integer v) { this.birthMonth = v; }
     public Integer getBirthYear() { return birthYear; }
     public void setBirthYear(Integer v) { this.birthYear = v; }
+    public Gender getGender() { return gender; }
+    public void setGender(Gender gender) { this.gender = gender; }
+    public LocalTime getBirthTime() { return birthTime; }
+    public void setBirthTime(LocalTime birthTime) { this.birthTime = birthTime; }
+    public Boolean getBirthTimeApprox() { return birthTimeApprox; }
+    public void setBirthTimeApprox(Boolean birthTimeApprox) { this.birthTimeApprox = birthTimeApprox; }
+    public String getBirthTimeZone() { return birthTimeZone; }
+    public void setBirthTimeZone(String birthTimeZone) { this.birthTimeZone = birthTimeZone; }
+    public Integer getBirthUtcOffsetMinutes() { return birthUtcOffsetMinutes; }
+    public void setBirthUtcOffsetMinutes(Integer birthUtcOffsetMinutes) { this.birthUtcOffsetMinutes = birthUtcOffsetMinutes; }
+    public String getBirthPlace() { return birthPlace; }
+    public void setBirthPlace(String birthPlace) { this.birthPlace = birthPlace; }
+    public Double getBirthLatitude() { return birthLatitude; }
+    public void setBirthLatitude(Double birthLatitude) { this.birthLatitude = birthLatitude; }
+    public Double getBirthLongitude() { return birthLongitude; }
+    public void setBirthLongitude(Double birthLongitude) { this.birthLongitude = birthLongitude; }
     public String getBio() { return bio; }
     public void setBio(String bio) { this.bio = bio; }
     public RelationshipType getRelationshipType() { return relationshipType; }

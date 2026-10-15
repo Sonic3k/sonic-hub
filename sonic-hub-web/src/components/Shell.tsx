@@ -6,14 +6,13 @@ import { Fragment, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { angelsOrdered } from '../pages/Angels';
 import { MoneySide } from '../pages/Money';
-import MysticSide from '../pages/mystic/Side';
+import { PortalSide } from '../pages/Portal';
 import { isOwner } from './money/data';
 import { cdn } from '../api/client';
 import { counts, fmt, noteDate, useAlbums, useLibraryCounts, useNotes, usePersons, useRegions, useTimeline } from '../lib/queries';
 
-const FOOTBALL = import.meta.env.VITE_FOOTBALL_URL;
-/* [label, path, colour, short label for the phone's bottom bar] */
-const TABS: [string, string, string, string?][] = [['Hôm nay', '/', '--photo'], ['Ảnh', '/photos', '--photo'], ['Nhật ký', '/journal', '--journal'], ['Angels', '/angels', '--angels'], ['Diễn đàn', '/forum', '--forum'], ['Bóng đá', '/football', '--football'], ['Game', '/games', '--games'], ['Huyền học', '/huyen-hoc', '--mystic', 'Tử vi']];
+/* [label, path, colour, short label for the phone's bottom bar]. Portal lists the sites of their own (Huyền học, Bóng đá). */
+const TABS: [string, string, string, string?][] = [['Hôm nay', '/', '--photo'], ['Ảnh', '/photos', '--photo'], ['Nhật ký', '/journal', '--journal'], ['Angels', '/angels', '--angels'], ['Diễn đàn', '/forum', '--forum'], ['Game', '/games', '--games'], ['Portal', '/portal', '--portal']];
 /* Only on the owner's own browser (set by opening /money once): visitors of the portal never see the money tab. */
 const MONEY_TAB: [string, string, string, string?] = ['Tiền', '/money', '--money'];
 
@@ -21,10 +20,9 @@ export default function Shell() {
   const loc = useLocation(), nav = useNavigate(), tl = useTimeline();
   const reading = /^\/journal\/.+/.test(loc.pathname), inJournal = loc.pathname.startsWith('/journal'), inPhotos = /^\/(photos|tags)/.test(loc.pathname), inAngels = loc.pathname.startsWith('/angels'), inForum = loc.pathname.startsWith('/forum');
   const inMoney = loc.pathname.startsWith('/money'), tabs = inMoney || isOwner() ? [...TABS, MONEY_TAB] : TABS;
-  const inMystic = loc.pathname.startsWith('/huyen-hoc');
-  /* Angels changes the light of the whole page, softly; Huyền học turns it to old paper */
+  const inPortal = loc.pathname.startsWith('/portal');
+  /* Angels changes the light of the whole page, softly */
   useEffect(() => { document.body.classList.toggle('mood-angels', inAngels); }, [inAngels]);
-  useEffect(() => { document.body.classList.toggle('mood-mystic', inMystic); }, [inMystic]);
   const random = async () => {
     const years = Object.keys(counts(tl.data ?? [])).map(Number); if (!years.length) return;
     const y = years[Math.floor(Math.random() * years.length)], r = await randomDay(y, tl.data ?? []).catch(() => null);
@@ -35,13 +33,11 @@ export default function Shell() {
       <header className="top"><div className="top-in">
         <Link className="logo" to="/">Sonic Hub</Link>
         <Search />
-        <nav className="tabs">{tabs.map(([n, to, c, short]) => to === '/football' && FOOTBALL
-          ? <a key={to} href={FOOTBALL} style={{ ['--c' as string]: `var(${c})` }}><i />{n}</a>
-          : <NavLink key={to} to={to} end={to === '/'} className={({ isActive }) => `${isActive ? 'on' : ''} ${short ? 'has-s' : ''}`} style={{ ['--c' as string]: `var(${c})` }}><i /><span className="tl">{n}</span>{short && <span className="ts">{short}</span>}</NavLink>)}</nav>
+        <nav className="tabs">{tabs.map(([n, to, c, short]) => <NavLink key={to} to={to} end={to === '/'} className={({ isActive }) => `${isActive ? 'on' : ''} ${short ? 'has-s' : ''}`} style={{ ['--c' as string]: `var(${c})` }}><i /><span className="tl">{n}</span>{short && <span className="ts">{short}</span>}</NavLink>)}</nav>
         <button className="rand" type="button" onClick={random}>Một ngày bất kỳ</button>
       </div></header>
       <div className={`frame ${reading ? 'reading' : ''}`}>
-        <aside className="side">{inJournal ? <JournalSide /> : inPhotos ? <PhotosSide /> : inAngels ? <AngelsSide /> : inForum ? <ForumSide /> : inMoney ? <MoneySide /> : inMystic ? <MysticSide /> : <HomeSide />}</aside>
+        <aside className="side">{inJournal ? <JournalSide /> : inPhotos ? <PhotosSide /> : inAngels ? <AngelsSide /> : inForum ? <ForumSide /> : inMoney ? <MoneySide /> : inPortal ? <PortalSide /> : <HomeSide />}</aside>
         <main><Outlet /></main>
       </div>
     </>

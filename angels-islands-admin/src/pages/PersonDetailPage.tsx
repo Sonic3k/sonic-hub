@@ -101,14 +101,24 @@ export default function PersonDetailPage() {
       birthYear: person.birthYear ? String(person.birthYear) : '',
       relationshipType: person.relationshipType || 'FRIEND', period: person.period || '',
       firstMet: person.firstMet || '', howWeMet: person.howWeMet || '', song: person.song || '',
+      gender: person.gender || '', birthTime: person.birthTime || '', birthTimeApprox: person.birthTimeApprox ? 'true' : '',
+      birthTimeZone: person.birthTimeZone || '', birthUtcOffsetMinutes: person.birthUtcOffsetMinutes != null ? String(person.birthUtcOffsetMinutes) : '',
+      birthPlace: person.birthPlace || '', birthLatitude: person.birthLatitude != null ? String(person.birthLatitude) : '',
+      birthLongitude: person.birthLongitude != null ? String(person.birthLongitude) : '',
     })
     setEditing(true)
   }
 
   const saveEdit = () => {
     // a full date wins when it was changed; otherwise the parts are sent (an empty part clears it)
-    const { birthDay, birthMonth, birthYear, ...rest } = form as Record<string, string>
-    const payload: Record<string, unknown> = { ...rest }
+    const { birthDay, birthMonth, birthYear, birthTimeApprox, birthUtcOffsetMinutes, birthLatitude, birthLongitude, ...rest } = form as Record<string, string>
+    const payload: Record<string, unknown> = { ...rest, birthTimeApprox: birthTimeApprox === 'true' }
+    // the offset is worked out by the API from the zone; it is sent only when set here by hand
+    const offset = birthUtcOffsetMinutes.trim()
+    if (offset !== (person.birthUtcOffsetMinutes != null ? String(person.birthUtcOffsetMinutes) : '') && /^-?\d+$/.test(offset)) payload.birthUtcOffsetMinutes = Number(offset)
+    if (birthLatitude.trim()) payload.birthLatitude = Number(birthLatitude)
+    if (birthLongitude.trim()) payload.birthLongitude = Number(birthLongitude)
+    if (!form.birthTime) delete payload.birthTimeZone
     if (form.dateOfBirth && form.dateOfBirth !== (person.dateOfBirth || '')) {
       payload.dateOfBirth = form.dateOfBirth
     } else {
@@ -135,6 +145,9 @@ export default function PersonDetailPage() {
     { label: 'Alternative Name', key: 'alternativeName', value: person.alternativeName },
     { label: 'Nickname', key: 'nickname', value: person.nickname },
     { label: 'Birthday', key: 'dateOfBirth', value: birthdayText(person) },
+    { label: 'Gender', key: 'gender', value: person.gender === 'MALE' ? 'Male' : person.gender === 'FEMALE' ? 'Female' : undefined },
+    { label: 'Birth time', key: 'birthTime', value: person.birthTime ? `${person.birthTime}${person.birthTimeApprox ? ' (approx.)' : ''} · ${person.birthTimeZone ?? ''}${person.birthUtcOffsetMinutes != null ? ` (UTC${person.birthUtcOffsetMinutes >= 0 ? '+' : '−'}${Math.abs(person.birthUtcOffsetMinutes) / 60})` : ''}` : undefined },
+    { label: 'Birthplace', key: 'birthPlace', value: person.birthPlace ? `${person.birthPlace}${person.birthLatitude != null ? ` (${person.birthLatitude}, ${person.birthLongitude})` : ''}` : undefined },
     { label: 'Relationship', key: 'relationshipType', value: person.relationshipType ? REL_LABELS[person.relationshipType] : undefined },
     { label: 'Period', key: 'period', value: person.period },
     { label: 'First Met', key: 'firstMet', value: person.firstMet },
@@ -228,6 +241,7 @@ export default function PersonDetailPage() {
               <input className="w-20 px-2 py-2 text-sm border rounded-lg border-slate-200" inputMode="numeric" placeholder="year" value={form.birthYear} onChange={e => set('birthYear', e.target.value.replace(/\D/g, ''))} />
             </div>
           </div>
+          <BirthFields form={form} set={set} />
           <div className="space-y-1">
             <label className="block text-xs font-medium text-slate-600">Relationship</label>
             <select className="w-full px-3 py-2.5 text-sm border rounded-lg border-slate-200 bg-white"
@@ -785,3 +799,37 @@ function birthdayText(p: { dateOfBirth?: string; birthDay?: number | null; birth
   const dm = p.birthDay && p.birthMonth ? `${p.birthDay}/${p.birthMonth}` : ''
   return [dm, p.birthYear ? String(p.birthYear) : ''].filter(Boolean).join('/') || undefined
 }
+
+/** a few birthplaces with their coordinates (the latitude picks the lunar calendar of 1968–1975, the longitude sun time) */
+const PLACES: [string, number, number][] = [
+  ['Hà Nội', 21.0285, 105.8542], ['Hải Phòng', 20.8449, 106.6881], ['Nam Định', 20.4388, 106.1621], ['Thanh Hóa', 19.8067, 105.7852],
+  ['Vinh', 18.6796, 105.6813], ['Huế', 16.4637, 107.5909], ['Đà Nẵng', 16.0544, 108.2022], ['Nha Trang', 12.2388, 109.1967],
+  ['Đà Lạt', 11.9404, 108.4583], ['TP Hồ Chí Minh', 10.8231, 106.6297], ['Cần Thơ', 10.0452, 105.7469],
+]
+
+/** Gender, birth time and birthplace — what Huyền học (the Mystic site) reads a chart from. Linked people take them from here. */
+function BirthFields({ form, set }: { form: Record<string, any>; set: (k: string, v: string) => void }) {
+  const cls = 'px-2 py-2 text-sm border rounded-lg border-slate-200 bg-white'
+  const pick = (name: string) => { const p = PLACES.find(x => x[0] === name); if (!p) return; set('birthPlace', p[0]); set('birthLatitude', String(p[1])); set('birthLongitude', String(p[2])) }
+  return (
+    <div className="space-y-2 rounded-lg border border-slate-100 p-3">
+      <p className="text-xs font-medium text-slate-600">For Huyền học <span className="font-normal text-slate-400">— blank where unknown; the time and place stay private</span></p>
+      <div className="flex flex-wrap gap-2 items-center">
+        <select className={cls} value={form.gender} onChange={e => set('gender', e.target.value)}>
+          <option value="">Gender: not set</option><option value="MALE">Male</option><option value="FEMALE">Female</option>
+        </select>
+        <input className={`${cls} w-28`} type="time" value={form.birthTime} onChange={e => set('birthTime', e.target.value)} title="Birth time (clock)" />
+        <label className="flex items-center gap-1 text-xs text-slate-600"><input type="checkbox" checked={form.birthTimeApprox === 'true'} onChange={e => set('birthTimeApprox', e.target.checked ? 'true' : '')} />approx.</label>
+        {form.birthTime && <input className={`${cls} w-44`} value={form.birthTimeZone} onChange={e => set('birthTimeZone', e.target.value)} placeholder="Asia/Ho_Chi_Minh" title="IANA time zone" />}
+        {form.birthTime && <input className={`${cls} w-24`} inputMode="numeric" value={form.birthUtcOffsetMinutes} onChange={e => set('birthUtcOffsetMinutes', e.target.value.replace(/[^\d-]/g, ''))} placeholder="offset" title="UTC offset in minutes (420 = UTC+7); worked out from the zone when left alone" />}
+      </div>
+      <div className="flex flex-wrap gap-2 items-center">
+        <select className={cls} value="" onChange={e => pick(e.target.value)}><option value="">Pick a place…</option>{PLACES.map(p => <option key={p[0]}>{p[0]}</option>)}</select>
+        <input className={`${cls} flex-1 min-w-[140px]`} value={form.birthPlace} onChange={e => set('birthPlace', e.target.value)} placeholder="Birthplace" />
+        <input className={`${cls} w-24`} inputMode="decimal" value={form.birthLatitude} onChange={e => set('birthLatitude', e.target.value)} placeholder="lat" />
+        <input className={`${cls} w-24`} inputMode="decimal" value={form.birthLongitude} onChange={e => set('birthLongitude', e.target.value)} placeholder="lng" />
+      </div>
+    </div>
+  )
+}
+

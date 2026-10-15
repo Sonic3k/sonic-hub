@@ -6,10 +6,11 @@ import { cdn, pic } from '../api/client';
 import type { MediaFile, Person } from '../types';
 import { counts, excerptOf, fmt, noteDate, noteHref, readMinutes, useAlbums, useNotes, usePersons, useRegions, useTimeline } from '../lib/queries';
 import { dayMonthYear, isoDay, longDay, yearOf } from '../lib/date';
+import { PORTALS } from './Portal';
 import Justified from '../components/Justified';
 import Viewer from '../components/Viewer';
 
-const T = 10 * 60_000, FOOTBALL = import.meta.env.VITE_FOOTBALL_URL;
+const T = 10 * 60_000;
 const nameOf = (p: Person) => p.displayName || p.name;
 
 export default function Home() {
@@ -71,7 +72,8 @@ export default function Home() {
         <aside className="rail">
           <ChatCard people={people.length ? people : (persons.data ?? []).filter(isAngel)} />
           <RandomPhoto onOpen={(m) => setViewer({ items: [m], i: 0 })} />
-          {FOOTBALL && <div className="card" style={{ ['--c' as string]: 'var(--football)' }}><h3><i />Bóng đá</h3><a href={FOOTBALL} style={{ fontWeight: 600 }}>Mở Fantasy Football →</a></div>}
+          {PORTALS.some(s => s.url) && <div className="card" style={{ ['--c' as string]: 'var(--portal)' }}><h3><i />Portal</h3>
+            {PORTALS.filter(s => s.url).map(s => <a key={s.key} href={s.url} style={{ display: 'block', fontWeight: 600, padding: '4px 0', color: `var(${s.color})` }}>{s.name} →</a>)}</div>}
         </aside>
       </section>
 

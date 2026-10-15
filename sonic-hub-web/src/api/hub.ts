@@ -1,5 +1,5 @@
 import { apiUrl, get } from './client';
-import type { Chapter, ChatArchive, ChatAttachment, ChatMessage, Collection, Episode, Fact, Forum, ForumBoard, ForumMember, ForumPage, ForumPostHit, ForumThread, ForumThreadDetail, MediaFile, Note, Paged, Person, PersonDetail, PersonForum, PersonRanking, RankingDetail, SeriesPart, Tag, TagStats, TimelineBucket, Trait } from '../types';
+import type { Chapter, ChatArchive, ChatAttachment, ChatMessage, Collection, Episode, Fact, Forum, ForumBoard, ForumMember, ForumPage, ForumPostHit, ForumThread, ForumThreadDetail, MediaFile, MysticBrief, Note, Paged, Person, PersonDetail, PersonForum, PersonRanking, RankingDetail, SeriesPart, Tag, TagStats, TimelineBucket, Trait } from '../types';
 import { isoDay, addDays } from '../lib/date';
 
 export interface Search {
@@ -46,6 +46,7 @@ export const hub = {
   /** The stored file of an attachment (only when hasFile). */
   attachmentUrl: (id: string) => apiUrl(`/chat-attachments/${id}/content`),
   person: (id: string) => get<PersonDetail>(`/persons/${id}`),
+  mysticBriefs: (id: string) => get<MysticBrief[]>(`/persons/${id}/mystic-briefs`),
   facts: (id: string) => get<Fact[]>(`/persons/${id}/memory/facts`),
   episodes: (id: string) => get<Episode[]>(`/persons/${id}/memory/episodes`),
   chapters: (id: string) => get<Chapter[]>(`/persons/${id}/memory/chapters`),

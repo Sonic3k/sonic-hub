@@ -4,7 +4,7 @@ import { Link, useParams, useSearchParams } from 'react-router-dom';
 import { useInfiniteQuery, useQueries, useQuery } from '@tanstack/react-query';
 import { hub, isAngel, periodYears, randomLine } from '../api/hub';
 import { cdn, pic } from '../api/client';
-import type { ChatAttachment, ChatMessage, Person } from '../types';
+import type { ChatAttachment, ChatMessage, MysticBrief, Person } from '../types';
 import { fmt, usePersons } from '../lib/queries';
 import { dayMonthYear, longDay, momentDate, timeOf } from '../lib/date';
 import { fold } from '../lib/text';
@@ -13,6 +13,7 @@ import { Sentinel, useViewer } from '../components/PhotoGroups';
 import { PostHits } from './Forum';
 import PersonNumbers from '../components/PersonNumbers';
 import { Attachment, AttachmentGallery, Lightbox, type Shown } from '../components/ChatAttachments';
+import { isOwner } from '../components/money/data';
 
 const T = 10 * 60_000;
 const nameOf = (p: Person) => p.displayName || p.name;
@@ -94,6 +95,7 @@ export function PersonPage() {
   const items = photos.data?.content ?? [], viewer = useViewer(items);
   const openById = (mid: string) => { const i = items.findIndex(m => m.id === mid); if (i >= 0) viewer.open(i); };
   const p = person.data, order = angelsOrdered(persons.data ?? []), k = order.findIndex(x => x.id === id), prev = order[k - 1], next = order[k + 1];
+  const owner = isOwner();
   const platforms = [...new Set((archives.data ?? []).map(a => a.platform))];
   const chs = [...(chapters.data ?? [])].sort((a, b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0));
   const eps = [...(episodes.data ?? [])].sort((a, b) => (a.occurredAt ?? '').localeCompare(b.occurredAt ?? ''));
@@ -171,10 +173,13 @@ export function PersonPage() {
               {p.firstMet && <div><dt>Gặp nhau</dt><dd>{dayMonthYear(p.firstMet)}</dd></div>}
               {p.dateOfBirth ? <div><dt>Sinh nhật</dt><dd>{dayMonthYear(p.dateOfBirth)}</dd></div>
                 : (p.birthMonth || p.birthYear) ? <div><dt>Sinh nhật</dt><dd>{[p.birthDay && p.birthMonth ? `${p.birthDay} tháng ${p.birthMonth}` : '', p.birthYear ? `năm ${p.birthYear}` : ''].filter(Boolean).join(', ')}</dd></div> : null}
+              {owner && p.birthTime && <div><dt>Giờ sinh</dt><dd>{p.birthTime}{p.birthTimeApprox ? ' (ước chừng)' : ''}</dd></div>}
+              {owner && p.birthPlace && <div><dt>Nơi sinh</dt><dd>{p.birthPlace}</dd></div>}
               {p.song && <div><dt>Bài hát</dt><dd>{p.song}</dd></div>}
               {shortFacts.slice(0, 8).map(f => <div key={f.id}><dt>{f.key || f.category}</dt><dd>{f.value}</dd></div>)}
               {p.totalMediaFiles != null && <div><dt>Ảnh</dt><dd>{fmt(p.totalMediaFiles)}</dd></div>}
             </dl></div>
+          {owner && <MysticBriefs personId={id} />}
           {!!p.contacts?.length && <div className="card" style={{ ['--c' as string]: 'var(--angels)' }}><h3><i />Liên hệ</h3>
             <dl className="facts">{CONTACT_ORDER.flatMap(k => p.contacts!.filter(c => c.platform === k)).concat(p.contacts.filter(c => !CONTACT_ORDER.includes(c.platform))).map(c => (
               <div key={c.id}><dt>{CONTACT_LABEL[c.platform] ?? c.platform}</dt>
@@ -188,6 +193,19 @@ export function PersonPage() {
       {viewer.element}
     </div>
   );
+}
+
+/** What Huyền học has read for this person, one brief per discipline (owner only: it is read from their birth time).
+ *  Grandma's lines keep her typeface; the added ones are marked as such. */
+function MysticBriefs({ personId }: { personId: string }) {
+  const q = useQuery({ queryKey: ['mystic-briefs', personId], queryFn: () => hub.mysticBriefs(personId).catch(() => [] as MysticBrief[]), staleTime: T });
+  return <>{(q.data ?? []).map(b => (
+    <div key={b.discipline} className="card mystic-brief" style={{ ['--c' as string]: 'var(--mystic)' }}>
+      <h3><i />{b.title}{b.profileLabel && <small>{b.profileLabel}</small>}</h3>
+      <dl className="facts">{b.facts.map(f => <div key={f.label}><dt>{f.label}</dt><dd>{f.value}</dd></div>)}</dl>
+      {b.lines.map((l, i) => <p key={i} className={`mystic-line ${l.layer}`}><span>{l.layer === 'primary' ? 'Lời bà' : 'Bổ sung — không phải của bà'}</span>{l.text}</p>)}
+      {b.url && <a className="go" href={b.url}>Mở lá số ở Huyền học →</a>}
+    </div>))}</>;
 }
 
 /* ── reading an old conversation ── */

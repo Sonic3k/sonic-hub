@@ -67,6 +67,10 @@ export interface TagStats { id: string; name: string; color?: string | null; med
 
 export interface PersonDetail extends Person {
   alternativeName?: string | null; dateOfBirth?: string | null; birthDay?: number | null; birthMonth?: number | null; birthYear?: number | null; bio?: string | null; firstMet?: string | null; howWeMet?: string | null;
+  gender?: 'MALE' | 'FEMALE' | null;
+  /** birth time and place: only the owner gets them (blank for everyone else) */
+  birthTime?: string | null; birthTimeApprox?: boolean | null; birthTimeZone?: string | null; birthUtcOffsetMinutes?: number | null;
+  birthPlace?: string | null; birthLatitude?: number | null; birthLongitude?: number | null;
   coverUrl?: string | null; bannerUrl?: string | null; tags?: TagRef[] | null; contacts?: Contact[] | null;
   totalCollections?: number | null; totalMediaFiles?: number | null; totalChatArchives?: number | null; totalFacts?: number | null; totalEpisodes?: number | null;
 }
@@ -93,3 +97,13 @@ export interface PersonRanking {
   id: string; personId?: string | null; label: string; rank?: number | null; points?: number | null; period?: string | null;
   metrics?: Record<string, unknown> | null; note?: string | null; ranking: RankingSummary;
 }
+
+/** What Huyền học (the Mystic site) has read for a person — one brief per discipline, pushed by Mystic. Lines in the
+ *  primary layer are grandma's own words; added ones come from other books or AI. */
+export interface MysticBrief {
+  discipline: string; title: string; subjectId?: string | null; profileId?: string | null; profileLabel?: string | null; url?: string | null;
+  facts: { label: string; value: string }[];
+  lines: { layer: 'primary' | 'added'; text: string; source?: string | null }[];
+  updatedAt?: string | null; receivedAt?: string | null;
+}
+
