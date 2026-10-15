@@ -196,16 +196,24 @@ export function PersonPage() {
 }
 
 /** What Huyền học has read for this person, one brief per discipline (owner only: it is read from their birth time).
- *  Grandma's lines keep her typeface; the added ones are marked as such. */
+ *  The source's lines keep its typeface (grandma's notes for Tử vi, the book for Nhân số học); the added ones are
+ *  marked as such. */
 function MysticBriefs({ personId }: { personId: string }) {
   const q = useQuery({ queryKey: ['mystic-briefs', personId], queryFn: () => hub.mysticBriefs(personId).catch(() => [] as MysticBrief[]), staleTime: T });
   return <>{(q.data ?? []).map(b => (
     <div key={b.discipline} className="card mystic-brief" style={{ ['--c' as string]: 'var(--mystic)' }}>
       <h3><i />{b.title}{b.profileLabel && <small>{b.profileLabel}</small>}</h3>
       <dl className="facts">{b.facts.map(f => <div key={f.label}><dt>{f.label}</dt><dd>{f.value}</dd></div>)}</dl>
-      {b.lines.map((l, i) => <p key={i} className={`mystic-line ${l.layer}`}><span>{l.layer === 'primary' ? 'Lời bà' : 'Bổ sung — không phải của bà'}</span>{l.text}</p>)}
-      {b.url && <a className="go" href={b.url}>Mở lá số ở Huyền học →</a>}
+      {b.lines.map((l, i) => <p key={i} className={`mystic-line ${l.layer}`}><span>{voiceOf(b.discipline, l)}</span>{l.text}</p>)}
+      {b.url && <a className="go" href={b.url}>{b.discipline === 'tuvi' ? 'Mở lá số ở Huyền học →' : 'Mở hồ sơ ở Huyền học →'}</a>}
     </div>))}</>;
+}
+
+/** whose words a line of a brief is: grandma's (Tử vi), the book's or a summary of it (Nhân số học), or added */
+function voiceOf(discipline: string, l: MysticBrief['lines'][number]): string {
+  if (discipline === 'tuvi') return l.layer === 'primary' ? 'Lời bà' : 'Bổ sung — không phải của bà';
+  if (l.layer === 'added') return 'Luận thêm — không phải lời sách';
+  return l.source?.startsWith('Tóm lược') ? 'Tóm lược sách' : 'Lời sách';
 }
 
 /* ── reading an old conversation ── */
