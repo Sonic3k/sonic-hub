@@ -61,6 +61,7 @@ public class MysticBriefController {
         b.setProfileLabel(cut(in.getProfileLabel(), 255));
         b.setUrl(cut(in.getUrl(), 500));
         b.setSourceUpdatedAt(in.getUpdatedAt());
+        b.setReceivedAt(java.time.LocalDateTime.now());
         b.getFacts().clear();
         if (in.getFacts() != null) in.getFacts().stream().filter(f -> f != null && f.label() != null && f.value() != null).limit(MAX_FACTS)
             .forEach(f -> b.getFacts().add(new PersonMysticBrief.BriefFact(cut(f.label(), 120), cut(f.value(), 500))));
@@ -88,7 +89,7 @@ public class MysticBriefController {
     private static MysticBriefDto dto(PersonMysticBrief b) {
         MysticBriefDto d = new MysticBriefDto();
         d.setDiscipline(b.getDiscipline()); d.setTitle(b.getTitle()); d.setSubjectId(b.getSubjectId()); d.setProfileId(b.getProfileId());
-        d.setProfileLabel(b.getProfileLabel()); d.setUrl(b.getUrl()); d.setUpdatedAt(b.getSourceUpdatedAt()); d.setReceivedAt(b.getUpdatedAt());
+        d.setProfileLabel(b.getProfileLabel()); d.setUrl(b.getUrl()); d.setUpdatedAt(b.getSourceUpdatedAt()); d.setReceivedAt(b.getReceivedAt() != null ? b.getReceivedAt() : b.getUpdatedAt());
         d.setFacts(b.getFacts().stream().map(f -> new MysticBriefDto.Fact(f.getLabel(), f.getValue())).toList());
         d.setLines(b.getLines().stream().map(l -> new MysticBriefDto.Line(l.getLayer(), l.getText(), l.getSource())).toList());
         return d;

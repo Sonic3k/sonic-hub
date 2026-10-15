@@ -1,6 +1,7 @@
 package com.sonic.angels.model.entity;
 
 import jakarta.persistence.*;
+import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -46,6 +47,10 @@ public class PersonMysticBrief extends BaseEntity {
     /** when Mystic made this brief */
     @Column(name = "source_updated_at")
     private OffsetDateTime sourceUpdatedAt;
+
+    /** when it last arrived here (set on every push, so a push that only changes the lines still counts) */
+    @Column(name = "received_at")
+    private LocalDateTime receivedAt;
 
     @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name = "person_mystic_brief_facts", joinColumns = @JoinColumn(name = "brief_id"))
@@ -98,6 +103,8 @@ public class PersonMysticBrief extends BaseEntity {
     public void setUrl(String url) { this.url = url; }
     public OffsetDateTime getSourceUpdatedAt() { return sourceUpdatedAt; }
     public void setSourceUpdatedAt(OffsetDateTime sourceUpdatedAt) { this.sourceUpdatedAt = sourceUpdatedAt; }
+    public LocalDateTime getReceivedAt() { return receivedAt; }
+    public void setReceivedAt(LocalDateTime receivedAt) { this.receivedAt = receivedAt; }
     public List<BriefFact> getFacts() { return facts; }
     public List<BriefLine> getLines() { return lines; }
 }
