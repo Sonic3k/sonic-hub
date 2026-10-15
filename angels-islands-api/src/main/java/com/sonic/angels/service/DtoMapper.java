@@ -16,13 +16,20 @@ public class DtoMapper {
      *  without one). */
     public String imageUrl(MediaFile m) {
         if (m == null) return null;
-        if (m.getPosterStorageKey() != null) return storageService.buildCdnUrl(m.getPosterStorageKey());
-        if (noPicture(m)) return null;
-        return storageService.buildCdnUrl(m.getStorageKey(), m.getStorageProvider());
+        return imageUrl(m.getPosterStorageKey(), m.getFileType(), m.getStorageKey(), m.getStorageProvider());
     }
 
-    private static boolean noPicture(MediaFile m) {
-        return m.getFileType() == MediaFile.FileType.FLASH || m.getFileType() == MediaFile.FileType.AUDIO || m.getFileType() == MediaFile.FileType.DOCUMENT;
+    /** the same picture from its parts, for lists that read them without loading the files */
+    public String imageUrl(String posterStorageKey, MediaFile.FileType fileType, String storageKey, MediaFile.StorageProvider provider) {
+        if (posterStorageKey != null) return storageService.buildCdnUrl(posterStorageKey);
+        if (noPicture(fileType)) return null;
+        return storageService.buildCdnUrl(storageKey, provider);
+    }
+
+    private static boolean noPicture(MediaFile m) { return noPicture(m.getFileType()); }
+
+    private static boolean noPicture(MediaFile.FileType t) {
+        return t == MediaFile.FileType.FLASH || t == MediaFile.FileType.AUDIO || t == MediaFile.FileType.DOCUMENT;
     }
 
     // ── Tag ──────────────────────────────────────────────────────────────────
@@ -34,12 +41,17 @@ public class DtoMapper {
 
     // ── Person Summary (for lists) ───────────────────────────────────────────
     public PersonDto.Summary toPersonSummary(Person p) {
+        return toPersonSummary(p, p.getAvatarMediaFile() != null ? imageUrl(p.getAvatarMediaFile()) : null);
+    }
+
+    /** with the avatar's URL worked out by the caller (lists read many avatars at once) */
+    public PersonDto.Summary toPersonSummary(Person p, String avatarUrl) {
         PersonDto.Summary s = new PersonDto.Summary();
         s.setId(p.getId()); s.setName(p.getName()); s.setDisplayName(p.getDisplayName());
         s.setNickname(p.getNickname()); s.setRelationshipType(p.getRelationshipType());
         s.setPeriod(p.getPeriod()); s.setIsSelf(p.getIsSelf()); s.setIsFavorite(p.getIsFavorite()); s.setIsFeatured(p.getIsFeatured());
         s.setSong(p.getSong());
-        if (p.getAvatarMediaFile() != null) s.setAvatarUrl(imageUrl(p.getAvatarMediaFile()));
+        s.setAvatarUrl(avatarUrl);
         return s;
     }
 
