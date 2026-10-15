@@ -21,6 +21,20 @@ public class PersonDto {
         public Integer getBirthDay() { return birthDay; } public void setBirthDay(Integer v) { this.birthDay = v; }
         public Integer getBirthMonth() { return birthMonth; } public void setBirthMonth(Integer v) { this.birthMonth = v; }
         public Integer getBirthYear() { return birthYear; } public void setBirthYear(Integer v) { this.birthYear = v; }
+        /** MALE, FEMALE, or "" to clear */
+        private String gender;
+        /** "HH:mm", or "" to clear the time (with its zone, offset and approx flag) */
+        private String birthTime; private Boolean birthTimeApprox; private String birthTimeZone; private Integer birthUtcOffsetMinutes;
+        /** a place name, or "" to clear the place (with its coordinates) */
+        private String birthPlace; private Double birthLatitude; private Double birthLongitude;
+        public String getGender() { return gender; } public void setGender(String v) { this.gender = v; }
+        public String getBirthTime() { return birthTime; } public void setBirthTime(String v) { this.birthTime = v; }
+        public Boolean getBirthTimeApprox() { return birthTimeApprox; } public void setBirthTimeApprox(Boolean v) { this.birthTimeApprox = v; }
+        public String getBirthTimeZone() { return birthTimeZone; } public void setBirthTimeZone(String v) { this.birthTimeZone = v; }
+        public Integer getBirthUtcOffsetMinutes() { return birthUtcOffsetMinutes; } public void setBirthUtcOffsetMinutes(Integer v) { this.birthUtcOffsetMinutes = v; }
+        public String getBirthPlace() { return birthPlace; } public void setBirthPlace(String v) { this.birthPlace = v; }
+        public Double getBirthLatitude() { return birthLatitude; } public void setBirthLatitude(Double v) { this.birthLatitude = v; }
+        public Double getBirthLongitude() { return birthLongitude; } public void setBirthLongitude(Double v) { this.birthLongitude = v; }
 
         public String getName() { return name; } public void setName(String v) { this.name = v; }
         public String getDisplayName() { return displayName; } public void setDisplayName(String v) { this.displayName = v; }
@@ -61,6 +75,23 @@ public class PersonDto {
     public static class DetailResponse extends Summary {
         private String alternativeName; private LocalDate dateOfBirth; private String bio;
         private Integer birthDay; private Integer birthMonth; private Integer birthYear;
+        private String gender;
+        /** birth time and place — only for the owner and for Mystic (they are blank for everyone else) */
+        private String birthTime; private Boolean birthTimeApprox; private String birthTimeZone; private Integer birthUtcOffsetMinutes;
+        private String birthPlace; private Double birthLatitude; private Double birthLongitude;
+        public String getGender() { return gender; } public void setGender(String v) { this.gender = v; }
+        public String getBirthTime() { return birthTime; } public void setBirthTime(String v) { this.birthTime = v; }
+        public Boolean getBirthTimeApprox() { return birthTimeApprox; } public void setBirthTimeApprox(Boolean v) { this.birthTimeApprox = v; }
+        public String getBirthTimeZone() { return birthTimeZone; } public void setBirthTimeZone(String v) { this.birthTimeZone = v; }
+        public Integer getBirthUtcOffsetMinutes() { return birthUtcOffsetMinutes; } public void setBirthUtcOffsetMinutes(Integer v) { this.birthUtcOffsetMinutes = v; }
+        public String getBirthPlace() { return birthPlace; } public void setBirthPlace(String v) { this.birthPlace = v; }
+        public Double getBirthLatitude() { return birthLatitude; } public void setBirthLatitude(Double v) { this.birthLatitude = v; }
+        public Double getBirthLongitude() { return birthLongitude; } public void setBirthLongitude(Double v) { this.birthLongitude = v; }
+        /** hides what only the owner and Mystic may read */
+        public void hidePrivateBirth() {
+            birthTime = null; birthTimeApprox = null; birthTimeZone = null; birthUtcOffsetMinutes = null;
+            birthPlace = null; birthLatitude = null; birthLongitude = null;
+        }
         public Integer getBirthDay() { return birthDay; } public void setBirthDay(Integer v) { this.birthDay = v; }
         public Integer getBirthMonth() { return birthMonth; } public void setBirthMonth(Integer v) { this.birthMonth = v; }
         public Integer getBirthYear() { return birthYear; } public void setBirthYear(Integer v) { this.birthYear = v; }

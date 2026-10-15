@@ -52,6 +52,11 @@ public class DtoMapper {
         d.setSong(p.getSong()); d.setAlternativeName(p.getAlternativeName());
         d.setDateOfBirth(p.getDateOfBirth()); d.setBio(p.getBio());
         d.setBirthDay(p.getBirthDay()); d.setBirthMonth(p.getBirthMonth()); d.setBirthYear(p.getBirthYear());
+        d.setGender(p.getGender() == null ? null : p.getGender().name());
+        d.setBirthTime(p.getBirthTime() == null ? null : p.getBirthTime().toString().substring(0, 5));
+        d.setBirthTimeApprox(p.getBirthTime() == null ? null : Boolean.TRUE.equals(p.getBirthTimeApprox()));
+        d.setBirthTimeZone(p.getBirthTimeZone()); d.setBirthUtcOffsetMinutes(p.getBirthUtcOffsetMinutes());
+        d.setBirthPlace(p.getBirthPlace()); d.setBirthLatitude(p.getBirthLatitude()); d.setBirthLongitude(p.getBirthLongitude());
         d.setFirstMet(p.getFirstMet()); d.setHowWeMet(p.getHowWeMet());
         d.setCreatedAt(p.getCreatedAt()); d.setUpdatedAt(p.getUpdatedAt());
         if (p.getAvatarMediaFile() != null) d.setAvatarUrl(imageUrl(p.getAvatarMediaFile()));

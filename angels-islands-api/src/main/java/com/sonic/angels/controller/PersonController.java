@@ -1,7 +1,9 @@
 package com.sonic.angels.controller;
 
 import com.sonic.angels.config.AdminAuth;
+import com.sonic.angels.config.MysticAuth;
 import com.sonic.angels.model.dto.PersonDto;
+import com.sonic.angels.service.MysticClient;
 import com.sonic.angels.service.PersonService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -14,10 +16,14 @@ public class PersonController {
 
     private final PersonService personService;
     private final AdminAuth adminAuth;
+    private final MysticAuth mysticAuth;
+    private final MysticClient mystic;
 
-    public PersonController(PersonService personService, AdminAuth adminAuth) {
+    public PersonController(PersonService personService, AdminAuth adminAuth, MysticAuth mysticAuth, MysticClient mystic) {
         this.personService = personService;
         this.adminAuth = adminAuth;
+        this.mysticAuth = mysticAuth;
+        this.mystic = mystic;
     }
 
     @GetMapping
@@ -32,18 +38,33 @@ public class PersonController {
     @GetMapping("/{id}")
     public PersonDto.DetailResponse findById(@PathVariable UUID id) {
         PersonDto.DetailResponse d = personService.findById(id);
-        if (!adminAuth.isAdminRequest()) d.setContacts(List.of()); // phone numbers / handles are private
+        boolean admin = adminAuth.isAdminRequest();
+        if (!admin) d.setContacts(List.of()); // phone numbers / handles are private
+        if (!admin && !mysticAuth.isMysticRequest()) d.hidePrivateBirth(); // birth time and place: the owner and Mystic only
         return d;
     }
 
+    /** a change is told to Mystic once it is saved (Mystic refreshes the person if it has them linked) */
     @PostMapping
-    public PersonDto.DetailResponse create(@RequestBody PersonDto.Request req) { return personService.create(req); }
+    public PersonDto.DetailResponse create(@RequestBody PersonDto.Request req) {
+        PersonDto.DetailResponse d = personService.create(req);
+        mystic.personChanged(d.getId(), d);
+        return d;
+    }
 
     @PutMapping("/{id}")
-    public PersonDto.DetailResponse update(@PathVariable UUID id, @RequestBody PersonDto.Request req) { return personService.update(id, req); }
+    public PersonDto.DetailResponse update(@PathVariable UUID id, @RequestBody PersonDto.Request req) {
+        PersonDto.DetailResponse d = personService.update(id, req);
+        mystic.personChanged(id, d);
+        return d;
+    }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> delete(@PathVariable UUID id) { personService.delete(id); return ResponseEntity.noContent().build(); }
+    public ResponseEntity<Void> delete(@PathVariable UUID id) {
+        personService.delete(id);
+        mystic.personDeleted(id);
+        return ResponseEntity.noContent().build();
+    }
 
     // ── Contacts ─────────────────────────────────────────────────────────────
 

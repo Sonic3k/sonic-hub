@@ -15,6 +15,10 @@ export interface PersonSummary {
 export interface PersonDetail extends PersonSummary {
   alternativeName?: string; dateOfBirth?: string; bio?: string
   birthDay?: number | null; birthMonth?: number | null; birthYear?: number | null
+  gender?: 'MALE' | 'FEMALE' | null
+  /** what Huyền học reads a chart from: the clock time ("HH:mm"), its zone and offset, and the birthplace */
+  birthTime?: string | null; birthTimeApprox?: boolean | null; birthTimeZone?: string | null; birthUtcOffsetMinutes?: number | null
+  birthPlace?: string | null; birthLatitude?: number | null; birthLongitude?: number | null
   firstMet?: string; howWeMet?: string; coverUrl?: string; bannerUrl?: string
   tags?: TagResponse[]; contacts?: ContactResponse[]
   totalCollections?: number; totalMediaFiles?: number
@@ -27,6 +31,9 @@ export interface PersonRequest {
   name?: string; displayName?: string; alternativeName?: string; nickname?: string
   dateOfBirth?: string; bio?: string; relationshipType?: RelationshipType
   birthDay?: number; birthMonth?: number; birthYear?: number
+  /** "" clears; clearing birthTime clears its zone, offset and approx flag, clearing birthPlace its coordinates */
+  gender?: string; birthTime?: string; birthTimeApprox?: boolean; birthTimeZone?: string; birthUtcOffsetMinutes?: number
+  birthPlace?: string; birthLatitude?: number; birthLongitude?: number
   period?: string; firstMet?: string; howWeMet?: string; song?: string
   isSelf?: boolean; isFavorite?: boolean; isFeatured?: boolean; tagIds?: number[]
 }

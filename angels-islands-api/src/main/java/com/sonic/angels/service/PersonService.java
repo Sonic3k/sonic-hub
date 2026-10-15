@@ -9,15 +9,19 @@ import com.sonic.angels.repository.PersonContactRepository;
 import com.sonic.angels.repository.PersonRepository;
 import com.sonic.angels.repository.TagRepository;
 import com.sonic.angels.repository.TelegramCompanionSessionRepository;
-import com.sonic.angels.repository.TuViProfileRepository;
+import com.sonic.angels.repository.PersonMysticBriefRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.DateTimeException;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.time.MonthDay;
+import java.time.ZoneId;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 
 @Service
@@ -33,7 +37,7 @@ public class PersonService {
     private final CompanionConfigRepository companionConfigRepository;
     private final TelegramCompanionSessionRepository telegramSessionRepository;
     private final com.sonic.angels.repository.RankingEntryRepository rankingEntryRepository;
-    private final TuViProfileRepository tuViProfileRepository;
+    private final PersonMysticBriefRepository mysticBriefRepository;
     @org.springframework.beans.factory.annotation.Autowired
     private com.sonic.angels.repository.MediaFileRepository mediaFileRepository;
 
@@ -43,7 +47,7 @@ public class PersonService {
                          CompanionConfigRepository companionConfigRepository,
                          TelegramCompanionSessionRepository telegramSessionRepository,
                          com.sonic.angels.repository.RankingEntryRepository rankingEntryRepository,
-                         TuViProfileRepository tuViProfileRepository) {
+                         PersonMysticBriefRepository mysticBriefRepository) {
         this.personRepository = personRepository;
         this.contactRepository = contactRepository;
         this.tagRepository = tagRepository;
@@ -52,7 +56,7 @@ public class PersonService {
         this.companionConfigRepository = companionConfigRepository;
         this.telegramSessionRepository = telegramSessionRepository;
         this.rankingEntryRepository = rankingEntryRepository;
-        this.tuViProfileRepository = tuViProfileRepository;
+        this.mysticBriefRepository = mysticBriefRepository;
     }
 
     // ── Queries ──────────────────────────────────────────────────────────────
@@ -95,8 +99,8 @@ public class PersonService {
         personRepository.clearCollectionLinks(id);
         // their rows in old rankings stay, as the nick written in the sheet
         rankingEntryRepository.detachPerson(id);
-        // their tử vi charts stay, belonging to no one
-        tuViProfileRepository.detachPerson(id);
+        // the briefs Mystic kept here go with them (Mystic itself is told by the controller)
+        mysticBriefRepository.deleteByPersonId(id);
         // Entity cascade handles contacts, archives(+messages), facts, episodes, chapters, traits
         personRepository.deleteById(id);
     }
@@ -157,6 +161,72 @@ public class PersonService {
         p.setDateOfBirth(full);
     }
 
+    /** where a birth time without a zone was most likely kept */
+    static final String DEFAULT_ZONE = "Asia/Ho_Chi_Minh";
+
+    /** Gender, the birth time and the birthplace. "" clears; the time and the place each go as a group: clearing the
+     *  time clears its zone, offset and approx flag, clearing the place clears its coordinates. The UTC offset is
+     *  worked out from the zone for that date and time unless one is given (a northern birth before 1975 written in
+     *  Asia/Ho_Chi_Minh, which follows the South, can be given 420 by hand). */
+    static void applyBirthDetails(Person p, PersonDto.Request req, boolean dateChanged) {
+        if (req.getGender() != null) {
+            String g = req.getGender().trim().toUpperCase();
+            if (g.isEmpty()) p.setGender(null);
+            else try { p.setGender(Person.Gender.valueOf(g)); } catch (IllegalArgumentException e) { throw new IllegalArgumentException("gender must be MALE or FEMALE"); }
+        }
+        boolean timeChanged = false;
+        if (req.getBirthTime() != null) {
+            String t = req.getBirthTime().trim();
+            if (t.isEmpty()) {
+                p.setBirthTime(null); p.setBirthTimeApprox(false); p.setBirthTimeZone(null); p.setBirthUtcOffsetMinutes(null);
+            } else {
+                try { p.setBirthTime(LocalTime.parse(t.matches("\\d:\\d\\d.*") ? "0" + t : t).withSecond(0).withNano(0)); }
+                catch (DateTimeException e) { throw new IllegalArgumentException("birthTime must be HH:mm"); }
+                timeChanged = true;
+            }
+        }
+        if (p.getBirthTime() != null) {
+            if (req.getBirthTimeApprox() != null) p.setBirthTimeApprox(req.getBirthTimeApprox());
+            if (req.getBirthTimeZone() != null) {
+                String z = req.getBirthTimeZone().trim();
+                if (!z.isEmpty()) try { ZoneId.of(z); } catch (DateTimeException e) { throw new IllegalArgumentException("unknown time zone: " + z); }
+                p.setBirthTimeZone(z.isEmpty() ? null : z);
+                timeChanged = true;
+            }
+            if (p.getBirthTimeZone() == null) p.setBirthTimeZone(DEFAULT_ZONE);
+            if (req.getBirthUtcOffsetMinutes() != null) {
+                int o = req.getBirthUtcOffsetMinutes();
+                if (o < -720 || o > 840) throw new IllegalArgumentException("birthUtcOffsetMinutes must be between -720 and 840");
+                p.setBirthUtcOffsetMinutes(o);
+            } else if (timeChanged || dateChanged || p.getBirthUtcOffsetMinutes() == null) {
+                p.setBirthUtcOffsetMinutes(offsetOf(p));
+            }
+        }
+        if (req.getBirthPlace() != null) {
+            String place = req.getBirthPlace().trim();
+            if (place.isEmpty()) { p.setBirthPlace(null); p.setBirthLatitude(null); p.setBirthLongitude(null); }
+            else p.setBirthPlace(place);
+        }
+        if (req.getBirthLatitude() != null) {
+            if (Math.abs(req.getBirthLatitude()) > 90) throw new IllegalArgumentException("birthLatitude must be between -90 and 90");
+            p.setBirthLatitude(req.getBirthLatitude());
+        }
+        if (req.getBirthLongitude() != null) {
+            if (Math.abs(req.getBirthLongitude()) > 180) throw new IllegalArgumentException("birthLongitude must be between -180 and 180");
+            p.setBirthLongitude(req.getBirthLongitude());
+        }
+    }
+
+    /** the zone's offset at the moment of birth, in minutes; null without a full date */
+    static Integer offsetOf(Person p) {
+        if (p.getBirthTime() == null || p.getBirthTimeZone() == null || p.getDateOfBirth() == null) return null;
+        try {
+            return ZoneId.of(p.getBirthTimeZone()).getRules().getOffset(LocalDateTime.of(p.getDateOfBirth(), p.getBirthTime())).getTotalSeconds() / 60;
+        } catch (DateTimeException e) {
+            return null;
+        }
+    }
+
     /** null = not sent (keep), 0 = clear */
     private static Integer part(Integer given, Integer current) {
         if (given == null) return current;
@@ -170,7 +240,9 @@ public class PersonService {
         if (req.getDisplayName() != null) p.setDisplayName(req.getDisplayName());
         if (req.getAlternativeName() != null) p.setAlternativeName(req.getAlternativeName());
         if (req.getNickname() != null) p.setNickname(req.getNickname());
+        LocalDate before = p.getDateOfBirth();
         applyBirthday(p, req);
+        applyBirthDetails(p, req, !Objects.equals(before, p.getDateOfBirth()));
         if (req.getBio() != null) p.setBio(req.getBio());
         if (req.getRelationshipType() != null) p.setRelationshipType(req.getRelationshipType());
         if (req.getPeriod() != null) p.setPeriod(req.getPeriod());
