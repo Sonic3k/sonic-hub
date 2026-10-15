@@ -16,6 +16,22 @@ public interface CollectionRepository extends JpaRepository<Collection, UUID> {
 
     long countByParentId(UUID parentId);
 
+    // ── the optional fields of many collections at once (one grouped query each, not one per collection) ──
+
+    @Query(value = "SELECT parent_id, COUNT(*) FROM collections WHERE parent_id IN (:ids) GROUP BY parent_id", nativeQuery = true)
+    List<Object[]> countChildrenOf(List<UUID> ids);
+
+    @Query(value = "SELECT collection_id, COUNT(*) FROM collection_media WHERE collection_id IN (:ids) GROUP BY collection_id", nativeQuery = true)
+    List<Object[]> countMediaOf(List<UUID> ids);
+
+    /** [collection_id, tag_id] */
+    @Query(value = "SELECT collection_id, tag_id FROM collection_tags WHERE collection_id IN (:ids)", nativeQuery = true)
+    List<Object[]> tagLinksOf(List<UUID> ids);
+
+    /** [collection_id, person_id] */
+    @Query(value = "SELECT collection_id, person_id FROM collection_persons WHERE collection_id IN (:ids)", nativeQuery = true)
+    List<Object[]> personLinksOf(List<UUID> ids);
+
     @Query(value = "SELECT COUNT(*) FROM collection_media WHERE collection_id = :collectionId", nativeQuery = true)
     long countMediaInCollection(UUID collectionId);
 

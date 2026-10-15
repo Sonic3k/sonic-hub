@@ -13,6 +13,12 @@ import java.util.UUID;
 
 @Repository
 public interface MediaFileRepository extends JpaRepository<MediaFile, UUID> {
+
+    /** what the pictures of many files are made of — [id, posterStorageKey, fileType, storageKey, storageProvider] —
+     *  without loading the files (each loaded file also reads its three 1:1 detail rows) */
+    @org.springframework.data.jpa.repository.Query("select m.id, m.posterStorageKey, m.fileType, m.storageKey, m.storageProvider from MediaFile m where m.id in :ids")
+    java.util.List<Object[]> pictureKeysOf(java.util.Collection<java.util.UUID> ids);
+
     boolean existsByStorageKey(String storageKey);
 
     @Query("SELECT m FROM MediaFile m JOIN m.persons p WHERE p.id = :personId ORDER BY m.effectiveDate DESC")
