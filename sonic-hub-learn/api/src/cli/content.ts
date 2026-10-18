@@ -1,7 +1,7 @@
 import { resolve } from 'node:path';
 import { parseArgs } from 'node:util';
 import { defaultContentDir, loadSyncConfig, type MediaStorageKind } from '../config.js';
-import { createDb, createPool, runMigrations } from '../db/db.js';
+import { createDb, openPool, runMigrations } from '../db/db.js';
 import { checkContent, formatIssues } from '../content/check.js';
 import { loadContent } from '../content/loader.js';
 import { createMediaStore, syncMedia } from '../content/media.js';
@@ -39,7 +39,7 @@ async function main(): Promise<number> {
   if (command === 'check') return 0;
 
   const config = loadSyncConfig(process.env, { contentDir, storage: values.media as MediaStorageKind | undefined });
-  const pool = createPool(config.databaseUrl, config.databaseSsl);
+  const pool = await openPool(config.database);
   try {
     const db = createDb(pool);
     await runMigrations(db);

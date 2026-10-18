@@ -140,8 +140,7 @@ describe('learn API end to end', { skip: !adminUrl && 'TEST_DATABASE_URL not set
 
     process.env.NODE_ENV = 'test';
     const config: AppConfig = {
-      databaseUrl: dbUrl,
-      databaseSsl: false,
+      database: { url: dbUrl, adminUrl: null, name: dbName, user: 'learn_app', password: null, ssl: false },
       port: 0,
       corsOrigins: true,
       timezone: clock.timezone,

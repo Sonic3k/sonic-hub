@@ -5,10 +5,10 @@ import { pathToFileURL } from 'node:url';
 import type { NestExpressApplication } from '@nestjs/platform-express';
 import { AppModule } from './app.module.js';
 import { loadAppConfig, type AppConfig } from './config.js';
-import { createDb, createPool, runMigrations } from './db/db.js';
+import { createDb, openPool, runMigrations } from './db/db.js';
 
 export async function createApp(config: AppConfig): Promise<NestExpressApplication> {
-  const pool = createPool(config.databaseUrl, config.databaseSsl);
+  const pool = await openPool(config.database);
   await runMigrations(createDb(pool));
   const app = await NestFactory.create<NestExpressApplication>(AppModule.forRoot(config, pool), {
     logger: process.env.NODE_ENV === 'test' ? ['error'] : ['log', 'warn', 'error'],
