@@ -48,6 +48,7 @@ public interface CollectionRepository extends JpaRepository<Collection, UUID> {
         "(SELECT 1 FROM collection_media WHERE collection_id = :collectionId AND media_file_id = :mediaId)", nativeQuery = true)
     void linkMedia(UUID collectionId, UUID mediaId);
     List<Collection> findByPersonsId(UUID personId);
+    List<Collection> findByMediaFilesId(UUID mediaId);
 
     /** The album, plus every sub-album below it when deep = true. */
     String TREE = "WITH RECURSIVE tree AS (SELECT id FROM collections WHERE id = :rootId " +

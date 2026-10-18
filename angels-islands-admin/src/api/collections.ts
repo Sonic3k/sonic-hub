@@ -1,5 +1,5 @@
 import api from './client'
-import type { CollectionResponse, CollectionRequest, MediaFileResponse } from '../types'
+import type { CollectionResponse, CollectionRequest, EventDateInput, MediaFileResponse } from '../types'
 
 /** What "Delete collection + photos" would do (nothing is changed by asking). */
 export interface DeletePreview {
@@ -70,7 +70,7 @@ export const uploadApi = {
 }
 
 export const mediaApi = {
-  patch: (id: string, data: { caption?: string; isFavorite?: boolean; dateTaken?: string; takenByPersonId?: string; mediaSource?: string }) =>
+  patch: (id: string, data: { caption?: string; isFavorite?: boolean; dateTaken?: string; takenByPersonId?: string; mediaSource?: string; event?: EventDateInput }) =>
     api.patch<MediaFileResponse>(`/api/media-files/${id}`, data).then(r => r.data),
   favoriteBatch: (ids: string[], value: boolean) =>
     api.post('/api/media-files/batch/favorite', { ids, value }).then(r => r.data),

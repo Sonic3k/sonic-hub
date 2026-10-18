@@ -53,6 +53,7 @@ export interface MediaFileResponse {
   posterUrl?: string; soundtrackUrl?: string
   dateTaken?: string; fileDateCreated?: string; fileDateModified?: string
   effectiveDate?: string; uploadedAt?: string
+  event?: EventDate | null
   latitude?: number; longitude?: number; displayedAddress?: string; timezone?: string
   duration?: number; isAnimated?: boolean; isFavorite?: boolean; isFeatured?: boolean
   persons?: { id: string; name: string; displayName?: string; avatarUrl?: string }[]
@@ -74,12 +75,18 @@ export interface MediaFileResponse {
   }
 }
 
+/** When the moment really happened, as far as it is known (start of the known span). */
+export type DatePrecision = 'DECADE' | 'YEAR' | 'SEASON' | 'MONTH' | 'DAY' | 'HOUR' | 'MINUTE' | 'SECOND'
+export interface EventDate { date: string; precision: DatePrecision; approx?: boolean; fromAlbumId?: string | null }
+export interface EventDateInput { date: string; precision?: DatePrecision; approx?: boolean }
+
 export interface CollectionResponse {
   id: string; name: string; description?: string; parentId?: string; parentName?: string
   childrenCount?: number; mediaCount?: number; thumbnailUrl?: string; createdAt?: string
   tags?: TagResponse[]; persons?: { id: string; name: string; displayName?: string; avatarUrl?: string }[]
+  event?: EventDate | null
 }
-export interface CollectionRequest { name?: string; description?: string; parentId?: string; personIds?: string[]; tagIds?: string[] }
+export interface CollectionRequest { name?: string; description?: string; parentId?: string; personIds?: string[]; tagIds?: string[]; event?: EventDateInput }
 
 export interface ChatArchiveResponse {
   id: string; platform: Platform; title?: string; messageCount?: number

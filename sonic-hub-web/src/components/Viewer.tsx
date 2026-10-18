@@ -7,7 +7,7 @@ import FlashCard from './FlashCard';
 import AudioCard from './AudioCard';
 import DocumentCard from './DocumentCard';
 import type { MediaFile } from '../types';
-import { longDay, timeOf } from '../lib/date';
+import { eventLabel, longDay, timeOf } from '../lib/date';
 
 export default function Viewer({ items, start, onClose, onIndex }: { items: MediaFile[]; start: number; onClose: () => void; onIndex?: (i: number) => void }) {
   const [i, setI] = useState(Math.max(0, Math.min(start, items.length - 1))), [info, setInfo] = useState(() => innerWidth > 1100), x0 = useRef<number | null>(null);
@@ -40,7 +40,8 @@ export default function Viewer({ items, start, onClose, onIndex }: { items: Medi
       {info && (
         <aside className="v-info">
           {m.caption && <p className="vi-cap">{m.caption}</p>}
-          {d && <div className="vi-row"><span>Thời gian</span><b>{longDay(+d.slice(0, 4), +d.slice(5, 7), +d.slice(8, 10))} · {timeOf(d)}</b></div>}
+          {m.event ? <div className="vi-row"><span>Thời gian</span><b>{eventLabel(m.event)}{m.event.fromAlbumId && <small>theo album</small>}{m.dateTaken && <small>Ngày trên tệp: {m.dateTaken.slice(0, 10).split('-').reverse().join('/')} {timeOf(m.dateTaken)}</small>}</b></div>
+            : d && <div className="vi-row"><span>Thời gian</span><b>{longDay(+d.slice(0, 4), +d.slice(5, 7), +d.slice(8, 10))} · {timeOf(d)}</b></div>}
           {!!m.persons?.length && <div className="vi-row"><span>Người</span><b>{m.persons.map(p => <Link key={p.id} to={`/photos?person=${p.id}`} onClick={onClose}>{p.displayName || p.name}</Link>)}</b></div>}
           {!!m.tags?.length && <div className="vi-row"><span>Vùng</span><b className="vi-tags">{m.tags.map(t => <Link key={t.id} to={`/tags/${encodeURIComponent(t.name)}`} onClick={onClose} className="chip">{t.name}</Link>)}</b></div>}
           {m.displayedAddress && <div className="vi-row"><span>Nơi chụp</span><b>{m.displayedAddress}</b></div>}

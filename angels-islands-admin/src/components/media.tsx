@@ -1,10 +1,11 @@
 import { useState, useEffect, useCallback } from 'react'
-import { ChevronRight, ChevronLeft, Image, ArrowLeft, Camera, MapPin, FileText, Clock, Film, Info, X, Check, FolderPlus, Heart, ImageIcon, Users, Music } from 'lucide-react'
+import { ChevronRight, ChevronLeft, Image, ArrowLeft, Camera, MapPin, FileText, Clock, Film, Info, X, Check, FolderPlus, Heart, ImageIcon, Users, Music, CalendarDays } from 'lucide-react'
 import { mediaApi } from '../api/collections'
 import { usePersons } from '../hooks/usePersons'
 import { TagToggle } from './TagPanel'
 import { Camera as CameraIcon } from 'lucide-react'
 import type { MediaFileResponse } from '../types'
+import EventDateEditor, { eventLabel } from './EventDateEditor'
 
 export function fmtDate(d?: string) {
   if (!d) return null
@@ -247,6 +248,7 @@ function InfoContent({ media, cameraStr, settingsStr, exif, vid, onChanged }: {
   const { data: allPersons = [] } = usePersons()
   const [settingTakenBy, setSettingTakenBy] = useState(false)
   const [editingDate, setEditingDate] = useState(false)
+  const [editingEvent, setEditingEvent] = useState(false)
   const [dateDraft, setDateDraft] = useState('')
 
   const saveDate = async () => {
@@ -397,6 +399,20 @@ function InfoContent({ media, cameraStr, settingsStr, exif, vid, onChanged }: {
         )}
         {media.dateTaken && media.uploadedAt && media.dateTaken !== media.uploadedAt && (
           <p className="text-white/30 text-[11px] mt-0.5">Uploaded {fmtDate(media.uploadedAt)}</p>
+        )}
+      </InfoSection>
+
+      {/* When the moment really happened — a scan from 1970 says 1970 here, the date above stays the scan's */}
+      <InfoSection icon={<CalendarDays size={15} />} title="Ngày sự kiện">
+        {editingEvent ? (
+          <EventDateEditor dark value={media.event} onClose={() => setEditingEvent(false)}
+            onSave={async e => onChanged(await mediaApi.patch(media.id, { event: e }))} />
+        ) : (
+          <p onClick={() => setEditingEvent(true)} title="Bấm để đặt ngày thật của sự kiện (ảnh scan, ảnh cũ)"
+            className={`text-sm cursor-text rounded px-0.5 -mx-0.5 hover:bg-white/5 inline-flex items-center gap-2 ${media.event ? 'text-white/80' : 'text-white/25 italic'}`}>
+            {media.event ? eventLabel(media.event) : 'Chưa có — bấm để đặt'}
+            {media.event?.fromAlbumId && <span className="text-white/30 text-[10px] not-italic">theo album</span>}
+          </p>
         )}
       </InfoSection>
 
