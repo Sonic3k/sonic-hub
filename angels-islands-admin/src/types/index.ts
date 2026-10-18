@@ -96,7 +96,7 @@ export interface ChatArchiveResponse {
   counterpart?: string; counterpartKey?: string; personId?: string; personName?: string
 }
 
-export interface FactResponse { id: string; category: string; key: string; value: string; period?: string; confidence?: number; createdAt?: string }
+export interface FactResponse { id: string; category: string; key: string; value: string; period?: string; confidence?: number; source?: string; createdAt?: string }
 export interface FactRequest { category: string; key: string; value: string; period?: string; confidence?: number }
 
 export interface EpisodeResponse { id: string; summary: string; emotion?: string; importance?: number; occurredAt?: string; createdAt?: string }
@@ -107,6 +107,9 @@ export interface ChapterRequest { period: string; title?: string; summary?: stri
 
 export interface TraitResponse { id: string; trait: string; description?: string; evidence?: string; period?: string; createdAt?: string }
 export interface TraitRequest { trait: string; description?: string; evidence?: string; period?: string }
+
+/** A long write-up about a person (Markdown), one per source — e.g. "deep" = Claude's deep research */
+export interface PersonReport { id: string; source: string; title: string; content: string; updatedAt?: string }
 
 export interface ProblemResponse {
   id: string; title: string; description?: string; status: string

@@ -1,5 +1,5 @@
 import api from './client'
-import type { FactResponse, FactRequest, EpisodeResponse, EpisodeRequest, ChapterResponse, ChapterRequest, TraitResponse, TraitRequest, ChatArchiveResponse } from '../types'
+import type { FactResponse, FactRequest, EpisodeResponse, EpisodeRequest, ChapterResponse, ChapterRequest, TraitResponse, TraitRequest, ChatArchiveResponse, PersonReport } from '../types'
 
 const base = (pid: string) => `/api/persons/${pid}`
 
@@ -23,6 +23,9 @@ export const memoryApi = {
   createTrait: (pid: string, data: TraitRequest) => api.post<TraitResponse>(`${base(pid)}/memory/traits`, data).then(r => r.data),
   updateTrait: (pid: string, id: string, data: TraitRequest) => api.put<TraitResponse>(`${base(pid)}/memory/traits/${id}`, data).then(r => r.data),
   deleteTrait: (pid: string, id: string) => api.delete(`${base(pid)}/memory/traits/${id}`),
+
+  getReports: (pid: string) => api.get<PersonReport[]>(`${base(pid)}/memory/reports`).then(r => r.data),
+  deleteReport: (pid: string, source: string) => api.delete(`${base(pid)}/memory/reports/${source}`),
 
   getArchives: (pid: string) => api.get<ChatArchiveResponse[]>(`${base(pid)}/chat-archives`).then(r => r.data),
   deleteArchive: (pid: string, archiveId: string) => api.delete(`${base(pid)}/chat-archives/${archiveId}`),
