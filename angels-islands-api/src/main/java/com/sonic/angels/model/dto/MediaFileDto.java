@@ -25,6 +25,8 @@ public class MediaFileDto {
         public String getCaption() { return caption; } public void setCaption(String v) { this.caption = v; }
         public Boolean getIsFavorite() { return isFavorite; } public void setIsFavorite(Boolean v) { this.isFavorite = v; }
         public String getDateTaken() { return dateTaken; } public void setDateTaken(String v) { this.dateTaken = v; }
+        private EventDateDto event;
+        public EventDateDto getEvent() { return event; } public void setEvent(EventDateDto v) { this.event = v; }
     }
 
     public static class FavoriteBatchRequest {
@@ -110,6 +112,8 @@ public class MediaFileDto {
         public LocalDateTime getFileDateCreated() { return fileDateCreated; } public void setFileDateCreated(LocalDateTime v) { this.fileDateCreated = v; }
         public LocalDateTime getFileDateModified() { return fileDateModified; } public void setFileDateModified(LocalDateTime v) { this.fileDateModified = v; }
         public LocalDateTime getEffectiveDate() { return effectiveDate; } public void setEffectiveDate(LocalDateTime v) { this.effectiveDate = v; }
+        private EventDateDto event;
+        public EventDateDto getEvent() { return event; } public void setEvent(EventDateDto v) { this.event = v; }
         public LocalDateTime getUploadedAt() { return uploadedAt; } public void setUploadedAt(LocalDateTime v) { this.uploadedAt = v; }
         public Double getLatitude() { return latitude; } public void setLatitude(Double v) { this.latitude = v; }
         public Double getLongitude() { return longitude; } public void setLongitude(Double v) { this.longitude = v; }

@@ -34,6 +34,18 @@ public class Collection extends BaseEntity {
     private Set<Collection> children = new HashSet<>();
 
     @JsonIgnore
+    /** When the album's event happened, as far as it is known (from a name like "[1995.08] Sai Gon - Da Lat").
+     *  Files in it without their own event date take this one. */
+    @Column(name = "event_date")
+    private java.time.LocalDateTime eventDate;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "event_precision", length = 16)
+    private DatePrecision eventPrecision;
+
+    @Column(name = "event_approx")
+    private Boolean eventApprox;
+
     @ManyToMany
     @JoinTable(name = "collection_media",
         joinColumns = @JoinColumn(name = "collection_id"),
@@ -82,4 +94,11 @@ public class Collection extends BaseEntity {
     public void setTags(Set<Tag> tags) { this.tags = tags; }
     public MediaFile getThumbnailMediaFile() { return thumbnailMediaFile; }
     public void setThumbnailMediaFile(MediaFile thumbnailMediaFile) { this.thumbnailMediaFile = thumbnailMediaFile; }
+
+    public java.time.LocalDateTime getEventDate() { return eventDate; }
+    public void setEventDate(java.time.LocalDateTime v) { this.eventDate = v; }
+    public DatePrecision getEventPrecision() { return eventPrecision; }
+    public void setEventPrecision(DatePrecision v) { this.eventPrecision = v; }
+    public Boolean getEventApprox() { return eventApprox; }
+    public void setEventApprox(Boolean v) { this.eventApprox = v; }
 }

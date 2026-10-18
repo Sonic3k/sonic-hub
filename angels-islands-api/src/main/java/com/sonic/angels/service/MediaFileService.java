@@ -331,7 +331,7 @@ public class MediaFileService {
     public org.springframework.data.domain.Page<MediaFileDto.Response> search(
             String type, String orientation, String category,
             Boolean favorite, Boolean featured, Boolean hasGps,
-            UUID personId, UUID takenById, String source, String ext, java.time.LocalDate from, java.time.LocalDate to, UUID collectionId,
+            UUID personId, UUID takenById, String source, String ext, java.time.LocalDate from, java.time.LocalDate to, boolean vague, UUID collectionId,
             List<UUID> tagIds, List<String> tagNames,
             List<UUID> excludeTagIds, List<String> excludeTagNames,
             String q, boolean random, int page, int size,
@@ -369,7 +369,7 @@ public class MediaFileService {
 
         if (random) {
             var rows = mediaFileRepository.searchRandom(
-                ft, ori, cat, src, extN, hasFrom, fromDt, hasTo, toDt, favorite, featured, hasGps,
+                ft, ori, cat, src, extN, hasFrom, fromDt, hasTo, toDt, vague, favorite, featured, hasGps,
                 hasPerson, safePerson, hasTakenBy, safeTakenBy, hasCollection, safeCollection,
                 hasInclude, safeTagIds, safeTagNames,
                 hasExclude, safeExcludeIds, safeExcludeNames,
@@ -386,10 +386,16 @@ public class MediaFileService {
         var primary = "asc".equalsIgnoreCase(sortDir)
             ? org.springframework.data.domain.Sort.Order.asc(sb).nullsLast()
             : org.springframework.data.domain.Sort.Order.desc(sb).nullsLast();
-        var sort = org.springframework.data.domain.Sort.by(primary, org.springframework.data.domain.Sort.Order.desc("id"));
+        // Same moment: the vaguer date first going forward in time (a "1998" file opens 1998), so last going back.
+        var rank = "asc".equalsIgnoreCase(sortDir)
+            ? org.springframework.data.domain.Sort.Order.asc("dateRank").nullsLast()
+            : org.springframework.data.domain.Sort.Order.desc("dateRank").nullsFirst();
+        var sort = "effectiveDate".equals(sb)
+            ? org.springframework.data.domain.Sort.by(primary, rank, org.springframework.data.domain.Sort.Order.desc("id"))
+            : org.springframework.data.domain.Sort.by(primary, org.springframework.data.domain.Sort.Order.desc("id"));
 
         return mediaFileRepository.searchSorted(
-                ft, ori, cat, src, extN, hasFrom, fromDt, hasTo, toDt, favorite, featured, hasGps,
+                ft, ori, cat, src, extN, hasFrom, fromDt, hasTo, toDt, vague, favorite, featured, hasGps,
                 hasPerson, safePerson, hasTakenBy, safeTakenBy, hasCollection, safeCollection,
                 hasInclude, safeTagIds, safeTagNames,
                 hasExclude, safeExcludeIds, safeExcludeNames,
@@ -419,6 +425,11 @@ public class MediaFileService {
             String v = req.getDateTaken().trim();
             if (v.length() == 16) v = v + ":00"; // datetime-local gives yyyy-MM-ddTHH:mm
             mf.setDateTaken(LocalDateTime.parse(v)); // effectiveDate recomputed by @PreUpdate
+        }
+        if (req.getEvent() != null) {
+            var e = req.getEvent();
+            if (e.clears()) { mf.setEvent(null, null, null, null); collectionService.inheritEvent(mf, null); }
+            else mf.setEvent(e.parsedDate(), e.parsedPrecision(), e.getApprox(), null);
         }
         if (req.getTakenByPersonId() != null) {
             if (req.getTakenByPersonId().equals(NIL_UUID)) mf.setTakenBy(null);

@@ -98,7 +98,7 @@ public class DtoMapper {
         r.setMimeType(m.getMimeType()); r.setCaption(m.getCaption()); r.setIsAnimated(m.getIsAnimated());
         r.setDateTaken(m.getDateTaken()); r.setFileDateCreated(m.getFileDateCreated());
         r.setFileDateModified(m.getFileDateModified());
-        r.setEffectiveDate(m.getEffectiveDate()); r.setUploadedAt(m.getUploadedAt());
+        r.setEffectiveDate(m.getEffectiveDate()); r.setEvent(com.sonic.angels.model.dto.EventDateDto.of(m.getEventDate(), m.getEventPrecision(), m.getEventApprox(), m.getEventCollectionId())); r.setUploadedAt(m.getUploadedAt());
         r.setLatitude(m.getLatitude()); r.setLongitude(m.getLongitude());
         r.setDisplayedAddress(m.getDisplayedAddress());
         r.setTimezone(m.getTimezone());

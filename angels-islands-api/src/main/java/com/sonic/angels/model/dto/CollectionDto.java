@@ -18,6 +18,8 @@ public class CollectionDto {
         public UUID getParentId() { return parentId; } public void setParentId(UUID v) { this.parentId = v; }
         public Set<UUID> getPersonIds() { return personIds; } public void setPersonIds(Set<UUID> v) { this.personIds = v; }
         public Set<UUID> getTagIds() { return tagIds; } public void setTagIds(Set<UUID> v) { this.tagIds = v; }
+        private EventDateDto event;
+        public EventDateDto getEvent() { return event; } public void setEvent(EventDateDto v) { this.event = v; }
     }
 
     public static class Response {
@@ -44,6 +46,8 @@ public class CollectionDto {
         public Set<TagDto.Response> getTags() { return tags; } public void setTags(Set<TagDto.Response> v) { this.tags = v; }
         public Set<PersonDto.Summary> getPersons() { return persons; } public void setPersons(Set<PersonDto.Summary> v) { this.persons = v; }
         public LocalDateTime getCreatedAt() { return createdAt; } public void setCreatedAt(LocalDateTime v) { this.createdAt = v; }
+        private EventDateDto event;
+        public EventDateDto getEvent() { return event; } public void setEvent(EventDateDto v) { this.event = v; }
     }
 
     // ── Tree creation (batch) ────────────────────────────────────────────────

@@ -97,6 +97,31 @@ public class MediaFile extends BaseEntity {
     @Column(name = "effective_date")
     private LocalDateTime effectiveDate;
 
+    /** When the moment in the picture really happened, as far as it is known (a scan from 1970 carries 1970 here,
+     *  while dateTaken keeps the day it was scanned). Start of the known span; see eventPrecision. */
+    @Column(name = "event_date")
+    private LocalDateTime eventDate;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "event_precision", length = 16)
+    private DatePrecision eventPrecision;
+
+    /** "khoảng" — the span itself is a guess (~1970). */
+    @Column(name = "event_approx")
+    private Boolean eventApprox;
+
+    /** The album this event date was taken from; null when it was set on the file itself. */
+    @Column(name = "event_collection_id")
+    private UUID eventCollectionId;
+
+    /** End (exclusive) of the known span — lets a month filter leave out files known only to the year. */
+    @Column(name = "event_end")
+    private LocalDateTime eventEnd;
+
+    /** Tie-break under effective_date: vaguer dates first (DatePrecision.rank), camera / file dates last. */
+    @Column(name = "date_rank")
+    private Integer dateRank;
+
     /** Lowercase extension without the dot (jpg, heic, mp4...). Null when the name has none. */
     @Column(name = "file_extension", length = 16)
     private String fileExtension;
@@ -188,6 +213,17 @@ public class MediaFile extends BaseEntity {
     }
 
     public void calculateEffectiveDate() {
+        if (eventDate != null) {
+            DatePrecision p = eventPrecision != null ? eventPrecision : DatePrecision.DAY;
+            eventPrecision = p;
+            eventDate = p.floor(eventDate);
+            effectiveDate = eventDate;
+            eventEnd = p.end(eventDate);
+            dateRank = p.rank();
+            return;
+        }
+        eventPrecision = null; eventApprox = null; eventEnd = null; eventCollectionId = null;
+        dateRank = DatePrecision.DIGITAL_RANK;
         if (dateTaken != null) effectiveDate = dateTaken;
         else if (fileDateModified != null) effectiveDate = fileDateModified;
         else if (fileDateCreated != null) effectiveDate = fileDateCreated;
@@ -275,6 +311,22 @@ public class MediaFile extends BaseEntity {
     public void setFileDateCreated(LocalDateTime fileDateCreated) { this.fileDateCreated = fileDateCreated; }
     public LocalDateTime getFileDateModified() { return fileDateModified; }
     public void setFileDateModified(LocalDateTime fileDateModified) { this.fileDateModified = fileDateModified; }
+    public LocalDateTime getEventDate() { return eventDate; }
+    public void setEventDate(LocalDateTime v) { this.eventDate = v; }
+    public DatePrecision getEventPrecision() { return eventPrecision; }
+    public void setEventPrecision(DatePrecision v) { this.eventPrecision = v; }
+    public Boolean getEventApprox() { return eventApprox; }
+    public void setEventApprox(Boolean v) { this.eventApprox = v; }
+    public UUID getEventCollectionId() { return eventCollectionId; }
+    public void setEventCollectionId(UUID v) { this.eventCollectionId = v; }
+    public LocalDateTime getEventEnd() { return eventEnd; }
+    public Integer getDateRank() { return dateRank; }
+    /** Set (or with null clear) the event date in one go; source = the album it comes from, null = the file's own. */
+    public void setEvent(LocalDateTime date, DatePrecision precision, Boolean approx, UUID source) {
+        this.eventDate = date; this.eventPrecision = date == null ? null : precision;
+        this.eventApprox = date == null ? null : Boolean.TRUE.equals(approx); this.eventCollectionId = date == null ? null : source;
+        calculateEffectiveDate();
+    }
     public LocalDateTime getEffectiveDate() { return effectiveDate; }
     public void setEffectiveDate(LocalDateTime effectiveDate) { this.effectiveDate = effectiveDate; }
     public String getTimezone() { return timezone; }
