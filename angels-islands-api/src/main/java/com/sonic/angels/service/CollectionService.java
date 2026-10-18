@@ -139,63 +139,16 @@ public class CollectionService {
     public CollectionDto.Response update(UUID id, CollectionDto.Request req) {
         Collection c = findById(id);
         applyRequest(c, req);
-        Collection saved = collectionRepository.save(c);
-        if (req.getEvent() != null) propagateEvent(saved);
-        return toResponse(saved);
+        return toResponse(collectionRepository.save(c));
     }
 
-    // ── Event date: an album's date goes to the files in it that have none of their own ──
+    // ── Event date of the album itself (when its event happened). It is the album's only: files keep their own
+    //    dates; a file whose own date is not the moment (a scan) gets its event date set on the file. ──
 
     private void applyEvent(Collection c, com.sonic.angels.model.dto.EventDateDto e) {
         if (e.clears()) { c.setEventDate(null); c.setEventPrecision(null); c.setEventApprox(null); return; }
         com.sonic.angels.model.entity.DatePrecision p = e.parsedPrecision();
         c.setEventPrecision(p); c.setEventDate(p.floor(e.parsedDate())); c.setEventApprox(Boolean.TRUE.equals(e.getApprox()));
-    }
-
-    /** Files in the album with no own date (or with this album's) follow the album's date; cleared → they look for another album's. */
-    private void propagateEvent(Collection c) {
-        List<MediaFile> changed = new java.util.ArrayList<>();
-        for (MediaFile m : c.getMediaFiles()) {
-            boolean ours = c.getId().equals(m.getEventCollectionId());
-            if (!ours && m.getEventDate() != null) continue;            // its own date, or another album's
-            if (c.getEventDate() != null && !cameraInside(m, c.getEventDate(), c.getEventPrecision()))
-                m.setEvent(c.getEventDate(), c.getEventPrecision(), c.getEventApprox(), c.getId());
-            else if (ours) { m.setEvent(null, null, null, null); inheritEvent(m, c.getId()); }
-            else continue;
-            changed.add(m);
-        }
-        mediaFileRepository.saveAll(changed);
-    }
-
-    /** The camera already dated the file inside the album's span (a photo taken on the trip, not a later scan):
-     *  that date is finer than the album's, so the file keeps it. */
-    private static boolean cameraInside(MediaFile m, LocalDateTime start, com.sonic.angels.model.entity.DatePrecision p) {
-        LocalDateTime t = m.getDateTaken();
-        return t != null && p != null && !t.isBefore(start) && t.isBefore(p.end(start));
-    }
-
-    /** A file without an event date takes the one of the first album holding it that has one (except skipId). */
-    public boolean inheritEvent(MediaFile m, UUID skipId) {
-        if (m.getEventDate() != null) return false;
-        for (Collection a : collectionRepository.findByMediaFilesId(m.getId())) {
-            if (a.getId().equals(skipId) || a.getEventDate() == null || cameraInside(m, a.getEventDate(), a.getEventPrecision())) continue;
-            m.setEvent(a.getEventDate(), a.getEventPrecision(), a.getEventApprox(), a.getId());
-            return true;
-        }
-        return false;
-    }
-
-    private void inheritFrom(Collection c, java.util.Collection<MediaFile> files) {
-        if (c.getEventDate() == null) return;
-        List<MediaFile> changed = new java.util.ArrayList<>();
-        for (MediaFile m : files) if (m.getEventDate() == null && !cameraInside(m, c.getEventDate(), c.getEventPrecision())) { m.setEvent(c.getEventDate(), c.getEventPrecision(), c.getEventApprox(), c.getId()); changed.add(m); }
-        mediaFileRepository.saveAll(changed);
-    }
-
-    private void forgetAlbum(Collection c, java.util.Collection<MediaFile> files) {
-        List<MediaFile> changed = new java.util.ArrayList<>();
-        for (MediaFile m : files) if (c.getId().equals(m.getEventCollectionId())) { m.setEvent(null, null, null, null); inheritEvent(m, c.getId()); changed.add(m); }
-        mediaFileRepository.saveAll(changed);
     }
 
     public void delete(UUID id) {
@@ -223,8 +176,6 @@ public class CollectionService {
         if (!collectionRepository.existsById(collectionId)) throw new RuntimeException("Collection not found: " + collectionId);
         if (!mediaFileRepository.existsById(mediaId)) throw new RuntimeException("MediaFile not found: " + mediaId);
         collectionRepository.linkMedia(collectionId, mediaId);
-        Collection c = findById(collectionId);
-        if (c.getEventDate() != null) mediaFileRepository.findById(mediaId).ifPresent(m -> inheritFrom(c, List.of(m)));
     }
 
     /** First IMAGE uploaded into a cover-less collection becomes its cover automatically.
@@ -243,7 +194,6 @@ public class CollectionService {
         List<MediaFile> files = mediaFileRepository.findAllById(mediaIds);
         c.getMediaFiles().addAll(files);
         collectionRepository.save(c);
-        inheritFrom(c, files);
         return files.size();
     }
 
@@ -251,10 +201,8 @@ public class CollectionService {
         Collection c = findById(collectionId);
         Set<UUID> ids = new HashSet<>(mediaIds);
         int before = c.getMediaFiles().size();
-        List<MediaFile> leaving = c.getMediaFiles().stream().filter(m -> ids.contains(m.getId())).toList();
         c.getMediaFiles().removeIf(m -> ids.contains(m.getId()));
         collectionRepository.save(c);
-        forgetAlbum(c, leaving);
         return before - c.getMediaFiles().size();
     }
 
@@ -267,10 +215,8 @@ public class CollectionService {
 
     public void removeMedia(UUID collectionId, UUID mediaId) {
         Collection c = findById(collectionId);
-        List<MediaFile> leaving = c.getMediaFiles().stream().filter(m -> m.getId().equals(mediaId)).toList();
         c.getMediaFiles().removeIf(m -> m.getId().equals(mediaId));
         collectionRepository.save(c);
-        forgetAlbum(c, leaving);
     }
 
     public List<MediaFileDto.Response> getMedia(UUID collectionId, String sort, String sortDir, MediaFileDto.Includes inc) {

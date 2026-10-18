@@ -428,7 +428,7 @@ public class MediaFileService {
         }
         if (req.getEvent() != null) {
             var e = req.getEvent();
-            if (e.clears()) { mf.setEvent(null, null, null, null); collectionService.inheritEvent(mf, null); }
+            if (e.clears()) mf.setEvent(null, null, null, null);
             else mf.setEvent(e.parsedDate(), e.parsedPrecision(), e.getApprox(), null);
         }
         if (req.getTakenByPersonId() != null) {
