@@ -5,13 +5,17 @@ export interface Paged<T> { content: T[]; totalElements: number; totalPages: num
 export interface TagRef { id: string; name: string; color?: string | null }
 export interface PersonRef { id: string; name: string; displayName?: string | null; nickname?: string | null; avatarUrl?: string | null }
 
+/** When the moment really happened, as far as it is known: date = start of the known span. */
+export type DatePrecision = 'DECADE' | 'YEAR' | 'SEASON' | 'MONTH' | 'DAY' | 'HOUR' | 'MINUTE' | 'SECOND';
+export interface EventDate { date: string; precision: DatePrecision; approx?: boolean; fromAlbumId?: string | null }
+
 export interface MediaFile {
   id: string; fileName: string; fileType: 'IMAGE' | 'VIDEO' | 'FLASH' | 'AUDIO' | 'DOCUMENT'; mediaCategory?: string | null; orientation?: string | null;
   width?: number | null; height?: number | null; aspectRatio?: number | null; duration?: number | null;
   isFavorite?: boolean; isFeatured?: boolean; caption?: string | null; cdnUrl: string; thumbnailUrl?: string | null;
   /** FLASH / AUDIO / VIDEO: the still that stands for the file (also its thumbnailUrl); FLASH: the music that plays with it */
   posterUrl?: string | null; soundtrackUrl?: string | null;
-  dateTaken?: string | null; effectiveDate?: string | null; latitude?: number | null; longitude?: number | null;
+  dateTaken?: string | null; effectiveDate?: string | null; event?: EventDate | null; latitude?: number | null; longitude?: number | null;
   displayedAddress?: string | null; timezone?: string | null; mediaSource?: string | null; fileExtension?: string | null;
   persons?: PersonRef[] | null; tags?: TagRef[] | null; takenBy?: PersonRef | null;
   imageDetail?: { cameraMake?: string | null; cameraModel?: string | null; lensModel?: string | null; iso?: number | null; focalLength?: string | number | null; aperture?: string | number | null; shutterSpeed?: string | null } | null;
@@ -25,6 +29,7 @@ export interface Person {
 export interface Collection {
   id: string; name: string; description?: string | null; parentId?: string | null; parentName?: string | null;
   childrenCount?: number | null; mediaCount?: number | null; thumbnailUrl?: string | null; tags?: TagRef[] | null; persons?: PersonRef[] | null;
+  event?: EventDate | null;
 }
 
 export interface Tag { id: string; name: string; color?: string | null }

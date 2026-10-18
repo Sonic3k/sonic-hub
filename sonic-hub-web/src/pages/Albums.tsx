@@ -6,6 +6,7 @@ import { cdn } from '../api/client';
 import type { Collection } from '../types';
 import { fmt, useAlbums, useAllAlbums } from '../lib/queries';
 import { matches } from '../lib/text';
+import { eventLabel } from '../lib/date';
 import PhotoGroups, { useViewer } from '../components/PhotoGroups';
 
 function AlbumCard({ a }: { a: Collection }) {
@@ -40,7 +41,7 @@ export function AlbumPage() {
   return (
     <div className="wrap page" key={id}>
       <div className="crumbs"><Link to="/photos/albums">Album</Link>{trail.map(c => <span key={c.id}> / <Link to={`/photos/albums/${c.id}`}>{c.name}</Link></span>)}</div>
-      <div className="ptitle"><h1>{album?.name ?? 'Album'}</h1><span>{fmt(items.length || album?.mediaCount || 0)} ảnh{children.length ? ` · ${children.length} album con` : ''}</span>
+      <div className="ptitle"><h1>{album?.name ?? 'Album'}</h1><span>{album?.event ? `${eventLabel(album.event)} · ` : ''}{fmt(items.length || album?.mediaCount || 0)} ảnh{children.length ? ` · ${children.length} album con` : ''}</span>
         {!!album?.tags?.length && <div className="chips" style={{ marginLeft: 'auto' }}>{album.tags.map(t => <Link key={t.id} className="chip" to={`/tags/${encodeURIComponent(t.name)}`}>{t.name}</Link>)}</div>}</div>
       {album?.description && <p className="desc">{album.description}</p>}
       {children.length > 0 && <section className="block"><div className="hd"><h2>Album con</h2></div><div className="albums grid-auto">{children.map(a => <AlbumCard key={a.id} a={a} />)}</div></section>}

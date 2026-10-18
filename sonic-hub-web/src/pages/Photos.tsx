@@ -12,11 +12,13 @@ export default function Photos() {
   const [sp, setSp] = useSearchParams(), tl = useTimeline(), persons = usePersons();
   const q = sp.get('q') ?? '', tag = sp.get('tag'), person = sp.get('person'), fav = sp.get('fav') === '1', type = sp.get('type') as 'IMAGE' | 'VIDEO' | null;
   const year = Number(sp.get('year')) || 0, month = Number(sp.get('month')) || 0, old = sp.get('sort') === 'old';
+  /* a month filter shows files known to that month; this adds the ones known only to the year / season around it */
+  const vague = !!month && sp.get('vague') === '1';
   const from = year ? (month ? isoDay(new Date(year, month - 1, 1)) : `${year}-01-01`) : undefined;
   const to = year ? (month ? isoDay(new Date(year, month, 1)) : `${year + 1}-01-01`) : undefined;
   const inf = useInfiniteQuery({
-    queryKey: ['photos', q, tag, person, fav, type, year, month, old], initialPageParam: 0, staleTime: T,
-    queryFn: ({ pageParam }) => hub.search({ q: q || undefined, tagNames: tag ? [tag] : undefined, personId: person || undefined, favorite: fav || undefined, type: type || undefined, from, to, sortBy: 'effectiveDate', sortDir: old ? 'asc' : 'desc', page: pageParam, size: 90, inclPersons: true, inclTags: true }),
+    queryKey: ['photos', q, tag, person, fav, type, year, month, old, vague], initialPageParam: 0, staleTime: T,
+    queryFn: ({ pageParam }) => hub.search({ q: q || undefined, tagNames: tag ? [tag] : undefined, personId: person || undefined, favorite: fav || undefined, type: type || undefined, from, to, vague: vague || undefined, sortBy: 'effectiveDate', sortDir: old ? 'asc' : 'desc', page: pageParam, size: 90, inclPersons: true, inclTags: true }),
     getNextPageParam: (last) => (last.last ? undefined : last.number + 1),
   });
   const items = inf.data?.pages.flatMap(p => p.content) ?? [], total = inf.data?.pages[0]?.totalElements ?? 0, viewer = useViewer(items);
@@ -41,7 +43,7 @@ export default function Photos() {
         <button type="button" className="sortbtn" onClick={() => set('sort', old ? null : 'old')}>{old ? 'Cũ nhất trước' : 'Mới nhất trước'} ⇅</button>
       </div>
       {pills.length > 0 && <div className="pills">{pills.map(([k, label]) => <button key={k} type="button" className="fpill" onClick={() => set(k, null)}>{label}<i>✕</i></button>)}</div>}
-      {months.length > 0 && <div className="mchips"><a className={!month ? 'on' : ''} onClick={() => set('month', null)}>Cả năm</a>{months.map(b => <a key={b.month} className={month === b.month ? 'on' : ''} onClick={() => set('month', String(b.month))}>Th {b.month}<small>{b.count}</small></a>)}</div>}
+      {months.length > 0 && <div className="mchips"><a className={!month ? 'on' : ''} onClick={() => set('month', null)}>Cả năm</a>{months.map(b => <a key={b.month} className={month === b.month ? 'on' : ''} onClick={() => set('month', String(b.month))}>Th {b.month}<small>{b.count}</small></a>)}{!!month && <a className={vague ? 'on' : ''} onClick={() => set('vague', vague ? null : '1')} title="Thêm những ảnh chỉ biết năm hoặc mùa">+ ảnh không rõ tháng</a>}</div>}
       {!inf.isLoading && !items.length && <div className="card empty">Không có ảnh nào khớp. <Link to="/photos">Xem tất cả ảnh</Link></div>}
       <PhotoGroups items={items} onOpen={viewer.open} />
       <Sentinel more={more} active={!!inf.hasNextPage} />

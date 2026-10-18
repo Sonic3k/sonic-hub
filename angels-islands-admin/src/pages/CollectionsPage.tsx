@@ -1,7 +1,7 @@
 import { useState, useRef } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { FolderOpen, ChevronRight, Image, ArrowLeft, Trash2, X, Plus, FolderPlus, ImagePlus, UploadCloud, Heart, FolderInput, FolderMinus, MoreVertical, Pencil, Users, ImageIcon, UserPlus, ChevronDown, Search, Tag, Camera } from 'lucide-react'
+import { FolderOpen, ChevronRight, Image, ArrowLeft, Trash2, X, Plus, FolderPlus, ImagePlus, UploadCloud, Heart, FolderInput, FolderMinus, MoreVertical, Pencil, Users, ImageIcon, UserPlus, ChevronDown, Search, Tag, Camera, CalendarDays } from 'lucide-react'
 import { collectionBrowseApi, uploadApi, collectionsApi, mediaApi } from '../api/collections'
 import CollectionPicker from '../components/CollectionPicker'
 import PersonSelectModal from '../components/PersonSelectModal'
@@ -12,6 +12,7 @@ import { collectDroppedFiles, groupDropped } from '../lib/dropUpload'
 import { useUploadQueue, UploadQueuePanel, type QueueTask } from '../components/UploadQueue'
 import type { CollectionResponse, MediaFileResponse, PersonSummary } from '../types'
 import { Lightbox, MediaItem } from '../components/media'
+import EventDateEditor, { eventLabel } from '../components/EventDateEditor'
 
 
 // ── Collection Card ──────────────────────────────────────────────────────────
@@ -282,6 +283,7 @@ export default function CollectionsPage() {
   const [showCollMenu, setShowCollMenu] = useState(false)
   const [renameOpen, setRenameOpen] = useState(false)
   const [renameDraft, setRenameDraft] = useState('')
+  const [eventOpen, setEventOpen] = useState(false)
   const [personsOpen, setPersonsOpen] = useState(false)
   const [deleteTreeOpen, setDeleteTreeOpen] = useState(false)
   const { data: allPersons = [] } = usePersons()
@@ -533,6 +535,10 @@ export default function CollectionsPage() {
                       className="flex items-center gap-2.5 w-full px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 active:bg-slate-100 transition-colors">
                       <Pencil size={16} className="text-slate-400" />Rename
                     </button>
+                    <button onClick={() => { setEventOpen(true); setShowCollMenu(false) }}
+                      className="flex items-center gap-2.5 w-full px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 active:bg-slate-100 transition-colors">
+                      <CalendarDays size={16} className="text-slate-400" />Ngày sự kiện{current?.event ? ` · ${eventLabel(current.event)}` : ''}
+                    </button>
                     <button onClick={() => { setPicker({ mode: 'moveCollection', ids: [] }); setShowCollMenu(false) }}
                       className="flex items-center gap-2.5 w-full px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 active:bg-slate-100 transition-colors">
                       <FolderInput size={16} className="text-slate-400" />Move collection
@@ -745,6 +751,19 @@ export default function CollectionsPage() {
               <button onClick={handleCreateSubCollection} disabled={!newCollName.trim()}
                 className="px-4 py-2 text-sm bg-pink-500 text-white rounded-lg hover:bg-pink-600 disabled:opacity-50">Create</button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Album event date: files in it without their own date take it */}
+      {eventOpen && current && currentId && (
+        <div className="fixed inset-0 z-50 flex items-end md:items-center justify-center">
+          <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => setEventOpen(false)} />
+          <div className="relative bg-white rounded-t-2xl md:rounded-xl shadow-xl w-full md:max-w-md md:mx-4 p-5">
+            <h3 className="text-sm font-semibold text-slate-800 mb-1">Ngày sự kiện của "{current.name}"</h3>
+            <p className="text-[11px] text-slate-400 mb-3">Ảnh trong album chưa có ngày sự kiện riêng sẽ lấy ngày này (trừ ảnh có ngày chụp nằm sẵn trong khoảng đó)</p>
+            <EventDateEditor value={current.event} onClose={() => setEventOpen(false)}
+              onSave={async e => { await collectionsApi.update(currentId, { event: e }); invalidateAll() }} />
           </div>
         </div>
       )}

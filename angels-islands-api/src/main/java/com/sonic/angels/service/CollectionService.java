@@ -402,6 +402,7 @@ public class CollectionService {
             CollectionDto.Response r = new CollectionDto.Response();
             r.setId(c.getId()); r.setName(c.getName()); r.setDescription(c.getDescription());
             r.setCreatedAt(c.getCreatedAt());
+            r.setEvent(com.sonic.angels.model.dto.EventDateDto.of(c.getEventDate(), c.getEventPrecision(), c.getEventApprox(), null));
             if (c.getParent() != null) {
                 Collection parent = parents.get(c.getParent().getId());
                 r.setParentId(c.getParent().getId());

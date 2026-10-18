@@ -4,14 +4,14 @@ import { useSearchParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { hub } from '../api/hub';
 import type { MediaFile } from '../types';
-import { monthLabel } from '../lib/date';
+import { groupLabel } from '../lib/date';
 import Justified from './Justified';
 import Viewer from './Viewer';
 
 export default function PhotoGroups({ items, onOpen }: { items: MediaFile[]; onOpen: (i: number) => void }) {
   const groups = useMemo(() => {
     const g: { label: string; start: number; items: MediaFile[] }[] = [];
-    items.forEach((m, i) => { const label = m.effectiveDate ? monthLabel(m.effectiveDate) : 'Không rõ ngày'; const last = g[g.length - 1];
+    items.forEach((m, i) => { const label = groupLabel(m); const last = g[g.length - 1];
       if (last && last.label === label) last.items.push(m); else g.push({ label, start: i, items: [m] }); });
     return g;
   }, [items]);

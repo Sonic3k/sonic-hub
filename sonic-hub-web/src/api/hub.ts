@@ -4,7 +4,7 @@ import { isoDay, addDays } from '../lib/date';
 
 export interface Search {
   type?: 'IMAGE' | 'VIDEO'; favorite?: boolean; featured?: boolean; personId?: string; collectionId?: string;
-  tagIds?: string[]; tagNames?: string[]; q?: string; from?: string; to?: string; random?: boolean;
+  tagIds?: string[]; tagNames?: string[]; q?: string; from?: string; to?: string; vague?: boolean; random?: boolean;
   page?: number; size?: number; sortBy?: string; sortDir?: 'asc' | 'desc'; inclPersons?: boolean; inclTags?: boolean;
 }
 

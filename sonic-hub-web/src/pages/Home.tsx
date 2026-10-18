@@ -5,7 +5,7 @@ import { hub, dayOf, isAngel, peopleOfYear, randomLine } from '../api/hub';
 import { cdn, pic } from '../api/client';
 import type { MediaFile, Person } from '../types';
 import { counts, excerptOf, fmt, noteDate, noteHref, readMinutes, useAlbums, useNotes, usePersons, useRegions, useTimeline } from '../lib/queries';
-import { dayMonthYear, isoDay, longDay, yearOf } from '../lib/date';
+import { dayMonthYear, isoDay, longDay, yearOf, eventLabel } from '../lib/date';
 import { PORTALS } from './Portal';
 import Justified from '../components/Justified';
 import Viewer from '../components/Viewer';
@@ -130,7 +130,7 @@ function RandomPhoto({ onOpen }: { onOpen: (m: MediaFile) => void }) {
   return (
     <div className="card" style={{ ['--c' as string]: 'var(--photo)' }}>
       <h3><i />Một tấm ngẫu nhiên<button type="button" onClick={() => setN(v => v + 1)}>Đổi</button></h3>
-      {m ? <><img className="pic zoom" src={cdn(pic(m), 480)} alt="" onClick={() => onOpen(m)} /><div className="meta">{[m.caption, d ? dayMonthYear(d) : ''].filter(Boolean).join(' · ')}</div></> : <div className="pic ph" />}
+      {m ? <><img className="pic zoom" src={cdn(pic(m), 480)} alt="" onClick={() => onOpen(m)} /><div className="meta">{[m.caption, m.event ? eventLabel(m.event) : d ? dayMonthYear(d) : ''].filter(Boolean).join(' · ')}</div></> : <div className="pic ph" />}
     </div>
   );
 }
