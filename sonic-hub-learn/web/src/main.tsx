@@ -10,7 +10,7 @@ import { Flash } from './screens/Flash';
 import { Home } from './screens/Home';
 import { Learn, StartSession } from './screens/Learn';
 import { Lesson } from './screens/Lesson';
-import './styles/onthi.css';
+import './styles/desk.css';
 
 const queryClient = new QueryClient({ defaultOptions: { queries: { retry: 1, refetchOnWindowFocus: false } } });
 

@@ -1,28 +1,22 @@
-import type { AnswerResult, CreateSessionInput, LessonDetail, QuestionType, SessionCardView, SessionView } from '@learn/shared';
+import type { AnswerResult, CreateSessionInput, SessionCardView, SessionView } from '@learn/shared';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, type CSSProperties } from 'react';
 import { Link, useLocation, useNavigate, useParams, useSearchParams } from 'react-router';
 import { api, ApiError } from '../api';
-import { Bar, Md, NoteCard, Pages, SessionHead, SubjectTag, Waiting } from '../components/Bits';
-import { CheckIcon, CrossIcon } from '../components/Icons';
+import { Md, NoteCard, Strip, Waiting } from '../components/Bits';
+import { CloseIcon } from '../components/Icons';
 import { Question, type AnswerPayload, type QuestionControls } from '../components/Question';
 import { Screen } from '../components/Screen';
-import { courseShort, subStyle, useCatalog, type Catalog } from '../lib/catalog';
+import { courseShort, useCatalog, type Catalog } from '../lib/catalog';
 import { untilLabel } from '../lib/format';
 import { FACET_LABEL, RATING_LABEL } from '../lib/labels';
 import { clientId, reduceMotion } from '../lib/motion';
 
 /* Studying: today's Daily, a quiz over a lesson / a course / the cards that keep slipping. */
 
-type NavState = { back?: string; title?: string } | null;
+type BackState = { back?: string } | null;
 
 const errorText = (e: unknown) => (e instanceof ApiError ? e.message : 'Có lỗi xảy ra.');
-
-/** What the session is, for the bar on top (sessions do not carry a title of their own). */
-function sessionTitle(v: SessionView): string {
-  if (v.mode === 'daily') return 'Ôn hôm nay';
-  return v.course ? `Quiz ${courseShort(v.course.title)}` : 'Quiz';
-}
 
 /** Creates a quiz session, then moves to its own address so a reload resumes it. */
 export function StartSession({ kind }: { kind: 'lesson' | 'weak' | 'course' }) {
@@ -30,16 +24,9 @@ export function StartSession({ kind }: { kind: 'lesson' | 'weak' | 'course' }) {
   const [search] = useSearchParams();
   const navigate = useNavigate();
   const location = useLocation();
-  const queryClient = useQueryClient();
-  const { catalog } = useCatalog();
   const started = useRef(false);
   const [error, setError] = useState<unknown>(null);
-  const back = (location.state as NavState)?.back ?? (kind === 'lesson' ? `/lesson/${lessonId}` : kind === 'course' ? `/course/${key}` : '/');
-  const lessonTitle = kind === 'lesson' ? queryClient.getQueryData<LessonDetail>(['lesson', Number(lessonId)])?.title : undefined;
-  const courseTitle = kind === 'course' && key ? catalog.course(key)?.title : undefined;
-  const title = kind === 'weak' ? 'Hay quên' : lessonTitle ? `Quiz: ${lessonTitle}` : courseTitle ? `Quiz ${courseShort(courseTitle)}` : 'Quiz';
-  const titleRef = useRef(title);
-  titleRef.current = title;
+  const back = (location.state as BackState)?.back ?? (kind === 'lesson' ? `/lesson/${lessonId}` : kind === 'course' ? `/course/${key}` : '/');
   useEffect(() => {
     if (started.current) return;
     started.current = true;
@@ -52,29 +39,32 @@ export function StartSession({ kind }: { kind: 'lesson' | 'weak' | 'course' }) {
           : { mode: 'quiz', courseKey: key, size: 10 };
     api
       .createSession(input)
-      .then((s) => navigate(`/session/${s.id}`, { replace: true, state: { back, title: titleRef.current } }))
+      .then((s) => navigate(`/session/${s.id}`, { replace: true, state: { back } }))
       .catch(setError);
   }, [kind, lessonId, key, search, navigate, back]);
-  const empty = error instanceof ApiError && error.status === 422;
   return (
     <Screen focus>
-      <SessionHead back={back} title={title} />
-      <div className="s-layout solo">
-        {error ? (
-          <NoteCard
-            error={!empty}
-            action={
-              <Link className="btn" to={back}>
-                Quay lại
-              </Link>
-            }
-          >
-            {empty ? 'Chưa có câu hỏi nào cho phần này.' : errorText(error)}
-          </NoteCard>
-        ) : (
-          <Waiting tall />
-        )}
+      <div className="s-top">
+        <Link className="round" to={back} aria-label="Thoát">
+          <CloseIcon />
+        </Link>
+        <div />
+        <span />
       </div>
+      {error ? (
+        <NoteCard
+          error={!(error instanceof ApiError && error.status === 422)}
+          action={
+            <Link className="btn" to={back}>
+              Quay lại
+            </Link>
+          }
+        >
+          {error instanceof ApiError && error.status === 422 ? 'Chưa có câu hỏi nào cho phần này.' : errorText(error)}
+        </NoteCard>
+      ) : (
+        <Waiting tall />
+      )}
     </Screen>
   );
 }
@@ -90,62 +80,35 @@ export function Learn({ kind }: { kind: 'daily' | 'session' }) {
     gcTime: 0,
   });
   const { catalog } = useCatalog();
-  const nav = location.state as NavState;
-  const back = nav?.back ?? (q.data?.course && q.data.mode !== 'daily' ? `/course/${q.data.course.key}` : '/');
-  const title = nav?.title ?? (q.data ? sessionTitle(q.data) : kind === 'daily' ? 'Ôn hôm nay' : '');
+  const stateBack = (location.state as BackState)?.back;
+  const back = stateBack ?? (q.data?.course && q.data.mode !== 'daily' ? `/course/${q.data.course.key}` : '/');
   if (!q.data)
     return (
       <Screen focus>
-        <SessionHead back={back} title={title} />
-        <div className="s-layout solo">
-          {q.error ? (
-            <NoteCard error action={<button className="btn" onClick={() => q.refetch()}>Thử lại</button>}>
-              {errorText(q.error)}
-            </NoteCard>
-          ) : (
-            <Waiting tall />
-          )}
+        <div className="s-top">
+          <Link className="round" to={back} aria-label="Thoát">
+            <CloseIcon />
+          </Link>
+          <div />
+          <span />
         </div>
+        {q.error ? (
+          <NoteCard error action={<button className="btn" onClick={() => q.refetch()}>Thử lại</button>}>
+            {errorText(q.error)}
+          </NoteCard>
+        ) : (
+          <Waiting tall />
+        )}
       </Screen>
     );
-  return <Player key={q.data.id} initial={q.data} back={back} title={title} catalog={catalog} />;
-}
-
-/** Wide screens, before answering: the side column says what will appear there and which keys work. */
-function KeysHint({ type }: { type: QuestionType }) {
-  const rows: [string, string][] =
-    type === 'flashcard'
-      ? [['Space', 'Lật thẻ']]
-      : type === 'typing' || type === 'cloze'
-        ? [['Enter', 'Kiểm tra, rồi sang câu tiếp']]
-        : [...(type === 'single' ? ([['1 – 4', 'Chọn đáp án']] as [string, string][]) : []), ['Enter', 'Sang câu tiếp, sau khi trả lời']];
-  return (
-    <section className="box plain keys-hint" aria-hidden="true">
-      <Bar>Phím tắt</Bar>
-      <div className="body">
-        <p>{type === 'flashcard' ? 'Lật thẻ rồi tự chấm: nhớ được tới đâu.' : 'Trả lời xong, phần giải thích hiện ở đây.'}</p>
-        <table className="kv">
-          <tbody>
-            {rows.map(([k, what]) => (
-              <tr key={k}>
-                <td>
-                  <kbd>{k}</kbd>
-                </td>
-                <td>{what}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-    </section>
-  );
+  return <Player key={q.data.id} initial={q.data} back={back} catalog={catalog} />;
 }
 
 function firstPending(v: SessionView): number | null {
   return v.cards.find((c) => c.status === 'pending')?.id ?? null;
 }
 
-function Player({ initial, back, title, catalog }: { initial: SessionView; back: string; title: string; catalog: Catalog }) {
+function Player({ initial, back, catalog }: { initial: SessionView; back: string; catalog: Catalog }) {
   const queryClient = useQueryClient();
   const [view, setView] = useState(initial);
   const [currentId, setCurrentId] = useState<number | null>(() => firstPending(initial));
@@ -160,7 +123,7 @@ function Player({ initial, back, title, catalog }: { initial: SessionView; back:
   const nextRef = useRef<HTMLButtonElement>(null);
 
   const current = view.cards.find((c) => c.id === currentId) ?? null;
-  const index = current ? view.cards.findIndex((c) => c.id === current.id) : view.cards.length - 1;
+  const position = current ? view.cards.findIndex((c) => c.id === current.id) + 1 : view.cards.length;
 
   useEffect(() => {
     shownAt.current = Date.now();
@@ -229,62 +192,53 @@ function Player({ initial, back, title, catalog }: { initial: SessionView; back:
     return () => removeEventListener('keydown', onKey);
   }, [answered, current]);
 
-  // on phones the explanation sits under the question: bring it into view
+  // on phones the note sits under the card: bring it into view
   useEffect(() => {
     if (!answered || !sideRef.current || current?.question.type === 'flashcard') return;
     nextRef.current?.focus({ preventScroll: true });
-    if (innerWidth < 960) sideRef.current.scrollIntoView({ behavior: reduceMotion() ? 'auto' : 'smooth', block: 'nearest' });
+    if (innerWidth < 960) sideRef.current.scrollIntoView({ behavior: reduceMotion() ? 'auto' : 'smooth', block: 'start' });
   }, [answered, current]);
 
-  if (!view.cards.length) return <EmptySession back={back} title={title} daily={view.mode === 'daily'} />;
-  if (!current) return <Finished view={view} back={back} title={title} />;
+  if (!view.cards.length) return <EmptySession back={back} daily={view.mode === 'daily'} />;
+  if (!current) return <Finished view={view} back={back} catalog={catalog} />;
 
   const color = catalog.colorOf(current.courseKey);
   const courseTitle = catalog.course(current.courseKey)?.title ?? view.course?.title ?? '';
   const result = answered?.result ?? null;
   const reveal =
     result && current.question.type !== 'flashcard' ? { correct: result.correct, typo: result.typo, feedback: result.feedback, response: answered!.input } : null;
-  const summaryMd = result?.feedback?.summaryMd;
 
   return (
     <Screen focus>
-      <SessionHead back={back} title={title}>
-        <span className="cnt">
-          {index + 1}/{view.cards.length}
-        </span>
-      </SessionHead>
-      <div className="s-pages">
-        <Pages current={index} many={view.cards.length > 12}>
-          {view.cards.map((c, i) => {
-            const ok = c.outcome?.correct ?? (c.outcome?.rating ?? 0) > 1;
-            const cls = c.id === current.id ? 'now' : c.status === 'answered' ? (ok ? 'ok' : 'no') : undefined;
+      <div className="s-top">
+        <Link className="round" to={back} aria-label="Thoát">
+          <CloseIcon />
+        </Link>
+        <div className={`ticks${view.cards.length > 18 ? ' dense' : ''}`} aria-hidden="true">
+          {view.cards.map((c) => {
+            const ok = c.outcome?.correct;
+            const cls = c.id === current.id ? 'now' : c.status === 'answered' ? (ok ? 'ok' : 'no') : '';
             return (
               <i key={c.id} className={cls}>
-                {c.status === 'answered' ? (ok ? '✓' : '✗') : i + 1}
+                {c.status === 'answered' ? (ok ? '✓' : '✗') : ''}
               </i>
             );
           })}
-        </Pages>
+        </div>
+        <span className="s-count">
+          {position}/{view.cards.length}
+        </span>
       </div>
       <div className="s-layout">
-        <section className="box qpost" style={subStyle(color)} aria-live="polite">
-          <Bar
-            extra={
-              <>
-                {current.isNew && <span className="tag new">thẻ mới</span>}
-                {current.isRequeue && <span className="tag again">hỏi lại</span>}
-              </>
-            }
-            right={
-              <span className="r">
-                <SubjectTag subject={catalog.subjectOf(current.courseKey)} />
-                <span className="cn">{courseShort(courseTitle)}</span>
-              </span>
-            }
-          >
-            {FACET_LABEL[current.facet]}
-          </Bar>
-          <div className="body">
+        <section className="card qcard" style={{ '--sub': color } as CSSProperties} aria-live="polite">
+          <Strip parts={[{ color, n: 1 }]} />
+          <p className="q-label">
+            <span className="dot" />
+            {FACET_LABEL[current.facet]}, {courseShort(courseTitle)}
+            {current.isNew && <span className="new">thẻ mới</span>}
+            {current.isRequeue && <span className="again">hỏi lại</span>}
+          </p>
+          <div className="qbody">
             <Question key={current.id} card={current} mode="study" reveal={reveal} busy={busy} onCommit={send} controls={controls} />
           </div>
         </section>
@@ -294,76 +248,57 @@ function Player({ initial, back, title, catalog }: { initial: SessionView; back:
               {errorText(error)}
             </NoteCard>
           ) : result && current.question.type === 'flashcard' ? (
-            <section className="box reply">
-              <Bar icon={(result.rating ?? 3) > 1 ? <CheckIcon /> : <CrossIcon />} tone={(result.rating ?? 3) > 1 ? 'ok' : 'no'}>
-                {RATING_LABEL[result.rating ?? 3]}
-              </Bar>
-              {result.memory && (
-                <div className="body">
-                  <div className="foot2">
-                    <span className="due-tag">
-                      <span>Ôn lại sau</span>
-                      <b>{untilLabel(result.memory.due)}</b>
-                    </span>
-                  </div>
-                </div>
-              )}
-            </section>
+            <div className="card note flash-note">
+              <span className="stamp">
+                <span>{RATING_LABEL[result.rating ?? 3]}</span>
+                <b>{untilLabel(result.memory?.due)}</b>
+              </span>
+            </div>
           ) : result ? (
-            <section className="box reply" style={subStyle(color)}>
-              <Bar icon={result.correct ? <CheckIcon /> : <CrossIcon />} tone={result.correct ? 'ok' : 'no'}>
+            <div className="card note" style={{ '--sub': color } as CSSProperties}>
+              <p className={`verdict ${result.correct ? 'ok' : 'no'}`}>
                 {result.correct ? (result.typo ? 'Đúng rồi, chỉ sai chính tả chút xíu' : 'Đúng rồi') : 'Chưa đúng'}
-              </Bar>
-              <div className="body">
-                {result.feedback?.explanationMd && <Md className="expl" src={result.feedback.explanationMd} />}
-                {summaryMd && <Md className={`summary${current.itemKind === 'vocab' ? ' vocab' : ''}`} src={summaryMd} />}
-                {result.requeuedCardId && <p className="again-note">Thẻ này sẽ quay lại sau vài câu nữa.</p>}
-                <div className="foot2">
-                  {result.memory ? (
-                    <span className="due-tag">
-                      <span>Ôn lại sau</span>
-                      <b>{untilLabel(result.memory.due)}</b>
-                    </span>
-                  ) : (
-                    <span />
-                  )}
-                  <button ref={nextRef} type="button" className="btn" onClick={() => goNext(current.id, view)}>
-                    Tiếp
-                    <span className="go" />
-                  </button>
-                </div>
+              </p>
+              {result.feedback?.explanationMd && <Md className="expl" src={result.feedback.explanationMd} />}
+              <Md className={`summary${current.itemKind === 'vocab' ? ' vocab' : ''}`} src={result.feedback?.summaryMd} />
+              {result.requeuedCardId && <p className="requeue">Thẻ này sẽ quay lại sau vài câu nữa.</p>}
+              <div className="foot">
+                {result.memory ? (
+                  <span className="stamp">
+                    <span>Ôn lại sau</span>
+                    <b>{untilLabel(result.memory.due)}</b>
+                  </span>
+                ) : (
+                  <span />
+                )}
+                <button ref={nextRef} className="btn" onClick={() => goNext(current.id, view)}>
+                  Tiếp
+                </button>
               </div>
-            </section>
-          ) : (
-            <KeysHint type={current.question.type} />
-          )}
+            </div>
+          ) : null}
         </div>
       </div>
     </Screen>
   );
 }
 
-function EmptySession({ back, title, daily }: { back: string; title: string; daily: boolean }) {
+function EmptySession({ back, daily }: { back: string; daily: boolean }) {
   return (
     <Screen focus>
-      <SessionHead back={back} title={title} />
-      <div className="s-layout solo">
+      <div style={{ maxWidth: 560, margin: '4vh auto 0' }}>
         <NoteCard
           action={
-            daily ? (
-              <>
-                <Link className="btn" to="/courses">
-                  Chọn khóa học
-                </Link>
-                <Link className="xp" to="/">
+            <div style={{ display: 'grid', gap: 10 }}>
+              <Link className="btn wide" to={daily ? '/courses' : back}>
+                {daily ? 'Chọn khóa học' : 'Quay lại'}
+              </Link>
+              {daily && (
+                <Link className="btn ghost wide" to="/">
                   Về trang chính
                 </Link>
-              </>
-            ) : (
-              <Link className="btn" to={back}>
-                Quay lại
-              </Link>
-            )
+              )}
+            </div>
           }
         >
           {daily ? 'Hôm nay chưa có thẻ nào. Bật “Đang học” ở một khóa học để thẻ của khóa đó vào phần ôn mỗi ngày.' : 'Phần này chưa có câu hỏi nào.'}
@@ -385,62 +320,58 @@ function longestRun(cards: SessionCardView[]): number {
   return best;
 }
 
-function Finished({ view, back, title }: { view: SessionView; back: string; title: string }) {
+function Finished({ view, back, catalog }: { view: SessionView; back: string; catalog: Catalog }) {
   const stats = useQuery({ queryKey: ['stats'], queryFn: api.stats });
   const firstTry = view.cards.filter((c) => !c.isRequeue && c.status === 'answered');
   const correct = firstTry.filter((c) => c.outcome?.correct).length;
   const fresh = view.cards.filter((c) => c.isNew && c.status === 'answered').length;
   const again = view.cards.filter((c) => c.outcome?.rating === 1).length;
+  const bySubject = new Map<string, number>();
+  for (const c of view.cards) {
+    const color = catalog.colorOf(c.courseKey);
+    bySubject.set(color, (bySubject.get(color) ?? 0) + 1);
+  }
   const isDaily = view.mode === 'daily';
-  const home = isDaily ? '/' : back;
-  const homeLabel = isDaily ? 'Về trang chính' : back.startsWith('/lesson') ? 'Về bài học' : back.startsWith('/course') ? 'Về khóa học' : 'Về trang chính';
   return (
     <Screen focus>
-      <SessionHead back={home} title={title} closeLabel="Đóng" />
-      <div className="s-layout solo">
-        <section className="box done">
-          <Bar>{isDaily ? 'Xong phần hôm nay' : 'Xong quiz'}</Bar>
-          <div className="body">
-            <p className="big">
-              {correct}
-              <small>/{firstTry.length}</small>
-            </p>
-            <p className="muted" style={{ margin: 0 }}>
-              đúng ngay lần đầu
-            </p>
-            <table className="kv">
-              <tbody>
-                <tr>
-                  <td>Thẻ mới đã học</td>
-                  <td>{fresh}</td>
-                </tr>
-                <tr>
-                  <td>Hỏi lại trong buổi</td>
-                  <td>{again}</td>
-                </tr>
-                <tr>
-                  <td>Đúng liền một mạch</td>
-                  <td>{longestRun(view.cards)} câu</td>
-                </tr>
-                <tr>
-                  <td>Ngày mai cần ôn</td>
-                  <td>{stats.data ? `${stats.data.dueTomorrow} thẻ` : '…'}</td>
-                </tr>
-              </tbody>
-            </table>
-            <div className="acts">
-              <Link className="btn" to={home}>
-                <span className="go" />
-                {homeLabel}
-              </Link>
-              {isDaily && (
-                <Link className="xp" to="/flash">
-                  Lật thẻ thêm
-                </Link>
-              )}
-            </div>
+      <div className="card done-card" style={{ maxWidth: 560, margin: '4vh auto 0' }}>
+        <Strip parts={[...bySubject].map(([color, n]) => ({ color, n }))} />
+        <h1 className="display h1">{isDaily ? 'Xong phần hôm nay' : 'Xong quiz'}</h1>
+        <p className="score">
+          {correct}
+          <small>/{firstTry.length}</small>
+        </p>
+        <p className="muted" style={{ margin: 0 }}>
+          đúng ngay lần đầu
+        </p>
+        <div className="lines">
+          <div>
+            <span>Thẻ mới đã học</span>
+            <b>{fresh}</b>
           </div>
-        </section>
+          <div>
+            <span>Hỏi lại trong buổi</span>
+            <b>{again}</b>
+          </div>
+          <div>
+            <span>Đúng liền một mạch</span>
+            <b>{longestRun(view.cards)} câu</b>
+          </div>
+          <div>
+            <span>Ngày mai cần ôn</span>
+            <b>{stats.data ? `${stats.data.dueTomorrow} thẻ` : '…'}</b>
+          </div>
+        </div>
+        <div className="actions">
+          <Link className="btn wide" to={isDaily ? '/' : back}>
+            {isDaily ? 'Về trang chính' : back.startsWith('/lesson') ? 'Về bài học' : back.startsWith('/course') ? 'Về khóa học' : 'Về trang chính'}
+          </Link>
+          {isDaily && (
+            <Link className="btn ghost wide" to="/flash">
+              Lật thẻ thêm
+            </Link>
+          )}
+        </div>
       </div>
     </Screen>
   );

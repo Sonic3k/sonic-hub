@@ -1,13 +1,13 @@
 import type { AnswerResponse, SessionView } from '@learn/shared';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, type CSSProperties } from 'react';
 import { Link, useNavigate, useParams } from 'react-router';
 import { api, ApiError } from '../api';
-import { Bar, Md, NoteCard, Pages, SessionHead, SubjectTag, Waiting } from '../components/Bits';
-import { ClockIcon } from '../components/Icons';
+import { Md, NoteCard, Strip, Waiting } from '../components/Bits';
+import { BackIcon, CloseIcon } from '../components/Icons';
 import { Question, type AnswerPayload } from '../components/Question';
 import { Screen } from '../components/Screen';
-import { courseShort, subStyle, useCatalog } from '../lib/catalog';
+import { courseShort, useCatalog } from '../lib/catalog';
 import { clientId, reduceMotion } from '../lib/motion';
 
 /* Practice exam: answers are saved blind until submit, then graded by exam domain. */
@@ -26,11 +26,11 @@ export function Exam() {
   const { key = '', sessionId } = useParams();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
-  const { catalog } = useCatalog();
   const creating = useRef(false);
   const [error, setError] = useState<unknown>(null);
 
-  // /exam/:course deals a new paper (also after "Thi lại", which comes back here from a finished one)
+  // /exam/:course deals a new paper (also after "Thi lại", which comes back here from a finished one: the route
+  // keeps this same screen, so the guard is reset once a paper has its own address)
   useEffect(() => {
     if (sessionId) {
       creating.current = false;
@@ -50,36 +50,38 @@ export function Exam() {
 
   const id = sessionId ? Number(sessionId) : null;
   const q = useQuery({ queryKey: ['session', id], queryFn: () => api.session(id!), enabled: id !== null, staleTime: Infinity });
-  const courseTitle = q.data?.course?.title ?? catalog.course(key)?.title ?? '';
-  const title = `Thi thử ${courseShort(courseTitle)}`.trim();
 
-  if (q.data?.status === 'submitted') return <Results view={q.data} courseKey={key} title={title} />;
-  if (q.data) return <Sitting key={q.data.id} initial={q.data} courseKey={key} title={title} onDone={(v) => queryClient.setQueryData(['session', v.id], v)} />;
+  if (q.data?.status === 'submitted') return <Results view={q.data} courseKey={key} />;
+  if (q.data) return <Sitting key={q.data.id} initial={q.data} courseKey={key} onDone={(v) => queryClient.setQueryData(['session', v.id], v)} />;
   const err = error ?? q.error;
   return (
     <Screen focus>
-      <SessionHead back={`/course/${key}`} title={title} />
-      <div className="s-layout solo">
-        {err ? (
-          <NoteCard
-            error
-            action={
-              <Link className="btn" to={`/course/${key}`}>
-                Về khóa học
-              </Link>
-            }
-          >
-            {errorText(err)}
-          </NoteCard>
-        ) : (
-          <Waiting tall />
-        )}
+      <div className="s-top">
+        <Link className="round" to={`/course/${key}`} aria-label="Thoát">
+          <CloseIcon />
+        </Link>
+        <div />
+        <span />
       </div>
+      {err ? (
+        <NoteCard
+          error
+          action={
+            <Link className="btn" to={`/course/${key}`}>
+              Về khóa học
+            </Link>
+          }
+        >
+          {errorText(err)}
+        </NoteCard>
+      ) : (
+        <Waiting tall />
+      )}
     </Screen>
   );
 }
 
-function Sitting({ initial, courseKey, title, onDone }: { initial: SessionView; courseKey: string; title: string; onDone: (v: SessionView) => void }) {
+function Sitting({ initial, courseKey, onDone }: { initial: SessionView; courseKey: string; onDone: (v: SessionView) => void }) {
   const { catalog } = useCatalog();
   const [index, setIndex] = useState(() => Math.max(0, initial.cards.findIndex((c) => c.status === 'pending')));
   const [saved, setSaved] = useState<Map<number, AnswerResponse>>(
@@ -94,9 +96,8 @@ function Sitting({ initial, courseKey, title, onDone }: { initial: SessionView; 
   const deadline = initial.deadlineAt ? Date.parse(initial.deadlineAt) : null;
   const left = deadline ? deadline - now : null;
   const card = initial.cards[index];
-  const total = initial.cards.length;
-  const unanswered = total - saved.size;
-  const short = courseShort(initial.course?.title ?? catalog.course(courseKey)?.title ?? '');
+  const color = catalog.colorOf(courseKey);
+  const unanswered = initial.cards.length - saved.size;
 
   const submit = async () => {
     if (submitting) return;
@@ -140,162 +141,123 @@ function Sitting({ initial, courseKey, title, onDone }: { initial: SessionView; 
     });
   };
 
-  const last = index === total - 1;
+  const last = index === initial.cards.length - 1;
   return (
     <Screen focus>
-      <SessionHead back={`/course/${courseKey}`} title={title}>
-        {left !== null ? (
-          <span className={`clock${left < 120_000 ? ' low' : ''}`} aria-live="off" title="Thời gian còn lại">
-            <ClockIcon />
-            {clock(left)}
-          </span>
-        ) : (
-          <span />
-        )}
-      </SessionHead>
-      <div className="s-pages solo">
-        <Pages current={index} many={total > 12} label="Chọn câu">
-          {initial.cards.map((c, i) => (
-            <button
-              key={c.id}
-              type="button"
-              className={i === index ? 'now' : saved.has(c.id) ? 'saved' : undefined}
-              aria-label={`Câu ${i + 1}${saved.has(c.id) ? ', đã trả lời' : ''}`}
-              aria-current={i === index ? 'step' : undefined}
-              onClick={() => setIndex(i)}
-            >
-              {i + 1}
-            </button>
-          ))}
-        </Pages>
+      <div className="s-top">
+        <Link className="round" to={`/course/${courseKey}`} aria-label="Thoát">
+          <CloseIcon />
+        </Link>
+        <strong>Thi thử {courseShort(initial.course?.title ?? '')}</strong>
+        <span className={`timer${left !== null && left < 120_000 ? ' low' : ''}`} aria-live="off">
+          {left !== null ? clock(left) : ''}
+        </span>
       </div>
-      <div className="s-layout solo">
-        <section className="box qpost" style={subStyle(catalog.colorOf(courseKey))}>
-          <Bar
-            right={
-              <span className="r">
-                <SubjectTag subject={catalog.subjectOf(courseKey)} />
-                <span className="cn">{short}</span>
-              </span>
-            }
-          >
-            Câu {index + 1} trên {total}
-          </Bar>
-          <div className="body">
+      <div className="navq">
+        {initial.cards.map((c, i) => (
+          <button key={c.id} className={`${saved.has(c.id) ? 'saved' : ''} ${i === index ? 'now' : ''}`} aria-label={`Câu ${i + 1}`} onClick={() => setIndex(i)}>
+            {i + 1}
+          </button>
+        ))}
+      </div>
+      <div className="s-layout">
+        <section className="card qcard" style={{ '--sub': color } as CSSProperties}>
+          <Strip parts={[{ color, n: 1 }]} />
+          <p className="q-label">
+            Câu {index + 1} trên {initial.cards.length}
+          </p>
+          <div className="qbody">
             <Question key={card.id} card={card} mode="exam" saved={saved.get(card.id) ?? null} onCommit={save} />
-            {saved.has(card.id) && <p className="saved-note">Đã lưu đáp án. Có thể đổi trước khi nộp.</p>}
-            {error ? <p className="side-err">{errorText(error)}</p> : null}
-            {confirming ? (
-              <div className="exam-foot confirm">
-                <span className="muted">Còn {unanswered} câu bỏ trống.</span>
-                <span className="pair">
-                  <button type="button" className="xp" onClick={() => setConfirming(false)}>
-                    Làm tiếp
-                  </button>
-                  <button type="button" className="btn" disabled={submitting} onClick={submit}>
-                    Nộp luôn
-                  </button>
-                </span>
-              </div>
-            ) : (
-              <div className="exam-foot">
-                <button type="button" className="xp" disabled={index === 0} onClick={() => setIndex(index - 1)}>
-                  Câu trước
-                </button>
-                <button type="button" className="btn" disabled={submitting} onClick={() => (last ? (unanswered ? setConfirming(true) : submit()) : setIndex(index + 1))}>
-                  {last ? 'Nộp bài' : 'Câu sau'}
-                </button>
-              </div>
-            )}
           </div>
+          {saved.has(card.id) && <p className="saved-note">Đã lưu đáp án. Có thể đổi trước khi nộp.</p>}
+          {error ? <p className="saved-note" style={{ color: 'var(--pen)' }}>{errorText(error)}</p> : null}
+          {confirming ? (
+            <div className="exam-foot">
+              <span className="muted" style={{ alignSelf: 'center' }}>
+                Còn {unanswered} câu bỏ trống.
+              </span>
+              <span style={{ display: 'flex', gap: 10 }}>
+                <button className="btn ghost" onClick={() => setConfirming(false)}>
+                  Làm tiếp
+                </button>
+                <button className="btn" disabled={submitting} onClick={submit}>
+                  Nộp luôn
+                </button>
+              </span>
+            </div>
+          ) : (
+            <div className="exam-foot">
+              <button className="btn ghost" disabled={index === 0} onClick={() => setIndex(index - 1)}>
+                Câu trước
+              </button>
+              <button className="btn" disabled={submitting} onClick={() => (last ? (unanswered ? setConfirming(true) : submit()) : setIndex(index + 1))}>
+                {last ? 'Nộp bài' : 'Câu sau'}
+              </button>
+            </div>
+          )}
         </section>
+        <div />
       </div>
     </Screen>
   );
 }
 
-function Results({ view, courseKey, title }: { view: SessionView; courseKey: string; title: string }) {
+function Results({ view, courseKey }: { view: SessionView; courseKey: string }) {
   const { catalog } = useCatalog();
   const r = view.exam!;
-  const navigate = useNavigate();
   const color = catalog.colorOf(courseKey);
+  const navigate = useNavigate();
   return (
     <Screen focus>
-      <SessionHead back={`/course/${courseKey}`} title={title} closeLabel="Đóng" />
-      <div className="s-layout solo">
-        <div>
-          <section className="box done wide">
-            <Bar>Kết quả thi thử</Bar>
-            <div className="body">
-              <p className="big">
-                {Math.round(r.percent)}
-                <small>%</small>
-              </p>
-              <p className="muted" style={{ margin: 0 }}>
-                {r.correct}/{r.total} câu đúng, cần {r.passPercent}% để đạt
-              </p>
-              <span className={`stamp-pass ${r.passed ? 'ok' : 'no'}`}>{r.passed ? 'Đạt' : 'Chưa đạt'}</span>
-              <table className="tbl dom-tbl">
-                <thead>
-                  <tr>
-                    <th>STT</th>
-                    <th>Lĩnh vực</th>
-                    <th className="num">Đúng</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {r.domains
-                    .filter((d) => d.total)
-                    .map((d, i) => (
-                      <tr key={d.key}>
-                        <td className="stt">{i + 1}</td>
-                        <td>
-                          {d.title}
-                          <div className="xpbar thin">
-                            <i style={{ width: `${(d.correct / d.total) * 100}%` }} />
-                          </div>
-                        </td>
-                        <td className="num">
-                          {d.correct}/{d.total}
-                        </td>
-                      </tr>
-                    ))}
-                </tbody>
-              </table>
-              <div className="acts">
-                <button type="button" className="btn" onClick={() => navigate(`/exam/${courseKey}`)}>
-                  <span className="go" />
-                  Thi lại
-                </button>
-                <Link className="xp" to={`/course/${courseKey}`}>
-                  Về khóa học
-                </Link>
-              </div>
-            </div>
-          </section>
-          <h2 className="h2 review-head">Xem lại từng câu</h2>
-          <div className="review">
-            {view.cards.map((c, i) => {
-              const state = !c.response ? 'skip' : c.outcome?.correct ? 'ok' : 'no';
-              return (
-                <section key={c.id} className="box qpost" style={subStyle(color)}>
-                  <Bar
-                    right={
-                      <span className="r">
-                        <span className={`res ${state}`}>{state === 'ok' ? 'Đúng' : state === 'no' ? 'Sai' : 'Bỏ trống'}</span>
-                      </span>
-                    }
-                  >
-                    Câu {i + 1}
-                  </Bar>
-                  <div className="body">
-                    <Question card={c} mode="review" reveal={{ correct: c.outcome?.correct ?? false, feedback: c.feedback, response: c.response }} />
-                    {c.feedback?.explanationMd && <Md className="expl" src={c.feedback.explanationMd} />}
-                  </div>
-                </section>
-              );
-            })}
+      <div style={{ maxWidth: 720, margin: '0 auto' }}>
+        <Link className="back" to={`/course/${courseKey}`}>
+          <BackIcon />
+          {courseShort(view.course?.title ?? courseKey)}
+        </Link>
+        <div className="card done-card">
+          <Strip parts={[{ color, n: 1 }]} />
+          <h1 className="display h1">Kết quả thi thử</h1>
+          <p className="score">
+            {Math.round(r.percent)}
+            <small>%</small>
+          </p>
+          <p className="muted" style={{ margin: 0 }}>
+            {r.correct}/{r.total} câu đúng, cần {r.passPercent}% để đạt
+          </p>
+          <span className={`pass-stamp ${r.passed ? 'ok' : 'no'}`}>{r.passed ? 'Đạt' : 'Chưa đạt'}</span>
+          <div className="dom">
+            {r.domains
+              .filter((d) => d.total)
+              .map((d) => (
+                <div key={d.key}>
+                  <span>{d.title}</span>
+                  <b>
+                    {d.correct}/{d.total}
+                  </b>
+                  <span className="bar">
+                    <i style={{ width: `${(d.correct / d.total) * 100}%` }} />
+                  </span>
+                </div>
+              ))}
           </div>
+          <button className="btn wide" onClick={() => navigate(`/exam/${courseKey}`)}>
+            Thi lại
+          </button>
+        </div>
+        <h2 className="h2" style={{ margin: '28px 0 12px' }}>
+          Xem lại từng câu
+        </h2>
+        <div className="review">
+          {view.cards.map((c, i) => (
+            <section key={c.id} className="card qcard" style={{ '--sub': color } as CSSProperties}>
+              <p className="q-label">
+                Câu {i + 1}
+                {c.response ? '' : ', bỏ trống'}
+              </p>
+              <Question card={c} mode="review" reveal={{ correct: c.outcome?.correct ?? false, feedback: c.feedback, response: c.response }} />
+              {c.feedback?.explanationMd && <Md className="expl" src={c.feedback.explanationMd} />}
+            </section>
+          ))}
         </div>
       </div>
     </Screen>

@@ -3,8 +3,8 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { Link, useLocation, useParams } from 'react-router';
 import { api } from '../api';
-import { Bar, Md, NoteCard, SubjectTag, Waiting } from '../components/Bits';
-import { QuizBubbleIcon } from '../components/Icons';
+import { Dot, Md, NoteCard, Strip, Waiting } from '../components/Bits';
+import { BackIcon, NextIcon } from '../components/Icons';
 import { Screen } from '../components/Screen';
 import { courseShort, subStyle, useCatalog } from '../lib/catalog';
 import { mountSlides, type SlideDeckApi } from '../lib/slides';
@@ -13,11 +13,8 @@ import { mountSlides, type SlideDeckApi } from '../lib/slides';
 
 type TabKey = 'read' | 'slides' | 'video' | 'cards';
 
-/** Slides keep the subject's colours but take the portal's type. */
-const SLIDE_TYPE = 'section, h2 { font-family: Verdana, "DejaVu Sans", Geneva, sans-serif; } h2 { font-weight: bold; }';
-
 /** A short name for an item: the word, or a concept's question cut to its subject. */
-function itemLabel(it: ItemView): string {
+export function itemLabel(it: ItemView): string {
   if (it.vocab) return it.vocab.term;
   const text = (it.frontMd ?? it.key).replace(/[*_`#>]/g, '').replace(/<[^>]+>/g, '').trim();
   const cut = text.split(/\s[—–]\s|:\s/)[0].replace(/\?$/, '');
@@ -32,21 +29,15 @@ function youtubeEmbed(url: string): string | null {
 function Slides({ lesson, onProgress }: { lesson: LessonDetail; onProgress: (index: number, count: number) => void }) {
   const hostRef = useRef<HTMLDivElement>(null);
   const deckRef = useRef<SlideDeckApi | null>(null);
-  const [state, setState] = useState({ index: 0, count: 0, title: '' });
+  const [state, setState] = useState({ index: 0, count: 0 });
   const progress = useRef(onProgress);
   progress.current = onProgress;
   useEffect(() => {
     if (!hostRef.current || !lesson.slidesHtml) return;
-    deckRef.current = mountSlides(
-      hostRef.current,
-      lesson.slidesHtml,
-      lesson.themeCss,
-      (s) => {
-        setState({ index: s.index, count: s.count, title: s.title });
-        progress.current(s.index, s.count);
-      },
-      SLIDE_TYPE,
-    );
+    deckRef.current = mountSlides(hostRef.current, lesson.slidesHtml, lesson.themeCss, (s) => {
+      setState({ index: s.index, count: s.count });
+      progress.current(s.index, s.count);
+    });
     const onKey = (e: KeyboardEvent) => {
       if ((e.target as Element).matches('input, textarea')) return;
       if (e.key === 'ArrowRight' || e.key === ' ') {
@@ -59,27 +50,22 @@ function Slides({ lesson, onProgress }: { lesson: LessonDetail; onProgress: (ind
     return () => removeEventListener('keydown', onKey);
   }, [lesson.slidesHtml, lesson.themeCss]);
   return (
-    <section className="box slides-box">
-      <Bar right={state.count ? <span className="r">{`${state.index + 1}/${state.count}`}</span> : undefined}>{state.title || `Slide ${state.index + 1}`}</Bar>
-      <div className="body">
-        <div className="slides-host" ref={hostRef} tabIndex={0} aria-label="Slide, chạm để xem tiếp" onClick={() => deckRef.current?.next()} />
-        <div className="slides-ctl">
-          <button type="button" className="xp" onClick={() => deckRef.current?.prev()}>
-            ‹ Lùi
-          </button>
-          <div className="pages">
-            {Array.from({ length: state.count }, (_, i) => (
-              <button key={i} type="button" className={i === state.index ? 'now' : undefined} aria-label={`Slide ${i + 1}`} onClick={() => deckRef.current?.goto(i)}>
-                {i + 1}
-              </button>
-            ))}
-          </div>
-          <button type="button" className="xp" onClick={() => deckRef.current?.next()}>
-            Tiếp ›
-          </button>
+    <div className="card slides-frame">
+      <div className="slides-host" ref={hostRef} tabIndex={0} aria-label="Slide, chạm để xem tiếp" onClick={() => deckRef.current?.next()} />
+      <div className="slides-bar">
+        <button className="round" aria-label="Lùi" onClick={() => deckRef.current?.prev()}>
+          <BackIcon />
+        </button>
+        <div className="dots" aria-hidden="true">
+          {Array.from({ length: state.count }, (_, i) => (
+            <i key={i} className={i === state.index ? 'on' : ''} />
+          ))}
         </div>
+        <button className="round" aria-label="Tiếp" onClick={() => deckRef.current?.next()}>
+          <NextIcon />
+        </button>
       </div>
-    </section>
+    </div>
   );
 }
 
@@ -153,22 +139,13 @@ export function Lesson() {
     if (tab === 'cards') expose();
   }, [tab]);
 
-  const crumbs = (
-    <nav className="crumbs" aria-label="Đường dẫn">
-      <Link to="/courses">Khóa học</Link>
-      {l && (
-        <>
-          <span className="gt">{'>>'}</span>
-          <Link to={`/course/${l.course.key}`}>{courseShort(l.course.title)}</Link>
-        </>
-      )}
-    </nav>
-  );
-
   if (!l)
     return (
       <Screen tab="courses">
-        {crumbs}
+        <Link className="back" to="/courses">
+          <BackIcon />
+          Khóa học
+        </Link>
         {q.error ? (
           <NoteCard error action={<button className="btn" onClick={() => q.refetch()}>Thử lại</button>}>
             {q.error.message}
@@ -186,28 +163,31 @@ export function Lesson() {
 
   return (
     <Screen tab="courses">
-      {crumbs}
+      <Link className="back" to={`/course/${l.course.key}`}>
+        <BackIcon />
+        {courseShort(l.course.title)}
+      </Link>
+      <header className="lesson-head" style={subStyle(color)}>
+        <span className="course-name">
+          <Dot color={color} />
+          {l.chapter.title}
+        </span>
+        <h1 className="display h1">{l.title}</h1>
+        {l.summary && <p>{l.summary}</p>}
+      </header>
       <div className="lesson-wrap" style={subStyle(color)}>
         <div>
-          <header className="lesson-head">
-            <p className="chap">
-              <SubjectTag subject={catalog.subjectOf(l.course.key)} />
-              {l.chapter.title}
-            </p>
-            <h1 className="h1">{l.title}</h1>
-            {l.summary && <p>{l.summary}</p>}
-          </header>
           {tabs.length > 1 && (
-            <div className="strip-tabs" role="tablist" aria-label="Cách học bài này">
+            <div className="seg" role="tablist">
               {tabs.map(([k, t]) => (
-                <button key={k} type="button" role="tab" aria-selected={tab === k} onClick={() => setChosen(k)}>
+                <button key={k} role="tab" aria-selected={tab === k} onClick={() => setChosen(k)}>
                   {t}
                 </button>
               ))}
             </div>
           )}
           {tab === 'read' && (
-            <article className="sheet" ref={articleRef}>
+            <article className="card sheet" ref={articleRef}>
               <Md className="reading" src={l.bodyMd} />
             </article>
           )}
@@ -221,83 +201,67 @@ export function Lesson() {
             />
           )}
           {tab === 'video' && l.videoUrl && (
-            <section className="box video-box">
-              <Bar>Video</Bar>
-              <div className="body">
-                {embed ? (
-                  <iframe src={embed} title={l.title} allow="accelerometer; encrypted-media; gyroscope; picture-in-picture" allowFullScreen loading="lazy" />
-                ) : (
-                  <a className="btn" href={l.videoUrl} target="_blank" rel="noopener">
-                    <span className="go" />
-                    Mở video
-                  </a>
-                )}
-              </div>
-            </section>
+            <div className="card video-frame">
+              {embed ? (
+                <iframe src={embed} title={l.title} allow="accelerometer; encrypted-media; gyroscope; picture-in-picture" allowFullScreen loading="lazy" />
+              ) : (
+                <a className="btn" href={l.videoUrl} target="_blank" rel="noopener">
+                  Mở video
+                </a>
+              )}
+            </div>
           )}
-          {tab === 'cards' &&
-            (l.items.length ? (
-              <>
-                <p className="muted small skim-note">Xem lướt: các thẻ đã xem sẽ được đưa vào Hôm nay trước.</p>
-                <div className="skim">
-                  {l.items.map((it) => (
-                    <div key={it.key} className="cell">
-                      {it.vocab ? (
-                        <>
-                          <p className="t" lang="en">
-                            {it.vocab.term}
-                          </p>
-                          <p className="m">{it.vocab.meaning}</p>
-                        </>
-                      ) : (
-                        <Md className="t concept" src={it.frontMd} />
-                      )}
-                      {it.noteMd && <Md className="note" src={it.noteMd} />}
-                    </div>
-                  ))}
-                </div>
-              </>
-            ) : (
-              <NoteCard>Bài này chưa có thẻ nào.</NoteCard>
-            ))}
+          {tab === 'cards' && (
+            <>
+              <p className="muted small skim-note">Xem lướt: các thẻ đã xem sẽ được đưa vào Hôm nay trước.</p>
+              <div className="skim">
+                {l.items.map((it) => (
+                  <div key={it.key} className="card">
+                    <Strip parts={[{ color, n: 1 }]} />
+                    {it.vocab ? (
+                      <>
+                        <p className="t" lang="en">
+                          {it.vocab.term}
+                        </p>
+                        <p className="m">{it.vocab.meaning}</p>
+                      </>
+                    ) : (
+                      <Md className="t concept" src={it.frontMd} />
+                    )}
+                    {it.noteMd && <Md className="note" src={it.noteMd} />}
+                  </div>
+                ))}
+              </div>
+            </>
+          )}
           {l.items.length > 0 && (
             <div className="sticky-cta mobile-only">
               <Link className="btn" to={quiz} state={quizState}>
-                <span className="go" />
                 Quiz phần này
               </Link>
             </div>
           )}
         </div>
-        <aside className="lesson-side">
+        <aside className="lesson-side desktop-only">
           {l.items.length > 0 && (
-            <section className="box gold side-quiz">
-              <Bar icon={<QuizBubbleIcon />} tone="gold">
-                Quiz phần này
-              </Bar>
-              <div className="body">
-                <p>Câu hỏi về {l.items.length} thẻ trong bài. Không cần đọc hết trước.</p>
-                <Link className="btn wide" to={quiz} state={quizState}>
-                  <span className="go" />
-                  Bắt đầu quiz
-                </Link>
-              </div>
-            </section>
+            <div className="card" style={{ padding: 20 }}>
+              <h2 className="h2">Quiz phần này</h2>
+              <p className="muted small">Câu hỏi về {l.items.length} thẻ trong bài. Không cần đọc hết trước.</p>
+              <Link className="btn wide" to={quiz} state={quizState}>
+                Bắt đầu quiz
+              </Link>
+            </div>
           )}
-          {l.items.length > 0 && (
-            <section className="box in-lesson">
-              <Bar>Trong bài</Bar>
-              <div className="body">
-                <ul className="dlist">
-                  {l.items.map((it) => (
-                    <li key={it.key}>
-                      <span className="row">{itemLabel(it)}</span>
-                    </li>
-                  ))}
-                </ul>
+          <div className="card" style={{ padding: '16px 18px' }}>
+            <h2 className="h2" style={{ fontSize: 18, marginBottom: 6 }}>
+              Trong bài
+            </h2>
+            {l.items.map((it) => (
+              <div key={it.key} className="in-lesson">
+                {itemLabel(it)}
               </div>
-            </section>
-          )}
+            ))}
+          </div>
         </aside>
       </div>
     </Screen>
