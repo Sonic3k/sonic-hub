@@ -38,6 +38,7 @@ public class PersonService {
     private final TelegramCompanionSessionRepository telegramSessionRepository;
     private final com.sonic.angels.repository.RankingEntryRepository rankingEntryRepository;
     private final PersonMysticBriefRepository mysticBriefRepository;
+    private final com.sonic.angels.repository.PersonReportRepository reportRepository;
     @org.springframework.beans.factory.annotation.Autowired
     private com.sonic.angels.repository.MediaFileRepository mediaFileRepository;
 
@@ -47,7 +48,8 @@ public class PersonService {
                          CompanionConfigRepository companionConfigRepository,
                          TelegramCompanionSessionRepository telegramSessionRepository,
                          com.sonic.angels.repository.RankingEntryRepository rankingEntryRepository,
-                         PersonMysticBriefRepository mysticBriefRepository) {
+                         PersonMysticBriefRepository mysticBriefRepository,
+                         com.sonic.angels.repository.PersonReportRepository reportRepository) {
         this.personRepository = personRepository;
         this.contactRepository = contactRepository;
         this.tagRepository = tagRepository;
@@ -57,6 +59,7 @@ public class PersonService {
         this.telegramSessionRepository = telegramSessionRepository;
         this.rankingEntryRepository = rankingEntryRepository;
         this.mysticBriefRepository = mysticBriefRepository;
+        this.reportRepository = reportRepository;
     }
 
     // ── Queries ──────────────────────────────────────────────────────────────
@@ -101,6 +104,8 @@ public class PersonService {
         rankingEntryRepository.detachPerson(id);
         // the briefs Mystic kept here go with them (Mystic itself is told by the controller)
         mysticBriefRepository.deleteByPersonId(id);
+        // and the long write-ups about them
+        reportRepository.deleteByPersonId(id);
         // Entity cascade handles contacts, archives(+messages), facts, episodes, chapters, traits
         personRepository.deleteById(id);
     }

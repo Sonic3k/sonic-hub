@@ -1,9 +1,10 @@
 import { useState, useEffect, useRef } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { ArrowLeft, Brain, MessageSquare, User, Pencil, Save, X, Plus, Trash2, Upload, Image as ImageIcon, FolderOpen, FolderPlus, UserMinus, Bot, Feather } from 'lucide-react'
-import { Button, Input, Textarea, Modal, Select } from '../components/ui'
+import { Button, Input, Textarea, Modal } from '../components/ui'
 import { usePerson, useUpdatePerson } from '../hooks/usePersons'
-import { useFacts, useEpisodes, useChapters, useTraits, useArchives } from '../hooks/useMemory'
+import { useFacts, useEpisodes, useChapters, useTraits, useArchives, useReports } from '../hooks/useMemory'
+import ReportView from '../components/ReportView'
 import { personsApi } from '../api/persons'
 import { memoryApi } from '../api/memory'
 import { useMutation, useQuery, useInfiniteQuery, useQueryClient } from '@tanstack/react-query'
@@ -35,6 +36,8 @@ export default function PersonDetailPage() {
   const { data: chapters = [] } = useChapters(pid)
   const { data: traits = [] } = useTraits(pid)
   const { data: archives = [] } = useArchives(pid)
+  const { data: reports = [] } = useReports(pid)
+  const factGroups = groupFacts(facts)
   const [tab, setTab] = useState<Tab>('info')
   const [viewerArchive, setViewerArchive] = useState<ChatArchiveResponse | null>(null)
   const [memForm, setMemForm] = useState<{ kind: 'chapter' | 'trait' | 'fact' | 'episode'; item?: ChapterResponse | TraitResponse | FactResponse | EpisodeResponse } | null>(null)
@@ -194,7 +197,7 @@ export default function PersonDetailPage() {
       {tab === 'companion' && <CompanionTab personId={pid} personName={person.displayName || person.name} />}
 
       {memForm && (
-        <MemoryFormModal personId={pid} kind={memForm.kind} item={memForm.item}
+        <MemoryFormModal personId={pid} kind={memForm.kind} item={memForm.item} categories={factGroups.map(([c]) => c)}
           onSaved={() => { invalidateMemory(memForm.kind); setMemForm(null) }}
           onClose={() => setMemForm(null)} />
       )}
@@ -308,6 +311,18 @@ export default function PersonDetailPage() {
 
       {tab === 'memory' && (
         <div className="space-y-6">
+          {reports.length > 0 && (
+            <section>
+              <h3 className="text-sm font-semibold text-slate-600 mb-3">Hồ sơ</h3>
+              <div className="space-y-2">{reports.map(r => (
+                <ReportView key={r.id} report={r} onDelete={async () => {
+                  if (!confirm(`Xoá "${r.title}"?`)) return
+                  await memoryApi.deleteReport(pid, r.source)
+                  queryClient.invalidateQueries({ queryKey: ['reports', pid] })
+                }} />
+              ))}</div>
+            </section>
+          )}
           {(
             <section>
               <div className="flex items-center gap-2 mb-3">
@@ -367,20 +382,25 @@ export default function PersonDetailPage() {
                   <Plus size={11} />Add
                 </button>
               </div>
+              <div className="space-y-3">{factGroups.map(([category, list]) => (
+              <div key={category}>
+                <p className="text-[11px] font-medium uppercase tracking-wide text-slate-400 mb-1">{category} <span className="text-slate-300">· {list.length}</span></p>
               <div className="bg-white rounded-lg border border-slate-100 divide-y divide-slate-50">
-                {facts.map(f => (
+                {list.map(f => (
                   <div key={f.id} className="group px-3 md:px-4 py-2.5 flex flex-wrap items-baseline gap-1.5 md:gap-3">
-                    <span className="text-xs text-slate-400 w-20 shrink-0">{f.category}</span>
                     <span className="text-xs font-medium text-slate-600">{f.key}:</span>
                     <span className="text-xs text-slate-700">{f.value}</span>
                     <span className="ml-auto flex items-center gap-1.5">
                       {f.period && <span className="text-xs text-slate-300">{f.period}</span>}
+                      {f.source && <span className="text-[10px] px-1.5 py-0.5 rounded bg-slate-50 text-slate-400">{f.source}</span>}
                       <button onClick={() => setMemForm({ kind: 'fact', item: f })} className="p-1 text-slate-300 hover:text-pink-500 rounded transition-colors opacity-100 md:opacity-0 md:group-hover:opacity-100"><Pencil size={12} /></button>
                       <button onClick={() => deleteMemItem('fact', f.id, `fact "${f.key}"`)} className="p-1 text-slate-300 hover:text-rose-500 rounded transition-colors opacity-100 md:opacity-0 md:group-hover:opacity-100"><X size={12} /></button>
                     </span>
                   </div>
                 ))}
               </div>
+              </div>
+              ))}</div>
             </section>
           )}
           {(
@@ -696,8 +716,18 @@ function PersonPhotosTab({ personId }: { personId: string }) {
 
 const FACT_CATEGORIES = ['basic', 'preference', 'habit', 'work', 'family', 'hobby']
 
-function MemoryFormModal({ personId, kind, item, onSaved, onClose }: {
+/** Facts by category: scores first, the intimate ones last, the rest in the order they first appear. */
+const FACT_FIRST = ['Điểm (Claude chấm)'], FACT_LAST = ['Tình dục & thân mật']
+function groupFacts(facts: FactResponse[]): [string, FactResponse[]][] {
+  const m = new Map<string, FactResponse[]>()
+  for (const f of facts) { const c = f.category || 'basic'; if (!m.has(c)) m.set(c, []); m.get(c)!.push(f) }
+  const rank = (c: string) => FACT_FIRST.includes(c) ? 0 : FACT_LAST.includes(c) ? 2 : 1
+  return [...m.entries()].sort((a, b) => rank(a[0]) - rank(b[0]))
+}
+
+function MemoryFormModal({ personId, kind, item, categories = [], onSaved, onClose }: {
   personId: string
+  categories?: string[]
   kind: 'chapter' | 'trait' | 'fact' | 'episode'
   item?: ChapterResponse | TraitResponse | FactResponse | EpisodeResponse
   onSaved: () => void
@@ -747,9 +777,11 @@ function MemoryFormModal({ personId, kind, item, onSaved, onClose }: {
     <Modal title={`${editing ? 'Edit' : 'Add'} ${titles[kind]}`} onClose={onClose}>
       <div className="space-y-3">
         {kind === 'fact' && <>
-          <Select label="Category" value={String(f.category)} onChange={e => set('category', e.target.value)}>
-            {FACT_CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
-          </Select>
+          {/* free text with suggestions: imports write their own categories ("Điểm (Claude chấm)"…) and a fixed list would turn them into "basic" on save */}
+          <Input label="Category" list="fact-categories" value={String(f.category)} onChange={e => set('category', e.target.value)} />
+          <datalist id="fact-categories">
+            {[...new Set([...FACT_CATEGORIES, ...categories])].map(c => <option key={c} value={c} />)}
+          </datalist>
           <Input label="Key *" value={String(f.key)} onChange={e => set('key', e.target.value)} placeholder="truong_hoc, mon_an_thich..." />
           <Input label="Value *" value={String(f.value)} onChange={e => set('value', e.target.value)} placeholder="Chu Van An High School" />
           <Input label="Period" value={String(f.period)} onChange={e => set('period', e.target.value)} placeholder="2010 or 2009-2011, empty = always true" />
