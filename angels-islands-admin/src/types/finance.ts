@@ -25,14 +25,19 @@ export interface FinCategoryRequest { name?: string; icon?: string; kind?: Categ
 export interface FinRule {
   id: string; keywords: string; direction: RuleDirection; categoryId: string | null; categoryName: string | null; categoryIcon: string | null
   transferAccountId: string | null; transferAccountName: string | null; priority: number; origin: 'SEED' | 'USER'; hits: number; active: boolean
+  /** a rule about one counterparty (keywords empty); label renames what it matches */
+  counterpartyName: string | null; counterpartyAccount: string | null; label: string | null
 }
-export interface FinRuleRequest { keywords?: string; direction?: RuleDirection; categoryId?: string; transferAccountId?: string; priority?: number; active?: boolean }
+export interface FinRuleRequest {
+  keywords?: string; direction?: RuleDirection; categoryId?: string; transferAccountId?: string; priority?: number; active?: boolean
+  counterpartyName?: string; counterpartyAccount?: string; label?: string
+}
 
 export interface FinTxn {
   id: string; accountId: string; accountName: string; accountMode: AccountMode; currency: string
   occurredAt: string; amount: number; amountVnd: number | null; kind: TxnKind
   categoryId: string | null; categoryName: string | null; categoryIcon: string | null
-  description: string | null; bankDescription: string | null; counterparty: string | null; note: string | null
+  description: string | null; bankDescription: string | null; counterparty: string | null; counterpartyAccount: string | null; note: string | null
   source: 'SEPAY' | 'EMAIL' | 'NOTE' | 'MANUAL' | 'RECONCILE' | 'SYSTEM'; status: TxnStatus
   categorizedBy: 'RULE' | 'AI' | 'USER' | 'SYSTEM' | null; aiConfidence: number | null; balanceAfter: number | null
   transferPeerId: string | null; transferAccountName: string | null; suggestedKeywords: string | null; createdAt: string

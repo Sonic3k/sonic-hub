@@ -118,6 +118,7 @@ export default function TransactionsTab() {
                         <p className="text-sm text-slate-800 truncate">{t.description || t.bankDescription || '—'}</p>
                         <p className="text-xs text-slate-400 flex items-center gap-1.5 flex-wrap mt-0.5">
                           <AccountDot account={acc} />{t.accountName}
+                          {t.counterparty && t.kind !== 'TRANSFER' && <span className="truncate max-w-[14rem]">{t.amount < 0 ? '→' : '←'} {t.counterparty}</span>}
                           <span>·</span>
                           {t.kind === 'TRANSFER' ? <span>↔ {t.transferAccountName ?? 'own account'}</span>
                             : t.categoryName ? <span className={clsx(t.status === 'REVIEW' && 'text-amber-600')}>{t.categoryName}{t.status === 'REVIEW' && '?'}</span>

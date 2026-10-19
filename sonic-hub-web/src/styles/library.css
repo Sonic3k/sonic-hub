@@ -826,6 +826,25 @@ a.rk-mcell:hover, .rk-mcell.on { background: #FDE7EC; border-color: color-mix(in
   .mn-toast { bottom: calc(78px + env(safe-area-inset-bottom)); }
 }
 @media (max-width: 640px) { .mn-chart .tick { font-size: 22px; } .mn-chart .cap { font-size: 24px; } .mn-form { grid-template-columns: 1fr; } }
+/* statements and counterparties */
+.mn .ptitle .mn-import { padding-bottom: 6px; }
+.mn-rv-hint { margin: -4px 0 4px; font-size: 13px; line-height: 1.5; color: var(--ink2); }
+.mn-rv-who { margin-right: 6px; font-weight: 500; color: var(--ink3); }
+.mn-pick-label { flex-basis: 100%; height: 36px; margin-bottom: 4px; padding: 0 10px; border: 1px solid var(--line); border-radius: 8px; background: var(--card); font: inherit; font-size: 14px; }
+.mn-pick-label:focus { outline: 2px solid color-mix(in srgb, var(--money) 40%, transparent); border-color: var(--money); }
+.mn-pick-wide { flex-basis: 100%; margin-bottom: 4px; }
+.mn-everyone { display: flex; flex-direction: column; gap: 8px; margin-top: 14px; }
+.mn-everyone .mn-pick-label { flex: none; margin: 0; }
+.mn-everyone .mn-remember { align-items: flex-start; line-height: 1.45; }
+.mn-everyone .mn-remember input { margin-top: 3px; }
+.mn-imp-acc { margin: 10px 0 0; font-size: 14px; color: var(--ink2); }
+.mn-imp { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; margin: 14px 0 0; }
+.mn-imp div { padding: 10px 12px; border: 1px solid var(--line); border-radius: 10px; }
+.mn-imp dt { font-size: 12px; color: var(--ink3); }
+.mn-imp dd { margin: 2px 0 0; font-size: 18px; font-weight: 600; font-variant-numeric: tabular-nums; }
+.mn-imp dd small { display: block; margin-top: 2px; font-size: 11.5px; font-weight: 400; color: var(--ink3); }
+.mn-imp-done { margin: 14px 0 0; font-size: 15px; font-weight: 600; }
+
 
 /* a PDF in the viewer: the browser's reader, with a button to open it on its own */
 .v-doc { width: min(1100px, 92vw); height: 86vh; display: flex; flex-direction: column; gap: 10px; align-items: center; }

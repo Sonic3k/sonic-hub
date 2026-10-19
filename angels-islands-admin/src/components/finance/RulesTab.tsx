@@ -34,6 +34,7 @@ export default function RulesTab() {
           <div key={r.id} className={clsx('flex items-center gap-3 px-4 py-3', !r.active && 'opacity-50')}>
             <div className="min-w-0 flex-1">
               <div className="flex flex-wrap gap-1">
+                {r.counterpartyName && <span className="text-[11px] px-1.5 py-0.5 rounded bg-pink-50 text-pink-700">counterparty: {r.counterpartyName}</span>}
                 {r.keywords.split('|').map(k => k.trim()).filter(Boolean).slice(0, 12).map(k => (
                   <span key={k} className="text-[11px] px-1.5 py-0.5 rounded bg-slate-100 text-slate-600">{k}</span>
                 ))}
@@ -43,6 +44,7 @@ export default function RulesTab() {
                 {DIR_LABEL[r.direction]} → <span className="text-slate-700 font-medium">
                   {r.transferAccountName ? `↔ ${r.transferAccountName}` : `${r.categoryIcon ?? ''} ${r.categoryName}`}
                 </span>
+                {r.label && <span> · named “{r.label}”</span>}
                 <span> · priority {r.priority} · {r.hits} hits · {r.origin === 'SEED' ? 'built-in' : 'mine'}</span>
               </p>
             </div>
@@ -63,6 +65,8 @@ function RuleModal({ rule, onClose }: { rule?: FinRule; onClose: () => void }) {
   const { data: categories = [] } = useFinCategories()
   const { data: accounts = [] } = useFinAccounts()
   const [keywords, setKeywords] = useState(rule?.keywords ?? '')
+  const [label, setLabel] = useState(rule?.label ?? '')
+  const byCounterparty = !!rule?.counterpartyName
   const [direction, setDirection] = useState<RuleDirection>(rule?.direction ?? 'OUT')
   const [target, setTarget] = useState<'category' | 'account'>(rule?.transferAccountId ? 'account' : 'category')
   const [categoryId, setCategoryId] = useState(rule?.categoryId ?? '')
@@ -72,7 +76,7 @@ function RuleModal({ rule, onClose }: { rule?: FinRule; onClose: () => void }) {
   const done = () => { qc.invalidateQueries({ queryKey: finKeys.rules }); onClose() }
   const save = useMutation({
     mutationFn: () => {
-      const body = { keywords, direction, priority: Number(priority) || 10,
+      const body = { keywords: byCounterparty ? undefined : keywords, label, direction, priority: Number(priority) || 10,
         categoryId: target === 'category' ? categoryId || undefined : undefined,
         transferAccountId: target === 'account' ? accountId || undefined : undefined }
       return rule ? financeApi.updateRule(rule.id, body) : financeApi.createRule(body)
@@ -84,7 +88,10 @@ function RuleModal({ rule, onClose }: { rule?: FinRule; onClose: () => void }) {
   return (
     <Modal title={rule ? 'Edit rule' : 'New rule'} onClose={onClose}>
       <div className="space-y-3">
-        <Input label="Keywords (separate with |)" value={keywords} onChange={e => setKeywords(e.target.value)} placeholder="highlands | phúc long | katinat" />
+        {byCounterparty
+          ? <p className="text-sm text-slate-600">Everything with <b>{rule!.counterpartyName}</b>{rule!.counterpartyAccount ? ` (${rule!.counterpartyAccount})` : ''}</p>
+          : <Input label="Keywords (separate with |)" value={keywords} onChange={e => setKeywords(e.target.value)} placeholder="highlands | phúc long | katinat" />}
+        <Input label="Name the matching transactions (optional)" value={label} onChange={e => setLabel(e.target.value)} placeholder="Tiền nhà" />
         <div className="grid grid-cols-2 gap-3">
           <Select label="Applies to" value={direction} onChange={e => setDirection(e.target.value as RuleDirection)}>
             {(['OUT', 'IN', 'ANY'] as const).map(d => <option key={d} value={d}>{DIR_LABEL[d]}</option>)}
@@ -115,7 +122,7 @@ function RuleModal({ rule, onClose }: { rule?: FinRule; onClose: () => void }) {
           {rule ? <Button size="sm" variant="danger" onClick={() => { if (confirm('Delete this rule?')) remove.mutate() }}><Trash2 size={14} />Delete</Button> : <span />}
           <div className="flex gap-2">
             <Button variant="ghost" onClick={onClose}>Cancel</Button>
-            <Button onClick={() => { setError(''); save.mutate() }} disabled={!keywords.trim() || save.isPending}>Save</Button>
+            <Button onClick={() => { setError(''); save.mutate() }} disabled={(!byCounterparty && !keywords.trim()) || save.isPending}>Save</Button>
           </div>
         </div>
       </div>

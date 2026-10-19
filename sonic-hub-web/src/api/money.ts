@@ -1,5 +1,5 @@
 /* /api/finance — the "Tiền" section. Times are UTC without a Z (see lib/money utc()). */
-import { get, send } from './client';
+import { get, send, upload } from './client';
 import type { Paged } from '../types';
 
 export type Mode = 'FEED' | 'RECONCILE' | 'POOL';
@@ -21,6 +21,7 @@ export interface Txn {
   amount: number; amountVnd: number | null; kind: 'EXPENSE' | 'INCOME' | 'TRANSFER';
   categoryId: string | null; categoryName: string | null; categoryIcon: string | null;
   description: string | null; bankDescription: string | null; note: string | null;
+  counterparty: string | null; counterpartyAccount: string | null;
   source: string; status: 'OK' | 'REVIEW'; categorizedBy: 'RULE' | 'AI' | 'USER' | 'SYSTEM' | null; aiConfidence: number | null;
   transferPeerId: string | null; transferAccountName: string | null; suggestedKeywords: string | null; createdAt: string;
 }
@@ -35,7 +36,21 @@ export interface MonthReport {
 export interface TrendPoint { month: string; income: number; expense: number; saved: number; netWorth: number | null }
 export interface Summary { accounts: MoneyAccount[]; netWorthVnd: number; reviewCount: number; usdRate: number | null; flexibleBudget: number | null; lastFeedAt: string | null }
 export interface Chip { text: string; amount: number; accountId: string; accountName: string; categoryId: string | null; categoryName: string | null; categoryIcon: string | null; uses: number }
-export interface TxnEdit { accountId?: string; occurredAt?: string; amount?: number; kind?: string; categoryId?: string; description?: string; note?: string; transferAccountId?: string; learnKeywords?: string }
+export interface TxnEdit {
+  accountId?: string; occurredAt?: string; amount?: number; kind?: string; categoryId?: string; description?: string; note?: string;
+  transferAccountId?: string; learnKeywords?: string; learnCounterparty?: boolean; label?: string;
+}
+/** Everyone money went to or came from, with what still waits; one decision covers all their lines. */
+export interface CounterpartyGroup {
+  key: string; name: string; account: string | null; accounts: number; ownAccountIds: string[]; count: number; waiting: number;
+  outCount: number; inCount: number; totalOut: number; totalIn: number; lastAt: string; sample: string | null;
+  ruleId: string | null; ruleLabel: string | null; guessCategoryId: string | null; guessCategoryName: string | null; guessCategoryIcon: string | null;
+}
+export interface ImportSummary {
+  bank: string; accountNumber: string | null; accountId: string; accountName: string; period: string | null; from: string; to: string;
+  rows: number; matched: number; enriched: number; created: number; already: number; withCounterparty: number;
+  categorized: number; waiting: number; skipped: number; committed: boolean;
+}
 
 export const moneyApi = {
   summary: () => get<Summary>('/finance/summary'),
@@ -53,4 +68,8 @@ export const moneyApi = {
   confirmAll: () => send<{ updated: number }>('POST', '/finance/transactions/confirm-all'),
   setBudget: (flexibleBudget: number) => send<unknown>('PUT', '/finance/settings', { flexibleBudget }),
   setBalance: (id: string, balance: number) => send<MoneyAccount>('POST', `/finance/accounts/${id}/balance`, { balance }),
+  counterparties: () => get<CounterpartyGroup[]>('/finance/counterparties', { waiting: true }),
+  assign: (b: { name: string; categoryId?: string; transferAccountId?: string; label?: string }) => send<{ updated: number }>('POST', '/finance/counterparties/assign', b),
+  importPreview: (file: File, accountId?: string) => upload<ImportSummary>('/finance/import/preview', file, { accountId }),
+  importStatement: (file: File, accountId?: string) => upload<ImportSummary>('/finance/import', file, { accountId }),
 };

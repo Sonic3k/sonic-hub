@@ -9,6 +9,7 @@ export const useTrend = () => useQuery({ queryKey: ['money', 'trend'], queryFn: 
 export const useCategories = () => useQuery({ queryKey: ['money', 'categories'], queryFn: moneyApi.categories, staleTime: 10 * S });
 export const useRules = () => useQuery({ queryKey: ['money', 'rules'], queryFn: moneyApi.rules, staleTime: 10 * S });
 export const useReview = () => useQuery({ queryKey: ['money', 'review'], queryFn: moneyApi.review, staleTime: S });
+export const useCounterparties = () => useQuery({ queryKey: ['money', 'counterparties'], queryFn: moneyApi.counterparties, staleTime: S });
 export const useChips = () => useQuery({ queryKey: ['money', 'chips'], queryFn: moneyApi.chips, staleTime: S });
 export const useTxns = (month: string, size: number) =>
   useQuery({ queryKey: ['money', 'txns', month, size], queryFn: () => moneyApi.transactions({ month, size }), staleTime: S, placeholderData: p => p });
