@@ -9,6 +9,7 @@ import org.springframework.data.jpa.repository.Query;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
 
@@ -76,7 +77,20 @@ public interface FinanceTransactionRepository extends JpaRepository<FinanceTrans
     @Query("UPDATE FinanceTransaction t SET t.matchedRule = NULL WHERE t.matchedRule.id = :ruleId")
     int clearRule(UUID ruleId);
 
-    @Modifying(flushAutomatically = true)
-    @Query("UPDATE FinanceTransaction t SET t.category = NULL, t.status = :review WHERE t.category.id = :categoryId")
-    int uncategorize(UUID categoryId, FinanceTransaction.Status review);
+    List<FinanceTransaction> findByCategoryId(UUID categoryId);
+
+    /** Lines that carry this tag, put there or brought along by another. */
+    @Query("SELECT DISTINCT t FROM FinanceTransaction t JOIN t.tags x WHERE x.tag.id = :tagId")
+    List<FinanceTransaction> withTag(UUID tagId);
+
+    /** Lines decided before tags existed: a category, no tags yet. */
+    @Query("SELECT t FROM FinanceTransaction t JOIN FETCH t.category WHERE t.kind <> :transfer AND t.tags IS EMPTY")
+    List<FinanceTransaction> categorizedWithoutTags(FinanceTransaction.Kind transfer);
+
+    /** Every line a rule could be about (the bookkeeping side of a move is never one). */
+    @Query("SELECT t FROM FinanceTransaction t JOIN FETCH t.account LEFT JOIN FETCH t.category WHERE t.source <> :system")
+    List<FinanceTransaction> allExcept(FinanceTransaction.Source system);
+
+    @Query("SELECT t FROM FinanceTransaction t JOIN FETCH t.account LEFT JOIN FETCH t.category WHERE t.id IN :ids")
+    List<FinanceTransaction> findAllByIdIn(Collection<UUID> ids);
 }

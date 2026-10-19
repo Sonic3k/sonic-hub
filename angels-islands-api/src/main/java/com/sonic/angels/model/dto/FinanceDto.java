@@ -1,6 +1,7 @@
 package com.sonic.angels.model.dto;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
@@ -22,20 +23,42 @@ public final class FinanceDto {
     /** "Chốt số dư": the balance seen in the app right now. */
     public record BalanceRequest(BigDecimal balance, String note) {}
 
-    // ── categories and rules ──
+    // ── facets, tags and rules ──
 
+    /** A way of looking at money ("mặt"). main: the classic categories; perTransaction: its tags describe one occasion. */
+    public record Facet(UUID id, String code, String name, String icon, int sortOrder, boolean main, boolean perTransaction,
+                        boolean system, boolean archived, long tagCount) {}
+
+    public record FacetRequest(String name, String icon, Integer sortOrder, Boolean perTransaction, Boolean archived) {}
+
+    /**
+     * A tag ("nhãn") of a facet; the main facet's are the categories (kind EXPENSE/INCOME, with a budget group),
+     * the others are kind ANY. impliesIds: tags that come along whenever this one is put on a line.
+     */
     public record Category(UUID id, String code, String name, String icon, String kind, String budgetGroup,
-                           int sortOrder, boolean system, boolean archived) {}
+                           int sortOrder, boolean system, boolean archived, UUID facetId, List<UUID> impliesIds) {}
 
-    public record CategoryRequest(String name, String icon, String kind, String budgetGroup, Integer sortOrder, Boolean archived) {}
+    /** facetId only when creating (default: the main facet); impliesIds replaces what it brings along. */
+    public record CategoryRequest(String name, String icon, String kind, String budgetGroup, Integer sortOrder, Boolean archived,
+                                  UUID facetId, List<UUID> impliesIds) {}
 
+    /** A tag as a line or a rule shows it. by: who put it on the line (RULE, AI, USER, SYSTEM, IMPLIED); null on a rule. */
+    public record TagRef(UUID id, String name, String icon, UUID facetId, boolean main, String by) {}
+
+    /** tags: everything the rule gives (category is its main-facet one); fromDate/toDate: an occasion's days. */
     public record Rule(UUID id, String keywords, String direction, UUID categoryId, String categoryName, String categoryIcon,
                        UUID transferAccountId, String transferAccountName, int priority, String origin, int hits, boolean active,
-                       String counterpartyName, String counterpartyAccount, String label) {}
+                       String counterpartyName, String counterpartyAccount, String label,
+                       List<TagRef> tags, LocalDate fromDate, LocalDate toDate) {}
 
-    /** keywords, or counterpartyName for a rule about one counterparty; label renames what it matches. */
+    /**
+     * keywords, or counterpartyName for a rule about one counterparty, and/or fromDate–toDate (Vietnam dates, both
+     * included; "" clears) for an occasion; label renames what it matches. tagIds: every tag it gives (categoryId,
+     * when sent, is added to them); a rule gives tags or moves money (transferAccountId), not both.
+     */
     public record RuleRequest(String keywords, String direction, UUID categoryId, UUID transferAccountId, Integer priority, Boolean active,
-                              String counterpartyName, String counterpartyAccount, String label) {}
+                              String counterpartyName, String counterpartyAccount, String label,
+                              List<UUID> tagIds, String fromDate, String toDate) {}
 
     // ── transactions ──
 
@@ -44,16 +67,22 @@ public final class FinanceDto {
                       UUID categoryId, String categoryName, String categoryIcon, String description, String bankDescription,
                       String counterparty, String counterpartyAccount, String note, String source, String status, String categorizedBy, Double aiConfidence,
                       BigDecimal balanceAfter, UUID transferPeerId, String transferAccountName, String suggestedKeywords,
-                      LocalDateTime createdAt) {}
+                      LocalDateTime createdAt, List<TagRef> tags) {}
 
     /**
      * Create or edit. occurredAt: ISO; with Z/offset it is converted, bare means UTC. kind TRANSFER needs transferAccountId.
-     * learnKeywords: also make a rule "these words → this category" and apply it to what still waits for review.
+     * tagIds: every tag the line should carry (implied ones come by themselves); each facet that changes becomes his.
+     * categoryId alone: the main facet becomes that one category.
+     * learnKeywords: also make a rule "these words → these tags" and apply it to what still waits for review.
      * learnCounterparty: the same for everything with this transaction's counterparty, old and new; label renames them.
+     * ruleTagIds: the tags such a rule gives (default: the line's tags, but not those of per-transaction facets).
      */
     public record TxnRequest(UUID accountId, String occurredAt, BigDecimal amount, String kind, UUID categoryId,
                              String description, String note, UUID transferAccountId, String learnKeywords,
-                             Boolean learnCounterparty, String label) {}
+                             Boolean learnCounterparty, String label, List<UUID> tagIds, List<UUID> ruleTagIds) {}
+
+    /** Many lines at once: these tags put on (his) and/or taken off. Moves between own accounts are skipped. */
+    public record TagsRequest(List<UUID> ids, List<UUID> add, List<UUID> remove) {}
 
     /** A quick note, already understood by the client: amount is signed (negative = spent). */
     public record NoteRequest(String text, BigDecimal amount, UUID accountId, String occurredAt, UUID categoryId) {}
@@ -75,8 +104,8 @@ public final class FinanceDto {
                                     LocalDateTime lastAt, String sample, UUID ruleId, String ruleLabel,
                                     UUID guessCategoryId, String guessCategoryName, String guessCategoryIcon) {}
 
-    /** "Everything with this counterparty is …": a category or a move to an own account, and an optional label. */
-    public record AssignRequest(String name, UUID categoryId, UUID transferAccountId, String label) {}
+    /** "Everything with this counterparty is …": a category or a move to an own account; more tags, an optional label. */
+    public record AssignRequest(String name, UUID categoryId, UUID transferAccountId, String label, List<UUID> tagIds) {}
 
     /**
      * What a statement file holds and what importing it does (or did): matched = already here from the bank feed

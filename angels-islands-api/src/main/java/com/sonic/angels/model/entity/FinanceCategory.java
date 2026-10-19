@@ -1,19 +1,27 @@
 package com.sonic.angels.model.entity;
 
 import jakarta.persistence.*;
+import org.hibernate.annotations.BatchSize;
+
+import java.util.LinkedHashSet;
+import java.util.Set;
 import java.util.UUID;
 
 /**
- * What money was for. `code` is a stable key (the AI answers with it; system categories are found by it).
- * Expense categories carry a budget group: FIXED (bills that come anyway), FLEXIBLE (what the monthly
- * "còn tiêu được" number watches) or SAVING (money put aside — reported apart, never counted as spending).
+ * A tag ("nhãn") in one facet. The tags of the main facet are the classic categories — what money was for:
+ * they say spending or income, and expense ones carry a budget group: FIXED (bills that come anyway), FLEXIBLE
+ * (what the monthly "còn tiêu được" number watches) or SAVING (money put aside — reported apart, never counted as
+ * spending). Tags of the other facets ("Bạn bè", "Digital", "Tết") are kind ANY and carry no budget group.
+ * `code` is a stable key (the AI answers with it; system categories are found by it).
+ * `implies`: tags that come along whenever this one is put on a line ("Game" → "Giải trí" + "Digital").
  */
 @Entity
 @Table(name = "finance_categories",
     uniqueConstraints = @UniqueConstraint(name = "uk_finance_category_code", columnNames = "code"))
+@BatchSize(size = 50)
 public class FinanceCategory extends FinanceEntity {
 
-    public enum Kind { EXPENSE, INCOME }
+    public enum Kind { EXPENSE, INCOME, ANY }
     public enum BudgetGroup { FIXED, FLEXIBLE, SAVING }
 
     /** Codes the code relies on. */
@@ -52,6 +60,17 @@ public class FinanceCategory extends FinanceEntity {
     @Column(name = "archived", nullable = false)
     private boolean archived = false;
 
+    /** Null only on rows from before facets existed — those belong to the main facet. */
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "facet_id")
+    private FinanceFacet facet;
+
+    @ManyToMany(fetch = FetchType.LAZY)
+    @JoinTable(name = "finance_category_implies",
+        joinColumns = @JoinColumn(name = "category_id"), inverseJoinColumns = @JoinColumn(name = "implied_id"))
+    @BatchSize(size = 50)
+    private Set<FinanceCategory> implies = new LinkedHashSet<>();
+
     public FinanceCategory() {}
 
     public UUID getId() { return id; }
@@ -71,4 +90,10 @@ public class FinanceCategory extends FinanceEntity {
     public void setSystem(boolean system) { this.system = system; }
     public boolean isArchived() { return archived; }
     public void setArchived(boolean archived) { this.archived = archived; }
+    public FinanceFacet getFacet() { return facet; }
+    public void setFacet(FinanceFacet facet) { this.facet = facet; }
+    public Set<FinanceCategory> getImplies() { return implies; }
+
+    /** A tag of the main facet: a category in the classic sense. */
+    public boolean isMain() { return facet == null || facet.isMain(); }
 }

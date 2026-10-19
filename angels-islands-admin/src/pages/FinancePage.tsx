@@ -15,7 +15,7 @@ type Tab = 'transactions' | 'accounts' | 'categories' | 'rules' | 'settings' | '
 const TABS: { key: Tab; label: string; icon: typeof Landmark }[] = [
   { key: 'transactions', label: 'Transactions', icon: ArrowLeftRight },
   { key: 'accounts', label: 'Accounts', icon: Landmark },
-  { key: 'categories', label: 'Categories', icon: Tags },
+  { key: 'categories', label: 'Tags', icon: Tags },
   { key: 'rules', label: 'Rules', icon: ListChecks },
   { key: 'settings', label: 'Settings', icon: Settings },
   { key: 'inbound', label: 'Webhook log', icon: Webhook },

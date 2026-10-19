@@ -60,7 +60,19 @@ public class FinanceController {
     @PostMapping("/accounts/{id}/balance")
     public FinanceDto.Account setBalance(@PathVariable UUID id, @RequestBody FinanceDto.BalanceRequest req) { return finance.setBalance(id, req); }
 
-    // ── categories and rules ──
+    // ── facets, tags (the main facet's are the categories) and rules ──
+
+    @GetMapping("/facets")
+    public List<FinanceDto.Facet> facets() { return finance.facets(); }
+
+    @PostMapping("/facets")
+    public FinanceDto.Facet createFacet(@RequestBody FinanceDto.FacetRequest req) { return finance.createFacet(req); }
+
+    @PutMapping("/facets/{id}")
+    public FinanceDto.Facet updateFacet(@PathVariable UUID id, @RequestBody FinanceDto.FacetRequest req) { return finance.updateFacet(id, req); }
+
+    @DeleteMapping("/facets/{id}")
+    public ResponseEntity<Void> deleteFacet(@PathVariable UUID id) { finance.deleteFacet(id); return ResponseEntity.noContent().build(); }
 
     @GetMapping("/categories")
     public List<FinanceDto.Category> categories() { return finance.categories(); }
@@ -89,6 +101,10 @@ public class FinanceController {
     /** Run every rule again over the transactions still waiting for review. */
     @PostMapping("/rules/apply")
     public FinanceDto.Applied applyRules() { return finance.applyRules(); }
+
+    /** One rule over every line it fits, decided ones too (what he chose himself stays). */
+    @PostMapping("/rules/{id}/apply")
+    public FinanceDto.Applied applyRule(@PathVariable UUID id) { return finance.applyRule(id); }
 
     // ── transactions ──
 
@@ -127,6 +143,10 @@ public class FinanceController {
 
     @PostMapping("/transactions/confirm-all")
     public FinanceDto.Applied confirmAll() { return finance.confirmAll(); }
+
+    /** Tags on and off many lines at once. */
+    @PostMapping("/transactions/tags")
+    public FinanceDto.Applied tags(@RequestBody FinanceDto.TagsRequest req) { return finance.tags(req); }
 
     // ── counterparties: one decision for everyone with the same name ──
 

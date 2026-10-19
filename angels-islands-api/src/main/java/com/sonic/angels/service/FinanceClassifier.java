@@ -16,14 +16,15 @@ import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.time.Duration;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Set;
+import java.time.LocalDate;
+import java.util.*;
 
 /**
  * Decides what a transaction is, in this order: the other half of a move between own accounts, money to one of my
- * own account numbers (the statement's counterparty), a rule, one of my account numbers in the text — and otherwise
- * it waits for review (and the AI gets a look).
+ * own account numbers (the statement's counterparty), the rules, one of my account numbers in the text — and otherwise
+ * it waits for review (and the AI gets a look). The rules decide facet by facet: the first fitting rule that is a move
+ * or has a main-facet tag says what the line is; every other facet takes the tags of the first fitting rule that has
+ * some there. A facet whose tags Ngọc Anh chose himself is never touched by a rule.
  * Also keeps running balances right (the ledger part): every add, change and removal goes through here.
  * Callers run inside a transaction.
  */
@@ -46,52 +47,117 @@ public class FinanceClassifier {
         if (FEEDS.contains(t.getSource()) && pairWithExisting(t)) return false;
         FinanceAccount mine = ownAccountByCounterparty(t);
         if (mine != null) { makeTransfer(t, mine, By.SYSTEM); return false; }
-        FinanceRule rule = match(t, rules());
-        if (rule != null) { apply(t, rule); return false; }
+        if (decide(t, fitting(t, rules()))) return false;
         FinanceAccount own = ownAccountMentioned(t);
         if (own != null) { makeTransfer(t, own, By.SYSTEM); return false; }
-        t.setKind(t.getAmount().signum() < 0 ? Kind.EXPENSE : Kind.INCOME);
+        FinanceTags.settle(t);                 // waits for review — with whatever tags rules gave its other facets
         t.setStatus(Status.REVIEW);
         return true;
     }
 
     public List<FinanceRule> rules() { return ruleRepo.findAllByOrderByPriorityAscCreatedAtAsc(); }
 
-    /**
-     * First active rule that fits, honouring direction: a counterparty rule when the transaction's counterparty is
-     * that one, a keyword rule when its words appear in the memo, bank line or counterparty.
-     */
-    public FinanceRule match(FinanceTransaction t, List<FinanceRule> rules) {
-        String text = FinanceText.padded(t.searchableText());
-        String who = FinanceText.counterpartyKey(t.getCounterparty());
-        boolean out = t.getAmount().signum() < 0;
-        for (FinanceRule r : rules) {
-            if (!r.isActive()) continue;
-            if (r.getDirection() == FinanceRule.Direction.IN && out) continue;
-            if (r.getDirection() == FinanceRule.Direction.OUT && !out) continue;
-            if (r.getCategory() == null && r.getTransferAccount() == null) continue;
-            if (r.getTransferAccount() != null && r.getTransferAccount().getId().equals(t.getAccount().getId())) continue;
-            if (r.isCounterpartyRule()) {
-                if (who.isEmpty() || !who.equals(FinanceText.counterpartyKey(r.getCounterpartyName()))) continue;
-                String acc = r.getCounterpartyAccount();
-                if (acc != null && !acc.isBlank() && !acc.equals(t.getCounterpartyAccount())) continue;
-                return r;
-            }
-            if (!text.isBlank() && FinanceText.matchesAny(text, FinanceText.keywords(r.getKeywords()))) return r;
-        }
-        return null;
+    /** Every active rule that fits the line, in priority order. */
+    public List<FinanceRule> fitting(FinanceTransaction t, List<FinanceRule> rules) {
+        return rules.stream().filter(r -> fits(t, r)).toList();
     }
 
-    public void apply(FinanceTransaction t, FinanceRule r) {
-        r.setHits(r.getHits() + 1);
-        t.setMatchedRule(r);
-        if (r.getTransferAccount() != null) {
-            makeTransfer(t, r.getTransferAccount(), By.RULE);
-        } else {
-            setCategory(t, r.getCategory(), By.RULE);
-            t.setStatus(Status.OK);
+    /**
+     * Does this rule speak about this line? Direction first; then the counterparty (a counterparty rule), the words
+     * (in the memo, bank line or counterparty), and the days (an occasion) — whichever the rule has, all of them.
+     */
+    public boolean fits(FinanceTransaction t, FinanceRule r) {
+        if (!r.isActive()) return false;
+        boolean out = t.getAmount().signum() < 0;
+        if (r.getDirection() == FinanceRule.Direction.IN && out) return false;
+        if (r.getDirection() == FinanceRule.Direction.OUT && !out) return false;
+        if (r.givenTags().isEmpty() && r.getTransferAccount() == null) return false;
+        if (r.getTransferAccount() != null && r.getTransferAccount().getId().equals(t.getAccount().getId())) return false;
+        if (r.hasDates()) {
+            LocalDate d = FinanceText.utcToVn(t.getOccurredAt()).toLocalDate();
+            if (r.getFromDate() != null && d.isBefore(r.getFromDate())) return false;
+            if (r.getToDate() != null && d.isAfter(r.getToDate())) return false;
         }
-        if (r.getLabel() != null && !r.getLabel().isBlank()) relabel(t, r.getLabel().trim());
+        if (r.isCounterpartyRule()) {
+            String who = FinanceText.counterpartyKey(t.getCounterparty());
+            if (who.isEmpty() || !who.equals(FinanceText.counterpartyKey(r.getCounterpartyName()))) return false;
+            String acc = r.getCounterpartyAccount();
+            return acc == null || acc.isBlank() || acc.equals(t.getCounterpartyAccount());
+        }
+        if (r.hasKeywords()) {
+            String text = FinanceText.padded(t.searchableText());
+            return !text.isBlank() && FinanceText.matchesAny(text, FinanceText.keywords(r.getKeywords()));
+        }
+        return r.hasDates();
+    }
+
+    /** Would these rules say what the line is (a move, or a main-facet tag)? */
+    public boolean decides(List<FinanceRule> fitting) {
+        return fitting.stream().anyMatch(r -> r.getTransferAccount() != null || r.givenTags().stream().anyMatch(FinanceCategory::isMain));
+    }
+
+    /**
+     * The rules' word on a line (see the class comment). Facets he chose himself stay; a move the system found
+     * itself stays (callers leave those out). An occasion — a rule of days only — leaves bills and savings alone.
+     * Returns whether the rules said what the line is: it is a move now, or its main facet came from a rule.
+     */
+    public boolean decide(FinanceTransaction t, List<FinanceRule> fitting) {
+        if (fitting.isEmpty()) return false;
+        boolean mainHis = t.getKind() == Kind.TRANSFER ? t.getCategorizedBy() == By.USER : FinanceTags.his(t, FinanceTags.MAIN);
+        FinanceRule head = fitting.stream()
+            .filter(r -> r.getTransferAccount() != null || r.givenTags().stream().anyMatch(FinanceCategory::isMain))
+            .findFirst().orElse(null);
+        List<FinanceRule> used = new ArrayList<>();
+        boolean decided = false;
+        if (head != null && !mainHis) {
+            if (head.getTransferAccount() != null) {
+                boolean same = t.getKind() == Kind.TRANSFER && t.getTransferPeer() != null
+                    && t.getTransferPeer().getAccount().getId().equals(head.getTransferAccount().getId());
+                if (!same) {
+                    if (t.getKind() == Kind.TRANSFER) breakTransfer(t);
+                    makeTransfer(t, head.getTransferAccount(), By.RULE);
+                }
+                t.setMatchedRule(head);
+                head.setHits(head.getHits() + 1);
+                relabelBy(t, List.of(head));
+                return true;
+            }
+            if (t.getKind() == Kind.TRANSFER) { breakTransfer(t); t.setKind(t.getAmount().signum() < 0 ? Kind.EXPENSE : Kind.INCOME); }
+            FinanceTags.replace(t, FinanceTags.MAIN, head.givenTags(), By.RULE);
+            t.setMatchedRule(head);
+            used.add(head);
+            decided = true;
+        }
+        if (t.getKind() == Kind.TRANSFER) return false;          // a move carries no tags
+        FinanceTags.settle(t);
+        Map<String, FinanceRule> byFacet = new LinkedHashMap<>();
+        for (FinanceRule r : fitting) {
+            if (r.getTransferAccount() != null) continue;
+            for (FinanceCategory c : r.givenTags()) if (!c.isMain()) byFacet.putIfAbsent(FinanceTags.facet(c), r);
+        }
+        FinanceCategory.BudgetGroup group = t.getCategory() == null ? null : t.getCategory().getBudgetGroup();
+        boolean billOrSaving = group == FinanceCategory.BudgetGroup.FIXED || group == FinanceCategory.BudgetGroup.SAVING;
+        for (Map.Entry<String, FinanceRule> e : byFacet.entrySet()) {
+            FinanceRule r = e.getValue();
+            if (FinanceTags.his(t, e.getKey())) continue;
+            if (billOrSaving && occasion(r)) continue;
+            FinanceTags.replace(t, e.getKey(), r.givenTags(), By.RULE);
+            if (!used.contains(r)) used.add(r);
+        }
+        for (FinanceRule r : used) r.setHits(r.getHits() + 1);
+        relabelBy(t, used);
+        if (decided) FinanceTags.settleDecided(t); else FinanceTags.settle(t);
+        return decided;
+    }
+
+    /** A rule of days only: "everything 12–15/11 is the trip". */
+    static boolean occasion(FinanceRule r) { return r.hasDates() && !r.hasKeywords() && !r.isCounterpartyRule(); }
+
+    /** The first of these rules that names its lines ("Tiền nhà") names this one. */
+    private static void relabelBy(FinanceTransaction t, List<FinanceRule> rules) {
+        for (FinanceRule r : rules) {
+            if (r.getLabel() != null && !r.getLabel().isBlank()) { relabel(t, r.getLabel().trim()); return; }
+        }
     }
 
     /** The rule's name for it becomes the description; the bank's words stay as the bank line. */
@@ -101,10 +167,11 @@ public class FinanceClassifier {
         t.setDescription(label);
     }
 
-    public void setCategory(FinanceTransaction t, FinanceCategory c, By by) {
-        t.setCategory(c);
-        t.setKind(c.getKind() == FinanceCategory.Kind.INCOME ? Kind.INCOME : Kind.EXPENSE);
-        t.setCategorizedBy(by);
+    /** The main facet becomes this one category — the classic one-category decision. */
+    public void setMain(FinanceTransaction t, FinanceCategory c, By by) {
+        if (t.getKind() == Kind.TRANSFER) t.setKind(t.getAmount().signum() < 0 ? Kind.EXPENSE : Kind.INCOME);
+        FinanceTags.replace(t, FinanceTags.MAIN, List.of(c), by);
+        FinanceTags.settle(t);
     }
 
     /**
@@ -114,6 +181,7 @@ public class FinanceClassifier {
     public void makeTransfer(FinanceTransaction t, FinanceAccount target, By by) {
         t.setKind(Kind.TRANSFER);
         t.setCategory(null);
+        t.getTags().clear();
         t.setStatus(Status.OK);
         t.setCategorizedBy(by);
         if (target.getMode() == FinanceAccount.Mode.FEED) return;
@@ -164,6 +232,7 @@ public class FinanceClassifier {
         for (FinanceTransaction x : List.of(t, best)) {
             x.setKind(Kind.TRANSFER);
             x.setCategory(null);
+            x.getTags().clear();
             x.setStatus(Status.OK);
             x.setCategorizedBy(By.SYSTEM);
         }

@@ -56,6 +56,7 @@ public class EnumCheckConstraintFixer implements InitializingBean {
         new EnumColumn("finance_transactions", "source", FinanceTransaction.Source.class),
         new EnumColumn("finance_transactions", "status", FinanceTransaction.Status.class),
         new EnumColumn("finance_transactions", "categorized_by", FinanceTransaction.By.class),
+        new EnumColumn("finance_transaction_tags", "decided_by", FinanceTransaction.By.class),
         new EnumColumn("finance_inbound", "status", FinanceInbound.Status.class)
     );
 

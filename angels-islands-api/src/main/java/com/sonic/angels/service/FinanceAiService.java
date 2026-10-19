@@ -78,10 +78,9 @@ public class FinanceAiService {
         tx.executeWithoutResult(s -> {
             FinanceTransaction t = txnRepo.findById(id).orElse(null);
             if (t == null || t.getStatus() != Status.REVIEW || t.getCategorizedBy() == By.USER || t.getKind() == Kind.TRANSFER) return;
-            categoryRepo.findByCode(code).filter(c -> !c.isArchived()).ifPresent(c -> {
-                t.setCategory(c);
-                t.setKind(c.getKind() == FinanceCategory.Kind.INCOME ? Kind.INCOME : Kind.EXPENSE);
-                t.setCategorizedBy(By.AI);
+            categoryRepo.findByCode(code).filter(c -> !c.isArchived() && c.isMain()).ifPresent(c -> {
+                FinanceTags.replace(t, FinanceTags.MAIN, List.of(c), By.AI);
+                FinanceTags.settle(t);
                 t.setAiConfidence(confidence);
                 if (confidence >= SURE) t.setStatus(Status.OK);
             });
@@ -93,7 +92,7 @@ public class FinanceAiService {
         FinanceTransaction t = txnRepo.findById(id).orElse(null);
         if (t == null || t.getStatus() != Status.REVIEW || t.getCategorizedBy() == By.USER || t.getKind() == Kind.TRANSFER) return null;
         String cats = categoryRepo.findAllByOrderByKindAscSortOrderAscNameAsc().stream()
-            .filter(c -> !c.isArchived() && !c.isSystem())
+            .filter(c -> !c.isArchived() && !c.isSystem() && c.isMain())
             .map(c -> "- " + c.getCode() + ": " + c.getName() + (c.getKind() == FinanceCategory.Kind.INCOME ? " (THU)" : " (CHI)"))
             .collect(Collectors.joining("\n"));
         var vn = FinanceText.utcToVn(t.getOccurredAt());
