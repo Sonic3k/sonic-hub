@@ -50,7 +50,7 @@ export default function RulesTab() {
                 <span>{DIR_LABEL[r.direction]} →</span>
                 {r.transferAccountName
                   ? <span className="text-slate-700 font-medium">↔ {r.transferAccountName}</span>
-                  : r.tags.map(t => <TagPill key={t.id} tag={t} />)}
+                  : (r.tags ?? []).map(t => <TagPill key={t.id} tag={t} />)}
                 {r.label && <span>· named “{r.label}”</span>}
                 <span>· priority {r.priority} · {r.hits} hits · {r.origin === 'SEED' ? 'built-in' : 'mine'}</span>
               </p>

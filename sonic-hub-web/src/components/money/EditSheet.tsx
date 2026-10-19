@@ -19,9 +19,11 @@ const same = (a: Set<string>, b: Set<string>) => a.size === b.size && [...a].eve
 export default function EditSheet({ txn, onClose }: { txn: Txn; onClose: () => void }) {
   const categories = useCategories(), summary = useSummary(), refresh = useRefresh(), book = useTagBook();
   /* the tags put on the line (implied ones follow by themselves) */
-  const initial = useMemo(() => new Set(txn.kind === 'TRANSFER' ? [] : txn.tags.filter(x => x.by !== 'IMPLIED').map(x => x.id)), [txn]);
+  /* tags is missing only while an older API is still being replaced */
+  const tags = useMemo(() => txn.tags ?? (txn.categoryId ? [{ id: txn.categoryId, name: txn.categoryName ?? '', icon: txn.categoryIcon, facetId: null, main: true, by: txn.categorizedBy }] : []), [txn]);
+  const initial = useMemo(() => new Set(txn.kind === 'TRANSFER' ? [] : tags.filter(x => x.by !== 'IMPLIED').map(x => x.id)), [txn, tags]);
   const [sel, setSel] = useState<Set<string>>(initial);
-  const [multi, setMulti] = useState(() => txn.tags.filter(x => x.main && x.by !== 'IMPLIED').length > 1);
+  const [multi, setMulti] = useState(() => tags.filter(x => x.main && x.by !== 'IMPLIED').length > 1);
   const [transferTo, setTransferTo] = useState<string | null>(null);
   const [amount, setAmount] = useState(String(Math.abs(txn.amount)));
   const [accountId, setAccountId] = useState(txn.accountId);

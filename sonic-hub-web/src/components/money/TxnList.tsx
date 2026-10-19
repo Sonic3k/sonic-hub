@@ -18,7 +18,7 @@ export default function TxnList({ month, category, onClearCategory }: { month: s
   /* a transfer shows once: the other account's side is bookkeeping, already named on this row */
   const all = (txns.data?.content ?? []).filter(t => t.source !== 'SYSTEM');
   const cat = category ? (categories.data ?? []).find(c => c.id === category) : null;
-  const rows = category ? all.filter(t => t.categoryId === category || t.tags.some(x => x.id === category)) : all;
+  const rows = category ? all.filter(t => t.categoryId === category || (t.tags ?? []).some(x => x.id === category)) : all;
 
   useEffect(() => { setPicking(false); setPicked(new Set()); }, [month]);
 
@@ -64,7 +64,7 @@ export default function TxnList({ month, category, onClearCategory }: { month: s
             <ul>
               {g.items.map(t => {
                 const on = picked.has(t.id), can = pickable(t);
-                const more = t.tags.filter(x => x.id !== t.categoryId);
+                const more = (t.tags ?? []).filter(x => x.id !== t.categoryId);
                 return (
                   <li key={t.id}>
                     <button type="button" className={`mn-tx ${t.status === 'REVIEW' ? 'review' : ''} ${picking ? 'picking' : ''} ${on ? 'picked' : ''}`}
@@ -135,7 +135,7 @@ function TagSheet({ ids, lines, onClose, onDone }: { ids: string[]; lines: Txn[]
   const mains = (categories.data ?? []).filter((c: MoneyCategory) => c.kind !== 'ANY' && !c.archived && !c.system
     && ((out && c.kind === 'EXPENSE') || (inn && c.kind === 'INCOME')));
   /* how many of the picked lines already carry each tag — "3/5" on its chip */
-  const count = (id: string) => lines.filter(t => t.tags.some(x => x.id === id)).length;
+  const count = (id: string) => lines.filter(t => (t.tags ?? []).some(x => x.id === id)).length;
 
   const go = async (mode: 'add' | 'remove') => {
     setBusy(true); setError('');

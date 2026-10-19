@@ -135,8 +135,8 @@ export default function TransactionsTab() {
                           <span>· {utc(t.occurredAt).toLocaleTimeString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh', hour: '2-digit', minute: '2-digit' })}</span>
                           {t.note && <span className="italic truncate max-w-[12rem]">“{t.note}”</span>}
                         </p>
-                        {t.tags.some(x => x.id !== t.categoryId) && (
-                          <div className="flex flex-wrap gap-1 mt-1">{t.tags.filter(x => x.id !== t.categoryId).map(x => <TagPill key={x.id} tag={x} />)}</div>
+                        {(t.tags ?? []).some(x => x.id !== t.categoryId) && (
+                          <div className="flex flex-wrap gap-1 mt-1">{(t.tags ?? []).filter(x => x.id !== t.categoryId).map(x => <TagPill key={x.id} tag={x} />)}</div>
                         )}
                       </div>
                       <Amount t={t} className="text-sm" />
