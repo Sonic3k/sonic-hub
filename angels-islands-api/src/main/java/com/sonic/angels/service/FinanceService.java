@@ -234,9 +234,16 @@ public class FinanceService {
     }
 
     private void fillRule(FinanceRule rule, FinanceDto.RuleRequest r, boolean creating) {
-        if (r.keywords() != null || creating) {
+        if (r.counterpartyName() != null) {
+            String who = FinanceText.cleanCounterparty(r.counterpartyName());
+            rule.setCounterpartyName(who);
+            if (who != null) rule.setKeywords("");
+        }
+        if (r.counterpartyAccount() != null) rule.setCounterpartyAccount(blankToNull(r.counterpartyAccount()));
+        if (r.label() != null) rule.setLabel(blankToNull(r.label()));
+        if (!rule.isCounterpartyRule() && (r.keywords() != null || creating)) {
             if (r.keywords() == null || FinanceText.keywords(r.keywords()).isEmpty())
-                throw new IllegalArgumentException("Cần ít nhất một từ khoá");
+                throw new IllegalArgumentException("Cần ít nhất một từ khoá (hoặc một người nhận)");
             rule.setKeywords(r.keywords().trim());
         }
         if (r.direction() != null) rule.setDirection(parseEnum(FinanceRule.Direction.class, r.direction(), "direction"));
@@ -330,6 +337,14 @@ public class FinanceService {
         if (r.note() != null) t.setNote(blankToNull(r.note()));
         decide(t, r);
         learn(t, r);
+        if (Boolean.TRUE.equals(r.learnCounterparty()) && t.getCounterparty() != null) {
+            FinanceAccount target = t.getKind() == Kind.TRANSFER && t.getTransferPeer() != null ? t.getTransferPeer().getAccount()
+                : t.getKind() == Kind.TRANSFER && r.transferAccountId() != null ? account(r.transferAccountId()) : null;
+            if (target == null && t.getCategory() == null) throw new IllegalArgumentException("Chọn hạng mục trước khi áp cho cả người nhận");
+            assignCounterparty(new FinanceDto.AssignRequest(t.getCounterparty(), target == null ? t.getCategory().getId() : null,
+                target == null ? null : target.getId(), r.label()));
+        }
+        if (r.label() != null && !r.label().isBlank()) FinanceClassifier.relabel(t, r.label().trim());
         return toTxn(t, rates.usdValue());
     }
 
@@ -355,6 +370,111 @@ public class FinanceService {
         int n = 0;
         for (FinanceTransaction t : txnRepo.findWithStatus(Status.REVIEW)) {
             if (t.getKind() == Kind.TRANSFER || t.getCategory() != null) { t.setStatus(Status.OK); n++; }
+        }
+        return new FinanceDto.Applied(n);
+    }
+
+    // ════════════════════════════════ counterparties ════════════════════════════════
+
+    /**
+     * Who the money went to or came from, grouped by name — the ones with lines still waiting for review first.
+     * waitingOnly leaves out counterparties whose lines are all decided.
+     */
+    @Transactional(readOnly = true)
+    public List<FinanceDto.CounterpartyGroup> counterparties(boolean waitingOnly) {
+        Map<String, List<FinanceTransaction>> groups = new LinkedHashMap<>();
+        for (FinanceTransaction t : txnRepo.withCounterparty()) {
+            if (t.getSource() == Source.SYSTEM) continue;
+            String key = FinanceText.counterpartyKey(t.getCounterparty());
+            if (!key.isEmpty()) groups.computeIfAbsent(key, k -> new ArrayList<>()).add(t);
+        }
+        Map<String, FinanceRule> ruleByKey = new HashMap<>();
+        for (FinanceRule r : classifier.rules())
+            if (r.isCounterpartyRule()) ruleByKey.putIfAbsent(FinanceText.counterpartyKey(r.getCounterpartyName()), r);
+        List<FinanceDto.CounterpartyGroup> out = new ArrayList<>();
+        for (Map.Entry<String, List<FinanceTransaction>> e : groups.entrySet()) {
+            List<FinanceTransaction> g = e.getValue();
+            long waiting = g.stream().filter(t -> t.getStatus() == Status.REVIEW).count();
+            if (waitingOnly && waiting == 0) continue;
+            Map<String, Long> names = new HashMap<>();
+            Set<String> accounts = new HashSet<>();
+            Set<UUID> own = new LinkedHashSet<>();
+            Map<UUID, Long> cats = new HashMap<>();
+            Map<UUID, FinanceCategory> catById = new HashMap<>();
+            BigDecimal totalOut = BigDecimal.ZERO, totalIn = BigDecimal.ZERO;
+            long outCount = 0, inCount = 0;
+            FinanceTransaction last = g.get(0);
+            for (FinanceTransaction t : g) {
+                names.merge(FinanceText.cleanCounterparty(t.getCounterparty()), 1L, Long::sum);
+                if (t.getCounterpartyAccount() != null) accounts.add(t.getCounterpartyAccount());
+                own.add(t.getAccount().getId());
+                if (t.getAmount().signum() < 0) { outCount++; totalOut = totalOut.add(t.getAmount().negate()); }
+                else { inCount++; totalIn = totalIn.add(t.getAmount()); }
+                if (t.getCategory() != null && t.getKind() != Kind.TRANSFER) {
+                    cats.merge(t.getCategory().getId(), 1L, Long::sum);
+                    catById.put(t.getCategory().getId(), t.getCategory());
+                }
+                if (t.getOccurredAt().isAfter(last.getOccurredAt())) last = t;
+            }
+            String name = names.entrySet().stream().max(Map.Entry.comparingByValue()).map(Map.Entry::getKey).orElse(last.getCounterparty());
+            FinanceCategory guess = cats.entrySet().stream().max(Map.Entry.comparingByValue()).map(x -> catById.get(x.getKey())).orElse(null);
+            FinanceRule rule = ruleByKey.get(e.getKey());
+            String sample = last.getBankDescription() != null && rule != null && rule.getLabel() != null ? last.getBankDescription() : last.getDescription();
+            out.add(new FinanceDto.CounterpartyGroup(e.getKey(), name, accounts.size() == 1 ? accounts.iterator().next() : null,
+                accounts.size(), List.copyOf(own), g.size(), waiting, outCount, inCount, totalOut, totalIn, last.getOccurredAt(), sample,
+                rule == null ? null : rule.getId(), rule == null ? null : rule.getLabel(),
+                guess == null ? null : guess.getId(), guess == null ? null : guess.getName(), guess == null ? null : guess.getIcon()));
+        }
+        out.sort(Comparator.comparingLong(FinanceDto.CounterpartyGroup::waiting).reversed()
+            .thenComparing(Comparator.comparingLong(FinanceDto.CounterpartyGroup::count).reversed()));
+        return out;
+    }
+
+    /**
+     * "Everything with this counterparty is …": one rule (made, or the existing one changed) and every line with that
+     * counterparty follows it — old and new — except lines decided one by one and moves the system found itself.
+     */
+    public FinanceDto.Applied assignCounterparty(FinanceDto.AssignRequest r) {
+        String key = FinanceText.counterpartyKey(r.name());
+        if (key.isEmpty()) throw new IllegalArgumentException("Người nhận?");
+        if (r.categoryId() == null && r.transferAccountId() == null) throw new IllegalArgumentException("Chọn hạng mục hoặc tài khoản đích");
+        FinanceRule rule = classifier.rules().stream()
+            .filter(x -> x.isCounterpartyRule() && key.equals(FinanceText.counterpartyKey(x.getCounterpartyName())))
+            .findFirst().orElseGet(FinanceRule::new);
+        rule.setCounterpartyName(FinanceText.cleanCounterparty(r.name()));
+        rule.setKeywords("");
+        rule.setOrigin(FinanceRule.Origin.USER);
+        rule.setPriority(5);
+        rule.setActive(true);
+        rule.setLabel(blankToNull(r.label()));
+        if (r.categoryId() != null) {
+            FinanceCategory c = category(r.categoryId());
+            rule.setCategory(c);
+            rule.setTransferAccount(null);
+            rule.setDirection(c.getKind() == FinanceCategory.Kind.INCOME ? FinanceRule.Direction.IN : FinanceRule.Direction.ANY);
+        } else {
+            rule.setTransferAccount(account(r.transferAccountId()));
+            rule.setCategory(null);
+            rule.setDirection(FinanceRule.Direction.ANY);
+        }
+        // money only went one way with them (what still waits, else everything): the rule keeps to that way, so an
+        // interest line from one's own savings or a refund does not follow a "→ Techcombank" or a spending rule
+        List<FinanceTransaction> lines = txnRepo.withCounterparty().stream()
+            .filter(t -> t.getSource() != Source.SYSTEM && key.equals(FinanceText.counterpartyKey(t.getCounterparty()))).toList();
+        List<FinanceTransaction> basis = lines.stream().anyMatch(t -> t.getStatus() == Status.REVIEW)
+            ? lines.stream().filter(t -> t.getStatus() == Status.REVIEW).toList() : lines;
+        boolean anyOut = basis.stream().anyMatch(t -> t.getAmount().signum() < 0), anyIn = basis.stream().anyMatch(t -> t.getAmount().signum() > 0);
+        if (rule.getCategory() == null || rule.getCategory().getKind() != FinanceCategory.Kind.INCOME)
+            rule.setDirection(anyOut && !anyIn ? FinanceRule.Direction.OUT : anyIn && !anyOut ? FinanceRule.Direction.IN : FinanceRule.Direction.ANY);
+        rule = ruleRepo.save(rule);
+        int n = 0;
+        for (FinanceTransaction t : lines) {
+            if (t.getCategorizedBy() == By.USER) continue;
+            if (t.getKind() == Kind.TRANSFER && t.getCategorizedBy() == By.SYSTEM) continue;
+            if (classifier.match(t, List.of(rule)) == null) continue;
+            if (t.getKind() == Kind.TRANSFER) classifier.breakTransfer(t);
+            classifier.apply(t, rule);
+            n++;
         }
         return new FinanceDto.Applied(n);
     }
@@ -534,6 +654,7 @@ public class FinanceService {
                 String like = "%" + q.trim().toLowerCase(Locale.ROOT) + "%";
                 ps.add(cb.or(cb.like(cb.lower(root.get("description")), like),
                     cb.like(cb.lower(root.get("bankDescription")), like),
+                    cb.like(cb.lower(root.get("counterparty")), like),
                     cb.like(cb.lower(root.get("note")), like)));
             }
             return cb.and(ps.toArray(Predicate[]::new));
@@ -569,7 +690,8 @@ public class FinanceService {
         FinanceAccount a = r.getTransferAccount();
         return new FinanceDto.Rule(r.getId(), r.getKeywords(), r.getDirection().name(),
             c == null ? null : c.getId(), c == null ? null : c.getName(), c == null ? null : c.getIcon(),
-            a == null ? null : a.getId(), a == null ? null : a.getName(), r.getPriority(), r.getOrigin().name(), r.getHits(), r.isActive());
+            a == null ? null : a.getId(), a == null ? null : a.getName(), r.getPriority(), r.getOrigin().name(), r.getHits(), r.isActive(),
+            r.getCounterpartyName(), r.getCounterpartyAccount(), r.getLabel());
     }
 
     static FinanceDto.Txn toTxn(FinanceTransaction t, BigDecimal usd) {
@@ -580,7 +702,7 @@ public class FinanceService {
         return new FinanceDto.Txn(t.getId(), a.getId(), a.getName(), a.getMode().name(), a.getCurrency(), t.getOccurredAt(), t.getAmount(),
             FinanceRateService.toVnd(t.getAmount(), a.getCurrency(), usd), t.getKind().name(),
             c == null ? null : c.getId(), c == null ? null : c.getName(), c == null ? null : c.getIcon(),
-            t.getDescription(), t.getBankDescription(), t.getCounterparty(), t.getNote(), t.getSource().name(), t.getStatus().name(),
+            t.getDescription(), t.getBankDescription(), t.getCounterparty(), t.getCounterpartyAccount(), t.getNote(), t.getSource().name(), t.getStatus().name(),
             t.getCategorizedBy() == null ? null : t.getCategorizedBy().name(), t.getAiConfidence(), t.getBalanceAfter(),
             peer == null ? null : peer.getId(), peer == null ? null : peer.getAccount().getName(), suggest, t.getCreatedAt());
     }

@@ -22,7 +22,7 @@ import java.util.UUID;
 public class FinanceTransaction extends FinanceEntity {
 
     public enum Kind { EXPENSE, INCOME, TRANSFER }
-    public enum Source { SEPAY, EMAIL, NOTE, MANUAL, RECONCILE, SYSTEM }
+    public enum Source { SEPAY, EMAIL, STATEMENT, NOTE, MANUAL, RECONCILE, SYSTEM }
     public enum Status { OK, REVIEW }
     public enum By { RULE, AI, USER, SYSTEM }
 
@@ -56,8 +56,15 @@ public class FinanceTransaction extends FinanceEntity {
     @Column(name = "bank_description", columnDefinition = "TEXT")
     private String bankDescription;
 
+    /**
+     * Who the money went to or came from: the name on the other account (from a bank statement, or inherited from an
+     * earlier line with the same memo), or the merchant of a card payment.
+     */
     @Column(name = "counterparty", length = 200)
     private String counterparty;
+
+    @Column(name = "counterparty_account", length = 64)
+    private String counterpartyAccount;
 
     /** Ngọc Anh's own remark, added later. */
     @Column(name = "note", length = 1000)
@@ -67,7 +74,7 @@ public class FinanceTransaction extends FinanceEntity {
     @Column(name = "source", nullable = false, length = 20)
     private Source source;
 
-    /** "sepay:92704" — the same transaction delivered twice is stored once. */
+    /** "sepay:92704" or "stmt:<account>:<code>:<sign+amount>" — the same transaction delivered twice is stored once. */
     @Column(name = "external_id", length = 100)
     private String externalId;
 
@@ -116,6 +123,8 @@ public class FinanceTransaction extends FinanceEntity {
     public void setBankDescription(String bankDescription) { this.bankDescription = bankDescription; }
     public String getCounterparty() { return counterparty; }
     public void setCounterparty(String counterparty) { this.counterparty = counterparty; }
+    public String getCounterpartyAccount() { return counterpartyAccount; }
+    public void setCounterpartyAccount(String counterpartyAccount) { this.counterpartyAccount = counterpartyAccount; }
     public String getNote() { return note; }
     public void setNote(String note) { this.note = note; }
     public Source getSource() { return source; }

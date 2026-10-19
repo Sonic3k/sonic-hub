@@ -45,6 +45,7 @@ export default function TxnList({ month, category, onClearCategory }: { month: s
                     <b>{t.description || t.bankDescription || '—'}</b>
                     <small>
                       <i className="mn-dot" style={{ background: 'var(--ink3)' }} />{t.accountName}
+                      {t.counterparty && t.kind !== 'TRANSFER' && <>{' · '}{t.amount < 0 ? '→' : '←'} {t.counterparty}</>}
                       {' · '}{t.kind === 'TRANSFER' ? `chuyển ${t.amount < 0 ? 'sang' : 'từ'} ${t.transferAccountName ?? 'ví khác'}` : t.categoryName ?? 'chưa phân loại'}
                       {t.status === 'REVIEW' && ' · chờ xem'}
                       {' · '}{timeOf(t.occurredAt)}

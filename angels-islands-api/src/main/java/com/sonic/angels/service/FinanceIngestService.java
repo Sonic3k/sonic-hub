@@ -11,6 +11,7 @@ import com.sonic.angels.repository.FinanceTransactionRepository;
 import com.sonic.angels.util.FinanceText;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.support.TransactionSynchronization;
@@ -19,7 +20,10 @@ import org.springframework.transaction.support.TransactionTemplate;
 
 import java.math.BigDecimal;
 import java.text.NumberFormat;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Locale;
+import java.util.Set;
 import java.util.UUID;
 
 /**
@@ -94,15 +98,28 @@ public class FinanceIngestService {
         boolean out = "out".equalsIgnoreCase(text(j, "transferType"));
 
         FinanceAccount account = resolveAccount(text(j, "gateway"), text(j, "accountNumber"));
-        String content = text(j, "content"), description = text(j, "description");
+        String content = text(j, "content").trim(), description = text(j, "description").trim();
+        BigDecimal signed = out ? amount.abs().negate() : amount.abs();
+        String reference = text(j, "referenceCode").trim();
+
+        // a statement imported earlier may already hold this line (the feed was late, or retried)
+        if (!reference.isEmpty()) {
+            FinanceTransaction known = txnRepo.byReference(account.getId(), reference, FinanceTransaction.Source.STATEMENT).stream()
+                .filter(x -> x.getAmount().compareTo(signed) == 0).findFirst().orElse(null);
+            if (known != null) {
+                in.setTransaction(known);
+                return done(in, FinanceInbound.Status.DUPLICATE, "Đã có từ sao kê");
+            }
+        }
 
         FinanceTransaction t = new FinanceTransaction();
         t.setAccount(account);
         t.setOccurredAt(FinanceText.parseSepayTime(text(j, "transactionDate")));
-        t.setAmount(out ? amount.abs().negate() : amount.abs());
+        t.setAmount(signed);
         t.setDescription(!content.isEmpty() ? content : description);
         if (!description.isEmpty() && !description.equals(t.getDescription())) t.setBankDescription(description);
-        t.setReferenceCode(text(j, "referenceCode").isEmpty() ? null : text(j, "referenceCode"));
+        t.setReferenceCode(reference.isEmpty() ? null : reference);
+        counterparty(t);
         BigDecimal balance = number(j, "accumulated");
         t.setBalanceAfter(balance != null && balance.signum() != 0 ? balance : null);   // 0 = the bank did not say
         t.setExternalId(externalId);
@@ -159,6 +176,31 @@ public class FinanceIngestService {
         a.setCurrency("VND");
         a.setSortOrder(accountRepo.findAll().stream().mapToInt(FinanceAccount::getSortOrder).max().orElse(0) + 1);
         return accountRepo.save(a);
+    }
+
+    /**
+     * The feed does not say who the other side was. A card payment names its merchant; and a memo seen before with
+     * one and the same counterparty every time (a shop's fixed QR, a code someone always uses) is that counterparty
+     * again. A memo shared by several counterparties ("… chuyen tien QR") says nothing — the next statement will.
+     */
+    private void counterparty(FinanceTransaction t) {
+        String merchant = FinanceText.cardMerchant(t.getDescription());
+        if (merchant != null) { t.setCounterparty(merchant); return; }
+        String memo = t.getDescription();
+        if (memo == null || memo.isBlank()) return;
+        List<FinanceTransaction> same = txnRepo.sameMemoWithCounterparty(t.getAccount().getId(), memo.trim().toLowerCase(Locale.ROOT),
+            PageRequest.of(0, 30));
+        if (same.isEmpty()) return;
+        Set<String> who = new HashSet<>();
+        Set<String> accounts = new HashSet<>();
+        for (FinanceTransaction x : same) {
+            who.add(FinanceText.counterpartyKey(x.getCounterparty()));
+            if (x.getCounterpartyAccount() != null) accounts.add(x.getCounterpartyAccount());
+        }
+        boolean looksLikeCode = memo.matches(".*[A-Za-z]+\\d{4,}.*");
+        if (who.size() != 1 || (!looksLikeCode && same.size() < 3)) return;
+        t.setCounterparty(same.get(0).getCounterparty());
+        if (accounts.size() == 1) t.setCounterpartyAccount(accounts.iterator().next());
     }
 
     private FinanceInbound.Status done(FinanceInbound in, FinanceInbound.Status status, String message) {

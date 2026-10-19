@@ -72,6 +72,50 @@ public final class FinanceText {
         return String.join(" ", kept);
     }
 
+    // ── counterparties ──
+
+    private static final Pattern CP_AMOUNT_PREFIX = Pattern.compile("(?i)^HD\\d+VND_");
+    private static final Pattern CP_AMOUNT_SUFFIX = Pattern.compile("(?i)_\\d+VND(_\\w+)?$");
+    private static final Pattern CARD = Pattern.compile("(?i)^\\s*GIAO DICH THE\\s+\\d+\\s+TAI\\s+(.+)$");
+    private static final Pattern DIGIT_RUN = Pattern.compile("\\d{3,}");
+
+    /**
+     * A counterparty name as people read it, without the order amounts some shops put in it:
+     * "HD65000VND_CJ BAKERY VIETNAM" → "CJ BAKERY VIETNAM"; "Y DUOC 3P - LANG SINH VIEN_99000VND_12" → "Y DUOC 3P - LANG SINH VIEN".
+     */
+    public static String cleanCounterparty(String name) {
+        if (name == null) return null;
+        String n = CP_AMOUNT_SUFFIX.matcher(CP_AMOUNT_PREFIX.matcher(name.trim()).replaceFirst("")).replaceFirst("");
+        n = n.replaceAll("\\s+", " ").trim();
+        if (n.isEmpty()) return null;
+        return n.length() > 200 ? n.substring(0, 200) : n;
+    }
+
+    /** What two lines must share to be "the same counterparty": the cleaned name, normalized. */
+    public static String counterpartyKey(String name) {
+        String c = cleanCounterparty(name);
+        return c == null ? "" : normalize(c);
+    }
+
+    /**
+     * The merchant of a card payment, from the bank line: "GIAO DICH THE 0465 TAI Green SM8424393666VN" → "Green SM",
+     * "…TAI ANTHROPIC+14152360599US" → "ANTHROPIC", "…TAI Google YouTubePremium650-…" → "Google YouTube Premium".
+     * Null for other lines.
+     */
+    public static String cardMerchant(String memo) {
+        if (memo == null) return null;
+        java.util.regex.Matcher m = CARD.matcher(memo);
+        if (!m.matches()) return null;
+        String s = m.group(1);
+        int plus = s.indexOf('+');
+        if (plus >= 0) s = s.substring(0, plus);
+        java.util.regex.Matcher d = DIGIT_RUN.matcher(s);
+        if (d.find()) s = s.substring(0, d.start());
+        s = s.replaceAll("(?<=[a-z]{3})(?=[A-Z][a-z]{2,})", " ").replaceAll("(?<=[A-Z]{2})(?=[A-Z][a-z]{2,})", " ");
+        s = s.replaceAll("[\\s\\-_.*/]+$", "").replaceAll("^[\\s\\-_.*/]+", "").replaceAll("\\s+", " ").trim();
+        return s.isEmpty() ? null : (s.length() > 200 ? s.substring(0, 200) : s);
+    }
+
     // ── time ──
 
     /** Vietnam wall-clock time → the UTC LocalDateTime this database stores. */

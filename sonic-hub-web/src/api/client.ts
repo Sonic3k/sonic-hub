@@ -36,6 +36,21 @@ export async function send<T>(method: 'POST' | 'PUT' | 'DELETE', path: string, b
   return (text ? JSON.parse(text) : undefined) as T;
 }
 
+/** POST a file as multipart/form-data (field "file") plus plain fields; errors read like send()'s. */
+export async function upload<T>(path: string, file: File, fields: Record<string, string | undefined> = {}): Promise<T> {
+  const form = new FormData();
+  form.append('file', file);
+  for (const [k, v] of Object.entries(fields)) if (v !== undefined) form.append(k, v);
+  const r = await fetch(`${API}/api${path}`, { method: 'POST', headers: { Accept: 'application/json' }, body: form });
+  const text = await r.text();
+  if (!r.ok) {
+    let msg = `${r.status} ${path}`;
+    try { msg = (JSON.parse(text) as { error?: string }).error || msg; } catch { /* not JSON */ }
+    throw new Error(msg);
+  }
+  return JSON.parse(text) as T;
+}
+
 /* Bunny resizes on the fly via ?width=; snapping to a few widths keeps the CDN cache small. */
 const WIDTHS = [160, 320, 640, 960, 1280, 1920];
 export function cdn(url: string | null | undefined, width?: number): string {

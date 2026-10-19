@@ -21,15 +21,16 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * Decides what a transaction is, in this order: the other half of a move between own accounts, a rule,
- * one of my account numbers in the text — and otherwise it waits for review (and the AI gets a look).
+ * Decides what a transaction is, in this order: the other half of a move between own accounts, money to one of my
+ * own account numbers (the statement's counterparty), a rule, one of my account numbers in the text — and otherwise
+ * it waits for review (and the AI gets a look).
  * Also keeps running balances right (the ledger part): every add, change and removal goes through here.
  * Callers run inside a transaction.
  */
 @Service
 public class FinanceClassifier {
 
-    private static final Set<Source> FEEDS = Set.of(Source.SEPAY, Source.EMAIL);
+    private static final Set<Source> FEEDS = Set.of(Source.SEPAY, Source.EMAIL, Source.STATEMENT);
     private static final Duration PAIR_WINDOW = Duration.ofMinutes(90);
 
     private final FinanceRuleRepository ruleRepo;
@@ -43,6 +44,8 @@ public class FinanceClassifier {
     /** A saved transaction that nobody has decided on yet. Returns true when the AI should guess its category. */
     public boolean classify(FinanceTransaction t) {
         if (FEEDS.contains(t.getSource()) && pairWithExisting(t)) return false;
+        FinanceAccount mine = ownAccountByCounterparty(t);
+        if (mine != null) { makeTransfer(t, mine, By.SYSTEM); return false; }
         FinanceRule rule = match(t, rules());
         if (rule != null) { apply(t, rule); return false; }
         FinanceAccount own = ownAccountMentioned(t);
@@ -54,10 +57,13 @@ public class FinanceClassifier {
 
     public List<FinanceRule> rules() { return ruleRepo.findAllByOrderByPriorityAscCreatedAtAsc(); }
 
-    /** First active rule whose words appear in the transaction, honouring direction. */
+    /**
+     * First active rule that fits, honouring direction: a counterparty rule when the transaction's counterparty is
+     * that one, a keyword rule when its words appear in the memo, bank line or counterparty.
+     */
     public FinanceRule match(FinanceTransaction t, List<FinanceRule> rules) {
         String text = FinanceText.padded(t.searchableText());
-        if (text.isBlank()) return null;
+        String who = FinanceText.counterpartyKey(t.getCounterparty());
         boolean out = t.getAmount().signum() < 0;
         for (FinanceRule r : rules) {
             if (!r.isActive()) continue;
@@ -65,7 +71,13 @@ public class FinanceClassifier {
             if (r.getDirection() == FinanceRule.Direction.OUT && !out) continue;
             if (r.getCategory() == null && r.getTransferAccount() == null) continue;
             if (r.getTransferAccount() != null && r.getTransferAccount().getId().equals(t.getAccount().getId())) continue;
-            if (FinanceText.matchesAny(text, FinanceText.keywords(r.getKeywords()))) return r;
+            if (r.isCounterpartyRule()) {
+                if (who.isEmpty() || !who.equals(FinanceText.counterpartyKey(r.getCounterpartyName()))) continue;
+                String acc = r.getCounterpartyAccount();
+                if (acc != null && !acc.isBlank() && !acc.equals(t.getCounterpartyAccount())) continue;
+                return r;
+            }
+            if (!text.isBlank() && FinanceText.matchesAny(text, FinanceText.keywords(r.getKeywords()))) return r;
         }
         return null;
     }
@@ -79,6 +91,14 @@ public class FinanceClassifier {
             setCategory(t, r.getCategory(), By.RULE);
             t.setStatus(Status.OK);
         }
+        if (r.getLabel() != null && !r.getLabel().isBlank()) relabel(t, r.getLabel().trim());
+    }
+
+    /** The rule's name for it becomes the description; the bank's words stay as the bank line. */
+    public static void relabel(FinanceTransaction t, String label) {
+        if (label.equals(t.getDescription())) return;
+        if (t.getBankDescription() == null || t.getBankDescription().isBlank()) t.setBankDescription(t.getDescription());
+        t.setDescription(label);
     }
 
     public void setCategory(FinanceTransaction t, FinanceCategory c, By by) {
@@ -152,6 +172,15 @@ public class FinanceClassifier {
         return true;
     }
 
+    /** The statement says the other account is one of mine. */
+    private FinanceAccount ownAccountByCounterparty(FinanceTransaction t) {
+        String n = t.getCounterpartyAccount();
+        if (n == null || n.isBlank()) return null;
+        return accountRepo.findFirstByAccountNumber(n.trim())
+            .filter(a -> !a.isArchived() && !a.getId().equals(t.getAccount().getId()))
+            .orElse(null);
+    }
+
     /** One of my other account numbers in the memo or bank line means money went there. */
     private FinanceAccount ownAccountMentioned(FinanceTransaction t) {
         String text = t.searchableText().replaceAll("\\s+", "");
@@ -166,7 +195,10 @@ public class FinanceClassifier {
 
     // ── running balances ──
 
-    /** A transaction now counts on its account. */
+    /**
+     * A transaction now counts on its account. On a check-in account only what happened after the last check-in
+     * moves the balance — the check-in already contains everything before it (old statement lines, back-dated notes).
+     */
     public void added(FinanceTransaction t) {
         FinanceAccount a = t.getAccount();
         if (a.getMode() == FinanceAccount.Mode.FEED) {
@@ -174,7 +206,7 @@ public class FinanceClassifier {
                 a.setBalance(t.getBalanceAfter());
                 a.setBalanceAt(t.getOccurredAt());
             }
-        } else if (a.getMode() == FinanceAccount.Mode.RECONCILE && a.getBalance() != null) {
+        } else if (afterCheckIn(a, t)) {
             a.setBalance(a.getBalance().add(t.getAmount()));
         }
     }
@@ -182,8 +214,11 @@ public class FinanceClassifier {
     /** A transaction no longer counts (deleted, or about to move/change amount). */
     public void removed(FinanceTransaction t) {
         FinanceAccount a = t.getAccount();
-        if (a.getMode() == FinanceAccount.Mode.RECONCILE && a.getBalance() != null) {
-            a.setBalance(a.getBalance().subtract(t.getAmount()));
-        }
+        if (afterCheckIn(a, t)) a.setBalance(a.getBalance().subtract(t.getAmount()));
+    }
+
+    private static boolean afterCheckIn(FinanceAccount a, FinanceTransaction t) {
+        return a.getMode() == FinanceAccount.Mode.RECONCILE && a.getBalance() != null
+            && (a.getBalanceAt() == null || t.getOccurredAt().isAfter(a.getBalanceAt()));
     }
 }

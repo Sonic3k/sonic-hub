@@ -21,7 +21,10 @@ export default function EditSheet({ txn, onClose }: { txn: Txn; onClose: () => v
   const [when, setWhen] = useState(toInput(txn.occurredAt));
   const [description, setDescription] = useState(txn.description ?? '');
   const [note, setNote] = useState(txn.note ?? '');
-  const [remember, setRemember] = useState(txn.status === 'REVIEW' && !!txn.suggestedKeywords);
+  const [remember, setRemember] = useState(txn.status === 'REVIEW' && !!txn.suggestedKeywords && !txn.counterparty);
+  /* with a known counterparty the choice can cover all their lines, and give them a name */
+  const [everyone, setEveryone] = useState(!!txn.counterparty && txn.status === 'REVIEW');
+  const [label, setLabel] = useState('');
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
 
@@ -49,10 +52,12 @@ export default function EditSheet({ txn, onClose }: { txn: Txn; onClose: () => v
     if (editable && accountId !== txn.accountId) b.accountId = accountId;
     if (when !== toInput(txn.occurredAt)) b.occurredAt = `${when}:00+07:00`;
     if (transferTo) { b.kind = 'TRANSFER'; b.transferAccountId = transferTo; }
-    else if (categoryId && (categoryId !== txn.categoryId || txn.status === 'REVIEW' || txn.kind === 'TRANSFER')) {
+    else if (categoryId && (categoryId !== txn.categoryId || txn.status === 'REVIEW' || txn.kind === 'TRANSFER' || (txn.counterparty && everyone))) {
       b.categoryId = categoryId;
-      if (remember && txn.suggestedKeywords) b.learnKeywords = txn.suggestedKeywords;
+      if (remember && txn.suggestedKeywords && !(txn.counterparty && everyone)) b.learnKeywords = txn.suggestedKeywords;
     }
+    if (txn.counterparty && everyone && (b.categoryId || b.kind === 'TRANSFER')) b.learnCounterparty = true;
+    if (label.trim()) { b.label = label.trim(); delete b.description; }
     return moneyApi.update(txn.id, b);
   });
 
@@ -63,7 +68,10 @@ export default function EditSheet({ txn, onClose }: { txn: Txn; onClose: () => v
         <div className="mn-sheet-head">
           <div>
             <b>{txn.description || txn.bankDescription || 'Giao dịch'}</b>
-            <small>{txn.accountName} · {txn.source === 'SEPAY' ? 'từ ngân hàng' : txn.source === 'NOTE' ? 'ghi tay' : txn.source === 'RECONCILE' ? 'chốt số dư' : txn.source.toLowerCase()}</small>
+            <small>
+              {txn.accountName} · {txn.source === 'SEPAY' ? 'từ ngân hàng' : txn.source === 'STATEMENT' ? 'từ sao kê' : txn.source === 'NOTE' ? 'ghi tay' : txn.source === 'RECONCILE' ? 'chốt số dư' : txn.source.toLowerCase()}
+              {txn.counterparty && <> · {sign < 0 ? '→' : '←'} {txn.counterparty}</>}
+            </small>
           </div>
           <span className={`mn-amt ${txn.amount > 0 ? 'in' : ''}`}>{money(txn.amount, txn.currency, true)}</span>
         </div>
@@ -86,7 +94,14 @@ export default function EditSheet({ txn, onClose }: { txn: Txn; onClose: () => v
             </button>
           ))}
         </div>
-        {txn.status === 'REVIEW' && txn.suggestedKeywords && !transferTo && (
+        {txn.counterparty ? (
+          <div className="mn-everyone">
+            <label className="mn-remember"><input type="checkbox" checked={everyone} onChange={e => setEveryone(e.target.checked)} />
+              <span>Áp cho mọi giao dịch với <b>{txn.counterparty}</b>, cả cũ lẫn sau này</span></label>
+            <input className="mn-pick-label" value={label} maxLength={80} onChange={e => setLabel(e.target.value)}
+              placeholder="Đặt tên (không bắt buộc), vd: Tiền nhà" />
+          </div>
+        ) : txn.status === 'REVIEW' && txn.suggestedKeywords && !transferTo && (
           <label className="mn-remember"><input type="checkbox" checked={remember} onChange={e => setRemember(e.target.checked)} />
             Nhớ: lần sau “{txn.suggestedKeywords}” là hạng mục này</label>
         )}

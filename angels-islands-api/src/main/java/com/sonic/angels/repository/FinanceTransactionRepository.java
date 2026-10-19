@@ -40,6 +40,22 @@ public interface FinanceTransactionRepository extends JpaRepository<FinanceTrans
            "AND t.occurredAt >= :from AND t.occurredAt < :to ORDER BY t.occurredAt ASC, t.createdAt ASC")
     List<FinanceTransaction> balanceTrail(UUID accountId, LocalDateTime from, LocalDateTime to);
 
+    /** Lines of one account that carry a bank reference, in a time window — what a statement row is matched against. */
+    @Query("SELECT t FROM FinanceTransaction t WHERE t.account.id = :accountId AND t.referenceCode IS NOT NULL " +
+           "AND t.occurredAt BETWEEN :from AND :to")
+    List<FinanceTransaction> withReference(UUID accountId, LocalDateTime from, LocalDateTime to);
+
+    @Query("SELECT t FROM FinanceTransaction t WHERE t.account.id = :accountId AND t.referenceCode = :reference AND t.source = :source")
+    List<FinanceTransaction> byReference(UUID accountId, String reference, FinanceTransaction.Source source);
+
+    /** Earlier lines of the account with this memo whose counterparty is known, newest first. */
+    @Query("SELECT t FROM FinanceTransaction t WHERE t.account.id = :accountId AND t.counterparty IS NOT NULL " +
+           "AND (lower(t.description) = :memo OR lower(t.bankDescription) = :memo) ORDER BY t.occurredAt DESC")
+    List<FinanceTransaction> sameMemoWithCounterparty(UUID accountId, String memo, Pageable page);
+
+    @Query("SELECT t FROM FinanceTransaction t JOIN FETCH t.account LEFT JOIN FETCH t.category WHERE t.counterparty IS NOT NULL")
+    List<FinanceTransaction> withCounterparty();
+
     @Query("SELECT MIN(t.occurredAt) FROM FinanceTransaction t")
     LocalDateTime firstOccurredAt();
 

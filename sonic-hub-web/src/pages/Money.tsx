@@ -9,6 +9,7 @@ import Review from '../components/money/Review';
 import Overview from '../components/money/Overview';
 import { CategoryBars, TrendChart } from '../components/money/Charts';
 import TxnList from '../components/money/TxnList';
+import ImportStatement from '../components/money/ImportStatement';
 
 export default function Money() {
   const [sp, setSp] = useSearchParams();
@@ -31,6 +32,7 @@ export default function Money() {
           <a href="#" className={month === now ? 'on' : ''} onClick={e => { e.preventDefault(); go(now); }}>Tháng này</a>
           <a href="#" onClick={e => { e.preventDefault(); if (month < now) go(shiftMonth(month, 1)); }} aria-label="Tháng sau" aria-disabled={month >= now}>›</a>
         </div>
+        <ImportStatement />
       </div>
 
       <div className="mn-top">
