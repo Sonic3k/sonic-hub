@@ -156,25 +156,22 @@ public class FinanceStatementService {
         }
     }
 
-    /** The statement told us more about a line the feed brought: decide it again unless someone already did. */
+    /** The statement told us more about a line the feed brought: decide it again — what he decided himself stays. */
     private void redo(FinanceTransaction t, List<FinanceRule> rules) {
-        if (t.getCategorizedBy() == By.USER) return;
         if (t.getKind() == Kind.TRANSFER && t.getCategorizedBy() == By.SYSTEM) return;
         FinanceAccount mine = own(t);
         if (mine != null) {
+            if (t.getCategorizedBy() == By.USER) return;
             if (t.getKind() == Kind.TRANSFER) classifier.breakTransfer(t);
             classifier.makeTransfer(t, mine, By.SYSTEM);
             return;
         }
-        FinanceRule r = classifier.match(t, rules);
-        if (r == null) return;
-        if (t.getKind() == Kind.TRANSFER) classifier.breakTransfer(t);
-        classifier.apply(t, r);
+        classifier.decide(t, classifier.fitting(t, rules));
     }
 
     /** Preview only: would a rule or an own account number decide this line? */
     private boolean decidable(FinanceTransaction t, List<FinanceRule> rules) {
-        return own(t) != null || classifier.match(t, rules) != null;
+        return own(t) != null || classifier.decides(classifier.fitting(t, rules));
     }
 
     private FinanceAccount own(FinanceTransaction t) {

@@ -7,6 +7,7 @@ export const useSummary = () => useQuery({ queryKey: ['money', 'summary'], query
 export const useReport = (month: string) => useQuery({ queryKey: ['money', 'report', month], queryFn: () => moneyApi.report(month), staleTime: S, placeholderData: p => p });
 export const useTrend = () => useQuery({ queryKey: ['money', 'trend'], queryFn: () => moneyApi.trend(12), staleTime: S });
 export const useCategories = () => useQuery({ queryKey: ['money', 'categories'], queryFn: moneyApi.categories, staleTime: 10 * S });
+export const useFacets = () => useQuery({ queryKey: ['money', 'facets'], queryFn: moneyApi.facets, staleTime: 10 * S, retry: 1 });
 export const useRules = () => useQuery({ queryKey: ['money', 'rules'], queryFn: moneyApi.rules, staleTime: 10 * S });
 export const useReview = () => useQuery({ queryKey: ['money', 'review'], queryFn: moneyApi.review, staleTime: S });
 export const useCounterparties = () => useQuery({ queryKey: ['money', 'counterparties'], queryFn: moneyApi.counterparties, staleTime: S });

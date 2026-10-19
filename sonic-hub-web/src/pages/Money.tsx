@@ -42,8 +42,8 @@ export default function Money() {
       {!!r?.gaps.length && (
         <div className="card mn-gaps">
           <b>⚠ Số dư ngân hàng không khớp</b>
-          {r.gaps.map(g => (
-            <p key={`${g.accountId}-${g.at}`}>{g.accountName}: lệch {vnd(g.missing, true)} trước giao dịch lúc {timeOf(g.at)} {utc(g.at).toLocaleDateString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh' })} — có thể thiếu một giao dịch (phí, hoặc webhook bị lỡ).</p>
+          {r.gaps.map((g, i) => (
+            <p key={`${g.accountId}-${g.at}-${i}`}>{g.accountName}: lệch {vnd(g.missing, true)} trước giao dịch lúc {timeOf(g.at)} {utc(g.at).toLocaleDateString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh' })} — có thể thiếu một giao dịch (phí, hoặc webhook bị lỡ).</p>
           ))}
         </div>
       )}

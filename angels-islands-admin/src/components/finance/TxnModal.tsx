@@ -6,13 +6,14 @@ import { Button, Input, Modal, Select, Textarea } from '../ui'
 import { apiError, financeApi } from '../../api/finance'
 import { fmtDateTime, fromLocalInput, money, toLocalInput } from '../../lib/money'
 import type { FinTxn, FinTxnRequest } from '../../types/finance'
-import { CategoryOptions, useFinAccounts, useFinCategories } from './shared'
+import { CategoryOptions, TagPicker, isMainTag, useFinAccounts, useFinCategories, useFinFacets } from './shared'
 
 /** Add or edit one transaction. Editing a waiting one can also teach a rule ("remember these words"). */
 export default function TxnModal({ txn, onClose }: { txn?: FinTxn; onClose: () => void }) {
   const qc = useQueryClient()
   const { data: accounts = [] } = useFinAccounts()
   const { data: categories = [] } = useFinCategories()
+  const { data: facets = [] } = useFinFacets()
   const isNew = !txn
   const [accountId, setAccountId] = useState(txn?.accountId ?? accounts.find(a => a.mode === 'POOL')?.id ?? accounts[0]?.id ?? '')
   const [when, setWhen] = useState(toLocalInput(txn?.occurredAt))
@@ -23,6 +24,9 @@ export default function TxnModal({ txn, onClose }: { txn?: FinTxn; onClose: () =
   const [transferTo, setTransferTo] = useState('')
   const [description, setDescription] = useState(txn?.description ?? '')
   const [note, setNote] = useState(txn?.note ?? '')
+  /* tags of the other facets put on the line (implied ones follow by themselves) */
+  const startTags = (txn?.tags ?? []).filter(x => !x.main && x.by !== 'IMPLIED').map(x => x.id)
+  const [tags, setTags] = useState<string[]>(startTags)
   const [learn, setLearn] = useState(!!txn && txn.status === 'REVIEW' && !!txn.suggestedKeywords)
   const [keywords, setKeywords] = useState(txn?.suggestedKeywords ?? '')
   const [error, setError] = useState('')
@@ -34,8 +38,13 @@ export default function TxnModal({ txn, onClose }: { txn?: FinTxn; onClose: () =
       if (!n) throw new Error('Amount?')
       const signed = dir === 'out' ? -n : n
       const body: FinTxnRequest = { accountId, occurredAt: fromLocalInput(when), amount: signed, description, note }
+      const tagsChanged = tags.length !== startTags.length || tags.some(x => !startTags.includes(x))
+      /* a second category put on from the Tiền page stays, unless it is the one now chosen */
+      const keepMain = (txn?.tags ?? []).filter(x => x.main && x.by !== 'IMPLIED' && x.id !== txn?.categoryId && x.id !== categoryId).map(x => x.id)
       if (mode === 'transfer') {
         if (transferTo) { body.kind = 'TRANSFER'; body.transferAccountId = transferTo }
+      } else if (tagsChanged && (categoryId || txn?.kind !== 'TRANSFER')) {
+        body.tagIds = [...(categoryId ? [categoryId] : []), ...keepMain, ...tags]
       } else if (categoryId && categoryId !== txn?.categoryId) body.categoryId = categoryId
       else if (categoryId && txn?.status === 'REVIEW') body.categoryId = categoryId
       else if (txn?.kind === 'TRANSFER' && mode === 'category') body.kind = dir === 'out' ? 'EXPENSE' : 'INCOME'
@@ -97,10 +106,17 @@ export default function TxnModal({ txn, onClose }: { txn?: FinTxn; onClose: () =
             ))}
           </div>
           {mode === 'category' ? (
-            <Select value={categoryId} onChange={e => setCategoryId(e.target.value)}>
-              <option value="">— choose —</option>
-              <CategoryOptions categories={categories} />
-            </Select>
+            <div className="space-y-3">
+              <Select value={categoryId} onChange={e => setCategoryId(e.target.value)}>
+                <option value="">— choose —</option>
+                <CategoryOptions categories={categories} />
+              </Select>
+              {facets.some(f => !f.main) && (
+                <div className="rounded-xl border border-dashed border-slate-200 p-3">
+                  <TagPicker facets={facets} categories={categories.filter(c => !isMainTag(c))} selected={tags} onChange={setTags} />
+                </div>
+              )}
+            </div>
           ) : (
             <Select value={transferTo} onChange={e => setTransferTo(e.target.value)}>
               <option value="">{txn?.transferAccountName ? `keep: ${txn.transferAccountName}` : '— to / from which account —'}</option>

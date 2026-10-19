@@ -1,14 +1,20 @@
 package com.sonic.angels.model.entity;
 
 import jakarta.persistence.*;
+import org.hibernate.annotations.BatchSize;
+
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.LinkedHashSet;
+import java.util.Set;
 import java.util.UUID;
 
 /**
  * One movement of money on one account. `amount` is signed in the account's currency: negative left the account.
  * kind EXPENSE / INCOME follows the category (a refund is an EXPENSE with a positive amount: it lowers spending);
- * TRANSFER is money between own accounts — never spending — and `transferPeer` points at the other side.
+ * TRANSFER is money between own accounts — never spending, no tags — and `transferPeer` points at the other side.
+ * `tags`: every tag the line carries, of every facet. `category` is the one main-facet tag that does the counting
+ * (spending or saving, budget group) — kept in step with the tags by FinanceTags.settle.
  * Times are UTC, like everywhere else in this database.
  */
 @Entity
@@ -24,7 +30,8 @@ public class FinanceTransaction extends FinanceEntity {
     public enum Kind { EXPENSE, INCOME, TRANSFER }
     public enum Source { SEPAY, EMAIL, STATEMENT, NOTE, MANUAL, RECONCILE, SYSTEM }
     public enum Status { OK, REVIEW }
-    public enum By { RULE, AI, USER, SYSTEM }
+    /** IMPLIED only on tags: brought along by another tag of the line. */
+    public enum By { RULE, AI, USER, SYSTEM, IMPLIED }
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
@@ -104,6 +111,10 @@ public class FinanceTransaction extends FinanceEntity {
     @JoinColumn(name = "matched_rule_id")
     private FinanceRule matchedRule;
 
+    @OneToMany(mappedBy = "transaction", cascade = CascadeType.ALL, orphanRemoval = true)
+    @BatchSize(size = 200)
+    private Set<FinanceTxnTag> tags = new LinkedHashSet<>();
+
     public FinanceTransaction() {}
 
     public UUID getId() { return id; }
@@ -145,6 +156,8 @@ public class FinanceTransaction extends FinanceEntity {
     public void setTransferPeer(FinanceTransaction transferPeer) { this.transferPeer = transferPeer; }
     public FinanceRule getMatchedRule() { return matchedRule; }
     public void setMatchedRule(FinanceRule matchedRule) { this.matchedRule = matchedRule; }
+    /** Change through FinanceTags, which keeps `category` and the implied tags in step. */
+    public Set<FinanceTxnTag> getTags() { return tags; }
 
     /** Memo and bank line together — what rules and the AI read. */
     public String searchableText() {

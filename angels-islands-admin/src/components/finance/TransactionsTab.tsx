@@ -6,7 +6,7 @@ import { Button } from '../ui'
 import { apiError, financeApi } from '../../api/finance'
 import { fmtDay, shiftMonth, utc, vnMonth, vnd } from '../../lib/money'
 import type { FinTxn } from '../../types/finance'
-import { AccountDot, Amount, finKeys, useFinAccounts, useFinCategories } from './shared'
+import { AccountDot, Amount, TagPill, finKeys, isMainTag, useFinAccounts, useFinCategories, useFinFacets } from './shared'
 import TxnModal from './TxnModal'
 
 const PAGE = 60
@@ -16,6 +16,7 @@ export default function TransactionsTab() {
   const qc = useQueryClient()
   const { data: accounts = [] } = useFinAccounts()
   const { data: categories = [] } = useFinCategories()
+  const { data: facets = [] } = useFinFacets()
   const [month, setMonth] = useState(vnMonth())
   const [accountId, setAccountId] = useState('')
   const [categoryId, setCategoryId] = useState('')
@@ -74,9 +75,16 @@ export default function TransactionsTab() {
           {accounts.map(a => <option key={a.id} value={a.id}>{a.name}</option>)}
         </select>
         <select className={filterCls} value={categoryId} onChange={e => { setCategoryId(e.target.value); setPage(0) }}>
-          <option value="">All categories</option>
+          <option value="">All tags</option>
           <option value="none">Uncategorized</option>
-          {categories.map(c => <option key={c.id} value={c.id}>{c.icon ? `${c.icon} ` : ''}{c.name}</option>)}
+          <optgroup label="Categories">
+            {categories.filter(isMainTag).map(c => <option key={c.id} value={c.id}>{c.icon ? `${c.icon} ` : ''}{c.name}</option>)}
+          </optgroup>
+          {facets.filter(f => !f.main && !f.archived).sort((a, b) => a.sortOrder - b.sortOrder).map(f => (
+            <optgroup key={f.id} label={f.name}>
+              {categories.filter(c => c.facetId === f.id && !isMainTag(c)).map(c => <option key={c.id} value={c.id}>{c.icon ? `${c.icon} ` : ''}{c.name}</option>)}
+            </optgroup>
+          ))}
         </select>
         <label className="flex items-center gap-1.5 px-3 py-1.5 bg-white border border-slate-200 rounded-full text-xs text-slate-400 focus-within:border-pink-300">
           <Search size={13} />
@@ -127,6 +135,9 @@ export default function TransactionsTab() {
                           <span>· {utc(t.occurredAt).toLocaleTimeString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh', hour: '2-digit', minute: '2-digit' })}</span>
                           {t.note && <span className="italic truncate max-w-[12rem]">“{t.note}”</span>}
                         </p>
+                        {t.tags.some(x => x.id !== t.categoryId) && (
+                          <div className="flex flex-wrap gap-1 mt-1">{t.tags.filter(x => x.id !== t.categoryId).map(x => <TagPill key={x.id} tag={x} />)}</div>
+                        )}
                       </div>
                       <Amount t={t} className="text-sm" />
                       {t.status === 'REVIEW' && (t.categoryId || t.kind === 'TRANSFER') && (

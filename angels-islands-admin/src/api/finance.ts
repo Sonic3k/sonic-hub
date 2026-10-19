@@ -1,7 +1,7 @@
 import api from './client'
 import type { Paged } from '../types'
 import type {
-  FinAccount, FinAccountRequest, FinCategory, FinCategoryRequest, FinInbound, FinRule, FinRuleRequest,
+  FinAccount, FinAccountRequest, FinCategory, FinCategoryRequest, FinFacet, FinFacetRequest, FinInbound, FinRule, FinRuleRequest,
   FinMonthReport, FinSettings, FinTxn, FinTxnRequest,
 } from '../types/finance'
 
@@ -15,6 +15,11 @@ export const financeApi = {
   deleteAccount: (id: string) => api.delete(`/api/finance/accounts/${id}`),
   setBalance: (id: string, balance: number, note?: string) => api.post<FinAccount>(`/api/finance/accounts/${id}/balance`, { balance, note }).then(r => r.data),
 
+  facets: () => api.get<FinFacet[]>('/api/finance/facets').then(r => r.data),
+  createFacet: (d: FinFacetRequest) => api.post<FinFacet>('/api/finance/facets', d).then(r => r.data),
+  updateFacet: (id: string, d: FinFacetRequest) => api.put<FinFacet>(`/api/finance/facets/${id}`, d).then(r => r.data),
+  deleteFacet: (id: string) => api.delete(`/api/finance/facets/${id}`),
+
   categories: () => api.get<FinCategory[]>('/api/finance/categories').then(r => r.data),
   createCategory: (d: FinCategoryRequest) => api.post<FinCategory>('/api/finance/categories', d).then(r => r.data),
   updateCategory: (id: string, d: FinCategoryRequest) => api.put<FinCategory>(`/api/finance/categories/${id}`, d).then(r => r.data),
@@ -25,6 +30,8 @@ export const financeApi = {
   updateRule: (id: string, d: FinRuleRequest) => api.put<FinRule>(`/api/finance/rules/${id}`, d).then(r => r.data),
   deleteRule: (id: string) => api.delete(`/api/finance/rules/${id}`),
   applyRules: () => api.post<{ updated: number }>('/api/finance/rules/apply').then(r => r.data),
+  /** one rule over every line it fits, decided ones too */
+  applyRule: (id: string) => api.post<{ updated: number }>(`/api/finance/rules/${id}/apply`).then(r => r.data),
 
   transactions: (q: TxnQuery) => api.get<Paged<FinTxn>>('/api/finance/transactions', { params: q }).then(r => r.data),
   createTransaction: (d: FinTxnRequest) => api.post<FinTxn>('/api/finance/transactions', d).then(r => r.data),

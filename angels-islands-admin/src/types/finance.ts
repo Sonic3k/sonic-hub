@@ -2,7 +2,7 @@
 export type AccountMode = 'FEED' | 'RECONCILE' | 'POOL'
 export type TxnKind = 'EXPENSE' | 'INCOME' | 'TRANSFER'
 export type TxnStatus = 'OK' | 'REVIEW'
-export type CategoryKind = 'EXPENSE' | 'INCOME'
+export type CategoryKind = 'EXPENSE' | 'INCOME' | 'ANY'
 export type BudgetGroup = 'FIXED' | 'FLEXIBLE' | 'SAVING'
 export type RuleDirection = 'ANY' | 'IN' | 'OUT'
 
@@ -16,21 +16,37 @@ export interface FinAccountRequest {
   color?: string; sortOrder?: number; archived?: boolean
 }
 
+/** A way of looking at money ("mặt"). main: the categories; perTransaction: its tags describe one occasion. */
+export interface FinFacet {
+  id: string; code: string; name: string; icon: string | null; sortOrder: number; main: boolean; perTransaction: boolean
+  system: boolean; archived: boolean; tagCount: number
+}
+export interface FinFacetRequest { name?: string; icon?: string; sortOrder?: number; perTransaction?: boolean; archived?: boolean }
+
+/** A tag ("nhãn"). The main facet's are the categories (EXPENSE/INCOME, with a budget group); the others are ANY. */
 export interface FinCategory {
   id: string; code: string; name: string; icon: string | null; kind: CategoryKind; budgetGroup: BudgetGroup | null
-  sortOrder: number; system: boolean; archived: boolean
+  sortOrder: number; system: boolean; archived: boolean; facetId: string | null; impliesIds: string[]
 }
-export interface FinCategoryRequest { name?: string; icon?: string; kind?: CategoryKind; budgetGroup?: BudgetGroup; sortOrder?: number; archived?: boolean }
+export interface FinCategoryRequest {
+  name?: string; icon?: string; kind?: CategoryKind; budgetGroup?: BudgetGroup; sortOrder?: number; archived?: boolean
+  facetId?: string; impliesIds?: string[]
+}
+/** A tag on a line or a rule; by: who put it on the line (null on a rule). */
+export interface FinTagRef { id: string; name: string; icon: string | null; facetId: string | null; main: boolean; by: string | null }
 
 export interface FinRule {
   id: string; keywords: string; direction: RuleDirection; categoryId: string | null; categoryName: string | null; categoryIcon: string | null
   transferAccountId: string | null; transferAccountName: string | null; priority: number; origin: 'SEED' | 'USER'; hits: number; active: boolean
   /** a rule about one counterparty (keywords empty); label renames what it matches */
   counterpartyName: string | null; counterpartyAccount: string | null; label: string | null
+  /** every tag it gives, the category among them; fromDate/toDate: an occasion's days (Vietnam dates) */
+  tags: FinTagRef[]; fromDate: string | null; toDate: string | null
 }
 export interface FinRuleRequest {
   keywords?: string; direction?: RuleDirection; categoryId?: string; transferAccountId?: string; priority?: number; active?: boolean
   counterpartyName?: string; counterpartyAccount?: string; label?: string
+  tagIds?: string[]; fromDate?: string; toDate?: string
 }
 
 export interface FinTxn {
@@ -41,10 +57,12 @@ export interface FinTxn {
   source: 'SEPAY' | 'EMAIL' | 'NOTE' | 'MANUAL' | 'RECONCILE' | 'SYSTEM'; status: TxnStatus
   categorizedBy: 'RULE' | 'AI' | 'USER' | 'SYSTEM' | null; aiConfidence: number | null; balanceAfter: number | null
   transferPeerId: string | null; transferAccountName: string | null; suggestedKeywords: string | null; createdAt: string
+  tags: FinTagRef[]
 }
+/** tagIds: every tag the line should carry (implied ones come by themselves). */
 export interface FinTxnRequest {
   accountId?: string; occurredAt?: string; amount?: number; kind?: TxnKind; categoryId?: string
-  description?: string; note?: string; transferAccountId?: string; learnKeywords?: string
+  description?: string; note?: string; transferAccountId?: string; learnKeywords?: string; tagIds?: string[]
 }
 
 export interface FinSettings {

@@ -1,17 +1,22 @@
 /* "Cần xem lại": what no rule knew. Lines whose counterparty is known (the bank statement says who) come grouped
-   by it — one decision covers all of that person's or shop's lines, old and new, and can rename them ("Tiền nhà").
-   The few without a counterparty are decided one by one; that choice is remembered by its words. */
+   by it — one decision covers all of that person's or shop's lines, old and new, can rename them ("Tiền nhà") and
+   can give them more tags ("Digital", "Vợ"). The few without a counterparty are decided one by one; that choice is
+   remembered by its words. */
 import { useState } from 'react';
 import { moneyApi, type CounterpartyGroup, type MoneyCategory, type Txn } from '../../api/money';
 import { dayLabel, money, short, timeOf } from '../../lib/money';
 import { useCategories, useCounterparties, useRefresh, useReview, useSummary } from './data';
+import { FacetChips, useTagBook } from './tags';
 
 type Row = { g: CounterpartyGroup } | { t: Txn };
 
 export default function Review() {
   const review = useReview(), groups = useCounterparties(), categories = useCategories(), summary = useSummary(), refresh = useRefresh();
+  const book = useTagBook();
   const [open, setOpen] = useState<string | null>(null);
   const [label, setLabel] = useState('');
+  const [extra, setExtra] = useState<Set<string>>(new Set());
+  const [showExtra, setShowExtra] = useState(false);
   const [remember, setRemember] = useState(true);
   const [busy, setBusy] = useState<string | null>(null);
   const [error, setError] = useState('');
@@ -29,13 +34,15 @@ export default function Review() {
 
   const act = async (key: string, f: () => Promise<unknown>) => {
     setBusy(key); setError('');
-    try { await f(); setOpen(null); setLabel(''); refresh(); } catch (e) { setError((e as Error).message); } finally { setBusy(null); }
+    try { await f(); setOpen(null); setLabel(''); setExtra(new Set()); setShowExtra(false); refresh(); } catch (e) { setError((e as Error).message); } finally { setBusy(null); }
   };
-  const toggle = (key: string) => { setOpen(open === key ? null : key); setLabel(''); };
+  const toggle = (key: string) => { setOpen(open === key ? null : key); setLabel(''); setExtra(new Set()); setShowExtra(false); };
+  const toggleExtra = (id: string) => setExtra(s => { const n = new Set(s); if (n.has(id)) n.delete(id); else n.add(id); return n; });
 
   /* everyone with this name */
   const assign = (g: CounterpartyGroup, target: { categoryId?: string; transferAccountId?: string }) =>
-    act(g.key, () => moneyApi.assign({ name: g.name, ...target, label: label.trim() || undefined }));
+    act(g.key, () => moneyApi.assign({ name: g.name, ...target, label: label.trim() || undefined,
+      tagIds: target.categoryId && extra.size ? [...extra] : undefined }));
   /* one line, its words remembered */
   const pick = (t: Txn, c: MoneyCategory) => act(t.id, () => moneyApi.update(t.id, {
     categoryId: c.id, learnKeywords: remember && t.suggestedKeywords ? t.suggestedKeywords : undefined,
@@ -92,6 +99,20 @@ export default function Review() {
                 {open === g.key && (
                   <div className="mn-pick">
                     {labelInput}
+                    {book.others.length > 0 && (showExtra ? (
+                      <>
+                        {book.others.map(f => (
+                          <div key={f.id} className="mn-pick-group">
+                            <span className="mn-pick-cap">{f.name}</span>
+                            <FacetChips facet={f} book={book} chosen={extra} implied={book.implied(extra)} onToggle={toggleExtra}
+                              onCreated={id => setExtra(s => new Set(s).add(id))} />
+                          </div>
+                        ))}
+                        <span className="mn-pick-sep">Hạng mục — chọn là lưu cho mọi giao dịch với họ:</span>
+                      </>
+                    ) : (
+                      <button type="button" className="mn-link mn-pick-wide mn-pick-more" onClick={() => setShowExtra(true)}>＋ Thêm nhãn khác (không bắt buộc)</button>
+                    ))}
                     {cats(kind).map(c => (
                       <button key={c.id} type="button" className="mn-pick-i" onClick={() => assign(g, { categoryId: c.id })}><span>{c.icon}</span>{c.name}</button>
                     ))}

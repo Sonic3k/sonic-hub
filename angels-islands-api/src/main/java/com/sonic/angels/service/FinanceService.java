@@ -12,6 +12,8 @@ import com.sonic.angels.util.SlugUtil;
 import jakarta.persistence.criteria.Fetch;
 import jakarta.persistence.criteria.JoinType;
 import jakarta.persistence.criteria.Predicate;
+import jakarta.persistence.criteria.Root;
+import jakarta.persistence.criteria.Subquery;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -28,7 +30,7 @@ import java.time.LocalDateTime;
 import java.time.YearMonth;
 import java.util.*;
 
-/** Accounts, categories, rules, transactions, quick notes, balance check-ins and settings of the finance module. */
+/** Accounts, facets and tags, rules, transactions, quick notes, balance check-ins and settings of the finance module. */
 @Service
 @Transactional
 public class FinanceService {
@@ -37,6 +39,7 @@ public class FinanceService {
 
     private final FinanceAccountRepository accountRepo;
     private final FinanceCategoryRepository categoryRepo;
+    private final FinanceFacetRepository facetRepo;
     private final FinanceRuleRepository ruleRepo;
     private final FinanceTransactionRepository txnRepo;
     private final FinanceInboundRepository inboundRepo;
@@ -46,11 +49,11 @@ public class FinanceService {
     private final FinanceRateService rates;
     private final String sepayKey;
 
-    public FinanceService(FinanceAccountRepository accountRepo, FinanceCategoryRepository categoryRepo, FinanceRuleRepository ruleRepo,
-                          FinanceTransactionRepository txnRepo, FinanceInboundRepository inboundRepo, AppSettingRepository settingRepo,
-                          FinanceClassifier classifier, FinanceAiService ai, FinanceRateService rates,
+    public FinanceService(FinanceAccountRepository accountRepo, FinanceCategoryRepository categoryRepo, FinanceFacetRepository facetRepo,
+                          FinanceRuleRepository ruleRepo, FinanceTransactionRepository txnRepo, FinanceInboundRepository inboundRepo,
+                          AppSettingRepository settingRepo, FinanceClassifier classifier, FinanceAiService ai, FinanceRateService rates,
                           @Value("${finance.sepay.api-key:}") String sepayKey) {
-        this.accountRepo = accountRepo; this.categoryRepo = categoryRepo; this.ruleRepo = ruleRepo; this.txnRepo = txnRepo;
+        this.accountRepo = accountRepo; this.categoryRepo = categoryRepo; this.facetRepo = facetRepo; this.ruleRepo = ruleRepo; this.txnRepo = txnRepo;
         this.inboundRepo = inboundRepo; this.settingRepo = settingRepo; this.classifier = classifier; this.ai = ai;
         this.rates = rates; this.sepayKey = sepayKey == null ? "" : sepayKey.trim();
     }
@@ -82,7 +85,7 @@ public class FinanceService {
         FinanceAccount a = account(id);
         if (txnRepo.countByAccountId(id) > 0)
             throw new IllegalArgumentException("Tài khoản đã có giao dịch — hãy lưu trữ thay vì xoá");
-        ruleRepo.deleteByTransferAccountId(id);
+        for (FinanceRule r : ruleRepo.findByTransferAccountId(id)) { txnRepo.clearRule(r.getId()); ruleRepo.delete(r); }
         accountRepo.delete(a);
     }
 
@@ -108,9 +111,13 @@ public class FinanceService {
                 String code = diff.signum() < 0 ? FinanceCategory.UNKNOWN_EXPENSE : FinanceCategory.UNKNOWN_INCOME;
                 FinanceCategory c = categoryRepo.findByCode(code).orElse(null);
                 t.setKind(diff.signum() < 0 ? Kind.EXPENSE : Kind.INCOME);
-                t.setCategory(c);
                 t.setDescription("Chênh lệch khi chốt số dư" + (r.note() != null && !r.note().isBlank() ? " · " + r.note().trim() : ""));
-                txnRepo.save(t);
+                t = txnRepo.save(t);
+                if (c != null) {
+                    FinanceTags.replace(t, FinanceTags.MAIN, List.of(c), By.SYSTEM);
+                    FinanceTags.settle(t);
+                    t.setStatus(Status.OK);
+                }
             }
         }
         a.setBalance(r.balance());
@@ -139,30 +146,93 @@ public class FinanceService {
         if (r.archived() != null) a.setArchived(r.archived());
     }
 
-    // ════════════════════════════════ categories ════════════════════════════════
+    // ════════════════════════════════ facets and tags ════════════════════════════════
+
+    @Transactional(readOnly = true)
+    public List<FinanceDto.Facet> facets() {
+        Map<UUID, Long> counts = new HashMap<>();
+        UUID main = mainFacet().getId();
+        for (FinanceCategory c : categoryRepo.findAll()) counts.merge(c.getFacet() == null ? main : c.getFacet().getId(), 1L, Long::sum);
+        return facetRepo.findAllByOrderBySortOrderAscNameAsc().stream().map(f -> toFacet(f, counts.getOrDefault(f.getId(), 0L))).toList();
+    }
+
+    public FinanceDto.Facet createFacet(FinanceDto.FacetRequest r) {
+        if (r.name() == null || r.name().isBlank()) throw new IllegalArgumentException("Tên mặt?");
+        FinanceFacet f = new FinanceFacet();
+        f.setName(r.name().trim());
+        f.setIcon(blankToNull(r.icon()));
+        f.setPerTransaction(Boolean.TRUE.equals(r.perTransaction()));
+        f.setSortOrder(r.sortOrder() != null ? r.sortOrder()
+            : facetRepo.findAll().stream().mapToInt(FinanceFacet::getSortOrder).max().orElse(0) + 10);
+        String base = SlugUtil.slugify(f.getName()), code = base;
+        for (int i = 2; facetRepo.existsByCode(code); i++) code = base + "-" + i;
+        f.setCode(code);
+        return toFacet(facetRepo.save(f), 0);
+    }
+
+    public FinanceDto.Facet updateFacet(UUID id, FinanceDto.FacetRequest r) {
+        FinanceFacet f = facet(id);
+        if (r.name() != null && !r.name().isBlank()) f.setName(r.name().trim());
+        if (r.icon() != null) f.setIcon(blankToNull(r.icon()));
+        if (r.sortOrder() != null) f.setSortOrder(r.sortOrder());
+        if (r.perTransaction() != null && !f.isMain()) f.setPerTransaction(r.perTransaction());
+        if (r.archived() != null) {
+            if (f.isMain() && r.archived()) throw new IllegalArgumentException("Mặt Hạng mục không lưu trữ được");
+            f.setArchived(r.archived());
+        }
+        return toFacet(f, categoryRepo.countByFacetId(id));
+    }
+
+    /** Only an empty facet goes away; one with tags can be archived. */
+    public void deleteFacet(UUID id) {
+        FinanceFacet f = facet(id);
+        if (f.isMain() || f.isSystem()) throw new IllegalArgumentException("Mặt này không xoá được");
+        long n = categoryRepo.countByFacetId(id);
+        if (n > 0) throw new IllegalArgumentException("Mặt này còn " + n + " nhãn — xoá các nhãn trước, hoặc lưu trữ mặt");
+        facetRepo.delete(f);
+    }
 
     @Transactional(readOnly = true)
     public List<FinanceDto.Category> categories() {
         return categoryRepo.findAllByOrderByKindAscSortOrderAscNameAsc().stream().map(FinanceService::toCategory).toList();
     }
 
+    /**
+     * A new tag (facetId absent: a category of the main facet). The same name again in the same facet gives back the
+     * one that exists (brought back from the archive) — the quick "＋" on the Tiền page relies on it.
+     */
     public FinanceDto.Category createCategory(FinanceDto.CategoryRequest r) {
-        if (r.name() == null || r.name().isBlank()) throw new IllegalArgumentException("Tên hạng mục?");
+        if (r.name() == null || r.name().isBlank()) throw new IllegalArgumentException("Tên nhãn?");
+        FinanceFacet f = r.facetId() != null ? facet(r.facetId()) : mainFacet();
+        String key = FinanceText.normalize(r.name());
+        for (FinanceCategory o : categoryRepo.findAll()) {
+            boolean sameFacet = o.isMain() ? f.isMain() : o.getFacet().getId().equals(f.getId());
+            if (sameFacet && FinanceText.normalize(o.getName()).equals(key)) { o.setArchived(false); return toCategory(o); }
+        }
         FinanceCategory c = new FinanceCategory();
         c.setName(r.name().trim());
-        c.setKind(r.kind() == null ? FinanceCategory.Kind.EXPENSE : parseEnum(FinanceCategory.Kind.class, r.kind(), "kind"));
-        c.setBudgetGroup(c.getKind() == FinanceCategory.Kind.INCOME ? null
-            : r.budgetGroup() == null ? FinanceCategory.BudgetGroup.FLEXIBLE : parseEnum(FinanceCategory.BudgetGroup.class, r.budgetGroup(), "budgetGroup"));
+        c.setFacet(f);
+        if (f.isMain()) {
+            c.setKind(r.kind() == null ? FinanceCategory.Kind.EXPENSE : parseEnum(FinanceCategory.Kind.class, r.kind(), "kind"));
+            if (c.getKind() == FinanceCategory.Kind.ANY) throw new IllegalArgumentException("Hạng mục là chi hoặc thu");
+            c.setBudgetGroup(c.getKind() == FinanceCategory.Kind.INCOME ? null
+                : r.budgetGroup() == null ? FinanceCategory.BudgetGroup.FLEXIBLE : parseEnum(FinanceCategory.BudgetGroup.class, r.budgetGroup(), "budgetGroup"));
+        } else {
+            c.setKind(FinanceCategory.Kind.ANY);
+            c.setBudgetGroup(null);
+        }
         c.setIcon(blankToNull(r.icon()));
         c.setSortOrder(r.sortOrder() != null ? r.sortOrder() : 50);
         String base = SlugUtil.slugify(c.getName()), code = base;
         for (int i = 2; categoryRepo.existsByCode(code); i++) code = base + "-" + i;
         c.setCode(code);
-        return toCategory(categoryRepo.save(c));
+        c = categoryRepo.save(c);
+        if (r.impliesIds() != null) setImplies(c, r.impliesIds());
+        return toCategory(c);
     }
 
     public FinanceDto.Category updateCategory(UUID id, FinanceDto.CategoryRequest r) {
-        FinanceCategory c = categoryRepo.findById(id).orElseThrow(() -> new NoSuchElementException("Category not found: " + id));
+        FinanceCategory c = category(id);
         if (r.name() != null && !r.name().isBlank()) c.setName(r.name().trim());
         if (r.icon() != null) c.setIcon(blankToNull(r.icon()));
         if (r.sortOrder() != null) c.setSortOrder(r.sortOrder());
@@ -170,8 +240,9 @@ public class FinanceService {
             if (c.isSystem() && r.archived()) throw new IllegalArgumentException("Hạng mục hệ thống không lưu trữ được");
             c.setArchived(r.archived());
         }
-        if (r.kind() != null) {
+        if (r.kind() != null && c.isMain()) {
             FinanceCategory.Kind k = parseEnum(FinanceCategory.Kind.class, r.kind(), "kind");
+            if (k == FinanceCategory.Kind.ANY) throw new IllegalArgumentException("Hạng mục là chi hoặc thu");
             if (k != c.getKind()) {
                 if (c.isSystem()) throw new IllegalArgumentException("Không đổi loại của hạng mục hệ thống");
                 c.setKind(k);
@@ -179,21 +250,54 @@ public class FinanceService {
                 else if (c.getBudgetGroup() == null) c.setBudgetGroup(FinanceCategory.BudgetGroup.FLEXIBLE);
             }
         }
-        if (r.budgetGroup() != null && c.getKind() == FinanceCategory.Kind.EXPENSE)
+        if (r.budgetGroup() != null && c.isMain() && c.getKind() == FinanceCategory.Kind.EXPENSE)
             c.setBudgetGroup(parseEnum(FinanceCategory.BudgetGroup.class, r.budgetGroup(), "budgetGroup"));
+        if (r.impliesIds() != null) setImplies(c, r.impliesIds());
         return toCategory(c);
     }
 
-    /** Its transactions go back to review; rules pointing at it go away. */
+    /** What a tag brings along changed: every line that carries it works its implied tags out again. */
+    private void setImplies(FinanceCategory c, List<UUID> ids) {
+        Set<UUID> want = new LinkedHashSet<>(ids);
+        want.remove(c.getId());
+        Set<UUID> have = new HashSet<>();
+        c.getImplies().forEach(x -> have.add(x.getId()));
+        if (have.equals(want)) return;
+        c.getImplies().clear();
+        for (UUID x : want) c.getImplies().add(category(x));
+        for (FinanceTransaction t : txnRepo.withTag(c.getId())) FinanceTags.settleDecided(t);
+    }
+
+    /** The tag comes off every line (those left without a category go back to review) and every rule. */
     public void deleteCategory(UUID id) {
-        FinanceCategory c = categoryRepo.findById(id).orElseThrow(() -> new NoSuchElementException("Category not found: " + id));
+        FinanceCategory c = category(id);
         if (c.isSystem()) throw new IllegalArgumentException("Hạng mục hệ thống không xoá được");
-        txnRepo.uncategorize(id, Status.REVIEW);
-        List<FinanceRule> doomed = ruleRepo.findAllByOrderByPriorityAscCreatedAtAsc().stream()
-            .filter(r -> r.getCategory() != null && r.getCategory().getId().equals(id)).toList();
-        for (FinanceRule r : doomed) txnRepo.clearRule(r.getId());
-        ruleRepo.deleteByCategoryId(id);
+        Set<FinanceTransaction> lines = new LinkedHashSet<>(txnRepo.withTag(id));
+        lines.addAll(txnRepo.findByCategoryId(id));
+        for (FinanceTransaction t : lines) {
+            if (t.getCategory() != null && t.getCategory().getId().equals(id)) t.setCategory(null);
+            FinanceTags.remove(t, Set.of(id));
+            FinanceTags.settle(t);
+        }
+        for (FinanceRule r : ruleRepo.withTag(id)) {
+            r.getTags().removeIf(x -> x.getId().equals(id));
+            if (r.getCategory() != null && r.getCategory().getId().equals(id)) r.setCategory(mainOf(r.getTags()));
+            if (r.getTags().isEmpty() && r.getCategory() == null && r.getTransferAccount() == null) {
+                txnRepo.clearRule(r.getId());
+                ruleRepo.delete(r);
+            }
+        }
+        for (FinanceCategory o : categoryRepo.implying(id)) o.getImplies().removeIf(x -> x.getId().equals(id));
+        c.getImplies().clear();
         categoryRepo.delete(c);
+    }
+
+    /** The main-facet tag among these that does the counting (the same choice a line makes). */
+    static FinanceCategory mainOf(java.util.Collection<FinanceCategory> tags) {
+        return tags.stream().filter(FinanceCategory::isMain).min(Comparator
+            .comparingInt((FinanceCategory c) -> c.getBudgetGroup() == FinanceCategory.BudgetGroup.SAVING ? 0
+                : c.getBudgetGroup() == FinanceCategory.BudgetGroup.FIXED ? 1 : 2)
+            .thenComparingInt(FinanceCategory::getSortOrder)).orElse(null);
     }
 
     // ════════════════════════════════ rules ════════════════════════════════
@@ -206,17 +310,18 @@ public class FinanceService {
         rule.setOrigin(FinanceRule.Origin.USER);
         rule.setPriority(10);
         fillRule(rule, r, true);
+        if (r.priority() == null && FinanceClassifier.occasion(rule)) rule.setPriority(200);
         return toRule(ruleRepo.save(rule));
     }
 
     public FinanceDto.Rule updateRule(UUID id, FinanceDto.RuleRequest r) {
-        FinanceRule rule = ruleRepo.findById(id).orElseThrow(() -> new NoSuchElementException("Rule not found: " + id));
+        FinanceRule rule = rule(id);
         fillRule(rule, r, false);
         return toRule(rule);
     }
 
     public void deleteRule(UUID id) {
-        FinanceRule rule = ruleRepo.findById(id).orElseThrow(() -> new NoSuchElementException("Rule not found: " + id));
+        FinanceRule rule = rule(id);
         txnRepo.clearRule(id);
         ruleRepo.delete(rule);
     }
@@ -227,8 +332,33 @@ public class FinanceService {
         int n = 0;
         for (FinanceTransaction t : txnRepo.findWithStatus(Status.REVIEW)) {
             if (t.getCategorizedBy() == By.USER || t.getKind() == Kind.TRANSFER) continue;
-            FinanceRule r = classifier.match(t, rules);
-            if (r != null) { classifier.apply(t, r); n++; }
+            String before = FinanceTags.signature(t);
+            classifier.decide(t, classifier.fitting(t, rules));
+            if (!before.equals(FinanceTags.signature(t))) n++;
+        }
+        return new FinanceDto.Applied(n);
+    }
+
+    /**
+     * One rule over every line it fits, old ones and decided ones too — after giving it a new tag, or for an occasion
+     * set up after the trip. Facets he chose himself and moves the system found stay as they are.
+     */
+    public FinanceDto.Applied applyRule(UUID id) {
+        FinanceRule rule = rule(id);
+        List<FinanceTransaction> lines;
+        if (rule.hasDates()) {
+            LocalDateTime from = rule.getFromDate() == null ? LocalDateTime.of(1970, 1, 1, 0, 0) : FinanceText.vnToUtc(rule.getFromDate().atStartOfDay());
+            LocalDateTime to = rule.getToDate() == null ? LocalDateTime.of(9999, 1, 1, 0, 0) : FinanceText.vnToUtc(rule.getToDate().plusDays(1).atStartOfDay());
+            lines = txnRepo.findInRange(from, to);
+        } else lines = rule.isCounterpartyRule() ? txnRepo.withCounterparty() : txnRepo.allExcept(Source.SYSTEM);
+        int n = 0;
+        for (FinanceTransaction t : lines) {
+            if (t.getSource() == Source.SYSTEM) continue;
+            if (t.getKind() == Kind.TRANSFER && t.getCategorizedBy() == By.SYSTEM) continue;
+            if (!classifier.fits(t, rule)) continue;
+            String before = FinanceTags.signature(t);
+            classifier.decide(t, List.of(rule));
+            if (!before.equals(FinanceTags.signature(t))) n++;
         }
         return new FinanceDto.Applied(n);
     }
@@ -241,28 +371,44 @@ public class FinanceService {
         }
         if (r.counterpartyAccount() != null) rule.setCounterpartyAccount(blankToNull(r.counterpartyAccount()));
         if (r.label() != null) rule.setLabel(blankToNull(r.label()));
+        if (r.fromDate() != null) rule.setFromDate(parseDate(r.fromDate()));
+        if (r.toDate() != null) rule.setToDate(parseDate(r.toDate()));
+        if (rule.getFromDate() != null && rule.getToDate() != null && rule.getFromDate().isAfter(rule.getToDate()))
+            throw new IllegalArgumentException("Ngày bắt đầu đang sau ngày kết thúc");
         if (!rule.isCounterpartyRule() && (r.keywords() != null || creating)) {
-            if (r.keywords() == null || FinanceText.keywords(r.keywords()).isEmpty())
-                throw new IllegalArgumentException("Cần ít nhất một từ khoá (hoặc một người nhận)");
-            rule.setKeywords(r.keywords().trim());
+            boolean none = r.keywords() == null || FinanceText.keywords(r.keywords()).isEmpty();
+            if (none && !rule.hasDates()) throw new IllegalArgumentException("Cần ít nhất một từ khoá, một người nhận hoặc một khoảng ngày");
+            rule.setKeywords(none ? "" : r.keywords().trim());
         }
         if (r.direction() != null) rule.setDirection(parseEnum(FinanceRule.Direction.class, r.direction(), "direction"));
         if (r.priority() != null) rule.setPriority(r.priority());
         if (r.active() != null) rule.setActive(r.active());
-        if (r.categoryId() != null) {
-            rule.setCategory(categoryRepo.findById(r.categoryId()).orElseThrow(() -> new IllegalArgumentException("Không có hạng mục này")));
-            rule.setTransferAccount(null);
-        } else if (r.transferAccountId() != null) {
+        if (r.transferAccountId() != null && r.categoryId() == null && (r.tagIds() == null || r.tagIds().isEmpty())) {
             rule.setTransferAccount(account(r.transferAccountId()));
             rule.setCategory(null);
+            rule.getTags().clear();
+        } else if (r.categoryId() != null || r.tagIds() != null) {
+            List<FinanceCategory> tags = new ArrayList<>();
+            if (r.categoryId() != null) tags.add(category(r.categoryId()));
+            if (r.tagIds() != null) for (UUID x : r.tagIds()) if (tags.stream().noneMatch(c -> c.getId().equals(x))) tags.add(category(x));
+            rule.getTags().clear();
+            rule.getTags().addAll(tags);
+            rule.setCategory(mainOf(tags));
+            rule.setTransferAccount(null);
         }
-        if (rule.getCategory() == null && rule.getTransferAccount() == null)
-            throw new IllegalArgumentException("Quy tắc cần một hạng mục hoặc một tài khoản đích");
+        if (rule.givenTags().isEmpty() && rule.getTransferAccount() == null)
+            throw new IllegalArgumentException("Quy tắc cần ít nhất một nhãn hoặc một tài khoản đích");
+    }
+
+    private static LocalDate parseDate(String s) {
+        if (s == null || s.isBlank()) return null;
+        try { return LocalDate.parse(s.trim()); }
+        catch (java.time.format.DateTimeParseException e) { throw new IllegalArgumentException("Ngày không hợp lệ: " + s); }
     }
 
     // ════════════════════════════════ transactions ════════════════════════════════
 
-    /** month (2026-10) or from/to (Vietnam dates, inclusive); categoryId "none" = uncategorized. */
+    /** month (2026-10) or from/to (Vietnam dates, inclusive); categoryId: lines carrying that tag, "none" = uncategorized. */
     @Transactional(readOnly = true)
     public Page<FinanceDto.Txn> transactions(String month, String from, String to, UUID accountId, String categoryId,
                                              String status, String kind, String q, int page, int size) {
@@ -340,9 +486,11 @@ public class FinanceService {
         if (Boolean.TRUE.equals(r.learnCounterparty()) && t.getCounterparty() != null) {
             FinanceAccount target = t.getKind() == Kind.TRANSFER && t.getTransferPeer() != null ? t.getTransferPeer().getAccount()
                 : t.getKind() == Kind.TRANSFER && r.transferAccountId() != null ? account(r.transferAccountId()) : null;
-            if (target == null && t.getCategory() == null) throw new IllegalArgumentException("Chọn hạng mục trước khi áp cho cả người nhận");
-            assignCounterparty(new FinanceDto.AssignRequest(t.getCounterparty(), target == null ? t.getCategory().getId() : null,
-                target == null ? null : target.getId(), r.label()));
+            List<FinanceCategory> give = target == null ? ruleTags(t, r) : List.of();
+            FinanceCategory main = mainOf(give);
+            if (target == null && main == null) throw new IllegalArgumentException("Chọn hạng mục trước khi áp cho cả người nhận");
+            assignCounterparty(new FinanceDto.AssignRequest(t.getCounterparty(), main == null ? null : main.getId(),
+                target == null ? null : target.getId(), r.label(), give.stream().map(FinanceCategory::getId).toList()));
         }
         if (r.label() != null && !r.label().isBlank()) FinanceClassifier.relabel(t, r.label().trim());
         return toTxn(t, rates.usdValue());
@@ -370,6 +518,27 @@ public class FinanceService {
         int n = 0;
         for (FinanceTransaction t : txnRepo.findWithStatus(Status.REVIEW)) {
             if (t.getKind() == Kind.TRANSFER || t.getCategory() != null) { t.setStatus(Status.OK); n++; }
+        }
+        return new FinanceDto.Applied(n);
+    }
+
+    /**
+     * Tags put on (his) and taken off many lines at once — "everything that evening was with friends". A line that
+     * gets a category this way is decided. Moves between own accounts carry no tags and are left out.
+     */
+    public FinanceDto.Applied tags(FinanceDto.TagsRequest r) {
+        if (r.ids() == null || r.ids().isEmpty()) throw new IllegalArgumentException("Chọn giao dịch trước");
+        List<FinanceCategory> add = r.add() == null ? List.of() : r.add().stream().distinct().map(this::category).toList();
+        Set<UUID> remove = r.remove() == null ? Set.of() : new HashSet<>(r.remove());
+        if (add.isEmpty() && remove.isEmpty()) throw new IllegalArgumentException("Chọn nhãn");
+        int n = 0;
+        for (FinanceTransaction t : txnRepo.findAllByIdIn(r.ids())) {
+            if (t.getKind() == Kind.TRANSFER || t.getSource() == Source.SYSTEM) continue;
+            String before = FinanceTags.signature(t);
+            if (!remove.isEmpty()) FinanceTags.remove(t, remove);
+            if (!add.isEmpty()) FinanceTags.add(t, add, By.USER);
+            FinanceTags.settleDecided(t);
+            if (!before.equals(FinanceTags.signature(t))) n++;
         }
         return new FinanceDto.Applied(n);
     }
@@ -449,12 +618,17 @@ public class FinanceService {
         rule.setLabel(blankToNull(r.label()));
         if (r.categoryId() != null) {
             FinanceCategory c = category(r.categoryId());
+            if (!c.isMain()) throw new IllegalArgumentException("Chọn một hạng mục");
+            rule.getTags().clear();
+            rule.getTags().add(c);
+            if (r.tagIds() != null) for (UUID x : r.tagIds()) if (!x.equals(c.getId())) rule.getTags().add(category(x));
             rule.setCategory(c);
             rule.setTransferAccount(null);
             rule.setDirection(c.getKind() == FinanceCategory.Kind.INCOME ? FinanceRule.Direction.IN : FinanceRule.Direction.ANY);
         } else {
             rule.setTransferAccount(account(r.transferAccountId()));
             rule.setCategory(null);
+            rule.getTags().clear();
             rule.setDirection(FinanceRule.Direction.ANY);
         }
         // money only went one way with them (what still waits, else everything): the rule keeps to that way, so an
@@ -469,12 +643,11 @@ public class FinanceService {
         rule = ruleRepo.save(rule);
         int n = 0;
         for (FinanceTransaction t : lines) {
-            if (t.getCategorizedBy() == By.USER) continue;
             if (t.getKind() == Kind.TRANSFER && t.getCategorizedBy() == By.SYSTEM) continue;
-            if (classifier.match(t, List.of(rule)) == null) continue;
-            if (t.getKind() == Kind.TRANSFER) classifier.breakTransfer(t);
-            classifier.apply(t, rule);
-            n++;
+            if (!classifier.fits(t, rule)) continue;
+            String before = FinanceTags.signature(t);
+            classifier.decide(t, List.of(rule));
+            if (!before.equals(FinanceTags.signature(t))) n++;
         }
         return new FinanceDto.Applied(n);
     }
@@ -496,13 +669,9 @@ public class FinanceService {
         t = txnRepo.save(t);
         classifier.added(t);
         if (r.categoryId() != null) {
-            classifier.setCategory(t, category(r.categoryId()), By.USER);
+            classifier.setMain(t, category(r.categoryId()), By.USER);
             t.setStatus(Status.OK);
-        } else {
-            FinanceRule rule = classifier.match(t, classifier.rules());
-            if (rule != null) classifier.apply(t, rule);
-            else askAiAfterCommit(t);
-        }
+        } else if (!classifier.decide(t, classifier.fitting(t, classifier.rules()))) askAiAfterCommit(t);
         return toTxn(t, rates.usdValue());
     }
 
@@ -567,7 +736,11 @@ public class FinanceService {
 
     // ════════════════════════════════ internals ════════════════════════════════
 
-    /** What the request says the transaction is: a transfer, a category, or back to plain spending/income. */
+    /**
+     * What the request says the transaction is: a transfer; its tags (tagIds — each facet that changes becomes his,
+     * and a line waiting for review whose category is sent is decided); one category (categoryId alone); or back to
+     * plain spending/income. A MANUAL line nobody decided yet goes through the rules.
+     */
     private void decide(FinanceTransaction t, FinanceDto.TxnRequest r) {
         if ("TRANSFER".equalsIgnoreCase(r.kind())) {
             if (r.transferAccountId() == null) throw new IllegalArgumentException("Chuyển sang tài khoản nào?");
@@ -575,9 +748,36 @@ public class FinanceService {
             if (target.getId().equals(t.getAccount().getId())) throw new IllegalArgumentException("Tài khoản đích phải khác");
             classifier.breakTransfer(t);
             classifier.makeTransfer(t, target, By.USER);
+        } else if (r.tagIds() != null) {
+            if (t.getKind() == Kind.TRANSFER) {
+                classifier.breakTransfer(t);
+                t.setKind(t.getAmount().signum() < 0 ? Kind.EXPENSE : Kind.INCOME);
+            }
+            List<FinanceCategory> want = new ArrayList<>();
+            if (r.categoryId() != null) want.add(category(r.categoryId()));
+            for (UUID x : r.tagIds()) if (want.stream().noneMatch(c -> c.getId().equals(x))) want.add(category(x));
+            Map<String, List<FinanceCategory>> byFacet = new LinkedHashMap<>();
+            for (FinanceCategory c : want) byFacet.computeIfAbsent(FinanceTags.facet(c), k -> new ArrayList<>()).add(c);
+            Set<String> facets = new LinkedHashSet<>(byFacet.keySet());
+            for (FinanceCategory c : FinanceTags.chosenTags(t)) facets.add(FinanceTags.facet(c));
+            if (t.getCategory() != null) facets.add(FinanceTags.MAIN);
+            boolean waiting = t.getStatus() == Status.REVIEW;
+            for (String f : facets) {
+                List<FinanceCategory> next = byFacet.getOrDefault(f, List.of());
+                Set<UUID> now = new HashSet<>(), then = new HashSet<>();
+                FinanceTags.chosen(t, f).forEach(x -> now.add(x.getTag().getId()));
+                if (f.equals(FinanceTags.MAIN) && now.isEmpty() && t.getCategory() != null) now.add(t.getCategory().getId());
+                next.forEach(c -> then.add(c.getId()));
+                boolean confirm = f.equals(FinanceTags.MAIN) && waiting && !next.isEmpty();
+                if (!now.equals(then) || confirm) FinanceTags.replace(t, f, next, By.USER);
+            }
+            FinanceTags.settleDecided(t);
+            // a typed line with tags but no category yet still goes through the rules for one
+            if (t.getCategory() == null && t.getSource() == Source.MANUAL && t.getStatus() == Status.REVIEW
+                && !classifier.decide(t, classifier.fitting(t, classifier.rules()))) askAiAfterCommit(t);
         } else if (r.categoryId() != null) {
             if (t.getKind() == Kind.TRANSFER) classifier.breakTransfer(t);
-            classifier.setCategory(t, category(r.categoryId()), By.USER);
+            classifier.setMain(t, category(r.categoryId()), By.USER);
             t.setStatus(Status.OK);
         } else if (r.kind() != null && t.getKind() == Kind.TRANSFER) {
             Kind k = parseEnum(Kind.class, r.kind(), "kind");
@@ -585,12 +785,23 @@ public class FinanceService {
             t.setKind(k);
             t.setCategory(null);
             t.setCategorizedBy(null);
+            t.getTags().clear();
             t.setStatus(Status.REVIEW);
         } else if (t.getSource() == Source.MANUAL && t.getStatus() == Status.REVIEW && t.getCategorizedBy() == null) {
-            FinanceRule rule = classifier.match(t, classifier.rules());
-            if (rule != null) classifier.apply(t, rule);
-            else askAiAfterCommit(t);
+            if (!classifier.decide(t, classifier.fitting(t, classifier.rules()))) askAiAfterCommit(t);
         }
+    }
+
+    /**
+     * What a rule learned from this line gives: the tags sent for it, else the line's own tags — except those of
+     * per-transaction facets (who it was with, the occasion), which are about that one time.
+     */
+    private List<FinanceCategory> ruleTags(FinanceTransaction t, FinanceDto.TxnRequest r) {
+        if (r.ruleTagIds() != null) return r.ruleTagIds().stream().distinct().map(this::category).toList();
+        List<FinanceCategory> out = new ArrayList<>(FinanceTags.chosenTags(t).stream()
+            .filter(c -> c.isMain() || !c.getFacet().isPerTransaction()).toList());
+        if (out.isEmpty() && t.getCategory() != null) out.add(t.getCategory());
+        return out;
     }
 
     /** "Remember this": a rule from these words to what the transaction is now, applied to everything still waiting. */
@@ -607,14 +818,18 @@ public class FinanceService {
                 : r.transferAccountId() != null ? account(r.transferAccountId()) : null;
             if (target == null) throw new IllegalArgumentException("Chuyển sang tài khoản nào?");
             rule.setTransferAccount(target);
-        } else if (t.getCategory() != null) rule.setCategory(t.getCategory());
-        else throw new IllegalArgumentException("Chọn hạng mục trước khi ghi nhớ");
+        } else {
+            List<FinanceCategory> give = ruleTags(t, r);
+            if (mainOf(give) == null) throw new IllegalArgumentException("Chọn hạng mục trước khi ghi nhớ");
+            rule.getTags().addAll(give);
+            rule.setCategory(mainOf(give));
+        }
         rule.setHits(1);
         rule = ruleRepo.save(rule);
         t.setMatchedRule(rule);
         for (FinanceTransaction other : txnRepo.findWithStatus(Status.REVIEW)) {
             if (other.getId().equals(t.getId()) || other.getCategorizedBy() == By.USER || other.getKind() == Kind.TRANSFER) continue;
-            if (classifier.match(other, List.of(rule)) != null) classifier.apply(other, rule);
+            if (classifier.fits(other, rule)) classifier.decide(other, List.of(rule));
         }
     }
 
@@ -647,7 +862,13 @@ public class FinanceService {
             if (to != null) ps.add(cb.lessThan(root.get("occurredAt"), to));
             if (accountId != null) ps.add(cb.equal(root.get("account").get("id"), accountId));
             if ("none".equalsIgnoreCase(categoryId)) ps.add(cb.isNull(root.get("category")));
-            else if (categoryId != null && !categoryId.isBlank()) ps.add(cb.equal(root.get("category").get("id"), UUID.fromString(categoryId)));
+            else if (categoryId != null && !categoryId.isBlank()) {
+                UUID tagId = UUID.fromString(categoryId);
+                Subquery<UUID> tagged = query.subquery(UUID.class);
+                Root<FinanceTxnTag> x = tagged.from(FinanceTxnTag.class);
+                tagged.select(x.get("id")).where(cb.equal(x.get("transaction"), root), cb.equal(x.get("tag").get("id"), tagId));
+                ps.add(cb.or(cb.equal(root.get("category").get("id"), tagId), cb.exists(tagged)));
+            }
             if (status != null && !status.isBlank()) ps.add(cb.equal(root.get("status"), parseEnum(Status.class, status, "status")));
             if (kind != null && !kind.isBlank()) ps.add(cb.equal(root.get("kind"), parseEnum(Kind.class, kind, "kind")));
             if (q != null && !q.isBlank()) {
@@ -663,6 +884,13 @@ public class FinanceService {
 
     private FinanceAccount account(UUID id) { return accountRepo.findById(id).orElseThrow(() -> new NoSuchElementException("Account not found: " + id)); }
     private FinanceCategory category(UUID id) { return categoryRepo.findById(id).orElseThrow(() -> new NoSuchElementException("Category not found: " + id)); }
+    private FinanceFacet facet(UUID id) { return facetRepo.findById(id).orElseThrow(() -> new NoSuchElementException("Facet not found: " + id)); }
+    private FinanceRule rule(UUID id) { return ruleRepo.findById(id).orElseThrow(() -> new NoSuchElementException("Rule not found: " + id)); }
+
+    /** The facet of the classic categories (made at start by the seeder). */
+    private FinanceFacet mainFacet() {
+        return facetRepo.findFirstByMainTrue().orElseThrow(() -> new IllegalStateException("Main facet missing"));
+    }
     private FinanceTransaction txn(UUID id) { return txnRepo.findById(id).orElseThrow(() -> new NoSuchElementException("Transaction not found: " + id)); }
 
     private static String blankToNull(String s) { return s == null || s.isBlank() ? null : s.trim(); }
@@ -680,10 +908,26 @@ public class FinanceService {
             a.getSortOrder(), a.isArchived(), count);
     }
 
+    static FinanceDto.Facet toFacet(FinanceFacet f, long tagCount) {
+        return new FinanceDto.Facet(f.getId(), f.getCode(), f.getName(), f.getIcon(), f.getSortOrder(), f.isMain(), f.isPerTransaction(),
+            f.isSystem(), f.isArchived(), tagCount);
+    }
+
     static FinanceDto.Category toCategory(FinanceCategory c) {
         return new FinanceDto.Category(c.getId(), c.getCode(), c.getName(), c.getIcon(), c.getKind().name(),
-            c.getBudgetGroup() == null ? null : c.getBudgetGroup().name(), c.getSortOrder(), c.isSystem(), c.isArchived());
+            c.getBudgetGroup() == null ? null : c.getBudgetGroup().name(), c.getSortOrder(), c.isSystem(), c.isArchived(),
+            c.getFacet() == null ? null : c.getFacet().getId(), c.getImplies().stream().map(FinanceCategory::getId).toList());
     }
+
+    static FinanceDto.TagRef toTag(FinanceCategory c, By by) {
+        return new FinanceDto.TagRef(c.getId(), c.getName(), c.getIcon(), c.getFacet() == null ? null : c.getFacet().getId(), c.isMain(),
+            by == null ? null : by.name());
+    }
+
+    /** Main facet first (the one that counts leading), then facet by facet. */
+    private static final Comparator<FinanceCategory> TAG_ORDER = Comparator
+        .comparingInt((FinanceCategory c) -> c.isMain() ? Integer.MIN_VALUE : c.getFacet().getSortOrder())
+        .thenComparingInt(FinanceCategory::getSortOrder).thenComparing(FinanceCategory::getName);
 
     static FinanceDto.Rule toRule(FinanceRule r) {
         FinanceCategory c = r.getCategory();
@@ -691,7 +935,8 @@ public class FinanceService {
         return new FinanceDto.Rule(r.getId(), r.getKeywords(), r.getDirection().name(),
             c == null ? null : c.getId(), c == null ? null : c.getName(), c == null ? null : c.getIcon(),
             a == null ? null : a.getId(), a == null ? null : a.getName(), r.getPriority(), r.getOrigin().name(), r.getHits(), r.isActive(),
-            r.getCounterpartyName(), r.getCounterpartyAccount(), r.getLabel());
+            r.getCounterpartyName(), r.getCounterpartyAccount(), r.getLabel(),
+            r.givenTags().stream().sorted(TAG_ORDER).map(x -> toTag(x, null)).toList(), r.getFromDate(), r.getToDate());
     }
 
     static FinanceDto.Txn toTxn(FinanceTransaction t, BigDecimal usd) {
@@ -704,7 +949,19 @@ public class FinanceService {
             c == null ? null : c.getId(), c == null ? null : c.getName(), c == null ? null : c.getIcon(),
             t.getDescription(), t.getBankDescription(), t.getCounterparty(), t.getCounterpartyAccount(), t.getNote(), t.getSource().name(), t.getStatus().name(),
             t.getCategorizedBy() == null ? null : t.getCategorizedBy().name(), t.getAiConfidence(), t.getBalanceAfter(),
-            peer == null ? null : peer.getId(), peer == null ? null : peer.getAccount().getName(), suggest, t.getCreatedAt());
+            peer == null ? null : peer.getId(), peer == null ? null : peer.getAccount().getName(), suggest, t.getCreatedAt(), tagsOf(t));
+    }
+
+    /** The line's tags for the UIs: the one that counts first, then facet by facet. */
+    static List<FinanceDto.TagRef> tagsOf(FinanceTransaction t) {
+        if (t.getKind() == Kind.TRANSFER) return List.of();
+        UUID primary = t.getCategory() == null ? null : t.getCategory().getId();
+        List<FinanceTxnTag> tags = new ArrayList<>(t.getTags());
+        if (primary != null && tags.stream().noneMatch(x -> x.getTag().getId().equals(primary)))    // from before tags existed
+            return List.of(toTag(t.getCategory(), t.getCategorizedBy()));
+        tags.sort(Comparator.comparing((FinanceTxnTag x) -> !x.getTag().getId().equals(primary))
+            .thenComparing(FinanceTxnTag::getTag, TAG_ORDER));
+        return tags.stream().map(x -> toTag(x.getTag(), x.getDecidedBy())).toList();
     }
 
     static FinanceDto.Inbound toInbound(FinanceInbound i) {

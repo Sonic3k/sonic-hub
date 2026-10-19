@@ -1,10 +1,12 @@
-/* One transaction, fixed in place: category (or a move between own accounts), amount, account, day, note.
+/* One transaction, fixed in place: its tags facet by facet (or a move between own accounts), amount, account, day, note.
+   Hạng mục is one tap by default — "＋ thêm hạng mục" lets a line count under two. The other facets take any number.
    A bottom sheet on the phone, a centred card on a wide screen. */
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { moneyApi, type Txn, type TxnEdit } from '../../api/money';
 import { money, utc } from '../../lib/money';
 import { useCategories, useRefresh, useSummary } from './data';
+import { FacetChips, tagText, useTagBook } from './tags';
 
 const toInput = (s: string) => {
   const p = new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Ho_Chi_Minh', year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', hour12: false }).formatToParts(utc(s));
@@ -12,9 +14,14 @@ const toInput = (s: string) => {
   return `${g('year')}-${g('month')}-${g('day')}T${g('hour') === '24' ? '00' : g('hour')}:${g('minute')}`;
 };
 
+const same = (a: Set<string>, b: Set<string>) => a.size === b.size && [...a].every(x => b.has(x));
+
 export default function EditSheet({ txn, onClose }: { txn: Txn; onClose: () => void }) {
-  const categories = useCategories(), summary = useSummary(), refresh = useRefresh();
-  const [categoryId, setCategoryId] = useState<string | null>(txn.kind === 'TRANSFER' ? null : txn.categoryId);
+  const categories = useCategories(), summary = useSummary(), refresh = useRefresh(), book = useTagBook();
+  /* the tags put on the line (implied ones follow by themselves) */
+  const initial = useMemo(() => new Set(txn.kind === 'TRANSFER' ? [] : txn.tags.filter(x => x.by !== 'IMPLIED').map(x => x.id)), [txn]);
+  const [sel, setSel] = useState<Set<string>>(initial);
+  const [multi, setMulti] = useState(() => txn.tags.filter(x => x.main && x.by !== 'IMPLIED').length > 1);
   const [transferTo, setTransferTo] = useState<string | null>(null);
   const [amount, setAmount] = useState(String(Math.abs(txn.amount)));
   const [accountId, setAccountId] = useState(txn.accountId);
@@ -24,6 +31,7 @@ export default function EditSheet({ txn, onClose }: { txn: Txn; onClose: () => v
   const [remember, setRemember] = useState(txn.status === 'REVIEW' && !!txn.suggestedKeywords && !txn.counterparty);
   /* with a known counterparty the choice can cover all their lines, and give them a name */
   const [everyone, setEveryone] = useState(!!txn.counterparty && txn.status === 'REVIEW');
+  const [ruleOff, setRuleOff] = useState<Set<string> | null>(null);   // tags left out of that rule (null: the default)
   const [label, setLabel] = useState('');
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
@@ -36,9 +44,33 @@ export default function EditSheet({ txn, onClose }: { txn: Txn; onClose: () => v
 
   const sign = txn.amount < 0 ? -1 : 1;
   const kind = sign > 0 ? 'INCOME' : 'EXPENSE';
-  const cats = (categories.data ?? []).filter(c => c.id === txn.categoryId || (!c.archived && !c.system && c.kind === kind));
+  const cats = (categories.data ?? []).filter(c => c.kind !== 'ANY' && (sel.has(c.id) || (!c.archived && !c.system && c.kind === kind)));
   const accounts = (summary.data?.accounts ?? []).filter(a => !a.archived || a.id === txn.accountId);
   const editable = txn.source === 'NOTE' || txn.source === 'MANUAL';
+  const implied = book.implied(sel);
+  const mainSel = [...sel].filter(book.isMain);
+  const decided = mainSel.length > 0 || [...implied.keys()].some(book.isMain);
+  const moving = !!transferTo || (txn.kind === 'TRANSFER' && !decided);
+
+  /* what "everyone with them" would give: the line's tags, without the ones about this one time unless picked */
+  const ruleTags = [...sel].filter(id => (ruleOff ? !ruleOff.has(id) : !book.perTransaction(id)));
+  const toggleRule = (id: string) => {
+    const off = new Set(ruleOff ?? [...sel].filter(book.perTransaction));
+    if (off.has(id)) off.delete(id); else off.add(id);
+    setRuleOff(off);
+  };
+
+  const pickMain = (id: string) => {
+    setTransferTo(null);
+    setSel(s => {
+      const n = new Set(s);
+      if (multi) { if (n.has(id)) n.delete(id); else n.add(id); return n; }
+      for (const x of s) if (book.isMain(x)) n.delete(x);
+      n.add(id);
+      return n;
+    });
+  };
+  const toggle = (id: string) => setSel(s => { const n = new Set(s); if (n.has(id)) n.delete(id); else n.add(id); return n; });
 
   const run = async (f: () => Promise<unknown>) => {
     setBusy(true); setError('');
@@ -51,15 +83,20 @@ export default function EditSheet({ txn, onClose }: { txn: Txn; onClose: () => v
     if (editable && n && n !== Math.abs(txn.amount)) b.amount = sign * n;
     if (editable && accountId !== txn.accountId) b.accountId = accountId;
     if (when !== toInput(txn.occurredAt)) b.occurredAt = `${when}:00+07:00`;
+    const forAll = !!txn.counterparty && everyone;
     if (transferTo) { b.kind = 'TRANSFER'; b.transferAccountId = transferTo; }
-    else if (categoryId && (categoryId !== txn.categoryId || txn.status === 'REVIEW' || txn.kind === 'TRANSFER' || (txn.counterparty && everyone))) {
-      b.categoryId = categoryId;
-      if (remember && txn.suggestedKeywords && !(txn.counterparty && everyone)) b.learnKeywords = txn.suggestedKeywords;
+    else if (txn.kind === 'TRANSFER') { if (decided) b.tagIds = [...sel]; }
+    else if (!same(sel, initial) || (txn.status === 'REVIEW' && decided)) b.tagIds = [...sel];
+    if (remember && txn.suggestedKeywords && !forAll && decided && !transferTo) { b.learnKeywords = txn.suggestedKeywords; b.ruleTagIds = ruleTags; }
+    if (forAll && (decided || moving)) {
+      b.learnCounterparty = true;
+      if (!moving) b.ruleTagIds = ruleTags;
     }
-    if (txn.counterparty && everyone && (b.categoryId || b.kind === 'TRANSFER')) b.learnCounterparty = true;
     if (label.trim()) { b.label = label.trim(); delete b.description; }
     return moneyApi.update(txn.id, b);
   });
+
+  const forAllTags = ruleTags.map(id => book.byId.get(id)).filter(Boolean);
 
   // Rendered into <body> so the overlay covers the whole screen (see the toast in QuickNote).
   return createPortal(
@@ -77,33 +114,62 @@ export default function EditSheet({ txn, onClose }: { txn: Txn; onClose: () => v
         </div>
         {txn.bankDescription && txn.description && <p className="mn-sub">{txn.bankDescription}</p>}
 
-        <p className="mn-label">Hạng mục</p>
-        <div className="mn-pick flat">
-          {cats.map(c => (
-            <button key={c.id} type="button" className={`mn-pick-i ${categoryId === c.id && !transferTo ? 'on' : ''}`} onClick={() => { setCategoryId(c.id); setTransferTo(null); }}>
-              <span>{c.icon}</span>{c.name}
-            </button>
-          ))}
+        <div className="mn-facet-head">
+          <p className="mn-label">Hạng mục</p>
+          {!multi && mainSel.length > 0 && !transferTo && <button type="button" className="mn-link" onClick={() => setMulti(true)}>＋ thêm hạng mục</button>}
+          {multi && <span className="mn-muted">chọn được nhiều</span>}
         </div>
+        <div className="mn-pick flat">
+          {cats.map(c => {
+            const on = !transferTo && sel.has(c.id), via = on || transferTo ? undefined : implied.get(c.id);
+            return (
+              <button key={c.id} type="button" className={`mn-pick-i ${on ? 'on' : via !== undefined ? 'implied' : ''}`}
+                aria-pressed={on || via !== undefined} title={via !== undefined ? `Đi kèm ${via}` : undefined}
+                onClick={() => { if (via === undefined) pickMain(c.id); }}>
+                {tagText(c)}
+              </button>
+            );
+          })}
+        </div>
+        {!moving && book.others.map(f => (
+          <div key={f.id}>
+            <p className="mn-label">{f.name}</p>
+            <FacetChips facet={f} book={book} chosen={sel} implied={implied} onToggle={toggle}
+              onCreated={id => setSel(s => new Set(s).add(id))} />
+          </div>
+        ))}
+
         <p className="mn-label">Hoặc là chuyển giữa ví của mình</p>
         <div className="mn-pick flat">
           {accounts.filter(a => a.id !== accountId).map(a => (
-            <button key={a.id} type="button" className={`mn-pick-i ${transferTo === a.id || (!transferTo && !categoryId && txn.transferAccountName === a.name) ? 'on' : ''}`}
-              onClick={() => { setTransferTo(a.id); setCategoryId(null); }}>
+            <button key={a.id} type="button" className={`mn-pick-i ${transferTo === a.id || (!transferTo && !decided && txn.transferAccountName === a.name) ? 'on' : ''}`}
+              onClick={() => setTransferTo(a.id)}>
               <i className="mn-dot" style={{ background: a.color ?? 'var(--ink3)' }} />{sign < 0 ? '→' : '←'} {a.name}
             </button>
           ))}
         </div>
+
         {txn.counterparty ? (
           <div className="mn-everyone">
             <label className="mn-remember"><input type="checkbox" checked={everyone} onChange={e => setEveryone(e.target.checked)} />
               <span>Áp cho mọi giao dịch với <b>{txn.counterparty}</b>, cả cũ lẫn sau này</span></label>
+            {everyone && !moving && sel.size > 0 && (
+              <div className="mn-pick flat mn-rule-tags" aria-label="Những nhãn áp cho mọi giao dịch">
+                {[...sel].map(id => book.byId.get(id)).filter(c => !!c).map(c => (
+                  <button key={c!.id} type="button" className={`mn-pick-i ${ruleTags.includes(c!.id) ? 'on' : ''}`}
+                    disabled={book.isMain(c!.id)} onClick={() => toggleRule(c!.id)}
+                    title={book.isMain(c!.id) ? 'Hạng mục luôn đi theo' : ruleTags.includes(c!.id) ? 'Bỏ ra: chỉ cho lần này' : 'Áp cả nhãn này'}>
+                    {tagText(c!)}
+                  </button>
+                ))}
+              </div>
+            )}
             <input className="mn-pick-label" value={label} maxLength={80} onChange={e => setLabel(e.target.value)}
               placeholder="Đặt tên (không bắt buộc), vd: Tiền nhà" />
           </div>
         ) : txn.status === 'REVIEW' && txn.suggestedKeywords && !transferTo && (
           <label className="mn-remember"><input type="checkbox" checked={remember} onChange={e => setRemember(e.target.checked)} />
-            Nhớ: lần sau “{txn.suggestedKeywords}” là hạng mục này</label>
+            <span>Nhớ: lần sau “{txn.suggestedKeywords}” là {forAllTags.length ? forAllTags.map(c => c!.name).join(' + ') : 'như lần này'}</span></label>
         )}
 
         <div className="mn-form">
