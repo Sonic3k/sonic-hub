@@ -5,9 +5,11 @@ import java.util.UUID;
 
 /**
  * "When the text says one of these words, it is that." Keywords are separated by |, matched as whole words
- * with accents and case ignored, against a transaction's memo and bank description.
- * A rule either sets a category, or says the money moved to another own account (ATM → cash, top-up → MoMo).
- * Lower priority numbers are tried first; rules learned from a correction get 10, the built-in ones 100.
+ * with accents and case ignored, against a transaction's memo, bank description and counterparty.
+ * A rule may instead name a counterparty ("everything with NGUYEN VAN A"): then keywords stay empty and the
+ * counterparty's name decides. A rule either sets a category, or says the money moved to another own account
+ * (ATM → cash, top-up → MoMo), and may also give the transaction a label ("Tiền nhà").
+ * Lower priority numbers are tried first: counterparty rules 5, rules learned from a correction 10, built-in 50–100.
  */
 @Entity
 @Table(name = "finance_rules")
@@ -21,7 +23,19 @@ public class FinanceRule extends FinanceEntity {
     private UUID id;
 
     @Column(name = "keywords", nullable = false, length = 1000)
-    private String keywords;
+    private String keywords = "";
+
+    /** Display name of the counterparty this rule is about; matched by {@code FinanceText.counterpartyKey}. */
+    @Column(name = "counterparty_name", length = 200)
+    private String counterpartyName;
+
+    /** When set, only this account number of the counterparty matches. */
+    @Column(name = "counterparty_account", length = 64)
+    private String counterpartyAccount;
+
+    /** Replaces the transaction's description (the bank memo is kept as its bank line). */
+    @Column(name = "label", length = 200)
+    private String label;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "direction", nullable = false, length = 10)
@@ -53,6 +67,13 @@ public class FinanceRule extends FinanceEntity {
     public UUID getId() { return id; }
     public String getKeywords() { return keywords; }
     public void setKeywords(String keywords) { this.keywords = keywords; }
+    public String getCounterpartyName() { return counterpartyName; }
+    public void setCounterpartyName(String counterpartyName) { this.counterpartyName = counterpartyName; }
+    public String getCounterpartyAccount() { return counterpartyAccount; }
+    public void setCounterpartyAccount(String counterpartyAccount) { this.counterpartyAccount = counterpartyAccount; }
+    public String getLabel() { return label; }
+    public void setLabel(String label) { this.label = label; }
+    public boolean isCounterpartyRule() { return counterpartyName != null && !counterpartyName.isBlank(); }
     public Direction getDirection() { return direction; }
     public void setDirection(Direction direction) { this.direction = direction; }
     public FinanceCategory getCategory() { return category; }

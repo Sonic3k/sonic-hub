@@ -1,11 +1,13 @@
 package com.sonic.angels.config;
 
+import com.sonic.angels.model.entity.AppSetting;
 import com.sonic.angels.model.entity.FinanceAccount;
 import com.sonic.angels.model.entity.FinanceCategory;
 import com.sonic.angels.model.entity.FinanceCategory.BudgetGroup;
 import com.sonic.angels.model.entity.FinanceCategory.Kind;
 import com.sonic.angels.model.entity.FinanceRule;
 import com.sonic.angels.model.entity.FinanceRule.Direction;
+import com.sonic.angels.repository.AppSettingRepository;
 import com.sonic.angels.repository.FinanceAccountRepository;
 import com.sonic.angels.repository.FinanceCategoryRepository;
 import com.sonic.angels.repository.FinanceRuleRepository;
@@ -17,8 +19,12 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.support.TransactionTemplate;
 
+import com.sonic.angels.util.FinanceText;
+
 import java.util.HashMap;
+import java.util.LinkedHashSet;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * First start of the finance module: the five places Ngọc Anh's money sits, a Vietnamese set of categories, and
@@ -33,18 +39,58 @@ public class FinanceSeeder implements ApplicationRunner {
     private final FinanceAccountRepository accounts;
     private final FinanceCategoryRepository categories;
     private final FinanceRuleRepository rules;
+    private final AppSettingRepository settings;
     private final TransactionTemplate tx;
 
+    static final String SEED_VERSION = "finance.seed.version";
+
     public FinanceSeeder(FinanceAccountRepository accounts, FinanceCategoryRepository categories, FinanceRuleRepository rules,
-                         PlatformTransactionManager txManager) {
-        this.accounts = accounts; this.categories = categories; this.rules = rules;
+                         AppSettingRepository settings, PlatformTransactionManager txManager) {
+        this.accounts = accounts; this.categories = categories; this.rules = rules; this.settings = settings;
         this.tx = new TransactionTemplate(txManager);
     }
 
     @Override
     public void run(ApplicationArguments args) {
-        try { tx.executeWithoutResult(s -> seed()); }
+        try { tx.executeWithoutResult(s -> { seed(); upgrade(); }); }
         catch (Exception e) { log.warn("Finance defaults not seeded: {}", e.getMessage()); }
+    }
+
+    /**
+     * Words added to the built-in rules after the first start, each set once (the version is remembered), so a word
+     * removed by hand later stays removed. 2: merchants seen in TPBank statements (card merchants, QR shops, bills).
+     */
+    private void upgrade() {
+        int version = settings.findById(SEED_VERSION).map(AppSetting::getValue).map(v -> {
+            try { return Integer.parseInt(v.trim()); } catch (NumberFormatException e) { return 1; }
+        }).orElse(1);
+        if (version < 2) {
+            addWords("mua-sam", "wincommerce|winmart");
+            addWords("hoa-don", "evnhn|dien evnhn|vtlbilling|payoo|truc tuyen cong dong viet");
+            addWords("dang-ky", "google|youtube premium|bunnycdn|proton|amazon web|aws");
+            addWords("giai-tri", "steamgames");
+            addWords("di-lai", "green sm");
+            addWords("an-uong", "cj bakery|tous les jours|ramen|may ban hang tu dong");
+            addWords("suc-khoe", "pharmacy|y duoc");
+            AppSetting s = settings.findById(SEED_VERSION).orElseGet(() -> new AppSetting(SEED_VERSION, ""));
+            s.setValue("2");
+            settings.save(s);
+            log.info("Finance: built-in rules upgraded to 2");
+        }
+    }
+
+    /** The built-in rule of that category gets these words too (those it lacks). */
+    private void addWords(String categoryCode, String words) {
+        FinanceRule r = rules.findAllByOrderByPriorityAscCreatedAtAsc().stream()
+            .filter(x -> x.getOrigin() == FinanceRule.Origin.SEED && x.getCategory() != null && categoryCode.equals(x.getCategory().getCode()))
+            .findFirst().orElse(null);
+        if (r == null) return;
+        Set<String> have = new LinkedHashSet<>(FinanceText.keywords(r.getKeywords()));
+        StringBuilder kw = new StringBuilder(r.getKeywords());
+        for (String w : words.split("\\|")) {
+            if (have.add(FinanceText.normalize(w))) kw.append('|').append(w);
+        }
+        if (kw.length() <= 1000) r.setKeywords(kw.toString());
     }
 
     private void seed() {

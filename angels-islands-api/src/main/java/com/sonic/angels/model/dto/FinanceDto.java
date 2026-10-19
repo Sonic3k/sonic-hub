@@ -30,25 +30,30 @@ public final class FinanceDto {
     public record CategoryRequest(String name, String icon, String kind, String budgetGroup, Integer sortOrder, Boolean archived) {}
 
     public record Rule(UUID id, String keywords, String direction, UUID categoryId, String categoryName, String categoryIcon,
-                       UUID transferAccountId, String transferAccountName, int priority, String origin, int hits, boolean active) {}
+                       UUID transferAccountId, String transferAccountName, int priority, String origin, int hits, boolean active,
+                       String counterpartyName, String counterpartyAccount, String label) {}
 
-    public record RuleRequest(String keywords, String direction, UUID categoryId, UUID transferAccountId, Integer priority, Boolean active) {}
+    /** keywords, or counterpartyName for a rule about one counterparty; label renames what it matches. */
+    public record RuleRequest(String keywords, String direction, UUID categoryId, UUID transferAccountId, Integer priority, Boolean active,
+                              String counterpartyName, String counterpartyAccount, String label) {}
 
     // ── transactions ──
 
     public record Txn(UUID id, UUID accountId, String accountName, String accountMode, String currency,
                       LocalDateTime occurredAt, BigDecimal amount, BigDecimal amountVnd, String kind,
                       UUID categoryId, String categoryName, String categoryIcon, String description, String bankDescription,
-                      String counterparty, String note, String source, String status, String categorizedBy, Double aiConfidence,
+                      String counterparty, String counterpartyAccount, String note, String source, String status, String categorizedBy, Double aiConfidence,
                       BigDecimal balanceAfter, UUID transferPeerId, String transferAccountName, String suggestedKeywords,
                       LocalDateTime createdAt) {}
 
     /**
      * Create or edit. occurredAt: ISO; with Z/offset it is converted, bare means UTC. kind TRANSFER needs transferAccountId.
      * learnKeywords: also make a rule "these words → this category" and apply it to what still waits for review.
+     * learnCounterparty: the same for everything with this transaction's counterparty, old and new; label renames them.
      */
     public record TxnRequest(UUID accountId, String occurredAt, BigDecimal amount, String kind, UUID categoryId,
-                             String description, String note, UUID transferAccountId, String learnKeywords) {}
+                             String description, String note, UUID transferAccountId, String learnKeywords,
+                             Boolean learnCounterparty, String label) {}
 
     /** A quick note, already understood by the client: amount is signed (negative = spent). */
     public record NoteRequest(String text, BigDecimal amount, UUID accountId, String occurredAt, UUID categoryId) {}
@@ -58,6 +63,28 @@ public final class FinanceDto {
                             UUID categoryId, String categoryName, String categoryIcon, int uses) {}
 
     public record Applied(int updated) {}
+
+    // ── counterparties and statements ──
+
+    /**
+     * Everyone money went to or came from, with what is still waiting: one decision covers them all.
+     * guess* is the category most of its lines already have (from a rule or the AI), if any.
+     */
+    public record CounterpartyGroup(String key, String name, String account, int accounts, List<UUID> ownAccountIds, long count, long waiting,
+                                    long outCount, long inCount, BigDecimal totalOut, BigDecimal totalIn,
+                                    LocalDateTime lastAt, String sample, UUID ruleId, String ruleLabel,
+                                    UUID guessCategoryId, String guessCategoryName, String guessCategoryIcon) {}
+
+    /** "Everything with this counterparty is …": a category or a move to an own account, and an optional label. */
+    public record AssignRequest(String name, UUID categoryId, UUID transferAccountId, String label) {}
+
+    /**
+     * What a statement file holds and what importing it does (or did): matched = already here from the bank feed
+     * (they get the counterparty), created = new lines, already = imported before.
+     */
+    public record ImportSummary(String bank, String accountNumber, UUID accountId, String accountName, String period,
+                                LocalDateTime from, LocalDateTime to, int rows, int matched, int enriched, int created,
+                                int already, int withCounterparty, int categorized, int waiting, int skipped, boolean committed) {}
 
     // ── reports ──
 

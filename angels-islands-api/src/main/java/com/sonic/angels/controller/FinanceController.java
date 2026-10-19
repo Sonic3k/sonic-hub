@@ -4,10 +4,12 @@ import com.sonic.angels.model.dto.FinanceDto;
 import com.sonic.angels.service.FinanceIngestService;
 import com.sonic.angels.service.FinanceReportService;
 import com.sonic.angels.service.FinanceService;
+import com.sonic.angels.service.FinanceStatementService;
 import com.sonic.angels.util.FinanceText;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 import java.util.Map;
@@ -22,9 +24,11 @@ public class FinanceController {
     private final FinanceService finance;
     private final FinanceReportService reports;
     private final FinanceIngestService ingest;
+    private final FinanceStatementService statements;
 
-    public FinanceController(FinanceService finance, FinanceReportService reports, FinanceIngestService ingest) {
-        this.finance = finance; this.reports = reports; this.ingest = ingest;
+    public FinanceController(FinanceService finance, FinanceReportService reports, FinanceIngestService ingest,
+                             FinanceStatementService statements) {
+        this.finance = finance; this.reports = reports; this.ingest = ingest; this.statements = statements;
     }
 
     // ── overview and reports ──
@@ -123,6 +127,29 @@ public class FinanceController {
 
     @PostMapping("/transactions/confirm-all")
     public FinanceDto.Applied confirmAll() { return finance.confirmAll(); }
+
+    // ── counterparties: one decision for everyone with the same name ──
+
+    @GetMapping("/counterparties")
+    public List<FinanceDto.CounterpartyGroup> counterparties(@RequestParam(defaultValue = "true") boolean waiting) {
+        return finance.counterparties(waiting);
+    }
+
+    @PostMapping("/counterparties/assign")
+    public FinanceDto.Applied assignCounterparty(@RequestBody FinanceDto.AssignRequest req) { return finance.assignCounterparty(req); }
+
+    // ── bank statements (.xlsx from the bank's app) ──
+
+    /** What importing this file would do; nothing is written. */
+    @PostMapping(value = "/import/preview", consumes = "multipart/form-data")
+    public FinanceDto.ImportSummary previewImport(@RequestParam("file") MultipartFile file, @RequestParam(required = false) UUID accountId) {
+        return statements.preview(file, accountId);
+    }
+
+    @PostMapping(value = "/import", consumes = "multipart/form-data")
+    public FinanceDto.ImportSummary importStatement(@RequestParam("file") MultipartFile file, @RequestParam(required = false) UUID accountId) {
+        return statements.commit(file, accountId);
+    }
 
     // ── quick notes ──
 
