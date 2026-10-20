@@ -1,24 +1,40 @@
 /* Money — the everyday side of the finance module: note in one line, check what the bank feed could not place,
-   see the month. Bank transactions arrive by themselves (SePay); the back office is the admin's Finance page. */
-import { useEffect, useState } from 'react';
+   see the month. Bank transactions arrive by themselves (SePay); the back office is the admin's Finance page.
+   Labels work the same everywhere: every place that puts labels on lines opens the same sheet. */
+import { useEffect, useRef, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { monthAbbr, monthName, monthOf, shiftMonth, short, timeOf, utc, vnd } from '../lib/money';
 import { markOwner, useReport, useSummary, useTrend } from '../components/money/data';
 import QuickNote from '../components/money/QuickNote';
 import Review from '../components/money/Review';
 import Overview from '../components/money/Overview';
-import { CategoryBars, TrendChart } from '../components/money/Charts';
+import { LabelReport, TrendChart } from '../components/money/Charts';
 import TxnList from '../components/money/TxnList';
 import ImportStatement from '../components/money/ImportStatement';
+import LabelTree from '../components/money/LabelTree';
+import { useLabelBook } from '../components/money/labels';
+import { Toasts } from '../components/money/toast';
 
 export default function Money() {
   const [sp, setSp] = useSearchParams();
   const now = monthOf();
   const month = /^\d{4}-\d{2}$/.test(sp.get('m') ?? '') ? sp.get('m')! : now;
-  const [category, setCategory] = useState<string | null>(null);
-  const report = useReport(month), trend = useTrend();
+  const [filter, setFilter] = useState<string | null>(null);
+  const [labels, setLabels] = useState(false);
+  const report = useReport(month), trend = useTrend(), book = useLabelBook();
+  const list = useRef<HTMLDivElement>(null);
   useEffect(() => { markOwner(); document.title = 'Money · Sonic Hub'; return () => { document.title = 'Sonic Hub'; }; }, []);
-  useEffect(() => { setCategory(null); }, [month]);
+  useEffect(() => { setFilter(null); }, [month]);
+  /* a label picked in the report: the list below shows its transactions, brought into view when it is far down */
+  const pick = (id: string | null) => {
+    setFilter(id);
+    if (!id) return;
+    window.requestAnimationFrame(() => {
+      const el = list.current;
+      if (el && el.getBoundingClientRect().top > window.innerHeight * 0.6)
+        el.scrollIntoView({ behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block: 'start' });
+    });
+  };
   const go = (m: string) => setSp(m === now ? {} : { m }, { replace: true });
   const r = report.data;
 
@@ -33,6 +49,7 @@ export default function Money() {
           <a href="#" onClick={e => { e.preventDefault(); if (month < now) go(shiftMonth(month, 1)); }} aria-label="Next month" aria-disabled={month >= now}>›</a>
         </div>
         <ImportStatement />
+        <button type="button" className="mn-btn ghost" disabled={!book.ready} onClick={() => setLabels(true)}>Manage labels</button>
       </div>
 
       <div className="mn-top">
@@ -48,10 +65,14 @@ export default function Money() {
         </div>
       )}
       <div className="mn-two">
-        <CategoryBars report={r} active={category} onPick={setCategory} />
+        <LabelReport report={r} month={month} active={filter} onPick={pick} />
         <TrendChart trend={trend.data ?? []} month={month} onPick={go} />
       </div>
-      <TxnList month={month} category={category} onClearCategory={() => setCategory(null)} />
+      <div ref={list} className="mn-list-at">
+        <TxnList month={month} filter={filter} onClearFilter={() => setFilter(null)} />
+      </div>
+      {labels && <LabelTree onClose={() => setLabels(false)} />}
+      <Toasts />
     </div>
   );
 }

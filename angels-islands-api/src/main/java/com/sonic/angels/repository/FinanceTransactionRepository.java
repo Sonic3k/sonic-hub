@@ -79,6 +79,10 @@ public interface FinanceTransactionRepository extends JpaRepository<FinanceTrans
 
     List<FinanceTransaction> findByCategoryId(UUID categoryId);
 
+    /** How many lines carry each tag (put there or brought along): rows of [tag id, count]. */
+    @Query("SELECT x.tag.id, COUNT(x) FROM FinanceTxnTag x GROUP BY x.tag.id")
+    List<Object[]> tagUses();
+
     /** Lines that carry this tag, put there or brought along by another. */
     @Query("SELECT DISTINCT t FROM FinanceTransaction t JOIN t.tags x WHERE x.tag.id = :tagId")
     List<FinanceTransaction> withTag(UUID tagId);

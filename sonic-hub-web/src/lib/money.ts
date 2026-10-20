@@ -69,8 +69,8 @@ export const dayLabel = (s: string) => {
   const [yy, mm, dd] = d.split('-').map(Number);
   return `${WEEKDAYS[new Date(Date.UTC(yy, mm - 1, dd)).getUTCDay()]} ${dd} ${MONTHS[mm - 1].slice(0, 3)}`;
 };
-const WEEKDAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-/** dayLabel inside a sentence: "latest today", "latest Monday 12 Oct". */
+const WEEKDAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+/** dayLabel inside a sentence: "latest today", "latest Mon 12 Oct". */
 export const dayWord = (s: string) => { const d = dayLabel(s); return d === 'Today' || d === 'Yesterday' ? d.toLowerCase() : d; };
 
 // ── the quick-note language ──
