@@ -117,6 +117,22 @@ public final class FinanceTags {
         if (t.getKind() == Kind.TRANSFER) { t.getTags().clear(); return; }
         adopt(t);
 
+        // a parent chosen beside its own child is brought along by the child instead: a line keeps its most specific
+        // labels (the child takes over who decided, when the parent's word was the stronger one)
+        Map<UUID, FinanceTxnTag> chosenTag = new LinkedHashMap<>();
+        for (FinanceTxnTag x : t.getTags()) if (!x.isImplied()) chosenTag.putIfAbsent(x.getTag().getId(), x);
+        Set<UUID> parents = new HashSet<>();
+        for (FinanceTxnTag child : chosenTag.values()) {
+            String f = facet(child.getTag());
+            for (FinanceCategory p : reach(child.getTag())) {
+                FinanceTxnTag parent = chosenTag.get(p.getId());
+                if (parent == null || parent == child || !f.equals(facet(p)) || reach(p).contains(child.getTag())) continue;
+                parents.add(p.getId());
+                if (weight(parent.getDecidedBy()) > weight(child.getDecidedBy())) child.setDecidedBy(parent.getDecidedBy());
+            }
+        }
+        if (!parents.isEmpty()) t.getTags().removeIf(x -> !x.isImplied() && parents.contains(x.getTag().getId()));
+
         // implied tags: everything the chosen ones bring along, transitively; each owes its weight to the strongest bringer
         Map<UUID, FinanceCategory> chosen = new LinkedHashMap<>();
         Map<UUID, By> chosenBy = new HashMap<>();
@@ -165,6 +181,20 @@ public final class FinanceTags {
         t.setCategory(primary.getTag());
         t.setKind(primary.getTag().getKind() == FinanceCategory.Kind.INCOME ? Kind.INCOME : Kind.EXPENSE);
         t.setCategorizedBy(decider);
+    }
+
+    /** Every live tag this one brings along, transitively (not itself, unless it comes back round). */
+    static Set<FinanceCategory> reach(FinanceCategory start) {
+        Set<FinanceCategory> out = new LinkedHashSet<>();
+        Deque<FinanceCategory> todo = new ArrayDeque<>(start.getImplies());
+        Set<UUID> seen = new HashSet<>();
+        while (!todo.isEmpty()) {
+            FinanceCategory c = todo.poll();
+            if (!seen.add(c.getId()) || c.isArchived()) continue;
+            out.add(c);
+            todo.addAll(c.getImplies());
+        }
+        return out;
     }
 
     /** {@link #settle}, and a line whose main facet anyone but the AI decided is done. */

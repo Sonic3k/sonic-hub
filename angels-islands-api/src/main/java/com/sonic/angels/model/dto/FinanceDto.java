@@ -33,10 +33,11 @@ public final class FinanceDto {
 
     /**
      * A tag ("nhãn") of a facet; the main facet's are the categories (kind EXPENSE/INCOME, with a budget group),
-     * the others are kind ANY. impliesIds: tags that come along whenever this one is put on a line.
+     * the others are kind ANY. impliesIds: tags that come along whenever this one is put on a line (one of the same
+     * facet is its parent). uses: how many lines carry it, put there or brought along (0 where not counted).
      */
     public record Category(UUID id, String code, String name, String icon, String kind, String budgetGroup,
-                           int sortOrder, boolean system, boolean archived, UUID facetId, List<UUID> impliesIds) {}
+                           int sortOrder, boolean system, boolean archived, UUID facetId, List<UUID> impliesIds, long uses) {}
 
     /** facetId only when creating (default: the main facet); impliesIds replaces what it brings along. */
     public record CategoryRequest(String name, String icon, String kind, String budgetGroup, Integer sortOrder, Boolean archived,
@@ -67,7 +68,7 @@ public final class FinanceDto {
                       UUID categoryId, String categoryName, String categoryIcon, String description, String bankDescription,
                       String counterparty, String counterpartyAccount, String note, String source, String status, String categorizedBy, Double aiConfidence,
                       BigDecimal balanceAfter, UUID transferPeerId, String transferAccountName, String suggestedKeywords,
-                      LocalDateTime createdAt, List<TagRef> tags) {}
+                      LocalDateTime createdAt, List<TagRef> tags, UUID transferAccountId) {}
 
     /**
      * Create or edit. occurredAt: ISO; with Z/offset it is converted, bare means UTC. kind TRANSFER needs transferAccountId.
@@ -97,15 +98,22 @@ public final class FinanceDto {
 
     /**
      * Everyone money went to or came from, with what is still waiting: one decision covers them all.
-     * guess* is the category most of its lines already have (from a rule or the AI), if any.
+     * guess* is the category most of its lines already have (from a rule or the AI), if any. direction: which way the
+     * waiting money went (OUT/IN; all of it when nothing waits), the way one decision for them goes; scope: how many
+     * of their lines go that way (what the decision covers); waitingAmount: the waiting lines added up, signed.
      */
     public record CounterpartyGroup(String key, String name, String account, int accounts, List<UUID> ownAccountIds, long count, long waiting,
                                     long outCount, long inCount, BigDecimal totalOut, BigDecimal totalIn,
                                     LocalDateTime lastAt, String sample, UUID ruleId, String ruleLabel,
-                                    UUID guessCategoryId, String guessCategoryName, String guessCategoryIcon) {}
+                                    UUID guessCategoryId, String guessCategoryName, String guessCategoryIcon,
+                                    String direction, long scope, BigDecimal waitingAmount) {}
 
-    /** "Everything with this counterparty is …": a category or a move to an own account; more tags, an optional label. */
-    public record AssignRequest(String name, UUID categoryId, UUID transferAccountId, String label, List<UUID> tagIds) {}
+    /**
+     * "Everything with this counterparty is …": labels (categoryId and/or tagIds, any sections) or a move to an own
+     * account; an optional label renames them. In each section given, their labels become these; sections not given
+     * stay as they are. direction OUT/IN/ANY: which of their lines (default: the way the waiting ones went).
+     */
+    public record AssignRequest(String name, UUID categoryId, UUID transferAccountId, String label, List<UUID> tagIds, String direction) {}
 
     /**
      * What a statement file holds and what importing it does (or did): matched = already here from the bank feed

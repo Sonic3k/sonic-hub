@@ -193,9 +193,12 @@ public class FinanceService {
         facetRepo.delete(f);
     }
 
+    /** Every tag, with how many lines carry it. */
     @Transactional(readOnly = true)
     public List<FinanceDto.Category> categories() {
-        return categoryRepo.findAllByOrderByKindAscSortOrderAscNameAsc().stream().map(FinanceService::toCategory).toList();
+        Map<UUID, Long> uses = new HashMap<>();
+        for (Object[] row : txnRepo.tagUses()) uses.put((UUID) row[0], ((Number) row[1]).longValue());
+        return categoryRepo.findAllByOrderByKindAscSortOrderAscNameAsc().stream().map(c -> toCategory(c, uses.getOrDefault(c.getId(), 0L))).toList();
     }
 
     /**
@@ -484,14 +487,14 @@ public class FinanceService {
         if (r.note() != null) t.setNote(blankToNull(r.note()));
         decide(t, r);
         learn(t, r);
+        // "apply to every transaction with them": the others that went the same way follow; this line stays as he set it
         if (Boolean.TRUE.equals(r.learnCounterparty()) && t.getCounterparty() != null) {
             FinanceAccount target = t.getKind() == Kind.TRANSFER && t.getTransferPeer() != null ? t.getTransferPeer().getAccount()
                 : t.getKind() == Kind.TRANSFER && r.transferAccountId() != null ? account(r.transferAccountId()) : null;
             List<FinanceCategory> give = target == null ? ruleTags(t, r) : List.of();
-            FinanceCategory main = mainOf(give);
-            if (target == null && main == null) throw new IllegalArgumentException("Pick a category before applying it to everything with this payee");
-            assignCounterparty(new FinanceDto.AssignRequest(t.getCounterparty(), main == null ? null : main.getId(),
-                target == null ? null : target.getId(), r.label(), give.stream().map(FinanceCategory::getId).toList()));
+            if (target != null || !give.isEmpty())
+                assign(new FinanceDto.AssignRequest(t.getCounterparty(), null, target == null ? null : target.getId(), r.label(),
+                    give.stream().map(FinanceCategory::getId).toList(), t.getAmount().signum() < 0 ? "OUT" : "IN"), t.getId());
         }
         if (r.label() != null && !r.label().isBlank()) FinanceClassifier.relabel(t, r.label().trim());
         return toTxn(t, rates.usdValue());
@@ -524,8 +527,9 @@ public class FinanceService {
     }
 
     /**
-     * Tags put on (his) and taken off many lines at once — "everything that evening was with friends". A line that
-     * gets a category this way is decided. Moves between own accounts carry no tags and are left out.
+     * Tags put on (his) and taken off many lines at once — "everything that evening was with friends". A category goes
+     * only on lines whose money went its way, and replaces what the AI guessed there; a line that gets one this way is
+     * decided. Moves between own accounts carry no tags and are left out.
      */
     public FinanceDto.Applied tags(FinanceDto.TagsRequest r) {
         if (r.ids() == null || r.ids().isEmpty()) throw new IllegalArgumentException("Pick transactions first");
@@ -537,7 +541,17 @@ public class FinanceService {
             if (t.getKind() == Kind.TRANSFER || t.getSource() == Source.SYSTEM) continue;
             String before = FinanceTags.signature(t);
             if (!remove.isEmpty()) FinanceTags.remove(t, remove);
-            if (!add.isEmpty()) FinanceTags.add(t, add, By.USER);
+            FinanceCategory.Kind way = t.getAmount().signum() < 0 ? FinanceCategory.Kind.EXPENSE : FinanceCategory.Kind.INCOME;
+            List<FinanceCategory> fit = add.stream().filter(c -> !c.isMain() || c.getKind() == way).toList();
+            if (fit.stream().anyMatch(FinanceCategory::isMain)) {
+                Set<UUID> keep = new HashSet<>();
+                fit.forEach(c -> keep.add(c.getId()));
+                Set<UUID> guessed = new HashSet<>();
+                for (FinanceTxnTag x : FinanceTags.chosen(t, FinanceTags.MAIN))
+                    if (x.getDecidedBy() == By.AI && !keep.contains(x.getTag().getId())) guessed.add(x.getTag().getId());
+                if (!guessed.isEmpty()) FinanceTags.remove(t, guessed);
+            }
+            if (!fit.isEmpty()) FinanceTags.add(t, fit, By.USER);
             FinanceTags.settleDecided(t);
             if (!before.equals(FinanceTags.signature(t))) n++;
         }
@@ -571,10 +585,16 @@ public class FinanceService {
             Set<UUID> own = new LinkedHashSet<>();
             Map<UUID, Long> cats = new HashMap<>();
             Map<UUID, FinanceCategory> catById = new HashMap<>();
-            BigDecimal totalOut = BigDecimal.ZERO, totalIn = BigDecimal.ZERO;
-            long outCount = 0, inCount = 0;
+            BigDecimal totalOut = BigDecimal.ZERO, totalIn = BigDecimal.ZERO, waitingAmount = BigDecimal.ZERO, all = BigDecimal.ZERO;
+            long outCount = 0, inCount = 0, waitingOut = 0, allOut = 0;
             FinanceTransaction last = g.get(0);
             for (FinanceTransaction t : g) {
+                all = all.add(t.getAmount());
+                if (t.getAmount().signum() < 0) allOut++;
+                if (t.getStatus() == Status.REVIEW) {
+                    waitingAmount = waitingAmount.add(t.getAmount());
+                    if (t.getAmount().signum() < 0) waitingOut++;
+                }
                 names.merge(FinanceText.cleanCounterparty(t.getCounterparty()), 1L, Long::sum);
                 if (t.getCounterpartyAccount() != null) accounts.add(t.getCounterpartyAccount());
                 own.add(t.getAccount().getId());
@@ -587,27 +607,61 @@ public class FinanceService {
                 if (t.getOccurredAt().isAfter(last.getOccurredAt())) last = t;
             }
             String name = names.entrySet().stream().max(Map.Entry.comparingByValue()).map(Map.Entry::getKey).orElse(last.getCounterparty());
+            // the way one decision for them goes: where the waiting money went on balance (all of it when nothing waits)
+            boolean goesOut = waiting > 0 ? waitingAmount.signum() < 0 || (waitingAmount.signum() == 0 && waitingOut > 0)
+                : all.signum() < 0 || (all.signum() == 0 && allOut > 0);
+            long scope = g.stream().filter(t -> (t.getAmount().signum() < 0) == goesOut && !(t.getKind() == Kind.TRANSFER && t.getCategorizedBy() == By.SYSTEM)).count();
             FinanceCategory guess = cats.entrySet().stream().max(Map.Entry.comparingByValue()).map(x -> catById.get(x.getKey())).orElse(null);
             FinanceRule rule = ruleByKey.get(e.getKey());
             String sample = last.getBankDescription() != null && rule != null && rule.getLabel() != null ? last.getBankDescription() : last.getDescription();
             out.add(new FinanceDto.CounterpartyGroup(e.getKey(), name, accounts.size() == 1 ? accounts.iterator().next() : null,
                 accounts.size(), List.copyOf(own), g.size(), waiting, outCount, inCount, totalOut, totalIn, last.getOccurredAt(), sample,
                 rule == null ? null : rule.getId(), rule == null ? null : rule.getLabel(),
-                guess == null ? null : guess.getId(), guess == null ? null : guess.getName(), guess == null ? null : guess.getIcon()));
+                guess == null ? null : guess.getId(), guess == null ? null : guess.getName(), guess == null ? null : guess.getIcon(),
+                goesOut ? "OUT" : "IN", scope, waitingAmount));
         }
         out.sort(Comparator.comparingLong(FinanceDto.CounterpartyGroup::waiting).reversed()
             .thenComparing(Comparator.comparingLong(FinanceDto.CounterpartyGroup::count).reversed()));
         return out;
     }
 
+    /** Every line with this counterparty (their own side, not the mirrors written here), newest first. */
+    @Transactional(readOnly = true)
+    public List<FinanceDto.Txn> counterpartyLines(String name) {
+        String key = FinanceText.counterpartyKey(name);
+        if (key.isEmpty()) return List.of();
+        BigDecimal usd = rates.usdValue();
+        return txnRepo.withCounterparty().stream()
+            .filter(t -> t.getSource() != Source.SYSTEM && key.equals(FinanceText.counterpartyKey(t.getCounterparty())))
+            .sorted(Comparator.comparing(FinanceTransaction::getOccurredAt).thenComparing(FinanceTransaction::getCreatedAt).reversed())
+            .map(t -> toTxn(t, usd)).toList();
+    }
+
+    public FinanceDto.Applied assignCounterparty(FinanceDto.AssignRequest r) { return assign(r, null); }
+
     /**
-     * "Everything with this counterparty is …": one rule (made, or the existing one changed) and every line with that
-     * counterparty follows it — old and new — except lines decided one by one and moves the system found itself.
+     * "Everything with this counterparty is …" (see {@link FinanceDto.AssignRequest}). Their one rule (made, or the
+     * existing one changed: in each section given, its labels become these; a move replaces everything) and every line
+     * of theirs that goes that way follows it now, old and new — lines decided by hand too, in the sections given;
+     * sections not given stay as they are on each line. Moves the system found itself stay, and so does `except`, the
+     * line this decision came from, already as he wants it.
      */
-    public FinanceDto.Applied assignCounterparty(FinanceDto.AssignRequest r) {
+    private FinanceDto.Applied assign(FinanceDto.AssignRequest r, UUID except) {
         String key = FinanceText.counterpartyKey(r.name());
         if (key.isEmpty()) throw new IllegalArgumentException("Enter a payee");
-        if (r.categoryId() == null && r.transferAccountId() == null) throw new IllegalArgumentException("Pick a category or a target account");
+        List<FinanceCategory> give = new ArrayList<>();
+        if (r.categoryId() != null) {
+            FinanceCategory c = category(r.categoryId());
+            if (!c.isMain()) throw new IllegalArgumentException("Pick a category");
+            give.add(c);
+        }
+        if (r.tagIds() != null) for (UUID x : r.tagIds()) if (give.stream().noneMatch(c -> c.getId().equals(x))) give.add(category(x));
+        FinanceAccount target = r.transferAccountId() == null ? null : account(r.transferAccountId());
+        if (target == null && give.isEmpty()) throw new IllegalArgumentException("Pick a label or an account");
+        if (target != null && !give.isEmpty()) throw new IllegalArgumentException("A move between own accounts takes no labels");
+        Map<String, List<FinanceCategory>> byFacet = new LinkedHashMap<>();
+        for (FinanceCategory c : give) byFacet.computeIfAbsent(FinanceTags.facet(c), k -> new ArrayList<>()).add(c);
+
         FinanceRule rule = classifier.rules().stream()
             .filter(x -> x.isCounterpartyRule() && key.equals(FinanceText.counterpartyKey(x.getCounterpartyName())))
             .findFirst().orElseGet(FinanceRule::new);
@@ -616,40 +670,62 @@ public class FinanceService {
         rule.setOrigin(FinanceRule.Origin.USER);
         rule.setPriority(5);
         rule.setActive(true);
-        rule.setLabel(blankToNull(r.label()));
-        if (r.categoryId() != null) {
-            FinanceCategory c = category(r.categoryId());
-            if (!c.isMain()) throw new IllegalArgumentException("Pick a category");
-            rule.getTags().clear();
-            rule.getTags().add(c);
-            if (r.tagIds() != null) for (UUID x : r.tagIds()) if (!x.equals(c.getId())) rule.getTags().add(category(x));
-            rule.setCategory(c);
-            rule.setTransferAccount(null);
-            rule.setDirection(c.getKind() == FinanceCategory.Kind.INCOME ? FinanceRule.Direction.IN : FinanceRule.Direction.ANY);
-        } else {
-            rule.setTransferAccount(account(r.transferAccountId()));
+        String label = blankToNull(r.label());
+        if (label != null) rule.setLabel(label);
+        if (target != null) {
+            rule.setTransferAccount(target);
             rule.setCategory(null);
             rule.getTags().clear();
-            rule.setDirection(FinanceRule.Direction.ANY);
+        } else {
+            if (rule.getTransferAccount() != null) { rule.setTransferAccount(null); rule.getTags().clear(); rule.setCategory(null); }
+            if (rule.getTags().isEmpty() && rule.getCategory() != null) rule.getTags().add(rule.getCategory());   // from before tags existed
+            rule.getTags().removeIf(c -> byFacet.containsKey(FinanceTags.facet(c)));
+            rule.getTags().addAll(give);
+            rule.setCategory(mainOf(rule.getTags()));
         }
-        // money only went one way with them (what still waits, else everything): the rule keeps to that way, so an
-        // interest line from one's own savings or a refund does not follow a "→ Techcombank" or a spending rule
+
         List<FinanceTransaction> lines = txnRepo.withCounterparty().stream()
             .filter(t -> t.getSource() != Source.SYSTEM && key.equals(FinanceText.counterpartyKey(t.getCounterparty()))).toList();
-        List<FinanceTransaction> basis = lines.stream().anyMatch(t -> t.getStatus() == Status.REVIEW)
-            ? lines.stream().filter(t -> t.getStatus() == Status.REVIEW).toList() : lines;
-        boolean anyOut = basis.stream().anyMatch(t -> t.getAmount().signum() < 0), anyIn = basis.stream().anyMatch(t -> t.getAmount().signum() > 0);
-        if (rule.getCategory() == null || rule.getCategory().getKind() != FinanceCategory.Kind.INCOME)
+        if (r.direction() != null && !r.direction().isBlank()) {
+            rule.setDirection(parseEnum(FinanceRule.Direction.class, r.direction(), "direction"));
+        } else if (rule.getCategory() != null && rule.getCategory().getKind() == FinanceCategory.Kind.INCOME) {
+            rule.setDirection(FinanceRule.Direction.IN);
+        } else {
+            // money only went one way with them (what still waits, else everything): the rule keeps to that way, so an
+            // interest line from one's own savings or a refund does not follow a "→ Techcombank" or a spending rule
+            List<FinanceTransaction> basis = lines.stream().anyMatch(t -> t.getStatus() == Status.REVIEW)
+                ? lines.stream().filter(t -> t.getStatus() == Status.REVIEW).toList() : lines;
+            boolean anyOut = basis.stream().anyMatch(t -> t.getAmount().signum() < 0), anyIn = basis.stream().anyMatch(t -> t.getAmount().signum() > 0);
             rule.setDirection(anyOut && !anyIn ? FinanceRule.Direction.OUT : anyIn && !anyOut ? FinanceRule.Direction.IN : FinanceRule.Direction.ANY);
+        }
         rule = ruleRepo.save(rule);
+
         int n = 0;
         for (FinanceTransaction t : lines) {
+            if (t.getId().equals(except)) continue;
             if (t.getKind() == Kind.TRANSFER && t.getCategorizedBy() == By.SYSTEM) continue;
             if (!classifier.fits(t, rule)) continue;
             String before = FinanceTags.signature(t);
-            classifier.decide(t, List.of(rule));
+            if (target != null) {
+                boolean same = t.getKind() == Kind.TRANSFER && t.getTransferPeer() != null
+                    && t.getTransferPeer().getAccount().getId().equals(target.getId());
+                if (!same) {
+                    if (t.getKind() == Kind.TRANSFER) classifier.breakTransfer(t);
+                    classifier.makeTransfer(t, target, By.RULE);
+                }
+            } else {
+                if (t.getKind() == Kind.TRANSFER) {
+                    classifier.breakTransfer(t);
+                    t.setKind(t.getAmount().signum() < 0 ? Kind.EXPENSE : Kind.INCOME);
+                }
+                for (Map.Entry<String, List<FinanceCategory>> e : byFacet.entrySet()) FinanceTags.replace(t, e.getKey(), e.getValue(), By.RULE);
+                FinanceTags.settleDecided(t);
+            }
+            if (target != null || byFacet.containsKey(FinanceTags.MAIN)) t.setMatchedRule(rule);
+            if (label != null) FinanceClassifier.relabel(t, label);
             if (!before.equals(FinanceTags.signature(t))) n++;
         }
+        rule.setHits(rule.getHits() + n);
         return new FinanceDto.Applied(n);
     }
 
@@ -821,7 +897,7 @@ public class FinanceService {
             rule.setTransferAccount(target);
         } else {
             List<FinanceCategory> give = ruleTags(t, r);
-            if (mainOf(give) == null) throw new IllegalArgumentException("Pick a category before remembering these words");
+            if (give.isEmpty()) return;                    // nothing that would follow these words
             rule.getTags().addAll(give);
             rule.setCategory(mainOf(give));
         }
@@ -914,10 +990,12 @@ public class FinanceService {
             f.isSystem(), f.isArchived(), tagCount);
     }
 
-    static FinanceDto.Category toCategory(FinanceCategory c) {
+    static FinanceDto.Category toCategory(FinanceCategory c) { return toCategory(c, 0); }
+
+    static FinanceDto.Category toCategory(FinanceCategory c, long uses) {
         return new FinanceDto.Category(c.getId(), c.getCode(), c.getName(), c.getIcon(), c.getKind().name(),
             c.getBudgetGroup() == null ? null : c.getBudgetGroup().name(), c.getSortOrder(), c.isSystem(), c.isArchived(),
-            c.getFacet() == null ? null : c.getFacet().getId(), c.getImplies().stream().map(FinanceCategory::getId).toList());
+            c.getFacet() == null ? null : c.getFacet().getId(), c.getImplies().stream().map(FinanceCategory::getId).toList(), uses);
     }
 
     static FinanceDto.TagRef toTag(FinanceCategory c, By by) {
@@ -950,7 +1028,8 @@ public class FinanceService {
             c == null ? null : c.getId(), c == null ? null : c.getName(), c == null ? null : c.getIcon(),
             t.getDescription(), t.getBankDescription(), t.getCounterparty(), t.getCounterpartyAccount(), t.getNote(), t.getSource().name(), t.getStatus().name(),
             t.getCategorizedBy() == null ? null : t.getCategorizedBy().name(), t.getAiConfidence(), t.getBalanceAfter(),
-            peer == null ? null : peer.getId(), peer == null ? null : peer.getAccount().getName(), suggest, t.getCreatedAt(), tagsOf(t));
+            peer == null ? null : peer.getId(), peer == null ? null : peer.getAccount().getName(), suggest, t.getCreatedAt(), tagsOf(t),
+            peer == null ? null : peer.getAccount().getId());
     }
 
     /** The line's tags for the UIs: the one that counts first, then facet by facet. */

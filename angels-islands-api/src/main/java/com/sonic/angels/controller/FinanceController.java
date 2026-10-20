@@ -155,6 +155,10 @@ public class FinanceController {
         return finance.counterparties(waiting);
     }
 
+    /** Every line with this counterparty, newest first: what one decision for them would touch. */
+    @GetMapping("/counterparties/lines")
+    public List<FinanceDto.Txn> counterpartyLines(@RequestParam String name) { return finance.counterpartyLines(name); }
+
     @PostMapping("/counterparties/assign")
     public FinanceDto.Applied assignCounterparty(@RequestBody FinanceDto.AssignRequest req) { return finance.assignCounterparty(req); }
 

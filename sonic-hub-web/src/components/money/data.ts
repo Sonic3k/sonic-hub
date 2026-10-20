@@ -12,8 +12,12 @@ export const useRules = () => useQuery({ queryKey: ['money', 'rules'], queryFn: 
 export const useReview = () => useQuery({ queryKey: ['money', 'review'], queryFn: moneyApi.review, staleTime: S });
 export const useCounterparties = () => useQuery({ queryKey: ['money', 'counterparties'], queryFn: moneyApi.counterparties, staleTime: S });
 export const useChips = () => useQuery({ queryKey: ['money', 'chips'], queryFn: moneyApi.chips, staleTime: S });
-export const useTxns = (month: string, size: number) =>
-  useQuery({ queryKey: ['money', 'txns', month, size], queryFn: () => moneyApi.transactions({ month, size }), staleTime: S, placeholderData: p => p });
+/** a month's lines; with a label, only those carrying it (a parent through its children) */
+export const useTxns = (month: string, size: number, categoryId?: string | null) =>
+  useQuery({ queryKey: ['money', 'txns', month, size, categoryId ?? ''], queryFn: () => moneyApi.transactions({ month, size, categoryId: categoryId ?? undefined }), staleTime: S, placeholderData: p => p });
+/** every line with a payee: what one decision for them covers */
+export const useCounterpartyLines = (name: string | null | undefined) =>
+  useQuery({ queryKey: ['money', 'cp-lines', name ?? ''], queryFn: () => moneyApi.counterpartyLines(name!), enabled: !!name, staleTime: S });
 
 export function useRefresh() {
   const qc = useQueryClient();
