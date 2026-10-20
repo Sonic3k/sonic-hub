@@ -1,15 +1,15 @@
 <!doctype html>
-<html lang="vi">
+<html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Nhãn giao dịch</title>
+<title>Transaction labels</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&family=Literata:wght@500&display=swap" rel="stylesheet">
 <style>
-/* Demo for the Tiền page (sonic-hub-web /money): one way to put labels on transactions, in every place.
+/* Demo for the Money page (sonic-hub-web /money): one way to put labels on transactions, in every place.
    Layout: the app's own frame (library.css): top bar, page title, rules + review | report, the month's list below.
    Every place that puts labels on lines opens the same sheet. Light only, like the app; tokens are the app's. */
 :root {
@@ -89,7 +89,7 @@ input, select { font: inherit; color: var(--ink); }
 .mn-rules li::before { content: ""; position: absolute; left: 1px; top: .62em; width: 6px; height: 6px; border-radius: 50%; background: var(--money); }
 .mn-rules li b { font-weight: 600; color: var(--ink); }
 
-/* Cần xem lại */
+/* To review */
 .mn-rv-hint { margin: -4px 0 4px; font-size: 13px; line-height: 1.5; color: var(--ink2); }
 .mn-rv-list { margin: 0; padding: 0; list-style: none; }
 .mn-rv-list li { padding: 12px 0; border-top: 1px solid var(--line); }
@@ -289,39 +289,39 @@ button.mn-bar-row:hover, .mn-bar-row.on { background: var(--soft); }
 <header class="top">
   <div class="top-in">
     <span class="logo">Sonic Hub</span>
-    <span class="crumb"><i aria-hidden="true"></i>Tiền</span>
-    <div class="demo-tag"><b>Demo</b><span>Dữ liệu mẫu, đổi gì cũng chỉ nằm trong trang này</span><button type="button" class="mn-link" data-act="reset">Đặt lại</button></div>
+    <span class="crumb"><i aria-hidden="true"></i>Money</span>
+    <div class="demo-tag"><b>Demo</b><span>Sample data. Changes stay on this page.</span><button type="button" class="mn-link" data-act="reset">Reset</button></div>
   </div>
 </header>
 
 <main class="wrap mn">
   <div class="ptitle">
-    <h1>Tiền</h1>
-    <span>Tháng 10, 2026</span>
-    <button type="button" class="mn-btn ghost" data-act="labels">Quản lý nhãn</button>
+    <h1>Money</h1>
+    <span>October 2026</span>
+    <button type="button" class="mn-btn ghost" data-act="labels">Manage labels</button>
   </div>
 
   <div class="mn-top">
     <div class="mn-col">
       <section class="card mn-rules" aria-labelledby="rules-h">
-        <div class="mn-head"><h2 id="rules-h">Một kiểu gắn nhãn cho mọi chỗ</h2></div>
+        <div class="mn-head"><h2 id="rules-h">Labels work the same everywhere</h2></div>
         <ul>
-          <li><b>Chạm để bật, chạm lại để tắt.</b> Chọn bao nhiêu nhãn cũng được. Chỉ lưu khi bấm nút cuối bảng, nút đó ghi rõ sẽ đổi bao nhiêu giao dịch.</li>
-          <li><b>Nhãn con tự tính vào nhãn cha.</b> Chọn 🍜 Ăn thì 🍽️ Ăn uống tự sáng. Chọn riêng Ăn uống khi bữa đó không cần tách.</li>
-          <li><b>Mục chỉ để xếp nhãn cho dễ tìm.</b> Hạng mục, Với ai, Dạng, Dịp. Không còn Nhóm.</li>
-          <li><b>Rời Cần xem lại khi có ít nhất 1 hạng mục,</b> hoặc khi là chuyển giữa ví của mình.</li>
-          <li><b>Chuyển giữa ví của mình là lựa chọn riêng.</b> Đó không phải chi hay thu, nên không gắn nhãn và không vào báo cáo.</li>
-          <li><b>Báo cáo cộng theo nhãn.</b> Tổng chi tính mỗi giao dịch một lần; mỗi nhãn cộng đủ các giao dịch mang nó.</li>
+          <li><b>Tap a label to turn it on, tap again to turn it off.</b> Pick as many as you like. Nothing is saved until you press the button at the bottom, and that button says how many transactions will change.</li>
+          <li><b>A child label counts toward its parent.</b> Pick 🍜 Food and 🍽️ Food &amp; Drink is included automatically. Pick Food &amp; Drink on its own when a meal doesn’t need splitting.</li>
+          <li><b>Sections are just headings.</b> Category, People, Type and Occasion keep labels easy to find. The old Group section is gone.</li>
+          <li><b>A transaction leaves To review once it has a category,</b> or once it’s marked as an internal transfer.</li>
+          <li><b>An internal transfer is the one either-or choice.</b> Moving money between your own accounts isn’t spending or income, so it takes no labels and stays out of reports.</li>
+          <li><b>Reports add up by label.</b> Total spending counts each transaction once, and each label adds up every transaction that carries it.</li>
         </ul>
       </section>
-      <section class="card mn-review" id="review" aria-label="Cần xem lại"></section>
+      <section class="card mn-review" id="review" aria-label="To review"></section>
     </div>
     <div class="mn-col">
-      <section class="card mn-cats" id="report" aria-label="Chi theo nhãn"></section>
+      <section class="card mn-cats" id="report" aria-label="Spending by label"></section>
     </div>
   </div>
 
-  <section class="card mn-list" id="list" aria-label="Giao dịch tháng 10"></section>
+  <section class="card mn-list" id="list" aria-label="October transactions"></section>
 </main>
 
 <div id="sheet"></div>
@@ -336,61 +336,65 @@ button.mn-bar-row:hover, .mn-bar-row.on { background: var(--soft); }
   const $ = (s, el = document) => el.querySelector(s);
   const $$ = (s, el = document) => [...el.querySelectorAll(s)];
   const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
-  const nf = new Intl.NumberFormat('vi-VN');
+  const nf = new Intl.NumberFormat('en-US');
   const vnd = n => `${nf.format(Math.round(n))} ₫`;
   const money = n => `${n < 0 ? '−' : '+'}${vnd(Math.abs(n))}`;
   const pct = (a, b) => (b > 0 && a > 0 ? `${Math.max(1, Math.round((a / b) * 100))}%` : '');
   const motion = () => (matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth');
 
   const TODAY = new Date(2026, 9, 20);
-  const WD = ['Chủ nhật', 'Thứ Hai', 'Thứ Ba', 'Thứ Tư', 'Thứ Năm', 'Thứ Sáu', 'Thứ Bảy'];
-  const dm = d => `${d.getDate()}/${d.getMonth() + 1}`;
+  const WD = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+  const MON = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+  const dm = d => `${d.getDate()} ${MON[d.getMonth()]}`;
   const hhmm = d => `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
   const dayKey = d => `${d.getMonth() + 1}-${d.getDate()}`;
   const dayName = d => {
     const diff = Math.round((TODAY - new Date(d.getFullYear(), d.getMonth(), d.getDate())) / 864e5);
-    return diff === 0 ? 'Hôm nay' : diff === 1 ? 'Hôm qua' : `${WD[d.getDay()]} ${dm(d)}`;
+    return diff === 0 ? 'Today' : diff === 1 ? 'Yesterday' : `${WD[d.getDay()]} ${dm(d)}`;
   };
+  /* inside a sentence: "latest today", "latest Mon 12 Oct" */
+  const when = d => { const n = dayName(d); return n === 'Today' || n === 'Yesterday' ? n.toLowerCase() : n; };
+  const txs = n => `${n} transaction${n === 1 ? '' : 's'}`;
 
   const WALLETS = [
     { id: 'tp', name: 'TPBank', color: '#6D4AA8' },
     { id: 'tcb', name: 'Techcombank', color: '#1F6F8B' },
-    { id: 'cash', name: 'Tiền mặt', color: '#2E8B57' },
+    { id: 'cash', name: 'Cash', color: '#2E8B57' },
     { id: 'momo', name: 'MoMo', color: '#A8326E' },
-    { id: 'save', name: 'Sổ tiết kiệm', color: '#B7791F' },
+    { id: 'save', name: 'Savings', color: '#B7791F' },
   ];
   const W = Object.fromEntries(WALLETS.map(w => [w.id, w]));
 
   /* ── sample data: made up, a month of ordinary spending ── */
   function seed() {
     const sections = [
-      { id: 'hm', name: 'Hạng mục', main: true, carry: true },
-      { id: 'who', name: 'Với ai', carry: false },
-      { id: 'form', name: 'Dạng', carry: true },
-      { id: 'occ', name: 'Dịp', carry: false },
+      { id: 'hm', name: 'Category', main: true, carry: true },
+      { id: 'who', name: 'People', carry: false },
+      { id: 'form', name: 'Type', carry: true },
+      { id: 'occ', name: 'Occasion', carry: false },
     ];
     const labels = [];
     const L = (id, sec, kind, name, icon = '', parent = null) => labels.push({ id, sec, kind, name, icon, parent, archived: false, order: labels.length });
-    L('an-uong', 'hm', 'out', 'Ăn uống', '🍽️');
-    L('an', 'hm', 'out', 'Ăn', '🍜', 'an-uong');
-    L('uong', 'hm', 'out', 'Uống', '🥤', 'an-uong');
-    L('di-lai', 'hm', 'out', 'Đi lại', '🛵');
-    L('mua-sam', 'hm', 'out', 'Mua sắm', '🛍️');
+    L('an-uong', 'hm', 'out', 'Food & Drink', '🍽️');
+    L('an', 'hm', 'out', 'Food', '🍜', 'an-uong');
+    L('uong', 'hm', 'out', 'Drinks', '🥤', 'an-uong');
+    L('di-lai', 'hm', 'out', 'Transport', '🛵');
+    L('mua-sam', 'hm', 'out', 'Shopping', '🛍️');
     L('sub', 'hm', 'out', 'Subscription', '🔁');
-    L('hoa-don', 'hm', 'out', 'Hóa đơn & dịch vụ', '💡');
-    L('suc-khoe', 'hm', 'out', 'Sức khỏe', '💊');
-    L('gia-dinh', 'hm', 'out', 'Gia đình', '👪');
-    L('giai-tri', 'hm', 'out', 'Giải trí', '🎮');
-    L('du-lich', 'hm', 'out', 'Du lịch', '✈️');
-    L('qua', 'hm', 'out', 'Quà & hiếu hỉ', '🎁');
-    L('luong', 'hm', 'in', 'Lương', '💼');
-    L('thuong', 'hm', 'in', 'Thưởng', '🎉');
-    L('lai', 'hm', 'in', 'Lãi & hoàn tiền', '💰');
-    for (const [id, name] of [['ban-than', 'Bản thân'], ['vo', 'Vợ'], ['con', 'Con'], ['bo-me', 'Bố mẹ'], ['ho-hang', 'Họ hàng'], ['ban-be', 'Bạn bè'], ['dong-nghiep', 'Đồng nghiệp']]) L(id, 'who', 'any', name);
+    L('hoa-don', 'hm', 'out', 'Bills & Services', '💡');
+    L('suc-khoe', 'hm', 'out', 'Health', '💊');
+    L('gia-dinh', 'hm', 'out', 'Family', '👪');
+    L('giai-tri', 'hm', 'out', 'Entertainment', '🎮');
+    L('du-lich', 'hm', 'out', 'Travel', '✈️');
+    L('qua', 'hm', 'out', 'Gifts', '🎁');
+    L('luong', 'hm', 'in', 'Salary', '💼');
+    L('thuong', 'hm', 'in', 'Bonus', '🎉');
+    L('lai', 'hm', 'in', 'Interest & Refunds', '💰');
+    for (const [id, name] of [['ban-than', 'Me'], ['vo', 'Wife'], ['con', 'Kids'], ['bo-me', 'Parents'], ['ho-hang', 'Relatives'], ['ban-be', 'Friends'], ['dong-nghiep', 'Colleagues']]) L(id, 'who', 'any', name);
     L('digital', 'form', 'any', 'Digital');
-    L('do-vat', 'form', 'any', 'Đồ vật');
+    L('do-vat', 'form', 'any', 'Physical');
     L('tet', 'occ', 'any', 'Tết');
-    L('sinh-nhat', 'occ', 'any', 'Sinh nhật');
+    L('sinh-nhat', 'occ', 'any', 'Birthday');
 
     const txns = [];
     const T = (id, when, wallet, amount, title, x = {}) => {
@@ -399,35 +403,35 @@ button.mn-bar-row:hover, .mn-bar-row.on { background: var(--soft); }
         src: x.src || 'bank', labels: new Set(x.labels || []), transfer: x.transfer || null, guess: x.guess || null, guessWallet: x.guessWallet || null, note: x.note || '' });
     };
     T('t1', '10-20 08:12', 'tp', -45000, 'Highlands Coffee', { cp: 'HIGHLANDS COFFEE', bank: 'QR HIGHLANDS COFFEE 201026', labels: ['uong'] });
-    T('t2', '10-20 12:05', 'tp', -65000, 'Bếp Nhà', { cp: 'BEP NHA', bank: 'QR BEP NHA COM VAN PHONG', labels: ['an'] });
+    T('t2', '10-20 12:05', 'tp', -65000, 'Office lunch', { cp: 'BEP NHA', bank: 'QR BEP NHA COM VAN PHONG', labels: ['an'] });
     T('t3', '10-20 18:40', 'tp', -89000, 'Grab', { cp: 'GRAB', bank: 'GRAB A-7XK2 HCMC', labels: ['di-lai'] });
-    T('t4', '10-19 07:55', 'cash', -15000, 'Bánh mì', { src: 'note', labels: ['an'] });
+    T('t4', '10-19 07:55', 'cash', -15000, 'Breakfast', { src: 'note', labels: ['an'] });
     T('t5', '10-19 12:10', 'tp', -159000, 'KFC', { cp: 'KFC VIETNAM', bank: 'KFC VIETNAM POS 4412', labels: ['an', 'uong'] });
     T('t6', '10-19 21:30', 'tp', -260000, 'Netflix', { cp: 'NETFLIX.COM', bank: 'NETFLIX.COM AMSTERDAM', labels: ['sub', 'digital'] });
     T('t7', '10-18 10:20', 'tp', -1250000, 'Shopee', { cp: 'SHOPEEPAY', bank: 'SHOPEEPAY THANH TOAN DON HANG', labels: ['mua-sam', 'do-vat'] });
-    T('t8', '10-18 19:00', 'tp', -780000, 'Lẩu Manwah', { cp: 'MANWAH', bank: 'POS MANWAH VINCOM', labels: ['an', 'ban-be'], note: 'họp lớp' });
+    T('t8', '10-18 19:00', 'tp', -780000, 'Manwah hotpot', { cp: 'MANWAH', bank: 'POS MANWAH VINCOM', labels: ['an', 'ban-be'], note: 'class reunion' });
     T('t9', '10-17 09:05', 'tp', -2000000, 'PHAM THU HA chuyen tien', { cp: 'PHAM THU HA' });
     T('t10', '10-17 14:00', 'tp', -320000, 'Steam', { cp: 'STEAM PURCHASE', bank: 'STEAM PURCHASE SEATTLE', labels: ['giai-tri', 'digital'] });
     T('t11', '10-16 08:30', 'tp', -52000, 'Highlands Coffee', { cp: 'HIGHLANDS COFFEE', bank: 'QR HIGHLANDS COFFEE 161026', labels: ['uong'] });
-    T('t12', '10-16 20:15', 'cash', -120000, 'Bún chả', { src: 'note', labels: ['an'] });
+    T('t12', '10-16 20:15', 'cash', -120000, 'Dinner', { src: 'note', labels: ['an'] });
     T('t13', '10-15 09:10', 'tp', -1850000, 'BQL TOA NHA THU PHI DICH VU T10', { cp: 'BQL TOA NHA', guess: ['hoa-don'] });
-    T('t14', '10-15 12:30', 'tp', -75000, 'Bếp Nhà', { cp: 'BEP NHA', bank: 'QR BEP NHA COM VAN PHONG', labels: ['an'] });
+    T('t14', '10-15 12:30', 'tp', -75000, 'Office lunch', { cp: 'BEP NHA', bank: 'QR BEP NHA COM VAN PHONG', labels: ['an'] });
     T('t15', '10-14 07:45', 'tp', -32000, 'MAY BAN HANG TU DONG 0912', { words: 'MAY BAN HANG TU DONG', guess: ['uong'] });
     T('t16', '10-14 15:20', 'tp', -15000, 'MAY BAN HANG TU DONG 0912', { words: 'MAY BAN HANG TU DONG' });
     T('t17', '10-13 19:30', 'tp', -500000, 'NAP TIEN VI MOMO', { words: 'NAP TIEN VI MOMO', guessWallet: 'momo' });
-    T('t18', '10-12 11:00', 'tp', -2000000, 'Gửi tiết kiệm', { transfer: 'save', bank: 'TRICH TK GUI TIET KIEM ONLINE' });
+    T('t18', '10-12 11:00', 'tp', -2000000, 'To savings', { transfer: 'save', bank: 'TRICH TK GUI TIET KIEM ONLINE' });
     T('t19', '10-12 13:00', 'tp', -95000, 'PHUC LONG 0123', { cp: 'PHUC LONG COFFEE & TEA', guess: ['uong'] });
-    T('t20', '10-11 16:00', 'tp', -180000, 'Highlands Coffee', { cp: 'HIGHLANDS COFFEE', bank: 'QR HIGHLANDS COFFEE 111026', labels: ['uong', 'dong-nghiep'], note: 'mời team' });
-    T('t21', '10-10 10:00', 'tp', 25000000, 'Lương tháng 9', { cp: 'CONG TY CP ANH DUONG', bank: 'CONG TY CP ANH DUONG TRA LUONG T9', labels: ['luong'] });
-    T('t22', '10-10 19:00', 'tp', -450000, 'Quà sinh nhật bạn', { cp: 'TIKI', bank: 'TIKI THANH TOAN DON HANG', labels: ['qua', 'ban-be', 'sinh-nhat'] });
-    T('t23', '10-09 09:30', 'tp', -640000, 'Tiền điện', { cp: 'EVN HCMC', bank: 'EVN HCMC THANH TOAN TIEN DIEN T9', labels: ['hoa-don'] });
+    T('t20', '10-11 16:00', 'tp', -180000, 'Highlands Coffee', { cp: 'HIGHLANDS COFFEE', bank: 'QR HIGHLANDS COFFEE 111026', labels: ['uong', 'dong-nghiep'], note: 'treated the team' });
+    T('t21', '10-10 10:00', 'tp', 25000000, 'September salary', { cp: 'CONG TY CP ANH DUONG', bank: 'CONG TY CP ANH DUONG TRA LUONG T9', labels: ['luong'] });
+    T('t22', '10-10 19:00', 'tp', -450000, 'Birthday gift for a friend', { cp: 'TIKI', bank: 'TIKI THANH TOAN DON HANG', labels: ['qua', 'ban-be', 'sinh-nhat'] });
+    T('t23', '10-09 09:30', 'tp', -640000, 'Electricity bill', { cp: 'EVN HCMC', bank: 'EVN HCMC THANH TOAN TIEN DIEN T9', labels: ['hoa-don'] });
     T('t24', '10-08 12:00', 'tp', -49000, 'PHUC LONG 0123', { cp: 'PHUC LONG COFFEE & TEA', guess: ['uong'] });
     T('t25', '10-07 08:00', 'tp', -110000, 'Grab', { cp: 'GRAB', bank: 'GRAB A-6QW1 HCMC', labels: ['di-lai'] });
-    T('t26', '10-06 20:00', 'tp', -2400000, 'Vé máy bay', { cp: 'VIETJET AIR', bank: 'VIETJET AIR BOOKING', labels: ['du-lich'] });
+    T('t26', '10-06 20:00', 'tp', -2400000, 'Flights', { cp: 'VIETJET AIR', bank: 'VIETJET AIR BOOKING', labels: ['du-lich'] });
     T('t27', '10-05 09:00', 'tp', -5000000, 'PHAM THU HA chuyen tien', { cp: 'PHAM THU HA' });
-    T('t28', '10-04 12:00', 'cash', -60000, 'Phở', { src: 'note', labels: ['an'] });
+    T('t28', '10-04 12:00', 'cash', -60000, 'Noodle soup', { src: 'note', labels: ['an'] });
     T('t29', '10-03 15:00', 'tp', -55000, 'PHUC LONG 0123', { cp: 'PHUC LONG COFFEE & TEA', guess: ['uong'] });
-    T('t30', '10-02 22:00', 'tp', 38000, 'Hoàn tiền Shopee', { cp: 'SHOPEEPAY', bank: 'SHOPEEPAY HOAN TIEN', labels: ['lai'] });
+    T('t30', '10-02 22:00', 'tp', 38000, 'Shopee refund', { cp: 'SHOPEEPAY', bank: 'SHOPEEPAY HOAN TIEN', labels: ['lai'] });
     T('t31', '10-01 08:00', 'tp', -59000, 'Apple iCloud', { cp: 'APPLE.COM/BILL', bank: 'APPLE.COM/BILL ITUNES', labels: ['sub', 'digital'] });
     T('t32', '10-01 08:05', 'tp', -59000, 'Spotify', { cp: 'SPOTIFY', bank: 'SPOTIFY P1A2B3', labels: ['sub', 'digital'] });
     return { sections, labels, txns };
@@ -449,7 +453,7 @@ button.mn-bar-row:hover, .mn-bar-row.on { background: var(--soft); }
   const normalize = set => { const s = new Set(set); for (const id of set) for (const a of ancestors(id)) s.delete(a); return s; };
   const effective = set => { const s = new Set(); for (const id of set) { s.add(id); for (const a of ancestors(id)) s.add(a); } return s; };
   const dirOf = t => (t.amount < 0 ? 'out' : 'in');
-  /* out of "Cần xem lại" once it has a Hạng mục, or once it is a move between own wallets */
+  /* out of To review once it has a category, or once it is an internal transfer */
   const decided = t => !!t.transfer || [...t.labels].some(isMain);
   const byOrder = (a, b) => a.order - b.order;
   const kindOk = (l, dirs) => l.kind === 'any' || dirs.includes(l.kind);
@@ -484,9 +488,9 @@ button.mn-bar-row:hover, .mn-bar-row.on { background: var(--soft); }
   const allWith = (cp, dir) => D.txns.filter(x => x.cp === cp && dirOf(x) === dir);
   const guessKey = t => (t.guess ? sortIds(t.guess).join(',') : t.guessWallet ? `w:${t.guessWallet}` : '');
   function groupGuess(g) { const ks = g.lines.map(guessKey); return ks[0] && ks.every(k => k === ks[0]) ? ks[0] : null; }
-  const guessHtml = k => (k.startsWith('w:') ? `<span class="mn-tag">⇄ sang ${esc(W[k.slice(2)].name)}</span>` : k.split(',').map(id => pill(id)).join(''));
+  const guessHtml = k => (k.startsWith('w:') ? `<span class="mn-tag">⇄ to ${esc(W[k.slice(2)].name)}</span>` : k.split(',').map(id => pill(id)).join(''));
   /* What "for everyone with them" does to each line: the chosen labels replace that line's labels in their own sections
-     (Hạng mục for Hạng mục, Với ai for Với ai); sections nothing was chosen in stay as they were. */
+     (Category for Category, People for People); sections nothing was chosen in stay as they were. */
   function setLabels(x, chosen) {
     const secs = new Set(chosen.map(secOf));
     x.transfer = null;
@@ -496,32 +500,32 @@ button.mn-bar-row:hover, .mn-bar-row.on { background: var(--soft); }
   function setTransfer(x, wallet) { x.transfer = wallet; x.labels = new Set(); x.guess = null; x.guessWallet = null; }
   function acceptGuess(t) { if (t.guessWallet) setTransfer(t, t.guessWallet); else if (t.guess) setLabels(t, t.guess); }
 
-  /* ── page: Cần xem lại ── */
+  /* ── page: To review ── */
   function renderReview() {
     const el = $('#review'), w = waiting();
     if (!w.length) {
-      el.innerHTML = '<div class="mn-head"><h2>Cần xem lại</h2></div><p class="mn-empty">Không còn giao dịch nào chờ. Mọi giao dịch đã có hạng mục hoặc là chuyển giữa ví của mình.</p>';
+      el.innerHTML = '<div class="mn-head"><h2>To review</h2></div><p class="mn-empty">Nothing to review. Every transaction has a category or is an internal transfer.</p>';
       return;
     }
     const gs = groups(), singles = w.filter(t => !t.cp).sort((a, b) => b.at - a.at);
     const guessed = w.filter(t => t.guess || t.guessWallet).length;
-    const parts = [gs.length ? `${gs.length} người hoặc nơi nhận` : '', singles.length ? `${singles.length} giao dịch lẻ` : ''].filter(Boolean).join(' · ');
-    let h = `<div class="mn-head"><h2>Cần xem lại <small>${w.length}</small></h2>${guessed ? `<button type="button" class="mn-btn" data-act="accept-all">Đúng hết các đoán (${guessed})</button>` : ''}</div>`;
-    h += `<p class="mn-rv-hint">${parts}. Người nhận nào cũng chỉ cần chọn một lần, áp cho mọi giao dịch với họ.</p><ul class="mn-rv-list">`;
+    const parts = [gs.length ? `${gs.length} payee${gs.length === 1 ? '' : 's'}` : '', singles.length ? `${singles.length} single transaction${singles.length === 1 ? '' : 's'}` : ''].filter(Boolean).join(' · ');
+    let h = `<div class="mn-head"><h2>To review <small>${w.length}</small></h2>${guessed ? `<button type="button" class="mn-btn" data-act="accept-all">Accept all guesses (${guessed})</button>` : ''}</div>`;
+    h += `<p class="mn-rv-hint">${parts}. Decide once per payee and it applies to all their transactions.</p><ul class="mn-rv-list">`;
     for (const g of gs) {
       const total = g.lines.reduce((s, t) => s + t.amount, 0), dir = total < 0 ? 'out' : 'in';
       const all = allWith(g.cp, dir).length, guess = groupGuess(g);
-      h += `<li><div class="mn-rv"><div class="mn-rv-main"><b><span class="mn-rv-who">${dir === 'out' ? '→' : '←'}</span>${esc(g.cp)}</b><small>${g.lines.length} giao dịch chờ${all > g.lines.length ? ` (của ${all})` : ''} · gần nhất ${esc(dayName(g.lines[0].at).toLowerCase())}</small></div><span class="mn-amt${dir === 'in' ? ' in' : ''}">${money(total)}</span></div>`;
+      h += `<li><div class="mn-rv"><div class="mn-rv-main"><b><span class="mn-rv-who">${dir === 'out' ? '→' : '←'}</span>${esc(g.cp)}</b><small>${g.lines.length} waiting${all > g.lines.length ? ` (of ${all})` : ''} · latest ${esc(when(g.lines[0].at))}</small></div><span class="mn-amt${dir === 'in' ? ' in' : ''}">${money(total)}</span></div>`;
       h += `<div class="mn-rv-act">${guess
-        ? `<span class="mn-guess">Đoán ${guessHtml(guess)}</span><button type="button" class="mn-btn sm" data-act="accept-group" data-cp="${esc(g.cp)}">Đúng, áp cho ${all}</button><button type="button" class="mn-link" data-act="open-group" data-cp="${esc(g.cp)}">Sửa</button>`
-        : `<span class="mn-muted">Chưa đoán được</span><button type="button" class="mn-btn sm" data-act="open-group" data-cp="${esc(g.cp)}">Gắn nhãn</button>`}</div></li>`;
+        ? `<span class="mn-guess">Guess ${guessHtml(guess)}</span><button type="button" class="mn-btn sm" data-act="accept-group" data-cp="${esc(g.cp)}">Yes, apply to ${all}</button><button type="button" class="mn-link" data-act="open-group" data-cp="${esc(g.cp)}">Change</button>`
+        : `<span class="mn-muted">No guess yet</span><button type="button" class="mn-btn sm" data-act="open-group" data-cp="${esc(g.cp)}">Add labels</button>`}</div></li>`;
     }
     for (const t of singles) {
       const k = guessKey(t);
-      h += `<li><div class="mn-rv"><div class="mn-rv-main"><b>${esc(t.title)}</b><small>${esc(W[t.wallet].name)} · ${esc(dayName(t.at).toLowerCase())} ${hhmm(t.at)}</small></div><span class="mn-amt${t.amount > 0 ? ' in' : ''}">${money(t.amount)}</span></div>`;
+      h += `<li><div class="mn-rv"><div class="mn-rv-main"><b>${esc(t.title)}</b><small>${esc(W[t.wallet].name)} · ${esc(when(t.at))} ${hhmm(t.at)}</small></div><span class="mn-amt${t.amount > 0 ? ' in' : ''}">${money(t.amount)}</span></div>`;
       h += `<div class="mn-rv-act">${k
-        ? `<span class="mn-guess">Đoán ${guessHtml(k)}</span><button type="button" class="mn-btn sm" data-act="accept-one" data-id="${t.id}">Đúng</button><button type="button" class="mn-link" data-act="open-line" data-id="${t.id}">Sửa</button>`
-        : `<span class="mn-muted">Chưa đoán được</span><button type="button" class="mn-btn sm" data-act="open-line" data-id="${t.id}">Gắn nhãn</button>`}</div></li>`;
+        ? `<span class="mn-guess">Guess ${guessHtml(k)}</span><button type="button" class="mn-btn sm" data-act="accept-one" data-id="${t.id}">Yes</button><button type="button" class="mn-link" data-act="open-line" data-id="${t.id}">Change</button>`
+        : `<span class="mn-muted">No guess yet</span><button type="button" class="mn-btn sm" data-act="open-line" data-id="${t.id}">Add labels</button>`}</div></li>`;
     }
     el.innerHTML = `${h}</ul>`;
   }
@@ -545,30 +549,30 @@ button.mn-bar-row:hover, .mn-bar-row.on { background: var(--soft); }
     const width = a => `calc((100% - 136px) * ${Math.max(0.015, a / max).toFixed(4)})`;
     const bar = r => {
       const on = ui.filter === r.l.id;
-      return `<li><button type="button" class="mn-bar-row${r.child ? ' child' : ''}${on ? ' on' : ''}" data-act="filter" data-id="${r.l.id}" aria-pressed="${on}" title="Xem ${r.n} giao dịch"><span class="mn-bar-n">${icons ? `<span class="mn-ic" aria-hidden="true">${r.l.icon}</span>` : ''}<span class="mn-bar-name">${esc(r.l.name)}${r.l.archived ? ' (đã ẩn)' : ''}</span></span><span class="mn-bar-t"><i style="width:${width(r.amount)}"></i><b>${vnd(r.amount)}</b><small>${pct(r.amount, total)}</small></span></button></li>`;
+      return `<li><button type="button" class="mn-bar-row${r.child ? ' child' : ''}${on ? ' on' : ''}" data-act="filter" data-id="${r.l.id}" aria-pressed="${on}" title="Show ${txs(r.n)}"><span class="mn-bar-n">${icons ? `<span class="mn-ic" aria-hidden="true">${r.l.icon}</span>` : ''}<span class="mn-bar-name">${esc(r.l.name)}${r.l.archived ? ' (hidden)' : ''}</span></span><span class="mn-bar-t"><i style="width:${width(r.amount)}"></i><b>${vnd(r.amount)}</b><small>${pct(r.amount, total)}</small></span></button></li>`;
     };
     const tabs = D.sections.map(s => `<button type="button" role="tab" aria-selected="${s.id === sec.id}" class="${s.id === sec.id ? 'on' : ''}" data-act="rsec" data-id="${s.id}">${esc(s.name)}</button>`).join('');
-    let h = `<div class="mn-head"><h2>Chi theo nhãn</h2></div>`;
-    h += `<p class="mn-total"><b>${vnd(total)}</b><span>tổng chi tháng 10 · ${out.length} giao dịch, mỗi giao dịch tính một lần</span></p>`;
-    h += `<div class="seg mn-rsec" role="tablist" aria-label="Xem theo mục">${tabs}</div><ul class="mn-bars${icons ? ' has-ic' : ''}">${rows.map(bar).join('')}`;
-    if (noneAmt > 0) h += `<li><div class="mn-bar-row none"><span class="mn-bar-n">${icons ? '<span class="mn-ic"></span>' : ''}<span class="mn-bar-name">${sec.main ? 'Chưa có hạng mục' : `Không có nhãn ${esc(sec.name.toLowerCase())}`}</span></span><span class="mn-bar-t"><i style="width:${width(noneAmt)}"></i><b>${vnd(noneAmt)}</b><small>${pct(noneAmt, total)}</small></span></div></li>`;
+    let h = `<div class="mn-head"><h2>Spending by label</h2></div>`;
+    h += `<p class="mn-total"><b>${vnd(total)}</b><span>spent in October · ${txs(out.length)}, each counted once</span></p>`;
+    h += `<div class="seg mn-rsec" role="tablist" aria-label="View by section">${tabs}</div><ul class="mn-bars${icons ? ' has-ic' : ''}">${rows.map(bar).join('')}`;
+    if (noneAmt > 0) h += `<li><div class="mn-bar-row none"><span class="mn-bar-n">${icons ? '<span class="mn-ic"></span>' : ''}<span class="mn-bar-name">${sec.main ? 'No category' : `No ${esc(sec.name.toLowerCase())} label`}</span></span><span class="mn-bar-t"><i style="width:${width(noneAmt)}"></i><b>${vnd(noneAmt)}</b><small>${pct(noneAmt, total)}</small></span></div></li>`;
     h += '</ul>';
     const multi = out.filter(t => [...t.labels].filter(id => secOf(id) === sec.id).length >= 2);
-    let note = rows.some(r => r.child) ? 'Nhãn cha gồm cả các nhãn con. ' : '';
-    note += 'Một giao dịch mang hai nhãn được tính ở cả hai, nên cộng các dòng có thể hơn tổng chi.';
+    let note = rows.some(r => r.child) ? 'A parent label includes its children. ' : '';
+    note += 'A transaction with two labels counts under both, so the rows can add up to more than the total.';
     if (multi.length) {
       const m = multi[0], names = sortIds([...m.labels].filter(id => secOf(id) === sec.id)).map(id => esc(lbl(id).name)).join(' + ');
-      note += ` Tháng này có ${multi.length} giao dịch như vậy, ví dụ ${esc(m.title)} (${names}).`;
+      note += ` This month ${multi.length === 1 ? 'one transaction does' : `${multi.length} transactions do`}, e.g. ${esc(m.title)} (${names}).`;
     }
     h += `<p class="mn-note">${note}</p>`;
     if (sec.main) {
       const inc = D.txns.filter(t => !t.transfer && t.amount > 0);
       const incRows = D.labels.filter(l => l.sec === sec.id && l.kind === 'in' && !l.parent)
         .map(l => ({ l, amount: inc.filter(t => effective(t.labels).has(l.id)).reduce((s, t) => s + t.amount, 0) })).filter(r => r.amount > 0);
-      if (inc.length) h += `<div class="mn-head sub"><h3>Thu</h3><span class="mn-muted">${money(inc.reduce((s, t) => s + t.amount, 0))}</span></div><ul class="mn-inc">${incRows.map(r => `<li><span><span class="mn-ic" aria-hidden="true">${r.l.icon}</span>${esc(r.l.name)}</span><b>${money(r.amount)}</b></li>`).join('')}</ul>`;
+      if (inc.length) h += `<div class="mn-head sub"><h3>Income</h3><span class="mn-muted">${money(inc.reduce((s, t) => s + t.amount, 0))}</span></div><ul class="mn-inc">${incRows.map(r => `<li><span><span class="mn-ic" aria-hidden="true">${r.l.icon}</span>${esc(r.l.name)}</span><b>${money(r.amount)}</b></li>`).join('')}</ul>`;
     }
     const moved = D.txns.filter(t => t.transfer && t.amount < 0);
-    if (moved.length) h += `<p class="mn-sub">Chuyển giữa ví của mình ${vnd(sumOut(moved))}, không tính vào chi.</p>`;
+    if (moved.length) h += `<p class="mn-sub">Internal transfers ${vnd(sumOut(moved))}, not counted as spending.</p>`;
     el.innerHTML = h;
   }
 
@@ -577,8 +581,8 @@ button.mn-bar-row:hover, .mn-bar-row.on { background: var(--soft); }
     const on = ui.picked.has(t.id), dec = decided(t);
     const sub = [`<i class="mn-dot" style="background:${W[t.wallet].color}"></i>${esc(W[t.wallet].name)}`];
     if (t.cp && !t.transfer) sub.push(`${t.amount < 0 ? '→' : '←'} ${esc(t.cp)}`);
-    if (t.transfer) sub.push(`chuyển ${t.amount < 0 ? 'sang' : 'từ'} ${esc(W[t.transfer].name)}`);
-    if (!dec) sub.push(`<span class="mn-wait">chờ xem${t.guessWallet ? `, đoán chuyển sang ${esc(W[t.guessWallet].name)}` : ''}</span>`);
+    if (t.transfer) sub.push(`transfer ${t.amount < 0 ? 'to' : 'from'} ${esc(W[t.transfer].name)}`);
+    if (!dec) sub.push(`<span class="mn-wait">to review${t.guessWallet ? `, guess: transfer to ${esc(W[t.guessWallet].name)}` : ''}</span>`);
     sub.push(hhmm(t.at));
     if (t.note) sub.push(`<em>“${esc(t.note)}”</em>`);
     const tags = t.transfer ? '' : [...sortIds(t.labels).map(id => pill(id)), ...(!dec && t.guess ? sortIds(t.guess).map(id => pill(id, 'guess')) : [])].join('');
@@ -598,14 +602,14 @@ button.mn-bar-row:hover, .mn-bar-row.on { background: var(--soft); }
       g.items.push(t);
       if (!t.transfer && t.amount < 0) g.out -= t.amount;
     }
-    let h = `<div class="mn-head"><h2>Giao dịch tháng 10</h2>${f ? `<button type="button" class="mn-chip on" data-act="filter" data-id="${f.id}" aria-label="Bỏ lọc ${esc(f.name)}">${ltxt(f)} <span aria-hidden="true">✕</span></button>` : ''}<span class="mn-muted">${rows.length} giao dịch</span>${ui.picking ? '<button type="button" class="mn-link" data-act="pick-stop">Xong</button>' : '<button type="button" class="mn-link" data-act="pick-start">Chọn nhiều</button>'}</div>`;
-    if (f) h += `<p class="mn-rv-hint">Đang lọc theo ${ltxt(f)}${kids(f.id).length ? ', gồm cả nhãn con' : ''}.</p>`;
-    if (ui.picking) h += '<p class="mn-rv-hint">Chạm để chọn giao dịch, hoặc chọn cả ngày, rồi gắn nhãn một lần cho tất cả. Chuyển giữa ví của mình không chọn được vì không mang nhãn.</p>';
-    if (!rows.length) h += '<p class="mn-empty">Không có giao dịch nào.</p>';
+    let h = `<div class="mn-head"><h2>October transactions</h2>${f ? `<button type="button" class="mn-chip on" data-act="filter" data-id="${f.id}" aria-label="Clear the ${esc(f.name)} filter">${ltxt(f)} <span aria-hidden="true">✕</span></button>` : ''}<span class="mn-muted">${txs(rows.length)}</span>${ui.picking ? '<button type="button" class="mn-link" data-act="pick-stop">Done</button>' : '<button type="button" class="mn-link" data-act="pick-start">Select</button>'}</div>`;
+    if (f) h += `<p class="mn-rv-hint">Showing ${ltxt(f)}${kids(f.id).length ? ' and its child labels' : ''}.</p>`;
+    if (ui.picking) h += '<p class="mn-rv-hint">Tap transactions or a whole day, then label them all at once. Internal transfers can’t be picked because they take no labels.</p>';
+    if (!rows.length) h += '<p class="mn-empty">No transactions.</p>';
     for (const g of days) {
       const ids = g.items.filter(t => !t.transfer).map(t => t.id);
       const allOn = ids.length > 0 && ids.every(id => ui.picked.has(id));
-      const right = ui.picking && ids.length ? `<button type="button" class="mn-day-pick" data-act="pick-day" data-day="${g.k}">${allOn ? 'Bỏ chọn ngày này' : 'Chọn cả ngày'}</button>` : g.out > 0 ? `<small>chi ${vnd(g.out)}</small>` : '';
+      const right = ui.picking && ids.length ? `<button type="button" class="mn-day-pick" data-act="pick-day" data-day="${g.k}">${allOn ? 'Deselect day' : 'Select day'}</button>` : g.out > 0 ? `<small>spent ${vnd(g.out)}</small>` : '';
       h += `<section class="mn-day"><h3><span>${esc(dayName(g.at))}</span>${right}</h3><ul>${g.items.map(rowHtml).join('')}</ul></section>`;
     }
     el.innerHTML = h;
@@ -614,25 +618,25 @@ button.mn-bar-row:hover, .mn-bar-row.on { background: var(--soft); }
     const host = $('#selbar');
     if (!ui.picking) { host.innerHTML = ''; return; }
     let bar = $('.mn-selbar', host);
-    if (!bar) { host.innerHTML = '<div class="mn-selbar" role="toolbar" aria-label="Giao dịch đã chọn"></div>'; bar = $('.mn-selbar', host); }
-    bar.innerHTML = `<span>${ui.picked.size ? `Đã chọn ${ui.picked.size}` : 'Chưa chọn giao dịch nào'}</span><button type="button" class="go" data-act="bulk"${ui.picked.size ? '' : ' disabled'}>Gắn nhãn</button><button type="button" data-act="pick-stop">Xong</button>`;
+    if (!bar) { host.innerHTML = '<div class="mn-selbar" role="toolbar" aria-label="Selected transactions"></div>'; bar = $('.mn-selbar', host); }
+    bar.innerHTML = `<span>${ui.picked.size ? `${ui.picked.size} selected` : 'Nothing selected'}</span><button type="button" class="go" data-act="bulk"${ui.picked.size ? '' : ' disabled'}>Label</button><button type="button" data-act="pick-stop">Done</button>`;
   }
 
   /* ── the one sheet: a line, everyone with a name, several lines, or the labels themselves ── */
-  const modeSeg = (d, dir) => `<div class="seg mn-mode" role="radiogroup" aria-label="Loại giao dịch">`
-    + `<button type="button" role="radio" aria-checked="${d.mode === 'label'}" class="${d.mode === 'label' ? 'on' : ''}" data-act="mode" data-id="label">${dir === 'out' ? 'Chi tiêu' : 'Thu nhập'}</button>`
-    + `<button type="button" role="radio" aria-checked="${d.mode === 'transfer'}" class="${d.mode === 'transfer' ? 'on' : ''}" data-act="mode" data-id="transfer">Chuyển giữa ví của mình</button></div>`;
-  const walletsHtml = (d, dir, exclude) => `<p class="mn-label" style="margin-top:18px">${dir === 'out' ? 'Chuyển sang ví nào' : 'Nhận từ ví nào'}</p><div class="mn-radios" role="radiogroup" aria-label="Ví">`
+  const modeSeg = (d, dir) => `<div class="seg mn-mode" role="radiogroup" aria-label="Transaction type">`
+    + `<button type="button" role="radio" aria-checked="${d.mode === 'label'}" class="${d.mode === 'label' ? 'on' : ''}" data-act="mode" data-id="label">${dir === 'out' ? 'Expense' : 'Income'}</button>`
+    + `<button type="button" role="radio" aria-checked="${d.mode === 'transfer'}" class="${d.mode === 'transfer' ? 'on' : ''}" data-act="mode" data-id="transfer">Internal transfer</button></div>`;
+  const walletsHtml = (d, dir, exclude) => `<p class="mn-label" style="margin-top:18px">${dir === 'out' ? 'Moved to' : 'Moved from'}</p><div class="mn-radios" role="radiogroup" aria-label="Account">`
     + WALLETS.filter(w => !exclude.includes(w.id)).map(w => `<button type="button" role="radio" aria-checked="${d.wallet === w.id}" class="mn-radio${d.wallet === w.id ? ' on' : ''}" data-act="wallet" data-id="${w.id}"><span class="rd" aria-hidden="true"></span><i class="mn-dot" style="background:${w.color}"></i>${esc(w.name)}</button>`).join('')
-    + '</div><p class="mn-sub">Chuyển giữa ví của mình không phải chi hay thu, nên không gắn nhãn và không tính vào báo cáo.</p>';
-  const foot = (note, label, disabled, act = 'save') => `<div class="mn-sheet-foot"><span class="mn-foot-note">${esc(note)}</span>${act === 'save' ? '<button type="button" class="mn-link" data-act="close">Huỷ</button>' : ''}<button type="button" class="mn-btn" data-act="${act}"${disabled ? ' disabled' : ''}>${esc(label)}</button></div>`;
+    + '</div><p class="mn-sub">An internal transfer isn’t spending or income, so it takes no labels and stays out of reports.</p>';
+  const foot = (note, label, disabled, act = 'save') => `<div class="mn-sheet-foot"><span class="mn-foot-note">${esc(note)}</span>${act === 'save' ? '<button type="button" class="mn-link" data-act="close">Cancel</button>' : ''}<button type="button" class="mn-btn" data-act="${act}"${disabled ? ' disabled' : ''}>${esc(label)}</button></div>`;
 
   function chip(l, d, eff) {
     if (d.type === 'bulk') return bulkChip(l, d);
     const on = d.sel.has(l.id), auto = !on && eff.has(l.id);
     const via = auto ? sortIds([...d.sel].filter(x => ancestors(x).includes(l.id))).map(x => lbl(x).name).join(', ') : '';
-    return `<button type="button" class="mn-pick-i${on ? ' on' : auto ? ' auto' : ''}" data-act="tog" data-id="${l.id}" aria-pressed="${on || auto}"${auto ? ` title="${esc(`Tự tính vì đã chọn ${via}. Chạm để bỏ cả nhãn con.`)}"` : ''}>`
-      + `${on ? '<span class="ok" aria-hidden="true">✓</span>' : ''}${ltxt(l)}${auto ? '<small>tự tính</small>' : ''}</button>`;
+    return `<button type="button" class="mn-pick-i${on ? ' on' : auto ? ' auto' : ''}" data-act="tog" data-id="${l.id}" aria-pressed="${on || auto}"${auto ? ` title="${esc(`Included because ${via} is picked. Tap to clear it and its children.`)}"` : ''}>`
+      + `${on ? '<span class="ok" aria-hidden="true">✓</span>' : ''}${ltxt(l)}${auto ? '<small>auto</small>' : ''}</button>`;
   }
   function bulkChip(l, s) {
     const N = s._N, b = s._before(l.id), a = s._after(l.id), op = s.ops.get(l.id);
@@ -649,27 +653,27 @@ button.mn-bar-row:hover, .mn-bar-row.on { background: var(--soft); }
       return ks.length ? `<span class="fam">${chip(p, d, eff)}<span class="fam-sep" aria-hidden="true">›</span>${ks.map(k => chip(k, d, eff)).join('')}</span>` : chip(p, d, eff);
     }).join('');
     return D.sections.map(sec => {
-      const chips = sec.main && dirs.length > 1 ? `${fam(tops(sec.id, ['out']))}<span class="mn-pick-sep">Thu</span>${fam(tops(sec.id, ['in']))}` : fam(tops(sec.id, dirs));
+      const chips = sec.main && dirs.length > 1 ? `${fam(tops(sec.id, ['out']))}<span class="mn-pick-sep">Income</span>${fam(tops(sec.id, ['in']))}` : fam(tops(sec.id, dirs));
       const add = d.adding === sec.id
-        ? `<input class="mn-pick-new" id="new-label" data-sec="${sec.id}" value="${esc(d.newName)}" maxlength="40" autocomplete="off" placeholder="Tên nhãn, Enter để thêm" aria-label="Nhãn mới trong ${esc(sec.name)}">`
-        : `<button type="button" class="mn-pick-i new" data-act="add-label" data-sec="${sec.id}" aria-label="Thêm nhãn vào ${esc(sec.name)}" title="Thêm nhãn">＋</button>`;
-      return `<div class="mn-facet-head"><p class="mn-label">${esc(sec.name)}</p>${sec.main && d.type !== 'bulk' ? '<span class="mn-muted">cần ít nhất 1</span>' : ''}</div><div class="mn-pick">${chips}${add}</div>`;
+        ? `<input class="mn-pick-new" id="new-label" data-sec="${sec.id}" value="${esc(d.newName)}" maxlength="40" autocomplete="off" placeholder="New label, then Enter" aria-label="New label in ${esc(sec.name)}">`
+        : `<button type="button" class="mn-pick-i new" data-act="add-label" data-sec="${sec.id}" aria-label="Add a label to ${esc(sec.name)}" title="Add a label">＋</button>`;
+      return `<div class="mn-facet-head"><p class="mn-label">${esc(sec.name)}</p>${sec.main && d.type !== 'bulk' ? '<span class="mn-muted">at least 1</span>' : ''}</div><div class="mn-pick">${chips}${add}</div>`;
     }).join('');
   }
   const ruleOn = (d, id) => carries(id) !== d.ruleFlip.has(id);
   function ruleBox(d, t, scope) {
     if (!t.cp && !t.words) return '';
-    const text = t.cp ? `Áp cho mọi giao dịch với <b>${esc(t.cp)}</b> (${scope}), cả cũ lẫn sau này` : `Nhớ cho lần sau: giao dịch có chữ “${esc(t.words)}” cũng xếp như vầy`;
+    const text = t.cp ? `Apply to every transaction with <b>${esc(t.cp)}</b> (${scope}), past and future` : `Remember: next time a transaction contains “${esc(t.words)}”, do the same`;
     let h = `<div class="mn-everyone"><label class="mn-remember"><input type="checkbox" id="rule"${d.rule ? ' checked' : ''}><span>${text}</span></label>`;
     if (d.rule && d.mode === 'label' && d.sel.size) {
       const ids = sortIds(d.sel);
       const off = [...new Set(ids.filter(id => !carries(id)).map(id => sect(secOf(id)).name))];
-      h += `<div class="mn-rule"><span class="mn-pick-cap">${t.cp ? `Nhãn đi theo ${esc(t.cp)}` : 'Lần sau gắn'}</span><div class="mn-pick">${ids.map(id => {
+      h += `<div class="mn-rule"><span class="mn-pick-cap">${t.cp ? `Labels that follow ${esc(t.cp)}` : 'Labels for next time'}</span><div class="mn-pick">${ids.map(id => {
         const on = ruleOn(d, id);
         return `<button type="button" class="mn-pick-i sm${on ? ' on' : ''}" aria-pressed="${on}" data-act="rule-tog" data-id="${id}">${on ? '<span class="ok" aria-hidden="true">✓</span>' : ''}${ltxt(lbl(id))}</button>`;
-      }).join('')}</div>${off.length ? `<p class="mn-sub">${esc(off.join(' và '))} thường chỉ đúng cho lần này nên mặc định không đi theo. Chạm để đổi.</p>` : ''}</div>`;
+      }).join('')}</div>${off.length ? `<p class="mn-sub">${esc(off.join(' and '))} labels usually fit only this one, so they don’t follow by default. Tap one to change that.</p>` : ''}</div>`;
     }
-    if (d.rule && t.cp) h += `<input class="mn-pick-label" id="rule-name" value="${esc(d.name)}" maxlength="80" placeholder="Đặt tên cho họ (không bắt buộc), vd: Cà phê sáng">`;
+    if (d.rule && t.cp) h += `<input class="mn-pick-label" id="rule-name" value="${esc(d.name)}" maxlength="80" placeholder="Name them (optional), e.g. Morning coffee">`;
     return `${h}</div>`;
   }
 
@@ -677,32 +681,32 @@ button.mn-bar-row:hover, .mn-bar-row.on { background: var(--soft); }
     const t = find(d.id);
     if (!t) return '';
     const dir = dirOf(t), scope = t.cp ? allWith(t.cp, dir).length : 1;
-    let h = `<div class="mn-sheet-head"><div><b>${esc(t.title)}</b><small>${esc(W[t.wallet].name)} · ${t.src === 'note' ? 'ghi tay' : 'từ ngân hàng'}${t.cp ? ` · ${dir === 'out' ? '→' : '←'} ${esc(t.cp)}` : ''} · ${hhmm(t.at)} ${esc(dayName(t.at).toLowerCase())}</small></div><span class="mn-amt${dir === 'in' ? ' in' : ''}">${money(t.amount)}</span></div>`;
+    let h = `<div class="mn-sheet-head"><div><b>${esc(t.title)}</b><small>${esc(W[t.wallet].name)} · ${t.src === 'note' ? 'manual entry' : 'from the bank'}${t.cp ? ` · ${dir === 'out' ? '→' : '←'} ${esc(t.cp)}` : ''} · ${hhmm(t.at)} ${esc(when(t.at))}</small></div><span class="mn-amt${dir === 'in' ? ' in' : ''}">${money(t.amount)}</span></div>`;
     if (t.bank) h += `<p class="mn-sub">${esc(t.bank)}</p>`;
     h += modeSeg(d, dir);
-    if (d.fromGuess) h += '<p class="mn-guess-note">Đã chọn sẵn theo đoán. Đúng thì bấm Lưu, sai thì chạm để đổi.</p>';
+    if (d.fromGuess) h += '<p class="mn-guess-note">Filled in from a guess. Save if it’s right, or tap to change it.</p>';
     h += d.mode === 'label' ? sectionsHtml(d, [dir]) : walletsHtml(d, dir, [t.wallet]);
     h += ruleBox(d, t, scope);
-    h += `<div class="mn-form"><label>Số tiền<input value="${nf.format(Math.abs(t.amount))}" disabled></label><label>Tài khoản<select disabled><option>${esc(W[t.wallet].name)}</option></select></label>`
-      + `<label>Nội dung<input id="f-title" value="${esc(d.title)}" maxlength="120"></label><label>Ghi chú<input id="f-note" value="${esc(d.note)}" maxlength="120" placeholder="đi với ai, vì sao…"></label></div>`;
-    if (t.src !== 'note') h += '<p class="mn-sub">Số tiền và tài khoản của giao dịch từ ngân hàng giữ nguyên như ngân hàng báo.</p>';
+    h += `<div class="mn-form"><label>Amount<input value="${nf.format(Math.abs(t.amount))}" disabled></label><label>Account<select disabled><option>${esc(W[t.wallet].name)}</option></select></label>`
+      + `<label>Description<input id="f-title" value="${esc(d.title)}" maxlength="120"></label><label>Note<input id="f-note" value="${esc(d.note)}" maxlength="120" placeholder="who with, what for…"></label></div>`;
+    if (t.src !== 'note') h += '<p class="mn-sub">Amount and account stay as the bank reported them.</p>';
     const many = d.rule && t.cp && (d.mode === 'transfer' || [...d.sel].some(id => ruleOn(d, id))) ? scope : 1;
-    const note = d.mode === 'transfer' ? (d.wallet ? 'Không tính vào chi hay thu' : 'Chọn một ví') : [...d.sel].some(isMain) ? '' : 'Chưa có hạng mục nên vẫn nằm ở Cần xem lại';
-    return h + foot(note, many > 1 ? `Lưu cho ${many} giao dịch` : 'Lưu', d.mode === 'transfer' && !d.wallet);
+    const note = d.mode === 'transfer' ? (d.wallet ? 'Not counted as spending or income' : 'Pick an account') : [...d.sel].some(isMain) ? '' : 'No category yet, so it stays in To review';
+    return h + foot(note, many > 1 ? `Save for ${txs(many)}` : 'Save', d.mode === 'transfer' && !d.wallet);
   }
   function groupBody(d) {
     const lines = allWith(d.cp, d.dir).sort((a, b) => b.at - a.at);
     const total = lines.reduce((s, t) => s + t.amount, 0);
-    let h = `<div class="mn-sheet-head"><div><b><span class="mn-rv-who">${d.dir === 'out' ? '→' : '←'}</span>${esc(d.cp)}</b><small>${lines.length} giao dịch · chọn một lần cho mọi giao dịch với họ, cả sau này</small></div><span class="mn-amt${total > 0 ? ' in' : ''}">${money(total)}</span></div>`;
-    const now = t => (t.transfer ? `<span class="mn-tag">⇄ sang ${esc(W[t.transfer].name)}</span>` : `${sortIds(t.labels).map(id => pill(id)).join('')}${decided(t) ? '' : '<span class="mn-wait">chờ xem</span>'}`);
+    let h = `<div class="mn-sheet-head"><div><b><span class="mn-rv-who">${d.dir === 'out' ? '→' : '←'}</span>${esc(d.cp)}</b><small>${txs(lines.length)} · one choice for all of them, future ones too</small></div><span class="mn-amt${total > 0 ? ' in' : ''}">${money(total)}</span></div>`;
+    const now = t => (t.transfer ? `<span class="mn-tag">⇄ to ${esc(W[t.transfer].name)}</span>` : `${sortIds(t.labels).map(id => pill(id)).join('')}${decided(t) ? '' : '<span class="mn-wait">to review</span>'}`);
     h += `<ul class="mn-mini">${lines.map(t => `<li><span>${dm(t.at)} ${hhmm(t.at)}</span><span class="mn-mini-t"><span>${esc(t.title)}</span>${now(t)}</span><b>${money(t.amount)}</b></li>`).join('')}</ul>`;
     h += modeSeg(d, d.dir);
-    if (d.fromGuess) h += '<p class="mn-guess-note">Đã chọn sẵn theo đoán. Đúng thì bấm Áp, sai thì chạm để đổi.</p>';
+    if (d.fromGuess) h += '<p class="mn-guess-note">Filled in from a guess. Apply if it’s right, or tap to change it.</p>';
     h += d.mode === 'label' ? sectionsHtml(d, [d.dir]) : walletsHtml(d, d.dir, [...new Set(lines.map(t => t.wallet))]);
-    if (d.mode === 'label' && lines.some(t => t.labels.size || t.transfer)) h += `<p class="mn-sub">Mục nào có nhãn được chọn thì nhãn đó thay nhãn cũ ở mục ấy cho cả ${lines.length} giao dịch; mục không chọn gì giữ nguyên.</p>`;
-    h += `<div class="mn-everyone"><input class="mn-pick-label" id="group-name" value="${esc(d.name)}" maxlength="80" placeholder="Đặt tên cho họ (không bắt buộc), vd: Trà sữa"></div>`;
-    const note = d.mode === 'transfer' ? (d.wallet ? 'Không tính vào chi hay thu' : 'Chọn một ví') : [...d.sel].some(isMain) ? '' : d.sel.size ? 'Chưa có hạng mục nên vẫn nằm ở Cần xem lại' : 'Chọn ít nhất một nhãn';
-    return h + foot(note, `Áp cho ${lines.length} giao dịch`, d.mode === 'transfer' ? !d.wallet : !d.sel.size);
+    if (d.mode === 'label' && lines.some(t => t.labels.size || t.transfer)) h += `<p class="mn-sub">In each section where you pick a label, it replaces the old labels on all ${txs(lines.length)}. Sections you leave alone keep their labels.</p>`;
+    h += `<div class="mn-everyone"><input class="mn-pick-label" id="group-name" value="${esc(d.name)}" maxlength="80" placeholder="Name them (optional), e.g. Bubble tea"></div>`;
+    const note = d.mode === 'transfer' ? (d.wallet ? 'Not counted as spending or income' : 'Pick an account') : [...d.sel].some(isMain) ? '' : d.sel.size ? 'No category yet, so they stay in To review' : 'Pick at least one label';
+    return h + foot(note, `Apply to ${txs(lines.length)}`, d.mode === 'transfer' ? !d.wallet : !d.sel.size);
   }
   const bulkLines = s => s.ids.map(find).filter(Boolean);
   function applyOps(lines, ops) {
@@ -725,42 +729,42 @@ button.mn-bar-row:hover, .mn-bar-row.on { background: var(--soft); }
     const hasMain = set => [...set].some(isMain);
     const back = lines.filter((t, i) => hasMain(t.labels) && !hasMain(next[i])).length;
     const done = lines.filter((t, i) => !hasMain(t.labels) && hasMain(next[i])).length;
-    let h = `<div class="mn-sheet-head"><div><b>Gắn nhãn cho ${N} giao dịch</b><small>Chạm một nhãn để gắn cho cả ${N}, chạm nữa để gỡ khỏi cả ${N}, chạm nữa để giữ như cũ. Số nhỏ là bao nhiêu giao dịch đang có nhãn đó.</small></div></div>`;
+    let h = `<div class="mn-sheet-head"><div><b>Label ${txs(N)}</b><small>Tap a label once to add it to all ${N}, again to remove it from all ${N}, and a third time to leave it as it was. The small number shows how many have it now.</small></div></div>`;
     h += sectionsHtml(s, dirs);
     const adds = sortIds([...s.ops].filter(([, o]) => o === 'add').map(([id]) => id));
     const rms = sortIds([...s.ops].filter(([, o]) => o === 'remove').map(([id]) => id));
     h += `<p class="mn-bulk-sum">${adds.length || rms.length
-      ? `${adds.length ? `Gắn ${adds.map(id => pill(id)).join('')}` : ''}${adds.length && rms.length ? '<span aria-hidden="true">·</span>' : ''}${rms.length ? `Gỡ ${rms.map(id => pill(id, 'rm')).join('')}` : ''}<span aria-hidden="true">·</span>${changed} trong ${N} giao dịch sẽ thay đổi`
-      : 'Chưa đổi gì.'}</p>`;
-    if (done) h += `<p class="mn-sub">${done} giao dịch có hạng mục và rời Cần xem lại.</p>`;
-    if (back) h += `<p class="mn-sub" style="color:var(--bad)">${back} giao dịch không còn hạng mục nào, sẽ quay lại Cần xem lại.</p>`;
-    return h + foot('', `Lưu cho ${N} giao dịch`, !s.ops.size);
+      ? `${adds.length ? `Add ${adds.map(id => pill(id)).join('')}` : ''}${adds.length && rms.length ? '<span aria-hidden="true">·</span>' : ''}${rms.length ? `Remove ${rms.map(id => pill(id, 'rm')).join('')}` : ''}<span aria-hidden="true">·</span>${changed} of ${N} will change`
+      : 'Nothing changed yet.'}</p>`;
+    if (done) h += `<p class="mn-sub">${txs(done)} ${done === 1 ? 'gets a category and leaves' : 'get a category and leave'} To review.</p>`;
+    if (back) h += `<p class="mn-sub" style="color:var(--bad)">${txs(back)} will have no category left and go back to To review.</p>`;
+    return h + foot('', `Save for ${txs(N)}`, !s.ops.size);
   }
 
   /* the labels themselves: sections, parents and children */
   function treeBody(s) {
     const cnt = id => D.txns.filter(t => !t.transfer && effective(t.labels).has(id)).length;
-    const carryBox = sec => `<label class="mn-remember tr-carry" title="Khi chọn “Áp cho mọi giao dịch với…”, nhãn của mục này đi theo người nhận"><input type="checkbox" data-carry="${sec.id}"${sec.carry ? ' checked' : ''}${sec.main ? ' disabled' : ''}><span>Tự áp theo người nhận</span></label>`;
+    const carryBox = sec => `<label class="mn-remember tr-carry" title="When you apply labels to every transaction with a payee, labels from this section go along"><input type="checkbox" data-carry="${sec.id}"${sec.carry ? ' checked' : ''}${sec.main ? ' disabled' : ''}><span>Follows the payee</span></label>`;
     const row = (l, kid) => {
       if (s.edit?.id === l.id) return editRow(l);
-      return `<li class="tr-row${kid ? ' kid' : ''}"><span class="tr-n">${ltxt(l)}</span><small class="tr-c">${cnt(l.id)} gd</small>${kid ? '' : `<button type="button" class="mn-link quiet" data-act="tr-child" data-id="${l.id}">＋ Nhãn con</button>`}<button type="button" class="mn-link" data-act="tr-edit" data-id="${l.id}">Sửa</button></li>`;
+      return `<li class="tr-row${kid ? ' kid' : ''}"><span class="tr-n">${ltxt(l)}</span><small class="tr-c">${cnt(l.id)}</small>${kid ? '' : `<button type="button" class="mn-link quiet" data-act="tr-child" data-id="${l.id}">＋ Child label</button>`}<button type="button" class="mn-link" data-act="tr-edit" data-id="${l.id}">Edit</button></li>`;
     };
     const editRow = l => {
       const hasKids = kids(l.id).length > 0;
       const parents = live(l.sec).filter(p => !p.parent && p.id !== l.id && p.kind === l.kind);
-      return `<li class="tr-edit${l.parent ? ' kid' : ''}"><div class="tr-fields"><input class="tr-ic" id="tr-icon" value="${esc(s.edit.icon)}" maxlength="4" placeholder="🙂" aria-label="Biểu tượng (không bắt buộc)"><input class="tr-name" id="tr-name" value="${esc(s.edit.name)}" maxlength="40" aria-label="Tên nhãn"></div>`
-        + `<label class="tr-parent">Nằm trong<select id="tr-parent"${hasKids ? ' disabled' : ''}><option value="">Không, là nhãn gốc</option>${parents.map(p => `<option value="${p.id}"${s.edit.parent === p.id ? ' selected' : ''}>${esc(p.name)}</option>`).join('')}</select></label>`
-        + (hasKids ? '<p class="mn-sub" style="margin:0">Nhãn này đang có nhãn con nên giữ là nhãn gốc.</p>' : '')
-        + `<div class="tr-act"><button type="button" class="mn-link danger" data-act="tr-archive" data-id="${l.id}"${hasKids ? ' disabled title="Ẩn các nhãn con trước"' : ''}>Ẩn nhãn</button><span></span><button type="button" class="mn-link" data-act="tr-cancel">Huỷ</button><button type="button" class="mn-btn sm" data-act="tr-save">Lưu</button></div></li>`;
+      return `<li class="tr-edit${l.parent ? ' kid' : ''}"><div class="tr-fields"><input class="tr-ic" id="tr-icon" value="${esc(s.edit.icon)}" maxlength="4" placeholder="🙂" aria-label="Icon (optional)"><input class="tr-name" id="tr-name" value="${esc(s.edit.name)}" maxlength="40" aria-label="Label name"></div>`
+        + `<label class="tr-parent">Inside<select id="tr-parent"${hasKids ? ' disabled' : ''}><option value="">Nothing, top level</option>${parents.map(p => `<option value="${p.id}"${s.edit.parent === p.id ? ' selected' : ''}>${esc(p.name)}</option>`).join('')}</select></label>`
+        + (hasKids ? '<p class="mn-sub" style="margin:0">This label has child labels, so it stays at the top level.</p>' : '')
+        + `<div class="tr-act"><button type="button" class="mn-link danger" data-act="tr-archive" data-id="${l.id}"${hasKids ? ' disabled title="Hide its child labels first"' : ''}>Hide</button><span></span><button type="button" class="mn-link" data-act="tr-cancel">Cancel</button><button type="button" class="mn-btn sm" data-act="tr-save">Save</button></div></li>`;
     };
     const newRow = () => {
       const a = s.adding;
-      return `<li class="tr-edit${a.parent ? ' kid' : ''}"><div class="tr-fields"><input class="tr-ic" id="tr-icon" value="${esc(a.icon)}" maxlength="4" placeholder="🙂" aria-label="Biểu tượng (không bắt buộc)"><input class="tr-name" id="tr-name" value="${esc(a.name)}" maxlength="40" placeholder="${a.parent ? `Nhãn con của ${esc(lbl(a.parent).name)}` : 'Tên nhãn mới'}" aria-label="Tên nhãn"></div>`
-        + '<div class="tr-act"><span></span><button type="button" class="mn-link" data-act="tr-cancel">Huỷ</button><button type="button" class="mn-btn sm" data-act="tr-save">Thêm</button></div></li>';
+      return `<li class="tr-edit${a.parent ? ' kid' : ''}"><div class="tr-fields"><input class="tr-ic" id="tr-icon" value="${esc(a.icon)}" maxlength="4" placeholder="🙂" aria-label="Icon (optional)"><input class="tr-name" id="tr-name" value="${esc(a.name)}" maxlength="40" placeholder="${a.parent ? `Child of ${esc(lbl(a.parent).name)}` : 'New label name'}" aria-label="Label name"></div>`
+        + '<div class="tr-act"><span></span><button type="button" class="mn-link" data-act="tr-cancel">Cancel</button><button type="button" class="mn-btn sm" data-act="tr-save">Add</button></div></li>';
     };
-    let h = '<div class="mn-sheet-head"><div><b>Quản lý nhãn</b><small>Mục chỉ để xếp nhãn cho dễ tìm. Nhãn con tự tính vào nhãn cha. Một giao dịch mang được nhiều nhãn.</small></div></div>';
+    let h = '<div class="mn-sheet-head"><div><b>Manage labels</b><small>Sections are just headings. A child label counts toward its parent, and a transaction can carry many labels. The numbers show how many transactions carry each label.</small></div></div>';
     for (const sec of D.sections) {
-      for (const [kind, cap] of sec.main ? [['out', 'chi'], ['in', 'thu']] : [['any', '']]) {
+      for (const [kind, cap] of sec.main ? [['out', 'spending'], ['in', 'income']] : [['any', '']]) {
         h += `<section class="tr-sec"><div class="tr-head"><p class="mn-label">${esc(sec.name)}${cap ? ` · ${cap}` : ''}</p>${kind !== 'in' ? carryBox(sec) : ''}</div><ul class="tr">`;
         for (const p of live(sec.id).filter(l => !l.parent && l.kind === kind)) {
           h += row(p, false);
@@ -768,15 +772,15 @@ button.mn-bar-row:hover, .mn-bar-row.on { background: var(--soft); }
           if (s.adding?.parent === p.id) h += newRow();
         }
         if (s.adding && !s.adding.parent && s.adding.sec === sec.id && s.adding.kind === kind) h += newRow();
-        h += `</ul><button type="button" class="mn-link tr-add" data-act="tr-new" data-sec="${sec.id}" data-id="${kind}">＋ Nhãn mới${cap ? ` (${cap})` : ''}</button></section>`;
+        h += `</ul><button type="button" class="mn-link tr-add" data-act="tr-new" data-sec="${sec.id}" data-id="${kind}">＋ New label${cap ? ` (${cap})` : ''}</button></section>`;
       }
     }
     const archived = D.labels.filter(l => l.archived);
-    if (archived.length) h += `<section class="tr-sec"><p class="mn-label">Đã ẩn</p><ul class="tr">${archived.map(l => `<li class="tr-row off"><span class="tr-n">${ltxt(l)}</span><small class="tr-c">${esc(sect(l.sec)?.name ?? '')}</small><button type="button" class="mn-link" data-act="tr-unarchive" data-id="${l.id}">Hiện lại</button></li>`).join('')}</ul></section>`;
+    if (archived.length) h += `<section class="tr-sec"><p class="mn-label">Hidden</p><ul class="tr">${archived.map(l => `<li class="tr-row off"><span class="tr-n">${ltxt(l)}</span><small class="tr-c">${esc(sect(l.sec)?.name ?? '')}</small><button type="button" class="mn-link" data-act="tr-unarchive" data-id="${l.id}">Show</button></li>`).join('')}</ul></section>`;
     h += s.addingSec
-      ? `<div class="tr-newsec"><input class="mn-pick-label" id="new-sec" value="${esc(s.secName)}" maxlength="40" placeholder="Tên mục mới, vd: Dự án" aria-label="Tên mục mới"><button type="button" class="mn-btn sm" data-act="tr-sec-save">Thêm mục</button><button type="button" class="mn-link" data-act="tr-sec-cancel">Huỷ</button></div>`
-      : '<p style="margin:20px 0 0"><button type="button" class="mn-link" data-act="tr-new-sec">＋ Mục mới</button></p>';
-    return h + foot('Đổi ở đây có hiệu lực ngay ở mọi chỗ.', 'Xong', false, 'close');
+      ? `<div class="tr-newsec"><input class="mn-pick-label" id="new-sec" value="${esc(s.secName)}" maxlength="40" placeholder="New section name, e.g. Projects" aria-label="New section name"><button type="button" class="mn-btn sm" data-act="tr-sec-save">Add section</button><button type="button" class="mn-link" data-act="tr-sec-cancel">Cancel</button></div>`
+      : '<p style="margin:20px 0 0"><button type="button" class="mn-link" data-act="tr-new-sec">＋ New section</button></p>';
+    return h + foot('Changes here apply everywhere right away.', 'Done', false, 'close');
   }
 
   const sheetBody = s => (s.type === 'line' ? lineBody(s) : s.type === 'group' ? groupBody(s) : s.type === 'bulk' ? bulkBody(s) : treeBody(s));
@@ -828,7 +832,7 @@ button.mn-bar-row:hover, .mn-bar-row.on { background: var(--soft); }
       if (d.name.trim()) [t, ...others].forEach(x => { x.title = d.name.trim(); });
     }
     closeSheet(); update();
-    toast(n > 1 ? `Đã lưu cho ${n} giao dịch` : 'Đã lưu');
+    toast(n > 1 ? `Saved for ${txs(n)}` : 'Saved');
   }
   function saveGroup(d) {
     const lines = allWith(d.cp, d.dir);
@@ -837,7 +841,7 @@ button.mn-bar-row:hover, .mn-bar-row.on { background: var(--soft); }
       if (d.name.trim()) x.title = d.name.trim();
     }
     closeSheet(); update();
-    toast(`Đã áp cho ${lines.length} giao dịch với ${d.cp}`);
+    toast(`Applied to ${txs(lines.length)} with ${d.cp}`);
   }
   function saveBulk(s) {
     const lines = bulkLines(s), next = applyOps(lines, s.ops);
@@ -849,7 +853,7 @@ button.mn-bar-row:hover, .mn-bar-row.on { background: var(--soft); }
     });
     ui.picking = false; ui.picked.clear();
     closeSheet(); update();
-    toast(changed ? `Đã lưu, ${changed} trong ${lines.length} giao dịch thay đổi` : 'Không có gì thay đổi');
+    toast(changed ? `Saved. ${changed} of ${lines.length} changed` : 'Nothing changed');
   }
   function newLabel(sec, kind, name, icon = '', parent = null) {
     const id = `n${++seq}`;
@@ -874,12 +878,12 @@ button.mn-bar-row:hover, .mn-bar-row.on { background: var(--soft); }
       l.name = name; l.icon = s.edit.icon.trim();
       const p = s.edit.parent || null;
       if (p !== l.parent && !kids(l.id).length) { l.parent = p; D.txns.forEach(t => { t.labels = normalize(t.labels); }); }
-      s.edit = null; update(); toast('Đã lưu nhãn');
+      s.edit = null; update(); toast('Label saved');
     } else if (s.adding) {
       const name = s.adding.name.trim();
       if (!name) return;
       newLabel(s.adding.sec, s.adding.kind, name, s.adding.icon.trim(), s.adding.parent);
-      s.adding = null; update(); toast(`Đã thêm “${name}”`);
+      s.adding = null; update(); toast(`Added “${name}”`);
     }
   }
   function addSection() {
@@ -887,7 +891,7 @@ button.mn-bar-row:hover, .mn-bar-row.on { background: var(--soft); }
     if (!name) return;
     D.sections.push({ id: `s${++seq}`, name, carry: false });
     s.addingSec = false; s.secName = '';
-    update(); toast(`Đã thêm mục “${name}”`);
+    update(); toast(`Added section “${name}”`);
   }
 
   /* ── keeping focus where it was across re-renders ── */
@@ -913,7 +917,7 @@ button.mn-bar-row:hover, .mn-bar-row.on { background: var(--soft); }
     if (!s) return;
     ui.sheet = s; ui.openerKey = focusKey(opener);
     clearTimeout(ui.toastT); $('#toast').innerHTML = '';
-    const label = s.type === 'line' ? 'Gắn nhãn cho giao dịch' : s.type === 'group' ? `Gắn nhãn cho mọi giao dịch với ${s.cp}` : s.type === 'bulk' ? `Gắn nhãn cho ${s.ids.length} giao dịch` : 'Quản lý nhãn';
+    const label = s.type === 'line' ? 'Label a transaction' : s.type === 'group' ? `Label every transaction with ${s.cp}` : s.type === 'bulk' ? `Label ${txs(s.ids.length)}` : 'Manage labels';
     $('#sheet').innerHTML = `<div class="mn-sheet-wrap" data-bg="1"><div class="mn-sheet" role="dialog" aria-modal="true" aria-label="${esc(label)}" tabindex="-1"></div></div>`;
     document.body.classList.add('locked');
     renderSheet();
@@ -952,17 +956,17 @@ button.mn-bar-row:hover, .mn-bar-row.on { background: var(--soft); }
 
   /* ── events ── */
   const H = {
-    reset() { D = seed(); ui.filter = null; ui.reportSec = 'hm'; ui.picking = false; ui.picked.clear(); if (ui.sheet) closeSheet(); update(); toast('Đã đặt lại dữ liệu mẫu'); },
+    reset() { D = seed(); ui.filter = null; ui.reportSec = 'hm'; ui.picking = false; ui.picked.clear(); if (ui.sheet) closeSheet(); update(); toast('Sample data reset'); },
     labels(ds, el) { openSheet({ type: 'tree', edit: null, adding: null, addingSec: false, secName: '' }, el); },
-    'accept-all'() { const w = waiting().filter(t => t.guess || t.guessWallet); w.forEach(acceptGuess); update(); toast(`Đã nhận ${w.length} đoán`); },
+    'accept-all'() { const w = waiting().filter(t => t.guess || t.guessWallet); w.forEach(acceptGuess); update(); toast(`Accepted ${w.length} guess${w.length === 1 ? '' : 'es'}`); },
     'accept-group'(ds) {
       const g = groups().find(x => x.cp === ds.cp);
       if (!g) return;
       const lines = allWith(g.cp, g.lines.reduce((s, t) => s + t.amount, 0) < 0 ? 'out' : 'in'), k = groupGuess(g);
       for (const t of lines) { if (k.startsWith('w:')) setTransfer(t, k.slice(2)); else setLabels(t, k.split(',')); }
-      update(); toast(`Đã áp cho ${lines.length} giao dịch với ${g.cp}`);
+      update(); toast(`Applied to ${txs(lines.length)} with ${g.cp}`);
     },
-    'accept-one'(ds) { acceptGuess(find(ds.id)); update(); toast('Đã lưu'); },
+    'accept-one'(ds) { acceptGuess(find(ds.id)); update(); toast('Saved'); },
     'open-group'(ds, el) { openSheet(groupDraft(ds.cp), el); },
     'open-line'(ds, el) { openSheet(lineDraft(find(ds.id)), el); },
     filter(ds) {
@@ -994,7 +998,7 @@ button.mn-bar-row:hover, .mn-bar-row.on { background: var(--soft); }
     'tr-edit'(ds) { const l = lbl(ds.id); ui.sheet.adding = null; ui.sheet.edit = { id: l.id, name: l.name, icon: l.icon, parent: l.parent || '' }; renderSheet(); $('#tr-name')?.focus(); },
     'tr-cancel'() { ui.sheet.edit = null; ui.sheet.adding = null; renderSheet(); },
     'tr-save'() { treeSave(); },
-    'tr-archive'(ds) { const l = lbl(ds.id); l.archived = true; ui.sheet.edit = null; update(); toast(`Đã ẩn “${l.name}”`); },
+    'tr-archive'(ds) { const l = lbl(ds.id); l.archived = true; ui.sheet.edit = null; update(); toast(`Hid “${l.name}”`); },
     'tr-unarchive'(ds) { lbl(ds.id).archived = false; update(); },
     'tr-new-sec'() { ui.sheet.addingSec = true; ui.sheet.secName = ''; renderSheet(); $('#new-sec')?.focus(); },
     'tr-sec-save'() { addSection(); },
