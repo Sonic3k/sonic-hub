@@ -182,7 +182,7 @@ public class FinanceReportService {
             BigDecimal bucket = poolInflow.subtract(poolNotes);
             if (bucket.signum() != 0 || poolInflowCount > 0) {
                 Key k = cash != null ? new Key(cash.getId(), cash.getCode(), cash.getName(), cash.getIcon(), "FLEXIBLE")
-                    : new Key(null, FinanceCategory.CASH, "Petty cash", "💵", "FLEXIBLE");
+                    : new Key(null, FinanceCategory.CASH, "Petty Cash", "💵", "FLEXIBLE");
                 Line l = all.computeIfAbsent(k, x -> new Line());
                 l.amount = l.amount.add(bucket);
                 l.count += poolInflowCount;

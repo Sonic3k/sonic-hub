@@ -28,10 +28,10 @@ public final class XlsxReader {
     public static List<List<String>> firstSheet(InputStream in) throws IOException {
         Map<String, byte[]> parts = unzip(in);
         byte[] sheet = parts.get(firstSheetPath(parts));
-        if (sheet == null) throw new IOException("Không thấy trang tính nào trong file");
+        if (sheet == null) throw new IOException("The file has no worksheet");
         List<String> shared = parts.containsKey("xl/sharedStrings.xml") ? sharedStrings(parts.get("xl/sharedStrings.xml")) : List.of();
         try { return rows(sheet, shared); }
-        catch (XMLStreamException e) { throw new IOException("File Excel hỏng: " + e.getMessage(), e); }
+        catch (XMLStreamException e) { throw new IOException("Broken Excel file: " + e.getMessage(), e); }
     }
 
     private static Map<String, byte[]> unzip(InputStream in) throws IOException {
@@ -50,13 +50,13 @@ public final class XlsxReader {
                 long size = 0;
                 while ((n = zip.read(buf)) > 0) {
                     size += n; total += n;
-                    if (size > MAX_ENTRY || total > MAX_TOTAL) throw new IOException("File quá lớn");
+                    if (size > MAX_ENTRY || total > MAX_TOTAL) throw new IOException("The file is too big");
                     bos.write(buf, 0, n);
                 }
                 out.put(name, bos.toByteArray());
             }
         }
-        if (out.isEmpty()) throw new IOException("Không phải file .xlsx");
+        if (out.isEmpty()) throw new IOException("Not an .xlsx file");
         return out;
     }
 
@@ -115,7 +115,7 @@ public final class XlsxReader {
                     }
                 }
             }
-        } catch (XMLStreamException e) { throw new IOException("File Excel hỏng: " + e.getMessage(), e); }
+        } catch (XMLStreamException e) { throw new IOException("Broken Excel file: " + e.getMessage(), e); }
         return out;
     }
 

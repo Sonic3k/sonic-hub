@@ -52,7 +52,7 @@ export default function CategoriesTab() {
       </div>
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         <div className="space-y-4">
-          <p className="text-sm font-semibold text-slate-700 px-1">{main?.icon} {main?.name ?? 'Categories'} <span className="font-normal text-xs text-slate-400">— categories</span></p>
+          <p className="text-sm font-semibold text-slate-700 px-1">{main?.icon} {main?.name ?? 'Category'}</p>
           {GROUPS.map(g => {
             const list = categories.filter(c => c.kind === 'EXPENSE' && c.budgetGroup === g.key)
             return (

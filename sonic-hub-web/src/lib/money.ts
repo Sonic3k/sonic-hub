@@ -66,8 +66,10 @@ export const dayLabel = (s: string) => {
   const d = dayOf(utc(s)), today = dayOf(new Date()), y = dayOf(new Date(Date.now() - 86_400_000));
   if (d === today) return 'Today';
   if (d === y) return 'Yesterday';
-  return utc(s).toLocaleDateString('en-GB', { timeZone: VN, weekday: 'long', day: 'numeric', month: 'short' });
+  const [yy, mm, dd] = d.split('-').map(Number);
+  return `${WEEKDAYS[new Date(Date.UTC(yy, mm - 1, dd)).getUTCDay()]} ${dd} ${MONTHS[mm - 1].slice(0, 3)}`;
 };
+const WEEKDAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 /** dayLabel inside a sentence: "latest today", "latest Monday 12 Oct". */
 export const dayWord = (s: string) => { const d = dayLabel(s); return d === 'Today' || d === 'Yesterday' ? d.toLowerCase() : d; };
 
