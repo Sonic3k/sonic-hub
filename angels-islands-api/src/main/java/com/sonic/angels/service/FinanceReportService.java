@@ -182,7 +182,7 @@ public class FinanceReportService {
             BigDecimal bucket = poolInflow.subtract(poolNotes);
             if (bucket.signum() != 0 || poolInflowCount > 0) {
                 Key k = cash != null ? new Key(cash.getId(), cash.getCode(), cash.getName(), cash.getIcon(), "FLEXIBLE")
-                    : new Key(null, FinanceCategory.CASH, "Tiền mặt lặt vặt", "💵", "FLEXIBLE");
+                    : new Key(null, FinanceCategory.CASH, "Petty cash", "💵", "FLEXIBLE");
                 Line l = all.computeIfAbsent(k, x -> new Line());
                 l.amount = l.amount.add(bucket);
                 l.count += poolInflowCount;
@@ -208,7 +208,7 @@ public class FinanceReportService {
     }
 
     private static Key key(FinanceCategory c) {
-        if (c == null) return new Key(null, null, "Chưa phân loại", "❔", null);
+        if (c == null) return new Key(null, null, "Uncategorized", "❔", null);
         return new Key(c.getId(), c.getCode(), c.getName(), c.getIcon(), c.getBudgetGroup() == null ? null : c.getBudgetGroup().name());
     }
 

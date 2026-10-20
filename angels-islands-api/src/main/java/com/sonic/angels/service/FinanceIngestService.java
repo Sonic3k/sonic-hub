@@ -86,15 +86,15 @@ public class FinanceIngestService {
         FinanceInbound in = inboundRepo.findById(inboundId).orElseThrow();
         JsonNode j;
         try { j = om.readTree(in.getPayload()); }
-        catch (Exception e) { return done(in, FinanceInbound.Status.IGNORED, "Không phải JSON"); }
+        catch (Exception e) { return done(in, FinanceInbound.Status.IGNORED, "Not JSON"); }
 
         String id = text(j, "id");
-        if (id.isEmpty()) return done(in, FinanceInbound.Status.IGNORED, "Thiếu id");
+        if (id.isEmpty()) return done(in, FinanceInbound.Status.IGNORED, "Missing id");
         String externalId = "sepay:" + id;
-        if (txnRepo.existsByExternalId(externalId)) return done(in, FinanceInbound.Status.DUPLICATE, "Đã có " + externalId);
+        if (txnRepo.existsByExternalId(externalId)) return done(in, FinanceInbound.Status.DUPLICATE, "Already saved: " + externalId);
 
         BigDecimal amount = number(j, "transferAmount");
-        if (amount == null || amount.signum() == 0) return done(in, FinanceInbound.Status.IGNORED, "Số tiền 0");
+        if (amount == null || amount.signum() == 0) return done(in, FinanceInbound.Status.IGNORED, "Amount is 0");
         boolean out = "out".equalsIgnoreCase(text(j, "transferType"));
 
         FinanceAccount account = resolveAccount(text(j, "gateway"), text(j, "accountNumber"));
@@ -108,7 +108,7 @@ public class FinanceIngestService {
                 .filter(x -> x.getAmount().compareTo(signed) == 0).findFirst().orElse(null);
             if (known != null) {
                 in.setTransaction(known);
-                return done(in, FinanceInbound.Status.DUPLICATE, "Đã có từ sao kê");
+                return done(in, FinanceInbound.Status.DUPLICATE, "Already imported from a statement");
             }
         }
 
@@ -131,9 +131,9 @@ public class FinanceIngestService {
         boolean askAi = classifier.classify(t);
 
         in.setTransaction(t);
-        NumberFormat nf = NumberFormat.getIntegerInstance(Locale.forLanguageTag("vi-VN"));
-        String what = t.getKind() == FinanceTransaction.Kind.TRANSFER ? "chuyển nội bộ"
-            : t.getCategory() != null ? t.getCategory().getName() : "chờ duyệt";
+        NumberFormat nf = NumberFormat.getIntegerInstance(Locale.US);
+        String what = t.getKind() == FinanceTransaction.Kind.TRANSFER ? "internal transfer"
+            : t.getCategory() != null ? t.getCategory().getName() : "to review";
         done(in, FinanceInbound.Status.SAVED, account.getName() + " " + (out ? "−" : "+") + nf.format(amount.abs()) + " → " + what);
 
         if (askAi) {
@@ -168,7 +168,7 @@ public class FinanceIngestService {
             }
         }
         FinanceAccount a = new FinanceAccount();
-        String label = gateway.isEmpty() ? "Tài khoản" : gateway;
+        String label = gateway.isEmpty() ? "Account" : gateway;
         a.setName(number.length() >= 4 ? label + " ••" + number.substring(number.length() - 4) : label);
         a.setInstitution(gateway.isEmpty() ? null : gateway);
         a.setAccountNumber(number.isEmpty() ? null : number);

@@ -70,7 +70,7 @@ public class FinanceRateService {
 
     /** Typed in admin; null goes back to the automatic daily rate. */
     public synchronized void setManual(BigDecimal value) {
-        if (value != null && value.signum() <= 0) throw new IllegalArgumentException("Tỷ giá phải lớn hơn 0");
+        if (value != null && value.signum() <= 0) throw new IllegalArgumentException("The exchange rate must be above 0");
         LocalDateTime now = FinanceText.nowUtc();
         tx.executeWithoutResult(s -> {
             if (value == null) { put(MANUAL, "false"); put(AT, ""); }
