@@ -7,7 +7,7 @@ import type { BudgetGroup, CategoryKind, FinCategory, FinFacet } from '../../typ
 import { TagPicker, isMainTag, useFinCategories, useFinFacets } from './shared'
 
 const GROUPS: { key: BudgetGroup; label: string; help: string }[] = [
-  { key: 'FLEXIBLE', label: 'Flexible', help: 'what the monthly “còn tiêu được” budget watches' },
+  { key: 'FLEXIBLE', label: 'Flexible', help: 'what the monthly “left to spend” budget watches' },
   { key: 'FIXED', label: 'Fixed', help: 'bills that come anyway' },
   { key: 'SAVING', label: 'Saving', help: 'money put aside — reported apart, never counted as spending' },
 ]
@@ -46,13 +46,13 @@ export default function CategoriesTab() {
   return (
     <div className="space-y-4">
       <div className="flex flex-wrap items-center gap-2">
-        <p className="text-xs text-slate-500 mr-auto">A transaction can carry many tags, of every facet. Categories (Hạng mục) do the counting; the other facets only add a point of view.</p>
+        <p className="text-xs text-slate-500 mr-auto">A transaction can carry many tags, of every facet. Categories do the counting; the other facets only add a point of view.</p>
         <Button size="sm" variant="ghost" onClick={() => setFacet('new')}><Plus size={14} />Add facet</Button>
         <Button size="sm" onClick={() => setEditing({ facetId: main?.id })}><Plus size={14} />Add category</Button>
       </div>
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         <div className="space-y-4">
-          <p className="text-sm font-semibold text-slate-700 px-1">{main?.icon} {main?.name ?? 'Hạng mục'} <span className="font-normal text-xs text-slate-400">— categories</span></p>
+          <p className="text-sm font-semibold text-slate-700 px-1">{main?.icon} {main?.name ?? 'Categories'} <span className="font-normal text-xs text-slate-400">— categories</span></p>
           {GROUPS.map(g => {
             const list = categories.filter(c => c.kind === 'EXPENSE' && c.budgetGroup === g.key)
             return (
@@ -129,7 +129,7 @@ function TagModal({ tag, facetId, facets, categories, onClose }: {
         )}
         <div className="grid grid-cols-[80px_1fr] gap-3">
           <Input label="Icon" value={icon} onChange={e => setIcon(e.target.value)} placeholder="🐶" className="text-center text-lg" />
-          <Input label="Name" value={name} onChange={e => setName(e.target.value)} placeholder={isMain ? 'Thú cưng' : 'Đà Lạt 11/2026'} />
+          <Input label="Name" value={name} onChange={e => setName(e.target.value)} placeholder={isMain ? 'Pets' : 'Da Lat trip 11/2026'} />
         </div>
         {isMain && (
           <>
@@ -145,7 +145,7 @@ function TagModal({ tag, facetId, facets, categories, onClose }: {
           </>
         )}
         <div className="rounded-xl border border-dashed border-slate-200 p-3 space-y-2">
-          <p className="text-xs font-medium text-slate-600">Brings along <span className="font-normal text-slate-400">— put on every line that gets this tag (e.g. Game → Giải trí + Digital)</span></p>
+          <p className="text-xs font-medium text-slate-600">Brings along <span className="font-normal text-slate-400">— put on every line that gets this tag (e.g. Game → Entertainment + Digital)</span></p>
           <TagPicker facets={facets} categories={categories} selected={implies} onChange={setImplies} includeMain exclude={tag?.id} />
         </div>
         {error && <p className="text-xs text-rose-500">{error}</p>}
@@ -189,7 +189,7 @@ function FacetModal({ facet, onClose }: { facet?: FinFacet; onClose: () => void 
       <div className="space-y-3">
         <div className="grid grid-cols-[80px_1fr_90px] gap-3">
           <Input label="Icon" value={icon} onChange={e => setIcon(e.target.value)} placeholder="⚖️" className="text-center text-lg" />
-          <Input label="Name" value={name} onChange={e => setName(e.target.value)} placeholder="Mức cần thiết" />
+          <Input label="Name" value={name} onChange={e => setName(e.target.value)} placeholder="Necessity" />
           <Input label="Order" inputMode="numeric" value={sortOrder} onChange={e => setSortOrder(e.target.value)} placeholder="auto" />
         </div>
         {!facet?.main && (

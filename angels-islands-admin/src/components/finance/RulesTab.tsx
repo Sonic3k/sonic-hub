@@ -118,13 +118,13 @@ function RuleModal({ rule, onClose }: { rule?: FinRule; onClose: () => void }) {
       <div className="space-y-3">
         {byCounterparty
           ? <p className="text-sm text-slate-600">Everything with <b>{rule!.counterpartyName}</b>{rule!.counterpartyAccount ? ` (${rule!.counterpartyAccount})` : ''}</p>
-          : <Input label="Keywords (separate with |) — leave empty for an occasion" value={keywords} onChange={e => setKeywords(e.target.value)} placeholder="highlands | phúc long | katinat" />}
+          : <Input label="Keywords (separate with |) — leave empty for an occasion" value={keywords} onChange={e => setKeywords(e.target.value)} placeholder="highlands | phuc long | katinat" />}
         <div className="grid grid-cols-2 gap-3">
           <Input label="From (optional)" type="date" value={fromDate} onChange={e => setFromDate(e.target.value)} />
           <Input label="To" type="date" value={toDate} onChange={e => setToDate(e.target.value)} />
         </div>
         {occasion && <p className="text-[11px] text-sky-700 -mt-1">An occasion: every line of those days gets its tags (bills, subscriptions and savings are left out). Tried last (priority 200).</p>}
-        <Input label="Name the matching transactions (optional)" value={label} onChange={e => setLabel(e.target.value)} placeholder="Tiền nhà" />
+        <Input label="Name the matching transactions (optional)" value={label} onChange={e => setLabel(e.target.value)} placeholder="Rent" />
         <div className="grid grid-cols-2 gap-3">
           <Select label="Applies to" value={direction} onChange={e => setDirection(e.target.value as RuleDirection)}>
             {(['OUT', 'IN', 'ANY'] as const).map(d => <option key={d} value={d}>{DIR_LABEL[d]}</option>)}
