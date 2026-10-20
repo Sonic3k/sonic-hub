@@ -1,5 +1,5 @@
 /* One transaction, fixed in place: its tags facet by facet (or a move between own accounts), amount, account, day, note.
-   Hạng mục is one tap by default — "＋ thêm hạng mục" lets a line count under two. The other facets take any number.
+   A category is one tap by default; "＋ another category" lets a line count under two. The other facets take any number.
    A bottom sheet on the phone, a centred card on a wide screen. */
 import { useEffect, useMemo, useState } from 'react';
 import { createPortal } from 'react-dom';
@@ -103,12 +103,12 @@ export default function EditSheet({ txn, onClose }: { txn: Txn; onClose: () => v
   // Rendered into <body> so the overlay covers the whole screen (see the toast in QuickNote).
   return createPortal(
     <div className="mn-sheet-wrap" onClick={onClose}>
-      <div className="mn-sheet" role="dialog" aria-modal="true" aria-label="Sửa giao dịch" onClick={e => e.stopPropagation()}>
+      <div className="mn-sheet" role="dialog" aria-modal="true" aria-label="Edit transaction" onClick={e => e.stopPropagation()}>
         <div className="mn-sheet-head">
           <div>
-            <b>{txn.description || txn.bankDescription || 'Giao dịch'}</b>
+            <b>{txn.description || txn.bankDescription || 'Transaction'}</b>
             <small>
-              {txn.accountName} · {txn.source === 'SEPAY' ? 'từ ngân hàng' : txn.source === 'STATEMENT' ? 'từ sao kê' : txn.source === 'NOTE' ? 'ghi tay' : txn.source === 'RECONCILE' ? 'chốt số dư' : txn.source.toLowerCase()}
+              {txn.accountName} · {txn.source === 'SEPAY' ? 'from the bank' : txn.source === 'STATEMENT' ? 'from a statement' : txn.source === 'NOTE' ? 'manual entry' : txn.source === 'RECONCILE' ? 'balance check' : txn.source.toLowerCase()}
               {txn.counterparty && <> · {sign < 0 ? '→' : '←'} {txn.counterparty}</>}
             </small>
           </div>
@@ -117,16 +117,16 @@ export default function EditSheet({ txn, onClose }: { txn: Txn; onClose: () => v
         {txn.bankDescription && txn.description && <p className="mn-sub">{txn.bankDescription}</p>}
 
         <div className="mn-facet-head">
-          <p className="mn-label">Hạng mục</p>
-          {!multi && mainSel.length > 0 && !transferTo && <button type="button" className="mn-link" onClick={() => setMulti(true)}>＋ thêm hạng mục</button>}
-          {multi && <span className="mn-muted">chọn được nhiều</span>}
+          <p className="mn-label">Category</p>
+          {!multi && mainSel.length > 0 && !transferTo && <button type="button" className="mn-link" onClick={() => setMulti(true)}>＋ another category</button>}
+          {multi && <span className="mn-muted">pick several</span>}
         </div>
         <div className="mn-pick flat">
           {cats.map(c => {
             const on = !transferTo && sel.has(c.id), via = on || transferTo ? undefined : implied.get(c.id);
             return (
               <button key={c.id} type="button" className={`mn-pick-i ${on ? 'on' : via !== undefined ? 'implied' : ''}`}
-                aria-pressed={on || via !== undefined} title={via !== undefined ? `Đi kèm ${via}` : undefined}
+                aria-pressed={on || via !== undefined} title={via !== undefined ? `Comes with ${via}` : undefined}
                 onClick={() => { if (via === undefined) pickMain(c.id); }}>
                 {tagText(c)}
               </button>
@@ -141,7 +141,7 @@ export default function EditSheet({ txn, onClose }: { txn: Txn; onClose: () => v
           </div>
         ))}
 
-        <p className="mn-label">Hoặc là chuyển giữa ví của mình</p>
+        <p className="mn-label">Or an internal transfer</p>
         <div className="mn-pick flat">
           {accounts.filter(a => a.id !== accountId).map(a => (
             <button key={a.id} type="button" className={`mn-pick-i ${transferTo === a.id || (!transferTo && !decided && txn.transferAccountName === a.name) ? 'on' : ''}`}
@@ -154,42 +154,42 @@ export default function EditSheet({ txn, onClose }: { txn: Txn; onClose: () => v
         {txn.counterparty ? (
           <div className="mn-everyone">
             <label className="mn-remember"><input type="checkbox" checked={everyone} onChange={e => setEveryone(e.target.checked)} />
-              <span>Áp cho mọi giao dịch với <b>{txn.counterparty}</b>, cả cũ lẫn sau này</span></label>
+              <span>Apply to every transaction with <b>{txn.counterparty}</b>, past and future</span></label>
             {everyone && !moving && sel.size > 0 && (
-              <div className="mn-pick flat mn-rule-tags" aria-label="Những nhãn áp cho mọi giao dịch">
+              <div className="mn-pick flat mn-rule-tags" aria-label="Labels applied to every transaction">
                 {[...sel].map(id => book.byId.get(id)).filter(c => !!c).map(c => (
                   <button key={c!.id} type="button" className={`mn-pick-i ${ruleTags.includes(c!.id) ? 'on' : ''}`}
                     disabled={book.isMain(c!.id)} onClick={() => toggleRule(c!.id)}
-                    title={book.isMain(c!.id) ? 'Hạng mục luôn đi theo' : ruleTags.includes(c!.id) ? 'Bỏ ra: chỉ cho lần này' : 'Áp cả nhãn này'}>
+                    title={book.isMain(c!.id) ? 'The category always goes along' : ruleTags.includes(c!.id) ? 'Leave out: only for this one' : 'Apply this label too'}>
                     {tagText(c!)}
                   </button>
                 ))}
               </div>
             )}
             <input className="mn-pick-label" value={label} maxLength={80} onChange={e => setLabel(e.target.value)}
-              placeholder="Đặt tên (không bắt buộc), vd: Tiền nhà" />
+              placeholder="Name (optional), e.g. Rent" />
           </div>
         ) : txn.status === 'REVIEW' && txn.suggestedKeywords && !transferTo && (
           <label className="mn-remember"><input type="checkbox" checked={remember} onChange={e => setRemember(e.target.checked)} />
-            <span>Nhớ: lần sau “{txn.suggestedKeywords}” là {forAllTags.length ? forAllTags.map(c => c!.name).join(' + ') : 'như lần này'}</span></label>
+            <span>Remember: next time “{txn.suggestedKeywords}” is {forAllTags.length ? forAllTags.map(c => c!.name).join(' + ') : 'the same as this one'}</span></label>
         )}
 
         <div className="mn-form">
-          <label>Số tiền<input inputMode="decimal" value={amount} disabled={!editable} onChange={e => setAmount(e.target.value)} /></label>
-          <label>Tài khoản<select value={accountId} disabled={!editable} onChange={e => setAccountId(e.target.value)}>
+          <label>Amount<input inputMode="decimal" value={amount} disabled={!editable} onChange={e => setAmount(e.target.value)} /></label>
+          <label>Account<select value={accountId} disabled={!editable} onChange={e => setAccountId(e.target.value)}>
             {accounts.map(a => <option key={a.id} value={a.id}>{a.name}</option>)}
           </select></label>
-          <label>Lúc<input type="datetime-local" value={when} onChange={e => setWhen(e.target.value)} /></label>
-          <label>Nội dung<input value={description} onChange={e => setDescription(e.target.value)} /></label>
-          <label className="wide">Ghi chú<input value={note} onChange={e => setNote(e.target.value)} placeholder="đi với ai, vì sao…" /></label>
+          <label>When<input type="datetime-local" value={when} onChange={e => setWhen(e.target.value)} /></label>
+          <label>Description<input value={description} onChange={e => setDescription(e.target.value)} /></label>
+          <label className="wide">Note<input value={note} onChange={e => setNote(e.target.value)} placeholder="who with, what for…" /></label>
         </div>
-        {!editable && <p className="mn-sub">Số tiền và tài khoản của giao dịch từ ngân hàng giữ nguyên như ngân hàng báo.</p>}
+        {!editable && <p className="mn-sub">Amount and account stay as the bank reported them.</p>}
         {error && <p className="mn-error">{error}</p>}
         <div className="mn-sheet-foot">
-          <button type="button" className="mn-link danger" disabled={busy} onClick={() => { if (confirm('Xoá giao dịch này?')) run(() => moneyApi.remove(txn.id)); }}>Xoá</button>
+          <button type="button" className="mn-link danger" disabled={busy} onClick={() => { if (confirm('Delete this transaction?')) run(() => moneyApi.remove(txn.id)); }}>Delete</button>
           <span />
-          <button type="button" className="mn-link" onClick={onClose}>Huỷ</button>
-          <button type="button" className="mn-btn" disabled={busy} onClick={save}>{busy ? 'Đang lưu…' : 'Lưu'}</button>
+          <button type="button" className="mn-link" onClick={onClose}>Cancel</button>
+          <button type="button" className="mn-btn" disabled={busy} onClick={save}>{busy ? 'Saving…' : 'Save'}</button>
         </div>
       </div>
     </div>,

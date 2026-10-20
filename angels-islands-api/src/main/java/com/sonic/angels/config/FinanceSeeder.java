@@ -34,7 +34,7 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * First start of the finance module: the five places Ngọc Anh's money sits, a Vietnamese set of categories, and
+ * First start of the finance module: the five places Ngọc Anh's money sits, a set of categories, and
  * rules for the merchants and words that come up most. Each part is written only while its table is empty, so
  * nothing he changed is ever overwritten; the three system categories are re-created if they went missing.
  * It runs once every bean is ready but before the web server opens (an ApplicationRunner would run after, and the
@@ -73,8 +73,10 @@ public class FinanceSeeder implements SmartInitializingSingleton {
     /**
      * Changes after the first start, each made once (the version is remembered), so what is changed by hand later
      * stays changed. 2: merchants seen in TPBank statements (card merchants, QR shops, bills).
-     * 3: facets — the categories become the tags of "Hạng mục", beside "Với ai", "Dạng" and "Dịp"; every rule and every
+     * 3: facets — the categories become the tags of "Category", beside "People", "Type" and "Occasion"; every rule and every
      * decided line carries its category as a tag; subscriptions and games are also "Digital". Nothing is deleted.
+     * 4: the money module goes English — the Vietnamese names it wrote (facets, categories, tags, the cash account, the
+     * labels set while sorting the bank history) get their English names. Names typed by hand are left as they are.
      */
     private void upgrade() {
         int version = settings.findById(SEED_VERSION).map(AppSetting::getValue).map(v -> {
@@ -91,22 +93,22 @@ public class FinanceSeeder implements SmartInitializingSingleton {
             version(2);
         }
         if (version < 3) {
-            FinanceFacet main = facet(FinanceFacet.MAIN, "Hạng mục", "🗂️", 0, true, false);
-            FinanceFacet who = facet("voi-ai", "Với ai", "👥", 10, false, true);
-            FinanceFacet form = facet("dang", "Dạng", "🧩", 20, false, false);
-            FinanceFacet occasion = facet("dip", "Dịp", "🎉", 30, false, true);
+            FinanceFacet main = facet(FinanceFacet.MAIN, "Category", "🗂️", 0, true, false);
+            FinanceFacet who = facet("voi-ai", "People", "👥", 10, false, true);
+            FinanceFacet form = facet("dang", "Type", "🧩", 20, false, false);
+            FinanceFacet occasion = facet("dip", "Occasion", "🎉", 30, false, true);
             for (FinanceCategory c : categories.findAll()) if (c.getFacet() == null) c.setFacet(main);
-            tag(who, "ban-than", "Bản thân", "🙋", 10);
-            tag(who, "vo", "Vợ", "💑", 20);
-            tag(who, "con", "Con", "👶", 30);
-            tag(who, "bo-me", "Bố mẹ", "👵", 40);
-            tag(who, "ho-hang", "Họ hàng", "🏡", 50);
-            tag(who, "ban-be", "Bạn bè", "🍻", 60);
-            tag(who, "dong-nghiep", "Đồng nghiệp", "💼", 70);
+            tag(who, "ban-than", "Me", "🙋", 10);
+            tag(who, "vo", "Wife", "💑", 20);
+            tag(who, "con", "Kids", "👶", 30);
+            tag(who, "bo-me", "Parents", "👵", 40);
+            tag(who, "ho-hang", "Relatives", "🏡", 50);
+            tag(who, "ban-be", "Friends", "🍻", 60);
+            tag(who, "dong-nghiep", "Colleagues", "💼", 70);
             FinanceCategory digital = tag(form, "digital", "Digital", "💾", 10);
-            tag(form, "do-vat", "Đồ vật", "📦", 20);
+            tag(form, "do-vat", "Physical", "📦", 20);
             tag(occasion, "tet", "Tết", "🧧", 10);
-            tag(occasion, "sinh-nhat", "Sinh nhật", "🎂", 20);
+            tag(occasion, "sinh-nhat", "Birthday", "🎂", 20);
             for (FinanceRule r : rules.findAll()) if (r.getCategory() != null && r.getTags().isEmpty()) r.getTags().add(r.getCategory());
             List<FinanceRule> digitalRules = new ArrayList<>();
             if (digital.getFacet() != null && digital.getFacet().getId().equals(form.getId())) {
@@ -132,6 +134,56 @@ public class FinanceSeeder implements SmartInitializingSingleton {
             version(3);
             log.info("Finance: facets set up, {} decided line(s) now carry their category as a tag, {} also Digital", n, d);
         }
+        if (version < 4) {
+            int n = english();
+            version(4);
+            log.info("Finance: {} name(s) put in English", n);
+        }
+    }
+
+    /** The Vietnamese names this module wrote itself, seeded or set while sorting the bank history, in English. */
+    private static final Map<String, String> ENGLISH = Map.ofEntries(
+        Map.entry("Hạng mục", "Category"), Map.entry("Với ai", "People"), Map.entry("Dạng", "Type"), Map.entry("Dịp", "Occasion"),
+        Map.entry("Nhóm", "Group"),
+        Map.entry("Ăn uống", "Food & Drink"), Map.entry("Ăn", "Food"), Map.entry("Uống", "Drinks"), Map.entry("Cà phê", "Coffee"),
+        Map.entry("Đi lại", "Transport"), Map.entry("Mua sắm", "Shopping"), Map.entry("Giải trí", "Entertainment"),
+        Map.entry("Sức khỏe", "Health"), Map.entry("Quà & hiếu hỉ", "Gifts & Ceremonies"), Map.entry("Gia đình", "Family"),
+        Map.entry("Học tập", "Education"), Map.entry("Du lịch", "Travel"), Map.entry("Hóa đơn & dịch vụ", "Bills & Services"),
+        Map.entry("Nhà ở", "Housing"), Map.entry("Đăng ký dịch vụ", "Subscription"), Map.entry("Phí ngân hàng", "Bank Fees"),
+        Map.entry("Tiết kiệm & đầu tư", "Savings & Investments"), Map.entry("Khác", "Other"),
+        Map.entry("Lương", "Salary"), Map.entry("Thưởng", "Bonus"), Map.entry("Lãi & hoàn tiền", "Interest & Refunds"),
+        Map.entry("Thu khác", "Other Income"),
+        Map.entry("Tiền mặt lặt vặt", "Petty Cash"), Map.entry("Chi chưa rõ", "Unknown Spending"), Map.entry("Thu chưa rõ", "Unknown Income"),
+        Map.entry("Bản thân", "Me"), Map.entry("Vợ", "Wife"), Map.entry("Con", "Kids"), Map.entry("Bố mẹ", "Parents"),
+        Map.entry("Họ hàng", "Relatives"), Map.entry("Bạn bè", "Friends"), Map.entry("Đồng nghiệp", "Colleagues"),
+        Map.entry("Đồ vật", "Physical"), Map.entry("Sinh nhật", "Birthday"),
+        Map.entry("Tiền mặt", "Cash"), Map.entry("Tài khoản", "Account"));
+    /** Labels and descriptions it wrote on lines (whole, or as the start of one), in English. Notes typed by hand are never touched. */
+    private static final String[][] ENGLISH_LINES = {
+        {"Chuyển cho vợ", "Transfer to wife"}, {"Phí dịch vụ chung cư ", "Apartment service fee "},
+        {"Chênh lệch khi chốt số dư", "Balance adjustment"}, {"Tài khoản ••", "Account ••"}};
+
+    private int english() {
+        int n = 0;
+        for (FinanceFacet f : facets.findAll()) { String e = ENGLISH.get(f.getName().strip()); if (e != null) { f.setName(e); n++; } }
+        for (FinanceCategory c : categories.findAll()) { String e = ENGLISH.get(c.getName().strip()); if (e != null) { c.setName(e); n++; } }
+        for (FinanceAccount a : accounts.findAll()) {
+            String e = a.getName() == null ? null : ENGLISH.getOrDefault(a.getName().strip(), lineInEnglish(a.getName()));
+            if (e != null) { a.setName(e); n++; }
+        }
+        for (FinanceRule r : rules.findAll()) { String e = lineInEnglish(r.getLabel()); if (e != null) { r.setLabel(e); n++; } }
+        for (FinanceTransaction t : txns.findAll()) { String e = lineInEnglish(t.getDescription()); if (e != null) { t.setDescription(e); n++; } }
+        return n;
+    }
+
+    private static String lineInEnglish(String s) {
+        if (s == null) return null;
+        String t = s.strip();
+        for (String[] p : ENGLISH_LINES) {
+            if (t.equals(p[0].strip())) return p[1].strip();
+            if (p[0].endsWith(" ") || p[0].endsWith("••") ? t.startsWith(p[0]) : t.startsWith(p[0] + " ")) return p[1] + t.substring(p[0].length());
+        }
+        return null;
     }
 
     private void version(int v) {
@@ -185,31 +237,31 @@ public class FinanceSeeder implements SmartInitializingSingleton {
     private void seed() {
         boolean freshCategories = categories.count() == 0;
         if (freshCategories) {
-            cat("an-uong", "Ăn uống", "🍜", Kind.EXPENSE, BudgetGroup.FLEXIBLE, 10);
-            cat("ca-phe", "Cà phê", "☕", Kind.EXPENSE, BudgetGroup.FLEXIBLE, 20);
-            cat("di-lai", "Đi lại", "🛵", Kind.EXPENSE, BudgetGroup.FLEXIBLE, 30);
-            cat("mua-sam", "Mua sắm", "🛍️", Kind.EXPENSE, BudgetGroup.FLEXIBLE, 40);
-            cat("giai-tri", "Giải trí", "🎮", Kind.EXPENSE, BudgetGroup.FLEXIBLE, 50);
-            cat("suc-khoe", "Sức khỏe", "💊", Kind.EXPENSE, BudgetGroup.FLEXIBLE, 60);
-            cat("qua-hieu-hi", "Quà & hiếu hỉ", "🎁", Kind.EXPENSE, BudgetGroup.FLEXIBLE, 70);
-            cat("gia-dinh", "Gia đình", "👪", Kind.EXPENSE, BudgetGroup.FLEXIBLE, 80);
-            cat("hoc-tap", "Học tập", "📚", Kind.EXPENSE, BudgetGroup.FLEXIBLE, 90);
-            cat("du-lich", "Du lịch", "✈️", Kind.EXPENSE, BudgetGroup.FLEXIBLE, 100);
-            cat("hoa-don", "Hóa đơn & dịch vụ", "💡", Kind.EXPENSE, BudgetGroup.FIXED, 110);
-            cat("nha-o", "Nhà ở", "🏠", Kind.EXPENSE, BudgetGroup.FIXED, 120);
-            cat("dang-ky", "Đăng ký dịch vụ", "🔁", Kind.EXPENSE, BudgetGroup.FIXED, 130);
-            cat("phi-ngan-hang", "Phí ngân hàng", "🏦", Kind.EXPENSE, BudgetGroup.FIXED, 140);
-            cat("tiet-kiem", "Tiết kiệm & đầu tư", "🌱", Kind.EXPENSE, BudgetGroup.SAVING, 150);
-            cat("khac", "Khác", "📦", Kind.EXPENSE, BudgetGroup.FLEXIBLE, 160);
-            cat("luong", "Lương", "💼", Kind.INCOME, null, 10);
-            cat("thuong", "Thưởng", "🎉", Kind.INCOME, null, 20);
-            cat("lai-hoan-tien", "Lãi & hoàn tiền", "💰", Kind.INCOME, null, 30);
-            cat("thu-khac", "Thu khác", "➕", Kind.INCOME, null, 40);
+            cat("an-uong", "Food & Drink", "🍜", Kind.EXPENSE, BudgetGroup.FLEXIBLE, 10);
+            cat("ca-phe", "Coffee", "☕", Kind.EXPENSE, BudgetGroup.FLEXIBLE, 20);
+            cat("di-lai", "Transport", "🛵", Kind.EXPENSE, BudgetGroup.FLEXIBLE, 30);
+            cat("mua-sam", "Shopping", "🛍️", Kind.EXPENSE, BudgetGroup.FLEXIBLE, 40);
+            cat("giai-tri", "Entertainment", "🎮", Kind.EXPENSE, BudgetGroup.FLEXIBLE, 50);
+            cat("suc-khoe", "Health", "💊", Kind.EXPENSE, BudgetGroup.FLEXIBLE, 60);
+            cat("qua-hieu-hi", "Gifts & Ceremonies", "🎁", Kind.EXPENSE, BudgetGroup.FLEXIBLE, 70);
+            cat("gia-dinh", "Family", "👪", Kind.EXPENSE, BudgetGroup.FLEXIBLE, 80);
+            cat("hoc-tap", "Education", "📚", Kind.EXPENSE, BudgetGroup.FLEXIBLE, 90);
+            cat("du-lich", "Travel", "✈️", Kind.EXPENSE, BudgetGroup.FLEXIBLE, 100);
+            cat("hoa-don", "Bills & Services", "💡", Kind.EXPENSE, BudgetGroup.FIXED, 110);
+            cat("nha-o", "Housing", "🏠", Kind.EXPENSE, BudgetGroup.FIXED, 120);
+            cat("dang-ky", "Subscription", "🔁", Kind.EXPENSE, BudgetGroup.FIXED, 130);
+            cat("phi-ngan-hang", "Bank Fees", "🏦", Kind.EXPENSE, BudgetGroup.FIXED, 140);
+            cat("tiet-kiem", "Savings & Investments", "🌱", Kind.EXPENSE, BudgetGroup.SAVING, 150);
+            cat("khac", "Other", "📦", Kind.EXPENSE, BudgetGroup.FLEXIBLE, 160);
+            cat("luong", "Salary", "💼", Kind.INCOME, null, 10);
+            cat("thuong", "Bonus", "🎉", Kind.INCOME, null, 20);
+            cat("lai-hoan-tien", "Interest & Refunds", "💰", Kind.INCOME, null, 30);
+            cat("thu-khac", "Other Income", "➕", Kind.INCOME, null, 40);
         }
         // the ones the code relies on — always there
-        if (!categories.existsByCode(FinanceCategory.CASH)) cat(FinanceCategory.CASH, "Tiền mặt lặt vặt", "💵", Kind.EXPENSE, BudgetGroup.FLEXIBLE, 170).setSystem(true);
-        if (!categories.existsByCode(FinanceCategory.UNKNOWN_EXPENSE)) cat(FinanceCategory.UNKNOWN_EXPENSE, "Chi chưa rõ", "❔", Kind.EXPENSE, BudgetGroup.FLEXIBLE, 180).setSystem(true);
-        if (!categories.existsByCode(FinanceCategory.UNKNOWN_INCOME)) cat(FinanceCategory.UNKNOWN_INCOME, "Thu chưa rõ", "❔", Kind.INCOME, null, 50).setSystem(true);
+        if (!categories.existsByCode(FinanceCategory.CASH)) cat(FinanceCategory.CASH, "Petty Cash", "💵", Kind.EXPENSE, BudgetGroup.FLEXIBLE, 170).setSystem(true);
+        if (!categories.existsByCode(FinanceCategory.UNKNOWN_EXPENSE)) cat(FinanceCategory.UNKNOWN_EXPENSE, "Unknown Spending", "❔", Kind.EXPENSE, BudgetGroup.FLEXIBLE, 180).setSystem(true);
+        if (!categories.existsByCode(FinanceCategory.UNKNOWN_INCOME)) cat(FinanceCategory.UNKNOWN_INCOME, "Unknown Income", "❔", Kind.INCOME, null, 50).setSystem(true);
 
         Map<String, FinanceAccount> acc = new HashMap<>();
         if (accounts.count() == 0) {
@@ -217,7 +269,7 @@ public class FinanceSeeder implements SmartInitializingSingleton {
             acc.put("tcb", account("Techcombank", "Techcombank", FinanceAccount.Mode.RECONCILE, "VND", "#E2231A", 2));
             acc.put("momo", account("MoMo", "MoMo", FinanceAccount.Mode.RECONCILE, "VND", "#A50064", 3));
             acc.put("boa", account("Bank of America", "BoA", FinanceAccount.Mode.RECONCILE, "USD", "#012169", 4));
-            acc.put("cash", account("Tiền mặt", "Cash", FinanceAccount.Mode.POOL, "VND", "#6B7B3A", 5));
+            acc.put("cash", account("Cash", "Cash", FinanceAccount.Mode.POOL, "VND", "#6B7B3A", 5));
             log.info("Finance: seeded 5 accounts");
         }
 

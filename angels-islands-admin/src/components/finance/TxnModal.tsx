@@ -35,7 +35,7 @@ export default function TxnModal({ txn, onClose }: { txn?: FinTxn; onClose: () =
   const save = useMutation({
     mutationFn: () => {
       const n = Number(amount.replace(/[^\d.]/g, ''))
-      if (!n) throw new Error('Amount?')
+      if (!n) throw new Error('Enter an amount')
       const signed = dir === 'out' ? -n : n
       const body: FinTxnRequest = { accountId, occurredAt: fromLocalInput(when), amount: signed, description, note }
       const tagsChanged = tags.length !== startTags.length || tags.some(x => !startTags.includes(x))
@@ -125,7 +125,7 @@ export default function TxnModal({ txn, onClose }: { txn?: FinTxn; onClose: () =
           )}
         </div>
 
-        <Input label="Description" value={description} onChange={e => setDescription(e.target.value)} placeholder="cafe với team" />
+        <Input label="Description" value={description} onChange={e => setDescription(e.target.value)} placeholder="coffee with the team" />
         <Textarea label="Note" rows={2} value={note} onChange={e => setNote(e.target.value)} />
 
         {!isNew && (

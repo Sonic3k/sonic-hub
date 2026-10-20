@@ -1,5 +1,5 @@
 /* The month in a few numbers: what went out (the one big figure), what is left of the budget, what came in, and
-   where the money sits — each balance editable in place (the monthly "chốt số dư"). */
+   where the money sits — each balance editable in place (the monthly balance check). */
 import { useState } from 'react';
 import { moneyApi, type MoneyAccount, type MonthReport, type TrendPoint } from '../../api/money';
 import { money, monthName, monthOf, vnd } from '../../lib/money';
@@ -9,7 +9,7 @@ export default function Overview({ report, month, trend }: { report?: MonthRepor
   const summary = useSummary(), refresh = useRefresh();
   const [budgetEdit, setBudgetEdit] = useState<string | null>(null);
   const current = month === monthOf();
-  if (!report) return <div className="card mn-ov mn-loading">Đang tính…</div>;
+  if (!report) return <div className="card mn-ov mn-loading">Loading…</div>;
 
   const base = current ? report.prevExpenseToDate : report.prevExpense;
   const delta = base && base > 0 ? Math.round(((report.expense - base) / base) * 100) : null;
@@ -27,43 +27,43 @@ export default function Overview({ report, month, trend }: { report?: MonthRepor
 
   return (
     <div className="card mn-ov">
-      <p className="mn-label">Đã chi {monthName(month).toLowerCase()}</p>
+      <p className="mn-label">Spent in {monthName(month)}</p>
       <p className="mn-hero">{vnd(report.expense)}</p>
       <p className="mn-delta">
-        {delta === null ? (current ? 'Tháng trước chưa có số để so.' : '')
-          : <><b className={delta > 0 ? 'up' : 'down'}>{delta > 0 ? '▲' : '▼'} {Math.abs(delta)}%</b> {current ? 'so với cùng kỳ tháng trước' : 'so với tháng trước'}</>}
+        {delta === null ? (current ? 'Nothing from last month to compare with yet.' : '')
+          : <><b className={delta > 0 ? 'up' : 'down'}>{delta > 0 ? '▲' : '▼'} {Math.abs(delta)}%</b> {current ? 'vs. this point last month' : 'vs. last month'}</>}
       </p>
 
       {b ? (
         <div className={`mn-budget ${over ? 'over' : ''}`}>
           <div className="mn-budget-top">
-            <span>{over ? '⚠ Vượt ngân sách' : 'Còn tiêu được'}</span>
+            <span>{over ? '⚠ Over budget' : 'Left to spend'}</span>
             <b>{vnd(Math.abs(b.remaining))}</b>
           </div>
-          <div className="mn-meter" role="meter" aria-valuemin={0} aria-valuemax={b.limit} aria-valuenow={b.spent} aria-label="Ngân sách đã dùng">
+          <div className="mn-meter" role="meter" aria-valuemin={0} aria-valuemax={b.limit} aria-valuenow={b.spent} aria-label="Budget used">
             <i style={{ width: `${Math.round(used * 100)}%` }} />
           </div>
           <p className="mn-sub">
             {vnd(b.spent)} / {vnd(b.limit)}
-            {current && b.perDay !== null && !over && <> · ≈ {vnd(b.perDay)}/ngày · còn {b.daysLeft} ngày</>}
-            <button type="button" className="mn-link" onClick={() => setBudgetEdit(String(b.limit))}>Sửa</button>
+            {current && b.perDay !== null && !over && <> · ≈ {vnd(b.perDay)}/day · {b.daysLeft} {b.daysLeft === 1 ? 'day' : 'days'} left</>}
+            <button type="button" className="mn-link" onClick={() => setBudgetEdit(String(b.limit))}>Edit</button>
           </p>
         </div>
       ) : budgetEdit === null && (
-        <button type="button" className="mn-link mn-setbudget" onClick={() => setBudgetEdit('')}>+ Đặt ngân sách chi tiêu linh hoạt mỗi tháng</button>
+        <button type="button" className="mn-link mn-setbudget" onClick={() => setBudgetEdit('')}>+ Set a monthly budget for flexible spending</button>
       )}
       {budgetEdit !== null && (
         <form className="mn-inline" onSubmit={e => { e.preventDefault(); saveBudget(); }}>
           <input inputMode="numeric" autoFocus value={budgetEdit} onChange={e => setBudgetEdit(e.target.value)} placeholder="8000000" />
-          <button type="submit" className="mn-btn">Lưu</button>
-          <button type="button" className="mn-link" onClick={() => setBudgetEdit(null)}>Huỷ</button>
+          <button type="submit" className="mn-btn">Save</button>
+          <button type="button" className="mn-link" onClick={() => setBudgetEdit(null)}>Cancel</button>
         </form>
       )}
 
       <dl className="mn-kpis">
-        <div><dt>Thu</dt><dd>{vnd(report.income)}</dd></div>
-        <div><dt>Dư</dt><dd className={report.net < 0 ? 'neg' : ''}>{vnd(report.net)}</dd></div>
-        {report.saved > 0 && <div><dt>Để dành</dt><dd>{vnd(report.saved)}</dd></div>}
+        <div><dt>Income</dt><dd>{vnd(report.income)}</dd></div>
+        <div><dt>Net</dt><dd className={report.net < 0 ? 'neg' : ''}>{vnd(report.net)}</dd></div>
+        {report.saved > 0 && <div><dt>Saved</dt><dd>{vnd(report.saved)}</dd></div>}
       </dl>
 
       <Accounts accounts={summary.data?.accounts ?? []} onSaved={refresh} worth={worth}
@@ -84,8 +84,8 @@ function Accounts({ accounts, onSaved, worth, change }: { accounts: MoneyAccount
   return (
     <div className="mn-accts">
       <div className="mn-accts-head">
-        <p className="mn-label">Tiền đang ở đâu</p>
-        <div><b>{vnd(worth)}</b>{change !== null && <small>{change >= 0 ? '+' : '−'}{vnd(Math.abs(change))} so với cuối tháng trước</small>}</div>
+        <p className="mn-label">Where the money is</p>
+        <div><b>{vnd(worth)}</b>{change !== null && <small>{change >= 0 ? '+' : '−'}{vnd(Math.abs(change))} since the end of last month</small>}</div>
       </div>
       <ul>
         {live.map(a => (
@@ -95,12 +95,12 @@ function Accounts({ accounts, onSaved, worth, change }: { accounts: MoneyAccount
             {edit?.id === a.id ? (
               <form className="mn-inline" onSubmit={e => { e.preventDefault(); save(); }}>
                 <input inputMode="decimal" autoFocus value={edit.value} onChange={e => setEdit({ id: a.id, value: e.target.value })} />
-                <button type="submit" className="mn-btn">Chốt</button>
+                <button type="submit" className="mn-btn">Set</button>
               </form>
             ) : (
-              <button type="button" className="mn-acc-v" title={a.mode === 'FEED' ? 'Số dư từ ngân hàng' : 'Bấm để chốt số dư hiện tại'}
+              <button type="button" className="mn-acc-v" title={a.mode === 'FEED' ? 'Balance from the bank' : 'Tap to set the current balance'}
                 onClick={() => a.mode !== 'FEED' && setEdit({ id: a.id, value: a.balance !== null ? String(a.balance) : '' })}>
-                {a.balance === null ? <span className="mn-muted">{a.mode === 'FEED' ? 'chờ SePay' : 'chốt số dư'}</span> : money(a.balance, a.currency)}
+                {a.balance === null ? <span className="mn-muted">{a.mode === 'FEED' ? 'waiting for SePay' : 'set balance'}</span> : money(a.balance, a.currency)}
                 {a.currency !== 'VND' && a.balanceVnd !== null && <small>≈ {vnd(a.balanceVnd)}</small>}
               </button>
             )}

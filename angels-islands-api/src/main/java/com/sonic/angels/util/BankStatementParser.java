@@ -56,7 +56,7 @@ public final class BankStatementParser {
             }
         }
         if (header < 0) throw new IllegalArgumentException(
-            "Không nhận ra định dạng sao kê này (cần các cột Ngày thực hiện, Ghi nợ, Ghi có, Mã giao dịch)");
+            "Unknown statement layout (it needs the columns Ngày thực hiện, Ghi nợ, Ghi có and Mã giao dịch)");
 
         String accountNumber = null, period = null;
         for (int i = 0; i < header; i++) {

@@ -138,7 +138,7 @@ function CheckInModal({ account, onClose }: { account: FinAccount; onClose: () =
       <div className="space-y-3">
         <p className="text-xs text-slate-500 leading-relaxed">
           {reconcile
-            ? `Type the balance the ${account.name} app shows now. The difference from ${money(account.balance, account.currency)} becomes one “Chi chưa rõ” or “Thu chưa rõ” line.`
+            ? `Type the balance the ${account.name} app shows now. The difference from ${money(account.balance, account.currency)} becomes one line of unexplained spending or income.`
             : account.mode === 'FEED'
               ? 'This account gets its balance from the bank feed; set it by hand only to start before the first transaction arrives.'
               : 'The first check-in only sets where the balance starts.'}

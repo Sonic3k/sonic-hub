@@ -1,4 +1,4 @@
-/* The month's transactions by day; tap one to fix it. "Chọn nhiều" picks several (a whole day in one tap) to put tags
+/* The month's transactions by day; tap one to fix it. "Select" picks several (a whole day in one tap) to put tags
    on or take them off together — "that evening was with friends". */
 import { useEffect, useMemo, useState } from 'react';
 import { createPortal } from 'react-dom';
@@ -42,15 +42,15 @@ export default function TxnList({ month, category, onClearCategory }: { month: s
   return (
     <div className="card mn-list">
       <div className="mn-head">
-        <h2>Giao dịch {monthName(month).toLowerCase()}</h2>
+        <h2>{monthName(month)} transactions</h2>
         {cat && <button type="button" className="mn-chip on" onClick={onClearCategory}>{cat.icon} {cat.name} ✕</button>}
-        <span className="mn-muted">{txns.data ? `${rows.length}${!category && txns.data.totalElements > all.length ? ` / ${txns.data.totalElements}` : ''} giao dịch` : ''}</span>
+        <span className="mn-muted">{txns.data ? `${rows.length}${!category && txns.data.totalElements > all.length ? ` / ${txns.data.totalElements}` : ''} transaction${rows.length === 1 ? '' : 's'}` : ''}</span>
         {rows.length > 0 && (picking
-          ? <button type="button" className="mn-link" onClick={stop}>Xong</button>
-          : <button type="button" className="mn-link" onClick={() => setPicking(true)}>Chọn nhiều</button>)}
+          ? <button type="button" className="mn-link" onClick={stop}>Done</button>
+          : <button type="button" className="mn-link" onClick={() => setPicking(true)}>Select</button>)}
       </div>
-      {picking && <p className="mn-rv-hint">Chạm để chọn giao dịch, hoặc chọn cả ngày ở đầu mỗi ngày — rồi gắn nhãn một lần cho tất cả.</p>}
-      {!rows.length ? <p className="mn-empty">{txns.isLoading ? 'Đang tải…' : 'Chưa có giao dịch nào.'}</p> : days.map(g => {
+      {picking && <p className="mn-rv-hint">Tap transactions, or a whole day at its heading, then label them all at once.</p>}
+      {!rows.length ? <p className="mn-empty">{txns.isLoading ? 'Loading…' : 'No transactions yet.'}</p> : days.map(g => {
         const ids = g.items.filter(pickable).map(t => t.id);
         const allOn = ids.length > 0 && ids.every(id => picked.has(id));
         return (
@@ -58,8 +58,8 @@ export default function TxnList({ month, category, onClearCategory }: { month: s
             <h3>
               <span>{g.label}</span>
               {picking && ids.length > 0
-                ? <button type="button" className="mn-day-pick" onClick={() => flip(ids, !allOn)}>{allOn ? 'Bỏ chọn ngày này' : 'Chọn cả ngày'}</button>
-                : g.out > 0 && <small>chi {vnd(g.out)}</small>}
+                ? <button type="button" className="mn-day-pick" onClick={() => flip(ids, !allOn)}>{allOn ? 'Deselect day' : 'Select day'}</button>
+                : g.out > 0 && <small>spent {vnd(g.out)}</small>}
             </h3>
             <ul>
               {g.items.map(t => {
@@ -78,8 +78,8 @@ export default function TxnList({ month, category, onClearCategory }: { month: s
                         <small>
                           <i className="mn-dot" style={{ background: 'var(--ink3)' }} />{t.accountName}
                           {t.counterparty && t.kind !== 'TRANSFER' && <>{' · '}{t.amount < 0 ? '→' : '←'} {t.counterparty}</>}
-                          {' · '}{t.kind === 'TRANSFER' ? `chuyển ${t.amount < 0 ? 'sang' : 'từ'} ${t.transferAccountName ?? 'ví khác'}` : t.categoryName ?? 'chưa phân loại'}
-                          {t.status === 'REVIEW' && ' · chờ xem'}
+                          {' · '}{t.kind === 'TRANSFER' ? `transfer ${t.amount < 0 ? 'to' : 'from'} ${t.transferAccountName ?? 'another account'}` : t.categoryName ?? 'uncategorized'}
+                          {t.status === 'REVIEW' && ' · to review'}
                           {' · '}{timeOf(t.occurredAt)}
                           {t.note && <em> · “{t.note}”</em>}
                         </small>
@@ -99,15 +99,15 @@ export default function TxnList({ month, category, onClearCategory }: { month: s
         );
       })}
       {!category && txns.data && txns.data.totalElements > all.length && (
-        <button type="button" className="mn-more" onClick={() => setSize(s => s + 100)}>Xem thêm</button>
+        <button type="button" className="mn-more" onClick={() => setSize(s => s + 100)}>Show more</button>
       )}
       {editing && <EditSheet txn={editing} onClose={() => setEditing(null)} />}
       {/* In <body>: the page's entrance animation leaves a transform on .page, which would trap a fixed element. */}
       {picking && createPortal(
-        <div className="mn-selbar" role="toolbar" aria-label="Giao dịch đã chọn">
-          <span>{picked.size ? `Đã chọn ${picked.size}` : 'Chưa chọn giao dịch nào'}</span>
-          <button type="button" className="go" disabled={!picked.size} onClick={() => setTagging(true)}>Gắn nhãn</button>
-          <button type="button" onClick={stop}>Xong</button>
+        <div className="mn-selbar" role="toolbar" aria-label="Selected transactions">
+          <span>{picked.size ? `${picked.size} selected` : 'Nothing selected'}</span>
+          <button type="button" className="go" disabled={!picked.size} onClick={() => setTagging(true)}>Label</button>
+          <button type="button" onClick={stop}>Done</button>
         </div>,
         document.body,
       )}
@@ -116,7 +116,7 @@ export default function TxnList({ month, category, onClearCategory }: { month: s
   );
 }
 
-/** Tags for the picked lines: chosen chips go on ("Gắn") or come off ("Gỡ") every one of them. */
+/** Tags for the picked lines: chosen chips go on ("Add to") or come off ("Remove from") every one of them. */
 function TagSheet({ ids, lines, onClose, onDone }: { ids: string[]; lines: Txn[]; onClose: () => void; onDone: () => void }) {
   const book = useTagBook(), categories = useCategories(), refresh = useRefresh();
   const [chosen, setChosen] = useState<Set<string>>(new Set());
@@ -142,7 +142,7 @@ function TagSheet({ ids, lines, onClose, onDone }: { ids: string[]; lines: Txn[]
     try {
       const r = await moneyApi.tags({ ids, [mode]: [...chosen] });
       refresh();
-      setDone(`${mode === 'add' ? 'Đã gắn' : 'Đã gỡ'} — ${r.updated} giao dịch thay đổi.`);
+      setDone(`${mode === 'add' ? 'Added' : 'Removed'}. ${r.updated} transaction${r.updated === 1 ? '' : 's'} changed.`);
       window.setTimeout(onDone, 900);
     } catch (e) { setError((e as Error).message); setBusy(false); }
   };
@@ -158,9 +158,9 @@ function TagSheet({ ids, lines, onClose, onDone }: { ids: string[]; lines: Txn[]
 
   return createPortal(
     <div className="mn-sheet-wrap" onClick={onClose}>
-      <div className="mn-sheet" role="dialog" aria-modal="true" aria-label="Gắn nhãn cho nhiều giao dịch" onClick={e => e.stopPropagation()}>
+      <div className="mn-sheet" role="dialog" aria-modal="true" aria-label="Label several transactions" onClick={e => e.stopPropagation()}>
         <div className="mn-sheet-head">
-          <div><b>Gắn nhãn cho {ids.length} giao dịch</b><small>Chọn nhãn, rồi gắn vào hoặc gỡ khỏi tất cả.</small></div>
+          <div><b>Label {ids.length} transaction{ids.length === 1 ? '' : 's'}</b><small>Pick labels, then add them to all of them or remove them from all of them.</small></div>
         </div>
         {book.others.map(f => (
           <div key={f.id}>
@@ -169,15 +169,15 @@ function TagSheet({ ids, lines, onClose, onDone }: { ids: string[]; lines: Txn[]
               count={count} of={lines.length} />
           </div>
         ))}
-        <p className="mn-label">Hạng mục</p>
+        <p className="mn-label">Category</p>
         <div className="mn-pick flat">{mains.map(chip)}</div>
         {error && <p className="mn-error">{error}</p>}
         {done && <p className="mn-imp-done">{done}</p>}
         <div className="mn-sheet-foot">
-          <button type="button" className="mn-link danger" disabled={busy || !chosen.size} onClick={() => go('remove')}>Gỡ khỏi {ids.length}</button>
+          <button type="button" className="mn-link danger" disabled={busy || !chosen.size} onClick={() => go('remove')}>Remove from {ids.length}</button>
           <span />
-          <button type="button" className="mn-link" onClick={onClose}>Huỷ</button>
-          <button type="button" className="mn-btn" disabled={busy || !chosen.size} onClick={() => go('add')}>{busy ? 'Đang lưu…' : `Gắn vào ${ids.length}`}</button>
+          <button type="button" className="mn-link" onClick={onClose}>Cancel</button>
+          <button type="button" className="mn-btn" disabled={busy || !chosen.size} onClick={() => go('add')}>{busy ? 'Saving…' : `Add to ${ids.length}`}</button>
         </div>
       </div>
     </div>,

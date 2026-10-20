@@ -1,4 +1,4 @@
-/* Tags by facet, shared by the edit sheet, the review pickers and the list's "chọn nhiều".
+/* Tags by facet, shared by the edit sheet, the review pickers and the list's "Select".
    The main facet's tags are the categories (kind EXPENSE/INCOME); every other facet's are kind ANY. */
 import { useMemo, useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
@@ -12,7 +12,7 @@ export interface TagBook {
   isMain: (id: string) => boolean;
   /** live tags of a facet */
   tagsOf: (facetId: string) => MoneyCategory[];
-  /** a tag of a per-transaction facet ("Với ai", "Dịp"): about one occasion, so not carried into a rule by default */
+  /** a tag of a per-transaction facet ("People", "Occasion"): about one occasion, so not carried into a rule by default */
   perTransaction: (id: string) => boolean;
   /** what the chosen tags bring along: implied id → the name of a tag that brings it */
   implied: (chosen: Iterable<string>) => Map<string, string>;
@@ -91,7 +91,7 @@ export function FacetChips({ facet, book, chosen, implied, onToggle, onCreated, 
         const on = chosen.has(c.id), via = on ? undefined : implied.get(c.id), n = count ? count(c.id) : 0;
         return (
           <button key={c.id} type="button" className={`mn-pick-i ${on ? 'on' : via !== undefined ? 'implied' : ''}`}
-            aria-pressed={on || via !== undefined} title={via !== undefined ? `Đi kèm ${via}` : undefined}
+            aria-pressed={on || via !== undefined} title={via !== undefined ? `Comes with ${via}` : undefined}
             onClick={() => { if (via === undefined) onToggle(c.id); }}>
             {tagText(c)}
             {n > 0 && <small className="mn-pick-n">{n}/{of}</small>}
@@ -99,7 +99,7 @@ export function FacetChips({ facet, book, chosen, implied, onToggle, onCreated, 
         );
       })}
       {adding ? (
-        <input className="mn-pick-new" autoFocus value={name} maxLength={80} disabled={busy} placeholder={`Nhãn mới cho “${facet.name}”`}
+        <input className="mn-pick-new" autoFocus value={name} maxLength={80} disabled={busy} placeholder={`New label for “${facet.name}”`}
           onChange={e => setName(e.target.value)}
           onKeyDown={e => {
             if (e.key === 'Enter') { e.preventDefault(); create(); }
@@ -107,7 +107,7 @@ export function FacetChips({ facet, book, chosen, implied, onToggle, onCreated, 
           }}
           onBlur={() => { if (!name.trim()) setAdding(false); }} />
       ) : (
-        <button type="button" className="mn-pick-i add" onClick={() => setAdding(true)} aria-label={`Thêm nhãn cho ${facet.name}`} title="Thêm nhãn">＋</button>
+        <button type="button" className="mn-pick-i add" onClick={() => setAdding(true)} aria-label={`Add a label to ${facet.name}`} title="Add a label">＋</button>
       )}
       {error && <span className="mn-error mn-pick-wide">{error}</span>}
     </div>

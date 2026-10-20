@@ -132,7 +132,7 @@ export default function TransactionsTab() {
                             : t.categoryName ? <span className={clsx(t.status === 'REVIEW' && 'text-amber-600')}>{t.categoryName}{t.status === 'REVIEW' && '?'}</span>
                             : <span className="text-amber-600">needs a category</span>}
                           {t.categorizedBy === 'AI' && <Sparkles size={11} className="text-violet-500" />}
-                          <span>· {utc(t.occurredAt).toLocaleTimeString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh', hour: '2-digit', minute: '2-digit' })}</span>
+                          <span>· {utc(t.occurredAt).toLocaleTimeString('en-GB', { timeZone: 'Asia/Ho_Chi_Minh', hour: '2-digit', minute: '2-digit' })}</span>
                           {t.note && <span className="italic truncate max-w-[12rem]">“{t.note}”</span>}
                         </p>
                         {(t.tags ?? []).some(x => x.id !== t.categoryId) && (

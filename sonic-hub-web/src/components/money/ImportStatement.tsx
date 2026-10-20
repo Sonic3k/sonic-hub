@@ -1,5 +1,5 @@
-/* "Nhập sao kê": the .xlsx the bank's app exports (TPBank: Lịch sử giao dịch tài khoản). First what importing would
-   do — nothing is written — then, on "Nhập", the new lines go in and the bank feed's lines get their counterparty. */
+/* "Import statement": the .xlsx the bank's app exports (TPBank: the account's transaction history). First what importing
+   would do — nothing is written — then, on "Import", the new lines go in and the bank feed's lines get their counterparty. */
 import { useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { moneyApi, type ImportSummary } from '../../api/money';
@@ -33,16 +33,16 @@ export default function ImportStatement() {
 
   return (
     <>
-      <button type="button" className="mn-link mn-import" onClick={() => input.current?.click()}>＋ Nhập sao kê</button>
+      <button type="button" className="mn-link mn-import" onClick={() => input.current?.click()}>＋ Import statement</button>
       <input ref={input} type="file" hidden accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
         onChange={e => { const f = e.target.files?.[0]; if (f) read(f); }} />
       {file && createPortal(
         <div className="mn-sheet-wrap" onClick={close}>
-          <div className="mn-sheet mn-imp-sheet" role="dialog" aria-modal="true" aria-label="Nhập sao kê" onClick={e => e.stopPropagation()}>
+          <div className="mn-sheet mn-imp-sheet" role="dialog" aria-modal="true" aria-label="Import statement" onClick={e => e.stopPropagation()}>
             <div className="mn-sheet-head">
-              <div><b>Nhập sao kê</b><small>{file.name}</small></div>
+              <div><b>Import statement</b><small>{file.name}</small></div>
             </div>
-            {busy && !p && <p className="mn-sub">Đang đọc file…</p>}
+            {busy && !p && <p className="mn-sub">Reading the file…</p>}
             {error && <p className="mn-error">{error}</p>}
             {p && !result && (
               <>
@@ -50,18 +50,18 @@ export default function ImportStatement() {
                   <b>{p.accountName}</b>{p.accountNumber ? ` ••${p.accountNumber.slice(-4)}` : ''}{p.period ? ` · ${p.period}` : ''}
                 </p>
                 <dl className="mn-imp">
-                  <div><dt>Giao dịch trong file</dt><dd>{p.rows}</dd></div>
-                  <div><dt>Thêm mới</dt><dd>{p.created}</dd></div>
-                  <div><dt>Đã có từ ngân hàng</dt><dd>{p.matched}<small>{p.enriched ? `gắn thêm người nhận cho ${p.enriched}` : 'không đổi'}</small></dd></div>
-                  {p.already > 0 && <div><dt>Đã nhập trước đây</dt><dd>{p.already}<small>bỏ qua</small></dd></div>}
-                  <div><dt>Tự phân loại được</dt><dd>{p.categorized}</dd></div>
-                  <div><dt>Chờ bạn chọn</dt><dd>{p.waiting}<small>theo từng người nhận</small></dd></div>
+                  <div><dt>Transactions in the file</dt><dd>{p.rows}</dd></div>
+                  <div><dt>New</dt><dd>{p.created}</dd></div>
+                  <div><dt>Already in from the bank</dt><dd>{p.matched}<small>{p.enriched ? `payee added to ${p.enriched}` : 'no change'}</small></dd></div>
+                  {p.already > 0 && <div><dt>Imported before</dt><dd>{p.already}<small>skipped</small></dd></div>}
+                  <div><dt>Categorized automatically</dt><dd>{p.categorized}</dd></div>
+                  <div><dt>Waiting for you</dt><dd>{p.waiting}<small>grouped by payee</small></dd></div>
                 </dl>
                 <div className="mn-sheet-foot">
                   <span />
-                  <button type="button" className="mn-link" onClick={close} disabled={busy}>Huỷ</button>
+                  <button type="button" className="mn-link" onClick={close} disabled={busy}>Cancel</button>
                   <button type="button" className="mn-btn" onClick={commit} disabled={busy || nothingNew}>
-                    {busy ? 'Đang nhập…' : nothingNew ? 'Không có gì mới' : `Nhập ${p.created} giao dịch`}
+                    {busy ? 'Importing…' : nothingNew ? 'Nothing new' : `Import ${p.created} transaction${p.created === 1 ? '' : 's'}`}
                   </button>
                 </div>
               </>
@@ -69,14 +69,14 @@ export default function ImportStatement() {
             {result && (
               <>
                 <p className="mn-imp-done">
-                  ✓ Đã thêm {result.created} giao dịch{result.enriched ? `, gắn người nhận cho ${result.enriched} giao dịch có sẵn` : ''}.
+                  ✓ Added {result.created} transaction{result.created === 1 ? '' : 's'}{result.enriched ? `, and the payee to ${result.enriched} existing one${result.enriched === 1 ? '' : 's'}` : ''}.
                 </p>
                 <p className="mn-sub">
                   {result.waiting
-                    ? `${result.waiting} giao dịch chờ bạn chọn ở “Cần xem lại” — gom theo người nhận, mỗi người chọn một lần.`
-                    : 'Tất cả đã được phân loại.'}
+                    ? `${result.waiting} transaction${result.waiting === 1 ? ' is' : 's are'} waiting in To review, grouped by payee. One choice per payee covers all their transactions.`
+                    : 'Everything is categorized.'}
                 </p>
-                <div className="mn-sheet-foot"><span /><button type="button" className="mn-btn" onClick={close}>Xong</button></div>
+                <div className="mn-sheet-foot"><span /><button type="button" className="mn-btn" onClick={close}>Done</button></div>
               </>
             )}
           </div>

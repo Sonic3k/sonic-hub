@@ -49,13 +49,13 @@ public class FinanceStatementService {
     public FinanceDto.ImportSummary commit(MultipartFile file, UUID accountId) { return run(read(file), accountId, true); }
 
     private BankStatementParser.Statement read(MultipartFile file) {
-        if (file == null || file.isEmpty()) throw new IllegalArgumentException("Chọn file sao kê (.xlsx)");
+        if (file == null || file.isEmpty()) throw new IllegalArgumentException("Pick a statement file (.xlsx)");
         try (InputStream in = file.getInputStream()) {
             BankStatementParser.Statement st = BankStatementParser.parse(XlsxReader.firstSheet(in));
-            if (st.rows().isEmpty()) throw new IllegalArgumentException("Sao kê không có giao dịch nào");
+            if (st.rows().isEmpty()) throw new IllegalArgumentException("The statement has no transactions");
             return st;
         } catch (IOException e) {
-            throw new IllegalArgumentException(e.getMessage() == null ? "Không đọc được file" : e.getMessage());
+            throw new IllegalArgumentException(e.getMessage() == null ? "Couldn't read the file" : e.getMessage());
         }
     }
 
@@ -186,12 +186,12 @@ public class FinanceStatementService {
         if (accountId != null) {
             FinanceAccount chosen = accountRepo.findById(accountId).orElseThrow(() -> new NoSuchElementException("Account not found: " + accountId));
             if (byNumber != null && !byNumber.getId().equals(chosen.getId()))
-                throw new IllegalArgumentException("Sao kê này của tài khoản " + byNumber.getName() + ", không phải " + chosen.getName());
+                throw new IllegalArgumentException("This statement is for " + byNumber.getName() + ", not " + chosen.getName());
             return chosen;
         }
         if (byNumber != null) return byNumber;
-        throw new IllegalArgumentException(number == null ? "Không thấy số tài khoản trong sao kê — chọn tài khoản để nhập vào"
-            : "Chưa có tài khoản nào số ••" + number.substring(Math.max(0, number.length() - 4)) + " — chọn tài khoản để nhập vào");
+        throw new IllegalArgumentException(number == null ? "Couldn't find an account number in the statement — pick the account to import into"
+            : "No account with number ••" + number.substring(Math.max(0, number.length() - 4)) + " yet — pick the account to import into");
     }
 
     private static String key(String reference, BigDecimal amount) { return reference.trim() + "|" + plain(amount); }

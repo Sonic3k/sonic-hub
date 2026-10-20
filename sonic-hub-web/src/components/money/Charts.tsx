@@ -4,25 +4,25 @@
      a tooltip per column, and a table view one tap away. */
 import { useState, type FocusEvent, type MouseEvent } from 'react';
 import type { Line, MonthReport, TrendPoint } from '../../api/money';
-import { compact, vnd } from '../../lib/money';
+import { compact, monthFull, monthShort, vnd } from '../../lib/money';
 
 export function CategoryBars({ report, active, onPick }: { report?: MonthReport; active: string | null; onPick: (id: string | null) => void }) {
-  if (!report) return <div className="card mn-cats mn-loading">Đang tính…</div>;
+  if (!report) return <div className="card mn-cats mn-loading">Loading…</div>;
   const lines = report.expenses;
   const max = Math.max(1, ...lines.map(l => l.amount));
   const total = report.expense || 1;
   const keyOf = (l: Line) => l.categoryId ?? (l.code ? `code:${l.code}` : 'none');
   return (
     <div className="card mn-cats">
-      <div className="mn-head"><h2>Chi theo hạng mục</h2><span className="mn-muted">{vnd(report.expense)}</span></div>
-      {!lines.length ? <p className="mn-empty">Tháng này chưa có khoản chi nào.</p> : (
+      <div className="mn-head"><h2>Spending by category</h2><span className="mn-muted">{vnd(report.expense)}</span></div>
+      {!lines.length ? <p className="mn-empty">No spending this month yet.</p> : (
         <ul className="mn-bars">
           {lines.map(l => {
             const k = keyOf(l), on = active === k, clickable = !!l.categoryId && l.code !== 'tien-mat';
             return (
               <li key={k}>
                 <button type="button" className={`mn-bar-row ${on ? 'on' : ''}`} onClick={() => onPick(on ? null : k)}
-                  disabled={!clickable} title={clickable ? 'Xem các giao dịch của hạng mục này' : undefined}>
+                  disabled={!clickable} title={clickable ? 'Show this category’s transactions' : undefined}>
                   <span className="mn-bar-n"><span className="mn-ic">{l.icon ?? '·'}</span>{l.name}</span>
                   <span className="mn-bar-t">
                     {l.amount > 0 && <i style={{ width: `calc((100% - 124px) * ${Math.max(0.015, l.amount / max).toFixed(4)})` }} />}
@@ -37,13 +37,13 @@ export function CategoryBars({ report, active, onPick }: { report?: MonthReport;
       )}
       {report.incomes.length > 0 && (
         <>
-          <div className="mn-head sub"><h3>Thu</h3><span className="mn-muted">{vnd(report.income)}</span></div>
+          <div className="mn-head sub"><h3>Income</h3><span className="mn-muted">{vnd(report.income)}</span></div>
           <ul className="mn-inc">
             {report.incomes.map(l => <li key={l.categoryId ?? l.name}><span><span className="mn-ic">{l.icon ?? '·'}</span>{l.name}</span><b>{vnd(l.amount)}</b></li>)}
           </ul>
         </>
       )}
-      {report.saved > 0 && <p className="mn-sub">Để dành riêng (không tính là chi): <b>{vnd(report.saved)}</b></p>}
+      {report.saved > 0 && <p className="mn-sub">Set aside (not counted as spending): <b>{vnd(report.saved)}</b></p>}
     </div>
   );
 }
@@ -60,12 +60,12 @@ function ticks(max: number): number[] {
 export function TrendChart({ trend, month, onPick }: { trend: TrendPoint[]; month: string; onPick: (m: string) => void }) {
   const [tip, setTip] = useState<{ i: number; x: number } | null>(null);
   const [table, setTable] = useState(false);
-  if (!trend.length) return <div className="card mn-trend mn-loading">Đang tính…</div>;
+  if (!trend.length) return <div className="card mn-trend mn-loading">Loading…</div>;
   const ts = ticks(Math.max(...trend.map(t => t.expense)));
   const top = ts[ts.length - 1] || 1;
   const band = (W - PAD_L) / trend.length, bw = Math.min(24, band * 0.56);
   const y = (v: number) => PAD_T + (H - PAD_T - PAD_B) * (1 - v / top);
-  const label = (m: string) => `T${+m.slice(5)}${m.slice(5) === '01' ? `/${m.slice(2, 4)}` : ''}`;
+  const label = monthShort;
   const show = (i: number) => (e: MouseEvent<SVGElement> | FocusEvent<SVGElement>) => {
     const box = (e.currentTarget.ownerSVGElement ?? e.currentTarget).getBoundingClientRect();
     const scale = box.width / W;
@@ -76,18 +76,18 @@ export function TrendChart({ trend, month, onPick }: { trend: TrendPoint[]; mont
 
   return (
     <div className="card mn-trend">
-      <div className="mn-head"><h2>Chi theo tháng</h2><button type="button" className="mn-link" onClick={() => setTable(!table)}>{table ? 'Xem biểu đồ' : 'Xem dạng bảng'}</button></div>
+      <div className="mn-head"><h2>Spending by month</h2><button type="button" className="mn-link" onClick={() => setTable(!table)}>{table ? 'Show chart' : 'Show table'}</button></div>
       {table ? (
         <table className="mn-table">
-          <thead><tr><th>Tháng</th><th>Chi</th><th>Thu</th><th>Tài sản</th></tr></thead>
+          <thead><tr><th>Month</th><th>Spent</th><th>Income</th><th>Net worth</th></tr></thead>
           <tbody>{[...trend].reverse().map(t => (
             <tr key={t.month} className={t.month === month ? 'on' : ''} onClick={() => onPick(t.month)}>
-              <td>{+t.month.slice(5)}/{t.month.slice(0, 4)}</td><td>{vnd(t.expense)}</td><td>{vnd(t.income)}</td><td>{t.netWorth === null ? '—' : vnd(t.netWorth)}</td>
+              <td>{monthFull(t.month)}</td><td>{vnd(t.expense)}</td><td>{vnd(t.income)}</td><td>{t.netWorth === null ? '—' : vnd(t.netWorth)}</td>
             </tr>))}</tbody>
         </table>
       ) : (
         <div className="mn-chart" onMouseLeave={() => setTip(null)}>
-          <svg viewBox={`0 0 ${W} ${H}`} role="img" aria-label="Chi tiêu theo tháng">
+          <svg viewBox={`0 0 ${W} ${H}`} role="img" aria-label="Spending by month">
             {ts.map(v => (
               <g key={v}>
                 <line className="grid" x1={PAD_L} x2={W} y1={y(v)} y2={y(v)} />
@@ -105,7 +105,7 @@ export function TrendChart({ trend, month, onPick }: { trend: TrendPoint[]; mont
                   {on && t.expense > 0 && <text className="cap" x={cx} y={yTop - 6} textAnchor="middle">{compact(t.expense)}</text>}
                   <text className="tick" x={cx} y={H - 8} textAnchor="middle">{label(t.month)}</text>
                   <rect className="hit" x={PAD_L + band * i} y={0} width={band} height={H} tabIndex={0} role="button"
-                    aria-label={`Tháng ${+t.month.slice(5)}/${t.month.slice(0, 4)}: chi ${vnd(t.expense)}`}
+                    aria-label={`${monthFull(t.month)}: spent ${vnd(t.expense)}`}
                     onMouseMove={show(i)} onFocus={show(i)} onBlur={() => setTip(null)} onClick={() => onPick(t.month)}
                     onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') onPick(t.month); }} />
                 </g>
@@ -115,9 +115,9 @@ export function TrendChart({ trend, month, onPick }: { trend: TrendPoint[]; mont
           </svg>
           {tip && trend[tip.i] && (
             <div className="mn-tip" style={{ left: tip.x }}>
-              <span>Tháng {+trend[tip.i].month.slice(5)}/{trend[tip.i].month.slice(0, 4)}</span>
-              <b>Chi {vnd(trend[tip.i].expense)}</b>
-              <span>Thu {vnd(trend[tip.i].income)}</span>
+              <span>{monthFull(trend[tip.i].month)}</span>
+              <b>Spent {vnd(trend[tip.i].expense)}</b>
+              <span>Income {vnd(trend[tip.i].income)}</span>
             </div>
           )}
         </div>

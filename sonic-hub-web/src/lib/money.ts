@@ -1,5 +1,6 @@
-/* The quick-note language and money formatting of the "Tiền" section.
-   "cafe 35k" · "grab 52k momo" · "hôm qua 200k quà" · "+5tr lương" · "12/10 1tr2 sửa xe tcb" · "$12 netflix" */
+/* The quick-note language and money formatting of the Money section.
+   "coffee 35k" · "grab 52k momo" · "yesterday 200k gift" · "+5m salary" · "12/10 1.2m bike repair tcb" · "$12 netflix"
+   Vietnamese words still work: "hôm qua 200k quà", "+5tr lương", "1tr2". */
 import type { MoneyAccount, MoneyCategory, MoneyRule } from '../api/money';
 
 const VN = 'Asia/Ho_Chi_Minh';
@@ -15,8 +16,8 @@ export const utc = (s: string) => new Date(s.endsWith('Z') ? s : s + 'Z');
 
 export function vnd(n: number | null | undefined, signed = false): string {
   if (n === null || n === undefined || Number.isNaN(n)) return '—';
-  const s = Math.round(Math.abs(n)).toLocaleString('vi-VN');
-  return (signed ? (n < 0 ? '−' : n > 0 ? '+' : '') : n < 0 ? '−' : '') + s + ' đ';
+  const s = Math.round(Math.abs(n)).toLocaleString('en-US');
+  return (signed ? (n < 0 ? '−' : n > 0 ? '+' : '') : n < 0 ? '−' : '') + s + ' ₫';
 }
 
 export function money(n: number | null | undefined, currency = 'VND', signed = false): string {
@@ -25,16 +26,16 @@ export function money(n: number | null | undefined, currency = 'VND', signed = f
   return (signed ? (n < 0 ? '−' : n > 0 ? '+' : '') : n < 0 ? '−' : '') + '$' + Math.abs(n).toLocaleString('en-US', { maximumFractionDigits: 2 });
 }
 
-/** 35000 → "35k", 1200000 → "1,2tr" — how the chips say it. */
+/** 35000 → "35k", 1200000 → "1.2M" — how the chips say it. */
 export function short(n: number): string {
   const a = Math.abs(n);
-  if (a >= 1_000_000) return `${+(a / 1_000_000).toFixed(a % 1_000_000 ? 1 : 0)}tr`.replace('.', ',');
-  if (a >= 1000) return `${+(a / 1000).toFixed(a % 1000 ? 1 : 0)}k`.replace('.', ',');
+  if (a >= 1_000_000) return `${+(a / 1_000_000).toFixed(a % 1_000_000 ? 1 : 0)}M`;
+  if (a >= 1000) return `${+(a / 1000).toFixed(a % 1000 ? 1 : 0)}k`;
   return String(a);
 }
 
-/** Compact for axis ticks: 8,2tr / 950k. */
-export const compact = (n: number) => (Math.abs(n) >= 1_000_000 ? `${+(n / 1_000_000).toFixed(1)}tr`.replace('.', ',') : Math.abs(n) >= 1000 ? `${Math.round(n / 1000)}k` : `${Math.round(n)}`);
+/** Compact for axis ticks: 8.2M / 950k. */
+export const compact = (n: number) => (Math.abs(n) >= 1_000_000 ? `${+(n / 1_000_000).toFixed(1)}M` : Math.abs(n) >= 1000 ? `${Math.round(n / 1000)}k` : `${Math.round(n)}`);
 
 function vnParts(d: Date) {
   const p = new Intl.DateTimeFormat('en-CA', { timeZone: VN, year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', hour12: false }).formatToParts(d);
@@ -49,14 +50,28 @@ export const shiftMonth = (m: string, delta: number) => {
   const [y, mo] = m.split('-').map(Number), d = new Date(Date.UTC(y, mo - 1 + delta, 1));
   return `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, '0')}`;
 };
-export const monthName = (m: string) => `Tháng ${+m.slice(5)}${m.slice(0, 4) !== String(new Date().getFullYear()) ? `/${m.slice(0, 4)}` : ''}`;
-export const timeOf = (s: string) => utc(s).toLocaleTimeString('vi-VN', { timeZone: VN, hour: '2-digit', minute: '2-digit' });
+const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+/** "October", or "October 2025" outside the current year. */
+export const monthName = (m: string) => `${MONTHS[+m.slice(5) - 1]}${m.slice(0, 4) !== String(new Date().getFullYear()) ? ` ${m.slice(0, 4)}` : ''}`;
+/** "October 2026". */
+export const monthFull = (m: string) => `${MONTHS[+m.slice(5) - 1]} ${m.slice(0, 4)}`;
+/** "Oct 2026", for the sidebar. */
+export const monthAbbr = (m: string) => `${MONTHS[+m.slice(5) - 1].slice(0, 3)} ${m.slice(0, 4)}`;
+/** "Oct", and "Jan 26" where a year starts, for chart ticks. */
+export const monthShort = (m: string) => `${MONTHS[+m.slice(5) - 1].slice(0, 3)}${m.slice(5) === '01' ? ` ${m.slice(2, 4)}` : ''}`;
+/** "2026-10-12" → "12 Oct". */
+export const dayShort = (d: string) => `${+d.slice(8)} ${MONTHS[+d.slice(5, 7) - 1].slice(0, 3)}`;
+export const timeOf = (s: string) => utc(s).toLocaleTimeString('en-GB', { timeZone: VN, hour: '2-digit', minute: '2-digit' });
 export const dayLabel = (s: string) => {
   const d = dayOf(utc(s)), today = dayOf(new Date()), y = dayOf(new Date(Date.now() - 86_400_000));
-  if (d === today) return 'Hôm nay';
-  if (d === y) return 'Hôm qua';
-  return utc(s).toLocaleDateString('vi-VN', { timeZone: VN, weekday: 'long', day: 'numeric', month: 'numeric' });
+  if (d === today) return 'Today';
+  if (d === y) return 'Yesterday';
+  const [yy, mm, dd] = d.split('-').map(Number);
+  return `${WEEKDAYS[new Date(Date.UTC(yy, mm - 1, dd)).getUTCDay()]} ${dd} ${MONTHS[mm - 1].slice(0, 3)}`;
 };
+const WEEKDAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+/** dayLabel inside a sentence: "latest today", "latest Monday 12 Oct". */
+export const dayWord = (s: string) => { const d = dayLabel(s); return d === 'Today' || d === 'Yesterday' ? d.toLowerCase() : d; };
 
 // ── the quick-note language ──
 
@@ -69,7 +84,7 @@ export interface Parsed {
 }
 
 const UNIT: Record<string, number> = { K: 1e3, NGHIN: 1e3, NGAN: 1e3, TR: 1e6, TRIEU: 1e6, M: 1e6, CU: 1e6, LIT: 1e5, D: 1, VND: 1, DONG: 1 };
-const INCOME_WORDS = new Set(['NHAN', 'LUONG', 'THUONG', 'HOAN', 'LAI']);
+const INCOME_WORDS = new Set(['NHAN', 'LUONG', 'THUONG', 'HOAN', 'LAI', 'SALARY', 'BONUS', 'REFUND', 'INTEREST', 'CASHBACK']);
 
 /** Words that pick an account, besides its own name: cash, MoMo, banks. */
 function accountAliases(accounts: MoneyAccount[]): [string, MoneyAccount][] {
@@ -110,7 +125,7 @@ function amountOf(raw: string): { value: number; usd: boolean; unit: boolean } |
 
 /**
  * Read a quick note. Accounts and dates are words; an amount with a unit wins over a bare number
- * ("vé 2026 1tr5" is 1,5 triệu); "35 k" with a space works too; whatever is left is the description.
+ * ("tickets 2026 1.5m" is 1.5 million); "35 k" with a space works too; whatever is left is the description.
  */
 export function parseNote(input: string, accounts: MoneyAccount[]): Parsed {
   const tokens = input.trim().split(/\s+/).filter(Boolean);
@@ -126,6 +141,8 @@ export function parseNote(input: string, accounts: MoneyAccount[]): Parsed {
     if (n === 'HOM' && (next === 'QUA' || next === 'KIA')) { date = dayOf(new Date(now.getTime() - (next === 'QUA' ? 1 : 2) * 86_400_000)); i++; continue; }
     if (n === 'HQUA' || n === 'HOMQUA') { date = dayOf(new Date(now.getTime() - 86_400_000)); continue; }
     if (n === 'HKIA' || n === 'HOMKIA') { date = dayOf(new Date(now.getTime() - 2 * 86_400_000)); continue; }
+    if (n === 'YESTERDAY' || n === 'YDAY') { date = dayOf(new Date(now.getTime() - 86_400_000)); continue; }
+    if (n === 'TODAY') { date = null; continue; }
     const dm = /^(\d{1,2})[/](\d{1,2})(?:[/](\d{2,4}))?$/.exec(tok);
     if (dm) {
       const d = +dm[1], mo = +dm[2], y = dm[3] ? (+dm[3] < 100 ? 2000 + +dm[3] : +dm[3]) : vnYear(now, mo);
@@ -174,15 +191,15 @@ function vnYear(now: Date, month: number): number {
 
 /** Short words that mean a category in a note (never used on bank lines, where they collide with names). */
 const NOTE_WORDS: [string[], string][] = [
-  [['LUONG'], 'luong'], [['THUONG'], 'thuong'], [['LAI', 'HOAN'], 'lai-hoan-tien'],
-  [['QUA', 'MUNG', 'LIXI', 'CUOI', 'HIEU'], 'qua-hieu-hi'],
-  [['THUOC', 'KHAM'], 'suc-khoe'],
-  [['SACH'], 'hoc-tap'],
-  [['DIEN', 'NUOC', 'NET', 'WIFI', 'CUOC'], 'hoa-don'],
-  [['PHIM', 'GAME'], 'giai-tri'],
-  [['XANG', 'GRAB', 'TAXI', 'XE', 'BUS'], 'di-lai'],
-  [['CAFE', 'CF', 'CAPHE', 'COFFEE'], 'ca-phe'],
-  [['AN', 'COM', 'PHO', 'BUN', 'LAU', 'NHAU', 'TRUA', 'BANH', 'NUONG'], 'an-uong'],
+  [['LUONG', 'SALARY'], 'luong'], [['THUONG', 'BONUS'], 'thuong'], [['LAI', 'HOAN', 'INTEREST', 'REFUND', 'CASHBACK'], 'lai-hoan-tien'],
+  [['QUA', 'MUNG', 'LIXI', 'CUOI', 'HIEU', 'GIFT', 'GIFTS', 'WEDDING'], 'qua-hieu-hi'],
+  [['THUOC', 'KHAM', 'MEDICINE', 'DOCTOR', 'PHARMACY', 'HOSPITAL'], 'suc-khoe'],
+  [['SACH', 'BOOK', 'BOOKS', 'COURSE'], 'hoc-tap'],
+  [['DIEN', 'NUOC', 'NET', 'WIFI', 'CUOC', 'ELECTRICITY', 'WATER', 'INTERNET', 'BILL'], 'hoa-don'],
+  [['PHIM', 'GAME', 'MOVIE', 'CINEMA'], 'giai-tri'],
+  [['XANG', 'GRAB', 'TAXI', 'XE', 'BUS', 'FUEL', 'PETROL', 'PARKING'], 'di-lai'],
+  [['CAFE', 'CF', 'CAPHE', 'COFFEE', 'TEA', 'DRINK', 'DRINKS'], 'ca-phe'],
+  [['AN', 'COM', 'PHO', 'BUN', 'LAU', 'NHAU', 'TRUA', 'BANH', 'NUONG', 'FOOD', 'LUNCH', 'DINNER', 'BREAKFAST', 'MEAL', 'SNACK'], 'an-uong'],
 ];
 
 export type Guess = { kind: 'category'; category: MoneyCategory } | { kind: 'transfer'; account: MoneyAccount } | null;

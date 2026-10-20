@@ -1,4 +1,4 @@
-/* /api/finance — the "Tiền" section. Times are UTC without a Z (see lib/money utc()). */
+/* /api/finance — the Money section. Times are UTC without a Z (see lib/money utc()). */
 import { get, send, upload } from './client';
 import type { Paged } from '../types';
 
@@ -9,12 +9,12 @@ export interface MoneyAccount {
   balance: number | null; balanceAt: string | null; balanceVnd: number | null; color: string | null;
   sortOrder: number; archived: boolean; transactionCount: number;
 }
-/** A way of looking at money ("mặt"). The main one holds the categories; perTransaction ones describe one occasion. */
+/** A way of looking at money (a facet). The main one holds the categories; perTransaction ones describe one occasion. */
 export interface MoneyFacet {
   id: string; code: string; name: string; icon: string | null; sortOrder: number; main: boolean; perTransaction: boolean;
   system: boolean; archived: boolean; tagCount: number;
 }
-/** A tag ("nhãn"). Those of the main facet are the categories (EXPENSE/INCOME); the other facets' are ANY. */
+/** A tag (a "label" on screen). Those of the main facet are the categories (EXPENSE/INCOME); the other facets' are ANY. */
 export interface MoneyCategory {
   id: string; code: string; name: string; icon: string | null; kind: 'EXPENSE' | 'INCOME' | 'ANY';
   budgetGroup: 'FIXED' | 'FLEXIBLE' | 'SAVING' | null; sortOrder: number; system: boolean; archived: boolean;

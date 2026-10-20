@@ -53,7 +53,7 @@ export default function SettingsTab() {
 
       <div className={`${card} lg:col-span-2`}>
         <h3 className="text-sm font-semibold text-slate-800">SePay webhook</h3>
-        <p className="text-xs text-slate-500">Paste this URL into SePay → Tích hợp → Webhooks (event: both money in and out). Every transaction of the linked TPBank account then lands here by itself.</p>
+        <p className="text-xs text-slate-500">Paste this URL into SePay → Integrations → Webhooks (event: both money in and out). Every transaction of the linked TPBank account then lands here by itself.</p>
         <div className="flex items-center gap-2">
           <code className="flex-1 min-w-0 truncate text-xs bg-slate-50 border border-slate-100 rounded-lg px-3 py-2.5 text-slate-700">{hook}</code>
           <Button variant="ghost" onClick={copy}>{copied ? <Check size={14} /> : <Copy size={14} />}{copied ? 'Copied' : 'Copy'}</Button>
