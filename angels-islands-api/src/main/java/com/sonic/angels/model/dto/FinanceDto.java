@@ -131,10 +131,20 @@ public final class FinanceDto {
 
     public record Budget(BigDecimal limit, BigDecimal spent, BigDecimal remaining, int daysLeft, BigDecimal perDay) {}
 
+    /** One label in a month's spending: every line carrying it counts in full (a parent through its children). */
+    public record LabelLine(UUID id, String name, String icon, UUID parentId, BigDecimal amount, long count) {}
+
+    /**
+     * A facet's view of the month's spending. A line with two labels of the facet counts under both, so the labels can
+     * add up to more than the month's spending; unlabeled is what carries none of them, multi how many lines carry two
+     * or more chosen ones.
+     */
+    public record FacetSpend(UUID facetId, String name, boolean main, List<LabelLine> labels, BigDecimal unlabeled, long multi) {}
+
     public record MonthReport(String month, BigDecimal income, BigDecimal expense, BigDecimal saved, BigDecimal net,
                               List<CategoryLine> expenses, List<CategoryLine> incomes, List<AccountLine> accounts,
                               Budget budget, BigDecimal prevExpense, BigDecimal prevExpenseToDate, long reviewCount,
-                              List<Gap> gaps, BigDecimal usdRate) {}
+                              List<Gap> gaps, BigDecimal usdRate, List<FacetSpend> byLabel, BigDecimal moved) {}
 
     public record TrendPoint(String month, BigDecimal income, BigDecimal expense, BigDecimal saved, BigDecimal netWorth) {}
 

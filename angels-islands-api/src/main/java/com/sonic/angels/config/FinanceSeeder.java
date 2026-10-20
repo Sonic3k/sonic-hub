@@ -77,6 +77,8 @@ public class FinanceSeeder implements SmartInitializingSingleton {
      * decided line carries its category as a tag; subscriptions and games are also "Digital". Nothing is deleted.
      * 4: the money module goes English — the Vietnamese names it wrote (facets, categories, tags, the cash account, the
      * labels set while sorting the bank history) get their English names. Names typed by hand are left as they are.
+     * 5: labels have parents instead of a separate "Group" facet — its labels become categories that their children
+     * bring along (Food & Drink above Food and Drinks), shown just before them, and the Group facet is archived.
      */
     private void upgrade() {
         int version = settings.findById(SEED_VERSION).map(AppSetting::getValue).map(v -> {
@@ -138,6 +140,28 @@ public class FinanceSeeder implements SmartInitializingSingleton {
             int n = english();
             version(4);
             log.info("Finance: {} name(s) put in English", n);
+        }
+        if (version < 5) {
+            int n = 0, lines = 0;
+            FinanceFacet group = facets.findByCode("nhom").orElse(null);
+            FinanceFacet main = facets.findFirstByMainTrue().orElse(null);
+            if (group != null && main != null) {
+                List<FinanceCategory> all = categories.findAll();
+                for (FinanceCategory c : all) {
+                    if (c.getFacet() == null || !c.getFacet().getId().equals(group.getId())) continue;
+                    c.setFacet(main);
+                    c.setKind(Kind.EXPENSE);
+                    if (c.getBudgetGroup() == null) c.setBudgetGroup(BudgetGroup.FLEXIBLE);
+                    int first = all.stream().filter(k -> k.getImplies().stream().anyMatch(p -> p.getId().equals(c.getId())))
+                        .mapToInt(FinanceCategory::getSortOrder).min().orElse(c.getSortOrder() + 1);
+                    c.setSortOrder(Math.max(0, first - 1));
+                    for (FinanceTransaction t : txns.withTag(c.getId())) { FinanceTags.settleDecided(t); lines++; }
+                    n++;
+                }
+                group.setArchived(true);
+            }
+            version(5);
+            log.info("Finance: {} label(s) of the Group facet are categories now ({} line(s) looked at)", n, lines);
         }
     }
 
