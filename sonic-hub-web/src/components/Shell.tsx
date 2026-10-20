@@ -14,7 +14,7 @@ import { counts, fmt, noteDate, useAlbums, useLibraryCounts, useNotes, usePerson
 /* [label, path, colour, short label for the phone's bottom bar]. Portal lists the sites of their own (Huyền học, Bóng đá). */
 const TABS: [string, string, string, string?][] = [['Hôm nay', '/', '--photo'], ['Ảnh', '/photos', '--photo'], ['Nhật ký', '/journal', '--journal'], ['Angels', '/angels', '--angels'], ['Diễn đàn', '/forum', '--forum'], ['Game', '/games', '--games'], ['Portal', '/portal', '--portal']];
 /* Only on the owner's own browser (set by opening /money once): visitors of the portal never see the money tab. */
-const MONEY_TAB: [string, string, string, string?] = ['Tiền', '/money', '--money'];
+const MONEY_TAB: [string, string, string, string?] = ['Money', '/money', '--money'];
 
 export default function Shell() {
   const loc = useLocation(), nav = useNavigate(), tl = useTimeline();

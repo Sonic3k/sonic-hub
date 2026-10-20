@@ -636,7 +636,7 @@ a.rk-mcell:hover, .rk-mcell.on { background: #FDE7EC; border-color: color-mix(in
 .series-list b, .writings b { display: block; font-weight: 600; } .series-list small, .writings small { display: block; font-size: 12.5px; color: var(--ink3); margin-top: 2px; }
 .writings li a { display: block; padding: 10px 0; }
 
-/* ═══ Tiền — personal money (owner only). Accent: copper, validated ≥3:1 on card and paper. ═══ */
+/* ═══ Money — personal money (owner only). Accent: copper, validated ≥3:1 on card and paper. ═══ */
 :root { --money: #B5541B; --money-soft: #F4E4D8; --context: #DCD6CB; --good: #1E7B3C; --bad: #C8352F; }
 .mn > * + * { margin-top: 24px; }
 .mn .ptitle { flex-wrap: wrap; }

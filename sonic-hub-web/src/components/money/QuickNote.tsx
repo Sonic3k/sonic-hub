@@ -1,8 +1,8 @@
-/* "Ghi nhanh": one line, understood while typing, Enter writes it down. Recent notes come back as one-tap chips. */
+/* Quick note: one line, understood while typing, Enter writes it down. Recent notes come back as one-tap chips. */
 import { useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { moneyApi, type Chip, type MoneyCategory, type Txn } from '../../api/money';
-import { dayOf, guess, money, noteTime, parseNote, short } from '../../lib/money';
+import { dayOf, dayShort, guess, money, noteTime, parseNote, short } from '../../lib/money';
 import { useCategories, useChips, useRefresh, useRules, useSummary } from './data';
 
 type Toast = { txn: Txn; text: string } | null;
@@ -58,7 +58,7 @@ export default function QuickNote() {
     const ok = await save({
       text: p.text, amount: p.amount, accountId, occurredAt: noteTime(date),
       categoryId: transfer ? undefined : chosen?.id,
-    }, `${chosen ? `${chosen.icon ?? ''} ${chosen.name}` : transfer ? `↔ ${g.account.name}` : 'Đã ghi'} · ${money(p.amount, account?.currency, true)}`);
+    }, `${chosen ? `${chosen.icon ?? ''} ${chosen.name}` : transfer ? `↔ ${g.account.name}` : 'Added'} · ${money(p.amount, account?.currency, true)}`);
     if (ok) { reset(); input.current?.focus(); }
   };
 
@@ -75,29 +75,29 @@ export default function QuickNote() {
 
   return (
     <div className="card mn-quick">
-      <label className="mn-label" htmlFor="mn-q">Ghi nhanh</label>
+      <label className="mn-label" htmlFor="mn-q">Quick note</label>
       <form className="mn-q-row" onSubmit={e => { e.preventDefault(); submit(); }}>
         <input id="mn-q" ref={input} className="mn-q-input" value={text} autoComplete="off" enterKeyHint="done"
           onChange={e => { setText(e.target.value); if (!e.target.value) reset(); }}
-          placeholder="cafe 35k · grab 52k momo · hôm qua 200k quà" />
-        <button className="mn-q-go" type="submit" disabled={p.amount === null || busy}>Ghi</button>
+          placeholder="coffee 35k · grab 52k momo · yesterday 200k gift" />
+        <button className="mn-q-go" type="submit" disabled={p.amount === null || busy}>Add</button>
       </form>
 
       {p.amount !== null ? (
         <div className="mn-q-preview">
           <span className={`mn-q-amt ${sign > 0 ? 'in' : ''}`}>{money(p.amount, account?.currency, true)}</span>
           <button type="button" className={`mn-chip ${picker === 'cat' ? 'on' : ''}`} onClick={() => setPicker(picker === 'cat' ? null : 'cat')}>
-            {chosen ? <>{chosen.icon} {chosen.name}</> : g?.kind === 'transfer' && !catOverride ? <>↔ {g.account.name}</> : <span className="mn-muted">Chọn hạng mục</span>}
+            {chosen ? <>{chosen.icon} {chosen.name}</> : g?.kind === 'transfer' && !catOverride ? <>↔ {g.account.name}</> : <span className="mn-muted">Pick a category</span>}
           </button>
           <button type="button" className={`mn-chip ${picker === 'acc' ? 'on' : ''}`} onClick={() => setPicker(picker === 'acc' ? null : 'acc')}>
-            <i className="mn-dot" style={{ background: account?.color ?? 'var(--ink3)' }} />{account?.name ?? 'Tài khoản'}
+            <i className="mn-dot" style={{ background: account?.color ?? 'var(--ink3)' }} />{account?.name ?? 'Account'}
           </button>
           <button type="button" className={`mn-chip ${picker === 'date' ? 'on' : ''}`} onClick={() => setPicker(picker === 'date' ? null : 'date')}>
-            {!date || date === today ? 'Hôm nay' : date === yesterday ? 'Hôm qua' : `${+date.slice(8)}/${+date.slice(5, 7)}`}
+            {!date || date === today ? 'Today' : date === yesterday ? 'Yesterday' : dayShort(date)}
           </button>
         </div>
       ) : (
-        <p className="mn-q-hint"><b>k</b> nghìn · <b>tr</b> triệu · thêm <b>momo</b>, <b>tm</b>, <b>tp</b>, <b>tcb</b> để chọn ví · <b>hôm qua</b>, <b>12/10</b> để lùi ngày · <b>+</b> là tiền vào</p>
+        <p className="mn-q-hint"><b>k</b> thousand · <b>m</b> million · add <b>momo</b>, <b>cash</b>, <b>tp</b> or <b>tcb</b> to pick the account · <b>yesterday</b> or <b>12/10</b> for an earlier day · <b>+</b> for money in</p>
       )}
 
       {picker === 'cat' && p.amount !== null && (
@@ -128,7 +128,7 @@ export default function QuickNote() {
       {error && <p className="mn-error">{error}</p>}
 
       {!!chips.data?.length && (
-        <div className="mn-q-chips" aria-label="Ghi lại một chạm">
+        <div className="mn-q-chips" aria-label="Add again in one tap">
           {chips.data.map(c => (
             <button key={`${c.text}-${c.amount}-${c.accountId}`} type="button" className="mn-qc" disabled={busy} onClick={() => tapChip(c)}>
               {c.categoryIcon && <span>{c.categoryIcon}</span>}{c.text}<b>{short(c.amount)}</b>
@@ -140,8 +140,8 @@ export default function QuickNote() {
       {/* In <body>: the page's entrance animation leaves a transform on .page, which would trap a fixed element. */}
       {toast && createPortal(
         <div className="mn-toast" role="status">
-          <span>Đã ghi · {toast.text}</span>
-          <button type="button" onClick={undo}>Hoàn tác</button>
+          <span>Added · {toast.text}</span>
+          <button type="button" onClick={undo}>Undo</button>
         </div>,
         document.body,
       )}

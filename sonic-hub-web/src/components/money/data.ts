@@ -1,4 +1,4 @@
-/* Shared reads of the "Tiền" section. Every write invalidates ['money'] so all of it agrees again. */
+/* Shared reads of the Money section. Every write invalidates ['money'] so all of it agrees again. */
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { moneyApi } from '../../api/money';
 
@@ -20,7 +20,7 @@ export function useRefresh() {
   return () => qc.invalidateQueries({ queryKey: ['money'] });
 }
 
-/** The owner's browser shows the "Tiền" tab; visitors of the portal never see it. Set by opening /money once. */
+/** The owner's browser shows the Money tab; visitors of the portal never see it. Set by opening /money once. */
 export const OWNER_KEY = 'sonic-hub-owner';
 export function isOwner(): boolean { try { return localStorage.getItem(OWNER_KEY) === '1'; } catch { return false; } }
 export function markOwner() { try { localStorage.setItem(OWNER_KEY, '1'); } catch { /* private mode */ } }

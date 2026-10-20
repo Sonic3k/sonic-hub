@@ -1,10 +1,10 @@
-/* "Cần xem lại": what no rule knew. Lines whose counterparty is known (the bank statement says who) come grouped
-   by it — one decision covers all of that person's or shop's lines, old and new, can rename them ("Tiền nhà") and
-   can give them more tags ("Digital", "Vợ"). The few without a counterparty are decided one by one; that choice is
+/* To review: what no rule knew. Lines whose counterparty is known (the bank statement says who) come grouped
+   by it — one decision covers all of that person's or shop's lines, old and new, can rename them ("Rent") and
+   can give them more tags ("Digital", "Wife"). The few without a counterparty are decided one by one; that choice is
    remembered by its words. */
 import { useState } from 'react';
 import { moneyApi, type CounterpartyGroup, type MoneyCategory, type Txn } from '../../api/money';
-import { dayLabel, money, short, timeOf } from '../../lib/money';
+import { dayLabel, dayWord, money, short, timeOf } from '../../lib/money';
 import { useCategories, useCounterparties, useRefresh, useReview, useSummary } from './data';
 import { FacetChips, useTagBook } from './tags';
 
@@ -51,19 +51,19 @@ export default function Review() {
 
   const labelInput = (
     <input className="mn-pick-label" value={label} maxLength={80} onChange={e => setLabel(e.target.value)}
-      placeholder="Đặt tên (không bắt buộc), vd: Tiền nhà" />
+      placeholder="Name (optional), e.g. Rent" />
   );
 
   return (
     <div className="card mn-review">
       <div className="mn-head">
-        <h2>Cần xem lại <small>{items.length}</small></h2>
-        {guessed > 0 && <button type="button" className="mn-btn" onClick={() => act('all', moneyApi.confirmAll)} disabled={busy !== null}>Đúng hết ({guessed})</button>}
+        <h2>To review <small>{items.length}</small></h2>
+        {guessed > 0 && <button type="button" className="mn-btn" onClick={() => act('all', moneyApi.confirmAll)} disabled={busy !== null}>Accept all guesses ({guessed})</button>}
       </div>
       {gs.length > 0 && (
         <p className="mn-rv-hint">
-          {gs.length} người hoặc nơi nhận{singles.length ? ` · ${singles.length} giao dịch lẻ` : ''}. Chọn một lần cho mỗi người —
-          áp cho mọi giao dịch với họ, cả cũ lẫn sau này.
+          {gs.length} payee{gs.length === 1 ? '' : 's'}{singles.length ? ` · ${singles.length} single transaction${singles.length === 1 ? '' : 's'}` : ''}. Decide once per payee and
+          it applies to all their transactions, past and future.
         </p>
       )}
       {error && <p className="mn-error">{error}</p>}
@@ -79,7 +79,7 @@ export default function Review() {
                   <div className="mn-rv-main">
                     <b><span className="mn-rv-who">{g.outCount ? '→' : '←'}</span>{g.name}</b>
                     <small>
-                      {g.waiting} giao dịch chờ{g.count > g.waiting ? ` (của ${g.count})` : ''} · gần nhất {dayLabel(g.lastAt)}
+                      {g.waiting} waiting{g.count > g.waiting ? ` (of ${g.count})` : ''} · latest {dayWord(g.lastAt)}
                       {g.sample ? ` · ${g.sample}` : ''}
                     </small>
                   </div>
@@ -87,13 +87,13 @@ export default function Review() {
                 </div>
                 <div className="mn-rv-act">
                   {g.guessCategoryId && g.guessCategoryName && (
-                    <button type="button" className="mn-chip guess" title="Đúng rồi — cho mọi giao dịch với người này"
+                    <button type="button" className="mn-chip guess" title="Yes, for every transaction with this payee"
                       onClick={() => assign(g, { categoryId: g.guessCategoryId! })}>
                       {g.guessCategoryIcon} {g.guessCategoryName}?<span className="mn-check">✓</span>
                     </button>
                   )}
                   <button type="button" className={`mn-chip ${open === g.key ? 'on' : ''}`} onClick={() => toggle(g.key)}>
-                    {g.guessCategoryId ? 'Khác' : 'Chọn hạng mục'}
+                    {g.guessCategoryId ? 'Other' : 'Pick a category'}
                   </button>
                 </div>
                 {open === g.key && (
@@ -108,15 +108,15 @@ export default function Review() {
                               onCreated={id => setExtra(s => new Set(s).add(id))} />
                           </div>
                         ))}
-                        <span className="mn-pick-sep">Hạng mục — chọn là lưu cho mọi giao dịch với họ:</span>
+                        <span className="mn-pick-sep">Pick a category to save it for all their transactions:</span>
                       </>
                     ) : (
-                      <button type="button" className="mn-link mn-pick-wide mn-pick-more" onClick={() => setShowExtra(true)}>＋ Thêm nhãn khác (không bắt buộc)</button>
+                      <button type="button" className="mn-link mn-pick-wide mn-pick-more" onClick={() => setShowExtra(true)}>＋ More labels (optional)</button>
                     ))}
                     {cats(kind).map(c => (
                       <button key={c.id} type="button" className="mn-pick-i" onClick={() => assign(g, { categoryId: c.id })}><span>{c.icon}</span>{c.name}</button>
                     ))}
-                    {live.some(a => !g.ownAccountIds.includes(a.id)) && <span className="mn-pick-sep">Hoặc là chuyển giữa ví của mình:</span>}
+                    {live.some(a => !g.ownAccountIds.includes(a.id)) && <span className="mn-pick-sep">Or an internal transfer:</span>}
                     {live.filter(a => !g.ownAccountIds.includes(a.id)).map(a => (
                       <button key={a.id} type="button" className="mn-pick-i" onClick={() => assign(g, { transferAccountId: a.id })}>
                         <i className="mn-dot" style={{ background: a.color ?? 'var(--ink3)' }} />{g.outCount ? '→' : '←'} {a.name}
@@ -134,29 +134,29 @@ export default function Review() {
             <li key={t.id} className={busy === t.id ? 'busy' : ''}>
               <div className="mn-rv">
                 <div className="mn-rv-main">
-                  <b>{t.description || t.bankDescription || 'Không có nội dung'}</b>
+                  <b>{t.description || t.bankDescription || 'No description'}</b>
                   <small>{t.accountName} · {dayLabel(t.occurredAt)} {timeOf(t.occurredAt)}{t.bankDescription && t.description ? ` · ${t.bankDescription}` : ''}</small>
                 </div>
                 <span className={`mn-amt ${t.amount > 0 ? 'in' : ''}`}>{money(t.amount, t.currency, true)}</span>
               </div>
               <div className="mn-rv-act">
                 {t.categoryId ? (
-                  <button type="button" className="mn-chip guess" onClick={() => act(t.id, () => moneyApi.confirm(t.id))} title="Đúng rồi">
+                  <button type="button" className="mn-chip guess" onClick={() => act(t.id, () => moneyApi.confirm(t.id))} title="Correct">
                     {t.categoryIcon} {t.categoryName}{t.categorizedBy === 'AI' ? '?' : ''}<span className="mn-check">✓</span>
                   </button>
-                ) : <span className="mn-muted">Chưa đoán được</span>}
+                ) : <span className="mn-muted">No guess yet</span>}
                 <button type="button" className={`mn-chip ${open === t.id ? 'on' : ''}`} onClick={() => toggle(t.id)}>
-                  {t.categoryId ? 'Khác' : 'Chọn hạng mục'}
+                  {t.categoryId ? 'Other' : 'Pick a category'}
                 </button>
               </div>
               {open === t.id && (
                 <div className="mn-pick">
                   {t.suggestedKeywords && (
                     <label className="mn-remember mn-pick-wide"><input type="checkbox" checked={remember} onChange={e => setRemember(e.target.checked)} />
-                      Nhớ: lần sau “{t.suggestedKeywords}” là hạng mục được chọn</label>
+                      Remember: next time “{t.suggestedKeywords}” gets the category you pick</label>
                   )}
                   {cats(kind).map(c => <button key={c.id} type="button" className="mn-pick-i" onClick={() => pick(t, c)}><span>{c.icon}</span>{c.name}</button>)}
-                  {others.length > 0 && <span className="mn-pick-sep">Hoặc là chuyển giữa ví của mình:</span>}
+                  {others.length > 0 && <span className="mn-pick-sep">Or an internal transfer:</span>}
                   {others.map(a => <button key={a.id} type="button" className="mn-pick-i" onClick={() => moveTo(t, a.id)}><i className="mn-dot" style={{ background: a.color ?? 'var(--ink3)' }} />{t.amount < 0 ? '→' : '←'} {a.name}</button>)}
                 </div>
               )}
@@ -164,7 +164,7 @@ export default function Review() {
           );
         })}
       </ul>
-      {rows.length > shown.length && <button type="button" className="mn-more" onClick={() => setAll(true)}>Xem tất cả ({rows.length})</button>}
+      {rows.length > shown.length && <button type="button" className="mn-more" onClick={() => setAll(true)}>Show all ({rows.length})</button>}
     </div>
   );
 }
