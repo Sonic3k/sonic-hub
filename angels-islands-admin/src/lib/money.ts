@@ -5,8 +5,8 @@ export const utc = (s: string) => new Date(s.endsWith('Z') ? s : s + 'Z')
 
 export function vnd(n: number | null | undefined, signed = false): string {
   if (n === null || n === undefined) return '—'
-  const s = Math.round(Math.abs(n)).toLocaleString('vi-VN')
-  return (signed ? (n < 0 ? '−' : n > 0 ? '+' : '') : n < 0 ? '−' : '') + s + ' đ'
+  const s = Math.round(Math.abs(n)).toLocaleString('en-US')
+  return (signed ? (n < 0 ? '−' : n > 0 ? '+' : '') : n < 0 ? '−' : '') + s + ' ₫'
 }
 
 export function money(n: number | null | undefined, currency: string, signed = false): string {
@@ -17,10 +17,10 @@ export function money(n: number | null | undefined, currency: string, signed = f
 }
 
 export const fmtDateTime = (s: string | null | undefined) => s
-  ? utc(s).toLocaleString('vi-VN', { timeZone: VN, day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })
+  ? utc(s).toLocaleString('en-GB', { timeZone: VN, day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })
   : '—'
 
-export const fmtDay = (s: string) => utc(s).toLocaleDateString('vi-VN', { timeZone: VN, weekday: 'short', day: '2-digit', month: '2-digit' })
+export const fmtDay = (s: string) => utc(s).toLocaleDateString('en-GB', { timeZone: VN, weekday: 'short', day: '2-digit', month: '2-digit' })
 
 /** "2026-10" for the month a UTC time falls in, Vietnam time. */
 export const vnMonth = (d = new Date()) => {
@@ -48,6 +48,6 @@ export const fromLocalInput = (v: string) => (v ? `${v}:00+07:00` : undefined)
 export const MODE_LABEL: Record<string, string> = { FEED: 'Auto feed', RECONCILE: 'Balance check-ins', POOL: 'Cash pool' }
 export const MODE_HELP: Record<string, string> = {
   FEED: 'Every transaction arrives by itself (SePay). The balance is the bank’s own figure.',
-  RECONCILE: 'Notes are optional. Typing the balance now and then turns the gap into “Chi chưa rõ / Thu chưa rõ”.',
+  RECONCILE: 'Notes are optional. Typing the balance now and then turns the gap into unexplained spending or income.',
   POOL: 'Cash: money going in counts as spent at once; a cash note only moves part of it to its real category.',
 }

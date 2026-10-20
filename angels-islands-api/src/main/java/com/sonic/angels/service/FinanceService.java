@@ -68,7 +68,7 @@ public class FinanceService {
     }
 
     public FinanceDto.Account createAccount(FinanceDto.AccountRequest r) {
-        if (r.name() == null || r.name().isBlank()) throw new IllegalArgumentException("Tên tài khoản?");
+        if (r.name() == null || r.name().isBlank()) throw new IllegalArgumentException("Enter an account name");
         FinanceAccount a = new FinanceAccount();
         a.setSortOrder(accountRepo.findAll().stream().mapToInt(FinanceAccount::getSortOrder).max().orElse(0) + 1);
         fill(a, r);
@@ -84,7 +84,7 @@ public class FinanceService {
     public void deleteAccount(UUID id) {
         FinanceAccount a = account(id);
         if (txnRepo.countByAccountId(id) > 0)
-            throw new IllegalArgumentException("Tài khoản đã có giao dịch — hãy lưu trữ thay vì xoá");
+            throw new IllegalArgumentException("This account has transactions — archive it instead");
         for (FinanceRule r : ruleRepo.findByTransferAccountId(id)) { txnRepo.clearRule(r.getId()); ruleRepo.delete(r); }
         accountRepo.delete(a);
     }
@@ -95,8 +95,8 @@ public class FinanceService {
      */
     public FinanceDto.Account setBalance(UUID id, FinanceDto.BalanceRequest r) {
         FinanceAccount a = account(id);
-        if (r == null || r.balance() == null) throw new IllegalArgumentException("Số dư?");
-        if (a.getMode() == FinanceAccount.Mode.POOL) throw new IllegalArgumentException("Tiền mặt không cần chốt số dư");
+        if (r == null || r.balance() == null) throw new IllegalArgumentException("Enter a balance");
+        if (a.getMode() == FinanceAccount.Mode.POOL) throw new IllegalArgumentException("Cash doesn't need its balance set");
         LocalDateTime now = FinanceText.nowUtc();
         if (a.getMode() == FinanceAccount.Mode.RECONCILE && a.getBalance() != null) {
             BigDecimal diff = r.balance().subtract(a.getBalance());
@@ -111,7 +111,7 @@ public class FinanceService {
                 String code = diff.signum() < 0 ? FinanceCategory.UNKNOWN_EXPENSE : FinanceCategory.UNKNOWN_INCOME;
                 FinanceCategory c = categoryRepo.findByCode(code).orElse(null);
                 t.setKind(diff.signum() < 0 ? Kind.EXPENSE : Kind.INCOME);
-                t.setDescription("Chênh lệch khi chốt số dư" + (r.note() != null && !r.note().isBlank() ? " · " + r.note().trim() : ""));
+                t.setDescription("Balance adjustment" + (r.note() != null && !r.note().isBlank() ? " · " + r.note().trim() : ""));
                 t = txnRepo.save(t);
                 if (c != null) {
                     FinanceTags.replace(t, FinanceTags.MAIN, List.of(c), By.SYSTEM);
@@ -131,13 +131,13 @@ public class FinanceService {
         if (r.mode() != null) a.setMode(parseEnum(FinanceAccount.Mode.class, r.mode(), "mode"));
         if (r.currency() != null) {
             String c = r.currency().trim().toUpperCase(Locale.ROOT);
-            if (!c.matches("[A-Z]{3}")) throw new IllegalArgumentException("Tiền tệ là 3 chữ cái, ví dụ VND, USD");
+            if (!c.matches("[A-Z]{3}")) throw new IllegalArgumentException("Currency must be 3 letters, like VND or USD");
             a.setCurrency(c);
         }
         if (r.accountNumber() != null) {
             String n = r.accountNumber().replaceAll("\\s+", "");
             if (!n.isEmpty()) accountRepo.findFirstByAccountNumber(n).filter(o -> !o.getId().equals(a.getId())).ifPresent(o -> {
-                throw new IllegalArgumentException("Số tài khoản này đã thuộc " + o.getName());
+                throw new IllegalArgumentException("This account number already belongs to " + o.getName());
             });
             a.setAccountNumber(n.isEmpty() ? null : n);
         }
@@ -157,7 +157,7 @@ public class FinanceService {
     }
 
     public FinanceDto.Facet createFacet(FinanceDto.FacetRequest r) {
-        if (r.name() == null || r.name().isBlank()) throw new IllegalArgumentException("Tên mặt?");
+        if (r.name() == null || r.name().isBlank()) throw new IllegalArgumentException("Enter a section name");
         FinanceFacet f = new FinanceFacet();
         f.setName(r.name().trim());
         f.setIcon(blankToNull(r.icon()));
@@ -177,7 +177,7 @@ public class FinanceService {
         if (r.sortOrder() != null) f.setSortOrder(r.sortOrder());
         if (r.perTransaction() != null && !f.isMain()) f.setPerTransaction(r.perTransaction());
         if (r.archived() != null) {
-            if (f.isMain() && r.archived()) throw new IllegalArgumentException("Mặt Hạng mục không lưu trữ được");
+            if (f.isMain() && r.archived()) throw new IllegalArgumentException("The categories section can't be archived");
             f.setArchived(r.archived());
         }
         return toFacet(f, categoryRepo.countByFacetId(id));
@@ -186,9 +186,10 @@ public class FinanceService {
     /** Only an empty facet goes away; one with tags can be archived. */
     public void deleteFacet(UUID id) {
         FinanceFacet f = facet(id);
-        if (f.isMain() || f.isSystem()) throw new IllegalArgumentException("Mặt này không xoá được");
+        if (f.isMain() || f.isSystem()) throw new IllegalArgumentException("This section can't be deleted");
         long n = categoryRepo.countByFacetId(id);
-        if (n > 0) throw new IllegalArgumentException("Mặt này còn " + n + " nhãn — xoá các nhãn trước, hoặc lưu trữ mặt");
+        if (n > 0) throw new IllegalArgumentException("This section still has " + n + (n == 1 ? " label — delete it" : " labels — delete them")
+            + " first, or archive the section");
         facetRepo.delete(f);
     }
 
@@ -202,7 +203,7 @@ public class FinanceService {
      * one that exists (brought back from the archive) — the quick "＋" on the Tiền page relies on it.
      */
     public FinanceDto.Category createCategory(FinanceDto.CategoryRequest r) {
-        if (r.name() == null || r.name().isBlank()) throw new IllegalArgumentException("Tên nhãn?");
+        if (r.name() == null || r.name().isBlank()) throw new IllegalArgumentException("Enter a label name");
         FinanceFacet f = r.facetId() != null ? facet(r.facetId()) : mainFacet();
         String key = FinanceText.normalize(r.name());
         for (FinanceCategory o : categoryRepo.findAll()) {
@@ -214,7 +215,7 @@ public class FinanceService {
         c.setFacet(f);
         if (f.isMain()) {
             c.setKind(r.kind() == null ? FinanceCategory.Kind.EXPENSE : parseEnum(FinanceCategory.Kind.class, r.kind(), "kind"));
-            if (c.getKind() == FinanceCategory.Kind.ANY) throw new IllegalArgumentException("Hạng mục là chi hoặc thu");
+            if (c.getKind() == FinanceCategory.Kind.ANY) throw new IllegalArgumentException("A category must be spending or income");
             c.setBudgetGroup(c.getKind() == FinanceCategory.Kind.INCOME ? null
                 : r.budgetGroup() == null ? FinanceCategory.BudgetGroup.FLEXIBLE : parseEnum(FinanceCategory.BudgetGroup.class, r.budgetGroup(), "budgetGroup"));
         } else {
@@ -237,14 +238,14 @@ public class FinanceService {
         if (r.icon() != null) c.setIcon(blankToNull(r.icon()));
         if (r.sortOrder() != null) c.setSortOrder(r.sortOrder());
         if (r.archived() != null) {
-            if (c.isSystem() && r.archived()) throw new IllegalArgumentException("Hạng mục hệ thống không lưu trữ được");
+            if (c.isSystem() && r.archived()) throw new IllegalArgumentException("System categories can't be archived");
             c.setArchived(r.archived());
         }
         if (r.kind() != null && c.isMain()) {
             FinanceCategory.Kind k = parseEnum(FinanceCategory.Kind.class, r.kind(), "kind");
-            if (k == FinanceCategory.Kind.ANY) throw new IllegalArgumentException("Hạng mục là chi hoặc thu");
+            if (k == FinanceCategory.Kind.ANY) throw new IllegalArgumentException("A category must be spending or income");
             if (k != c.getKind()) {
-                if (c.isSystem()) throw new IllegalArgumentException("Không đổi loại của hạng mục hệ thống");
+                if (c.isSystem()) throw new IllegalArgumentException("The kind of a system category can't be changed");
                 c.setKind(k);
                 if (k == FinanceCategory.Kind.INCOME) c.setBudgetGroup(null);
                 else if (c.getBudgetGroup() == null) c.setBudgetGroup(FinanceCategory.BudgetGroup.FLEXIBLE);
@@ -271,7 +272,7 @@ public class FinanceService {
     /** The tag comes off every line (those left without a category go back to review) and every rule. */
     public void deleteCategory(UUID id) {
         FinanceCategory c = category(id);
-        if (c.isSystem()) throw new IllegalArgumentException("Hạng mục hệ thống không xoá được");
+        if (c.isSystem()) throw new IllegalArgumentException("System categories can't be deleted");
         Set<FinanceTransaction> lines = new LinkedHashSet<>(txnRepo.withTag(id));
         lines.addAll(txnRepo.findByCategoryId(id));
         for (FinanceTransaction t : lines) {
@@ -374,10 +375,10 @@ public class FinanceService {
         if (r.fromDate() != null) rule.setFromDate(parseDate(r.fromDate()));
         if (r.toDate() != null) rule.setToDate(parseDate(r.toDate()));
         if (rule.getFromDate() != null && rule.getToDate() != null && rule.getFromDate().isAfter(rule.getToDate()))
-            throw new IllegalArgumentException("Ngày bắt đầu đang sau ngày kết thúc");
+            throw new IllegalArgumentException("The start date is after the end date");
         if (!rule.isCounterpartyRule() && (r.keywords() != null || creating)) {
             boolean none = r.keywords() == null || FinanceText.keywords(r.keywords()).isEmpty();
-            if (none && !rule.hasDates()) throw new IllegalArgumentException("Cần ít nhất một từ khoá, một người nhận hoặc một khoảng ngày");
+            if (none && !rule.hasDates()) throw new IllegalArgumentException("A rule needs at least one keyword, a payee or a date range");
             rule.setKeywords(none ? "" : r.keywords().trim());
         }
         if (r.direction() != null) rule.setDirection(parseEnum(FinanceRule.Direction.class, r.direction(), "direction"));
@@ -397,13 +398,13 @@ public class FinanceService {
             rule.setTransferAccount(null);
         }
         if (rule.givenTags().isEmpty() && rule.getTransferAccount() == null)
-            throw new IllegalArgumentException("Quy tắc cần ít nhất một nhãn hoặc một tài khoản đích");
+            throw new IllegalArgumentException("A rule needs at least one label or a target account");
     }
 
     private static LocalDate parseDate(String s) {
         if (s == null || s.isBlank()) return null;
         try { return LocalDate.parse(s.trim()); }
-        catch (java.time.format.DateTimeParseException e) { throw new IllegalArgumentException("Ngày không hợp lệ: " + s); }
+        catch (java.time.format.DateTimeParseException e) { throw new IllegalArgumentException("Invalid date: " + s); }
     }
 
     // ════════════════════════════════ transactions ════════════════════════════════
@@ -437,8 +438,8 @@ public class FinanceService {
 
     /** Typed in admin. Without a category it goes through the rules like everything else. */
     public FinanceDto.Txn createTransaction(FinanceDto.TxnRequest r) {
-        if (r.accountId() == null) throw new IllegalArgumentException("Chọn tài khoản");
-        if (r.amount() == null || r.amount().signum() == 0) throw new IllegalArgumentException("Số tiền?");
+        if (r.accountId() == null) throw new IllegalArgumentException("Pick an account");
+        if (r.amount() == null || r.amount().signum() == 0) throw new IllegalArgumentException("Enter an amount");
         FinanceTransaction t = new FinanceTransaction();
         t.setAccount(account(r.accountId()));
         t.setAmount(r.amount());
@@ -464,7 +465,7 @@ public class FinanceService {
             classifier.added(t);
         }
         if (r.amount() != null && r.amount().compareTo(t.getAmount()) != 0) {
-            if (r.amount().signum() == 0) throw new IllegalArgumentException("Số tiền?");
+            if (r.amount().signum() == 0) throw new IllegalArgumentException("Enter an amount");
             classifier.removed(t);
             t.setAmount(r.amount());
             classifier.added(t);
@@ -488,7 +489,7 @@ public class FinanceService {
                 : t.getKind() == Kind.TRANSFER && r.transferAccountId() != null ? account(r.transferAccountId()) : null;
             List<FinanceCategory> give = target == null ? ruleTags(t, r) : List.of();
             FinanceCategory main = mainOf(give);
-            if (target == null && main == null) throw new IllegalArgumentException("Chọn hạng mục trước khi áp cho cả người nhận");
+            if (target == null && main == null) throw new IllegalArgumentException("Pick a category before applying it to everything with this payee");
             assignCounterparty(new FinanceDto.AssignRequest(t.getCounterparty(), main == null ? null : main.getId(),
                 target == null ? null : target.getId(), r.label(), give.stream().map(FinanceCategory::getId).toList()));
         }
@@ -508,7 +509,7 @@ public class FinanceService {
     /** One tap: the guess (AI or rule) is right. */
     public FinanceDto.Txn confirm(UUID id) {
         FinanceTransaction t = txn(id);
-        if (t.getKind() != Kind.TRANSFER && t.getCategory() == null) throw new IllegalArgumentException("Chọn hạng mục trước");
+        if (t.getKind() != Kind.TRANSFER && t.getCategory() == null) throw new IllegalArgumentException("Pick a category first");
         t.setStatus(Status.OK);
         return toTxn(t, rates.usdValue());
     }
@@ -527,10 +528,10 @@ public class FinanceService {
      * gets a category this way is decided. Moves between own accounts carry no tags and are left out.
      */
     public FinanceDto.Applied tags(FinanceDto.TagsRequest r) {
-        if (r.ids() == null || r.ids().isEmpty()) throw new IllegalArgumentException("Chọn giao dịch trước");
+        if (r.ids() == null || r.ids().isEmpty()) throw new IllegalArgumentException("Pick transactions first");
         List<FinanceCategory> add = r.add() == null ? List.of() : r.add().stream().distinct().map(this::category).toList();
         Set<UUID> remove = r.remove() == null ? Set.of() : new HashSet<>(r.remove());
-        if (add.isEmpty() && remove.isEmpty()) throw new IllegalArgumentException("Chọn nhãn");
+        if (add.isEmpty() && remove.isEmpty()) throw new IllegalArgumentException("Pick a label");
         int n = 0;
         for (FinanceTransaction t : txnRepo.findAllByIdIn(r.ids())) {
             if (t.getKind() == Kind.TRANSFER || t.getSource() == Source.SYSTEM) continue;
@@ -605,8 +606,8 @@ public class FinanceService {
      */
     public FinanceDto.Applied assignCounterparty(FinanceDto.AssignRequest r) {
         String key = FinanceText.counterpartyKey(r.name());
-        if (key.isEmpty()) throw new IllegalArgumentException("Người nhận?");
-        if (r.categoryId() == null && r.transferAccountId() == null) throw new IllegalArgumentException("Chọn hạng mục hoặc tài khoản đích");
+        if (key.isEmpty()) throw new IllegalArgumentException("Enter a payee");
+        if (r.categoryId() == null && r.transferAccountId() == null) throw new IllegalArgumentException("Pick a category or a target account");
         FinanceRule rule = classifier.rules().stream()
             .filter(x -> x.isCounterpartyRule() && key.equals(FinanceText.counterpartyKey(x.getCounterpartyName())))
             .findFirst().orElseGet(FinanceRule::new);
@@ -618,7 +619,7 @@ public class FinanceService {
         rule.setLabel(blankToNull(r.label()));
         if (r.categoryId() != null) {
             FinanceCategory c = category(r.categoryId());
-            if (!c.isMain()) throw new IllegalArgumentException("Chọn một hạng mục");
+            if (!c.isMain()) throw new IllegalArgumentException("Pick a category");
             rule.getTags().clear();
             rule.getTags().add(c);
             if (r.tagIds() != null) for (UUID x : r.tagIds()) if (!x.equals(c.getId())) rule.getTags().add(category(x));
@@ -656,7 +657,7 @@ public class FinanceService {
 
     /** A note from the quick box. Default account: cash. No category given → rules, then the AI. */
     public FinanceDto.Txn note(FinanceDto.NoteRequest r) {
-        if (r.amount() == null || r.amount().signum() == 0) throw new IllegalArgumentException("Số tiền?");
+        if (r.amount() == null || r.amount().signum() == 0) throw new IllegalArgumentException("Enter an amount");
         FinanceAccount a = r.accountId() != null ? account(r.accountId()) : defaultNoteAccount();
         FinanceTransaction t = new FinanceTransaction();
         t.setAccount(a);
@@ -743,9 +744,9 @@ public class FinanceService {
      */
     private void decide(FinanceTransaction t, FinanceDto.TxnRequest r) {
         if ("TRANSFER".equalsIgnoreCase(r.kind())) {
-            if (r.transferAccountId() == null) throw new IllegalArgumentException("Chuyển sang tài khoản nào?");
+            if (r.transferAccountId() == null) throw new IllegalArgumentException("Pick a target account");
             FinanceAccount target = account(r.transferAccountId());
-            if (target.getId().equals(t.getAccount().getId())) throw new IllegalArgumentException("Tài khoản đích phải khác");
+            if (target.getId().equals(t.getAccount().getId())) throw new IllegalArgumentException("Pick a different target account");
             classifier.breakTransfer(t);
             classifier.makeTransfer(t, target, By.USER);
         } else if (r.tagIds() != null) {
@@ -816,11 +817,11 @@ public class FinanceService {
         if (t.getKind() == Kind.TRANSFER) {
             FinanceAccount target = t.getTransferPeer() != null ? t.getTransferPeer().getAccount()
                 : r.transferAccountId() != null ? account(r.transferAccountId()) : null;
-            if (target == null) throw new IllegalArgumentException("Chuyển sang tài khoản nào?");
+            if (target == null) throw new IllegalArgumentException("Pick a target account");
             rule.setTransferAccount(target);
         } else {
             List<FinanceCategory> give = ruleTags(t, r);
-            if (mainOf(give) == null) throw new IllegalArgumentException("Chọn hạng mục trước khi ghi nhớ");
+            if (mainOf(give) == null) throw new IllegalArgumentException("Pick a category before remembering these words");
             rule.getTags().addAll(give);
             rule.setCategory(mainOf(give));
         }
@@ -844,7 +845,7 @@ public class FinanceService {
     private FinanceAccount defaultNoteAccount() {
         return accountRepo.findFirstByModeAndArchivedFalseOrderBySortOrderAsc(FinanceAccount.Mode.POOL)
             .or(() -> accountRepo.findAllByOrderBySortOrderAscCreatedAtAsc().stream().filter(a -> !a.isArchived()).findFirst())
-            .orElseThrow(() -> new IllegalArgumentException("Chưa có tài khoản nào"));
+            .orElseThrow(() -> new IllegalArgumentException("Add an account first"));
     }
 
     private Specification<FinanceTransaction> spec(LocalDateTime from, LocalDateTime to, UUID accountId, String categoryId,
