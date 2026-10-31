@@ -210,6 +210,16 @@
   .stops li small { display: block; color: var(--ink3); font-size: 12.5px; }
   .doc { margin: 14px 0; padding: 14px 16px; border-radius: 8px; background: #FBFAF6; border: 1px solid var(--line); font-size: 13.5px; white-space: pre-wrap; max-height: 360px; overflow-y: auto; }
   .doc h5 { margin: 0 0 6px; font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--k-document); white-space: normal; }
+  .chessw { margin: 16px 0; display: grid; grid-template-columns: minmax(0, 300px) minmax(0, 1fr); gap: 16px; align-items: start; }
+  .chessw h5 { margin: 0 0 6px; font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--k-milestone); }
+  .board { display: grid; grid-template-columns: repeat(8, 1fr); aspect-ratio: 1; border: 1px solid var(--ink3); border-radius: 4px; overflow: hidden; }
+  .board div { display: grid; place-items: center; font-size: min(5.6vw, 28px); line-height: 1; user-select: none; }
+  .board .l { background: #F1E9D8; } .board .d { background: #B9A27E; } .board .hl { box-shadow: inset 0 0 0 3px rgba(156,61,142,.55); }
+  .cctl { display: flex; gap: 6px; margin-top: 8px; } .cctl button { flex: 1; height: 34px; border-radius: 8px; background: var(--soft); font-weight: 600; }
+  .moves { font-size: 13px; line-height: 1.9; max-height: 300px; overflow-y: auto; }
+  .moves span { padding: 1px 4px; border-radius: 4px; cursor: pointer; } .moves span.on { background: #F6E8F4; color: var(--memory); font-weight: 600; }
+  .gtabs { display: flex; gap: 6px; margin-bottom: 8px; flex-wrap: wrap; } .gtabs button { padding: 4px 10px; border-radius: 999px; background: var(--soft); font-size: 12.5px; } .gtabs button.on { background: var(--ink); color: #fff; }
+  @media (max-width: 600px) { .chessw { grid-template-columns: 1fr; } }
   .idx { margin-top: 18px; padding-top: 12px; border-top: 1px dashed var(--line); font-size: 12px; color: var(--ink3); font-family: ui-monospace, Menlo, monospace; word-break: break-all; }
   .lightbox { position: fixed; inset: 0; z-index: 80; background: rgba(10,10,10,.92); display: none; align-items: center; justify-content: center; }
   .lightbox.on { display: flex; }
@@ -268,6 +278,7 @@
 <div class="lightbox" id="lb"><img id="lbImg" alt=""></div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/chess.js/0.10.3/chess.min.js"></script>
 <script>
 const $ = (id) => document.getElementById(id);
 const esc = (s) => String(s ?? '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
@@ -425,7 +436,9 @@ function renderAll(scrollToResults) {
     <span class="stat"><b>${photos.size}</b> photos linked</span><span class="stat"><b>${Math.min(...yrs)}–${Math.max(...yrs)}</b></span></div>`;
 
   if (filtering()) {
-    const res = ALL.filter(matches).sort((a, b) => (a.date || '9999').localeCompare(b.date || '9999'));
+    const fq = fold(state.q), words = fq.split(/\s+/).filter(Boolean);
+    const score = (m) => { if (!fq) return 0; const ft = fold(m.title); let sc = 0; if (ft.includes(fq)) sc += 10; if (m._text.includes(fq)) sc += 5; words.forEach((w) => { if (ft.includes(w)) sc += 2; }); return sc; };
+    const res = ALL.filter(matches).map((m) => [m, score(m)]).sort((a, b) => b[1] - a[1] || (a[0].date || '9999').localeCompare(b[0].date || '9999')).map(([m]) => m);
     const af = [];
     if (state.q) af.push(['q', `“${esc(state.q)}”`]);
     if (state.kind) af.push(['kind', KINDS[state.kind][0]]);
@@ -540,12 +553,14 @@ function drawSheet(m) {
       ${m.summary ? `<p class="sum">${esc(m.summary)}</p>` : ''}
       ${c && c.caption ? `<p style="margin:-6px 0 14px;color:var(--ink2);font-size:13.5px">Ảnh: “${esc(c.caption)}”</p>` : ''}
       ${m.stops && m.stops.length ? `<ul class="stops">${m.stops.map((s) => `<li>${esc(s.name)}<small>${[s.transport && 'đi ' + s.transport, s.lodging && 'ở ' + s.lodging, s.note].filter(Boolean).map(esc).join(' · ')}</small></li>`).join('')}</ul>` : ''}
+      ${m.games && m.games.length && window.Chess ? '<div id="chessBox"></div>' : ''}
       ${doc ? `<div class="doc"><h5>Transcription</h5>${esc(doc)}</div>` : ''}
       ${(m.links || []).length ? `<div style="display:flex;gap:8px;flex-wrap:wrap;margin:10px 0">${m.links.map((l) => `<a class="btn ${l.kind === 'REPLICA' ? 'tint' : 'ghost'}" href="${esc(l.url)}" target="_blank" rel="noopener">${l.kind === 'REPLICA' ? '▶ ' : ''}${esc(l.label)}</a>`).join('')}</div>` : ''}
       ${facets.length || (m.threads || []).length ? `<dl class="facets">${facets.map(([f, v]) => `<dt>${FACET_LABEL[f] || f}</dt><dd>${v.map((t) => f === 'THEME' ? `<span class="tag" data-th="${esc(Object.keys(TH).find((k) => TH[k].title === t) || '')}">${esc(t)}</span>` : `<span class="tag" data-tag="${esc(t)}">${esc(t)}</span>`).join('')}</dd>`).join('')}</dl>` : ''}
       <div class="idx">${esc(m.key)} · ${m.kind}${m.date ? ' · ' + esc(m.date) + (m.precision ? '/' + m.precision : '') : ''}${m.source ? ' · source: ' + esc(m.source) : ''}${c ? ' · photo ' + esc(c.id.slice(0, 8)) : ''}</div>
     </div>`;
   $('cls').onclick = closeSheet;
+  if ($('chessBox')) chessReplay($('chessBox'), m.games, 0);
   if ($('pv')) { $('pv').onclick = () => { sheetIdx = (sheetIdx - 1 + ph.length) % ph.length; drawSheet(m); }; $('nx').onclick = () => { sheetIdx = (sheetIdx + 1) % ph.length; drawSheet(m); }; }
   $('sheet').querySelectorAll('.strip img').forEach((el) => el.onclick = () => { sheetIdx = +el.dataset.i; drawSheet(m); });
   if ($('heroImg')) $('heroImg').onclick = () => { $('lbImg').src = c.url.split('?')[0] + '?width=2560'; $('lb').classList.add('on'); };
@@ -558,6 +573,37 @@ $('lb').onclick = () => $('lb').classList.remove('on');
 document.addEventListener('keydown', (e) => { if (e.key === 'Escape') { if ($('lb').classList.contains('on')) $('lb').classList.remove('on'); else closeSheet(); } });
 document.addEventListener('click', (e) => { const o = e.target.closest('[data-open]'); if (!o) return; e.preventDefault(); openMem(o.dataset.open); });
 window.addEventListener('popstate', () => { const k = location.hash.startsWith('#m/') ? decodeURIComponent(location.hash.slice(3)) : null; if (k) openMem(k, false); else { $('veil').classList.remove('on'); document.body.style.overflow = ''; } });
+
+
+/* ── chess replay for transcribed score sheets ── */
+const GLYPH = { wp: '♙', wn: '♘', wb: '♗', wr: '♖', wq: '♕', wk: '♔', bp: '♟', bn: '♞', bb: '♝', br: '♜', bq: '♛', bk: '♚' };
+function chessReplay(el, games, gi) {
+  const G = games[gi], c = new Chess();
+  // play move by move; an over-specified move as written on the sheet (Rbe1 with one rook able) is retried plain
+  for (const t of G.san.replace(/\d+\./g, ' ').split(/\s+/).filter((x) => x && !/^(1-0|0-1|½-½)$/.test(x))) {
+    const mv = t.replace(/[?!]/g, '');
+    if (!c.move(mv, { sloppy: true }) && !c.move(mv.replace(/^([NBRQK])[a-h1-8]([a-h][1-8])/, '$1$2'), { sloppy: true })) break;
+  }
+  const hist = c.history({ verbose: true }); let i = 0;
+  const draw = () => {
+    const b = new Chess(); hist.slice(0, i).forEach((mv) => b.move(mv.san));
+    const last = i ? hist[i - 1] : null, sq = b.board();
+    let cells = '';
+    for (let r = 0; r < 8; r++) for (let f = 0; f < 8; f++) {
+      const p = sq[r][f], name = 'abcdefgh'[f] + (8 - r), on = last && (last.from === name || last.to === name);
+      cells += `<div class="${(r + f) % 2 ? 'd' : 'l'}${on ? ' hl' : ''}">${p ? GLYPH[p.color + p.type] : ''}</div>`;
+    }
+    const mv = hist.map((h, k) => `${k % 2 === 0 ? '<b style="color:var(--ink3);font-weight:500">' + (k / 2 + 1) + '.</b>' : ''}<span data-k="${k + 1}" class="${k + 1 === i ? 'on' : ''}">${h.san}</span>`).join(' ');
+    el.innerHTML = `<div class="gtabs">${games.map((g, k) => `<button data-g="${k}" class="${k === gi ? 'on' : ''}">${esc(g.title)}</button>`).join('')}</div>
+      <div class="chessw"><div><div class="board">${cells}</div><div class="cctl"><button data-c="0">⏮</button><button data-c="-1">◀</button><button data-c="1">▶</button><button data-c="9">⏭</button></div></div>
+      <div><h5>Replay</h5><div style="font-size:13px;margin-bottom:6px">Trắng: <b>${esc(G.white)}</b> · Đen: <b>${esc(G.black)}</b> · ${esc(G.result)}</div>
+      ${G.note ? `<div style="font-size:12.5px;color:var(--ink3);margin-bottom:6px">${esc(G.note)}</div>` : ''}<div class="moves">${mv}</div></div></div>`;
+    el.querySelectorAll('[data-c]').forEach((bt) => bt.onclick = () => { const d = +bt.dataset.c; i = d === 0 ? 0 : d === 9 ? hist.length : Math.max(0, Math.min(hist.length, i + d)); draw(); });
+    el.querySelectorAll('.moves span').forEach((sp) => sp.onclick = () => { i = +sp.dataset.k; draw(); });
+    el.querySelectorAll('[data-g]').forEach((bt) => bt.onclick = () => chessReplay(el, games, +bt.dataset.g));
+  };
+  draw();
+}
 
 /* ── search ── */
 let qT;
