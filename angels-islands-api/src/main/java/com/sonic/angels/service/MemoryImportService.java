@@ -22,12 +22,16 @@ public class MemoryImportService {
     private final FactRepository factRepo;
     private final PersonalityTraitRepository traitRepo;
     private final EpisodeRepository episodeRepo;
+    private final MemoryService memory;
 
     public MemoryImportService(PersonRepository personRepo, LifeChapterRepository chapterRepo, FactRepository factRepo,
-                               PersonalityTraitRepository traitRepo, EpisodeRepository episodeRepo) {
+                               PersonalityTraitRepository traitRepo, EpisodeRepository episodeRepo, MemoryService memory) {
         this.personRepo = personRepo; this.chapterRepo = chapterRepo; this.factRepo = factRepo;
-        this.traitRepo = traitRepo; this.episodeRepo = episodeRepo;
+        this.traitRepo = traitRepo; this.episodeRepo = episodeRepo; this.memory = memory;
     }
+
+    /** an import writes drafts unless it says its items are checked */
+    private static MemoryStatus statusOr(String v) { MemoryStatus s = MemoryService.status(v); return s != null ? s : MemoryStatus.DRAFT; }
 
     public Map<String, Object> replace(UUID personId, String source, MemoryDto.SourceImport req) {
         if (source == null || source.isBlank()) throw new IllegalArgumentException("source is required");
@@ -38,7 +42,7 @@ public class MemoryImportService {
             for (MemoryDto.ChapterRequest r : req.getChapters()) {
                 LifeChapter c = new LifeChapter(); c.setPerson(person); c.setSource(source);
                 c.setPeriod(r.getPeriod() == null ? "" : r.getPeriod()); c.setTitle(r.getTitle()); c.setSummary(r.getSummary());
-                c.setSentiment(r.getSentiment()); c.setSortOrder(r.getSortOrder());
+                c.setSentiment(r.getSentiment()); c.setSortOrder(r.getSortOrder()); c.setStatus(statusOr(r.getStatus()));
                 chapterRepo.save(c);
             }
             out.put("chapters", counts(removed, req.getChapters()));
@@ -50,6 +54,7 @@ public class MemoryImportService {
                 f.setCategory(r.getCategory() == null ? "basic" : r.getCategory()); f.setKey(r.getKey() == null ? "" : r.getKey());
                 f.setValue(r.getValue() == null ? "" : r.getValue()); f.setPeriod(r.getPeriod());
                 if (r.getConfidence() != null) f.setConfidence(r.getConfidence());
+                f.setStatus(statusOr(r.getStatus()));
                 factRepo.save(f);
             }
             out.put("facts", counts(removed, req.getFacts()));
@@ -59,17 +64,18 @@ public class MemoryImportService {
             for (MemoryDto.TraitRequest r : req.getTraits()) {
                 PersonalityTrait t = new PersonalityTrait(); t.setPerson(person); t.setSource(source);
                 t.setTrait(r.getTrait()); t.setDescription(r.getDescription()); t.setEvidence(r.getEvidence()); t.setPeriod(r.getPeriod());
+                t.setStatus(statusOr(r.getStatus()));
                 traitRepo.save(t);
             }
             out.put("traits", counts(removed, req.getTraits()));
         }
         if (req.getEpisodes() != null) {
+            // the bulk delete skips the link tables, so they go first
+            episodeRepo.unlinkMediaOfSource(personId, source); episodeRepo.unlinkCollectionsOfSource(personId, source);
+            episodeRepo.unlinkTagsOfSource(personId, source); episodeRepo.unlinkPersonsOfSource(personId, source);
             int removed = episodeRepo.deleteByPersonAndSource(personId, source);
-            for (MemoryDto.EpisodeRequest r : req.getEpisodes()) {
-                Episode e = new Episode(); e.setPerson(person); e.setSource(source);
-                e.setSummary(r.getSummary()); e.setEmotion(r.getEmotion()); e.setImportance(r.getImportance()); e.setOccurredAt(r.getOccurredAt());
-                episodeRepo.save(e);
-            }
+            for (MemoryDto.EpisodeRequest r : req.getEpisodes())
+                memory.newEpisode(person, source, r, statusOr(r.getStatus()));
             out.put("episodes", counts(removed, req.getEpisodes()));
         }
         return out;

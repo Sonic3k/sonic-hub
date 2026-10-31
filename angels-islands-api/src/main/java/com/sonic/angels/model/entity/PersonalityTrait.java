@@ -35,6 +35,10 @@ public class PersonalityTrait extends BaseEntity {
     @Column(name = "source", length = 40)
     private String source;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "status", length = 20)
+    private MemoryStatus status;
+
     public PersonalityTrait() {}
 
     public UUID getId() { return id; }
@@ -51,4 +55,6 @@ public class PersonalityTrait extends BaseEntity {
     public void setPeriod(String period) { this.period = period; }
     public String getSource() { return source; }
     public void setSource(String source) { this.source = source; }
+    public MemoryStatus getStatus() { return status; }
+    public void setStatus(MemoryStatus status) { this.status = status; }
 }

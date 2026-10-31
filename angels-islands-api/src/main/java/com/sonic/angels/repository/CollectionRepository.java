@@ -32,6 +32,11 @@ public interface CollectionRepository extends JpaRepository<Collection, UUID> {
     @Query(value = "SELECT collection_id, person_id FROM collection_persons WHERE collection_id IN (:ids)", nativeQuery = true)
     List<Object[]> personLinksOf(List<UUID> ids);
 
+    /** the memories that pointed at this album keep their text, only the link goes */
+    @org.springframework.data.jpa.repository.Modifying
+    @Query(value = "DELETE FROM episode_collections WHERE collection_id = :collectionId", nativeQuery = true)
+    void unlinkEpisodes(@org.springframework.data.repository.query.Param("collectionId") UUID collectionId);
+
     @Query(value = "SELECT COUNT(*) FROM collection_media WHERE collection_id = :collectionId", nativeQuery = true)
     long countMediaInCollection(UUID collectionId);
 

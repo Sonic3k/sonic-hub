@@ -342,8 +342,10 @@ public class CompanionService {
             if (!episodes.isEmpty()) {
                 sb.append("\n## Kỷ niệm chung đáng nhớ\n");
                 episodes.stream().limit(15).forEach(e -> {
-                    sb.append("- ").append(e.getOccurredAt() != null ? e.getOccurredAt().toLocalDate() + ": " : "")
-                      .append(e.getSummary());
+                    sb.append("- ").append(e.getOccurredAt() != null ? e.whenText() + ": " : "");
+                    if (e.getTitle() != null && !e.getSummary().startsWith(e.getTitle())) sb.append(e.getTitle()).append(" — ");
+                    sb.append(e.getSummary());
+                    if (e.getPlace() != null) sb.append(" [").append(e.getPlace()).append(']');
                     if (e.getEmotion() != null) sb.append(" (cảm xúc: ").append(e.getEmotion()).append(')');
                     sb.append('\n');
                 });

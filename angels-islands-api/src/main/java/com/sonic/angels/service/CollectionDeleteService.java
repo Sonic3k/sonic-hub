@@ -108,6 +108,7 @@ public class CollectionDeleteService {
             jdbc.update("DELETE FROM media_file_persons WHERE media_file_id IN (:ids)", m);
             jdbc.update("DELETE FROM media_file_tags WHERE media_file_id IN (:ids)", m);
             jdbc.update("DELETE FROM collection_media WHERE media_file_id IN (:ids)", m);
+            jdbc.update("DELETE FROM episode_media WHERE media_file_id IN (:ids)", m);
             jdbc.update("UPDATE collections SET thumbnail_media_file_id = NULL WHERE thumbnail_media_file_id IN (:ids)", m);
             jdbc.update("DELETE FROM media_image_detail WHERE media_file_id IN (:ids)", m);
             jdbc.update("DELETE FROM media_video_detail WHERE media_file_id IN (:ids)", m);
@@ -119,6 +120,7 @@ public class CollectionDeleteService {
         jdbc.update("DELETE FROM collection_media WHERE collection_id IN (:ids)", all);
         jdbc.update("DELETE FROM collection_persons WHERE collection_id IN (:ids)", all);
         jdbc.update("DELETE FROM collection_tags WHERE collection_id IN (:ids)", all);
+        jdbc.update("DELETE FROM episode_collections WHERE collection_id IN (:ids)", all);
         int albumsDeleted = 0;
         List<Integer> depths = new ArrayList<>(p.albumsByDepth().keySet());
         depths.sort(Comparator.reverseOrder());

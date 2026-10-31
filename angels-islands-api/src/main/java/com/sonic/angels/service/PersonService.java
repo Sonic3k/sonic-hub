@@ -100,6 +100,7 @@ public class PersonService {
         // Person is inverse side of media/collection person joins — clear by hand
         personRepository.clearMediaLinks(id);
         personRepository.clearCollectionLinks(id);
+        personRepository.clearEpisodeLinks(id);
         // their rows in old rankings stay, as the nick written in the sheet
         rankingEntryRepository.detachPerson(id);
         // the briefs Mystic kept here go with them (Mystic itself is told by the controller)
