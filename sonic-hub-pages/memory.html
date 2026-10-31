@@ -524,6 +524,7 @@ function renderTrips() {
     if (tripSel === t.key) { openMem(t.key); return; }
     tripSel = t.key; renderTrips();
     const b = L.latLngBounds(t.stops.map((s) => [s.lat, s.lng])); map.flyToBounds(b.pad(.6), { maxZoom: 9, duration: .8 });
+    if (innerWidth <= 960) $('map').scrollIntoView({ behavior: 'smooth', block: 'center' });
   });
 }
 
