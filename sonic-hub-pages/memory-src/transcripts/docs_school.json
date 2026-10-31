@@ -1,0 +1,1543 @@
+[
+ {
+  "collection": "C2 PDP / Box",
+  "file": "scan0175.jpg",
+  "mediaId": "13f7e8cf-1e12-4686-a00b-a621226ac329",
+  "kind": "roster",
+  "title": "Danh sách lớp C2 Phan Đình Phùng (trang 1, STT 01–23)",
+  "year": "2005–2008 (học sinh sinh năm 1989–1991)",
+  "content": [
+   "01. Ngô Hải Anh",
+   "02. Trần Hồng Anh",
+   "03. Trần Huy Anh",
+   "04. Vũ Ngọc Anh",
+   "05. Đoàn Phương Anh",
+   "06. Nguyễn Phương Anh",
+   "07. Trịnh Thị Hà Anh",
+   "08. Cù Tuấn Anh",
+   "09. Nguyễn Tuấn Anh",
+   "10. Nguyễn Vân Anh",
+   "11. Trần Yến Chi",
+   "12. Lý Quang Diệu",
+   "13. Đinh Anh Dũng",
+   "14. Phạm Việt Dũng",
+   "15. Lại Tiến Đức",
+   "16. Nguyễn Tiến Đức",
+   "17. Nguyễn Minh Giang",
+   "18. Phạm Minh Hảo",
+   "19. Bùi Bích Hằng",
+   "20. Nguyễn Huy Hiếu",
+   "21. Phạm Thanh Hoa",
+   "22. Bùi Ngọc Huyền",
+   "23. Luyện Trung Kiên"
+  ],
+  "legibility": "good",
+  "notes": "Printed table with columns STT, Họ và tên, Ngày sinh, Giới tính, ĐV (Đoàn viên), Địa chỉ, Điện thoại; only names transcribed (names printed in capitals on the sheet). No title line on the page; class C2 inferred from the collection. Owner is No. 04."
+ },
+ {
+  "collection": "C2 PDP / Box",
+  "file": "scan0176.jpg",
+  "mediaId": "12419371-72b1-4b38-92d4-33df69a103c0",
+  "kind": "roster",
+  "title": "Danh sách lớp C2 Phan Đình Phùng (trang 2, STT 24–47)",
+  "year": "2005–2008",
+  "content": [
+   "24. Hoàng Trà Linh",
+   "25. Phan Thị Hương Ly",
+   "26. Hà Thị Thanh Mai",
+   "27. Trịnh Thu Mai",
+   "28. Phan Tuấn Nam",
+   "29. Nguyễn Trọng Nghĩa",
+   "30. Nguyễn Bích Ngọc",
+   "31. Nguyễn Thị Bích Ngọc",
+   "32. Vũ Hữu Phúc",
+   "33. Nguyễn Hồng Quân",
+   "34. Lê Ngọc Quỳnh",
+   "35. Nguyễn Mai Thanh",
+   "36. Nguyễn Phong Thu",
+   "37. Lê Anh Thư",
+   "38. Bùi Thu Trà",
+   "39. Phạm Minh Trang",
+   "40. Nguyễn Thu Trang",
+   "41. Dương Mạnh Tuấn",
+   "42. Triệu Mạnh Tuấn",
+   "43. Trương Thanh Tùng",
+   "44. Hy Thị Hồng Vân",
+   "45. Trịnh Hồng Vân",
+   "46. Nguyễn Thị Việt",
+   "47. Khuất Thị Hải Yến"
+  ],
+  "legibility": "good",
+  "notes": "Continuation of scan0175 (same columns); 47 students in total. Only names transcribed."
+ },
+ {
+  "collection": "C2 PDP / Box",
+  "file": "scan0114.jpg",
+  "mediaId": "02d416b6-7ca3-414b-9a30-0bcc46af2841",
+  "kind": "seating",
+  "title": "Trường PTTH Phan Đình Phùng – Sơ đồ lớp 10C2 (Lớp trưởng: Nguyễn Phương Anh)",
+  "year": "2005–2006 (lớp 10)",
+  "content": {
+   "orientation": "As printed: top row = back of the room; bottom row = front, nearest the board (BẢNG, bottom centre). Door at bottom-left, teacher's desk (BÀN GIÁO VIÊN) at bottom-right. 5 columns of 2-seat desks, columns listed left to right.",
+   "rows": [
+    {
+     "row": 1,
+     "position": "back",
+     "desks": [
+      [
+       "Ngô Hải Anh",
+       "Lý Quang Diệu"
+      ],
+      [
+       "Nguyễn Tiến Đức",
+       "Nguyễn Huy Hiếu"
+      ],
+      [
+       "Trần Huy Anh",
+       "Phan Tuấn Nam"
+      ],
+      [
+       "Dương Mạnh Tuấn",
+       "(empty)"
+      ],
+      [
+       "Nguyễn Minh Giang",
+       "(empty)"
+      ]
+     ]
+    },
+    {
+     "row": 2,
+     "desks": [
+      [
+       "Phạm Minh Trang",
+       "Hy Hồng Vân"
+      ],
+      [
+       "Nguyễn Tuấn Anh",
+       "Phạm Việt Dũng"
+      ],
+      [
+       "Nguyễn Phương Anh",
+       "Bùi Bích Hằng"
+      ],
+      [
+       "Trương Thanh Tùng",
+       "Hoàng Trà Linh"
+      ],
+      [
+       "Trần Hồng Anh",
+       "Đinh Anh Dũng"
+      ]
+     ]
+    },
+    {
+     "row": 3,
+     "desks": [
+      [
+       "Lại Tiến Đức",
+       "Cù Tuấn Anh"
+      ],
+      [
+       "Trịnh Hồng Vân",
+       "Nguyễn Mai Thanh"
+      ],
+      [
+       "Lê Ngọc Quỳnh",
+       "Phan Hương Ly"
+      ],
+      [
+       "Phạm Thanh Hoa",
+       "Phạm Minh Hảo"
+      ],
+      [
+       "Nguyễn Vân Anh",
+       "Bùi Ngọc Huyền"
+      ]
+     ]
+    },
+    {
+     "row": 4,
+     "desks": [
+      [
+       "Nguyễn Thị Việt",
+       "Khuất Hải Yến"
+      ],
+      [
+       "Nguyễn Phong Thu",
+       "Lê Anh Thư"
+      ],
+      [
+       "Nguyễn Bích Ngọc",
+       "Trịnh Thu Mai"
+      ],
+      [
+       "Nguyễn Trọng Nghĩa",
+       "Vũ Hữu Phúc"
+      ],
+      [
+       "Trần Yến Chi",
+       "Trịnh Hà Anh"
+      ]
+     ]
+    },
+    {
+     "row": 5,
+     "position": "front (next to the board)",
+     "desks": [
+      [
+       "(empty)",
+       "Bùi Thu Trà"
+      ],
+      [
+       "Đoàn Phương Anh",
+       "Nguyễn Thu Trang"
+      ],
+      [
+       "Vũ Ngọc Anh",
+       "Luyện Trung Kiên"
+      ],
+      [
+       "Nguyễn Thị Bích Ngọc",
+       "Hà Thanh Mai"
+      ],
+      [
+       "Triệu Mạnh Tuấn",
+       "Nguyễn Hồng Quân"
+      ]
+     ]
+    }
+   ]
+  },
+  "legibility": "good",
+  "notes": "47 seated names, matching the 47-name roster. Vũ Ngọc Anh sits in the front row, centre desk, next to Luyện Trung Kiên. Five names are printed in bold (Hy Hồng Vân, Nguyễn Phương Anh, Hoàng Trà Linh, Trịnh Hồng Vân, Phan Hương Ly); these are probably class officers or group leaders, but the sheet does not say. The two middle columns are shaded grey. A small mark that looks like 'π' follows Nguyễn Vân Anh."
+ },
+ {
+  "collection": "C2 PDP / Box",
+  "file": "scan0118.jpg",
+  "mediaId": "c56ed838-a9d7-46b5-8d3b-fd2565119d11",
+  "kind": "report",
+  "title": "Phiếu kết quả học kỳ 1 – Sở GD-ĐT TP. Hà Nội, Trường Phan Đình Phùng (two slips scanned side by side)",
+  "year": "2005–2006 (10C2) and 2007–2008 (12C2)",
+  "content": {
+   "columns_legend": "HS = hệ số; KTM = kiểm tra miệng; KT15P = 15-minute tests; TH = thực hành; KT1T = 1-period tests; HK = semester exam; TB HK = semester average; Xếp thứ = rank in class for that subject (class of 47)",
+   "slip_1": {
+    "class": "10C2",
+    "school_year": "2005–2006",
+    "term": "Học kỳ 1",
+    "student": "Vũ Ngọc Anh",
+    "subjects": [
+     {
+      "subject": "Ngữ văn",
+      "hs": 1,
+      "hk": "7",
+      "tb_hk": "6,8",
+      "rank": 33,
+      "parts": {
+       "Văn": {
+        "ktm": "8",
+        "kt15p": "4",
+        "kt1t": "7 7"
+       },
+       "T.Việt": {}
+      }
+     },
+     {
+      "subject": "Sử",
+      "hs": 1,
+      "kt15p": "7 6",
+      "kt1t": "7",
+      "hk": "7.5",
+      "tb_hk": "7,1",
+      "rank": 38
+     },
+     {
+      "subject": "Địa",
+      "hs": 1,
+      "ktm": "10 7",
+      "kt15p": "6 9",
+      "kt1t": "6",
+      "hk": "8.5",
+      "tb_hk": "7,7",
+      "rank": 9
+     },
+     {
+      "subject": "GDCD",
+      "hs": 1,
+      "ktm": "7 8",
+      "kt15p": "8",
+      "kt1t": "8",
+      "hk": "8",
+      "tb_hk": "7,9",
+      "rank": 36
+     },
+     {
+      "subject": "Toán",
+      "hs": 3,
+      "ktm": "8",
+      "kt15p": "8 6 5 10",
+      "kt1t": "8 8 8",
+      "hk": "7",
+      "tb_hk": "7,6",
+      "rank": 15
+     },
+     {
+      "subject": "Lý",
+      "hs": 2,
+      "ktm": "6",
+      "kt15p": "4 8 7",
+      "kt1t": "7",
+      "hk": "7",
+      "tb_hk": "6,7",
+      "rank": 20
+     },
+     {
+      "subject": "Hoá",
+      "hs": 2,
+      "kt15p": "9 7",
+      "kt1t": "7 9 5",
+      "hk": "7.5",
+      "tb_hk": "7,3",
+      "rank": 13
+     },
+     {
+      "subject": "Sinh",
+      "hs": 2,
+      "ktm": "8",
+      "kt15p": "9 6 8",
+      "kt1t": "8 5",
+      "hk": "6",
+      "tb_hk": "6,8",
+      "rank": 28
+     },
+     {
+      "subject": "Anh",
+      "hs": 2,
+      "ktm": "8",
+      "kt15p": "9 8",
+      "kt1t": "7 8",
+      "hk": "8",
+      "tb_hk": "7,9",
+      "rank": 4
+     },
+     {
+      "subject": "Tin học",
+      "hs": 1,
+      "ktm": "10",
+      "kt15p": "9",
+      "kt1t": "9",
+      "hk": "9",
+      "tb_hk": "9,1",
+      "rank": 8
+     },
+     {
+      "subject": "Công nghệ",
+      "hs": 1,
+      "ktm": "9",
+      "kt15p": "9 8 9",
+      "kt1t": "10 8",
+      "hk": "8",
+      "tb_hk": "8,6",
+      "rank": 32
+     },
+     {
+      "subject": "Thể dục",
+      "hs": 1,
+      "kt15p": "8 7 8",
+      "kt1t": "9 8 7 8",
+      "hk": "7",
+      "tb_hk": "7,7",
+      "rank": 40
+     },
+     {
+      "subject": "Tự chọn",
+      "hs": 1,
+      "kt1t": "10 8 9",
+      "tb_hk": "9,0",
+      "rank": 9
+     }
+    ],
+    "tong_dtb": "144.1",
+    "tong_hs": 19,
+    "dtb_hk": "7.6",
+    "xep_thu_chung": 12,
+    "hoc_luc": "Khá",
+    "hanh_kiem": "Tốt",
+    "danh_hieu": "(blank)",
+    "nhan_xet_gvcn": "(blank)",
+    "date": "Ngày 14 tháng 01 năm 2006",
+    "signed": "Lê Lan Phương (GVCN, printed/stamped name)"
+   },
+   "slip_2": {
+    "class": "12C2",
+    "school_year": "2007–2008",
+    "term": "Học kỳ 1",
+    "student": "Vũ Ngọc Anh",
+    "subjects": [
+     {
+      "subject": "Ngữ văn",
+      "hs": 1,
+      "ktm": "10 10",
+      "kt15p": "3 7",
+      "kt1t": "6 7 6",
+      "hk": "6",
+      "tb_hk": "6,6",
+      "rank": 10
+     },
+     {
+      "subject": "Sử",
+      "hs": 1,
+      "ktm": "6 9",
+      "kt15p": "8 8",
+      "kt1t": "8",
+      "hk": "5",
+      "tb_hk": "6,9",
+      "rank": 47
+     },
+     {
+      "subject": "Địa",
+      "hs": 1,
+      "ktm": "10",
+      "kt15p": "7 6",
+      "kt1t": "7",
+      "hk": "8.5",
+      "tb_hk": "7,8",
+      "rank": 10
+     },
+     {
+      "subject": "GDCD",
+      "hs": 1,
+      "ktm": "9",
+      "kt15p": "7 9",
+      "kt1t": "10",
+      "hk": "7",
+      "tb_hk": "8,3",
+      "rank": 14
+     },
+     {
+      "subject": "Toán",
+      "hs": 3,
+      "ktm": "10",
+      "kt15p": "8 10 10 9",
+      "kt1t": "8 4",
+      "hk": "9.5",
+      "tb_hk": "8,3",
+      "rank": 8
+     },
+     {
+      "subject": "Lý",
+      "hs": 2,
+      "ktm": "10",
+      "kt15p": "9 8 10",
+      "kt1t": "9 6",
+      "hk": "8",
+      "tb_hk": "8,3",
+      "rank": 4
+     },
+     {
+      "subject": "Hoá",
+      "hs": 2,
+      "ktm": "7",
+      "kt15p": "10 4",
+      "kt1t": "6 7 10",
+      "hk": "7.5",
+      "tb_hk": "7,5",
+      "rank": 24
+     },
+     {
+      "subject": "Sinh",
+      "hs": 2,
+      "ktm": "9",
+      "kt15p": "6 7",
+      "kt1t": "5",
+      "hk": "6.5",
+      "tb_hk": "6,4",
+      "rank": 17
+     },
+     {
+      "subject": "Công nghệ",
+      "hs": 1,
+      "ktm": "3",
+      "kt15p": "8 9",
+      "kt1t": "9",
+      "hk": "9",
+      "tb_hk": "8,1",
+      "rank": 22
+     },
+     {
+      "subject": "Anh",
+      "hs": 2,
+      "ktm": "10 9",
+      "kt15p": "10 9",
+      "kt1t": "7 7",
+      "hk": "9.5",
+      "tb_hk": "8,6",
+      "rank": 4
+     },
+     {
+      "subject": "Thể dục",
+      "hs": 1,
+      "ktm": "9",
+      "kt15p": "8 8",
+      "kt1t": "9 8 8",
+      "hk": "9",
+      "tb_hk": "8,5",
+      "rank": 11
+     },
+     {
+      "subject": "Tin học",
+      "hs": 1,
+      "ktm": "9",
+      "kt15p": "9 8",
+      "kt1t": "10",
+      "hk": "10",
+      "tb_hk": "9,5",
+      "rank": 1
+     },
+     {
+      "subject": "Tự chọn",
+      "hs": 1,
+      "ktm": "9",
+      "kt15p": "8 8",
+      "tb_hk": "8,3",
+      "rank": null
+     }
+    ],
+    "tong_dtb": "150.5",
+    "tong_hs": 19,
+    "dtb_hk": "7.9",
+    "xep_thu_chung": 9,
+    "hoc_luc": "Khá",
+    "hanh_kiem": "Tốt",
+    "danh_hieu": "(blank)",
+    "nhan_xet_gvcn": "Ngoan, học tốt. Ý thức học tập tốt. Cần cố gắng nữa (?) Sinh.",
+    "date": "Ngày 10 tháng 01 năm 2008",
+    "signed": "Lê Lan Phương (GVCN, signature + name)"
+   }
+  },
+  "legibility": "good",
+  "notes": "Owner's personal semester-1 result slips for grade 10 and grade 12, both from homeroom teacher Lê Lan Phương. The 12C2 slip prints a birth date and both print a student code (Số hiệu); neither is transcribed. Highlights: 1st in class for Tin học in 12C2 HK1, 4th for Anh in both years and 4th for Lý in 12. The handwritten GVCN remark is fairly legible; the word before 'Sinh' reads like 'nữa' or 'môn' (most likely 'Cần cố gắng môn Sinh', i.e. 'needs more effort in Biology'). The grade-10 slip has a blank remark."
+ },
+ {
+  "collection": "C2 PDP / Box",
+  "file": "scan0115.jpg",
+  "mediaId": "0f59c30d-aa13-4b51-9e23-4bc9877780a2",
+  "kind": "report",
+  "title": "Bảng tổng hợp ĐTB, học lực, hạnh kiểm, danh hiệu HK1 – Lớp 11C2 (Trang 1) – Sở GD-ĐT TP. Hà Nội, Trường Phan Đình Phùng",
+  "year": "2006–2007",
+  "content": {
+   "row": "4. Vũ Ngọc Anh",
+   "scores": {
+    "Ngữ văn": "6.8",
+    "Sử": "7.2",
+    "Địa": "8.0",
+    "GDCD": "7.6",
+    "Toán": "8.6",
+    "Lý": "8.4",
+    "Hoá": "7.8",
+    "Sinh": "7.0",
+    "Anh": "7.2",
+    "Tin học": "8.3",
+    "Công nghệ": "8.6",
+    "Thể dục": "7.1",
+    "Tự chọn": "9.7"
+   },
+   "dtb": "7.9",
+   "xep_thu": "(not printed)",
+   "hoc_luc": "Khá",
+   "hanh_kiem": "(blank)",
+   "danh_hieu": "(blank)"
+  },
+  "legibility": "good",
+  "notes": "Class-wide HK1 summary table for 11C2 (page 1, rows 1–33). Only the owner's row is transcribed. Rank, conduct and title columns are empty on the printout. For context: one classmate on this page is rated Giỏi; the owner's ĐTB of 7.9 is among the highest on the page."
+ },
+ {
+  "collection": "C2 PDP / Box",
+  "file": "scan0116.jpg",
+  "mediaId": "2b895341-b0af-47c5-b36a-06f3c3a6a9ea",
+  "kind": "report",
+  "title": "Bảng tổng hợp ĐTB, học lực, hạnh kiểm, danh hiệu HK1 – Lớp 11C2 (Trang 2)",
+  "year": "2006–2007",
+  "content": {
+   "row": "(owner not on this page; it lists rows 34–47)",
+   "class_statistics": {
+    "note": "Chi tiết theo môn – number of students per grade band",
+    "Giỏi": {
+     "Ngữ văn": 1,
+     "Sử": 1,
+     "Địa": 25,
+     "GDCD": 18,
+     "Toán": 11,
+     "Lý": 12,
+     "Hoá": 11,
+     "Sinh": 1,
+     "Anh": 2,
+     "Tin học": 11,
+     "Công nghệ": 7,
+     "Thể dục": 29,
+     "Tự chọn": 29
+    },
+    "Khá": {
+     "Ngữ văn": 29,
+     "Sử": 42,
+     "Địa": 21,
+     "GDCD": 28,
+     "Toán": 24,
+     "Lý": 18,
+     "Hoá": 22,
+     "Sinh": 26,
+     "Anh": 7,
+     "Tin học": 32,
+     "Công nghệ": 34,
+     "Thể dục": 17,
+     "Tự chọn": 17
+    },
+    "TB": {
+     "Ngữ văn": 16,
+     "Sử": 4,
+     "Địa": 1,
+     "GDCD": 1,
+     "Toán": 11,
+     "Lý": 15,
+     "Hoá": 14,
+     "Sinh": 19,
+     "Anh": 28,
+     "Tin học": 4,
+     "Công nghệ": 6,
+     "Thể dục": 1,
+     "Tự chọn": 1
+    },
+    "Yếu": {
+     "Ngữ văn": 1,
+     "Toán": 1,
+     "Lý": 2,
+     "Sinh": 1,
+     "Anh": 10
+    },
+    "Học lực overall": {
+     "Giỏi": 2,
+     "Khá": 32,
+     "TB": 13
+    }
+   }
+  },
+  "legibility": "good",
+  "notes": "Second page of the same 11C2 HK1 table. The owner (No. 4) is on page 1 (scan0115), so no individual rows are transcribed here, only the class-level statistics block. Date, GVCN and Hiệu trưởng fields are blank."
+ },
+ {
+  "collection": "C2 PDP / Box",
+  "file": "Luu but Van Anh 1.jpg",
+  "mediaId": "ce93b557-5ef1-4574-bcf6-9ec63a4458b8",
+  "kind": "other",
+  "title": "Lưu bút cho Vân Anh (trang 1)",
+  "year": "c. 2008 (end of grade 12)",
+  "content": "Page 1 of a two-page handwritten farewell note (lưu bút) Vũ Ngọc Anh wrote in a classmate's (Vân Anh's) green star-decorated notebook. Light-hearted tone with smiley faces; text not transcribed, as instructed.",
+  "legibility": "good",
+  "notes": "Phone photo of a notebook page, slightly dark. Text intentionally not transcribed."
+ },
+ {
+  "collection": "C2 PDP / Box",
+  "file": "Luu but Van Anh 2.jpg",
+  "mediaId": "7d7ab08d-6020-4a61-a451-0db507a0f25e",
+  "kind": "other",
+  "title": "Lưu bút cho Vân Anh (trang 2)",
+  "year": "c. 2008",
+  "content": "Page 2 of the same farewell note: closing good wishes, his signature 'Vũ Ngọc Anh', and a small hand-drawn shield badge reading 'HYPER SONIC'. Text not transcribed, as instructed.",
+  "legibility": "good",
+  "notes": "The page also shows his birth date and a personal phone number under the signature; neither is transcribed. The 'HYPER SONIC' badge matches his later online handle."
+ },
+ {
+  "collection": "THCS Thong Nhat / Box",
+  "file": "scan0122.jpg",
+  "mediaId": "59952def-396e-4c60-ac00-e0e0c6199b2a",
+  "kind": "report",
+  "title": "Tổng hợp học kỳ I (class summary, GVCN Chu Minh Tâm)",
+  "year": "Likely 2001–2002 (lớp 6G) or 2002–2003 (lớp 7G); no year printed",
+  "content": {
+   "row": "3. Vũ Anh",
+   "scores_with_subject_rank": {
+    "Toán": "8.5 (7)",
+    "Lý": "7.9 (14)",
+    "Sinh": "8.2 (13)",
+    "KT (Kỹ thuật)": "8.5 (20)",
+    "Văn": "7.1 (13)",
+    "Sử": "8.3 (16)",
+    "Địa": "8.4 (12)",
+    "GDCD": "8.3 (13)",
+    "Anh": "8.4 (13)",
+    "N th (Nhạc/Mỹ thuật)": "9.6 (IV)",
+    "TD": "8.9 (V)"
+   },
+   "TBm": "8.4",
+   "HL": "Giỏi (overall rank 6)",
+   "HK": "Tốt",
+   "class_summary": "30 students; học sinh giỏi 20, giỏi xuất sắc 3, tiên tiến 4, trung bình 5, yếu 1; hạnh kiểm Tốt 24, Khá 4, TB 2"
+  },
+  "legibility": "good",
+  "notes": "Typed table with handwritten per-subject class ranks in superscript (Roman numerals I–V mark the top 5). The subject set has no Hoá, so this is grade 6 or 7. Names and student count match the grade-7 sheet (scan0123), so it may be grade-7 HK1, but the year is not shown. Only the owner's row is transcribed."
+ },
+ {
+  "collection": "THCS Thong Nhat / Box",
+  "file": "scan0123.jpg",
+  "mediaId": "5ff5e82f-cc44-48ee-9480-dc72fa59df43",
+  "kind": "report",
+  "title": "Tổng hợp kết quả đánh giá năm học (2002–2003) – Lớp 7G",
+  "year": "2002–2003",
+  "content": {
+   "row": "3. V. Anh",
+   "scores": {
+    "Toán": "8,2",
+    "Lý": "7,8",
+    "Sinh": "8,5",
+    "KT": "8,1",
+    "Văn": "6,9",
+    "Sử": "8,5",
+    "Địa": "8,6",
+    "GDCD": "8,3",
+    "Anh": "9,6",
+    "Nth": "9,1",
+    "TD": "6,5"
+   },
+   "TBm": "8,1",
+   "HL": "Giỏi",
+   "HK": "Tốt",
+   "personalised_footer": {
+    "Họ và tên học sinh": "Vũ Ngọc Anh (handwritten)",
+    "Nhận xét của giáo viên chủ nhiệm lớp 7G": [
+     "Ngoan, ý thức tổ chức kỷ luật tốt.",
+     "Có tiến bộ rõ rệt về môn toán.",
+     "Tích cực phát biểu xây dựng bài."
+    ],
+    "signature": "GVCN signature (initials only)"
+   }
+  },
+  "legibility": "good",
+  "notes": "Full-year class table with a personalised footer for the owner: his name and the homeroom teacher's handwritten remarks, all clearly legible. 'Lớp 7' is handwritten at the top. Row 7 is blank on the printout."
+ },
+ {
+  "collection": "THCS Thong Nhat / Box",
+  "file": "scan0124.jpg",
+  "mediaId": "7e2b0953-767b-4183-802a-11e577a63471",
+  "kind": "report",
+  "title": "Kết quả học tập và tu dưỡng học kỳ I (2003–2004) – Lớp 8G",
+  "year": "2003–2004",
+  "content": {
+   "header": "Lớp 8G – Sĩ số: 28 * HS Giỏi: 17 * HSTT: 9 * HS giỏi xuất sắc: Phạm Thị Lệ Xuân, Đỗ Thanh Huyền",
+   "row": "3. Vũ Ngọc Anh",
+   "scores_with_subject_rank": {
+    "Toán": "8.0 (8)",
+    "Lý": "9.4 (7)",
+    "Hoá": "9.3 (V)",
+    "Sinh": "8.5 (6)",
+    "KT": "9.1 (III)",
+    "Văn": "7.1 (13)",
+    "Sử": "8.5 (16)",
+    "Địa": "8.6 (10)",
+    "CD (GDCD)": "8.5 (20/21, overwritten)",
+    "NN (Ngoại ngữ)": "8.9 (V)",
+    "NT (Nghệ thuật)": "9.6 (10)",
+    "TD": "7.9 (24)"
+   },
+   "TBk": "8.5",
+   "HL": "Giỏi",
+   "HK": "Tốt",
+   "handwritten_margins": {
+    "left": "(9,53)  149/10, probably mean subject rank 9.53, rank-sum 149, overall position 10",
+    "right": "0 0 1, probably his count of subject ranks I / II / III (one 3rd place, in KT)"
+   }
+  },
+  "legibility": "good",
+  "notes": "GVCN Chu Minh Tâm. Typed table with handwritten per-subject ranks and margin tallies added by hand. Only the owner's row and the header are transcribed. The meaning of the margin numbers is inferred."
+ },
+ {
+  "collection": "THCS Thong Nhat / Box",
+  "file": "scan0125.jpg",
+  "mediaId": "e519ad84-ca06-4c17-ab8b-88634b01911f",
+  "kind": "report",
+  "title": "Tổng hợp học kỳ I (2004–2005) – (lớp 9G, GVCN Chu Minh Tâm)",
+  "year": "2004–2005",
+  "content": {
+   "row": "2. Vũ Ngọc Anh",
+   "scores": {
+    "Toán": "8.1",
+    "Lý": "8.9",
+    "Hoá": "8.4",
+    "Sinh": "7.5",
+    "KT": "9.3",
+    "Văn": "6.9",
+    "Sử": "8.9",
+    "Địa": "8.6",
+    "GDCD": "9.0",
+    "NN": "9.2",
+    "TD": "7.7"
+   },
+   "TBm": "8.3",
+   "HL": "Giỏi",
+   "HK": "Tốt",
+   "handwritten_margin": "✓ 8.4"
+  },
+  "legibility": "good",
+  "notes": "Photocopied table, 29 students, with handwritten row numbers. The class name is not printed; 9G is inferred from the year and the same GVCN. The margin '✓ 8.4' next to his row (similar ticks next to three classmates) may be a corrected or recomputed average. Only the owner's row is transcribed."
+ },
+ {
+  "collection": "THCS Thong Nhat / Box",
+  "file": "scan0142.jpg",
+  "mediaId": "2db40c73-ac74-4c15-af8d-14b6a49afd89",
+  "kind": "poem",
+  "title": "Công Cô",
+  "year": "THCS period (2001–2005); exact year not shown, probably written for 20/11",
+  "content": "Công Cô\n\nCông cô như sóng biển đông\nNghĩa cô như ánh nắng hồng ban mai\nCâu thơ nói thật không sai\nCô là người mẹ thứ hai của mình\nTuy cô không có công sinh\nNhưng cô lại có công trình lớn lao\nGiúp em cố gắng học cao\nThành người trò giỏi cháu ngoan Bác Hồ",
+  "legibility": "good",
+  "notes": "Handwritten in blue ink on yellowed paper: an 8-line lục bát poem for Teachers' Day (Ngày Nhà giáo). Unsigned and undated. The handwriting is a child's, presumably his own."
+ },
+ {
+  "collection": "THCS Thong Nhat / Box",
+  "file": "scan0109.jpg",
+  "mediaId": "1e78caad-f247-4425-8e93-118a97d8d884",
+  "kind": "exam",
+  "title": "Trường THCS Thống Nhất – Đề khảo sát chất lượng vào lớp 6, Môn: Toán (60 phút)",
+  "year": "2001–2002",
+  "content": {
+   "subject": "Toán",
+   "duration": "60 phút",
+   "problems": [
+    "Câu 1 (3đ): Tính nhanh: a) 0.9×95 + 1.8×2 + 0.9 (1đ); b) (24347×78 − 26×4×3×6000) / (4+5+6+…+24+25+28) (2đ)",
+    "Câu 2 (2.5đ): Bài toán chuyển động: lúc 7h xe tải đi từ A với 40 km/h; 9h30 xe du lịch đuổi theo với 60 km/h. Hỏi mấy giờ đuổi kịp và cách A bao nhiêu km?",
+    "Câu 3 (2.5đ): Tìm chữ số x, y để số x3154y chia hết cho cả 3 và 5.",
+    "Câu 4 (2đ): Hình chữ nhật ABCD (AB = 20 cm, AD = 44 cm), M là trung điểm DC, E trên BC với BE = 30 cm. Tính diện tích tam giác AEM (có hình vẽ)."
+   ]
+  },
+  "legibility": "good",
+  "notes": "Grade-6 entrance placement test for THCS Thống Nhất, i.e. the test he sat on entering secondary school. Faint pencil construction lines are visible behind the text (bleed-through or doodles)."
+ },
+ {
+  "collection": "THCS Thong Nhat / Box",
+  "file": "scan0110.jpg",
+  "mediaId": "1b348f24-161a-4330-8df0-506530153864",
+  "kind": "exam",
+  "title": "Sở GD&ĐT Hà Nội – Kỳ thi tuyển sinh vào lớp 10, Trường THPT Chu Văn An & Hà Nội–Amsterdam – Đề chính thức, Môn thi: Toán–Tin",
+  "year": "2005–2006 (ngày thi 21-6-2005, 150 phút)",
+  "content": {
+   "subject": "Toán–Tin (chuyên)",
+   "exam_date": "21-6-2005",
+   "duration": "150 phút",
+   "problems": [
+    "Bài I (2đ): P = (a+b)(b+c)(c+a) − abc, a, b, c nguyên; chứng minh nếu a+b+c chia hết cho 4 thì P chia hết cho 4.",
+    "Bài II (2đ): Hệ (x+y)^4 + 13 = 6x²y² + m; xy(x²+y²) = m. 1) Giải với m = −10. 2) Chứng minh không tồn tại m để hệ có nghiệm duy nhất.",
+    "Bài III (2đ): x, y, z > 0 thỏa 1/x + 2/y + 3/z = 6, P = x + y² + z³. 1) Chứng minh P ≥ x + 2y + 3z − 3. 2) Tìm giá trị nhỏ nhất của P.",
+    "Bài IV (3đ): Tam giác ABC, D, E, F trên BC, CA, AB với AEDF nội tiếp; P trên tia AD với DA·DP = DB·DC. 1) Chứng minh ABPC nội tiếp và tam giác DEF đồng dạng PCB. 2) Chứng minh S'/S ≤ (EF/2AD)² (S, S' là diện tích ABC, DEF).",
+    "Bài V (1đ): Hình vuông ABCD và 2005 đường thẳng, mỗi đường cắt hai cạnh đối và chia hình vuông thành hai phần có tỉ số diện tích 0,5; chứng minh có ít nhất 502 đường đồng quy."
+   ]
+  },
+  "legibility": "good",
+  "notes": "The official math-informatics specialist entrance exam for Chu Văn An and Hà Nội–Amsterdam high schools, which he sat in June 2005 at the end of THCS (he then went to Phan Đình Phùng). The back of the sheet shows through with his handwritten working (algebra, a doodled face). The candidate name and registration-number lines are blank; there is an invigilator's initial."
+ },
+ {
+  "collection": "Tieu hoc Nguyen Ba Ngoc",
+  "file": "scan0120.jpg",
+  "mediaId": "a246a670-c77d-4dff-a2be-0f01317a5242",
+  "kind": "report",
+  "title": "Thông báo kết quả học kỳ I (sổ liên lạc, trang 10)",
+  "year": "1999–2000 (parent signed 9-1-2000); probably grade 4",
+  "content": {
+   "xep_loai": {
+    "Hạnh kiểm": "Tốt",
+    "Học lực": "Khá",
+    "XLVSCĐ (vở sạch chữ đẹp)": "A"
+   },
+   "khen_thuong": "HS tiên tiến",
+   "subjects": {
+    "Tiếng Việt": {
+     "KTĐK": "8",
+     "HLM": "7,7"
+    },
+    "Toán": {
+     "KTĐK": "9",
+     "HLM": "8,8"
+    },
+    "Đạo đức": {
+     "KTĐK": "8",
+     "HLM": "7,5"
+    },
+    "TN–XH": {},
+    "Khoa học": {
+     "KTĐK": "9",
+     "HLM": "7,7"
+    },
+    "Lịch sử": {
+     "KTĐK": "10",
+     "HLM": "8,5"
+    },
+    "Địa lý": {
+     "KTĐK": "9",
+     "HLM": "7,7"
+    },
+    "Kỹ thuật": {
+     "KTĐK": "8",
+     "HLM": "7,7"
+    },
+    "Hát – Nhạc": {
+     "KTĐK": "9",
+     "HLM": "9,3"
+    },
+    "Mĩ thuật": {
+     "KTĐK": "7",
+     "HLM": "7,7"
+    },
+    "Thể dục": {
+     "KTĐK": "7",
+     "HLM": "7,5"
+    },
+    "Sức khỏe": {
+     "KTĐK": "10",
+     "HLM": "7,8"
+    },
+    "Ngoại ngữ": {
+     "KTĐK": "9",
+     "HLM": "9,3"
+    },
+    "Tin học": {}
+   },
+   "nhan_xet_giao_vien": "Ít nói, sách vở sạch. Cần mạnh dạn trong học tập. Tiếp thu toán nhanh.",
+   "giao_vien_ky": "signature reading 'Yên' (?)",
+   "y_kien_phu_huynh": "parent's signature only, dated 'Ngày 9-1-2000'"
+  },
+  "legibility": "good",
+  "notes": "Grades in red ink (KTĐK = periodic test, HLM = subject average); 'Xếp loại' column empty. 'tiếp thu' is written above the line as an insertion. Pink handwriting from the facing page bleeds through and is not part of this page. The school name is not on this page; it comes from the collection."
+ },
+ {
+  "collection": "Tieu hoc Nguyen Ba Ngoc",
+  "file": "scan0121.jpg",
+  "mediaId": "8dc9d53b-d922-426e-a1c3-3ce2fb5d61aa",
+  "kind": "report",
+  "title": "Đánh giá, xếp loại học lực môn (học bạ page)",
+  "year": "Năm học 199…–199… left blank; 1990s primary, grade 4 or 5 judging by subjects",
+  "content": {
+   "hoc_ki_I_hoc_luc_mon": {
+    "Tiếng Việt": "7,3",
+    "Toán": "7,8",
+    "Đạo đức – Lối sống": "9,5",
+    "Tự nhiên – Xã hội": "(blank)",
+    "Khoa học": "8,8",
+    "Lịch sử": "8,8",
+    "Địa lý": "8,8",
+    "Kĩ thuật": "7,8",
+    "Hát – Nhạc": "9,5",
+    "Mỹ thuật": "7,3",
+    "Thể dục": "7,5",
+    "Sức khoẻ": "9,7",
+    "Tự chọn 1": "9,8",
+    "Tự chọn 2": "(blank)"
+   },
+   "hoc_ki_II": "(blank)",
+   "ca_nam": "(blank)",
+   "nhan_xet_giao_vien": "(blank)"
+  },
+  "legibility": "partial",
+  "notes": "Only the semester-1 column is filled in, in faint pencil; the rest of the form is empty, including year, school and teacher remark. The faint pencil makes some digits a little uncertain: 7 and 9 are hard to tell apart in places, e.g. Đạo đức 9,5 vs 8,5 and Sức khoẻ 9,7 vs 8,7."
+ },
+ {
+  "collection": "Tieu hoc Nguyen Ba Ngoc",
+  "file": "IMG_2305.JPG",
+  "mediaId": "07c151b3-738b-4f41-af33-e2f3106fea02",
+  "kind": "essay",
+  "title": "Quả táo",
+  "year": "2001 (dated 5/7/2001 in the margin)",
+  "content": "[Ending of the previous story on the page:]\nBài học trong câu truyện này là: Kẻ yếu có thể thắng được kẻ mạnh nhờ trí thông minh và lòng dũng cảm.\n\n5/7/2001\nQuả táo\n\nTrời cuối thu, cây đã rụng lá, cây táo giữa rừng chỉ còn mỗi một quả. Vào một buổi sáng, chú Thỏ chạy chơi, chợt trông thấy quả táo treo lơ lửng trên cành. Thỏ định hái quả táo nhưng không sao với tới được. Vừa lúc ấy, có một chú Quạ từ đâu bay tới đậu trên cành cây thông gần đó. Thỏ nhìn lên, gọi:\n- Anh Quạ ơi! Hái hộ tôi quả táo!\nQuạ bay sang cành táo vặt quả. Nhưng không giữ nổi để quả táo rơi xuống trúng vào Nhím đang ngủ dưới gốc cây. Nhím ù té chạy. Thỏ vội kêu lên:\n- Anh Nhím! Đứng lại! Anh mang táo của tôi đi đâu thế?\nNhím đứng lại cãi:\n- Táo của tôi chứ! Quả táo rụng, tôi bắt được mà!\nQuạ cũng bay đến, bảo:\n- Quả táo của tôi! Chính tôi hái!\nLúc đó, Gấu đi tới, Gấu đã biết hết đầu đuôi câu chuyện. Gấu nói:\n- Thôi, đừng tranh cãi nữa! Hãy bổ quả táo ra làm ba, mỗi cháu nhận lấy một phần.\nTất cả đều thốt lên:\n- Vậy mà trước đây bọn cháu không nghĩ ra!\nNhím bổ quả táo ra làm tư, đưa một phần cho Gấu và nói:\n- Cháu mời bác Gấu, cháu cảm ơn bác vì bác đã phân xử công bằng!\nBa phần còn lại Nhím đưa cho Thỏ, Quạ và mình. Cả bốn bác cháu đều ăn táo vui vẻ.\nBài học trong câu truyện này là: Không nên tranh giành nhau mà phải nhường nhịn nhau.",
+  "legibility": "good",
+  "notes": "Neat cursive in purple ink on a lined notebook page: a retelling of the picture story 'Quả táo', ending with the moral. Dated 5/7/2001 in the left margin (the leading digit may be cut off at the page edge), i.e. summer 2001 between primary and THCS. Small crossed-out slips are omitted: a 'bo' before 'Nhím', 'tao' before 'tôi', 'quả' after 'Nhím', 'Gra' before 'Cháu'. The top two lines are the moral of the previous story in the notebook."
+ },
+ {
+  "collection": "Marble Garden / Toy box",
+  "file": "scan0117.jpg",
+  "mediaId": "a7faa355-bc68-4a51-82ad-7a5f8aad639e",
+  "kind": "club-list",
+  "title": "Hội K4 : Áo Tím",
+  "year": "c. 1999–2000 (grade 4 at Nguyễn Bá Ngọc; inferred)",
+  "content": [
+   {
+    "no": 1,
+    "name": "Nguyễn Đức Anh",
+    "class": "4A"
+   },
+   {
+    "no": 2,
+    "name": "Lê Hoàn Anh",
+    "class": "TT"
+   },
+   {
+    "no": 3,
+    "name": "Vũ Ngọc Anh",
+    "class": "4D"
+   },
+   {
+    "no": 4,
+    "name": "Li Ming Dong",
+    "class": "TT"
+   },
+   {
+    "no": 5,
+    "name": "Nguyễn Đức Hùng",
+    "class": "4D"
+   },
+   {
+    "no": 6,
+    "name": "Trần Quang Hưng",
+    "class": "4D"
+   },
+   {
+    "no": 7,
+    "name": "Lê Việt Hưng",
+    "class": "4D"
+   },
+   {
+    "no": 8,
+    "name": "Nguyễn Tuấn Linh",
+    "class": "4A"
+   },
+   {
+    "no": 9,
+    "name": "Phạm Bá Mạnh",
+    "class": "4A"
+   },
+   {
+    "no": 10,
+    "name": "Nguyễn Quang Minh",
+    "class": "4B"
+   },
+   {
+    "no": 11,
+    "name": "… Minh Nghĩa (family name left blank)",
+    "class": "4B"
+   },
+   {
+    "no": 12,
+    "name": "Okinawa Matsuda",
+    "class": "TT"
+   },
+   {
+    "no": 13,
+    "name": "Bùi Vinh Quang",
+    "class": "4D"
+   },
+   {
+    "no": 14,
+    "name": "Đỗ Hoàng Quân",
+    "class": "4D"
+   },
+   {
+    "no": 15,
+    "name": "Phạm Anh Thanh",
+    "class": "4D"
+   },
+   {
+    "no": 16,
+    "name": "Cao Trang Xuân Thủy",
+    "class": "TT"
+   },
+   {
+    "no": 17,
+    "name": "Dương Xuân Thủy",
+    "class": "TT"
+   },
+   {
+    "no": 18,
+    "name": "Kim Dae Young",
+    "class": "TT"
+   }
+  ],
+  "legibility": "good",
+  "notes": "Neat blue-pen list on the back of an exam answer sheet (the printed form shows through). It looks like a membership list of a boys' club, the 'Purple Shirt' society of grade 4: 12 real classmates from 4A, 4B and 4D (his own class is 4D) plus 6 members marked 'TT'. The TT members have invented-sounding or foreign names (Chinese, Japanese, Korean). So TT probably marks pretend or imaginary members, e.g. 'tưởng tượng', but that is an inference. Real classmates' names are kept since the list is a keepsake."
+ },
+ {
+  "collection": "Marble Garden / Football Empires Box",
+  "file": "scan2000 (115).jpg",
+  "mediaId": "44091299-fec9-467b-95de-81d37a473a0e",
+  "kind": "club-list",
+  "title": "Hội K4 – Tím",
+  "year": "c. 1999–2001 (inferred)",
+  "content": {
+   "columns": "no. · short name · number · colour",
+   "rows": [
+    {
+     "no": 1,
+     "name": "VNA",
+     "number": 3,
+     "colour": "Xanh lá cây"
+    },
+    {
+     "no": 2,
+     "name": "Ng Q Minh",
+     "number": 10,
+     "colour": "Đỏ"
+    },
+    {
+     "no": 3,
+     "name": "P Bá Mạnh",
+     "number": 9,
+     "colour": "Vàng"
+    },
+    {
+     "no": 4,
+     "name": "Li M Dong",
+     "number": 4,
+     "colour": "Đỏ",
+     "group": "Coroot (?)"
+    },
+    {
+     "no": 5,
+     "name": "Okinawa",
+     "number": 12,
+     "colour": "Xanh lam",
+     "group": "Coroot (?)"
+    },
+    {
+     "no": 6,
+     "name": "Kim",
+     "number": 18,
+     "colour": "Đỏ"
+    },
+    {
+     "no": 7,
+     "name": "V. Quang",
+     "number": 13,
+     "colour": "Xanh lá cây"
+    },
+    {
+     "no": 8,
+     "name": "H. Quân",
+     "number": 14,
+     "colour": "Xanh chàm"
+    },
+    {
+     "no": 9,
+     "name": "Đ. Hùng",
+     "number": 5,
+     "colour": "Xanh lam"
+    },
+    {
+     "no": 10,
+     "name": "Q. Hưng",
+     "number": 6,
+     "colour": "Nâu"
+    },
+    {
+     "no": 11,
+     "name": "V. Hưng",
+     "number": 7,
+     "colour": "Trắng"
+    },
+    {
+     "no": 12,
+     "name": "Đức Anh",
+     "number": 1,
+     "colour": "Xanh cây nhạt"
+    },
+    {
+     "no": 13,
+     "name": "T. Linh",
+     "number": 8,
+     "colour": "Trắng"
+    },
+    {
+     "no": 14,
+     "name": "M. Nghĩa",
+     "number": 11,
+     "colour": "Đỏ"
+    },
+    {
+     "no": 15,
+     "name": "C.T Xuân Thủy",
+     "number": "16 (15 crossed out)",
+     "colour": "Xanh chuối",
+     "group": "Coroot (?)"
+    },
+    {
+     "no": 16,
+     "name": "D.X Thủy",
+     "number": 17,
+     "colour": "Xanh lam đậm",
+     "group": "Coroot (?)"
+    },
+    {
+     "no": 17,
+     "name": "Hoàn Anh",
+     "number": 2,
+     "colour": "Cam",
+     "group": "Coroot (?)"
+    },
+    {
+     "no": 18,
+     "name": "Anh Thanh",
+     "number": 15,
+     "colour": "Xanh lá cây trắng"
+    }
+   ]
+  },
+  "legibility": "good",
+  "notes": "Same 18 members as the 'Hội K4: Áo Tím' list (scan0117), here abbreviated (VNA = Vũ Ngọc Anh) and each given a unique number 1–18 and a colour. The numbers look like shirt or team numbers and the colours like each member's team or kit colour in a home-made football game: this sheet is in the 'Football Empires Box', and scan2000 (114) assigns clubs to members. Two brackets group the 'TT' (imaginary?) members with a label read as 'Corost' / 'Coroot' (reading uncertain). The ruled page has faint pencil tables from another page showing through (club names such as 'Dupcan', 'Whistle', 'Opezz', amounts like '£3000'); these are not transcribed."
+ },
+ {
+  "collection": "Marble Garden / Football Empires Box",
+  "file": "scan2000 (114).jpg",
+  "mediaId": "fd51aaf9-e15c-49a5-8fe4-27f2745aae78",
+  "kind": "club-list",
+  "title": "(untitled) – club names assigned to Hội K4 members",
+  "year": "c. 1999–2001 (inferred)",
+  "content": {
+   "Anh Thanh": [
+    "Icy Spheres",
+    "Mitsisipi River (written above, replacing crossed-out 'I.C. You')",
+    "Colisium",
+    "I.C. You (written in margin, replacing crossed-out 'ARC Man')",
+    "Totally Doom",
+    "Ytheane"
+   ],
+   "Việt Hưng": [
+    "Dynomite Blaster",
+    "Pingpong",
+    "Naltredes",
+    "Thanippon",
+    "Beta Meateh",
+    "BHU"
+   ],
+   "Kim DY": [
+    "Samsung TCC (¹)",
+    "Bastra (¹) (replacing crossed-out 'BASS')",
+    "League Men (¹)",
+    "Hyper Hippo",
+    "AKZE",
+    "Dooin College"
+   ]
+  },
+  "legibility": "good",
+  "notes": "Strip of a ruled notebook page (Date/No. header). It lists six invented club names each for three Hội K4 members: Anh Thanh, Việt Hưng and Kim DY (= Kim Dae Young, one of the 'TT' members). These look like the clubs each member 'owns' in his imaginary Football Empires league. Spellings are as written (e.g. 'Mitsisipi', 'Colisium'). A small superscript '1' marks three of Kim DY's clubs; its meaning is unknown."
+ },
+ {
+  "collection": "[2004.12] Chess",
+  "file": "scan2000 (52).jpg",
+  "mediaId": "7b073fcd-7f77-457a-b5d3-920ac98af9a7",
+  "kind": "chess-game",
+  "title": "Biên bản thi đấu – Giải Q. Ba Đình, ván 1",
+  "year": "12/11/2004 (the year is written like '2009' because his 4 looks like a 9)",
+  "content": {
+   "game_type": "Cờ vua (international chess). NOT cờ tướng. Notation is Vietnamese piece letters: M = Mã (N), T = Tượng (B), X = Xe (R), H = Hậu (Q), V = Vua (K); bare square = pawn move; ':' = capture; 'FE' = fxe, etc.",
+   "tournament": "Q. Ba Đình (Giải cờ vua học sinh quận Ba Đình 2004)",
+   "round": 1,
+   "date": "12/11/2004",
+   "white": "Vũ Ngọc Anh",
+   "black": "Lê Minh Hoà (Tô Hoàng)",
+   "result": "0–1 (Trắng 0, Đen 1): Vũ Ngọc Anh lost",
+   "moves_as_written": [
+    "1. E4 E5",
+    "2. MF3 MC6",
+    "3. TC4 TC5",
+    "4. MC3 MF6",
+    "5. H3 D6",
+    "6. D3 H6",
+    "7. 0-0 0-0",
+    "8. A3 A5",
+    "9. HE2 TE6",
+    "10. T:E6 FE",
+    "11. TE3 MD4",
+    "12. M:D4 ?? ED",
+    "13. E5 DE",
+    "14. T:H6 GH",
+    "15. ME4 (ink mark between M and E4) M:E4",
+    "16. H:E4 XAE1 (?)",
+    "17. B6 (?) XE2 (?)",
+    "18. XAE8 (?) [black cell: an 'H…' crossed out]",
+    "19. HF5 HC6",
+    "20. – (white cell has only a dash; nothing more recorded)"
+   ],
+   "moves_san": "1. e4 e5 2. Nf3 Nc6 3. Bc4 Bc5 4. Nc3 Nf6 5. h3 d6 6. d3 h6 7. O-O O-O 8. a3 a5 9. Qe2 Be6 10. Bxe6 fxe6 11. Be3 Nd4 12. Nxd4?? exd4 13. e5 dxe5 14. Bxh6 gxh6 15. Ne4 Nxe4 16. Qxe4 ? ... 19. Qf5 Qc6 0-1",
+   "reconstruction_of_moves_16_to_19": "As written, moves 16…–18 are not legal: black's a-rook cannot go to e1, white's b-pawn cannot go to b6, and XAE8 cannot be white's move. Everything becomes legal if one black move was skipped and the following entries slid half a move: 16. Qxe4 Q? (missing; Qd7, Qd6 or Qd5) 17. Rae1 b6 18. Re2 Rae8 19. Qf5 Qc6. The crossed-out 'H…' in black's 18th cell fits him starting to write 19. Qf5 one cell early. This reconstruction is an inference, not what is on the sheet."
+  },
+  "legibility": "partial",
+  "notes": "Moves 1–16 (white) are clear and form a legal game, checked move by move with a chess engine library. The '??' after 12. M:D4 is his own annotation: after 12…exd4 13. e5 dxe5 14. Bxh6 gxh6 he had given up a piece. The opponent's name is followed by '(Tô Hoàng)', probably the opponent's school or club. Referee and signature fields are blank. The right-hand page (moves 35–66) is empty apart from the result."
+ },
+ {
+  "collection": "[2004.12] Chess",
+  "file": "scan2000 (53).jpg",
+  "mediaId": "bb8af33b-5fb5-4a4c-818d-acff2a0ec57b",
+  "kind": "chess-game",
+  "title": "Biên bản thi đấu – Giải Q. Ba Đình, ván 2",
+  "year": "12/11/2004",
+  "content": {
+   "game_type": "Cờ vua (international chess), same Vietnamese letter notation as round 1",
+   "tournament": "Q. Ba Đình",
+   "round": 2,
+   "date": "12/11/2004",
+   "white": "Ng Khôi Giang (P.C.Trinh)",
+   "black": "Vũ Ngọc Anh",
+   "result": "½–½ (Trắng ½, Đen ½): draw",
+   "moves_as_written": [
+    "1. E4 E5",
+    "2. D3 MC6",
+    "3. MF3 H6",
+    "4. MC3 MF6",
+    "5. G3 D6",
+    "6. TG2 TG4",
+    "7. 0-0 TE7",
+    "8. A3 (ink blot) 0-0",
+    "9. [A6 crossed out] B4  [XB4 crossed out] A6",
+    "10. XB1 D5",
+    "11. A4 HD7",
+    "12. B5 MD4",
+    "13. M:E5 T:D1",
+    "14. M:D7 M:D7",
+    "15. X:D1 DE",
+    "16. DE TC5",
+    "17. BA BA",
+    "18. E5 XAE1 (sic: means Rae8)",
+    "19. TE3 M:C2",
+    "20. X:D7 T:E3",
+    "21. FE M:E3",
+    "22. XE1 MG4",
+    "23. MD5 [XC7 crossed out] ME5",
+    "24. [MF3 crossed out] X:C7  [T:F3 crossed out] MF3",
+    "25. [XE1 crossed out] TF3 (= T:F3) XE1 (= X:E1)",
+    "26. VG2 XE8",
+    "27. TH5 G6",
+    "28. MF6 VG7",
+    "29. M:E8 X:E8",
+    "30. TF3 XE6",
+    "31. XC6 X:C6",
+    "32. T:C6 A5",
+    "33. VF3 F5",
+    "34. VF4 VF6",
+    "35. G4 FG",
+    "36. V:G4 H5",
+    "37. VH4 VF5",
+    "38. TF3 VF4",
+    "39. T:H5 GH",
+    "40. [H4 crossed out] (game ends)"
+   ],
+   "moves_san": "1. e4 e5 2. d3 Nc6 3. Nf3 h6 4. Nc3 Nf6 5. g3 d6 6. Bg2 Bg4 7. O-O Be7 8. a3 O-O 9. b4 a6 10. Rb1 d5 11. a4 Qd7 12. b5 Nd4 13. Nxe5 Bxd1 14. Nxd7 Nxd7 15. Rxd1 dxe4 16. dxe4 Bc5 17. bxa6 bxa6 18. e5 Rae8 19. Be3 Nxc2 20. Rxd7 Bxe3 21. fxe3 Nxe3 22. Rbe1 Ng4 23. Nd5 Nxe5 24. Rxc7 Nf3+ 25. Bxf3 Rxe1+ 26. Kg2 Rfe8 27. Bh5 g6 28. Nf6+ Kg7 29. Nxe8+ Rxe8 30. Bf3 Re6 31. Rc6 Rxc6 32. Bxc6 a5 33. Kf3 f5 34. Kf4 Kf6 35. g4 fxg4 36. Kxg4 h5+ 37. Kh4 Kf5 38. Bf3 Kf4 39. Bxh5 gxh5 ½-½"
+  },
+  "legibility": "good",
+  "notes": "The whole game was checked move by move with a chess engine library and is legal as transcribed (78 plies). The final position is K+a+h pawns vs K+a+h pawns with the a-pawns blocked, so the draw is agreed. 13…Bxd1 won White's queen for a knight and bishop (13. Nxe5 Bxd1 14. Nxd7). His black 18th move is written 'XAE1', which can only mean Rae8, and the round-1 sheet has the same 'XAE1' quirk. The opponent's name is followed by '(P.C.Trinh)', probably THCS Phan Chu Trinh. The faint mirror-image writing on both pages is bleed-through from the facing sheets of the score book."
+ },
+ {
+  "collection": "[2004.12] Chess",
+  "file": "scan2000 (51).jpg",
+  "mediaId": "686d0eb5-026b-4629-a528-2b60272afa18",
+  "kind": "chess-letter",
+  "title": "Lịch thi đấu – Giải Cờ Vua Cờ Tướng học sinh quận Ba Đình năm 2004",
+  "year": "2004 (sheet prints the dates as 12–14/11/2003; weekdays and the score sheets show it was 12–14/11/2004)",
+  "content": {
+   "events": "Cờ vua and cờ tướng, Ba Đình district students",
+   "venue": "not stated",
+   "schedule": [
+    {
+     "date": "12/11 (Thứ 6)",
+     "items": [
+      "17h30 khai mạc",
+      "18h thi đấu ván 1",
+      "19h15 thi đấu ván 2"
+     ],
+     "who": "Tất cả các hạng tuổi"
+    },
+    {
+     "date": "13/11 (Thứ 7), chiều",
+     "items": [
+      "18h ván 1",
+      "19h15 ván 2",
+      "20h30 ván thứ 3"
+     ],
+     "who": "Tất cả các hạng tuổi phải thi đấu"
+    },
+    {
+     "date": "14/11 (CN), sáng",
+     "items": [
+      "8h30 ván 1",
+      "9h45 ván 2"
+     ],
+     "who": "Chỉ các hạng tuổi phải thi đấu 9 ván"
+    },
+    {
+     "date": "14/11 (CN), chiều",
+     "items": [
+      "17h00 ván 1",
+      "18h15 ván 2",
+      "20h00 lễ bế mạc giải"
+     ],
+     "who": "Tất cả các hạng tuổi"
+    }
+   ]
+  },
+  "legibility": "good",
+  "notes": "A staple and a handwritten '1' are top-left. The back of the sheet shows through in mirror image: a rules table 'Một số lỗi kỹ thuật và cách xử phạt' (touch-move, illegal castling etc.) and a 'Chú ý' about reporting results to the arbiter. The year '2003' is a typo: 12/11/2004 was a Friday (Thứ 6), and his two score sheets from this event are dated 12/11/2004."
+ },
+ {
+  "collection": "[2004.12] Chess",
+  "file": "scan2000 (47).jpg",
+  "mediaId": "41843823-3e52-4b0c-a51c-a0ab88164026",
+  "kind": "chess-letter",
+  "title": "Giấy triệu tập – UBND Quận Ba Đình, Phòng GD&ĐT",
+  "year": "Dated Hà Nội, 22/11/2004",
+  "content": {
+   "basis": "Kết quả thi đấu giải Cờ Vua, Cờ Tướng học sinh quận Ba Đình năm 2004",
+   "summons": "Em Vũ Ngọc Anh, học sinh lớp 9G, trường THCS Thống Nhất",
+   "when": "19h00 ngày 5/12/2004",
+   "where": "Phòng Truyền thống, Trường TTTN 10.10 (Trường Thể thao Thiếu niên 10/10)",
+   "purpose": "Tham gia đội tuyển của Quận Ba Đình chuẩn bị giải Cờ HKPĐ (Hội khỏe Phù Đổng) thành phố HN năm 2005",
+   "request": "Đề nghị Ban giám hiệu nhà trường tạo điều kiện để em Ng.Anh tham gia giải ở thành phố đạt kết quả cao nhất",
+   "ghi_chu": "Nếu vắng mặt, BTC sẽ thay thế VĐV khác theo quy định",
+   "signed": "Phòng GD&ĐT Quận Ba Đình, Trưởng phòng (red name stamp, reads like 'Đỗ Vũ')"
+  },
+  "legibility": "good",
+  "notes": "The official letter calling him up to the Ba Đình district chess team after the November 2004 district tournament. Name, class, school and time are handwritten into the printed form."
+ },
+ {
+  "collection": "[2004.12] Chess",
+  "file": "scan2000 (45).jpg",
+  "mediaId": "84ae4ffd-0db1-4164-93bf-a730fc20abcb",
+  "kind": "chess-letter",
+  "title": "Phiếu thi đấu + Thẻ đội tuyển cờ (Trường TTTN 10.10)",
+  "year": "2004–2005 (card valid until 10/01/2005)",
+  "content": {
+   "phieu_thi_dau": {
+    "student": "Vũ Ngọc Anh (Nam), with ID photo",
+    "class": "9G",
+    "school": "THCS Thống Nhất",
+    "district": "Ba Đình, Hà Nội",
+    "xep_loai_van_hoa": "Giỏi",
+    "dao_duc": "Tốt",
+    "signatures": "Student signature 'Anh'; GV chủ nhiệm (signed); BGH trường (stamp of Trường THCS Thống Nhất, Phó hiệu trưởng Lê Văn Quế); Phòng GD&ĐT (stamp + signature); Sở GD&ĐT (blank)"
+   },
+   "the_doi_tuyen_co": {
+    "issuer": "Trường TTTN 10.10",
+    "holder": "Vũ Ngọc Anh, học sinh trường THCS Thống Nhất",
+    "training": "Thứ 5 – CN, 19:00–21:00",
+    "valid_until": "10/01/2005",
+    "signed": "Ban giám hiệu (round stamp of Trường Thể thao Thiếu niên 10-10)"
+   }
+  },
+  "legibility": "good",
+  "notes": "Two items scanned together: the competition entry form, presumably for the HKPĐ 2005 city tournament, and the yellow chess-team membership card. The form shows his birth date and the card has a card number; neither is transcribed. The ID photo shows him at about 14–15."
+ },
+ {
+  "collection": "[2004.12] Chess",
+  "file": "scan2000 (48).jpg",
+  "mediaId": "e24a257d-ad9e-4aad-8516-a8545e651dc7",
+  "kind": "chess-letter",
+  "title": "Trường TTTN 10-10, Bộ môn Cờ – Thư gửi phụ huynh các lớp Cờ Vua (trang 1)",
+  "year": "Dated Hà Nội, 21/12/2004",
+  "content": {
+   "addressed_to": "Phụ huynh các lớp Cờ Vua Trường TTTN 10.10",
+   "summary": "To prepare for the Cờ Vua HKPĐ city tournament from 15/1/2005, Trường Thể thao thiếu niên 10.10 is holding a blitz (chớp nhoáng) and rapid (cờ nhanh) chess tournament, traditional 1st edition 2005. Expected entrants: provincial and sectoral teams from the north (Quảng Ninh, Hải Phòng, Quân Đội, Bắc Ninh, Bắc Giang…) plus district team players from across the city. A chance for the school's chess students to gain practice before the Hà Nội 2004–2005 city tournament.",
+   "schedule": {
+    "dates": "Thứ 7, Chủ Nhật – 8 đến 9 tháng 1/2005",
+    "8/1": [
+     "8h30–11h30 thi đấu Cờ Chớp",
+     "14h45–18h00 khai mạc và thi đấu Cờ Nhanh"
+    ],
+    "9/1": [
+     "8h30–11h30 thi đấu Cờ Nhanh",
+     "(continued on page 2) 15h–18h thi đấu Cờ Nhanh – bế mạc trao giải"
+    ]
+   },
+   "venue": "Trường TTTN 10.10 (implied)"
+  },
+  "legibility": "good",
+  "notes": "Page 1 of 2; continues on scan2000 (49). Page 2 of the same letter shows through faintly in reverse at the top."
+ },
+ {
+  "collection": "[2004.12] Chess",
+  "file": "scan2000 (49).jpg",
+  "mediaId": "5a8c75c3-f719-47ac-bdd7-75096bc46018",
+  "kind": "chess-letter",
+  "title": "Trường TTTN 10-10, Bộ môn Cờ – Thư gửi phụ huynh (trang 2)",
+  "year": "21/12/2004",
+  "content": {
+   "schedule_cont": "Từ 15h–18h thi đấu Cờ Nhanh – bế mạc trao giải (9/1/2005)",
+   "fees": {
+    "Cờ Chớp": "30.000đ / 1 vđv",
+    "Cờ Nhanh": "40.000đ / 1 vđv"
+   },
+   "registration_deadline": "02/01/2005",
+   "closing": "Bộ Môn Cờ xin trân trọng cảm ơn!",
+   "ghi_chu": "Phụ huynh nào đăng ký và nộp lệ phí xin liên hệ trực tiếp với HLV phụ trách lớp hoặc với Thầy Vinh (phone number given; omitted)",
+   "signed": "T/M Bộ môn Cờ – Huấn luyện viên Bùi Vinh"
+  },
+  "legibility": "good",
+  "notes": "Second half of the 21/12/2004 letter. The coach's phone number is deliberately not transcribed."
+ },
+ {
+  "collection": "[2004.12] Chess",
+  "file": "scan2000 (46).jpg",
+  "mediaId": "efad9596-06a0-497e-924d-b0a8fa6cde1a",
+  "kind": "chess-letter",
+  "title": "Lịch thi đấu – Giải Cờ Vua Chớp Nhoáng – Cờ Nhanh Trường TTTN 10/10 mở rộng lần 1 năm 2005",
+  "year": "8–9/1/2005",
+  "content": {
+   "events": [
+    "Cờ chớp nhoáng (blitz), 9 ván",
+    "Cờ nhanh (rapid), 9 ván"
+   ],
+   "venue": "Trường TTTN 10/10",
+   "schedule": [
+    {
+     "date": "8/1/2005 (Thứ 7)",
+     "items": [
+      "8h30–11h30 thi đấu CỜ CHỚP NHOÁNG (9 ván)"
+     ]
+    },
+    {
+     "date": "8/1 (Thứ 7), chiều (printed '8/1/2003')",
+     "items": [
+      "15h45 khai mạc giải CỜ NHANH",
+      "16h–19h thi đấu ván 1-2-3 CỜ NHANH"
+     ]
+    },
+    {
+     "date": "9/1/2005 (CN), sáng",
+     "items": [
+      "8h30–11h30 thi đấu ván 4-5-6 CỜ NHANH"
+     ]
+    },
+    {
+     "date": "9/1/2005 (CN), chiều",
+     "items": [
+      "15h00–18h00 thi đấu ván 7-8-9 CỜ NHANH",
+      "18h10 Lễ bế mạc và trao giải"
+     ]
+    }
+   ],
+   "signed": "Ban Tổ Chức"
+  },
+  "legibility": "good",
+  "notes": "The final schedule for the January 2005 tournament. Times differ slightly from the 21/12/2004 letter (rapid opening at 15h45 rather than 14h45). '8/1/2003' in row 2 is a typo for 2005."
+ },
+ {
+  "collection": "[2004.12] Chess",
+  "file": "scan2000 (50).jpg",
+  "mediaId": "40a0bb2e-d395-447b-ae93-50adb43ee62c",
+  "kind": "chess-letter",
+  "title": "Trường TTTN 10-10, Bộ môn Cờ – Thư gửi phụ huynh học sinh các lớp Cờ Vua Trường 10/10 (giải truyền thống mở rộng 2004)",
+  "year": "Dated Hà Nội, 15/8/2004",
+  "content": {
+   "purpose": "Đánh giá công tác đào tạo các em năng khiếu Cờ vua trong 3 tháng hè",
+   "event": "Giải Cờ Vua truyền thống Trường TTTN 10.10 mở rộng năm 2004, open to talented students from chess centres across the city, as preparation for the district and city tournaments of 2004–2005",
+   "date": "Chủ nhật 29/08/2004; sáng 7h30–11h30, chiều 14h00–17h00",
+   "fee": "10.000đ",
+   "venue": "Trường TTTN 10.10",
+   "registration_deadline": "25/08/2004",
+   "signed": "T/M Bộ môn Cờ – Huấn luyện viên Bùi Vinh"
+  },
+  "legibility": "good",
+  "notes": "Earliest item in the folder; it shows he was in the TTTN 10/10 chess classes by summer 2004. A small blue pen mark sits at the bottom."
+ },
+ {
+  "collection": "[2004.12] Chess",
+  "file": "IMG_2187.JPG",
+  "mediaId": "3fa77bae-7c01-4ad7-9de9-c09a4b34f5b3",
+  "kind": "other",
+  "title": "Chess keepsakes laid out on a table (overview photo)",
+  "year": "Photo taken later; items from 2004–2005",
+  "content": "Phone photo of the chess materials spread on a pink-and-white flowered tablecloth: a worn book 'Cờ Vua' with Kasparov on the cover; a yellow booklet 'Cờ vua – 332 thế hết cờ sau 3 nước đi' (Nhiều tác giả); a 'Du…/Music' children's magazine; the 'Sổ ghi biên bản các ván cờ' score book (blue cover) that holds scan2000 (52)/(53); a yellow 'Vở' notebook; the yellow 'Thẻ đội tuyển cờ' card; the Ba Đình 2004 schedule; the Giấy triệu tập; and several photocopied pages of chess puzzles/opening lessons with diagrams (one titled 'Khai cuộc …', another 'Cờ vua – những bài học vô lòng').",
+  "legibility": "good",
+  "notes": "Context photo only; no new text beyond what the scans already cover."
+ }
+]
