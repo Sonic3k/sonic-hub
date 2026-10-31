@@ -272,7 +272,7 @@ M = [
       photos=[("Box", "IMG_2299.JPG", "C2 PDP"), ("Box", "IMG_2298.JPG", "C2 PDP"), ("Box", "IMG_2297.JPG", "C2 PDP"), ("Box", "IMG_2300.JPG", "C2 PDP"), ("Box", "IMG_2283.JPG", "C2 PDP")],
       doc="school2:IMG_2299.JPG,IMG_2298.JPG,IMG_2297.JPG,IMG_2300.JPG,IMG_2283.JPG", tags=dict(OCCASION=["Thi cử"], OBJECT=["Giấy tờ"])),
  dict(key="luu-but-van-anh", kind="KEEPSAKE", chapter="highschool", title="Lưu bút viết cho Vân Anh", date="2008", precision="YEAR",
-      summary="Lưu bút anh viết cho Vân Anh, cuối năm lớp 12.", photos=[("Box", "Luu but Van Anh 1.jpg", "C2 PDP")],
+      summary="Lưu bút anh viết cho Vân Anh, bạn cùng lớp C2, cuối năm lớp 12 — \"lần đầu tiên tớ viết lưu bút cho bạn khác\". Hai người học cùng nhau từ lớp hè 10A8 khi mới vào trường, trước kỳ kiểm tra phân lớp.", photos=[("Box", "Luu but Van Anh 1.jpg", "C2 PDP")],
       tags=dict(PEOPLE=["Lớp C2"], OBJECT=["Kỷ vật"])),
 ]
 
@@ -304,7 +304,7 @@ FACTS = [
  ("place", "Nơi lớn lên", "Đội Cấn, nay là khu tập thể Vạn Bảo"),
  ("school", "Tiểu học", "Nguyễn Bá Ngọc (đến 2001), lớp 4D năm 1999–2000"),
  ("school", "THCS", "Thống Nhất, lớp 7G–8G–9G (2001–2005), học bồi dưỡng học sinh giỏi tiếng Anh năm lớp 8"),
- ("school", "THPT", "Phan Đình Phùng, lớp C2 (2005–2008); thi đại học 2008 cả khối A (ĐH Xây dựng) và khối B (ĐH Khoa học Tự nhiên)"),
+ ("school", "THPT", "Phan Đình Phùng (2005–2008): hè 2005 mới vào trường học lớp hè 10A8 (trước kỳ kiểm tra phân lớp, học cùng Vân Anh), sau đó vào lớp C2: 10C2 – 11C2 – 12C2; thi đại học 2008 cả khối A (ĐH Xây dựng) và khối B (ĐH Khoa học Tự nhiên)"),
  ("habit", "Du lịch hè", "Gần như hè nào cũng đi xa cùng bố mẹ từ 1993 đến 2007; riêng 1996 không đi"),
  ("hobby", "Cờ", "Ở đội tuyển cờ vua – cờ tướng thi giải học sinh quận Ba Đình 2004"),
  ("hobby", "Trò chơi tự chế", "Tự vẽ màn chơi, giải bóng đá, thành phố, bộ bài từ khoảng 2000 đến 2005"),
