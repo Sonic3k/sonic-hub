@@ -55,6 +55,13 @@ public class MemoryService {
             hits = new ArrayList<>(hits);
             hits.sort(Comparator.comparing(Episode::getOccurredAt, Comparator.nullsLast(Comparator.naturalOrder())));
         }
+        if (!words.isEmpty()) {   // with a query: the best matches first, the date order kept among equals
+            String phrase = String.join(" ", words);
+            Map<Episode, Integer> score = new HashMap<>();
+            for (Episode e : hits) score.put(e, score(e, phrase, words, marks));
+            hits = new ArrayList<>(hits);
+            hits.sort(Comparator.comparing(score::get, Comparator.reverseOrder()));
+        }
         return hits.stream().map(mapper::toEpisodeResponseWithLinks).toList();
     }
 
@@ -154,6 +161,18 @@ public class MemoryService {
         List<String> tokens = words(marks ? lower(text) : fold(text));
         // every word of the query starts a word of the memory: "ma" finds "Mario", not "Hà Nam"
         return words.stream().allMatch(w -> tokens.stream().anyMatch(t -> t.startsWith(w)));
+    }
+
+    /** the whole query in the title counts most, then the whole query anywhere, then each word as a whole word */
+    private static int score(Episode e, String phrase, List<String> words, boolean marks) {
+        String title = String.join(" ", words(marks ? lower(e.getTitle()) : fold(e.getTitle())));
+        String text = String.join(" ", words(marks ? lower(haystack(e)) : fold(haystack(e))));
+        java.util.Set<String> tokens = new java.util.HashSet<>(Arrays.asList(text.split(" ")));
+        int s = 0;
+        if ((" " + title + " ").contains(" " + phrase + " ")) s += 8; else if (title.contains(phrase)) s += 4;
+        if ((" " + text + " ").contains(" " + phrase + " ")) s += 2;
+        s += (int) words.stream().filter(tokens::contains).count();
+        return s;
     }
 
     /** the last day a memory covers: its end, else the end of the span its date is known to */
