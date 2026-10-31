@@ -712,10 +712,10 @@
    "kind": "DOCUMENT",
    "chapter": "primary",
    "title": "Sổ liên lạc và học bạ tiểu học",
-   "date": "2001",
+   "date": "1999",
+   "end": "2001",
    "precision": "YEAR",
-   "approx": true,
-   "summary": "Hai cuốn sổ trao đổi giữa gia đình và nhà trường, trang điểm và lời nhận xét.",
+   "summary": "Hai cuốn sổ trao đổi giữa gia đình và nhà trường năm 1999–2000 (lớp 4D) và 2000–2001. Lời cô học kỳ I: \"Ít nói, sách vở sạch. Cần mạnh dạn trong học tập. Tiếp thu toán nhanh.\" Học sinh tiên tiến.",
    "photos": [
     {
      "id": "449ede81-c780-4a72-b12f-95a688764974",
@@ -742,7 +742,7 @@
      "caption": null
     }
    ],
-   "doc": "school:scan0120.jpg,scan0121.jpg",
+   "doc": "school:scan0120.jpg,scan0121.jpg;school2:IMG_2304.JPG",
    "tags": {
     "OBJECT": [
      "Giấy tờ",
@@ -753,7 +753,7 @@
    "source": "photo-review",
    "links": [],
    "threads": [],
-   "doc_text": "▸ Thông báo kết quả học kỳ I (sổ liên lạc, trang 10) (1999–2000 (parent signed 9-1-2000); probably grade 4)\nxep loai:\n  Hạnh kiểm: Tốt\n  Học lực: Khá\n  XLVSCĐ (vở sạch chữ đẹp): A\nkhen thuong: HS tiên tiến\nsubjects:\n  Tiếng Việt:\n    KTĐK: 8\n    HLM: 7,7\n  Toán:\n    KTĐK: 9\n    HLM: 8,8\n  Đạo đức:\n    KTĐK: 8\n    HLM: 7,5\n  Khoa học:\n    KTĐK: 9\n    HLM: 7,7\n  Lịch sử:\n    KTĐK: 10\n    HLM: 8,5\n  Địa lý:\n    KTĐK: 9\n    HLM: 7,7\n  Kỹ thuật:\n    KTĐK: 8\n    HLM: 7,7\n  Hát – Nhạc:\n    KTĐK: 9\n    HLM: 9,3\n  Mĩ thuật:\n    KTĐK: 7\n    HLM: 7,7\n  Thể dục:\n    KTĐK: 7\n    HLM: 7,5\n  Sức khỏe:\n    KTĐK: 10\n    HLM: 7,8\n  Ngoại ngữ:\n    KTĐK: 9\n    HLM: 9,3\nnhan xet giao vien: Ít nói, sách vở sạch. Cần mạnh dạn trong học tập. Tiếp thu toán nhanh.\ngiao vien ky: signature reading 'Yên' (?)\ny kien phu huynh: parent's signature only, dated 'Ngày 9-1-2000'\n\n▸ Đánh giá, xếp loại học lực môn (học bạ page) (Năm học 199…–199… left blank; 1990s primary, grade 4 or 5 judging by subjects)\nhoc ki I hoc luc mon:\n  Tiếng Việt: 7,3\n  Toán: 7,8\n  Đạo đức – Lối sống: 9,5\n  Tự nhiên – Xã hội: (blank)\n  Khoa học: 8,8\n  Lịch sử: 8,8\n  Địa lý: 8,8\n  Kĩ thuật: 7,8\n  Hát – Nhạc: 9,5\n  Mỹ thuật: 7,3\n  Thể dục: 7,5\n  Sức khoẻ: 9,7\n  Tự chọn 1: 9,8\n  Tự chọn 2: (blank)\nhoc ki II: (blank)\nca nam: (blank)\nnhan xet giao vien: (blank)"
+   "doc_text": "▸ Thông báo kết quả học kỳ I (sổ liên lạc, trang 10) (1999–2000 (parent signed 9-1-2000); probably grade 4)\nxep loai:\n  Hạnh kiểm: Tốt\n  Học lực: Khá\n  XLVSCĐ (vở sạch chữ đẹp): A\nkhen thuong: HS tiên tiến\nsubjects:\n  Tiếng Việt:\n    KTĐK: 8\n    HLM: 7,7\n  Toán:\n    KTĐK: 9\n    HLM: 8,8\n  Đạo đức:\n    KTĐK: 8\n    HLM: 7,5\n  Khoa học:\n    KTĐK: 9\n    HLM: 7,7\n  Lịch sử:\n    KTĐK: 10\n    HLM: 8,5\n  Địa lý:\n    KTĐK: 9\n    HLM: 7,7\n  Kỹ thuật:\n    KTĐK: 8\n    HLM: 7,7\n  Hát – Nhạc:\n    KTĐK: 9\n    HLM: 9,3\n  Mĩ thuật:\n    KTĐK: 7\n    HLM: 7,7\n  Thể dục:\n    KTĐK: 7\n    HLM: 7,5\n  Sức khỏe:\n    KTĐK: 10\n    HLM: 7,8\n  Ngoại ngữ:\n    KTĐK: 9\n    HLM: 9,3\nnhan xet giao vien: Ít nói, sách vở sạch. Cần mạnh dạn trong học tập. Tiếp thu toán nhanh.\ngiao vien ky: signature reading 'Yên' (?)\ny kien phu huynh: parent's signature only, dated 'Ngày 9-1-2000'\n\n▸ Đánh giá, xếp loại học lực môn (học bạ page) (Năm học 199…–199… left blank; 1990s primary, grade 4 or 5 judging by subjects)\nhoc ki I hoc luc mon:\n  Tiếng Việt: 7,3\n  Toán: 7,8\n  Đạo đức – Lối sống: 9,5\n  Tự nhiên – Xã hội: (blank)\n  Khoa học: 8,8\n  Lịch sử: 8,8\n  Địa lý: 8,8\n  Kĩ thuật: 7,8\n  Hát – Nhạc: 9,5\n  Mỹ thuật: 7,3\n  Thể dục: 7,5\n  Sức khoẻ: 9,7\n  Tự chọn 1: 9,8\n  Tự chọn 2: (blank)\nhoc ki II: (blank)\nca nam: (blank)\nnhan xet giao vien: (blank)\n\n▸ Hai cuốn \"Sổ trao đổi giữa gia đình và nhà trường (Tiểu học)\" — năm học 1999-2000 (lớp 4D) và 2000-2001 (1999-2001)\nCovers only: 'TẤT CẢ VÌ TƯƠNG LAI CON EM CHÚNG TA — SỔ TRAO ĐỔI GIỮA GIA ĐÌNH VÀ NHÀ TRƯỜNG (TIỂU HỌC)'.\nRight booklet: Họ và tên học sinh: Vũ Ngọc Anh / Học sinh lớp: 4D / Trường: Nguyễn Bá Ngọc / (home address fields filled in — omitted) / Năm học: 1999 – 2000.\nLeft booklet: Họ và tên học sinh: Vũ Ngọc Anh / other fields blank / Năm học: 2000 – 2001 (his lớp 5 year); loose folded papers tucked behind it.\nLời phê: (not visible — inside pages not photographed)"
   },
   {
    "key": "bai-van-muc-tim",
@@ -1188,36 +1188,6 @@
    ]
   },
   {
-   "key": "day-dien-9g",
-   "kind": "KEEPSAKE",
-   "chapter": "secondary",
-   "title": "Bảng nối dây điện lớp 9G",
-   "date": "2005",
-   "precision": "YEAR",
-   "approx": true,
-   "summary": "Bài thực hành công nghệ: dây điện thật dán lên bảng.",
-   "photos": [
-    {
-     "id": "b15bbc9c-8fbc-4232-b117-a7300fbc8ade",
-     "url": "https://sonic-hub.b-cdn.net/angels-islands/sonic3k-box/1990-2007/thcs-thong-nhat/box/img_0369.jpg",
-     "w": 3264,
-     "h": 2448,
-     "album": "380ab354-2011-4252-9af7-c5cc42f4f9b9",
-     "caption": null
-    }
-   ],
-   "tags": {
-    "OBJECT": [
-     "Kỷ vật"
-    ]
-   },
-   "status": "DRAFT",
-   "source": "photo-review",
-   "links": [],
-   "threads": [],
-   "doc_text": null
-  },
-  {
    "key": "tho-20-11",
    "kind": "DOCUMENT",
    "chapter": "secondary",
@@ -1294,11 +1264,11 @@
    "key": "de-thi-vao-10",
    "kind": "DOCUMENT",
    "chapter": "secondary",
-   "title": "Đề thi vào lớp 10 chuyên Toán – Tin, 2005",
-   "date": "2005-06",
-   "precision": "MONTH",
-   "approx": true,
-   "summary": "Đề tuyển sinh Chu Văn An và Hà Nội – Amsterdam năm học 2005–2006, còn giữ cùng giấy nháp.",
+   "title": "Thi tốt nghiệp THCS và thi vào lớp 10 chuyên Toán – Tin, 2005",
+   "date": "2005-05-25",
+   "end": "2005-06-21",
+   "precision": "DAY",
+   "summary": "Đề thi tốt nghiệp THCS 25–26/5/2005 (Văn, Sinh, Toán) cùng dàn ý nháp đoạn văn \"Bánh trôi nước\"; đề chuyên Toán – Tin Chu Văn An và Hà Nội – Amsterdam 21/6/2005 với giấy nháp anh giải bài chia hết, bất đẳng thức và bài \"2005 đường thẳng\", bên lề vẽ một mặt nhăn nhó. Vở ôn Đề 11, Đề 12.",
    "photos": [
     {
      "id": "1b348f24-161a-4330-8df0-506530153864",
@@ -1309,15 +1279,39 @@
      "caption": null
     },
     {
+     "id": "a0562c65-3873-4207-bb4b-34f987e81e05",
+     "url": "https://sonic-hub.b-cdn.net/angels-islands/sonic3k-box/1990-2007/thcs-thong-nhat/box/scan0111.jpg",
+     "w": 1234,
+     "h": 1751,
+     "album": "380ab354-2011-4252-9af7-c5cc42f4f9b9",
+     "caption": null
+    },
+    {
+     "id": "776a874b-0048-45ae-a212-550a1bfcedd0",
+     "url": "https://sonic-hub.b-cdn.net/angels-islands/sonic3k-box/1990-2007/thcs-thong-nhat/box/img_2289.jpg",
+     "w": 4608,
+     "h": 3456,
+     "album": "380ab354-2011-4252-9af7-c5cc42f4f9b9",
+     "caption": null
+    },
+    {
      "id": "8dae9089-a09a-468f-baeb-f338eb490c64",
      "url": "https://sonic-hub.b-cdn.net/angels-islands/sonic3k-box/1990-2007/thcs-thong-nhat/box/img_2290.jpg",
      "w": 4608,
      "h": 3456,
      "album": "380ab354-2011-4252-9af7-c5cc42f4f9b9",
      "caption": null
+    },
+    {
+     "id": "c349260c-f9f1-4447-89b5-3802f850d606",
+     "url": "https://sonic-hub.b-cdn.net/angels-islands/sonic3k-box/1990-2007/thcs-thong-nhat/box/img_2296.jpg",
+     "w": 4608,
+     "h": 3456,
+     "album": "380ab354-2011-4252-9af7-c5cc42f4f9b9",
+     "caption": null
     }
    ],
-   "doc": "school:scan0110.jpg",
+   "doc": "school:scan0110.jpg;school2:scan0111.jpg,IMG_2289.JPG,IMG_2290.JPG,IMG_2296.JPG",
    "tags": {
     "OBJECT": [
      "Giấy tờ"
@@ -1330,7 +1324,158 @@
    "source": "photo-review",
    "links": [],
    "threads": [],
-   "doc_text": "▸ Sở GD&ĐT Hà Nội – Kỳ thi tuyển sinh vào lớp 10, Trường THPT Chu Văn An & Hà Nội–Amsterdam – Đề chính thức, Môn thi: Toán–Tin (2005–2006 (ngày thi 21-6-2005, 150 phút))\nsubject: Toán–Tin (chuyên)\nexam date: 21-6-2005\nduration: 150 phút\nproblems:\n  • Bài I (2đ): P = (a+b)(b+c)(c+a) − abc, a, b, c nguyên; chứng minh nếu a+b+c chia hết cho 4 thì P chia hết cho 4.\n  • Bài II (2đ): Hệ (x+y)^4 + 13 = 6x²y² + m; xy(x²+y²) = m. 1) Giải với m = −10. 2) Chứng minh không tồn tại m để hệ có nghiệm duy nhất.\n  • Bài III (2đ): x, y, z > 0 thỏa 1/x + 2/y + 3/z = 6, P = x + y² + z³. 1) Chứng minh P ≥ x + 2y + 3z − 3. 2) Tìm giá trị nhỏ nhất của P.\n  • Bài IV (3đ): Tam giác ABC, D, E, F trên BC, CA, AB với AEDF nội tiếp; P trên tia AD với DA·DP = DB·DC. 1) Chứng minh ABPC nội tiếp và tam giác DEF đồng dạng PCB. 2) Chứng minh S'/S ≤ (EF/2AD)² (S, S' là diện tích ABC, DEF).\n  • Bài V (1đ): Hình vuông ABCD và 2005 đường thẳng, mỗi đường cắt hai cạnh đối và chia hình vuông thành hai phần có tỉ số diện tích 0,5; chứng minh có ít nhất 502 đường đồng quy."
+   "doc_text": "▸ Sở GD&ĐT Hà Nội – Kỳ thi tuyển sinh vào lớp 10, Trường THPT Chu Văn An & Hà Nội–Amsterdam – Đề chính thức, Môn thi: Toán–Tin (2005–2006 (ngày thi 21-6-2005, 150 phút))\nsubject: Toán–Tin (chuyên)\nexam date: 21-6-2005\nduration: 150 phút\nproblems:\n  • Bài I (2đ): P = (a+b)(b+c)(c+a) − abc, a, b, c nguyên; chứng minh nếu a+b+c chia hết cho 4 thì P chia hết cho 4.\n  • Bài II (2đ): Hệ (x+y)^4 + 13 = 6x²y² + m; xy(x²+y²) = m. 1) Giải với m = −10. 2) Chứng minh không tồn tại m để hệ có nghiệm duy nhất.\n  • Bài III (2đ): x, y, z > 0 thỏa 1/x + 2/y + 3/z = 6, P = x + y² + z³. 1) Chứng minh P ≥ x + 2y + 3z − 3. 2) Tìm giá trị nhỏ nhất của P.\n  • Bài IV (3đ): Tam giác ABC, D, E, F trên BC, CA, AB với AEDF nội tiếp; P trên tia AD với DA·DP = DB·DC. 1) Chứng minh ABPC nội tiếp và tam giác DEF đồng dạng PCB. 2) Chứng minh S'/S ≤ (EF/2AD)² (S, S' là diện tích ABC, DEF).\n  • Bài V (1đ): Hình vuông ABCD và 2005 đường thẳng, mỗi đường cắt hai cạnh đối và chia hình vuông thành hai phần có tỉ số diện tích 0,5; chứng minh có ít nhất 502 đường đồng quy.\n\n▸ Giấy nháp bài thi vào lớp 10 chuyên Toán-Tin, THPT Chu Văn An & Hà Nội-Amsterdam (2005) (2005)\nPrinted exam shows through mirrored from the reverse: 'Sở GD&ĐT Hà Nội — Kỳ thi tuyển sinh … Trường THPT Chu Văn An & Hà Nội-Amsterdam, năm học 2005-2006 (?), Môn thi: Toán-Tin, Thời gian làm bài: 150 phút'. Bài I: P = (a+b)(b+c)(c+a) − abc, a, b, c nguyên; chứng minh nếu a+b+c chia hết cho 4 thì P chia hết cho 4. Bài II: hệ phương trình có tham số m (giải với m = −10; chứng minh không tồn tại m để hệ có nghiệm duy nhất). Bài III: x, y, z dương với 1/x + 2/y + 3/z = 6 (?), xét biểu thức P = x + y² + z³ (?). Bài IV: tam giác ABC, D, E, F trên BC, CA, AB với AEDF nội tiếp; P trên tia AD với DA.DP = DB.DC … Bài V: hình vuông ABCD và 2005 đường thẳng, mỗi đường chia hình vuông thành hai tứ giác có tỉ số diện tích cho trước — chứng minh có ít nhất 502 đường thẳng đồng quy.\nHis working: Bài 1: P = (a+b)(b+c)(c+a) − abc = (ab + b² + ac + bc)(c + a) − abc = … = ab(c+a+b) + bc(a+b+c) + ac(b+a+c) − 2abc = (a+b+c)(ab+bc+ac) − 2abc. Vì a+b+c ⋮ 4 → 1 trg số a, b, c phải có 1 số chẵn (ít nhất) → 2abc ⋮ 4 (1); a+b+c ⋮ 4 ⇒ (a+b+c)(ab+bc+ac) ⋮ 4 (2). Từ (1) và (2) ⇒ (a+b+c)(ab+bc+ac) − 2abc ⋮ 4 hay P ⋮ 4. Bài 5 sketch: square ABCD with lines through E — '2005 đg thẳng phải đi qua 4 điểm ⇒ ít nhất 502 đg đồng quy'. Bài 3b: Đặt S = x + 2y + 3z; S×6 = (x + 2y + 3z)(1/x + 2/y + 3/z) = 14 + (2y/x + 2x/y) + (3z/x + 3x/z) + (6z/y + 6y/z) ≥ 14 + 4 + 6 + 12 = 36 ⇒ S ≥ 6 ⇒ P ≥ S − 3 ≥ 3; P_min = 3 ⇔ x = y = z = 1. III a. Xét hiệu: H = x + y² + z³ − x − 2y − 3z + 3 = (y − 1)² + z³ − 3z + 2 ≥ 0; xét C = z³ − 3z + 2 = (z − 1)(z² + z − 2); nếu z ≥ 1 … C ≥ 0; nếu z ≤ 1 … C ≥ 0 ⇒ đpcm.\nAlso: a doodle of a boy's face with a pained/grimacing expression and a hand making a gesture; scribbles; a column of sums (113 500 + 75 500 + 57 000 + 57 000 = 303 000 …).\n\n▸ Kỳ thi tốt nghiệp THCS năm học 2004-2005 (Sở GD&ĐT Hà Nội) — đề Văn-Tiếng Việt và đề Sinh học (25/05/2005)\n1) Môn thi: VĂN - TIẾNG VIỆT, 25/5/2005, 120 phút. 1. Chép lại bài thơ Bánh trôi nước (Hồ Xuân Hương); thành ngữ dân gian nào được vận dụng, giúp nói lên điều gì (2đ). 2. Viết đoạn văn quy nạp 8–10 câu với câu chốt 'Quả thật, hai câu cuối của bài thơ là lời tự khẳng định phẩm giá của người phụ nữ trong xã hội phong kiến', có một câu ghép đẳng lập (3đ). 3. Làm văn (5đ), chọn 1: Đề I phân tích nhân vật anh thanh niên trong Lặng lẽ Sa Pa (Nguyễn Thành Long); Đề II giải thích câu tục ngữ 'Uống nước nhớ nguồn' và việc kế thừa truyền thống đó ngày nay. His name filled in at the bottom with an invigilator signature (SBD not transcribed).\n2) Môn thi: SINH HỌC, 25/5/2005, 60 phút. Câu I các bộ phận hệ hô hấp, bộ phận quan trọng nhất; đặc điểm cấu tạo phổi; vì sao người ít luyện tập thở nhanh hơn khi lao động nặng (3,5đ). Câu II cấu tạo trong và chức năng tủy sống (2đ). Câu III khác nhau giữa thường biến và đột biến; vì sao thường biến không di truyền (2đ). Câu IV cà chua quả đỏ (A) trội so với quả vàng (a): lai, giải thích F1, F2, lai phân tích (2,5đ).\n\n▸ Tờ nháp bài thi Văn tốt nghiệp THCS + đề thi Toán tốt nghiệp THCS 2004-2005 (25–26/05/2005)\nLeft — 'TỜ NHÁP BÀI THI (Không nộp cùng bài thi)', invigilator signature, his exam number (omitted). His notes for the Văn paper: 'Diễn dịch: chốt …' / 'Quy nạp: + + + + chốt' — '– ở câu thứ 3, Người …' — an 8-line plan for the inductive paragraph on Bánh trôi nước: 1. Bánh trôi 2. [gạch: số phận] / Bánh trôi 3. Nghĩa đen 4. [gạch: ở câu thứ 4] Qua … số phận 5. Rắn nát … giữ 6. Từ biểu cảm 7. Đẹp 8. Chế độ nam quyền (circled ×). Below: a list of five other candidates named '… Anh' with their exam numbers (numbers omitted: Lê Ngọc Anh (Nam), Lê Ngọc Anh (Nữ), Liêu Ngọc Anh, Phạm Ngọc Anh, Ngô Phương Anh), then 'LV CV:' followed by 'VNA' and 16 boys' names (Lương Trung Hiếu, Kiều Hải Đăng, Trần Ngọc Hiệp, Cao Minh Đức, Lê Sỹ Hiếu, Đào Đức Anh, Hoàng Minh Trí, Đào Tùng Anh, Đào Duy Anh, Trịnh Mạnh Khuê, Lê Minh Hòa, Lê Xuân Trường, Ngô Bảo Trung, Chu Trường Vỹ, Tô Minh Trung, Đặng Ngọc Hà). Faint show-through from the back: a list headed 'Hội K4: Áo Tím' with names and classes (unreadable details).\nRight — printed: KÌ THI TỐT NGHIỆP THCS 2004-2005, Môn TOÁN, 26/5/2005, 120 phút. A- Lý thuyết: điều kiện để √A có nghĩa (√(2x−1)); hoặc định lí góc có đỉnh bên trong đường tròn. B- Bài 1 rút gọn P = (1/(√x−2) + (5√x−4)/(2√x−x)) : ((2+√x)/√x − √x/(√x−2)), tính P khi x = (3−√5)/2, tìm m; Bài 2 giải bài toán bằng lập phương trình (công nhân 60 sản phẩm, mỗi giờ làm thêm 2, xong sớm 30 phút còn vượt 3 sản phẩm); Bài 3 tam giác ABC vuông tại A, đường tròn đường kính BM — tứ giác AMEC nội tiếp, góc ACM = góc KHM, BH, EM, AC đồng quy, vị trí M để AHBC là hình thang cân.\n\n▸ Vở ôn thi Toán vào lớp 10 — Đề 11, Đề 12 (bài giải và hình vẽ) (likely lớp 9 (2004-2005))\n[left page] Đề 11: Bài 1: a) P = [(√x − 1)/(3√x − 1) − 1/(3√x + 1) + 8√x/(9x − 1)] : [1 − (3√x − 2)/(3√x + 1)]; TXĐ: {x > 0, x ≠ 1/9}. P = ((√x − 1)(3√x + 1) − 3√x + 1 + 8√x)/((3√x − 1)(3√x + 1)) : (3√x + 1 − 3√x + 2)/(3√x + 1) = (3x − 3√x + √x − 1 − 3√x + 1 + 8√x)/… : 3/(3√x + 1) = (3x + 3√x)/((3√x − 1).3) = √x(√x + 1)/(3√x − 1). b) P = 6/5 ⇔ √x(√x + 1)/(3√x − 1) = 6/5 ⇔ 5x + 5√x = 18√x − 6 ⇔ 5x − 13√x + 6 = 0; Δ = 169 − 120 = 49. Bài 2: table S | v | t: 3x/4 – 45; 1/4 x – 50; x – 30.\n[right page] Đề 12: geometry figure with points A, O, B, C, M, H, K, I, N, D. Đề 11: figure with A, O, B, M, C, E, D, N, D', C', K (right angle at K)."
+  },
+  {
+   "key": "hsg-tieng-anh-8g",
+   "kind": "MILESTONE",
+   "chapter": "secondary",
+   "title": "Nhóm bồi dưỡng học sinh giỏi tiếng Anh lớp 8G",
+   "date": "2003-12",
+   "end": "2004-02",
+   "precision": "MONTH",
+   "approx": true,
+   "summary": "Bảy bài luyện đề học sinh giỏi tiếng Anh chấm trên 20 (từ 6,25 đến 16), có cả đề học sinh giỏi quận Hoàn Kiếm 1999–2000. Trong hai bài làm chung của nhóm 8G, có bài anh được 16, thuộc nhóm cao nhất. Sang lớp 9 vở tiếng Anh toàn 9, 9,75, 10.",
+   "photos": [
+    {
+     "id": "0d740ffd-7975-4a72-b7db-0d61be2e1cab",
+     "url": "https://sonic-hub.b-cdn.net/angels-islands/sonic3k-box/1990-2007/thcs-thong-nhat/box/img_2276.jpg",
+     "w": 4608,
+     "h": 3456,
+     "album": "380ab354-2011-4252-9af7-c5cc42f4f9b9",
+     "caption": null
+    },
+    {
+     "id": "5ba4d638-53af-4b40-9812-b3f2663f76f4",
+     "url": "https://sonic-hub.b-cdn.net/angels-islands/sonic3k-box/1990-2007/thcs-thong-nhat/box/img_2293.jpg",
+     "w": 4608,
+     "h": 3456,
+     "album": "380ab354-2011-4252-9af7-c5cc42f4f9b9",
+     "caption": null
+    },
+    {
+     "id": "3ae48928-6f13-4567-b58b-461ef3f8f8c8",
+     "url": "https://sonic-hub.b-cdn.net/angels-islands/sonic3k-box/1990-2007/thcs-thong-nhat/box/img_2266.jpg",
+     "w": 4608,
+     "h": 3456,
+     "album": "380ab354-2011-4252-9af7-c5cc42f4f9b9",
+     "caption": null
+    },
+    {
+     "id": "27ab7045-e5d3-4d64-8471-e70045a5bafc",
+     "url": "https://sonic-hub.b-cdn.net/angels-islands/sonic3k-box/1990-2007/thcs-thong-nhat/box/img_2265.jpg",
+     "w": 4608,
+     "h": 3456,
+     "album": "380ab354-2011-4252-9af7-c5cc42f4f9b9",
+     "caption": null
+    }
+   ],
+   "doc": "school2:IMG_2276.JPG,IMG_2292.JPG,IMG_2293.JPG,IMG_2266.JPG,IMG_2267.JPG,IMG_2302.JPG",
+   "tags": {
+    "ACTIVITY": [
+     "Tiếng Anh"
+    ],
+    "OBJECT": [
+     "Giấy tờ"
+    ]
+   },
+   "status": "DRAFT",
+   "source": "photo-review",
+   "links": [],
+   "threads": [],
+   "doc_text": "▸ Bảy bài \"English test\" của Vũ Ngọc Anh, 8G + đề thi HSG Tiếng Anh lớp 8 Quận Hoàn Kiếm 1999-2000 (lớp 8 (2003-2004); one sheet dated February 19th, 2004)\nEight sheets laid out. Seven are his own lined-paper tests, each headed 'Name: Vũ Ngọc Anh / Class: 8G / English test / Mark | Teacher's remark', scored out of 20 (section sub-scores in red in the margin). Marks: 6,25; 12; 13,5/20; 9,5; 7,75 + 0,5 = 8,25; 12,25; 12,5 (Date: February 19th, 2004).\nSample answers (legible): 'I haven't seen Linda since Jimmy's birthday party.' / 'We haven't decorated this room for years.' / 'I wish the school holidays were longer.' / 'John is too young to join the club.' / 'Tennis used to be an indoor game.' / 'My mother cooks better than I do.' / 'Unless you don't continue to treat her like that, she won't tell you the truth.' / 'We spent two hours watering the flowers.' / 'They moved here six years ago.' / 'I wish I didn't get so much to do today.' / 'My father's new car is being watched.' / 'Mary had a mechanic repair her car.' / 'He is the most intelligent I've ever met.' / 'It isn't dark enough for us to see the stars clearly.' / 'If we had known your address, we would have written you a letter.' / 'He is such a dangerous prisoner.' / 'Would you mind watering the flower pots for me?' / 'It is such a beautiful girl that everyone admires her.' / 'More care must be given to your work.' / 'Rice is cut by farmers during the harvest.' / word forms: careless, organization, unsuccessful, cooperation, preparations, performance, examination, millionaire, happiness, encourage, mountainous …\nPrinted sheet (right): 'Đề thi học sinh giỏi tiếng Anh lớp 8, Quận Hoàn Kiếm năm học 1999–2000, Thời gian: 60 phút' — I/ Chia động từ (Nothing (do) since I moved here …); II/ Viết lại câu (They've been living here for six years now → They moved …; The last time I saw Linda was at Jimmy's birthday party → I haven't …; She is over weight because she eats so much chocolate → If she …); III/ Cho dạng đúng của từ (care, organige, worth …).\nLời phê: (only marks and red ticks/corrections; remark boxes empty)\nĐiểm: 6,25; 12; 13,5/20; 9,5; 8,25; 12,25; 12,5 (all /20)\n\n▸ Đề 1 — bài làm của nhóm HSG Tiếng Anh lớp 8G (\"Đề thi học sinh giỏi quận lớp 8\") (07–08/01/2004)\nSix answer sheets of the same test from members of class 8G: Phạm Thị Lê Xuân (13,75), Vũ Ngọc Anh (13,25; 'Date: January 7th, 2004', 'English test'), Hà Thị Thu Hà (13,5; 'Date 8-1-2004, time 90 minutes, ĐỀ THI HỌC SINH GIỎI QUẬN LỚP 8'), Đinh Hoàng Yến (13,75; 'Test (Đề 1)'), Thùy Linh (9,25), Đỗ Thanh Huyền (13,75).\nHis sheet (Đề 1): I/ 1. a 2. c→b 3. a 4. c 5. c 6. a→b 7. c 8. a (sub-score 2,5). II/ 1. was wondered / came / bought 2. had done / bought / makes / do / find 3. has collected / is collecting / doesn't know 4. went / was having / was / have turned / have seen (2,75). III/ 1. Mexico is a warmer country than Canada. 2. She advised me not to go there immediately. 3. The garden is not large enough to play football in. 4. There will be a meeting organized at the Town hall by Green peace next Tuesday evening. 5. It would look rude if we refused their invitation. 6. The train doesn't take so long as the bus. 7. He was made to wait for 2 hours. (4).\nLời phê: (marks and red corrections only)\nĐiểm: his: 13,25 /20\n\n▸ Đề 2 / Test 2 — bài làm của nhóm HSG Tiếng Anh lớp 8G (\"Đề thi Anh học sinh giỏi năm học 02-03\") (11/01/2004 (he wrote 'January 11th, 2003'))\nSix sheets of the same test: Phạm Thu Lê Xuân (14,5; 'TEST 2'), Vũ Ngọc Anh (16), Thùy Linh (11; 'Test đề 2'), Đỗ Thanh Huyền (13 + 2; 'TEST ENGLISH 2'), Hà Thị Thu Hà (16,75; 'ĐỀ THI ANH HỌC SINH GIỎI NĂM HỌC (02-03)', Ngày 11 tháng 1 năm 2004), Đinh Hoàng Yến (14; 'Kiểm tra môn Anh (Đề 2)', Trường Thống Nhất).\nHis sheet: Name: Vũ Ngọc Anh, Class: 8G, Date: January 11th, 2003, English test, Mark 16. Đề 2 — I. 1. A. The boy was very fat and couldn't run far. 2. C. Maybe he'll write to her, and then she'll be happy. 3. C. Will you wait outside the office? 4. [gạch: A. Betty] B … didn't like to drink the sweet tea. (1,5) II. 1. have known 2. moved 3. has lived 4. came 5. am doing 6. saw 7. was waiting 8. will stay 9. answers 10. is raining 11. stops 12. think 13. has improved 14. saw 15. go 16. will write (4). III. 1. When is your birthday? → [red: were you born] 2. It is twenty years since John and Mary moved to Edinburgh. 3. They put [red correction: blame me on causing the accident]. 4. Would you mind lending me your pen? 5. [red: Please take notice what I am saying]. (3)\nLời phê: (marks and red corrections only)\nĐiểm: his: 16 /20\n\n▸ Vở ghi Tiếng Anh 9G — Unit 14 (63rd–64th period), bài tập có chấm điểm (Feb 2005)\n[left page, ends of exercises marked by teacher] 3. were ✓ 4. … will … do / is ✓ 5. is ✓/ will die ✓ 8. [gạch: went / … would stay] go ✓/ … will … stay ✓ — Ex 18: I/ 1. collector ✓ 3. scientists ✓ 4. friendship ✓ 6. childhood ✓ 9. performance ✓; II/ 1. suitable ✓ 2. skillful ✓ 5. exciting ✓ 9. attractive ✓ 10. careless ✓ — Ex 24: II/ 1. Charles Dickens was born in a poor clerk family in Portsmouth. ✓ 2. He was born on February, 17th, 1812. ✓ 3. When Dickens was two, his parents moved to London. ✓ 4. Dickens spent most of his life there from that time. ✓ 5. He died in 1870, at the early age of 58. ✓\nUnit 14 (The 63rd period) Practice — I/ New words: 1. confident (a) : (in); 2. delighted (adj) vui thích (at); 3. pantomime (n) → go to the pantomime …\n[right page] II. Grammar — Structures: 1. To be too adj (for sb) to do (st) 2. To be adj enough (for sb) to do … 3. so + adj/adv + that + clause 4. To be adj + prep doing st 5. To be adj (that) + clause / to be adj to do. III. Homework: 1. New words 2. HTL 5 cấu trúc 3. Cho 3 VD với mỗi cấu trúc rồi …\nFriday, February 18th 2005 — Unit Fourteen (the 64th period) Practice (2) — I, Make up sentences with: 1. be adj + prep: + be confident in + be delighted at; 2. be adj + that + clause: + I am delighted that you under…\nĐiểm: 10, 10, 9 (red, in margin beside three exercise sets)\n\n▸ Vở ghi Tiếng Anh 9G — Unit 17 Further Practice (Test one) và Unit 20 Consolidation (08–15/04/2005)\n[left] Friday, April 8th 2005 — Unit 17 (The 83rd period) Further Practice — I) Test one: Ex 7 (2đ) 2. got / went / [gạch: …] realized / had left; 4. has been / was / hope / won't forget. Ex 8 (1đ): 4. Tom wasn't allowed to take these books home. 8. The meal had been eaten before [gạch: they finished their] their conversation was finished. Ex 16 (2đ): 6. The teacher's explanation was such a clear one that everyone could understand easily. 2. The novel is short enough for us to finish reading in a few hours. Ex 17 (2đ) II/ 1. The car is too small for us to get all in. 10. He is not only clever but also hard-working. Ex 18 (1đ) I/ 8. designer 10. management. Ex 23 (1đ) I/ 1. If I have free time, I'll go to the zoo. 6. I'm reading a book now. Ex 27 (1đ) 1. We can keep our teeth healthy by visiting our dentist twice a year, brushing our teeth by a toothbrush and fluoride toothpaste at least twice a day and eating [V −0,25] 2. We don't eat chocolate, sweets before bedtime because they stick to our teeth and cause decay.\n[right] … to design – designer (n) – designation (n). H.W: 1. Làm phiếu TN theo đề: Ex 10 (2đ): 3, 5, 9; Ex 17 (2đ) II/ 1, 10; Ex 24 (2đ) I/ 1, 6; Ex 18 (1đ) II/ 3, 10; Ex 23 (2đ) III/ 7, 10; Ex 25 (1đ) II/ … 1. How long was Rose Mary a pupil at her local school? 2. Since when has she been working as a computer programmer. — Tuesday, April 12th 2005, Unit Twenty (the 84th period) Consolidation: I. Correct the test; II. Unit 20; H.W: Hoàn thành phiếu KT; Luyện lại dạng bài tập hỏi cho phần gạch chân và nối 2 cột. Ra 2 đề bài, mỗi đề 10 câu. — Friday, April 15th 2005, Unit Twenty (the 85th period) Consolidation: I) Test for the final exam.\nLời phê: (red ticks; '−0,25' deduction on Ex 27 sentence 1)\nĐiểm: 9,75\n\n▸ Đáp án \"KEY\" bài tập từ loại (word forms) (THCS (likely 2003-2005))\nPrinted folded sheet. 'Key': 1. fast 2. preparations 3. actress 4. daily 5. cloudless 6. rainy 7. widening 8. mice 9. enjoyment 10. carefully 11. excitedly 12. winning 13. truth 14. silence 15. symbolizes 16. disagreement 17. succeed 18. uninteresting/ sleepy 19. inconvenient 20. neccessary 21. librarian 22. amused 23. revision/ easily 24. harder/ harder 25. laziness 26. eatable 27. demonstrations 28. to strengthen/ friendship 29. the worst 30. homelessness.\n'KEY — Answer': 1. breaking 2. unsuccessful 3. honestly 4. interesting/ speech 5. national 6. performing 7. impure 8. musical 9. disagree 10. preparation 11. participants 12. artist 13. shyness 14. collecting 15. economically 16. biger/ biger 17. fast 18. working 19. overweight 20. feet/ inches 21. stamped 22. permission 23. scientist 24. worried 25. noisy/ noisily 26. carefulness 27. interested 28. painful 29. impolite 30. wooden. Union Jack flag graphic; small handwritten initials bottom right (?)."
+  },
+  {
+   "key": "bia-vo-ve-bay",
+   "kind": "KEEPSAKE",
+   "chapter": "secondary",
+   "title": "Bìa vở học thêm Văn bị chấm 1 điểm",
+   "date": "2004",
+   "end": "2005",
+   "precision": "YEAR",
+   "summary": "Bìa vở \"Pupil Notebook\" lớp 9G anh vẽ kín tia chớp, mây bão và chữ \"Anh\" to; có người phê mực đỏ \"Ai cho con vẽ bậy hả? — Kí tên Thầy giáo Hùng\", \"TỔNG ĐIỂM: 1\". Trong vở là bài nghị luận bảo vệ môi trường chen từ tiếng Anh, bài phân tích \"Thu điếu\" dẫn cả thơ Trần Đăng Khoa, và cách phân tích thơ (30/10/2004) dưới dòng chữ trang trí \"Vũ Kiệt\".",
+   "photos": [
+    {
+     "id": "d58f9024-8eb1-4763-8b5f-047ed0ed2fe3",
+     "url": "https://sonic-hub.b-cdn.net/angels-islands/sonic3k-box/1990-2007/thcs-thong-nhat/box/img_2274.jpg",
+     "w": 3456,
+     "h": 4608,
+     "album": "380ab354-2011-4252-9af7-c5cc42f4f9b9",
+     "caption": null
+    },
+    {
+     "id": "8cce4283-c62d-4404-9038-cd5a6342a5d3",
+     "url": "https://sonic-hub.b-cdn.net/angels-islands/sonic3k-box/1990-2007/thcs-thong-nhat/box/img_2307.jpg",
+     "w": 4608,
+     "h": 3456,
+     "album": "380ab354-2011-4252-9af7-c5cc42f4f9b9",
+     "caption": null
+    },
+    {
+     "id": "58b2ead5-d757-40e6-a518-499fa5033be7",
+     "url": "https://sonic-hub.b-cdn.net/angels-islands/sonic3k-box/1990-2007/thcs-thong-nhat/box/img_2275.jpg",
+     "w": 4608,
+     "h": 3456,
+     "album": "380ab354-2011-4252-9af7-c5cc42f4f9b9",
+     "caption": null
+    },
+    {
+     "id": "702ca94c-c135-4279-bd79-0dbb98bbad35",
+     "url": "https://sonic-hub.b-cdn.net/angels-islands/sonic3k-box/1990-2007/thcs-thong-nhat/box/img_2306.jpg",
+     "w": 4608,
+     "h": 3456,
+     "album": "380ab354-2011-4252-9af7-c5cc42f4f9b9",
+     "caption": null
+    }
+   ],
+   "doc": "school2:IMG_2274.JPG,IMG_2275.JPG,IMG_2307.JPG,IMG_2306.JPG",
+   "tags": {
+    "ACTIVITY": [
+     "Vẽ"
+    ],
+    "OBJECT": [
+     "Kỷ vật"
+    ],
+    "MOOD": [
+     "Nghịch ngợm"
+    ]
+   },
+   "status": "DRAFT",
+   "source": "photo-review",
+   "links": [],
+   "threads": [],
+   "doc_text": "▸ Bìa vở \"Pupil Notebook\" — Vở Học thêm Văn học, 9G, với hình vẽ bậy và lời \"phê\" bằng mực đỏ (lớp 9 (2004-2005))\nPrinted cover 'PUPIL NOTEBOOK — Vở kẻ ngang Hải Tiến'. His label: Trường: THCS Thống Nhất / Lớp: 9G / Vở: Học thêm VĂN HỌC / Họ tên: Vũ Ngọc Anh / Năm học: 200… – 200… (left blank).\nHis blue-pen doodles all over: jagged lightning bolts around the title, swirling clouds with rain streaks, and a big 'Anh' signature across the middle.\nRed-pen 'grading' of the cover: 'Ø viết tắt?' with 'THCS' boxed; '9G ???' circled; 'HỌC ??' circled; 'Anh ??' circled; Nhất underlined with an ×; 'Năm học: 200? – 200?'; 'TỔNG ĐIỂM: 1'. Top right: 'Ai cho con vẽ bậy hả? Kí tên Thầy giáo Hùng' (signature).\nLời phê: Ai cho con vẽ bậy hả? — Kí tên Thầy giáo Hùng (red); corrections on the label: không viết tắt (THCS), 9G ???, HỌC ??, Anh ??, 200? – 200?\nĐiểm: TỔNG ĐIỂM: 1 (red, mock grade for the cover)\n\n▸ Bài văn nghị luận về bảo vệ môi trường (BVMT) — 2 trang vở (likely lớp 9 (2004-2005))\n[left page] … ngày càng mong muốn có thêm phương tiện hiện đại để phục vụ cho n~ nhu cầu thiết yếu của đời sống trên tất cả các lĩnh vực. K n~ thế, con n` vẫn phải khai thác của cải, tài nguyên vốn có of tn rồi mới [gạch: con] có thể chế biến và sáng tạo đc. Nếu MT k: đc bảo vệ và chỉ khai thác bừa bãi, k: có kế hoạch và vì mục đích cá nhân, chắc chắn đến 1 lúc nào đó, con n` sẽ k: còn MT để khai thác. Vậy như thế, con n` k: thể sống và pt đc. Ngày hôm nay con n` đã khai thác rừng vô ý thức chẳng n~ k: bảo vệ đc rừng mà còn phá làm cháy rừng. Điều đó đe dọa nghiêm trọng đến cuộc sống của chúng ta. Như thế, chỉ có trên cơ sở BVMT, con n` mới có thể tạo ra đc cuộc sống tốt đẹp, bền vững lâu dài, đầy đủ sung túc. Thứ hai, BVMT còn là đòi hỏi cấp thiết và cần phải hành động [gạch: hay] ngay. Tình trạng MT trên tg và ở nc ta trong n~ năm qua destroyed nghiêm trọng. Năm 1990, tg đã có 16 tr ha rừng bị phá, 25 tỉ tấn đất bị xói mòn, 1/4 các loài ĐTV có nguy cơ defeated. Besides, ngay từ n~ năm 60 của TK 20, mặc dù dân số chưa cao, nhịp độ pt chưa mạnh mẽ như nay, tg đã xảy ra nạn phá rừng tràn lan tàn sát ĐV làm impure MT và O₂. Hơn thế nữa hiện nay, cùng với quá trình đô thị hoá sự pt rất nhanh chóng của KHKT và con n` đã có n~ thành tựu quan trọng để làm cho cuộc sống hiện đại, nhưng MT đã bị khai thác và destroy nghiêm trọng và đe dọa trực tiếp đến life và sự pt của loài n`. Từ 1990, n~ thùng dầu bị đắm, với n~ chất thải rắn của các ngành CN đã làm MT very impure. Tầng O₃ là lá chắn của\n[right page] Earth đã bị phá hoại làm cho t° TĐ tăng và mực nc biển có xu hướng dâng dâng.\nHiểu điều đó ta phải làm gì? Một là chúng ta phải khai thác có kế hoạch và trong phạm vi cho phép. Chúng ta chỉ khai thác khi đc phép. Tuyệt đối k: đc khai thác bừa bãi. Hai là, mọi người k: đc làm ô nhiễm nguồn nc k², tầng khí quyển của TĐ, chú ý đến bảo vệ các tầng khí quyển của TĐ. Ba là phải bảo vệ các loài thú nhất là các loài thú quý hiếm phải đc XH quan tâm. Bốn là chúng ta đổ ph² (?) MT TN như trồng cây gây rừng. Chúng ta còn phải có n~ vật nuôi có ích để BVMT. Năm là khi xây dựng nhà ở, công trình, nhà máy, … thì chúng ta cần tôn trọng và thực hiện đúng tất cả các yêu cầu BVMT. Sáu là BVMT hiện nay còn là vấn đề chung của toàn cầu, vì thế mà mỗi n` trên tg phải có trách nhiệm đóng góp thiết thực để BVMT. Thời đại ngày nay chúng ta cần phải hợp tác, liên kết với nhau để gìn giữ MT trong sạch. Chúng ta phải nối vòng tay lớn để BVMT. Bảy là đối với học sinh, thế hệ trẻ ngày nay phải BV ngay từ khi còn ngồi trên ghế nhà trường. Trước hết HS cần phải BV MT tốt ngay trong trường học và nơi ở của mình bằng n~ việc làm thiết thực như: Trồng và bảo vệ cây xanh như HCM đã dạy: \"Mùa xuân là Tết…\". We ? tích cực (?) tham gia tổng vệ sinh như n` xưa đã dạy: \"Nhà sạch thì mát…\". Và hiện nay cả nc ta đang sôi nổi phong trào, mọi n` cùng nhau xây dựng TP xanh và sạch. Hơn bao giờ hết, HS phải đi đầu trong n~ công việc đó. Tham gia tốt n~ tổng vệ sinh của trường, TP để làm thay đổi MT và làm KK càng thêm trong lành.\nLời phê: (red margin labels: 'b) Thứ hai'; 'Một là' … 'Bảy là' marking each point — hand uncertain, may be his own)\n\n▸ Bài phân tích \"Thu điếu\" (Nguyễn Khuyến) và đề <L2> đoạn văn về \"Hịch tướng sĩ\" (likely 2004-2005 (lớp 9 học thêm))\n<L1> \"Thu điếu\" — margin labels: I. MB (Tg, T/P, H/c sáng tác); – Cảnh ao thu; – Bối ngoại …; 2. Tâm trạng t/g; III. KL: 1. KĐ, 2. Gắn với giá trị.\nOpening: Trong giai đoạn văn học nửa cuối TK XIX, NK là tác giả nổi tiếng. Ông không chỉ là nhà thơ trào phúng xuất sắc mà còn là nhà thơ trữ tình, của làng quê VN. Ông đã để lại cho đời nhiều t/p hay, trong đó \"Thu điếu\" là bài thơ tiêu biểu hơn cả nằm trong [gạch: tác giả viết] chùm thơ t/g viết về mùa thu được coi là bất hủ. Bài thơ đã thể hiện được tình yêu đất nước tha thiết của t/g.\nBức tranh mùa thu được thể hiện qua tầm nhìn của một ông lão câu cá ngồi trên chiếc thuyền … qua 1 cái ao nhỏ của làng quê …\n[next page] \"Ao … trong\". Câu thơ hay với n~ từ biểu cảm được chọn lựa rất chính xác. Và qua đó, ng` đọc cảm nhận được không khí lạnh lẽo của mùa thu. Nước của mặt ao chẳng chỉ trong veo mà còn có màu xanh biếc … \"Sóng … vèo\" câu thơ hay lời NT đối ngẫu tài tình. NK đã sáng tạo ra n~ từ ngữ để diễn tả tốc độ rơi rất nhẹ của lá mùa thu \"khẽ đưa vèo\" … Phải chăng học tập NK, nhà thơ Trần Đăng Khoa cũng viết câu thơ rất hay: \"Ngoài thềm rơi chiếc lá đa / Tiếng rơi rất mỏng như là rơi nghiêng\". Và cảnh còn được mở rộng ở chiều cao và chiều sâu \"Tầng mây lơ lửng\" … Qua từ biểu cảm \"lơ lửng\", chúng ta cảm nhận được sự yên tĩnh của bầu trời … Đó là màu sắc rất riêng của bầu trời mùa thu VN. Điều này đã được ông nhắc đến cả 3 bài thơ mùa thu \"Trời thu xanh ngắt\" (Thu vịnh); \"Da trời ai nhuộm mà xanh ngắt\" (Thu ẩm) … \"quanh co\" … Đó là cảnh sắc rất quen thuộc, gần gũi với làng quê VN. NK đã cảm nhận cảnh đẹp đó = trái tim của 1 thi nhân và = con mắt 1 ng` họa sĩ. Màu sắc ở đây rất phong phú: xanh biếc \"ở\" sóng, xanh ngắt \"ở\" bầu trời, xanh \"ở\" trúc … Nổi bật trên màu xanh ấy là màu vàng của chiếc lá thu … NK mới viết được n~ câu thơ … = tất cả tình yêu quê hương …\nKL: Nói tóm lại, bài thơ với NT đặc sắc đã thể hiện được tình yêu đất nước, quê hương của t/g … \"Thu điếu\" … bài thơ tiêu biểu … là 1 t/g tiêu biểu thời đó.\n<L2>* Đoạn trích \"Hịch tướng sĩ\" đã thể hiện tình yêu nồng nàn, mãnh liệt của ng` anh hùng TQT (?). Viết 1 đoạn văn làm rõ ý trên và trình bày theo cách phân hợp. B1. Xác định yêu cầu của đề bài: viết đoạn văn; Thể loại: phân tích + 1 phần CM 1 ý kiến; ND: thể hiện tình yêu đất nước nồng nàn; Phạm vi dẫn chứng: đoạn trích; Xác định câu chốt; Cách trình bày: tổng phân hợp; Câu chốt ở đầu mang tính tổng quát … B2. Đặt câu hỏi tìm ý và trả lời: – Căn cứ vào đề bài để đặt câu hỏi: … được thể hiện như thế nào? – Lòng căm thù giặc …; B3. Lập dàn ý: Câu 1 viết câu chốt; Câu 2 – Lòng căm thù …\n\n▸ Vở học thêm Văn: bìa \"Vũ Kiệt\" và bài \"cách phân tích thơ\" (T7 – 30/10/2004) (30/10/2004 (lớp 9))\n[left — inside cover] Large hollow calligraphic letters 'Vũ' and 'Kiệt' (pen), an eye-shaped doodle scribbled out, and a math note 'Tìm x để P = (√x + 5)/(x + 1) ∈ Z'; faint digits 3 … 5 … 7 … 9 below.\n[right] T7 – 30/10/2004 — heading (?) '… văn nghị luận (?)'. A. Phân tích thơ là làm rõ cái hay, cái đặc sắc về nội dung và nghệ thuật và chỉ ra được n~ thành công lớn của tác giả. B. Những điều cần chú ý khi phân tích thơ: 1. Thể loại 2. Các biện pháp tu từ về từ: + So sánh + Nhân hóa + Tương phản + Ẩn dụ + Hoán dụ + Nói quá + Nói giảm, nói tránh + Chơi chữ + Tượng trưng 3. Tu từ về câu: + Đối ngữ + Điệp ngữ + Câu hỏi tu từ + Đảo ngữ + Liệt kê 4. Chú ý n~ hình ảnh thơ đặc đáo 5. Ngôn ngữ của bài thơ: + Từ … + từ biểu cảm, giàu sức khái nghĩa, hàm súc … + Từ láy, từ tượng hình, tượng thanh 6. Giọng điệu bài thơ 7. Nhịp ___ 8. Vần chân ___ 9. Chỉ ra được nét nổi bật nhất của bài thơ. C. Các bước phân tích: B1. Tìm hiểu đề – XĐ thể loại và thể loại văn bản … – Khái quát nét nổi bật nhất của NT và ND – Phạm vi dẫn chứng: trong bài thơ + các bài khác … B2. Tìm ý: – Đặt câu hỏi: bài thơ ∈ thể loại nào, … có gì hay về ND và NT ở từng phần … B3. Dàn ý: I. Mở bài …"
+  },
+  {
+   "key": "tuoi-doi-menh-mong",
+   "kind": "KEEPSAKE",
+   "chapter": "secondary",
+   "title": "Bản nhạc \"Tuổi đời mênh mông\"",
+   "date": "2004",
+   "precision": "YEAR",
+   "approx": true,
+   "summary": "Bản photocopy bài hát của Trịnh Công Sơn, giữ trong hộp đồ cấp 2.",
+   "photos": [
+    {
+     "id": "0f2bfb8f-3369-4fcc-ac0b-3e2524c718e3",
+     "url": "https://sonic-hub.b-cdn.net/angels-islands/sonic3k-box/1990-2007/thcs-thong-nhat/box/img_2301.jpg",
+     "w": 3456,
+     "h": 4608,
+     "album": "380ab354-2011-4252-9af7-c5cc42f4f9b9",
+     "caption": null
+    }
+   ],
+   "doc": "school2:IMG_2301.JPG",
+   "tags": {
+    "OBJECT": [
+     "Kỷ vật"
+    ]
+   },
+   "status": "DRAFT",
+   "source": "photo-review",
+   "links": [],
+   "threads": [],
+   "doc_text": "▸ Bản nhạc photocopy \"Tuổi đời mênh mông\" — Trịnh Công Sơn (?)\nPhotocopied sheet music: 'Tuổi đời mênh mông' — TRỊNH CÔNG SƠN. Tempo marking 'Surf (Nhí nhảnh)', key with four sharps. Lyrics (as printed, partly broken by the copy): Mây và tóc em bay trong chiều gió lộng. Trời làm cơn mưa xanh dưới những hàng me. Em cùng lá tung tăng như loài chim đến. Và đã hát giữa phố nhà. Ôm cuộc sống trong tay bên đời quá rộng. Tuổi thần tiên yêu dấu dưới ngôi trường kia. Em cùng đóa hoa lan hay quỳnh ? hương … trắng thơm ngát … Có tình yêu ? thời thơ ấu. Bướm hoa và chim cùng mưa nắng. Em đứng bên trời tự do yêu đời thiết tha. Bao đường phố em qua nắng lên đường chờ. Đường dìu chân em đi đến những miền xa. Thảm ruộng đất bao la những làng quê cũ. Mùa cây trái như chín đỏ. Như là những bông … dưa biển khơi. / … hoa trong thành phố này. Tuổi đời mênh mông quá bíp non đầu cây (?). Em về giữa thiên nhiên em cười em nói như sóng …"
   },
   {
    "key": "tot-nghiep-9g",
@@ -2922,24 +3067,81 @@
    "key": "bai-kiem-tra-c2",
    "kind": "KEEPSAKE",
    "chapter": "highschool",
-   "title": "Đề thi và bài kiểm tra cấp 3",
-   "date": "2008",
+   "title": "Bài kiểm tra cấp 3: Toán toàn điểm 10",
+   "date": "2005",
+   "end": "2008",
    "precision": "YEAR",
-   "summary": "Đề Văn tốt nghiệp 2008, bài kiểm tra tiếng Anh 9,5 điểm, bài Văn có lời phê, vở ghi.",
+   "summary": "Năm bài kiểm tra Toán từ 10C2 đến 12C2 (lượng giác, tổ hợp, hình không gian, Oxyz, tích phân) đều 10 điểm; phiếu ôn công thức Lý 10 điểm; bản vẽ kỹ thuật 9; vở bài tập Hoá 9; tường trình thực hành tim ếch anh viết cho cả nhóm. Còn giữ đề thi học sinh giỏi Toán 12 của trường.",
    "photos": [
     {
-     "id": "fc4f4454-1553-4ceb-bdc5-8173cf24d380",
-     "url": "https://sonic-hub.b-cdn.net/angels-islands/sonic3k-box/1990-2007/c2-pdp/box/img_2299.jpg",
+     "id": "e53ded6a-d9dd-419e-80a2-cc8406de8445",
+     "url": "https://sonic-hub.b-cdn.net/angels-islands/sonic3k-box/1990-2007/c2-pdp/box/img_2287.jpg",
+     "w": 4608,
+     "h": 3456,
+     "album": "6c0c13ae-931b-45ca-a099-6ef4c27b36fd",
+     "caption": null
+    },
+    {
+     "id": "25871ad5-ed47-4c9b-8e02-0b094d450645",
+     "url": "https://sonic-hub.b-cdn.net/angels-islands/sonic3k-box/1990-2007/c2-pdp/box/img_2278.jpg",
+     "w": 4608,
+     "h": 3456,
+     "album": "6c0c13ae-931b-45ca-a099-6ef4c27b36fd",
+     "caption": null
+    },
+    {
+     "id": "7301e90c-4425-4b35-bd01-3c840ec2ec00",
+     "url": "https://sonic-hub.b-cdn.net/angels-islands/sonic3k-box/1990-2007/c2-pdp/box/scan0112.jpg",
+     "w": 1272,
+     "h": 1752,
+     "album": "6c0c13ae-931b-45ca-a099-6ef4c27b36fd",
+     "caption": null
+    },
+    {
+     "id": "d4a27185-e5da-4d08-bede-7ea7a46d9df8",
+     "url": "https://sonic-hub.b-cdn.net/angels-islands/sonic3k-box/1990-2007/c2-pdp/box/img_2288.jpg",
      "w": 3456,
      "h": 4608,
      "album": "6c0c13ae-931b-45ca-a099-6ef4c27b36fd",
      "caption": null
     },
     {
-     "id": "b656c3b7-6e1c-44bc-bf4c-b93d359f8644",
-     "url": "https://sonic-hub.b-cdn.net/angels-islands/sonic3k-box/1990-2007/c2-pdp/box/scan0113.jpg",
-     "w": 1035,
-     "h": 1462,
+     "id": "67e0770a-6902-4f2e-b731-e317dc31660c",
+     "url": "https://sonic-hub.b-cdn.net/angels-islands/sonic3k-box/1990-2007/c2-pdp/box/img_2294.jpg",
+     "w": 3456,
+     "h": 4608,
+     "album": "6c0c13ae-931b-45ca-a099-6ef4c27b36fd",
+     "caption": null
+    }
+   ],
+   "doc": "school2:IMG_2277.JPG,IMG_2279.JPG,IMG_2286.JPG,IMG_2287.JPG,IMG_2280.JPG,IMG_2278.JPG,IMG_2294.JPG,IMG_2303.JPG,scan0112.jpg,IMG_2269.JPG,IMG_2288.JPG,scan0119.jpg,IMG_2308.JPG",
+   "tags": {
+    "OBJECT": [
+     "Giấy tờ",
+     "Kỷ vật"
+    ]
+   },
+   "status": "DRAFT",
+   "source": "photo-review",
+   "links": [],
+   "threads": [],
+   "doc_text": "▸ Kiểm tra môn Toán 20 phút (Đề 1) — 11C2 (26/12/2006)\nHeader: Họ tên Vũ Ngọc Anh, Lớp 11C2, Trường THPT Phan Đình Phùng, Ngày 26 tháng 12 năm 2006, Kiểm tra môn Toán, Thời gian 20 phút.\nĐề (printed slip laid on top): Câu 1: Giải các phương trình 1) √2 cosx = cosx + sinx; 2) cos²x + cos²2x + cos²3x = 1. Câu 2: Lớp có 10 HS nam và 15 HS nữ; chọn đội văn nghệ 13 người sao cho có ít nhất 10 nữ và phải có cả nam và nữ — có bao nhiêu cách chọn.\nHis answer (visible part): Đề 1: Câu 1: 1) √2 cosx = cosx + sinx ⇔ √2 cosx = √2 cos(x − π/4) ⇔ cosx = cos(x − π/4) ⇔ [x = x − π/4 + k2π ; x = π/4 − x + k2π] ⇔ [−π/4 + k2π = 0 (loại) ; x = π/8 + kπ] (k ∈ Z). 2) cos²x + cos²2x + cos²3x = 1 ⇔ (1+cos2x)/2 + (1+cos4x)/2 + (1+cos6x)/2 = 1 ⇔ 3/2 + (cos2x + cos4x + cos6x)/2 = 1 ⇔ 1 + cos2x + cos4x + cos6x = 0 ⇔ (1 + cos6x) + (cos2x + cos4x) = 0 ⇔ 2cos²3x + 2cos3x cosx = 0 ⇔ 2cos3x(cos3x + cosx) = 0 … (continues on back; Câu 2 combinatorics answer shows through faintly from the reverse side).\nLời phê: (Lời phê box empty)\nĐiểm: 10\n\n▸ Kiểm tra Hình học 45 phút (Đề 1) — 10C2 (lớp 10 (2005-2006))\nWritten on lined notebook paper: Họ tên: Vũ Ngọc Anh / Lớp: 10C2 / Kiểm tra: Hình học / Điểm | Lời phê.\nĐề (printed slip): Câu 1: Tam giác ABC với A(1;5), B(−4;−5), C(4;−1): 1) tìm tọa độ trọng tâm G; 2) tính chu vi và diện tích. Câu 2: A(2;3) và Δ: x + 2y − 3 = 0: 1) phương trình đường tròn tâm A tiếp xúc Δ; 2) tọa độ A' đối xứng với A qua Δ; 3) phương trình Δ' qua A sao cho góc (Δ, Δ') = 45°.\nHis answer (visible): Đề 1: Câu 1: A(1;5), B(−4;−5), C(4;−1). 1) Gọi G(x_G; y_G) ⇒ x_G = (x_A+x_B+x_C)/3 = (1−4+4)/3 = 1/3; y_G = (5−5−1)/3 = −1/3. Vậy G = (1/3; −1/3). 2) AB→ = (−5;−10) ⇒ AB = √(5²+10²) = √125 = 5√5; BC→ = (8;4) ⇒ BC = √80 = 4√5; AC→ = (3;−6) ⇒ AC = √45 = 3√5. Chu vi ΔABC: P = 5√5 + 4√5 + 3√5 = 12√5.\nLời phê: (Lời phê empty; red ticks)\nĐiểm: 10\n\n▸ Kiểm tra Hình học 20 phút (Đề 1) — 11C2 (02/02/2007)\nHeader: Vũ Ngọc Anh, 11C2, THPT Phan Đình Phùng, Ngày 2 tháng 2 năm 2007, Kiểm tra môn Hình học, thời gian 15 phút (as he wrote; printed slip says 20 phút).\nĐề: Hình hộp ABCD.A'B'C'D'; M thuộc AD, N thuộc DD' sao cho AM/MD = D'N/ND = 1/2. 1) Chứng minh MN // (C'BD). 2) Xác định thiết diện của hình hộp cắt bởi (P) qua MN và song song (C'BD).\nHis answer: large hand-drawn parallelepiped with the section shaded (points P, S, R, Q). 1) Xét mp (AA'D'D): ΔA'AD có DM/AM = DN/ND' = 2 ⇒ DM/DA = DN/DD' = 2/3. Theo Talet ⇒ MN // AD' (1). Mặt khác xét mp (AD'C'B): theo tính chất hình hộp tứ giác AD'C'B là hình bình hành ⇒ AD' // BC' (2) …\nLời phê: (Lời phê empty)\nĐiểm: 10\n\n▸ Kiểm tra Hình học 45 phút (Đề 1) — 11C2 (13/02/2007)\nHeader: Vũ Ngọc Anh, 11C2, THPT Phan Đình Phùng, Ngày 13 tháng 2 năm 2007, Kiểm tra môn Hình học (Đề 1), 45 phút.\nĐề (handwritten slip 'Đề kiểm tra 45'. Đề 1'): Lăng trụ tam giác ABC.A'B'C'; trên tia đối của tia AB lấy M sao cho AM = …; E là trung điểm CA. 1) Xác định thiết diện của lăng trụ cắt bởi mp (MEB'). 2) K = AA' ∩ mp(MEB'), tính tỉ số AK/AA'. 3) Xác định giao tuyến Δ của (MEB') với (A'B'C'). 4) D = BC ∩ mp(MEB'), tính CD/CB.\nHis answer: diagram of the prism with points M, E, K, D, F, L. 1) * Xét mp (AA'B'B) có MB' ⊂ (AA'B'B) (do M ∈ AB, AB ⊂ (AA'B'B)), AA' ⊂ (AA'B'B) ⇒ MB' ∩ AA' = K ⇒ K ∈ MB'. Mà MB' ⊂ (MEB') ⇒ K ∈ (MEB') (1). * Xét mp (ABC) có: …\nLời phê: (Lời phê empty)\nĐiểm: 10\n\n▸ Kiểm tra Hình học 15 phút (Đề 1) — 12C2 (10/04/2008)\nHeader: Vũ Ngọc Anh, 12C2, THPT Phan Đình Phùng, Ngày 10 tháng 4 năm 2008, Kiểm tra môn Toán (Đề 1), 15 phút.\nĐề (printed slip, 'Ngọc Anh' written on it): Cho M(2;0;−3) và Δ: {2x+y−z−3=0; x+y+z−1=0}. 1) Viết PT tham số, chính tắc, tổng quát của đường thẳng d qua M và song song Δ. 2) Viết PT mặt phẳng (α) qua Δ và đi qua M.\nHis answer (visible): M(2;0;−3); Δ: {2x+y−z−3=0 (P); x+y+z−1=0 (Q)}. 1) Δ là giao của 2 mp (P) và mp (Q). mp(P) có VTPT u₁ = (2;1;−1); mp(Q) có VTPT u₂ = (1;1;1) ⇒ n = [u₁,u₂] là VTCP của Δ; [u₁,u₂] = (2;−3;1). * pt đường thẳng d cần tìm // Δ ⇒ n(2;−3;1) cũng là VTCP của d. Và d qua M(2;0;−3) ⇒ * Phương trình tham số: x = 2+2t, y = −3t, z = −3+t …\nLời phê: (Lời phê empty)\nĐiểm: 10\n\n▸ Kiểm tra ĐS 45 phút (Đề 1) — 12C2 (04/04/2008)\nHeader: Vũ Ngọc Anh, Lớp 12C2, THPT Phan Đình Phùng, Ngày 4 tháng 4 năm 2008, Kiểm tra môn Toán, 45 phút.\nĐề (printed slip, 'Ngọc Anh' written at top): Câu 1: Tính các tích phân 1) ∫₋₁² (x²−x−10)/(x²−x−12) dx; 2) ∫₀^{π/2} sin⁵x dx; 3) ∫₀^π (x²+2x+3)cosx dx. Câu 2: D là miền phẳng giới hạn bởi y = 2x − x² và trục hoành: 1) tính diện tích D; 2) tính thể tích khối tròn xoay khi quay D quanh Ox.\nHis answer (visible): Câu 1) 1) I = ∫₋₁² (x²−x−10)/(x²−x−12) dx = ∫₋₁² (1 + 2/((x−4)(x+3))) dx = ∫₋₁² dx + ∫₋₁² 2dx/((x−4)(x+3)) = x|₋₁² + I₁. Xét I₁ … Đặt 2/((x−4)(x+3)) = A/(x−4) + B/(x+3) ⇔ 2 = A(x+3) + B(x−4); chọn x = −3 ⇒ B = −2/7; chọn x = 4 ⇒ A = 2/7 ⇒ I₁ = 2/7 ∫ dx/(x−4) − 2/7 ∫ dx/(x+3) = 2/7 ln|x−4| − 2/7 ln|x+3| = 2/7 ln|(x−4)/(x+3)| ⇒ I = 3 + 2/7 ln(2/5) − 2/7 ln(5/2) = 3 + 2/7 ln(4/25).\nLời phê: (Lời phê box empty; red tick by the first result)\nĐiểm: 10\n\n▸ Phiếu ôn tập điền công thức: I. Điện xoay chiều / II. Tính chất sóng của ánh sáng — 12C2 (lớp 12 (2007-2008))\nPrinted fill-in formula sheet; he wrote: Họ và tên: Vũ Ngọc Anh, Lớp: 12C2.\nI. ĐIỆN XOAY CHIỀU — 1. Điện trở: a. Điện trở thuần: R; b. Cảm kháng: Z_L = Lω = L.2πf = L2π/T; c. Dung kháng: Z_C = 1/(Cω) = 1/(C.2πf) = T/(C.2π); d. Tổng trở: Z = √((R+r)² + (Z_L − Z_C)²) hay U = √((U_R+U_r)² + (U_L − U_C)²). Chú ý: Trên mạch mà không có đại lượng nào thì bỏ đi. 2. Biểu thức tức thời: e = ω.NBS cos(ωt+φ) = E₀cos(ωt+φ); i = I₀cos(ωt+φ_i); u = U₀cos(ωt+φ_u). 3. Giá trị hiệu dụng: I = I₀/√2; U = U₀/√2; E = E₀/√2. 5. Định luật ôm: I = U/Z; I₀ = U₀/Z. 4. Góc lệch pha: tgφ = (Z_L−Z_C)/(R+r) = (U_L−U_C)/(U_R+U_r); φ = φ_u − φ_i; cosφ = (R+r)/Z = (U_R+U_r)/U. Chú ý: Mạch chỉ có R: u và i trùng pha; chỉ có L thuần cảm: u nhanh pha hơn so với i là π/2; chỉ có C: u chậm pha hơn so với i là π/2. 6. i → u: u = U₀cos(ωt+φ_i+φ); u → i: i = I₀cos(ωt+φ_u−φ). 7. Cộng hưởng: I_max khi Z_min; Z_min khi Z_L = Z_C ⇔ ωL = 1/(ωC) ⇔ C = 1/(Lω²), và I_max = U/Z_min = U/R. Chú ý: Cộng hưởng: φ = 0 nên cosφ = 1. 8. Công suất: P = UIcosφ = (R+r)I². Chú ý: P_max trên R: P = U²/2R với R = |Z_L − Z_C|. 9. Máy biến thế: U₁/U₂ = n₁/n₂ = I₂/I₁; Công suất hao phí: ΔP = R.I² = R.P²/(U²cos²φ).\nII. TÍNH CHẤT SÓNG CỦA ÁNH SÁNG — 1. d₂ − d₁ = a.x/D; 2. Khoảng vân: i = λD/a (= bề rộng giao thoa / số vân …); 3. Vân sáng: x_s = k.λD/a = k.i [k = 0: vân sáng trung tâm; k = ±1: vân sáng bậc 1]; 4. Vân tối: x_t = (k + 1/2).λD/a = (k+1/2).i [k = 0; −1: vân tối bậc 1; k = 1; −2: vân tối bậc 2]; 5. Hai vân trùng nhau: x₁ = x₂.\nĐiểm: 10 (large red, top of sheet)\n\n▸ Tờ tóm tắt công thức Vật lý 11 (điện học) — gấp nhiều nếp (likely lớp 11-12)\nSeveral folded notebook sheets of boxed formulas in his hand (photo soft, partly legible): Điện dung của tụ điện phẳng C = εS/(4πkd) (S: phần diện tích đối diện của 2 bản tụ (m²); d: khoảng cách giữa 2 bản (m)); Ghép song song: U = U₁ = U₂ = … ; Q = Q₁ + Q₂ + … ; C = C₁ + C₂ + …; Ghép nối tiếp: U = U₁ + U₂ + … ; Q = Q₁ = Q₂ … ; 1/C = 1/C₁ + 1/C₂ + …; W = QU/2 = CU²/2 = Q²/2C (Năng lượng của tụ điện (J)); Năng lượng điện trường W = εE²/(8kπ).V; w₀ = εE²/(8kπ) (mật độ năng lượng điện trường J/m³). 3. Dòng điện không đổi – Nguồn điện – Định luật Ohm: I = Δq/Δt; I = q/t, q = It; q = Ne (N: số electron); vectơ mật độ dòng điện j = n₀qv (A/m²); Định luật Ohm I = U/R; R = ρl/S; ρ_t = ρ₀(1 + αt), R_t = R₀(1 + αt); Nguồn điện ξ = A/q; Định luật Jun-Lenxơ P = UI, A = Pt = U²t, Q = RI²t; Công và công suất của nguồn: P_tp = ξI, H = P_i/P_tp = 1 − (r/ξ)I; Các cách ghép nguồn điện: nối tiếp ξ_b = ξ₁ + ξ₂ + … + ξₙ, r_b = r₁ + … + rₙ; xung đối ξ_b = |ξ₁ − ξ₂|, r_b = r₁ + r₂; hỗn hợp (m dãy, n nguồn) ξ_b = nξ, r_b = nr/m; song song ξ_b = ξ, r_b = r/m.\n\n▸ Bản vẽ kỹ thuật — Biểu diễn vật thể, Bài số 02 (11C2) (23/10/2006)\nPencil technical drawing on A4: section view 'A-A' (hatched), plan view with cutting line A–A, side view, and an isometric (3-D) view of the object with hatched cut faces. Dimensions: 5, 24, 19, 7, 14, 23, 14, 28, 11, 31, 57.\nTitle block (computer-printed): BIỂU DIỄN VẬT THỂ (handwritten) | Vật liệu | Tỷ lệ 1:1 | Bài số 02 | Người vẽ: Vũ Ngọc Anh | 23.10.06 | Kiểm tra: (teacher's initials) | Trường THPT Phan Đình Phùng, Lớp 11C2.\nLời phê: (red circle on one corner of the isometric view — a marked error)\nĐiểm: 9\n\n▸ Trang vở bài tập Hóa (phản ứng tráng bạc, axit hữu cơ) (2006-2007 (likely, lớp 11))\n... CH3CHO (y) + 2[Ag(NH3)2]OH → ... 2Ag↓ (2y)\nCó hệ { x + y = 0,1 ; 4x + 2y = 25,92/108 }\n⇒ { x = 0,02 ; y = 0,08 } ⇒ { 16,1% HCOOH ; 83,9% CH3COOH }\nĐiểm: 9 (red ink, written below the work)\n\n▸ Bản tường trình thực hành — Tìm hiểu hoạt động của tim ếch (11C2) (lớp 11 (2006-2007))\nTrường: THPT Phan Đình Phùng / Lớp: 11C2\nBẢN TƯỜNG TRÌNH THỰC HÀNH — TÌM HIỂU HOẠT ĐỘNG CỦA TIM ẾCH\nDanh sách: 1. Trịnh Thu Mai 2. Nguyễn Bích Ngọc 3. Phan Thị Hương Ly 4. Lê Ngọc Quỳnh 5. Luyện Trung Kiên 6. Trần Huy Anh 7. Nguyễn Phương Anh 8. Bùi Bích Hằn"
+  },
+  {
+   "key": "van-11c2",
+   "kind": "DOCUMENT",
+   "chapter": "highschool",
+   "title": "Hai bài văn lớp 11",
+   "date": "2007-01-19",
+   "end": "2007-02-19",
+   "precision": "DAY",
+   "summary": "\"Quan niệm của em về quê hương\" (19/1/2007) được 7, cô phê \"Hiểu đề – Diễn đạt tương đối khá\"; với anh quê hương là nơi mình sinh ra và lớn lên. \"Phải chăng Xuân Diệu là nhà thơ mới nhất\" (19/2/2007) được 7, \"Hiểu đề – Có ý, khai thác được\". Chỉ còn ảnh trang đầu của mỗi bài.",
+   "photos": [
+    {
+     "id": "f9e5a4d2-44aa-4ab3-a925-48627762c1f7",
+     "url": "https://sonic-hub.b-cdn.net/angels-islands/sonic3k-box/1990-2007/c2-pdp/box/img_2284.jpg",
+     "w": 3456,
+     "h": 4608,
      "album": "6c0c13ae-931b-45ca-a099-6ef4c27b36fd",
      "caption": null
     },
@@ -2952,17 +3154,114 @@
      "caption": null
     }
    ],
+   "doc": "school2:IMG_2284.JPG,IMG_2285.JPG",
    "tags": {
     "OBJECT": [
-     "Giấy tờ",
-     "Kỷ vật"
+     "Giấy tờ"
     ]
    },
    "status": "DRAFT",
    "source": "photo-review",
    "links": [],
    "threads": [],
-   "doc_text": null
+   "doc_text": "▸ Kiểm tra Ngữ văn 45 phút (Đề chẵn) — \"Quan niệm của em về quê hương\" (19/01/2007 (lớp 11C2))\nHeader: Vũ Ngọc Anh, 11C2, THPT Phan Đình Phùng, Ngày 19 (sửa từ 18) tháng 1 năm 2007, Kiểm tra môn Ngữ Văn (Đề chẵn), 45 phút.\nĐề bài: Quan niệm của em về quê hương.\nBài làm\nMỗi người trong chúng ta, ai cũng có quê hương của mình. Đối với mỗi người, quê hương là một thứ rất thiêng liêng, ai cũng tôn trọng nó [gạch: và bảo vệ nó], yêu quý và bảo vệ nó. Vậy quan niệm về quê hương như thế nào? Mỗi người đều có một quan niệm riêng của mình về quê hương. Sau đây em sẽ trình bày quan niệm của mình về quê hương.\nQuê hương là nơi mà mình đã sinh ra và lớn lên. Mỗi người trong chúng ta, từ bé đến khi trưởng thành đều giành cho quê hương một tình cảm đặc biệt. Tình cảm đó đều có sẵn trong mỗi người, bởi vì quê hương chính là nơi mà cha mẹ đã sinh ra, nuôi dưỡng mình nên người. Quê hương cũng là nơi lưu giữ những kỉ niệm thời thơ ấu của mỗi con người. Mỗi người khi nhắc đến thời thơ ấu đều gắn liền với quê hương. Chúng ta [gạch: con] có thể nhận ra những tình cảm đặc biệt đó ở trong những nhà văn, nhà thơ. Những tình cảm đặc biệt này được [gạch: gửi] gửi gắm trong những câu văn, câu … [continues on next sheet, not photographed]\nLời phê: Hiểu đề – Diễn đạt tương đối khá\nĐiểm: 7\n\n▸ Kiểm tra Ngữ văn (Tờ 1/2) — \"Phải chăng Xuân Diệu là 'nhà thơ mới nhất trong các nhà thơ mới' như Hoài Thanh đã nói?\" (19/02/2007 (lớp 11C2))\nHeader: Vũ Ngọc Anh, 11C2, PTTH Phan Đình Phùng, Ngày 19 tháng 2 năm 2007, Kiểm tra môn Ngữ Văn (Tờ 1/2).\nĐề bài: Phải chăng Xuân Diệu là \"nhà thơ mới nhất trong các nhà thơ mới\" như Hoài Thanh đã nói?\nBài làm:\nTrong giai đoạn văn học Việt Nam từ thế kỉ XX đến cách mạng tháng tám 1945, Xuân Diệu là một nhà thơ nổi tiếng. Ông có nhiều tác phẩm văn học với những [gạch: nghệ t] giá trị nội dung và nghệ thuật đặc sắc. Ông nổi tiếng như một \"nhà thơ mới nhất\" (Hoài Thanh) và đầy tài năng, nhất là từ khi xuất bản \"Thơ thơ\" và \"Phấn thông vàng\". Vậy phải chăng Xuân Diệu là \"nhà thơ mới nhất trong các nhà thơ mới\" như Hoài Thanh đã nói?\nXuân Diệu là một tài năng nhiều mặt: làm thơ, viết văn, nghiên cứu phê bình văn học, dịch thuật. Tất nhiên, ông trước hết vẫn là một nhà thơ. Thành tựu xuất sắc nhất, được độc giả trong và ngoài nước yêu chuộng là thơ. Mười lăm tập thơ đã in khẳng định ông là một nhà thơ lớn. Xuân Diệu bắt đầu có thơ đăng báo từ năm 1935, 1936. Từ bài thơ đầu tiên Xuân Diệu gửi đăng báo Phong Hoá, Thế Lữ đã thấy ở Xuân Diệu \"Một tâm hồn đằm thắm và rất dễ cảm xúc\". Sau này nhà thơ tự nói về mình: \"Tôi chỉ … [continues on sheet 2, not photographed]\nLời phê: Hiểu đề – Có ý, khai thác được\nĐiểm: 7"
+  },
+  {
+   "key": "tieng-anh-10c2",
+   "kind": "DOCUMENT",
+   "chapter": "highschool",
+   "title": "Bài tiếng Anh về bảo vệ động vật hoang dã",
+   "date": "2006",
+   "precision": "YEAR",
+   "approx": true,
+   "summary": "Bài viết lớp 10C2 được 9,5, cô phê \"Very good – Well done! Try to keep writing like this\".",
+   "photos": [
+    {
+     "id": "b656c3b7-6e1c-44bc-bf4c-b93d359f8644",
+     "url": "https://sonic-hub.b-cdn.net/angels-islands/sonic3k-box/1990-2007/c2-pdp/box/scan0113.jpg",
+     "w": 1035,
+     "h": 1462,
+     "album": "6c0c13ae-931b-45ca-a099-6ef4c27b36fd",
+     "caption": null
+    }
+   ],
+   "doc": "school2:scan0113.jpg",
+   "tags": {
+    "OBJECT": [
+     "Giấy tờ"
+    ]
+   },
+   "status": "DRAFT",
+   "source": "photo-review",
+   "links": [],
+   "threads": [],
+   "doc_text": "▸ Kiểm tra Tiếng Anh — \"I'd like to write about protecting wild animals\" (10C2) (lớp 10 (2005-2006); date blank)\nHeader: Vũ Ngọc Anh, Lớp 10C2, THPT Phan Đình Phùng, Kiểm tra môn Tiếng Anh.\nI'd like to write about protecting wild animals.\nIn the past, wild animals were not protected well. Many hunters hunted them. Polluted environment made wild animals' lives get worse and worse. Wild animals were at risk due to many things. But people didn't do so many to protect them. Nowadays, everything have changed. People [gạch: are more] know that protecting wild animals is very important and necessary. People get more knowledge about animals. We all know that some species of animals are in danger because of the world population's need for raw materials, others are in dangers because people kill them for their skins, or for parts of their bodies. People have many plans to protect wild animals. There are many National Parks where many species of animals, especially endangered animals can be safe and develop, such as: Nairobi, Everglades, Kinabalu, and Cuc Phuong… Besides, wild animals' lives [gạch: dep] also depend on environment. People are trying to make our environment better. The better the environment is, the better wild animals' lives are. Each of us should try [gạch: our] our best to do something to protect wild animals.\nLời phê: - Very good - Well done! Try to keep writing like this\nĐiểm: 9,5"
+  },
+  {
+   "key": "thi-dai-hoc-2008",
+   "kind": "MILESTONE",
+   "chapter": "highschool",
+   "title": "Thi tốt nghiệp và thi đại học 2008",
+   "date": "2008-06",
+   "end": "2008-07",
+   "precision": "MONTH",
+   "summary": "Đề Văn tốt nghiệp THPT 2008 (ban KHTN). Đề thi đại học khối A (Toán, Lý, Hoá) với giấy nháp ĐH Xây dựng, và khối B (Toán, Hoá, Sinh) với giấy nháp ĐH Khoa học Tự nhiên; đáp án anh chọn được khoanh trên đề Lý và Sinh.",
+   "photos": [
+    {
+     "id": "fc4f4454-1553-4ceb-bdc5-8173cf24d380",
+     "url": "https://sonic-hub.b-cdn.net/angels-islands/sonic3k-box/1990-2007/c2-pdp/box/img_2299.jpg",
+     "w": 3456,
+     "h": 4608,
+     "album": "6c0c13ae-931b-45ca-a099-6ef4c27b36fd",
+     "caption": null
+    },
+    {
+     "id": "67323a46-5334-4142-b9d3-bd06e55d251e",
+     "url": "https://sonic-hub.b-cdn.net/angels-islands/sonic3k-box/1990-2007/c2-pdp/box/img_2298.jpg",
+     "w": 4608,
+     "h": 3456,
+     "album": "6c0c13ae-931b-45ca-a099-6ef4c27b36fd",
+     "caption": null
+    },
+    {
+     "id": "d4dc9e22-2c82-4c27-815f-bff2327d7727",
+     "url": "https://sonic-hub.b-cdn.net/angels-islands/sonic3k-box/1990-2007/c2-pdp/box/img_2297.jpg",
+     "w": 3456,
+     "h": 4608,
+     "album": "6c0c13ae-931b-45ca-a099-6ef4c27b36fd",
+     "caption": null
+    },
+    {
+     "id": "6cbc35c7-998f-46ce-bf49-1b9052f11f57",
+     "url": "https://sonic-hub.b-cdn.net/angels-islands/sonic3k-box/1990-2007/c2-pdp/box/img_2300.jpg",
+     "w": 4608,
+     "h": 3456,
+     "album": "6c0c13ae-931b-45ca-a099-6ef4c27b36fd",
+     "caption": null
+    },
+    {
+     "id": "ad004872-8e0f-42ca-b5f4-485ca2d3e4e8",
+     "url": "https://sonic-hub.b-cdn.net/angels-islands/sonic3k-box/1990-2007/c2-pdp/box/img_2283.jpg",
+     "w": 4608,
+     "h": 3456,
+     "album": "6c0c13ae-931b-45ca-a099-6ef4c27b36fd",
+     "caption": null
+    }
+   ],
+   "doc": "school2:IMG_2299.JPG,IMG_2298.JPG,IMG_2297.JPG,IMG_2300.JPG,IMG_2283.JPG",
+   "tags": {
+    "OCCASION": [
+     "Thi cử"
+    ],
+    "OBJECT": [
+     "Giấy tờ"
+    ]
+   },
+   "status": "DRAFT",
+   "source": "photo-review",
+   "links": [],
+   "threads": [],
+   "doc_text": "▸ Kỳ thi tốt nghiệp THPT năm 2008 — Môn Văn (THPT phân ban), đề chính thức (2008)\nPrinted: BỘ GIÁO DỤC VÀ ĐÀO TẠO, KỲ THI TỐT NGHIỆP TRUNG HỌC PHỔ THÔNG NĂM 2008, Môn thi: VĂN – Trung học phổ thông phân ban, 150 phút (2 trang).\nI. Phần chung (5 điểm): Câu 1 (2đ) Lòng nhân hậu của nhân vật An-đrây Xô-cô-lốp thể hiện như thế nào trong đoạn trích Số phận con người (M. Sô-lô-khốp)? Câu 2 (3đ) Suy nghĩ về quan niệm sống: \"Không thể bên trong một đằng, bên ngoài một nẻo được. Tôi muốn được là tôi toàn vẹn\" (Hồn Trương Ba, da hàng thịt – Lưu Quang Vũ).\nII. Phần riêng (5đ) — A. Ban KHTN chọn 3a hoặc 3b: Câu 3a cảm nhận đoạn thơ trong Sóng của Xuân Quỳnh (\"Con sóng dưới lòng sâu … Hướng về anh - một phương\"); Câu 3b phân tích tâm trạng nhân vật Tràng trong Vợ nhặt (Kim Lân).\n\n▸ Đề thi tuyển sinh ĐH, CĐ 2008 — Môn Toán, khối A + trang nháp (2008)\nRight: printed Đề chính thức, Môn thi TOÁN, khối A, 180 phút. Câu I hàm số y = (mx² + (3m²−2)x − 2)/(x + 3m): khảo sát khi m = 1; tìm m để góc giữa hai tiệm cận bằng 45°. Câu II 1/sinx + 1/sin(x − 3π/2) = 4sin(7π/4 − x); hệ x² + y + x³y + xy² + xy = −5/4, x⁴ + y² + xy(1+2x) = −5/4. Câu III A(2;5;3), d: (x−1)/2 = y/1 = (z−2)/2 — hình chiếu của A, mặt phẳng chứa d cách A lớn nhất. Câu IV ∫₀^{π/6} tg⁴x/cos2x dx; tìm m để ⁴√(2x) + √(2x) + 2⁴√(6−x) + 2√(6−x) = m có đúng 2 nghiệm. Câu V.a elip tâm sai √5/3, chu vi hình chữ nhật cơ sở 20; khai triển (1+2x)ⁿ, a₀ + a₁/2 + … + aₙ/2ⁿ = 4096. Câu V.b log_{2x−1}(2x² + x − 1) + log_{x+1}(2x−1)² = 4; lăng trụ ABC.A'B'C'. His name written at the bottom.\nLeft: his scratch sheet — two sketches of prism ABC.A'B'C' (2a, a√3) with an Oxyz frame; t = ⁴√(2x) + 2⁴√(6−x), t² = √(2x) + 4√(6−x) …; cos2x = (1−t²)/(1+t²) = (1−tg²x)/(1+tg²x); ∫ (tg²x+1) d(tgx) …; (2+√3)/(2−√3) = (2+√3)²/((2−√3)(2+√3)) = 4 + 3 + 4√3.\n\n▸ Đề thi tuyển sinh ĐH, CĐ 2008 — Vật lí khối A (Mã đề 128) và Sinh học khối B (Mã đề 379) (2008)\nTwo printed exam booklets, his name written on both.\n1) Môn thi: VẬT LÍ, khối A, 90 phút, Mã đề 128 (8 trang, 40 câu chung): Câu 1 quang điện với hai bức xạ f₁, f₂ (ticked answer A: V₂); Câu 2 sóng dừng trên dây 1,2 m; Câu 8 hạt nhân A phân rã thành B và α, tỉ số động năng (D: m_α/m_B circled); Câu 9 mạch RLC lệch pha π/2 (B circled); Câu 10 chất phóng xạ X, chu kì T …\n2) Môn thi: SINH HỌC, khối B, 90 phút, Mã đề 379 (7 trang, 43 câu chung): Câu 1 cây AaBbDd tự thụ phấn — số dòng thuần (C. 8 circled); Câu 2 gen S đột biến thành s (B. mất 2 cặp nuclêôtit circled); Câu 3 vai trò của quá trình đột biến; Câu 7 ADN tái tổ hợp insulin trong E. coli (C circled); Câu 8 phương pháp tạo biến dị tổ hợp ở vật nuôi (C. lai hữu tính); Câu 9 phát sinh sự sống (D circled); Câu 10 thuyết Kimura (B. trung tính); a pedigree chart (phả hệ) on a later page.\n\n▸ Giấy nháp ĐH Khoa học Tự nhiên + Đề thi tuyển sinh ĐH 2008 Môn Toán, khối B (2008)\nLeft: 'TRƯỜNG ĐẠI HỌC KHOA HỌC TỰ NHIÊN — GIẤY NHÁP', Môn thi: Toán, Phòng thi số: 06, his name, two invigilator signatures (SBD and birth date not transcribed). His scratch work on the hệ phương trình and Câu IV.2: x⁴ − x² + 2x³y − 2xy + x²y² = 2x − 6x + 3 → x²(x²−1) + 2xy(x²−1) + x²y² … ; x² − 6x + 9 + 2xy = 15; (2sin²t + 12 sint cost)/(1 + 2 sint cost + 2cos²t) = (2tg²t + 12tgt)/(tg²t + 2tgt + 3) → f(u) = (2u² + 12u)/(u² + 2u + 3) = 2 + (8u − 6)/(u² + 2u + 3); f' … = −8u² + 12u + 36 …\nRight: printed Đề chính thức, Môn thi TOÁN, khối B, 180 phút: Câu I y = 4x³ − 6x² + 1, tiếp tuyến qua M(−1;−9); Câu II sin³x − √3cos³x = sinx cos²x − √3 sin²x cosx; hệ x⁴ + 2x³y + x²y² = 2x + 9, x² + 2xy = 6x + 6; Câu III A(0;1;2), B(2;−2;1), C(−2;0;1), mặt phẳng ABC, M với MA = MB = MC; Câu IV ∫₀^{π/4} sin(x − π/4)dx/(sin2x + 2(1 + sinx + cosx)); x² + y² = 1, max/min P = 2(x² + 6xy)/(1 + 2xy + 2y²); V.a tổ hợp, tam giác ABC với H(−1;−1); V.b log₀,₇(log₆((x²+x)/(x+4))) < 0, hình chóp S.ABCD. His name written at the bottom.\n\n▸ Đề thi tuyển sinh ĐH, CĐ năm 2008 — Môn Hóa học, khối A (Mã đề 263) + giấy nháp thi ĐH Xây dựng (2008)\nPrinted: BỘ GD&ĐT, Đề thi tuyển sinh Đại học, Cao đẳng năm 2008, Môn thi: HOÁ HỌC, khối A, 90 phút, Mã đề thi 263 (pages 1–2 of 5 shown; 44 common questions). Sample questions: Câu 1 andehit X + H₂ (Ni) → X là andehit…; Câu 4 hòa tan 2,32 g FeO, Fe₃O₄, Fe₂O₃ cần V lít HCl 1M; Câu 5 điện phân NaCl nóng chảy, ở catot xảy ra…; Câu 10 3,6 g andehit X + Ag₂O/NH₃…; Câu 13 khối lượng mắt xích nilon-6,6 và capron; Câu 20 số phản ứng HCl thể hiện tính oxi hóa; Câu 21 phân tích thành phần rượu X (C+H = 3,625 lần O)…\nWith it: 'GIẤY NHÁP THI TUYỂN SINH 2008 — Trường Đại học Xây dựng', Môn: Hóa, his name filled in (SBD and date of birth omitted here). His scratch work: Na⁺ + e → Na (NaCl, catot K / anot A); {Fe: a, O: b} + HCl … 56a + 16b = 2,32; CaCO₃ → CaO + CO₂; CaO + H₂O → Ca(OH)₂; Ca(OH)₂ + NaHCO₃ → CaCO₃ …; Al + KOH → KAlO₂ + 3/2 H₂; Al₄C₃ + KOH → KAlO₂ + CH₄; C₂H₅COOCH₃, C₂H₄(OOC…); CO + Fe₃O₄ → 3Fe + 4CO₂; Cu(OH)₂ …; CH₃OH, C₂H₅OH. On the đề: CₙH₂ₙ₊₂₋₂ₓO … 12n + 2n + 2 − 2x = 16·3,625 = 58."
   },
   {
    "key": "luu-but-van-anh",
@@ -6235,19 +6534,19 @@
   {
    "category": "school",
    "key": "Tiểu học",
-   "value": "Nguyễn Bá Ngọc (đến 2001)",
+   "value": "Nguyễn Bá Ngọc (đến 2001), lớp 4D năm 1999–2000",
    "status": "DRAFT"
   },
   {
    "category": "school",
    "key": "THCS",
-   "value": "Thống Nhất, lớp 9G (2001–2005)",
+   "value": "Thống Nhất, lớp 7G–8G–9G (2001–2005), học bồi dưỡng học sinh giỏi tiếng Anh năm lớp 8",
    "status": "DRAFT"
   },
   {
    "category": "school",
    "key": "THPT",
-   "value": "Phan Đình Phùng, lớp C2 (2005–2008)",
+   "value": "Phan Đình Phùng, lớp C2 (2005–2008); thi đại học 2008 cả khối A (ĐH Xây dựng) và khối B (ĐH Khoa học Tự nhiên)",
    "status": "DRAFT"
   },
   {
