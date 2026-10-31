@@ -55,8 +55,6 @@ for m in mems:
     if m["kind"] == "TRIP" and (m.get("skip_map") or m.get("who") == "university"): continue   # university trips belong to the next era
     mood = next((EMO[x] for x in m.get("tags", {}).get("MOOD", []) if x in EMO), None)
     episodes.append(dict(source=SOURCE, summary=episode_text(m), emotion=mood, importance=IMP.get(m["kind"], 2), occurredAt=when(m)))
-# keep what the previous era1990 pass recorded that the new set does not say in its own words
-episodes.append(dict(source=SOURCE, summary="Viết lưu bút cho Vân Anh cuối năm lớp 12 — \"lần đầu tiên tớ viết lưu bút cho bạn khác\".", emotion=None, importance=2, occurredAt="2008-05-01T00:00:00"))
 facts = [dict(source=SOURCE, category=f["category"], key=f["key"], value=f["value"], confidence=0.8) for f in data["facts"]]
 facts += [
     dict(source=SOURCE, category="hobby", key="Cờ vua", value="đội tuyển cờ Trường TTTN 10-10; đánh giải cờ vua – cờ tướng học sinh quận Ba Đình 11/2004 (ván 2 hoà 39 nước, cầm Đen) và giải cờ chớp nhoáng – cờ nhanh TTTN 10-10 mở rộng 1/2005", confidence=1.0),
