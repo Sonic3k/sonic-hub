@@ -1559,12 +1559,12 @@
    "key": "mario-4",
    "kind": "CREATION",
    "chapter": "primary",
-   "title": "Mario 4 – 43 màn vẽ tay",
+   "title": "Mario 4 – 21 màn vẽ tay",
    "date": "2000",
    "end": "2004",
    "precision": "YEAR",
    "approx": true,
-   "summary": "Mỗi trang giấy là một màn, chia 3–4 dải: cửa, khối hỏi chấm, đồng xu, bệ chạy trên ray, quái có cánh, lâu đài cuối màn.",
+   "summary": "43 trang giấy, mỗi màn trải trên hai trang đặt cạnh nhau, chia 3–4 dải: cửa, khối hình thoi, đồng xu, bệ chạy trên ray, quái có cánh, dung nham, lâu đài cuối màn, cuối mỗi màn có ô số dẫn sang màn sau. Có cả màn trên trời, màn dưới nước và phòng thưởng sau bức tường cuối.",
    "photos": [
     {
      "id": "8ea13cf8-c73d-4524-99eb-f67fdaaeaca7",
@@ -1601,7 +1601,7 @@
    ],
    "links": [
     {
-     "label": "Chơi bản dựng lại",
+     "label": "Chơi Tím 4 – bản dựng lại",
      "url": "game-notebook-4.html",
      "kind": "REPLICA"
     }
@@ -6196,7 +6196,7 @@
     ],
     [
      "2026",
-     "Notebook 4 – dựng lại từ bản vẽ Mario 4"
+     "Tím 4 – 21 màn Mario 4 dựng lại thành game"
     ]
    ]
   }
