@@ -39,22 +39,65 @@ def when(m):
     elif len(d) == 7: d += "-01"
     return d + "T00:00:00"
 def episode_text(m):
-    s = m["title"].rstrip(".") + "."
-    if m.get("summary"): s += " " + m["summary"]
+    """the summary under the title: what happened, and for a trip each leg (the title, dates and place have their own fields)"""
+    s = m.get("summary") or ""
     if m.get("stops"):
         legs = []
         for st in m["stops"]:
             bits = [st["name"]] + [b for b in (st.get("transport") and "đi " + st["transport"], st.get("lodging") and "ở " + st["lodging"], st.get("note")) if b]
             legs.append(" – ".join(bits[:1]) + (" (" + ", ".join(bits[1:]) + ")" if len(bits) > 1 else ""))
-        s += " Lộ trình: " + "; ".join(legs) + "."
-    if m.get("date") and m.get("end"): s += f" ({m['date']} → {m['end']})"
-    return s
+        s += (" " if s else "") + "Lộ trình: " + "; ".join(legs) + "."
+    return s or None
+def end_at(m):
+    e = m.get("end")
+    if not e: return None
+    e = e[:10]
+    if len(e) == 4: e += "-12-31"          # "2008" as an end = to the end of 2008
+    elif len(e) == 7:
+        y, mo = int(e[:4]), int(e[5:7])
+        e += "-%02d" % [31, 29 if y % 4 == 0 else 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31][mo - 1]
+    return e + "T00:00:00"
+def place_of(m):
+    if m.get("place"): return m["place"]["name"], m["place"].get("lat"), m["place"].get("lng")
+    stops = [st for st in m.get("stops") or [] if not st["name"].startswith("Hà Nội")]
+    if not stops: return None, None, None
+    first = next((st for st in stops if st.get("lat") is not None), {})
+    return " – ".join(dict.fromkeys(st["name"].split(",")[0] for st in stops)), first.get("lat"), first.get("lng")
+
+TAG_ALIAS = {"Gia đình": "Gia đình", "Tết": "Tết", "Sinh nhật": "Sinh nhật", "Đám cưới": "Đám cưới", "Cờ vua": "Cờ vua",
+             "Xe buýt": "Xe buýt Hà Nội", "Du lịch": "Du lịch gia đình", "Kỷ vật": "Kỷ vật", "Đồ chơi": "Đồ chơi", "Vẽ": "Vẽ tranh",
+             "Làm game": "Game tự chế", "Lớp C2": "C2 PĐP", "Lớp 9G": "THCS Thống Nhất", "Vạn Bảo": "Hàng xóm Vạn Bảo", "Bóng đá": "Bóng đá"}
+
+# people, only where the memory says who: Mẹ is the person the hub calls "Mẹ" (nickname), Bố and Bà ngoại by name
+_all = call("GET", "/api/persons?size=1000"); _all = _all.get("content", _all) if isinstance(_all, dict) else _all
+BY_NICK = {(p.get("nickname") or "").strip().lower(): p["id"] for p in _all}
+BY_NAME = {p["name"]: p["id"] for p in _all}
+BO, ME, BA_NGOAI, EM_GAI = BY_NAME.get("Bố"), BY_NICK.get("mẹ"), BY_NAME.get("Bà ngoại"), BY_NAME.get("Vũ Diệu Anh")
+PEOPLE_TAG = {"Ông bà ngoại": [BA_NGOAI], "Bố mẹ": [BO, ME], "Em gái": [EM_GAI]}
+def persons_of(m):
+    out = []
+    for x in m.get("tags", {}).get("PEOPLE", []): out += PEOPLE_TAG.get(x, [])
+    if m["kind"] == "TRIP" and m.get("who") == "family": out += [BO, ME]   # the trip notebook: "đi cùng bố mẹ"
+    return [i for i in dict.fromkeys(out) if i]
+
+TAG_IDS = {t["name"]: t["id"] for t in call("GET", "/api/tags")}
+def tag_ids_of(m):
+    names = [TAG_ALIAS.get(x) for v in m.get("tags", {}).values() for x in v]
+    return [TAG_IDS[n] for n in dict.fromkeys(names) if n and n in TAG_IDS]
+
 episodes = []
 for m in mems:
     if m["kind"] == "TRIP" and (not m.get("date") or m["date"][:4] > "2008"): continue   # later trips belong to later eras
     if m["kind"] == "TRIP" and (m.get("skip_map") or m.get("who") == "university"): continue   # university trips belong to the next era
     mood = next((EMO[x] for x in m.get("tags", {}).get("MOOD", []) if x in EMO), None)
-    episodes.append(dict(source=SOURCE, summary=episode_text(m), emotion=mood, importance=IMP.get(m["kind"], 2), occurredAt=when(m)))
+    place, lat, lng = place_of(m)
+    episodes.append(dict(source=SOURCE, externalKey=m["key"], kind=m["kind"], title=m["title"], summary=episode_text(m),
+                         status=m.get("status") or "DRAFT", emotion=mood, importance=IMP.get(m["kind"], 2),
+                         occurredAt=when(m), precision=m.get("precision"), endAt=end_at(m),
+                         place=place, latitude=lat, longitude=lng,
+                         mediaIds=[p["id"] for p in m.get("photos", []) if p.get("id")],
+                         collectionIds=[m["album"]] if m.get("album") else [],
+                         tagIds=tag_ids_of(m), personIds=persons_of(m)))
 facts = [dict(source=SOURCE, category=f["category"], key=f["key"], value=f["value"], confidence=0.8) for f in data["facts"]]
 facts += [
     dict(source=SOURCE, category="hobby", key="Cờ vua", value="đội tuyển cờ Trường TTTN 10-10; đánh giải cờ vua – cờ tướng học sinh quận Ba Đình 11/2004 (ván 2 hoà 39 nước, cầm Đen) và giải cờ chớp nhoáng – cờ nhanh TTTN 10-10 mở rộng 1/2005", confidence=1.0),
@@ -189,9 +232,6 @@ for cid in sorted(set(coll_of[i] for i in captions if i in coll_of)):
 todo = {i: t for i, t in captions.items() if i in current and not (current[i] or "").strip()}
 
 tags = {t["name"]: t["id"] for t in call("GET", "/api/tags")}
-TAG_ALIAS = {"Gia đình": "Gia đình", "Tết": "Tết", "Sinh nhật": "Sinh nhật", "Đám cưới": "Đám cưới", "Cờ vua": "Cờ vua",
-             "Xe buýt": "Xe buýt Hà Nội", "Du lịch": "Du lịch gia đình", "Kỷ vật": "Kỷ vật", "Đồ chơi": "Đồ chơi", "Vẽ": "Vẽ tranh",
-             "Làm game": "Game tự chế", "Lớp C2": "C2 PĐP", "Lớp 9G": "THCS Thống Nhất", "Vạn Bảo": "Hàng xóm Vạn Bảo", "Bóng đá": "Bóng đá"}
 tag_batches = collections.defaultdict(list)
 for mid, names in pick_tags.items():
     for n in names:
@@ -201,7 +241,11 @@ for mid, names in pick_tags.items():
 print(f"memory: {len(chapters)} chapters, {len(episodes)} episodes, {len(facts)} facts → source '{SOURCE}' (replaces that source only)")
 print(f"captions: {len(todo)} photos without a caption get one ({len(captions) - len(todo)} skipped: already captioned or outside the tree)")
 print("tags:", {n: len(tag_batches[i]) for n, i in tags.items() if i in tag_batches})
+print("episode links:", {k: sum(1 for e in episodes if e[k]) for k in ("mediaIds", "collectionIds", "tagIds", "personIds", "place")},
+      "status:", dict(collections.Counter(e["status"] for e in episodes)))
 if not APPLY:
+    for e in [episodes[0]] + [x for x in episodes if x["kind"] == "TRIP"][:1]:
+        print("  ·", json.dumps({k: v for k, v in e.items() if k != "mediaIds"}, ensure_ascii=False)[:500])
     for i, t in list(todo.items())[:5]: print("  ·", i[:8], t[:120].replace("\n", " / "))
     sys.exit(0)
 print(call("PUT", f"/api/persons/{SELF}/memory/sources/{SOURCE}", dict(chapters=chapters, episodes=episodes, facts=facts)))
