@@ -150,6 +150,7 @@ public class ChatExtractionService {
                 fact.setPeriod(f.hasNonNull("period") ? f.path("period").asText() : null);
                 fact.setConfidence((float) f.path("confidence").asDouble(0.7));
                 fact.setSourceArchiveId(archive.getId());
+                fact.setStatus(MemoryStatus.DRAFT);   // read out of chats by the AI, not checked yet
                 factRepo.save(fact);
                 savedFacts++;
             }
@@ -167,6 +168,7 @@ public class ChatExtractionService {
                 episode.setImportance(Math.min(10, Math.max(1, imp)));
                 episode.setOccurredAt(parseOccurredAt(ep.path("occurredAt").asText(null), chunkStart));
                 episode.setSourceArchiveId(archive.getId());
+                episode.setStatus(MemoryStatus.DRAFT);
                 episodeRepo.save(episode);
                 savedEpisodes++;
             }

@@ -74,6 +74,11 @@ public interface MediaFileRepository extends JpaRepository<MediaFile, UUID> {
     @Query(value = "DELETE FROM collection_media WHERE media_file_id = :mediaId", nativeQuery = true)
     void removeFromAllCollections(UUID mediaId);
 
+    /** the memories it was a photo of keep their text, only the link goes */
+    @Modifying
+    @Query(value = "DELETE FROM episode_media WHERE media_file_id = :mediaId", nativeQuery = true)
+    void removeFromAllEpisodes(UUID mediaId);
+
     // ── Super search: one shared WHERE, sorted + random variants ─────────────
     // Optional scalars use (:x IS NULL OR ...) null-guards; list/uuid filters use
     // boolean guards + EXISTS / NOT EXISTS subqueries (safe with empty lists,

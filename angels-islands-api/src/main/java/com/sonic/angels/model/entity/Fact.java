@@ -42,6 +42,10 @@ public class Fact extends BaseEntity {
     @Column(name = "source", length = 40)
     private String source;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "status", length = 20)
+    private MemoryStatus status;
+
     public Fact() {}
 
     public UUID getId() { return id; }
@@ -62,4 +66,6 @@ public class Fact extends BaseEntity {
     public void setSourceArchiveId(UUID sourceArchiveId) { this.sourceArchiveId = sourceArchiveId; }
     public String getSource() { return source; }
     public void setSource(String source) { this.source = source; }
+    public MemoryStatus getStatus() { return status; }
+    public void setStatus(MemoryStatus status) { this.status = status; }
 }

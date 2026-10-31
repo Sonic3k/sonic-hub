@@ -16,10 +16,11 @@ public class TagService {
     public List<Tag> findAll() { return tagRepository.findAll(); }
     public Tag findById(UUID id) { return tagRepository.findById(id).orElseThrow(() -> new RuntimeException("Tag not found: " + id)); }
     public Tag save(Tag tag) { return tagRepository.save(tag); }
-    /** A tag in use is linked from four join tables; unlink everywhere first or the delete hits a FK. */
+    /** A tag in use is linked from five join tables; unlink everywhere first or the delete hits a FK. */
     @org.springframework.transaction.annotation.Transactional
     public void delete(UUID id) {
         tagRepository.unlinkMedia(id); tagRepository.unlinkCollections(id); tagRepository.unlinkNotes(id); tagRepository.unlinkPersons(id);
+        tagRepository.unlinkEpisodes(id);
         tagRepository.deleteById(id);
     }
 

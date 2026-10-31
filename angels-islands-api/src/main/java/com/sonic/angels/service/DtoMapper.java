@@ -168,6 +168,7 @@ public class DtoMapper {
         r.setId(f.getId()); r.setCategory(f.getCategory()); r.setKey(f.getKey()); r.setValue(f.getValue());
         r.setPeriod(f.getPeriod()); r.setConfidence(f.getConfidence());
         r.setSourceArchiveId(f.getSourceArchiveId()); r.setCreatedAt(f.getCreatedAt()); r.setSource(f.getSource());
+        r.setStatus(statusName(f.getStatus()));
         return r;
     }
 
@@ -176,8 +177,37 @@ public class DtoMapper {
         MemoryDto.EpisodeResponse r = new MemoryDto.EpisodeResponse();
         r.setId(e.getId()); r.setSummary(e.getSummary()); r.setEmotion(e.getEmotion());
         r.setImportance(e.getImportance()); r.setOccurredAt(e.getOccurredAt()); r.setCreatedAt(e.getCreatedAt()); r.setSource(e.getSource());
+        r.setStatus(statusName(e.getStatus())); r.setTitle(e.getTitle()); r.setKind(e.getKind());
+        r.setPrecision(e.getOccurredPrecision() != null ? e.getOccurredPrecision().name() : null); r.setApprox(e.getOccurredApprox());
+        r.setWhen(e.whenText()); r.setEndAt(e.getEndAt());
+        r.setPlace(e.getPlace()); r.setLatitude(e.getLatitude()); r.setLongitude(e.getLongitude()); r.setExternalKey(e.getExternalKey());
         return r;
     }
+
+    /** The episode with its photos, albums, tags and people — reads the four link tables, so inside a transaction. */
+    public MemoryDto.EpisodeResponse toEpisodeResponseWithLinks(Episode e) {
+        MemoryDto.EpisodeResponse r = toEpisodeResponse(e);
+        List<MemoryDto.MediaRef> media = e.getMediaFiles().stream().filter(java.util.Objects::nonNull).map(m -> {
+            MemoryDto.MediaRef x = new MemoryDto.MediaRef();
+            x.setId(m.getId()); x.setFileName(m.getFileName()); x.setUrl(imageUrl(m)); x.setCaption(m.getCaption());
+            x.setWidth(m.getWidth()); x.setHeight(m.getHeight());
+            return x;
+        }).toList();
+        r.setMedia(media); r.setMediaIds(media.stream().map(MemoryDto.MediaRef::getId).toList());
+        List<MemoryDto.CollectionRef> cols = e.getCollections().stream().map(c -> {
+            MemoryDto.CollectionRef x = new MemoryDto.CollectionRef(); x.setId(c.getId()); x.setName(c.getName()); return x;
+        }).sorted(java.util.Comparator.comparing(MemoryDto.CollectionRef::getName, java.util.Comparator.nullsLast(String::compareTo))).toList();
+        r.setCollections(cols); r.setCollectionIds(cols.stream().map(MemoryDto.CollectionRef::getId).toList());
+        List<TagDto.Response> tags = e.getTags().stream().map(this::toTagResponse)
+            .sorted(java.util.Comparator.comparing(TagDto.Response::getName, java.util.Comparator.nullsLast(String::compareTo))).toList();
+        r.setTags(tags); r.setTagIds(tags.stream().map(TagDto.Response::getId).toList());
+        // avatar left out: a list of memories does not need it and it would load each person's photo
+        List<PersonDto.Summary> persons = e.getPersons().stream().map(p -> toPersonSummary(p, null)).toList();
+        r.setPersons(persons); r.setPersonIds(persons.stream().map(PersonDto.Summary::getId).toList());
+        return r;
+    }
+
+    private static String statusName(MemoryStatus s) { return s != null ? s.name() : null; }
 
     // ── Memory: LifeChapter ──────────────────────────────────────────────────
     public MemoryDto.ChapterResponse toChapterResponse(LifeChapter c) {
@@ -185,6 +215,7 @@ public class DtoMapper {
         r.setId(c.getId()); r.setPeriod(c.getPeriod()); r.setTitle(c.getTitle());
         r.setSummary(c.getSummary()); r.setSentiment(c.getSentiment());
         r.setSortOrder(c.getSortOrder()); r.setCreatedAt(c.getCreatedAt()); r.setSource(c.getSource());
+        r.setStatus(statusName(c.getStatus()));
         return r;
     }
 
@@ -193,6 +224,7 @@ public class DtoMapper {
         MemoryDto.TraitResponse r = new MemoryDto.TraitResponse();
         r.setId(t.getId()); r.setTrait(t.getTrait()); r.setDescription(t.getDescription());
         r.setEvidence(t.getEvidence()); r.setPeriod(t.getPeriod()); r.setCreatedAt(t.getCreatedAt()); r.setSource(t.getSource());
+        r.setStatus(statusName(t.getStatus()));
         return r;
     }
 

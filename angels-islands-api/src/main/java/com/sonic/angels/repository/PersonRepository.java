@@ -26,4 +26,9 @@ public interface PersonRepository extends JpaRepository<Person, UUID> {
     @Modifying
     @Query(value = "DELETE FROM collection_persons WHERE person_id = :personId", nativeQuery = true)
     void clearCollectionLinks(java.util.UUID personId);
+
+    /** someone else's memories this person was in */
+    @Modifying
+    @Query(value = "DELETE FROM episode_persons WHERE person_id = :personId", nativeQuery = true)
+    void clearEpisodeLinks(java.util.UUID personId);
 }

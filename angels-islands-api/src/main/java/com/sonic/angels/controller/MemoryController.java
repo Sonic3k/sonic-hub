@@ -4,6 +4,7 @@ import com.sonic.angels.model.dto.MemoryDto;
 import com.sonic.angels.model.entity.*;
 import com.sonic.angels.repository.*;
 import com.sonic.angels.service.DtoMapper;
+import com.sonic.angels.service.MemoryService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
@@ -20,14 +21,25 @@ public class MemoryController {
     private final PersonRepository personRepo;
     private final DtoMapper mapper;
     private final com.sonic.angels.service.MemoryImportService memoryImport;
+    private final MemoryService memory;
 
     public MemoryController(FactRepository factRepo, EpisodeRepository episodeRepo,
                             LifeChapterRepository chapterRepo, PersonalityTraitRepository traitRepo,
                             PersonRepository personRepo, DtoMapper mapper,
-                            com.sonic.angels.service.MemoryImportService memoryImport) {
+                            com.sonic.angels.service.MemoryImportService memoryImport, MemoryService memory) {
         this.factRepo = factRepo; this.episodeRepo = episodeRepo;
         this.chapterRepo = chapterRepo; this.traitRepo = traitRepo;
-        this.personRepo = personRepo; this.mapper = mapper; this.memoryImport = memoryImport;
+        this.personRepo = personRepo; this.mapper = mapper; this.memoryImport = memoryImport; this.memory = memory;
+    }
+
+    /** Memories picked at random across kinds: types = episode,fact,chapter,trait (all when left out). */
+    @GetMapping("/random")
+    public List<MemoryDto.RandomItem> random(@PathVariable UUID personId,
+                                             @RequestParam(defaultValue = "1") int count,
+                                             @RequestParam(required = false) java.util.Set<String> types,
+                                             @RequestParam(required = false) String status,
+                                             @RequestParam(required = false) Integer minImportance) {
+        return memory.random(personId, count, types, status, minImportance);
     }
 
     /** Replace everything one source wrote for this person (e.g. "analysis"); memory typed in by hand is never touched. */
@@ -45,6 +57,7 @@ public class MemoryController {
         Fact f = new Fact(); f.setPerson(personRepo.findById(personId).orElseThrow());
         f.setCategory(req.getCategory()); f.setKey(req.getKey()); f.setValue(req.getValue());
         f.setPeriod(req.getPeriod()); f.setConfidence(req.getConfidence()); f.setSource(req.getSource());
+        f.setStatus(req.getStatus() != null ? MemoryService.status(req.getStatus()) : MemoryStatus.CONFIRMED);
         return mapper.toFactResponse(factRepo.save(f));
     }
 
@@ -57,32 +70,38 @@ public class MemoryController {
         if (req.getPeriod() != null) f.setPeriod(req.getPeriod().isBlank() ? null : req.getPeriod());
         if (req.getConfidence() != null) f.setConfidence(req.getConfidence());
         if (req.getSource() != null) f.setSource(req.getSource().isBlank() ? null : req.getSource());
+        if (req.getStatus() != null) f.setStatus(MemoryService.status(req.getStatus()));
         return mapper.toFactResponse(factRepo.save(f));
     }
 
     @DeleteMapping("/facts/{id}")
     public ResponseEntity<Void> deleteFact(@PathVariable UUID id) { factRepo.deleteById(id); return ResponseEntity.noContent().build(); }
 
+    /** All episodes, newest first; each filter is optional. q matches words anywhere (title, summary, place, tags,
+     *  people, album names, photo captions), without minding Vietnamese marks. from / to = yyyy-MM-dd. */
     @GetMapping("/episodes")
-    public List<MemoryDto.EpisodeResponse> getEpisodes(@PathVariable UUID personId) { return episodeRepo.findByPersonIdOrderByOccurredAtDesc(personId).stream().map(mapper::toEpisodeResponse).toList(); }
+    public List<MemoryDto.EpisodeResponse> getEpisodes(@PathVariable UUID personId,
+            @RequestParam(required = false) String q, @RequestParam(required = false) String kind,
+            @RequestParam(required = false) String status, @RequestParam(required = false) String source,
+            @RequestParam(required = false) UUID tagId, @RequestParam(required = false) UUID withPersonId,
+            @RequestParam(required = false) UUID mediaId, @RequestParam(required = false) UUID collectionId,
+            @RequestParam(required = false) java.time.LocalDate from, @RequestParam(required = false) java.time.LocalDate to,
+            @RequestParam(required = false) Integer minImportance, @RequestParam(defaultValue = "false") boolean oldestFirst) {
+        return memory.episodes(personId, new MemoryService.EpisodeQuery(q, kind, status, source, tagId, withPersonId,
+            mediaId, collectionId, from, to, minImportance, oldestFirst));
+    }
+
+    @GetMapping("/episodes/{id}")
+    public MemoryDto.EpisodeResponse getEpisode(@PathVariable UUID personId, @PathVariable UUID id) { return memory.episode(id); }
 
     @PostMapping("/episodes")
     public MemoryDto.EpisodeResponse createEpisode(@PathVariable UUID personId, @RequestBody MemoryDto.EpisodeRequest req) {
-        Episode e = new Episode(); e.setPerson(personRepo.findById(personId).orElseThrow());
-        e.setSummary(req.getSummary()); e.setEmotion(req.getEmotion());
-        e.setImportance(req.getImportance()); e.setOccurredAt(req.getOccurredAt()); e.setSource(req.getSource());
-        return mapper.toEpisodeResponse(episodeRepo.save(e));
+        return memory.create(personId, req);
     }
 
     @PutMapping("/episodes/{id}")
     public MemoryDto.EpisodeResponse updateEpisode(@PathVariable UUID personId, @PathVariable UUID id, @RequestBody MemoryDto.EpisodeRequest req) {
-        Episode e = episodeRepo.findById(id).orElseThrow();
-        if (req.getSummary() != null) e.setSummary(req.getSummary());
-        if (req.getEmotion() != null) e.setEmotion(req.getEmotion().isBlank() ? null : req.getEmotion());
-        if (req.getImportance() != null) e.setImportance(req.getImportance());
-        if (req.getOccurredAt() != null) e.setOccurredAt(req.getOccurredAt());
-        if (req.getSource() != null) e.setSource(req.getSource().isBlank() ? null : req.getSource());
-        return mapper.toEpisodeResponse(episodeRepo.save(e));
+        return memory.update(id, req);
     }
 
     @DeleteMapping("/episodes/{id}")
@@ -96,6 +115,7 @@ public class MemoryController {
         LifeChapter c = new LifeChapter(); c.setPerson(personRepo.findById(personId).orElseThrow());
         c.setPeriod(req.getPeriod()); c.setTitle(req.getTitle()); c.setSummary(req.getSummary());
         c.setSentiment(req.getSentiment()); c.setSortOrder(req.getSortOrder()); c.setSource(req.getSource());
+        c.setStatus(req.getStatus() != null ? MemoryService.status(req.getStatus()) : MemoryStatus.CONFIRMED);
         return mapper.toChapterResponse(chapterRepo.save(c));
     }
 
@@ -108,6 +128,7 @@ public class MemoryController {
         if (req.getSentiment() != null) c.setSentiment(req.getSentiment().isBlank() ? null : req.getSentiment());
         if (req.getSortOrder() != null) c.setSortOrder(req.getSortOrder());
         if (req.getSource() != null) c.setSource(req.getSource().isBlank() ? null : req.getSource());
+        if (req.getStatus() != null) c.setStatus(MemoryService.status(req.getStatus()));
         return mapper.toChapterResponse(chapterRepo.save(c));
     }
 
@@ -122,6 +143,7 @@ public class MemoryController {
         PersonalityTrait t = new PersonalityTrait(); t.setPerson(personRepo.findById(personId).orElseThrow());
         t.setTrait(req.getTrait()); t.setDescription(req.getDescription());
         t.setEvidence(req.getEvidence()); t.setPeriod(req.getPeriod()); t.setSource(req.getSource());
+        t.setStatus(req.getStatus() != null ? MemoryService.status(req.getStatus()) : MemoryStatus.CONFIRMED);
         return mapper.toTraitResponse(traitRepo.save(t));
     }
 
@@ -133,6 +155,7 @@ public class MemoryController {
         if (req.getEvidence() != null) t.setEvidence(req.getEvidence().isBlank() ? null : req.getEvidence());
         if (req.getPeriod() != null) t.setPeriod(req.getPeriod().isBlank() ? null : req.getPeriod());
         if (req.getSource() != null) t.setSource(req.getSource().isBlank() ? null : req.getSource());
+        if (req.getStatus() != null) t.setStatus(MemoryService.status(req.getStatus()));
         return mapper.toTraitResponse(traitRepo.save(t));
     }
 

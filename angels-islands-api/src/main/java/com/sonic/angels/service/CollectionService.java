@@ -164,6 +164,7 @@ public class CollectionService {
         c.getMediaFiles().clear();
         c.getTags().clear();
         c.getPersons().clear();
+        collectionRepository.unlinkEpisodes(c.getId());
         collectionRepository.save(c);
         collectionRepository.delete(c);
     }

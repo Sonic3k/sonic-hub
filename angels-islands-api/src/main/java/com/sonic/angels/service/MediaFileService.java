@@ -556,6 +556,7 @@ public class MediaFileService {
         mediaFileRepository.save(mf);
         // Remove from all collections + any cover reference (FK would block the delete)
         mediaFileRepository.removeFromAllCollections(id);
+        mediaFileRepository.removeFromAllEpisodes(id);
         collectionService.clearCoverRefs(id);
         List<String> keys = mf.storageKeys();
         MediaFile.StorageProvider provider = mf.getStorageProvider();

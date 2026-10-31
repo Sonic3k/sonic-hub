@@ -30,4 +30,7 @@ public interface TagRepository extends JpaRepository<Tag, UUID> {
     @org.springframework.data.jpa.repository.Modifying
     @org.springframework.data.jpa.repository.Query(value = "DELETE FROM person_tags WHERE tag_id = :id", nativeQuery = true)
     void unlinkPersons(java.util.UUID id);
+    @org.springframework.data.jpa.repository.Modifying
+    @org.springframework.data.jpa.repository.Query(value = "DELETE FROM episode_tags WHERE tag_id = :id", nativeQuery = true)
+    void unlinkEpisodes(java.util.UUID id);
 }

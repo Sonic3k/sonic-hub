@@ -12,6 +12,39 @@ public interface EpisodeRepository extends JpaRepository<Episode, UUID> {
     List<Episode> findByPersonIdOrderByOccurredAtDesc(UUID personId);
     List<Episode> findByPersonIdAndImportanceGreaterThanEqual(UUID personId, Integer importance);
 
+    // the four link tables: a bulk delete of episodes (below) skips them, and a deleted photo / album / tag / person
+    // must leave them first or the FK refuses
+    String OF_SOURCE = "(SELECT id FROM episodes WHERE person_id = :personId AND source = :source)";
+    @org.springframework.data.jpa.repository.Modifying
+    @org.springframework.data.jpa.repository.Query(value = "DELETE FROM episode_media WHERE episode_id IN " + OF_SOURCE, nativeQuery = true)
+    int unlinkMediaOfSource(@org.springframework.data.repository.query.Param("personId") UUID personId,
+                            @org.springframework.data.repository.query.Param("source") String source);
+    @org.springframework.data.jpa.repository.Modifying
+    @org.springframework.data.jpa.repository.Query(value = "DELETE FROM episode_collections WHERE episode_id IN " + OF_SOURCE, nativeQuery = true)
+    int unlinkCollectionsOfSource(@org.springframework.data.repository.query.Param("personId") UUID personId,
+                                  @org.springframework.data.repository.query.Param("source") String source);
+    @org.springframework.data.jpa.repository.Modifying
+    @org.springframework.data.jpa.repository.Query(value = "DELETE FROM episode_tags WHERE episode_id IN " + OF_SOURCE, nativeQuery = true)
+    int unlinkTagsOfSource(@org.springframework.data.repository.query.Param("personId") UUID personId,
+                           @org.springframework.data.repository.query.Param("source") String source);
+    @org.springframework.data.jpa.repository.Modifying
+    @org.springframework.data.jpa.repository.Query(value = "DELETE FROM episode_persons WHERE episode_id IN " + OF_SOURCE, nativeQuery = true)
+    int unlinkPersonsOfSource(@org.springframework.data.repository.query.Param("personId") UUID personId,
+                              @org.springframework.data.repository.query.Param("source") String source);
+
+    @org.springframework.data.jpa.repository.Modifying
+    @org.springframework.data.jpa.repository.Query(value = "DELETE FROM episode_media WHERE media_file_id = :mediaId", nativeQuery = true)
+    int unlinkMedia(@org.springframework.data.repository.query.Param("mediaId") UUID mediaId);
+    @org.springframework.data.jpa.repository.Modifying
+    @org.springframework.data.jpa.repository.Query(value = "DELETE FROM episode_collections WHERE collection_id = :collectionId", nativeQuery = true)
+    int unlinkCollection(@org.springframework.data.repository.query.Param("collectionId") UUID collectionId);
+    @org.springframework.data.jpa.repository.Modifying
+    @org.springframework.data.jpa.repository.Query(value = "DELETE FROM episode_tags WHERE tag_id = :tagId", nativeQuery = true)
+    int unlinkTag(@org.springframework.data.repository.query.Param("tagId") UUID tagId);
+    @org.springframework.data.jpa.repository.Modifying
+    @org.springframework.data.jpa.repository.Query(value = "DELETE FROM episode_persons WHERE person_id = :personId", nativeQuery = true)
+    int unlinkPerson(@org.springframework.data.repository.query.Param("personId") UUID personId);
+
     @org.springframework.data.jpa.repository.Modifying
     @org.springframework.data.jpa.repository.Query("DELETE FROM Episode x WHERE x.person.id = :personId AND x.source = :source")
     int deleteByPersonAndSource(@org.springframework.data.repository.query.Param("personId") UUID personId,
