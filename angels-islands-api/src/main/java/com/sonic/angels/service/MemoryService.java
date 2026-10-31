@@ -47,9 +47,10 @@ public class MemoryService {
     @Transactional(readOnly = true)
     public List<MemoryDto.EpisodeResponse> episodes(UUID personId, EpisodeQuery f) {
         List<Episode> all = episodeRepo.findByPersonIdOrderByOccurredAtDesc(personId);
-        List<String> words = f == null || f.q() == null ? List.of()
-            : Arrays.stream(fold(f.q()).split("\\s+")).filter(w -> !w.isBlank()).toList();
-        List<Episode> hits = all.stream().filter(e -> matches(e, f, words)).toList();
+        // a query typed with its marks ("cờ") matches them exactly; one typed without ("co") matches any marks
+        boolean marks = f != null && f.q() != null && !fold(f.q()).equals(lower(f.q()));
+        List<String> words = f == null || f.q() == null ? List.of() : words(marks ? lower(f.q()) : fold(f.q()));
+        List<Episode> hits = all.stream().filter(e -> matches(e, f, words, marks)).toList();
         if (f != null && f.oldestFirst()) {   // undated ones stay last
             hits = new ArrayList<>(hits);
             hits.sort(Comparator.comparing(Episode::getOccurredAt, Comparator.nullsLast(Comparator.naturalOrder())));
@@ -136,7 +137,7 @@ public class MemoryService {
         return want.stream().map(byId::get).filter(Objects::nonNull).toList();
     }
 
-    private static boolean matches(Episode e, EpisodeQuery f, List<String> words) {
+    private static boolean matches(Episode e, EpisodeQuery f, List<String> words, boolean marks) {
         if (f == null) return true;
         if (f.kind() != null && !f.kind().isBlank() && !f.kind().trim().equalsIgnoreCase(e.getKind())) return false;
         if (f.status() != null && !f.status().isBlank() && (e.getStatus() == null || !e.getStatus().name().equalsIgnoreCase(f.status().trim()))) return false;
@@ -149,8 +150,10 @@ public class MemoryService {
         if (f.mediaId() != null && e.getMediaFiles().stream().noneMatch(m -> m != null && f.mediaId().equals(m.getId()))) return false;
         if (f.collectionId() != null && e.getCollections().stream().noneMatch(c -> f.collectionId().equals(c.getId()))) return false;
         if (words.isEmpty()) return true;
-        String hay = haystack(e);
-        return words.stream().allMatch(hay::contains);
+        String text = haystack(e);
+        List<String> tokens = words(marks ? lower(text) : fold(text));
+        // every word of the query starts a word of the memory: "ma" finds "Mario", not "Hà Nam"
+        return words.stream().allMatch(w -> tokens.stream().anyMatch(t -> t.startsWith(w)));
     }
 
     /** the last day a memory covers: its end, else the end of the span its date is known to */
@@ -171,8 +174,15 @@ public class MemoryService {
             .append(p.getNickname() != null ? p.getNickname() : "").append(' '));
         e.getCollections().forEach(c -> sb.append(c.getName()).append(' '));
         e.getMediaFiles().forEach(m -> { if (m != null && m.getCaption() != null) sb.append(m.getCaption()).append(' '); });
-        return fold(sb.toString());
+        return sb.toString();
     }
+
+    private static List<String> words(String s) {
+        return Arrays.stream(s.split("[^\\p{L}\\p{N}]+")).filter(w -> !w.isBlank()).toList();
+    }
+
+    /** lower case, marks kept (in one canonical form) */
+    static String lower(String s) { return s == null ? "" : Normalizer.normalize(s, Normalizer.Form.NFC).toLowerCase(Locale.ROOT); }
 
     /** lower case without Vietnamese marks, so "bong da" finds "Bóng đá" */
     static String fold(String s) {
