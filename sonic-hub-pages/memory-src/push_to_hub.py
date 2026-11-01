@@ -30,7 +30,7 @@ SORT = {"roots": 1949010, "early": 1990010, "primary": 1996090, "secondary": 200
 chapters = [dict(source=SOURCE, period=c["period"], title=c["title"], summary=c["summary"], sentiment="warm", sortOrder=SORT[c["key"]])
             for c in data["chapters"]]
 EMO = {"Vui": "vui", "Bồi hồi": "bồi hồi", "Nghịch ngợm": "nghịch ngợm", "Ấm áp": "ấm áp"}
-IMP = {"MILESTONE": 3, "CREATION": 3, "TRIP": 2, "MOMENT": 2, "PLACE": 2, "KEEPSAKE": 2, "DOCUMENT": 2}
+IMP = {"MILESTONE": 7, "CREATION": 6, "TRIP": 5, "MOMENT": 5, "PLACE": 4, "KEEPSAKE": 4, "DOCUMENT": 4}   # 1–10, as on every episode
 def when(m):
     d = m.get("date")
     if not d: return None
@@ -91,8 +91,8 @@ for m in mems:
     if m["kind"] == "TRIP" and (m.get("skip_map") or m.get("who") == "university"): continue   # university trips belong to the next era
     mood = next((EMO[x] for x in m.get("tags", {}).get("MOOD", []) if x in EMO), None)
     place, lat, lng = place_of(m)
-    episodes.append(dict(source=SOURCE, externalKey=m["key"], kind=m["kind"], title=m["title"], summary=episode_text(m),
-                         status=m.get("status") or "DRAFT", emotion=mood, importance=IMP.get(m["kind"], 2),
+    episodes.append(dict(source=SOURCE, externalKey=m["key"], kind=m["kind"], title=m["title"], summary=episode_text(m) or m["title"],   # the API keeps the title as the summary of a memory without one
+                         status=m.get("status") or "DRAFT", emotion=mood, importance=IMP.get(m["kind"], 5),
                          occurredAt=when(m), precision=m.get("precision"), endAt=end_at(m),
                          place=place, latitude=lat, longitude=lng,
                          mediaIds=[p["id"] for p in m.get("photos", []) if p.get("id")],
@@ -104,6 +104,9 @@ facts += [
     dict(source=SOURCE, category="habit", key="Đi chơi cùng gia đình", value="gần như năm nào cũng đi (1993 – 2007, trừ 1996): Sầm Sơn, Huế – Đà Nẵng, Sài Gòn – Đà Lạt, Kim Bôi, Cửa Lò, Hạ Long – Cát Bà – Trà Cổ, Quảng Bình, Côn Minh, Cát Bà; tự ghi lại trong cuốn sổ \"Visit in\"", confidence=1.0),
 ]
 facts = [f for f in facts if f["key"] not in ("Du lịch hè", "Cờ")]
+# what he told us himself is checked; the rest stays a draft until he confirms it in the admin
+OWNER_SAID = {"THPT"}
+for f in facts: f["status"] = "CONFIRMED" if f["key"] in OWNER_SAID else "DRAFT"
 
 # ── 2–3. photos ──────────────────────────────────────────────────────────────
 tree = json.load(open(os.path.join(D, "transcripts", "media-tree-1990-2007.json")))
@@ -248,6 +251,26 @@ if not APPLY:
         print("  ·", json.dumps({k: v for k, v in e.items() if k != "mediaIds"}, ensure_ascii=False)[:500])
     for i, t in list(todo.items())[:5]: print("  ·", i[:8], t[:120].replace("\n", " / "))
     sys.exit(0)
+# A re-run replaces everything this source wrote. Once memories are checked or fixed in the admin, that would undo
+# the work — so stop when anything in the hub differs from what this script would write (--force to replace anyway).
+if "--force" not in sys.argv:
+    have = {e.get("externalKey"): e for e in call("GET", f"/api/persons/{SELF}/memory/episodes?source={SOURCE}")}
+    changed = []
+    for e in episodes:
+        h = have.get(e["externalKey"])
+        if h and any((h.get(k) or None) != (e.get(k) or None) for k in ("title", "summary", "status", "kind", "place")) \
+               or h and [m["id"] for m in h.get("media") or []] != e["mediaIds"]:
+            changed.append(e["externalKey"])
+    gone = [k for k in have if k and k not in {e["externalKey"] for e in episodes}]
+    hand_facts = [f["key"] for f in call("GET", f"/api/persons/{SELF}/memory/facts")
+                  if f.get("source") == SOURCE and f.get("status") == "CONFIRMED" and f["key"] not in OWNER_SAID]
+    mine = {(c["title"], c["summary"]) for c in chapters}
+    hand_chapters = [c["title"] for c in call("GET", f"/api/persons/{SELF}/memory/chapters")
+                     if c.get("source") == SOURCE and (c.get("status") == "CONFIRMED" or (c.get("title"), c.get("summary")) not in mine)]
+    if changed or gone or hand_facts or hand_chapters:
+        print("Stopped: these were changed in the hub since the last push —", changed + gone + hand_facts + hand_chapters)
+        print("Bring the change into memories_src.py first, or run with --force to replace them.")
+        sys.exit(1)
 print(call("PUT", f"/api/persons/{SELF}/memory/sources/{SOURCE}", dict(chapters=chapters, episodes=episodes, facts=facts)))
 n = 0
 for i, t in todo.items():

@@ -36,7 +36,7 @@ export function Button({ variant = 'primary', size = 'md', className, children, 
 
 // --- Modal (bottom sheet on mobile, centered on desktop) ---
 export function Modal({ title, onClose, children, size = 'md' }: {
-  title: string; onClose: () => void; children: ReactNode; size?: 'md' | 'lg'
+  title: string; onClose: () => void; children: ReactNode; size?: 'md' | 'lg' | 'xl'
 }) {
   return (
     <div className="fixed inset-0 z-50 flex items-end md:items-center justify-center">
@@ -45,7 +45,7 @@ export function Modal({ title, onClose, children, size = 'md' }: {
         'relative bg-white shadow-xl w-full overflow-hidden',
         'rounded-t-2xl md:rounded-xl',
         'max-h-[90vh] md:max-h-[85vh]',
-        size === 'lg' ? 'md:max-w-lg' : 'md:max-w-md',
+        size === 'xl' ? 'md:max-w-3xl' : size === 'lg' ? 'md:max-w-lg' : 'md:max-w-md',
         'md:mx-4',
         'animate-slide-up md:animate-none'
       )}>

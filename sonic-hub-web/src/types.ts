@@ -81,7 +81,15 @@ export interface PersonDetail extends Person {
 }
 export interface Contact { id: string; platform: string; identifier: string; displayName?: string | null; notes?: string | null }
 export interface Fact { id: string; category?: string | null; key?: string | null; value?: string | null; period?: string | null; confidence?: number | null; source?: string | null }
-export interface Episode { id: string; summary: string; emotion?: string | null; importance?: number | null; occurredAt?: string | null; source?: string | null }
+export interface Episode {
+  id: string; summary: string; emotion?: string | null; importance?: number | null; occurredAt?: string | null; source?: string | null;
+  /** a memory: what kind (TRIP, MILESTONE, MOMENT…), its date as far as known (when = "1995", "Hè 1998"), how long it lasted, where */
+  title?: string | null; kind?: string | null; status?: 'DRAFT' | 'CONFIRMED' | null; precision?: DatePrecision | null; approx?: boolean | null;
+  when?: string | null; endAt?: string | null; place?: string | null; latitude?: number | null; longitude?: number | null; externalKey?: string | null;
+  media?: { id: string; fileName: string; url?: string | null; caption?: string | null; width?: number | null; height?: number | null }[] | null;
+  collections?: { id: string; name: string }[] | null; tags?: TagRef[] | null; persons?: PersonRef[] | null;
+}
+export interface RandomMemory { type: 'episode' | 'fact' | 'chapter' | 'trait'; episode?: Episode | null; fact?: Fact | null; chapter?: Chapter | null; trait?: Trait | null }
 export interface Chapter { id: string; period?: string | null; title?: string | null; summary?: string | null; sentiment?: string | null; sortOrder?: number | null; source?: string | null }
 export interface Trait { id: string; trait: string; description?: string | null; evidence?: string | null; period?: string | null; source?: string | null }
 

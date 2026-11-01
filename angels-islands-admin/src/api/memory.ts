@@ -1,5 +1,5 @@
 import api from './client'
-import type { FactResponse, FactRequest, EpisodeResponse, EpisodeRequest, ChapterResponse, ChapterRequest, TraitResponse, TraitRequest, ChatArchiveResponse, PersonReport } from '../types'
+import type { FactResponse, FactRequest, EpisodeResponse, EpisodeRequest, EpisodeQuery, ChapterResponse, ChapterRequest, TraitResponse, TraitRequest, ChatArchiveResponse, PersonReport } from '../types'
 
 const base = (pid: string) => `/api/persons/${pid}`
 
@@ -9,7 +9,8 @@ export const memoryApi = {
   updateFact: (pid: string, id: string, data: FactRequest) => api.put<FactResponse>(`${base(pid)}/memory/facts/${id}`, data).then(r => r.data),
   deleteFact: (pid: string, id: string) => api.delete(`${base(pid)}/memory/facts/${id}`),
 
-  getEpisodes: (pid: string) => api.get<EpisodeResponse[]>(`${base(pid)}/memory/episodes`).then(r => r.data),
+  getEpisodes: (pid: string, params?: EpisodeQuery) => api.get<EpisodeResponse[]>(`${base(pid)}/memory/episodes`, { params }).then(r => r.data),
+  getEpisode: (pid: string, id: string) => api.get<EpisodeResponse>(`${base(pid)}/memory/episodes/${id}`).then(r => r.data),
   createEpisode: (pid: string, data: EpisodeRequest) => api.post<EpisodeResponse>(`${base(pid)}/memory/episodes`, data).then(r => r.data),
   updateEpisode: (pid: string, id: string, data: EpisodeRequest) => api.put<EpisodeResponse>(`${base(pid)}/memory/episodes/${id}`, data).then(r => r.data),
   deleteEpisode: (pid: string, id: string) => api.delete(`${base(pid)}/memory/episodes/${id}`),

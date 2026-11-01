@@ -8,7 +8,7 @@ export const PRECISIONS: { value: DatePrecision; label: string }[] = [
   { value: 'MONTH', label: 'Tháng' }, { value: 'DAY', label: 'Ngày' }, { value: 'HOUR', label: 'Giờ' },
   { value: 'MINUTE', label: 'Phút' }, { value: 'SECOND', label: 'Giây' },
 ]
-const SEASONS = [{ m: 3, label: 'Xuân' }, { m: 6, label: 'Hè' }, { m: 9, label: 'Thu' }, { m: 12, label: 'Đông' }]
+export const SEASONS = [{ m: 3, label: 'Xuân' }, { m: 6, label: 'Hè' }, { m: 9, label: 'Thu' }, { m: 12, label: 'Đông' }]
 
 /** "14/05/2007 09:12", "08/1995", "Hè 1998", "1993", "Thập niên 70", "~" in front when it is a guess */
 export function eventLabel(e?: EventDate | null): string {
@@ -23,7 +23,7 @@ export function eventLabel(e?: EventDate | null): string {
 }
 
 /** Builds the yyyy-MM-ddTHH:mm:ss start of the span from what the inputs hold. */
-function toIso(p: DatePrecision, year: string, month: string, season: number, day: string, time: string): string | null {
+export function toIso(p: DatePrecision, year: string, month: string, season: number, day: string, time: string): string | null {
   const y = year.padStart(4, '0')
   if (!/^\d{4}$/.test(y)) return null
   switch (p) {
