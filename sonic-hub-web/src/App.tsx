@@ -14,6 +14,7 @@ import { ForumIndex, ForumPage, ForumThreadPage } from './pages/Forum';
 import SeriesPage from './pages/Series';
 import Money from './pages/Money';
 import Portal from './pages/Portal';
+import { MemoriesIndex, MemoryPage } from './pages/Memories';
 
 const qc = new QueryClient({ defaultOptions: { queries: { retry: 1, refetchOnWindowFocus: false } } });
 
@@ -27,6 +28,8 @@ export function AppRoutes() {
         <Route path="journal/id/:id" element={<Post />} />
         <Route path="journal/series" element={<SeriesPage />} />
         <Route path="journal/:slug" element={<Post />} />
+        <Route path="memories" element={<MemoriesIndex />} />
+        <Route path="memories/:id" element={<MemoryPage />} />
         <Route path="photos" element={<Photos />} />
         <Route path="photos/albums" element={<AlbumsIndex />} />
         <Route path="photos/albums/:id" element={<AlbumPage />} />

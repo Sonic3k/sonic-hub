@@ -8,7 +8,7 @@ import ReportView from '../components/ReportView'
 import { personsApi } from '../api/persons'
 import { memoryApi } from '../api/memory'
 import { useMutation, useQuery, useInfiniteQuery, useQueryClient } from '@tanstack/react-query'
-import type { PersonRequest, ContactPlatform, ContactRequest, MediaFileResponse, CollectionResponse, ChatArchiveResponse, ChapterResponse, TraitResponse, FactResponse, EpisodeResponse, ChapterRequest, TraitRequest, FactRequest, EpisodeRequest } from '../types'
+import type { PersonRequest, ContactPlatform, ContactRequest, MediaFileResponse, CollectionResponse, ChatArchiveResponse, ChapterResponse, TraitResponse, FactResponse, EpisodeResponse } from '../types'
 import api from '../api/client'
 import { mediaApi, uploadApi, collectionBrowseApi, collectionsApi } from '../api/collections'
 import { Lightbox, MediaItem } from '../components/media'
@@ -16,6 +16,9 @@ import CollectionPicker from '../components/CollectionPicker'
 import ChatViewer from '../components/ChatViewer'
 import CompanionTab from '../components/CompanionTab'
 import NoteBody from '../components/NoteBody'
+import MemoryFormModal from '../components/memory/MemoryFormModal'
+import EpisodeEditor from '../components/memory/EpisodeEditor'
+import { StatusBadge, episodeWhen, groupFacts, kindLabel } from '../components/memory/shared'
 import { journalApi } from '../api/journal'
 import { REL_LABELS, REL_CHOICES } from '../lib/relationship'
 
@@ -196,9 +199,15 @@ export default function PersonDetailPage() {
 
       {tab === 'companion' && <CompanionTab personId={pid} personName={person.displayName || person.name} />}
 
-      {memForm && (
-        <MemoryFormModal personId={pid} kind={memForm.kind} item={memForm.item} categories={factGroups.map(([c]) => c)}
+      {memForm && memForm.kind !== 'episode' && (
+        <MemoryFormModal personId={pid} kind={memForm.kind} item={memForm.item as ChapterResponse | TraitResponse | FactResponse | undefined} categories={factGroups.map(([c]) => c)}
           onSaved={() => { invalidateMemory(memForm.kind); setMemForm(null) }}
+          onClose={() => setMemForm(null)} />
+      )}
+      {memForm && memForm.kind === 'episode' && (
+        <EpisodeEditor personId={pid} item={memForm.item as EpisodeResponse | undefined}
+          onSaved={() => { invalidateMemory('episode'); setMemForm(null) }}
+          onDeleted={() => { invalidateMemory('episode'); setMemForm(null) }}
           onClose={() => setMemForm(null)} />
       )}
 
@@ -418,11 +427,15 @@ export default function PersonDetailPage() {
                     <button onClick={() => setMemForm({ kind: 'episode', item: e })} className="p-1 text-slate-300 hover:text-pink-500 rounded transition-colors"><Pencil size={12} /></button>
                     <button onClick={() => deleteMemItem('episode', e.id, `this episode`)} className="p-1 text-slate-300 hover:text-rose-500 rounded transition-colors"><X size={12} /></button>
                   </span>
-                  <p className="text-sm text-slate-700 pr-14">{e.summary}</p>
-                  <div className="flex gap-2 mt-2">
+                  {e.title && <p className="text-sm font-medium text-slate-700 pr-14">{e.title}</p>}
+                  {(!e.title || e.summary !== e.title) && <p className={`pr-14 ${e.title ? 'text-xs text-slate-500 mt-0.5' : 'text-sm text-slate-700'}`}>{e.summary}</p>}
+                  <div className="flex gap-2 mt-2 items-center flex-wrap">
+                    {e.kind && <span className="text-[11px] text-slate-400">{kindLabel(e.kind)}</span>}
+                    <StatusBadge status={e.status} />
                     {e.emotion && <span className="text-xs px-1.5 py-0.5 rounded bg-blue-50 text-blue-500">{e.emotion}</span>}
                     {e.importance && <span className="text-xs text-slate-300">importance: {e.importance}/10</span>}
-                    {e.occurredAt && <span className="text-xs text-slate-300 ml-auto">{String(e.occurredAt).slice(0, 10)}</span>}
+                    {!!e.media?.length && <span className="text-xs text-slate-300">{e.media.length} photos</span>}
+                    {e.occurredAt && <span className="text-xs text-slate-300 ml-auto">{episodeWhen(e) || String(e.occurredAt).slice(0, 10)}</span>}
                   </div>
                 </div>
               ))}</div>
@@ -711,119 +724,6 @@ function PersonPhotosTab({ personId }: { personId: string }) {
   )
 }
 
-
-// ── Memory add/edit modal (facts / traits / episodes / chapters) ─────────────
-
-const FACT_CATEGORIES = ['basic', 'preference', 'habit', 'work', 'family', 'hobby']
-
-/** Facts by category: scores first, the intimate ones last, the rest in the order they first appear. */
-const FACT_FIRST = ['Điểm (Claude chấm)'], FACT_LAST = ['Tình dục & thân mật']
-function groupFacts(facts: FactResponse[]): [string, FactResponse[]][] {
-  const m = new Map<string, FactResponse[]>()
-  for (const f of facts) { const c = f.category || 'basic'; if (!m.has(c)) m.set(c, []); m.get(c)!.push(f) }
-  const rank = (c: string) => FACT_FIRST.includes(c) ? 0 : FACT_LAST.includes(c) ? 2 : 1
-  return [...m.entries()].sort((a, b) => rank(a[0]) - rank(b[0]))
-}
-
-function MemoryFormModal({ personId, kind, item, categories = [], onSaved, onClose }: {
-  personId: string
-  categories?: string[]
-  kind: 'chapter' | 'trait' | 'fact' | 'episode'
-  item?: ChapterResponse | TraitResponse | FactResponse | EpisodeResponse
-  onSaved: () => void
-  onClose: () => void
-}) {
-  const editing = !!item
-  const [f, setF] = useState<Record<string, string | number | undefined>>(() => {
-    if (kind === 'fact') { const x = item as FactResponse | undefined; return { category: x?.category || 'basic', key: x?.key || '', value: x?.value || '', period: x?.period || '', confidence: x?.confidence ?? 0.8 } }
-    if (kind === 'trait') { const x = item as TraitResponse | undefined; return { trait: x?.trait || '', description: x?.description || '', evidence: x?.evidence || '', period: x?.period || '' } }
-    if (kind === 'episode') { const x = item as EpisodeResponse | undefined; return { summary: x?.summary || '', emotion: x?.emotion || '', importance: x?.importance ?? 5, occurredAt: x?.occurredAt ? String(x.occurredAt).slice(0, 10) : '' } }
-    const x = item as ChapterResponse | undefined; return { period: x?.period || '', title: x?.title || '', summary: x?.summary || '', sentiment: x?.sentiment || '' }
-  })
-  const [saving, setSaving] = useState(false)
-  const set = (k: string, v: string | number) => setF(p => ({ ...p, [k]: v }))
-
-
-  const valid = kind === 'fact' ? !!(f.key && f.value)
-    : kind === 'trait' ? !!f.trait
-    : kind === 'episode' ? !!f.summary
-    : !!f.period
-
-  const save = async () => {
-    if (!valid || saving) return
-    setSaving(true)
-    try {
-      if (kind === 'fact') {
-        const data: FactRequest = { category: String(f.category), key: String(f.key), value: String(f.value), period: String(f.period), confidence: Number(f.confidence) }
-        editing ? await memoryApi.updateFact(personId, item!.id, data) : await memoryApi.createFact(personId, data)
-      } else if (kind === 'trait') {
-        const data: TraitRequest = { trait: String(f.trait), description: String(f.description), evidence: String(f.evidence), period: String(f.period) }
-        editing ? await memoryApi.updateTrait(personId, item!.id, data) : await memoryApi.createTrait(personId, data)
-      } else if (kind === 'episode') {
-        const data: EpisodeRequest = { summary: String(f.summary), emotion: String(f.emotion), importance: Number(f.importance), occurredAt: f.occurredAt ? `${f.occurredAt}T00:00:00` : undefined }
-        editing ? await memoryApi.updateEpisode(personId, item!.id, data) : await memoryApi.createEpisode(personId, data)
-      } else {
-        const data: ChapterRequest = { period: String(f.period), title: String(f.title), summary: String(f.summary), sentiment: String(f.sentiment) }
-        editing ? await memoryApi.updateChapter(personId, item!.id, data) : await memoryApi.createChapter(personId, data)
-      }
-      onSaved()
-    } catch { alert('Save failed') }
-    setSaving(false)
-  }
-
-  const titles = { fact: 'Fact', trait: 'Trait', episode: 'Episode', chapter: 'Life Chapter' }
-
-  return (
-    <Modal title={`${editing ? 'Edit' : 'Add'} ${titles[kind]}`} onClose={onClose}>
-      <div className="space-y-3">
-        {kind === 'fact' && <>
-          {/* free text with suggestions: imports write their own categories ("Điểm (Claude chấm)"…) and a fixed list would turn them into "basic" on save */}
-          <Input label="Category" list="fact-categories" value={String(f.category)} onChange={e => set('category', e.target.value)} />
-          <datalist id="fact-categories">
-            {[...new Set([...FACT_CATEGORIES, ...categories])].map(c => <option key={c} value={c} />)}
-          </datalist>
-          <Input label="Key *" value={String(f.key)} onChange={e => set('key', e.target.value)} placeholder="truong_hoc, mon_an_thich..." />
-          <Input label="Value *" value={String(f.value)} onChange={e => set('value', e.target.value)} placeholder="Chu Van An High School" />
-          <Input label="Period" value={String(f.period)} onChange={e => set('period', e.target.value)} placeholder="2010 or 2009-2011, empty = always true" />
-          <div>
-            <label className="block text-xs font-medium text-slate-500 mb-1">Confidence · {Number(f.confidence).toFixed(2)}</label>
-            <input type="range" min={0.1} max={1} step={0.05} value={Number(f.confidence)}
-              onChange={e => set('confidence', parseFloat(e.target.value))} className="w-full accent-pink-500" />
-          </div>
-        </>}
-        {kind === 'trait' && <>
-          <Input label="Trait *" value={String(f.trait)} onChange={e => set('trait', e.target.value)} placeholder="clingy, thoughtful..." />
-          <Textarea label="Description" rows={2} value={String(f.description)} onChange={e => set('description', e.target.value)} />
-          <Textarea label="Evidence" rows={2} value={String(f.evidence)} onChange={e => set('evidence', e.target.value)} placeholder='Verbatim chat line as evidence' />
-          <Input label="Period" value={String(f.period)} onChange={e => set('period', e.target.value)} placeholder="2010" />
-        </>}
-        {kind === 'episode' && <>
-          <Textarea label="Summary *" rows={3} value={String(f.summary)} onChange={e => set('summary', e.target.value)}
-            placeholder="1-2 sentences you will still understand in 10 years" />
-          <div className="grid grid-cols-2 gap-3">
-            <Input label="Emotion" value={String(f.emotion)} onChange={e => set('emotion', e.target.value)} placeholder="happy, sad, longing..." />
-            <Input label="Date" type="date" value={String(f.occurredAt)} onChange={e => set('occurredAt', e.target.value)} />
-          </div>
-          <div>
-            <label className="block text-xs font-medium text-slate-500 mb-1">Importance · {f.importance}/10</label>
-            <input type="range" min={1} max={10} step={1} value={Number(f.importance)}
-              onChange={e => set('importance', parseInt(e.target.value))} className="w-full accent-pink-500" />
-          </div>
-        </>}
-        {kind === 'chapter' && <>
-          <Input label="Period *" value={String(f.period)} onChange={e => set('period', e.target.value)} placeholder="2009-2011" />
-          <Input label="Title" value={String(f.title)} onChange={e => set('title', e.target.value)} placeholder="High-school years" />
-          <Textarea label="Summary" rows={3} value={String(f.summary)} onChange={e => set('summary', e.target.value)} />
-          <Input label="Sentiment" value={String(f.sentiment)} onChange={e => set('sentiment', e.target.value)} placeholder="warm, romantic, tense..." />
-        </>}
-        <div className="flex justify-end gap-2 pt-1">
-          <Button variant="ghost" onClick={onClose}>Cancel</Button>
-          <Button onClick={save} disabled={!valid || saving}>{saving ? 'Saving...' : 'Save'}</Button>
-        </div>
-      </div>
-    </Modal>
-  )
-}
 
 /** dd/mm/yyyy, or as much of it as is known (11/1, or just 1990). */
 function birthdayText(p: { dateOfBirth?: string; birthDay?: number | null; birthMonth?: number | null; birthYear?: number | null }) {

@@ -7,18 +7,19 @@ import { useQuery } from '@tanstack/react-query';
 import { angelsOrdered } from '../pages/Angels';
 import { MoneySide } from '../pages/Money';
 import { PortalSide } from '../pages/Portal';
+import { MemoriesSide } from '../pages/Memories';
 import { isOwner } from './money/data';
 import { cdn } from '../api/client';
 import { counts, fmt, noteDate, useAlbums, useLibraryCounts, useNotes, usePersons, useRegions, useTimeline } from '../lib/queries';
 
 /* [label, path, colour, short label for the phone's bottom bar]. Portal lists the sites of their own (Huyền học, Bóng đá). */
-const TABS: [string, string, string, string?][] = [['Hôm nay', '/', '--photo'], ['Ảnh', '/photos', '--photo'], ['Nhật ký', '/journal', '--journal'], ['Angels', '/angels', '--angels'], ['Diễn đàn', '/forum', '--forum'], ['Game', '/games', '--games'], ['Portal', '/portal', '--portal']];
+const TABS: [string, string, string, string?][] = [['Hôm nay', '/', '--photo'], ['Ảnh', '/photos', '--photo'], ['Nhật ký', '/journal', '--journal'], ['Ký ức', '/memories', '--memory'], ['Angels', '/angels', '--angels'], ['Diễn đàn', '/forum', '--forum'], ['Game', '/games', '--games'], ['Portal', '/portal', '--portal']];
 /* Only on the owner's own browser (set by opening /money once): visitors of the portal never see the money tab. */
 const MONEY_TAB: [string, string, string, string?] = ['Money', '/money', '--money'];
 
 export default function Shell() {
   const loc = useLocation(), nav = useNavigate(), tl = useTimeline();
-  const reading = /^\/journal\/.+/.test(loc.pathname), inJournal = loc.pathname.startsWith('/journal'), inPhotos = /^\/(photos|tags)/.test(loc.pathname), inAngels = loc.pathname.startsWith('/angels'), inForum = loc.pathname.startsWith('/forum');
+  const reading = /^\/(journal|memories)\/.+/.test(loc.pathname), inMemories = loc.pathname.startsWith('/memories'), inJournal = loc.pathname.startsWith('/journal'), inPhotos = /^\/(photos|tags)/.test(loc.pathname), inAngels = loc.pathname.startsWith('/angels'), inForum = loc.pathname.startsWith('/forum');
   const inMoney = loc.pathname.startsWith('/money'), tabs = inMoney || isOwner() ? [...TABS, MONEY_TAB] : TABS;
   const inPortal = loc.pathname.startsWith('/portal');
   /* Angels changes the light of the whole page, softly */
@@ -37,7 +38,7 @@ export default function Shell() {
         <button className="rand" type="button" onClick={random}>Một ngày bất kỳ</button>
       </div></header>
       <div className={`frame ${reading ? 'reading' : ''}`}>
-        <aside className="side">{inJournal ? <JournalSide /> : inPhotos ? <PhotosSide /> : inAngels ? <AngelsSide /> : inForum ? <ForumSide /> : inMoney ? <MoneySide /> : inPortal ? <PortalSide /> : <HomeSide />}</aside>
+        <aside className="side">{inJournal ? <JournalSide /> : inMemories ? <MemoriesSide /> : inPhotos ? <PhotosSide /> : inAngels ? <AngelsSide /> : inForum ? <ForumSide /> : inMoney ? <MoneySide /> : inPortal ? <PortalSide /> : <HomeSide />}</aside>
         <main><Outlet /></main>
       </div>
     </>

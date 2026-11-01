@@ -96,17 +96,44 @@ export interface ChatArchiveResponse {
   counterpart?: string; counterpartKey?: string; personId?: string; personName?: string
 }
 
-export interface FactResponse { id: string; category: string; key: string; value: string; period?: string; confidence?: number; source?: string; createdAt?: string }
-export interface FactRequest { category: string; key: string; value: string; period?: string; confidence?: number }
+/** DRAFT = written by an import or the AI and not checked yet; CONFIRMED = checked (or typed in) by you. Older rows have none. */
+export type MemoryStatus = 'DRAFT' | 'CONFIRMED'
 
-export interface EpisodeResponse { id: string; summary: string; emotion?: string; importance?: number; occurredAt?: string; createdAt?: string }
-export interface EpisodeRequest { summary: string; emotion?: string; importance?: number; occurredAt?: string }
+export interface FactResponse { id: string; category: string; key: string; value: string; period?: string; confidence?: number; source?: string; status?: MemoryStatus | null; createdAt?: string }
+export interface FactRequest { category: string; key: string; value: string; period?: string; confidence?: number; status?: MemoryStatus }
 
-export interface ChapterResponse { id: string; period: string; title?: string; summary?: string; sentiment?: string; sortOrder?: number; createdAt?: string }
-export interface ChapterRequest { period: string; title?: string; summary?: string; sentiment?: string; sortOrder?: number }
+/** A photo of a memory, as the memory list returns it */
+export interface MemoryMediaRef { id: string; fileName: string; url?: string; caption?: string; width?: number; height?: number }
+export interface MemoryCollectionRef { id: string; name: string }
 
-export interface TraitResponse { id: string; trait: string; description?: string; evidence?: string; period?: string; createdAt?: string }
-export interface TraitRequest { trait: string; description?: string; evidence?: string; period?: string }
+export interface EpisodeResponse {
+  id: string; summary: string; emotion?: string; importance?: number; occurredAt?: string; createdAt?: string; source?: string
+  title?: string; kind?: string; status?: MemoryStatus | null
+  /** how far occurredAt is known; occurredAt is then the start of that span */
+  precision?: DatePrecision; approx?: boolean; endAt?: string
+  /** occurredAt written as far as it is known: "1995", "Hè 1998", "2005-07-15" */
+  when?: string
+  place?: string; latitude?: number; longitude?: number; externalKey?: string
+  media?: MemoryMediaRef[]; collections?: MemoryCollectionRef[]; tags?: TagResponse[]
+  persons?: { id: string; name: string; displayName?: string; nickname?: string }[]
+}
+/** In an update a field left out keeps its value, '' clears it; a link list left out keeps the links, [] clears them. */
+export interface EpisodeRequest {
+  summary?: string; emotion?: string; importance?: number; occurredAt?: string; source?: string
+  title?: string; kind?: string; status?: MemoryStatus; precision?: DatePrecision | ''; approx?: boolean; endAt?: string
+  place?: string; latitude?: number; longitude?: number
+  mediaIds?: string[]; collectionIds?: string[]; tagIds?: string[]; personIds?: string[]
+}
+export interface EpisodeQuery {
+  q?: string; kind?: string; status?: string; source?: string; tagId?: string; withPersonId?: string
+  mediaId?: string; collectionId?: string; from?: string; to?: string; minImportance?: number; oldestFirst?: boolean
+}
+
+export interface ChapterResponse { id: string; period: string; title?: string; summary?: string; sentiment?: string; sortOrder?: number; source?: string; status?: MemoryStatus | null; createdAt?: string }
+export interface ChapterRequest { period: string; title?: string; summary?: string; sentiment?: string; sortOrder?: number; status?: MemoryStatus }
+
+export interface TraitResponse { id: string; trait: string; description?: string; evidence?: string; period?: string; source?: string; status?: MemoryStatus | null; createdAt?: string }
+export interface TraitRequest { trait: string; description?: string; evidence?: string; period?: string; status?: MemoryStatus }
 
 /** A long write-up about a person (Markdown), one per source — e.g. "deep" = Claude's deep research */
 export interface PersonReport { id: string; source: string; title: string; content: string; updatedAt?: string }

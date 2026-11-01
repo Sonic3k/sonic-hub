@@ -1,5 +1,5 @@
 import { apiUrl, get } from './client';
-import type { Chapter, ChatArchive, ChatAttachment, ChatMessage, Collection, Episode, Fact, Forum, ForumBoard, ForumMember, ForumPage, ForumPostHit, ForumThread, ForumThreadDetail, MediaFile, MysticBrief, Note, Paged, Person, PersonDetail, PersonForum, PersonRanking, RankingDetail, SeriesPart, Tag, TagStats, TimelineBucket, Trait } from '../types';
+import type { Chapter, ChatArchive, RandomMemory, ChatAttachment, ChatMessage, Collection, Episode, Fact, Forum, ForumBoard, ForumMember, ForumPage, ForumPostHit, ForumThread, ForumThreadDetail, MediaFile, MysticBrief, Note, Paged, Person, PersonDetail, PersonForum, PersonRanking, RankingDetail, SeriesPart, Tag, TagStats, TimelineBucket, Trait } from '../types';
 import { isoDay, addDays } from '../lib/date';
 
 export interface Search {
@@ -48,7 +48,11 @@ export const hub = {
   person: (id: string) => get<PersonDetail>(`/persons/${id}`),
   mysticBriefs: (id: string) => get<MysticBrief[]>(`/persons/${id}/mystic-briefs`),
   facts: (id: string) => get<Fact[]>(`/persons/${id}/memory/facts`),
-  episodes: (id: string) => get<Episode[]>(`/persons/${id}/memory/episodes`),
+  /** one person's memories, newest first; q = words anywhere (marks optional), best match first */
+  episodes: (id: string, p?: { q?: string; kind?: string; tagId?: string; withPersonId?: string; oldestFirst?: boolean }) => get<Episode[]>(`/persons/${id}/memory/episodes`, p),
+  episode: (personId: string, id: string) => get<Episode>(`/persons/${personId}/memory/episodes/${id}`),
+  /** memories picked at random; types = episode,fact,chapter,trait */
+  randomMemory: (id: string, count = 1, types?: string) => get<RandomMemory[]>(`/persons/${id}/memory/random`, { count, types }),
   chapters: (id: string) => get<Chapter[]>(`/persons/${id}/memory/chapters`),
   traits: (id: string) => get<Trait[]>(`/persons/${id}/memory/traits`),
   rankings: (id: string) => get<PersonRanking[]>(`/persons/${id}/rankings`),

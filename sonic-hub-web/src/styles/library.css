@@ -8,7 +8,7 @@
      ═══════════════════════════════════════════════════════════════════════════ */
   :root {
     --bg: #F7F6F2; --card: #FFFFFF; --line: #E8E5DD; --soft: #F0EEE8; --ink: #1D1C1A; --ink2: #57544D; --ink3: #8E8A80;
-    --photo: #E9A100; --journal: #2E7FD6; --angels: #EF5B78; --forum: #0E9AA7; --football: #23A35E; --games: #7B61FF; --portal: #D9480F; --mystic: #9E2B25;
+    --photo: #E9A100; --journal: #2E7FD6; --angels: #EF5B78; --forum: #0E9AA7; --football: #23A35E; --games: #7B61FF; --portal: #D9480F; --mystic: #9E2B25; --memory: #A0663A;
     --sans: "Be Vietnam Pro", system-ui, sans-serif; --serif: Literata, Georgia, serif;
     --r: 10px; --wrap: 1240px;
   }
@@ -1019,4 +1019,39 @@ button.mn-bar-row:hover, .mn-bar-row.on { background: var(--soft); }
   .mystic-line span { display: block; margin-bottom: 2px; font-family: var(--sans); font-size: 10.5px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--mystic); }
   .mystic-line.added span { color: #34617E; }
   .mystic-brief .go { display: inline-block; margin-top: 12px; font-weight: 600; color: var(--mystic); }
+
+/* ═══ Ký ức (memories): list through the years, one memory with its photos ═══ */
+.mem .cat { color: var(--memory); }
+.mem .post:hover h4, .mem .pn a:hover b, .mem .back:hover { color: var(--memory); }
+.mem .post p { -webkit-line-clamp: 3; }
+.mem-lede { max-width: 760px; margin: -12px 0 24px; font-family: var(--serif); font-size: 16.5px; line-height: 1.6; color: var(--ink2); }
+.msearch { display: flex; align-items: center; gap: 8px; margin-left: auto; width: 260px; height: 36px; padding: 0 10px; border-radius: 8px; background: var(--card); border: 1px solid var(--line); color: var(--ink3); }
+.msearch svg { flex: 0 0 auto; width: 15px; height: 15px; stroke: currentColor; fill: none; stroke-width: 2; }
+.msearch input { flex: 1; min-width: 0; border: 0; outline: 0; background: none; font: inherit; font-size: 13.5px; color: var(--ink); }
+.msearch button { font-size: 16px; line-height: 1; color: var(--ink3); }
+.msearch:focus-within { border-color: color-mix(in srgb, var(--memory) 45%, var(--line)); }
+.ptitle .msearch + .sortbtn { margin-left: 0; }
+.mem-rt { display: block; margin-top: 10px; font-family: var(--serif); font-size: 17px; font-weight: 600; line-height: 1.35; }
+.mem-rt:hover { color: var(--memory); }
+.mem .pill { color: var(--ink2); }
+.mem .pill small { margin-left: -2px; font-size: 11.5px; color: var(--ink3); }
+.mem a.pill:hover, .mem .pill.on { background: color-mix(in srgb, var(--memory) 14%, var(--soft)); color: var(--ink); }
+.pill-ph { width: 26px; height: 26px; border-radius: 50%; background: color-mix(in srgb, var(--memory) 22%, var(--soft)); }
+.mem .chip:hover, .mem .chip.on { background: color-mix(in srgb, var(--memory) 14%, var(--soft)); color: var(--memory); }
+.mem .chip.on { font-weight: 600; }
+.mem .byline { flex-wrap: wrap; gap: 8px 12px; }
+.mem-h { margin: 8px 0 10px; font-size: 11.5px; font-weight: 600; letter-spacing: .1em; text-transform: uppercase; color: var(--ink3); }
+.mem-route { margin: 0 0 32px; padding: 0; list-style: none; counter-reset: leg; border-left: 2px solid color-mix(in srgb, var(--memory) 30%, transparent); }
+.mem-route li { position: relative; padding: 0 0 12px 22px; font-size: 15px; line-height: 1.5; color: var(--ink2); }
+.mem-route li::before { content: ""; position: absolute; left: -6px; top: 6px; width: 10px; height: 10px; border-radius: 50%; background: var(--bg); border: 2px solid var(--memory); }
+.mem-route li:first-child::before, .mem-route li:last-child::before { background: var(--memory); }
+.mem-photos { margin: 8px 0 8px; }
+.mem-same { display: flex; flex-direction: column; gap: 10px; }
+.mem-same a { font-family: var(--serif); font-size: 15px; font-weight: 600; line-height: 1.35; }
+.mem-same a small { display: block; margin-top: 2px; font-family: var(--sans); font-size: 12px; font-weight: 500; color: var(--ink3); }
+.mem-same a:hover { color: var(--memory); }
+.mem-map { font-size: 13.5px; font-weight: 500; color: var(--memory); }
+.side a.mem-ch { flex-direction: column; align-items: flex-start; gap: 0; line-height: 1.35; }
+.side a.mem-ch small { margin-left: 0; margin-top: 1px; }
+@media (max-width: 860px) { .msearch { width: 100%; order: 3; margin-left: 0; } }
 
