@@ -206,7 +206,7 @@ public final class FinanceTags {
     /** What the line is, in one string — to tell whether a change changed anything. */
     public static String signature(FinanceTransaction t) {
         StringBuilder sb = new StringBuilder().append(t.getKind()).append('|').append(t.getStatus()).append('|')
-            .append(t.getCategory() == null ? "-" : t.getCategory().getId()).append('|').append(t.getDescription());
+            .append(t.getCategory() == null ? "-" : t.getCategory().getId()).append('|').append(t.getDescription()).append('|').append(t.getPayeeName());
         t.getTags().stream().map(x -> x.getTag().getId() + ":" + x.getDecidedBy()).sorted().forEach(x -> sb.append('|').append(x));
         return sb.toString();
     }

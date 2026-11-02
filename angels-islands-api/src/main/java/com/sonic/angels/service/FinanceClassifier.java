@@ -169,18 +169,16 @@ public class FinanceClassifier {
     /** A rule of days only: "everything 12–15/11 is the trip". */
     static boolean occasion(FinanceRule r) { return r.hasDates() && !r.hasKeywords() && !r.isCounterpartyRule(); }
 
-    /** The first of these rules that names its lines ("Tiền nhà") names this one. */
+    /** The first of these rules that names its payee ("Azzan Coffee") names this line's payee. */
     private static void relabelBy(FinanceTransaction t, List<FinanceRule> rules) {
         for (FinanceRule r : rules) {
             if (r.getLabel() != null && !r.getLabel().isBlank()) { relabel(t, r.getLabel().trim()); return; }
         }
     }
 
-    /** The rule's name for it becomes the description; the bank's words stay as the bank line. */
+    /** A rule's (or his) name for the other side becomes the line's payee name; the line's own words stay as they are. */
     public static void relabel(FinanceTransaction t, String label) {
-        if (label.equals(t.getDescription())) return;
-        if (t.getBankDescription() == null || t.getBankDescription().isBlank()) t.setBankDescription(t.getDescription());
-        t.setDescription(label);
+        t.setPayeeName(label);
     }
 
     /** Before a bank line is renamed by hand, what the bank said is kept, if it was not yet (lines from before it always was). */
@@ -228,7 +226,7 @@ public class FinanceClassifier {
         m.setAmount(t.getAmount().negate());
         m.setOccurredAt(t.getOccurredAt());
         m.setKind(Kind.TRANSFER);
-        m.setDescription(t.getDescription());
+        m.setDescription(t.title());                  // what the other side's line is shown as, said on this account too
         m.setSource(Source.SYSTEM);
         m.setStatus(Status.OK);
         m.setCategorizedBy(By.SYSTEM);

@@ -6,7 +6,7 @@ import { moneyApi, type CounterpartyGroup, type Txn } from '../../api/money';
 import { dayWord, money, timeOf } from '../../lib/money';
 import { useCounterparties, useRefresh, useReview } from './data';
 import GroupSheet from './GroupSheet';
-import { guessOf, txs, useLabelBook } from './labels';
+import { guessOf, titleOf, txs, useLabelBook } from './labels';
 import LineSheet from './LineSheet';
 import { Pill } from './Picker';
 import { toast } from './toast';
@@ -101,7 +101,7 @@ export default function Review() {
             <li key={t.id} className={busy === t.id ? 'busy' : ''}>
               <div className="mn-rv">
                 <div className="mn-rv-main">
-                  <b>{t.description || t.bankDescription || 'No description'}</b>
+                  <b>{titleOf(t) || 'No description'}</b>
                   <small>{t.accountName} · {dayWord(t.occurredAt)} {timeOf(t.occurredAt)}</small>
                 </div>
                 <span className={`mn-amt${t.amount > 0 ? ' in' : ''}`}>{money(t.amount, t.currency, true)}</span>

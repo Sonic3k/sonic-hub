@@ -56,11 +56,15 @@ public class FinanceTransaction extends FinanceEntity {
     private FinanceCategory category;
 
     /**
-     * What the line is called here: the bank's memo at first, then whatever he or a rule names it; a note's own words.
-     * Empty means it goes by the bank's text.
+     * The line's own words: what he wrote about this one payment (or a note's text, or what an email said about it).
+     * A bank line has none until someone writes them; rules never touch them.
      */
     @Column(name = "description", columnDefinition = "TEXT")
     private String description;
+
+    /** What his rules call the other side ("Azzan Coffee (Hoà Lạc)"); rules set and change it, the line's own words stay. */
+    @Column(name = "payee_name", length = 200)
+    private String payeeName;
 
     /** What the bank said, as it came (the statement's or the feed's memo). Set once when the line arrives, never renamed. */
     @Column(name = "bank_description", columnDefinition = "TEXT")
@@ -133,6 +137,15 @@ public class FinanceTransaction extends FinanceEntity {
     public void setCategory(FinanceCategory category) { this.category = category; }
     public String getDescription() { return description; }
     public void setDescription(String description) { this.description = description; }
+    public String getPayeeName() { return payeeName; }
+    public void setPayeeName(String payeeName) { this.payeeName = payeeName; }
+
+    /** What the line is shown as: its own words, else the payee's name here, else the payee, else what the bank said. */
+    public String title() {
+        for (String s : new String[]{description, payeeName, counterparty, bankDescription}) if (s != null && !s.isBlank()) return s.strip();
+        return null;
+    }
+
     public String getBankDescription() { return bankDescription; }
     public void setBankDescription(String bankDescription) { this.bankDescription = bankDescription; }
     public String getCounterparty() { return counterparty; }

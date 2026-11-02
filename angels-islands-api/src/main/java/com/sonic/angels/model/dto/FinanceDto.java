@@ -68,7 +68,7 @@ public final class FinanceDto {
                       UUID categoryId, String categoryName, String categoryIcon, String description, String bankDescription,
                       String counterparty, String counterpartyAccount, String note, String source, String status, String categorizedBy, Double aiConfidence,
                       BigDecimal balanceAfter, UUID transferPeerId, String transferAccountName, String suggestedKeywords,
-                      LocalDateTime createdAt, List<TagRef> tags, UUID transferAccountId) {}
+                      LocalDateTime createdAt, List<TagRef> tags, UUID transferAccountId, String payeeName) {}
 
     /**
      * Create or edit. occurredAt: ISO; with Z/offset it is converted, bare means UTC. kind TRANSFER needs transferAccountId.

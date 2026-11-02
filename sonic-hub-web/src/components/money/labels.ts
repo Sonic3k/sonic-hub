@@ -133,3 +133,6 @@ export const sameSet = (a: Set<string>, b: Set<string>) => a.size === b.size && 
 
 /** "3 transactions" */
 export const txs = (n: number) => `${n} transaction${n === 1 ? '' : 's'}`;
+
+/** What a line is shown as: its own words, else the payee's name here, else the payee, else what the bank said. */
+export const titleOf = (t: Txn) => t.description || t.payeeName || t.counterparty || t.bankDescription || '';

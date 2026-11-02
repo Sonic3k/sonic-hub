@@ -614,7 +614,7 @@ public class FinanceService {
             long scope = g.stream().filter(t -> (t.getAmount().signum() < 0) == goesOut && !(t.getKind() == Kind.TRANSFER && t.getCategorizedBy() == By.SYSTEM)).count();
             FinanceCategory guess = cats.entrySet().stream().max(Map.Entry.comparingByValue()).map(x -> catById.get(x.getKey())).orElse(null);
             FinanceRule rule = ruleByKey.get(e.getKey());
-            String sample = last.getBankDescription() != null && rule != null && rule.getLabel() != null ? last.getBankDescription() : last.getDescription();
+            String sample = last.getDescription() != null ? last.getDescription() : last.getBankDescription();   // its own words, else the bank's
             out.add(new FinanceDto.CounterpartyGroup(e.getKey(), name, accounts.size() == 1 ? accounts.iterator().next() : null,
                 accounts.size(), List.copyOf(own), g.size(), waiting, outCount, inCount, totalOut, totalIn, last.getOccurredAt(), sample,
                 rule == null ? null : rule.getId(), rule == null ? null : rule.getLabel(),
@@ -991,6 +991,7 @@ public class FinanceService {
                 String like = "%" + q.trim().toLowerCase(Locale.ROOT) + "%";
                 ps.add(cb.or(cb.like(cb.lower(root.get("description")), like),
                     cb.like(cb.lower(root.get("bankDescription")), like),
+                    cb.like(cb.lower(root.get("payeeName")), like),
                     cb.like(cb.lower(root.get("counterparty")), like),
                     cb.like(cb.lower(root.get("note")), like)));
             }
@@ -1068,7 +1069,7 @@ public class FinanceService {
             t.getDescription(), t.getBankDescription(), t.getCounterparty(), t.getCounterpartyAccount(), t.getNote(), t.getSource().name(), t.getStatus().name(),
             t.getCategorizedBy() == null ? null : t.getCategorizedBy().name(), t.getAiConfidence(), t.getBalanceAfter(),
             peer == null ? null : peer.getId(), peer == null ? null : peer.getAccount().getName(), suggest, t.getCreatedAt(), tagsOf(t),
-            peer == null ? null : peer.getAccount().getId());
+            peer == null ? null : peer.getAccount().getId(), t.getPayeeName());
     }
 
     /** The line's tags for the UIs: the one that counts first, then facet by facet. */

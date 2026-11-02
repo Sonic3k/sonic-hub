@@ -116,10 +116,9 @@ public class FinanceIngestService {
         t.setAccount(account);
         t.setOccurredAt(FinanceText.parseSepayTime(text(j, "transactionDate")));
         t.setAmount(signed);
-        t.setDescription(!content.isEmpty() ? content : description);
         t.setBankDescription(FinanceText.bankText(description, content));
         t.setReferenceCode(reference.isEmpty() ? null : reference);
-        counterparty(t);
+        counterparty(t, !content.isEmpty() ? content : description);
         BigDecimal balance = number(j, "accumulated");
         t.setBalanceAfter(balance != null && balance.signum() != 0 ? balance : null);   // 0 = the bank did not say
         t.setExternalId(externalId);
@@ -183,10 +182,9 @@ public class FinanceIngestService {
      * one and the same counterparty every time (a shop's fixed QR, a code someone always uses) is that counterparty
      * again. A memo shared by several counterparties ("… chuyen tien QR") says nothing — the next statement will.
      */
-    private void counterparty(FinanceTransaction t) {
-        String merchant = FinanceText.cardMerchant(t.getDescription());
+    private void counterparty(FinanceTransaction t, String memo) {
+        String merchant = FinanceText.cardMerchant(memo);
         if (merchant != null) { t.setCounterparty(merchant); return; }
-        String memo = t.getDescription();
         if (memo == null || memo.isBlank()) return;
         List<FinanceTransaction> same = txnRepo.sameMemoWithCounterparty(t.getAccount().getId(), memo.trim().toLowerCase(Locale.ROOT),
             PageRequest.of(0, 30));

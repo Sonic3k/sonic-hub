@@ -6,7 +6,7 @@ import type { Txn } from '../../api/money';
 import { dayLabel, dayOf, money, monthName, timeOf, utc, vnd } from '../../lib/money';
 import BulkSheet from './BulkSheet';
 import { useSummary, useTxns } from './data';
-import { decided, dirOf, guessOf, labelsOf, txs, useLabelBook } from './labels';
+import { decided, dirOf, guessOf, labelsOf, titleOf, txs, useLabelBook } from './labels';
 import LineSheet from './LineSheet';
 import { LabelText, Pill } from './Picker';
 
@@ -58,7 +58,9 @@ export default function TxnList({ month, filter, onClearFilter }: { month: strin
     const labels = move ? [] : book.sortIds(book.normalize(labelsOf(t)));
     const guess = move || dec ? [] : book.sortIds(guessOf(t));
     const sub: ReactNode[] = [<><i className="mn-dot" style={{ background: colors.get(t.accountId) ?? 'var(--ink3)' }} />{t.accountName}</>];
-    if (t.counterparty && !move) sub.push(`${dir === 'out' ? '→' : '←'} ${t.counterparty}`);
+    // the payee as the title does not say it: his name for them, else (when that is the title) their real name
+    const title = titleOf(t), payee = [t.payeeName, t.counterparty].find(x => x && x !== title);
+    if (payee && !move) sub.push(`${dir === 'out' ? '→' : '←'} ${payee}`);
     if (move) sub.push(`transfer ${dir === 'out' ? 'to' : 'from'} ${t.transferAccountName ?? 'another account'}`);
     if (!dec) sub.push(<span className="mn-wait">to review</span>);
     sub.push(timeOf(t.occurredAt));
@@ -72,8 +74,8 @@ export default function TxnList({ month, filter, onClearFilter }: { month: strin
             ? <span className={`mn-tick${on ? ' on' : ''}`} aria-hidden="true">{on ? '✓' : ''}</span>
             : <span className="mn-ic big" aria-hidden="true">{icon(t, labels)}</span>}
           <span className="mn-tx-main">
-            <b>{t.description || t.bankDescription || '—'}</b>
-            {t.description && t.bankDescription && t.bankDescription !== t.description && <span className="mn-tx-bank">{t.bankDescription}</span>}
+            <b>{title || '—'}</b>
+            {t.bankDescription && t.bankDescription !== title && <span className="mn-tx-bank">{t.bankDescription}</span>}
             <small>{sub.map((x, i) => <Piece key={i} sep={i > 0}>{x}</Piece>)}</small>
             {(labels.length > 0 || guess.length > 0) && (
               <span className="mn-tags">

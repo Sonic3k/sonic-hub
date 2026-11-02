@@ -28,6 +28,7 @@ import com.sonic.angels.util.FinanceText;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -81,6 +82,8 @@ public class FinanceSeeder implements SmartInitializingSingleton {
      * bring along (Food & Drink above Food and Drinks), shown just before them, and the Group facet is archived.
      * 6: every line from a bank keeps the bank's own text apart from its name here: lines that never had it get it from
      * their description (what the bank said, unless renamed by hand), and SePay's copy loses its "BankAPINotify" prefix.
+     * 7: a line's description is its own words only. A bank line whose description just repeats the bank's text loses
+     * the copy; a name a rule gave (a rule's label) moves to the payee name — a note gets its typed words back.
      */
     private void upgrade() {
         int version = settings.findById(SEED_VERSION).map(AppSetting::getValue).map(v -> {
@@ -181,6 +184,31 @@ public class FinanceSeeder implements SmartInitializingSingleton {
             }
             version(6);
             log.info("Finance: the bank's own text kept apart on {} line(s), {} SePay line(s) cleaned", kept, trimmed);
+        }
+        if (version < 7) {
+            Set<String> ruleNames = new HashSet<>();
+            for (FinanceRule r : rules.findAll()) if (r.getLabel() != null && !r.getLabel().isBlank()) ruleNames.add(r.getLabel().strip());
+            int copies = 0, names = 0;
+            for (FinanceTransaction t : txns.findAll()) {
+                String d = t.getDescription() == null ? null : t.getDescription().strip();
+                if (d == null || d.isEmpty()) { t.setDescription(null); continue; }
+                String bank = t.getBankDescription() == null ? null : t.getBankDescription().strip();
+                FinanceTransaction.Source src = t.getSource();
+                boolean fromBank = src == FinanceTransaction.Source.SEPAY || src == FinanceTransaction.Source.STATEMENT || src == FinanceTransaction.Source.EMAIL;
+                FinanceRule matched = t.getMatchedRule();
+                boolean ruleName = ruleNames.contains(d) || (matched != null && d.equals(matched.getLabel() == null ? null : matched.getLabel().strip()));
+                if (ruleName) {
+                    t.setPayeeName(d);
+                    t.setDescription(fromBank || bank == null || bank.isEmpty() ? null : bank);   // a note renamed by a rule: its typed words back
+                    if (!fromBank && bank != null && !bank.isEmpty()) t.setBankDescription(null);
+                    names++;
+                } else if (fromBank && d.equals(bank)) {
+                    t.setDescription(null);
+                    copies++;
+                }
+            }
+            version(7);
+            log.info("Finance: {} description(s) that only repeated the bank's text emptied, {} rule name(s) moved to the payee name", copies, names);
         }
     }
 
