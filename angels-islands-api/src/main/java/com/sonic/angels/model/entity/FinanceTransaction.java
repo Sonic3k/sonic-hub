@@ -48,6 +48,17 @@ public class FinanceTransaction extends FinanceEntity {
     @Column(name = "amount", nullable = false, precision = 18, scale = 2)
     private BigDecimal amount;
 
+    /**
+     * What was paid in another currency, when it was not the account's (a VND card charged 148 SGD; a VND line for
+     * 20 USD of Claude): the amount as the merchant charged it (always positive) and its currency. The account's own
+     * amount above stays what really moved there.
+     */
+    @Column(name = "original_amount", precision = 18, scale = 2)
+    private BigDecimal originalAmount;
+
+    @Column(name = "original_currency", length = 3)
+    private String originalCurrency;
+
     @Enumerated(EnumType.STRING)
     @Column(name = "kind", nullable = false, length = 20)
     private Kind kind;
@@ -140,6 +151,15 @@ public class FinanceTransaction extends FinanceEntity {
     public void setOccurredAt(LocalDateTime occurredAt) { this.occurredAt = occurredAt; }
     public BigDecimal getAmount() { return amount; }
     public void setAmount(BigDecimal amount) { this.amount = amount; }
+    public BigDecimal getOriginalAmount() { return originalAmount; }
+    public String getOriginalCurrency() { return originalCurrency; }
+    /** Both or neither; a currency that is the account's own clears them (nothing was converted). */
+    public void setOriginal(BigDecimal amount, String currency) {
+        boolean none = amount == null || currency == null || currency.isBlank() || amount.signum() == 0
+            || (this.account != null && currency.equalsIgnoreCase(this.account.getCurrency()));
+        this.originalAmount = none ? null : amount.abs();
+        this.originalCurrency = none ? null : currency.trim().toUpperCase(java.util.Locale.ROOT);
+    }
     public Kind getKind() { return kind; }
     public void setKind(Kind kind) { this.kind = kind; }
     public FinanceCategory getCategory() { return category; }

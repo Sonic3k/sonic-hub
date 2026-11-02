@@ -6,11 +6,12 @@
      a tooltip per column, and a table view one tap away. */
 import { useState, type FocusEvent, type MouseEvent } from 'react';
 import type { FacetSpend, LabelLine, MonthReport, TrendPoint } from '../../api/money';
-import { compact, money, monthFull, monthName, monthShort, vnd } from '../../lib/money';
+import { compact, money, monthFull, monthName, monthShort } from '../../lib/money';
 import { useTxns } from './data';
 import { dirOf, labelsOf, titleOf, txs, useLabelBook } from './labels';
 
 export function LabelReport({ report, month, active, onPick }: { report?: MonthReport; month: string; active: string | null; onPick: (id: string | null) => void }) {
+  const vnd = (n: number | null | undefined) => money(n, report?.currency ?? 'VND');   // amounts in the report's currency
   const book = useLabelBook();
   const sample = useTxns(month, 100);
   const [secId, setSecId] = useState<string | null>(null);
@@ -120,7 +121,9 @@ function ticks(max: number): number[] {
   return Array.from({ length: Math.ceil(max / step) + 1 }, (_, i) => i * step);
 }
 
-export function TrendChart({ trend, month, onPick }: { trend: TrendPoint[]; month: string; onPick: (m: string) => void }) {
+export function TrendChart({ trend, month, onPick, cur = 'VND' }: { trend: TrendPoint[]; month: string; onPick: (m: string) => void; cur?: string }) {
+  const vnd = (n: number | null | undefined) => money(n, cur);                     // amounts in the chosen currency
+  const tick = (n: number) => (cur === 'USD' ? '$' : '') + compact(n);
   const [tip, setTip] = useState<{ i: number; x: number } | null>(null);
   const [table, setTable] = useState(false);
   if (!trend.length) return <div className="card mn-trend mn-loading">Loading…</div>;
@@ -154,7 +157,7 @@ export function TrendChart({ trend, month, onPick }: { trend: TrendPoint[]; mont
             {ts.map(v => (
               <g key={v}>
                 <line className="grid" x1={PAD_L} x2={W} y1={y(v)} y2={y(v)} />
-                <text className="tick" x={PAD_L - 8} y={y(v) + 4} textAnchor="end">{compact(v)}</text>
+                <text className="tick" x={PAD_L - 8} y={y(v) + 4} textAnchor="end">{tick(v)}</text>
               </g>
             ))}
             {trend.map((t, i) => {
@@ -165,7 +168,7 @@ export function TrendChart({ trend, month, onPick }: { trend: TrendPoint[]; mont
               return (
                 <g key={t.month} className={`col ${on ? 'on' : ''} ${tip?.i === i ? 'hover' : ''}`}>
                   {path && <path d={path} />}
-                  {on && t.expense > 0 && <text className="cap" x={cx} y={yTop - 6} textAnchor="middle">{compact(t.expense)}</text>}
+                  {on && t.expense > 0 && <text className="cap" x={cx} y={yTop - 6} textAnchor="middle">{tick(t.expense)}</text>}
                   <text className="tick" x={cx} y={H - 8} textAnchor="middle">{label(t.month)}</text>
                   <rect className="hit" x={PAD_L + band * i} y={0} width={band} height={H} tabIndex={0} role="button"
                     aria-label={`${monthFull(t.month)}: spent ${vnd(t.expense)}`}

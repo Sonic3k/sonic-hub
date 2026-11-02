@@ -21,7 +21,9 @@ export default function Money() {
   const month = /^\d{4}-\d{2}$/.test(sp.get('m') ?? '') ? sp.get('m')! : now;
   const [filter, setFilter] = useState<string | null>(null);
   const [labels, setLabels] = useState(false);
-  const report = useReport(month), trend = useTrend(), book = useLabelBook();
+  const [cur, setCur] = useState<'VND' | 'USD'>(() => { try { return localStorage.getItem('mn-cur') === 'USD' ? 'USD' : 'VND'; } catch { return 'VND'; } });
+  const pickCur = (c: 'VND' | 'USD') => { setCur(c); try { localStorage.setItem('mn-cur', c); } catch { /* not kept */ } };
+  const report = useReport(month, cur), trend = useTrend(cur), book = useLabelBook();
   const list = useRef<HTMLDivElement>(null);
   useEffect(() => { markOwner(); document.title = 'Money · Sonic Hub'; return () => { document.title = 'Sonic Hub'; }; }, []);
   useEffect(() => { setFilter(null); }, [month]);
@@ -48,6 +50,12 @@ export default function Money() {
           <a href="#" className={month === now ? 'on' : ''} onClick={e => { e.preventDefault(); go(now); }}>This month</a>
           <a href="#" onClick={e => { e.preventDefault(); if (month < now) go(shiftMonth(month, 1)); }} aria-label="Next month" aria-disabled={month >= now}>›</a>
         </div>
+        <div className="seg mn-cur" role="group" aria-label="Show amounts in">
+          {(['VND', 'USD'] as const).map(c => (
+            <a key={c} href="#" className={cur === c ? 'on' : ''} aria-pressed={cur === c} title={c === 'VND' ? 'Amounts in VND' : 'Amounts in USD, each at its own day’s rate'}
+              onClick={e => { e.preventDefault(); pickCur(c); }}>{c === 'VND' ? '₫' : '$'}</a>
+          ))}
+        </div>
         <ImportStatement />
         <button type="button" className="mn-btn ghost" disabled={!book.ready} onClick={() => setLabels(true)}>Manage labels</button>
       </div>
@@ -66,7 +74,7 @@ export default function Money() {
       )}
       <div className="mn-two">
         <LabelReport report={r} month={month} active={filter} onPick={pick} />
-        <TrendChart trend={trend.data ?? []} month={month} onPick={go} />
+        <TrendChart trend={trend.data ?? []} month={month} onPick={go} cur={cur} />
       </div>
       <div ref={list} className="mn-list-at">
         <TxnList month={month} filter={filter} onClearFilter={() => setFilter(null)} />

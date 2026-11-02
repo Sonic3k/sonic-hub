@@ -6,6 +6,8 @@ import { money, monthName, monthOf, vnd } from '../../lib/money';
 import { useRefresh, useSummary } from './data';
 
 export default function Overview({ report, month, trend }: { report?: MonthReport; month: string; trend: TrendPoint[] }) {
+  const cur = report?.currency ?? 'VND';
+  const fmt = (n: number | null | undefined) => money(n, cur);
   const summary = useSummary(), refresh = useRefresh();
   const [budgetEdit, setBudgetEdit] = useState<string | null>(null);
   const current = month === monthOf();
@@ -28,7 +30,7 @@ export default function Overview({ report, month, trend }: { report?: MonthRepor
   return (
     <div className="card mn-ov">
       <p className="mn-label">Spent in {monthName(month)}</p>
-      <p className="mn-hero">{vnd(report.expense)}</p>
+      <p className="mn-hero">{fmt(report.expense)}</p>
       <p className="mn-delta">
         {delta === null ? (current ? 'Nothing from last month to compare with yet.' : '')
           : <><b className={delta > 0 ? 'up' : 'down'}>{delta > 0 ? '▲' : '▼'} {Math.abs(delta)}%</b> {current ? 'vs. this point last month' : 'vs. last month'}</>}
@@ -49,7 +51,7 @@ export default function Overview({ report, month, trend }: { report?: MonthRepor
             <button type="button" className="mn-link" onClick={() => setBudgetEdit(String(b.limit))}>Edit</button>
           </p>
         </div>
-      ) : budgetEdit === null && (
+      ) : budgetEdit === null && cur === 'VND' && (
         <button type="button" className="mn-link mn-setbudget" onClick={() => setBudgetEdit('')}>+ Set a monthly budget for flexible spending</button>
       )}
       {budgetEdit !== null && (
@@ -61,13 +63,13 @@ export default function Overview({ report, month, trend }: { report?: MonthRepor
       )}
 
       <dl className="mn-kpis">
-        <div><dt>Income</dt><dd>{vnd(report.income)}</dd></div>
-        <div><dt>Net</dt><dd className={report.net < 0 ? 'neg' : ''}>{vnd(report.net)}</dd></div>
-        {report.saved > 0 && <div><dt>Saved</dt><dd>{vnd(report.saved)}</dd></div>}
+        <div><dt>Income</dt><dd>{fmt(report.income)}</dd></div>
+        <div><dt>Net</dt><dd className={report.net < 0 ? 'neg' : ''}>{fmt(report.net)}</dd></div>
+        {report.saved > 0 && <div><dt>Saved</dt><dd>{fmt(report.saved)}</dd></div>}
       </dl>
 
       <Accounts accounts={summary.data?.accounts ?? []} onSaved={refresh} worth={worth}
-        change={prevWorth !== null && worth !== null && current ? worth - prevWorth : null} />
+        change={prevWorth !== null && worth !== null && current && cur === 'VND' ? worth - prevWorth : null} />
     </div>
   );
 }

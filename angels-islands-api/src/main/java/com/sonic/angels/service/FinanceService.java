@@ -27,6 +27,7 @@ import org.springframework.transaction.support.TransactionSynchronization;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.YearMonth;
@@ -64,9 +65,9 @@ public class FinanceService {
 
     @Transactional(readOnly = true)
     public List<FinanceDto.Account> accounts() {
-        BigDecimal usd = rates.usdValue();
+        FinanceFx fx = rates.fx();
         return accountRepo.findAllByOrderBySortOrderAscCreatedAtAsc().stream()
-            .map(a -> toAccount(a, usd, txnRepo.countByAccountId(a.getId()))).toList();
+            .map(a -> toAccount(a, fx, txnRepo.countByAccountId(a.getId()))).toList();
     }
 
     public FinanceDto.Account createAccount(FinanceDto.AccountRequest r) {
@@ -74,13 +75,13 @@ public class FinanceService {
         FinanceAccount a = new FinanceAccount();
         a.setSortOrder(accountRepo.findAll().stream().mapToInt(FinanceAccount::getSortOrder).max().orElse(0) + 1);
         fill(a, r);
-        return toAccount(accountRepo.save(a), rates.usdValue(), 0);
+        return toAccount(accountRepo.save(a), rates.fx(), 0);
     }
 
     public FinanceDto.Account updateAccount(UUID id, FinanceDto.AccountRequest r) {
         FinanceAccount a = account(id);
         fill(a, r);
-        return toAccount(a, rates.usdValue(), txnRepo.countByAccountId(id));
+        return toAccount(a, rates.fx(), txnRepo.countByAccountId(id));
     }
 
     public void deleteAccount(UUID id) {
@@ -124,7 +125,7 @@ public class FinanceService {
         }
         a.setBalance(r.balance());
         a.setBalanceAt(now);
-        return toAccount(a, rates.usdValue(), txnRepo.countByAccountId(id));
+        return toAccount(a, rates.fx(), txnRepo.countByAccountId(id));
     }
 
     private void fill(FinanceAccount a, FinanceDto.AccountRequest r) {
@@ -429,18 +430,18 @@ public class FinanceService {
         Specification<FinanceTransaction> spec = spec(f, t, accountId, categoryId, status, kind, q);
         PageRequest pr = PageRequest.of(Math.max(0, page), Math.min(Math.max(1, size), 200),
             Sort.by(Sort.Direction.DESC, "occurredAt").and(Sort.by(Sort.Direction.DESC, "createdAt")));
-        BigDecimal usd = rates.usdValue();
-        return txnRepo.findAll(spec, pr).map(x -> toTxn(x, usd));
+        FinanceFx fx = rates.fx();
+        return txnRepo.findAll(spec, pr).map(x -> toTxn(x, fx));
     }
 
     @Transactional(readOnly = true)
     public List<FinanceDto.Txn> review() {
-        BigDecimal usd = rates.usdValue();
-        return txnRepo.findWithStatus(Status.REVIEW).stream().map(x -> toTxn(x, usd)).toList();
+        FinanceFx fx = rates.fx();
+        return txnRepo.findWithStatus(Status.REVIEW).stream().map(x -> toTxn(x, fx)).toList();
     }
 
     @Transactional(readOnly = true)
-    public FinanceDto.Txn transaction(UUID id) { return toTxn(txn(id), rates.usdValue()); }
+    public FinanceDto.Txn transaction(UUID id) { return toTxn(txn(id), rates.fx()); }
 
     /**
      * What a payment bought (a flight, a hotel stay), read from an email: set as a whole, or cleared with null / {}.
@@ -449,7 +450,14 @@ public class FinanceService {
     public FinanceDto.Txn setDetails(UUID id, JsonNode d) {
         FinanceTransaction t = txn(id);
         t.setDetails(detailsJson(d));
-        return toTxn(t, rates.usdValue());
+        return toTxn(t, rates.fx());
+    }
+
+    /** What was paid in another currency: an amount above 0 and a three-letter code. */
+    private static BigDecimal checkedOriginal(BigDecimal amount, String currency) {
+        if (!currency.trim().matches("[A-Za-z]{3}")) throw new IllegalArgumentException("Not a currency code: " + currency);
+        if (amount == null || amount.signum() == 0) throw new IllegalArgumentException("How much was it in " + currency.trim().toUpperCase(Locale.ROOT) + "?");
+        return amount.abs();
     }
 
     /** Details checked and stored as they came; null for none. */
@@ -483,12 +491,12 @@ public class FinanceService {
         FinanceTransaction had = txnRepo.findByExternalId(ext).orElse(null);
         if (had != null) {
             if (had.getDetails() == null && details != null) had.setDetails(details);
-            return new FinanceDto.Receipt(false, toTxn(had, rates.usdValue()));
+            return new FinanceDto.Receipt(false, toTxn(had, rates.fx()));
         }
-        if (r.accountId() == null) throw new IllegalArgumentException("Pick an account");
+        if (r.accountId() == null && (r.currency() == null || r.currency().isBlank())) throw new IllegalArgumentException("Pick an account");
         if (r.amount() == null || r.amount().signum() == 0) throw new IllegalArgumentException("Enter an amount");
         if (r.occurredAt() == null || r.occurredAt().isBlank()) throw new IllegalArgumentException("When was it paid?");
-        FinanceAccount a = account(r.accountId());
+        FinanceAccount a = r.accountId() != null ? account(r.accountId()) : cashWallet(r.currency());
         if (a.getMode() == FinanceAccount.Mode.FEED)
             throw new IllegalArgumentException(a.getName() + " gets its lines from the bank: put the details on its line instead");
         FinanceTransaction t = new FinanceTransaction();
@@ -499,12 +507,14 @@ public class FinanceService {
         t.setDetails(details);
         t.setExternalId(ext);
         t.setSource(Source.RECEIPT);
+        if (r.originalCurrency() != null && !r.originalCurrency().isBlank())
+            t.setOriginal(checkedOriginal(r.originalAmount(), r.originalCurrency()), r.originalCurrency());
         t.setKind(r.amount().signum() < 0 ? Kind.EXPENSE : Kind.INCOME);
         t.setStatus(Status.REVIEW);
         t = txnRepo.save(t);
         classifier.added(t);
         if (!classifier.decide(t, classifier.fitting(t, classifier.rules()))) askAiAfterCommit(t);
-        return new FinanceDto.Receipt(true, toTxn(t, rates.usdValue()));
+        return new FinanceDto.Receipt(true, toTxn(t, rates.fx()));
     }
 
     /** Typed in admin. Without a category it goes through the rules like everything else. */
@@ -524,7 +534,7 @@ public class FinanceService {
         classifier.added(t);
         decide(t, r);
         learn(t, r);
-        return toTxn(t, rates.usdValue());
+        return toTxn(t, rates.fx());
     }
 
     public FinanceDto.Txn updateTransaction(UUID id, FinanceDto.TxnRequest r) {
@@ -533,7 +543,12 @@ public class FinanceService {
             classifier.removed(t);
             t.setAccount(account(r.accountId()));
             t.setBalanceAfter(null);                       // the bank's figure belonged to the old account
+            t.setOriginal(t.getOriginalAmount(), t.getOriginalCurrency());   // not "another currency" in an account of that currency
             classifier.added(t);
+        }
+        if (r.originalCurrency() != null) {
+            if (r.originalCurrency().isBlank()) t.setOriginal(null, null);
+            else t.setOriginal(checkedOriginal(r.originalAmount(), r.originalCurrency()), r.originalCurrency());
         }
         if (r.amount() != null && r.amount().compareTo(t.getAmount()) != 0) {
             if (r.amount().signum() == 0) throw new IllegalArgumentException("Enter an amount");
@@ -565,7 +580,7 @@ public class FinanceService {
                     give.stream().map(FinanceCategory::getId).toList(), t.getAmount().signum() < 0 ? "OUT" : "IN", null), t.getId());
         }
         if (r.label() != null && !r.label().isBlank()) FinanceClassifier.relabel(t, r.label().trim());
-        return toTxn(t, rates.usdValue());
+        return toTxn(t, rates.fx());
     }
 
     public void deleteTransaction(UUID id) {
@@ -582,7 +597,7 @@ public class FinanceService {
         FinanceTransaction t = txn(id);
         if (t.getKind() != Kind.TRANSFER && t.getCategory() == null) throw new IllegalArgumentException("Pick a category first");
         t.setStatus(Status.OK);
-        return toTxn(t, rates.usdValue());
+        return toTxn(t, rates.fx());
     }
 
     /** Every pre-filled guess still waiting is taken as right. */
@@ -698,11 +713,11 @@ public class FinanceService {
     public List<FinanceDto.Txn> counterpartyLines(String name) {
         String key = FinanceText.counterpartyKey(name);
         if (key.isEmpty()) return List.of();
-        BigDecimal usd = rates.usdValue();
+        FinanceFx fx = rates.fx();
         return txnRepo.withCounterparty().stream()
             .filter(t -> t.getSource() != Source.SYSTEM && key.equals(FinanceText.counterpartyKey(t.getCounterparty())))
             .sorted(Comparator.comparing(FinanceTransaction::getOccurredAt).thenComparing(FinanceTransaction::getCreatedAt).reversed())
-            .map(t -> toTxn(t, usd)).toList();
+            .map(t -> toTxn(t, fx)).toList();
     }
 
     public FinanceDto.Applied assignCounterparty(FinanceDto.AssignRequest r) { return assign(r, null); }
@@ -818,11 +833,11 @@ public class FinanceService {
         LocalDateTime cut = FinanceText.vnToUtc(before.atStartOfDay());
         FinanceCategory spending = categoryRepo.findByCode(FinanceCategory.UNKNOWN_EXPENSE).orElseThrow();
         FinanceCategory income = categoryRepo.findByCode(FinanceCategory.UNKNOWN_INCOME).orElseThrow();
-        BigDecimal usd = rates.usdValue();
+        FinanceFx fx = rates.fx();
         int n = 0;
         for (FinanceTransaction t : txnRepo.findWithStatus(Status.REVIEW)) {
             if (!t.getOccurredAt().isBefore(cut) || t.getKind() == Kind.TRANSFER) continue;
-            BigDecimal vnd = FinanceRateService.toVnd(t.getAmount(), t.getAccount().getCurrency(), usd);
+            BigDecimal vnd = fx.vnd(t.getAmount(), t.getAccount().getCurrency(), t.getOccurredAt());
             if (vnd == null || vnd.abs().compareTo(under) >= 0) continue;
             FinanceTags.replace(t, FinanceTags.MAIN, List.of(t.getAmount().signum() < 0 ? spending : income), By.SYSTEM);
             FinanceTags.settleDecided(t);
@@ -836,11 +851,20 @@ public class FinanceService {
     /** A note from the quick box. Default account: cash. No category given → rules, then the AI. */
     public FinanceDto.Txn note(FinanceDto.NoteRequest r) {
         if (r.amount() == null || r.amount().signum() == 0) throw new IllegalArgumentException("Enter an amount");
-        FinanceAccount a = r.accountId() != null ? account(r.accountId()) : defaultNoteAccount();
+        FinanceAccount a = r.accountId() != null ? account(r.accountId()) : cashWallet(r.currency());
         FinanceTransaction t = new FinanceTransaction();
         t.setAccount(a);
         t.setAmount(r.amount());
         t.setOccurredAt(FinanceText.parseClientTime(r.occurredAt()));
+        String paidIn = r.currency() == null ? "" : r.currency().trim().toUpperCase(Locale.ROOT);
+        if (!paidIn.isEmpty() && !paidIn.equals(a.getCurrency())) {
+            // paid in another currency from this account (300 THB on a VND card): its own amount at that day's rate,
+            // what was paid kept beside it
+            BigDecimal own = rates.fx().convert(r.amount(), paidIn, a.getCurrency(), t.getOccurredAt());
+            if (own == null) throw new IllegalArgumentException("No exchange rate for " + paidIn + " yet");
+            t.setAmount(FinanceFx.isVnd(a.getCurrency()) ? own.setScale(0, RoundingMode.HALF_UP) : own);
+            t.setOriginal(r.amount().abs(), paidIn);
+        }
         t.setDescription(blankToNull(r.text()));
         t.setSource(Source.NOTE);
         t.setKind(r.amount().signum() < 0 ? Kind.EXPENSE : Kind.INCOME);
@@ -851,7 +875,7 @@ public class FinanceService {
             classifier.setMain(t, category(r.categoryId()), By.USER);
             t.setStatus(Status.OK);
         } else if (!classifier.decide(t, classifier.fitting(t, classifier.rules()))) askAiAfterCommit(t);
-        return toTxn(t, rates.usdValue());
+        return toTxn(t, rates.fx());
     }
 
     /**
@@ -1024,8 +1048,31 @@ public class FinanceService {
         });
     }
 
+    /**
+     * Where cash in a currency is kept: VND (or none) is the usual cash; another currency has a cash wallet of its
+     * own ("Cash · THB"), made the first time money in it is noted.
+     */
+    private FinanceAccount cashWallet(String currency) {
+        String c = currency == null ? "" : currency.trim().toUpperCase(Locale.ROOT);
+        if (c.isEmpty() || c.equals(FinanceFx.VND)) return defaultNoteAccount();
+        if (!c.matches("[A-Z]{3}")) throw new IllegalArgumentException("Not a currency code: " + currency);
+        List<FinanceAccount> all = accountRepo.findAllByOrderBySortOrderAscCreatedAtAsc();
+        return all.stream().filter(a -> !a.isArchived() && a.getMode() == FinanceAccount.Mode.POOL && c.equals(a.getCurrency())).findFirst()
+            .orElseGet(() -> {
+                FinanceAccount a = new FinanceAccount();
+                a.setName("Cash · " + c);
+                a.setMode(FinanceAccount.Mode.POOL);
+                a.setCurrency(c);
+                a.setSortOrder(all.stream().mapToInt(FinanceAccount::getSortOrder).max().orElse(0) + 1);
+                return accountRepo.save(a);
+            });
+    }
+
+    /** The usual cash: the VND cash wallet (other cash wallets hold other currencies). */
     private FinanceAccount defaultNoteAccount() {
-        return accountRepo.findFirstByModeAndArchivedFalseOrderBySortOrderAsc(FinanceAccount.Mode.POOL)
+        return accountRepo.findAllByOrderBySortOrderAscCreatedAtAsc().stream()
+            .filter(a -> !a.isArchived() && a.getMode() == FinanceAccount.Mode.POOL && FinanceFx.VND.equals(a.getCurrency())).findFirst()
+            .or(() -> accountRepo.findFirstByModeAndArchivedFalseOrderBySortOrderAsc(FinanceAccount.Mode.POOL))
             .or(() -> accountRepo.findAllByOrderBySortOrderAscCreatedAtAsc().stream().filter(a -> !a.isArchived()).findFirst())
             .orElseThrow(() -> new IllegalArgumentException("Add an account first"));
     }
@@ -1087,9 +1134,9 @@ public class FinanceService {
 
     // ── mapping (inside the transaction: relations are lazy) ──
 
-    static FinanceDto.Account toAccount(FinanceAccount a, BigDecimal usd, long count) {
+    static FinanceDto.Account toAccount(FinanceAccount a, FinanceFx fx, long count) {
         return new FinanceDto.Account(a.getId(), a.getName(), a.getInstitution(), a.getMode().name(), a.getCurrency(), a.getAccountNumber(),
-            a.getBalance(), a.getBalanceAt(), FinanceRateService.toVnd(a.getBalance(), a.getCurrency(), usd), a.getColor(),
+            a.getBalance(), a.getBalanceAt(), fx.vndToday(a.getBalance(), a.getCurrency()), a.getColor(),
             a.getSortOrder(), a.isArchived(), count);
     }
 
@@ -1126,18 +1173,18 @@ public class FinanceService {
             r.givenTags().stream().sorted(TAG_ORDER).map(x -> toTag(x, null)).toList(), r.getFromDate(), r.getToDate());
     }
 
-    static FinanceDto.Txn toTxn(FinanceTransaction t, BigDecimal usd) {
+    static FinanceDto.Txn toTxn(FinanceTransaction t, FinanceFx fx) {
         FinanceAccount a = t.getAccount();
         FinanceCategory c = t.getCategory();
         FinanceTransaction peer = t.getTransferPeer();
         String suggest = t.getStatus() == Status.REVIEW ? FinanceText.suggestKeywords(t.getDescription() != null ? t.getDescription() : t.getBankDescription()) : null;
         return new FinanceDto.Txn(t.getId(), a.getId(), a.getName(), a.getMode().name(), a.getCurrency(), t.getOccurredAt(), t.getAmount(),
-            FinanceRateService.toVnd(t.getAmount(), a.getCurrency(), usd), t.getKind().name(),
+            fx.vnd(t.getAmount(), a.getCurrency(), t.getOccurredAt()), t.getKind().name(),
             c == null ? null : c.getId(), c == null ? null : c.getName(), c == null ? null : c.getIcon(),
             t.getDescription(), t.getBankDescription(), t.getCounterparty(), t.getCounterpartyAccount(), t.getNote(), t.getSource().name(), t.getStatus().name(),
             t.getCategorizedBy() == null ? null : t.getCategorizedBy().name(), t.getAiConfidence(), t.getBalanceAfter(),
             peer == null ? null : peer.getId(), peer == null ? null : peer.getAccount().getName(), suggest, t.getCreatedAt(), tagsOf(t),
-            peer == null ? null : peer.getAccount().getId(), t.getPayeeName(), details(t));
+            peer == null ? null : peer.getAccount().getId(), t.getPayeeName(), details(t), t.getOriginalAmount(), t.getOriginalCurrency());
     }
 
     private static final ObjectMapper JSON = new ObjectMapper();

@@ -65,13 +65,18 @@ public final class FinanceDto {
 
     // ── transactions ──
 
-    /** details: what the payment bought (a flight, a hotel stay), as stored — see FinanceTransaction.details. */
+    /**
+     * amount is in the account's currency (currency); amountVnd is it in VND with the rate of its own day.
+     * originalAmount / originalCurrency: what was paid when it was another currency (a VND card charged 148 SGD).
+     * details: what the payment bought (a flight, a hotel stay), as stored — see FinanceTransaction.details.
+     */
     public record Txn(UUID id, UUID accountId, String accountName, String accountMode, String currency,
                       LocalDateTime occurredAt, BigDecimal amount, BigDecimal amountVnd, String kind,
                       UUID categoryId, String categoryName, String categoryIcon, String description, String bankDescription,
                       String counterparty, String counterpartyAccount, String note, String source, String status, String categorizedBy, Double aiConfidence,
                       BigDecimal balanceAfter, UUID transferPeerId, String transferAccountName, String suggestedKeywords,
-                      LocalDateTime createdAt, List<TagRef> tags, UUID transferAccountId, String payeeName, JsonNode details) {}
+                      LocalDateTime createdAt, List<TagRef> tags, UUID transferAccountId, String payeeName, JsonNode details,
+                      BigDecimal originalAmount, String originalCurrency) {}
 
     /**
      * Create or edit. occurredAt: ISO; with Z/offset it is converted, bare means UTC. kind TRANSFER needs transferAccountId.
@@ -80,10 +85,13 @@ public final class FinanceDto {
      * learnKeywords: also make a rule "these words → these tags" and apply it to what still waits for review.
      * learnCounterparty: the same for everything with this transaction's counterparty, old and new; label renames them.
      * ruleTagIds: the tags such a rule gives (default: the line's tags, but not those of per-transaction facets).
+     * originalAmount + originalCurrency: what was paid when it was another currency than the account's (a VND card
+     * charged 148 SGD); originalCurrency "" clears it. Any line may carry it, bank lines included.
      */
     public record TxnRequest(UUID accountId, String occurredAt, BigDecimal amount, String kind, UUID categoryId,
                              String description, String note, UUID transferAccountId, String learnKeywords,
-                             Boolean learnCounterparty, String label, List<UUID> tagIds, List<UUID> ruleTagIds) {}
+                             Boolean learnCounterparty, String label, List<UUID> tagIds, List<UUID> ruleTagIds,
+                             BigDecimal originalAmount, String originalCurrency) {}
 
     /** Many lines at once: these tags put on (his) and/or taken off. Moves between own accounts are skipped. */
     public record TagsRequest(List<UUID> ids, List<UUID> add, List<UUID> remove) {}
@@ -92,15 +100,21 @@ public final class FinanceDto {
      * A payment read from a merchant's receipt (a Grab ride paid from MoMo), for an account the bank does not feed.
      * amount is signed (negative = spent); occurredAt ISO, with an offset; merchant becomes the counterparty;
      * externalId is the receipt's own id ("grab:A-7KQ2…"): the same receipt twice gives back the line already there.
-     * details as for PUT /transactions/{id}/details.
+     * details as for PUT /transactions/{id}/details. originalAmount / originalCurrency: when the receipt was in
+     * another currency than the account's. currency instead of accountId: cash in that currency, in its own wallet.
      */
-    public record ReceiptRequest(UUID accountId, String occurredAt, BigDecimal amount, String merchant, String externalId, JsonNode details) {}
+    public record ReceiptRequest(UUID accountId, String occurredAt, BigDecimal amount, String merchant, String externalId, JsonNode details,
+                                 BigDecimal originalAmount, String originalCurrency, String currency) {}
 
     /** created: false when the receipt was there already (its details are filled in if it had none). */
     public record Receipt(boolean created, Txn txn) {}
 
-    /** A quick note, already understood by the client: amount is signed (negative = spent). */
-    public record NoteRequest(String text, BigDecimal amount, UUID accountId, String occurredAt, UUID categoryId) {}
+    /**
+     * A quick note, already understood by the client: amount is signed (negative = spent), in the account's currency.
+     * currency: what the amount is in when no account is given — cash in that currency, in its own wallet
+     * ("Cash · THB", made when there is none yet); none (or VND) is the usual VND cash.
+     */
+    public record NoteRequest(String text, BigDecimal amount, UUID accountId, String occurredAt, UUID categoryId, String currency) {}
 
     /** A note worth repeating with one tap, built from recent ones. */
     public record QuickChip(String text, BigDecimal amount, UUID accountId, String accountName,
@@ -171,9 +185,12 @@ public final class FinanceDto {
     public record MonthReport(String month, BigDecimal income, BigDecimal expense, BigDecimal saved, BigDecimal net,
                               List<CategoryLine> expenses, List<CategoryLine> incomes, List<AccountLine> accounts,
                               Budget budget, BigDecimal prevExpense, BigDecimal prevExpenseToDate, long reviewCount,
-                              List<Gap> gaps, BigDecimal usdRate, List<FacetSpend> byLabel, BigDecimal moved) {}
+                              List<Gap> gaps, BigDecimal usdRate, List<FacetSpend> byLabel, BigDecimal moved, String currency) {}
 
     public record TrendPoint(String month, BigDecimal income, BigDecimal expense, BigDecimal saved, BigDecimal netWorth) {}
+
+    /** What one unit of a currency was worth in VND on a day; source: where the figure came from. */
+    public record RateRow(String currency, LocalDate day, BigDecimal vnd, String source) {}
 
     // ── settings and the webhook log ──
 

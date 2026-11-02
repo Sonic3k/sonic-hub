@@ -84,7 +84,11 @@ export default function TxnList({ month, filter, onClearFilter }: { month: strin
               </span>
             )}
           </span>
-          <span className={`mn-amt${move ? ' tr' : t.amount > 0 ? ' in' : ''}`}>{money(t.amount, t.currency, true)}</span>
+          <span className={`mn-amt${move ? ' tr' : t.amount > 0 ? ' in' : ''}`}>
+            {money(t.amount, t.currency, true)}
+            {t.originalCurrency && t.originalAmount ? <small className="mn-orig">{money(t.originalAmount, t.originalCurrency)}</small>
+              : t.currency !== 'VND' && t.amountVnd !== null ? <small className="mn-orig">≈ {money(Math.abs(t.amountVnd), 'VND')}</small> : null}
+          </span>
         </button>
       </li>
     );

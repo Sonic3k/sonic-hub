@@ -1067,3 +1067,7 @@ button.mn-bar-row:hover, .mn-bar-row.on { background: var(--soft); }
 .side a.mem-ch small { margin-left: 0; margin-top: 1px; }
 @media (max-width: 860px) { .msearch { width: 100%; order: 3; margin-left: 0; } }
 
+/* under an amount: what was paid in another currency, or what a line in another currency was in VND that day */
+.mn-amt small.mn-orig { display: block; margin-top: 1px; font-size: 11.5px; font-weight: 500; color: var(--ink3); text-align: right; }
+.mn-sheet-head .mn-amt small.mn-orig { font-size: 12.5px; }
+.mn-cur a { min-width: 34px; text-align: center; }

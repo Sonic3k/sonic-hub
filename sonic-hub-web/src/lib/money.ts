@@ -20,10 +20,15 @@ export function vnd(n: number | null | undefined, signed = false): string {
   return (signed ? (n < 0 ? '−' : n > 0 ? '+' : '') : n < 0 ? '−' : '') + s + ' ₫';
 }
 
-export function money(n: number | null | undefined, currency = 'VND', signed = false): string {
-  if (currency === 'VND') return vnd(n, signed);
-  if (n === null || n === undefined) return '—';
-  return (signed ? (n < 0 ? '−' : n > 0 ? '+' : '') : n < 0 ? '−' : '') + '$' + Math.abs(n).toLocaleString('en-US', { maximumFractionDigits: 2 });
+/** An amount in its own currency: "66,000 ₫", "$12.50", "SGD 14.80", "THB 243.00". */
+export function money(n: number | null | undefined, currency: string | null = 'VND', signed = false): string {
+  const c = (currency || 'VND').toUpperCase();
+  if (c === 'VND') return vnd(n, signed);
+  if (n === null || n === undefined || Number.isNaN(n)) return '—';
+  const sign = signed ? (n < 0 ? '−' : n > 0 ? '+' : '') : n < 0 ? '−' : '';
+  try {
+    return sign + new Intl.NumberFormat('en-US', { style: 'currency', currency: c, currencyDisplay: c === 'USD' ? 'narrowSymbol' : 'code' }).format(Math.abs(n));
+  } catch { return `${sign}${Math.abs(n).toLocaleString('en-US', { maximumFractionDigits: 2 })} ${c}`; }
 }
 
 /** 35000 → "35k", 1200000 → "1.2M" — how the chips say it. */
@@ -76,7 +81,8 @@ export const dayWord = (s: string) => { const d = dayLabel(s); return d === 'Tod
 // ── the quick-note language ──
 
 export interface Parsed {
-  amount: number | null;          // signed, in the account's currency
+  amount: number | null;          // signed, in `currency`
+  currency: string | null;        // what the amount was typed in ("300 thb", "$12"); null = VND, or the account's own
   usd: boolean;
   accountId: string | null;       // null = the default (cash)
   date: string | null;            // YYYY-MM-DD (Vietnam) when not today
@@ -84,6 +90,14 @@ export interface Parsed {
 }
 
 const UNIT: Record<string, number> = { K: 1e3, NGHIN: 1e3, NGAN: 1e3, TR: 1e6, TRIEU: 1e6, M: 1e6, CU: 1e6, LIT: 1e5, D: 1, VND: 1, DONG: 1 };
+/** Words for other currencies in a note ("300 thb", "17rm", "12 usd"), and signs before or after the number. */
+const CURRENCY: Record<string, string> = {
+  USD: 'USD', DOLLAR: 'USD', DOLLARS: 'USD', SGD: 'SGD', THB: 'THB', BAHT: 'THB', MYR: 'MYR', RM: 'MYR', RINGGIT: 'MYR',
+  EUR: 'EUR', EURO: 'EUR', EUROS: 'EUR', GBP: 'GBP', JPY: 'JPY', YEN: 'JPY', KRW: 'KRW', WON: 'KRW', TWD: 'TWD', NTD: 'TWD',
+  PHP: 'PHP', PESO: 'PHP', IDR: 'IDR', RUPIAH: 'IDR', CNY: 'CNY', RMB: 'CNY', HKD: 'HKD', AUD: 'AUD', CAD: 'CAD', KHR: 'KHR',
+  LAK: 'LAK', INR: 'INR', CHF: 'CHF',
+};
+const SIGNS: [RegExp, string][] = [[/^S\$|S\$$/i, 'SGD'], [/^US\$/i, 'USD'], [/^\$|\$$/, 'USD'], [/€/, 'EUR'], [/£/, 'GBP'], [/¥/, 'JPY'], [/₩/, 'KRW'], [/฿/, 'THB']];
 const INCOME_WORDS = new Set(['NHAN', 'LUONG', 'THUONG', 'HOAN', 'LAI', 'SALARY', 'BONUS', 'REFUND', 'INTEREST', 'CASHBACK']);
 
 /** Words that pick an account, besides its own name: cash, MoMo, banks. */
@@ -91,7 +105,7 @@ function accountAliases(accounts: MoneyAccount[]): [string, MoneyAccount][] {
   const out: [string, MoneyAccount][] = [];
   for (const a of accounts.filter(x => !x.archived)) {
     const words = new Set<string>([norm(a.name).replace(/ /g, ''), norm(a.institution).replace(/ /g, '')].filter(Boolean));
-    if (a.mode === 'POOL') ['TM', 'CASH', 'TIENMAT'].forEach(w => words.add(w));
+    if (a.mode === 'POOL' && a.currency === 'VND') ['TM', 'CASH', 'TIENMAT'].forEach(w => words.add(w));
     const n = norm(a.name + ' ' + (a.institution ?? ''));
     if (n.includes('TPBANK')) ['TP', 'TPB'].forEach(w => words.add(w));
     if (n.includes('TECHCOMBANK')) ['TCB', 'TECHCOM'].forEach(w => words.add(w));
@@ -105,22 +119,35 @@ function accountAliases(accounts: MoneyAccount[]): [string, MoneyAccount][] {
 const up = (s: string) => s.normalize('NFD').replace(/\p{M}+/gu, '').replace(/đ/g, 'd').replace(/Đ/g, 'D').toUpperCase();
 
 /** One token as an amount: 35k · 1,5tr · 1tr2 · 1.500.000 · 35 (= 35k) · $12. `unit` says whether it was explicit. */
-function amountOf(raw: string): { value: number; usd: boolean; unit: boolean } | null {
-  let t = raw.trim(), usd = false;
-  if (/^\$|\$$|usd$/i.test(t)) { usd = true; t = t.replace(/\$|usd/gi, ''); }
-  const u = up(t);
+/** "1,500" and "1.500" are thousands; "14.80" and "14,8" are decimals. */
+function numberOf(digits: string): number {
+  return /^\d{1,3}([.,]\d{3})+$/.test(digits) ? +digits.replace(/[.,]/g, '') : +digits.replace(',', '.');
+}
+
+/**
+ * One token as an amount. value: what it means in VND when it names no currency ("35" is 35k); raw: the number as
+ * typed, for any other currency; currency: one it names ("$12", "17rm", "usd12").
+ */
+function amountOf(raw: string): { value: number; raw: number; currency: string | null; unit: boolean } | null {
+  let t = raw.trim(), currency: string | null = null;
+  for (const [re, c] of SIGNS) if (re.test(t)) { currency = c; t = t.replace(re, ''); break; }
+  let u = up(t);
+  if (!currency) {
+    const w = /^([A-Z]{2,7})(\d.*)$/.exec(u) ?? /^(\d[\d.,]*)([A-Z]{2,7})$/.exec(u);
+    const word = w ? (/^\d/.test(w[1]) ? w[2] : w[1]) : '';
+    if (w && word in CURRENCY) { currency = CURRENCY[word]; u = /^\d/.test(w[1]) ? w[1] : w[2]; }
+  }
   const tr = /^(\d+)(TR|M|CU)(\d{1,3})$/.exec(u);                      // 1tr2 = 1,2 triệu
-  if (tr) return { value: (+tr[1] + +(`0.${tr[3]}`)) * 1e6, usd, unit: true };
+  if (tr && !currency) { const v = (+tr[1] + +(`0.${tr[3]}`)) * 1e6; return { value: v, raw: v, currency, unit: true }; }
   const num = /^(\d{1,3}(?:[.,]\d{3})+|\d+(?:[.,]\d+)?)([A-Z]*)$/.exec(u);
   if (!num) return null;
   const [, digits, unit] = num;
-  if (unit && !(unit in UNIT)) return null;
-  const grouped = /^\d{1,3}([.,]\d{3})+$/.test(digits);
-  const value = grouped ? +digits.replace(/[.,]/g, '') : +digits.replace(',', '.');
-  if (!Number.isFinite(value) || value <= 0) return null;
-  if (usd) return { value, usd, unit: true };
-  if (unit) return { value: value * UNIT[unit], usd, unit: true };
-  return { value: value < 1000 ? value * 1000 : value, usd, unit: grouped };     // "cafe 35" means 35k
+  if (unit && (currency || !(unit in UNIT))) return null;
+  const n = numberOf(digits);
+  if (!Number.isFinite(n) || n <= 0) return null;
+  if (currency) return { value: n, raw: n, currency, unit: true };
+  if (unit) return { value: n * UNIT[unit], raw: n * UNIT[unit], currency, unit: true };
+  return { value: n < 1000 ? n * 1000 : n, raw: n, currency, unit: /^\d{1,3}([.,]\d{3})+$/.test(digits) };   // "cafe 35" means 35k
 }
 
 /**
@@ -160,26 +187,33 @@ export function parseNote(input: string, accounts: MoneyAccount[]): Parsed {
   // the amount: the first one with a unit, else the first bare number
   const cands = rest.map((r, k) => ({ k, a: amountOf(r.tok) })).filter(c => c.a);
   const pick = cands.find(c => c.a!.unit) ?? cands[0];
-  let amount: { value: number; usd: boolean } | null = null;
+  let amount: { value: number; raw: number; currency: string | null; unit: boolean } | null = null;
   const used = new Set<number>();
   if (pick) {
-    amount = { value: pick.a!.value, usd: pick.a!.usd };
+    amount = { ...pick.a! };
     used.add(pick.k);
-    const after = rest[pick.k + 1];                                    // "35 k", "2 tr"
+    const after = rest[pick.k + 1];                                    // "35 k", "2 tr", "14.80 sgd"
     const unitWord = after ? up(after.tok).replace(/[^A-Z]/g, '') : '';
-    if (!pick.a!.unit && !pick.a!.usd && after && unitWord in UNIT && unitWord !== 'D') {
-      const base = +up(rest[pick.k].tok).replace(/[^0-9.,]/g, '').replace(',', '.');
-      amount.value = base * UNIT[unitWord];
+    if (!pick.a!.unit && !pick.a!.currency && after && unitWord in CURRENCY && !/\d/.test(after.tok)) {
+      amount = { ...amount, value: amount.raw, currency: CURRENCY[unitWord], unit: true };
+      used.add(pick.k + 1);
+    } else if (!pick.a!.unit && !pick.a!.currency && after && unitWord in UNIT && unitWord !== 'D') {
+      const base = numberOf(up(rest[pick.k].tok).replace(/[^0-9.,]/g, ''));
+      amount.value = amount.raw = base * UNIT[unitWord];
       used.add(pick.k + 1);
     }
   }
   const words = rest.filter((_, k) => !used.has(k)).map(r => r.tok);
   if (words.length && INCOME_WORDS.has(norm(words[0]).replace(/ /g, ''))) sign = 1;
 
-  let usd = amount?.usd ?? false;
-  if (usd && !accountId) accountId = accounts.find(a => a.currency === 'USD' && !a.archived)?.id ?? null;
-  if (accountId && accounts.find(a => a.id === accountId)?.currency === 'USD') usd = true;
-  return { amount: amount ? sign * amount.value : null, usd, accountId, date, text: words.join(' ') };
+  // the currency: one typed with the amount, else the picked account's own; cash in another currency has its own wallet
+  const account = accountId ? accounts.find(a => a.id === accountId) : undefined;
+  let currency = amount?.currency ?? null;
+  if (currency === 'VND') currency = null;
+  if (currency && !accountId) accountId = accounts.find(a => !a.archived && a.mode === 'POOL' && a.currency === currency)?.id ?? null;
+  if (!currency && account && account.currency !== 'VND') currency = account.currency;
+  const value = amount ? (currency ? amount.raw : amount.value) : null;   // "14.8" in a SGD wallet is 14.80, not 14,800
+  return { amount: value === null ? null : sign * value, currency, usd: currency === 'USD', accountId, date, text: words.join(' ') };
 }
 
 /** "12/10" typed in January means last October. */
