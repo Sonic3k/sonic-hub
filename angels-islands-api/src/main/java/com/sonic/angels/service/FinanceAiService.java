@@ -103,7 +103,7 @@ public class FinanceAiService {
             "- Tài khoản: " + t.getAccount().getName() + "\n" +
             "- Lúc: " + vn.getDayOfWeek().getDisplayName(TextStyle.FULL, new Locale("vi")) + " " + vn.toLocalTime().withSecond(0).withNano(0) + "\n" +
             "- Nội dung: " + Objects.toString(t.getDescription(), "") + "\n" +
-            (t.getBankDescription() != null ? "- Mô tả ngân hàng: " + t.getBankDescription() + "\n" : "") +
+            (t.getBankDescription() != null && !t.getBankDescription().equals(t.getDescription()) ? "- Mô tả ngân hàng: " + t.getBankDescription() + "\n" : "") +
             (t.getNote() != null ? "- Ghi chú: " + t.getNote() + "\n" : "");
         return Map.of("prompt", text);
     }

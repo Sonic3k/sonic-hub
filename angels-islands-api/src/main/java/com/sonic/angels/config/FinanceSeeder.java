@@ -79,6 +79,8 @@ public class FinanceSeeder implements SmartInitializingSingleton {
      * labels set while sorting the bank history) get their English names. Names typed by hand are left as they are.
      * 5: labels have parents instead of a separate "Group" facet — its labels become categories that their children
      * bring along (Food & Drink above Food and Drinks), shown just before them, and the Group facet is archived.
+     * 6: every line from a bank keeps the bank's own text apart from its name here: lines that never had it get it from
+     * their description (what the bank said, unless renamed by hand), and SePay's copy loses its "BankAPINotify" prefix.
      */
     private void upgrade() {
         int version = settings.findById(SEED_VERSION).map(AppSetting::getValue).map(v -> {
@@ -162,6 +164,23 @@ public class FinanceSeeder implements SmartInitializingSingleton {
             }
             version(5);
             log.info("Finance: {} label(s) of the Group facet are categories now ({} line(s) looked at)", n, lines);
+        }
+        if (version < 6) {
+            int kept = 0, trimmed = 0;
+            for (FinanceTransaction t : txns.findAll()) {
+                FinanceTransaction.Source src = t.getSource();
+                if (src != FinanceTransaction.Source.SEPAY && src != FinanceTransaction.Source.STATEMENT && src != FinanceTransaction.Source.EMAIL) continue;
+                String bank = t.getBankDescription();
+                if (bank != null && !bank.isBlank()) {
+                    String clean = FinanceText.bankText(bank, null);
+                    if (clean != null && !clean.equals(bank)) { t.setBankDescription(clean); trimmed++; }
+                } else if (t.getDescription() != null && !t.getDescription().isBlank()) {
+                    t.setBankDescription(t.getDescription().strip());
+                    kept++;
+                }
+            }
+            version(6);
+            log.info("Finance: the bank's own text kept apart on {} line(s), {} SePay line(s) cleaned", kept, trimmed);
         }
     }
 

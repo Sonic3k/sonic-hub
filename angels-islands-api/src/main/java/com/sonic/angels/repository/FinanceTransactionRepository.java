@@ -27,6 +27,19 @@ public interface FinanceTransactionRepository extends JpaRepository<FinanceTrans
            "WHERE t.occurredAt >= :from AND t.occurredAt < :to")
     List<FinanceTransaction> findInRange(LocalDateTime from, LocalDateTime to);
 
+    /** Sides of moves that the system wrote on this account itself (mirrors), by amount and time. */
+    @Query("SELECT t FROM FinanceTransaction t JOIN FETCH t.transferPeer " +
+           "WHERE t.account.id = :accountId AND t.amount = :amount AND t.source = com.sonic.angels.model.entity.FinanceTransaction.Source.SYSTEM " +
+           "AND t.kind = com.sonic.angels.model.entity.FinanceTransaction.Kind.TRANSFER AND t.occurredAt BETWEEN :from AND :to")
+    List<FinanceTransaction> mirrorsOn(UUID accountId, BigDecimal amount, LocalDateTime from, LocalDateTime to);
+
+    /** Bank lines on this account (not mirrors, not paired yet) of this amount, by time: the other side of a known move. */
+    @Query("SELECT t FROM FinanceTransaction t " +
+           "WHERE t.account.id = :accountId AND t.amount = :amount AND t.transferPeer IS NULL " +
+           "AND t.source IN (com.sonic.angels.model.entity.FinanceTransaction.Source.SEPAY, com.sonic.angels.model.entity.FinanceTransaction.Source.EMAIL, " +
+           "com.sonic.angels.model.entity.FinanceTransaction.Source.STATEMENT) AND t.occurredAt BETWEEN :from AND :to")
+    List<FinanceTransaction> realSideOn(UUID accountId, BigDecimal amount, LocalDateTime from, LocalDateTime to);
+
     /** The other side of a move between own accounts: same size, opposite sign, close in time, not paired yet. */
     @Query("SELECT t FROM FinanceTransaction t JOIN FETCH t.account " +
            "WHERE t.account.id <> :accountId AND t.amount = :amount AND t.transferPeer IS NULL " +

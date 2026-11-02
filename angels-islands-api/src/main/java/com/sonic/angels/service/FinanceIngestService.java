@@ -117,7 +117,7 @@ public class FinanceIngestService {
         t.setOccurredAt(FinanceText.parseSepayTime(text(j, "transactionDate")));
         t.setAmount(signed);
         t.setDescription(!content.isEmpty() ? content : description);
-        if (!description.isEmpty() && !description.equals(t.getDescription())) t.setBankDescription(description);
+        t.setBankDescription(FinanceText.bankText(description, content));
         t.setReferenceCode(reference.isEmpty() ? null : reference);
         counterparty(t);
         BigDecimal balance = number(j, "accumulated");

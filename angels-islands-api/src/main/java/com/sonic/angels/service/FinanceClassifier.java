@@ -33,6 +33,8 @@ public class FinanceClassifier {
 
     private static final Set<Source> FEEDS = Set.of(Source.SEPAY, Source.EMAIL, Source.STATEMENT);
     private static final Duration PAIR_WINDOW = Duration.ofMinutes(90);
+    /** How far apart in time the two sides of one known move may be (a statement can date a line by the day only). */
+    private static final Duration SIDE_WINDOW = Duration.ofDays(1);
 
     private final FinanceRuleRepository ruleRepo;
     private final FinanceTransactionRepository txnRepo;
@@ -44,7 +46,7 @@ public class FinanceClassifier {
 
     /** A saved transaction that nobody has decided on yet. Returns true when the AI should guess its category. */
     public boolean classify(FinanceTransaction t) {
-        if (FEEDS.contains(t.getSource()) && pairWithExisting(t)) return false;
+        if (FEEDS.contains(t.getSource()) && (takeOverMirror(t) || pairWithExisting(t))) return false;
         FinanceAccount mine = ownAccountByCounterparty(t);
         if (mine != null) { makeTransfer(t, mine, By.SYSTEM); return false; }
         if (decide(t, fitting(t, rules()))) return false;
@@ -167,6 +169,12 @@ public class FinanceClassifier {
         t.setDescription(label);
     }
 
+    /** Before a bank line is renamed by hand, what the bank said is kept, if it was not yet (lines from before it always was). */
+    public static void keepBankText(FinanceTransaction t) {
+        if (!FEEDS.contains(t.getSource()) || (t.getBankDescription() != null && !t.getBankDescription().isBlank())) return;
+        if (t.getDescription() != null && !t.getDescription().isBlank()) t.setBankDescription(t.getDescription().strip());
+    }
+
     /** The main facet becomes this one category — the classic one-category decision. */
     public void setMain(FinanceTransaction t, FinanceCategory c, By by) {
         if (t.getKind() == Kind.TRANSFER) t.setKind(t.getAmount().signum() < 0 ? Kind.EXPENSE : Kind.INCOME);
@@ -184,6 +192,21 @@ public class FinanceClassifier {
         t.getTags().clear();
         t.setStatus(Status.OK);
         t.setCategorizedBy(by);
+        // the bank's own line on the other account is already here (its statement came first): that is the other side
+        FinanceTransaction real = txnRepo.realSideOn(target.getId(), t.getAmount().negate(),
+                t.getOccurredAt().minus(SIDE_WINDOW), t.getOccurredAt().plus(SIDE_WINDOW)).stream()
+            .filter(x -> !x.getId().equals(t.getId()) && (x.getKind() == Kind.TRANSFER || x.getCategorizedBy() != By.USER))
+            .min(Comparator.comparing(x -> Duration.between(x.getOccurredAt(), t.getOccurredAt()).abs())).orElse(null);
+        if (real != null) {
+            real.setKind(Kind.TRANSFER);
+            real.setCategory(null);
+            real.getTags().clear();
+            real.setStatus(Status.OK);
+            real.setCategorizedBy(by);
+            real.setTransferPeer(t);
+            t.setTransferPeer(real);
+            return;
+        }
         if (target.getMode() == FinanceAccount.Mode.FEED) return;
         if (!target.getCurrency().equalsIgnoreCase(t.getAccount().getCurrency())) return;
         FinanceTransaction m = new FinanceTransaction();
@@ -218,13 +241,40 @@ public class FinanceClassifier {
         }
     }
 
-    /** Pair with a feed transaction of the same size and opposite sign on another feed account, close in time. */
+    /**
+     * A move this account took part in before any of its own data arrived has a side the system wrote here itself (a
+     * mirror of the other account's line). The bank's own line for it takes that side's place, so the money is not
+     * counted twice: same account, same amount, within a day.
+     */
+    private boolean takeOverMirror(FinanceTransaction t) {
+        FinanceTransaction mirror = txnRepo.mirrorsOn(t.getAccount().getId(), t.getAmount(),
+                t.getOccurredAt().minus(SIDE_WINDOW), t.getOccurredAt().plus(SIDE_WINDOW)).stream()
+            .filter(m -> m.getTransferPeer() != null && !m.getId().equals(t.getId()))
+            .min(Comparator.comparing(m -> Duration.between(m.getOccurredAt(), t.getOccurredAt()).abs())).orElse(null);
+        if (mirror == null) return false;
+        FinanceTransaction other = mirror.getTransferPeer();
+        other.setTransferPeer(null);
+        mirror.setTransferPeer(null);
+        removed(mirror);
+        txnRepo.unlinkPeer(mirror.getId());
+        txnRepo.delete(mirror);
+        t.setKind(Kind.TRANSFER);
+        t.setCategory(null);
+        t.getTags().clear();
+        t.setStatus(Status.OK);
+        t.setCategorizedBy(other.getCategorizedBy() == null ? By.SYSTEM : other.getCategorizedBy());
+        t.setTransferPeer(other);
+        other.setTransferPeer(t);
+        return true;
+    }
+
+    /** Pair with a bank line (feed or statement) of the same size and opposite sign on another account, close in time. */
     private boolean pairWithExisting(FinanceTransaction t) {
         BigDecimal opposite = t.getAmount().negate();
         List<FinanceTransaction> candidates = txnRepo.transferCandidates(t.getId(), t.getAccount().getId(), opposite,
             t.getOccurredAt().minus(PAIR_WINDOW), t.getOccurredAt().plus(PAIR_WINDOW));
         FinanceTransaction best = candidates.stream()
-            .filter(c -> FEEDS.contains(c.getSource()) && c.getAccount().getMode() == FinanceAccount.Mode.FEED)
+            .filter(c -> FEEDS.contains(c.getSource()))
             .filter(c -> c.getKind() == Kind.TRANSFER || c.getCategorizedBy() != By.USER)
             .min(Comparator.comparing(c -> Duration.between(c.getOccurredAt(), t.getOccurredAt()).abs()))
             .orElse(null);
