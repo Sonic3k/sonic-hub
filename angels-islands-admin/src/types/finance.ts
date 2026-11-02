@@ -54,7 +54,7 @@ export interface FinTxn {
   occurredAt: string; amount: number; amountVnd: number | null; kind: TxnKind
   categoryId: string | null; categoryName: string | null; categoryIcon: string | null
   description: string | null; payeeName: string | null; bankDescription: string | null; counterparty: string | null; counterpartyAccount: string | null; note: string | null
-  source: 'SEPAY' | 'EMAIL' | 'NOTE' | 'MANUAL' | 'RECONCILE' | 'SYSTEM'; status: TxnStatus
+  source: 'SEPAY' | 'EMAIL' | 'STATEMENT' | 'NOTE' | 'MANUAL' | 'RECONCILE' | 'SYSTEM' | 'RECEIPT'; status: TxnStatus
   categorizedBy: 'RULE' | 'AI' | 'USER' | 'SYSTEM' | null; aiConfidence: number | null; balanceAfter: number | null
   transferPeerId: string | null; transferAccountName: string | null; suggestedKeywords: string | null; createdAt: string
   tags: FinTagRef[]

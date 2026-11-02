@@ -28,7 +28,8 @@ import java.util.UUID;
 public class FinanceTransaction extends FinanceEntity {
 
     public enum Kind { EXPENSE, INCOME, TRANSFER }
-    public enum Source { SEPAY, EMAIL, STATEMENT, NOTE, MANUAL, RECONCILE, SYSTEM }
+    /** EMAIL: a bank's notification email; RECEIPT: a merchant's receipt (a Grab ride paid from MoMo), for a wallet with no feed. */
+    public enum Source { SEPAY, EMAIL, STATEMENT, NOTE, MANUAL, RECONCILE, SYSTEM, RECEIPT }
     public enum Status { OK, REVIEW }
     /** IMPLIED only on tags: brought along by another tag of the line. */
     public enum By { RULE, AI, USER, SYSTEM, IMPLIED }

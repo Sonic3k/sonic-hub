@@ -142,6 +142,10 @@ public class FinanceController {
     @PutMapping("/transactions/{id}")
     public FinanceDto.Txn updateTransaction(@PathVariable UUID id, @RequestBody FinanceDto.TxnRequest req) { return finance.updateTransaction(id, req); }
 
+    /** A payment read from a merchant's receipt, for MoMo / Cash and other accounts without a bank feed. */
+    @PostMapping("/receipts")
+    public FinanceDto.Receipt receipt(@RequestBody FinanceDto.ReceiptRequest req) { return finance.receipt(req); }
+
     /** What the payment bought (a flight, a hotel stay), from an email; null or {} clears it. */
     @PutMapping("/transactions/{id}/details")
     public FinanceDto.Txn setDetails(@PathVariable UUID id, @RequestBody(required = false) JsonNode details) { return finance.setDetails(id, details); }

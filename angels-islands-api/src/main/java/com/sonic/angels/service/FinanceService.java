@@ -448,23 +448,63 @@ public class FinanceService {
      */
     public FinanceDto.Txn setDetails(UUID id, JsonNode d) {
         FinanceTransaction t = txn(id);
-        if (d == null || d.isNull() || (d.isObject() && d.isEmpty())) t.setDetails(null);
-        else {
-            if (!d.isObject()) throw new IllegalArgumentException("Details must be an object");
-            for (String k : new String[]{"kind", "title"})
-                if (!d.path(k).isTextual() || d.path(k).asText().isBlank()) throw new IllegalArgumentException("Details need a " + k);
-            if (d.path("title").asText().length() > 200) throw new IllegalArgumentException("The title is too long");
-            for (String k : new String[]{"start", "end"}) {
-                JsonNode v = d.path(k);
-                if (v.isMissingNode() || v.isNull()) continue;
-                try { LocalDate.parse(v.asText()); }
-                catch (Exception e) { throw new IllegalArgumentException(k + " must be a date (YYYY-MM-DD)"); }
-            }
-            String json = d.toString();
-            if (json.length() > 20_000) throw new IllegalArgumentException("Details are too long");
-            t.setDetails(json);
-        }
+        t.setDetails(detailsJson(d));
         return toTxn(t, rates.usdValue());
+    }
+
+    /** Details checked and stored as they came; null for none. */
+    private static String detailsJson(JsonNode d) {
+        if (d == null || d.isNull() || (d.isObject() && d.isEmpty())) return null;
+        if (!d.isObject()) throw new IllegalArgumentException("Details must be an object");
+        for (String k : new String[]{"kind", "title"})
+            if (!d.path(k).isTextual() || d.path(k).asText().isBlank()) throw new IllegalArgumentException("Details need a " + k);
+        if (d.path("title").asText().length() > 200) throw new IllegalArgumentException("The title is too long");
+        for (String k : new String[]{"start", "end"}) {
+            JsonNode v = d.path(k);
+            if (v.isMissingNode() || v.isNull()) continue;
+            try { LocalDate.parse(v.asText()); }
+            catch (Exception e) { throw new IllegalArgumentException(k + " must be a date (YYYY-MM-DD)"); }
+        }
+        String json = d.toString();
+        if (json.length() > 20_000) throw new IllegalArgumentException("Details are too long");
+        return json;
+    }
+
+    /**
+     * A payment read from a merchant's receipt, for an account the bank does not feed (a Grab ride paid from MoMo, a
+     * cash payment): a new line that carries what it bought and goes through the rules like any other. A receipt
+     * already here (its externalId) is given back as it is, its details filled in if it had none.
+     */
+    public FinanceDto.Receipt receipt(FinanceDto.ReceiptRequest r) {
+        String ext = blankToNull(r.externalId());
+        if (ext == null) throw new IllegalArgumentException("A receipt needs its own id (externalId)");
+        if (ext.length() > 100) throw new IllegalArgumentException("The receipt id is too long");
+        String details = detailsJson(r.details());
+        FinanceTransaction had = txnRepo.findByExternalId(ext).orElse(null);
+        if (had != null) {
+            if (had.getDetails() == null && details != null) had.setDetails(details);
+            return new FinanceDto.Receipt(false, toTxn(had, rates.usdValue()));
+        }
+        if (r.accountId() == null) throw new IllegalArgumentException("Pick an account");
+        if (r.amount() == null || r.amount().signum() == 0) throw new IllegalArgumentException("Enter an amount");
+        if (r.occurredAt() == null || r.occurredAt().isBlank()) throw new IllegalArgumentException("When was it paid?");
+        FinanceAccount a = account(r.accountId());
+        if (a.getMode() == FinanceAccount.Mode.FEED)
+            throw new IllegalArgumentException(a.getName() + " gets its lines from the bank: put the details on its line instead");
+        FinanceTransaction t = new FinanceTransaction();
+        t.setAccount(a);
+        t.setAmount(r.amount());
+        t.setOccurredAt(FinanceText.parseClientTime(r.occurredAt()));
+        t.setCounterparty(blankToNull(r.merchant()));
+        t.setDetails(details);
+        t.setExternalId(ext);
+        t.setSource(Source.RECEIPT);
+        t.setKind(r.amount().signum() < 0 ? Kind.EXPENSE : Kind.INCOME);
+        t.setStatus(Status.REVIEW);
+        t = txnRepo.save(t);
+        classifier.added(t);
+        if (!classifier.decide(t, classifier.fitting(t, classifier.rules()))) askAiAfterCommit(t);
+        return new FinanceDto.Receipt(true, toTxn(t, rates.usdValue()));
     }
 
     /** Typed in admin. Without a category it goes through the rules like everything else. */

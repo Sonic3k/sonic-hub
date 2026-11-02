@@ -11,12 +11,15 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 public interface FinanceTransactionRepository extends JpaRepository<FinanceTransaction, UUID>,
         JpaSpecificationExecutor<FinanceTransaction> {
 
     boolean existsByExternalId(String externalId);
+
+    Optional<FinanceTransaction> findByExternalId(String externalId);
 
     long countByStatus(FinanceTransaction.Status status);
 

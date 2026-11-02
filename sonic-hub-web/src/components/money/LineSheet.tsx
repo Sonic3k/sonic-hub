@@ -11,7 +11,7 @@ import { Sheet, SheetFoot } from './Sheet';
 import { toast } from './toast';
 
 const SOURCE: Record<string, string> = {
-  SEPAY: 'from the bank', EMAIL: 'from the bank', STATEMENT: 'from a statement', NOTE: 'manual entry', MANUAL: 'manual entry', RECONCILE: 'balance check',
+  SEPAY: 'from the bank', EMAIL: 'from the bank', STATEMENT: 'from a statement', NOTE: 'manual entry', MANUAL: 'manual entry', RECONCILE: 'balance check', RECEIPT: 'from a receipt',
 };
 /* lines that came from a bank: their kept text is the bank's; anything else kept is the words it was first written with */
 const FROM_BANK = new Set(['SEPAY', 'EMAIL', 'STATEMENT']);
@@ -200,7 +200,7 @@ export default function LineSheet({ txn: t, onClose }: { txn: Txn; onClose: () =
         <label>Note<input value={note} maxLength={120} onChange={e => setNote(e.target.value)} placeholder="who with, what for…" /></label>
         {editable && <label className="wide">When<input type="datetime-local" value={when} onChange={e => setWhen(e.target.value)} /></label>}
       </div>
-      {!editable && <p className="mn-sub">Amount and account stay as the bank reported them.</p>}
+      {!editable && <p className="mn-sub">Amount and account stay as {t.source === 'RECEIPT' ? 'the receipt shows them' : 'the bank reported them'}.</p>}
       <p className="mn-del"><button type="button" className="mn-link danger" disabled={busy} onClick={remove}>{del ? 'Tap again to delete it' : 'Delete transaction'}</button></p>
       {error && <p className="mn-error">{error}</p>}
       <SheetFoot note={footNote} label={many > 1 ? `Save for ${txs(many)}` : 'Save'} disabled={mode === 'transfer' && !wallet} busy={busy}

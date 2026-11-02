@@ -88,6 +88,17 @@ public final class FinanceDto {
     /** Many lines at once: these tags put on (his) and/or taken off. Moves between own accounts are skipped. */
     public record TagsRequest(List<UUID> ids, List<UUID> add, List<UUID> remove) {}
 
+    /**
+     * A payment read from a merchant's receipt (a Grab ride paid from MoMo), for an account the bank does not feed.
+     * amount is signed (negative = spent); occurredAt ISO, with an offset; merchant becomes the counterparty;
+     * externalId is the receipt's own id ("grab:A-7KQ2…"): the same receipt twice gives back the line already there.
+     * details as for PUT /transactions/{id}/details.
+     */
+    public record ReceiptRequest(UUID accountId, String occurredAt, BigDecimal amount, String merchant, String externalId, JsonNode details) {}
+
+    /** created: false when the receipt was there already (its details are filled in if it had none). */
+    public record Receipt(boolean created, Txn txn) {}
+
     /** A quick note, already understood by the client: amount is signed (negative = spent). */
     public record NoteRequest(String text, BigDecimal amount, UUID accountId, String occurredAt, UUID categoryId) {}
 
