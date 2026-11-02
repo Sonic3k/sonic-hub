@@ -19,6 +19,9 @@ public interface FinanceTransactionRepository extends JpaRepository<FinanceTrans
 
     boolean existsByExternalId(String externalId);
 
+    @Query("select distinct t.originalCurrency from FinanceTransaction t where t.originalCurrency is not null")
+    List<String> originalCurrencies();
+
     Optional<FinanceTransaction> findByExternalId(String externalId);
 
     long countByStatus(FinanceTransaction.Status status);

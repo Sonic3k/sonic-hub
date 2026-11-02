@@ -4,8 +4,9 @@ import { moneyApi } from '../../api/money';
 
 const S = 60_000;
 export const useSummary = () => useQuery({ queryKey: ['money', 'summary'], queryFn: moneyApi.summary, staleTime: S });
-export const useReport = (month: string) => useQuery({ queryKey: ['money', 'report', month], queryFn: () => moneyApi.report(month), staleTime: S, placeholderData: p => p });
-export const useTrend = () => useQuery({ queryKey: ['money', 'trend'], queryFn: () => moneyApi.trend(12), staleTime: S });
+export const useReport = (month: string, currency = 'VND') =>
+  useQuery({ queryKey: ['money', 'report', month, currency], queryFn: () => moneyApi.report(month, currency), staleTime: S, placeholderData: p => p });
+export const useTrend = (currency = 'VND') => useQuery({ queryKey: ['money', 'trend', currency], queryFn: () => moneyApi.trend(12, currency), staleTime: S });
 export const useCategories = () => useQuery({ queryKey: ['money', 'categories'], queryFn: moneyApi.categories, staleTime: 10 * S });
 export const useFacets = () => useQuery({ queryKey: ['money', 'facets'], queryFn: moneyApi.facets, staleTime: 10 * S, retry: 1 });
 export const useRules = () => useQuery({ queryKey: ['money', 'rules'], queryFn: moneyApi.rules, staleTime: 10 * S });

@@ -58,6 +58,8 @@ export interface FinTxn {
   categorizedBy: 'RULE' | 'AI' | 'USER' | 'SYSTEM' | null; aiConfidence: number | null; balanceAfter: number | null
   transferPeerId: string | null; transferAccountName: string | null; suggestedKeywords: string | null; createdAt: string
   tags: FinTagRef[]
+  /** what was paid when it was another currency than the account's (a VND card charged 148 SGD) */
+  originalAmount?: number | null; originalCurrency?: string | null
   /** what the payment bought (a flight, a hotel stay), read from an email */
   details?: { kind: string; title: string; start?: string | null; end?: string | null; items?: { label: string; value: string }[]; source?: { kind?: string; url?: string; subject?: string } | null } | null
 }

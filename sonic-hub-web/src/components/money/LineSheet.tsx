@@ -19,6 +19,16 @@ const DETAIL_KIND: Record<string, string> = {
   flight: 'Flight', hotel: 'Hotel stay', ride: 'Ride', food: 'Food order', order: 'Order', delivery: 'Delivery', tip: 'Tip', membership: 'Membership',
 };
 
+/** "148 SGD", "SGD 148", "20.5 usd", "1,234.50 EUR" → amount and currency; null when it is not that. */
+function readOriginal(s: string): { amount: number; currency: string } | null {
+  const m = /^\s*([A-Za-z]{3})\s*([\d.,]+)\s*$/.exec(s) ?? /^\s*([\d.,]+)\s*([A-Za-z]{3})\s*$/.exec(s);
+  if (!m) return null;
+  const [num, code] = /^\d/.test(m[1]) ? [m[1], m[2]] : [m[2], m[1]];
+  const grouped = /^\d{1,3}(,\d{3})+(\.\d+)?$/.test(num);
+  const amount = grouped ? +num.replace(/,/g, '') : +num.replace(',', '.');
+  return Number.isFinite(amount) && amount > 0 ? { amount, currency: code.toUpperCase() } : null;
+}
+
 const toInput = (s: string) => {
   const p = new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Ho_Chi_Minh', year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', hour12: false }).formatToParts(utc(s));
   const g = (x: string) => p.find(y => y.type === x)!.value;
@@ -48,6 +58,8 @@ export default function LineSheet({ txn: t, onClose }: { txn: Txn; onClose: () =
   const [name, setName] = useState('');
   const [own, setOwn] = useState(t.description ?? '');   // the line's own words; empty = shown by its payee or the bank's text
   const [note, setNote] = useState(t.note ?? '');
+  const orig0 = t.originalCurrency && t.originalAmount ? `${t.originalAmount} ${t.originalCurrency}` : '';
+  const [orig, setOrig] = useState(orig0);     // what was paid in another currency: "148 SGD"
   const editable = t.source === 'NOTE' || t.source === 'MANUAL';
   const [amount, setAmount] = useState(String(Math.abs(t.amount)));
   const [accountId, setAccountId] = useState(t.accountId);
@@ -86,6 +98,15 @@ export default function LineSheet({ txn: t, onClose }: { txn: Txn; onClose: () =
     const b: TxnEdit = {};
     if (own.trim() !== (t.description ?? '').trim()) b.description = own.trim();
     if (note.trim() !== (t.note ?? '').trim()) b.note = note.trim();
+    if (orig.trim() !== orig0) {
+      if (!orig.trim()) b.originalCurrency = '';
+      else {
+        const o = readOriginal(orig);
+        if (!o) { setError('Write what was paid like “148 SGD” or “USD 20”'); return; }
+        if (o.currency === t.currency) { setError(`This account is already in ${t.currency}`); return; }
+        b.originalAmount = o.amount; b.originalCurrency = o.currency;
+      }
+    }
     if (editable) {
       const n = Number(amount.replace(/[^\d.]/g, ''));
       if (n && n !== Math.abs(t.amount)) b.amount = (t.amount < 0 ? -1 : 1) * n;
@@ -139,7 +160,11 @@ export default function LineSheet({ txn: t, onClose }: { txn: Txn; onClose: () =
             {t.accountName} · {SOURCE[t.source] ?? t.source.toLowerCase()}{cp ? ` · ${dir === 'out' ? '→' : '←'} ${cp}` : ''} · {timeOf(t.occurredAt)} {dayWord(t.occurredAt)}
           </small>
         </div>
-        <span className={`mn-amt${dir === 'in' ? ' in' : ''}`}>{money(t.amount, t.currency, true)}</span>
+        <span className={`mn-amt${dir === 'in' ? ' in' : ''}`}>
+          {money(t.amount, t.currency, true)}
+          {t.originalCurrency && t.originalAmount ? <small className="mn-orig">paid {money(t.originalAmount, t.originalCurrency)}</small>
+            : t.currency !== 'VND' && t.amountVnd !== null ? <small className="mn-orig">≈ {money(Math.abs(t.amountVnd), 'VND')} that day</small> : null}
+        </span>
       </div>
       {t.bankDescription && t.bankDescription !== title0 && <p className="mn-sub">{FROM_BANK.has(t.source) ? 'From the bank: ' : 'First written as: '}{t.bankDescription}</p>}
       {d && (
@@ -200,6 +225,8 @@ export default function LineSheet({ txn: t, onClose }: { txn: Txn; onClose: () =
         </select></label>
         <label>Description<input value={own} maxLength={120} onChange={e => setOwn(e.target.value)} placeholder={d?.title || t.payeeName || t.counterparty || t.bankDescription || 'what this payment was'} /></label>
         <label>Note<input value={note} maxLength={120} onChange={e => setNote(e.target.value)} placeholder="who with, what for…" /></label>
+        <label className="wide">Paid in another currency<input value={orig} maxLength={24} onChange={e => setOrig(e.target.value)}
+          placeholder={t.currency === 'VND' ? 'e.g. 148 SGD, if the card was charged in another currency' : 'e.g. 3,155,188 VND'} /></label>
         {editable && <label className="wide">When<input type="datetime-local" value={when} onChange={e => setWhen(e.target.value)} /></label>}
       </div>
       {!editable && <p className="mn-sub">Amount and account stay as {t.source === 'RECEIPT' ? 'the receipt shows them' : 'the bank reported them'}.</p>}

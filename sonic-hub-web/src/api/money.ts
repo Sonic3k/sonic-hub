@@ -46,6 +46,8 @@ export interface Txn {
   transferAccountId?: string | null;
   /** what the payment bought (a flight, a hotel stay), read from an email */
   details?: TxnDetails | null;
+  /** what was paid when it was another currency than the account's (a VND card charged 148 SGD): always positive */
+  originalAmount?: number | null; originalCurrency?: string | null;
 }
 /** kind: flight, hotel…; start/end: its first and last day (YYYY-MM-DD); items: what to show, in order. */
 export interface TxnDetails {
@@ -66,6 +68,8 @@ export interface MonthReport {
   gaps: { accountId: string; accountName: string; at: string; missing: number }[]; usdRate: number | null;
   /** spending by label, section by section; moved: money between own accounts */
   byLabel?: FacetSpend[]; moved?: number;
+  /** what the amounts are in: every line at the rate of its own day */
+  currency?: string;
 }
 export interface TrendPoint { month: string; income: number; expense: number; saved: number; netWorth: number | null }
 export interface Summary { accounts: MoneyAccount[]; netWorthVnd: number; reviewCount: number; usdRate: number | null; flexibleBudget: number | null; lastFeedAt: string | null }
@@ -75,6 +79,8 @@ export interface TxnEdit {
   accountId?: string; occurredAt?: string; amount?: number; kind?: string; categoryId?: string; description?: string; note?: string;
   transferAccountId?: string; learnKeywords?: string; learnCounterparty?: boolean; label?: string;
   tagIds?: string[]; ruleTagIds?: string[];
+  /** what was paid in another currency; originalCurrency '' clears it */
+  originalAmount?: number; originalCurrency?: string;
 }
 /** Everyone money went to or came from, with what still waits; one decision covers all their lines. */
 export interface CounterpartyGroup {
@@ -92,8 +98,8 @@ export interface ImportSummary {
 
 export const moneyApi = {
   summary: () => get<Summary>('/finance/summary'),
-  report: (month: string) => get<MonthReport>('/finance/report', { month }),
-  trend: (months = 12) => get<TrendPoint[]>('/finance/trend', { months }),
+  report: (month: string, currency = 'VND') => get<MonthReport>('/finance/report', { month, currency }),
+  trend: (months = 12, currency = 'VND') => get<TrendPoint[]>('/finance/trend', { months, currency }),
   categories: () => get<MoneyCategory[]>('/finance/categories'),
   facets: () => get<MoneyFacet[]>('/finance/facets'),
   /** the same name again in the same facet gives back the tag that exists */
@@ -110,7 +116,8 @@ export const moneyApi = {
   review: () => get<Txn[]>('/finance/review'),
   chips: () => get<Chip[]>('/finance/notes/chips', { limit: 8 }),
   transactions: (p: { month?: string; categoryId?: string; accountId?: string; page?: number; size?: number }) => get<Paged<Txn>>('/finance/transactions', p),
-  note: (b: { text: string; amount: number; accountId?: string | null; occurredAt?: string; categoryId?: string }) => send<Txn>('POST', '/finance/notes', b),
+  /** currency: what the amount is in when it is not the account's — with no account, the cash wallet of that currency */
+  note: (b: { text: string; amount: number; accountId?: string | null; occurredAt?: string; categoryId?: string; currency?: string }) => send<Txn>('POST', '/finance/notes', b),
   update: (id: string, b: TxnEdit) => send<Txn>('PUT', `/finance/transactions/${id}`, b),
   /** null clears them */
   setDetails: (id: string, d: TxnDetails | null) => send<Txn>('PUT', `/finance/transactions/${id}/details`, d ?? {}),

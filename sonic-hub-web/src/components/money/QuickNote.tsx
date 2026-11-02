@@ -23,11 +23,14 @@ export default function QuickNote() {
 
   const accounts = summary.data?.accounts ?? [];
   const live = accounts.filter(a => !a.archived);
-  const cash = live.find(a => a.mode === 'POOL') ?? live[0];
+  const cash = live.find(a => a.mode === 'POOL' && a.currency === 'VND') ?? live.find(a => a.mode === 'POOL') ?? live[0];
   const p = useMemo(() => parseNote(text, accounts), [text, accounts]);
   const sign = p.amount !== null && p.amount > 0 ? 1 : -1;
-  const accountId = accOverride ?? p.accountId ?? cash?.id ?? null;
+  /* money in another currency with no account picked: its own cash wallet ("Cash · THB"), made on the first note */
+  const accountId = accOverride ?? p.accountId ?? (p.currency ? null : cash?.id ?? null);
   const account = live.find(a => a.id === accountId);
+  const typedIn = p.currency ?? account?.currency ?? 'VND';
+  const accountName = account?.name ?? (p.currency ? `Cash · ${p.currency} (new)` : 'Account');
   const date = dateOverride ?? p.date;
   const g = useMemo(() => guess(p.text, sign, rules.data ?? [], categories.data ?? [], live, accountId),
     [p.text, sign, rules.data, categories.data, live, accountId]);
@@ -42,7 +45,7 @@ export default function QuickNote() {
     timer.current = window.setTimeout(() => setToast(null), 6000);
   };
 
-  const save = async (b: { text: string; amount: number; accountId?: string | null; occurredAt?: string; categoryId?: string }, label: string) => {
+  const save = async (b: { text: string; amount: number; accountId?: string | null; occurredAt?: string; categoryId?: string; currency?: string }, label: string) => {
     setBusy(true); setError('');
     try {
       const txn = await moneyApi.note(b);
@@ -58,16 +61,16 @@ export default function QuickNote() {
     const transfer = !catOverride && g?.kind === 'transfer';
     const ok = await save({
       text: p.text, amount: p.amount, accountId, occurredAt: noteTime(date),
-      categoryId: transfer ? undefined : chosen?.id,
-    }, `${chosen ? `${chosen.icon ?? ''} ${chosen.name}` : transfer ? `↔ ${g.account.name}` : 'Added'} · ${money(p.amount, account?.currency, true)}`);
+      categoryId: transfer ? undefined : chosen?.id, currency: p.currency ?? undefined,
+    }, `${chosen ? `${chosen.icon ?? ''} ${chosen.name}` : transfer ? `↔ ${g.account.name}` : 'Added'} · ${money(p.amount, typedIn, true)}`);
     if (ok) { reset(); input.current?.focus(); }
   };
 
   /* the chip's note, written out the way it would be typed ("cafe 35,000đ"), its account and label picked: Add saves it */
   const fill = (c: Chip) => {
-    const usd = live.find(a => a.id === c.accountId)?.currency === 'USD';
+    const cur = live.find(a => a.id === c.accountId)?.currency ?? 'VND';
     const abs = Math.abs(c.amount);
-    setText(`${c.text} ${c.amount > 0 ? '+' : ''}${usd ? `$${abs}` : `${abs.toLocaleString('en-US')}đ`}`);
+    setText(`${c.text} ${c.amount > 0 ? '+' : ''}${cur === 'VND' ? `${abs.toLocaleString('en-US')}đ` : cur === 'USD' ? `$${abs}` : `${abs} ${cur.toLowerCase()}`}`);
     setAccOverride(c.accountId); setCatOverride(c.categoryId); setDateOverride(null); setPicker(null); setError('');
     input.current?.focus();
   };
@@ -92,19 +95,19 @@ export default function QuickNote() {
 
       {p.amount !== null ? (
         <div className="mn-q-preview">
-          <span className={`mn-q-amt ${sign > 0 ? 'in' : ''}`}>{money(p.amount, account?.currency, true)}</span>
+          <span className={`mn-q-amt ${sign > 0 ? 'in' : ''}`}>{money(p.amount, typedIn, true)}</span>
           <button type="button" className={`mn-chip ${picker === 'cat' ? 'on' : ''}`} onClick={() => setPicker(picker === 'cat' ? null : 'cat')}>
             {chosen ? <>{chosen.icon} {chosen.name}</> : g?.kind === 'transfer' && !catOverride ? <>↔ {g.account.name}</> : <span className="mn-muted">Pick a category</span>}
           </button>
           <button type="button" className={`mn-chip ${picker === 'acc' ? 'on' : ''}`} onClick={() => setPicker(picker === 'acc' ? null : 'acc')}>
-            <i className="mn-dot" style={{ background: account?.color ?? 'var(--ink3)' }} />{account?.name ?? 'Account'}
+            <i className="mn-dot" style={{ background: account?.color ?? 'var(--ink3)' }} />{accountName}
           </button>
           <button type="button" className={`mn-chip ${picker === 'date' ? 'on' : ''}`} onClick={() => setPicker(picker === 'date' ? null : 'date')}>
             {!date || date === today ? 'Today' : date === yesterday ? 'Yesterday' : dayShort(date)}
           </button>
         </div>
       ) : (
-        <p className="mn-q-hint"><b>k</b> thousand · <b>m</b> million · add <b>momo</b>, <b>cash</b>, <b>tp</b> or <b>tcb</b> to pick the account · <b>yesterday</b> or <b>12/10</b> for an earlier day · <b>+</b> for money in</p>
+        <p className="mn-q-hint"><b>k</b> thousand · <b>m</b> million · <b>$12</b>, <b>300 thb</b> for other currencies · add <b>momo</b>, <b>cash</b>, <b>tp</b> or <b>tcb</b> to pick the account · <b>yesterday</b> or <b>12/10</b> for an earlier day · <b>+</b> for money in</p>
       )}
 
       {picker === 'cat' && p.amount !== null && (

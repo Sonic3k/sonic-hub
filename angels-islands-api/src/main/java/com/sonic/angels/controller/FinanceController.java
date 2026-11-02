@@ -3,6 +3,7 @@ package com.sonic.angels.controller;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.sonic.angels.model.dto.FinanceDto;
 import com.sonic.angels.service.FinanceIngestService;
+import com.sonic.angels.service.FinanceRateService;
 import com.sonic.angels.service.FinanceReportService;
 import com.sonic.angels.service.FinanceService;
 import com.sonic.angels.service.FinanceStatementService;
@@ -26,10 +27,11 @@ public class FinanceController {
     private final FinanceReportService reports;
     private final FinanceIngestService ingest;
     private final FinanceStatementService statements;
+    private final FinanceRateService rates;
 
     public FinanceController(FinanceService finance, FinanceReportService reports, FinanceIngestService ingest,
-                             FinanceStatementService statements) {
-        this.finance = finance; this.reports = reports; this.ingest = ingest; this.statements = statements;
+                             FinanceStatementService statements, FinanceRateService rates) {
+        this.finance = finance; this.reports = reports; this.ingest = ingest; this.statements = statements; this.rates = rates;
     }
 
     // ── overview and reports ──
@@ -37,11 +39,29 @@ public class FinanceController {
     @GetMapping("/summary")
     public FinanceDto.Summary summary() { return reports.summary(); }
 
+    /** currency: what to show the amounts in (VND unless asked) — every line at the rate of its own day. */
     @GetMapping("/report")
-    public FinanceDto.MonthReport report(@RequestParam(required = false) String month) { return reports.month(FinanceText.parseMonth(month)); }
+    public FinanceDto.MonthReport report(@RequestParam(required = false) String month, @RequestParam(required = false) String currency) {
+        return reports.month(FinanceText.parseMonth(month), currency);
+    }
 
     @GetMapping("/trend")
-    public List<FinanceDto.TrendPoint> trend(@RequestParam(defaultValue = "12") int months) { return reports.trend(months); }
+    public List<FinanceDto.TrendPoint> trend(@RequestParam(defaultValue = "12") int months, @RequestParam(required = false) String currency) {
+        return reports.trend(months, currency);
+    }
+
+    // ── exchange rates ──
+
+    /** VND for one unit of a currency, day by day (from/to: YYYY-MM-DD, both included). */
+    @GetMapping("/rates")
+    public List<FinanceDto.RateRow> rates(@RequestParam(defaultValue = "USD") String currency, @RequestParam(required = false) String from,
+                                          @RequestParam(required = false) String to) {
+        return rates.list(currency, from == null ? null : java.time.LocalDate.parse(from), to == null ? null : java.time.LocalDate.parse(to));
+    }
+
+    /** Add or replace rates (currency + day); history is loaded this way. */
+    @PutMapping("/rates")
+    public Map<String, Integer> putRates(@RequestBody List<FinanceDto.RateRow> rows) { return Map.of("saved", rates.upsert(rows)); }
 
     // ── accounts ──
 

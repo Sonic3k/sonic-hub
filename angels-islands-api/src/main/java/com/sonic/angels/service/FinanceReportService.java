@@ -54,9 +54,10 @@ public class FinanceReportService {
 
     /** Accounts with balances, net worth, how much waits for review. */
     public FinanceDto.Summary summary() {
+        FinanceFx fx = rates.fx();
         BigDecimal usd = rates.usdValue();
         List<FinanceDto.Account> accounts = accountRepo.findAllByOrderBySortOrderAscCreatedAtAsc().stream()
-            .map(a -> FinanceService.toAccount(a, usd, txnRepo.countByAccountId(a.getId()))).toList();
+            .map(a -> FinanceService.toAccount(a, fx, txnRepo.countByAccountId(a.getId()))).toList();
         BigDecimal net = accounts.stream()
             .filter(a -> !a.archived() && !"POOL".equals(a.mode()) && a.balanceVnd() != null)
             .map(FinanceDto.Account::balanceVnd).reduce(BigDecimal.ZERO, BigDecimal::add);
@@ -64,10 +65,15 @@ public class FinanceReportService {
         return new FinanceDto.Summary(accounts, net, txnRepo.countByStatus(FinanceTransaction.Status.REVIEW), usd, finance.flexibleBudget(), lastFeed);
     }
 
-    public FinanceDto.MonthReport month(YearMonth m) {
-        BigDecimal usd = rates.usdValue();
+    /**
+     * A month in a currency (VND unless asked): every line counts with the rate of its own day, so a dollar spent in
+     * 2019 is worth what it was then. The budget is a VND budget: only the VND view has one.
+     */
+    public FinanceDto.MonthReport month(YearMonth m, String currency) {
+        FinanceFx fx = rates.fx();
+        String in = reportCurrency(currency);
         LocalDateTime from = FinanceText.monthStartUtc(m), to = FinanceText.monthStartUtc(m.plusMonths(1));
-        Totals cur = totals(txnRepo.findInRange(from, to), usd);
+        Totals cur = totals(txnRepo.findInRange(from, to), fx, in);
         List<FinanceDto.CategoryLine> expenses = cur.expenseLines();
         List<FinanceDto.CategoryLine> incomes = cur.incomeLines();
 
@@ -76,15 +82,15 @@ public class FinanceReportService {
         YearMonth prev = m.minusMonths(1);
         LocalDateTime pFrom = FinanceText.monthStartUtc(prev), pTo = FinanceText.monthStartUtc(m);
         List<FinanceTransaction> prevTx = txnRepo.findInRange(pFrom, pTo);
-        BigDecimal prevExpense = totals(prevTx, usd).expense();
+        BigDecimal prevExpense = totals(prevTx, fx, in).expense();
         BigDecimal prevToDate = null;
         if (m.equals(now)) {
             Duration elapsed = Duration.between(from, FinanceText.nowUtc());
             LocalDateTime cut = pFrom.plus(elapsed);
-            prevToDate = totals(prevTx.stream().filter(t -> t.getOccurredAt().isBefore(cut)).toList(), usd).expense();
+            prevToDate = totals(prevTx.stream().filter(t -> t.getOccurredAt().isBefore(cut)).toList(), fx, in).expense();
         }
 
-        BigDecimal limit = finance.flexibleBudget();
+        BigDecimal limit = FinanceFx.VND.equals(in) ? finance.flexibleBudget() : null;
         FinanceDto.Budget budget = null;
         if (limit != null) {
             BigDecimal spent = expenses.stream()
@@ -102,7 +108,7 @@ public class FinanceReportService {
 
         return new FinanceDto.MonthReport(m.toString(), cur.income, cur.expense(), cur.saved, cur.income.subtract(cur.expense()),
             expenses, incomes, cur.accountLines(), budget, prevExpense, prevToDate,
-            txnRepo.countByStatus(FinanceTransaction.Status.REVIEW), gaps(from, to), usd, byLabel(cur), cur.moved);
+            txnRepo.countByStatus(FinanceTransaction.Status.REVIEW), gaps(from, to), rates.usdValue(), byLabel(cur), cur.moved, in);
     }
 
     /** Each live facet's view of the spending: its labels, and what carries none. */
@@ -131,8 +137,9 @@ public class FinanceReportService {
     }
 
     /** The last `months` months (oldest first): income, spending, saving, and net worth at each month's end. */
-    public List<FinanceDto.TrendPoint> trend(int months) {
-        BigDecimal usd = rates.usdValue();
+    public List<FinanceDto.TrendPoint> trend(int months, String currency) {
+        FinanceFx fx = rates.fx();
+        String in = reportCurrency(currency);
         YearMonth now = FinanceText.currentMonth();
         YearMonth start = now.minusMonths(Math.max(1, Math.min(months, 36)) - 1);
         LocalDateTime first = txnRepo.firstOccurredAt();
@@ -150,7 +157,7 @@ public class FinanceReportService {
 
         List<FinanceDto.TrendPoint> out = new ArrayList<>();
         for (YearMonth m = start; !m.isAfter(now); m = m.plusMonths(1)) {
-            Totals t = totals(byMonth.getOrDefault(m, List.of()), usd);
+            Totals t = totals(byMonth.getOrDefault(m, List.of()), fx, in);
             LocalDateTime end = m.equals(now) ? FinanceText.nowUtc() : FinanceText.monthStartUtc(m.plusMonths(1));
             BigDecimal worth = BigDecimal.ZERO;
             boolean known = false;
@@ -158,7 +165,7 @@ public class FinanceReportService {
                 BigDecimal later = all.stream()
                     .filter(x -> x.getAccount().getId().equals(a.getId()) && !x.getOccurredAt().isBefore(end))
                     .map(FinanceTransaction::getAmount).reduce(BigDecimal.ZERO, BigDecimal::add);
-                BigDecimal v = FinanceRateService.toVnd(a.getBalance().subtract(later), a.getCurrency(), usd);
+                BigDecimal v = fx.convert(a.getBalance().subtract(later), a.getCurrency(), in, end);   // worth then, at that day's rates
                 if (v != null) { worth = worth.add(v); known = true; }
             }
             out.add(new FinanceDto.TrendPoint(m.toString(), t.income, t.expense(), t.saved, known ? worth : null));
@@ -253,11 +260,20 @@ public class FinanceReportService {
         return new Key(c.getId(), c.getCode(), c.getName(), c.getIcon(), c.getBudgetGroup() == null ? null : c.getBudgetGroup().name());
     }
 
-    private static Totals totals(List<FinanceTransaction> txns, BigDecimal usd) {
+    /** "VND" unless another three-letter currency is asked for. */
+    static String reportCurrency(String currency) {
+        if (currency == null || currency.isBlank()) return FinanceFx.VND;
+        String c = currency.trim().toUpperCase(Locale.ROOT);
+        if (!c.matches("[A-Z]{3}")) throw new IllegalArgumentException("Not a currency code: " + currency);
+        return c;
+    }
+
+    /** Each line in `in`, with the rate of its own day; a line whose currency has no rate yet is left out. */
+    private static Totals totals(List<FinanceTransaction> txns, FinanceFx fx, String in) {
         Totals s = new Totals();
         for (FinanceTransaction t : txns) {
             FinanceAccount a = t.getAccount();
-            BigDecimal v = FinanceRateService.toVnd(t.getAmount(), a.getCurrency(), usd);
+            BigDecimal v = fx.convert(t.getAmount(), a.getCurrency(), in, t.getOccurredAt());
             if (v == null) continue;                                  // a currency without a rate yet
             if (t.getKind() != Kind.TRANSFER) {
                 Acc acc = s.accounts.computeIfAbsent(a.getId(), k -> { Acc x = new Acc(); x.name = a.getName(); x.mode = a.getMode().name(); return x; });
