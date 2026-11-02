@@ -1,4 +1,5 @@
-/* Quick note: one line, understood while typing, Enter writes it down. Recent notes come back as one-tap chips. */
+/* Quick note: one line, understood while typing, Enter writes it down. What is noted again and again comes back as
+   chips; a chip only fills the line in — nothing is written until Add, so a stray tap costs nothing. */
 import { useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { moneyApi, type Chip, type MoneyCategory, type Txn } from '../../api/money';
@@ -62,8 +63,14 @@ export default function QuickNote() {
     if (ok) { reset(); input.current?.focus(); }
   };
 
-  const tapChip = (c: Chip) => save({ text: c.text, amount: c.amount, accountId: c.accountId, categoryId: c.categoryId ?? undefined },
-    `${c.categoryIcon ?? ''} ${c.text} · ${money(c.amount, undefined, true)}`);
+  /* the chip's note, written out the way it would be typed ("cafe 35,000đ"), its account and label picked: Add saves it */
+  const fill = (c: Chip) => {
+    const usd = live.find(a => a.id === c.accountId)?.currency === 'USD';
+    const abs = Math.abs(c.amount);
+    setText(`${c.text} ${c.amount > 0 ? '+' : ''}${usd ? `$${abs}` : `${abs.toLocaleString('en-US')}đ`}`);
+    setAccOverride(c.accountId); setCatOverride(c.categoryId); setDateOverride(null); setPicker(null); setError('');
+    input.current?.focus();
+  };
 
   const undo = async () => {
     if (!toast) return;
@@ -128,9 +135,10 @@ export default function QuickNote() {
       {error && <p className="mn-error">{error}</p>}
 
       {!!chips.data?.length && (
-        <div className="mn-q-chips" aria-label="Add again in one tap">
+        <div className="mn-q-chips" role="group" aria-label="Often noted: tap to fill in">
+          <span className="mn-qc-label">Often noted · tap to fill in, then Add</span>
           {chips.data.map(c => (
-            <button key={`${c.text}-${c.amount}-${c.accountId}`} type="button" className="mn-qc" disabled={busy} onClick={() => tapChip(c)}>
+            <button key={`${c.text}-${c.amount}-${c.accountId}`} type="button" className="mn-qc" disabled={busy} onClick={() => fill(c)}>
               {c.categoryIcon && <span>{c.categoryIcon}</span>}{c.text}<b>{short(c.amount)}</b>
             </button>
           ))}

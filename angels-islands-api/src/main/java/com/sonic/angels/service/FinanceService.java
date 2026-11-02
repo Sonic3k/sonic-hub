@@ -787,7 +787,10 @@ public class FinanceService {
         return toTxn(t, rates.usdValue());
     }
 
-    /** The notes typed most often lately — one tap writes them again. */
+    /**
+     * The notes typed again and again lately (three times or more: a coffee, not a one-off payment) — a tap on one fills
+     * the quick note in; nothing is written until he adds it.
+     */
     @Transactional(readOnly = true)
     public List<FinanceDto.QuickChip> chips(int limit) {
         record Key(String text, BigDecimal amount, UUID account) {}
@@ -798,6 +801,7 @@ public class FinanceService {
             groups.computeIfAbsent(k, x -> new ArrayList<>()).add(t);
         }
         return groups.values().stream()
+            .filter(g -> g.size() >= 3)
             .sorted(Comparator.comparingInt((List<FinanceTransaction> g) -> g.size()).reversed())
             .limit(Math.max(1, Math.min(limit, 20)))
             .map(g -> {
