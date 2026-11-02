@@ -38,7 +38,7 @@ export interface FinTagRef { id: string; name: string; icon: string | null; face
 export interface FinRule {
   id: string; keywords: string; direction: RuleDirection; categoryId: string | null; categoryName: string | null; categoryIcon: string | null
   transferAccountId: string | null; transferAccountName: string | null; priority: number; origin: 'SEED' | 'USER'; hits: number; active: boolean
-  /** a rule about one counterparty (keywords empty); label renames what it matches */
+  /** a rule about one counterparty (keywords empty); label is what the payee of the lines it matches is called */
   counterpartyName: string | null; counterpartyAccount: string | null; label: string | null
   /** every tag it gives, the category among them; fromDate/toDate: an occasion's days (Vietnam dates) */
   tags: FinTagRef[]; fromDate: string | null; toDate: string | null
@@ -53,7 +53,7 @@ export interface FinTxn {
   id: string; accountId: string; accountName: string; accountMode: AccountMode; currency: string
   occurredAt: string; amount: number; amountVnd: number | null; kind: TxnKind
   categoryId: string | null; categoryName: string | null; categoryIcon: string | null
-  description: string | null; bankDescription: string | null; counterparty: string | null; counterpartyAccount: string | null; note: string | null
+  description: string | null; payeeName: string | null; bankDescription: string | null; counterparty: string | null; counterpartyAccount: string | null; note: string | null
   source: 'SEPAY' | 'EMAIL' | 'NOTE' | 'MANUAL' | 'RECONCILE' | 'SYSTEM'; status: TxnStatus
   categorizedBy: 'RULE' | 'AI' | 'USER' | 'SYSTEM' | null; aiConfidence: number | null; balanceAfter: number | null
   transferPeerId: string | null; transferAccountName: string | null; suggestedKeywords: string | null; createdAt: string

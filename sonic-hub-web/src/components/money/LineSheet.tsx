@@ -5,7 +5,7 @@ import { useRef, useState } from 'react';
 import { moneyApi, type Txn, type TxnEdit } from '../../api/money';
 import { dayWord, money, timeOf, utc } from '../../lib/money';
 import { useCounterpartyLines, useRefresh, useSummary } from './data';
-import { decided, dirOf, guessOf, labelsOf, sameSet, systemMove, txs, useLabelBook } from './labels';
+import { decided, dirOf, guessOf, labelsOf, sameSet, systemMove, titleOf, txs, useLabelBook } from './labels';
 import { LabelText, ModeSeg, Sections, Wallets } from './Picker';
 import { Sheet, SheetFoot } from './Sheet';
 import { toast } from './toast';
@@ -34,7 +34,7 @@ export default function LineSheet({ txn: t, onClose }: { txn: Txn; onClose: () =
     const labels = book.normalize(labelsOf(t)), guess = guessOf(t), fromGuess = waiting && guess.size > 0;
     start.current = { labels, sel: book.normalize([...labels, ...(fromGuess ? guess : [])]), fromGuess };
   }
-  const title0 = t.description || t.bankDescription || '';
+  const title0 = titleOf(t);
 
   const [mode, setMode] = useState<'label' | 'transfer'>(t.kind === 'TRANSFER' ? 'transfer' : 'label');
   const [sel, setSel] = useState<Set<string>>(start.current.sel);
@@ -43,7 +43,7 @@ export default function LineSheet({ txn: t, onClose }: { txn: Txn; onClose: () =
   const [rule, setRule] = useState(waiting && (!!cp || !!words));
   const [flip, setFlip] = useState<Set<string>>(new Set());
   const [name, setName] = useState('');
-  const [title, setTitle] = useState(title0);
+  const [own, setOwn] = useState(t.description ?? '');   // the line's own words; empty = shown by its payee or the bank's text
   const [note, setNote] = useState(t.note ?? '');
   const editable = t.source === 'NOTE' || t.source === 'MANUAL';
   const [amount, setAmount] = useState(String(Math.abs(t.amount)));
@@ -79,7 +79,7 @@ export default function LineSheet({ txn: t, onClose }: { txn: Txn; onClose: () =
   const save = async () => {
     if (busy || (mode === 'transfer' && !wallet)) return;
     const b: TxnEdit = {};
-    if (title.trim() !== title0.trim()) b.description = title.trim();
+    if (own.trim() !== (t.description ?? '').trim()) b.description = own.trim();
     if (note.trim() !== (t.note ?? '').trim()) b.note = note.trim();
     if (editable) {
       const n = Number(amount.replace(/[^\d.]/g, ''));
@@ -96,7 +96,7 @@ export default function LineSheet({ txn: t, onClose }: { txn: Txn; onClose: () =
     if (rule && cp) {
       if (mode === 'transfer') b.learnCounterparty = true;
       else if (carried.length) { b.learnCounterparty = true; b.ruleTagIds = carried; }
-      if (name.trim()) { b.label = name.trim(); delete b.description; }
+      if (name.trim()) b.label = name.trim();                             // what they are called, on every line of theirs
     } else if (rule && words) {
       if (mode === 'transfer') b.learnKeywords = words;
       else if (carried.length) { b.learnKeywords = words; b.ruleTagIds = carried; }
@@ -164,7 +164,7 @@ export default function LineSheet({ txn: t, onClose }: { txn: Txn; onClose: () =
           )}
           {rule && cp && (
             <input className="mn-pick-label" value={name} maxLength={80} onChange={e => setName(e.target.value)}
-              placeholder="Name them (optional), e.g. Morning coffee" aria-label="Name them (optional)" />
+              placeholder="What to call them (optional), e.g. Azzan Coffee" aria-label="What to call them (optional)" />
           )}
         </div>
       )}
@@ -174,7 +174,7 @@ export default function LineSheet({ txn: t, onClose }: { txn: Txn; onClose: () =
         <label>Account<select value={accountId} disabled={!editable} onChange={e => setAccountId(e.target.value)}>
           {accounts.map(a => <option key={a.id} value={a.id}>{a.name}</option>)}
         </select></label>
-        <label>Description<input value={title} maxLength={120} onChange={e => setTitle(e.target.value)} placeholder={t.bankDescription ?? ''} /></label>
+        <label>Description<input value={own} maxLength={120} onChange={e => setOwn(e.target.value)} placeholder={t.payeeName || t.counterparty || t.bankDescription || 'what this payment was'} /></label>
         <label>Note<input value={note} maxLength={120} onChange={e => setNote(e.target.value)} placeholder="who with, what for…" /></label>
         {editable && <label className="wide">When<input type="datetime-local" value={when} onChange={e => setWhen(e.target.value)} /></label>}
       </div>

@@ -102,8 +102,9 @@ public class FinanceAiService {
             "- Số tiền: " + (amt.signum() < 0 ? "tiền RA " : "tiền VÀO ") + nf.format(amt.abs()) + " " + t.getAccount().getCurrency() + "\n" +
             "- Tài khoản: " + t.getAccount().getName() + "\n" +
             "- Lúc: " + vn.getDayOfWeek().getDisplayName(TextStyle.FULL, new Locale("vi")) + " " + vn.toLocalTime().withSecond(0).withNano(0) + "\n" +
-            "- Nội dung: " + Objects.toString(t.getDescription(), "") + "\n" +
+            (t.getDescription() != null ? "- Nội dung: " + t.getDescription() + "\n" : "") +
             (t.getBankDescription() != null && !t.getBankDescription().equals(t.getDescription()) ? "- Mô tả ngân hàng: " + t.getBankDescription() + "\n" : "") +
+            (t.getCounterparty() != null ? "- Bên kia: " + t.getCounterparty() + "\n" : "") +
             (t.getNote() != null ? "- Ghi chú: " + t.getNote() + "\n" : "");
         return Map.of("prompt", text);
     }

@@ -134,7 +134,6 @@ public class FinanceStatementService {
             n.setAccount(account);
             n.setOccurredAt(FinanceText.vnToUtc(row.occurredAtVn()));
             n.setAmount(row.amount());
-            n.setDescription(row.description());
             n.setBankDescription(row.description());
             n.setCounterparty(who);
             n.setCounterpartyAccount(whoAccount);

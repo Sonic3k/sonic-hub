@@ -8,7 +8,7 @@ import { useState, type FocusEvent, type MouseEvent } from 'react';
 import type { FacetSpend, LabelLine, MonthReport, TrendPoint } from '../../api/money';
 import { compact, money, monthFull, monthName, monthShort, vnd } from '../../lib/money';
 import { useTxns } from './data';
-import { dirOf, labelsOf, txs, useLabelBook } from './labels';
+import { dirOf, labelsOf, titleOf, txs, useLabelBook } from './labels';
 
 export function LabelReport({ report, month, active, onPick }: { report?: MonthReport; month: string; active: string | null; onPick: (id: string | null) => void }) {
   const book = useLabelBook();
@@ -43,7 +43,7 @@ export function LabelReport({ report, month, active, onPick }: { report?: MonthR
     const inSec = (id: string) => book.secOf(id) === sec.facetId || (sec.main && book.isMain(id));
     const ex = (sample.data?.content ?? []).map(t => ({ t, ids: book.sortIds(book.normalize(labelsOf(t))).filter(inSec) }))
       .find(x => x.t.kind !== 'TRANSFER' && dirOf(x.t) === 'out' && x.ids.length >= 2);
-    const name = ex ? ex.t.description || ex.t.bankDescription : null;
+    const name = ex ? titleOf(ex.t) : null;
     note += ` This month ${sec.multi === 1 ? 'one transaction does' : `${sec.multi} transactions do`}`
       + `${ex && name ? `, e.g. ${name} (${ex.ids.map(id => book.label(id)?.name).join(' + ')})` : ''}.`;
   }

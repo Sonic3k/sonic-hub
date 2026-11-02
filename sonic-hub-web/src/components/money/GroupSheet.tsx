@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { moneyApi, type CounterpartyGroup, type Txn } from '../../api/money';
 import { dayOf, dayShort, money, timeOf, utc } from '../../lib/money';
 import { useCounterpartyLines, useRefresh, useSummary } from './data';
-import { decided, dirOf, labelsOf, systemMove, txs, useLabelBook, type Dir } from './labels';
+import { decided, dirOf, labelsOf, systemMove, titleOf, txs, useLabelBook, type Dir } from './labels';
 import { ModeSeg, Pill, Sections, Wallets } from './Picker';
 import { Sheet, SheetFoot } from './Sheet';
 import { toast } from './toast';
@@ -81,7 +81,7 @@ export default function GroupSheet({ group: g, onClose }: { group: CounterpartyG
             {shown.map(x => (
               <li key={x.id}>
                 <span>{dayShort(dayOf(utc(x.occurredAt)))} {timeOf(x.occurredAt)}</span>
-                <span className="mn-mini-t"><span>{x.description || x.bankDescription || '—'}</span>{now(x)}</span>
+                <span className="mn-mini-t"><span>{titleOf(x) || '—'}</span>{now(x)}</span>
                 <b>{money(x.amount, x.currency, true)}</b>
               </li>
             ))}
@@ -102,7 +102,7 @@ export default function GroupSheet({ group: g, onClose }: { group: CounterpartyG
       )}
       <div className="mn-everyone">
         <input className="mn-pick-label" value={name} maxLength={80} onChange={e => setName(e.target.value)}
-          placeholder="Name them (optional), e.g. Bubble tea" aria-label="Name them (optional)" />
+          placeholder="What to call them (optional), e.g. Azzan Coffee" aria-label="What to call them (optional)" />
       </div>
       {error && <p className="mn-error">{error}</p>}
       <SheetFoot note={footNote} label={`Apply to ${txs(n)}`} busy={busy} onSave={save} onCancel={onClose}

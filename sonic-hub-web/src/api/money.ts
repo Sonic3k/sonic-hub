@@ -35,7 +35,8 @@ export interface Txn {
   id: string; accountId: string; accountName: string; accountMode: Mode; currency: string; occurredAt: string;
   amount: number; amountVnd: number | null; kind: 'EXPENSE' | 'INCOME' | 'TRANSFER';
   categoryId: string | null; categoryName: string | null; categoryIcon: string | null;
-  description: string | null; bankDescription: string | null; note: string | null;
+  /** description: the line's own words; payeeName: what rules call the other side; bankDescription: what the bank said */
+  description: string | null; payeeName: string | null; bankDescription: string | null; note: string | null;
   counterparty: string | null; counterpartyAccount: string | null;
   source: string; status: 'OK' | 'REVIEW'; categorizedBy: 'RULE' | 'AI' | 'USER' | 'SYSTEM' | null; aiConfidence: number | null;
   transferPeerId: string | null; transferAccountName: string | null; suggestedKeywords: string | null; createdAt: string;

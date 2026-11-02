@@ -123,7 +123,7 @@ export default function TransactionsTab() {
                         {t.kind === 'TRANSFER' ? <ArrowLeftRight size={15} className="text-slate-400" /> : t.categoryIcon || '❔'}
                       </span>
                       <div className="min-w-0 flex-1">
-                        <p className="text-sm text-slate-800 truncate">{t.description || t.bankDescription || '—'}</p>
+                        <p className="text-sm text-slate-800 truncate">{t.description || t.payeeName || t.counterparty || t.bankDescription || '—'}</p>
                         <p className="text-xs text-slate-400 flex items-center gap-1.5 flex-wrap mt-0.5">
                           <AccountDot account={acc} />{t.accountName}
                           {t.counterparty && t.kind !== 'TRANSFER' && <span className="truncate max-w-[14rem]">{t.amount < 0 ? '→' : '←'} {t.counterparty}</span>}
