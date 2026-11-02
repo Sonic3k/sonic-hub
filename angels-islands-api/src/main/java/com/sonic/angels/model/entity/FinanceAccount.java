@@ -10,7 +10,8 @@ import java.util.UUID;
  * The mode says how its numbers arrive:
  *   FEED      — every transaction comes in by itself (SePay, a parsed email); the balance is the bank's own figure.
  *   RECONCILE — notes are optional; a balance typed in now and then turns the gap into "chưa rõ" spending or income.
- *   POOL      — cash: money going in counts as spent at once; a cash note only moves part of it to its real category.
+ *   POOL      — cash: a wallet nobody keeps the balance of. Money taken out at an ATM is a move into it; a payment
+ *               from it is spending once it is noted.
  */
 @Entity
 @Table(name = "finance_accounts")

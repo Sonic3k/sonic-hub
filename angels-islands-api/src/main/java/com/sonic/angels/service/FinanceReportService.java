@@ -10,7 +10,6 @@ import com.sonic.angels.model.entity.FinanceTransaction.Kind;
 import com.sonic.angels.model.entity.FinanceTransaction.Source;
 import com.sonic.angels.model.entity.FinanceTxnTag;
 import com.sonic.angels.repository.FinanceAccountRepository;
-import com.sonic.angels.repository.FinanceCategoryRepository;
 import com.sonic.angels.repository.FinanceFacetRepository;
 import com.sonic.angels.repository.FinanceInboundRepository;
 import com.sonic.angels.repository.FinanceTransactionRepository;
@@ -25,9 +24,9 @@ import java.util.*;
 
 /**
  * Month report, trend and net worth. The counting rules, in one place:
- *  - TRANSFER never counts as spending or income — except money going INTO the cash pool, which counts as spent.
- *  - A cash note (EXPENSE on the POOL account) does not add spending: it moves that much from "Tiền mặt lặt vặt"
- *    to its real category, so the total stays what left the bank.
+ *  - TRANSFER never counts as spending or income. Cash is a wallet like any account: taking money out at an ATM is a
+ *    move into it, and a payment from it counts when it is noted, in its month, under its labels. Cash nobody notes
+ *    spending does not count — no one keeps the wallet's balance.
  *  - SAVING categories are reported as "để dành", apart from spending.
  *  - A refund is an EXPENSE with a positive amount: it lowers its category.
  *  - By label (byLabel): a spending line counts in full under every label it carries, a parent through the children
@@ -42,15 +41,14 @@ public class FinanceReportService {
 
     private final FinanceTransactionRepository txnRepo;
     private final FinanceAccountRepository accountRepo;
-    private final FinanceCategoryRepository categoryRepo;
     private final FinanceFacetRepository facetRepo;
     private final FinanceInboundRepository inboundRepo;
     private final FinanceRateService rates;
     private final FinanceService finance;
 
-    public FinanceReportService(FinanceTransactionRepository txnRepo, FinanceAccountRepository accountRepo, FinanceCategoryRepository categoryRepo,
+    public FinanceReportService(FinanceTransactionRepository txnRepo, FinanceAccountRepository accountRepo,
                                 FinanceFacetRepository facetRepo, FinanceInboundRepository inboundRepo, FinanceRateService rates, FinanceService finance) {
-        this.txnRepo = txnRepo; this.accountRepo = accountRepo; this.categoryRepo = categoryRepo; this.facetRepo = facetRepo;
+        this.txnRepo = txnRepo; this.accountRepo = accountRepo; this.facetRepo = facetRepo;
         this.inboundRepo = inboundRepo; this.rates = rates; this.finance = finance;
     }
 
@@ -70,8 +68,7 @@ public class FinanceReportService {
         BigDecimal usd = rates.usdValue();
         LocalDateTime from = FinanceText.monthStartUtc(m), to = FinanceText.monthStartUtc(m.plusMonths(1));
         Totals cur = totals(txnRepo.findInRange(from, to), usd);
-        FinanceCategory cash = categoryRepo.findByCode(FinanceCategory.CASH).orElse(null);
-        List<FinanceDto.CategoryLine> expenses = cur.expenseLines(cash);
+        List<FinanceDto.CategoryLine> expenses = cur.expenseLines();
         List<FinanceDto.CategoryLine> incomes = cur.incomeLines();
 
         YearMonth now = FinanceText.currentMonth();
@@ -105,13 +102,11 @@ public class FinanceReportService {
 
         return new FinanceDto.MonthReport(m.toString(), cur.income, cur.expense(), cur.saved, cur.income.subtract(cur.expense()),
             expenses, incomes, cur.accountLines(), budget, prevExpense, prevToDate,
-            txnRepo.countByStatus(FinanceTransaction.Status.REVIEW), gaps(from, to), usd, byLabel(cur, cash), cur.moved);
+            txnRepo.countByStatus(FinanceTransaction.Status.REVIEW), gaps(from, to), usd, byLabel(cur), cur.moved);
     }
 
-    /** Each live facet's view of the spending: its labels (cash taken out but not yet noted shows under the categories), and what carries none. */
-    private List<FinanceDto.FacetSpend> byLabel(Totals cur, FinanceCategory cash) {
-        BigDecimal bucket = cur.poolInflow.subtract(cur.poolNotes);
-        boolean cashLine = bucket.signum() != 0 || cur.poolInflowCount > 0;
+    /** Each live facet's view of the spending: its labels, and what carries none. */
+    private List<FinanceDto.FacetSpend> byLabel(Totals cur) {
         List<FinanceDto.FacetSpend> out = new ArrayList<>();
         for (FinanceFacet f : facetRepo.findAllByOrderBySortOrderAscNameAsc()) {
             if (f.isArchived()) continue;
@@ -123,10 +118,6 @@ public class FinanceReportService {
                 labels.add(new FinanceDto.LabelLine(c.getId(), c.getName(), c.getIcon(), parentOf(c), e.getValue().amount, e.getValue().count));
             }
             BigDecimal none = cur.spentLines.subtract(cur.labeled.getOrDefault(key, BigDecimal.ZERO));
-            if (f.isMain() && cashLine) {
-                labels.add(new FinanceDto.LabelLine(cash == null ? null : cash.getId(), cash == null ? "Petty Cash" : cash.getName(),
-                    cash == null ? "💵" : cash.getIcon(), null, bucket, cur.poolInflowCount));
-            } else if (!f.isMain()) none = none.add(bucket);
             labels.sort((a, b) -> b.amount().compareTo(a.amount()));
             out.add(new FinanceDto.FacetSpend(f.getId(), f.getName(), f.isMain(), labels, none, cur.multi.getOrDefault(key, 0L)));
         }
@@ -206,31 +197,20 @@ public class FinanceReportService {
     private static final class Acc { String name, mode; BigDecimal out = BigDecimal.ZERO, in = BigDecimal.ZERO; }
 
     private static final class Totals {
-        BigDecimal income = BigDecimal.ZERO, saved = BigDecimal.ZERO;
-        BigDecimal nonPoolSpent = BigDecimal.ZERO, poolInflow = BigDecimal.ZERO, poolNotes = BigDecimal.ZERO, poolSaving = BigDecimal.ZERO;
-        /** moved: money between own accounts (not into the cash pool, which counts as spent); spentLines: every spending line once */
+        BigDecimal income = BigDecimal.ZERO, saved = BigDecimal.ZERO, spent = BigDecimal.ZERO;
+        /** moved: money between own accounts, cash included; spentLines: every spending line once */
         BigDecimal moved = BigDecimal.ZERO, spentLines = BigDecimal.ZERO;
         final Map<UUID, Line> spentByTag = new LinkedHashMap<>();
         final Map<UUID, FinanceCategory> tagById = new HashMap<>();
         final Map<String, BigDecimal> labeled = new HashMap<>();
         final Map<String, Long> multi = new HashMap<>();
-        long poolInflowCount;
         final Map<Key, Line> expense = new LinkedHashMap<>(), incomeBy = new LinkedHashMap<>();
         final Map<UUID, Acc> accounts = new LinkedHashMap<>();
 
-        BigDecimal expense() { return nonPoolSpent.add(poolInflow).subtract(poolSaving); }
+        BigDecimal expense() { return spent; }
 
-        List<FinanceDto.CategoryLine> expenseLines(FinanceCategory cash) {
-            Map<Key, Line> all = new LinkedHashMap<>(expense);
-            BigDecimal bucket = poolInflow.subtract(poolNotes);
-            if (bucket.signum() != 0 || poolInflowCount > 0) {
-                Key k = cash != null ? new Key(cash.getId(), cash.getCode(), cash.getName(), cash.getIcon(), "FLEXIBLE")
-                    : new Key(null, FinanceCategory.CASH, "Petty Cash", "💵", "FLEXIBLE");
-                Line l = all.computeIfAbsent(k, x -> new Line());
-                l.amount = l.amount.add(bucket);
-                l.count += poolInflowCount;
-            }
-            return all.entrySet().stream().filter(e -> e.getValue().amount.signum() != 0 || e.getValue().count > 0)
+        List<FinanceDto.CategoryLine> expenseLines() {
+            return expense.entrySet().stream().filter(e -> e.getValue().amount.signum() != 0 || e.getValue().count > 0)
                 .sorted((a, b) -> b.getValue().amount.compareTo(a.getValue().amount))
                 .map(e -> line(e.getKey(), e.getValue())).toList();
         }
@@ -279,24 +259,16 @@ public class FinanceReportService {
             FinanceAccount a = t.getAccount();
             BigDecimal v = FinanceRateService.toVnd(t.getAmount(), a.getCurrency(), usd);
             if (v == null) continue;                                  // a currency without a rate yet
-            boolean pool = a.getMode() == FinanceAccount.Mode.POOL;
             if (t.getKind() != Kind.TRANSFER) {
                 Acc acc = s.accounts.computeIfAbsent(a.getId(), k -> { Acc x = new Acc(); x.name = a.getName(); x.mode = a.getMode().name(); return x; });
                 if (v.signum() < 0) acc.out = acc.out.add(v.negate()); else acc.in = acc.in.add(v);
             }
             switch (t.getKind()) {
-                case TRANSFER -> {
-                    if (pool) { s.poolInflow = s.poolInflow.add(v); s.poolInflowCount++; }
-                    else if (v.signum() < 0) {
-                        FinanceTransaction peer = t.getTransferPeer();
-                        if (peer == null || peer.getAccount().getMode() != FinanceAccount.Mode.POOL) s.moved = s.moved.add(v.negate());
-                    }
-                }
+                case TRANSFER -> { if (v.signum() < 0) s.moved = s.moved.add(v.negate()); }   // each move once: its outgoing side
                 case INCOME -> {
                     s.income = s.income.add(v);
                     Line l = s.incomeBy.computeIfAbsent(key(t.getCategory()), k -> new Line());
                     l.amount = l.amount.add(v); l.count++;
-                    if (pool) { s.poolInflow = s.poolInflow.add(v); s.poolInflowCount++; }
                 }
                 case EXPENSE -> {
                     BigDecimal spent = v.negate();
@@ -304,12 +276,11 @@ public class FinanceReportService {
                     boolean saving = c != null && c.getBudgetGroup() == FinanceCategory.BudgetGroup.SAVING;
                     if (saving) s.saved = s.saved.add(spent);
                     else {
+                        s.spent = s.spent.add(spent);
                         Line l = s.expense.computeIfAbsent(key(c), k -> new Line());
                         l.amount = l.amount.add(spent); l.count++;
                         s.byLabel(t, spent);
                     }
-                    if (pool) { s.poolNotes = s.poolNotes.add(spent); if (saving) s.poolSaving = s.poolSaving.add(spent); }
-                    else if (!saving) s.nonPoolSpent = s.nonPoolSpent.add(spent);
                 }
             }
         }
