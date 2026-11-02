@@ -71,6 +71,14 @@ public class FinanceTransaction extends FinanceEntity {
     private String bankDescription;
 
     /**
+     * What this payment bought, read from somewhere else (a flight's legs, a hotel stay), as JSON:
+     * {kind, title, start, end, items: [{label, value}], source: {kind, id, url, subject, from, date}}.
+     * Imports and rules never touch it; it is set (or cleared) as a whole.
+     */
+    @Column(name = "details", columnDefinition = "TEXT")
+    private String details;
+
+    /**
      * Who the money went to or came from: the name on the other account (from a bank statement, or inherited from an
      * earlier line with the same memo), or the merchant of a card payment.
      */
@@ -148,6 +156,8 @@ public class FinanceTransaction extends FinanceEntity {
 
     public String getBankDescription() { return bankDescription; }
     public void setBankDescription(String bankDescription) { this.bankDescription = bankDescription; }
+    public String getDetails() { return details; }
+    public void setDetails(String details) { this.details = details; }
     public String getCounterparty() { return counterparty; }
     public void setCounterparty(String counterparty) { this.counterparty = counterparty; }
     public String getCounterpartyAccount() { return counterpartyAccount; }

@@ -1,5 +1,7 @@
 package com.sonic.angels.model.dto;
 
+import com.fasterxml.jackson.databind.JsonNode;
+
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -63,12 +65,13 @@ public final class FinanceDto {
 
     // ── transactions ──
 
+    /** details: what the payment bought (a flight, a hotel stay), as stored — see FinanceTransaction.details. */
     public record Txn(UUID id, UUID accountId, String accountName, String accountMode, String currency,
                       LocalDateTime occurredAt, BigDecimal amount, BigDecimal amountVnd, String kind,
                       UUID categoryId, String categoryName, String categoryIcon, String description, String bankDescription,
                       String counterparty, String counterpartyAccount, String note, String source, String status, String categorizedBy, Double aiConfidence,
                       BigDecimal balanceAfter, UUID transferPeerId, String transferAccountName, String suggestedKeywords,
-                      LocalDateTime createdAt, List<TagRef> tags, UUID transferAccountId, String payeeName) {}
+                      LocalDateTime createdAt, List<TagRef> tags, UUID transferAccountId, String payeeName, JsonNode details) {}
 
     /**
      * Create or edit. occurredAt: ISO; with Z/offset it is converted, bare means UTC. kind TRANSFER needs transferAccountId.

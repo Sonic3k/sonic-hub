@@ -5,7 +5,7 @@ import { useRef, useState } from 'react';
 import { moneyApi, type Txn, type TxnEdit } from '../../api/money';
 import { dayWord, money, timeOf, utc } from '../../lib/money';
 import { useCounterpartyLines, useRefresh, useSummary } from './data';
-import { decided, dirOf, guessOf, labelsOf, sameSet, systemMove, titleOf, txs, useLabelBook } from './labels';
+import { decided, DETAIL_ICON, dirOf, guessOf, labelsOf, sameSet, systemMove, titleOf, txs, useLabelBook } from './labels';
 import { LabelText, ModeSeg, Sections, Wallets } from './Picker';
 import { Sheet, SheetFoot } from './Sheet';
 import { toast } from './toast';
@@ -15,6 +15,7 @@ const SOURCE: Record<string, string> = {
 };
 /* lines that came from a bank: their kept text is the bank's; anything else kept is the words it was first written with */
 const FROM_BANK = new Set(['SEPAY', 'EMAIL', 'STATEMENT']);
+const DETAIL_KIND: Record<string, string> = { flight: 'Flight', hotel: 'Hotel stay' };
 
 const toInput = (s: string) => {
   const p = new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Ho_Chi_Minh', year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', hour12: false }).formatToParts(utc(s));
@@ -52,7 +53,9 @@ export default function LineSheet({ txn: t, onClose }: { txn: Txn; onClose: () =
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
   const [del, setDel] = useState(false);
+  const [drop, setDrop] = useState(false);
   const delTimer = useRef<number>();
+  const d = t.details;
 
   const scope = cp && cpLines.data ? cpLines.data.filter(x => dirOf(x) === dir && !systemMove(x)).length : null;
   const chosen = book.sortIds(book.normalize(sel));
@@ -117,6 +120,14 @@ export default function LineSheet({ txn: t, onClose }: { txn: Txn; onClose: () =
     catch (e) { setError((e as Error).message); setBusy(false); }
   };
 
+  /* details matched to the wrong payment: take them off this line (the line itself stays) */
+  const dropDetails = async () => {
+    if (!drop) { setDrop(true); window.clearTimeout(delTimer.current); delTimer.current = window.setTimeout(() => setDrop(false), 4000); return; }
+    setBusy(true); setError('');
+    try { await moneyApi.setDetails(t.id, null); refresh(); toast('Details removed'); onClose(); }
+    catch (e) { setError((e as Error).message); setBusy(false); }
+  };
+
   return (
     <Sheet label="Label a transaction" onClose={onClose}>
       <div className="mn-sheet-head">
@@ -129,6 +140,17 @@ export default function LineSheet({ txn: t, onClose }: { txn: Txn; onClose: () =
         <span className={`mn-amt${dir === 'in' ? ' in' : ''}`}>{money(t.amount, t.currency, true)}</span>
       </div>
       {t.bankDescription && t.bankDescription !== title0 && <p className="mn-sub">{FROM_BANK.has(t.source) ? 'From the bank: ' : 'First written as: '}{t.bankDescription}</p>}
+      {d && (
+        <section className="mn-details" aria-label="What it paid for">
+          <p className="mn-details-cap"><span aria-hidden="true">{DETAIL_ICON[d.kind] ?? '🧾'}</span> {DETAIL_KIND[d.kind] ?? 'Details'}{d.source?.kind === 'gmail' ? ', from your email' : ''}</p>
+          {d.title !== title0 && <p className="mn-details-t">{d.title}</p>}
+          {!!d.items?.length && <dl>{d.items.map((x, i) => <div key={i}><dt>{x.label}</dt><dd>{x.value}</dd></div>)}</dl>}
+          <p className="mn-details-foot">
+            {d.source?.url && <a className="mn-link" href={d.source.url} target="_blank" rel="noopener noreferrer">Open the email ↗</a>}
+            <button type="button" className="mn-link quiet" disabled={busy} onClick={dropDetails}>{drop ? 'Tap again to remove' : 'Not this payment? Remove'}</button>
+          </p>
+        </section>
+      )}
 
       <ModeSeg dir={dir} mode={mode} onMode={m => { setMode(m); setFromGuess(false); }} />
       {fromGuess && <p className="mn-guess-note">Filled in from a guess. Save if it’s right, or tap to change it.</p>}
@@ -174,7 +196,7 @@ export default function LineSheet({ txn: t, onClose }: { txn: Txn; onClose: () =
         <label>Account<select value={accountId} disabled={!editable} onChange={e => setAccountId(e.target.value)}>
           {accounts.map(a => <option key={a.id} value={a.id}>{a.name}</option>)}
         </select></label>
-        <label>Description<input value={own} maxLength={120} onChange={e => setOwn(e.target.value)} placeholder={t.payeeName || t.counterparty || t.bankDescription || 'what this payment was'} /></label>
+        <label>Description<input value={own} maxLength={120} onChange={e => setOwn(e.target.value)} placeholder={d?.title || t.payeeName || t.counterparty || t.bankDescription || 'what this payment was'} /></label>
         <label>Note<input value={note} maxLength={120} onChange={e => setNote(e.target.value)} placeholder="who with, what for…" /></label>
         {editable && <label className="wide">When<input type="datetime-local" value={when} onChange={e => setWhen(e.target.value)} /></label>}
       </div>
