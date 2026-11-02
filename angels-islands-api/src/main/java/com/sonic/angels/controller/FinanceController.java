@@ -106,6 +106,12 @@ public class FinanceController {
     @PostMapping("/rules/{id}/apply")
     public FinanceDto.Applied applyRule(@PathVariable UUID id) { return finance.applyRule(id); }
 
+    /** Old history out of To review: what still waits from before `before` (2023-01-01), each under `under` VND. */
+    @PostMapping("/review/settle")
+    public FinanceDto.Applied settleOld(@RequestParam String before, @RequestParam(defaultValue = "5000000") java.math.BigDecimal under) {
+        return finance.settleOld(java.time.LocalDate.parse(before.trim()), under);
+    }
+
     // ── transactions ──
 
     @GetMapping("/transactions")

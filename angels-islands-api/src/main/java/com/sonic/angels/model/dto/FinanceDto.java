@@ -111,9 +111,12 @@ public final class FinanceDto {
     /**
      * "Everything with this counterparty is …": labels (categoryId and/or tagIds, any sections) or a move to an own
      * account; an optional label renames them. In each section given, their labels become these; sections not given
-     * stay as they are. direction OUT/IN/ANY: which of their lines (default: the way the waiting ones went).
+     * stay as they are. direction OUT/IN/ANY: which of their lines (default: the way the waiting ones went). account:
+     * only their lines to or from this account number — one of two people with the name; such a rule is its own and
+     * comes before the one about the name alone.
      */
-    public record AssignRequest(String name, UUID categoryId, UUID transferAccountId, String label, List<UUID> tagIds, String direction) {}
+    public record AssignRequest(String name, UUID categoryId, UUID transferAccountId, String label, List<UUID> tagIds, String direction,
+                                String account) {}
 
     /**
      * What a statement file holds and what importing it does (or did): matched = already here from the bank feed
