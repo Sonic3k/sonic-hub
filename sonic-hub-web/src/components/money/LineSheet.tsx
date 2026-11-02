@@ -15,7 +15,9 @@ const SOURCE: Record<string, string> = {
 };
 /* lines that came from a bank: their kept text is the bank's; anything else kept is the words it was first written with */
 const FROM_BANK = new Set(['SEPAY', 'EMAIL', 'STATEMENT']);
-const DETAIL_KIND: Record<string, string> = { flight: 'Flight', hotel: 'Hotel stay' };
+const DETAIL_KIND: Record<string, string> = {
+  flight: 'Flight', hotel: 'Hotel stay', ride: 'Ride', food: 'Food order', order: 'Order', delivery: 'Delivery', tip: 'Tip', membership: 'Membership',
+};
 
 const toInput = (s: string) => {
   const p = new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Ho_Chi_Minh', year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', hour12: false }).formatToParts(utc(s));

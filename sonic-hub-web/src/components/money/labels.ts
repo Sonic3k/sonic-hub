@@ -141,4 +141,6 @@ export const txs = (n: number) => `${n} transaction${n === 1 ? '' : 's'}`;
 export const titleOf = (t: Txn) => t.description || t.details?.title || t.payeeName || t.counterparty || t.bankDescription || '';
 
 /** what kind of thing a line's details are about, as a small sign */
-export const DETAIL_ICON: Record<string, string> = { flight: '✈️', hotel: '🏨' };
+export const DETAIL_ICON: Record<string, string> = {
+  flight: '✈️', hotel: '🏨', ride: '🚕', food: '🍜', order: '🛒', delivery: '📦', tip: '🙏', membership: '🎟️',
+};
