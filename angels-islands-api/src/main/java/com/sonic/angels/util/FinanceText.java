@@ -91,6 +91,17 @@ public final class FinanceText {
         return n.length() > 200 ? n.substring(0, 200) : n;
     }
 
+    /**
+     * The bank's own text of a feed line: SePay's full description without the "BankAPINotify" it puts in front
+     * ("BankAPINotify TT QR - 0126…" → "TT QR - 0126…"); the memo when the description is empty.
+     */
+    public static String bankText(String feedDescription, String memo) {
+        String d = feedDescription == null ? "" : feedDescription.strip();
+        if (d.regionMatches(true, 0, "BankAPINotify", 0, 13)) d = d.substring(13).strip();
+        if (d.isEmpty()) d = memo == null ? "" : memo.strip();
+        return d.isEmpty() ? null : d;
+    }
+
     /** What two lines must share to be "the same counterparty": the cleaned name, normalized. */
     public static String counterpartyKey(String name) {
         String c = cleanCounterparty(name);

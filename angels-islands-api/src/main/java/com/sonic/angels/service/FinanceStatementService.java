@@ -120,6 +120,7 @@ public class FinanceStatementService {
             n.setOccurredAt(FinanceText.vnToUtc(row.occurredAtVn()));
             n.setAmount(row.amount());
             n.setDescription(row.description());
+            n.setBankDescription(row.description());
             n.setCounterparty(who);
             n.setCounterpartyAccount(whoAccount);
             n.setReferenceCode(trim(row.reference(), 100));

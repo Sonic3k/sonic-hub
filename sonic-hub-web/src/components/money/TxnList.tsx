@@ -73,6 +73,7 @@ export default function TxnList({ month, filter, onClearFilter }: { month: strin
             : <span className="mn-ic big" aria-hidden="true">{icon(t, labels)}</span>}
           <span className="mn-tx-main">
             <b>{t.description || t.bankDescription || '—'}</b>
+            {t.description && t.bankDescription && t.bankDescription !== t.description && <span className="mn-tx-bank">{t.bankDescription}</span>}
             <small>{sub.map((x, i) => <Piece key={i} sep={i > 0}>{x}</Piece>)}</small>
             {(labels.length > 0 || guess.length > 0) && (
               <span className="mn-tags">

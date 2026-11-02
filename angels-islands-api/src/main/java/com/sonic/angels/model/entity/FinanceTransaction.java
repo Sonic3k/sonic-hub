@@ -55,11 +55,14 @@ public class FinanceTransaction extends FinanceEntity {
     @JoinColumn(name = "category_id")
     private FinanceCategory category;
 
-    /** The memo: what was typed when paying, or the note's own words. */
+    /**
+     * What the line is called here: the bank's memo at first, then whatever he or a rule names it; a note's own words.
+     * Empty means it goes by the bank's text.
+     */
     @Column(name = "description", columnDefinition = "TEXT")
     private String description;
 
-    /** The bank's full line (SePay "description"), kept apart from the memo. */
+    /** What the bank said, as it came (the statement's or the feed's memo). Set once when the line arrives, never renamed. */
     @Column(name = "bank_description", columnDefinition = "TEXT")
     private String bankDescription;
 

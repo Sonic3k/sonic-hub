@@ -13,6 +13,8 @@ import { toast } from './toast';
 const SOURCE: Record<string, string> = {
   SEPAY: 'from the bank', EMAIL: 'from the bank', STATEMENT: 'from a statement', NOTE: 'manual entry', MANUAL: 'manual entry', RECONCILE: 'balance check',
 };
+/* lines that came from a bank: their kept text is the bank's; anything else kept is the words it was first written with */
+const FROM_BANK = new Set(['SEPAY', 'EMAIL', 'STATEMENT']);
 
 const toInput = (s: string) => {
   const p = new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Ho_Chi_Minh', year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', hour12: false }).formatToParts(utc(s));
@@ -126,7 +128,7 @@ export default function LineSheet({ txn: t, onClose }: { txn: Txn; onClose: () =
         </div>
         <span className={`mn-amt${dir === 'in' ? ' in' : ''}`}>{money(t.amount, t.currency, true)}</span>
       </div>
-      {t.bankDescription && t.bankDescription !== title0 && <p className="mn-sub">{t.bankDescription}</p>}
+      {t.bankDescription && t.bankDescription !== title0 && <p className="mn-sub">{FROM_BANK.has(t.source) ? 'From the bank: ' : 'First written as: '}{t.bankDescription}</p>}
 
       <ModeSeg dir={dir} mode={mode} onMode={m => { setMode(m); setFromGuess(false); }} />
       {fromGuess && <p className="mn-guess-note">Filled in from a guess. Save if it’s right, or tap to change it.</p>}
@@ -172,7 +174,7 @@ export default function LineSheet({ txn: t, onClose }: { txn: Txn; onClose: () =
         <label>Account<select value={accountId} disabled={!editable} onChange={e => setAccountId(e.target.value)}>
           {accounts.map(a => <option key={a.id} value={a.id}>{a.name}</option>)}
         </select></label>
-        <label>Description<input value={title} maxLength={120} onChange={e => setTitle(e.target.value)} /></label>
+        <label>Description<input value={title} maxLength={120} onChange={e => setTitle(e.target.value)} placeholder={t.bankDescription ?? ''} /></label>
         <label>Note<input value={note} maxLength={120} onChange={e => setNote(e.target.value)} placeholder="who with, what for…" /></label>
         {editable && <label className="wide">When<input type="datetime-local" value={when} onChange={e => setWhen(e.target.value)} /></label>}
       </div>

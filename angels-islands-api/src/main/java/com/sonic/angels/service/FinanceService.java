@@ -483,7 +483,7 @@ public class FinanceService {
             t.setOccurredAt(FinanceText.parseClientTime(r.occurredAt()));
             if (t.getTransferPeer() != null && t.getTransferPeer().getSource() == Source.SYSTEM) t.getTransferPeer().setOccurredAt(t.getOccurredAt());
         }
-        if (r.description() != null) t.setDescription(blankToNull(r.description()));
+        if (r.description() != null) { FinanceClassifier.keepBankText(t); t.setDescription(blankToNull(r.description())); }
         if (r.note() != null) t.setNote(blankToNull(r.note()));
         decide(t, r);
         learn(t, r);
