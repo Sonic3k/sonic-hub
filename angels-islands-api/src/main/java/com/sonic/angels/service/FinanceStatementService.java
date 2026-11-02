@@ -29,8 +29,9 @@ import java.util.*;
  * A bank statement (the .xlsx the bank's app exports) into the ledger. Each row is either a line the bank feed
  * already brought — matched by the bank's transaction code and amount, it gets the counterparty the feed did not
  * have — or a new line (history from before the feed, or something the feed missed). Importing the same file
- * again changes nothing. The statement says who the other side was, so counterparty rules decide most lines; a line
- * an earlier statement brought without it (one converted from a PDF, which leaves the names out) gets it too.
+ * again changes nothing: a row is already here when a line with its bank code and amount is a few days from it. The
+ * statement says who the other side was, so counterparty rules decide most lines; a line an earlier statement brought
+ * without it (one converted from a PDF, which leaves the names out) gets it too.
  */
 @Service
 @Transactional
@@ -110,12 +111,12 @@ public class FinanceStatementService {
                 continue;
             }
 
-            String externalId = "stmt:" + accountKey + ":" + row.reference() + ":" + plain(row.amount()) + (dup > 0 ? ":" + dup : "");
-            if (txnRepo.existsByExternalId(externalId)) {
+            // an earlier statement brought this row: same code and amount, a few days apart at most
+            FinanceTransaction before = closest(earlier.get(k), FinanceText.vnToUtc(row.occurredAtVn()));
+            if (before != null) {
                 already++;
-                // a statement without the other side's name (a PDF) brought it before: this one names it
-                FinanceTransaction before = closest(earlier.get(k), FinanceText.vnToUtc(row.occurredAtVn()));
-                if (before != null && fillIn(before, who, whoAccount, commit, rules)) {
+                // that statement may not have named the other side (one converted from a PDF): this one does
+                if (fillIn(before, who, whoAccount, commit, rules)) {
                     alreadyEnriched++;
                     boolean decided = commit ? before.getStatus() == Status.OK
                         : before.getStatus() == Status.OK || decidable(withOtherSide(before, who, whoAccount), rules);
@@ -123,6 +124,11 @@ public class FinanceStatementService {
                 }
                 continue;
             }
+            String externalId = "stmt:" + accountKey + ":" + row.reference() + ":" + plain(row.amount()) + (dup > 0 ? ":" + dup : "");
+            // the bank uses some codes again and again (a yearly card fee, the same amount each year): when a row of
+            // another day has the id, this one is told apart by its date
+            if (txnRepo.existsByExternalId(externalId)) externalId += "@" + row.occurredAtVn().toLocalDate();
+            if (txnRepo.existsByExternalId(externalId)) { already++; continue; }
             created++;
             FinanceTransaction n = new FinanceTransaction();
             n.setAccount(account);

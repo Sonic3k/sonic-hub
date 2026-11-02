@@ -59,10 +59,24 @@ public class FinanceClassifier {
 
     public List<FinanceRule> rules() { return ruleRepo.findAllByOrderByPriorityAscCreatedAtAsc(); }
 
-    /** Every active rule that fits the line, in priority order. */
+    /** Every active rule that fits the line, in priority order — but see {@link #shadowed}. */
     public List<FinanceRule> fitting(FinanceTransaction t, List<FinanceRule> rules) {
-        return rules.stream().filter(r -> fits(t, r)).toList();
+        List<FinanceRule> fit = rules.stream().filter(r -> fits(t, r)).toList();
+        return fit.stream().filter(r -> !shadowed(t, r, fit)).toList();
     }
+
+    /**
+     * Two people can have one name: a rule about everyone with the name gives way, on this line, to a rule about the
+     * payee's own account number that fits it (Azzan's Nguyễn Thùy Linh is not every Nguyễn Thùy Linh).
+     */
+    public boolean shadowed(FinanceTransaction t, FinanceRule r, List<FinanceRule> rules) {
+        if (!r.isCounterpartyRule() || hasAccount(r)) return false;
+        String key = FinanceText.counterpartyKey(r.getCounterpartyName());
+        return rules.stream().anyMatch(x -> x != r && x.isCounterpartyRule() && hasAccount(x)
+            && key.equals(FinanceText.counterpartyKey(x.getCounterpartyName())) && fits(t, x));
+    }
+
+    public static boolean hasAccount(FinanceRule r) { return r.getCounterpartyAccount() != null && !r.getCounterpartyAccount().isBlank(); }
 
     /**
      * Does this rule speak about this line? Direction first; then the counterparty (a counterparty rule), the words

@@ -355,11 +355,12 @@ public class FinanceService {
             LocalDateTime to = rule.getToDate() == null ? LocalDateTime.of(9999, 1, 1, 0, 0) : FinanceText.vnToUtc(rule.getToDate().plusDays(1).atStartOfDay());
             lines = txnRepo.findInRange(from, to);
         } else lines = rule.isCounterpartyRule() ? txnRepo.withCounterparty() : txnRepo.allExcept(Source.SYSTEM);
+        List<FinanceRule> all = classifier.rules();
         int n = 0;
         for (FinanceTransaction t : lines) {
             if (t.getSource() == Source.SYSTEM) continue;
             if (t.getKind() == Kind.TRANSFER && t.getCategorizedBy() == By.SYSTEM) continue;
-            if (!classifier.fits(t, rule)) continue;
+            if (!classifier.fits(t, rule) || classifier.shadowed(t, rule, all)) continue;
             String before = FinanceTags.signature(t);
             classifier.decide(t, List.of(rule));
             if (!before.equals(FinanceTags.signature(t))) n++;
@@ -494,7 +495,7 @@ public class FinanceService {
             List<FinanceCategory> give = target == null ? ruleTags(t, r) : List.of();
             if (target != null || !give.isEmpty())
                 assign(new FinanceDto.AssignRequest(t.getCounterparty(), null, target == null ? null : target.getId(), r.label(),
-                    give.stream().map(FinanceCategory::getId).toList(), t.getAmount().signum() < 0 ? "OUT" : "IN"), t.getId());
+                    give.stream().map(FinanceCategory::getId).toList(), t.getAmount().signum() < 0 ? "OUT" : "IN", null), t.getId());
         }
         if (r.label() != null && !r.label().isBlank()) FinanceClassifier.relabel(t, r.label().trim());
         return toTxn(t, rates.usdValue());
@@ -662,13 +663,22 @@ public class FinanceService {
         Map<String, List<FinanceCategory>> byFacet = new LinkedHashMap<>();
         for (FinanceCategory c : give) byFacet.computeIfAbsent(FinanceTags.facet(c), k -> new ArrayList<>()).add(c);
 
-        FinanceRule rule = classifier.rules().stream()
-            .filter(x -> x.isCounterpartyRule() && key.equals(FinanceText.counterpartyKey(x.getCounterpartyName())))
+        // their rule: the one about this account of theirs, or about the name alone — a rule tied to one account
+        // number (one of two people with the name) is never changed by a choice about the name
+        String acc = blankToNull(r.account());
+        List<FinanceRule> all = classifier.rules();
+        FinanceRule rule = all.stream()
+            .filter(x -> x.isCounterpartyRule() && key.equals(FinanceText.counterpartyKey(x.getCounterpartyName()))
+                && Objects.equals(blankToNull(x.getCounterpartyAccount()), acc))
             .findFirst().orElseGet(FinanceRule::new);
+        Set<String> boundElsewhere = acc != null ? Set.of() : all.stream()
+            .filter(x -> x.isCounterpartyRule() && FinanceClassifier.hasAccount(x) && key.equals(FinanceText.counterpartyKey(x.getCounterpartyName())))
+            .map(x -> x.getCounterpartyAccount().trim()).collect(java.util.stream.Collectors.toSet());
         rule.setCounterpartyName(FinanceText.cleanCounterparty(r.name()));
+        rule.setCounterpartyAccount(acc);
         rule.setKeywords("");
         rule.setOrigin(FinanceRule.Origin.USER);
-        rule.setPriority(5);
+        rule.setPriority(acc != null ? 4 : 5);
         rule.setActive(true);
         String label = blankToNull(r.label());
         if (label != null) rule.setLabel(label);
@@ -685,7 +695,9 @@ public class FinanceService {
         }
 
         List<FinanceTransaction> lines = txnRepo.withCounterparty().stream()
-            .filter(t -> t.getSource() != Source.SYSTEM && key.equals(FinanceText.counterpartyKey(t.getCounterparty()))).toList();
+            .filter(t -> t.getSource() != Source.SYSTEM && key.equals(FinanceText.counterpartyKey(t.getCounterparty())))
+            .filter(t -> t.getCounterpartyAccount() == null || !boundElsewhere.contains(t.getCounterpartyAccount().trim()))
+            .toList();
         if (r.direction() != null && !r.direction().isBlank()) {
             rule.setDirection(parseEnum(FinanceRule.Direction.class, r.direction(), "direction"));
         } else if (rule.getCategory() != null && rule.getCategory().getKind() == FinanceCategory.Kind.INCOME) {
@@ -726,6 +738,29 @@ public class FinanceService {
             if (!before.equals(FinanceTags.signature(t))) n++;
         }
         rule.setHits(rule.getHits() + n);
+        return new FinanceDto.Applied(n);
+    }
+
+    /**
+     * History nobody can tell any more: what still waits from before a day, each under an amount (VND), is filed as
+     * unknown spending or income and leaves To review. The system files it, so a rule or his own choice can still
+     * change it; bigger sums stay for him to look at.
+     */
+    public FinanceDto.Applied settleOld(LocalDate before, BigDecimal under) {
+        if (before == null || under == null || under.signum() <= 0) throw new IllegalArgumentException("Give a day and an amount above 0");
+        LocalDateTime cut = FinanceText.vnToUtc(before.atStartOfDay());
+        FinanceCategory spending = categoryRepo.findByCode(FinanceCategory.UNKNOWN_EXPENSE).orElseThrow();
+        FinanceCategory income = categoryRepo.findByCode(FinanceCategory.UNKNOWN_INCOME).orElseThrow();
+        BigDecimal usd = rates.usdValue();
+        int n = 0;
+        for (FinanceTransaction t : txnRepo.findWithStatus(Status.REVIEW)) {
+            if (!t.getOccurredAt().isBefore(cut) || t.getKind() == Kind.TRANSFER) continue;
+            BigDecimal vnd = FinanceRateService.toVnd(t.getAmount(), t.getAccount().getCurrency(), usd);
+            if (vnd == null || vnd.abs().compareTo(under) >= 0) continue;
+            FinanceTags.replace(t, FinanceTags.MAIN, List.of(t.getAmount().signum() < 0 ? spending : income), By.SYSTEM);
+            FinanceTags.settleDecided(t);
+            n++;
+        }
         return new FinanceDto.Applied(n);
     }
 
