@@ -77,7 +77,7 @@ export interface CounterpartyGroup {
 }
 export interface ImportSummary {
   bank: string; accountNumber: string | null; accountId: string; accountName: string; period: string | null; from: string; to: string;
-  rows: number; matched: number; enriched: number; created: number; already: number; withCounterparty: number;
+  rows: number; matched: number; enriched: number; created: number; already: number; alreadyEnriched: number; withCounterparty: number;
   categorized: number; waiting: number; skipped: number; committed: boolean;
 }
 

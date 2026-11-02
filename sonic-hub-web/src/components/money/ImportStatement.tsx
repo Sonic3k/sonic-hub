@@ -1,9 +1,11 @@
 /* "Import statement": the .xlsx the bank's app exports (TPBank: the account's transaction history). First what importing
-   would do — nothing is written — then, on "Import", the new lines go in and the bank feed's lines get their counterparty. */
+   would do — nothing is written — then, on "Import", the new lines go in, and lines already here (from the bank feed, or
+   from an earlier statement that left the names out) get their payee. */
 import { useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { moneyApi, type ImportSummary } from '../../api/money';
 import { useRefresh } from './data';
+import { txs } from './labels';
 
 export default function ImportStatement() {
   const input = useRef<HTMLInputElement>(null);
@@ -29,7 +31,8 @@ export default function ImportStatement() {
     if (input.current) input.current.value = '';
   };
   const p = preview;
-  const nothingNew = !!p && p.created === 0 && p.enriched === 0;
+  const named = (s: ImportSummary) => s.enriched + s.alreadyEnriched;
+  const nothingNew = !!p && p.created === 0 && named(p) === 0;
 
   return (
     <>
@@ -53,7 +56,7 @@ export default function ImportStatement() {
                   <div><dt>Transactions in the file</dt><dd>{p.rows}</dd></div>
                   <div><dt>New</dt><dd>{p.created}</dd></div>
                   <div><dt>Already in from the bank</dt><dd>{p.matched}<small>{p.enriched ? `payee added to ${p.enriched}` : 'no change'}</small></dd></div>
-                  {p.already > 0 && <div><dt>Imported before</dt><dd>{p.already}<small>skipped</small></dd></div>}
+                  {p.already > 0 && <div><dt>Imported before</dt><dd>{p.already}<small>{p.alreadyEnriched ? `payee added to ${p.alreadyEnriched}` : 'no change'}</small></dd></div>}
                   <div><dt>Categorized automatically</dt><dd>{p.categorized}</dd></div>
                   <div><dt>Waiting for you</dt><dd>{p.waiting}<small>grouped by payee</small></dd></div>
                 </dl>
@@ -61,7 +64,7 @@ export default function ImportStatement() {
                   <span />
                   <button type="button" className="mn-link" onClick={close} disabled={busy}>Cancel</button>
                   <button type="button" className="mn-btn" onClick={commit} disabled={busy || nothingNew}>
-                    {busy ? 'Importing…' : nothingNew ? 'Nothing new' : `Import ${p.created} transaction${p.created === 1 ? '' : 's'}`}
+                    {busy ? 'Importing…' : nothingNew ? 'Nothing new' : p.created ? `Import ${txs(p.created)}` : `Add the payee to ${txs(named(p))}`}
                   </button>
                 </div>
               </>
@@ -69,7 +72,9 @@ export default function ImportStatement() {
             {result && (
               <>
                 <p className="mn-imp-done">
-                  ✓ Added {result.created} transaction{result.created === 1 ? '' : 's'}{result.enriched ? `, and the payee to ${result.enriched} existing one${result.enriched === 1 ? '' : 's'}` : ''}.
+                  {result.created
+                    ? `✓ Added ${txs(result.created)}${named(result) ? `, and the payee to ${named(result)} existing one${named(result) === 1 ? '' : 's'}` : ''}.`
+                    : `✓ Added the payee to ${txs(named(result))}.`}
                 </p>
                 <p className="mn-sub">
                   {result.waiting

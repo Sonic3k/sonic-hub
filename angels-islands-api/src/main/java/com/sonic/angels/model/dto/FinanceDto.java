@@ -117,11 +117,13 @@ public final class FinanceDto {
 
     /**
      * What a statement file holds and what importing it does (or did): matched = already here from the bank feed
-     * (they get the counterparty), created = new lines, already = imported before.
+     * (enriched of them get the counterparty), created = new lines, already = imported before (alreadyEnriched of them
+     * get the counterparty that statement did not have). categorized / waiting: of the lines it adds or tells more about.
      */
     public record ImportSummary(String bank, String accountNumber, UUID accountId, String accountName, String period,
                                 LocalDateTime from, LocalDateTime to, int rows, int matched, int enriched, int created,
-                                int already, int withCounterparty, int categorized, int waiting, int skipped, boolean committed) {}
+                                int already, int alreadyEnriched, int withCounterparty, int categorized, int waiting,
+                                int skipped, boolean committed) {}
 
     // ── reports ──
 

@@ -21,6 +21,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.io.InputStream;
 import java.math.BigDecimal;
+import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.*;
 
@@ -28,11 +29,15 @@ import java.util.*;
  * A bank statement (the .xlsx the bank's app exports) into the ledger. Each row is either a line the bank feed
  * already brought — matched by the bank's transaction code and amount, it gets the counterparty the feed did not
  * have — or a new line (history from before the feed, or something the feed missed). Importing the same file
- * again changes nothing. The statement says who the other side was, so counterparty rules decide most lines.
+ * again changes nothing. The statement says who the other side was, so counterparty rules decide most lines; a line
+ * an earlier statement brought without it (one converted from a PDF, which leaves the names out) gets it too.
  */
 @Service
 @Transactional
 public class FinanceStatementService {
+
+    /** How far apart two statements may date the same row (a day apart has been seen). */
+    private static final Duration SAME_ROW = Duration.ofDays(3);
 
     private final FinanceAccountRepository accountRepo;
     private final FinanceTransactionRepository txnRepo;
@@ -71,9 +76,11 @@ public class FinanceStatementService {
         LocalDateTime from = FinanceText.vnToUtc(rows.get(0).occurredAtVn());
         LocalDateTime to = FinanceText.vnToUtc(rows.get(rows.size() - 1).occurredAtVn());
 
-        // what the bank feed already brought, by (code, amount), oldest first
+        // what the bank feed already brought, by (code, amount), oldest first; and what earlier statements brought
         Map<String, Deque<FinanceTransaction>> feed = new HashMap<>();
+        Map<String, List<FinanceTransaction>> earlier = new HashMap<>();
         for (FinanceTransaction t : txnRepo.withReference(account.getId(), from.minusDays(3), to.plusDays(3))) {
+            if (t.getSource() == Source.STATEMENT) earlier.computeIfAbsent(key(t.getReferenceCode(), t.getAmount()), k -> new ArrayList<>()).add(t);
             if (t.getSource() != Source.SEPAY && t.getSource() != Source.EMAIL) continue;
             feed.computeIfAbsent(key(t.getReferenceCode(), t.getAmount()), k -> new ArrayDeque<>()).add(t);
         }
@@ -85,7 +92,7 @@ public class FinanceStatementService {
 
         List<FinanceRule> rules = classifier.rules();
         Map<String, Integer> seen = new HashMap<>();
-        int matched = 0, enriched = 0, created = 0, already = 0, withCp = 0, categorized = 0, waiting = 0;
+        int matched = 0, enriched = 0, created = 0, already = 0, alreadyEnriched = 0, withCp = 0, categorized = 0, waiting = 0;
         for (Row row : rows) {
             String k = key(row.reference(), row.amount());
             int dup = seen.merge(k, 1, Integer::sum) - 1;
@@ -98,22 +105,24 @@ public class FinanceStatementService {
             FinanceTransaction t = fromFeed == null ? null : fromFeed.pollFirst();
             if (t != null) {
                 matched++;
-                boolean newWho = who != null && !FinanceText.counterpartyKey(who).equals(FinanceText.counterpartyKey(t.getCounterparty()));
-                boolean newAccount = whoAccount != null && !whoAccount.equals(t.getCounterpartyAccount());
-                if (newWho || newAccount) {
-                    enriched++;
-                    if (commit) {
-                        if (who != null) t.setCounterparty(who);
-                        if (whoAccount != null) t.setCounterpartyAccount(whoAccount);
-                        if (t.getStatus() == Status.REVIEW || t.getCategorizedBy() == By.RULE || t.getCategorizedBy() == By.AI) redo(t, rules);
-                    }
-                }
+                if (fillIn(t, who, whoAccount, commit, rules)) enriched++;
                 if (t.getStatus() == Status.OK) categorized++; else waiting++;
                 continue;
             }
 
             String externalId = "stmt:" + accountKey + ":" + row.reference() + ":" + plain(row.amount()) + (dup > 0 ? ":" + dup : "");
-            if (txnRepo.existsByExternalId(externalId)) { already++; continue; }
+            if (txnRepo.existsByExternalId(externalId)) {
+                already++;
+                // a statement without the other side's name (a PDF) brought it before: this one names it
+                FinanceTransaction before = closest(earlier.get(k), FinanceText.vnToUtc(row.occurredAtVn()));
+                if (before != null && fillIn(before, who, whoAccount, commit, rules)) {
+                    alreadyEnriched++;
+                    boolean decided = commit ? before.getStatus() == Status.OK
+                        : before.getStatus() == Status.OK || decidable(withOtherSide(before, who, whoAccount), rules);
+                    if (decided) categorized++; else waiting++;
+                }
+                continue;
+            }
             created++;
             FinanceTransaction n = new FinanceTransaction();
             n.setAccount(account);
@@ -139,7 +148,49 @@ public class FinanceStatementService {
         }
         if (commit && account.getMode() == FinanceAccount.Mode.FEED) latestBalance(account, st.rows());
         return new FinanceDto.ImportSummary(st.bank(), number, account.getId(), account.getName(), st.period(), from, to,
-            rows.size(), matched, enriched, created, already, withCp, categorized, waiting, st.skipped(), commit);
+            rows.size(), matched, enriched, created, already, alreadyEnriched, withCp, categorized, waiting, st.skipped(), commit);
+    }
+
+    /**
+     * The statement names the other side of a line already here (the bank feed's, or an earlier statement's): the line
+     * takes the name and account, and what he did not decide himself is decided again. False when it says nothing new.
+     */
+    private boolean fillIn(FinanceTransaction t, String who, String whoAccount, boolean commit, List<FinanceRule> rules) {
+        boolean newWho = who != null && !FinanceText.counterpartyKey(who).equals(FinanceText.counterpartyKey(t.getCounterparty()));
+        boolean newAccount = whoAccount != null && !whoAccount.equals(t.getCounterpartyAccount());
+        if (!newWho && !newAccount) return false;
+        if (commit) {
+            if (who != null) t.setCounterparty(who);
+            if (whoAccount != null) t.setCounterpartyAccount(whoAccount);
+            if (t.getStatus() == Status.REVIEW || t.getCategorizedBy() == By.RULE || t.getCategorizedBy() == By.AI) redo(t, rules);
+        }
+        return true;
+    }
+
+    /**
+     * Of the lines an earlier statement made with this code and amount, the one closest in time, a few days apart at
+     * most (one statement can date a line a day off another); it is taken, so a repeated code is matched once.
+     */
+    private static FinanceTransaction closest(List<FinanceTransaction> lines, LocalDateTime at) {
+        if (lines == null) return null;
+        FinanceTransaction best = lines.stream()
+            .filter(t -> Duration.between(t.getOccurredAt(), at).abs().compareTo(SAME_ROW) <= 0)
+            .min(Comparator.comparing(t -> Duration.between(t.getOccurredAt(), at).abs())).orElse(null);
+        if (best != null) lines.remove(best);
+        return best;
+    }
+
+    /** Preview only: the line as it would be with the other side's name, to ask the rules without changing it. */
+    private static FinanceTransaction withOtherSide(FinanceTransaction t, String who, String whoAccount) {
+        FinanceTransaction c = new FinanceTransaction();
+        c.setAccount(t.getAccount());
+        c.setAmount(t.getAmount());
+        c.setOccurredAt(t.getOccurredAt());
+        c.setDescription(t.getDescription());
+        c.setBankDescription(t.getBankDescription());
+        c.setCounterparty(who != null ? who : t.getCounterparty());
+        c.setCounterpartyAccount(whoAccount != null ? whoAccount : t.getCounterpartyAccount());
+        return c;
     }
 
     /**
