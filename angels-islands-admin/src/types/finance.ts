@@ -58,6 +58,8 @@ export interface FinTxn {
   categorizedBy: 'RULE' | 'AI' | 'USER' | 'SYSTEM' | null; aiConfidence: number | null; balanceAfter: number | null
   transferPeerId: string | null; transferAccountName: string | null; suggestedKeywords: string | null; createdAt: string
   tags: FinTagRef[]
+  /** what the payment bought (a flight, a hotel stay), read from an email */
+  details?: { kind: string; title: string; start?: string | null; end?: string | null; items?: { label: string; value: string }[]; source?: { kind?: string; url?: string; subject?: string } | null } | null
 }
 /** tagIds: every tag the line should carry (implied ones come by themselves). */
 export interface FinTxnRequest {

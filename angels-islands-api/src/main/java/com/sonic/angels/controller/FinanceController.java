@@ -1,5 +1,6 @@
 package com.sonic.angels.controller;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.sonic.angels.model.dto.FinanceDto;
 import com.sonic.angels.service.FinanceIngestService;
 import com.sonic.angels.service.FinanceReportService;
@@ -140,6 +141,10 @@ public class FinanceController {
 
     @PutMapping("/transactions/{id}")
     public FinanceDto.Txn updateTransaction(@PathVariable UUID id, @RequestBody FinanceDto.TxnRequest req) { return finance.updateTransaction(id, req); }
+
+    /** What the payment bought (a flight, a hotel stay), from an email; null or {} clears it. */
+    @PutMapping("/transactions/{id}/details")
+    public FinanceDto.Txn setDetails(@PathVariable UUID id, @RequestBody(required = false) JsonNode details) { return finance.setDetails(id, details); }
 
     @DeleteMapping("/transactions/{id}")
     public ResponseEntity<Void> deleteTransaction(@PathVariable UUID id) { finance.deleteTransaction(id); return ResponseEntity.noContent().build(); }

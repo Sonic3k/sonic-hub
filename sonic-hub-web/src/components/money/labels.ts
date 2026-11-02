@@ -134,5 +134,11 @@ export const sameSet = (a: Set<string>, b: Set<string>) => a.size === b.size && 
 /** "3 transactions" */
 export const txs = (n: number) => `${n} transaction${n === 1 ? '' : 's'}`;
 
-/** What a line is shown as: its own words, else the payee's name here, else the payee, else what the bank said. */
-export const titleOf = (t: Txn) => t.description || t.payeeName || t.counterparty || t.bankDescription || '';
+/**
+ * What a line is shown as: its own words, else what it bought (a flight, a hotel stay), else the payee's name here,
+ * else the payee, else what the bank said.
+ */
+export const titleOf = (t: Txn) => t.description || t.details?.title || t.payeeName || t.counterparty || t.bankDescription || '';
+
+/** what kind of thing a line's details are about, as a small sign */
+export const DETAIL_ICON: Record<string, string> = { flight: '✈️', hotel: '🏨' };

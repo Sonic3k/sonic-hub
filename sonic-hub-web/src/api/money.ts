@@ -44,6 +44,14 @@ export interface Txn {
   tags: TagRef[];
   /** a move: the other own account */
   transferAccountId?: string | null;
+  /** what the payment bought (a flight, a hotel stay), read from an email */
+  details?: TxnDetails | null;
+}
+/** kind: flight, hotel…; start/end: its first and last day (YYYY-MM-DD); items: what to show, in order. */
+export interface TxnDetails {
+  kind: string; title: string; start?: string | null; end?: string | null;
+  items?: { label: string; value: string }[];
+  source?: { kind?: string; id?: string; url?: string; subject?: string; from?: string; date?: string } | null;
 }
 export interface Line { categoryId: string | null; code: string | null; name: string; icon: string | null; budgetGroup: string | null; amount: number; count: number }
 /** One label in a month's spending: every line carrying it counts in full (a parent through its children). */
@@ -104,6 +112,8 @@ export const moneyApi = {
   transactions: (p: { month?: string; categoryId?: string; accountId?: string; page?: number; size?: number }) => get<Paged<Txn>>('/finance/transactions', p),
   note: (b: { text: string; amount: number; accountId?: string | null; occurredAt?: string; categoryId?: string }) => send<Txn>('POST', '/finance/notes', b),
   update: (id: string, b: TxnEdit) => send<Txn>('PUT', `/finance/transactions/${id}`, b),
+  /** null clears them */
+  setDetails: (id: string, d: TxnDetails | null) => send<Txn>('PUT', `/finance/transactions/${id}/details`, d ?? {}),
   remove: (id: string) => send<void>('DELETE', `/finance/transactions/${id}`),
   confirm: (id: string) => send<Txn>('POST', `/finance/transactions/${id}/confirm`),
   confirmAll: () => send<{ updated: number }>('POST', '/finance/transactions/confirm-all'),

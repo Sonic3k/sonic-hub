@@ -1,5 +1,7 @@
 package com.sonic.angels.service;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sonic.angels.model.dto.FinanceDto;
 import com.sonic.angels.model.entity.*;
 import com.sonic.angels.model.entity.FinanceTransaction.By;
@@ -439,6 +441,31 @@ public class FinanceService {
 
     @Transactional(readOnly = true)
     public FinanceDto.Txn transaction(UUID id) { return toTxn(txn(id), rates.usdValue()); }
+
+    /**
+     * What a payment bought (a flight, a hotel stay), read from an email: set as a whole, or cleared with null / {}.
+     * Needs a kind and a title; start/end, when given, are its first and last day (YYYY-MM-DD).
+     */
+    public FinanceDto.Txn setDetails(UUID id, JsonNode d) {
+        FinanceTransaction t = txn(id);
+        if (d == null || d.isNull() || (d.isObject() && d.isEmpty())) t.setDetails(null);
+        else {
+            if (!d.isObject()) throw new IllegalArgumentException("Details must be an object");
+            for (String k : new String[]{"kind", "title"})
+                if (!d.path(k).isTextual() || d.path(k).asText().isBlank()) throw new IllegalArgumentException("Details need a " + k);
+            if (d.path("title").asText().length() > 200) throw new IllegalArgumentException("The title is too long");
+            for (String k : new String[]{"start", "end"}) {
+                JsonNode v = d.path(k);
+                if (v.isMissingNode() || v.isNull()) continue;
+                try { LocalDate.parse(v.asText()); }
+                catch (Exception e) { throw new IllegalArgumentException(k + " must be a date (YYYY-MM-DD)"); }
+            }
+            String json = d.toString();
+            if (json.length() > 20_000) throw new IllegalArgumentException("Details are too long");
+            t.setDetails(json);
+        }
+        return toTxn(t, rates.usdValue());
+    }
 
     /** Typed in admin. Without a category it goes through the rules like everything else. */
     public FinanceDto.Txn createTransaction(FinanceDto.TxnRequest r) {
@@ -992,6 +1019,7 @@ public class FinanceService {
                 ps.add(cb.or(cb.like(cb.lower(root.get("description")), like),
                     cb.like(cb.lower(root.get("bankDescription")), like),
                     cb.like(cb.lower(root.get("payeeName")), like),
+                    cb.like(cb.lower(root.get("details")), like),
                     cb.like(cb.lower(root.get("counterparty")), like),
                     cb.like(cb.lower(root.get("note")), like)));
             }
@@ -1069,7 +1097,15 @@ public class FinanceService {
             t.getDescription(), t.getBankDescription(), t.getCounterparty(), t.getCounterpartyAccount(), t.getNote(), t.getSource().name(), t.getStatus().name(),
             t.getCategorizedBy() == null ? null : t.getCategorizedBy().name(), t.getAiConfidence(), t.getBalanceAfter(),
             peer == null ? null : peer.getId(), peer == null ? null : peer.getAccount().getName(), suggest, t.getCreatedAt(), tagsOf(t),
-            peer == null ? null : peer.getAccount().getId(), t.getPayeeName());
+            peer == null ? null : peer.getAccount().getId(), t.getPayeeName(), details(t));
+    }
+
+    private static final ObjectMapper JSON = new ObjectMapper();
+
+    /** The stored details as JSON for the UIs; null when there are none (or they no longer parse). */
+    static JsonNode details(FinanceTransaction t) {
+        if (t.getDetails() == null) return null;
+        try { return JSON.readTree(t.getDetails()); } catch (Exception e) { return null; }
     }
 
     /** The line's tags for the UIs: the one that counts first, then facet by facet. */
