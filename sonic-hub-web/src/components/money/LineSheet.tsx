@@ -3,8 +3,8 @@
    says how many transactions will change. */
 import { useRef, useState } from 'react';
 import { moneyApi, type Txn, type TxnEdit } from '../../api/money';
-import { dayWord, money, timeOf, utc } from '../../lib/money';
-import { useCounterpartyLines, useRefresh, useSummary } from './data';
+import { dayOf, dayShort, dayWord, money, rateOf, timeOf, utc } from '../../lib/money';
+import { useCounterpartyLines, useMove, useRefresh, useSummary } from './data';
 import { decided, DETAIL_ICON, dirOf, guessOf, labelsOf, sameSet, systemMove, titleOf, txs, useLabelBook } from './labels';
 import { LabelText, ModeSeg, Sections, Wallets } from './Picker';
 import { Sheet, SheetFoot } from './Sheet';
@@ -17,7 +17,44 @@ const SOURCE: Record<string, string> = {
 const FROM_BANK = new Set(['SEPAY', 'EMAIL', 'STATEMENT']);
 const DETAIL_KIND: Record<string, string> = {
   flight: 'Flight', hotel: 'Hotel stay', ride: 'Ride', food: 'Food order', order: 'Order', delivery: 'Delivery', tip: 'Tip', membership: 'Membership',
+  payment: 'Payment',
 };
+const sum = (xs: Txn[]) => xs.reduce((s, x) => s + Math.abs(x.amount), 0);
+/* a friend's rate this far from the market's means part of the move is not here (a payment with no email) */
+const GAP = 0.08;
+
+/** A move between own accounts in two currencies: what went out, what came in, and the rate that makes. */
+function Exchange({ t }: { t: Txn }) {
+  const q = useMove(t.id), lines = q.data ?? [];
+  if (!lines.length) return null;
+  const mine = lines.filter(x => x.accountId === t.accountId), theirs = lines.filter(x => x.accountId !== t.accountId);
+  if (!theirs.length) return null;
+  const out = t.amount < 0 ? mine : theirs, inn = t.amount < 0 ? theirs : mine;
+  const r = rateOf({ amount: sum(out), currency: out[0].currency }, { amount: sum(inn), currency: inn[0].currency });
+  // the market's rate that day: what the foreign side was worth in đồng
+  const foreign = out[0].currency !== 'VND' ? out : inn;
+  const market = r && foreign.every(x => x.amountVnd !== null) && (out[0].currency === 'VND' || inn[0].currency === 'VND')
+    ? foreign.reduce((s, x) => s + Math.abs(x.amountVnd!), 0) / sum(foreign) : null;
+  const diff = r && market ? r.value / market - 1 : null;
+  const parts = (xs: Txn[]) => xs.length > 1 ? ` (${xs.length} payments)` : '';
+  return (
+    <section className="mn-details" aria-label="Exchange">
+      <p className="mn-details-cap"><span aria-hidden="true">⇄</span> Exchange between your accounts</p>
+      <p className="mn-details-t">{money(sum(out), out[0].currency)} out of {out[0].accountName}{parts(out)} → {money(sum(inn), inn[0].currency)} into {inn[0].accountName}{parts(inn)}</p>
+      <dl>
+        {r && <div><dt>Rate</dt><dd>{r.text}</dd></div>}
+        {market !== null && diff !== null && (
+          <div><dt>Market that day</dt><dd>{rateOf({ amount: 1, currency: foreign[0].currency }, { amount: market, currency: 'VND' })?.text}
+            {Math.abs(diff) >= 0.0005 ? ` · yours ${diff > 0 ? '+' : '−'}${(Math.abs(diff) * 100).toFixed(1)}%` : ' · the same'}</dd></div>
+        )}
+        {lines.length > 2 && [out, inn].map((xs, i) => xs.length > 1 && (
+          <div key={i}><dt>{i === 0 ? 'Out' : 'In'}</dt><dd>{xs.map(x => `${dayShort(dayOf(utc(x.occurredAt)))} ${money(Math.abs(x.amount), x.currency)}`).join(' · ')}</dd></div>
+        ))}
+      </dl>
+      {diff !== null && Math.abs(diff) > GAP && <p className="mn-sub">The two sides don’t add up at about that day’s rate, so part of this exchange may not be here yet.</p>}
+    </section>
+  );
+}
 
 /** "148 SGD", "SGD 148", "20.5 usd", "1,234.50 EUR" → amount and currency; null when it is not that. */
 function readOriginal(s: string): { amount: number; currency: string } | null {
@@ -178,6 +215,8 @@ export default function LineSheet({ txn: t, onClose }: { txn: Txn; onClose: () =
           </p>
         </section>
       )}
+
+      {t.kind === 'TRANSFER' && (t.moveId || (t.transferCurrency && t.transferCurrency !== t.currency)) && <Exchange t={t} />}
 
       <ModeSeg dir={dir} mode={mode} onMode={m => { setMode(m); setFromGuess(false); }} />
       {fromGuess && <p className="mn-guess-note">Filled in from a guess. Save if it’s right, or tap to change it.</p>}

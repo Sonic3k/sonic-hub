@@ -504,6 +504,9 @@ public class FinanceService {
         t.setAmount(r.amount());
         t.setOccurredAt(FinanceText.parseClientTime(r.occurredAt()));
         t.setCounterparty(blankToNull(r.merchant()));
+        String words = blankToNull(r.description());
+        if (words != null && words.length() > 500) words = words.substring(0, 500);
+        t.setDescription(words);
         t.setDetails(details);
         t.setExternalId(ext);
         t.setSource(Source.RECEIPT);
@@ -513,7 +516,10 @@ public class FinanceService {
         t.setStatus(Status.REVIEW);
         t = txnRepo.save(t);
         classifier.added(t);
-        if (!classifier.decide(t, classifier.fitting(t, classifier.rules()))) askAiAfterCommit(t);
+        // labels he already knows for it (a Zelle payment that says "rent"); without a category it still goes the usual way
+        List<FinanceCategory> known = r.tagIds() == null ? List.of() : r.tagIds().stream().filter(Objects::nonNull).distinct().map(this::category).toList();
+        if (!known.isEmpty()) addTags(t, known);
+        if (t.getCategory() == null && !classifier.decide(t, classifier.fitting(t, classifier.rules()))) askAiAfterCommit(t);
         return new FinanceDto.Receipt(true, toTxn(t, rates.fx()));
     }
 
@@ -600,6 +606,52 @@ public class FinanceService {
         return toTxn(t, rates.fx());
     }
 
+    /**
+     * These lines are one move between two own accounts: an exchange with a friend (dollars out of Bank of America,
+     * đồng into TPBank — each side keeps its own amounts, together they say the rate; one side may be paid in parts)
+     * or a move whose sides the automatic pairing did not see. In one currency both sides add up to the same amount.
+     * Returns the move's lines.
+     */
+    public List<FinanceDto.Txn> joinMove(List<UUID> ids) {
+        List<UUID> distinct = ids == null ? List.of() : ids.stream().filter(Objects::nonNull).distinct().toList();
+        if (distinct.size() < 2) throw new IllegalArgumentException("A move needs a line on each of two accounts");
+        List<FinanceTransaction> lines = distinct.stream().map(this::txn).toList();
+        if (lines.stream().anyMatch(x -> x.getSource() == Source.SYSTEM))
+            throw new IllegalArgumentException("A line written by the app for a move cannot be picked; pick the bank's own line");
+        List<List<FinanceTransaction>> sides = new ArrayList<>(FinanceClassifier.bySide(lines).values());
+        if (sides.size() != 2) throw new IllegalArgumentException("A move is between exactly two accounts");
+        int signA = direction(sides.get(0)), signB = direction(sides.get(1));
+        if (signA == 0 || signB == 0) throw new IllegalArgumentException("On each account the lines of a move all go the same way");
+        if (signA == signB) throw new IllegalArgumentException("Money leaves one account and arrives on the other");
+        FinanceAccount a = sides.get(0).get(0).getAccount(), b = sides.get(1).get(0).getAccount();
+        if (a.getCurrency().equalsIgnoreCase(b.getCurrency()) && total(sides.get(0)).compareTo(total(sides.get(1))) != 0)
+            throw new IllegalArgumentException("In one currency both sides of a move add up to the same amount");
+        classifier.join(lines, By.USER);
+        return move(lines.get(0).getId());
+    }
+
+    /** -1 when every line goes out, 1 when every line comes in, 0 when they are mixed. */
+    private static int direction(List<FinanceTransaction> side) {
+        boolean out = side.stream().allMatch(x -> x.getAmount().signum() < 0), in = side.stream().allMatch(x -> x.getAmount().signum() > 0);
+        return out ? -1 : in ? 1 : 0;
+    }
+
+    private static BigDecimal total(List<FinanceTransaction> side) {
+        return side.stream().map(x -> x.getAmount().abs()).reduce(BigDecimal.ZERO, BigDecimal::add);
+    }
+
+    /** The lines of the move this line is part of — its own side first, each side by time; empty when it is none. */
+    @Transactional(readOnly = true)
+    public List<FinanceDto.Txn> move(UUID id) {
+        FinanceTransaction t = txn(id);
+        List<FinanceTransaction> all = t.getMoveId() != null ? new ArrayList<>(txnRepo.findByMoveId(t.getMoveId()))
+            : t.getTransferPeer() != null ? new ArrayList<>(List.of(t, t.getTransferPeer())) : new ArrayList<>();
+        UUID own = t.getAccount().getId();
+        all.sort(Comparator.comparing((FinanceTransaction x) -> !x.getAccount().getId().equals(own)).thenComparing(FinanceTransaction::getOccurredAt));
+        FinanceFx fx = rates.fx();
+        return all.stream().map(x -> toTxn(x, fx)).toList();
+    }
+
     /** Every pre-filled guess still waiting is taken as right. */
     public FinanceDto.Applied confirmAll() {
         int n = 0;
@@ -624,21 +676,29 @@ public class FinanceService {
             if (t.getKind() == Kind.TRANSFER || t.getSource() == Source.SYSTEM) continue;
             String before = FinanceTags.signature(t);
             if (!remove.isEmpty()) FinanceTags.remove(t, remove);
-            FinanceCategory.Kind way = t.getAmount().signum() < 0 ? FinanceCategory.Kind.EXPENSE : FinanceCategory.Kind.INCOME;
-            List<FinanceCategory> fit = add.stream().filter(c -> !c.isMain() || c.getKind() == way).toList();
-            if (fit.stream().anyMatch(FinanceCategory::isMain)) {
-                Set<UUID> keep = new HashSet<>();
-                fit.forEach(c -> keep.add(c.getId()));
-                Set<UUID> guessed = new HashSet<>();
-                for (FinanceTxnTag x : FinanceTags.chosen(t, FinanceTags.MAIN))
-                    if (x.getDecidedBy() == By.AI && !keep.contains(x.getTag().getId())) guessed.add(x.getTag().getId());
-                if (!guessed.isEmpty()) FinanceTags.remove(t, guessed);
-            }
-            if (!fit.isEmpty()) FinanceTags.add(t, fit, By.USER);
-            FinanceTags.settleDecided(t);
+            addTags(t, add);
             if (!before.equals(FinanceTags.signature(t))) n++;
         }
         return new FinanceDto.Applied(n);
+    }
+
+    /**
+     * His labels on a line, besides the ones it has: a category only when it goes the line's way (spending for money
+     * out); a category he picks replaces the AI's guess. Settles what the line is.
+     */
+    private static void addTags(FinanceTransaction t, List<FinanceCategory> add) {
+        FinanceCategory.Kind way = t.getAmount().signum() < 0 ? FinanceCategory.Kind.EXPENSE : FinanceCategory.Kind.INCOME;
+        List<FinanceCategory> fit = add.stream().filter(c -> !c.isMain() || c.getKind() == way).toList();
+        if (fit.stream().anyMatch(FinanceCategory::isMain)) {
+            Set<UUID> keep = new HashSet<>();
+            fit.forEach(c -> keep.add(c.getId()));
+            Set<UUID> guessed = new HashSet<>();
+            for (FinanceTxnTag x : FinanceTags.chosen(t, FinanceTags.MAIN))
+                if (x.getDecidedBy() == By.AI && !keep.contains(x.getTag().getId())) guessed.add(x.getTag().getId());
+            if (!guessed.isEmpty()) FinanceTags.remove(t, guessed);
+        }
+        if (!fit.isEmpty()) FinanceTags.add(t, fit, By.USER);
+        FinanceTags.settleDecided(t);
     }
 
     // ════════════════════════════════ counterparties ════════════════════════════════
@@ -1184,7 +1244,8 @@ public class FinanceService {
             t.getDescription(), t.getBankDescription(), t.getCounterparty(), t.getCounterpartyAccount(), t.getNote(), t.getSource().name(), t.getStatus().name(),
             t.getCategorizedBy() == null ? null : t.getCategorizedBy().name(), t.getAiConfidence(), t.getBalanceAfter(),
             peer == null ? null : peer.getId(), peer == null ? null : peer.getAccount().getName(), suggest, t.getCreatedAt(), tagsOf(t),
-            peer == null ? null : peer.getAccount().getId(), t.getPayeeName(), details(t), t.getOriginalAmount(), t.getOriginalCurrency());
+            peer == null ? null : peer.getAccount().getId(), t.getPayeeName(), details(t), t.getOriginalAmount(), t.getOriginalCurrency(),
+            peer == null ? null : peer.getAmount(), peer == null ? null : peer.getAccount().getCurrency(), t.getMoveId());
     }
 
     private static final ObjectMapper JSON = new ObjectMapper();

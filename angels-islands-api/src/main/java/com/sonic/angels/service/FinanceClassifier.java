@@ -35,13 +35,19 @@ public class FinanceClassifier {
     private static final Duration PAIR_WINDOW = Duration.ofMinutes(90);
     /** How far apart in time the two sides of one known move may be (a statement can date a line by the day only). */
     private static final Duration SIDE_WINDOW = Duration.ofDays(1);
+    /** An exchange with a friend: he pays there, the friend pays here — a few days apart at most. */
+    private static final Duration EXCHANGE_WINDOW = Duration.ofDays(4);
+    /** How far a friend's rate may be from that day's market rate. */
+    private static final double EXCHANGE_SPREAD = 0.08;
 
     private final FinanceRuleRepository ruleRepo;
     private final FinanceTransactionRepository txnRepo;
     private final FinanceAccountRepository accountRepo;
+    private final FinanceRateService rates;
 
-    public FinanceClassifier(FinanceRuleRepository ruleRepo, FinanceTransactionRepository txnRepo, FinanceAccountRepository accountRepo) {
-        this.ruleRepo = ruleRepo; this.txnRepo = txnRepo; this.accountRepo = accountRepo;
+    public FinanceClassifier(FinanceRuleRepository ruleRepo, FinanceTransactionRepository txnRepo, FinanceAccountRepository accountRepo,
+                             FinanceRateService rates) {
+        this.ruleRepo = ruleRepo; this.txnRepo = txnRepo; this.accountRepo = accountRepo; this.rates = rates;
     }
 
     /** A saved transaction that nobody has decided on yet. Returns true when the AI should guess its category. */
@@ -197,6 +203,8 @@ public class FinanceClassifier {
     /**
      * Money moved to (or from) another own account. When that account has no feed of its own, its side is written
      * here (a mirror), so its running balance and the cash pool stay right; a feed account brings its own side later.
+     * An account in another currency gets no mirror — nobody knows the rate he got — but the line there that is this
+     * money at about that day's rate (an exchange with a friend) becomes the other side.
      */
     public void makeTransfer(FinanceTransaction t, FinanceAccount target, By by) {
         t.setKind(Kind.TRANSFER);
@@ -204,23 +212,18 @@ public class FinanceClassifier {
         t.getTags().clear();
         t.setStatus(Status.OK);
         t.setCategorizedBy(by);
+        boolean sameCurrency = target.getCurrency().equalsIgnoreCase(t.getAccount().getCurrency());
         // the bank's own line on the other account is already here (its statement came first): that is the other side
-        FinanceTransaction real = txnRepo.realSideOn(target.getId(), t.getAmount().negate(),
+        FinanceTransaction real = sameCurrency ? txnRepo.realSideOn(target.getId(), t.getAmount().negate(),
                 t.getOccurredAt().minus(SIDE_WINDOW), t.getOccurredAt().plus(SIDE_WINDOW)).stream()
             .filter(x -> !x.getId().equals(t.getId()) && (x.getKind() == Kind.TRANSFER || x.getCategorizedBy() != By.USER))
-            .min(Comparator.comparing(x -> Duration.between(x.getOccurredAt(), t.getOccurredAt()).abs())).orElse(null);
+            .min(Comparator.comparing(x -> Duration.between(x.getOccurredAt(), t.getOccurredAt()).abs())).orElse(null)
+            : exchangeSide(t, target);
         if (real != null) {
-            real.setKind(Kind.TRANSFER);
-            real.setCategory(null);
-            real.getTags().clear();
-            real.setStatus(Status.OK);
-            real.setCategorizedBy(by);
-            real.setTransferPeer(t);
-            t.setTransferPeer(real);
+            link(t, real, by);
             return;
         }
-        if (target.getMode() == FinanceAccount.Mode.FEED) return;
-        if (!target.getCurrency().equalsIgnoreCase(t.getAccount().getCurrency())) return;
+        if (target.getMode() == FinanceAccount.Mode.FEED || !sameCurrency) return;
         FinanceTransaction m = new FinanceTransaction();
         m.setAccount(target);
         m.setAmount(t.getAmount().negate());
@@ -236,8 +239,99 @@ public class FinanceClassifier {
         added(m);
     }
 
+    /**
+     * Lines he says are one move between two own accounts (the caller checked they are on exactly two). Two lines are
+     * each other's side: an exchange keeps each side's own amount, the two together say the rate. More lines — an
+     * exchange paid in parts (two Zelle payments for one transfer here, three for two) — share a move id, and each
+     * line's side is the biggest line on the other account. Whatever a line was part of before lets go of it first.
+     */
+    public void join(List<FinanceTransaction> lines, By by) {
+        for (FinanceTransaction x : lines)
+            if (x.getMoveId() != null || x.getTransferPeer() != null) breakTransfer(x);
+        List<List<FinanceTransaction>> sides = new ArrayList<>(bySide(lines).values());
+        UUID move = lines.size() > 2 ? UUID.randomUUID() : null;
+        for (FinanceTransaction x : lines) mark(x, by);
+        point(sides.get(0), sides.get(1), move);
+        point(sides.get(1), sides.get(0), move);
+    }
+
+    /** Both lines become one move between own accounts, each the other's side. */
+    private static void link(FinanceTransaction a, FinanceTransaction b, By by) {
+        mark(a, by);
+        mark(b, by);
+        a.setTransferPeer(b);
+        b.setTransferPeer(a);
+    }
+
+    private static void mark(FinanceTransaction x, By by) {
+        x.setKind(Kind.TRANSFER);
+        x.setCategory(null);
+        x.getTags().clear();
+        x.setStatus(Status.OK);
+        x.setCategorizedBy(by);
+    }
+
+    /** Every line of one side points at the biggest line of the other side, and carries the move id (or none). */
+    private static void point(List<FinanceTransaction> side, List<FinanceTransaction> other, UUID move) {
+        FinanceTransaction biggest = other.stream().max(Comparator.comparing((FinanceTransaction x) -> x.getAmount().abs())
+            .thenComparing(FinanceTransaction::getOccurredAt)).orElseThrow();
+        for (FinanceTransaction x : side) { x.setTransferPeer(biggest); x.setMoveId(move); }
+    }
+
+    /** Lines by account, in the order first seen. */
+    static Map<UUID, List<FinanceTransaction>> bySide(List<FinanceTransaction> lines) {
+        Map<UUID, List<FinanceTransaction>> m = new LinkedHashMap<>();
+        for (FinanceTransaction x : lines) m.computeIfAbsent(x.getAccount().getId(), k -> new ArrayList<>()).add(x);
+        return m;
+    }
+
+    /**
+     * A line leaves a move of several lines. What is left stays one move while both accounts still have a line in it
+     * (two lines left: a plain pair again); otherwise the lines left go back to waiting for review.
+     */
+    private void leaveMove(FinanceTransaction t) {
+        UUID move = t.getMoveId();
+        t.setMoveId(null);
+        t.setTransferPeer(null);
+        List<FinanceTransaction> rest = txnRepo.findByMoveId(move).stream().filter(x -> !x.getId().equals(t.getId())).toList();
+        List<List<FinanceTransaction>> sides = new ArrayList<>(bySide(rest).values());
+        if (sides.size() < 2) {
+            for (FinanceTransaction x : rest) { x.setMoveId(null); x.setTransferPeer(null); toReview(x); }
+            return;
+        }
+        UUID keep = rest.size() > 2 ? move : null;
+        point(sides.get(0), sides.get(1), keep);
+        point(sides.get(1), sides.get(0), keep);
+    }
+
+    private static void toReview(FinanceTransaction x) {
+        x.setKind(x.getAmount().signum() < 0 ? Kind.EXPENSE : Kind.INCOME);
+        x.setStatus(Status.REVIEW);
+        x.setCategorizedBy(null);
+    }
+
+    /**
+     * The other side of an exchange on an account in another currency: the line going the other way within a few
+     * days whose amount is this one at about that day's rate — the closest to it. Null when there is none.
+     */
+    private FinanceTransaction exchangeSide(FinanceTransaction t, FinanceAccount target) {
+        BigDecimal expected = rates.fx().convert(t.getAmount().abs(), t.getAccount().getCurrency(), target.getCurrency(), t.getOccurredAt());
+        if (expected == null || expected.signum() == 0) return null;
+        return txnRepo.openSidesOn(target.getId(), t.getOccurredAt().minus(EXCHANGE_WINDOW), t.getOccurredAt().plus(EXCHANGE_WINDOW)).stream()
+            .filter(x -> !x.getId().equals(t.getId()) && x.getAmount().signum() == -t.getAmount().signum())
+            .filter(x -> x.getKind() == Kind.TRANSFER || x.getCategorizedBy() != By.USER)
+            .filter(x -> off(x.getAmount(), expected) <= EXCHANGE_SPREAD)
+            .min(Comparator.comparingDouble(x -> off(x.getAmount(), expected))).orElse(null);
+    }
+
+    /** How far an amount is from the one expected, as a share of it (0.03 = 3 %). */
+    private static double off(BigDecimal amount, BigDecimal expected) {
+        return Math.abs(amount.abs().doubleValue() / expected.doubleValue() - 1);
+    }
+
     /** Undo a transfer: the mirror goes away, a real other half goes back to waiting for review. */
     public void breakTransfer(FinanceTransaction t) {
+        if (t.getMoveId() != null) { leaveMove(t); return; }
         FinanceTransaction peer = t.getTransferPeer();
         t.setTransferPeer(null);
         if (peer == null) return;
@@ -247,9 +341,7 @@ public class FinanceClassifier {
             txnRepo.unlinkPeer(peer.getId());
             txnRepo.delete(peer);
         } else {
-            peer.setKind(peer.getAmount().signum() < 0 ? Kind.EXPENSE : Kind.INCOME);
-            peer.setStatus(Status.REVIEW);
-            peer.setCategorizedBy(null);
+            toReview(peer);
         }
     }
 

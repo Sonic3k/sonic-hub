@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState, type ReactNode } from 'react';
 import { createPortal } from 'react-dom';
 import type { Txn } from '../../api/money';
-import { dayLabel, dayOf, money, monthName, timeOf, utc, vnd } from '../../lib/money';
+import { dayLabel, dayOf, money, monthName, rateOf, timeOf, utc, vnd } from '../../lib/money';
 import BulkSheet from './BulkSheet';
 import { useSummary, useTxns } from './data';
 import { decided, dirOf, guessOf, labelsOf, titleOf, txs, useLabelBook } from './labels';
@@ -61,7 +61,12 @@ export default function TxnList({ month, filter, onClearFilter }: { month: strin
     // the payee as the title does not say it: his name for them, else (when that is the title) their real name
     const title = titleOf(t), payee = [t.payeeName, t.counterparty].find(x => x && x !== title);
     if (payee && !move) sub.push(`${dir === 'out' ? '→' : '←'} ${payee}`);
-    if (move) sub.push(`transfer ${dir === 'out' ? 'to' : 'from'} ${t.transferAccountName ?? 'another account'}`);
+    if (move) {
+      // in another currency it is an exchange; a plain pair says the rate it was done at
+      const x = !!t.transferCurrency && t.transferCurrency !== t.currency;
+      const r = x && !t.moveId && t.transferAmount ? rateOf(t, { amount: t.transferAmount, currency: t.transferCurrency! }) : null;
+      sub.push(`${x ? 'exchange' : 'transfer'} ${dir === 'out' ? 'to' : 'from'} ${t.transferAccountName ?? 'another account'}${r ? ` · ${r.text}` : ''}`);
+    }
     if (!dec) sub.push(<span className="mn-wait">to review</span>);
     sub.push(timeOf(t.occurredAt));
     if (t.note) sub.push(<em>“{t.note}”</em>);

@@ -48,6 +48,10 @@ export interface Txn {
   details?: TxnDetails | null;
   /** what was paid when it was another currency than the account's (a VND card charged 148 SGD): always positive */
   originalAmount?: number | null; originalCurrency?: string | null;
+  /** a move: the other side's own amount and currency — in another currency, an exchange */
+  transferAmount?: number | null; transferCurrency?: string | null;
+  /** set when the move has more than two lines (an exchange paid in parts): moneyApi.move gives them all */
+  moveId?: string | null;
 }
 /** kind: flight, hotel…; start/end: its first and last day (YYYY-MM-DD); items: what to show, in order. */
 export interface TxnDetails {
@@ -123,6 +127,10 @@ export const moneyApi = {
   setDetails: (id: string, d: TxnDetails | null) => send<Txn>('PUT', `/finance/transactions/${id}/details`, d ?? {}),
   remove: (id: string) => send<void>('DELETE', `/finance/transactions/${id}`),
   confirm: (id: string) => send<Txn>('POST', `/finance/transactions/${id}/confirm`),
+  /** the lines of the move this line is part of, its own side first; [] when it is none */
+  move: (id: string) => get<Txn[]>(`/finance/transactions/${id}/move`),
+  /** these lines are one move between two own accounts (an exchange: each side keeps its own amounts) */
+  joinMove: (ids: string[]) => send<Txn[]>('POST', '/finance/transactions/move', { ids }),
   confirmAll: () => send<{ updated: number }>('POST', '/finance/transactions/confirm-all'),
   setBudget: (flexibleBudget: number) => send<unknown>('PUT', '/finance/settings', { flexibleBudget }),
   setBalance: (id: string, balance: number) => send<MoneyAccount>('POST', `/finance/accounts/${id}/balance`, { balance }),
