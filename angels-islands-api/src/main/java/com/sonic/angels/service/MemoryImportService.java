@@ -73,6 +73,7 @@ public class MemoryImportService {
             // the bulk delete skips the link tables, so they go first
             episodeRepo.unlinkMediaOfSource(personId, source); episodeRepo.unlinkCollectionsOfSource(personId, source);
             episodeRepo.unlinkTagsOfSource(personId, source); episodeRepo.unlinkPersonsOfSource(personId, source);
+            episodeRepo.deleteSourcesOfSource(personId, source);
             int removed = episodeRepo.deleteByPersonAndSource(personId, source);
             for (MemoryDto.EpisodeRequest r : req.getEpisodes())
                 memory.newEpisode(person, source, r, statusOr(r.getStatus()));

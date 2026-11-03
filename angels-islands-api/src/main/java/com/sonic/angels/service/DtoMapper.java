@@ -204,7 +204,29 @@ public class DtoMapper {
         // avatar left out: a list of memories does not need it and it would load each person's photo
         List<PersonDto.Summary> persons = e.getPersons().stream().map(p -> toPersonSummary(p, null)).toList();
         r.setPersons(persons); r.setPersonIds(persons.stream().map(PersonDto.Summary::getId).toList());
+        r.setSourceViews(e.getSources().stream().map(this::toSourceView).toList());
         return r;
+    }
+
+    private MemoryDto.SourceView toSourceView(EpisodeSource s) {
+        MemoryDto.SourceView v = new MemoryDto.SourceView();
+        v.setKind(s.getKind().name()); v.setPosition(s.getPosition()); v.setExcerpt(s.getExcerpt()); v.setAuthor(s.getAuthor());
+        v.setSaidAt(s.getSaidAt()); v.setUrl(s.getUrl());
+        if (s.getThread() != null) {
+            ForumThread t = s.getThread();
+            v.setThreadId(t.getId()); v.setThreadTitle(t.getTitle());
+            if (t.getForum() != null) { v.setForumKey(t.getForum().getKey()); v.setForumName(t.getForum().getName()); }
+        }
+        if (s.getArchive() != null) {
+            ChatArchive a = s.getArchive();
+            v.setArchiveId(a.getId()); v.setArchivePlatform(a.getPlatform() != null ? a.getPlatform().name() : null); v.setArchiveTitle(a.getTitle());
+            if (a.getPerson() != null) {
+                v.setArchivePersonId(a.getPerson().getId());
+                v.setArchivePersonName(a.getPerson().getDisplayName() != null ? a.getPerson().getDisplayName() : a.getPerson().getName());
+            }
+        }
+        if (s.getNote() != null) { v.setNoteId(s.getNote().getId()); v.setNoteTitle(s.getNote().getTitle()); v.setNoteSlug(s.getNote().getSlug()); }
+        return v;
     }
 
     private static String statusName(MemoryStatus s) { return s != null ? s.name() : null; }

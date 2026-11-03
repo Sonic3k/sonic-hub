@@ -33,6 +33,8 @@ export const hub = {
   categories: () => get<string[]>('/journal/categories'),
   archives: (personId: string) => get<ChatArchive[]>(`/persons/${personId}/chat-archives`),
   messages: (personId: string, archiveId: string, page: number, size: number, q?: string) => get<Paged<ChatMessage>>(`/persons/${personId}/chat-archives/${archiveId}/messages`, { page, size, q }),
+  /** where message seq N falls in the reader's list */
+  messagePosition: (personId: string, archiveId: string, seq: number) => get<{ index: number }>(`/persons/${personId}/chat-archives/${archiveId}/messages/position`, { seq }),
   /** Attachments of these messages; ids go 100 to a request so the URL stays short. */
   chatAttachments: async (personId: string, archiveId: string, messageIds: string[]) => {
     const parts: Promise<ChatAttachment[]>[] = [];
@@ -49,7 +51,7 @@ export const hub = {
   mysticBriefs: (id: string) => get<MysticBrief[]>(`/persons/${id}/mystic-briefs`),
   facts: (id: string) => get<Fact[]>(`/persons/${id}/memory/facts`),
   /** one person's memories, newest first; q = words anywhere (marks optional), best match first */
-  episodes: (id: string, p?: { q?: string; kind?: string; tagId?: string; withPersonId?: string; oldestFirst?: boolean }) => get<Episode[]>(`/persons/${id}/memory/episodes`, p),
+  episodes: (id: string, p?: { q?: string; kind?: string; tagId?: string; withPersonId?: string; oldestFirst?: boolean; source?: string }) => get<Episode[]>(`/persons/${id}/memory/episodes`, p),
   episode: (personId: string, id: string) => get<Episode>(`/persons/${personId}/memory/episodes/${id}`),
   /** memories picked at random; types = episode,fact,chapter,trait */
   randomMemory: (id: string, count = 1, types?: string) => get<RandomMemory[]>(`/persons/${id}/memory/random`, { count, types }),

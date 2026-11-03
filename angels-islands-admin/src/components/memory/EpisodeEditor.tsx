@@ -11,7 +11,7 @@ import TagSelectModal, { TagChip } from '../TagSelectModal'
 import PersonSelectModal from '../PersonSelectModal'
 import MediaPickerModal from './MediaPickerModal'
 import { EPISODE_KINDS, StatusSwitch } from './shared'
-import type { DatePrecision, EpisodeRequest, EpisodeResponse, MemoryCollectionRef, MemoryMediaRef, MemoryStatus, TagResponse } from '../../types'
+import type { DatePrecision, EpisodeRequest, EpisodeResponse, MemoryCollectionRef, MemoryMediaRef, MemorySourceView, MemoryStatus, TagResponse } from '../../types'
 
 const DATE_PRECISIONS = PRECISIONS.filter(p => ['DECADE', 'YEAR', 'SEASON', 'MONTH', 'DAY'].includes(p.value))
 const field = 'px-3 py-2 text-sm border rounded-lg border-slate-200 focus:border-pink-400 outline-none'
@@ -49,6 +49,7 @@ export default function EpisodeEditor({ personId, item, onSaved, onDeleted, onCl
   const [albums, setAlbums] = useState<MemoryCollectionRef[]>(item?.collections ?? [])
   const [tags, setTags] = useState<TagResponse[]>(item?.tags ?? [])
   const [people, setPeople] = useState<PersonRef[]>(item?.persons ?? [])
+  const [sources, setSources] = useState<MemorySourceView[]>(item?.sourceViews ?? [])
   const [modal, setModal] = useState<'media' | 'album' | 'tag' | 'person' | null>(null)
   const [saving, setSaving] = useState(false)
 
@@ -71,6 +72,7 @@ export default function EpisodeEditor({ personId, item, onSaved, onDeleted, onCl
       place: place.trim(),
       ...(lat && lng && !isNaN(+lat) && !isNaN(+lng) ? { latitude: +lat, longitude: +lng } : {}),
       mediaIds: media.map(m => m.id), collectionIds: albums.map(a => a.id), tagIds: tags.map(t => t.id), personIds: people.map(x => x.id),
+      sources: sources.map(({ kind, threadId, archiveId, noteId, position, excerpt, author, saidAt, url }) => ({ kind, threadId, archiveId, noteId, position, excerpt, author, saidAt, url })),
       ...(status ? { status } : {}),
     }
     try {
@@ -180,6 +182,25 @@ export default function EpisodeEditor({ personId, item, onSaved, onDeleted, onCl
             {people.map(x => <Chip key={x.id} text={x.displayName || x.name} onRemove={() => setPeople(y => y.filter(z => z.id !== x.id))} />)}
           </LinkBox>
         </div>
+
+        {sources.length > 0 && (
+          <div>
+            <label className="block text-xs font-medium text-slate-500 mb-1.5">Told in · {sources.length}</label>
+            <div className="space-y-1.5">
+              {sources.map((x, i) => (
+                <div key={i} className="group flex gap-2 items-start rounded-lg border border-slate-100 px-3 py-2">
+                  <span className="text-[10px] font-medium px-1.5 py-0.5 rounded bg-slate-50 text-slate-500 shrink-0 mt-0.5">{x.kind === 'FORUM' ? 'Forum' : x.kind === 'CHAT' ? 'Chat' : x.kind === 'NOTE' ? 'Note' : 'Link'}</span>
+                  <div className="min-w-0 flex-1">
+                    {x.excerpt && <p className="text-xs text-slate-700 line-clamp-3 whitespace-pre-line">{x.excerpt}</p>}
+                    <p className="text-[11px] text-slate-400 truncate">{[x.author, x.saidAt?.slice(0, 16).replace('T', ' '),
+                      x.kind === 'FORUM' ? x.threadTitle : x.kind === 'CHAT' ? [x.archivePlatform, x.archivePersonName].filter(Boolean).join(' · ') : x.kind === 'NOTE' ? x.noteTitle : x.url].filter(Boolean).join(' · ')}</p>
+                  </div>
+                  <button type="button" onClick={() => setSources(s => s.filter((_, k) => k !== i))} className="text-slate-300 hover:text-rose-500"><X size={12} /></button>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
         {(item?.source || item?.externalKey) && (
           <p className="text-[11px] text-slate-300">{[item.source && `source: ${item.source}`, item.externalKey && `key: ${item.externalKey}`].filter(Boolean).join(' · ')}</p>

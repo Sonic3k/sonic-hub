@@ -33,6 +33,11 @@ public interface EpisodeRepository extends JpaRepository<Episode, UUID> {
                               @org.springframework.data.repository.query.Param("source") String source);
 
     @org.springframework.data.jpa.repository.Modifying
+    @org.springframework.data.jpa.repository.Query(value = "DELETE FROM episode_sources WHERE episode_id IN " + OF_SOURCE, nativeQuery = true)
+    int deleteSourcesOfSource(@org.springframework.data.repository.query.Param("personId") UUID personId,
+                              @org.springframework.data.repository.query.Param("source") String source);
+
+    @org.springframework.data.jpa.repository.Modifying
     @org.springframework.data.jpa.repository.Query(value = "DELETE FROM episode_media WHERE media_file_id = :mediaId", nativeQuery = true)
     int unlinkMedia(@org.springframework.data.repository.query.Param("mediaId") UUID mediaId);
     @org.springframework.data.jpa.repository.Modifying

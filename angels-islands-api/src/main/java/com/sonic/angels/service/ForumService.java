@@ -257,7 +257,7 @@ public class ForumService {
         return out;
     }
 
-    public void deleteThread(UUID id) { threadRepo.deleteById(id); }
+    public void deleteThread(UUID id) { threadRepo.detachEpisodeSources(id); threadRepo.deleteById(id); }
 
     // ── helpers ──────────────────────────────────────────────────────────────
 

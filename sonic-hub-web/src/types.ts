@@ -88,6 +88,14 @@ export interface Episode {
   when?: string | null; endAt?: string | null; place?: string | null; latitude?: number | null; longitude?: number | null; externalKey?: string | null;
   media?: { id: string; fileName: string; url?: string | null; caption?: string | null; width?: number | null; height?: number | null }[] | null;
   collections?: { id: string; name: string }[] | null; tags?: TagRef[] | null; persons?: PersonRef[] | null;
+  /** where it is told: forum posts, chat messages, notes — with the words as they were written */
+  sourceViews?: MemorySource[] | null;
+}
+export interface MemorySource {
+  kind: 'FORUM' | 'CHAT' | 'NOTE' | 'LINK'; position?: number | null; excerpt?: string | null; author?: string | null; saidAt?: string | null; url?: string | null;
+  threadId?: string | null; threadTitle?: string | null; forumKey?: string | null; forumName?: string | null;
+  archiveId?: string | null; archivePlatform?: string | null; archiveTitle?: string | null; archivePersonId?: string | null; archivePersonName?: string | null;
+  noteId?: string | null; noteTitle?: string | null; noteSlug?: string | null;
 }
 export interface RandomMemory { type: 'episode' | 'fact' | 'chapter' | 'trait'; episode?: Episode | null; fact?: Fact | null; chapter?: Chapter | null; trait?: Trait | null }
 export interface Chapter { id: string; period?: string | null; title?: string | null; summary?: string | null; sentiment?: string | null; sortOrder?: number | null; source?: string | null }

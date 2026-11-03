@@ -26,15 +26,20 @@ public class MemoryService {
     private final MediaFileRepository mediaRepo;
     private final CollectionRepository collectionRepo;
     private final TagRepository tagRepo;
+    private final ForumThreadRepository threadRepo;
+    private final ChatArchiveRepository archiveRepo;
+    private final JournalNoteRepository noteRepo;
     private final DtoMapper mapper;
 
     public MemoryService(PersonRepository personRepo, EpisodeRepository episodeRepo, FactRepository factRepo,
                          LifeChapterRepository chapterRepo, PersonalityTraitRepository traitRepo,
                          MediaFileRepository mediaRepo, CollectionRepository collectionRepo, TagRepository tagRepo,
+                         ForumThreadRepository threadRepo, ChatArchiveRepository archiveRepo, JournalNoteRepository noteRepo,
                          DtoMapper mapper) {
         this.personRepo = personRepo; this.episodeRepo = episodeRepo; this.factRepo = factRepo;
         this.chapterRepo = chapterRepo; this.traitRepo = traitRepo;
-        this.mediaRepo = mediaRepo; this.collectionRepo = collectionRepo; this.tagRepo = tagRepo; this.mapper = mapper;
+        this.mediaRepo = mediaRepo; this.collectionRepo = collectionRepo; this.tagRepo = tagRepo;
+        this.threadRepo = threadRepo; this.archiveRepo = archiveRepo; this.noteRepo = noteRepo; this.mapper = mapper;
     }
 
     // ── Episodes ─────────────────────────────────────────────────────────────
@@ -133,6 +138,26 @@ public class MemoryService {
             e.getPersons().clear();
             e.getPersons().addAll(inOrder(r.getPersonIds(), personRepo::findAllById, Person::getId));
         }
+        if (r.getSources() != null) {
+            e.getSources().clear();
+            int k = 0;
+            for (MemoryDto.SourceRef x : r.getSources()) {
+                if (x == null) continue;
+                EpisodeSource src = new EpisodeSource();
+                src.setEpisode(e); src.setSortOrder(k++);
+                EpisodeSource.Kind kind = x.getKind() != null ? EpisodeSource.Kind.valueOf(x.getKind().trim().toUpperCase())
+                    : x.getThreadId() != null ? EpisodeSource.Kind.FORUM : x.getArchiveId() != null ? EpisodeSource.Kind.CHAT
+                    : x.getNoteId() != null ? EpisodeSource.Kind.NOTE : EpisodeSource.Kind.LINK;
+                src.setKind(kind);
+                // a link that is no longer there is dropped; the words stay
+                if (x.getThreadId() != null) threadRepo.findById(x.getThreadId()).ifPresent(src::setThread);
+                if (x.getArchiveId() != null) archiveRepo.findById(x.getArchiveId()).ifPresent(src::setArchive);
+                if (x.getNoteId() != null) noteRepo.findById(x.getNoteId()).ifPresent(src::setNote);
+                src.setPosition(x.getPosition()); src.setExcerpt(blankToNull(x.getExcerpt()));
+                src.setAuthor(blankToNull(x.getAuthor())); src.setSaidAt(x.getSaidAt()); src.setUrl(blankToNull(x.getUrl()));
+                e.getSources().add(src);
+            }
+        }
     }
 
     /** the rows for these ids, in the order asked, each once; ids that are not there are skipped */
@@ -193,6 +218,11 @@ public class MemoryService {
             .append(p.getNickname() != null ? p.getNickname() : "").append(' '));
         e.getCollections().forEach(c -> sb.append(c.getName()).append(' '));
         e.getMediaFiles().forEach(m -> { if (m != null && m.getCaption() != null) sb.append(m.getCaption()).append(' '); });
+        e.getSources().forEach(x -> {
+            if (x.getExcerpt() != null) sb.append(x.getExcerpt()).append(' ');
+            if (x.getAuthor() != null) sb.append(x.getAuthor()).append(' ');
+            if (x.getThread() != null) sb.append(x.getThread().getTitle()).append(' ');
+        });
         return sb.toString();
     }
 

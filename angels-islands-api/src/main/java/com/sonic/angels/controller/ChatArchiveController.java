@@ -63,6 +63,14 @@ public class ChatArchiveController {
         return messageRepo.findVisibleByArchive(archiveId, ChatMessage.Kind.EMPTY, pageable);
     }
 
+    /** Where message seq N falls in the reader's list (messages before it that the reader shows) — so a link to one
+     *  message can open the page it is on. */
+    @GetMapping("/{archiveId}/messages/position")
+    public ResponseEntity<java.util.Map<String, Long>> positionOf(@PathVariable UUID personId, @PathVariable UUID archiveId, @RequestParam int seq) {
+        if (!archiveRepo.existsByIdAndPersonId(archiveId, personId)) return ResponseEntity.notFound().build();
+        return ResponseEntity.ok(java.util.Map.of("index", messageRepo.countVisibleBefore(archiveId, ChatMessage.Kind.EMPTY, seq)));
+    }
+
     /** Attachments of the messages the reader has on screen (?messageIds=a,b,c — at most 500). */
     @GetMapping("/{archiveId}/attachments")
     public ResponseEntity<List<ChatAttachmentDto.Item>> attachmentsOf(
@@ -116,6 +124,7 @@ public class ChatArchiveController {
 
     @DeleteMapping("/{archiveId}")
     public ResponseEntity<Void> delete(@PathVariable UUID personId, @PathVariable UUID archiveId) {
+        archiveRepo.detachEpisodeSources(archiveId);
         archiveRepo.deleteById(archiveId);
         return ResponseEntity.noContent().build();
     }

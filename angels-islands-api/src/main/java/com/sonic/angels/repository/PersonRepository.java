@@ -31,4 +31,10 @@ public interface PersonRepository extends JpaRepository<Person, UUID> {
     @Modifying
     @Query(value = "DELETE FROM episode_persons WHERE person_id = :personId", nativeQuery = true)
     void clearEpisodeLinks(java.util.UUID personId);
+
+    /** a deleted person's chat archives leaves the memories that quote it: the words stay, only the link goes */
+    @org.springframework.transaction.annotation.Transactional
+    @org.springframework.data.jpa.repository.Modifying
+    @org.springframework.data.jpa.repository.Query(value = "UPDATE episode_sources SET chat_archive_id = NULL WHERE chat_archive_id IN (SELECT id FROM chat_archives WHERE person_id = :id)", nativeQuery = true)
+    int detachEpisodeSourceArchives(@org.springframework.data.repository.query.Param("id") java.util.UUID id);
 }

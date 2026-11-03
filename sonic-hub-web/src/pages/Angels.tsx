@@ -1,5 +1,5 @@
 /* Angels — the people who passed through, each one a story. Same frame, a softer light. */
-import { Fragment, useCallback, useEffect, useMemo, useState } from 'react';
+import { Fragment, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useParams, useSearchParams } from 'react-router-dom';
 import { useInfiniteQuery, useQueries, useQuery } from '@tanstack/react-query';
 import { hub, isAngel, periodYears, randomLine } from '../api/hub';
@@ -13,6 +13,7 @@ import { Sentinel, useViewer } from '../components/PhotoGroups';
 import { PostHits } from './Forum';
 import PersonNumbers from '../components/PersonNumbers';
 import { Attachment, AttachmentGallery, Lightbox, type Shown } from '../components/ChatAttachments';
+import { kindName, memoryHref, memoryWhen } from './Memories';
 import { isOwner } from '../components/money/data';
 
 const T = 10 * 60_000;
@@ -91,6 +92,10 @@ export function PersonPage() {
   const writings = useQuery({ queryKey: ['writings', id], queryFn: () => hub.notes({ authorId: id, size: 50 }), staleTime: T });
   const forums = useQuery({ queryKey: ['person-forums', id], queryFn: () => hub.personForums(id).catch(() => []), staleTime: T });
   const forumPosts = useQuery({ queryKey: ['person-forum-posts', id], queryFn: () => hub.personForumPosts(id, 0, 8).catch(() => null), staleTime: T, enabled: !!forums.data?.length });
+  /* his own memories this person is in */
+  const me = usePersons().data?.find(x => x.isSelf);
+  const shared = useQuery({ queryKey: ['memories-with', me?.id, id], enabled: !!me && me.id !== id, staleTime: T,
+    queryFn: async () => (await hub.episodes(me!.id, { withPersonId: id })).sort((a, b) => (a.occurredAt ?? '9999').localeCompare(b.occurredAt ?? '9999')) });
   const photos = useQuery({ queryKey: ['person-photos', id], staleTime: T, queryFn: () => hub.search({ personId: id, size: 30, sortBy: 'effectiveDate', sortDir: 'asc', inclPersons: true, inclTags: true }) });
   const items = photos.data?.content ?? [], viewer = useViewer(items);
   const openById = (mid: string) => { const i = items.findIndex(m => m.id === mid); if (i >= 0) viewer.open(i); };
@@ -141,6 +146,13 @@ export function PersonPage() {
               <li key={e.id} className={(e.importance ?? 0) >= 4 ? 'big' : ''}>
                 <time>{momentDate(e.occurredAt)}</time>
                 <p>{e.summary}</p>{e.emotion && <span className="emo">{e.emotion}</span>}
+              </li>))}</ol></section>}
+
+          {!!shared.data?.length && <section className="block"><div className="hd"><h2>Trong ký ức của anh</h2><span>{shared.data.length}</span></div>
+            <ol className="episodes">{shared.data.map(e => (
+              <li key={e.id} className={(e.importance ?? 0) >= 7 ? 'big' : ''}>
+                <time>{[memoryWhen(e), kindName(e.kind)].filter(Boolean).join(' · ')}</time>
+                <p><Link to={memoryHref(e)}>{e.title || e.summary}</Link></p>
               </li>))}</ol></section>}
 
           {items.length > 0 && <section className="block"><div className="hd"><h2>Ảnh cùng nhau</h2><span>{fmt(photos.data?.totalElements ?? items.length)}</span><Link to={`/photos?person=${id}`} style={{ ['--c' as string]: 'var(--angels)' }}>Xem tất cả</Link></div>
@@ -223,10 +235,17 @@ export function ChatReader() {
   const person = useQuery({ queryKey: ['person', id], queryFn: () => hub.person(id), staleTime: T });
   const archives = useQuery({ queryKey: ['archives', id], queryFn: () => hub.archives(id), staleTime: T });
   const a = archives.data?.find(x => x.id === archiveId), p = person.data;
-  const inf = useInfiniteQuery({ queryKey: ['chat', archiveId, dq], initialPageParam: 0, staleTime: T,
-    queryFn: ({ pageParam }) => hub.messages(id, archiveId, pageParam, 200, dq || undefined), getNextPageParam: (last) => (last.last ? undefined : last.number + 1) });
-  const msgs = inf.data?.pages.flatMap(x => x.content) ?? [], total = inf.data?.pages[0]?.totalElements ?? 0;
   const [sp, setSp] = useSearchParams(), media = sp.get('tab') === 'media', [shown, setShown] = useState<Shown | null>(null);
+  /* ?at=548 opens the conversation at message seq 548 (a memory quoting it links here): start on its page, earlier pages on demand */
+  const at = Number(sp.get('at')) || 0;
+  const pos = useQuery({ queryKey: ['chat-pos', archiveId, at], enabled: !!at, staleTime: T, queryFn: () => hub.messagePosition(id, archiveId, at).catch(() => ({ index: 0 })) });
+  const start = at && !dq ? Math.floor((pos.data?.index ?? 0) / 200) : 0;
+  const inf = useInfiniteQuery({ queryKey: ['chat', archiveId, dq, start], initialPageParam: start, staleTime: T, enabled: !at || !!dq || pos.isSuccess,
+    queryFn: ({ pageParam }) => hub.messages(id, archiveId, pageParam, 200, dq || undefined), getNextPageParam: (last) => (last.last ? undefined : last.number + 1),
+    getPreviousPageParam: (first) => (first.number > 0 ? first.number - 1 : undefined) });
+  const msgs = inf.data?.pages.flatMap(x => x.content) ?? [], total = inf.data?.pages[0]?.totalElements ?? 0;
+  const jumped = useRef(false);
+  useEffect(() => { if (!at || dq || jumped.current || !msgs.some(m => m.seq === at)) return; jumped.current = true; document.getElementById(`m-${at}`)?.scrollIntoView({ block: 'center' }); }, [msgs, at, dq]);
   const closeShown = useCallback(() => setShown(null), []);
   const tab = (m: boolean) => { const n = new URLSearchParams(sp); if (m) n.set('tab', 'media'); else n.delete('tab'); setSp(n, { replace: true }); };
   /* what came with each page of messages, one request per 100 ids */
@@ -253,13 +272,14 @@ export function ChatReader() {
       {media ? <AttachmentGallery personId={id} archiveId={archiveId} onOpen={setShown} /> : <div className="transcript">
         {inf.isLoading && <div className="card empty">Đang mở cuộc trò chuyện…</div>}
         {!inf.isLoading && !msgs.length && <div className="card empty">{dq ? 'Không có tin nhắn nào khớp.' : 'Kho này chưa có tin nhắn.'}</div>}
+        {inf.hasPreviousPage && <button type="button" className="older" onClick={() => inf.fetchPreviousPage()} disabled={inf.isFetchingPreviousPage}>{inf.isFetchingPreviousPage ? 'Đang mở…' : '↑ Tin nhắn trước đó'}</button>}
         {msgs.map((m, i) => {
           const day = (m.timestamp ?? '').slice(0, 10), prevM = msgs[i - 1], newDay = !prevM || (prevM.timestamp ?? '').slice(0, 10) !== day, them = isThem(m), cont = !newDay && prevM && prevM.sender === m.sender;
           const att = atts.get(m.id) ?? [], text = !!m.content?.trim() || !att.length;
           return (
             <Fragment key={m.id}>
               {newDay && day && <div className="day-sep"><span>{longDay(+day.slice(0, 4), +day.slice(5, 7), +day.slice(8, 10))}</span></div>}
-              <div className={`msg ${them ? 'them' : 'me'} ${cont ? 'cont' : ''}`}>
+              <div id={m.seq != null ? `m-${m.seq}` : undefined} className={`msg ${them ? 'them' : 'me'} ${cont ? 'cont' : ''} ${at && m.seq === at && !dq ? 'hit' : ''}`}>
                 {!cont && <span className="who">{m.sender}</span>}
                 {text && <p>{mark(m.content)}<time>{timeOf(m.timestamp)}</time></p>}
                 {att.length > 0 && <div className="atts">{att.map(x => <Attachment key={x.id} a={x} onOpen={setShown} />)}

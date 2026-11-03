@@ -115,6 +115,12 @@ public class Episode extends BaseEntity {
     @BatchSize(size = 200)
     private Set<Person> persons = new HashSet<>();
 
+    /** Where it is told — forum posts, chat messages, notes — with the words kept. */
+    @OneToMany(mappedBy = "episode", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OrderBy("sortOrder ASC")
+    @BatchSize(size = 200)
+    private List<EpisodeSource> sources = new ArrayList<>();
+
     public Episode() {}
 
     public UUID getId() { return id; }
@@ -159,6 +165,8 @@ public class Episode extends BaseEntity {
     public void setCollections(Set<Collection> collections) { this.collections = collections; }
     public Set<Tag> getTags() { return tags; }
     public void setTags(Set<Tag> tags) { this.tags = tags; }
+    public List<EpisodeSource> getSources() { return sources; }
+    public void setSources(List<EpisodeSource> sources) { this.sources = sources; }
     public Set<Person> getPersons() { return persons; }
     public void setPersons(Set<Person> persons) { this.persons = persons; }
 

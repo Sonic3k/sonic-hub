@@ -176,6 +176,7 @@ public class JournalController {
 
     @DeleteMapping("/notes/{id}")
     public ResponseEntity<Void> deleteNote(@PathVariable UUID id) {
+        noteRepo.detachEpisodeSources(id);
         noteRepo.deleteById(id); // owning side: join rows removed with the entity
         return ResponseEntity.noContent().build();
     }

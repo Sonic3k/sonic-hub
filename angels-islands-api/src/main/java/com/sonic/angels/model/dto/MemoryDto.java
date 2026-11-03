@@ -55,12 +55,48 @@ public class MemoryDto {
         public java.util.List<UUID> getCollectionIds() { return collectionIds; } public void setCollectionIds(java.util.List<UUID> v) { this.collectionIds = v; }
         public java.util.List<UUID> getTagIds() { return tagIds; } public void setTagIds(java.util.List<UUID> v) { this.tagIds = v; }
         public java.util.List<UUID> getPersonIds() { return personIds; } public void setPersonIds(java.util.List<UUID> v) { this.personIds = v; }
+        /** Where it is told, in order (a list left out keeps them, [] clears them). */
+        private java.util.List<SourceRef> sources;
+        public java.util.List<SourceRef> getSources() { return sources; } public void setSources(java.util.List<SourceRef> v) { this.sources = v; }
+    }
+
+    /** One place a memory is told. kind FORUM: threadId + position (the post's sort order); CHAT: archiveId + position
+     *  (the message's seq); NOTE: noteId; LINK: url. excerpt = the words as written; author / saidAt as on the page. */
+    public static class SourceRef {
+        private String kind; private UUID threadId; private UUID archiveId; private UUID noteId; private Integer position;
+        private String excerpt; private String author; private LocalDateTime saidAt; private String url;
+        public String getKind() { return kind; } public void setKind(String v) { this.kind = v; }
+        public UUID getThreadId() { return threadId; } public void setThreadId(UUID v) { this.threadId = v; }
+        public UUID getArchiveId() { return archiveId; } public void setArchiveId(UUID v) { this.archiveId = v; }
+        public UUID getNoteId() { return noteId; } public void setNoteId(UUID v) { this.noteId = v; }
+        public Integer getPosition() { return position; } public void setPosition(Integer v) { this.position = v; }
+        public String getExcerpt() { return excerpt; } public void setExcerpt(String v) { this.excerpt = v; }
+        public String getAuthor() { return author; } public void setAuthor(String v) { this.author = v; }
+        public LocalDateTime getSaidAt() { return saidAt; } public void setSaidAt(LocalDateTime v) { this.saidAt = v; }
+        public String getUrl() { return url; } public void setUrl(String v) { this.url = v; }
+    }
+    /** …and what the page needs to show and link it: the thread's title and forum, the chat's platform and person, the note. */
+    public static class SourceView extends SourceRef {
+        private String threadTitle; private String forumKey; private String forumName; private String archivePlatform; private String archiveTitle;
+        private UUID archivePersonId; private String archivePersonName; private String noteTitle; private String noteSlug;
+        public String getThreadTitle() { return threadTitle; } public void setThreadTitle(String v) { this.threadTitle = v; }
+        public String getForumKey() { return forumKey; } public void setForumKey(String v) { this.forumKey = v; }
+        public String getForumName() { return forumName; } public void setForumName(String v) { this.forumName = v; }
+        public String getArchivePlatform() { return archivePlatform; } public void setArchivePlatform(String v) { this.archivePlatform = v; }
+        public String getArchiveTitle() { return archiveTitle; } public void setArchiveTitle(String v) { this.archiveTitle = v; }
+        public UUID getArchivePersonId() { return archivePersonId; } public void setArchivePersonId(UUID v) { this.archivePersonId = v; }
+        public String getArchivePersonName() { return archivePersonName; } public void setArchivePersonName(String v) { this.archivePersonName = v; }
+        public String getNoteTitle() { return noteTitle; } public void setNoteTitle(String v) { this.noteTitle = v; }
+        public String getNoteSlug() { return noteSlug; } public void setNoteSlug(String v) { this.noteSlug = v; }
     }
     public static class EpisodeResponse extends EpisodeRequest {
         private UUID id; private LocalDateTime createdAt; private String when;
         private java.util.List<MediaRef> media; private java.util.List<CollectionRef> collections;
         private java.util.List<TagDto.Response> tags; private java.util.List<PersonDto.Summary> persons;
+        private java.util.List<SourceView> sourceViews;
         public UUID getId() { return id; } public void setId(UUID v) { this.id = v; }
+        /** the sources with their titles and links (the request's "sources" carries the same refs without them) */
+        public java.util.List<SourceView> getSourceViews() { return sourceViews; } public void setSourceViews(java.util.List<SourceView> v) { this.sourceViews = v; }
         public LocalDateTime getCreatedAt() { return createdAt; } public void setCreatedAt(LocalDateTime v) { this.createdAt = v; }
         /** occurredAt written as far as it is known: "1995", "Hè 1998", "1998-06", "2005-07-15" */
         public String getWhen() { return when; } public void setWhen(String v) { this.when = v; }
