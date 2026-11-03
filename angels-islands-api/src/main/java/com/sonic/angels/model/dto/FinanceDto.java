@@ -111,7 +111,9 @@ public final class FinanceDto {
     public record ReceiptRequest(UUID accountId, String occurredAt, BigDecimal amount, String merchant, String externalId, JsonNode details,
                                  BigDecimal originalAmount, String originalCurrency, String currency,
                                  /* the payment's own words, when it has some (the message on a Zelle payment) */
-                                 String description) {}
+                                 String description,
+                                 /* labels already known for it; a category that does not go the payment's way is left out */
+                                 List<UUID> tagIds) {}
 
     /** created: false when the receipt was there already (its details are filled in if it had none). */
     public record Receipt(boolean created, Txn txn) {}

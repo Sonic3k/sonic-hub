@@ -516,7 +516,10 @@ public class FinanceService {
         t.setStatus(Status.REVIEW);
         t = txnRepo.save(t);
         classifier.added(t);
-        if (!classifier.decide(t, classifier.fitting(t, classifier.rules()))) askAiAfterCommit(t);
+        // labels he already knows for it (a Zelle payment that says "rent"); without a category it still goes the usual way
+        List<FinanceCategory> known = r.tagIds() == null ? List.of() : r.tagIds().stream().filter(Objects::nonNull).distinct().map(this::category).toList();
+        if (!known.isEmpty()) addTags(t, known);
+        if (t.getCategory() == null && !classifier.decide(t, classifier.fitting(t, classifier.rules()))) askAiAfterCommit(t);
         return new FinanceDto.Receipt(true, toTxn(t, rates.fx()));
     }
 
@@ -673,21 +676,29 @@ public class FinanceService {
             if (t.getKind() == Kind.TRANSFER || t.getSource() == Source.SYSTEM) continue;
             String before = FinanceTags.signature(t);
             if (!remove.isEmpty()) FinanceTags.remove(t, remove);
-            FinanceCategory.Kind way = t.getAmount().signum() < 0 ? FinanceCategory.Kind.EXPENSE : FinanceCategory.Kind.INCOME;
-            List<FinanceCategory> fit = add.stream().filter(c -> !c.isMain() || c.getKind() == way).toList();
-            if (fit.stream().anyMatch(FinanceCategory::isMain)) {
-                Set<UUID> keep = new HashSet<>();
-                fit.forEach(c -> keep.add(c.getId()));
-                Set<UUID> guessed = new HashSet<>();
-                for (FinanceTxnTag x : FinanceTags.chosen(t, FinanceTags.MAIN))
-                    if (x.getDecidedBy() == By.AI && !keep.contains(x.getTag().getId())) guessed.add(x.getTag().getId());
-                if (!guessed.isEmpty()) FinanceTags.remove(t, guessed);
-            }
-            if (!fit.isEmpty()) FinanceTags.add(t, fit, By.USER);
-            FinanceTags.settleDecided(t);
+            addTags(t, add);
             if (!before.equals(FinanceTags.signature(t))) n++;
         }
         return new FinanceDto.Applied(n);
+    }
+
+    /**
+     * His labels on a line, besides the ones it has: a category only when it goes the line's way (spending for money
+     * out); a category he picks replaces the AI's guess. Settles what the line is.
+     */
+    private static void addTags(FinanceTransaction t, List<FinanceCategory> add) {
+        FinanceCategory.Kind way = t.getAmount().signum() < 0 ? FinanceCategory.Kind.EXPENSE : FinanceCategory.Kind.INCOME;
+        List<FinanceCategory> fit = add.stream().filter(c -> !c.isMain() || c.getKind() == way).toList();
+        if (fit.stream().anyMatch(FinanceCategory::isMain)) {
+            Set<UUID> keep = new HashSet<>();
+            fit.forEach(c -> keep.add(c.getId()));
+            Set<UUID> guessed = new HashSet<>();
+            for (FinanceTxnTag x : FinanceTags.chosen(t, FinanceTags.MAIN))
+                if (x.getDecidedBy() == By.AI && !keep.contains(x.getTag().getId())) guessed.add(x.getTag().getId());
+            if (!guessed.isEmpty()) FinanceTags.remove(t, guessed);
+        }
+        if (!fit.isEmpty()) FinanceTags.add(t, fit, By.USER);
+        FinanceTags.settleDecided(t);
     }
 
     // ════════════════════════════════ counterparties ════════════════════════════════
