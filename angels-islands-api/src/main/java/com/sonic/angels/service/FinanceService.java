@@ -1238,10 +1238,12 @@ public class FinanceService {
         FinanceCategory c = t.getCategory();
         FinanceTransaction peer = t.getTransferPeer();
         String suggest = t.getStatus() == Status.REVIEW ? FinanceText.suggestKeywords(t.getDescription() != null ? t.getDescription() : t.getBankDescription()) : null;
+        boolean middleman = FinanceText.middleman(t.getCounterparty());        // the clearing house, not the one paid
         return new FinanceDto.Txn(t.getId(), a.getId(), a.getName(), a.getMode().name(), a.getCurrency(), t.getOccurredAt(), t.getAmount(),
             fx.vnd(t.getAmount(), a.getCurrency(), t.getOccurredAt()), t.getKind().name(),
             c == null ? null : c.getId(), c == null ? null : c.getName(), c == null ? null : c.getIcon(),
-            t.getDescription(), t.getBankDescription(), t.getCounterparty(), t.getCounterpartyAccount(), t.getNote(), t.getSource().name(), t.getStatus().name(),
+            t.getDescription(), t.getBankDescription(), middleman ? null : t.getCounterparty(), middleman ? null : t.getCounterpartyAccount(),
+            t.getNote(), t.getSource().name(), t.getStatus().name(),
             t.getCategorizedBy() == null ? null : t.getCategorizedBy().name(), t.getAiConfidence(), t.getBalanceAfter(),
             peer == null ? null : peer.getId(), peer == null ? null : peer.getAccount().getName(), suggest, t.getCreatedAt(), tagsOf(t),
             peer == null ? null : peer.getAccount().getId(), t.getPayeeName(), details(t), t.getOriginalAmount(), t.getOriginalCurrency(),

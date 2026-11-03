@@ -84,12 +84,24 @@ public final class FinanceText {
      * "HD65000VND_CJ BAKERY VIETNAM" → "CJ BAKERY VIETNAM"; "Y DUOC 3P - LANG SINH VIEN_99000VND_12" → "Y DUOC 3P - LANG SINH VIEN".
      */
     public static String cleanCounterparty(String name) {
-        if (name == null) return null;
+        if (name == null || middleman(name)) return null;
         String n = CP_AMOUNT_SUFFIX.matcher(CP_AMOUNT_PREFIX.matcher(name.trim()).replaceFirst("")).replaceFirst("");
         n = n.replaceAll("\\s+", " ").trim();
         if (n.isEmpty()) return null;
         return n.length() > 200 ? n.substring(0, 200) : n;
     }
+
+    /**
+     * Who a bank names instead of the one paid: the State Bank's clearing house for a transfer to another bank
+     * ("SGD NHNN VIET NAM"), VNPAY for a QR payment ("CTCP GIAI PHAP THANH TOAN VIET NAM"), NAPAS. Never a
+     * counterparty — one name over hundreds of different people and shops.
+     */
+    public static boolean middleman(String name) {
+        return name != null && MIDDLEMAN.matcher(normalize(name)).find();
+    }
+
+    private static final Pattern MIDDLEMAN = Pattern.compile(
+        "^(SGD NHNN|SO GIAO DICH (NHNN|NGAN HANG NHA NUOC))|GIAI PHAP THANH TOAN VIET NAM|THANH TOAN QUOC GIA VIET NAM");
 
     /**
      * The bank's own text of a feed line: SePay's full description without the "BankAPINotify" it puts in front

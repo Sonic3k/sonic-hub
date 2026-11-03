@@ -99,7 +99,7 @@ public class FinanceStatementService {
             int dup = seen.merge(k, 1, Integer::sum) - 1;
             String who = FinanceText.cleanCounterparty(row.counterpartyName());
             if (who == null) who = FinanceText.cardMerchant(row.description());
-            String whoAccount = trim(row.counterpartyAccount(), 64);
+            String whoAccount = FinanceText.middleman(row.counterpartyName()) ? null : trim(row.counterpartyAccount(), 64);
             if (who != null) withCp++;
 
             Deque<FinanceTransaction> fromFeed = feed.get(k);
