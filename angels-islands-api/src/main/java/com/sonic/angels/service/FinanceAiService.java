@@ -25,7 +25,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 /**
- * Guesses the category of a transaction no rule knew, with DeepSeek (the same key the companion uses).
+ * Guesses the category of a transaction no rule knew, with Claude (the app's Anthropic key, a small fast model).
  * A sure guess (confidence ≥ 0.8) is taken as it is; a less sure one stays in review, pre-filled, so one tap confirms it.
  * Runs after the transaction is committed, off the request thread; without a key it does nothing.
  */
@@ -44,19 +44,19 @@ public class FinanceAiService {
 
     private final FinanceTransactionRepository txnRepo;
     private final FinanceCategoryRepository categoryRepo;
-    private final OpenAiCompatClient llm;
-    private final String deepseekKey;
+    private final AnthropicClient claude;
+    private final String model;
     private final TransactionTemplate tx;
     private final ObjectMapper om = new ObjectMapper();
 
-    public FinanceAiService(FinanceTransactionRepository txnRepo, FinanceCategoryRepository categoryRepo, OpenAiCompatClient llm,
-                            @Value("${deepseek.api-key:}") String deepseekKey, PlatformTransactionManager txManager) {
-        this.txnRepo = txnRepo; this.categoryRepo = categoryRepo; this.llm = llm;
-        this.deepseekKey = deepseekKey == null ? "" : deepseekKey.trim();
+    public FinanceAiService(FinanceTransactionRepository txnRepo, FinanceCategoryRepository categoryRepo, AnthropicClient claude,
+                            @Value("${finance.ai.model:claude-haiku-4-5-20251001}") String model, PlatformTransactionManager txManager) {
+        this.txnRepo = txnRepo; this.categoryRepo = categoryRepo; this.claude = claude;
+        this.model = model == null || model.isBlank() ? "claude-haiku-4-5-20251001" : model.trim();
         this.tx = new TransactionTemplate(txManager);
     }
 
-    public boolean enabled() { return !deepseekKey.isEmpty(); }
+    public boolean enabled() { return claude.isConfigured(); }
 
     @Async
     public void categorizeLater(UUID transactionId) {
@@ -68,8 +68,7 @@ public class FinanceAiService {
     private void categorize(UUID id) throws Exception {
         Map<String, String> ask = tx.execute(s -> prompt(id));
         if (ask == null) return;
-        String answer = llm.chat("https://api.deepseek.com", deepseekKey, "deepseek-chat", SYSTEM,
-            List.of(Map.of("role", "user", "content", ask.get("prompt"))), 60, 0f);
+        String answer = claude.chat(model, SYSTEM, List.of(Map.of("role", "user", "content", ask.get("prompt"))), 60, 0f);
         int a = answer.indexOf('{'), b = answer.lastIndexOf('}');
         if (a < 0 || b <= a) return;
         JsonNode j = om.readTree(answer.substring(a, b + 1));
@@ -104,7 +103,7 @@ public class FinanceAiService {
             "- Lúc: " + vn.getDayOfWeek().getDisplayName(TextStyle.FULL, new Locale("vi")) + " " + vn.toLocalTime().withSecond(0).withNano(0) + "\n" +
             (t.getDescription() != null ? "- Nội dung: " + t.getDescription() + "\n" : "") +
             (t.getBankDescription() != null && !t.getBankDescription().equals(t.getDescription()) ? "- Mô tả ngân hàng: " + t.getBankDescription() + "\n" : "") +
-            (t.getCounterparty() != null ? "- Bên kia: " + t.getCounterparty() + "\n" : "") +
+            (FinanceText.cleanCounterparty(t.getCounterparty()) != null ? "- Bên kia: " + FinanceText.cleanCounterparty(t.getCounterparty()) + "\n" : "") +
             (t.getNote() != null ? "- Ghi chú: " + t.getNote() + "\n" : "");
         return Map.of("prompt", text);
     }
