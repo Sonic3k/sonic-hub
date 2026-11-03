@@ -26,6 +26,8 @@ import java.util.stream.Collectors;
 
 /**
  * Guesses the category of a transaction no rule knew, with Claude (the app's Anthropic key, a small fast model).
+ * OFF unless FINANCE_AI_ENABLED=true: he does not want the app spending his API key on this — labels are decided by
+ * the rules, by him, or in a working session, never by paid calls from the app on its own.
  * A sure guess (confidence ≥ 0.8) is taken as it is; a less sure one stays in review, pre-filled, so one tap confirms it.
  * Runs after the transaction is committed, off the request thread; without a key it does nothing.
  */
@@ -46,17 +48,19 @@ public class FinanceAiService {
     private final FinanceCategoryRepository categoryRepo;
     private final AnthropicClient claude;
     private final String model;
+    private final boolean on;
     private final TransactionTemplate tx;
     private final ObjectMapper om = new ObjectMapper();
 
     public FinanceAiService(FinanceTransactionRepository txnRepo, FinanceCategoryRepository categoryRepo, AnthropicClient claude,
-                            @Value("${finance.ai.model:claude-haiku-4-5-20251001}") String model, PlatformTransactionManager txManager) {
-        this.txnRepo = txnRepo; this.categoryRepo = categoryRepo; this.claude = claude;
+                            @Value("${finance.ai.model:claude-haiku-4-5-20251001}") String model,
+                            @Value("${finance.ai.enabled:false}") boolean on, PlatformTransactionManager txManager) {
+        this.txnRepo = txnRepo; this.categoryRepo = categoryRepo; this.claude = claude; this.on = on;
         this.model = model == null || model.isBlank() ? "claude-haiku-4-5-20251001" : model.trim();
         this.tx = new TransactionTemplate(txManager);
     }
 
-    public boolean enabled() { return claude.isConfigured(); }
+    public boolean enabled() { return on && claude.isConfigured(); }
 
     @Async
     public void categorizeLater(UUID transactionId) {
