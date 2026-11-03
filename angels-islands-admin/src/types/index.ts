@@ -116,6 +116,16 @@ export interface EpisodeResponse {
   place?: string; latitude?: number; longitude?: number; externalKey?: string
   media?: MemoryMediaRef[]; collections?: MemoryCollectionRef[]; tags?: TagResponse[]
   persons?: { id: string; name: string; displayName?: string; nickname?: string }[]
+  /** where it is told, with the words as written */
+  sourceViews?: MemorySourceView[]
+}
+export interface MemorySourceRef {
+  kind: 'FORUM' | 'CHAT' | 'NOTE' | 'LINK'; threadId?: string; archiveId?: string; noteId?: string; position?: number
+  excerpt?: string; author?: string; saidAt?: string; url?: string
+}
+export interface MemorySourceView extends MemorySourceRef {
+  threadTitle?: string; forumKey?: string; forumName?: string; archivePlatform?: string; archiveTitle?: string
+  archivePersonId?: string; archivePersonName?: string; noteTitle?: string; noteSlug?: string
 }
 /** In an update a field left out keeps its value, '' clears it; a link list left out keeps the links, [] clears them. */
 export interface EpisodeRequest {
@@ -123,6 +133,7 @@ export interface EpisodeRequest {
   title?: string; kind?: string; status?: MemoryStatus; precision?: DatePrecision | ''; approx?: boolean; endAt?: string
   place?: string; latitude?: number; longitude?: number
   mediaIds?: string[]; collectionIds?: string[]; tagIds?: string[]; personIds?: string[]
+  sources?: MemorySourceRef[]
 }
 export interface EpisodeQuery {
   q?: string; kind?: string; status?: string; source?: string; tagId?: string; withPersonId?: string

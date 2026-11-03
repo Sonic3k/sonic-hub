@@ -17,6 +17,9 @@ public interface ChatMessageRepository extends JpaRepository<ChatMessage, UUID> 
     Page<ChatMessage> findByChatArchiveId(UUID archiveId, Pageable pageable);
 
     /** Everything but EMPTY rows (Yahoo lines whose emoticon was lost in the export). */
+    @Query("SELECT COUNT(m) FROM ChatMessage m WHERE m.chatArchive.id = :archiveId AND (m.kind IS NULL OR m.kind <> :hidden) AND m.seq < :seq")
+    long countVisibleBefore(UUID archiveId, ChatMessage.Kind hidden, int seq);
+
     @Query("SELECT m FROM ChatMessage m WHERE m.chatArchive.id = :archiveId AND (m.kind IS NULL OR m.kind <> :hidden)")
     Page<ChatMessage> findVisibleByArchive(UUID archiveId, ChatMessage.Kind hidden, Pageable pageable);
 

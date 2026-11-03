@@ -168,7 +168,9 @@ export function ForumThreadPage() {
   const t = q.data;
   const [hash, setHash] = useState(() => location.hash.slice(1));
   useEffect(() => { const on = () => setHash(location.hash.slice(1)); addEventListener('hashchange', on); return () => removeEventListener('hashchange', on); }, []);
-  useEffect(() => { if (t && hash) document.getElementById(hash)?.scrollIntoView({ block: 'center' }); else window.scrollTo({ top: 0 }); }, [t, hash]);
+  /* #n-12 = the post at place 12 of the thread (a memory links that way: post ids change when a thread is re-imported) */
+  const target = useMemo(() => { const m = /^n-(\d+)$/.exec(hash); if (!m || !t) return hash; const p = t.posts.find(x => x.sortOrder === +m[1]); return p ? `p-${p.id}` : hash; }, [hash, t]);
+  useEffect(() => { if (t && target) document.getElementById(target)?.scrollIntoView({ block: 'center' }); else window.scrollTo({ top: 0 }); }, [t, target]);
   const crumbs = useMemo(() => (t?.board ?? '').split(' / ').filter(Boolean), [t?.board]);
   if (q.isLoading) return <div className="wrap page"><div className="card empty">Đang mở thread…</div></div>;
   if (!t) return <div className="wrap page"><Link className="back" to="/forum">← Diễn đàn</Link><h1>Không tìm thấy thread này</h1></div>;
@@ -185,7 +187,7 @@ export function ForumThreadPage() {
         return (
           <Fragment key={p.id}>
             {newDay && i > 0 && <li className="day-sep"><span>{longDay(+day.slice(0, 4), +day.slice(5, 7), +day.slice(8, 10))}</span></li>}
-            <li id={`p-${p.id}`} className={`fpost ${p.person?.isSelf ? 'me' : ''} ${hash === `p-${p.id}` ? 'hit' : ''}`}>
+            <li id={`p-${p.id}`} className={`fpost ${p.person?.isSelf ? 'me' : ''} ${target === `p-${p.id}` ? 'hit' : ''}`}>
               <Who p={p.person} nick={p.authorNick} size={40} />
               <div className="fbody">
                 <div className="fhead"><b>{p.authorNick}</b>{p.person && !p.person.isSelf && <Link to={`/angels/${p.person.id}`}>{nameOf(p.person)}</Link>}<time>{i === 0 ? `${dayMonthYear(p.postedAt)} · ` : ''}{timeOf(p.postedAt)}</time><a className="fnum" href={`#p-${p.id}`}>#{i + 1}</a></div>

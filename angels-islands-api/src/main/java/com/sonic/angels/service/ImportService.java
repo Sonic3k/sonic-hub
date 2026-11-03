@@ -230,6 +230,7 @@ public class ImportService {
             .orElseThrow(() -> new ImportException(404, "archive not found: " + archiveId));
         if (a.getExternalKey() == null) throw new ImportException(400, "only imported archives can be deleted here");
         int n = messageRepo.deleteByArchiveId(archiveId);
+        archiveRepo.detachEpisodeSources(archiveId);
         archiveRepo.delete(a);
         return n;
     }

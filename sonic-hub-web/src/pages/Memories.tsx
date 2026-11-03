@@ -164,6 +164,23 @@ export function MemoriesSide() {
 
 // ── one memory ───────────────────────────────────────────────────────────────
 
+const PLATFORM: Record<string, string> = { YAHOO: 'Yahoo', FACEBOOK: 'Facebook', SMS: 'SMS', ZALO: 'Zalo', OTHER: 'Thư' };
+const stamp = (iso?: string | null) => (iso ? `${+iso.slice(8, 10)}/${+iso.slice(5, 7)}/${iso.slice(0, 4)}${iso.length > 11 && iso.slice(11, 16) !== '00:00' ? ` ${iso.slice(11, 16)}` : ''}` : '');
+/** where a memory is told: the words as they were written, and a link to the thread / the chat / the note around them */
+function SourceQuote({ s }: { s: import('../types').MemorySource }) {
+  const href = s.kind === 'FORUM' && s.threadId ? `/forum/t/${s.threadId}${s.position != null ? `#n-${s.position}` : ''}`
+    : s.kind === 'CHAT' && s.archiveId && s.archivePersonId ? `/angels/${s.archivePersonId}/chat/${s.archiveId}${s.position != null ? `?at=${s.position}` : ''}`
+    : s.kind === 'NOTE' && s.noteId ? (s.noteSlug ? `/journal/${s.noteSlug}` : `/journal/id/${s.noteId}`) : null;
+  const where = s.kind === 'FORUM' ? [s.forumName || 'Diễn đàn', s.threadTitle].filter(Boolean).join(' · ')
+    : s.kind === 'CHAT' ? [PLATFORM[s.archivePlatform ?? ''] ?? s.archivePlatform, s.archivePersonName && `với ${s.archivePersonName}`].filter(Boolean).join(' ')
+    : s.kind === 'NOTE' ? s.noteTitle || 'Ghi chép' : s.url || '';
+  const meta = [s.author, stamp(s.saidAt)].filter(Boolean).join(' · ');
+  const body = <>{s.excerpt && <blockquote>{s.excerpt}</blockquote>}<span className="mem-src-meta">{meta && <b>{meta}</b>}{where}</span></>;
+  if (href) return <Link className={`mem-src ${s.kind.toLowerCase()}`} to={href}>{body}</Link>;
+  if (s.kind === 'LINK' && s.url) return <a className="mem-src link" href={s.url} target="_blank" rel="noreferrer">{body}</a>;
+  return <div className={`mem-src ${s.kind.toLowerCase()}`}>{body}</div>;
+}
+
 export function MemoryPage() {
   const { id } = useParams(), self = useSelf(), all = useMemories(), persons = usePersons();
   const q = useQuery({ queryKey: ['memory', id], enabled: !!self && !!id, staleTime: T, queryFn: () => hub.episode(self!.id, id!) });
@@ -200,6 +217,7 @@ export function MemoryPage() {
           {text && <div className="prose">{text.split(/\n+/).map((para, k) => <p key={k}>{para}</p>)}</div>}
           {route.length > 0 && <><h5 className="mem-h">Lộ trình</h5><ol className="mem-route">{route.map((leg, k) => <li key={k}>{leg}</li>)}</ol></>}
           {photos.length > 0 && <div className="mem-photos"><Justified items={photos} rowHeight={200} gap={8} onOpen={setViewer} /></div>}
+          {!!e.sourceViews?.length && <><h5 className="mem-h">Còn lưu lại</h5><div className="mem-sources">{e.sourceViews.map((s, k) => <SourceQuote key={k} s={s} />)}</div></>}
           {(!!e.collections?.length || !!e.tags?.length) && <div className="endtags">
             {e.collections?.map(c => <Link key={c.id} className="chip" to={`/photos/albums/${c.id}`}>Album · {c.name}</Link>)}
             {e.tags?.map(t => <Link key={t.id} className="chip" to={`/memories?tag=${encodeURIComponent(t.name)}`}>{t.name}</Link>)}

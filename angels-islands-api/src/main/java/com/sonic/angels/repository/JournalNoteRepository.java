@@ -59,4 +59,10 @@ public interface JournalNoteRepository extends JpaRepository<JournalNote, UUID> 
 
     long countByProblemsId(UUID problemId);
     java.util.List<com.sonic.angels.model.entity.JournalNote> findBySeries(String series);
+
+    /** a deleted journal note leaves the memories that quote it: the words stay, only the link goes */
+    @org.springframework.transaction.annotation.Transactional
+    @org.springframework.data.jpa.repository.Modifying
+    @org.springframework.data.jpa.repository.Query(value = "UPDATE episode_sources SET journal_note_id = NULL WHERE journal_note_id = :id", nativeQuery = true)
+    int detachEpisodeSources(@org.springframework.data.repository.query.Param("id") java.util.UUID id);
 }

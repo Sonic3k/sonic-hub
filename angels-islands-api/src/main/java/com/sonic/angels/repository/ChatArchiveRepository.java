@@ -30,4 +30,10 @@ public interface ChatArchiveRepository extends JpaRepository<ChatArchive, UUID> 
     @Query("SELECT a FROM ChatArchive a LEFT JOIN FETCH a.person WHERE a.person IS NULL OR a.counterpartKey IS NOT NULL " +
            "ORDER BY a.counterpart, a.platform, a.title")
     List<ChatArchive> findOthers();
+
+    /** a deleted chat archive leaves the memories that quote it: the words stay, only the link goes */
+    @org.springframework.transaction.annotation.Transactional
+    @org.springframework.data.jpa.repository.Modifying
+    @org.springframework.data.jpa.repository.Query(value = "UPDATE episode_sources SET chat_archive_id = NULL WHERE chat_archive_id = :id", nativeQuery = true)
+    int detachEpisodeSources(@org.springframework.data.repository.query.Param("id") java.util.UUID id);
 }
