@@ -46,6 +46,15 @@ public interface FinanceTransactionRepository extends JpaRepository<FinanceTrans
            "com.sonic.angels.model.entity.FinanceTransaction.Source.STATEMENT) AND t.occurredAt BETWEEN :from AND :to")
     List<FinanceTransaction> realSideOn(UUID accountId, BigDecimal amount, LocalDateTime from, LocalDateTime to);
 
+    /** Every line of one move of more than two lines. */
+    List<FinanceTransaction> findByMoveId(UUID moveId);
+
+    /** Lines on this account of any amount (not mirrors, not paired yet), by time: the other side of an exchange. */
+    @Query("SELECT t FROM FinanceTransaction t " +
+           "WHERE t.account.id = :accountId AND t.transferPeer IS NULL " +
+           "AND t.source <> com.sonic.angels.model.entity.FinanceTransaction.Source.SYSTEM AND t.occurredAt BETWEEN :from AND :to")
+    List<FinanceTransaction> openSidesOn(UUID accountId, LocalDateTime from, LocalDateTime to);
+
     /** The other side of a move between own accounts: same size, opposite sign, close in time, not paired yet. */
     @Query("SELECT t FROM FinanceTransaction t JOIN FETCH t.account " +
            "WHERE t.account.id <> :accountId AND t.amount = :amount AND t.transferPeer IS NULL " +

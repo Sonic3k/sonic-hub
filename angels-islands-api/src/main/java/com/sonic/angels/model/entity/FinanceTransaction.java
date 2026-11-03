@@ -13,6 +13,8 @@ import java.util.UUID;
  * One movement of money on one account. `amount` is signed in the account's currency: negative left the account.
  * kind EXPENSE / INCOME follows the category (a refund is an EXPENSE with a positive amount: it lowers spending);
  * TRANSFER is money between own accounts — never spending, no tags — and `transferPeer` points at the other side.
+ * A move of more than two lines (an exchange paid in parts: two Zelle payments for one transfer here) shares one
+ * `moveId`; each of its lines points at the biggest line on the other account.
  * `tags`: every tag the line carries, of every facet. `category` is the one main-facet tag that does the counting
  * (spending or saving, budget group) — kept in step with the tags by FinanceTags.settle.
  * Times are UTC, like everywhere else in this database.
@@ -23,7 +25,8 @@ import java.util.UUID;
     indexes = {
         @Index(name = "idx_finance_txn_occurred", columnList = "occurred_at"),
         @Index(name = "idx_finance_txn_account_occurred", columnList = "account_id, occurred_at"),
-        @Index(name = "idx_finance_txn_status", columnList = "status")
+        @Index(name = "idx_finance_txn_status", columnList = "status"),
+        @Index(name = "idx_finance_txn_move", columnList = "move_id")
     })
 public class FinanceTransaction extends FinanceEntity {
 
@@ -134,6 +137,10 @@ public class FinanceTransaction extends FinanceEntity {
     @JoinColumn(name = "transfer_peer_id")
     private FinanceTransaction transferPeer;
 
+    /** set on every line of a move of more than two lines; null on a plain pair */
+    @Column(name = "move_id")
+    private UUID moveId;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "matched_rule_id")
     private FinanceRule matchedRule;
@@ -201,6 +208,8 @@ public class FinanceTransaction extends FinanceEntity {
     public void setAiConfidence(Double aiConfidence) { this.aiConfidence = aiConfidence; }
     public FinanceTransaction getTransferPeer() { return transferPeer; }
     public void setTransferPeer(FinanceTransaction transferPeer) { this.transferPeer = transferPeer; }
+    public UUID getMoveId() { return moveId; }
+    public void setMoveId(UUID moveId) { this.moveId = moveId; }
     public FinanceRule getMatchedRule() { return matchedRule; }
     public void setMatchedRule(FinanceRule matchedRule) { this.matchedRule = matchedRule; }
     /** Change through FinanceTags, which keeps `category` and the implied tags in step. */

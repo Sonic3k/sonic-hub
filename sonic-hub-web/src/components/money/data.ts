@@ -20,6 +20,9 @@ export const useTxns = (month: string, size: number, categoryId?: string | null)
 export const useCounterpartyLines = (name: string | null | undefined) =>
   useQuery({ queryKey: ['money', 'cp-lines', name ?? ''], queryFn: () => moneyApi.counterpartyLines(name!), enabled: !!name, staleTime: S });
 
+/** the lines of a move (an exchange), when the line is one */
+export const useMove = (id: string | null) =>
+  useQuery({ queryKey: ['money', 'move', id ?? ''], queryFn: () => moneyApi.move(id!), enabled: !!id, staleTime: S });
 export function useRefresh() {
   const qc = useQueryClient();
   return () => qc.invalidateQueries({ queryKey: ['money'] });

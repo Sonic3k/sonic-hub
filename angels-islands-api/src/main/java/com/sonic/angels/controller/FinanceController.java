@@ -173,6 +173,14 @@ public class FinanceController {
     @DeleteMapping("/transactions/{id}")
     public ResponseEntity<Void> deleteTransaction(@PathVariable UUID id) { finance.deleteTransaction(id); return ResponseEntity.noContent().build(); }
 
+    /** These lines are one move between two own accounts (an exchange: each side keeps its own amounts); returns its lines. */
+    @PostMapping("/transactions/move")
+    public List<FinanceDto.Txn> joinMove(@RequestBody FinanceDto.MoveRequest req) { return finance.joinMove(req.ids()); }
+
+    /** The lines of the move this line is part of; empty when it is none. */
+    @GetMapping("/transactions/{id}/move")
+    public List<FinanceDto.Txn> move(@PathVariable UUID id) { return finance.move(id); }
+
     @PostMapping("/transactions/{id}/confirm")
     public FinanceDto.Txn confirm(@PathVariable UUID id) { return finance.confirm(id); }
 

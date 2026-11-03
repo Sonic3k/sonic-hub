@@ -142,5 +142,5 @@ export const titleOf = (t: Txn) => t.description || t.details?.title || t.payeeN
 
 /** what kind of thing a line's details are about, as a small sign */
 export const DETAIL_ICON: Record<string, string> = {
-  flight: '✈️', hotel: '🏨', ride: '🚕', food: '🍜', order: '🛒', delivery: '📦', tip: '🙏', membership: '🎟️',
+  flight: '✈️', hotel: '🏨', ride: '🚕', food: '🍜', order: '🛒', delivery: '📦', tip: '🙏', membership: '🎟️', payment: '💸',
 };

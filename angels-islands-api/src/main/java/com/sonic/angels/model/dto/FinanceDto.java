@@ -76,7 +76,12 @@ public final class FinanceDto {
                       String counterparty, String counterpartyAccount, String note, String source, String status, String categorizedBy, Double aiConfidence,
                       BigDecimal balanceAfter, UUID transferPeerId, String transferAccountName, String suggestedKeywords,
                       LocalDateTime createdAt, List<TagRef> tags, UUID transferAccountId, String payeeName, JsonNode details,
-                      BigDecimal originalAmount, String originalCurrency) {}
+                      BigDecimal originalAmount, String originalCurrency,
+                      /* a move: the other side's own amount and currency (an exchange shows the rate he got) */
+                      BigDecimal transferAmount, String transferCurrency, UUID moveId) {}
+
+    /** Lines that are one move between two own accounts, picked by hand (an exchange: each side keeps its own amounts). */
+    public record MoveRequest(List<UUID> ids) {}
 
     /**
      * Create or edit. occurredAt: ISO; with Z/offset it is converted, bare means UTC. kind TRANSFER needs transferAccountId.
@@ -104,7 +109,9 @@ public final class FinanceDto {
      * another currency than the account's. currency instead of accountId: cash in that currency, in its own wallet.
      */
     public record ReceiptRequest(UUID accountId, String occurredAt, BigDecimal amount, String merchant, String externalId, JsonNode details,
-                                 BigDecimal originalAmount, String originalCurrency, String currency) {}
+                                 BigDecimal originalAmount, String originalCurrency, String currency,
+                                 /* the payment's own words, when it has some (the message on a Zelle payment) */
+                                 String description) {}
 
     /** created: false when the receipt was there already (its details are filled in if it had none). */
     public record Receipt(boolean created, Txn txn) {}

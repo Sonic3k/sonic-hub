@@ -60,6 +60,8 @@ export interface FinTxn {
   tags: FinTagRef[]
   /** what was paid when it was another currency than the account's (a VND card charged 148 SGD) */
   originalAmount?: number | null; originalCurrency?: string | null
+  /** a move: the other side's own amount and currency; moveId when the move has more than two lines */
+  transferAmount?: number | null; transferCurrency?: string | null; moveId?: string | null
   /** what the payment bought (a flight, a hotel stay), read from an email */
   details?: { kind: string; title: string; start?: string | null; end?: string | null; items?: { label: string; value: string }[]; source?: { kind?: string; url?: string; subject?: string } | null } | null
 }

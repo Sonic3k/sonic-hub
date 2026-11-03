@@ -31,6 +31,22 @@ export function money(n: number | null | undefined, currency: string | null = 'V
   } catch { return `${sign}${Math.abs(n).toLocaleString('en-US', { maximumFractionDigits: 2 })} ${c}`; }
 }
 
+/**
+ * The rate of an exchange from what went each way: "23,145 ₫/$" when one side is đồng, else "1 USD = 1.3512 SGD".
+ * value: đồng (or the second currency) for one unit of the other. Null when it is not two currencies.
+ */
+export function rateOf(a: { amount: number; currency: string }, b: { amount: number; currency: string }): { value: number; text: string } | null {
+  const x = Math.abs(a.amount), y = Math.abs(b.amount);
+  if (!x || !y || !a.currency || !b.currency || a.currency === b.currency) return null;
+  const [f, fc, v, vc] = a.currency === 'VND' ? [y, b.currency, x, a.currency] : [x, a.currency, y, b.currency];
+  const value = v / f;
+  return {
+    value,
+    text: vc === 'VND' ? `${Math.round(value).toLocaleString('en-US')} ₫/${fc === 'USD' ? '$' : fc}`
+      : `1 ${fc} = ${value.toLocaleString('en-US', { maximumFractionDigits: 4 })} ${vc}`,
+  };
+}
+
 /** 35000 → "35k", 1200000 → "1.2M" — how the chips say it. */
 export function short(n: number): string {
   const a = Math.abs(n);
