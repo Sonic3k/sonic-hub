@@ -624,8 +624,11 @@ public class FinanceService {
         if (signA == 0 || signB == 0) throw new IllegalArgumentException("On each account the lines of a move all go the same way");
         if (signA == signB) throw new IllegalArgumentException("Money leaves one account and arrives on the other");
         FinanceAccount a = sides.get(0).get(0).getAccount(), b = sides.get(1).get(0).getAccount();
-        if (a.getCurrency().equalsIgnoreCase(b.getCurrency()) && total(sides.get(0)).compareTo(total(sides.get(1))) != 0)
-            throw new IllegalArgumentException("In one currency both sides of a move add up to the same amount");
+        // in one currency both sides add up to the same — but for the fee the sending bank took with it (an
+        // interbank transfer of 5,000,000 leaves as 5,008,800): at most 1 % apart
+        BigDecimal x = total(sides.get(0)), y = total(sides.get(1));
+        if (a.getCurrency().equalsIgnoreCase(b.getCurrency()) && x.subtract(y).abs().compareTo(x.max(y).multiply(new BigDecimal("0.01"))) > 0)
+            throw new IllegalArgumentException("In one currency both sides of a move add up to the same amount (a transfer fee aside)");
         classifier.join(lines, By.USER);
         return move(lines.get(0).getId());
     }
