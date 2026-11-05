@@ -111,6 +111,17 @@ public class StorageService {
         };
     }
 
+    /** Copies an object inside the bucket (no bytes go through this server); returns the new full key.
+     *  fromFullKey is a stored key (with the prefix), toStorageKey one as upload() takes it (without). */
+    public String copy(String fromFullKey, String toStorageKey) {
+        if (s3Client == null) throw new IllegalStateException("Storage not configured");
+        String fullKey = prefix + "/" + toStorageKey;
+        s3Client.copyObject(CopyObjectRequest.builder()
+            .sourceBucket(bucket).sourceKey(fromFullKey)
+            .destinationBucket(bucket).destinationKey(fullKey).build());
+        return fullKey;
+    }
+
     public void delete(String storageKey) {
         if (s3Client == null) return;
         s3Client.deleteObject(DeleteObjectRequest.builder().bucket(bucket).key(storageKey).build());

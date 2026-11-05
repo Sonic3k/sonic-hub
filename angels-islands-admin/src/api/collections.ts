@@ -106,9 +106,10 @@ export const collectionBrowseApi = {
   getByPerson: (personId: string) =>
     api.get<CollectionResponse[]>(`/api/collections/person/${personId}`, { params: { inclChildrenCount: true, inclMediaCount: true } }).then(r => r.data),
   getRoot: () => api.get<CollectionResponse>('/api/collections/root').then(r => r.data),
-  getTopLevel: () => api.get<CollectionResponse[]>('/api/collections', { params: { inclChildrenCount: true, inclMediaCount: true, inclPersons: true, inclTags: true } }).then(r => r.data),
+  /** inclSocial: also the Social Media album (left out of pickers, so its pictures never land in memories or albums) */
+  getTopLevel: (inclSocial = false) => api.get<CollectionResponse[]>('/api/collections', { params: { inclChildrenCount: true, inclMediaCount: true, inclPersons: true, inclTags: true, inclSocial } }).then(r => r.data),
   getById: (id: string) => api.get<CollectionResponse>(`/api/collections/${id}`).then(r => r.data),
-  getChildren: (id: string) => api.get<CollectionResponse[]>(`/api/collections/${id}/children`, { params: { inclChildrenCount: true, inclMediaCount: true, inclPersons: true, inclTags: true } }).then(r => r.data),
+  getChildren: (id: string, inclSocial = false) => api.get<CollectionResponse[]>(`/api/collections/${id}/children`, { params: { inclChildrenCount: true, inclMediaCount: true, inclPersons: true, inclTags: true, inclSocial } }).then(r => r.data),
   getBreadcrumb: (id: string) => api.get<CollectionResponse[]>(`/api/collections/${id}/breadcrumb`).then(r => r.data),
   getCollectionMedia: (id: string, sort?: string, sortDir?: string) => api.get(`/api/collections/${id}/media`, { params: { sort, sortDir, inclDetails: true, inclPersons: true, inclTags: true } }).then(r => r.data),
 }

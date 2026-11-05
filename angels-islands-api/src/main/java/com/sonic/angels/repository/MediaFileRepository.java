@@ -64,7 +64,8 @@ public interface MediaFileRepository extends JpaRepository<MediaFile, UUID> {
     @Query(value = "UPDATE media_files SET media_source = NULL WHERE media_source = 'ORIGINAL'", nativeQuery = true)
     int clearOriginalSource();
 
-    @Query("SELECT m FROM MediaFile m WHERE m.latitude IS NOT NULL AND m.longitude IS NOT NULL ORDER BY m.effectiveDate DESC")
+    @Query("SELECT m FROM MediaFile m WHERE m.latitude IS NOT NULL AND m.longitude IS NOT NULL" +
+           " AND (m.mediaCategory IS NULL OR m.mediaCategory <> com.sonic.angels.model.entity.MediaFile.MediaCategory.SOCIAL) ORDER BY m.effectiveDate DESC")
     List<MediaFile> findGeotagged();
 
     @Query("SELECT m FROM MediaFile m WHERE m.storageKey IS NOT NULL AND (SELECT COUNT(t) FROM m.tags t WHERE t.name = 'CLASSIFIED') = 0")
@@ -86,7 +87,9 @@ public interface MediaFileRepository extends JpaRepository<MediaFile, UUID> {
     String SEARCH_WHERE =
         " WHERE (:type IS NULL OR m.fileType = :type)" +
         " AND (:orientation IS NULL OR m.orientation = :orientation)" +
-        " AND (:category IS NULL OR m.mediaCategory = :category)" +
+        // SOCIAL pictures (the Social Media portal's) stay out of every stream unless asked for by category or album
+        " AND ((:category IS NULL AND (:hasCollection = true OR m.mediaCategory IS NULL" +
+        "      OR m.mediaCategory <> com.sonic.angels.model.entity.MediaFile.MediaCategory.SOCIAL)) OR m.mediaCategory = :category)" +
         " AND (:source IS NULL OR m.mediaSource = :source)" +
         " AND (:ext IS NULL OR m.fileExtension = :ext)" +
         // a file whose known span (event_end) runs past the window counts only with :vague — then any overlap does
@@ -149,7 +152,8 @@ public interface MediaFileRepository extends JpaRepository<MediaFile, UUID> {
     // as an unfiltered search, so summing newer buckets gives a page offset.
     @Query(value =
         "SELECT CAST(EXTRACT(YEAR FROM t) AS int) AS y, CAST(EXTRACT(MONTH FROM t) AS int) AS m, COUNT(*) AS c" +
-        " FROM (SELECT (effective_date AT TIME ZONE 'UTC') AT TIME ZONE :tz AS t FROM media_files WHERE effective_date IS NOT NULL) x" +
+        " FROM (SELECT (effective_date AT TIME ZONE 'UTC') AT TIME ZONE :tz AS t FROM media_files WHERE effective_date IS NOT NULL" +
+        "   AND (media_category IS NULL OR media_category <> 'SOCIAL')) x" +
         " GROUP BY 1, 2 ORDER BY 1 DESC, 2 DESC", nativeQuery = true)
     List<Object[]> timelineIndex(@Param("tz") String tz);
 

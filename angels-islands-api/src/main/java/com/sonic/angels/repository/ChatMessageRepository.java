@@ -55,4 +55,37 @@ public interface ChatMessageRepository extends JpaRepository<ChatMessage, UUID> 
     /** All messages (both sides) of a person across archives, global chronological-ish order. */
     @Query("SELECT m FROM ChatMessage m WHERE m.chatArchive.person.id = :personId ORDER BY m.chatArchive.id, m.seq")
     List<ChatMessage> findAllByPersonOrdered(UUID personId);
+
+    // ── Messenger at a moment (Social Media portal) ──────────────────────────
+
+    /** archive id, seq, sender, sender_type, kind, content, timestamp — the last visible message of each archive by T. */
+    @Query(value = "SELECT a.id, m.seq, m.sender, m.sender_type, m.kind, m.content, m.timestamp FROM chat_archives a " +
+        "CROSS JOIN LATERAL (SELECT x.seq, x.sender, x.sender_type, x.kind, x.content, x.timestamp FROM chat_messages x " +
+        "WHERE x.chat_archive_id = a.id AND x.timestamp <= :t AND (x.kind IS NULL OR x.kind <> 'EMPTY') " +
+        "ORDER BY x.timestamp DESC, x.seq DESC LIMIT 1) m WHERE a.id IN (:ids)", nativeQuery = true)
+    List<Object[]> lastVisibleBy(java.util.Collection<UUID> ids, java.time.LocalDateTime t);
+
+    /** Visible messages of one archive by T, newest first; before a seq when given. */
+    @Query("SELECT m FROM ChatMessage m WHERE m.chatArchive.id = :archiveId AND (m.kind IS NULL OR m.kind <> :hidden) " +
+           "AND (m.timestamp IS NULL OR m.timestamp <= :t) AND (:hasBefore = false OR m.seq < :before) ORDER BY m.seq DESC")
+    List<ChatMessage> pageBefore(UUID archiveId, ChatMessage.Kind hidden, java.time.LocalDateTime t, boolean hasBefore, int before, Pageable page);
+
+    @Query("SELECT COUNT(m) FROM ChatMessage m WHERE m.chatArchive.id = :archiveId AND (m.kind IS NULL OR m.kind <> :hidden) " +
+           "AND (m.timestamp IS NULL OR m.timestamp <= :t)")
+    long countVisibleBy(UUID archiveId, ChatMessage.Kind hidden, java.time.LocalDateTime t);
+
+    /** archive id, how many different people other than the owner wrote in it — two or more is a group chat. */
+    @Query(value = "SELECT chat_archive_id, COUNT(DISTINCT sender) FROM chat_messages WHERE chat_archive_id IN (:ids) " +
+        "AND sender_type NOT IN ('SELF', 'SYSTEM') GROUP BY chat_archive_id", nativeQuery = true)
+    List<Object[]> otherSenderCounts(java.util.Collection<UUID> ids);
+
+    /** sender, sender type, messages, first time — everyone who wrote in an archive by T. */
+    @Query("SELECT m.sender, m.senderType, COUNT(m), MIN(m.timestamp) FROM ChatMessage m WHERE m.chatArchive.id = :archiveId " +
+           "AND (m.timestamp IS NULL OR m.timestamp <= :t) GROUP BY m.sender, m.senderType")
+    List<Object[]> sendersOf(UUID archiveId, java.time.LocalDateTime t);
+
+    /** The time of the first message at or after a seq — a random spot in a conversation. */
+    @Query(value = "SELECT timestamp FROM chat_messages WHERE chat_archive_id = :archiveId AND seq >= :seq AND timestamp IS NOT NULL " +
+        "ORDER BY seq LIMIT 1", nativeQuery = true)
+    List<Object> timeAtOrAfter(UUID archiveId, int seq);
 }

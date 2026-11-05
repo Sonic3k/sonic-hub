@@ -11,6 +11,12 @@ import com.sonic.angels.model.entity.FinanceTransaction;
 import com.sonic.angels.model.entity.MediaFile;
 import com.sonic.angels.model.entity.Person;
 import com.sonic.angels.model.entity.PersonContact;
+import com.sonic.angels.model.entity.SocialConnection;
+import com.sonic.angels.model.entity.SocialPost;
+import com.sonic.angels.model.entity.SocialProfile;
+import com.sonic.angels.model.entity.SocialProfileDetail;
+import com.sonic.angels.model.entity.SocialProfileImage;
+import com.sonic.angels.model.entity.SocialReaction;
 import jakarta.persistence.EntityManagerFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -46,6 +52,7 @@ public class EnumCheckConstraintFixer implements InitializingBean {
         new EnumColumn("chat_attachments", "type", ChatAttachment.Type.class),
         new EnumColumn("person_contacts", "platform", PersonContact.Platform.class),
         new EnumColumn("media_files", "file_type", MediaFile.FileType.class),
+        new EnumColumn("media_files", "media_category", MediaFile.MediaCategory.class),
         new EnumColumn("persons", "relationship_type", Person.RelationshipType.class),
         new EnumColumn("finance_accounts", "mode", FinanceAccount.Mode.class),
         new EnumColumn("finance_categories", "kind", FinanceCategory.Kind.class),
@@ -57,7 +64,17 @@ public class EnumCheckConstraintFixer implements InitializingBean {
         new EnumColumn("finance_transactions", "status", FinanceTransaction.Status.class),
         new EnumColumn("finance_transactions", "categorized_by", FinanceTransaction.By.class),
         new EnumColumn("finance_transaction_tags", "decided_by", FinanceTransaction.By.class),
-        new EnumColumn("finance_inbound", "status", FinanceInbound.Status.class)
+        new EnumColumn("finance_inbound", "status", FinanceInbound.Status.class),
+        new EnumColumn("social_profiles", "platform", SocialProfile.Platform.class),
+        new EnumColumn("social_profiles", "kind", SocialProfile.Kind.class),
+        new EnumColumn("social_profiles", "level", SocialProfile.Level.class),
+        new EnumColumn("social_profiles", "privacy", SocialProfile.Privacy.class),
+        new EnumColumn("social_profile_images", "kind", SocialProfileImage.Kind.class),
+        new EnumColumn("social_profile_details", "kind", SocialProfileDetail.Kind.class),
+        new EnumColumn("social_posts", "kind", SocialPost.Kind.class),
+        new EnumColumn("social_posts", "audience", SocialPost.Audience.class),
+        new EnumColumn("social_reactions", "type", SocialReaction.Type.class),
+        new EnumColumn("social_connections", "kind", SocialConnection.Kind.class)
     );
 
     /** Values taken out of an enum, per table.column, and what rows holding one become. */

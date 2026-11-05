@@ -12,7 +12,8 @@ public interface TagRepository extends JpaRepository<Tag, UUID> {
 
     /** id, name, color, media count, album count, note count — most-used first. */
     @org.springframework.data.jpa.repository.Query(value = "SELECT t.id, t.name, t.color, " +
-        "(SELECT COUNT(*) FROM media_file_tags x WHERE x.tag_id = t.id), " +
+        "(SELECT COUNT(*) FROM media_file_tags x JOIN media_files mf ON mf.id = x.media_file_id WHERE x.tag_id = t.id " +
+        "  AND (mf.media_category IS NULL OR mf.media_category <> 'SOCIAL')), " +
         "(SELECT COUNT(*) FROM collection_tags x WHERE x.tag_id = t.id), " +
         "(SELECT COUNT(*) FROM journal_note_tags x WHERE x.tag_id = t.id) " +
         "FROM tags t ORDER BY 4 DESC, t.name", nativeQuery = true)
