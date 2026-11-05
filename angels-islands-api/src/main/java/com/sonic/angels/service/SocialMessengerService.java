@@ -202,7 +202,10 @@ public class SocialMessengerService {
         return out;
     }
 
+    /** How the inbox names who wrote last: the nickname set for them in that chat, else their name at the moment. */
     private static String senderName(Threads th, ChatArchive a, String sender, String type, LocalDateTime at, boolean group) {
+        SocialChatMember m = th.member(a, sender, at);
+        if (m != null && m.getNickname() != null && !m.getNickname().isBlank()) return m.getNickname();
         SocialProfile p = th.sender(a, sender, type, at, group);
         return p != null ? th.v.ref(p).name() : sender;
     }
