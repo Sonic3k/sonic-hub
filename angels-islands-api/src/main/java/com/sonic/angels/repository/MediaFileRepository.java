@@ -35,9 +35,9 @@ public interface MediaFileRepository extends JpaRepository<MediaFile, UUID> {
 
     Page<MediaFile> findByStorageKeyIsNotNull(Pageable pageable);
 
-    /** The library list (optionally favourites only); Social Media pictures stay in their own folder, as in search. */
+    /** The library list (optionally favourites only); Social Media pictures and assets stay in their own folders, as in search. */
     @Query("SELECT m FROM MediaFile m WHERE (:favoriteOnly = false OR m.isFavorite = true)" +
-           " AND (m.mediaCategory IS NULL OR m.mediaCategory <> com.sonic.angels.model.entity.MediaFile.MediaCategory.SOCIAL)")
+           " AND (m.mediaCategory IS NULL OR m.mediaCategory NOT IN (com.sonic.angels.model.entity.MediaFile.MediaCategory.SOCIAL, com.sonic.angels.model.entity.MediaFile.MediaCategory.ASSET))")
     Page<MediaFile> library(@Param("favoriteOnly") boolean favoriteOnly, Pageable pageable);
 
     java.util.Optional<MediaFile> findFirstByContentHash(String contentHash);
@@ -68,7 +68,7 @@ public interface MediaFileRepository extends JpaRepository<MediaFile, UUID> {
     int clearOriginalSource();
 
     @Query("SELECT m FROM MediaFile m WHERE m.latitude IS NOT NULL AND m.longitude IS NOT NULL" +
-           " AND (m.mediaCategory IS NULL OR m.mediaCategory <> com.sonic.angels.model.entity.MediaFile.MediaCategory.SOCIAL) ORDER BY m.effectiveDate DESC")
+           " AND (m.mediaCategory IS NULL OR m.mediaCategory NOT IN (com.sonic.angels.model.entity.MediaFile.MediaCategory.SOCIAL, com.sonic.angels.model.entity.MediaFile.MediaCategory.ASSET)) ORDER BY m.effectiveDate DESC")
     List<MediaFile> findGeotagged();
 
     @Query("SELECT m FROM MediaFile m WHERE m.storageKey IS NOT NULL AND (SELECT COUNT(t) FROM m.tags t WHERE t.name = 'CLASSIFIED') = 0")
@@ -90,9 +90,11 @@ public interface MediaFileRepository extends JpaRepository<MediaFile, UUID> {
     String SEARCH_WHERE =
         " WHERE (:type IS NULL OR m.fileType = :type)" +
         " AND (:orientation IS NULL OR m.orientation = :orientation)" +
-        // SOCIAL pictures (the Social Media portal's) stay out of every stream unless asked for by category or album
+        // SOCIAL pictures (the Social Media portal's) and ASSETs (the machines' wallpapers…) stay out of every stream
+        // unless asked for by category or album
         " AND ((:category IS NULL AND (:hasCollection = true OR m.mediaCategory IS NULL" +
-        "      OR m.mediaCategory <> com.sonic.angels.model.entity.MediaFile.MediaCategory.SOCIAL)) OR m.mediaCategory = :category)" +
+        "      OR m.mediaCategory NOT IN (com.sonic.angels.model.entity.MediaFile.MediaCategory.SOCIAL, com.sonic.angels.model.entity.MediaFile.MediaCategory.ASSET)))" +
+        "      OR m.mediaCategory = :category)" +
         " AND (:source IS NULL OR m.mediaSource = :source)" +
         " AND (:ext IS NULL OR m.fileExtension = :ext)" +
         // a file whose known span (event_end) runs past the window counts only with :vague — then any overlap does
@@ -156,7 +158,7 @@ public interface MediaFileRepository extends JpaRepository<MediaFile, UUID> {
     @Query(value =
         "SELECT CAST(EXTRACT(YEAR FROM t) AS int) AS y, CAST(EXTRACT(MONTH FROM t) AS int) AS m, COUNT(*) AS c" +
         " FROM (SELECT (effective_date AT TIME ZONE 'UTC') AT TIME ZONE :tz AS t FROM media_files WHERE effective_date IS NOT NULL" +
-        "   AND (media_category IS NULL OR media_category <> 'SOCIAL')) x" +
+        "   AND (media_category IS NULL OR media_category NOT IN ('SOCIAL', 'ASSET'))) x" +
         " GROUP BY 1, 2 ORDER BY 1 DESC, 2 DESC", nativeQuery = true)
     List<Object[]> timelineIndex(@Param("tz") String tz);
 

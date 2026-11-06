@@ -186,12 +186,12 @@ public class DeskService {
         return new DeskDto.Day(photos, memories, toasts);
     }
 
-    /** Images taken in [from, to], newest first; Social Media pictures are not part of the library. */
+    /** Images taken in [from, to], newest first; Social Media pictures and assets are not part of the library. */
     private List<DeskDto.Photo> photos(LocalDateTime from, LocalDateTime to, int max) {
         if (max <= 0) return List.of();
         List<MediaFile> rows = em.createQuery("SELECT m FROM MediaFile m WHERE m.effectiveDate >= :a AND m.effectiveDate <= :b " +
                 "AND m.fileType = com.sonic.angels.model.entity.MediaFile.FileType.IMAGE " +
-                "AND (m.mediaCategory IS NULL OR m.mediaCategory <> com.sonic.angels.model.entity.MediaFile.MediaCategory.SOCIAL) " +
+                "AND (m.mediaCategory IS NULL OR m.mediaCategory NOT IN (com.sonic.angels.model.entity.MediaFile.MediaCategory.SOCIAL, com.sonic.angels.model.entity.MediaFile.MediaCategory.ASSET)) " +
                 "ORDER BY m.effectiveDate DESC", MediaFile.class)
             .setParameter("a", from).setParameter("b", to).setMaxResults(max).getResultList();
         return rows.stream().map(this::photo).toList();
@@ -271,22 +271,22 @@ public class DeskService {
         UUID root = collections.getRootId();
         Map<UUID, Node> nodes = new HashMap<>();
         Map<UUID, List<UUID>> children = new HashMap<>();
-        UUID social = null;
+        Set<UUID> hidden = new HashSet<>();
         @SuppressWarnings("unchecked")
         List<Object[]> rows = em.createNativeQuery("SELECT c.id, c.name, c.parent_id, c.slug, t.storage_key, t.storage_provider, t.effective_date " +
             "FROM collections c LEFT JOIN media_files t ON t.id = c.thumbnail_media_file_id").getResultList();
         for (Object[] r : rows) {
             UUID id = (UUID) r[0], parent = (UUID) r[2];
-            if (root.equals(parent) && CollectionService.SOCIAL_SLUG.equals(r[3])) social = id;
+            if (root.equals(parent) && CollectionService.hiddenSlug((String) r[3])) hidden.add(id);
             String cover = r[4] == null ? null : storage.buildCdnUrl((String) r[4], r[5] == null ? null : MediaFile.StorageProvider.valueOf(String.valueOf(r[5])));
             nodes.put(id, new Node(id, (String) r[1], parent, cover, SocialTime.fromDb(r[6])));
             if (parent != null) children.computeIfAbsent(parent, k -> new ArrayList<>()).add(id);
         }
-        if (social != null) children.getOrDefault(root, new ArrayList<>()).remove(social);
+        children.getOrDefault(root, new ArrayList<>()).removeAll(hidden);
         Map<UUID, LocalDateTime> direct = new HashMap<>();
         @SuppressWarnings("unchecked")
         List<Object[]> mins = em.createNativeQuery("SELECT cm.collection_id, MIN(m.effective_date) FROM collection_media cm " +
-            "JOIN media_files m ON m.id = cm.media_file_id WHERE m.media_category IS NULL OR m.media_category <> 'SOCIAL' GROUP BY cm.collection_id").getResultList();
+            "JOIN media_files m ON m.id = cm.media_file_id WHERE m.media_category IS NULL OR m.media_category NOT IN ('SOCIAL', 'ASSET') GROUP BY cm.collection_id").getResultList();
         for (Object[] r : mins) if (r[1] != null) direct.put((UUID) r[0], SocialTime.fromDb(r[1]));
         Map<UUID, LocalDateTime> first = new HashMap<>();
         firstOf(root, children, direct, first, new HashSet<>());
@@ -325,7 +325,7 @@ public class DeskService {
         ask.add(id);
         @SuppressWarnings("unchecked")
         List<Object[]> rows = em.createNativeQuery("SELECT cm.collection_id, COUNT(*) FROM collection_media cm JOIN media_files m ON m.id = cm.media_file_id " +
-                "WHERE cm.collection_id IN (:ids) AND m.effective_date <= :t AND (m.media_category IS NULL OR m.media_category <> 'SOCIAL') GROUP BY cm.collection_id")
+                "WHERE cm.collection_id IN (:ids) AND m.effective_date <= :t AND (m.media_category IS NULL OR m.media_category NOT IN ('SOCIAL', 'ASSET')) GROUP BY cm.collection_id")
             .setParameter("ids", ask).setParameter("t", t).getResultList();
         for (Object[] r : rows) counts.put((UUID) r[0], ((Number) r[1]).intValue());
         List<DeskDto.Folder> out = kids.stream().map(c -> {

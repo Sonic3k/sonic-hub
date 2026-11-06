@@ -2,12 +2,16 @@ package com.sonic.angels.controller;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.sonic.angels.model.dto.DeskDto;
+import com.sonic.angels.service.DeskAssetService;
 import com.sonic.angels.service.DeskService;
 import com.sonic.angels.service.DeskSyncService;
 import com.sonic.angels.service.ImportException;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.Map;
 import java.util.UUID;
 
@@ -19,6 +23,8 @@ import java.util.UUID;
  *   GET  /api/desk/folders?parent=&at=         the photo library as it stood at T (folders, counts)
  *   GET  /api/desk/memories?at=&q=&page=&size= memories up to T, newest first
  *   POST /api/desk/sync                        devices, systems, wallpapers, items, apps (+ delete), all or nothing
+ *   POST /api/desk/assets?folder=wallpapers    multipart file [+ lastModified]: a picture the machines use (mediaCategory
+ *                                              ASSET, album Assets → Desk → Wallpapers | Machines); the same file twice is one asset
  *   GET  /api/desk/raw                         everything stored, in the shapes it is written in
  *   DELETE /api/desk/{devices|systems|wallpapers|items|apps}?key=
  */
@@ -28,10 +34,12 @@ public class DeskController {
 
     private final DeskService desk;
     private final DeskSyncService sync;
+    private final DeskAssetService assets;
 
-    public DeskController(DeskService desk, DeskSyncService sync) {
+    public DeskController(DeskService desk, DeskSyncService sync, DeskAssetService assets) {
         this.desk = desk;
         this.sync = sync;
+        this.assets = assets;
     }
 
     @GetMapping("/at")
@@ -58,6 +66,13 @@ public class DeskController {
     @PostMapping("/sync")
     public DeskDto.SyncResult sync(@RequestBody JsonNode body) {
         return sync.sync(body);
+    }
+
+    @PostMapping(value = "/assets", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<DeskDto.AssetOut> asset(@RequestParam MultipartFile file, @RequestParam String folder,
+                                                  @RequestParam(required = false) Long lastModified) throws IOException {
+        DeskDto.AssetOut out = assets.upload(file, folder, lastModified);
+        return ResponseEntity.status(out.created() ? 201 : 200).body(out);
     }
 
     @GetMapping("/raw")

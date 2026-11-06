@@ -37,6 +37,9 @@ public final class DeskDto {
 
     public record SyncResult(Map<String, Map<String, Integer>> counts, List<String> warnings) {}
 
+    /** A picture the machines use (a wallpaper, a machine's photo): the media file to point at from a wallpaper or a device. */
+    public record AssetOut(UUID mediaFileId, String url, String fileName, Integer width, Integer height, boolean created) {}
+
     /** Everything stored, in the shapes it is written in. */
     public record Raw(List<DeviceIn> devices, List<SystemIn> systems, List<WallpaperIn> wallpapers, List<ItemIn> items, List<AppIn> apps) {}
 
