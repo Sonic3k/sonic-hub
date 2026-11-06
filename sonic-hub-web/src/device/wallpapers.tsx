@@ -25,7 +25,7 @@ const BUILTIN: Record<string, () => ReactNode> = {
       <linearGradient id="xh-sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor="#2a62c9" /><stop offset=".55" stopColor="#6aa5ea" /><stop offset="1" stopColor="#cfe5fb" /></linearGradient>
       <linearGradient id="xh-back" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor="#5aa63e" /><stop offset="1" stopColor="#2d7a22" /></linearGradient>
       <linearGradient id="xh-front" x1="0" y1="0" x2=".2" y2="1"><stop offset="0" stopColor="#8fd04f" /><stop offset=".6" stopColor="#4f9e2e" /><stop offset="1" stopColor="#2f7420" /></linearGradient>
-      <filter id="xh-blur"><feGaussianBlur stdDeviation="18" /></filter>
+      <filter id="xh-blur" x="-100%" y="-100%" width="300%" height="300%"><feGaussianBlur stdDeviation="18" /></filter>
     </defs>
     <rect width="1600" height="1000" fill="url(#xh-sky)" />
     <g filter="url(#xh-blur)" fill="#fff" opacity=".85">
@@ -40,7 +40,7 @@ const BUILTIN: Record<string, () => ReactNode> = {
     <defs>
       <radialGradient id="xs-bg" cx=".7" cy=".3" r="1"><stop offset="0" stopColor="#123a8c" /><stop offset=".55" stopColor="#061a4a" /><stop offset="1" stopColor="#01061a" /></radialGradient>
       <radialGradient id="xs-planet" cx=".55" cy=".25" r=".9"><stop offset="0" stopColor="#3f8fe6" /><stop offset=".55" stopColor="#0d3a8a" /><stop offset="1" stopColor="#03122e" /></radialGradient>
-      <filter id="xs-blur"><feGaussianBlur stdDeviation="40" /></filter><filter id="xs-glow"><feGaussianBlur stdDeviation="10" /></filter>
+      <filter id="xs-blur" x="-100%" y="-100%" width="300%" height="300%"><feGaussianBlur stdDeviation="40" /></filter><filter id="xs-glow" x="-100%" y="-100%" width="300%" height="300%"><feGaussianBlur stdDeviation="10" /></filter>
     </defs>
     <rect width="1600" height="1000" fill="url(#xs-bg)" />
     <g filter="url(#xs-blur)" opacity=".7"><ellipse cx="1150" cy="330" rx="260" ry="130" fill="#2f86d8" transform="rotate(-25 1150 330)" />
@@ -53,7 +53,7 @@ const BUILTIN: Record<string, () => ReactNode> = {
   'xp-azure': () => svg(<>
     <defs>
       <linearGradient id="xa-bg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stopColor="#0a2f86" /><stop offset=".5" stopColor="#1257c4" /><stop offset="1" stopColor="#061f5c" /></linearGradient>
-      <filter id="xa-blur"><feGaussianBlur stdDeviation="50" /></filter>
+      <filter id="xa-blur" x="-100%" y="-100%" width="300%" height="300%"><feGaussianBlur stdDeviation="50" /></filter>
     </defs>
     <rect width="1600" height="1000" fill="url(#xa-bg)" />
     <g filter="url(#xa-blur)"><ellipse cx="900" cy="760" rx="380" ry="120" fill="#fff4d8" opacity=".75" /><ellipse cx="700" cy="560" rx="520" ry="90" fill="#7fc0ff" opacity=".5" transform="rotate(-12 700 560)" /></g>
@@ -62,7 +62,7 @@ const BUILTIN: Record<string, () => ReactNode> = {
   'vista-aurora': () => svg(<>
     <defs>
       <linearGradient id="va-bg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor="#01110b" /><stop offset=".6" stopColor="#03251a" /><stop offset="1" stopColor="#0a3b22" /></linearGradient>
-      <filter id="va-blur"><feGaussianBlur stdDeviation="22" /></filter>
+      <filter id="va-blur" x="-100%" y="-100%" width="300%" height="300%"><feGaussianBlur stdDeviation="22" /></filter>
     </defs>
     <rect width="1600" height="1000" fill="url(#va-bg)" />
     {stars(90, 3, 55, .7)}
@@ -76,7 +76,7 @@ const BUILTIN: Record<string, () => ReactNode> = {
   'win7-glow': () => svg(<>
     <defs>
       <radialGradient id="w7-bg" cx=".5" cy=".55" r=".8"><stop offset="0" stopColor="#3aa0f0" /><stop offset=".5" stopColor="#0e5bbf" /><stop offset="1" stopColor="#062a6b" /></radialGradient>
-      <filter id="w7-blur"><feGaussianBlur stdDeviation="30" /></filter>
+      <filter id="w7-blur" x="-100%" y="-100%" width="300%" height="300%"><feGaussianBlur stdDeviation="30" /></filter>
     </defs>
     <rect width="1600" height="1000" fill="url(#w7-bg)" />
     <g filter="url(#w7-blur)" opacity=".6">{[-40, -18, 6, 28, 52].map((a, i) =>
@@ -86,7 +86,7 @@ const BUILTIN: Record<string, () => ReactNode> = {
   'win7-night-arch': () => svg(<>
     <defs>
       <linearGradient id="na-bg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor="#020a24" /><stop offset=".7" stopColor="#0a2a6a" /><stop offset="1" stopColor="#1a3f86" /></linearGradient>
-      <filter id="na-glow"><feGaussianBlur stdDeviation="6" /></filter>
+      <filter id="na-glow" x="-100%" y="-100%" width="300%" height="300%"><feGaussianBlur stdDeviation="6" /></filter>
     </defs>
     <rect width="1600" height="1000" fill="url(#na-bg)" />
     {stars(60, 11, 45, .6)}
@@ -103,15 +103,20 @@ const BUILTIN: Record<string, () => ReactNode> = {
   'win10-light': () => svg(<>
     <defs>
       <linearGradient id="w10-bg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stopColor="#010a1e" /><stop offset="1" stopColor="#04256a" /></linearGradient>
-      <linearGradient id="w10-beam" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stopColor="#0a6ad6" stopOpacity="0" /><stop offset="1" stopColor="#5fc0ff" stopOpacity=".9" /></linearGradient>
-      <filter id="w10-blur"><feGaussianBlur stdDeviation="14" /></filter>
+      <linearGradient id="w10-beam" gradientUnits="userSpaceOnUse" x1="-120" y1="0" x2="1120" y2="0">
+        <stop offset="0" stopColor="#0a6ad6" stopOpacity="0" /><stop offset=".7" stopColor="#2f8de8" stopOpacity=".42" /><stop offset="1" stopColor="#9ad8ff" stopOpacity=".95" />
+      </linearGradient>
+      <radialGradient id="w10-glow" gradientUnits="userSpaceOnUse" cx="1120" cy="497" r="240">
+        <stop offset="0" stopColor="#eef9ff" stopOpacity=".95" /><stop offset=".22" stopColor="#86ccff" stopOpacity=".55" /><stop offset="1" stopColor="#1f6fd6" stopOpacity="0" />
+      </radialGradient>
+      <filter id="w10-soft" filterUnits="userSpaceOnUse" x="-400" y="-400" width="2400" height="1800"><feGaussianBlur stdDeviation="9" /></filter>
     </defs>
     <rect width="1600" height="1000" fill="url(#w10-bg)" />
-    <g filter="url(#w10-blur)">
-      <path d="M-100 260L1100 430 1100 470-100 640z" fill="url(#w10-beam)" opacity=".7" />
-      <path d="M-100 700L1100 520 1100 560-100 980z" fill="url(#w10-beam)" opacity=".5" />
+    <g filter="url(#w10-soft)">
+      <path d="M-120 230L1120 476 1120 500-120 660z" fill="url(#w10-beam)" opacity=".75" />
+      <path d="M-120 730L1120 506 1120 528-120 1010z" fill="url(#w10-beam)" opacity=".5" />
     </g>
-    <circle cx="1120" cy="495" r="60" fill="#bfe8ff" opacity=".55" filter="url(#w10-blur)" />
+    <circle cx="1120" cy="497" r="240" fill="url(#w10-glow)" />
   </>),
   'win10-peaks': () => svg(<>
     <defs>
@@ -149,7 +154,7 @@ const BUILTIN: Record<string, () => ReactNode> = {
   'ios-dusk': () => svg(<>
     <defs>
       <linearGradient id="ios-bg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor="#2b1d6b" /><stop offset=".5" stopColor="#b04f8f" /><stop offset="1" stopColor="#f6a15b" /></linearGradient>
-      <filter id="ios-blur"><feGaussianBlur stdDeviation="60" /></filter>
+      <filter id="ios-blur" x="-100%" y="-100%" width="300%" height="300%"><feGaussianBlur stdDeviation="60" /></filter>
     </defs>
     <rect width="1000" height="1600" fill="url(#ios-bg)" />
     <g filter="url(#ios-blur)"><circle cx="250" cy="400" r="220" fill="#6a5cff" opacity=".6" /><circle cx="780" cy="1100" r="260" fill="#ffcf6b" opacity=".55" /></g>

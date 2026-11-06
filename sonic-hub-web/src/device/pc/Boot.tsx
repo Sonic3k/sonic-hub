@@ -16,11 +16,10 @@ export function Boot({ phase, machine, skin, T, changed, onNext }: {
   phase: Phase; machine: Machine; skin: string; T: Date; changed: 'first' | 'machine' | 'os'; onNext: () => void;
 }) {
   if (phase === 'on') return null;
-  const os = machine.system?.os;
   return (
     <div className={`dv-boot dv-boot-${phase} dv-boot-${skin}`} onClick={onNext} role="presentation">
       {phase === 'card' && <Card machine={machine} T={T} changed={changed} />}
-      {phase === 'boot' && <Starting skin={skin} os={osName(os)} />}
+      {phase === 'boot' && <Starting skin={skin} />}
       {phase === 'login' && <Login skin={skin} machine={machine} T={T} />}
       {phase === 'down' && <Down skin={skin} />}
     </div>
@@ -41,7 +40,7 @@ function Card({ machine, T, changed }: { machine: Machine; T: Date; changed: str
   );
 }
 
-function Starting({ skin, os }: { skin: string; os: string }) {
+function Starting({ skin }: { skin: string }) {
   switch (skin) {
     case 'w98':
       return (
@@ -61,7 +60,7 @@ function Starting({ skin, os }: { skin: string; os: string }) {
       return (
         <div className="dv-b7">
           <div className="dv-b7-orb"><Mark size={64} /></div>
-          <p>Starting {os}</p>
+          <p>Starting Windows</p>
         </div>
       );
     default:
