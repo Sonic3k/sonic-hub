@@ -69,7 +69,7 @@ public class DeskService {
     }
     private record Dev(DeskDto.Device dto, UUID id, DeskDevice.Kind kind, Span span) {}
     private record Sys(UUID device, DeskDto.System dto, Span span) {}
-    private record Wall(UUID device, DeskWallpaper.Place place, DeskDto.Wallpaper dto, boolean isDefault, Span span) {}
+    private record Wall(UUID device, DeskWallpaper.Place place, String key, DeskDto.Wallpaper dto, boolean isDefault, Span span) {}
     private record Itm(UUID device, DeskItem.Place place, DeskDto.Item dto, Span span) {}
     private record App(UUID device, String app, String version, Span span) {}
     private record Snapshot(List<Dev> devices, List<Sys> systems, List<Wall> walls, List<Itm> items, List<App> apps) {}
@@ -87,7 +87,7 @@ public class DeskService {
             List<Sys> systems = systemRepo.loadAll().stream().map(x -> new Sys(x.getDevice().getId(),
                 new DeskDto.System(x.getExternalKey(), x.getOs().name(), x.getAccent(), x.getLanguage(), x.getValidFrom(), x.getValidTo()),
                 new Span(x.getValidFrom(), x.getValidTo()))).toList();
-            List<Wall> walls = wallpaperRepo.loadAll().stream().map(w -> new Wall(w.getDevice().getId(), w.getPlace(),
+            List<Wall> walls = wallpaperRepo.loadAll().stream().map(w -> new Wall(w.getDevice().getId(), w.getPlace(), w.getExternalKey(),
                 new DeskDto.Wallpaper(w.getMediaFile() == null ? null : storage.buildCdnUrl(w.getMediaFile().getStorageKey(), w.getMediaFile().getStorageProvider()),
                     w.getBuiltin(), w.getFit().name(), w.getColor()),
                 Boolean.TRUE.equals(w.getIsDefault()), new Span(w.getValidFrom(), w.getValidTo()))).toList();
@@ -136,6 +136,7 @@ public class DeskService {
         UUID id = dev.id;
         DeskDto.System sys = pick(s.systems.stream().filter(x -> x.device.equals(id)).toList(), Sys::span, t, x -> x.dto);
         DeskDto.Wallpaper wall = wallpaper(s, id, DeskWallpaper.Place.DESKTOP, t), lock = wallpaper(s, id, DeskWallpaper.Place.LOCK, t);
+        List<DeskDto.Wallpaper> screen = screen(s, id, t);
         List<DeskDto.Item> items = s.items.stream()
             .filter(i -> i.span.covers(t) && (id.equals(i.device) || (i.device == null && PHONE_PLACES.contains(i.place) == phone)))
             .map(Itm::dto)
@@ -146,7 +147,7 @@ public class DeskService {
             .sorted(Comparator.comparing((App a) -> a.device != null).thenComparing((x, y) -> Span.later(x.span, y.span)))
             .forEach(a -> apps.put(a.app, a.version));                  // a device's own row beats a general one; later beats earlier
         Dev next = mine.stream().filter(d -> d.span.from != null && d.span.from.isAfter(t)).findFirst().orElse(null);
-        return new DeskDto.Machine(dev.dto, sys, wall, lock, items, apps, next == null ? null : next.dto);
+        return new DeskDto.Machine(dev.dto, sys, wall, lock, screen, items, apps, next == null ? null : next.dto);
     }
 
     private DeskDto.Wallpaper wallpaper(Snapshot s, UUID device, DeskWallpaper.Place place, LocalDateTime t) {
@@ -156,6 +157,14 @@ public class DeskService {
         if (hit != null) return hit.dto;
         return of.stream().filter(w -> w.isDefault).map(w -> w.dto).findFirst()   // …else the device's own default
             .orElseGet(() -> pick(of, Wall::span, t, w -> w.dto));
+    }
+
+    /** The screensaver's pictures at T, in key order: the ones set for a period that covers T, else the device's defaults. */
+    private List<DeskDto.Wallpaper> screen(Snapshot s, UUID device, LocalDateTime t) {
+        List<Wall> of = s.walls.stream().filter(w -> w.device.equals(device) && w.place == DeskWallpaper.Place.SCREEN)
+            .sorted(Comparator.comparing(Wall::key)).toList();
+        List<Wall> now = of.stream().filter(w -> !w.isDefault && w.span.covers(t)).toList();
+        return (now.isEmpty() ? of.stream().filter(w -> w.isDefault).toList() : now).stream().map(Wall::dto).toList();
     }
 
     /** Of rows with spans, the one covering T that started last; failing that, the earliest row (a device's first setup). */
