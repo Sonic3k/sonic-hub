@@ -1082,3 +1082,15 @@ a.mem-src:hover { border-color: #D9D5CB; } a.mem-src:hover .mem-src-meta { color
 .mn-amt small.mn-orig { display: block; margin-top: 1px; font-size: 11.5px; font-weight: 500; color: var(--ink3); text-align: right; }
 .mn-sheet-head .mn-amt small.mn-orig { font-size: 12.5px; }
 .mn-cur a { min-width: 34px; text-align: center; }
+
+/* ═══ The machines of the moment (header): the computer and the phone of the day being looked at ═══ */
+.machines { display: flex; gap: 4px; margin-left: -14px; }
+.machines a { display: flex; align-items: center; gap: 6px; height: 36px; padding: 0 11px; border-radius: 8px; border: 1px solid var(--line); color: var(--ink2); font-weight: 600; white-space: nowrap; transition: background .2s, color .2s; }
+.machines a:hover { color: var(--ink); background: var(--soft); }
+.machines svg { flex: none; width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
+@media (max-width: 1560px) { .machines span { display: none; } .machines a { width: 36px; padding: 0; justify-content: center; } }
+@media (max-width: 860px) { .machines { margin-left: -6px; gap: 0; } .machines a { width: 34px; border: 0; } }
+.mem-boot { display: flex; flex-wrap: wrap; gap: 8px; margin: 14px 0 6px; }
+.mem-boot a { display: inline-flex; align-items: center; padding: 8px 15px; border-radius: 999px; background: var(--ink); color: #fff; font-weight: 600; font-size: 13.5px; }
+.mem-boot a + a { background: var(--soft); color: var(--ink); }
+.mem-boot a:hover { filter: brightness(1.12); }

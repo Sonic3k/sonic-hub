@@ -4,6 +4,5 @@ interface ImportMetaEnv {
   readonly VITE_FOOTBALL_URL?: string;
   readonly VITE_MYSTIC_URL?: string;
   readonly VITE_PAGES_URL?: string;
-  readonly VITE_SOCIAL_URL?: string;
 }
 interface ImportMeta { readonly env: ImportMetaEnv }

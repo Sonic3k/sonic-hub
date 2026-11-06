@@ -1,6 +1,7 @@
 /* Small shared pieces: links that keep the moment, pictures of people, endless lists, the photo viewer. */
-import { useCallback, useEffect, useRef, useState, type ReactNode, type MouseEvent } from 'react';
+import { useCallback, useEffect, useRef, useState, type ReactNode, type MouseEvent, useContext } from 'react';
 import { createPortal } from 'react-dom';
+import { LayerHost } from './layer';
 import { Link, type LinkProps } from 'react-router-dom';
 import { cdn, type Media, type Ref } from '../api';
 import { useMoment, withAt } from '../time';
@@ -69,6 +70,7 @@ export interface Shown { items: Media[]; index: number; title?: ReactNode }
 
 /** Photos one at a time over the page: arrows or ← → to move, Esc or the backdrop to close. */
 export function Viewer({ shown, onClose }: { shown: Shown | null; onClose: () => void }) {
+  const host = useContext(LayerHost);
   const [i, setI] = useState(shown?.index ?? 0);
   useEffect(() => { setI(shown?.index ?? 0); }, [shown]);
   const n = shown?.items.length ?? 0;
@@ -106,7 +108,7 @@ export function Viewer({ shown, onClose }: { shown: Shown | null; onClose: () =>
           {n > 1 && <span className="viewer-count">{i + 1} of {n}</span>}
         </div>
       )}
-    </div>, document.body);
+    </div>, host ?? document.body);
 }
 
 /** One photo or video tile (a play mark on videos). */

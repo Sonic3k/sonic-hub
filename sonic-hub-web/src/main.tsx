@@ -1,7 +1,5 @@
-import React from 'react';
-import ReactDOM from 'react-dom/client';
-import App from './App';
-import './styles/base.css';
-import './styles/library.css';
-
-ReactDOM.createRoot(document.getElementById('root')!).render(<React.StrictMode><App /></React.StrictMode>);
+/* Two worlds in one site: the portal, and the computer / phone of a moment (/pc, /phone). Each loads only its own
+   code and styles, so neither can bleed into the other; moving between them is a full page load, like turning a
+   machine on or off. */
+if (/^\/(pc|phone)(\/|$)/.test(window.location.pathname)) void import('./device/main');
+else void import('./portal-main');

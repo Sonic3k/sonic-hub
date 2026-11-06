@@ -229,8 +229,9 @@ public class DeskService {
         LocalDateTime at = sources.stream().filter(s -> s.getKind() == EpisodeSource.Kind.CHAT && s.getSaidAt() != null)
             .map(EpisodeSource::getSaidAt).min(Comparator.naturalOrder()).orElse(null);
         if (at == null && e.getOccurredAt() != null) {
+            // a memory known to the day (or month, year) is dated by the calendar of Vietnam: it opens at the end of that day
             DatePrecision p = e.getOccurredPrecision();
-            at = p != null && p.ordinal() <= DatePrecision.DAY.ordinal() ? p.end(e.getOccurredAt()).minusSeconds(1) : e.getOccurredAt();
+            at = p != null && p.ordinal() <= DatePrecision.DAY.ordinal() ? p.end(e.getOccurredAt()).minusHours(7).minusSeconds(1) : e.getOccurredAt();
         }
         if (at == null) throw new ImportException(400, "this memory has no time to go back to");
         List<DeskDto.Window> windows = new ArrayList<>();
