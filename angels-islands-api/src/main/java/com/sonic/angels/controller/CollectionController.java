@@ -57,8 +57,9 @@ public class CollectionController {
         @RequestParam(defaultValue = "false") boolean inclChildrenCount,
         @RequestParam(defaultValue = "false") boolean inclMediaCount,
         @RequestParam(defaultValue = "false") boolean inclTags,
-        @RequestParam(defaultValue = "false") boolean inclPersons) {
-        return collectionService.findTopLevel(new CollectionService.Includes(inclChildrenCount, inclMediaCount, inclTags, inclPersons));
+        @RequestParam(defaultValue = "false") boolean inclPersons,
+        @RequestParam(defaultValue = "false") boolean inclSocial) {
+        return collectionService.findTopLevel(new CollectionService.Includes(inclChildrenCount, inclMediaCount, inclTags, inclPersons), inclSocial);
     }
 
     @GetMapping("/root")
@@ -69,8 +70,9 @@ public class CollectionController {
         @RequestParam(defaultValue = "false") boolean inclChildrenCount,
         @RequestParam(defaultValue = "false") boolean inclMediaCount,
         @RequestParam(defaultValue = "false") boolean inclTags,
-        @RequestParam(defaultValue = "false") boolean inclPersons) {
-        return collectionService.findAll(new CollectionService.Includes(inclChildrenCount, inclMediaCount, inclTags, inclPersons));
+        @RequestParam(defaultValue = "false") boolean inclPersons,
+        @RequestParam(defaultValue = "false") boolean inclSocial) {
+        return collectionService.findAll(new CollectionService.Includes(inclChildrenCount, inclMediaCount, inclTags, inclPersons), inclSocial);
     }
 
     @GetMapping("/{id}")
@@ -81,8 +83,9 @@ public class CollectionController {
         @RequestParam(defaultValue = "false") boolean inclChildrenCount,
         @RequestParam(defaultValue = "false") boolean inclMediaCount,
         @RequestParam(defaultValue = "false") boolean inclTags,
-        @RequestParam(defaultValue = "false") boolean inclPersons) {
-        return collectionService.findByParentId(id, new CollectionService.Includes(inclChildrenCount, inclMediaCount, inclTags, inclPersons));
+        @RequestParam(defaultValue = "false") boolean inclPersons,
+        @RequestParam(defaultValue = "false") boolean inclSocial) {
+        return collectionService.findByParentId(id, new CollectionService.Includes(inclChildrenCount, inclMediaCount, inclTags, inclPersons), inclSocial);
     }
 
     @PostMapping

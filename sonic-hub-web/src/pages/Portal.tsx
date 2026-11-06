@@ -1,17 +1,23 @@
-/* Portal: the sites of their own that grew out of Sonic Hub — Huyền học (tử vi from grandma's notes) and Bóng đá
-   (Fantasy). Each lives at its own address (VITE_MYSTIC_URL, VITE_FOOTBALL_URL); this page only points there. */
+/* Portal: the sites of their own that grew out of Sonic Hub — Social Media (the old networks as they were at any
+   moment), Huyền học (tử vi from grandma's notes) and Bóng đá (Fantasy). Each lives at its own address
+   (VITE_SOCIAL_URL, VITE_MYSTIC_URL, VITE_FOOTBALL_URL); this page only points there. */
 import { useEffect } from 'react';
 
-interface Site { key: string; name: string; line: string; detail: string; url?: string; color: string; open: string }
+interface Site { key: string; name: string; line: string; detail: string; url?: string; color: string; open: string; env: string }
 
 export const PORTALS: Site[] = [
   {
-    key: 'mystic', name: 'Huyền học', color: '--mystic', open: 'Mở Huyền học', url: import.meta.env.VITE_MYSTIC_URL,
+    key: 'social', name: 'Social Media', color: '--social', open: 'Mở Social Media', url: import.meta.env.VITE_SOCIAL_URL, env: 'VITE_SOCIAL_URL',
+    line: 'Facebook và Messenger ngày trước, xem lại đúng như ở từng thời điểm.',
+    detail: 'Trang cá nhân, ảnh đại diện, bài đăng, nhóm và trang đổi theo mốc thời gian; tin nhắn lấy từ các cuộc trò chuyện đã nhập. Yahoo, Instagram, Threads sắp có.',
+  },
+  {
+    key: 'mystic', name: 'Huyền học', color: '--mystic', open: 'Mở Huyền học', url: import.meta.env.VITE_MYSTIC_URL, env: 'VITE_MYSTIC_URL',
     line: 'Tử vi theo ghi chép của bà: lập lá số, luận từng cung, vận hạn, đọc sách của bà.',
     detail: 'Mỗi người có thể có nhiều lá số; bản tóm tắt hiện ở trang người trong Angels. Chiêm tinh, nhân số học, Kinh Dịch, tarot — sắp có.',
   },
   {
-    key: 'football', name: 'Bóng đá', color: '--football', open: 'Mở Fantasy Football', url: import.meta.env.VITE_FOOTBALL_URL,
+    key: 'football', name: 'Bóng đá', color: '--football', open: 'Mở Fantasy Football', url: import.meta.env.VITE_FOOTBALL_URL, env: 'VITE_FOOTBALL_URL',
     line: 'Fantasy Football: giải đấu, đội hình, bảng điểm.',
     detail: 'Trang quản lý giải và đội của Competition Fantasy.',
   },
@@ -32,7 +38,7 @@ export default function Portal() {
             <p className="d">{s.detail}</p>
             {s.url
               ? <a className="go" href={s.url}>{s.open} →<small>{host(s.url)}</small></a>
-              : <span className="go off">Chưa cấu hình địa chỉ ({s.key === 'mystic' ? 'VITE_MYSTIC_URL' : 'VITE_FOOTBALL_URL'})</span>}
+              : <span className="go off">Chưa cấu hình địa chỉ ({s.env})</span>}
           </div>
         ))}
       </div>

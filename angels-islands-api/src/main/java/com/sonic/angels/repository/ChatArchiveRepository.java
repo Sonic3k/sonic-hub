@@ -36,4 +36,11 @@ public interface ChatArchiveRepository extends JpaRepository<ChatArchive, UUID> 
     @org.springframework.data.jpa.repository.Modifying
     @org.springframework.data.jpa.repository.Query(value = "UPDATE episode_sources SET chat_archive_id = NULL WHERE chat_archive_id = :id", nativeQuery = true)
     int detachEpisodeSources(@org.springframework.data.repository.query.Param("id") java.util.UUID id);
+
+    /** Messenger conversations: Facebook archives that are not the 2017 wall pages ("fbwall:…"). */
+    @Query("SELECT a FROM ChatArchive a LEFT JOIN FETCH a.person WHERE a.platform = com.sonic.angels.model.entity.ChatArchive.Platform.FACEBOOK " +
+           "AND (a.externalKey IS NULL OR a.externalKey NOT LIKE 'fbwall:%')")
+    List<ChatArchive> messengerThreads();
+
+    List<ChatArchive> findByExternalKey(String externalKey);
 }

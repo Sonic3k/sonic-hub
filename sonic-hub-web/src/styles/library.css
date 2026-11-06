@@ -8,7 +8,7 @@
      ═══════════════════════════════════════════════════════════════════════════ */
   :root {
     --bg: #F7F6F2; --card: #FFFFFF; --line: #E8E5DD; --soft: #F0EEE8; --ink: #1D1C1A; --ink2: #57544D; --ink3: #8E8A80;
-    --photo: #E9A100; --journal: #2E7FD6; --angels: #EF5B78; --forum: #0E9AA7; --football: #23A35E; --games: #7B61FF; --portal: #D9480F; --mystic: #9E2B25; --memory: #A0663A;
+    --photo: #E9A100; --journal: #2E7FD6; --angels: #EF5B78; --forum: #0E9AA7; --football: #23A35E; --games: #7B61FF; --portal: #D9480F; --mystic: #9E2B25; --memory: #A0663A; --social: #3B5998;
     --sans: "Be Vietnam Pro", system-ui, sans-serif; --serif: Literata, Georgia, serif;
     --r: 10px; --wrap: 1240px;
   }

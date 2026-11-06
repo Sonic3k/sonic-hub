@@ -136,14 +136,14 @@ export default function CollectionsPage() {
   const activeSort = sortOptions.find(o => o.sort === sort && o.dir === sortDir) || sortOptions[0]
 
   const { data: topLevel = [], isLoading } = useQuery({
-    queryKey: ['collections', 'top'],
-    queryFn: () => collectionBrowseApi.getTopLevel(),
+    queryKey: ['collections', 'top', 'with-social'],
+    queryFn: () => collectionBrowseApi.getTopLevel(true),
     enabled: !currentId,
   })
 
   const { data: children = [] } = useQuery({
     queryKey: ['collections', currentId, 'children'],
-    queryFn: () => collectionBrowseApi.getChildren(currentId!),
+    queryFn: () => collectionBrowseApi.getChildren(currentId!, true),
     enabled: !!currentId,
   })
 

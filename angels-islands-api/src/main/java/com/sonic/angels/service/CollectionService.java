@@ -60,15 +60,40 @@ public class CollectionService {
 
     // ── Queries (scoped under root) ──────────────────────────────────────────
 
-    public List<CollectionDto.Response> findAll(Includes inc) {
-        // All collections under root (excluding root itself)
-        UUID rootId = getRootId();
-        return toResponses(collectionRepository.findAll().stream().filter(c -> !c.getId().equals(rootId)).toList(), inc);
+    /** Slug of the album the Social Media portal files its pictures under (see SocialMediaService). */
+    public static final String SOCIAL_SLUG = "social-media";
+
+    /** The Social Media album and every album below it: left out of the album lists unless asked for (admin asks). */
+    private Set<UUID> socialTree(List<Collection> all, UUID rootId) {
+        UUID social = all.stream().filter(c -> c.getParent() != null && c.getParent().getId().equals(rootId) && SOCIAL_SLUG.equals(c.getSlug()))
+            .map(Collection::getId).findFirst().orElse(null);
+        if (social == null) return Set.of();
+        Set<UUID> out = new HashSet<>();
+        out.add(social);
+        boolean grew = true;
+        while (grew) {
+            grew = false;
+            for (Collection c : all)
+                if (c.getParent() != null && out.contains(c.getParent().getId()) && out.add(c.getId())) grew = true;
+        }
+        return out;
     }
 
-    public List<CollectionDto.Response> findTopLevel(Includes inc) {
+    public List<CollectionDto.Response> findAll(Includes inc) { return findAll(inc, false); }
+
+    public List<CollectionDto.Response> findAll(Includes inc, boolean inclSocial) {
+        // All collections under root (excluding root itself)
+        UUID rootId = getRootId();
+        List<Collection> all = collectionRepository.findAll();
+        Set<UUID> hidden = inclSocial ? Set.of() : socialTree(all, rootId);
+        return toResponses(all.stream().filter(c -> !c.getId().equals(rootId) && !hidden.contains(c.getId())).toList(), inc);
+    }
+
+    public List<CollectionDto.Response> findTopLevel(Includes inc) { return findTopLevel(inc, false); }
+
+    public List<CollectionDto.Response> findTopLevel(Includes inc, boolean inclSocial) {
         // Direct children of root = top-level collections
-        return toResponses(collectionRepository.findByParentId(getRootId()), inc);
+        return findByParentId(getRootId(), inc, inclSocial);
     }
 
     public List<CollectionDto.Response> findByPersonId(UUID personId, Includes inc) {
@@ -76,8 +101,12 @@ public class CollectionService {
         return toResponses(collectionRepository.findByPersonsId(personId).stream().filter(c -> !c.getId().equals(rootId)).toList(), inc);
     }
 
-    public List<CollectionDto.Response> findByParentId(UUID parentId, Includes inc) {
-        return toResponses(collectionRepository.findByParentId(parentId), inc);
+    public List<CollectionDto.Response> findByParentId(UUID parentId, Includes inc) { return findByParentId(parentId, inc, false); }
+
+    public List<CollectionDto.Response> findByParentId(UUID parentId, Includes inc, boolean inclSocial) {
+        List<Collection> kids = collectionRepository.findByParentId(parentId);
+        if (!inclSocial && parentId.equals(getRootId())) kids = kids.stream().filter(c -> !SOCIAL_SLUG.equals(c.getSlug())).toList();
+        return toResponses(kids, inc);
     }
 
     public CollectionDto.Response findResponseById(UUID id) {
