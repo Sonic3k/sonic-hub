@@ -8,6 +8,7 @@ import { cdn } from '../api/client';
 import { fmt, usePersons } from '../lib/queries';
 import Justified from '../components/Justified';
 import Viewer from '../components/Viewer';
+import { atOfMemory } from '../components/Machines';
 import { eventLabel } from '../lib/date';
 import type { Chapter, Episode, MediaFile } from '../types';
 
@@ -214,6 +215,10 @@ export function MemoryPage() {
             {e.place && !!e.persons?.length && <span className="sep">|</span>}
             {e.persons?.map(p => <span key={p.id} className="pill">{avatar(p.id) ? <img src={cdn(avatar(p.id), 80)} alt="" /> : <span className="pill-ph" />}{p.displayName || p.name}</span>)}
           </div>}
+          <div className="mem-boot">
+            <a href={`/pc?scene=${e.id}`}>Xem trên máy tính lúc đó</a>
+            {atOfMemory(e) && <a href={`/phone?at=${encodeURIComponent(atOfMemory(e)!)}`}>Điện thoại lúc đó</a>}
+          </div>
           {text && <div className="prose">{text.split(/\n+/).map((para, k) => <p key={k}>{para}</p>)}</div>}
           {route.length > 0 && <><h5 className="mem-h">Lộ trình</h5><ol className="mem-route">{route.map((leg, k) => <li key={k}>{leg}</li>)}</ol></>}
           {photos.length > 0 && <div className="mem-photos"><Justified items={photos} rowHeight={200} gap={8} onOpen={setViewer} /></div>}

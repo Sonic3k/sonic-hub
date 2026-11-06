@@ -65,22 +65,34 @@ public class ForumService {
             (rs, i) -> new ForumDto.Board(rs.getString("board"), rs.getLong("threads"), rs.getLong("posts"), ts(rs, "last")), f.getId());
     }
 
-    /** Threads of a forum, newest activity first; board narrows to a board and everything under it; q matches titles. */
+    /** Threads of a forum, newest activity first; board narrows to a board and everything under it; q matches titles.
+     *  With at (UTC), the forum as it stood then: threads started by then, their posts and last activity up to it. */
     @Transactional(readOnly = true)
     public ForumDto.Page<ForumDto.ThreadSummary> threads(String key, String board, String q, String sort, int page, int size) {
+        return threads(key, board, q, sort, page, size, null);
+    }
+
+    @Transactional(readOnly = true)
+    public ForumDto.Page<ForumDto.ThreadSummary> threads(String key, String board, String q, String sort, int page, int size, LocalDateTime at) {
         Forum f = forumOf(key);
         size = Math.max(1, Math.min(size, 200));
         StringBuilder where = new StringBuilder(" WHERE t.forum_id = ?");
-        List<Object> args = new ArrayList<>(List.of(f.getId()));
+        List<Object> args = new ArrayList<>();
+        if (at != null) args.add(at);
+        args.add(f.getId());
+        if (at != null) { where.append(" AND t.started_at <= ?"); args.add(at); }
         if (board != null && !board.isBlank()) { where.append(" AND (t.board = ? OR t.board LIKE ?)"); args.add(board); args.add(board + " / %"); }
         if (q != null && !q.isBlank()) { where.append(" AND t.title_fold LIKE ?"); args.add("%" + fold(q) + "%"); }
         String order = switch (sort == null ? "" : sort) {
             case "oldest" -> "t.started_at ASC";
             case "posts" -> "t.post_count DESC, t.last_post_at DESC";
             case "started" -> "t.started_at DESC";
-            default -> "t.last_post_at DESC";
+            default -> at == null ? "t.last_post_at DESC" : "t.last_post_at DESC NULLS LAST";
         };
-        String from = " FROM (SELECT ft.*, " + FOLD_SQL.formatted("ft.title") + " AS title_fold FROM forum_threads ft) t";
+        String cols = at == null ? "ft.*" : "ft.id, ft.forum_id, ft.title, ft.board, ft.started_at, ft.starter_nick, x.last_at AS last_post_at, x.n AS post_count";
+        String asOf = at == null ? "" : " LEFT JOIN LATERAL (SELECT max(p.posted_at) AS last_at, count(*) AS n FROM forum_posts p" +
+            " WHERE p.thread_id = ft.id AND (p.posted_at IS NULL OR p.posted_at <= ?)) x ON true";
+        String from = " FROM (SELECT " + cols + ", " + FOLD_SQL.formatted("ft.title") + " AS title_fold FROM forum_threads ft" + asOf + ") t";
         long total = num(jdbc.queryForObject("SELECT count(*)" + from + where, Object.class, args.toArray()));
         List<Object> pageArgs = new ArrayList<>(args); pageArgs.add(size); pageArgs.add((long) page * size);
         List<Map<String, Object>> rows = jdbc.queryForList("SELECT t.id, t.title, t.board, t.started_at, t.last_post_at, t.post_count, t.starter_nick" +

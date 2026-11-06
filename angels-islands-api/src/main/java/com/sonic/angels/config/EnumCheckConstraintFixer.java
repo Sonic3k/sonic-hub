@@ -1,6 +1,10 @@
 package com.sonic.angels.config;
 
 import com.sonic.angels.model.entity.ChatArchive;
+import com.sonic.angels.model.entity.DeskDevice;
+import com.sonic.angels.model.entity.DeskItem;
+import com.sonic.angels.model.entity.DeskSystem;
+import com.sonic.angels.model.entity.DeskWallpaper;
 import com.sonic.angels.model.entity.ChatAttachment;
 import com.sonic.angels.model.entity.ChatMessage;
 import com.sonic.angels.model.entity.FinanceAccount;
@@ -74,7 +78,12 @@ public class EnumCheckConstraintFixer implements InitializingBean {
         new EnumColumn("social_posts", "kind", SocialPost.Kind.class),
         new EnumColumn("social_posts", "audience", SocialPost.Audience.class),
         new EnumColumn("social_reactions", "type", SocialReaction.Type.class),
-        new EnumColumn("social_connections", "kind", SocialConnection.Kind.class)
+        new EnumColumn("social_connections", "kind", SocialConnection.Kind.class),
+        new EnumColumn("desk_devices", "kind", DeskDevice.Kind.class),
+        new EnumColumn("desk_systems", "os", DeskSystem.Os.class),
+        new EnumColumn("desk_wallpapers", "place", DeskWallpaper.Place.class),
+        new EnumColumn("desk_wallpapers", "fit", DeskWallpaper.Fit.class),
+        new EnumColumn("desk_items", "place", DeskItem.Place.class)
     );
 
     /** Values taken out of an enum, per table.column, and what rows holding one become. */

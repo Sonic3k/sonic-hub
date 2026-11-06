@@ -83,7 +83,7 @@ public final class SocialDto {
 
     /** FRIEND goes both ways; MEMBER / ADMIN / MODERATOR: from = the person, to = the group; PAGE_LIKE / FOLLOW: to = the page. */
     public record ConnectionIn(String key, String kind, String from, String fromName, String to, String toName,
-                               String since, String until, String source) {}
+                               String since, String until, String label, String source) {}
 
     /** archive = the Messenger archive's externalKey (or archiveId); sender = the sender name exactly as stored. */
     public record ChatMemberIn(String key, String archive, UUID archiveId, String sender, String profile, String profileName,
@@ -182,4 +182,12 @@ public final class SocialDto {
                           List<ChatAttachmentDto.Item> attachments, List<MessageReaction> reactions) {}
 
     public record MessagePage(List<Message> items, boolean hasMore, Integer oldestSeq) {}
+
+    /** One contact on a buddy list at a moment: online = a message within half an hour of it. */
+    public record Buddy(Ref ref, String name, UUID archiveId, String status, boolean online, LocalDateTime lastAt, long messages) {}
+
+    public record BuddyGroup(String name, int online, List<Buddy> buddies) {}
+
+    /** A buddy list as it stood at T: who I was there (name, picture, status) and my contacts by group. */
+    public record BuddyList(Ref me, String status, List<BuddyGroup> groups, LocalDateTime at) {}
 }

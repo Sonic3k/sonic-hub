@@ -9,6 +9,15 @@ import java.util.List;
 
 @Repository
 public interface EpisodeRepository extends JpaRepository<Episode, UUID> {
+    /** Memories that happened in [from, to) — a day on the desktop. Drafts are left out. */
+    @org.springframework.data.jpa.repository.Query("SELECT e FROM Episode e LEFT JOIN FETCH e.person WHERE e.occurredAt >= :from AND e.occurredAt < :to " +
+        "AND (e.status IS NULL OR e.status <> com.sonic.angels.model.entity.MemoryStatus.DRAFT) ORDER BY e.occurredAt")
+    List<Episode> occurredBetween(java.time.LocalDateTime from, java.time.LocalDateTime to);
+    /** Memories up to a moment, newest first (drafts left out); q matches the title or the summary. */
+    @org.springframework.data.jpa.repository.Query("SELECT e FROM Episode e WHERE e.occurredAt <= :t " +
+        "AND (e.status IS NULL OR e.status <> com.sonic.angels.model.entity.MemoryStatus.DRAFT) " +
+        "AND (:q = '' OR LOWER(COALESCE(e.title, '')) LIKE :q OR LOWER(e.summary) LIKE :q) ORDER BY e.occurredAt DESC")
+    org.springframework.data.domain.Page<Episode> upTo(java.time.LocalDateTime t, String q, org.springframework.data.domain.Pageable page);
     List<Episode> findByPersonIdOrderByOccurredAtDesc(UUID personId);
     List<Episode> findByPersonIdAndImportanceGreaterThanEqual(UUID personId, Integer importance);
 

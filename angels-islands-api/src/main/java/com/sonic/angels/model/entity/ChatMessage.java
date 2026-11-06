@@ -7,7 +7,8 @@ import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "chat_messages", indexes = {
-    @Index(name = "idx_chatmsg_archive_ts", columnList = "chat_archive_id, timestamp")
+    @Index(name = "idx_chatmsg_archive_ts", columnList = "chat_archive_id, timestamp"),
+    @Index(name = "idx_chatmsg_ts", columnList = "timestamp")
 }, uniqueConstraints = {
     @UniqueConstraint(name = "uk_chatmsg_archive_ext", columnNames = {"chat_archive_id", "external_id"})
 })

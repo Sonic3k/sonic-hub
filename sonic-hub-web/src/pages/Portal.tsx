@@ -1,16 +1,11 @@
-/* Portal: the sites of their own that grew out of Sonic Hub — Social Media (the old networks as they were at any
-   moment), Huyền học (tử vi from grandma's notes) and Bóng đá (Fantasy). Each lives at its own address
-   (VITE_SOCIAL_URL, VITE_MYSTIC_URL, VITE_FOOTBALL_URL); this page only points there. */
+/* Portal: the sites of their own that grew out of Sonic Hub — Huyền học (tử vi from grandma's notes) and Bóng đá
+   (Fantasy). Each lives at its own address (VITE_MYSTIC_URL, VITE_FOOTBALL_URL); this page only points there.
+   The old networks (Facebook, Yahoo…) are no longer a site here: they open inside the machines (/pc, /phone). */
 import { useEffect } from 'react';
 
 interface Site { key: string; name: string; line: string; detail: string; url?: string; color: string; open: string; env: string }
 
 export const PORTALS: Site[] = [
-  {
-    key: 'social', name: 'Social Media', color: '--social', open: 'Mở Social Media', url: import.meta.env.VITE_SOCIAL_URL, env: 'VITE_SOCIAL_URL',
-    line: 'Facebook và Messenger ngày trước, xem lại đúng như ở từng thời điểm.',
-    detail: 'Trang cá nhân, ảnh đại diện, bài đăng, nhóm và trang đổi theo mốc thời gian; tin nhắn lấy từ các cuộc trò chuyện đã nhập. Yahoo, Instagram, Threads sắp có.',
-  },
   {
     key: 'mystic', name: 'Huyền học', color: '--mystic', open: 'Mở Huyền học', url: import.meta.env.VITE_MYSTIC_URL, env: 'VITE_MYSTIC_URL',
     line: 'Tử vi theo ghi chép của bà: lập lá số, luận từng cung, vận hạn, đọc sách của bà.',

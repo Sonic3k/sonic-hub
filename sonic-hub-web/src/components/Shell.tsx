@@ -2,6 +2,7 @@
 import { Link, NavLink, Outlet, useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import { hub, randomDay } from '../api/hub';
 import Search from './Search';
+import MachineButtons from './Machines';
 import { Fragment, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { angelsOrdered } from '../pages/Angels';
@@ -36,6 +37,7 @@ export default function Shell() {
         <Search />
         <nav className="tabs">{tabs.map(([n, to, c, short]) => <NavLink key={to} to={to} end={to === '/'} className={({ isActive }) => `${isActive ? 'on' : ''} ${short ? 'has-s' : ''}`} style={{ ['--c' as string]: `var(${c})` }}><i /><span className="tl">{n}</span>{short && <span className="ts">{short}</span>}</NavLink>)}</nav>
         <button className="rand" type="button" onClick={random}>Một ngày bất kỳ</button>
+        <MachineButtons />
       </div></header>
       <div className={`frame ${reading ? 'reading' : ''}`}>
         <aside className="side">{inJournal ? <JournalSide /> : inMemories ? <MemoriesSide /> : inPhotos ? <PhotosSide /> : inAngels ? <AngelsSide /> : inForum ? <ForumSide /> : inMoney ? <MoneySide /> : inPortal ? <PortalSide /> : <HomeSide />}</aside>

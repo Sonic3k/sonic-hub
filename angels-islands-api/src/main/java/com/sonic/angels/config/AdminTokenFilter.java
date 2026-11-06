@@ -24,7 +24,7 @@ public class AdminTokenFilter extends OncePerRequestFilter {
     private static final Pattern PRIVATE_READ = Pattern.compile(
         "^/api/(persons/[^/]+/(chat-archives|memory|contacts|companion|rankings|mystic-briefs)(/.*)?" +
         "|companion(/.*)?|chat-archives(/.*)?|chat-attachments(/.*)?|journal/(problems|authors)(/.*)?|import(/.*)?|rankings(/.*)?" +
-        "|finance(/.*)?|social/(messenger|raw|keys|status)(/.*)?)$");
+        "|finance(/.*)?|social/(messenger|raw|keys|status)(/.*)?|desk/raw)$");
 
     /** a brief Mystic sends or withdraws (PUT / DELETE) */
     private static final Pattern MYSTIC_PUSH = Pattern.compile("^/api/persons/[^/]+/mystic-briefs/[^/]+$");

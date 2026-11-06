@@ -2,6 +2,7 @@ package com.sonic.angels.controller;
 
 import com.sonic.angels.model.dto.ForumDto;
 import com.sonic.angels.service.ForumService;
+import com.sonic.angels.service.SocialReadService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -15,8 +16,9 @@ import java.util.UUID;
 public class ForumController {
 
     private final ForumService forumService;
+    private final SocialReadService reads;
 
-    public ForumController(ForumService forumService) { this.forumService = forumService; }
+    public ForumController(ForumService forumService, SocialReadService reads) { this.forumService = forumService; this.reads = reads; }
 
     @GetMapping("/api/forums")
     public List<ForumDto.Summary> forums() { return forumService.forums(); }
@@ -27,12 +29,13 @@ public class ForumController {
     @GetMapping("/api/forums/{key}/boards")
     public List<ForumDto.Board> boards(@PathVariable String key) { return forumService.boards(key); }
 
-    /** sort: activity (default) | started | oldest | posts */
+    /** sort: activity (default) | started | oldest | posts; at (Vietnam wall-clock, as the portal writes it): the forum as it stood then */
     @GetMapping("/api/forums/{key}/threads")
     public ForumDto.Page<ForumDto.ThreadSummary> threads(@PathVariable String key, @RequestParam(required = false) String board,
                                                          @RequestParam(required = false) String q, @RequestParam(required = false) String sort,
-                                                         @RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "30") int size) {
-        return forumService.threads(key, board, q, sort, page, size);
+                                                         @RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "30") int size,
+                                                         @RequestParam(required = false) String at) {
+        return forumService.threads(key, board, q, sort, page, size, at == null || at.isBlank() ? null : reads.at(at));
     }
 
     @GetMapping("/api/forum-threads/{id}")

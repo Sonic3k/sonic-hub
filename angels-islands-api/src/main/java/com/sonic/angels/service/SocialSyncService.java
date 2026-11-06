@@ -738,6 +738,7 @@ public class SocialSyncService {
         x.setTo(to);
         if (created || it.has("since")) x.setValidFrom(time(in.since(), w + ".since"));
         if (created || it.has("until")) x.setValidTo(time(in.until(), w + ".until"));
+        if (created || it.has("label")) x.setLabel(cut(trim(in.label()), 120));
         if (created || it.has("source")) x.setSource(SocialMediaService.source(in.source()));
         connectionRepo.save(x);
         c.count("connections", created ? "created" : "updated");
@@ -751,7 +752,7 @@ public class SocialSyncService {
         ChatArchive a = archive(in.archive(), in.archiveId(), w);
         if (a == null) throw new ImportException(400, w + ": archive (its externalKey) or archiveId is required");
         if (blank(in.sender())) throw new ImportException(400, w + ": sender (the name as stored in the messages) is required");
-        SocialProfile who = ref(in.profile(), in.profileName(), SocialProfile.Platform.FACEBOOK, w + ".profile", c);
+        SocialProfile who = ref(in.profile(), in.profileName(), SocialMessengerService.platformOf(a.getPlatform()), w + ".profile", c);
         if (who == null) throw new ImportException(400, w + ": profile (a key) or profileName is required");
         String key = blank(in.key()) ? a.getId() + "/" + in.sender() + "/" + (blank(in.from()) ? "_" : in.from().trim()) : in.key().trim();
         SocialChatMember m = memberRepo.findByExternalKey(key).orElse(null);

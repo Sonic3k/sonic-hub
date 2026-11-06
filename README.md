@@ -35,8 +35,8 @@ Everything can live standalone or inside a **Project**. Move items between proje
 sonic-hub/
 ├── sonic-hub-api/       Spring Boot backend
 ├── sonic-hub-admin/     Internal admin panel (React)
-├── sonic-hub-web/       Main web app (React, mobile-friendly)
-└── sonic-hub-social/    Social Media portal: Facebook + Messenger as they were at any moment (React; API in angels-islands-api, /api/social)
+└── sonic-hub-web/       Main web app (React, mobile-friendly): the portal, and the computer / phone of any moment
+                         (/pc, /phone — Facebook, Yahoo, SMS, Zalo… as they were; API in angels-islands-api, /api/desk, /api/social)
 ```
 
 ---

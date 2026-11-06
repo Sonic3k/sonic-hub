@@ -47,6 +47,10 @@ public class SocialConnection extends BaseEntity {
     @OnDelete(action = OnDeleteAction.CASCADE)
     private SocialProfile to;
 
+    /** The group a contact sat in on a buddy list ("onthi.com", "SE0421 FPT"…); none for Facebook friends. */
+    @Column(name = "label", length = 120)
+    private String label;
+
     @Column(name = "valid_from")
     private LocalDateTime validFrom;
 
@@ -74,4 +78,6 @@ public class SocialConnection extends BaseEntity {
     public void setValidTo(LocalDateTime v) { this.validTo = v; }
     public SocialSource getSource() { return source; }
     public void setSource(SocialSource v) { this.source = v; }
+    public String getLabel() { return label; }
+    public void setLabel(String label) { this.label = label; }
 }

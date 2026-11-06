@@ -62,14 +62,20 @@ public class CollectionService {
 
     /** Slug of the album the Social Media portal files its pictures under (see SocialMediaService). */
     public static final String SOCIAL_SLUG = "social-media";
+    /** Slug of the album of the pictures Sonic Hub itself uses: the machines' wallpapers and photos (see DeskAssetService). */
+    public static final String ASSETS_SLUG = "assets";
+    /** Albums under the root that are not his photos and stay out of the album lists. */
+    public static final Set<String> HIDDEN_SLUGS = Set.of(SOCIAL_SLUG, ASSETS_SLUG);
 
-    /** The Social Media album and every album below it: left out of the album lists unless asked for (admin asks). */
+    /** Whether an album under the root with this slug is one of the hidden ones (an album may have no slug yet). */
+    public static boolean hiddenSlug(String slug) { return slug != null && HIDDEN_SLUGS.contains(slug); }
+
+    /** The Social Media and Assets albums and every album below them: left out of the album lists unless asked for (admin asks). */
     private Set<UUID> socialTree(List<Collection> all, UUID rootId) {
-        UUID social = all.stream().filter(c -> c.getParent() != null && c.getParent().getId().equals(rootId) && SOCIAL_SLUG.equals(c.getSlug()))
-            .map(Collection::getId).findFirst().orElse(null);
-        if (social == null) return Set.of();
         Set<UUID> out = new HashSet<>();
-        out.add(social);
+        all.stream().filter(c -> c.getParent() != null && c.getParent().getId().equals(rootId) && hiddenSlug(c.getSlug()))
+            .map(Collection::getId).forEach(out::add);
+        if (out.isEmpty()) return Set.of();
         boolean grew = true;
         while (grew) {
             grew = false;
@@ -105,7 +111,7 @@ public class CollectionService {
 
     public List<CollectionDto.Response> findByParentId(UUID parentId, Includes inc, boolean inclSocial) {
         List<Collection> kids = collectionRepository.findByParentId(parentId);
-        if (!inclSocial && parentId.equals(getRootId())) kids = kids.stream().filter(c -> !SOCIAL_SLUG.equals(c.getSlug())).toList();
+        if (!inclSocial && parentId.equals(getRootId())) kids = kids.stream().filter(c -> !hiddenSlug(c.getSlug())).toList();
         return toResponses(kids, inc);
     }
 

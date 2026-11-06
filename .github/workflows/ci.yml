@@ -30,10 +30,10 @@ jobs:
       - uses: actions/setup-node@v4
         with: { node-version: '20' }
       - run: cd angels-islands-admin && npm ci --silent && npx tsc --noEmit && npx vite build
-  social-build:
+  web-build:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with: { node-version: '20' }
-      - run: cd sonic-hub-social && npm ci --silent && npx tsc --noEmit && npx vite build
+      - run: cd sonic-hub-web && npm ci --silent && npx tsc --noEmit && npx vite build

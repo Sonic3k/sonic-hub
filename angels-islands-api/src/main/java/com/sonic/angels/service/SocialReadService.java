@@ -249,6 +249,9 @@ public class SocialReadService {
             case INSTAGRAM -> "Instagram user";
             case THREADS -> "Threads user";
             case YAHOO -> "Yahoo user";
+            case SKYPE -> "Skype user";
+            case ZALO -> "Zalo user";
+            case SMS -> "Unknown";
         };
     }
 
