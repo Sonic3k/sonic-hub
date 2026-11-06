@@ -8,13 +8,14 @@ import org.hibernate.annotations.OnDeleteAction;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
-/** A desktop (or lock screen) picture over a period: one of his photos, or a picture drawn into the app (builtin). */
+/** A desktop (or lock screen) picture over a period: one of his photos, or a picture drawn into the app (builtin).
+ *  SCREEN rows are the pictures the screensaver goes through, in the order of their keys. */
 @Entity
 @Table(name = "desk_wallpapers",
     uniqueConstraints = @UniqueConstraint(name = "uk_desk_wallpaper_key", columnNames = "external_key"),
     indexes = @Index(name = "idx_desk_wallpaper_device", columnList = "device_id"))
 public class DeskWallpaper extends BaseEntity {
-    public enum Place { DESKTOP, LOCK }
+    public enum Place { DESKTOP, LOCK, SCREEN }
     public enum Fit { FILL, FIT, CENTER, TILE, STRETCH }
 
     @Id

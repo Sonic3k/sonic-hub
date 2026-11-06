@@ -593,3 +593,24 @@
 .dv.small.dv-xp .dv-start { width: auto; padding: 0 12px 0 8px; margin-right: 4px; }
 .dv.small.dv-w98 .dv-start { width: auto; }
 .dv.small .dv-showdesk { display: none; }
+
+/* ── screensaver ────────────────────────────────────────────────────────── */
+
+.dv-saver { position: absolute; inset: 0; z-index: 2500; background: #000; overflow: hidden; cursor: none; animation: dv-fade .8s ease both; }
+.dv-saver-lock { cursor: default; }
+.dv-slide { position: absolute; inset: 0; opacity: 0; transition: opacity 1.4s ease; }
+.dv-slide.on { opacity: 1; }
+.dv-slide.kb { animation-name: dv-kb0; animation-timing-function: linear; animation-fill-mode: both; }
+.dv-slide.kb1 { animation-name: dv-kb1; }
+.dv-slide.kb2 { animation-name: dv-kb2; }
+.dv-slide.kb3 { animation-name: dv-kb3; }
+@keyframes dv-kb0 { from { transform: scale(1.02) translate(0, 0); } to { transform: scale(1.14) translate(-2.5%, -1.5%); } }
+@keyframes dv-kb1 { from { transform: scale(1.14) translate(2%, 1%); } to { transform: scale(1.03) translate(0, 0); } }
+@keyframes dv-kb2 { from { transform: scale(1.03) translate(2%, -1%); } to { transform: scale(1.15) translate(-1%, 1.5%); } }
+@keyframes dv-kb3 { from { transform: scale(1.15) translate(-2%, 1%); } to { transform: scale(1.02) translate(1%, -1%); } }
+.dv-stars { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+.dv-xplogo { position: absolute; display: flex; align-items: flex-end; gap: 10px; color: #fff; animation: dv-logo 5s ease both;
+  font: bold 40px "Franklin Gothic Medium", "Trebuchet MS", Arial, sans-serif; }
+.dv-xplogo sup { color: #ff6a00; font-size: 24px; font-style: italic; margin-left: -6px; }
+@keyframes dv-logo { 0% { opacity: 0; } 18% { opacity: 1; } 82% { opacity: 1; } 100% { opacity: 0; } }
+@media (prefers-reduced-motion: reduce) { .dv-slide.kb { animation: none; } }

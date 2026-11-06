@@ -11,7 +11,7 @@ export type Os = 'WIN98' | 'WINXP' | 'VISTA' | 'WIN7' | 'WIN81' | 'WIN10' | 'WIN
 export interface DeskSystem { key: string; os: Os; accent?: string | null; language?: string | null; from?: string | null; to?: string | null }
 export interface Wallpaper { url?: string | null; builtin?: string | null; fit: string; color?: string | null }
 export interface DeskItem { key: string; place: string; label: string; glyph?: string | null; app?: string | null; target?: string | null; sort: number }
-export interface Machine { device: DeskDevice; system: DeskSystem | null; wallpaper: Wallpaper | null; lock: Wallpaper | null; items: DeskItem[];
+export interface Machine { device: DeskDevice; system: DeskSystem | null; wallpaper: Wallpaper | null; lock: Wallpaper | null; screen?: Wallpaper[]; items: DeskItem[];
   apps: Record<string, string>; next: DeskDevice | null }
 export interface DayPhoto { id: string; url: string; width?: number | null; height?: number | null; at?: string | null; caption?: string | null }
 export interface DayMemory { id: string; title?: string | null; summary?: string | null; kind?: string | null; at?: string | null; precision?: string | null;

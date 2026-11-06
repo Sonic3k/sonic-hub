@@ -23,7 +23,8 @@ public final class DeskDto {
     public record SystemIn(String key, String device, String os, String accent, String language, String from, String to,
                            String note, String source) {}
 
-    /** place = DESKTOP (default) or LOCK; media = a photo id, or builtin = a picture drawn into the app. */
+    /** place = DESKTOP (default), LOCK or SCREEN (a picture of the screensaver; give each its own key, they play in key
+     *  order); media = a photo id, or builtin = a picture drawn into the app. */
     public record WallpaperIn(String key, String device, String place, String media, String builtin, String fit, String color,
                               Boolean isDefault, String from, String to, String note, String source) {}
 
@@ -54,9 +55,10 @@ public final class DeskDto {
 
     public record Item(String key, String place, String label, String glyph, String app, String target, int sort) {}
 
-    /** One machine as it was at T; next = the machine that comes after it (where the clock can jump). */
-    public record Machine(Device device, System system, Wallpaper wallpaper, Wallpaper lock, List<Item> items,
-                          Map<String, String> apps, Device next) {}
+    /** One machine as it was at T; screen = the pictures its screensaver goes through; next = the machine that comes
+     *  after it (where the clock can jump). */
+    public record Machine(Device device, System system, Wallpaper wallpaper, Wallpaper lock, List<Wallpaper> screen,
+                          List<Item> items, Map<String, String> apps, Device next) {}
 
     public record Photo(UUID id, String url, Integer width, Integer height, LocalDateTime at, String caption) {}
 

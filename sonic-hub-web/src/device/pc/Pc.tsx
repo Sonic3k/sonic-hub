@@ -19,6 +19,7 @@ import { TimeMachine } from './TimeMachine';
 import { DesktopIcons } from './Icons';
 import { Boot, type Phase } from './Boot';
 import { Gadgets, Notices } from './Extras';
+import { IDLE_MS, Screensaver, saverKind } from './Screensaver';
 
 const TASKBAR: Record<string, number> = { w98: 28, xp: 30, vista: 30, w7: 40, w81: 40, w10: 40, w11: 48 };
 const FALLBACK: Record<string, string> = { w98: 'win98-teal', xp: 'xp-hills', vista: 'vista-aurora', w7: 'win7-glow', w81: 'win81-teal', w10: 'win10-light', w11: 'win11-bloom' };
@@ -95,6 +96,7 @@ function Desktop({ data, machine, T, at, fresh, scene, go, scr, skin }: {
   const [timeOpen, setTimeOpen] = useState(false);
   const booted = useRef<string | null>(null), started = useRef<string | null>(null), shown = useRef<string | null>(null);
   const [sceneAsk, setSceneAsk] = useState(0);
+  const [saver, setSaver] = useState(false);
   const messengerApp = machine.items.some(i => i.app === 'messenger');
 
   // another machine, or another system on it: reboot into it
@@ -159,6 +161,17 @@ function Desktop({ data, machine, T, at, fresh, scene, go, scr, skin }: {
   const shutdown = useCallback(() => { setStartOpen(false); setTimeOpen(false); setPhase('down'); }, []);
   const openTime = useCallback(() => { setStartOpen(false); setTimeOpen(true); }, []);
 
+  // left alone for a while, the machine goes to its screensaver (not on a phone-sized page, where reading is all there is)
+  useEffect(() => {
+    if (phase !== 'on' || scr.small) { setSaver(false); return; }
+    let id = window.setTimeout(() => setSaver(true), IDLE_MS);
+    const poke = () => { window.clearTimeout(id); id = window.setTimeout(() => setSaver(true), IDLE_MS); };
+    const evs = ['pointermove', 'pointerdown', 'keydown', 'wheel', 'touchstart', 'scroll'] as const;
+    evs.forEach(e => window.addEventListener(e, poke, { capture: true, passive: true }));
+    return () => { window.clearTimeout(id); evs.forEach(e => window.removeEventListener(e, poke, { capture: true })); };
+  }, [phase, scr.small]);
+  const wake = useCallback(() => setSaver(false), []);
+
   useEffect(() => {
     const key = (e: KeyboardEvent) => { if (e.key === 'Escape') { setStartOpen(false); setTimeOpen(false); } };
     window.addEventListener('keydown', key);
@@ -190,6 +203,7 @@ function Desktop({ data, machine, T, at, fresh, scene, go, scr, skin }: {
           <Taskbar startOpen={startOpen} timeOpen={timeOpen} onStart={() => { setTimeOpen(false); setStartOpen(o => !o); }}
             onClock={() => { setStartOpen(false); setTimeOpen(o => !o); }} />
           <Boot phase={phase} machine={machine} skin={skin} T={T} changed={changed} onNext={phase === 'down' ? off : next} />
+          {saver && phase === 'on' && <Screensaver kind={saverKind(skin, machine)} machine={machine} skin={skin} T={T} onWake={wake} />}
         </div>
       </div>
     </Desk.Provider>
