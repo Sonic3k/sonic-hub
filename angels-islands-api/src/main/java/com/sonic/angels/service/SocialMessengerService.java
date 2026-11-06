@@ -12,23 +12,28 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.Collection;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 /**
- * Messenger read at a moment T, over the Facebook conversations already imported into chat_archives (the 2017 wall
- * pages, "fbwall:…", are not conversations). Who is behind each sender name comes from social_chat_members; without
- * a row, the owner's own messages are his profile, the other side of a two-person chat is the profile of the person
- * the archive belongs to, and any other name is matched against the names profiles went by when only one fits.
- * Names and pictures are shown as they were at T, the way Messenger shows everyone as they are now.
+ * Conversations read at a moment T, for every chat app whose history is in chat_archives: Facebook Messenger, Yahoo,
+ * SMS, Zalo (the 2017 Facebook wall pages, "fbwall:…", are not conversations). Who is behind each sender name comes
+ * from social_chat_members; without a row, the owner's own messages are his profile on that platform, the other side
+ * of a two-person chat is the profile of the person the archive belongs to, and any other name is matched against the
+ * names profiles of that platform went by when only one fits. Names and pictures are shown as they were at T.
  */
 @Service
 @Transactional(readOnly = true)
 public class SocialMessengerService {
 
     private static final long GROUP_CACHE_MS = 10 * 60_000L;
+    private static final long ONLINE_MINUTES = 30;
+    private static final String DEFAULT_GROUP = "Friends";
     private static final Map<String, String> SENT = Map.of(
         "PHOTO", "sent a photo.", "VIDEO", "sent a video.", "STICKER", "sent a sticker.", "AUDIO", "sent a voice message.",
         "FILE", "sent a file.", "GIF", "sent a GIF.");
+    private static final Set<ChatArchive.Platform> CHAT_APPS = EnumSet.of(
+        ChatArchive.Platform.FACEBOOK, ChatArchive.Platform.YAHOO, ChatArchive.Platform.SMS, ChatArchive.Platform.ZALO);
 
     private final SocialReadService reads;
     private final ChatArchiveRepository archiveRepo;
@@ -37,13 +42,17 @@ public class SocialMessengerService {
     private final SocialChatMemberRepository memberRepo;
     private final SocialProfileRepository profileRepo;
     private final SocialProfileNameRepository nameRepo;
+    private final SocialConnectionRepository connectionRepo;
+    private final SocialProfileDetailRepository detailRepo;
 
-    private volatile Map<UUID, Integer> otherSenders = Map.of();
-    private volatile long otherSendersAt;
+    /** Per chat app: archive id → how many people other than the owner wrote in it (cached a while). */
+    private final Map<ChatArchive.Platform, Map<UUID, Integer>> otherSenders = new ConcurrentHashMap<>();
+    private final Map<ChatArchive.Platform, Long> otherSendersAt = new ConcurrentHashMap<>();
 
     public SocialMessengerService(SocialReadService reads, ChatArchiveRepository archiveRepo, ChatMessageRepository messageRepo,
                                   ChatAttachmentRepository attachmentRepo, SocialChatMemberRepository memberRepo,
-                                  SocialProfileRepository profileRepo, SocialProfileNameRepository nameRepo) {
+                                  SocialProfileRepository profileRepo, SocialProfileNameRepository nameRepo,
+                                  SocialConnectionRepository connectionRepo, SocialProfileDetailRepository detailRepo) {
         this.reads = reads;
         this.archiveRepo = archiveRepo;
         this.messageRepo = messageRepo;
@@ -51,26 +60,55 @@ public class SocialMessengerService {
         this.memberRepo = memberRepo;
         this.profileRepo = profileRepo;
         this.nameRepo = nameRepo;
+        this.connectionRepo = connectionRepo;
+        this.detailRepo = detailRepo;
+    }
+
+    /** The social platform whose profiles stand behind a chat app's senders. */
+    public static SocialProfile.Platform platformOf(ChatArchive.Platform p) {
+        if (p == null) return SocialProfile.Platform.FACEBOOK;
+        return switch (p) {
+            case YAHOO -> SocialProfile.Platform.YAHOO;
+            case SMS -> SocialProfile.Platform.SMS;
+            case ZALO -> SocialProfile.Platform.ZALO;
+            default -> SocialProfile.Platform.FACEBOOK;
+        };
+    }
+
+    /** "yahoo" / "YAHOO" → the chat app; nothing given = Facebook. */
+    public static ChatArchive.Platform chatApp(String s) {
+        if (s == null || s.isBlank()) return ChatArchive.Platform.FACEBOOK;
+        try {
+            ChatArchive.Platform p = ChatArchive.Platform.valueOf(s.trim().toUpperCase(Locale.ROOT));
+            if (!CHAT_APPS.contains(p)) throw new IllegalArgumentException();
+            return p;
+        } catch (IllegalArgumentException e) {
+            throw new ImportException(400, "platform must be one of " + CHAT_APPS);
+        }
     }
 
     // ── What is known about a set of conversations ───────────────────────────
 
     private final class Threads {
+        final ChatArchive.Platform app;
+        final SocialProfile.Platform platform;
         final SocialReadService.View v;
         final Map<UUID, List<SocialChatMember>> members;
         final Map<UUID, SocialProfile> chatProfiles = new HashMap<>();
         final Map<UUID, SocialProfile> personProfile = new HashMap<>();
         Map<String, Set<UUID>> byName;
 
-        Threads(SocialReadService.View v, List<ChatArchive> archives) {
-            this.v = v;
+        Threads(ChatArchive.Platform app, LocalDateTime t, List<ChatArchive> archives) {
+            this.app = app;
+            this.platform = platformOf(app);
+            this.v = reads.view(t, platform);
             List<UUID> ids = archives.stream().map(ChatArchive::getId).toList();
             members = ids.isEmpty() ? Map.of() : memberRepo.findByArchiveIdIn(ids).stream()
                 .collect(Collectors.groupingBy(m -> m.getArchive().getId()));
             if (!ids.isEmpty()) profileRepo.findByChatArchiveIdIn(ids).forEach(p -> chatProfiles.put(p.getChatArchive().getId(), p));
             Set<UUID> persons = archives.stream().filter(a -> a.getPerson() != null).map(a -> a.getPerson().getId()).collect(Collectors.toSet());
             if (!persons.isEmpty()) {
-                Map<UUID, List<SocialProfile>> of = profileRepo.findUsersOfPersons(SocialProfile.Platform.FACEBOOK, persons).stream()
+                Map<UUID, List<SocialProfile>> of = profileRepo.findUsersOfPersons(platform, persons).stream()
                     .collect(Collectors.groupingBy(p -> p.getPerson().getId()));
                 of.forEach((person, ps) -> { if (ps.size() == 1) personProfile.put(person, ps.get(0)); });
             }
@@ -85,7 +123,10 @@ public class SocialMessengerService {
             if (chatProfiles.containsKey(a.getId())) return true;
             long people = members.getOrDefault(a.getId(), List.of()).stream()
                 .filter(m -> v.me == null || !m.getProfile().getId().equals(v.me.getId())).map(SocialChatMember::getSenderName).distinct().count();
-            return people > 1 || otherSenderCounts().getOrDefault(a.getId(), 0) > 1;
+            if (people > 1) return true;
+            // a conversation filed under one person is with that person, even when an export wrote her under two names
+            if (a.getPerson() != null) return false;
+            return otherSenderCounts(app).getOrDefault(a.getId(), 0) > 1;
         }
 
         /** The other side of a two-person chat. */
@@ -119,8 +160,8 @@ public class SocialMessengerService {
             if (sender == null || sender.isBlank()) return null;
             if (byName == null) {
                 byName = new HashMap<>();
-                for (Object[] r : profileRepo.namesOf(SocialProfile.Platform.FACEBOOK)) byName.computeIfAbsent(SocialReadService.fold((String) r[1]), k -> new HashSet<>()).add((UUID) r[0]);
-                for (Object[] r : nameRepo.namesOf(SocialProfile.Platform.FACEBOOK)) byName.computeIfAbsent(SocialReadService.fold((String) r[1]), k -> new HashSet<>()).add((UUID) r[0]);
+                for (Object[] r : profileRepo.namesOf(platform)) byName.computeIfAbsent(SocialReadService.fold((String) r[1]), k -> new HashSet<>()).add((UUID) r[0]);
+                for (Object[] r : nameRepo.namesOf(platform)) byName.computeIfAbsent(SocialReadService.fold((String) r[1]), k -> new HashSet<>()).add((UUID) r[0]);
             }
             Set<UUID> ids = byName.get(SocialReadService.fold(sender));
             if (ids == null || ids.size() != 1) return null;
@@ -137,7 +178,7 @@ public class SocialMessengerService {
                 if (a.getPerson() != null) return firstNonBlank(a.getPerson().getDisplayName(), a.getPerson().getName());
             }
             String raw = firstNonBlank(a.getTitle(), a.getCounterpart(), "Conversation");
-            return raw.replaceFirst("^Facebook · ", "").replaceFirst("^Nhóm: ", "");
+            return raw.replaceFirst("^(Facebook|Yahoo|SMS|Zalo) · ", "").replaceFirst("^Nhóm: ", "");
         }
 
         List<SocialDto.Ref> faces(ChatArchive a, boolean group, String title) {
@@ -145,7 +186,7 @@ public class SocialMessengerService {
             if (chat != null && v.ref(chat).avatarUrl() != null) return List.of(v.ref(chat));
             if (!group) {
                 SocialProfile c = counterpart(a);
-                return List.of(c != null ? v.ref(c) : bare(title));
+                return List.of(c != null ? v.ref(c) : bare(title, platform));
             }
             List<SocialDto.Ref> out = new ArrayList<>();
             for (SocialChatMember m : members.getOrDefault(a.getId(), List.of())) {
@@ -154,34 +195,37 @@ public class SocialMessengerService {
                 if (out.stream().noneMatch(x -> Objects.equals(x.id(), r.id()))) out.add(r);
                 if (out.size() == 2) break;
             }
-            if (out.isEmpty()) out.add(bare(title));
+            if (out.isEmpty()) out.add(bare(title, platform));
             return out;
         }
     }
 
-    private static SocialDto.Ref bare(String name) {
-        return new SocialDto.Ref(null, null, null, "FACEBOOK", "USER", "active", name, null, null, false);
+    private static SocialDto.Ref bare(String name, SocialProfile.Platform platform) {
+        return new SocialDto.Ref(null, null, null, platform.name(), "USER", "active", name, null, null, false);
     }
 
-    private Map<UUID, Integer> otherSenderCounts() {
-        if (System.currentTimeMillis() - otherSendersAt < GROUP_CACHE_MS) return otherSenders;
-        List<UUID> ids = archiveRepo.messengerThreads().stream().map(ChatArchive::getId).toList();
+    private Map<UUID, Integer> otherSenderCounts(ChatArchive.Platform app) {
+        Long at = otherSendersAt.get(app);
+        if (at != null && System.currentTimeMillis() - at < GROUP_CACHE_MS) return otherSenders.getOrDefault(app, Map.of());
+        List<UUID> ids = archiveRepo.threadsOf(app).stream().map(ChatArchive::getId).toList();
         Map<UUID, Integer> m = new HashMap<>();
         if (!ids.isEmpty()) for (Object[] r : messageRepo.otherSenderCounts(ids)) m.put((UUID) r[0], ((Number) r[1]).intValue());
-        otherSenders = m;
-        otherSendersAt = System.currentTimeMillis();
+        otherSenders.put(app, m);
+        otherSendersAt.put(app, System.currentTimeMillis());
         return m;
     }
 
     // ── The inbox ────────────────────────────────────────────────────────────
 
-    public List<SocialDto.Thread> threads(LocalDateTime t, String q) {
-        List<ChatArchive> archives = archiveRepo.messengerThreads();
+    public List<SocialDto.Thread> threads(LocalDateTime t, String q) { return threads(ChatArchive.Platform.FACEBOOK, t, q); }
+
+    public List<SocialDto.Thread> threads(ChatArchive.Platform app, LocalDateTime t, String q) {
+        List<ChatArchive> archives = archiveRepo.threadsOf(app);
         if (archives.isEmpty()) return List.of();
         Map<UUID, Object[]> last = new HashMap<>();
         for (Object[] r : messageRepo.lastVisibleBy(archives.stream().map(ChatArchive::getId).toList(), t)) last.put((UUID) r[0], r);
         List<ChatArchive> live = archives.stream().filter(a -> last.containsKey(a.getId())).toList();
-        Threads th = new Threads(reads.view(t, SocialProfile.Platform.FACEBOOK), live);
+        Threads th = new Threads(app, t, live);
         String needle = SocialReadService.fold(q);
         List<SocialDto.Thread> out = new ArrayList<>();
         for (ChatArchive a : live) {
@@ -210,11 +254,97 @@ public class SocialMessengerService {
         return p != null ? th.v.ref(p).name() : sender;
     }
 
+    // ── A buddy list (Yahoo and the like) ────────────────────────────────────
+
+    /**
+     * The contact list of a chat app at T. Contacts come from my links on that platform (with the group they sat in)
+     * and from every conversation already started by T; a contact counts as online when a message went either way
+     * within half an hour of the moment, which is what the list would have shown that evening.
+     */
+    public SocialDto.BuddyList buddies(ChatArchive.Platform app, LocalDateTime t) {
+        List<ChatArchive> archives = archiveRepo.threadsOf(app);
+        Map<UUID, Object[]> last = new HashMap<>();
+        if (!archives.isEmpty())
+            for (Object[] r : messageRepo.lastVisibleBy(archives.stream().map(ChatArchive::getId).toList(), t)) last.put((UUID) r[0], r);
+        List<ChatArchive> live = archives.stream().filter(a -> last.containsKey(a.getId())).toList();
+        Threads th = new Threads(app, t, live);
+        Set<UUID> online = live.isEmpty() ? Set.of() : new HashSet<>(messageRepo.activeBetween(
+            live.stream().map(ChatArchive::getId).toList(), t.minusMinutes(ONLINE_MINUTES), t.plusMinutes(ONLINE_MINUTES)));
+
+        // the group of each contact, from my links that stand at T
+        Map<UUID, String> labelOf = new HashMap<>();
+        Map<UUID, SocialProfile> linked = new LinkedHashMap<>();
+        if (th.v.me != null)
+            for (SocialConnection c : connectionRepo.from(th.v.me.getId(), List.of(SocialConnection.Kind.FRIEND), t)) {
+                linked.put(c.getTo().getId(), c.getTo());
+                if (c.getLabel() != null && !c.getLabel().isBlank()) labelOf.put(c.getTo().getId(), c.getLabel().trim());
+            }
+        th.v.preload(new ArrayList<>(linked.values()));
+
+        // one row per contact: a linked profile, a two-person conversation, or both joined
+        Map<String, SocialDto.Buddy> rows = new LinkedHashMap<>();
+        Map<String, String> groupOf = new HashMap<>();
+        for (ChatArchive a : live) {
+            if (th.group(a)) continue;
+            SocialProfile c = th.counterpart(a);
+            Object[] r = last.get(a.getId());
+            String key = c != null ? c.getId().toString() : "a:" + a.getId();
+            SocialDto.Ref ref = c != null ? th.v.ref(c) : bare(th.title(a, false), th.platform);
+            SocialDto.Buddy prev = rows.get(key);
+            LocalDateTime lastAt = SocialTime.fromDb(r[6]);
+            if (prev != null && prev.lastAt() != null && lastAt != null && prev.lastAt().isAfter(lastAt)) continue;   // the busier thread wins
+            rows.put(key, new SocialDto.Buddy(ref, ref.name(), a.getId(), null, online.contains(a.getId()), lastAt,
+                a.getMessageCount() == null ? 0 : a.getMessageCount()));
+            groupOf.put(key, c != null ? labelOf.getOrDefault(c.getId(), DEFAULT_GROUP) : DEFAULT_GROUP);
+        }
+        for (SocialProfile p : linked.values()) {
+            String key = p.getId().toString();
+            if (rows.containsKey(key)) continue;
+            SocialDto.Ref ref = th.v.ref(p);
+            if (!"active".equals(ref.state())) continue;
+            rows.put(key, new SocialDto.Buddy(ref, ref.name(), null, null, false, null, 0));
+            groupOf.put(key, labelOf.getOrDefault(p.getId(), DEFAULT_GROUP));
+        }
+
+        // status lines at T, mine included
+        Set<UUID> ids = new HashSet<>();
+        rows.values().forEach(b -> { if (b.ref().id() != null) ids.add(b.ref().id()); });
+        if (th.v.me != null) ids.add(th.v.me.getId());
+        Map<UUID, String> status = statusAt(ids, t);
+
+        Map<String, List<SocialDto.Buddy>> byGroup = new TreeMap<>(Comparator.comparing((String g) -> g.equals(DEFAULT_GROUP)).thenComparing(String.CASE_INSENSITIVE_ORDER));
+        rows.forEach((k, b) -> byGroup.computeIfAbsent(groupOf.get(k), x -> new ArrayList<>())
+            .add(b.ref().id() == null ? b : new SocialDto.Buddy(b.ref(), b.name(), b.archiveId(), status.get(b.ref().id()), b.online(), b.lastAt(), b.messages())));
+        List<SocialDto.BuddyGroup> groups = new ArrayList<>();
+        byGroup.forEach((g, list) -> {
+            list.sort(Comparator.comparing((SocialDto.Buddy b) -> !b.online()).thenComparing(b -> SocialReadService.fold(b.name())));
+            groups.add(new SocialDto.BuddyGroup(g, (int) list.stream().filter(SocialDto.Buddy::online).count(), list));
+        });
+        SocialDto.Ref me = th.v.me == null ? null : th.v.ref(th.v.me);
+        return new SocialDto.BuddyList(me, th.v.me == null ? null : status.get(th.v.me.getId()), groups, t);
+    }
+
+    /** The status line each profile showed at T (the latest one started by then). */
+    private Map<UUID, String> statusAt(Collection<UUID> ids, LocalDateTime t) {
+        Map<UUID, SocialProfileDetail> best = new HashMap<>();
+        if (ids.isEmpty()) return Map.of();
+        for (SocialProfileDetail d : detailRepo.findByProfileIdInAndKind(ids, SocialProfileDetail.Kind.STATUS)) {
+            if (d.getValidFrom() != null && d.getValidFrom().isAfter(t)) continue;
+            if (d.getValidTo() != null && !d.getValidTo().isAfter(t)) continue;
+            SocialProfileDetail cur = best.get(d.getProfile().getId());
+            if (cur == null || (d.getValidFrom() != null && (cur.getValidFrom() == null || d.getValidFrom().isAfter(cur.getValidFrom()))))
+                best.put(d.getProfile().getId(), d);
+        }
+        Map<UUID, String> out = new HashMap<>();
+        best.forEach((id, d) -> out.put(id, firstNonBlank(d.getTitle(), d.getBody())));
+        return out;
+    }
+
     // ── One conversation ─────────────────────────────────────────────────────
 
     public SocialDto.ThreadDetail thread(UUID archiveId, LocalDateTime t) {
         ChatArchive a = archive(archiveId);
-        Threads th = new Threads(reads.view(t, SocialProfile.Platform.FACEBOOK), List.of(a));
+        Threads th = new Threads(a.getPlatform(), t, List.of(a));
         boolean group = th.group(a);
         List<SocialDto.Member> members = new ArrayList<>();
         Map<UUID, SocialDto.Member> seen = new HashMap<>();
@@ -231,7 +361,7 @@ public class SocialMessengerService {
             SocialProfile p = th.sender(a, sender, type.name(), t, group);
             SocialChatMember m = th.member(a, sender, t);
             int n = ((Number) r[2]).intValue();
-            SocialDto.Ref ref = p != null ? th.v.ref(p) : bare(sender);
+            SocialDto.Ref ref = p != null ? th.v.ref(p) : bare(sender, th.platform);
             if (p != null && seen.containsKey(p.getId())) continue;   // one person under two names: counted once, by the busier name
             SocialDto.Member row = new SocialDto.Member(ref, sender, m == null ? null : m.getNickname(), m != null && Boolean.TRUE.equals(m.getAdmin()),
                 type == ChatMessage.SenderType.SELF, n);
@@ -253,7 +383,7 @@ public class SocialMessengerService {
         boolean more = rows.size() > n;
         if (more) rows = rows.subList(0, n);
         Collections.reverse(rows);
-        Threads th = new Threads(reads.view(t, SocialProfile.Platform.FACEBOOK), List.of(a));
+        Threads th = new Threads(a.getPlatform(), t, List.of(a));
         boolean group = th.group(a);
         Map<UUID, List<ChatAttachmentDto.Item>> atts = new HashMap<>();
         if (!rows.isEmpty())
@@ -277,8 +407,8 @@ public class SocialMessengerService {
 
     private ChatArchive archive(UUID id) {
         ChatArchive a = archiveRepo.findById(id).orElseThrow(() -> new ImportException(404, "no conversation " + id));
-        if (a.getPlatform() != ChatArchive.Platform.FACEBOOK || (a.getExternalKey() != null && a.getExternalKey().startsWith("fbwall:")))
-            throw new ImportException(404, "not a Messenger conversation");
+        if (!CHAT_APPS.contains(a.getPlatform()) || (a.getExternalKey() != null && a.getExternalKey().startsWith("fbwall:")))
+            throw new ImportException(404, "not a conversation of a chat app");
         return a;
     }
 

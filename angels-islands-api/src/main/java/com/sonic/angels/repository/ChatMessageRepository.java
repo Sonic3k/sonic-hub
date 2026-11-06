@@ -88,4 +88,22 @@ public interface ChatMessageRepository extends JpaRepository<ChatMessage, UUID> 
     @Query(value = "SELECT timestamp FROM chat_messages WHERE chat_archive_id = :archiveId AND seq >= :seq AND timestamp IS NOT NULL " +
         "ORDER BY seq LIMIT 1", nativeQuery = true)
     List<Object> timeAtOrAfter(UUID archiveId, int seq);
+
+    // ── The desktop at a moment ──────────────────────────────────────────────
+
+    /** Archives among these with a message in (from, to] — who was "online" around a moment. */
+    @Query("SELECT DISTINCT m.chatArchive.id FROM ChatMessage m WHERE m.chatArchive.id IN :ids AND m.timestamp > :from AND m.timestamp <= :to")
+    List<UUID> activeBetween(java.util.Collection<UUID> ids, java.time.LocalDateTime from, java.time.LocalDateTime to);
+
+    /** archive id, platform, sender, content, kind, timestamp, seq — messages from others that came in during (from, t], newest first. */
+    @Query(value = "SELECT a.id, a.platform, m.sender, m.content, m.kind, m.timestamp, m.seq FROM chat_messages m " +
+        "JOIN chat_archives a ON a.id = m.chat_archive_id WHERE m.timestamp > :from AND m.timestamp <= :t " +
+        "AND m.sender_type = 'PERSON' AND (m.kind IS NULL OR m.kind <> 'EMPTY') AND (a.external_key IS NULL OR a.external_key NOT LIKE 'fbwall:%') " +
+        "ORDER BY m.timestamp DESC LIMIT :n", nativeQuery = true)
+    List<Object[]> arrivedBy(java.time.LocalDateTime from, java.time.LocalDateTime t, int n);
+
+    /** The seq of the first visible message at or after a time — where to open a conversation for a moment. */
+    @Query(value = "SELECT seq FROM chat_messages WHERE chat_archive_id = :archiveId AND timestamp >= :t " +
+        "AND (kind IS NULL OR kind <> 'EMPTY') ORDER BY timestamp, seq LIMIT 1", nativeQuery = true)
+    List<Object> seqAtOrAfter(UUID archiveId, java.time.LocalDateTime t);
 }

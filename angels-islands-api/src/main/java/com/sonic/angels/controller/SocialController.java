@@ -37,7 +37,7 @@ import java.util.UUID;
  *   GET /api/social/fb/home · /fb/feed?before= · /fb/search?q=
  *   GET /api/social/fb/profiles/{ref} · /timeline?before= · /friends?q= · /photos · /albums/{albumId} · /notes?before=
  *   GET /api/social/fb/posts/{ref} (id, or ?key=) · /fb/friendship?a=&b=&before=
- *   GET /api/social/messenger/threads?q= · /threads/{archiveId} · /threads/{archiveId}/messages?before=&size=
+ *   GET /api/social/messenger/threads?q=&platform= · /buddies?platform= · /threads/{archiveId} · /threads/{archiveId}/messages?before=&size=
  * A profile {ref} is its id, its handle or its key; before= is the "next" a page answered with.
  */
 @RestController
@@ -169,9 +169,17 @@ public class SocialController {
 
     // ── Messenger ────────────────────────────────────────────────────────────
 
+    /** platform = FACEBOOK (default), YAHOO, SMS or ZALO. */
     @GetMapping("/messenger/threads")
-    public List<SocialDto.Thread> threads(@RequestParam(required = false) String at, @RequestParam(required = false) String q) {
-        return messenger.threads(read.at(at), q);
+    public List<SocialDto.Thread> threads(@RequestParam(required = false) String at, @RequestParam(required = false) String q,
+                                          @RequestParam(required = false) String platform) {
+        return messenger.threads(SocialMessengerService.chatApp(platform), read.at(at), q);
+    }
+
+    /** A buddy list at T (Yahoo and the like): my contacts by group, with who was around at that moment. */
+    @GetMapping("/messenger/buddies")
+    public SocialDto.BuddyList buddies(@RequestParam(required = false) String at, @RequestParam(defaultValue = "YAHOO") String platform) {
+        return messenger.buddies(SocialMessengerService.chatApp(platform), read.at(at));
     }
 
     @GetMapping("/messenger/threads/{archiveId}")

@@ -31,7 +31,7 @@ import java.util.UUID;
     })
 public class SocialProfile extends BaseEntity {
 
-    public enum Platform { FACEBOOK, YAHOO, INSTAGRAM, THREADS }
+    public enum Platform { FACEBOOK, YAHOO, INSTAGRAM, THREADS, SMS, ZALO, SKYPE }
     /** CHAT = a Messenger group conversation, so its name and picture can change over time like a profile's. */
     public enum Kind { USER, PAGE, GROUP, CHAT }
     public enum Level { FULL, STUB }

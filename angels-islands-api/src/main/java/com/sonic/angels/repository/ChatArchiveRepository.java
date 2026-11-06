@@ -43,4 +43,8 @@ public interface ChatArchiveRepository extends JpaRepository<ChatArchive, UUID> 
     List<ChatArchive> messengerThreads();
 
     List<ChatArchive> findByExternalKey(String externalKey);
+    /** The conversations of one chat app (for Facebook, not the 2017 wall pages). */
+    @Query("SELECT a FROM ChatArchive a LEFT JOIN FETCH a.person WHERE a.platform = :platform " +
+           "AND (a.externalKey IS NULL OR a.externalKey NOT LIKE 'fbwall:%')")
+    List<ChatArchive> threadsOf(ChatArchive.Platform platform);
 }

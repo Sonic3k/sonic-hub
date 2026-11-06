@@ -27,7 +27,9 @@ public class SocialProfileDetail extends BaseEntity {
 
     public enum Kind {
         BIO, WORK, EDUCATION, CURRENT_CITY, HOMETOWN, RELATIONSHIP, FAMILY, BIRTHDAY, WEBSITE, CONTACT,
-        LANGUAGES, QUOTES, ABOUT, NICKNAME, INTERESTED_IN
+        LANGUAGES, QUOTES, ABOUT, NICKNAME, INTERESTED_IN,
+        /** A messenger status line ("boom!!", "Em yêu tự do!") for as long as it stood. */
+        STATUS
     }
 
     @Id

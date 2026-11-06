@@ -107,6 +107,9 @@ public class SocialMediaService {
             case YAHOO -> "Yahoo";
             case INSTAGRAM -> "Instagram";
             case THREADS -> "Threads";
+            case SMS -> "SMS";
+            case ZALO -> "Zalo";
+            case SKYPE -> "Skype";
         };
     }
 
