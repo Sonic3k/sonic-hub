@@ -315,10 +315,7 @@ public class MediaFileService {
     public org.springframework.data.domain.Page<MediaFileDto.Response> library(int page, int size, Boolean favorite, MediaFileDto.Includes inc) {
         var pageable = org.springframework.data.domain.PageRequest.of(page, size,
             org.springframework.data.domain.Sort.by(org.springframework.data.domain.Sort.Direction.DESC, "effectiveDate"));
-        var result = Boolean.TRUE.equals(favorite)
-            ? mediaFileRepository.findByIsFavoriteTrue(pageable)
-            : mediaFileRepository.findAll(pageable);
-        return result.map(m -> mapper.toMediaFileResponse(m, inc));
+        return mediaFileRepository.library(Boolean.TRUE.equals(favorite), pageable).map(m -> mapper.toMediaFileResponse(m, inc));
     }
 
     // ── Super search (one endpoint for the web: filters + sort/random + paging + includes) ──

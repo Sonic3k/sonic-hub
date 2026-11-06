@@ -35,7 +35,10 @@ public interface MediaFileRepository extends JpaRepository<MediaFile, UUID> {
 
     Page<MediaFile> findByStorageKeyIsNotNull(Pageable pageable);
 
-    Page<MediaFile> findByIsFavoriteTrue(Pageable pageable);
+    /** The library list (optionally favourites only); Social Media pictures stay in their own folder, as in search. */
+    @Query("SELECT m FROM MediaFile m WHERE (:favoriteOnly = false OR m.isFavorite = true)" +
+           " AND (m.mediaCategory IS NULL OR m.mediaCategory <> com.sonic.angels.model.entity.MediaFile.MediaCategory.SOCIAL)")
+    Page<MediaFile> library(@Param("favoriteOnly") boolean favoriteOnly, Pageable pageable);
 
     java.util.Optional<MediaFile> findFirstByContentHash(String contentHash);
 
