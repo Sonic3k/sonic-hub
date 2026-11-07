@@ -17,13 +17,49 @@ public class MediaFileController {
     private final MediaFileService mediaFileService;
     private final com.sonic.angels.service.GeocodingService geocodingService;
     private final com.sonic.angels.service.CollectionService collectionService;
+    private final com.sonic.angels.service.MediaMergeService mergeService;
+    private final com.sonic.angels.repository.MediaFileRepository mediaFileRepository;
 
     public MediaFileController(MediaFileService mediaFileService,
                                com.sonic.angels.service.GeocodingService geocodingService,
-                               com.sonic.angels.service.CollectionService collectionService) {
+                               com.sonic.angels.service.CollectionService collectionService,
+                               com.sonic.angels.service.MediaMergeService mergeService,
+                               com.sonic.angels.repository.MediaFileRepository mediaFileRepository) {
         this.mediaFileService = mediaFileService;
         this.geocodingService = geocodingService;
         this.collectionService = collectionService;
+        this.mergeService = mergeService;
+        this.mediaFileRepository = mediaFileRepository;
+    }
+
+    public record MergePair(UUID from, UUID into) {}
+    public record MergeRequest(List<MergePair> pairs, Boolean sameContentOnly) {}
+
+    /** Fold duplicate files into the copy to keep (see MediaMergeService): every pair on its own,
+     *  by default only when both hold the same content hash. */
+    @PostMapping("/merge")
+    public Map<String, Object> merge(@RequestBody MergeRequest req) {
+        boolean same = req.sameContentOnly() == null || req.sameContentOnly();
+        List<com.sonic.angels.service.MediaMergeService.Outcome> out = new java.util.ArrayList<>();
+        for (MergePair p : req.pairs() == null ? List.<MergePair>of() : req.pairs()) {
+            try { out.add(mergeService.merge(p.from(), p.into(), same)); }
+            catch (Exception e) { out.add(new com.sonic.angels.service.MediaMergeService.Outcome(p.from(), p.into(), false, String.valueOf(e.getMessage()))); }
+        }
+        return Map.of("merged", out.stream().filter(com.sonic.angels.service.MediaMergeService.Outcome::merged).count(), "results", out);
+    }
+
+    /** Files already stored with these SHA-256 hashes: hash -> ids (oldest first), so an uploader can link instead of uploading again. */
+    @PostMapping("/by-hash")
+    public Map<String, List<UUID>> byHash(@RequestBody List<String> hashes) {
+        Map<String, List<UUID>> out = new java.util.LinkedHashMap<>();
+        if (hashes == null || hashes.isEmpty()) return out;
+        for (int i = 0; i < hashes.size(); i += 500) {
+            var chunk = hashes.subList(i, Math.min(hashes.size(), i + 500)).stream().map(h -> h.trim().toLowerCase()).toList();
+            mediaFileRepository.findByContentHashIn(chunk).stream()
+                .sorted(java.util.Comparator.comparing(m -> m.getUploadedAt() == null ? java.time.LocalDateTime.MIN : m.getUploadedAt()))
+                .forEach(m -> out.computeIfAbsent(m.getContentHash(), k -> new java.util.ArrayList<>()).add(m.getId()));
+        }
+        return out;
     }
 
     @PostMapping("/rescan-batch")
