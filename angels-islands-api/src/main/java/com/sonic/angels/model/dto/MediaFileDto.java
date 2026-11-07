@@ -70,7 +70,10 @@ public class MediaFileDto {
         private PersonDto.Summary takenBy;
         private String mediaSource;
         private String fileExtension;
+        private String contentHash;
         public String getFileExtension() { return fileExtension; } public void setFileExtension(String v) { this.fileExtension = v; }
+        /** SHA-256 of the file as uploaded: two rows with the same hash are the same file. */
+        public String getContentHash() { return contentHash; } public void setContentHash(String v) { this.contentHash = v; }
         public PersonDto.Summary getTakenBy() { return takenBy; } public void setTakenBy(PersonDto.Summary v) { this.takenBy = v; }
         public String getMediaSource() { return mediaSource; } public void setMediaSource(String v) { this.mediaSource = v; }
 

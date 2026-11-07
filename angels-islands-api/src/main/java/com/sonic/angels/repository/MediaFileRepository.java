@@ -42,6 +42,8 @@ public interface MediaFileRepository extends JpaRepository<MediaFile, UUID> {
 
     java.util.Optional<MediaFile> findFirstByContentHash(String contentHash);
 
+    List<MediaFile> findByContentHashIn(java.util.Collection<String> hashes);
+
     /** Duplicate scope = destination collection, not the whole library. */
     @Query("SELECT m FROM Collection c JOIN c.mediaFiles m WHERE c.id = :collectionId AND m.contentHash = :hash")
     List<MediaFile> findInCollectionByHash(@Param("collectionId") UUID collectionId, @Param("hash") String hash);
