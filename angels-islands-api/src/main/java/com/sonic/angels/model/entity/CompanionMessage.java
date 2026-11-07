@@ -3,9 +3,11 @@ package com.sonic.angels.model.entity;
 import jakarta.persistence.*;
 import java.util.UUID;
 
-/** One turn of companion conversation. History is shared across channels. */
+/** One turn of companion conversation. History is shared across channels.
+ *  Its own table: "companion_messages" in the shared database belongs to sonic-hub-companion (another shape, its rows),
+ *  so Hibernate could never add person_id / channel / created_at there and every query on it failed (person delete too). */
 @Entity
-@Table(name = "companion_messages", indexes = @Index(name = "idx_companion_msg_person", columnList = "person_id, created_at"))
+@Table(name = "angels_companion_messages", indexes = @Index(name = "idx_angels_companion_msg_person", columnList = "person_id, created_at"))
 public class CompanionMessage extends BaseEntity {
 
     public enum Role { USER, ASSISTANT }
