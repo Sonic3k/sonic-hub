@@ -1,6 +1,8 @@
-/* Desktop icons, all drawn here (48×48), so no real product's artwork is copied: a glyph name says what the thing is
-   (a folder, a document, a browser globe, a chat smiley…) and the label under it says what he called it. */
+/* Desktop icons: a glyph name says what the thing is (a folder, a document, a browser globe, a chat smiley…) and the
+   label under it says what he called it. They are drawn here (48×48), except programs whose own icon is among the
+   files he gave (OWN below), which show that once it has come. */
 import { useId, type ReactNode } from 'react';
+import { useAssets } from './assets';
 
 type G = (id: string) => ReactNode;
 
@@ -248,11 +250,28 @@ const GLYPHS: Record<string, G> = {
   </>,
 };
 
+/** Programs whose own icon is among the assets (folder, small one for 16 px, large one): drawn only until it comes. */
+const OWN: Record<string, [folder: string, small: string, large: string]> = {
+  'im-smile': ['yahoo', 'icon/messenger-16.png', 'icon/messenger-256.png'],
+};
+
 /** Icon by glyph name; anything unknown is a plain program icon. */
 export function Glyph({ name, size = 32, className }: { name?: string | null; size?: number; className?: string }) {
+  const own = OWN[name ?? ''];
+  return own ? <OwnIcon own={own} name={name!} size={size} className={className} /> : <Drawn name={name} size={size} className={className} />;
+}
+
+function Drawn({ name, size, className }: { name?: string | null; size: number; className?: string }) {
   const id = useId().replace(/:/g, '');
   const draw = GLYPHS[name ?? ''] ?? GLYPHS.app;
   return <svg className={className} width={size} height={size} viewBox="0 0 48 48" aria-hidden="true">{draw(id)}</svg>;
+}
+
+function OwnIcon({ own: [folder, small, large], name, size, className }: { own: [string, string, string]; name: string; size: number; className?: string }) {
+  const { a } = useAssets(folder);
+  const src = a(size <= 16 ? small : large);
+  if (!src) return <Drawn name={name} size={size} className={className} />;
+  return <img className={`dv-own-icon ${className ?? ''}`} src={src} width={size} height={size} alt="" draggable={false} />;
 }
 
 /** The power mark that stands where a system's own logo would: a ring with a spark, his own. */

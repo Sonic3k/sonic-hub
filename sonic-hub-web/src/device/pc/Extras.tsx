@@ -7,6 +7,8 @@ import { clockText, DAYS, MONTHS, utc, vn } from '../moment';
 import { Glyph } from '../glyphs';
 import { emoticons } from '../apps/Chat';
 import { viewDay } from '../apps/Viewers';
+import { YmText, useYm } from '../apps/yahoo/ui';
+import { play } from '../assets';
 import { useWm } from './wm';
 import { useDesk, useTick, viewerName } from './desk';
 
@@ -78,11 +80,12 @@ const APP_NAME: Record<string, string> = { YAHOO: 'Yahoo! Messenger', FACEBOOK: 
 const APP_GLYPH: Record<string, string> = { YAHOO: 'im-smile', FACEBOOK: 'fb', SMS: 'sms', ZALO: 'chat-blue', SKYPE: 'phone-bubble' };
 const SENT: Record<string, string> = { PHOTO: 'đã gửi một ảnh', VIDEO: 'đã gửi một video', STICKER: 'đã gửi một sticker', AUDIO: 'đã gửi tin nhắn thoại', FILE: 'đã gửi một tệp', GIF: 'đã gửi một GIF' };
 
-interface Notice { key: string; head: string; glyph: string; title: string; text: string; time?: string; open: () => void }
+interface Notice { key: string; head: string; glyph: string; title: string; text: string; raw?: string; time?: string; platform?: string; open: () => void }
 
 /** skip: the memory being shown (its own notice would only repeat it) */
 export function Notices({ ready, messengerApp, skip }: { ready: boolean; messengerApp: boolean; skip?: string }) {
-  const { data, scene, openChat } = useDesk();
+  const { data, scene, openChat, ver } = useDesk();
+  const { a } = useYm();
   const [gone, setGone] = useState<Record<string, boolean>>({});
   const [shown, setShown] = useState(false);
   useEffect(() => {
@@ -99,18 +102,30 @@ export function Notices({ ready, messengerApp, skip }: { ready: boolean; messeng
       const head = last.platform === 'FACEBOOK' && messengerApp ? 'Messenger' : APP_NAME[last.platform] ?? last.platform;
       const text = last.text ? emoticons(last.text) : SENT[last.kind ?? ''] ?? '';
       return { key: `c:${last.archiveId}:${last.seq}`, head, glyph: APP_GLYPH[last.platform] ?? 'chat-blue', title: last.sender,
-        text: ts.length > 1 ? `${text}  (+${ts.length - 1})` : text, time: last.at ? clockText(utc(last.at)!) : undefined,
-        open: () => openChat(last.platform, last.archiveId, last.sender, last.seq) };
+        text: ts.length > 1 ? `${text}  (+${ts.length - 1})` : text, raw: last.text ?? undefined, platform: last.platform,
+        time: last.at ? clockText(utc(last.at)!) : undefined, open: () => openChat(last.platform, last.archiveId, last.sender, last.seq) };
     }).slice(-3);
     const memories = data.day.memories.filter(m => m.id !== skip).slice(0, 2).map(m => ({ key: `m:${m.id}`, head: 'Ký ức', glyph: 'sticky',
       title: m.title || (m.summary ?? '').slice(0, 60), text: m.title ? (m.summary ?? '') : '', time: 'Hôm nay', open: () => scene(m.id) }));
     return [...memories, ...chats];
   }, [data, messengerApp, openChat, scene, skip]);
   const live = list.filter(n => !gone[n.key]);
+  // Messenger's own alert for its messages, with its sound, on a machine that had it
+  const ym = !!ver.yahoo;
+  const ymOn = ym && shown && live.some(n => n.platform === 'YAHOO');
+  useEffect(() => { if (ymOn) play(a('sounds/message.wav'), 0.6); }, [ymOn, a]);
   if (!shown || !live.length) return null;
   return (
     <div className="dv-notices">
-      {live.map(n => (
+      {live.map(n => ym && n.platform === 'YAHOO' ? (
+        <div key={n.key} className="ym-alert" role="status">
+          <div className="ym-alert-h"><span>Yahoo! Messenger</span><button type="button" onClick={() => setGone(g => ({ ...g, [n.key]: true }))} aria-label="Đóng">×</button></div>
+          <button type="button" className="ym-alert-b" onClick={() => { n.open(); setGone(g => ({ ...g, [n.key]: true })); }}>
+            {a('icon/im-16.png') && <img src={a('icon/im-16.png')} alt="" />}
+            <span><b>{n.title}:</b>&nbsp; &quot;{n.raw ? <YmText text={n.raw} /> : n.text}&quot;</span>
+          </button>
+        </div>
+      ) : (
         <div key={n.key} className="dv-notice" role="status">
           <div className="dv-notice-head"><Glyph name={n.glyph} size={16} /><span>{n.head}</span>{n.time && <time>{n.time}</time>}
             <button type="button" onClick={() => setGone(g => ({ ...g, [n.key]: true }))} aria-label="Đóng">×</button></div>

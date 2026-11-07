@@ -1,0 +1,220 @@
+/* Yahoo! Messenger: sizes and colours from his own copy (the Purple skin of 11.5: Tahoma 8 pt, the purple of its
+   group headers, its list selection) and from his screenshots for 8 and 9. The pictures come in by name (ui.tsx). */
+
+.ym { display: flex; flex-direction: column; height: 100%; min-height: 0; background: #f9f9f2; color: #333; font: 11px Tahoma, "Segoe UI", sans-serif;
+  user-select: none; -webkit-user-select: none; }
+:where(.ym) button { font: inherit; color: inherit; background: none; border: 0; padding: 0; margin: 0; text-align: left; cursor: default; }
+:where(.ym) img { flex: none; }
+/* a group's triangle, as Messenger drew it */
+.ym-tri { flex: none; width: 0; height: 0; margin: 0 2px; border: 4px solid transparent; border-top: 5px solid #555; border-bottom: 0; }
+.ym-tri.shut { border: 4px solid transparent; border-left: 5px solid #555; border-right: 0; margin: 0 3px 0 4px; }
+.ym-sp { display: inline-block; flex: none; background-repeat: no-repeat; vertical-align: middle; }
+.ym-fill { flex: 1; }
+.ym-note { padding: 16px; color: #888; text-align: center; }
+.ym-emo { vertical-align: middle; margin: -3px 0 -2px; }
+.ym-buzz { color: #f00; font-weight: bold; }
+
+/* the menu bar on glass: Messenger's purple band */
+.ym-menubar { flex: none; display: flex; height: 20px; padding: 0 3px; background: #a07dde 0 0 / 100% 100% no-repeat; color: #dcdcdc; }
+.ym-menubar { white-space: nowrap; overflow: hidden; }
+.ym-menubar span { display: flex; align-items: center; padding: 0 6px; }
+.ym-menubar span:hover { color: #fff; }
+
+/* ── the list of 10 and 11 ── */
+.ym-me { flex: none; display: flex; height: 59px; padding: 4px 4px 3px; background: #fbfbf8 right top no-repeat; }
+.ym-me-pic { flex: none; width: 50px; height: 50px; margin-right: 6px; border: 1px solid #b6b6b6; background: #fff; }
+.ym-me-pic img { display: block; width: 48px; height: 48px; object-fit: cover; }
+.ym-me-r { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 1px; }
+.ym-me-l1 { display: flex; align-items: center; gap: 4px; height: 18px; }
+.ym-me-l1 b { font: bold 12px Tahoma, sans-serif; color: #000; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ym-arr { flex: none; }
+.ym-insider { margin-left: auto; display: flex; align-items: center; gap: 3px; color: #333; }
+.ym-me-st { display: flex; height: 19px; border: 1px solid #b6b6b6; background: #fff; }
+.ym-me-st span { flex: 1; min-width: 0; padding: 2px 4px; color: #000; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ym-me-st span.none { color: #999; }
+.ym-me-st i { flex: none; width: 17px; border-left: 1px solid #d2d2d2; background: center no-repeat; }
+.ym-me-l3 { display: flex; align-items: center; gap: 7px; height: 16px; color: #333; }
+.ym-voice, .ym-game { display: flex; align-items: center; gap: 3px; }
+
+.ym-info { flex: none; position: relative; display: flex; align-items: flex-start; gap: 5px; margin: 3px 4px 0; padding: 4px 22px 4px 6px; border: 1px solid #e6dc9c; border-radius: 3px;
+  background: #fdfbe1 0 0 / 100% 100% no-repeat; color: #000; line-height: 1.35; }
+.ym-info img { flex: none; width: 12px; height: 12px; margin-top: 2px; }
+.ym-info u { color: #3399cc; }
+.ym-info-x { position: absolute; right: 4px; top: 4px; }
+
+.ym-tabs { flex: none; display: flex; height: 28px; margin: 4px 4px 0; }
+.ym-tab { flex: 1; position: relative; display: flex; align-items: center; justify-content: center; gap: 4px; background-repeat: no-repeat;
+  font: bold 12px Tahoma, sans-serif; color: #818181; }
+.ym-tab.on { color: #664b97; }
+.ym-tab.on span { margin-right: 14px; }
+.ym-tab-dd { position: absolute; right: 0; top: 0; width: 17px; height: 28px; }
+
+.ym-search { flex: none; display: flex; align-items: center; gap: 5px; margin: 0 4px; padding: 4px; background: #fff; border: 1px solid #b4a6d4; border-bottom: 0; }
+.ym-search-box { flex: 1; min-width: 0; display: flex; align-items: center; gap: 3px; height: 22px; padding: 0 5px; border: 1px solid #b4a6d4; background: #fff; color: #999;
+  white-space: nowrap; overflow: hidden; }
+
+.ym-list { flex: 1; min-height: 0; overflow: auto; margin: 0 4px; background: #fff; border: 1px solid #b4a6d4; }
+.ym-gh { display: flex; align-items: center; gap: 4px; width: 100%; height: 19px; padding: 0 4px; color: #8362d3; font: bold 12px Tahoma, sans-serif; white-space: nowrap; }
+.ym-b { display: flex; align-items: center; gap: 5px; width: 100%; height: 19px; padding: 0 4px 0 18px; color: #000; background: 0 0 / 100% 100% no-repeat;
+  white-space: nowrap; overflow: hidden; font: 12px Tahoma, sans-serif; }
+.ym-b:hover { background-color: #f4f0fc; }
+.ym-b.sel { background-color: #e4defe; }
+.ym-b-pic { flex: none; width: 16px; height: 16px; object-fit: cover; }
+.ym-b-n { flex: none; max-width: 64%; overflow: hidden; text-overflow: ellipsis; }
+.ym-b-s { min-width: 0; overflow: hidden; text-overflow: ellipsis; color: #999; }
+
+.ym-plug { flex: none; display: flex; align-items: center; justify-content: space-between; height: 27px; margin: 0 4px; padding: 0 9px;
+  border: 1px solid #b6b6b6; border-top: 0; border-radius: 0 0 6px 6px; background: #e9e9e4 0 0 / 100% 100% no-repeat; color: #333; }
+.ym-plug span { display: flex; align-items: center; gap: 4px; }
+.ym-ad { flex: none; display: flex; justify-content: center; padding: 8px 0 5px; }
+.ym-ad img { display: block; max-width: 100%; }
+.ym-ws { flex: none; display: flex; align-items: center; gap: 3px; padding: 0 6px 5px; }
+.ym-ws img { display: block; }
+.ym-ws-box { flex: 1; height: 26px; border: 1px solid #7b5aa6; background: #fff; }
+
+/* the title of 9–11 on glass */
+.ym-logo { display: inline-block; flex: none; margin: 0 auto 0 4px; background-repeat: no-repeat; filter: drop-shadow(0 0 2px rgba(0, 0, 0, .5)); }
+
+/* the contact card (10, 11) */
+.ym-card { position: fixed; z-index: 4000; height: auto; background: #fff top / 100% 62px no-repeat; border: 1px solid #b4a6d4; border-radius: 4px;
+  box-shadow: 0 2px 9px rgba(0, 0, 0, .28); }
+.ym-card-h { display: flex; align-items: center; gap: 2px; padding: 5px 8px 4px; white-space: nowrap; overflow: hidden; }
+.ym-card-h b { font: bold 12px Tahoma, sans-serif; color: #000; overflow: hidden; text-overflow: ellipsis; }
+.ym-card-h i { margin-left: auto; padding-left: 6px; font-style: normal; color: #777; }
+.ym-card-m { display: flex; gap: 8px; padding: 2px 8px 6px; }
+.ym-card-pic { flex: none; width: 98px; height: 98px; border: 1px solid #cfcfcf !important; background: #fff !important; }
+.ym-card-pic img { display: block; width: 96px; height: 96px; object-fit: cover; }
+.ym-card-r { min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.ym-card-icons { display: flex; align-items: center; gap: 7px; margin: 2px 0 6px; }
+.ym-card-a { color: #3399cc; white-space: nowrap; }
+.ym-card-a:hover { text-decoration: underline; }
+.ym-card-gap { height: 6px; }
+.ym-card-f { display: flex; align-items: center; justify-content: center; gap: 4px; padding: 5px 8px; border-top: 1px solid #e5e1ec; color: #333; }
+
+/* Messenger's own alert for a message (9–11, on 8 too) */
+.ym-alert { width: 270px; background: #fff; border: 1px solid #5f45a3; box-shadow: 0 3px 12px rgba(0, 0, 0, .3); font: 12px Tahoma, sans-serif; color: #000; }
+.ym-alert-h { display: flex; align-items: center; height: 20px; padding: 0 2px 0 7px; color: #fff; background: linear-gradient(#8f72d4, #6a4fb0); }
+.ym-alert-h span { flex: 1; }
+.ym-alert-h button { width: 18px; height: 18px; border: 0; background: none; color: #fff; font-size: 15px; line-height: 1; cursor: default; }
+.ym-alert-b { display: flex; align-items: center; gap: 6px; width: 100%; padding: 8px 8px 9px; border: 0; background: none; text-align: left; font: inherit; color: inherit; cursor: default; }
+.ym-alert-b img { flex: none; }
+.ym-alert-b span { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+/* ── the list of 9 (his screenshot of 2/9/2010) ── */
+.ym-9 { background: #fff; }
+.ym9-me { flex: none; display: flex; gap: 6px; padding: 6px 6px 5px; background: linear-gradient(#fff, #f4f0fb); border-bottom: 1px solid #d8d0ea; }
+.ym9-me-l { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.ym9-me-n { display: flex; align-items: center; gap: 4px; }
+.ym9-me-n b { font: bold 13px Tahoma, sans-serif; color: #000; }
+.ym9-me-st { color: #000; font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ym9-me-ph { display: flex; justify-content: space-between; gap: 6px; color: #3366cc; }
+.ym9-me-pic { position: relative; flex: none; width: 50px; height: 50px; border: 1px solid #a9a9a9; background: #fff; }
+.ym9-me-pic img { display: block; width: 48px; height: 48px; object-fit: cover; }
+.ym9-mail { position: absolute; left: -24px; top: 0; }
+.ym9-search { flex: none; margin: 4px; padding: 6px; border-radius: 6px; background: #ece5f8; }
+.ym9-search span { display: block; height: 20px; padding: 2px 5px; border: 1px solid #c3b6e0; background: #fff; color: #999; }
+.ym-9 .ym-list { margin: 0; border: 0; border-top: 1px solid #d8d0ea; }
+.ym9-gh { display: flex; align-items: center; gap: 4px; width: 100%; height: 21px; padding: 0 4px; color: #6d55b0; font: bold 12px Tahoma, sans-serif; border-bottom: 1px solid #ede7f8; }
+.ym9-b { display: flex; align-items: center; gap: 6px; width: 100%; min-height: 32px; padding: 2px 4px 2px 12px; }
+.ym9-b:hover { background-color: #f4f0fc; }
+.ym9-b.sel { background: #e4defe 0 0 / 100% 100%; }
+.ym9-b-t { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.ym9-b-n { font: 12px Tahoma, sans-serif; color: #000; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ym9-b-t small { color: #888; font-size: 11px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ym9-b-pic { flex: none; width: 26px; height: 26px; object-fit: cover; border: 1px solid #d6d6d6; }
+.ym9-btns { flex: none; display: flex; gap: 4px; padding: 4px; border-top: 1px solid #d8d0ea; background: #f6f3fb; }
+.ym9-btns span { flex: 1; display: flex; align-items: center; justify-content: center; gap: 4px; height: 22px; border: 1px solid #b3a8cf; border-radius: 3px;
+  background: linear-gradient(#fff, #ebe6f5); color: #333; }
+.ym9-ws { flex: none; padding: 2px 4px 4px; }
+.ym9-ws img { display: block; max-width: 100%; }
+
+/* ── the list of 8 (his screenshot of 6/8/2007, in the window of XP) ── */
+.ym-8 { background: #fff; color: #000; }
+.ym8-menu { flex: none; display: flex; align-items: center; height: 20px; padding: 0 2px; background: #f7f7ef; border-bottom: 1px solid #e2e2d8; }
+.ym8-menu > span { padding: 2px 7px; }
+.ym8-menu img { display: block; }
+.ym8-invite { flex: none; display: flex; align-items: center; height: 22px; padding: 0 4px 0 6px; background: #ffffce; color: #0065ce; font-size: 12px; }
+.ym8-invite span { flex: 1; }
+.ym8-invite button { width: 15px; height: 15px; border: 1px solid #8a8a8a; background: #fff; color: #333; font-size: 9px; line-height: 13px; text-align: center; }
+.ym8-me { flex: none; display: flex; align-items: center; gap: 4px; height: 26px; padding: 0 6px; background: #f7f7ef; color: #4a595a; font-size: 12px; white-space: nowrap; overflow: hidden; }
+.ym8-me b { font: bold 12px Tahoma, sans-serif; }
+.ym8-me i { font-style: normal; }
+.ym8-me-pic { flex: none; width: 18px; height: 18px; object-fit: cover; }
+.ym8-tools { flex: none; display: flex; align-items: center; gap: 5px; height: 33px; padding: 0 6px; background: #f7f7ef; }
+.ym8-seg { display: flex; }
+.ym8-tools img { display: block; }
+.ym8-phone { flex: none; display: flex; align-items: center; gap: 4px; height: 22px; margin: 0 6px 5px; padding: 0 4px; border: 1px solid #a5acb5; border-radius: 2px; background: #fff; color: #999; font-size: 12px; }
+.ym8-phone i { margin-left: auto; font-style: normal; color: #555; }
+.ym-list.ym8-list { margin: 0; border: 0; border-top: 1px solid #c8c8d8; }
+.ym8-gh { display: flex; align-items: center; gap: 6px; width: 100%; height: 19px; padding: 0 4px; color: #4271c6; font: bold 12px Tahoma, sans-serif; }
+.ym8-gh i { width: 0; height: 0; border: 5px solid transparent; border-top-color: #4271c6; margin-top: 5px; }
+.ym8-gh i.shut { border-top-color: transparent; border-left-color: #4271c6; margin: 0 0 0 4px; }
+.ym8-b { display: flex; align-items: center; gap: 5px; width: 100%; height: 19px; padding: 0 4px 0 16px; color: #000; font: 12px Tahoma, sans-serif; white-space: nowrap; overflow: hidden; }
+.ym8-b img { flex: none; }
+.ym8-b.on .ym8-b-n { font-weight: bold; }
+.ym8-b-n { padding: 0 2px; }
+.ym8-b-n.sel { background: #7b79c6; color: #fff; }
+.ym8-b-s { color: #000; overflow: hidden; text-overflow: ellipsis; }
+.ym8-phonebar { flex: none; display: flex; justify-content: space-between; align-items: center; height: 18px; margin: 0 2px; padding: 0 4px; border: 1px solid #c8c3e6;
+  background: #efebff; color: #0065ce; font-size: 12px; }
+.ym8-img { flex: none; display: flex; justify-content: center; padding: 2px 0; background: #f7f7ef; }
+.ym8-img img { display: block; max-width: 100%; }
+.ym-8 .ym-ad { background: #f7f7ef; padding: 4px 0; }
+
+/* ── a conversation (9–11) ── */
+.ym-im .ym-im-hist { flex: 1; min-width: 0; position: relative; background: #fff; border: 1px solid #a2a2a2; }
+.ym-im .ym-im-hist > * { position: absolute; inset: 0; }
+.ym-im-tb { flex: none; display: flex; align-items: flex-end; height: 57px; padding: 0 6px 3px; background: linear-gradient(#fff, #f1eef7); border-bottom: 1px solid #d5cfe3; }
+.ym-im-btn { display: flex; flex-direction: column; align-items: center; justify-content: flex-end; gap: 2px; padding: 0 8px; color: #48585f; }
+.ym-im-btn small { font: 11px Tahoma, sans-serif; white-space: nowrap; }
+.ym-im-friend { flex: none; display: flex; align-items: center; gap: 4px; height: 22px; padding: 0 8px; background: #fff; border-bottom: 1px solid #e4e0ea; white-space: nowrap; overflow: hidden; }
+.ym-im-friend b { color: #000; font: bold 12px Tahoma, sans-serif; }
+.ym-im-friend span { color: #999; overflow: hidden; text-overflow: ellipsis; }
+.ym-im-main { flex: 1; min-height: 0; display: flex; padding: 3px; }
+.ym-im-side { flex: none; width: 106px; display: flex; flex-direction: column; align-items: center; margin-left: 3px; padding: 4px 0; background: #ecebf2 0 0 / 100% 100% no-repeat; }
+.ym-im-dp { width: 96px; height: 96px; object-fit: cover; border: 1px solid #bbb; background: #fff; }
+.ym-im-mydp { width: 48px; height: 48px; object-fit: cover; border: 1px solid #bbb; background: #fff; }
+.ym-im-inbar { flex: none; display: flex; align-items: center; gap: 6px; height: 25px; padding: 0 6px; }
+.ym-im-input { flex: none; height: 54px; padding: 0 3px 3px; }
+.ym-im-input textarea { display: block; width: 100%; height: 100%; border: 1px solid #a2a2a2; resize: none; background: #fff; outline: none; }
+.ym-im-status { flex: none; height: 19px; padding: 3px 6px; border-top: 1px solid #ddd; color: #555; white-space: nowrap; overflow: hidden; }
+
+/* ── a conversation of 8 (his screenshot of 4/8/2007) ── */
+.ym-im8 { background: #f7f7ef; color: #000; }
+.ym8-im-tb { flex: none; display: flex; align-items: center; height: 44px; padding: 0 2px; overflow: hidden; }
+.ym8-im-tb img { display: block; }
+.ym8-im-friend { flex: none; display: flex; align-items: center; gap: 4px; height: 21px; padding: 0 6px; font-size: 12px; white-space: nowrap; overflow: hidden; }
+.ym8-im-friend b { color: #333; }
+.ym8-im-friend u { color: #0066cc; overflow: hidden; text-overflow: ellipsis; }
+.ym8-im-fpic { flex: none; width: 16px; height: 16px; object-fit: cover; }
+.ym8-im-main { flex: 1; min-height: 0; display: flex; padding: 0 4px; }
+.ym8-im-main .ym-im-hist { border-color: #a5acb5; }
+.ym8-im-side { flex: none; width: 100px; margin-left: 4px; display: flex; flex-direction: column; }
+.ym8-im-dp { width: 100px; height: 100px; border: 1px solid #a5acb5; background: #fff; }
+.ym8-im-dp img { display: block; width: 98px; height: 98px; object-fit: cover; }
+.ym8-im-emo { flex: none; display: flex; align-items: center; height: 26px; padding: 0 4px; }
+.ym8-im-emo img { display: block; }
+.ym8-im-in { flex: none; display: flex; gap: 8px; height: 74px; padding: 0 4px 5px; }
+.ym8-im-in textarea { flex: 1; border: 1px solid #7f9db9; resize: none; background: #fff; outline: none; }
+.ym8-im-in button { width: 64px; border: 1px solid #c5c2b2 !important; border-radius: 3px; background: linear-gradient(#fff, #ece9d8) !important; color: #a0a0a0 !important; text-align: center !important; }
+.ym8-im-status { flex: none; height: 21px; padding: 3px 6px; border-top: 1px solid #d0d0bf; font-size: 12px; white-space: nowrap; overflow: hidden; }
+
+/* ── a conversation of 9 (his screenshot of 21/3/2009, on Vista) ── */
+.ym-im9 { background: #f6f5ee; color: #000; }
+.ym9-im-menu { flex: none; display: flex; height: 21px; padding: 0 2px; color: #8a8a8a; font-size: 12px; }
+.ym9-im-menu span { display: flex; align-items: center; padding: 0 6px; }
+.ym9-im-tb { flex: none; display: flex; align-items: center; height: 44px; padding: 0 3px; }
+.ym9-im-tb img { display: block; }
+.ym9-im-friend { flex: none; display: flex; align-items: center; gap: 4px; height: 20px; padding: 0 9px; font-size: 12px; white-space: nowrap; overflow: hidden; }
+.ym9-im-body { flex: 1; min-height: 0; display: grid; grid-template-columns: minmax(0, 1fr) 100px; grid-template-rows: minmax(0, 1fr) 26px 48px;
+  grid-template-areas: "chat side" "emo side" "in side"; column-gap: 4px; padding: 0 3px 3px 6px; }
+.ym9-im-body .ym-im-hist { grid-area: chat; border-color: #b9b9b0; }
+.ym9-im-side { grid-area: side; display: flex; flex-direction: column; }
+.ym9-im-side img { display: block; width: 100px; height: 100px; object-fit: cover; border: 1px solid #c6c6bd; background: #fff; }
+.ym9-im-emo { grid-area: emo; display: flex; align-items: center; padding: 0 2px; }
+.ym9-im-emo img { display: block; }
+.ym9-im-in { grid-area: in; position: relative; border: 1px solid #a7a7a0; background: #fff; }
+.ym9-im-in textarea { display: block; width: 100%; height: 100%; padding: 3px 66px 3px 4px; border: 0; resize: none; background: none; outline: none; }
+.ym9-im-in button { position: absolute; right: 6px; top: 7px; width: 50px; height: 30px; border: 1px solid #cfcfc6; border-radius: 3px;
+  background: linear-gradient(#fbfbf8, #ecebe4); color: #9b9b9b; text-align: center; }
+.ym9-im-status { flex: none; height: 20px; padding: 3px 6px; font-size: 12px; color: #000; white-space: nowrap; overflow: hidden; }

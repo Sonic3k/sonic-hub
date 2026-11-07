@@ -23,8 +23,10 @@ import java.util.UUID;
  *   GET  /api/desk/folders?parent=&at=         the photo library as it stood at T (folders, counts)
  *   GET  /api/desk/memories?at=&q=&page=&size= memories up to T, newest first
  *   POST /api/desk/sync                        devices, systems, wallpapers, items, apps (+ delete), all or nothing
- *   POST /api/desk/assets?folder=wallpapers    multipart file [+ lastModified]: a picture the machines use (mediaCategory
- *                                              ASSET, album Assets → Desk → Wallpapers | Machines); the same file twice is one asset
+ *   POST /api/desk/assets?folder=wallpapers    multipart file [+ lastModified, name]: a file the machines use (mediaCategory
+ *                                              ASSET, album Assets → Desk → Wallpapers | Machines | Yahoo | <folder>); the same
+ *                                              file twice is one asset; with a name the asset is that name in its folder
+ *   GET  /api/desk/assets?folder=yahoo         the assets of a folder, by name
  *   GET  /api/desk/raw                         everything stored, in the shapes it is written in
  *   DELETE /api/desk/{devices|systems|wallpapers|items|apps}?key=
  */
@@ -70,9 +72,15 @@ public class DeskController {
 
     @PostMapping(value = "/assets", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<DeskDto.AssetOut> asset(@RequestParam MultipartFile file, @RequestParam String folder,
-                                                  @RequestParam(required = false) Long lastModified) throws IOException {
-        DeskDto.AssetOut out = assets.upload(file, folder, lastModified);
+                                                  @RequestParam(required = false) Long lastModified,
+                                                  @RequestParam(required = false) String name) throws IOException {
+        DeskDto.AssetOut out = assets.upload(file, folder, lastModified, name);
         return ResponseEntity.status(out.created() ? 201 : 200).body(out);
+    }
+
+    @GetMapping("/assets")
+    public java.util.List<DeskDto.AssetOut> assets(@RequestParam String folder) {
+        return assets.list(folder);
     }
 
     @GetMapping("/raw")

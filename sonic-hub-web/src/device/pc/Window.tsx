@@ -31,8 +31,8 @@ export function Window({ win, def, small }: { win: Win; def: AppDef; small?: boo
       onPointerDownCapture={() => { if (!on) focus(win.id); }} aria-label={win.title}>
       <header className="dv-tb" onPointerDown={small ? undefined : move}
         onDoubleClick={e => { if (!small && !(e.target as HTMLElement).closest('button')) toggleMax(win.id); }}>
-        <Glyph name={win.glyph} size={16} className="dv-tb-icon" />
-        <span className="dv-tt">{win.title}</span>
+        {def.Title ? <def.Title win={win} on={on} fallback={<><Glyph name={win.glyph} size={16} className="dv-tb-icon" /><span className="dv-tt">{win.title}</span></>} />
+          : <><Glyph name={win.glyph} size={16} className="dv-tb-icon" /><span className="dv-tt">{win.title}</span></>}
         <div className="dv-caps">
           <button type="button" className="dv-cap min" onClick={() => minimize(win.id)} aria-label="Minimize"><Min /></button>
           {!small && <button type="button" className="dv-cap max" onClick={() => toggleMax(win.id)} aria-label="Maximize">{max ? <Restore /> : <Max />}</button>}
