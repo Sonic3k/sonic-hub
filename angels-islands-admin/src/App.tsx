@@ -9,6 +9,7 @@ import LibraryPage from './pages/LibraryPage'
 import MapPage from './pages/MapPage'
 import TagsPage from './pages/TagsPage'
 import UploadPage from './pages/UploadPage'
+import EventsPage from './pages/EventsPage'
 import MemoryPage from './pages/MemoryPage'
 import ScriptsPage from './pages/ScriptsPage'
 import JournalPage from './pages/JournalPage'
@@ -34,6 +35,7 @@ export default function App() {
             <Route path="tags" element={<TagsPage />} />
             <Route path="upload" element={<UploadPage />} />
             <Route path="memory" element={<MemoryPage />} />
+            <Route path="events" element={<EventsPage />} />
             <Route path="scripts" element={<ScriptsPage />} />
             <Route path="journal" element={<JournalPage />} />
             <Route path="other-chats" element={<OtherChatsPage />} />

@@ -1,5 +1,5 @@
 import { apiUrl, get } from './client';
-import type { Chapter, ChatArchive, RandomMemory, ChatAttachment, ChatMessage, Collection, Episode, Fact, Forum, ForumBoard, ForumMember, ForumPage, ForumPostHit, ForumThread, ForumThreadDetail, MediaFile, MysticBrief, Note, Paged, Person, PersonDetail, PersonForum, PersonRanking, RankingDetail, SeriesPart, Tag, TagStats, TimelineBucket, Trait } from '../types';
+import type { Chapter, LifeEvent, LifeEventAt, LifeEventDetail, ChatArchive, RandomMemory, ChatAttachment, ChatMessage, Collection, Episode, Fact, Forum, ForumBoard, ForumMember, ForumPage, ForumPostHit, ForumThread, ForumThreadDetail, MediaFile, MysticBrief, Note, Paged, Person, PersonDetail, PersonForum, PersonRanking, RankingDetail, SeriesPart, Tag, TagStats, TimelineBucket, Trait } from '../types';
 import { isoDay, addDays } from '../lib/date';
 
 export interface Search {
@@ -56,6 +56,11 @@ export const hub = {
   /** memories picked at random; types = episode,fact,chapter,trait */
   randomMemory: (id: string, count = 1, types?: string) => get<RandomMemory[]>(`/persons/${id}/memory/random`, { count, types }),
   chapters: (id: string) => get<Chapter[]>(`/persons/${id}/memory/chapters`),
+  /** events (sự kiện) of the hub's owner, oldest first */
+  events: () => get<LifeEvent[]>('/events'),
+  event: (id: string) => get<LifeEventDetail>(`/events/${id}`),
+  /** the events a moment is inside, the one before and the next one */
+  eventsAt: (moment: string) => get<LifeEventAt>('/events/at', { moment }),
   traits: (id: string) => get<Trait[]>(`/persons/${id}/memory/traits`),
   rankings: (id: string) => get<PersonRanking[]>(`/persons/${id}/rankings`),
   /** Every list of one board with its rows, oldest first; metrics (heavy) only when asked for. */

@@ -177,3 +177,29 @@ export interface JournalNoteRequest {
 export interface JournalAuthor { personId?: string; name?: string; notes: number }
 
 export interface Paged<T> { content: T[]; totalElements: number; totalPages: number; number: number; last: boolean }
+
+// ── Events (sự kiện) ────────────────────────────────────────────────────────
+export interface EventMoney { currency: string; out: number; in: number; count: number }
+export interface LifeEventSummary {
+  id: string; personId: string; parentId?: string | null; coverMediaId?: string | null
+  title: string; kind?: string | null; summary?: string | null; place?: string | null; when: string; precision?: string | null
+  source?: string | null; externalKey?: string | null; coverUrl?: string | null
+  startAt: string; endAt?: string | null; endExclusive: string; approx?: boolean; importance?: number | null
+  latitude?: number | null; longitude?: number | null
+  albums: number; memories: number; transactions: number; people: number; children: number; money: EventMoney[]
+}
+export interface LifeEventDetail extends LifeEventSummary {
+  parent?: LifeEventSummary | null; childEvents: LifeEventSummary[]
+  persons: { id: string; name: string; nickname?: string | null; avatarUrl?: string | null }[]
+  albumList: { id: string; name: string; mediaCount?: number | null; thumbnailUrl?: string | null; parentId?: string | null }[]
+  memoryList: { id: string; title?: string | null; summary?: string | null; when?: string | null; occurredAt?: string | null; kind?: string | null }[]
+  transactionList: { id: string; occurredAt: string; amount: number; currency: string; originalAmount?: number | null; originalCurrency?: string | null
+    kind: string; description?: string | null; payeeName?: string | null; category?: string | null; account?: string | null }[]
+}
+/** start: yyyy | yyyy-MM | yyyy-MM-dd | yyyy-MM-ddTHH:mm; end: last day ('' clears); lists replace the links */
+export interface LifeEventRequest {
+  personId?: string; title?: string; kind?: string; summary?: string; start?: string; precision?: string; end?: string; approx?: boolean
+  place?: string; importance?: number; parentId?: string; coverMediaId?: string
+  personIds?: string[]; collectionIds?: string[]; episodeIds?: string[]; transactionIds?: string[]
+}
+export interface LifeEventAt { moment: string; current: LifeEventSummary[]; previous?: LifeEventSummary | null; next?: LifeEventSummary | null }

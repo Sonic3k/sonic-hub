@@ -90,6 +90,8 @@ export interface Episode {
   collections?: { id: string; name: string }[] | null; tags?: TagRef[] | null; persons?: PersonRef[] | null;
   /** where it is told: forum posts, chat messages, notes — with the words as they were written */
   sourceViews?: MemorySource[] | null;
+  /** the event it belongs to (its title only on a single memory) */
+  lifeEventId?: string | null; lifeEventTitle?: string | null;
 }
 export interface MemorySource {
   kind: 'FORUM' | 'CHAT' | 'NOTE' | 'LINK'; position?: number | null; excerpt?: string | null; author?: string | null; saidAt?: string | null; url?: string | null;
@@ -128,3 +130,20 @@ export interface MysticBrief {
   updatedAt?: string | null; receivedAt?: string | null;
 }
 
+
+/** Sự kiện: a trip, a concert, a purchase — the frame memories sit in. when = "2023-02-16 → 2023-02-20" */
+export interface LifeEventMoney { currency: string; out: number; in: number; count: number }
+export interface LifeEvent {
+  id: string; parentId?: string | null; title: string; kind?: string | null; summary?: string | null; place?: string | null; when: string;
+  precision?: DatePrecision | null; approx?: boolean; startAt: string; endAt?: string | null; endExclusive: string; coverUrl?: string | null;
+  latitude?: number | null; longitude?: number | null; albums: number; memories: number; transactions: number; people: number; children: number;
+  money: LifeEventMoney[];
+}
+export interface LifeEventDetail extends LifeEvent {
+  parent?: LifeEvent | null; childEvents: LifeEvent[];
+  persons: { id: string; name: string; nickname?: string | null; avatarUrl?: string | null }[];
+  albumList: { id: string; name: string; mediaCount?: number | null; thumbnailUrl?: string | null }[];
+  memoryList: { id: string; title?: string | null; summary?: string | null; when?: string | null; occurredAt?: string | null; kind?: string | null }[];
+  transactionList: { id: string; occurredAt: string; amount: number; currency: string; kind: string; description?: string | null; payeeName?: string | null; category?: string | null }[];
+}
+export interface LifeEventAt { moment: string; current: LifeEvent[]; previous?: LifeEvent | null; next?: LifeEvent | null }

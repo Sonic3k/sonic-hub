@@ -20,7 +20,7 @@ const MONEY_TAB: [string, string, string, string?] = ['Money', '/money', '--mone
 
 export default function Shell() {
   const loc = useLocation(), nav = useNavigate(), tl = useTimeline();
-  const reading = /^\/(journal|memories)\/.+/.test(loc.pathname), inMemories = loc.pathname.startsWith('/memories'), inJournal = loc.pathname.startsWith('/journal'), inPhotos = /^\/(photos|tags)/.test(loc.pathname), inAngels = loc.pathname.startsWith('/angels'), inForum = loc.pathname.startsWith('/forum');
+  const reading = /^\/(journal|memories)\/(?!events\/?$).+/.test(loc.pathname), inMemories = loc.pathname.startsWith('/memories'), inJournal = loc.pathname.startsWith('/journal'), inPhotos = /^\/(photos|tags)/.test(loc.pathname), inAngels = loc.pathname.startsWith('/angels'), inForum = loc.pathname.startsWith('/forum');
   const inMoney = loc.pathname.startsWith('/money'), tabs = inMoney || isOwner() ? [...TABS, MONEY_TAB] : TABS;
   const inPortal = loc.pathname.startsWith('/portal');
   /* Angels changes the light of the whole page, softly */
