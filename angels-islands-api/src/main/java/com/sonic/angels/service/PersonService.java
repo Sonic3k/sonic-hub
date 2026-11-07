@@ -39,6 +39,8 @@ public class PersonService {
     private final com.sonic.angels.repository.RankingEntryRepository rankingEntryRepository;
     private final PersonMysticBriefRepository mysticBriefRepository;
     private final com.sonic.angels.repository.PersonReportRepository reportRepository;
+    private final com.sonic.angels.repository.LifeEventRepository lifeEventRepository;
+    private final LifeEventService lifeEventService;
     @org.springframework.beans.factory.annotation.Autowired
     private com.sonic.angels.repository.MediaFileRepository mediaFileRepository;
 
@@ -49,7 +51,11 @@ public class PersonService {
                          TelegramCompanionSessionRepository telegramSessionRepository,
                          com.sonic.angels.repository.RankingEntryRepository rankingEntryRepository,
                          PersonMysticBriefRepository mysticBriefRepository,
-                         com.sonic.angels.repository.PersonReportRepository reportRepository) {
+                         com.sonic.angels.repository.PersonReportRepository reportRepository,
+                         com.sonic.angels.repository.LifeEventRepository lifeEventRepository,
+                         LifeEventService lifeEventService) {
+        this.lifeEventRepository = lifeEventRepository;
+        this.lifeEventService = lifeEventService;
         this.personRepository = personRepository;
         this.contactRepository = contactRepository;
         this.tagRepository = tagRepository;
@@ -108,6 +114,9 @@ public class PersonService {
         mysticBriefRepository.deleteByPersonId(id);
         // and the long write-ups about them
         reportRepository.deleteByPersonId(id);
+        // the events of their life go (their albums, memories and money stay), and they leave the ones they were part of
+        for (var ev : lifeEventRepository.findByPersonIdOrderByStartAtAsc(id)) lifeEventService.delete(ev.getId());
+        lifeEventRepository.unlinkPerson(id);
         // Entity cascade handles contacts, archives(+messages), facts, episodes, chapters, traits
         personRepository.deleteById(id);
     }

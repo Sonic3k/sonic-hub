@@ -63,4 +63,10 @@ public interface EpisodeRepository extends JpaRepository<Episode, UUID> {
     @org.springframework.data.jpa.repository.Query("DELETE FROM Episode x WHERE x.person.id = :personId AND x.source = :source")
     int deleteByPersonAndSource(@org.springframework.data.repository.query.Param("personId") UUID personId,
                                 @org.springframework.data.repository.query.Param("source") String source);
+
+    /** external key -> event, for the memories of one import that belong to an event (kept across a re-import) */
+    @org.springframework.data.jpa.repository.Query(value = "SELECT external_key, CAST(life_event_id AS varchar) FROM episodes WHERE person_id = :personId AND source = :source "
+        + "AND life_event_id IS NOT NULL AND external_key IS NOT NULL", nativeQuery = true)
+    java.util.List<Object[]> eventLinksOfSource(@org.springframework.data.repository.query.Param("personId") java.util.UUID personId,
+                                               @org.springframework.data.repository.query.Param("source") String source);
 }

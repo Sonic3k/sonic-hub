@@ -182,12 +182,14 @@ public class DtoMapper {
         r.setPrecision(e.getOccurredPrecision() != null ? e.getOccurredPrecision().name() : null); r.setApprox(e.getOccurredApprox());
         r.setWhen(e.whenText()); r.setEndAt(e.getEndAt());
         r.setPlace(e.getPlace()); r.setLatitude(e.getLatitude()); r.setLongitude(e.getLongitude()); r.setExternalKey(e.getExternalKey());
+        if (e.getLifeEvent() != null) r.setLifeEventId(e.getLifeEvent().getId());   // the proxy's id: no extra query
         return r;
     }
 
     /** The episode with its photos, albums, tags and people — reads the four link tables, so inside a transaction. */
     public MemoryDto.EpisodeResponse toEpisodeResponseWithLinks(Episode e) {
         MemoryDto.EpisodeResponse r = toEpisodeResponse(e);
+        if (e.getLifeEvent() != null) r.setLifeEventTitle(e.getLifeEvent().getTitle());
         List<MemoryDto.MediaRef> media = e.getMediaFiles().stream().filter(java.util.Objects::nonNull).map(m -> {
             MemoryDto.MediaRef x = new MemoryDto.MediaRef();
             x.setId(m.getId()); x.setFileName(m.getFileName()); x.setUrl(imageUrl(m)); x.setCaption(m.getCaption());
