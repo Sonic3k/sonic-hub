@@ -1,12 +1,14 @@
 /* Sự kiện: the clear frames of a life — a trip, a concert, a move. Memories come back at random; an event says
    where a moment sits: what was going on then and what came next. Written in the admin; here they are only read. */
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { hub } from '../api/hub';
 import { cdn } from '../api/client';
 import { fmt } from '../lib/queries';
-import type { LifeEvent, LifeEventMoney } from '../types';
+import Justified from '../components/Justified';
+import Viewer from '../components/Viewer';
+import type { LifeEvent, LifeEventMoney, MediaFile } from '../types';
 
 const T = 10 * 60_000;
 /** the kinds of event, as they read here */
@@ -76,6 +78,17 @@ export function EventPage() {
   const { id } = useParams(), all = useEvents();
   const q = useQuery({ queryKey: ['event', id], enabled: !!id, staleTime: T, queryFn: () => hub.event(id!) });
   const e = q.data;
+  // the photos of its albums (the first 60, oldest first)
+  const albumIds = (e?.albumList ?? []).map(a => a.id).join(',');
+  const photos = useQuery({
+    queryKey: ['event-photos', id, albumIds], enabled: !!albumIds, staleTime: T,
+    queryFn: async () => {
+      const lists = await Promise.all((e!.albumList).slice(0, 8).map(a => hub.albumMedia(a.id, 'asc').catch(() => [] as MediaFile[])));
+      const seen = new Set<string>();
+      return lists.flat().filter(m => (m.fileType === 'IMAGE' || m.fileType === 'VIDEO') && !seen.has(m.id) && (seen.add(m.id), true)).slice(0, 60);
+    },
+  });
+  const [viewer, setViewer] = useState<number | null>(null);
   const list = [...(all.data ?? [])].sort((a, b) => a.startAt.localeCompare(b.startAt));
   const i = e ? list.findIndex(x => x.id === e.id) : -1, prev = i > 0 ? list[i - 1] : undefined, next = i >= 0 ? list[i + 1] : undefined;
   if (q.isLoading) return <div className="reader"><article className="article"><p className="empty">Đang mở…</p></article></div>;
@@ -92,21 +105,24 @@ export function EventPage() {
             {e.place && e.persons.length > 0 && <span className="sep">|</span>}
             {e.persons.map(p => <Link key={p.id} className="pill" to={`/angels/${p.id}`}>{p.avatarUrl ? <img src={cdn(p.avatarUrl, 80)} alt="" /> : <span className="pill-ph" />}{p.name}</Link>)}
           </div>}
-          {e.coverUrl && <img className="pic" src={cdn(e.coverUrl, 1200)} alt="" style={{ width: '100%', borderRadius: 12, margin: '12px 0' }} />}
           {e.summary && <div className="prose">{e.summary.split(/\n+/).map((p, k) => <p key={k}>{p}</p>)}</div>}
+          {photos.data && photos.data.length > 0
+            ? <div className="mem-photos"><Justified items={photos.data} rowHeight={190} gap={8} onOpen={setViewer} /></div>
+            : e.coverUrl && <img src={cdn(e.coverUrl, 1200)} alt="" style={{ width: '100%', maxHeight: 420, objectFit: 'cover', borderRadius: 12, margin: '12px 0' }} />}
           {e.parent && <p className="meta">Thuộc <Link to={eventHref(e.parent)}>{e.parent.title}</Link> ({eventWhen(e.parent)})</p>}
           {e.childEvents.length > 0 && <><h5 className="mem-h">Bao gồm</h5><nav className="mem-same">{e.childEvents.map(c => <Link key={c.id} to={eventHref(c)}>{c.title}<small>{eventWhen(c)}</small></Link>)}</nav></>}
           {e.memoryList.length > 0 && <><h5 className="mem-h">Ký ức</h5><nav className="mem-same">{e.memoryList.map(m => <Link key={m.id} to={`/memories/${m.id}`}>{m.title || m.summary?.slice(0, 80)}<small>{m.when?.replace(/(\d{4})-(\d{2})-(\d{2})/, '$3/$2/$1')}</small></Link>)}</nav></>}
-          {e.albumList.length > 0 && <><h5 className="mem-h">Album</h5><div className="endtags">{e.albumList.map(a => <Link key={a.id} className="chip" to={`/photos/albums/${a.id}`}>{a.name}{a.mediaCount ? ` · ${fmt(a.mediaCount)}` : ''}</Link>)}</div></>}
           {e.transactionList.length > 0 && <><h5 className="mem-h">Chi tiêu{spent(e.money) ? ` · ${spent(e.money)}` : ''}</h5>
             <nav className="mem-same">{e.transactionList.map(t => <Link key={t.id} to={`/money?txn=${t.id}`}>{t.description || t.payeeName || t.category || '—'}<small>{t.occurredAt.slice(8, 10)}/{t.occurredAt.slice(5, 7)}/{t.occurredAt.slice(0, 4)} · {fmt(Math.round(t.amount))} {t.currency}</small></Link>)}</nav></>}
           <div className="pn">{prev ? <Link to={eventHref(prev)}><small>← Trước đó</small><b>{prev.title}</b></Link> : <span />}
             {next ? <Link to={eventHref(next)}><small>Sau đó →</small><b>{next.title}</b></Link> : <span />}</div>
         </article>
         <aside className="aside">
+          {e.albumList.length > 0 && <div><h5>Ảnh</h5><nav className="mem-same">{e.albumList.map(a => <Link key={a.id} to={`/photos/albums/${a.id}`}>{a.name}<small>{a.mediaCount ? `${fmt(a.mediaCount)} ảnh` : ''}</small></Link>)}</nav></div>}
           {e.latitude != null && e.longitude != null && <div><h5>Ở đâu</h5><a className="mem-map" href={`https://www.openstreetmap.org/?mlat=${e.latitude}&mlon=${e.longitude}#map=11/${e.latitude}/${e.longitude}`} target="_blank" rel="noreferrer">{e.place || `${e.latitude}, ${e.longitude}`} ↗</a></div>}
         </aside>
       </div>
+      {viewer !== null && photos.data && <Viewer items={photos.data} start={viewer} onClose={() => setViewer(null)} />}
     </div>
   );
 }

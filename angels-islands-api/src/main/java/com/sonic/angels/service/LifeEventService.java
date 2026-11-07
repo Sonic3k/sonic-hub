@@ -271,6 +271,24 @@ public class LifeEventService {
                 cover.put(rs.getObject("e", UUID.class), mapper.imageUrl(rs.getString("poster_storage_key"),
                     ft == null ? null : MediaFile.FileType.valueOf(ft), rs.getString("storage_key"), sp == null ? null : MediaFile.StorageProvider.valueOf(sp)));
             });
+        // no album cover: the first photo of its albums, else the first photo of its memories
+        List<UUID> bare = ids.stream().filter(x -> !cover.containsKey(x)).toList();
+        if (!bare.isEmpty()) {
+            MapSqlParameterSource b = new MapSqlParameterSource("ids", bare);
+            org.springframework.jdbc.core.RowCallbackHandler put = rs -> {
+                UUID e = rs.getObject("e", UUID.class);
+                if (cover.containsKey(e)) return;
+                String sp = rs.getString("storage_provider");
+                cover.put(e, mapper.imageUrl(rs.getString("poster_storage_key"), MediaFile.FileType.IMAGE, rs.getString("storage_key"),
+                    sp == null ? null : MediaFile.StorageProvider.valueOf(sp)));
+            };
+            jdbc.query("SELECT DISTINCT ON (c.life_event_id) c.life_event_id AS e, m.poster_storage_key, m.storage_key, m.storage_provider "
+                + "FROM collections c JOIN collection_media cm ON cm.collection_id = c.id JOIN media_files m ON m.id = cm.media_file_id "
+                + "WHERE c.life_event_id IN (:ids) AND m.file_type = 'IMAGE' ORDER BY c.life_event_id, m.effective_date NULLS LAST", b, put);
+            jdbc.query("SELECT DISTINCT ON (ep.life_event_id) ep.life_event_id AS e, m.poster_storage_key, m.storage_key, m.storage_provider "
+                + "FROM episodes ep JOIN episode_media em ON em.episode_id = ep.id JOIN media_files m ON m.id = em.media_file_id "
+                + "WHERE ep.life_event_id IN (:ids) AND m.file_type = 'IMAGE' ORDER BY ep.life_event_id, ep.occurred_at NULLS LAST, em.position", b, put);
+        }
         return new Counts(count("SELECT life_event_id AS e, COUNT(*) AS n FROM collections WHERE life_event_id IN (:ids) GROUP BY life_event_id", m),
             count("SELECT life_event_id AS e, COUNT(*) AS n FROM episodes WHERE life_event_id IN (:ids) GROUP BY life_event_id", m),
             count("SELECT life_event_id AS e, COUNT(*) AS n FROM finance_transactions WHERE life_event_id IN (:ids) GROUP BY life_event_id", m),
