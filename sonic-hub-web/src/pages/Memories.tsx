@@ -1,7 +1,7 @@
 /* Ký ức: your own memories as the hub keeps them — a list through the years, and one memory with its photos.
    They are written and checked in the admin; here they are only read. */
 import { useMemo, useState } from 'react';
-import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
+import { Link, useLocation, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { hub, periodYears } from '../api/hub';
 import { cdn } from '../api/client';
@@ -10,6 +10,7 @@ import Justified from '../components/Justified';
 import Viewer from '../components/Viewer';
 import { atOfMemory } from '../components/Machines';
 import { eventLabel } from '../lib/date';
+import { EventsAround, useEvents } from './Events';
 import type { Chapter, Episode, MediaFile } from '../types';
 
 const T = 10 * 60_000;
@@ -145,7 +146,8 @@ function Facets({ list, onTag }: { list: Episode[]; onTag: (t: string) => void }
 
 /** the sidebar while in Ký ức: kinds, the chapters of your life, the years */
 export function MemoriesSide() {
-  const all = useMemories(), chapters = useLifeChapters(), [sp] = useSearchParams(), list = all.data ?? [];
+  const all = useMemories(), chapters = useLifeChapters(), [sp] = useSearchParams(), list = all.data ?? [], events = useEvents();
+  const inEvents = useLocation().pathname.startsWith('/memories/events');
   const kind = sp.get('kind'), chapter = sp.get('chapter'), year = Number(sp.get('year')), any = kind || chapter || year || sp.get('tag') || sp.get('person') || sp.get('q');
   const byYear: Record<number, number> = {}; list.forEach(e => { const y = yearOf(e); if (y) byYear[y] = (byYear[y] ?? 0) + 1; });
   const years = Object.keys(byYear).map(Number).sort((a, b) => a - b), max = Math.max(1, ...Object.values(byYear));
@@ -153,7 +155,8 @@ export function MemoriesSide() {
   return (
     <>
       <h4>Ký ức</h4>
-      <Link to="/memories" className={!any ? 'on' : ''}>Tất cả<small>{fmt(list.length)}</small></Link>
+      <Link to="/memories" className={!any && !inEvents ? 'on' : ''}>Tất cả<small>{fmt(list.length)}</small></Link>
+      <Link to="/memories/events" className={inEvents ? 'on' : ''}>Sự kiện<small>{events.data ? fmt(events.data.length) : ''}</small></Link>
       {KINDS.map(([k, n]) => { const c = list.filter(e => e.kind === k).length; return c > 0 && <Link key={k} to={`/memories?kind=${k}`} className={kind === k ? 'on' : ''}>{n}<small>{c}</small></Link>; })}
       {chs.length > 0 && <h4>Giai đoạn</h4>}
       {chs.map(c => <Link key={c.id} to={`/memories?chapter=${c.id}`} className={`mem-ch ${chapter === c.id ? 'on' : ''}`}><span>{c.title || c.period}</span>{c.title && <small>{c.period}</small>}</Link>)}
@@ -223,7 +226,8 @@ export function MemoryPage() {
           {route.length > 0 && <><h5 className="mem-h">Lộ trình</h5><ol className="mem-route">{route.map((leg, k) => <li key={k}>{leg}</li>)}</ol></>}
           {photos.length > 0 && <div className="mem-photos"><Justified items={photos} rowHeight={200} gap={8} onOpen={setViewer} /></div>}
           {!!e.sourceViews?.length && <><h5 className="mem-h">Còn lưu lại</h5><div className="mem-sources">{e.sourceViews.map((s, k) => <SourceQuote key={k} s={s} />)}</div></>}
-          {(!!e.collections?.length || !!e.tags?.length) && <div className="endtags">
+          {(!!e.collections?.length || !!e.tags?.length || !!e.lifeEventId) && <div className="endtags">
+            {e.lifeEventId && <Link className="chip" to={`/memories/events/${e.lifeEventId}`}>Sự kiện · {e.lifeEventTitle || 'xem'}</Link>}
             {e.collections?.map(c => <Link key={c.id} className="chip" to={`/photos/albums/${c.id}`}>Album · {c.name}</Link>)}
             {e.tags?.map(t => <Link key={t.id} className="chip" to={`/memories?tag=${encodeURIComponent(t.name)}`}>{t.name}</Link>)}
           </div>}
@@ -231,6 +235,7 @@ export function MemoryPage() {
             {next ? <Link to={memoryHref(next)}><small>Sau đó →</small><b>{next.title || next.summary.slice(0, 60)}</b></Link> : <span />}</div>
         </article>
         <aside className="aside">
+          <EventsAround at={e.occurredAt} />
           {sameYear.length > 0 && <div><h5>Cũng năm {yearOf(e)}</h5><nav className="mem-same">{sameYear.map(x => <Link key={x.id} to={memoryHref(x)}>{x.title || x.summary.slice(0, 60)}<small>{kindName(x.kind)}</small></Link>)}</nav></div>}
           {e.latitude != null && e.longitude != null && <div><h5>Ở đâu</h5><a className="mem-map" href={`https://www.openstreetmap.org/?mlat=${e.latitude}&mlon=${e.longitude}#map=11/${e.latitude}/${e.longitude}`} target="_blank" rel="noreferrer">{e.place || `${e.latitude}, ${e.longitude}`} ↗</a></div>}
         </aside>

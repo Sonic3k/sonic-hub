@@ -1,3 +1,4 @@
+import { EventPage, EventsIndex } from './pages/Events';
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import Shell from './components/Shell';
@@ -29,6 +30,8 @@ export function AppRoutes() {
         <Route path="journal/series" element={<SeriesPage />} />
         <Route path="journal/:slug" element={<Post />} />
         <Route path="memories" element={<MemoriesIndex />} />
+        <Route path="memories/events" element={<EventsIndex />} />
+        <Route path="memories/events/:id" element={<EventPage />} />
         <Route path="memories/:id" element={<MemoryPage />} />
         <Route path="photos" element={<Photos />} />
         <Route path="photos/albums" element={<AlbumsIndex />} />

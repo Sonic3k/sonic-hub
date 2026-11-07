@@ -5,7 +5,7 @@ import type {
   FinMonthReport, FinSettings, FinTxn, FinTxnRequest,
 } from '../types/finance'
 
-export interface TxnQuery { month?: string; accountId?: string; categoryId?: string; status?: string; kind?: string; q?: string; page?: number; size?: number }
+export interface TxnQuery { month?: string; from?: string; to?: string; accountId?: string; categoryId?: string; status?: string; kind?: string; q?: string; page?: number; size?: number }
 
 export const financeApi = {
   report: (month?: string) => api.get<FinMonthReport>('/api/finance/report', { params: { month } }).then(r => r.data),
