@@ -6,6 +6,7 @@ import com.sonic.angels.repository.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -23,9 +24,11 @@ public class MemoryImportService {
     private final PersonalityTraitRepository traitRepo;
     private final EpisodeRepository episodeRepo;
     private final MemoryService memory;
+    private final LifeEventRepository lifeEventRepo;
 
     public MemoryImportService(PersonRepository personRepo, LifeChapterRepository chapterRepo, FactRepository factRepo,
-                               PersonalityTraitRepository traitRepo, EpisodeRepository episodeRepo, MemoryService memory) {
+                               PersonalityTraitRepository traitRepo, EpisodeRepository episodeRepo, MemoryService memory, LifeEventRepository lifeEventRepo) {
+        this.lifeEventRepo = lifeEventRepo;
         this.personRepo = personRepo; this.chapterRepo = chapterRepo; this.factRepo = factRepo;
         this.traitRepo = traitRepo; this.episodeRepo = episodeRepo; this.memory = memory;
     }
@@ -70,13 +73,19 @@ public class MemoryImportService {
             out.put("traits", counts(removed, req.getTraits()));
         }
         if (req.getEpisodes() != null) {
+            // the event each memory belongs to, by its stable key: a re-import keeps the link
+            Map<String, UUID> eventOf = new HashMap<>();
+            for (Object[] row : episodeRepo.eventLinksOfSource(personId, source)) eventOf.put((String) row[0], UUID.fromString((String) row[1]));
             // the bulk delete skips the link tables, so they go first
             episodeRepo.unlinkMediaOfSource(personId, source); episodeRepo.unlinkCollectionsOfSource(personId, source);
             episodeRepo.unlinkTagsOfSource(personId, source); episodeRepo.unlinkPersonsOfSource(personId, source);
             episodeRepo.deleteSourcesOfSource(personId, source);
             int removed = episodeRepo.deleteByPersonAndSource(personId, source);
-            for (MemoryDto.EpisodeRequest r : req.getEpisodes())
-                memory.newEpisode(person, source, r, statusOr(r.getStatus()));
+            for (MemoryDto.EpisodeRequest r : req.getEpisodes()) {
+                Episode e = memory.newEpisode(person, source, r, statusOr(r.getStatus()));
+                UUID ev = e.getExternalKey() != null ? eventOf.get(e.getExternalKey()) : null;
+                if (ev != null) lifeEventRepo.findById(ev).ifPresent(e::setLifeEvent);
+            }
             out.put("episodes", counts(removed, req.getEpisodes()));
         }
         return out;

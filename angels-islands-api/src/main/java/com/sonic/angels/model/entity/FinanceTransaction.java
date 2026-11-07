@@ -107,6 +107,12 @@ public class FinanceTransaction extends FinanceEntity {
     @Column(name = "note", length = 1000)
     private String note;
 
+    /** The event this belongs to (a trip, a concert…); null = none. */
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "life_event_id")
+    @com.fasterxml.jackson.annotation.JsonIgnore
+    private LifeEvent lifeEvent;
+
     @Enumerated(EnumType.STRING)
     @Column(name = "source", nullable = false, length = 20)
     private Source source;
@@ -223,4 +229,6 @@ public class FinanceTransaction extends FinanceEntity {
         if (counterparty != null) sb.append(' ').append(counterparty);
         return sb.toString();
     }
+    public LifeEvent getLifeEvent() { return lifeEvent; }
+    public void setLifeEvent(LifeEvent lifeEvent) { this.lifeEvent = lifeEvent; }
 }

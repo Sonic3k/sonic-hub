@@ -71,6 +71,12 @@ public class Collection extends BaseEntity {
     @JoinColumn(name = "thumbnail_media_file_id")
     private MediaFile thumbnailMediaFile;
 
+    /** The event this belongs to (a trip, a concert…); null = none. */
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "life_event_id")
+    @com.fasterxml.jackson.annotation.JsonIgnore
+    private LifeEvent lifeEvent;
+
     public Collection() {}
 
     public UUID getId() { return id; }
@@ -101,4 +107,6 @@ public class Collection extends BaseEntity {
     public void setEventPrecision(DatePrecision v) { this.eventPrecision = v; }
     public Boolean getEventApprox() { return eventApprox; }
     public void setEventApprox(Boolean v) { this.eventApprox = v; }
+    public LifeEvent getLifeEvent() { return lifeEvent; }
+    public void setLifeEvent(LifeEvent lifeEvent) { this.lifeEvent = lifeEvent; }
 }

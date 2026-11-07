@@ -91,6 +91,10 @@ public class MemoryDto {
     }
     public static class EpisodeResponse extends EpisodeRequest {
         private UUID id; private LocalDateTime createdAt; private String when;
+        private UUID lifeEventId; private String lifeEventTitle;
+        /** the event it belongs to (title only in a single memory's response) */
+        public UUID getLifeEventId() { return lifeEventId; } public void setLifeEventId(UUID v) { this.lifeEventId = v; }
+        public String getLifeEventTitle() { return lifeEventTitle; } public void setLifeEventTitle(String v) { this.lifeEventTitle = v; }
         private java.util.List<MediaRef> media; private java.util.List<CollectionRef> collections;
         private java.util.List<TagDto.Response> tags; private java.util.List<PersonDto.Summary> persons;
         private java.util.List<SourceView> sourceViews;
