@@ -109,7 +109,7 @@ public class CollectionController {
     @DeleteMapping("/{id}")
     public ResponseEntity<?> delete(@PathVariable UUID id, @RequestParam(defaultValue = "false") boolean withMedia) {
         if (withMedia) return ResponseEntity.ok(collectionDeleteService.deleteWithMedia(id));
-        collectionService.delete(id);
+        collectionDeleteService.deleteAlbumsOnly(id);
         return ResponseEntity.noContent().build();
     }
 

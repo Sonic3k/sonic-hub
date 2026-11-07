@@ -97,6 +97,27 @@ public class CollectionDeleteService {
         return new Result(albums, photos, keptOther, keptInUse, b2.deleted(), b2.failed());
     }
 
+    /** Deletes the tree only; its photos stay in the library (and in any other album). One transaction, plain SQL,
+     *  deepest albums first — the entity-graph delete it replaces failed for every album deeper than one level. */
+    public int deleteAlbumsOnly(UUID id) {
+        Integer n = tx.execute(s -> {
+            Plan p = plan(id);
+            MapSqlParameterSource all = new MapSqlParameterSource("ids", p.albumIds());
+            jdbc.update("DELETE FROM collection_media WHERE collection_id IN (:ids)", all);
+            jdbc.update("DELETE FROM collection_persons WHERE collection_id IN (:ids)", all);
+            jdbc.update("DELETE FROM collection_tags WHERE collection_id IN (:ids)", all);
+            jdbc.update("DELETE FROM episode_collections WHERE collection_id IN (:ids)", all);
+            int deleted = 0;
+            List<Integer> depths = new ArrayList<>(p.albumsByDepth().keySet());
+            depths.sort(Comparator.reverseOrder());
+            for (int d : depths)
+                deleted += jdbc.update("DELETE FROM collections WHERE id IN (:ids)", new MapSqlParameterSource("ids", p.albumsByDepth().get(d)));
+            log.info("Deleted album \"{}\" (photos kept): {} albums", p.path(), deleted);
+            return deleted;
+        });
+        return n == null ? 0 : n;
+    }
+
     private Object[] deleteRows(UUID id) {
         Plan p = plan(id);
         List<Photo> photos = p.toDelete();
