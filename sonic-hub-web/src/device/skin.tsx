@@ -143,8 +143,13 @@ export function iconFiles(map: Record<string, unknown> | undefined, base: string
 
 /* ── screens ────────────────────────────────────────────────────────────── */
 
-/** The default pictures of the systems, standing for the drawn ones the machines were given (builtin → folder, file). */
+/** The default pictures of the systems, standing for the drawn ones a period falls back to when it has no picture of
+ *  its own (builtin → folder, file): XP's Bliss, 7's img0 and the Vista forest are the ones he gave earlier (the
+ *  wallpapers folder, which the periods themselves use), the rest came with the systems' files. */
 export const WALLPAPER_ASSET: Record<string, [string, string]> = {
+  'xp-hills': ['wallpapers', 'winxp-bliss-1600x1200.jpg'],
+  'vista-aurora': ['wallpapers', 'vista-forest-1024x768.jpg'],
+  'win7-glow': ['wallpapers', 'win7-img0.jpg'],
   'win81-teal': ['w81', 'wallpaper/default.jpg'],
   'win10-light': ['w10', 'wallpaper/hero.jpg'],
   'win10-lake': ['w10', 'lock/default.jpg'],
