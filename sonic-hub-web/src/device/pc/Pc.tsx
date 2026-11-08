@@ -6,7 +6,8 @@ import { keepPreviousData, useQuery } from '@tanstack/react-query';
 import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties } from 'react';
 import { desk, type DeskItem, type Machine, type MomentData, type Scene } from '../api';
 import { useUrlParams } from '../url';
-import { MomentContext, atString, portalAt, utc } from '../moment';
+import { MomentContext, atString, portalAt, utc, vn } from '../moment';
+import { IconContext, useSkin } from '../skin';
 import { Wallpaper } from '../wallpapers';
 import { viewDay } from '../apps/Viewers';
 import { Desk, browserGlyph, skinOf, type DeskCtx } from './desk';
@@ -22,6 +23,8 @@ import { Gadgets, Notices } from './Extras';
 import { IDLE_MS, Screensaver, saverKind } from './Screensaver';
 
 const TASKBAR: Record<string, number> = { w98: 28, xp: 30, vista: 30, w7: 40, w81: 40, w10: 40, w11: 48 };
+/** systems whose shutdown had a sound of its own */
+const SHUTDOWN_SOUND = new Set(['w98', 'xp', 'vista', 'w7']);
 const FALLBACK: Record<string, string> = { w98: 'win98-teal', xp: 'xp-hills', vista: 'vista-aurora', w7: 'win7-glow', w81: 'win81-teal', w10: 'win10-light', w11: 'win11-bloom' };
 
 function useViewport() {
@@ -98,6 +101,10 @@ function Desktop({ data, machine, T, at, fresh, scene, go, scr, skin }: {
   const [sceneAsk, setSceneAsk] = useState(0);
   const [saver, setSaver] = useState(false);
   const messengerApp = machine.items.some(i => i.app === 'messenger');
+  const look = useSkin(skin);
+  const { sound } = look;
+  const year = vn(T).y;
+  const iconCtx = useMemo(() => ({ skin, year, ver }), [skin, year, ver]);
 
   // another machine, or another system on it: reboot into it
   useEffect(() => {
@@ -116,9 +123,21 @@ function Desktop({ data, machine, T, at, fresh, scene, go, scr, skin }: {
   const off = useCallback(() => window.location.assign(portalAt(T)), [T]);
   useEffect(() => {
     if (phase === 'on') return;
-    const id = window.setTimeout(phase === 'down' ? off : next, phase === 'card' ? 2600 : phase === 'boot' ? 2200 : phase === 'login' ? 1500 : 1600);
+    const id = window.setTimeout(phase === 'down' ? off : next,
+      phase === 'card' ? 2600 : phase === 'boot' ? 2600 : phase === 'login' ? 1700 : SHUTDOWN_SOUND.has(skin) ? 3000 : 1600);
     return () => window.clearTimeout(id);
-  }, [phase, next, off]);
+  }, [phase, next, off, skin]);
+
+  // the sounds of the system starting (at its welcome screen from 7 on, with the desktop before) and going down
+  const lastPhase = useRef<Phase>(phase);
+  useEffect(() => {
+    const was = lastPhase.current;
+    lastPhase.current = phase;
+    if (was === phase) return;
+    if (phase === 'login' && (skin === 'w7' || skin === 'w11')) sound('startup');
+    else if (phase === 'on' && (skin === 'w98' || skin === 'xp' || skin === 'vista')) sound('startup');
+    else if (phase === 'down' && SHUTDOWN_SOUND.has(skin)) sound('shutdown');
+  }, [phase, skin, sound]);
 
   const openItem = useCallback((it: Pick<DeskItem, 'app' | 'target' | 'label' | 'glyph'>) => {
     const spec = specOf(it, os, ver);
@@ -184,13 +203,15 @@ function Desktop({ data, machine, T, at, fresh, scene, go, scr, skin }: {
   const gadgets = machine.items.filter(i => i.place === 'GADGET');
   const sidebar = skin === 'vista' && gadgets.length > 0;
   const tb = TASKBAR[skin];
-  const style = { width: scr.W, height: scr.H, transform: scr.s !== 1 ? `scale(${scr.s})` : undefined, '--tb': `${tb}px`,
+  const style = { ...look.style, width: scr.W, height: scr.H, transform: scr.s !== 1 ? `scale(${scr.s})` : undefined, '--tb': `${tb}px`,
     '--accent': machine.system?.accent ?? '#0078d7' } as CSSProperties;
 
   return (
     <Desk.Provider value={ctx}>
+     <IconContext.Provider value={iconCtx}>
       <div className="dv-stage">
-        <div className={`dv dv-${skin} ${scr.small ? 'small' : ''}`} style={style} onClick={() => { setStartOpen(false); setTimeOpen(false); }}>
+        <div className={`dv dv-${skin} ${scr.small ? 'small' : ''} ${look.real ? 'real' : ''} ${phase !== 'on' ? 'busy' : ''}`} style={style}
+          onClick={() => { setStartOpen(false); setTimeOpen(false); }}>
           <Wallpaper wp={machine.wallpaper} fallback={FALLBACK[skin]} />
           <div className="dv-desk" style={sidebar ? { right: 150 } : undefined}>
             <DesktopIcons items={icons} skin={skin} height={scr.H - tb} onOpen={openItem} />
@@ -206,6 +227,7 @@ function Desktop({ data, machine, T, at, fresh, scene, go, scr, skin }: {
           {saver && phase === 'on' && <Screensaver kind={saverKind(skin, machine)} machine={machine} skin={skin} T={T} onWake={wake} />}
         </div>
       </div>
+     </IconContext.Provider>
     </Desk.Provider>
   );
 }

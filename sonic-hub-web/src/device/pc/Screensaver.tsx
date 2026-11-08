@@ -7,6 +7,7 @@ import { useEffect, useRef, useState } from 'react';
 import type { Machine, Wallpaper as Wp } from '../api';
 import { clockText, longDate } from '../moment';
 import { Mark } from '../glyphs';
+import { useAssets } from '../assets';
 import { Wallpaper } from '../wallpapers';
 import { useTick } from './desk';
 
@@ -132,8 +133,11 @@ function Stars() {
   return <canvas ref={ref} className="dv-stars" />;
 }
 
-/** XP's own screensaver when there were no pictures: the logo turning up here and there on black. */
+/** XP's own screensaver when there were no pictures: the logo turning up here and there on black (its own once the
+ *  files have come). */
 function FloatingLogo() {
+  const xp = useAssets('xp');
+  const flag = xp.a('icon/windows-logo-48.png'), word = xp.a('logo/wordmark-white.svg');
   const [p, setP] = useState({ x: 30, y: 30, k: 0 });
   useEffect(() => {
     const id = window.setInterval(() => setP(o => ({ x: 6 + Math.random() * 62, y: 8 + Math.random() * 70, k: o.k + 1 })), 5000);
@@ -141,7 +145,7 @@ function FloatingLogo() {
   }, []);
   return (
     <div key={p.k} className="dv-xplogo" style={{ left: `${p.x}%`, top: `${p.y}%` }}>
-      <Mark size={64} /><b>Sonic3k</b><sup>xp</sup>
+      {flag && word ? <span className="dv-lxp-logo"><img src={flag} alt="" /><img src={word} alt="" /></span> : <><Mark size={64} /><b>Sonic3k</b><sup>xp</sup></>}
     </div>
   );
 }

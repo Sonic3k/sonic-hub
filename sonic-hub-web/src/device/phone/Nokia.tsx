@@ -1,11 +1,12 @@
 /* The Nokia (Series 40) of 2006–2015: the standby screen with its clock, the menu of nine, lists moved through with
-   the keys, the soft keys under the screen. Drawn here; the keypad works by touch and by the keyboard's arrows,
-   Enter and Esc. */
+   the keys, the soft keys under the screen. Drawn here, with its sounds: the key beep, the message tone for what had
+   come in. The keypad works by touch and by the keyboard's arrows, Enter and Esc. */
 import { useEffect, useState, type ReactNode } from 'react';
 import type { DeskItem } from '../api';
 import { vn } from '../moment';
 import { Glyph } from '../glyphs';
 import { Wallpaper } from '../wallpapers';
+import { play, useAssets } from '../assets';
 import { usePhone } from './ctx';
 import { CalendarView, ClockView, Contacts, Empty, Gallery, MemoryView, NoteReader, NotesList, PhoneBrowser, PhotoView, SettingsView, ThreadView, Threads, useKeys } from './apps';
 
@@ -96,6 +97,8 @@ const Batt = () => <span className="ph-s40-batt" aria-hidden="true">{[0, 1, 2, 3
 
 function Standby({ sms, memories }: { sms: number; memories: number }) {
   const { machine, T } = usePhone();
+  const tone = useAssets('phones').a('nokia/sms-tone-standard.mp3');
+  useEffect(() => { if (sms > 0 && tone) { const id = window.setTimeout(() => play(tone, 0.5), 700); return () => window.clearTimeout(id); } }, [sms, tone]);
   const [tick, setTick] = useState(() => Date.now());
   const [base] = useState(() => Date.now());
   useEffect(() => { const id = window.setInterval(() => setTick(Date.now()), 10_000); return () => window.clearInterval(id); }, []);
@@ -144,7 +147,8 @@ function Menu({ items }: { items: DeskItem[] }) {
 
 /** The keypad under the screen: soft keys, the navigation ring, call and end, the numbers. */
 export function Keypad({ compact }: { compact?: boolean }) {
-  const k = (key: string) => () => press(key);
+  const beep = useAssets('phones').a('nokia/beep-once.mp3');
+  const k = (key: string) => () => { play(beep, 0.25); press(key); };
   return (
     <div className={`ph-keys ${compact ? 'compact' : ''}`}>
       <div className="ph-keys-top">

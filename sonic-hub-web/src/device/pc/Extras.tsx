@@ -9,8 +9,9 @@ import { emoticons } from '../apps/Chat';
 import { viewDay } from '../apps/Viewers';
 import { YmText, useYm } from '../apps/yahoo/ui';
 import { play } from '../assets';
+import { useSkin } from '../skin';
 import { useWm } from './wm';
-import { useDesk, useTick, viewerName } from './desk';
+import { skinOf, useDesk, useTick, viewerName } from './desk';
 
 export function Gadgets({ items, sidebar }: { items: DeskItem[]; sidebar: boolean }) {
   return (
@@ -84,8 +85,10 @@ interface Notice { key: string; head: string; glyph: string; title: string; text
 
 /** skip: the memory being shown (its own notice would only repeat it) */
 export function Notices({ ready, messengerApp, skip }: { ready: boolean; messengerApp: boolean; skip?: string }) {
-  const { data, scene, openChat, ver } = useDesk();
+  const { data, scene, openChat, ver, os } = useDesk();
   const { a } = useYm();
+  const skin = skinOf(os);
+  const { sound } = useSkin(skin);
   const [gone, setGone] = useState<Record<string, boolean>>({});
   const [shown, setShown] = useState(false);
   useEffect(() => {
@@ -114,6 +117,13 @@ export function Notices({ ready, messengerApp, skip }: { ready: boolean; messeng
   const ym = !!ver.yahoo;
   const ymOn = ym && shown && live.some(n => n.platform === 'YAHOO');
   useEffect(() => { if (ymOn) play(a('sounds/message.wav'), 0.6); }, [ymOn, a]);
+  // the others with the system's own sound for a notice (its balloon on XP, Notify on Vista and 7, Messaging from 8)
+  const otherOn = shown && live.some(n => !(ym && n.platform === 'YAHOO'));
+  useEffect(() => {
+    if (!otherOn) return;
+    const s = skin === 'xp' ? 'balloon' : skin === 'vista' || skin === 'w7' ? 'notify' : skin === 'w98' ? '' : 'notify-messaging';
+    if (s) sound(s, 0.55);
+  }, [otherOn, skin, sound]);
   if (!shown || !live.length) return null;
   return (
     <div className="dv-notices">
@@ -127,7 +137,7 @@ export function Notices({ ready, messengerApp, skip }: { ready: boolean; messeng
         </div>
       ) : (
         <div key={n.key} className="dv-notice" role="status">
-          <div className="dv-notice-head"><Glyph name={n.glyph} size={16} /><span>{n.head}</span>{n.time && <time>{n.time}</time>}
+          <div className="dv-notice-head"><Glyph name={n.glyph} label={n.head} size={16} /><span>{n.head}</span>{n.time && <time>{n.time}</time>}
             <button type="button" onClick={() => setGone(g => ({ ...g, [n.key]: true }))} aria-label="Đóng">×</button></div>
           <button type="button" className="dv-notice-body" onClick={() => { n.open(); setGone(g => ({ ...g, [n.key]: true })); }}>
             <b>{n.title}</b>{n.text && <span>{n.text}</span>}

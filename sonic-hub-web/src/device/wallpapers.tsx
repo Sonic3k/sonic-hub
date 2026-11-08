@@ -1,8 +1,11 @@
-/* Desktop pictures. One of his photos when a period had one; otherwise a picture drawn here in the spirit of what the
-   machine showed then (a sky over hills, deep space, glass light…) — drawn, never a copy of the system's own art. */
+/* Desktop pictures. One of his photos when a period had one; otherwise the system's own default picture from the files
+   he gathered (skin.tsx WALLPAPER_ASSET), or until it has come — and for the systems whose picture is not among them —
+   one drawn here in the spirit of what the machine showed then (a sky over hills, deep space, glass light…). */
 import type { CSSProperties, ReactNode } from 'react';
 import { cdn } from '../api/client';
 import type { Wallpaper as Wp } from './api';
+import { useAssets } from './assets';
+import { WALLPAPER_ASSET } from './skin';
 
 function rng(seed: number) {
   let s = seed >>> 0;
@@ -161,13 +164,24 @@ const BUILTIN: Record<string, () => ReactNode> = {
   </>, '0 0 1000 1600'),
 };
 
+BUILTIN['win81-lock'] = BUILTIN['win81-teal'];
+BUILTIN['win11-lock'] = BUILTIN['win11-bloom'];
+
 const BG: Record<string, string> = {
   'win98-teal': '#008080', 'xp-hills': '#4a8fe0', 'xp-space': '#04102e', 'xp-azure': '#0b3a9a', 'vista-aurora': '#02170e',
   'win7-glow': '#0d4fae', 'win7-night-arch': '#06173f', 'win81-teal': '#1a8a8c', 'win10-light': '#02133a', 'win10-peaks': '#173f99',
-  'win10-lake': '#2d5fa6', 'win11-bloom': '#cfdff5', 's40-blue': '#1a5bb5', 'ios-dusk': '#7a3a7f',
+  'win10-lake': '#2d5fa6', 'win11-bloom': '#cfdff5', 'win81-lock': '#1a8a8c', 'win11-lock': '#cfdff5', 's40-blue': '#1a5bb5', 'ios-dusk': '#7a3a7f',
 };
 
-export function Wallpaper({ wp, fallback = 'win7-glow' }: { wp: Wp | null | undefined; fallback?: string }) {
+/** asset: a picture of the asset folders to show instead of a drawn one ([folder, file]), e.g. a phone's own */
+export function Wallpaper({ wp, fallback = 'win7-glow', asset }: { wp: Wp | null | undefined; fallback?: string; asset?: [string, string] | null }) {
+  const key0 = wp?.builtin && BUILTIN[wp.builtin] ? wp.builtin : fallback;
+  const pick = asset ?? (wp?.url ? null : WALLPAPER_ASSET[wp?.builtin ?? ''] ?? WALLPAPER_ASSET[key0]);
+  const { a } = useAssets(pick?.[0] ?? 'w10');
+  const own = pick ? a(pick[1]) : undefined;
+  if (!wp?.url && own) {
+    return <div className="dv-wp" style={{ backgroundColor: '#000', backgroundImage: `url("${own}")`, backgroundSize: 'cover', backgroundPosition: 'center' }} />;
+  }
   if (wp?.url) {
     const fit = wp.fit ?? 'FILL';
     const style: CSSProperties = {

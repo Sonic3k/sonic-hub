@@ -1,5 +1,6 @@
 /* A window as the system of T draws it: title bar to drag (double-click to maximise), caption buttons, a corner to
-   resize. Apps inside can name their window (the folder, the page, the document they show). */
+   resize, its frame (XP's from Luna's own bitmaps). Apps inside can name their window (the folder, the page, the
+   document they show). */
 import { createContext, useContext, useEffect } from 'react';
 import { Glyph } from '../glyphs';
 import { useDrag, useWm, type AppDef, type Win } from './wm';
@@ -31,8 +32,8 @@ export function Window({ win, def, small }: { win: Win; def: AppDef; small?: boo
       onPointerDownCapture={() => { if (!on) focus(win.id); }} aria-label={win.title}>
       <header className="dv-tb" onPointerDown={small ? undefined : move}
         onDoubleClick={e => { if (!small && !(e.target as HTMLElement).closest('button')) toggleMax(win.id); }}>
-        {def.Title ? <def.Title win={win} on={on} fallback={<><Glyph name={win.glyph} size={16} className="dv-tb-icon" /><span className="dv-tt">{win.title}</span></>} />
-          : <><Glyph name={win.glyph} size={16} className="dv-tb-icon" /><span className="dv-tt">{win.title}</span></>}
+        {def.Title ? <def.Title win={win} on={on} fallback={<><Glyph name={win.glyph} label={win.title} size={16} className="dv-tb-icon" /><span className="dv-tt">{win.title}</span></>} />
+          : <><Glyph name={win.glyph} label={win.title} size={16} className="dv-tb-icon" /><span className="dv-tt">{win.title}</span></>}
         <div className="dv-caps">
           <button type="button" className="dv-cap min" onClick={() => minimize(win.id)} aria-label="Minimize"><Min /></button>
           {!small && <button type="button" className="dv-cap max" onClick={() => toggleMax(win.id)} aria-label="Maximize">{max ? <Restore /> : <Max />}</button>}
@@ -40,6 +41,8 @@ export function Window({ win, def, small }: { win: Win; def: AppDef; small?: boo
         </div>
       </header>
       <div className="dv-wb"><WinCtx.Provider value={win}>{def.render(win)}</WinCtx.Provider></div>
+      {/* the frame's sides, for a theme that draws them with its own bitmaps (XP) */}
+      <i className="dv-fr l" /><i className="dv-fr r" /><i className="dv-fr b" />
       {!max && <div className="dv-grip" onPointerDown={size} />}
     </section>
   );

@@ -1,6 +1,7 @@
 /* The taskbar of the machine: Start, the pinned programs and the open windows (buttons with titles up to Vista,
    icons from 7 on, centred on 11), the tray with its clock — T, running on; a click on it opens the time machine. */
 import type { DeskItem } from '../api';
+import { useAssets } from '../assets';
 import { clockText, trayDate } from '../moment';
 import { Glyph, Mark } from '../glyphs';
 import { useWm, type Win } from './wm';
@@ -22,11 +23,14 @@ export function Taskbar({ startOpen, timeOpen, onStart, onClock }: { startOpen: 
   const yahooOn = wins.some(w => w.app === 'yahoo' || w.app === 'im') || machine.items.some(i => i.place === 'STARTUP' && i.app === 'yahoo');
   const laptop = machine.device.kind === 'LAPTOP';
 
+  const art = useStartArt(skin);
   const start = (
     <button type="button" className={`dv-start ${startOpen ? 'on' : ''}`} onClick={e => { e.stopPropagation(); onStart(); }} aria-label="Start">
-      {skin === 'w98' ? <><Mark size={16} color="#000" /><b>Start</b></>
-        : skin === 'xp' ? <><Mark size={18} /><i>start</i></>
-        : skin === 'vista' || skin === 'w7' ? <span className="dv-orb"><Mark size={20} /></span>
+      {skin === 'w98' ? <>{art ? <img className="dv-start-flag" src={art} alt="" /> : <Mark size={16} color="#000" />}<b>Start</b></>
+        : skin === 'xp' ? <>{art ? <img className="dv-start-flag" src={art} alt="" /> : <Mark size={18} />}<i>start</i></>
+        : skin === 'vista' || skin === 'w7' ? (art ? <span className="dv-orb real" style={{ backgroundImage: `url("${art}")` }} /> : <span className="dv-orb"><Mark size={20} /></span>)
+        : skin === 'w81' && art ? <span className="dv-flat" style={{ backgroundImage: `url("${art}")` }} />
+        : (skin === 'w10' || skin === 'w11') && art ? <span className={`dv-logo11 ${skin}`} style={{ WebkitMaskImage: `url("${art}")`, maskImage: `url("${art}")` }} />
         : <Mark size={skin === 'w11' ? 20 : 17} color={skin === 'w11' ? '#0067c0' : '#fff'} />}
     </button>
   );
@@ -50,16 +54,16 @@ export function Taskbar({ startOpen, timeOpen, onStart, onClock }: { startOpen: 
       return (
         <button type="button" key={g} className={`dv-tk ${ws.length ? 'run' : ''} ${on ? 'on' : ''} ${ws.length > 1 ? 'many' : ''}`}
           title={top?.title ?? pin?.label} onClick={() => top ? toggle(top) : pin && openItem(pin)}>
-          <Glyph name={pin?.glyph ?? top?.glyph} size={skin === 'w11' ? 24 : 24} />
+          <Glyph name={pin?.glyph ?? top?.glyph} label={pin?.label ?? top?.title} size={24} />
         </button>
       );
     });
   } else {
     apps = <>
-      {pins.length > 0 && <div className="dv-ql">{pins.map(p => <button type="button" key={p.key} title={p.label} onClick={() => openItem(p)}><Glyph name={p.glyph} size={16} /></button>)}</div>}
+      {pins.length > 0 && <div className="dv-ql">{pins.map(p => <button type="button" key={p.key} title={p.label} onClick={() => openItem(p)}><Glyph name={p.glyph} label={p.label} size={16} /></button>)}</div>}
       {wins.map(w => (
         <button type="button" key={w.id} className={`dv-tb-btn ${w.id === active && !w.min ? 'on' : ''}`} onClick={() => toggle(w)} title={w.title}>
-          <Glyph name={w.glyph} size={16} /><span>{w.title}</span>
+          <Glyph name={w.glyph} label={w.title} size={16} /><span>{w.title}</span>
         </button>
       ))}
     </>;
@@ -82,6 +86,19 @@ export function Taskbar({ startOpen, timeOpen, onStart, onClock }: { startOpen: 
       </div>
     </footer>
   );
+}
+
+/** The picture Start was drawn with: 98's flag, XP's, the orb of Vista and 7 (normal, lit, pressed one above another),
+ *  8.1's button, the flat logo of 10 and 11. */
+function useStartArt(skin: string) {
+  const w98 = useAssets('w98'), xp = useAssets('xp'), w7 = useAssets('w7'), w11 = useAssets('w11');
+  switch (skin) {
+    case 'w98': return w98.a('logo/flag.svg');
+    case 'xp': return xp.a('icon/windows-logo-32.png');
+    case 'vista': case 'w7': return w7.a('start/orb-96.png');
+    case 'w81': return w7.a('start/flat-6801.png');
+    default: return w11.a('logo/logo.svg');
+  }
 }
 
 const Speaker = () => <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M2 6h3l4-3v10l-4-3H2z" className="f" /><path d="M11 5.5q1.6 2.5 0 5M12.8 3.8q2.8 4.2 0 8.4" /></svg>;

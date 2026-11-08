@@ -6,9 +6,10 @@ import { useMemo, useState, type ReactNode } from 'react';
 import { cdn } from '../../api/client';
 import { desk, type DeskItem } from '../api';
 import { DAYS, utc, vn, vnDate } from '../moment';
+import { useAssets } from '../assets';
 import { Glyph, Mark } from '../glyphs';
 import { Wallpaper } from '../wallpapers';
-import { browserName, skinOf, useDesk } from './desk';
+import { browserGlyph, browserName, skinOf, useDesk } from './desk';
 
 type It = Pick<DeskItem, 'key' | 'label' | 'glyph' | 'app' | 'target'>;
 const SYSTEM = new Set(['computer', 'recycle', 'documents', 'user-folder', 'network', 'control', 'heart-folder', 'sticky']);
@@ -26,7 +27,7 @@ function useLists() {
     for (const app of PINNED_APPS) {
       const it = ranked.find(i => i.app === app);
       if (!it) continue;
-      byApp.set(app, app === 'browser' ? { ...it, label: skin === 'xp' ? 'Internet' : browserName(ver.browser), glyph: it.glyph }
+      byApp.set(app, app === 'browser' ? { ...it, label: skin === 'xp' ? 'Internet' : browserName(ver.browser), glyph: browserGlyph(ver.browser) }
         : app === 'notepad' ? { ...it, label: 'Notepad', glyph: 'notepad' } : app === 'yahoo' ? { ...it, label: 'Yahoo! Messenger' } : it);
     }
     const pinned = [...byApp.values()];
@@ -50,7 +51,7 @@ function useLists() {
 function Row({ it, size = 16, sub, onPick }: { it: It; size?: number; sub?: string; onPick: (it: It) => void }) {
   return (
     <button type="button" className="dv-sm-row" onClick={() => onPick(it)}>
-      <Glyph name={it.glyph} size={size} /><span><b>{it.label}</b>{sub && <small>{sub}</small>}</span>
+      <Glyph name={it.glyph} label={it.label} size={size} /><span><b>{it.label}</b>{sub && <small>{sub}</small>}</span>
     </button>
   );
 }
@@ -76,7 +77,7 @@ function Start98({ pick }: P) {
   const [sub, setSub] = useState(false);
   return (
     <div className="dv-sm dv-sm98">
-      <div className="dv-sm98-band"><b>Sonic3k</b><i>98</i></div>
+      <div className="dv-sm98-band"><b>Windows</b><i>98</i></div>
       <div className="dv-sm98-list">
         {pinned.slice(0, 4).map(it => <Row key={it.key} it={it} size={24} onPick={pick} />)}
         <hr />
@@ -98,15 +99,16 @@ function StartXp({ pick }: P) {
   const { shutdown, ver } = useDesk();
   const { pinned, programs, places } = useLists();
   const [all, setAll] = useState(false);
+  const pic = useAssets('xp').a('user/chess.png');
   return (
     <div className="dv-sm dv-smxp">
-      <header><span className="dv-sm-pic"><Glyph name="chess" size={40} /></span><b>Sonic3k</b></header>
+      <header><span className="dv-sm-pic">{pic ? <img src={pic} alt="" /> : <Glyph name="chess" size={40} />}</span><b>Sonic3k</b></header>
       <div className="dv-smxp-cols">
         <div className="dv-smxp-left">
           {pinned.map(it => <Row key={it.key} it={it} size={32} sub={it.app === 'browser' ? browserName(ver.browser).replace(/^Microsoft /, '') : undefined} onPick={pick} />)}
           <div className="dv-smxp-sp" />
           <div className="dv-smxp-allwrap">
-            <button type="button" className="dv-smxp-all" onClick={() => setAll(a => !a)}><b>All Programs</b><i /></button>
+            <button type="button" className={`dv-smxp-all ${all ? 'on' : ''}`} onClick={() => setAll(a => !a)}><b>All Programs</b><i /></button>
             {all && <div className="dv-smxp-fly">{programs.map(it => <Row key={it.key} it={it} onPick={pick} />)}</div>}
           </div>
         </div>
@@ -164,7 +166,7 @@ function useLive() {
 function Tile({ it, wide, color, children, onPick }: { it: It; wide?: boolean; color: string; children?: ReactNode; onPick: (it: It) => void }) {
   return (
     <button type="button" className={`dv-tile ${wide ? 'wide' : ''}`} style={{ background: color }} onClick={() => onPick(it)} title={it.label}>
-      {children ?? <Glyph name={it.glyph} size={wide ? 44 : 40} />}
+      {children ?? <Glyph name={it.glyph} label={it.label} size={wide ? 44 : 40} />}
       <span className="dv-tile-label">{it.label}</span>
     </button>
   );
@@ -234,7 +236,7 @@ function Start10({ pick }: P) {
         <div className="dv-sm10-railbot">
           <button type="button" title="Sonic3k" onClick={() => pick({ key: 'u', label: 'Sonic3k', glyph: 'user-folder', app: 'documents' })}><Glyph name="chess" size={20} /></button>
           {places.filter(p => p.app === 'documents' || p.app === 'pictures' || p.app === 'control').map(p =>
-            <button type="button" key={p.key} title={p.label} onClick={() => pick(p)}><Glyph name={p.glyph} size={20} /></button>)}
+            <button type="button" key={p.key} title={p.label} onClick={() => pick(p)}><Glyph name={p.glyph} label={p.label} size={20} /></button>)}
           <button type="button" title="Power" onClick={shutdown}><Power /></button>
         </div>
       </nav>
@@ -261,7 +263,7 @@ function Start11({ pick }: P) {
         <div className="dv-sm11-all">{programs.map(it => <Row key={it.key} it={it} size={24} onPick={pick} />)}</div>
       ) : <>
         <div className="dv-sm11-grid">{grid.map(it => (
-          <button type="button" key={it.key} onClick={() => pick(it)} title={it.label}><Glyph name={it.glyph} size={32} /><span>{it.label}</span></button>
+          <button type="button" key={it.key} onClick={() => pick(it)} title={it.label}><Glyph name={it.glyph} label={it.label} size={32} /><span>{it.label}</span></button>
         ))}</div>
         <div className="dv-sm11-head"><b>Recommended</b></div>
         <div className="dv-sm11-rec">{memories.map(m => (

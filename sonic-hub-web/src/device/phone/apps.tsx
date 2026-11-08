@@ -359,7 +359,7 @@ export function PhoneBrowser({ url: start = 'home' }: { url?: string }) {
     <div className="ph-br">
       <div className="ph-br-bar"><button type="button" onClick={() => go('home')} aria-label="Dấu trang">☆</button><span>{address || 'Tìm kiếm hoặc nhập địa chỉ'}</span></div>
       <div className="ph-br-page">
-        {url === 'home' && <div className="ph-br-home">{marks.map(b => <button type="button" key={b.key} onClick={() => pick(b)}><Glyph name={b.glyph} size={44} /><span>{b.label}</span></button>)}</div>}
+        {url === 'home' && <div className="ph-br-home">{marks.map(b => <button type="button" key={b.key} onClick={() => pick(b)}><Glyph name={b.glyph} label={b.label} size={44} /><span>{b.label}</span></button>)}</div>}
         {url.startsWith('facebook.com') && <FacebookSite path="/facebook" />}
         {url.startsWith('forum/') && <ForumSite path={url.slice(6)} go={go} />}
         {url.startsWith('blog') && <BlogSite id={url.split('/')[1]} go={go} />}

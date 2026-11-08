@@ -1,8 +1,10 @@
 /* The desktop icons, top to bottom then the next column, as Windows lines them up; one click selects, a double click
-   (or a tap) opens. Shortcuts carry the little arrow. */
+   (or a tap) opens. Shortcuts carry the little arrow — the system's own when its files have come. */
 import { useState, type KeyboardEvent, type MouseEvent } from 'react';
 import type { DeskItem } from '../api';
+import { useAssets } from '../assets';
 import { Glyph } from '../glyphs';
+import { ICON_FOLDER, iconFiles } from '../skin';
 
 const CELL: Record<string, { w: number; h: number; icon: number }> = {
   w98: { w: 75, h: 70, icon: 32 }, xp: { w: 78, h: 74, icon: 32 }, vista: { w: 80, h: 84, icon: 48 }, w7: { w: 80, h: 84, icon: 48 },
@@ -27,12 +29,24 @@ export function DesktopIcons({ items, skin, height, onOpen }: { items: DeskItem[
           style={{ left: 2 + Math.floor(i / rows) * cell.w, top: 4 + (i % rows) * cell.h, width: cell.w - 4 }}
           onClick={click(it)} onDoubleClick={() => onOpen(it)} onKeyDown={key(it)} title={it.label}>
           <span className="dv-icon-img">
-            <Glyph name={it.glyph} size={cell.icon} />
-            {isShortcut(it) && <svg className="dv-sc" viewBox="0 0 10 10" aria-hidden="true"><rect x=".5" y=".5" width="9" height="9" fill="#fff" stroke="#777" /><path d="M3 7.5V5.2q0-1.8 1.8-1.8H7M5.6 2.2L7.2 3.4 5.6 4.6" fill="none" stroke="#1a4fd0" strokeWidth="1.3" /></svg>}
+            <Glyph name={it.glyph} label={it.label} size={cell.icon} />
+            {isShortcut(it) && <ShortcutArrow skin={skin} size={cell.icon} />}
           </span>
           <span className="dv-icon-label">{it.label}</span>
         </button>
       ))}
     </div>
   );
+}
+
+/** The arrow of a shortcut: the system's overlay (as big as the icon, the arrow in its corner), or a drawn one. */
+function ShortcutArrow({ skin, size }: { skin: string; size: number }) {
+  const folder = ICON_FOLDER[skin];
+  const { a, map } = useAssets(folder ?? 'xp');
+  const files = folder ? iconFiles(map, 'icon/shortcut-arrow-overlay', size) : null;
+  if (files) {
+    const one = a(files.one), two = files.two ? a(files.two) : undefined;
+    return <img className="dv-sc-own" src={one} srcSet={two ? `${one} 1x, ${two} 2x` : undefined} width={size} height={size} alt="" draggable={false} />;
+  }
+  return <svg className="dv-sc" viewBox="0 0 10 10" aria-hidden="true"><rect x=".5" y=".5" width="9" height="9" fill="#fff" stroke="#777" /><path d="M3 7.5V5.2q0-1.8 1.8-1.8H7M5.6 2.2L7.2 3.4 5.6 4.6" fill="none" stroke="#1a4fd0" strokeWidth="1.3" /></svg>;
 }

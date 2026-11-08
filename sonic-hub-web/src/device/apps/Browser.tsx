@@ -7,7 +7,8 @@ import { hub } from '../../api/hub';
 import { desk } from '../api';
 import { useMoment, utc, vnDate } from '../moment';
 import { Glyph } from '../glyphs';
-import { browserName, useDesk } from '../pc/desk';
+import { browserName, skinOf, useDesk } from '../pc/desk';
+import { useNavClick } from '../skin';
 import { useWinTitle } from '../pc/Window';
 import { FacebookSite } from '../fb/Site';
 
@@ -17,15 +18,16 @@ const titleOf = (url: string) => url.startsWith('facebook.com') ? 'Facebook' : u
 const glyphOf = (url: string) => url.startsWith('facebook') ? 'fb' : url.startsWith('forum') ? 'forum' : url.startsWith('blog') ? 'blog' : 'globe-blue';
 
 export function Browser({ url: start = 'home' }: { url?: string }) {
-  const { ver, machine } = useDesk();
+  const { ver, machine, os } = useDesk();
   const v = ver.browser ?? 'IE6';
+  const click = useNavClick(skinOf(os), v.startsWith('IE'));
   const bookmarks = machine.items.filter(i => i.place === 'BOOKMARK');
   const [tabs, setTabs] = useState<Tab[]>([{ id: 1, hist: [start], i: 0 }]);
   const [cur, setCur] = useState(1);
   const tab = tabs.find(t => t.id === cur) ?? tabs[0];
   const url = tab.hist[tab.i];
   const edit = useCallback((f: (t: Tab) => Tab) => setTabs(ts => ts.map(t => (t.id === cur ? f(t) : t))), [cur]);
-  const go = useCallback((u: string) => edit(t => ({ ...t, hist: [...t.hist.slice(0, t.i + 1), u], i: t.i + 1 })), [edit]);
+  const go = useCallback((u: string) => { click(); edit(t => ({ ...t, hist: [...t.hist.slice(0, t.i + 1), u], i: t.i + 1 })); }, [edit, click]);
   // what the page inside says it shows (Facebook's own links, a forum's address)
   const [shown, setShown] = useState<Record<string, string>>({});
   const report = useCallback((p: string) => setShown(s => (s[`${cur}:${url}`] === p ? s : { ...s, [`${cur}:${url}`]: p })), [cur, url]);
@@ -70,7 +72,7 @@ export function Browser({ url: start = 'home' }: { url?: string }) {
       {bookmarks.length > 0 && (
         <div className="dv-br-marks">
           {!tabbed && <span className="dv-br-label">Links</span>}
-          {bookmarks.map(b => <button type="button" key={b.key} onClick={() => openBookmark(b)}><Glyph name={b.glyph} size={14} />{b.label}</button>)}
+          {bookmarks.map(b => <button type="button" key={b.key} onClick={() => openBookmark(b)}><Glyph name={b.glyph} label={b.label} size={14} />{b.label}</button>)}
         </div>
       )}
       <div className="dv-br-page" key={`${tab.id}:${tab.i}`}>
@@ -91,7 +93,7 @@ function StartPage({ marks, open }: { marks: { key: string; label: string; glyph
     <div className="dv-br-start">
       <h2>{vnDate(T)}</h2>
       <div className="dv-br-tiles">
-        {marks.map(b => <button type="button" key={b.key} onClick={() => open(b)}><Glyph name={b.glyph} size={40} /><span>{b.label}</span></button>)}
+        {marks.map(b => <button type="button" key={b.key} onClick={() => open(b)}><Glyph name={b.glyph} label={b.label} size={40} /><span>{b.label}</span></button>)}
       </div>
     </div>
   );
