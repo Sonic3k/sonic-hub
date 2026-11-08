@@ -35,3 +35,23 @@ export function YmText({ text }: { text: string }) {
 
 /** A buzz, as it was archived ("<ding>") or typed. */
 export const isBuzz = (text?: string | null) => !!text && /^\s*(<ding>|BUZZ!!!)\s*$/i.test(text);
+
+/** The files each Messenger draws its windows with (buddy list, conversation, card, alert), to have them before it
+ *  opens; its emoticons come as they are typed. */
+export function ymFiles(v: string): string[] {
+  const common = ['icon/im-16.png', 'icon/messenger-16.png', 'icon/messenger-256.png', 'skin/images/DefaultFriendIcon.png'];
+  if (v === 'YM8') return [...common, 'ads/2007.png', 'res/png-1225.png', 'res/png-1226.png', 'res/png-1228.png',
+    ...['avatar-2007', 'avatars', 'busy', 'mail', 'offline', 'online', 'phone', 'plugins', 'voicemail', 'websearch',
+      'im-emobar', 'im-friendbar-icons', 'im-search', 'im-toolbar'].map(n => `ym8/${n}.png`)];
+  if (v === 'YM9') return [...common, 'ads/2010.png', 'skin/images/online.png', 'skin/images/offline.png', 'skin/theme/Yahoo!_Messenger.png',
+    ...['websearch', 'im-emobar', 'im-emobar-r', 'im-toolbar'].map(n => `ym9/${n}.png`)];
+  return [...common, v === 'YM10' ? 'ads/2011.png' : 'ads/2013.png', 'ym11/websearch-logo.png', 'skin/theme/mainmenubarbg_aero.png',
+    'skin/theme/Yahoo!_Messenger_aero.png', 'skin/SlotManager/BottomPluginPanel.png',
+    ...['AddBuddy', 'Plugins-arrow', 'SearchOptions', 'TabLeft', 'TabMenuLeft', 'TabRight', 'gameButton', 'icon_info', 'info_bg', 'me_bg',
+      'new_updates'].map(n => `skin/FriendList/${n}.png`),
+    ...['Clear', 'RecentContact_Icon', 'addbuddy', 'bg_selected', 'email', 'mobile_status', 'offline', 'online', 'rolodex',
+      'single_arrow_down', 'yinsider', 'SendFile', 'video', 'voice'].map(n => `skin/images/${n}.png`),
+    ...['Activities', 'IMTheme', 'PhotoShare', 'im_side_bg', 'im_tb_audibles', 'im_tb_buzz', 'im_tb_disp_img_toggle', 'im_tb_emoticon',
+      'im_tb_format', 'im_tb_screen_capture'].map(n => `skin/IMWindow/${n}.png`),
+    ...['background', 'card-CallButton', 'card-SmsButton', 'card-VideoButton'].map(n => `skin/ContactCard/${n}.png`)];
+}

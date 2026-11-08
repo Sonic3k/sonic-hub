@@ -8,7 +8,7 @@ import type { DeskDevice } from './api';
 import { play, useAssets } from './assets';
 
 export const ICON_FOLDER: Record<string, string | null> = { w98: null, xp: 'xp', vista: 'w7', w7: 'w7', w81: 'w7', w10: 'w10', w11: 'w10' };
-const CURSOR_FOLDER: Record<string, string> = { w98: 'w98', xp: 'xp', vista: 'w7', w7: 'w7', w81: 'w7', w10: 'w7', w11: 'w11' };
+export const CURSOR_FOLDER: Record<string, string> = { w98: 'w98', xp: 'xp', vista: 'w7', w7: 'w7', w81: 'w7', w10: 'w7', w11: 'w11' };
 
 /* hot spots of the cursors (read from their .cur files when the folders were built) */
 const HOT: Record<string, Record<string, [number, number]>> = {
@@ -21,7 +21,7 @@ const KEYWORD: Record<string, string> = { arrow: 'default', hand: 'pointer', bea
   ns: 'ns-resize', ew: 'ew-resize', nwse: 'nwse-resize', nesw: 'nesw-resize', no: 'not-allowed', help: 'help' };
 
 /* the parts of Luna (XP's blue theme) the stylesheet draws with, each a state of its bitmap (luna/<part>-<state>.png) */
-const LUNA: string[] = [
+export const LUNA: string[] = [
   ...['framecaption', 'framemaximized', 'frameleft', 'frameright', 'framebottom'].flatMap(p => [`${p}-0`, `${p}-1`]),
   ...['captionbutton', 'closebutton', 'minimizeglyph', 'maximizeglyph', 'restoreglyph', 'closeglyph'].flatMap(p => [0, 1, 2, 4].map(s => `${p}-${s}`)),
   'startbutton-0', 'startbutton-1', 'startbutton-2', 'taskbarbackground', 'taskbartray',
@@ -77,7 +77,7 @@ export const IconContext = createContext<IconCtx | null>(null);
 export const useIconCtx = () => useContext(IconContext);
 
 /* the system's own icons, by what a glyph names (icon/<base>-<size>.png in the system's icon folder) */
-const SYSTEM_ICONS: Record<string, Record<string, string>> = {
+export const SYSTEM_ICONS: Record<string, Record<string, string>> = {
   xp: { computer: 'my-computer', documents: 'my-documents', 'user-folder': 'my-documents', recycle: 'recycle-bin-empty', network: 'my-network-places',
     control: 'control-panel', settings: 'control-panel', folder: 'folder-closed', 'folder-pictures': 'my-pictures', 'folder-music': 'my-music',
     text: 'file-txt', image: 'file-image', film: 'file-video', music: 'file-audio', wave: 'file-audio', help: 'help', app: 'file-application-exe',
