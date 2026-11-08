@@ -1,0 +1,231 @@
+/* The systems' own look from their files (skin.tsx): every system's cursors, the Start buttons and boot, welcome and
+   lock screens, and XP's Luna drawn with its own bitmaps — the frame and caption buttons, the taskbar, Start and the
+   tray, the Start menu, scroll bars and buttons. Nothing here shows before the files have come: the cursors are
+   variables set only then, the rest hangs on .real (set on the screen once the system's folder has loaded). The
+   measures are Luna's own (NormalBlue.ini: SizingMargins as left right top bottom → border-image top right bottom left). */
+
+/* ── cursors ────────────────────────────────────────────────────────────── */
+
+.dv { cursor: var(--c-arrow, default); }
+:where(.dv button:not(.fbx *)) { cursor: var(--c-arrow, default); }
+.dv-wb { cursor: var(--c-arrow, auto); }
+.dv-wb :where(a[href]) { cursor: var(--c-hand, pointer); }
+.dv :where(input:not([type=checkbox], [type=radio], [type=button], [type=submit]), textarea, [contenteditable=true]) { cursor: var(--c-beam, text); }
+.dv-grip { cursor: var(--c-nwse, nwse-resize); }
+.dv-boot-boot { cursor: var(--c-busy, wait); }
+.dv-boot-login, .dv-boot-down { cursor: var(--c-appstart, progress); }
+
+/* ── icons ──────────────────────────────────────────────────────────────── */
+
+.dv-own-icon { display: block; flex: none; }
+.dv-sc-own { position: absolute; left: 0; top: 0; pointer-events: none; }
+.dv-w98 .dv-icon.sel .dv-icon-img > img:first-child { filter: brightness(.55) sepia(1) hue-rotate(190deg) saturate(4); }
+.dv-xp .dv-icon.sel .dv-icon-img > img:first-child { filter: brightness(.75) sepia(.6) hue-rotate(180deg) saturate(2.5); }
+
+/* ── Start buttons ──────────────────────────────────────────────────────── */
+
+.dv-start-flag { width: 16px; height: 16px; flex: none; }
+.dv-xp .dv-start-flag { width: 20px; height: 20px; filter: drop-shadow(1px 1px 1px rgba(0, 0, 0, .35)); }
+.dv-orb.real { width: 54px; height: 54px; border-radius: 0; background: no-repeat 0 0 / 54px 162px; box-shadow: none; margin: -7px 0; }
+.dv-orb.real::after { display: none; }
+.dv-start:hover .dv-orb.real { background-position: 0 -54px; box-shadow: none; }
+.dv-start.on .dv-orb.real, .dv-start:active .dv-orb.real { background-position: 0 -108px; box-shadow: none; }
+.dv-vista .dv-orb.real { width: 44px; height: 44px; background-size: 44px 132px; margin: -5px 0 0; }
+.dv-vista .dv-start:hover .dv-orb.real { background-position: 0 -44px; }
+.dv-vista .dv-start.on .dv-orb.real, .dv-vista .dv-start:active .dv-orb.real { background-position: 0 -88px; }
+.dv-flat { display: block; width: 54px; height: 40px; background: no-repeat 0 -7px / 54px 162px; }
+.dv-w81 .dv-start:hover { background: none; }
+.dv-w81 .dv-start:hover .dv-flat { background-position: 0 -61px; }
+.dv-w81 .dv-start.on .dv-flat, .dv-w81 .dv-start:active .dv-flat { background-position: 0 -115px; }
+.dv-logo11 { display: block; width: 16px; height: 16px; background: #fff; -webkit-mask: no-repeat center / contain; mask: no-repeat center / contain; }
+.dv-w10 .dv-start:hover .dv-logo11, .dv-w10 .dv-start.on .dv-logo11 { background: #429ce3; }
+.dv-logo11.w11 { width: 20px; height: 20px; background: linear-gradient(135deg, #5ec8ff 0%, #1a8ce8 45%, #0a5fc8 100%); }
+
+/* ── on and off ─────────────────────────────────────────────────────────── */
+
+.dv-post { position: absolute; inset: 0; background: #000; display: grid; place-items: center; animation: dv-fade .25s ease; }
+.dv-post img { max-width: 38%; max-height: 24%; }
+.dv-b98.real { background: #000 center / 100% 100% no-repeat; }
+.dv-b98.real .dv-b98-bar { height: 2.2%; }
+.dv-bxp.real, .dv-b7.real { gap: 0; }
+.dv-b43 { position: relative; height: 100%; max-width: 100%; aspect-ratio: 4 / 3; background: center / 100% 100% no-repeat; }
+/* XP's three blocks running in their box (the picture's own frame; its painted blocks covered) */
+.dv-bxp-run { position: absolute; left: 40.16%; top: 73.54%; width: 19.06%; height: 2.3%; background: #000; overflow: hidden; }
+.dv-bxp-run i { position: absolute; top: 0; bottom: 0; left: -25%; width: 6.4%; animation: dv-xprun 2.1s linear infinite;
+  background: linear-gradient(180deg, #2838c7, #5979ef 20%, #869ef3 50%, #5979ef 80%, #2838c7); }
+.dv-bxp-run i:nth-child(2) { animation-delay: .1s; }
+.dv-bxp-run i:nth-child(3) { animation-delay: .2s; }
+@keyframes dv-xprun { from { left: -25%; } to { left: 112%; } }
+/* Vista's green run */
+.dv-bvista-run { position: absolute; left: 40.31%; top: 73.75%; width: 18.75%; height: 1.9%; background: #000; overflow: hidden; }
+.dv-bvista-run i { position: absolute; top: 0; bottom: 0; left: -30%; width: 22%; animation: dv-xprun 1.9s linear infinite;
+  background: repeating-linear-gradient(90deg, transparent 0 2px, rgba(166, 223, 79, .95) 2px 5px), linear-gradient(90deg, transparent, #000 15%, #000 85%, transparent);
+  background-blend-mode: multiply; -webkit-mask: linear-gradient(90deg, transparent, #000 25%, #000 75%, transparent); mask: linear-gradient(90deg, transparent, #000 25%, #000 75%, transparent); }
+.dv-b7.real .dv-b7-orb { width: 108px; height: 108px; border-radius: 0; background: no-repeat 0 0 / 108px 324px; margin-bottom: 36px; }
+.dv-b10.real { gap: 90px; }
+.dv-b10-maker { width: 26%; max-height: 22%; object-fit: contain; }
+.dv-b10-logo { display: block; width: 92px; height: 92px; }
+.dv-b10-logo.w10 { background: no-repeat 0 0 / auto 100%; }
+.dv-b10-logo.w81, .dv-b10-logo.w11 { -webkit-mask: no-repeat center / contain; mask: no-repeat center / contain; }
+.dv-b10-logo.w81 { background: #1fb2f1; }
+.dv-b10-logo.w11 { background: linear-gradient(135deg, #5ec8ff 0%, #1a8ce8 45%, #0a5fc8 100%); }
+.dv-lxp-logo { display: flex; align-items: flex-end; gap: 6px; }
+.dv-lxp-logo img:first-child { width: 52px; height: 52px; }
+.dv-lxp-logo img:last-child { height: 44px; }
+.dv-lxp-pic img { display: block; width: 100%; height: 100%; border-radius: 4px; }
+.dv-lxp-bot span { display: flex; align-items: center; }
+.dv-lxp-bot span img { width: 26px; height: 26px; margin-right: 9px; }
+.dv-lxp-mid.center { flex-direction: column; gap: 24px; }
+.dv-dxp .dv-dxp-text { flex: none; background: none; margin: 0; font-size: 20px; }
+.dv-l7.real { background: #0d3a74 center / cover no-repeat; text-shadow: 0 1px 4px rgba(0, 0, 0, .55); }
+
+/* ── XP: Luna's frame ───────────────────────────────────────────────────── */
+
+/* a message box has only Close, and no icon in its title (every system) */
+.dv-app-box .dv-cap.min, .dv-app-box .dv-cap.max, .dv-app-box .dv-tb-icon { display: none; }
+
+.dv-fr { display: none; }
+.dv-xp.real .dv-win { padding: 0 4px 4px; background: transparent; border-radius: 0; box-shadow: none; }
+.dv-xp.real .dv-win.max { padding: 0; }
+.dv-xp.real .dv-tb { position: relative; z-index: 0; height: 29px; margin: 0 -4px; padding: 0 4px 0 6px; gap: 4px; border-radius: 0; background: none;
+  color: #fff; font: bold 13px "Trebuchet MS", Tahoma, sans-serif; text-shadow: 1px 1px rgb(10, 24, 131); }
+.dv-xp.real .dv-tb::before { content: ''; position: absolute; inset: 0; z-index: -1; border-style: solid; border-width: 9px 35px 17px 28px;
+  border-image: var(--l-framecaption-0) 9 35 17 28 fill stretch; }
+.dv-xp.real .dv-win:not(.on) .dv-tb { color: rgb(216, 228, 248); text-shadow: none; }
+.dv-xp.real .dv-win:not(.on) .dv-tb::before { border-image-source: var(--l-framecaption-1); }
+.dv-xp.real .dv-win.max .dv-tb { margin: 0; }
+.dv-xp.real .dv-win.max .dv-tb::before { border-image-source: var(--l-framemaximized-0); }
+.dv-xp.real .dv-win.max:not(.on) .dv-tb::before { border-image-source: var(--l-framemaximized-1); }
+.dv-xp.real .dv-fr { display: block; position: absolute; pointer-events: none; }
+.dv-xp.real .dv-fr.l, .dv-xp.real .dv-fr.r { top: 29px; bottom: 4px; width: 4px; background: 0 0 / 100% 100%; }
+.dv-xp.real .dv-fr.l { left: 0; background-image: var(--l-frameleft-0); }
+.dv-xp.real .dv-fr.r { right: 0; background-image: var(--l-frameright-0); }
+.dv-xp.real .dv-fr.b { left: 0; right: 0; bottom: 0; height: 4px; border-style: solid; border-width: 2px 4px; border-image: var(--l-framebottom-0) 2 5 fill stretch; }
+.dv-xp.real .dv-win:not(.on) .dv-fr.l { background-image: var(--l-frameleft-1); }
+.dv-xp.real .dv-win:not(.on) .dv-fr.r { background-image: var(--l-frameright-1); }
+.dv-xp.real .dv-win:not(.on) .dv-fr.b { border-image-source: var(--l-framebottom-1); }
+.dv-xp.real .dv-win.max .dv-fr { display: none; }
+
+/* caption buttons: the button's state under its glyph's (normal, hot, pressed; 4 = the window not active) */
+.dv-xp.real .dv-caps { align-self: flex-start; margin-top: 5px; gap: 3px; }
+.dv-xp.real .dv-cap { width: 21px; height: 21px; margin: 0; border: 0; border-radius: 0; filter: none; opacity: 1; color: transparent;
+  background: no-repeat center / 13px 13px, no-repeat 0 0 / 100% 100%; }
+.dv-xp.real .dv-cap svg { display: none; }
+.dv-xp.real .dv-cap.min { background-image: var(--l-minimizeglyph-0), var(--l-captionbutton-0); }
+.dv-xp.real .dv-cap.min:hover { background-image: var(--l-minimizeglyph-1), var(--l-captionbutton-1); }
+.dv-xp.real .dv-cap.min:active { background-image: var(--l-minimizeglyph-2), var(--l-captionbutton-2); }
+.dv-xp.real .dv-cap.max { background-image: var(--l-maximizeglyph-0), var(--l-captionbutton-0); }
+.dv-xp.real .dv-cap.max:hover { background-image: var(--l-maximizeglyph-1), var(--l-captionbutton-1); }
+.dv-xp.real .dv-cap.max:active { background-image: var(--l-maximizeglyph-2), var(--l-captionbutton-2); }
+.dv-xp.real .dv-win.max .dv-cap.max { background-image: var(--l-restoreglyph-0), var(--l-captionbutton-0); }
+.dv-xp.real .dv-win.max .dv-cap.max:hover { background-image: var(--l-restoreglyph-1), var(--l-captionbutton-1); }
+.dv-xp.real .dv-cap.close { background-image: var(--l-closeglyph-0), var(--l-closebutton-0); }
+.dv-xp.real .dv-cap.close:hover { background-image: var(--l-closeglyph-1), var(--l-closebutton-1); }
+.dv-xp.real .dv-cap.close:active { background-image: var(--l-closeglyph-2), var(--l-closebutton-2); }
+.dv-xp.real .dv-win:not(.on) .dv-cap.min { background-image: var(--l-minimizeglyph-4), var(--l-captionbutton-4); }
+.dv-xp.real .dv-win:not(.on) .dv-cap.max { background-image: var(--l-maximizeglyph-4), var(--l-captionbutton-4); }
+.dv-xp.real .dv-win.max:not(.on) .dv-cap.max { background-image: var(--l-restoreglyph-4), var(--l-captionbutton-4); }
+.dv-xp.real .dv-win:not(.on) .dv-cap.close { background-image: var(--l-closeglyph-4), var(--l-closebutton-4); }
+
+/* ── XP: taskbar, Start, tray ───────────────────────────────────────────── */
+
+.dv-xp.real .dv-task { background: none; isolation: isolate; }
+.dv-xp.real .dv-task::before { content: ''; position: absolute; inset: 0; z-index: -1; border-style: solid; border-width: 15px 0 11px;
+  border-image: var(--l-taskbarbackground) 15 0 11 0 fill stretch; }
+.dv-xp.real .dv-start { position: relative; z-index: 0; width: 99px; height: 100%; margin-right: 10px; padding: 0 0 2px 8px; gap: 5px; justify-content: flex-start;
+  border-radius: 0; background: none; box-shadow: none; filter: none; font: italic 19px "Franklin Gothic Medium", "Trebuchet MS", Arial, sans-serif;
+  text-shadow: 1px 1px 2px rgb(69, 76, 16), 2px 2px 3px rgba(0, 0, 0, .25); }
+.dv-xp.real .dv-start::before { content: ''; position: absolute; inset: 0; z-index: -1; border-style: solid; border-width: 13px 52px 14px 6px;
+  border-image: var(--l-startbutton-0) 13 52 14 6 fill stretch; }
+.dv-xp.real .dv-start:hover::before { border-image-source: var(--l-startbutton-1); }
+.dv-xp.real .dv-start.on::before, .dv-xp.real .dv-start:active::before { border-image-source: var(--l-startbutton-2); }
+.dv-xp.real .dv-start.on { filter: none; }
+.dv-xp.real .dv-tray { position: relative; z-index: 0; padding: 0 9px 0 19px; gap: 3px; background: none; border: 0; box-shadow: none; }
+.dv-xp.real .dv-tray::before { content: ''; position: absolute; inset: 0; z-index: -1; border-style: solid; border-width: 12px 10px 12px 34px;
+  border-image: var(--l-taskbartray) 12 10 12 34 fill stretch; }
+.dv-xp.real .dv-clock { padding: 0 2px 0 6px; font: 11px Tahoma, sans-serif; color: #fff; }
+/* window buttons: TaskBandButton (0 normal, 1 hot, 2 pressed, 4 the active window's, 5 it hot) */
+.dv-xp.real .dv-tb-btn { position: relative; z-index: 0; height: 24px; margin-top: 1px; padding: 0 8px 0 9px; border-radius: 0; background: none; box-shadow: none; color: #fff; }
+.dv-xp.real .dv-tb-btn::before { content: ''; position: absolute; inset: 0; z-index: -1; border-style: solid; border-width: 15px 5px 8px 17px;
+  border-image: var(--l-taskbandbutton-0) 15 5 8 17 fill stretch; }
+.dv-xp.real .dv-tb-btn:hover::before { border-image-source: var(--l-taskbandbutton-1); }
+.dv-xp.real .dv-tb-btn:active::before { border-image-source: var(--l-taskbandbutton-2); }
+.dv-xp.real .dv-tb-btn.on { background: none; box-shadow: none; }
+.dv-xp.real .dv-tb-btn.on::before { border-image-source: var(--l-taskbandbutton-4); }
+.dv-xp.real .dv-tb-btn.on:hover::before { border-image-source: var(--l-taskbandbutton-5); }
+.dv-xp.real .dv-ql button { border-radius: 0; }
+.dv-xp.real .dv-ql button:hover { background: var(--l-taskbandbuttonnoedge-1) 0 0 / 100% 100%; }
+.dv-xp.real .dv-ql button:active { background-image: var(--l-taskbandbuttonnoedge-2); }
+
+/* ── XP: the Start menu ─────────────────────────────────────────────────── */
+
+.dv-xp.real .dv-smxp { width: 380px; border: 0; border-radius: 0; background: transparent; box-shadow: 2px 2px 6px rgba(0, 0, 0, .45); }
+.dv-xp.real .dv-smxp header { position: relative; z-index: 0; height: 64px; padding: 0 10px 4px 8px; gap: 7px; border-radius: 0; background: none;
+  font: 19px "Franklin Gothic Medium", "Trebuchet MS", Tahoma, sans-serif; text-shadow: 1px 1px 2px rgba(0, 0, 0, .55); }
+.dv-xp.real .dv-smxp header::before { content: ''; position: absolute; inset: 0; z-index: -1; border-style: solid; border-width: 62px 60px 0 59px;
+  border-image: var(--l-startuserpanel) 62 60 0 59 fill stretch; }
+.dv-xp.real .dv-smxp header .dv-sm-pic { width: 56px; height: 56px; padding: 5px 7px 7px 5px; border: 0; border-radius: 0; box-shadow: none;
+  background: var(--l-usertilebackground) 0 0 / 100% 100%; }
+.dv-xp.real .dv-smxp header .dv-sm-pic img { display: block; width: 44px; height: 44px; border-radius: 3px; }
+.dv-xp.real .dv-smxp-cols { border-top: 0; border-image: none; }
+.dv-xp.real .dv-smxp-left { position: relative; z-index: 1; width: 190px; background: none; }  /* above the places: All Programs opens over them */
+.dv-xp.real .dv-smxp-left::before { content: ''; position: absolute; inset: 0; z-index: -1; border-style: solid; border-width: 3px 153px 0 2px;
+  border-image: var(--l-startpanelmfubackground) 3 153 0 2 fill stretch; }
+.dv-xp.real .dv-smxp-right { position: relative; z-index: 0; width: 190px; background: none; border-left: 0; }
+.dv-xp.real .dv-smxp-right::before { content: ''; position: absolute; inset: 0; z-index: -1; border-style: solid; border-width: 3px 7px 1px 172px;
+  border-image: var(--l-startpanelplacesbackground) 3 7 1 172 fill stretch; }
+.dv-xp.real .dv-smxp .dv-sm-row b { color: rgb(55, 55, 56); }
+.dv-xp.real .dv-smxp-right .dv-sm-row b { color: rgb(10, 36, 106); }
+.dv-xp.real .dv-smxp .dv-sm-row:hover { background: rgb(49, 106, 197); }
+.dv-xp.real .dv-smxp .dv-sm-row:hover b, .dv-xp.real .dv-smxp .dv-sm-row:hover small { color: #fff; }
+.dv-xp.real .dv-smxp-right hr { height: 2px; margin: 4px 10px; border: 0; background: var(--l-startplacesseparator) 0 0 / 100% 100%; }
+.dv-xp.real .dv-smxp-allwrap { border-top: 0; border-image: none; }
+.dv-xp.real .dv-smxp-allwrap::before { content: ''; display: block; height: 2px; margin: 0 9px; background: var(--l-startprogramsseparator) 0 0 / 100% 100%; }
+.dv-xp.real .dv-smxp-all { font: bold 11px Tahoma, sans-serif; color: rgb(55, 55, 56); }
+.dv-xp.real .dv-smxp-all:hover, .dv-xp.real .dv-smxp-all.on { background: rgb(49, 106, 197); color: #fff; }
+.dv-xp.real .dv-smxp-all i { width: 16px; height: 24px; border-radius: 0; box-shadow: none; background: var(--l-startpanelmoreprogarrow) center / 16px 24px no-repeat; }
+.dv-xp.real .dv-smxp-all:hover i { background-image: var(--l-startpanelmoreprogarrowhot); }
+.dv-xp.real .dv-smxp-all i::after { display: none; }
+.dv-xp.real .dv-smxp-fly { border: 0; padding: 0 0 0 4px; background: none; isolation: isolate; }
+.dv-xp.real .dv-smxp-fly::before { content: ''; position: absolute; inset: 0; z-index: -1; border-style: solid; border-width: 3px 4px 4px 6px;
+  border-image: var(--l-startgroupbackground) 3 4 4 6 fill stretch; }
+.dv-xp.real .dv-smxp footer { position: relative; z-index: 0; height: 40px; gap: 18px; background: none; }
+.dv-xp.real .dv-smxp footer::before { content: ''; position: absolute; inset: 0; z-index: -1; border-style: solid; border-width: 0 47px 38px 49px;
+  border-image: var(--l-startpanellogoffbackground) 0 47 38 49 fill stretch; }
+.dv-xp.real .dv-smxp-key { width: 24px; height: 24px; border: 0; border-radius: 0; background: var(--l-startpanellogoffbuttons) no-repeat 0 0 / 72px 24px; }
+.dv-xp.real .dv-smxp-key.k1 { background-position: -24px 0; }
+.dv-xp.real .dv-smxp-key.k2 { background-position: -48px 0; }
+.dv-xp.real .dv-smxp-key.k2 svg { display: none; }
+.dv-xp.real .dv-smxp footer button:hover .dv-smxp-key { background-image: var(--l-startpanellogoffbuttonshot); }
+
+/* ── XP: scroll bars and buttons ────────────────────────────────────────── */
+
+.dv-xp.real ::-webkit-scrollbar { width: 17px; height: 17px; }
+.dv-xp.real ::-webkit-scrollbar-corner { background: rgb(236, 233, 216); }
+.dv-xp.real ::-webkit-scrollbar-track:vertical { background: var(--l-scrollshaftvertical-0) 0 0 / 100% 100%; }
+.dv-xp.real ::-webkit-scrollbar-track:horizontal { background: var(--l-scrollshafthorizontal-0) 0 0 / 100% 100%; }
+.dv-xp.real ::-webkit-scrollbar-thumb { border: 4px solid transparent; }
+.dv-xp.real ::-webkit-scrollbar-thumb:vertical { border-image: var(--l-scrollthumbvertical-0) 4 stretch;
+  background: var(--l-scrollthumbgrippervertical-0) center / 8px 8px no-repeat, var(--l-scrollthumbvertical-0) 0 0 / 100% 100% border-box; }
+.dv-xp.real ::-webkit-scrollbar-thumb:vertical:hover { border-image-source: var(--l-scrollthumbvertical-1);
+  background-image: var(--l-scrollthumbgrippervertical-1), var(--l-scrollthumbvertical-1); }
+.dv-xp.real ::-webkit-scrollbar-thumb:horizontal { border-image: var(--l-scrollthumbhorizontal-0) 4 stretch;
+  background: var(--l-scrollthumbgripperhorizontal-0) center / 8px 8px no-repeat, var(--l-scrollthumbhorizontal-0) 0 0 / 100% 100% border-box; }
+.dv-xp.real ::-webkit-scrollbar-thumb:horizontal:hover { border-image-source: var(--l-scrollthumbhorizontal-1);
+  background-image: var(--l-scrollthumbgripperhorizontal-1), var(--l-scrollthumbhorizontal-1); }
+.dv-xp.real ::-webkit-scrollbar-button:single-button { display: block; width: 17px; height: 17px; background: no-repeat center / 9px 9px, no-repeat 0 0 / 100% 100%; }
+.dv-xp.real ::-webkit-scrollbar-button:single-button:vertical:decrement { background-image: var(--l-scrollarrowglyphs-0), var(--l-scrollarrows-0); }
+.dv-xp.real ::-webkit-scrollbar-button:single-button:vertical:decrement:hover { background-image: var(--l-scrollarrowglyphs-1), var(--l-scrollarrows-1); }
+.dv-xp.real ::-webkit-scrollbar-button:single-button:vertical:decrement:active { background-image: var(--l-scrollarrowglyphs-2), var(--l-scrollarrows-2); }
+.dv-xp.real ::-webkit-scrollbar-button:single-button:vertical:increment { background-image: var(--l-scrollarrowglyphs-4), var(--l-scrollarrows-4); }
+.dv-xp.real ::-webkit-scrollbar-button:single-button:vertical:increment:hover { background-image: var(--l-scrollarrowglyphs-5), var(--l-scrollarrows-5); }
+.dv-xp.real ::-webkit-scrollbar-button:single-button:vertical:increment:active { background-image: var(--l-scrollarrowglyphs-6), var(--l-scrollarrows-6); }
+.dv-xp.real ::-webkit-scrollbar-button:single-button:horizontal:decrement { background-image: var(--l-scrollarrowglyphs-8), var(--l-scrollarrows-8); }
+.dv-xp.real ::-webkit-scrollbar-button:single-button:horizontal:decrement:hover { background-image: var(--l-scrollarrowglyphs-9), var(--l-scrollarrows-9); }
+.dv-xp.real ::-webkit-scrollbar-button:single-button:horizontal:increment { background-image: var(--l-scrollarrowglyphs-12), var(--l-scrollarrows-12); }
+.dv-xp.real ::-webkit-scrollbar-button:single-button:horizontal:increment:hover { background-image: var(--l-scrollarrowglyphs-13), var(--l-scrollarrows-13); }
+.dv-xp.real .dv-box-btns button { height: 23px; border-style: solid; border-width: 9px 8px; border-radius: 0; padding: 0 4px; background: none; display: flex; align-items: center; justify-content: center;
+  border-image: var(--l-button-0) 9 8 fill stretch; }
+.dv-xp.real .dv-box-btns button:focus { border-image-source: var(--l-button-4); outline: none; }
+.dv-xp.real .dv-box-btns button:hover { border-image-source: var(--l-button-1); }
+.dv-xp.real .dv-box-btns button:active { border-image-source: var(--l-button-2); }

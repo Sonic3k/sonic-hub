@@ -1,10 +1,13 @@
 /* The iPhones (2015 on): the lock screen with T and what had just come in, the home screen of his apps and the dock,
-   each app under a navigation bar. Drawn here; no system art. */
+   each app under a navigation bar. Drawn here, on the wallpaper each iPhone came with (his colour), with its sounds:
+   the tri-tone for what had come in, the lock click when it is switched off. */
 import { useEffect, useState, type ReactNode } from 'react';
 import type { DeskItem } from '../api';
 import { clockText, utc, vn } from '../moment';
 import { Glyph } from '../glyphs';
 import { Wallpaper } from '../wallpapers';
+import { play, useAssets } from '../assets';
+import { phoneModel } from '../skin';
 import { emoticons } from '../apps/Chat';
 import { FacebookSite } from '../fb/Site';
 import { chatScreen, usePhone } from './ctx';
@@ -57,12 +60,12 @@ function Lock({ onOpen, notch }: { onOpen: () => void; notch: boolean }) {
   ];
   return (
     <div className="ph-lock" onClick={onOpen}>
-      <Wallpaper wp={machine.lock ?? machine.wallpaper} fallback="ios-dusk" />
+      <Wallpaper wp={machine.lock ?? machine.wallpaper} fallback="ios-dusk" asset={ownWallpaper(machine.device)} />
       <div className="ph-lock-time"><b>{pad(v.h)}:{pad(v.mi)}</b><span>{VI_WD[v.wd]}, {v.d} tháng {MONTH(v.mo)}</span></div>
       <div className="ph-lock-list">
         {notices.map(n => (
           <button type="button" key={n.key} className="ph-notice" onClick={e => { e.stopPropagation(); onOpen(); n.go(); }}>
-            <span className="ph-notice-head"><Glyph name={n.glyph} size={18} /><span>{n.app}</span><time>{n.time}</time></span>
+            <span className="ph-notice-head"><Glyph name={n.glyph} label={n.app} size={18} /><span>{n.app}</span><time>{n.time}</time></span>
             <b>{n.title}</b>{n.text && <span className="ph-notice-text">{n.text}</span>}
           </button>
         ))}
@@ -78,17 +81,17 @@ function Springboard() {
   const dock = machine.items.filter(i => i.place === 'DOCK').sort((a, b) => a.sort - b.sort);
   const icon = (it: DeskItem) => (
     <button type="button" key={it.key} className="ph-app" onClick={() => open(appOf(it), {})}>
-      <span className="ph-app-icon"><Glyph name={it.glyph} size={46} /></span><span className="ph-app-label">{it.label}</span>
+      <span className="ph-app-icon"><Glyph name={it.glyph} label={it.label} size={46} /></span><span className="ph-app-label">{it.label}</span>
     </button>
   );
   return (
     <div className="ph-board">
-      <Wallpaper wp={machine.wallpaper} fallback="ios-dusk" />
+      <Wallpaper wp={machine.wallpaper} fallback="ios-dusk" asset={ownWallpaper(machine.device)} />
       <div className="ph-board-grid">{home.map(icon)}</div>
       <div className="ph-board-dots"><i className="on" /><i /></div>
       <div className="ph-dock">{dock.map(it => (
         <button type="button" key={it.key} className="ph-app" onClick={() => open(appOf(it), {})} title={it.label}>
-          <span className="ph-app-icon"><Glyph name={it.glyph} size={46} /></span>
+          <span className="ph-app-icon"><Glyph name={it.glyph} label={it.label} size={46} /></span>
         </button>
       ))}</div>
     </div>
@@ -137,10 +140,21 @@ function AppView() {
   );
 }
 
+/** The picture an iPhone came with, in his colour (phones/<model>/wallpaper.jpg). */
+const ownWallpaper = (d: Parameters<typeof phoneModel>[0]): [string, string] | null => {
+  const m = phoneModel(d);
+  return m && m !== 'nokia' ? ['phones', `${m}/wallpaper.jpg`] : null;
+};
+
 export function IosScreen({ notch, homeBar }: { notch: boolean; homeBar: boolean }) {
-  const { stack, home, T } = usePhone();
+  const { stack, home, T, data } = usePhone();
   const [locked, setLocked] = useState(true);
   useEffect(() => setLocked(true), [T]);
+  // what had just come in rings once, as it did on the lock screen
+  const { a } = useAssets('phones');
+  const tone = a('iphone/tri-tone.mp3');
+  const news = data.day.toasts.length > 0;
+  useEffect(() => { if (locked && news && tone) { const id = window.setTimeout(() => play(tone, 0.5), 600); return () => window.clearTimeout(id); } }, [locked, news, tone]);
   const cur = stack[stack.length - 1];
   const light = locked || !cur || cur.app === 'photo';
   return (

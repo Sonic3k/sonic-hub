@@ -7,6 +7,7 @@ import './device.css';
 import './apps.css';
 import './phone.css';
 import './fb/fb.css';
+import './skins.css';
 
 const Pc = lazy(() => import('./pc/Pc'));
 const Phone = lazy(() => import('./phone/Phone'));

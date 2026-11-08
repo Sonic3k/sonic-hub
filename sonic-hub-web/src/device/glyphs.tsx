@@ -1,6 +1,9 @@
-/* Desktop icons, all drawn here (48×48), so no real product's artwork is copied: a glyph name says what the thing is
-   (a folder, a document, a browser globe, a chat smiley…) and the label under it says what he called it. */
+/* Desktop icons: a glyph name says what the thing is (a folder, a document, a browser globe, a chat smiley…) and the
+   label under it says what he called it. On a machine they are the system's own icons and the programs' icons of that
+   year (skin.tsx), from the files he gathered; what has none is drawn here (48×48). */
 import { useId, type ReactNode } from 'react';
+import { useAssets } from './assets';
+import { iconFiles, iconOf, useIconCtx } from './skin';
 
 type G = (id: string) => ReactNode;
 
@@ -248,11 +251,40 @@ const GLYPHS: Record<string, G> = {
   </>,
 };
 
-/** Icon by glyph name; anything unknown is a plain program icon. */
-export function Glyph({ name, size = 32, className }: { name?: string | null; size?: number; className?: string }) {
+/** Programs whose own icon is among the assets (folder, small one for 16 px, large one): drawn only until it comes. */
+const OWN: Record<string, [folder: string, small: string, large: string]> = {
+  'im-smile': ['yahoo', 'icon/messenger-16.png', 'icon/messenger-256.png'],
+};
+
+/** Icon by glyph name (and the item's name, which tells which program it is); on a machine, the system's own icon or the
+ *  program's icon of that year when there is one; anything unknown is a plain program icon. */
+export function Glyph({ name, size = 32, className, label }: { name?: string | null; size?: number; className?: string; label?: string }) {
+  const own = OWN[name ?? ''];
+  const pick = iconOf(name, label, useIconCtx());
+  if (own) return <OwnIcon own={own} name={name!} size={size} className={className} />;
+  if (pick) return <AssetIcon folder={pick[0]} base={pick[1]} name={name} size={size} className={className} />;
+  return <Drawn name={name} size={size} className={className} />;
+}
+
+function AssetIcon({ folder, base, name, size, className }: { folder: string; base: string; name?: string | null; size: number; className?: string }) {
+  const { a, map } = useAssets(folder);
+  const files = iconFiles(map, base.startsWith('icon/') ? base : `icon/${base}`, size);
+  if (!files) return <Drawn name={name} size={size} className={className} />;
+  const one = a(files.one), two = files.two ? a(files.two) : undefined;
+  return <img className={`dv-own-icon ${className ?? ''}`} src={one} srcSet={two ? `${one} 1x, ${two} 2x` : undefined} width={size} height={size} alt="" draggable={false} />;
+}
+
+function Drawn({ name, size, className }: { name?: string | null; size: number; className?: string }) {
   const id = useId().replace(/:/g, '');
   const draw = GLYPHS[name ?? ''] ?? GLYPHS.app;
   return <svg className={className} width={size} height={size} viewBox="0 0 48 48" aria-hidden="true">{draw(id)}</svg>;
+}
+
+function OwnIcon({ own: [folder, small, large], name, size, className }: { own: [string, string, string]; name: string; size: number; className?: string }) {
+  const { a } = useAssets(folder);
+  const src = a(size <= 16 ? small : large);
+  if (!src) return <Drawn name={name} size={size} className={className} />;
+  return <img className={`dv-own-icon ${className ?? ''}`} src={src} width={size} height={size} alt="" draggable={false} />;
 }
 
 /** The power mark that stands where a system's own logo would: a ring with a spark, his own. */

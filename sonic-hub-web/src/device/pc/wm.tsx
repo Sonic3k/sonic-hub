@@ -1,5 +1,5 @@
 /* The window manager: which windows are open, where, in what order; dragging, resizing, minimising, maximising. */
-import { createContext, useCallback, useContext, useMemo, useRef, useState, type PointerEvent as RPE, type ReactNode } from 'react';
+import { createContext, useCallback, useContext, useMemo, useRef, useState, type ComponentType, type PointerEvent as RPE, type ReactNode } from 'react';
 
 export interface WinSpec {
   app: string; arg?: Record<string, unknown>; title?: string; glyph?: string;
@@ -12,6 +12,8 @@ export interface Win {
 export interface AppDef {
   title: (arg: Record<string, unknown>) => string; glyph: string; w: number; h: number;
   render: (win: Win) => ReactNode;
+  /** what the title bar shows instead of the icon and title, when the program drew its own (fallback: the usual) */
+  Title?: ComponentType<{ win: Win; on: boolean; fallback: ReactNode }>;
 }
 
 interface Wm {

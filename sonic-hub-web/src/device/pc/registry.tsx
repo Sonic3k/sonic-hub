@@ -2,7 +2,7 @@
 import type { DeskItem, Os, Scene } from '../api';
 import { Explorer, type Loc } from '../apps/Explorer';
 import { Browser } from '../apps/Browser';
-import { YahooIm, YahooList } from '../apps/Yahoo';
+import { YahooIm, YahooList, YahooTitle } from '../apps/Yahoo';
 import { Messages } from '../apps/Messages';
 import { Memories, Notepad, PhotoViewer, Word } from '../apps/Viewers';
 import { MessageBox } from '../apps/MessageBox';
@@ -25,13 +25,16 @@ export const APPS: Record<string, AppDef> = {
   browser: { title: () => 'Internet', glyph: 'globe-blue', w: 1040, h: 700, render: w => <Browser url={str(w.arg.url)} /> },
   messenger: { title: () => 'Messenger', glyph: 'chat-blue', w: 940, h: 640,
     render: w => <FacebookSite path={str(w.arg.thread) ? `/messenger/${str(w.arg.thread)}` : '/messenger'} /> },
-  yahoo: { title: () => 'Yahoo! Messenger', glyph: 'im-smile', w: 280, h: 600, render: () => <YahooList /> },
-  im: { title: a => `${str(a.name) ?? ''} - Instant Message`, glyph: 'im-smile', w: 540, h: 480,
+  yahoo: { title: () => 'Yahoo! Messenger', glyph: 'im-smile', w: 300, h: 760, render: () => <YahooList />, Title: YahooTitle },
+  im: { title: a => `${str(a.name) ?? ''} - Instant Message`, glyph: 'im-smile', w: 560, h: 500,
     render: w => <YahooIm archiveId={str(w.arg.archiveId) ?? ''} name={str(w.arg.name) ?? ''} seq={num(w.arg.seq)} /> },
   messages: { title: a => (a.platform === 'ZALO' ? 'Zalo' : 'Messages'), glyph: 'sms', w: 860, h: 580,
     render: w => <Messages platform={str(w.arg.platform) ?? 'SMS'} archiveId={str(w.arg.archiveId)} seq={num(w.arg.seq)} /> },
   box: { title: () => 'Problem with Shortcut', glyph: 'help', w: 420, h: 170, render: w => <MessageBox text={str(w.arg.text) ?? ''} /> },
 };
+
+/** how wide his buddy list was in each Messenger (his screenshots of 2007, 2010, 2011 and 2013) */
+const YM_WIDTH: Record<string, number> = { YM8: 262, YM9: 250, YM10: 304, YM11: 352 };
 
 const box = (label: string): WinSpec => ({ app: 'box', arg: { text: `'${label}' is no longer on this computer.` }, title: label, w: 420, h: 170 });
 
@@ -51,7 +54,7 @@ export function specOf(it: Pick<DeskItem, 'app' | 'target' | 'label' | 'glyph'>,
     case 'blog': return { app: 'browser', arg: { url: 'blog' }, glyph: browserGlyph(ver.browser) };
     case 'link': return it.target ? { app: 'browser', arg: { url: it.target }, glyph: browserGlyph(ver.browser) } : box(label);
     case 'messenger': return { app: 'messenger', arg: {} };
-    case 'yahoo': return { app: 'yahoo', arg: {}, dock: 'right' };
+    case 'yahoo': return { app: 'yahoo', arg: {}, dock: 'right', w: YM_WIDTH[ver.yahoo ?? ''] ?? 340 };
     case 'messages': return { app: 'messages', arg: { platform: 'SMS' }, title: label, glyph: it.glyph ?? 'sms' };
     case 'zalo': return { app: 'messages', arg: { platform: 'ZALO' }, title: 'Zalo', glyph: 'chat-blue' };
     case 'word': return { app: 'word', arg: it.target ? { noteId: it.target } : {} };

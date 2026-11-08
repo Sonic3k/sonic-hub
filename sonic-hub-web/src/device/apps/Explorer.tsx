@@ -9,7 +9,8 @@ import type { MediaFile } from '../../types';
 import { dayAfter, useMoment, utc, vn, vnDate } from '../moment';
 import { Glyph } from '../glyphs';
 import { useWm } from '../pc/wm';
-import { useDesk } from '../pc/desk';
+import { skinOf, useDesk } from '../pc/desk';
+import { useNavClick } from '../skin';
 import { useWinTitle } from '../pc/Window';
 import { putSet, type ViewerPhoto } from './sets';
 
@@ -21,8 +22,9 @@ const toViewer = (m: MediaFile): ViewerPhoto => ({ id: m.id, url: pic(m, true), 
 export function Explorer({ start }: { start: Loc }) {
   const [hist, setHist] = useState<{ list: Loc[]; i: number }>({ list: [start], i: 0 });
   const loc = hist.list[hist.i];
-  const go = (l: Loc) => setHist(h => ({ list: [...h.list.slice(0, h.i + 1), l], i: h.i + 1 }));
   const { os } = useDesk();
+  const click = useNavClick(skinOf(os));
+  const go = (l: Loc) => { click(); setHist(h => ({ list: [...h.list.slice(0, h.i + 1), l], i: h.i + 1 })); };
   const places: [string, string, Loc][] = [
     ['Pictures', 'folder-pictures', { view: 'folder' }], ['Documents', 'documents', { view: 'documents' }],
     ['Angels', 'heart-folder', { view: 'angels' }], [os === 'WIN10' || os === 'WIN11' || os === 'WIN81' ? 'This PC' : os === 'WINXP' || os === 'WIN98' ? 'My Computer' : 'Computer', 'computer', { view: 'computer' }],
@@ -69,7 +71,7 @@ export function Explorer({ start }: { start: Loc }) {
 function Tile({ glyph, img, label, sub, onOpen }: { glyph?: string; img?: string | null; label: string; sub?: ReactNode; onOpen: () => void }) {
   return (
     <button type="button" className="dv-ex-tile" onDoubleClick={onOpen} onClick={e => { if ((e.nativeEvent as PointerEvent).pointerType === 'touch') onOpen(); }} title={label}>
-      <span className="dv-ex-icon">{img ? <img src={img} alt="" loading="lazy" /> : <Glyph name={glyph} size={48} />}</span>
+      <span className="dv-ex-icon">{img ? <img src={img} alt="" loading="lazy" /> : <Glyph name={glyph} label={label} size={48} />}</span>
       <span className="dv-ex-label">{label}</span>{sub && <small>{sub}</small>}
     </button>
   );

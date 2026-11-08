@@ -1,6 +1,7 @@
 /* The machines of a moment. Everything is scoped to .dv (the computer's screen) or .ph (the phone); the look of each
    system is a class on the screen: .dv-w98 .dv-xp .dv-vista .dv-w7 .dv-w81 .dv-w10 .dv-w11. Drawn here in the spirit
-   of each era — no system art or logos are used. */
+   of each era; once a system's own files have come, skins.css draws it with them (its cursors, Start, screens, and
+   XP's Luna bitmaps) over what is drawn here. */
 
 .dv-root, .dv-root body { margin: 0; height: 100%; background: #000; overflow: hidden; overscroll-behavior: none; }
 .dv-root #root { height: 100%; }

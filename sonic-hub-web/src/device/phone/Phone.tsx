@@ -5,7 +5,9 @@ import { keepPreviousData, useQuery } from '@tanstack/react-query';
 import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties, type ReactNode } from 'react';
 import { cdn } from '../../api/client';
 import { desk, type Machine, type MomentData } from '../api';
-import { MomentContext, atString, clockText, portalAt, usedText, utc, vnDate } from '../moment';
+import { MomentContext, atString, clockText, portalAt, usedText, utc, vn, vnDate } from '../moment';
+import { IconContext, phoneModel } from '../skin';
+import { play, useAssets } from '../assets';
 import { Glyph, Mark } from '../glyphs';
 import { useUrlParams } from '../url';
 import { Phone as PhoneCtxProvider, type PhoneCtx, type Screen } from './ctx';
@@ -37,7 +39,9 @@ export default function Phone() {
   if (!data.phone) return <NoPhone T={T} />;
   return (
     <MomentContext.Provider value={moment}>
-      <Handset data={data} machine={data.phone} T={T} at={moment.at!} fresh={!q.isPlaceholderData} setAt={setAt} />
+      <IconContext.Provider value={{ skin: data.phone.system?.os?.startsWith('NOKIA') ? 'nokia' : 'ios', year: vn(T).y, ver: data.phone.apps }}>
+        <Handset data={data} machine={data.phone} T={T} at={moment.at!} fresh={!q.isPlaceholderData} setAt={setAt} />
+      </IconContext.Provider>
     </MomentContext.Provider>
   );
 }
@@ -84,7 +88,8 @@ function Handset({ data, machine, T, at, fresh, setAt }: { data: MomentData; mac
   const open = useCallback((app: string, arg: Record<string, unknown> = {}) => setStack(s => [...s, { app, arg }]), []);
   const back = useCallback(() => setStack(s => s.slice(0, -1)), []);
   const home = useCallback(() => setStack([]), []);
-  const powerOff = useCallback(() => { setAsk(false); setPhase('down'); }, []);
+  const lockClick = useAssets('phones').a('iphone/lock.mp3');
+  const powerOff = useCallback(() => { setAsk(false); setPhase('down'); if (!nokia) play(lockClick, 0.6); }, [nokia, lockClick]);
   const ctx = useMemo<PhoneCtx>(() => ({ T, at, data, machine, nokia, stack, open, back, home, setAt, powerOff }),
     [T, at, data, machine, nokia, stack, open, back, home, setAt, powerOff]);
 
@@ -145,11 +150,13 @@ function Handset({ data, machine, T, at, fresh, setAt }: { data: MomentData; mac
 
 function Card({ machine, T, changed, onNext }: { machine: Machine; T: Date; changed: boolean; onNext: () => void }) {
   const d = machine.device;
+  const model = phoneModel(d);
+  const stock = useAssets('phones').a(model ? `${model}/photo.jpg` : '');
   return (
     <div className="ph-card" onClick={onNext} role="presentation">
       <div className="dv-card">
         <div className="dv-card-at">{vnDate(T)} · {clockText(T, true)}</div>
-        <div className="dv-card-ph">{d.photoUrl ? <img src={cdn(d.photoUrl, 960)} alt={d.name} /> : <Glyph name="phone" size={130} />}</div>
+        <div className="dv-card-ph">{d.photoUrl ? <img src={cdn(d.photoUrl, 960)} alt={d.name} /> : stock ? <img src={stock} alt={d.name} /> : <Glyph name="phone" size={130} />}</div>
         {changed && <div className="dv-card-new">Đổi máy</div>}
         <h1>{d.name}</h1>
         <p>{[d.model, `dùng ${usedText(d.from, d.to)}`].filter(Boolean).join(' · ')}</p>

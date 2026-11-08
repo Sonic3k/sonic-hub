@@ -48,6 +48,10 @@ public interface MediaFileRepository extends JpaRepository<MediaFile, UUID> {
     @Query("SELECT m FROM Collection c JOIN c.mediaFiles m WHERE c.id = :collectionId AND m.contentHash = :hash")
     List<MediaFile> findInCollectionByHash(@Param("collectionId") UUID collectionId, @Param("hash") String hash);
 
+    /** Everything filed directly in this collection. */
+    @Query("SELECT m FROM Collection c JOIN c.mediaFiles m WHERE c.id = :collectionId")
+    List<MediaFile> findInCollection(@Param("collectionId") UUID collectionId);
+
     /** Pre-flight resume check: which of these names already live in this collection. */
     @Query("SELECT m FROM Collection c JOIN c.mediaFiles m WHERE c.id = :collectionId AND m.fileName IN :names")
     List<MediaFile> findInCollectionByNames(@Param("collectionId") UUID collectionId, @Param("names") java.util.Collection<String> names);
