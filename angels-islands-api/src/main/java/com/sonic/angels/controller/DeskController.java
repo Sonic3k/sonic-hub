@@ -44,9 +44,10 @@ public class DeskController {
         this.assets = assets;
     }
 
+    /** The moment at T; device= picks one of the computers he had at T when there were two (else the usual one). */
     @GetMapping("/at")
-    public DeskDto.Moment at(@RequestParam(required = false) String at) {
-        return desk.moment(desk.at(at));
+    public DeskDto.Moment at(@RequestParam(required = false) String at, @RequestParam(required = false) String device) {
+        return desk.moment(desk.at(at), device);
     }
 
     @GetMapping("/scene")

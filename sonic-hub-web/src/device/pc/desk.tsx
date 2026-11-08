@@ -1,11 +1,13 @@
 /* What every part of the computer shares: T, the machine of T, and the few actions that change them. */
 import { createContext, useContext, useEffect, useState } from 'react';
-import type { DeskItem, Machine, MomentData, Os } from '../api';
+import type { DeskDevice, DeskItem, Machine, MomentData, Os } from '../api';
+import { utc } from '../moment';
 
 export interface DeskCtx {
   T: Date; at: string; data: MomentData; machine: Machine; os: Os; ver: Record<string, string>;
-  /** move T (Vietnam wall-clock "2011-08-22T20:35"); a different machine means a reboot */
-  setAt: (at: string) => void;
+  /** move T (Vietnam wall-clock "2011-08-22T20:35"), on the computer named if he had it then; a different machine
+   *  means a reboot */
+  setAt: (at: string, device?: string) => void;
   /** what a desktop icon, a Start entry or a bookmark opens */
   openItem: (item: Pick<DeskItem, 'app' | 'target' | 'label' | 'glyph'>) => void;
   /** go back to a memory: its moment, its windows */
@@ -31,6 +33,12 @@ export const skinOf = (os: Os | undefined | null): string => {
     case 'WIN11': return 'w11';
     default: return 'xp';
   }
+};
+
+/** The computers he had at T, in the order he got them — there were years with two (his own and the family's). */
+export const computersAt = (all: DeskDevice[], T: Date): DeskDevice[] => {
+  const t = T.getTime();
+  return all.filter(m => m.kind !== 'PHONE' && (utc(m.from)?.getTime() ?? -Infinity) <= t && (utc(m.to)?.getTime() ?? Infinity) > t);
 };
 
 /** From Windows 7 the taskbar is tall enough for the date under the time; before, only the time. */
