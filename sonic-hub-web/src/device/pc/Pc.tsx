@@ -8,6 +8,7 @@ import { desk, type DeskItem, type Machine, type MomentData, type Scene } from '
 import { useUrlParams } from '../url';
 import { MomentContext, atString, portalAt, utc, vn } from '../moment';
 import { IconContext, useSkin } from '../skin';
+import { usePreloadPc } from '../preload';
 import { Wallpaper } from '../wallpapers';
 import { viewDay } from '../apps/Viewers';
 import { Desk, browserGlyph, skinOf, type DeskCtx } from './desk';
@@ -105,6 +106,8 @@ function Desktop({ data, machine, T, at, fresh, scene, go, scr, skin }: {
   const { sound } = look;
   const year = vn(T).y;
   const iconCtx = useMemo(() => ({ skin, year, ver }), [skin, year, ver]);
+  // its files fetched while it shows itself and starts, so the desktop opens whole
+  usePreloadPc(machine, skin, year);
 
   // another machine, or another system on it: reboot into it
   useEffect(() => {

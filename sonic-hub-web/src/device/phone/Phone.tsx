@@ -8,6 +8,7 @@ import { desk, type Machine, type MomentData } from '../api';
 import { MomentContext, atString, clockText, portalAt, usedText, utc, vn, vnDate } from '../moment';
 import { IconContext, phoneModel } from '../skin';
 import { play, useAssets } from '../assets';
+import { usePreloadPhone } from '../preload';
 import { Glyph, Mark } from '../glyphs';
 import { useUrlParams } from '../url';
 import { Phone as PhoneCtxProvider, type PhoneCtx, type Screen } from './ctx';
@@ -89,6 +90,7 @@ function Handset({ data, machine, T, at, fresh, setAt }: { data: MomentData; mac
   const back = useCallback(() => setStack(s => s.slice(0, -1)), []);
   const home = useCallback(() => setStack([]), []);
   const lockClick = useAssets('phones').a('iphone/lock.mp3');
+  usePreloadPhone(machine, vn(T).y);
   const powerOff = useCallback(() => { setAsk(false); setPhase('down'); if (!nokia) play(lockClick, 0.6); }, [nokia, lockClick]);
   const ctx = useMemo<PhoneCtx>(() => ({ T, at, data, machine, nokia, stack, open, back, home, setAt, powerOff }),
     [T, at, data, machine, nokia, stack, open, back, home, setAt, powerOff]);
