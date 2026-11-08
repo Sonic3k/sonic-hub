@@ -114,18 +114,22 @@ public class DeskService {
         return at == null || at.isBlank() ? LocalDateTime.now(ZoneOffset.UTC).withNano(0) : reads.at(at);
     }
 
-    public DeskDto.Moment moment(LocalDateTime t) {
+    /** The moment at T, with the computer asked for (its key) when it is one he had at T — there were times he had two. */
+    public DeskDto.Moment moment(LocalDateTime t, String computerKey) {
         Snapshot s = snap();
-        DeskDto.Machine computer = machine(s, t, false), phone = machine(s, t, true);
+        DeskDto.Machine computer = machine(s, t, false, computerKey), phone = machine(s, t, true, null);
         return new DeskDto.Moment(t, computer, phone, day(t), s.devices.stream().map(Dev::dto).toList());
     }
 
-    /** The computer (or phone) of T: the one whose span covers T (the later one when two do); before the first, the first. */
-    private DeskDto.Machine machine(Snapshot s, LocalDateTime t, boolean phone) {
+    /** The computer (or phone) of T: the one asked for if its span covers T, else the one whose span covers T (the later
+     *  one when two do); before the first, the first. */
+    private DeskDto.Machine machine(Snapshot s, LocalDateTime t, boolean phone, String wanted) {
         List<Dev> mine = s.devices.stream().filter(d -> (d.kind == DeskDevice.Kind.PHONE) == phone).toList();
         if (mine.isEmpty()) return null;
         Dev dev = null;
-        for (Dev d : mine) if (d.span.covers(t)) dev = d;               // sorted by start: the last that covers wins
+        for (Dev d : mine) if (d.span.covers(t)) dev = d;               // sorted by start: the last that covers wins…
+        if (wanted != null)                                            // …unless another one he had then is asked for
+            for (Dev d : mine) if (d.dto.key().equals(wanted) && d.span.covers(t)) dev = d;
         if (dev == null) {                                             // in a gap or past the end: the last one he had…
             for (Dev d : mine) if (d.span.from == null || !d.span.from.isAfter(t)) dev = d;
             if (dev == null) {                                         // …before the first: the first computer, no phone yet

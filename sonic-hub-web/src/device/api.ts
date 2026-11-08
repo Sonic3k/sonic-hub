@@ -31,7 +31,8 @@ export interface Buddy { ref: Ref; name: string; archiveId?: string | null; stat
 export interface BuddyList { me?: Ref | null; status?: string | null; groups: { name: string; online: number; buddies: Buddy[] }[]; at: string }
 
 export const desk = {
-  at: (at: string) => get<MomentData>('/desk/at', { at }),
+  /** the moment at T; device = one of the two computers he had then (else the usual one) */
+  at: (at: string, device?: string | null) => get<MomentData>('/desk/at', { at, device }),
   scene: (episode: string) => get<Scene>('/desk/scene', { episode }),
   folders: (at: string, parent?: string) => get<FolderPage>('/desk/folders', { at, parent }),
   memories: (at: string, q?: string, page = 0, size = 40) => get<MemoryPage>('/desk/memories', { at, q, page, size }),

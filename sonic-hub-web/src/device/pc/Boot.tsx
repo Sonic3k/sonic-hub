@@ -1,9 +1,10 @@
 /* Turning the machine on and off: the machine itself (his photo of it), its maker's mark, the system starting as it
    did then (its own boot screen), the welcome or lock screen, and at the end the screen of shutting down. A click
-   moves on. The screens are the systems' own pictures once their files have come; until then they are drawn. */
+   moves on. The screens are the systems' own pictures once their files have come; until then they are drawn. When he
+   had two computers at the time, the other one stands beside this one while it shows itself; a click on it starts it. */
 import { useEffect, useState, type CSSProperties, type ReactNode } from 'react';
 import { cdn } from '../../api/client';
-import type { Machine } from '../api';
+import type { DeskDevice, Machine } from '../api';
 import { useAssets } from '../assets';
 import { clockText, longDate, usedText, vnDate } from '../moment';
 import { Glyph, Mark } from '../glyphs';
@@ -17,13 +18,14 @@ const Dots = () => <div className="dv-dots">{[0, 1, 2, 3, 4].map(i => <i key={i}
 const Spin = () => <div className="dv-spin" />;
 const bg = (u?: string): CSSProperties | undefined => (u ? { backgroundImage: `url("${u}")` } : undefined);
 
-export function Boot({ phase, machine, skin, T, changed, onNext }: {
-  phase: Phase; machine: Machine; skin: string; T: Date; changed: 'first' | 'machine' | 'os'; onNext: () => void;
+export function Boot({ phase, machine, skin, T, changed, others = [], onPick, onNext }: {
+  phase: Phase; machine: Machine; skin: string; T: Date; changed: 'first' | 'machine' | 'os';
+  others?: DeskDevice[]; onPick?: (key: string) => void; onNext: () => void;
 }) {
   if (phase === 'on') return null;
   return (
     <div className={`dv-boot dv-boot-${phase} dv-boot-${skin}`} onClick={onNext} role="presentation">
-      {phase === 'card' && <Card machine={machine} T={T} changed={changed} />}
+      {phase === 'card' && <Card machine={machine} T={T} changed={changed} others={others} onPick={onPick} />}
       {phase === 'boot' && <Starting skin={skin} machine={machine} />}
       {phase === 'login' && <Login skin={skin} machine={machine} T={T} />}
       {phase === 'down' && <Down skin={skin} />}
@@ -31,18 +33,33 @@ export function Boot({ phase, machine, skin, T, changed, onNext }: {
   );
 }
 
-function Card({ machine, T, changed }: { machine: Machine; T: Date; changed: string }) {
+function Card({ machine, T, changed, others, onPick }: {
+  machine: Machine; T: Date; changed: string; others: DeskDevice[]; onPick?: (key: string) => void;
+}) {
   const d = machine.device;
   const m = useAssets('machines');
   const stock = makerOf(d) === 'rog' ? m.a('rog/photo.jpg') : undefined;
+  const two = others.length > 0 && !!onPick;
   return (
-    <div className="dv-card">
+    <div className={`dv-card ${two ? 'dv-card-two' : ''}`}>
       <div className="dv-card-at">{vnDate(T)} · {clockText(T, true)}</div>
-      <div className="dv-card-ph">{d.photoUrl ? <img src={cdn(d.photoUrl, 960)} alt={d.name} /> : stock ? <img src={stock} alt={d.name} /> : <Glyph name="computer" size={150} />}</div>
-      {changed === 'machine' && <div className="dv-card-new">Đổi máy</div>}
-      <h1>{d.name}</h1>
-      <p>{[osName(machine.system?.os), `dùng ${usedText(d.from, d.to)}`].filter(Boolean).join(' · ')}</p>
-      <span className="dv-card-led" />
+      <div className="dv-card-row">
+        <div className="dv-card-main">
+          <div className="dv-card-ph">{d.photoUrl ? <img src={cdn(d.photoUrl, 960)} alt={d.name} /> : stock ? <img src={stock} alt={d.name} /> : <Glyph name="computer" size={150} />}</div>
+          {changed === 'machine' && <div className="dv-card-new">Đổi máy</div>}
+          <h1>{d.name}</h1>
+          <p>{[osName(machine.system?.os), `dùng ${usedText(d.from, d.to)}`].filter(Boolean).join(' · ')}</p>
+          <span className="dv-card-led" />
+        </div>
+        {two && others.map(o => (
+          <button type="button" key={o.key} className="dv-card-alt" onClick={e => { e.stopPropagation(); onPick!(o.key); }}>
+            <span className="dv-card-ph">{o.photoUrl ? <img src={cdn(o.photoUrl, 480)} alt="" /> : <Glyph name="computer" size={84} />}</span>
+            <b>{o.name}</b>
+            <small>dùng {usedText(o.from, o.to)}</small>
+            <em>Bật máy này</em>
+          </button>
+        ))}
+      </div>
     </div>
   );
 }

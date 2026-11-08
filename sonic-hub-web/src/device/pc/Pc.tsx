@@ -1,17 +1,21 @@
 /* The computer of a moment: /pc?at=2011-08-22T20:35 (Vietnam wall-clock; none = now), or /pc?scene=<memory id> to go
    back to a memory with its windows open. It boots as the machine he had then (his photo of it, the system starting),
    runs what started with it, keeps T in its clock (a click there is the time machine; another machine's time
-   reboots into that machine), and when shut down goes back to the portal on that day. */
+   reboots into that machine), and when shut down goes back to the portal on that day. In the years he had two
+   computers it starts the later one, shows the other beside it while showing itself, and &device=<key> starts that
+   one instead (kept while moving in time, as long as he still had it). */
 import { keepPreviousData, useQuery } from '@tanstack/react-query';
 import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties } from 'react';
+import { cdn } from '../../api/client';
 import { desk, type DeskItem, type Machine, type MomentData, type Scene } from '../api';
+import { preloadImages } from '../assets';
 import { useUrlParams } from '../url';
 import { MomentContext, atString, portalAt, utc, vn } from '../moment';
 import { IconContext, useSkin } from '../skin';
 import { usePreloadPc } from '../preload';
 import { Wallpaper } from '../wallpapers';
 import { viewDay } from '../apps/Viewers';
-import { Desk, browserGlyph, skinOf, type DeskCtx } from './desk';
+import { Desk, browserGlyph, computersAt, skinOf, type DeskCtx } from './desk';
 import { WmProvider, useWm } from './wm';
 import { APPS, sceneSpecs, specOf } from './registry';
 import { Window } from './Window';
@@ -57,7 +61,9 @@ export default function Pc() {
   const sceneAt = sceneQ.data ? atString(utc(sceneQ.data.at)!) : null;
   const at = sceneId ? (sceneAt ?? (sceneQ.isError ? last.current : null)) : sp.get('at') ?? last.current;
   if (at) last.current = at;
-  const q = useQuery({ queryKey: ['desk-at', at], queryFn: () => desk.at(at!), enabled: !!at, placeholderData: keepPreviousData, staleTime: 5 * 60_000 });
+  const want = sceneId ? null : sp.get('device');
+  const q = useQuery({ queryKey: ['desk-at', at, want], queryFn: () => desk.at(at!, want), enabled: !!at, placeholderData: keepPreviousData,
+    staleTime: 5 * 60_000 });
   const vp = useViewport();
   const data = q.data;
   const machine = data?.computer ?? null;
@@ -79,15 +85,15 @@ export default function Pc() {
       <WmProvider apps={APPS} area={{ w: scr.W, h: scr.H - TASKBAR[skin] }} scale={scr.s}
         dockInset={!scr.small && machine.items.some(i => i.place === 'GADGET') ? (skin === 'vista' ? 150 : 156) : 0}>
         <Desktop data={data} machine={machine} T={T} at={moment.at!} fresh={!q.isPlaceholderData} scene={sceneId ? sceneQ.data ?? null : null}
-          go={go} scr={scr} skin={skin} />
+          go={go} want={want} scr={scr} skin={skin} />
       </WmProvider>
     </MomentContext.Provider>
   );
 }
 
-function Desktop({ data, machine, T, at, fresh, scene, go, scr, skin }: {
+function Desktop({ data, machine, T, at, fresh, scene, go, want, scr, skin }: {
   data: MomentData; machine: Machine; T: Date; at: string; fresh: boolean; scene: Scene | null;
-  go: (p: Record<string, string>) => void; scr: { W: number; H: number; s: number; small: boolean }; skin: string;
+  go: (p: Record<string, string>) => void; want: string | null; scr: { W: number; H: number; s: number; small: boolean }; skin: string;
 }) {
   const wm = useWm();
   const { open, closeAll, close } = wm;
@@ -122,14 +128,20 @@ function Desktop({ data, machine, T, at, fresh, scene, go, scr, skin }: {
     setPhase(kind === 'os' ? 'boot' : 'card');
   }, [fresh, bootKey, machine.device.key, closeAll]);
 
+  // the other computer he had at T (the years with two): shown beside this one while it shows itself, a click starts it
+  const others = useMemo(() => computersAt(data.machines, T).filter(m => m.key !== machine.device.key), [data.machines, T, machine.device.key]);
+  const choosing = others.length > 0 && want !== machine.device.key;
+  const pick = useCallback((key: string) => go({ at, device: key }), [go, at]);
+  useEffect(() => { preloadImages(others.map(o => (o.photoUrl ? cdn(o.photoUrl, 480) : undefined))); }, [others]);
+
   const next = useCallback(() => setPhase(p => p === 'card' ? 'boot' : p === 'boot' ? (skin === 'w98' ? 'on' : 'login') : p === 'login' ? 'on' : p), [skin]);
   const off = useCallback(() => window.location.assign(portalAt(T)), [T]);
   useEffect(() => {
     if (phase === 'on') return;
     const id = window.setTimeout(phase === 'down' ? off : next,
-      phase === 'card' ? 2600 : phase === 'boot' ? 2600 : phase === 'login' ? 1700 : SHUTDOWN_SOUND.has(skin) ? 3000 : 1600);
+      phase === 'card' ? (choosing ? 6000 : 2600) : phase === 'boot' ? 2600 : phase === 'login' ? 1700 : SHUTDOWN_SOUND.has(skin) ? 3000 : 1600);
     return () => window.clearTimeout(id);
-  }, [phase, next, off, skin]);
+  }, [phase, next, off, skin, choosing]);
 
   // the sounds of the system starting (at its welcome screen from 7 on, with the desktop before) and going down
   const lastPhase = useRef<Phase>(phase);
@@ -179,7 +191,11 @@ function Desktop({ data, machine, T, at, fresh, scene, go, scr, skin }: {
   }, [scene, phase, fresh, T, sceneAsk, wm.wins, wm.area.w, close, open, messengerApp, os, ver, scr.small]);
 
   const toScene = useCallback((id: string) => { setStartOpen(false); setTimeOpen(false); setSceneAsk(n => n + 1); go({ scene: id }); }, [go]);
-  const setAt = useCallback((next: string) => go({ at: next }), [go]);
+  // moving in time keeps the computer picked by hand, while he still had it (the server says when he didn't)
+  const setAt = useCallback((next: string, device?: string) => {
+    const d = device ?? (want && want === machine.device.key ? want : undefined);
+    go(d ? { at: next, device: d } : { at: next });
+  }, [go, want, machine.device.key]);
   const shutdown = useCallback(() => { setStartOpen(false); setTimeOpen(false); setPhase('down'); }, []);
   const openTime = useCallback(() => { setStartOpen(false); setTimeOpen(true); }, []);
 
@@ -226,7 +242,7 @@ function Desktop({ data, machine, T, at, fresh, scene, go, scr, skin }: {
           {timeOpen && <TimeMachine onClose={() => setTimeOpen(false)} />}
           <Taskbar startOpen={startOpen} timeOpen={timeOpen} onStart={() => { setTimeOpen(false); setStartOpen(o => !o); }}
             onClock={() => { setStartOpen(false); setTimeOpen(o => !o); }} />
-          <Boot phase={phase} machine={machine} skin={skin} T={T} changed={changed} onNext={phase === 'down' ? off : next} />
+          <Boot phase={phase} machine={machine} skin={skin} T={T} changed={changed} others={others} onPick={pick} onNext={phase === 'down' ? off : next} />
           {saver && phase === 'on' && <Screensaver kind={saverKind(skin, machine)} machine={machine} skin={skin} T={T} onWake={wake} />}
         </div>
       </div>

@@ -1,22 +1,24 @@
 /* The clock's time machine: the calendar of T's month, the time, a day back or ahead, a day at random, back to now,
-   and the computers he had (each opens on its first day). Changing to another machine's time reboots into it. */
+   and the computers he had (each opens on its first day, or at T when he had it then too). Changing to another
+   machine's time reboots into it. */
 import { useState } from 'react';
 import { cdn } from '../../api/client';
 import { clockText, usedText, viLong, vn } from '../moment';
 import { Glyph } from '../glyphs';
-import { useDesk, useTick } from './desk';
+import { computersAt, useDesk, useTick } from './desk';
 
 const pad = (n: number) => String(n).padStart(2, '0');
 const WD = ['T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'CN'];
 
 export function TimeMachine({ onClose }: { onClose: () => void }) {
-  const { T, setAt, data, machine } = useDesk();
+  const { T, at: atNow, setAt, data, machine } = useDesk();
   const tick = useTick(T, 1000);
   const t = vn(T), now = vn(new Date());
   const [view, setView] = useState({ y: t.y, m: t.mo });
   const [day, setDay] = useState({ y: t.y, m: t.mo, d: t.d });
   const [time, setTime] = useState(`${pad(t.h)}:${pad(t.mi)}`);
-  const go = (at: string) => { setAt(at); onClose(); };
+  const go = (at: string, device?: string) => { setAt(at, device); onClose(); };
+  const alsoNow = new Set(computersAt(data.machines, T).map(m => m.key));
   const at = (y: number, m: number, d: number, hm: string) => `${y}-${pad(m + 1)}-${pad(d)}T${hm}`;
   const byDays = (n: number) => { const x = vn(new Date(T.getTime() + n * 86400_000)); go(at(x.y, x.mo, x.d, `${pad(x.h)}:${pad(x.mi)}`)); };
   const random = () => {
@@ -71,11 +73,12 @@ export function TimeMachine({ onClose }: { onClose: () => void }) {
         <h4>Các máy tính đã dùng</h4>
         {computers.map(m => {
           const f = m.from ? vn(new Date(`${m.from}Z`)) : null;
+          const cur = m.key === machine.device.key, same = !cur && alsoNow.has(m.key);
           return (
-            <button type="button" key={m.key} className={m.key === machine.device.key ? 'cur' : ''}
-              onClick={() => f && go(at(f.y, f.mo, f.d, '20:00'))} disabled={!f}>
+            <button type="button" key={m.key} className={cur ? 'cur' : ''} disabled={!f && !same}
+              onClick={() => (same ? go(atNow, m.key) : f && go(at(f.y, f.mo, f.d, '20:00'), m.key))}>
               <span className="dv-time-ph">{m.photoUrl ? <img src={cdn(m.photoUrl, 160)} alt="" /> : <Glyph name="computer" size={30} />}</span>
-              <span><b>{m.name}</b><small>{usedText(m.from, m.to)}</small></span>
+              <span><b>{m.name}</b><small>{usedText(m.from, m.to)}{same ? ' · có cùng lúc này' : ''}</small></span>
             </button>
           );
         })}
