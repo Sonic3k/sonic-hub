@@ -1,6 +1,7 @@
 /* What every part of the computer shares: T, the machine of T, and the few actions that change them. */
 import { createContext, useContext, useEffect, useState } from 'react';
 import type { DeskDevice, DeskItem, Machine, MomentData, Os } from '../api';
+import { isComputer } from '../api';
 import { utc } from '../moment';
 
 export interface DeskCtx {
@@ -38,7 +39,7 @@ export const skinOf = (os: Os | undefined | null): string => {
 /** The computers he had at T, in the order he got them — there were years with two (his own and the family's). */
 export const computersAt = (all: DeskDevice[], T: Date): DeskDevice[] => {
   const t = T.getTime();
-  return all.filter(m => m.kind !== 'PHONE' && (utc(m.from)?.getTime() ?? -Infinity) <= t && (utc(m.to)?.getTime() ?? Infinity) > t);
+  return all.filter(m => isComputer(m) && (utc(m.from)?.getTime() ?? -Infinity) <= t && (utc(m.to)?.getTime() ?? Infinity) > t);
 };
 
 /** From Windows 7 the taskbar is tall enough for the date under the time; before, only the time. */
