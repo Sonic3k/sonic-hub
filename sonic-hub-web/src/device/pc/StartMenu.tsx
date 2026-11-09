@@ -16,7 +16,7 @@ const SYSTEM = new Set(['computer', 'recycle', 'documents', 'user-folder', 'netw
 const FILE = /\.(docx?|txt|jpe?g|png|pptx?|rar|zip|pdf|xlsx?)$/i;
 const PINNED_APPS = ['browser', 'yahoo', 'word', 'messages', 'zalo', 'messenger', 'skype', 'notepad', 'memories'];
 /** the folders of Programs his games sit in, by the part of their key after "start/" (<device>/start/<folder>/<name>) */
-const FOLDER_NAMES: Record<string, string> = { games: 'Games', 'win-games': 'Win Games' };
+const FOLDER_NAMES: Record<string, string> = { games: 'Games', 'win-games': 'Win Games', popcap: 'PopCap Games' };
 const folderOf = (key: string) => key.split('/start/')[1]?.split('/')[0] ?? 'games';
 const folderName = (f: string) => FOLDER_NAMES[f] ?? f.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
 

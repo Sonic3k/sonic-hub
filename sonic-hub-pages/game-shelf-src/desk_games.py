@@ -27,13 +27,15 @@ UPGRADE = {
     "pc-old/desktop/_/007-pikachu": ("gamecard", "pikachu", None),
     "pc-xp/desktop/picachu2004": ("game", "pikachu", "exe:pikachu"),
     "pc-xp/desktop/sticks": ("game", "sticks", "exe:sticks"),
-    "pc-xp/desktop/empires2": ("gamecard", "aoe2", None),
-    "pc-xp/desktop/feeding-frenzy": ("gamecard", "feeding-frenzy", None),
-    "pc-xp/desktop/luxor": ("gamecard", "luxor", None),
-    "pc-xp/desktop/chuzzle-deluxe": ("gamecard", "chuzzle", None),
+    "pc-xp/desktop/empires2": ("gamecard", "aoe2", "exe:aoe2"),
+    "pc-xp/desktop/feeding-frenzy": ("gamecard", "feeding-frenzy", "exe:feeding-frenzy"),
+    "pc-xp/desktop/luxor": ("gamecard", "luxor", None),            # only Luxor 4 is left on D:, a later icon
+    "pc-xp/desktop/chuzzle-deluxe": ("gamecard", "chuzzle", "exe:chuzzle"),
+    "pc-xp/desktop/mad-caps": ("none", None, "exe:mad-caps"),
     "pc-fujitsu/desktop/2005/006-grandmaster-chess": ("gamecard", "grandmaster-chess", None),
-    "pc-fujitsu/desktop/2005/007-shortcut-to-chiec-non-ky-dieu": ("game", "chiec-non", None),
-    "pc-fujitsu/desktop/2005/008-feeding-frenzy": ("gamecard", "feeding-frenzy", None),
+    "pc-fujitsu/desktop/2005/007-shortcut-to-chiec-non-ky-dieu": ("game", "chiec-non", "exe:chiec-non"),
+    "pc-fujitsu/desktop/2005/008-feeding-frenzy": ("gamecard", "feeding-frenzy", "exe:feeding-frenzy"),
+    "pc-fujitsu/desktop/2005/009-shortcut-to-lines98": ("none", None, "exe:lines98"),
     "pc-fujitsu/desktop/2005/011-shortcut-to-picachu": ("game", "pikachu", "exe:pikachu"),
 }
 
@@ -55,11 +57,11 @@ START = [
     ("games", "pc-old", "Sonic & Knuckles Collection", "s3k", "exe:s3k", "2001-01-01", None, "Theo anh: có từ năm 2001"),
     ("games", "pc-xp", "Minesweeper", "minesweeper", "mine", None, None, "Có sẵn trong Windows XP"),
     ("games", "pc-xp", "Sonic & Knuckles Collection", "s3k", "exe:s3k", None, None, "Theo anh: có tới khi thôi dùng PC Win XP"),
-    ("games", "pc-xp", "Đào vàng", "dao-vang", "game", "2004-11-16", None, "File game đề ngày 16/11/2004"),
-    ("games", "pc-xp", "Chiếc nón kỳ diệu", "chiec-non", "game", "2005-06-02", None, "File game đề ngày 02/06/2005"),
-    ("games", "pc-xp", "Bloxorz", "bloxorz", "game", None, None, XP),
-    ("games", "pc-xp", "Doodle Devil", "doodle-devil", "game", None, None, XP),
-    ("games", "pc-xp", "Doodle God", "doodle-god", "game", None, None, XP),
+    ("games", "pc-xp", "Đào vàng", "dao-vang", "exe:dao-vang", "2004-11-16", None, "File game đề ngày 16/11/2004"),
+    ("games", "pc-xp", "Chiếc nón kỳ diệu", "chiec-non", "exe:chiec-non", "2005-06-02", None, "File game đề ngày 02/06/2005"),
+    ("games", "pc-xp", "Bloxorz", "bloxorz", "exe:bloxorz", None, None, XP),
+    ("games", "pc-xp", "Doodle Devil", "doodle-devil", "exe:doodle-devil", None, None, XP),
+    ("games", "pc-xp", "Doodle God", "doodle-god", "exe:doodle-god", None, None, XP),
     ("games", "pc-hp", "Minesweeper", "minesweeper", "mine", None, None, "Có sẵn trong Windows"),
     ("games", "pc-hp", "DX-Ball 2", "dxball2", "exe:dxball2", None, None, "Thư mục DXBall2 trong [Mini Games]"),
 ]
@@ -76,6 +78,31 @@ WIN_GAMES = [
 for dev in ("pc-old", "pc-xp"):
     for label, pkg in WIN_GAMES:
         START.append(("win-games", dev, label, pkg, f"exe:{pkg}", None, None, "Thư mục [Win Games] trên ổ D:"))
+
+# Games that are only their icon (his rule: PopCap and the heavier games need their shortcut, not to play): the card
+# of the game when the shelf has it, else what Windows says of a shortcut whose program is gone.
+# folder, device, label, card (game key) or None, icon, from, note
+SHORTCUT_ONLY = [
+    ("games", "pc-old", "Age of Empires II", "aoe2", "exe:aoe2", "2002-01-01", "Thư mục AOE 2 the conquerors; anh chơi từ năm 2002"),
+    ("games", "pc-hp", "Age of Empires II", "aoe2", "exe:aoe2", "2009-01-01", "Anh chơi lại từ tháng 1/2009"),
+    ("games", "pc-hp", "Warcraft III", "warcraft-3", "exe:warcraft-3", "2009-04-23", "Thư mục WarCraft III (1.23)"),
+    ("games", "pc-hp", "Warcraft III: The Frozen Throne", "warcraft-3", "exe:frozen-throne", "2009-04-23", "Thư mục WarCraft III (1.23)"),
+    ("games", "pc-fujitsu", "Need for Speed II SE", "need-for-speed-2", "exe:nfs2", "2008-08-01", "Thư mục Need For Speed II SE trong [Sports]"),
+    ("games", "pc-hp", "Mario Forever", "mario-forever", "exe:mario-forever", "2010-12-21", "Thư mục Mario Forever 5.0"),
+    ("games", "pc-xp", "Boom Online", "boom-online", "game-boom", "2007-05-01", "Theo anh: cài trên cả hai máy tháng 5/2007"),
+]
+# his [PopCap Game] folder (with Zuma and the Feeding Frenzy games, PopCap's too), on the XP machines only; Plants vs.
+# Zombies (2009) and Bejeweled 3 (2010) came out after those machines were put away
+POPCAP = [
+    ("AstroPop Deluxe", None, "astropop"), ("Bejeweled 2 Deluxe", "bejeweled-2", "bejeweled-2"), ("Big Money Deluxe", "big-money", "big-money"),
+    ("BookWorm Deluxe", None, "bookworm"), ("Bookworm Adventures Deluxe", None, "bookworm-adventures"), ("Chuzzle Deluxe", "chuzzle", "chuzzle"),
+    ("Dynomite Deluxe", "dynomite", "dynomite"), ("Feeding Frenzy", "feeding-frenzy", "feeding-frenzy"), ("Feeding Frenzy 2", None, "feeding-frenzy-2"),
+    ("Iggle Pop Deluxe", None, "iggle-pop"), ("Insaniquarium Deluxe", None, "insaniquarium"), ("Mummy Maze Deluxe", "mummy-maze", "mummy-maze"),
+    ("Noah's Ark Deluxe", None, "noahs-ark"), ("Seven Seas Deluxe", None, "seven-seas"), ("TipTop Deluxe", None, "tiptop"), ("Zuma Deluxe", None, "zuma"),
+]
+for dev in ("pc-xp", "pc-fujitsu"):
+    for label, card, icon in POPCAP:
+        SHORTCUT_ONLY.append(("popcap", dev, label, card, f"exe:{icon}", None, "Thư mục [PopCap Game] trên ổ D:"))
 
 # entries that were put elsewhere before and are not there any more
 GONE = [
@@ -102,6 +129,11 @@ def main():
     for n, (folder, device, label, pkg, glyph, start, end, note) in enumerate(START):
         items.append({"key": f"{device}/start/{folder}/{pkg}", "device": device, "place": "START", "label": label, "glyph": glyph,
                       "app": "game", "target": pkg, "sort": 100 + n, "from": start, "to": end, "note": note,
+                      "source": "RECONSTRUCTED"})
+    for n, (folder, device, label, card, glyph, start, note) in enumerate(SHORTCUT_ONLY):
+        name = glyph.split(":", 1)[-1] if glyph.startswith("exe:") else card
+        items.append({"key": f"{device}/start/{folder}/{name}", "device": device, "place": "START", "label": label, "glyph": glyph,
+                      "app": "gamecard" if card else "game", "target": card, "sort": 300 + n, "from": start, "note": note,
                       "source": "RECONSTRUCTED"})
     for n, (device, label, emu, start, end, note) in enumerate(EMULATORS):
         items.append({"key": f"{device}/start/games/emu-{emu}", "device": device, "place": "START", "label": label, "glyph": "game",
