@@ -84,6 +84,7 @@ for dev in ("pc-old", "pc-xp"):
 # folder, device, label, card (game key) or None, icon, from, note
 SHORTCUT_ONLY = [
     ("games", "pc-old", "Age of Empires II", "aoe2", "exe:aoe2", "2002-01-01", "Thư mục AOE 2 the conquerors; anh chơi từ năm 2002"),
+    ("games", "pc-old", "Commandos", "commandos", "exe:commandos", None, "Theo anh: chơi trên PC Win 98"),
     ("games", "pc-hp", "Age of Empires II", "aoe2", "exe:aoe2", "2009-01-01", "Anh chơi lại từ tháng 1/2009"),
     ("games", "pc-hp", "Warcraft III", "warcraft-3", "exe:warcraft-3", "2009-04-23", "Thư mục WarCraft III (1.23)"),
     ("games", "pc-hp", "Warcraft III: The Frozen Throne", "warcraft-3", "exe:frozen-throne", "2009-04-23", "Thư mục WarCraft III (1.23)"),
