@@ -13,8 +13,9 @@ import java.util.UUID;
 @Table(name = "desk_devices",
     uniqueConstraints = @UniqueConstraint(name = "uk_desk_device_key", columnNames = "external_key"))
 public class DeskDevice extends BaseEntity {
-    /** MUSIC_PLAYER = a music player he carried (his JVJ, his Sony): never a machine of the desk, only a device of his. */
-    public enum Kind { DESKTOP, LAPTOP, PHONE, MUSIC_PLAYER;
+    /** PLAYER = a music player he carried (his JVJ, his Sony): never a machine of the desk, only a device of his.
+     *  (Names stay within the column's 10 characters: ddl-auto=update never widens it.) */
+    public enum Kind { DESKTOP, LAPTOP, PHONE, PLAYER;
         public boolean computer() { return this == DESKTOP || this == LAPTOP; }
     }
 

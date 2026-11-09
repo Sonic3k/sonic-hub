@@ -5,7 +5,7 @@ import type { MediaFile, Note, Paged, Person } from '../types';
 import type { MessagePage, Ref, Thread } from './fb/api';
 export type { Message, MessagePage, Ref, Thread } from './fb/api';
 
-export interface DeskDevice { key: string; kind: 'DESKTOP' | 'LAPTOP' | 'PHONE' | 'MUSIC_PLAYER'; name: string; model?: string | null; photoUrl?: string | null;
+export interface DeskDevice { key: string; kind: 'DESKTOP' | 'LAPTOP' | 'PHONE' | 'PLAYER'; name: string; model?: string | null; photoUrl?: string | null;
   screenWidth?: number | null; screenHeight?: number | null; from?: string | null; to?: string | null }
 
 /** A desktop or laptop (phones and music players are devices of his too, but not machines of the desk). */
