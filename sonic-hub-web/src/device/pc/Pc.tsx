@@ -17,7 +17,7 @@ import { Wallpaper } from '../wallpapers';
 import { viewDay } from '../apps/Viewers';
 import { Desk, browserGlyph, computersAt, skinOf, type DeskCtx } from './desk';
 import { WmProvider, useWm } from './wm';
-import { APPS, sceneSpecs, specOf } from './registry';
+import { APPS, gameSpec, sceneSpecs, specOf } from './registry';
 import { Window } from './Window';
 import { Taskbar } from './Taskbar';
 import { StartMenu } from './StartMenu';
@@ -85,15 +85,17 @@ export default function Pc() {
       <WmProvider apps={APPS} area={{ w: scr.W, h: scr.H - TASKBAR[skin] }} scale={scr.s}
         dockInset={!scr.small && machine.items.some(i => i.place === 'GADGET') ? (skin === 'vista' ? 150 : 156) : 0}>
         <Desktop data={data} machine={machine} T={T} at={moment.at!} fresh={!q.isPlaceholderData} scene={sceneId ? sceneQ.data ?? null : null}
-          go={go} want={want} scr={scr} skin={skin} />
+          go={go} want={want} scr={scr} skin={skin} openOnBoot={sp.get('open')} />
       </WmProvider>
     </MomentContext.Provider>
   );
 }
 
-function Desktop({ data, machine, T, at, fresh, scene, go, want, scr, skin }: {
+function Desktop({ data, machine, T, at, fresh, scene, go, want, scr, skin, openOnBoot }: {
   data: MomentData; machine: Machine; T: Date; at: string; fresh: boolean; scene: Scene | null;
   go: (p: Record<string, string>) => void; want: string | null; scr: { W: number; H: number; s: number; small: boolean }; skin: string;
+  /** a window asked for in the link (?open=game:dyna): opened once the machine is up */
+  openOnBoot?: string | null;
 }) {
   const wm = useWm();
   const { open, closeAll, close } = wm;
@@ -174,6 +176,19 @@ function Desktop({ data, machine, T, at, fresh, scene, go, want, scr, skin }: {
     started.current = bootKey;
     machine.items.filter(i => i.place === 'STARTUP').forEach(openItem);
   }, [phase, bootKey, machine.items, openItem]);
+
+  // a game asked for in the link: its window opens once the desktop is up, named as its icon on this machine is
+  const opened = useRef<string | null>(null);
+  useEffect(() => {
+    if (!openOnBoot || phase !== 'on' || !fresh) return;
+    const mark = `${bootKey}|${openOnBoot}`;
+    if (opened.current === mark) return;
+    opened.current = mark;
+    const [kind, target] = openOnBoot.split(':');
+    if (kind !== 'game' || !target) return;
+    const it = machine.items.find(i => i.app === 'game' && i.target === target);
+    open(gameSpec(target, it?.label, it?.glyph));
+  }, [openOnBoot, phase, fresh, bootKey, machine.items, open]);
 
   // a memory asked for: once its moment is up, its windows open (over what was open, the buddy list kept)
   useEffect(() => {

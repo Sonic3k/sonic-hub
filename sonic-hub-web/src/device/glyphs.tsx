@@ -155,6 +155,32 @@ const GLYPHS: Record<string, G> = {
     <path d="M14 20v7M10.5 23.5h7" stroke="#fff" strokeWidth="2.4" strokeLinecap="round" />
     <circle cx="32" cy="21.5" r="2.1" fill="#f15a5a" /><circle cx="36" cy="25.5" r="2.1" fill="#4fb3f4" />
   </>,
+  /* a DOS program on Windows: the black screen with its prompt */
+  dos: id => <>
+    <defs>{lin(`${id}f`, '#e9edf2', '#b7c0cb')}</defs>
+    {shade}
+    <rect x="5" y="8" width="38" height="31" rx="2" fill={`url(#${id}f)`} stroke="#8a95a3" />
+    <rect x="5" y="8" width="38" height="6" rx="2" fill="#1f3f9e" /><rect x="8" y="17" width="32" height="19" fill="#0b0b0b" />
+    <path d="M11 22h3.5M11 22v4h3.5M17 26.5h1.2M17 22.5h1.2M20.5 21.8l3 2.6-3 2.6" stroke="#d8d8d8" strokeWidth="1.4" fill="none" />
+    <rect x="25" y="25.2" width="4.5" height="1.6" fill="#d8d8d8" />
+  </>,
+  /* Minesweeper's mine */
+  mine: id => <>
+    <defs>{rad(`${id}m`, '#5d6470', '#0e1014')}</defs>
+    {shade}
+    <g stroke="#15181d" strokeWidth="3" strokeLinecap="round"><path d="M24 7v34M7 24h34M12 12l24 24M36 12L12 36" /></g>
+    <circle cx="24" cy="24" r="12" fill={`url(#${id}m)`} />
+    <rect x="18.5" y="17.5" width="4.5" height="4.5" rx="1" fill="#fff" />
+  </>,
+  /* Lines: the balls on their board */
+  lines: id => <>
+    <defs>{lin(`${id}g`, '#d9dde3', '#a9b1bc')}</defs>
+    {shade}
+    <rect x="5" y="6" width="38" height="36" rx="2.5" fill={`url(#${id}g)`} stroke="#7d8794" />
+    <g stroke="#8d96a2" strokeWidth="1"><path d="M17.7 6v36M30.3 6v36M5 18h38M5 30h38" /></g>
+    <circle cx="11.4" cy="12" r="4.4" fill="#e23b3b" /><circle cx="24" cy="24" r="4.4" fill="#2f74e0" /><circle cx="36.6" cy="36" r="4.4" fill="#2fb34a" />
+    <circle cx="36.6" cy="12" r="4.4" fill="#f2c230" /><circle cx="10.2" cy="10.8" r="1.4" fill="#fff" opacity=".6" />
+  </>,
   'game-boom': id => <>
     <defs>{rad(`${id}b`, '#6a7383', '#14181f')}</defs>
     {shade}

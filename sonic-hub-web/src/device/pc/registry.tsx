@@ -7,7 +7,10 @@ import { Messages } from '../apps/Messages';
 import { Memories, Notepad, PhotoViewer, Word } from '../apps/Viewers';
 import { MessageBox } from '../apps/MessageBox';
 import { FacebookSite } from '../fb/Site';
-import type { AppDef, WinSpec } from './wm';
+import { lazy, Suspense } from 'react';
+const GameRunner = lazy(() => import('../../games/Runner'));
+const GameCardView = lazy(() => import('../../games/GameCardView'));
+import { useWm, type AppDef, type WinSpec } from './wm';
 import { browserGlyph, viewerName } from './desk';
 export { browserGlyph, browserName, osName, viewerName } from './desk';
 
@@ -31,6 +34,27 @@ export const APPS: Record<string, AppDef> = {
   messages: { title: a => (a.platform === 'ZALO' ? 'Zalo' : 'Messages'), glyph: 'sms', w: 860, h: 580,
     render: w => <Messages platform={str(w.arg.platform) ?? 'SMS'} archiveId={str(w.arg.archiveId)} seq={num(w.arg.seq)} /> },
   box: { title: () => 'Problem with Shortcut', glyph: 'help', w: 420, h: 170, render: w => <MessageBox text={str(w.arg.text) ?? ''} /> },
+  /* a game of his: the package it plays (a DOS game, a Flash game, a game remade for the web) */
+  game: { title: a => str(a.title) ?? 'Game', glyph: 'game', w: 680, h: 470,
+    render: w => <GameWindow pkg={str(w.arg.pkg) ?? ''} /> },
+  /* a game of the shelf, as the hub keeps it: when he played it, his pictures of it */
+  gamecard: { title: a => str(a.title) ?? 'Game', glyph: 'game', w: 560, h: 520,
+    render: w => <Suspense fallback={null}><GameCardView gameKey={str(w.arg.key) ?? ''} /></Suspense> },
+};
+
+function GameWindow({ pkg }: { pkg: string }) {
+  const { scale } = useWm();
+  return <Suspense fallback={null}><div className="dv-game"><GameRunner pkg={pkg} scale={scale} /></div></Suspense>;
+}
+
+/** the size a game's window opens at: its board or screen, and the frame around it */
+const GAME_SIZE: Record<string, [number, number]> = {
+  minesweeper: [168, 262], lines: [404, 520], 'chiec-non': [420, 344], 'dao-vang': [570, 444], bloxorz: [570, 344], 'doodle-god': [660, 524], 'doodle-devil': [660, 524],
+};
+/** the window of a game package (on a desktop icon, a Start entry, or ?open=game:<key>) */
+export const gameSpec = (pkg: string, label?: string, glyph?: string | null): WinSpec => {
+  const [w, h] = GAME_SIZE[pkg] ?? [680, 470];
+  return { app: 'game', arg: { pkg }, title: label ?? 'Game', glyph: glyph ?? 'game', w, h };
 };
 
 /** how wide his buddy list was in each Messenger (his screenshots of 2007, 2010, 2011 and 2013) */
@@ -61,6 +85,8 @@ export function specOf(it: Pick<DeskItem, 'app' | 'target' | 'label' | 'glyph'>,
     case 'notepad': return { app: 'notepad', arg: { file: label }, title: `${/\.txt$/i.test(label) ? label.replace(/\.txt$/i, '') : 'Untitled'} - Notepad` };
     case 'memories': return { app: 'memories', arg: {} };
     case 'photos': return { app: 'viewer', arg: { set: 'day' }, title: viewerName(os) };
+    case 'game': return it.target ? gameSpec(it.target, label, it.glyph) : box(label);
+    case 'gamecard': return it.target ? { app: 'gamecard', arg: { key: it.target }, title: label, glyph: it.glyph ?? 'game' } : box(label);
     case 'control': case 'settings': case 'clock': case 'calendar': return 'time';
     default: return box(label);
   }
