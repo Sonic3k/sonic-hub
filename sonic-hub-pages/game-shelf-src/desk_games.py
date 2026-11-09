@@ -50,11 +50,27 @@ START = [
 ]
 
 
+# device, label, emulator, from, to, note
+EMULATORS = [
+    ("pc-fujitsu", "VisualBoyAdvance", "vba", "2007-01-01", None, "VisualBoyAdvance 1.7: bản lưu nhanh Super Mario Advance 3 từ 02/2007, Pokémon Emerald từ 05/2007"),
+    ("pc-fujitsu", "No$GBA", "nogba", "2007-12-01", None, "Các file save Nintendo DS từ 22/12/2007 đến 26/01/2008"),
+    ("pc-hp", "VisualBoyAdvance", "vba", None, None, "Bản lưu nhanh Pokémon FireRed từ 15/10/2008, file save cuối 22/05/2010"),
+    ("pc-hp", "Snes9x", "snes9x", "2010-11-21", None, "Tải Snes9x 1.51 ngày 21/11/2010"),
+    ("pc-hp", "No$GBA", "nogba", "2010-12-01", None, "File save New Super Mario Bros. ngày 05/01/2011"),
+    ("pc-hp", "VirtuaNES", "virtuanes", "2012-09-03", None, "Cài VirtuaNES cùng 758 ROM NES ngày 03/09/2012"),
+    ("pc-asus", "VirtuaNES", "virtuanes", None, None, "Bản lưu trạng thái Mario Bros. và Rainbow Islands ngày 16/02/2016"),
+]
+
+
 def main():
     items = [{"key": k, "app": app, "target": target} for k, (app, target) in UPGRADE.items()]
     for n, (device, label, pkg, glyph, start, end, note) in enumerate(START):
         items.append({"key": f"{device}/start/games/{pkg}", "device": device, "place": "START", "label": label, "glyph": glyph,
                       "app": "game", "target": pkg, "sort": 100 + n, "from": start, "to": end, "note": note,
+                      "source": "RECONSTRUCTED"})
+    for n, (device, label, emu, start, end, note) in enumerate(EMULATORS):
+        items.append({"key": f"{device}/start/games/emu-{emu}", "device": device, "place": "START", "label": label, "glyph": "game",
+                      "app": "emulator", "target": emu, "sort": 200 + n, "from": start, "to": end, "note": note,
                       "source": "RECONSTRUCTED"})
     r = requests.post(f"{API}/desk/sync", json={"items": items}, timeout=120)
     r.raise_for_status()

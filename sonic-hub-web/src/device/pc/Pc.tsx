@@ -17,7 +17,9 @@ import { Wallpaper } from '../wallpapers';
 import { viewDay } from '../apps/Viewers';
 import { Desk, browserGlyph, computersAt, skinOf, type DeskCtx } from './desk';
 import { WmProvider, useWm } from './wm';
-import { APPS, gameSpec, sceneSpecs, specOf } from './registry';
+import { APPS, emuSpec, gameSpec, sceneSpecs, specOf } from './registry';
+import { hub } from '../../api/hub';
+import { emuOf } from '../../games/EmulatorApp';
 import { Window } from './Window';
 import { Taskbar } from './Taskbar';
 import { StartMenu } from './StartMenu';
@@ -185,7 +187,12 @@ function Desktop({ data, machine, T, at, fresh, scene, go, want, scr, skin, open
     if (opened.current === mark) return;
     opened.current = mark;
     const [kind, target] = openOnBoot.split(':');
-    if (kind !== 'game' || !target) return;
+    if (!target) return;
+    if (kind === 'rom') {   // a ROM opens in its emulator, as his machine had it
+      hub.gamePackage(target).then(p => { const emu = emuOf(p); if (emu) open(emuSpec(emu, p.key, machine.items.find(i => i.app === 'emulator' && i.target === emu)?.label)); }).catch(() => undefined);
+      return;
+    }
+    if (kind !== 'game') return;
     const it = machine.items.find(i => i.app === 'game' && i.target === target);
     open(gameSpec(target, it?.label, it?.glyph));
   }, [openOnBoot, phase, fresh, bootKey, machine.items, open]);

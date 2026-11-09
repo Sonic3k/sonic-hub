@@ -14,6 +14,7 @@ export const hub = {
   gameSeries: () => get<GameSeries[]>('/game-series'),
   gameSeriesOne: (key: string) => get<GameSeries>(`/game-series/${encodeURIComponent(key)}`),
   gamePackage: (key: string) => get<GamePackage>(`/game-packages/${encodeURIComponent(key)}`),
+  gamePackages: () => get<GamePackage[]>('/game-packages'),
   timeline: () => get<TimelineBucket[]>('/media-files/timeline-index', { tz: 'Asia/Ho_Chi_Minh' }),
   search: (p: Search) => get<Paged<MediaFile>>('/media-files/search', p as Record<string, string | number | boolean | string[] | undefined>),
   persons: () => get<Person[]>('/persons'),

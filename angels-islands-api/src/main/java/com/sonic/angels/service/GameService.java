@@ -91,7 +91,7 @@ public class GameService {
         d.notes = gameNotes.findByGame(g.getId()).stream().map(GameNote::getNote).map(GameService::noteRef).toList();
         List<GamePackage> pk = packages.findByGameIdOrderBySortOrderAsc(g.getId());
         d.packages = pk.stream().map(GameService::pkg).toList();
-        d.spots = spots(pk.stream().map(GamePackage::getExternalKey).toList(), plays.findByGame(g.getId()));
+        d.spots = spots(pk, plays.findByGame(g.getId()));
         return d;
     }
 
@@ -168,9 +168,11 @@ public class GameService {
         Set<UUID> portal = new HashSet<>(), machine = new HashSet<>();
         Set<String> placed = new HashSet<>(jdbc.queryForList("SELECT DISTINCT target FROM desk_items WHERE app = 'game' AND target IS NOT NULL",
             new MapSqlParameterSource(), String.class));
+        Set<String> emulators = new HashSet<>(jdbc.queryForList("SELECT DISTINCT target FROM desk_items WHERE app = 'emulator' AND target IS NOT NULL",
+            new MapSqlParameterSource(), String.class));
         for (GamePackage p : packages.findAllWithGame()) {
             if (Boolean.TRUE.equals(p.getPortal())) portal.add(p.getGame().getId());
-            if (placed.contains(p.getExternalKey())) machine.add(p.getGame().getId());
+            if (placed.contains(p.getExternalKey()) || emulators.contains(emuOf(p))) machine.add(p.getGame().getId());
         }
         // games with something of his on them besides plays: pictures, memories, notes, packages
         Set<UUID> linked = new HashSet<>(jdbc.queryForList("SELECT game_id FROM game_media UNION SELECT game_id FROM game_memories "
@@ -273,8 +275,41 @@ public class GameService {
 
     /** Where the packages play inside the machines (desk items with app game), and a moment to start each machine at:
      *  when he played it there if that is known, else early in the item's time on that machine. */
-    private List<GameDto.Spot> spots(List<String> keys, List<GamePlay> ps) {
+    /** the emulator a ROM package plays in on the machines (config {"emu": "vba"}), or null */
+    static String emuOf(GamePackage p) {
+        if (p.getConfig() == null) return null;
+        java.util.regex.Matcher m = EMU.matcher(p.getConfig());
+        return m.find() ? m.group(1) : null;
+    }
+    private static final java.util.regex.Pattern EMU = java.util.regex.Pattern.compile("\"emu\"\\s*:\\s*\"([a-z0-9-]+)\"");
+
+    private List<GameDto.Spot> spots(List<GamePackage> pk, List<GamePlay> ps) {
+        List<String> keys = pk.stream().map(GamePackage::getExternalKey).toList();
         if (keys.isEmpty()) return List.of();
+        List<GameDto.Spot> out = new ArrayList<>(spotsOf(keys, ps));
+        // a ROM plays where its emulator is: the emulator's item on a machine stands for each of its games
+        Map<String, List<String>> byEmu = new LinkedHashMap<>();
+        for (GamePackage p : pk) { String e = emuOf(p); if (e != null) byEmu.computeIfAbsent(e, k -> new ArrayList<>()).add(p.getExternalKey()); }
+        if (!byEmu.isEmpty()) {
+            jdbc.query("SELECT i.target, i.label, i.valid_from, i.valid_to, d.external_key AS dkey, d.name AS dname, d.valid_from AS dfrom, d.valid_to AS dto "
+                    + "FROM desk_items i JOIN desk_devices d ON d.id = i.device_id WHERE i.app = 'emulator' AND i.target IN (:emus) "
+                    + "ORDER BY COALESCE(i.valid_from, d.valid_from) NULLS FIRST, i.sort_order NULLS LAST",
+                new MapSqlParameterSource("emus", byEmu.keySet()), rs -> {
+                    for (String key : byEmu.get(rs.getString("target"))) {
+                        GameDto.Spot s = new GameDto.Spot();
+                        s.packageKey = key; s.label = rs.getString("label");
+                        s.deviceKey = rs.getString("dkey"); s.deviceName = rs.getString("dname");
+                        LocalDateTime f = later(ts(rs, "valid_from"), ts(rs, "dfrom")), t = earlier(ts(rs, "valid_to"), ts(rs, "dto"));
+                        s.from = f; s.to = t;
+                        s.at = startAt(f, t, ps, s.deviceKey);
+                        if (s.at != null) out.add(s);
+                    }
+                });
+        }
+        return out;
+    }
+
+    private List<GameDto.Spot> spotsOf(List<String> keys, List<GamePlay> ps) {
         List<GameDto.Spot> out = new ArrayList<>();
         jdbc.query("SELECT i.target, i.label, i.valid_from, i.valid_to, d.external_key AS dkey, d.name AS dname, d.valid_from AS dfrom, d.valid_to AS dto "
                 + "FROM desk_items i JOIN desk_devices d ON d.id = i.device_id WHERE i.app = 'game' AND i.target IN (:keys) "

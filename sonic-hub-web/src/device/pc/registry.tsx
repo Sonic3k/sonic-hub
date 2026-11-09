@@ -10,6 +10,10 @@ import { FacebookSite } from '../fb/Site';
 import { lazy, Suspense } from 'react';
 const GameRunner = lazy(() => import('../../games/Runner'));
 const GameCardView = lazy(() => import('../../games/GameCardView'));
+const EmulatorApp = lazy(() => import('../../games/EmulatorApp'));
+/** the emulators of his machines, by the name the desk gives them */
+const EMU_NAME: Record<string, string> = { vba: 'VisualBoyAdvance', snes9x: 'Snes9x', nogba: 'No$GBA', virtuanes: 'VirtuaNES', desmume: 'DeSmuME' };
+const EMU_SIZE: Record<string, [number, number]> = { vba: [520, 400], snes9x: [560, 470], nogba: [420, 640], virtuanes: [540, 500], desmume: [420, 640] };
 import { useWm, type AppDef, type WinSpec } from './wm';
 import { browserGlyph, viewerName } from './desk';
 export { browserGlyph, browserName, osName, viewerName } from './desk';
@@ -38,6 +42,9 @@ export const APPS: Record<string, AppDef> = {
   game: { title: a => str(a.title) ?? 'Game', glyph: 'game', w: 680, h: 470,
     render: w => <GameWindow pkg={str(w.arg.pkg) ?? ''} /> },
   /* a game of the shelf, as the hub keeps it: when he played it, his pictures of it */
+  /* an emulator (VisualBoyAdvance, Snes9x, No$GBA, VirtuaNES) with the games he had in it */
+  emulator: { title: a => EMU_NAME[str(a.emu) ?? ''] ?? 'Emulator', glyph: 'game', w: 520, h: 400,
+    render: w => <Suspense fallback={null}><EmulatorApp emu={str(w.arg.emu) ?? ''} pkg={str(w.arg.pkg)} /></Suspense> },
   gamecard: { title: a => str(a.title) ?? 'Game', glyph: 'game', w: 560, h: 520,
     render: w => <Suspense fallback={null}><GameCardView gameKey={str(w.arg.key) ?? ''} /></Suspense> },
 };
@@ -50,6 +57,11 @@ function GameWindow({ pkg }: { pkg: string }) {
 /** the size a game's window opens at: its board or screen, and the frame around it */
 const GAME_SIZE: Record<string, [number, number]> = {
   minesweeper: [168, 262], lines: [404, 520], 'chiec-non': [420, 344], 'dao-vang': [570, 444], bloxorz: [570, 344], 'doodle-god': [660, 524], 'doodle-devil': [660, 524],
+};
+/** the window of an emulator, at one of its games when pkg is given (?open=rom:<key>) */
+export const emuSpec = (emu: string, pkg?: string, label?: string): WinSpec => {
+  const [w, h] = EMU_SIZE[emu] ?? [520, 400];
+  return { app: 'emulator', arg: pkg ? { emu, pkg } : { emu }, title: label ?? EMU_NAME[emu] ?? 'Emulator', glyph: 'game', w, h };
 };
 /** the window of a game package (on a desktop icon, a Start entry, or ?open=game:<key>) */
 export const gameSpec = (pkg: string, label?: string, glyph?: string | null): WinSpec => {
@@ -86,6 +98,7 @@ export function specOf(it: Pick<DeskItem, 'app' | 'target' | 'label' | 'glyph'>,
     case 'memories': return { app: 'memories', arg: {} };
     case 'photos': return { app: 'viewer', arg: { set: 'day' }, title: viewerName(os) };
     case 'game': return it.target ? gameSpec(it.target, label, it.glyph) : box(label);
+    case 'emulator': return it.target ? emuSpec(it.target, undefined, label) : box(label);
     case 'gamecard': return it.target ? { app: 'gamecard', arg: { key: it.target }, title: label, glyph: it.glyph ?? 'game' } : box(label);
     case 'control': case 'settings': case 'clock': case 'calendar': return 'time';
     default: return box(label);
