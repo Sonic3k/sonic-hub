@@ -1,0 +1,104 @@
+[
+ {
+  "file": "VisualBoyAdvance/Pokemon Emerald (U)_02.png",
+  "mediaId": "51f5b347-3bb5-461b-b0bb-dc13d17bfdfa",
+  "game": "pokemon-emerald",
+  "role": "SCREENSHOT"
+ },
+ {
+  "file": "VisualBoyAdvance/Pokemon Emerald (U)_01.png",
+  "mediaId": "12ec3eb5-65f4-4ae4-b5f0-f23437ceecf3",
+  "game": "pokemon-emerald",
+  "role": "SCREENSHOT"
+ },
+ {
+  "file": "VisualBoyAdvance/Pokemon Fire Red (U)_04.png",
+  "mediaId": "a6dfe6cd-3184-477e-82e5-1de6fdb94435",
+  "game": "pokemon-firered",
+  "role": "SCREENSHOT"
+ },
+ {
+  "file": "VisualBoyAdvance/Pokemon Fire Red (U)_05.png",
+  "mediaId": "d4328c80-0356-4575-98d4-ad2ba80637d6",
+  "game": "pokemon-firered",
+  "role": "SCREENSHOT"
+ },
+ {
+  "file": "VisualBoyAdvance/Pokemon Fire Red (U)_06.png",
+  "mediaId": "bd3b8760-2f8b-4499-9570-4ff1d41ac7c6",
+  "game": "pokemon-firered",
+  "role": "SCREENSHOT"
+ },
+ {
+  "file": "VisualBoyAdvance/Pokemon Fire Red (U)_07.png",
+  "mediaId": "8301012a-1c95-4081-aea9-d3c55820ab5e",
+  "game": "pokemon-firered",
+  "role": "SCREENSHOT"
+ },
+ {
+  "file": "VisualBoyAdvance/Pokemon Fire Red (U)_02.png",
+  "mediaId": "7c0e2f49-e8b8-4f21-b533-8718b8179b5f",
+  "game": "pokemon-firered",
+  "role": "SCREENSHOT"
+ },
+ {
+  "file": "VisualBoyAdvance/Pokemon Fire Red (U)_03.png",
+  "mediaId": "798bd1dd-3932-401a-8296-67483cc4d99f",
+  "game": "pokemon-firered",
+  "role": "SCREENSHOT"
+ },
+ {
+  "file": "VisualBoyAdvance/Pokemon Fire Red (U)_01.png",
+  "mediaId": "b14a5092-3b5d-4eac-88d8-352a7901fd3c",
+  "game": "pokemon-firered",
+  "role": "SCREENSHOT"
+ },
+ {
+  "file": "VisualBoyAdvance/Sonic Advance_02.png",
+  "mediaId": "e63faef8-1306-4697-a4ee-2e978b38bd6b",
+  "game": "sonic-advance",
+  "role": "SCREENSHOT"
+ },
+ {
+  "file": "VisualBoyAdvance/Sonic Advance_03.png",
+  "mediaId": "aa496b48-1df3-440e-aece-7c756b35e4eb",
+  "game": "sonic-advance",
+  "role": "SCREENSHOT"
+ },
+ {
+  "file": "VisualBoyAdvance/Sonic Advance_01.png",
+  "mediaId": "d4843dcd-f45e-4234-9af9-716a36b92b08",
+  "game": "sonic-advance",
+  "role": "SCREENSHOT"
+ },
+ {
+  "file": "VisualBoyAdvance/Super Mario Advance 3-Yoshi's Island (U)_04.png",
+  "mediaId": "514e4d70-4a3c-43b8-9f2b-ab16d8fc2776",
+  "game": "yoshis-island",
+  "role": "SCREENSHOT"
+ },
+ {
+  "file": "[Adventure Games]/DYNA Blaster/CAPTURE/dyna_000.png",
+  "mediaId": "1ac5db28-09c8-4d58-a559-dbcca557f25b",
+  "game": "dyna-blaster",
+  "role": "SCREENSHOT"
+ },
+ {
+  "file": "[Adventure Games]/DYNA Blaster/CAPTURE/dyna_001.png",
+  "mediaId": "597ffdc8-62ac-4038-8177-fa83ba2a845e",
+  "game": "dyna-blaster",
+  "role": "SCREENSHOT"
+ },
+ {
+  "file": "[Adventure Games]/Sonic 3 & Knuckles/CAP00000.BMP",
+  "mediaId": "eb76b71c-3082-44a4-8360-3ff55f0dd992",
+  "game": "sonic-3-knuckles",
+  "role": "SCREENSHOT"
+ },
+ {
+  "file": "WarCraft III (1.23)/Screenshots/WC3ScrnShot_052309_215750_01.tga",
+  "mediaId": "fd7f277d-c265-4c40-9a93-120b10c50e0f",
+  "game": "dota",
+  "role": "SCREENSHOT"
+ }
+]

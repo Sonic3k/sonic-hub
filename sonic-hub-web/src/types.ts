@@ -160,3 +160,36 @@ export interface LifeEventDetail extends LifeEvent {
   transactionList: { id: string; occurredAt: string; amount: number; currency: string; kind: string; description?: string | null; payeeName?: string | null; category?: string | null }[];
 }
 export interface LifeEventAt { moment: string; current: LifeEvent[]; previous?: LifeEvent | null; next?: LifeEvent | null }
+
+/** Kệ game: a game as the shelf lists it. played = "2007 – 2010"; spans = each stretch he played it and on which machine;
+ *  portal = playable on the portal itself, machine = playable inside a machine of its time; mine = something of his is on it. */
+export type GameKind = 'OFFICIAL' | 'FAN' | 'HOMEMADE' | 'REMAKE';
+export interface GameCard {
+  id: string; key: string; title: string; kind: GameKind; platform?: string | null; developer?: string | null; genre?: string | null;
+  versions?: string | null; handName?: string | null; handOrder?: number | null; coverUrl?: string | null; iconUrl?: string | null;
+  basedOnKey?: string | null; played?: string | null; releaseYear?: number | null; seriesOrder?: number | null; favorite: boolean;
+  series?: { key: string; name: string } | null; playFrom?: string | null; playTo?: string | null; devices: string[];
+  portal: boolean; machine: boolean; spans?: { from: string; to: string; device?: string | null }[] | null; mine?: boolean;
+}
+export interface GamePlay {
+  id: string; startAt: string; endAt?: string | null; precision: DatePrecision; when: string; deviceKey?: string | null; deviceName?: string | null;
+  via?: string | null; version?: string | null; evidence?: string | null; note?: string | null; approx: boolean;
+}
+export interface GameLink { id: string; kind: string; title?: string | null; url: string; note?: string | null }
+export interface GameMedia { linkId: string; role: string; label?: string | null; media: MediaFile }
+export interface GameMemory {
+  id: string; title?: string | null; summary?: string | null; when?: string | null; kind?: string | null; coverUrl?: string | null;
+  occurredAt?: string | null; persons?: { id: string; name: string; avatarUrl?: string | null }[] | null;
+}
+export interface GamePackage {
+  id: string; key: string; engine: string; title?: string | null; fileName?: string | null; saveFileName?: string | null; config?: string | null;
+  note?: string | null; gameKey: string; gameTitle: string; fileSize?: number | null; saveSize?: number | null; saveAt?: string | null;
+  hasFile: boolean; hasSave: boolean; portal: boolean;
+}
+export interface GameSpot { packageKey: string; deviceKey: string; deviceName: string; label?: string | null; at: string; from?: string | null; to?: string | null }
+export interface GameDetail extends GameCard {
+  summary?: string | null; note?: string | null; basedOn?: GameCard | null; derived: GameCard[]; seriesGames: GameCard[];
+  plays: GamePlay[]; links: GameLink[]; media: GameMedia[]; memories: GameMemory[];
+  notes: { id: string; title?: string | null; slug?: string | null; excerpt?: string | null }[]; packages: GamePackage[]; spots: GameSpot[];
+}
+export interface GameSeries { id: string; key: string; name: string; summary?: string | null; coverUrl?: string | null; sortOrder?: number | null; games: GameCard[] }
