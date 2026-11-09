@@ -33,6 +33,7 @@ START = [
     ("pc-old", "Prince of Persia", "prince", "dos", None, None, "File lưu PRINCE.SAV ngày 22/11/1998"),
     ("pc-old", "Hexxagon", "hexx", "dos", None, None, "File cấu hình CONFIG.HXG ngày 31/03/1998"),
     ("pc-old", "Dangerous Dave", "dave2", "dos", None, None, "“DAVE” số 65 trong danh sách 100 trò, 2004"),
+    ("pc-old", "Jazz Jackrabbit", "jazz", "dos", None, None, "“JAZZ” số 23 trong danh sách 100 trò, 2004"),
     ("pc-old", "The Lion King", "lionking", "dos", None, None, "“LIONKING” số 69 trong danh sách 100 trò, 2004"),
     ("pc-old", "Mario Brothers", "mariobro", "dos", None, None, "Thư mục mariobro trong [DOS Games]"),
     ("pc-old", "Fast Food", "fastfood", "dos", None, None, "Thư mục fastfood trong [DOS Games]"),
@@ -47,6 +48,9 @@ START = [
     ("pc-hp", "Bloxorz", "bloxorz", "game", "2010-09-10", None, "File game đề ngày 10/09/2010"),
     ("pc-hp", "Doodle Devil", "doodle-devil", "game", "2010-11-24", None, "File game đề ngày 24/11/2010"),
     ("pc-hp", "Doodle God", "doodle-god", "game", "2011-04-15", None, "File game đề ngày 15/04/2011"),
+    ("pc-hp", "Jazz Jackrabbit", "jazz", "dos", "2012-08-04", None, "Chơi lại trên DOSBox: CONFIG.000 ngày 04/08/2012"),
+    ("pc-hp", "In Search of Dr. Riptide", "riptide", "dos", "2012-08-04", None, "Chơi lại trên DOSBox: bảng điểm HIGH.SCR ngày 04/08/2012"),
+    ("pc-hp", "Shadow Knights", "shadow", "dos", "2012-08-04", None, "Chơi lại trên DOSBox: CTLPANEL.NIN ngày 04/08/2012"),
 ]
 
 
