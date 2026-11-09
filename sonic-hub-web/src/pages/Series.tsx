@@ -2,7 +2,7 @@
 import { Link, useSearchParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { hub } from '../api/hub';
-import { dayMonthYear } from '../lib/date';
+import { dayMonthYear, vnClock } from '../lib/date';
 
 export default function SeriesPage() {
   const [sp] = useSearchParams(), name = sp.get('name') ?? '';
@@ -16,7 +16,7 @@ export default function SeriesPage() {
       <ol className="series-list">{parts.map((p, i) => (
         <li key={p.id}><Link to={p.slug ? `/journal/${p.slug}` : `/journal/id/${p.id}`}>
           <span className="sn">{p.seriesOrder ?? i + 1}</span>
-          <span><b>{p.title || `Phần ${i + 1}`}</b><small>{[p.authorPersonName || p.authorName, dayMonthYear(p.writtenAt)].filter(Boolean).join(' · ')}</small></span>
+          <span><b>{p.title || `Phần ${i + 1}`}</b><small>{[p.authorPersonName || p.authorName, dayMonthYear(vnClock(p.writtenAt))].filter(Boolean).join(' · ')}</small></span>
         </Link></li>))}</ol>
     </div>
   );

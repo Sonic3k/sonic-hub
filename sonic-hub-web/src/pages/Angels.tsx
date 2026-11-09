@@ -162,7 +162,7 @@ export function PersonPage() {
           {!!writings.data?.content.length && <section className="block"><div className="hd"><h2>Bài viết</h2><span>{writings.data.totalElements}</span></div>
             <ol className="writings">{[...writings.data.content].sort((a, b) => (a.writtenAt ?? a.createdAt ?? '').localeCompare(b.writtenAt ?? b.createdAt ?? '')).map(w => (
               <li key={w.id}><Link to={w.slug ? `/journal/${w.slug}` : `/journal/id/${w.id}`}><b>{w.title || 'Không tiêu đề'}</b>
-                <small>{[dayMonthYear(w.writtenAt ?? w.createdAt), w.series].filter(Boolean).join(' · ')}</small></Link></li>))}</ol></section>}
+                <small>{[dayMonthYear(vnClock(w.writtenAt ?? w.createdAt)), w.series].filter(Boolean).join(' · ')}</small></Link></li>))}</ol></section>}
 
           {!!forums.data?.length && <section className="block"><div className="hd"><h2>Trên diễn đàn</h2>
             <span>{forums.data.map(f => `${f.forumName}: ${fmt(f.postCount)} bài`).join(' · ')}</span>
