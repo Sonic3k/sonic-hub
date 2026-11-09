@@ -37,7 +37,7 @@ function useLists() {
       .filter(i => { const k = i.label.toLowerCase(); if (seen.has(k)) return false; seen.add(k); return true; })
       .sort((a, b) => a.label.localeCompare(b.label, 'vi', { sensitivity: 'base' }));
     // his games on this machine (Start entries that open a game): a Games folder in Programs
-    const games = items.filter(i => i.place === 'START' && (i.app === 'game' || i.app === 'gamecard'))
+    const games = items.filter(i => i.place === 'START' && (i.app === 'game' || i.app === 'gamecard' || i.app === 'emulator'))
       .sort((a, b) => a.label.localeCompare(b.label, 'vi', { sensitivity: 'base' }));
     const my = skin === 'w98' || skin === 'xp';
     const places: It[] = [

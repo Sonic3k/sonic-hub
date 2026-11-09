@@ -192,6 +192,11 @@ export function GamePage() {
   const play = g.packages.filter(p => p.portal && p.hasFile !== false);
   const pageLinks = g.links.filter(l => l.kind === 'PLAY'), watch = g.links.filter(l => l.kind !== 'PLAY');
   const icon = g.media.find(m => m.role === 'ICON')?.media;
+  const ROM = new Set(['GBA', 'GB', 'GBC', 'SNES', 'NES', 'NDS']);
+  const isRom = (k: string) => ROM.has(g.packages.find(p => p.key === k)?.engine ?? '');
+  const title = (k: string) => g.packages.find(p => p.key === k)?.title ?? k;
+  /** one way into each machine per package (the same machine twice when its two eras both had it) */
+  const spots = g.spots.filter((s, i, all) => all.findIndex(x => x.deviceKey === s.deviceKey && x.packageKey === s.packageKey) === i);
   const meta = [g.series?.name, g.platform, g.releaseYear, g.developer].filter(Boolean);
   const around = (games.data ?? []).filter(x => x.key !== g.key && isMine(x) && !own(x) && overlaps(x, g)).sort(byPlay).slice(0, 6);
 
@@ -206,9 +211,10 @@ export function GamePage() {
           {g.summary && <p className="dek">{g.summary}</p>}
           {g.note && <blockquote className="g-note">“{g.note}”</blockquote>}
 
-          {(play.length > 0 || g.spots.length > 0 || pageLinks.length > 0) && <div className="g-play">
+          {(play.length > 0 || spots.length > 0 || pageLinks.length > 0) && <div className="g-play">
             {play.map(p => <Link key={p.key} className="g-btn main" to={`/games/play/${p.key}`}>▶ Chơi ngay{play.length > 1 ? ` · ${p.title || p.engine}` : ''}</Link>)}
-            {g.spots.map(s => <a key={s.packageKey + s.deviceKey + s.at} className="g-btn" href={pcHref(s.deviceKey, s.at, `game:${s.packageKey}`)}>Mở trên {s.deviceName}</a>)}
+            {spots.map(s => <a key={s.packageKey + s.deviceKey + s.at} className="g-btn" href={pcHref(s.deviceKey, s.at, `${isRom(s.packageKey) ? 'rom' : 'game'}:${s.packageKey}`)}>
+              Mở trên {s.deviceName}{spots.filter(x => x.deviceKey === s.deviceKey).length > 1 ? ` · ${title(s.packageKey)}` : ''}</a>)}
             {pageLinks.map(l => <a key={l.id} className="g-btn main" href={l.url} target="_blank" rel="noreferrer">▶ {l.title || 'Chơi'}</a>)}
           </div>}
 

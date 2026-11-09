@@ -645,3 +645,17 @@
 /* Programs ▸ Games on Windows 98: the games open under the folder, in the same list */
 .dv-sm98-in { margin: 0 0 2px 14px; border-left: 1px dotted #808080; }
 .dv-sm98-fly .dv-sm-row.arrow.open { background: #000080; color: #fff; }
+/* an emulator window: its menu, then the games it had or the game */
+.dv-emu { display: flex; flex-direction: column; width: 100%; height: 100%; background: #000; font: 12px Tahoma, "MS Sans Serif", sans-serif; }
+.dv-emu-menu { display: flex; gap: 2px; padding: 1px 2px; background: #ece9d8; color: #000; border-bottom: 1px solid #aca899; }
+.dv-emu-menu > span { position: relative; padding: 1px 7px; cursor: default; }
+.dv-emu-menu > span.on, .dv-emu-menu > span:first-child:hover { background: #316ac5; color: #fff; }
+.dv-emu-drop { position: absolute; left: 0; top: 100%; z-index: 5; min-width: 220px; max-height: 320px; overflow: auto; padding: 2px; background: #fff; color: #000; border: 1px solid #808080; box-shadow: 2px 2px 3px rgba(0,0,0,.3); }
+.dv-emu-drop div { padding: 2px 18px; white-space: nowrap; } .dv-emu-drop div:hover { background: #316ac5; color: #fff; }
+.dv-emu-drop hr { margin: 3px 1px; border: 0; border-top: 1px solid #aca899; }
+.dv-emu-body { position: relative; flex: 1; min-height: 0; }
+.dv-emu-body .gr-rom { position: absolute; inset: 0; width: 100%; height: 100%; min-height: 0; }
+.dv-emu-list { height: 100%; overflow: auto; padding: 6px; background: #fff; color: #000; }
+.dv-emu-list button { display: flex; flex-direction: column; align-items: flex-start; width: 100%; padding: 5px 8px; border: 0; border-bottom: 1px dotted #ccc; background: none; text-align: left; font: inherit; cursor: pointer; }
+.dv-emu-list button:hover { background: #316ac5; color: #fff; }
+.dv-emu-list small { color: #777; } .dv-emu-list button:hover small { color: #dde; }
