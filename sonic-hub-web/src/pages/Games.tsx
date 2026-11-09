@@ -195,8 +195,11 @@ export function GamePage() {
   const ROM = new Set(['GBA', 'GB', 'GBC', 'SNES', 'NES', 'NDS']);
   const isRom = (k: string) => ROM.has(g.packages.find(p => p.key === k)?.engine ?? '');
   const title = (k: string) => g.packages.find(p => p.key === k)?.title ?? k;
-  /** one way into each machine per package (the same machine twice when its two eras both had it) */
-  const spots = g.spots.filter((s, i, all) => all.findIndex(x => x.deviceKey === s.deviceKey && x.packageKey === s.packageKey) === i);
+  /** one way into each machine per package (the same machine twice when its two eras both had it); a folder of many
+   *  games (Win Games) is one way into each machine, where its Start menu has them all */
+  const once = g.spots.filter((s, i, all) => all.findIndex(x => x.deviceKey === s.deviceKey && x.packageKey === s.packageKey) === i);
+  const many = new Set(once.map(s => s.deviceKey).filter(d => once.filter(x => x.deviceKey === d).length > 3));
+  const spots = once.filter((s, i) => !many.has(s.deviceKey) || once.findIndex(x => x.deviceKey === s.deviceKey) === i);
   const meta = [g.series?.name, g.platform, g.releaseYear, g.developer].filter(Boolean);
   const around = (games.data ?? []).filter(x => x.key !== g.key && isMine(x) && !own(x) && overlaps(x, g)).sort(byPlay).slice(0, 6);
 
@@ -213,8 +216,9 @@ export function GamePage() {
 
           {(play.length > 0 || spots.length > 0 || pageLinks.length > 0) && <div className="g-play">
             {play.map(p => <Link key={p.key} className="g-btn main" to={`/games/play/${p.key}`}>▶ Chơi ngay{play.length > 1 ? ` · ${p.title || p.engine}` : ''}</Link>)}
-            {spots.map(s => <a key={s.packageKey + s.deviceKey + s.at} className="g-btn" href={pcHref(s.deviceKey, s.at, `${isRom(s.packageKey) ? 'rom' : 'game'}:${s.packageKey}`)}>
-              Mở trên {s.deviceName}{spots.filter(x => x.deviceKey === s.deviceKey).length > 1 ? ` · ${title(s.packageKey)}` : ''}</a>)}
+            {spots.map(s => <a key={s.packageKey + s.deviceKey + s.at} className="g-btn"
+              href={many.has(s.deviceKey) ? pcHref(s.deviceKey, s.at) : pcHref(s.deviceKey, s.at, `${isRom(s.packageKey) ? 'rom' : 'game'}:${s.packageKey}`)}>
+              Mở trên {s.deviceName}{!many.has(s.deviceKey) && spots.filter(x => x.deviceKey === s.deviceKey).length > 1 ? ` · ${title(s.packageKey)}` : ''}</a>)}
             {pageLinks.map(l => <a key={l.id} className="g-btn main" href={l.url} target="_blank" rel="noreferrer">▶ {l.title || 'Chơi'}</a>)}
           </div>}
 
