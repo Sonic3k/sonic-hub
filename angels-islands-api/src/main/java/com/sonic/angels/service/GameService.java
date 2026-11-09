@@ -139,7 +139,7 @@ public class GameService {
 
     /** What the cards of the shelf need, read once for all games. */
     private record Shelf(Map<UUID, List<GamePlay>> plays, Map<UUID, String> pictures, Map<UUID, String> firstPicture,
-                         Set<UUID> portal, Set<UUID> machine) {}
+                         Set<UUID> portal, Set<UUID> machine, Set<UUID> linked) {}
 
     private Shelf shelf(List<Game> all) {
         Map<UUID, List<GamePlay>> byGame = plays.findAllWithDevice().stream()
@@ -172,7 +172,12 @@ public class GameService {
             if (Boolean.TRUE.equals(p.getPortal())) portal.add(p.getGame().getId());
             if (placed.contains(p.getExternalKey())) machine.add(p.getGame().getId());
         }
-        return new Shelf(byGame, pictures, first, portal, machine);
+        // games with something of his on them besides plays: pictures, memories, notes, packages
+        Set<UUID> linked = new HashSet<>(jdbc.queryForList("SELECT game_id FROM game_media UNION SELECT game_id FROM game_memories "
+            + "UNION SELECT game_id FROM game_notes UNION SELECT game_id FROM game_packages", new MapSqlParameterSource(), UUID.class));
+        // and the games his own games come from (Citadels behind Masks & Mortar)
+        for (Game g : all) if (g.getBasedOn() != null) linked.add(g.getBasedOn().getId());
+        return new Shelf(byGame, pictures, first, portal, machine, linked);
     }
 
     private GameDto.Card card(Game g, Shelf s) {
@@ -198,8 +203,11 @@ public class GameService {
             c.played = years(ps);
             c.devices = ps.stream().map(GamePlay::getDevice).filter(Objects::nonNull).map(DeskDevice::getExternalKey).distinct().toList();
         } else c.devices = List.of();
+        c.spans = ps.stream().map(p -> new GameDto.Span(p.getStartAt(), p.endExclusive(), p.getDevice() == null ? null : p.getDevice().getExternalKey())).toList();
         c.portal = s.portal().contains(g.getId());
         c.machine = s.machine().contains(g.getId());
+        c.mine = !ps.isEmpty() || s.linked().contains(g.getId()) || g.getHandName() != null || g.getKind() != Game.Kind.OFFICIAL
+            || Boolean.TRUE.equals(g.getFavorite());
     }
 
     /** "2007", "2007 – 2010", "~2004" (the first year is approximate) */
