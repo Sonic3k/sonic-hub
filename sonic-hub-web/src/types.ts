@@ -115,6 +115,19 @@ export interface RankingEntry {
 }
 /** A whole list with its rows, as GET /rankings/board/{board} returns them. */
 export interface RankingDetail extends RankingSummary { entries: RankingEntry[] }
+/** A month of messages: [yyyy-mm, Facebook, Yahoo, SMS, Zalo]. */
+export type ChatMonth = [string, ...number[]];
+/** A person's messages counted from every chat filed under them (all their nicks and accounts), as the data is now.
+ *  Days, months, hours, first and last are Vietnam time. */
+export interface ChatStats {
+  messages?: number; by_platform?: Record<string, number>; self?: number; them?: number; first?: string; last?: string;
+  peak_month?: { month: string; messages: number }; peak_day?: { date: string; messages: number }; active_days?: number;
+  longest_streak?: { days: number; from: string; to: string }; conversations?: number;
+  started_by?: { self?: number; them?: number }; reply_median_s?: { self?: number | null; them?: number | null };
+  monthly?: ChatMonth[]; hours?: number[];
+}
+/** Every Angel by their messages with him, counted the same way. */
+export interface ChatBoard { title: string; series: string[]; entries: RankingEntry[] }
 /** One person's row in one ranking. */
 export interface PersonRanking {
   id: string; personId?: string | null; label: string; rank?: number | null; points?: number | null; period?: string | null;

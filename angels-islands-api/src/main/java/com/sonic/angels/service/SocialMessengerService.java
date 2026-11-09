@@ -123,18 +123,23 @@ public class SocialMessengerService {
         boolean group(ChatArchive a) {
             if (chatProfiles.containsKey(a.getId())) return true;
             Set<UUID> accounts = new HashSet<>(), persons = new HashSet<>();
+            Set<String> named = new HashSet<>();
             boolean unowned = false;
             for (SocialChatMember m : members.getOrDefault(a.getId(), List.of())) {
                 SocialProfile p = m.getProfile();
                 if (v.me != null && p.getId().equals(v.me.getId())) continue;
                 accounts.add(p.getId());
+                named.add(m.getSenderName());
                 if (p.getPerson() != null) persons.add(p.getPerson().getId()); else unowned = true;
             }
             // two accounts of the same person in one conversation is still a talk with her
             if (accounts.size() > 1 && (unowned || persons.size() > 1)) return true;
             // a conversation filed under one person is with that person, even when an export wrote her under two names
             if (a.getPerson() != null) return false;
-            return otherSenderCounts(app).getOrDefault(a.getId(), 0) > 1;
+            int others = otherSenderCounts(app).getOrDefault(a.getId(), 0);
+            // every name the other side wrote under belongs to one account (a name she changed): a talk with that one
+            if (accounts.size() == 1 && named.size() >= others) return false;
+            return others > 1;
         }
 
         /** The other side of a two-person chat. */

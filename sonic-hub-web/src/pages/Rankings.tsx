@@ -21,6 +21,7 @@ const PLATFORMS = [
   { keys: ['facebook', 'facebook-wall'], label: 'Facebook', color: '#2a78d6' },
   { keys: ['yahoo'], label: 'Yahoo', color: '#eb6834' },
   { keys: ['sms'], label: 'SMS', color: '#1baf7a' },
+  { keys: ['zalo'], label: 'Zalo', color: '#eda100' },
 ] as const;
 /* fb association: one pink ramp, darker = higher (lightness falls monotonically; ink text, white on the darkest). */
 const HEAT: [number, string, string][] = [[3, '#B8304F', '#fff'], [8, '#EF5B78', 'var(--ink)'], [14, '#F49AAE', 'var(--ink)'], [19, '#F9C3CF', 'var(--ink)'], [999, '#FDE7EC', 'var(--ink)']];
@@ -370,8 +371,9 @@ function MomentsTab() {
 /* ── Tin nhắn ─────────────────────────────────────────────────────────────── */
 
 function MessagesTab({ byId }: { byId: Map<string, Person> }) {
-  const q = useBoard('chat-activity', true);
-  const list = q.data?.[q.data.length - 1];
+  /* counted from the chats as they are now: every nick and account of a person together */
+  const q = useQuery({ queryKey: ['chat-board'], queryFn: hub.chatBoard, staleTime: T });
+  const list = q.data;
   const rows = useMemo(() => (list?.entries ?? []).filter(e => e.rank != null).sort((a, b) => a.rank! - b.rank!).map(e => {
     const m = (e.metrics ?? {}) as Record<string, unknown>, bp = (m.by_platform ?? {}) as Record<string, number>;
     return { e, parts: PLATFORMS.map(p => p.keys.reduce((s, k) => s + (bp[k] ?? 0), 0)), first: monthLabel(m.first), last: monthLabel(m.last) };
