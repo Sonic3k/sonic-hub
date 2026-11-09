@@ -124,7 +124,7 @@ public class DeskService {
     /** The computer (or phone) of T: the one asked for if its span covers T, else the one whose span covers T (the later
      *  one when two do); before the first, the first. */
     private DeskDto.Machine machine(Snapshot s, LocalDateTime t, boolean phone, String wanted) {
-        List<Dev> mine = s.devices.stream().filter(d -> (d.kind == DeskDevice.Kind.PHONE) == phone).toList();
+        List<Dev> mine = s.devices.stream().filter(d -> phone ? d.kind == DeskDevice.Kind.PHONE : d.kind != null && d.kind.computer()).toList();
         if (mine.isEmpty()) return null;
         Dev dev = null;
         for (Dev d : mine) if (d.span.covers(t)) dev = d;               // sorted by start: the last that covers wins…

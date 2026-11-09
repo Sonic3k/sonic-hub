@@ -5,6 +5,12 @@ import com.sonic.angels.model.entity.DeskDevice;
 import com.sonic.angels.model.entity.DeskItem;
 import com.sonic.angels.model.entity.DeskSystem;
 import com.sonic.angels.model.entity.DeskWallpaper;
+import com.sonic.angels.model.entity.MusicAlbum;
+import com.sonic.angels.model.entity.MusicArtist;
+import com.sonic.angels.model.entity.MusicCdMedia;
+import com.sonic.angels.model.entity.MusicLink;
+import com.sonic.angels.model.entity.MusicPlaylist;
+import com.sonic.angels.model.entity.MusicTrackMemory;
 import com.sonic.angels.model.entity.ChatAttachment;
 import com.sonic.angels.model.entity.ChatMessage;
 import com.sonic.angels.model.entity.FinanceAccount;
@@ -83,7 +89,14 @@ public class EnumCheckConstraintFixer implements InitializingBean {
         new EnumColumn("desk_systems", "os", DeskSystem.Os.class),
         new EnumColumn("desk_wallpapers", "place", DeskWallpaper.Place.class),
         new EnumColumn("desk_wallpapers", "fit", DeskWallpaper.Fit.class),
-        new EnumColumn("desk_items", "place", DeskItem.Place.class)
+        new EnumColumn("desk_items", "place", DeskItem.Place.class),
+        new EnumColumn("music_artists", "kind", MusicArtist.Kind.class),
+        new EnumColumn("music_albums", "kind", MusicAlbum.Kind.class),
+        new EnumColumn("music_links", "kind", MusicLink.Kind.class),
+        new EnumColumn("music_cd_media", "role", MusicCdMedia.Role.class),
+        new EnumColumn("music_playlists", "kind", MusicPlaylist.Kind.class),
+        new EnumColumn("music_track_memories", "role", MusicTrackMemory.Role.class),
+        new EnumColumn("music_track_events", "role", MusicTrackMemory.Role.class)
     );
 
     /** Values taken out of an enum, per table.column, and what rows holding one become. */
