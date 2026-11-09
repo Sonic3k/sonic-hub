@@ -1,5 +1,5 @@
 import { apiUrl, get } from './client';
-import type { Chapter, LifeEvent, LifeEventAt, LifeEventDetail, ChatArchive, ChatBoard, ChatStats, RandomMemory, ChatAttachment, ChatMessage, Collection, Episode, Fact, Forum, ForumBoard, ForumMember, ForumPage, ForumPostHit, ForumThread, ForumThreadDetail, MediaFile, MysticBrief, Note, Paged, Person, PersonDetail, PersonForum, PersonRanking, RankingDetail, SeriesPart, Tag, TagStats, TimelineBucket, Trait } from '../types';
+import type { GameCard, GameDetail, GamePackage, GameSeries, Chapter, LifeEvent, LifeEventAt, LifeEventDetail, ChatArchive, ChatBoard, ChatStats, RandomMemory, ChatAttachment, ChatMessage, Collection, Episode, Fact, Forum, ForumBoard, ForumMember, ForumPage, ForumPostHit, ForumThread, ForumThreadDetail, MediaFile, MysticBrief, Note, Paged, Person, PersonDetail, PersonForum, PersonRanking, RankingDetail, SeriesPart, Tag, TagStats, TimelineBucket, Trait } from '../types';
 import { isoDay, addDays } from '../lib/date';
 
 export interface Search {
@@ -9,6 +9,11 @@ export interface Search {
 }
 
 export const hub = {
+  games: () => get<GameCard[]>('/games'),
+  game: (key: string) => get<GameDetail>(`/games/${encodeURIComponent(key)}`),
+  gameSeries: () => get<GameSeries[]>('/game-series'),
+  gameSeriesOne: (key: string) => get<GameSeries>(`/game-series/${encodeURIComponent(key)}`),
+  gamePackage: (key: string) => get<GamePackage>(`/game-packages/${encodeURIComponent(key)}`),
   timeline: () => get<TimelineBucket[]>('/media-files/timeline-index', { tz: 'Asia/Ho_Chi_Minh' }),
   search: (p: Search) => get<Paged<MediaFile>>('/media-files/search', p as Record<string, string | number | boolean | string[] | undefined>),
   persons: () => get<Person[]>('/persons'),
@@ -140,3 +145,7 @@ export async function tagWorlds(limit = 10): Promise<(Tag & { count: number })[]
   const stats = await hub.tagStats();
   return stats.filter(t => t.mediaCount > 0).sort((a, b) => b.mediaCount - a.mediaCount).slice(0, limit).map(t => ({ id: t.id, name: t.name, color: t.color, count: t.mediaCount }));
 }
+
+/** a game package's file and its save, streamed by the API from the private bucket */
+export const packageFile = (key: string) => apiUrl(`/game-packages/${encodeURIComponent(key)}/file`);
+export const packageSave = (key: string) => apiUrl(`/game-packages/${encodeURIComponent(key)}/save`);

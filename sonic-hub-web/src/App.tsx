@@ -5,7 +5,6 @@ import Shell from './components/Shell';
 import Home from './pages/Home';
 import Journal from './pages/Journal';
 import Post from './pages/Post';
-import Soon from './pages/Soon';
 import Photos from './pages/Photos';
 import { AlbumPage, AlbumsIndex } from './pages/Albums';
 import Region from './pages/Region';
@@ -16,6 +15,7 @@ import SeriesPage from './pages/Series';
 import Money from './pages/Money';
 import Portal from './pages/Portal';
 import { MemoriesIndex, MemoryPage } from './pages/Memories';
+import { GamePage, GameSeriesPage, GamesIndex } from './pages/Games';
 
 const qc = new QueryClient({ defaultOptions: { queries: { retry: 1, refetchOnWindowFocus: false } } });
 
@@ -46,7 +46,9 @@ export function AppRoutes() {
         <Route path="forum/:key" element={<ForumPage />} />
         <Route path="money" element={<Money />} />
         <Route path="portal" element={<Portal />} />
-        <Route path="games" element={<Soon title="Game" line="Kệ game — đang được thiết kế ở bước tiếp theo." />} />
+        <Route path="games" element={<GamesIndex />} />
+        <Route path="games/series/:key" element={<GameSeriesPage />} />
+        <Route path="games/:key" element={<GamePage />} />
         {/* Huyền học and Bóng đá have their own sites now: old links land on the portal */}
         <Route path="huyen-hoc/*" element={<Navigate to="/portal" replace />} />
         <Route path="football" element={<Navigate to="/portal" replace />} />
