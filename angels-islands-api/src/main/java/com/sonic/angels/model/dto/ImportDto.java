@@ -278,7 +278,8 @@ public class ImportDto {
      */
     /** A message as stored, EMPTY rows included, for the import tools. */
     public record StoredMessage(java.util.UUID id, Integer seq, String externalId, String sender, String senderType, String kind,
-                                java.time.LocalDateTime timestamp, String precision, String content, String sources) {}
+                                java.time.LocalDateTime timestamp, String precision, String content, String sources,
+                                String reactions, String replyTo) {}
 
     public static class MoveRequest {
         private List<Integer> seqs = new ArrayList<>();

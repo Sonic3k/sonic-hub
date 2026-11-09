@@ -386,7 +386,8 @@ public class ImportService {
                 org.springframework.data.domain.PageRequest.of(0, n)).stream()
             .map(m -> new ImportDto.StoredMessage(m.getId(), m.getSeq(), m.getExternalId(), m.getSender(),
                 m.getSenderType() == null ? null : m.getSenderType().name(), m.getKind() == null ? null : m.getKind().name(),
-                m.getTimestamp(), m.getTimePrecision() == null ? null : m.getTimePrecision().name(), m.getContent(), m.getSources()))
+                m.getTimestamp(), m.getTimePrecision() == null ? null : m.getTimePrecision().name(), m.getContent(), m.getSources(),
+                m.getReactions(), m.getReplyToExternalId()))
             .toList();
     }
 
