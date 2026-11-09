@@ -8,6 +8,13 @@ export const dayMonthYear = (iso?: string | null) => (iso ? new Date(+iso.slice(
 export const momentDate = (iso?: string | null) => (!iso ? '' : iso.slice(17, 19) === '01' ? monthLabel(iso) : iso.slice(17, 19) === '02' ? iso.slice(0, 4) : dayMonthYear(iso));
 export const monthLabel = (iso: string) => cap(new Date(+iso.slice(0, 4), +iso.slice(5, 7) - 1, 1).toLocaleDateString('vi-VN', { month: 'long', year: 'numeric' }));
 export const timeOf = (iso?: string | null) => (iso ? iso.slice(11, 16) : '');
+/** A chat moment as the API keeps it (UTC, no zone) as the Vietnam wall-clock "YYYY-MM-DDTHH:mm:ss" the helpers above
+ *  read — Vietnam is UTC+7 all year. Photos and forum posts are kept as wall-clock already and don't go through this. */
+export function vnClock(iso?: string | null): string {
+  if (!iso) return '';
+  const d = new Date(/[zZ]|[+-]\d\d:?\d\d$/.test(iso) ? iso : `${iso}Z`);
+  return isNaN(d.getTime()) ? iso : new Date(d.getTime() + 7 * 3600_000).toISOString().slice(0, 19);
+}
 export const yearOf = (iso?: string | null) => (iso ? Number(iso.slice(0, 4)) : NaN);
 
 /* ── Event dates: how far the moment is known decides how it reads ── */

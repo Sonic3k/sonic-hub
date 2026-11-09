@@ -5,7 +5,7 @@ import { useInfiniteQuery } from '@tanstack/react-query';
 import { hub } from '../api/hub';
 import type { ChatAttachment } from '../types';
 import { fmt } from '../lib/queries';
-import { longDay, timeOf } from '../lib/date';
+import { longDay, timeOf, vnClock } from '../lib/date';
 import { Sentinel } from './PhotoGroups';
 
 export type Shown = { src: string; name: string };
@@ -87,7 +87,7 @@ export function AttachmentGallery({ personId, archiveId, onOpen }: { personId: s
   const items = inf.data?.pages.flatMap(p => p.content) ?? [], total = inf.data?.pages[0]?.totalElements ?? 0;
   const days: { day: string; items: ChatAttachment[] }[] = [];
   for (const a of items) {
-    const d = (a.timestamp ?? '').slice(0, 10), last = days[days.length - 1];
+    const d = vnClock(a.timestamp).slice(0, 10), last = days[days.length - 1];
     if (last && last.day === d) last.items.push(a); else days.push({ day: d, items: [a] });
   }
   const more = useCallback(() => { if (inf.hasNextPage && !inf.isFetchingNextPage) inf.fetchNextPage(); }, [inf]);
@@ -105,7 +105,7 @@ export function AttachmentGallery({ personId, archiveId, onOpen }: { personId: s
           <div className="day-sep"><span>{g.day ? longDay(+g.day.slice(0, 4), +g.day.slice(5, 7), +g.day.slice(8, 10)) : 'Không rõ ngày'}</span></div>
           <div className="att-grid">{g.items.map(a => (
             <div key={a.id} className={`att-cell ${isPicture(a) || a.type === 'VIDEO' ? 'pic' : 'row'} ${a.senderType === 'SELF' ? 'me' : 'them'}`}
-              title={`${a.senderType === 'SELF' ? 'Mình' : 'Họ'} · ${timeOf(a.timestamp)}`}>
+              title={`${a.senderType === 'SELF' ? 'Mình' : 'Họ'} · ${timeOf(vnClock(a.timestamp))}`}>
               <Attachment a={a} onOpen={onOpen} />
             </div>))}</div>
         </Fragment>))}

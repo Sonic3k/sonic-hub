@@ -5,7 +5,7 @@ import { hub, dayOf, isAngel, peopleOfYear, randomLine } from '../api/hub';
 import { cdn, pic } from '../api/client';
 import type { MediaFile, Person } from '../types';
 import { counts, excerptOf, fmt, noteDate, noteHref, readMinutes, useAlbums, useNotes, usePersons, useRegions, useTimeline } from '../lib/queries';
-import { dayMonthYear, isoDay, longDay, yearOf, eventLabel } from '../lib/date';
+import { dayMonthYear, isoDay, longDay, yearOf, eventLabel, vnClock } from '../lib/date';
 import { PORTALS } from './Portal';
 import Justified from '../components/Justified';
 import Viewer from '../components/Viewer';
@@ -118,7 +118,7 @@ function ChatCard({ people }: { people: Person[] }) {
   return (
     <div className="card" style={{ ['--c' as string]: 'var(--angels)' }}>
       <h3><i />Một dòng tin nhắn<button type="button" onClick={() => setN(v => v + 1)}>Đổi</button></h3>
-      {q.data ? <><span className="bubble">{q.data.text}</span><div className="meta">{q.data.who} · {q.data.platform}{q.data.at ? ` · ${dayMonthYear(q.data.at)}` : ''}</div></> : <div className="meta">Đang lục lại…</div>}
+      {q.data ? <><span className="bubble">{q.data.text}</span><div className="meta">{q.data.who} · {q.data.platform}{q.data.at ? ` · ${dayMonthYear(vnClock(q.data.at))}` : ''}</div></> : <div className="meta">Đang lục lại…</div>}
     </div>
   );
 }
