@@ -89,6 +89,7 @@ export function PersonPage() {
   const traits = useQuery({ queryKey: ['traits', id], queryFn: () => hub.traits(id), staleTime: T });
   const archives = useQuery({ queryKey: ['archives', id], queryFn: () => hub.archives(id), staleTime: T });
   const rankings = useQuery({ queryKey: ['rankings', id], queryFn: () => hub.rankings(id), staleTime: T });
+  const chatStats = useQuery({ queryKey: ['chat-stats', id], queryFn: () => hub.chatStats(id), staleTime: T });
   const writings = useQuery({ queryKey: ['writings', id], queryFn: () => hub.notes({ authorId: id, size: 50 }), staleTime: T });
   const forums = useQuery({ queryKey: ['person-forums', id], queryFn: () => hub.personForums(id).catch(() => []), staleTime: T });
   const forumPosts = useQuery({ queryKey: ['person-forum-posts', id], queryFn: () => hub.personForumPosts(id, 0, 8).catch(() => null), staleTime: T, enabled: !!forums.data?.length });
@@ -139,7 +140,7 @@ export function PersonPage() {
               <ul className="prose">{style.map(f => <li key={f.id}>{f.value}</li>)}</ul></>}
           </section>}
 
-          <PersonNumbers entries={rankings.data ?? []} name={nameOf(p)} />
+          <PersonNumbers entries={rankings.data ?? []} name={nameOf(p)} activity={chatStats.data} />
 
           {eps.length > 0 && <section className="block"><div className="hd"><h2>Những khoảnh khắc</h2><span>{eps.length}</span></div>
             <ol className="episodes">{eps.map(e => (

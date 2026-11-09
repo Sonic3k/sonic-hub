@@ -1,21 +1,22 @@
 /* "Những con số" on a person's page: messages over the years, hours of the day, rank in the relationship sheets,
    Moments. Plain SVG, one hover readout per chart. */
 import { useState, type MouseEvent } from 'react';
-import type { PersonRanking } from '../types';
+import type { ChatMonth, ChatStats, PersonRanking } from '../types';
 import { fmt } from '../lib/queries';
 
-/* Validated categorical order (dataviz reference slots 1–3), fixed per platform. */
+/* Validated categorical order (dataviz reference slots 1–4), fixed per platform; i = its place in a month row. */
 const PLATFORMS = [
   { i: 1, label: 'Facebook', color: '#2a78d6' },
   { i: 2, label: 'Yahoo', color: '#eb6834' },
   { i: 3, label: 'SMS', color: '#1baf7a' },
+  { i: 4, label: 'Zalo', color: '#eda100' },
 ] as const;
 const ACCENT = 'var(--angels)';
-const PLATFORM_NAME: Record<string, string> = { facebook: 'Facebook', yahoo: 'Yahoo', sms: 'SMS', 'facebook-wall': 'tường FB' };
+const PLATFORM_NAME: Record<string, string> = { facebook: 'Facebook', yahoo: 'Yahoo', sms: 'SMS', zalo: 'Zalo', 'facebook-wall': 'tường FB' };
 
 /* Sheet columns worth showing, with the meaning they had in the sheet. Anything else stays in the data.
    The sheet's message columns (m.mess, fb.mess, yahoo…) are rough guesses written by hand, so they are left out:
-   the real counts come from the imported chats (chat-activity, above). */
+   the real counts come from the imported chats (ChatActivity, above). */
 const METRICS: [string[], string, string?][] = [
   [['meet'], 'Gặp nhau', 'lần'],
   [['pic chung'], 'Ảnh chung'],
@@ -28,19 +29,13 @@ const METRICS: [string[], string, string?][] = [
   [['year'], 'Quen từ năm', 'year'],
 ];
 
-type Month = [string, number, number, number];
-interface Activity {
-  messages?: number; by_platform?: Record<string, number>; first?: string; last?: string;
-  peak_month?: { month: string; messages: number }; peak_day?: { date: string; messages: number };
-  longest_streak?: { days: number; from: string; to: string }; conversations?: number;
-  started_by?: { self?: number; them?: number }; reply_median_s?: { self?: number; them?: number };
-  monthly?: Month[]; hours?: number[];
-}
+type Month = ChatMonth;
+const total = (r: Month) => PLATFORMS.reduce((s, p) => s + (r[p.i] ?? 0), 0);
 
 const monthLabel = (ym?: string) => (ym && /^\d{4}-\d{2}/.test(ym) ? `${+ym.slice(5, 7)}/${ym.slice(0, 4)}` : ym ?? '');
 const dayLabel = (d?: string) => (d && /^\d{4}-\d{2}-\d{2}/.test(d) ? `${+d.slice(8, 10)}/${+d.slice(5, 7)}/${d.slice(0, 4)}` : d ?? '');
 const periodLabel = (p: string) => (/^\d{4}\.\d{2}$/.test(p) ? `${+p.slice(5)}/${p.slice(0, 4)}` : /^\d{4}-\d{2}$/.test(p) ? monthLabel(p) : p);
-const seconds = (s?: number) => (s == null ? '' : s < 60 ? `${Math.round(s)} giây` : `${Math.round(s / 60)} phút`);
+const seconds = (s?: number | null) => (s == null ? '' : s < 60 ? `${Math.round(s)} giây` : `${Math.round(s / 60)} phút`);
 
 /** Every month between the first and the last, empty ones included, so the gaps show. */
 function allMonths(rows: Month[]): Month[] {
@@ -51,7 +46,7 @@ function allMonths(rows: Month[]): Month[] {
   const out: Month[] = [];
   while (y < y2 || (y === y2 && m <= m2)) {
     const k = `${y}-${String(m).padStart(2, '0')}`;
-    out.push(by.get(k) ?? [k, 0, 0, 0]);
+    out.push(by.get(k) ?? [k, 0, 0, 0, 0]);
     if (++m > 12) { m = 1; y++; }
   }
   return out;
@@ -74,7 +69,8 @@ function useHover(count: number, left: number, width: number) {
 function MonthsChart({ rows }: { rows: Month[] }) {
   const months = allMonths(rows);
   const W = 720, H = 150, L = 58, top = 8, n = months.length;   // L: room for the max label at phone size
-  const max = Math.max(1, ...months.map(r => r[1] + r[2] + r[3]));
+  const max = Math.max(1, ...months.map(total));
+  const shown = PLATFORMS.filter(p => months.some(r => r[p.i]));   // only the apps this person was on
   const step = W / n, bw = Math.max(1, step - (step > 4 ? 2 : 0));
   const y = (v: number) => (v / max) * (H - top);
   const hover = useHover(n, L, W);
@@ -84,7 +80,7 @@ function MonthsChart({ rows }: { rows: Month[] }) {
   return (
     <figure className="nchart">
       <figcaption>Tin nhắn theo tháng
-        <span className="legend">{PLATFORMS.map(p => <span key={p.i}><i style={{ background: p.color }} />{p.label}</span>)}</span>
+        <span className="legend">{shown.map(p => <span key={p.i}><i style={{ background: p.color }} />{p.label}</span>)}</span>
       </figcaption>
       <div className="nchart-box">
         <svg viewBox={`0 0 ${L + W + 8} ${H + 22}`} role="img" aria-label="Số tin nhắn mỗi tháng" onMouseMove={hover.onMove} onMouseLeave={hover.onLeave}>
@@ -103,7 +99,7 @@ function MonthsChart({ rows }: { rows: Month[] }) {
         </svg>
         {h && (
           <div className="ntip" style={tipStyle((L + (hover.i! + .5) * step) / (L + W + 8))}>
-            <b>{monthLabel(h[0])}</b> · {fmt(h[1] + h[2] + h[3])} tin
+            <b>{monthLabel(h[0])}</b> · {fmt(total(h))} tin
             {PLATFORMS.filter(p => h[p.i]).map(p => <span key={p.i}><i style={{ background: p.color }} />{p.label} {fmt(h[p.i])}</span>)}
           </div>)}
       </div>
@@ -136,7 +132,7 @@ function HoursChart({ hours }: { hours: number[] }) {
   );
 }
 
-function ChatActivity({ a, name }: { a: Activity; name: string }) {
+function ChatActivity({ a, name }: { a: ChatStats; name: string }) {
   const sb = a.started_by ?? {}, sbTotal = (sb.self ?? 0) + (sb.them ?? 0);
   const plat = Object.entries(a.by_platform ?? {}).filter(([, v]) => v > 0).sort((x, y) => y[1] - x[1]);
   return (
@@ -202,15 +198,16 @@ function RankHistory({ rows }: { rows: PersonRanking[] }) {
   );
 }
 
-export default function PersonNumbers({ entries, name }: { entries: PersonRanking[]; name: string }) {
+/** activity: counted from every chat filed under the person — all their nicks and accounts together. */
+export default function PersonNumbers({ entries, name, activity }: { entries: PersonRanking[]; name: string; activity?: ChatStats }) {
   const by = (board: string) => entries.filter(e => e.ranking.board === board && !e.ranking.variant)
     .sort((a, b) => (a.ranking.takenOn ?? a.ranking.period).localeCompare(b.ranking.takenOn ?? b.ranking.period));
-  const act = by('chat-activity').pop(), rel = by('relationship'), moments = entries.filter(e => e.ranking.board === 'moments'), fba = by('fb-association');
+  const act = activity?.messages ? activity : undefined, rel = by('relationship'), moments = entries.filter(e => e.ranking.board === 'moments'), fba = by('fb-association');
   if (!act && !rel.length && !moments.length && !fba.length) return null;
   return (
     <section className="block numbers">
       <div className="hd"><h2>Những con số</h2></div>
-      {act && <ChatActivity a={(act.metrics ?? {}) as Activity} name={name} />}
+      {act && <ChatActivity a={act} name={name} />}
       {rel.length > 0 && <RankHistory rows={rel} />}
       {(moments.length > 0 || fba.length > 0) && (
         <div className="ngroup nchips">

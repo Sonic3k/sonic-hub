@@ -1,5 +1,5 @@
 import { apiUrl, get } from './client';
-import type { Chapter, LifeEvent, LifeEventAt, LifeEventDetail, ChatArchive, RandomMemory, ChatAttachment, ChatMessage, Collection, Episode, Fact, Forum, ForumBoard, ForumMember, ForumPage, ForumPostHit, ForumThread, ForumThreadDetail, MediaFile, MysticBrief, Note, Paged, Person, PersonDetail, PersonForum, PersonRanking, RankingDetail, SeriesPart, Tag, TagStats, TimelineBucket, Trait } from '../types';
+import type { Chapter, LifeEvent, LifeEventAt, LifeEventDetail, ChatArchive, ChatBoard, ChatStats, RandomMemory, ChatAttachment, ChatMessage, Collection, Episode, Fact, Forum, ForumBoard, ForumMember, ForumPage, ForumPostHit, ForumThread, ForumThreadDetail, MediaFile, MysticBrief, Note, Paged, Person, PersonDetail, PersonForum, PersonRanking, RankingDetail, SeriesPart, Tag, TagStats, TimelineBucket, Trait } from '../types';
 import { isoDay, addDays } from '../lib/date';
 
 export interface Search {
@@ -63,6 +63,10 @@ export const hub = {
   eventsAt: (moment: string) => get<LifeEventAt>('/events/at', { moment }),
   traits: (id: string) => get<Trait[]>(`/persons/${id}/memory/traits`),
   rankings: (id: string) => get<PersonRanking[]>(`/persons/${id}/rankings`),
+  /** messages with one person, every nick and account together, counted from the chats as they are now */
+  chatStats: (id: string) => get<ChatStats>(`/persons/${id}/chat-stats`),
+  /** every Angel by messages, counted the same way */
+  chatBoard: () => get<ChatBoard>('/chat-stats'),
   /** Every list of one board with its rows, oldest first; metrics (heavy) only when asked for. */
   rankingBoard: (board: string, metrics = false) => get<RankingDetail[]>(`/rankings/board/${encodeURIComponent(board)}`, { metrics: metrics || undefined }),
   total: async (p: Search) => (await hub.search({ ...p, size: 1 })).totalElements,
