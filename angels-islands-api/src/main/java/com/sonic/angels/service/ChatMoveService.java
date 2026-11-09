@@ -85,6 +85,52 @@ public class ChatMoveService {
         return r;
     }
 
+    /**
+     * Puts messages of one archive in another order (a fix of an import that dated a part of it wrong): old seq → new
+     * seq. What points at a message by its seq (memories, posts imported from it) follows. The seqs left must stay
+     * one per message.
+     */
+    @Transactional
+    public ImportDto.ReseqResult reseq(UUID archiveId, ImportDto.ReseqRequest req) {
+        ChatArchive a = archiveRepo.findById(archiveId).orElseThrow(() -> new ImportException(404, "archive not found: " + archiveId));
+        Map<Integer, Integer> map = req == null || req.seqs() == null ? Map.of() : req.seqs();
+        if (map.isEmpty()) throw new ImportException(400, "seqs: old seq -> new seq");
+        if (map.size() > MAX_SEQS) throw new ImportException(413, "at most " + MAX_SEQS + " messages per call");
+        if (map.keySet().stream().anyMatch(k -> k == null || k < 0) || map.values().stream().anyMatch(v -> v == null || v < 0))
+            throw new ImportException(400, "seqs are 0 or more");
+        List<Integer> all = em.createQuery("SELECT m.seq FROM ChatMessage m WHERE m.chatArchive = :a", Integer.class)
+            .setParameter("a", a).getResultList();
+        Map<Integer, Integer> count = new HashMap<>();
+        for (Integer x : all) if (x != null) count.merge(x, 1, Integer::sum);
+        for (Integer k : map.keySet()) {
+            Integer n = count.get(k);
+            if (n == null) throw new ImportException(400, "no message at seq " + k);
+            if (n > 1) throw new ImportException(409, "more than one message at seq " + k);
+        }
+        Set<Integer> taken = new HashSet<>();
+        for (Integer x : count.keySet()) if (!map.containsKey(x)) taken.add(x);
+        for (Integer v : map.values()) if (!taken.add(v)) throw new ImportException(409, "seq " + v + " would be used twice");
+
+        // two steps, so a chain (5 -> 9, 9 -> 12) never meets itself half done: first to -1 - new, then back
+        int messages = 0, memories = 0, posts = 0;
+        for (Map.Entry<Integer, Integer> e : map.entrySet()) {
+            int tmp = -1 - e.getValue();
+            messages += em.createQuery("UPDATE ChatMessage m SET m.seq = :t WHERE m.chatArchive = :a AND m.seq = :o")
+                .setParameter("t", tmp).setParameter("a", a).setParameter("o", e.getKey()).executeUpdate();
+            memories += em.createQuery("UPDATE EpisodeSource x SET x.position = :t WHERE x.archive = :a AND x.position = :o")
+                .setParameter("t", tmp).setParameter("a", a).setParameter("o", e.getKey()).executeUpdate();
+            posts += em.createQuery("UPDATE SocialPost p SET p.originSeq = :t WHERE p.originArchiveId = :a AND p.originSeq = :o")
+                .setParameter("t", tmp).setParameter("a", a.getId()).setParameter("o", e.getKey()).executeUpdate();
+            posts += em.createQuery("UPDATE SocialComment c SET c.originSeq = :t WHERE c.originArchiveId = :a AND c.originSeq = :o")
+                .setParameter("t", tmp).setParameter("a", a.getId()).setParameter("o", e.getKey()).executeUpdate();
+        }
+        em.createQuery("UPDATE ChatMessage m SET m.seq = -1 - m.seq WHERE m.chatArchive = :a AND m.seq < 0").setParameter("a", a).executeUpdate();
+        em.createQuery("UPDATE EpisodeSource x SET x.position = -1 - x.position WHERE x.archive = :a AND x.position < 0").setParameter("a", a).executeUpdate();
+        em.createQuery("UPDATE SocialPost p SET p.originSeq = -1 - p.originSeq WHERE p.originArchiveId = :a AND p.originSeq < 0").setParameter("a", a.getId()).executeUpdate();
+        em.createQuery("UPDATE SocialComment c SET c.originSeq = -1 - c.originSeq WHERE c.originArchiveId = :a AND c.originSeq < 0").setParameter("a", a.getId()).executeUpdate();
+        return new ImportDto.ReseqResult(messages, memories, posts);
+    }
+
     /** The conversation the messages go to: by id, or found again (or made) by key under its person or counterpart. */
     private ChatArchive target(ChatArchive from, ImportDto.MoveRequest req, boolean[] created) {
         if (req.getToArchiveId() != null)

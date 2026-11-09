@@ -65,6 +65,12 @@ public class ImportController {
         return moves.move(archiveId, body);
     }
 
+    /** Put messages of an archive in another order: old seq → new seq; links to them follow. */
+    @PostMapping("/archives/{archiveId}/reseq")
+    public ImportDto.ReseqResult reseq(@PathVariable UUID archiveId, @RequestBody ImportDto.ReseqRequest body) {
+        return moves.reseq(archiveId, body);
+    }
+
     @DeleteMapping("/archives/{archiveId}")
     public Map<String, Object> deleteArchive(@PathVariable UUID archiveId) {
         return Map.of("archiveId", archiveId, "deletedMessages", importService.deleteArchive(archiveId));

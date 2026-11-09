@@ -281,6 +281,10 @@ public class ImportDto {
                                 java.time.LocalDateTime timestamp, String precision, String content, String sources,
                                 String reactions, String replyTo) {}
 
+/** New places for messages of one archive: old seq → new seq (the archive's other seqs stay). */
+    public record ReseqRequest(java.util.Map<Integer, Integer> seqs) {}
+    public record ReseqResult(int messages, int memoryLinks, int postLinks) {}
+
     public static class MoveRequest {
         private List<Integer> seqs = new ArrayList<>();
         private UUID toArchiveId; private String toExternalKey; private String toTitle; private String toPlatform;
