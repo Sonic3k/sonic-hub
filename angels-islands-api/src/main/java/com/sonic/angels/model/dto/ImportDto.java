@@ -269,4 +269,44 @@ public class ImportDto {
         public long getAttachmentsWithFile() { return attachmentsWithFile; } public void setAttachmentsWithFile(long v) { this.attachmentsWithFile = v; }
         public long getAttachmentsStored() { return attachmentsStored; } public void setAttachmentsStored(long v) { this.attachmentsStored = v; }
     }
+
+    /**
+     * POST /api/import/archives/{id}/move: messages (by seq) that belong in another conversation — a chat saved under
+     * the wrong nick, a Yahoo conference kept inside a one-to-one chat. to: an existing conversation (toArchiveId), or
+     * one found or made by key: under the same person unless toPersonSlug names another, or under no one
+     * (noPerson + counterpart + counterpartKey, as for a group chat).
+     */
+    /** A message as stored, EMPTY rows included, for the import tools. */
+    public record StoredMessage(java.util.UUID id, Integer seq, String externalId, String sender, String senderType, String kind,
+                                java.time.LocalDateTime timestamp, String precision, String content, String sources,
+                                String reactions, String replyTo) {}
+
+/** New places for messages of one archive: old seq → new seq (the archive's other seqs stay). */
+    public record ReseqRequest(java.util.Map<Integer, Integer> seqs) {}
+    public record ReseqResult(int messages, int memoryLinks, int postLinks) {}
+
+    public static class MoveRequest {
+        private List<Integer> seqs = new ArrayList<>();
+        private UUID toArchiveId; private String toExternalKey; private String toTitle; private String toPlatform;
+        private String toPersonSlug; private Boolean noPerson; private String counterpart; private String counterpartKey;
+        public List<Integer> getSeqs() { return seqs; } public void setSeqs(List<Integer> v) { this.seqs = v; }
+        public UUID getToArchiveId() { return toArchiveId; } public void setToArchiveId(UUID v) { this.toArchiveId = v; }
+        public String getToExternalKey() { return toExternalKey; } public void setToExternalKey(String v) { this.toExternalKey = v; }
+        public String getToTitle() { return toTitle; } public void setToTitle(String v) { this.toTitle = v; }
+        public String getToPlatform() { return toPlatform; } public void setToPlatform(String v) { this.toPlatform = v; }
+        public String getToPersonSlug() { return toPersonSlug; } public void setToPersonSlug(String v) { this.toPersonSlug = v; }
+        public Boolean getNoPerson() { return noPerson; } public void setNoPerson(Boolean v) { this.noPerson = v; }
+        public String getCounterpart() { return counterpart; } public void setCounterpart(String v) { this.counterpart = v; }
+        public String getCounterpartKey() { return counterpartKey; } public void setCounterpartKey(String v) { this.counterpartKey = v; }
+    }
+    public static class MoveResult {
+        private int moved; private int memoryLinks; private int postLinks; private boolean created;
+        private FinalizeResult from; private FinalizeResult to;
+        public int getMoved() { return moved; } public void setMoved(int v) { this.moved = v; }
+        public int getMemoryLinks() { return memoryLinks; } public void setMemoryLinks(int v) { this.memoryLinks = v; }
+        public int getPostLinks() { return postLinks; } public void setPostLinks(int v) { this.postLinks = v; }
+        public boolean isCreated() { return created; } public void setCreated(boolean v) { this.created = v; }
+        public FinalizeResult getFrom() { return from; } public void setFrom(FinalizeResult v) { this.from = v; }
+        public FinalizeResult getTo() { return to; } public void setTo(FinalizeResult v) { this.to = v; }
+    }
 }

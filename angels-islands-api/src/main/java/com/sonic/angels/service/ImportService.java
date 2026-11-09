@@ -378,7 +378,20 @@ public class ImportService {
         return r;
     }
 
-    /** Optionally prune messages that are no longer in the source, then refresh count and date range. */
+    @Transactional(readOnly = true)
+    public List<ImportDto.StoredMessage> stored(UUID archiveId, int fromSeq, int toSeq, int size) {
+        if (!archiveRepo.existsById(archiveId)) throw new ImportException(404, "archive not found: " + archiveId);
+        int n = Math.max(1, Math.min(size, 2000));
+        return messageRepo.findByChatArchiveIdAndSeqBetweenOrderBySeqAsc(archiveId, fromSeq, toSeq,
+                org.springframework.data.domain.PageRequest.of(0, n)).stream()
+            .map(m -> new ImportDto.StoredMessage(m.getId(), m.getSeq(), m.getExternalId(), m.getSender(),
+                m.getSenderType() == null ? null : m.getSenderType().name(), m.getKind() == null ? null : m.getKind().name(),
+                m.getTimestamp(), m.getTimePrecision() == null ? null : m.getTimePrecision().name(), m.getContent(), m.getSources(),
+                m.getReactions(), m.getReplyToExternalId()))
+            .toList();
+    }
+
+        /** Optionally prune messages that are no longer in the source, then refresh count and date range. */
     @Transactional
     public ImportDto.FinalizeResult finalizeArchive(UUID archiveId, ImportDto.FinalizeRequest req) {
         ChatArchive a = archiveRepo.findById(archiveId)

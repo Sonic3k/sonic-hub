@@ -37,6 +37,7 @@ const EN = {
   last: (d: string, t: string) => `Last message received on ${d} at ${t}`,
   noContacts: 'No contacts yet.',
   card: ['Send Email...', 'Conference', 'Share Photos', 'Send a File'],
+  conference: 'Conference',
   cardDetails: 'Contact Details',
   cardProfile: 'View Profile',
   cardOnline: 'You appear online to this contact',
@@ -76,6 +77,7 @@ const VI: typeof EN = {
   last: (d: string, t: string) => `Tin nhắn sau cùng nhận ngày ${d} lúc ${t}`, // 10309
   noContacts: 'Chưa có ai trong danh bạ.',
   card: ['Gửi Email...', 'Họp nhóm', 'Chia sẻ hình ảnh', 'Gửi tập tin'], // 60398, 531, 530, 1000
+  conference: 'Họp nhóm', // 531
   cardDetails: 'Chi tiết liên lạc',
   cardProfile: 'Xem hồ sơ', // 11111
   cardOnline: 'Bạn hiện online với người này', // 491

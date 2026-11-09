@@ -14,6 +14,9 @@ import java.util.List;
 public interface ChatMessageRepository extends JpaRepository<ChatMessage, UUID> {
     List<ChatMessage> findByChatArchiveIdOrderBySeqAsc(UUID archiveId);
 
+    /** Every row of a seq range, EMPTY ones too (what the importer and the move tool work with). */
+    List<ChatMessage> findByChatArchiveIdAndSeqBetweenOrderBySeqAsc(UUID archiveId, Integer fromSeq, Integer toSeq, Pageable pageable);
+
     Page<ChatMessage> findByChatArchiveId(UUID archiveId, Pageable pageable);
 
     /** Everything but EMPTY rows (Yahoo lines whose emoticon was lost in the export). */

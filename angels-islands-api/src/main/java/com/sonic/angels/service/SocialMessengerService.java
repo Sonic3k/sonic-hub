@@ -119,11 +119,19 @@ public class SocialMessengerService {
             v.preload(known);
         }
 
+        /** More than one other account wrote in it (two names of one account are one; a Yahoo conference is many). */
         boolean group(ChatArchive a) {
             if (chatProfiles.containsKey(a.getId())) return true;
-            long people = members.getOrDefault(a.getId(), List.of()).stream()
-                .filter(m -> v.me == null || !m.getProfile().getId().equals(v.me.getId())).map(SocialChatMember::getSenderName).distinct().count();
-            if (people > 1) return true;
+            Set<UUID> accounts = new HashSet<>(), persons = new HashSet<>();
+            boolean unowned = false;
+            for (SocialChatMember m : members.getOrDefault(a.getId(), List.of())) {
+                SocialProfile p = m.getProfile();
+                if (v.me != null && p.getId().equals(v.me.getId())) continue;
+                accounts.add(p.getId());
+                if (p.getPerson() != null) persons.add(p.getPerson().getId()); else unowned = true;
+            }
+            // two accounts of the same person in one conversation is still a talk with her
+            if (accounts.size() > 1 && (unowned || persons.size() > 1)) return true;
             // a conversation filed under one person is with that person, even when an export wrote her under two names
             if (a.getPerson() != null) return false;
             return otherSenderCounts(app).getOrDefault(a.getId(), 0) > 1;

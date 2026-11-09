@@ -903,7 +903,7 @@ public class SocialSyncService {
         out.put("connections", connectionRepo.allOf(p.getId()).stream().map(x -> {
             Map<String, Object> m = new LinkedHashMap<>();
             m.put("key", x.getExternalKey()); m.put("kind", x.getKind().name()); m.put("from", x.getFrom().getExternalKey()); m.put("to", x.getTo().getExternalKey());
-            m.put("since", vn(x.getValidFrom())); m.put("until", vn(x.getValidTo())); m.put("source", x.getSource().name());
+            m.put("since", vn(x.getValidFrom())); m.put("until", vn(x.getValidTo())); m.put("label", x.getLabel()); m.put("source", x.getSource().name());
             return m;
         }).toList());
         return out;

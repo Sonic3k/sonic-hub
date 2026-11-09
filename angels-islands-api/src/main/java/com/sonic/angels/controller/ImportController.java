@@ -1,6 +1,7 @@
 package com.sonic.angels.controller;
 
 import com.sonic.angels.model.dto.ImportDto;
+import com.sonic.angels.service.ChatMoveService;
 import com.sonic.angels.service.ImportException;
 import com.sonic.angels.service.ImportService;
 import org.springframework.http.MediaType;
@@ -19,9 +20,11 @@ import java.util.UUID;
 public class ImportController {
 
     private final ImportService importService;
+    private final ChatMoveService moves;
 
-    public ImportController(ImportService importService) {
+    public ImportController(ImportService importService, ChatMoveService moves) {
         this.importService = importService;
+        this.moves = moves;
     }
 
     @GetMapping("/status")
@@ -46,6 +49,26 @@ public class ImportController {
     public ImportDto.FinalizeResult finalizeArchive(@PathVariable UUID archiveId,
                                                     @RequestBody(required = false) ImportDto.FinalizeRequest body) {
         return importService.finalizeArchive(archiveId, body);
+    }
+
+    /** The rows of an archive as stored (EMPTY ones too), by seq: at most 2000 a call. */
+    @GetMapping("/archives/{archiveId}/messages")
+    public List<ImportDto.StoredMessage> stored(@PathVariable UUID archiveId, @RequestParam(defaultValue = "0") int fromSeq,
+                                                @RequestParam(defaultValue = "2147483647") int toSeq,
+                                                @RequestParam(defaultValue = "2000") int size) {
+        return importService.stored(archiveId, fromSeq, toSeq, size);
+    }
+
+    /** Move messages (by seq) into the conversation they belong to: another nick's chat, or a conference of its own. */
+    @PostMapping("/archives/{archiveId}/move")
+    public ImportDto.MoveResult move(@PathVariable UUID archiveId, @RequestBody ImportDto.MoveRequest body) {
+        return moves.move(archiveId, body);
+    }
+
+    /** Put messages of an archive in another order: old seq → new seq; links to them follow. */
+    @PostMapping("/archives/{archiveId}/reseq")
+    public ImportDto.ReseqResult reseq(@PathVariable UUID archiveId, @RequestBody ImportDto.ReseqRequest body) {
+        return moves.reseq(archiveId, body);
     }
 
     @DeleteMapping("/archives/{archiveId}")
