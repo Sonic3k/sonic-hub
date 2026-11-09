@@ -27,6 +27,8 @@ public class StorageService {
     @Value("${storage.prefix}") private String prefix;
     /** Path-style URLs for S3-compatible test servers; B2 itself works either way. */
     @Value("${storage.b2.path-style:false}") private boolean pathStyle;
+    /** The private bucket for game files (ROMs, DOS games, saves): never behind the CDN, read only through the API. */
+    @Value("${storage.b2.games-bucket:sonic-hub-games}") private String gamesBucket;
 
     private S3Client s3Client;
 
@@ -84,6 +86,28 @@ public class StorageService {
     public java.io.InputStream downloadStream(String storageKey) {
         if (s3Client == null) throw new IllegalStateException("Storage not configured");
         return s3Client.getObject(GetObjectRequest.builder().bucket(bucket).key(storageKey).build());
+    }
+
+    // ── the private games bucket (keys are used as given, no prefix) ─────────
+
+    /** Streams a known-length body into the games bucket under the key given. */
+    public void uploadGameFile(java.io.InputStream data, long size, String key, String contentType) {
+        if (s3Client == null) throw new IllegalStateException("Storage not configured");
+        s3Client.putObject(
+            PutObjectRequest.builder().bucket(gamesBucket).key(key)
+                .contentType(contentType == null ? "application/octet-stream" : contentType).contentLength(size).build(),
+            RequestBody.fromInputStream(data, size)
+        );
+    }
+
+    public java.io.InputStream downloadGameFile(String key) {
+        if (s3Client == null) throw new IllegalStateException("Storage not configured");
+        return s3Client.getObject(GetObjectRequest.builder().bucket(gamesBucket).key(key).build());
+    }
+
+    public void deleteGameFile(String key) {
+        if (s3Client == null || key == null) return;
+        s3Client.deleteObject(DeleteObjectRequest.builder().bucket(gamesBucket).key(key).build());
     }
 
     /**
