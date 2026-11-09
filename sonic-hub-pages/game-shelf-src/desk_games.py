@@ -63,6 +63,8 @@ START = [
     ("games", "pc-xp", "Doodle Devil", "doodle-devil", "exe:doodle-devil", None, None, XP),
     ("games", "pc-xp", "Doodle God", "doodle-god", "exe:doodle-god", None, None, XP),
     ("games", "pc-hp", "Minesweeper", "minesweeper", "mine", None, None, "Có sẵn trong Windows"),
+    ("games", "pc-fujitsu", "Pinball", "pinball", "exe:pinball", None, None, "Theo anh: chỉ có trên máy Fujitsu"),
+    ("games", "pc-fujitsu", "Minesweeper", "minesweeper", "mine", None, None, "Có sẵn trong Windows XP, cùng bộ Games với Pinball"),
     ("games", "pc-hp", "DX-Ball 2", "dxball2", "exe:dxball2", None, None, "Thư mục DXBall2 trong [Mini Games]"),
 ]
 # the games of D:\Games\[Win Games] (Windows 3.1), in a Win Games folder of Programs on both desktops

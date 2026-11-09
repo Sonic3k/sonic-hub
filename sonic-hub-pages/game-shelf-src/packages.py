@@ -121,6 +121,8 @@ WIN_FILES = {
     "lines98": ("/mnt/user-data/uploads/0049294d-Lines98-wayback-narod.zip", "Lines98/", "lines98", []),
     # Kawai 2003 is a Visual Basic 5 program: Microsoft's VB5 runtime (msvbvm50.exe, unpacked) goes beside it
     "pikachu": ("/mnt/user-data/uploads/1b09a047-Pikachu-original.zip", "", "pikachu", ["/home/claude/untrusted/vb5/MSVBVM50.DLL"]),
+    # C:\\Program Files\\Windows NT\\Pinball of Windows XP SP3, from his upload (its README stays beside it)
+    "pinball": ("/mnt/user-data/uploads/a5915bc6-Pinball-WinXP-original.zip", "", "pinball", []),
 }
 
 # key, game, title, zip (another package's file; None = its own), program, screen (None = 800x600), portal, note
@@ -162,6 +164,8 @@ WIN = [
     ("lines98", "lines-98", "Lines 98", None, "lines98.exe", None, False, "Bản gốc anh tìm lại được (narod.ru, qua Wayback Machine)"),
     ("pikachu", "pikachu", "Pikachu (Kawai 2003)", None, "Kawai2003.exe", None, False,
      "Kawai 2003 của CHEN PROGRAM STUDY (Đài Loan), chạy cùng Visual Basic 5 runtime của Microsoft"),
+    ("pinball", "space-cadet-pinball", "3D Pinball for Windows – Space Cadet", None, "PINBALL.EXE", None, False,
+     "Bản của Windows XP SP3 (5.1.2600.5512), đúng từng byte với bản gốc"),
 ]
 
 

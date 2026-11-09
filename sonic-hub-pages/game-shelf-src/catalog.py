@@ -455,6 +455,12 @@ GAMES = [
     dict(key="hearts", title="Hearts", series="windows", seriesOrder=13, platform="Windows", developer="Microsoft",
          genre="Card", handName="Tú Hearts", summary="Bài tránh ăn cơ và đầm bích, có sẵn trong Windows.",
          links=[wiki("Microsoft_Hearts")]),
+    dict(key="space-cadet-pinball", title="3D Pinball for Windows – Space Cadet", series="windows", seriesOrder=21,
+         platform="Windows", releaseYear=1995, developer="Cinematronics", genre="Pinball",
+         summary="Bàn pinball có sẵn trong Windows XP, vào vai học viên phi công vũ trụ lên dần cấp bậc.",
+         plays=[play("2005-10", "pc-fujitsu", end="2008-09", precision="MONTH", approx=True,
+                     evidence="Theo anh: chỉ thấy Pinball trên máy Fujitsu, máy PC Win XP của mẹ thì không có")],
+         links=[wiki("3D_Pinball_for_Windows_–_Space_Cadet")]),
     dict(key="win-games", title="Win Games", series="windows", seriesOrder=20, platform="Windows", genre="Puzzle",
          summary="Thư mục [Win Games] trên ổ D: những trò nhỏ của Windows 3.1 như Pipe Dream, SkiFree, Golf, Cruel, "
                  "Rattler Race, WordZap."),
