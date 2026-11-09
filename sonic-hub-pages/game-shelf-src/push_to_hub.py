@@ -28,6 +28,7 @@ def load(name, default):
 def build():
     ids = load("ids.json", {})
     uploads = load("uploads.json", [])
+    icons = load("icons.json", {})
     missing = []
 
     def ref(prefix):
@@ -53,6 +54,10 @@ def build():
             "plays": g.get("plays", []), "links": [{k: v for k, v in l.items() if v is not None} for l in g.get("links", [])],
             "media": media, "memoryIds": [ref(m) for m in g.get("memories", [])], "noteIds": [],
         })
+        if g["key"] in icons:
+            games[-1]["iconMediaId"] = icons[g["key"]]
+        if g.get("cover"):
+            games[-1]["coverMediaId"] = ref(g["cover"])
     payload = {"source": "game-shelf-src", "series": catalog.SERIES, "games": games, "packages": []}
     return payload, missing
 

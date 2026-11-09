@@ -9,6 +9,7 @@ import { angelsOrdered } from '../pages/Angels';
 import { MoneySide } from '../pages/Money';
 import { PortalSide } from '../pages/Portal';
 import { MemoriesSide } from '../pages/Memories';
+import { GamesSide } from '../pages/Games';
 import { isOwner } from './money/data';
 import { cdn } from '../api/client';
 import { counts, fmt, noteDate, useAlbums, useLibraryCounts, useNotes, usePersons, useRegions, useTimeline } from '../lib/queries';
@@ -22,7 +23,7 @@ export default function Shell() {
   const loc = useLocation(), nav = useNavigate(), tl = useTimeline();
   const reading = /^\/(journal|memories)\/(?!events\/?$).+/.test(loc.pathname), inMemories = loc.pathname.startsWith('/memories'), inJournal = loc.pathname.startsWith('/journal'), inPhotos = /^\/(photos|tags)/.test(loc.pathname), inAngels = loc.pathname.startsWith('/angels'), inForum = loc.pathname.startsWith('/forum');
   const inMoney = loc.pathname.startsWith('/money'), tabs = inMoney || isOwner() ? [...TABS, MONEY_TAB] : TABS;
-  const inPortal = loc.pathname.startsWith('/portal');
+  const inPortal = loc.pathname.startsWith('/portal'); const inGames = loc.pathname.startsWith('/games');
   /* Angels changes the light of the whole page, softly */
   useEffect(() => { document.body.classList.toggle('mood-angels', inAngels); }, [inAngels]);
   const random = async () => {
@@ -40,7 +41,7 @@ export default function Shell() {
         <MachineButtons />
       </div></header>
       <div className={`frame ${reading ? 'reading' : ''}`}>
-        <aside className="side">{inJournal ? <JournalSide /> : inMemories ? <MemoriesSide /> : inPhotos ? <PhotosSide /> : inAngels ? <AngelsSide /> : inForum ? <ForumSide /> : inMoney ? <MoneySide /> : inPortal ? <PortalSide /> : <HomeSide />}</aside>
+        <aside className="side">{inJournal ? <JournalSide /> : inMemories ? <MemoriesSide /> : inPhotos ? <PhotosSide /> : inAngels ? <AngelsSide /> : inForum ? <ForumSide /> : inMoney ? <MoneySide /> : inPortal ? <PortalSide /> : inGames ? <GamesSide /> : <HomeSide />}</aside>
         <main><Outlet /></main>
       </div>
     </>
