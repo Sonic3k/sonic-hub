@@ -48,18 +48,25 @@ def group_id(path):
     return (0, int(n), "") if n.isdigit() else (1, 0, n)
 
 
-def upload(key, pics):
+def upload(key, pics, have):
     for size, im in pics.items():
+        name = f"icon/{key}-{size}.png"
+        if name in have:
+            continue
         buf = io.BytesIO()
         im.save(buf, "PNG")
-        r = requests.post(f"{API}/desk/assets", params={"folder": "games"}, timeout=120,
-                          data={"name": f"icon/{key}-{size}.png"}, files={"file": (f"{key}-{size}.png", buf.getvalue(), "image/png")})
+        for attempt in range(3):   # the API sometimes answers 500 to one upload; sent again it goes through
+            r = requests.post(f"{API}/desk/assets", params={"folder": "games"}, timeout=120,
+                              data={"name": name}, files={"file": (f"{key}-{size}.png", buf.getvalue(), "image/png")})
+            if r.status_code < 500:
+                break
         r.raise_for_status()
 
 
 def main(bundles):
+    have = {a["fileName"] for a in requests.get(f"{API}/desk/assets", params={"folder": "games"}, timeout=60).json()}
     for key, _game, _title, z, exe, _res, _portal, _note in packages.WIN:
-        if not exe:
+        if not exe or all(f"icon/{key}-{s}.png" in have for s in (16, 32, 96)):
             continue
         holder = z or key
         top = packages.WIN_FILES[holder][2]
@@ -69,7 +76,7 @@ def main(bundles):
         if not pics:
             print(key, "no icon")
             continue
-        upload(key, pics)
+        upload(key, pics, have)
         print(key, "ok")
 
 
