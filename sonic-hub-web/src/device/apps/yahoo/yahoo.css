@@ -173,6 +173,10 @@
 .ym-im-main { flex: 1; min-height: 0; display: flex; padding: 3px; }
 .ym-im-side { flex: none; width: 106px; display: flex; flex-direction: column; align-items: center; margin-left: 3px; padding: 4px 0; background: #ecebf2 0 0 / 100% 100% no-repeat; }
 .ym-im-dp { width: 96px; height: 96px; object-fit: cover; border: 1px solid #bbb; background: #fff; }
+.ym-conf { flex: 1; min-height: 0; width: 100%; margin-bottom: 4px; overflow: auto; border: 1px solid #bbb; background: #fff; }
+.ym-conf-p { display: flex; align-items: center; gap: 4px; padding: 2px 3px; font: 11px Tahoma, sans-serif; color: #000; }
+.ym-conf .ym-conf-p img { display: block; flex: none; width: 16px; height: 16px; object-fit: cover; border: 0; background: none; }
+.ym-conf-p span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .ym-im-mydp { width: 48px; height: 48px; object-fit: cover; border: 1px solid #bbb; background: #fff; }
 .ym-im-inbar { flex: none; display: flex; align-items: center; gap: 6px; height: 25px; padding: 0 6px; }
 .ym-im-input { flex: none; height: 54px; padding: 0 3px 3px; }
