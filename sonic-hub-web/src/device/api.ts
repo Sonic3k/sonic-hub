@@ -5,8 +5,11 @@ import type { MediaFile, Note, Paged, Person } from '../types';
 import type { MessagePage, Ref, Thread } from './fb/api';
 export type { Message, MessagePage, Ref, Thread } from './fb/api';
 
-export interface DeskDevice { key: string; kind: 'DESKTOP' | 'LAPTOP' | 'PHONE'; name: string; model?: string | null; photoUrl?: string | null;
+export interface DeskDevice { key: string; kind: 'DESKTOP' | 'LAPTOP' | 'PHONE' | 'MUSIC_PLAYER'; name: string; model?: string | null; photoUrl?: string | null;
   screenWidth?: number | null; screenHeight?: number | null; from?: string | null; to?: string | null }
+
+/** A desktop or laptop (phones and music players are devices of his too, but not machines of the desk). */
+export const isComputer = (d: Pick<DeskDevice, 'kind'>) => d.kind === 'DESKTOP' || d.kind === 'LAPTOP';
 export type Os = 'WIN98' | 'WINXP' | 'VISTA' | 'WIN7' | 'WIN81' | 'WIN10' | 'WIN11' | 'NOKIA_S40' | 'NOKIA_S60' | 'IOS6' | 'IOS7' | 'IOS';
 export interface DeskSystem { key: string; os: Os; accent?: string | null; language?: string | null; from?: string | null; to?: string | null }
 export interface Wallpaper { url?: string | null; builtin?: string | null; fit: string; color?: string | null }
