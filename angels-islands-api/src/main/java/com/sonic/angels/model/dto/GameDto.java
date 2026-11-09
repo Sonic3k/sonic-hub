@@ -24,7 +24,14 @@ public class GameDto {
         public List<String> devices;
         /** plays on the portal page itself / plays inside a machine of its time */
         public boolean portal, machine;
+        /** each stretch he played it: first moment, first moment after, the machine (for placing it in a period) */
+        public List<Span> spans;
+        /** something of his is on it (a play, a picture, a memory, a package, his list, his own game): false = only
+         *  a line of its series, shown on the series page */
+        public boolean mine;
     }
+
+    public record Span(LocalDateTime from, LocalDateTime to, String device) {}
 
     public static class Play {
         public UUID id;
