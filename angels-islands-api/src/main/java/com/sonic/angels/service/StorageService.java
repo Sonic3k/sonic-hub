@@ -29,6 +29,10 @@ public class StorageService {
     @Value("${storage.b2.path-style:false}") private boolean pathStyle;
     /** The private bucket for game files (ROMs, DOS games, saves): never behind the CDN, read only through the API. */
     @Value("${storage.b2.games-bucket:sonic-hub-games}") private String gamesBucket;
+    /** His music (the audio of his song lists): a folder of its own (music/, next to the photos' root), read only through
+     *  /api/music/tracks/{key}/audio. Moving it to a bucket of its own = copying the folder and setting the bucket. */
+    @Value("${storage.b2.music-bucket:${storage.b2.bucket}}") private String musicBucket;
+    @Value("${storage.b2.music-root:music}") private String musicRoot;
 
     private S3Client s3Client;
 
@@ -110,14 +114,43 @@ public class StorageService {
         s3Client.deleteObject(DeleteObjectRequest.builder().bucket(gamesBucket).key(key).build());
     }
 
+    // ── his music (keys are full keys, "music/…"; see musicKey) ─────────────
+
+    /** The full key of a file of the music folder: "audio/x/y.mp3" → "music/audio/x/y.mp3". */
+    public String musicKey(String relative) { return musicRoot + "/" + relative; }
+
+    /** Streams a known-length body into the music folder under the (full) key given. */
+    public void uploadMusicFile(java.io.InputStream data, long size, String key, String contentType) {
+        if (s3Client == null) throw new IllegalStateException("Storage not configured");
+        s3Client.putObject(
+            PutObjectRequest.builder().bucket(musicBucket).key(key)
+                .contentType(contentType == null ? "application/octet-stream" : contentType).contentLength(size).build(),
+            RequestBody.fromInputStream(data, size)
+        );
+    }
+
+    public java.io.InputStream downloadMusicFile(String key) {
+        if (s3Client == null) throw new IllegalStateException("Storage not configured");
+        return s3Client.getObject(GetObjectRequest.builder().bucket(musicBucket).key(key).build());
+    }
+
+    public java.io.InputStream downloadMusicRange(String key, long start, long end) { return range(musicBucket, key, start, end); }
+
+    public void deleteMusicFile(String key) {
+        if (s3Client == null || key == null) return;
+        s3Client.deleteObject(DeleteObjectRequest.builder().bucket(musicBucket).key(key).build());
+    }
+
     /**
      * Bytes start..end (inclusive) of an object, for HTTP Range requests (video/audio seeking).
      * A server that ignores Range sends the whole object; then the unwanted bytes are skipped here.
      */
-    public java.io.InputStream downloadRange(String storageKey, long start, long end) {
+    public java.io.InputStream downloadRange(String storageKey, long start, long end) { return range(bucket, storageKey, start, end); }
+
+    private java.io.InputStream range(String inBucket, String storageKey, long start, long end) {
         if (s3Client == null) throw new IllegalStateException("Storage not configured");
         software.amazon.awssdk.core.ResponseInputStream<GetObjectResponse> body = s3Client.getObject(
-            GetObjectRequest.builder().bucket(bucket).key(storageKey).range("bytes=" + start + "-" + end).build());
+            GetObjectRequest.builder().bucket(inBucket).key(storageKey).range("bytes=" + start + "-" + end).build());
         if (body.response().contentRange() != null) return body;
         try { body.skipNBytes(start); }
         catch (IOException e) { body.abort(); throw new java.io.UncheckedIOException(e); }

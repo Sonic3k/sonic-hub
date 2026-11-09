@@ -13,7 +13,10 @@ import java.util.UUID;
 @Table(name = "desk_devices",
     uniqueConstraints = @UniqueConstraint(name = "uk_desk_device_key", columnNames = "external_key"))
 public class DeskDevice extends BaseEntity {
-    public enum Kind { DESKTOP, LAPTOP, PHONE }
+    /** MUSIC_PLAYER = a music player he carried (his JVJ, his Sony): never a machine of the desk, only a device of his. */
+    public enum Kind { DESKTOP, LAPTOP, PHONE, MUSIC_PLAYER;
+        public boolean computer() { return this == DESKTOP || this == LAPTOP; }
+    }
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)

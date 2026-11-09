@@ -6,6 +6,7 @@ import { cdn } from '../../api/client';
 import { clockText, usedText, viLong, vn } from '../moment';
 import { Glyph } from '../glyphs';
 import { computersAt, useDesk, useTick } from './desk';
+import { isComputer } from '../api';
 
 const pad = (n: number) => String(n).padStart(2, '0');
 const WD = ['T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'CN'];
@@ -32,7 +33,7 @@ export function TimeMachine({ onClose }: { onClose: () => void }) {
   const future = (d: number) => view.y > now.y || (view.y === now.y && (view.m > now.mo || (view.m === now.mo && d > now.d)));
   const years: number[] = [];
   for (let y = now.y; y >= 1998; y--) years.push(y);
-  const computers = data.machines.filter(m => m.kind !== 'PHONE');
+  const computers = data.machines.filter(isComputer);
   return (
     <div className="dv-time" onClick={e => e.stopPropagation()} role="dialog" aria-label="Cỗ máy thời gian">
       <div className="dv-time-now">

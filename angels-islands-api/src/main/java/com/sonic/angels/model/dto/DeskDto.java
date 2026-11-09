@@ -15,7 +15,7 @@ public final class DeskDto {
 
     // ── Writing (POST /api/desk/sync) ────────────────────────────────────────
 
-    /** kind = DESKTOP, LAPTOP or PHONE; photo = id of one of his photos of the machine. */
+    /** kind = DESKTOP, LAPTOP, PHONE or MUSIC_PLAYER (a device of his, never a machine of the desk); photo = id of one of his photos of it. */
     public record DeviceIn(String key, String kind, String name, String model, String photo, Integer screenWidth, Integer screenHeight,
                            String from, String to, String note, String source) {}
 
