@@ -15,6 +15,10 @@ type It = Pick<DeskItem, 'key' | 'label' | 'glyph' | 'app' | 'target'>;
 const SYSTEM = new Set(['computer', 'recycle', 'documents', 'user-folder', 'network', 'control', 'heart-folder', 'sticky']);
 const FILE = /\.(docx?|txt|jpe?g|png|pptx?|rar|zip|pdf|xlsx?)$/i;
 const PINNED_APPS = ['browser', 'yahoo', 'word', 'messages', 'zalo', 'messenger', 'skype', 'notepad', 'memories'];
+/** the folders of Programs his games sit in, by the part of their key after "start/" (<device>/start/<folder>/<name>) */
+const FOLDER_NAMES: Record<string, string> = { games: 'Games', 'win-games': 'Win Games' };
+const folderOf = (key: string) => key.split('/start/')[1]?.split('/')[0] ?? 'games';
+const folderName = (f: string) => FOLDER_NAMES[f] ?? f.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
 
 function useLists() {
   const { machine, os, ver } = useDesk();
@@ -36,9 +40,16 @@ function useLists() {
       && !FILE.test(i.label) && !(i.glyph ?? '').startsWith('folder'))
       .filter(i => { const k = i.label.toLowerCase(); if (seen.has(k)) return false; seen.add(k); return true; })
       .sort((a, b) => a.label.localeCompare(b.label, 'vi', { sensitivity: 'base' }));
-    // his games on this machine (Start entries that open a game): a Games folder in Programs
+    // his games on this machine (Start entries that open a game): folders in Programs (Games, Win Games…)
     const games = items.filter(i => i.place === 'START' && (i.app === 'game' || i.app === 'gamecard' || i.app === 'emulator'))
       .sort((a, b) => a.label.localeCompare(b.label, 'vi', { sensitivity: 'base' }));
+    const folders: [string, It[]][] = [];
+    for (const it of games) {
+      const name = folderName(folderOf(it.key));
+      const f = folders.find(x => x[0] === name);
+      if (f) f[1].push(it); else folders.push([name, [it]]);
+    }
+    folders.sort((a, b) => a[0].localeCompare(b[0]));
     const my = skin === 'w98' || skin === 'xp';
     const places: It[] = [
       { key: 'p-docs', label: my ? 'My Documents' : 'Documents', glyph: 'documents', app: 'documents' },
@@ -47,8 +58,18 @@ function useLists() {
       { key: 'p-pc', label: my ? 'My Computer' : skin === 'vista' || skin === 'w7' ? 'Computer' : 'This PC', glyph: 'computer', app: 'computer' },
       { key: 'p-ctl', label: skin === 'w10' || skin === 'w11' ? 'Settings' : 'Control Panel', glyph: skin === 'w10' || skin === 'w11' ? 'settings' : 'control', app: 'control' },
     ];
-    return { pinned, programs: skin === 'w98' ? programs : [...programs, ...games], places, games };
+    return { pinned, programs: skin === 'w98' || skin === 'xp' ? programs : [...programs, ...games], places, folders };
   }, [machine.items, skin, ver.browser]);
+}
+
+/** the folders of Programs with his games, each opening in place under its name */
+function Folders({ folders, pick, size = 16 }: { folders: [string, It[]][]; pick: (it: It) => void; size?: number }) {
+  const [open, setOpen] = useState<string | null>(null);
+  return <>{folders.map(([name, its]) => <div key={name}>
+    <button type="button" className={`dv-sm-row arrow ${open === name ? 'open' : ''}`} onClick={() => setOpen(o => (o === name ? null : name))}>
+      <Glyph name="folder" size={size} /><span><b>{name}</b></span></button>
+    {open === name && <div className="dv-sm98-in">{its.map(it => <Row key={it.key} it={it} onPick={pick} />)}</div>}
+  </div>)}</>;
 }
 
 function Row({ it, size = 16, sub, onPick }: { it: It; size?: number; sub?: string; onPick: (it: It) => void }) {
@@ -76,8 +97,8 @@ interface P { pick: (it: It) => void; onClose: () => void }
 
 function Start98({ pick }: P) {
   const { shutdown } = useDesk();
-  const { pinned, programs, games } = useLists();
-  const [sub, setSub] = useState(false), [gsub, setGsub] = useState(false);
+  const { pinned, programs, folders } = useLists();
+  const [sub, setSub] = useState(false);
   return (
     <div className="dv-sm dv-sm98">
       <div className="dv-sm98-band"><b>Windows</b><i>98</i></div>
@@ -87,10 +108,7 @@ function Start98({ pick }: P) {
         <div className="dv-sm98-sub">
           <button type="button" className="dv-sm-row arrow" onClick={() => setSub(s => !s)}><Glyph name="folder" size={24} /><span><b>Programs</b></span></button>
           {sub && <div className="dv-sm98-fly">
-            {games.length > 0 && <>
-              <button type="button" className={`dv-sm-row arrow ${gsub ? 'open' : ''}`} onClick={() => setGsub(g => !g)}><Glyph name="folder" size={16} /><span><b>Games</b></span></button>
-              {gsub && <div className="dv-sm98-in">{games.map(it => <Row key={it.key} it={it} onPick={pick} />)}</div>}
-            </>}
+            <Folders folders={folders} pick={pick} />
             {programs.map(it => <Row key={it.key} it={it} onPick={pick} />)}</div>}
         </div>
         <Row it={{ key: 'd', label: 'Documents', glyph: 'documents', app: 'documents' }} size={24} onPick={pick} />
@@ -105,7 +123,7 @@ function Start98({ pick }: P) {
 
 function StartXp({ pick }: P) {
   const { shutdown, ver } = useDesk();
-  const { pinned, programs, places } = useLists();
+  const { pinned, programs, places, folders } = useLists();
   const [all, setAll] = useState(false);
   const pic = useAssets('xp').a('user/chess.png');
   return (
@@ -117,7 +135,7 @@ function StartXp({ pick }: P) {
           <div className="dv-smxp-sp" />
           <div className="dv-smxp-allwrap">
             <button type="button" className={`dv-smxp-all ${all ? 'on' : ''}`} onClick={() => setAll(a => !a)}><b>All Programs</b><i /></button>
-            {all && <div className="dv-smxp-fly">{programs.map(it => <Row key={it.key} it={it} onPick={pick} />)}</div>}
+            {all && <div className="dv-smxp-fly"><Folders folders={folders} pick={pick} />{programs.map(it => <Row key={it.key} it={it} onPick={pick} />)}</div>}
           </div>
         </div>
         <div className="dv-smxp-right">

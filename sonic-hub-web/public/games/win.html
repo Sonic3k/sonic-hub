@@ -1,0 +1,153 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+<title>Windows game</title>
+<!-- A Windows game (Windows 3.1 or 9x) in Boxedwine: Wine and an x86 machine in WebAssembly, run in this page. The game
+     windows of Sonic Hub open it in a frame: ?rt=<the hub's /api/game-runtime/>&zip=<the game's folder, zipped>
+     &dir=<its folder in the zip>&exe=<program, from that folder>[&res=640x480].
+     Boxedwine's engine (the 2020 web build of boxedwine.org) and the Wine files it starts from (Wine 1.7.55, cut down
+     to what his games use) come from the hub: /api/game-runtime/<name>.
+     Wine draws its own desktop with the game's window on it; only that window is shown, without Wine's title bar (the
+     machine's window has its own), found again in the picture every moment as it moves or a dialog opens. -->
+<style>
+  html, body { margin: 0; height: 100%; background: transparent; overflow: hidden; }
+  #view { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; }
+  #crop { position: relative; overflow: hidden; flex: none; visibility: hidden; }
+  #canvas { position: absolute; left: 0; top: 0; outline: none; image-rendering: pixelated; }
+  #wait { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; color: #8a93a0;
+    font: 12px Tahoma, Verdana, sans-serif; }
+</style>
+</head>
+<body>
+<div id="view"><div id="crop"><canvas id="canvas" tabindex="0" oncontextmenu="event.preventDefault()"></canvas></div></div>
+<div id="wait">…</div>
+<script>
+  const Q = new URLSearchParams(location.search);
+  const RT = (Q.get('rt') || '/api/game-runtime/').replace(/\/?$/, '/');
+  const ENGINE = 'boxedwine-2020', ROOT = 'winroot-v1.zip';
+  const ZIP = Q.get('zip') || '', DIR = Q.get('dir') || '', EXE = (Q.get('exe') || '').replace(/\\/g, '/'), RES = Q.get('res');
+  const canvas = document.getElementById('canvas'), crop = document.getElementById('crop'), wait = document.getElementById('wait');
+  canvas.width = 800; canvas.height = 600;
+
+  const fail = (what) => { wait.textContent = what; wait.style.display = ''; crop.style.visibility = 'hidden'; };
+  const bytes = (url) => fetch(url).then(r => { if (!r.ok) throw new Error(url + ' ' + r.status); return r.arrayBuffer(); });
+
+  /* Boxedwine's command line: the Wine files as root, the game's folder as drive D:, the program run from its folder */
+  function args() {
+    const cut = EXE.lastIndexOf('/');
+    const work = '/home/username/.wine/dosdevices/d:/' + [DIR, cut > 0 ? EXE.slice(0, cut) : ''].filter(Boolean).join('/');
+    const a = ['-root', '/root/base', '-mount_drive', '/root/files/', 'd', '-nozip'];
+    if (RES) a.push('-resolution', RES);
+    return a.concat(['-w', work, '/bin/wine', EXE.slice(cut + 1)]);
+  }
+
+  /* the file systems, as Boxedwine's own page builds them: each zip read-only under a layer that takes what is written */
+  function setup() {
+    Module.addRunDependency('win-fs');
+    Promise.all([bytes(RT + ROOT), bytes(ZIP)]).then(([root, app]) => {
+      const B = BrowserFS.FileSystem, Buffer = BrowserFS.BFSRequire('buffer').Buffer;
+      B.ZipFS.Create({ zipData: new Buffer(root) }, (e1, rootZip) => {
+        B.ZipFS.Create({ zipData: new Buffer(app) }, (e2, appZip) => {
+          if (e1 || e2) return fail('…');
+          FS.createFolder(FS.root, 'root', true, true);
+          FS.createFolder('/root', 'base', true, true);
+          FS.createFolder('/root', 'files', true, true);
+          B.OverlayFS.Create({ readable: rootZip, writable: new B.InMemory() }, (e3, rootFs) => {
+            const home = new B.FolderAdapter('/', appZip);
+            home.initialize(() => {
+              B.OverlayFS.Create({ readable: home, writable: new B.InMemory() }, (e4, homeFs) => {
+                const mfs = new B.MountableFileSystem();
+                mfs.mount('/root/base', rootFs);
+                mfs.mount('/root/files', homeFs);
+                BrowserFS.initialize(mfs);
+                FS.mount(new BrowserFS.EmscriptenFS(), { root: '/root' }, '/root');
+                for (const a of args()) Module.arguments.push(a);
+                Module.removeRunDependency('win-fs');
+              });
+            });
+          });
+        });
+      });
+    }).catch(() => fail('…'));
+  }
+
+  var Module = {
+    arguments: [], preRun: [setup], postRun: [],
+    print: () => {}, printErr: () => {},
+    canvas, setStatus: () => {}, totalDependencies: 0, monitorRunDependencies: () => {},
+    locateFile: (f) => RT + (f.endsWith('.wasm') ? ENGINE + '.wasm' : f),
+  };
+
+  /* sound starts with the first click or key in the game (browsers keep it off until then) */
+  const resume = () => { const c = Module.SDL2 && Module.SDL2.audioContext; if (c && c.state === 'suspended') c.resume(); };
+  addEventListener('pointerdown', resume, true);
+  addEventListener('keydown', resume, true);
+
+  /* What of Wine's screen to show: everything that is not its desktop (the game's window and any dialog of it), less
+     the window's frame and title bar (Windows 2000 metrics: a 3 or 4 px frame, an 18 px caption; a maximized window
+     has its frame off screen). A full-screen game (DirectDraw) covers the desktop, so it is shown whole. */
+  const DESK = [58, 110, 165], CAPTION = [[10, 36, 106], [128, 128, 128]];
+  let shown = null, seen = null, seenTimes = 0;
+  function region() {
+    const w = canvas.width, h = canvas.height;
+    let d;
+    try { d = canvas.getContext('2d').getImageData(0, 0, w, h).data; } catch { return null; }
+    const desk = (i) => d[i] === DESK[0] && d[i + 1] === DESK[1] && d[i + 2] === DESK[2];
+    const rowHas = (y) => { for (let x = 0, i = y * w * 4; x < w; x++, i += 4) if (!desk(i)) return true; return false; };
+    const colHas = (x, y0, y1) => { for (let y = y0; y <= y1; y++) if (!desk((y * w + x) * 4)) return true; return false; };
+    let top = 0; while (top < h && !rowHas(top)) top++;
+    if (top >= h) return null;
+    /* nothing drawn yet: a screen of one colour (before Wine paints its desktop, or a full-screen game's first frame) */
+    const at = (x, y) => (y * w + x) * 4, first = at(0, 0);
+    if ([[w - 1, 0], [0, h - 1], [w - 1, h - 1], [w >> 1, h >> 1], [w >> 2, h >> 2], [(3 * w) >> 2, (3 * h) >> 2]]
+      .every(([x, y]) => { const i = at(x, y); return d[i] === d[first] && d[i + 1] === d[first + 1] && d[i + 2] === d[first + 2]; })) return null;
+    let bottom = h - 1; while (bottom > top && !rowHas(bottom)) bottom--;
+    let left = 0; while (left < w && !colHas(left, top, bottom)) left++;
+    let right = w - 1; while (right > left && !colHas(right, top, bottom)) right--;
+    const px = (x, y) => { const i = (y * w + x) * 4; return [d[i], d[i + 1], d[i + 2]]; };
+    const same = (a, b) => a[0] === b[0] && a[1] === b[1] && a[2] === b[2];
+    const isCaption = (x, y) => x < w && y < h && CAPTION.some(c => same(px(x, y), c));
+    const plain = (p) => same(p, [212, 208, 200]) || same(p, [255, 255, 255]);
+    let b = 0; while (b < 8 && left + b < w && plain(px(left + b, top + 12))) b++;
+    const bw = right - left + 1, bh = bottom - top + 1;
+    if (b >= 2 && b <= 6 && isCaption(left + b, top + b + 2)) return [left + b, top + b + 18, bw - 2 * b, bh - 2 * b - 18];
+    if (b === 0 && isCaption(left, top + 2) && isCaption(left + 1, top + 2)) return [left, top + 18, bw, bh - 18];
+    return [left, top, bw, bh];
+  }
+  function fit() {
+    if (!shown) return;
+    const [x, y, w, h] = shown;
+    const f = Math.min(innerWidth / w, innerHeight / h);
+    const s = f >= 1 ? Math.floor(f) : f;   /* whole times bigger, so the pixels stay sharp */
+    crop.style.width = `${Math.round(w * s)}px`;
+    crop.style.height = `${Math.round(h * s)}px`;
+    canvas.style.width = `${canvas.width * s}px`;
+    canvas.style.height = `${canvas.height * s}px`;
+    canvas.style.left = `${-x * s}px`;
+    canvas.style.top = `${-y * s}px`;
+  }
+  function tick() {
+    const r = region();
+    const key = r && r.join(',');
+    if (key && key === seen) seenTimes++; else { seen = key; seenTimes = 0; }
+    if (r && seenTimes >= 1 && key !== (shown && shown.join(','))) {
+      shown = r;
+      crop.style.visibility = 'visible';
+      wait.style.display = 'none';
+    }
+    fit();
+  }
+  setInterval(tick, 600);
+  addEventListener('resize', fit);
+
+  const engine = () => { const s = document.createElement('script'); s.src = RT + ENGINE + '.js'; s.onerror = () => fail('…'); document.body.appendChild(s); };
+  const fs = document.createElement('script');
+  fs.src = RT + 'browserfs-2020.js';
+  fs.onload = engine;
+  fs.onerror = () => fail('…');
+  document.body.appendChild(fs);
+</script>
+</body>
+</html>

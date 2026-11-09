@@ -455,6 +455,9 @@ GAMES = [
     dict(key="hearts", title="Hearts", series="windows", seriesOrder=13, platform="Windows", developer="Microsoft",
          genre="Card", handName="Tú Hearts", summary="Bài tránh ăn cơ và đầm bích, có sẵn trong Windows.",
          links=[wiki("Microsoft_Hearts")]),
+    dict(key="win-games", title="Win Games", series="windows", seriesOrder=20, platform="Windows", genre="Puzzle",
+         summary="Thư mục [Win Games] trên ổ D: những trò nhỏ của Windows 3.1 như Pipe Dream, SkiFree, Golf, Cruel, "
+                 "Rattler Race, WordZap."),
     dict(key="lines-98", title="Lines 98", platform="Windows", genre="Puzzle", handName="LINES", handOrder=3,
          summary="Xếp năm viên bi cùng màu thành hàng để ăn; bản Windows của Color Lines.",
          plays=[play("1998", "pc-old", end="2004", precision="YEAR", approx=True,

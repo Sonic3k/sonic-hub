@@ -18,6 +18,7 @@ import com.sonic.angels.model.entity.FinanceCategory;
 import com.sonic.angels.model.entity.FinanceInbound;
 import com.sonic.angels.model.entity.FinanceRule;
 import com.sonic.angels.model.entity.FinanceTransaction;
+import com.sonic.angels.model.entity.GamePackage;
 import com.sonic.angels.model.entity.MediaFile;
 import com.sonic.angels.model.entity.Person;
 import com.sonic.angels.model.entity.PersonContact;
@@ -96,7 +97,8 @@ public class EnumCheckConstraintFixer implements InitializingBean {
         new EnumColumn("music_cd_media", "role", MusicCdMedia.Role.class),
         new EnumColumn("music_playlists", "kind", MusicPlaylist.Kind.class),
         new EnumColumn("music_track_memories", "role", MusicTrackMemory.Role.class),
-        new EnumColumn("music_track_events", "role", MusicTrackMemory.Role.class)
+        new EnumColumn("music_track_events", "role", MusicTrackMemory.Role.class),
+        new EnumColumn("game_packages", "engine", GamePackage.Engine.class)
     );
 
     /** Values taken out of an enum, per table.column, and what rows holding one become. */

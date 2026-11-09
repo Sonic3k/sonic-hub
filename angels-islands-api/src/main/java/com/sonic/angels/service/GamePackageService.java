@@ -21,7 +21,10 @@ import java.util.NoSuchElementException;
 /**
  * The files that play games for real, in the private games bucket (packages/<key>/…): never behind the CDN, read only
  * through /api/game-packages/{key}/file and /save. Each package holds one file (a DOS game bundled for DOSBox, a .swf,
- * a ROM) and optionally his own save from back then.
+ * a ROM, a Windows game's folder) and optionally his own save from back then.
+ *
+ * The bucket also keeps what runs the Windows games (runtime/<name>: Boxedwine's engine and the Wine file system it
+ * starts from), read through /api/game-runtime/{name}. Their names carry their version, so a browser keeps them.
  */
 @Service
 public class GamePackageService {
@@ -95,6 +98,40 @@ public class GamePackageService {
     }
 
     public InputStream open(Stream s) { return storage.downloadGameFile(s.storageKey()); }
+
+    private static final java.util.regex.Pattern RUNTIME_NAME = java.util.regex.Pattern.compile("[a-z0-9][a-z0-9._-]{0,79}");
+
+    /** A file of the Windows games' runtime (boxedwine-2020.wasm, winroot-v1.zip…). */
+    public Stream runtime(String name) {
+        String n = runtimeName(name);
+        StorageService.ObjectInfo info = storage.gameFileInfo("runtime/" + n);
+        if (info == null) throw new NoSuchElementException("No runtime file " + n);
+        return new Stream("runtime/" + n, n, info.size(), info.etag());
+    }
+
+    /** Puts a file of the runtime (replacing the one of that name). */
+    public Stream uploadRuntime(String name, MultipartFile file) throws IOException {
+        String n = runtimeName(name);
+        if (file == null || file.isEmpty()) throw new IllegalArgumentException("file missing");
+        try (InputStream in = file.getInputStream()) {
+            storage.uploadGameFile(in, file.getSize(), "runtime/" + n, runtimeType(n));
+        }
+        return runtime(n);
+    }
+
+    /** What a runtime file is served as: the engine's script and module, or a plain file (the zips). */
+    public static String runtimeType(String name) {
+        if (name.endsWith(".wasm")) return "application/wasm";
+        if (name.endsWith(".js")) return "text/javascript";
+        if (name.endsWith(".zip")) return "application/zip";
+        return "application/octet-stream";
+    }
+
+    private static String runtimeName(String name) {
+        String n = name == null ? "" : name.trim();
+        if (!RUNTIME_NAME.matcher(n).matches() || n.contains("..")) throw new IllegalArgumentException("bad runtime name: " + name);
+        return n;
+    }
 
     private GamePackage find(String key) {
         return packages.findByKey(key).orElseThrow(() -> new NoSuchElementException("Package not found: " + key));
