@@ -109,6 +109,22 @@ public class StorageService {
         return s3Client.getObject(GetObjectRequest.builder().bucket(gamesBucket).key(key).build());
     }
 
+    /** Size and tag of an object of the games bucket, or null when there is none under that key. */
+    public record ObjectInfo(long size, String etag) {}
+
+    public ObjectInfo gameFileInfo(String key) {
+        if (s3Client == null) throw new IllegalStateException("Storage not configured");
+        try {
+            HeadObjectResponse h = s3Client.headObject(HeadObjectRequest.builder().bucket(gamesBucket).key(key).build());
+            return new ObjectInfo(h.contentLength(), h.eTag() == null ? null : h.eTag().replace("\"", ""));
+        } catch (NoSuchKeyException e) {
+            return null;
+        } catch (S3Exception e) {
+            if (e.statusCode() == 404) return null;
+            throw e;
+        }
+    }
+
     public void deleteGameFile(String key) {
         if (s3Client == null || key == null) return;
         s3Client.deleteObject(DeleteObjectRequest.builder().bucket(gamesBucket).key(key).build());

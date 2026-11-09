@@ -96,6 +96,7 @@ const FILE_RE = /\.[a-z0-9]{2,4}$/i;
 function programIcon(glyph: string, label: string, c: IconCtx): [string, string] | null {
   const y = c.year, l = label.toLowerCase();
   const isFile = FILE_RE.test(label);
+  if (glyph.startsWith('exe:')) return ['games', `icon/${glyph.slice(4)}`];   // a game's own icon, taken from its .exe
   if (glyph === 'globe-blue' && !isFile) return c.skin === 'w98' || c.skin === 'xp' ? ['programs', 'ie6'] : ['programs', 'ie8'];
   if (glyph === 'globe-orange') return ['programs', 'firefox-3'];
   if (glyph === 'globe-multi') return ['programs', y < 2014 ? 'chrome-2011' : y < 2022 ? 'chrome-2014' : 'chrome-2022'];

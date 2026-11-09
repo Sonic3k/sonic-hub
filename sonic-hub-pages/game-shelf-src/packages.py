@@ -1,14 +1,20 @@
 # -*- coding: utf-8 -*-
-"""What plays the games: his DOS games as js-dos bundles, and the games remade for the portal.
+"""What plays the games: his DOS games as js-dos bundles, his Windows games for Boxedwine, the Flash movies, the ROMs,
+and the game remade for the portal.
 
 A DOS bundle is a zip of the game folder as it is in D:\\Games\\[DOS Games] (his saves and settings included: Prince
 of Persia starts the way his Prince.bat did, with the save of 22/11/1998), plus .jsdos/dosbox.conf that mounts it
 as C: and runs the game. The bundle goes into the private bucket (PUT /api/game-packages/{key}, then POST its file);
 the web plays it with js-dos inside the PC Win 98 window (portal = false: these play only inside the machine).
+A WIN package is a Windows game run by Boxedwine in the web's /games/win.html: its file is the game's folder zipped
+as it is on D: (with its own dates), under one top folder; config names the program (exe), that folder (dir), the
+screen size Wine starts with when not 800x600 (res), and, for the games of [Win Games] that share one folder, the
+package that holds the zip (zip). What runs them (Boxedwine and the Wine files) is win_runtime.py.
 WEB packages have no file: the web has the game itself (config names it).
 
   python3 packages.py build /mnt/user-data/uploads/Games/[DOS\\ Games] /tmp/bundles    writes the bundles
   python3 packages.py flash /mnt/user-data/uploads/Games/[Mini\\ Games] /tmp/bundles     the Flash movies out of their .exe
+  python3 packages.py win /tmp/bundles                                                   the Windows games' zips (WIN_FILES)
   python3 packages.py push /tmp/bundles [jazz,riptide]                                  metadata + files to the hub (all, or those keys)
 """
 import json
@@ -103,7 +109,59 @@ def save_bytes(path):
 # key, game, title, what the web runs
 WEB = [
     ("minesweeper", "minesweeper", "Minesweeper", {"replica": "minesweeper"}),
-    ("lines", "lines-98", "Lines 98", {"replica": "lines"}),
+]
+
+# The zips of the Windows games, each the way the folder is (dates kept): package → (zip of the folder as it came from
+# his drive or his upload, the part of its paths to drop, the top folder in the package's zip, files added)
+STAGED = "/mnt/user-data/uploads/Games data/_sonic-hub-tmp"
+WIN_FILES = {
+    "wingames": (f"{STAGED}/wingames-src.zip", "", "wingames", []),                       # D:\Games\[Win Games]
+    "dxball2": (f"{STAGED}/dxball2-src.zip", "", "dxball2", []),                          # [Mini Games]\DXBall2
+    "s3k": (f"{STAGED}/s3k-src.zip", "", "s3k", []),                                      # [Adventure Games]\Sonic 3 & Knuckles
+    "lines98": ("/mnt/user-data/uploads/0049294d-Lines98-wayback-narod.zip", "Lines98/", "lines98", []),
+    # Kawai 2003 is a Visual Basic 5 program: Microsoft's VB5 runtime (msvbvm50.exe, unpacked) goes beside it
+    "pikachu": ("/mnt/user-data/uploads/1b09a047-Pikachu-original.zip", "", "pikachu", ["/home/claude/untrusted/vb5/MSVBVM50.DLL"]),
+}
+
+# key, game, title, zip (another package's file; None = its own), program, screen (None = 800x600), portal, note
+WG = "wingames"
+WIN = [
+    ("wingames", "win-games", "Win Games", None, None, None, False, "Thư mục [Win Games] trên D:, chung cho các game bên dưới"),
+    ("chips", "chips-challenge", "Chip's Challenge", WG, "CHIPS.EXE", None, False, None),
+    ("jezzball", "jezzball", "JezzBall", WG, "JEZZBALL.EXE", None, False, None),
+    ("tetravex", "tetravex", "Tetravex", WG, "TETRAVEX.EXE", None, False, None),
+    ("tripeaks", "tripeaks", "TriPeaks", WG, "TRIPEAKS.EXE", None, False, None),
+    ("taipei", "taipei", "Taipei", WG, "TP.EXE", None, False, None),
+    ("klotski", "klotski", "Klotski", WG, "KLOTSKI.EXE", None, False, "Kèm bảng điểm KLOTSKI.SCO trong thư mục"),
+    ("rodent", "rodents-revenge", "Rodent's Revenge", WG, "RODENT.EXE", None, False, None),
+    ("maxwell", "maxwells-maniac", "Maxwell's Maniac", WG, "MAXWELL.EXE", None, False, None),
+    ("gofigure", "go-figure", "Go Figure!", WG, "GOFIGURE.EXE", None, False, None),
+    ("dots", "dots", "Dots", WG, "DOTS.EXE", "640x480", False, None),
+    ("fences", "fences", "Fences", WG, "FENCES/FENCES.EXE", None, False, None),
+    ("pipe-dream", "win-games", "Pipe Dream", WG, "PIPE.EXE", None, False, None),
+    ("skifree", "win-games", "SkiFree", WG, "SKI.EXE", None, False, None),
+    ("golf", "win-games", "Golf", WG, "GOLF.EXE", "640x480", False, None),
+    ("cruel", "win-games", "Cruel", WG, "CRUEL.EXE", "640x480", False, None),
+    ("chess-win", "win-games", "Chess", WG, "CHESS.EXE", "640x480", False, None),
+    ("noughts", "win-games", "Noughts and Crosses", WG, "0X.EXE", None, False, None),
+    ("amnesia", "win-games", "Amnesia", WG, "AMNESIA/AMNESIA.EXE", "640x480", False, None),
+    ("blackjack", "win-games", "BlackJack", WG, "BLAKJAK.EXE", None, False, None),
+    ("codebreaker", "win-games", "CodeBreaker", WG, "CODEBRAK.EXE", None, False, None),
+    ("fujigolf", "win-games", "FujiGolf", WG, "FUJIGOLF.EXE", "640x480", False, None),
+    ("hangman", "win-games", "Hangman", WG, "HANGMAN.EXE", "640x480", False, None),
+    ("jacks", "win-games", "Jacks", WG, "JACKS.EXE", "640x480", False, None),
+    ("lifegen", "win-games", "LifeGenesis", WG, "LIFEGEN.EXE", None, False, None),
+    ("pegged", "win-games", "Pegged", WG, "PEGGED.EXE", None, False, None),
+    ("rattler", "win-games", "Rattler Race", WG, "RATTLER/RATTLER.EXE", None, False, None),
+    ("sticks", "win-games", "Sticks", WG, "STICKS.EXE", None, False, None),
+    ("tictactics", "win-games", "TicTactics", WG, "TIC.EXE", None, False, None),
+    ("wordzap", "win-games", "WordZap", WG, "WORDZAP.EXE", "640x480", False, None),
+    ("dxball2", "dx-ball-2", "DX-Ball 2", None, "DXBall2.exe", None, True, None),
+    ("s3k", "sonic-3-knuckles", "Sonic & Knuckles Collection", None, "SONIC3K.EXE", None, True,
+     "Bản PC của anh, kèm file lưu SONIC3K.BIN ngày 17/03/2014; mở lên nó hỏi đĩa CD như hồi đó, bấm OK là vào game"),
+    ("lines98", "lines-98", "Lines 98", None, "lines98.exe", None, False, "Bản gốc anh tìm lại được (narod.ru, qua Wayback Machine)"),
+    ("pikachu", "pikachu", "Pikachu (Kawai 2003)", None, "Kawai2003.exe", None, False,
+     "Kawai 2003 của CHEN PROGRAM STUDY (Đài Loan), chạy cùng Visual Basic 5 runtime của Microsoft"),
 ]
 
 
@@ -155,6 +213,28 @@ def build_flash(src, out):
         swf = swf_of(open(os.path.join(src, rel), "rb").read())
         open(os.path.join(out, f"{key}.swf"), "wb").write(swf)
         print(key, len(swf))
+
+
+def build_win(out):
+    """the Windows games' zips: each folder under one top folder, every file with the date it has on his drive"""
+    os.makedirs(out, exist_ok=True)
+    for key, (src, drop, top, extra) in WIN_FILES.items():
+        path = os.path.join(out, f"{key}.zip")
+        with zipfile.ZipFile(src) as zi, zipfile.ZipFile(path, "w", zipfile.ZIP_DEFLATED) as zo:
+            zo.writestr(f"{top}/", b"")
+            for info in zi.infolist():
+                name = info.filename
+                if drop and not name.startswith(drop):
+                    continue
+                name = name[len(drop):]
+                if not name:
+                    continue
+                ni = zipfile.ZipInfo(f"{top}/{name}", info.date_time)
+                ni.compress_type = zipfile.ZIP_DEFLATED
+                zo.writestr(ni, b"" if info.is_dir() else zi.read(info))
+            for f in extra:
+                zo.write(f, f"{top}/{os.path.basename(f)}")
+        print(key, os.path.getsize(path))
 
 
 def build(src, out):
@@ -214,6 +294,27 @@ def push(bundles, only=None):
                               files={"file": (os.path.basename(sav), data, "application/octet-stream")})
             r.raise_for_status()
         print(key, "ok", "with save" if sav else "")
+    for key, game, title, z, exe, res, portal, note in WIN:
+        order += 1
+        if only and key not in only:
+            continue
+        top = WIN_FILES[z or key][2]
+        config = {"dir": top}
+        if z:
+            config["zip"] = z
+        if exe:
+            config["exe"] = exe
+        if res:
+            config["res"] = res
+        meta = {"gameKey": game, "engine": "WIN", "title": title, "portal": portal, "sortOrder": order,
+                "config": json.dumps(config), "note": note or ""}
+        requests.put(f"{API}/game-packages/{key}", json=meta, timeout=60).raise_for_status()
+        if not z:
+            with open(os.path.join(bundles, f"{key}.zip"), "rb") as fh:
+                r = requests.post(f"{API}/game-packages/{key}/file", timeout=600,
+                                  files={"file": (f"{key}.zip", fh, "application/zip")})
+            r.raise_for_status()
+        print(key, "ok")
     for key, game, title, config in WEB:
         order += 1
         if only and key not in only:
@@ -226,4 +327,5 @@ def push(bundles, only=None):
 
 if __name__ == "__main__":
     {"build": lambda: build(sys.argv[2], sys.argv[3]), "flash": lambda: build_flash(sys.argv[2], sys.argv[3]),
+     "win": lambda: build_win(sys.argv[2]),
      "push": lambda: push(sys.argv[2], sys.argv[3].split(",") if len(sys.argv) > 3 else None)}[sys.argv[1]]()

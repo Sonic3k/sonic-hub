@@ -40,6 +40,8 @@ import java.util.UUID;
  *   POST   /api/game-packages/{key}/save       multipart file [+ lastModified]: his save from back then
  *   GET    /api/game-packages/{key}/file       the file itself, streamed from the private bucket
  *   GET    /api/game-packages/{key}/save       his save, streamed
+ *   GET    /api/game-runtime/{name}            what runs the Windows games (Boxedwine, the Wine files), kept a year
+ *   POST   /api/game-runtime/{name}            multipart file: put one of them
  */
 @RestController
 @RequestMapping("/api")
@@ -128,6 +130,25 @@ public class GameController {
     public ResponseEntity<InputStreamResource> save(@PathVariable String key,
                                                     @RequestHeader(value = HttpHeaders.IF_NONE_MATCH, required = false) String ifNoneMatch) {
         return stream(packages.save(key), ifNoneMatch);
+    }
+
+    @GetMapping("/game-runtime/{name}")
+    public ResponseEntity<InputStreamResource> runtime(@PathVariable String name,
+                                                       @RequestHeader(value = HttpHeaders.IF_NONE_MATCH, required = false) String ifNoneMatch) {
+        GamePackageService.Stream s = packages.runtime(name);
+        String etag = s.etag() == null ? null : "\"" + s.etag() + "\"";
+        CacheControl cache = CacheControl.maxAge(Duration.ofDays(365)).cachePublic();
+        if (etag != null && etag.equals(ifNoneMatch)) return ResponseEntity.status(HttpStatus.NOT_MODIFIED).eTag(etag).cacheControl(cache).build();
+        var r = ResponseEntity.ok().contentType(MediaType.parseMediaType(GamePackageService.runtimeType(s.fileName()))).cacheControl(cache);
+        if (etag != null) r = r.eTag(etag);
+        if (s.size() != null) r = r.contentLength(s.size());
+        return r.body(new InputStreamResource(packages.open(s)));
+    }
+
+    @PostMapping(value = "/game-runtime/{name}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public Map<String, Object> uploadRuntime(@PathVariable String name, @RequestParam MultipartFile file) throws IOException {
+        GamePackageService.Stream s = packages.uploadRuntime(name, file);
+        return Map.of("name", s.fileName(), "size", s.size(), "etag", String.valueOf(s.etag()));
     }
 
     /** A file of the games bucket to the browser; it may keep it a day, and asks again with its tag after that. */
