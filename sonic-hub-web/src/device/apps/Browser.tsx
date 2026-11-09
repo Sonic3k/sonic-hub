@@ -5,7 +5,7 @@ import { useQuery } from '@tanstack/react-query';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { hub } from '../../api/hub';
 import { desk } from '../api';
-import { useMoment, utc, vnDate } from '../moment';
+import { atString, useMoment, utc, vnDate } from '../moment';
 import { Glyph } from '../glyphs';
 import { browserName, skinOf, useDesk } from '../pc/desk';
 import { useNavClick } from '../skin';
@@ -119,7 +119,9 @@ export function ForumSite({ path, go, onAddress }: { path: string; go: (url: str
   const threads = useQuery({ queryKey: ['forum-threads', key, at], queryFn: () => hub.forumThreads(key, { page: 0, size: 100, at }), enabled: !!key });
   const [tid, post] = isThread ? path.slice(2).split('#') : [null, null];
   const thread = useQuery({ queryKey: ['forum-thread', tid], queryFn: () => hub.forumThread(tid!), enabled: !!tid });
-  const before = (iso?: string | null) => { const d = utc(iso); return !d || d.getTime() <= T.getTime(); };
+  /* forum times are kept as the boards showed them, on Vietnam's clock (not UTC like chats): compare and show them as they are */
+  const wall = atString(T), before = (iso?: string | null) => !iso || iso.slice(0, 16) <= wall;
+  const day = (iso?: string | null) => (iso ? `${iso.slice(8, 10)}/${iso.slice(5, 7)}/${iso.slice(0, 4)}` : '');
   const site = forums.data?.find(f => f.key === (isThread ? thread.data?.forumKey : key))?.url?.replace(/\/$/, '');
   useEffect(() => { if (site) onAddress?.(`${site}/forum/`); }, [site, onAddress]);
   if (isThread) {
@@ -130,7 +132,7 @@ export function ForumSite({ path, go, onAddress }: { path: string; go: (url: str
         <div className="dv-fo-head"><button type="button" onClick={() => t && go(`forum/${t.forumKey}`)}>{t?.forumName ?? '…'}</button> › {t?.title}</div>
         {posts.map(p => (
           <div key={p.id} className={`dv-fo-post ${post && String(p.sortOrder) === post ? 'hit' : ''}`}>
-            <div className="dv-fo-who"><b>{p.authorNick}</b><small>{vnDate(utc(p.postedAt))}</small></div>
+            <div className="dv-fo-who"><b>{p.authorNick}</b><small>{day(p.postedAt)}</small></div>
             <div className="dv-fo-body">{p.title && <h4>{p.title}</h4>}<div dangerouslySetInnerHTML={{ __html: p.contentHtml ?? '' }} /></div>
           </div>
         ))}
@@ -147,7 +149,7 @@ export function ForumSite({ path, go, onAddress }: { path: string; go: (url: str
         {list.map(t => (
           <button type="button" key={t.id} className="dv-fo-tr" onClick={() => go(`forum/t/${t.id}`)}>
             <span><b>{t.title}</b><small>{t.starterNick}{t.board ? ` · ${t.board}` : ''}</small></span>
-            <span>{Math.max(0, t.postCount - 1)}</span><span>{vnDate(utc(t.lastPostAt && before(t.lastPostAt) ? t.lastPostAt : t.startedAt))}</span>
+            <span>{Math.max(0, t.postCount - 1)}</span><span>{day(t.lastPostAt && before(t.lastPostAt) ? t.lastPostAt : t.startedAt)}</span>
           </button>
         ))}
         {threads.data && !list.length && <div className="dv-ex-empty">Diễn đàn chưa có chủ đề nào tới lúc này.</div>}

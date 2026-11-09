@@ -29,13 +29,19 @@ public class ForumController {
     @GetMapping("/api/forums/{key}/boards")
     public List<ForumDto.Board> boards(@PathVariable String key) { return forumService.boards(key); }
 
-    /** sort: activity (default) | started | oldest | posts; at (Vietnam wall-clock, as the portal writes it): the forum as it stood then */
+    /** sort: activity (default) | started | oldest | posts; at (Vietnam wall-clock, as the portal writes it): the forum as it stood then.
+     *  Forum times are kept as the boards showed them, on Vietnam's clock (not UTC like chats), so T is compared on that clock. */
     @GetMapping("/api/forums/{key}/threads")
     public ForumDto.Page<ForumDto.ThreadSummary> threads(@PathVariable String key, @RequestParam(required = false) String board,
                                                          @RequestParam(required = false) String q, @RequestParam(required = false) String sort,
                                                          @RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "30") int size,
                                                          @RequestParam(required = false) String at) {
-        return forumService.threads(key, board, q, sort, page, size, at == null || at.isBlank() ? null : reads.at(at));
+        return forumService.threads(key, board, q, sort, page, size, at == null || at.isBlank() ? null : wallClock(reads.at(at)));
+    }
+
+    /** A UTC moment as the Vietnam wall-clock forum times are kept in. */
+    private static java.time.LocalDateTime wallClock(java.time.LocalDateTime utc) {
+        return utc.atOffset(java.time.ZoneOffset.UTC).atZoneSameInstant(com.sonic.angels.util.SocialTime.VN).toLocalDateTime();
     }
 
     @GetMapping("/api/forum-threads/{id}")
