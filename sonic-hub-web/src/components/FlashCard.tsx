@@ -13,7 +13,7 @@ declare global {
 }
 
 let loading: Promise<void> | null = null;
-function loadRuffle(): Promise<void> {
+export function loadRuffle(): Promise<void> {
   if (window.RufflePlayer?.newest) return Promise.resolve();
   if (!loading) {
     loading = new Promise<void>((resolve, reject) => {

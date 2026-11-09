@@ -16,6 +16,7 @@ import Money from './pages/Money';
 import Portal from './pages/Portal';
 import { MemoriesIndex, MemoryPage } from './pages/Memories';
 import { GamePage, GameSeriesPage, GamesIndex } from './pages/Games';
+import GamePlayPage from './pages/GamePlay';
 
 const qc = new QueryClient({ defaultOptions: { queries: { retry: 1, refetchOnWindowFocus: false } } });
 
@@ -48,6 +49,7 @@ export function AppRoutes() {
         <Route path="portal" element={<Portal />} />
         <Route path="games" element={<GamesIndex />} />
         <Route path="games/series/:key" element={<GameSeriesPage />} />
+        <Route path="games/play/:pkg" element={<GamePlayPage />} />
         <Route path="games/:key" element={<GamePage />} />
         {/* Huyền học and Bóng đá have their own sites now: old links land on the portal */}
         <Route path="huyen-hoc/*" element={<Navigate to="/portal" replace />} />

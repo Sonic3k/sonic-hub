@@ -36,6 +36,9 @@ function useLists() {
       && !FILE.test(i.label) && !(i.glyph ?? '').startsWith('folder'))
       .filter(i => { const k = i.label.toLowerCase(); if (seen.has(k)) return false; seen.add(k); return true; })
       .sort((a, b) => a.label.localeCompare(b.label, 'vi', { sensitivity: 'base' }));
+    // his games on this machine (Start entries that open a game): a Games folder in Programs
+    const games = items.filter(i => i.place === 'START' && (i.app === 'game' || i.app === 'gamecard'))
+      .sort((a, b) => a.label.localeCompare(b.label, 'vi', { sensitivity: 'base' }));
     const my = skin === 'w98' || skin === 'xp';
     const places: It[] = [
       { key: 'p-docs', label: my ? 'My Documents' : 'Documents', glyph: 'documents', app: 'documents' },
@@ -44,7 +47,7 @@ function useLists() {
       { key: 'p-pc', label: my ? 'My Computer' : skin === 'vista' || skin === 'w7' ? 'Computer' : 'This PC', glyph: 'computer', app: 'computer' },
       { key: 'p-ctl', label: skin === 'w10' || skin === 'w11' ? 'Settings' : 'Control Panel', glyph: skin === 'w10' || skin === 'w11' ? 'settings' : 'control', app: 'control' },
     ];
-    return { pinned, programs, places };
+    return { pinned, programs: skin === 'w98' ? programs : [...programs, ...games], places, games };
   }, [machine.items, skin, ver.browser]);
 }
 
@@ -73,8 +76,8 @@ interface P { pick: (it: It) => void; onClose: () => void }
 
 function Start98({ pick }: P) {
   const { shutdown } = useDesk();
-  const { pinned, programs } = useLists();
-  const [sub, setSub] = useState(false);
+  const { pinned, programs, games } = useLists();
+  const [sub, setSub] = useState(false), [gsub, setGsub] = useState(false);
   return (
     <div className="dv-sm dv-sm98">
       <div className="dv-sm98-band"><b>Windows</b><i>98</i></div>
@@ -83,7 +86,12 @@ function Start98({ pick }: P) {
         <hr />
         <div className="dv-sm98-sub">
           <button type="button" className="dv-sm-row arrow" onClick={() => setSub(s => !s)}><Glyph name="folder" size={24} /><span><b>Programs</b></span></button>
-          {sub && <div className="dv-sm98-fly">{programs.map(it => <Row key={it.key} it={it} onPick={pick} />)}</div>}
+          {sub && <div className="dv-sm98-fly">
+            {games.length > 0 && <>
+              <button type="button" className={`dv-sm-row arrow ${gsub ? 'open' : ''}`} onClick={() => setGsub(g => !g)}><Glyph name="folder" size={16} /><span><b>Games</b></span></button>
+              {gsub && <div className="dv-sm98-in">{games.map(it => <Row key={it.key} it={it} onPick={pick} />)}</div>}
+            </>}
+            {programs.map(it => <Row key={it.key} it={it} onPick={pick} />)}</div>}
         </div>
         <Row it={{ key: 'd', label: 'Documents', glyph: 'documents', app: 'documents' }} size={24} onPick={pick} />
         <Row it={{ key: 'p', label: 'Pictures', glyph: 'folder-pictures', app: 'pictures' }} size={24} onPick={pick} />

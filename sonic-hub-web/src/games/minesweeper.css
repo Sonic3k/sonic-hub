@@ -1,0 +1,26 @@
+/* Minesweeper: the grey board of Windows, sized in real pixels like the original */
+.ms { position: relative; display: inline-flex; flex-direction: column; background: #c0c0c0; font: 11px Tahoma, "MS Sans Serif", Arial, sans-serif; color: #000; user-select: none; -webkit-user-select: none; touch-action: manipulation; }
+.ms-menu { display: flex; height: 20px; padding: 0 2px; background: #ece9d8; border-bottom: 1px solid #fff; }
+.ms-mi { position: relative; padding: 0 7px; line-height: 20px; cursor: default; }
+.ms-mi.on { background: #316ac5; color: #fff; }
+.ms-drop { position: absolute; left: 0; top: 20px; z-index: 5; min-width: 150px; padding: 2px; background: #fff; border: 1px solid #808080; box-shadow: 2px 2px 3px rgba(0,0,0,.3); color: #000; }
+.ms-drop div { position: relative; display: flex; padding: 0 18px 0 20px; line-height: 18px; white-space: nowrap; }
+.ms-drop div img { position: absolute; left: 7px; top: 6px; }
+.ms-drop div span { margin-left: auto; padding-left: 24px; }
+.ms-drop div:hover { background: #316ac5; color: #fff; }
+.ms-drop hr { margin: 3px 1px; border: 0; border-top: 1px solid #aca899; }
+.ms-body { padding: 6px; border-left: 3px solid #fff; border-top: 3px solid #fff; }
+.ms-score { display: flex; justify-content: space-between; align-items: center; height: 37px; padding: 0 5px; margin-bottom: 6px; border: 2px solid; border-color: #808080 #fff #fff #808080; }
+.ms-digits { display: flex; border: 1px solid; border-color: #808080 #fff #fff #808080; }
+.ms-digits img { width: 13px; height: 23px; }
+.ms-face { display: grid; place-items: center; width: 26px; height: 26px; padding: 0; border: 1px solid #808080; background: #c0c0c0; box-shadow: inset 2px 2px #fff, inset -2px -2px #808080; cursor: default; }
+.ms-face:active { box-shadow: inset 1px 1px #808080; }
+.ms-face img { width: 17px; height: 17px; }
+.ms-grid { display: grid; border: 3px solid; border-color: #808080 #fff #fff #808080; }
+.ms-cell { position: relative; width: 16px; height: 16px; background: #c0c0c0; box-shadow: inset 2px 2px #f5f5f5, inset -2px -2px #808080; cursor: default; }
+.ms-cell.open { box-shadow: inset 1px 1px #808080; }
+.ms-cell img { position: absolute; inset: 0; width: 16px; height: 16px; image-rendering: pixelated; }
+.ms-about { position: absolute; inset: 0; display: grid; place-items: center; background: rgba(0,0,0,.08); }
+.ms-about div { padding: 12px 16px; background: #ece9d8; border: 1px solid #0a246a; text-align: center; box-shadow: 2px 2px 6px rgba(0,0,0,.3); }
+.ms-about p { margin: 6px 0 10px; }
+.ms-about button { min-width: 64px; padding: 2px 8px; border: 1px solid #003c74; border-radius: 3px; background: #f4f3ee; }
