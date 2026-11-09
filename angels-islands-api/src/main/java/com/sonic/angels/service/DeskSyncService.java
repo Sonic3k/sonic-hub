@@ -28,10 +28,11 @@ import java.util.stream.Collectors;
 @Service
 public class DeskSyncService {
 
-    /** What items may open; anything else is stored but flagged, since a misspelt app would open nothing. */
+    /** What items may open; anything else is stored but flagged, since a misspelt app would open nothing.
+     *  game plays a game package (target = the package's key); gamecard shows a game of the shelf (target = its key). */
     public static final Set<String> APPS = Set.of("computer", "documents", "pictures", "explorer", "recycle", "network", "control",
         "browser", "yahoo", "skype", "messages", "zalo", "messenger", "facebook", "word", "notepad", "memories", "photos", "angels",
-        "forum", "blog", "music", "games", "game", "link", "folder", "camera", "calendar", "clock", "settings", "none");
+        "forum", "blog", "music", "games", "game", "gamecard", "link", "folder", "camera", "calendar", "clock", "settings", "none");
 
     private final DeskDeviceRepository deviceRepo;
     private final DeskSystemRepository systemRepo;
