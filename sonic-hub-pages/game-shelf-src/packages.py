@@ -9,7 +9,7 @@ WEB packages have no file: the web has the game itself (config names it).
 
   python3 packages.py build /mnt/user-data/uploads/Games/[DOS\\ Games] /tmp/bundles    writes the bundles
   python3 packages.py flash /mnt/user-data/uploads/Games/[Mini\\ Games] /tmp/bundles     the Flash movies out of their .exe
-  python3 packages.py push /tmp/bundles                                                  metadata + files to the hub
+  python3 packages.py push /tmp/bundles [jazz,riptide]                                  metadata + files to the hub (all, or those keys)
 """
 import json
 import os
@@ -33,6 +33,10 @@ DOS = [
     ("hexx", "hexxagon", "Hexxagon", "hexx", "HEXX.EXE", 7, None),
     ("rrover", "rescue-rover", "Rescue Rover", "rrover", "ROVER.EXE", 7, "Kèm bản lưu SAVEGAME.ROV ngày 04/08/2008"),
     ("fastfood", "fast-food", "Fast Food", "fastfood", "FASTFOOD.EXE", 7, None),
+    ("jazz", "jazz-jackrabbit", "Jazz Jackrabbit", "jazz", "JAZZ.EXE", 7,
+     "Bản CD cài đủ (không có các game tặng kèm), cấu hình âm thanh anh đặt khi chơi lại trên DOSBox ngày 04/08/2012"),
+    ("riptide", "dr-riptide", "In Search of Dr. Riptide", "riptide", "RIPTIDE.EXE", 7, "Kèm bảng điểm HIGH.SCR ngày 04/08/2012"),
+    ("shadow", "shadow-knights", "Shadow Knights", "shadow", "SHADOW.EXE", 7, None),
 ]
 
 # key, game, title, file under D:\Games\[Mini Games] (a Flash projector .exe or a .swf), stage size
@@ -171,6 +175,8 @@ def push(bundles, only=None):
     order = 0
     for key, game, title, _folder, run, irq, note in DOS:
         order += 1
+        if only and key not in only:
+            continue
         meta = {"gameKey": game, "engine": "DOS", "title": title, "portal": False, "sortOrder": order,
                 "config": json.dumps({"run": run, "irq": irq}), "note": note or ""}
         requests.put(f"{API}/game-packages/{key}", json=meta, timeout=60).raise_for_status()
@@ -181,6 +187,8 @@ def push(bundles, only=None):
         print(key, "ok", r.json().get("fileSize"))
     for key, game, title, _rel, w, h in FLASH:
         order += 1
+        if only and key not in only:
+            continue
         meta = {"gameKey": game, "engine": "FLASH", "title": title, "portal": False, "sortOrder": order,
                 "config": json.dumps({"width": w, "height": h}), "note": ""}
         requests.put(f"{API}/game-packages/{key}", json=meta, timeout=60).raise_for_status()
@@ -191,6 +199,8 @@ def push(bundles, only=None):
         print(key, "ok", r.json().get("fileSize"))
     for key, game, title, engine, emu, core, rom, sav, sav_at in ROMS:
         order += 1
+        if only and key not in only:
+            continue
         meta = {"gameKey": game, "engine": engine, "title": title, "portal": False, "sortOrder": order,
                 "config": json.dumps({"emu": emu, "core": core}), "note": ""}
         requests.put(f"{API}/game-packages/{key}", json=meta, timeout=60).raise_for_status()
@@ -206,6 +216,8 @@ def push(bundles, only=None):
         print(key, "ok", "with save" if sav else "")
     for key, game, title, config in WEB:
         order += 1
+        if only and key not in only:
+            continue
         meta = {"gameKey": game, "engine": "WEB", "title": title, "portal": True, "sortOrder": order,
                 "config": json.dumps(config), "note": ""}
         requests.put(f"{API}/game-packages/{key}", json=meta, timeout=60).raise_for_status()
@@ -214,4 +226,4 @@ def push(bundles, only=None):
 
 if __name__ == "__main__":
     {"build": lambda: build(sys.argv[2], sys.argv[3]), "flash": lambda: build_flash(sys.argv[2], sys.argv[3]),
-     "push": lambda: push(sys.argv[2])}[sys.argv[1]]()
+     "push": lambda: push(sys.argv[2], sys.argv[3].split(",") if len(sys.argv) > 3 else None)}[sys.argv[1]]()
