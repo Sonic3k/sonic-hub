@@ -6,7 +6,7 @@ import { hub, isAngel, periodYears, randomLine } from '../api/hub';
 import { cdn, pic } from '../api/client';
 import type { ChatAttachment, ChatMessage, MysticBrief, Person } from '../types';
 import { fmt, usePersons } from '../lib/queries';
-import { dayMonthYear, longDay, momentDate, timeOf } from '../lib/date';
+import { dayMonthYear, longDay, momentDate, timeOf, vnClock } from '../lib/date';
 import { fold } from '../lib/text';
 import Justified from '../components/Justified';
 import { Sentinel, useViewer } from '../components/PhotoGroups';
@@ -38,7 +38,7 @@ function LineCard({ people, title = 'Một dòng tin nhắn' }: { people: Person
   return (
     <div className="card" style={{ ['--c' as string]: 'var(--angels)' }}>
       <h3><i />{title}<button type="button" onClick={() => setN(v => v + 1)}>Đổi</button></h3>
-      {q.data ? <><span className="bubble">{q.data.text}</span><div className="meta">{q.data.who} · {q.data.platform}{q.data.at ? ` · ${dayMonthYear(q.data.at)}` : ''}</div></> : <div className="meta">Đang lục lại…</div>}
+      {q.data ? <><span className="bubble">{q.data.text}</span><div className="meta">{q.data.who} · {q.data.platform}{q.data.at ? ` · ${dayMonthYear(vnClock(q.data.at))}` : ''}</div></> : <div className="meta">Đang lục lại…</div>}
     </div>
   );
 }
@@ -162,7 +162,7 @@ export function PersonPage() {
           {!!writings.data?.content.length && <section className="block"><div className="hd"><h2>Bài viết</h2><span>{writings.data.totalElements}</span></div>
             <ol className="writings">{[...writings.data.content].sort((a, b) => (a.writtenAt ?? a.createdAt ?? '').localeCompare(b.writtenAt ?? b.createdAt ?? '')).map(w => (
               <li key={w.id}><Link to={w.slug ? `/journal/${w.slug}` : `/journal/id/${w.id}`}><b>{w.title || 'Không tiêu đề'}</b>
-                <small>{[dayMonthYear(w.writtenAt ?? w.createdAt), w.series].filter(Boolean).join(' · ')}</small></Link></li>))}</ol></section>}
+                <small>{[dayMonthYear(vnClock(w.writtenAt ?? w.createdAt)), w.series].filter(Boolean).join(' · ')}</small></Link></li>))}</ol></section>}
 
           {!!forums.data?.length && <section className="block"><div className="hd"><h2>Trên diễn đàn</h2>
             <span>{forums.data.map(f => `${f.forumName}: ${fmt(f.postCount)} bài`).join(' · ')}</span>
@@ -174,7 +174,7 @@ export function PersonPage() {
             <div className="chatlist">{archives.data.map(a => (
               <Link key={a.id} className="card chatcard" to={`/angels/${id}/chat/${a.id}`}>
                 <span className="plat">{a.platform}</span><b>{a.title || `${a.platform} với ${nameOf(p)}`}</b>
-                <small>{fmt(a.messageCount)} tin nhắn{a.dateFrom ? ` · ${dayMonthYear(a.dateFrom)}${a.dateTo ? ` – ${dayMonthYear(a.dateTo)}` : ''}` : ''}</small>
+                <small>{fmt(a.messageCount)} tin nhắn{a.dateFrom ? ` · ${dayMonthYear(vnClock(a.dateFrom))}${a.dateTo ? ` – ${dayMonthYear(vnClock(a.dateTo))}` : ''}` : ''}</small>
               </Link>))}</div></section>}
 
           {!chs.length && !eps.length && !intro && <p className="hush-note">Câu chuyện này chưa được viết — ảnh và tin nhắn bên dưới là những gì đang có.</p>}
@@ -275,16 +275,17 @@ export function ChatReader() {
         {!inf.isLoading && !msgs.length && <div className="card empty">{dq ? 'Không có tin nhắn nào khớp.' : 'Kho này chưa có tin nhắn.'}</div>}
         {inf.hasPreviousPage && <button type="button" className="older" onClick={() => inf.fetchPreviousPage()} disabled={inf.isFetchingPreviousPage}>{inf.isFetchingPreviousPage ? 'Đang mở…' : '↑ Tin nhắn trước đó'}</button>}
         {msgs.map((m, i) => {
-          const day = (m.timestamp ?? '').slice(0, 10), prevM = msgs[i - 1], newDay = !prevM || (prevM.timestamp ?? '').slice(0, 10) !== day, them = isThem(m), cont = !newDay && prevM && prevM.sender === m.sender;
-          const att = atts.get(m.id) ?? [], text = !!m.content?.trim() || !att.length;
+          /* stored in UTC, read on Vietnam's clock; a line known only to its day shows no time */
+          const ts = vnClock(m.timestamp), day = ts.slice(0, 10), prevM = msgs[i - 1], newDay = !prevM || vnClock(prevM.timestamp).slice(0, 10) !== day, them = isThem(m), cont = !newDay && prevM && prevM.sender === m.sender;
+          const att = atts.get(m.id) ?? [], text = !!m.content?.trim() || !att.length, time = m.timePrecision === 'DAY' ? '' : timeOf(ts);
           return (
             <Fragment key={m.id}>
               {newDay && day && <div className="day-sep"><span>{longDay(+day.slice(0, 4), +day.slice(5, 7), +day.slice(8, 10))}</span></div>}
               <div id={m.seq != null ? `m-${m.seq}` : undefined} className={`msg ${them ? 'them' : 'me'} ${cont ? 'cont' : ''} ${at && m.seq === at && !dq ? 'hit' : ''}`}>
                 {!cont && <span className="who">{m.sender}</span>}
-                {text && <p>{mark(m.content)}<time>{timeOf(m.timestamp)}</time></p>}
+                {text && <p>{mark(m.content)}{time && <time>{time}</time>}</p>}
                 {att.length > 0 && <div className="atts">{att.map(x => <Attachment key={x.id} a={x} onOpen={setShown} />)}
-                  {!text && <time>{timeOf(m.timestamp)}</time>}</div>}
+                  {!text && time && <time>{time}</time>}</div>}
               </div>
             </Fragment>);
         })}

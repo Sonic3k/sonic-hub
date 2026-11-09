@@ -66,7 +66,8 @@ public class ForumService {
     }
 
     /** Threads of a forum, newest activity first; board narrows to a board and everything under it; q matches titles.
-     *  With at (UTC), the forum as it stood then: threads started by then, their posts and last activity up to it. */
+     *  With at (on the forum's clock: Vietnam wall-clock, as its times are kept), the forum as it stood then: threads started
+     *  by then, their posts and last activity up to it. */
     @Transactional(readOnly = true)
     public ForumDto.Page<ForumDto.ThreadSummary> threads(String key, String board, String q, String sort, int page, int size) {
         return threads(key, board, q, sort, page, size, null);

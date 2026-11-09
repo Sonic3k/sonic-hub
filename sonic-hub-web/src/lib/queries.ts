@@ -2,6 +2,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { hub, tagWorlds } from '../api/hub';
 import type { Note } from '../types';
+import { vnClock } from './date';
 
 const T = 10 * 60_000;
 export const useTimeline = () => useQuery({ queryKey: ['timeline'], queryFn: hub.timeline, staleTime: T });
@@ -15,7 +16,8 @@ export const useNotes = () => useQuery({ queryKey: ['notes', 'all'], staleTime: 
 export const useLibraryCounts = () => useQuery({ queryKey: ['library-counts'], staleTime: T, queryFn: async () => {
   const [fav, vid] = await Promise.all([hub.total({ favorite: true }), hub.total({ type: 'VIDEO' })]); return { fav, vid }; } });
 
-export const noteDate = (n: Note) => n.publishedAt ?? n.createdAt ?? '';
+/** a note's date on Vietnam's clock (kept in UTC: a day-only note sits at Vietnam midnight or noon) */
+export const noteDate = (n: Note) => vnClock(n.publishedAt ?? n.createdAt);
 export const noteHref = (n: Note) => (n.slug ? `/journal/${n.slug}` : `/journal/id/${n.id}`);
 export const plain = (html: string) => html.replace(/<[^>]+>/g, ' ').replace(/&nbsp;/g, ' ').replace(/\s+/g, ' ').trim();
 export const excerptOf = (n: Note, len = 180) => (n.excerpt || plain(n.content)).slice(0, len);

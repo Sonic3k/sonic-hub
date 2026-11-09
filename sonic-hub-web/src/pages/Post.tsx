@@ -5,7 +5,7 @@ import { hub } from '../api/hub';
 import { cdn, pic } from '../api/client';
 import type { MediaFile } from '../types';
 import { excerptOf, noteDate, noteHref, plain, readMinutes, useNotes, usePersons } from '../lib/queries';
-import { addDays, dayMonthYear, isoDay } from '../lib/date';
+import { addDays, dayMonthYear, isoDay, vnClock } from '../lib/date';
 import Viewer from '../components/Viewer';
 
 const T = 10 * 60_000;
@@ -60,7 +60,7 @@ export default function Post() {
           {n.excerpt && <p className="dek">{n.excerpt}</p>}
           {n.series && <Link className="series-tag" to={`/journal/series?name=${encodeURIComponent(n.series)}`}>{n.series}{pi >= 0 ? ` · phần ${pi + 1}/${parts.length}` : ''}</Link>}
           <div className="byline">{n.authorPersonId || n.authorName
-            ? <>{n.authorPersonId ? <Link to={`/angels/${n.authorPersonId}`}><b>{n.authorPersonName || n.authorName}</b></Link> : <b>{n.authorName}</b>}<span className="sep">|</span><span>{dayMonthYear(n.writtenAt || date)}</span></>
+            ? <>{n.authorPersonId ? <Link to={`/angels/${n.authorPersonId}`}><b>{n.authorPersonName || n.authorName}</b></Link> : <b>{n.authorName}</b>}<span className="sep">|</span><span>{dayMonthYear(vnClock(n.writtenAt) || date)}</span></>
             : <>{self?.avatarUrl && <img src={cdn(self.avatarUrl, 80)} alt="" />}<b>{self ? self.displayName || self.name : 'Sonic'}</b><span className="sep">|</span><span>{dayMonthYear(date)}</span></>}
             <span className="sep">|</span><span>{readMinutes(n)} phút đọc</span></div>
           {n.coverMedia && <figure className="cover"><img className="zoom" src={cdn(pic(n.coverMedia, true), 1440)} alt="" onClick={() => setViewer({ items: [n.coverMedia!], i: 0 })} />{n.coverMedia.caption && <figcaption>{n.coverMedia.caption}</figcaption>}</figure>}
