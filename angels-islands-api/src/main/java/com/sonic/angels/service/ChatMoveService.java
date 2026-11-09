@@ -51,13 +51,17 @@ public class ChatMoveService {
         ChatArchive to = target(from, req, created);
         if (to.getId().equals(from.getId())) throw new ImportException(400, "the messages are already in that conversation");
 
-        long here = 0, clash = 0;
+        long here = 0, clash = 0, twice = 0;
         for (List<Integer> part : chunks(seqs)) {
             here += count("SELECT COUNT(m) FROM ChatMessage m WHERE m.chatArchive = :a AND m.seq IN :s", from, part);
             clash += count("SELECT COUNT(m) FROM ChatMessage m WHERE m.chatArchive = :a AND m.seq IN :s", to, part);
+            twice += em.createQuery("SELECT COUNT(t) FROM ChatMessage t WHERE t.chatArchive = :to AND t.externalId IN "
+                    + "(SELECT m.externalId FROM ChatMessage m WHERE m.chatArchive = :from AND m.seq IN :s)", Long.class)
+                .setParameter("to", to).setParameter("from", from).setParameter("s", part).getSingleResult();
         }
         if (here != seqs.size()) throw new ImportException(400, (seqs.size() - here) + " of those seqs are not in the conversation");
         if (clash > 0) throw new ImportException(409, "the target already has messages at " + clash + " of those seqs");
+        if (twice > 0) throw new ImportException(409, "the target already has " + twice + " of those messages (same external ids)");
 
         int moved = 0, memories = 0, posts = 0;
         for (List<Integer> part : chunks(seqs)) {

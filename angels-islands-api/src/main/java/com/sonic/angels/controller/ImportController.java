@@ -51,6 +51,14 @@ public class ImportController {
         return importService.finalizeArchive(archiveId, body);
     }
 
+    /** The rows of an archive as stored (EMPTY ones too), by seq: at most 2000 a call. */
+    @GetMapping("/archives/{archiveId}/messages")
+    public List<ImportDto.StoredMessage> stored(@PathVariable UUID archiveId, @RequestParam(defaultValue = "0") int fromSeq,
+                                                @RequestParam(defaultValue = "2147483647") int toSeq,
+                                                @RequestParam(defaultValue = "2000") int size) {
+        return importService.stored(archiveId, fromSeq, toSeq, size);
+    }
+
     /** Move messages (by seq) into the conversation they belong to: another nick's chat, or a conference of its own. */
     @PostMapping("/archives/{archiveId}/move")
     public ImportDto.MoveResult move(@PathVariable UUID archiveId, @RequestBody ImportDto.MoveRequest body) {

@@ -276,6 +276,10 @@ public class ImportDto {
      * one found or made by key: under the same person unless toPersonSlug names another, or under no one
      * (noPerson + counterpart + counterpartKey, as for a group chat).
      */
+    /** A message as stored, EMPTY rows included, for the import tools. */
+    public record StoredMessage(java.util.UUID id, Integer seq, String externalId, String sender, String senderType, String kind,
+                                java.time.LocalDateTime timestamp, String precision, String content, String sources) {}
+
     public static class MoveRequest {
         private List<Integer> seqs = new ArrayList<>();
         private UUID toArchiveId; private String toExternalKey; private String toTitle; private String toPlatform;
