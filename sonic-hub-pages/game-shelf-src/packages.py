@@ -21,6 +21,7 @@ import json
 import os
 import struct
 import sys
+import time
 import zipfile
 
 import requests
@@ -47,6 +48,14 @@ DOS = [
     # a DOS program he kept among the Windows games, in [Win Games]\\English ABC (his name for it)
     ("textris", "textris", "Textris", "../[Win Games]/English ABC", "TEXTRIS.EXE", 7,
      "Kèm bảng điểm TEXTRIS.SCO của anh: NGOC ANH 1.029 điểm ghi 01-10-03 (10/01/2003)"),
+]
+
+# A DOS prompt with a drive C: of its own: the computer room of his school, where the games were started by typing.
+# key, game it is kept under, title, {folder on its C: → folder under [DOS Games]}, what its autoexec does, IRQ, note
+SHELLS = [
+    ("msdos-school", "rescue-rover", "MS-DOS Prompt", {"GAMES/ROVER": "rrover", "GAMES/MARIO": "mariobro"},
+     ["cd \\WINDOWS", "cls", "echo.", "echo Microsoft(R) Windows 98", "echo    (C)Copyright Microsoft Corp 1981-1999.", "echo."], 7,
+     "Ổ C: của máy phòng tin học trường THCS Thống Nhất: C:\\GAMES\\ROVER (Rescue Rover, gõ START), C:\\GAMES\\MARIO (Mario Brothers VGA, gõ MARIO)"),
 ]
 
 # key, game, title, file under D:\Games\[Mini Games] (a Flash projector .exe or a .swf), stage size
@@ -173,7 +182,15 @@ WIN = [
 ]
 
 
-def dosbox_conf(run, irq):
+# the date every file of Windows 98 Second Edition carries (23/04/1999, 10:22 PM): the folders of a prompt's drive C:
+WIN98SE = (1999, 4, 23, 22, 22, 0)
+SHELL_BEFORE = 1117558800      # 01/06/2005: the last day of the school's computer room for him
+
+
+def dosbox_conf(run, irq, mount="."):
+    """run = the program its autoexec starts, or the lines it runs before leaving the prompt (a list); mount = the
+    folder of the bundle that is drive C: (a prompt keeps its drive in C/, so DIR does not show the bundle's own files)"""
+    run = run if isinstance(run, str) else "\n".join(run)
     return f"""[sdl]
 autolock=false
 
@@ -198,7 +215,7 @@ hdma=5
 
 [autoexec]
 echo off
-mount c .
+mount c {mount}
 c:
 cls
 {run}
@@ -259,6 +276,26 @@ def build(src, out, only=None):
                     z.write(full, os.path.relpath(full, root).replace(os.sep, "/"))
             z.writestr(".jsdos/dosbox.conf", dosbox_conf(run, irq))
         print(key, os.path.getsize(path))
+    for key, _game, _title, folders, lines, irq, _note in SHELLS:
+        if only and key not in only:
+            continue
+        path = os.path.join(out, f"{key}.jsdos")
+        with zipfile.ZipFile(path, "w", zipfile.ZIP_DEFLATED) as z:
+            def folder(name, when):        # each folder before what is in it: js-dos makes none on its own
+                info = zipfile.ZipInfo(f"C/{name}/".replace("//", "/"), when)
+                info.external_attr = (0o40755 << 16) | 0x10      # a folder anyone may open (none given = none may)
+                z.writestr(info, b"")
+            for d in ("", "WINDOWS", "WINDOWS/COMMAND", "GAMES"):
+                folder(d, WIN98SE)
+            for into, src_folder in folders.items():
+                root = os.path.join(src, src_folder)
+                files = [f for f in sorted(os.listdir(root)) if os.path.getmtime(os.path.join(root, f)) < SHELL_BEFORE]
+                newest = max(os.path.getmtime(os.path.join(root, f)) for f in files)
+                folder(into, time.localtime(newest)[:6])
+                for f in files:        # what he saved later on his own machines (2008) was not on the school's
+                    z.write(os.path.join(root, f), f"C/{into}/{f.upper()}")
+            z.writestr(".jsdos/dosbox.conf", dosbox_conf(lines, irq, mount="C"))
+        print(key, os.path.getsize(path))
 
 
 def push(bundles, only=None):
@@ -269,6 +306,17 @@ def push(bundles, only=None):
             continue
         meta = {"gameKey": game, "engine": "DOS", "title": title, "portal": False, "sortOrder": order,
                 "config": json.dumps({"run": run, "irq": irq}), "note": note or ""}
+        requests.put(f"{API}/game-packages/{key}", json=meta, timeout=60).raise_for_status()
+        with open(os.path.join(bundles, f"{key}.jsdos"), "rb") as fh:
+            r = requests.post(f"{API}/game-packages/{key}/file", timeout=300,
+                              files={"file": (f"{key}.jsdos", fh, "application/zip")})
+        r.raise_for_status()
+        print(key, "ok", r.json().get("fileSize"))
+    for key, game, title, _folders, _lines, irq, note in SHELLS:      # a prompt, not a game: last in the list
+        if only and key not in only:
+            continue
+        meta = {"gameKey": game, "engine": "DOS", "title": title, "portal": False, "sortOrder": 900,
+                "config": json.dumps({"shell": True, "irq": irq}), "note": note}
         requests.put(f"{API}/game-packages/{key}", json=meta, timeout=60).raise_for_status()
         with open(os.path.join(bundles, f"{key}.jsdos"), "rb") as fh:
             r = requests.post(f"{API}/game-packages/{key}/file", timeout=300,

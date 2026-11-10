@@ -33,7 +33,7 @@ public class DeskSyncService {
      *  emulator opens an emulator of the period (target = vba, snes9x, desmume, nogba or virtuanes). */
     public static final Set<String> APPS = Set.of("computer", "documents", "pictures", "explorer", "recycle", "network", "control",
         "browser", "yahoo", "skype", "messages", "zalo", "messenger", "facebook", "word", "notepad", "memories", "photos", "angels",
-        "forum", "blog", "music", "games", "game", "gamecard", "emulator", "link", "folder", "camera", "calendar", "clock", "settings", "none");
+        "forum", "blog", "music", "games", "game", "gamecard", "emulator", "dos", "link", "folder", "camera", "calendar", "clock", "settings", "none");
 
     private final DeskDeviceRepository deviceRepo;
     private final DeskSystemRepository systemRepo;

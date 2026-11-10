@@ -139,11 +139,12 @@ public class DeskService {
             }
         }
         UUID id = dev.id;
+        boolean own = !dev.dto.elsewhere();                            // a machine that was not his has none of his things on it
         DeskDto.System sys = pick(s.systems.stream().filter(x -> x.device.equals(id)).toList(), Sys::span, t, x -> x.dto);
         DeskDto.Wallpaper wall = wallpaper(s, id, DeskWallpaper.Place.DESKTOP, t), lock = wallpaper(s, id, DeskWallpaper.Place.LOCK, t);
         List<DeskDto.Wallpaper> screen = screen(s, id, t);
         List<DeskDto.Item> items = s.items.stream()
-            .filter(i -> i.span.covers(t) && (id.equals(i.device) || (i.device == null && PHONE_PLACES.contains(i.place) == phone)))
+            .filter(i -> i.span.covers(t) && (id.equals(i.device) || (own && i.device == null && PHONE_PLACES.contains(i.place) == phone)))
             .map(Itm::dto)
             .sorted(Comparator.comparing(DeskDto.Item::place).thenComparingInt(DeskDto.Item::sort).thenComparing(DeskDto.Item::label))
             .toList();
