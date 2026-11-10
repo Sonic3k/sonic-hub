@@ -25,7 +25,7 @@ API = os.environ.get("HUB_API", "https://angels-islands-api-production.up.railwa
 # "cut:<key>" = an icon cut out of one of his screenshots)
 UPGRADE = {
     "pc-old/desktop/_/006-lines-98": ("game", "lines98", "exe:lines98"),
-    "pc-old/desktop/_/007-pikachu": ("gamecard", "pikachu", None),
+    "pc-old/desktop/_/007-pikachu": ("gamecard", "pikachu", "exe:pikachu"),
     "pc-xp/desktop/picachu2004": ("game", "pikachu", "exe:pikachu"),
     "pc-xp/desktop/sticks": ("game", "sticks", "exe:sticks"),
     "pc-xp/desktop/empires2": ("gamecard", "aoe2", "exe:aoe2"),
