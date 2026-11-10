@@ -1122,6 +1122,8 @@ a.mem-src:hover { border-color: #D9D5CB; } a.mem-src:hover .mem-src-meta { color
 .g-box small { font-size: 12px; color: var(--ink3); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .g-box:hover b { color: var(--games); }
 .g-tag { position: absolute; left: 6px; bottom: 6px; padding: 2px 7px; border-radius: 999px; background: rgba(255,255,255,.93); color: var(--games); font-size: 11px; font-style: normal; font-weight: 700; }
+/* a game with no picture shows its name at the foot of the box, where the label sits: the name moves up above it */
+.g-art:has(.g-tag) .g-ph { padding-bottom: 32px; }
 .g-fav { position: absolute; right: 7px; top: 5px; font-style: normal; font-size: 13px; color: #fff; text-shadow: 0 1px 3px rgba(0,0,0,.45); }
 .g-box.ghost { opacity: .5; } .g-box.ghost:hover { opacity: .85; }
 .g-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 24px 18px; }
