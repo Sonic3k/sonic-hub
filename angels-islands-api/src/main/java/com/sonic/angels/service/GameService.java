@@ -221,6 +221,13 @@ public class GameService {
         return Boolean.TRUE.equals(first.getApprox()) ? "~" + t : t;
     }
 
+    /** Every play that left a trace, oldest first: what the game pages show under each game, in one list. */
+    @Transactional(readOnly = true)
+    public List<GameDto.Trace> traces() {
+        return plays.findAllWithDevice().stream().filter(p -> p.getEvidence() != null && !p.getEvidence().isBlank())
+            .map(p -> new GameDto.Trace(p.getGame().getExternalKey(), p.getGame().getTitle(), play(p))).toList();
+    }
+
     private GameDto.Play play(GamePlay p) {
         GameDto.Play o = new GameDto.Play();
         o.id = p.getId(); o.startAt = p.getStartAt(); o.endAt = p.getEndAt();

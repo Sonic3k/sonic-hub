@@ -15,9 +15,10 @@ public final class DeskDto {
 
     // ── Writing (POST /api/desk/sync) ────────────────────────────────────────
 
-    /** kind = DESKTOP, LAPTOP, PHONE or PLAYER (a music player of his, never a machine of the desk); photo = id of one of his photos of it. */
+    /** kind = DESKTOP, LAPTOP, PHONE or PLAYER (a music player of his, never a machine of the desk); photo = id of one of his photos of it;
+     *  elsewhere = a machine that was not his own (the school's), offered beside his own of those years, never started first. */
     public record DeviceIn(String key, String kind, String name, String model, String photo, Integer screenWidth, Integer screenHeight,
-                           String from, String to, String note, String source) {}
+                           String from, String to, String note, String source, Boolean elsewhere) {}
 
     /** os = WIN98, WINXP, VISTA, WIN7, WIN81, WIN10, WIN11, NOKIA_S40, NOKIA_S60, IOS6, IOS7, IOS. */
     public record SystemIn(String key, String device, String os, String accent, String language, String from, String to,
@@ -47,7 +48,7 @@ public final class DeskDto {
     // ── Reading ──────────────────────────────────────────────────────────────
 
     public record Device(String key, String kind, String name, String model, String photoUrl, Integer screenWidth, Integer screenHeight,
-                         LocalDateTime from, LocalDateTime to) {}
+                         LocalDateTime from, LocalDateTime to, boolean elsewhere) {}
 
     public record System(String key, String os, String accent, String language, LocalDateTime from, LocalDateTime to) {}
 
