@@ -7,7 +7,7 @@ import { createContext, useCallback, useContext, useMemo, type CSSProperties } f
 import type { DeskDevice } from './api';
 import { play, useAssets } from './assets';
 
-export const ICON_FOLDER: Record<string, string | null> = { w98: null, xp: 'xp', vista: 'w7', w7: 'w7', w81: 'w7', w10: 'w10', w11: 'w10' };
+export const ICON_FOLDER: Record<string, string | null> = { w98: 'w98', xp: 'xp', vista: 'w7', w7: 'w7', w81: 'w7', w10: 'w10', w11: 'w10' };
 export const CURSOR_FOLDER: Record<string, string> = { w98: 'w98', xp: 'xp', vista: 'w7', w7: 'w7', w81: 'w7', w10: 'w7', w11: 'w11' };
 
 /* hot spots of the cursors (read from their .cur files when the folders were built) */
@@ -78,6 +78,11 @@ export const useIconCtx = () => useContext(IconContext);
 
 /* the system's own icons, by what a glyph names (icon/<base>-<size>.png in the system's icon folder) */
 export const SYSTEM_ICONS: Record<string, Record<string, string>> = {
+  /* 98: My Computer and the Recycle Bin from its own explorer.exe; the rest are the 16-colour pictures XP still carried
+     for each of its icons, which are the look 98 had */
+  w98: { computer: 'my-computer', documents: 'my-documents', 'user-folder': 'my-documents', recycle: 'recycle-bin', network: 'network',
+    control: 'control-panel', settings: 'control-panel', folder: 'folder-closed', 'folder-pictures': 'my-pictures', 'folder-music': 'my-music',
+    text: 'file-txt', image: 'file-image', help: 'help', search: 'search', printer: 'printer', user: 'user', app: 'file-application-exe' },
   xp: { computer: 'my-computer', documents: 'my-documents', 'user-folder': 'my-documents', recycle: 'recycle-bin-empty', network: 'my-network-places',
     control: 'control-panel', settings: 'control-panel', folder: 'folder-closed', 'folder-pictures': 'my-pictures', 'folder-music': 'my-music',
     text: 'file-txt', image: 'file-image', film: 'file-video', music: 'file-audio', wave: 'file-audio', help: 'help', app: 'file-application-exe',

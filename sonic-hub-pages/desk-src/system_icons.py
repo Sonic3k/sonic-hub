@@ -7,6 +7,9 @@ desktop of a machine in safe mode). 96 px is the 256 px picture made smaller, wh
   python3 system_icons.py <system>/icons <prefix> <folder> [name ...]
   e.g. python3 system_icons.py xp/icons xp- xp
        python3 system_icons.py w10/icons w10- w10 error information warning     only these
+  python3 system_icons.py w98 <xp/icons> <w98/icons>
+       Windows 98's folder: My Computer and the Recycle Bin from its own explorer.exe (icons 100 and 108), the rest the
+       16-colour pictures XP's files still carry for each icon — the look 98 had.
   needs Pillow, requests
 """
 import io
@@ -52,5 +55,45 @@ def main(src, prefix, folder, only):
         print(base, "ok")
 
 
+# 98's name for an icon → XP's file that has its 16-colour picture
+CLASSIC = {"my-documents": "my-documents", "network": "my-network-places", "folder-closed": "folder-closed", "folder-open": "folder-open",
+           "my-pictures": "my-pictures", "my-music": "my-music", "control-panel": "control-panel", "file-txt": "file-txt", "file-generic": "file-generic",
+           "file-image": "file-image", "help": "help", "search": "search", "printer": "printer", "user": "user", "cd-drive": "cd-drive",
+           "favorites": "favorites", "shortcut-arrow-overlay": "shortcut-arrow-overlay", "file-application-exe": "file-application-exe",
+           "recycle-bin": "recycle-bin-empty"}
+
+
+def send(folder, name, im):
+    buf = io.BytesIO()
+    im.save(buf, "PNG")
+    for _ in range(3):
+        r = requests.post(f"{API}/desk/assets", params={"folder": folder}, timeout=120, data={"name": f"icon/{name}"},
+                          files={"file": (name, buf.getvalue(), "image/png")})
+        if r.status_code < 500:
+            break
+    r.raise_for_status()
+
+
+def w98(xp, own):
+    def sized(path, fewest):
+        ico, out = Image.open(path).ico, {}
+        for size in (16, 32, 48):
+            c = sorted((e.bpp, i) for i, e in enumerate(ico.entry) if e.width == size and e.height == size)
+            if c:
+                out[size] = ico.frame((c[0] if fewest else c[-1])[1]).convert("RGBA")
+        return out
+    for name, src in CLASSIC.items():
+        for size, im in sized(os.path.join(xp, f"xp-{src}.ico"), True).items():
+            if (name, size) != ("recycle-bin", 32) and (name, size) != ("recycle-bin", 48):   # 98's own bin is the one drawn at 32
+                send("w98", f"{name}-{size}.png", im)
+    for size, im in sized(os.path.join(own, "w98-icon-explorer-100.ico"), False).items():
+        send("w98", f"my-computer-{size}.png", im)
+    send("w98", "recycle-bin-32.png", sized(os.path.join(own, "w98-icon-explorer-108.ico"), False)[32])
+    print("w98 ok")
+
+
 if __name__ == "__main__":
-    main(sys.argv[1], sys.argv[2], sys.argv[3], set(sys.argv[4:]))
+    if sys.argv[1] == "w98":
+        w98(sys.argv[2], sys.argv[3])
+    else:
+        main(sys.argv[1], sys.argv[2], sys.argv[3], set(sys.argv[4:]))

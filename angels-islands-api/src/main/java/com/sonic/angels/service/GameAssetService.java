@@ -62,20 +62,24 @@ public class GameAssetService {
         String hash = sha256(file);
         MediaFile mf = null;
         boolean created = false;
+        List<MediaFile> replaced = List.of();
         if (n == null) {
             List<MediaFile> same = mediaRepo.findInCollectionByHash(album.getId(), hash);
             if (!same.isEmpty()) mf = same.get(0);
         } else {
             List<MediaFile> named = mediaRepo.findInCollectionByNames(album.getId(), List.of(n));
             for (MediaFile old : named) if (hash.equals(old.getContentHash())) mf = old;
-            if (mf == null) for (MediaFile old : named) mediaFileService.delete(old.getId());
+            if (mf == null) replaced = named;
         }
         if (mf == null) {
+            // the new file first, while the old rows still hold their storage keys (see DeskAssetService.upload): it
+            // gets a key of its own, so the purge of the old file after the commit cannot take it along
             mf = mediaFileService.upload(file, null, album.getId(), null, lastModified, hash, null);
             mf.setMediaCategory(MediaFile.MediaCategory.ASSET);
             if (n != null) mf.setFileName(n);
             mf = mediaRepo.save(mf);
             created = true;
+            for (MediaFile old : replaced) mediaFileService.delete(old.getId());
         }
         MediaFile file0 = mf;
         GameMedia link = gameMedia.findByGameId(g.getId()).stream().filter(x -> x.getMedia().getId().equals(file0.getId())).findFirst().orElse(null);
