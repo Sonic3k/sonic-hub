@@ -7,6 +7,8 @@ import { packageFile } from '../api/hub';
 export default function WinGame({ pkg, conf }: { pkg: string; conf: Record<string, string> }) {
   const q = new URLSearchParams({ rt: apiUrl('/game-runtime/'), zip: packageFile(conf.zip || pkg), dir: conf.dir || '', exe: conf.exe || '' });
   if (conf.res) q.set('res', conf.res);
+  if (conf.bpp) q.set('bpp', conf.bpp);
+  if (conf.win) q.set('win', conf.win);
   return <iframe className="gr-win" title={pkg} src={`/games/win.html?${q}`} allow="autoplay; fullscreen; gamepad"
     onLoad={e => e.currentTarget.focus()} />;
 }

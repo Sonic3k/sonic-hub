@@ -45,17 +45,32 @@ DOS = [
      "Bản CD cài đủ (không có các game tặng kèm), cấu hình âm thanh anh đặt khi chơi lại trên DOSBox ngày 04/08/2012"),
     ("riptide", "dr-riptide", "In Search of Dr. Riptide", "riptide", "RIPTIDE.EXE", 7, "Kèm bảng điểm HIGH.SCR ngày 04/08/2012"),
     ("shadow", "shadow-knights", "Shadow Knights", "shadow", "SHADOW.EXE", 7, None),
+    # the Mario he played at school: Mike Wiering's own free release (freeware/mario-luigi, see FREE below). The
+    # Mario.exe on his drive (downloaded 06/07/2004) is an altered copy that skips the title and its menus.
+    ("mario-luigi", "mario-luigi", "Mario & Luigi", "mario-luigi", "MARIO.EXE", 7,
+     "Bản gốc tác giả Mike Wiering phát hành miễn phí. Bản Mario.exe anh tải ngày 06/07/2004 là bản đã bị sửa: vào thẳng màn 1, không có màn hình mở đầu và menu"),
     # a DOS program he kept among the Windows games, in [Win Games]\\English ABC (his name for it)
     ("textris", "textris", "Textris", "../[Win Games]/English ABC", "TEXTRIS.EXE", 7,
      "Kèm bảng điểm TEXTRIS.SCO của anh: NGOC ANH 1.029 điểm ghi 01-10-03 (10/01/2003)"),
 ]
 
+# Games that are not on his drive but free to copy unchanged, kept beside this script in freeware/<folder>, with the
+# year their author gives them (their files carry no date of their own): Mario & Luigi, "a small Mario game I made in
+# 1994", freeware: "You may copy it, as long as you make NO changes to the game or any associated files" (README.TXT),
+# from the mirror of the author's release at github.com/Leask/Mario.
+FREE = {"mario-luigi": (1994, 1, 1, 0, 0, 0)}
+# DOS games that also play outside the machines, on the portal's game page (11/11/2026: Mario Brothers VGA was on none
+# of his machines, but stays playable)
+PORTAL = {"mariobro"}
+# what a Windows game needs besides its program: files of its folder it wants in C:\\WINDOWS (win.html puts them there)
+WIN_OPTIONS = {"fujigolf": {"win": "FUJIGOLF.DAT"}}
+
 # A DOS prompt with a drive C: of its own: the computer room of his school, where the games were started by typing.
 # key, game it is kept under, title, {folder on its C: → folder under [DOS Games]}, what its autoexec does, IRQ, note
 SHELLS = [
-    ("msdos-school", "rescue-rover", "MS-DOS Prompt", {"GAMES/ROVER": "rrover", "GAMES/MARIO": "mariobro"},
+    ("msdos-school", "rescue-rover", "MS-DOS Prompt", {"GAMES/ROVER": "rrover", "GAMES/MARIO": "mario-luigi"},
      ["cd \\WINDOWS", "cls", "echo.", "echo Microsoft(R) Windows 98", "echo    (C)Copyright Microsoft Corp 1981-1999.", "echo."], 7,
-     "Ổ C: của máy phòng tin học trường THCS Thống Nhất: C:\\GAMES\\ROVER (Rescue Rover, gõ START), C:\\GAMES\\MARIO (Mario Brothers VGA, gõ MARIO)"),
+     "Ổ C: của máy phòng tin học trường THCS Thống Nhất: C:\\GAMES\\ROVER (Rescue Rover, gõ START), C:\\GAMES\\MARIO (Mario & Luigi, gõ MARIO)"),
 ]
 
 # key, game, title, file under D:\Games\[Mini Games] (a Flash projector .exe or a .swf), stage size
@@ -262,6 +277,20 @@ def build_win(out):
         print(key, os.path.getsize(path))
 
 
+def source(src, folder):
+    """where a game's folder is: under [DOS Games] as staged from his drive, or beside this script when it is FREE"""
+    return os.path.join(os.path.dirname(os.path.abspath(__file__)), "freeware", folder) if folder in FREE else os.path.join(src, folder)
+
+
+def put(z, full, name, date=None):
+    """a file into a bundle with its own date, or the date given"""
+    if not date:
+        return z.write(full, name)
+    info = zipfile.ZipInfo(name, date)
+    info.compress_type, info.external_attr = zipfile.ZIP_DEFLATED, 0o644 << 16
+    z.writestr(info, open(full, "rb").read())
+
+
 def build(src, out, only=None):
     os.makedirs(out, exist_ok=True)
     for key, _game, _title, folder, run, irq, _note in DOS:
@@ -269,11 +298,11 @@ def build(src, out, only=None):
             continue
         path = os.path.join(out, f"{key}.jsdos")
         with zipfile.ZipFile(path, "w", zipfile.ZIP_DEFLATED) as z:
-            root = os.path.join(src, folder)
+            root = source(src, folder)
             for dirpath, _dirs, files in os.walk(root):
                 for f in sorted(files):
                     full = os.path.join(dirpath, f)
-                    z.write(full, os.path.relpath(full, root).replace(os.sep, "/"))
+                    put(z, full, os.path.relpath(full, root).replace(os.sep, "/"), FREE.get(folder))
             z.writestr(".jsdos/dosbox.conf", dosbox_conf(run, irq))
         print(key, os.path.getsize(path))
     for key, _game, _title, folders, lines, irq, _note in SHELLS:
@@ -288,12 +317,11 @@ def build(src, out, only=None):
             for d in ("", "WINDOWS", "WINDOWS/COMMAND", "GAMES"):
                 folder(d, WIN98SE)
             for into, src_folder in folders.items():
-                root = os.path.join(src, src_folder)
-                files = [f for f in sorted(os.listdir(root)) if os.path.getmtime(os.path.join(root, f)) < SHELL_BEFORE]
-                newest = max(os.path.getmtime(os.path.join(root, f)) for f in files)
-                folder(into, time.localtime(newest)[:6])
+                root, year = source(src, src_folder), FREE.get(src_folder)
+                files = [f for f in sorted(os.listdir(root)) if year or os.path.getmtime(os.path.join(root, f)) < SHELL_BEFORE]
+                folder(into, year or time.localtime(max(os.path.getmtime(os.path.join(root, f)) for f in files))[:6])
                 for f in files:        # what he saved later on his own machines (2008) was not on the school's
-                    z.write(os.path.join(root, f), f"C/{into}/{f.upper()}")
+                    put(z, os.path.join(root, f), f"C/{into}/{f.upper()}", year)
             z.writestr(".jsdos/dosbox.conf", dosbox_conf(lines, irq, mount="C"))
         print(key, os.path.getsize(path))
 
@@ -304,7 +332,7 @@ def push(bundles, only=None):
         order += 1
         if only and key not in only:
             continue
-        meta = {"gameKey": game, "engine": "DOS", "title": title, "portal": False, "sortOrder": order,
+        meta = {"gameKey": game, "engine": "DOS", "title": title, "portal": key in PORTAL, "sortOrder": order,
                 "config": json.dumps({"run": run, "irq": irq}), "note": note or ""}
         requests.put(f"{API}/game-packages/{key}", json=meta, timeout=60).raise_for_status()
         with open(os.path.join(bundles, f"{key}.jsdos"), "rb") as fh:
@@ -364,6 +392,7 @@ def push(bundles, only=None):
             config["exe"] = exe
         if res:
             config["res"] = res
+        config.update(WIN_OPTIONS.get(key, {}))
         meta = {"gameKey": game, "engine": "WIN", "title": title, "portal": portal, "sortOrder": order,
                 "config": json.dumps(config), "note": note or ""}
         requests.put(f"{API}/game-packages/{key}", json=meta, timeout=60).raise_for_status()
