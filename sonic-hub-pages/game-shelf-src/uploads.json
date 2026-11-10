@@ -100,5 +100,11 @@
   "mediaId": "fd7f277d-c265-4c40-9a93-120b10c50e0f",
   "game": "dota",
   "role": "SCREENSHOT"
+ },
+ {
+  "file": "captures/textris-best-scores.png",
+  "mediaId": "6b8051fc-8115-455f-ab7f-a3ed47823478",
+  "game": "textris",
+  "role": "SCREENSHOT"
  }
 ]

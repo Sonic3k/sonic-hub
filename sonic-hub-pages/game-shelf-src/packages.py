@@ -12,7 +12,7 @@ screen size Wine starts with when not 800x600 (res), and, for the games of [Win 
 package that holds the zip (zip). What runs them (Boxedwine and the Wine files) is win_runtime.py.
 WEB packages have no file: the web has the game itself (config names it).
 
-  python3 packages.py build /mnt/user-data/uploads/Games/[DOS\\ Games] /tmp/bundles    writes the bundles
+  python3 packages.py build /mnt/user-data/uploads/Games/[DOS\\ Games] /tmp/bundles [textris]   writes the bundles (all, or those keys)
   python3 packages.py flash /mnt/user-data/uploads/Games/[Mini\\ Games] /tmp/bundles     the Flash movies out of their .exe
   python3 packages.py win /tmp/bundles                                                   the Windows games' zips (WIN_FILES)
   python3 packages.py push /tmp/bundles [jazz,riptide]                                  metadata + files to the hub (all, or those keys)
@@ -43,6 +43,9 @@ DOS = [
      "Bản CD cài đủ (không có các game tặng kèm), cấu hình âm thanh anh đặt khi chơi lại trên DOSBox ngày 04/08/2012"),
     ("riptide", "dr-riptide", "In Search of Dr. Riptide", "riptide", "RIPTIDE.EXE", 7, "Kèm bảng điểm HIGH.SCR ngày 04/08/2012"),
     ("shadow", "shadow-knights", "Shadow Knights", "shadow", "SHADOW.EXE", 7, None),
+    # a DOS program he kept among the Windows games, in [Win Games]\\English ABC (his name for it)
+    ("textris", "textris", "Textris", "../[Win Games]/English ABC", "TEXTRIS.EXE", 7,
+     "Kèm bảng điểm TEXTRIS.SCO của anh: NGOC ANH 1.029 điểm ghi 01-10-03 (10/01/2003)"),
 ]
 
 # key, game, title, file under D:\Games\[Mini Games] (a Flash projector .exe or a .swf), stage size
@@ -241,9 +244,11 @@ def build_win(out):
         print(key, os.path.getsize(path))
 
 
-def build(src, out):
+def build(src, out, only=None):
     os.makedirs(out, exist_ok=True)
     for key, _game, _title, folder, run, irq, _note in DOS:
+        if only and key not in only:
+            continue
         path = os.path.join(out, f"{key}.jsdos")
         with zipfile.ZipFile(path, "w", zipfile.ZIP_DEFLATED) as z:
             root = os.path.join(src, folder)
@@ -330,6 +335,6 @@ def push(bundles, only=None):
 
 
 if __name__ == "__main__":
-    {"build": lambda: build(sys.argv[2], sys.argv[3]), "flash": lambda: build_flash(sys.argv[2], sys.argv[3]),
+    {"build": lambda: build(sys.argv[2], sys.argv[3], sys.argv[4].split(",") if len(sys.argv) > 4 else None), "flash": lambda: build_flash(sys.argv[2], sys.argv[3]),
      "win": lambda: build_win(sys.argv[2]),
      "push": lambda: push(sys.argv[2], sys.argv[3].split(",") if len(sys.argv) > 3 else None)}[sys.argv[1]]()

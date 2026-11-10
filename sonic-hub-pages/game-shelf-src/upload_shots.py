@@ -4,6 +4,9 @@
 Each keeps the date the file was written (lastModified), gets a caption, and is listed in uploads.json with the game it
 belongs to; push_to_hub.py links it to that game as a SCREENSHOT. BMP and TGA are turned into PNG first.
 
+CAPTURES are pictures taken now of what his own files still show (a score table with his name read by the game itself,
+run from his folder): kept in captures/, dated the day they were taken, their caption says so.
+
   python3 upload_shots.py /mnt/user-data/uploads/Games      (needs pillow, requests)
 """
 import io
@@ -57,6 +60,14 @@ SHOTS = [
 ]
 
 
+# file under captures/, when it was taken (ms), game, caption
+CAPTURES = [
+    ("captures/textris-best-scores.png", 1794326400000, "textris",
+     "Bảng Best Scores của Textris đọc từ file TEXTRIS.SCO trên ổ D: của anh: NGOC ANH 1.029 điểm ghi 01-10-03 (10/01/2003), "
+     "trên cùng là Chelsea 1.210 điểm ghi 11-09-03. Chụp lại ngày 10/11/2026 khi chạy game bằng chính thư mục English ABC."),
+]
+
+
 def album():
     kids = requests.get(f"{API}/collections/{COLLECTIONS}/children", timeout=60).json()
     for c in kids:
@@ -71,10 +82,10 @@ def album():
 def main(root):
     col = album()
     done = {u["file"]: u for u in json.load(open(os.path.join(HERE, "uploads.json")))} if os.path.exists(os.path.join(HERE, "uploads.json")) else {}
-    for rel, mtime, game, caption in SHOTS:
+    for rel, mtime, game, caption in SHOTS + CAPTURES:
         if rel in done:
             continue
-        path = os.path.join(root, rel)
+        path = os.path.join(HERE if rel.startswith("captures/") else root, rel)
         if mtime is None:
             mtime = int(os.path.getmtime(path) * 1000)
         name = os.path.basename(rel)
