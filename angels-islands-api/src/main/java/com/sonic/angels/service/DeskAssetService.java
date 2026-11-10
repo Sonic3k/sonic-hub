@@ -63,18 +63,23 @@ public class DeskAssetService {
             throw new ImportException(400, "name: a relative path such as skin/images/online.png");
         Collection album = album(f);
         String hash = sha256(file);
+        List<MediaFile> replaced = List.of();
         if (n == null) {
             List<MediaFile> same = mediaRepo.findInCollectionByHash(album.getId(), hash);
             if (!same.isEmpty()) return out(same.get(0), false);
         } else {
             List<MediaFile> named = mediaRepo.findInCollectionByNames(album.getId(), List.of(n));
             for (MediaFile old : named) if (hash.equals(old.getContentHash())) return out(old, false);
-            for (MediaFile old : named) mediaFileService.delete(old.getId());   // the same name with other content: the new one replaces it
+            replaced = named;   // the same name with other content: the new one replaces it
         }
+        // The new file goes up while the old rows still hold their storage keys, so it gets a key of its own. Deleting
+        // the old ones first freed their key for the new file, and the purge of the old file after the commit then
+        // took the new one with it (a file sent again under the same file name came out missing).
         MediaFile mf = mediaFileService.upload(file, null, album.getId(), null, lastModified, hash, null);
         mf.setMediaCategory(MediaFile.MediaCategory.ASSET);
         if (n != null) mf.setFileName(n);
         mf = mediaRepo.save(mf);
+        for (MediaFile old : replaced) mediaFileService.delete(old.getId());
         return out(mf, true);
     }
 
