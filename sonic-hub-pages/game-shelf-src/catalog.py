@@ -480,7 +480,10 @@ GAMES = [
          links=[wiki("3D_Pinball_for_Windows_–_Space_Cadet")]),
     dict(key="win-games", title="Win Games", series="windows", seriesOrder=20, platform="Windows", genre="Puzzle",
          summary="Thư mục [Win Games] trên ổ D: những trò nhỏ của Windows 3.1 như Pipe Dream, SkiFree, Golf, Cruel, "
-                 "Rattler Race, WordZap."),
+                 "Rattler Race, WordZap.",
+         plays=[play("2003", "pc-old", end="2004", precision="YEAR", approx=True,
+                     evidence="Mở Help lần đầu của WordZap, FujiGolf, Golf, TicTactics, Idlewild, Chess, Pegged, LifeGenesis và BlackJack, "
+                              "từ 0:05 đến 10:27 trong buổi đồng hồ máy bị về 01/01/1999; ngày thật là sau 09/11/2003, theo bảng điểm Textris ghi cùng buổi")]),
     dict(key="lines-98", title="Lines 98", platform="Windows", genre="Puzzle", handName="LINES", handOrder=3,
          summary="Xếp năm viên bi cùng màu thành hàng để ăn; bản Windows của Color Lines.",
          plays=[play("1998", "pc-old", end="2004", precision="YEAR", approx=True,

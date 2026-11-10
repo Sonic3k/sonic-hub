@@ -106,5 +106,365 @@
   "mediaId": "6b8051fc-8115-455f-ab7f-a3ed47823478",
   "game": "textris",
   "role": "SCREENSHOT"
+ },
+ {
+  "file": "captures/dyna-title.png",
+  "mediaId": "f11354a1-de22-4307-8fb8-69dc120f1bfd",
+  "game": "dyna-blaster",
+  "role": "SCREENSHOT"
+ },
+ {
+  "file": "captures/dyna-play.png",
+  "mediaId": "98ce504f-0bd3-4f33-a3f6-1684ec60dab7",
+  "game": "dyna-blaster",
+  "role": "SCREENSHOT"
+ },
+ {
+  "file": "captures/prince-title.png",
+  "mediaId": "db2b07d0-e03a-4e6c-8875-9ee5e65a2737",
+  "game": "prince-of-persia",
+  "role": "SCREENSHOT"
+ },
+ {
+  "file": "captures/prince-play.png",
+  "mediaId": "c7f7fbbf-390f-4366-8d5c-8e13e0caf1c8",
+  "game": "prince-of-persia",
+  "role": "SCREENSHOT"
+ },
+ {
+  "file": "captures/dave2-title.png",
+  "mediaId": "633b520d-ed40-4171-8810-ca5aa0373da8",
+  "game": "dangerous-dave-2",
+  "role": "SCREENSHOT"
+ },
+ {
+  "file": "captures/dave2-play.png",
+  "mediaId": "26990458-cf95-4efd-adf8-3cd9023c7b2a",
+  "game": "dangerous-dave-2",
+  "role": "SCREENSHOT"
+ },
+ {
+  "file": "captures/lionking-title.png",
+  "mediaId": "aee3c7cc-145d-42ec-8f54-9a2011338381",
+  "game": "lion-king",
+  "role": "SCREENSHOT"
+ },
+ {
+  "file": "captures/lionking-play.png",
+  "mediaId": "5f817055-2ff5-47db-98fe-d496d66fb113",
+  "game": "lion-king",
+  "role": "SCREENSHOT"
+ },
+ {
+  "file": "captures/mariobro-title.png",
+  "mediaId": "40dfe088-dc44-4a75-b040-4ed672142439",
+  "game": "mario-brothers-vga",
+  "role": "SCREENSHOT"
+ },
+ {
+  "file": "captures/mariobro-play.png",
+  "mediaId": "b45d2d38-9021-4bea-8cad-22cd002353c8",
+  "game": "mario-brothers-vga",
+  "role": "SCREENSHOT"
+ },
+ {
+  "file": "captures/hexx-title.png",
+  "mediaId": "f34c1339-ee52-4ccf-abb5-9dcc8bdde672",
+  "game": "hexxagon",
+  "role": "SCREENSHOT"
+ },
+ {
+  "file": "captures/hexx-play.png",
+  "mediaId": "4da683fa-accf-4b93-97cf-fca044fbf2ae",
+  "game": "hexxagon",
+  "role": "SCREENSHOT"
+ },
+ {
+  "file": "captures/rrover-title.png",
+  "mediaId": "7a114721-3425-427f-a016-5b0358b8d786",
+  "game": "rescue-rover",
+  "role": "SCREENSHOT"
+ },
+ {
+  "file": "captures/rrover-play.png",
+  "mediaId": "da6b33cc-f856-42a8-84da-839c1232b972",
+  "game": "rescue-rover",
+  "role": "SCREENSHOT"
+ },
+ {
+  "file": "captures/fastfood-title.png",
+  "mediaId": "48b6e631-c9d7-43e1-99ac-432eac3cddda",
+  "game": "fast-food",
+  "role": "SCREENSHOT"
+ },
+ {
+  "file": "captures/fastfood-play.png",
+  "mediaId": "550548ea-2173-4862-be7d-f267dfda064b",
+  "game": "fast-food",
+  "role": "SCREENSHOT"
+ },
+ {
+  "file": "captures/riptide-title.png",
+  "mediaId": "612f752f-4a62-4445-9eb2-1cd76aa32da7",
+  "game": "dr-riptide",
+  "role": "SCREENSHOT"
+ },
+ {
+  "file": "captures/riptide-play.png",
+  "mediaId": "9ee2f860-1df7-455e-ad17-85065698e3d0",
+  "game": "dr-riptide",
+  "role": "SCREENSHOT"
+ },
+ {
+  "file": "captures/riptide-scores.png",
+  "mediaId": "978e1f08-3a3c-49d8-906c-8289510511e9",
+  "game": "dr-riptide",
+  "role": "SCREENSHOT"
+ },
+ {
+  "file": "captures/shadow-title.png",
+  "mediaId": "021fef94-524a-44d4-aa9a-8e7b2bbe4d0d",
+  "game": "shadow-knights",
+  "role": "SCREENSHOT"
+ },
+ {
+  "file": "captures/shadow-play.png",
+  "mediaId": "038654f4-fded-4821-8e62-1655f97c881a",
+  "game": "shadow-knights",
+  "role": "SCREENSHOT"
+ },
+ {
+  "file": "captures/jazz-title.png",
+  "mediaId": "3b8aab05-4c46-4cfa-aff3-36507c1ee531",
+  "game": "jazz-jackrabbit",
+  "role": "SCREENSHOT"
+ },
+ {
+  "file": "captures/jazz-play.png",
+  "mediaId": "2081054d-818a-4835-a947-916477da7eb9",
+  "game": "jazz-jackrabbit",
+  "role": "SCREENSHOT"
+ },
+ {
+  "file": "captures/textris-title.png",
+  "mediaId": "3479051b-90ce-4b0d-85c8-e92a464cc678",
+  "game": "textris",
+  "role": "SCREENSHOT"
+ },
+ {
+  "file": "captures/chips.png",
+  "mediaId": "905daa7e-5d64-4a8e-b1c2-fe753bc47e40",
+  "game": "chips-challenge",
+  "role": "SCREENSHOT"
+ },
+ {
+  "file": "captures/jezzball.png",
+  "mediaId": "936ac9ba-02ba-4524-89f8-82cf01a7d524",
+  "game": "jezzball",
+  "role": "SCREENSHOT"
+ },
+ {
+  "file": "captures/tetravex.png",
+  "mediaId": "9521b5ba-238b-4d8f-9224-d9531458a900",
+  "game": "tetravex",
+  "role": "SCREENSHOT"
+ },
+ {
+  "file": "captures/taipei.png",
+  "mediaId": "b5500fe6-7cfb-415e-88c5-5493d245670b",
+  "game": "taipei",
+  "role": "SCREENSHOT"
+ },
+ {
+  "file": "captures/rodent.png",
+  "mediaId": "464d2bfc-8992-4e9a-858d-070da230e493",
+  "game": "rodents-revenge",
+  "role": "SCREENSHOT"
+ },
+ {
+  "file": "captures/maxwell.png",
+  "mediaId": "b7c8f7ad-7068-4d48-ae7b-54cd09950861",
+  "game": "maxwells-maniac",
+  "role": "SCREENSHOT"
+ },
+ {
+  "file": "captures/gofigure.png",
+  "mediaId": "2085e0d9-97a2-4737-8ad8-6de6db947a93",
+  "game": "go-figure",
+  "role": "SCREENSHOT"
+ },
+ {
+  "file": "captures/dots.png",
+  "mediaId": "8acf2989-4815-4449-b000-1634c0825aba",
+  "game": "dots",
+  "role": "SCREENSHOT"
+ },
+ {
+  "file": "captures/fences.png",
+  "mediaId": "63bcfefa-0c10-4789-b17d-93e8cf30ae4a",
+  "game": "fences",
+  "role": "SCREENSHOT"
+ },
+ {
+  "file": "captures/pipe-dream.png",
+  "mediaId": "8401ef88-c564-46c4-bf1f-cc06f074ba15",
+  "game": "win-games",
+  "role": "SCREENSHOT"
+ },
+ {
+  "file": "captures/golf.png",
+  "mediaId": "7065b21f-2167-4c47-a685-9156c4af4b4c",
+  "game": "win-games",
+  "role": "SCREENSHOT"
+ },
+ {
+  "file": "captures/cruel.png",
+  "mediaId": "bb12a830-a93f-4155-b5cc-8d2df53d2d85",
+  "game": "win-games",
+  "role": "SCREENSHOT"
+ },
+ {
+  "file": "captures/chess-win.png",
+  "mediaId": "eb8076e8-86cb-4156-9741-171a258675a9",
+  "game": "win-games",
+  "role": "SCREENSHOT"
+ },
+ {
+  "file": "captures/noughts.png",
+  "mediaId": "493fe9f8-381e-4a2a-876f-de30613138fc",
+  "game": "win-games",
+  "role": "SCREENSHOT"
+ },
+ {
+  "file": "captures/amnesia.png",
+  "mediaId": "5ef5587a-3fd7-4c7c-abb6-f64f20985ff1",
+  "game": "win-games",
+  "role": "SCREENSHOT"
+ },
+ {
+  "file": "captures/codebreaker.png",
+  "mediaId": "e83e13c5-e292-4123-bc79-2fa13f277fd2",
+  "game": "win-games",
+  "role": "SCREENSHOT"
+ },
+ {
+  "file": "captures/hangman.png",
+  "mediaId": "55db7c5d-0a2a-4ebf-83ef-3c51dcb836c2",
+  "game": "win-games",
+  "role": "SCREENSHOT"
+ },
+ {
+  "file": "captures/jacks.png",
+  "mediaId": "394f2e4c-8415-4d15-a990-994480b4e518",
+  "game": "win-games",
+  "role": "SCREENSHOT"
+ },
+ {
+  "file": "captures/lifegen.png",
+  "mediaId": "11a298c1-ab80-49ca-afa7-60b55932a86e",
+  "game": "win-games",
+  "role": "SCREENSHOT"
+ },
+ {
+  "file": "captures/pegged.png",
+  "mediaId": "55b89744-305f-49c3-ac89-54a45aa2d606",
+  "game": "win-games",
+  "role": "SCREENSHOT"
+ },
+ {
+  "file": "captures/rattler.png",
+  "mediaId": "3daf3b6c-e80c-425b-b61e-efaee1f7919e",
+  "game": "win-games",
+  "role": "SCREENSHOT"
+ },
+ {
+  "file": "captures/sticks.png",
+  "mediaId": "a397e816-4737-4c7b-97ff-8663a6c6328e",
+  "game": "win-games",
+  "role": "SCREENSHOT"
+ },
+ {
+  "file": "captures/tictactics.png",
+  "mediaId": "20ede307-b1ae-4fff-90bc-f81e06770c7c",
+  "game": "win-games",
+  "role": "SCREENSHOT"
+ },
+ {
+  "file": "captures/wordzap.png",
+  "mediaId": "3da57a1c-ea92-4d4c-b77a-6b0e951f16bf",
+  "game": "win-games",
+  "role": "SCREENSHOT"
+ },
+ {
+  "file": "captures/lines98.png",
+  "mediaId": "1b3c84d2-5adf-4a96-92cb-2f2b1cbca4cd",
+  "game": "lines-98",
+  "role": "SCREENSHOT"
+ },
+ {
+  "file": "captures/pikachu.png",
+  "mediaId": "88316e69-de4b-44f2-91d4-0d0f27da7814",
+  "game": "pikachu",
+  "role": "SCREENSHOT"
+ },
+ {
+  "file": "captures/tripeaks.png",
+  "mediaId": "a4849559-c83a-471f-9367-741e7a960461",
+  "game": "tripeaks",
+  "role": "SCREENSHOT"
+ },
+ {
+  "file": "captures/blackjack.png",
+  "mediaId": "31ec5848-f22e-4284-8a18-2ba9f40b814c",
+  "game": "win-games",
+  "role": "SCREENSHOT"
+ },
+ {
+  "file": "captures/minesweeper.png",
+  "mediaId": "d3cce409-7140-4c68-9049-98754fc83813",
+  "game": "minesweeper",
+  "role": "SCREENSHOT"
+ },
+ {
+  "file": "captures/pinball.png",
+  "mediaId": "9bfb010a-5a51-4d52-bd57-d3a6e40f0ccc",
+  "game": "space-cadet-pinball",
+  "role": "SCREENSHOT"
+ },
+ {
+  "file": "captures/dxball2.png",
+  "mediaId": "da244215-a84b-4dc8-9247-219262aa9308",
+  "game": "dx-ball-2",
+  "role": "SCREENSHOT"
+ },
+ {
+  "file": "captures/s3k.png",
+  "mediaId": "61da707d-2663-487d-9ff9-8282287c6598",
+  "game": "sonic-3-knuckles",
+  "role": "SCREENSHOT"
+ },
+ {
+  "file": "captures/dao-vang.png",
+  "mediaId": "c1911afb-d670-4918-8bac-2a1c2355b9af",
+  "game": "dao-vang",
+  "role": "SCREENSHOT"
+ },
+ {
+  "file": "captures/bloxorz.png",
+  "mediaId": "29885a8c-21ab-4b39-a122-30537e2ca8d7",
+  "game": "bloxorz",
+  "role": "SCREENSHOT"
+ },
+ {
+  "file": "captures/doodle-god.png",
+  "mediaId": "45dbea52-617c-4faf-88b6-6609662bba06",
+  "game": "doodle-god",
+  "role": "SCREENSHOT"
+ },
+ {
+  "file": "captures/doodle-devil.png",
+  "mediaId": "853dd372-9523-414a-9e5d-fdad5bbe9cde",
+  "game": "doodle-devil",
+  "role": "SCREENSHOT"
  }
 ]

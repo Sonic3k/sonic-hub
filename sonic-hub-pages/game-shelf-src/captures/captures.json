@@ -1,0 +1,612 @@
+[
+ {
+  "file": "captures/textris-best-scores.png",
+  "game": "textris",
+  "event": {
+   "date": "2003-11-09",
+   "precision": "DAY",
+   "approx": false
+  },
+  "caption": "Bảng Best Scores của Textris, đọc từ file TEXTRIS.SCO trên ổ D: của anh: Chelsea 1.210 điểm ghi 11-09-03 (09/11/2003), NGOC ANH 1.029 điểm ghi 01-10-03 (10/01/2003); Everton và Fulham cũng là anh. Chụp lại ngày 10/11/2026, chạy từ thư mục English ABC."
+ },
+ {
+  "file": "captures/dyna-title.png",
+  "game": "dyna-blaster",
+  "caption": "Màn hình mở đầu của DYNA Blaster. Chụp lại ngày 11/11/2026, chạy từ thư mục game trên ổ D: của anh.",
+  "event": {
+   "date": "2001",
+   "precision": "YEAR",
+   "approx": true
+  }
+ },
+ {
+  "file": "captures/dyna-play.png",
+  "game": "dyna-blaster",
+  "caption": "DYNA Blaster, lúc vào chơi. Chụp lại ngày 11/11/2026, chạy từ thư mục game trên ổ D: của anh.",
+  "event": {
+   "date": "2001",
+   "precision": "YEAR",
+   "approx": true
+  }
+ },
+ {
+  "file": "captures/prince-title.png",
+  "game": "prince-of-persia",
+  "caption": "Màn hình mở đầu của Prince of Persia. Chụp lại ngày 11/11/2026, chạy từ thư mục game trên ổ D: của anh.",
+  "event": {
+   "date": "1998-11-22",
+   "precision": "DAY",
+   "approx": false
+  }
+ },
+ {
+  "file": "captures/prince-play.png",
+  "game": "prince-of-persia",
+  "caption": "Prince of Persia, lúc vào chơi. Chụp lại ngày 11/11/2026, chạy từ thư mục game trên ổ D: của anh.",
+  "event": {
+   "date": "1998-11-22",
+   "precision": "DAY",
+   "approx": false
+  }
+ },
+ {
+  "file": "captures/dave2-title.png",
+  "game": "dangerous-dave-2",
+  "caption": "Màn hình mở đầu của Dangerous Dave in the Haunted Mansion. Chụp lại ngày 11/11/2026, chạy từ thư mục game trên ổ D: của anh.",
+  "event": {
+   "date": "2008-08-02",
+   "precision": "DAY",
+   "approx": false
+  }
+ },
+ {
+  "file": "captures/dave2-play.png",
+  "game": "dangerous-dave-2",
+  "caption": "Dangerous Dave in the Haunted Mansion, lúc vào chơi. Chụp lại ngày 11/11/2026, chạy từ thư mục game trên ổ D: của anh.",
+  "event": {
+   "date": "2008-08-02",
+   "precision": "DAY",
+   "approx": false
+  }
+ },
+ {
+  "file": "captures/lionking-title.png",
+  "game": "lion-king",
+  "caption": "Màn hình mở đầu của The Lion King. Chụp lại ngày 11/11/2026, chạy từ thư mục game trên ổ D: của anh.",
+  "event": {
+   "date": "2008-11-06",
+   "precision": "DAY",
+   "approx": false
+  }
+ },
+ {
+  "file": "captures/lionking-play.png",
+  "game": "lion-king",
+  "caption": "The Lion King, lúc vào chơi. Chụp lại ngày 11/11/2026, chạy từ thư mục game trên ổ D: của anh.",
+  "event": {
+   "date": "2008-11-06",
+   "precision": "DAY",
+   "approx": false
+  }
+ },
+ {
+  "file": "captures/mariobro-title.png",
+  "game": "mario-brothers-vga",
+  "caption": "Màn hình mở đầu của Mario Brothers VGA. Chụp lại ngày 11/11/2026, chạy từ thư mục game trên ổ D: của anh.",
+  "event": {
+   "date": "2003",
+   "precision": "YEAR",
+   "approx": true
+  }
+ },
+ {
+  "file": "captures/mariobro-play.png",
+  "game": "mario-brothers-vga",
+  "caption": "Mario Brothers VGA, lúc vào chơi. Chụp lại ngày 11/11/2026, chạy từ thư mục game trên ổ D: của anh.",
+  "event": {
+   "date": "2003",
+   "precision": "YEAR",
+   "approx": true
+  }
+ },
+ {
+  "file": "captures/hexx-title.png",
+  "game": "hexxagon",
+  "caption": "Màn hình mở đầu của Hexxagon. Chụp lại ngày 11/11/2026, chạy từ thư mục game trên ổ D: của anh.",
+  "event": {
+   "date": "1998-03-31",
+   "precision": "DAY",
+   "approx": false
+  }
+ },
+ {
+  "file": "captures/hexx-play.png",
+  "game": "hexxagon",
+  "caption": "Hexxagon, lúc vào chơi. Chụp lại ngày 11/11/2026, chạy từ thư mục game trên ổ D: của anh.",
+  "event": {
+   "date": "1998-03-31",
+   "precision": "DAY",
+   "approx": false
+  }
+ },
+ {
+  "file": "captures/rrover-title.png",
+  "game": "rescue-rover",
+  "caption": "Màn hình mở đầu của Rescue Rover. Chụp lại ngày 11/11/2026, chạy từ thư mục game trên ổ D: của anh.",
+  "event": {
+   "date": "2003",
+   "precision": "YEAR",
+   "approx": true
+  }
+ },
+ {
+  "file": "captures/rrover-play.png",
+  "game": "rescue-rover",
+  "caption": "Rescue Rover, lúc vào chơi. Chụp lại ngày 11/11/2026, chạy từ thư mục game trên ổ D: của anh.",
+  "event": {
+   "date": "2003",
+   "precision": "YEAR",
+   "approx": true
+  }
+ },
+ {
+  "file": "captures/fastfood-title.png",
+  "game": "fast-food",
+  "caption": "Màn hình mở đầu của Fast Food. Chụp lại ngày 11/11/2026, chạy từ thư mục game trên ổ D: của anh.",
+  "event": {
+   "date": "2001",
+   "precision": "YEAR",
+   "approx": true
+  }
+ },
+ {
+  "file": "captures/fastfood-play.png",
+  "game": "fast-food",
+  "caption": "Fast Food, lúc vào chơi. Chụp lại ngày 11/11/2026, chạy từ thư mục game trên ổ D: của anh.",
+  "event": {
+   "date": "2001",
+   "precision": "YEAR",
+   "approx": true
+  }
+ },
+ {
+  "file": "captures/riptide-title.png",
+  "game": "dr-riptide",
+  "caption": "Màn hình mở đầu của In Search of Dr. Riptide. Chụp lại ngày 11/11/2026, chạy từ thư mục game trên ổ D: của anh.",
+  "event": {
+   "date": "2012-08-04",
+   "precision": "DAY",
+   "approx": false
+  }
+ },
+ {
+  "file": "captures/riptide-play.png",
+  "game": "dr-riptide",
+  "caption": "In Search of Dr. Riptide, lúc vào chơi. Chụp lại ngày 11/11/2026, chạy từ thư mục game trên ổ D: của anh.",
+  "event": {
+   "date": "2012-08-04",
+   "precision": "DAY",
+   "approx": false
+  }
+ },
+ {
+  "file": "captures/riptide-scores.png",
+  "game": "dr-riptide",
+  "caption": "Bảng High scores của In Search of Dr. Riptide, đọc từ file HIGH.SCR của anh (ghi ngày 04/08/2012): Sonic3k đứng đầu với 235.550 điểm. Chụp lại ngày 11/11/2026, chạy từ thư mục game trên ổ D: của anh.",
+  "event": {
+   "date": "2012-08-04",
+   "precision": "DAY",
+   "approx": false
+  }
+ },
+ {
+  "file": "captures/shadow-title.png",
+  "game": "shadow-knights",
+  "caption": "Màn hình mở đầu của Shadow Knights. Chụp lại ngày 11/11/2026, chạy từ thư mục game trên ổ D: của anh.",
+  "event": {
+   "date": "2012-08-04",
+   "precision": "DAY",
+   "approx": false
+  }
+ },
+ {
+  "file": "captures/shadow-play.png",
+  "game": "shadow-knights",
+  "caption": "Shadow Knights, lúc vào chơi. Chụp lại ngày 11/11/2026, chạy từ thư mục game trên ổ D: của anh.",
+  "event": {
+   "date": "2012-08-04",
+   "precision": "DAY",
+   "approx": false
+  }
+ },
+ {
+  "file": "captures/jazz-title.png",
+  "game": "jazz-jackrabbit",
+  "caption": "Màn hình mở đầu của Jazz Jackrabbit. Chụp lại ngày 11/11/2026, chạy từ thư mục game trên ổ D: của anh.",
+  "event": {
+   "date": "2012-08-04",
+   "precision": "DAY",
+   "approx": false
+  }
+ },
+ {
+  "file": "captures/jazz-play.png",
+  "game": "jazz-jackrabbit",
+  "caption": "Jazz Jackrabbit, lúc vào chơi. Chụp lại ngày 11/11/2026, chạy từ thư mục game trên ổ D: của anh.",
+  "event": {
+   "date": "2012-08-04",
+   "precision": "DAY",
+   "approx": false
+  }
+ },
+ {
+  "file": "captures/textris-title.png",
+  "game": "textris",
+  "caption": "Màn hình mở đầu của Textris. Chụp lại ngày 11/11/2026, chạy từ thư mục game trên ổ D: của anh.",
+  "event": {
+   "date": "2003-01-10",
+   "precision": "DAY",
+   "approx": false
+  }
+ },
+ {
+  "file": "captures/chips.png",
+  "game": "chips-challenge",
+  "caption": "Chip's Challenge khi vừa mở. Chụp lại ngày 11/11/2026, chạy từ thư mục game trên ổ D: của anh.",
+  "event": {
+   "date": "2005-08-05",
+   "precision": "DAY",
+   "approx": false
+  }
+ },
+ {
+  "file": "captures/jezzball.png",
+  "game": "jezzball",
+  "caption": "JezzBall khi vừa mở. Chụp lại ngày 11/11/2026, chạy từ thư mục game trên ổ D: của anh.",
+  "event": {
+   "date": "2003",
+   "precision": "YEAR",
+   "approx": true
+  }
+ },
+ {
+  "file": "captures/tetravex.png",
+  "game": "tetravex",
+  "caption": "Tetravex khi vừa mở. Chụp lại ngày 11/11/2026, chạy từ thư mục game trên ổ D: của anh.",
+  "event": {
+   "date": "2003",
+   "precision": "YEAR",
+   "approx": true
+  }
+ },
+ {
+  "file": "captures/taipei.png",
+  "game": "taipei",
+  "caption": "Taipei khi vừa mở. Chụp lại ngày 11/11/2026, chạy từ thư mục game trên ổ D: của anh.",
+  "event": {
+   "date": "2003",
+   "precision": "YEAR",
+   "approx": true
+  }
+ },
+ {
+  "file": "captures/rodent.png",
+  "game": "rodents-revenge",
+  "caption": "Rodent's Revenge khi vừa mở. Chụp lại ngày 11/11/2026, chạy từ thư mục game trên ổ D: của anh.",
+  "event": {
+   "date": "2001",
+   "precision": "YEAR",
+   "approx": true
+  }
+ },
+ {
+  "file": "captures/maxwell.png",
+  "game": "maxwells-maniac",
+  "caption": "Maxwell's Maniac khi vừa mở. Chụp lại ngày 11/11/2026, chạy từ thư mục game trên ổ D: của anh.",
+  "event": {
+   "date": "2003",
+   "precision": "YEAR",
+   "approx": true
+  }
+ },
+ {
+  "file": "captures/gofigure.png",
+  "game": "go-figure",
+  "caption": "Go Figure! khi vừa mở. Chụp lại ngày 11/11/2026, chạy từ thư mục game trên ổ D: của anh.",
+  "event": {
+   "date": "2003",
+   "precision": "YEAR",
+   "approx": true
+  }
+ },
+ {
+  "file": "captures/dots.png",
+  "game": "dots",
+  "caption": "Dots khi vừa mở. Chụp lại ngày 11/11/2026, chạy từ thư mục game trên ổ D: của anh.",
+  "event": {
+   "date": "2001",
+   "precision": "YEAR",
+   "approx": true
+  }
+ },
+ {
+  "file": "captures/fences.png",
+  "game": "fences",
+  "caption": "Fences khi vừa mở. Chụp lại ngày 11/11/2026, chạy từ thư mục game trên ổ D: của anh.",
+  "event": {
+   "date": "2001",
+   "precision": "YEAR",
+   "approx": true
+  }
+ },
+ {
+  "file": "captures/pipe-dream.png",
+  "game": "win-games",
+  "caption": "Pipe Dream khi vừa mở. Chụp lại ngày 11/11/2026, chạy từ thư mục game trên ổ D: của anh.",
+  "event": {
+   "date": "2003",
+   "precision": "YEAR",
+   "approx": true
+  }
+ },
+ {
+  "file": "captures/golf.png",
+  "game": "win-games",
+  "caption": "Golf khi vừa mở. Chụp lại ngày 11/11/2026, chạy từ thư mục game trên ổ D: của anh.",
+  "event": {
+   "date": "2003",
+   "precision": "YEAR",
+   "approx": true
+  }
+ },
+ {
+  "file": "captures/cruel.png",
+  "game": "win-games",
+  "caption": "Cruel khi vừa mở. Chụp lại ngày 11/11/2026, chạy từ thư mục game trên ổ D: của anh.",
+  "event": {
+   "date": "2003",
+   "precision": "YEAR",
+   "approx": true
+  }
+ },
+ {
+  "file": "captures/chess-win.png",
+  "game": "win-games",
+  "caption": "Chess khi vừa mở. Chụp lại ngày 11/11/2026, chạy từ thư mục game trên ổ D: của anh.",
+  "event": {
+   "date": "2003",
+   "precision": "YEAR",
+   "approx": true
+  }
+ },
+ {
+  "file": "captures/noughts.png",
+  "game": "win-games",
+  "caption": "Noughts and Crosses khi vừa mở. Chụp lại ngày 11/11/2026, chạy từ thư mục game trên ổ D: của anh.",
+  "event": {
+   "date": "2003",
+   "precision": "YEAR",
+   "approx": true
+  }
+ },
+ {
+  "file": "captures/amnesia.png",
+  "game": "win-games",
+  "caption": "Amnesia khi vừa mở. Chụp lại ngày 11/11/2026, chạy từ thư mục game trên ổ D: của anh.",
+  "event": {
+   "date": "2003",
+   "precision": "YEAR",
+   "approx": true
+  }
+ },
+ {
+  "file": "captures/codebreaker.png",
+  "game": "win-games",
+  "caption": "CodeBreaker khi vừa mở. Chụp lại ngày 11/11/2026, chạy từ thư mục game trên ổ D: của anh.",
+  "event": {
+   "date": "2003",
+   "precision": "YEAR",
+   "approx": true
+  }
+ },
+ {
+  "file": "captures/hangman.png",
+  "game": "win-games",
+  "caption": "Hangman khi vừa mở. Chụp lại ngày 11/11/2026, chạy từ thư mục game trên ổ D: của anh.",
+  "event": {
+   "date": "2003",
+   "precision": "YEAR",
+   "approx": true
+  }
+ },
+ {
+  "file": "captures/jacks.png",
+  "game": "win-games",
+  "caption": "Jacks khi vừa mở. Chụp lại ngày 11/11/2026, chạy từ thư mục game trên ổ D: của anh.",
+  "event": {
+   "date": "2003",
+   "precision": "YEAR",
+   "approx": true
+  }
+ },
+ {
+  "file": "captures/lifegen.png",
+  "game": "win-games",
+  "caption": "LifeGenesis khi vừa mở. Chụp lại ngày 11/11/2026, chạy từ thư mục game trên ổ D: của anh.",
+  "event": {
+   "date": "2003",
+   "precision": "YEAR",
+   "approx": true
+  }
+ },
+ {
+  "file": "captures/pegged.png",
+  "game": "win-games",
+  "caption": "Pegged khi vừa mở. Chụp lại ngày 11/11/2026, chạy từ thư mục game trên ổ D: của anh.",
+  "event": {
+   "date": "2003",
+   "precision": "YEAR",
+   "approx": true
+  }
+ },
+ {
+  "file": "captures/rattler.png",
+  "game": "win-games",
+  "caption": "Rattler Race khi vừa mở. Chụp lại ngày 11/11/2026, chạy từ thư mục game trên ổ D: của anh.",
+  "event": {
+   "date": "2003",
+   "precision": "YEAR",
+   "approx": true
+  }
+ },
+ {
+  "file": "captures/sticks.png",
+  "game": "win-games",
+  "caption": "Sticks khi vừa mở. Chụp lại ngày 11/11/2026, chạy từ thư mục game trên ổ D: của anh.",
+  "event": {
+   "date": "2003",
+   "precision": "YEAR",
+   "approx": true
+  }
+ },
+ {
+  "file": "captures/tictactics.png",
+  "game": "win-games",
+  "caption": "TicTactics khi vừa mở. Chụp lại ngày 11/11/2026, chạy từ thư mục game trên ổ D: của anh.",
+  "event": {
+   "date": "2003",
+   "precision": "YEAR",
+   "approx": true
+  }
+ },
+ {
+  "file": "captures/wordzap.png",
+  "game": "win-games",
+  "caption": "WordZap khi vừa mở. Chụp lại ngày 11/11/2026, chạy từ thư mục game trên ổ D: của anh.",
+  "event": {
+   "date": "2003",
+   "precision": "YEAR",
+   "approx": true
+  }
+ },
+ {
+  "file": "captures/lines98.png",
+  "game": "lines-98",
+  "caption": "Lines 98 khi vừa mở. Chụp lại ngày 11/11/2026, chạy từ thư mục game trên ổ D: của anh.",
+  "event": {
+   "date": "2001",
+   "precision": "YEAR",
+   "approx": true
+  }
+ },
+ {
+  "file": "captures/pikachu.png",
+  "game": "pikachu",
+  "caption": "Pikachu (Kawai 2003) khi vừa mở. Chụp lại ngày 11/11/2026, chạy từ thư mục game trên ổ D: của anh.",
+  "event": {
+   "date": "2001",
+   "precision": "YEAR",
+   "approx": true
+  }
+ },
+ {
+  "file": "captures/tripeaks.png",
+  "game": "tripeaks",
+  "caption": "TriPeaks khi vừa mở. Chụp lại ngày 11/11/2026, chạy từ thư mục game trên ổ D: của anh.",
+  "event": {
+   "date": "2003",
+   "precision": "YEAR",
+   "approx": true
+  }
+ },
+ {
+  "file": "captures/blackjack.png",
+  "game": "win-games",
+  "caption": "BlackJack khi vừa mở. Chụp lại ngày 11/11/2026, chạy từ thư mục game trên ổ D: của anh.",
+  "event": {
+   "date": "2003",
+   "precision": "YEAR",
+   "approx": true
+  }
+ },
+ {
+  "file": "captures/minesweeper.png",
+  "game": "minesweeper",
+  "caption": "Minesweeper khi vừa mở. Chụp lại ngày 11/11/2026, chạy từ thư mục game trên ổ D: của anh.",
+  "event": {
+   "date": "2001",
+   "precision": "YEAR",
+   "approx": true
+  }
+ },
+ {
+  "file": "captures/pinball.png",
+  "game": "space-cadet-pinball",
+  "caption": "3D Pinball for Windows – Space Cadet khi vừa mở. Chụp lại ngày 11/11/2026, chạy từ thư mục game trên ổ D: của anh.",
+  "event": {
+   "date": "2005-10",
+   "precision": "MONTH",
+   "approx": true
+  }
+ },
+ {
+  "file": "captures/dxball2.png",
+  "game": "dx-ball-2",
+  "caption": "DX-Ball 2 khi vừa mở. Chụp lại ngày 11/11/2026, chạy từ thư mục game trên ổ D: của anh.",
+  "event": {
+   "date": "2011-08-04",
+   "precision": "DAY",
+   "approx": false
+  }
+ },
+ {
+  "file": "captures/s3k.png",
+  "game": "sonic-3-knuckles",
+  "caption": "Sonic & Knuckles Collection khi vừa mở. Chụp lại ngày 11/11/2026, chạy từ thư mục game trên ổ D: của anh.",
+  "event": {
+   "date": "2003-04-06",
+   "precision": "DAY",
+   "approx": false
+  }
+ },
+ {
+  "file": "captures/dao-vang.png",
+  "game": "dao-vang",
+  "caption": "Đào vàng khi vừa mở. Chụp lại ngày 11/11/2026, chạy từ thư mục game trên ổ D: của anh.",
+  "event": {
+   "date": "2004-11-16",
+   "precision": "DAY",
+   "approx": false
+  }
+ },
+ {
+  "file": "captures/bloxorz.png",
+  "game": "bloxorz",
+  "caption": "Bloxorz khi vừa mở. Chụp lại ngày 11/11/2026, chạy từ thư mục game trên ổ D: của anh.",
+  "event": {
+   "date": "2010-09-10",
+   "precision": "DAY",
+   "approx": false
+  }
+ },
+ {
+  "file": "captures/doodle-god.png",
+  "game": "doodle-god",
+  "caption": "Doodle God khi vừa mở. Chụp lại ngày 11/11/2026, chạy từ thư mục game trên ổ D: của anh.",
+  "event": {
+   "date": "2011-04-15",
+   "precision": "DAY",
+   "approx": false
+  }
+ },
+ {
+  "file": "captures/doodle-devil.png",
+  "game": "doodle-devil",
+  "caption": "Doodle Devil khi vừa mở. Chụp lại ngày 11/11/2026, chạy từ thư mục game trên ổ D: của anh.",
+  "event": {
+   "date": "2010-11-24",
+   "precision": "DAY",
+   "approx": false
+  }
+ }
+]
