@@ -466,5 +466,29 @@
   "mediaId": "853dd372-9523-414a-9e5d-fdad5bbe9cde",
   "game": "doodle-devil",
   "role": "SCREENSHOT"
+ },
+ {
+  "file": "captures/mario-luigi-title.png",
+  "mediaId": "547a13b4-b375-4f25-96a0-704d2132275a",
+  "game": "mario-luigi",
+  "role": "SCREENSHOT"
+ },
+ {
+  "file": "captures/mario-luigi-play.png",
+  "mediaId": "3b254ded-34ff-4309-aead-de0c16ffdd46",
+  "game": "mario-luigi",
+  "role": "SCREENSHOT"
+ },
+ {
+  "file": "captures/skifree.png",
+  "mediaId": "71dc8f9f-d6f3-4b06-9628-50541c4aa9d6",
+  "game": "win-games",
+  "role": "SCREENSHOT"
+ },
+ {
+  "file": "captures/fujigolf.png",
+  "mediaId": "fdae95ae-7532-4319-be31-57ecad352eb2",
+  "game": "win-games",
+  "role": "SCREENSHOT"
  }
 ]
