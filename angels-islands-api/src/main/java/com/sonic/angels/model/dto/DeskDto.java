@@ -29,7 +29,8 @@ public final class DeskDto {
     public record WallpaperIn(String key, String device, String place, String media, String builtin, String fit, String color,
                               Boolean isDefault, String from, String to, String note, String source) {}
 
-    /** No device = on every computer (or every phone for HOME / DOCK). */
+    /** No device = on every computer of his own (or every phone for HOME / DOCK); a machine that was elsewhere has only
+     *  its own items. */
     public record ItemIn(String key, String device, String place, String label, String glyph, String app, String target,
                          Integer sort, String from, String to, String note, String source) {}
 
