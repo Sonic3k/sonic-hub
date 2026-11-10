@@ -6,7 +6,8 @@
 <title>Windows game</title>
 <!-- A Windows game (Windows 3.1 or 9x) in Boxedwine: Wine and an x86 machine in WebAssembly, run in this page. The game
      windows of Sonic Hub open it in a frame: ?rt=<the hub's /api/game-runtime/>&zip=<the game's folder, zipped>
-     &dir=<its folder in the zip>&exe=<program, from that folder>[&res=640x480].
+     &dir=<its folder in the zip>&exe=<program, from that folder>[&res=640x480][&bpp=8][&win=FILE.DAT,…: files of its
+     folder that it wants in the Windows directory, put there before it starts].
      Boxedwine's engine (the 2020 web build of boxedwine.org) and the Wine files it starts from (Wine 1.7.55, cut down
      to what his games use) come from the hub: /api/game-runtime/<name>.
      Wine draws its own desktop with the game's window on it; only that window is shown, without Wine's title bar (the
@@ -28,6 +29,7 @@
   const RT = (Q.get('rt') || '/api/game-runtime/').replace(/\/?$/, '/');
   const ENGINE = 'boxedwine-2020', ROOT = 'winroot-v1.zip';
   const ZIP = Q.get('zip') || '', DIR = Q.get('dir') || '', EXE = (Q.get('exe') || '').replace(/\\/g, '/'), RES = Q.get('res');
+  const BPP = Q.get('bpp'), TO_WINDOWS = (Q.get('win') || '').split(',').filter(n => /^[\w.-]+$/.test(n));
   const canvas = document.getElementById('canvas'), crop = document.getElementById('crop'), wait = document.getElementById('wait');
   canvas.width = 800; canvas.height = 600;
 
@@ -48,6 +50,7 @@
     const work = '/home/username/.wine/dosdevices/d:/' + [DIR, cut > 0 ? EXE.slice(0, cut) : ''].filter(Boolean).join('/');
     const a = ['-root', '/root/base', '-mount_drive', '/root/files/', 'd', '-nozip'];
     if (RES) a.push('-resolution', RES);
+    if (BPP) a.push('-bpp', BPP);
     return a.concat(['-w', work, '/bin/wine', EXE.slice(cut + 1)]);
   }
 
@@ -71,6 +74,10 @@
                 mfs.mount('/root/files', homeFs);
                 BrowserFS.initialize(mfs);
                 FS.mount(new BrowserFS.EmscriptenFS(), { root: '/root' }, '/root');
+                /* a game that keeps a file in C:\\WINDOWS (FujiGolf's course) finds it there, as on his machine */
+                for (const n of TO_WINDOWS) {
+                  try { FS.writeFile('/root/base/home/username/.wine/drive_c/windows/' + n, FS.readFile('/root/files/' + (DIR ? DIR + '/' : '') + n)); } catch { /* it will ask, as before */ }
+                }
                 for (const a of args()) Module.arguments.push(a);
                 Module.removeRunDependency('win-fs');
               });
@@ -136,14 +143,23 @@
     canvas.style.left = `${-x * s}px`;
     canvas.style.top = `${-y * s}px`;
   }
+  /* A game that paints only once the pointer has moved over it (SkiFree stays a white slope until then) gets that
+     first move here, across the middle of its window. */
+  function nudge() {
+    const b = crop.getBoundingClientRect();
+    for (const dx of [-6, 0, 6]) canvas.dispatchEvent(new MouseEvent('mousemove',
+      { clientX: b.left + b.width / 2 + dx, clientY: b.top + b.height / 2, bubbles: true, cancelable: true, view: window }));
+  }
   function tick() {
     const r = region();
     const key = r && r.join(',');
     if (key && key === seen) seenTimes++; else { seen = key; seenTimes = 0; }
     if (r && seenTimes >= 1 && key !== (shown && shown.join(','))) {
+      const first = !shown;
       shown = r;
       crop.style.visibility = 'visible';
       wait.style.display = 'none';
+      if (first) setTimeout(nudge, 900);
     }
     fit();
   }

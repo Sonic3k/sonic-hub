@@ -20,7 +20,8 @@ API = os.environ.get("HUB_API", "https://angels-islands-api-production.up.railwa
 # PC Win 98 and PC Win XP; Sonic 3 & Knuckles from 2001 on PC Win 98 until PC Win XP was retired; every Flash game and
 # Pikachu (Kawai 2003) on the XP machines; Lines 98 and DYNA only on PC Win 98; PopCap and the heavier games only as
 # the icons that were on his desktops. Rescue Rover and Mario Brothers he only ever played in the computer room of his
-# school (11/11/2026): they are on that machine, not on PC Win 98.
+# school (11/11/2026): Rescue Rover is on that machine, not on PC Win 98; the Mario he meant was Mario & Luigi (Mike
+# Wiering), and Mario Brothers VGA is on none of his machines (it plays from the portal).
 
 # his own icons: key → (app, target, glyph); glyph None keeps the one he set ("exe:<key>" = the game's own icon,
 # "cut:<key>" = an icon cut out of one of his screenshots)
@@ -67,7 +68,7 @@ START = [
     ("games", "pc-old", "Textris", "textris", "dos", None, None, "Thư mục English ABC; “ENGLISH ABC” số 66 trong danh sách 100 trò, 2004; bảng điểm có tên anh ghi 01-10-03"),
     ("games", "pc-school", "Minesweeper", "minesweeper", "mine", None, None, "Theo anh: các game có sẵn của Windows 98"),
     ("games", "pc-school", "Rescue Rover", "rrover", "dos", None, None, SCHOOL),
-    ("games", "pc-school", "Mario Brothers", "mariobro", "dos", None, None, SCHOOL),
+    ("games", "pc-school", "Mario & Luigi", "mario-luigi", "dos", None, None, SCHOOL),
     ("games", "pc-old", "Sonic & Knuckles Collection", "s3k", "exe:s3k", "2001-01-01", None, "Theo anh: có từ năm 2001"),
     ("games", "pc-xp", "Minesweeper", "minesweeper", "mine", None, None, "Có sẵn trong Windows XP"),
     ("games", "pc-xp", "Sonic & Knuckles Collection", "s3k", "exe:s3k", None, None, "Theo anh: có tới khi thôi dùng PC Win XP"),
@@ -125,6 +126,7 @@ for dev in ("pc-xp", "pc-fujitsu"):
 GONE = [
     "pc-fujitsu/start/games/dave2", "pc-fujitsu/start/games/rrover",
     "pc-old/start/games/rrover", "pc-old/start/games/mariobro",      # only ever played at school
+    "pc-school/start/games/mariobro",      # the Mario of the school was Mario & Luigi; Mario Brothers VGA was on no machine of his
     "pc-hp/start/games/lionking", "pc-hp/start/games/dyna", "pc-hp/start/games/jazz", "pc-hp/start/games/riptide",
     "pc-hp/start/games/shadow", "pc-hp/start/games/bloxorz", "pc-hp/start/games/doodle-devil", "pc-hp/start/games/doodle-god",
 ]
