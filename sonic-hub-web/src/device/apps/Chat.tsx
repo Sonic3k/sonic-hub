@@ -31,6 +31,7 @@ export function Chat({ archiveId, variant, focusSeq, meName, grouped }: {
     queryFn: ({ pageParam }) => desk.messages(archiveId, at!, pageParam ?? null, 60),
     initialPageParam: null as number | null,
     getNextPageParam: p => (p.hasMore ? p.oldestSeq : undefined),
+    enabled: !!archiveId,
   });
   const items = useMemo(() => (q.data?.pages ?? []).slice().reverse().flatMap(p => p.items), [q.data]);
   const box = useRef<HTMLDivElement>(null), keep = useRef<{ h: number; t: number } | null>(null), first = useRef(true);
@@ -54,6 +55,7 @@ export function Chat({ archiveId, variant, focusSeq, meName, grouped }: {
     void q.fetchNextPage();
   };
 
+  if (!archiveId) return <div className="dv-chat-empty">Không còn lưu cuộc trò chuyện nào.</div>;
   if (q.isLoading) return <div className="dv-chat-empty">Đang tải…</div>;
   if (q.isError) return <div className="dv-chat-empty">Không mở được cuộc trò chuyện.</div>;
   if (!items.length) return <div className="dv-chat-empty">Chưa có tin nhắn nào tới lúc này.</div>;

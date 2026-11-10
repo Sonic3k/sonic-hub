@@ -21,7 +21,8 @@ API = os.environ.get("HUB_API", "https://angels-islands-api-production.up.railwa
 # Pikachu (Kawai 2003) on the XP machines; Lines 98 and DYNA only on PC Win 98; PopCap and the heavier games only as
 # the icons that were on his desktops.
 
-# his own icons: key → (app, target, glyph); glyph None keeps the one he set ("exe:<key>" = the game's own icon)
+# his own icons: key → (app, target, glyph); glyph None keeps the one he set ("exe:<key>" = the game's own icon,
+# "cut:<key>" = an icon cut out of one of his screenshots)
 UPGRADE = {
     "pc-old/desktop/_/006-lines-98": ("game", "lines98", "exe:lines98"),
     "pc-old/desktop/_/007-pikachu": ("gamecard", "pikachu", None),
@@ -32,6 +33,14 @@ UPGRADE = {
     "pc-xp/desktop/luxor": ("gamecard", "luxor", None),            # only Luxor 4 is left on D:, a later icon
     "pc-xp/desktop/chuzzle-deluxe": ("gamecard", "chuzzle", "exe:chuzzle"),
     "pc-xp/desktop/mad-caps": ("none", None, "exe:mad-caps"),
+    # icons cut out of his screenshots of 4/8 and 6/8/2007 (desk-src/cut_icons.py), drawn with the mark they had there
+    "pc-xp/desktop/jewel-quest": ("none", None, "cut:jewel-quest"),
+    "pc-xp/desktop/vietkey-2000": ("none", None, "cut:vietkey-xp"),
+    "pc-xp/desktop/bkav2006": ("none", None, "cut:bkav2006"),
+    "pc-fujitsu/desktop/2007-11/bkav2006": ("none", None, "cut:bkav2006"),
+    "pc-fujitsu/desktop/2007-05/vietkey-2000": ("none", None, "cut:vietkey-fj"),
+    "pc-fujitsu/desktop/2007-05/turbo-pascal": ("none", None, "cut:turbo-pascal"),
+    "pc-fujitsu/desktop/2007-05/boom-online": ("folder", "d720a144-fa0b-45c8-b03e-8aebdbac37bc", "cut:boom-online"),
     "pc-fujitsu/desktop/2005/006-grandmaster-chess": ("gamecard", "grandmaster-chess", None),
     "pc-fujitsu/desktop/2005/007-shortcut-to-chiec-non-ky-dieu": ("game", "chiec-non", "exe:chiec-non"),
     "pc-fujitsu/desktop/2005/008-feeding-frenzy": ("gamecard", "feeding-frenzy", "exe:feeding-frenzy"),
@@ -92,7 +101,7 @@ SHORTCUT_ONLY = [
     ("games", "pc-hp", "Warcraft III: The Frozen Throne", "warcraft-3", "exe:frozen-throne", "2009-04-23", "Thư mục WarCraft III (1.23)"),
     ("games", "pc-fujitsu", "Need for Speed II SE", "need-for-speed-2", "exe:nfs2", "2008-08-01", "Thư mục Need For Speed II SE trong [Sports]"),
     ("games", "pc-hp", "Mario Forever", "mario-forever", "exe:mario-forever", "2010-12-21", "Thư mục Mario Forever 5.0"),
-    ("games", "pc-xp", "Boom Online", "boom-online", "game-boom", "2007-05-01", "Theo anh: cài trên cả hai máy tháng 5/2007"),
+    ("games", "pc-xp", "Boom Online", "boom-online", "cut:boom-online", "2007-05-01", "Theo anh: cài trên cả hai máy tháng 5/2007"),
 ]
 # his [PopCap Game] folder (with Zuma and the Feeding Frenzy games, PopCap's too), on the XP machines only; Plants vs.
 # Zombies (2009) and Bejeweled 3 (2010) came out after those machines were put away

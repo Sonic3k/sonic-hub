@@ -4,18 +4,30 @@ import { createPortal } from 'react-dom';
 import type { Buddy } from '../../api';
 import { cdn } from '../../fb/api';
 import { ymText, type YmVer } from './strings';
-import { bgUrl, Sp, useYm } from './ui';
+import { Sp, useYm } from './ui';
 
-export interface CardAt { b: Buddy; top: number; left: number }
+/** where the buddy's row is, in the pixels of the machine's screen (host), or of the page when there is no screen */
+export interface CardAt { b: Buddy; top: number; left: number; host: HTMLElement | null }
+
+/** The row under the mouse, measured on the screen it is drawn on: that screen may be shown larger or smaller than
+ *  its pixels, and the card is drawn on it too, so it follows the list at any size. */
+export function cardAt(b: Buddy, row: HTMLElement): CardAt {
+  const r = row.getBoundingClientRect(), host = row.closest<HTMLElement>('.dv');
+  if (!host) return { b, top: r.top, left: r.left, host: null };
+  const o = host.getBoundingClientRect(), k = o.width / host.offsetWidth || 1;
+  return { b, top: (r.top - o.top) / k, left: (r.left - o.left) / k, host };
+}
 
 export function Card({ at, v, onEnter, onLeave, onChat }: { at: CardAt; v: YmVer; onEnter: () => void; onLeave: () => void; onChat: (b: Buddy) => void }) {
   const { a } = useYm();
   const t = ymText(v);
-  const { b } = at;
+  const { b, host } = at;
   const W = 252;
-  const left = Math.max(4, at.left - W + 2), top = Math.max(4, Math.min(at.top - 18, window.innerHeight - 190));
+  // beside the list, its top a little above the row (his screenshots); kept on the screen, above the taskbar
+  const room = host ? host.offsetHeight - 46 : window.innerHeight;
+  const left = Math.max(4, at.left - W - 1), top = Math.max(4, Math.min(at.top - 18, room - 196));
   return createPortal(
-    <div className="ym ym-card" style={{ left, top, width: W, ...bgUrl(a('skin/ContactCard/background.png')) }} onPointerEnter={onEnter} onPointerLeave={onLeave}>
+    <div className={`ym ym-card ${host ? 'in' : ''}`} style={{ left, top, width: W, borderImageSource: a('skin/ContactCard/background.png') ? `url("${a('skin/ContactCard/background.png')}")` : undefined }} onPointerEnter={onEnter} onPointerLeave={onLeave}>
       <div className="ym-card-h"><b>{b.name}</b>{b.ref.handle && b.ref.handle !== b.name && <span> ({b.ref.handle})</span>}<i>✕</i></div>
       <div className="ym-card-m">
         <button type="button" className="ym-card-pic" onClick={() => onChat(b)}>
@@ -35,6 +47,6 @@ export function Card({ at, v, onEnter, onLeave, onChat }: { at: CardAt; v: YmVer
       </div>
       <div className="ym-card-f">{t.cardOnline} <img src={a('skin/images/single_arrow_down.png')} alt="" /></div>
     </div>,
-    document.body,
+    host ?? document.body,
   );
 }

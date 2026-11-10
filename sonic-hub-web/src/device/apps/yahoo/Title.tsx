@@ -14,6 +14,7 @@ export function YahooTitle({ on, fallback }: { win: Win; on: boolean; fallback: 
   const v = ymVer(ver.yahoo);
   const [src, w, h] = v === 'YM9' ? [a('skin/theme/Yahoo!_Messenger.png'), 170, 17] : [a('skin/theme/Yahoo!_Messenger_aero.png'), 115, 19];
   if (v === 'YM8' || !GLASS.has(os) || !src) return <>{fallback}</>;
+  // its two states one above the other; narrower than its picture when the window is, so the buttons keep their place
   return <span className="ym-logo" role="img" aria-label="Yahoo! Messenger"
-    style={{ width: w, height: h, backgroundImage: `url("${src}")`, backgroundPosition: `0 ${on ? 0 : -h}px` }} />;
+    style={{ width: w, aspectRatio: `${w} / ${h}`, backgroundImage: `url("${src}")`, backgroundPosition: on ? '0 0' : '0 100%' }} />;
 }

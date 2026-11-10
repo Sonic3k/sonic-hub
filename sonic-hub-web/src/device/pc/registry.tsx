@@ -33,8 +33,8 @@ export const APPS: Record<string, AppDef> = {
   messenger: { title: () => 'Messenger', glyph: 'chat-blue', w: 940, h: 640,
     render: w => <FacebookSite path={str(w.arg.thread) ? `/messenger/${str(w.arg.thread)}` : '/messenger'} /> },
   yahoo: { title: () => 'Yahoo! Messenger', glyph: 'im-smile', w: 300, h: 760, render: () => <YahooList />, Title: YahooTitle },
-  im: { title: a => `${str(a.name) ?? ''} - Instant Message`, glyph: 'im-smile', w: 560, h: 500,
-    render: w => <YahooIm archiveId={str(w.arg.archiveId) ?? ''} name={str(w.arg.name) ?? ''} seq={num(w.arg.seq)} /> },
+  im: { title: a => `${str(a.name) ?? ''} - Instant Message`, glyph: 'im-smile', w: 600, h: 560,
+    render: w => <YahooIm archiveId={str(w.arg.archiveId) ?? ''} buddy={str(w.arg.buddy)} name={str(w.arg.name) ?? ''} seq={num(w.arg.seq)} /> },
   messages: { title: a => (a.platform === 'ZALO' ? 'Zalo' : 'Messages'), glyph: 'sms', w: 860, h: 580,
     render: w => <Messages platform={str(w.arg.platform) ?? 'SMS'} archiveId={str(w.arg.archiveId)} seq={num(w.arg.seq)} /> },
   box: { title: () => 'Problem with Shortcut', glyph: 'help', w: 420, h: 170, render: w => <MessageBox text={str(w.arg.text) ?? ''} /> },
@@ -71,8 +71,9 @@ export const gameSpec = (pkg: string, label?: string, glyph?: string | null): Wi
   return { app: 'game', arg: { pkg }, title: label ?? 'Game', glyph: glyph ?? 'game', w, h };
 };
 
-/** how wide his buddy list was in each Messenger (his screenshots of 2007, 2010, 2011 and 2013) */
-const YM_WIDTH: Record<string, number> = { YM8: 262, YM9: 250, YM10: 304, YM11: 352 };
+/** how wide his buddy list was in each Messenger, frame and all (measured on his screenshots of 6/8/2007, 2/9/2010,
+ *  22/8/2011 and 1/8/2013) */
+const YM_WIDTH: Record<string, number> = { YM8: 265, YM9: 250, YM10: 294, YM11: 345 };
 
 const box = (label: string): WinSpec => ({ app: 'box', arg: { text: `'${label}' is no longer on this computer.` }, title: label, w: 420, h: 170 });
 

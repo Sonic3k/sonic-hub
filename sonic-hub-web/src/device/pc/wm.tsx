@@ -26,7 +26,8 @@ const Ctx = createContext<Wm | null>(null);
 export const useWm = () => useContext(Ctx)!;
 
 /** scale: how much the screen is enlarged on the page (an old 800×600 screen shown bigger), so a drag follows the pointer */
-/** dockInset: room kept on the right for the gadgets, so a window docked right (the buddy list) sits beside them */
+/** dockInset: room kept on the right for the gadgets, so a window docked right (the buddy list) sits beside them;
+ *  docked, a window stands as tall as the screen allows unless it asks for a height (his buddy list did) */
 export function WmProvider({ apps, area, scale = 1, dockInset = 0, children }: {
   apps: Record<string, AppDef>; area: { w: number; h: number }; scale?: number; dockInset?: number; children: ReactNode;
 }) {
@@ -54,10 +55,10 @@ export function WmProvider({ apps, area, scale = 1, dockInset = 0, children }: {
     const n = cascade.current++ % 8, small = area.w < 760;
     const w = Math.min(spec.w ?? def.w, area.w - 16), h = Math.min(spec.h ?? def.h, area.h - 16);
     const dockRight = spec.dock === 'right' && !small;
-    const x = dockRight ? area.w - w - 12 - dockInset : spec.x ?? Math.max(8, Math.min(48 + n * 28 + (area.w > 1200 ? 120 : 0), area.w - w - 8));
-    const y = dockRight ? 10 : spec.y ?? Math.max(6, Math.min(24 + n * 26, area.h - h - 8));
+    const x = dockRight ? area.w - w - 10 - dockInset : spec.x ?? Math.max(8, Math.min(48 + n * 28 + (area.w > 1200 ? 120 : 0), area.w - w - 8));
+    const y = dockRight ? 4 : spec.y ?? Math.max(6, Math.min(24 + n * 26, area.h - h - 8));
     const win: Win = { id: `w${++seq.current}`, key, app: spec.app, arg, title: spec.title ?? def.title(arg), glyph: spec.glyph ?? def.glyph,
-      x, y, w, h: dockRight ? Math.min(area.h - 20, spec.h ?? def.h) : h, z: ++z.current, min: false, max: spec.max ?? small };
+      x, y, w, h: dockRight ? Math.min(area.h - 8, spec.h ?? area.h) : h, z: ++z.current, min: false, max: spec.max ?? small };
     winsRef.current = [...winsRef.current, win];
     setActive(win.id);
     setWins(ws => [...ws, win]);
