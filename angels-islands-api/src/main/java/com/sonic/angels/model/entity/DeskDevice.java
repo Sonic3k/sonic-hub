@@ -57,6 +57,11 @@ public class DeskDevice extends BaseEntity {
     @Column(name = "note", length = 2000)
     private String note;
 
+    /** A machine that was not his own (the school's computer room): never the machine a moment starts with, only one
+     *  to switch to beside his own. */
+    @Column(name = "elsewhere")
+    private Boolean elsewhere;
+
     @Enumerated(EnumType.STRING)
     @Column(name = "source", nullable = false, length = 16)
     private SocialSource source = SocialSource.REAL;
@@ -84,6 +89,8 @@ public class DeskDevice extends BaseEntity {
     public void setValidTo(LocalDateTime v) { this.validTo = v; }
     public String getNote() { return note; }
     public void setNote(String v) { this.note = v; }
+    public boolean isElsewhere() { return Boolean.TRUE.equals(elsewhere); }
+    public void setElsewhere(Boolean v) { this.elsewhere = v; }
     public SocialSource getSource() { return source; }
     public void setSource(SocialSource v) { this.source = v; }
 }

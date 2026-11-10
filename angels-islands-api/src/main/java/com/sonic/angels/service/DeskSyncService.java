@@ -125,6 +125,7 @@ public class DeskSyncService {
         if (created || it.has("to")) d.setValidTo(time(in.to(), w + ".to"));
         if (created || it.has("note")) d.setNote(cut(trim(in.note()), 2000));
         if (created || it.has("source")) d.setSource(SocialMediaService.source(in.source()));
+        if (created || it.has("elsewhere")) d.setElsewhere(Boolean.TRUE.equals(in.elsewhere()) ? Boolean.TRUE : null);
         deviceRepo.save(d);
         c.devices.put(key, d);
         c.count("devices", created ? "created" : "updated");
@@ -286,7 +287,7 @@ public class DeskSyncService {
             deviceRepo.loadAll().stream().sorted(Comparator.comparing(DeskDevice::getValidFrom, Comparator.nullsFirst(Comparator.naturalOrder())))
                 .map(d -> new DeskDto.DeviceIn(d.getExternalKey(), d.getKind().name(), d.getName(), d.getModel(),
                     d.getPhoto() == null ? null : d.getPhoto().getId().toString(), d.getScreenWidth(), d.getScreenHeight(),
-                    vn(d.getValidFrom()), vn(d.getValidTo()), d.getNote(), d.getSource().name())).toList(),
+                    vn(d.getValidFrom()), vn(d.getValidTo()), d.getNote(), d.getSource().name(), d.isElsewhere() ? Boolean.TRUE : null)).toList(),
             systemRepo.loadAll().stream().map(x -> new DeskDto.SystemIn(x.getExternalKey(), dk.apply(x.getDevice()), x.getOs().name(), x.getAccent(),
                 x.getLanguage(), vn(x.getValidFrom()), vn(x.getValidTo()), x.getNote(), x.getSource().name())).toList(),
             wallpaperRepo.loadAll().stream().map(x -> new DeskDto.WallpaperIn(x.getExternalKey(), dk.apply(x.getDevice()), x.getPlace().name(),

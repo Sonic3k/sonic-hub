@@ -104,7 +104,7 @@ public class DeskService {
     private DeskDto.Device device(DeskDevice d) {
         String photo = d.getPhoto() == null ? null : storage.buildCdnUrl(d.getPhoto().getStorageKey(), d.getPhoto().getStorageProvider());
         return new DeskDto.Device(d.getExternalKey(), d.getKind().name(), d.getName(), d.getModel(), photo, d.getScreenWidth(), d.getScreenHeight(),
-            d.getValidFrom(), d.getValidTo());
+            d.getValidFrom(), d.getValidTo(), d.isElsewhere());
     }
 
     // ── A moment ─────────────────────────────────────────────────────────────
@@ -121,20 +121,21 @@ public class DeskService {
         return new DeskDto.Moment(t, computer, phone, day(t), s.devices.stream().map(Dev::dto).toList());
     }
 
-    /** The computer (or phone) of T: the one asked for if its span covers T, else the one whose span covers T (the later
-     *  one when two do); before the first, the first. */
+    /** The computer (or phone) of T: the one asked for if its span covers T, else the one of his own whose span covers T
+     *  (the later one when two do); before the first, the first. A machine that was elsewhere (the school's) is only
+     *  ever the one asked for. */
     private DeskDto.Machine machine(Snapshot s, LocalDateTime t, boolean phone, String wanted) {
         List<Dev> mine = s.devices.stream().filter(d -> phone ? d.kind == DeskDevice.Kind.PHONE : d.kind != null && d.kind.computer()).toList();
         if (mine.isEmpty()) return null;
         Dev dev = null;
-        for (Dev d : mine) if (d.span.covers(t)) dev = d;               // sorted by start: the last that covers wins…
+        for (Dev d : mine) if (d.span.covers(t) && !d.dto.elsewhere()) dev = d;   // sorted by start: the last that covers wins…
         if (wanted != null)                                            // …unless another one he had then is asked for
             for (Dev d : mine) if (d.dto.key().equals(wanted) && d.span.covers(t)) dev = d;
         if (dev == null) {                                             // in a gap or past the end: the last one he had…
-            for (Dev d : mine) if (d.span.from == null || !d.span.from.isAfter(t)) dev = d;
+            for (Dev d : mine) if (!d.dto.elsewhere() && (d.span.from == null || !d.span.from.isAfter(t))) dev = d;
             if (dev == null) {                                         // …before the first: the first computer, no phone yet
                 if (phone) return null;
-                dev = mine.get(0);
+                dev = mine.stream().filter(d -> !d.dto.elsewhere()).findFirst().orElse(mine.get(0));
             }
         }
         UUID id = dev.id;
@@ -150,7 +151,7 @@ public class DeskService {
         s.apps.stream().filter(a -> a.span.covers(t) && (a.device == null || a.device.equals(id)))
             .sorted(Comparator.comparing((App a) -> a.device != null).thenComparing((x, y) -> Span.later(x.span, y.span)))
             .forEach(a -> apps.put(a.app, a.version));                  // a device's own row beats a general one; later beats earlier
-        Dev next = mine.stream().filter(d -> d.span.from != null && d.span.from.isAfter(t)).findFirst().orElse(null);
+        Dev next = mine.stream().filter(d -> !d.dto.elsewhere() && d.span.from != null && d.span.from.isAfter(t)).findFirst().orElse(null);
         return new DeskDto.Machine(dev.dto, sys, wall, lock, screen, items, apps, next == null ? null : next.dto);
     }
 

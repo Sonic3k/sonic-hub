@@ -40,6 +40,9 @@ public class GameDto {
         public boolean approx;
     }
 
+    /** A play that left a trace (a save, a score table, a settings file, his own words), with the game it belongs to. */
+    public record Trace(String gameKey, String gameTitle, Play play) {}
+
     public static class Link {
         public UUID id;
         public String kind, title, url, note;

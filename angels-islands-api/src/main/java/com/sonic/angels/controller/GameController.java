@@ -24,6 +24,7 @@ import java.util.UUID;
  * The game shelf ("Kệ game").
  *
  *   GET    /api/games                          every game as the shelf lists it
+ *   GET    /api/games/traces                   every play that left a trace (its evidence), oldest first, with its game
  *   GET    /api/games/{key}                    one game: plays, pictures, memories, notes, links, packages, where it plays
  *   PUT    /api/games/{key}                    create or update one game (GameIn)
  *   DELETE /api/games/{key}
@@ -60,6 +61,9 @@ public class GameController {
 
     @PostMapping("/games/sync")
     public GameDto.SyncResult sync(@RequestBody GameDto.Sync body) { return games.sync(body); }
+
+    @GetMapping("/games/traces")
+    public List<GameDto.Trace> traces() { return games.traces(); }
 
     @GetMapping("/games/{key}")
     public GameDto.Detail get(@PathVariable String key) { return games.detail(key); }
