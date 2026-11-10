@@ -4,8 +4,10 @@
 Each keeps the date the file was written (lastModified), gets a caption, and is listed in uploads.json with the game it
 belongs to; push_to_hub.py links it to that game as a SCREENSHOT. BMP and TGA are turned into PNG first.
 
-CAPTURES are pictures taken now of what his own files still show (a score table with his name read by the game itself,
-run from his folder): kept in captures/, dated the day they were taken, their caption says so.
+CAPTURES (captures/captures.json) are pictures taken now of what his own files still show — a game's opening screen, a
+moment of play, a score table with his name read by the game itself — run from his folders inside the old machines
+(captures/capture_games.py, capture_dos.py, make_manifest.py). Their file date is the day they were taken and their
+caption says so; their event date is the play they belong to, so they sit in the photo library in that period.
 
   python3 upload_shots.py /mnt/user-data/uploads/Games      (needs pillow, requests)
 """
@@ -60,12 +62,9 @@ SHOTS = [
 ]
 
 
-# file under captures/, when it was taken (ms), game, caption
-CAPTURES = [
-    ("captures/textris-best-scores.png", 1794326400000, "textris",
-     "Bảng Best Scores của Textris đọc từ file TEXTRIS.SCO trên ổ D: của anh: NGOC ANH 1.029 điểm ghi 01-10-03 (10/01/2003), "
-     "trên cùng là Chelsea 1.210 điểm ghi 11-09-03. Chụp lại ngày 10/11/2026 khi chạy game bằng chính thư mục English ABC."),
-]
+# captures/captures.json: the pictures taken now of what his own files still show, each with its game, its caption and
+# the date of the moment it shows (event: the day of the play it belongs to, or the years of that machine)
+CAPTURES = json.load(open(os.path.join(HERE, "captures", "captures.json"), encoding="utf-8"))
 
 
 def album():
@@ -81,13 +80,10 @@ def album():
 
 def main(root):
     col = album()
-    done = {u["file"]: u for u in json.load(open(os.path.join(HERE, "uploads.json")))} if os.path.exists(os.path.join(HERE, "uploads.json")) else {}
-    for rel, mtime, game, caption in SHOTS + CAPTURES:
-        if rel in done:
-            continue
-        path = os.path.join(HERE if rel.startswith("captures/") else root, rel)
-        if mtime is None:
-            mtime = int(os.path.getmtime(path) * 1000)
+    store = os.path.join(HERE, "uploads.json")
+    done = {u["file"]: u for u in json.load(open(store))} if os.path.exists(store) else {}
+
+    def send(rel, path, mtime, game):
         name = os.path.basename(rel)
         data = open(path, "rb").read()
         if name.lower().endswith((".bmp", ".tga")):
@@ -98,14 +94,27 @@ def main(root):
                           data={"collectionId": col, "lastModified": str(mtime)})
         if not r.ok:
             print("failed", rel, r.status_code, r.text[:300])
-            continue
+            return None
         out = r.json()
         m = out.get("media") or out.get("existing")
-        requests.patch(f"{API}/media-files/{m['id']}", json={"caption": caption}, timeout=60).raise_for_status()
         done[rel] = {"file": rel, "mediaId": m["id"], "game": game, "role": "SCREENSHOT"}
+        json.dump(list(done.values()), open(store, "w"), indent=1, ensure_ascii=False)
         print(game, m["id"], "duplicate" if out.get("duplicate") else "new")
-        json.dump(list(done.values()), open(os.path.join(HERE, "uploads.json"), "w"), indent=1, ensure_ascii=False)
-    json.dump(list(done.values()), open(os.path.join(HERE, "uploads.json"), "w"), indent=1, ensure_ascii=False)
+        return m["id"]
+
+    for rel, mtime, game, caption in SHOTS:
+        if rel in done:
+            continue
+        path = os.path.join(root, rel)
+        mid = send(rel, path, mtime if mtime is not None else int(os.path.getmtime(path) * 1000), game)
+        if mid:
+            requests.patch(f"{API}/media-files/{mid}", json={"caption": caption}, timeout=60).raise_for_status()
+    for c in CAPTURES:       # a capture keeps the day it was taken as its file date; the moment it shows is its event date
+        path = os.path.join(HERE, c["file"])
+        mid = done[c["file"]]["mediaId"] if c["file"] in done else send(c["file"], path, int(os.path.getmtime(path) * 1000), c["game"])
+        if mid:
+            requests.patch(f"{API}/media-files/{mid}", json={"caption": c["caption"], "event": c["event"]}, timeout=60).raise_for_status()
+    json.dump(list(done.values()), open(store, "w"), indent=1, ensure_ascii=False)
 
 
 if __name__ == "__main__":
