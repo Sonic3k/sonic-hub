@@ -94,9 +94,7 @@
   "game": "mario-brothers-vga",
   "caption": "Màn hình mở đầu của Mario Brothers VGA. Chụp lại ngày 11/11/2026, chạy từ thư mục game trên ổ D: của anh.",
   "event": {
-   "date": "2003",
-   "precision": "YEAR",
-   "approx": true
+   "date": null
   }
  },
  {
@@ -104,9 +102,7 @@
   "game": "mario-brothers-vga",
   "caption": "Mario Brothers VGA, lúc vào chơi. Chụp lại ngày 11/11/2026, chạy từ thư mục game trên ổ D: của anh.",
   "event": {
-   "date": "2003",
-   "precision": "YEAR",
-   "approx": true
+   "date": null
   }
  },
  {
@@ -247,6 +243,26 @@
    "date": "2003-01-10",
    "precision": "DAY",
    "approx": false
+  }
+ },
+ {
+  "file": "captures/mario-luigi-title.png",
+  "game": "mario-luigi",
+  "caption": "Màn hình mở đầu của Mario & Luigi. Chụp lại ngày 11/11/2026, chạy từ thư mục game trên ổ D: của anh.",
+  "event": {
+   "date": "2003",
+   "precision": "YEAR",
+   "approx": true
+  }
+ },
+ {
+  "file": "captures/mario-luigi-play.png",
+  "game": "mario-luigi",
+  "caption": "Mario & Luigi, lúc vào chơi. Chụp lại ngày 11/11/2026, chạy từ thư mục game trên ổ D: của anh.",
+  "event": {
+   "date": "2003",
+   "precision": "YEAR",
+   "approx": true
   }
  },
  {
@@ -567,6 +583,26 @@
    "date": "2003-04-06",
    "precision": "DAY",
    "approx": false
+  }
+ },
+ {
+  "file": "captures/skifree.png",
+  "game": "win-games",
+  "caption": "SkiFree khi vừa mở. Chụp lại ngày 11/11/2026, chạy từ thư mục game trên ổ D: của anh.",
+  "event": {
+   "date": "2003",
+   "precision": "YEAR",
+   "approx": true
+  }
+ },
+ {
+  "file": "captures/fujigolf.png",
+  "game": "win-games",
+  "caption": "FujiGolf khi vừa mở. Chụp lại ngày 11/11/2026, chạy từ thư mục game trên ổ D: của anh.",
+  "event": {
+   "date": "2003",
+   "precision": "YEAR",
+   "approx": true
   }
  },
  {

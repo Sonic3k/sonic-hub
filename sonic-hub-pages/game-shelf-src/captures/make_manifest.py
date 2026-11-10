@@ -7,6 +7,7 @@ spec = importlib.util.spec_from_file_location("catalog", SRC + "/catalog.py"); c
 GAMES = {g["key"]: g for g in cat.GAMES}
 pk = {p["key"]: p for p in json.load(open("/home/claude/shots/school/pk.json"))}
 pk.setdefault("textris", {"gameKey": "textris", "title": "Textris"})
+pk.setdefault("mario-luigi", {"gameKey": "mario-luigi", "title": "Mario & Luigi"})
 TAIL = " Chụp lại ngày 11/11/2026, chạy từ thư mục game trên ổ D: của anh."
 DOS = {  # package: [(frame file, kind)]
  "dyna": [("cap2/dyna-title", "title"), ("cap2/dyna-d", "play")], "prince": [("cap2/prince-title", "title"), ("cap2/prince-play", "play")],
@@ -16,16 +17,21 @@ DOS = {  # package: [(frame file, kind)]
  "riptide": [("cap2/riptide-title", "title"), ("cap2/riptide-play", "play"), ("cap2/riptide-scores", "scores")],
  "shadow": [("cap2/shadow-title", "title"), ("cap2/shadow-play", "play")], "jazz": [("cap2/jazz-menu", "title"), ("cap2/jazz-d", "play")],
  "textris": [("cap2/textris-title", "title")],
+ "mario-luigi": [("cap2/mario-luigi-title", "title"), ("cap2/mario-luigi-play", "play")],
 }
 WIN = "chips jezzball tetravex taipei rodent maxwell gofigure dots fences pipe-dream golf cruel chess-win noughts amnesia codebreaker hangman jacks lifegen pegged rattler sticks tictactics wordzap lines98 pikachu".split()
 OTHER = {"tripeaks": "cap2/tripeaks-b", "blackjack": "cap2/blackjack-b", "minesweeper": "cap3/minesweeper_1", "pinball": "cap3/pinball_1",
-         "dxball2": "cap2/dxball2-b", "s3k": "cap2/s3k-b", "dao-vang": "cap/dao-vang_2", "bloxorz": "cap/bloxorz_2", "doodle-god": "cap/doodle-god_2", "doodle-devil": "cap2/doodle-devil-b"}
+         "dxball2": "cap2/dxball2-b", "s3k": "cap2/s3k-b", "skifree": "cap4/skifree_2", "fujigolf": "cap4/fujigolf_2", "dao-vang": "cap/dao-vang_2", "bloxorz": "cap/bloxorz_2", "doodle-god": "cap/doodle-god_2", "doodle-devil": "cap2/doodle-devil-b"}
 SCORES = {"riptide": "Bảng High scores của In Search of Dr. Riptide, đọc từ file HIGH.SCR của anh (ghi ngày 04/08/2012): Sonic3k đứng đầu với 235.550 điểm."}
 FALLBACK = {"pc-old": 2001, "pc-school": 2003, "pc-xp": 2006, "pc-fujitsu": 2006, "pc-hp": 2011}
+# on none of his machines (he said so, 11/11/2026): no period to date its pictures by
+NO_MACHINE = {"mariobro"}
 SPOT = {"dave2": "pc-old", "lionking": "pc-old", "fastfood": "pc-old", "mariobro": "pc-school", "dao-vang": "pc-xp", "bloxorz": "pc-xp", "doodle-god": "pc-xp", "doodle-devil": "pc-xp", "pinball": "pc-fujitsu"}
 
 def event(game, package):
     plays = sorted(GAMES[game].get("plays", []), key=lambda p: p["start"] if len(p["start"]) == 10 else p["start"] + "-99")
+    if not plays and package in NO_MACHINE:
+        return {"date": None}
     if not plays:
         return {"date": str(FALLBACK[SPOT.get(package, "pc-old")]), "precision": "YEAR", "approx": True}
     p = plays[0]; st = p["start"]
@@ -65,4 +71,4 @@ rows.insert(0, {"file": "captures/textris-best-scores.png", "game": "textris", "
                "NGOC ANH 1.029 điểm ghi 01-10-03 (10/01/2003); Everton và Fulham cũng là anh. Chụp lại ngày 10/11/2026, chạy từ thư mục English ABC."})
 json.dump(rows, open(out + "/captures.json", "w"), indent=1, ensure_ascii=False)
 print(len(rows)); 
-for r in rows: print(r["file"][9:], r["game"], r["event"]["date"], r["event"]["precision"], "~" if r["event"]["approx"] else "")
+for r in rows: print(r["file"][9:], r["game"], r["event"].get("date"), r["event"].get("precision"), "~" if r["event"].get("approx") else "")
