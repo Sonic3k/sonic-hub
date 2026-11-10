@@ -9,7 +9,7 @@ import { hub } from '../api/hub';
 import { cdn } from '../api/client';
 import Justified from '../components/Justified';
 import Viewer from '../components/Viewer';
-import type { GameCard, GameDetail, GamePlay, MediaFile } from '../types';
+import type { GameCard, GameDetail, GamePlay, GameTrace, MediaFile } from '../types';
 
 const T = 10 * 60_000;
 /** the memory that keeps his lists of games of 2004 (the homemade ones, the 50 sets, the numbered 100) */
@@ -27,7 +27,7 @@ const ERAS: { key: string; name: string; from: string; to: string; range: string
   { key: 'now', name: 'Từ 2023', from: '2023-01-01', to: '9999', range: '' },
 ];
 const DEVICES: Record<string, string> = {
-  'pc-old': 'PC Win 98', 'pc-xp': 'PC Win XP', 'pc-fujitsu': 'Fujitsu FMV', 'pc-hp': 'HP Pavilion', 'pc-asus': 'Asus N56',
+  'pc-old': 'PC Win 98', 'pc-school': 'PC trường Thống Nhất', 'pc-xp': 'PC Win XP', 'pc-fujitsu': 'Fujitsu FMV', 'pc-hp': 'HP Pavilion', 'pc-asus': 'Asus N56',
   'pc-thinkpad': 'Lenovo ThinkPad', 'pc-now': 'Laptop', 'phone-nokia': 'Nokia', 'phone-iphone6': 'iPhone 6s', 'phone-iphone11': 'iPhone 11', 'phone-iphone13': 'iPhone 13',
 };
 export const deviceName = (k?: string | null) => (k ? DEVICES[k] ?? k : '');
@@ -63,7 +63,7 @@ export function GamesIndex() {
     : view === 'homemade' ? mine.filter(own)
     : view === 'favorite' ? mine.filter(g => g.favorite)
     : device ? mine.filter(g => g.devices?.includes(device)) : null;
-  const title = view === 'play' ? 'Chơi được' : view === 'homemade' ? 'Game tự chế' : view === 'favorite' ? 'Yêu thích' : device ? deviceName(device) : 'Game';
+  const title = view === 'play' ? 'Chơi được' : view === 'homemade' ? 'Game tự chế' : view === 'favorite' ? 'Yêu thích' : view === 'traces' ? 'Dấu vết' : device ? deviceName(device) : 'Game';
   const listed = mine.filter(g => g.handOrder).sort((a, b) => (a.handOrder ?? 0) - (b.handOrder ?? 0));
 
   return (
@@ -72,7 +72,7 @@ export function GamesIndex() {
       <section className="lanes">
         <div>
           {games.isLoading && <div className="card empty">Đang mở kệ game…</div>}
-          {filtered ? (filtered.length ? <div className="g-grid">{[...filtered].sort(view === 'homemade' ? byYear : byPlay).map(g => <GameBox key={g.key} g={g} />)}</div>
+          {view === 'traces' ? <Traces /> : filtered ? (filtered.length ? <div className="g-grid">{[...filtered].sort(view === 'homemade' ? byYear : byPlay).map(g => <GameBox key={g.key} g={g} />)}</div>
             : !games.isLoading && <div className="card empty">Chưa có game nào ở đây.</div>)
             : <>
               {ERAS.map(e => { const gs = mine.filter(g => !own(g) && onShelf(g) && eraOf(g) === e.key).sort(byPlay); return gs.length > 0 && <Shelf key={e.key} name={e.name} range={e.range} games={gs} />; })}
@@ -86,6 +86,37 @@ export function GamesIndex() {
             {listed.map(g => <Link key={g.key} to={`/games/${g.key}`}><b>{g.handOrder}</b>{g.iconUrl && <img src={cdn(g.iconUrl, 64)} alt="" />}<span className="hand">{g.handName}</span><small>{g.title}</small></Link>)}</div>}
         </aside>
       </section>
+    </div>
+  );
+}
+
+/** Every play that left something behind — a save, a score table with his name, a settings file, his own words — in
+ *  the order it happened: what each game's page shows under "Những lần chơi", in one list. */
+function Traces() {
+  const q = useQuery({ queryKey: ['game-traces'], queryFn: hub.gameTraces, staleTime: T });
+  const years = useMemo(() => {
+    const out: [string, GameTrace[]][] = [];
+    for (const t of q.data ?? []) {
+      const y = t.play.startAt.slice(0, 4), last = out[out.length - 1];
+      if (last && last[0] === y) last[1].push(t); else out.push([y, [t]]);
+    }
+    return out;
+  }, [q.data]);
+  if (q.isLoading) return <div className="card empty">Đang tìm dấu vết…</div>;
+  return (
+    <div className="g-traces">
+      {years.map(([y, ts]) => <section key={y}>
+        <h5 className="mem-h">{y}</h5>
+        <ol className="g-plays">{ts.map(({ gameKey, gameTitle, play: p }) => <li key={p.id}>
+          <time>{playWhen(p)}</time>
+          <div>
+            <b><Link to={`/games/${gameKey}`}>{gameTitle}</Link></b>
+            {p.deviceKey ? <span className="g-via"><a href={pcHref(p.deviceKey, playAt(p))}>{p.deviceName || deviceName(p.deviceKey)}</a></span>
+              : p.via ? <span className="g-via">{p.via}</span> : null}
+            <p>{p.evidence}</p>
+          </div>
+        </li>)}</ol>
+      </section>)}
     </div>
   );
 }
@@ -129,6 +160,7 @@ export function GamesSide() {
       {mine.some(g => g.portal || g.machine) && <Link to="/games?view=play" className={view === 'play' ? 'on' : ''}>Chơi được</Link>}
       <Link to="/games?view=homemade" className={view === 'homemade' ? 'on' : ''}>Tự chế</Link>
       <Link to="/games?view=favorite" className={view === 'favorite' ? 'on' : ''}>Yêu thích</Link>
+      <Link to="/games?view=traces" className={view === 'traces' ? 'on' : ''}>Dấu vết</Link>
       {!!series.data?.length && <h4>Series</h4>}
       {series.data?.map(s => <Link key={s.key} to={`/games/series/${s.key}`} className={path === `/games/series/${s.key}` ? 'on' : ''}>{s.name}</Link>)}
       {devices.length > 0 && <h4>Chơi trên</h4>}

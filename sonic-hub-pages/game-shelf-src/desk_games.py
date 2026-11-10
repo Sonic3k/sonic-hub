@@ -19,7 +19,8 @@ API = os.environ.get("HUB_API", "https://angels-islands-api-production.up.railwa
 # Where his games are, by machine (his rules, 09/11/2026): DOS games only on PC Win 98; the games of [Win Games] on
 # PC Win 98 and PC Win XP; Sonic 3 & Knuckles from 2001 on PC Win 98 until PC Win XP was retired; every Flash game and
 # Pikachu (Kawai 2003) on the XP machines; Lines 98 and DYNA only on PC Win 98; PopCap and the heavier games only as
-# the icons that were on his desktops.
+# the icons that were on his desktops. Rescue Rover and Mario Brothers he only ever played in the computer room of his
+# school (11/11/2026): they are on that machine, not on PC Win 98.
 
 # his own icons: key → (app, target, glyph); glyph None keeps the one he set ("exe:<key>" = the game's own icon,
 # "cut:<key>" = an icon cut out of one of his screenshots)
@@ -49,6 +50,8 @@ UPGRADE = {
 }
 
 WIN98, XP = "Theo anh: game DOS chỉ chơi trên PC Win 98", "Theo anh: game Flash ở các máy Windows XP"
+# the computer room of his school (desk-src/school_pc.py): the games he could only play there (said 11/11/2026)
+SCHOOL = "Theo anh: không được chơi ở nhà, chỉ chơi trong giờ tin học ở trường THCS Thống Nhất"
 # folder of Programs, device, label, package, glyph, from, to, note  (key: <device>/start/<folder>/<package>)
 START = [
     ("games", "pc-old", "Minesweeper", "minesweeper", "mine", None, None, "Có sẵn trong Windows 98"),
@@ -58,12 +61,13 @@ START = [
     ("games", "pc-old", "Dangerous Dave", "dave2", "dos", None, None, "“DAVE” số 65 trong danh sách 100 trò, 2004"),
     ("games", "pc-old", "Jazz Jackrabbit", "jazz", "dos", None, None, "“JAZZ” số 23 trong danh sách 100 trò, 2004"),
     ("games", "pc-old", "The Lion King", "lionking", "dos", None, None, "“LIONKING” số 69 trong danh sách 100 trò, 2004"),
-    ("games", "pc-old", "Mario Brothers", "mariobro", "dos", None, None, "Thư mục mariobro trong [DOS Games]"),
     ("games", "pc-old", "Fast Food", "fastfood", "dos", None, None, "Thư mục fastfood trong [DOS Games]"),
-    ("games", "pc-old", "Rescue Rover", "rrover", "dos", None, None, WIN98),
     ("games", "pc-old", "In Search of Dr. Riptide", "riptide", "dos", None, None, WIN98),
     ("games", "pc-old", "Shadow Knights", "shadow", "dos", None, None, "“NINJA” số 64 trong danh sách 100 trò, 2004"),
     ("games", "pc-old", "Textris", "textris", "dos", None, None, "Thư mục English ABC; “ENGLISH ABC” số 66 trong danh sách 100 trò, 2004; bảng điểm có tên anh ghi 01-10-03"),
+    ("games", "pc-school", "Minesweeper", "minesweeper", "mine", None, None, "Theo anh: các game có sẵn của Windows 98"),
+    ("games", "pc-school", "Rescue Rover", "rrover", "dos", None, None, SCHOOL),
+    ("games", "pc-school", "Mario Brothers", "mariobro", "dos", None, None, SCHOOL),
     ("games", "pc-old", "Sonic & Knuckles Collection", "s3k", "exe:s3k", "2001-01-01", None, "Theo anh: có từ năm 2001"),
     ("games", "pc-xp", "Minesweeper", "minesweeper", "mine", None, None, "Có sẵn trong Windows XP"),
     ("games", "pc-xp", "Sonic & Knuckles Collection", "s3k", "exe:s3k", None, None, "Theo anh: có tới khi thôi dùng PC Win XP"),
@@ -108,10 +112,10 @@ SHORTCUT_ONLY = [
 # Zombies (2009) and Bejeweled 3 (2010) came out after those machines were put away
 POPCAP = [
     ("AstroPop Deluxe", None, "astropop"), ("Bejeweled 2 Deluxe", "bejeweled-2", "bejeweled-2"), ("Big Money Deluxe", "big-money", "big-money"),
-    ("BookWorm Deluxe", None, "bookworm"), ("Bookworm Adventures Deluxe", None, "bookworm-adventures"), ("Chuzzle Deluxe", "chuzzle", "chuzzle"),
+    ("BookWorm Deluxe", None, "bookworm"), ("Bookworm Adventures Deluxe", "bookworm-adventures", "bookworm-adventures"), ("Chuzzle Deluxe", "chuzzle", "chuzzle"),
     ("Dynomite Deluxe", "dynomite", "dynomite"), ("Feeding Frenzy", "feeding-frenzy", "feeding-frenzy"), ("Feeding Frenzy 2", None, "feeding-frenzy-2"),
-    ("Iggle Pop Deluxe", None, "iggle-pop"), ("Insaniquarium Deluxe", None, "insaniquarium"), ("Mummy Maze Deluxe", "mummy-maze", "mummy-maze"),
-    ("Noah's Ark Deluxe", None, "noahs-ark"), ("Seven Seas Deluxe", None, "seven-seas"), ("TipTop Deluxe", None, "tiptop"), ("Zuma Deluxe", None, "zuma"),
+    ("Iggle Pop Deluxe", None, "iggle-pop"), ("Insaniquarium Deluxe", "insaniquarium", "insaniquarium"), ("Mummy Maze Deluxe", "mummy-maze", "mummy-maze"),
+    ("Noah's Ark Deluxe", None, "noahs-ark"), ("Seven Seas Deluxe", "seven-seas", "seven-seas"), ("TipTop Deluxe", None, "tiptop"), ("Zuma Deluxe", None, "zuma"),
 ]
 for dev in ("pc-xp", "pc-fujitsu"):
     for label, card, icon in POPCAP:
@@ -120,6 +124,7 @@ for dev in ("pc-xp", "pc-fujitsu"):
 # entries that were put elsewhere before and are not there any more
 GONE = [
     "pc-fujitsu/start/games/dave2", "pc-fujitsu/start/games/rrover",
+    "pc-old/start/games/rrover", "pc-old/start/games/mariobro",      # only ever played at school
     "pc-hp/start/games/lionking", "pc-hp/start/games/dyna", "pc-hp/start/games/jazz", "pc-hp/start/games/riptide",
     "pc-hp/start/games/shadow", "pc-hp/start/games/bloxorz", "pc-hp/start/games/doodle-devil", "pc-hp/start/games/doodle-god",
 ]

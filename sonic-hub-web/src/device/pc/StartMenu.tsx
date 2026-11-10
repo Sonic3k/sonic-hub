@@ -102,7 +102,8 @@ export function StartMenu({ onClose }: { onClose: () => void }) {
 interface P { pick: (it: It) => void; onClose: () => void }
 
 function Start98({ pick }: P) {
-  const { shutdown } = useDesk();
+  const { shutdown, machine } = useDesk();
+  const away = !!machine.device.elsewhere;
   const { pinned, programs, folders } = useLists();
   const [sub, setSub] = useState(false);
   return (
@@ -118,7 +119,7 @@ function Start98({ pick }: P) {
             {programs.map(it => <Row key={it.key} it={it} onPick={pick} />)}</div>}
         </div>
         <Row it={{ key: 'd', label: 'Documents', glyph: 'documents', app: 'documents' }} size={24} onPick={pick} />
-        <Row it={{ key: 'p', label: 'Pictures', glyph: 'folder-pictures', app: 'pictures' }} size={24} onPick={pick} />
+        {!away && <Row it={{ key: 'p', label: 'Pictures', glyph: 'folder-pictures', app: 'pictures' }} size={24} onPick={pick} />}
         <Row it={{ key: 's', label: 'Settings', glyph: 'control', app: 'control' }} size={24} onPick={pick} />
         <hr />
         <button type="button" className="dv-sm-row" onClick={shutdown}><Glyph name="computer" size={24} /><span><b>Shut Down…</b></span></button>

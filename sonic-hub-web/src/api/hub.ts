@@ -1,5 +1,5 @@
 import { apiUrl, get } from './client';
-import type { GameCard, GameDetail, GamePackage, GameSeries, Chapter, LifeEvent, LifeEventAt, LifeEventDetail, ChatArchive, ChatBoard, ChatStats, RandomMemory, ChatAttachment, ChatMessage, Collection, Episode, Fact, Forum, ForumBoard, ForumMember, ForumPage, ForumPostHit, ForumThread, ForumThreadDetail, MediaFile, MysticBrief, Note, Paged, Person, PersonDetail, PersonForum, PersonRanking, RankingDetail, SeriesPart, Tag, TagStats, TimelineBucket, Trait } from '../types';
+import type { GameCard, GameDetail, GamePackage, GameSeries, GameTrace, Chapter, LifeEvent, LifeEventAt, LifeEventDetail, ChatArchive, ChatBoard, ChatStats, RandomMemory, ChatAttachment, ChatMessage, Collection, Episode, Fact, Forum, ForumBoard, ForumMember, ForumPage, ForumPostHit, ForumThread, ForumThreadDetail, MediaFile, MysticBrief, Note, Paged, Person, PersonDetail, PersonForum, PersonRanking, RankingDetail, SeriesPart, Tag, TagStats, TimelineBucket, Trait } from '../types';
 import { isoDay, addDays } from '../lib/date';
 
 export interface Search {
@@ -11,6 +11,7 @@ export interface Search {
 export const hub = {
   games: () => get<GameCard[]>('/games'),
   game: (key: string) => get<GameDetail>(`/games/${encodeURIComponent(key)}`),
+  gameTraces: () => get<GameTrace[]>('/games/traces'),
   gameSeries: () => get<GameSeries[]>('/game-series'),
   gameSeriesOne: (key: string) => get<GameSeries>(`/game-series/${encodeURIComponent(key)}`),
   gamePackage: (key: string) => get<GamePackage>(`/game-packages/${encodeURIComponent(key)}`),
