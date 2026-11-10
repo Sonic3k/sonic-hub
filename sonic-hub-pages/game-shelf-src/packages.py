@@ -37,7 +37,8 @@ DOS = [
     ("lionking", "lion-king", "The Lion King", "lionking", "LIONKING.EXE", 5, "Theo LIONKING.CFG của anh: Sound Blaster 220, IRQ 5, DMA 1"),
     ("mariobro", "mario-brothers-vga", "Mario Brothers VGA", "mariobro", "MARIO.EXE", 7, None),
     ("hexx", "hexxagon", "Hexxagon", "hexx", "HEXX.EXE", 7, None),
-    ("rrover", "rescue-rover", "Rescue Rover", "rrover", "ROVER.EXE", 7, "Kèm bản lưu SAVEGAME.ROV ngày 04/08/2008"),
+    # ROVER.EXE refuses to run on its own ("You must type START at the DOS prompt"): START.EXE is Softdisk's opening menu
+    ("rrover", "rescue-rover", "Rescue Rover", "rrover", "START.EXE", 7, "Kèm bản lưu SAVEGAME.ROV ngày 04/08/2008"),
     ("fastfood", "fast-food", "Fast Food", "fastfood", "FASTFOOD.EXE", 7, None),
     ("jazz", "jazz-jackrabbit", "Jazz Jackrabbit", "jazz", "JAZZ.EXE", 7,
      "Bản CD cài đủ (không có các game tặng kèm), cấu hình âm thanh anh đặt khi chơi lại trên DOSBox ngày 04/08/2012"),
