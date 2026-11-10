@@ -6,7 +6,7 @@ import { gamesApi, type GameDetail, type GameIn, type GameLink, type PlayIn } fr
 const KINDS = ['OFFICIAL', 'FAN', 'HOMEMADE', 'REMAKE']
 const PRECISIONS = ['DAY', 'MONTH', 'SEASON', 'YEAR']
 const LINK_KINDS = ['WALKTHROUGH', 'LONGPLAY', 'WIKI', 'MANUAL', 'OFFICIAL', 'PLAY', 'SOUNDTRACK', 'VIDEO', 'OTHER']
-const DEVICES = ['', 'pc-old', 'pc-xp', 'pc-fujitsu', 'pc-hp', 'pc-asus', 'pc-thinkpad', 'pc-now', 'phone-nokia', 'phone-iphone6', 'phone-iphone11', 'phone-iphone13']
+const DEVICES = ['', 'pc-old', 'pc-school', 'pc-xp', 'pc-fujitsu', 'pc-hp', 'pc-asus', 'pc-thinkpad', 'pc-now', 'phone-nokia', 'phone-iphone6', 'phone-iphone11', 'phone-iphone13']
 const input = 'w-full rounded-lg border border-slate-200 px-2.5 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-violet-200'
 const label = 'block text-[11px] font-medium uppercase tracking-wide text-slate-400 mb-1'
 

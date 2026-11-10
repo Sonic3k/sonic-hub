@@ -14,7 +14,7 @@ import { useNavClick } from '../skin';
 import { useWinTitle } from '../pc/Window';
 import { putSet, type ViewerPhoto } from './sets';
 
-export type Loc = { view: 'computer' | 'folder' | 'documents' | 'angels' | 'angel' | 'recycle'; id?: string; name?: string };
+export type Loc = { view: 'computer' | 'folder' | 'documents' | 'angels' | 'angel' | 'recycle' | 'drive'; id?: string; name?: string };
 
 const PLATFORM_GLYPH: Record<string, string> = { YAHOO: 'im-smile', FACEBOOK: 'fb', SMS: 'sms', ZALO: 'chat-blue' };
 const toViewer = (m: MediaFile): ViewerPhoto => ({ id: m.id, url: pic(m, true), thumb: pic(m), caption: m.caption ?? m.fileName, at: m.effectiveDate ?? null });
@@ -22,17 +22,20 @@ const toViewer = (m: MediaFile): ViewerPhoto => ({ id: m.id, url: pic(m, true), 
 export function Explorer({ start }: { start: Loc }) {
   const [hist, setHist] = useState<{ list: Loc[]; i: number }>({ list: [start], i: 0 });
   const loc = hist.list[hist.i];
-  const { os } = useDesk();
+  const { os, machine } = useDesk();
+  /** a machine that was not his (the school's): its own drive, none of his folders */
+  const away = !!machine.device.elsewhere;
   const click = useNavClick(skinOf(os));
   const go = (l: Loc) => { click(); setHist(h => ({ list: [...h.list.slice(0, h.i + 1), l], i: h.i + 1 })); };
-  const places: [string, string, Loc][] = [
+  const all: [string, string, Loc][] = [
     ['Pictures', 'folder-pictures', { view: 'folder' }], ['Documents', 'documents', { view: 'documents' }],
     ['Angels', 'heart-folder', { view: 'angels' }], [os === 'WIN10' || os === 'WIN11' || os === 'WIN81' ? 'This PC' : os === 'WINXP' || os === 'WIN98' ? 'My Computer' : 'Computer', 'computer', { view: 'computer' }],
     ['Recycle Bin', 'recycle', { view: 'recycle' }],
   ];
+  const places = away ? all.slice(3) : all;
   const [crumbs, setCrumbs] = useState<{ id?: string; name: string }[]>([]);
-  const title = loc.name ?? (loc.view === 'folder' ? 'Pictures' : loc.view === 'documents' ? 'Documents' : loc.view === 'angels' ? 'Angels'
-    : loc.view === 'recycle' ? 'Recycle Bin' : places[3][0]);
+  const title = loc.name ?? (loc.view === 'folder' ? 'Pictures' : loc.view === 'documents' ? (away ? 'My Documents' : 'Documents') : loc.view === 'angels' ? 'Angels'
+    : loc.view === 'recycle' ? 'Recycle Bin' : all[3][0]);
   const [count, setCount] = useState(0);
   useWinTitle(title);
   return (
@@ -55,9 +58,10 @@ export function Explorer({ start }: { start: Loc }) {
           {places.map(([label, glyph, l]) => <button type="button" key={label} className={loc.view === l.view && !loc.id ? 'on' : ''} onClick={() => go(l)}><Glyph name={glyph} size={16} />{label}</button>)}
         </nav>
         <div className="dv-ex-view">
-          {loc.view === 'computer' && <Computer go={go} />}
-          {loc.view === 'folder' && <FolderView id={loc.id} go={go} onPath={setCrumbs} onCount={setCount} />}
-          {loc.view === 'documents' && <Documents onCount={setCount} />}
+          {loc.view === 'computer' && (away ? <AwayComputer go={go} /> : <Computer go={go} />)}
+          {loc.view === 'drive' && <AwayDrive folder={loc.id} go={go} />}
+          {loc.view === 'folder' && !away && <FolderView id={loc.id} go={go} onPath={setCrumbs} onCount={setCount} />}
+          {loc.view === 'documents' && (away ? <div className="dv-ex-empty">This folder is empty.</div> : <Documents onCount={setCount} />)}
           {loc.view === 'angels' && <Angels go={go} onCount={setCount} />}
           {loc.view === 'angel' && loc.id && <Angel id={loc.id} name={loc.name ?? ''} />}
           {loc.view === 'recycle' && <div className="dv-ex-empty">Recycle Bin is empty.</div>}
@@ -92,6 +96,31 @@ function Computer({ go }: { go: (l: Loc) => void }) {
       </div>
     </div>
   );
+}
+
+/** My Computer on a machine that was not his: its one drive. */
+function AwayComputer({ go }: { go: (l: Loc) => void }) {
+  return (
+    <div className="dv-ex-groups">
+      <h4>Hard Disk Drives</h4>
+      <div className="dv-ex-grid">
+        <Tile glyph="computer" label="(C:)" onOpen={() => go({ view: 'drive', name: '(C:)' })} />
+      </div>
+    </div>
+  );
+}
+
+/** That drive: the folder of DOS games the machine had (what its Start menu lists), each starting as there. */
+function AwayDrive({ folder, go }: { folder?: string; go: (l: Loc) => void }) {
+  const { machine, openItem } = useDesk();
+  if (!folder) return (
+    <div className="dv-ex-grid">
+      <Tile glyph="folder" label="Games" onOpen={() => go({ view: 'drive', id: 'games', name: 'Games' })} />
+      <Tile glyph="documents" label="My Documents" onOpen={() => go({ view: 'documents' })} />
+    </div>
+  );
+  const games = machine.items.filter(i => i.place === 'START' && i.app === 'game' && i.glyph === 'dos');
+  return <div className="dv-ex-grid">{games.map(g => <Tile key={g.key} glyph="dos" label={g.label} onOpen={() => openItem(g)} />)}</div>;
 }
 
 function FolderView({ id, go, onPath, onCount }: { id?: string; go: (l: Loc) => void; onPath: (c: { id?: string; name: string }[]) => void; onCount: (n: number) => void }) {

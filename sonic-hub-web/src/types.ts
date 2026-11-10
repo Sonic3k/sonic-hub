@@ -176,6 +176,8 @@ export interface GamePlay {
   id: string; startAt: string; endAt?: string | null; precision: DatePrecision; when: string; deviceKey?: string | null; deviceName?: string | null;
   via?: string | null; version?: string | null; evidence?: string | null; note?: string | null; approx: boolean;
 }
+/** a play that left a trace (a save, a score table, his own words), with the game it belongs to */
+export interface GameTrace { gameKey: string; gameTitle: string; play: GamePlay }
 export interface GameLink { id: string; kind: string; title?: string | null; url: string; note?: string | null }
 export interface GameMedia { linkId: string; role: string; label?: string | null; media: MediaFile }
 export interface GameMemory {

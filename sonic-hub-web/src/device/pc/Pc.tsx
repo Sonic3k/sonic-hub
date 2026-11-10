@@ -274,7 +274,7 @@ function Desktop({ data, machine, T, at, fresh, scene, go, want, scr, skin, open
           </div>
           {gadgets.length > 0 && <Gadgets items={gadgets} sidebar={sidebar} />}
           <div className="dv-wins">{wm.wins.map(w => APPS[w.app] && <Window key={w.id} win={w} def={APPS[w.app]} small={scr.small} />)}</div>
-          <Notices ready={phase === 'on'} messengerApp={messengerApp} skip={scene?.episode} />
+          {!machine.device.elsewhere && <Notices ready={phase === 'on'} messengerApp={messengerApp} skip={scene?.episode} />}
           {startOpen && <StartMenu onClose={() => setStartOpen(false)} />}
           {timeOpen && <TimeMachine onClose={() => setTimeOpen(false)} />}
           <Taskbar startOpen={startOpen} timeOpen={timeOpen} onStart={() => { setTimeOpen(false); setStartOpen(o => !o); }}

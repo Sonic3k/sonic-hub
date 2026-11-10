@@ -101,6 +101,7 @@ export function specOf(it: Pick<DeskItem, 'app' | 'target' | 'label' | 'glyph'>,
     case 'memories': return { app: 'memories', arg: {} };
     case 'photos': return { app: 'viewer', arg: { set: 'day' }, title: viewerName(os) };
     case 'game': return it.target ? gameSpec(it.target, label, it.glyph) : box(label);
+    case 'dos': return it.target ? gameSpec(it.target, label, it.glyph ?? 'dos') : box(label);   // a DOS prompt with a drive of its own
     case 'emulator': return it.target ? emuSpec(it.target, undefined, label) : box(label);
     case 'gamecard': return it.target ? { app: 'gamecard', arg: { key: it.target }, title: label, glyph: it.glyph ?? 'game' } : box(label);
     case 'control': case 'settings': case 'clock': case 'calendar': return 'time';
