@@ -12,18 +12,19 @@ import { Chat } from '../Chat';
 import { ymText, ymVer, type YmVer } from './strings';
 import { bgUrl, Sp, stateBg, useYm } from './ui';
 
-/** The buddy of a conversation as the list has them at T (picture, status, ID). */
-function useBuddy(archiveId: string) {
+/** The buddy of a conversation as the list has them at T (picture, status, ID); by their own key when no conversation
+ *  with them was kept. */
+function useBuddy(archiveId: string, key?: string) {
   const { at } = useMoment();
   const q = useQuery({ queryKey: ['buddies', 'YAHOO', at], queryFn: () => desk.buddies('YAHOO', at!) });
-  const b = q.data?.groups.flatMap(g => g.buddies).find(x => x.archiveId === archiveId);
+  const b = q.data?.groups.flatMap(g => g.buddies).find(x => (archiveId ? x.archiveId === archiveId : (x.ref.key ?? x.name) === key));
   return { b, me: q.data?.me };
 }
 
 /** Who else was in a conference as the archive has them at T; null for a talk with one buddy. */
 function useConference(archiveId: string): Member[] | null {
   const { at } = useMoment();
-  const q = useQuery({ queryKey: ['ym-thread', archiveId, at], queryFn: () => social.thread(archiveId, at!) });
+  const q = useQuery({ queryKey: ['ym-thread', archiveId, at], queryFn: () => social.thread(archiveId, at!), enabled: !!archiveId });
   return q.data?.group ? q.data.members.filter(m => !m.me) : null;
 }
 
@@ -50,16 +51,18 @@ function useLastAt(archiveId: string) {
     queryFn: ({ pageParam }) => desk.messages(archiveId, at!, pageParam ?? null, 60),
     initialPageParam: null as number | null,
     getNextPageParam: p => (p.hasMore ? p.oldestSeq : undefined),
+    enabled: !!archiveId,
   });
   const items = q.data?.pages[0]?.items ?? [];
   const last = [...items].reverse().find(m => !m.fromMe) ?? items[items.length - 1];
   return utc(last?.at);
 }
 
-export function YahooIm({ archiveId, name: asked, seq }: { archiveId: string; name: string; seq?: number | null }) {
+/** archiveId: the conversation kept; none (and buddy, the key of who it is with) for a buddy nothing was kept with. */
+export function YahooIm({ archiveId, buddy, name: asked, seq }: { archiveId: string; buddy?: string; name: string; seq?: number | null }) {
   const { ver } = useDesk();
   const v = ymVer(ver.yahoo);
-  const { b, me } = useBuddy(archiveId);
+  const { b, me } = useBuddy(archiveId, buddy);
   const people = useConference(archiveId);
   const name = people ? people.map(m => m.ref.name || m.sender).join(', ') : asked;
   const handle = b?.ref.handle;

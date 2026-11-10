@@ -73,32 +73,41 @@
 .ym-ws-box { flex: 1; height: 26px; border: 1px solid #7b5aa6; background: #fff; }
 
 /* the title of 9–11 on glass */
-.ym-logo { display: inline-block; flex: none; margin: 0 auto 0 4px; background-repeat: no-repeat; filter: drop-shadow(0 0 2px rgba(0, 0, 0, .5)); }
+.ym-logo { display: block; flex: 0 1 auto; min-width: 0; margin: 0 auto 0 4px; background-repeat: no-repeat; background-size: 100% 200%;
+  filter: drop-shadow(0 0 2px rgba(0, 0, 0, .5)); }
 
-/* the contact card (10, 11) */
-.ym-card { position: fixed; z-index: 4000; height: auto; background: #fff top / 100% 62px no-repeat; border: 1px solid #b4a6d4; border-radius: 4px;
-  box-shadow: 0 2px 9px rgba(0, 0, 0, .28); }
-.ym-card-h { display: flex; align-items: center; gap: 2px; padding: 5px 8px 4px; white-space: nowrap; overflow: hidden; }
-.ym-card-h b { font: bold 12px Tahoma, sans-serif; color: #000; overflow: hidden; text-overflow: ellipsis; }
-.ym-card-h i { margin-left: auto; padding-left: 6px; font-style: normal; color: #777; }
-.ym-card-m { display: flex; gap: 8px; padding: 2px 8px 6px; }
+/* the contact card (10, 11): its own picture is the frame and the wash behind (edges kept, the middle stretched);
+   sizes from his screenshot of 1/8/2013 */
+.ym-card { position: fixed; z-index: 4000; height: auto; background: #f6f3fb; border: 2px solid #9986c5; border-image-slice: 2 fill; border-image-width: 2px;
+  border-image-repeat: stretch; box-shadow: 0 2px 9px rgba(0, 0, 0, .28); }
+/* on the machine's screen, in its pixels */
+.ym-card.in { position: absolute; }
+.ym-card-h { display: flex; align-items: center; gap: 2px; padding: 4px 8px 4px 9px; white-space: nowrap; overflow: hidden; font: 13px Tahoma, sans-serif; color: #000; }
+.ym-card-h b { font-weight: normal; overflow: hidden; text-overflow: ellipsis; }
+.ym-card-h i { margin-left: auto; padding-left: 6px; font-style: normal; font-size: 12px; color: #555; }
+.ym-card-m { display: flex; gap: 8px; padding: 2px 8px 7px 10px; }
 .ym-card-pic { flex: none; width: 98px; height: 98px; border: 1px solid #cfcfcf !important; background: #fff !important; }
 .ym-card-pic img { display: block; width: 96px; height: 96px; object-fit: cover; }
-.ym-card-r { min-width: 0; display: flex; flex-direction: column; gap: 2px; }
-.ym-card-icons { display: flex; align-items: center; gap: 7px; margin: 2px 0 6px; }
-.ym-card-a { color: #3399cc; white-space: nowrap; }
+.ym-card-r { min-width: 0; display: flex; flex-direction: column; gap: 3px; }
+.ym-card-icons { display: flex; align-items: center; gap: 9px; margin: 3px 0 3px 4px; }
+.ym-card-a { color: #3399cc; white-space: nowrap; font: 12px/14px Tahoma, sans-serif; }
 .ym-card-a:hover { text-decoration: underline; }
 .ym-card-gap { height: 6px; }
-.ym-card-f { display: flex; align-items: center; justify-content: center; gap: 4px; padding: 5px 8px; border-top: 1px solid #e5e1ec; color: #333; }
+.ym-card-f { display: flex; align-items: center; justify-content: center; gap: 5px; margin: 0 8px; padding: 6px 0 7px; border-top: 1px solid #e3ddef; color: #333; font: 12px Tahoma, sans-serif; }
 
-/* Messenger's own alert for a message (9–11, on 8 too) */
-.ym-alert { width: 270px; background: #fff; border: 1px solid #5f45a3; box-shadow: 0 3px 12px rgba(0, 0, 0, .3); font: 12px Tahoma, sans-serif; color: #000; }
-.ym-alert-h { display: flex; align-items: center; height: 20px; padding: 0 2px 0 7px; color: #fff; background: linear-gradient(#8f72d4, #6a4fb0); }
+/* Messenger's own alert for a message (9–11, on 8 too): small, in the corner above the taskbar (his screenshot of 1/8/2013) */
+.ym-alerts { position: absolute; right: 3px; bottom: calc(var(--tb) + 1px); z-index: 860; display: flex; flex-direction: column; gap: 2px; }
+.dv.small .ym-alerts { left: 3px; }
+.ym-alert { width: 200px; background: #fafaf5; border: 1px solid #5f45a3; border-radius: 3px 3px 0 0; box-shadow: 0 2px 8px rgba(0, 0, 0, .3); font: 11px Tahoma, sans-serif; color: #000;
+  animation: dv-up .3s ease both; }
+.dv.small .ym-alert { width: auto; }
+.ym-alert-h { display: flex; align-items: center; height: 17px; padding: 0 1px 0 6px; border-radius: 2px 2px 0 0; color: #fff; background: linear-gradient(#9c82dc, #6d50bd 55%, #6444b6); }
 .ym-alert-h span { flex: 1; }
-.ym-alert-h button { width: 18px; height: 18px; border: 0; background: none; color: #fff; font-size: 15px; line-height: 1; cursor: default; }
-.ym-alert-b { display: flex; align-items: center; gap: 6px; width: 100%; padding: 8px 8px 9px; border: 0; background: none; text-align: left; font: inherit; color: inherit; cursor: default; }
+.ym-alert-h button { width: 16px; height: 15px; border: 0; background: none; color: #fff; font: bold 13px/1 Tahoma, sans-serif; cursor: default; }
+.ym-alert-b { display: flex; align-items: center; gap: 6px; width: 100%; height: 24px; padding: 0 5px; border: 0; background: none; text-align: left; font: inherit; color: inherit; cursor: default; }
 .ym-alert-b img { flex: none; }
 .ym-alert-b span { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ym-alert-b .ym-emo { max-height: 18px; }
 
 /* ── the list of 9 (his screenshot of 2/9/2010) ── */
 .ym-9 { background: #fff; }
@@ -128,7 +137,31 @@
 .ym9-ws { flex: none; padding: 2px 4px 4px; }
 .ym9-ws img { display: block; max-width: 100%; }
 
-/* ── the list of 8 (his screenshot of 6/8/2007, in the window of XP) ── */
+/* ── the windows of 8: Messenger drew its own on XP, not Luna's — a lavender title when active, white when not, small
+   grey buttons, a pale frame (his screenshots of 4/8 and 6/8/2007). On XP the list and a conversation are always 8's. ── */
+.dv.dv-xp .dv-win:is(.dv-app-yahoo, .dv-app-im) { padding: 0 5px 5px; background: #f7f7ef; border: 1px solid #52558c; border-radius: 7px 7px 4px 4px;
+  box-shadow: inset 1px 0 #fff, inset -1px -1px #d6d7ce, 2px 3px 9px rgba(0, 0, 0, .3); }
+.dv.dv-xp .dv-win:is(.dv-app-yahoo, .dv-app-im):not(.on) { border-color: #b5b6b5; }
+.dv.dv-xp .dv-win:is(.dv-app-yahoo, .dv-app-im).max { padding: 0; border: 0; border-radius: 0; }
+.dv.dv-xp .dv-win:is(.dv-app-yahoo, .dv-app-im) .dv-fr { display: none !important; }
+/* the thin line between the frame and what it holds */
+.dv.dv-xp .dv-win:is(.dv-app-yahoo, .dv-app-im):not(.max) .dv-wb { border: 1px solid #b5b6b5; border-top-color: #fff; }
+.dv.dv-xp .dv-win:is(.dv-app-yahoo, .dv-app-im) .dv-tb { height: 27px; margin: 0 -5px; padding: 0 5px 0 6px; gap: 4px; border-radius: 6px 6px 0 0; color: #fff;
+  font: bold 13px Tahoma, sans-serif; text-shadow: none;
+  background: linear-gradient(180deg, #9c96de 0, #8c8ad6 1px, #cec3ff 2px, #cec3ff 4px, #a59ee7 11px, #8482d6 15px, #7b79c6 16px, #7b79c6 22px, #7375c6 23px, #7375c6 26px, #7379a5 26px); }
+.dv.dv-xp .dv-win:is(.dv-app-yahoo, .dv-app-im).max .dv-tb { margin: 0; border-radius: 0; }
+.dv.dv-xp .dv-win:is(.dv-app-yahoo, .dv-app-im) .dv-tb::before { display: none !important; }
+.dv.dv-xp .dv-win:is(.dv-app-yahoo, .dv-app-im):not(.on) .dv-tb { color: #7b8284;
+  background: linear-gradient(180deg, #f7f7ef 0, #fff 2px, #fff 10px, #efefe7 14px, #e7e3de 25px, #b5b6b5 26px); }
+.dv.dv-xp .dv-win:is(.dv-app-yahoo, .dv-app-im) .dv-caps { align-self: flex-start; margin-top: 5px; gap: 3px; }
+.dv.dv-xp .dv-win:is(.dv-app-yahoo, .dv-app-im) .dv-cap { width: 17px; height: 17px; margin: 0; border: 1px solid #b5b6b5; border-radius: 3px; opacity: 1; filter: none;
+  background: linear-gradient(180deg, #fff, #efefe7 40%, #d6d7ce) !important; color: #5a6163; box-shadow: 0 1px 0 #6365b5; }
+.dv.dv-xp .dv-win:is(.dv-app-yahoo, .dv-app-im) .dv-cap:hover { border-color: #8c8ad6; }
+.dv.dv-xp .dv-win:is(.dv-app-yahoo, .dv-app-im) .dv-cap.close { color: #002463; }
+.dv.dv-xp .dv-win:is(.dv-app-yahoo, .dv-app-im) .dv-cap svg { display: block; width: 9px; height: 9px; stroke-width: 1.5; }
+.dv.dv-xp .dv-win:is(.dv-app-yahoo, .dv-app-im):not(.on) .dv-cap { border-color: #cecbc6; background: linear-gradient(180deg, #fff, #e7e3de) !important; color: #8c8e8c; box-shadow: none; }
+
+/* ── the list of 8 (his screenshot of 6/8/2007) ── */
 .ym-8 { background: #fff; color: #000; }
 .ym8-menu { flex: none; display: flex; align-items: center; height: 20px; padding: 0 2px; background: #f7f7ef; border-bottom: 1px solid #e2e2d8; }
 .ym8-menu > span { padding: 2px 7px; }
@@ -145,11 +178,12 @@
 .ym8-tools img { display: block; }
 .ym8-phone { flex: none; display: flex; align-items: center; gap: 4px; height: 22px; margin: 0 6px 5px; padding: 0 4px; border: 1px solid #a5acb5; border-radius: 2px; background: #fff; color: #999; font-size: 12px; }
 .ym8-phone i { margin-left: auto; font-style: normal; color: #555; }
-.ym-list.ym8-list { margin: 0; border: 0; border-top: 1px solid #c8c8d8; }
-.ym8-gh { display: flex; align-items: center; gap: 6px; width: 100%; height: 19px; padding: 0 4px; color: #4271c6; font: bold 12px Tahoma, sans-serif; }
+/* the list stands in from the left edge, the window's cream showing beside it (his screenshot) */
+.ym-list.ym8-list { margin: 0 0 0 9px; border: 0; border-top: 1px solid #c8c8d8; }
+.ym8-gh { display: flex; align-items: center; gap: 8px; width: 100%; height: 19px; padding: 0 4px 0 0; color: #4271c6; font: bold 12px Tahoma, sans-serif; }
 .ym8-gh i { width: 0; height: 0; border: 5px solid transparent; border-top-color: #4271c6; margin-top: 5px; }
 .ym8-gh i.shut { border-top-color: transparent; border-left-color: #4271c6; margin: 0 0 0 4px; }
-.ym8-b { display: flex; align-items: center; gap: 5px; width: 100%; height: 19px; padding: 0 4px 0 16px; color: #000; font: 12px Tahoma, sans-serif; white-space: nowrap; overflow: hidden; }
+.ym8-b { display: flex; align-items: center; gap: 5px; width: 100%; height: 19px; padding: 0 4px 0 17px; color: #000; font: 12px Tahoma, sans-serif; white-space: nowrap; overflow: hidden; }
 .ym8-b img { flex: none; }
 .ym8-b.on .ym8-b-n { font-weight: bold; }
 .ym8-b-n { padding: 0 2px; }

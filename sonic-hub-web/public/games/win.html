@@ -31,6 +31,14 @@
   const canvas = document.getElementById('canvas'), crop = document.getElementById('crop'), wait = document.getElementById('wait');
   canvas.width = 800; canvas.height = 600;
 
+  /* Boxedwine shrinks Wine's screen to the monitor when that is the smaller one (a small laptop at 150%, a phone), which
+     blurs it and squeezes the game. The picture is cut out and fitted here anyway, so it is told of a monitor that
+     always has room. */
+  for (const [k, least] of [['width', 1024], ['height', 768], ['availWidth', 1024], ['availHeight', 768]]) {
+    const v = Math.max(least, screen[k] || 0);
+    try { Object.defineProperty(screen, k, { get: () => v, configurable: true }); } catch { /* left as it is */ }
+  }
+
   const fail = (what) => { wait.textContent = what; wait.style.display = ''; crop.style.visibility = 'hidden'; };
   const bytes = (url) => fetch(url).then(r => { if (!r.ok) throw new Error(url + ' ' + r.status); return r.arrayBuffer(); });
 

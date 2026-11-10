@@ -124,26 +124,41 @@ export function Notices({ ready, messengerApp, skip }: { ready: boolean; messeng
     const s = skin === 'xp' ? 'balloon' : skin === 'vista' || skin === 'w7' ? 'notify' : skin === 'w98' ? '' : 'notify-messaging';
     if (s) sound(s, 0.55);
   }, [otherOn, skin, sound]);
+  // the system's notices stand beside the buddy list when it is docked where they would come up, not over it
+  const { wins, area } = useWm();
+  const buddies = wins.find(w => w.app === 'yahoo' && !w.min && !w.max);
+  const beside = buddies && buddies.x + buddies.w > area.w - 322 && buddies.x >= 330 ? area.w - buddies.x + 8 : undefined;
   if (!shown || !live.length) return null;
+  const alerts = live.filter(n => ym && n.platform === 'YAHOO'), rest = live.filter(n => !(ym && n.platform === 'YAHOO'));
   return (
-    <div className="dv-notices">
-      {live.map(n => ym && n.platform === 'YAHOO' ? (
-        <div key={n.key} className="ym-alert" role="status">
-          <div className="ym-alert-h"><span>Yahoo! Messenger</span><button type="button" onClick={() => setGone(g => ({ ...g, [n.key]: true }))} aria-label="Đóng">×</button></div>
-          <button type="button" className="ym-alert-b" onClick={() => { n.open(); setGone(g => ({ ...g, [n.key]: true })); }}>
-            {a('icon/im-16.png') && <img src={a('icon/im-16.png')} alt="" />}
-            <span><b>{n.title}:</b>&nbsp; &quot;{n.raw ? <YmText text={n.raw} /> : n.text}&quot;</span>
-          </button>
+    <>
+      {rest.length > 0 && (
+        <div className="dv-notices" style={beside ? { right: beside } : alerts.length ? { bottom: `calc(var(--tb) + ${alerts.length * 44 + 8}px)` } : undefined}>
+          {rest.map(n => (
+            <div key={n.key} className="dv-notice" role="status">
+              <div className="dv-notice-head"><Glyph name={n.glyph} label={n.head} size={16} /><span>{n.head}</span>{n.time && <time>{n.time}</time>}
+                <button type="button" onClick={() => setGone(g => ({ ...g, [n.key]: true }))} aria-label="Đóng">×</button></div>
+              <button type="button" className="dv-notice-body" onClick={() => { n.open(); setGone(g => ({ ...g, [n.key]: true })); }}>
+                <b>{n.title}</b>{n.text && <span>{n.text}</span>}
+              </button>
+            </div>
+          ))}
         </div>
-      ) : (
-        <div key={n.key} className="dv-notice" role="status">
-          <div className="dv-notice-head"><Glyph name={n.glyph} label={n.head} size={16} /><span>{n.head}</span>{n.time && <time>{n.time}</time>}
-            <button type="button" onClick={() => setGone(g => ({ ...g, [n.key]: true }))} aria-label="Đóng">×</button></div>
-          <button type="button" className="dv-notice-body" onClick={() => { n.open(); setGone(g => ({ ...g, [n.key]: true })); }}>
-            <b>{n.title}</b>{n.text && <span>{n.text}</span>}
-          </button>
+      )}
+      {/* Messenger's own, in the corner of the screen over whatever is there (his screenshot of 1/8/2013) */}
+      {alerts.length > 0 && (
+        <div className="ym-alerts">
+          {alerts.map(n => (
+            <div key={n.key} className="ym-alert" role="status">
+              <div className="ym-alert-h"><span>Yahoo! Messenger</span><button type="button" onClick={() => setGone(g => ({ ...g, [n.key]: true }))} aria-label="Đóng">×</button></div>
+              <button type="button" className="ym-alert-b" onClick={() => { n.open(); setGone(g => ({ ...g, [n.key]: true })); }}>
+                {a('icon/im-16.png') && <img src={a('icon/im-16.png')} alt="" />}
+                <span>{n.title}:&nbsp; &quot;{n.raw ? <YmText text={n.raw} /> : n.text}&quot;</span>
+              </button>
+            </div>
+          ))}
         </div>
-      ))}
-    </div>
+      )}
+    </>
   );
 }

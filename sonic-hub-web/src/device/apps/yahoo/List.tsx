@@ -10,7 +10,7 @@ import { useWm } from '../../pc/wm';
 import { useDesk } from '../../pc/desk';
 import { ymText, ymVer, type YmVer } from './strings';
 import { bgUrl, Sp, stateBg, useYm } from './ui';
-import { Card, type CardAt } from './Card';
+import { Card, cardAt, type CardAt } from './Card';
 
 const AD: Record<YmVer, string> = { YM8: 'ads/2007.png', YM9: 'ads/2010.png', YM10: 'ads/2011.png', YM11: 'ads/2013.png' };
 /** the notice Messenger 11 showed from late 2012 (his screenshot of 1/8/2013) */
@@ -22,10 +22,11 @@ function useList() {
   const v = ymVer(ver.yahoo);
   const q = useQuery({ queryKey: ['buddies', 'YAHOO', at], queryFn: () => desk.buddies('YAHOO', at!) });
   const { open } = useWm();
+  /** a double click opens the conversation — an empty window when none was kept with that buddy */
   const chat = (b: Buddy) => {
-    if (!b.archiveId) return;
     const who = b.ref.handle && b.ref.handle !== b.name ? `${b.name} (${b.ref.handle})` : b.name;
-    open({ app: 'im', arg: { archiveId: b.archiveId, name: b.name }, title: v === 'YM8' ? `${who} - Instant Message` : who });
+    open({ app: 'im', arg: b.archiveId ? { archiveId: b.archiveId, name: b.name } : { buddy: b.ref.key ?? b.name, name: b.name },
+      title: v === 'YM8' ? `${who} - Instant Message` : who });
   };
   return { v, q, chat, data: q.data };
 }
@@ -64,9 +65,9 @@ function List11({ v }: { v: YmVer }) {
 
   const enter = (b: Buddy, e: RPE<HTMLElement>) => {
     if (e.pointerType !== 'mouse') return;
-    const r = e.currentTarget.getBoundingClientRect();
+    const row = e.currentTarget;
     window.clearTimeout(hover.current);
-    hover.current = window.setTimeout(() => setCard({ b, top: r.top, left: r.left }), 650);
+    hover.current = window.setTimeout(() => setCard(cardAt(b, row)), 650);
   };
   const leave = () => { window.clearTimeout(hover.current); hover.current = window.setTimeout(() => setCard(null), 250); };
 

@@ -97,6 +97,7 @@ function programIcon(glyph: string, label: string, c: IconCtx): [string, string]
   const y = c.year, l = label.toLowerCase();
   const isFile = FILE_RE.test(label);
   if (glyph.startsWith('exe:')) return ['games', `icon/${glyph.slice(4)}`];   // a game's own icon, taken from its .exe
+  if (glyph.startsWith('cut:')) return ['games', `icon/${glyph.slice(4)}`];   // an icon cut out of one of his screenshots, with the mark it had there
   if (glyph === 'globe-blue' && !isFile) return c.skin === 'w98' || c.skin === 'xp' ? ['programs', 'ie6'] : ['programs', 'ie8'];
   if (glyph === 'globe-orange') return ['programs', 'firefox-3'];
   if (glyph === 'globe-multi') return ['programs', y < 2014 ? 'chrome-2011' : y < 2022 ? 'chrome-2014' : 'chrome-2022'];
@@ -132,15 +133,22 @@ export function iconOf(glyph: string | null | undefined, label: string | undefin
 
 const SIZES = [16, 32, 48, 96];
 
-/** The icon file for a size drawn (and the one twice as big, for sharp scaled screens), among those a folder has. */
+/** The icon file for a size drawn, and a bigger one for sharp screens (twice as big, or failing that the biggest there
+ *  is: XP's icons stop at 48), among those a folder has. */
 export function iconFiles(map: Record<string, unknown> | undefined, base: string, size: number) {
   if (!map) return null;
   const have = SIZES.filter(s => `${base}-${s}.png` in map);
   if (!have.length) return null;
   const one = have.find(s => s >= size) ?? have[have.length - 1];
-  const two = have.find(s => s >= size * 2);
-  return { one: `${base}-${one}.png`, two: two && two !== one ? `${base}-${two}.png` : null };
+  const two = have.find(s => s >= size * 2) ?? have[have.length - 1];
+  return { one: `${base}-${one}.png`, two: two > one ? `${base}-${two}.png` : null, x1: Math.max(1, one / size), x2: Math.max(1, two / size) };
 }
+
+/** Both files of an icon for the browser to choose from, each with how sharp it is at the size drawn. */
+export const iconSet = (f: { one: string; two: string | null; x1: number; x2: number }, a: (name: string) => string | undefined) => {
+  const one = a(f.one), two = f.two ? a(f.two) : undefined;
+  return one && two ? `${one} ${+f.x1.toFixed(2)}x, ${two} ${+f.x2.toFixed(2)}x` : undefined;
+};
 
 /* ── screens ────────────────────────────────────────────────────────────── */
 

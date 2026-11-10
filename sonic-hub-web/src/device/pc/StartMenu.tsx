@@ -14,6 +14,12 @@ import { browserGlyph, browserName, skinOf, useDesk } from './desk';
 type It = Pick<DeskItem, 'key' | 'label' | 'glyph' | 'app' | 'target'>;
 const SYSTEM = new Set(['computer', 'recycle', 'documents', 'user-folder', 'network', 'control', 'heart-folder', 'sticky']);
 const FILE = /\.(docx?|txt|jpe?g|png|pptx?|rar|zip|pdf|xlsx?)$/i;
+/** what a file on the desktop is drawn with (a film, a song, a PDF…): those are his files, not programs — and a Word,
+ *  Excel or PowerPoint icon is the program only under its own name */
+const FILE_GLYPH = new Set(['film', 'music', 'wave', 'media', 'image', 'pdf', 'text', 'archive', 'book']);
+const OFFICE_GLYPH = new Set(['doc-blue', 'sheet-green', 'slides-orange']);
+const isDocument = (i: Pick<DeskItem, 'glyph' | 'label'>) =>
+  FILE_GLYPH.has(i.glyph ?? '') || (OFFICE_GLYPH.has(i.glyph ?? '') && !/^microsoft|\b(word|excel|powerpoint)\b/i.test(i.label));
 const PINNED_APPS = ['browser', 'yahoo', 'word', 'messages', 'zalo', 'messenger', 'skype', 'notepad', 'memories'];
 /** the folders of Programs his games sit in, by the part of their key after "start/" (<device>/start/<folder>/<name>) */
 const FOLDER_NAMES: Record<string, string> = { games: 'Games', 'win-games': 'Win Games', popcap: 'PopCap Games' };
@@ -37,7 +43,7 @@ function useLists() {
     const pinned = [...byApp.values()];
     const seen = new Set<string>();
     const programs = items.filter(i => (i.place === 'DESKTOP' || i.place === 'TASKBAR') && !SYSTEM.has(i.glyph ?? '')
-      && !FILE.test(i.label) && !(i.glyph ?? '').startsWith('folder'))
+      && !FILE.test(i.label) && !(i.glyph ?? '').startsWith('folder') && !isDocument(i))
       .filter(i => { const k = i.label.toLowerCase(); if (seen.has(k)) return false; seen.add(k); return true; })
       .sort((a, b) => a.label.localeCompare(b.label, 'vi', { sensitivity: 'base' }));
     // his games on this machine (Start entries that open a game): folders in Programs (Games, Win Games…)

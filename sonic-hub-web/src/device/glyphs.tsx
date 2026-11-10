@@ -3,7 +3,7 @@
    year (skin.tsx), from the files he gathered; what has none is drawn here (48×48). */
 import { useId, type ReactNode } from 'react';
 import { useAssets } from './assets';
-import { iconFiles, iconOf, useIconCtx } from './skin';
+import { iconFiles, iconOf, iconSet, useIconCtx } from './skin';
 
 type G = (id: string) => ReactNode;
 
@@ -296,8 +296,7 @@ function AssetIcon({ folder, base, name, size, className }: { folder: string; ba
   const { a, map } = useAssets(folder);
   const files = iconFiles(map, base.startsWith('icon/') ? base : `icon/${base}`, size);
   if (!files) return <Drawn name={name} size={size} className={className} />;
-  const one = a(files.one), two = files.two ? a(files.two) : undefined;
-  return <img className={`dv-own-icon ${className ?? ''}`} src={one} srcSet={two ? `${one} 1x, ${two} 2x` : undefined} width={size} height={size} alt="" draggable={false} />;
+  return <img className={`dv-own-icon ${className ?? ''}`} src={a(files.one)} srcSet={iconSet(files, a)} width={size} height={size} alt="" draggable={false} />;
 }
 
 function Drawn({ name, size, className }: { name?: string | null; size: number; className?: string }) {

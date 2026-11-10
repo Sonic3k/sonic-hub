@@ -44,15 +44,23 @@ function useViewport() {
   return v;
 }
 
-/** The screen of the machine: its resolution (1080p laptops ran at 150%), enlarged to fill the page like the monitor
- *  did. A page smaller than that screen, or a phone, gets a screen of its own size instead, so nothing is too small to read. */
+/** below this the screen would be too small to read */
+const FLOOR = 0.8;
+
+/** The screen of the machine: its resolution (1080p laptops ran at 150%), shown whole on the page in its own shape, as
+ *  the monitor was — enlarged up to twice on a big page, a little smaller on a small one. Where it would have to
+ *  shrink past reading (FLOOR) it keeps its shape and gives up pixels instead; a hair off its true size, it is shown
+ *  at that size, sharp. A phone, a page too short for any of this, or one held upright that the screen doesn't fit,
+ *  gets a screen of its own size. */
 function screenOf(m: Machine | null | undefined, vp: { w: number; h: number }) {
   const dw = m?.device.screenWidth ?? 1280, dh = m?.device.screenHeight ?? 800;
   const dpi = dw >= 1900 ? 1.5 : 1;
   const W = Math.round(dw / dpi), H = Math.round(dh / dpi);
-  const s = Math.min(vp.w / W, vp.h / H);
-  if (vp.w < 720 || s < 1) return { W: vp.w, H: vp.h, s: 1, small: vp.w < 720 };
-  return { W, H, s: Math.min(s, 2), small: false };
+  const fit = Math.min(vp.w / W, vp.h / H);
+  if (vp.w < 720 || vp.h < 480 || (vp.h > vp.w && fit < 1)) return { W: vp.w, H: vp.h, s: 1, small: vp.w < 720 };
+  const s = fit > 0.96 && fit < 1.04 ? 1 : Math.max(FLOOR, Math.min(fit, 2));
+  const k = Math.min(1, fit / s);   // the share of its pixels that fit at that size
+  return { W: Math.round(W * k), H: Math.round(H * k), s, small: false };
 }
 
 export default function Pc() {
@@ -244,7 +252,14 @@ function Desktop({ data, machine, T, at, fresh, scene, go, want, scr, skin, open
   const gadgets = machine.items.filter(i => i.place === 'GADGET');
   const sidebar = skin === 'vista' && gadgets.length > 0;
   const tb = TASKBAR[skin];
-  const style = { ...look.style, width: scr.W, height: scr.H, transform: scr.s !== 1 ? `scale(${scr.s})` : undefined, '--tb': `${tb}px`,
+  // 7's glass in the colour he had set (dark from mid-2011, his screenshots): see-through, so it takes on the wallpaper
+  const tint = skin === 'w7' ? machine.system?.accent : null;
+  const glass = tint ? {
+    '--glass': `linear-gradient(180deg, rgba(255, 255, 255, .22), rgba(255, 255, 255, .05) 26px, rgba(255, 255, 255, 0) 30px), color-mix(in srgb, ${tint} 62%, transparent)`,
+    '--glass-off': `linear-gradient(180deg, rgba(255, 255, 255, .3), rgba(255, 255, 255, .12) 30px), color-mix(in srgb, ${tint} 46%, transparent)`,
+    '--glass-bar': `color-mix(in srgb, ${tint} 66%, transparent)`,
+  } : null;
+  const style = { ...look.style, ...glass, width: scr.W, height: scr.H, transform: scr.s !== 1 ? `scale(${scr.s})` : undefined, '--tb': `${tb}px`, '--sh': `${scr.H}px`,
     '--accent': machine.system?.accent ?? '#0078d7' } as CSSProperties;
 
   return (
@@ -255,7 +270,7 @@ function Desktop({ data, machine, T, at, fresh, scene, go, want, scr, skin, open
           onClick={() => { setStartOpen(false); setTimeOpen(false); }}>
           <Wallpaper wp={machine.wallpaper} fallback={FALLBACK[skin]} />
           <div className="dv-desk" style={sidebar ? { right: 150 } : undefined}>
-            <DesktopIcons items={icons} skin={skin} height={scr.H - tb} onOpen={openItem} />
+            <DesktopIcons items={icons} skin={skin} device={machine.device.key} height={scr.H - tb} onOpen={openItem} />
           </div>
           {gadgets.length > 0 && <Gadgets items={gadgets} sidebar={sidebar} />}
           <div className="dv-wins">{wm.wins.map(w => APPS[w.app] && <Window key={w.id} win={w} def={APPS[w.app]} small={scr.small} />)}</div>

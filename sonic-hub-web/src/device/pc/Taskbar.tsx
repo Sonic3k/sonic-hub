@@ -54,7 +54,7 @@ export function Taskbar({ startOpen, timeOpen, onStart, onClock }: { startOpen: 
       return (
         <button type="button" key={g} className={`dv-tk ${ws.length ? 'run' : ''} ${on ? 'on' : ''} ${ws.length > 1 ? 'many' : ''}`}
           title={top?.title ?? pin?.label} onClick={() => top ? toggle(top) : pin && openItem(pin)}>
-          <Glyph name={pin?.glyph ?? top?.glyph} label={pin?.label ?? top?.title} size={24} />
+          <Glyph name={pin?.glyph ?? top?.glyph} label={pin?.label ?? top?.title} size={skin === 'w7' || skin === 'w81' ? 32 : 24} />
         </button>
       );
     });
