@@ -39,6 +39,10 @@ public class MusicPlaylistEntry extends BaseEntity {
     @Column(name = "file_modified_at")
     private LocalDateTime fileModifiedAt;
 
+    /** The day he put the song in the list, where the list keeps it (a Spotify playlist's "Date added"). */
+    @Column(name = "added_at")
+    private LocalDateTime addedAt;
+
     @Column(name = "note", length = 1000)
     private String note;
 
@@ -55,6 +59,8 @@ public class MusicPlaylistEntry extends BaseEntity {
     public void setFileName(String v) { this.fileName = v; }
     public LocalDateTime getFileModifiedAt() { return fileModifiedAt; }
     public void setFileModifiedAt(LocalDateTime v) { this.fileModifiedAt = v; }
+    public LocalDateTime getAddedAt() { return addedAt; }
+    public void setAddedAt(LocalDateTime v) { this.addedAt = v; }
     public String getNote() { return note; }
     public void setNote(String v) { this.note = v; }
 }

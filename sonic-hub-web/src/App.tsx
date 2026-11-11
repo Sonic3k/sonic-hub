@@ -17,6 +17,8 @@ import Portal from './pages/Portal';
 import { MemoriesIndex, MemoryPage } from './pages/Memories';
 import { GamePage, GameSeriesPage, GamesIndex } from './pages/Games';
 import GamePlayPage from './pages/GamePlay';
+import { ListPage, MusicIndex } from './pages/Music';
+import Spotify, { SongPage } from './pages/Spotify';
 
 const qc = new QueryClient({ defaultOptions: { queries: { retry: 1, refetchOnWindowFocus: false } } });
 
@@ -51,6 +53,10 @@ export function AppRoutes() {
         <Route path="games/series/:key" element={<GameSeriesPage />} />
         <Route path="games/play/:pkg" element={<GamePlayPage />} />
         <Route path="games/:key" element={<GamePage />} />
+        <Route path="music" element={<MusicIndex />} />
+        <Route path="music/lists/:key" element={<ListPage />} />
+        <Route path="music/spotify" element={<Spotify />} />
+        <Route path="music/spotify/song/:id" element={<SongPage />} />
         {/* Huyền học and Bóng đá have their own sites now: old links land on the portal */}
         <Route path="huyen-hoc/*" element={<Navigate to="/portal" replace />} />
         <Route path="football" element={<Navigate to="/portal" replace />} />
