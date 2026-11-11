@@ -209,8 +209,10 @@ export function playWhen(p: Pick<GamePlay, 'startAt' | 'endAt' | 'precision' | '
   if (p.endAt && p.endAt.slice(0, 10) !== p.startAt.slice(0, 10)) end = f(p.endAt, p.precision === 'YEAR' ? 'YEAR' : p.endAt.slice(8, 10) === '01' ? 'MONTH' : 'DAY');
   return (p.approx ? '~' : '') + (end && end !== start ? `${start} – ${end}` : start);
 }
-/** a moment inside a play to start its machine at, in the evening as he would have played */
+/** a moment inside a play to start its machine at, in the evening as he would have played: the one the API gives (a day
+ *  that machine was there), else the middle of what the play's date says */
 function playAt(p: GamePlay): string {
+  if (p.at) return p.at;
   const d = new Date(p.startAt.slice(0, 10) + 'T12:00:00Z');
   if (p.precision === 'YEAR') d.setUTCMonth(5, 15); else if (p.precision === 'MONTH') d.setUTCDate(15);
   const end = p.endAt ? new Date(p.endAt.slice(0, 10) + 'T12:00:00Z') : null;
