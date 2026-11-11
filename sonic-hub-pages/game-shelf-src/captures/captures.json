@@ -712,6 +712,46 @@
   }
  },
  {
+  "file": "captures/cch-title.png",
+  "game": "chinese-chess-master-3",
+  "caption": "Màn hình mở đầu của Chinese Chess Master III (將族). Chụp lại ngày 11/11/2026, chạy bản bot của anh tìm về.",
+  "event": {
+   "date": "2003",
+   "precision": "YEAR",
+   "approx": true
+  }
+ },
+ {
+  "file": "captures/cch-driver.png",
+  "game": "chinese-chess-master-3",
+  "caption": "Trang đối thủ Driver Brown trong Chinese Chess Master III: 4.002 điểm, một sao. Chụp lại ngày 11/11/2026, chạy bản bot của anh tìm về.",
+  "event": {
+   "date": "2003",
+   "precision": "YEAR",
+   "approx": true
+  }
+ },
+ {
+  "file": "captures/cch-ussr.png",
+  "game": "chinese-chess-master-3",
+  "caption": "Nhóm đối thủ có Mr. USSR trong Chinese Chess Master III. Chụp lại ngày 11/11/2026, chạy bản bot của anh tìm về.",
+  "event": {
+   "date": "2003",
+   "precision": "YEAR",
+   "approx": true
+  }
+ },
+ {
+  "file": "captures/cch-play.png",
+  "game": "chinese-chess-master-3",
+  "caption": "Chinese Chess Master III, một ván với Driver Brown. Chụp lại ngày 11/11/2026, chạy bản bot của anh tìm về.",
+  "event": {
+   "date": "2003",
+   "precision": "YEAR",
+   "approx": true
+  }
+ },
+ {
   "file": "captures/saltline-title.png",
   "game": "saltline",
   "caption": "Màn hình mở đầu của Saltline. Chụp lại ngày 11/11/2026, chạy file HTML anh chép trên mạng về.",
