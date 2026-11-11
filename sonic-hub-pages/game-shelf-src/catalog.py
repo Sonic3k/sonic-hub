@@ -332,7 +332,7 @@ GAMES = [
     # ── Age of Empires ─────────────────────────────────────────────────────────────────────────────────────────
     dict(key="age-of-empires", title="Age of Empires", series="age-of-empires", seriesOrder=1, platform="Windows",
          releaseYear=1997, developer="Ensemble Studios", genre="RTS", versions="Age of Empires, The Rise of Rome",
-         handName="AGE", handOrder=85,
+         handName="AGE", handOrder=85, cover="e8cfd7e5",
          summary="Dựng một nền văn minh cổ đại từ thời đồ đá; phần đầu của dòng Đế chế.",
          # the office years: his own account of when (11/11/2026), the first written trace, his album, the league's data
          plays=[play("2015-12", end="2018-01", approx=True, via="Máy công ty",
@@ -386,8 +386,7 @@ GAMES = [
          basedOn="age-of-empires", platform="Web", releaseYear=2016, genre="League",
          summary="App web chia kèo và xếp hạng của hội đế chế ở công ty: tick những người có mặt, app chia hai đội cân theo điểm từng người; đánh xong gõ tỷ số, điểm cộng trừ theo kiểu Elo rồi xếp lại bảng. Viết bằng Java (Spring Boot, Thymeleaf), dữ liệu nằm trong file XML.",
          plays=[play("2016-12-23", end="2017-07-11", via="Máy công ty",
-                     evidence="File dữ liệu của app giữ 520 kèo: kèo đầu ghi 17:30 ngày 23/12/2016, cùng ngày ghi ở đầu file match.js; kèo cuối lúc 20:03 ngày 11/07/2017. 68 kèo đầu phần lớn gõ tay vào file; từ trưa 02/02/2017 (ngày của phần lớn file mã nguồn, bản có đầy đủ giao diện) app tự ghi. Giờ trong sổ là lúc ghi kết quả, có khi ghi dồn mấy kèo một lúc hoặc ghi hôm sau."),
-                play("2023-06-01", evidence="File aoeleague-1.0.0.jar đóng gói lại và commit đầu tiên của kho git đều mang ngày 01/06/2023")],
+                     evidence="File dữ liệu của app giữ 520 kèo: kèo đầu ghi 17:30 ngày 23/12/2016, cùng ngày ghi ở đầu file match.js; kèo cuối lúc 20:03 ngày 11/07/2017. 68 kèo đầu phần lớn gõ tay vào file; từ trưa 02/02/2017 (ngày của phần lớn file mã nguồn, bản có đầy đủ giao diện) app tự ghi. Giờ trong sổ là lúc ghi kết quả, có khi ghi dồn mấy kèo một lúc hoặc ghi hôm sau. Về sau: file aoeleague-1.0.0.jar đóng gói lại và commit đầu tiên của kho git đều mang ngày 01/06/2023.")],
          memories=["e:4c87c041"],
          links=[{"kind": "OTHER", "title": "Mã nguồn: Sonic3k/aoe-league", "url": "https://github.com/Sonic3k/aoe-league"}]),
     dict(key="len-doi", title="Lên Đời", series="age-of-empires", seriesOrder=40, kind="HOMEMADE", basedOn="aoe2",
