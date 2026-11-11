@@ -684,15 +684,18 @@ GAMES = [
          links=[wiki("Phoenix_Wright:_Ace_Attorney_%E2%88%92_Trials_and_Tribulations")]),
 
     # ── Cờ ─────────────────────────────────────────────────────────────────────────────────────────────────────
+    # His US years: the chess group is the Messenger group "VnChess" (online, he joined 12/2020); "Team cờ vua" (his folder)
+    # is its three members who lived near each other in the US (him, anh Huỳnh, anh Thành). The tea group at anh Huỳnh's
+    # house (Skype group "Trà đá chém gió") is a different group and is not on this card.
     dict(key="chess", title="Cờ vua", series="co", seriesOrder=1, platform="Board, PC", genre="Chess",
          handName="Cờ Vua", note="hồi nhỏ thậm chí còn nghĩ mình sẽ là vận động viên cờ vua hay thày dạy cờ vua á",
-         summary="Môn cờ anh theo từ thời đi học: đội tuyển cờ quận Ba Đình, đội FPT, rồi “Team cờ vua” những năm ở Mỹ.",
+         summary="Môn cờ anh theo từ thời đi học: đội tuyển cờ quận Ba Đình, đội FPT, rồi hội cờ vua VnChess và “Team cờ vua” những năm ở Mỹ.",
          plays=[play("2004-11", None, end="2005-01", via="Đội tuyển cờ Trường 10-10",
                      evidence="Đánh cờ vua ở giải Cờ Vua – Cờ Tướng học sinh quận Ba Đình 11/2004 (biên bản ván 2 ghi nước cờ vua), giải cờ chớp nhoáng – cờ nhanh 1/2005"),
                 play("2011-04-02", None, precision="DAY", via="Đội FPT",
                      evidence="Đánh cờ vua cho đội FPT ở Đại hội thể thao Ngoại thương"),
                 play("2020-02", "pc-thinkpad", end="2022-12",
-                     evidence="Chơi cờ vua trên laptop từ đầu 2020; sách cờ và bàn cờ gỗ 07/2021; đánh cờ vua với nhóm anh em FPT ở Mỹ. Theo anh: các buổi trà đá và họp nhóm ở Mỹ đều là cờ vua, còn trà đá ở nhà anh Huỳnh thì nhiều chủ đề trò chuyện chứ không riêng cờ vua")],
+                     evidence="Học lại cờ vua trên chess.com từ 05/2019, chơi cờ trên laptop (ảnh 01/02/2020); từ 12/2020 vào hội cờ vua VnChess, nhóm anh em dev người Việt thi đấu online trên lichess cuối tuần (anh chơi nick Sonic3k); sách cờ và bàn cờ gỗ 07/2021; đánh cờ bàn với anh Huỳnh, anh Thành, ba anh em của hội ở Mỹ. Hội trà đá ở nhà anh Huỳnh là hội khác, không phải hội cờ")],
          media=[pic("e4412dec"), pic("fbf99ccb"), pic("f7b550f0"), pic("a010a078"), pic("11c681a0")],
          memories=["e:19d6ff3a", "e:120c54f1", "e:0150a7f5", "e:3ae47575"], links=[wiki("Chess")]),
     # Chinese chess itself. The district tournament of 11/2004 carried both names (Cờ Vua – Cờ Tướng) but he played
