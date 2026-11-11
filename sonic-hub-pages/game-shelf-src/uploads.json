@@ -490,5 +490,23 @@
   "mediaId": "fdae95ae-7532-4319-be31-57ecad352eb2",
   "game": "win-games",
   "role": "SCREENSHOT"
+ },
+ {
+  "file": "captures/mario-typing-title.png",
+  "mediaId": "c3913774-a3b6-42d1-8afb-394dff100146",
+  "game": "mario-teaches-typing",
+  "role": "SCREENSHOT"
+ },
+ {
+  "file": "captures/mario-typing-menu.png",
+  "mediaId": "8012016a-9c49-4b44-bb87-6827beee2ab1",
+  "game": "mario-teaches-typing",
+  "role": "SCREENSHOT"
+ },
+ {
+  "file": "captures/mario-typing-play.png",
+  "mediaId": "34b0b7ba-dede-4ac1-aa5b-744d4bc7f8c0",
+  "game": "mario-teaches-typing",
+  "role": "SCREENSHOT"
  }
 ]

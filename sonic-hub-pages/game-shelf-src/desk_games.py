@@ -22,6 +22,8 @@ API = os.environ.get("HUB_API", "https://angels-islands-api-production.up.railwa
 # the icons that were on his desktops. Rescue Rover and Mario Brothers he only ever played in the computer room of his
 # school (11/11/2026): Rescue Rover is on that machine, not on PC Win 98; the Mario he meant was Mario & Luigi (Mike
 # Wiering), and Mario Brothers VGA is on none of his machines (it plays from the portal).
+# Mario Teaches Typing is there too since his bot found its floppy (11/11/2026). The school's Chinese-chess game has
+# no entry yet: two programs wait on that machine's drive C: for him to say which one it was (packages.py, SCHOOL_C).
 
 # his own icons: key → (app, target, glyph); glyph None keeps the one he set ("exe:<key>" = the game's own icon,
 # "cut:<key>" = an icon cut out of one of his screenshots)
@@ -69,6 +71,7 @@ START = [
     ("games", "pc-school", "Minesweeper", "minesweeper", "mine", None, None, "Theo anh: các game có sẵn của Windows 98"),
     ("games", "pc-school", "Rescue Rover", "rrover", "dos", None, None, SCHOOL),
     ("games", "pc-school", "Mario & Luigi", "mario-luigi", "dos", None, None, SCHOOL),
+    ("games", "pc-school", "Mario Teaches Typing", "mario-typing", "dos", None, None, SCHOOL),
     ("games", "pc-old", "Sonic & Knuckles Collection", "s3k", "exe:s3k", "2001-01-01", None, "Theo anh: có từ năm 2001"),
     ("games", "pc-xp", "Minesweeper", "minesweeper", "mine", None, None, "Có sẵn trong Windows XP"),
     ("games", "pc-xp", "Sonic & Knuckles Collection", "s3k", "exe:s3k", None, None, "Theo anh: có tới khi thôi dùng PC Win XP"),

@@ -248,7 +248,7 @@
  {
   "file": "captures/mario-luigi-title.png",
   "game": "mario-luigi",
-  "caption": "Màn hình mở đầu của Mario & Luigi. Chụp lại ngày 11/11/2026, chạy từ thư mục game trên ổ D: của anh.",
+  "caption": "Màn hình mở đầu của Mario & Luigi. Chụp lại ngày 11/11/2026, chạy bản gốc tác giả phát hành miễn phí.",
   "event": {
    "date": "2003",
    "precision": "YEAR",
@@ -258,7 +258,37 @@
  {
   "file": "captures/mario-luigi-play.png",
   "game": "mario-luigi",
-  "caption": "Mario & Luigi, lúc vào chơi. Chụp lại ngày 11/11/2026, chạy từ thư mục game trên ổ D: của anh.",
+  "caption": "Mario & Luigi, lúc vào chơi. Chụp lại ngày 11/11/2026, chạy bản gốc tác giả phát hành miễn phí.",
+  "event": {
+   "date": "2003",
+   "precision": "YEAR",
+   "approx": true
+  }
+ },
+ {
+  "file": "captures/mario-typing-title.png",
+  "game": "mario-teaches-typing",
+  "caption": "Màn hình mở đầu của Mario Teaches Typing. Chụp lại ngày 11/11/2026, chạy bản đĩa mềm 1.0 bot của anh tìm về.",
+  "event": {
+   "date": "2003",
+   "precision": "YEAR",
+   "approx": true
+  }
+ },
+ {
+  "file": "captures/mario-typing-menu.png",
+  "game": "mario-teaches-typing",
+  "caption": "Menu chính của Mario Teaches Typing. Chụp lại ngày 11/11/2026, chạy bản đĩa mềm 1.0 bot của anh tìm về.",
+  "event": {
+   "date": "2003",
+   "precision": "YEAR",
+   "approx": true
+  }
+ },
+ {
+  "file": "captures/mario-typing-play.png",
+  "game": "mario-teaches-typing",
+  "caption": "Mario Teaches Typing, lúc vào chơi. Chụp lại ngày 11/11/2026, chạy bản đĩa mềm 1.0 bot của anh tìm về.",
   "event": {
    "date": "2003",
    "precision": "YEAR",

@@ -244,7 +244,7 @@ GAMES = [
                               "(“Done by Utter Chaos [DFF]”), vào thẳng màn 1, không có màn hình mở đầu và menu")],
          links=[{"kind": "OFFICIAL", "title": "Wiering Software — Mario & Luigi", "url": "http://www.wieringsoftware.nl/mario/games.html"}]),
     dict(key="mario-teaches-typing", title="Mario Teaches Typing", series="mario", seriesOrder=21, platform="DOS",
-         releaseYear=1992, developer="Interplay", genre="Typing",
+         releaseYear=1992, developer="Interplay", genre="Typing", versions="1.0 (đĩa mềm)",
          summary="Luyện gõ mười ngón: Mario chạy và nhảy theo từng phím gõ đúng.",
          note="Mario gõ chữ typing",
          plays=[play("2002", "pc-school", end="2005", precision="YEAR", approx=True,
