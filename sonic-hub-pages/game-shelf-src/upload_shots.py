@@ -9,7 +9,12 @@ moment of play, a score table with his name read by the game itself — run from
 (captures/capture_games.py, capture_dos.py, make_manifest.py). Their file date is the day they were taken and their
 caption says so; their event date is the play they belong to, so they sit in the photo library in that period.
 
+PRIVATE captures show other people's names (a league table, a list of matches): their files and captions stay out of
+this public repo, in a folder of their own with a captures.json of the same shape (file, game, caption, event). Only
+the name of each file and the id it got are kept here (uploads.json, under "private/"), so a sync still links them.
+
   python3 upload_shots.py /mnt/user-data/uploads/Games      (needs pillow, requests)
+  python3 upload_shots.py --private <folder>                only the captures of that folder
 """
 import io
 import json
@@ -78,7 +83,7 @@ def album():
     return r.json()["id"]
 
 
-def main(root):
+def main(root, private=None):
     col = album()
     store = os.path.join(HERE, "uploads.json")
     done = {u["file"]: u for u in json.load(open(store))} if os.path.exists(store) else {}
@@ -102,20 +107,26 @@ def main(root):
         print(game, m["id"], "duplicate" if out.get("duplicate") else "new")
         return m["id"]
 
-    for rel, mtime, game, caption in SHOTS:
+    for rel, mtime, game, caption in ([] if private else SHOTS):
         if rel in done:
             continue
         path = os.path.join(root, rel)
         mid = send(rel, path, mtime if mtime is not None else int(os.path.getmtime(path) * 1000), game)
         if mid:
             requests.patch(f"{API}/media-files/{mid}", json={"caption": caption}, timeout=60).raise_for_status()
-    for c in CAPTURES:       # a capture keeps the day it was taken as its file date; the moment it shows is its event date
-        path = os.path.join(HERE, c["file"])
-        mid = done[c["file"]]["mediaId"] if c["file"] in done else send(c["file"], path, int(os.path.getmtime(path) * 1000), c["game"])
+    captures = [(c["file"], os.path.join(HERE, c["file"]), c) for c in CAPTURES]
+    if private:
+        captures = [("private/" + c["file"], os.path.join(private, c["file"]), c)
+                    for c in json.load(open(os.path.join(private, "captures.json"), encoding="utf-8"))]
+    for rel, path, c in captures:   # a capture keeps the day it was taken as its file date; the moment it shows is its event date
+        mid = done[rel]["mediaId"] if rel in done else send(rel, path, int(os.path.getmtime(path) * 1000), c["game"])
         if mid:
             requests.patch(f"{API}/media-files/{mid}", json={"caption": c["caption"], "event": c["event"]}, timeout=60).raise_for_status()
     json.dump(list(done.values()), open(store, "w"), indent=1, ensure_ascii=False)
 
 
 if __name__ == "__main__":
-    main(sys.argv[1])
+    if sys.argv[1] == "--private":
+        main(None, sys.argv[2])
+    else:
+        main(sys.argv[1])

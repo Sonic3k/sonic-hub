@@ -8,6 +8,7 @@ import { Link, useLocation, useParams, useSearchParams } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query';
 import { hub } from '../api/hub';
 import { cdn } from '../api/client';
+import { dayMonthYear, vnClock } from '../lib/date';
 import Justified from '../components/Justified';
 import Viewer from '../components/Viewer';
 import type { GameCard, GameDetail, GameMatch, GamePlay, GameTrace, MediaFile } from '../types';
@@ -288,7 +289,7 @@ export function GamePage() {
 
           {g.notes.length > 0 && <><h5 className="mem-h">Trong nhật ký</h5>
             <div className="posts g-mems g-notes">{g.notes.map(n => <Link key={n.id} className="post" to={n.slug ? `/journal/${n.slug}` : `/journal/id/${n.id}`}>
-              <div>{n.writtenAt && <span className="cat">{about(n.writtenAt.slice(0, 10))}</span>}<h4>{n.title || 'Ghi chép'}</h4>{n.excerpt && <p>{n.excerpt}</p>}</div>
+              <div>{n.writtenAt && <span className="cat">{dayMonthYear(vnClock(n.writtenAt))}</span>}<h4>{n.title || 'Ghi chép'}</h4>{n.excerpt && <p>{n.excerpt}</p>}</div>
             </Link>)}</div></>}
 
           {g.basedOn && <><h5 className="mem-h">Bắt nguồn từ</h5><div className="g-grid small"><GameBox g={g.basedOn} ghost={!isMine(g.basedOn)} /></div></>}

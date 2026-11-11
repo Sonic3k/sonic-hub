@@ -4,11 +4,14 @@
 #   data/boom.json, data/onthi.json — the curated memories of one import source each: life chapters, episodes (with photos,
 #     albums, people, tags and the forum posts / chat messages / notes they are told in), facts and traits.
 #     PUT …/memory/sources/<source> replaces only what that source wrote; anything typed by hand elsewhere is untouched.
+#   data/aoe.json — the same for the office Age of Empires years (2015–2018) and the league's app; pushed only when named.
 #   data/captions.json — short captions for onthi photos that have none yet (an existing caption is never overwritten).
+#   data/captions_<name>.json — the same for another set of photos (captions_aoe: his album of the office games).
 #   data/pushed_<source>.json — what the hub held right after the last push. A re-run compares the hub with it and stops
 #     when a memory was checked or edited in the admin since then (bring the change into the json first, or use --force).
 # Usage: python3 push.py [boom] [onthi] [captions]            dry run: what would change
 #        python3 push.py [boom] [onthi] [captions] --apply    write
+#        python3 push.py aoe captions_aoe --apply             any other source or caption file, by name
 import json, os, sys, urllib.request, urllib.error, datetime, collections
 D = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data")
 API = "https://angels-islands-api-production.up.railway.app"
@@ -81,19 +84,19 @@ def push(source):
     print("   photo tags:", {t[:8]: len(ids) for t, ids in batches.items()})
     return True
 
-def captions():
-    caps = json.load(open(os.path.join(D, "captions.json")))           # media id -> {"album": collection id, "caption": text}
+def captions(name="captions"):
+    caps = json.load(open(os.path.join(D, name + ".json")))            # media id -> {"album": collection id, "caption": text}
     current = {}
     for album in sorted({c["album"] for c in caps.values()}):
         for m in call("GET", f"/api/collections/{album}/media"): current[m["id"]] = m.get("caption")
     todo = {i: c["caption"] for i, c in caps.items() if i in current and not (current[i] or "").strip()}
-    print(f"[captions] {len(todo)} photos without a caption get one ({len(caps) - len(todo)} skipped: captioned already or moved)")
+    print(f"[{name}] {len(todo)} photos without a caption get one ({len(caps) - len(todo)} skipped: captioned already or moved)")
     if APPLY:
         for i, t in todo.items(): call("PATCH", f"/api/media-files/{i}", {"caption": t})
         print("   written:", len(todo))
 
 ok = True
 for w in WHAT:
-    if w in ("boom", "onthi"): ok = push(w) and ok
-    elif w == "captions": captions()
+    if w.startswith("captions"): captions(w)
+    else: ok = push(w) and ok
 sys.exit(0 if ok else 1)

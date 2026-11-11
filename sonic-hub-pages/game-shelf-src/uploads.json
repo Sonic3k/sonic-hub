@@ -568,5 +568,59 @@
   "mediaId": "f8368c38-bfad-4172-999c-2eb3971cb7e3",
   "game": "chinese-chess-master-3",
   "role": "SCREENSHOT"
+ },
+ {
+  "file": "private/aoe-league/aoe-league-chia-keo.png",
+  "mediaId": "ea42eaab-d07e-411c-a56b-0e17b8f7037e",
+  "game": "aoe-league",
+  "role": "SCREENSHOT"
+ },
+ {
+  "file": "private/aoe-league/aoe-league-keo-solo.png",
+  "mediaId": "d63284d9-03d3-480c-adcd-4163e0189375",
+  "game": "aoe-league",
+  "role": "SCREENSHOT"
+ },
+ {
+  "file": "private/aoe-league/aoe-league-bang-xep-hang.png",
+  "mediaId": "e97352b6-71eb-4b22-96f8-51266d60755d",
+  "game": "aoe-league",
+  "role": "SCREENSHOT"
+ },
+ {
+  "file": "private/aoe-league/aoe-league-bang-xep-hang-2017-07-11.png",
+  "mediaId": "5e80800a-69e9-49e4-a5b0-53ac23687d15",
+  "game": "aoe-league",
+  "role": "SCREENSHOT"
+ },
+ {
+  "file": "private/aoe-league/aoe-league-bang-xep-hang-2017-05-17.png",
+  "mediaId": "cdfa5494-66a8-499c-b397-9c71523d4e54",
+  "game": "aoe-league",
+  "role": "SCREENSHOT"
+ },
+ {
+  "file": "private/aoe-league/aoe-league-bang-xep-hang-2017-04-14.png",
+  "mediaId": "ef17557c-988c-4c96-ae79-704b50593a61",
+  "game": "aoe-league",
+  "role": "SCREENSHOT"
+ },
+ {
+  "file": "private/aoe-league/aoe-league-bang-xep-hang-2017-03-03.png",
+  "mediaId": "c4bdab75-9a45-4827-85fd-cb5624e15e72",
+  "game": "aoe-league",
+  "role": "SCREENSHOT"
+ },
+ {
+  "file": "private/aoe-league/aoe-league-bang-xep-hang-2017-01-25.png",
+  "mediaId": "59a1e176-5f38-43ef-8c70-f53328da3d18",
+  "game": "aoe-league",
+  "role": "SCREENSHOT"
+ },
+ {
+  "file": "private/aoe-league/aoe-league-sonic3k.png",
+  "mediaId": "2311b54b-e91e-4c51-858f-e00f2afddd01",
+  "game": "aoe-league",
+  "role": "SCREENSHOT"
  }
 ]
