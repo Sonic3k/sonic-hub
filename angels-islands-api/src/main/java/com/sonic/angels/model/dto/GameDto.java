@@ -101,7 +101,16 @@ public class GameDto {
         public List<Package> packages;
         public List<Spot> spots;
         public UUID coverMediaId, iconMediaId;
+        /** results of matches are filed under it (GET /api/games/{key}/matches) */
+        public boolean hasMatches;
     }
+
+    /** A result written down between two sides (a "kèo"): the sides in the record's order, his own name marked. */
+    public record Match(UUID id, String key, LocalDateTime playedAt, String map, Integer score1, Integer score2, String note,
+                        List<MatchPlayer> side1, List<MatchPlayer> side2) {}
+
+    /** rating = the player's points once that result was counted, when the record keeps one */
+    public record MatchPlayer(String name, boolean self, Double rating) {}
 
     public static class Series {
         public UUID id;
@@ -153,6 +162,24 @@ public class GameDto {
         public String key, gameKey, engine, title, config, note;
         public Boolean portal;
         public Integer sortOrder;
+    }
+
+    /** playedAt: yyyy-MM-ddTHH:mm[:ss], the wall clock where it was played. key = the record's own id. */
+    public static class MatchIn {
+        public String key, playedAt, map, note;
+        public Integer score1, score2;
+        public List<MatchPlayerIn> side1, side2;
+    }
+
+    public static class MatchPlayerIn {
+        public String name;
+        public Boolean self;
+        public Double rating;
+    }
+
+    /** Every match kept for one game, written at once (matched by key; what is not named goes). */
+    public static class MatchesIn {
+        public List<MatchIn> matches;
     }
 
     public static class Delete {

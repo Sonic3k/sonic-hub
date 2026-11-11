@@ -1160,6 +1160,23 @@ a.mem-src:hover { border-color: #D9D5CB; } a.mem-src:hover .mem-src-meta { color
 .g-plays p.g-pnote { color: var(--ink2); font-style: italic; }
 .g-article .mem-photos { margin: 0 0 32px; }
 .g-mems { margin-bottom: 32px; }
+.g-notes .post { grid-template-columns: minmax(0, 1fr); }
+/* the results kept for a game: a month at a time, each match a line of side – score – side */
+.g-mwait { margin: 0 0 32px; font-size: 13.5px; color: var(--ink3); }
+.g-months { display: flex; flex-wrap: wrap; gap: 6px; margin: 0 0 14px; }
+.g-months button { padding: 5px 12px; border-radius: 999px; border: 1px solid var(--line); background: var(--card); font: inherit; font-size: 13px; font-variant-numeric: tabular-nums; color: var(--ink2); cursor: pointer; }
+.g-months button.on { background: var(--games); border-color: var(--games); color: #fff; font-weight: 600; }
+.g-matches { margin: 0 0 32px; }
+.g-matches h6 { margin: 18px 0 2px; font-size: 13px; font-weight: 600; color: var(--ink); }
+.g-matches section:first-child h6 { margin-top: 0; }
+.g-match { display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); align-items: center; column-gap: 14px; padding: 8px 0 9px; border-top: 1px solid var(--line); }
+.g-match small { grid-column: 1 / -1; display: flex; gap: 10px; margin-bottom: 2px; font-size: 11.5px; color: var(--ink3); font-variant-numeric: tabular-nums; }
+.g-match small time { font-weight: 600; color: var(--ink2); }
+.g-match b { font-size: 15px; font-variant-numeric: tabular-nums; white-space: nowrap; color: var(--ink); }
+.g-side { display: flex; flex-wrap: wrap; gap: 2px 10px; font-size: 13.5px; line-height: 1.4; color: var(--ink3); }
+.g-side.r { justify-content: flex-end; text-align: right; }
+.g-side.won { color: var(--ink); }
+.g-side .me { font-weight: 700; color: #4A3AA8; }
 .g-links { display: flex; flex-direction: column; margin-bottom: 8px; }
 .g-links a { display: grid; grid-template-columns: 96px minmax(0, 1fr); column-gap: 14px; padding: 10px 0; border-top: 1px solid var(--line); }
 .g-links a small { grid-row: span 2; padding-top: 2px; font-size: 11.5px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: var(--games); }

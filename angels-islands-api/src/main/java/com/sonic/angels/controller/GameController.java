@@ -2,6 +2,7 @@ package com.sonic.angels.controller;
 
 import com.sonic.angels.model.dto.GameDto;
 import com.sonic.angels.service.GameAssetService;
+import com.sonic.angels.service.GameMatchService;
 import com.sonic.angels.service.GamePackageService;
 import com.sonic.angels.service.GameService;
 import org.springframework.core.io.InputStreamResource;
@@ -30,6 +31,8 @@ import java.util.UUID;
  *   DELETE /api/games/{key}
  *   POST   /api/games/{key}/assets             multipart file, role (MAP | ART | ICON), label, sortOrder, lastModified, name
  *   DELETE /api/games/{key}/media/{linkId}     a picture taken off the game
+ *   GET    /api/games/{key}/matches            the results kept for it (matches between two sides), oldest first
+ *   PUT    /api/games/{key}/matches            all of them at once from the record they come from (matched by key)
  *   POST   /api/games/sync                     series, games, packages at once (matched by key) + deletes
  *   GET    /api/game-series                    every series with its games
  *   GET    /api/game-series/{key}
@@ -51,9 +54,10 @@ public class GameController {
     private final GameService games;
     private final GamePackageService packages;
     private final GameAssetService assets;
+    private final GameMatchService matches;
 
-    public GameController(GameService games, GamePackageService packages, GameAssetService assets) {
-        this.games = games; this.packages = packages; this.assets = assets;
+    public GameController(GameService games, GamePackageService packages, GameAssetService assets, GameMatchService matches) {
+        this.games = games; this.packages = packages; this.assets = assets; this.matches = matches;
     }
 
     @GetMapping("/games")
@@ -88,6 +92,12 @@ public class GameController {
         games.unlinkMedia(key, linkId);
         return ResponseEntity.noContent().build();
     }
+
+    @GetMapping("/games/{key}/matches")
+    public List<GameDto.Match> matches(@PathVariable String key) { return matches.list(key); }
+
+    @PutMapping("/games/{key}/matches")
+    public Map<String, Integer> putMatches(@PathVariable String key, @RequestBody GameDto.MatchesIn body) { return matches.put(key, body); }
 
     @GetMapping("/game-series")
     public List<GameDto.Series> series() { return games.seriesList(); }
