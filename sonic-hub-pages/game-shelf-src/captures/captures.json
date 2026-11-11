@@ -636,6 +636,26 @@
   }
  },
  {
+  "file": "captures/solitaire.png",
+  "game": "solitaire",
+  "caption": "Solitaire khi vừa mở. Chụp lại ngày 11/11/2026 trên máy trường, chạy bản của Windows XP bot của anh tìm về.",
+  "event": {
+   "date": "2003",
+   "precision": "YEAR",
+   "approx": true
+  }
+ },
+ {
+  "file": "captures/freecell.png",
+  "game": "freecell",
+  "caption": "FreeCell khi vừa mở. Chụp lại ngày 11/11/2026 trên máy trường, chạy bản của Windows XP bot của anh tìm về.",
+  "event": {
+   "date": "2003",
+   "precision": "YEAR",
+   "approx": true
+  }
+ },
+ {
   "file": "captures/dao-vang.png",
   "game": "dao-vang",
   "caption": "Đào vàng khi vừa mở. Chụp lại ngày 11/11/2026, chạy từ thư mục game trên ổ D: của anh.",
@@ -673,6 +693,22 @@
    "date": "2010-11-24",
    "precision": "DAY",
    "approx": false
+  }
+ },
+ {
+  "file": "captures/rodger-dodger-title.png",
+  "game": "rodger-dodger",
+  "caption": "Màn hình mở đầu của Rodger Dodger. Chụp lại ngày 11/11/2026, chạy bản trong After Dark Games (1998) bot của anh tìm về.",
+  "event": {
+   "date": null
+  }
+ },
+ {
+  "file": "captures/rodger-dodger-play.png",
+  "game": "rodger-dodger",
+  "caption": "Rodger Dodger, màn 1: quả cầu, các vòng xoáy xanh và những thứ màu đỏ phải tránh. Chụp lại ngày 11/11/2026, chạy bản trong After Dark Games (1998) bot của anh tìm về.",
+  "event": {
+   "date": null
   }
  }
 ]

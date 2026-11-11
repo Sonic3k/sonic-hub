@@ -508,5 +508,29 @@
   "mediaId": "34b0b7ba-dede-4ac1-aa5b-744d4bc7f8c0",
   "game": "mario-teaches-typing",
   "role": "SCREENSHOT"
+ },
+ {
+  "file": "captures/solitaire.png",
+  "mediaId": "98b8ad07-ba0c-4b66-ab1d-062a319c912c",
+  "game": "solitaire",
+  "role": "SCREENSHOT"
+ },
+ {
+  "file": "captures/freecell.png",
+  "mediaId": "18d017e6-cd8d-4a67-8f23-d1c3d0dbf667",
+  "game": "freecell",
+  "role": "SCREENSHOT"
+ },
+ {
+  "file": "captures/rodger-dodger-title.png",
+  "mediaId": "04a0c291-f2a6-44cb-8225-124458596c0a",
+  "game": "rodger-dodger",
+  "role": "SCREENSHOT"
+ },
+ {
+  "file": "captures/rodger-dodger-play.png",
+  "mediaId": "c3724cb0-bddb-40e4-a767-e3c8de73a7fe",
+  "game": "rodger-dodger",
+  "role": "SCREENSHOT"
  }
 ]

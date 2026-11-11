@@ -9,10 +9,14 @@ pk = {p["key"]: p for p in json.load(open("/home/claude/shots/school/pk.json"))}
 pk.setdefault("textris", {"gameKey": "textris", "title": "Textris"})
 pk.setdefault("mario-luigi", {"gameKey": "mario-luigi", "title": "Mario & Luigi"})
 pk.setdefault("mario-typing", {"gameKey": "mario-teaches-typing", "title": "Mario Teaches Typing"})
+pk.setdefault("solitaire", {"gameKey": "solitaire", "title": "Solitaire"})
+pk.setdefault("freecell", {"gameKey": "freecell", "title": "FreeCell"})
 TAIL = " Chụp lại ngày 11/11/2026, chạy từ thư mục game trên ổ D: của anh."
 # the games that do not run from his drive D:
 TAILS = {"mario-luigi": " Chụp lại ngày 11/11/2026, chạy bản gốc tác giả phát hành miễn phí.",
-         "mario-typing": " Chụp lại ngày 11/11/2026, chạy bản đĩa mềm 1.0 bot của anh tìm về."}
+         "mario-typing": " Chụp lại ngày 11/11/2026, chạy bản đĩa mềm 1.0 bot của anh tìm về.",
+         "solitaire": " Chụp lại ngày 11/11/2026 trên máy trường, chạy bản của Windows XP bot của anh tìm về.",
+         "freecell": " Chụp lại ngày 11/11/2026 trên máy trường, chạy bản của Windows XP bot của anh tìm về."}
 DOS = {  # package: [(frame file, kind)]
  "dyna": [("cap2/dyna-title", "title"), ("cap2/dyna-d", "play")], "prince": [("cap2/prince-title", "title"), ("cap2/prince-play", "play")],
  "dave2": [("cap2/dave2-t3", "title"), ("cap2/dave2-play", "play")], "lionking": [("cap2/lionking-title", "title"), ("cap2/lionking-play", "play")],
@@ -26,12 +30,12 @@ DOS = {  # package: [(frame file, kind)]
 }
 WIN = "chips jezzball tetravex taipei rodent maxwell gofigure dots fences pipe-dream golf cruel chess-win noughts amnesia codebreaker hangman jacks lifegen pegged rattler sticks tictactics wordzap lines98 pikachu".split()
 OTHER = {"tripeaks": "cap2/tripeaks-b", "blackjack": "cap2/blackjack-b", "minesweeper": "cap3/minesweeper_1", "pinball": "cap3/pinball_1",
-         "dxball2": "cap2/dxball2-b", "s3k": "cap2/s3k-b", "skifree": "cap4/skifree_2", "fujigolf": "cap4/fujigolf_2", "dao-vang": "cap/dao-vang_2", "bloxorz": "cap/bloxorz_2", "doodle-god": "cap/doodle-god_2", "doodle-devil": "cap2/doodle-devil-b"}
+         "dxball2": "cap2/dxball2-b", "s3k": "cap2/s3k-b", "skifree": "cap4/skifree_2", "fujigolf": "cap4/fujigolf_2", "solitaire": "cap6/solitaire_2", "freecell": "cap6/freecell_2", "dao-vang": "cap/dao-vang_2", "bloxorz": "cap/bloxorz_2", "doodle-god": "cap/doodle-god_2", "doodle-devil": "cap2/doodle-devil-b"}
 SCORES = {"riptide": "Bảng High scores của In Search of Dr. Riptide, đọc từ file HIGH.SCR của anh (ghi ngày 04/08/2012): Sonic3k đứng đầu với 235.550 điểm."}
 FALLBACK = {"pc-old": 2001, "pc-school": 2003, "pc-xp": 2006, "pc-fujitsu": 2006, "pc-hp": 2011}
 # on none of his machines (he said so, 11/11/2026): no period to date its pictures by
 NO_MACHINE = {"mariobro"}
-SPOT = {"dave2": "pc-old", "lionking": "pc-old", "fastfood": "pc-old", "mariobro": "pc-school", "dao-vang": "pc-xp", "bloxorz": "pc-xp", "doodle-god": "pc-xp", "doodle-devil": "pc-xp", "pinball": "pc-fujitsu"}
+SPOT = {"solitaire": "pc-school", "freecell": "pc-school", "dave2": "pc-old", "lionking": "pc-old", "fastfood": "pc-old", "mariobro": "pc-school", "dao-vang": "pc-xp", "bloxorz": "pc-xp", "doodle-god": "pc-xp", "doodle-devil": "pc-xp", "pinball": "pc-fujitsu"}
 
 def event(game, package):
     plays = sorted(GAMES[game].get("plays", []), key=lambda p: p["start"] if len(p["start"]) == 10 else p["start"] + "-99")
@@ -70,7 +74,11 @@ for key, frames in DOS.items():
 for key in WIN + list(OTHER):
     game = pk[key]["gameKey"]; title = pk[key].get("title") or GAMES[game]["title"]
     src = OTHER.get(key, f"cap3/{key}_2")
-    add(src, key, game, f"{title} khi vừa mở." + TAIL, event(game, key))
+    add(src, key, game, f"{title} khi vừa mở." + TAILS.get(key, TAIL), event(game, key))
+# Rodger Dodger: on none of his machines (someone let him try it), so its pictures carry no date of their own
+for kind, cap in (("title", "Màn hình mở đầu của Rodger Dodger."), ("play", "Rodger Dodger, màn 1: quả cầu, các vòng xoáy xanh và những thứ màu đỏ phải tránh.")):
+    add(f"cap6/rodger-dodger-{kind}", f"rodger-dodger-{kind}", "rodger-dodger",
+        cap + " Chụp lại ngày 11/11/2026, chạy bản trong After Dark Games (1998) bot của anh tìm về.", {"date": None})
 rows.insert(0, {"file": "captures/textris-best-scores.png", "game": "textris", "event": {"date": "2003-11-09", "precision": "DAY", "approx": False},
     "caption": "Bảng Best Scores của Textris, đọc từ file TEXTRIS.SCO trên ổ D: của anh: Chelsea 1.210 điểm ghi 11-09-03 (09/11/2003), "
                "NGOC ANH 1.029 điểm ghi 01-10-03 (10/01/2003); Everton và Fulham cũng là anh. Chụp lại ngày 10/11/2026, chạy từ thư mục English ABC."})
