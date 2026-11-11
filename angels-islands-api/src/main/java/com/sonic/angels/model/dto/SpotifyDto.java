@@ -42,7 +42,8 @@ public class SpotifyDto {
 
     // ── read ────────────────────────────────────────────────────────────────
 
-    /** starts = every stream; plays = the ones of 30 seconds or more (what Spotify counts as a play); ms = time played. */
+    /** starts = every stream; plays = the ones of 30 seconds or more (what Spotify counts as a play); ms = time played.
+     *  songs, artists, days, first and last are counted on plays: a song passed by within half a minute is not one he listened to. */
     public static class Totals {
         public long starts, plays, ms;
         public int songs, artists, days;
