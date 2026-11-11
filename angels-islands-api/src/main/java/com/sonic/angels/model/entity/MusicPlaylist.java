@@ -67,6 +67,10 @@ public class MusicPlaylist extends BaseEntity {
     @Column(name = "source_folder", length = 500)
     private String sourceFolder;
 
+    /** A playlist of his on Spotify: its id there (open.spotify.com/playlist/…). takenAt = the day he made it. */
+    @Column(name = "spotify_id", length = 40)
+    private String spotifyId;
+
     @Column(name = "summary", columnDefinition = "TEXT")
     private String summary;
 
@@ -102,6 +106,8 @@ public class MusicPlaylist extends BaseEntity {
     public void setEvent(LifeEvent v) { this.event = v; }
     public String getSourceFolder() { return sourceFolder; }
     public void setSourceFolder(String v) { this.sourceFolder = v; }
+    public String getSpotifyId() { return spotifyId; }
+    public void setSpotifyId(String v) { this.spotifyId = v; }
     public String getSummary() { return summary; }
     public void setSummary(String v) { this.summary = v; }
     public String getNote() { return note; }

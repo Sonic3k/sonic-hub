@@ -108,7 +108,7 @@ public class MusicDto {
     /** A checkpoint list. when = its moment as text; windowFrom → takenEnd = the stretch a WINDOW list covers. */
     public static class Playlist {
         public UUID id;
-        public String key, title, kind, when, deviceKey, deviceName, eventTitle, sourceFolder, summary, note;
+        public String key, title, kind, when, deviceKey, deviceName, eventTitle, sourceFolder, spotifyId, summary, note;
         public UUID eventId;
         public LocalDateTime takenAt, takenEnd, windowFrom;
         public Integer sortOrder;
@@ -122,7 +122,7 @@ public class MusicDto {
     public static class Entry {
         public Integer position;
         public String fileName, note;
-        public LocalDateTime fileModifiedAt;
+        public LocalDateTime fileModifiedAt, addedAt;
         public Track track;
     }
 
@@ -182,18 +182,18 @@ public class MusicDto {
         public String role, label;
     }
 
-    /** taken / windowFrom as firstHeard; device = a desk device key. */
+    /** taken / windowFrom as firstHeard; device = a desk device key; spotifyId = the playlist's id on Spotify. */
     public static class PlaylistIn {
-        public String key, title, kind, taken, takenPrecision, windowFrom, device, sourceFolder, summary, note;
+        public String key, title, kind, taken, takenPrecision, windowFrom, device, sourceFolder, spotifyId, summary, note;
         public Boolean takenApprox;
         public UUID eventId;
         public Integer sortOrder;
         public List<EntryIn> entries;
     }
 
-    /** track = a recording key; fileModifiedAt = yyyy-MM-ddTHH:mm[:ss] (Vietnam wall clock). */
+    /** track = a recording key; fileModifiedAt = yyyy-MM-ddTHH:mm[:ss] (Vietnam wall clock); addedAt = yyyy-MM-dd. */
     public static class EntryIn {
-        public String track, fileName, fileModifiedAt, note;
+        public String track, fileName, fileModifiedAt, addedAt, note;
         public Integer position;
     }
 

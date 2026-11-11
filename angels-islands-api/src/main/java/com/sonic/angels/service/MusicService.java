@@ -291,6 +291,7 @@ public class MusicService {
         d.entries = es.stream().map(e -> {
             MusicDto.Entry o = new MusicDto.Entry();
             o.position = e.getPosition(); o.fileName = e.getFileName(); o.note = e.getNote(); o.fileModifiedAt = e.getFileModifiedAt();
+            o.addedAt = e.getAddedAt();
             MusicTrack t = full.get(e.getTrack().getId());
             o.track = t == null ? null : track(t, member);
             return o;
@@ -308,6 +309,7 @@ public class MusicService {
         o.id = p.getId(); o.key = p.getExternalKey(); o.title = p.getTitle(); o.kind = p.getKind().name();
         o.takenAt = p.getTakenAt(); o.takenEnd = p.takenEnd(); o.windowFrom = p.getWindowFrom(); o.when = when(p);
         o.sourceFolder = p.getSourceFolder(); o.summary = p.getSummary(); o.note = p.getNote(); o.sortOrder = p.getSortOrder();
+        o.spotifyId = p.getSpotifyId();
         if (p.getDevice() != null) { o.deviceKey = p.getDevice().getExternalKey(); o.deviceName = p.getDevice().getName(); }
         if (p.getEvent() != null) { o.eventId = p.getEvent().getId(); o.eventTitle = p.getEvent().getTitle(); }
         int[] c = n.getOrDefault(p.getId(), new int[2]);
@@ -783,6 +785,7 @@ public class MusicService {
             }
         }
         if (p.sourceFolder != null) x.setSourceFolder(text(p.sourceFolder, 500));
+        if (p.spotifyId != null) x.setSpotifyId(text(p.spotifyId, 40));
         if (p.summary != null) x.setSummary(p.summary.isBlank() ? null : p.summary.trim());
         if (p.note != null) x.setNote(p.note.isBlank() ? null : p.note.trim());
         if (p.sortOrder != null) x.setSortOrder(p.sortOrder);
@@ -803,6 +806,7 @@ public class MusicService {
             y.setPosition(e.position != null ? e.position : i);
             y.setFileName(text(e.fileName, 300)); y.setNote(text(e.note, 1000));
             if (!blank(e.fileModifiedAt)) y.setFileModifiedAt(dated(e.fileModifiedAt, null, w + ".entries[" + i + "].fileModifiedAt").at());
+            if (!blank(e.addedAt)) y.setAddedAt(dated(e.addedAt, null, w + ".entries[" + i + "].addedAt").at());
             entries.save(y);
             i++;
         }

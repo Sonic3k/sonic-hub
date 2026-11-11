@@ -10,12 +10,13 @@ import { MoneySide } from '../pages/Money';
 import { PortalSide } from '../pages/Portal';
 import { MemoriesSide } from '../pages/Memories';
 import { GamesSide } from '../pages/Games';
+import { MusicSide } from '../pages/Music';
 import { isOwner } from './money/data';
 import { cdn } from '../api/client';
 import { counts, fmt, noteDate, useAlbums, useLibraryCounts, useNotes, usePersons, useRegions, useTimeline } from '../lib/queries';
 
 /* [label, path, colour, short label for the phone's bottom bar]. Portal lists the sites of their own (Huyền học, Bóng đá). */
-const TABS: [string, string, string, string?][] = [['Hôm nay', '/', '--photo'], ['Ảnh', '/photos', '--photo'], ['Nhật ký', '/journal', '--journal'], ['Ký ức', '/memories', '--memory'], ['Angels', '/angels', '--angels'], ['Diễn đàn', '/forum', '--forum'], ['Game', '/games', '--games'], ['Portal', '/portal', '--portal']];
+const TABS: [string, string, string, string?][] = [['Hôm nay', '/', '--photo'], ['Ảnh', '/photos', '--photo'], ['Nhật ký', '/journal', '--journal'], ['Ký ức', '/memories', '--memory'], ['Angels', '/angels', '--angels'], ['Diễn đàn', '/forum', '--forum'], ['Game', '/games', '--games'], ['Music', '/music', '--music'], ['Portal', '/portal', '--portal']];
 /* Only on the owner's own browser (set by opening /money once): visitors of the portal never see the money tab. */
 const MONEY_TAB: [string, string, string, string?] = ['Money', '/money', '--money'];
 
@@ -23,7 +24,7 @@ export default function Shell() {
   const loc = useLocation(), nav = useNavigate(), tl = useTimeline();
   const reading = /^\/(journal|memories)\/(?!events\/?$).+/.test(loc.pathname), inMemories = loc.pathname.startsWith('/memories'), inJournal = loc.pathname.startsWith('/journal'), inPhotos = /^\/(photos|tags)/.test(loc.pathname), inAngels = loc.pathname.startsWith('/angels'), inForum = loc.pathname.startsWith('/forum');
   const inMoney = loc.pathname.startsWith('/money'), tabs = inMoney || isOwner() ? [...TABS, MONEY_TAB] : TABS;
-  const inPortal = loc.pathname.startsWith('/portal'); const inGames = loc.pathname.startsWith('/games');
+  const inPortal = loc.pathname.startsWith('/portal'); const inGames = loc.pathname.startsWith('/games'); const inMusic = loc.pathname.startsWith('/music');
   /* Angels changes the light of the whole page, softly */
   useEffect(() => { document.body.classList.toggle('mood-angels', inAngels); }, [inAngels]);
   const random = async () => {
@@ -41,7 +42,7 @@ export default function Shell() {
         <MachineButtons />
       </div></header>
       <div className={`frame ${reading ? 'reading' : ''}`}>
-        <aside className="side">{inJournal ? <JournalSide /> : inMemories ? <MemoriesSide /> : inPhotos ? <PhotosSide /> : inAngels ? <AngelsSide /> : inForum ? <ForumSide /> : inMoney ? <MoneySide /> : inPortal ? <PortalSide /> : inGames ? <GamesSide /> : <HomeSide />}</aside>
+        <aside className="side">{inJournal ? <JournalSide /> : inMemories ? <MemoriesSide /> : inPhotos ? <PhotosSide /> : inAngels ? <AngelsSide /> : inForum ? <ForumSide /> : inMoney ? <MoneySide /> : inPortal ? <PortalSide /> : inGames ? <GamesSide /> : inMusic ? <MusicSide /> : <HomeSide />}</aside>
         <main><Outlet /></main>
       </div>
     </>
