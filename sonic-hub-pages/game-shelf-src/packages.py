@@ -24,7 +24,7 @@ DOSBox stamps what an installer writes with today's date, so every installed fil
 
   python3 packages.py build /mnt/user-data/uploads/Games/[DOS\\ Games] /tmp/bundles [textris]   writes the bundles (all, or those keys)
   python3 packages.py flash /mnt/user-data/uploads/Games/[Mini\\ Games] /tmp/bundles     the Flash movies out of their .exe
-  python3 packages.py win /tmp/bundles                                                   the Windows games' zips (WIN_FILES)
+  python3 packages.py win /tmp/bundles [solitaire,rodger-dodger]                         the Windows games' zips (WIN_FILES)
   python3 packages.py push /tmp/bundles [jazz,riptide]                                  metadata + files to the hub (all, or those keys)
 """
 import json
@@ -85,8 +85,11 @@ FREE_ZIPS = {"xiangqi-donnelly": ("CCHESS.zip", ["XQ.EXE", "XQ.RUL"]), "cchess-1
 # no date of their own): Norton Commander's saved setup (NC.INI: both panels, C:\\GAMES on the left) and its F2 menu
 # of the school's games (NC.MNU)
 MADE = {"school-nc": (2002, 9, 1, 8, 0, 0)}
-# what a Windows game needs besides its program: files of its folder it wants in C:\\WINDOWS (win.html puts them there)
-WIN_OPTIONS = {"fujigolf": {"win": "FUJIGOLF.DAT"}}
+# what a Windows game needs besides its program: files of its folder it wants in C:\\WINDOWS (win.html puts them
+# there), what it is started with
+WIN_OPTIONS = {"fujigolf": {"win": "FUJIGOLF.DAT"},
+               # After Dark Games is started with the game to open
+               "rodger-dodger": {"arg": "Rodger Dodger.adz"}}
 
 # A DOS prompt with a drive C: of its own: the computer room of his school, where the games were started by typing.
 # key, game it is kept under, title, {folder on its C: → the folder it comes from (see source()), or several},
@@ -187,6 +190,15 @@ WIN_FILES = {
     "pikachu": ("/mnt/user-data/uploads/1b09a047-Pikachu-original.zip", "", "pikachu", ["/home/claude/untrusted/vb5/MSVBVM50.DLL"]),
     # C:\\Program Files\\Windows NT\\Pinball of Windows XP SP3, from his upload (its README stays beside it)
     "pinball": ("/mnt/user-data/uploads/a5915bc6-Pinball-WinXP-original.zip", "", "pinball", []),
+    # What his bot brought (see _incoming at the top), put into zips of the same kind:
+    # Solitaire and FreeCell of Windows XP (sol.exe, freecell.exe and cards.dll 5.1.2600.0, taken by his bot out of the
+    # English XP Professional SP3 disc; each file with that disc's day): they stand in for the Windows 98 ones of the
+    # school's machine. Hearts of the same disc is an MFC program and waits for MFC42U.DLL
+    "solitaire": ("/mnt/user-data/uploads/Games/_incoming/windows-games/windows-games-src.zip", "", "wincards", []),
+    # After Dark Games (Berkeley Systems / Sierra, disc of 09/1998), the part Rodger Dodger runs on: the program, its
+    # engine, the game and the After Dark module it is built on, the default game the program looks for, and in data\
+    # their pictures and sounds (the frame's, the default's, Rodger Dodger's)
+    "rodger-dodger": ("/mnt/user-data/uploads/Games/_incoming/after-dark-games/rodger-dodger-src.zip", "", "adg", []),
 }
 
 # key, game, title, zip (another package's file; None = its own), program, screen (None = 800x600), portal, note
@@ -230,6 +242,12 @@ WIN = [
      "Kawai 2003 của CHEN PROGRAM STUDY (Đài Loan), chạy cùng Visual Basic 5 runtime của Microsoft"),
     ("pinball", "space-cadet-pinball", "3D Pinball for Windows – Space Cadet", None, "PINBALL.EXE", None, False,
      "Bản của Windows XP SP3 (5.1.2600.5512), đúng từng byte với bản gốc"),
+    ("solitaire", "solitaire", "Solitaire", None, "SOL.EXE", None, False,
+     "Bản của Windows XP (5.1.2600.0) bot của anh lấy từ đĩa cài XP Professional SP3 tiếng Anh ngày 11/11/2026, thế chỗ bản Windows 98 của máy trường"),
+    ("freecell", "freecell", "FreeCell", "solitaire", "FREECELL.EXE", None, False, None),
+    # on none of his machines (someone let him try it): it plays from the portal
+    ("rodger-dodger", "rodger-dodger", "Rodger Dodger", None, "After Dark Games.exe", None, True,
+     "Bản trong After Dark Games (Berkeley Systems, 1998) bot của anh tìm về ngày 11/11/2026. Vào game gõ tên người chơi rồi bấm PLAY"),
 ]
 
 
@@ -291,10 +309,13 @@ def build_flash(src, out):
         print(key, len(swf))
 
 
-def build_win(out):
-    """the Windows games' zips: each folder under one top folder, every file with the date it has on his drive"""
+def build_win(out, only=None):
+    """the Windows games' zips (all, or those keys): each folder under one top folder, every file with the date it has
+    on his drive"""
     os.makedirs(out, exist_ok=True)
     for key, (src, drop, top, extra) in WIN_FILES.items():
+        if only and key not in only:
+            continue
         path = os.path.join(out, f"{key}.zip")
         with zipfile.ZipFile(src) as zi, zipfile.ZipFile(path, "w", zipfile.ZIP_DEFLATED) as zo:
             zo.writestr(f"{top}/", b"")
@@ -479,5 +500,5 @@ def push(bundles, only=None):
 
 if __name__ == "__main__":
     {"build": lambda: build(sys.argv[2], sys.argv[3], sys.argv[4].split(",") if len(sys.argv) > 4 else None), "flash": lambda: build_flash(sys.argv[2], sys.argv[3]),
-     "win": lambda: build_win(sys.argv[2]),
+     "win": lambda: build_win(sys.argv[2], sys.argv[3].split(",") if len(sys.argv) > 3 else None),
      "push": lambda: push(sys.argv[2], sys.argv[3].split(",") if len(sys.argv) > 3 else None)}[sys.argv[1]]()
