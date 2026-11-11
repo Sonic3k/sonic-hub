@@ -12,6 +12,16 @@ screen size Wine starts with when not 800x600 (res), and, for the games of [Win 
 package that holds the zip (zip). What runs them (Boxedwine and the Wine files) is win_runtime.py.
 WEB packages have no file: the web has the game itself (config names it).
 
+What his bot brought on 11/11/2026 (his Drive folder _incoming: SOURCE.txt beside each item names where it came from
+and its SHA-256) is staged under GAMES_ROOT/_incoming, installed the way a machine of the time had it:
+  mario-teaches-typing/installed   Mario Teaches Typing 1.0 (Interplay, 1992): INSTALL.EXE of the 1.2M floppy image run
+                                   in js-dos into C:\\MARIO, its SETUP answered VGA, Sound Blaster (music and voice),
+                                   normal speed
+  norton-commander-5/installed     Norton Commander 5.0 (Symantec, 07/02/1995): INSTALL.EXE of the three floppies (their
+                                   files in one folder), Full Install into C:\\NC
+DOSBox stamps what an installer writes with today's date, so every installed file carries its floppy's date again
+(04/08/1992 18:14; 07/02/1995 05:00).
+
   python3 packages.py build /mnt/user-data/uploads/Games/[DOS\\ Games] /tmp/bundles [textris]   writes the bundles (all, or those keys)
   python3 packages.py flash /mnt/user-data/uploads/Games/[Mini\\ Games] /tmp/bundles     the Flash movies out of their .exe
   python3 packages.py win /tmp/bundles                                                   the Windows games' zips (WIN_FILES)
@@ -49,6 +59,9 @@ DOS = [
     # Mario.exe on his drive (downloaded 06/07/2004) is an altered copy that skips the title and its menus.
     ("mario-luigi", "mario-luigi", "Mario & Luigi", "mario-luigi", "MARIO.EXE", 7,
      "Bản gốc tác giả Mike Wiering phát hành miễn phí. Bản Mario.exe anh tải ngày 06/07/2004 là bản đã bị sửa: vào thẳng màn 1, không có màn hình mở đầu và menu"),
+    # the typing game of his school's computer room, from the floppy his bot found (see the notes on _incoming above)
+    ("mario-typing", "mario-teaches-typing", "Mario Teaches Typing", "../_incoming/mario-teaches-typing/installed", "MARIO.EXE", 7,
+     "Bản 1.0 trên đĩa mềm (Interplay, 1992) bot của anh tìm về ngày 11/11/2026, cài bằng chính INSTALL.EXE của đĩa: VGA, Sound Blaster"),
     # a DOS program he kept among the Windows games, in [Win Games]\\English ABC (his name for it)
     ("textris", "textris", "Textris", "../[Win Games]/English ABC", "TEXTRIS.EXE", 7,
      "Kèm bảng điểm TEXTRIS.SCO của anh: NGOC ANH 1.029 điểm ghi 01-10-03 (10/01/2003)"),
@@ -62,15 +75,38 @@ FREE = {"mario-luigi": (1994, 1, 1, 0, 0, 0)}
 # DOS games that also play outside the machines, on the portal's game page (11/11/2026: Mario Brothers VGA was on none
 # of his machines, but stays playable)
 PORTAL = {"mariobro"}
+# Free programs kept beside this script as the archive they came in (freeware/<folder>/<archive>), so their files keep
+# the dates the archive gives them. folder → (archive, the files of it that are the program; None = all of it):
+#   Xiangqi 2.3 by Peter Donnelly (1989): "I'm releasing it into the public domain" (XQ.RUL), "May be copied freely"
+#     (its opening screen); inside Roleigh Martin's freeware package of 23/12/1993, archive.org/details/CCHESS
+#   CCHESS (1987): author unknown, passed around as shareware; archive.org/details/msdos_shareware_fb_CCHESS
+FREE_ZIPS = {"xiangqi-donnelly": ("CCHESS.zip", ["XQ.EXE", "XQ.RUL"]), "cchess-1987": ("CCHESS.ZIP", None)}
+# What was made here for a machine's drive, kept in made/<folder>, with the day the machine starts (its files carry
+# no date of their own): Norton Commander's saved setup (NC.INI: both panels, C:\\GAMES on the left) and its F2 menu
+# of the school's games (NC.MNU)
+MADE = {"school-nc": (2002, 9, 1, 8, 0, 0)}
 # what a Windows game needs besides its program: files of its folder it wants in C:\\WINDOWS (win.html puts them there)
 WIN_OPTIONS = {"fujigolf": {"win": "FUJIGOLF.DAT"}}
 
 # A DOS prompt with a drive C: of its own: the computer room of his school, where the games were started by typing.
-# key, game it is kept under, title, {folder on its C: → folder under [DOS Games]}, what its autoexec does, IRQ, note
+# key, game it is kept under, title, {folder on its C: → the folder it comes from (see source()), or several},
+# what its autoexec does, IRQ, note
+MTT, NC5 = "../_incoming/mario-teaches-typing/installed", "../_incoming/norton-commander-5/installed"
+# drive C: of the computer room: the games he could only play there; the two Chinese-chess programs his bot found, for
+# him to say which one it was (none has a Start-menu entry or a card until he does); Norton Commander, the blue screen
+# old school machines were worked from
+SCHOOL_C = {"GAMES/ROVER": "rrover", "GAMES/MARIO": "mario-luigi", "GAMES/TYPING": MTT, "GAMES/CCHESS": "cchess-1987",
+            "GAMES/XQ": "xiangqi-donnelly", "NC": [NC5, "school-nc"]}
+SCHOOL_PATH = "set path=C:\\NC;Z:\\"
+SCHOOL_NOTE = ("Ổ C: của máy phòng tin học trường THCS Thống Nhất: C:\\GAMES\\ROVER (Rescue Rover, gõ START), C:\\GAMES\\MARIO "
+               "(Mario & Luigi, gõ MARIO), C:\\GAMES\\TYPING (Mario Teaches Typing, gõ MARIO), C:\\NC (Norton Commander 5.0, gõ NC; "
+               "F2 ra menu các game). C:\\GAMES\\CCHESS và C:\\GAMES\\XQ là hai bản cờ tướng DOS bot tìm được, để anh nhận mặt")
 SHELLS = [
-    ("msdos-school", "rescue-rover", "MS-DOS Prompt", {"GAMES/ROVER": "rrover", "GAMES/MARIO": "mario-luigi"},
-     ["cd \\WINDOWS", "cls", "echo.", "echo Microsoft(R) Windows 98", "echo    (C)Copyright Microsoft Corp 1981-1999.", "echo."], 7,
-     "Ổ C: của máy phòng tin học trường THCS Thống Nhất: C:\\GAMES\\ROVER (Rescue Rover, gõ START), C:\\GAMES\\MARIO (Mario & Luigi, gõ MARIO)"),
+    ("msdos-school", "rescue-rover", "MS-DOS Prompt", SCHOOL_C,
+     [SCHOOL_PATH, "cd \\WINDOWS", "cls", "echo.", "echo Microsoft(R) Windows 98", "echo    (C)Copyright Microsoft Corp 1981-1999.", "echo."], 7,
+     SCHOOL_NOTE),
+    # the same drive, entered through Norton Commander (F10 leaves it for the prompt)
+    ("nc-school", "rescue-rover", "Norton Commander", SCHOOL_C, [SCHOOL_PATH, "cd \\GAMES", "cls", "nc"], 7, SCHOOL_NOTE),
 ]
 
 # key, game, title, file under D:\Games\[Mini Games] (a Flash projector .exe or a .swf), stage size
@@ -277,9 +313,34 @@ def build_win(out):
         print(key, os.path.getsize(path))
 
 
+HERE = os.path.dirname(os.path.abspath(__file__))
+FIXED = {**FREE, **MADE}       # folders whose files carry no date of their own → the date they are given
+_unpacked = {}
+
+
 def source(src, folder):
-    """where a game's folder is: under [DOS Games] as staged from his drive, or beside this script when it is FREE"""
-    return os.path.join(os.path.dirname(os.path.abspath(__file__)), "freeware", folder) if folder in FREE else os.path.join(src, folder)
+    """where a game's folder is: under [DOS Games] as staged from his drive; beside this script when it is FREE or
+    MADE; or, for a free program kept as its archive, that archive unpacked for this run, each file with its date"""
+    if folder in FREE:
+        return os.path.join(HERE, "freeware", folder)
+    if folder in MADE:
+        return os.path.join(HERE, "made", folder)
+    if folder in FREE_ZIPS:
+        if folder not in _unpacked:
+            import tempfile
+            archive, only = FREE_ZIPS[folder]
+            out = _unpacked[folder] = tempfile.mkdtemp(prefix=folder + "-")
+            with zipfile.ZipFile(os.path.join(HERE, "freeware", folder, archive)) as z:
+                for info in z.infolist():
+                    name = os.path.basename(info.filename)
+                    if info.is_dir() or name != info.filename or (only is not None and name not in only):
+                        continue
+                    path = os.path.join(out, name)
+                    open(path, "wb").write(z.read(info))
+                    when = time.mktime(info.date_time + (0, 0, -1))
+                    os.utime(path, (when, when))
+        return _unpacked[folder]
+    return os.path.join(src, folder)
 
 
 def put(z, full, name, date=None):
@@ -302,7 +363,7 @@ def build(src, out, only=None):
             for dirpath, _dirs, files in os.walk(root):
                 for f in sorted(files):
                     full = os.path.join(dirpath, f)
-                    put(z, full, os.path.relpath(full, root).replace(os.sep, "/"), FREE.get(folder))
+                    put(z, full, os.path.relpath(full, root).replace(os.sep, "/"), FIXED.get(folder))
             z.writestr(".jsdos/dosbox.conf", dosbox_conf(run, irq))
         print(key, os.path.getsize(path))
     for key, _game, _title, folders, lines, irq, _note in SHELLS:
@@ -316,12 +377,16 @@ def build(src, out, only=None):
                 z.writestr(info, b"")
             for d in ("", "WINDOWS", "WINDOWS/COMMAND", "GAMES"):
                 folder(d, WIN98SE)
-            for into, src_folder in folders.items():
-                root, year = source(src, src_folder), FREE.get(src_folder)
-                files = [f for f in sorted(os.listdir(root)) if year or os.path.getmtime(os.path.join(root, f)) < SHELL_BEFORE]
-                folder(into, year or time.localtime(max(os.path.getmtime(os.path.join(root, f)) for f in files))[:6])
-                for f in files:        # what he saved later on his own machines (2008) was not on the school's
-                    put(z, os.path.join(root, f), f"C/{into}/{f.upper()}", year)
+            for into, from_folders in folders.items():
+                found = []       # (file, its date when it has none of its own)
+                for src_folder in ([from_folders] if isinstance(from_folders, str) else from_folders):
+                    root, given = source(src, src_folder), FIXED.get(src_folder)
+                    # what he saved later on his own machines (2008) was not on the school's
+                    found += [(os.path.join(root, f), given) for f in sorted(os.listdir(root))
+                              if given or os.path.getmtime(os.path.join(root, f)) < SHELL_BEFORE]
+                folder(into, max(given or time.localtime(os.path.getmtime(full))[:6] for full, given in found))
+                for full, given in found:
+                    put(z, full, f"C/{into}/{os.path.basename(full).upper()}", given)
             z.writestr(".jsdos/dosbox.conf", dosbox_conf(lines, irq, mount="C"))
         print(key, os.path.getsize(path))
 

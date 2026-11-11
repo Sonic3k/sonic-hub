@@ -8,7 +8,11 @@ GAMES = {g["key"]: g for g in cat.GAMES}
 pk = {p["key"]: p for p in json.load(open("/home/claude/shots/school/pk.json"))}
 pk.setdefault("textris", {"gameKey": "textris", "title": "Textris"})
 pk.setdefault("mario-luigi", {"gameKey": "mario-luigi", "title": "Mario & Luigi"})
+pk.setdefault("mario-typing", {"gameKey": "mario-teaches-typing", "title": "Mario Teaches Typing"})
 TAIL = " Chụp lại ngày 11/11/2026, chạy từ thư mục game trên ổ D: của anh."
+# the games that do not run from his drive D:
+TAILS = {"mario-luigi": " Chụp lại ngày 11/11/2026, chạy bản gốc tác giả phát hành miễn phí.",
+         "mario-typing": " Chụp lại ngày 11/11/2026, chạy bản đĩa mềm 1.0 bot của anh tìm về."}
 DOS = {  # package: [(frame file, kind)]
  "dyna": [("cap2/dyna-title", "title"), ("cap2/dyna-d", "play")], "prince": [("cap2/prince-title", "title"), ("cap2/prince-play", "play")],
  "dave2": [("cap2/dave2-t3", "title"), ("cap2/dave2-play", "play")], "lionking": [("cap2/lionking-title", "title"), ("cap2/lionking-play", "play")],
@@ -18,6 +22,7 @@ DOS = {  # package: [(frame file, kind)]
  "shadow": [("cap2/shadow-title", "title"), ("cap2/shadow-play", "play")], "jazz": [("cap2/jazz-menu", "title"), ("cap2/jazz-d", "play")],
  "textris": [("cap2/textris-title", "title")],
  "mario-luigi": [("cap2/mario-luigi-title", "title"), ("cap2/mario-luigi-play", "play")],
+ "mario-typing": [("cap5/mario-typing-t3", "title"), ("cap5/mario-typing-menu", "menu"), ("cap5/mario-typing-play", "play")],
 }
 WIN = "chips jezzball tetravex taipei rodent maxwell gofigure dots fences pipe-dream golf cruel chess-win noughts amnesia codebreaker hangman jacks lifegen pegged rattler sticks tictactics wordzap lines98 pikachu".split()
 OTHER = {"tripeaks": "cap2/tripeaks-b", "blackjack": "cap2/blackjack-b", "minesweeper": "cap3/minesweeper_1", "pinball": "cap3/pinball_1",
@@ -59,9 +64,9 @@ def add(src, name, game, caption, ev, dos=False):
 for key, frames in DOS.items():
     game, title = pk[key]["gameKey"], GAMES[pk[key]["gameKey"]]["title"]
     for src, kind in frames:
-        cap = SCORES[key] if kind == "scores" else (f"Màn hình mở đầu của {title}." if kind == "title" else f"{title}, lúc vào chơi.")
+        cap = SCORES[key] if kind == "scores" else (f"Màn hình mở đầu của {title}." if kind == "title" else f"Menu chính của {title}." if kind == "menu" else f"{title}, lúc vào chơi.")
         ev = {"date": "2012-08-04", "precision": "DAY", "approx": False} if kind == "scores" else event(game, key)
-        add(src, f"{key}-{kind}", game, cap + TAIL, ev, dos=True)
+        add(src, f"{key}-{kind}", game, cap + TAILS.get(key, TAIL), ev, dos=True)
 for key in WIN + list(OTHER):
     game = pk[key]["gameKey"]; title = pk[key].get("title") or GAMES[game]["title"]
     src = OTHER.get(key, f"cap3/{key}_2")

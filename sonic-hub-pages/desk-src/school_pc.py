@@ -7,6 +7,9 @@ from what he said on 11/11/2026: Windows 98 on machines older than their time, n
 programs, DOS to type in, the games of Windows 98, and the games he could only play there — Rescue Rover, Mario Bros,
 the Mario typing game, a Chinese-chess game whose name he does not know. The games' entries are in
 game-shelf-src/desk_games.py; the prompt's drive C: is the package msdos-school (game-shelf-src/packages.py).
+"A blue screen with a menu to choose from, because the school's machines were older than their time": taken to be
+Norton Commander (he has not said it was), which is the same drive C: entered through NC (the package nc-school),
+with the games on its F2 menu.
 
   python3 school_pc.py
 """
@@ -34,7 +37,10 @@ ITEMS = [
     ("DESKTOP", "desktop/_/003-network-neighborhood", "Network Neighborhood", "network", "none", None, None),
     ("DESKTOP", "desktop/_/004-recycle-bin", "Recycle Bin", "recycle", "recycle", None, None),
     ("DESKTOP", "desktop/_/005-ms-dos-prompt", "MS-DOS Prompt", "dos", "dos", "msdos-school",
-     "“có phần mở DOS gõ gõ”: ổ C: có C:\\GAMES\\ROVER và C:\\GAMES\\MARIO. " + SAID),
+     "“có phần mở DOS gõ gõ”: ổ C: có C:\\GAMES (ROVER, MARIO, TYPING) và C:\\NC. " + SAID),
+    ("DESKTOP", "desktop/_/006-norton-commander", "Norton Commander", "dos", "dos", "nc-school",
+     "“phần chọn menu màn hình xanh vì máy trường máy cổ hơn cùng thời”: đoán là Norton Commander, anh chưa xác nhận. "
+     "Bản 5.0 bot của anh tìm về ngày 11/11/2026; F2 ra menu các game. " + SAID),
     ("START", "start/_/word", "Microsoft Word", "doc-blue", "word", None, "“các trình microsoft cơ bản”. " + SAID),
     ("START", "start/_/notepad", "Notepad", "notepad", "notepad", None, None),
 ]

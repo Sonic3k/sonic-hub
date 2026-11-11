@@ -1,0 +1,20 @@
+1:  Rescue Rover
+    c:
+    cd \games\rover
+    start
+2:  Mario & Luigi
+    c:
+    cd \games\mario
+    mario
+3:  Mario Teaches Typing
+    c:
+    cd \games\typing
+    mario
+4:  Co tuong - CCHESS
+    c:
+    cd \games\cchess
+    cchess
+5:  Co tuong - Xiangqi
+    c:
+    cd \games\xq
+    xq
