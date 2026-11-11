@@ -155,12 +155,16 @@ public class GameController {
         return Map.of("name", s.fileName(), "size", s.size(), "etag", String.valueOf(s.etag()));
     }
 
-    /** A file of the games bucket to the browser; it may keep it a day, and asks again with its tag after that. */
+    /** A file of the games bucket to the browser; it may keep it a day, and asks again with its tag after that.
+     *  Always as plain bytes, never as a page: a package may be someone else's HTML (engine HTML), and opened straight
+     *  from this address it must not run as a page of the API — "nosniff" keeps a browser from guessing it is one, and
+     *  the sandbox policy leaves it without this origin even if one did. */
     private ResponseEntity<InputStreamResource> stream(GamePackageService.Stream s, String ifNoneMatch) {
         String etag = s.etag() == null ? null : "\"" + s.etag() + "\"";
         CacheControl cache = CacheControl.maxAge(Duration.ofDays(1)).cachePrivate();
         if (etag != null && etag.equals(ifNoneMatch)) return ResponseEntity.status(HttpStatus.NOT_MODIFIED).eTag(etag).cacheControl(cache).build();
         var r = ResponseEntity.ok().contentType(MediaType.APPLICATION_OCTET_STREAM).cacheControl(cache)
+            .header("X-Content-Type-Options", "nosniff").header("Content-Security-Policy", "sandbox")
             .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"" + s.fileName().replace("\"", "") + "\"");
         if (etag != null) r = r.eTag(etag);
         if (s.size() != null) r = r.contentLength(s.size());

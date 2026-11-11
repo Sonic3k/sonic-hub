@@ -10,11 +10,3 @@
     c:
     cd \games\typing
     mario
-4:  Co tuong - CCHESS
-    c:
-    cd \games\cchess
-    cchess
-5:  Co tuong - Xiangqi
-    c:
-    cd \games\xq
-    xq

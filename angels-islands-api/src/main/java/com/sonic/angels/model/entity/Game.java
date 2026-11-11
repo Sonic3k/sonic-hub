@@ -19,8 +19,9 @@ import java.util.UUID;
 public class Game extends BaseEntity {
 
     /** OFFICIAL = a published game; FAN = made by fans (Mario Forever); HOMEMADE = his own, on paper or in his head;
-     *  REMAKE = one of his built so it can be played (Tím 4 from the Mario 4 notebook). */
-    public enum Kind { OFFICIAL, FAN, HOMEMADE, REMAKE }
+     *  REMAKE = one of his built so it can be played (Tím 4 from the Mario 4 notebook); REFERENCE = someone else's
+     *  game he copied from the web to look at when he vibe-codes his own (never one he played back then, never his). */
+    public enum Kind { OFFICIAL, FAN, HOMEMADE, REMAKE, REFERENCE }
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)

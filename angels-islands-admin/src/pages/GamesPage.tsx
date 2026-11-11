@@ -3,7 +3,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { Gamepad2, Plus, Save, Trash2, Upload, X } from 'lucide-react'
 import { gamesApi, type GameDetail, type GameIn, type GameLink, type PlayIn } from '../api/games'
 
-const KINDS = ['OFFICIAL', 'FAN', 'HOMEMADE', 'REMAKE']
+const KINDS = ['OFFICIAL', 'FAN', 'HOMEMADE', 'REMAKE', 'REFERENCE']
 const PRECISIONS = ['DAY', 'MONTH', 'SEASON', 'YEAR']
 const LINK_KINDS = ['WALKTHROUGH', 'LONGPLAY', 'WIKI', 'MANUAL', 'OFFICIAL', 'PLAY', 'SOUNDTRACK', 'VIDEO', 'OTHER']
 const DEVICES = ['', 'pc-old', 'pc-school', 'pc-xp', 'pc-fujitsu', 'pc-hp', 'pc-asus', 'pc-thinkpad', 'pc-now', 'phone-nokia', 'phone-iphone6', 'phone-iphone11', 'phone-iphone13']

@@ -1,7 +1,8 @@
 /* Game: the shelf of games he played — by the machines of each period, his own games on a shelf of their own, the series
    with their versions — and one game with when and on what he played it, his pictures and memories of it, the games he
-   made from it, the videos to watch it again and, where it can be, the game itself. Everything is read here; it is
-   written through the admin and game-shelf-src. */
+   made from it, the videos to watch it again and, where it can be, the game itself. Other people's games he copied
+   from the web to look at when he vibe-codes (kind REFERENCE) stand on a last shelf of their own, never among the
+   periods. Everything is read here; it is written through the admin and game-shelf-src. */
 import { useMemo, useState } from 'react';
 import { Link, useLocation, useParams, useSearchParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
@@ -31,7 +32,8 @@ const DEVICES: Record<string, string> = {
   'pc-thinkpad': 'Lenovo ThinkPad', 'pc-now': 'Laptop', 'phone-nokia': 'Nokia', 'phone-iphone6': 'iPhone 6s', 'phone-iphone11': 'iPhone 11', 'phone-iphone13': 'iPhone 13',
 };
 export const deviceName = (k?: string | null) => (k ? DEVICES[k] ?? k : '');
-const KIND: Record<string, string> = { FAN: 'Fan game', HOMEMADE: 'Tự chế', REMAKE: 'Remake' };
+const REFERENCE = 'Tham khảo vibe code';
+const KIND: Record<string, string> = { FAN: 'Fan game', HOMEMADE: 'Tự chế', REMAKE: 'Remake', REFERENCE };
 const LINK: Record<string, string> = { WALKTHROUGH: 'Walkthrough', LONGPLAY: 'Longplay', WIKI: 'Wikipedia', MANUAL: 'Hướng dẫn', OFFICIAL: 'Trang chính thức', PLAY: 'Chơi', SOUNDTRACK: 'Nhạc', VIDEO: 'Video', OTHER: 'Link' };
 
 /** the look of a game with no picture yet: the kind of machine or table it is played on */
@@ -40,16 +42,19 @@ const family = (p?: string | null) => !p ? 'plain' : /Notebook/.test(p) ? 'paper
 /** "~2004 – 2011" reads "khoảng 2004 – 2011"; "2007-05" reads "05/2007" */
 const about = (t?: string | null) => (t ?? '').replace(/^~/, 'khoảng ').replace(/\b(\d{4})-(\d{2})-(\d{2})\b/g, '$3/$2/$1').replace(/\b(\d{4})-(\d{2})\b/g, '$2/$1');
 const own = (g: GameCard) => g.kind === 'HOMEMADE' || g.kind === 'REMAKE';
+/** someone else's game, kept to look at: not his, and not from any of his periods */
+const ref = (g: GameCard) => g.kind === 'REFERENCE';
 const isMine = (g: GameCard) => g.mine ?? (!!g.played || !!g.handName || own(g) || g.favorite || g.portal || g.machine);
 /** an official game stands on a period's shelf when he played it then, wrote it in his 2004 lists, or it plays here */
-const onShelf = (g: GameCard) => !!g.playFrom || !!g.handName || g.portal || g.machine;
+const onShelf = (g: GameCard) => !ref(g) && (!!g.playFrom || !!g.handName || g.portal || g.machine);
 /** the period he first played it in; a game numbered in his list of 100 (2004) is from the PC Win 98 years */
 const eraOf = (g: GameCard) => { const t = g.handOrder && (!g.playFrom || g.playFrom >= '2004') ? '' : g.playFrom ?? ''; return ERAS.find(e => t >= e.from && t < e.to)?.key ?? 'win98'; };
 const byPlay = (a: GameCard, b: GameCard) => (a.playFrom ?? '9').localeCompare(b.playFrom ?? '9') || (a.handOrder ?? 999) - (b.handOrder ?? 999) || a.title.localeCompare(b.title);
 const byYear = (a: GameCard, b: GameCard) => (a.releaseYear ?? 9999) - (b.releaseYear ?? 9999) || a.title.localeCompare(b.title);
-/** the order the shelf reads in, for "previous / next" on a game */
-const shelfOrder = (all: GameCard[]) => {
+/** the order the shelf reads in, for "previous / next" on a game; the games kept to look at only lead to one another */
+const shelfOrder = (all: GameCard[], among?: GameCard) => {
   const mine = all.filter(isMine);
+  if (among && ref(among)) return mine.filter(ref).sort(byYear);
   return [...ERAS.flatMap(e => mine.filter(g => !own(g) && onShelf(g) && eraOf(g) === e.key).sort(byPlay)), ...mine.filter(own).sort(byYear)];
 };
 
@@ -61,9 +66,10 @@ export function GamesIndex() {
   const all = games.data ?? [], mine = all.filter(isMine);
   const filtered = view === 'play' ? mine.filter(g => g.portal || g.machine)
     : view === 'homemade' ? mine.filter(own)
+    : view === 'reference' ? mine.filter(ref)
     : view === 'favorite' ? mine.filter(g => g.favorite)
     : device ? mine.filter(g => g.devices?.includes(device)) : null;
-  const title = view === 'play' ? 'Chơi được' : view === 'homemade' ? 'Game tự chế' : view === 'favorite' ? 'Yêu thích' : view === 'traces' ? 'Dấu vết' : device ? deviceName(device) : 'Game';
+  const title = view === 'play' ? 'Chơi được' : view === 'homemade' ? 'Game tự chế' : view === 'reference' ? REFERENCE : view === 'favorite' ? 'Yêu thích' : view === 'traces' ? 'Dấu vết' : device ? deviceName(device) : 'Game';
   const listed = mine.filter(g => g.handOrder).sort((a, b) => (a.handOrder ?? 0) - (b.handOrder ?? 0));
 
   return (
@@ -72,11 +78,12 @@ export function GamesIndex() {
       <section className="lanes">
         <div>
           {games.isLoading && <div className="card empty">Đang mở kệ game…</div>}
-          {view === 'traces' ? <Traces /> : filtered ? (filtered.length ? <div className="g-grid">{[...filtered].sort(view === 'homemade' ? byYear : byPlay).map(g => <GameBox key={g.key} g={g} />)}</div>
+          {view === 'traces' ? <Traces /> : filtered ? (filtered.length ? <div className="g-grid">{[...filtered].sort(view === 'homemade' || view === 'reference' ? byYear : byPlay).map(g => <GameBox key={g.key} g={g} />)}</div>
             : !games.isLoading && <div className="card empty">Chưa có game nào ở đây.</div>)
             : <>
               {ERAS.map(e => { const gs = mine.filter(g => !own(g) && onShelf(g) && eraOf(g) === e.key).sort(byPlay); return gs.length > 0 && <Shelf key={e.key} name={e.name} range={e.range} games={gs} />; })}
               {mine.some(own) && <Shelf name="Tự chế" range="" games={mine.filter(own).sort(byYear)} to="/games?view=homemade" />}
+              {mine.some(ref) && <Shelf name={REFERENCE} range="" games={mine.filter(ref).sort(byYear)} to="/games?view=reference" />}
             </>}
         </div>
         <aside className="rail">
@@ -139,7 +146,7 @@ export function GameBox({ g, ghost }: { g: GameCard; ghost?: boolean }) {
         {g.coverUrl ? <img src={cdn(g.coverUrl, 360)} alt="" loading="lazy" />
           : g.iconUrl ? <span className="g-paper"><img className="g-icon" src={cdn(g.iconUrl, 160)} alt="" loading="lazy" /></span>
           : <span className={`g-ph ${family(g.platform)}`}><small>{g.platform || (own(g) ? 'Tự chế' : '')}</small><span>{g.title}</span></span>}
-        {(g.portal || g.machine) && <em className="g-tag">Chơi được</em>}
+        {ref(g) ? <em className="g-tag ref">Tham khảo</em> : (g.portal || g.machine) && <em className="g-tag">Chơi được</em>}
         {g.favorite && <em className="g-fav" title="Yêu thích">♥</em>}
       </span>
       <b>{g.title}</b><small>{sub}</small>
@@ -159,6 +166,7 @@ export function GamesSide() {
       <Link to="/games" className={shelf ? 'on' : ''}>Kệ game</Link>
       {mine.some(g => g.portal || g.machine) && <Link to="/games?view=play" className={view === 'play' ? 'on' : ''}>Chơi được</Link>}
       <Link to="/games?view=homemade" className={view === 'homemade' ? 'on' : ''}>Tự chế</Link>
+      {mine.some(ref) && <Link to="/games?view=reference" className={view === 'reference' ? 'on' : ''}>{REFERENCE}</Link>}
       <Link to="/games?view=favorite" className={view === 'favorite' ? 'on' : ''}>Yêu thích</Link>
       <Link to="/games?view=traces" className={view === 'traces' ? 'on' : ''}>Dấu vết</Link>
       {!!series.data?.length && <h4>Series</h4>}
@@ -219,7 +227,7 @@ export function GamePage() {
   if (q.isLoading) return <div className="reader"><article className="article"><p className="empty">Đang mở game…</p></article></div>;
   if (!g) return <div className="reader"><article className="article"><Link className="back" to="/games">← Game</Link><h1>Không tìm thấy game này</h1></article></div>;
 
-  const order = shelfOrder(games.data ?? []), i = order.findIndex(x => x.key === g.key), prev = i > 0 ? order[i - 1] : undefined, next = i >= 0 ? order[i + 1] : undefined;
+  const order = shelfOrder(games.data ?? [], g), i = order.findIndex(x => x.key === g.key), prev = i > 0 ? order[i - 1] : undefined, next = i >= 0 ? order[i + 1] : undefined;
   const photos: MediaFile[] = g.media.filter(m => m.role !== 'ICON').map(m => ({ ...m.media, caption: m.label || m.media.caption }));
   const play = g.packages.filter(p => p.portal && p.hasFile !== false);
   const pageLinks = g.links.filter(l => l.kind === 'PLAY'), watch = g.links.filter(l => l.kind !== 'PLAY');

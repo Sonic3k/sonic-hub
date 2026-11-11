@@ -164,7 +164,7 @@ export interface LifeEventAt { moment: string; current: LifeEvent[]; previous?: 
 
 /** Kệ game: a game as the shelf lists it. played = "2007 – 2010"; spans = each stretch he played it and on which machine;
  *  portal = playable on the portal itself, machine = playable inside a machine of its time; mine = something of his is on it. */
-export type GameKind = 'OFFICIAL' | 'FAN' | 'HOMEMADE' | 'REMAKE';
+export type GameKind = 'OFFICIAL' | 'FAN' | 'HOMEMADE' | 'REMAKE' | 'REFERENCE';
 export interface GameCard {
   id: string; key: string; title: string; kind: GameKind; platform?: string | null; developer?: string | null; genre?: string | null;
   versions?: string | null; handName?: string | null; handOrder?: number | null; coverUrl?: string | null; iconUrl?: string | null;

@@ -710,5 +710,21 @@
   "event": {
    "date": null
   }
+ },
+ {
+  "file": "captures/saltline-title.png",
+  "game": "saltline",
+  "caption": "Màn hình mở đầu của Saltline. Chụp lại ngày 11/11/2026, chạy file HTML anh chép trên mạng về.",
+  "event": {
+   "date": null
+  }
+ },
+ {
+  "file": "captures/saltline-play.png",
+  "game": "saltline",
+  "caption": "Saltline, lúc vừa vào màn: cảng container, la bàn chỉ ba trạm phát A, B, C. Chụp lại ngày 11/11/2026, chạy file HTML anh chép trên mạng về.",
+  "event": {
+   "date": null
+  }
  }
 ]
