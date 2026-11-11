@@ -1122,6 +1122,7 @@ a.mem-src:hover { border-color: #D9D5CB; } a.mem-src:hover .mem-src-meta { color
 .g-box small { font-size: 12px; color: var(--ink3); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .g-box:hover b { color: var(--games); }
 .g-tag { position: absolute; left: 6px; bottom: 6px; padding: 2px 7px; border-radius: 999px; background: rgba(255,255,255,.93); color: var(--games); font-size: 11px; font-style: normal; font-weight: 700; }
+.g-tag.ref { background: rgba(22,20,42,.86); color: #fff; }
 /* a game with no picture shows its name at the foot of the box, where the label sits: the name moves up above it */
 .g-art:has(.g-tag) .g-ph { padding-bottom: 32px; }
 .g-fav { position: absolute; right: 7px; top: 5px; font-style: normal; font-size: 13px; color: #fff; text-shadow: 0 1px 3px rgba(0,0,0,.45); }
@@ -1176,8 +1177,14 @@ a.mem-src:hover { border-color: #D9D5CB; } a.mem-src:hover .mem-src-meta { color
   .g-plays li { grid-template-columns: 1fr; gap: 2px; }
   .g-links a { grid-template-columns: 1fr; } .g-links a small { grid-row: auto; }
 }
+/* no entry animation here: what it leaves on the page would hold a game that fills the screen (.gr-html.full) inside the page */
+.g-playpage { animation: none; }
 .g-playpage .g-stage { display: grid; place-items: center; min-height: 60vh; padding: 32px 16px; border-radius: var(--r); background: radial-gradient(ellipse at 50% 30%, #3a3466, #16142a); }
 .g-playpage .g-stage > * { box-shadow: 0 18px 50px rgba(0,0,0,.45); }
 .g-playpage .ms { zoom: 1.8; }
 .g-playpage .gr-win { width: min(960px, 92vw); height: min(720px, 69vw); }
-@media (max-width: 860px) { .g-playpage .ms { zoom: 1.3; } .g-playpage .g-stage { padding: 20px 8px; overflow-x: auto; } }
+.g-playpage .gr-html:not(.full) { width: min(1100px, 100%); height: auto; }
+.g-playpage .gr-html:not(.full) iframe, .g-playpage .gr-html:not(.full) .gr-wait { flex: none; aspect-ratio: 16 / 9; min-height: 200px; max-height: calc(100vh - 190px); }
+@media (max-width: 860px) { .g-playpage .ms { zoom: 1.3; } .g-playpage .g-stage { padding: 20px 8px; overflow-x: auto; }
+  /* a phone held upright: the game gets a tall box, where its own narrow layout fits */
+  .g-playpage .gr-html:not(.full) iframe, .g-playpage .gr-html:not(.full) .gr-wait { aspect-ratio: auto; height: min(72vh, 600px); max-height: none; } }

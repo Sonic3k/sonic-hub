@@ -701,7 +701,7 @@ GAMES = [
                      evidence="Giải cờ vua – cờ tướng học sinh quận Ba Đình 11/2004"),
                 play("2011-09-09", None, precision="DAY", via="Zing", evidence="Ván cờ tướng trên Zing với fuzz"),
                 play("2002", "pc-school", end="2005", precision="YEAR", approx=True,
-                     evidence="Theo anh: một game cờ tướng trên máy phòng tin học trường THCS Thống Nhất, anh không biết tên")],
+                     evidence="Theo anh: một game cờ tướng trên máy phòng tin học trường THCS Thống Nhất, anh không biết tên, nhớ các đối thủ có Driver rồi Mr. USSR. Bản CCH (Chinese Chess Master III, 1992) bot của anh tìm về ngày 11/11/2026 có đúng hai tên này trong bảng xếp hạng: Driver Brown và Mr. USSR")],
          media=[pic("81396794")], memories=["e:19d6ff3a", "e:120c54f1"], links=[wiki("Xiangqi")]),
     dict(key="grandmaster-chess", title="Grandmaster Chess", series="co", seriesOrder=3, platform="Windows",
          genre="Chess", summary="Chương trình đánh cờ vua với máy.",
@@ -802,4 +802,10 @@ GAMES = [
     dict(key="muop", title="Mướp và Mười Hai Ngọn Đèn", kind="HOMEMADE", platform="Web", releaseYear=2026,
          developer="Sonic Hub Pages", genre="Platform",
          summary="Game đi cảnh kiểu retro; hình, chữ và nhạc đều vẽ bằng code.", links=[page("game-muop")]),
+
+    # ── Kept to look at ────────────────────────────────────────────────────────────────────────────────────────
+    # Other people's games he copied from the web as references for vibe coding (kind REFERENCE): never his own and
+    # never on a period's shelf. Their file plays on the portal in a frame of its own (packages.py, HTML).
+    dict(key="saltline", title="Saltline", kind="REFERENCE", platform="Web", genre="Shooter",
+         summary="Game bắn súng góc nhìn thứ nhất gói trong một file HTML: cảng container lúc rạng sáng, cắt ba trạm phát của hệ thống an ninh rồi ra thuyền. Hình và âm thanh đều do code dựng ngay trong trình duyệt. Anh chép trên mạng về ngày 11/11/2026 để tham khảo khi vibe code; file không ghi tác giả."),
 ]

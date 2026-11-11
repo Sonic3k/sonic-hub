@@ -11,6 +11,8 @@ as it is on D: (with its own dates), under one top folder; config names the prog
 screen size Wine starts with when not 800x600 (res), and, for the games of [Win Games] that share one folder, the
 package that holds the zip (zip). What runs them (Boxedwine and the Wine files) is win_runtime.py.
 WEB packages have no file: the web has the game itself (config names it).
+An HTML package is someone else's web game in one .html file (a game he copied from the web to look at), stored byte
+for byte; the web plays it in a frame that has none of the site's origin and may load only from the hosts listed here.
 
 What his bot brought on 11/11/2026 (his Drive folder _incoming: SOURCE.txt beside each item names where it came from
 and its SHA-256) is staged under GAMES_ROOT/_incoming, installed the way a machine of the time had it:
@@ -26,6 +28,7 @@ DOSBox stamps what an installer writes with today's date, so every installed fil
   python3 packages.py flash /mnt/user-data/uploads/Games/[Mini\\ Games] /tmp/bundles     the Flash movies out of their .exe
   python3 packages.py win /tmp/bundles [solitaire,rodger-dodger]                         the Windows games' zips (WIN_FILES)
   python3 packages.py push /tmp/bundles [jazz,riptide]                                  metadata + files to the hub (all, or those keys)
+                                                                                        (an HTML package's file is read from GAMES_ROOT)
 """
 import json
 import os
@@ -75,12 +78,6 @@ FREE = {"mario-luigi": (1994, 1, 1, 0, 0, 0)}
 # DOS games that also play outside the machines, on the portal's game page (11/11/2026: Mario Brothers VGA was on none
 # of his machines, but stays playable)
 PORTAL = {"mariobro"}
-# Free programs kept beside this script as the archive they came in (freeware/<folder>/<archive>), so their files keep
-# the dates the archive gives them. folder → (archive, the files of it that are the program; None = all of it):
-#   Xiangqi 2.3 by Peter Donnelly (1989): "I'm releasing it into the public domain" (XQ.RUL), "May be copied freely"
-#     (its opening screen); inside Roleigh Martin's freeware package of 23/12/1993, archive.org/details/CCHESS
-#   CCHESS (1987): author unknown, passed around as shareware; archive.org/details/msdos_shareware_fb_CCHESS
-FREE_ZIPS = {"xiangqi-donnelly": ("CCHESS.zip", ["XQ.EXE", "XQ.RUL"]), "cchess-1987": ("CCHESS.ZIP", None)}
 # What was made here for a machine's drive, kept in made/<folder>, with the day the machine starts (its files carry
 # no date of their own): Norton Commander's saved setup (NC.INI: both panels, C:\\GAMES on the left) and its F2 menu
 # of the school's games (NC.MNU)
@@ -95,15 +92,15 @@ WIN_OPTIONS = {"fujigolf": {"win": "FUJIGOLF.DAT"},
 # key, game it is kept under, title, {folder on its C: → the folder it comes from (see source()), or several},
 # what its autoexec does, IRQ, note
 MTT, NC5 = "../_incoming/mario-teaches-typing/installed", "../_incoming/norton-commander-5/installed"
-# drive C: of the computer room: the games he could only play there; the two Chinese-chess programs his bot found, for
-# him to say which one it was (none has a Start-menu entry or a card until he does); Norton Commander, the blue screen
-# old school machines were worked from
-SCHOOL_C = {"GAMES/ROVER": "rrover", "GAMES/MARIO": "mario-luigi", "GAMES/TYPING": MTT, "GAMES/CCHESS": "cchess-1987",
-            "GAMES/XQ": "xiangqi-donnelly", "NC": [NC5, "school-nc"]}
+# drive C: of the computer room: the games he could only play there, and Norton Commander, the blue screen old school
+# machines were worked from. The Chinese chess he played there is CCH (Chinese Chess Master III, 1992): its ranking
+# file holds the opponents he remembers, "Driver Brown" and "Mr. USSR" (11/11/2026). It is staged in _incoming/cch and
+# not on this drive yet: it opens with a question out of its printed manual, which he does not have.
+SCHOOL_C = {"GAMES/ROVER": "rrover", "GAMES/MARIO": "mario-luigi", "GAMES/TYPING": MTT, "NC": [NC5, "school-nc"]}
 SCHOOL_PATH = "set path=C:\\NC;Z:\\"
 SCHOOL_NOTE = ("Ổ C: của máy phòng tin học trường THCS Thống Nhất: C:\\GAMES\\ROVER (Rescue Rover, gõ START), C:\\GAMES\\MARIO "
                "(Mario & Luigi, gõ MARIO), C:\\GAMES\\TYPING (Mario Teaches Typing, gõ MARIO), C:\\NC (Norton Commander 5.0, gõ NC; "
-               "F2 ra menu các game). C:\\GAMES\\CCHESS và C:\\GAMES\\XQ là hai bản cờ tướng DOS bot tìm được, để anh nhận mặt")
+               "F2 ra menu các game)")
 SHELLS = [
     ("msdos-school", "rescue-rover", "MS-DOS Prompt", SCHOOL_C,
      [SCHOOL_PATH, "cd \\WINDOWS", "cls", "echo.", "echo Microsoft(R) Windows 98", "echo    (C)Copyright Microsoft Corp 1981-1999.", "echo."], 7,
@@ -256,6 +253,16 @@ WIN98SE = (1999, 4, 23, 22, 22, 0)
 SHELL_BEFORE = 1117558800      # 01/06/2005: the last day of the school's computer room for him
 
 
+# Web games in one .html file that are someone else's (kind REFERENCE in catalog.py), played on the portal in a frame
+# of its own: key, game, title, the file under GAMES_ROOT (stored as it is), the only other hosts its page may load
+# from (read out of the file: its fonts), note
+HTML = [
+    ("saltline", "saltline", "Saltline", "_incoming/saltline/saltline_1.html", "https://fonts.googleapis.com https://fonts.gstatic.com",
+     "File saltline_1.html anh gửi ngày 11/11/2026 (chép trên mạng), giữ nguyên từng byte. Chạy trong khung riêng: không đụng được "
+     "tới trang, bộ nhớ hay phiên đăng nhập của hub, chỉ tải thêm font chữ từ Google Fonts"),
+]
+
+
 def dosbox_conf(run, irq, mount="."):
     """run = the program its autoexec starts, or the lines it runs before leaving the prompt (a list); mount = the
     folder of the bundle that is drive C: (a prompt keeps its drive in C/, so DIR does not show the bundle's own files)"""
@@ -336,31 +343,15 @@ def build_win(out, only=None):
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 FIXED = {**FREE, **MADE}       # folders whose files carry no date of their own → the date they are given
-_unpacked = {}
 
 
 def source(src, folder):
-    """where a game's folder is: under [DOS Games] as staged from his drive; beside this script when it is FREE or
-    MADE; or, for a free program kept as its archive, that archive unpacked for this run, each file with its date"""
+    """where a game's folder is: under [DOS Games] as staged from his drive, or beside this script when it is FREE or
+    MADE"""
     if folder in FREE:
         return os.path.join(HERE, "freeware", folder)
     if folder in MADE:
         return os.path.join(HERE, "made", folder)
-    if folder in FREE_ZIPS:
-        if folder not in _unpacked:
-            import tempfile
-            archive, only = FREE_ZIPS[folder]
-            out = _unpacked[folder] = tempfile.mkdtemp(prefix=folder + "-")
-            with zipfile.ZipFile(os.path.join(HERE, "freeware", folder, archive)) as z:
-                for info in z.infolist():
-                    name = os.path.basename(info.filename)
-                    if info.is_dir() or name != info.filename or (only is not None and name not in only):
-                        continue
-                    path = os.path.join(out, name)
-                    open(path, "wb").write(z.read(info))
-                    when = time.mktime(info.date_time + (0, 0, -1))
-                    os.utime(path, (when, when))
-        return _unpacked[folder]
     return os.path.join(src, folder)
 
 
@@ -496,6 +487,17 @@ def push(bundles, only=None):
                 "config": json.dumps(config), "note": ""}
         requests.put(f"{API}/game-packages/{key}", json=meta, timeout=60).raise_for_status()
         print(key, "ok")
+    for key, game, title, rel, hosts, note in HTML:
+        order += 1
+        if only and key not in only:
+            continue
+        meta = {"gameKey": game, "engine": "HTML", "title": title, "portal": True, "sortOrder": order,
+                "config": json.dumps({"hosts": hosts}), "note": note}
+        requests.put(f"{API}/game-packages/{key}", json=meta, timeout=60).raise_for_status()
+        with open(os.path.join(ROOT, rel), "rb") as fh:
+            r = requests.post(f"{API}/game-packages/{key}/file", timeout=300, files={"file": (f"{key}.html", fh, "text/html")})
+        r.raise_for_status()
+        print(key, "ok", r.json().get("fileSize"))
 
 
 if __name__ == "__main__":

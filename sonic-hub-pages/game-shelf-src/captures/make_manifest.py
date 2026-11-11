@@ -79,6 +79,9 @@ for key in WIN + list(OTHER):
 for kind, cap in (("title", "Màn hình mở đầu của Rodger Dodger."), ("play", "Rodger Dodger, màn 1: quả cầu, các vòng xoáy xanh và những thứ màu đỏ phải tránh.")):
     add(f"cap6/rodger-dodger-{kind}", f"rodger-dodger-{kind}", "rodger-dodger",
         cap + " Chụp lại ngày 11/11/2026, chạy bản trong After Dark Games (1998) bot của anh tìm về.", {"date": None})
+# Saltline: someone else's game kept to look at, from none of his years, so its pictures carry no date of their own
+for kind, cap in (("title", "Màn hình mở đầu của Saltline."), ("play", "Saltline, lúc vừa vào màn: cảng container, la bàn chỉ ba trạm phát A, B, C.")):
+    add(f"cap7/saltline-{kind}", f"saltline-{kind}", "saltline", cap + " Chụp lại ngày 11/11/2026, chạy file HTML anh chép trên mạng về.", {"date": None})
 rows.insert(0, {"file": "captures/textris-best-scores.png", "game": "textris", "event": {"date": "2003-11-09", "precision": "DAY", "approx": False},
     "caption": "Bảng Best Scores của Textris, đọc từ file TEXTRIS.SCO trên ổ D: của anh: Chelsea 1.210 điểm ghi 11-09-03 (09/11/2003), "
                "NGOC ANH 1.029 điểm ghi 01-10-03 (10/01/2003); Everton và Fulham cũng là anh. Chụp lại ngày 10/11/2026, chạy từ thư mục English ABC."})

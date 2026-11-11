@@ -12,7 +12,9 @@ import java.util.UUID;
  * private games bucket, and his own save from back then so it goes on where he stopped. WIN packages are Windows games
  * run by Boxedwine (Wine in the browser): the file is a zip of the game's folder, and config names the .exe; several
  * games of one folder share the file of one of them (config "zip"). WEB packages are games rebuilt on the site itself
- * (Minesweeper): config names which.
+ * (Minesweeper): config names which. HTML packages are web games that are one .html file written by someone else: the
+ * site plays the file inside a frame that has no part of the site's own origin (see /file in GameController), and
+ * config "hosts" lists the only other sites the page may load from (its fonts).
  * portal = it plays on the portal page too; otherwise only inside the machines of its time (a desk item with
  * app "game" and this key as its target puts it there).
  */
@@ -22,7 +24,7 @@ import java.util.UUID;
     indexes = @Index(name = "idx_game_package_game", columnList = "game_id"))
 public class GamePackage extends BaseEntity {
 
-    public enum Engine { DOS, FLASH, NES, SNES, GB, GBC, GBA, NDS, WIN, WEB }
+    public enum Engine { DOS, FLASH, NES, SNES, GB, GBC, GBA, NDS, WIN, WEB, HTML }
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
