@@ -100,7 +100,7 @@ export function ListPage() {
               <td>{e.position ?? i + 1}</td>
               <td><b>{x.title}</b>{x.version && <em> ({x.version})</em>}<small>{x.artist?.name}{x.featuring ? ` · cùng ${x.featuring}` : ''}</small></td>
               {dated && <td>{dmy(e.addedAt)}</td>}
-              {counted && <td>{r ? num(r.plays) : ''}</td>}{counted && <td>{r ? hours(r.ms) : ''}</td>}
+              {counted && <td>{r?.plays ? num(r.plays) : ''}</td>}{counted && <td>{r?.plays ? hours(r.ms) : ''}</td>}
               {audio && <td>{x.hasAudio && <button type="button" className="mu-play" aria-label={`Nghe ${x.title}`} onClick={() => setPlaying(playing?.key === x.key ? null : x)}>{playing?.key === x.key ? '■' : '▶'}</button>}</td>}
             </tr>); })}</tbody>
         </table></div>

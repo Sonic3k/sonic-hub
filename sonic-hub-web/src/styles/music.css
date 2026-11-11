@@ -6,9 +6,9 @@
 .mu .ptitle h1 small { font-size: .55em; font-weight: 500; color: var(--ink3); }
 .mu .ptitle span a { color: var(--ink2); text-decoration: underline; text-decoration-color: var(--line); text-underline-offset: 3px; }
 .mu .ptitle span a:hover { color: var(--music); }
-.mu-years { margin: -8px 0 16px; }
+.mu .mu-years { margin: -8px 0 16px; }
 .mu .mu-years a.on { background: var(--music); color: #fff; }
-.mu-views { display: none; }
+.mu .mu-views { display: none; }
 .mu .mu-views a.on { background: var(--ink); color: #fff; }
 .mu .pills { align-items: center; margin: 0 0 16px; }
 .mu-go { font-size: 13px; font-weight: 600; }
@@ -104,7 +104,8 @@ a.mu-bar-row:hover { background: var(--soft); }
 .mu-songs td:nth-child(2) small, .mu-day td:nth-child(2) small { display: block; }
 .mu-songs td em, .mu-day td em { font-style: normal; color: var(--ink2); }
 .mu-day td { white-space: nowrap; } .mu-day td:nth-child(2) { white-space: normal; min-width: 200px; }
-.mu-seg { margin-left: auto; } .mu-seg a { cursor: pointer; user-select: none; }
+.mu-seg { margin-left: auto; } .mu-block .hd .mu-seg a { margin-left: 0; font-weight: 500; color: var(--ink2); cursor: pointer; user-select: none; text-decoration: none; }
+.mu-block .hd .mu-seg a.on { color: var(--ink); }
 .mu-block .finput { margin-left: 0; min-width: 200px; } .mu-block .finput:focus { border-color: var(--music); }
 .mu-more { display: block; width: 100%; margin-top: 10px; padding: 9px; border-radius: 8px; background: var(--soft); font-size: 13px; font-weight: 600; color: var(--ink2); }
 .mu-more:hover { color: var(--ink); }
@@ -146,7 +147,7 @@ a.mu-bar-row:hover { background: var(--soft); }
 
 @media (max-width: 1100px) { .mu-two { grid-template-columns: 1fr; } }
 @media (max-width: 860px) {
-  .mu-views { display: flex; margin: -12px 0 10px; }
+  .mu .mu-views { display: flex; margin: -12px 0 10px; }
   .mu-facts { gap: 12px 24px; padding: 14px 16px; } .mu-facts dd { font-size: 19px; }
   .mu-block { padding: 14px 14px 12px; }
   .mu-bar-row { grid-template-columns: minmax(0, 1fr) 72px auto; gap: 8px; } .mu-bars.numbered .mu-bar-row { grid-template-columns: 18px minmax(0, 1fr) 60px auto; }
