@@ -233,9 +233,25 @@ public class GameService {
         o.id = p.getId(); o.startAt = p.getStartAt(); o.endAt = p.getEndAt();
         o.precision = p.getPrecision() == null ? null : p.getPrecision().name(); o.approx = Boolean.TRUE.equals(p.getApprox());
         o.when = LifeEventService.whenText(p.getStartAt(), p.getPrecision(), o.approx, p.getEndAt());
-        if (p.getDevice() != null) { o.deviceKey = p.getDevice().getExternalKey(); o.deviceName = p.getDevice().getName(); }
+        if (p.getDevice() != null) { o.deviceKey = p.getDevice().getExternalKey(); o.deviceName = p.getDevice().getName(); o.at = machineAt(p); }
         o.via = p.getVia(); o.version = p.getVersion(); o.evidence = p.getEvidence(); o.note = p.getNote();
         return o;
+    }
+
+    /** The evening a play's machine is opened at: the middle of what its date says (a play known by its year: mid-June;
+     *  by its month: the 15th), moved into the days that machine was there. A play of "2002" on the school's computer,
+     *  which he first sat at in September 2002, opens in September — a day in June would start the computer he had at
+     *  home instead, since the school's was not there yet. */
+    private static String machineAt(GamePlay p) {
+        DatePrecision prec = p.getPrecision() == null ? DatePrecision.DAY : p.getPrecision();
+        LocalDate start = p.getStartAt().toLocalDate();
+        LocalDate d = prec == DatePrecision.YEAR || prec == DatePrecision.DECADE ? LocalDate.of(start.getYear(), 6, 15)
+            : prec == DatePrecision.MONTH || prec == DatePrecision.SEASON ? start.withDayOfMonth(15) : start;
+        if (!d.isBefore(p.endExclusive().toLocalDate())) d = start;
+        LocalDateTime from = p.getDevice().getValidFrom(), to = p.getDevice().getValidTo();
+        if (from != null && d.isBefore(from.toLocalDate())) d = from.toLocalDate();
+        if (to != null && !d.isBefore(to.toLocalDate())) d = to.toLocalDate().minusDays(1);
+        return d + "T21:00";
     }
 
     private static GameDto.Link link(GameLink l) {

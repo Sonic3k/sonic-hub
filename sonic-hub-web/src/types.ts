@@ -175,6 +175,8 @@ export interface GameCard {
 export interface GamePlay {
   id: string; startAt: string; endAt?: string | null; precision: DatePrecision; when: string; deviceKey?: string | null; deviceName?: string | null;
   via?: string | null; version?: string | null; evidence?: string | null; note?: string | null; approx: boolean;
+  /** the evening its machine is opened at: a day of the play on which that machine was there */
+  at?: string | null;
 }
 /** a play that left a trace (a save, a score table, his own words), with the game it belongs to */
 export interface GameTrace { gameKey: string; gameTitle: string; play: GamePlay }

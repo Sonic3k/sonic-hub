@@ -38,6 +38,9 @@ public class GameDto {
         public LocalDateTime startAt, endAt;
         public String precision, when, deviceKey, deviceName, via, version, evidence, note;
         public boolean approx;
+        /** The evening its machine is opened at ("2002-09-01T21:00"): a day of the play on which that machine was there.
+         *  None for a play with no machine. */
+        public String at;
     }
 
     /** A play that left a trace (a save, a score table, a settings file, his own words), with the game it belongs to. */
