@@ -692,7 +692,7 @@ GAMES = [
                 play("2011-04-02", None, precision="DAY", via="Đội FPT",
                      evidence="Đánh cờ vua cho đội FPT ở Đại hội thể thao Ngoại thương"),
                 play("2020-02", "pc-thinkpad", end="2022-12",
-                     evidence="Chơi cờ trên laptop từ đầu 2020; sách cờ và bàn cờ gỗ 07/2021; những tối trà đá đánh cờ ở nhà anh Huỳnh")],
+                     evidence="Chơi cờ vua trên laptop từ đầu 2020; sách cờ và bàn cờ gỗ 07/2021; đánh cờ vua với nhóm anh em FPT ở Mỹ. Theo anh: các buổi trà đá và họp nhóm ở Mỹ đều là cờ vua, còn trà đá ở nhà anh Huỳnh thì nhiều chủ đề trò chuyện chứ không riêng cờ vua")],
          media=[pic("e4412dec"), pic("fbf99ccb"), pic("f7b550f0"), pic("a010a078"), pic("11c681a0")],
          memories=["e:19d6ff3a", "e:120c54f1", "e:0150a7f5", "e:3ae47575"], links=[wiki("Chess")]),
     # Chinese chess itself. The district tournament of 11/2004 carried both names (Cờ Vua – Cờ Tướng) but he played
