@@ -10,7 +10,7 @@ import { hub } from '../api/hub';
 import { cdn } from '../api/client';
 import Justified from '../components/Justified';
 import Viewer from '../components/Viewer';
-import type { GameCard, GameDetail, GamePlay, GameTrace, MediaFile } from '../types';
+import type { GameCard, GameDetail, GameMatch, GamePlay, GameTrace, MediaFile } from '../types';
 
 const T = 10 * 60_000;
 /** the memory that keeps his lists of games of 2004 (the homemade ones, the 50 sets, the numbered 100) */
@@ -278,10 +278,17 @@ export function GamePage() {
 
           {photos.length > 0 && <div className="mem-photos"><Justified items={photos} rowHeight={190} gap={8} onOpen={setViewer} /></div>}
 
+          {g.hasMatches && <GameMatches gameKey={g.key} />}
+
           {g.memories.length > 0 && <><h5 className="mem-h">Ký ức</h5>
             <div className="posts g-mems">{g.memories.map(m => <Link key={m.id} className="post" to={`/memories/${m.id}`}>
               <div><span className="cat">{about(m.when)}</span><h4>{m.title || m.summary}</h4>{m.title && m.summary && <p>{m.summary}</p>}</div>
               {m.coverUrl ? <img src={cdn(m.coverUrl, 240)} alt="" /> : <span className="noimg" />}
+            </Link>)}</div></>}
+
+          {g.notes.length > 0 && <><h5 className="mem-h">Trong nhật ký</h5>
+            <div className="posts g-mems g-notes">{g.notes.map(n => <Link key={n.id} className="post" to={n.slug ? `/journal/${n.slug}` : `/journal/id/${n.id}`}>
+              <div>{n.writtenAt && <span className="cat">{about(n.writtenAt.slice(0, 10))}</span>}<h4>{n.title || 'Ghi chép'}</h4>{n.excerpt && <p>{n.excerpt}</p>}</div>
             </Link>)}</div></>}
 
           {g.basedOn && <><h5 className="mem-h">Bắt nguồn từ</h5><div className="g-grid small"><GameBox g={g.basedOn} ghost={!isMine(g.basedOn)} /></div></>}
@@ -308,6 +315,42 @@ export function GamePage() {
       </div>
       {viewer !== null && <Viewer items={photos} start={viewer} onClose={() => setViewer(null)} />}
     </div>
+  );
+}
+
+const WEEKDAY = ['Chủ nhật', 'Thứ Hai', 'Thứ Ba', 'Thứ Tư', 'Thứ Năm', 'Thứ Sáu', 'Thứ Bảy'];
+/** "Thứ Ba, 11/07/2017" from a wall-clock day */
+const dayName = (day: string) => `${WEEKDAY[new Date(day + 'T12:00:00Z').getUTCDay()]}, ${day.slice(8, 10)}/${day.slice(5, 7)}/${day.slice(0, 4)}`;
+
+/** The results kept for a game: one month at a time (the last one first), each day's matches in the order they were
+ *  written down — the two sides, the games each took, the map. His own name stands out. */
+function GameMatches({ gameKey }: { gameKey: string }) {
+  const q = useQuery({ queryKey: ['game-matches', gameKey], staleTime: T, queryFn: () => hub.gameMatches(gameKey) });
+  const [picked, setPicked] = useState<string | null>(null);
+  const all = q.data ?? [];
+  const months = useMemo(() => [...new Set(all.map(m => m.playedAt.slice(0, 7)))], [all]);
+  const month = picked && months.includes(picked) ? picked : months[months.length - 1];
+  const days = useMemo(() => {
+    const by = new Map<string, GameMatch[]>();
+    all.filter(m => m.playedAt.slice(0, 7) === month).forEach(m => { const d = m.playedAt.slice(0, 10); by.set(d, [...(by.get(d) ?? []), m]); });
+    return [...by.entries()];
+  }, [all, month]);
+  if (q.isLoading) return <><h5 className="mem-h">Kết quả các kèo</h5><p className="g-mwait">Đang mở sổ kết quả…</p></>;
+  if (!all.length) return null;
+  const side = (ps: GameMatch['side1'], won: boolean, right?: boolean) => <span className={`g-side${won ? ' won' : ''}${right ? ' r' : ''}`}>
+    {ps.map((p, i) => <span key={i} className={p.self ? 'me' : ''}>{p.name}</span>)}</span>;
+  return (
+    <>
+      <h5 className="mem-h">Kết quả các kèo</h5>
+      <div className="g-months">{months.map(m => <button key={m} type="button" className={m === month ? 'on' : ''} onClick={() => setPicked(m)}>{m.slice(5)}/{m.slice(0, 4)}</button>)}</div>
+      <div className="g-matches">{days.map(([day, ms]) => <section key={day}>
+        <h6>{dayName(day)}</h6>
+        {ms.map(m => { const a = m.score1 ?? 0, b = m.score2 ?? 0; return <div key={m.key} className="g-match">
+          <small><time>{m.playedAt.slice(11, 16)}</time>{[m.map, m.note].filter(Boolean).map(t => <span key={t}>{t}</span>)}</small>
+          {side(m.side1, a > b)}<b>{a} – {b}</b>{side(m.side2, b > a, true)}
+        </div>; })}
+      </section>)}</div>
+    </>
   );
 }
 

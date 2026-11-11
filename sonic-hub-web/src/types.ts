@@ -195,6 +195,14 @@ export interface GameSpot { packageKey: string; deviceKey: string; deviceName: s
 export interface GameDetail extends GameCard {
   summary?: string | null; note?: string | null; basedOn?: GameCard | null; derived: GameCard[]; seriesGames: GameCard[];
   plays: GamePlay[]; links: GameLink[]; media: GameMedia[]; memories: GameMemory[];
-  notes: { id: string; title?: string | null; slug?: string | null; excerpt?: string | null }[]; packages: GamePackage[]; spots: GameSpot[];
+  notes: { id: string; title?: string | null; slug?: string | null; excerpt?: string | null; writtenAt?: string | null }[]; packages: GamePackage[]; spots: GameSpot[];
+  /** results of matches are filed under it (hub.gameMatches) */
+  hasMatches?: boolean;
+}
+/** a result written down between two sides (a "kèo"): games each side took, the sides in the record's order */
+export interface GameMatchPlayer { name: string; self: boolean; rating?: number | null }
+export interface GameMatch {
+  id: string; key: string; playedAt: string; map?: string | null; score1?: number | null; score2?: number | null; note?: string | null;
+  side1: GameMatchPlayer[]; side2: GameMatchPlayer[];
 }
 export interface GameSeries { id: string; key: string; name: string; summary?: string | null; coverUrl?: string | null; sortOrder?: number | null; games: GameCard[] }

@@ -40,6 +40,7 @@ public class GameService {
     private final GameMemoryRepository gameMemories;
     private final GameNoteRepository gameNotes;
     private final GamePackageRepository packages;
+    private final GameMatchRepository gameMatches;
     private final MediaFileRepository mediaRepo;
     private final EpisodeRepository episodeRepo;
     private final JournalNoteRepository noteRepo;
@@ -51,11 +52,12 @@ public class GameService {
 
     public GameService(GameRepository games, GameSeriesRepository seriesRepo, GamePlayRepository plays, GameLinkRepository links,
                        GameMediaRepository gameMedia, GameMemoryRepository gameMemories, GameNoteRepository gameNotes,
-                       GamePackageRepository packages, MediaFileRepository mediaRepo, EpisodeRepository episodeRepo,
+                       GamePackageRepository packages, GameMatchRepository gameMatches, MediaFileRepository mediaRepo, EpisodeRepository episodeRepo,
                        JournalNoteRepository noteRepo, DeskDeviceRepository deviceRepo, StorageService storage,
                        NamedParameterJdbcTemplate jdbc, DtoMapper mapper, EntityManager em) {
         this.games = games; this.seriesRepo = seriesRepo; this.plays = plays; this.links = links; this.gameMedia = gameMedia;
-        this.gameMemories = gameMemories; this.gameNotes = gameNotes; this.packages = packages; this.mediaRepo = mediaRepo;
+        this.gameMemories = gameMemories; this.gameNotes = gameNotes; this.packages = packages; this.gameMatches = gameMatches;
+        this.mediaRepo = mediaRepo;
         this.episodeRepo = episodeRepo; this.noteRepo = noteRepo; this.deviceRepo = deviceRepo; this.storage = storage;
         this.jdbc = jdbc; this.mapper = mapper; this.em = em;
     }
@@ -92,6 +94,7 @@ public class GameService {
         List<GamePackage> pk = packages.findByGameIdOrderBySortOrderAsc(g.getId());
         d.packages = pk.stream().map(GameService::pkg).toList();
         d.spots = spots(pk, plays.findByGame(g.getId()));
+        d.hasMatches = gameMatches.existsByGameId(g.getId());
         return d;
     }
 
@@ -174,9 +177,10 @@ public class GameService {
             if (Boolean.TRUE.equals(p.getPortal())) portal.add(p.getGame().getId());
             if (placed.contains(p.getExternalKey()) || emulators.contains(emuOf(p))) machine.add(p.getGame().getId());
         }
-        // games with something of his on them besides plays: pictures, memories, notes, packages
+        // games with something of his on them besides plays: pictures, memories, notes, packages, results of matches
         Set<UUID> linked = new HashSet<>(jdbc.queryForList("SELECT game_id FROM game_media UNION SELECT game_id FROM game_memories "
-            + "UNION SELECT game_id FROM game_notes UNION SELECT game_id FROM game_packages", new MapSqlParameterSource(), UUID.class));
+            + "UNION SELECT game_id FROM game_notes UNION SELECT game_id FROM game_packages UNION SELECT game_id FROM game_matches",
+            new MapSqlParameterSource(), UUID.class));
         // and the games his own games come from (Citadels behind Masks & Mortar)
         for (Game g : all) if (g.getBasedOn() != null) linked.add(g.getBasedOn().getId());
         return new Shelf(byGame, pictures, first, portal, machine, linked);
