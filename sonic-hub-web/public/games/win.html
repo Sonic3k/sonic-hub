@@ -7,7 +7,8 @@
 <!-- A Windows game (Windows 3.1 or 9x) in Boxedwine: Wine and an x86 machine in WebAssembly, run in this page. The game
      windows of Sonic Hub open it in a frame: ?rt=<the hub's /api/game-runtime/>&zip=<the game's folder, zipped>
      &dir=<its folder in the zip>&exe=<program, from that folder>[&res=640x480][&bpp=8][&win=FILE.DAT,…: files of its
-     folder that it wants in the Windows directory, put there before it starts].
+     folder that it wants in the Windows directory, put there before it starts][&arg=<what it is started with>, once
+     for each].
      Boxedwine's engine (the 2020 web build of boxedwine.org) and the Wine files it starts from (Wine 1.7.55, cut down
      to what his games use) come from the hub: /api/game-runtime/<name>.
      Wine draws its own desktop with the game's window on it; only that window is shown, without Wine's title bar (the
@@ -30,6 +31,9 @@
   const ENGINE = 'boxedwine-2020', ROOT = 'winroot-v1.zip';
   const ZIP = Q.get('zip') || '', DIR = Q.get('dir') || '', EXE = (Q.get('exe') || '').replace(/\\/g, '/'), RES = Q.get('res');
   const BPP = Q.get('bpp'), TO_WINDOWS = (Q.get('win') || '').split(',').filter(n => /^[\w.-]+$/.test(n));
+  /* what the program is started with. After Dark Games takes the rest of its command line as the game's file, quotes
+     and all, so "Rodger Dodger.adz" comes as two words and reaches it unquoted */
+  const ARGS = Q.getAll('arg');
   const canvas = document.getElementById('canvas'), crop = document.getElementById('crop'), wait = document.getElementById('wait');
   canvas.width = 800; canvas.height = 600;
 
@@ -51,7 +55,7 @@
     const a = ['-root', '/root/base', '-mount_drive', '/root/files/', 'd', '-nozip'];
     if (RES) a.push('-resolution', RES);
     if (BPP) a.push('-bpp', BPP);
-    return a.concat(['-w', work, '/bin/wine', EXE.slice(cut + 1)]);
+    return a.concat(['-w', work, '/bin/wine', EXE.slice(cut + 1)], ARGS);
   }
 
   /* the file systems, as Boxedwine's own page builds them: each zip read-only under a layer that takes what is written */
