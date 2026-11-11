@@ -16,7 +16,7 @@ export const my = (iso?: string | null) => (iso ? `${iso.slice(5, 7)}/${iso.slic
 export const clock = (ms: number) => { const s = Math.round(ms / 1000); return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`; };
 
 export const DEVICE: Record<string, string> = {
-  THINKPAD: 'ThinkPad X1', WINDOWS: 'Laptop Windows', WORK_PC: 'Máy công ty ở Mỹ', WORK_LAPTOP: 'Laptop công ty ở Cebu', ASUS: 'Asus N56',
+  THINKPAD: 'ThinkPad X1', WINDOWS: 'Laptop Windows', WORK_PC: 'Máy công ty ở Mỹ', WORK_LAPTOP: 'Máy công ty, thời ở Cebu', ASUS: 'Asus N56',
   IPHONE_6S: 'iPhone 6s', IPHONE_11: 'iPhone 11', IPHONE_13: 'iPhone 13 Pro', IPHONE: 'iPhone', IPAD: 'iPad', ANDROID: 'Android', WEB: 'Web player', OTHER: 'Khác',
 };
 export const PLACE: Record<string, string> = { 'US-CA': 'California, Mỹ', VN: 'Việt Nam', PH: 'Cebu, Philippines', SG: 'Singapore', HK: 'Hồng Kông', TH: 'Thái Lan', MY: 'Malaysia' };
