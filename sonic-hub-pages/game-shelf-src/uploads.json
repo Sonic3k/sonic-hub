@@ -532,5 +532,17 @@
   "mediaId": "c3724cb0-bddb-40e4-a767-e3c8de73a7fe",
   "game": "rodger-dodger",
   "role": "SCREENSHOT"
+ },
+ {
+  "file": "captures/saltline-title.png",
+  "mediaId": "8f0c1db9-b0c6-4fe8-a7ec-86eb467544a7",
+  "game": "saltline",
+  "role": "SCREENSHOT"
+ },
+ {
+  "file": "captures/saltline-play.png",
+  "mediaId": "b3092069-6e57-427c-b06b-eb50028a9824",
+  "game": "saltline",
+  "role": "SCREENSHOT"
  }
 ]

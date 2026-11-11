@@ -806,6 +806,6 @@ GAMES = [
     # ── Kept to look at ────────────────────────────────────────────────────────────────────────────────────────
     # Other people's games he copied from the web as references for vibe coding (kind REFERENCE): never his own and
     # never on a period's shelf. Their file plays on the portal in a frame of its own (packages.py, HTML).
-    dict(key="saltline", title="Saltline", kind="REFERENCE", platform="Web", genre="Shooter",
+    dict(key="saltline", title="Saltline", kind="REFERENCE", platform="Web", genre="Shooter", cover="b3092069",
          summary="Game bắn súng góc nhìn thứ nhất gói trong một file HTML: cảng container lúc rạng sáng, cắt ba trạm phát của hệ thống an ninh rồi ra thuyền. Hình và âm thanh đều do code dựng ngay trong trình duyệt. Anh chép trên mạng về ngày 11/11/2026 để tham khảo khi vibe code; file không ghi tác giả."),
 ]
