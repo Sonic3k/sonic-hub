@@ -248,9 +248,11 @@ public class GameService {
         LocalDate d = prec == DatePrecision.YEAR || prec == DatePrecision.DECADE ? LocalDate.of(start.getYear(), 6, 15)
             : prec == DatePrecision.MONTH || prec == DatePrecision.SEASON ? start.withDayOfMonth(15) : start;
         if (!d.isBefore(p.endExclusive().toLocalDate())) d = start;
+        // the machine's first and last whole days (its stored moments are UTC, a few hours off the day he would name)
         LocalDateTime from = p.getDevice().getValidFrom(), to = p.getDevice().getValidTo();
-        if (from != null && d.isBefore(from.toLocalDate())) d = from.toLocalDate();
-        if (to != null && !d.isBefore(to.toLocalDate())) d = to.toLocalDate().minusDays(1);
+        LocalDate lo = from == null ? null : from.toLocalDate().plusDays(1), hi = to == null ? null : to.toLocalDate().minusDays(1);
+        if (lo != null && d.isBefore(lo)) d = lo;
+        if (hi != null && d.isAfter(hi)) d = hi;
         return d + "T21:00";
     }
 
