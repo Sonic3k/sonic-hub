@@ -4,8 +4,8 @@
   python3 push_to_hub.py --dry   prints the payload summary and checks every reference
   python3 push_to_hub.py         sends it
 
-Media and memories are referred to in catalog.py by the first 8 characters of their id; ids.json maps them to full ids
-(media by prefix, memories by "e:" + prefix). uploads.json lists the screenshots upload_shots.py put into the hub and
+Media, memories and his journal notes are referred to in catalog.py by the first 8 characters of their id; ids.json
+maps them to full ids (media by prefix, memories by "e:" + prefix, notes by "n:" + prefix). uploads.json lists the screenshots upload_shots.py put into the hub and
 the game each belongs to, so a sync never drops them. Sync replaces each game's plays, links, memories and own pictures
 (SCREENSHOT, PHOTO, SCAN); maps, art and icons uploaded through the assets endpoint stay as they are.
 """
@@ -52,7 +52,7 @@ def build():
             "versions": g.get("versions", ""), "summary": g.get("summary", ""), "note": g.get("note", ""),
             "favorite": bool(g.get("favorite")), "handName": g.get("handName", ""), "handOrder": g.get("handOrder", 0),
             "plays": g.get("plays", []), "links": [{k: v for k, v in l.items() if v is not None} for l in g.get("links", [])],
-            "media": media, "memoryIds": [ref(m) for m in g.get("memories", [])], "noteIds": [],
+            "media": media, "memoryIds": [ref(m) for m in g.get("memories", [])], "noteIds": [ref(n) for n in g.get("notes", [])],
         })
         if g["key"] in icons:
             games[-1]["iconMediaId"] = icons[g["key"]]
@@ -70,7 +70,8 @@ def main():
         print(len(payload["series"]), "series,", len(payload["games"]), "games,",
               sum(len(g["plays"]) for g in payload["games"]), "plays,",
               sum(len(g["media"]) for g in payload["games"]), "pictures,",
-              sum(len(g["memoryIds"]) for g in payload["games"]), "memory links")
+              sum(len(g["memoryIds"]) for g in payload["games"]), "memory links,",
+              sum(len(g["noteIds"]) for g in payload["games"]), "notes")
         return
     req = urllib.request.Request(API + "/games/sync", data=json.dumps(payload).encode("utf-8"), method="POST",
                                  headers={"Content-Type": "application/json"})
