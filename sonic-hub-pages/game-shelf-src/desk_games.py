@@ -75,6 +75,7 @@ START = [
     ("games", "pc-school", "Rescue Rover", "rrover", "dos", None, None, SCHOOL),
     ("games", "pc-school", "Mario & Luigi", "mario-luigi", "dos", None, None, SCHOOL),
     ("games", "pc-school", "Mario Teaches Typing", "mario-typing", "dos", None, None, SCHOOL),
+    ("games", "pc-school", "Chinese Chess", "cch", "dos", None, None, SCHOOL),
     ("games", "pc-old", "Sonic & Knuckles Collection", "s3k", "exe:s3k", "2001-01-01", None, "Theo anh: có từ năm 2001"),
     ("games", "pc-xp", "Minesweeper", "minesweeper", "mine", None, None, "Có sẵn trong Windows XP"),
     ("games", "pc-xp", "Sonic & Knuckles Collection", "s3k", "exe:s3k", None, None, "Theo anh: có tới khi thôi dùng PC Win XP"),

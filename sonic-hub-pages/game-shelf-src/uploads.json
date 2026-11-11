@@ -544,5 +544,29 @@
   "mediaId": "b3092069-6e57-427c-b06b-eb50028a9824",
   "game": "saltline",
   "role": "SCREENSHOT"
+ },
+ {
+  "file": "captures/cch-title.png",
+  "mediaId": "a48cfbd0-1dd4-43d5-b910-21d6ff8f81be",
+  "game": "chinese-chess-master-3",
+  "role": "SCREENSHOT"
+ },
+ {
+  "file": "captures/cch-driver.png",
+  "mediaId": "86ea0a4f-8d46-43cd-b3d4-280f72294608",
+  "game": "chinese-chess-master-3",
+  "role": "SCREENSHOT"
+ },
+ {
+  "file": "captures/cch-ussr.png",
+  "mediaId": "14049e36-3fc5-41b9-a56f-7d6838d0c1cd",
+  "game": "chinese-chess-master-3",
+  "role": "SCREENSHOT"
+ },
+ {
+  "file": "captures/cch-play.png",
+  "mediaId": "f8368c38-bfad-4172-999c-2eb3971cb7e3",
+  "game": "chinese-chess-master-3",
+  "role": "SCREENSHOT"
  }
 ]

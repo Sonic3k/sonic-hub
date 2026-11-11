@@ -11,6 +11,7 @@ pk.setdefault("mario-luigi", {"gameKey": "mario-luigi", "title": "Mario & Luigi"
 pk.setdefault("mario-typing", {"gameKey": "mario-teaches-typing", "title": "Mario Teaches Typing"})
 pk.setdefault("solitaire", {"gameKey": "solitaire", "title": "Solitaire"})
 pk.setdefault("freecell", {"gameKey": "freecell", "title": "FreeCell"})
+pk.setdefault("cch", {"gameKey": "chinese-chess-master-3", "title": "Chinese Chess Master III"})
 TAIL = " Chụp lại ngày 11/11/2026, chạy từ thư mục game trên ổ D: của anh."
 # the games that do not run from his drive D:
 TAILS = {"mario-luigi": " Chụp lại ngày 11/11/2026, chạy bản gốc tác giả phát hành miễn phí.",
@@ -79,6 +80,13 @@ for key in WIN + list(OTHER):
 for kind, cap in (("title", "Màn hình mở đầu của Rodger Dodger."), ("play", "Rodger Dodger, màn 1: quả cầu, các vòng xoáy xanh và những thứ màu đỏ phải tránh.")):
     add(f"cap6/rodger-dodger-{kind}", f"rodger-dodger-{kind}", "rodger-dodger",
         cap + " Chụp lại ngày 11/11/2026, chạy bản trong After Dark Games (1998) bot của anh tìm về.", {"date": None})
+# Chinese Chess Master III on the school PC: the opponents he remembers, and a game against the first of them
+for kind, cap in (("title", "Màn hình mở đầu của Chinese Chess Master III (將族)."),
+                  ("driver", "Trang đối thủ Driver Brown trong Chinese Chess Master III: 4.002 điểm, một sao."),
+                  ("ussr", "Nhóm đối thủ có Mr. USSR trong Chinese Chess Master III."),
+                  ("play", "Chinese Chess Master III, một ván với Driver Brown.")):
+    add(f"cap8/cch-{kind}", f"cch-{kind}", "chinese-chess-master-3", cap + " Chụp lại ngày 11/11/2026, chạy bản bot của anh tìm về.",
+        event("chinese-chess-master-3", "cch"), dos=True)
 # Saltline: someone else's game kept to look at, from none of his years, so its pictures carry no date of their own
 for kind, cap in (("title", "Màn hình mở đầu của Saltline."), ("play", "Saltline, lúc vừa vào màn: cảng container, la bàn chỉ ba trạm phát A, B, C.")):
     add(f"cap7/saltline-{kind}", f"saltline-{kind}", "saltline", cap + " Chụp lại ngày 11/11/2026, chạy file HTML anh chép trên mạng về.", {"date": None})

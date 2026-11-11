@@ -21,6 +21,11 @@ and its SHA-256) is staged under GAMES_ROOT/_incoming, installed the way a machi
                                    normal speed
   norton-commander-5/installed     Norton Commander 5.0 (Symantec, 07/02/1995): INSTALL.EXE of the three floppies (their
                                    files in one folder), Full Install into C:\\NC
+  cch-playable/CCH                 Chinese Chess Master III "Jiang Zu" (T-Time, 1992) as the Chinese DOS-games archive
+                                   dos.zczc.cz keeps it: the 1992 files with a CCH.EXE of 26/06/1998 that starts a game
+                                   without the manual's password. Left out: the archive's own note, an antivirus list and
+                                   other people's progress (.BAK, .REC); SCORE.REC and FAME.REC are the 1992 templates
+                                   (.TTT), as NEW.BAT would make them
 DOSBox stamps what an installer writes with today's date, so every installed file carries its floppy's date again
 (04/08/1992 18:14; 07/02/1995 05:00).
 
@@ -66,6 +71,9 @@ DOS = [
     ("mario-typing", "mario-teaches-typing", "Mario Teaches Typing", "../_incoming/mario-teaches-typing/installed", "MARIO.EXE", 7,
      "Bản 1.0 trên đĩa mềm (Interplay, 1992) bot của anh tìm về ngày 11/11/2026, cài bằng chính INSTALL.EXE của đĩa: VGA, Sound Blaster"),
     # a DOS program he kept among the Windows games, in [Win Games]\\English ABC (his name for it)
+    ("cch", "chinese-chess-master-3", "Chinese Chess", "../_incoming/cch-playable/CCH", "CCH.EXE", 7,
+     "Bản không hỏi mật mã (CCH.EXE ngày 26/06/1998) bot của anh lấy ngày 11/11/2026 từ kho game DOS chữ Hán dos.zczc.cz; bảng xếp hạng "
+     "để mới như lúc chưa ai chơi (SCORE.TTT, FAME.TTT)"),
     ("textris", "textris", "Textris", "../[Win Games]/English ABC", "TEXTRIS.EXE", 7,
      "Kèm bảng điểm TEXTRIS.SCO của anh: NGOC ANH 1.029 điểm ghi 01-10-03 (10/01/2003)"),
 ]
@@ -80,8 +88,12 @@ FREE = {"mario-luigi": (1994, 1, 1, 0, 0, 0)}
 PORTAL = {"mariobro"}
 # What was made here for a machine's drive, kept in made/<folder>, with the day the machine starts (its files carry
 # no date of their own): Norton Commander's saved setup (NC.INI: both panels, C:\\GAMES on the left) and its F2 menu
-# of the school's games (NC.MNU)
-MADE = {"school-nc": (2002, 9, 1, 8, 0, 0)}
+# of the school's games (NC.MNU); PLAY.BAT, which starts CCH at the speed it needs
+MADE = {"school-nc": (2002, 9, 1, 8, 0, 0), "school-cch": (2002, 9, 1, 8, 0, 0)}
+# DOS games that need a faster machine than the 3000 cycles a real-mode program gets by default: CCH's menus and board
+# miss ordinary mouse clicks at that speed. On the school's drive the same speed is set by C:\\GAMES\\CCH\\PLAY.BAT
+# (made/school-cch), which puts it back when the game ends.
+SPEED = {"cch": "fixed 20000"}
 # what a Windows game needs besides its program: files of its folder it wants in C:\\WINDOWS (win.html puts them
 # there), what it is started with
 WIN_OPTIONS = {"fujigolf": {"win": "FUJIGOLF.DAT"},
@@ -92,15 +104,18 @@ WIN_OPTIONS = {"fujigolf": {"win": "FUJIGOLF.DAT"},
 # key, game it is kept under, title, {folder on its C: → the folder it comes from (see source()), or several},
 # what its autoexec does, IRQ, note
 MTT, NC5 = "../_incoming/mario-teaches-typing/installed", "../_incoming/norton-commander-5/installed"
+CCH = "../_incoming/cch-playable/CCH"
 # drive C: of the computer room: the games he could only play there, and Norton Commander, the blue screen old school
-# machines were worked from. The Chinese chess he played there is CCH (Chinese Chess Master III, 1992): its ranking
-# file holds the opponents he remembers, "Driver Brown" and "Mr. USSR" (11/11/2026). It is staged in _incoming/cch and
-# not on this drive yet: it opens with a question out of its printed manual, which he does not have.
-SCHOOL_C = {"GAMES/ROVER": "rrover", "GAMES/MARIO": "mario-luigi", "GAMES/TYPING": MTT, "NC": [NC5, "school-nc"]}
+# machines were worked from. The Chinese chess he played there is CCH (Chinese Chess Master III, 1992): two of its six
+# groups of opponents hold the ones he remembers, "Driver Brown" and "Mr. USSR" (11/11/2026). The 1992 program
+# (_incoming/cch) opens every game with a question out of its printed manual, which nobody has posted; the copy on
+# this drive (_incoming/cch-playable) is the one that starts without it.
+SCHOOL_C = {"GAMES/ROVER": "rrover", "GAMES/MARIO": "mario-luigi", "GAMES/TYPING": MTT, "GAMES/CCH": [CCH, "school-cch"],
+            "NC": [NC5, "school-nc"]}
 SCHOOL_PATH = "set path=C:\\NC;Z:\\"
 SCHOOL_NOTE = ("Ổ C: của máy phòng tin học trường THCS Thống Nhất: C:\\GAMES\\ROVER (Rescue Rover, gõ START), C:\\GAMES\\MARIO "
-               "(Mario & Luigi, gõ MARIO), C:\\GAMES\\TYPING (Mario Teaches Typing, gõ MARIO), C:\\NC (Norton Commander 5.0, gõ NC; "
-               "F2 ra menu các game)")
+               "(Mario & Luigi, gõ MARIO), C:\\GAMES\\TYPING (Mario Teaches Typing, gõ MARIO), C:\\GAMES\\CCH (cờ tướng, gõ PLAY), "
+               "C:\\NC (Norton Commander 5.0, gõ NC; F2 ra menu các game)")
 SHELLS = [
     ("msdos-school", "rescue-rover", "MS-DOS Prompt", SCHOOL_C,
      [SCHOOL_PATH, "cd \\WINDOWS", "cls", "echo.", "echo Microsoft(R) Windows 98", "echo    (C)Copyright Microsoft Corp 1981-1999.", "echo."], 7,
@@ -263,9 +278,10 @@ HTML = [
 ]
 
 
-def dosbox_conf(run, irq, mount="."):
+def dosbox_conf(run, irq, mount=".", cycles="auto"):
     """run = the program its autoexec starts, or the lines it runs before leaving the prompt (a list); mount = the
-    folder of the bundle that is drive C: (a prompt keeps its drive in C/, so DIR does not show the bundle's own files)"""
+    folder of the bundle that is drive C: (a prompt keeps its drive in C/, so DIR does not show the bundle's own files);
+    cycles = the speed of the machine (SPEED)"""
     run = run if isinstance(run, str) else "\n".join(run)
     return f"""[sdl]
 autolock=false
@@ -277,7 +293,7 @@ memsize=16
 [cpu]
 core=auto
 cputype=auto
-cycles=auto
+cycles={cycles}
 
 [mixer]
 rate=44100
@@ -376,7 +392,7 @@ def build(src, out, only=None):
                 for f in sorted(files):
                     full = os.path.join(dirpath, f)
                     put(z, full, os.path.relpath(full, root).replace(os.sep, "/"), FIXED.get(folder))
-            z.writestr(".jsdos/dosbox.conf", dosbox_conf(run, irq))
+            z.writestr(".jsdos/dosbox.conf", dosbox_conf(run, irq, cycles=SPEED.get(key, "auto")))
         print(key, os.path.getsize(path))
     for key, _game, _title, folders, lines, irq, _note in SHELLS:
         if only and key not in only:
