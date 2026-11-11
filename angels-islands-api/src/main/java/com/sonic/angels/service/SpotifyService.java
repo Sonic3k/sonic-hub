@@ -31,8 +31,15 @@ public class SpotifyService {
 
     private static final String FROM = " FROM spotify_plays p JOIN spotify_tracks t ON t.id = p.track_id JOIN spotify_songs s ON s.id = t.song_id"
         + " LEFT JOIN music_playlists l ON l.id = p.playlist_id";
-    private static final String METRICS = "COUNT(*) AS starts, COUNT(*) FILTER (WHERE p.ms_played >= 30000) AS plays, COALESCE(SUM(p.ms_played), 0) AS ms,"
-        + " COUNT(DISTINCT t.song_id) AS songs, COUNT(DISTINCT CAST(p.local_at AS date)) AS days, MIN(p.local_at) AS first_at, MAX(p.local_at) AS last_at";
+    /** A play = a stream of 30 seconds or more; anything shorter is a song passed by. */
+    private static final String PLAYED = "p.ms_played >= 30000";
+    /** starts = every stream, ms = all the time played; songs, days, first and last are counted on plays
+     *  (first / last fall back to the streams where nothing was played that long). */
+    private static final String METRICS = "COUNT(*) AS starts, COUNT(*) FILTER (WHERE " + PLAYED + ") AS plays, COALESCE(SUM(p.ms_played), 0) AS ms,"
+        + " COUNT(DISTINCT t.song_id) FILTER (WHERE " + PLAYED + ") AS songs, COUNT(DISTINCT CAST(p.local_at AS date)) FILTER (WHERE " + PLAYED + ") AS days,"
+        + " COALESCE(MIN(p.local_at) FILTER (WHERE " + PLAYED + "), MIN(p.local_at)) AS first_at,"
+        + " COALESCE(MAX(p.local_at) FILTER (WHERE " + PLAYED + "), MAX(p.local_at)) AS last_at";
+    private static final String ARTISTS = ", COUNT(DISTINCT s.artist_name) FILTER (WHERE " + PLAYED + ") AS artists";
 
     /** A side a report can be counted by: the SQL of its key, of the name it shows, of the line under it. */
     private record Dim(String key, String label, String sub, boolean time) {}
@@ -99,14 +106,14 @@ public class SpotifyService {
             + METRICS + FROM + (song ? " LEFT JOIN music_tracks m ON m.id = s.music_track_id" : "") + where + " GROUP BY " + d.key() + (d.sub() == null ? "" : ", " + d.sub()) + " ORDER BY " + order + ", k ASC LIMIT " + max;
         SpotifyDto.Report r = new SpotifyDto.Report();
         r.rows = jdbc.query(sql, p, (rs, i) -> row(rs));
-        r.total = jdbc.queryForObject("SELECT " + METRICS + ", COUNT(DISTINCT s.artist_name) AS artists" + FROM + where, p, (rs, i) -> totals(rs, true));
+        r.total = jdbc.queryForObject("SELECT " + METRICS + ARTISTS + FROM + where, p, (rs, i) -> totals(rs, true));
         if (by != null && !by.isBlank()) {
             String b = BUCKETS.get(by);
-            r.series = new ArrayList<>(jdbc.query("SELECT " + b + " AS b, NULL AS k, COUNT(*) FILTER (WHERE p.ms_played >= 30000) AS plays, SUM(p.ms_played) AS ms"
+            r.series = new ArrayList<>(jdbc.query("SELECT " + b + " AS b, NULL AS k, COUNT(*) FILTER (WHERE " + PLAYED + ") AS plays, SUM(p.ms_played) AS ms"
                 + FROM + where + " GROUP BY " + b + " ORDER BY b", p, (rs, i) -> point(rs)));
             if (!d.time() && !r.rows.isEmpty()) {
                 p.addValue("keys", r.rows.stream().map(x -> x.key).distinct().toList());
-                r.series.addAll(jdbc.query("SELECT " + b + " AS b, " + d.key() + " AS k, COUNT(*) FILTER (WHERE p.ms_played >= 30000) AS plays, SUM(p.ms_played) AS ms"
+                r.series.addAll(jdbc.query("SELECT " + b + " AS b, " + d.key() + " AS k, COUNT(*) FILTER (WHERE " + PLAYED + ") AS plays, SUM(p.ms_played) AS ms"
                     + FROM + where + " AND " + d.key() + " IN (:keys) GROUP BY " + b + ", " + d.key() + " ORDER BY b", p, (rs, i) -> point(rs)));
             }
         }
@@ -118,14 +125,14 @@ public class SpotifyService {
     public SpotifyDto.Overview overview() {
         MapSqlParameterSource p = new MapSqlParameterSource();
         SpotifyDto.Overview o = new SpotifyDto.Overview();
-        o.total = jdbc.queryForObject("SELECT " + METRICS + ", COUNT(DISTINCT s.artist_name) AS artists" + FROM, p, (rs, i) -> totals(rs, true));
+        o.total = jdbc.queryForObject("SELECT " + METRICS + ARTISTS + FROM, p, (rs, i) -> totals(rs, true));
         Map<String, SpotifyDto.Year> years = new TreeMap<>();
-        jdbc.query("SELECT to_char(p.local_at, 'YYYY') AS y, " + METRICS + ", COUNT(DISTINCT s.artist_name) AS artists" + FROM + " GROUP BY 1", p, rs -> {
+        jdbc.query("SELECT to_char(p.local_at, 'YYYY') AS y, " + METRICS + ARTISTS + FROM + " GROUP BY 1", p, rs -> {
             SpotifyDto.Year y = new SpotifyDto.Year(); y.year = rs.getString("y"); y.total = totals(rs, true); years.put(y.year, y);
         });
         String top = "SELECT * FROM (SELECT to_char(p.local_at, 'YYYY') AS y, %s AS k, %s AS label, %s AS sub, NULL AS ver, NULL AS track_key, " + METRICS
             + ", ROW_NUMBER() OVER (PARTITION BY to_char(p.local_at, 'YYYY') ORDER BY %s DESC) AS rn" + FROM + " %s GROUP BY 1, 2%s) x WHERE rn = 1";
-        jdbc.query(String.format(top, "CAST(s.id AS text)", "MAX(s.title)", "MAX(s.artist_name)", "COUNT(*) FILTER (WHERE p.ms_played >= 30000)", "", ""), p,
+        jdbc.query(String.format(top, "CAST(s.id AS text)", "MAX(s.title)", "MAX(s.artist_name)", "COUNT(*) FILTER (WHERE " + PLAYED + ")", "", ""), p,
             rs -> { SpotifyDto.Year y = years.get(rs.getString("y")); if (y != null) y.topSong = row(rs); });
         jdbc.query(String.format(top, "s.artist_name", "NULL", "NULL", "SUM(p.ms_played)", "", ""), p,
             rs -> { SpotifyDto.Year y = years.get(rs.getString("y")); if (y != null) y.topArtist = row(rs); });
@@ -144,10 +151,10 @@ public class SpotifyService {
         o.id = s.getId(); o.key = s.getSongKey(); o.title = s.getTitle(); o.version = s.getVersion(); o.artist = s.getArtistName(); o.assessment = s.getAssessment();
         String where = " WHERE t.song_id = :song";
         o.total = jdbc.queryForObject("SELECT " + METRICS + ", 1 AS artists" + FROM + where, p, (rs, i) -> totals(rs, true));
-        jdbc.query("SELECT COUNT(*) FILTER (WHERE p.reason_start = 'clickrow' AND p.ms_played >= 30000) AS picked, COUNT(*) FILTER (WHERE p.reason_end = 'fwdbtn') AS passed,"
+        jdbc.query("SELECT COUNT(*) FILTER (WHERE p.reason_start = 'clickrow' AND " + PLAYED + ") AS picked, COUNT(*) FILTER (WHERE p.reason_end = 'fwdbtn') AS passed,"
             + " COUNT(*) FILTER (WHERE p.reason_end = 'trackdone') AS finished" + FROM + where, p,
             rs -> { o.picked = rs.getLong("picked"); o.passed = rs.getLong("passed"); o.finished = rs.getLong("finished"); });
-        o.tracks = jdbc.query("SELECT t.spotify_id, t.name, t.album_name, (SELECT COUNT(*) FROM spotify_plays p WHERE p.track_id = t.id AND p.ms_played >= 30000) AS plays"
+        o.tracks = jdbc.query("SELECT t.spotify_id, t.name, t.album_name, (SELECT COUNT(*) FROM spotify_plays p WHERE p.track_id = t.id AND " + PLAYED + ") AS plays"
             + " FROM spotify_tracks t WHERE t.song_id = :song ORDER BY plays DESC, t.name", p,
             (rs, i) -> new SpotifyDto.TrackRef(rs.getString(1), rs.getString(2), rs.getString(3), rs.getLong(4)));
         MusicTrack m = s.getMusicTrack();

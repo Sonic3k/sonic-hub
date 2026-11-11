@@ -17,7 +17,7 @@ export interface Playlist {
 export interface Entry { position?: number | null; fileName?: string | null; note?: string | null; addedAt?: string | null; track?: Track | null }
 export interface PlaylistDetail extends Playlist { entries: Entry[] }
 
-/** starts = every stream; plays = the ones of 30 seconds or more; ms = time played */
+/** starts = every stream; plays = the ones of 30 seconds or more; ms = time played; songs, artists, days, first, last = counted on plays */
 export interface Totals { starts: number; plays: number; ms: number; songs: number; artists: number; days: number; first: string | null; last: string | null }
 export interface Row { key: string; label: string | null; sub: string | null; version: string | null; trackKey: string | null; starts: number; plays: number; ms: number; songs: number; days: number; first: string | null; last: string | null }
 export interface Point { bucket: string; key: string | null; plays: number; ms: number }

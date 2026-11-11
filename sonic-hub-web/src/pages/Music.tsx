@@ -73,10 +73,12 @@ export function ListPage() {
   if (!l) return <div className="wrap page mu"><div className="card empty">Không tìm thấy danh sách này.</div></div>;
   const byMonth = new Map((months.data?.rows ?? []).map(r => [r.key, r.ms])), t = months.data?.total;
   const dated = l.entries.some(e => e.addedAt), counted = plays.size > 0, audio = l.entries.some(e => e.track?.hasAudio);
+  // a playlist of his carries the day its first song went in; Liked Songs has no day it was made; the rebuilt list is a state on a day
+  const since = !spotify ? when(l.when) : l.spotifyId ? `tạo ngày ${dmy(l.takenAt)}` : dated ? `từ ${dmy(l.takenAt)}` : `tính đến ${dmy(l.takenAt)}`;
   return (
     <div className="wrap page mu" style={{ ['--c' as string]: 'var(--music)' }}>
       <div className="crumbs"><Link to="/music">Music</Link> / {spotify ? 'Playlist Spotify' : 'Danh sách'}</div>
-      <div className="ptitle"><h1>{l.title}</h1><span>{spotify ? `tạo ngày ${dmy(l.takenAt)}` : when(l.when)}</span></div>
+      <div className="ptitle"><h1>{l.title}</h1><span>{since}</span></div>
       {l.summary && <p className="mu-read">{l.summary}</p>}
       {l.eventId && <p className="mu-links"><Link to={`/memories/events/${l.eventId}`}>Sự kiện: {l.eventTitle} →</Link></p>}
       {spotify && <div className="mu-links">
