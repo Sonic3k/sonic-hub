@@ -91,7 +91,7 @@ function YourGames({ favs }: { favs: Set<string> }) {
   return (
     <section className={`line liq-ice${seen ? ' open' : ''}`} aria-labelledby="h-yours">
       <LineHead pipe={pipe} id="h-yours" title="Your games" to="/favorites" action={favorites.length > 3 ? <SeeAll to="/favorites">All favorites</SeeAll> : undefined} />
-      {shown.length > 0 && <div className="wrap grid">{shown.map(g => <Chamber key={g.key} game={g} fav />)}<Tank count={shown.length} /></div>}
+      {shown.length > 0 && <div className="wrap grid strip">{shown.map(g => <Chamber key={g.key} game={g} fav />)}<Tank count={shown.length} /></div>}
       {lately.length > 0 && (
         <>
           <h3 className="wrap row-label">Recently played</h3>
@@ -114,7 +114,7 @@ function Highlights({ favs }: { favs: Set<string> }) {
   return (
     <section className={`line liq-gold${seen ? ' open' : ''}`} aria-labelledby="h-highlights">
       <LineHead pipe={pipe} id="h-highlights" title="Highlights" to="/highlights" action={all.length > 3 ? <SeeAll to="/highlights">See all</SeeAll> : undefined} />
-      <div className="wrap grid">{shown.map(g => <Chamber key={g.key} game={g} fav={favs.has(g.key)} />)}<Tank count={shown.length} /></div>
+      <div className="wrap grid strip">{shown.map(g => <Chamber key={g.key} game={g} fav={favs.has(g.key)} />)}<Tank count={shown.length} /></div>
     </section>
   );
 }

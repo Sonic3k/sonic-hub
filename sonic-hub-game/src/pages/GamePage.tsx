@@ -90,7 +90,7 @@ export default function GamePage() {
         <section className={`line gp-more${moreSeen ? ' open' : ''}`} aria-labelledby="h-more">
           <LineHead pipe={morePipe} id="h-more" title="More like this" action={<Link className="see-all" to={groupLink(group.key, sub?.key)}>See all</Link>} />
           {more.length <= 3
-            ? <div className="wrap grid">{more.map(g => <Chamber key={g.key} game={g} fav={favs.has(g.key)} />)}<Tank count={more.length} /></div>
+            ? <div className="wrap grid strip">{more.map(g => <Chamber key={g.key} game={g} fav={favs.has(g.key)} />)}<Tank count={more.length} /></div>
             : <div className="wrap row">{more.map(g => <Tile key={g.key} game={g} fav={favs.has(g.key)} />)}</div>}
         </section>
       )}

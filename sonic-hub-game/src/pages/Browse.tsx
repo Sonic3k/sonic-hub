@@ -158,7 +158,7 @@ export default function Browse({ kind }: { kind: ShelfKind }) {
       {picks.length > 0 && (
         <section className="wrap picks" aria-label={picksName}>
           <h2 className="row-label">{picksName}</h2>
-          <div className="grid">{picks.map(g => <Chamber key={g.key} game={g} fav={favs.has(g.key)} />)}<Tank count={picks.length} /></div>
+          <div className="grid strip">{picks.map(g => <Chamber key={g.key} game={g} fav={favs.has(g.key)} />)}<Tank count={picks.length} /></div>
           <h2 className="row-label">{ALL_NAME[sort]}</h2>
         </section>
       )}
