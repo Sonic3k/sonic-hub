@@ -1,6 +1,6 @@
 /* Ký ức: your own memories as the hub keeps them — a list through the years, and one memory with its photos.
    They are written and checked in the admin; here they are only read. */
-import { useMemo, useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import { Link, useLocation, useParams, useSearchParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { hub, periodYears } from '../api/hub';
@@ -110,7 +110,7 @@ export function MemoriesIndex() {
       {chapter?.summary && <p className="mm-lede">{chapter.summary}</p>}
       {loading && <p className="jn-wait">Đang mở ký ức…</p>}
       {!loading && !list.length && <p className="jn-wait">{q ? 'Không thấy ký ức nào khớp.' : 'Chưa có ký ức nào ở đây.'}</p>}
-      {!filtered && <Resurface />}
+      {!filtered && !!all.data?.length && <Resurface list={all.data} />}
       {groups.map(g => <YearBlock key={g.years[0]} years={g.years} list={g.list} plain={!!q} here={g.years[0] === hereBlock} chapters={chapters.data ?? []} />)}
     </div>
   );
@@ -153,12 +153,18 @@ export function MemoryLine({ e }: { e: Episode }) {
 }
 
 /** One memory brought back at random: the page's opening, and its one tilted print. */
-function Resurface() {
-  const self = useSelf(), [n, setN] = useState(0);
-  // a few are drawn; one with a photo and a title is the one shown, when the draw has one
-  const r = useQuery({ queryKey: ['memory-random', self?.id, n], enabled: !!self, staleTime: Infinity, queryFn: () => hub.randomMemory(self!.id, 4, 'episode') });
-  const drawn = (r.data ?? []).map(x => x.episode).filter((x): x is Episode => !!x);
-  const e = drawn.find(x => x.title && coverOf(x)) ?? drawn[0];
+function Resurface({ list }: { list: Episode[] }) {
+  const [n, setN] = useState(0), last = useRef('');
+  // drawn from the memories already here (asking the server for a random one takes as long as the whole list):
+  // one with a photo and a title when there is one, and never the same one twice in a row
+  const pool = useMemo(() => { const p = list.filter(x => x.title && coverOf(x)); return p.length ? p : list; }, [list]);
+  const e = useMemo(() => {
+    if (!pool.length) return undefined;
+    let i = Math.floor(Math.random() * pool.length);
+    if (pool.length > 1 && pool[i].id === last.current) i = (i + 1) % pool.length;
+    last.current = pool[i].id;
+    return pool[i];
+  }, [pool, n]); // eslint-disable-line react-hooks/exhaustive-deps
   if (!e) return null;
   const cover = coverOf(e);
   return (
