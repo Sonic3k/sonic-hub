@@ -1,0 +1,20 @@
+{
+  "cleanUrls": true,
+  "rewrites": [
+    { "source": "/browse", "destination": "/index.html" },
+    { "source": "/search", "destination": "/index.html" },
+    { "source": "/favorites", "destination": "/index.html" },
+    { "source": "/highlights", "destination": "/index.html" },
+    { "source": "/group/**", "destination": "/index.html" },
+    { "source": "/machine/**", "destination": "/index.html" },
+    { "source": "/series/**", "destination": "/index.html" },
+    { "source": "/tag/**", "destination": "/index.html" },
+    { "source": "/game/**", "destination": "/index.html" }
+  ],
+  "headers": [
+    { "source": "assets/**", "headers": [{ "key": "Cache-Control", "value": "public, max-age=31536000, immutable" }] },
+    { "source": "games/**", "headers": [{ "key": "Cache-Control", "value": "no-cache" }] },
+    { "source": "catalog.json", "headers": [{ "key": "Cache-Control", "value": "no-cache" }] },
+    { "source": "covers/**", "headers": [{ "key": "Cache-Control", "value": "public, max-age=3600" }] }
+  ]
+}

@@ -1,0 +1,31 @@
+{
+  "name": "sonic-hub-game",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc --noEmit && vite build",
+    "preview": "vite preview",
+    "start": "serve dist -l ${PORT:-3000}",
+    "test": "esbuild scripts/search.test.ts --bundle --platform=node --format=esm --log-level=warning --outfile=node_modules/.cache/search.test.mjs && node node_modules/.cache/search.test.mjs"
+  },
+  "dependencies": {
+    "@fontsource/barlow-semi-condensed": "^5.3.0",
+    "@fontsource/kanit": "^5.3.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "react-router-dom": "^6.30.6",
+    "serve": "^14.2.3"
+  },
+  "devDependencies": {
+    "@types/react": "^18.3.12",
+    "@types/react-dom": "^18.3.1",
+    "@vitejs/plugin-react": "^4.3.3",
+    "typescript": "^5.6.3",
+    "vite": "^5.4.10"
+  }
+}

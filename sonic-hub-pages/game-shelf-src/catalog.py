@@ -10,7 +10,7 @@ this file another person appears by first name or nick at most, and only where a
 """
 from urllib.parse import quote_plus
 
-PAGES = "https://sonic-hub-pages-production.up.railway.app"
+GAMES_PORTAL = "https://sonic-hub-game-production.up.railway.app"   # Sonic Hub Games: where the games he had made live
 
 
 def play(start, device=None, end=None, precision=None, approx=None, via=None, version=None, evidence=None, note=None):
@@ -28,8 +28,9 @@ def yt(title, kind="LONGPLAY", note=None):
             "note": note}
 
 
-def page(slug, title="Chơi trên Sonic Hub Pages"):
-    return {"kind": "PLAY", "title": title, "url": f"{PAGES}/{slug}"}
+def portal(key, title="Chơi trên Sonic Hub Games"):
+    """A game on the game portal, under the same key as here: the link opens the game itself."""
+    return {"kind": "PLAY", "title": title, "url": f"{GAMES_PORTAL}/games/{key}"}
 
 
 def pic(prefix, role="PHOTO", label=None):
@@ -326,9 +327,9 @@ GAMES = [
          developer="VNA", handName="MARIO 60 bài",
          summary="Trò Mario anh tự làm, dòng thứ hai trong danh sách các trò tự làm.", ),
     dict(key="tim-4", title="Tím 4", series="mario", seriesOrder=32, kind="REMAKE", basedOn="mario-4-notebook",
-         platform="Web", releaseYear=2026, developer="Sonic Hub Pages", genre="Platform",
+         platform="Web", releaseYear=2026, developer="Sonic Hub Games", genre="Platform",
          summary="Mario 4 trong vở dựng lại thành 21 màn chơi được trên web.",
-         links=[page("game-notebook-4")]),
+         links=[portal("tim-4")]),
 
     # ── Age of Empires ─────────────────────────────────────────────────────────────────────────────────────────
     dict(key="age-of-empires", title="Age of Empires", series="age-of-empires", seriesOrder=1, platform="Windows",
@@ -392,9 +393,9 @@ GAMES = [
          memories=["e:d1fbe66c"],
          links=[{"kind": "OTHER", "title": "Mã nguồn: Sonic3k/aoe-league", "url": "https://github.com/Sonic3k/aoe-league"}]),
     dict(key="len-doi", title="Lên Đời", series="age-of-empires", seriesOrder=40, kind="HOMEMADE", basedOn="aoe2",
-         platform="Web", releaseYear=2026, developer="Sonic Hub Pages", genre="Strategy",
+         platform="Web", releaseYear=2026, developer="Sonic Hub Games", genre="Strategy",
          summary="Hai nền văn minh trung cổ đấu theo lượt trên một bản đồ nhỏ: hai bên ra lệnh bí mật, rồi cùng lật và giải quyết một lúc.",
-         links=[page("game-age-duel")]),
+         links=[portal("len-doi")]),
 
     # ── Bomberman ──────────────────────────────────────────────────────────────────────────────────────────────
     dict(key="dyna-blaster", title="DYNA Blaster", series="bomberman", seriesOrder=1, platform="DOS",
@@ -813,25 +814,25 @@ GAMES = [
          media=[pic("0c724ed7", "SCAN", "Afmine Homeat 1"), pic("d9705a49", "SCAN", "Afmine Homeat 2 và mật khẩu của bốn phần"),
                 pic("2af7bb26", "PHOTO", "Tờ bản đồ gấp trong hộp bánh")]),
 
-    # ── Sonic Hub Pages ────────────────────────────────────────────────────────────────────────────────────────
+    # ── Sonic Hub Games ────────────────────────────────────────────────────────────────────────────────────────
     dict(key="medieval-mayhem-2", title="Medieval Mayhem II", kind="HOMEMADE", basedOn="dungeon-mayhem", platform="Web",
-         releaseYear=2026, developer="Sonic Hub Pages", genre="Card",
+         releaseYear=2026, developer="Sonic Hub Games", genre="Card",
          summary="Mỗi lá bài là một đơn vị ghép từ các biểu tượng, mỗi nền văn minh là một bộ bài.",
-         links=[page("game-civ-clash-v2")]),
+         links=[portal("medieval-mayhem-2")]),
     dict(key="mayhem-classic", title="Mayhem Classic", kind="REMAKE", basedOn="dungeon-mayhem", platform="Web",
-         releaseYear=2026, developer="Sonic Hub Pages", genre="Card",
+         releaseYear=2026, developer="Sonic Hub Games", genre="Card",
          summary="Luật Dungeon Mayhem gốc chơi với máy: mỗi anh hùng một bộ 28 lá, mười máu, mỗi lượt rút một đánh một; anh hùng, tên bài và hình vẽ là của riêng.",
-         links=[page("game-mayhem-classic")]),
+         links=[portal("mayhem-classic")]),
     dict(key="masks-and-mortar", title="Masks & Mortar", kind="REMAKE", basedOn="citadels", platform="Web",
-         releaseYear=2026, developer="Sonic Hub Pages", genre="Card",
+         releaseYear=2026, developer="Sonic Hub Games", genre="Card",
          summary="Luật Citadels (bản 2016) chơi với máy: chọn bí mật một nhân vật mỗi vòng, thu vàng hoặc rút bài, xây quận.",
-         links=[page("game-citadels")]),
+         links=[portal("masks-and-mortar")]),
     dict(key="forum-tycoon", title="Ông Trùm 4rum", kind="HOMEMADE", platform="Web", releaseYear=2026,
-         developer="Sonic Hub Pages", genre="Tycoon",
-         summary="Điều hành một diễn đàn fan Việt từ 09/2007 tới thời Facebook.", links=[page("game-forum-tycoon")]),
+         developer="Sonic Hub Games", genre="Tycoon",
+         summary="Điều hành một diễn đàn fan Việt từ 09/2007 tới thời Facebook.", links=[portal("forum-tycoon")]),
     dict(key="muop", title="Mướp và Mười Hai Ngọn Đèn", kind="HOMEMADE", platform="Web", releaseYear=2026,
-         developer="Sonic Hub Pages", genre="Platform",
-         summary="Game đi cảnh kiểu retro; hình, chữ và nhạc đều vẽ bằng code.", links=[page("game-muop")]),
+         developer="Sonic Hub Games", genre="Platform",
+         summary="Game đi cảnh kiểu retro; hình, chữ và nhạc đều vẽ bằng code.", links=[portal("muop")]),
 
     # ── Kept to look at ────────────────────────────────────────────────────────────────────────────────────────
     # Other people's games he copied from the web as references for vibe coding (kind REFERENCE): never his own and
