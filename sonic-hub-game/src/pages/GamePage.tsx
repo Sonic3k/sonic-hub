@@ -17,7 +17,7 @@ export function Missing() {
   useTitle('Not found');
   return (
     <div className="notice">
-      <p className="notice-title">Nothing at this address</p>
+      <h1 className="notice-title">Nothing at this address</h1>
       <p>The game or shelf may have moved or been renamed.</p>
       <Link className="btn btn-play" to="/">See all games</Link>
     </div>
@@ -43,7 +43,7 @@ export default function GamePage() {
   const [morePipe, moreSeen] = useSeen<HTMLDivElement>();
   const more = useMemo(() => (game ? near(game, data.games) : []), [game, data]);
   const favs = useMemo(() => new Set(favorites), [favorites]);
-  useTitle(game?.title ?? '');
+  useTitle(game ? game.title : 'Not found');
 
   useEffect(() => {
     setPlay(false);

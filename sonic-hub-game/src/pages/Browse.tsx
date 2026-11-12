@@ -47,7 +47,7 @@ export default function Browse({ kind }: { kind: ShelfKind }) {
     }
     // the search title follows what was typed
   }, [kind, key, data, favKeys, searching, f.q]);
-  useTitle(shelf?.title ?? '');
+  useTitle(shelf ? shelf.title : 'Not found');
 
   // a filter that makes no sense on this shelf is ignored rather than obeyed
   const fx: Filters = useMemo(() => ({ ...f, group: shelf?.group ? '' : f.group, machine: kind === 'machine' ? '' : f.machine, sub: shelf?.group || f.group ? f.sub : '', fav: kind === 'favorites' ? false : f.fav }),
