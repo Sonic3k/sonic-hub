@@ -6,6 +6,7 @@ import { hub, randomDay } from '../api/hub';
 import Search from './Search';
 import MachineButtons from './Machines';
 import MomentPicker from './MomentPicker';
+import { YearGrid } from './Paper';
 import { Fragment, useEffect, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { angelsOrdered } from '../pages/Angels';
@@ -17,7 +18,7 @@ import { MusicSide } from '../pages/Music';
 import { isOwner } from './money/data';
 import { cdn } from '../api/client';
 import { counts, fmt, noteDate, useAlbums, useLibraryCounts, useNotes, usePersons, useRegions, useTimeline } from '../lib/queries';
-import { HOME_PATHS, MomentProvider, useMoment } from '../lib/moment';
+import { HOME_PATHS, MomentProvider, momentHref, useMoment } from '../lib/moment';
 
 interface Tab { n: string; to: string; c: string; end?: boolean }
 /* The menu in its groups: time · what is kept · people · play and listen · the sites of their own (Huyền học, Bóng đá). */
@@ -39,7 +40,7 @@ export default function Shell() {
 }
 
 function Frame() {
-  const loc = useLocation(), tl = useTimeline(), { pick } = useMoment(), path = loc.pathname;
+  const loc = useLocation(), tl = useTimeline(), { pick, picked, moment } = useMoment(), path = loc.pathname;
   const [more, setMore] = useState(false);
   const reading = /^\/(journal|memories)\/(?!events\/?$).+/.test(path), inMemories = path.startsWith('/memories'), inJournal = path.startsWith('/journal'), inPhotos = /^\/(photos|tags)/.test(path), inAngels = path.startsWith('/angels'), inForum = path.startsWith('/forum');
   const inMoney = path.startsWith('/money'), inPortal = path.startsWith('/portal'), inGames = path.startsWith('/games'), inMusic = path.startsWith('/music');
@@ -55,7 +56,9 @@ function Frame() {
     const y = years[Math.floor(Math.random() * years.length)], r = await randomDay(y, tl.data ?? []).catch(() => null);
     if (r) pick({ y, m: r.month, d: r.day });
   };
-  const link = (t: Tab) => <NavLink key={t.to} to={t.to} end={t.end} className={({ isActive }) => (isActive || t === current ? 'on' : '')} style={{ ['--c' as string]: `var(${t.c})` }}>{t.n}</NavLink>;
+  // with a day picked, Ảnh opens at its month (Ký ức and Nhật ký go to its year by themselves)
+  const dest = (t: Tab) => (picked && moment && t.to === '/photos' ? momentHref('/photos', moment) : t.to);
+  const link = (t: Tab) => <NavLink key={t.to} to={dest(t)} end={t.end} className={({ isActive }) => (isActive || t === current ? 'on' : '')} style={{ ['--c' as string]: `var(${t.c})` }}>{t.n}</NavLink>;
   return (
     <>
       <header className="hd1">
@@ -92,36 +95,41 @@ function JournalSide() {
   const kind = sp.get('kind'), cat = sp.get('cat'), year = Number(sp.get('year'));
   const byCat: Record<string, number> = {}, byYear: Record<number, number> = {};
   list.forEach(n => { if (n.category) byCat[n.category] = (byCat[n.category] ?? 0) + 1; const y = Number(noteDate(n).slice(0, 4)); if (y) byYear[y] = (byYear[y] ?? 0) + 1; });
-  const years = Object.keys(byYear).map(Number).sort((a, b) => b - a), max = Math.max(1, ...Object.values(byYear));
+  const years = Object.keys(byYear).map(Number).sort((a, b) => b - a), tag = sp.get('tag');
+  const tags: Record<string, number> = {}; list.forEach(n => n.tags?.forEach(x => { tags[x.name] = (tags[x.name] ?? 0) + 1; }));
   const k = (v: string) => list.filter(n => n.kind === v).length;
   return (
     <>
       <h4>Nhật ký</h4>
-      <Link to="/journal" className={!kind && !cat && !year ? 'on' : ''}>Tất cả<small>{list.length}</small></Link>
-      <Link to="/journal?kind=ARTICLE" className={kind === 'ARTICLE' ? 'on' : ''}>Bài viết<small>{k('ARTICLE')}</small></Link>
-      <Link to="/journal?kind=JOURNAL" className={kind === 'JOURNAL' ? 'on' : ''}>Ghi chép<small>{k('JOURNAL')}</small></Link>
+      <Link to="/journal" className={!kind && !cat && !year && !tag ? 'on' : ''}>Tất cả<small>{notes.data ? list.length : ''}</small></Link>
+      {k('ARTICLE') > 0 && k('JOURNAL') > 0 && <>
+        <Link to="/journal?kind=ARTICLE" className={kind === 'ARTICLE' ? 'on' : ''}>Bài viết<small>{k('ARTICLE')}</small></Link>
+        <Link to="/journal?kind=JOURNAL" className={kind === 'JOURNAL' ? 'on' : ''}>Ghi chép<small>{k('JOURNAL')}</small></Link>
+      </>}
       {Object.keys(byCat).length > 0 && <h4>Chuyên mục</h4>}
       {Object.entries(byCat).sort((a, b) => b[1] - a[1]).map(([n, v]) => <Link key={n} to={`/journal?cat=${encodeURIComponent(n)}`} className={cat === n ? 'on' : ''}>{n}<small>{v}</small></Link>)}
       {years.length > 0 && <h4>Năm</h4>}
-      {years.map(y => <Link key={y} to={`/journal?year=${y}`} className={y === year ? 'on' : ''}>{y}<span className="bar" style={{ ['--c' as string]: 'var(--journal)' }}><b style={{ width: `${Math.round(byYear[y] / max * 100)}%` }} /></span><small>{byYear[y]}</small></Link>)}
+      <YearGrid years={years} active={year} href={y => `/journal?year=${y}`} />
+      {Object.keys(tags).length > 0 && <h4>Thẻ</h4>}
+      {Object.entries(tags).sort((a, b) => b[1] - a[1]).slice(0, 14).map(([t]) => <Link key={t} to={`/journal?tag=${encodeURIComponent(t)}`} className={tag === t ? 'on' : ''}>{t}</Link>)}
     </>
   );
 }
 
 function PhotosSide() {
   const tl = useTimeline(), albums = useAlbums(), lib = useLibraryCounts(), regions = useRegions(12), persons = usePersons(), loc = useLocation(), [sp] = useSearchParams();
-  const c = counts(tl.data ?? []), years = Object.keys(c).map(Number).sort((a, b) => b - a), max = Math.max(1, ...Object.values(c)), total = Object.values(c).reduce((a, b) => a + b, 0);
+  const c = counts(tl.data ?? []), years = Object.keys(c).map(Number).sort((a, b) => b - a), total = Object.values(c).reduce((a, b) => a + b, 0);
   const y = Number(sp.get('year')), path = loc.pathname, plainAll = path === '/photos' && !sp.toString().replace(/(^|&)p=[^&]*/, '');
   const people = (persons.data ?? []).filter(p => !p.isSelf).sort((a, b) => Number(!!b.isFeatured) - Number(!!a.isFeatured)).slice(0, 8);
   return (
     <>
       <h4>Ảnh</h4>
-      <Link to="/photos" className={plainAll ? 'on' : ''}>Tất cả ảnh<small>{fmt(total)}</small></Link>
+      <Link to="/photos" className={plainAll ? 'on' : ''}>Tất cả ảnh<small>{tl.data ? fmt(total) : ''}</small></Link>
       <Link to="/photos/albums" className={path.startsWith('/photos/albums') ? 'on' : ''}>Album<small>{albums.data?.length ?? ''}</small></Link>
       <Link to="/photos?fav=1" className={sp.get('fav') === '1' ? 'on' : ''}>Yêu thích<small>{lib.data ? fmt(lib.data.fav) : ''}</small></Link>
       <Link to="/photos?type=VIDEO" className={sp.get('type') === 'VIDEO' ? 'on' : ''}>Video<small>{lib.data ? fmt(lib.data.vid) : ''}</small></Link>
       {years.length > 0 && <h4>Năm</h4>}
-      {years.map(yr => <Link key={yr} to={`/photos?year=${yr}`} className={yr === y ? 'on' : ''}>{yr}<span className="bar"><b style={{ width: `${Math.round(c[yr] / max * 100)}%` }} /></span><small>{fmt(c[yr])}</small></Link>)}
+      <YearGrid years={years.filter(yr => yr >= 1900)} active={y} href={yr => `/photos?year=${yr}`} />
       {!!regions.data?.length && <h4>Vùng</h4>}
       {regions.data?.map(r => <Link key={r.id} to={`/tags/${encodeURIComponent(r.name)}`} className={path === `/tags/${encodeURIComponent(r.name)}` || decodeURIComponent(path) === `/tags/${r.name}` ? 'on' : ''}><span className="dot" style={{ ['--c' as string]: r.color || 'var(--ink3)' }} />{r.name}<small>{fmt(r.count)}</small></Link>)}
       {people.length > 0 && <h4>Người</h4>}

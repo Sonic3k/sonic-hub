@@ -2,19 +2,20 @@
    it holds, and to the right what the hub keeps from then: photos of his memories laid out like prints on a table,
    the moments that mattered most, the machines to turn on, what he played and listened to. Everything is read from
    the hub (giai đoạn, ký ức, máy, game, list nhạc, diễn đàn, nhật ký); the layout of each era is fixed here. */
-import { useEffect, useMemo, useRef } from 'react';
+import { useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { hub, dayOf, randomDay } from '../api/hub';
 import { cdn, pic } from '../api/client';
 import type { Chapter, DeskDevice, Episode, Forum, GameCard, Note } from '../types';
 import type { Playlist } from '../api/music';
-import { noteDate, noteHref, plain, useNotes, useTimeline } from '../lib/queries';
+import { firstLine, noteDate, noteHref, useNotes, useTimeline } from '../lib/queries';
 import { dayMonthYear } from '../lib/date';
 import { atOf, isoOf, momentQuery, useMoment, type Moment } from '../lib/moment';
+import { useGoTo } from '../lib/scroll';
 import { ERAS, eraOf, eraRange, type Era } from '../lib/era';
 import { chapterYear, deviceMoment, deviceRange, deviceYear, forumYears, forumsIn, gamesIn, listsIn, periodSpan, sameDayCards } from '../lib/life';
-import { memoryHref, memoryWhen, useLifeChapters, useMemories } from './Memories';
+import { memoryDay, memoryHref, useLifeChapters, useMemories } from './Memories';
 import { useEvents } from './Events';
 import { useGames } from './Games';
 import { useLists } from './Spotify';
@@ -29,19 +30,6 @@ const photoOf = (e: Episode) => e.media?.find(x => x.url && IMAGE.test(x.fileNam
 const quoted = (s?: string | null) => { const q = /(?:^|[\s(:])[“"']([^”"']{6,48})[”"'](?=$|[\s).,;!?])/.exec(s ?? '')?.[1]; return q && q.trim().includes(' ') ? q.trim() : null; };
 /** a print's caption: what it is, and the year unless the title already says it */
 const captionOf = (e: Episode) => { const y = yearOf(e); return e.title && y && !e.title.includes(String(y)) ? `${e.title}, ${y}` : e.title ?? ''; };
-/** the opening sentence of something he wrote, as a line on a page */
-function firstLine(n: Note): string {
-  const t = plain(n.content), cut = /^.{24,110}?[.!?…](?=\s|$)/.exec(t)?.[0] ?? t.slice(0, 96);
-  return cut.length < t.length && !/[.!?…]$/.test(cut) ? `${cut}…` : cut;
-}
-
-/** when a memory was, short enough for a row: no hour, a stretch inside one month as "20 – 27/11/2007", a longer one by its first day */
-function rowWhen(e: Episode): string {
-  const w = memoryWhen(e).replace(/^(~?)\d{1,2}h /, '$1').replace(/^(~?\d{2}\/\d{2}\/\d{4}) \d{2}:\d{2}(:\d{2})?/, '$1');
-  const m = /^(~?)(\d{2})\/(\d{2})\/(\d{4}) – (\d{2})\/(\d{2})\/(\d{4})$/.exec(w);
-  if (!m) return w;
-  return m[3] === m[6] && m[4] === m[7] ? `${m[1]}${+m[2]} – ${+m[5]}/${m[6]}/${m[7]}` : `${m[1]}${m[2]}/${m[3]}/${m[4]}`;
-}
 
 interface EraData {
   era: Era; chapters: Chapter[]; rows: Episode[]; prints: Episode[]; object?: Episode; note?: string | null;
@@ -87,20 +75,9 @@ export default function Timeline() {
   const years = useMemo(() => (moment ? [...new Set((tl.data ?? []).filter(b => b.month === moment.m && b.count > 0 && b.year !== moment.y && b.year > 1900).map(b => b.year))]
     .filter(yr => !cards.some(c => c.year === yr)).sort((a, b) => a - b) : []), [tl.data, moment, cards]);
 
-  // a day was picked: the page opens at its era — again once the memories are in (they change the heights above it),
-  // unless he has started moving through the page himself
-  const here = moment ? eraOf(moment.y).key : '', filled = !memories.isLoading, moved = useRef(false);
-  useEffect(() => {
-    const on = () => { moved.current = true; };
-    window.addEventListener('wheel', on, { passive: true }); window.addEventListener('touchmove', on, { passive: true }); window.addEventListener('keydown', on);
-    return () => { window.removeEventListener('wheel', on); window.removeEventListener('touchmove', on); window.removeEventListener('keydown', on); };
-  }, []);
-  useEffect(() => { moved.current = false; }, [moment?.y, moment?.m, moment?.d]);
-  useEffect(() => {
-    if (!picked || !here || moved.current) return;
-    const el = document.getElementById(`e${here}`);
-    if (el) el.scrollIntoView({ behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block: 'start' });
-  }, [picked, here, filled, moment?.y, moment?.m, moment?.d]);
+  // a day was picked: the page opens at its era (again once the memories are in: they change the heights above it)
+  const here = moment ? eraOf(moment.y).key : '';
+  useGoTo(picked && here ? `e${here}` : '', !memories.isLoading);
 
   if (!moment) return <div className="hm"><p className="hm-wait">Đang tìm lại ngày ấy…</p></div>;
   const now = new Date(), isToday = moment.m === now.getMonth() + 1 && moment.d === now.getDate();
@@ -156,7 +133,7 @@ function EraSection({ d, loading, moment, dayLead, computerNow, last, onRandom }
         <div className="era-right">
           {loading && <p className="hm-wait">Đang lục lại ký ức…</p>}
           {!empty && <Table d={d} dayLead={dayLead} moment={moment} />}
-          <Rows rows={d.rows.map(e => ({ key: e.id, when: rowWhen(e), title: e.title!, to: memoryHref(e) }))} />
+          <Rows rows={d.rows.map(e => ({ key: e.id, when: memoryDay(e), title: e.title!, to: memoryHref(e) }))} />
           <div className="tiles">
             {d.machines.map(m => <MachineTile key={m.key} name={m.name} range={deviceRange(m)} phone={m.kind === 'PHONE'}
               href={`/${m.kind === 'PHONE' ? 'phone' : 'pc'}?at=${encodeURIComponent(deviceMoment(m) ?? '')}${m.kind === 'PHONE' ? '' : `&device=${m.key}`}`}

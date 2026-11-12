@@ -5,6 +5,8 @@ import { hub } from '../api/hub';
 import { fmt, usePersons, useTimeline } from '../lib/queries';
 import { isoDay } from '../lib/date';
 import PhotoGroups, { Sentinel, useViewer } from '../components/PhotoGroups';
+import { YearChip } from '../components/Paper';
+import { eraClass } from '../lib/era';
 
 const T = 10 * 60_000;
 
@@ -30,22 +32,31 @@ export default function Photos() {
   const pills: [string, string][] = [];
   if (q) pills.push(['q', `Tìm: ${q}`]); if (who) pills.push(['person', who.displayName || who.name]); if (tag) pills.push(['tag', `Vùng: ${tag}`]); if (year) pills.push(['year', `${month ? `Tháng ${month}/` : ''}${year}`]);
 
+  const plain = !q && !tag && !person && !fav && !type && !year;
+  const years = [...new Set((tl.data ?? []).filter(b => b.count > 0 && b.year >= 1900).map(b => b.year))].sort((a, b) => b - a);
+  const tools = <>
+    <div className="seg">
+      <a className={!type && !fav ? 'on' : ''} onClick={() => { const n = new URLSearchParams(sp); n.delete('type'); n.delete('fav'); n.delete('p'); setSp(n); }}>Tất cả</a>
+      <a className={type === 'IMAGE' ? 'on' : ''} onClick={() => set('type', 'IMAGE')}>Ảnh</a>
+      <a className={type === 'VIDEO' ? 'on' : ''} onClick={() => set('type', 'VIDEO')}>Video</a>
+      <a className={fav ? 'on' : ''} onClick={() => set('fav', fav ? null : '1')}>Yêu thích</a>
+    </div>
+    <button type="button" className="sortbtn" onClick={() => set('sort', old ? null : 'old')}>{old ? 'Cũ nhất trước' : 'Mới nhất trước'} ⇅</button>
+  </>;
+
   return (
-    <div className="wrap page">
-      <div className="ptitle">
-        <h1>{title}</h1><span>{inf.isLoading ? 'Đang tải…' : `${fmt(total)} ${type === 'VIDEO' ? 'video' : 'mục'}`}</span>
-        <div className="seg">
-          <a className={!type && !fav ? 'on' : ''} onClick={() => { const n = new URLSearchParams(sp); n.delete('type'); n.delete('fav'); n.delete('p'); setSp(n); }}>Tất cả</a>
-          <a className={type === 'IMAGE' ? 'on' : ''} onClick={() => set('type', 'IMAGE')}>Ảnh</a>
-          <a className={type === 'VIDEO' ? 'on' : ''} onClick={() => set('type', 'VIDEO')}>Video</a>
-          <a className={fav ? 'on' : ''} onClick={() => set('fav', fav ? null : '1')}>Yêu thích</a>
-        </div>
-        <button type="button" className="sortbtn" onClick={() => set('sort', old ? null : 'old')}>{old ? 'Cũ nhất trước' : 'Mới nhất trước'} ⇅</button>
-      </div>
-      {pills.length > 0 && <div className="pills">{pills.map(([k, label]) => <button key={k} type="button" className="fpill" onClick={() => set(k, null)}>{label}<i>✕</i></button>)}</div>}
-      {months.length > 0 && <div className="mchips"><a className={!month ? 'on' : ''} onClick={() => set('month', null)}>Cả năm</a>{months.map(b => <a key={b.month} className={month === b.month ? 'on' : ''} onClick={() => set('month', String(b.month))}>Th {b.month}<small>{b.count}</small></a>)}{!!month && <a className={vague ? 'on' : ''} onClick={() => set('vague', vague ? null : '1')} title="Thêm những ảnh chỉ biết năm hoặc mùa">+ ảnh không rõ tháng</a>}</div>}
+    <div className="wrap page ph">
+      {/* a year opens on a band of its era: the year set large, its months to step through */}
+      {year ? <header className={`ph-band ${eraClass(year)}`}>
+        <Link className="back" to="/photos">← Tất cả ảnh</Link>
+        <div className="ph-band-top"><h1><b>{year}</b>{month ? <span>Tháng {month}</span> : null}</h1><span className="ph-n">{inf.isLoading ? 'Đang tải…' : `${fmt(total)} ${type === 'VIDEO' ? 'video' : 'mục'}`}</span>{tools}</div>
+        {months.length > 0 && <div className="ph-months"><a className={!month ? 'on' : ''} onClick={() => set('month', null)}>Cả năm</a>{months.map(b => <a key={b.month} className={month === b.month ? 'on' : ''} onClick={() => set('month', String(b.month))}>Tháng {b.month}</a>)}{!!month && <a className={`more ${vague ? 'on' : ''}`} onClick={() => set('vague', vague ? null : '1')} title="Thêm những ảnh chỉ biết năm hoặc mùa">+ ảnh không rõ tháng</a>}</div>}
+      </header>
+        : <header className="ph-head"><h1>{title}</h1><span className="ph-n">{inf.isLoading ? 'Đang tải…' : `${fmt(total)} ${type === 'VIDEO' ? 'video' : 'mục'}`}</span>{tools}</header>}
+      {pills.filter(([k]) => k !== 'year').length > 0 && <div className="pills">{pills.filter(([k]) => k !== 'year').map(([k, label]) => <button key={k} type="button" className="fpill" onClick={() => set(k, null)}>{label}<i>✕</i></button>)}</div>}
+      {plain && years.length > 0 && <nav className="ph-years" aria-label="Các năm">{years.map(y => <Link key={y} to={`/photos?year=${y}`}><YearChip year={y} /></Link>)}</nav>}
       {!inf.isLoading && !items.length && <div className="card empty">Không có ảnh nào khớp. <Link to="/photos">Xem tất cả ảnh</Link></div>}
-      <PhotoGroups items={items} onOpen={viewer.open} />
+      <PhotoGroups items={items} onOpen={viewer.open} years={!year} />
       <Sentinel more={more} active={!!inf.hasNextPage} />
       {viewer.element}
     </div>

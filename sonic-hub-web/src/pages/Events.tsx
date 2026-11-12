@@ -9,6 +9,8 @@ import { fmt } from '../lib/queries';
 import Justified from '../components/Justified';
 import Viewer from '../components/Viewer';
 import type { LifeEvent, LifeEventMoney, MediaFile } from '../types';
+import { eraClass } from '../lib/era';
+import { yearBlocks, yearsLabel } from '../lib/life';
 
 const T = 10 * 60_000;
 /** the kinds of event, as they read here */
@@ -35,35 +37,29 @@ export function useEvents() {
   return useQuery({ queryKey: ['events'], staleTime: T, queryFn: () => hub.events() });
 }
 
+/* The events year by year, as dated lines: when, what, where — the ones with a story (memories filed under them) a
+   little heavier. */
 export function EventsIndex() {
   const all = useEvents();
   const list = all.data ?? [];
-  const groups = useMemo(() => {
-    const g: [string, LifeEvent[]][] = [];
-    [...list].sort((a, b) => a.startAt.localeCompare(b.startAt)).forEach(e => {
-      const y = e.startAt.slice(0, 4), last = g[g.length - 1];
-      if (last && last[0] === y) last[1].push(e); else g.push([y, [e]]);
-    });
-    return g;
-  }, [list]);
+  const groups = useMemo(() => yearBlocks([...list].sort((a, b) => a.startAt.localeCompare(b.startAt)), e => +e.startAt.slice(0, 4)), [list]);
   const title = (id?: string | null) => list.find(e => e.id === id)?.title;
   return (
-    <div className="wrap page mem">
-      <div className="ptitle"><h1>Sự kiện</h1><span>{fmt(list.length)} sự kiện</span></div>
-      <section className="lanes">
-        <div>
-          {all.isLoading && <div className="card empty">Đang mở…</div>}
-          {!all.isLoading && !list.length && <div className="card empty">Chưa có sự kiện nào.</div>}
-          {groups.map(([y, es]) => <div key={y}><div className="month">{y}</div><div className="posts">{es.map(e => (
-            <Link key={e.id} className="post" to={eventHref(e)}>
-              <div><span className="cat">{[eventKind(e.kind), eventWhen(e)].filter(Boolean).join(' · ')}</span><h4>{e.title}</h4>
-                {e.summary && <p>{e.summary}</p>}
-                <span className="by">{[e.place, e.parentId && title(e.parentId) ? `thuộc ${title(e.parentId)}` : '', e.memories ? `${e.memories} ký ức` : '', e.albums ? `${e.albums} album` : '', spent(e.money)].filter(Boolean).join(' · ')}</span></div>
-              {e.coverUrl ? <img src={cdn(e.coverUrl, 240)} alt="" /> : <span className="noimg" />}
-            </Link>))}</div></div>)}
-        </div>
-        <aside className="rail"><NowCard list={list} /></aside>
-      </section>
+    <div className="wrap page mm">
+      <header className="mm-head"><h1>Sự kiện</h1></header>
+      {all.isLoading && <p className="jn-wait">Đang mở…</p>}
+      {!all.isLoading && !list.length && <p className="jn-wait">Chưa có sự kiện nào.</p>}
+      <NowCard list={list} />
+      {groups.map(({ years, list: es }) => (
+        <section key={years[0]} className={`mm-year ${eraClass(years[0])}`}>
+          <div className="mm-yh"><b>{yearsLabel(years)}</b></div>
+          <div className="mm-rows">{es.map(e => (
+            <Link key={e.id} className={`mm-line ${e.memories ? 'told' : ''}`} to={eventHref(e)}>
+              <span className="mm-d">{eventDays(e)}</span>
+              <span className="mm-b"><b>{e.title}</b><small>{eventKind(e.kind) && <i>{eventKind(e.kind)}</i>}{[e.place, e.parentId && title(e.parentId) ? `thuộc ${title(e.parentId)}` : '', spent(e.money)].filter(Boolean).join(' · ')}</small></span>
+              {e.coverUrl && <img src={cdn(e.coverUrl, 160)} alt="" loading="lazy" />}
+            </Link>))}</div>
+        </section>))}
     </div>
   );
 }
@@ -74,15 +70,16 @@ function NowCard({ list }: { list: LifeEvent[] }) {
   const cur = list.filter(e => e.startAt <= now && e.endExclusive > now), next = list.filter(e => e.startAt > now).sort((a, b) => a.startAt.localeCompare(b.startAt))[0];
   if (!cur.length && !next) return null;
   return (
-    <div className="card" style={{ ['--c' as string]: 'var(--memory)' }}><h3><i />Bây giờ</h3>
-      <nav className="mem-same">
-        {cur.map(e => <Link key={e.id} to={eventHref(e)}>{e.title}<small>{eventWhen(e)}</small></Link>)}
-        {next && <Link to={eventHref(next)}>{next.title}<small>Sắp tới · {eventWhen(next)}</small></Link>}
-      </nav>
-    </div>
+    <section className="mm-now"><h2>Bây giờ</h2>
+      <div className="mm-rows">
+        {cur.map(e => <Link key={e.id} className="mm-line" to={eventHref(e)}><span className="mm-d">{eventDays(e)}</span><span className="mm-b"><b>{e.title}</b></span></Link>)}
+        {next && <Link className="mm-line" to={eventHref(next)}><span className="mm-d">{eventDays(next)}</span><span className="mm-b"><b>{next.title}</b><small><i>Sắp tới</i></small></span></Link>}
+      </div>
+    </section>
   );
 }
 
+/* An event opens like a memory: on the paper of its era, its year set large. */
 export function EventPage() {
   const { id } = useParams(), all = useEvents();
   const q = useQuery({ queryKey: ['event', id], enabled: !!id, staleTime: T, queryFn: () => hub.event(id!) });
@@ -100,24 +97,29 @@ export function EventPage() {
   const [viewer, setViewer] = useState<number | null>(null);
   const list = [...(all.data ?? [])].sort((a, b) => a.startAt.localeCompare(b.startAt));
   const i = e ? list.findIndex(x => x.id === e.id) : -1, prev = i > 0 ? list[i - 1] : undefined, next = i >= 0 ? list[i + 1] : undefined;
-  if (q.isLoading) return <div className="reader"><article className="article"><p className="empty">Đang mở…</p></article></div>;
-  if (!e) return <div className="reader"><article className="article"><Link className="back" to="/memories/events">← Sự kiện</Link><h1>Không tìm thấy sự kiện này</h1></article></div>;
+  if (q.isLoading) return <div className="page mm"><div className="reader"><article className="article"><p className="empty">Đang mở…</p></article></div></div>;
+  if (!e) return <div className="page mm"><div className="reader"><article className="article"><Link className="back" to="/memories/events">← Sự kiện</Link><h1>Không tìm thấy sự kiện này</h1></article></div></div>;
+  const y = +e.startAt.slice(0, 4);
   return (
-    <div className="page mem">
-      <div className="reader">
-        <article className="article">
-          <Link className="back" to="/memories/events">← Sự kiện</Link><br />
-          <span className="cat">{[eventKind(e.kind), eventWhen(e)].filter(Boolean).join(' · ')}</span>
+    <div className="page mm">
+      <header className={`mm-top ${eraClass(y)}`}><div className="mm-top-in">
+        <div className="mm-top-y"><b>{y}</b><span>{eventDays(e)}</span></div>
+        <div className="mm-top-t">
+          <Link className="back" to="/memories/events">← Sự kiện</Link>
+          <span className="mm-k">{eventKind(e.kind) || 'Sự kiện'}</span>
           <h1>{e.title}</h1>
-          {(e.place || e.persons.length > 0) && <div className="byline">
+          {(e.place || e.persons.length > 0) && <div className="mm-meta">
             {e.place && <span>{e.place}</span>}
-            {e.place && e.persons.length > 0 && <span className="sep">|</span>}
             {e.persons.map(p => <Link key={p.id} className="pill" to={`/angels/${p.id}`}>{p.avatarUrl ? <img src={cdn(p.avatarUrl, 80)} alt="" /> : <span className="pill-ph" />}{p.name}</Link>)}
           </div>}
+        </div>
+      </div></header>
+      <div className="reader">
+        <article className="article">
           {e.summary && <div className="prose">{e.summary.split(/\n+/).map((p, k) => <p key={k}>{p}</p>)}</div>}
           {photos.data && photos.data.length > 0
             ? <div className="mem-photos"><Justified items={photos.data} rowHeight={190} gap={8} onOpen={setViewer} /></div>
-            : e.coverUrl && <img src={cdn(e.coverUrl, 1200)} alt="" style={{ width: '100%', maxHeight: 420, objectFit: 'cover', borderRadius: 12, margin: '12px 0' }} />}
+            : e.coverUrl && <img className="mm-cover" src={cdn(e.coverUrl, 1200)} alt="" />}
           {e.parent && <p className="meta">Thuộc <Link to={eventHref(e.parent)}>{e.parent.title}</Link> ({eventWhen(e.parent)})</p>}
           {e.childEvents.length > 0 && <><h5 className="mem-h">Bao gồm</h5><nav className="mem-same">{e.childEvents.map(c => <Link key={c.id} to={eventHref(c)}>{c.title}<small>{eventWhen(c)}</small></Link>)}</nav></>}
           {e.memoryList.length > 0 && <><h5 className="mem-h">Ký ức</h5><nav className="mem-same">{e.memoryList.map(m => <Link key={m.id} to={`/memories/${m.id}`}>{m.title || m.summary?.slice(0, 80)}<small>{m.when?.replace(/(\d{4})-(\d{2})-(\d{2})/, '$3/$2/$1')}</small></Link>)}</nav></>}

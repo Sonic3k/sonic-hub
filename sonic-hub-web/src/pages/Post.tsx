@@ -5,7 +5,9 @@ import { hub } from '../api/hub';
 import { cdn, pic } from '../api/client';
 import type { MediaFile } from '../types';
 import { excerptOf, noteDate, noteHref, plain, readMinutes, useNotes, usePersons } from '../lib/queries';
-import { addDays, dayMonthYear, isoDay, vnClock } from '../lib/date';
+import { addDays, dayMonthYear, isoDay, longDay, vnClock } from '../lib/date';
+import { YearChip } from '../components/Paper';
+import { Entry } from './Journal';
 import Viewer from '../components/Viewer';
 
 const T = 10 * 60_000;
@@ -41,7 +43,6 @@ export default function Post() {
   useEffect(() => { window.scrollTo({ top: 0 }); }, [slug, id]);
 
   const text = n ? plain(n.content) : '';
-  const self = (persons.data ?? []).find(p => p.isSelf);
   const mentioned = useMemo(() => (persons.data ?? []).filter(p => !p.isSelf && [p.name, p.displayName].some(x => x && x.length > 1 && text.includes(x))), [persons.data, text]);
   const all = notes.data ?? [], idx = n ? all.findIndex(x => x.id === n.id) : -1, newer = idx > 0 ? all[idx - 1] : undefined, older = idx >= 0 ? all[idx + 1] : undefined;
   const sameYear = n ? all.filter(x => x.id !== n.id && noteDate(x).slice(0, 4) === date.slice(0, 4)).slice(0, 3) : [];
@@ -50,19 +51,17 @@ export default function Post() {
   if (!n) return <div className="reader"><article className="article"><Link className="back" to="/journal">← Nhật ký</Link><h1>Không tìm thấy bài này</h1></article></div>;
 
   return (
-    <div className="page">
+    <div className="page jn">
       <div className="progress" style={{ width: `${progress}%` }} />
       <div className="reader">
         <article className="article" ref={article}>
-          <Link className="back" to="/journal">← Nhật ký</Link><br />
-          <span className="cat">{n.category || (n.kind === 'ARTICLE' ? 'Bài viết' : 'Ghi chép')}</span>
+          <Link className="back" to="/journal">← Nhật ký</Link>
+          <div className="jn-when">{day && <YearChip year={day.getFullYear()} />}<span>{day ? longDay(day.getFullYear(), day.getMonth() + 1, day.getDate()) : ''}</span><i>{[n.category, `${readMinutes(n)} phút đọc`].filter(Boolean).join(' · ')}</i></div>
           <h1>{n.title || dayMonthYear(date)}</h1>
           {n.excerpt && <p className="dek">{n.excerpt}</p>}
           {n.series && <Link className="series-tag" to={`/journal/series?name=${encodeURIComponent(n.series)}`}>{n.series}{pi >= 0 ? ` · phần ${pi + 1}/${parts.length}` : ''}</Link>}
-          <div className="byline">{n.authorPersonId || n.authorName
-            ? <>{n.authorPersonId ? <Link to={`/angels/${n.authorPersonId}`}><b>{n.authorPersonName || n.authorName}</b></Link> : <b>{n.authorName}</b>}<span className="sep">|</span><span>{dayMonthYear(vnClock(n.writtenAt) || date)}</span></>
-            : <>{self?.avatarUrl && <img src={cdn(self.avatarUrl, 80)} alt="" />}<b>{self ? self.displayName || self.name : 'Sonic'}</b><span className="sep">|</span><span>{dayMonthYear(date)}</span></>}
-            <span className="sep">|</span><span>{readMinutes(n)} phút đọc</span></div>
+          {(n.authorPersonId || n.authorName) && <div className="byline">
+            {n.authorPersonId ? <Link to={`/angels/${n.authorPersonId}`}><b>{n.authorPersonName || n.authorName}</b></Link> : <b>{n.authorName}</b>}<span>viết ngày {dayMonthYear(vnClock(n.writtenAt) || date)}</span></div>}
           {n.coverMedia && <figure className="cover"><img className="zoom" src={cdn(pic(n.coverMedia, true), 1440)} alt="" onClick={() => setViewer({ items: [n.coverMedia!], i: 0 })} />{n.coverMedia.caption && <figcaption>{n.coverMedia.caption}</figcaption>}</figure>}
           <div className="prose" ref={prose} dangerouslySetInnerHTML={{ __html: n.content }} />
           {pi >= 0 && <div className="pn series-pn">{pi > 0 ? <Link to={partHref(parts[pi - 1])}><small>← Phần trước</small><b>{parts[pi - 1].title}</b></Link> : <span />}
@@ -77,7 +76,7 @@ export default function Post() {
         </aside>
       </div>
       {sameYear.length > 0 && <div className="after"><div className="hd"><h2>Cùng năm {date.slice(0, 4)}</h2><Link to={`/journal?year=${date.slice(0, 4)}`}>Tất cả bài</Link></div>
-        <div className="cards3">{sameYear.map(x => <Link key={x.id} className="card mini" to={noteHref(x)}>{pic(x.coverMedia) ? <img src={cdn(pic(x.coverMedia, true), 600)} alt="" /> : <div className="ph" style={{ aspectRatio: '16/10' }} />}<div><span className="cat">{x.category || 'Bài viết'}</span><h4>{x.title || excerptOf(x, 50)}</h4><div className="by" style={{ marginTop: 6 }}>{dayMonthYear(noteDate(x))}</div></div></Link>)}</div></div>}
+        <div className="jn-list">{sameYear.map(x => <Entry key={x.id} n={x} />)}</div></div>}
       {viewer && <Viewer items={viewer.items} start={viewer.i} onClose={() => setViewer(null)} />}
     </div>
   );

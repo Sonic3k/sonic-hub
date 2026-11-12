@@ -7,6 +7,8 @@
   --e-bg: var(--bg); --e-ac: var(--ink); --e-rule: var(--line); --e-ink: var(--ink); --e-ink2: var(--ink2);
   --e-tile: var(--paper); --e-tile-line: transparent; --e-on: var(--paper); --e-hand: var(--hand); --e-print: var(--paper);
   --e-shade: rgba(30, 50, 60, .22);
+  /* a year set on the page's own light paper: the era's ink — for the two navy eras the navy itself, their mint and gold are for dark ground */
+  --e-num: var(--ink);
 }
 .era-1990 { --e-bg: #E1EFE7; --e-ac: #2F6B4F; --e-rule: #BCD2C5; }
 .era-1996 { --e-bg: #D9E8F4; --e-ac: #4B4FA6; --e-rule: #B4C9DA; }
@@ -14,9 +16,11 @@
 .era-2005 { --e-bg: #D2EBE7; --e-ac: #0E5A78; --e-rule: #AFCFCA; }
 .era-2008 { --e-bg: #EAEEF8; --e-ac: #0F6A63; --e-rule: #C6CDE0; }
 .era-2013 { --e-bg: #F6F8F5; --e-ac: #A8385F; --e-rule: #D0D6D2; --e-tile-line: #D0D6D2; }
+/* (declared where --e-ac is, so it takes the era's own) */
+.era-1990, .era-1996, .era-2001, .era-2005, .era-2008, .era-2013 { --e-num: var(--e-ac); }
 .era-2018, .era-2023 { --e-rule: #25394A; --e-ink: #EEF3F5; --e-ink2: #B7C6CF; --e-hand: #CFEDE7; --e-print: #EEF1F0; --e-shade: rgba(0, 0, 0, .42); }
-.era-2018 { --e-bg: #0E1E2B; --e-ac: #8FD9CF; --e-tile: #18293A; --e-on: #0E1E2B; }
-.era-2023 { --e-bg: #0A1620; --e-ac: #E9D48C; --e-tile: #13222F; --e-on: #0A1620; }
+.era-2018 { --e-bg: #0E1E2B; --e-ac: #8FD9CF; --e-tile: #18293A; --e-on: #0E1E2B; --e-num: #0E1E2B; }
+.era-2023 { --e-bg: #0A1620; --e-ac: #E9D48C; --e-tile: #13222F; --e-on: #0A1620; --e-num: #0A1620; }
 
 html { scroll-padding-top: calc(var(--top) + 24px); }
 :focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
@@ -103,7 +107,7 @@ body.mood-angels { --bg: #F8F1F3; --soft: #F1E5E9; --line: #E4D3D9; --card: #FFF
   .hd1 { gap: 16px; }
   .rand { display: none; } /* it is also in the calendar */
 }
-@media (max-width: 1000px) { .nav a { padding: 0 9px; font-size: 14px; } .nav-g + .nav-g { margin-left: 6px; padding-left: 6px; } }
+@media (max-width: 1100px) { .nav a { padding: 0 9px; font-size: 14px; } .nav-g + .nav-g { margin-left: 6px; padding-left: 6px; } }
 
 /* ── phones ── */
 @media (max-width: 860px) {

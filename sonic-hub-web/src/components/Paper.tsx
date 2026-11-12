@@ -25,6 +25,16 @@ export function Print({ src, alt = '', caption, ratio = '4 / 3', tilt, tape, tag
   return <span className={cls} style={st}>{body}</span>;
 }
 
+/** A year in the colours of its era: the small mark that says "when" all over the portal. */
+export function YearChip({ year, className = '' }: { year: number; className?: string }) {
+  return <b className={`ychip ${eraClass(year)} ${className}`}>{year}</b>;
+}
+/** The years of a section as a grid, each in its era's tint (a sidebar's way through time). */
+export function YearGrid({ years, active, href }: { years: number[]; active?: number; href: (y: number) => string }) {
+  if (!years.length) return null;
+  return <div className="ygrid">{years.map(y => <Link key={y} to={href(y)} className={`${eraClass(y)} ${y === active ? 'on' : ''}`}>{y}</Link>)}</div>;
+}
+
 /** A margin note in the school hand with its little arrow: only for words that were really written or said. */
 export function HandNote({ children, tilt = -2, caps }: { children: ReactNode; tilt?: number; caps?: boolean }) {
   return (
@@ -45,11 +55,11 @@ export function Rows({ rows }: { rows: Row[] }) {
 const PC = <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="12" rx="1.6" /><path d="M9 20h6M12 16v4" /></svg>;
 const PHONE = <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="7" y="2.5" width="10" height="19" rx="2.2" /><path d="M11 18.5h2" /></svg>;
 /** Turning on a machine of then: a tile in the era's ink (the machines are pages of their own, so a plain link). */
-export function MachineTile({ name, range, href, phone, photo }: { name: string; range?: string; href: string; phone?: boolean; photo?: string | null }) {
+export function MachineTile({ name, label, range, href, phone, photo }: { name?: string; label?: string; range?: string; href: string; phone?: boolean; photo?: string | null }) {
   return (
     <a className={`tile on ${photo ? 'photo' : ''}`} href={href}>
       {photo && <img src={photo} alt="" loading="lazy" />}
-      <span className="tile-in">{range && <span className="tile-k">{range}</span>}<span className="tile-v">{phone ? PHONE : PC}Bật {name}</span></span>
+      <span className="tile-in">{range && <span className="tile-k">{range}</span>}<span className="tile-v">{phone ? PHONE : PC}{label ?? `Bật ${name}`}</span></span>
     </a>
   );
 }
