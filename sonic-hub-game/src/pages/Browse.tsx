@@ -60,19 +60,28 @@ export default function Browse({ kind }: { kind: ShelfKind }) {
     return narrow(shelf.base, !!shelf.whole, fx, { index: data.index, favorites: favs, boost: g => (favs.has(g.key) ? 10 : 0) + (rec.has(g.key) ? 8 : 0) });
   }, [shelf, fx, data, favs, recent]);
 
+  // on a search, the tools describe what the typed words match, not the whole shelf
+  const matched = useMemo(() => {
+    if (!shelf) return [];
+    if (!searching) return shelf.base;
+    return narrow(shelf.base, !!shelf.whole, { ...fx, group: '', sub: '', machine: '', lang: '', players: '', touch: false, fav: false, sort: 'relevance' }, { index: data.index, favorites: favs });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [shelf, searching, fx.q, data, favs]);
+
   // what this shelf can be narrowed by: only what is really on it
   const facets = useMemo(() => {
-    const base = shelf?.base ?? [];
+    const base = matched;
     const uniq = <T,>(xs: T[]) => [...new Set(xs)];
     const inGroup = shelf?.group ?? fx.group;
     return {
       groups: shelf?.group ? [] : uniq(base.map(g => g.group)).map(groupOf).sort((a, b) => data.groups.findIndex(x => x.group.key === a.key) - data.groups.findIndex(x => x.group.key === b.key)),
       subs: inGroup ? groupOf(inGroup).subs.filter(s => base.some(g => g.group === inGroup && g.sub === s.key)) : [],
-      machines: kind === 'machine' ? [] : data.machines.filter(m => base.some(g => g.machine === m.key)),
-      langs: uniq(base.map(g => g.lang)).sort(),
+      // a filter that is already on stays in its list, so it can always be seen and taken off
+      machines: kind === 'machine' ? [] : data.machines.filter(m => m.key === fx.machine || base.some(g => g.machine === m.key)),
+      langs: uniq([...base.map(g => g.lang), ...(fx.lang ? [fx.lang] : [])]).sort(),
       together: base.some(g => g.players > 1), phone: base.some(g => g.inputs.includes('touch')),
     };
-  }, [shelf, fx.group, kind, data]);
+  }, [shelf, matched, fx.group, fx.machine, fx.lang, kind, data]);
 
   const sort: Sort = fx.sort || (fx.q.trim() ? 'relevance' : 'az');
   const letters = useMemo(() => {
@@ -90,7 +99,8 @@ export default function Browse({ kind }: { kind: ShelfKind }) {
   const clearTop = () => (document.querySelector<HTMLElement>('.top')?.offsetHeight ?? 0) + (bar.current?.offsetHeight ?? 0);
   const narrowed = anyFilter(fx) || (kind !== 'search' && !!fx.q.trim());
   const roomy = fx.view === 'tiles' && list.length <= ROOMY;
-  const long = shelf.base.length > ROOMY;
+  // tools are worth their space when there is enough to narrow, or when a filter is already on and must be reachable
+  const long = matched.length > ROOMY || anyFilter(fx);
   // up front on an untouched shelf: the visitor's own favorites from it, then the owner's highlights
   const upFront = !narrowed && !searching && kind !== 'highlights' && kind !== 'favorites' && list.length > ROOMY;
   const mine = upFront ? shelf.base.filter(g => favs.has(g.key)) : [];
@@ -189,7 +199,7 @@ export default function Browse({ kind }: { kind: ShelfKind }) {
           <div className="notice notice-in">
             {kind === 'favorites' && !narrowed
               ? <><p className="notice-title">No favorites yet</p><p>Star a game and it will wait for you here.</p><Link className="btn btn-play" to="/">See all games</Link></>
-              : <><p className="notice-title">Nothing here matches</p><p>{fx.q.trim() ? 'Try another name it goes by, or fewer words.' : 'Loosen a filter to see more.'}</p>{narrowed && <button type="button" className="btn btn-steel" onClick={clear}>Clear filters</button>}</>}
+              : <><p className="notice-title">Nothing here matches</p><p>{fx.q.trim() && !anyFilter(fx) ? 'Try another name it goes by, or fewer words.' : 'Loosen a filter to see more.'}</p>{narrowed && <button type="button" className="btn btn-steel" onClick={clear}>Clear filters</button>}</>}
           </div>
         ) : roomy ? (
           <div className="grid">{list.map(g => <Chamber key={g.key} game={g} fav={favs.has(g.key)} />)}<Tank count={list.length} /></div>
