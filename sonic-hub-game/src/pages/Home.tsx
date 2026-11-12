@@ -7,9 +7,9 @@ import { gamePage, type Game } from '../catalog';
 import { groupLink, machineLink, useData } from '../data';
 import { AnotherIcon, PlayIcon } from '../icons';
 import { Skyline, Stars } from '../scene';
-import { rememberPlayed, useFavorites, useRecent } from '../store';
+import { useFavorites, useRecent } from '../store';
 import { groupOf, type Group } from '../taxonomy';
-import { Chamber, Inputs, LineHead, Picture, Tank, Tile, calm, useSeen } from '../ui';
+import { Chamber, Inputs, LineHead, Picture, PlayLink, Tank, Tile, calm, useSeen } from '../ui';
 import { useTitle } from './GamePage';
 
 /** how many games a group may have and still be shown as chambers on this screen */
@@ -64,7 +64,7 @@ function Featured() {
           <Inputs game={game} names />
           <div className="actions">
             {game.play
-              ? <a className="btn btn-play" href={game.play} onClick={() => rememberPlayed(game.key)}><PlayIcon size={20} />Play</a>
+              ? <PlayLink game={game} className="btn btn-play"><PlayIcon size={20} />Play</PlayLink>
               : <Link className="btn btn-play" to={gamePage(game)}>See the game</Link>}
             {pool.length > 1 && <button type="button" className="btn btn-steel" onClick={another}><AnotherIcon />Show another</button>}
           </div>

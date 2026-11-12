@@ -35,6 +35,8 @@ finds('citadels', 'masks-and-mortar'); finds('dungeon mayhem', 'mayhem-classic')
 // slips of the fingers
 finds('medeival mayhem', 'medieval-mayhem-2', 2); finds('mahyem classic', 'mayhem-classic'); finds('citadles', 'masks-and-mortar'); finds('forum tycon', 'forum-tycoon');
 finds('masks and morter', 'masks-and-mortar'); finds('lanterns twelv', 'muop');
+// a game kept from the web is found like any other
+finds('saltline', 'saltline'); finds('salt line', 'saltline'); finds('saltlin', 'saltline'); finds('satline', 'saltline', 3);
 
 // every sample entry is found by its own name, typed plainly and typed without accents
 const sample = shelf.filter(g => g.test).filter((_, i) => i % 37 === 0);
