@@ -1,0 +1,57 @@
+/* ── Central & North Europe: shield walls, longships and knightly orders; hordes on the move and castles raised overnight ── */
+Object.assign(UNITS, {
+  /* Teutons */
+  teutonicKnight:     { name: 'Teutonic Knight', sym: 'strike strike bodyguard', lore: 'Brother knights of the Order, slow, heavily armoured and impossible to rush.' },
+  eliteTeutonicKnight:{ name: 'Elite Teutonic Knight', sym: 'strike strike strike bodyguard' },
+  paviseCrossbowmen:  { name: 'Pavise Crossbowmen', sym: 'longranged mantlet', lore: 'Crossbowmen who shot from behind a tall standing shield, the pavise.' },
+  hanseatic:          { name: 'Hanseatic Traders', sym: 'gold gold draw', lore: 'Merchant towns of the Baltic bound together in the Hansa.' },
+  marienburg:         { name: 'Marienburg', sym: 'wall wall wall heal bodyguard', lore: 'The great brick castle of the Order, hospital and fortress in one.' },
+  /* Goths */
+  comitatus:          { name: 'Comitatus', sym: 'strike strike mantlet', lore: 'A war-chief\'s sworn retinue, shields locked against the arrows.' },
+  eliteComitatus:     { name: 'Elite Comitatus', sym: 'strike strike strike mantlet' },
+  gothicHorde:        { name: 'Gothic Horde', sym: 'play play draw', lore: 'Whole peoples on the move: warriors, families and wagons crossing the Danube.' },
+  sackOfRome:         { name: 'Sack of Rome', sym: 'ram spy strike', lore: 'Alaric\'s Goths broke into the Eternal City in 410 and carried off its treasures.' },
+  adrianople:         { name: 'Charge at Adrianople', sym: 'cavalry strike flank', lore: 'In 378 the Gothic horse fell on the Roman flank, and an emperor died on the field.' },
+  /* Vikings */
+  longship:           { name: 'Longship', sym: 'ship raid', lore: 'Shallow keels that could row up any river to the next monastery.' },
+  berserker:          { name: 'Berserker', sym: 'strike strike heal', lore: 'Warriors who fought in a trance and seemed to shrug off their wounds.' },
+  eliteBerserker:     { name: 'Elite Berserker', sym: 'strike strike strike heal' },
+  lindisfarne:        { name: 'Lindisfarne Raid', sym: 'spy raid strike', lore: 'The raid of 793 on the holy island that opened the Viking Age.' },
+  meadHall:           { name: 'Mead Hall', sym: 'heal heal play', lore: 'Where the jarl feasted his warriors and gave out rings.' },
+  dragonShip:         { name: 'Dragon Ship', sym: 'ship ship raid', lore: 'The great dragon-prowed ships of the sea kings.' },
+  /* Saxons */
+  housecarls:         { name: 'Housecarls', sym: 'strike bodyguard bodyguard', lore: 'Harold\'s household troops, who held the shield wall at Hastings until dusk.' },
+  eliteHousecarls:    { name: 'Elite Housecarls', sym: 'strike bodyguard bodyguard heal' },
+  fyrd:               { name: 'Fyrd', sym: 'strike draw play', lore: 'The levy of free men, called out shire by shire to defend the land.' },
+  seaxmen:            { name: 'Seaxmen', sym: 'strike flank', lore: 'Warriors with the seax, the long knife that gave the Saxons their name.' },
+  burh:               { name: 'Burh', sym: 'wall wall gold draw', lore: 'Alfred\'s fortified towns, each a day\'s march from the next, with a market and a mint.' },
+  shieldWall:         { name: 'Shield Wall', sym: 'bodyguard bodyguard draw', lore: 'Shields overlapping, spears over the rim: the wall that met every invader.' },
+  /* Normans */
+  normanKnights:      { name: 'Norman Knights', sym: 'cavalry strike bodyguard', lore: 'Mailed horsemen with kite shields and couched lances, the victors of Hastings.' },
+  eliteNormanKnights: { name: 'Elite Norman Knights', sym: 'cavalry cavalry strike bodyguard' },
+  motte:              { name: 'Motte-and-Bailey', sym: 'wall wall play', lore: 'Earth mound, timber keep and palisade: the Normans raised hundreds within a few years of the Conquest.' },
+  domesday:           { name: 'Domesday Book', sym: 'gold draw draw', lore: 'William\'s great survey of 1086, which counted every manor, plough and pig in England.' },
+  towerOfLondon:      { name: 'Tower of London', sym: 'wall wall wall bodyguard draw', lore: 'The White Tower on the Thames: fortress, palace, treasury and prison.' },
+});
+Object.assign(CIVS, {
+  teutons: { name: 'Teutons', group: 'Central & North Europe', color: '#2d2d2d', charge: 'cross', hp2: 11, hp4: 11,
+    style: 'Armoured knights of the Order behind guard towers and castles',
+    deck: { teutonicKnight: 3, guardTower: 2, stoneWall: 2, castle: 1, knights: 1, swordsmen: 2, militia: 2, paviseCrossbowmen: 1, crossbowmen: 2, batteringRam: 2, mangonel: 1, hanseatic: 1, monastery: 1, healer: 1, spearmen: 1, palisade: 1 },
+    imperial: { eliteTeutonicKnight: 1, marienburg: 1, knights: 1, guardTower: 1, crossbowmen: 1 }, age: 'heal heal' },
+  goths: { name: 'Goths', group: 'Central & North Europe', color: '#5b4636', charge: 'axe', hp2: 11, hp4: 14,
+    style: 'Waves of infantry, sworn retinues and the Sack of Rome',
+    deck: { comitatus: 3, gothicHorde: 1, swordsmen: 3, militia: 4, menAtArms: 1, spearmen: 3, skirmishers: 1, cavalry: 1, knights: 1, sackOfRome: 1, batteringRam: 1, palisade: 1, healer: 1, messenger: 1, monastery: 1 },
+    imperial: { eliteComitatus: 1, adrianople: 1, gothicHorde: 1, menAtArms: 1, batteringRam: 1 }, age: 'play draw' },
+  vikings: { name: 'Vikings', group: 'Central & North Europe', color: '#33506b', charge: 'ship', hp2: 14, hp4: 18,
+    style: 'Longship raids, berserkers and plunder',
+    deck: { longship: 3, berserker: 3, raiders: 2, warship: 1, swordsmen: 3, menAtArms: 1, spearmen: 2, militia: 1, skirmishers: 1, palisade: 1, watchTower: 1, healer: 1, lindisfarne: 1, meadHall: 1, messenger: 1, merchant: 1 },
+    imperial: { eliteBerserker: 1, dragonShip: 1, longship: 1, swordsmen: 1, raiders: 1 }, age: 'gold draw' },
+  saxons: { name: 'Saxons', group: 'Central & North Europe', color: '#3a5f2a', charge: 'dragon', hp2: 12, hp4: 13,
+    style: 'Housecarls, the shield wall and Alfred\'s burhs',
+    deck: { housecarls: 2, fyrd: 3, seaxmen: 2, menAtArms: 1, swordsmen: 3, spearmen: 1, militia: 2, archers: 2, skirmishers: 1, burh: 2, palisade: 1, watchTower: 1, monastery: 1, healer: 1, messenger: 1 },
+    imperial: { eliteHousecarls: 1, shieldWall: 1, burh: 1, menAtArms: 1, archers: 1 }, age: 'heal draw' },
+  normans: { name: 'Normans', group: 'Central & North Europe', color: '#962d2d', charge: 'lion', hp2: 11, hp4: 11,
+    style: 'Mailed knights, motte-and-bailey castles and the Domesday Book',
+    deck: { normanKnights: 2, knights: 1, cavalry: 1, crossbowmen: 2, archers: 2, spearmen: 2, swordsmen: 2, militia: 3, motte: 2, stoneWall: 1, watchTower: 1, domesday: 1, monastery: 1, healer: 1, merchant: 1, messenger: 1 },
+    imperial: { eliteNormanKnights: 1, towerOfLondon: 1, knights: 1, crossbowmen: 1, menAtArms: 1 }, age: 'gold draw' },
+});

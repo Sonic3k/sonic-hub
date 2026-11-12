@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Mayhem Classic</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Metamorphous&family=Alegreya+Sans:ital,wght@0,400;0,500;0,700;0,800;1,400&display=swap" rel="stylesheet">
+<style>/*__CSS__*/</style>
+</head>
+<body>
+<div id="app">
+  <section id="screen-menu" class="screen"></section>
+  <section id="screen-select" class="screen hidden"></section>
+  <section id="screen-match" class="screen hidden">
+    <header id="topbar"></header>
+    <div id="table">
+      <div id="opps"></div>
+      <div id="stage"><div class="ring"></div><div class="dropglow"></div><div id="stage-card"></div><div id="stage-caption"></div></div>
+      <div id="me"></div>
+      <div id="prompt" class="actionbar"></div>
+      <div id="handzone"><button class="hand-nav prev" data-act="hand-prev" aria-label="Scroll the hand left" tabindex="-1">‹</button><div id="hand"></div><button class="hand-nav next" data-act="hand-next" aria-label="Scroll the hand right" tabindex="-1">›</button></div>
+    </div>
+    <aside id="chronicle" class="drawer" aria-label="Battle log"></aside>
+  </section>
+  <svg id="fx-arrows" aria-hidden="true"></svg>
+  <div id="fx-layer" aria-hidden="true"></div>
+  <div id="drag-ghost" aria-hidden="true"></div>
+  <div id="codex" class="codex hidden" role="dialog" aria-label="Codex"></div>
+  <div id="sheet" class="sheet-wrap hidden"></div>
+  <div id="tip" class="tip hidden" role="tooltip"></div>
+  <div id="banner" aria-live="polite"></div>
+</div>
+<script>
+/*__JS__*/
+</script>
+</body>
+</html>
