@@ -2,10 +2,15 @@
 
    A catalogue entry needs only key, title, group and machine; everything else has a default. An entry with no
    `play` is on the shelf without a game behind it yet. `blurb` is optional and worth writing only for games that
-   will be shown large (highlights): a small tile never shows it. */
+   will be shown large (highlights): a small tile never shows it.
+
+   A game that is someone else's file (found on the web, kept to look at) has `frame` instead of `play`: the file's
+   address under /kept/ and the only other sites its page may load from. It is played at /play/<key>, in a frame
+   with none of this site's origin (pages/Player.tsx). Such files are not in the repository: see kept.json. */
 import { groupOf, subOf, type Input } from './taxonomy';
 
 export type Shot = 'title' | 'play';
+export interface Frame { file: string; hosts?: string }
 
 export interface Game {
   key: string;
@@ -35,6 +40,8 @@ export interface Game {
   shots: Shot[];
   /** where it runs */
   play: string | null;
+  /** set when the game is someone else's file, played in a frame of its own */
+  frame: Frame | null;
   /** a sample entry of the test shelf (see testShelf.ts): never a real game */
   test?: boolean;
 }
@@ -49,7 +56,8 @@ export function toGame(r: Raw): Game {
     key: r.key, title: r.title, alt: r.alt ?? [], lang: r.lang ?? 'en', group: r.group, sub, machine: r.machine ?? 'web',
     year: r.year ?? null, series: r.series ?? null, tags: r.tags ?? [], players, ai, inputs: r.inputs ?? [],
     kind: r.kind ?? `${subOf(r.group, sub)?.name ?? groupOf(r.group).name}, ${who}`,
-    blurb: r.blurb ?? null, maker: r.maker ?? null, highlight: !!r.highlight, added: r.added ?? null, shots: r.shots ?? [], play: r.play ?? null,
+    blurb: r.blurb ?? null, maker: r.maker ?? null, highlight: !!r.highlight, added: r.added ?? null, shots: r.shots ?? [],
+    play: r.play ?? (r.frame ? `/play/${encodeURIComponent(r.key)}` : null), frame: r.frame ?? null,
     test: r.test,
   };
 }

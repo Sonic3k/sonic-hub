@@ -9,6 +9,10 @@ For every game: its title screen and one screen of play, each saved at two width
     python3 scripts/capture_covers.py muop tim-4 # only these
 
 Run it again after a game's look changes. The steps below walk each game from its title to a screen worth showing.
+
+Not taken here: Saltline (someone else's file, a 3D shooter). A browser without a graphics card draws it too slowly
+to picture, so its covers were made by hand: the title screen at 1280x800, and a still of play (16:9) set between
+black bands the way the game's own title screen is.
 """
 import functools, http.server, io, json, os, sys, threading
 from PIL import Image

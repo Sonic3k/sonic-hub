@@ -56,6 +56,14 @@
       "kind": "Management, 1 player",
       "blurb": "It is 2007 and you run a fan forum. Clear the spam, calm the drama and keep the boards alive until Facebook arrives.",
       "shots": ["title", "play"], "play": "/games/forum-tycoon"
+    },
+    {
+      "key": "saltline", "title": "Saltline",
+      "lang": "en", "group": "shooter", "sub": "first-person", "machine": "web", "tags": ["reference"],
+      "players": 1, "inputs": ["keyboard", "mouse", "gamepad", "touch"], "maker": "Unknown (found on the web)", "added": "2026-11-13",
+      "blurb": "A first-person shooter in a single HTML file: a container port at dawn, three uplinks of a security net to cut, then the boat. Not a Sonic Hub game: found on the web and kept as a reference for vibe coding. The file names no author.",
+      "shots": ["title", "play"],
+      "frame": { "file": "/kept/saltline/saltline_1.html", "hosts": "https://fonts.googleapis.com https://fonts.gstatic.com" }
     }
   ]
 }

@@ -5,9 +5,9 @@ import { Link, useParams } from 'react-router-dom';
 import type { Game } from '../catalog';
 import { groupLink, machineLink, seriesLink, tagLink, useData } from '../data';
 import { PlayIcon } from '../icons';
-import { rememberPlayed, useFavorites } from '../store';
+import { useFavorites } from '../store';
 import { groupOf, machineOf, subOf, tagName } from '../taxonomy';
-import { Chamber, FavButton, Inputs, LineHead, Picture, Tank, Tile, calm, useSeen } from '../ui';
+import { Chamber, FavButton, Inputs, LineHead, Picture, PlayLink, Tank, Tile, calm, useSeen } from '../ui';
 
 export function useTitle(title: string) {
   useEffect(() => { document.title = title ? `${title} · Sonic Hub Games` : 'Sonic Hub Games'; }, [title]);
@@ -73,7 +73,7 @@ export default function GamePage() {
           <Inputs game={game} names />
           <div className="actions">
             {game.play
-              ? <a className="btn btn-play" href={game.play} onClick={() => rememberPlayed(game.key)}><PlayIcon size={20} />Play</a>
+              ? <PlayLink game={game} className="btn btn-play"><PlayIcon size={20} />Play</PlayLink>
               : <p className="no-play">{game.test ? 'A sample entry of the test shelf. There is no game behind it.' : 'On the shelf, not playable here yet.'}</p>}
             <FavButton game={game} on={favs.has(game.key)} label />
           </div>

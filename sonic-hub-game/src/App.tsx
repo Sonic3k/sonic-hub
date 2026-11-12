@@ -5,6 +5,7 @@ import { Header } from './Header';
 import Browse from './pages/Browse';
 import GamePage, { Missing } from './pages/GamePage';
 import Home from './pages/Home';
+import Player from './pages/Player';
 
 const SCROLL = 'sonic-hub-games.scroll';
 
@@ -64,8 +65,13 @@ function TestBar() {
   );
 }
 
-function Layout() {
+/** Above every screen, the player included, so a step back from a game played in the portal finds its place again. */
+function Root() {
   useScrollMemory();
+  return <Outlet />;
+}
+
+function Layout() {
   return (
     <>
       <TestBar />
@@ -84,6 +90,7 @@ export default function App() {
     <BrowserRouter>
       <DataProvider>
         <Routes>
+          <Route element={<Root />}>
           <Route element={<Layout />}>
             <Route index element={<Home />} />
             <Route path="browse" element={<Browse kind="all" />} />
@@ -96,6 +103,8 @@ export default function App() {
             <Route path="highlights" element={<Browse kind="highlights" />} />
             <Route path="game/:key" element={<GamePage />} />
             <Route path="*" element={<Missing />} />
+          </Route>
+          <Route path="play/:key" element={<Player />} />
           </Route>
         </Routes>
       </DataProvider>
