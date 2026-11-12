@@ -13,7 +13,7 @@ import { noteDate, noteHref, plain, useNotes, useTimeline } from '../lib/queries
 import { dayMonthYear } from '../lib/date';
 import { atOf, isoOf, momentQuery, useMoment, type Moment } from '../lib/moment';
 import { ERAS, eraOf, eraRange, type Era } from '../lib/era';
-import { chapterYear, deviceMoment, deviceRange, deviceYear, eventsOnDay, forumYears, forumsIn, gamesIn, listsIn, periodSpan } from '../lib/life';
+import { chapterYear, deviceMoment, deviceRange, deviceYear, forumYears, forumsIn, gamesIn, listsIn, periodSpan, sameDayCards } from '../lib/life';
 import { memoryHref, memoryWhen, useLifeChapters, useMemories } from './Memories';
 import { useEvents } from './Events';
 import { useGames } from './Games';
@@ -21,7 +21,6 @@ import { useLists } from './Spotify';
 import { HandNote, MachineTile, ModeSwitch, Print, Rows, SameDay, Tile, type DayCard } from '../components/Paper';
 
 const T = 10 * 60_000;
-const FINE = new Set(['DAY', 'HOUR', 'MINUTE', 'SECOND']);
 const IMAGE = /\.(jpe?g|png|webp|gif|bmp)$/i;
 const LIST_2004 = '/memories/82fa0730-5766-4112-837a-99ccaa86e340';
 const yearOf = (e: Episode) => (e.occurredAt ? +e.occurredAt.slice(0, 4) : NaN);
@@ -84,15 +83,7 @@ export default function Timeline() {
   }), [memories.data, chapters.data, desk.data, games.data, lists.data, forums.data, notes.data]);
 
   // the same day in other years (as on Hôm nay)
-  const cards = useMemo<DayCard[]>(() => {
-    if (!moment) return [];
-    const md = isoOf(moment).slice(5), out: DayCard[] = [];
-    (memories.data ?? []).filter(e => e.occurredAt && e.title && e.occurredAt.slice(5, 10) === md && yearOf(e) !== moment.y && (!e.precision || FINE.has(e.precision)))
-      .sort((a, b) => (b.importance ?? 0) - (a.importance ?? 0)).forEach(e => out.push({ year: yearOf(e), title: e.title! }));
-    eventsOnDay(events.data ?? [], moment.m, moment.d, moment.y).forEach(e => out.push({ year: +e.startAt.slice(0, 4), title: e.title }));
-    const seen = new Set<number>();
-    return out.filter(c => (seen.has(c.year) ? false : (seen.add(c.year), true))).slice(0, 3).sort((a, b) => a.year - b.year);
-  }, [memories.data, events.data, moment]);
+  const cards = useMemo<DayCard[]>(() => (moment ? sameDayCards(events.data ?? [], memories.data ?? [], moment) : []), [memories.data, events.data, moment]);
   const years = useMemo(() => (moment ? [...new Set((tl.data ?? []).filter(b => b.month === moment.m && b.count > 0 && b.year !== moment.y && b.year > 1900).map(b => b.year))]
     .filter(yr => !cards.some(c => c.year === yr)).sort((a, b) => a - b) : []), [tl.data, moment, cards]);
 

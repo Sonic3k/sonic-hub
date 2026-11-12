@@ -1,7 +1,7 @@
 /* What was going on at a moment, read out of the lists the portal already has: the stretch of life (giai đoạn) it
    falls in, the games he was playing, the music list of then, the machines he had. Everything here is plain
    filtering of data the API returns; nothing is fetched. */
-import type { Chapter, DeskDevice, Forum, GameCard, LifeEvent, Note } from '../types';
+import type { Chapter, DeskDevice, Episode, Forum, GameCard, LifeEvent, Note } from '../types';
 import type { Playlist } from '../api/music';
 import { noteDate } from './queries';
 
@@ -108,4 +108,16 @@ export function eventsOnDay(events: LifeEvent[], m: number, d: number, notYear: 
     const day = `${y}-${md}`, next = `${y + 1}-${md}`;
     return (day >= a && day < b) || (next >= a && next < b);
   });
+}
+
+/** The same day in other years, as up to three cards (a year and what happened): his events of that day first — they
+ *  are known at once — then, in the places left, his memories of that day by weight (they take a while to load, and
+ *  must not push out a card he may already be reading). Oldest first. */
+export function sameDayCards(events: LifeEvent[], memories: Episode[], at: { y: number; m: number; d: number }): { year: number; title: string }[] {
+  const md = `${pad(at.m)}-${pad(at.d)}`, fine = new Set(['DAY', 'HOUR', 'MINUTE', 'SECOND']), out: { year: number; title: string }[] = [];
+  const add = (year: number, title: string) => { if (out.length < 3 && year !== at.y && !out.some(c => c.year === year)) out.push({ year, title }); };
+  eventsOnDay(events, at.m, at.d, at.y).forEach(e => add(+e.startAt.slice(0, 4), e.title));
+  memories.filter(e => e.occurredAt && e.title && e.occurredAt.slice(5, 10) === md && (!e.precision || fine.has(e.precision)))
+    .sort((a, b) => (b.importance ?? 0) - (a.importance ?? 0)).forEach(e => add(+e.occurredAt!.slice(0, 4), e.title!));
+  return out.sort((a, b) => a.year - b.year);
 }

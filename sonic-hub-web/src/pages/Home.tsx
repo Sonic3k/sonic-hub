@@ -13,7 +13,7 @@ import { excerptOf, noteDate, noteHref, readMinutes, useNotes, useTimeline } fro
 import { dayMonthYear, eventLabel, isoDay, longDay } from '../lib/date';
 import { atOf, isoOf, useMoment, type Moment } from '../lib/moment';
 import { eraClass } from '../lib/era';
-import { chaptersAt, deviceRange, eventsOnDay, gamesAt, listsAt, notesNear } from '../lib/life';
+import { chaptersAt, deviceRange, gamesAt, listsAt, notesNear, sameDayCards } from '../lib/life';
 import { kindName, useLifeChapters, useMemories, useSelf } from './Memories';
 import { eventDays, useEvents } from './Events';
 import { useGames } from './Games';
@@ -97,14 +97,7 @@ function Today({ moment }: { moment: Moment }) {
   const note = quoted(story?.title) ?? quoted(lead?.caption);
 
   // ── the same day in other years: memories and events on it, then the years with photos this month
-  const cards = useMemo<DayCard[]>(() => {
-    const md = iso.slice(5), out: DayCard[] = [];
-    (memories.data ?? []).filter(e => e.occurredAt && e.title && e.occurredAt.slice(5, 10) === md && +e.occurredAt.slice(0, 4) !== y && (!e.precision || FINE.has(e.precision)))
-      .sort((a, b) => (b.importance ?? 0) - (a.importance ?? 0)).forEach(e => out.push({ year: +e.occurredAt!.slice(0, 4), title: e.title! }));
-    eventsOnDay(events.data ?? [], m, d, y).forEach(e => out.push({ year: +e.startAt.slice(0, 4), title: e.title }));
-    const seen = new Set<number>();
-    return out.filter(c => (seen.has(c.year) ? false : (seen.add(c.year), true))).slice(0, 3).sort((a, b) => a.year - b.year);
-  }, [memories.data, events.data, iso, y, m, d]);
+  const cards = useMemo<DayCard[]>(() => sameDayCards(events.data ?? [], memories.data ?? [], { y, m, d }), [memories.data, events.data, y, m, d]);
   const years = useMemo(() => [...new Set((tl.data ?? []).filter(b => b.month === m && b.count > 0 && b.year !== y && b.year > 1900).map(b => b.year))]
     .filter(yr => !cards.some(c => c.year === yr)).sort((a, b) => a - b), [tl.data, m, y, cards]);
 
