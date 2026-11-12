@@ -107,7 +107,7 @@ button.print { cursor: zoom-in; }
 /* dated rows */
 .drows { border-top: 1px solid var(--e-rule); }
 .drow { display: flex; align-items: baseline; gap: 16px; padding: 10px 0; border-bottom: 1px solid var(--e-rule); }
-.drow-d { flex: 0 0 112px; font-size: 14px; font-weight: 600; }
+.drow-d { flex: 0 0 122px; font-size: 14px; font-weight: 600; }
 .drow-t { font-size: 19px; font-weight: 600; line-height: 1.3; }
 .era-2018 .drow-d, .era-2023 .drow-d { color: var(--e-ac); }
 
