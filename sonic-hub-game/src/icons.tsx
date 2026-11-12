@@ -1,6 +1,6 @@
 /* The portal's few icons, drawn on a 24 grid with square joins so they sit with the hard-edged steel around them. */
 import type { ReactNode } from 'react';
-import type { Input } from './games';
+import type { Input } from './taxonomy';
 
 const Svg = ({ children, size = 22 }: { children: ReactNode; size?: number }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="square"
@@ -26,6 +26,20 @@ const Mouse = () => <Round><path d="M6 10a6 6 0 0 1 12 0v5a6 6 0 0 1-12 0zM12 4v
 
 export const InputIcon = ({ kind }: { kind: Input }) =>
   kind === 'keyboard' ? <Keyboard /> : kind === 'gamepad' ? <Gamepad /> : kind === 'touch' ? <Touch /> : <Mouse />;
+
+export const SearchIcon = ({ size = 20 }: { size?: number }) => <Svg size={size}><path d="M10.5 4a6.5 6.5 0 1 0 0 13a6.5 6.5 0 0 0 0-13zM15.5 15.5L20 20" /></Svg>;
+export const CloseIcon = ({ size = 18 }: { size?: number }) => <Svg size={size}><path d="M6 6l12 12M18 6L6 18" /></Svg>;
+export const ChevronIcon = ({ size = 16 }: { size?: number }) => <Svg size={size}><path d="M6 9l6 6l6-6" /></Svg>;
+export const UpIcon = ({ size = 18 }: { size?: number }) => <Svg size={size}><path d="M12 19V6M6 11l6-6l6 6" /></Svg>;
+export const TilesIcon = ({ size = 20 }: { size?: number }) => <Svg size={size}><path d="M4 4h6v6H4zM14 4h6v6h-6zM4 14h6v6H4zM14 14h6v6h-6z" /></Svg>;
+export const ListIcon = ({ size = 20 }: { size?: number }) => <Svg size={size}><path d="M4 6h16M4 12h16M4 18h16" /></Svg>;
+/** a five-point star: outlined, or filled when `on` */
+export const StarIcon = ({ size = 20, on = false }: { size?: number; on?: boolean }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+    <path d="M12 2.8l2.8 5.9l6.4.8l-4.7 4.4l1.2 6.3L12 17.1l-5.7 3.1l1.2-6.3L2.8 9.5l6.4-.8z" fill={on ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="2"
+      strokeLinejoin="miter" />
+  </svg>
+);
 
 /** The portal's mark: a bolt head with a play arrow cut into it. */
 export const Mark = ({ size = 30 }: { size?: number }) => (

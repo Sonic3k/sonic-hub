@@ -43,4 +43,4 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with: { node-version: '20' }
-      - run: cd sonic-hub-game && npm ci --silent && npx tsc --noEmit && npx vite build
+      - run: cd sonic-hub-game && npm ci --silent && npm test && npx tsc --noEmit && npx vite build

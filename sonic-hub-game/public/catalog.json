@@ -1,0 +1,61 @@
+{
+  "version": 1,
+  "games": [
+    {
+      "key": "muop", "title": "Mướp và Mười Hai Ngọn Đèn", "alt": ["Muop", "Mười Hai Ngọn Đèn", "Twelve Lanterns"],
+      "lang": "vi", "group": "platformer", "sub": "classic", "machine": "web", "year": 2026, "tags": ["originals"],
+      "players": 1, "inputs": ["keyboard", "gamepad", "touch"], "maker": "Sonic Hub", "added": "2026-09-30", "highlight": true,
+      "kind": "Platformer, 1 player",
+      "blurb": "A ginger cat carries the last spark through one long day, from morning hills to an aurora peak, to relight twelve lanterns.",
+      "shots": ["title", "play"], "play": "/games/muop"
+    },
+    {
+      "key": "tim-4", "title": "Tím 4", "alt": ["Tim 4", "Mario 4"],
+      "lang": "vi", "group": "platformer", "sub": "classic", "machine": "web", "year": 2026, "tags": ["originals"],
+      "players": 1, "inputs": ["keyboard", "gamepad", "touch"], "maker": "Sonic Hub", "added": "2026-11-01",
+      "kind": "Platformer, 1 player",
+      "blurb": "Notebook pages of a hand-drawn platformer, inked in purple and rebuilt as levels you can really play.",
+      "shots": ["title", "play"], "play": "/games/tim-4"
+    },
+    {
+      "key": "medieval-mayhem-2", "title": "Medieval Mayhem II", "alt": ["Medieval Mayhem 2", "MM2", "Civ Clash"],
+      "lang": "en", "group": "cards", "sub": "card-battle", "machine": "web", "year": 2026, "tags": ["originals"],
+      "players": 1, "ai": 3, "inputs": ["mouse", "touch"], "maker": "Sonic Hub", "added": "2026-10-09", "highlight": true,
+      "kind": "Card battle, you against up to 3 AI rivals",
+      "blurb": "Pick a civilization and outlast the table. Every card is a unit, and everything it does is printed in its symbols.",
+      "shots": ["title", "play"], "play": "/games/medieval-mayhem-2"
+    },
+    {
+      "key": "mayhem-classic", "title": "Mayhem Classic", "alt": ["Dungeon Mayhem"],
+      "lang": "en", "group": "cards", "sub": "card-battle", "machine": "web", "year": 2026, "tags": ["originals"],
+      "players": 1, "ai": 3, "inputs": ["mouse", "touch"], "maker": "Sonic Hub", "added": "2026-10-09",
+      "kind": "Card battle, you against up to 3 AI rivals",
+      "blurb": "Four heroes, ten hit points each. Draw a card, play a card, and be the last one standing. Plays by the Dungeon Mayhem rules.",
+      "shots": ["title", "play"], "play": "/games/mayhem-classic"
+    },
+    {
+      "key": "masks-and-mortar", "title": "Masks & Mortar", "alt": ["Masks and Mortar", "Citadels"],
+      "lang": "en", "group": "cards", "sub": "card-game", "machine": "web", "year": 2026, "tags": ["originals"],
+      "players": 1, "ai": 7, "inputs": ["mouse", "touch"], "maker": "Sonic Hub", "added": "2026-10-20",
+      "kind": "City building with cards, you against up to 7 AI rivals",
+      "blurb": "Each round, secretly take a character, gather gold and build districts. The finest city wins. Plays by the Citadels rules.",
+      "shots": ["title", "play"], "play": "/games/masks-and-mortar"
+    },
+    {
+      "key": "len-doi", "title": "Lên Đời", "alt": ["Len Doi", "Age Duel"],
+      "lang": "vi", "group": "strategy", "sub": "turn-based", "machine": "web", "year": 2026, "tags": ["originals"],
+      "players": 1, "ai": 1, "inputs": ["mouse", "touch"], "maker": "Sonic Hub", "added": "2026-10-05", "highlight": true,
+      "kind": "Turn-based strategy, you against the AI",
+      "blurb": "Medieval empires on a small map. Both sides give their orders in secret, then reveal them at the same moment.",
+      "shots": ["title", "play"], "play": "/games/len-doi"
+    },
+    {
+      "key": "forum-tycoon", "title": "Ông Trùm 4rum", "alt": ["Ong Trum 4rum", "Forum Tycoon", "Ông Trùm Forum"],
+      "lang": "vi", "group": "simulation", "sub": "management", "machine": "web", "year": 2026, "tags": ["originals"],
+      "players": 1, "inputs": ["mouse", "touch"], "maker": "Sonic Hub", "added": "2026-10-03",
+      "kind": "Management, 1 player",
+      "blurb": "It is 2007 and you run a fan forum. Clear the spam, calm the drama and keep the boards alive until Facebook arrives.",
+      "shots": ["title", "play"], "play": "/games/forum-tycoon"
+    }
+  ]
+}
