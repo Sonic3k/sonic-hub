@@ -1,9 +1,12 @@
-/* The frame every page shares: top bar, a sidebar that follows context, the page. */
-import { Link, NavLink, Outlet, useLocation, useNavigate, useSearchParams } from 'react-router-dom';
+/* The frame every page shares: the header (the wordmark, the search, the machines; under it the menu in its groups
+   and the day being looked at), a sidebar that follows the section, the page. On a phone the menu is a bar at the
+   bottom: the first four sections, the rest behind "Thêm". */
+import { Link, NavLink, Outlet, useLocation, useSearchParams } from 'react-router-dom';
 import { hub, randomDay } from '../api/hub';
 import Search from './Search';
 import MachineButtons from './Machines';
-import { Fragment, useEffect } from 'react';
+import MomentPicker from './MomentPicker';
+import { Fragment, useEffect, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { angelsOrdered } from '../pages/Angels';
 import { MoneySide } from '../pages/Money';
@@ -14,57 +17,72 @@ import { MusicSide } from '../pages/Music';
 import { isOwner } from './money/data';
 import { cdn } from '../api/client';
 import { counts, fmt, noteDate, useAlbums, useLibraryCounts, useNotes, usePersons, useRegions, useTimeline } from '../lib/queries';
+import { HOME_PATHS, MomentProvider, useMoment } from '../lib/moment';
 
-/* [label, path, colour, short label for the phone's bottom bar]. Portal lists the sites of their own (Huyền học, Bóng đá). */
-const TABS: [string, string, string, string?][] = [['Hôm nay', '/', '--photo'], ['Ảnh', '/photos', '--photo'], ['Nhật ký', '/journal', '--journal'], ['Ký ức', '/memories', '--memory'], ['Angels', '/angels', '--angels'], ['Diễn đàn', '/forum', '--forum'], ['Game', '/games', '--games'], ['Music', '/music', '--music'], ['Portal', '/portal', '--portal']];
+interface Tab { n: string; to: string; c: string; end?: boolean }
+/* The menu in its groups: time · what is kept · people · play and listen · the sites of their own (Huyền học, Bóng đá). */
+const GROUPS: Tab[][] = [
+  [{ n: 'Hôm nay', to: '/', c: '--ink', end: true }, { n: 'Dòng thời gian', to: '/timeline', c: '--ink' }],
+  [{ n: 'Ảnh', to: '/photos', c: '--photo' }, { n: 'Ký ức', to: '/memories', c: '--memory' }, { n: 'Nhật ký', to: '/journal', c: '--journal' }],
+  [{ n: 'Angels', to: '/angels', c: '--angels' }, { n: 'Diễn đàn', to: '/forum', c: '--forum' }],
+  [{ n: 'Game', to: '/games', c: '--games' }, { n: 'Music', to: '/music', c: '--music' }],
+  [{ n: 'Portal', to: '/portal', c: '--portal' }],
+];
 /* Only on the owner's own browser (set by opening /money once): visitors of the portal never see the money tab. */
-const MONEY_TAB: [string, string, string, string?] = ['Money', '/money', '--money'];
+const MONEY: Tab = { n: 'Money', to: '/money', c: '--money' };
+/* the phone's bottom bar */
+const BAR = ['/', '/photos', '/memories', '/journal'];
+const inTab = (path: string, t: Tab) => (t.end ? path === t.to : path === t.to || path.startsWith(`${t.to}/`));
 
 export default function Shell() {
-  const loc = useLocation(), nav = useNavigate(), tl = useTimeline();
-  const reading = /^\/(journal|memories)\/(?!events\/?$).+/.test(loc.pathname), inMemories = loc.pathname.startsWith('/memories'), inJournal = loc.pathname.startsWith('/journal'), inPhotos = /^\/(photos|tags)/.test(loc.pathname), inAngels = loc.pathname.startsWith('/angels'), inForum = loc.pathname.startsWith('/forum');
-  const inMoney = loc.pathname.startsWith('/money'), tabs = inMoney || isOwner() ? [...TABS, MONEY_TAB] : TABS;
-  const inPortal = loc.pathname.startsWith('/portal'); const inGames = loc.pathname.startsWith('/games'); const inMusic = loc.pathname.startsWith('/music');
+  return <MomentProvider><Frame /></MomentProvider>;
+}
+
+function Frame() {
+  const loc = useLocation(), tl = useTimeline(), { pick } = useMoment(), path = loc.pathname;
+  const [more, setMore] = useState(false);
+  const reading = /^\/(journal|memories)\/(?!events\/?$).+/.test(path), inMemories = path.startsWith('/memories'), inJournal = path.startsWith('/journal'), inPhotos = /^\/(photos|tags)/.test(path), inAngels = path.startsWith('/angels'), inForum = path.startsWith('/forum');
+  const inMoney = path.startsWith('/money'), inPortal = path.startsWith('/portal'), inGames = path.startsWith('/games'), inMusic = path.startsWith('/music');
+  const onHome = HOME_PATHS.includes(path);
+  const groups = inMoney || isOwner() ? [...GROUPS.slice(0, -1), [...GROUPS[GROUPS.length - 1], MONEY]] : GROUPS, tabs = groups.flat();
+  const current = tabs.find(t => inTab(path, t)) ?? (inPhotos ? tabs.find(t => t.to === '/photos') : undefined);
+  const beyond = current && !BAR.includes(current.to) ? current : null;
   /* Angels changes the light of the whole page, softly */
   useEffect(() => { document.body.classList.toggle('mood-angels', inAngels); }, [inAngels]);
+  useEffect(() => { setMore(false); }, [path, loc.search]);
   const random = async () => {
     const years = Object.keys(counts(tl.data ?? [])).map(Number); if (!years.length) return;
     const y = years[Math.floor(Math.random() * years.length)], r = await randomDay(y, tl.data ?? []).catch(() => null);
-    if (r) nav(`/?y=${y}&d=${r.month}-${r.day}`);
+    if (r) pick({ y, m: r.month, d: r.day });
   };
+  const link = (t: Tab) => <NavLink key={t.to} to={t.to} end={t.end} className={({ isActive }) => (isActive || t === current ? 'on' : '')} style={{ ['--c' as string]: `var(${t.c})` }}>{t.n}</NavLink>;
   return (
     <>
-      <header className="top"><div className="top-in">
-        <Link className="logo" to="/">Sonic Hub</Link>
+      <header className="hd1">
+        <Link className="wordmark" to="/">Sonic Hub</Link>
         <Search />
-        <nav className="tabs">{tabs.map(([n, to, c, short]) => <NavLink key={to} to={to} end={to === '/'} className={({ isActive }) => `${isActive ? 'on' : ''} ${short ? 'has-s' : ''}`} style={{ ['--c' as string]: `var(${c})` }}><i /><span className="tl">{n}</span>{short && <span className="ts">{short}</span>}</NavLink>)}</nav>
-        <button className="rand" type="button" onClick={random}>Một ngày bất kỳ</button>
         <MachineButtons />
-      </div></header>
-      <div className={`frame ${reading ? 'reading' : ''}`}>
-        <aside className="side">{inJournal ? <JournalSide /> : inMemories ? <MemoriesSide /> : inPhotos ? <PhotosSide /> : inAngels ? <AngelsSide /> : inForum ? <ForumSide /> : inMoney ? <MoneySide /> : inPortal ? <PortalSide /> : inGames ? <GamesSide /> : inMusic ? <MusicSide /> : <HomeSide />}</aside>
+      </header>
+      <div className="hd2">
+        <nav className="nav" aria-label="Các mục của Sonic Hub">{groups.map((g, i) => <div key={i} className="nav-g">{g.map(link)}</div>)}</nav>
+        <div className="hd2-tools">
+          <MomentPicker onRandom={random} />
+          <button className="rand" type="button" onClick={random}>Một ngày bất kỳ</button>
+        </div>
+      </div>
+      <div className={`frame ${reading ? 'reading' : ''} ${onHome ? 'home' : ''}`} style={{ ['--sec' as string]: `var(${current?.c ?? '--ink'})` }}>
+        {!onHome && <aside className="side">{inJournal ? <JournalSide /> : inMemories ? <MemoriesSide /> : inPhotos ? <PhotosSide /> : inAngels ? <AngelsSide /> : inForum ? <ForumSide /> : inMoney ? <MoneySide /> : inPortal ? <PortalSide /> : inGames ? <GamesSide /> : inMusic ? <MusicSide /> : null}</aside>}
         <main><Outlet /></main>
       </div>
-    </>
-  );
-}
-
-function HomeSide() {
-  const tl = useTimeline(), albums = useAlbums(), lib = useLibraryCounts(), regions = useRegions(), [sp] = useSearchParams();
-  const c = counts(tl.data ?? []), years = Object.keys(c).map(Number).sort((a, b) => b - a), max = Math.max(1, ...Object.values(c));
-  const total = Object.values(c).reduce((a, b) => a + b, 0), active = Number(sp.get('y'));
-  return (
-    <>
-      <h4>Thư viện</h4>
-      <Link className={!active ? 'on' : ''} to="/">Hôm nay</Link>
-      <Link to="/photos">Tất cả ảnh<small>{fmt(total)}</small></Link>
-      <Link to="/photos/albums">Album<small>{albums.data?.length ?? ''}</small></Link>
-      <Link to="/photos?fav=1">Yêu thích<small>{lib.data ? fmt(lib.data.fav) : ''}</small></Link>
-      <Link to="/photos?type=VIDEO">Video<small>{lib.data ? fmt(lib.data.vid) : ''}</small></Link>
-      {years.length > 0 && <h4>Năm</h4>}
-      {years.map(y => <Link key={y} to={`/?y=${y}`} className={y === active ? 'on' : ''}>{y}<span className="bar"><b style={{ width: `${Math.round(c[y] / max * 100)}%` }} /></span><small>{fmt(c[y])}</small></Link>)}
-      {!!regions.data?.length && <h4>Vùng</h4>}
-      {regions.data?.map(r => <Link key={r.id} to={`/tags/${encodeURIComponent(r.name)}`}><span className="dot" style={{ ['--c' as string]: r.color || 'var(--ink3)' }} />{r.name}<small>{fmt(r.count)}</small></Link>)}
+      <nav className="tabbar" aria-label="Các mục của Sonic Hub">
+        {tabs.filter(t => BAR.includes(t.to)).map(link)}
+        <button type="button" className={`bar-more ${beyond || more ? 'on' : ''}`} style={{ ['--c' as string]: `var(${beyond?.c ?? '--ink'})` }} aria-expanded={more} onClick={() => setMore(v => !v)}>{beyond ? beyond.n : 'Thêm'}</button>
+      </nav>
+      {more && <div className="more-back" onClick={() => setMore(false)}>
+        <div className="more-sheet" role="dialog" aria-label="Tất cả các mục" onClick={e => e.stopPropagation()}>
+          {groups.map((g, i) => <div key={i} className="more-g">{g.map(link)}</div>)}
+        </div>
+      </div>}
     </>
   );
 }
@@ -97,7 +115,7 @@ function PhotosSide() {
   const people = (persons.data ?? []).filter(p => !p.isSelf).sort((a, b) => Number(!!b.isFeatured) - Number(!!a.isFeatured)).slice(0, 8);
   return (
     <>
-      <h4>Thư viện</h4>
+      <h4>Ảnh</h4>
       <Link to="/photos" className={plainAll ? 'on' : ''}>Tất cả ảnh<small>{fmt(total)}</small></Link>
       <Link to="/photos/albums" className={path.startsWith('/photos/albums') ? 'on' : ''}>Album<small>{albums.data?.length ?? ''}</small></Link>
       <Link to="/photos?fav=1" className={sp.get('fav') === '1' ? 'on' : ''}>Yêu thích<small>{lib.data ? fmt(lib.data.fav) : ''}</small></Link>

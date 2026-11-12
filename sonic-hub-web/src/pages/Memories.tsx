@@ -20,7 +20,7 @@ export const KINDS: [string, string][] = [['TRIP', 'Chuyến đi'], ['MILESTONE'
 export const kindName = (k?: string | null) => KINDS.find(x => x[0] === k)?.[1] ?? '';
 export const memoryHref = (e: { id: string }) => `/memories/${e.id}`;
 
-const useSelf = () => usePersons().data?.find(p => p.isSelf);
+export const useSelf = () => usePersons().data?.find(p => p.isSelf);
 /** all your memories, oldest first (undated ones last) */
 export function useMemories() {
   const self = useSelf();
@@ -29,7 +29,7 @@ export function useMemories() {
     queryFn: async () => (await hub.episodes(self!.id)).sort((a, b) => (a.occurredAt ?? '9999').localeCompare(b.occurredAt ?? '9999')),
   });
 }
-const useLifeChapters = () => {
+export const useLifeChapters = () => {
   const self = useSelf();
   return useQuery({ queryKey: ['chapters', self?.id], enabled: !!self, staleTime: T, queryFn: async () => (await hub.chapters(self!.id)).sort((a, b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0)) });
 };

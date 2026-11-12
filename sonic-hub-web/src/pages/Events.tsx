@@ -17,6 +17,15 @@ const KINDS: Record<string, string> = { TRIP: 'Chuyến đi', CONCERT: 'Concert'
 export const eventKind = (k?: string | null) => (k ? KINDS[k] ?? '' : '');
 export const eventHref = (e: { id: string }) => `/memories/events/${e.id}`;
 /** "16/02/2023 – 20/02/2023", "02/2023", "2023" ("~" kept) */
+/** an event's days on one short line: "16 – 17/11/2019", "29/10 – 13/11/2011", "14/03/2019"; anything known less finely as eventWhen writes it */
+export function eventDays(e: Pick<LifeEvent, 'when'>): string {
+  const m = /^(\d{4})-(\d{2})-(\d{2})(?: → (\d{4})-(\d{2})-(\d{2}))?$/.exec(e.when);
+  if (!m) return eventWhen(e);
+  const [, y1, m1, d1, y2, m2, d2] = m;
+  if (!y2) return `${d1}/${m1}/${y1}`;
+  if (y1 !== y2) return `${d1}/${m1}/${y1} – ${d2}/${m2}/${y2}`;
+  return m1 === m2 ? `${+d1} – ${+d2}/${m2}/${y2}` : `${d1}/${m1} – ${d2}/${m2}/${y2}`;
+}
 export function eventWhen(e: Pick<LifeEvent, 'when'>): string {
   return e.when.replace(/(\d{4})-(\d{2})-(\d{2})/g, (_, y, m, d) => `${d}/${m}/${y}`).replace(/(\d{4})-(\d{2})(?!\/)/g, (_, y, m) => `${m}/${y}`).replace(' → ', ' – ');
 }

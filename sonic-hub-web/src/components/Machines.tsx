@@ -1,31 +1,23 @@
-/* Turning on the computer or the phone of the moment the page is looking at: the day shown on Hôm nay, the year or
-   month opened in Ảnh, a memory (the computer opens it with its windows). Elsewhere, the machines of now.
+/* Turning on the computer or the phone of the moment the page is looking at: the year or month opened in Ảnh, a memory
+   (the computer opens it with its windows), and anywhere else the day picked on the header's calendar — the day
+   Hôm nay shows. With no day picked, a section's page turns on the machines of now.
    The machines are a page of their own (/pc, /phone), so these are plain links. */
 import { skipToken, useQuery } from '@tanstack/react-query';
 import { useLocation, useSearchParams } from 'react-router-dom';
-import { useTimeline } from '../lib/queries';
+import { HOME_PATHS, atOf, useMoment } from '../lib/moment';
 import type { Episode } from '../types';
 
 const pad = (n: number | string) => String(n).padStart(2, '0');
 
 /** The Vietnam wall-clock the page is about, as the machines take it ("2011-08-22T21:00"), or null for now. */
 function useMomentOfPage(): string | null {
-  const loc = useLocation(), [sp] = useSearchParams(), tl = useTimeline();
+  const loc = useLocation(), [sp] = useSearchParams(), { moment, picked } = useMoment();
   const memId = /^\/memories\/([^/]+)/.exec(loc.pathname)?.[1];
   // the memory page's own data, if it is open (never fetched from here)
   const mem = useQuery<Episode>({ queryKey: ['memory', memId], queryFn: skipToken });
-  const now = new Date();
-  if (loc.pathname === '/') {
-    const [pm, pd] = (sp.get('d') ?? '').split('-').map(Number);
-    const month = pm || now.getMonth() + 1, day = pd || now.getDate();
-    const buckets = tl.data ?? [], years = [...new Set(buckets.map(b => b.year))].sort((a, b) => b - a);
-    // the year Hôm nay shows when none is asked: the latest with photos in this month, else the latest at all
-    const year = Number(sp.get('y')) || years.find(y => buckets.some(b => b.year === y && b.month === month && b.count > 0)) || years[0];
-    if (!year) return null;
-    return `${year}-${pad(month)}-${pad(day)}T21:00`;
-  }
   if (loc.pathname === '/photos' && sp.get('year')) return `${sp.get('year')}-${pad(sp.get('month') ?? 6)}-15T21:00`;
   if (memId && mem.data) return atOfMemory(mem.data);
+  if (moment && (picked || HOME_PATHS.includes(loc.pathname))) return atOf(moment);
   return null;
 }
 
