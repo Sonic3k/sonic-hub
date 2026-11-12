@@ -1,0 +1,39 @@
+{
+  "redirects": [
+    {
+      "source": "/game-notebook-4",
+      "destination": "https://sonic-hub-game-production.up.railway.app/games/tim-4",
+      "type": 302
+    },
+    {
+      "source": "/game-muop",
+      "destination": "https://sonic-hub-game-production.up.railway.app/games/muop",
+      "type": 302
+    },
+    {
+      "source": "/game-forum-tycoon",
+      "destination": "https://sonic-hub-game-production.up.railway.app/games/forum-tycoon",
+      "type": 302
+    },
+    {
+      "source": "/game-age-duel",
+      "destination": "https://sonic-hub-game-production.up.railway.app/games/len-doi",
+      "type": 302
+    },
+    {
+      "source": "/game-civ-clash-v2",
+      "destination": "https://sonic-hub-game-production.up.railway.app/games/medieval-mayhem-2",
+      "type": 302
+    },
+    {
+      "source": "/game-mayhem-classic",
+      "destination": "https://sonic-hub-game-production.up.railway.app/games/mayhem-classic",
+      "type": 302
+    },
+    {
+      "source": "/game-citadels",
+      "destination": "https://sonic-hub-game-production.up.railway.app/games/masks-and-mortar",
+      "type": 302
+    }
+  ]
+}
