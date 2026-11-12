@@ -1,5 +1,5 @@
 import { apiUrl, get } from './client';
-import type { GameCard, GameDetail, GameMatch, GamePackage, GameSeries, GameTrace, Chapter, LifeEvent, LifeEventAt, LifeEventDetail, ChatArchive, ChatBoard, ChatStats, RandomMemory, ChatAttachment, ChatMessage, Collection, Episode, Fact, Forum, ForumBoard, ForumMember, ForumPage, ForumPostHit, ForumThread, ForumThreadDetail, MediaFile, MysticBrief, Note, Paged, Person, PersonDetail, PersonForum, PersonRanking, RankingDetail, SeriesPart, Tag, TagStats, TimelineBucket, Trait } from '../types';
+import type { DeskMemory, DeskMoment, GameCard, GameDetail, GameMatch, GamePackage, GameSeries, GameTrace, Chapter, LifeEvent, LifeEventAt, LifeEventDetail, ChatArchive, ChatBoard, ChatStats, RandomMemory, ChatAttachment, ChatMessage, Collection, Episode, Fact, Forum, ForumBoard, ForumMember, ForumPage, ForumPostHit, ForumThread, ForumThreadDetail, MediaFile, MysticBrief, Note, Paged, Person, PersonDetail, PersonForum, PersonRanking, RankingDetail, SeriesPart, Tag, TagStats, TimelineBucket, Trait } from '../types';
 import { isoDay, addDays } from '../lib/date';
 
 export interface Search {
@@ -69,6 +69,10 @@ export const hub = {
   event: (id: string) => get<LifeEventDetail>(`/events/${id}`),
   /** the events a moment is inside, the one before and the next one */
   eventsAt: (moment: string) => get<LifeEventAt>('/events/at', { moment }),
+  /** the computer and the phone of a moment ("2007-11-12T21:00", Vietnam wall-clock), every machine he had, that day's memories */
+  deskAt: (at: string) => get<DeskMoment>('/desk/at', { at }),
+  /** memories up to a moment, newest first — everyone's, a page of them */
+  memoriesUpTo: (at: string, size = 100) => get<{ items: DeskMemory[]; total: number }>('/desk/memories', { at, size }),
   traits: (id: string) => get<Trait[]>(`/persons/${id}/memory/traits`),
   rankings: (id: string) => get<PersonRanking[]>(`/persons/${id}/rankings`),
   /** messages with one person, every nick and account together, counted from the chats as they are now */

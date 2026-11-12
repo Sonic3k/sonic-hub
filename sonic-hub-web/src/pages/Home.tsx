@@ -1,103 +1,183 @@
-import { useState } from 'react';
-import { Link, useSearchParams } from 'react-router-dom';
+/* Hôm nay: the day being looked at — today's date in a year of his, or any day picked on the header's calendar.
+   The page brings up what the hub holds around that day, and only what it holds: the photos, what happened, the
+   stretch of life it falls in, the machines he had, what he was playing and listening to, what was being said on
+   the forums, what he wrote. Paper and ink are those of the day's era. */
+import { useMemo, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import { hub, dayOf, isAngel, peopleOfYear, randomLine } from '../api/hub';
+import { hub, dayOf } from '../api/hub';
+import { musicApi } from '../api/music';
 import { cdn, pic } from '../api/client';
-import type { MediaFile, Person } from '../types';
-import { counts, excerptOf, fmt, noteDate, noteHref, readMinutes, useAlbums, useNotes, usePersons, useRegions, useTimeline } from '../lib/queries';
-import { dayMonthYear, isoDay, longDay, yearOf, eventLabel, vnClock } from '../lib/date';
-import { PORTALS } from './Portal';
+import type { DeskMemory, LifeEvent, MediaFile } from '../types';
+import { excerptOf, noteDate, noteHref, readMinutes, useNotes, useTimeline } from '../lib/queries';
+import { dayMonthYear, eventLabel, isoDay, longDay } from '../lib/date';
+import { atOf, isoOf, useMoment, type Moment } from '../lib/moment';
+import { eraClass } from '../lib/era';
+import { chaptersAt, deviceRange, gamesAt, listsAt, notesNear, sameDayCards } from '../lib/life';
+import { kindName, useLifeChapters, useMemories, useSelf } from './Memories';
+import { eventDays, useEvents } from './Events';
+import { useGames } from './Games';
+import { useLists } from './Spotify';
 import Justified from '../components/Justified';
 import Viewer from '../components/Viewer';
+import { HandNote, MachineTile, ModeSwitch, Print, Rows, SameDay, Tile, type DayCard, type Row } from '../components/Paper';
 
 const T = 10 * 60_000;
-const nameOf = (p: Person) => p.displayName || p.name;
+const FINE = new Set(['DAY', 'HOUR', 'MINUTE', 'SECOND']);
+/** how far from the day something still counts as around it */
+const NEAR = 200 * 86400_000;
+const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
+const ratioOf = (m: MediaFile) => Math.min(16 / 9, Math.max(4 / 5, m.aspectRatio || (m.width && m.height ? m.width / m.height : 1.5)));
+/** a memory's date as far as it is known, never finer than the day ("12/11/2007", "11/2007", "2007") */
+const memoryDate = (e: DeskMemory) => (e.at ? eventLabel({ date: e.at, precision: !e.precision || FINE.has(e.precision) ? 'DAY' : (e.precision as 'MONTH') }) : '');
+/** words someone really wrote or said, when a title or a caption quotes them */
+const quoted = (s?: string | null) => { const q = /(?:^|[\s(:])[“"']([^”"']{6,48})[”"'](?=$|[\s).,;!?])/.exec(s ?? '')?.[1]; return q && q.trim().includes(' ') ? q.trim() : null; };
 
 export default function Home() {
-  const [sp] = useSearchParams(), tl = useTimeline(), persons = usePersons(), notes = useNotes(), albums = useAlbums(), regions = useRegions();
-  const buckets = tl.data ?? [], c = counts(buckets), years = Object.keys(c).map(Number).sort((a, b) => b - a), now = new Date();
-  const [pm, pd] = (sp.get('d') ?? '').split('-').map(Number), month = pm || now.getMonth() + 1, day = pd || now.getDate();
-  const year = Number(sp.get('y')) || years.find(y => buckets.some(b => b.year === y && b.month === month && b.count > 0)) || years[0] || now.getFullYear();
-  const ready = tl.isSuccess || tl.isError;
-  const dayQ = useQuery({ queryKey: ['day', year, month, day], queryFn: () => dayOf(year, month, day), enabled: ready, staleTime: T });
-  const monthQ = useQuery({ queryKey: ['month', year, month], enabled: ready, staleTime: T,
-    queryFn: () => hub.search({ from: isoDay(new Date(year, month - 1, 1)), to: isoDay(new Date(year, month, 1)), size: 13, sortBy: 'effectiveDate', sortDir: 'asc' }) });
+  const { moment } = useMoment();
+  if (!moment) return <div className="hm"><p className="hm-wait">Đang tìm lại ngày ấy…</p></div>;
+  return <Today key={isoOf(moment)} moment={moment} />;
+}
+
+function Today({ moment }: { moment: Moment }) {
+  const { y, m, d } = moment, iso = isoOf(moment), at = atOf(moment), { pick } = useMoment();
+  const self = useSelf(), tl = useTimeline(), notes = useNotes(), chapters = useLifeChapters(), games = useGames(), lists = useLists(), events = useEvents(), memories = useMemories();
+  const dayQ = useQuery({ queryKey: ['day', y, m, d], queryFn: () => dayOf(y, m, d), staleTime: T });
+  const desk = useQuery({ queryKey: ['desk-at', at], queryFn: () => hub.deskAt(at), staleTime: T });
+  const around = useQuery({ queryKey: ['events-at', at], queryFn: () => hub.eventsAt(at), staleTime: T });
+  const upTo = useQuery({ queryKey: ['memories-upto', at], queryFn: () => hub.memoriesUpTo(at), staleTime: T });
+  const plays = useQuery({ queryKey: ['sp-day', iso], queryFn: () => musicApi.day(iso), enabled: iso >= '2018-12-29', staleTime: T });
+  const forums = useQuery({ queryKey: ['forums'], queryFn: hub.forums, staleTime: T });
+  const alive = (forums.data ?? []).filter(f => f.firstPostAt && f.lastPostAt && f.firstPostAt.slice(0, 10) <= iso && iso <= f.lastPostAt.slice(0, 10));
+  const threads = useQuery({ queryKey: ['forum-at', alive.map(f => f.key).join(','), at], enabled: alive.length > 0, staleTime: T,
+    queryFn: async () => (await Promise.all(alive.map(async f => ({ forum: f, thread: (await hub.forumThreads(f.key, { at, size: 1 })).content[0] })))).filter(x => x.thread) });
+  const monthQ = useQuery({ queryKey: ['month', y, m], staleTime: T,
+    queryFn: () => hub.search({ from: isoDay(new Date(y, m - 1, 1)), to: isoDay(new Date(y, m, 1)), size: 18, sortBy: 'effectiveDate', sortDir: 'asc' }) });
   const [viewer, setViewer] = useState<{ items: MediaFile[]; i: number } | null>(null);
 
-  const items = dayQ.data?.items ?? [], scope = dayQ.data?.scope, people = peopleOfYear(persons.data ?? [], year);
-  const yearNote = (notes.data ?? []).find(n => yearOf(noteDate(n)) === year);
-  const otherYears = years.filter(y => y !== year && buckets.some(b => b.year === y && b.month === month && b.count > 0)).slice(0, 9);
-  const monthCount = buckets.find(b => b.year === year && b.month === month)?.count ?? 0;
-  const written = notes.data ?? [], featured = written.find(n => n.kind === 'ARTICLE') ?? written[0], rest = written.filter(n => n !== featured).slice(0, 3);
-  const kicker = scope === 'day' ? `Ngày này năm ${year}` : scope === 'month' ? `Tháng này năm ${year}` : `Năm ${year}`;
-  const title = scope === 'day' ? longDay(year, month, day) : scope === 'month' ? `Tháng ${month}, ${year}` : `Năm ${year}`;
+  // ── the photos: one of them on the table, the rest beside and under it
+  const scope = dayQ.data?.scope, all = dayQ.data?.items ?? [];
+  const lead = all.find(x => x.isFavorite && pic(x)) ?? all.find(x => pic(x));
+  const photos = lead ? [lead, ...all.filter(x => x !== lead)] : all;
+  // up to six others sit beside it; more than that, four beside and the rest in rows under
+  const others = photos.slice(1), beside = (others.length <= 6 ? others : others.slice(0, 4)).filter(x => pic(x)), rest = others.length <= 6 ? [] : others.slice(4);
+  const open = (i: number) => setViewer({ items: photos, i });
+
+  // ── what happened: his own memories of the day, the last ones before it, the events around
+  const own = (list?: DeskMemory[]) => (list ?? []).filter(e => e.personId === self?.id);
+  const today = own(desk.data?.day.memories), story = today[0];
+  const going = (around.data?.current ?? []).filter(e => e.precision && FINE.has(e.precision));
+  const frame = !story ? going[0] : undefined;
+  const rows = useMemo<Row[]>(() => {
+    const out: (Row & { sort: string })[] = [], t = new Date(iso).getTime();
+    const near = (d?: string | null) => !!d && Math.abs(new Date(d.slice(0, 10)).getTime() - t) <= NEAR;
+    const ev = (e: LifeEvent | null | undefined) => { if (e && e.id !== frame?.id && (near(e.startAt) || near(e.endAt))) out.push({ key: `e${e.id}`, sort: e.startAt, when: eventDays(e), title: e.title, to: `/memories/events/${e.id}` }); };
+    ev(around.data?.previous);
+    going.forEach(ev);
+    own(upTo.data?.items).filter(e => e.id !== story?.id && (e.title || e.summary) && near(e.at)).slice(0, 4)
+      .forEach(e => out.push({ key: `m${e.id}`, sort: e.at ?? '', when: memoryDate(e), title: e.title || `${(e.summary ?? '').slice(0, 72)}…`, to: `/memories/${e.id}` }));
+    today.slice(1).forEach(e => out.push({ key: `t${e.id}`, sort: e.at ?? iso, when: memoryDate(e), title: e.title || `${(e.summary ?? '').slice(0, 72)}…`, to: `/memories/${e.id}` }));
+    ev(around.data?.next);
+    const seen = new Set<string>(story?.title ? [story.title] : []);
+    return out.sort((a, b) => a.sort.localeCompare(b.sort)).filter(r => (seen.has(r.title) ? false : (seen.add(r.title), true)));
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [around.data, upTo.data, desk.data, self?.id]);
+
+  // ── the stretch of life, the machines, what the sections hold from then
+  const life = chaptersAt(chapters.data ?? [], y, m);
+  const computer = desk.data?.computer?.device, phone = desk.data?.phone?.device;
+  const playing = gamesAt(games.data ?? [], iso).slice(0, 3);
+  const heard = useMemo(() => {
+    const by = new Map<string, { title: string; ms: number }>();
+    (plays.data ?? []).forEach(p => { const k = `${p.title}|${p.artist}`, x = by.get(k) ?? { title: p.title, ms: 0 }; x.ms += p.ms; by.set(k, x); });
+    return [...by.values()].sort((a, b) => b.ms - a.ms).slice(0, 3).map(x => x.title);
+  }, [plays.data]);
+  const kept = listsAt(lists.data ?? [], iso).slice(0, 2);
+  const wrote = notesNear(notes.data ?? [], iso, 1)[0];
+  const note = quoted(story?.title) ?? quoted(lead?.caption);
+
+  // ── the same day in other years: memories and events on it, then the years with photos this month
+  const cards = useMemo<DayCard[]>(() => sameDayCards(events.data ?? [], memories.data ?? [], { y, m, d }), [memories.data, events.data, y, m, d]);
+  const years = useMemo(() => [...new Set((tl.data ?? []).filter(b => b.month === m && b.count > 0 && b.year !== y && b.year > 1900).map(b => b.year))]
+    .filter(yr => !cards.some(c => c.year === yr)).sort((a, b) => a - b), [tl.data, m, y, cards]);
+
+  const now = new Date(), isToday = m === now.getMonth() + 1 && d === now.getDate();
+  const weekday = cap(new Date(y, m - 1, d).toLocaleDateString('vi-VN', { weekday: 'long' }));
+  const monthName = `tháng ${m}, ${y}`;
 
   return (
-    <div className="wrap page" key={`${year}-${month}-${day}`}>
-      <section className="focus">
-        <div className="card today">
-          {items[0] ? <div className="img zoom" onClick={() => setViewer({ items, i: 0 })}><img src={cdn(pic(items[0], true), 1280)} alt={items[0].caption ?? ''} /><span className="badge">{items.length} ảnh{yearNote ? ' · 1 trang viết' : ''}</span></div>
-            : <div className="img ph">{dayQ.isLoading || !ready ? 'Đang tìm lại ngày ấy…' : 'Chưa có ảnh'}</div>}
-          <div className="body">
-            <p className="kicker">{kicker}</p>
-            <h1>{title}</h1>
-            <p>{items[0]?.caption || (yearNote ? `${yearNote.title || 'Một trang viết'} — ${excerptOf(yearNote, 90)}` : scope === 'day' ? `${items.length} khoảnh khắc trong ngày.` : 'Ngày ấy không có tấm nào, đây là quanh thời điểm đó.')}</p>
-            <div className="row">
-              {items.length > 1 && <div className="thumbs">{items.slice(1, 5).map((m, k) => <img key={m.id} className="zoom" src={cdn(pic(m), 160)} alt="" onClick={() => setViewer({ items, i: k + 1 })} />)}</div>}
-              {people.slice(0, 2).map(p => <span key={p.id} className="pill">{p.avatarUrl ? <img src={cdn(p.avatarUrl, 80)} alt="" /> : null}{nameOf(p)}</span>)}
+    <div className="hm page">
+      <section className="hm-open">
+        <div className="hm-when">
+          <p>{isToday ? (y === now.getFullYear() ? `Hôm nay · ${weekday}` : `Ngày này năm ${y}`) : weekday}</p>
+          <h1>{d} tháng {m}</h1>
+          <ModeSwitch />
+        </div>
+        <SameDay moment={moment} cards={cards} years={years} onPick={pick} />
+      </section>
+
+      <section className={`era ${eraClass(y)}`}>
+        <div className="era-in">
+          <div className="era-left">
+            <div className="era-year"><b>{y}</b><span>{longDay(y, m, d)}</span></div>
+            {life.map(c => <Link key={c.id} className="ch" to={`/memories?chapter=${c.id}`}><b>{c.title || c.period}</b>{c.title && <span>{c.period}</span>}</Link>)}
+            {note && <HandNote>{note}</HandNote>}
+            {(computer || phone) && <div className="era-machines">
+              {computer && <MachineTile name={computer.name} range={deviceRange(computer)} href={`/pc?at=${encodeURIComponent(at)}`} photo={computer.photoUrl ? cdn(computer.photoUrl, 640) : null} />}
+              {phone && <MachineTile name={phone.name} range={deviceRange(phone)} href={`/phone?at=${encodeURIComponent(at)}`} phone />}
+            </div>}
+          </div>
+
+          <div className="era-right">
+            {dayQ.isLoading && <p className="hm-wait">Đang tìm lại ngày ấy…</p>}
+            {lead && <div>
+              {scope && scope !== 'day' && <p className="hm-hint">Ngày này không có ảnh. Đây là vài tấm của {scope === 'month' ? monthName : `năm ${y}`}.</p>}
+              <div className={`ov ${story || frame || beside.length ? '' : 'solo'}`}>
+                <Print className="lead" src={cdn(pic(lead, true), 960)} alt={lead.caption ?? ''} ratio={String(ratioOf(lead))} tilt={-1} tape={-4} onClick={() => open(0)}
+                  caption={lead.caption || (scope === 'day' ? dayMonthYear(iso) : lead.effectiveDate ? dayMonthYear(lead.effectiveDate) : undefined)} />
+                {(story || frame || beside.length > 0) && <div className="lead-side">
+                  {story && <Story label={kindName(story.kind) || 'Ký ức'} title={story.title || 'Ngày hôm đó'} text={story.summary} place={story.place} to={`/memories/${story.id}`} />}
+                  {frame && <Story label="Đang diễn ra" title={frame.title} text={frame.summary} place={frame.place} when={eventDays(frame)} to={`/memories/events/${frame.id}`} />}
+                  {beside.length > 0 && <div className="thumbs4">{beside.map(x => <button key={x.id} type="button" className="zoom" onClick={() => open(photos.indexOf(x))}><img src={cdn(pic(x), 320)} alt={x.caption ?? ''} loading="lazy" /></button>)}</div>}
+                </div>}
+              </div>
+              {rest.length > 0 && <div className="hm-rest"><Justified items={rest} rowHeight={128} gap={8} onOpen={i => open(i + 5)} /></div>}
+            </div>}
+            {!lead && !dayQ.isLoading && (story || frame) && <div className="lead-side alone">
+              {story && <Story label={kindName(story.kind) || 'Ký ức'} title={story.title || 'Ngày hôm đó'} text={story.summary} place={story.place} to={`/memories/${story.id}`} />}
+              {frame && <Story label="Đang diễn ra" title={frame.title} text={frame.summary} place={frame.place} when={eventDays(frame)} to={`/memories/events/${frame.id}`} />}
+            </div>}
+
+            {rows.length > 0 && <div><h2 className="hm-h">Quanh ngày này</h2><Rows rows={rows} /></div>}
+
+            <div className="tiles">
+              {playing.length > 0 && <Tile label="Game" to={playing.length === 1 ? `/games/${playing[0].key}` : '/games'}>{playing.map(g => g.title).join(', ')}</Tile>}
+              {heard.length > 0
+                ? <Tile label="Nghe hôm đó" to={`/music/spotify?y=${y}&v=days&day=${iso}`}>{heard.join(', ')}</Tile>
+                : kept.length > 0 && <Tile label="Music" to={kept.length === 1 ? `/music/lists/${kept[0].key}` : '/music'}>{kept.map(p => p.title).join(', ')}</Tile>}
+              {(threads.data ?? []).map(({ forum, thread }) => <Tile key={forum.key} label={forum.name.replace(/\s*\(.*\)$/, '')} to={`/forum/t/${thread.id}`}>{thread.title}</Tile>)}
+              {wrote && <Tile label={`Nhật ký · ${dayMonthYear(noteDate(wrote))}`} to={noteHref(wrote)}>{wrote.title || 'Không tiêu đề'}</Tile>}
             </div>
           </div>
         </div>
-        <div className="years">
-          <div className="hd"><h2>Tháng này các năm</h2><Link to="/photos" style={{ ['--c' as string]: 'var(--photo)' }}>Tất cả</Link></div>
-          {otherYears.map(y => <YearCard key={y} year={y} month={month} count={buckets.find(b => b.year === y && b.month === month)?.count ?? 0} />)}
-        </div>
       </section>
 
-      <section className="lanes">
-        <div>
-          <div className="block">
-            <div className="hd"><h2>Tháng {month}, {year}</h2><span>{fmt(monthCount)} ảnh</span><Link to={`/photos?year=${year}&month=${month}`} style={{ ['--c' as string]: 'var(--photo)' }}>Mở trong kho ảnh</Link></div>
-            {monthQ.data?.content.length ? <Justified items={monthQ.data.content} rowHeight={168} gap={8} onOpen={(i) => setViewer({ items: monthQ.data!.content, i })} /> : <div className="card empty">Tháng này chưa có ảnh.</div>}
-          </div>
-          {featured && <div className="block">
-            <div className="hd"><h2>Viết gần đây</h2><span>{written.length} bài</span><Link to="/journal">Vào Nhật ký</Link></div>
-            <Link className="card featured" to={noteHref(featured)}>
-              {featured.coverMedia ? <img src={cdn(pic(featured.coverMedia, true), 900)} alt="" /> : <div className="ph" />}
-              <div className="body"><span className="cat">{featured.category || (featured.kind === 'ARTICLE' ? 'Bài viết' : 'Ghi chép')}</span><h3>{featured.title || 'Không tiêu đề'}</h3><p>{excerptOf(featured)}</p><span className="by">{dayMonthYear(noteDate(featured))} · {readMinutes(featured)} phút đọc</span></div>
-            </Link>
-            <div className="posts" style={{ marginTop: 16 }}>{rest.map(n => <PostRow key={n.id} n={n} />)}</div>
-          </div>}
-        </div>
-        <aside className="rail">
-          <ChatCard people={people.length ? people : (persons.data ?? []).filter(isAngel)} />
-          <RandomPhoto onOpen={(m) => setViewer({ items: [m], i: 0 })} />
-          {PORTALS.some(s => s.url) && <div className="card" style={{ ['--c' as string]: 'var(--portal)' }}><h3><i />Portal</h3>
-            {PORTALS.filter(s => s.url).map(s => <a key={s.key} href={s.url} style={{ display: 'block', fontWeight: 600, padding: '4px 0', color: `var(${s.color})` }}>{s.name} →</a>)}</div>}
-        </aside>
-      </section>
-
-      {!!albums.data?.length && <section><div className="hd"><h2>Album</h2><span>{albums.data.length} album</span><Link to="/photos/albums" style={{ ['--c' as string]: 'var(--photo)' }}>Tất cả album</Link></div>
-        <div className="albums">{albums.data.slice(0, 6).map(a => <Link key={a.id} className="album" to={`/photos/albums/${a.id}`}><div className="cov">{a.thumbnailUrl ? <img src={cdn(a.thumbnailUrl, 400)} alt="" /> : <div className="ph" style={{ width: '100%', height: '100%' }} />}</div><b>{a.name}</b><span>{fmt(a.mediaCount ?? 0)} ảnh</span></Link>)}</div></section>}
-
-      <section className="duo">
-        <div><div className="hd"><h2>Angels</h2><span>{(persons.data ?? []).filter(isAngel).length} người</span><Link to="/angels" style={{ ['--c' as string]: 'var(--angels)' }}>Vào Angels</Link></div>
-          <div className="people">{(persons.data ?? []).filter(isAngel).sort((a, b) => Number(!!b.isFeatured) - Number(!!a.isFeatured)).slice(0, 6).map(p => (
-            <Link key={p.id} className="person" to={`/angels/${p.id}`}>{p.avatarUrl ? <img src={cdn(p.avatarUrl, 200)} alt="" /> : <span className="letter-ph">{nameOf(p).slice(0, 1)}</span>}<b>{nameOf(p)}</b><span>{p.period ?? ''}</span></Link>))}</div></div>
-        {!!regions.data?.length && <div><div className="hd"><h2>Vùng</h2><span>theo tag</span></div>
-          <div className="regions">{regions.data.map(r => <Link key={r.id} className="region" to={`/tags/${encodeURIComponent(r.name)}`} style={{ paddingLeft: 12 }}><span className="dot" style={{ width: 8, height: 8, borderRadius: '50%', background: r.color || 'var(--ink3)' }} />{r.name}<small>{fmt(r.count)}</small></Link>)}</div></div>}
-      </section>
+      {!!monthQ.data?.content.length && <section className="hm-month">
+        <div className="hm-month-hd"><h2>{cap(monthName)}</h2><Link to={`/photos?year=${y}&month=${m}`}>Mở trong kho ảnh</Link></div>
+        <Justified items={monthQ.data.content} rowHeight={168} gap={8} onOpen={i => setViewer({ items: monthQ.data!.content, i })} />
+      </section>}
       {viewer && <Viewer items={viewer.items} start={viewer.i} onClose={() => setViewer(null)} />}
     </div>
   );
 }
 
-function YearCard({ year, month, count }: { year: number; month: number; count: number }) {
-  const q = useQuery({ queryKey: ['yearcover', year, month], staleTime: T,
-    queryFn: async () => (await hub.search({ from: isoDay(new Date(year, month - 1, 1)), to: isoDay(new Date(year, month, 1)), size: 1, random: true, type: 'IMAGE' })).content[0] ?? null });
+/** What the day was: a memory of his, or the event it sits in. */
+function Story({ label, title, text, place, when, to }: { label: string; title: string; text?: string | null; place?: string | null; when?: string; to: string }) {
   return (
-    <Link className={`ycard ${q.data ? '' : 'ph'}`} to={`/?y=${year}`}>
-      {pic(q.data) && <img src={cdn(pic(q.data), 400)} alt="" />}<b>{year}</b><span>{fmt(count)} ảnh</span>
+    <Link className="daycard" to={to}>
+      <span className="daycard-k">{[label, when, place].filter(Boolean).join(' · ')}</span>
+      <b>{title}</b>
+      {text && <p>{text}</p>}
     </Link>
   );
 }
@@ -108,29 +188,5 @@ export function PostRow({ n }: { n: import('../types').Note }) {
       <div><span className="cat">{n.category || (n.kind === 'ARTICLE' ? 'Bài viết' : 'Ghi chép')}</span><h4>{n.title || 'Không tiêu đề'}</h4><p>{excerptOf(n)}</p><span className="by">{dayMonthYear(noteDate(n))} · {readMinutes(n)} phút đọc</span></div>
       {pic(n.coverMedia) ? <img src={cdn(pic(n.coverMedia), 240)} alt="" /> : <span className="noimg" />}
     </Link>
-  );
-}
-
-function ChatCard({ people }: { people: Person[] }) {
-  const ids = people.map(p => p.id).join(','), [n, setN] = useState(0);
-  const q = useQuery({ queryKey: ['line', ids, n], queryFn: () => randomLine(people), enabled: people.length > 0, staleTime: T });
-  if (!people.length || (q.isSuccess && !q.data)) return null;
-  return (
-    <div className="card" style={{ ['--c' as string]: 'var(--angels)' }}>
-      <h3><i />Một dòng tin nhắn<button type="button" onClick={() => setN(v => v + 1)}>Đổi</button></h3>
-      {q.data ? <><span className="bubble">{q.data.text}</span><div className="meta">{q.data.who} · {q.data.platform}{q.data.at ? ` · ${dayMonthYear(vnClock(q.data.at))}` : ''}</div></> : <div className="meta">Đang lục lại…</div>}
-    </div>
-  );
-}
-
-function RandomPhoto({ onOpen }: { onOpen: (m: MediaFile) => void }) {
-  const [n, setN] = useState(0), q = useQuery({ queryKey: ['randomphoto', n], queryFn: async () => (await hub.search({ random: true, size: 1, type: 'IMAGE' })).content[0] ?? null, staleTime: T });
-  if (q.isSuccess && !q.data) return null;
-  const m = q.data, d = m?.effectiveDate;
-  return (
-    <div className="card" style={{ ['--c' as string]: 'var(--photo)' }}>
-      <h3><i />Một tấm ngẫu nhiên<button type="button" onClick={() => setN(v => v + 1)}>Đổi</button></h3>
-      {m ? <><img className="pic zoom" src={cdn(pic(m), 480)} alt="" onClick={() => onOpen(m)} /><div className="meta">{[m.caption, m.event ? eventLabel(m.event) : d ? dayMonthYear(d) : ''].filter(Boolean).join(' · ')}</div></> : <div className="pic ph" />}
-    </div>
   );
 }

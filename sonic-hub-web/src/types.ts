@@ -206,3 +206,9 @@ export interface GameMatch {
   side1: GameMatchPlayer[]; side2: GameMatchPlayer[];
 }
 export interface GameSeries { id: string; key: string; name: string; summary?: string | null; coverUrl?: string | null; sortOrder?: number | null; games: GameCard[] }
+
+/** The machines of a moment and what that day holds — the read the computer and the phone make (GET /desk/at), as far
+ *  as the portal's own pages use it. Spans are UTC without a zone; the day's memories are everyone's (personId tells whose). */
+export interface DeskDevice { key: string; kind: 'DESKTOP' | 'LAPTOP' | 'PHONE' | 'PLAYER'; name: string; model?: string | null; photoUrl?: string | null; from?: string | null; to?: string | null; elsewhere?: boolean }
+export interface DeskMemory { id: string; title?: string | null; summary?: string | null; kind?: string | null; at?: string | null; precision?: string | null; personId?: string | null; personName?: string | null; place?: string | null }
+export interface DeskMoment { at: string; computer: { device: DeskDevice } | null; phone: { device: DeskDevice } | null; day: { memories: DeskMemory[] }; machines: DeskDevice[] }

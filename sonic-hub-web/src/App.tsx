@@ -3,6 +3,7 @@ import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import Shell from './components/Shell';
 import Home from './pages/Home';
+import Timeline from './pages/Timeline';
 import Journal from './pages/Journal';
 import Post from './pages/Post';
 import Photos from './pages/Photos';
@@ -28,6 +29,7 @@ export function AppRoutes() {
     <Routes>
       <Route element={<Shell />}>
         <Route index element={<Home />} />
+        <Route path="timeline" element={<Timeline />} />
         <Route path="journal" element={<Journal />} />
         <Route path="journal/id/:id" element={<Post />} />
         <Route path="journal/series" element={<SeriesPage />} />

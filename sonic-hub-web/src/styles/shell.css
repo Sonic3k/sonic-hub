@@ -1,0 +1,139 @@
+/* The frame in the 2.4 set: flat, square, ink on cool paper.
+   Header in two tiers — the wordmark, the search and the machines; then, staying with the page as it scrolls, the menu
+   in its groups and the day being looked at. On a phone the menu is a bar at the bottom. */
+
+/* ── eras: the paper and the ink of each stretch of his life (lib/era.ts) ── */
+:root {
+  --e-bg: var(--bg); --e-ac: var(--ink); --e-rule: var(--line); --e-ink: var(--ink); --e-ink2: var(--ink2);
+  --e-tile: var(--paper); --e-tile-line: transparent; --e-on: var(--paper); --e-hand: var(--hand); --e-print: var(--paper);
+  --e-shade: rgba(30, 50, 60, .22);
+}
+.era-1990 { --e-bg: #E1EFE7; --e-ac: #2F6B4F; --e-rule: #BCD2C5; }
+.era-1996 { --e-bg: #D9E8F4; --e-ac: #4B4FA6; --e-rule: #B4C9DA; }
+.era-2001 { --e-bg: #EDF3E3; --e-ac: #1F4FA8; --e-rule: #C9D4BC; }
+.era-2005 { --e-bg: #D2EBE7; --e-ac: #0E5A78; --e-rule: #AFCFCA; }
+.era-2008 { --e-bg: #EAEEF8; --e-ac: #0F6A63; --e-rule: #C6CDE0; }
+.era-2013 { --e-bg: #F6F8F5; --e-ac: #A8385F; --e-rule: #D0D6D2; --e-tile-line: #D0D6D2; }
+.era-2018, .era-2023 { --e-rule: #25394A; --e-ink: #EEF3F5; --e-ink2: #B7C6CF; --e-hand: #CFEDE7; --e-print: #EEF1F0; --e-shade: rgba(0, 0, 0, .42); }
+.era-2018 { --e-bg: #0E1E2B; --e-ac: #8FD9CF; --e-tile: #18293A; --e-on: #0E1E2B; }
+.era-2023 { --e-bg: #0A1620; --e-ac: #E9D48C; --e-tile: #13222F; --e-on: #0A1620; }
+
+html { scroll-padding-top: calc(var(--top) + 24px); }
+:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
+
+/* ── tier one: wordmark, search, machines ── */
+.hd1 { display: flex; align-items: center; gap: 28px; padding: 14px 24px 12px; }
+.wordmark { font-family: var(--display); font-size: 27px; font-weight: 800; line-height: 1.1; letter-spacing: -.01em; text-transform: uppercase; white-space: nowrap; }
+.search { position: relative; flex: 0 1 440px; min-width: 0; display: flex; align-items: center; gap: 8px; height: 40px; padding: 0 12px; background: var(--paper); border: 1px solid var(--field); border-radius: 0; color: var(--ink3); white-space: nowrap; overflow: visible; }
+.search svg { flex: 0 0 auto; width: 16px; height: 16px; stroke: currentColor; fill: none; stroke-width: 2; }
+.search:focus-within { background: var(--paper); border-color: var(--ink); box-shadow: none; }
+.search-pop { top: 46px; border-radius: 0; background: var(--paper); border: 1px solid var(--ink); box-shadow: 0 14px 30px rgba(30, 50, 60, .18); }
+.search-pop .sr, .search-pop .sr-all, .sr-th, .sr-photos img, .sr-ph { border-radius: 0; }
+.machines { display: flex; gap: 8px; margin-left: auto; }
+.machines a { display: flex; align-items: center; gap: 7px; height: 40px; padding: 0 13px; border: 1px solid var(--ink); font-size: 14px; font-weight: 600; white-space: nowrap; transition: background .15s, color .15s; }
+.machines a:hover { background: var(--ink); color: var(--paper); }
+.machines svg { flex: none; width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
+
+/* ── tier two: the menu and the day ── */
+.hd2 { position: sticky; top: 0; z-index: 20; display: flex; align-items: stretch; gap: 16px; height: var(--top); padding: 0 24px; background: var(--bg); border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); transition: background-color .8s ease; }
+.nav { display: flex; min-width: 0; overflow-x: auto; scrollbar-width: none; }
+.nav::-webkit-scrollbar { display: none; }
+.nav-g { display: flex; }
+.nav-g + .nav-g { position: relative; margin-left: 10px; padding-left: 10px; }
+.nav-g + .nav-g::before { content: ""; position: absolute; left: 0; top: 14px; bottom: 14px; width: 1px; background: #B9C3C0; }
+.nav a { display: flex; align-items: center; padding: 0 12px; font-size: 14.5px; font-weight: 500; white-space: nowrap; transition: background .15s; }
+.nav a:hover { background: var(--soft); }
+.nav a.on { background: var(--c, var(--ink)); color: var(--paper); font-weight: 700; }
+.hd2-tools { display: flex; align-items: center; gap: 8px; margin-left: auto; }
+.rand { height: 34px; padding: 0 13px; border: 1px solid var(--ink); font-size: 13.5px; font-weight: 600; white-space: nowrap; transition: background .15s, color .15s; }
+.rand:hover { background: var(--ink); color: var(--paper); }
+
+/* the day being looked at: the year in its era's colours, the date, a calendar under it */
+.mpick { position: relative; }
+.mchip { display: flex; align-items: center; height: 34px; background: var(--paper); border: 1px solid var(--ink); font-size: 13.5px; font-weight: 600; white-space: nowrap; }
+.mchip b { align-self: stretch; display: flex; align-items: center; padding: 0 9px; background: var(--e-bg); color: var(--e-ac); border-right: 1px solid var(--ink); font-family: var(--display); font-size: 17px; font-weight: 800; }
+.mchip span { padding: 0 6px 0 10px; }
+.mchip svg { width: 12px; height: 12px; margin-right: 9px; fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; transition: transform .15s; }
+.mchip.open svg { transform: rotate(180deg); }
+.mchip.wait { width: 156px; border-color: var(--line); }
+.mcal-back { display: none; }
+.mcal { position: absolute; right: 0; top: calc(100% + 8px); z-index: 45; width: 320px; padding: 14px; background: var(--paper); border: 1px solid var(--ink); box-shadow: 0 14px 30px rgba(30, 50, 60, .18); }
+.mcal-top { display: flex; align-items: stretch; gap: 6px; margin-bottom: 12px; }
+.mcal-step { flex: 0 0 38px; height: 38px; border: 1px solid var(--line); font-size: 22px; line-height: 1; }
+.mcal-step:hover { background: var(--soft); }
+.mcal-year { flex: 1; background: var(--e-bg); color: var(--e-ac); font-family: var(--display); font-size: 24px; font-weight: 800; line-height: 1; }
+.mcal-months { display: grid; grid-template-columns: repeat(12, 1fr); gap: 2px; margin-bottom: 12px; }
+.mcal-months button { height: 30px; font-size: 13px; font-weight: 600; font-variant-numeric: tabular-nums; }
+.mcal-months button.thin { color: var(--ink3); font-weight: 400; }
+.mcal-months button:hover, .mcal-days button:hover { background: var(--soft); }
+.mcal-months button.on, .mcal-days button.on { background: var(--ink); color: var(--paper); font-weight: 700; }
+.mcal-days { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; }
+.mcal-days i { padding: 2px 0 6px; font-style: normal; font-size: 11.5px; font-weight: 600; color: var(--ink3); text-align: center; }
+.mcal-days button { position: relative; height: 36px; font-size: 14px; font-variant-numeric: tabular-nums; }
+.mcal-days button.today { box-shadow: inset 0 0 0 1px var(--field); }
+.mcal-days button.busy::after { content: ""; position: absolute; left: 50%; bottom: 4px; width: 4px; height: 4px; margin-left: -2px; border-radius: 50%; background: var(--memory); }
+.mcal-days button.on.busy::after { background: var(--paper); }
+.mcal-years { display: grid; grid-template-columns: repeat(6, 1fr); gap: 3px; max-height: 300px; overflow-y: auto; scrollbar-width: thin; }
+.mcal-years button { height: 34px; background: var(--e-bg); color: var(--e-ac); font-family: var(--display); font-size: 15px; font-weight: 700; }
+.mcal-years button.thin { opacity: .5; }
+.mcal-years button.on { outline: 2px solid var(--ink); outline-offset: -2px; }
+.mcal-foot { display: flex; gap: 8px; margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--line); }
+.mcal-foot button { flex: 1; height: 36px; border: 1px solid var(--ink); font-size: 13.5px; font-weight: 600; }
+.mcal-foot button:hover { background: var(--ink); color: var(--paper); }
+
+/* ── the frame under it: a section's own column at the left, its name set large ── */
+.progress { top: var(--top); }
+.frame.home { grid-template-columns: minmax(0, 1fr); }
+.side { top: var(--top); height: calc(100vh - var(--top)); padding: 26px 16px 32px 24px; }
+.side h4:first-child { margin: 0 0 14px; font-family: var(--display); font-size: 34px; font-weight: 800; line-height: .95; letter-spacing: -.01em; color: var(--sec, var(--ink)); }
+.side a { border-radius: 0; }
+.side a.on { background: var(--sec, var(--ink)); color: var(--paper); }
+.side a.on small { color: inherit; opacity: .8; }
+.side .bar { border-radius: 0; } .side .bar b { background: var(--sec, var(--photo)); opacity: 1; }
+.side a.on .bar { background: rgba(255, 255, 255, .28); } .side a.on .bar b { background: var(--paper); }
+.rail { top: calc(var(--top) + 24px); }
+.month { top: var(--top); }
+.aside { top: calc(var(--top) + 32px); }
+body.mood-angels { --bg: #F8F1F3; --soft: #F1E5E9; --line: #E4D3D9; --card: #FFFCFD; }
+
+.tabbar, .more-back { display: none; }
+
+@media (max-width: 1180px) {
+  .machines span { display: none; } .machines a { width: 40px; padding: 0; justify-content: center; }
+  .hd1 { gap: 16px; }
+  .rand { display: none; } /* it is also in the calendar */
+}
+@media (max-width: 1000px) { .nav a { padding: 0 9px; font-size: 14px; } .nav-g + .nav-g { margin-left: 6px; padding-left: 6px; } }
+
+/* ── phones ── */
+@media (max-width: 860px) {
+  .hd1 { gap: 10px; padding: 10px 14px 8px; }
+  .wordmark { font-size: 22px; }
+  .search { flex: 1; height: 38px; }
+  .machines { gap: 6px; } .machines a { width: 38px; height: 38px; }
+  :root { --top: 46px; }
+  .hd2 { z-index: 40; padding: 0 14px; gap: 8px; } /* above the bottom bar: its calendar opens as a sheet over it */
+  .nav { display: none; }
+  .hd2-tools { flex: 1; margin-left: 0; }
+  .mpick { flex: 1; min-width: 0; }
+  .mchip { width: 100%; } .mchip svg { margin-left: auto; }
+  .rand { display: block; }
+  .mcal-back { display: block; position: fixed; inset: 0; z-index: 59; background: rgba(15, 25, 32, .45); }
+  .mcal { position: fixed; left: 0; right: 0; top: auto; bottom: 0; z-index: 60; width: auto; padding: 16px 16px calc(16px + env(safe-area-inset-bottom)); border-width: 1px 0 0; box-shadow: none; }
+  .mcal-days button { height: 42px; font-size: 15px; } .mcal-months button { height: 36px; } .mcal-step, .mcal-year { height: 44px; flex-basis: 44px; }
+  .mcal-foot button { height: 44px; }
+  .search-pop { position: fixed; left: 8px; right: 8px; top: 58px; min-width: 0; }
+
+  .tabbar { display: flex; position: fixed; left: 0; right: 0; bottom: 0; z-index: 30; background: var(--bg); border-top: 1px solid var(--ink); padding-bottom: env(safe-area-inset-bottom); }
+  .tabbar a, .tabbar button { flex: 1; min-width: 0; display: flex; align-items: center; justify-content: center; height: 50px; padding: 0 2px; font-size: 13px; font-weight: 600; text-align: center; white-space: nowrap; }
+  .tabbar a + a, .tabbar a + button { border-left: 1px solid var(--line); }
+  .tabbar .on { background: var(--c, var(--ink)); color: var(--paper); }
+  main { padding-bottom: calc(50px + env(safe-area-inset-bottom)); }
+  .more-back { display: block; position: fixed; inset: 0; z-index: 29; background: rgba(15, 25, 32, .45); }
+  .more-sheet { position: absolute; left: 0; right: 0; bottom: calc(50px + env(safe-area-inset-bottom)); padding: 6px 14px 10px; background: var(--paper); border-top: 1px solid var(--ink); }
+  .more-g { display: flex; flex-wrap: wrap; gap: 8px; padding: 10px 0; }
+  .more-g + .more-g { border-top: 1px solid var(--line); }
+  .more-g a { display: flex; align-items: center; height: 44px; padding: 0 16px; border: 1px solid var(--field); font-size: 14.5px; font-weight: 600; }
+  .more-g a.on { background: var(--c, var(--ink)); border-color: var(--c, var(--ink)); color: var(--paper); }
+}
+@media (max-width: 380px) { .rand { display: none; } }
