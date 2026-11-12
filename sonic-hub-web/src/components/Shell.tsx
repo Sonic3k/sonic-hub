@@ -1,6 +1,6 @@
 /* The frame every page shares: the header (the wordmark, the search, the machines; under it the menu in its groups
    and the day being looked at), a sidebar that follows the section, the page. On a phone the menu is a bar at the
-   bottom: the first four sections, the rest behind "Thêm". */
+   bottom: the first four sections, the rest behind "Thêm"; the section's sidebar opens as a sheet from "Lọc". */
 import { Link, NavLink, Outlet, useLocation, useSearchParams } from 'react-router-dom';
 import { hub, randomDay } from '../api/hub';
 import Search from './Search';
@@ -41,16 +41,18 @@ export default function Shell() {
 
 function Frame() {
   const loc = useLocation(), tl = useTimeline(), { pick, picked, moment } = useMoment(), path = loc.pathname;
-  const [more, setMore] = useState(false);
+  const [more, setMore] = useState(false), [filters, setFilters] = useState(false);
   const reading = /^\/(journal|memories)\/(?!events\/?$).+/.test(path), inMemories = path.startsWith('/memories'), inJournal = path.startsWith('/journal'), inPhotos = /^\/(photos|tags)/.test(path), inAngels = path.startsWith('/angels'), inForum = path.startsWith('/forum');
   const inMoney = path.startsWith('/money'), inPortal = path.startsWith('/portal'), inGames = path.startsWith('/games'), inMusic = path.startsWith('/music');
   const onHome = HOME_PATHS.includes(path);
+  /* on a phone the sidebar is a sheet behind a button: on the pages that list things, not where one thing is read, played or chatted */
+  const sheet = !onHome && !reading && !inPortal && !/^\/(angels\/[^/]+\/chat|games\/play|forum\/t)\//.test(path);
   const groups = inMoney || isOwner() ? [...GROUPS.slice(0, -1), [...GROUPS[GROUPS.length - 1], MONEY]] : GROUPS, tabs = groups.flat();
   const current = tabs.find(t => inTab(path, t)) ?? (inPhotos ? tabs.find(t => t.to === '/photos') : undefined);
   const beyond = current && !BAR.includes(current.to) ? current : null;
   /* Angels changes the light of the whole page, softly */
   useEffect(() => { document.body.classList.toggle('mood-angels', inAngels); }, [inAngels]);
-  useEffect(() => { setMore(false); }, [path, loc.search]);
+  useEffect(() => { setMore(false); setFilters(false); }, [path, loc.search]);
   const random = async () => {
     const years = Object.keys(counts(tl.data ?? [])).map(Number); if (!years.length) return;
     const y = years[Math.floor(Math.random() * years.length)], r = await randomDay(y, tl.data ?? []).catch(() => null);
@@ -74,13 +76,19 @@ function Frame() {
         </div>
       </div>
       <div className={`frame ${reading ? 'reading' : ''} ${onHome ? 'home' : ''}`} style={{ ['--sec' as string]: `var(${current?.c ?? '--ink'})` }}>
-        {!onHome && <aside className="side">{inJournal ? <JournalSide /> : inMemories ? <MemoriesSide /> : inPhotos ? <PhotosSide /> : inAngels ? <AngelsSide /> : inForum ? <ForumSide /> : inMoney ? <MoneySide /> : inPortal ? <PortalSide /> : inGames ? <GamesSide /> : inMusic ? <MusicSide /> : null}</aside>}
+        {!onHome && <aside className={`side ${filters ? 'open' : ''}`} onClick={e => { if ((e.target as HTMLElement).closest('a')) setFilters(false); }}>
+          {inJournal ? <JournalSide /> : inMemories ? <MemoriesSide /> : inPhotos ? <PhotosSide /> : inAngels ? <AngelsSide /> : inForum ? <ForumSide /> : inMoney ? <MoneySide /> : inPortal ? <PortalSide /> : inGames ? <GamesSide /> : inMusic ? <MusicSide /> : null}
+          <button type="button" className="side-x" onClick={() => setFilters(false)}>{inMoney ? 'Close' : 'Đóng'}</button>
+        </aside>}
         <main><Outlet /></main>
       </div>
       <nav className="tabbar" aria-label="Các mục của Sonic Hub">
         {tabs.filter(t => BAR.includes(t.to)).map(link)}
         <button type="button" className={`bar-more ${beyond || more ? 'on' : ''}`} style={{ ['--c' as string]: `var(${beyond?.c ?? '--ink'})` }} aria-expanded={more} onClick={() => setMore(v => !v)}>{beyond ? beyond.n : 'Thêm'}</button>
       </nav>
+      {sheet && <button type="button" className="side-btn" aria-expanded={filters} onClick={() => setFilters(true)}>
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M7 12h10M10 17h4" /></svg>{inMoney ? 'Filter' : inAngels ? 'Danh sách' : 'Lọc'}</button>}
+      {filters && <div className="side-back" onClick={() => setFilters(false)} />}
       {more && <div className="more-back" onClick={() => setMore(false)}>
         <div className="more-sheet" role="dialog" aria-label="Tất cả các mục" onClick={e => e.stopPropagation()}>
           {groups.map((g, i) => <div key={i} className="more-g">{g.map(link)}</div>)}
