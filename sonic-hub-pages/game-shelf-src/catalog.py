@@ -4,8 +4,9 @@
 Every play carries its evidence (a save file's date, a screenshot, a photo, a line in his 2004 lists), so a reader can
 see why the hub says he played a game then. Media and memories are referred to by the first 8 characters of their id,
 resolved through ids.json by push_to_hub.py; so are the journal notes he wrote about a game (notes=["n:…"]). Notes on
-games hold his own words only. This repo is public: other people's names stay out of this file — what names them (a
-league's results, its screenshots, the memories) is written to the hub from files kept outside the repo.
+games hold his own words only. This repo is public: what lists or shows other people (a league's results, its
+screenshots, the memories that quote his private writing) is written to the hub from files kept outside the repo; in
+this file another person appears by first name or nick at most, and only where a card needs it.
 """
 from urllib.parse import quote_plus
 
@@ -339,7 +340,7 @@ GAMES = [
                      evidence="Đế chế ở công ty vào giờ nghỉ trưa và sau giờ làm; anh kể quãng này kéo từ cuối 2015 đến đầu 2018, trước khi vào Sài Gòn. Sonic note 25/12/2015 đã nhắc chuyện học đánh đế chế; album AOE có 20 tấm chụp màn hình Timeline sau trận, từ 30/06/2016 đến 24/11/2017; AOE League ghi 520 kèo từ 23/12/2016 đến 11/07/2017, anh có mặt ở 385 kèo.")],
          media=[pic("211f6e27"), pic("5cc492bc"), pic("a7effcd6"), pic("fc00f9ea"), pic("63413f4e"), pic("cf653e9a"),
                 pic("e8cfd7e5"), pic("ebff8777")],
-         memories=["e:a6a139a2", "e:890191f9", "e:71492d32"], notes=["n:61d0b708", "n:43438c72", "n:8ef03f17"],
+         memories=["e:72ad0916", "e:b4d16059", "e:4fcdc0f0"], notes=["n:61d0b708", "n:43438c72", "n:8ef03f17"],
          links=[wiki("Age_of_Empires_(video_game)")]),
     dict(key="aoe2", title="Age of Empires II: The Conquerors", series="age-of-empires", seriesOrder=2,
          platform="Windows", releaseYear=2000, developer="Ensemble Studios", genre="RTS",
@@ -380,14 +381,15 @@ GAMES = [
          kind="HOMEMADE", basedOn="aoe2", developer="VNA", handName="MASTER REGION in Empires II",
          summary="Trò anh tự làm trên nền Age of Empires II, dòng cuối của danh sách các trò tự làm.",
          ),
-    # The office league's own app. Its results (520 "kèo") are in the hub as matches of this game, written by
+    # The office league's own app: a colleague wrote the first version (splitting the teams), he then took it over and
+    # built up the interface, the rating and the ranking table (his account, 12/11/2026). Its results (520 "kèo") are in the hub as matches of this game, written by
     # aoe_league.py from his data file; its screenshots by upload_shots.py --private. Neither is kept in this repo.
     dict(key="aoe-league", title="AOE League", series="age-of-empires", seriesOrder=35, kind="HOMEMADE",
          basedOn="age-of-empires", platform="Web", releaseYear=2016, genre="League",
-         summary="App web chia kèo và xếp hạng của hội đế chế ở công ty: tick những người có mặt, app chia hai đội cân theo điểm từng người; đánh xong gõ tỷ số, điểm cộng trừ theo kiểu Elo rồi xếp lại bảng. Viết bằng Java (Spring Boot, Thymeleaf), dữ liệu nằm trong file XML.",
+         summary="App web chia kèo và xếp hạng của hội đế chế ở công ty: tick những người có mặt, app chia hai đội cân theo điểm từng người; đánh xong gõ tỷ số, điểm cộng trừ theo kiểu Elo rồi xếp lại bảng. Bản đầu do Thành (Farmer) làm để chia kèo; sau đó anh tiếp quản, phát triển thêm cả giao diện lẫn phần tính điểm và bảng xếp hạng. Viết bằng Java (Spring Boot, Thymeleaf), dữ liệu nằm trong file XML.",
          plays=[play("2016-12-23", end="2017-07-11", via="Máy công ty",
                      evidence="File dữ liệu của app giữ 520 kèo: kèo đầu ghi 17:30 ngày 23/12/2016, cùng ngày ghi ở đầu file match.js; kèo cuối lúc 20:03 ngày 11/07/2017. 68 kèo đầu phần lớn gõ tay vào file; từ trưa 02/02/2017 (ngày của phần lớn file mã nguồn, bản có đầy đủ giao diện) app tự ghi. Giờ trong sổ là lúc ghi kết quả, có khi ghi dồn mấy kèo một lúc hoặc ghi hôm sau. Về sau: file aoeleague-1.0.0.jar đóng gói lại và commit đầu tiên của kho git đều mang ngày 01/06/2023.")],
-         memories=["e:4c87c041"],
+         memories=["e:d1fbe66c"],
          links=[{"kind": "OTHER", "title": "Mã nguồn: Sonic3k/aoe-league", "url": "https://github.com/Sonic3k/aoe-league"}]),
     dict(key="len-doi", title="Lên Đời", series="age-of-empires", seriesOrder=40, kind="HOMEMADE", basedOn="aoe2",
          platform="Web", releaseYear=2026, developer="Sonic Hub Pages", genre="Strategy",

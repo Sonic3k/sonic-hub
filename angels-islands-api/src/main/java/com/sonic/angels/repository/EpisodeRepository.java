@@ -64,6 +64,19 @@ public interface EpisodeRepository extends JpaRepository<Episode, UUID> {
     int deleteByPersonAndSource(@org.springframework.data.repository.query.Param("personId") UUID personId,
                                 @org.springframework.data.repository.query.Param("source") String source);
 
+    /** external key, game, place in that game's list — for the memories of one import that games are linked to. The link
+     *  rows go with the old rows of a re-import (ON DELETE CASCADE); these are what puts them back on the new ones. */
+    @org.springframework.data.jpa.repository.Query(value = "SELECT e.external_key, CAST(gm.game_id AS varchar), gm.sort_order FROM game_memories gm "
+        + "JOIN episodes e ON e.id = gm.episode_id WHERE e.person_id = :personId AND e.source = :source AND e.external_key IS NOT NULL", nativeQuery = true)
+    java.util.List<Object[]> gameLinksOfSource(@org.springframework.data.repository.query.Param("personId") java.util.UUID personId,
+                                              @org.springframework.data.repository.query.Param("source") String source);
+
+    /** external key, song, role, note, place in that song's list — the same for the songs tied to them */
+    @org.springframework.data.jpa.repository.Query(value = "SELECT e.external_key, CAST(tm.track_id AS varchar), tm.role, tm.note, tm.sort_order FROM music_track_memories tm "
+        + "JOIN episodes e ON e.id = tm.episode_id WHERE e.person_id = :personId AND e.source = :source AND e.external_key IS NOT NULL", nativeQuery = true)
+    java.util.List<Object[]> trackLinksOfSource(@org.springframework.data.repository.query.Param("personId") java.util.UUID personId,
+                                               @org.springframework.data.repository.query.Param("source") String source);
+
     /** external key -> event, for the memories of one import that belong to an event (kept across a re-import) */
     @org.springframework.data.jpa.repository.Query(value = "SELECT external_key, CAST(life_event_id AS varchar) FROM episodes WHERE person_id = :personId AND source = :source "
         + "AND life_event_id IS NOT NULL AND external_key IS NOT NULL", nativeQuery = true)
