@@ -9,14 +9,18 @@
 #   data/captions_<name>.json — the same for another set of photos (captions_aoe: his album of the office games).
 #   data/pushed_<source>.json — what the hub held right after the last push. A re-run compares the hub with it and stops
 #     when a memory was checked or edited in the admin since then (bring the change into the json first, or use --force).
+# A push writes every memory of the source as a new row, so their ids change (the hub carries the links from games,
+# songs and events over to the new rows, but a link someone kept to a memory's page dies). To change the wording, the
+# dates or the links of memories that are already there, use --edit: it writes each one in place and the ids stay.
 # Usage: python3 push.py [boom] [onthi] [captions]            dry run: what would change
 #        python3 push.py [boom] [onthi] [captions] --apply    write
 #        python3 push.py aoe captions_aoe --apply             any other source or caption file, by name
+#        python3 push.py aoe --edit --apply                   the same memories, rewritten in place
 import json, os, sys, urllib.request, urllib.error, datetime, collections
 D = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data")
 API = "https://angels-islands-api-production.up.railway.app"
 SELF = "00a10ffc-40b4-49c1-b9d3-4d658e234180"
-APPLY, FORCE = "--apply" in sys.argv, "--force" in sys.argv
+APPLY, FORCE, EDIT = "--apply" in sys.argv, "--force" in sys.argv, "--edit" in sys.argv
 WHAT = [a for a in sys.argv[1:] if not a.startswith("--")] or ["boom", "onthi", "captions"]
 
 def call(method, path, body=None):
@@ -84,6 +88,32 @@ def push(source):
     print("   photo tags:", {t[:8]: len(ids) for t, ids in batches.items()})
     return True
 
+def edit(source):
+    """The memories of a source rewritten in place (PUT …/episodes/{id}), matched by external key: rows and ids stay.
+    Only for the same set of memories — one added or dropped needs a push; chapters, facts and traits are left alone."""
+    data = json.load(open(os.path.join(D, source + ".json")))
+    want = {e["externalKey"]: e for e in data.get("episodes", [])}
+    have = {e.get("externalKey"): e for e in call("GET", f"/api/persons/{SELF}/memory/episodes?source={source}")}
+    if set(want) != set(have):
+        print(f"[{source}] STOP: not the same memories as in the hub (only here: {sorted(set(want) - set(have))[:6]}, only there: "
+              f"{sorted(str(k) for k in set(have) - set(want))[:6]}) — that takes a push, not an edit")
+        return False
+    todo = {}
+    for k, e in want.items():
+        body = {f: e[f] for f in API_FIELDS["episodes"] if f not in ("source", "externalKey") and e.get(f) is not None}
+        for f in ("title", "kind", "emotion", "place"): body.setdefault(f, "")                          # a blank clears the text
+        for f in ("mediaIds", "collectionIds", "tagIds", "personIds", "sources"): body.setdefault(f, [])  # an empty list clears the links
+        h = have[k]
+        if [h.get("title") or "", h.get("summary") or "", [m["id"] for m in h.get("media") or []]] != [body["title"], body.get("summary") or "", body["mediaIds"]]:
+            todo[k] = (h["id"], body)
+    print(f"[{source}] edit in place: {len(todo)} of {len(want)} memories differ in title, text or photos:", sorted(todo)[:8])
+    if not APPLY: return True
+    for k, (i, body) in todo.items(): call("PUT", f"/api/persons/{SELF}/memory/episodes/{i}", body)
+    snap = os.path.join(D, f"pushed_{source}.json")
+    json.dump(dict(at=datetime.datetime.now().isoformat(timespec="seconds"), state=hub_state(source)), open(snap, "w"), ensure_ascii=False, indent=0)
+    print("   written:", len(todo))
+    return True
+
 def captions(name="captions"):
     caps = json.load(open(os.path.join(D, name + ".json")))            # media id -> {"album": collection id, "caption": text}
     current = {}
@@ -98,5 +128,6 @@ def captions(name="captions"):
 ok = True
 for w in WHAT:
     if w.startswith("captions"): captions(w)
+    elif EDIT: ok = edit(w) and ok
     else: ok = push(w) and ok
 sys.exit(0 if ok else 1)
