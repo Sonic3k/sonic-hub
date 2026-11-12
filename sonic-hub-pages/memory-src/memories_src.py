@@ -154,7 +154,7 @@ M = [
  dict(key="mario-4", kind="CREATION", chapter="primary", title="Mario 4 – 21 màn vẽ tay", date="2000", end="2004", precision="YEAR", approx=True,
       summary="43 trang giấy, mỗi màn trải trên hai trang đặt cạnh nhau, chia 3–4 dải: cửa, khối hình thoi, đồng xu, bệ chạy trên ray, quái có cánh, dung nham, lâu đài cuối màn, cuối mỗi màn có ô số dẫn sang màn sau. Có cả màn trên trời, màn dưới nước và phòng thưởng sau bức tường cuối.",
       photos=[("Game pack 2", "scan0099.jpg"), ("Game pack 2", "scan0088.jpg"), ("Game pack 2", "scan0078.jpg"), ("Game pack 2", "scan0108.jpg")],
-      links=[("Chơi Tím 4 – bản dựng lại", "game-notebook-4.html", "REPLICA")],
+      links=[("Chơi Tím 4 – bản dựng lại", "https://sonic-hub-game-production.up.railway.app/games/tim-4", "REPLICA")],
       tags=dict(ACTIVITY=["Vẽ", "Làm game"], THEME=["Game platform"])),
  dict(key="city-tren-giay", kind="CREATION", chapter="secondary", title="City – các tuyến xe ngựa trong Age of Empires II", date="2004", end="2005", precision="YEAR", approx=True,
       summary="35 tuyến chép tay (01, 03–17, 19–36) và tuyến 02 dự kiến, nối các Stable Zawach, Robert, Tinecast, Fulhaster với trường đại học, chợ, cầu. Mỗi tuyến ghi thời gian chạy đo trong game và giãn cách giữa các chuyến. Đây là các tuyến kỵ binh chạy như xe buýt trong map City anh làm trên Age of Empires II hồi lớp 9; năm 2023 mở rộng thành City 2023 Extended trên AoE2 DE.",
