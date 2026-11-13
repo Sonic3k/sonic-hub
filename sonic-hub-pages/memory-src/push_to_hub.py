@@ -254,7 +254,8 @@ if not APPLY:
 # A re-run replaces everything this source wrote. Once memories are checked or fixed in the admin, that would undo
 # the work — so stop when anything in the hub differs from what this script would write (--force to replace anyway).
 if "--force" not in sys.argv:
-    have = {e.get("externalKey"): e for e in call("GET", f"/api/persons/{SELF}/memory/episodes?source={SOURCE}")}
+    # inclMedia: the list carries only the links asked for, and the photos are compared below
+    have = {e.get("externalKey"): e for e in call("GET", f"/api/persons/{SELF}/memory/episodes?source={SOURCE}&inclMedia=true")}
     changed = []
     for e in episodes:
         h = have.get(e["externalKey"])

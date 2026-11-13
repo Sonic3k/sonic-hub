@@ -56,8 +56,9 @@ public class FinanceReportService {
     public FinanceDto.Summary summary() {
         FinanceFx fx = rates.fx();
         BigDecimal usd = rates.usdValue();
+        Map<UUID, Long> lines = FinanceService.linesPerAccount(txnRepo);
         List<FinanceDto.Account> accounts = accountRepo.findAllByOrderBySortOrderAscCreatedAtAsc().stream()
-            .map(a -> FinanceService.toAccount(a, fx, txnRepo.countByAccountId(a.getId()))).toList();
+            .map(a -> FinanceService.toAccount(a, fx, lines.getOrDefault(a.getId(), 0L))).toList();
         BigDecimal net = accounts.stream()
             .filter(a -> !a.archived() && !"POOL".equals(a.mode()) && a.balanceVnd() != null)
             .map(FinanceDto.Account::balanceVnd).reduce(BigDecimal.ZERO, BigDecimal::add);

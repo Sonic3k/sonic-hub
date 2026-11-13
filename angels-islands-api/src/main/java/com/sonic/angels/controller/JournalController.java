@@ -128,14 +128,13 @@ public class JournalController {
     /** Every series with its number of parts. */
     @GetMapping("/series")
     public List<JournalDto.SeriesSummary> seriesList() {
-        return noteRepo.findAll().stream().filter(n -> n.getSeries() != null)
-            .collect(java.util.stream.Collectors.groupingBy(JournalNote::getSeries)).entrySet().stream().map(e -> {
-                JournalDto.SeriesSummary s = new JournalDto.SeriesSummary();
-                s.setSeries(e.getKey()); s.setParts(e.getValue().size());
-                s.setFirstAt(e.getValue().stream().map(x -> x.getWrittenAt() != null ? x.getWrittenAt() : x.getCreatedAt()).filter(java.util.Objects::nonNull).min(java.util.Comparator.naturalOrder()).orElse(null));
-                s.setLastAt(e.getValue().stream().map(x -> x.getWrittenAt() != null ? x.getWrittenAt() : x.getCreatedAt()).filter(java.util.Objects::nonNull).max(java.util.Comparator.naturalOrder()).orElse(null));
-                return s;
-            }).sorted(java.util.Comparator.comparing(JournalDto.SeriesSummary::getSeries)).toList();
+        // counted by the database: this used to read every note, text and all, to count the few that are in a series
+        return noteRepo.seriesStats().stream().map(r -> {
+            JournalDto.SeriesSummary s = new JournalDto.SeriesSummary();
+            s.setSeries((String) r[0]); s.setParts(((Number) r[1]).intValue());
+            s.setFirstAt((java.time.LocalDateTime) r[2]); s.setLastAt((java.time.LocalDateTime) r[3]);
+            return s;
+        }).sorted(java.util.Comparator.comparing(JournalDto.SeriesSummary::getSeries)).toList();
     }
 
     /** The parts of one series in order (part number, then date). */
@@ -273,8 +272,10 @@ public class JournalController {
 
     @GetMapping("/problems")
     public List<JournalDto.ProblemResponse> problems() {
+        java.util.Map<UUID, Long> notes = new java.util.HashMap<>();   // one statement for all the problems
+        for (Object[] r : noteRepo.countByProblem()) notes.put((UUID) r[0], ((Number) r[1]).longValue());
         return problemRepo.findAllByOrderByCreatedAtDesc().stream()
-            .map(p -> toProblemResponse(p, noteRepo.countByProblemsId(p.getId())))
+            .map(p -> toProblemResponse(p, notes.getOrDefault(p.getId(), 0L)))
             .toList();
     }
 

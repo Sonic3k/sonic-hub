@@ -186,28 +186,43 @@ public class DtoMapper {
         return r;
     }
 
-    /** The episode with its photos, albums, tags and people — reads the four link tables, so inside a transaction. */
+    /** One memory in full: every link, and the title of the event it belongs to. Inside a transaction. */
     public MemoryDto.EpisodeResponse toEpisodeResponseWithLinks(Episode e) {
-        MemoryDto.EpisodeResponse r = toEpisodeResponse(e);
+        MemoryDto.EpisodeResponse r = toEpisodeResponse(e, MemoryDto.Includes.all());
         if (e.getLifeEvent() != null) r.setLifeEventTitle(e.getLifeEvent().getTitle());
-        List<MemoryDto.MediaRef> media = e.getMediaFiles().stream().filter(java.util.Objects::nonNull).map(m -> {
-            MemoryDto.MediaRef x = new MemoryDto.MediaRef();
-            x.setId(m.getId()); x.setFileName(m.getFileName()); x.setUrl(imageUrl(m)); x.setCaption(m.getCaption());
-            x.setWidth(m.getWidth()); x.setHeight(m.getHeight());
-            return x;
-        }).toList();
-        r.setMedia(media); r.setMediaIds(media.stream().map(MemoryDto.MediaRef::getId).toList());
-        List<MemoryDto.CollectionRef> cols = e.getCollections().stream().map(c -> {
-            MemoryDto.CollectionRef x = new MemoryDto.CollectionRef(); x.setId(c.getId()); x.setName(c.getName()); return x;
-        }).sorted(java.util.Comparator.comparing(MemoryDto.CollectionRef::getName, java.util.Comparator.nullsLast(String::compareTo))).toList();
-        r.setCollections(cols); r.setCollectionIds(cols.stream().map(MemoryDto.CollectionRef::getId).toList());
-        List<TagDto.Response> tags = e.getTags().stream().map(this::toTagResponse)
-            .sorted(java.util.Comparator.comparing(TagDto.Response::getName, java.util.Comparator.nullsLast(String::compareTo))).toList();
-        r.setTags(tags); r.setTagIds(tags.stream().map(TagDto.Response::getId).toList());
-        // avatar left out: a list of memories does not need it and it would load each person's photo
-        List<PersonDto.Summary> persons = e.getPersons().stream().map(p -> toPersonSummary(p, null)).toList();
-        r.setPersons(persons); r.setPersonIds(persons.stream().map(PersonDto.Summary::getId).toList());
-        r.setSourceViews(e.getSources().stream().map(this::toSourceView).toList());
+        return r;
+    }
+
+    /** The memory with the links asked for and no others: a link that is not asked for is not read from the
+     *  database and is left out of the answer (null). Each link asked for reads its table, so inside a transaction. */
+    public MemoryDto.EpisodeResponse toEpisodeResponse(Episode e, MemoryDto.Includes inc) {
+        MemoryDto.EpisodeResponse r = toEpisodeResponse(e);
+        if (inc.media()) {
+            List<MemoryDto.MediaRef> media = e.getMediaFiles().stream().filter(java.util.Objects::nonNull).map(m -> {
+                MemoryDto.MediaRef x = new MemoryDto.MediaRef();
+                x.setId(m.getId()); x.setFileName(m.getFileName()); x.setUrl(imageUrl(m)); x.setCaption(m.getCaption());
+                x.setWidth(m.getWidth()); x.setHeight(m.getHeight());
+                return x;
+            }).toList();
+            r.setMedia(media); r.setMediaIds(media.stream().map(MemoryDto.MediaRef::getId).toList());
+        }
+        if (inc.collections()) {
+            List<MemoryDto.CollectionRef> cols = e.getCollections().stream().map(c -> {
+                MemoryDto.CollectionRef x = new MemoryDto.CollectionRef(); x.setId(c.getId()); x.setName(c.getName()); return x;
+            }).sorted(java.util.Comparator.comparing(MemoryDto.CollectionRef::getName, java.util.Comparator.nullsLast(String::compareTo))).toList();
+            r.setCollections(cols); r.setCollectionIds(cols.stream().map(MemoryDto.CollectionRef::getId).toList());
+        }
+        if (inc.tags()) {
+            List<TagDto.Response> tags = e.getTags().stream().map(this::toTagResponse)
+                .sorted(java.util.Comparator.comparing(TagDto.Response::getName, java.util.Comparator.nullsLast(String::compareTo))).toList();
+            r.setTags(tags); r.setTagIds(tags.stream().map(TagDto.Response::getId).toList());
+        }
+        if (inc.persons()) {
+            // avatar left out: a list of memories does not need it and it would load each person's photo
+            List<PersonDto.Summary> persons = e.getPersons().stream().map(p -> toPersonSummary(p, null)).toList();
+            r.setPersons(persons); r.setPersonIds(persons.stream().map(PersonDto.Summary::getId).toList());
+        }
+        if (inc.sources()) r.setSourceViews(e.getSources().stream().map(this::toSourceView).toList());
         return r;
     }
 

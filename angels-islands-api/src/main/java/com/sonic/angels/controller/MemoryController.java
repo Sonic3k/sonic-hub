@@ -32,14 +32,21 @@ public class MemoryController {
         this.personRepo = personRepo; this.mapper = mapper; this.memoryImport = memoryImport; this.memory = memory;
     }
 
-    /** Memories picked at random across kinds: types = episode,fact,chapter,trait (all when left out). */
+    /** Memories picked at random across kinds: types = episode,fact,chapter,trait (all when left out).
+     *  An episode comes without its links unless asked: the incl* parameters, as on GET …/episodes. */
     @GetMapping("/random")
     public List<MemoryDto.RandomItem> random(@PathVariable UUID personId,
                                              @RequestParam(defaultValue = "1") int count,
                                              @RequestParam(required = false) java.util.Set<String> types,
                                              @RequestParam(required = false) String status,
-                                             @RequestParam(required = false) Integer minImportance) {
-        return memory.random(personId, count, types, status, minImportance);
+                                             @RequestParam(required = false) Integer minImportance,
+                                             @RequestParam(defaultValue = "false") boolean inclMedia,
+                                             @RequestParam(defaultValue = "false") boolean inclCollections,
+                                             @RequestParam(defaultValue = "false") boolean inclTags,
+                                             @RequestParam(defaultValue = "false") boolean inclPersons,
+                                             @RequestParam(defaultValue = "false") boolean inclSources) {
+        return memory.random(personId, count, types, status, minImportance,
+            new MemoryDto.Includes(inclMedia, inclCollections, inclTags, inclPersons, inclSources));
     }
 
     /** Replace everything one source wrote for this person (e.g. "analysis"); memory typed in by hand is never touched. */
@@ -78,7 +85,10 @@ public class MemoryController {
     public ResponseEntity<Void> deleteFact(@PathVariable UUID id) { factRepo.deleteById(id); return ResponseEntity.noContent().build(); }
 
     /** All episodes, newest first; each filter is optional. q matches words anywhere (title, summary, place, tags,
-     *  people, album names, photo captions), without minding Vietnamese marks. from / to = yyyy-MM-dd. */
+     *  people, album names, photo captions), without minding Vietnamese marks. from / to = yyyy-MM-dd.
+     *  A memory comes without its links unless asked: inclMedia (media, mediaIds), inclCollections, inclTags,
+     *  inclPersons, inclSources (sourceViews). The event's title comes only with a single memory (…/episodes/{id}),
+     *  which always carries everything. */
     @GetMapping("/episodes")
     public List<MemoryDto.EpisodeResponse> getEpisodes(@PathVariable UUID personId,
             @RequestParam(required = false) String q, @RequestParam(required = false) String kind,
@@ -86,13 +96,26 @@ public class MemoryController {
             @RequestParam(required = false) UUID tagId, @RequestParam(required = false) UUID withPersonId,
             @RequestParam(required = false) UUID mediaId, @RequestParam(required = false) UUID collectionId,
             @RequestParam(required = false) java.time.LocalDate from, @RequestParam(required = false) java.time.LocalDate to,
-            @RequestParam(required = false) Integer minImportance, @RequestParam(defaultValue = "false") boolean oldestFirst) {
+            @RequestParam(required = false) Integer minImportance, @RequestParam(defaultValue = "false") boolean oldestFirst,
+            @RequestParam(defaultValue = "false") boolean inclMedia, @RequestParam(defaultValue = "false") boolean inclCollections,
+            @RequestParam(defaultValue = "false") boolean inclTags, @RequestParam(defaultValue = "false") boolean inclPersons,
+            @RequestParam(defaultValue = "false") boolean inclSources) {
         return memory.episodes(personId, new MemoryService.EpisodeQuery(q, kind, status, source, tagId, withPersonId,
-            mediaId, collectionId, from, to, minImportance, oldestFirst));
+            mediaId, collectionId, from, to, minImportance, oldestFirst),
+            new MemoryDto.Includes(inclMedia, inclCollections, inclTags, inclPersons, inclSources));
     }
 
     @GetMapping("/episodes/{id}")
     public MemoryDto.EpisodeResponse getEpisode(@PathVariable UUID personId, @PathVariable UUID id) { return memory.episode(id); }
+
+    /** The photos of one memory as files (what GET /media-files/{id} gives for each), in the memory's order; the
+     *  incl* parameters as on the photo lists. */
+    @GetMapping("/episodes/{id}/media")
+    public List<com.sonic.angels.model.dto.MediaFileDto.Response> getEpisodeMedia(@PathVariable UUID personId, @PathVariable UUID id,
+            @RequestParam(defaultValue = "false") boolean inclDetails, @RequestParam(defaultValue = "false") boolean inclPersons,
+            @RequestParam(defaultValue = "false") boolean inclTags) {
+        return memory.media(id, new com.sonic.angels.model.dto.MediaFileDto.Includes(inclDetails, inclPersons, inclTags));
+    }
 
     @PostMapping("/episodes")
     public MemoryDto.EpisodeResponse createEpisode(@PathVariable UUID personId, @RequestBody MemoryDto.EpisodeRequest req) {
@@ -100,8 +123,28 @@ public class MemoryController {
     }
 
     @PutMapping("/episodes/{id}")
-    public MemoryDto.EpisodeResponse updateEpisode(@PathVariable UUID personId, @PathVariable UUID id, @RequestBody MemoryDto.EpisodeRequest req) {
+    public MemoryDto.EpisodeResponse updateEpisode(@PathVariable UUID personId, @PathVariable UUID id, @RequestBody MemoryDto.EpisodeRequest req,
+                                                   jakarta.servlet.http.HttpServletRequest http) {
+        refuseStaleEditor(http, req);
         return memory.update(id, req);
+    }
+
+    /** What a browser's memory editor sends to say which editor it is (2: it reads the whole memory before it opens). */
+    public static final String CLIENT_HEADER = "X-Admin-Client";
+
+    /** The admin's memory editor writes every link back when it saves. Lists no longer carry a memory's links unless
+     *  asked (incl*), so a page of the admin loaded before that change would open its form on a list's copy — without
+     *  links — and saving it would wipe them. A browser therefore has to say it is the editor that reads the whole
+     *  memory first; an older page is refused (409) and has to be reloaded. Requests that do not come from a browser
+     *  (no Origin: the import scripts) and saves that touch no link are not asked. */
+    private static void refuseStaleEditor(jakarta.servlet.http.HttpServletRequest http, MemoryDto.EpisodeRequest r) {
+        boolean links = r.getMediaIds() != null || r.getCollectionIds() != null || r.getTagIds() != null
+            || r.getPersonIds() != null || r.getSources() != null;
+        if (!links || http.getHeader("Origin") == null) return;
+        int client = 0;
+        try { client = Integer.parseInt(http.getHeader(CLIENT_HEADER)); } catch (NumberFormatException ignored) {}   // no header: an old page
+        if (client < 2) throw new org.springframework.web.server.ResponseStatusException(org.springframework.http.HttpStatus.CONFLICT,
+            "This admin page is older than the API: reload it before changing a memory's photos, albums, tags, people or sources.");
     }
 
     @DeleteMapping("/episodes/{id}")

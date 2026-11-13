@@ -15,7 +15,7 @@ export default function Search() {
   useEffect(() => { setOpen(false); }, [loc.pathname, loc.search]);
   useEffect(() => { const h = (e: MouseEvent) => { if (box.current && !box.current.contains(e.target as Node)) setOpen(false); }; document.addEventListener('mousedown', h); return () => document.removeEventListener('mousedown', h); }, []);
   const self = persons.data?.find(p => p.isSelf);
-  const mems = useQuery({ queryKey: ['search-memories', self?.id, dq], queryFn: () => hub.episodes(self!.id, { q: dq }), enabled: !!self && dq.length >= 2, staleTime: 60_000 });
+  const mems = useQuery({ queryKey: ['search-memories', self?.id, dq], queryFn: () => hub.episodes(self!.id, { q: dq, inclMedia: true }), enabled: !!self && dq.length >= 2, staleTime: 60_000 });
   const photos = useQuery({ queryKey: ['search-photos', dq], queryFn: () => hub.search({ q: dq, size: 8, type: 'IMAGE' }), enabled: dq.length >= 2, staleTime: 60_000 });
   const t = q.trim(), years = Object.keys(counts(tl.data ?? [])).map(Number);
   const P = t ? (persons.data ?? []).filter(p => !p.isSelf && (matches(p.name, t) || matches(p.displayName, t) || matches(p.nickname, t))).slice(0, 4) : [];

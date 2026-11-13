@@ -247,7 +247,8 @@ function Links({ title, icon: Icon, items, onAdd, onRemove }: {
 /** memories of the owner: those linked, and a search to add more (closest to the event's start first) */
 function MemoryLinks({ ownerId, start, items, onChange }: { ownerId: string; start?: string; items: { id: string; title: string }[]; onChange: (x: { id: string; title: string }[]) => void }) {
   const [q, setQ] = useState('')
-  const all = useQuery({ queryKey: ['episodes', ownerId], queryFn: () => memoryApi.getEpisodes(ownerId) })
+  // titles, places and dates are enough to find one: no links asked for (so a key of its own, apart from the memory page's list)
+  const all = useQuery({ queryKey: ['episodes', ownerId, 'plain'], queryFn: () => memoryApi.getEpisodes(ownerId) })
   const found = useMemo(() => {
     const needle = q.trim().toLowerCase(); if (!needle) return []
     const t = start ? new Date(start.length === 4 ? `${start}-01-01` : start.length === 7 ? `${start}-01` : start).getTime() : 0

@@ -1,0 +1,104 @@
+# The read endpoints sql-sweep.py calls, one per line. Add yours when you add or change a GET.
+# people
+/api/persons
+/api/persons/{person}
+/api/persons/{person}/contacts
+# photos and albums
+/api/media-files/library?size=60
+/api/media-files/search?size=200
+/api/media-files/search?size=200&inclDetails=true&inclPersons=true&inclTags=true
+/api/media-files/search?size=60&personId={person}
+/api/media-files/geotagged
+/api/media-files/person/{person}
+/api/media-files/timeline-index
+/api/collections
+/api/collections/all
+/api/collections/all?inclMediaCount=true&inclChildrenCount=true&inclTags=true&inclPersons=true
+/api/collections/root
+/api/collections/{album}
+/api/collections/{album}/children?inclMediaCount=true&inclChildrenCount=true
+/api/collections/{album}/media
+/api/collections/{album}/media?inclDetails=true&inclPersons=true&inclTags=true
+/api/collections/person/{person}
+/api/tags
+/api/tags/stats
+# memory
+/api/persons/{self}/memory/episodes
+/api/persons/{self}/memory/episodes?inclMedia=true&inclPersons=true&inclTags=true
+/api/persons/{self}/memory/episodes?inclMedia=true&inclCollections=true&inclTags=true&inclPersons=true&inclSources=true
+/api/persons/{self}/memory/episodes?q=ha%20noi&inclMedia=true&inclPersons=true&inclTags=true
+/api/persons/{self}/memory/episodes?withPersonId={person}
+/api/persons/{self}/memory/episodes/{memory}
+/api/persons/{self}/memory/episodes/{memory}/media?inclDetails=true&inclPersons=true&inclTags=true
+/api/persons/{self}/memory/random?count=20&inclMedia=true
+/api/persons/{self}/memory/facts
+/api/persons/{self}/memory/chapters
+/api/persons/{self}/memory/traits
+/api/persons/{person}/memory/episodes
+/api/persons/{person}/memory/reports
+/api/persons/{person}/mystic-briefs
+/api/events?personId={self}
+/api/events/{event}
+/api/events/at?personId={self}&moment=2011-06-15T21:00:00
+# journal
+/api/journal/notes?size=50
+/api/journal/notes/{note}
+/api/journal/series
+/api/journal/authors
+/api/journal/categories
+/api/journal/problems
+# forums and chats
+/api/forums
+/api/forums/{forum}
+/api/forums/{forum}/boards
+/api/forums/{forum}/threads?size=40
+/api/forums/{forum}/posts?q=a&size=30
+/api/forums/{forum}/members
+/api/persons/{person}/forum-posts?size=8
+/api/persons/{person}/forums
+/api/persons/{person}/chat-archives
+/api/persons/{person}/chat-stats
+/api/chat-stats
+/api/chat-archives/others
+/api/social/messenger/threads?platform=yahoo&at=2010-06-15T21:00
+/api/social/messenger/buddies?platform=yahoo&at=2010-06-15T21:00
+# rankings
+/api/rankings
+/api/rankings/board/relationship
+/api/rankings/board/relationship/column/year
+/api/persons/{person}/rankings
+# desk
+/api/desk/at?at=2011-06-15T21:00
+/api/desk/scene?episode={memory}
+/api/desk/folders?at=2011-06-15T21:00
+/api/desk/memories?at=2011-06-15T21:00&size=30
+# games
+/api/games
+/api/games/{game}
+/api/games/traces
+/api/game-series
+/api/game-packages
+# music
+/api/music/artists
+/api/music/albums
+/api/music/tracks
+/api/music/cds
+/api/music/playlists
+/api/music/spotify/overview
+# facebook
+/api/social/range
+/api/social/status
+/api/social/fb/home
+/api/social/fb/feed?size=20
+/api/social/fb/search?q=a
+# money
+/api/finance/accounts
+/api/finance/summary
+/api/finance/transactions?size=200
+/api/finance/review
+/api/finance/categories
+/api/finance/facets
+/api/finance/rules
+/api/finance/counterparties
+/api/finance/trend
+/api/finance/report

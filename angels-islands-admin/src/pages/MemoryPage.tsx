@@ -7,7 +7,7 @@ import { ChevronDown, Image as ImageIcon, MapPin, Pencil, Plus, Search, X } from
 import clsx from 'clsx'
 import { usePersons } from '../hooks/usePersons'
 import { useChapters, useEpisodes, useFacts, useTraits } from '../hooks/useMemory'
-import { memoryApi } from '../api/memory'
+import { memoryApi, MEMORY_CARD } from '../api/memory'
 import EpisodeEditor from '../components/memory/EpisodeEditor'
 import MemoryFormModal, { type MemoryFormKind } from '../components/memory/MemoryFormModal'
 import { ConfirmButton, EPISODE_KINDS, StatusBadge, episodeWhen, groupFacts, kindLabel } from '../components/memory/shared'
@@ -95,7 +95,7 @@ function EpisodesTab({ pid, all, loading }: { pid: string; all: EpisodeResponse[
   const [edit, setEdit] = useState<EpisodeResponse | 'new' | null>(null)
   useEffect(() => { const t = setTimeout(() => setDq(q.trim()), 300); return () => clearTimeout(t) }, [q])
   // with words typed the API searches and ranks (marks optional); kind, status and source narrow what comes back
-  const found = useQuery({ queryKey: ['episodes', pid, 'q', dq], queryFn: () => memoryApi.getEpisodes(pid, { q: dq }), enabled: !!dq })
+  const found = useQuery({ queryKey: ['episodes', pid, 'q', dq], queryFn: () => memoryApi.getEpisodes(pid, { q: dq, ...MEMORY_CARD }), enabled: !!dq })
   const sources = useMemo(() => [...new Set(all.map(e => e.source || ''))].sort(), [all])
   const list = useMemo(() => {
     const base = dq ? found.data ?? [] : all

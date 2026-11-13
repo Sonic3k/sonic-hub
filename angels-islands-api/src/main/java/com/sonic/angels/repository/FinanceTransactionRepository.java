@@ -28,6 +28,10 @@ public interface FinanceTransactionRepository extends JpaRepository<FinanceTrans
 
     long countByAccountId(UUID accountId);
 
+    /** [account id, number of lines] for every account that has lines */
+    @Query("select t.account.id, count(t) from FinanceTransaction t group by t.account.id")
+    List<Object[]> countByAccount();
+
     /** Everything in [from, to) with account and category loaded — what a report reads. */
     @Query("SELECT t FROM FinanceTransaction t JOIN FETCH t.account LEFT JOIN FETCH t.category " +
            "WHERE t.occurredAt >= :from AND t.occurredAt < :to")

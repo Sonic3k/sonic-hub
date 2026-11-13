@@ -138,6 +138,8 @@ export interface EpisodeRequest {
 export interface EpisodeQuery {
   q?: string; kind?: string; status?: string; source?: string; tagId?: string; withPersonId?: string
   mediaId?: string; collectionId?: string; from?: string; to?: string; minImportance?: number; oldestFirst?: boolean
+  /** the links each memory of the list comes with; the API sends none unless asked (a single memory has them all) */
+  inclMedia?: boolean; inclCollections?: boolean; inclTags?: boolean; inclPersons?: boolean; inclSources?: boolean
 }
 
 export interface ChapterResponse { id: string; period: string; title?: string; summary?: string; sentiment?: string; sortOrder?: number; source?: string; status?: MemoryStatus | null; createdAt?: string }

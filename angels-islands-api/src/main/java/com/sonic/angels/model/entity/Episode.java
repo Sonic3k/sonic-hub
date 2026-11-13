@@ -89,13 +89,16 @@ public class Episode extends BaseEntity {
     @Column(name = "external_key", length = 160)
     private String externalKey;
 
+    // The five links below are lazy and read only when asked for (MemoryDto.Includes). When a list of memories does
+    // ask for one, @BatchSize makes it one statement for the whole list (up to 1000 memories) instead of one per memory.
+
     /** The photos / scans of this memory, the cover first. */
     @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(name = "episode_media",
         joinColumns = @JoinColumn(name = "episode_id"),
         inverseJoinColumns = @JoinColumn(name = "media_file_id"))
     @OrderColumn(name = "position")
-    @BatchSize(size = 200)
+    @BatchSize(size = 1000)
     private List<MediaFile> mediaFiles = new ArrayList<>();
 
     /** Whole albums that belong to it (a trip's album). */
@@ -103,14 +106,14 @@ public class Episode extends BaseEntity {
     @JoinTable(name = "episode_collections",
         joinColumns = @JoinColumn(name = "episode_id"),
         inverseJoinColumns = @JoinColumn(name = "collection_id"))
-    @BatchSize(size = 200)
+    @BatchSize(size = 1000)
     private Set<Collection> collections = new HashSet<>();
 
     @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(name = "episode_tags",
         joinColumns = @JoinColumn(name = "episode_id"),
         inverseJoinColumns = @JoinColumn(name = "tag_id"))
-    @BatchSize(size = 200)
+    @BatchSize(size = 1000)
     private Set<Tag> tags = new HashSet<>();
 
     /** Who else was in it (the owner of the memory is {@link #person}). */
@@ -118,13 +121,13 @@ public class Episode extends BaseEntity {
     @JoinTable(name = "episode_persons",
         joinColumns = @JoinColumn(name = "episode_id"),
         inverseJoinColumns = @JoinColumn(name = "person_id"))
-    @BatchSize(size = 200)
+    @BatchSize(size = 1000)
     private Set<Person> persons = new HashSet<>();
 
     /** Where it is told — forum posts, chat messages, notes — with the words kept. */
     @OneToMany(mappedBy = "episode", cascade = CascadeType.ALL, orphanRemoval = true)
     @OrderBy("sortOrder ASC")
-    @BatchSize(size = 200)
+    @BatchSize(size = 1000)
     private List<EpisodeSource> sources = new ArrayList<>();
 
     public Episode() {}

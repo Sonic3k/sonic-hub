@@ -16,7 +16,9 @@ export function setAdminToken(token: string) {
 
 const api = axios.create({
   baseURL: import.meta.env.VITE_API_URL || 'http://localhost:8080',
-  headers: { 'Content-Type': 'application/json' },
+  // X-Admin-Client: which admin this is. 2 = its memory editor reads the whole memory before it opens; the API
+  // refuses a memory's links from an older page (which would start from a list's copy, without them).
+  headers: { 'Content-Type': 'application/json', 'X-Admin-Client': '2' },
 })
 
 api.interceptors.request.use(config => {
