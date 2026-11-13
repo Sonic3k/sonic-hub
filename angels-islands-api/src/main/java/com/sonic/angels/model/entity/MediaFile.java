@@ -3,8 +3,12 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import java.util.UUID;
 import jakarta.persistence.*;
+import org.hibernate.annotations.BatchSize;
+
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 @Entity
@@ -157,18 +161,27 @@ public class MediaFile extends BaseEntity {
     private LocalDateTime uploadedAt;
 
     // ── Detail tables (1:1) ──────────────────────────────────────────────────
+    // A detail row shares its file's id: there is at most one of each. From this side they are mapped as collections
+    // (of none or one row), not as one-to-one, on purpose: Hibernate cannot leave the inverse side of a one-to-one
+    // unloaded (it has to look whether the row is there), so as one-to-one every file read anywhere — a page of 200
+    // photos, a person's avatar, the cover of a note — cost three more statements whether the details were asked for
+    // or not. A collection is not touched until something reads it (inclDetails, the upload, the geocoder), and is
+    // then fetched for a whole page of files at once. Use getImageDetail() and friends; never the lists themselves.
 
     @JsonIgnore
-    @OneToOne(mappedBy = "mediaFile", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
-    private MediaImageDetail imageDetail;
+    @OneToMany(mappedBy = "mediaFile", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
+    @BatchSize(size = 200)
+    private List<MediaImageDetail> imageDetails = new ArrayList<>();
 
     @JsonIgnore
-    @OneToOne(mappedBy = "mediaFile", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
-    private MediaVideoDetail videoDetail;
+    @OneToMany(mappedBy = "mediaFile", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
+    @BatchSize(size = 200)
+    private List<MediaVideoDetail> videoDetails = new ArrayList<>();
 
     @JsonIgnore
-    @OneToOne(mappedBy = "mediaFile", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
-    private MediaLocationDetail locationDetail;
+    @OneToMany(mappedBy = "mediaFile", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
+    @BatchSize(size = 200)
+    private List<MediaLocationDetail> locationDetails = new ArrayList<>();
 
     // ── Relations ────────────────────────────────────────────────────────────
 
@@ -247,18 +260,18 @@ public class MediaFile extends BaseEntity {
     public boolean isVideo() { return fileType == FileType.VIDEO; }
 
     public MediaImageDetail getOrCreateImageDetail() {
-        if (imageDetail == null) { imageDetail = new MediaImageDetail(); imageDetail.setMediaFile(this); }
-        return imageDetail;
+        if (imageDetails.isEmpty()) { MediaImageDetail d = new MediaImageDetail(); d.setMediaFile(this); imageDetails.add(d); }
+        return imageDetails.get(0);
     }
 
     public MediaVideoDetail getOrCreateVideoDetail() {
-        if (videoDetail == null) { videoDetail = new MediaVideoDetail(); videoDetail.setMediaFile(this); }
-        return videoDetail;
+        if (videoDetails.isEmpty()) { MediaVideoDetail d = new MediaVideoDetail(); d.setMediaFile(this); videoDetails.add(d); }
+        return videoDetails.get(0);
     }
 
     public MediaLocationDetail getOrCreateLocationDetail() {
-        if (locationDetail == null) { locationDetail = new MediaLocationDetail(); locationDetail.setMediaFile(this); }
-        return locationDetail;
+        if (locationDetails.isEmpty()) { MediaLocationDetail d = new MediaLocationDetail(); d.setMediaFile(this); locationDetails.add(d); }
+        return locationDetails.get(0);
     }
 
     // ── Getters / Setters ────────────────────────────────────────────────────
@@ -344,12 +357,20 @@ public class MediaFile extends BaseEntity {
     public void setDisplayedAddress(String displayedAddress) { this.displayedAddress = displayedAddress; }
     public LocalDateTime getUploadedAt() { return uploadedAt; }
     public void setUploadedAt(LocalDateTime uploadedAt) { this.uploadedAt = uploadedAt; }
-    public MediaImageDetail getImageDetail() { return imageDetail; }
-    public void setImageDetail(MediaImageDetail imageDetail) { this.imageDetail = imageDetail; }
-    public MediaVideoDetail getVideoDetail() { return videoDetail; }
-    public void setVideoDetail(MediaVideoDetail videoDetail) { this.videoDetail = videoDetail; }
-    public MediaLocationDetail getLocationDetail() { return locationDetail; }
-    public void setLocationDetail(MediaLocationDetail locationDetail) { this.locationDetail = locationDetail; }
+    /** The one detail row of its kind, or null. Reading it loads the row (with those of the other files being read). */
+    public MediaImageDetail getImageDetail() { return imageDetails.isEmpty() ? null : imageDetails.get(0); }
+    public void setImageDetail(MediaImageDetail d) { putOnly(imageDetails, d); if (d != null) d.setMediaFile(this); }
+    public MediaVideoDetail getVideoDetail() { return videoDetails.isEmpty() ? null : videoDetails.get(0); }
+    public void setVideoDetail(MediaVideoDetail d) { putOnly(videoDetails, d); if (d != null) d.setMediaFile(this); }
+    public MediaLocationDetail getLocationDetail() { return locationDetails.isEmpty() ? null : locationDetails.get(0); }
+    public void setLocationDetail(MediaLocationDetail d) { putOnly(locationDetails, d); if (d != null) d.setMediaFile(this); }
+
+    /** the list holds d and nothing else (null: nothing); a list already holding just d is left as it is */
+    private static <T> void putOnly(List<T> list, T d) {
+        if (d != null && list.size() == 1 && list.get(0) == d) return;
+        list.clear();
+        if (d != null) list.add(d);
+    }
     public Set<Person> getPersons() { return persons; }
     public void setPersons(Set<Person> persons) { this.persons = persons; }
     public Set<Tag> getTags() { return tags; }

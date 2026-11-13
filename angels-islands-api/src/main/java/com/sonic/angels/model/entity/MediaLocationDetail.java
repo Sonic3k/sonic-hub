@@ -10,7 +10,9 @@ public class MediaLocationDetail {
     @Id
     private UUID id;
 
-    @OneToOne(fetch = FetchType.LAZY)
+    /** The file this row describes; the row has the file's id. Many-to-one in the mapping only so that the file's
+     *  side can be a lazy collection (see MediaFile): there is never more than one row per file. */
+    @ManyToOne(fetch = FetchType.LAZY)
     @MapsId
     @JoinColumn(name = "media_file_id")
     private MediaFile mediaFile;

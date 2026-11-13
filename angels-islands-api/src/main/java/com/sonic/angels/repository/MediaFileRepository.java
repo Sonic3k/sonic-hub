@@ -27,10 +27,10 @@ public interface MediaFileRepository extends JpaRepository<MediaFile, UUID> {
     @Query("SELECT m FROM MediaFile m WHERE m.latitude IS NOT NULL AND m.longitude IS NOT NULL")
     Page<MediaFile> findWithLatLng(Pageable pageable);
 
-    @Query("SELECT m FROM MediaFile m WHERE m.latitude IS NOT NULL AND m.longitude IS NOT NULL AND m.locationDetail IS NULL")
+    @Query("SELECT m FROM MediaFile m WHERE m.latitude IS NOT NULL AND m.longitude IS NOT NULL AND m.locationDetails IS EMPTY")
     Page<MediaFile> findWithLatLngNoLocation(Pageable pageable);
 
-    @Query("SELECT COUNT(m) FROM MediaFile m WHERE m.latitude IS NOT NULL AND m.longitude IS NOT NULL AND m.locationDetail IS NULL")
+    @Query("SELECT COUNT(m) FROM MediaFile m WHERE m.latitude IS NOT NULL AND m.longitude IS NOT NULL AND m.locationDetails IS EMPTY")
     long countWithLatLngNoLocation();
 
     Page<MediaFile> findByStorageKeyIsNotNull(Pageable pageable);
@@ -56,7 +56,7 @@ public interface MediaFileRepository extends JpaRepository<MediaFile, UUID> {
     @Query("SELECT m FROM Collection c JOIN c.mediaFiles m WHERE c.id = :collectionId AND m.fileName IN :names")
     List<MediaFile> findInCollectionByNames(@Param("collectionId") UUID collectionId, @Param("names") java.util.Collection<String> names);
 
-    @Query("SELECT m FROM MediaFile m LEFT JOIN FETCH m.imageDetail WHERE m.mediaSource IS NULL")
+    @Query("SELECT m FROM MediaFile m LEFT JOIN FETCH m.imageDetails WHERE m.mediaSource IS NULL")
     List<MediaFile> findSourcelessWithDetail();
 
     @Modifying
