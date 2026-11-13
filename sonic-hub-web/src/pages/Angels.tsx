@@ -1,14 +1,22 @@
-/* Angels — the people who passed through, each one a story. Same frame, a softer light. */
+/* Angels — the people who passed through. The list is cut by the year he came to know each of them, the faces of a
+   year side by side; a person's page is their story, opened on the paper of that year; an old conversation is read
+   as a transcript. */
 import { Fragment, useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Link, useParams, useSearchParams } from 'react-router-dom';
+import { Link, useLocation, useParams, useSearchParams } from 'react-router-dom';
 import { useInfiniteQuery, useQueries, useQuery } from '@tanstack/react-query';
-import { hub, isAngel, periodYears, randomLine } from '../api/hub';
+import { hub, periodYears, randomLine } from '../api/hub';
 import { cdn, pic } from '../api/client';
-import type { ChatAttachment, ChatMessage, MysticBrief, Person } from '../types';
+import type { ChatAttachment, ChatMessage, Chapter, MysticBrief, Person } from '../types';
 import { fmt, usePersons } from '../lib/queries';
 import { dayMonthYear, longDay, momentDate, timeOf, vnClock } from '../lib/date';
-import { fold } from '../lib/text';
+import { fold, matches } from '../lib/text';
+import { eraClass } from '../lib/era';
+import { atOf, useMoment } from '../lib/moment';
+import { useDesk } from '../lib/desk';
+import { useGoTo } from '../lib/scroll';
+import { angelsByYear, angelsInOrder, metYear, nameOf, useMetYears, useMoments, type MomentOf } from '../lib/people';
 import Justified from '../components/Justified';
+import { YearChip } from '../components/Paper';
 import { Sentinel, useViewer } from '../components/PhotoGroups';
 import { PostHits } from './Forum';
 import PersonNumbers from '../components/PersonNumbers';
@@ -17,71 +25,167 @@ import { kindName, memoryHref, memoryWhen } from './Memories';
 import { isOwner } from '../components/money/data';
 
 const T = 10 * 60_000;
-const nameOf = (p: Person) => p.displayName || p.name;
 /* ANGEL is not written out: these pages are the Angels. OTHER marks someone who is not one. */
 const REL: Record<string, string> = { ANGEL: '', OTHER: 'khác', FRIEND: 'bạn', FAMILY: 'gia đình' };
 const rel = (r?: string | null) => (r ? REL[r] ?? r.toLowerCase().replace(/_/g, ' ') : '');
-const startOf = (p: Person) => periodYears(p.period)?.[0] ?? 9999;
-export const angelsOrdered = (all: Person[]) => all.filter(isAngel).sort((a, b) => startOf(a) - startOf(b) || nameOf(a).localeCompare(nameOf(b)));
+const nickOf = (p: Person) => (p.nickname && p.nickname !== nameOf(p) ? p.nickname : '');
+const PC = <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="12" rx="1.6" /><path d="M9 20h6M12 16v4" /></svg>;
 
-/** A face for a person: their avatar, else a photo they are in. */
-function Face({ p, w }: { p: Person; w: number }) {
-  const q = useQuery({ queryKey: ['face', p.id], enabled: !p.avatarUrl, staleTime: T, queryFn: async () => (await hub.search({ personId: p.id, size: 1, random: true, type: 'IMAGE' })).content[0] ?? null });
+type Faced = { id?: string; name: string; displayName?: string | null; avatarUrl?: string | null };
+/** A face: the person's avatar; with none, a photo they are in (asked for only once the face comes near the screen);
+ *  with none of those either, the first letter of their name on a quiet tile. */
+export function Face({ p, w = 240 }: { p: Faced; w?: number }) {
+  const ref = useRef<HTMLSpanElement>(null), [near, setNear] = useState(false), lacks = !p.avatarUrl && !!p.id;
+  useEffect(() => {
+    const el = ref.current;
+    if (!lacks || near || !el) return;
+    const io = new IntersectionObserver(es => { if (es.some(e => e.isIntersecting)) { setNear(true); io.disconnect(); } }, { rootMargin: '400px' });
+    io.observe(el);
+    return () => io.disconnect();
+  }, [lacks, near]);
+  const q = useQuery({ queryKey: ['face', p.id], enabled: lacks && near, staleTime: T, queryFn: async () => (await hub.search({ personId: p.id!, size: 1, random: true, type: 'IMAGE' })).content[0] ?? null });
   const src = p.avatarUrl ? cdn(p.avatarUrl, w) : q.data ? cdn(pic(q.data), w) : '';
-  return src ? <img src={src} alt="" /> : <span className="letter-ph">{nameOf(p).slice(0, 1)}</span>;
+  return src ? <img src={src} alt="" loading="lazy" decoding="async" /> : <span ref={ref} className="an-letter">{(p.displayName || p.name).trim().slice(0, 1).toUpperCase()}</span>;
 }
 
-function LineCard({ people, title = 'Một dòng tin nhắn' }: { people: Person[]; title?: string }) {
-  const [n, setN] = useState(0), ids = people.map(p => p.id).join(',');
-  const q = useQuery({ queryKey: ['line', ids, n], queryFn: () => randomLine(people), enabled: people.length > 0, staleTime: T });
-  if (!people.length || (q.isSuccess && !q.data)) return null;
+/** One of them in the list: the face, the name, the nick. `chip` shows the year on the face (search results, out of their place in the roll). */
+function PersonCard({ p, year, chip }: { p: Person; year?: number; chip?: boolean }) {
+  const nick = nickOf(p);
   return (
-    <div className="card" style={{ ['--c' as string]: 'var(--angels)' }}>
-      <h3><i />{title}<button type="button" onClick={() => setN(v => v + 1)}>Đổi</button></h3>
-      {q.data ? <><span className="bubble">{q.data.text}</span><div className="meta">{q.data.who} · {q.data.platform}{q.data.at ? ` · ${dayMonthYear(vnClock(q.data.at))}` : ''}</div></> : <div className="meta">Đang lục lại…</div>}
-    </div>
+    <Link className="an-card" to={`/angels/${p.id}`}>
+      <span className="an-face"><Face p={p} /></span>
+      <b>{nameOf(p)}</b>
+      {nick && <small>{nick}</small>}
+      {chip && !!year && <YearChip year={year} />}
+    </Link>
   );
 }
 
+/** A portrait as a small print with the name written under it. One of them on a page may be tilted and taped. */
+function FacePrint({ p, name, to, tilt, tape }: { p?: Person; name: string; to?: string; tilt?: number; tape?: number }) {
+  const body = <>
+    {tape !== undefined && <span className="tape" aria-hidden="true" style={{ transform: `rotate(${tape}deg)` }} />}
+    <Face p={p ?? { name }} w={320} />
+    <span className="print-cap">{name}</span>
+  </>;
+  const cls = 'print print-s captioned an-print', st = tilt ? { transform: `rotate(${tilt}deg)` } : undefined;
+  return to ? <Link className={cls} style={st} to={to}>{body}</Link> : <span className={cls} style={st}>{body}</span>;
+}
+
 /* ── the list ── */
-export function AngelsIndex() {
-  const persons = usePersons(), list = angelsOrdered(persons.data ?? []);
-  const first = list.map(startOf).filter(y => y < 9999)[0];
-  return (
-    <div className="wrap page">
-      <div className="ptitle"><h1>Những người đã đi qua</h1><span>{list.length} người{first ? ` · từ ${first}` : ''}</span>
-        <Link className="sortbtn" to="/angels/rankings">Bảng xếp hạng</Link></div>
-      <section className="lanes">
-        <div className="angels-list">
-          {persons.isLoading && <div className="card empty">Đang mở…</div>}
-          {list.map(p => (
-            <Link key={p.id} className="arow" to={`/angels/${p.id}`}>
-              <span className="ayrs">{p.period ?? ''}</span>
-              <span className="amid"><b className="aname">{nameOf(p)}</b>{p.nickname && p.nickname !== nameOf(p) && <span className="anick">“{p.nickname}”</span>}
-                <span className="arel">{[rel(p.relationshipType), p.song && `♪ ${p.song}`].filter(Boolean).join(' · ')}</span></span>
-              <span className="aimg"><Face p={p} w={240} /></span>
-            </Link>))}
+
+/** What the list opens on. With a day picked: who that month was about (his Moments sheet) and who he came to know
+ *  that year. Otherwise: who this month was about, year after year. */
+function Opener({ all, years }: { all: Person[]; years: Map<string, number> }) {
+  const { moment, picked } = useMoment(), moments = useMoments(), desk = useDesk();
+  const byId = useMemo(() => new Map(all.map(p => [p.id, p])), [all]);
+  const to = (x: MomentOf) => (x.personId ? `/angels/${x.personId}` : undefined), who = (x: MomentOf) => (x.personId ? byId.get(x.personId) : undefined);
+  if (picked && moment) {
+    const of = moments.find(x => x.year === moment.y && (x.month === moment.m || x.month === 0));
+    const met = angelsInOrder(all, years).filter(p => metYear(p, years) === moment.y);
+    if (!of && !met.length) return null;
+    const computer = desk.data?.computer?.device;
+    return (
+      <section className={`an-open then ${eraClass(moment.y)}`}>
+        <div className="an-open-hd"><h2>Tháng {moment.m} năm {moment.y}</h2>
+          {computer && <a className="an-go" href={`/pc?at=${encodeURIComponent(atOf(moment))}`}>{PC}Bật {computer.name}</a>}</div>
+        <div className="an-then">
+          {of && <div className="an-then-of">
+            <FacePrint p={who(of)} name={of.name} to={to(of)} tilt={-2} tape={3} />
+            <p>Trong Moments, {of.month ? 'tháng này' : `cả năm ${of.year}`} anh ghi tên {of.personId ? <Link to={`/angels/${of.personId}`}>{of.name}</Link> : <b>{of.name}</b>}.</p>
+          </div>}
+          {met.length > 0 && <div className="an-then-met"><h3>Quen trong năm {moment.y}</h3>
+            <div className="an-grid">{met.map(p => <PersonCard key={p.id} p={p} />)}</div></div>}
         </div>
-        <aside className="rail"><LineCard people={list} /></aside>
       </section>
+    );
+  }
+  const month = new Date().getMonth() + 1, list = moments.filter(x => x.month === month);
+  if (!list.length) return null;
+  return (
+    <section className="an-open">
+      <div className="an-open-hd"><h2>Tháng {month} những năm trước</h2><Link to="/angels/rankings?tab=moments">Moments</Link></div>
+      <div className="an-months" style={{ ['--n' as string]: list.length }}>{list.map((x, i) => (
+        <div key={x.year} className="an-mo">
+          <YearChip year={x.year} />
+          <FacePrint p={who(x)} name={x.name} to={to(x)} tilt={i === 0 ? -2 : undefined} tape={i === 0 ? 3 : undefined} />
+        </div>))}</div>
+    </section>
+  );
+}
+
+export function AngelsIndex() {
+  const persons = usePersons(), { years, ready } = useMetYears(), loc = useLocation(), [q, setQ] = useState('');
+  const all = useMemo(() => persons.data ?? [], [persons.data]);
+  const blocks = useMemo(() => angelsByYear(all, years), [all, years]);
+  const t = q.trim(), loading = persons.isLoading || !ready, everyone = useMemo(() => blocks.flatMap(([, ps]) => ps), [blocks]);
+  const found = t ? blocks.flatMap(([y, ps]) => ps.filter(p => matches(p.name, t) || matches(p.displayName, t) || matches(p.nickname, t)).map(p => ({ y, p }))) : [];
+  /* #y-2009: a year of the sidebar */
+  useGoTo(t ? '' : loc.hash.slice(1), !loading);
+  /* with no year known at all (the sheets could not be read) the roll is just everyone, with no turns */
+  const dated = blocks.some(([y]) => y > 0);
+  return (
+    <div className="wrap page an">
+      <header className="mm-head"><h1>Những người đã đi qua</h1>
+        <label className="msearch">
+          <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7" /><path d="M20 20l-4-4" /></svg>
+          <input value={q} onChange={e => setQ(e.target.value)} placeholder="Tìm theo tên hoặc nick…" />
+          {q && <button type="button" onClick={() => setQ('')} aria-label="Xoá">×</button>}
+        </label>
+        <Link className="sortbtn" to="/angels/rankings">Bảng xếp hạng</Link>
+      </header>
+      {loading ? <p className="jn-wait">Đang mở…</p>
+        : t ? (found.length ? <div className="an-grid">{found.map(({ y, p }) => <PersonCard key={p.id} p={p} year={y} chip />)}</div> : <p className="jn-wait">Không thấy ai tên như vậy.</p>)
+        : <>
+          <Opener all={all} years={years} />
+          <LineCard people={everyone} wide />
+          {/* one roll of faces, a tile where each year begins */}
+          <div className="an-grid an-roll">{blocks.map(([y, ps]) => (
+            <Fragment key={y}>
+              {dated && <h2 id={`y-${y}`} className={`an-turn ${y ? eraClass(y) : ''}`}>{y ? <b>{y}</b> : <span>Chưa rõ năm</span>}</h2>}
+              {ps.map(p => <PersonCard key={p.id} p={p} year={y} />)}
+            </Fragment>))}</div>
+        </>}
     </div>
   );
 }
 
 /* ── one person, one story ── */
+
 function ChapterPhotos({ personId, period, onOpen }: { personId: string; period?: string | null; onOpen: (id: string) => void }) {
   const yrs = periodYears(period);
   const q = useQuery({ queryKey: ['chapter-photos', personId, period], enabled: !!yrs, staleTime: T,
     queryFn: () => hub.search({ personId, from: `${yrs![0]}-01-01`, to: `${yrs![1] + 1}-01-01`, size: 5, random: true, type: 'IMAGE' }) });
   const items = q.data?.content ?? [];
-  return items.length ? <div className="chapter-photos"><Justified items={items} rowHeight={190} gap={6} onOpen={(i) => onOpen(items[i].id)} /></div> : null;
+  return items.length ? <div className="an-ch-photos"><Justified items={items} rowHeight={190} gap={6} onOpen={(i) => onOpen(items[i].id)} /></div> : null;
+}
+
+/** One line really written in an old chat, pulled out at random: these are the pages' words in the school hand.
+ *  On the list it is a line from anyone; on a person's page, one of theirs with him. */
+function LineCard({ people, wide }: { people: Person[]; wide?: boolean }) {
+  const [n, setN] = useState(0), who = people.length === 1 ? people[0].id : 'anyone';
+  const q = useQuery({ queryKey: ['line', who, n], queryFn: () => randomLine(people), enabled: people.length > 0, staleTime: T });
+  if (!people.length || (q.isSuccess && !q.data)) return null;
+  const head = <>Một dòng tin nhắn<button type="button" onClick={() => setN(v => v + 1)}>Dòng khác</button></>;
+  return (
+    <div className={`an-line ${wide ? 'wide' : ''}`}>
+      {wide ? <h2>{head}</h2> : <h5>{head}</h5>}
+      {q.data ? <><blockquote className="an-said">{q.data.text}</blockquote><small>{[q.data.who === 'self' ? 'anh' : q.data.who, platformName(q.data.platform), q.data.at ? dayMonthYear(vnClock(q.data.at)) : ''].filter(Boolean).join(' · ')}</small></>
+        : <small>Đang lục lại…</small>}
+    </div>
+  );
 }
 
 const CONTACT_ORDER = ['PHONE', 'YAHOO', 'FACEBOOK', 'SMS', 'ZALO'];
 const CONTACT_LABEL: Record<string, string> = { PHONE: 'Điện thoại', YAHOO: 'Yahoo', FACEBOOK: 'Facebook', SMS: 'SMS', ZALO: 'Zalo', TELEGRAM: 'Telegram', BLOG: 'Blog', INSTAGRAM: 'Instagram', TIKTOK: 'TikTok', OTHER: 'Khác' };
+const PLATFORM: Record<string, string> = { facebook: 'Facebook', 'facebook-wall': 'Tường Facebook', yahoo: 'Yahoo', sms: 'SMS', zalo: 'Zalo', skype: 'Skype' };
+const platformName = (s: string) => PLATFORM[s.toLowerCase()] ?? s;
+const paras = (t: string) => t.split(/\n{2,}/).map((x, i) => <p key={i}>{x}</p>);
+/** "Yahoo · Tommy" filed under Yahoo is just "Tommy" */
+const chatTitle = (title: string, platform: string) => (title.toLowerCase().startsWith(`${platform.toLowerCase()} · `) ? title.slice(platform.length + 3) : title);
 
 export function PersonPage() {
-  const { id = '' } = useParams(), persons = usePersons();
+  const { id = '' } = useParams(), persons = usePersons(), { years } = useMetYears();
   const person = useQuery({ queryKey: ['person', id], queryFn: () => hub.person(id), staleTime: T });
   const facts = useQuery({ queryKey: ['facts', id], queryFn: () => hub.facts(id), staleTime: T });
   const episodes = useQuery({ queryKey: ['episodes', id], queryFn: () => hub.episodes(id), staleTime: T });
@@ -94,94 +198,140 @@ export function PersonPage() {
   const forums = useQuery({ queryKey: ['person-forums', id], queryFn: () => hub.personForums(id).catch(() => []), staleTime: T });
   const forumPosts = useQuery({ queryKey: ['person-forum-posts', id], queryFn: () => hub.personForumPosts(id, 0, 8).catch(() => null), staleTime: T, enabled: !!forums.data?.length });
   /* his own memories this person is in */
-  const me = usePersons().data?.find(x => x.isSelf);
+  const me = persons.data?.find(x => x.isSelf);
   const shared = useQuery({ queryKey: ['memories-with', me?.id, id], enabled: !!me && me.id !== id, staleTime: T,
     queryFn: async () => (await hub.episodes(me!.id, { withPersonId: id })).sort((a, b) => (a.occurredAt ?? '9999').localeCompare(b.occurredAt ?? '9999')) });
   const photos = useQuery({ queryKey: ['person-photos', id], staleTime: T, queryFn: () => hub.search({ personId: id, size: 30, sortBy: 'effectiveDate', sortDir: 'asc', inclPersons: true, inclTags: true }) });
   const items = photos.data?.content ?? [], viewer = useViewer(items);
   const openById = (mid: string) => { const i = items.findIndex(m => m.id === mid); if (i >= 0) viewer.open(i); };
-  const p = person.data, order = angelsOrdered(persons.data ?? []), k = order.findIndex(x => x.id === id), prev = order[k - 1], next = order[k + 1];
+  const p = person.data, order = angelsInOrder(persons.data ?? [], years), k = order.findIndex(x => x.id === id), prev = k > 0 ? order[k - 1] : undefined, next = k >= 0 ? order[k + 1] : undefined;
   const owner = isOwner();
-  const platforms = [...new Set((archives.data ?? []).map(a => a.platform))];
+  /* the list of chapters: open beside a wide page; on a phone it waits behind its title, so the story starts near the top */
+  const [toc, setToc] = useState(() => typeof window === 'undefined' || window.matchMedia('(min-width: 861px)').matches);
   const chs = [...(chapters.data ?? [])].sort((a, b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0));
   const eps = [...(episodes.data ?? [])].sort((a, b) => (a.occurredAt ?? '').localeCompare(b.occurredAt ?? ''));
-  // notes from the chat analysis read as a list in the story; the side card keeps the short facts
+  // notes from the chat analysis read as a list in the story; the side keeps the short facts
   const analysis = (facts.data ?? []).filter(f => f.source === 'analysis'), shortFacts = (facts.data ?? []).filter(f => f.source !== 'analysis');
   const notes = analysis.filter(f => f.category === 'analysis-note'), style = analysis.filter(f => f.category === 'analysis-style');
-  const cover = p?.coverUrl || p?.bannerUrl || pic(items.find(m => m.isFeatured), true) || pic(items[0], true);
-  if (person.isLoading) return <div className="wrap page"><div className="card empty">Đang mở câu chuyện…</div></div>;
-  if (!p) return <div className="wrap page"><Link className="back" to="/angels">← Angels</Link><h1>Không tìm thấy người này</h1></div>;
-  const intro = p.howWeMet || p.bio;
+  if (person.isLoading) return <div className="page an"><div className="an-wait"><p className="jn-wait">Đang mở câu chuyện…</p></div></div>;
+  if (!p) return <div className="page an"><div className="an-wait"><Link className="back" to="/angels">← Angels</Link><h1>Không tìm thấy người này</h1></div></div>;
+
+  const y = metYear(p, years), intro = p.howWeMet || p.bio, wide = p.coverUrl || p.bannerUrl;
+  const portrait = p.avatarUrl || (wide ? '' : pic(items.find(m => m.isFeatured), true) || pic(items[0], true));
+  const chats = [...(archives.data ?? [])].sort((a, b) => b.messageCount - a.messageCount);
+  const kicker = [rel(p.relationshipType), p.period].filter(Boolean).join(' · ');
+  const meta = [nickOf(p) && `“${nickOf(p)}”`, p.alternativeName, p.song && `♪ ${p.song}`].filter(Boolean) as string[];
+  const hasNumbers = !!(rankings.data?.length || chatStats.data?.messages);
+  /* is anything known for the "Về …" list at the side */
+  const known = !!(p.firstMet || p.dateOfBirth || p.birthMonth || p.birthYear || p.song || shortFacts.length || (owner && (p.birthTime || p.birthPlace)));
+  /* A story can be told more than once: the long read of the chats first, then what the forum shows of them and the
+     earlier summary of the chats, period by period. Each run after the first says where it is from. */
+  const forumName = (key: string) => forums.data?.find(f => f.forumKey === key)?.forumName.replace(/\s*\(.*\)$/, '');
+  const runs: { key: string; label: string; items: Chapter[] }[] = [];
+  for (const c of chs) {
+    const key = c.source ?? '', last = runs[runs.length - 1];
+    if (last && last.key === key) last.items.push(c);
+    else runs.push({ key, label: !runs.length ? '' : key === 'analysis' ? 'Tóm tắt theo tin nhắn' : forumName(key) ? `Trên ${forumName(key)}` : '', items: [c] });
+  }
+  /* the parts of this page, for the way through it at the side (and under the name on a narrow screen) */
+  const parts = [
+    chs.length > 0 && ['chuyen', 'Câu chuyện'], hasNumbers && ['con-so', 'Những con số'], eps.length > 0 && ['khoanh-khac', 'Những khoảnh khắc'],
+    !!shared.data?.length && ['ky-uc', 'Trong ký ức của anh'], items.length > 0 && ['anh', 'Ảnh cùng nhau'], !!writings.data?.content.length && ['bai-viet', 'Bài viết'],
+    !!forums.data?.length && ['dien-dan', 'Trên diễn đàn'], chats.length > 0 && ['tin-nhan', 'Tin nhắn'],
+  ].filter(Boolean) as [string, string][];
 
   return (
-    <div className="wrap page" key={id}>
-      <section className="lanes">
-        <article className="story">
-          <Link className="back" to="/angels">← Angels</Link>
-          {p.period && <p className="kicker">{p.period}</p>}
-          <h1 className="story-name">{nameOf(p)}</h1>
-          <p className="story-meta">{[p.alternativeName, p.nickname && p.nickname !== nameOf(p) ? `“${p.nickname}”` : '', rel(p.relationshipType), platforms.join(' · ')].filter(Boolean).join(' · ')}</p>
-          {p.song && <p className="story-song">♪ {p.song}</p>}
-          {cover && <figure className="cover"><img className="zoom" src={cdn(cover, 1440)} alt="" onClick={() => items[0] && viewer.open(Math.max(0, items.findIndex(m => pic(m, true) === cover)))} /></figure>}
-          {intro && <div className="prose story-intro">{intro.split(/\n{2,}/).map((t, i) => <p key={i}>{t}</p>)}</div>}
+    <div className="page an" key={id}>
+      <header className={`mm-top an-top ${y ? `dated ${eraClass(y)}` : 'plain'}`}>
+        <div className="mm-top-in">
+          {y > 0 && <div className="mm-top-y"><b>{y}</b><span>Quen từ</span></div>}
+          <div className="mm-top-t">
+            <Link className="back" to={y ? `/angels#y-${y}` : '/angels'}>← Angels</Link>
+            {kicker && <span className="mm-k">{kicker}</span>}
+            <h1>{nameOf(p)}</h1>
+            {meta.length > 0 && <div className="mm-meta">{meta.map(x => <span key={x}>{x}</span>)}</div>}
+            <div className="an-acts">
+              {chats.length === 1 && <Link className="an-btn main" to={`/angels/${id}/chat/${chats[0].id}`}>Đọc tin nhắn</Link>}
+              {chats.length > 1 && <a className="an-btn main" href="#tin-nhan">Đọc tin nhắn</a>}
+              {items.length > 0 && <Link className="an-btn" to={`/photos?person=${id}`}>Xem ảnh</Link>}
+            </div>
+          </div>
+          {portrait && <figure className="an-top-face"><span className="tape" aria-hidden="true" /><img src={cdn(portrait, 480)} alt="" /></figure>}
+        </div>
+      </header>
+      {parts.length > 1 && <nav className="an-jump" aria-label="Các phần của trang">{parts.map(([k2, n]) => <a key={k2} href={`#${k2}`}>{n}</a>)}<a href="#thong-tin">Thông tin</a></nav>}
+      <div className="reader">
+        <article className="article">
+          {wide && <figure className="an-cover"><img src={cdn(wide, 1440)} alt="" onClick={() => items[0] && viewer.open(Math.max(0, items.findIndex(m => pic(m, true) === wide)))} /></figure>}
+          {intro && <div className="prose an-intro">{paras(intro)}</div>}
 
-          {chs.map(c => (
-            <section key={c.id} className={c.sentiment === 'gap' ? 'chapter gap' : 'chapter'}>
-              {c.period && <div className="when">{c.period}</div>}
-              {c.title && <h2>{c.title}</h2>}
-              {c.summary && <div className="prose">{c.summary.split(/\n{2,}/).map((t, i) => <p key={i}>{t}</p>)}</div>}
-              {c.sentiment !== 'gap' && <ChapterPhotos personId={id} period={c.period} onOpen={openById} />}
-            </section>))}
+          {chs.length > 0 && <div id="chuyen" className="an-story">
+            {chs.length > 3 && <details className="an-toc" open={toc} onToggle={e => setToc((e.currentTarget as HTMLDetailsElement).open)}>
+              <summary>Các chương</summary>
+              <div className="an-toc-in">{runs.map(r => (
+                <div key={r.key}>{r.label && <h3>{r.label}</h3>}
+                  <ol>{r.items.map(c => <li key={c.id}><a href={`#ch-${c.id}`}><span>{c.period}</span><b>{c.title || 'Không tên'}</b></a></li>)}</ol></div>))}</div>
+            </details>}
+            {runs.map(r => (
+              <div key={r.key} className="an-run">
+                {r.label && <h2 className="an-h">{r.label}</h2>}
+                {r.items.map(c => (
+                  <section key={c.id} id={`ch-${c.id}`} className={c.sentiment === 'gap' ? 'an-ch gap' : 'an-ch'}>
+                    {c.period && <span className="an-when">{c.period}</span>}
+                    {c.title && <h3>{c.title}</h3>}
+                    {c.summary && <div className="prose">{paras(c.summary)}</div>}
+                    {c.sentiment !== 'gap' && <ChapterPhotos personId={id} period={c.period} onOpen={openById} />}
+                  </section>))}
+              </div>))}
+          </div>}
 
-          {(notes.length > 0 || style.length > 0) && <section className="block notes">
-            {notes.length > 0 && <><div className="hd"><h2>Ghi chép</h2><span>{notes.length}</span></div>
-              <ul className="prose">{notes.map(f => <li key={f.id}>{f.value}</li>)}</ul></>}
-            {style.length > 0 && <><div className="hd"><h2>Cách hai người nói chuyện</h2></div>
-              <ul className="prose">{style.map(f => <li key={f.id}>{f.value}</li>)}</ul></>}
-          </section>}
+          {notes.length > 0 && <><h2 className="an-h">Ghi chép</h2><ul className="an-notes">{notes.map(f => <li key={f.id}>{f.value}</li>)}</ul></>}
+          {style.length > 0 && <><h2 className="an-h">Cách hai người nói chuyện</h2><ul className="an-notes">{style.map(f => <li key={f.id}>{f.value}</li>)}</ul></>}
 
-          <PersonNumbers entries={rankings.data ?? []} name={nameOf(p)} activity={chatStats.data} />
+          {hasNumbers && <div id="con-so" className="an-part"><PersonNumbers entries={rankings.data ?? []} name={nameOf(p)} activity={chatStats.data} /></div>}
 
-          {eps.length > 0 && <section className="block"><div className="hd"><h2>Những khoảnh khắc</h2><span>{eps.length}</span></div>
-            <ol className="episodes">{eps.map(e => (
+          {eps.length > 0 && <><h2 className="an-h" id="khoanh-khac">Những khoảnh khắc</h2>
+            <ol className="an-eps">{eps.map(e => (
               <li key={e.id} className={(e.importance ?? 0) >= 4 ? 'big' : ''}>
                 <time>{momentDate(e.occurredAt)}</time>
-                <p>{e.summary}</p>{e.emotion && <span className="emo">{e.emotion}</span>}
-              </li>))}</ol></section>}
+                <p>{e.summary}{e.emotion && <i>{e.emotion}</i>}</p>
+              </li>))}</ol></>}
 
-          {!!shared.data?.length && <section className="block"><div className="hd"><h2>Trong ký ức của anh</h2><span>{shared.data.length}</span></div>
-            <ol className="episodes">{shared.data.map(e => (
-              <li key={e.id} className={(e.importance ?? 0) >= 7 ? 'big' : ''}>
-                <time>{[memoryWhen(e), kindName(e.kind)].filter(Boolean).join(' · ')}</time>
-                <p><Link to={memoryHref(e)}>{e.title || e.summary}</Link></p>
-              </li>))}</ol></section>}
+          {!!shared.data?.length && <><h2 className="an-h" id="ky-uc">Trong ký ức của anh</h2>
+            <div className="an-rows">{shared.data.map(e => (
+              <Link key={e.id} className="mm-line" to={memoryHref(e)}>
+                <span className="mm-d">{memoryWhen(e)}</span>
+                <span className="mm-b"><b>{e.title || e.summary}</b>{e.kind && <small><i className={`k-${e.kind}`}>{kindName(e.kind)}</i></small>}</span>
+              </Link>))}</div></>}
 
-          {items.length > 0 && <section className="block"><div className="hd"><h2>Ảnh cùng nhau</h2><span>{fmt(photos.data?.totalElements ?? items.length)}</span><Link to={`/photos?person=${id}`} style={{ ['--c' as string]: 'var(--angels)' }}>Xem tất cả</Link></div>
-            <Justified items={items} rowHeight={180} gap={6} onOpen={viewer.open} /></section>}
+          {items.length > 0 && <><h2 className="an-h" id="anh">Ảnh cùng nhau<Link to={`/photos?person=${id}`}>Xem tất cả</Link></h2>
+            <Justified items={items} rowHeight={180} gap={6} onOpen={viewer.open} /></>}
 
-          {!!writings.data?.content.length && <section className="block"><div className="hd"><h2>Bài viết</h2><span>{writings.data.totalElements}</span></div>
-            <ol className="writings">{[...writings.data.content].sort((a, b) => (a.writtenAt ?? a.createdAt ?? '').localeCompare(b.writtenAt ?? b.createdAt ?? '')).map(w => (
-              <li key={w.id}><Link to={w.slug ? `/journal/${w.slug}` : `/journal/id/${w.id}`}><b>{w.title || 'Không tiêu đề'}</b>
-                <small>{[dayMonthYear(vnClock(w.writtenAt ?? w.createdAt)), w.series].filter(Boolean).join(' · ')}</small></Link></li>))}</ol></section>}
+          {!!writings.data?.content.length && <><h2 className="an-h" id="bai-viet">Bài viết</h2>
+            <div className="an-rows">{[...writings.data.content].sort((a, b) => (a.writtenAt ?? a.createdAt ?? '').localeCompare(b.writtenAt ?? b.createdAt ?? '')).map(w => (
+              <Link key={w.id} className="mm-line" to={w.slug ? `/journal/${w.slug}` : `/journal/id/${w.id}`}>
+                <span className="mm-d">{dayMonthYear(vnClock(w.writtenAt ?? w.createdAt))}</span>
+                <span className="mm-b"><b>{w.title || 'Không tiêu đề'}</b>{w.series && <small>{w.series}</small>}</span>
+              </Link>))}</div></>}
 
-          {!!forums.data?.length && <section className="block"><div className="hd"><h2>Trên diễn đàn</h2>
-            <span>{forums.data.map(f => `${f.forumName}: ${fmt(f.postCount)} bài`).join(' · ')}</span>
-            {forums.data.map(f => <Link key={f.forumKey} to={`/forum/${f.forumKey}?tab=posts&person=${id}`} style={{ ['--c' as string]: 'var(--forum)' }}>Xem tất cả</Link>)}</div>
-            <p className="hush-note">{forums.data.map(f => `${f.nicks}${f.firstAt ? ` · ${dayMonthYear(f.firstAt)} – ${dayMonthYear(f.lastAt)}` : ''}`).join(' · ')}</p>
-            {forumPosts.data && <PostHits rows={forumPosts.data.content} showPerson={false} />}</section>}
+          {!!forums.data?.length && <><h2 className="an-h" id="dien-dan">Trên diễn đàn{forums.data.map(f => <Link key={f.forumKey} className="forum" to={`/forum/${f.forumKey}?tab=posts&person=${id}`}>Mọi bài ở {f.forumName.replace(/\s*\(.*\)$/, '')}</Link>)}</h2>
+            <p className="an-note">{forums.data.map(f => `${f.nicks}${f.firstAt ? `, ${dayMonthYear(f.firstAt)} – ${dayMonthYear(f.lastAt)}` : ''}`).join(' · ')}</p>
+            {forumPosts.data && <PostHits rows={forumPosts.data.content} showPerson={false} />}</>}
 
-          {!!archives.data?.length && <section className="block"><div className="hd"><h2>Tin nhắn</h2><span>{archives.data.length} kho</span></div>
-            <div className="chatlist">{archives.data.map(a => (
-              <Link key={a.id} className="card chatcard" to={`/angels/${id}/chat/${a.id}`}>
-                <span className="plat">{a.platform}</span><b>{a.title || `${a.platform} với ${nameOf(p)}`}</b>
-                <small>{fmt(a.messageCount)} tin nhắn{a.dateFrom ? ` · ${dayMonthYear(vnClock(a.dateFrom))}${a.dateTo ? ` – ${dayMonthYear(vnClock(a.dateTo))}` : ''}` : ''}</small>
-              </Link>))}</div></section>}
+          {chats.length > 0 && <><h2 className="an-h" id="tin-nhan">Tin nhắn</h2>
+            <div className="an-rows">{chats.map(a => (
+              <Link key={a.id} className="mm-line an-chatrow" to={`/angels/${id}/chat/${a.id}`}>
+                <span className="mm-d">{platformName(a.platform)}</span>
+                <span className="mm-b"><b>{a.title ? chatTitle(a.title, platformName(a.platform)) : `Với ${nameOf(p)}`}</b>
+                  {a.dateFrom && <small>{dayMonthYear(vnClock(a.dateFrom))}{a.dateTo ? ` – ${dayMonthYear(vnClock(a.dateTo))}` : ''}</small>}</span>
+                <small className="an-n">{fmt(a.messageCount)} tin</small>
+              </Link>))}</div></>}
 
-          {!chs.length && !eps.length && !intro && <p className="hush-note">Câu chuyện này chưa được viết — ảnh và tin nhắn bên dưới là những gì đang có.</p>}
+          {!chs.length && !eps.length && !intro && <p className="an-note">Câu chuyện này chưa được viết.</p>}
           <div className="pn">{prev ? <Link to={`/angels/${prev.id}`}><small>← Trước</small><b>{nameOf(prev)}</b></Link> : <span />}{next ? <Link to={`/angels/${next.id}`}><small>Tiếp theo →</small><b>{nameOf(next)}</b></Link> : <span />}</div>
         </article>
-        <aside className="rail">
-          <div className="card" style={{ ['--c' as string]: 'var(--angels)' }}><h3><i />Về {nameOf(p)}</h3>
+        <aside className="aside" id="thong-tin">
+          {known && <div><h5>Về {nameOf(p)}</h5>
             <dl className="facts">
               {p.firstMet && <div><dt>Gặp nhau</dt><dd>{dayMonthYear(p.firstMet)}</dd></div>}
               {p.dateOfBirth ? <div><dt>Sinh nhật</dt><dd>{dayMonthYear(p.dateOfBirth)}</dd></div>
@@ -190,19 +340,19 @@ export function PersonPage() {
               {owner && p.birthPlace && <div><dt>Nơi sinh</dt><dd>{p.birthPlace}</dd></div>}
               {p.song && <div><dt>Bài hát</dt><dd>{p.song}</dd></div>}
               {shortFacts.slice(0, 8).map(f => <div key={f.id}><dt>{f.key || f.category}</dt><dd>{f.value}</dd></div>)}
-              {p.totalMediaFiles != null && <div><dt>Ảnh</dt><dd>{fmt(p.totalMediaFiles)}</dd></div>}
-            </dl></div>
+            </dl></div>}
           {owner && <MysticBriefs personId={id} />}
-          {!!p.contacts?.length && <div className="card" style={{ ['--c' as string]: 'var(--angels)' }}><h3><i />Liên hệ</h3>
-            <dl className="facts">{CONTACT_ORDER.flatMap(k => p.contacts!.filter(c => c.platform === k)).concat(p.contacts.filter(c => !CONTACT_ORDER.includes(c.platform))).map(c => (
+          {!!p.contacts?.length && <div><h5>Liên hệ</h5>
+            <dl className="facts">{CONTACT_ORDER.flatMap(c => p.contacts!.filter(x => x.platform === c)).concat(p.contacts.filter(c => !CONTACT_ORDER.includes(c.platform))).map(c => (
               <div key={c.id}><dt>{CONTACT_LABEL[c.platform] ?? c.platform}</dt>
                 <dd>{c.platform === 'PHONE' ? <a href={`tel:${c.identifier}`}>{c.identifier}</a> : c.platform === 'FACEBOOK' && !/\s/.test(c.identifier) ? <a href={`https://www.facebook.com/${c.identifier}`} target="_blank" rel="noreferrer">{c.displayName || c.identifier}</a> : c.identifier}
-                  {c.notes && <small style={{ display: 'block', opacity: .6 }}>{c.notes}</small>}</dd></div>))}</dl></div>}
-          {!!traits.data?.length && <div className="card" style={{ ['--c' as string]: 'var(--angels)' }}><h3><i />Tính cách</h3>
-            <div className="chips">{traits.data.map(t => <span key={t.id} className="chip" title={t.description ?? ''}>{t.trait}</span>)}</div></div>}
+                  {c.notes && <small>{c.notes}</small>}</dd></div>))}</dl></div>}
+          {!!traits.data?.length && <div><h5>Tính cách</h5>
+            <div className="an-traits">{traits.data.map(t => <span key={t.id} title={t.description ?? ''}>{t.trait}</span>)}</div></div>}
           <LineCard people={[p]} />
+          {parts.length > 1 && <nav className="an-here" aria-label="Các phần của trang"><h5>Trong trang này</h5>{parts.map(([k2, n]) => <a key={k2} href={`#${k2}`}>{n}</a>)}</nav>}
         </aside>
-      </section>
+      </div>
       {viewer.element}
     </div>
   );
@@ -254,7 +404,7 @@ export function ChatReader() {
     queryFn: () => hub.chatAttachments(id, archiveId, pg.content.map(m => m.id)).catch(() => [] as ChatAttachment[]) })) });
   const atts = useMemo(() => {
     const by = new Map<string, ChatAttachment[]>();
-    for (const q of attPages) for (const x of q.data ?? []) { const l = by.get(x.messageId); if (l) l.push(x); else by.set(x.messageId, [x]); }
+    for (const x of attPages) for (const y of x.data ?? []) { const l = by.get(y.messageId); if (l) l.push(y); else by.set(y.messageId, [y]); }
     return by;
   }, [attPages]);
   const names = useMemo(() => [p?.name, p?.displayName, p?.nickname, p?.alternativeName].filter(Boolean).map(x => fold(x!)), [p]);
@@ -263,16 +413,21 @@ export function ChatReader() {
   const isThem = (m: ChatMessage) => (m.senderType ? m.senderType !== 'SELF' : names.some(n => fold(m.sender).includes(n) || n.includes(fold(m.sender))));
   const more = useCallback(() => { if (inf.hasNextPage && !inf.isFetchingNextPage) inf.fetchNextPage(); }, [inf]);
   const mark = (text: string) => { if (!dq) return text; const i = fold(text).indexOf(fold(dq)); return i < 0 ? text : <>{text.slice(0, i)}<mark>{text.slice(i, i + dq.length)}</mark>{text.slice(i + dq.length)}</>; };
+  const span = a?.dateFrom ? `${dayMonthYear(vnClock(a.dateFrom))}${a.dateTo ? ` – ${dayMonthYear(vnClock(a.dateTo))}` : ''}` : '';
   return (
-    <div className="wrap page transcript-page">
-      <Link className="back" to={`/angels/${id}`}>← {p ? nameOf(p) : 'Angels'}</Link>
-      <div className="ptitle"><h1>{a?.title || (a && p ? `${a.platform} với ${nameOf(p)}` : 'Tin nhắn')}</h1>
-        <span>{a ? `${a.platform} · ${fmt(dq ? total : a.messageCount)} tin nhắn${dq ? ' khớp' : ''}` : ''}</span>
-        <div className="seg"><a className={media ? '' : 'on'} onClick={() => tab(false)}>Tin nhắn</a><a className={media ? 'on' : ''} onClick={() => tab(true)}>Ảnh &amp; file</a></div>
-        {!media && <input className="finput" value={q} onChange={e => setQ(e.target.value)} placeholder="Tìm trong cuộc trò chuyện…" />}</div>
+    <div className="wrap page an an-chat">
+      <header className="an-chat-top">
+        <Link className="back" to={`/angels/${id}`}>← {p ? nameOf(p) : 'Angels'}</Link>
+        <h1>{a?.title ? chatTitle(a.title, platformName(a.platform)) : p ? `Với ${nameOf(p)}` : 'Tin nhắn'}</h1>
+        <p>{a ? [platformName(a.platform), dq ? `${fmt(total)} tin nhắn khớp` : span].filter(Boolean).join(' · ') : ''}</p>
+        <div className="an-chat-tools">
+          <div className="seg"><a className={media ? '' : 'on'} onClick={() => tab(false)}>Tin nhắn</a><a className={media ? 'on' : ''} onClick={() => tab(true)}>Ảnh &amp; file</a></div>
+          {!media && <input className="finput" value={q} onChange={e => setQ(e.target.value)} placeholder="Tìm trong cuộc trò chuyện…" />}
+        </div>
+      </header>
       {media ? <AttachmentGallery personId={id} archiveId={archiveId} onOpen={setShown} /> : <div className="transcript">
-        {inf.isLoading && <div className="card empty">Đang mở cuộc trò chuyện…</div>}
-        {!inf.isLoading && !msgs.length && <div className="card empty">{dq ? 'Không có tin nhắn nào khớp.' : 'Kho này chưa có tin nhắn.'}</div>}
+        {inf.isLoading && <p className="jn-wait">Đang mở cuộc trò chuyện…</p>}
+        {!inf.isLoading && !msgs.length && <p className="jn-wait">{dq ? 'Không có tin nhắn nào khớp.' : 'Kho này chưa có tin nhắn.'}</p>}
         {inf.hasPreviousPage && <button type="button" className="older" onClick={() => inf.fetchPreviousPage()} disabled={inf.isFetchingPreviousPage}>{inf.isFetchingPreviousPage ? 'Đang mở…' : '↑ Tin nhắn trước đó'}</button>}
         {msgs.map((m, i) => {
           /* stored in UTC, read on Vietnam's clock; a line known only to its day shows no time */

@@ -81,6 +81,8 @@ export const hub = {
   chatBoard: () => get<ChatBoard>('/chat-stats'),
   /** Every list of one board with its rows, oldest first; metrics (heavy) only when asked for. */
   rankingBoard: (board: string, metrics = false) => get<RankingDetail[]>(`/rankings/board/${encodeURIComponent(board)}`, { metrics: metrics || undefined }),
+  /** One column of a board's sheets per person ({personId: value}), each from the latest sheet that has them. */
+  rankingColumn: (board: string, key: string) => get<Record<string, string>>(`/rankings/board/${encodeURIComponent(board)}/column/${encodeURIComponent(key)}`),
   total: async (p: Search) => (await hub.search({ ...p, size: 1 })).totalElements,
   tagStats: () => get<TagStats[]>('/tags/stats'),
   allAlbums: () => get<Collection[]>('/collections/all', { inclMediaCount: true, inclChildrenCount: true, inclTags: true }),
@@ -89,9 +91,10 @@ export const hub = {
   media: (id: string) => get<MediaFile>(`/media-files/${id}`),
 };
 
-/** One real line from an old conversation: a random archive, a random spot, the longest of a few lines there. */
+/** One real line from an old conversation: a random archive, a random spot, the longest of a few lines there.
+ *  Not everyone has a conversation kept: a few people are tried before giving up. */
 export async function randomLine(people: Person[]): Promise<{ text: string; who: string; platform: string; at?: string | null } | null> {
-  for (const p of [...people].sort(() => Math.random() - .5).slice(0, 3)) {
+  for (const p of [...people].sort(() => Math.random() - .5).slice(0, 6)) {
     const archives = (await hub.archives(p.id).catch(() => [] as ChatArchive[])).filter(a => a.messageCount > 0);
     if (!archives.length) continue;
     const a = archives[Math.floor(Math.random() * archives.length)], size = 6;

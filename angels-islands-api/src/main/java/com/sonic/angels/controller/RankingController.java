@@ -30,6 +30,11 @@ public class RankingController {
         return rankingService.board(board, metrics);
     }
 
+    /** One column of a board's sheets per person, {personId: value}, each from the latest sheet that has them:
+     *  "year" of the relationship board is the year he got to know them (the Angels page files people under it). */
+    @GetMapping("/api/rankings/board/{board}/column/{key}")
+    public Map<UUID, String> column(@PathVariable String board, @PathVariable String key) { return rankingService.column(board, key); }
+
     @GetMapping("/api/persons/{personId}/rankings")
     public List<RankingDto.PersonEntry> forPerson(@PathVariable UUID personId) { return rankingService.forPerson(personId); }
 

@@ -7,5 +7,7 @@ import './styles/shell.css';
 import './styles/home.css';
 import './styles/sections.css';
 import './styles/games.css';
+import './styles/angels.css';
+import './styles/forum.css';
 
 ReactDOM.createRoot(document.getElementById('root')!).render(<React.StrictMode><App /></React.StrictMode>);

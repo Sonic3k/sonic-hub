@@ -98,7 +98,6 @@ html { scroll-padding-top: calc(var(--top) + 24px); }
 .rail { top: calc(var(--top) + 24px); }
 .month { top: var(--top); }
 .aside { top: calc(var(--top) + 32px); }
-body.mood-angels { --bg: #F8F1F3; --soft: #F1E5E9; --line: #E4D3D9; --card: #FFFCFD; }
 
 .tabbar, .more-back, .side-btn, .side-x, .side-back { display: none; }
 
