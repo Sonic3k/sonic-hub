@@ -1,6 +1,7 @@
 /* Add / edit one memory (episode): what happened, when and where as far as it is known, and what belongs to it —
    its photos (the first is the cover), albums, tags and the people who were there. */
 import { useState } from 'react'
+import { useQuery } from '@tanstack/react-query'
 import { ArrowLeft, ArrowRight, FolderOpen, ImagePlus, Plus, Tag as TagIcon, Trash2, UserPlus, X } from 'lucide-react'
 import clsx from 'clsx'
 import { Button, Input, Modal, Textarea } from '../ui'
@@ -19,13 +20,32 @@ const thumb = (url?: string) => (url ? `${url.split('?')[0]}?width=300` : '')
 
 type PersonRef = { id: string; name: string; displayName?: string }
 
-export default function EpisodeEditor({ personId, item, onSaved, onDeleted, onClose }: {
+type Props = {
   personId: string
   item?: EpisodeResponse
   onSaved: (e: EpisodeResponse) => void
   onDeleted?: () => void
   onClose: () => void
-}) {
+}
+
+/* A memory taken from a list does not carry all of its links (a list gets only the ones it asks the API for), and
+   this form writes every link back on save. So editing never starts from the list's copy: the whole memory is read
+   here by its id first, and the form opens on that. */
+export default function EpisodeEditor(props: Props) {
+  const id = props.item?.id
+  const whole = useQuery({
+    queryKey: ['episode', props.personId, id], queryFn: () => memoryApi.getEpisode(props.personId, id!),
+    enabled: !!id, staleTime: 0, gcTime: 0, refetchOnWindowFocus: false,
+  })
+  if (id && !whole.data) return (
+    <Modal title="Edit memory" size="xl" onClose={props.onClose}>
+      <p className="text-sm text-slate-400 py-10 text-center">{whole.isError ? 'This memory could not be loaded — close and try again.' : 'Loading…'}</p>
+    </Modal>
+  )
+  return <EpisodeForm {...props} item={id ? whole.data : undefined} />
+}
+
+function EpisodeForm({ personId, item, onSaved, onDeleted, onClose }: Props) {
   const editing = !!item
   const d = item?.occurredAt ?? ''
   const [title, setTitle] = useState(item?.title ?? '')

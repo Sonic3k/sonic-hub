@@ -49,9 +49,16 @@ public class MemoryService {
                                UUID mediaId, UUID collectionId, LocalDate from, LocalDate to, Integer minImportance,
                                boolean oldestFirst) {}
 
+    private static final UUID NIL_UUID = new UUID(0, 0);
+    private static UUID orNil(UUID id) { return id != null ? id : NIL_UUID; }
+
+    /** A person's memories, with the links inc asks for and no others (a list asks for what it shows). */
     @Transactional(readOnly = true)
-    public List<MemoryDto.EpisodeResponse> episodes(UUID personId, EpisodeQuery f) {
-        List<Episode> all = episodeRepo.findByPersonIdOrderByOccurredAtDesc(personId);
+    public List<MemoryDto.EpisodeResponse> episodes(UUID personId, EpisodeQuery f, MemoryDto.Includes inc) {
+        // "linked to this tag / person / photo / album" is answered by the database, so no link is read to filter
+        List<Episode> all = f == null ? episodeRepo.findByPersonIdOrderByOccurredAtDesc(personId)
+            : episodeRepo.findLinked(personId, f.tagId() != null, orNil(f.tagId()), f.personId() != null, orNil(f.personId()),
+                f.mediaId() != null, orNil(f.mediaId()), f.collectionId() != null, orNil(f.collectionId()));
         // a query typed with its marks ("cờ") matches them exactly; one typed without ("co") matches any marks
         boolean marks = f != null && f.q() != null && !fold(f.q()).equals(lower(f.q()));
         List<String> words = f == null || f.q() == null ? List.of() : words(marks ? lower(f.q()) : fold(f.q()));
@@ -67,7 +74,7 @@ public class MemoryService {
             hits = new ArrayList<>(hits);
             hits.sort(Comparator.comparing(score::get, Comparator.reverseOrder()));
         }
-        return hits.stream().map(mapper::toEpisodeResponseWithLinks).toList();
+        return hits.stream().map(e -> mapper.toEpisodeResponse(e, inc)).toList();
     }
 
     @Transactional(readOnly = true)
@@ -177,10 +184,7 @@ public class MemoryService {
         if (f.minImportance() != null && (e.getImportance() == null || e.getImportance() < f.minImportance())) return false;
         if (f.from() != null && (e.getOccurredAt() == null || lastDay(e).isBefore(f.from()))) return false;
         if (f.to() != null && (e.getOccurredAt() == null || e.getOccurredAt().toLocalDate().isAfter(f.to()))) return false;
-        if (f.tagId() != null && e.getTags().stream().noneMatch(t -> f.tagId().equals(t.getId()))) return false;
-        if (f.personId() != null && e.getPersons().stream().noneMatch(p -> f.personId().equals(p.getId()))) return false;
-        if (f.mediaId() != null && e.getMediaFiles().stream().noneMatch(m -> m != null && f.mediaId().equals(m.getId()))) return false;
-        if (f.collectionId() != null && e.getCollections().stream().noneMatch(c -> f.collectionId().equals(c.getId()))) return false;
+        // tagId, personId, mediaId, collectionId: already applied by the query (EpisodeRepository.findLinked)
         if (words.isEmpty()) return true;
         String text = haystack(e);
         List<String> tokens = words(marks ? lower(text) : fold(text));
@@ -243,15 +247,17 @@ public class MemoryService {
     // ── Random memory ────────────────────────────────────────────────────────
 
     /** count memories picked at random: first a kind of memory (episode, fact, chapter, trait — each as likely,
-     *  among those that have any), then one item of it; no item twice. status / minImportance narrow the pool. */
+     *  among those that have any), then one item of it; no item twice. status / minImportance narrow the pool.
+     *  An episode comes with the links inc asks for. */
     @Transactional(readOnly = true)
-    public List<MemoryDto.RandomItem> random(UUID personId, int count, Set<String> types, String status, Integer minImportance) {
+    public List<MemoryDto.RandomItem> random(UUID personId, int count, Set<String> types, String status, Integer minImportance,
+                                             MemoryDto.Includes inc) {
         MemoryStatus st = status == null || status.isBlank() ? null : status(status);
         Map<String, List<?>> pools = new LinkedHashMap<>();
+        // episodes are picked by id and only the picked ones are read: a person has hundreds, each with its links
         if (wants(types, "episode"))
-            pools.put("episode", new ArrayList<>(episodeRepo.findByPersonIdOrderByOccurredAtDesc(personId).stream()
-                .filter(e -> st == null || st == e.getStatus())
-                .filter(e -> minImportance == null || (e.getImportance() != null && e.getImportance() >= minImportance)).toList()));
+            pools.put("episode", new ArrayList<>(episodeRepo.idsForPick(personId, st == null, st != null ? st : MemoryStatus.CONFIRMED,
+                minImportance == null, minImportance != null ? minImportance : 0)));
         if (wants(types, "fact"))
             pools.put("fact", new ArrayList<>(factRepo.findByPersonId(personId).stream().filter(x -> st == null || st == x.getStatus()).toList()));
         if (wants(types, "chapter"))
@@ -260,6 +266,7 @@ public class MemoryService {
             pools.put("trait", new ArrayList<>(traitRepo.findByPersonId(personId).stream().filter(x -> st == null || st == x.getStatus()).toList()));
         ThreadLocalRandom rnd = ThreadLocalRandom.current();
         List<MemoryDto.RandomItem> out = new ArrayList<>();
+        Map<UUID, MemoryDto.RandomItem> episodes = new HashMap<>();
         int n = Math.max(1, Math.min(count, 50));
         while (out.size() < n) {
             List<String> left = pools.entrySet().stream().filter(x -> !x.getValue().isEmpty()).map(Map.Entry::getKey).toList();
@@ -269,13 +276,14 @@ public class MemoryService {
             Object item = pool.remove(rnd.nextInt(pool.size()));
             MemoryDto.RandomItem r = new MemoryDto.RandomItem(); r.setType(type);
             switch (type) {
-                case "episode" -> r.setEpisode(mapper.toEpisodeResponseWithLinks((Episode) item));
+                case "episode" -> episodes.put((UUID) item, r);
                 case "fact" -> r.setFact(mapper.toFactResponse((Fact) item));
                 case "chapter" -> r.setChapter(mapper.toChapterResponse((LifeChapter) item));
                 default -> r.setTrait(mapper.toTraitResponse((PersonalityTrait) item));
             }
             out.add(r);
         }
+        for (Episode e : episodeRepo.findAllById(episodes.keySet())) episodes.get(e.getId()).setEpisode(mapper.toEpisodeResponse(e, inc));
         return out;
     }
 

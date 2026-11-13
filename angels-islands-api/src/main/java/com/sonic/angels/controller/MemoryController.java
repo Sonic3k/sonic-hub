@@ -32,14 +32,21 @@ public class MemoryController {
         this.personRepo = personRepo; this.mapper = mapper; this.memoryImport = memoryImport; this.memory = memory;
     }
 
-    /** Memories picked at random across kinds: types = episode,fact,chapter,trait (all when left out). */
+    /** Memories picked at random across kinds: types = episode,fact,chapter,trait (all when left out).
+     *  An episode comes without its links unless asked: the incl* parameters, as on GET …/episodes. */
     @GetMapping("/random")
     public List<MemoryDto.RandomItem> random(@PathVariable UUID personId,
                                              @RequestParam(defaultValue = "1") int count,
                                              @RequestParam(required = false) java.util.Set<String> types,
                                              @RequestParam(required = false) String status,
-                                             @RequestParam(required = false) Integer minImportance) {
-        return memory.random(personId, count, types, status, minImportance);
+                                             @RequestParam(required = false) Integer minImportance,
+                                             @RequestParam(defaultValue = "false") boolean inclMedia,
+                                             @RequestParam(defaultValue = "false") boolean inclCollections,
+                                             @RequestParam(defaultValue = "false") boolean inclTags,
+                                             @RequestParam(defaultValue = "false") boolean inclPersons,
+                                             @RequestParam(defaultValue = "false") boolean inclSources) {
+        return memory.random(personId, count, types, status, minImportance,
+            new MemoryDto.Includes(inclMedia, inclCollections, inclTags, inclPersons, inclSources));
     }
 
     /** Replace everything one source wrote for this person (e.g. "analysis"); memory typed in by hand is never touched. */
@@ -78,7 +85,10 @@ public class MemoryController {
     public ResponseEntity<Void> deleteFact(@PathVariable UUID id) { factRepo.deleteById(id); return ResponseEntity.noContent().build(); }
 
     /** All episodes, newest first; each filter is optional. q matches words anywhere (title, summary, place, tags,
-     *  people, album names, photo captions), without minding Vietnamese marks. from / to = yyyy-MM-dd. */
+     *  people, album names, photo captions), without minding Vietnamese marks. from / to = yyyy-MM-dd.
+     *  A memory comes without its links unless asked: inclMedia (media, mediaIds), inclCollections, inclTags,
+     *  inclPersons, inclSources (sourceViews). The event's title comes only with a single memory (…/episodes/{id}),
+     *  which always carries everything. */
     @GetMapping("/episodes")
     public List<MemoryDto.EpisodeResponse> getEpisodes(@PathVariable UUID personId,
             @RequestParam(required = false) String q, @RequestParam(required = false) String kind,
@@ -86,9 +96,13 @@ public class MemoryController {
             @RequestParam(required = false) UUID tagId, @RequestParam(required = false) UUID withPersonId,
             @RequestParam(required = false) UUID mediaId, @RequestParam(required = false) UUID collectionId,
             @RequestParam(required = false) java.time.LocalDate from, @RequestParam(required = false) java.time.LocalDate to,
-            @RequestParam(required = false) Integer minImportance, @RequestParam(defaultValue = "false") boolean oldestFirst) {
+            @RequestParam(required = false) Integer minImportance, @RequestParam(defaultValue = "false") boolean oldestFirst,
+            @RequestParam(defaultValue = "false") boolean inclMedia, @RequestParam(defaultValue = "false") boolean inclCollections,
+            @RequestParam(defaultValue = "false") boolean inclTags, @RequestParam(defaultValue = "false") boolean inclPersons,
+            @RequestParam(defaultValue = "false") boolean inclSources) {
         return memory.episodes(personId, new MemoryService.EpisodeQuery(q, kind, status, source, tagId, withPersonId,
-            mediaId, collectionId, from, to, minImportance, oldestFirst));
+            mediaId, collectionId, from, to, minImportance, oldestFirst),
+            new MemoryDto.Includes(inclMedia, inclCollections, inclTags, inclPersons, inclSources));
     }
 
     @GetMapping("/episodes/{id}")

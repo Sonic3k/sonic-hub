@@ -8,6 +8,12 @@ export interface Search {
   page?: number; size?: number; sortBy?: string; sortDir?: 'asc' | 'desc'; inclPersons?: boolean; inclTags?: boolean;
 }
 
+/** The links a list of memories can carry. The API sends none unless asked, so each list asks for what it shows;
+ *  a single memory (hub.episode) always comes whole. */
+export type MemoryLinks = { inclMedia?: boolean; inclCollections?: boolean; inclTags?: boolean; inclPersons?: boolean; inclSources?: boolean };
+/** what a memory's card shows: its cover photo, who was there, its tags */
+export const MEMORY_CARD: MemoryLinks = { inclMedia: true, inclPersons: true, inclTags: true };
+
 export const hub = {
   games: () => get<GameCard[]>('/games'),
   game: (key: string) => get<GameDetail>(`/games/${encodeURIComponent(key)}`),
@@ -58,11 +64,12 @@ export const hub = {
   person: (id: string) => get<PersonDetail>(`/persons/${id}`),
   mysticBriefs: (id: string) => get<MysticBrief[]>(`/persons/${id}/mystic-briefs`),
   facts: (id: string) => get<Fact[]>(`/persons/${id}/memory/facts`),
-  /** one person's memories, newest first; q = words anywhere (marks optional), best match first */
-  episodes: (id: string, p?: { q?: string; kind?: string; tagId?: string; withPersonId?: string; oldestFirst?: boolean; source?: string }) => get<Episode[]>(`/persons/${id}/memory/episodes`, p),
+  /** one person's memories, newest first; q = words anywhere (marks optional), best match first.
+   *  Without links (media, people, tags, albums, sources) unless p asks for them — see MemoryLinks. */
+  episodes: (id: string, p?: { q?: string; kind?: string; tagId?: string; withPersonId?: string; oldestFirst?: boolean; source?: string } & MemoryLinks) => get<Episode[]>(`/persons/${id}/memory/episodes`, p),
   episode: (personId: string, id: string) => get<Episode>(`/persons/${personId}/memory/episodes/${id}`),
   /** memories picked at random; types = episode,fact,chapter,trait */
-  randomMemory: (id: string, count = 1, types?: string) => get<RandomMemory[]>(`/persons/${id}/memory/random`, { count, types }),
+  randomMemory: (id: string, count = 1, types?: string, links?: MemoryLinks) => get<RandomMemory[]>(`/persons/${id}/memory/random`, { count, types, ...links }),
   chapters: (id: string) => get<Chapter[]>(`/persons/${id}/memory/chapters`),
   /** events (sự kiện) of the hub's owner, oldest first */
   events: () => get<LifeEvent[]>('/events'),

@@ -19,6 +19,29 @@ public interface EpisodeRepository extends JpaRepository<Episode, UUID> {
         "AND (:q = '' OR LOWER(COALESCE(e.title, '')) LIKE :q OR LOWER(e.summary) LIKE :q) ORDER BY e.occurredAt DESC")
     org.springframework.data.domain.Page<Episode> upTo(java.time.LocalDateTime t, String q, org.springframework.data.domain.Pageable page);
     List<Episode> findByPersonIdOrderByOccurredAtDesc(UUID personId);
+
+    /** A person's memories, newest first, narrowed in the database to those linked to a tag, a person, a photo or an
+     *  album (has… false: that link is not asked about, its id is a placeholder). */
+    @org.springframework.data.jpa.repository.Query("SELECT e FROM Episode e WHERE e.person.id = :personId " +
+        "AND (:hasTag = false OR EXISTS (SELECT 1 FROM e.tags t WHERE t.id = :tagId)) " +
+        "AND (:hasWith = false OR EXISTS (SELECT 1 FROM e.persons p WHERE p.id = :withId)) " +
+        "AND (:hasMedia = false OR EXISTS (SELECT 1 FROM e.mediaFiles m WHERE m.id = :mediaId)) " +
+        "AND (:hasCollection = false OR EXISTS (SELECT 1 FROM e.collections c WHERE c.id = :collectionId)) " +
+        "ORDER BY e.occurredAt DESC")
+    List<Episode> findLinked(@org.springframework.data.repository.query.Param("personId") UUID personId,
+        @org.springframework.data.repository.query.Param("hasTag") boolean hasTag, @org.springframework.data.repository.query.Param("tagId") UUID tagId,
+        @org.springframework.data.repository.query.Param("hasWith") boolean hasWith, @org.springframework.data.repository.query.Param("withId") UUID withId,
+        @org.springframework.data.repository.query.Param("hasMedia") boolean hasMedia, @org.springframework.data.repository.query.Param("mediaId") UUID mediaId,
+        @org.springframework.data.repository.query.Param("hasCollection") boolean hasCollection, @org.springframework.data.repository.query.Param("collectionId") UUID collectionId);
+
+    /** The ids of a person's memories that a random pick may take (status / minImportance null: any). */
+    @org.springframework.data.jpa.repository.Query("SELECT e.id FROM Episode e WHERE e.person.id = :personId " +
+        "AND (:anyStatus = true OR e.status = :status) AND (:anyImportance = true OR e.importance >= :minImportance)")
+    List<UUID> idsForPick(@org.springframework.data.repository.query.Param("personId") UUID personId,
+        @org.springframework.data.repository.query.Param("anyStatus") boolean anyStatus,
+        @org.springframework.data.repository.query.Param("status") com.sonic.angels.model.entity.MemoryStatus status,
+        @org.springframework.data.repository.query.Param("anyImportance") boolean anyImportance,
+        @org.springframework.data.repository.query.Param("minImportance") int minImportance);
     List<Episode> findByPersonIdAndImportanceGreaterThanEqual(UUID personId, Integer importance);
 
     // the four link tables: a bulk delete of episodes (below) skips them, and a deleted photo / album / tag / person

@@ -3,6 +3,9 @@ import type { FactResponse, FactRequest, EpisodeResponse, EpisodeRequest, Episod
 
 const base = (pid: string) => `/api/persons/${pid}`
 
+/** what a row of the memory list shows: its cover photo (and how many), who was there, its tags */
+export const MEMORY_CARD: EpisodeQuery = { inclMedia: true, inclPersons: true, inclTags: true }
+
 export const memoryApi = {
   getFacts: (pid: string) => api.get<FactResponse[]>(`${base(pid)}/memory/facts`).then(r => r.data),
   createFact: (pid: string, data: FactRequest) => api.post<FactResponse>(`${base(pid)}/memory/facts`, data).then(r => r.data),

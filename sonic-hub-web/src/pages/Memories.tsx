@@ -3,7 +3,7 @@
 import { useMemo, useRef, useState } from 'react';
 import { Link, useLocation, useParams, useSearchParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import { hub, periodYears } from '../api/hub';
+import { hub, MEMORY_CARD, periodYears } from '../api/hub';
 import { cdn } from '../api/client';
 import { fmt, usePersons } from '../lib/queries';
 import Justified from '../components/Justified';
@@ -26,12 +26,13 @@ export const kindName = (k?: string | null) => KINDS.find(x => x[0] === k)?.[1] 
 export const memoryHref = (e: { id: string }) => `/memories/${e.id}`;
 
 export const useSelf = () => usePersons().data?.find(p => p.isSelf);
-/** all your memories, oldest first (undated ones last) */
+/** all your memories, oldest first (undated ones last), each with what its card shows: cover photo, people, tags.
+ *  Its albums, its sources and its event's title come with the single memory (hub.episode), not with this list. */
 export function useMemories() {
   const self = useSelf();
   return useQuery({
     queryKey: ['memories', self?.id], enabled: !!self, staleTime: T,
-    queryFn: async () => (await hub.episodes(self!.id)).sort((a, b) => (a.occurredAt ?? '9999').localeCompare(b.occurredAt ?? '9999')),
+    queryFn: async () => (await hub.episodes(self!.id, MEMORY_CARD)).sort((a, b) => (a.occurredAt ?? '9999').localeCompare(b.occurredAt ?? '9999')),
   });
 }
 export const useLifeChapters = () => {
@@ -78,7 +79,7 @@ export function MemoriesIndex() {
   const [sp, setSp] = useSearchParams();
   const kind = sp.get('kind'), chapterId = sp.get('chapter'), year = Number(sp.get('year')), tag = sp.get('tag'), person = sp.get('person'), q = sp.get('q') ?? '', newest = sp.get('sort') === 'new';
   const [typed, setTyped] = useState(q);
-  const found = useQuery({ queryKey: ['memories-q', self?.id, q], enabled: !!self && !!q, staleTime: T, queryFn: () => hub.episodes(self!.id, { q }) });
+  const found = useQuery({ queryKey: ['memories-q', self?.id, q], enabled: !!self && !!q, staleTime: T, queryFn: () => hub.episodes(self!.id, { q, ...MEMORY_CARD }) });
   const chapter = chapters.data?.find(c => c.id === chapterId);
   const filtered = !!(kind || chapterId || year || tag || person || q);
   const base = q ? found.data ?? [] : all.data ?? [];

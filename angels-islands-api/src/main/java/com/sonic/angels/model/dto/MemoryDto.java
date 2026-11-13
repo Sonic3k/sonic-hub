@@ -5,6 +5,13 @@ import java.time.LocalDateTime;
 
 public class MemoryDto {
 
+    /** Which links a list of memories carries. Default none (slim); consumers opt in per call (the incl* parameters).
+     *  A single memory (GET …/episodes/{id}) always comes whole. */
+    public record Includes(boolean media, boolean collections, boolean tags, boolean persons, boolean sources) {
+        public static Includes none() { return new Includes(false, false, false, false, false); }
+        public static Includes all()  { return new Includes(true, true, true, true, true); }
+    }
+
     public static class FactRequest {
         private String source;
         public String getSource() { return source; } public void setSource(String v) { this.source = v; }

@@ -37,7 +37,8 @@ def call(method, path, body=None):
 
 def hub_state(source):
     """what the hub holds for one source, reduced to what a hand edit would change"""
-    eps = call("GET", f"/api/persons/{SELF}/memory/episodes?source={source}")
+    # the list carries only the links asked for: the photos, the people and the sources are compared below
+    eps = call("GET", f"/api/persons/{SELF}/memory/episodes?source={source}&inclMedia=true&inclPersons=true&inclSources=true")
     return dict(
         episodes={e.get("externalKey") or e["id"]: [e.get("title"), e.get("summary"), e.get("status"), e.get("kind"), e.get("place"),
                                                      e.get("importance"), [m["id"] for m in e.get("media") or []],
@@ -93,7 +94,7 @@ def edit(source):
     Only for the same set of memories — one added or dropped needs a push; chapters, facts and traits are left alone."""
     data = json.load(open(os.path.join(D, source + ".json")))
     want = {e["externalKey"]: e for e in data.get("episodes", [])}
-    have = {e.get("externalKey"): e for e in call("GET", f"/api/persons/{SELF}/memory/episodes?source={source}")}
+    have = {e.get("externalKey"): e for e in call("GET", f"/api/persons/{SELF}/memory/episodes?source={source}&inclMedia=true")}   # the photos are compared below
     if set(want) != set(have):
         print(f"[{source}] STOP: not the same memories as in the hub (only here: {sorted(set(want) - set(have))[:6]}, only there: "
               f"{sorted(str(k) for k in set(have) - set(want))[:6]}) — that takes a push, not an edit")
