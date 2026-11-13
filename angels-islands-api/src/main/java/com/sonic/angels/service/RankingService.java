@@ -61,6 +61,14 @@ public class RankingService {
         }).toList();
     }
 
+    /** One column of a board's sheets per person, from the latest sheet that has a value for them. */
+    @Transactional(readOnly = true)
+    public Map<UUID, String> column(String board, String key) {
+        Map<UUID, String> out = new HashMap<>();
+        for (Object[] row : entryRepo.latestColumn(board, key)) out.put((UUID) row[0], (String) row[1]);
+        return out;
+    }
+
     /** Every row this person has, in every ranking, with the ranking's header. */
     @Transactional(readOnly = true)
     public List<RankingDto.PersonEntry> forPerson(UUID personId) {

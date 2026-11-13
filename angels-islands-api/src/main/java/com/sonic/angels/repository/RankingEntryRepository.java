@@ -23,6 +23,15 @@ public interface RankingEntryRepository extends JpaRepository<RankingEntry, UUID
     @Query("SELECT e FROM RankingEntry e JOIN FETCH e.ranking r LEFT JOIN FETCH e.person WHERE r.board = :board ORDER BY e.sortOrder")
     List<RankingEntry> findByBoardWithPerson(@Param("board") String board);
 
+    /** [person_id, value]: one column of a board's sheets (a key of the rows' metrics) per person, as the latest sheet
+     *  that has a value for them gives it — "year" of the relationship board is the year he got to know each of them.
+     *  Re-scored copies of a sheet (variants) are left out; rows of someone with no page here have no person. */
+    @Query(value = "SELECT DISTINCT ON (e.person_id) e.person_id, e.metrics ->> :key " +
+        "FROM ranking_entries e JOIN rankings r ON r.id = e.ranking_id " +
+        "WHERE r.board = :board AND r.variant = '' AND e.person_id IS NOT NULL AND COALESCE(e.metrics ->> :key, '') <> '' " +
+        "ORDER BY e.person_id, r.taken_on DESC NULLS LAST, r.period DESC", nativeQuery = true)
+    List<Object[]> latestColumn(@Param("board") String board, @Param("key") String key);
+
     /** A person being deleted keeps their rows in old rankings, as a nick only. */
     @Modifying
     @Query("UPDATE RankingEntry e SET e.person = NULL WHERE e.person.id = :personId")
