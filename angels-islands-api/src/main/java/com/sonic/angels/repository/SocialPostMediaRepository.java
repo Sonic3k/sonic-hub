@@ -38,6 +38,14 @@ public interface SocialPostMediaRepository extends JpaRepository<SocialPostMedia
            SHOWN + " ORDER BY p.postedAt, pm.position")
     List<SocialPostMedia> ofAlbum(UUID albumId, UUID viewer, LocalDateTime t);
 
+    /** [album id, its first photo] for each of the albums: the photo ofAlbum would put first (earliest post, lowest
+     *  position), found for all of them in one statement — the cover of an album that has none of its own. */
+    @Query("SELECT p.album.id, pm FROM SocialPostMedia pm JOIN FETCH pm.mediaFile JOIN pm.post p WHERE p.album.id IN :albumIds" + SHOWN +
+           " AND NOT EXISTS (SELECT 1 FROM SocialPostMedia pm2 JOIN pm2.post p2 WHERE p2.album = p.album AND p2.postedAt <= :t" +
+           " AND (p2.audience IS NULL OR p2.audience <> com.sonic.angels.model.entity.SocialPost.Audience.ONLY_ME OR p2.author.id = :viewer)" +
+           " AND (p2.postedAt < p.postedAt OR (p2.postedAt = p.postedAt AND pm2.position < pm.position)))")
+    List<Object[]> firstOfAlbums(Collection<UUID> albumIds, UUID viewer, LocalDateTime t);
+
     /** album id, photo count, newest post time — for the album list. */
     @Query("SELECT p.album.id, COUNT(pm), MAX(p.postedAt) FROM SocialPostMedia pm JOIN pm.post p WHERE p.album.id IN :albumIds" + SHOWN +
            " GROUP BY p.album.id")
