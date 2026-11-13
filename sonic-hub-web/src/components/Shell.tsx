@@ -6,6 +6,7 @@ import { hub, randomDay } from '../api/hub';
 import Search from './Search';
 import MachineButtons from './Machines';
 import MomentPicker from './MomentPicker';
+import PlayerBar from './music/PlayerBar';
 import { YearGrid } from './Paper';
 import { Fragment, useEffect, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
@@ -42,7 +43,7 @@ export default function Shell() {
 function Frame() {
   const loc = useLocation(), tl = useTimeline(), { pick, picked, moment } = useMoment(), path = loc.pathname;
   const [more, setMore] = useState(false), [filters, setFilters] = useState(false);
-  const reading = /^\/(journal|memories)\/(?!events\/?$).+/.test(path) || /^\/games\/(?!series\/|play\/)[^/]+$/.test(path), inMemories = path.startsWith('/memories'), inJournal = path.startsWith('/journal'), inPhotos = /^\/(photos|tags)/.test(path), inAngels = path.startsWith('/angels'), inForum = path.startsWith('/forum');
+  const reading = /^\/(journal|memories)\/(?!events\/?$).+/.test(path) || /^\/games\/(?!series\/|play\/)[^/]+$/.test(path) || /^\/music\/lists\/[^/]+$/.test(path), inMemories = path.startsWith('/memories'), inJournal = path.startsWith('/journal'), inPhotos = /^\/(photos|tags)/.test(path), inAngels = path.startsWith('/angels'), inForum = path.startsWith('/forum');
   const inMoney = path.startsWith('/money'), inPortal = path.startsWith('/portal'), inGames = path.startsWith('/games'), inMusic = path.startsWith('/music');
   const onHome = HOME_PATHS.includes(path);
   /* on a phone the sidebar is a sheet behind a button: on the pages that list things, not where one thing is read, played or chatted */
@@ -82,6 +83,7 @@ function Frame() {
         </aside>}
         <main><Outlet /></main>
       </div>
+      {inMusic && <PlayerBar />}
       <nav className="tabbar" aria-label="Các mục của Sonic Hub">
         {tabs.filter(t => BAR.includes(t.to)).map(link)}
         <button type="button" className={`bar-more ${beyond || more ? 'on' : ''}`} style={{ ['--c' as string]: `var(${beyond?.c ?? '--ink'})` }} aria-expanded={more} onClick={() => setMore(v => !v)}>{beyond ? beyond.n : 'Thêm'}</button>

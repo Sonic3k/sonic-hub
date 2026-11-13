@@ -11,7 +11,7 @@ export interface Track {
 }
 export interface Playlist {
   key: string; title: string; kind: 'WINDOW' | 'FULL' | 'CURATED'; when?: string | null; takenAt?: string | null; windowFrom?: string | null;
-  deviceName?: string | null; eventId?: string | null; eventTitle?: string | null; sourceFolder?: string | null; spotifyId?: string | null;
+  deviceKey?: string | null; deviceName?: string | null; eventId?: string | null; eventTitle?: string | null; sourceFolder?: string | null; spotifyId?: string | null;
   summary?: string | null; note?: string | null; tracks: number; withAudio: number;
 }
 export interface Entry { position?: number | null; fileName?: string | null; note?: string | null; addedAt?: string | null; track?: Track | null }

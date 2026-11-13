@@ -14,7 +14,8 @@ import { cdn } from '../api/client';
 import { dayMonthYear, vnClock } from '../lib/date';
 import { eraClass } from '../lib/era';
 import { deviceRange, gamesAt } from '../lib/life';
-import { atOf, isoOf, useMoment } from '../lib/moment';
+import { useDesk } from '../lib/desk';
+import { isoOf, useMoment } from '../lib/moment';
 import Justified from '../components/Justified';
 import Viewer from '../components/Viewer';
 import type { DeskDevice, GameCard, GameDetail, GameMatch, GamePlay, GameTrace, MediaFile } from '../types';
@@ -70,11 +71,6 @@ const shelfOrder = (all: GameCard[], among?: GameCard) => {
   return [...ERAS.flatMap(e => mine.filter(g => !own(g) && onShelf(g) && eraOf(g) === e.key).sort(byPlay)), ...mine.filter(own).sort(byYear)];
 };
 
-/** His machines with their years: the desk of the day being looked at lists them all (the read Hôm nay makes too). */
-function useDesk() {
-  const { moment } = useMoment(), at = moment ? atOf(moment) : '';
-  return useQuery({ queryKey: ['desk-at', at], queryFn: () => hub.deskAt(at), enabled: !!moment, staleTime: T });
-}
 /** An evening late in a machine's time, when everything he played on it is there: a month before it left (Vietnam
  *  clock); a machine he still has is turned on as it is now. */
 function lateEvening(d: DeskDevice): string | undefined {
