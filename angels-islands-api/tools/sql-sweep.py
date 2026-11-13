@@ -8,7 +8,8 @@ Calls every path of the paths file (GET) and prints the X-Sql-Count header the A
 time and the size. Exits 1 when a read sent more statements than --max (50): a list costs a handful of statements
 whatever its length, so a higher count means something is fetched row by row.
 
-Placeholders in a path are filled from the API itself: {self} {person} {album} {forum} {game} {memory} {note} {event}.
+Placeholders in a path are filled from the API itself: {self} {person} {album} {forum} {game} {memory} {note} {event}
+{media} {fb}.
 A path whose placeholder cannot be filled (nothing of that kind yet) is skipped. Python 3, no packages needed.
 """
 import argparse, json, os, sys, time, urllib.request
@@ -48,6 +49,9 @@ ids['album'] = first('/api/collections', lambda c: c['id'])
 ids['forum'] = first('/api/forums', lambda f: f.get('key'))
 ids['game'] = first('/api/games', lambda g: g.get('key'))
 ids['note'] = first('/api/journal/notes?size=1', lambda n: n['id'])
+ids['media'] = first('/api/media-files/library?size=1', lambda m: m['id'])
+try: ids['fb'] = (json.loads(call('/api/social/fb/home')[3] or b'{}').get('me') or {}).get('id')
+except Exception: ids['fb'] = None
 if ids['self']:
     ids['memory'] = first(f"/api/persons/{ids['self']}/memory/episodes", lambda e: e['id'])
     ids['event'] = first(f"/api/events?personId={ids['self']}", lambda e: e['id'])
