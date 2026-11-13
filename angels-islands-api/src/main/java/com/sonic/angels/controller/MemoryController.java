@@ -108,6 +108,15 @@ public class MemoryController {
     @GetMapping("/episodes/{id}")
     public MemoryDto.EpisodeResponse getEpisode(@PathVariable UUID personId, @PathVariable UUID id) { return memory.episode(id); }
 
+    /** The photos of one memory as files (what GET /media-files/{id} gives for each), in the memory's order; the
+     *  incl* parameters as on the photo lists. */
+    @GetMapping("/episodes/{id}/media")
+    public List<com.sonic.angels.model.dto.MediaFileDto.Response> getEpisodeMedia(@PathVariable UUID personId, @PathVariable UUID id,
+            @RequestParam(defaultValue = "false") boolean inclDetails, @RequestParam(defaultValue = "false") boolean inclPersons,
+            @RequestParam(defaultValue = "false") boolean inclTags) {
+        return memory.media(id, new com.sonic.angels.model.dto.MediaFileDto.Includes(inclDetails, inclPersons, inclTags));
+    }
+
     @PostMapping("/episodes")
     public MemoryDto.EpisodeResponse createEpisode(@PathVariable UUID personId, @RequestBody MemoryDto.EpisodeRequest req) {
         return memory.create(personId, req);

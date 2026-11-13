@@ -241,7 +241,7 @@ export function MemoryPage() {
   // the photos as full files, so the viewer can say when and what each one is
   const files = useQuery({
     queryKey: ['memory-files', id], enabled: !!e?.media?.length, staleTime: T,
-    queryFn: async () => (await Promise.all((e!.media ?? []).slice(0, 60).map(m => hub.media(m.id).catch(() => null)))).filter((m): m is MediaFile => !!m),
+    queryFn: () => hub.episodeMedia(self!.id, id!),
   });
   const [viewer, setViewer] = useState<number | null>(null);
   const list = all.data ?? [], i = e ? list.findIndex(x => x.id === e.id) : -1, prev = i > 0 ? list[i - 1] : undefined, next = i >= 0 ? list[i + 1] : undefined;

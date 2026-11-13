@@ -66,8 +66,16 @@ public class FinanceService {
     @Transactional(readOnly = true)
     public List<FinanceDto.Account> accounts() {
         FinanceFx fx = rates.fx();
+        Map<UUID, Long> lines = linesPerAccount(txnRepo);
         return accountRepo.findAllByOrderBySortOrderAscCreatedAtAsc().stream()
-            .map(a -> toAccount(a, fx, txnRepo.countByAccountId(a.getId()))).toList();
+            .map(a -> toAccount(a, fx, lines.getOrDefault(a.getId(), 0L))).toList();
+    }
+
+    /** account id → how many lines it has, counted for all the accounts in one statement */
+    static Map<UUID, Long> linesPerAccount(FinanceTransactionRepository txnRepo) {
+        Map<UUID, Long> m = new HashMap<>();
+        for (Object[] r : txnRepo.countByAccount()) m.put((UUID) r[0], ((Number) r[1]).longValue());
+        return m;
     }
 
     public FinanceDto.Account createAccount(FinanceDto.AccountRequest r) {

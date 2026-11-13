@@ -58,6 +58,15 @@ public interface JournalNoteRepository extends JpaRepository<JournalNote, UUID> 
     List<String> categories(@Param("kind") JournalNote.Kind kind);
 
     long countByProblemsId(UUID problemId);
+
+    /** [problem id, number of notes] for every problem that has notes */
+    @Query("SELECT p.id, COUNT(n) FROM JournalNote n JOIN n.problems p GROUP BY p.id")
+    java.util.List<Object[]> countByProblem();
+
+    /** [series, parts, first date, last date] — a note's date is when it was written, else when it was stored */
+    @Query("SELECT n.series, COUNT(n), MIN(COALESCE(n.writtenAt, n.createdAt)), MAX(COALESCE(n.writtenAt, n.createdAt)) " +
+           "FROM JournalNote n WHERE n.series IS NOT NULL GROUP BY n.series")
+    java.util.List<Object[]> seriesStats();
     java.util.List<com.sonic.angels.model.entity.JournalNote> findBySeries(String series);
 
     /** a deleted journal note leaves the memories that quote it: the words stay, only the link goes */

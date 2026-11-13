@@ -102,7 +102,12 @@ public class GameService {
     public List<GameDto.Series> seriesList() {
         List<Game> all = games.findAllWithSeries();
         Shelf s = shelf(all);
-        return seriesRepo.findAll().stream().map(x -> series(x, all, s))
+        List<GameSeries> list = seriesRepo.findAll();
+        // the covers the series set for themselves, read together rather than one per series
+        Map<UUID, String> covers = new HashMap<>();
+        List<UUID> coverIds = list.stream().map(GameSeries::getCoverMediaId).filter(Objects::nonNull).distinct().toList();
+        if (!coverIds.isEmpty()) for (MediaFile m : mediaRepo.findAllById(coverIds)) covers.put(m.getId(), mapper.imageUrl(m));
+        return list.stream().map(x -> series(x, all, s, covers))
             .sorted(Comparator.comparing((GameDto.Series x) -> x.sortOrder, Comparator.nullsLast(Comparator.naturalOrder()))
                 .thenComparing(x -> x.name, String.CASE_INSENSITIVE_ORDER))
             .toList();
@@ -112,18 +117,22 @@ public class GameService {
     public GameDto.Series series(String key) {
         GameSeries x = seriesRepo.findByExternalKey(key).orElseThrow(() -> new NoSuchElementException("Series not found: " + key));
         List<Game> all = games.findAllWithSeries();
-        GameDto.Series out = series(x, all, shelf(all));
+        GameDto.Series out = series(x, all, shelf(all), null);
         out.summary = x.getSummary();
         return out;
     }
 
-    private GameDto.Series series(GameSeries x, List<Game> all, Shelf s) {
+    /** covers: the series' own covers when they were read for a whole list (null: read this one's here) */
+    private GameDto.Series series(GameSeries x, List<Game> all, Shelf s, Map<UUID, String> covers) {
         GameDto.Series out = new GameDto.Series();
         out.id = x.getId(); out.key = x.getExternalKey(); out.name = x.getName(); out.summary = x.getSummary();
         out.sortOrder = x.getSortOrder(); out.coverMediaId = x.getCoverMediaId();
         out.games = all.stream().filter(g -> g.getSeries() != null && g.getSeries().getId().equals(x.getId()))
             .map(g -> card(g, s)).sorted(SERIES_ORDER).toList();
-        if (x.getCoverMediaId() != null) mediaRepo.findById(x.getCoverMediaId()).map(mapper::imageUrl).ifPresent(u -> out.coverUrl = u);
+        if (x.getCoverMediaId() != null) {
+            if (covers != null) out.coverUrl = covers.get(x.getCoverMediaId());
+            else mediaRepo.findById(x.getCoverMediaId()).map(mapper::imageUrl).ifPresent(u -> out.coverUrl = u);
+        }
         if (out.coverUrl == null) out.coverUrl = out.games.stream().filter(c -> c.coverUrl != null && !c.kind.equals("HOMEMADE"))
             .map(c -> c.coverUrl).findFirst().orElse(out.games.stream().map(c -> c.coverUrl).filter(Objects::nonNull).findFirst().orElse(null));
         return out;

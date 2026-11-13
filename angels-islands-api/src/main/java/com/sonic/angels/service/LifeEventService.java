@@ -69,9 +69,11 @@ public class LifeEventService {
         List<UUID> albumIds = jdbc.queryForList("SELECT id FROM collections WHERE life_event_id = :id ORDER BY name", m, UUID.class);
         List<com.sonic.angels.model.entity.Collection> albums = collectionRepo.findAllById(albumIds);
         Map<UUID, String> covers = collectionService.coverUrls(albums);   // the cover set, else the album's first picture
+        Map<UUID, Integer> photos = new HashMap<>();   // counted for all the albums in one statement
+        if (!albumIds.isEmpty()) for (Object[] row : collectionRepo.countMediaOf(albumIds)) photos.put((UUID) row[0], ((Number) row[1]).intValue());
         d.albumList = albums.stream()
             .sorted(Comparator.comparing(c -> Objects.toString(c.getName(), "")))
-            .map(c -> new LifeEventDto.AlbumRef(c.getId(), c.getName(), countMedia(c.getId()), covers.get(c.getId()),
+            .map(c -> new LifeEventDto.AlbumRef(c.getId(), c.getName(), photos.getOrDefault(c.getId(), 0), covers.get(c.getId()),
                 c.getParent() != null ? c.getParent().getId() : null))
             .toList();
         d.memoryList = jdbc.query("SELECT id, title, summary, occurred_at, occurred_precision, occurred_approx, kind FROM episodes "
@@ -245,10 +247,6 @@ public class LifeEventService {
     private UUID owner(UUID personId) {
         if (personId != null) return personId;
         return personRepo.findByIsSelfTrue().map(Person::getId).orElseThrow(() -> new IllegalArgumentException("personId is required"));
-    }
-
-    private Integer countMedia(UUID albumId) {
-        return jdbc.queryForObject("SELECT COUNT(*) FROM collection_media WHERE collection_id = :id", Map.of("id", albumId), Integer.class);
     }
 
     private record Counts(Map<UUID, Integer> albums, Map<UUID, Integer> memories, Map<UUID, Integer> transactions,

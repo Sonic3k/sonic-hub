@@ -82,6 +82,14 @@ public class MemoryService {
         return mapper.toEpisodeResponseWithLinks(episodeRepo.findById(id).orElseThrow());
     }
 
+    /** The photos of one memory as files, in the memory's order, each with what inc asks for — read together, so a
+     *  page that shows them all (the viewer) makes one request instead of one per photo. */
+    @Transactional(readOnly = true)
+    public List<com.sonic.angels.model.dto.MediaFileDto.Response> media(UUID id, com.sonic.angels.model.dto.MediaFileDto.Includes inc) {
+        return episodeRepo.findById(id).orElseThrow().getMediaFiles().stream().filter(Objects::nonNull)
+            .map(m -> mapper.toMediaFileResponse(m, inc)).toList();
+    }
+
     /** Typed in by hand: CONFIRMED unless the request says otherwise. */
     public MemoryDto.EpisodeResponse create(UUID personId, MemoryDto.EpisodeRequest r) {
         Person person = personRepo.findById(personId).orElseThrow();

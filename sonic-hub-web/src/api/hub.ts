@@ -68,6 +68,8 @@ export const hub = {
    *  Without links (media, people, tags, albums, sources) unless p asks for them — see MemoryLinks. */
   episodes: (id: string, p?: { q?: string; kind?: string; tagId?: string; withPersonId?: string; oldestFirst?: boolean; source?: string } & MemoryLinks) => get<Episode[]>(`/persons/${id}/memory/episodes`, p),
   episode: (personId: string, id: string) => get<Episode>(`/persons/${personId}/memory/episodes/${id}`),
+  /** a memory's photos as whole files (camera, people, tags — what the viewer shows), in the memory's order: one request for all */
+  episodeMedia: (personId: string, id: string) => get<MediaFile[]>(`/persons/${personId}/memory/episodes/${id}/media`, { inclDetails: true, inclPersons: true, inclTags: true }),
   /** memories picked at random; types = episode,fact,chapter,trait */
   randomMemory: (id: string, count = 1, types?: string, links?: MemoryLinks) => get<RandomMemory[]>(`/persons/${id}/memory/random`, { count, types, ...links }),
   chapters: (id: string) => get<Chapter[]>(`/persons/${id}/memory/chapters`),
