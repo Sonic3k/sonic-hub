@@ -215,14 +215,36 @@ public class CollectionService {
     }
 
     /** First IMAGE uploaded into a cover-less collection becomes its cover automatically.
-     *  Videos are skipped (card thumbnails are CDN image resizes). Explicit set-cover always wins later. */
+     *  Videos are skipped (card thumbnails are CDN image resizes). Explicit set-cover always wins later.
+     *  An album that already shows another picture as its cover (its first one, see coverUrls) keeps showing it. */
     public void setCoverIfMissing(UUID collectionId, MediaFile mf) {
         if (mf.getFileType() != MediaFile.FileType.IMAGE) return;
         Collection c = findById(collectionId);
-        if (c.getThumbnailMediaFile() == null) {
-            c.setThumbnailMediaFile(mf);
-            collectionRepository.save(c);
+        if (c.getThumbnailMediaFile() != null) return;
+        for (Object[] row : collectionRepository.firstPicturesOf(List.of(collectionId)))
+            if (!mf.getId().equals(row[1])) return;
+        c.setThumbnailMediaFile(mf);
+        collectionRepository.save(c);
+    }
+
+    /**
+     * The cover of each of these albums that has one, as a picture URL: the picture set for it, else its first picture.
+     * Only an upload into an album sets a cover; files linked into an album made later (a tree rebuilt, a batch add,
+     * a move) set none, so without this those albums showed as blank cards. Read without loading the files.
+     */
+    public Map<UUID, String> coverUrls(java.util.Collection<Collection> albums) {
+        Map<UUID, UUID> picture = new HashMap<>();   // album → the file its cover is
+        List<UUID> bare = new ArrayList<>();
+        for (Collection c : albums) {
+            if (c.getThumbnailMediaFile() != null) picture.put(c.getId(), c.getThumbnailMediaFile().getId());
+            else bare.add(c.getId());
         }
+        for (List<UUID> part : chunks(bare))
+            for (Object[] row : collectionRepository.firstPicturesOf(part)) picture.put((UUID) row[0], (UUID) row[1]);
+        Map<UUID, String> urls = pictureUrls(picture.values().stream().distinct().toList());
+        Map<UUID, String> out = new HashMap<>();
+        picture.forEach((album, file) -> { String url = urls.get(file); if (url != null) out.put(album, url); });
+        return out;
     }
 
     public int addMediaBatch(UUID collectionId, List<UUID> mediaIds) {
@@ -349,8 +371,7 @@ public class CollectionService {
             r.setParentId(c.getParent().getId());
             r.setParentName(c.getParent().getName());
         }
-        if (c.getThumbnailMediaFile() != null)
-            r.setThumbnailUrl(mapper.imageUrl(c.getThumbnailMediaFile()));
+        r.setThumbnailUrl(coverUrls(List.of(c)).get(c.getId()));
         if (inc.childrenCount())
             r.setChildrenCount((int) collectionRepository.countByParentId(c.getId()));
         if (inc.mediaCount())
@@ -370,9 +391,9 @@ public class CollectionService {
     private List<CollectionDto.Response> toResponses(List<Collection> list, Includes inc) {
         if (list.isEmpty()) return List.of();
         List<UUID> ids = list.stream().map(Collection::getId).toList();
-        // parents and covers: their ids are read from the proxies (no query), then fetched together
+        // parents: their ids are read from the proxies (no query), then fetched together; covers: see coverUrls
         Map<UUID, Collection> parents = byId(collectionRepository.findAllById(distinctIds(list, c -> c.getParent() == null ? null : c.getParent().getId())), Collection::getId);
-        Map<UUID, String> covers = pictureUrls(distinctIds(list, c -> c.getThumbnailMediaFile() == null ? null : c.getThumbnailMediaFile().getId()));
+        Map<UUID, String> covers = coverUrls(list);
         Map<UUID, Long> children = inc.childrenCount() ? counts(ids, collectionRepository::countChildrenOf) : Map.of();
         Map<UUID, Long> media = inc.mediaCount() ? counts(ids, collectionRepository::countMediaOf) : Map.of();
         Map<UUID, Set<TagDto.Response>> tags = inc.tags()
@@ -390,7 +411,7 @@ public class CollectionService {
                 r.setParentId(c.getParent().getId());
                 r.setParentName(parent != null ? parent.getName() : c.getParent().getName());
             }
-            if (c.getThumbnailMediaFile() != null) r.setThumbnailUrl(covers.get(c.getThumbnailMediaFile().getId()));
+            r.setThumbnailUrl(covers.get(c.getId()));
             if (inc.childrenCount()) r.setChildrenCount(children.getOrDefault(c.getId(), 0L).intValue());
             if (inc.mediaCount()) r.setMediaCount(media.getOrDefault(c.getId(), 0L).intValue());
             if (inc.tags()) r.setTags(tags.getOrDefault(c.getId(), new HashSet<>()));
