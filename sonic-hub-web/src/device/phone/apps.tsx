@@ -200,8 +200,8 @@ export function MemoryView({ id }: { id: string }) {
   const q = useQuery({ queryKey: ['scene', id], queryFn: () => desk.scene(id), staleTime: Infinity });
   const sc = q.data;
   const mediaIds = sc?.windows.find(w => w.app === 'photos')?.mediaIds?.slice(0, 12) ?? [];
-  const media = useQueries({ queries: mediaIds.map(m => ({ queryKey: ['media', m], queryFn: () => desk.media(m) })) });
-  const photos = media.flatMap(x => (x.data ? [x.data] : []));
+  const media = useQuery({ queryKey: ['media-set', mediaIds], queryFn: () => desk.mediaByIds(mediaIds), enabled: mediaIds.length > 0, staleTime: Infinity });
+  const photos = media.data ?? [];
   if (q.isLoading) return <div className="ph-empty">…</div>;
   if (!sc) return <div className="ph-empty">Không mở được ký ức này.</div>;
   const sources = sc.windows.filter(w => w.app === 'chat' || w.app === 'word' || w.app === 'forum' || w.app === 'link');

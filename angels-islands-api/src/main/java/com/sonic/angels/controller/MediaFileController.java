@@ -151,6 +151,16 @@ public class MediaFileController {
     @GetMapping("/{id}")
     public MediaFileDto.Response findById(@PathVariable UUID id) { return mediaFileService.findDtoById(id); }
 
+    /** The files with these ids, in the order asked (an id that is not there is left out): one request for a set of
+     *  photos instead of one request each. At most 200 ids a call; the incl* parameters as on the lists. */
+    @GetMapping("/by-ids")
+    public List<MediaFileDto.Response> byIds(@RequestParam List<UUID> ids,
+        @RequestParam(defaultValue = "false") boolean inclDetails,
+        @RequestParam(defaultValue = "false") boolean inclPersons,
+        @RequestParam(defaultValue = "false") boolean inclTags) {
+        return mediaFileService.byIds(ids, new MediaFileDto.Includes(inclDetails, inclPersons, inclTags));
+    }
+
     @GetMapping("/person/{personId}")
     public List<MediaFileDto.Response> findByPerson(@PathVariable UUID personId,
         @RequestParam(defaultValue = "false") boolean inclDetails,

@@ -52,7 +52,12 @@ export const desk = {
     get<Paged<MediaFile>>('/media-files/search', { personId, to: toDay, size: 120, page, sortBy: 'effectiveDate', sortDir: 'desc' }),
   cameraRoll: (toDay: string, page = 0) =>
     get<Paged<MediaFile>>('/media-files/search', { to: toDay, size: 90, page, sortBy: 'effectiveDate', sortDir: 'desc', type: 'IMAGE' }),
-  media: (id: string) => get<MediaFile>(`/media-files/${id}`),
+  /** a set of photos in the order given, 100 a request (the API takes up to 200 ids): not one request per photo */
+  mediaByIds: async (ids: string[]) => {
+    const parts: MediaFile[][] = [];
+    for (let i = 0; i < ids.length; i += 100) parts.push(await get<MediaFile[]>('/media-files/by-ids', { ids: ids.slice(i, i + 100).join(',') }));
+    return parts.flat();
+  },
   persons: () => get<Person[]>('/persons'),
   notes: (page = 0) => get<Paged<Note>>('/journal/notes', { status: 'PUBLISHED', size: 100, page }),
   note: (id: string) => get<Note>(`/journal/notes/${id}`),
