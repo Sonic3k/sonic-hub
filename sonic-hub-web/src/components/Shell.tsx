@@ -1,25 +1,23 @@
 /* The frame every page shares: the header (the wordmark, the search, the machines; under it the menu in its groups
    and the day being looked at), a sidebar that follows the section, the page. On a phone the menu is a bar at the
    bottom: the first four sections, the rest behind "Thêm"; the section's sidebar opens as a sheet from "Lọc". */
-import { Link, NavLink, Outlet, useLocation, useSearchParams } from 'react-router-dom';
+import { Link, NavLink, Outlet, useLocation, useNavigationType, useSearchParams } from 'react-router-dom';
 import { hub, randomDay } from '../api/hub';
 import Search from './Search';
 import MachineButtons from './Machines';
 import MomentPicker from './MomentPicker';
 import PlayerBar from './music/PlayerBar';
 import { YearGrid } from './Paper';
-import { Fragment, useEffect, useState } from 'react';
+import { Fragment, useEffect, useLayoutEffect, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { angelsOrdered } from '../pages/Angels';
 import { MoneySide } from '../pages/Money';
-import { PortalSide } from '../pages/Portal';
 import { MemoriesSide } from '../pages/Memories';
 import { GamesSide } from '../pages/Games';
 import { MusicSide } from '../pages/Music';
 import { isOwner } from './money/data';
-import { cdn } from '../api/client';
 import { counts, fmt, noteDate, useAlbums, useLibraryCounts, useNotes, usePersons, useRegions, useTimeline } from '../lib/queries';
 import { HOME_PATHS, MomentProvider, momentHref, useMoment } from '../lib/moment';
+import { angelsByYear, useMetYears } from '../lib/people';
 
 interface Tab { n: string; to: string; c: string; end?: boolean }
 /* The menu in its groups: time · what is kept · people · play and listen · the sites of their own (Huyền học, Bóng đá). */
@@ -43,17 +41,24 @@ export default function Shell() {
 function Frame() {
   const loc = useLocation(), tl = useTimeline(), { pick, picked, moment } = useMoment(), path = loc.pathname;
   const [more, setMore] = useState(false), [filters, setFilters] = useState(false);
-  const reading = /^\/(journal|memories)\/(?!events\/?$).+/.test(path) || /^\/games\/(?!series\/|play\/)[^/]+$/.test(path) || /^\/music\/lists\/[^/]+$/.test(path), inMemories = path.startsWith('/memories'), inJournal = path.startsWith('/journal'), inPhotos = /^\/(photos|tags)/.test(path), inAngels = path.startsWith('/angels'), inForum = path.startsWith('/forum');
-  const inMoney = path.startsWith('/money'), inPortal = path.startsWith('/portal'), inGames = path.startsWith('/games'), inMusic = path.startsWith('/music');
+  const inPortal = path.startsWith('/portal');
+  /* pages with no sidebar: one thing being read (a note, a memory, a game, a list, a person and what hangs under them, a thread), and the Portal's two doors */
+  const reading = /^\/(journal|memories)\/(?!events\/?$).+/.test(path) || /^\/games\/(?!series\/|play\/)[^/]+$/.test(path) || /^\/music\/lists\/[^/]+$/.test(path)
+    || /^\/angels\/.+/.test(path) || /^\/forum\/t\//.test(path) || inPortal, inMemories = path.startsWith('/memories'), inJournal = path.startsWith('/journal'), inPhotos = /^\/(photos|tags)/.test(path), inAngels = path.startsWith('/angels'), inForum = path.startsWith('/forum');
+  const inMoney = path.startsWith('/money'), inGames = path.startsWith('/games'), inMusic = path.startsWith('/music');
   const onHome = HOME_PATHS.includes(path);
   /* on a phone the sidebar is a sheet behind a button: on the pages that list things, not where one thing is read, played or chatted */
-  const sheet = !onHome && !reading && !inPortal && !/^\/(angels\/[^/]+\/chat|games\/play|forum\/t)\//.test(path);
+  const sheet = !onHome && !reading && path !== '/forum' && !/^\/games\/play\//.test(path);
   const groups = inMoney || isOwner() ? [...GROUPS.slice(0, -1), [...GROUPS[GROUPS.length - 1], MONEY]] : GROUPS, tabs = groups.flat();
   const current = tabs.find(t => inTab(path, t)) ?? (inPhotos ? tabs.find(t => t.to === '/photos') : undefined);
-  const beyond = current && !BAR.includes(current.to) ? current : null;
-  /* Angels changes the light of the whole page, softly */
-  useEffect(() => { document.body.classList.toggle('mood-angels', inAngels); }, [inAngels]);
+  /* the phone's bar: Dòng thời gian is the other way of looking at Hôm nay (the switch is on the page), so it lights Hôm nay */
+  const beyond = current && !BAR.includes(current.to) && current.to !== '/timeline' ? current : null;
   useEffect(() => { setMore(false); setFilters(false); }, [path, loc.search]);
+  /* A page opened from somewhere down a list starts at its own top. Going back is left to the browser, which returns
+     to the place in the list; an address with a #place goes there by itself; a filter or a photo opened over the
+     page (the address after the "?") keeps the page where it is. */
+  const how = useNavigationType();
+  useLayoutEffect(() => { if (how === 'PUSH' && !loc.hash) window.scrollTo(0, 0); }, [path]); // eslint-disable-line react-hooks/exhaustive-deps
   const random = async () => {
     const years = Object.keys(counts(tl.data ?? [])).map(Number); if (!years.length) return;
     const y = years[Math.floor(Math.random() * years.length)], r = await randomDay(y, tl.data ?? []).catch(() => null);
@@ -78,18 +83,19 @@ function Frame() {
       </div>
       <div className={`frame ${reading ? 'reading' : ''} ${onHome ? 'home' : ''}`} style={{ ['--sec' as string]: `var(${current?.c ?? '--ink'})` }}>
         {!onHome && <aside className={`side ${filters ? 'open' : ''}`} onClick={e => { if ((e.target as HTMLElement).closest('a')) setFilters(false); }}>
-          {inJournal ? <JournalSide /> : inMemories ? <MemoriesSide /> : inPhotos ? <PhotosSide /> : inAngels ? <AngelsSide /> : inForum ? <ForumSide /> : inMoney ? <MoneySide /> : inPortal ? <PortalSide /> : inGames ? <GamesSide /> : inMusic ? <MusicSide /> : null}
+          {inJournal ? <JournalSide /> : inMemories ? <MemoriesSide /> : inPhotos ? <PhotosSide /> : inAngels ? <AngelsSide /> : inForum ? <ForumSide /> : inMoney ? <MoneySide /> : inGames ? <GamesSide /> : inMusic ? <MusicSide /> : null}
           <button type="button" className="side-x" onClick={() => setFilters(false)}>{inMoney ? 'Close' : 'Đóng'}</button>
         </aside>}
         <main><Outlet /></main>
       </div>
       {inMusic && <PlayerBar />}
       <nav className="tabbar" aria-label="Các mục của Sonic Hub">
-        {tabs.filter(t => BAR.includes(t.to)).map(link)}
+        {tabs.filter(t => BAR.includes(t.to)).map(t => (t.to === '/' && path === '/timeline'
+          ? <NavLink key={t.to} to={dest(t)} className="on" style={{ ['--c' as string]: `var(${t.c})` }}>{t.n}</NavLink> : link(t)))}
         <button type="button" className={`bar-more ${beyond || more ? 'on' : ''}`} style={{ ['--c' as string]: `var(${beyond?.c ?? '--ink'})` }} aria-expanded={more} onClick={() => setMore(v => !v)}>{beyond ? beyond.n : 'Thêm'}</button>
       </nav>
       {sheet && <button type="button" className="side-btn" aria-expanded={filters} onClick={() => setFilters(true)}>
-        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M7 12h10M10 17h4" /></svg>{inMoney ? 'Filter' : inAngels ? 'Danh sách' : 'Lọc'}</button>}
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M7 12h10M10 17h4" /></svg>{inMoney ? 'Filter' : inAngels ? 'Năm' : 'Lọc'}</button>}
       {filters && <div className="side-back" onClick={() => setFilters(false)} />}
       {more && <div className="more-back" onClick={() => setMore(false)}>
         <div className="more-sheet" role="dialog" aria-label="Tất cả các mục" onClick={e => e.stopPropagation()}>
@@ -149,16 +155,15 @@ function PhotosSide() {
 }
 
 function AngelsSide() {
-  const persons = usePersons(), loc = useLocation(), list = angelsOrdered(persons.data ?? []);
+  const persons = usePersons(), { years } = useMetYears(), loc = useLocation(), { moment, picked } = useMoment();
+  const blocks = angelsByYear(persons.data ?? [], years), ys = blocks.map(([y]) => y).filter(y => y > 0), n = blocks.reduce((a, [, ps]) => a + ps.length, 0);
   return (
     <>
       <h4>Angels</h4>
-      <Link to="/angels" className={loc.pathname === '/angels' ? 'on' : ''}>Tất cả<small>{list.length}</small></Link>
-      <Link to="/angels/rankings" className={loc.pathname === '/angels/rankings' ? 'on' : ''}>Bảng xếp hạng</Link>
-      <h4>Theo thời gian</h4>
-      {list.map(p => <Link key={p.id} to={`/angels/${p.id}`} className={`aside-person ${loc.pathname.startsWith(`/angels/${p.id}`) ? 'on' : ''}`}>
-        {p.avatarUrl ? <img src={cdn(p.avatarUrl, 60)} alt="" /> : <span className="av-ph">{(p.displayName || p.name).slice(0, 1)}</span>}
-        <span className="ap-n">{p.displayName || p.name}</span><small>{p.period ?? ''}</small></Link>)}
+      <Link to="/angels" className={loc.pathname === '/angels' ? 'on' : ''}>Tất cả<small>{n > 0 ? n : ''}</small></Link>
+      <Link to="/angels/rankings">Bảng xếp hạng</Link>
+      {ys.length > 0 && <h4>Quen từ năm</h4>}
+      <YearGrid years={ys} active={picked && moment ? moment.y : undefined} href={y => `/angels#y-${y}`} />
     </>
   );
 }
@@ -166,7 +171,7 @@ function AngelsSide() {
 function ForumSide() {
   const loc = useLocation(), [sp] = useSearchParams();
   const m = /^\/forum\/(?!t\/)([^/]+)/.exec(loc.pathname), forums = useQuery({ queryKey: ['forums'], queryFn: hub.forums, staleTime: 600_000 });
-  const key = m?.[1] ?? forums.data?.[0]?.key ?? '';
+  const key = m?.[1] ?? '';
   const boards = useQuery({ queryKey: ['forum-boards', key], queryFn: () => hub.forumBoards(key), enabled: !!key, staleTime: 600_000 });
   const active = sp.get('board') ?? '', tab = sp.get('tab') ?? '';
   /* boards grouped under their top box: "Kỷ niệm - Ước mơ / Tâm sự - lưu bút" sits under "Kỷ niệm - Ước mơ" */
@@ -181,7 +186,7 @@ function ForumSide() {
   return (
     <>
       <h4>Diễn đàn</h4>
-      {(forums.data ?? []).map(f => <Link key={f.key} to={`/forum/${f.key}`} className={f.key === key && !active && !tab ? 'on' : ''}>{f.name}<small>{fmt(f.threadCount)}</small></Link>)}
+      {[...(forums.data ?? [])].sort((a, b) => (a.firstPostAt ?? '').localeCompare(b.firstPostAt ?? '')).map(f => <Link key={f.key} to={`/forum/${f.key}`} className={f.key === key && !active && !tab ? 'on' : ''}>{f.name}<small>{fmt(f.threadCount)}</small></Link>)}
       {key && <Link to={`/forum/${key}?tab=members`} className={tab === 'members' ? 'on' : ''}>Thành viên</Link>}
       {total > 0 && <h4>Box</h4>}
       {Object.entries(groups).sort((a, b) => b[1].n - a[1].n).map(([top, g]) => (

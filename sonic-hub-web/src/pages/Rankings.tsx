@@ -8,6 +8,7 @@ import { cdn } from '../api/client';
 import type { Person, RankingDetail, RankingEntry } from '../types';
 import { fmt, usePersons } from '../lib/queries';
 import { fold } from '../lib/text';
+import { YearChip } from '../components/Paper';
 
 const T = 10 * 60_000;
 const TOP = 12;        // lanes in the rank chart
@@ -16,7 +17,7 @@ const TOP_LONG = 10;   // "longest in the top ten"
 /* Validated categorical slots 1–6 (dataviz reference), given to the top six of the latest update — by person, so a
    colour never moves to someone else when another update is picked. Names sit next to the lines (relief rule). */
 const SERIES = ['#2a78d6', '#eb6834', '#1baf7a', '#eda100', '#e87ba4', '#008300'];
-const CONTEXT = '#D6C2BD';
+const CONTEXT = '#C5CDC9';
 const PLATFORMS = [
   { keys: ['facebook', 'facebook-wall'], label: 'Facebook', color: '#2a78d6' },
   { keys: ['yahoo'], label: 'Yahoo', color: '#eb6834' },
@@ -61,7 +62,7 @@ function snapsOf(board?: RankingDetail[]): Snap[] {
 }
 
 function Face({ p, name }: { p?: Person; name: string }) {
-  return <span className="rk-face">{p?.avatarUrl ? <img src={cdn(p.avatarUrl, 80)} alt="" /> : <span className={p ? 'letter-ph' : 'letter-ph off'}>{name.slice(0, 1)}</span>}</span>;
+  return <span className="rk-face">{p?.avatarUrl ? <img src={cdn(p.avatarUrl, 80)} alt="" /> : <span className={p ? '' : 'off'}>{name.slice(0, 1)}</span>}</span>;
 }
 
 function Who({ personId, name, children, className = 'rk-n' }: { personId?: string | null; name: string; children?: ReactNode; className?: string }) {
@@ -83,12 +84,13 @@ export default function RankingsPage() {
   const set = (k: string, v?: string) => { const n = new URLSearchParams(sp); if (v) n.set(k, v); else n.delete(k); setSp(n, { replace: true }); };
   const first = snaps[0], last = snaps[snaps.length - 1];
   return (
-    <div className="wrap page rk">
-      <Link className="back" to="/angels">← Angels</Link>
-      <div className="ptitle"><h1>Bảng xếp hạng</h1>
-        <span>{first ? `sonic3k relationship · ${snaps.length} lần cập nhật · ${first.label} – ${last.label}` : ''}</span>
+    <div className="wrap page an rk">
+      <header className="mm-head">
+        <Link className="back" to="/angels">← Angels</Link>
+        <h1>Bảng xếp hạng</h1>
+        {first && <span className="ph-n">sonic3k relationship, {first.label} – {last.label}</span>}
         <nav className="seg">{TABS.map(([k, n]) => <a key={k} className={tab === k ? 'on' : ''} onClick={() => set('tab', k === 'rank' ? undefined : k)}>{n}</a>)}</nav>
-      </div>
+      </header>
       {tab === 'rank' && <RankTab snaps={snaps} loading={rel.isLoading} byId={byId} picked={sp.get('p')} onPick={p => set('p', p)} />}
       {tab === 'moments' && <MomentsTab />}
       {tab === 'messages' && <MessagesTab byId={byId} />}
@@ -104,8 +106,8 @@ function RankTab({ snaps, loading, byId, picked, onPick }: { snaps: Snap[]; load
   const [pinned, setPinned] = useState<string | null>(null);
   const [all, setAll] = useState(false);
   const colors = useMemo(() => new Map(snaps.length ? snaps[snaps.length - 1].rows.slice(0, SERIES.length).map((r, k) => [r.key, SERIES[k]] as const) : []), [snaps]);
-  if (loading) return <div className="card empty">Đang mở bảng…</div>;
-  if (!snaps.length) return <div className="card empty">Chưa có bảng xếp hạng nào.</div>;
+  if (loading) return <p className="jn-wait">Đang mở bảng…</p>;
+  if (!snaps.length) return <p className="jn-wait">Chưa có bảng xếp hạng nào.</p>;
   const k = snaps.findIndex(s => s.period === picked), at = k >= 0 ? k : snaps.length - 1;
   const snap = snaps[at], prev = snaps[at - 1], lit = hovered ?? pinned;
   const pick = (i: number) => onPick(snaps[i].period), pin = (key: string) => setPinned(v => (v === key ? null : key));
@@ -116,7 +118,6 @@ function RankTab({ snaps, loading, byId, picked, onPick }: { snaps: Snap[]; load
         <BumpChart snaps={snaps} at={at} colors={colors} lit={lit} onPick={pick} onLit={setHovered} onPin={pin} />
         <div className="rk-bar">
           <SnapPicker snaps={snaps} at={at} onPick={pick} />
-          <span className="rk-count">{snap.rows.length} người · {snap.rows.filter(r => r.personId).length} người có trang riêng</span>
         </div>
         <ol className="rk-board">
           {rows.map(r => {
@@ -333,8 +334,8 @@ function MomentsTab() {
     entries.forEach(e => m.set(keyOf(e), { e, n: (m.get(keyOf(e))?.n ?? 0) + 1 }));
     return [...m.values()].sort((a, b) => b.n - a.n).slice(0, 8);
   }, [entries]);
-  if (q.isLoading) return <div className="card empty">Đang mở Moments…</div>;
-  if (!entries.length) return <div className="card empty">Chưa có Moments.</div>;
+  if (q.isLoading) return <p className="jn-wait">Đang mở Moments…</p>;
+  if (!entries.length) return <p className="jn-wait">Chưa có Moments.</p>;
   const cell = (e: RankingEntry, m?: number) => {
     const k = keyOf(e), cls = `rk-mcell${e.personId ? '' : ' ext'}${m ? '' : ' whole'}${lit === k ? ' on' : ''}`;
     const body = m ? <span>{nameOf(e)}</span> : <>{nameOf(e)}<small>cả năm</small></>;
@@ -348,7 +349,7 @@ function MomentsTab() {
         <div className="rk-mgrid">
           <div className="rk-mhead"><span />{Array.from({ length: 12 }, (_, i) => <span key={i}>T{i + 1}</span>)}</div>
           {years.map(([yr, v]) => (
-            <div key={yr} className="rk-myear"><b>{yr}</b>
+            <div key={yr} className="rk-myear"><YearChip year={+yr} />
               {v.whole ? cell(v.whole) : v.months.map((e, i) => (e ? cell(e, i + 1) : <span key={i + 1} className="rk-mcell empty" />))}
             </div>))}
         </div>
@@ -378,8 +379,8 @@ function MessagesTab({ byId }: { byId: Map<string, Person> }) {
     const m = (e.metrics ?? {}) as Record<string, unknown>, bp = (m.by_platform ?? {}) as Record<string, number>;
     return { e, parts: PLATFORMS.map(p => p.keys.reduce((s, k) => s + (bp[k] ?? 0), 0)), first: monthLabel(m.first), last: monthLabel(m.last) };
   }), [list]);
-  if (q.isLoading) return <div className="card empty">Đang đếm tin nhắn…</div>;
-  if (!rows.length) return <div className="card empty">Chưa có số liệu tin nhắn.</div>;
+  if (q.isLoading) return <p className="jn-wait">Đang đếm tin nhắn…</p>;
+  if (!rows.length) return <p className="jn-wait">Chưa có số liệu tin nhắn.</p>;
   const max = Math.max(1, ...rows.map(r => r.parts.reduce((a, b) => a + b, 0)));
   const totals = PLATFORMS.map((_, i) => rows.reduce((s, r) => s + r.parts[i], 0)), all = totals.reduce((a, b) => a + b, 0);
   return (
@@ -433,8 +434,8 @@ function FbTab() {
     const latest = (v: { ranks: (number | undefined)[] }) => { for (let i = v.ranks.length - 1; i >= 0; i--) if (v.ranks[i] != null) return (lists.length - 1 - i) * 1000 + v.ranks[i]!; return 1e9; };
     return [...m.values()].sort((a, b) => latest(a) - latest(b));
   }, [lists]);
-  if (q.isLoading) return <div className="card empty">Đang mở fb association…</div>;
-  if (!lists.length) return <div className="card empty">Chưa có danh sách fb association.</div>;
+  if (q.isLoading) return <p className="jn-wait">Đang mở fb association…</p>;
+  if (!lists.length) return <p className="jn-wait">Chưa có danh sách fb association.</p>;
   const heat = (rk?: number) => { const h = HEAT.find(([lim]) => (rk ?? 999) <= lim)!; return { background: h[1], color: h[2] }; };
   return (
     <section className="lanes">

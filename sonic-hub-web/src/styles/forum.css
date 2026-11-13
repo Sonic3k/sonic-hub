@@ -1,0 +1,174 @@
+/* ═══ Diễn đàn (the 2.4 set): two forums kept from their years ═══
+   A forum stands on a band in the colour of the years it lived (onthi.com 2007 – 2009, V-Westlife 2009 – 2012), its
+   boxes under it the way a forum's first page listed them. Threads are plain rows. A thread is read the way the forum
+   showed it: who wrote at the left, what they wrote beside it. Nothing here is tilted or handwritten. */
+.fr { --fr-soft: #E9EAF6; }
+.fr section + section { margin-top: 0; }
+.fr-threads, .fr-hits, .fr-posts, .fr-members { list-style: none; margin: 0; padding: 0; }
+.fr-av { display: block; flex: none; overflow: hidden; background: var(--soft); }
+.fr-av img { display: block; width: 100%; height: 100%; object-fit: cover; }
+.fr-av span { display: grid; place-items: center; width: 100%; height: 100%; font-family: var(--display); font-size: 18px; font-weight: 800; line-height: 1; color: var(--field); }
+
+/* ── the forums ── */
+.fr-forum { margin: 0 0 56px; }
+.fr-band { display: flex; align-items: center; flex-wrap: wrap; gap: 8px 22px; min-height: 78px; padding: 14px 16px 14px 20px; background: var(--e-bg); color: var(--e-ink); }
+.fr-band b { font-family: var(--display); font-size: 40px; font-weight: 800; line-height: .9; color: var(--e-ac); white-space: nowrap; }
+.fr-band strong { font-size: 22px; font-weight: 700; line-height: 1.2; }
+.fr-band i { display: inline-flex; align-items: center; height: 36px; margin-left: auto; padding: 0 14px; background: var(--e-ac); color: var(--e-on); font-size: 13.5px; font-style: normal; font-weight: 700; white-space: nowrap; }
+.fr-band:hover i, .fr-go:hover { filter: brightness(1.1); }
+.fr-desc { max-width: 74ch; margin: 16px 0 0; font-size: 15px; line-height: 1.6; color: var(--ink2); }
+.fr-desc a, .fr-top p a { text-decoration: underline; text-underline-offset: 3px; overflow-wrap: anywhere; }
+.fr-desc a { color: var(--forum); }
+.fr-doors { display: flex; flex-wrap: wrap; gap: 4px 18px; margin: 10px 0 0; font-size: 14px; font-weight: 600; }
+.fr-doors span { font-weight: 400; color: var(--ink2); }
+.fr-doors a, .fr-more { color: var(--forum); }
+.fr-doors a:hover, .fr-more:hover { text-decoration: underline; text-underline-offset: 3px; }
+.fr-boxes { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 40px; margin-top: 20px; border-top: 1px solid var(--line); }
+.fr-box { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 2px 16px; align-items: baseline; align-content: center; min-height: 62px; padding: 10px 0; border-bottom: 1px solid var(--line); }
+.fr-box b { font-size: 15.5px; font-weight: 600; line-height: 1.35; }
+.fr-box span { font-size: 13px; font-variant-numeric: tabular-nums; color: var(--ink3); white-space: nowrap; }
+.fr-box small { grid-column: 1 / -1; overflow: hidden; font-size: 12.5px; color: var(--ink3); text-overflow: ellipsis; white-space: nowrap; }
+.fr-box:hover b { text-decoration: underline; }
+.fr-more { display: inline-block; margin-top: 12px; font-size: 13.5px; font-weight: 600; }
+/* a day picked inside a forum's years: what was being talked about that evening */
+.fr-open { margin: 0 0 44px; padding: 20px 22px 10px; background: var(--e-bg); color: var(--e-ink); }
+.fr-open-hd { display: flex; align-items: center; flex-wrap: wrap; gap: 6px 14px; min-height: 34px; margin-bottom: 12px; }
+.fr-open-hd h2 { margin: 0; font-size: 17px; font-weight: 700; }
+.fr-open-hd span { font-size: 14.5px; font-weight: 600; color: var(--e-ink2); }
+.fr-go { display: inline-flex; align-items: center; gap: 7px; height: 34px; margin-left: auto; padding: 0 12px; background: var(--e-ac); color: var(--e-on); font-size: 13.5px; font-weight: 700; white-space: nowrap; }
+.fr-go svg { flex: none; width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 1.8; }
+.fr-open .fr-threads, .fr-open .fr-row { border-color: var(--e-rule); }
+.fr-open .fr-row:last-child { border-bottom: 0; }
+.fr-open .fr-row small { color: var(--e-ink2); }
+.fr-open .fr-av { background: var(--e-tile); }
+
+/* ── one forum ── */
+.fr-top { margin: 0 0 20px; padding: 18px 22px 22px; background: var(--e-bg); color: var(--e-ink); }
+.fr-top .back { margin-bottom: 14px; color: var(--e-ink2); }
+.fr-top .back:hover { color: var(--e-ink); }
+.fr-top h1 { display: flex; align-items: baseline; flex-wrap: wrap; gap: 6px 18px; margin: 0; font-size: 26px; font-weight: 700; line-height: 1.2; letter-spacing: -.01em; }
+.fr-top h1 b { font-family: var(--display); font-size: clamp(40px, 5vw, 56px); font-weight: 800; line-height: .9; letter-spacing: 0; color: var(--e-ac); white-space: nowrap; }
+.fr-top p { max-width: 74ch; margin: 14px 0 0; font-size: 15px; line-height: 1.6; color: var(--e-ink2); }
+.fr-top p a { color: var(--e-ink); }
+/* the box being looked at, and the way back to all of them */
+.fr-in { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 8px; margin-top: 14px; font-size: 15px; font-weight: 600; }
+.fr-in a { cursor: pointer; } .fr-in a:hover { text-decoration: underline; text-underline-offset: 3px; }
+.fr-in span { color: var(--e-ink2); }
+.fr-in .fr-all { margin-left: 10px; font-size: 13.5px; text-decoration: underline; text-underline-offset: 3px; color: var(--e-ink2); }
+.fr-tools { display: flex; align-items: center; flex-wrap: wrap; gap: 10px; margin-bottom: 14px; }
+.fr-tools .seg { margin-left: 0; }
+.fr-tools .seg a { cursor: pointer; user-select: none; white-space: nowrap; }
+.fr-tools .finput { flex: 1; width: auto; min-width: 200px; margin-left: 0; }
+.fr-sel { height: 34px; padding: 0 8px; border: 1px solid var(--field); border-radius: 0; background: var(--paper); color: var(--ink); font: inherit; font-size: 13.5px; }
+.fr-count { margin: 0 0 8px; font-size: 13px; color: var(--ink3); }
+.fr-of { display: flex; align-items: baseline; gap: 14px; margin: 0 0 10px; font-size: 15px; font-weight: 700; }
+.fr-of button { font-size: 13.5px; font-weight: 600; color: var(--ink2); text-decoration: underline; text-underline-offset: 3px; }
+/* a thread in a list */
+.fr-threads { border-top: 1px solid var(--line); }
+.fr-row { position: relative; display: grid; grid-template-columns: 40px minmax(0, 1fr) auto; gap: 0 14px; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--line); }
+.fr-row-b { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+.fr-row-t { font-size: 16px; font-weight: 600; line-height: 1.35; overflow-wrap: anywhere; }
+.fr-row-t::after { content: ""; position: absolute; inset: 0; } /* the whole row opens the thread */
+.fr-row:hover .fr-row-t { text-decoration: underline; }
+.fr-row small { font-size: 12.5px; color: var(--ink3); }
+.fr-who { display: flex; flex-wrap: wrap; gap: 4px 5px; margin-top: 2px; }
+.fr-who em, .fr-who a, .fr-who span { position: relative; z-index: 1; padding: 1px 7px; font-size: 12px; font-style: normal; font-weight: 600; line-height: 1.5; }
+.fr-who em, .fr-by em, .fr-member em { background: var(--forum); color: var(--paper); }
+.fr-who a { background: #F4E4EA; color: var(--angels); }
+.fr-who a:hover { text-decoration: underline; }
+.fr-who span { padding-left: 2px; color: var(--ink3); }
+.fr-row-n { display: flex; flex-direction: column; align-items: flex-end; gap: 1px; min-width: 88px; font-size: 13px; text-align: right; color: var(--ink2); }
+.fr-row-n b { font-size: 15px; font-weight: 600; font-variant-numeric: tabular-nums; color: var(--ink); }
+.fr-open .fr-row-n, .fr-open .fr-row-n b { color: inherit; }
+/* posts found */
+.fr-hits { border-top: 1px solid var(--line); }
+.fr-hit { display: block; padding: 12px 0 13px; border-bottom: 1px solid var(--line); }
+.fr-hit small { display: flex; flex-wrap: wrap; gap: 2px 10px; font-size: 12.5px; color: var(--ink3); }
+.fr-hit small b { font-weight: 600; color: var(--forum); }
+.fr-hit p { margin: 4px 0 0; font-size: 14.5px; line-height: 1.55; overflow-wrap: anywhere; }
+.fr-hit:hover p { text-decoration: underline; text-decoration-color: var(--field); text-underline-offset: 3px; }
+.fr-hits mark { background: #FFF1B8; color: inherit; }
+/* the members */
+.fr-only { display: inline-flex; align-items: center; gap: 8px; margin-bottom: 12px; font-size: 14px; color: var(--ink2); cursor: pointer; }
+.fr-members { border-top: 1px solid var(--line); }
+.fr-member { display: grid; grid-template-columns: 44px minmax(0, 1fr) auto; gap: 0 14px; align-items: start; padding: 12px 0; border-bottom: 1px solid var(--line); }
+.fr-member b { font-size: 15.5px; font-weight: 600; overflow-wrap: anywhere; }
+.fr-member b + a, .fr-member b + em { margin-left: 10px; }
+.fr-member a { font-size: 14px; font-weight: 600; color: var(--angels); }
+.fr-member a.fr-nick { font-size: 15.5px; }
+.fr-member a:hover { text-decoration: underline; text-underline-offset: 3px; }
+.fr-member em { padding: 1px 7px; font-size: 12px; font-style: normal; font-weight: 600; }
+.fr-member small { display: block; margin-top: 2px; font-size: 12.5px; color: var(--ink3); overflow-wrap: anywhere; }
+.fr-member p { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; max-width: 78ch; margin: 5px 0 0; font-size: 13.5px; line-height: 1.5; color: var(--ink2); overflow-wrap: anywhere; }
+.fr-groups { display: flex; flex-wrap: wrap; align-items: center; gap: 4px; margin-top: 6px; }
+.fr-groups span { padding: 1px 7px; background: var(--fr-soft); font-size: 12px; font-weight: 600; line-height: 1.5; color: var(--forum); }
+.fr-groups i { font-size: 12px; font-style: normal; color: var(--ink3); }
+.fr-member-n { padding-top: 2px; font-size: 13px; color: var(--ink3); white-space: nowrap; }
+.fr-member-n a { font-size: 13px; color: var(--forum); }
+
+/* ── one thread ── */
+.wrap.fr-thread { max-width: 1044px; }
+.fr-thread .back:hover, .fr-crumbs a:hover { color: var(--forum); }
+.fr-crumbs { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 7px; margin-bottom: 12px; font-size: 13.5px; color: var(--ink3); }
+.fr-crumbs a { font-weight: 500; color: var(--ink2); }
+/* the forum itself, as a small mark in the colour of its years */
+.fr-crumbs a.fr-crumb-f { padding: 1px 7px; background: var(--e-bg); color: var(--e-ac); font-weight: 700; }
+.fr-thread h1 { margin: 0 0 8px; font-size: 28px; font-weight: 700; line-height: 1.25; letter-spacing: -.01em; overflow-wrap: anywhere; }
+.fr-meta { margin: 0 0 22px; font-size: 13.5px; color: var(--ink3); }
+.fr-older { display: block; margin: 0 auto 14px; padding: 8px 14px; box-shadow: inset 0 0 0 1px var(--ink); font-size: 13.5px; font-weight: 600; }
+.fr-older:hover { background: var(--ink); color: var(--paper); }
+.fr-posts { border-top: 1px solid var(--ink); }
+.fr-posts .day-sep { margin: 18px 0 4px; }
+.fr-posts .day-sep:first-child { margin-top: 14px; }
+.fr-post { display: grid; grid-template-columns: 148px minmax(0, 1fr); gap: 0 24px; padding: 18px 0 20px; border-bottom: 1px solid var(--line); scroll-margin-top: calc(var(--top) + 16px); }
+.fr-by { display: flex; flex-direction: column; align-items: flex-start; gap: 3px; min-width: 0; }
+.fr-by .fr-av { margin-bottom: 6px; } .fr-by .fr-av span { font-size: 24px; }
+.fr-by b { max-width: 100%; font-size: 14.5px; font-weight: 700; overflow-wrap: anywhere; }
+.fr-by a { font-size: 13px; font-weight: 600; color: var(--angels); }
+.fr-by a:hover { text-decoration: underline; text-underline-offset: 3px; }
+.fr-by em { padding: 1px 7px; font-size: 12px; font-style: normal; font-weight: 600; }
+/* what he wrote himself stands out by a rule in the forum's colour */
+.fr-post.me { padding-left: 16px; background: color-mix(in srgb, var(--forum) 5%, transparent); box-shadow: inset 3px 0 0 var(--forum); }
+.fr-post.hit { box-shadow: inset 0 0 0 2px var(--forum); padding-left: 16px; padding-right: 16px; }
+.fr-body { min-width: 0; }
+.fr-when { display: flex; align-items: baseline; gap: 10px; margin-bottom: 6px; font-size: 12.5px; font-variant-numeric: tabular-nums; color: var(--ink3); }
+.fr-when a { margin-left: auto; } .fr-when a:hover { color: var(--forum); }
+.fr-body h3 { margin: 0 0 6px; font-size: 15.5px; font-weight: 700; }
+.fr-content { font-size: 15.5px; line-height: 1.62; overflow-wrap: anywhere; }
+.fr-content p { margin: 0 0 8px; } .fr-content p:last-child { margin-bottom: 0; }
+.fr-content a { color: var(--forum); text-decoration: underline; text-underline-offset: 2px; }
+.fr-content blockquote { margin: 8px 0; padding: 8px 12px; background: var(--soft); box-shadow: inset 2px 0 0 var(--field); font-size: 14.5px; color: var(--ink2); }
+.fr-content img { max-width: 100%; height: auto; vertical-align: middle; }
+.fr-content img.gone { display: none; }
+.fr-content pre { margin: 6px 0; font: inherit; white-space: pre-wrap; }
+.fr-content ul, .fr-content ol { margin: 6px 0; padding-left: 1.3em; }
+/* the forums had dark skins: what was written in white or a pale colour there is set in the page's ink here */
+.fr-content [style*="color:White" i], .fr-content [style*="color:#fff" i], .fr-content [style*="color:Silver" i], .fr-content [style*="color:Yellow" i],
+.fr-content [style*="color:Lime" i], .fr-content [style*="color:Cyan" i], .fr-content [style*="color:Aqua" i] { color: inherit !important; }
+
+@media (max-width: 860px) {
+  .fr-forum { margin-bottom: 44px; }
+  .fr-band { margin: 0 -16px; padding: 14px 16px; }
+  .fr-band b { font-size: 34px; } .fr-band strong { flex: 1 1 100%; order: 3; font-size: 20px; }
+  .fr-boxes { grid-template-columns: minmax(0, 1fr); }
+  .fr-open { margin-right: -16px; margin-left: -16px; padding: 16px 16px 6px; }
+  .fr-top { margin: 0 -16px 16px; padding: 16px 16px 18px; }
+  .fr-top h1 { font-size: 22px; } .fr-top h1 b { flex: 1 1 100%; font-size: 40px; }
+  .fr-tools .seg { display: flex; width: 100%; } .fr-tools .seg a { flex: 1; justify-content: center; padding: 0 4px; }
+  .fr-tools .finput { flex: 1 1 100%; }
+  .fr-sel { flex: 1 1 0; min-width: 0; }
+  .fr-row { grid-template-columns: 36px minmax(0, 1fr); gap: 0 12px; align-items: start; }
+  .fr-row .fr-av { width: 36px !important; height: 36px !important; margin-top: 2px; }
+  .fr-row-n { grid-column: 2; flex-direction: row; align-items: baseline; gap: 10px; min-width: 0; margin-top: 4px; text-align: left; }
+  .fr-row-t { font-size: 15.5px; }
+  .fr-member { grid-template-columns: 40px minmax(0, 1fr); gap: 0 12px; }
+  .fr-member .fr-av { width: 40px !important; height: 40px !important; }
+  .fr-member-n { grid-column: 2; margin-top: 4px; }
+  .fr-thread h1 { font-size: 23px; }
+  /* who wrote goes above what they wrote */
+  .fr-post { display: block; padding: 14px 0 16px; }
+  .fr-post.me, .fr-post.hit { padding-left: 12px; padding-right: 8px; }
+  .fr-by { flex-direction: row; align-items: center; flex-wrap: wrap; gap: 4px 9px; margin-bottom: 8px; }
+  .fr-by .fr-av { width: 32px !important; height: 32px !important; margin: 0; } .fr-by .fr-av span { font-size: 15px; }
+  .fr-content { font-size: 15px; }
+}

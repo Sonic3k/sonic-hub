@@ -81,6 +81,8 @@ export const hub = {
   chatBoard: () => get<ChatBoard>('/chat-stats'),
   /** Every list of one board with its rows, oldest first; metrics (heavy) only when asked for. */
   rankingBoard: (board: string, metrics = false) => get<RankingDetail[]>(`/rankings/board/${encodeURIComponent(board)}`, { metrics: metrics || undefined }),
+  /** One column of a board's sheets per person ({personId: value}), each from the latest sheet that has them. */
+  rankingColumn: (board: string, key: string) => get<Record<string, string>>(`/rankings/board/${encodeURIComponent(board)}/column/${encodeURIComponent(key)}`),
   total: async (p: Search) => (await hub.search({ ...p, size: 1 })).totalElements,
   tagStats: () => get<TagStats[]>('/tags/stats'),
   allAlbums: () => get<Collection[]>('/collections/all', { inclMediaCount: true, inclChildrenCount: true, inclTags: true }),

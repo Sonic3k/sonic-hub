@@ -205,8 +205,8 @@ export default function PersonNumbers({ entries, name, activity }: { entries: Pe
   const act = activity?.messages ? activity : undefined, rel = by('relationship'), moments = entries.filter(e => e.ranking.board === 'moments'), fba = by('fb-association');
   if (!act && !rel.length && !moments.length && !fba.length) return null;
   return (
-    <section className="block numbers">
-      <div className="hd"><h2>Những con số</h2></div>
+    <section className="numbers">
+      <h2 className="an-h">Những con số</h2>
       {act && <ChatActivity a={act} name={name} />}
       {rel.length > 0 && <RankHistory rows={rel} />}
       {(moments.length > 0 || fba.length > 0) && (
