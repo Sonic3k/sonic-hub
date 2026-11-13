@@ -87,6 +87,48 @@ public class SpotifyService {
 
     // ── reports ──────────────────────────────────────────────────────────────
 
+    // ── answers kept ──────────────────────────────────────────────────────
+
+    // A report sums every play (some 160,000 rows, with several DISTINCT counts): a few hundred milliseconds per
+    // statement however it is written, and the overview needs five. The plays change only in a sync, and the names
+    // shown beside them only when a song, one of his tracks or a list is edited. So an answer is kept and given again
+    // for as long as the data is the same: sync() forgets them all, and every read first compares the fingerprint of
+    // the tables (one statement, about a millisecond), so an edit made anywhere else is seen too.
+    private static final int KEPT_MAX = 200;
+    private final Map<String, Object> kept = new java.util.concurrent.ConcurrentHashMap<>();
+    private final java.util.concurrent.atomic.AtomicLong generation = new java.util.concurrent.atomic.AtomicLong();
+    private volatile String keptFor = "";
+
+    /** the latest play, and how many songs, lists and tracks of his there are with the time of their last change */
+    private String fingerprint() {
+        String part = "(SELECT COUNT(*) || ' ' || COALESCE(CAST(MAX(updated_at) AS text), '') FROM %s)";
+        return jdbc.queryForObject("SELECT CONCAT_WS('|', (SELECT CAST(MAX(local_at) AS text) FROM spotify_plays), "
+            + String.format(part, "spotify_songs") + ", " + String.format(part, "music_playlists") + ", " + String.format(part, "music_tracks") + ")",
+            new MapSqlParameterSource(), String.class);
+    }
+
+    @SuppressWarnings("unchecked")
+    private <T> T kept(String key, java.util.function.Supplier<T> read) {
+        String now = fingerprint();
+        if (!now.equals(keptFor)) synchronized (kept) { if (!now.equals(keptFor)) { kept.clear(); keptFor = now; } }
+        Object have = kept.get(key);
+        if (have != null) return (T) have;
+        long before = generation.get();
+        T fresh = read.get();
+        if (kept.size() >= KEPT_MAX) kept.clear();
+        if (generation.get() == before) kept.put(key, fresh);   // a sync ran meanwhile: this answer may predate it, so it is not kept
+        return fresh;
+    }
+
+    private void forget() { generation.incrementAndGet(); kept.clear(); }
+
+    /** After a start the overview is read once in the background, so the first person to open it does not wait for it. */
+    @org.springframework.context.event.EventListener(org.springframework.boot.context.event.ApplicationReadyEvent.class)
+    public void warm() {
+        Thread t = new Thread(() -> { try { overview(); } catch (RuntimeException e) { /* nothing to warm, or no database yet: the first read does it */ } }, "spotify-warm");
+        t.setDaemon(true); t.start();
+    }
+
     /** The streams under a filter counted by one side (group); by = also cut by time (year, month, day, hour, weekday):
      *  the series then holds each line's numbers per bucket, and each bucket's own total under no key. */
     @Transactional(readOnly = true)
@@ -94,6 +136,12 @@ public class SpotifyService {
         Dim d = DIMS.get(group == null || group.isBlank() ? "year" : group);
         if (d == null) throw new IllegalArgumentException("group: one of " + DIMS.keySet());
         if (by != null && !by.isBlank() && !BUCKETS.containsKey(by)) throw new IllegalArgumentException("by: one of " + BUCKETS.keySet());
+        if (sort != null && !sort.isBlank() && !SORTS.containsKey(sort)) throw new IllegalArgumentException("sort: one of " + SORTS.keySet());
+        return kept("report|" + group + "|" + by + "|" + f + "|" + sort + "|" + limit, () -> readReport(group, by, f, sort, limit));
+    }
+
+    private SpotifyDto.Report readReport(String group, String by, Filter f, String sort, Integer limit) {
+        Dim d = DIMS.get(group == null || group.isBlank() ? "year" : group);
         MapSqlParameterSource p = new MapSqlParameterSource();
         String where = where(f, p);
         String order = sort != null && !sort.isBlank() ? SORTS.get(sort) : d.time() ? "k ASC" : "ms DESC";
@@ -122,7 +170,9 @@ public class SpotifyService {
 
     /** Everything at a glance: the whole, then each year with the song, the artist and the list he played most. */
     @Transactional(readOnly = true)
-    public SpotifyDto.Overview overview() {
+    public SpotifyDto.Overview overview() { return kept("overview", this::readOverview); }
+
+    private SpotifyDto.Overview readOverview() {
         MapSqlParameterSource p = new MapSqlParameterSource();
         SpotifyDto.Overview o = new SpotifyDto.Overview();
         o.total = jdbc.queryForObject("SELECT " + METRICS + ARTISTS + FROM, p, (rs, i) -> totals(rs, true));
@@ -265,6 +315,7 @@ public class SpotifyService {
 
     /** Songs and tracks matched by key / id, plays added in bulk; reset = every play is removed first. */
     public SpotifyDto.SyncResult sync(SpotifyDto.Sync in) {
+        forget();   // and again at the end: no kept report outlives the plays it was counted from
         Map<String, Integer> counts = new LinkedHashMap<>();
         List<String> warnings = new ArrayList<>();
         LocalDateTime now = LocalDateTime.now();
@@ -334,6 +385,7 @@ public class SpotifyService {
             counts.put("plays", batch.size());
             for (String k : missing) warnings.add("plays.playlist: no list " + k);
         }
+        forget();
         return new SpotifyDto.SyncResult(counts, warnings);
     }
 
