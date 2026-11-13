@@ -118,7 +118,7 @@ export function AngelsIndex() {
   const persons = usePersons(), { years, ready } = useMetYears(), loc = useLocation(), [q, setQ] = useState('');
   const all = useMemo(() => persons.data ?? [], [persons.data]);
   const blocks = useMemo(() => angelsByYear(all, years), [all, years]);
-  const t = q.trim(), loading = persons.isLoading || !ready;
+  const t = q.trim(), loading = persons.isLoading || !ready, everyone = useMemo(() => blocks.flatMap(([, ps]) => ps), [blocks]);
   const found = t ? blocks.flatMap(([y, ps]) => ps.filter(p => matches(p.name, t) || matches(p.displayName, t) || matches(p.nickname, t)).map(p => ({ y, p }))) : [];
   /* #y-2009: a year of the sidebar */
   useGoTo(t ? '' : loc.hash.slice(1), !loading);
@@ -138,6 +138,7 @@ export function AngelsIndex() {
         : t ? (found.length ? <div className="an-grid">{found.map(({ y, p }) => <PersonCard key={p.id} p={p} year={y} chip />)}</div> : <p className="jn-wait">Không thấy ai tên như vậy.</p>)
         : <>
           <Opener all={all} years={years} />
+          <LineCard people={everyone} wide />
           {/* one roll of faces, a tile where each year begins */}
           <div className="an-grid an-roll">{blocks.map(([y, ps]) => (
             <Fragment key={y}>
@@ -159,15 +160,17 @@ function ChapterPhotos({ personId, period, onOpen }: { personId: string; period?
   return items.length ? <div className="an-ch-photos"><Justified items={items} rowHeight={190} gap={6} onOpen={(i) => onOpen(items[i].id)} /></div> : null;
 }
 
-/** One line they really wrote, pulled from the old chats: the page's words in the school hand. */
-function LineCard({ p }: { p: Person }) {
-  const [n, setN] = useState(0);
-  const q = useQuery({ queryKey: ['line', p.id, n], queryFn: () => randomLine([p]), staleTime: T });
-  if (q.isSuccess && !q.data) return null;
+/** One line really written in an old chat, pulled out at random: these are the pages' words in the school hand.
+ *  On the list it is a line from anyone; on a person's page, one of theirs with him. */
+function LineCard({ people, wide }: { people: Person[]; wide?: boolean }) {
+  const [n, setN] = useState(0), who = people.length === 1 ? people[0].id : 'anyone';
+  const q = useQuery({ queryKey: ['line', who, n], queryFn: () => randomLine(people), enabled: people.length > 0, staleTime: T });
+  if (!people.length || (q.isSuccess && !q.data)) return null;
+  const head = <>Một dòng tin nhắn<button type="button" onClick={() => setN(v => v + 1)}>Dòng khác</button></>;
   return (
-    <div className="an-line">
-      <h5>Một dòng tin nhắn<button type="button" onClick={() => setN(v => v + 1)}>Dòng khác</button></h5>
-      {q.data ? <><blockquote className="an-said">{q.data.text}</blockquote><small>{[q.data.who, q.data.platform, q.data.at ? dayMonthYear(vnClock(q.data.at)) : ''].filter(Boolean).join(' · ')}</small></>
+    <div className={`an-line ${wide ? 'wide' : ''}`}>
+      {wide ? <h2>{head}</h2> : <h5>{head}</h5>}
+      {q.data ? <><blockquote className="an-said">{q.data.text}</blockquote><small>{[q.data.who === 'self' ? 'anh' : q.data.who, platformName(q.data.platform), q.data.at ? dayMonthYear(vnClock(q.data.at)) : ''].filter(Boolean).join(' · ')}</small></>
         : <small>Đang lục lại…</small>}
     </div>
   );
@@ -346,7 +349,7 @@ export function PersonPage() {
                   {c.notes && <small>{c.notes}</small>}</dd></div>))}</dl></div>}
           {!!traits.data?.length && <div><h5>Tính cách</h5>
             <div className="an-traits">{traits.data.map(t => <span key={t.id} title={t.description ?? ''}>{t.trait}</span>)}</div></div>}
-          <LineCard p={p} />
+          <LineCard people={[p]} />
           {parts.length > 1 && <nav className="an-here" aria-label="Các phần của trang"><h5>Trong trang này</h5>{parts.map(([k2, n]) => <a key={k2} href={`#${k2}`}>{n}</a>)}</nav>}
         </aside>
       </div>
