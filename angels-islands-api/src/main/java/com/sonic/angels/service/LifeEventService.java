@@ -27,11 +27,14 @@ public class LifeEventService {
     private final CollectionRepository collectionRepo;
     private final NamedParameterJdbcTemplate jdbc;
     private final DtoMapper mapper;
+    private final CollectionService collectionService;
 
     public LifeEventService(LifeEventRepository repo, PersonRepository personRepo, MediaFileRepository mediaRepo,
-                            CollectionRepository collectionRepo, NamedParameterJdbcTemplate jdbc, DtoMapper mapper) {
+                            CollectionRepository collectionRepo, NamedParameterJdbcTemplate jdbc, DtoMapper mapper,
+                            CollectionService collectionService) {
         this.repo = repo; this.personRepo = personRepo; this.mediaRepo = mediaRepo;
         this.collectionRepo = collectionRepo; this.jdbc = jdbc; this.mapper = mapper;
+        this.collectionService = collectionService;
     }
 
     // ── read ────────────────────────────────────────────────────────────────
@@ -64,10 +67,11 @@ public class LifeEventService {
             .toList();
         MapSqlParameterSource m = new MapSqlParameterSource("id", e.getId());
         List<UUID> albumIds = jdbc.queryForList("SELECT id FROM collections WHERE life_event_id = :id ORDER BY name", m, UUID.class);
-        d.albumList = collectionRepo.findAllById(albumIds).stream()
+        List<com.sonic.angels.model.entity.Collection> albums = collectionRepo.findAllById(albumIds);
+        Map<UUID, String> covers = collectionService.coverUrls(albums);   // the cover set, else the album's first picture
+        d.albumList = albums.stream()
             .sorted(Comparator.comparing(c -> Objects.toString(c.getName(), "")))
-            .map(c -> new LifeEventDto.AlbumRef(c.getId(), c.getName(), countMedia(c.getId()),
-                c.getThumbnailMediaFile() != null ? mapper.imageUrl(c.getThumbnailMediaFile()) : null,
+            .map(c -> new LifeEventDto.AlbumRef(c.getId(), c.getName(), countMedia(c.getId()), covers.get(c.getId()),
                 c.getParent() != null ? c.getParent().getId() : null))
             .toList();
         d.memoryList = jdbc.query("SELECT id, title, summary, occurred_at, occurred_precision, occurred_approx, kind FROM episodes "

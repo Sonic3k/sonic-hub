@@ -40,6 +40,16 @@ public interface CollectionRepository extends JpaRepository<Collection, UUID> {
     @Query(value = "SELECT COUNT(*) FROM collection_media WHERE collection_id = :collectionId", nativeQuery = true)
     long countMediaInCollection(UUID collectionId);
 
+    /** [collection_id, media_file_id]: the first picture in each of these albums, in the order the album shows its files —
+     *  a photo, or, in an album with no photo, a file that has a still (a video with a poster). What stands in as the
+     *  cover of an album that has none set. An album with no picture at all has no row. */
+    @Query(value = "SELECT DISTINCT ON (cm.collection_id) cm.collection_id, m.id " +
+        "FROM collection_media cm JOIN media_files m ON m.id = cm.media_file_id " +
+        "WHERE cm.collection_id IN (:ids) AND ((m.file_type = 'IMAGE' AND m.storage_key IS NOT NULL) OR m.poster_storage_key IS NOT NULL) " +
+        "ORDER BY cm.collection_id, CASE WHEN m.file_type = 'IMAGE' THEN 0 ELSE 1 END, " +
+        "m.effective_date NULLS FIRST, m.date_rank NULLS LAST, m.id", nativeQuery = true)
+    List<Object[]> firstPicturesOf(List<UUID> ids);
+
     /** Media being deleted may be some collections' cover — clear refs first or the FK blows up. */
     @org.springframework.data.jpa.repository.Modifying
     @Query(value = "UPDATE collections SET thumbnail_media_file_id = NULL WHERE thumbnail_media_file_id = :mediaId", nativeQuery = true)
