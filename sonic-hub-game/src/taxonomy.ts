@@ -57,6 +57,7 @@ export const MACHINES: Machine[] = [
 /** Tags are free: any word in the catalogue becomes one. These few have a proper name. */
 export const TAG_NAMES: Record<string, string> = {
   originals: 'Sonic Hub originals',
+  reference: 'Vibe code references',
   'two-player': 'Two players',
   'co-op': 'Co-op',
   classic: 'Classics',

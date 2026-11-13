@@ -1,0 +1,11 @@
+{
+  "files": [
+    {
+      "path": "saltline/saltline_1.html",
+      "from": "https://angels-islands-api-production.up.railway.app/api/game-packages/saltline/file",
+      "sha256": "039890a0fa3fbe2c8d6b6b907e937d47c5a0b80b742f32fb3a4f19f0f15e0cac",
+      "bytes": 1423581,
+      "note": "Saltline as he copied it from the web on 11/11/2026, byte for byte; kept in the hub's game storage as package saltline"
+    }
+  ]
+}

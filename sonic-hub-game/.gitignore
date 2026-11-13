@@ -3,3 +3,5 @@ dist/
 *.log
 .DS_Store
 __pycache__/
+# other people's game files: brought in by scripts/fetch-kept.mjs, never committed
+public/kept/

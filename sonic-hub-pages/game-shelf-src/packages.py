@@ -12,7 +12,10 @@ screen size Wine starts with when not 800x600 (res), and, for the games of [Win 
 package that holds the zip (zip). What runs them (Boxedwine and the Wine files) is win_runtime.py.
 WEB packages have no file: the web has the game itself (config names it).
 An HTML package is someone else's web game in one .html file (a game he copied from the web to look at), stored byte
-for byte; the web plays it in a frame that has none of the site's origin and may load only from the hosts listed here.
+for byte. It is played on Sonic Hub Games, not here (portal = false): the hub only keeps the file, and the game
+portal's build takes it from this package (sonic-hub-game/kept.json names it with its SHA-256), so the package and its
+file must stay as they are. The portal shows it in a frame that has none of its origin and may load only from the
+hosts listed here.
 
 What his bot brought on 11/11/2026 (his Drive folder _incoming: SOURCE.txt beside each item names where it came from
 and its SHA-256) is staged under GAMES_ROOT/_incoming, installed the way a machine of the time had it:
@@ -268,13 +271,13 @@ WIN98SE = (1999, 4, 23, 22, 22, 0)
 SHELL_BEFORE = 1117558800      # 01/06/2005: the last day of the school's computer room for him
 
 
-# Web games in one .html file that are someone else's (kind REFERENCE in catalog.py), played on the portal in a frame
-# of its own: key, game, title, the file under GAMES_ROOT (stored as it is), the only other hosts its page may load
-# from (read out of the file: its fonts), note
+# Web games in one .html file that are someone else's (kind REFERENCE in catalog.py), played on Sonic Hub Games in a
+# frame of their own while the hub keeps the file: key, game, title, the file under GAMES_ROOT (stored as it is), the
+# only other hosts its page may load from (read out of the file: its fonts), note
 HTML = [
     ("saltline", "saltline", "Saltline", "_incoming/saltline/saltline_1.html", "https://fonts.googleapis.com https://fonts.gstatic.com",
-     "File saltline_1.html anh gửi ngày 11/11/2026 (chép trên mạng), giữ nguyên từng byte. Chạy trong khung riêng: không đụng được "
-     "tới trang, bộ nhớ hay phiên đăng nhập của hub, chỉ tải thêm font chữ từ Google Fonts"),
+     "File saltline_1.html anh gửi ngày 11/11/2026 (chép trên mạng), giữ nguyên từng byte. Game chơi trên Sonic Hub Games; "
+     "hub chỉ giữ file, portal lấy file từ đây khi build"),
 ]
 
 
@@ -507,7 +510,7 @@ def push(bundles, only=None):
         order += 1
         if only and key not in only:
             continue
-        meta = {"gameKey": game, "engine": "HTML", "title": title, "portal": True, "sortOrder": order,
+        meta = {"gameKey": game, "engine": "HTML", "title": title, "portal": False, "sortOrder": order,
                 "config": json.dumps({"hosts": hosts}), "note": note}
         requests.put(f"{API}/game-packages/{key}", json=meta, timeout=60).raise_for_status()
         with open(os.path.join(ROOT, rel), "rb") as fh:

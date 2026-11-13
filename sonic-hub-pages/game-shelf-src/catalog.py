@@ -28,9 +28,10 @@ def yt(title, kind="LONGPLAY", note=None):
             "note": note}
 
 
-def portal(key, title="Chơi trên Sonic Hub Games"):
-    """A game on the game portal, under the same key as here: the link opens the game itself."""
-    return {"kind": "PLAY", "title": title, "url": f"{GAMES_PORTAL}/games/{key}"}
+def portal(key, title="Chơi trên Sonic Hub Games", path="games"):
+    """A game on the game portal, under the same key as here: the link opens the game itself. path "play" is for a
+    game the portal plays in a frame of its own (someone else's file)."""
+    return {"kind": "PLAY", "title": title, "url": f"{GAMES_PORTAL}/{path}/{key}"}
 
 
 def pic(prefix, role="PHOTO", label=None):
@@ -836,7 +837,9 @@ GAMES = [
 
     # ── Kept to look at ────────────────────────────────────────────────────────────────────────────────────────
     # Other people's games he copied from the web as references for vibe coding (kind REFERENCE): never his own and
-    # never on a period's shelf. Their file plays on the portal in a frame of its own (packages.py, HTML).
+    # never on a period's shelf. They are played on Sonic Hub Games, in a frame of their own; the hub keeps the file
+    # (packages.py, HTML), and the game portal's build takes it from there (sonic-hub-game/kept.json).
     dict(key="saltline", title="Saltline", kind="REFERENCE", platform="Web", genre="Shooter", cover="b3092069",
-         summary="Game bắn súng góc nhìn thứ nhất gói trong một file HTML: cảng container lúc rạng sáng, cắt ba trạm phát của hệ thống an ninh rồi ra thuyền. Hình và âm thanh đều do code dựng ngay trong trình duyệt. Anh chép trên mạng về ngày 11/11/2026 để tham khảo khi vibe code; file không ghi tác giả."),
+         summary="Game bắn súng góc nhìn thứ nhất gói trong một file HTML: cảng container lúc rạng sáng, cắt ba trạm phát của hệ thống an ninh rồi ra thuyền. Hình và âm thanh đều do code dựng ngay trong trình duyệt. Anh chép trên mạng về ngày 11/11/2026 để tham khảo khi vibe code; file không ghi tác giả.",
+         links=[portal("saltline", path="play")]),
 ]

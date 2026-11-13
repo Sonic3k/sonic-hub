@@ -8,6 +8,16 @@ import { markTitle } from './search';
 import { rememberPlayed, toggleFavorite } from './store';
 import { INPUT_NAME, groupOf, langName, machineOf, subOf } from './taxonomy';
 
+/** The way into a game. One that plays in the portal's own player (catalogue entries with `frame`) opens without
+ *  leaving the page; the others are pages of their own. Either way the portal remembers it was opened. */
+export function PlayLink({ game, className, label, children }: { game: Game; className: string; label?: string; children: ReactNode }) {
+  if (!game.play) return null;
+  const on = () => rememberPlayed(game.key);
+  return game.frame
+    ? <Link className={className} to={game.play} onClick={on} aria-label={label}>{children}</Link>
+    : <a className={className} href={game.play} onClick={on} aria-label={label}>{children}</a>;
+}
+
 export const calm = () => typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches;
 export const liq = (g: Game) => `liq-${groupOf(g.group).liquid}`;
 
@@ -70,7 +80,7 @@ export const Chamber = memo(function Chamber({ game, fav, wide }: { game: Game; 
         {game.blurb && <p className="g-blurb">{game.blurb}</p>}
         <div className="g-foot">
           <Inputs game={game} />
-          {game.play && <a className="go" href={game.play} onClick={() => rememberPlayed(game.key)} aria-label={`Play ${game.title}`}><PlayIcon size={15} />Play</a>}
+          <PlayLink game={game} className="go" label={`Play ${game.title}`}><PlayIcon size={15} />Play</PlayLink>
         </div>
       </div>
       <FavButton game={game} on={fav} />
