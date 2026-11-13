@@ -103,7 +103,7 @@ export function MusicIndex() {
         <div className={`mu-old ${players.length ? '' : 'solo'}`}>
           <div>
             {windows.length > 0 && <><h3 className="mu-h">Bài mới của từng giai đoạn</h3>
-              <div className="mu-tiles tapes">{windows.map(l => <ListTile key={l.key} l={l} />)}</div></>}
+              <div className="mu-tiles tapes">{windows.map(l => <ListTile key={l.key} l={l} bare />)}</div></>}
             {full.length > 0 && <><h3 className="mu-h">Cả danh sách lúc đó</h3>
               <div className="mu-rows">{full.map(l => <ListRow key={l.key} l={l} />)}</div></>}
           </div>
@@ -134,15 +134,16 @@ export function MusicIndex() {
   );
 }
 
-/** A list as a tile in the colour of its years: the years large, its name, what it is, a way to listen. */
-function ListTile({ l, plain }: { l: Playlist; plain?: boolean }) {
+/** A list as a tile in the colour of its years: the years large, its name, what it is (left out under a heading that
+ *  already says it), a way to listen. */
+function ListTile({ l, plain, bare }: { l: Playlist; plain?: boolean; bare?: boolean }) {
   const y = yearOf(l), spotify = isSpotify(l);
   return (
     <div className={`mu-tile ${plain || !y ? '' : eraClass(l.kind === 'WINDOW' ? +(l.windowFrom ?? '').slice(0, 4) || y : y)}`}>
       <Link to={listHref(l)}>
         <b>{yearsOf(l)}</b>
         <span>{l.title}</span>
-        <small>{spotify ? `tạo ngày ${dmy(l.takenAt)}` : KIND[l.kind] ?? ''}</small>
+        {!bare && <small>{spotify ? `tạo ngày ${dmy(l.takenAt)}` : KIND[l.kind] ?? ''}</small>}
         {l.summary && <p>{l.summary}</p>}
       </Link>
       <Listen l={l} label="Nghe" />
@@ -157,8 +158,7 @@ function ListRow({ l }: { l: Playlist }) {
     <div className="mu-row">
       <Link className="mm-line" to={listHref(l)}>
         <span className="mm-d">{spotify ? dmy(l.takenAt).slice(0, 5) : when(l.when)}</span>
-        <span className="mm-b"><b>{l.title}</b>{l.summary ? <small className="mu-sum">{l.summary}</small>
-          : <small>{[KIND[l.kind], l.deviceName].filter(Boolean).join(' · ')}</small>}</span>
+        <span className="mm-b"><b>{l.title}</b>{l.summary ? <small className="mu-sum">{l.summary}</small> : l.deviceName ? <small>trên {l.deviceName}</small> : null}</span>
       </Link>
       <Listen l={l} />
     </div>
@@ -186,7 +186,7 @@ export function ListPage() {
   const byMonth = new Map((months.data?.rows ?? []).map(r => [r.key, r.ms])), t = months.data?.total;
   const dated = l.entries.some(e => e.addedAt), counted = plays.size > 0, queue = playable(l.entries.map(e => e.track)), audio = queue.length > 0;
   // a playlist of his carries the day its first song went in; Liked Songs has no day it was made; the rebuilt list is a state on a day
-  const since = !spotify ? (l.kind === 'WINDOW' ? `bài mới của ${when(l.when)}` : when(l.when)) : l.spotifyId ? `tạo ngày ${dmy(l.takenAt)}` : dated ? `từ ${dmy(l.takenAt)}` : `tính đến ${dmy(l.takenAt)}`;
+  const since = !spotify ? when(l.when) : l.spotifyId ? `tạo ngày ${dmy(l.takenAt)}` : dated ? `từ ${dmy(l.takenAt)}` : `tính đến ${dmy(l.takenAt)}`;
   const year = yearOf(l), from: PlayedFrom = { title: l.title, to: listHref(l) };
   const device = l.deviceKey ? desk.data?.machines.find(d => d.key === l.deviceKey) : undefined;
   // the lists before and after it in time, among its own kind (his folders, or his Spotify playlists)
@@ -196,7 +196,7 @@ export function ListPage() {
     <div className="page mu">
       <header className={`mm-top mu-top ${year ? eraClass(l.kind === 'WINDOW' ? +(l.windowFrom ?? '').slice(0, 4) || year : year) : 'plain'}`}>
         <div className="mm-top-in">
-          {year > 0 && <div className="mm-top-y"><b>{year}</b><span>{since}</span></div>}
+          {year > 0 && <div className="mm-top-y"><b>{year}</b>{since !== String(year) && <span>{since}</span>}</div>}
           <div className="mm-top-t">
             <Link className="back" to="/music">← Music</Link>
             <span className="mm-k">{spotify ? 'Playlist Spotify' : KIND[l.kind] ?? 'Danh sách'}</span>
