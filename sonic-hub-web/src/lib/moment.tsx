@@ -12,7 +12,7 @@ interface MomentState {
   moment: Moment | null;
   /** a day was chosen (in the address or earlier in this visit), not just today's default */
   picked: boolean;
-  /** go and look at this day: a home page keeps its mode, Ảnh / Ký ức / Nhật ký stay and show that time, any other page goes to Hôm nay */
+  /** go and look at this day: a home page keeps its mode, Ảnh / Ký ức / Nhật ký / Game / Music stay and show that time, any other page goes to Hôm nay */
   pick: (m: Moment) => void;
   /** back to today's default */
   clear: () => void;
@@ -27,12 +27,15 @@ export const momentQuery = (m: Moment) => `?y=${m.y}&d=${m.m}-${m.d}`;
 export const daysIn = (y: number, m: number) => new Date(y, m, 0).getDate();
 export const HOME_PATHS = ['/', '/timeline'];
 /** Where a section shows a moment: the photo library opens its month; Ký ức and Nhật ký open their list, which goes
- *  to the moment's year by itself; the timeline keeps its mode; anything else is Hôm nay. */
+ *  to the moment's year by itself; Game and Music open on what he played and heard then; the timeline keeps its mode;
+ *  anything else is Hôm nay. */
 export function momentHref(path: string, m: Moment): string {
   if (path === '/timeline') return `/timeline${momentQuery(m)}`;
   if (/^\/(photos|tags)(\/|$)/.test(path)) return `/photos?year=${m.y}&month=${m.m}`;
   if (path.startsWith('/memories')) return '/memories';
   if (path.startsWith('/journal')) return '/journal';
+  if (path.startsWith('/games')) return '/games';
+  if (path.startsWith('/music')) return '/music';
   return `/${momentQuery(m)}`;
 }
 

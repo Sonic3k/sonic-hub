@@ -1,0 +1,191 @@
+/* ═══ Game (the 2.4 set): the shelf by machine, one game, a series ═══
+   A period of the shelf opens on a band in the colour of its years, like a year in Ảnh. A game is a flat box: its
+   picture, or a label in the tint of the machine it ran on when there is no picture yet. The one sheet of squared
+   paper is his numbered list of 2004 — it is his handwriting; nothing else here is ruled. */
+.wrap.gm { max-width: 1120px; }
+.gm section + section { margin-top: 0; }
+.gm .mm-head { margin-bottom: 28px; }
+.gm-up { order: -1; flex: 0 0 100%; margin: 0 0 2px; }
+.gm-go { display: inline-flex; align-items: center; gap: 7px; height: 34px; padding: 0 12px; background: var(--e-ac); color: var(--e-on); font-size: 13.5px; font-weight: 700; white-space: nowrap; }
+.gm-go:hover, .gm-band-go a:hover, .gm-btn.main:hover { filter: brightness(1.1); }
+.gm-go svg, .gm-band-go svg, .gm-btn svg { flex: none; width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 1.8; }
+.mm-head .gm-go { background: var(--games); color: var(--paper); }
+
+/* ── a game on the shelf ── */
+.gm-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(156px, 1fr)); gap: 28px 16px; }
+.gm-grid.small { grid-template-columns: repeat(auto-fill, minmax(140px, 180px)); margin-bottom: 8px; }
+.gm-box { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+.gm-art { position: relative; display: block; aspect-ratio: 4 / 3; overflow: hidden; background: var(--soft); }
+.gm-art > img { display: block; width: 100%; height: 100%; object-fit: cover; }
+.gm-box > b { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; margin-top: 8px; font-size: 15px; font-weight: 600; line-height: 1.3; }
+.gm-box > small { overflow: hidden; font-size: 12.5px; color: var(--ink3); white-space: nowrap; text-overflow: ellipsis; }
+.gm-box:hover > b { text-decoration: underline; }
+.gm-box.ghost { opacity: .5; } .gm-box.ghost:hover { opacity: .9; }
+/* no picture yet: a label, the way a cartridge or a floppy carries one — the machine in small, the name in the display face */
+.gm-ph { display: flex; flex-direction: column; justify-content: space-between; gap: 8px; height: 100%; padding: 10px 12px 12px; background: #DDE5EC; color: #2A3F57; }
+.gm-ph small { overflow: hidden; font-size: 11.5px; font-weight: 600; white-space: nowrap; text-overflow: ellipsis; opacity: .82; }
+.gm-ph span { display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; font-family: var(--display); font-size: 17px; font-weight: 700; line-height: 1.1; text-transform: uppercase; }
+.gm-ph.nin { background: #F0DBDC; color: #7B2733; }
+.gm-ph.web { background: #E1E0F3; color: #3A3684; }
+.gm-ph.table { background: #E2EADA; color: #33502F; }
+.gm-ph.mobile { background: #D6ECE8; color: #1B5E58; }
+.gm-ph.paper { background: var(--paper); color: var(--hand); box-shadow: inset 0 0 0 1px var(--line); }
+.gm-ph.plain { background: var(--soft); color: var(--ink2); }
+.gm-art:has(.gm-tag) .gm-ph { padding-bottom: 30px; }
+/* his own little drawing of the game, from the list of 2004 */
+.gm-draw { display: grid; place-items: center; height: 100%; background: var(--paper); box-shadow: inset 0 0 0 1px var(--line); }
+.gm-draw img { width: 56%; height: 56%; object-fit: contain; mix-blend-mode: multiply; }
+.gm-tag { position: absolute; left: 0; bottom: 0; padding: 3px 8px; background: var(--paper); color: var(--games); font-size: 11.5px; font-style: normal; font-weight: 700; }
+.gm-tag.ref { background: var(--ink); color: var(--paper); }
+.gm-fav { position: absolute; top: 0; right: 0; display: grid; place-items: center; width: 24px; height: 24px; background: var(--paper); color: var(--angels); font-size: 13px; font-style: normal; line-height: 1; }
+
+/* ── the top of the shelf: the ones he likes best, or what he was playing on the day picked ── */
+.gm-open { margin-bottom: 42px; }
+.gm-open.then { padding: 20px 22px 24px; background: var(--e-bg); color: var(--e-ink); }
+.gm-open.then.era-2013 { background: var(--paper); box-shadow: inset 0 0 0 1px var(--line); }
+.gm-open-hd { display: flex; align-items: center; flex-wrap: wrap; gap: 6px 14px; min-height: 34px; margin-bottom: 14px; }
+.gm-open-hd h2 { margin: 0; font-size: 17px; font-weight: 700; }
+.gm-open-hd span { font-size: 14.5px; font-weight: 600; color: var(--e-ink2); }
+.gm-open-hd .gm-go { margin-left: auto; }
+.gm-feat { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 16px; }
+.gm-open.then .gm-box > small { color: var(--e-ink2); }
+
+/* ── a period of the shelf ── */
+.gm-shelf { padding-bottom: 46px; scroll-margin-top: var(--top); }
+.gm-band { display: flex; align-items: center; flex-wrap: wrap; gap: 6px 16px; min-height: 56px; margin-bottom: 22px; padding: 11px 12px 11px 18px; background: var(--e-bg); color: var(--e-ink); }
+.gm-band b { font-family: var(--display); font-size: 29px; font-weight: 800; line-height: 1; text-transform: uppercase; color: var(--e-ac); }
+.gm-band > span { font-size: 14.5px; font-weight: 600; color: var(--e-ink2); }
+.gm-band .gm-band-go { display: flex; flex-wrap: wrap; gap: 8px; margin-left: auto; }
+.gm-band-go a { display: inline-flex; align-items: center; gap: 7px; height: 34px; padding: 0 12px; background: var(--e-ac); color: var(--e-on); font-size: 13.5px; font-weight: 700; white-space: nowrap; }
+.gm-band.era-2013, .gm-band.plain, .gm-top.plain { background: var(--paper); box-shadow: inset 0 0 0 1px var(--line); }
+.gm-band.plain b { color: var(--games); }
+.gm-made { margin-top: 44px; }
+
+/* ── his list of 100 games, 2004: squared paper, his names for them, his drawings ── */
+.gm-hand { padding: 2px 0 54px; }
+.gm-hand-sheet, .gm-handnote { background-color: #FCFDFB; color: var(--hand);
+  background-image: linear-gradient(#C8D6E6 1px, transparent 1px), linear-gradient(90deg, #C8D6E6 1px, transparent 1px), linear-gradient(#E8EEF5 1px, transparent 1px), linear-gradient(90deg, #E8EEF5 1px, transparent 1px);
+  background-size: 22px 22px, 22px 22px, 5.5px 5.5px, 5.5px 5.5px; }
+.gm-hand-sheet { max-width: 1000px; padding: 26px 34px 30px; box-shadow: 0 10px 22px rgba(30, 50, 60, .18); transform: rotate(-.35deg); }
+.gm-hand-sheet h2 { margin: 0 0 12px; font-family: var(--script); font-size: 26px; font-weight: 400; line-height: 44px; color: var(--games); }
+.gm-hand-sheet ol { margin: 0; padding: 0; list-style: none; columns: 3 230px; column-gap: 30px; }
+.gm-hand-sheet li { break-inside: avoid; }
+.gm-hand-sheet li a { display: grid; grid-template-columns: 26px 30px minmax(0, 1fr); align-items: center; column-gap: 9px; min-height: 44px; }
+.gm-hand-sheet i { font-size: 13px; font-style: normal; font-weight: 600; font-variant-numeric: tabular-nums; color: var(--ink3); text-align: right; }
+.gm-hand-sheet img { width: 30px; height: 30px; object-fit: contain; mix-blend-mode: multiply; }
+.gm-hand-sheet b { display: block; overflow: hidden; font-family: var(--cap); font-size: 19px; font-weight: 400; line-height: 1.12; white-space: nowrap; text-overflow: ellipsis; }
+.gm-hand-sheet small { display: block; overflow: hidden; font-size: 12.5px; color: var(--ink); white-space: nowrap; text-overflow: ellipsis; }
+.gm-hand-sheet li a:hover b { text-decoration: underline; }
+.gm-hand-more { display: inline-block; margin-top: 12px; font-size: 13.5px; font-weight: 700; color: var(--games); text-decoration: underline; text-underline-offset: 3px; }
+
+/* ── plays: on a game's page (a line down the side) and in "Dấu vết" (flat, under each year) ── */
+.gm-h { margin: 0 0 12px; font-size: 17px; font-weight: 700; line-height: 1.3; }
+.gm-plays { margin: 0 0 36px; padding: 0; list-style: none; border-left: 2px solid var(--games); }
+.gm-plays li { position: relative; display: grid; grid-template-columns: 150px minmax(0, 1fr); gap: 16px; padding: 9px 0 13px 18px; }
+.gm-plays li::before { content: ""; position: absolute; left: -6px; top: 15px; width: 10px; height: 10px; background: var(--games); }
+.gm-plays time { padding-top: 1px; font-size: 14px; font-weight: 600; font-variant-numeric: tabular-nums; }
+.gm-plays b { font-size: 15px; font-weight: 600; }
+.gm-plays a { text-decoration: underline; text-decoration-color: var(--games); text-underline-offset: 3px; }
+.gm-plays a:hover { color: var(--games); }
+.gm-via { margin-left: 9px; font-size: 13.5px; color: var(--ink2); }
+.gm-plays p { margin: 4px 0 0; font-size: 14px; line-height: 1.55; color: var(--ink2); }
+.gm-plays p.gm-pnote { color: var(--ink); font-style: italic; }
+.gm-plays.flat { margin-bottom: 0; border-left: 0; }
+.gm-plays.flat li { padding: 12px 0 13px; border-bottom: 1px solid var(--line); }
+.gm-plays.flat li::before { content: none; }
+.gm-traces .mm-yh { margin-bottom: 0; }
+
+/* ── one game ── */
+.gm-wait { max-width: 1056px; margin: 0 auto; padding: 40px 32px; }
+.gm .mm-top-in { align-items: flex-start; gap: 40px; }
+.gm-top .mm-top-y { align-self: flex-end; }
+.gm-top .mm-top-t { flex: 1 1 auto; }
+.gm-top-art { flex: none; align-self: center; width: 264px; margin-left: auto; padding: 8px; background: var(--e-print); box-shadow: 0 10px 22px var(--e-shade); }
+.gm-top-art img { display: block; width: 100%; aspect-ratio: 4 / 3; object-fit: cover; }
+.gm-top-art.draw { width: 170px; }
+.gm-top-art.draw img { aspect-ratio: 1; object-fit: contain; mix-blend-mode: multiply; }
+.gm-versions { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
+.gm-versions span { padding: 3px 9px; background: color-mix(in srgb, var(--e-ink) 10%, transparent); font-size: 13px; font-weight: 500; }
+.gm-dek { max-width: 54ch; margin: 8px 0 0; font-size: 16.5px; line-height: 1.6; color: var(--e-ink2); }
+.gm-acts { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 18px; }
+.gm-btn { display: inline-flex; align-items: center; gap: 8px; min-height: 40px; padding: 6px 15px; box-shadow: inset 0 0 0 1px var(--e-ink); color: var(--e-ink); font-size: 14.5px; font-weight: 700; }
+.gm-btn:hover { background: var(--e-ink); color: var(--e-bg); }
+.gm-btn.main, .gm-btn.main:hover { background: var(--e-ac); box-shadow: none; color: var(--e-on); }
+.gm-top.plain .gm-btn:hover { color: var(--paper); }
+
+.gm .reader { padding-top: 36px; }
+/* what he said about it, in his own words */
+.gm-said { max-width: 30em; margin: 0 0 34px; font-family: var(--script); font-size: 20.5px; font-weight: 400; line-height: 1.75; color: var(--hand); }
+.gm-photos { margin: 0 0 36px; }
+.gm-rows { margin: 0 0 36px; border-top: 1px solid var(--line); }
+.gm-rows .gm-sum { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; font-size: 13.5px; line-height: 1.5; color: var(--ink2); }
+.gm .gm-grid.small { margin-bottom: 36px; }
+.gm-links { display: flex; flex-direction: column; margin-bottom: 8px; border-top: 1px solid var(--line); }
+.gm-links a { display: grid; grid-template-columns: 110px minmax(0, 1fr); column-gap: 16px; padding: 11px 0; border-bottom: 1px solid var(--line); }
+.gm-links small { grid-row: span 2; padding-top: 1px; font-size: 13px; font-weight: 700; color: var(--games); }
+.gm-links b { font-size: 15px; font-weight: 600; }
+.gm-links span { font-size: 13px; color: var(--ink3); }
+.gm-links a:hover b { text-decoration: underline; }
+/* the results of the league */
+.gm-months { display: flex; flex-wrap: wrap; gap: 6px; margin: 0 0 14px; }
+.gm-months button { height: 32px; padding: 0 11px; background: var(--paper); box-shadow: inset 0 0 0 1px var(--line); font-size: 13.5px; font-weight: 500; font-variant-numeric: tabular-nums; color: var(--ink2); }
+.gm-months button.on { background: var(--games); box-shadow: none; color: var(--paper); font-weight: 700; }
+.gm-matches { margin: 0 0 36px; }
+.gm-matches h6 { margin: 20px 0 2px; font-size: 14px; font-weight: 700; }
+.gm-matches section:first-child h6 { margin-top: 0; }
+.gm-match { display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); align-items: center; column-gap: 14px; padding: 8px 0 9px; border-top: 1px solid var(--line); }
+.gm-match small { grid-column: 1 / -1; display: flex; gap: 10px; margin-bottom: 2px; font-size: 12px; font-variant-numeric: tabular-nums; color: var(--ink3); }
+.gm-match small time { font-weight: 600; color: var(--ink2); }
+.gm-match > b { font-size: 15px; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.gm-side { display: flex; flex-wrap: wrap; gap: 2px 10px; font-size: 14px; line-height: 1.4; color: var(--ink3); }
+.gm-side.r { justify-content: flex-end; text-align: right; }
+.gm-side.won { color: var(--ink); }
+.gm-side .me { font-weight: 700; color: var(--games); }
+
+.gm .aside { top: calc(var(--top) + 30px); gap: 30px; padding-top: 0; }
+.gm .aside h5 { margin-bottom: 12px; font-size: 14px; font-weight: 700; letter-spacing: 0; text-transform: none; color: var(--ink); }
+.gm .mem-same a, .gm-same span.on { font-family: var(--sans); font-size: 15px; font-weight: 600; line-height: 1.35; }
+.gm-same span.on { color: var(--games); }
+.gm-same span.on small { display: block; margin-top: 2px; font-size: 12px; font-weight: 500; color: var(--ink3); }
+.gm-same a.ghost { opacity: .55; }
+.gm .mem-same a:hover, .gm .pn a:hover b, .gm .back:hover { color: var(--games); }
+.gm .mm-top .back:hover { color: var(--e-ink); }
+.gm .pn a { border-radius: 0; } .gm .pn b { font-family: var(--sans); font-size: 16px; }
+/* his line of the list of 2004, on a corner of the same squared paper */
+.gm-handnote { display: flex; flex-direction: column; align-items: flex-start; gap: 4px; padding: 18px 18px 16px; box-shadow: 0 8px 18px rgba(30, 50, 60, .16); }
+.gm-handnote img { width: 66px; height: 66px; object-fit: contain; mix-blend-mode: multiply; }
+.gm-handnote b { font-family: var(--cap); font-size: 22px; font-weight: 400; line-height: 1.15; }
+.gm-handnote small { font-size: 12.5px; line-height: 1.45; color: var(--ink); }
+.gm-handnote:hover b { text-decoration: underline; }
+
+@media (min-width: 1181px) { .gm .reader { grid-template-columns: minmax(0, 680px) 240px; gap: 72px; } }
+@media (max-width: 1180px) {
+  .gm .reader { grid-template-columns: minmax(0, 680px); gap: 34px; }
+  .gm .aside { position: static; display: flex; padding-top: 0; }
+  .gm-top-art { width: 220px; }
+}
+@media (max-width: 860px) {
+  .gm-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 22px 12px; }
+  .gm-grid.small { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .gm .mm-head .msearch { flex: 1 1 100%; margin-left: 0; }
+  /* the favourites pass by sideways: one row to flick through, not three screens of large covers */
+  .gm-feat { grid-template-columns: none; grid-auto-flow: column; grid-auto-columns: 58%; gap: 12px; overflow-x: auto; scroll-snap-type: x proximity; scrollbar-width: none; }
+  .gm-feat::-webkit-scrollbar { display: none; }
+  .gm-feat .gm-box { scroll-snap-align: start; }
+  .gm-open.then { margin-left: -16px; margin-right: -16px; padding: 16px 16px 20px; }
+  .gm-band { min-height: 0; margin-left: -16px; margin-right: -16px; padding: 12px 16px; }
+  .gm-band b { font-size: 25px; }
+  .gm-band .gm-band-go { flex: 1 1 100%; margin: 4px 0 0; }
+  .gm-hand-sheet { padding: 22px 18px 24px; transform: none; }
+  .gm-hand-sheet ol { columns: 1; }
+  .gm-plays li { grid-template-columns: minmax(0, 1fr); gap: 2px; }
+  .gm-links a { grid-template-columns: minmax(0, 1fr); } .gm-links small { grid-row: auto; }
+  .gm-wait { padding: 24px 16px; }
+  .gm .mm-top-in { gap: 6px; }
+  .gm-top .mm-top-y { align-self: flex-start; }
+  .gm-top .mm-k { margin-top: 2px; }
+  .gm-top-art { order: 5; align-self: stretch; width: auto; margin: 18px 0 0; }
+  .gm-top-art.draw { align-self: flex-start; width: 150px; }
+  .gm-versions, .gm-dek, .gm-acts { align-self: stretch; }
+  .wrap.gm { overflow-x: clip; }
+}

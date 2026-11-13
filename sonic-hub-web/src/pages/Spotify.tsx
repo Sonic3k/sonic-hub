@@ -4,10 +4,11 @@
 import { useMemo, useState } from 'react';
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import { apiUrl } from '../api/client';
 import { musicApi, type Filters, type Group, type Report, type Row } from '../api/music';
 import { Bars, Facts, Legend, Punch, Stack, YearDays, type BarRow, type Serie } from '../components/music/Charts';
+import { eraClass } from '../lib/era';
 import { CONTEXT, DEVICE, END, PALETTE, PLACE, REST, SHUFFLE, START, WEEKDAY, clock, dmy, hours, my, num, whenText } from '../lib/music';
+import { player, usePlayer } from '../lib/player';
 import '../styles/music.css';
 
 const T = 5 * 60_000;
@@ -117,7 +118,7 @@ function Timeline({ s, f, group, by, title, hint, limit = 6, onPick, picked, hal
     }
     const flat = ['year', 'month', 'day', 'hour', 'weekday', 'punch'].includes(group);
     const series: Serie[] = flat ? [{ key: '*', label: 'Tất cả', color: 'var(--music)' }] : rep.rows.map((r, i) => ({
-      key: r.key, label: nameOf(group, r), color: group === 'playlist' && !r.key ? '#B9B1A3' : PALETTE[i % PALETTE.length], to: linkOf(group, r, s),
+      key: r.key, label: nameOf(group, r), color: group === 'playlist' && !r.key ? '#A9B4B6' : PALETTE[i % PALETTE.length], to: linkOf(group, r, s),
     }));
     const sum = (b: string) => rep.rows.reduce((a, r) => a + (cell.get(`${b}|${r.key}`) ?? 0), 0);
     const rest = flat ? 0 : buckets.reduce((a, b) => a + Math.max(0, (total.get(b) ?? 0) - sum(b)), 0);
@@ -167,7 +168,7 @@ export default function Spotify() {
       <div className="mchips mu-views">{VIEWS.map(([k, n]) => <Link key={k} to={s.to({ v: k || null })} className={s.view === k ? 'on' : ''}>{n}</Link>)}</div>
       <div className="mchips mu-years">
         <Link to={s.to({ y: null, m: null })} className={!s.y && !s.m ? 'on' : ''}>Tất cả</Link>
-        {years.map(y => <Link key={y.year} to={s.to({ y: y.year, m: null })} className={(s.y ?? s.m?.slice(0, 4)) === y.year ? 'on' : ''}>{y.year}<small>{hours(y.total.ms)}</small></Link>)}
+        {years.map(y => <Link key={y.year} to={s.to({ y: y.year, m: null })} className={`y ${eraClass(+y.year)} ${(s.y ?? s.m?.slice(0, 4)) === y.year ? 'on' : ''}`}><b>{y.year}</b><small>{hours(y.total.ms)}</small></Link>)}
       </div>
       {(pills.length > 0 || s.m) && <div className="pills">
         {s.m && <Link className="fpill" to={s.to({ m: null, y: s.m.slice(0, 4) })}>{monthName(s.m)}<i>✕</i></Link>}
@@ -339,7 +340,7 @@ function DayList({ day }: { day: string }) {
 export function SongPage() {
   const { id = '' } = useParams(), q = useQuery({ queryKey: ['sp-song', id], queryFn: () => musicApi.song(id), staleTime: T, enabled: !!id });
   const s = useScope(), f = useMemo<Filters>(() => ({ song: id }), [id]), scope = useMemo(() => ({ ...s, f }), [s, f]);
-  const g = q.data;
+  const g = q.data, { now } = usePlayer();
   if (q.isLoading) return <div className="wrap page mu"><div className="card empty">Đang mở bài hát…</div></div>;
   if (!g) return <div className="wrap page mu"><div className="card empty">Không tìm thấy bài này.</div></div>;
   const t = g.total, sid = g.tracks[0]?.spotifyId, rec = g.recording;
@@ -352,7 +353,8 @@ export function SongPage() {
         ['Tự chọn', num(g.picked), 'anh bấm vào chính bài này'], ['Bấm qua', num(g.passed), `trên ${num(t.starts)} lần phát`], ['Nghe hết', num(g.finished)]]} />
       <div className="mu-links">
         {sid && <a href={`https://open.spotify.com/track/${sid}`} target="_blank" rel="noreferrer">Mở trên Spotify ↗</a>}
-        {rec?.hasAudio && rec.audioUrl && <audio controls preload="none" src={apiUrl(rec.audioUrl.replace(/^\/api/, ''))} />}
+        {rec?.hasAudio && rec.audioUrl && <button type="button" className="mu-listen" onClick={() => player.toggle(rec, [rec], { title: 'Bài hát', to: `/music/spotify/song/${id}` })}>
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d={now?.key === rec.key ? 'M7 7h10v10H7z' : 'M8 5v14l11-7z'} /></svg>{now?.key === rec.key ? 'Dừng' : 'Nghe'}</button>}
         {rec?.firstHeard && <span>Bắt đầu nghe: {whenText(rec.firstHeard)}</span>}
       </div>
       {t.starts > 0 && <>

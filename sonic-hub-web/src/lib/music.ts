@@ -33,6 +33,6 @@ export const SHUFFLE: Record<string, string> = { true: 'Shuffle', false: 'Theo t
 export const WEEKDAY = ['', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'CN'];
 /** the colours of the lines of a chart, in the order they are given; the last one is for "everything else" */
 export const PALETTE = ['#A2418F', '#2E7FD6', '#E9A100', '#23A35E', '#EF5B78', '#0E9AA7', '#7B61FF', '#D9480F'];
-export const REST = '#D9D3C7';
+export const REST = '#D0D6D2';
 /** a moment as the API words it: "2005 → 2008" reads "2005 – 2008"; "~2014-12" reads "khoảng 12/2014"; "2015-07-31" reads "31/07/2015" */
 export const whenText = (t?: string | null) => (t ?? '').replace(/^~/, 'khoảng ').replace(/\b(\d{4})-(\d{2})-(\d{2})\b/g, '$3/$2/$1').replace(/\b(\d{4})-(\d{2})\b/g, '$2/$1').replace(' → ', ' – ');

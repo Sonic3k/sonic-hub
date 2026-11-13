@@ -17,8 +17,8 @@
 .ychip.era-2013, .ygrid .era-2013, .ph-band.era-2013, .ph-turn.era-2013, .mm-top.era-2013 { background: var(--paper); box-shadow: inset 0 0 0 1px var(--line); }
 /* a sidebar's years */
 .ygrid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 3px; margin: 2px 0 6px; }
-.side .ygrid a { display: grid; place-items: center; height: 28px; padding: 0; background: var(--e-bg); color: var(--e-ac); font-family: var(--display); font-size: 14px; font-weight: 800; }
-.side .ygrid a:hover { background: var(--e-bg); color: var(--e-ac); filter: brightness(.95); }
+.side .ygrid a, .mu-door .ygrid a { display: grid; place-items: center; height: 28px; padding: 0; background: var(--e-bg); color: var(--e-ac); font-family: var(--display); font-size: 14px; font-weight: 800; }
+.side .ygrid a:hover, .mu-door .ygrid a:hover { background: var(--e-bg); color: var(--e-ac); filter: brightness(.95); }
 .side .ygrid a.on { outline: 2px solid var(--ink); outline-offset: -2px; }
 
 /* ═══ Ảnh ═══ */
