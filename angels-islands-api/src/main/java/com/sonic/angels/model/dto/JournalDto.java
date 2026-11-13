@@ -7,6 +7,14 @@ import java.util.UUID;
 
 public class JournalDto {
 
+    /** What a list of notes carries besides each note's own fields. Default none: a note then comes with its lead
+     *  and its word count instead of its text. Consumers opt in per call (inclContent, inclTags, inclProblems).
+     *  A single note (GET /notes/{id}, /notes/slug/{slug}) always comes whole. */
+    public record Includes(boolean content, boolean tags, boolean problems) {
+        public static Includes none() { return new Includes(false, false, false); }
+        public static Includes all()  { return new Includes(true, true, true); }
+    }
+
     public static class NoteRequest {
         private String title; private String content; private String mood;
         private List<UUID> problemIds; private List<UUID> tagIds;
@@ -51,6 +59,12 @@ public class JournalDto {
         private String series; private Integer seriesOrder;
         public String getSeries() { return series; } public void setSeries(String v) { this.series = v; }
         public Integer getSeriesOrder() { return seriesOrder; } public void setSeriesOrder(Integer v) { this.seriesOrder = v; }
+        private String lead; private Integer words;
+        /** The beginning of the text as plain words (no markup, at most 400 characters): what a list shows of a note
+         *  without carrying its whole text. Always present; the stored excerpt, when there is one, is in excerpt. */
+        public String getLead() { return lead; } public void setLead(String v) { this.lead = v; }
+        /** How many words the text has (for "n minutes to read"). */
+        public Integer getWords() { return words; } public void setWords(Integer v) { this.words = v; }
         public UUID getAuthorPersonId() { return authorPersonId; } public void setAuthorPersonId(UUID v) { this.authorPersonId = v; }
         /** Display name of authorPerson. */
         public String getAuthorPersonName() { return authorPersonName; } public void setAuthorPersonName(String v) { this.authorPersonName = v; }

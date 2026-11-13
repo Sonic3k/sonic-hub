@@ -31,7 +31,8 @@ export const hub = {
     const root = await get<Collection>('/collections/root', { inclChildrenCount: true, inclMediaCount: true });
     return get<Collection[]>(`/collections/${root.id}/children`, { inclChildrenCount: true, inclMediaCount: true });
   },
-  notes: (p: { kind?: string; status?: string; category?: string; tagId?: string; q?: string; page?: number; size?: number; authorId?: string }) => get<Paged<Note>>('/journal/notes', p),
+  /** a page of notes (at most 100), each with its lead and word count; its text and tags only when asked */
+  notes: (p: { kind?: string; status?: string; category?: string; tagId?: string; q?: string; page?: number; size?: number; authorId?: string; inclContent?: boolean; inclTags?: boolean }) => get<Paged<Note>>('/journal/notes', p),
   seriesParts: (name: string) => get<SeriesPart[]>('/journal/series/parts', { name }),
   forums: () => get<Forum[]>('/forums'),
   forum: (key: string) => get<Forum>(`/forums/${key}`),

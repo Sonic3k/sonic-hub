@@ -35,7 +35,9 @@ export interface Collection {
 export interface Tag { id: string; name: string; color?: string | null }
 
 export interface Note {
-  id: string; title?: string | null; content: string; mood?: string | null; createdAt?: string | null; updatedAt?: string | null;
+  /** content, tags (and problems) come with a single note; a list carries them only when asked (hub.notes incl*) and
+   *  otherwise gives each note's lead (its first 400 characters as plain words) and word count */
+  id: string; title?: string | null; content?: string | null; lead?: string | null; words?: number | null; mood?: string | null; createdAt?: string | null; updatedAt?: string | null;
   kind?: 'JOURNAL' | 'ARTICLE' | string | null; status?: 'DRAFT' | 'PUBLISHED' | string | null; slug?: string | null; excerpt?: string | null;
   category?: string | null; publishedAt?: string | null; coverMedia?: MediaFile | null; tags?: TagRef[] | null;
   /** written by someone else: the person on the portal and/or the name, and when it was written */

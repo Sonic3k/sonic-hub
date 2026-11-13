@@ -4,7 +4,7 @@ import { useQuery } from '@tanstack/react-query';
 import { hub } from '../api/hub';
 import { cdn, pic } from '../api/client';
 import type { MediaFile } from '../types';
-import { excerptOf, noteDate, noteHref, plain, readMinutes, useNotes, usePersons } from '../lib/queries';
+import { excerptOf, noteDate, noteHref, textOf, readMinutes, useNotes, usePersons } from '../lib/queries';
 import { addDays, dayMonthYear, isoDay, longDay, vnClock } from '../lib/date';
 import { YearChip } from '../components/Paper';
 import { Entry } from './Journal';
@@ -42,7 +42,7 @@ export default function Post() {
   }, [n?.id]);
   useEffect(() => { window.scrollTo({ top: 0 }); }, [slug, id]);
 
-  const text = n ? plain(n.content) : '';
+  const text = n ? textOf(n) : '';
   const mentioned = useMemo(() => (persons.data ?? []).filter(p => !p.isSelf && [p.name, p.displayName].some(x => x && x.length > 1 && text.includes(x))), [persons.data, text]);
   const all = notes.data ?? [], idx = n ? all.findIndex(x => x.id === n.id) : -1, newer = idx > 0 ? all[idx - 1] : undefined, older = idx >= 0 ? all[idx + 1] : undefined;
   const sameYear = n ? all.filter(x => x.id !== n.id && noteDate(x).slice(0, 4) === date.slice(0, 4)).slice(0, 3) : [];
@@ -63,7 +63,7 @@ export default function Post() {
           {(n.authorPersonId || n.authorName) && <div className="byline">
             {n.authorPersonId ? <Link to={`/angels/${n.authorPersonId}`}><b>{n.authorPersonName || n.authorName}</b></Link> : <b>{n.authorName}</b>}<span>viết ngày {dayMonthYear(vnClock(n.writtenAt) || date)}</span></div>}
           {n.coverMedia && <figure className="cover"><img className="zoom" src={cdn(pic(n.coverMedia, true), 1440)} alt="" onClick={() => setViewer({ items: [n.coverMedia!], i: 0 })} />{n.coverMedia.caption && <figcaption>{n.coverMedia.caption}</figcaption>}</figure>}
-          <div className="prose" ref={prose} dangerouslySetInnerHTML={{ __html: n.content }} />
+          <div className="prose" ref={prose} dangerouslySetInnerHTML={{ __html: n.content ?? '' }} />
           {pi >= 0 && <div className="pn series-pn">{pi > 0 ? <Link to={partHref(parts[pi - 1])}><small>← Phần trước</small><b>{parts[pi - 1].title}</b></Link> : <span />}
             {pi < parts.length - 1 ? <Link to={partHref(parts[pi + 1])}><small>Phần tiếp →</small><b>{parts[pi + 1].title}</b></Link> : <span />}</div>}
           {!!n.tags?.length && <div className="endtags">{n.tags.map(t => <Link key={t.id} className="chip" to={`/journal?tag=${encodeURIComponent(t.name)}`}>{t.name}</Link>)}</div>}

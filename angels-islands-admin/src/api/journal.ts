@@ -2,8 +2,11 @@ import api from './client'
 import type { JournalNoteResponse, JournalNoteRequest, ProblemResponse, ProblemRequest, Paged, JournalAuthor } from '../types'
 
 export const journalApi = {
-  /** author: 'me' | 'others' | an author name; authorId: one person's writings */
-  notes: (params: { page?: number; size?: number; q?: string; kind?: string; status?: string; category?: string; problemId?: string; tagId?: string; author?: string; authorId?: string }) =>
+  /** author: 'me' | 'others' | an author name; authorId: one person's writings.
+   *  A note comes without its text, tags and problems unless asked (inclContent, inclTags, inclProblems): a list
+   *  whose rows are shown in full, or opened in the editor, asks for all it shows and writes back. */
+  notes: (params: { page?: number; size?: number; q?: string; kind?: string; status?: string; category?: string; problemId?: string; tagId?: string; author?: string; authorId?: string;
+                    inclContent?: boolean; inclTags?: boolean; inclProblems?: boolean }) =>
     api.get<Paged<JournalNoteResponse>>('/api/journal/notes', { params }).then(r => r.data),
   authors: () => api.get<JournalAuthor[]>('/api/journal/authors').then(r => r.data),
   categories: () => api.get<string[]>('/api/journal/categories').then(r => r.data),

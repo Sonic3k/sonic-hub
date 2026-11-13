@@ -194,7 +194,7 @@ export default function JournalPage() {
     : authorFilter ? { author: authorFilter } : {}
   const notesQ = useInfiniteQuery({
     queryKey: ['journal-notes', activeQ, problemFilter?.id, kindFilter, authorFilter],
-    queryFn: ({ pageParam = 0 }) => journalApi.notes({ page: pageParam, size: 20, q: activeQ || undefined, problemId: problemFilter?.id, kind: kindFilter || undefined, ...authorParams }),
+    queryFn: ({ pageParam = 0 }) => journalApi.notes({ page: pageParam, size: 20, inclContent: true, inclTags: true, inclProblems: true, q: activeQ || undefined, problemId: problemFilter?.id, kind: kindFilter || undefined, ...authorParams }),
     getNextPageParam: last => (last.last ? undefined : last.number + 1),
     initialPageParam: 0,
   })

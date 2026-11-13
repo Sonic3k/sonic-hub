@@ -5,7 +5,7 @@ import { useMemo, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { cdn, pic } from '../api/client';
 import type { Note } from '../types';
-import { excerptOf, firstLine, noteDate, noteHref, plain, readMinutes, useNotes } from '../lib/queries';
+import { excerptOf, firstLine, noteDate, noteHref, textOf, readMinutes, useNotes } from '../lib/queries';
 import { dayMonthYear } from '../lib/date';
 import { eraClass } from '../lib/era';
 import { useMoment } from '../lib/moment';
@@ -43,7 +43,7 @@ export default function Journal() {
         <div className="jn-again-hd"><h2>Đọc lại một trang cũ</h2><button type="button" onClick={() => setTurn(t => t + 1)}>Trang khác</button></div>
         <Link className="jn-sheet" to={noteHref(old)}>
           <span>{dayMonthYear(noteDate(old))}{!namedByDate(old) ? ` · ${old.title}` : ''}</span>
-          <p>{plain(old.content).slice(0, 330).replace(/\s+\S*$/, '')}…</p>
+          <p>{textOf(old).slice(0, 330).replace(/\s+\S*$/, '')}…</p>
           <i>Đọc tiếp</i>
         </Link>
       </section>}
@@ -68,7 +68,7 @@ export default function Journal() {
 /** One thing written: its day, then its title — or, for a note named after its date, its opening words. */
 export function Entry({ n, id }: { n: Note; id?: string }) {
   const d = noteDate(n), byDate = namedByDate(n), cover = pic(n.coverMedia);
-  const lead = byDate ? firstLine(n, 120) : '', rest = byDate ? plain(n.content).slice(lead.replace(/…$/, '').length).trim().slice(0, 190) : excerptOf(n, 200);
+  const lead = byDate ? firstLine(n, 120) : '', rest = byDate ? textOf(n).slice(lead.replace(/…$/, '').length).trim().slice(0, 190) : excerptOf(n, 200);
   const meta = [authorOf(n), n.series && !byDate ? n.series : '', n.category, `${readMinutes(n)} phút đọc`].filter(Boolean).join(' · ');
   return (
     <Link className="jn-row" to={noteHref(n)} id={id}>

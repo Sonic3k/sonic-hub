@@ -240,7 +240,8 @@ export function NoteReader({ noteId }: { noteId: string }) {
   const q = useQuery({ queryKey: ['note', noteId], queryFn: () => desk.note(noteId) });
   const n = q.data;
   if (!n) return <div className="ph-empty">…</div>;
-  const html = /<\w+[^>]*>/.test(n.content) ? n.content : n.content.split(/\n{2,}/).map(p => `<p>${p.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/\n/g, '<br>')}</p>`).join('');
+  const text = n.content ?? '';   // a note read on its own always comes with its text
+  const html = /<\w+[^>]*>/.test(text) ? text : text.split(/\n{2,}/).map(p => `<p>${p.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/\n/g, '<br>')}</p>`).join('');
   return (
     <article className="ph-note">
       <h2>{n.title || 'Không tiêu đề'}</h2>
