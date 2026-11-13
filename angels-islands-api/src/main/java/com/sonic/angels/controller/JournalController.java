@@ -52,7 +52,9 @@ public class JournalController {
     /** kind=JOURNAL|ARTICLE, status=DRAFT|PUBLISHED and category narrow the list; the web asks for
      *  kind=ARTICLE&status=PUBLISHED, the admin usually asks for nothing.
      *  author=me (Ngoc Anh's own) | others (written by someone else) | a name; authorId = one person's writings.
-     *  Once ADMIN_TOKEN is set, callers without it only ever see published articles. */
+     *  Once ADMIN_TOKEN is set, callers without it only ever see published articles.
+     *  A note comes with its lead and word count; its text, tags and problems only when asked: inclContent,
+     *  inclTags, inclProblems (a single note always has them). */
     @GetMapping("/notes")
     public Page<JournalDto.NoteResponse> notes(@RequestParam(defaultValue = "0") int page,
                                                @RequestParam(defaultValue = "20") int size,
@@ -63,7 +65,11 @@ public class JournalController {
                                                @RequestParam(required = false) UUID problemId,
                                                @RequestParam(required = false) UUID tagId,
                                                @RequestParam(required = false) String author,
-                                               @RequestParam(required = false) UUID authorId) {
+                                               @RequestParam(required = false) UUID authorId,
+                                               @RequestParam(defaultValue = "false") boolean inclContent,
+                                               @RequestParam(defaultValue = "false") boolean inclTags,
+                                               @RequestParam(defaultValue = "false") boolean inclProblems) {
+        JournalDto.Includes inc = new JournalDto.Includes(inclContent, inclTags, inclProblems);
         String query = q != null && !q.isBlank() ? "%" + q.trim().toLowerCase() + "%" : "";
         JournalNote.Kind k = parseEnum(kind, JournalNote.Kind.class);
         JournalNote.Status st = parseEnum(status, JournalNote.Status.class);
@@ -83,7 +89,7 @@ public class JournalController {
                 tagId != null, tagId != null ? tagId : NIL_UUID,
                 authorMode, authorId != null ? authorId : NIL_UUID, authorName,
                 PageRequest.of(page, Math.min(size, 100)))
-            .map(this::toNoteResponse);
+            .map(n -> toNoteResponse(n, inc));
     }
 
     @GetMapping("/notes/{id}")
@@ -167,7 +173,11 @@ public class JournalController {
     }
 
     @PutMapping("/notes/{id}")
-    public JournalDto.NoteResponse updateNote(@PathVariable UUID id, @RequestBody JournalDto.NoteRequest req) {
+    public JournalDto.NoteResponse updateNote(@PathVariable UUID id, @RequestBody JournalDto.NoteRequest req,
+                                              jakarta.servlet.http.HttpServletRequest http) {
+        // the journal's editor writes the text, tags and problems back: from a page that still has them (AdminClient)
+        if (req.getContent() != null || req.getTagIds() != null || req.getProblemIds() != null)
+            com.sonic.angels.config.AdminClient.require(http, 3, "a note's text, tags or problems");
         JournalNote n = noteRepo.findById(id).orElseThrow();
         apply(n, req);
         return toNoteResponse(noteRepo.save(n));
@@ -249,12 +259,20 @@ public class JournalController {
         try { return Enum.valueOf(clazz, v.trim().toUpperCase()); } catch (IllegalArgumentException e) { return null; }
     }
 
-    private JournalDto.NoteResponse toNoteResponse(JournalNote n) {
+    /** One note in full. */
+    private JournalDto.NoteResponse toNoteResponse(JournalNote n) { return toNoteResponse(n, JournalDto.Includes.all()); }
+
+    /** The note with what inc asks for: its text, tags and problems are left out (null) and not read unless asked. */
+    private JournalDto.NoteResponse toNoteResponse(JournalNote n, JournalDto.Includes inc) {
         JournalDto.NoteResponse r = new JournalDto.NoteResponse();
-        r.setId(n.getId()); r.setTitle(n.getTitle()); r.setContent(n.getContent()); r.setMood(n.getMood());
+        r.setId(n.getId()); r.setTitle(n.getTitle()); r.setMood(n.getMood());
+        String text = plain(n.getContent());
+        r.setLead(text.length() <= LEAD ? text : text.substring(0, Character.isHighSurrogate(text.charAt(LEAD - 1)) ? LEAD - 1 : LEAD));
+        r.setWords(text.isEmpty() ? 1 : text.split(" ").length);   // as the web counted them: "" is one
+        if (inc.content()) r.setContent(n.getContent());
         r.setCreatedAt(n.getCreatedAt()); r.setUpdatedAt(n.getUpdatedAt());
-        r.setTags(n.getTags().stream().map(mapper::toTagResponse).collect(java.util.stream.Collectors.toSet()));
-        r.setProblems(n.getProblems().stream().map(p -> toProblemResponse(p, null)).toList());
+        if (inc.tags()) r.setTags(n.getTags().stream().map(mapper::toTagResponse).collect(java.util.stream.Collectors.toSet()));
+        if (inc.problems()) r.setProblems(n.getProblems().stream().map(p -> toProblemResponse(p, null)).toList());
         r.setKind(n.getKind().name()); r.setSlug(n.getSlug()); r.setExcerpt(n.getExcerpt());
         r.setCategory(n.getCategory()); r.setStatus(n.getStatus().name()); r.setPublishedAt(n.getPublishedAt());
         if (n.getCoverMedia() != null) r.setCoverMedia(mapper.toMediaFileResponse(n.getCoverMedia(), MediaFileDto.Includes.none()));
@@ -266,6 +284,20 @@ public class JournalController {
         r.setSource(n.getSource()); r.setExternalKey(n.getExternalKey());
         r.setSeries(n.getSeries()); r.setSeriesOrder(n.getSeriesOrder());
         return r;
+    }
+
+    private static final int LEAD = 400;
+    private static final java.util.regex.Pattern MARKUP = java.util.regex.Pattern.compile("<[^>]+>"),
+        ENTITY = java.util.regex.Pattern.compile("&(nbsp|amp|lt|gt|quot|apos|#39);"), SPACES = java.util.regex.Pattern.compile("(?U)\\s+");
+
+    /** A note's HTML as plain words: tags out, the common entities decoded, runs of white space as one space. The web
+     *  made its excerpts and reading times from the text this way; the lead and the word count are made the same. */
+    static String plain(String html) {
+        if (html == null || html.isEmpty()) return "";
+        String t = MARKUP.matcher(html).replaceAll(" ");
+        t = ENTITY.matcher(t).replaceAll(m -> java.util.regex.Matcher.quoteReplacement(switch (m.group(1)) {
+            case "nbsp" -> " "; case "amp" -> "&"; case "lt" -> "<"; case "gt" -> ">"; case "quot" -> "\""; default -> "'"; }));
+        return SPACES.matcher(t).replaceAll(" ").trim();
     }
 
     // ── Problems ─────────────────────────────────────────────────────────────

@@ -16,9 +16,10 @@ export function setAdminToken(token: string) {
 
 const api = axios.create({
   baseURL: import.meta.env.VITE_API_URL || 'http://localhost:8080',
-  // X-Admin-Client: which admin this is. 2 = its memory editor reads the whole memory before it opens; the API
-  // refuses a memory's links from an older page (which would start from a list's copy, without them).
-  headers: { 'Content-Type': 'application/json', 'X-Admin-Client': '2' },
+  // X-Admin-Client: which admin this is, so the API can refuse a save from a page loaded before a form changed
+  // (it would write back parts its list no longer carries). 2 = the memory editor reads the whole memory before it
+  // opens; 3 = the journal lists ask for the text, tags and problems that the journal's editor writes back.
+  headers: { 'Content-Type': 'application/json', 'X-Admin-Client': '3' },
 })
 
 api.interceptors.request.use(config => {

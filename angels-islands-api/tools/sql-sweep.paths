@@ -11,6 +11,7 @@
 /api/media-files/geotagged
 /api/media-files/person/{person}
 /api/media-files/timeline-index
+/api/media-files/by-ids?ids={media}
 /api/collections
 /api/collections/all
 /api/collections/all?inclMediaCount=true&inclChildrenCount=true&inclTags=true&inclPersons=true
@@ -41,7 +42,9 @@
 /api/events/{event}
 /api/events/at?personId={self}&moment=2011-06-15T21:00:00
 # journal
-/api/journal/notes?size=50
+/api/journal/notes?size=100
+/api/journal/notes?size=100&inclTags=true
+/api/journal/notes?size=20&inclContent=true&inclTags=true&inclProblems=true
 /api/journal/notes/{note}
 /api/journal/series
 /api/journal/authors
@@ -85,10 +88,13 @@
 /api/music/cds
 /api/music/playlists
 /api/music/spotify/overview
+/api/music/spotify/report?group=song
+/api/music/spotify/report?group=year
 # facebook
 /api/social/range
 /api/social/status
 /api/social/fb/home
+/api/social/fb/profiles/{fb}/photos
 /api/social/fb/feed?size=20
 /api/social/fb/search?q=a
 # money

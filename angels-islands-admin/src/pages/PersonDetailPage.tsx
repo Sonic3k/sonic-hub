@@ -511,7 +511,7 @@ export default function PersonDetailPage() {
 function PersonWritingsTab({ personId }: { personId: string }) {
   const q = useInfiniteQuery({
     queryKey: ['journal-notes', 'author', personId],
-    queryFn: ({ pageParam = 0 }) => journalApi.notes({ page: pageParam, size: 20, authorId: personId }),
+    queryFn: ({ pageParam = 0 }) => journalApi.notes({ page: pageParam, size: 20, authorId: personId, inclContent: true }),
     getNextPageParam: last => (last.last ? undefined : last.number + 1),
     initialPageParam: 0,
   })

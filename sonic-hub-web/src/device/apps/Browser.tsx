@@ -170,17 +170,19 @@ export function BlogSite({ id, go }: { id?: string; go: (url: string) => void })
   const list = useMemo(() => (q.data ?? []).map(n => ({ n, d: utc(n.writtenAt ?? n.publishedAt ?? n.createdAt) }))
     .filter(x => x.d && x.d.getTime() <= T.getTime()).sort((a, b) => b.d!.getTime() - a.d!.getTime()), [q.data, T]);
   const one = id ? list.find(x => x.n.id === id) : null;
+  // the list carries each post's lead, not its text: that is read when the post is opened
+  const post = useQuery({ queryKey: ['note', id], queryFn: () => desk.note(id!), enabled: !!one });
   return (
     <div className="dv-blog">
       <header><button type="button" onClick={() => go('blog')}>Nhật ký</button></header>
       {one ? (
         <article className="dv-blog-post">
           <h1>{one.n.title || 'Không tiêu đề'}</h1><time>{vnDate(one.d)}</time>
-          <div dangerouslySetInnerHTML={{ __html: one.n.content }} />
+          <div dangerouslySetInnerHTML={{ __html: post.data?.content ?? '' }} />
         </article>
       ) : list.map(({ n, d }) => (
         <button type="button" key={n.id} className="dv-blog-item" onClick={() => go(`blog/${n.id}`)}>
-          <time>{vnDate(d)}</time><h3>{n.title || 'Không tiêu đề'}</h3><p>{(n.excerpt ?? n.content.replace(/<[^>]+>/g, ' ')).slice(0, 220)}</p>
+          <time>{vnDate(d)}</time><h3>{n.title || 'Không tiêu đề'}</h3><p>{(n.excerpt ?? n.lead ?? '').slice(0, 220)}</p>
         </button>
       ))}
       {q.data && !list.length && <div className="dv-ex-empty">Chưa có bài nào tới lúc này.</div>}

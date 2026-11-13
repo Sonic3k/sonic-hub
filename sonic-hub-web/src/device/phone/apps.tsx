@@ -200,8 +200,8 @@ export function MemoryView({ id }: { id: string }) {
   const q = useQuery({ queryKey: ['scene', id], queryFn: () => desk.scene(id), staleTime: Infinity });
   const sc = q.data;
   const mediaIds = sc?.windows.find(w => w.app === 'photos')?.mediaIds?.slice(0, 12) ?? [];
-  const media = useQueries({ queries: mediaIds.map(m => ({ queryKey: ['media', m], queryFn: () => desk.media(m) })) });
-  const photos = media.flatMap(x => (x.data ? [x.data] : []));
+  const media = useQuery({ queryKey: ['media-set', mediaIds], queryFn: () => desk.mediaByIds(mediaIds), enabled: mediaIds.length > 0, staleTime: Infinity });
+  const photos = media.data ?? [];
   if (q.isLoading) return <div className="ph-empty">…</div>;
   if (!sc) return <div className="ph-empty">Không mở được ký ức này.</div>;
   const sources = sc.windows.filter(w => w.app === 'chat' || w.app === 'word' || w.app === 'forum' || w.app === 'link');
@@ -240,7 +240,8 @@ export function NoteReader({ noteId }: { noteId: string }) {
   const q = useQuery({ queryKey: ['note', noteId], queryFn: () => desk.note(noteId) });
   const n = q.data;
   if (!n) return <div className="ph-empty">…</div>;
-  const html = /<\w+[^>]*>/.test(n.content) ? n.content : n.content.split(/\n{2,}/).map(p => `<p>${p.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/\n/g, '<br>')}</p>`).join('');
+  const text = n.content ?? '';   // a note read on its own always comes with its text
+  const html = /<\w+[^>]*>/.test(text) ? text : text.split(/\n{2,}/).map(p => `<p>${p.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/\n/g, '<br>')}</p>`).join('');
   return (
     <article className="ph-note">
       <h2>{n.title || 'Không tiêu đề'}</h2>

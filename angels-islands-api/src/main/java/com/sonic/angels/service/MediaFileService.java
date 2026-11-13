@@ -69,6 +69,16 @@ public class MediaFileService {
     @Transactional(readOnly = true)
     public MediaFileDto.Response findDtoById(UUID id) { return mapper.toMediaFileResponse(findById(id)); }
 
+    /** The files with these ids in the order asked, read together (at most 200); an id that is not there is left out. */
+    @Transactional(readOnly = true)
+    public List<MediaFileDto.Response> byIds(List<UUID> ids, MediaFileDto.Includes inc) {
+        if (ids == null || ids.isEmpty()) return List.of();
+        List<UUID> asked = ids.stream().filter(java.util.Objects::nonNull).distinct().limit(200).toList();
+        java.util.Map<UUID, MediaFile> found = new java.util.HashMap<>();
+        for (MediaFile m : mediaFileRepository.findAllById(asked)) found.put(m.getId(), m);
+        return asked.stream().map(found::get).filter(java.util.Objects::nonNull).map(m -> mapper.toMediaFileResponse(m, inc)).toList();
+    }
+
     @Transactional(readOnly = true)
     public List<MediaFileDto.Response> findDtoByPersonId(UUID personId, MediaFileDto.Includes inc) {
         return mediaFileRepository.findByPersonId(personId).stream().map(m -> mapper.toMediaFileResponse(m, inc)).toList();

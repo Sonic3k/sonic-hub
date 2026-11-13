@@ -10,15 +10,18 @@ is written to the log as a warning. (config/SqlCountingDataSource, SqlCountFilte
   that grows with the rows means something is fetched row by row: fix that first. Put the number in the PR.
 - `python3 angels-islands-api/tools/sql-sweep.py <base-url>` calls every read in `tools/sql-sweep.paths` and prints
   its count; it fails when one is above 50. Add your endpoint to that file.
-- **Lists send no relations unless asked** — the `incl*` query parameters (`MediaFileDto.Includes`,
-  `CollectionService.Includes`, `MemoryDto.Includes`). A new list follows the same pattern, and each consumer passes
-  only the flags for what it shows. A single-item GET may come whole.
+- **Lists send no relations and no long text unless asked** — the `incl*` query parameters (`MediaFileDto.Includes`,
+  `CollectionService.Includes`, `MemoryDto.Includes`, `JournalDto.Includes`). A new list follows the same pattern,
+  and each consumer passes only the flags for what it shows. A single-item GET may come whole.
 - No query (repository, JdbcTemplate, EntityManager) inside a loop or a per-item `map`: read for the whole list in
   one statement and look the rows up in a map.
 - Never map the inverse side of a one-to-one (`@OneToOne(mappedBy = …)`): Hibernate loads it with every row of the
   owner, lazy or not. See the note on the detail tables in `MediaFile`.
-- A form that writes links back (the admin's memory editor) starts from the single-item GET, never from a list's
-  copy: a list carries only the links it asked for.
+- A form that writes back what it holds (the admin's memory and journal editors) starts from a read that has all of
+  it: the single-item GET, or a list that asked for every part the form saves. When a list stops carrying such a
+  part, raise the admin's `X-Admin-Client` number and guard the PUT with `config/AdminClient`, so a page loaded
+  before the change is refused instead of wiping what it never read.
+- One request for a set, not one per item: `GET /media-files/by-ids`, `…/episodes/{id}/media`.
 
 ## Consumers of the API
 

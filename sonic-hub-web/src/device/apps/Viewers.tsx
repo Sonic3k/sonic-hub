@@ -1,6 +1,6 @@
 /* Looking at things: the picture viewer, the word processor (his writings), Notepad and the sticky note (a memory's
    words), and the list of memories up to T. */
-import { useQueries, useQuery } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 import { useEffect, useState } from 'react';
 import { desk } from '../api';
 import { cdn, pic } from '../../api/client';
@@ -11,8 +11,8 @@ import { useWinTitle } from '../pc/Window';
 import { getSet, putSet, type ViewerPhoto } from './sets';
 
 export function PhotoViewer({ set, index = 0, mediaIds }: { set?: string; index?: number; mediaIds?: string[] }) {
-  const fetched = useQueries({ queries: (mediaIds ?? []).map(id => ({ queryKey: ['media', id], queryFn: () => desk.media(id) })) });
-  const fromIds: ViewerPhoto[] = fetched.flatMap(q => q.data ? [{ id: q.data.id, url: pic(q.data, true), caption: q.data.caption ?? q.data.fileName, at: q.data.effectiveDate ?? null }] : []);
+  const fetched = useQuery({ queryKey: ['media-set', mediaIds], queryFn: () => desk.mediaByIds(mediaIds!), enabled: !!mediaIds?.length, staleTime: Infinity });
+  const fromIds: ViewerPhoto[] = (fetched.data ?? []).map(m => ({ id: m.id, url: pic(m, true), caption: m.caption ?? m.fileName, at: m.effectiveDate ?? null }));
   const photos = mediaIds ? fromIds : getSet(set ?? '');
   const [i, setI] = useState(index);
   const cur = photos[Math.min(i, photos.length - 1)];

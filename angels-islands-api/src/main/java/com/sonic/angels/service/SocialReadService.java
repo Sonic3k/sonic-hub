@@ -527,12 +527,16 @@ public class SocialReadService {
         if (!own.isEmpty()) {
             Map<UUID, Object[]> stats = new HashMap<>();
             for (Object[] r : postMediaRepo.albumStats(own.stream().map(SocialAlbum::getId).toList(), v.meId(), t)) stats.put((UUID) r[0], r);
+            // an album without a cover of its own shows its first photo: found for all such albums together
+            List<UUID> coverless = own.stream().filter(a -> a.getCover() == null && stats.containsKey(a.getId())).map(SocialAlbum::getId).toList();
+            Map<UUID, MediaFile> first = new HashMap<>();
+            if (!coverless.isEmpty())
+                for (Object[] r : postMediaRepo.firstOfAlbums(coverless, v.meId(), t)) first.putIfAbsent((UUID) r[0], ((SocialPostMedia) r[1]).getMediaFile());
             for (SocialAlbum a : own) {
                 Object[] s = stats.get(a.getId());
                 int count = s == null ? 0 : ((Number) s[1]).intValue();
                 if (count == 0 && a.getPublishedAt() == null) continue;
-                String cover = a.getCover() != null ? url(a.getCover()) : count == 0 ? null
-                    : url(postMediaRepo.ofAlbum(a.getId(), v.meId(), t).get(0).getMediaFile());
+                String cover = a.getCover() != null ? url(a.getCover()) : count == 0 || first.get(a.getId()) == null ? null : url(first.get(a.getId()));
                 albums.add(new SocialDto.AlbumRow(a.getId().toString(), a.getExternalKey(), a.getTitle(), a.getDescription(), cover, count,
                     s == null ? a.getPublishedAt() : (LocalDateTime) s[2], "album"));
             }

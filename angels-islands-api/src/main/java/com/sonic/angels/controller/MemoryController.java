@@ -129,22 +129,12 @@ public class MemoryController {
         return memory.update(id, req);
     }
 
-    /** What a browser's memory editor sends to say which editor it is (2: it reads the whole memory before it opens). */
-    public static final String CLIENT_HEADER = "X-Admin-Client";
-
-    /** The admin's memory editor writes every link back when it saves. Lists no longer carry a memory's links unless
-     *  asked (incl*), so a page of the admin loaded before that change would open its form on a list's copy — without
-     *  links — and saving it would wipe them. A browser therefore has to say it is the editor that reads the whole
-     *  memory first; an older page is refused (409) and has to be reloaded. Requests that do not come from a browser
-     *  (no Origin: the import scripts) and saves that touch no link are not asked. */
+    /** The admin's memory editor writes every link back when it saves; a page of the admin loaded before lists stopped
+     *  carrying links would wipe them (see AdminClient). Saves that touch no link are not asked. */
     private static void refuseStaleEditor(jakarta.servlet.http.HttpServletRequest http, MemoryDto.EpisodeRequest r) {
         boolean links = r.getMediaIds() != null || r.getCollectionIds() != null || r.getTagIds() != null
             || r.getPersonIds() != null || r.getSources() != null;
-        if (!links || http.getHeader("Origin") == null) return;
-        int client = 0;
-        try { client = Integer.parseInt(http.getHeader(CLIENT_HEADER)); } catch (NumberFormatException ignored) {}   // no header: an old page
-        if (client < 2) throw new org.springframework.web.server.ResponseStatusException(org.springframework.http.HttpStatus.CONFLICT,
-            "This admin page is older than the API: reload it before changing a memory's photos, albums, tags, people or sources.");
+        if (links) com.sonic.angels.config.AdminClient.require(http, 2, "a memory's photos, albums, tags, people or sources");
     }
 
     @DeleteMapping("/episodes/{id}")
