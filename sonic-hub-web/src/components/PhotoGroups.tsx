@@ -1,21 +1,36 @@
 /* Photos grouped by month with sticky headers; a deep-linkable viewer (?p=<id>); endless scroll. */
 import { useEffect, useMemo, useRef } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { hub } from '../api/hub';
 import type { MediaFile } from '../types';
 import { groupLabel } from '../lib/date';
 import Justified from './Justified';
 import Viewer from './Viewer';
+import { YearChip } from './Paper';
+import { eraClass } from '../lib/era';
 
-export default function PhotoGroups({ items, onOpen }: { items: MediaFile[]; onOpen: (i: number) => void }) {
+/** years: the list runs through several years, so a band marks where each one begins */
+export default function PhotoGroups({ items, onOpen, years }: { items: MediaFile[]; onOpen: (i: number) => void; years?: boolean }) {
   const groups = useMemo(() => {
-    const g: { label: string; start: number; items: MediaFile[] }[] = [];
+    const g: { label: string; year: number; start: number; items: MediaFile[] }[] = [];
     items.forEach((m, i) => { const label = groupLabel(m); const last = g[g.length - 1];
-      if (last && last.label === label) last.items.push(m); else g.push({ label, start: i, items: [m] }); });
+      if (last && last.label === label) last.items.push(m); else g.push({ label, year: Number((m.effectiveDate ?? m.event?.date ?? '').slice(0, 4)) || 0, start: i, items: [m] }); });
     return g;
   }, [items]);
-  return <>{groups.map(g => <section key={g.label + g.start} className="pgroup"><div className="month">{g.label}<span>{g.items.length}</span></div><Justified items={g.items} rowHeight={200} gap={6} onOpen={(i) => onOpen(g.start + i)} /></section>)}</>;
+  return <>{groups.map((g, k) => {
+    const turn = years && g.year > 1900 && g.year !== groups[k - 1]?.year;
+    // "Tháng 11 năm 2007" reads "Tháng 11" beside the year's chip
+    // (and a file known only to its year reads "Không rõ ngày")
+    const bare = g.year ? g.label.replace(new RegExp(`(,| năm)? ${g.year}$`), '').replace(new RegExp(`^${g.year} · `), '') : g.label;
+    const label = bare.charAt(0).toUpperCase() + bare.slice(1);
+    return (
+      <section key={g.label + g.start} className="pgroup">
+        {turn && <Link className={`ph-turn ${eraClass(g.year)}`} to={`/photos?year=${g.year}`}><b>{g.year}</b></Link>}
+        <div className="month">{g.year > 1900 && <YearChip year={g.year} />}{label}<span>{g.items.length}</span></div>
+        <Justified items={g.items} rowHeight={200} gap={6} onOpen={(i) => onOpen(g.start + i)} />
+      </section>);
+  })}</>;
 }
 
 export function useViewer(items: MediaFile[]) {

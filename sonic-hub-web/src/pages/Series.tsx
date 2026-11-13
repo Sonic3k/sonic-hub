@@ -9,10 +9,10 @@ export default function SeriesPage() {
   const q = useQuery({ queryKey: ['series', name], queryFn: () => hub.seriesParts(name), enabled: !!name, staleTime: 600_000 });
   const parts = q.data ?? [];
   return (
-    <div className="wrap page">
+    <div className="wrap page jn">
       <Link className="back" to="/journal">← Nhật ký</Link>
-      <div className="ptitle"><h1>{name || 'Series'}</h1><span>{parts.length ? `${parts.length} phần` : q.isLoading ? 'Đang tải…' : ''}</span></div>
-      {!q.isLoading && !parts.length && <div className="card empty">Không có bài nào trong series này.</div>}
+      <header className="jn-head"><h1>{name || 'Series'}</h1>{q.isLoading && <span className="ph-n">Đang tải…</span>}</header>
+      {!q.isLoading && !parts.length && <p className="jn-wait">Không có bài nào trong series này.</p>}
       <ol className="series-list">{parts.map((p, i) => (
         <li key={p.id}><Link to={p.slug ? `/journal/${p.slug}` : `/journal/id/${p.id}`}>
           <span className="sn">{p.seriesOrder ?? i + 1}</span>

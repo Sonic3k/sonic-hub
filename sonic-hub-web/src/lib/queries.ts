@@ -19,8 +19,14 @@ export const useLibraryCounts = () => useQuery({ queryKey: ['library-counts'], s
 /** a note's date on Vietnam's clock (kept in UTC: a day-only note sits at Vietnam midnight or noon) */
 export const noteDate = (n: Note) => vnClock(n.publishedAt ?? n.createdAt);
 export const noteHref = (n: Note) => (n.slug ? `/journal/${n.slug}` : `/journal/id/${n.id}`);
-export const plain = (html: string) => html.replace(/<[^>]+>/g, ' ').replace(/&nbsp;/g, ' ').replace(/\s+/g, ' ').trim();
+const ENTITY: Record<string, string> = { '&nbsp;': ' ', '&amp;': '&', '&lt;': '<', '&gt;': '>', '&quot;': '"', '&#39;': "'", '&apos;': "'" };
+export const plain = (html: string) => html.replace(/<[^>]+>/g, ' ').replace(/&(nbsp|amp|lt|gt|quot|apos|#39);/g, m => ENTITY[m]).replace(/\s+/g, ' ').trim();
 export const excerptOf = (n: Note, len = 180) => (n.excerpt || plain(n.content)).slice(0, len);
+/** the opening sentence of something written, as a line to show for it */
+export function firstLine(n: Note, max = 110): string {
+  const t = plain(n.content), cut = new RegExp(`^.{24,${max}}?[.!?…](?=\\s|$)`).exec(t)?.[0] ?? t.slice(0, max - 14);
+  return cut.length < t.length && !/[.!?…]$/.test(cut) ? `${cut}…` : cut;
+}
 export const readMinutes = (n: Note) => Math.max(1, Math.round(plain(n.content).split(' ').length / 220));
 export const fmt = (n: number) => n.toLocaleString('vi-VN');
 export const counts = (buckets: { year: number; month: number; count: number }[]) => { const c: Record<number, number> = {}; buckets.forEach(b => { c[b.year] = (c[b.year] ?? 0) + b.count; }); return c; };

@@ -1,7 +1,7 @@
 /* Ký ức: your own memories as the hub keeps them — a list through the years, and one memory with its photos.
    They are written and checked in the admin; here they are only read. */
-import { useMemo, useState } from 'react';
-import { Link, useLocation, useNavigate, useParams, useSearchParams } from 'react-router-dom';
+import { useMemo, useRef, useState } from 'react';
+import { Link, useLocation, useParams, useSearchParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { hub, periodYears } from '../api/hub';
 import { cdn } from '../api/client';
@@ -12,6 +12,11 @@ import { atOfMemory } from '../components/Machines';
 import { eventLabel } from '../lib/date';
 import { EventsAround, useEvents } from './Events';
 import type { Chapter, Episode, MediaFile } from '../types';
+import { eraClass } from '../lib/era';
+import { yearBlocks, yearsLabel } from '../lib/life';
+import { useMoment } from '../lib/moment';
+import { useGoTo } from '../lib/scroll';
+import { HandNote, MachineTile, Print, YearGrid } from '../components/Paper';
 
 const T = 10 * 60_000;
 
@@ -52,116 +57,155 @@ function splitRoute(summary: string): [string, string[]] {
   return [summary.slice(0, i).trim(), summary.slice(i + 9).replace(/\.\s*$/, '').split(';').map(s => s.trim()).filter(Boolean)];
 }
 
+/** when a memory was, short enough for a row: no hour, a stretch inside one month as "20 – 27/11/2007", a longer one by its first day */
+export function memoryDay(e: Episode): string {
+  const w = memoryWhen(e).replace(/^(~?)\d{1,2}h /, '$1').replace(/^(~?\d{2}\/\d{2}\/\d{4}) \d{2}:\d{2}(:\d{2})?/, '$1');
+  const m = /^(~?)(\d{2})\/(\d{2})\/(\d{4}) – (\d{2})\/(\d{2})\/(\d{4})$/.exec(w);
+  if (!m) return w;
+  return m[3] === m[6] && m[4] === m[7] ? `${m[1]}${+m[2]} – ${+m[5]}/${m[6]}/${m[7]}` : `${m[1]}${m[2]}/${m[3]}/${m[4]}`;
+}
+const coverOf = (e: Episode) => e.media?.find(x => x.url && /\.(jpe?g|png|webp|gif|bmp)$/i.test(x.fileName))?.url ?? null;
+const titleOf = (e: Episode) => e.title || e.summary;
+const peopleOf = (e: Episode) => (e.persons?.length ? e.persons.map(p => p.displayName || p.name).join(', ') : '');
+
 // ── the list ─────────────────────────────────────────────────────────────────
 
+/* Year by year. In each year the memories that weigh most (and have a photo) are shown large, the rest as dated
+   lines; what kind a memory is reads from a small coloured word, never from the shape of its card. With no filter
+   the page opens on one memory brought back at random. */
 export function MemoriesIndex() {
-  const self = useSelf(), all = useMemories(), chapters = useLifeChapters(), persons = usePersons(), nav = useNavigate();
+  const self = useSelf(), all = useMemories(), chapters = useLifeChapters(), persons = usePersons(), { moment, picked } = useMoment();
   const [sp, setSp] = useSearchParams();
   const kind = sp.get('kind'), chapterId = sp.get('chapter'), year = Number(sp.get('year')), tag = sp.get('tag'), person = sp.get('person'), q = sp.get('q') ?? '', newest = sp.get('sort') === 'new';
   const [typed, setTyped] = useState(q);
   const found = useQuery({ queryKey: ['memories-q', self?.id, q], enabled: !!self && !!q, staleTime: T, queryFn: () => hub.episodes(self!.id, { q }) });
   const chapter = chapters.data?.find(c => c.id === chapterId);
+  const filtered = !!(kind || chapterId || year || tag || person || q);
   const base = q ? found.data ?? [] : all.data ?? [];
   const list = base.filter(e => (!kind || e.kind === kind) && (!chapter || inChapter(e, chapter)) && (!year || yearOf(e) === year)
     && (!tag || e.tags?.some(t => t.name === tag)) && (!person || e.persons?.some(p => p.id === person)));
   const ordered = q ? list : newest ? [...list].reverse() : list;
-  const groups = useMemo(() => {
-    if (q) return [['', ordered]] as [string, Episode[]][];
-    const g: [string, Episode[]][] = [];
-    ordered.forEach(e => { const k = isNaN(yearOf(e)) ? 'Không rõ năm' : String(yearOf(e)); const last = g[g.length - 1]; if (last && last[0] === k) last[1].push(e); else g.push([k, [e]]); });
-    return g;
-  }, [ordered, q]);
+  // year by year (thin years run together); a search is one list, best match first
+  const groups = useMemo(() => (q ? [{ years: [0], list: ordered }] : yearBlocks(ordered, yearOf)), [ordered, q]);
   const set = (k: string, v: string | null) => setSp(prev => { const n = new URLSearchParams(prev); if (v) n.set(k, v); else n.delete(k); return n; });
   const personName = (id: string) => { const p = persons.data?.find(x => x.id === id); return p ? p.displayName || p.name : ''; };
-  const title = q ? `“${q}”` : chapter?.title || (kind && kindName(kind)) || tag || (person && personName(person)) || (year ? String(year) : 'Ký ức');
+  const title = q ? `“${q}”` : chapter?.title || (kind && kindName(kind)) || tag || (person && personName(person)) || (year ? `Ký ức năm ${year}` : 'Ký ức');
   const loading = all.isLoading || (!!q && found.isLoading);
+  // a day was picked on the calendar: the list goes to its year (the nearest one that has memories)
+  const yearsHere = groups.flatMap(g => g.years).filter(y => y > 0);
+  const here = picked && moment && !filtered && yearsHere.length ? yearsHere.reduce((a, b) => (Math.abs(b - moment.y) < Math.abs(a - moment.y) ? b : a)) : 0;
+  const hereBlock = here ? groups.find(g => g.years.includes(here))?.years[0] ?? 0 : 0;
+  useGoTo(hereBlock ? `my${hereBlock}` : '');
 
   return (
-    <div className="wrap page mem">
-      <div className="ptitle"><h1>{title}</h1><span>{fmt(list.length)} ký ức{chapter?.period ? ` · ${chapter.period}` : ''}</span>
+    <div className="wrap page mm">
+      <header className="mm-head"><h1>{title}</h1>{chapter?.period && <span className="ph-n">{chapter.period}</span>}
         <form className="msearch" onSubmit={ev => { ev.preventDefault(); set('q', typed.trim() || null); }}>
           <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7" /><path d="M20 20l-4-4" /></svg>
           <input value={typed} onChange={ev => setTyped(ev.target.value)} placeholder="Tìm trong ký ức…" />
           {q && <button type="button" onClick={() => { setTyped(''); set('q', null); }}>×</button>}
         </form>
         {!q && <button type="button" className="sortbtn" onClick={() => set('sort', newest ? null : 'new')}>{newest ? 'Mới nhất trước' : 'Cũ nhất trước'} ⇅</button>}
-      </div>
-      {chapter?.summary && <p className="mem-lede">{chapter.summary}</p>}
-      <section className="lanes">
-        <div>
-          {loading && <div className="card empty">Đang mở ký ức…</div>}
-          {!loading && !list.length && <div className="card empty">{q ? 'Không thấy ký ức nào khớp.' : 'Chưa có ký ức nào ở đây.'}</div>}
-          {groups.map(([y, es]) => <div key={y || 'q'}>{y && <div className="month">{y}</div>}<div className="posts">{es.map(e => <MemoryRow key={e.id} e={e} />)}</div></div>)}
-        </div>
-        <aside className="rail">
-          <RandomCard />
-          <Facets list={all.data ?? []} onTag={t => nav(`/memories?tag=${encodeURIComponent(t)}`)} />
-        </aside>
-      </section>
+      </header>
+      {chapter?.summary && <p className="mm-lede">{chapter.summary}</p>}
+      {loading && <p className="jn-wait">Đang mở ký ức…</p>}
+      {!loading && !list.length && <p className="jn-wait">{q ? 'Không thấy ký ức nào khớp.' : 'Chưa có ký ức nào ở đây.'}</p>}
+      {!filtered && !!all.data?.length && <Resurface list={all.data} />}
+      {groups.map(g => <YearBlock key={g.years[0]} years={g.years} list={g.list} plain={!!q} here={g.years[0] === hereBlock} chapters={chapters.data ?? []} />)}
     </div>
   );
 }
 
-function MemoryRow({ e }: { e: Episode }) {
-  const cover = e.media?.[0]?.url, n = e.media?.length ?? 0;
-  const [story] = splitRoute(e.summary);
-  const sub = e.title && story && story !== e.title ? story : '';
+/** One year of memories: its weightiest ones large, the rest as lines. */
+function YearBlock({ years, list, plain, here, chapters }: { years: number[]; list: Episode[]; plain: boolean; here: boolean; chapters: Chapter[] }) {
+  const year = years[0];
+  const feats = plain ? [] : list.filter(e => (e.importance ?? 0) >= 7 && e.title && coverOf(e)).sort((a, b) => (b.importance ?? 0) - (a.importance ?? 0)).slice(0, 3);
+  const rest = list.filter(e => !feats.includes(e));
+  // the stretches of life this year opens (a chapter is named once, in the year it begins)
+  const opens = year > 0 ? chapters.filter(c => { const from = periodYears(c.period)?.[0]; return !!from && years.includes(from) && c.title; }) : [];
   return (
-    <Link className="post" to={memoryHref(e)}>
-      <div><span className="cat">{[kindName(e.kind), memoryWhen(e)].filter(Boolean).join(' · ')}</span><h4>{e.title || e.summary}</h4>{sub && <p>{sub}</p>}
-        <span className="by">{[e.place, n ? `${n} ảnh` : '', e.persons?.length ? e.persons.map(p => p.displayName || p.name).join(', ') : ''].filter(Boolean).join(' · ')}</span></div>
-      {cover ? <img src={cdn(cover, 240)} alt="" /> : <span className="noimg" />}
+    <section id={year > 0 ? `my${year}` : undefined} className={`mm-year ${year > 0 ? eraClass(year) : ''} ${here ? 'here' : ''}`}>
+      {!plain && <div className="mm-yh"><b>{year > 0 ? yearsLabel(years) : 'Không rõ năm'}</b>{opens.length > 0 && <span>{opens.map(c => <Link key={c.id} to={`/memories?chapter=${c.id}`}>{c.title}</Link>)}</span>}</div>}
+      {feats.length > 0 && <div className={`mm-feats n${feats.length}`}>{feats.map(e => (
+        <Link key={e.id} className="mm-feat" to={memoryHref(e)}>
+          <img src={cdn(coverOf(e), 640)} alt="" loading="lazy" />
+          <span className="mm-feat-t">
+            <span className={`mm-k k-${e.kind ?? ''}`}>{[kindName(e.kind), memoryDay(e)].filter(Boolean).join(' · ')}</span>
+            <b>{e.title}</b>
+            <p>{splitRoute(e.summary)[0]}</p>
+            {(e.place || peopleOf(e)) && <small>{[e.place, peopleOf(e)].filter(Boolean).join(' · ')}</small>}
+          </span>
+        </Link>))}</div>}
+      <div className="mm-rows">{rest.map(e => <MemoryLine key={e.id} e={e} />)}</div>
+    </section>
+  );
+}
+
+export function MemoryLine({ e }: { e: Episode }) {
+  const cover = coverOf(e);
+  return (
+    <Link className="mm-line" to={memoryHref(e)}>
+      <span className="mm-d">{memoryDay(e)}</span>
+      <span className="mm-b"><b>{titleOf(e)}</b><small>{e.kind && <i className={`k-${e.kind}`}>{kindName(e.kind)}</i>}{[e.place, peopleOf(e)].filter(Boolean).join(' · ')}</small></span>
+      {cover && <img src={cdn(cover, 160)} alt="" loading="lazy" />}
     </Link>
   );
 }
 
-function RandomCard() {
-  const self = useSelf(), [n, setN] = useState(0);
-  const r = useQuery({ queryKey: ['memory-random', self?.id, n], enabled: !!self, staleTime: Infinity, queryFn: () => hub.randomMemory(self!.id, 1, 'episode') });
-  const e = r.data?.[0]?.episode;
+/** One memory brought back at random: the page's opening, and its one tilted print. */
+function Resurface({ list }: { list: Episode[] }) {
+  const [n, setN] = useState(0), last = useRef('');
+  // drawn from the memories already here (asking the server for a random one takes as long as the whole list):
+  // one with a photo and a title when there is one, and never the same one twice in a row
+  const pool = useMemo(() => { const p = list.filter(x => x.title && coverOf(x)); return p.length ? p : list; }, [list]);
+  const e = useMemo(() => {
+    if (!pool.length) return undefined;
+    let i = Math.floor(Math.random() * pool.length);
+    if (pool.length > 1 && pool[i].id === last.current) i = (i + 1) % pool.length;
+    last.current = pool[i].id;
+    return pool[i];
+  }, [pool, n]); // eslint-disable-line react-hooks/exhaustive-deps
   if (!e) return null;
-  const cover = e.media?.[0]?.url;
+  const cover = coverOf(e);
   return (
-    <div className="card" style={{ ['--c' as string]: 'var(--memory)' }}><h3><i />Một ký ức bất kỳ<button type="button" onClick={() => setN(v => v + 1)}>Đổi</button></h3>
-      <Link to={memoryHref(e)}>{cover && <img className="pic" src={cdn(cover, 400)} alt="" />}
-        <b className="mem-rt">{e.title || e.summary}</b></Link>
-      <div className="meta">{[kindName(e.kind), memoryWhen(e)].filter(Boolean).join(' · ')}</div></div>
+    <section className="mm-back">
+      <div className="mm-back-hd"><h2>Một ký ức trở lại</h2><button type="button" onClick={() => setN(v => v + 1)}>Ký ức khác</button></div>
+      <Link className={`mm-back-in ${cover ? '' : 'bare'}`} to={memoryHref(e)}>
+        {cover && <Print src={cdn(cover, 640)} ratio="4 / 3" tilt={-1.2} tape={-4} />}
+        <span className="mm-back-t">
+          <span className={`mm-k k-${e.kind ?? ''}`}>{[kindName(e.kind), memoryDay(e)].filter(Boolean).join(' · ') || 'Ký ức'}</span>
+          <b>{titleOf(e)}</b>
+          {e.title && <p>{splitRoute(e.summary)[0]}</p>}
+          {(e.place || peopleOf(e)) && <small>{[e.place, peopleOf(e)].filter(Boolean).join(' · ')}</small>}
+        </span>
+      </Link>
+    </section>
   );
 }
 
-function Facets({ list, onTag }: { list: Episode[]; onTag: (t: string) => void }) {
-  const persons = usePersons().data ?? [], [sp] = useSearchParams();
-  const tags = useMemo(() => { const t: Record<string, number> = {}; list.forEach(e => e.tags?.forEach(x => { t[x.name] = (t[x.name] ?? 0) + 1; })); return Object.entries(t).sort((a, b) => b[1] - a[1]).slice(0, 16); }, [list]);
+/** the sidebar while in Ký ức: kinds, the stretches of his life, the years, who and what they are about */
+export function MemoriesSide() {
+  const all = useMemories(), chapters = useLifeChapters(), persons = usePersons().data ?? [], [sp] = useSearchParams(), list = all.data ?? [], events = useEvents();
+  const inEvents = useLocation().pathname.startsWith('/memories/events');
+  const kind = sp.get('kind'), chapter = sp.get('chapter'), year = Number(sp.get('year')), tag = sp.get('tag'), person = sp.get('person'), any = kind || chapter || year || tag || person || sp.get('q');
+  const years = [...new Set(list.map(yearOf).filter(y => y > 0))].sort((a, b) => a - b);
+  const chs = (chapters.data ?? []).filter(c => list.some(e => inChapter(e, c)));
+  const tags = useMemo(() => { const t: Record<string, number> = {}; list.forEach(e => e.tags?.forEach(x => { t[x.name] = (t[x.name] ?? 0) + 1; })); return Object.entries(t).sort((a, b) => b[1] - a[1]).slice(0, 14); }, [list]);
   const people = useMemo(() => { const c: Record<string, number> = {}; list.forEach(e => e.persons?.forEach(p => { c[p.id] = (c[p.id] ?? 0) + 1; })); return Object.entries(c).sort((a, b) => b[1] - a[1]).slice(0, 10); }, [list]);
   return (
     <>
-      {people.length > 0 && <div className="card" style={{ ['--c' as string]: 'var(--memory)' }}><h3><i />Người trong ký ức</h3>
-        <div className="chips">{people.map(([id, k]) => { const p = persons.find(x => x.id === id); return p && (
-          <Link key={id} className={`pill ${sp.get('person') === id ? 'on' : ''}`} to={`/memories?person=${id}`}>{p.avatarUrl ? <img src={cdn(p.avatarUrl, 80)} alt="" /> : <span className="pill-ph" />}{p.displayName || p.name}<small>{k}</small></Link>); })}</div></div>}
-      {tags.length > 0 && <div className="card" style={{ ['--c' as string]: 'var(--memory)' }}><h3><i />Thẻ</h3>
-        <div className="chips">{tags.map(([t, k]) => <button key={t} type="button" className={`chip ${sp.get('tag') === t ? 'on' : ''}`} onClick={() => onTag(t)}>{t} · {k}</button>)}</div></div>}
-    </>
-  );
-}
-
-/** the sidebar while in Ký ức: kinds, the chapters of your life, the years */
-export function MemoriesSide() {
-  const all = useMemories(), chapters = useLifeChapters(), [sp] = useSearchParams(), list = all.data ?? [], events = useEvents();
-  const inEvents = useLocation().pathname.startsWith('/memories/events');
-  const kind = sp.get('kind'), chapter = sp.get('chapter'), year = Number(sp.get('year')), any = kind || chapter || year || sp.get('tag') || sp.get('person') || sp.get('q');
-  const byYear: Record<number, number> = {}; list.forEach(e => { const y = yearOf(e); if (y) byYear[y] = (byYear[y] ?? 0) + 1; });
-  const years = Object.keys(byYear).map(Number).sort((a, b) => a - b), max = Math.max(1, ...Object.values(byYear));
-  const chs = (chapters.data ?? []).filter(c => list.some(e => inChapter(e, c)));
-  return (
-    <>
       <h4>Ký ức</h4>
-      <Link to="/memories" className={!any && !inEvents ? 'on' : ''}>Tất cả<small>{fmt(list.length)}</small></Link>
+      <Link to="/memories" className={!any && !inEvents ? 'on' : ''}>Tất cả<small>{all.data ? fmt(list.length) : ''}</small></Link>
       <Link to="/memories/events" className={inEvents ? 'on' : ''}>Sự kiện<small>{events.data ? fmt(events.data.length) : ''}</small></Link>
-      {KINDS.map(([k, n]) => { const c = list.filter(e => e.kind === k).length; return c > 0 && <Link key={k} to={`/memories?kind=${k}`} className={kind === k ? 'on' : ''}>{n}<small>{c}</small></Link>; })}
+      {KINDS.map(([k, n]) => { const c = list.filter(e => e.kind === k).length; return c > 0 && <Link key={k} to={`/memories?kind=${k}`} className={kind === k ? 'on' : ''}><i className={`kdot k-${k}`} />{n}<small>{c}</small></Link>; })}
+      {years.length > 0 && <h4>Năm</h4>}
+      <YearGrid years={years} active={year} href={y => `/memories?year=${y}`} />
       {chs.length > 0 && <h4>Giai đoạn</h4>}
       {chs.map(c => <Link key={c.id} to={`/memories?chapter=${c.id}`} className={`mem-ch ${chapter === c.id ? 'on' : ''}`}><span>{c.title || c.period}</span>{c.title && <small>{c.period}</small>}</Link>)}
-      {years.length > 0 && <h4>Năm</h4>}
-      {years.map(y => <Link key={y} to={`/memories?year=${y}`} className={y === year ? 'on' : ''} style={{ ['--c' as string]: 'var(--memory)' }}>{y}<span className="bar"><b style={{ width: `${Math.round(byYear[y] / max * 100)}%` }} /></span><small>{byYear[y]}</small></Link>)}
+      {people.length > 0 && <h4>Người</h4>}
+      {people.map(([id]) => { const p = persons.find(x => x.id === id); return p && <Link key={id} to={`/memories?person=${id}`} className={person === id ? 'on' : ''}>{p.displayName || p.name}</Link>; })}
+      {tags.length > 0 && <h4>Thẻ</h4>}
+      {tags.map(([t]) => <Link key={t} to={`/memories?tag=${encodeURIComponent(t)}`} className={tag === t ? 'on' : ''}>{t}</Link>)}
     </>
   );
 }
@@ -184,7 +228,11 @@ function SourceQuote({ s }: { s: import('../types').MemorySource }) {
   if (s.kind === 'LINK' && s.url) return <a className="mem-src link" href={s.url} target="_blank" rel="noreferrer">{body}</a>;
   return <div className={`mem-src ${s.kind.toLowerCase()}`}>{body}</div>;
 }
+/** words someone really said or wrote, quoted in a memory's title: at least two of them */
+const quoted = (s?: string | null) => { const q = /(?:^|[\s(:])[“"']([^”"']{6,48})[”"'](?=$|[\s).,;!?])/.exec(s ?? '')?.[1]; return q && q.trim().includes(' ') ? q.trim() : null; };
 
+/* A memory opens on the paper of its era, its year set large; then what happened, where it went (a trip's legs), the
+   photos, and the words that are still kept about it. Beside it: the machines of then, what else was going on. */
 export function MemoryPage() {
   const { id } = useParams(), self = useSelf(), all = useMemories(), persons = usePersons();
   const q = useQuery({ queryKey: ['memory', id], enabled: !!self && !!id, staleTime: T, queryFn: () => hub.episode(self!.id, id!) });
@@ -198,29 +246,35 @@ export function MemoryPage() {
   const list = all.data ?? [], i = e ? list.findIndex(x => x.id === e.id) : -1, prev = i > 0 ? list[i - 1] : undefined, next = i >= 0 ? list[i + 1] : undefined;
   const sameYear = e ? list.filter(x => x.id !== e.id && yearOf(x) === yearOf(e)).slice(0, 5) : [];
 
-  if (q.isLoading || !self) return <div className="reader"><article className="article"><p className="empty">Đang mở ký ức…</p></article></div>;
-  if (!e) return <div className="reader"><article className="article"><Link className="back" to="/memories">← Ký ức</Link><h1>Không tìm thấy ký ức này</h1></article></div>;
+  if (q.isLoading || !self) return <div className="page mm"><div className="reader"><article className="article"><p className="empty">Đang mở ký ức…</p></article></div></div>;
+  if (!e) return <div className="page mm"><div className="reader"><article className="article"><Link className="back" to="/memories">← Ký ức</Link><h1>Không tìm thấy ký ức này</h1></article></div></div>;
 
   const [story, route] = splitRoute(e.summary);
   const text = e.title && story === e.title ? '' : story;
   const photos: MediaFile[] = files.data?.length ? files.data : (e.media ?? []).map((m): MediaFile => ({ id: m.id, fileName: m.fileName, fileType: 'IMAGE', cdnUrl: m.url ?? '', caption: m.caption, width: m.width, height: m.height }));
   const avatar = (id: string) => persons.data?.find(p => p.id === id)?.avatarUrl;
+  const y = yearOf(e) || 0, era = y ? eraClass(y) : '', at = atOfMemory(e), said = quoted(e.title);
 
   return (
-    <div className="page mem">
-      <div className="reader">
-        <article className="article">
-          <Link className="back" to="/memories">← Ký ức</Link><br />
-          <span className="cat">{[kindName(e.kind), memoryWhen(e)].filter(Boolean).join(' · ') || 'Ký ức'}</span>
+    <div className="page mm">
+      <header className={`mm-top ${era}`}><div className="mm-top-in">
+        {y > 0 && <div className="mm-top-y"><b>{y}</b><span>{memoryDay(e)}</span></div>}
+        <div className="mm-top-t">
+          <Link className="back" to="/memories">← Ký ức</Link>
+          <span className="mm-k">{kindName(e.kind) || 'Ký ức'}{!y && memoryWhen(e) ? ` · ${memoryWhen(e)}` : ''}</span>
           <h1>{e.title || memoryWhen(e) || 'Ký ức'}</h1>
-          {(e.place || e.persons?.length) && <div className="byline">
+          {(e.place || !!e.persons?.length) && <div className="mm-meta">
             {e.place && <span>{e.place}</span>}
-            {e.place && !!e.persons?.length && <span className="sep">|</span>}
             {e.persons?.map(p => <span key={p.id} className="pill">{avatar(p.id) ? <img src={cdn(avatar(p.id), 80)} alt="" /> : <span className="pill-ph" />}{p.displayName || p.name}</span>)}
           </div>}
-          <div className="mem-boot">
-            <a href={`/pc?scene=${e.id}`}>Xem trên máy tính lúc đó</a>
-            {atOfMemory(e) && <a href={`/phone?at=${encodeURIComponent(atOfMemory(e)!)}`}>Điện thoại lúc đó</a>}
+        </div>
+      </div></header>
+      <div className="reader">
+        <article className="article">
+          {/* on a narrow screen the machines come first (beside the text there is no room) */}
+          <div className={`mm-boot top ${era}`}>
+            <MachineTile label="Mở trên máy tính lúc đó" href={`/pc?scene=${e.id}`} />
+            {at && <MachineTile label="Điện thoại lúc đó" href={`/phone?at=${encodeURIComponent(at)}`} phone />}
           </div>
           {text && <div className="prose">{text.split(/\n+/).map((para, k) => <p key={k}>{para}</p>)}</div>}
           {route.length > 0 && <><h5 className="mem-h">Lộ trình</h5><ol className="mem-route">{route.map((leg, k) => <li key={k}>{leg}</li>)}</ol></>}
@@ -235,6 +289,11 @@ export function MemoryPage() {
             {next ? <Link to={memoryHref(next)}><small>Sau đó →</small><b>{next.title || next.summary.slice(0, 60)}</b></Link> : <span />}</div>
         </article>
         <aside className="aside">
+          <div className={`mm-boot ${era}`}>
+            <MachineTile label="Mở trên máy tính lúc đó" href={`/pc?scene=${e.id}`} />
+            {at && <MachineTile label="Điện thoại lúc đó" href={`/phone?at=${encodeURIComponent(at)}`} phone />}
+          </div>
+          {said && <div className={era}><HandNote>{said}</HandNote></div>}
           <EventsAround at={e.occurredAt} />
           {sameYear.length > 0 && <div><h5>Cũng năm {yearOf(e)}</h5><nav className="mem-same">{sameYear.map(x => <Link key={x.id} to={memoryHref(x)}>{x.title || x.summary.slice(0, 60)}<small>{kindName(x.kind)}</small></Link>)}</nav></div>}
           {e.latitude != null && e.longitude != null && <div><h5>Ở đâu</h5><a className="mem-map" href={`https://www.openstreetmap.org/?mlat=${e.latitude}&mlon=${e.longitude}#map=11/${e.latitude}/${e.longitude}`} target="_blank" rel="noreferrer">{e.place || `${e.latitude}, ${e.longitude}`} ↗</a></div>}

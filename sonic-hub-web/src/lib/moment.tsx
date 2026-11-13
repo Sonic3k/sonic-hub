@@ -12,7 +12,7 @@ interface MomentState {
   moment: Moment | null;
   /** a day was chosen (in the address or earlier in this visit), not just today's default */
   picked: boolean;
-  /** go and look at this day: the home page that is open keeps its mode, any other page goes to Hôm nay */
+  /** go and look at this day: a home page keeps its mode, Ảnh / Ký ức / Nhật ký stay and show that time, any other page goes to Hôm nay */
   pick: (m: Moment) => void;
   /** back to today's default */
   clear: () => void;
@@ -26,6 +26,15 @@ export const atOf = (m: Moment) => `${isoOf(m)}T21:00`;
 export const momentQuery = (m: Moment) => `?y=${m.y}&d=${m.m}-${m.d}`;
 export const daysIn = (y: number, m: number) => new Date(y, m, 0).getDate();
 export const HOME_PATHS = ['/', '/timeline'];
+/** Where a section shows a moment: the photo library opens its month; Ký ức and Nhật ký open their list, which goes
+ *  to the moment's year by itself; the timeline keeps its mode; anything else is Hôm nay. */
+export function momentHref(path: string, m: Moment): string {
+  if (path === '/timeline') return `/timeline${momentQuery(m)}`;
+  if (/^\/(photos|tags)(\/|$)/.test(path)) return `/photos?year=${m.y}&month=${m.m}`;
+  if (path.startsWith('/memories')) return '/memories';
+  if (path.startsWith('/journal')) return '/journal';
+  return `/${momentQuery(m)}`;
+}
 
 function read(): Moment | null {
   try {
@@ -69,7 +78,7 @@ export function MomentProvider({ children }: { children: ReactNode }) {
 
   const pick = useCallback((m: Moment) => {
     write(m); setStored(m);
-    nav(`${loc.pathname === '/timeline' ? '/timeline' : '/'}${momentQuery(m)}`);
+    nav(momentHref(loc.pathname, m));
   }, [nav, loc.pathname]);
   const clear = useCallback(() => {
     write(null); setStored(null);

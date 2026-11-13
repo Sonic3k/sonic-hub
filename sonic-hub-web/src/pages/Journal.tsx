@@ -1,49 +1,84 @@
+/* Nhật ký: what he wrote, under the year it was written. A note is led by its day and its opening words (most of
+   them are named after their date); the year at the left stays in view with the months that have writing. With no
+   filter the page opens on one old note, pulled out at random to read again. */
 import { useMemo, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { cdn, pic } from '../api/client';
-import { excerptOf, noteDate, noteHref, readMinutes, useNotes } from '../lib/queries';
-import { dayMonthYear, isoDay, monthLabel } from '../lib/date';
-import { PostRow } from './Home';
+import type { Note } from '../types';
+import { excerptOf, firstLine, noteDate, noteHref, plain, readMinutes, useNotes } from '../lib/queries';
+import { dayMonthYear } from '../lib/date';
+import { eraClass } from '../lib/era';
+import { useMoment } from '../lib/moment';
+import { useGoTo } from '../lib/scroll';
+
+/** a note named only after its day ("Sonic note · 9/4/2016") has nothing to add to the date beside it */
+const namedByDate = (n: Note) => !n.title || /^Sonic note\b/i.test(n.title);
+const authorOf = (n: Note) => n.authorPersonName || n.authorName || '';
 
 export default function Journal() {
-  const notes = useNotes(), [sp] = useSearchParams(), all = notes.data ?? [];
+  const notes = useNotes(), [sp] = useSearchParams(), all = notes.data ?? [], { moment, picked } = useMoment();
   const kind = sp.get('kind'), cat = sp.get('cat'), year = sp.get('year'), tag = sp.get('tag'), filtered = !!(kind || cat || year || tag);
   const list = all.filter(n => (!kind || n.kind === kind) && (!cat || n.category === cat) && (!year || noteDate(n).startsWith(year)) && (!tag || n.tags?.some(t => t.name === tag)));
-  const featured = !filtered ? list.find(n => n.kind === 'ARTICLE') : undefined, rest = list.filter(n => n !== featured);
-  const groups = useMemo(() => { const g: [string, typeof rest][] = []; rest.forEach(n => { const m = monthLabel(noteDate(n) || '1970-01'); const last = g[g.length - 1]; if (last && last[0] === m) last[1].push(n); else g.push([m, [n]]); }); return g; }, [rest]);
-  const first = all.length ? noteDate(all[all.length - 1]).slice(0, 4) : '';
-  /* writing calendar: the last 26 weeks, one square per day */
-  const heat = useMemo(() => {
-    const per: Record<string, number> = {}; all.forEach(n => { const d = noteDate(n).slice(0, 10); if (d) per[d] = (per[d] ?? 0) + 1; });
-    const end = new Date(); return Array.from({ length: 182 }, (_, i) => { const d = new Date(end); d.setDate(end.getDate() - (181 - i)); return per[isoDay(d)] ?? 0; });
-  }, [all]);
-  const tags = useMemo(() => { const t: Record<string, number> = {}; all.forEach(n => n.tags?.forEach(x => { t[x.name] = (t[x.name] ?? 0) + 1; })); return Object.entries(t).sort((a, b) => b[1] - a[1]).slice(0, 14); }, [all]);
-  const older = all.filter(n => Date.now() - new Date(noteDate(n)).getTime() > 30 * 864e5), [pick, setPick] = useState(0);
-  const old = older.length ? older[(pick * 7919 + older.length) % older.length] : undefined;
+  // newest first, year by year
+  const years = useMemo(() => {
+    const g: [number, Note[]][] = [];
+    list.forEach(n => { const y = +noteDate(n).slice(0, 4) || 0, last = g[g.length - 1]; if (last && last[0] === y) last[1].push(n); else g.push([y, [n]]); });
+    return g;
+  }, [list]);
+  // a different page each day, and another one on asking
+  const older = all.filter(n => Date.now() - new Date(noteDate(n)).getTime() > 30 * 864e5), [turn, setTurn] = useState(() => Math.floor(Date.now() / 864e5));
+  const old = !filtered && older.length ? older[(turn * 7919 + older.length) % older.length] : undefined;
+  // a day was picked on the calendar: the list goes to its year (the nearest one that has writing)
+  const here = picked && moment && !filtered && years.length ? years.reduce((a, b) => (Math.abs(b[0] - moment.y) < Math.abs(a[0] - moment.y) ? b : a))[0] : 0;
+  useGoTo(here ? `jy${here}` : '');
   const seg = (v: string | null, label: string) => <Link className={kind === v || (!kind && !v) ? 'on' : ''} to={v ? `/journal?kind=${v}` : '/journal'}>{label}</Link>;
 
   return (
-    <div className="wrap page">
-      <div className="ptitle"><h1>{cat || tag || (year ? `Viết năm ${year}` : 'Nhật ký')}</h1><span>{list.length} bài{!filtered && first ? ` · từ ${first}` : ''}</span><div className="seg">{seg(null, 'Tất cả')}{seg('ARTICLE', 'Bài viết')}{seg('JOURNAL', 'Ghi chép')}</div></div>
-      <section className="lanes">
-        <div>
-          {notes.isLoading && <div className="card empty">Đang mở nhật ký…</div>}
-          {!notes.isLoading && !list.length && <div className="card empty">Chưa có bài nào ở đây.</div>}
-          {featured && <Link className="card featured" to={noteHref(featured)}>
-            {pic(featured.coverMedia) ? <img src={cdn(pic(featured.coverMedia, true), 900)} alt="" /> : <div className="ph" />}
-            <div className="body"><span className="cat">Mới nhất{featured.category ? ` · ${featured.category}` : ''}</span><h3>{featured.title || 'Không tiêu đề'}</h3><p>{excerptOf(featured)}</p><span className="by">{dayMonthYear(noteDate(featured))} · {readMinutes(featured)} phút đọc</span></div>
-          </Link>}
-          {groups.map(([m, ps]) => <div key={m}><div className="month">{m}</div><div className="posts">{ps.map(n => <PostRow key={n.id} n={n} />)}</div></div>)}
-        </div>
-        <aside className="rail">
-          <div className="card" style={{ ['--c' as string]: 'var(--journal)' }}><h3><i />Lịch viết · 6 tháng qua</h3>
-            <div className="heat">{heat.map((v, i) => <i key={i} className={v > 2 ? 'l3' : v > 1 ? 'l2' : v > 0 ? 'l1' : ''} />)}</div>
-            <div className="meta">{heat.filter(v => v > 0).length} ngày có viết</div></div>
-          {tags.length > 0 && <div className="card" style={{ ['--c' as string]: 'var(--journal)' }}><h3><i />Thẻ</h3><div className="chips">{tags.map(([t, k]) => <Link key={t} className={`chip ${tag === t ? 'on' : ''}`} to={`/journal?tag=${encodeURIComponent(t)}`}>{t} · {k}</Link>)}</div></div>}
-          {old && <div className="card" style={{ ['--c' as string]: 'var(--journal)' }}><h3><i />Đọc lại một bài cũ<button type="button" onClick={() => setPick(p => p + 1)}>Đổi</button></h3>
-            <Link to={noteHref(old)} style={{ fontFamily: 'var(--serif)', fontSize: 17, fontWeight: 600, lineHeight: 1.35 }}>{old.title || excerptOf(old, 60)}</Link><div className="meta">{dayMonthYear(noteDate(old))}</div></div>}
-        </aside>
-      </section>
+    <div className="wrap page jn">
+      <header className="jn-head"><h1>{cat || tag || (year ? `Viết năm ${year}` : 'Nhật ký')}</h1>{all.some(n => n.kind === 'ARTICLE') && all.some(n => n.kind === 'JOURNAL') && <div className="seg">{seg(null, 'Tất cả')}{seg('ARTICLE', 'Bài viết')}{seg('JOURNAL', 'Ghi chép')}</div>}</header>
+      {notes.isLoading && <p className="jn-wait">Đang mở nhật ký…</p>}
+      {!notes.isLoading && !list.length && <p className="jn-wait">Chưa có bài nào ở đây. <Link to="/journal">Xem tất cả</Link></p>}
+
+      {old && <section className="jn-again">
+        <div className="jn-again-hd"><h2>Đọc lại một trang cũ</h2><button type="button" onClick={() => setTurn(t => t + 1)}>Trang khác</button></div>
+        <Link className="jn-sheet" to={noteHref(old)}>
+          <span>{dayMonthYear(noteDate(old))}{!namedByDate(old) ? ` · ${old.title}` : ''}</span>
+          <p>{plain(old.content).slice(0, 330).replace(/\s+\S*$/, '')}…</p>
+          <i>Đọc tiếp</i>
+        </Link>
+      </section>}
+
+      {years.map(([y, ns]) => {
+        const months = new Set(ns.map(n => +noteDate(n).slice(5, 7)));
+        return (
+          <section key={y} id={`jy${y}`} className={`jn-year ${eraClass(y)} ${y === here ? 'here' : ''}`}>
+            <div className="jn-yl">
+              <b>{y}</b>
+              <div className="jn-months" aria-label={`Các tháng có viết trong năm ${y}`}>{Array.from({ length: 12 }, (_, i) => i + 1).map(m => months.has(m)
+                ? <a key={m} href={`#jm${y}-${m}`} onClick={e => { e.preventDefault(); document.getElementById(`jm${y}-${m}`)?.scrollIntoView({ behavior: 'smooth', block: 'start' }); }}>{m}</a>
+                : <span key={m}>{m}</span>)}</div>
+            </div>
+            <div className="jn-list">{ns.map((n, i) => { const m = +noteDate(n).slice(5, 7), first = i === 0 || +noteDate(ns[i - 1]).slice(5, 7) !== m; return <Entry key={n.id} n={n} id={first ? `jm${y}-${m}` : undefined} />; })}</div>
+          </section>);
+      })}
     </div>
+  );
+}
+
+/** One thing written: its day, then its title — or, for a note named after its date, its opening words. */
+export function Entry({ n, id }: { n: Note; id?: string }) {
+  const d = noteDate(n), byDate = namedByDate(n), cover = pic(n.coverMedia);
+  const lead = byDate ? firstLine(n, 120) : '', rest = byDate ? plain(n.content).slice(lead.replace(/…$/, '').length).trim().slice(0, 190) : excerptOf(n, 200);
+  const meta = [authorOf(n), n.series && !byDate ? n.series : '', n.category, `${readMinutes(n)} phút đọc`].filter(Boolean).join(' · ');
+  return (
+    <Link className="jn-row" to={noteHref(n)} id={id}>
+      <span className="jn-d"><b>{+d.slice(8, 10) || ''}</b><i>tháng {+d.slice(5, 7) || ''}</i></span>
+      <span className="jn-b">
+        <b>{byDate ? lead : n.title}</b>
+        {rest && <span>{rest}</span>}
+        <small>{meta}</small>
+      </span>
+      {cover && <img src={cdn(cover, 240)} alt="" loading="lazy" />}
+    </Link>
   );
 }

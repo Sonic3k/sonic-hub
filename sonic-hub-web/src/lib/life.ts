@@ -121,3 +121,20 @@ export function sameDayCards(events: LifeEvent[], memories: Episode[], at: { y: 
     .sort((a, b) => (b.importance ?? 0) - (a.importance ?? 0)).forEach(e => add(+e.occurredAt!.slice(0, 4), e.title!));
   return out.sort((a, b) => a.year - b.year);
 }
+
+/** A list already in time order, cut into blocks by year. Years that hold little (one or two things) run together
+ *  under one heading ("1952 – 1978") until the block has about eight, so the thin stretches of a life do not fall
+ *  apart into a page of lone lines. A year of 0 or less means "not known" and stands alone. */
+export function yearBlocks<T>(items: T[], yearOf: (x: T) => number): { years: number[]; list: T[] }[] {
+  const g: { years: number[]; list: T[]; thin?: boolean }[] = [];
+  items.forEach(x => { const y = yearOf(x) || -1, last = g[g.length - 1]; if (last && last.years[0] === y) last.list.push(x); else g.push({ years: [y], list: [x] }); });
+  const out: typeof g = [];
+  g.forEach(b => {
+    const thin = b.years[0] > 0 && b.list.length <= 2, last = out[out.length - 1];
+    if (thin && last?.thin && last.list.length + b.list.length <= 8) { last.years.push(...b.years); last.list.push(...b.list); }
+    else out.push({ ...b, thin });
+  });
+  return out;
+}
+/** the heading of such a block: "2007", "1952 – 1978" */
+export const yearsLabel = (years: number[]) => { const lo = Math.min(...years), hi = Math.max(...years); return lo === hi ? `${lo}` : `${lo} – ${hi}`; };
