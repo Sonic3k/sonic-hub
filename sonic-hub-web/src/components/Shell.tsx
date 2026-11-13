@@ -42,7 +42,7 @@ export default function Shell() {
 function Frame() {
   const loc = useLocation(), tl = useTimeline(), { pick, picked, moment } = useMoment(), path = loc.pathname;
   const [more, setMore] = useState(false), [filters, setFilters] = useState(false);
-  const reading = /^\/(journal|memories)\/(?!events\/?$).+/.test(path), inMemories = path.startsWith('/memories'), inJournal = path.startsWith('/journal'), inPhotos = /^\/(photos|tags)/.test(path), inAngels = path.startsWith('/angels'), inForum = path.startsWith('/forum');
+  const reading = /^\/(journal|memories)\/(?!events\/?$).+/.test(path) || /^\/games\/(?!series\/|play\/)[^/]+$/.test(path), inMemories = path.startsWith('/memories'), inJournal = path.startsWith('/journal'), inPhotos = /^\/(photos|tags)/.test(path), inAngels = path.startsWith('/angels'), inForum = path.startsWith('/forum');
   const inMoney = path.startsWith('/money'), inPortal = path.startsWith('/portal'), inGames = path.startsWith('/games'), inMusic = path.startsWith('/music');
   const onHome = HOME_PATHS.includes(path);
   /* on a phone the sidebar is a sheet behind a button: on the pages that list things, not where one thing is read, played or chatted */
