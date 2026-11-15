@@ -50,6 +50,14 @@
       "shots": ["title", "play"], "play": "/games/penned-in"
     },
     {
+      "key": "keep-it-down", "title": "Keep It Down", "alt": ["Keep-It-Down", "KeepItDown"],
+      "lang": "en", "group": "cards", "sub": "board", "machine": "web", "year": 2026, "tags": ["originals", "two-player"],
+      "players": 2, "ai": 1, "inputs": ["mouse", "touch", "keyboard"], "maker": "Sonic Hub", "added": "2026-11-15",
+      "kind": "Board game of shoves and sieges, against the AI or a friend",
+      "blurb": "Eight Rams a side push across the board. Shove an enemy Ram, or pin it against anything and it is gone. Break through the Gates and bring both Keeps down. But go quietly: take a piece beside a Keep and its bell rings, and the Keep strikes back.",
+      "shots": ["title", "play"], "play": "/games/keep-it-down"
+    },
+    {
       "key": "len-doi", "title": "Lên Đời", "alt": ["Len Doi", "Age Duel"],
       "lang": "vi", "group": "strategy", "sub": "turn-based", "machine": "web", "year": 2026, "tags": ["originals"],
       "players": 1, "ai": 1, "inputs": ["mouse", "touch"], "maker": "Sonic Hub", "added": "2026-10-05", "highlight": true,

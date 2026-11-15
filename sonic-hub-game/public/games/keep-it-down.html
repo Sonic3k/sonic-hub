@@ -1,0 +1,1512 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#e8dfcf">
+<title>Keep It Down</title>
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Semi+Condensed:wght@500;600;700&family=Besley:ital,wght@0,400;0,500;0,700;0,900;1,500&display=swap" rel="stylesheet">
+<style>
+  /* ── Keep It Down ── a walnut tray lined with felt on a linen cloth, turned pieces in two woods with brass fittings,
+     the label off the box lid, and a maple board with brass pegs that keeps the settings and whose turn it is.
+     Printed things are set in a Clarendon; anything stamped into wood or brass is in condensed capitals. */
+  :root { box-sizing: border-box; color-scheme: light;
+    --linen: #e8dfcf; --ink: #22364a; --muted: #6b665c; --card: #fcf8ee; --felt: #3f6d8c; --brown: #3a2817; --brass: #c8a24a; --brass-lo: #8a6a25; --loud: #ff6a4d; --gold: #ffd975; --amber: #ffc74d;
+    --title: Besley, Rockwell, "Roboto Slab", Georgia, serif; --print: "Barlow Semi Condensed", "Arial Narrow", system-ui, sans-serif;
+    --grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 .2 0'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23n)'/%3E%3C/svg%3E");
+    --vh: 100vh; --side: 348px; --sheet: min(calc(100vw - var(--side) - 112px), calc(var(--vh) - 104px), 860px); }
+  @supports (height: 100dvh) { :root { --vh: 100dvh; } }
+  *, *::before, *::after { box-sizing: inherit; }
+  html { -webkit-text-size-adjust: 100%; }
+  body { margin: 0; min-height: var(--vh); color: var(--ink); font: 500 16px/1.4 var(--print); -webkit-tap-highlight-color: transparent; overscroll-behavior-y: none;
+    background-color: var(--linen);
+    background-image: radial-gradient(1200px 700px at 22% -8%, rgba(255,255,255,.6), transparent 70%), radial-gradient(1000px 640px at 100% 108%, rgba(110,85,50,.24), transparent 70%),
+      repeating-linear-gradient(0deg, rgba(110,90,60,.085) 0 1px, transparent 1px 3px), repeating-linear-gradient(90deg, rgba(110,90,60,.07) 0 1px, transparent 1px 3px), var(--grain);
+    background-attachment: fixed, fixed, scroll, scroll, scroll; }
+  button { font: inherit; color: inherit; cursor: pointer; touch-action: manipulation; } button:disabled { cursor: default; }
+  :focus-visible { outline: 3px solid var(--ink); outline-offset: 3px; }
+  [hidden] { display: none !important; }
+  #defs { position: absolute; width: 0; height: 0; overflow: hidden; }
+
+  /* the strip above the table: the way back to the shelf, sound, the rules */
+  .top { display: flex; align-items: center; gap: 8px; min-height: 52px; padding: calc(8px + env(safe-area-inset-top, 0px)) calc(16px + env(safe-area-inset-right, 0px)) 0 calc(12px + env(safe-area-inset-left, 0px)); }
+  .home { color: var(--ink); text-decoration: none; font-weight: 600; font-size: 15px; padding: 9px 10px; border-radius: 6px; } .home:hover { background: rgba(34,54,74,.09); } .no-home .home { visibility: hidden; }
+  .top-sp { flex: 1; }
+  .mini { min-height: 38px; padding: 0 13px; border-radius: 3px; border: 1.5px solid rgba(34,54,74,.45); background: rgba(255,255,255,.3); color: var(--ink); font: 600 13px/1 var(--print); letter-spacing: .12em; text-transform: uppercase; }
+  .mini:hover { background: rgba(255,255,255,.7); }
+
+  .table { display: grid; grid-template-columns: var(--sheet) var(--side); gap: 44px; justify-content: center; align-items: center; min-height: calc(var(--vh) - 60px); padding: 10px 24px calc(28px + env(safe-area-inset-bottom, 0px)); }
+
+  /* the tray: its rim is the wall round the board */
+  .tray { position: relative; width: var(--sheet); aspect-ratio: 1; padding: calc(var(--sheet) * .036); border-radius: calc(var(--sheet) * .02); background-color: #63402a;
+    background-image: linear-gradient(135deg, rgba(255,235,200,.2), transparent 38%, rgba(0,0,0,.24)), repeating-linear-gradient(91.5deg, rgba(30,14,4,.16) 0 2px, transparent 2px 7px, rgba(255,220,170,.05) 7px 9px, transparent 9px 17px), var(--grain);
+    box-shadow: inset 0 1.5px 0 rgba(255,230,190,.4), inset 1.5px 0 0 rgba(255,230,190,.16), inset 0 -2.5px 0 rgba(0,0,0,.4), inset -2px 0 0 rgba(0,0,0,.26), 0 2px 3px rgba(60,40,20,.35), 0 30px 54px -18px rgba(70,48,22,.7), 0 12px 20px -10px rgba(70,48,22,.5); }
+  .felt { position: relative; width: 100%; height: 100%; border-radius: 2px; background-color: var(--felt);
+    background-image: radial-gradient(120% 120% at 30% 20%, rgba(255,255,255,.09), transparent 60%), var(--grain);
+    box-shadow: 0 0 0 1.5px rgba(20,8,2,.55), 0 1.5px 0 2px rgba(255,225,180,.22), inset 0 9px 14px -4px rgba(4,18,30,.62), inset 8px 0 14px -6px rgba(4,18,30,.42), inset 0 -3px 5px -2px rgba(255,255,255,.14); }
+  #board { display: block; width: 100%; height: 100%; overflow: visible; -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; }
+  .play #board { touch-action: none; }   /* in play a finger on the board moves a piece; on the setup screen it scrolls the page */
+  #board.point { cursor: pointer; }
+  .fade-out { opacity: 0; transition: opacity .5s; }
+  .sq { fill: #fff; opacity: .05; } .ln { fill: none; stroke: #0b2638; stroke-opacity: .36; stroke-width: 1.3; vector-effect: non-scaling-stroke; }
+  .socket { fill: none; stroke: #e2c370; stroke-opacity: .55; stroke-width: 2.4; } .socket.in { stroke-opacity: .28; stroke-width: 1.4; }
+  .post { fill: #fff; fill-opacity: .04; stroke: #fff; stroke-opacity: .34; stroke-width: 1.5; stroke-dasharray: 5 6; stroke-linejoin: round; }
+  .pin { fill: url(#br); stroke: #6f5218; stroke-width: .8; }
+  .tr { fill: #fff; fill-opacity: .09; stroke: #fff; stroke-opacity: .4; stroke-width: 1.6; stroke-dasharray: 3 5; stroke-linejoin: round; }
+
+  /* the pieces */
+  .sh > * { fill: #04121e; opacity: .17; }
+  .pc .body { transition: transform .14s cubic-bezier(.2, .8, .3, 1.3); }
+  .pc.sel .body { transform: translateY(-6px); } .pc.sel .sh { transform: translate(4px, 6px); }
+  .pc.no .body { animation: no .3s; } @keyframes no { 20% { transform: translateX(-5px); } 50% { transform: translateX(5px); } 80% { transform: translateX(-3px); } }
+  .pc .glow { opacity: 0; transition: opacity .2s; } .pc.woken .glow { opacity: 1; }
+  /* a bell that is going: rings spread from the Keep for as long as it may strike */
+  .waves circle { fill: none; stroke: var(--amber); stroke-width: 3.2; opacity: 0; } .pc.woken .waves circle { animation: wave 1.1s ease-out infinite; } .pc.woken .waves circle + circle { animation-delay: .55s; }
+  @keyframes wave { 0% { opacity: .95; transform: scale(1); } 100% { opacity: 0; transform: scale(1.6); } }
+  .pc.woken .bell { animation: ring .32s ease-in-out infinite; } @keyframes ring { 0%, 100% { transform: translate(-2.6px, 0) rotate(-7deg); } 50% { transform: translate(2.6px, 0) rotate(7deg); } }
+  .pc.dim { opacity: .42; } .pc.lost { opacity: .5; transition: opacity .7s .2s; }
+  .deal .pc .body { animation: deal .34s cubic-bezier(.2, .8, .3, 1.2) backwards; animation-delay: calc(var(--i, 0) * 16ms); } @keyframes deal { from { opacity: 0; transform: translateY(-16px); } }
+
+  /* where a piece may go: brass for a quiet move, red for taking something, amber for a Keep that will hear it */
+  .t-sel { fill: var(--gold); fill-opacity: .2; stroke: var(--gold); stroke-width: 2.5; stroke-linejoin: round; }
+  .t-dot { fill: #f6dc8e; stroke: #10283a; stroke-opacity: .6; stroke-width: 2; transform-box: fill-box; transform-origin: center; transition: transform .1s; } .tg.hot .t-dot { transform: scale(1.5); fill: #fff6d0; }
+  .t-box { fill: var(--gold); fill-opacity: .1; stroke: var(--gold); stroke-width: 3.5; stroke-linejoin: round; } .t-box.loud { fill: var(--loud); fill-opacity: .16; stroke: var(--loud); } .tg.hot .t-box { stroke-width: 6; fill-opacity: .32; }
+  .t-arrow path { fill: none; stroke: var(--gold); stroke-width: 5; stroke-linecap: round; } .t-arrow .head { fill: var(--gold); stroke-linejoin: round; }
+  .t-anvil { fill: none; stroke: var(--loud); stroke-width: 7; stroke-linecap: round; }
+  .t-wake { fill: none; stroke: var(--amber); stroke-width: 4.5; stroke-dasharray: 8 7; animation: wake .8s linear infinite; } @keyframes wake { to { stroke-dashoffset: -30; } }
+  .t-leaf { fill: var(--gold); fill-opacity: .2; stroke: var(--gold); stroke-width: 3.5; stroke-linejoin: round; } .t-leaf.loud { fill: var(--loud); fill-opacity: .16; stroke: var(--loud); } .tg.hot .t-leaf { stroke-width: 6; fill-opacity: .36; }
+  .t-strike circle { fill: var(--loud); fill-opacity: .14; stroke: var(--loud); stroke-width: 4; } .t-strike path { fill: none; stroke: var(--loud); stroke-width: 5; stroke-linecap: round; } .tg.hot .t-strike circle { stroke-width: 6.5; fill-opacity: .3; }
+  .l-strike .t-strike { transform-box: fill-box; transform-origin: center; animation: pulse 1s ease-in-out infinite; } @keyframes pulse { 50% { transform: scale(1.08); } }
+  .chips rect { fill: #ecd29c; transform-box: fill-box; transform-origin: center; animation: chip .62s ease-out forwards; } .chips.s1 rect { fill: #5d4034; } @keyframes chip { to { transform: translate(var(--dx), var(--dy)) rotate(var(--r)); opacity: 0; } }
+  .rings circle { fill: none; stroke: var(--amber); stroke-width: 3.5; opacity: 0; transform-box: fill-box; transform-origin: center; animation: spread 1.1s ease-out forwards; } @keyframes spread { 0% { opacity: .95; transform: scale(1); } 100% { opacity: 0; transform: scale(2.7); } }
+  .bolt path { fill: none; stroke: #f6dc8e; stroke-width: 5; stroke-linecap: round; } .bolt .tip { fill: #fff6d0; stroke: #6f5218; stroke-width: 1; }
+  .cur { fill: none; stroke: #fff; stroke-width: 3; stroke-dasharray: 11 7; }
+
+  /* beside the board */
+  .side { display: flex; flex-direction: column; gap: 20px; width: var(--side); }
+  .lid { position: relative; padding: 26px 26px 20px; border-radius: 4px; background: var(--card); box-shadow: 0 1px 2px rgba(70,50,25,.28), 0 16px 28px -12px rgba(70,50,25,.5); }
+  .lid::before { content: ""; position: absolute; inset: 8px; border: 2px solid var(--ink); border-radius: 2px; box-shadow: inset 0 0 0 3px var(--card), inset 0 0 0 4px var(--ink); pointer-events: none; }
+  .logo { position: relative; margin: 0; font: 900 50px/.96 var(--title); color: var(--ink); letter-spacing: -.012em; white-space: nowrap; }
+  .logo .down { display: block; margin: 5px 0 0 3px; font: italic 500 29px/1 var(--title); letter-spacing: .05em; color: var(--brass-lo); }
+  .tagline { position: relative; margin: 14px 0 0 3px; font: 500 15.5px/1.3 var(--title); color: var(--muted); }
+  .crest { position: absolute; right: 30px; top: 30px; width: 54px; height: auto; } .c-ink { fill: var(--ink); } .c-win { fill: var(--card); } .c-bell { fill: var(--brass); } .c-line { fill: none; stroke: var(--card); stroke-width: 1.6; }
+
+  .plank { position: relative; padding: 18px 20px 20px; border-radius: 7px; color: var(--brown); background-color: #ead5aa;
+    background-image: linear-gradient(180deg, rgba(255,255,255,.4), transparent 34%, rgba(130,90,35,.14)), repeating-linear-gradient(90.8deg, rgba(150,105,50,.11) 0 1px, transparent 1px 5px, rgba(150,105,50,.07) 5px 6px, transparent 6px 14px), var(--grain);
+    box-shadow: inset 0 1.5px 0 rgba(255,255,255,.75), inset 0 -2.5px 0 rgba(120,85,40,.4), inset 1px 0 0 rgba(255,255,255,.3), inset -1px 0 0 rgba(120,85,40,.2), 0 1px 2px rgba(70,50,25,.3), 0 16px 28px -12px rgba(70,50,25,.55); }
+  .opt + .opt { margin-top: 10px; padding-top: 12px; border-top: 1.5px solid rgba(95,62,24,.2); box-shadow: 0 -1px 0 rgba(255,255,255,.5) inset; }
+  .opt-label { display: block; font: 600 12px/1 var(--print); letter-spacing: .18em; text-transform: uppercase; color: #7a5b33; }
+  .choices { display: flex; flex-wrap: wrap; gap: 0 2px; margin: 3px 0 0 -9px; }
+  .choices button { display: flex; align-items: center; gap: 7px; min-height: 44px; padding: 4px 8px 4px 9px; border: 0; border-radius: 6px; background: none; font: 500 18.5px/1 var(--title); color: var(--brown); white-space: nowrap; }
+  .choices button:hover { background: rgba(255,255,255,.3); } .choices button[aria-checked="true"] { font-weight: 700; }
+  .choices button small { padding-top: 2px; font: 500 14px/1 var(--print); letter-spacing: .03em; color: #7a5b33; } .choices .brk { flex-basis: 100%; height: 0; }
+  /* a hole in the board, and the brass peg that says which is chosen */
+  .hole, .choices button::before { content: ""; flex: none; width: 17px; height: 17px; border-radius: 50%; background: radial-gradient(circle at 50% 30%, #2c1d10, #5d4326 75%); box-shadow: inset 0 2px 2px rgba(0,0,0,.65), 0 1px 0 rgba(255,255,255,.75); }
+  .on > .hole, .choices button[aria-checked="true"]::before { background: radial-gradient(circle at 35% 28%, #fff6d0, #e3c166 42%, #a07c2c 80%, #7a5b1c); box-shadow: 0 1px 1px rgba(0,0,0,.45), 2px 4px 4px -1px rgba(60,40,10,.55), inset 0 -1px 1px rgba(90,60,10,.6); }
+  .go { display: flex; margin-top: 16px; } .go .plate { flex: 1; }
+
+  /* brass plates screwed to the board: the buttons */
+  .plate { min-height: 46px; padding: 0 14px; border: 0; border-radius: 4px; color: #3b2a0e; font: 700 14.5px/1 var(--print); letter-spacing: .2em; text-indent: .2em; text-transform: uppercase; white-space: nowrap;
+    background: linear-gradient(#f0dea6, #dcc07a 46%, #cfb066 54%, #dfc684); text-shadow: 0 1px 0 rgba(255,246,208,.8);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.75), inset 0 -1px 0 rgba(110,80,20,.55), 0 0 0 1px rgba(110,80,20,.5), 0 2px 2px rgba(70,50,20,.35), 0 6px 8px -4px rgba(70,50,20,.5); transition: transform .1s, filter .1s; }
+  .plate:hover:not(:disabled) { transform: translateY(-1px); filter: brightness(1.06); } .plate:active:not(:disabled) { transform: translateY(1px); filter: brightness(.96); }
+  .plate.big { min-height: 54px; font-size: 18px; } .plate:disabled { opacity: .45; }
+  .plate.ink { color: #f4ead2; text-shadow: 0 -1px 0 rgba(0,0,0,.4); background: linear-gradient(#34506b, #22364a 55%, #2a4159); box-shadow: inset 0 1px 0 rgba(255,255,255,.22), inset 0 -1px 0 rgba(0,0,0,.45), 0 0 0 1px rgba(12,24,36,.6), 0 2px 2px rgba(70,50,20,.35), 0 6px 8px -4px rgba(70,50,20,.5); }
+
+  /* in play: whose move, the two sides and what each has taken, the buttons */
+  .statusbox { min-height: 76px; }   /* room for two lines under the status, so that nothing moves when a line appears */
+  .status { margin: 0; font: 700 27px/1.15 var(--title); color: var(--brown); }
+  .status .dots::after { content: "…"; display: inline-block; width: 1em; text-align: left; animation: dots 1.2s steps(4, end) infinite; } @keyframes dots { 0% { clip-path: inset(0 100% 0 0); } 100% { clip-path: inset(0 -10% 0 0); } }
+  .sub { margin: 3px 0 0; font: 500 15.5px/1.3 var(--title); color: #6d5330; } .sub:empty { display: none; }
+  .players { display: grid; gap: 8px; margin: 10px 0 16px; }
+  .who { display: grid; grid-template-columns: auto auto 1fr; align-items: center; gap: 5px 9px; padding: 7px 9px 8px; border-radius: 6px; background: rgba(255,255,255,.22); box-shadow: inset 0 1px 2px rgba(95,62,24,.3), 0 1px 0 rgba(255,255,255,.55); }
+  .who.on { background: rgba(255,255,255,.62); }
+  .who > .pi { margin: -4px -2px -4px -3px; }
+  .who b { font: 700 14px/1 var(--print); letter-spacing: .13em; text-transform: uppercase; color: var(--brown); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  /* the groove a side lays what it has taken in */
+  .who .took { grid-column: 1 / -1; display: flex; align-items: center; height: 26px; padding: 0 6px; border-radius: 13px; background: rgba(95,62,24,.17); box-shadow: inset 0 1.5px 2px rgba(60,35,10,.45), 0 1px 0 rgba(255,255,255,.6); overflow: hidden; }
+  .who .took .pi { flex: none; margin: 0 -1.5px; }
+  .who.busy > .hole { animation: think 1s ease-in-out infinite; } @keyframes think { 50% { filter: brightness(1.25); transform: scale(1.12); } }
+  .btns { display: flex; flex-wrap: wrap; gap: 10px; } .btns .plate { flex: 1; } .btns.four .plate { flex: 1 1 40%; }
+
+  .crib { margin: 0; padding: 14px 18px 15px; list-style: none; border-radius: 4px; background: var(--card); box-shadow: 0 1px 2px rgba(70,50,25,.25), 0 14px 22px -12px rgba(70,50,25,.45); }
+  .crib li { display: grid; grid-template-columns: 34px 1fr; gap: 10px; align-items: center; font: 500 14.5px/1.3 var(--title); color: #3d4a57; } .crib li + li { margin-top: 7px; } .crib b { font-weight: 700; color: var(--ink); }
+  .crib .pi { margin: -2px; } .setup .crib { display: none; }
+
+  /* the rules: the leaflet from the box */
+  .overlay { position: fixed; inset: 0; z-index: 60; display: grid; place-items: center; padding: 16px; overflow: auto; background: rgba(40,30,18,.62); }
+  .page { position: relative; width: min(780px, 100%); padding: 26px 30px 26px; border-radius: 4px; background: var(--card); box-shadow: 0 30px 70px rgba(30,20,8,.55); }
+  .page h2 { margin: 0 0 4px; font: 900 34px/1.1 var(--title); color: var(--ink); }
+  .steps { display: grid; grid-template-columns: 1fr 1fr; gap: 16px 28px; margin: 14px 0 16px; }
+  .step { display: grid; grid-template-columns: 138px 1fr; gap: 14px; align-items: center; } .step:first-child { grid-column: 1 / -1; grid-template-columns: 210px 1fr; }
+  .scene { display: block; width: 100%; height: auto; border-radius: 3px; box-shadow: 0 1px 3px rgba(40,30,15,.4); }
+  .step p { margin: 0; font: 400 15.5px/1.38 var(--title); color: #33414e; } .step b { font-weight: 700; color: var(--ink); }
+  .page .keys { margin: 0 0 16px; padding-top: 12px; border-top: 1.5px solid rgba(34,54,74,.16); font: 400 14.5px/1.4 var(--title); color: var(--muted); }
+
+  @media (max-width: 900px) {
+    :root { --sheet: min(calc(100vw - 16px), calc(var(--vh) - 272px), 640px); }
+    .setup { --sheet: min(calc(100vw - 16px), 560px); }
+    .top { min-height: 46px; padding-left: calc(4px + env(safe-area-inset-left, 0px)); padding-right: calc(8px + env(safe-area-inset-right, 0px)); } .mini { min-height: 36px; padding: 0 10px; font-size: 12px; }
+    .table { grid-template-columns: minmax(0, 1fr); gap: 10px; justify-items: center; align-items: start; min-height: 0; padding: 6px 8px calc(16px + env(safe-area-inset-bottom, 0px)); }
+    .play .table { min-height: calc(var(--vh) - 50px - env(safe-area-inset-top, 0px)); align-content: center; }   /* in play the board sits in the middle of the screen, under the thumbs */
+    .side, #hud { display: contents; } .crib { display: none; }
+    .board-wrap { order: 3; }
+    .lid { order: 1; width: min(100%, 420px); padding: 22px 22px 16px; } .logo { font-size: 42px; } .logo .down { font-size: 25px; } .tagline { margin-top: 10px; font-size: 14.5px; } .crest { width: 46px; right: 26px; top: 26px; }
+    .play .lid { display: none; }
+    #setup { order: 2; width: min(100%, 420px); }
+    .players { order: 1; width: min(100%, 560px); grid-template-columns: 1fr 1fr; gap: 8px; margin: 0; }
+    .who { gap: 3px 6px; padding: 4px 7px 6px 6px; background: rgba(255,255,255,.34); box-shadow: inset 0 1px 2px rgba(95,62,24,.3), 0 1px 0 rgba(255,255,255,.6); } .who.on { background: rgba(255,255,255,.85); }
+    .who b { font-size: 12.5px; letter-spacing: .08em; } .who .long { display: none; } .who > .pi { width: 28px; height: 28px; margin: -3px -2px; }
+    .who .took { height: 20px; padding: 0 4px; border-radius: 10px; } .who .took .pi { width: 16px; height: 16px; margin: 0 -1.5px; }
+    .statusbox { order: 2; min-height: 64px; width: min(100%, 560px); display: flex; flex-direction: column; justify-content: center; text-align: center; padding: 0 6px; }
+    .status { font-size: 21px; } .sub { margin: 1px 0 0; font-size: 14.5px; line-height: 1.28; }
+    .btns { order: 4; width: min(100%, 560px); } .plate { min-height: 44px; padding: 0 8px; font-size: 13.5px; letter-spacing: .15em; text-indent: .15em; }
+    .page { padding: 20px 18px; } .page h2 { font-size: 28px; } .steps { grid-template-columns: 1fr; gap: 14px; } .step, .step:first-child { grid-template-columns: 116px 1fr; gap: 12px; } .step p { font-size: 15px; }
+  }
+  @media (max-width: 900px) and (orientation: landscape) and (max-height: 540px) {
+    /* a phone on its side: the board takes the height, everything else stands beside it */
+    :root, .setup { --sheet: min(calc(var(--vh) - 58px), calc(100vw - 270px)); }
+    .top { min-height: 42px; padding-top: calc(4px + env(safe-area-inset-top, 0px)); }
+    .table { grid-template-columns: var(--sheet) minmax(0, 300px); justify-content: center; column-gap: 16px; row-gap: 8px; align-content: start; padding-top: 4px; }
+    .board-wrap { grid-column: 1; grid-row: 1 / span 8; order: 0; } .lid, #setup, .players, .statusbox, .btns { grid-column: 2; width: 100%; }
+    .players { grid-template-columns: 1fr; } .statusbox { min-height: 58px; text-align: left; padding: 0; }
+    .lid { padding: 18px 18px 12px; } .logo { font-size: 32px; } .logo .down { font-size: 20px; } .tagline, .crest { display: none; }
+    .choices button { min-height: 40px; font-size: 17px; } #setup { padding: 12px 14px 14px; } .go { margin-top: 10px; }
+  }
+  @media (min-width: 901px) and (max-height: 700px) {
+    :root { --side: 310px; --sheet: min(calc(100vw - var(--side) - 80px), calc(var(--vh) - 80px)); }
+    .table { gap: 28px; padding-top: 4px; padding-bottom: 12px; } .side { gap: 14px; } .crib { display: none; } .logo { font-size: 42px; } .logo .down { font-size: 25px; } .lid { padding: 22px 22px 16px; } .tagline { display: none; } .crest { width: 44px; top: 24px; }
+    .play .lid { display: none; } .choices button { min-height: 40px; font-size: 18px; } .btns { gap: 8px; } .btns .plate { padding: 0 6px; letter-spacing: .13em; text-indent: .13em; }
+  }
+  @media (min-width: 901px) and (max-height: 860px) { .play .crib { display: none; } }
+  @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; }
+    .pc.woken .waves circle { opacity: .8; } .pc.woken .waves circle + circle { opacity: .4; transform: scale(1.3); } }
+</style>
+</head>
+<body class="setup">
+<svg id="defs" aria-hidden="true"><defs>
+  <linearGradient id="wl" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fbeac0"/><stop offset=".5" stop-color="#ecd29c"/><stop offset="1" stop-color="#d9b676"/></linearGradient>
+  <linearGradient id="wls" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#c39c5f"/><stop offset="1" stop-color="#a17a42"/></linearGradient>
+  <linearGradient id="wd" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#7a5645"/><stop offset=".5" stop-color="#553629"/><stop offset="1" stop-color="#40271e"/></linearGradient>
+  <linearGradient id="wds" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2e1a13"/><stop offset="1" stop-color="#1d0f0b"/></linearGradient>
+  <radialGradient id="br" cx=".34" cy=".3" r=".8"><stop offset="0" stop-color="#fff6d0"/><stop offset=".4" stop-color="#e6c66c"/><stop offset=".8" stop-color="#b08a33"/><stop offset="1" stop-color="#8a6a25"/></radialGradient>
+  <linearGradient id="brl" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#f4e09c"/><stop offset=".55" stop-color="#cfa94e"/><stop offset="1" stop-color="#a07c2c"/></linearGradient>
+  <radialGradient id="glow"><stop offset="0" stop-color="#fffbe0"/><stop offset=".6" stop-color="#ffe680" stop-opacity=".9"/><stop offset="1" stop-color="#ffc74d" stop-opacity=".25"/></radialGradient>
+  <linearGradient id="feltp" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#477797"/><stop offset="1" stop-color="#396584"/></linearGradient>
+  <linearGradient id="rimp" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#7a5236"/><stop offset="1" stop-color="#553521"/></linearGradient>
+</defs></svg>
+<header class="top">
+  <a class="home" href="/">‹ Sonic Hub Games</a>
+  <span class="top-sp"></span>
+  <button type="button" class="mini" data-act="sound" aria-pressed="true">Sound on</button>
+  <button type="button" class="mini" data-act="help">How to play</button>
+</header>
+<main class="table">
+  <section class="board-wrap">
+    <div class="tray"><div class="felt"><svg id="board" role="img" aria-label="The board"></svg></div></div>
+  </section>
+  <aside class="side">
+    <div class="lid">
+      <span id="crest"></span>
+      <h1 class="logo" aria-label="Keep It Down">Keep It<span class="down">down</span></h1>
+      <p class="tagline">A quiet siege for two.</p>
+    </div>
+    <div class="plank" id="setup">
+      <div class="opt"><span class="opt-label" id="l-level">Opponent</span>
+        <div class="choices" role="radiogroup" aria-labelledby="l-level">
+          <button type="button" role="radio" data-opt="level" data-val="easy">Easy</button>
+          <button type="button" role="radio" data-opt="level" data-val="medium">Medium</button>
+          <button type="button" role="radio" data-opt="level" data-val="hard">Hard</button>
+          <i class="brk"></i><button type="button" role="radio" data-opt="level" data-val="friend">A friend <small>same screen</small></button>
+        </div></div>
+      <div class="opt" id="opt-side"><span class="opt-label" id="l-side">You play</span>
+        <div class="choices" role="radiogroup" aria-labelledby="l-side">
+          <button type="button" role="radio" data-opt="side" data-val="0">Light <small>moves first</small></button>
+          <button type="button" role="radio" data-opt="side" data-val="1">Dark</button>
+        </div></div>
+      <div class="go"><button type="button" class="plate big ink" data-act="start">Start</button></div>
+    </div>
+    <div class="plank" id="hud" hidden>
+      <div class="statusbox" aria-live="polite"><p class="status" id="status"></p><p class="sub" id="sub"></p></div>
+      <div class="players" id="players"></div>
+      <div class="btns" id="btns"></div>
+    </div>
+    <ul class="crib" id="crib"></ul>
+  </aside>
+</main>
+<div class="overlay" id="help" hidden>
+  <div class="page" role="dialog" aria-modal="true" aria-labelledby="help-title">
+    <h2 id="help-title">How to play</h2>
+    <div class="steps" id="steps"></div>
+    <p class="keys">Tap a piece, then where it should go, or drag it there. With a keyboard: arrows and Enter, Esc to let go, U to take a move back. A game with no Rams left on either side, or with sixty moves each and nothing taken, is a draw.</p>
+    <button type="button" class="plate ink" data-act="help-close">Got it</button>
+  </div>
+</div>
+<script id="engine">
+/* ── Keep It Down: the rules ──
+   No DOM in here: this file and 10-ai.js also run inside the worker and under node.
+
+   An 8 × 8 board with a wall all round. Light sets up on ranks 1–3 and moves first, Dark on ranks 6–8.
+     Ram   Eight a side. One square up, down, left or right. Stepping into an enemy Ram shoves it one square on;
+           if it has no room to go (any piece behind it, or the wall) it is taken and the shover has its square.
+           A Ram that has just been shoved may not push back at the Ram that shoved it on the very next turn.
+     Gate  Two a side, one for each Keep. It stands on one of two posts, beside its Keep or in front of it, and steps
+           from one to the other, taking an enemy Ram that stands there. A Ram cannot shove a Gate or a Keep, but
+           takes it the way it takes a Ram: by pushing when there is no room behind.
+     Keep  Two a side, never moves. A Ram that has just taken something on a square next to a Keep has made a noise:
+           on the next move, and only then, that Keep may strike it off the board. A Ram that only walked up is safe.
+   Lose both Keeps and you lose. */
+const LIGHT = 0, DARK = 1, SIDE = ['Light', 'Dark'];
+const RAM = 1, GATE = 2, KEEP = 3;                            // a piece is its kind + 4 × its side; 0 is an empty square
+const STEP = 0, PUSH = 1, SWING = 2, STRIKE = 3, PASS = 4;    // kinds of move; a move is the number  from | to << 6 | kind << 12
+const PASS_MOVE = PASS << 12;
+const QUIET_LIMIT = 120;                                      // plies with nothing taken (sixty moves each) before the game is a draw
+
+const sideOf = p => p >> 2, kindOf = p => p & 3;
+const sqName = s => 'abcdefgh'[s & 7] + ((s >> 3) + 1);
+const mFrom = m => m & 63, mTo = m => (m >> 6) & 63, mKind = m => m >> 12;
+const moveOf = (from, to, kind) => from | to << 6 | kind << 12;
+
+/** NB[s * 4 + d]: the square next to s going d. 0 towards rank 8, 1 towards rank 1, 2 towards the h file, 3 towards the a file. −1 is the wall. */
+const NB = new Int8Array(256);
+for (let s = 0; s < 64; s++) {
+  const r = s >> 3, f = s & 7;
+  NB[s * 4] = r < 7 ? s + 8 : -1; NB[s * 4 + 1] = r > 0 ? s - 8 : -1; NB[s * 4 + 2] = f < 7 ? s + 1 : -1; NB[s * 4 + 3] = f > 0 ? s - 1 : -1;
+}
+const dirOf = (from, to) => { const x = to - from; return x === 8 ? 0 : x === -8 ? 1 : x === 1 ? 2 : 3; };
+
+/** POST[s]: the other post of the Gate that stands on s. GATE_KEEP[s]: where the Keep stands that this Gate guards. */
+const POST = new Int8Array(64).fill(-1), GATE_KEEP = new Int8Array(64).fill(-1);
+for (const [a, b, k] of [[2, 11, 3], [5, 12, 4], [58, 51, 59], [61, 52, 60]]) { POST[a] = b; POST[b] = a; GATE_KEEP[a] = GATE_KEEP[b] = k; }
+
+/* keys for telling positions apart quickly (the computer remembers positions it has already searched):
+   ZL / ZH by square × 8 + piece; ZXL / ZXH for the rest of a position, see keyLo */
+const ZL = new Int32Array(512), ZH = new Int32Array(512), ZXL = new Int32Array(264), ZXH = new Int32Array(264);
+const UNDO = 9;                                               // numbers kept for each move played, to take it back
+(() => {
+  let s = 0x9E3779B9;
+  const r = () => { s = (s + 0x6D2B79F5) | 0; let t = Math.imul(s ^ (s >>> 15), s | 1); t ^= t + Math.imul(t ^ (t >>> 7), t | 61); return (t ^ (t >>> 14)) | 0; };
+  for (let i = 0; i < 512; i++) { ZL[i] = r(); ZH[i] = r(); }
+  for (let i = 0; i < 264; i++) { ZXL[i] = r(); ZXH[i] = r(); }
+})();
+
+/** A position from 64 piece numbers (a1 first). koP / koQ: the Ram that was just shoved and the one that shoved it. alarm: where a Ram has just taken something. */
+function position(squares, turn = LIGHT, koP = -1, koQ = -1, alarm = -1) {
+  const S = { b: Int8Array.from(squares), turn, koP, koQ, alarm, quiet: 0, keeps: [0, 0], rams: [0, 0], hl: 0, hh: 0, undo: new Int32Array(UNDO * 512), sp: 0, history: [], over: null };
+  for (let s = 0; s < 64; s++) {
+    const p = S.b[s]; if (!p) continue;
+    S.hl ^= ZL[s * 8 + p]; S.hh ^= ZH[s * 8 + p];
+    if ((p & 3) === KEEP) S.keeps[p >> 2]++; else if ((p & 3) === RAM) S.rams[p >> 2]++;
+  }
+  return S;
+}
+function newGame() {
+  const b = new Int8Array(64);
+  for (let f = 0; f < 8; f++) { b[16 + f] = RAM; b[40 + f] = RAM + 4; }
+  b[2] = b[5] = GATE; b[3] = b[4] = KEEP; b[58] = b[61] = GATE + 4; b[59] = b[60] = KEEP + 4;
+  return position(b);
+}
+
+/** Every move the side to play may make, written into out from index off; returns how many. With nothing to do, the one move is a pass. */
+function gen(S, out, off = 0) {
+  const b = S.b, me = S.turn, base = me << 2, ram = RAM + base, gate = GATE + base, foeRam = RAM + ((1 - me) << 2);
+  let n = off;
+  for (let s = 0; s < 64; s++) {
+    const p = b[s]; if (!p || (p >> 2) !== me) continue;
+    if (p === ram) {
+      for (let d = 0; d < 4; d++) {
+        const t = NB[s * 4 + d]; if (t < 0) continue;
+        const q = b[t];
+        if (!q) { out[n++] = s | t << 6; continue; }
+        if ((q >> 2) === me) continue;
+        if (q === foeRam) { if (s === S.koP && t === S.koQ) continue; out[n++] = s | t << 6 | PUSH << 12; continue; }
+        const u = NB[t * 4 + d];                                        // a Gate or a Keep: it does not budge,
+        if (u < 0 || b[u]) out[n++] = s | t << 6 | PUSH << 12;         // and is taken only with something behind it
+      }
+    } else if (p === gate) {
+      const t = POST[s];
+      if (t >= 0 && (!b[t] || b[t] === foeRam)) out[n++] = s | t << 6 | SWING << 12;
+    } else if (S.alarm >= 0 && b[S.alarm] === foeRam) {                 // a Keep that has heard something
+      for (let d = 0; d < 4; d++) if (NB[s * 4 + d] === S.alarm) out[n++] = s | S.alarm << 6 | STRIKE << 12;
+    }
+  }
+  if (n === off) out[n++] = PASS_MOVE;
+  return n - off;
+}
+
+/** Plays a move without asking whether it is allowed. Returns the piece taken, or 0. Undone by unmake. */
+function make(S, m) {
+  const b = S.b, from = m & 63, to = (m >> 6) & 63, kind = m >> 12;
+  let cap = 0, pushed = -1, koP = -1, koQ = -1, alarm = -1;
+  if (S.sp + UNDO > S.undo.length) { const grown = new Int32Array(S.undo.length * 2); grown.set(S.undo); S.undo = grown; }
+  const u = S.undo, n = S.sp;
+  u[n] = m; u[n + 3] = S.koP; u[n + 4] = S.koQ; u[n + 5] = S.alarm; u[n + 6] = S.quiet; u[n + 7] = S.hl; u[n + 8] = S.hh;
+  S.sp = n + UNDO;
+  if (kind === STEP) {
+    const p = b[from]; b[to] = p; b[from] = 0;
+    S.hl ^= ZL[from * 8 + p] ^ ZL[to * 8 + p]; S.hh ^= ZH[from * 8 + p] ^ ZH[to * 8 + p];
+  } else if (kind === PUSH) {
+    const p = b[from], q = b[to], beyond = NB[to * 4 + dirOf(from, to)];
+    if ((q & 3) === RAM && beyond >= 0 && !b[beyond]) {                 // room behind: it is shoved along
+      b[beyond] = q; pushed = beyond; koP = beyond; koQ = to;
+      S.hl ^= ZL[beyond * 8 + q]; S.hh ^= ZH[beyond * 8 + q];
+    } else { cap = q; alarm = to; }                                     // no room: it is taken, and that makes a noise
+    b[to] = p; b[from] = 0;
+    S.hl ^= ZL[to * 8 + q] ^ ZL[to * 8 + p] ^ ZL[from * 8 + p]; S.hh ^= ZH[to * 8 + q] ^ ZH[to * 8 + p] ^ ZH[from * 8 + p];
+  } else if (kind === SWING) {
+    const p = b[from], q = b[to];
+    if (q) { cap = q; S.hl ^= ZL[to * 8 + q]; S.hh ^= ZH[to * 8 + q]; }
+    b[to] = p; b[from] = 0;
+    S.hl ^= ZL[from * 8 + p] ^ ZL[to * 8 + p]; S.hh ^= ZH[from * 8 + p] ^ ZH[to * 8 + p];
+  } else if (kind === STRIKE) {
+    cap = b[to]; b[to] = 0;
+    S.hl ^= ZL[to * 8 + cap]; S.hh ^= ZH[to * 8 + cap];
+  }
+  u[n + 1] = cap; u[n + 2] = pushed;
+  if (cap) { const k = cap & 3; if (k === KEEP) S.keeps[cap >> 2]--; else if (k === RAM) S.rams[cap >> 2]--; S.quiet = 0; } else S.quiet++;
+  S.koP = koP; S.koQ = koQ; S.alarm = alarm; S.turn = 1 - S.turn;
+  return cap;
+}
+
+function unmake(S) {
+  const u = S.undo, n = S.sp - UNDO, m = u[n], cap = u[n + 1], pushed = u[n + 2], b = S.b, from = m & 63, to = (m >> 6) & 63, kind = m >> 12;
+  S.koP = u[n + 3]; S.koQ = u[n + 4]; S.alarm = u[n + 5]; S.quiet = u[n + 6]; S.hl = u[n + 7]; S.hh = u[n + 8]; S.sp = n;
+  S.turn = 1 - S.turn;
+  if (kind === STEP) { b[from] = b[to]; b[to] = 0; }
+  else if (kind === PUSH) { b[from] = b[to]; if (pushed >= 0) { b[to] = b[pushed]; b[pushed] = 0; } else b[to] = cap; }
+  else if (kind === SWING) { b[from] = b[to]; b[to] = cap; }
+  else if (kind === STRIKE) b[to] = cap;
+  if (cap) { const k = cap & 3; if (k === KEEP) S.keeps[cap >> 2]++; else if (k === RAM) S.rams[cap >> 2]++; }
+  return m;
+}
+
+/** The move played just before this position, or −1 at the start. */
+const lastMove = S => S.sp ? S.undo[S.sp - UNDO] : -1;
+/** A position's key in two halves: the pieces, whose turn it is, the Ram that may not push back, and the square that made a noise. */
+const keyLo = S => S.hl ^ ZXL[S.koP + 1] ^ ZXL[S.koQ + 67] ^ ZXL[S.alarm + 133] ^ (S.turn ? ZXL[200] : 0);
+const keyHi = S => S.hh ^ ZXH[S.koP + 1] ^ ZXH[S.koQ + 67] ^ ZXH[S.alarm + 133] ^ (S.turn ? ZXH[200] : 0);
+
+const legalMoves = S => { if (S.over) return []; const out = []; gen(S, out); return out; };
+const isLegal = (S, m) => legalMoves(S).includes(m);
+const movesFrom = (S, s) => legalMoves(S).filter(m => m !== PASS_MOVE && (m & 63) === s);
+
+/** The Keeps of the side to play that may strike on this move. */
+function wokenKeeps(S) {
+  const out = [];
+  if (S.over || S.alarm < 0 || S.b[S.alarm] !== RAM + ((1 - S.turn) << 2)) return out;
+  for (let d = 0; d < 4; d++) { const s = NB[S.alarm * 4 + d]; if (s >= 0 && S.b[s] === KEEP + (S.turn << 2)) out.push(s); }
+  return out;
+}
+
+/** What a move is going to do, worked out before it is played: for the hints on the board and for showing it happen.
+ *  what:  step | shove | crush (a Ram taken) | take (a Gate or Keep taken) | swing | slam (a Gate taking a Ram) | strike | pass
+ *  anvil: what the taken piece was pushed against: a square, or −1 for the wall
+ *  wakes: the enemy Keeps that will be allowed to answer, because the move takes something right next to them */
+function describe(S, m) {
+  const b = S.b, from = m & 63, to = (m >> 6) & 63, kind = m >> 12, side = S.turn;
+  const ev = { m, what: 'pass', side, from, to, piece: 0, victim: 0, pushedTo: -1, anvil: -2, loud: false, wakes: [] };
+  if (kind === PASS) return ev;
+  ev.piece = b[from];
+  if (kind === STEP) ev.what = 'step';
+  else if (kind === SWING) { ev.victim = b[to]; ev.what = b[to] ? 'slam' : 'swing'; }
+  else if (kind === STRIKE) { ev.victim = b[to]; ev.what = 'strike'; }
+  else {
+    const q = b[to], beyond = NB[to * 4 + dirOf(from, to)];
+    if ((q & 3) === RAM && beyond >= 0 && !b[beyond]) { ev.what = 'shove'; ev.pushedTo = beyond; ev.victim = q; }
+    else {
+      ev.what = (q & 3) === RAM ? 'crush' : 'take'; ev.victim = q; ev.anvil = beyond; ev.loud = true;
+      for (let d = 0; d < 4; d++) { const s = NB[to * 4 + d]; if (s >= 0 && b[s] === KEEP + ((1 - side) << 2)) ev.wakes.push(s); }
+    }
+  }
+  return ev;
+}
+
+/** Plays a move in a game. Returns what happened (see describe), or null if the move is not allowed. */
+function playMove(S, m) {
+  if (!isLegal(S, m)) return null;
+  const ev = describe(S, m), prev = lastMove(S);
+  make(S, m); S.history.push(m);
+  const mover = 1 - S.turn;
+  if (!S.keeps[S.turn]) S.over = { winner: mover, loser: S.turn, why: 'keeps' };
+  else if (!S.rams[0] && !S.rams[1]) S.over = { winner: -1, why: 'spent' };            // nobody is left who could take a Keep
+  else if (m === PASS_MOVE && prev === PASS_MOVE) S.over = { winner: -1, why: 'stuck' };
+  else if (S.quiet >= QUIET_LIMIT) S.over = { winner: -1, why: 'quiet' };
+  ev.over = S.over;
+  return ev;
+}
+function undoMove(S) {
+  if (!S.history.length) return null;
+  S.history.pop(); S.over = null;
+  return unmake(S);
+}
+/** A game played again from its list of moves; null if one of them is not allowed. */
+function replay(moves) {
+  const S = newGame();
+  if (!Array.isArray(moves)) return null;
+  for (const m of moves) if (!Number.isInteger(m) || !playMove(S, m)) return null;
+  return S;
+}
+
+/* ── The computer player ──
+   Three levels, each a clear step above the one before (node sim.js prints how they fare against each other):
+
+   easy    looks at its own move only, with a shaky eye: it takes what it can take and walks into what it did not
+           see coming. One move in ten it just moves something.
+   medium  looks three moves ahead (its move, your answer, its next) and plays out the exchanges after that.
+   hard    searches as deep as its time allows (iterative deepening, alpha-beta, a transposition table), six or
+           seven moves in half a second on a laptop, and plays the best it finds.
+
+   What every level counts: the pieces (a Ram 100, a Gate 260, a Keep 1500), and how near each Ram stands to the
+   squares around the other side's Gates and Keeps, which is where it has to get to do any damage.
+
+   Sixty games a pair, each playing Light and Dark equally (node sim.js 60 100): easy beats a player that moves at
+   random 60–0; medium beats easy 60–0; hard, given a tenth of a second a move (in the game it gets half a second),
+   beats easy 60–0 and medium 54–4 with 2 drawn. Neither colour has the better of it: medium against itself, Light
+   won 27 games and Dark 30, with 3 drawn. */
+const LEVELS = ['easy', 'medium', 'hard'];
+const LEVEL_NAME = { easy: 'Easy', medium: 'Medium', hard: 'Hard' };
+
+const AI = (() => {
+  const WIN = 1000000, MAXPLY = 96, W = 40;                   // W: room for the moves of one position
+  const VAL = new Int32Array([0, 100, 260, 1500]);
+  const NEAR = 4, REACH = 6;                                  // a Ram within REACH squares of its goal: NEAR for each square nearer
+  const URGE = 50;                                            // taking now rather than later is worth  value × depth left / URGE
+  let QUIESCE = 4;                                            // captures followed beyond the last full move (set by the level)
+  const clock = typeof performance !== 'undefined' && performance.now ? () => performance.now() : () => Date.now();
+
+  const mvBuf = new Int32Array(MAXPLY * W), scBuf = new Int32Array(MAXPLY * W);
+  const killer = new Int32Array(MAXPLY * 2), hist = new Int32Array(8192);
+  const DIST = new Uint8Array(4096);
+  for (let a = 0; a < 64; a++) for (let b = 0; b < 64; b++) DIST[a * 64 + b] = Math.abs((a >> 3) - (b >> 3)) + Math.abs((a & 7) - (b & 7));
+  const goal = [new Int8Array(32), new Int8Array(32)], ramAt = [new Int8Array(16), new Int8Array(16)];
+
+  const TT_BITS = 18, TT_SIZE = 1 << TT_BITS, TT_MASK = TT_SIZE - 1;
+  const ttLo = new Int32Array(TT_SIZE), ttHi = new Int32Array(TT_SIZE), ttVal = new Int32Array(TT_SIZE), ttInfo = new Int32Array(TT_SIZE);
+
+  let nodes = 0, deadline = 0, timeUp = false;
+
+  /** The position as the side to move sees it. */
+  function evaluate(S) {
+    const b = S.b; let sc = 0, g0 = 0, g1 = 0, r0 = 0, r1 = 0;
+    for (let s = 0; s < 64; s++) {
+      const p = b[s]; if (!p) continue;
+      const k = p & 3, sd = p >> 2;
+      sc += sd ? -VAL[k] : VAL[k];
+      if (k === RAM) { if (sd) ramAt[1][r1++] = s; else ramAt[0][r0++] = s; continue; }
+      for (let d = 0; d < 4; d++) {                           // the squares beside a Gate or a Keep
+        const y = NB[s * 4 + d]; if (y < 0) continue;
+        const q = b[y]; if (q && (q & 3) !== RAM && (q >> 2) === sd) continue;
+        if (sd) goal[1][g1++] = y; else goal[0][g0++] = y;
+      }
+    }
+    for (let i = 0; i < r0; i++) {
+      const s = ramAt[0][i] * 64; let best = 99;
+      for (let k = 0; k < g1; k++) { const d = DIST[s + goal[1][k]]; if (d < best) best = d; }
+      if (best < REACH) sc += NEAR * (REACH - best);
+    }
+    for (let i = 0; i < r1; i++) {
+      const s = ramAt[1][i] * 64; let best = 99;
+      for (let k = 0; k < g0; k++) { const d = DIST[s + goal[0][k]]; if (d < best) best = d; }
+      if (best < REACH) sc -= NEAR * (REACH - best);
+    }
+    return S.turn === LIGHT ? sc : -sc;
+  }
+
+  /** Does this move take something? */
+  function takes(S, m) {
+    const kind = m >> 12;
+    if (kind === STRIKE) return true;
+    const to = (m >> 6) & 63;
+    if (kind === SWING) return S.b[to] !== 0;
+    if (kind !== PUSH) return false;
+    if ((S.b[to] & 3) !== RAM) return true;
+    const beyond = NB[to * 4 + dirOf(m & 63, to)];
+    return beyond < 0 || S.b[beyond] !== 0;
+  }
+  /** After a move: is the game drawn on the spot? */
+  const drawn = (S, m, before) => (!S.rams[0] && !S.rams[1]) || S.quiet >= QUIET_LIMIT || (m === PASS_MOVE && before === PASS_MOVE);
+
+  /* At the end of the look-ahead, play out the captures that are still on, so that something taken on the last move
+     is not counted without the answer to it (a Keep striking back, a Gate stepping onto a Ram, a crush). */
+  function quiesce(S, alpha, beta, ply, left) {
+    nodes++;
+    const stand = evaluate(S);
+    if (left <= 0 || stand >= beta || ply >= MAXPLY - 1) return stand;
+    if (stand > alpha) alpha = stand;
+    const off = ply * W, n = gen(S, mvBuf, off);
+    let best = stand;
+    for (let i = 0; i < n; i++) {
+      const m = mvBuf[off + i];
+      if (!takes(S, m)) continue;
+      const cap = make(S, m);
+      const v = !S.keeps[S.turn] ? WIN - ply : (!S.rams[0] && !S.rams[1]) ? 0 : -quiesce(S, -beta, -alpha, ply + 1, left - 1);
+      unmake(S);
+      if (v > best) { best = v; if (v > alpha) { alpha = v; if (alpha >= beta) break; } }
+    }
+    return best;
+  }
+
+  function search(S, depth, alpha, beta, ply) {
+    if (depth <= 0) return quiesce(S, alpha, beta, ply, QUIESCE);
+    if ((++nodes & 1023) === 0 && clock() > deadline) { timeUp = true; return 0; }
+    if (ply >= MAXPLY - 1) return evaluate(S);
+
+    // near the no-capture limit the same position is worth different things at different counts: no memory there
+    const remember = S.quiet + depth + QUIESCE < QUIET_LIMIT;
+    const kLo = keyLo(S), kHi = keyHi(S), slot = kLo & TT_MASK, alpha0 = alpha;
+    let ttMove = -1;
+    if (ttInfo[slot] !== 0 && ttLo[slot] === kLo && ttHi[slot] === kHi) {
+      const info = ttInfo[slot];
+      ttMove = (info >> 10) - 1;
+      if (remember && (info & 255) >= depth) {
+        const flag = (info >> 8) & 3; let v = ttVal[slot];
+        if (v > WIN / 2) v -= ply; else if (v < -WIN / 2) v += ply;
+        if (flag === 1) return v;
+        if (flag === 2) { if (v > alpha) alpha = v; } else if (v < beta) beta = v;
+        if (alpha >= beta) return v;
+      }
+    }
+
+    const off = ply * W, n = gen(S, mvBuf, off), before = lastMove(S), k0 = killer[ply * 2], k1 = killer[ply * 2 + 1], hOff = S.turn << 12;
+    for (let i = 0; i < n; i++) {                             // the remembered move, what takes most, shoves, then what has worked before
+      const m = mvBuf[off + i]; let v;
+      if (m === ttMove) v = 1 << 30;
+      else if (takes(S, m)) v = (1 << 28) + VAL[S.b[(m >> 6) & 63] & 3] * 1000;
+      else if (m === k0) v = (1 << 27) + 1; else if (m === k1) v = 1 << 27;
+      else v = hist[hOff + (m & 4095)] + ((m >> 12) === PUSH ? 1 << 20 : 0);
+      scBuf[off + i] = v;
+    }
+    let best = -WIN * 2, bestMove = mvBuf[off];
+    for (let i = 0; i < n; i++) {
+      let bi = i;
+      for (let j = i + 1; j < n; j++) if (scBuf[off + j] > scBuf[off + bi]) bi = j;
+      const m = mvBuf[off + bi]; mvBuf[off + bi] = mvBuf[off + i]; mvBuf[off + i] = m; scBuf[off + bi] = scBuf[off + i];
+
+      const cap = make(S, m); let v;
+      if (!S.keeps[S.turn]) v = WIN - ply;
+      else if (drawn(S, m, before)) v = 0;
+      else {
+        const urge = cap ? (VAL[cap & 3] * depth / URGE) | 0 : 0;
+        v = urge - search(S, depth - 1, -beta + urge, -alpha + urge, ply + 1);
+      }
+      unmake(S);
+      if (timeUp) return 0;
+      if (v > best) {
+        best = v; bestMove = m;
+        if (v > alpha) {
+          alpha = v;
+          if (alpha >= beta) {
+            if (!cap && m !== PASS_MOVE) {
+              if (m !== k0) { killer[ply * 2 + 1] = k0; killer[ply * 2] = m; }
+              if (hist[hOff + (m & 4095)] < 1 << 19) hist[hOff + (m & 4095)] += depth * depth;
+            }
+            break;
+          }
+        }
+      }
+    }
+    if (remember) {
+      ttLo[slot] = kLo; ttHi[slot] = kHi;
+      ttVal[slot] = best > WIN / 2 ? best + ply : best < -WIN / 2 ? best - ply : best;
+      ttInfo[slot] = Math.min(depth, 255) | ((best <= alpha0 ? 3 : best >= beta ? 2 : 1) << 8) | ((bestMove + 1) << 10);
+    } else if (ttInfo[slot] === 0) { ttLo[slot] = kLo; ttHi[slot] = kHi; ttVal[slot] = 0; ttInfo[slot] = (bestMove + 1) << 10; }
+    return best;
+  }
+
+  function shuffle(arr, rand) { for (let i = arr.length - 1; i > 0; i--) { const j = Math.floor(rand() * (i + 1)); const t = arr[i]; arr[i] = arr[j]; arr[j] = t; } return arr; }
+
+  /** Looks maxDepth moves ahead, or as far as timeMs allows. Returns the moves best first with their scores, from the
+   *  last depth that was finished. Scores are exact down to `margin` below the best; under that they only say "worse". */
+  function deepen(S, moves, maxDepth, timeMs, margin) {
+    ttInfo.fill(0); killer.fill(0); hist.fill(0); nodes = 0; timeUp = false; deadline = clock() + timeMs;
+    const before = lastMove(S);
+    let order = moves.slice(), scores = order.map(() => 0), reached = 0;
+    for (let d = 1; d <= maxDepth; d++) {
+      const sc = []; let best = -WIN * 2;
+      for (let i = 0; i < order.length; i++) {
+        const m = order[i], cap = make(S, m); let v;
+        if (!S.keeps[S.turn]) v = WIN - 1;
+        else if (drawn(S, m, before)) v = 0;
+        else {
+          const urge = cap ? (VAL[cap & 3] * d / URGE) | 0 : 0, floor = Math.max(-WIN * 2, best - margin - 1);
+          v = urge - search(S, d - 1, -WIN * 2, -floor + urge, 1);
+        }
+        unmake(S);
+        if (timeUp) break;
+        sc.push(v); if (v > best) best = v;
+      }
+      if (timeUp) {
+        // a depth cut short still counts when something beat the move the last depth liked: that one was looked at first
+        let top = 0;
+        for (let i = 1; i < sc.length; i++) if (sc[i] > sc[top]) top = i;
+        if (top > 0) { const m = order[top]; order = [m, ...order.filter(x => x !== m)]; scores = order.map((_, i) => i ? -WIN * 2 : sc[top]); }
+        break;
+      }
+      const idx = order.map((_, i) => i).sort((a, b) => sc[b] - sc[a] || a - b);
+      order = idx.map(i => order[i]); scores = idx.map(i => sc[i]); reached = d;
+      if (best > WIN / 2 || best < -WIN / 2) break;           // the end is in sight: looking further changes nothing
+    }
+    return { order, scores, depth: reached, nodes };
+  }
+
+  /** How each level plays: how far it looks, how much time it may take, how unsteady its judgement is (jitter: every
+   *  move's score is off by up to that much; slack: any move within that much of the best will do), and how often it
+   *  just moves something. */
+  const STYLE = {
+    easy: { depth: 1, follow: 0, ms: 2000, jitter: 30, slack: 0, wild: 0.1 },
+    medium: { depth: 3, follow: 4, ms: 4000, jitter: 0, slack: 3, wild: 0 },
+    hard: { depth: 40, follow: 4, ms: 450, jitter: 0, slack: 3, wild: 0 },
+  };
+
+  /** The move for the side to play. opt: level, timeMs (hard's thinking time), maxDepth, rand. Returns { move, score, depth, nodes }. */
+  function think(S, opt = {}) {
+    const rand = opt.rand || Math.random, st = STYLE[opt.level] || STYLE.medium;
+    const moves = legalMoves(S);
+    if (!moves.length) return { move: -1, score: 0, depth: 0, nodes: 0 };
+    if (moves.length === 1) return { move: moves[0], score: 0, depth: 0, nodes: 0 };
+    shuffle(moves, rand);
+    const sure = moves.find(m => { make(S, m); const won = !S.keeps[S.turn]; unmake(S); return won; });
+    if (sure !== undefined) return { move: sure, score: WIN, depth: 1, nodes: 0 };
+    if (st.wild && rand() < st.wild) return { move: moves[0], score: 0, depth: 0, nodes: 0 };
+
+    QUIESCE = st.follow;
+    const maxDepth = opt.maxDepth || st.depth, timeMs = opt.level === 'hard' ? (opt.timeMs || st.ms) : st.ms;
+    const r = deepen(S, moves, maxDepth, timeMs, st.jitter ? WIN * 4 : st.slack);
+    const best = r.scores[0], decided = best > WIN / 2 || best < -WIN / 2;
+    let pick = 0;
+    if (!decided && st.jitter) {
+      let top = -Infinity;
+      for (let i = 0; i < r.order.length; i++) { const v = r.scores[i] + (rand() * 2 - 1) * st.jitter; if (v > top) { top = v; pick = i; } }
+    } else if (!decided && st.slack) {
+      let k = 1; while (k < r.order.length && r.scores[k] >= best - st.slack) k++;
+      pick = Math.floor(rand() * k);
+    }
+    return { move: r.order[pick], score: r.scores[pick], depth: r.depth, nodes: r.nodes };
+  }
+
+  return { think, evaluate, STYLE };
+})();
+
+</script>
+<script>
+/* ── Asking the computer for its move ──
+   The engine (00-core.js, 10-ai.js) sits in its own <script id="engine">, so the same text can be started as a worker:
+   hard thinks for a good part of a second, and the page keeps drawing meanwhile. Where a worker cannot be started the
+   move is worked out on the page's own thread, with a shorter think. */
+const HARD_MS = 520;
+const Brain = {
+  worker: null, seq: 0, waiting: new Map(),
+  start() {
+    try {
+      const glue = 'onmessage = e => { const q = e.data; let move = null; try { move = AI.think(replay(q.moves), { level: q.level, timeMs: q.timeMs }).move; } catch (err) {} postMessage({ id: q.id, move }); };';
+      const url = URL.createObjectURL(new Blob([document.getElementById('engine').textContent, '\n', glue], { type: 'text/javascript' }));
+      this.worker = new Worker(url);
+      this.worker.onmessage = e => { const f = this.waiting.get(e.data.id); this.waiting.delete(e.data.id); if (f) f(e.data.move); };
+      this.worker.onerror = () => { this.worker = null; const fs = [...this.waiting.values()]; this.waiting.clear(); fs.forEach(f => f(null)); };
+    } catch (e) { this.worker = null; }
+  },
+  /** the computer's move for the side to play in S, at one of LEVELS */
+  move(S, level) {
+    const moves = S.history.slice();
+    const here = () => AI.think(replay(moves), { level, timeMs: 220 }).move;
+    if (!this.worker) return new Promise(res => setTimeout(() => res(here()), 30));
+    return new Promise(res => {
+      const id = ++this.seq;
+      this.waiting.set(id, m => res(Number.isInteger(m) && m >= 0 ? m : here()));
+      this.worker.postMessage({ id, moves, level, timeMs: HARD_MS });
+    });
+  },
+};
+
+/* ── Sounds: wood on felt, and a brass bell, synthesized with WebAudio ──
+   The game is about noise, so the sounds say it too: a step is barely there, a shove is a knock, and taking something
+   is the loudest thing on the table until a bell answers it. */
+const SFX = {
+  ctx: null, on: true,
+  init() { if (this.ctx) { if (this.ctx.state === 'suspended') this.ctx.resume(); return; } try { const AC = window.AudioContext || window.webkitAudioContext; if (AC) this.ctx = new AC(); } catch (e) { } },
+  /** a burst of filtered noise: a slide, a crack, a rattle */
+  noise(t0, dur, vol, f0, f1, type = 'bandpass', q = 0.9) {
+    const c = this.ctx, n = Math.max(1, Math.floor(c.sampleRate * dur)), b = c.createBuffer(1, n, c.sampleRate), d = b.getChannelData(0);
+    for (let i = 0; i < n; i++) { const k = i / n; d[i] = (Math.random() * 2 - 1) * Math.pow(1 - k, 1.6); }
+    const s = c.createBufferSource(), f = c.createBiquadFilter(), g = c.createGain(), t = c.currentTime + t0;
+    f.type = type; f.Q.value = q; f.frequency.setValueAtTime(f0, t); f.frequency.exponentialRampToValueAtTime(Math.max(40, f1), t + dur);
+    g.gain.value = vol; s.buffer = b; s.connect(f); f.connect(g); g.connect(c.destination); s.start(t);
+  },
+  tone(f, t0, dur, vol = 0.07, type = 'triangle', f1 = 0) {
+    const c = this.ctx, o = c.createOscillator(), g = c.createGain(), t = c.currentTime + t0;
+    o.type = type; o.frequency.setValueAtTime(f, t); if (f1) o.frequency.exponentialRampToValueAtTime(f1, t + dur);
+    g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(vol, t + 0.008); g.gain.exponentialRampToValueAtTime(0.0008, t + dur);
+    o.connect(g); g.connect(c.destination); o.start(t); o.stop(t + dur + 0.02);
+  },
+  /** wood meeting wood: a low thump with a click on top */
+  knock(t0, vol, f = 170) { this.tone(f, t0, 0.13, vol, 'sine', f * 0.55); this.noise(t0, 0.03, vol * 0.7, 2400, 900); },
+  /** a small brass bell: a struck tone with the overtones a bell has, dying away */
+  bell(t0, vol, f = 1320, len = 1.5) {
+    for (const [ratio, amp, life] of [[0.5, 0.25, 1], [1, 1, 1], [1.19, 0.5, 0.75], [1.5, 0.4, 0.6], [2, 0.55, 0.5], [2.51, 0.28, 0.35], [3.01, 0.2, 0.25], [4.1, 0.12, 0.16]])
+      this.tone(f * ratio, t0, len * life, vol * amp, 'sine');
+    this.noise(t0, 0.02, vol * 0.5, 5200, 3000);
+  },
+  play(name) {
+    if (!this.on) return;
+    this.init(); if (!this.ctx) return;
+    switch (name) {
+      case 'step': this.noise(0, 0.1, 0.035, 900 + Math.random() * 200, 420); break;
+      case 'shove': this.noise(0, 0.09, 0.04, 900, 450); this.knock(0.07, 0.13, 190); break;
+      case 'crush': this.knock(0.02, 0.22, 150); this.noise(0.03, 0.16, 0.2, 3200, 700, 'highpass', 0.5); this.knock(0.1, 0.12, 110); break;
+      case 'break': this.knock(0.02, 0.26, 120); this.noise(0.03, 0.3, 0.24, 2600, 380, 'bandpass', 0.6); this.knock(0.13, 0.16, 90); break;
+      case 'fall': this.knock(0.02, 0.3, 95); this.noise(0.04, 0.6, 0.22, 1500, 160, 'lowpass', 0.5); this.bell(0.05, 0.07, 392, 1.6); this.knock(0.24, 0.2, 70); break;
+      case 'swing': this.noise(0, 0.28, 0.035, 500, 1400, 'bandpass', 6); this.knock(0.33, 0.17, 130); break;
+      case 'slam': this.noise(0, 0.28, 0.035, 500, 1400, 'bandpass', 6); this.knock(0.33, 0.24, 120); this.noise(0.34, 0.14, 0.16, 3000, 800, 'highpass', 0.5); break;
+      case 'bell': this.bell(0, 0.075); this.bell(0.2, 0.06); this.bell(0.4, 0.05); break;
+      case 'strike': this.noise(0, 0.12, 0.09, 1400, 5200, 'bandpass', 1.6); this.knock(0.12, 0.24, 210); this.noise(0.13, 0.12, 0.14, 3400, 900, 'highpass', 0.5); break;
+      case 'tick': this.noise(0, 0.03, 0.05, 3200, 2400); break;
+      case 'lift': this.noise(0, 0.04, 0.03, 2000, 2800); break;
+      case 'no': this.tone(170, 0, 0.12, 0.05, 'sine'); break;
+      case 'win': [659, 784, 988, 1319].forEach((f, i) => this.bell(0.35 + i * 0.16, 0.05, f, 1.3)); break;
+      case 'lose': [523, 440, 349].forEach((f, i) => this.bell(0.35 + i * 0.26, 0.05, f, 1.5)); break;
+      case 'draw': [587, 587].forEach((f, i) => this.bell(0.3 + i * 0.3, 0.045, f, 1.2)); break;
+    }
+  },
+};
+
+/* ── The pieces, drawn from above ──
+   A walnut tray lined with felt, and three kinds of turned piece in boxwood (Light) and dark walnut (Dark) with brass
+   fittings. Each is shaped by what it does:
+     Ram   a low square block, the same on all four sides, because it goes and pushes all four ways
+     Gate  a quarter-round leaf on a hinge at the corner of its Keep: the two ways it can lie are its two posts
+     Keep  a round tower fixed to the board, with a bell in it
+   One square is U units wide in the board's own coordinates. The gradients these drawings use are in the page (#defs). */
+const U = 100, NS = 'http://www.w3.org/2000/svg';
+const svg = (name, attrs = {}, kids = []) => { const e = document.createElementNS(NS, name); for (const k in attrs) e.setAttribute(k, attrs[k]); for (const c of kids) e.appendChild(c); return e; };
+const f1 = v => Math.round(v * 10) / 10;
+
+/** the two woods: [Light, Dark] */
+const WOOD = [
+  { top: 'url(#wl)', side: 'url(#wls)', rim: '#a07c44', hi: '#fff6dc', hiO: 0.8, court: '#c9a367', courtRim: '#8f6c3a', lo: '#b8935a' },
+  { top: 'url(#wd)', side: 'url(#wds)', rim: '#1d110d', hi: '#a98572', hiO: 0.7, court: '#2a1a15', courtRim: '#140b08', lo: '#24140f' },
+];
+const RAM_H = 7, KEEP_H = 12, GATE_H = 6, KEEP_R = 36, LEAF = 84, LEAF_IN = 6;
+const LEAF_PATH = `M0 0H${LEAF}A${LEAF} ${LEAF} 0 0 1 0 ${LEAF}Z`;
+
+/** A Ram, centred on 0,0. */
+function ramArt(side) {
+  const w = WOOD[side], tri = [0, 90, 180, 270].map(a => `<path transform="rotate(${a})" d="M0 -23.5L5.6 -15.5H-5.6Z"/>`).join('');
+  return `<g class="sh"><rect x="-27" y="-23" width="64" height="67" rx="13"/><rect x="-24" y="-19" width="64" height="67" rx="13"/></g>` +
+    `<g class="body"><g class="tilt">` +
+    `<rect x="-32" y="${-32 + RAM_H}" width="64" height="64" rx="11" fill="${w.side}"/>` +
+    `<rect x="-32" y="-32" width="64" height="64" rx="11" fill="${w.top}" stroke="${w.rim}" stroke-width="1"/>` +
+    `<rect x="-26" y="-26" width="52" height="52" rx="6.5" fill="none" stroke="${w.hi}" stroke-opacity="${w.hiO}" stroke-width="1.5"/>` +
+    `<g fill="url(#brl)" stroke="#6f5218" stroke-width=".6">${tri}</g>` +
+    `<circle r="8" fill="url(#br)" stroke="#6f5218" stroke-width=".8"/><circle cx="-2.6" cy="-2.9" r="2.3" fill="#fffbe6" opacity=".85"/>` +
+    `</g></g>`;
+}
+
+/** A Keep, centred on 0,0: battlements round the top, the bell in the middle. */
+function keepArt(side) {
+  const w = WOOD[side], R = KEEP_R;
+  return `<g class="sh"><ellipse cx="6" cy="${KEEP_H + 5}" rx="${R + 1}" ry="${R + 1}"/><ellipse cx="9" cy="${KEEP_H + 9}" rx="${R + 1}" ry="${R + 1}"/></g>` +
+    `<g class="waves"><circle r="41"/><circle r="41"/></g>` +
+    `<g class="body"><g class="tilt">` +
+    `<circle cy="${KEEP_H}" r="${R}" fill="${w.side}"/><rect x="${-R}" width="${R * 2}" height="${KEEP_H}" fill="${w.side}"/>` +
+    `<circle r="${R}" fill="${w.lo}" stroke="${w.rim}" stroke-width="1"/>` +
+    `<circle r="30.5" fill="none" stroke="${w.top}" stroke-width="11" stroke-dasharray="15.4 8.55" transform="rotate(-14.5)"/>` +
+    `<circle r="24.5" fill="${w.court}" stroke="${w.courtRim}" stroke-width="1.2"/>` +
+    `<circle class="glow" r="24" fill="url(#glow)"/>` +
+    `<g class="bell"><circle r="14.5" fill="url(#br)" stroke="#6f5218" stroke-width=".9"/><circle r="9" fill="none" stroke="#8a6a25" stroke-opacity=".55" stroke-width="1.1"/>` +
+    `<circle r="3.8" fill="#8a6a25"/><ellipse cx="-5.2" cy="-5.8" rx="3.6" ry="2.4" fill="#fffbe6" opacity=".8" transform="rotate(-40 -5.2 -5.8)"/></g>` +
+    `</g></g>`;
+}
+
+/** A Gate with its hinge on 0,0, the leaf turned by `angle` (0 lies towards +x +y; a quarter turn is 90). */
+function gateArt(side, angle) {
+  const w = WOOD[side], t = `translate(${LEAF_IN} ${LEAF_IN})`;
+  const studs = r => [18, 45, 72].map(a => { const x = r * Math.cos(a * Math.PI / 180), y = r * Math.sin(a * Math.PI / 180); return `<circle cx="${f1(x)}" cy="${f1(y)}" r="2" fill="#6f5218"/>`; }).join('');
+  return `<g class="sh"><g transform="translate(6 8)"><g class="rot" transform="rotate(${angle})"><path transform="${t}" d="${LEAF_PATH}"/></g></g>` +
+    `<g transform="translate(9 12)"><g class="rot" transform="rotate(${angle})"><path transform="${t}" d="${LEAF_PATH}"/></g></g></g>` +
+    `<g class="body"><g class="tilt">` +
+    `<g class="deep" transform="translate(0 ${GATE_H})"><g class="rot" transform="rotate(${angle})"><path transform="${t}" d="${LEAF_PATH}" fill="${w.side}" stroke="${w.side}" stroke-width="1" stroke-linejoin="round"/></g></g>` +
+    `<g class="rot" transform="rotate(${angle})"><g transform="${t}">` +
+    `<path d="${LEAF_PATH}" fill="${w.top}" stroke="${w.rim}" stroke-width="1" stroke-linejoin="round"/>` +
+    `<path d="M5 5H${LEAF - 9}A${LEAF - 9} ${LEAF - 9} 0 0 1 5 ${LEAF - 9}Z" fill="none" stroke="${w.hi}" stroke-opacity="${w.hiO * 0.8}" stroke-width="1.4" stroke-linejoin="round"/>` +
+    `<path d="M0 0L${f1(LEAF * 0.866)} ${f1(LEAF * 0.5)}M0 0L${f1(LEAF * 0.5)} ${f1(LEAF * 0.866)}" stroke="${w.rim}" stroke-opacity=".5" stroke-width="1.2"/>` +
+    `<path d="M33 0A33 33 0 0 1 0 33M64 0A64 64 0 0 1 0 64" fill="none" stroke="url(#brl)" stroke-width="6"/>` +
+    `<path d="M33 0A33 33 0 0 1 0 33M64 0A64 64 0 0 1 0 64" fill="none" stroke="#fffbe6" stroke-opacity=".35" stroke-width="1" transform="translate(-.8 -.8)"/>` +
+    studs(33) + studs(64) +
+    `</g></g>` +
+    `<circle r="8.5" fill="url(#br)" stroke="#6f5218" stroke-width=".9"/><circle cx="-2.4" cy="-2.6" r="2.3" fill="#fffbe6" opacity=".85"/>` +
+    `</g></g>`;
+}
+
+/** A piece on its own, for the panel beside the board and the rules: kind and side, in a square box `size` px wide. */
+function pieceIcon(kind, side, size) {
+  const art = kind === RAM ? ramArt(side) : kind === KEEP ? keepArt(side) : `<g transform="translate(-45 -47)">${gateArt(side, 0)}</g>`;
+  return `<svg class="pi k${kind}" viewBox="-52 -52 104 104" width="${size}" height="${size}" aria-hidden="true">${art}</svg>`;
+}
+
+/* ── marks laid over the board: where a piece may go, and what will happen there ── */
+const dotMark = (x, y) => `<circle class="t-dot" cx="${x}" cy="${y}" r="10.5"/>`;
+const ringMark = (x, y, r, cls) => `<circle class="${cls}" cx="${x}" cy="${y}" r="${r}"/>`;
+const boxMark = (x, y, cls) => `<rect class="${cls}" x="${x - 41}" y="${y - 41}" width="82" height="82" rx="17"/>`;
+/** an arrow from one point to another, stopping short at both ends */
+function arrowMark(x1, y1, x2, y2, cls, a = 12, b = 12) {
+  const dx = x2 - x1, dy = y2 - y1, l = Math.hypot(dx, dy), ux = dx / l, uy = dy / l;
+  const sx = x1 + ux * a, sy = y1 + uy * a, ex = x2 - ux * b, ey = y2 - uy * b, h = 11;
+  return `<g class="${cls}"><path d="M${f1(sx)} ${f1(sy)}L${f1(ex - ux * 6)} ${f1(ey - uy * 6)}"/>` +
+    `<path class="head" d="M${f1(ex)} ${f1(ey)}L${f1(ex - ux * h - uy * h * 0.62)} ${f1(ey - uy * h + ux * h * 0.62)}L${f1(ex - ux * h + uy * h * 0.62)} ${f1(ey - uy * h - ux * h * 0.62)}Z"/></g>`;
+}
+/** the bar a piece is squeezed against: across the far side of its square */
+function anvilMark(x, y, dx, dy) {
+  const px = x + dx * 46, py = y + dy * 46;
+  return `<path class="t-anvil" d="M${f1(px - dy * 30)} ${f1(py + dx * 30)}L${f1(px + dy * 30)} ${f1(py - dx * 30)}"/>`;
+}
+const crossMark = (x, y) => `<g class="t-strike"><circle cx="${x}" cy="${y}" r="41"/><path d="M${x} ${y - 49}v16M${x} ${y + 33}v16M${x - 49} ${y}h16M${x + 33} ${y}h16"/></g>`;
+
+/** the tower with its bell, from the side: the emblem on the box */
+const CREST = `<svg class="crest" viewBox="0 0 64 84" aria-hidden="true"><path class="c-ink" d="M7 4h10v7h8V4h14v7h8V4h10v19l-4 5v48a4 4 0 0 1-4 4H15a4 4 0 0 1-4-4V28l-4-5Z"/>` +
+  `<path class="c-win" d="M21 63V46a11 11 0 0 1 22 0v17Z"/><path class="c-bell" d="M32 41.5c-5 0-6.6 4.6-6.9 11.3-.1 1.6-1.1 2.4-2.1 3.2h18c-1-.8-2-1.6-2.1-3.2-.3-6.700-1.900-11.300-6.900-11.300Z"/><circle class="c-bell" cx="32" cy="58.600" r="2.300"/>` +
+  `<path class="c-line" d="M11 28h42"/></svg>`;
+
+/* ── The board on the page: laying it out, moving the pieces, showing where they may go ── */
+const $ = s => document.querySelector(s), sleep = ms => new Promise(r => setTimeout(r, ms));
+const REDUCED = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+
+/** flip: the board is turned so that Dark sits at the bottom. pc: the piece standing on each square. */
+const V = { flip: false, L: {}, pc: new Map() };
+
+const colRow = s => (V.flip ? [7 - (s & 7), s >> 3] : [s & 7, 7 - (s >> 3)]);
+const xy = s => { const [c, r] = colRow(s); return [c * U + 50, r * U + 50]; };
+/** where on the screen a step in direction d goes, in squares */
+const stepXY = d => { const v = [[0, -1], [0, 1], [1, 0], [-1, 0]][d]; return V.flip ? [-v[0], -v[1]] : v; };
+/** the hinge of the Gate that stands on post s, and the way its leaf lies there */
+const hinge = s => { const a = xy(s), b = xy(POST[s]); return [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2]; };
+const quarter = (p, c) => (c[0] > p[0] ? (c[1] > p[1] ? 0 : 270) : (c[1] > p[1] ? 90 : 180));
+const leafAngle = s => quarter(hinge(s), xy(s));
+const leafAt = (s, cls) => { const p = hinge(s); return `<g transform="translate(${p[0]} ${p[1]}) rotate(${leafAngle(s)})"><path class="${cls}" transform="translate(${LEAF_IN} ${LEAF_IN})" d="${LEAF_PATH}"/></g>`; };
+
+function buildBoard(flip) {
+  V.flip = !!flip; V.pc.clear();
+  const b = $('#board');
+  b.setAttribute('viewBox', '0 0 800 800'); b.replaceChildren(); b.classList.remove('fade-out', 'mine');
+  for (const name of ['grid', 'trace', 'under', 'pieces', 'fx', 'strike', 'over', 'cursor']) b.appendChild(V.L[name] = svg('g', { class: 'l-' + name }));
+  let g = '';
+  for (let r = 0; r < 8; r++) for (let c = 0; c < 8; c++) if ((r + c) % 2) g += `<rect class="sq" x="${c * U}" y="${r * U}" width="${U}" height="${U}"/>`;
+  for (let i = 1; i < 8; i++) g += `<path class="ln" d="M${i * U} 0V800M0 ${i * U}H800"/>`;
+  for (const k of [3, 4, 59, 60]) { const [x, y] = xy(k); g += `<circle class="socket" cx="${x}" cy="${y}" r="33"/><circle class="socket in" cx="${x}" cy="${y}" r="25"/>`; }
+  for (const home of [2, 5, 58, 61]) { const p = hinge(home); g += leafAt(home, 'post') + leafAt(POST[home], 'post') + `<circle class="pin" cx="${p[0]}" cy="${p[1]}" r="5.5"/>`; }
+  V.L.grid.innerHTML = g;
+}
+
+function makePiece(p, s) {
+  const kind = kindOf(p), side = sideOf(p), el = svg('g', { class: `pc k${kind} s${side}` });
+  if (kind === GATE) { el.innerHTML = gateArt(side, leafAngle(s)); setAt(el, hinge(s)); }
+  else { el.innerHTML = kind === RAM ? ramArt(side) : keepArt(side); setAt(el, xy(s)); }
+  el.kind = kind; el.side = side;
+  return el;
+}
+const setAt = (el, p, extra = '') => el.setAttribute('transform', `translate(${f1(p[0])} ${f1(p[1])})${extra}`);
+const part = (el, cls) => el.querySelector('.' + cls);
+/** pieces lower on the screen lie over the ones above them */
+function restack() { [...V.pc.entries()].sort((a, b) => colRow(a[0])[1] - colRow(b[0])[1]).forEach(([, el]) => V.L.pieces.appendChild(el)); }
+
+/** the board as position S has it, with nothing moving */
+function placeAll(S) {
+  V.pc.clear(); V.L.pieces.replaceChildren(); V.L.fx.replaceChildren();
+  for (let s = 0; s < 64; s++) if (S.b[s]) V.pc.set(s, makePiece(S.b[s], s));
+  restack(); markState(S);
+}
+
+/** What shows on a position without anyone asking: the Ram that was just shoved sits askew, a Keep that has heard
+ *  something has its bell going, the last move leaves a trace, and a side that has lost stands back. */
+function markState(S) {
+  const loser = S.over && S.over.winner >= 0 ? S.over.loser : -1;
+  for (const [s, el] of V.pc) {
+    el.classList.toggle('lost', el.side === loser);
+    if (el.kind === RAM) { const t = part(el, 'tilt'); if (s === S.koP && !S.over) t.setAttribute('transform', `rotate(${askew(s)})`); else t.removeAttribute('transform'); }
+    else if (el.kind === KEEP) el.classList.remove('woken');
+  }
+  for (const k of wokenKeeps(S)) { const el = V.pc.get(k); if (el) el.classList.add('woken'); }
+  const m = lastMove(S);
+  let t = '';
+  if (m >= 0 && m !== PASS_MOVE) {
+    const kind = mKind(m), [x, y] = xy(mTo(m));
+    if (kind === STRIKE) t = `<circle class="tr" cx="${x}" cy="${y}" r="27"/>`;
+    else if (kind === SWING) t = leafAt(mFrom(m), 'tr');
+    else { const [a, b] = xy(mFrom(m)); t = `<rect class="tr" x="${a - 31}" y="${b - 31}" width="62" height="62" rx="12"/>`; }
+  }
+  V.L.trace.innerHTML = t;
+}
+const askew = s => (((s * 7) & 1) ? 9 : -9);
+
+/* ── movement ── */
+const easeOut = t => 1 - Math.pow(1 - t, 3), easeIO = t => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2);
+const mix = (a, b, k) => [a[0] + (b[0] - a[0]) * k, a[1] + (b[1] - a[1]) * k];
+function tween(ms, step) {
+  if (REDUCED) { step(1); return Promise.resolve(); }
+  return new Promise(res => {
+    const t0 = performance.now();
+    const frame = now => { const t = Math.min(1, Math.max(0, (now - t0) / ms)); step(t); if (t < 1) requestAnimationFrame(frame); else res(); };
+    requestAnimationFrame(frame);
+  });
+}
+/** splinters flying off a piece that is taken */
+function chips(p, side, n = 7) {
+  if (REDUCED) return;
+  const g = svg('g', { class: 'chips s' + side });
+  for (let i = 0; i < n; i++) {
+    const a = (i / n) * Math.PI * 2 + Math.random(), d = 34 + Math.random() * 36, w = 5 + Math.random() * 7;
+    g.appendChild(svg('rect', { x: f1(p[0] - w / 2), y: f1(p[1] - 2.5), width: f1(w), height: 5, rx: 1.2, style: `--dx:${f1(Math.cos(a) * d)}px;--dy:${f1(Math.sin(a) * d)}px;--r:${Math.round(Math.random() * 500 - 250)}deg` }));
+  }
+  V.L.fx.appendChild(g); setTimeout(() => g.remove(), 700);
+}
+/** a bell going: rings spreading out from a Keep */
+function rings(s) {
+  if (REDUCED) return;
+  const [x, y] = xy(s), g = svg('g', { class: 'rings' });
+  for (let i = 0; i < 3; i++) g.appendChild(svg('circle', { cx: x, cy: y, r: 30, style: `animation-delay:${i * 0.2}s` }));
+  V.L.fx.appendChild(g); setTimeout(() => g.remove(), 1700);
+}
+/** how far a Ram can be pressed against what is behind it before there is nowhere left to go */
+const slack = (S, anvil) => (anvil < 0 ? 18 : kindOf(S.b[anvil]) === RAM ? 36 : kindOf(S.b[anvil]) === KEEP ? 31 : 12);
+
+/** Shows a move happening. ev comes from describe(), made on the position before the move; room is slack() for a crush. */
+async function showMove(ev, room = 18) {
+  const el = V.pc.get(ev.from), a = ev.what === 'pass' ? null : xy(ev.from), b = a && xy(ev.to);
+  const lead = ev.lead || 0, go = (t, ease = easeOut) => lead + (1 - lead) * ease(t);   // a piece dragged part of the way starts from there
+  switch (ev.what) {
+    case 'step':
+      V.pc.delete(ev.from); V.pc.set(ev.to, el); snd('step');
+      await tween(170 - 90 * lead, t => setAt(el, mix(a, b, go(t))));
+      break;
+    case 'shove': {
+      const v = V.pc.get(ev.to), c = xy(ev.pushedTo), tilt = part(v, 'tilt'), lean = askew(ev.pushedTo);
+      V.pc.delete(ev.from); V.pc.set(ev.to, el); V.pc.set(ev.pushedTo, v); snd('shove');
+      await tween(260, t => {                                  // the two blocks are 36 apart: after that they travel together
+        const k = go(t) * 100, j = Math.max(0, k - 36) / 64;
+        setAt(el, mix(a, b, k / 100)); setAt(v, mix(b, c, j)); tilt.setAttribute('transform', `rotate(${f1(lean * j)})`);
+      });
+      break;
+    }
+    case 'crush': case 'take': {
+      const v = V.pc.get(ev.to), ux = (b[0] - a[0]) / 100, uy = (b[1] - a[1]) / 100, ram = v.kind === RAM;
+      const touch = ram ? 36 : v.kind === KEEP ? 31 : 20, full = ram ? touch + room : touch;
+      V.pc.delete(ev.from); V.pc.set(ev.to, el);
+      snd(v.kind === KEEP ? 'fall' : ram ? 'crush' : 'break');
+      const start = v.kind === GATE ? hinge(ev.to) : b;
+      let burst = false;
+      await tween(ram ? 340 : 420, t => {
+        const k = go(t, ram ? easeOut : easeIO) * 100;
+        setAt(el, mix(a, b, k / 100));
+        if (k <= touch) return;
+        if (!burst && k > full + 4) { burst = true; chips(b, sideOf(ev.victim), v.kind === KEEP ? 13 : 8); }
+        if (ram) {                                             // pushed up against what is behind it, then squeezed flat
+          const go = Math.min(k - touch, room), sq = k > full ? Math.max(0.04, 1 - (k - full) / (100 - full)) : 1, off = go + (1 - sq) * 32;
+          setAt(v, [b[0] + ux * off, b[1] + uy * off], ` scale(${ux ? f1(sq * 100) / 100 : 1} ${uy ? f1(sq * 100) / 100 : 1})`);
+          v.style.opacity = sq < 0.35 ? String(sq / 0.35) : '';
+        } else {                                               // a Gate or a Keep stands where it is and gives way
+          const q = (k - touch) / (100 - touch), sh = v.kind === KEEP ? Math.sin(q * 28) * 3 * (1 - q) : 0;
+          setAt(v, [start[0] + sh, start[1]], v.kind === KEEP ? ` scale(${f1((1 - q * 0.75) * 100) / 100})` : '');
+          v.style.opacity = String(Math.max(0, 1 - q * 1.25));
+        }
+      });
+      v.remove();
+      break;
+    }
+    case 'swing': case 'slam': {
+      const v = ev.what === 'slam' ? V.pc.get(ev.to) : null, a0 = leafAngle(ev.from), p = hinge(ev.from);
+      const turn = (a0 + 90) % 360 === quarter(p, xy(GATE_KEEP[ev.from])) ? -1 : 1;   // the way round that does not cross its Keep
+      const rots = el.querySelectorAll('.rot'), tilt = part(el, 'tilt'), sh = part(el, 'sh');
+      V.pc.delete(ev.from); V.pc.set(ev.to, el); V.L.pieces.appendChild(el);
+      snd(v ? 'slam' : 'swing');
+      let hit = false;
+      await tween(440, t => {
+        const k = easeIO(t), lift = Math.sin(Math.PI * k), ang = f1(a0 + turn * 180 * k);
+        for (const r of rots) r.setAttribute('transform', `rotate(${ang})`);
+        tilt.setAttribute('transform', `translate(0 ${f1(-9 * lift)})`); sh.setAttribute('transform', `translate(${f1(7 * lift)} ${f1(10 * lift)})`);
+        if (v && k > 0.8) {
+          if (!hit) { hit = true; chips(b, sideOf(ev.victim)); }
+          const q = (k - 0.8) / 0.2; setAt(v, b, ` scale(${f1((1 - q) * 100) / 100})`); v.style.opacity = String(1 - q);
+        }
+      });
+      tilt.removeAttribute('transform'); sh.removeAttribute('transform');
+      if (v) v.remove();
+      break;
+    }
+    case 'strike': {
+      const v = V.pc.get(ev.to), ux = (b[0] - a[0]) / 100, uy = (b[1] - a[1]) / 100, ang = Math.atan2(uy, ux) * 180 / Math.PI;
+      const bolt = svg('g', { class: 'bolt' }, [svg('path', { d: 'M-26 0H8' }), svg('path', { class: 'tip', d: 'M16 0L4 -6.5V6.5Z' })]);
+      V.pc.delete(ev.to); V.L.fx.appendChild(bolt); snd('strike');
+      await tween(130, t => setAt(bolt, mix(a, b, 0.18 + 0.72 * t), ` rotate(${f1(ang)})`));
+      bolt.remove(); chips(b, sideOf(ev.victim), 9);
+      await tween(230, t => { const k = easeOut(t); setAt(v, [b[0] + ux * 26 * k, b[1] + uy * 26 * k], ` rotate(${f1(70 * k)}) scale(${f1((1 - k * 0.6) * 100) / 100})`); v.style.opacity = String(1 - k); });
+      v.remove();
+      break;
+    }
+  }
+  restack();
+}
+
+/* ── where a piece may go ── */
+/** Marks every move of the piece on s, each in a group that knows its move. */
+function showTargets(S, s) {
+  const el = V.pc.get(s);
+  let under = '', over = '';
+  if (el) under += el.kind === GATE ? leafAt(s, 't-sel') : el.kind === KEEP ? ringMark(xy(s)[0], xy(s)[1], 46, 't-sel') : boxMark(xy(s)[0], xy(s)[1], 't-sel');
+  for (const m of movesFrom(S, s)) {
+    const ev = describe(S, m), [x, y] = xy(ev.to), open = `<g class="tg" data-m="${m}">`;
+    if (ev.what === 'step') under += `${open}${dotMark(x, y)}</g>`;
+    else if (ev.what === 'shove') { const p = xy(ev.pushedTo); over += `${open}${boxMark(x, y, 't-box')}${arrowMark(x, y, p[0], p[1], 't-arrow', 44, 26)}</g>`; }
+    else if (ev.what === 'crush' || ev.what === 'take') {
+      const d = stepXY(dirOf(ev.from, ev.to));
+      over += open + (kindOf(ev.victim) === KEEP ? ringMark(x, y, 44, 't-box loud') : kindOf(ev.victim) === GATE ? leafAt(ev.to, 't-box loud') : boxMark(x, y, 't-box loud')) + anvilMark(x, y, d[0], d[1]);
+      for (const k of ev.wakes) over += ringMark(xy(k)[0], xy(k)[1], 47, 't-wake');
+      over += '</g>';
+    } else if (ev.what === 'swing') under += `${open}${leafAt(ev.to, 't-leaf')}</g>`;
+    else if (ev.what === 'slam') over += `${open}${leafAt(ev.to, 't-leaf loud')}${boxMark(x, y, 't-box loud')}</g>`;
+    else if (ev.what === 'strike') over += `${open}${crossMark(x, y)}</g>`;
+  }
+  V.L.under.innerHTML = under; V.L.over.innerHTML = over;
+  for (const [sq, p] of V.pc) p.classList.toggle('sel', sq === s);
+}
+function clearTargets() { V.L.under.replaceChildren(); V.L.over.replaceChildren(); for (const p of V.pc.values()) p.classList.remove('sel'); }
+/** A Keep that may strike shows whom, without being asked. */
+function showStrikes(S, on) {
+  V.L.strike.innerHTML = on ? legalMoves(S).filter(m => mKind(m) === STRIKE).map(m => crossMark(...xy(mTo(m)))).join('') : '';
+}
+/** the mark for move m stands out (the pointer is on it, or a piece is being dragged that way) */
+function setHot(m) { for (const g of document.querySelectorAll('#board .tg')) g.classList.toggle('hot', +g.dataset.m === m); }
+
+/** the square under a pointer, or −1 */
+function squareAt(ev) {
+  const [x, y] = boardPoint(ev);
+  if (x < 0 || y < 0 || x >= 800 || y >= 800) return -1;
+  const c = Math.floor(x / U), r = Math.floor(y / U);
+  return V.flip ? r * 8 + (7 - c) : (7 - r) * 8 + c;
+}
+function boardPoint(ev) { const r = $('#board').getBoundingClientRect(); return [(ev.clientX - r.left) / r.width * 800, (ev.clientY - r.top) / r.height * 800]; }
+/** a piece shakes its head */
+function nudge(s) {
+  const el = V.pc.get(s); snd('no');
+  if (!el || REDUCED) return;
+  el.classList.remove('no'); el.getBoundingClientRect(); el.classList.add('no'); setTimeout(() => el.classList.remove('no'), 320);
+}
+/** the square the keyboard is on */
+function showCursor(s) {
+  V.L.cursor.innerHTML = s < 0 ? '' : `<rect class="cur" x="${xy(s)[0] - 46}" y="${xy(s)[1] - 46}" width="92" height="92" rx="14"/>`;
+}
+
+/* ── the rules, each with a small board ── */
+/** A corner of a board: w × h squares, a wall along one side ('t', 'b', 'r' or none), pieces and marks in its own coordinates. */
+function scene(w, h, wall, pieces, marks = '', under = '') {
+  const W = w * U, H = h * U, t = 30;
+  let g = `<rect width="${W}" height="${H}" fill="url(#feltp)"/>`;
+  for (let r = 0; r < h; r++) for (let c = 0; c < w; c++) if ((r + c) % 2) g += `<rect class="sq" x="${c * U}" y="${r * U}" width="${U}" height="${U}"/>`;
+  for (let i = 1; i < w; i++) g += `<path class="ln" d="M${i * U} 0V${H}"/>`;
+  for (let i = 1; i < h; i++) g += `<path class="ln" d="M0 ${i * U}H${W}"/>`;
+  g += under;
+  for (const p of pieces) g += `<g class="pc k${p[0]} s${p[1]}${p[5] || ''}" transform="translate(${p[2]} ${p[3]})">${p[0] === RAM ? ramArt(p[1]) : p[0] === KEEP ? keepArt(p[1]) : gateArt(p[1], p[4])}</g>`;
+  g += marks;
+  if (wall === 'b') g += `<rect y="${H}" width="${W}" height="${t}" fill="url(#rimp)"/><path d="M0 ${H}H${W}" stroke="#2a180d" stroke-width="3"/><path d="M0 ${H + 2.5}H${W}" stroke="#fff" stroke-opacity=".25" stroke-width="1.5"/>`;
+  if (wall === 'r') g += `<rect x="${W}" width="${t}" height="${H}" fill="url(#rimp)"/><path d="M${W} 0V${H}" stroke="#2a180d" stroke-width="3"/><path d="M${W + 2.5} 0V${H}" stroke="#fff" stroke-opacity=".25" stroke-width="1.5"/>`;
+  if (wall === 't') g += `<rect y="${-t}" width="${W}" height="${t}" fill="url(#rimp)"/><path d="M0 0H${W}" stroke="#2a180d" stroke-width="3"/><path d="M0 2.500H${W}" stroke="#04121e" stroke-opacity=".3" stroke-width="5"/>`;
+  return `<svg class="scene" viewBox="0 ${wall === 't' ? -t : 0} ${W + (wall === 'r' ? t : 0)} ${H + (wall === 'b' || wall === 't' ? t : 0)}" aria-hidden="true">${g}</svg>`;
+}
+function buildHelp() {
+  const c = i => i * U + 50, L = LIGHT, D = DARK;
+  const steps = [
+    [scene(4, 2, 't', [[GATE, D, 100, 100, 180], [KEEP, D, c(1), c(0)], [KEEP, D, c(2), c(0)], [GATE, D, 300, 100, 270], [RAM, L, c(0), c(1)], [RAM, L, c(2), c(1)]]),
+      '<b>Take both Keeps</b> on the other side to win. Each Keep has a Gate to guard it, and eight Rams go out to do the work. Light moves first.'],
+    [scene(3, 3, '', [[RAM, L, c(1), c(1)]], '', [[1, 0], [0, 1], [2, 1], [1, 2]].map(p => dotMark(c(p[0]), c(p[1]))).join('')),
+      'A <b>Ram</b> steps one square: forward, back or sideways.'],
+    [scene(3, 2, '', [[RAM, L, c(0), c(0)], [RAM, D, c(1), c(0)], [RAM, D, c(0), c(1)], [RAM, L, c(2), c(1)]], boxMark(c(1), c(0), 't-box') + arrowMark(c(1), c(0), c(2), c(0), 't-arrow', 44, 26)),
+      'Step into an enemy Ram and it is <b>shoved</b> one square on. A Ram that has just been shoved can’t shove straight back: it has to wait a turn.'],
+    [scene(3, 2, 'r', [[RAM, L, c(1), c(0)], [RAM, D, c(2), c(0)], [RAM, L, c(0), c(1)], [RAM, D, c(1), c(1)], [RAM, D, c(2), c(1)]], boxMark(c(2), c(0), 't-box loud') + anvilMark(c(2), c(0), 1, 0) + boxMark(c(1), c(1), 't-box loud') + anvilMark(c(1), c(1), 1, 0)),
+      '<b>No room behind it?</b> Then it is taken instead. The wall will do, and so will any piece, yours or theirs.'],
+    [scene(3, 2, 't', [[KEEP, D, c(1), c(0)], [RAM, L, c(1), c(1)], [RAM, L, c(0), c(0), 0, ' dim']], ringMark(c(1), c(0), 44, 't-box loud') + anvilMark(c(1), c(0), 0, -1)),
+      '<b>Gates and Keeps never budge</b>, but they fall the same way: push one that has something behind it. From the side, this Keep would stand: nothing is behind it there.'],
+    [scene(3, 2, 'b', [[KEEP, L, c(1), c(1)], [GATE, L, 100, 100, 90], [RAM, D, c(1), c(0)]], `<g transform="translate(100 100) rotate(270)"><path class="t-leaf loud" transform="translate(${LEAF_IN} ${LEAF_IN})" d="${LEAF_PATH}"/></g>` + boxMark(c(1), c(0), 't-box loud')),
+      'A <b>Gate</b> turns on its hinge between two posts: beside its Keep and in front of it. It takes a Ram that stands on the other post.'],
+    [scene(3, 2, 'b', [[KEEP, L, c(1), c(1), 0, ' woken'], [RAM, D, c(0), c(1)], [RAM, D, c(2), c(0)]], crossMark(c(0), c(1))),
+      'A <b>Keep</b> sleeps while Rams walk up to it. But take anything on a square next to it and <b>its bell rings</b>: on the very next move, and only then, it may strike that Ram off the board.'],
+  ];
+  $('#steps').innerHTML = steps.map(([art, text]) => `<div class="step">${art}<p>${text}</p></div>`).join('');
+}
+
+/* ── The game on the page: setup, turns, the computer, undo, what is kept between visits ── */
+const STORE = 'keep-it-down.v1';
+const MIN_THINK = 430;   // the computer never answers faster than a hand could
+
+/** cfg.level is one of LEVELS, or 'friend' for two people at one screen; cfg.side is the side the person plays against
+ *  the computer. log holds what each move of the game did (see describe), in step with S.history. */
+const G = { screen: 'setup', cfg: { level: 'medium', side: LIGHT }, S: null, log: [], token: 0, busy: false, passing: false, sel: -1, drag: null, cur: -1, keys: false, note: '' };
+
+const vsComputer = () => G.cfg.level !== 'friend';
+const person = side => !vsComputer() || side === G.cfg.side;
+const computerToMove = () => vsComputer() && !G.S.over && G.S.turn !== G.cfg.side;
+const canPlay = () => G.screen === 'play' && !G.busy && !G.S.over && !computerToMove();
+const canUndo = () => G.screen === 'play' && G.log.some(ev => person(ev.side) && ev.what !== 'pass');   // even while the computer thinks: a move can be taken straight back
+const snd = name => { if (G.screen === 'play') SFX.play(name); };   // the game that plays itself on the setup screen is silent
+
+function save() {
+  try {
+    const S = G.S, game = G.screen === 'play' && S && !S.over && S.history.length ? { moves: S.history } : null;
+    localStorage.setItem(STORE, JSON.stringify({ cfg: G.cfg, sound: SFX.on, game }));
+  } catch (e) { /* a browser that keeps nothing: the game still plays */ }
+}
+/** reads what was kept; returns the moves of a game to go on with, or null */
+function load() {
+  try {
+    const d = JSON.parse(localStorage.getItem(STORE) || 'null');
+    if (!d) return null;
+    const c = d.cfg || {};
+    if (LEVELS.includes(c.level) || c.level === 'friend') G.cfg.level = c.level;
+    if (c.side === LIGHT || c.side === DARK) G.cfg.side = c.side;
+    if (d.sound === false) SFX.on = false;
+    const S = d.game ? replay(d.game.moves) : null;
+    return S && !S.over && S.history.length ? d.game.moves : null;
+  } catch (e) { return null; }
+}
+
+function renderSetup() {
+  for (const b of document.querySelectorAll('#setup [data-opt]')) b.setAttribute('aria-checked', String(String(G.cfg[b.dataset.opt]) === b.dataset.val));
+  $('#opt-side').hidden = !vsComputer();
+}
+function renderSound() {
+  const b = $('[data-act=sound]');
+  b.textContent = SFX.on ? 'Sound on' : 'Sound off'; b.setAttribute('aria-pressed', String(SFX.on));
+}
+function renderHud() {
+  const S = G.S, vs = vsComputer(), me = G.cfg.side, live = !S.over;
+  const name = side => (vs ? (side === me ? 'You' : `<span class="long">Computer · </span>${LEVEL_NAME[G.cfg.level]}`) : SIDE[side]);
+  const took = side => G.log.filter(ev => ev.side === side && ev.victim && ev.what !== 'shove').map(ev => pieceIcon(kindOf(ev.victim), sideOf(ev.victim), 22)).join('');
+  const who = side => `<div class="who${live && S.turn === side ? ' on' : ''}${live && vs && S.turn === side && side !== me ? ' busy' : ''}"><i class="hole"></i>${pieceIcon(RAM, side, 34)}<b>${name(side)}</b><span class="took">${took(side)}</span></div>`;
+  $('#players').innerHTML = V.flip ? who(LIGHT) + who(DARK) : who(DARK) + who(LIGHT);   // as they sit at the board: the far side first
+
+  let text;
+  if (S.over) { const w = S.over.winner; text = w < 0 ? 'A draw' : !vs ? `${SIDE[w]} wins!` : w === me ? 'You win!' : 'Your Keeps are down'; }
+  else text = G.passing ? 'No move' : !vs ? `${SIDE[S.turn]} to move` : S.turn === me ? 'Your move' : 'Thinking<span class="dots"></span>';
+  $('#status').innerHTML = text; $('#sub').textContent = subLine();
+  const undo = `<button type="button" class="plate" data-act="undo"${canUndo() ? '' : ' disabled'}>Undo</button>`;
+  const btns = $('#btns');
+  btns.innerHTML = S.over
+    ? `<button type="button" class="plate ink" data-act="restart">Play again</button>${undo}${vs ? '<button type="button" class="plate" data-act="swap">Swap sides</button>' : ''}<button type="button" class="plate" data-act="setup">Setup</button>`
+    : `${undo}<button type="button" class="plate" data-act="restart">Restart</button><button type="button" class="plate" data-act="setup">Setup</button>`;
+  btns.classList.toggle('four', btns.children.length === 4);   // four plates sit two and two
+}
+/** The line under the status: how the game ended; else what was last said (see say); else what the position calls for. */
+function subLine() {
+  const S = G.S, vs = vsComputer();
+  if (S.over) {
+    const w = S.over.winner;
+    if (w < 0) return { spent: 'No Rams are left on either side.', quiet: 'Sixty moves each, and nothing taken.', stuck: 'Neither side can move.' }[S.over.why];
+    return !vs ? `Both of ${SIDE[1 - w]}’s Keeps are down.` : w === G.cfg.side ? 'Both of the computer’s Keeps are down.' : 'The computer wins this one.';
+  }
+  if (G.note) return G.note;
+  const mine = person(S.turn);
+  if (wokenKeeps(S).length) return !mine ? 'That was loud.' : vs ? 'Your bell is ringing: you may strike the Ram that woke it.' : 'The bell is ringing: the Keep may strike the Ram that woke it.';
+  return mine && S.history.length < 2 ? 'Tap a piece, then where it should go.' : '';
+}
+/** says why something was not allowed, or what just happened; say('') takes it back */
+function say(text) { G.note = text; if (G.screen === 'play') $('#sub').textContent = subLine(); }
+
+function select(s) { G.sel = s; showTargets(G.S, s); snd('lift'); }
+function clearSel() { G.sel = -1; clearTargets(); }
+
+/** after any change to the board: redraw what surrounds it, and let the computer move if it is its turn */
+function afterMove() {
+  const S = G.S;
+  clearSel(); markState(S); renderHud(); save();
+  $('#board').classList.remove('point');
+  showCursor(G.keys && canPlay() ? G.cur : -1);   // the keyboard stays where it was
+  if (S.over) { showStrikes(S, false); snd(S.over.winner < 0 ? 'draw' : !vsComputer() || S.over.winner === G.cfg.side ? 'win' : 'lose'); return; }
+  if (legalMoves(S)[0] === PASS_MOVE) return passTurn();
+  showStrikes(S, canPlay());
+  if (computerToMove()) computerMove();
+}
+
+/** plays move m and shows it; false if the game was left meanwhile */
+async function perform(m, token, lead = 0) {
+  const S = G.S, room = slack(S, describe(S, m).anvil), ev = playMove(S, m);
+  G.log.push(ev); G.note = ''; ev.lead = lead;
+  await showMove(ev, room);
+  if (token !== G.token) return false;
+  if (ev.wakes.length && !S.over) {   // a bell: let it be heard before anyone answers
+    markState(S); ev.wakes.forEach(rings); snd('bell');
+    await sleep(REDUCED ? 0 : 460);
+    if (token !== G.token) return false;
+  }
+  return true;
+}
+async function humanMove(m, lead = 0) {
+  if (!canPlay() || !isLegal(G.S, m)) return;
+  const token = G.token;
+  G.busy = true; G.drag = null; clearSel(); showStrikes(G.S, false); showCursor(-1); $('#board').classList.remove('point');
+  if (!(await perform(m, token, lead))) return;
+  G.busy = false; afterMove();
+}
+async function computerMove() {
+  const token = G.token, S = G.S, t0 = performance.now();
+  G.busy = true;
+  let move = await Brain.move(S, G.cfg.level);
+  if (token !== G.token) return;
+  const rest = MIN_THINK - (performance.now() - t0);
+  if (rest > 0) { await sleep(rest); if (token !== G.token) return; }
+  if (!isLegal(S, move)) move = legalMoves(S)[0];
+  if (!(await perform(move, token))) return;
+  G.busy = false; afterMove();
+}
+/** the side to move has nothing it can do: say so, and hand the turn over */
+async function passTurn() {
+  const token = G.token, S = G.S;
+  G.busy = true; G.passing = true;
+  G.note = `${!vsComputer() ? SIDE[S.turn] + ' has' : person(S.turn) ? 'You have' : 'The computer has'} nothing to move, so the turn passes.`;
+  renderHud();
+  await sleep(1500);
+  if (token !== G.token) return;
+  G.log.push(playMove(S, PASS_MOVE)); G.busy = false; G.passing = false; G.note = '';
+  afterMove();
+}
+
+/** back to before the person's last move (against the computer that takes its answer back too) */
+function undo() {
+  if (!canUndo()) return;
+  G.token++;
+  for (;;) { undoMove(G.S); const ev = G.log.pop(); if (!G.log.length || (person(ev.side) && ev.what !== 'pass')) break; }
+  G.busy = false; G.passing = false; G.note = ''; G.drag = null;
+  placeAll(G.S); snd('tick'); afterMove();
+}
+
+function startGame(moves) {
+  G.token++;
+  G.screen = 'play'; G.busy = false; G.passing = false; G.drag = null; G.cur = -1; G.note = ''; G.S = newGame(); G.log = [];
+  for (const m of moves || []) G.log.push(playMove(G.S, m));
+  document.body.className = 'play'; $('#setup').hidden = true; $('#hud').hidden = false;
+  buildBoard(vsComputer() && G.cfg.side === DARK);
+  placeAll(G.S);
+  if (!moves) deal();
+  afterMove();
+}
+/** a new game: the pieces are set down one after another */
+function deal() {
+  let i = 0;
+  for (const el of V.L.pieces.children) el.style.setProperty('--i', i++);
+  V.L.pieces.classList.add('deal'); setTimeout(() => V.L.pieces.classList.remove('deal'), 900);
+}
+
+function toSetup() {
+  G.screen = 'setup'; G.busy = false; G.passing = false; G.drag = null;
+  document.body.className = 'setup'; $('#hud').hidden = true; $('#setup').hidden = false;
+  renderSetup(); save(); demo();
+}
+/** While nobody is playing, the board plays itself: one game after another. */
+async function demo() {
+  const token = ++G.token;
+  G.S = null;
+  while (token === G.token) {
+    const S = newGame();
+    buildBoard(false); placeAll(S); deal();
+    await sleep(1300); if (token !== G.token) return;
+    while (!S.over && S.history.length < 260) {
+      const m = AI.think(S, { level: 'medium' }).move, room = slack(S, describe(S, m).anvil), ev = playMove(S, m);
+      await showMove(ev, room); if (token !== G.token) return;
+      markState(S); if (!S.over) ev.wakes.forEach(rings);
+      await sleep(REDUCED ? 1200 : 560); if (token !== G.token) return;
+    }
+    await sleep(2600); if (token !== G.token) return;
+    $('#board').classList.add('fade-out');
+    await sleep(540); if (token !== G.token) return;
+  }
+}
+
+function openHelp() { $('#help').hidden = false; $('[data-act=help-close]').focus({ preventScroll: true }); $('#help').scrollTop = 0; }   // the rules open at their top, however long they are
+function closeHelp() { $('#help').hidden = true; }
+
+/* ── a hand on the board ── */
+/** why the Ram on `from` may not go to the square beside it: a line for the person, or nothing */
+function whyNot(S, from, to) {
+  const q = S.b[to];
+  if (kindOf(S.b[from]) !== RAM || !q || sideOf(q) === S.turn) return '';
+  if (kindOf(q) === RAM) return from === S.koP && to === S.koQ ? 'It has just been shoved: it can’t shove straight back.' : '';
+  return `A ${kindOf(q) === GATE ? 'Gate' : 'Keep'} won’t budge. Push it where something stands behind it.`;
+}
+/** why a piece of one's own has no move at all */
+function whyStuck(S, s) {
+  const k = kindOf(S.b[s]);
+  return k === KEEP ? 'A Keep never moves. It strikes only when its bell rings.' : k === GATE ? 'Its other post is taken.' : 'There is no room for it to move.';
+}
+/** the square next to s in a direction on the screen, or −1 */
+function beside(s, dx, dy) {
+  const [c, r] = colRow(s), x = c + dx, y = r + dy;
+  return x < 0 || y < 0 || x > 7 || y > 7 ? -1 : V.flip ? y * 8 + (7 - x) : (7 - y) * 8 + x;
+}
+/** A press on square s, by finger, mouse or key. Returns true when the piece there is now held (and may be dragged). */
+function press(s) {
+  const S = G.S;
+  if (s < 0) { clearSel(); return false; }
+  if (G.sel >= 0 && G.sel !== s) {
+    const m = movesFrom(S, G.sel).find(x => mTo(x) === s);
+    if (m !== undefined) { humanMove(m); return false; }
+  }
+  const p = S.b[s], own = p !== 0 && sideOf(p) === S.turn;
+  if (!own) {
+    const strike = legalMoves(S).find(x => mKind(x) === STRIKE && mTo(x) === s);   // the Ram a ringing Keep may strike
+    if (strike !== undefined) { humanMove(strike); return false; }
+    if (G.sel >= 0) { const why = [0, 1, 2, 3].some(d => NB[G.sel * 4 + d] === s) ? whyNot(S, G.sel, s) : ''; if (why) { say(why); nudge(G.sel); return false; } }
+    clearSel(); return false;
+  }
+  if (!movesFrom(S, s).length) { clearSel(); say(whyStuck(S, s)); nudge(s); return false; }
+  if (G.sel !== s) { say(''); select(s); }
+  return true;
+}
+/** the move of the held piece that a drag of (dx, dy) points at, or −1 */
+function aimed(S, s, dx, dy) {
+  const len = Math.hypot(dx, dy), a = xy(s);
+  if (len < 34) return -1;
+  let best = -1, top = 0.7;
+  for (const m of movesFrom(S, s)) {
+    const b = xy(mTo(m)), tx = b[0] - a[0], ty = b[1] - a[1], dot = (dx * tx + dy * ty) / (len * Math.hypot(tx, ty));
+    if (dot > top) { top = dot; best = m; }
+  }
+  return best;
+}
+/** a Ram follows the finger along the way it is being dragged: all the way onto an empty square, up to the piece on a taken one */
+function follow(d, dx, dy) {
+  const el = V.pc.get(d.s);
+  if (!el || el.kind !== RAM) return;
+  const horiz = Math.abs(dx) > Math.abs(dy), sx = horiz ? Math.sign(dx) : 0, sy = horiz ? 0 : Math.sign(dy), far = Math.abs(horiz ? dx : dy);
+  const to = beside(d.s, sx, sy), m = to < 0 ? undefined : movesFrom(G.S, d.s).find(x => mTo(x) === to);
+  const reach = m === undefined ? Math.min(far, 100) * 0.1 : Math.min(far, mKind(m) === STEP ? 100 : 28), a = xy(d.s);
+  d.lead = m === undefined || m !== d.m ? 0 : reach / 100;
+  setAt(el, [a[0] + sx * reach, a[1] + sy * reach]);
+}
+function settle(d) { const el = V.pc.get(d.s); if (el && el.kind === RAM) setAt(el, xy(d.s)); setHot(-1); }
+
+const KEYS = { ArrowUp: [0, -1], ArrowDown: [0, 1], ArrowLeft: [-1, 0], ArrowRight: [1, 0], w: [0, -1], s: [0, 1], a: [-1, 0], d: [1, 0] };
+
+function wire() {
+  document.addEventListener('click', ev => {
+    const opt = ev.target.closest('[data-opt]'), act = ev.target.closest('[data-act]');
+    if (opt) {
+      const k = opt.dataset.opt, v = opt.dataset.val;
+      G.cfg[k] = k === 'level' ? v : +v;
+      renderSetup(); save(); SFX.play('tick');
+      return;
+    }
+    if (ev.target.id === 'help') return closeHelp();
+    if (!act || act.disabled) return;
+    switch (act.dataset.act) {
+      case 'start': SFX.init(); startGame(); break;
+      case 'restart': startGame(); break;
+      case 'swap': G.cfg.side = 1 - G.cfg.side; startGame(); break;
+      case 'setup': toSetup(); break;
+      case 'undo': undo(); break;
+      case 'sound': SFX.on = !SFX.on; renderSound(); save(); SFX.play('tick'); break;
+      case 'help': openHelp(); break;
+      case 'help-close': closeHelp(); break;
+    }
+  });
+
+  const board = $('#board');
+  board.addEventListener('pointerdown', ev => {
+    if (G.screen !== 'play' || (ev.pointerType === 'mouse' && ev.button !== 0)) return;
+    SFX.init();
+    if (!canPlay()) return;
+    if (G.drag) { if (!ev.isPrimary) return; settle(G.drag); G.drag = null; }   // a second finger is ignored; a drag that never ended is dropped
+    ev.preventDefault();
+    G.cur = -1; G.keys = false; showCursor(-1);
+    const s = squareAt(ev), was = G.sel === s;
+    if (!press(s)) return;
+    G.drag = { id: ev.pointerId, s, p0: boardPoint(ev), moved: false, was, m: -1, lead: 0 };
+    try { board.setPointerCapture(ev.pointerId); } catch (e) { /* an older browser: the pointer simply is not held */ }
+  });
+  board.addEventListener('pointermove', ev => {
+    const d = G.drag;
+    if (d) {
+      if (ev.pointerId !== d.id) return;
+      const p = boardPoint(ev), dx = p[0] - d.p0[0], dy = p[1] - d.p0[1];
+      if (!d.moved && Math.hypot(dx, dy) < 14) return;
+      d.moved = true; d.m = aimed(G.S, d.s, dx, dy); setHot(d.m); follow(d, dx, dy);
+      return;
+    }
+    if (ev.pointerType !== 'mouse' || !canPlay()) return;
+    const s = squareAt(ev), S = G.S;
+    let m = -1;
+    if (s >= 0 && G.sel >= 0) { const f = movesFrom(S, G.sel).find(x => mTo(x) === s); if (f !== undefined) m = f; }
+    setHot(m);
+    const own = s >= 0 && S.b[s] !== 0 && sideOf(S.b[s]) === S.turn && movesFrom(S, s).length > 0;
+    board.classList.toggle('point', m >= 0 || own || (s >= 0 && legalMoves(S).some(x => mKind(x) === STRIKE && mTo(x) === s)));
+  });
+  const drop = ev => {
+    const d = G.drag;
+    if (!d || ev.pointerId !== d.id) return;
+    G.drag = null;
+    if (!d.moved) { if (d.was) clearSel(); return; }          // a second tap on the piece that is held lets it go
+    if (ev.type === 'pointerup' && d.m >= 0) return humanMove(d.m, d.lead);
+    settle(d);
+    if (ev.type !== 'pointerup') return;
+    const p = boardPoint(ev), dx = p[0] - d.p0[0], dy = p[1] - d.p0[1];
+    if (Math.hypot(dx, dy) < 34) return;
+    const horiz = Math.abs(dx) > Math.abs(dy), to = beside(d.s, horiz ? Math.sign(dx) : 0, horiz ? 0 : Math.sign(dy)), why = to < 0 ? '' : whyNot(G.S, d.s, to);
+    if (why) say(why);
+    nudge(d.s);
+  };
+  board.addEventListener('pointerup', drop);
+  board.addEventListener('pointercancel', drop);
+  board.addEventListener('pointerleave', () => { if (!G.drag) { setHot(-1); board.classList.remove('point'); } });
+
+  document.addEventListener('keydown', ev => {
+    if (ev.metaKey || ev.ctrlKey || ev.altKey) return;
+    if (!$('#help').hidden) { if (ev.key === 'Escape') closeHelp(); return; }
+    if (G.screen !== 'play') return;
+    const key = ev.key.length === 1 ? ev.key.toLowerCase() : ev.key, onButton = ev.target.closest && ev.target.closest('button, a');
+    if (key === 'u') return undo();
+    if (!canPlay()) return;
+    const S = G.S, dir = KEYS[key];
+    if (dir) {
+      ev.preventDefault(); G.keys = true;
+      if (G.sel >= 0 && kindOf(S.b[G.sel]) === RAM) {          // a Ram that is held goes the way the arrow points
+        const to = beside(G.sel, dir[0], dir[1]), m = to < 0 ? undefined : movesFrom(S, G.sel).find(x => mTo(x) === to);
+        if (m !== undefined) { G.cur = to; return humanMove(m); }
+        if (to >= 0) say(whyNot(S, G.sel, to));
+        return nudge(G.sel);
+      }
+      if (G.cur < 0) G.cur = G.sel >= 0 ? G.sel : firstSquare(S); else { const to = beside(G.cur, dir[0], dir[1]); if (to >= 0) G.cur = to; }
+      return showCursor(G.cur);
+    }
+    if (key === 'Escape') { clearSel(); return; }
+    if ((key === 'Enter' || key === ' ') && !onButton) {
+      ev.preventDefault(); G.keys = true;
+      if (G.cur < 0) { G.cur = firstSquare(S); return showCursor(G.cur); }
+      if (G.sel === G.cur) {                                   // Enter again on a Gate or a Keep that can do one thing only does it
+        const moves = movesFrom(S, G.sel);
+        return moves.length === 1 && kindOf(S.b[G.sel]) !== RAM ? humanMove(moves[0]) : clearSel();
+      }
+      press(G.cur);
+    }
+  });
+}
+/** where the keyboard starts: the mover's Ram nearest the middle of the board */
+function firstSquare(S) {
+  let best = -1, far = 99;
+  for (let s = 0; s < 64; s++) if (S.b[s] === RAM + (S.turn << 2) && movesFrom(S, s).length) { const d = Math.abs((s & 7) - 3.4) + Math.abs((s >> 3) - 3.5); if (d < far) { far = d; best = s; } }
+  return best < 0 ? 27 : best;
+}
+
+function boot() {
+  // the way back to the shelf shows only where there is a shelf: under /games/ on the portal
+  if (!/^\/games\//.test(location.pathname) || /claude/.test(location.hostname)) document.documentElement.classList.add('no-home');
+  $('#crest').outerHTML = CREST;
+  $('#crib').innerHTML = [[RAM, '<b>Ram</b> shoves. No room behind: taken.'], [GATE, '<b>Gate</b> has two posts, and takes a Ram on the other one.'], [KEEP, '<b>Keep</b> strikes a Ram that has just taken something beside it.']]
+    .map(([k, t]) => `<li>${pieceIcon(k, LIGHT, 34)}<span>${t}</span></li>`).join('');
+  Brain.start(); buildHelp(); wire();
+  const saved = load();
+  renderSound();
+  if (saved) startGame(saved); else toSetup();
+}
+
+boot();
+</script>
+</body>
+</html>

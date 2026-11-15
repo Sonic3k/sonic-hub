@@ -26,7 +26,8 @@ W, H = 1280, 800
 # Steps: key:<Key> | hold:<Key>:<ms> | click:<css> | text:<visible text> | wait:<ms> | waitsel:<css>.  ls = what the
 # browser already holds for the game when the screen of play is taken (a save that opens later levels), so that picture
 # is not always level 1; the title screen is taken in a browser that has never seen the game. title = steps before the
-# title screen is taken, for a game whose title screen moves (Penned In plays itself there: wait for some marks).
+# title screen is taken, for a game whose title screen moves (Penned In and Keep It Down play themselves there: wait
+# for a few moves).
 GAMES = {
     'muop': dict(
         ls={'muop-12-den.v1': {'v': 1, 'unlocked': 12, 'abilities': {'wall': True, 'dash': True}, 'levels': {}, 'sfx': False, 'music': False}},
@@ -43,6 +44,10 @@ GAMES = {
         title=['wait:12000'],
         ls={'penned-in.v1': {'cfg': {'level': 'hard', 'size': 11, 'side': 0}, 'sound': True, 'game': {'n': 11, 'cells': [12, 108, 24, 96, 36, 84, 48, 73, 60, 61, 70, 49, 81, 37, 93, 27, 105, 39, 106, 51, 94, 63, 104, 62, 92, 72, 80, 71, 69, 59, 58, 47, 57, 46, 67, 34, 68, 23, 79, 13, 91, 1, 101, 2, 111, 14]}}},
         play=['wait:700']),
+    'keep-it-down': dict(
+        title=['wait:9000'],
+        ls={'keep-it-down.v1': {'cfg': {'level': 'hard', 'side': 0}, 'sound': True, 'game': {'moves': [1682,2413,1747,2283,1812,2926,2007,2153,1951,2218,1877,2469,6558,5794,5787,2209,6298,6574,6818,6054,7338,11514,6045,2527,2462,2023,1942,1503,5713,2991,7078,7085,2543,5729,1886,1763,2471,5915,7078,7094,2397,983,2738,911,2794,11955,1234,5209,6955,846,8965,4689,1,6957,2731,649,3242,4234]}}},
+        play=['wait:900']),
 }
 
 

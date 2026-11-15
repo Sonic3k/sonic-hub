@@ -1,0 +1,256 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#e8dfcf">
+<title>Keep It Down</title>
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Semi+Condensed:wght@500;600;700&family=Besley:ital,wght@0,400;0,500;0,700;0,900;1,500&display=swap" rel="stylesheet">
+<style>
+  /* ── Keep It Down ── a walnut tray lined with felt on a linen cloth, turned pieces in two woods with brass fittings,
+     the label off the box lid, and a maple board with brass pegs that keeps the settings and whose turn it is.
+     Printed things are set in a Clarendon; anything stamped into wood or brass is in condensed capitals. */
+  :root { box-sizing: border-box; color-scheme: light;
+    --linen: #e8dfcf; --ink: #22364a; --muted: #6b665c; --card: #fcf8ee; --felt: #3f6d8c; --brown: #3a2817; --brass: #c8a24a; --brass-lo: #8a6a25; --loud: #ff6a4d; --gold: #ffd975; --amber: #ffc74d;
+    --title: Besley, Rockwell, "Roboto Slab", Georgia, serif; --print: "Barlow Semi Condensed", "Arial Narrow", system-ui, sans-serif;
+    --grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 .2 0'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23n)'/%3E%3C/svg%3E");
+    --vh: 100vh; --side: 348px; --sheet: min(calc(100vw - var(--side) - 112px), calc(var(--vh) - 104px), 860px); }
+  @supports (height: 100dvh) { :root { --vh: 100dvh; } }
+  *, *::before, *::after { box-sizing: inherit; }
+  html { -webkit-text-size-adjust: 100%; }
+  body { margin: 0; min-height: var(--vh); color: var(--ink); font: 500 16px/1.4 var(--print); -webkit-tap-highlight-color: transparent; overscroll-behavior-y: none;
+    background-color: var(--linen);
+    background-image: radial-gradient(1200px 700px at 22% -8%, rgba(255,255,255,.6), transparent 70%), radial-gradient(1000px 640px at 100% 108%, rgba(110,85,50,.24), transparent 70%),
+      repeating-linear-gradient(0deg, rgba(110,90,60,.085) 0 1px, transparent 1px 3px), repeating-linear-gradient(90deg, rgba(110,90,60,.07) 0 1px, transparent 1px 3px), var(--grain);
+    background-attachment: fixed, fixed, scroll, scroll, scroll; }
+  button { font: inherit; color: inherit; cursor: pointer; touch-action: manipulation; } button:disabled { cursor: default; }
+  :focus-visible { outline: 3px solid var(--ink); outline-offset: 3px; }
+  [hidden] { display: none !important; }
+  #defs { position: absolute; width: 0; height: 0; overflow: hidden; }
+
+  /* the strip above the table: the way back to the shelf, sound, the rules */
+  .top { display: flex; align-items: center; gap: 8px; min-height: 52px; padding: calc(8px + env(safe-area-inset-top, 0px)) calc(16px + env(safe-area-inset-right, 0px)) 0 calc(12px + env(safe-area-inset-left, 0px)); }
+  .home { color: var(--ink); text-decoration: none; font-weight: 600; font-size: 15px; padding: 9px 10px; border-radius: 6px; } .home:hover { background: rgba(34,54,74,.09); } .no-home .home { visibility: hidden; }
+  .top-sp { flex: 1; }
+  .mini { min-height: 38px; padding: 0 13px; border-radius: 3px; border: 1.5px solid rgba(34,54,74,.45); background: rgba(255,255,255,.3); color: var(--ink); font: 600 13px/1 var(--print); letter-spacing: .12em; text-transform: uppercase; }
+  .mini:hover { background: rgba(255,255,255,.7); }
+
+  .table { display: grid; grid-template-columns: var(--sheet) var(--side); gap: 44px; justify-content: center; align-items: center; min-height: calc(var(--vh) - 60px); padding: 10px 24px calc(28px + env(safe-area-inset-bottom, 0px)); }
+
+  /* the tray: its rim is the wall round the board */
+  .tray { position: relative; width: var(--sheet); aspect-ratio: 1; padding: calc(var(--sheet) * .036); border-radius: calc(var(--sheet) * .02); background-color: #63402a;
+    background-image: linear-gradient(135deg, rgba(255,235,200,.2), transparent 38%, rgba(0,0,0,.24)), repeating-linear-gradient(91.5deg, rgba(30,14,4,.16) 0 2px, transparent 2px 7px, rgba(255,220,170,.05) 7px 9px, transparent 9px 17px), var(--grain);
+    box-shadow: inset 0 1.5px 0 rgba(255,230,190,.4), inset 1.5px 0 0 rgba(255,230,190,.16), inset 0 -2.5px 0 rgba(0,0,0,.4), inset -2px 0 0 rgba(0,0,0,.26), 0 2px 3px rgba(60,40,20,.35), 0 30px 54px -18px rgba(70,48,22,.7), 0 12px 20px -10px rgba(70,48,22,.5); }
+  .felt { position: relative; width: 100%; height: 100%; border-radius: 2px; background-color: var(--felt);
+    background-image: radial-gradient(120% 120% at 30% 20%, rgba(255,255,255,.09), transparent 60%), var(--grain);
+    box-shadow: 0 0 0 1.5px rgba(20,8,2,.55), 0 1.5px 0 2px rgba(255,225,180,.22), inset 0 9px 14px -4px rgba(4,18,30,.62), inset 8px 0 14px -6px rgba(4,18,30,.42), inset 0 -3px 5px -2px rgba(255,255,255,.14); }
+  #board { display: block; width: 100%; height: 100%; overflow: visible; -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; }
+  .play #board { touch-action: none; }   /* in play a finger on the board moves a piece; on the setup screen it scrolls the page */
+  #board.point { cursor: pointer; }
+  .fade-out { opacity: 0; transition: opacity .5s; }
+  .sq { fill: #fff; opacity: .05; } .ln { fill: none; stroke: #0b2638; stroke-opacity: .36; stroke-width: 1.3; vector-effect: non-scaling-stroke; }
+  .socket { fill: none; stroke: #e2c370; stroke-opacity: .55; stroke-width: 2.4; } .socket.in { stroke-opacity: .28; stroke-width: 1.4; }
+  .post { fill: #fff; fill-opacity: .04; stroke: #fff; stroke-opacity: .34; stroke-width: 1.5; stroke-dasharray: 5 6; stroke-linejoin: round; }
+  .pin { fill: url(#br); stroke: #6f5218; stroke-width: .8; }
+  .tr { fill: #fff; fill-opacity: .09; stroke: #fff; stroke-opacity: .4; stroke-width: 1.6; stroke-dasharray: 3 5; stroke-linejoin: round; }
+
+  /* the pieces */
+  .sh > * { fill: #04121e; opacity: .17; }
+  .pc .body { transition: transform .14s cubic-bezier(.2, .8, .3, 1.3); }
+  .pc.sel .body { transform: translateY(-6px); } .pc.sel .sh { transform: translate(4px, 6px); }
+  .pc.no .body { animation: no .3s; } @keyframes no { 20% { transform: translateX(-5px); } 50% { transform: translateX(5px); } 80% { transform: translateX(-3px); } }
+  .pc .glow { opacity: 0; transition: opacity .2s; } .pc.woken .glow { opacity: 1; }
+  /* a bell that is going: rings spread from the Keep for as long as it may strike */
+  .waves circle { fill: none; stroke: var(--amber); stroke-width: 3.2; opacity: 0; } .pc.woken .waves circle { animation: wave 1.1s ease-out infinite; } .pc.woken .waves circle + circle { animation-delay: .55s; }
+  @keyframes wave { 0% { opacity: .95; transform: scale(1); } 100% { opacity: 0; transform: scale(1.6); } }
+  .pc.woken .bell { animation: ring .32s ease-in-out infinite; } @keyframes ring { 0%, 100% { transform: translate(-2.6px, 0) rotate(-7deg); } 50% { transform: translate(2.6px, 0) rotate(7deg); } }
+  .pc.dim { opacity: .42; } .pc.lost { opacity: .5; transition: opacity .7s .2s; }
+  .deal .pc .body { animation: deal .34s cubic-bezier(.2, .8, .3, 1.2) backwards; animation-delay: calc(var(--i, 0) * 16ms); } @keyframes deal { from { opacity: 0; transform: translateY(-16px); } }
+
+  /* where a piece may go: brass for a quiet move, red for taking something, amber for a Keep that will hear it */
+  .t-sel { fill: var(--gold); fill-opacity: .2; stroke: var(--gold); stroke-width: 2.5; stroke-linejoin: round; }
+  .t-dot { fill: #f6dc8e; stroke: #10283a; stroke-opacity: .6; stroke-width: 2; transform-box: fill-box; transform-origin: center; transition: transform .1s; } .tg.hot .t-dot { transform: scale(1.5); fill: #fff6d0; }
+  .t-box { fill: var(--gold); fill-opacity: .1; stroke: var(--gold); stroke-width: 3.5; stroke-linejoin: round; } .t-box.loud { fill: var(--loud); fill-opacity: .16; stroke: var(--loud); } .tg.hot .t-box { stroke-width: 6; fill-opacity: .32; }
+  .t-arrow path { fill: none; stroke: var(--gold); stroke-width: 5; stroke-linecap: round; } .t-arrow .head { fill: var(--gold); stroke-linejoin: round; }
+  .t-anvil { fill: none; stroke: var(--loud); stroke-width: 7; stroke-linecap: round; }
+  .t-wake { fill: none; stroke: var(--amber); stroke-width: 4.5; stroke-dasharray: 8 7; animation: wake .8s linear infinite; } @keyframes wake { to { stroke-dashoffset: -30; } }
+  .t-leaf { fill: var(--gold); fill-opacity: .2; stroke: var(--gold); stroke-width: 3.5; stroke-linejoin: round; } .t-leaf.loud { fill: var(--loud); fill-opacity: .16; stroke: var(--loud); } .tg.hot .t-leaf { stroke-width: 6; fill-opacity: .36; }
+  .t-strike circle { fill: var(--loud); fill-opacity: .14; stroke: var(--loud); stroke-width: 4; } .t-strike path { fill: none; stroke: var(--loud); stroke-width: 5; stroke-linecap: round; } .tg.hot .t-strike circle { stroke-width: 6.5; fill-opacity: .3; }
+  .l-strike .t-strike { transform-box: fill-box; transform-origin: center; animation: pulse 1s ease-in-out infinite; } @keyframes pulse { 50% { transform: scale(1.08); } }
+  .chips rect { fill: #ecd29c; transform-box: fill-box; transform-origin: center; animation: chip .62s ease-out forwards; } .chips.s1 rect { fill: #5d4034; } @keyframes chip { to { transform: translate(var(--dx), var(--dy)) rotate(var(--r)); opacity: 0; } }
+  .rings circle { fill: none; stroke: var(--amber); stroke-width: 3.5; opacity: 0; transform-box: fill-box; transform-origin: center; animation: spread 1.1s ease-out forwards; } @keyframes spread { 0% { opacity: .95; transform: scale(1); } 100% { opacity: 0; transform: scale(2.7); } }
+  .bolt path { fill: none; stroke: #f6dc8e; stroke-width: 5; stroke-linecap: round; } .bolt .tip { fill: #fff6d0; stroke: #6f5218; stroke-width: 1; }
+  .cur { fill: none; stroke: #fff; stroke-width: 3; stroke-dasharray: 11 7; }
+
+  /* beside the board */
+  .side { display: flex; flex-direction: column; gap: 20px; width: var(--side); }
+  .lid { position: relative; padding: 26px 26px 20px; border-radius: 4px; background: var(--card); box-shadow: 0 1px 2px rgba(70,50,25,.28), 0 16px 28px -12px rgba(70,50,25,.5); }
+  .lid::before { content: ""; position: absolute; inset: 8px; border: 2px solid var(--ink); border-radius: 2px; box-shadow: inset 0 0 0 3px var(--card), inset 0 0 0 4px var(--ink); pointer-events: none; }
+  .logo { position: relative; margin: 0; font: 900 50px/.96 var(--title); color: var(--ink); letter-spacing: -.012em; white-space: nowrap; }
+  .logo .down { display: block; margin: 5px 0 0 3px; font: italic 500 29px/1 var(--title); letter-spacing: .05em; color: var(--brass-lo); }
+  .tagline { position: relative; margin: 14px 0 0 3px; font: 500 15.5px/1.3 var(--title); color: var(--muted); }
+  .crest { position: absolute; right: 30px; top: 30px; width: 54px; height: auto; } .c-ink { fill: var(--ink); } .c-win { fill: var(--card); } .c-bell { fill: var(--brass); } .c-line { fill: none; stroke: var(--card); stroke-width: 1.6; }
+
+  .plank { position: relative; padding: 18px 20px 20px; border-radius: 7px; color: var(--brown); background-color: #ead5aa;
+    background-image: linear-gradient(180deg, rgba(255,255,255,.4), transparent 34%, rgba(130,90,35,.14)), repeating-linear-gradient(90.8deg, rgba(150,105,50,.11) 0 1px, transparent 1px 5px, rgba(150,105,50,.07) 5px 6px, transparent 6px 14px), var(--grain);
+    box-shadow: inset 0 1.5px 0 rgba(255,255,255,.75), inset 0 -2.5px 0 rgba(120,85,40,.4), inset 1px 0 0 rgba(255,255,255,.3), inset -1px 0 0 rgba(120,85,40,.2), 0 1px 2px rgba(70,50,25,.3), 0 16px 28px -12px rgba(70,50,25,.55); }
+  .opt + .opt { margin-top: 10px; padding-top: 12px; border-top: 1.5px solid rgba(95,62,24,.2); box-shadow: 0 -1px 0 rgba(255,255,255,.5) inset; }
+  .opt-label { display: block; font: 600 12px/1 var(--print); letter-spacing: .18em; text-transform: uppercase; color: #7a5b33; }
+  .choices { display: flex; flex-wrap: wrap; gap: 0 2px; margin: 3px 0 0 -9px; }
+  .choices button { display: flex; align-items: center; gap: 7px; min-height: 44px; padding: 4px 8px 4px 9px; border: 0; border-radius: 6px; background: none; font: 500 18.5px/1 var(--title); color: var(--brown); white-space: nowrap; }
+  .choices button:hover { background: rgba(255,255,255,.3); } .choices button[aria-checked="true"] { font-weight: 700; }
+  .choices button small { padding-top: 2px; font: 500 14px/1 var(--print); letter-spacing: .03em; color: #7a5b33; } .choices .brk { flex-basis: 100%; height: 0; }
+  /* a hole in the board, and the brass peg that says which is chosen */
+  .hole, .choices button::before { content: ""; flex: none; width: 17px; height: 17px; border-radius: 50%; background: radial-gradient(circle at 50% 30%, #2c1d10, #5d4326 75%); box-shadow: inset 0 2px 2px rgba(0,0,0,.65), 0 1px 0 rgba(255,255,255,.75); }
+  .on > .hole, .choices button[aria-checked="true"]::before { background: radial-gradient(circle at 35% 28%, #fff6d0, #e3c166 42%, #a07c2c 80%, #7a5b1c); box-shadow: 0 1px 1px rgba(0,0,0,.45), 2px 4px 4px -1px rgba(60,40,10,.55), inset 0 -1px 1px rgba(90,60,10,.6); }
+  .go { display: flex; margin-top: 16px; } .go .plate { flex: 1; }
+
+  /* brass plates screwed to the board: the buttons */
+  .plate { min-height: 46px; padding: 0 14px; border: 0; border-radius: 4px; color: #3b2a0e; font: 700 14.5px/1 var(--print); letter-spacing: .2em; text-indent: .2em; text-transform: uppercase; white-space: nowrap;
+    background: linear-gradient(#f0dea6, #dcc07a 46%, #cfb066 54%, #dfc684); text-shadow: 0 1px 0 rgba(255,246,208,.8);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.75), inset 0 -1px 0 rgba(110,80,20,.55), 0 0 0 1px rgba(110,80,20,.5), 0 2px 2px rgba(70,50,20,.35), 0 6px 8px -4px rgba(70,50,20,.5); transition: transform .1s, filter .1s; }
+  .plate:hover:not(:disabled) { transform: translateY(-1px); filter: brightness(1.06); } .plate:active:not(:disabled) { transform: translateY(1px); filter: brightness(.96); }
+  .plate.big { min-height: 54px; font-size: 18px; } .plate:disabled { opacity: .45; }
+  .plate.ink { color: #f4ead2; text-shadow: 0 -1px 0 rgba(0,0,0,.4); background: linear-gradient(#34506b, #22364a 55%, #2a4159); box-shadow: inset 0 1px 0 rgba(255,255,255,.22), inset 0 -1px 0 rgba(0,0,0,.45), 0 0 0 1px rgba(12,24,36,.6), 0 2px 2px rgba(70,50,20,.35), 0 6px 8px -4px rgba(70,50,20,.5); }
+
+  /* in play: whose move, the two sides and what each has taken, the buttons */
+  .statusbox { min-height: 76px; }   /* room for two lines under the status, so that nothing moves when a line appears */
+  .status { margin: 0; font: 700 27px/1.15 var(--title); color: var(--brown); }
+  .status .dots::after { content: "…"; display: inline-block; width: 1em; text-align: left; animation: dots 1.2s steps(4, end) infinite; } @keyframes dots { 0% { clip-path: inset(0 100% 0 0); } 100% { clip-path: inset(0 -10% 0 0); } }
+  .sub { margin: 3px 0 0; font: 500 15.5px/1.3 var(--title); color: #6d5330; } .sub:empty { display: none; }
+  .players { display: grid; gap: 8px; margin: 10px 0 16px; }
+  .who { display: grid; grid-template-columns: auto auto 1fr; align-items: center; gap: 5px 9px; padding: 7px 9px 8px; border-radius: 6px; background: rgba(255,255,255,.22); box-shadow: inset 0 1px 2px rgba(95,62,24,.3), 0 1px 0 rgba(255,255,255,.55); }
+  .who.on { background: rgba(255,255,255,.62); }
+  .who > .pi { margin: -4px -2px -4px -3px; }
+  .who b { font: 700 14px/1 var(--print); letter-spacing: .13em; text-transform: uppercase; color: var(--brown); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  /* the groove a side lays what it has taken in */
+  .who .took { grid-column: 1 / -1; display: flex; align-items: center; height: 26px; padding: 0 6px; border-radius: 13px; background: rgba(95,62,24,.17); box-shadow: inset 0 1.5px 2px rgba(60,35,10,.45), 0 1px 0 rgba(255,255,255,.6); overflow: hidden; }
+  .who .took .pi { flex: none; margin: 0 -1.5px; }
+  .who.busy > .hole { animation: think 1s ease-in-out infinite; } @keyframes think { 50% { filter: brightness(1.25); transform: scale(1.12); } }
+  .btns { display: flex; flex-wrap: wrap; gap: 10px; } .btns .plate { flex: 1; } .btns.four .plate { flex: 1 1 40%; }
+
+  .crib { margin: 0; padding: 14px 18px 15px; list-style: none; border-radius: 4px; background: var(--card); box-shadow: 0 1px 2px rgba(70,50,25,.25), 0 14px 22px -12px rgba(70,50,25,.45); }
+  .crib li { display: grid; grid-template-columns: 34px 1fr; gap: 10px; align-items: center; font: 500 14.5px/1.3 var(--title); color: #3d4a57; } .crib li + li { margin-top: 7px; } .crib b { font-weight: 700; color: var(--ink); }
+  .crib .pi { margin: -2px; } .setup .crib { display: none; }
+
+  /* the rules: the leaflet from the box */
+  .overlay { position: fixed; inset: 0; z-index: 60; display: grid; place-items: center; padding: 16px; overflow: auto; background: rgba(40,30,18,.62); }
+  .page { position: relative; width: min(780px, 100%); padding: 26px 30px 26px; border-radius: 4px; background: var(--card); box-shadow: 0 30px 70px rgba(30,20,8,.55); }
+  .page h2 { margin: 0 0 4px; font: 900 34px/1.1 var(--title); color: var(--ink); }
+  .steps { display: grid; grid-template-columns: 1fr 1fr; gap: 16px 28px; margin: 14px 0 16px; }
+  .step { display: grid; grid-template-columns: 138px 1fr; gap: 14px; align-items: center; } .step:first-child { grid-column: 1 / -1; grid-template-columns: 210px 1fr; }
+  .scene { display: block; width: 100%; height: auto; border-radius: 3px; box-shadow: 0 1px 3px rgba(40,30,15,.4); }
+  .step p { margin: 0; font: 400 15.5px/1.38 var(--title); color: #33414e; } .step b { font-weight: 700; color: var(--ink); }
+  .page .keys { margin: 0 0 16px; padding-top: 12px; border-top: 1.5px solid rgba(34,54,74,.16); font: 400 14.5px/1.4 var(--title); color: var(--muted); }
+
+  @media (max-width: 900px) {
+    :root { --sheet: min(calc(100vw - 16px), calc(var(--vh) - 272px), 640px); }
+    .setup { --sheet: min(calc(100vw - 16px), 560px); }
+    .top { min-height: 46px; padding-left: calc(4px + env(safe-area-inset-left, 0px)); padding-right: calc(8px + env(safe-area-inset-right, 0px)); } .mini { min-height: 36px; padding: 0 10px; font-size: 12px; }
+    .table { grid-template-columns: minmax(0, 1fr); gap: 10px; justify-items: center; align-items: start; min-height: 0; padding: 6px 8px calc(16px + env(safe-area-inset-bottom, 0px)); }
+    .play .table { min-height: calc(var(--vh) - 50px - env(safe-area-inset-top, 0px)); align-content: center; }   /* in play the board sits in the middle of the screen, under the thumbs */
+    .side, #hud { display: contents; } .crib { display: none; }
+    .board-wrap { order: 3; }
+    .lid { order: 1; width: min(100%, 420px); padding: 22px 22px 16px; } .logo { font-size: 42px; } .logo .down { font-size: 25px; } .tagline { margin-top: 10px; font-size: 14.5px; } .crest { width: 46px; right: 26px; top: 26px; }
+    .play .lid { display: none; }
+    #setup { order: 2; width: min(100%, 420px); }
+    .players { order: 1; width: min(100%, 560px); grid-template-columns: 1fr 1fr; gap: 8px; margin: 0; }
+    .who { gap: 3px 6px; padding: 4px 7px 6px 6px; background: rgba(255,255,255,.34); box-shadow: inset 0 1px 2px rgba(95,62,24,.3), 0 1px 0 rgba(255,255,255,.6); } .who.on { background: rgba(255,255,255,.85); }
+    .who b { font-size: 12.5px; letter-spacing: .08em; } .who .long { display: none; } .who > .pi { width: 28px; height: 28px; margin: -3px -2px; }
+    .who .took { height: 20px; padding: 0 4px; border-radius: 10px; } .who .took .pi { width: 16px; height: 16px; margin: 0 -1.5px; }
+    .statusbox { order: 2; min-height: 64px; width: min(100%, 560px); display: flex; flex-direction: column; justify-content: center; text-align: center; padding: 0 6px; }
+    .status { font-size: 21px; } .sub { margin: 1px 0 0; font-size: 14.5px; line-height: 1.28; }
+    .btns { order: 4; width: min(100%, 560px); } .plate { min-height: 44px; padding: 0 8px; font-size: 13.5px; letter-spacing: .15em; text-indent: .15em; }
+    .page { padding: 20px 18px; } .page h2 { font-size: 28px; } .steps { grid-template-columns: 1fr; gap: 14px; } .step, .step:first-child { grid-template-columns: 116px 1fr; gap: 12px; } .step p { font-size: 15px; }
+  }
+  @media (max-width: 900px) and (orientation: landscape) and (max-height: 540px) {
+    /* a phone on its side: the board takes the height, everything else stands beside it */
+    :root, .setup { --sheet: min(calc(var(--vh) - 58px), calc(100vw - 270px)); }
+    .top { min-height: 42px; padding-top: calc(4px + env(safe-area-inset-top, 0px)); }
+    .table { grid-template-columns: var(--sheet) minmax(0, 300px); justify-content: center; column-gap: 16px; row-gap: 8px; align-content: start; padding-top: 4px; }
+    .board-wrap { grid-column: 1; grid-row: 1 / span 8; order: 0; } .lid, #setup, .players, .statusbox, .btns { grid-column: 2; width: 100%; }
+    .players { grid-template-columns: 1fr; } .statusbox { min-height: 58px; text-align: left; padding: 0; }
+    .lid { padding: 18px 18px 12px; } .logo { font-size: 32px; } .logo .down { font-size: 20px; } .tagline, .crest { display: none; }
+    .choices button { min-height: 40px; font-size: 17px; } #setup { padding: 12px 14px 14px; } .go { margin-top: 10px; }
+  }
+  @media (min-width: 901px) and (max-height: 700px) {
+    :root { --side: 310px; --sheet: min(calc(100vw - var(--side) - 80px), calc(var(--vh) - 80px)); }
+    .table { gap: 28px; padding-top: 4px; padding-bottom: 12px; } .side { gap: 14px; } .crib { display: none; } .logo { font-size: 42px; } .logo .down { font-size: 25px; } .lid { padding: 22px 22px 16px; } .tagline { display: none; } .crest { width: 44px; top: 24px; }
+    .play .lid { display: none; } .choices button { min-height: 40px; font-size: 18px; } .btns { gap: 8px; } .btns .plate { padding: 0 6px; letter-spacing: .13em; text-indent: .13em; }
+  }
+  @media (min-width: 901px) and (max-height: 860px) { .play .crib { display: none; } }
+  @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; }
+    .pc.woken .waves circle { opacity: .8; } .pc.woken .waves circle + circle { opacity: .4; transform: scale(1.3); } }
+</style>
+</head>
+<body class="setup">
+<svg id="defs" aria-hidden="true"><defs>
+  <linearGradient id="wl" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fbeac0"/><stop offset=".5" stop-color="#ecd29c"/><stop offset="1" stop-color="#d9b676"/></linearGradient>
+  <linearGradient id="wls" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#c39c5f"/><stop offset="1" stop-color="#a17a42"/></linearGradient>
+  <linearGradient id="wd" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#7a5645"/><stop offset=".5" stop-color="#553629"/><stop offset="1" stop-color="#40271e"/></linearGradient>
+  <linearGradient id="wds" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2e1a13"/><stop offset="1" stop-color="#1d0f0b"/></linearGradient>
+  <radialGradient id="br" cx=".34" cy=".3" r=".8"><stop offset="0" stop-color="#fff6d0"/><stop offset=".4" stop-color="#e6c66c"/><stop offset=".8" stop-color="#b08a33"/><stop offset="1" stop-color="#8a6a25"/></radialGradient>
+  <linearGradient id="brl" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#f4e09c"/><stop offset=".55" stop-color="#cfa94e"/><stop offset="1" stop-color="#a07c2c"/></linearGradient>
+  <radialGradient id="glow"><stop offset="0" stop-color="#fffbe0"/><stop offset=".6" stop-color="#ffe680" stop-opacity=".9"/><stop offset="1" stop-color="#ffc74d" stop-opacity=".25"/></radialGradient>
+  <linearGradient id="feltp" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#477797"/><stop offset="1" stop-color="#396584"/></linearGradient>
+  <linearGradient id="rimp" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#7a5236"/><stop offset="1" stop-color="#553521"/></linearGradient>
+</defs></svg>
+<header class="top">
+  <a class="home" href="/">‹ Sonic Hub Games</a>
+  <span class="top-sp"></span>
+  <button type="button" class="mini" data-act="sound" aria-pressed="true">Sound on</button>
+  <button type="button" class="mini" data-act="help">How to play</button>
+</header>
+<main class="table">
+  <section class="board-wrap">
+    <div class="tray"><div class="felt"><svg id="board" role="img" aria-label="The board"></svg></div></div>
+  </section>
+  <aside class="side">
+    <div class="lid">
+      <span id="crest"></span>
+      <h1 class="logo" aria-label="Keep It Down">Keep It<span class="down">down</span></h1>
+      <p class="tagline">A quiet siege for two.</p>
+    </div>
+    <div class="plank" id="setup">
+      <div class="opt"><span class="opt-label" id="l-level">Opponent</span>
+        <div class="choices" role="radiogroup" aria-labelledby="l-level">
+          <button type="button" role="radio" data-opt="level" data-val="easy">Easy</button>
+          <button type="button" role="radio" data-opt="level" data-val="medium">Medium</button>
+          <button type="button" role="radio" data-opt="level" data-val="hard">Hard</button>
+          <i class="brk"></i><button type="button" role="radio" data-opt="level" data-val="friend">A friend <small>same screen</small></button>
+        </div></div>
+      <div class="opt" id="opt-side"><span class="opt-label" id="l-side">You play</span>
+        <div class="choices" role="radiogroup" aria-labelledby="l-side">
+          <button type="button" role="radio" data-opt="side" data-val="0">Light <small>moves first</small></button>
+          <button type="button" role="radio" data-opt="side" data-val="1">Dark</button>
+        </div></div>
+      <div class="go"><button type="button" class="plate big ink" data-act="start">Start</button></div>
+    </div>
+    <div class="plank" id="hud" hidden>
+      <div class="statusbox" aria-live="polite"><p class="status" id="status"></p><p class="sub" id="sub"></p></div>
+      <div class="players" id="players"></div>
+      <div class="btns" id="btns"></div>
+    </div>
+    <ul class="crib" id="crib"></ul>
+  </aside>
+</main>
+<div class="overlay" id="help" hidden>
+  <div class="page" role="dialog" aria-modal="true" aria-labelledby="help-title">
+    <h2 id="help-title">How to play</h2>
+    <div class="steps" id="steps"></div>
+    <p class="keys">Tap a piece, then where it should go, or drag it there. With a keyboard: arrows and Enter, Esc to let go, U to take a move back. A game with no Rams left on either side, or with sixty moves each and nothing taken, is a draw.</p>
+    <button type="button" class="plate ink" data-act="help-close">Got it</button>
+  </div>
+</div>
+<script id="engine">
+/*__ENGINE__*/
+</script>
+<script>
+/*__JS__*/
+boot();
+</script>
+</body>
+</html>
