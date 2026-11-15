@@ -42,6 +42,14 @@
       "shots": ["title", "play"], "play": "/games/masks-and-mortar"
     },
     {
+      "key": "penned-in", "title": "Penned In", "alt": ["Penned-In", "PennedIn"],
+      "lang": "en", "group": "cards", "sub": "board", "machine": "web", "year": 2026, "tags": ["originals", "two-player", "short"],
+      "players": 2, "ai": 1, "inputs": ["mouse", "touch", "keyboard"], "maker": "Sonic Hub", "added": "2026-11-15",
+      "kind": "Pen-and-paper duel, against the AI or a friend",
+      "blurb": "Two markers and a sheet of squared paper. Every mark goes next to your last one and stays in the way for good. Slip through the diagonal gaps, wall off more room than your rival, and don't get penned in.",
+      "shots": ["title", "play"], "play": "/games/penned-in"
+    },
+    {
       "key": "len-doi", "title": "Lên Đời", "alt": ["Len Doi", "Age Duel"],
       "lang": "vi", "group": "strategy", "sub": "turn-based", "machine": "web", "year": 2026, "tags": ["originals"],
       "players": 1, "ai": 1, "inputs": ["mouse", "touch"], "maker": "Sonic Hub", "added": "2026-10-05", "highlight": true,

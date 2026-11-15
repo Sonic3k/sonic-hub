@@ -1,0 +1,237 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#2a7267">
+<title>Penned In</title>
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Semi+Condensed:wght@500;600;700&family=Kalam:wght@400;700&family=Permanent+Marker&display=swap" rel="stylesheet">
+<style>
+  /* ── Penned In ── a sheet of squared paper taped to a cutting mat, two felt-tip markers, a notepad and a sticky note.
+     Printed things (the grid, form labels, label-maker buttons) are set in type; everything a hand would write is in marker. */
+  :root { box-sizing: border-box; color-scheme: light;
+    --mat: #2a7267; --paper: #fcf9ee; --rule: #a9c9e2; --frame: #6d9bc3; --blue: #2443c9; --red: #d7352f; --pencil: #5c5a56; --hl: #ffe24d; --ink: #27313b; --muted: #68727d;
+    --marker: "Permanent Marker", "Marker Felt", "Comic Sans MS", cursive; --hand: Kalam, "Segoe Print", "Bradley Hand", cursive; --print: "Barlow Semi Condensed", "Arial Narrow", system-ui, sans-serif;
+    --vh: 100vh; --side: 348px; --sheet: min(calc(100vw - var(--side) - 112px), calc(var(--vh) - 108px), 900px); }
+  @supports (height: 100dvh) { :root { --vh: 100dvh; } }
+  *, *::before, *::after { box-sizing: inherit; }
+  html { -webkit-text-size-adjust: 100%; }
+  body { margin: 0; min-height: var(--vh); color: var(--ink); font: 500 16px/1.4 var(--print); -webkit-tap-highlight-color: transparent; overscroll-behavior-y: none;
+    background-color: var(--mat);
+    background-image: radial-gradient(1100px 640px at 28% -5%, rgba(255,255,255,.16), transparent 70%), radial-gradient(900px 600px at 100% 105%, rgba(0,0,0,.24), transparent 70%),
+      linear-gradient(rgba(255,255,255,.14) 1.5px, transparent 1.5px), linear-gradient(90deg, rgba(255,255,255,.14) 1.5px, transparent 1.5px),
+      linear-gradient(rgba(255,255,255,.06) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.06) 1px, transparent 1px);
+    background-size: 100% 100%, 100% 100%, 150px 150px, 150px 150px, 30px 30px, 30px 30px; background-position: 0 0, 0 0, -1px -1px, -1px -1px, -1px -1px, -1px -1px; }
+  body { position: relative; } .top, .table { position: relative; z-index: 1; }
+  #mat { position: absolute; left: 0; top: 0; pointer-events: none; }
+  #mat rect { fill: none; stroke: rgba(255,255,255,.3); stroke-width: 1.5; } #mat line { stroke: rgba(255,255,255,.13); stroke-width: 1.5; } #mat text { fill: rgba(255,255,255,.5); font: 600 12px var(--print); letter-spacing: .06em; }
+  button { font: inherit; color: inherit; cursor: pointer; touch-action: manipulation; } button:disabled { cursor: default; }
+  :focus-visible { outline: 3px solid var(--hl); outline-offset: 3px; }
+  [hidden] { display: none !important; }
+
+  /* the strip above the table: the way back to the shelf, sound, the rules */
+  .top { display: flex; align-items: center; gap: 8px; min-height: 52px; padding: calc(8px + env(safe-area-inset-top, 0px)) calc(16px + env(safe-area-inset-right, 0px)) 0 calc(12px + env(safe-area-inset-left, 0px)); }
+  .home { color: rgba(255,255,255,.86); text-decoration: none; font-weight: 600; font-size: 15px; padding: 9px 10px; border-radius: 6px; } .home:hover { color: #fff; background: rgba(255,255,255,.12); } .no-home .home { visibility: hidden; }
+  .top-sp { flex: 1; }
+  .mini { min-height: 38px; padding: 0 13px; border-radius: 3px; border: 1.5px solid rgba(255,255,255,.5); background: rgba(8,40,36,.18); color: #fff; font: 600 13px/1 var(--print); letter-spacing: .12em; text-transform: uppercase; }
+  .mini:hover { background: rgba(255,255,255,.16); }
+
+  .table { display: grid; grid-template-columns: var(--sheet) var(--side); gap: 44px; justify-content: center; align-items: center; min-height: calc(var(--vh) - 60px); padding: 12px 24px calc(28px + env(safe-area-inset-bottom, 0px)); }
+
+  /* the sheet */
+  .sheet { position: relative; width: var(--sheet); aspect-ratio: 1; padding: calc(var(--sheet) * .046); border-radius: 2px; background-color: var(--paper);
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .42 0 0 0 0 .34 0 0 0 0 .2 0 0 0 .09 0'/%3E%3C/filter%3E%3Crect width='180' height='180' filter='url(%23n)'/%3E%3C/svg%3E");
+    box-shadow: 0 0 0 1px rgba(0,0,0,.05), 0 2px 3px rgba(0,0,0,.2), 0 26px 46px -14px rgba(0,0,0,.55); }
+  .strip { position: absolute; top: -13px; width: 104px; height: 31px; background: repeating-linear-gradient(90deg, rgba(255,255,255,.16) 0 2px, transparent 2px 7px), rgba(247,225,160,.86); box-shadow: 0 1px 2px rgba(0,0,0,.2);
+    clip-path: polygon(0 0, 100% 0, 97% 16%, 100% 33%, 97% 50%, 100% 67%, 97% 84%, 100% 100%, 0 100%, 3% 84%, 0 67%, 3% 50%, 0 33%, 3% 16%); }
+  .strip.a { left: 9%; transform: rotate(-4deg); } .strip.b { right: 9%; transform: rotate(3deg); }
+  .imprint { position: absolute; right: calc(var(--sheet) * .046 + 2px); bottom: calc(var(--sheet) * .023 - 6px); font: 600 10.5px/1 var(--print); letter-spacing: .2em; text-transform: uppercase; color: #93b2ca; }
+  #board { display: block; width: 100%; height: 100%; overflow: visible; -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; }
+  .play #board { touch-action: none; }   /* in play a finger on the sheet aims a mark; on the setup screen it scrolls the page */
+  #board.mine { cursor: pointer; }
+  .rule { stroke: var(--rule); stroke-width: 1; vector-effect: non-scaling-stroke; shape-rendering: crispEdges; }
+  .frame { fill: none; stroke: var(--frame); stroke-width: 2; vector-effect: non-scaling-stroke; shape-rendering: crispEdges; }
+  .mk { fill: none; stroke-linecap: round; stroke-linejoin: round; stroke-width: 15; opacity: .86; } .mk.x { stroke: var(--blue); } .mk.o { stroke: var(--red); }
+  .m.gone { opacity: 0; transition: opacity .22s; }
+  .hl path { fill: none; stroke-width: 30; } .hl .now path { stroke: var(--hl); opacity: .56; } .hl .rest path { opacity: .17; } .hl .rest.x path { stroke: var(--blue); } .hl .rest.o path { stroke: var(--red); }
+  .dot { fill: var(--pencil); opacity: .46; } .hints.flash .dot { animation: flash .45s ease-out 1; } @keyframes flash { 30% { opacity: 1; r: 13px; } }
+  .ghost .mk { opacity: .3; } .aim { fill: none; stroke: var(--pencil); stroke-width: 5; stroke-linecap: round; stroke-dasharray: 1 13; opacity: .75; }
+  .scribble { fill: none; stroke-width: 9; stroke-linecap: round; stroke-linejoin: round; opacity: .88; } .scribble.x { stroke: var(--blue); } .scribble.o { stroke: var(--red); }
+  .pen-sprite { opacity: 0; transition: opacity .12s; pointer-events: none; } .pen-sprite.on { opacity: 1; }
+  .pen-sprite .ink { fill: var(--blue); } .pen-sprite.o .ink { fill: var(--red); } .pen-sprite .dark { fill: #17309a; } .pen-sprite.o .dark { fill: #a3211c; }
+  .fade-out { opacity: 0; transition: opacity .5s; }
+
+  /* beside the sheet */
+  .side { display: flex; flex-direction: column; gap: 24px; width: var(--side); }
+  .logo-card { padding: 30px 22px 15px; border-radius: 3px; transform: rotate(-1.3deg); background-color: #fffdf6;
+    background-image: linear-gradient(#e86a62, #e86a62), repeating-linear-gradient(transparent 0 27px, #c3d9ec 27px 28.5px); background-size: 100% 1.5px, 100% 28.5px; background-position: 0 22px, 0 23px; background-repeat: no-repeat, repeat;
+    box-shadow: 0 1px 2px rgba(0,0,0,.25), 0 14px 24px -8px rgba(0,0,0,.45); }
+  .logo { margin: 0; font: 400 60px/1 var(--marker); color: var(--blue); white-space: nowrap; letter-spacing: .01em; }
+  .logo .in { position: relative; display: inline-block; margin-left: .2em; padding: 0 .14em; color: var(--red); }
+  .logo .loop { position: absolute; left: -8%; top: -12%; width: 116%; height: 124%; overflow: visible; }
+  .logo .loop path { fill: none; stroke: var(--red); stroke-width: 3.6; stroke-linecap: round; stroke-linejoin: round; stroke-dasharray: 1; stroke-dashoffset: 1; animation: draw .7s .35s ease-out forwards; }
+  @keyframes draw { to { stroke-dashoffset: 0; } }
+  .tagline { margin: 13px 0 0; font: 400 20px/1.2 var(--hand); color: #4a5563; }
+
+  .pad { border-radius: 3px 3px 5px 5px; background: #fffef9; box-shadow: 0 1px 2px rgba(0,0,0,.25), 0 16px 26px -10px rgba(0,0,0,.45); padding: 0 20px 20px; }
+  .pad::before { content: ""; display: block; height: 22px; margin: 0 -20px 12px; border-radius: 3px 3px 0 0; background: radial-gradient(circle at 3px 19px, #c9cfd8 1.1px, transparent 1.6px) 0 0 / 7px 22px repeat-x, linear-gradient(#34406e, #232c52 15px, transparent 15px); }
+  .opt + .opt { margin-top: 9px; padding-top: 10px; border-top: 1.5px dashed #d9dee4; }
+  .opt-label { display: block; font: 600 12px/1 var(--print); letter-spacing: .16em; text-transform: uppercase; color: var(--muted); }
+  .choices { display: flex; flex-wrap: wrap; gap: 0 4px; margin: 2px 0 0 -10px; }
+  .choices button { position: relative; min-height: 44px; padding: 6px 11px 2px; border: 0; background: none; font: 700 22px/1 var(--hand); color: var(--ink); white-space: nowrap; }
+  .choices button small { font: 400 16px/1 var(--hand); color: var(--muted); } .choices .brk { flex-basis: 100%; height: 0; }
+  .choices button::after { content: ""; position: absolute; inset: 1px -1px 0; opacity: 0; transition: opacity .12s;
+    background: center / 100% 100% no-repeat url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 50' preserveAspectRatio='none'%3E%3Cpath d='M55 4.5C27 1.5 4 11 4.5 25.5 5 41 29 47.5 54 46.5 80 45.5 97 37 95.5 23 94 10 71 2.5 40 6.5' fill='none' stroke='%232443c9' stroke-width='3' stroke-linecap='round' vector-effect='non-scaling-stroke'/%3E%3C/svg%3E"); }
+  .choices button:hover::after { opacity: .25; } .choices button[aria-checked="true"]::after { opacity: 1; }
+  .go { display: flex; margin-top: 16px; } .go .label { flex: 1; }
+
+  /* label-maker tape: the buttons */
+  .label { min-height: 46px; padding: 0 16px; border: 0; border-radius: 2px; color: #fbfbf6; font: 700 15px/1 var(--print); letter-spacing: .22em; text-indent: .22em; text-transform: uppercase; white-space: nowrap;
+    background: linear-gradient(#3a3d44, #1c1e22 52%, #2a2c31); text-shadow: 0 0 1px rgba(255,255,255,.85), 0 1px 1px rgba(0,0,0,.65);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.22), inset 0 -1px 0 rgba(0,0,0,.45), 0 1px 1px rgba(0,0,0,.35), 0 5px 7px -2px rgba(0,0,0,.35); transition: transform .1s, filter .1s; }
+  .label:hover:not(:disabled) { transform: translateY(-1px); filter: brightness(1.12); } .label:active:not(:disabled) { transform: translateY(1px); }
+  .label.red { background: linear-gradient(#e7554c, #c32823 52%, #d43b34); } .label.blue { background: linear-gradient(#3f5ee0, #1f3bb8 52%, #2c4bcf); }
+  .label.big { min-height: 52px; font-size: 18px; } .label:disabled { opacity: .42; }
+
+  /* in play: whose move, the two markers, the buttons */
+  .statusbox { min-height: 36px; }
+  .status { margin: 0; font: 700 29px/1.15 var(--hand); } .status.x { color: var(--blue); } .status.o { color: var(--red); }
+  .status .dots::after { content: "…"; display: inline-block; width: 1em; text-align: left; animation: dots 1.2s steps(4, end) infinite; } @keyframes dots { 0% { clip-path: inset(0 100% 0 0); } 100% { clip-path: inset(0 -10% 0 0); } }
+  .sub { margin: 0; font: 400 19px/1.3 var(--hand); color: var(--muted); } .sub:empty { display: none; }
+  .players { display: grid; gap: 12px; margin: 12px 0 18px; }
+  .pen { display: flex; align-items: center; height: 46px; transition: transform .25s; filter: drop-shadow(0 5px 4px rgba(0,0,0,.26)); --c: var(--blue); --c2: #17309a; --c3: #5c79ee; }
+  .pen.o { --c: var(--red); --c2: #a3211c; --c3: #f0736b; } .pen.on { transform: translateX(-9px); }
+  .pen .nib { flex: none; width: 17px; height: 15px; background: var(--c2); clip-path: polygon(0 50%, 100% 0, 100% 100%); margin-right: -1px; }
+  .pen .neck { flex: none; width: 24px; height: 32px; background: linear-gradient(#f1f3f5, #c9ced5 55%, #a9afb8); clip-path: polygon(0 20%, 100% 0, 100% 100%, 0 80%); }
+  .pen .barrel { flex: 1; min-width: 0; height: 44px; display: flex; align-items: center; padding: 0 10px; border-radius: 4px 7px 7px 4px; background: linear-gradient(var(--c3), var(--c) 28%, var(--c) 62%, var(--c2)); }
+  .pen .lab { flex: 1; min-width: 0; display: flex; align-items: center; gap: 9px; padding: 2px 10px 2px; border-radius: 2px; background: #fffdf6; overflow: hidden; white-space: nowrap; }
+  .pen .lab b { font: 400 21px/1.15 var(--marker); color: var(--c); } .pen .lab em { padding-top: 2px; } .pen .lab em { font: 600 14px/1 var(--print); font-style: normal; letter-spacing: .12em; text-transform: uppercase; color: var(--ink); overflow: hidden; text-overflow: ellipsis; }
+  .pen .cap { flex: none; width: 58px; height: 50px; margin-left: -8px; border-radius: 7px 9px 9px 7px; background: linear-gradient(var(--c3), var(--c) 30%, var(--c2)); box-shadow: inset 3px 0 0 rgba(0,0,0,.18); position: relative; }
+  .pen .cap::after { content: ""; position: absolute; left: 12px; right: 12px; top: 7px; height: 5px; border-radius: 3px; background: rgba(255,255,255,.3); }
+  .pen:not(.on) .nib, .pen:not(.on) .neck { display: none; } .pen:not(.on) .cap { order: -1; margin: 0 -8px 0 0; border-radius: 9px 7px 7px 9px; box-shadow: inset -3px 0 0 rgba(0,0,0,.18); }
+  .pen.busy { animation: tap .7s ease-in-out infinite; transform-origin: 20% 50%; } @keyframes tap { 0%, 100% { transform: translateX(-9px) rotate(0); } 50% { transform: translateX(-9px) rotate(-1.6deg); } }
+  .btns { display: flex; flex-wrap: wrap; gap: 10px; } .btns .label { flex: 1; rotate: -.5deg; } .btns .label:nth-child(even) { rotate: .45deg; } .btns.four .label { flex: 1 1 40%; }
+
+  .sticky { margin: 0 6px 0 14px; padding: 15px 18px 19px; transform: rotate(1.7deg); background: linear-gradient(#fff4a8, #ffe870); font: 400 18px/1.36 var(--hand); color: #3d3620;
+    border-bottom-right-radius: 46px 7px; box-shadow: 0 1px 1px rgba(0,0,0,.18), 0 16px 18px -10px rgba(0,0,0,.45); }
+  .sticky p { margin: 0; } .sticky b { font-weight: 700; } .setup .for-play, .play .for-setup { display: none; } .setup .sticky { align-self: flex-end; margin-right: 18px; font-size: 21px; }
+
+  /* the rules, on a notebook page */
+  .overlay { position: fixed; inset: 0; z-index: 60; display: grid; place-items: center; padding: 16px; overflow: auto; background: rgba(10,38,34,.66); }
+  .page { position: relative; width: min(720px, 100%); padding: 26px 30px 26px 64px; border-radius: 4px; background-color: #fffef8;
+    background-image: linear-gradient(90deg, transparent 46px, #f0a39d 46px 47.5px, transparent 47.5px); box-shadow: 0 30px 70px rgba(0,0,0,.5); }
+  .page h2 { margin: 0 0 6px; font: 400 40px/1.1 var(--marker); color: var(--blue); }
+  .steps { display: grid; grid-template-columns: 1fr 1fr; gap: 18px 26px; margin: 12px 0 20px; }
+  .step { display: grid; grid-template-columns: 112px 1fr; gap: 14px; align-items: center; } .step svg { width: 112px; height: 112px; background: var(--paper); box-shadow: 0 1px 3px rgba(0,0,0,.25); }
+  .step p { margin: 0; font: 400 18.5px/1.32 var(--hand); } .step b { font-weight: 700; }
+  .page .keys { margin: 0 0 18px; font: 400 17px/1.35 var(--hand); color: var(--muted); }
+
+  @media (max-width: 900px) {
+    :root { --sheet: min(calc(100vw - 16px), calc(var(--vh) - 252px), 640px); }
+    .setup { --sheet: min(calc(100vw - 16px), 560px); }
+    .top { min-height: 46px; padding-left: calc(4px + env(safe-area-inset-left, 0px)); padding-right: calc(8px + env(safe-area-inset-right, 0px)); } .mini { min-height: 36px; padding: 0 10px; font-size: 12px; }
+    .table { grid-template-columns: minmax(0, 1fr); gap: 12px; justify-items: center; align-items: start; min-height: 0; padding: 8px 8px calc(16px + env(safe-area-inset-bottom, 0px)); }
+    .side, #hud { display: contents; } #hud::before, .imprint, #mat { display: none; }
+    .sheet-wrap { order: 3; } .sticky { display: none; }
+    .logo-card { order: 1; width: min(100%, 420px); padding: 26px 18px 11px; } .logo { font-size: 46px; } .tagline { font-size: 18px; margin-top: 9px; }
+    .play .logo-card { display: none; }
+    #setup { order: 2; width: min(100%, 420px); }
+    .players { order: 1; width: min(100%, 560px); grid-template-columns: 1fr 1fr; gap: 14px; margin: 2px 0 0; padding: 0 4px 0 12px; } .pen { height: 40px; } .pen .barrel { height: 38px; padding: 0 7px; } .pen .cap { width: 34px; height: 43px; } .pen .neck { width: 18px; height: 27px; } .pen.on { transform: translateX(-5px); }
+    .pen .lab { gap: 6px; padding: 2px 7px 1px; } .pen .lab b { font-size: 18px; } .pen .lab em { font-size: 12.5px; letter-spacing: .08em; }
+    .pen.busy { animation: none; }
+    .statusbox { order: 2; min-height: 0; display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; justify-content: center; padding: 3px 16px 1px; border-radius: 2px; background: #fffef9; box-shadow: 0 1px 2px rgba(0,0,0,.25), 0 8px 12px -6px rgba(0,0,0,.4); }
+    .status { font-size: 23px; } .sub { min-height: 0; font-size: 17px; } .sub:empty { display: none; }
+    .btns { order: 4; width: min(100%, 560px); padding: 2px 4px 0; } .label { padding: 0 10px; font-size: 14px; letter-spacing: .16em; text-indent: .16em; }
+    .page { padding: 20px 18px 20px 46px; background-image: linear-gradient(90deg, transparent 32px, #f0a39d 32px 33.5px, transparent 33.5px); }
+    .page h2 { font-size: 32px; } .steps { grid-template-columns: 1fr; gap: 14px; } .step { grid-template-columns: 92px 1fr; } .step svg { width: 92px; height: 92px; } .step p { font-size: 17.5px; }
+  }
+  @media (max-width: 900px) and (orientation: landscape) and (max-height: 540px) {
+    /* a phone on its side: the sheet takes the height, everything else stands beside it */
+    :root, .setup { --sheet: min(calc(var(--vh) - 58px), calc(100vw - 250px)); }
+    .top { min-height: 42px; padding-top: calc(4px + env(safe-area-inset-top, 0px)); }
+    .table { grid-template-columns: var(--sheet) minmax(0, 300px); justify-content: center; column-gap: 18px; row-gap: 10px; align-content: start; padding-top: 4px; }
+    .sheet-wrap { grid-column: 1; grid-row: 1 / span 8; order: 0; } .logo-card, #setup, .players, .statusbox, .btns { grid-column: 2; width: 100%; }
+    .players { grid-template-columns: 1fr; gap: 10px; padding: 4px 0 0 10px; } .statusbox { justify-content: flex-start; } .btns { padding: 0; }
+    .logo-card { padding: 22px 14px 8px; } .logo { font-size: 36px; } .tagline { display: none; }
+  }
+  @media (min-width: 901px) and (max-height: 640px) {
+    :root { --side: 300px; --sheet: min(calc(100vw - var(--side) - 80px), calc(var(--vh) - 84px)); }
+    .table { gap: 28px; padding-top: 4px; padding-bottom: 12px; } .side { gap: 14px; } .sticky { display: none; } .logo { font-size: 44px; } .logo-card { padding: 26px 18px 10px; } .tagline { display: none; }
+    .play .logo-card { display: none; } .choices button { min-height: 38px; font-size: 20px; }
+  }
+  @media (min-width: 901px) and (max-height: 779px) { .sticky { display: none; } }
+  @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } .logo .loop path { stroke-dashoffset: 0; } }
+</style>
+</head>
+<body class="setup">
+<svg id="mat" aria-hidden="true"></svg>
+<header class="top">
+  <a class="home" href="/">‹ Sonic Hub Games</a>
+  <span class="top-sp"></span>
+  <button type="button" class="mini" data-act="sound" aria-pressed="true">Sound on</button>
+  <button type="button" class="mini" data-act="help">How to play</button>
+</header>
+<main class="table">
+  <section class="sheet-wrap">
+    <div class="sheet">
+      <i class="strip a"></i><i class="strip b"></i>
+      <svg id="board" role="img" aria-label="The sheet"></svg>
+      <span class="imprint" id="imprint"></span>
+    </div>
+  </section>
+  <aside class="side">
+    <div class="logo-card">
+      <h1 class="logo" aria-label="Penned In">Penned<span class="in">In<svg class="loop" viewBox="0 0 100 60" preserveAspectRatio="none" aria-hidden="true"><path pathLength="1" d="M9 9C34 4.5 71 4.5 93 9 96.5 22 96 41 92.5 53 67 57.5 31 57 8 52.5 4 39 4.5 20 10.5 6.5"/></svg></span></h1>
+      <p class="tagline">A pen-and-paper duel. Don’t get boxed in.</p>
+    </div>
+    <div class="pad" id="setup">
+      <div class="opt"><span class="opt-label" id="l-level">Opponent</span>
+        <div class="choices" role="radiogroup" aria-labelledby="l-level">
+          <button type="button" role="radio" data-opt="level" data-val="easy">Easy</button>
+          <button type="button" role="radio" data-opt="level" data-val="medium">Medium</button>
+          <button type="button" role="radio" data-opt="level" data-val="hard">Hard</button>
+          <i class="brk"></i><button type="button" role="radio" data-opt="level" data-val="friend">A friend <small>same screen</small></button>
+        </div></div>
+      <div class="opt"><span class="opt-label" id="l-size">Sheet</span>
+        <div class="choices" role="radiogroup" aria-labelledby="l-size">
+          <button type="button" role="radio" data-opt="size" data-val="11">11 × 11</button>
+          <button type="button" role="radio" data-opt="size" data-val="13">13 × 13</button>
+        </div></div>
+      <div class="opt" id="opt-side"><span class="opt-label" id="l-side">You write</span>
+        <div class="choices" role="radiogroup" aria-labelledby="l-side">
+          <button type="button" role="radio" data-opt="side" data-val="0">X <small>goes first</small></button>
+          <button type="button" role="radio" data-opt="side" data-val="1">O</button>
+        </div></div>
+      <div class="go"><button type="button" class="label red big" data-act="start">Start</button></div>
+    </div>
+    <div class="pad" id="hud" hidden>
+      <div class="statusbox" aria-live="polite"><p class="status" id="status"></p><p class="sub" id="sub"></p></div>
+      <div class="players" id="players"></div>
+      <div class="btns" id="btns"></div>
+    </div>
+    <div class="sticky">
+      <p class="for-setup">Nowhere left to write?<br>You’re <b>penned in</b>.</p>
+      <p class="for-play">Write next to your own last mark: any of the <b>8 squares</b> around it. Marks are walls, but you can <b>slip through</b> where two only touch at a corner.</p>
+    </div>
+  </aside>
+</main>
+<div class="overlay" id="help" hidden>
+  <div class="page" role="dialog" aria-modal="true" aria-labelledby="help-title">
+    <h2 id="help-title">How to play</h2>
+    <div class="steps" id="steps"></div>
+    <p class="keys">Keyboard: arrow keys, and Q E Z C for the diagonals. U takes a move back.</p>
+    <button type="button" class="label blue" data-act="help-close">Got it</button>
+  </div>
+</div>
+<script id="engine">
+/*__ENGINE__*/
+</script>
+<script>
+/*__JS__*/
+boot();
+</script>
+</body>
+</html>

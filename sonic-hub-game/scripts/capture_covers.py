@@ -9,6 +9,7 @@ For every game: its title screen and one screen of play, each saved at two width
     python3 scripts/capture_covers.py muop tim-4 # only these
 
 Run it again after a game's look changes. The steps below walk each game from its title to a screen worth showing.
+With no Chromium of Playwright's own at hand, point CHROME at a browser: CHROME=/usr/bin/google-chrome python3 scripts/capture_covers.py
 
 Not taken here: Saltline (someone else's file, a 3D shooter). A browser without a graphics card draws it too slowly
 to picture, so its covers were made by hand: the title screen at 1280x800, and a still of play (16:9) set between
@@ -24,7 +25,8 @@ W, H = 1280, 800
 
 # Steps: key:<Key> | hold:<Key>:<ms> | click:<css> | text:<visible text> | wait:<ms> | waitsel:<css>.  ls = what the
 # browser already holds for the game when the screen of play is taken (a save that opens later levels), so that picture
-# is not always level 1; the title screen is taken in a browser that has never seen the game.
+# is not always level 1; the title screen is taken in a browser that has never seen the game. title = steps before the
+# title screen is taken, for a game whose title screen moves (Penned In plays itself there: wait for some marks).
 GAMES = {
     'muop': dict(
         ls={'muop-12-den.v1': {'v': 1, 'unlocked': 12, 'abilities': {'wall': True, 'dash': True}, 'levels': {}, 'sfx': False, 'music': False}},
@@ -37,6 +39,10 @@ GAMES = {
                                    'click:#sheet button.pick >> nth=1', 'wait:300', 'click:[data-act=form-ok]', 'wait:2500']),
     'len-doi': dict(play=['text:Xuất quân', 'wait:2500']),
     'forum-tycoon': dict(play=['text:Mở 4rum', 'wait:2500']),
+    'penned-in': dict(
+        title=['wait:12000'],
+        ls={'penned-in.v1': {'cfg': {'level': 'hard', 'size': 11, 'side': 0}, 'sound': True, 'game': {'n': 11, 'cells': [12, 108, 24, 96, 36, 84, 48, 73, 60, 61, 70, 49, 81, 37, 93, 27, 105, 39, 106, 51, 94, 63, 104, 62, 92, 72, 80, 71, 69, 59, 58, 47, 57, 46, 67, 34, 68, 23, 79, 13, 91, 1, 101, 2, 111, 14]}}},
+        play=['wait:700']),
 }
 
 
@@ -76,10 +82,10 @@ def main(keys):
     threading.Thread(target=srv.serve_forever, daemon=True).start()
     base = f'http://127.0.0.1:{srv.server_address[1]}'
     with sync_playwright() as p:
-        b = p.chromium.launch()
+        b = p.chromium.launch(executable_path=os.environ.get('CHROME') or None)
         for key in keys:
             g = GAMES[key]
-            for shot, ls, steps in (('title', None, []), ('play', g.get('ls'), g['play'])):
+            for shot, ls, steps in (('title', None, g.get('title', [])), ('play', g.get('ls'), g['play'])):
                 ctx = b.new_context(viewport={'width': W, 'height': H}, device_scale_factor=1)
                 if ls:
                     ctx.add_init_script('(() => { const o = %s; for (const k in o) localStorage.setItem(k, JSON.stringify(o[k])); })()' % json.dumps(ls))
