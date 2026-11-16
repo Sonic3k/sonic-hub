@@ -189,7 +189,8 @@ function showTargets(S, s) {
     else if (ev.what === 'shove') { const p = xy(ev.pushedTo); over += `${open}${boxMark(x, y, 't-box')}${arrowMark(x, y, p[0], p[1], 't-arrow', 44, 26)}</g>`; }
     else if (ev.what === 'crush' || ev.what === 'take') {
       const d = stepXY(dirOf(ev.from, ev.to));
-      over += open + (kindOf(ev.victim) === KEEP ? ringMark(x, y, 44, 't-box loud') : kindOf(ev.victim) === GATE ? leafAt(ev.to, 't-box loud') : boxMark(x, y, 't-box loud')) + anvilMark(x, y, d[0], d[1]);
+      // a Ram or a Gate shows the bar it is squeezed against; a Keep needs nothing behind it
+      over += open + (kindOf(ev.victim) === KEEP ? ringMark(x, y, 44, 't-box loud') : (kindOf(ev.victim) === GATE ? leafAt(ev.to, 't-box loud') : boxMark(x, y, 't-box loud')) + anvilMark(x, y, d[0], d[1]));
       for (const k of ev.wakes) over += ringMark(xy(k)[0], xy(k)[1], 47, 't-wake');
       over += '</g>';
     } else if (ev.what === 'swing') under += `${open}${leafAt(ev.to, 't-leaf')}</g>`;
@@ -253,11 +254,13 @@ function buildHelp() {
       'Step into an enemy Ram and it is <b>shoved</b> one square on. A Ram that has just been shoved can’t shove straight back: it has to wait a turn.'],
     [scene(3, 2, 'r', [[RAM, L, c(1), c(0)], [RAM, D, c(2), c(0)], [RAM, L, c(0), c(1)], [RAM, D, c(1), c(1)], [RAM, D, c(2), c(1)]], boxMark(c(2), c(0), 't-box loud') + anvilMark(c(2), c(0), 1, 0) + boxMark(c(1), c(1), 't-box loud') + anvilMark(c(1), c(1), 1, 0)),
       '<b>No room behind it?</b> Then it is taken instead. The wall will do, and so will any piece, yours or theirs.'],
-    [scene(3, 2, 't', [[KEEP, D, c(1), c(0)], [RAM, L, c(1), c(1)], [RAM, L, c(0), c(0), 0, ' dim']], ringMark(c(1), c(0), 44, 't-box loud') + anvilMark(c(1), c(0), 0, -1)),
-      '<b>Gates and Keeps never budge</b>, but they fall the same way: push one that has something behind it. From the side, this Keep would stand: nothing is behind it there.'],
+    [scene(3, 2, 't', [[GATE, D, 100, 100, 180], [KEEP, D, c(1), c(0)], [RAM, L, c(0), c(1)]], `<g transform="translate(100 100) rotate(180)"><path class="t-box loud" transform="translate(${LEAF_IN} ${LEAF_IN})" d="${LEAF_PATH}"/></g>` + anvilMark(c(0), c(0), 0, -1)),
+      '<b>A Gate never budges</b>, but it falls the same way: push it where something stands behind it.'],
+    [scene(3, 2, 't', [[KEEP, D, c(1), c(0)], [RAM, L, c(0), c(0)], [RAM, L, c(1), c(1)]], ringMark(c(1), c(0), 44, 't-box loud')),
+      '<b>A Keep never budges either</b>, and it needs nothing behind it. A Ram that gets to it takes it, from the front or from the side.'],
     [scene(3, 2, 'b', [[KEEP, L, c(1), c(1)], [GATE, L, 100, 100, 90], [RAM, D, c(1), c(0)]], `<g transform="translate(100 100) rotate(270)"><path class="t-leaf loud" transform="translate(${LEAF_IN} ${LEAF_IN})" d="${LEAF_PATH}"/></g>` + boxMark(c(1), c(0), 't-box loud')),
       'A <b>Gate</b> turns on its hinge between two posts: beside its Keep and in front of it. It takes a Ram that stands on the other post.'],
-    [scene(3, 2, 'b', [[KEEP, L, c(1), c(1), 0, ' woken'], [RAM, D, c(0), c(1)], [RAM, D, c(2), c(0)]], crossMark(c(0), c(1))),
+    [scene(4, 2, 'b', [[KEEP, L, c(1), c(1), 0, ' woken'], [KEEP, L, c(2), c(1)], [RAM, D, c(0), c(1)], [RAM, D, c(2), c(0)]], crossMark(c(0), c(1))),
       'A <b>Keep</b> sleeps while Rams walk up to it. But take anything on a square next to it and <b>its bell rings</b>: on the very next move, and only then, it may strike that Ram off the board.'],
   ];
   $('#steps').innerHTML = steps.map(([art, text]) => `<div class="step">${art}<p>${text}</p></div>`).join('');

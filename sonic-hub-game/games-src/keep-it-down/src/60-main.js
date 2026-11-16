@@ -193,7 +193,7 @@ function whyNot(S, from, to) {
   const q = S.b[to];
   if (kindOf(S.b[from]) !== RAM || !q || sideOf(q) === S.turn) return '';
   if (kindOf(q) === RAM) return from === S.koP && to === S.koQ ? 'It has just been shoved: it can’t shove straight back.' : '';
-  return `A ${kindOf(q) === GATE ? 'Gate' : 'Keep'} won’t budge. Push it where something stands behind it.`;
+  return kindOf(q) === GATE ? 'A Gate won’t budge. Push it where something stands behind it.' : '';   // a Keep can always be taken
 }
 /** why a piece of one's own has no move at all */
 function whyStuck(S, s) {

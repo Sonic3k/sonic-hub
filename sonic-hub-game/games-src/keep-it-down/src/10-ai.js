@@ -10,10 +10,16 @@
    What every level counts: the pieces (a Ram 100, a Gate 260, a Keep 1500), and how near each Ram stands to the
    squares around the other side's Gates and Keeps, which is where it has to get to do any damage.
 
+   A Keep falls to any Ram that reaches it, from the front or from the side, with or without something behind it.
+   The levels learn that from the rules themselves (gen in 00-core.js), in every line they look down. Two things on
+   top of that were tried when the rule came in, medium against itself over 200 to 400 games a setting: counting a
+   Ram right beside a Keep as a threat in its own right, and pulling Rams harder towards a side's last Keep. Neither
+   won more games, so what is counted stayed as it is.
+
    Sixty games a pair, each playing Light and Dark equally (node sim.js 60 100): easy beats a player that moves at
    random 60–0; medium beats easy 60–0; hard, given a tenth of a second a move (in the game it gets half a second),
-   beats easy 60–0 and medium 54–4 with 2 drawn. Neither colour has the better of it: medium against itself, Light
-   won 27 games and Dark 30, with 3 drawn. */
+   beats easy 60–0 and medium 57–2 with 1 drawn. Neither colour has the better of it: medium against itself, Light
+   won 27 games and Dark 33. */
 const LEVELS = ['easy', 'medium', 'hard'];
 const LEVEL_NAME = { easy: 'Easy', medium: 'Medium', hard: 'Hard' };
 
