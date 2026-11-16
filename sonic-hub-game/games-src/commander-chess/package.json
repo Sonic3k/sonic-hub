@@ -1,0 +1,14 @@
+{
+  "name": "sonic-commander-chess",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Commander Chess (Cờ Tư Lệnh) with a campaign: places, opponents, ratings, cards.",
+  "engines": { "node": ">=18" },
+  "scripts": {
+    "build": "node build.mjs",
+    "test": "node test/engine.test.js",
+    "sim": "node tools/sim.js",
+    "start": "serve dist -l ${PORT:-3000}"
+  },
+  "dependencies": { "serve": "^14.2.3" }
+}
