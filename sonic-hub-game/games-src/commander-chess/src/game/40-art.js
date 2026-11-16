@@ -110,30 +110,42 @@ function sceneHalcyon() {
     <linearGradient id="water" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f29a6a"/><stop offset=".35" stop-color="#3f8fa6"/><stop offset="1" stop-color="#17506b"/></linearGradient></defs>
     <rect width="1200" height="300" fill="url(#sky)"/><circle cx="820" cy="262" r="64" fill="#fff3c4"/><circle cx="820" cy="262" r="110" fill="#fff3c4" opacity=".25"/>
     <g fill="#fff" opacity=".5"><ellipse cx="260" cy="96" rx="120" ry="12"/><ellipse cx="330" cy="116" rx="80" ry="8"/><ellipse cx="980" cy="140" rx="110" ry="10"/></g>
-    <path d="M0 268Q120 214 250 240Q330 200 420 252L470 270H0Z" fill="#3b3160"/><path d="M196 236V160h14v76z" fill="#f4ead2"/><path d="M192 160h22l-5 -16h-12z" fill="#c8324b"/><circle cx="203" cy="152" r="6" fill="#ffe08a"/><path d="M203 152L60 120V186Z" fill="#ffe08a" opacity=".18"/>
-    <rect y="268" width="1200" height="252" fill="url(#water)"/><g fill="#fff3c4" opacity=".5"><rect x="760" y="282" width="120" height="4" rx="2"/><rect x="780" y="298" width="80" height="4" rx="2"/><rect x="744" y="316" width="150" height="5" rx="2"/><rect x="790" y="338" width="64" height="5" rx="2"/></g>
+    <path d="M0 268Q120 214 250 240Q330 200 420 252L470 270H0Z" fill="#3b3160"/><path d="M196 236V160h14v76z" fill="#f4ead2"/><path d="M192 160h22l-5 -16h-12z" fill="#c8324b"/><circle cx="203" cy="152" r="6" fill="#ffe08a"/><path class="beam" d="M203 152L60 120V186Z" fill="#ffe08a" opacity=".18"/>
+    <rect y="268" width="1200" height="252" fill="url(#water)"/><g class="glints" fill="#fff3c4" opacity=".5"><rect x="760" y="282" width="120" height="4" rx="2"/><rect x="780" y="298" width="80" height="4" rx="2"/><rect x="744" y="316" width="150" height="5" rx="2"/><rect x="790" y="338" width="64" height="5" rx="2"/></g>
     <g fill="#1d2a48"><path d="M520 300h250l-22 30H548z"/><path d="M580 300v-22h40v-18h46v18h50v22z"/><path d="M640 260v-44M626 232h30" stroke="#1d2a48" stroke-width="4" fill="none"/><path d="M716 116V300" stroke="#1d2a48" stroke-width="3"/>
       <path d="M930 318h190l-16 22H950z"/><path d="M980 318v-16h32v-12h34v12h30v16z"/></g>${flags}
-    <path d="M0 410Q200 392 420 404T860 400T1200 408V520H0Z" fill="#12283c"/><path d="M0 396Q300 420 600 398T1200 402" fill="none" stroke="#2a1c1a" stroke-width="2"/>${lights}
+    <path d="M0 410Q200 392 420 404T860 400T1200 408V520H0Z" fill="#12283c"/><path d="M0 396Q300 420 600 398T1200 402" fill="none" stroke="#2a1c1a" stroke-width="2"/><g class="bulbs">${lights}</g>
     <g fill="#0c1b2a"><rect x="0" y="446" width="1200" height="10"/><path d="M60 446v74h10v-74zM260 446v74h10v-74zM460 446v74h10v-74zM660 446v74h10v-74zM860 446v74h10v-74zM1060 446v74h10v-74z"/></g></svg>`;
 }
 
 /* ── the coast the Maneuvers travel ── */
-function chartArt() {
-  const land = [
-    'M40 430Q20 330 90 300Q150 270 210 300Q270 300 290 360Q300 430 240 460Q150 500 40 430Z',
-    'M330 250Q300 170 370 130Q440 90 500 130Q560 160 540 230Q520 280 440 280Q360 290 330 250Z',
-    'M560 430Q540 360 600 330Q680 300 740 340Q790 380 760 440Q720 490 640 480Q580 470 560 430Z',
-    'M720 220Q700 150 770 110Q850 80 900 130Q940 180 900 230Q850 270 790 260Q740 250 720 220Z',
-    'M840 480Q820 410 880 390Q950 370 990 410Q1030 450 990 500Q940 530 890 520Q850 510 840 480Z',
-  ];
-  let g = '<rect width="1040" height="600" fill="url(#sea)"/><rect width="1040" height="600" fill="url(#swell)"/>';
-  for (let i = 1; i < 8; i++) g += `<path d="M${i * 130} 0V600" stroke="#fff" stroke-opacity=".12"/>`;
-  for (let i = 1; i < 5; i++) g += `<path d="M0 ${i * 120}H1040" stroke="#fff" stroke-opacity=".12"/>`;
-  for (const d of land) g += `<path d="${d}" fill="none" stroke="#fff" stroke-opacity=".3" stroke-width="16"/><path d="${d}" fill="#f1e6c8" stroke="#8c6a35" stroke-width="2.500"/><path d="${d}" fill="#7fb069" opacity=".35" transform="translate(6 6) scale(.985)"/>`;
-  for (const [x, y] of [[120, 360], [170, 330], [400, 170], [450, 190], [640, 380], [700, 400], [800, 150], [850, 170], [900, 440], [950, 460]]) g += `<path d="M${x - 16} ${y + 9}L${x - 5} ${y - 9}L${x + 3} ${y + 2}L${x + 9} ${y - 5}L${x + 18} ${y + 9}" fill="none" stroke="#8c6a35" stroke-opacity=".7" stroke-width="2" stroke-linejoin="round"/>`;
-  for (const [x, y, t] of [[300, 470, 14], [330, 60, 22], [600, 210, 31], [520, 520, 18], [960, 300, 27], [690, 560, 12], [210, 220, 25], [1000, 90, 34]]) g += `<text x="${x}" y="${y}" class="sounding">${t}</text>`;
-  g += '<g transform="translate(560 250) rotate(-12)" fill="#14243a" opacity=".8"><path d="M-22 0H22L16 9H-17Z"/><path d="M-9 0V-7H6V0Z"/><path d="M-1 -7V-16" stroke="#14243a" stroke-width="2"/><path d="M-30 13Q-24 9 -18 13T-6 13T6 13T18 13T30 13" fill="none" stroke="#fff" stroke-opacity=".7" stroke-width="1.500"/></g>';
-  g += `<g transform="translate(120 110)"><circle r="46" fill="none" stroke="#fff" stroke-opacity=".5" stroke-width="1.500"/><path d="${star(44, 9)}" fill="#fff" fill-opacity=".5" transform="rotate(18)"/><path d="M0 -52L7 0L0 52L-7 0Z" fill="#14243a"/><path d="M0 -52L7 0H-7Z" fill="#d7263d"/><text y="-58" class="chart-n">N</text></g>`;
+/* One island for each place, in PLACES order: its outline and hills as drawn on the wide chart (1040 by 600), where its
+   flag stands there, and where that flag stands on the tall chart (600 by 1040) that an upright phone gets. */
+const ISLES = [
+  { d: 'M40 370Q20 270 90 240Q150 210 210 240Q270 240 290 300Q300 370 240 400Q150 440 40 370Z', hills: [[120, 300], [170, 270]], at: [208, 336], tall: [205, 905] },
+  { d: 'M330 250Q300 170 370 130Q440 90 500 130Q560 160 540 230Q520 280 440 280Q360 290 330 250Z', hills: [[385, 170], [485, 185]], at: [430, 230], tall: [460, 715] },
+  { d: 'M560 430Q540 360 600 330Q680 300 740 340Q790 380 760 440Q720 490 640 480Q580 470 560 430Z', hills: [[610, 400], [712, 398]], at: [655, 360], tall: [165, 520] },
+  { d: 'M720 220Q700 150 770 110Q850 80 900 130Q940 180 900 230Q850 270 790 260Q740 250 720 220Z', hills: [[772, 196], [884, 190]], at: [840, 150], tall: [455, 315] },
+  { d: 'M840 480Q820 410 880 390Q950 370 990 410Q1030 450 990 500Q940 530 890 520Q850 510 840 480Z', hills: [[884, 458], [966, 474]], at: [936, 432], tall: [200, 135] },
+];
+const CHART = {
+  wide: { w: 1040, h: 600, rose: [120, 110, 1], boat: [605, 112], depths: [[330, 455, 14], [330, 60, 22], [612, 228, 31], [520, 520, 18], [960, 300, 27], [690, 560, 12], [210, 220, 25], [1000, 90, 34]] },
+  tall: { w: 600, h: 1040, rose: [540, 1000, 0.7], boat: [535, 515], depths: [[105, 340, 14], [545, 665, 22], [70, 715, 31], [350, 985, 18], [560, 215, 27], [45, 55, 12], [370, 150, 25]] },
+};
+const chartPoint = (i, tall) => (tall ? ISLES[i].tall : ISLES[i].at);
+function chartArt(tall) {
+  const c = tall ? CHART.tall : CHART.wide;
+  // the sea is the frame's own background, so swell and graticule run past the sheet to wherever the frame ends
+  let g = '<rect x="-800" y="-800" width="2700" height="2700" fill="url(#swell)"/>';
+  for (let x = -780; x <= 1820; x += 130) g += `<path d="M${x} -800V1900" stroke="#fff" stroke-opacity=".12"/>`;
+  for (let y = -720; y <= 1800; y += 120) g += `<path d="M-800 ${y}H1900" stroke="#fff" stroke-opacity=".12"/>`;
+  for (const o of ISLES) {
+    g += `<g${tall ? ` transform="translate(${o.tall[0] - o.at[0]} ${o.tall[1] - o.at[1]})"` : ''}><path d="${o.d}" fill="none" stroke="#fff" stroke-opacity=".3" stroke-width="16"/><path d="${o.d}" fill="#f1e6c8" stroke="#8c6a35" stroke-width="2.500"/><path d="${o.d}" fill="#7fb069" opacity=".35" transform="translate(6 6) scale(.985)"/>`;
+    for (const [x, y] of o.hills) g += `<path d="M${x - 16} ${y + 9}L${x - 5} ${y - 9}L${x + 3} ${y + 2}L${x + 9} ${y - 5}L${x + 18} ${y + 9}" fill="none" stroke="#8c6a35" stroke-opacity=".7" stroke-width="2" stroke-linejoin="round"/>`;
+    g += '</g>';
+  }
+  for (const [x, y, t] of c.depths) g += `<text x="${x}" y="${y}" class="sounding"${tall ? ' style="font-size:21px"' : ''}>${t}</text>`;
+  g += `<g transform="translate(${c.boat[0]} ${c.boat[1]}) rotate(-12)" fill="#14243a" opacity=".8"><path d="M-22 0H22L16 9H-17Z"/><path d="M-9 0V-7H6V0Z"/><path d="M-1 -7V-16" stroke="#14243a" stroke-width="2"/><path d="M-30 13Q-24 9 -18 13T-6 13T6 13T18 13T30 13" fill="none" stroke="#fff" stroke-opacity=".7" stroke-width="1.500"/></g>`;
+  g += `<g transform="translate(${c.rose[0]} ${c.rose[1]}) scale(${c.rose[2]})"><circle r="46" fill="none" stroke="#fff" stroke-opacity=".5" stroke-width="1.500"/><path d="${star(44, 9)}" fill="#fff" fill-opacity=".5" transform="rotate(18)"/><path d="M0 -52L7 0L0 52L-7 0Z" fill="#14243a"/><path d="M0 -52L7 0H-7Z" fill="#d7263d"/><text y="-58" class="chart-n">N</text></g>`;
   return g;
 }

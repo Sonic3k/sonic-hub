@@ -20,21 +20,35 @@ function screenTitle() {
   </div>`;
 }
 
-function screenChart() {
-  const pts = PLACES.map(p => [p.x * 1040, p.y * 600]);
-  let route = ''; for (let i = 0; i < pts.length - 1; i++) route += `<path class="route${placeOpen(PLACES[i + 1]) ? ' done' : ''}" d="M${pts[i][0]} ${pts[i][1]}Q${(pts[i][0] + pts[i + 1][0]) / 2} ${Math.min(pts[i][1], pts[i + 1][1]) - 60} ${pts[i + 1][0]} ${pts[i + 1][1]}"/>`;
+/** the chart as one sheet with its flags: wide for a desk, tall for an upright phone (both are drawn, the page shows the one that fits) */
+function chartSheet(tall) {
+  const c = tall ? CHART.tall : CHART.wide, pts = PLACES.map((p, i) => chartPoint(i, tall));
+  let route = '';
+  for (let i = 0; i < pts.length - 1; i++) {
+    const a = pts[i], b = pts[i + 1], q = tall ? [(a[0] + b[0]) / 2 + (i % 2 ? -44 : 44), (a[1] + b[1]) / 2 + 34] : [(a[0] + b[0]) / 2, Math.min(a[1], b[1]) - 60];
+    route += `<path class="route${placeOpen(PLACES[i + 1]) ? ' done' : ''}" d="M${a[0]} ${a[1]}Q${q[0]} ${q[1]} ${b[0]} ${b[1]}"/>`;
+  }
   const pins = PLACES.map((p, i) => {
-    const open = placeOpen(p), why = !p.built ? (SAVE.peak >= p.open ? 'Being charted' : `Opens at ${p.open}`) : `Opens at ${p.open}`;
-    return `<button type="button" class="pin${open ? ' open' : ''}" style="left:${p.x * 100}%;top:${p.y * 100}%" data-act="${open ? 'place' : 'locked'}" data-id="${p.id}"><i>${i + 1}</i><span><b>${p.name}</b><em>${open ? p.room : why}</em></span></button>`;
+    const open = placeOpen(p), x = pts[i][0] / c.w, y = pts[i][1] / c.h, left = x > (tall ? 0.5 : 0.75);
+    return `<button type="button" class="pin${open ? ' open' : ''}${left ? ' left' : ''}" style="left:${(x * 100).toFixed(2)}%;top:${(y * 100).toFixed(2)}%" data-act="${open ? 'place' : 'locked'}" data-id="${p.id}"><i>${i + 1}</i><span><b>${p.name}</b><em>${open ? p.room : !p.built && SAVE.peak >= p.open ? 'Being charted' : `Opens at ${p.open}`}</em></span></button>`;
   }).join('');
+  return `<div class="map ${tall ? 'tall' : 'wide'}"><svg viewBox="0 0 ${c.w} ${c.h}" aria-hidden="true">${chartArt(tall)}${route}</svg>${pins}</div>`;
+}
+function screenChart() {
   const won = WOMEN.reduce((n, w) => n + recordOf(w.id).w, 0), lost = WOMEN.reduce((n, w) => n + recordOf(w.id).l, 0);
   return `<header class="bar"><button type="button" class="chip" data-act="title">‹ Title</button><span class="bar-sp"></span>${plate()}
       <button type="button" class="chip" data-act="cards">Cards ${cardCount()}/${WOMEN.length * 3}</button><button type="button" class="chip" data-act="rules">Rules</button>${soundBtn()}</header>
-    <div class="chart"><svg viewBox="0 0 1040 600" preserveAspectRatio="xMidYMid slice" aria-hidden="true">${chartArt()}${route}</svg>${pins}
+    <div class="chart-wrap"><div class="chart">${chartSheet(false)}${chartSheet(true)}</div>
       <div class="logbook"><h2>The Lumen coast</h2><p>Five garrisons, each with its own table and its own way of playing. Points open the way: beat people rated above you and they come quickly.</p>
         <p class="log-line"><b>${SAVE.rating}</b> points, best ${SAVE.peak}. Won ${won}, lost ${lost}.</p>
         <label class="check"><input type="checkbox" data-act="all" ${SAVE.all ? 'checked' : ''}> Open everyone (for trying things out)</label></div>
     </div>`;
+}
+/** what is known of a place that cannot be entered yet */
+function placeNote(p) {
+  const when = p.built ? `Opens at ${p.open} points. You have ${SAVE.rating}.` : SAVE.peak >= p.open ? 'You have the points. Its table is still being built.' : `Opens at ${p.open} points; you have ${SAVE.rating}. Its table is still being built.`;
+  return `<h2 id="dlg-title">${esc(p.name)}</h2><p class="dlg-sub">${esc(p.room)}</p><p>${esc(p.blurb)}</p><p class="dlg-house"><span>House rules</span>${esc(p.house)}</p><p class="dlg-when">${when}</p>
+    <div class="dlg-btns"><button type="button" class="btn big" data-act="close">Back to the chart</button></div>`;
 }
 
 function dossier(w) {
@@ -137,7 +151,7 @@ function resultHTML(w, res, why, line, got) {
   let h = `<h2 id="dlg-title" class="res-head r${res * 2}">${head}</h2><p class="res-why">${(WHY[why] || [''])[res === 0 ? 1 : 0] || ''}</p>
     <div class="res-her">${portrait(w)}<p>“${esc(line)}”</p></div>`;
   if (got) {
-    h += `<p class="res-points"><span>${got.before}</span><b class="${got.delta >= 0 ? 'up' : 'down'}">${signed(got.delta)}</b><span>${got.after} points</span></p>`;
+    h += `<p class="res-points"><span>${got.before}</span><b class="${got.delta > 0 ? 'up' : got.delta < 0 ? 'down' : 'flat'}">${signed(got.delta)}</b><span>${got.after} points</span></p>`;
     if (got.newCards.length) h += `<div class="res-cards">${got.newCards.map(i => cardArt(w, i, true)).join('')}</div><p class="res-note">${got.newCards.length > 1 ? 'New cards' : 'A new card'} for your collection.</p>`;
     for (const x of got.newWomen) h += `<p class="res-note">${x.rank} ${esc(x.name)} will play you now.</p>`;
     for (const p of got.newPlaces) h += `<p class="res-note">${p.name} is on the chart${p.built ? '' : ', though its table is not ready yet'}.</p>`;

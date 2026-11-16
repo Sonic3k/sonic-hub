@@ -13,26 +13,27 @@ const START_RATING = 600, K_FACTOR = 32;
 const CARD_WINS = [1, 3, 5];                                  // wins against her that earn her first, second and third card
 
 const PLACES = [
-  { id: 'halcyon', name: 'Port Halcyon', room: 'The Harbour Mess', open: 0, x: 0.2, y: 0.66, built: true,
+  { id: 'halcyon', name: 'Port Halcyon', room: 'The Harbour Mess', open: 0, built: true,
     blurb: 'The fleet’s home port. After the evening gun the officers’ mess above the docks clears a table, and nobody goes to bed until the last Commander has fallen.',
     house: 'The standard board.' },
-  { id: 'kestrel', name: 'Kestrel Field', room: 'The Ready Room', open: 760, x: 0.42, y: 0.34, built: false,
+  { id: 'kestrel', name: 'Kestrel Field', room: 'The Ready Room', open: 760, built: false,
     blurb: 'The air station on the northern cliffs. The pilots play fast, between scrambles, and they do not believe in holding anything back.',
     house: 'Open skies: a third squadron for each side, thinner air defence.' },
-  { id: 'ironwood', name: 'Ironwood Depot', room: 'The Motor Pool', open: 900, x: 0.63, y: 0.6, built: false,
+  { id: 'ironwood', name: 'Ironwood Depot', room: 'The Motor Pool', open: 900, built: false,
     blurb: 'The armoured brigade’s workshops in the pine hills. Games are played on an engine crate, and settled on the bridges.',
     house: 'Land war: no ships, a second bridge road, more armour.' },
-  { id: 'meridian', name: 'Fort Meridian', room: 'The Gun Deck', open: 1050, x: 0.8, y: 0.3, built: false,
+  { id: 'meridian', name: 'Fort Meridian', room: 'The Gun Deck', open: 1050, built: false,
     blurb: 'The old fortress over the strait. Its gunners have had two hundred years to learn patience.',
     house: 'Siege: the host starts dug in behind the river, the guest has the numbers.' },
-  { id: 'admiralty', name: 'The Admiralty', room: 'The Long Table', open: 1250, x: 0.9, y: 0.72, built: false,
+  { id: 'admiralty', name: 'The Admiralty', room: 'The Long Table', open: 1250, built: false,
     blurb: 'The capital. The staff who write the Maneuvers play here, under the portraits of everyone who ever beat them.',
     house: 'The host chooses the board, game by game.' },
 ];
 
-/* rating: measured by letting the five play each other (tools/sim.js; see the README). needs: points that open her. */
+/* rating: the order is measured by letting the five play each other (tools/sim.js; the scores are in the README), the
+   spacing is set narrower than those scores say. needs: points that open her. */
 const WOMEN = [
-  { id: 'pia', place: 'halcyon', name: 'Pia Lindqvist', rank: 'Ensign', job: 'Signals officer, first posting', level: 'Easiest', rating: 480, needs: 0,
+  { id: 'pia', place: 'halcyon', name: 'Pia Lindqvist', rank: 'Ensign', job: 'Signals officer, first posting', level: 'Easiest', rating: 500, needs: 0,
     hair: 'bob', tone: ['#f6c56a', '#e98a5b', '#fff3d6'],
     style: 'Moves first and thinks afterwards. Loves her planes, forgets everything else.',
     cards: [['On watch', 'Three flags up, two of them right.'], ['Off watch', 'She learned the rules last month and the ukulele last week.'], ['Shore leave', 'First one down the gangway, last one back.']],
@@ -56,7 +57,7 @@ const WOMEN = [
       lose: ['Well. That was educational. For me, mostly.', 'You’re good. I’m going to say I let you win. I didn’t, but I’m going to say it.'],
       draw: ['A draw! That’s basically winning. For me it is.'],
     } },
-  { id: 'sol', place: 'halcyon', name: 'Marisol Ortega', rank: 'Chief', job: 'Deck chief of the Corvina', level: 'Easy', rating: 1060, needs: 610,
+  { id: 'sol', place: 'halcyon', name: 'Marisol Ortega', rank: 'Chief', job: 'Deck chief of the Corvina', level: 'Easy', rating: 950, needs: 610,
     hair: 'curls', tone: ['#ff8c5a', '#c8324b', '#ffe9c9'],
     style: 'Takes whatever is on the table and laughs about it. Rarely asks what it costs.',
     cards: [['Deck chief', 'Twelve years at sea and she has never paid for her own drink.'], ['Dockside', 'The Corvina sails at six. Sol sails when she is ready.'], ['Fiesta', 'Port Halcyon has one dance floor. It is wherever she is standing.']],
@@ -80,7 +81,7 @@ const WOMEN = [
       lose: ['Well, damn. All right, what are you drinking?', 'You got me. Don’t let it go to your head, it’s small enough.'],
       draw: ['Nobody buys? Worst possible result.'],
     } },
-  { id: 'hana', place: 'halcyon', name: 'Hana Sorel', rank: 'Lieutenant', job: 'Gunnery officer, shore batteries', level: 'Moderate', rating: 1420, needs: 640,
+  { id: 'hana', place: 'halcyon', name: 'Hana Sorel', rank: 'Lieutenant', job: 'Gunnery officer, shore batteries', level: 'Moderate', rating: 1350, needs: 640,
     hair: 'long', tone: ['#5fb4c9', '#1f5d8c', '#e9f6ff'],
     style: 'Guns and ships, set up with care. She does not give pieces away, and she shells anything that stands still.',
     cards: [['Fire control', 'She corrects the tables in ink.'], ['Range day', 'Ear defenders on, one eyebrow up.'], ['Evening gun', 'Sunset, the battery wall, and for once nothing to correct.']],
@@ -104,7 +105,7 @@ const WOMEN = [
       lose: ['Well played. I mean that, and I don’t say it often.', 'I’ll want that one back, Lieutenant. Not tonight. I need to think.'],
       draw: ['Level. I can live with level. I don’t have to like it.'],
     } },
-  { id: 'nadia', place: 'halcyon', name: 'Nadia Rahimi', rank: 'Commander', job: 'Captain of the destroyer Simurgh', level: 'Hard', rating: 1690, needs: 670,
+  { id: 'nadia', place: 'halcyon', name: 'Nadia Rahimi', rank: 'Commander', job: 'Captain of the destroyer Simurgh', level: 'Hard', rating: 1700, needs: 670,
     hair: 'wave', tone: ['#ffb238', '#b3273a', '#fff0d0'],
     style: 'Attacks from the first move and goes straight for your headquarters. She will trade anything for speed.',
     cards: [['Simurgh', 'Fastest ship in the flotilla. She says it is the paint.'], ['Night run', 'Lights out, thirty knots, and that smile.'], ['The wager', 'She only bets on herself. So far it has paid.']],
@@ -128,7 +129,7 @@ const WOMEN = [
       lose: ['Well. Well, well. Nobody’s done that to me in a while. Say you’ll play me again.', 'You beat me to it. I may have to keep you, Lieutenant.'],
       draw: ['A draw. How unsatisfying. We’ll have to do it again, properly.'],
     } },
-  { id: 'isolde', place: 'halcyon', name: 'Isolde Varga', rank: 'Captain', job: 'Commandant of Port Halcyon', level: 'Hardest', rating: 1940, needs: 700,
+  { id: 'isolde', place: 'halcyon', name: 'Isolde Varga', rank: 'Captain', job: 'Commandant of Port Halcyon', level: 'Hardest', rating: 2000, needs: 700,
     hair: 'updo', tone: ['#c9a4ff', '#3b2a78', '#f4ecff'],
     style: 'Gives you nothing and waits. By the time you see what she wanted, she has had it for five moves.',
     cards: [['The Commandant', 'Port Halcyon runs on her signature.'], ['The long table', 'She has not lost at this table since the old Admiral retired.'], ['After hours', 'Her door is open after ten. Bring the board.']],
@@ -160,7 +161,7 @@ const rankFor = r => RANKS.filter(x => r >= x[0]).pop()[1];
 /* ── points ── */
 const expected = (mine, hers) => 1 / (1 + Math.pow(10, (hers - mine) / 400));
 /** points for a result against her: result 1 win, 0.5 draw, 0 loss */
-const pointsFor = (mine, hers, result) => Math.round(K_FACTOR * (result - expected(mine, hers)));
+const pointsFor = (mine, hers, result) => { const p = Math.round(K_FACTOR * (result - expected(mine, hers))); return result === 1 ? Math.max(1, p) : p; };   // a win is never worth nothing
 
 /* ── what is kept between visits ── */
 const STORE = 'commander-chess.v1';

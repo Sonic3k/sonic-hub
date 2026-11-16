@@ -10,7 +10,12 @@ const G = { screen: 'title', w: null, rated: true, side: RED, S: null, moves: []
 
 function show(screen, html) { G.screen = screen; document.body.dataset.screen = screen; $('#app').innerHTML = html; window.scrollTo(0, 0); }
 function goTitle() { G.token++; show('title', screenTitle()); }
-function goChart() { G.token++; show('chart', screenChart()); }
+function goChart() { G.token++; show('chart', screenChart()); fitChart(); }
+/** the chart's sheet takes the largest size that fits whole inside the frame; the sea around it is the frame's own */
+function fitChart() {
+  const c = $('.chart'); if (!c) return;
+  for (const m of c.querySelectorAll('.map')) { const r = m.classList.contains('tall') ? CHART.tall.w / CHART.tall.h : CHART.wide.w / CHART.wide.h, w = Math.min(c.clientWidth, c.clientHeight * r); m.style.width = w + 'px'; m.style.height = w / r + 'px'; }
+}
 function goPlace(id) { G.token++; closeDialog(); show('place', screenPlace(placeById(id))); }
 function goCards() { G.token++; show('cards', screenCards()); }
 function goVersus(w, rated) {
@@ -42,7 +47,7 @@ function startMatch(w, rated, side, resume) {
   buildBoard(side === BLUE);
   for (const m of resume || []) if (!quiet(m)) break;
   placeAll(G.S); wireBoard();
-  if (!resume || !resume.length) setTimeout(() => { if (G.screen === 'match') speak(pick(w.say.start)); }, 500);
+  if (!resume || !resume.length) setTimeout(() => { if (G.screen === 'match') speak(pick(w.say.start), true); }, 500);
   nextTurn();
 }
 function saveMatch() { SAVE.match = { w: G.w.id, side: G.side, rated: G.rated, moves: G.moves.slice() }; keep(); }
@@ -57,7 +62,7 @@ async function nextTurn() {
     if (S.dOrg < 0) { G.marks.push(G.moves.length); clearSel(); saveMatch(); } else select(S.dOrg);
     renderHud(); return;
   }
-  G.busy = true; clearSel(); renderHud();
+  G.busy = true; clearSel(); renderHud(); saveMatch();
   const t0 = performance.now();
   const moves = await Brain.turn(SETUP, G.moves, G.w.id, G.seen, (Math.random() * 1e9) | 0);
   if (token !== G.token) return;
@@ -110,9 +115,13 @@ function finish(st) {
 }
 
 /* ── what she says ── */
-function speak(text) {
+function speak(text, loud) {
   const b = $('#bubble'); if (!b) return;
   b.textContent = text; b.classList.remove('pop'); b.getBoundingClientRect(); b.classList.add('pop'); G.saidAt = G.turns;
+  if (!loud || REDUCED) return;                               // the moments that matter: she leans across the board to say it
+  const old = $('.cutin'); if (old) old.remove();
+  const c = document.createElement('div'); c.className = 'cutin'; c.innerHTML = `${portrait(G.w)}<p><b>${first(G.w)}</b>${esc(text)}</p>`;
+  $('.board-wrap').appendChild(c); setTimeout(() => c.remove(), 3000);
 }
 /** picks what the turn just played calls for, if anything: a threat to a Commander or a Headquarters first, then losses */
 function react(log, mover) {
@@ -133,7 +142,7 @@ function react(log, mover) {
   if (mover === her && S.core[her] > 0) set('hqHers', 8);
   if (mover === G.side && S.core[G.side] > 0) set('hqYours', 8);
   if (!key && G.turns - G.saidAt > 7) { const d = worth(S, her) - worth(S, G.side); key = d > 600 ? 'ahead' : d < -600 ? 'behind' : Math.random() < 0.3 ? 'idle' : ''; }
-  if (key && (pri >= 5 || G.turns - G.saidAt >= 3)) speak(pick(w.say[key]));
+  if (key && (pri >= 5 || G.turns - G.saidAt >= 3)) speak(pick(w.say[key]), pri >= 6);
 }
 
 /* ── beside the board ── */
@@ -258,7 +267,7 @@ function wire() {
       case 'chart': goChart(); break;
       case 'place': goPlace(id); break;
       case 'cards': goCards(); break;
-      case 'locked': { const p = placeById(id); hintPin(act, p.built ? `${p.name} opens at ${p.open} points.` : SAVE.peak >= p.open ? `${p.name} is next: its table is still being built.` : `${p.name} opens at ${p.open} points. Its table is still being built.`); break; }
+      case 'locked': openDialog(placeNote(placeById(id))); SFX.play('tick'); break;
       case 'challenge': goVersus(womanById(id), true); break;
       case 'spar': goVersus(womanById(id), false); break;
       case 'talk': if (G.talkAt < G.talk.length - 1) { G.talkAt++; showTalk(); SFX.play('tick'); } break;
@@ -288,10 +297,9 @@ function wire() {
   });
   $('#overlay').addEventListener('click', ev => { if (ev.target.id === 'overlay' && !$('#overlay .result')) closeDialog(); });
 }
-function hintPin(el, text) { const e = el.querySelector('em'); if (e) e.textContent = text; }
 
 function boot() {
   loadSave(); SFX.on = SAVE.sound !== false;
   $('#defs').innerHTML = '<defs>' + DEFS + '</defs>';
-  Brain.start(); wire(); goTitle();
+  Brain.start(); wire(); goTitle(); window.addEventListener('resize', fitChart);
 }

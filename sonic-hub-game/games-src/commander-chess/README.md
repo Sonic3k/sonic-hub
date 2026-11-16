@@ -24,6 +24,13 @@ the pictures are used instead; a missing file falls back to the stand-in.
 
 ## Ratings
 
-The five at Port Halcyon were rated by letting them play each other (`tools/sim.js`): each one beats the one below
-her nearly every game, so the numbers are spread wide. Only the first place is built; the other four are on the
-chart with what is planned for them.
+The five at Port Halcyon were put in order by letting them play each other (`tools/sim.js`, colours alternating):
+
+    Marisol beat Pia      39 of 40
+    Hana    beat Marisol  20 of 20   (and Pia 10 of 10)
+    Nadia   beat Hana      6 of 6
+    Isolde  beat Nadia     6 of 6
+
+So the order is measured. The numbers (500, 950, 1350, 1700, 2000) are spaced narrower than those scores say,
+because machines beating machines exaggerate the gap a person feels; they want adjusting once people have played.
+You start at 600. Only the first place is built; the other four are on the chart with what is planned for them.
