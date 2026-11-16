@@ -141,7 +141,7 @@
   .page { position: relative; width: min(780px, 100%); padding: 26px 30px 26px; border-radius: 4px; background: var(--card); box-shadow: 0 30px 70px rgba(30,20,8,.55); }
   .page h2 { margin: 0 0 4px; font: 900 34px/1.1 var(--title); color: var(--ink); }
   .steps { display: grid; grid-template-columns: 1fr 1fr; gap: 16px 28px; margin: 14px 0 16px; }
-  .step { display: grid; grid-template-columns: 138px 1fr; gap: 14px; align-items: center; } .step:first-child { grid-column: 1 / -1; grid-template-columns: 210px 1fr; }
+  .step { display: grid; grid-template-columns: 138px 1fr; gap: 14px; align-items: center; } .step:first-child, .step:last-child { grid-column: 1 / -1; grid-template-columns: 210px 1fr; }   /* the aim opens the list and the bell closes it, each across both columns */
   .scene { display: block; width: 100%; height: auto; border-radius: 3px; box-shadow: 0 1px 3px rgba(40,30,15,.4); }
   .step p { margin: 0; font: 400 15.5px/1.38 var(--title); color: #33414e; } .step b { font-weight: 700; color: var(--ink); }
   .page .keys { margin: 0 0 16px; padding-top: 12px; border-top: 1.5px solid rgba(34,54,74,.16); font: 400 14.5px/1.4 var(--title); color: var(--muted); }
@@ -164,7 +164,7 @@
     .statusbox { order: 2; min-height: 64px; width: min(100%, 560px); display: flex; flex-direction: column; justify-content: center; text-align: center; padding: 0 6px; }
     .status { font-size: 21px; } .sub { margin: 1px 0 0; font-size: 14.5px; line-height: 1.28; }
     .btns { order: 4; width: min(100%, 560px); } .plate { min-height: 44px; padding: 0 8px; font-size: 13.5px; letter-spacing: .15em; text-indent: .15em; }
-    .page { padding: 20px 18px; } .page h2 { font-size: 28px; } .steps { grid-template-columns: 1fr; gap: 14px; } .step, .step:first-child { grid-template-columns: 116px 1fr; gap: 12px; } .step p { font-size: 15px; }
+    .page { padding: 20px 18px; } .page h2 { font-size: 28px; } .steps { grid-template-columns: 1fr; gap: 14px; } .step, .step:first-child, .step:last-child { grid-template-columns: 116px 1fr; gap: 12px; } .step p { font-size: 15px; }
   }
   @media (max-width: 900px) and (orientation: landscape) and (max-height: 540px) {
     /* a phone on its side: the board takes the height, everything else stands beside it */
@@ -254,9 +254,10 @@
            if it has no room to go (any piece behind it, or the wall) it is taken and the shover has its square.
            A Ram that has just been shoved may not push back at the Ram that shoved it on the very next turn.
      Gate  Two a side, one for each Keep. It stands on one of two posts, beside its Keep or in front of it, and steps
-           from one to the other, taking an enemy Ram that stands there. A Ram cannot shove a Gate or a Keep, but
-           takes it the way it takes a Ram: by pushing when there is no room behind.
-     Keep  Two a side, never moves. A Ram that has just taken something on a square next to a Keep has made a noise:
+           from one to the other, taking an enemy Ram that stands there. A Ram cannot shove a Gate, but takes it the
+           way it takes a Ram: by pushing when there is no room behind.
+     Keep  Two a side, never moves. It cannot be shoved either, so a Ram that gets to it simply takes it: nothing
+           has to stand behind. A Ram that has just taken something on a square next to a Keep has made a noise:
            on the next move, and only then, that Keep may strike it off the board. A Ram that only walked up is safe.
    Lose both Keeps and you lose. */
 const LIGHT = 0, DARK = 1, SIDE = ['Light', 'Dark'];
@@ -323,8 +324,9 @@ function gen(S, out, off = 0) {
         if (!q) { out[n++] = s | t << 6; continue; }
         if ((q >> 2) === me) continue;
         if (q === foeRam) { if (s === S.koP && t === S.koQ) continue; out[n++] = s | t << 6 | PUSH << 12; continue; }
-        const u = NB[t * 4 + d];                                        // a Gate or a Keep: it does not budge,
-        if (u < 0 || b[u]) out[n++] = s | t << 6 | PUSH << 12;         // and is taken only with something behind it
+        if ((q & 3) === KEEP) { out[n++] = s | t << 6 | PUSH << 12; continue; }   // a Keep cannot be shoved: it is taken where it stands
+        const u = NB[t * 4 + d];                                        // a Gate does not budge either,
+        if (u < 0 || b[u]) out[n++] = s | t << 6 | PUSH << 12;         // but is taken only with something behind it
       }
     } else if (p === gate) {
       const t = POST[s];
@@ -353,7 +355,7 @@ function make(S, m) {
     if ((q & 3) === RAM && beyond >= 0 && !b[beyond]) {                 // room behind: it is shoved along
       b[beyond] = q; pushed = beyond; koP = beyond; koQ = to;
       S.hl ^= ZL[beyond * 8 + q]; S.hh ^= ZH[beyond * 8 + q];
-    } else { cap = q; alarm = to; }                                     // no room: it is taken, and that makes a noise
+    } else { cap = q; alarm = to; }                                     // no room, or a Keep: it is taken, and that makes a noise
     b[to] = p; b[from] = 0;
     S.hl ^= ZL[to * 8 + q] ^ ZL[to * 8 + p] ^ ZL[from * 8 + p]; S.hh ^= ZH[to * 8 + q] ^ ZH[to * 8 + p] ^ ZH[from * 8 + p];
   } else if (kind === SWING) {
@@ -403,7 +405,7 @@ function wokenKeeps(S) {
 
 /** What a move is going to do, worked out before it is played: for the hints on the board and for showing it happen.
  *  what:  step | shove | crush (a Ram taken) | take (a Gate or Keep taken) | swing | slam (a Gate taking a Ram) | strike | pass
- *  anvil: what the taken piece was pushed against: a square, or −1 for the wall
+ *  anvil: what the taken piece was pushed against: a square, or −1 for the wall; −2 for a Keep, which needs nothing behind it
  *  wakes: the enemy Keeps that will be allowed to answer, because the move takes something right next to them */
 function describe(S, m) {
   const b = S.b, from = m & 63, to = (m >> 6) & 63, kind = m >> 12, side = S.turn;
@@ -417,7 +419,7 @@ function describe(S, m) {
     const q = b[to], beyond = NB[to * 4 + dirOf(from, to)];
     if ((q & 3) === RAM && beyond >= 0 && !b[beyond]) { ev.what = 'shove'; ev.pushedTo = beyond; ev.victim = q; }
     else {
-      ev.what = (q & 3) === RAM ? 'crush' : 'take'; ev.victim = q; ev.anvil = beyond; ev.loud = true;
+      ev.what = (q & 3) === RAM ? 'crush' : 'take'; ev.victim = q; ev.anvil = (q & 3) === KEEP ? -2 : beyond; ev.loud = true;
       for (let d = 0; d < 4; d++) { const s = NB[to * 4 + d]; if (s >= 0 && b[s] === KEEP + ((1 - side) << 2)) ev.wakes.push(s); }
     }
   }
@@ -462,10 +464,16 @@ function replay(moves) {
    What every level counts: the pieces (a Ram 100, a Gate 260, a Keep 1500), and how near each Ram stands to the
    squares around the other side's Gates and Keeps, which is where it has to get to do any damage.
 
+   A Keep falls to any Ram that reaches it, from the front or from the side, with or without something behind it.
+   The levels learn that from the rules themselves (gen in 00-core.js), in every line they look down. Two things on
+   top of that were tried when the rule came in, medium against itself over 200 to 400 games a setting: counting a
+   Ram right beside a Keep as a threat in its own right, and pulling Rams harder towards a side's last Keep. Neither
+   won more games, so what is counted stayed as it is.
+
    Sixty games a pair, each playing Light and Dark equally (node sim.js 60 100): easy beats a player that moves at
    random 60–0; medium beats easy 60–0; hard, given a tenth of a second a move (in the game it gets half a second),
-   beats easy 60–0 and medium 54–4 with 2 drawn. Neither colour has the better of it: medium against itself, Light
-   won 27 games and Dark 30, with 3 drawn. */
+   beats easy 60–0 and medium 57–2 with 1 drawn. Neither colour has the better of it: medium against itself, Light
+   won 27 games and Dark 33. */
 const LEVELS = ['easy', 'medium', 'hard'];
 const LEVEL_NAME = { easy: 'Easy', medium: 'Medium', hard: 'Hard' };
 
@@ -1060,7 +1068,8 @@ function showTargets(S, s) {
     else if (ev.what === 'shove') { const p = xy(ev.pushedTo); over += `${open}${boxMark(x, y, 't-box')}${arrowMark(x, y, p[0], p[1], 't-arrow', 44, 26)}</g>`; }
     else if (ev.what === 'crush' || ev.what === 'take') {
       const d = stepXY(dirOf(ev.from, ev.to));
-      over += open + (kindOf(ev.victim) === KEEP ? ringMark(x, y, 44, 't-box loud') : kindOf(ev.victim) === GATE ? leafAt(ev.to, 't-box loud') : boxMark(x, y, 't-box loud')) + anvilMark(x, y, d[0], d[1]);
+      // a Ram or a Gate shows the bar it is squeezed against; a Keep needs nothing behind it
+      over += open + (kindOf(ev.victim) === KEEP ? ringMark(x, y, 44, 't-box loud') : (kindOf(ev.victim) === GATE ? leafAt(ev.to, 't-box loud') : boxMark(x, y, 't-box loud')) + anvilMark(x, y, d[0], d[1]));
       for (const k of ev.wakes) over += ringMark(xy(k)[0], xy(k)[1], 47, 't-wake');
       over += '</g>';
     } else if (ev.what === 'swing') under += `${open}${leafAt(ev.to, 't-leaf')}</g>`;
@@ -1124,11 +1133,13 @@ function buildHelp() {
       'Step into an enemy Ram and it is <b>shoved</b> one square on. A Ram that has just been shoved can’t shove straight back: it has to wait a turn.'],
     [scene(3, 2, 'r', [[RAM, L, c(1), c(0)], [RAM, D, c(2), c(0)], [RAM, L, c(0), c(1)], [RAM, D, c(1), c(1)], [RAM, D, c(2), c(1)]], boxMark(c(2), c(0), 't-box loud') + anvilMark(c(2), c(0), 1, 0) + boxMark(c(1), c(1), 't-box loud') + anvilMark(c(1), c(1), 1, 0)),
       '<b>No room behind it?</b> Then it is taken instead. The wall will do, and so will any piece, yours or theirs.'],
-    [scene(3, 2, 't', [[KEEP, D, c(1), c(0)], [RAM, L, c(1), c(1)], [RAM, L, c(0), c(0), 0, ' dim']], ringMark(c(1), c(0), 44, 't-box loud') + anvilMark(c(1), c(0), 0, -1)),
-      '<b>Gates and Keeps never budge</b>, but they fall the same way: push one that has something behind it. From the side, this Keep would stand: nothing is behind it there.'],
+    [scene(3, 2, 't', [[GATE, D, 100, 100, 180], [KEEP, D, c(1), c(0)], [RAM, L, c(0), c(1)]], `<g transform="translate(100 100) rotate(180)"><path class="t-box loud" transform="translate(${LEAF_IN} ${LEAF_IN})" d="${LEAF_PATH}"/></g>` + anvilMark(c(0), c(0), 0, -1)),
+      '<b>A Gate never budges</b>, but it falls the same way: push it where something stands behind it.'],
+    [scene(3, 2, 't', [[KEEP, D, c(1), c(0)], [RAM, L, c(0), c(0)], [RAM, L, c(1), c(1)]], ringMark(c(1), c(0), 44, 't-box loud')),
+      '<b>A Keep never budges either</b>, and it needs nothing behind it. A Ram that gets to it takes it, from the front or from the side.'],
     [scene(3, 2, 'b', [[KEEP, L, c(1), c(1)], [GATE, L, 100, 100, 90], [RAM, D, c(1), c(0)]], `<g transform="translate(100 100) rotate(270)"><path class="t-leaf loud" transform="translate(${LEAF_IN} ${LEAF_IN})" d="${LEAF_PATH}"/></g>` + boxMark(c(1), c(0), 't-box loud')),
       'A <b>Gate</b> turns on its hinge between two posts: beside its Keep and in front of it. It takes a Ram that stands on the other post.'],
-    [scene(3, 2, 'b', [[KEEP, L, c(1), c(1), 0, ' woken'], [RAM, D, c(0), c(1)], [RAM, D, c(2), c(0)]], crossMark(c(0), c(1))),
+    [scene(4, 2, 'b', [[KEEP, L, c(1), c(1), 0, ' woken'], [KEEP, L, c(2), c(1)], [RAM, D, c(0), c(1)], [RAM, D, c(2), c(0)]], crossMark(c(0), c(1))),
       'A <b>Keep</b> sleeps while Rams walk up to it. But take anything on a square next to it and <b>its bell rings</b>: on the very next move, and only then, it may strike that Ram off the board.'],
   ];
   $('#steps').innerHTML = steps.map(([art, text]) => `<div class="step">${art}<p>${text}</p></div>`).join('');
@@ -1329,7 +1340,7 @@ function whyNot(S, from, to) {
   const q = S.b[to];
   if (kindOf(S.b[from]) !== RAM || !q || sideOf(q) === S.turn) return '';
   if (kindOf(q) === RAM) return from === S.koP && to === S.koQ ? 'It has just been shoved: it can’t shove straight back.' : '';
-  return `A ${kindOf(q) === GATE ? 'Gate' : 'Keep'} won’t budge. Push it where something stands behind it.`;
+  return kindOf(q) === GATE ? 'A Gate won’t budge. Push it where something stands behind it.' : '';   // a Keep can always be taken
 }
 /** why a piece of one's own has no move at all */
 function whyStuck(S, s) {

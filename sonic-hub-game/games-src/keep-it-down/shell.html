@@ -141,7 +141,7 @@
   .page { position: relative; width: min(780px, 100%); padding: 26px 30px 26px; border-radius: 4px; background: var(--card); box-shadow: 0 30px 70px rgba(30,20,8,.55); }
   .page h2 { margin: 0 0 4px; font: 900 34px/1.1 var(--title); color: var(--ink); }
   .steps { display: grid; grid-template-columns: 1fr 1fr; gap: 16px 28px; margin: 14px 0 16px; }
-  .step { display: grid; grid-template-columns: 138px 1fr; gap: 14px; align-items: center; } .step:first-child { grid-column: 1 / -1; grid-template-columns: 210px 1fr; }
+  .step { display: grid; grid-template-columns: 138px 1fr; gap: 14px; align-items: center; } .step:first-child, .step:last-child { grid-column: 1 / -1; grid-template-columns: 210px 1fr; }   /* the aim opens the list and the bell closes it, each across both columns */
   .scene { display: block; width: 100%; height: auto; border-radius: 3px; box-shadow: 0 1px 3px rgba(40,30,15,.4); }
   .step p { margin: 0; font: 400 15.5px/1.38 var(--title); color: #33414e; } .step b { font-weight: 700; color: var(--ink); }
   .page .keys { margin: 0 0 16px; padding-top: 12px; border-top: 1.5px solid rgba(34,54,74,.16); font: 400 14.5px/1.4 var(--title); color: var(--muted); }
@@ -164,7 +164,7 @@
     .statusbox { order: 2; min-height: 64px; width: min(100%, 560px); display: flex; flex-direction: column; justify-content: center; text-align: center; padding: 0 6px; }
     .status { font-size: 21px; } .sub { margin: 1px 0 0; font-size: 14.5px; line-height: 1.28; }
     .btns { order: 4; width: min(100%, 560px); } .plate { min-height: 44px; padding: 0 8px; font-size: 13.5px; letter-spacing: .15em; text-indent: .15em; }
-    .page { padding: 20px 18px; } .page h2 { font-size: 28px; } .steps { grid-template-columns: 1fr; gap: 14px; } .step, .step:first-child { grid-template-columns: 116px 1fr; gap: 12px; } .step p { font-size: 15px; }
+    .page { padding: 20px 18px; } .page h2 { font-size: 28px; } .steps { grid-template-columns: 1fr; gap: 14px; } .step, .step:first-child, .step:last-child { grid-template-columns: 116px 1fr; gap: 12px; } .step p { font-size: 15px; }
   }
   @media (max-width: 900px) and (orientation: landscape) and (max-height: 540px) {
     /* a phone on its side: the board takes the height, everything else stands beside it */

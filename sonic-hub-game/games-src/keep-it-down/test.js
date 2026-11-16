@@ -74,31 +74,51 @@ test('standing either side of an enemy Ram takes nothing: it has to be pushed', 
   playMove(S, mv('h6', 'h5', STEP));
   assert.strictEqual(playMove(S, mv('c5', 'd5', PUSH)).what, 'crush', 'pushed against the Ram on the far side, it goes');
 });
-test('a Gate or a Keep cannot be shoved; a Ram takes it only with something behind it', () => {
-  // in front of a Keep on the back rank: the wall is behind it
-  const A = board(['...kk...', '...R....', '........', '........', '........', '........', '........', '...KK...']);
-  assert.ok(can(A, 'd7', 'd8', PUSH));
-  const ev = playMove(A, mv('d7', 'd8', PUSH));
-  assert.strictEqual(ev.what, 'take'); assert.strictEqual(ev.anvil, -1); assert.strictEqual(at(A, 'd8'), RAM); assert.deepStrictEqual(A.keeps, [2, 1]);
-  // beside a Keep: the other Keep is behind it
-  const B = board(['..Rkk...', '........', '........', '........', '........', '........', '........', '...KK...']);
-  assert.ok(can(B, 'c8', 'd8', PUSH));
-  // … and with that other Keep gone and nothing in its place, nothing is behind it
-  const C = board(['..Rk....', '........', '........', '........', '........', '........', '........', '...KK...']);
-  assert.ok(!can(C, 'c8', 'd8', PUSH)); assert.ok(!can(C, 'c8', 'd8', STEP));
+test('a Gate cannot be shoved; a Ram takes it only with something behind it', () => {
   // a Gate at home falls to a Ram beside it (the Keep is behind) or in front of it (the wall is behind)
   const D = board(['.Rgkk...', '..R.....', '........', '........', '........', '........', '........', '...KK...']);
   assert.ok(can(D, 'b8', 'c8', PUSH)); assert.ok(can(D, 'c7', 'c8', PUSH));
+  const ev = playMove(D, mv('c7', 'c8', PUSH));
+  assert.strictEqual(ev.what, 'take'); assert.strictEqual(ev.anvil, -1, 'the wall'); assert.strictEqual(at(D, 'c8'), RAM); assert.strictEqual(at(D, 'c7'), 0);
   // a Gate out in front of its Keep falls to a Ram in front of it (the Keep is behind) …
   const E = board(['...kk...', '...g....', '...R....', '........', '........', '........', '........', '...KK...']);
-  assert.ok(can(E, 'd6', 'd7', PUSH));
+  assert.ok(can(E, 'd6', 'd7', PUSH)); assert.strictEqual(describe(E, mv('d6', 'd7', PUSH)).anvil, sq('d8'));
   // … but from the side only when something stands on the far side
   const F = board(['...kk...', '..Rg....', '........', '........', '........', '........', '........', '...KK...']);
-  assert.ok(!can(F, 'c7', 'd7', PUSH));
+  assert.ok(!can(F, 'c7', 'd7', PUSH)); assert.ok(!can(F, 'c7', 'd7', STEP));
   const Gp = board(['...kk...', '..Rgg...', '........', '........', '........', '........', '........', '...KK...']);
   assert.ok(can(Gp, 'c7', 'd7', PUSH), 'the other Gate is behind it');
   const H = board(['...kk...', '..RgR...', '........', '........', '........', '........', '........', '...KK...']);
   assert.ok(can(H, 'c7', 'd7', PUSH), 'even the pusher’s own Ram will do');
+});
+test('a Keep cannot be shoved, and needs nothing behind it: a Ram that gets to it takes it', () => {
+  // from in front
+  const A = board(['...kk...', '...R....', '........', '........', '........', '........', '........', '...KK...']);
+  assert.ok(can(A, 'd7', 'd8', PUSH));
+  const ev = playMove(A, mv('d7', 'd8', PUSH));
+  assert.strictEqual(ev.what, 'take'); assert.strictEqual(ev.anvil, -2, 'nothing behind it is asked for'); assert.ok(ev.loud);
+  assert.strictEqual(at(A, 'd8'), RAM); assert.strictEqual(at(A, 'd7'), 0); assert.deepStrictEqual(A.keeps, [2, 1]); assert.strictEqual(A.alarm, sq('d8'));
+  // from beside it, with the other Keep on the far side
+  const B = board(['..Rkk...', '........', '........', '........', '........', '........', '........', '...KK...']);
+  assert.ok(can(B, 'c8', 'd8', PUSH));
+  // from beside it with an empty square on the far side: taken all the same, and nothing is shoved along
+  for (const [rows, from] of [[['..Rk....', '........'], 'c8'], [['...kR...', '........'], 'e8'], [['.r.kR...', '...r....'], 'e8']]) {
+    const C = board([...rows, '........', '........', '........', '........', '........', '...KK...']);
+    assert.ok(can(C, from, 'd8', PUSH), from); assert.ok(!can(C, from, 'd8', STEP), 'it is a capture, never a plain step');
+    const was = Array.from(C.b), e = playMove(C, mv(from, 'd8', PUSH));
+    assert.strictEqual(e.what, 'take'); assert.strictEqual(e.pushedTo, -1); assert.strictEqual(e.anvil, -2);
+    assert.strictEqual(at(C, 'd8'), RAM); assert.strictEqual(at(C, from), 0);
+    assert.strictEqual(C.b.filter(p => p === KEEP + 4).length, 0, 'the Keep is gone, not moved');
+    assert.deepStrictEqual(C.over, { winner: LIGHT, loser: DARK, why: 'keeps' }, 'and it was the last one');
+    undoMove(C);
+    assert.deepStrictEqual(Array.from(C.b), was, 'taking the move back stands the Keep up again'); assert.deepStrictEqual(C.keeps, [2, 1]); assert.strictEqual(C.over, null);
+  }
+  // Dark takes Light's the same way
+  const E = board(['...kk...', '........', '........', '........', '........', '........', '........', '..rK....'], DARK);
+  assert.ok(can(E, 'c1', 'd1', PUSH)); assert.strictEqual(playMove(E, mv('c1', 'd1', PUSH)).what, 'take'); assert.strictEqual(E.over.winner, DARK);
+  // a Keep is never a Ram's own to walk through, and an empty square beside it is still just a step
+  const F = board(['...kk...', '........', '........', '........', '........', '........', '........', '..RK....']);
+  assert.deepStrictEqual(movesFrom(F, sq('c1')).map(m => sqName(mTo(m)) + mKind(m)).sort(), ['b1' + STEP, 'c2' + STEP]);
 });
 test('a Gate has two posts, beside its Keep and in front of it, and takes an enemy Ram standing on the other one', () => {
   const S = newGame();
@@ -226,6 +246,29 @@ test('every level plays whole games with allowed moves only, and the games end',
 test('every level takes the last Keep when it can', () => {
   const S = board(['...k....', '...R....', 'r.......', '........', '........', '........', '........', '...KK...']);
   for (const level of LEVELS) for (let i = 0; i < 20; i++) assert.strictEqual(AI.think(S, { level, timeMs: 20, rand: rng(i) }).move, mv('d7', 'd8', PUSH), level);
+});
+test('every level takes the last Keep from the side, with nothing behind it', () => {
+  const S = board(['..Rk....', '........', 'r.......', '........', '........', '........', '........', '...KK...']);
+  for (const level of LEVELS) for (let i = 0; i < 20; i++) assert.strictEqual(AI.think(S, { level, timeMs: 20, rand: rng(i) }).move, mv('c8', 'd8', PUSH), level);
+});
+test('medium and hard see a Ram beside their last Keep for what it is', () => {
+  // Light's last Keep on d1, its Gate out in front. Dark's Ram has reached e1: the square beyond the Keep is empty, and it takes all the same
+  const lost = board(['...kk...', '........', 'rrr.....', '........', '........', 'RRR.....', '...G....', '...Kr..R']);
+  assert.ok(can(position(lost.b, DARK), 'e1', 'd1', PUSH), 'the threat is real');
+  for (const level of ['medium', 'hard']) assert.ok(AI.think(lost, { level, timeMs: 60, rand: rng(2) }).score < -100000, level + ' knows the game is lost: nothing of Light’s gets at that Ram in one move');
+  // with a Ram of its own on f1 there is exactly one answer: push the intruder against the Keep
+  const T = board(['...kk...', '........', 'rrr.....', '........', '........', 'RRR.....', '...G....', '...KrR..']);
+  for (const level of ['medium', 'hard']) assert.strictEqual(AI.think(T, { level, timeMs: 60, rand: rng(5) }).move, mv('f1', 'e1', PUSH), level);
+  // a Ram one step from the Keep's side: a careless move loses to it, and medium and hard do not make one
+  const U = ['...kk...', '........', 'rrr.....', '........', '........', 'RRR.....', '...Gr...', '...K..R.'];
+  const forced = S2 => AI.think(S2, { level: 'hard', timeMs: 150, rand: rng(7) }).score > 100000;   // can the side to move take the last Keep, whatever the answer?
+  const careless = board(U); playMove(careless, mv('a3', 'a4', STEP));
+  assert.ok(forced(careless), 'left alone, the Ram steps beside the Keep and takes it');
+  for (const level of ['medium', 'hard']) {
+    const V = board(U);
+    playMove(V, AI.think(V, { level, timeMs: 60, rand: rng(6) }).move);
+    assert.ok(!forced(V), level + ' has kept its last Keep safe');
+  }
 });
 test('medium and hard strike a Ram that has just taken a Gate beside their Keep, and guard a Keep that is about to fall', () => {
   const S = board(['...kk...', '........', '........', '........', '..RRR...', '........', '........', '.rGKKG..'], DARK);

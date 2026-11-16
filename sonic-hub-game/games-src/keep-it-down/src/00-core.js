@@ -6,9 +6,10 @@
            if it has no room to go (any piece behind it, or the wall) it is taken and the shover has its square.
            A Ram that has just been shoved may not push back at the Ram that shoved it on the very next turn.
      Gate  Two a side, one for each Keep. It stands on one of two posts, beside its Keep or in front of it, and steps
-           from one to the other, taking an enemy Ram that stands there. A Ram cannot shove a Gate or a Keep, but
-           takes it the way it takes a Ram: by pushing when there is no room behind.
-     Keep  Two a side, never moves. A Ram that has just taken something on a square next to a Keep has made a noise:
+           from one to the other, taking an enemy Ram that stands there. A Ram cannot shove a Gate, but takes it the
+           way it takes a Ram: by pushing when there is no room behind.
+     Keep  Two a side, never moves. It cannot be shoved either, so a Ram that gets to it simply takes it: nothing
+           has to stand behind. A Ram that has just taken something on a square next to a Keep has made a noise:
            on the next move, and only then, that Keep may strike it off the board. A Ram that only walked up is safe.
    Lose both Keeps and you lose. */
 const LIGHT = 0, DARK = 1, SIDE = ['Light', 'Dark'];
@@ -75,8 +76,9 @@ function gen(S, out, off = 0) {
         if (!q) { out[n++] = s | t << 6; continue; }
         if ((q >> 2) === me) continue;
         if (q === foeRam) { if (s === S.koP && t === S.koQ) continue; out[n++] = s | t << 6 | PUSH << 12; continue; }
-        const u = NB[t * 4 + d];                                        // a Gate or a Keep: it does not budge,
-        if (u < 0 || b[u]) out[n++] = s | t << 6 | PUSH << 12;         // and is taken only with something behind it
+        if ((q & 3) === KEEP) { out[n++] = s | t << 6 | PUSH << 12; continue; }   // a Keep cannot be shoved: it is taken where it stands
+        const u = NB[t * 4 + d];                                        // a Gate does not budge either,
+        if (u < 0 || b[u]) out[n++] = s | t << 6 | PUSH << 12;         // but is taken only with something behind it
       }
     } else if (p === gate) {
       const t = POST[s];
@@ -105,7 +107,7 @@ function make(S, m) {
     if ((q & 3) === RAM && beyond >= 0 && !b[beyond]) {                 // room behind: it is shoved along
       b[beyond] = q; pushed = beyond; koP = beyond; koQ = to;
       S.hl ^= ZL[beyond * 8 + q]; S.hh ^= ZH[beyond * 8 + q];
-    } else { cap = q; alarm = to; }                                     // no room: it is taken, and that makes a noise
+    } else { cap = q; alarm = to; }                                     // no room, or a Keep: it is taken, and that makes a noise
     b[to] = p; b[from] = 0;
     S.hl ^= ZL[to * 8 + q] ^ ZL[to * 8 + p] ^ ZL[from * 8 + p]; S.hh ^= ZH[to * 8 + q] ^ ZH[to * 8 + p] ^ ZH[from * 8 + p];
   } else if (kind === SWING) {
@@ -155,7 +157,7 @@ function wokenKeeps(S) {
 
 /** What a move is going to do, worked out before it is played: for the hints on the board and for showing it happen.
  *  what:  step | shove | crush (a Ram taken) | take (a Gate or Keep taken) | swing | slam (a Gate taking a Ram) | strike | pass
- *  anvil: what the taken piece was pushed against: a square, or −1 for the wall
+ *  anvil: what the taken piece was pushed against: a square, or −1 for the wall; −2 for a Keep, which needs nothing behind it
  *  wakes: the enemy Keeps that will be allowed to answer, because the move takes something right next to them */
 function describe(S, m) {
   const b = S.b, from = m & 63, to = (m >> 6) & 63, kind = m >> 12, side = S.turn;
@@ -169,7 +171,7 @@ function describe(S, m) {
     const q = b[to], beyond = NB[to * 4 + dirOf(from, to)];
     if ((q & 3) === RAM && beyond >= 0 && !b[beyond]) { ev.what = 'shove'; ev.pushedTo = beyond; ev.victim = q; }
     else {
-      ev.what = (q & 3) === RAM ? 'crush' : 'take'; ev.victim = q; ev.anvil = beyond; ev.loud = true;
+      ev.what = (q & 3) === RAM ? 'crush' : 'take'; ev.victim = q; ev.anvil = (q & 3) === KEEP ? -2 : beyond; ev.loud = true;
       for (let d = 0; d < 4; d++) { const s = NB[to * 4 + d]; if (s >= 0 && b[s] === KEEP + ((1 - side) << 2)) ev.wakes.push(s); }
     }
   }
