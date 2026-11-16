@@ -1,0 +1,22 @@
+{
+  "name": "sonic-hub-world",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Nơi chốn: the places of a life (home, school, the streets around, a homestay…), each rebuilt in 3D to walk through.",
+  "type": "module",
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "build": "node build.mjs",
+    "start": "serve dist -l ${PORT:-3000}",
+    "test": "node build.mjs && node tools/check.mjs"
+  },
+  "dependencies": {
+    "esbuild": "0.24.0",
+    "serve": "^14.2.3"
+  },
+  "devDependencies": {
+    "three": "0.170.0"
+  }
+}
