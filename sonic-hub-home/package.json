@@ -1,0 +1,16 @@
+{
+  "name": "nha-van-bao",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Flat 507, Vạn Bảo, 2005–2012: a 3D page to walk through. Built into one HTML file.",
+  "type": "module",
+  "scripts": {
+    "build": "node build.mjs",
+    "build:min": "node build.mjs --min",
+    "test": "node build.mjs && node tools/tourcheck.mjs && node tools/interact.mjs"
+  },
+  "dependencies": {
+    "esbuild": "0.24.0",
+    "three": "0.170.0"
+  }
+}
