@@ -1,4 +1,4 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="utf-8">
@@ -15,7 +15,7 @@
   :root { box-sizing: border-box; color-scheme: light;
     --sea: #2c86ab; --deep: #145470; --ink: #14243a; --paper: #f1e6c8; --card: #fbf5e3; --brass: #e2b04a; --brass-lo: #94681a; --red: #d7263d; --blue: #2458c5; --coral: #ff7f51; --muted: #5a6470;
     --display: "Stardos Stencil", "Barlow Semi Condensed", Impact, sans-serif; --ui: "Barlow Semi Condensed", "Arial Narrow", system-ui, sans-serif;
-    --vh: 100vh; --side: 340px; --bh: min(calc(var(--vh) - 86px), calc((100vw - var(--side) - 76px) * 1.0874), 860px); }
+    --vh: 100vh; --top: env(safe-area-inset-top, 0px); --side: 340px; --bh: min(calc(var(--vh) - var(--top) - 86px), calc((100vw - var(--side) - 76px) * 1.0874), 860px); }
   @supports (height: 100dvh) { :root { --vh: 100dvh; } }
   *, *::before, *::after { box-sizing: inherit; }
   html { -webkit-text-size-adjust: 100%; }
@@ -160,7 +160,7 @@
   .card-lock { padding: 0 12px; font-size: 14.5px; line-height: 1.25; color: #b9c7d3; }
 
   /* boxes over the screen */
-  #overlay { position: fixed; inset: 0; z-index: 60; display: grid; place-items: center; padding: 14px; overflow: auto; background: rgba(8,24,40,.66); }
+  #overlay { position: fixed; inset: 0; z-index: 60; display: grid; place-items: center; padding: calc(14px + env(safe-area-inset-top, 0px)) 14px calc(14px + env(safe-area-inset-bottom, 0px)); overflow: auto; background: rgba(8,24,40,.66); }
   .dlg { width: min(500px, 100%); padding: 22px 24px 20px; border-radius: 10px; background: var(--card); box-shadow: 0 0 0 3px #7a5a2a, 0 30px 70px rgba(4,14,26,.7); } .dlg.wide { width: min(860px, 100%); }
   .dlg h2 { font: 700 34px/1 var(--display); } .dlg > p { margin-top: 8px; } .dlg > .dlg-sub { margin-top: 3px; color: var(--muted); } .dlg > .dlg-house { padding: 8px 11px; border-radius: 5px; background: rgba(20,36,58,.07); } .dlg-house span { display: block; font-size: 14.5px; color: var(--muted); } .dlg > .dlg-when { font-weight: 600; }
   .res-head.r2 { color: var(--red); font-size: 50px; } .res-head.r0 { color: var(--blue); font-size: 44px; } .res-why { color: var(--muted); }
@@ -170,7 +170,7 @@
   .rules p { margin-top: 10px; font-size: 16.5px; line-height: 1.42; max-width: 86ch; } .rule-pieces { margin: 12px 0 2px; border-collapse: collapse; font-size: 16px; line-height: 1.3; } .rule-pieces td, .rule-pieces th { padding: 4px 10px 4px 0; text-align: left; vertical-align: middle; } .rule-pieces th { white-space: nowrap; font-weight: 700; } .rules + .btn { margin-top: 16px; }
 
   @media (max-width: 900px) {
-    :root { --bh: min(calc((100vw - 16px) * 1.0874), calc(var(--vh) - 250px)); }
+    :root { --bh: min(calc((100vw - 16px) * 1.0874), calc(var(--vh) - var(--top) - 250px)); }
     body { font-size: 16.5px; } .bar { min-height: 48px; gap: 6px; padding-left: calc(8px + env(safe-area-inset-left, 0px)); padding-right: calc(8px + env(safe-area-inset-right, 0px)); } .chip { min-height: 36px; padding: 0 10px; font-size: 14px; } .bar-title { font-size: 18px; flex-basis: 100%; order: 9; display: none; }
     .table { grid-template-columns: minmax(0, 1fr); gap: 8px; justify-items: center; padding: 0 8px calc(14px + env(safe-area-inset-bottom, 0px)); }
     .board-wrap { order: 2; width: calc(var(--bh) * .9196); } .cutin { grid-template-columns: 60px 1fr; gap: 10px; padding: 8px 12px 8px 8px; } .cutin .portrait { height: 60px; } .cutin p { font-size: 16.5px; } .side { display: contents; }
@@ -187,7 +187,7 @@
   }
   @media (max-width: 900px) and (orientation: landscape) and (max-height: 540px) {
     .chart-wrap { flex-direction: row-reverse; } .chart { min-height: 250px; margin: 2px 8px 10px 0; } .logbook { position: static; align-self: flex-end; width: 232px; margin: 0 10px 10px calc(8px + env(safe-area-inset-left, 0px)); padding: 10px 12px; } .logbook p:first-of-type, .pin em { display: none; }
-    :root { --bh: calc(var(--vh) - 56px); --side: min(300px, calc(100vw - var(--bh) * .9196 - 40px)); }
+    :root { --bh: calc(var(--vh) - var(--top) - 56px); --side: min(300px, calc(100vw - var(--bh) * .9196 - 40px)); }
     .table { grid-template-columns: calc(var(--bh) * .9196) var(--side); align-items: start; justify-content: center; gap: 12px; } .board-wrap { order: 0; grid-row: 1 / span 6; } .her, .statusbox, .orders, .tray, .btns { grid-column: 2; } .her .portrait { height: 48px; }
   }
   @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } }
