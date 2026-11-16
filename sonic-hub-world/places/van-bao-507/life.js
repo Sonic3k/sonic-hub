@@ -4,13 +4,13 @@ import * as THREE from 'three';
 export function buildLife(scene, ctx) {
   const fish = [];
   if (ctx.fish) {
-    const f = ctx.fish, cols = ['#f28a2e', '#f4f1e8', '#e8552e', '#f2c23a', '#2a2a2e', '#f28a2e', '#e8e2d0'];
+    const f = ctx.fish, alongX = f.axis === 'x', cols = ['#f28a2e', '#f4f1e8', '#e8552e', '#f2c23a', '#2a2a2e', '#f28a2e', '#e8e2d0'];
     for (let i = 0; i < 7; i++) {
       const g = new THREE.SphereGeometry(0.5, 10, 8); g.scale(0.022 + (i % 3) * 0.004, 0.02, 0.055 + (i % 2) * 0.012);
       const tail = new THREE.ConeGeometry(0.014, 0.03, 4); tail.rotateX(-Math.PI / 2); tail.translate(0, 0, -0.04);
       const mat = new THREE.MeshStandardMaterial({ color: cols[i], roughness: 0.4, emissive: cols[i], emissiveIntensity: 0.25 });
       const m = new THREE.Group(); m.add(new THREE.Mesh(g, mat), new THREE.Mesh(tail, mat)); scene.add(m);
-      fish.push({ m, x: f.x0 + (f.x1 - f.x0) * ((i * 0.37) % 1), y: f.y0 + (f.y1 - f.y0) * ((i * 0.61 + 0.2) % 1), ph: i * 1.7, sp: 0.16 + (i % 4) * 0.05 });
+      fish.push({ m, across: alongX ? f.z0 + (f.z1 - f.z0) * ((i * 0.37) % 1) : f.x0 + (f.x1 - f.x0) * ((i * 0.37) % 1), y: f.y0 + (f.y1 - f.y0) * ((i * 0.61 + 0.2) % 1), ph: i * 1.7, sp: 0.16 + (i % 4) * 0.05 });
     }
   }
   const pend = new THREE.Group();
@@ -31,7 +31,14 @@ export function buildLife(scene, ctx) {
     /** every clock in the flat shows the same time */
     setClocks(hh, mm) { for (const c of hands) { c.h.rotation.z = -((hh % 12) + mm / 60) / 12 * Math.PI * 2; c.m.rotation.z = -mm / 60 * Math.PI * 2; } },
     animate(dt, clock) {
-      if (ctx.fish) { const f = ctx.fish, span = f.z1 - f.z0; for (const q of fish) { const u = (clock * q.sp + q.ph) % 2, k = u < 1 ? u : 2 - u, e = k * k * (3 - 2 * k); q.m.position.set(q.x + Math.sin(clock * 0.7 + q.ph) * 0.02, q.y + Math.sin(clock * 0.9 + q.ph * 2) * 0.025, f.z0 + span * e); q.m.rotation.y = u < 1 ? 0 : Math.PI; } }
+      if (ctx.fish) {            // each fish runs the length of the tank and back, at its own depth and height
+        const f = ctx.fish, alongX = f.axis === 'x', from = alongX ? f.x0 : f.z0, span = alongX ? f.x1 - f.x0 : f.z1 - f.z0, sway = alongX ? (f.z1 - f.z0) * 0.3 : 0.02;
+        for (const q of fish) {
+          const u = (clock * q.sp + q.ph) % 2, k = u < 1 ? u : 2 - u, e = k * k * (3 - 2 * k);
+          const run = from + span * e, side = q.across + Math.sin(clock * 0.7 + q.ph) * sway, y = q.y + Math.sin(clock * 0.9 + q.ph * 2) * 0.025;
+          if (alongX) { q.m.position.set(run, y, side); q.m.rotation.y = u < 1 ? Math.PI / 2 : -Math.PI / 2; } else { q.m.position.set(side, y, run); q.m.rotation.y = u < 1 ? 0 : Math.PI; }
+        }
+      }
       pend.rotation.z = Math.sin(clock * 3.6) * 0.26;
     },
   };

@@ -37,7 +37,7 @@ try {
   await page.click('#b-rooms'); ok('rooms list opens', await page.evaluate(() => document.getElementById('rooms').classList.contains('on')));
   await page.click('#room-list li:nth-child(4) button'); await page.waitForTimeout(700); await wait(page, 100);
   const p6 = await pose(page);
-  ok('"Bếp" takes you to the kitchen', Math.abs(p6[0] - 2.55) < 0.05 && Math.abs(p6[2] - 3.95) < 0.05 && await page.evaluate(() => !document.getElementById('rooms').classList.contains('on')), JSON.stringify(p6));
+  ok('"Bếp" takes you to the kitchen', Math.abs(p6[0] - 2.55) < 0.05 && Math.abs(p6[2] - 3.4) < 0.05 && await page.evaluate(() => !document.getElementById('rooms').classList.contains('on')), JSON.stringify(p6));
   // year
   await page.focus('#year'); for (let i = 0; i < 3; i++) await page.keyboard.press('ArrowRight'); await wait(page, 300);
   ok('year slider moves by keys', await page.evaluate(() => document.getElementById('year-out').textContent === '2010' && document.getElementById('where').textContent.endsWith('2010') && document.documentElement.dataset.era === '2008'), await page.evaluate(() => document.getElementById('year-out').textContent));
@@ -66,7 +66,7 @@ try {
   const { page, ctx, logs } = await open({ width: 900, height: 560 }, false, { query: '?at=2010-06-15T21:00', hash: '#bep' });
   const st = await page.evaluate(() => ({ s: window.__world.state(), pose: window.__world.pose(), era: document.documentElement.dataset.era, toi: document.getElementById('h-toi').getAttribute('aria-pressed'), where: document.getElementById('where').textContent, back: [...document.querySelectorAll('.back')].every(a => a.hidden) }));
   ok('?at=2010-06-15T21:00 opens on 2010, in the evening', st.s.year === 2010 && st.s.hour === 'toi' && st.toi === 'true' && st.era === '2008' && st.where.endsWith('2010'), JSON.stringify(st.s));
-  ok('#bep opens in the kitchen', Math.abs(st.pose[0] - 2.55) < 0.05 && Math.abs(st.pose[2] - 3.95) < 0.05, JSON.stringify(st.pose));
+  ok('#bep opens in the kitchen', Math.abs(st.pose[0] - 2.55) < 0.05 && Math.abs(st.pose[2] - 3.4) < 0.05, JSON.stringify(st.pose));
   ok('a lone copy of the page shows no link back to the list', st.back);
   await ctx.close();
   const b = await open({ width: 900, height: 560 }, false, { query: '?at=1999-01-01T03:00' });
