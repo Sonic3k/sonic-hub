@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#F6F8F5">
+<title>Nơi chốn · Sonic Hub</title>
+<meta name="description" content="Những nơi đã sống, đã học, đã đi qua, dựng lại bằng 3D để bước vào đi lại.">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Phudu:wght@500;700;800&family=Be+Vietnam+Pro:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+/* The list of places, in Sonic Hub's own hand (sonic-hub-web: flat, square, ink on cool paper; Phudu for what is
+   named, Be Vietnam Pro for what is said). Each place is a door, as on the hub's Portal page: its face in the ink of
+   its era, with its plan drawn on it. */
+:root {
+  color-scheme: light;
+  --bg: #F6F8F5; --paper: #FDFEFC; --line: #D0D6D2; --ink: #1F2630; --ink2: #4D5863; --ink3: #68737D;
+  --display: Phudu, "Be Vietnam Pro", system-ui, sans-serif; --sans: "Be Vietnam Pro", system-ui, sans-serif;
+}
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body { margin: 0; background: var(--bg); color: var(--ink); font-family: var(--sans); font-size: 16px; line-height: 1.5; }
+a { color: inherit; }
+:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; }
+.top { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 12px clamp(16px, 4vw, 48px); border-bottom: 1px solid var(--line); }
+.top a { display: inline-flex; align-items: center; min-height: 44px; text-decoration: none; font-size: 14px; font-weight: 600; }
+.top .mark { font-family: var(--display); font-size: 19px; font-weight: 800; letter-spacing: .02em; text-transform: uppercase; }
+.wrap { max-width: 1100px; margin: 0 auto; padding: clamp(28px, 6vw, 64px) clamp(16px, 4vw, 48px) 72px; }
+h1 { margin: 0; font-family: var(--display); font-size: clamp(60px, 15vw, 138px); font-weight: 800; line-height: .86; letter-spacing: -.01em; text-transform: uppercase; }
+.lede { max-width: 54ch; margin: 18px 0 0; font-size: 17px; color: var(--ink2); }
+.places { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 430px), 1fr)); gap: 24px; margin: clamp(28px, 5vw, 48px) 0 0; padding: 0; list-style: none; }
+.place { display: flex; flex-direction: column; height: 100%; background: var(--paper); box-shadow: inset 0 0 0 1px var(--line); text-decoration: none; }
+.face { position: relative; display: flex; align-items: flex-end; min-height: 250px; padding: 0 22px 18px; overflow: hidden; background: var(--c); color: var(--p); }
+.face svg { position: absolute; top: 22px; right: 22px; width: 58%; height: 150px; fill: none; stroke: currentColor; stroke-width: 1.5; opacity: .6; }
+.face .yrs { position: absolute; top: 20px; left: 22px; font-family: var(--display); font-size: 16px; font-weight: 700; letter-spacing: .04em; font-variant-numeric: tabular-nums; }
+.face b { position: relative; font-family: var(--display); font-size: clamp(36px, 8vw, 48px); font-weight: 800; line-height: .95; text-transform: uppercase; text-wrap: balance; }
+.body { display: flex; flex: 1; flex-direction: column; gap: 6px; padding: 18px 22px 22px; }
+.where { font-size: 12.5px; font-weight: 600; letter-spacing: .04em; text-transform: uppercase; color: var(--ink3); }
+.sub { font-size: 15px; font-weight: 600; }
+.blurb { font-size: 15.5px; line-height: 1.55; color: var(--ink2); }
+.go { display: inline-flex; align-items: center; align-self: flex-start; min-height: 44px; margin-top: 14px; padding: 6px 18px; background: var(--c); color: var(--p); font-size: 15px; font-weight: 700; }
+a.place:hover .go { filter: brightness(1.12); }
+.next { max-width: 60ch; margin: 40px 0 0; padding-top: 18px; border-top: 1px solid var(--line); font-size: 15px; color: var(--ink2); }
+.next b { font-weight: 600; color: var(--ink); }
+@media (max-width: 520px) { .face { min-height: 200px; padding: 0 16px 14px; } .face svg { top: 16px; right: 16px; height: 110px; } .face .yrs { top: 14px; left: 16px; } .body { padding: 16px 16px 18px; } }
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+</head>
+<body>
+<header class="top">
+  <a class="mark" href="{{hub}}">Sonic Hub</a>
+  <a href="{{hub}}/portal">← Portal</a>
+</header>
+<main class="wrap">
+  <h1>Nơi chốn</h1>
+  <p class="lede">Những nơi đã sống, đã học, đã đi qua, dựng lại bằng 3D để bước vào đi lại. Mỗi nơi mở đúng những năm của nó; chỗ nào dựng theo ảnh và video, chỗ nào là đoán, đều ghi ngay trong đó.</p>
+  <ul class="places">
+    {{cards}}
+  </ul>
+  <p class="next"><b>Chưa dựng:</b> trường học, đường quanh nhà, homestay.</p>
+</main>
+<!-- {{count}} place(s); the same list as data: /places.json -->
+</body>
+</html>
