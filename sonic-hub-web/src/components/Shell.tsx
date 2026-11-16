@@ -20,7 +20,7 @@ import { HOME_PATHS, MomentProvider, momentHref, useMoment } from '../lib/moment
 import { angelsByYear, useMetYears } from '../lib/people';
 
 interface Tab { n: string; to: string; c: string; end?: boolean }
-/* The menu in its groups: time · what is kept · people · play and listen · the sites of their own (Huyền học, Bóng đá). */
+/* The menu in its groups: time · what is kept · people · play and listen · the sites of their own (Huyền học, Bóng đá, Nơi chốn). */
 const GROUPS: Tab[][] = [
   [{ n: 'Hôm nay', to: '/', c: '--ink', end: true }, { n: 'Dòng thời gian', to: '/timeline', c: '--ink' }],
   [{ n: 'Ảnh', to: '/photos', c: '--photo' }, { n: 'Ký ức', to: '/memories', c: '--memory' }, { n: 'Nhật ký', to: '/journal', c: '--journal' }],
@@ -42,7 +42,7 @@ function Frame() {
   const loc = useLocation(), tl = useTimeline(), { pick, picked, moment } = useMoment(), path = loc.pathname;
   const [more, setMore] = useState(false), [filters, setFilters] = useState(false);
   const inPortal = path.startsWith('/portal');
-  /* pages with no sidebar: one thing being read (a note, a memory, a game, a list, a person and what hangs under them, a thread), and the Portal's two doors */
+  /* pages with no sidebar: one thing being read (a note, a memory, a game, a list, a person and what hangs under them, a thread), and the Portal's doors */
   const reading = /^\/(journal|memories)\/(?!events\/?$).+/.test(path) || /^\/games\/(?!series\/|play\/)[^/]+$/.test(path) || /^\/music\/lists\/[^/]+$/.test(path)
     || /^\/angels\/.+/.test(path) || /^\/forum\/t\//.test(path) || inPortal, inMemories = path.startsWith('/memories'), inJournal = path.startsWith('/journal'), inPhotos = /^\/(photos|tags)/.test(path), inAngels = path.startsWith('/angels'), inForum = path.startsWith('/forum');
   const inMoney = path.startsWith('/money'), inGames = path.startsWith('/games'), inMusic = path.startsWith('/music');

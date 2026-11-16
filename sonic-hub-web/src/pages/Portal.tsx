@@ -1,8 +1,9 @@
-/* Portal: the sites of their own that grew out of Sonic Hub — Huyền học (tử vi from grandma's notes) and Bóng đá
-   (Fantasy). Each lives at its own address (VITE_MYSTIC_URL, VITE_FOOTBALL_URL); this page only points there: two
-   doors, each in its site's colour with a drawing of what is behind it (the twelve houses of a tử vi chart, a pitch).
+/* Portal: the sites of their own that grew out of Sonic Hub — Huyền học (tử vi from grandma's notes), Bóng đá
+   (Fantasy) and Nơi chốn (the places of his life rebuilt in 3D: sonic-hub-world). Each lives at its own address
+   (VITE_MYSTIC_URL, VITE_FOOTBALL_URL, VITE_WORLD_URL); this page only points there: a door each, in its site's
+   colour with a drawing of what is behind it (the twelve houses of a tử vi chart, a pitch, the plan of a home).
    The old networks (Facebook, Yahoo…) are no longer a site here: they open inside the machines (/pc, /phone). */
-import { useEffect, type ReactNode } from 'react';
+import { useEffect, useState, type ReactNode } from 'react';
 
 interface Site { key: string; name: string; line: string; detail: string; url?: string; open: string; env: string; mark: ReactNode }
 
@@ -36,6 +37,46 @@ const PORTALS: Site[] = [
 
 const host = (u: string) => { try { return new URL(u).host; } catch { return u; } };
 
+/* ── Nơi chốn: the door knows what is behind it ──
+   sonic-hub-world publishes its list of places at /places.json (with CORS). The door reads it: it names the places
+   that are there, draws the plan of the first, and is a way in only when the site has answered. */
+const WORLD_URL = (import.meta.env.VITE_WORLD_URL ?? 'https://sonic-hub-world-production.up.railway.app').replace(/\/+$/, '');
+interface Plan { box: [number, number]; rooms: [number, number, number, number][] }
+interface Place { id: string; title: string; years: { from: number; to: number } | null; plan: Plan | null }
+/* the plan drawn until the site has answered: flat 507, the first place built */
+const HOME: Plan = { box: [1180, 845], rooms: [[120, 0, 560, 350], [692, 0, 388, 350], [255, 362, 210, 353], [480, 362, 700, 353], [120, 362, 122, 198], [120, 572, 122, 143], [120, 737, 345, 108], [0, 22, 98, 308], [1102, 20, 78, 310]] };
+const planMark = (p: Plan) => (
+  <svg viewBox={`-6 -6 ${p.box[0] + 12} ${p.box[1] + 12}`} aria-hidden="true">
+    {p.rooms.map(([x, y, w, h], i) => <rect key={i} x={x} y={y} width={w} height={h} vectorEffect="non-scaling-stroke" />)}
+  </svg>
+);
+const span = (p: Place) => (p.years ? (p.years.to > p.years.from ? ` (${p.years.from}–${p.years.to})` : ` (${p.years.from})`) : '');
+
+function WorldDoor() {
+  /* undefined: still asking · null: no answer · a list: what is there */
+  const [places, setPlaces] = useState<Place[] | null | undefined>(undefined);
+  useEffect(() => {
+    const ac = new AbortController();
+    fetch(`${WORLD_URL}/places.json`, { signal: ac.signal })
+      .then(r => (r.ok ? r.json() : Promise.reject(new Error(String(r.status)))))
+      .then((d: { places?: Place[] }) => setPlaces(Array.isArray(d.places) ? d.places : null))
+      .catch(() => { if (!ac.signal.aborted) setPlaces(null); });
+    return () => ac.abort();
+  }, []);
+  const there = places && places.length > 0 ? places : null;
+  const body = <>
+    <span className="pt-face">{planMark(there?.find(p => p.plan)?.plan ?? HOME)}<b>Nơi chốn</b></span>
+    <span className="pt-t">
+      <span className="pt-l">Những nơi đã sống, đã học, đã đi qua, dựng lại bằng 3D để bước vào đi lại.</span>
+      <span className="pt-d">{there ? `Đang có: ${there.map(p => p.title + span(p)).join(', ')}. ` : ''}Trường học, đường quanh nhà, homestay: sắp có.</span>
+      {there ? <span className="pt-go"><i>Mở Nơi chốn</i><small>{host(WORLD_URL)}</small></span>
+        : places === null ? <span className="pt-off">Chưa mở được ({host(WORLD_URL)})</span>
+        : <span className="pt-off" aria-hidden="true">&nbsp;</span>}
+    </span>
+  </>;
+  return there ? <a className="pt-door pt-world" href={WORLD_URL}>{body}</a> : <div className="pt-door pt-world">{body}</div>;
+}
+
 export default function Portal() {
   useEffect(() => { document.title = 'Portal · Sonic Hub'; return () => { document.title = 'Sonic Hub'; }; }, []);
   return (
@@ -53,6 +94,7 @@ export default function Portal() {
           </>;
           return s.url ? <a key={s.key} className={`pt-door pt-${s.key}`} href={s.url}>{body}</a> : <div key={s.key} className={`pt-door pt-${s.key}`}>{body}</div>;
         })}
+        <WorldDoor />
       </div>
     </div>
   );
