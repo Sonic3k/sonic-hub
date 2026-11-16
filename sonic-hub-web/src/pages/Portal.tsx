@@ -44,7 +44,7 @@ const WORLD_URL = (import.meta.env.VITE_WORLD_URL ?? 'https://sonic-hub-world-pr
 interface Plan { box: [number, number]; rooms: [number, number, number, number][] }
 interface Place { id: string; title: string; years: { from: number; to: number } | null; plan: Plan | null }
 /* the plan drawn until the site has answered: flat 507, the first place built */
-const HOME: Plan = { box: [1180, 845], rooms: [[120, 0, 560, 350], [692, 0, 388, 350], [255, 362, 210, 353], [480, 362, 700, 353], [120, 362, 122, 198], [120, 572, 122, 143], [120, 737, 345, 108], [0, 22, 98, 308], [1102, 20, 78, 310]] };
+const HOME: Plan = { box: [1260, 930], rooms: [[120, 0, 560, 350], [680, 230, 80, 120], [692, 0, 80, 218], [772, 0, 388, 350], [315, 362, 215, 438], [560, 362, 700, 438], [120, 362, 185, 198], [120, 572, 185, 228], [315, 822, 379, 108], [0, 22, 98, 308], [1182, 20, 78, 310]] };
 const planMark = (p: Plan) => (
   <svg viewBox={`-6 -6 ${p.box[0] + 12} ${p.box[1] + 12}`} aria-hidden="true">
     {p.rooms.map(([x, y, w, h], i) => <rect key={i} x={x} y={y} width={w} height={h} vectorEffect="non-scaling-stroke" />)}

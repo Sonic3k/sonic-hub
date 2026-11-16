@@ -7,6 +7,8 @@ import * as THREE from 'three';
 import { M, canvasTex, plateTex, rng } from '../../engine/tex.js';
 import { part } from '../../engine/kit.js';
 import { BUS27 } from './photos.js';
+import { desk, chair } from '../../engine/furn.js';
+import { piano, pianoStool } from './rooms_b.js';
 
 const XP = { os: 'Windows XP', web: 'Internet Explorer 6' };
 export const YEARS = {
@@ -25,6 +27,7 @@ export const WALL = {
   2009: 'rừng cây có sẵn của Windows Vista', 2010: 'nền mặc định của Windows 7', 2011: 'ảnh xe buýt 27 tự chụp', 2012: 'ảnh xe buýt 27 tự chụp',
 };
 /** the moment a card's links to the hub open on: 15 June of the year, at the hour being shown */
+export const PIANO_FROM = 2009;      // the first year the piano stands in the big room
 export const atOf = (year, hour) => `${year}-06-15T${hour === 'toi' ? '21:00' : '18:05'}`;
 
 /* ── screens, drawn ──────────────────────────────────────────────────── */
@@ -278,6 +281,18 @@ export function buildEra(scene, shared, ctx) {
   mk('par-empty', PD, b => { b.box(M.plain('#f3f1ea', 0.8), 0.3, 0, 0.2, 0.52, 0.03, 0.42, {}); b.box(M.books(3, 'mixed'), 0.56, 0, 0.08, 0.86, 0.2, 0.26, { uv: [0.5, 0.2], cast: false }); });
 
   const state = { year: 2007, tv: false };
+  /* the big room's north-east corner: a study desk until 2008 (the reportage about onthi.com was filmed at it on
+     23/4/2008), the piano after (it is in the photographs from September 2009; the year it came is a guess) */
+  mk('ne-desk', ctx.spots.neCorner, b => {
+    const w = M.wood('#8a4a2a', 0.6), ch = M.wood('#7a3a1c', 0.6);
+    desk(b, 1.3, 0.75, 0.6, { mat: w, ped: 0.36 });
+    b.cyl(M.plain('#e9e6dc', 0.4), 0.2, 0.75, 0.16, 0.07, 0.015, { seg: 12 }); b.bar(M.plain('#c9ccd0', 0.3, 0.8), 0.2, 0.76, 0.16, 0.27, 1.12, 0.2, 0.01, { round: true }); b.box(M.plain('#f3f1e6', 0.5), 0.2, 1.1, 0.14, 0.5, 1.14, 0.26, {});
+    b.box(M.books(4, 'school'), 0.72, 0.75, 0.06, 1.24, 0.98, 0.24, { uv: [0.6, 0.23], cast: false });
+    b.box(M.plain('#f6f4ec', 0.9), 0.46, 0.75, 0.3, 0.76, 0.765, 0.52, { cast: false }); b.box(M.plain('#3a6fd8', 0.6), 0.82, 0.75, 0.34, 0.835, 0.757, 0.48, { cast: false });
+    for (const x of [0.66, 1.22]) { b.push(x, 0, 1.24, 180); chair(b, { mat: ch }); b.pop(); }
+  });
+  mk('piano', ctx.spots.neCorner, b => { piano(b); b.push(0.38, 0, 0.85, 0); pianoStool(b); b.pop(); });
+
   function setYear(y) {
     const Y = YEARS[y]; if (!Y) return;
     state.year = y;
@@ -289,6 +304,7 @@ export function buildEra(scene, shared, ctx) {
     if (Y.phone) on('phone-' + Y.phone); if (y >= 2007) on('player');
     on('tv-' + Y.tv); on('tv-' + Y.tv + '-s');
     on(y <= 2005 ? 'par-empty' : y <= 2008 ? 'par-xp' : 'par-lcd');
+    on(y >= PIANO_FROM ? 'piano' : 'ne-desk');
     let t = calTex.get(y); if (!t) calTex.set(y, t = calendarTex(y)); cal.material.map = t; cal.material.needsUpdate = true;
   }
   function setTv(on) { state.tv = on; for (const m of tvScreens) m.material = on ? tvOn : tvOff; }

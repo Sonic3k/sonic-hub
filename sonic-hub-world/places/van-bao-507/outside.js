@@ -61,14 +61,16 @@ export function buildOutside(scene, ctx) {
   // on this side of the street, north and south of the block: low houses and a villa set back in its garden
   house(11.5, 9.2, 8.5, 6.5, 2, { roof: 'hip', color: '#e6d58a' }); house(12.5, 17.5, 7.5, 6, 3, { roof: 'hip' }); tree(16.5, 8.2, 0.8); tree(12.6, 16.2, 0.9);
   /* south: red roofs right under his window, then taller fronts behind */
-  { const rows = [[9.6, 2, 3], [17.5, 3, 4], [26, 3, 5], [35, 4, 6]];
-    for (const [z0, f0, f1] of rows) { let x = -30; while (x < 34) { const w = 4 + R() * 3.5, fl = f0 + ((R() * (f1 - f0 + 1)) | 0); if (!(z0 < 12 && x > 9.5 && x < 22)) house(x, z0 + R() * 1.2, w, 6.5 + R() * 1.5, fl, { roof: z0 < 20 ? (R() < 0.75 ? 'hip' : 'flat') : undefined }); x += w + (R() < 0.2 ? 1.5 : 0.08); } }
+  { const rows = [[10.5, 2, 3], [18.4, 3, 4], [26.9, 3, 5], [35.9, 4, 6]];
+    for (const [z0, f0, f1] of rows) { let x = -30; while (x < 34) { const w = 4 + R() * 3.5, fl = f0 + ((R() * (f1 - f0 + 1)) | 0); if (!(z0 < 13 && x > 9.5 && x < 22)) house(x, z0 + R() * 1.2, w, 6.5 + R() * 1.5, fl, { roof: z0 < 20 ? (R() < 0.75 ? 'hip' : 'flat') : undefined }); x += w + (R() < 0.2 ? 1.5 : 0.08); } }
+    b.push(0, 0, 0.9, 0);
     // the villa with the roof terrace under a red pavilion (it is in both his 2010 storm photos and the video)
     b.box(facade('#f1ede2', 1, 3, 3), -2, GROUND, 10.4, 6.5, GROUND + 10.4, 16.5, O);
     for (const [px, pz] of [[-1.5, 11], [3.4, 11], [-1.5, 14.6], [3.4, 14.6]]) b.box(M.plain('#f1eee6', 0.8), px, GROUND + 10.4, pz, px + 0.2, GROUND + 13, pz + 0.2, O);
     { const g = new THREE.ConeGeometry(Math.SQRT1_2, 1, 4, 1); g.rotateY(Math.PI / 4); g.scale(6.4, 1.5, 5.2); g.translate(1.05, GROUND + 13.75, 12.9); b.geo(roofRed, g, O); }
     for (let i = 0; i < 9; i++) b.box(M.plain('#f1eee6', 0.8), -2 + i * 1.06, GROUND + 10.4, 16.4, -1.9 + i * 1.06, GROUND + 11.3, 16.5, O);
     b.box(M.plain('#f1eee6', 0.8), -2, GROUND + 11.25, 16.38, 6.5, GROUND + 11.35, 16.52, O);
+    b.pop();
   }
   /* west: what the gallery and the living-room balcony look over — the yard with its sheds, tin roofs and trees, a few low
      houses, and across it the next blocks of the estate: grey render, five floors, caged balconies */

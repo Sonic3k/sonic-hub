@@ -98,12 +98,17 @@ Its own Railway service, like the other folders: root directory `sonic-hub-world
 ## van-bao-507: what it rests on
 
 - Two walk-through videos of June 2013 in the hub's archive (Hydrocity → [2013.06] Van Bao Home): the flat, and the
-  gallery with the stairs. Photos of 22/9/2012 and of Tết 2009 (fish tank, the Di Lặc statue).
+  gallery with the stairs. Photos of 22/9/2012, 25/5/2013 and of Tết 2009 (fish tank, the Di Lặc statue). The TV
+  reportage about onthi.com (2007-2017 → onthi.com → `onthi_vcd.mp4`), filmed in the big room on 23/4/2008.
+  `places/van-bao-507/EVIDENCE.md` goes through the plan part by part: which frame or photograph each wall, door and
+  piece of furniture rests on, how the sizes were measured, what is still a guess. Read it before moving a wall.
 - The desk of Sonic Hub (`/api/desk/at`, read for 15 June of each year): PC Win XP until 9/2008, Fujitsu FMV
   10/2005–9/2008, HP Pavilion from 9/2008 (Vista in 2009, Windows 7 from 2010), Nokia Series 40 from 2006, and the
   wallpapers. One picture in it is real: his own bus-27 photograph, the wallpaper of 2011–2012 (`photos.js`).
 
-Guesses (the page lists them too, under "Chỗ nào là đoán"): room sizes (estimated from the footage, never measured);
-the 2013 arrangement used for all of 2005–2012; the old XP tower on the parents' desk in 2006–2008; the year the flat
+Guesses (the page lists them too, under "Chỗ nào là đoán"): the sizes of the two bedrooms (the living room, kitchen, wet rooms
+and the ceiling height were measured off the pictures in the review of November 2026, to about ±0.3 m, and the south
+side was set right by the owner);
+the 2012–2013 arrangement used for all of 2005–2012 (before 2009 the archive has only the reportage of April 2008, in the big room); the old XP tower on the parents' desk in 2006–2008; the year the flat
 TV replaced the tube set (2010); which room and which side was whose; the compass direction (set from the evening sun
 on the TV wall); the neighbours' houses.
