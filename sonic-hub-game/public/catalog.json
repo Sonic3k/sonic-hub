@@ -51,11 +51,19 @@
     },
     {
       "key": "keep-it-down", "title": "Keep It Down", "alt": ["Keep-It-Down", "KeepItDown"],
-      "lang": "en", "group": "cards", "sub": "board", "machine": "web", "year": 2026, "tags": ["originals", "two-player"],
+      "lang": "en", "group": "cards", "sub": "board", "machine": "web", "year": 2026, "series": "Keep It Down", "tags": ["originals", "two-player"],
       "players": 2, "ai": 1, "inputs": ["mouse", "touch", "keyboard"], "maker": "Sonic Hub", "added": "2026-11-15",
       "kind": "Board game of shoves and sieges, against the AI or a friend",
       "blurb": "Eight Rams a side push across the board. Shove an enemy Ram, or pin it against anything and it is gone. Break through the Gates and bring both Keeps down. But go quietly: take a piece beside a Keep and its bell rings, and the Keep strikes back.",
       "shots": ["title", "play"], "play": "/games/keep-it-down"
+    },
+    {
+      "key": "keep-it-down-extended", "title": "Keep It Down Extended", "alt": ["Keep It Down: The Campaign", "Keep-It-Down Extended", "KeepItDown Extended"],
+      "lang": "en", "group": "cards", "sub": "board", "machine": "web", "year": 2026, "series": "Keep It Down", "tags": ["originals"],
+      "players": 1, "ai": 1, "inputs": ["mouse", "touch", "keyboard"], "maker": "Sonic Hub", "added": "2026-11-17",
+      "kind": "Board game campaign, you against the AI",
+      "blurb": "Keep It Down with somewhere to go. In a bookshop after closing, five opponents from the newcomer to the owner play you for points: beat someone who stands above you and the next one agrees to a game. They talk while they play, and each keeps an album that fills as you beat her.",
+      "shots": ["title", "play"], "play": "https://keepitdown-game-production.up.railway.app/"
     },
     {
       "key": "len-doi", "title": "Lên Đời", "alt": ["Len Doi", "Age Duel"],
