@@ -9,6 +9,7 @@ For every game: its title screen and one screen of play, each saved at two width
     python3 scripts/capture_covers.py muop tim-4 # only these
 
 Run it again after a game's look changes. The steps below walk each game from its title to a screen worth showing.
+A game that lives on a site of its own (`site`) is pictured there.
 With no Chromium of Playwright's own at hand, point CHROME at a browser: CHROME=/usr/bin/google-chrome python3 scripts/capture_covers.py
 
 Not taken here: Saltline (someone else's file, a 3D shooter). A browser without a graphics card draws it too slowly
@@ -48,6 +49,14 @@ GAMES = {
         title=['wait:9000'],
         ls={'keep-it-down.v1': {'cfg': {'level': 'hard', 'side': 0}, 'sound': True, 'game': {'moves': [1682,2413,1747,2283,1812,2926,2007,2153,1951,2218,1877,2469,6558,5794,5787,2209,6298,6574,6818,6054,7338,11514,6045,2527,2462,2023,1942,1503,5713,2991,7078,7085,2543,5729,1886,1763,2471,5915,7078,7094,2397,983,2738,911,2794,11955,1234,5209,6955,846,8965,4689,1,6957,2731,649,3242,4234]}}},
         play=['wait:900']),
+    # on its own site. The title picture is its first screen, the rooms. The picture of play opens a game for points
+    # against the owner at the moment she has a Ram to take: she takes it and says so
+    'keep-it-down-extended': dict(
+        site='https://keepitdown-game-production.up.railway.app/',
+        ls={'keepitdown.campaign.v1': {'points': 1104, 'peak': 1128, 'sound': True,
+            'vs': {'mina': {'w': 5, 'l': 0, 'd': 0}, 'odette': {'w': 5, 'l': 1, 'd': 0}, 'claire': {'w': 4, 'l': 2, 'd': 0}, 'vera': {'w': 3, 'l': 3, 'd': 0}, 'isolde': {'w': 1, 'l': 2, 'd': 0}},
+            'match': {'opp': 'isolde', 'rated': True, 'side': 0, 'moves': [1942,2153,1682,2413,1552,2218,6298,6305,1624,2543,1812,6379,1689,5859,5850,1698,2267,2478,2007,6054,6623,2991,1617,5722,2072,6184,5720,1178,1747,658,8898,5534,2137,5462,6177,853,1422,4429,12612,2794,6883,1893,2332,6899,2211,6444,2592]}}},
+        play=['waitsel:#said:not(:empty)', 'wait:1600']),
 }
 
 
@@ -95,7 +104,7 @@ def main(keys):
                 if ls:
                     ctx.add_init_script('(() => { const o = %s; for (const k in o) localStorage.setItem(k, JSON.stringify(o[k])); })()' % json.dumps(ls))
                 pg = ctx.new_page()
-                pg.goto(f'{base}/games/{key}', wait_until='load')
+                pg.goto(g.get('site') or f'{base}/games/{key}', wait_until='load')
                 pg.wait_for_timeout(1800)
                 # the picture is of the game alone: the link back to the portal is not part of it
                 pg.add_style_tag(content='#home, a.home, a.menu-home { visibility: hidden !important }')
