@@ -66,6 +66,14 @@
       "shots": ["title", "play"], "play": "https://keepitdown-game-production.up.railway.app/"
     },
     {
+      "key": "commander-chess", "title": "Commander Chess", "alt": ["Cờ Tư Lệnh", "Co Tu Lenh", "Commander-Chess"],
+      "lang": "en", "group": "cards", "sub": "board", "machine": "web", "year": 2026, "tags": ["originals"],
+      "players": 1, "ai": 1, "inputs": ["mouse", "touch"], "maker": "Sonic Hub", "added": "2026-11-17",
+      "kind": "Board game campaign, you against the AI",
+      "blurb": "Cờ Tư Lệnh, Nguyễn Quý Hải’s chess of land, sea and air, played by his own rules. In the officers’ mess at Port Halcyon five opponents, from an ensign to the commandant, play you for points: lose your Commander, your last ship or your last plane and the game is over. They talk while they play, and each has cards to win.",
+      "shots": ["title", "play"], "play": "https://sonic-commander-chess-production.up.railway.app/"
+    },
+    {
       "key": "len-doi", "title": "Lên Đời", "alt": ["Len Doi", "Age Duel"],
       "lang": "vi", "group": "strategy", "sub": "turn-based", "machine": "web", "year": 2026, "tags": ["originals"],
       "players": 1, "ai": 1, "inputs": ["mouse", "touch"], "maker": "Sonic Hub", "added": "2026-10-05", "highlight": true,
