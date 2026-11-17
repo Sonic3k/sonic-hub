@@ -8,6 +8,7 @@
     "build": "node build.mjs",
     "test": "node test/engine.test.js",
     "sim": "node tools/sim.js",
+    "kit": "node tools/kit.js",
     "start": "serve dist -l ${PORT:-3000}"
   },
   "dependencies": { "serve": "^14.2.3" }

@@ -8,6 +8,7 @@ page. RULES.md says where each rule comes from, and what was read and not follow
     npm test          # the rules: one check per rule, 11 positions from cotulenh.vn, random games
     npm run sim -- isolde nadia 10    # let two of the computer's players meet
     npm start         # serve dist/ (Railway runs build, then this)
+    npm run kit       # kit/ → kit-out/commander-chess-ai-kit.zip, for whoever writes a computer player of their own
 
 ## What is where
 
@@ -15,6 +16,9 @@ page. RULES.md says where each rule comes from, and what was read and not follow
 - `src/engine/10-ai.js`, `20-players.js`: the computer player, and how each opponent plays.
 - `src/game/60-campaign.js`: places, the women, what they say, points, what is saved.
 - `src/game/40-art.js`, `50-board.js`, `70-screens.js`, `80-main.js`, `src/shell.html`: everything seen.
+- `kit/`, `tools/kit.js`: the AI kit. The rules engine under one name (`CC`), the rules as text, a plain table to play at
+  (`match.html`, and `arena.js` for Node) and the contract a player's file has to keep (`kit/README.md`). Our own
+  computer player stays out of it, so that what comes back was written without seeing it.
 - `test/site-vectors.js`: what cotulenh.vn lit up for every piece in eleven positions of two games played there
   (plain moves, where it and the author agree).
 
