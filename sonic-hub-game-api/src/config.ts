@@ -62,8 +62,9 @@ function databaseConfig(env: NodeJS.ProcessEnv): DatabaseConfig {
   const db: DatabaseConfig = {
     url: opt(env, 'DATABASE_URL') ?? null,
     adminUrl: opt(env, 'DATABASE_ADMIN_URL') ?? null,
-    name: opt(env, 'GAME_DB_NAME') ?? 'game',
-    user: opt(env, 'GAME_DB_USER') ?? 'game_app',
+    // names that nothing else on the shared server is likely to bear: the role's password is set at every start
+    name: opt(env, 'GAME_DB_NAME') ?? 'game_saves',
+    user: opt(env, 'GAME_DB_USER') ?? 'game_saves_app',
     password: opt(env, 'GAME_DB_PASSWORD') ?? null,
     ssl: ssl(env),
   };

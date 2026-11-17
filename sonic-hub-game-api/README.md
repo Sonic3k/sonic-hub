@@ -58,7 +58,7 @@ TEST_DATABASE_URL=postgresql://postgres:…@localhost:5432/postgres npm test
 
 On the shared Postgres it makes its own role and database at the start, as Ôn Bài does: give it
 `DATABASE_ADMIN_URL` (the server's own connection string) and `GAME_DB_PASSWORD` instead of `DATABASE_URL`
-(`GAME_DB_NAME` and `GAME_DB_USER` default to `game` and `game_app`).
+(`GAME_DB_NAME` and `GAME_DB_USER` default to `game_saves` and `game_saves_app`; `DATABASE_SSL=no-verify` on Railway).
 
 Limits, all by environment: `PLAYERS_PER_GAME` 3, `GAMES_PER_CODE` 24, `SAVE_BYTES` 65536, and by address
 `REQUESTS_PER_MINUTE` 240, `NEW_CODES_PER_HOUR` 10, `WRONG_CODES_PER_HOUR` 30. `CORS_ORIGIN` is `*` unless set.
