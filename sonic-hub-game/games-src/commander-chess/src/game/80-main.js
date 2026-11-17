@@ -47,7 +47,8 @@ function startMatch(w, rated, side, resume) {
   buildBoard(side === BLUE);
   for (const m of resume || []) if (!quiet(m)) break;
   placeAll(G.S); wireBoard();
-  if (!resume || !resume.length) setTimeout(() => { if (G.screen === 'match') speak(pick(w.say.start), true); }, 500);
+  const token = G.token;                                      // she opens the game with a line, and has one for a game that is picked up again
+  setTimeout(() => { if (G.screen === 'match' && token === G.token && !G.S.over) { if (resume && resume.length) speak(pick(w.say.idle)); else speak(pick(w.say.start), true); } }, 500);
   nextTurn();
 }
 function saveMatch() { SAVE.match = { w: G.w.id, side: G.side, rated: G.rated, moves: G.moves.slice() }; keep(); }
