@@ -105,8 +105,7 @@ const K = 'i1=C d12=c ';                                      // two Commanders 
   S = position('g1=C g12=c g2=T(I) a12=n'); ok(!has(S, 'g2', 'h2', MOVE, m => E.mGroup(m) === 3), 'a stack between the Commanders stays too'); ok(has(S, 'g2', 'h2', MOVE, m => E.mGroup(m) === 1), 'but its tank may leave the infantry there');
   S = position('f2=H(C) f12=c a1=N'); ok(!E.exposed(S), 'a Commander inside a Headquarters is not seen'); ok(has(S, 'f2', 'g2', MOVE), 'and may come out sideways'); ok(!has(S, 'f2', 'f3'), 'not out into the line');
   S = position('k1=C d12=c h3=t a1=N'); ok(has(S, 'k1', 'i1', MOVE), 'a Commander runs along its line'); ok(!has(S, 'k1', 'h1'), 'not onto a point where it would be taken');
-  ok(!has(S, 'k1', 'g1') && !has(S, 'k1', 'e1'), 'and not over such a point either');
-  S = position('k1=C d12=c h3=t h2=I a1=N'); ok(has(S, 'k1', 'g1', MOVE), 'with the tank’s fire stopped, it passes');
+  ok(has(S, 'k1', 'g1', MOVE) && has(S, 'k1', 'e1', MOVE), 'it may pass such a point: only the other Commander’s line stops it on the way');
 }
 { // a Headquarters
   let S = position('k1=C f11=h(c) f10=I g11=S a12=n'); ok(!has(S, 'f10', 'f11') && !has(S, 'g11', 'f11'), 'infantry and missile cannot break a Headquarters with the Commander inside');
@@ -140,6 +139,7 @@ const K = 'i1=C d12=c ';                                      // two Commanders 
   S = position(K + 'k5=T k7=i j12=a'); go(S, 'k5', 'k7', CAPTURE); ok(!S.over, 'infantry gone, artillery left: the land battle is still on');
   S = position(K + 'k5=T k7=i j12=g'); go(S, 'k5', 'k7', CAPTURE); ok(S.over && S.over.winner === RED && S.over.why === 'land', 'the last of infantry, tanks and artillery lost: the battle on land');
   S = position(K + 'k5=T k7=i j12=g', RED, 'total'); go(S, 'k5', 'k7', CAPTURE); ok(!S.over, 'in total war none of that ends the game');
+  S = position(K + 'k5=T k7=g', RED, 'total'); go(S, 'k5', 'k7', CAPTURE); ok(S.over && S.over.winner === RED && S.over.why === 'alone', 'but a Commander with nobody left to command has lost, in total war too');
   S = position(K + 'c4=F a4=n k1=I k12=i'); go(S, 'c4', 'a4', SUICIDE); ok(S.over && S.over.winner === RED && S.over.why === 'sea', 'the last plane going down with the last ship has won');
   S = position(K + 'f3=F f5=g f7=i k1=I'); go(S, 'f3', 'f7', INTERCEPT); ok(S.over && S.over.winner === BLUE && S.over.why === 'air', 'the last plane thrown away has lost');
 }
@@ -160,20 +160,31 @@ const K = 'i1=C d12=c ';                                      // two Commanders 
   ok(S.top[E.sqNamed('e5')] >= 0 && S.turn === BLUE, 'a gun that moves up beside a plane does not shoot it down by that'); ok(has(S, 'f5', 'e5', CAPTURE), 'it takes it with a move, like anything else');
 }
 { // riding, and getting off
-  let S = position(K + 'f4=T g5=M f5=I a12=n');
+  let S = position(K + 'f4=T g5=M f5=I e4=I a12=n');
   ok(has(S, 'g5', 'f4', COMBINE) && has(S, 'f5', 'f4', COMBINE), 'infantry or militia mounts a tank'); go(S, 'g5', 'f4', COMBINE); S.turn = RED;
-  ok(!has(S, 'f5', 'f4', COMBINE), 'a tank carries one'); same(E.members(S, E.sqNamed('f4')).map(p => E.KIND_CODE[S.kind[p]]).join(''), 'TM', 'the tank is the carrier');
+  same(E.members(S, E.sqNamed('f4')).map(p => E.KIND_CODE[S.kind[p]]).join(''), 'TM', 'the tank is the carrier'); ok(has(S, 'f5', 'f4', COMBINE), 'a second rider may mount');
+  { const V = E.clone(S); go(V, 'f5', 'f4', COMBINE); V.turn = RED; const M = E.members(V, E.sqNamed('f4'));
+    ok(M.length === 3 && V.kind[M[0]] === TANK, 'a tank carries two'); ok(!has(V, 'e4', 'f4', COMBINE), 'and no third');
+    ok(has(V, 'f4', 'h4', MOVE, m => E.mGroup(m) === 7), 'the three move as one, at the tank’s pace'); }
   ok(has(S, 'f4', 'h4', MOVE, m => E.mGroup(m) === 3), 'the two move as one');
   const T = E.clone(S); go(T, 'f4', 'h4', MOVE, m => E.mGroup(m) === 1); ok(T.dOrg === E.sqNamed('f4') && T.turn === RED, 'the tank going on alone opens a deployment');
   const U = E.clone(T); ok(E.play(U, COMMIT_MOVE, true) && U.turn === BLUE && U.dOrg < 0, 'which may end there'); same(U.half, 1, 'and counts as one quiet turn');
   go(T, 'f4', 'e5', MOVE); ok(T.dOrg < 0 && T.turn === BLUE, 'or the militia walks off too, in the same turn');
-  S = position('g2=C d12=c g3=T a1=N a12=n'); ok(has(S, 'g2', 'g3', COMBINE), 'a Commander rides a tank');
+  S = position('g2=C d12=c g3=T(I) a1=N a12=n'); ok(has(S, 'g2', 'g3', COMBINE), 'a Commander rides a tank, beside the rider it has');
+  S = position(K + 'f4=T(MI) f6=i g5=g e4=a a12=n k12=i j12=t');                         // one turn, three takes, three ways
+  go(S, 'f4', 'f6', CAPTURE, m => S.kind[E.mActor(m)] === TANK && alone(S)(m)); ok(S.turn === RED && S.dOrg === E.sqNamed('f4'), 'the tank strikes ahead and the turn stays open');
+  go(S, 'f4', 'g5', CAPTURE, m => S.kind[E.mActor(m)] === MILITIA); go(S, 'f4', 'e4', CAPTURE, m => S.kind[E.mActor(m)] === INFANTRY);
+  ok(S.turn === BLUE && S.dOrg < 0, 'when the last of the three has gone the turn is over'); same(E.points(S)[RED], 50, 'three pieces taken in the one turn');
   S = position(K + 'b5=N(FT) b7=n d5=i c6=I'); ok(!has(S, 'b5', 'b6', MOVE, alone(S)), 'a ship does not sail from under its plane at sea'); ok(!has(S, 'c6', 'b5', COMBINE), 'a ship carries two');
   ok(has(S, 'b5', 'c5', MOVE, m => S.kind[E.mActor(m)] === TANK), 'a tank lands from the ship'); ok(has(S, 'b5', 'f5', MOVE, m => S.kind[E.mActor(m)] === AIR && E.mGroup(m) === 6), 'the plane may lift the tank off with it');
   ok(has(S, 'b5', 'd5', CAPTURE, m => S.kind[E.mActor(m)] === TANK), 'a tank storms ashore'); ok(!has(S, 'b5', 'b7', STAY, m => S.kind[E.mActor(m)] === TANK), 'but cannot fire from the deck');
   S = position(K + 'c5=N(T) c6=T c4=F'); ok(!has(S, 'c6', 'c5', COMBINE), 'a ship takes one tank only'); ok(has(S, 'c4', 'c5', COMBINE), 'a plane beside the tank is fine');
   S = position(K + 'c5=N(F) c4=F'); ok(has(S, 'c4', 'c5', COMBINE), 'a ship may carry both planes');
-  S = position(K + 'e2=F(T) e3=I'); ok(has(S, 'e2', 'e6', MOVE, m => E.mGroup(m) === 3), 'a plane flies a tank'); ok(!has(S, 'e3', 'e2', COMBINE), 'and has room for nothing else');
+  S = position(K + 'e2=F(T) e3=I e1=M d2=T'); ok(has(S, 'e2', 'e6', MOVE, m => E.mGroup(m) === 3), 'a plane flies a tank'); ok(has(S, 'e3', 'e2', COMBINE), 'and one more beside it'); ok(!has(S, 'd2', 'e2', COMBINE), 'but never two tanks');
+  go(S, 'e3', 'e2', COMBINE); S.turn = RED; { const M = E.members(S, E.sqNamed('e2')); ok(M.length === 3 && S.kind[M[0]] === AIR, 'the plane is the carrier of both'); }
+  ok(!has(S, 'e1', 'e2', COMBINE), 'three is a full stack'); ok(has(S, 'e2', 'e6', MOVE, m => E.mGroup(m) === 7), 'and it lifts both four points');
+  ok(has(S, 'e2', 'f2', MOVE, m => S.kind[E.mActor(m)] === TANK && [0, 1, 2].filter(b => (E.mGroup(m) >> b) & 1).length === 2), 'the tank drives off the plane with its rider');
+  S = position(K + 'e2=F(I) e3=M'); ok(has(S, 'e3', 'e2', COMBINE), 'a plane carries two on foot as well');
   S = position(K + 'e2=F g2=E'); ok(!has(S, 'e2', 'g2'), 'nobody carries an Engineer');
 }
 { // a game nobody wins on the board is settled on points
@@ -182,6 +193,12 @@ const K = 'i1=C d12=c ';                                      // two Commanders 
   S = position('h1=C g12=c a1=N a12=n k5=T k7=i j12=g', RED, 'total'); go(S, 'k5', 'k7', CAPTURE); S.half = 99; go(S, 'a12', 'a11');
   ok(S.over && S.over.winner === RED && S.over.pts[RED] === 10 && S.over.pts[BLUE] === 0, 'with something taken, the side with more points has it');
   same(JSON.stringify(E.points(position(K + 'a1=N'))), '[0,0]', 'nothing gone, nothing scored');
+  S = position(K + 'f10=T f11=h a1=N a12=n'); go(S, 'f10', 'f11', CAPTURE); same(JSON.stringify(E.points(S)), '[10,0]', 'a Headquarters broken is ten points');
+}
+{ // line-ups: the full one, and the short one without Engineers
+  const count = S => { const n = [0, 0]; let eng = 0; for (let p = 0; p < S.n; p++) { n[S.own[p]]++; if (S.kind[p] === ENGINEER) eng++; } return n.join('+') + ' engineers ' + eng; };
+  same(count(E.newGame()), '19+19 engineers 4', 'the standard line-up: nineteen a side'); same(count(E.newGame({ lineup: 'light' })), '17+17 engineers 0', 'the short line-up: the same without the Engineers');
+  same(count(E.newGame({ lineup: 'light', game: 'total' })), '17+17 engineers 0', 'whatever the game played');
 }
 
 /* 3 ── games at random */
@@ -195,7 +212,7 @@ function sane(S) {
 let seed = 12345; const rnd = n => { seed = (seed * 1103515245 + 12345) & 0x7fffffff; return seed % n; };
 const ends = {}; let plies = 0, deploys = 0, t0 = Date.now();
 for (let g = 0; g < 60; g++) {
-  const S = E.newGame(); let n = 0, why = '';
+  const S = E.newGame(g % 3 === 2 ? { lineup: 'light' } : undefined); let n = 0, why = '';      // every third game without Engineers
   while (n < 500) {
     const st = E.status(S); if (st) { why = st.why; break; }
     const L = E.legalMoves(S); if (!L.length) { failed++; console.log('FAIL  no move in a deployment'); break; }

@@ -17,9 +17,11 @@
                    covered. arms: how much a whole arm matters to it, its own and the other side's (a game of battles
                    is lost with the last ship, the last plane, or the last of infantry, tanks and artillery).
                    air, sea, guns, armor, foot: what it thinks its planes, ships, artillery and missiles, tanks,
-                   infantry and militia are worth. */
+                   infantry and militia are worth.
+                   ride: how much it likes the rapid march, pieces riding on a carrier for the reach it lends them
+                   (0, the plain player, never thinks of it: it only rides when a line it can see calls for it). */
 const VALUE = [0, 100, 240, 115, 110, 320, 170, 280, 450, 500, 150];
-const STYLE0 = { adv: 1, hunt: 1, guard: 1, arms: 1, air: 1, sea: 1, guns: 1, armor: 1, foot: 1 };
+const STYLE0 = { adv: 1, hunt: 1, guard: 1, arms: 1, air: 1, sea: 1, guns: 1, armor: 1, foot: 1, ride: 0 };
 const WIN = 100000;
 
 const AI = (() => {
@@ -54,6 +56,7 @@ const AI = (() => {
       else if (k === ARTILLERY || k === MISSILE) { v += Math.min(fwd, 6) * 3 * W.adv; }
       if (foe >= 0 && k !== HQ) { const d = DIST[s * NSQ + foe]; if (d <= 3) v += (4 - d) * 7 * W.hunt; }      // pressing the other Commander
       if (mine >= 0 && k !== AIR && k !== NAVY && k !== HQ) { const d = DIST[s * NSQ + mine]; if (d <= 2) v += 4 * W.guard; }   // standing by one's own
+      if (W.ride && S.car[p] >= 0) { const kc = S.kind[S.car[p]]; if (kc !== HQ && kc !== ENGINEER) v += 5 * W.ride * Math.max(0, MOVE_ORTH[kc] - MOVE_ORTH[k]); }   // riding: the reach its carrier lends it
       sc += side === RED ? v : -v;
     }
     for (let side = 0; side < 2; side++) {
