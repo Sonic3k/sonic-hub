@@ -19,8 +19,8 @@ export async function createApp(config: AppConfig): Promise<NestExpressApplicati
   app.disable('x-powered-by');
   app.setGlobalPrefix('api');
   app.useBodyParser('json', { limit: config.limits.saveBytes * 2 + 4096 });
-  // any page may call: what is kept is opened by the code a request carries, never by a cookie
-  app.enableCors({ origin: config.corsOrigins, methods: ['GET', 'PUT', 'POST', 'DELETE'], allowedHeaders: ['Authorization', 'Content-Type'], exposedHeaders: ['X-Now', 'Retry-After'], maxAge: 86400 });
+  // any page may call: nothing here goes by a cookie or by who is asking
+  app.enableCors({ origin: config.corsOrigins, methods: ['GET', 'PUT', 'DELETE'], allowedHeaders: ['Content-Type'], exposedHeaders: ['X-Now', 'Retry-After'], maxAge: 86400 });
   // A saved game is never served from a cache: what a browser reads is what was last written. Every answer also says
   // what time it is here (X-Now, in ms), so two devices with different clocks can still tell which of them played last.
   app.use((req: Request, res: Response, next: NextFunction) => {

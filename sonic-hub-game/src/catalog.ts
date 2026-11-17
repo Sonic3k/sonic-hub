@@ -42,8 +42,6 @@ export interface Game {
   play: string | null;
   /** set when the game is someone else's file, played in a frame of its own */
   frame: Frame | null;
-  /** it keeps its players with the saves service: its Play link takes the visitor's code along (see code.ts) */
-  saves: boolean;
   /** a sample entry of the test shelf (see testShelf.ts): never a real game */
   test?: boolean;
 }
@@ -59,7 +57,7 @@ export function toGame(r: Raw): Game {
     year: r.year ?? null, series: r.series ?? null, tags: r.tags ?? [], players, ai, inputs: r.inputs ?? [],
     kind: r.kind ?? `${subOf(r.group, sub)?.name ?? groupOf(r.group).name}, ${who}`,
     blurb: r.blurb ?? null, maker: r.maker ?? null, highlight: !!r.highlight, added: r.added ?? null, shots: r.shots ?? [],
-    play: r.play ?? (r.frame ? `/play/${encodeURIComponent(r.key)}` : null), frame: r.frame ?? null, saves: !!r.saves && !r.frame,
+    play: r.play ?? (r.frame ? `/play/${encodeURIComponent(r.key)}` : null), frame: r.frame ?? null,
     test: r.test,
   };
 }

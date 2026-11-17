@@ -1,35 +1,21 @@
 import { sql } from 'drizzle-orm';
-import { check, index, integer, jsonb, pgTable, text, timestamp, uniqueIndex, uuid } from 'drizzle-orm/pg-core';
+import { boolean, check, index, integer, jsonb, pgTable, text, timestamp, uuid } from 'drizzle-orm/pg-core';
 
 /*
  * Two tables:
- *  - holder: whoever carries a code. The code is all there is to them: no name, no address, no password.
- *    Only its SHA-256 is kept, so nobody reading this table learns a code.
- *  - player: one player of one game under a holder, with the game's own save. A game may have a few.
+ *  - player: one player of one game, with the game's own save. A game has a few, and they are the game's own: whoever
+ *    opens the game sees the same list, as on the machine an old game was installed on. Nobody signs in.
+ *  - service: one row, made when the database is. It tells a database that was set up anew from one that has only
+ *    lost a player, so a browser knows whether what it still holds was removed or never arrived.
  */
 
 const ts = (name: string) => timestamp(name, { withTimezone: true, mode: 'date' });
-
-export const holder = pgTable(
-  'holder',
-  {
-    id: uuid('id').primaryKey().defaultRandom(),
-    codeHash: text('code_hash').notNull(),
-    createdAt: ts('created_at').notNull().defaultNow(),
-    /** When the code was last used, to the day: what tells a code in use from one long forgotten. */
-    seenAt: ts('seen_at').notNull().defaultNow(),
-  },
-  (t) => [uniqueIndex('holder_code_hash_key').on(t.codeHash)],
-);
 
 export const player = pgTable(
   'player',
   {
     /** Chosen by the browser that made the player, so a save sent twice is still one player. */
     id: uuid('id').primaryKey(),
-    holderId: uuid('holder_id')
-      .notNull()
-      .references(() => holder.id, { onDelete: 'cascade' }),
     /** The game's key on the shelf (keep-it-down-extended). Games are not listed anywhere: a new one just starts saving. */
     game: text('game').notNull(),
     name: text('name').notNull(),
@@ -49,8 +35,17 @@ export const player = pgTable(
      */
     playedAt: ts('played_at').notNull().defaultNow(),
   },
-  (t) => [index('player_holder_game_idx').on(t.holderId, t.game), check('player_version_positive', sql`${t.version} > 0`)],
+  (t) => [index('player_game_idx').on(t.game), check('player_version_positive', sql`${t.version} > 0`)],
 );
 
-export type HolderRow = typeof holder.$inferSelect;
+export const service = pgTable(
+  'service',
+  {
+    one: boolean('one').primaryKey().default(true),
+    /** Given once, when the database is first set up. */
+    epoch: uuid('epoch').notNull().defaultRandom(),
+  },
+  (t) => [check('service_one_row', sql`${t.one}`)],
+);
+
 export type PlayerRow = typeof player.$inferSelect;

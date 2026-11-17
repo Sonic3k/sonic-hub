@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "description": "Where the games on Sonic Hub Games keep their saves: players and their saved games, under a code the player carries.",
+  "description": "Where the games on Sonic Hub Games keep their players: a few to a game, each with the game's own save.",
   "engines": { "node": ">=22" },
   "scripts": {
     "build": "tsc -p tsconfig.build.json",

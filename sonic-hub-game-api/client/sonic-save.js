@@ -3,28 +3,25 @@
 
      const save = SonicSave({ api: 'https://…', game: 'keep-it-down-extended', onChange: what => … });
 
-   What it keeps for a game is a short list of PLAYERS (three at most, the service says how many), each with a name
-   and the game's own save, which is any plain object. One of them is the CURRENT player: the one this page plays.
+   A game has a short list of PLAYERS (three at most, the service says how many), each with a name and the game's own
+   save, which is any plain object. They are the game's own, as on the machine an old game was installed on: whoever
+   opens the game, on any device, sees the same players and picks theirs. Nobody signs in.
 
-     save.players()            every player: { id, name, data, playedAt, kept, full }
-     save.current()            the one being played, or null
+     save.players()            every player: { id, name, data, playedAt, kept, full }. kept: the service has this very
+                               save. full: the list there has no room for this one, so it lives in this browser
+                               only; it is sent by itself once there is room
+     save.current()            the one this page plays, or null
      save.add(name, data)      a new player, who becomes current; null when the list is full
      save.choose(id)           makes a player current
      save.write(data)          the current player's save, every time it changes
      save.rename(id, name)     save.remove(id)
+     save.refresh()            reads the list anew (it is read when the page opens, and when it is come back to)
+     save.heard()              has the list been read from the service this time? null: not yet · true · false: it
+                               could not be reached, and what is shown is what this browser last held
 
    Everything is written to this browser first and sent to the service a moment later, so the game never waits and
-   goes on working with no connection at all; what could not be sent is sent when it can be.
-
-   The players are kept under a CODE (K7QM-2XPD-9RBT), which the service hands out the first time there is something
-   to keep. Nobody signs in: whoever has the code has the players. On another device:
-
-     save.code()               the code to show, or null while there is none
-     save.useCode(typed)       → Promise of { ok: true, previous } or { ok: false, why }: takes up the players kept
-                               under a code typed in ('malformed' | 'unknown' | 'unreachable' | 'slow_down')
-     save.link(url)            url with the code attached, for a link to another site of the family, which then
-                               needs no typing: this file reads #code=… off the address, when it starts and whenever
-                               that part of the address changes
+   goes on working with no connection at all; what could not be sent is sent when it can be. Which player was played
+   last is remembered by the browser, so the game can open on them.
 
    A game built with no service to talk to (api left empty) keeps its players in this browser only: save.remote()
    says which it is.
@@ -35,9 +32,11 @@
 
      onChange('replaced')      the current player's save is now a different one, or the player is gone: read
                                save.current() again
-     onChange('players')       the list changed (someone was added, renamed or removed elsewhere, or a code was taken up)
+     onChange('players')       the list changed (someone was added, renamed or removed elsewhere), or it has now
+                               been heard from the service
      onChange('status')        save.status() changed: 'kept' | 'keeping' (on its way) | 'waiting' (it could not be
-                               sent, and is tried again by itself)
+                               sent, and is tried again by itself). A player the list has no room for is not
+                               counted: nothing of theirs is on its way, and `full` says so
 
    What the browser holds is one copy for every tab the game is open in. A tab reads it afresh before it changes
    anything, and an answer from the service is laid on what is held when the answer comes, so two tabs never undo
@@ -53,12 +52,11 @@ function SonicSave(opt) {
   var clock = env.now || Date.now;
 
   var REMOTE = !!opt.api, API = String(opt.api || '').replace(/\/+$/, '') + '/api', GAME = opt.game;
-  var CODE_KEY = 'sonic-hub.code', MIRROR_KEY = 'sonic-save.' + GAME;
-  var SIGNS = '23456789ABCDEFGHJKMNPQRSTUVWXYZ', WAITS = [2000, 5000, 15000, 30000, 60000, 120000];
+  var MIRROR_KEY = 'sonic-save.' + GAME, WAITS = [2000, 5000, 15000, 30000, 60000, 120000];
   var DELAY = opt.delay >= 0 ? opt.delay : 700;   // a save is sent this long after the last write, so a burst of writes is one request
 
   var held = {}, broken = !storage;   // see read()
-  var code = null;            // the code as it is shown, or null
+  var heard = null;           // has the service's list been read this time? null: not yet; false: it could not be reached
   var M = blank();            // what the browser holds for this game, as this tab last read it: see load()
   var me = null;              // the player this tab is playing
   var seen = null;            // what the game was last told of: see look()
@@ -100,13 +98,6 @@ function SonicSave(opt) {
     for (var j = 0; j < 16; j++) h += (b[j] < 16 ? '0' : '') + b[j].toString(16) + (j === 3 || j === 5 || j === 7 || j === 9 ? '-' : '');
     return h;
   }
-  /** a code however it was typed, as it is shown; null if it cannot be one */
-  function tidy(typed) {
-    var bare = String(typed || '').toUpperCase().replace(/[\s-]+/g, '');
-    if (bare.length !== 12) return null;
-    for (var i = 0; i < 12; i++) if (SIGNS.indexOf(bare[i]) < 0) return null;
-    return bare.slice(0, 4) + '-' + bare.slice(4, 8) + '-' + bare.slice(8);
-  }
   function tidyName(name) { return Array.from(String(name == null ? '' : name).replace(/\s+/g, ' ').trim()).slice(0, 24).join('').trim(); }
   /** Now, on the service's clock, and always after `than`: a save made on top of another was played after it,
    *  whatever the clocks say. This is what "played last" is judged by, here and on the service. */
@@ -128,9 +119,10 @@ function SonicSave(opt) {
   function emit(what) { if (opt.onChange) try { opt.onChange(what); } catch (e) { if (typeof console !== 'undefined') console.error(e); } }
 
   /* ── what the browser holds ── */
-  function blank() { return { v: 1, current: null, max: 3, players: [], gone: [] }; }
-  /** Read afresh, and never trusted to be well made: { v, current, max, players: [{ id, name, data, version, dirty,
-   *  playedAt, since, full }], gone: [ids removed here that the service has yet to be told of] }. version 0: never kept. */
+  function blank() { return { v: 1, current: null, max: 3, epoch: null, players: [], gone: [] }; }
+  /** Read afresh, and never trusted to be well made: { v, current, max, epoch, players: [{ id, name, data, version,
+   *  dirty, playedAt, since, full }], gone: [ids removed here that the service has yet to be told of] }.
+   *  version 0: never kept. current: who was played last here. epoch: which database the versions are from. */
   function load() {
     var m = null, out = blank(), i, p;
     try { m = JSON.parse(read(MIRROR_KEY) || 'null'); } catch (e) { m = null; }
@@ -143,14 +135,14 @@ function SonicSave(opt) {
       }
       if (Array.isArray(m.gone)) out.gone = m.gone.filter(function (id) { return typeof id === 'string'; });
       if (m.max > 0) out.max = Math.floor(m.max);
+      if (typeof m.epoch === 'string') out.epoch = m.epoch;
       if (typeof m.current === 'string' && find2(out.players, m.current)) out.current = m.current;
     }
     return out;
   }
   function persist() { keep(MIRROR_KEY, JSON.stringify(M)); }
   /** what the browser holds now: another tab may have written since this one last looked */
-  function fresh() { M = load(); code = tidy(read(CODE_KEY)); }
-  function setCode(c) { code = c; keep(CODE_KEY, c); }
+  function fresh() { M = load(); }
 
   /** Is anything held here still to be sent? What the service will not take does not count: asking again changes nothing. */
   function owing() {
@@ -161,17 +153,17 @@ function SonicSave(opt) {
   function status() {
     if (!REMOTE) return 'kept';                                   // this browser is all there is, and it has everything
     var dirty = M.gone.length > 0;
-    for (var i = 0; i < M.players.length && !dirty; i++) dirty = M.players[i].dirty;
+    for (var i = 0; i < M.players.length && !dirty; i++) dirty = M.players[i].dirty && !M.players[i].full;   // one with no room there is not on its way: it says so itself
     if (!dirty) return 'kept';
     return failures === 0 && owing() ? 'keeping' : 'waiting';
   }
   function told() { var s = status(); if (s !== lastStatus) { lastStatus = s; emit('status'); } }
 
-  /** What a game can see of all this: its own player's save, and the rest (the code, the list, the others' saves). */
+  /** What a game can see of all this: its own player's save, and the rest (the list, the others' saves, whether the list has been heard). */
   function look() {
     var p = me ? find(me) : null;
     if (!p) me = null;
-    return { mine: p ? p.data : null, rest: [code, M.max, M.players.map(function (q) { return [q.id, q.name, !!q.full, q === p ? null : q.data]; })] };
+    return { mine: p ? p.data : null, rest: [heard, M.max, M.players.map(function (q) { return [q.id, q.name, !!q.full, q === p ? null : q.data]; })] };
   }
   /** tells the game whatever is news to it in what the browser now holds */
   function notice() {
@@ -192,23 +184,11 @@ function SonicSave(opt) {
     return out;
   }
 
-  /** a code handed over in the address (…#code=K7QM-2XPD-9RBT) is taken up if this browser has none, and wiped off the address either way */
-  function takeCodeFromAddress() {
-    var loc = env.location || (win && win.location), hist = env.history || (win && win.history);
-    if (!loc || !loc.hash) return;
-    var parts = loc.hash.replace(/^#/, '').split('&'), rest = [], given = null;
-    for (var i = 0; i < parts.length; i++) { if (parts[i].slice(0, 5) === 'code=') { try { given = tidy(decodeURIComponent(parts[i].slice(5))); } catch (e) { given = null; } } else if (parts[i]) rest.push(parts[i]); }
-    if (rest.length === parts.length) return;
-    try { if (hist && hist.replaceState) hist.replaceState(hist.state || null, '', loc.pathname + loc.search + (rest.length ? '#' + rest.join('&') : '')); } catch (e) { /* the address stays as it is */ }
-    if (given && !code) setCode(given);
-  }
-
   /* ── talking to the service ── */
-  /** One request. Whatever goes wrong on the way is an answer too: status 0. `as`: a code other than the one held. */
-  function call(method, path, body, as) {
-    var headers = {}, ctl = typeof AbortController !== 'undefined' ? new AbortController() : null, who = as === undefined ? code : as, asked;
+  /** One request. Whatever goes wrong on the way is an answer too: status 0. */
+  function call(method, path, body) {
+    var headers = {}, ctl = typeof AbortController !== 'undefined' ? new AbortController() : null, asked;
     if (body) headers['Content-Type'] = 'application/json';
-    if (who) headers.Authorization = 'Bearer ' + who;
     var giveUp = ctl ? later(function () { ctl.abort(); }, 12000) : null;
     try { asked = doFetch(API + path, { method: method, headers: headers, body: body ? JSON.stringify(body) : undefined, keepalive: leaving, cache: 'no-store', credentials: 'omit', signal: ctl ? ctl.signal : undefined }); } catch (e) { asked = Promise.reject(e); }
     return Promise.resolve(asked).then(function (res) {
@@ -220,37 +200,41 @@ function SonicSave(opt) {
     }, function () { if (giveUp) never(giveUp); return { ok: false, status: 0, body: {} }; });
   }
   var playersPath = '/games/' + encodeURIComponent(GAME) + '/players';
-  /* The service's own words are waited for before anything held here is given up: a 404 or a 401 from whatever else
-     may stand at the address one day (a proxy, another app) costs nobody their players. */
-  function unknown(r) { return r.status === 401 && r.body.error === 'unknown_code'; }
-  function listed(r) { return r.ok && Array.isArray(r.body.players) && r.body.max > 0 && r.body.players.every(valid); }
+  /* The service's own words are waited for before anything held here is given up: a 404 or an empty list from
+     whatever else may stand at the address one day (a proxy, another app) costs nobody their players. */
+  function listed(r) { return r.ok && Array.isArray(r.body.players) && r.body.max > 0 && typeof r.body.epoch === 'string' && r.body.players.every(valid); }
+  /** the list has been read from the service, or could not be: once it has been read, a later failure does not unsay it */
+  function hear(did) { if (did || heard === null) heard = did; }
 
-  /** the service does not know the code this browser holds: everything here is kept again, under a new one */
-  function lostCode() {
-    setCode(null); M.gone = [];
-    for (var i = 0; i < M.players.length; i++) { M.players[i].version = 0; M.players[i].dirty = true; M.players[i].full = false; }
-    persist(); notice(); told();
-  }
   function drop(p) { M.players.splice(M.players.indexOf(p), 1); if (M.current === p.id) M.current = null; }
-  /** the service has this id under another code (the player was once kept under that one): it goes on under a new id */
+  /** the service has this id for a player of another game: this one goes on under a new id */
   function rekey(p) { var was = p.id; p.id = uuid(); if (M.current === was) M.current = p.id; if (me === was) me = p.id; }
   /** `p` as this browser holds it against `s`, the same player as the service holds it, where the two differ.
-   *  What is held here stands only if it was played on with theirs not yet there to go on from (theirs reached the
-   *  service after this run of changes began) and was played later than theirs. Otherwise theirs stands: either it
-   *  was played later, or it was already waiting on the service when this device, on its old copy, began. */
+   *  What is held here stands only if it was played later than theirs, and was played on with theirs not yet there
+   *  to go on from: theirs reached the service after this run of changes began, or the service as this browser knew
+   *  it never had the player (version 0: new here, or kept in a database that has since been set up anew, where
+   *  another device's copy got in first). Otherwise theirs stands: either it was played later, or it was already
+   *  waiting on the service when this device, on its old copy, began. */
   function settle(p, s) {
     if (s.version === p.version && p.version > 0) return;                                  // nothing new there
     if (same(p.data, s.data) && p.name === s.name) { p.version = s.version; p.playedAt = s.playedAt; inStep(p); return; }   // the same save: only its number moved on
     if (s.version < p.version) { p.version = s.version; if (!p.dirty) { p.dirty = true; p.since = p.playedAt; } return; }   // the service is back at an earlier save (a backup put back): what is held here goes out on top of it
-    if (p.dirty && (p.version === 0 || (Date.parse(s.updatedAt) >= Date.parse(p.since || p.playedAt) && Date.parse(p.playedAt) > Date.parse(s.playedAt)))) { p.version = s.version; return; }   // ours goes out on top of theirs
+    if (p.dirty && Date.parse(p.playedAt) > Date.parse(s.playedAt) && (p.version === 0 || Date.parse(s.updatedAt) >= Date.parse(p.since || p.playedAt))) { p.version = s.version; return; }   // ours goes out on top of theirs
     p.name = s.name; p.data = s.data; p.version = s.version; p.playedAt = s.playedAt; inStep(p);
   }
   /** The players as the service lists them, laid on what the browser holds. `before`: each player's version when the
    *  list was asked for. One that another tab has written or removed since is left for the next time: the list is
    *  older than what that tab did. */
   function takeList(body, before) {
-    var theirs = body.players, mine = M.players.slice(), i, p, s;
-    M.max = body.max;
+    var theirs = body.players, i, p, s;
+    // A database set up anew has none of what was kept in the one before. What this browser holds was not removed
+    // there: it never arrived, and goes out again as new.
+    if (M.epoch && body.epoch !== M.epoch) {
+      M.gone = [];
+      for (i = 0; i < M.players.length; i++) if (M.players[i].version > 0) { M.players[i].version = 0; M.players[i].dirty = true; before[M.players[i].id] = 0; }
+    }
+    M.epoch = body.epoch; M.max = body.max;
+    var mine = M.players.slice();
     for (i = 0; i < mine.length; i++) {
       p = mine[i]; s = find2(theirs, p.id);
       if (before[p.id] !== p.version) continue;
@@ -267,50 +251,34 @@ function SonicSave(opt) {
    *  holds at that moment, and its answer is laid on what it holds when the answer comes. Throws when it has to wait. */
   async function work() {
     for (var round = 0; round < 6; round++) {
-      var stop = false, r, i, p, asked, at;
+      var r, i, p, at;
       fresh();
-      if (!code) {
-        if (!M.players.length) { if (M.gone.length) { M.gone = []; persist(); } listing = false; return; }   // nothing to keep, so no code is asked for
-        r = await call('POST', '/codes', null, null);
-        if (r.status !== 201 || !tidy(r.body.code)) throw r.body;
-        fresh();
-        if (!code) { setCode(tidy(r.body.code)); listing = false; }   // (had another tab got one meanwhile, that is the one: a browser has one code)
-        notice();
-      }
       if (listing) {
         var before = {};
         for (i = 0; i < M.players.length; i++) before[M.players[i].id] = M.players[i].version;
-        asked = code;
         r = await call('GET', playersPath);
         fresh();
-        if (code !== asked) continue;                             // another tab took up another code meanwhile: this answer is about the old one
-        if (unknown(r)) { lostCode(); continue; }
-        if (!listed(r)) throw r.body;
+        if (!listed(r)) { hear(false); throw r.body; }
         listing = false; lastList = clock();
         takeList(r.body, before);
-        persist(); notice(); told();
+        persist(); hear(true); notice(); told();
       }
       var gone = M.gone.slice();
-      for (i = 0; i < gone.length && !stop; i++) {
-        asked = code;
+      for (i = 0; i < gone.length; i++) {
         r = await call('DELETE', playersPath + '/' + gone[i]);
         fresh();
-        if (code !== asked) stop = true;
-        else if (unknown(r)) { lostCode(); stop = true; }
-        else if (r.status === 204 || (r.status === 400 && r.body.error === 'invalid')) { at = M.gone.indexOf(gone[i]); if (at >= 0) { M.gone.splice(at, 1); persist(); } }
-        else throw r.body;
+        if (r.status !== 204 && !(r.status === 400 && r.body.error === 'invalid')) throw r.body;
+        at = M.gone.indexOf(gone[i]);
+        if (at >= 0) { M.gone.splice(at, 1); persist(); }
       }
-      var ids = stop ? [] : M.players.map(function (q) { return q.id; });
-      for (i = 0; i < ids.length && !stop; i++) {
+      var ids = M.players.map(function (q) { return q.id; });
+      for (i = 0; i < ids.length; i++) {
         fresh();
-        if (!code) { stop = true; break; }
         p = find(ids[i]);
         if (!p || !p.dirty || p.full || refused[p.id] === p.playedAt) continue;
-        asked = code;
         var base = p.version, sent = p.data, sentName = p.name, sentAt = p.playedAt;   // a save held here is replaced, never changed in place: this is it as sent
         r = await call('PUT', playersPath + '/' + p.id, { base: base, name: sentName, data: sent, at: sentAt });
         fresh();
-        if (code !== asked) { stop = true; break; }
         p = find(ids[i]);
         if (!p) continue;                                         // removed while it was on its way: the removal goes out next
         if (r.ok && valid(r.body)) {
@@ -322,13 +290,15 @@ function SonicSave(opt) {
         } else if (r.status === 409 && r.body.error === 'stale' && valid(r.body.player)) { if (p.version === base) settle(p, r.body.player); }
         else if (r.status === 409 && r.body.error === 'full') { p.full = true; if (r.body.max > 0) M.max = r.body.max; }
         else if (r.status === 409 && r.body.error === 'taken') rekey(p);
-        else if (r.status === 404 && r.body.error === 'gone') { if (p.version === base) drop(p); }   // removed from somewhere else
-        else if (unknown(r)) { lostCode(); stop = true; break; }
+        else if (r.status === 404 && r.body.error === 'gone') {
+          // Removed from somewhere else. Unless it is another database that answers, which never had the player: the
+          // list is read anew, which says so, and the player goes out to it as new.
+          if (p.version === base) { if (M.epoch && typeof r.body.epoch === 'string' && r.body.epoch !== M.epoch) listing = true; else drop(p); }
+        }
         else if ((r.status === 400 && r.body.error === 'invalid') || (r.status === 413 && r.body.error === 'too_big')) refused[p.id] = p.playedAt;
         else throw r.body;
         persist(); notice(); told();
       }
-      if (stop) continue;
       fresh();
       if (!owing()) return;
     }
@@ -369,7 +339,7 @@ function SonicSave(opt) {
     current: function () { var p = me ? find(me) : null; return p ? shown(p) : null; },
     max: function () { return M.max; },
     remote: function () { return REMOTE; },
-    code: function () { return REMOTE ? code : null; },
+    heard: function () { return REMOTE ? heard : true; },
     status: status,
     choose: function (id) { return own(function () { var p = find(id); if (!p) return null; M.current = me = id; return shown(p); }); },
     add: function (name, data) {
@@ -419,28 +389,6 @@ function SonicSave(opt) {
       if (done === 2) kick();
       return done > 0;
     },
-    useCode: function (typed) {
-      var to = tidy(typed);
-      if (!to) return Promise.resolve({ ok: false, why: 'malformed' });
-      if (!REMOTE) return Promise.resolve({ ok: false, why: 'unreachable' });
-      fresh();
-      if (to === code) return refresh().then(function () { return { ok: true, previous: null }; });
-      return call('GET', playersPath, null, to).then(function (r) {
-        if (unknown(r)) return { ok: false, why: 'unknown' };
-        if (r.status === 429) return { ok: false, why: 'slow_down' };
-        if (!listed(r)) return { ok: false, why: 'unreachable' };
-        fresh();
-        var previous = code === to ? null : code, unsent = M.players.filter(function (p) { return p.version === 0; });
-        setCode(to);
-        M.max = r.body.max; M.gone = []; M.players = r.body.players.map(fromService);
-        // whoever was never kept anywhere comes along, while there is room; those kept under the code before stay under it
-        for (var i = 0; i < unsent.length; i++) if (!find(unsent[i].id)) { unsent[i].full = M.players.length >= M.max; M.players.push(unsent[i]); }
-        if (M.current && !find(M.current)) M.current = null;
-        persist(); notice(); told(); kick(0);
-        return { ok: true, previous: previous };
-      });
-    },
-    link: function (url) { return REMOTE && code ? url + (url.indexOf('#') < 0 ? '#' : '&') + 'code=' + encodeURIComponent(code) : url; },
     refresh: refresh,
     /** sends what is waiting at once: the page is about to go */
     flush: function () {
@@ -453,28 +401,20 @@ function SonicSave(opt) {
   };
 
   /* ── start ── */
+  keep('sonic-hub.code', null);   // what the first version of this file kept beside the players: no longer anything
   fresh();
-  if (REMOTE) takeCodeFromAddress();
   me = M.current;
   seen = look();
   lastStatus = status();
   if (win && win.addEventListener) {
     win.addEventListener('online', function () { kick(0); });
     win.addEventListener('pagehide', function () { api.flush(); });
-    // another tab wrote (a save, a new player, a code taken up): what it wrote is what this one holds too
+    // another tab wrote (a save, a new player): what it wrote is what this one holds too
     win.addEventListener('storage', function (ev) {
       var key = ev ? ev.key : null;
-      if (key !== null && key !== undefined && key !== CODE_KEY && key !== MIRROR_KEY) return;
+      if (key !== null && key !== undefined && key !== MIRROR_KEY) return;
       fresh(); notice(); told();
       if (REMOTE && !pumping && !timer && status() !== 'kept') kick(WAITS[1]);   // the tab that wrote it sends it; should that tab be gone, this one does
-    });
-    // a link with a code followed while the page is open: only the part after # changes, and the page does not start again
-    win.addEventListener('hashchange', function () {
-      if (!REMOTE) return;
-      fresh();
-      var had = code;
-      takeCodeFromAddress();
-      if (code !== had) { notice(); told(); refresh(); }
     });
   }
   if (doc && doc.addEventListener) doc.addEventListener('visibilitychange', function () {
