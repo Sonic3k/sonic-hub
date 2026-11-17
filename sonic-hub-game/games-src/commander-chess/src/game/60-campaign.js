@@ -6,6 +6,9 @@
    (Ngọc Anh's rule: no place is "the beginners' place"). Points are won and lost by rating, the way chess clubs
    count them; reaching a number of points opens the next opponent, and the next place.
 
+   The rules are the same at every table of the coast. What a place may have of its own is its line-up (lineup: a
+   name the rules know; the short one leaves the Engineers out) and the game it plays, battles or total war.
+
    Pictures of the women come from outside (ART.base, set when there is a place to load them from): until then each
    has a drawn stand-in. Each has three cards to win. */
 const ART = { base: '' };                                     // e.g. 'https://cdn.example/commander-chess/' → <base><id>/portrait.webp, card-1.webp …
@@ -13,15 +16,15 @@ const START_RATING = 600, K_FACTOR = 32;
 const CARD_WINS = [1, 3, 5];                                  // wins against her that earn her first, second and third card
 
 const PLACES = [
-  { id: 'halcyon', name: 'Port Halcyon', room: 'The Harbour Mess', open: 0, built: true,
+  { id: 'halcyon', name: 'Port Halcyon', room: 'The Harbour Mess', open: 0, built: true, lineup: 'standard',
     blurb: 'The fleet’s home port. After the evening gun the officers’ mess above the docks clears a table, and nobody goes to bed until the last Commander has fallen.',
     house: 'The standard line-up, and a game of battles: it ends with a Commander, or with a side’s last ship, its last plane, or the last of its infantry, tanks and artillery. The Commandant alone plays total war.' },
   { id: 'kestrel', name: 'Kestrel Field', room: 'The Ready Room', open: 760, built: false,
     blurb: 'The air station on the northern cliffs. The pilots play fast, between scrambles, and they do not believe in holding anything back.',
     house: 'Battles, from the pilots’ own line-up: their planes start well forward.' },
-  { id: 'ironwood', name: 'Ironwood Depot', room: 'The Motor Pool', open: 900, built: false,
+  { id: 'ironwood', name: 'Ironwood Depot', room: 'The Motor Pool', open: 900, built: false, lineup: 'light',
     blurb: 'The armoured brigade’s workshops in the pine hills. Games are played on an engine crate, and settled on the bridges.',
-    house: 'Battles, from the brigade’s line-up: armour massed on the fords.' },
+    house: 'Battles, from the brigade’s line-up: armour massed on the fords, and no Engineers, so the guns cross at the fords or not at all.' },
   { id: 'meridian', name: 'Fort Meridian', room: 'The Gun Deck', open: 1050, built: false,
     blurb: 'The old fortress over the strait. Its gunners have had two hundred years to learn patience.',
     house: 'Battles, and you set out your own line-up before the first move, as the fortress does.' },
@@ -107,7 +110,7 @@ const WOMEN = [
     } },
   { id: 'nadia', place: 'halcyon', name: 'Nadia Rahimi', rank: 'Commander', job: 'Captain of the destroyer Simurgh', level: 'Hard', rating: 1700, needs: 670,
     hair: 'wave', tone: ['#ffb238', '#b3273a', '#fff0d0'],
-    style: 'Attacks from the first move and goes straight for your Commander. She will trade anything for speed.',
+    style: 'Attacks from the first move and goes straight for your Commander. She will trade anything for speed, and loads her tanks and planes to get it.',
     cards: [['Simurgh', 'Fastest ship in the flotilla. She says it is the paint.'], ['Night run', 'Lights out, thirty knots, and that smile.'], ['The wager', 'She only bets on herself. So far it has paid.']],
     say: {
       intro: ['So this is the lieutenant Hana keeps frowning about. Come here, let me look at you.', 'Nadia Rahimi. I drive the Simurgh. I don’t sit behind rivers and I don’t wait to be asked.', 'I’m coming for your Commander, darling. You can hide it, or you can come and get mine first.'],

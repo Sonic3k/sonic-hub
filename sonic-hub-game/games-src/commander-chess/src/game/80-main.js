@@ -1,5 +1,5 @@
 /* ── The game itself: going from screen to screen, a match from the first move to the result, what is kept ── */
-const setupFor = w => ({ game: w.game === 'total' ? 'total' : 'battles' });   // every table at Port Halcyon uses the standard line-up; the Commandant plays total war
+const setupFor = w => ({ game: w.game === 'total' ? 'total' : 'battles', lineup: placeById(w.place).lineup || 'standard' });   // the place sets the line-up, the opponent the game: at Port Halcyon the Commandant alone plays total war
 const MIN_THINK = 700;                                        // she never answers faster than a hand could
 
 /** w: who is across the table; side: the player's; moves: every move of the game so far (steps of a deployment and their
