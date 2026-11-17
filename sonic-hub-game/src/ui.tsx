@@ -1,21 +1,28 @@
 /* The pieces every screen is built from: a game's picture, the two sizes a game is shown at (a chamber when it is
    given room, a tile on a full shelf, a row in a list), the pipe that heads a shelf, and the tank that fills a row. */
-import { memo, useEffect, useRef, useState, type CSSProperties, type ReactNode } from 'react';
+import { memo, useEffect, useRef, useState, type CSSProperties, type MouseEvent, type ReactNode } from 'react';
 import { Link } from 'react-router-dom';
 import { cover, coverSet, gamePage, seedOf, type Game } from './catalog';
+import { withCode } from './code';
 import { InputIcon, PlayIcon, StarIcon } from './icons';
 import { markTitle } from './search';
 import { rememberPlayed, toggleFavorite } from './store';
 import { INPUT_NAME, groupOf, langName, machineOf, subOf } from './taxonomy';
 
 /** The way into a game. One that plays in the portal's own player (catalogue entries with `frame`) opens without
- *  leaving the page; the others are pages of their own. Either way the portal remembers it was opened. */
+ *  leaving the page; the others are pages of their own. Either way the portal remembers it was opened.
+ *  A game that keeps its players with the saves service is handed the visitor's code as it is opened (code.ts).
+ *  The link itself stays plain: copied, or opened in a tab of its own, it gives nothing away. */
 export function PlayLink({ game, className, label, children }: { game: Game; className: string; label?: string; children: ReactNode }) {
-  if (!game.play) return null;
-  const on = () => rememberPlayed(game.key);
-  return game.frame
-    ? <Link className={className} to={game.play} onClick={on} aria-label={label}>{children}</Link>
-    : <a className={className} href={game.play} onClick={on} aria-label={label}>{children}</a>;
+  const play = game.play;
+  if (!play) return null;
+  if (game.frame) return <Link className={className} to={play} onClick={() => rememberPlayed(game.key)} aria-label={label}>{children}</Link>;
+  const on = (ev: MouseEvent<HTMLAnchorElement>) => {
+    rememberPlayed(game.key);
+    const to = game.saves ? withCode(play) : play;
+    if (to !== play && ev.button === 0 && !(ev.ctrlKey || ev.metaKey || ev.shiftKey || ev.altKey)) { ev.preventDefault(); location.assign(to); }
+  };
+  return <a className={className} href={play} onClick={on} aria-label={label}>{children}</a>;
 }
 
 export const calm = () => typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches;
