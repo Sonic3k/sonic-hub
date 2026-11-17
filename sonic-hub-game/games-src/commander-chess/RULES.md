@@ -8,8 +8,10 @@ accounts of his rules agree on**. The accounts:
   help page (posted 2023 by the account Quyhainhk), the Political University's page (signed Hà Nội, 15 May 2012, "new
   version with additions"), Ziga, thuthuatchoi.com.
 - **Board Game Arena's version of the game**, which credits him as designer.
-- **Wikipedia (Vietnamese)**: its page would not open from here; only what the search index carries of it was read
-  (the pieces, the Headquarters as a fixed obstacle, mate "of the sea battle and the air battle too").
+- **Wikipedia (Vietnamese)**: not a witness of its own, since it takes its rules from thuthuatchoi.com and the
+  Political University's page. It adds two things: Red always moves first, and a short line-up without Engineers
+  (17 a side) for schoolchildren and online play. It names the printed source: *Luật chơi cờ tư lệnh*, Nguyễn Quý Hải,
+  Đà Nẵng Publishing House, 2011. Nobody here has read that book; it would settle what the accounts leave open.
 - **cotulenh.vn**: followed only where every account above is silent. The first build followed it throughout.
 
 Where the accounts part, the rule book decides. Where one account alone has a rule, the rule is not used.
@@ -34,12 +36,12 @@ Where the accounts part, the rule book decides. Where one account alone has a ru
 | Heavy pieces and the river | Board Game Arena's game: Artillery, Anti-Air, Missile cross only at the two fords. Its help page and thuthuatchoi: an Engineer carries them over deep water, bank to bank; taking something on the far side, they cross anywhere | The same |
 | Plane takes plane | 2012 text: only by moving in. Board Game Arena's game: a plane strikes from its place at anything but a plane | The same |
 | A ship's missiles | Ziga, 2012 text: one to four points, at ships only, moving in. Board Game Arena's game: they pass any piece but a ship | One to four, at ships only, stopped by a ship in between |
-| Who moves first | Rule book: Blue. Board Game Arena's page: lots, then the loser of the last game | Red, and the player picks a side |
+| Who moves first | Wikipedia: always Red. Rule book: Blue. Board Game Arena's page: lots, then the loser of the last game | Red, and the player picks a side |
 
 **Kept from cotulenh.vn because no account settles it:** taking turns to leave a stack and pressing Done; the three
 outcomes of a flight (clear, lost with its target, shot down on the way); round air-defence zones, one point wider
 for a hero; land pieces passing a ship along the shore; no ship round the two corners of the river mouth.
 
-**Not built yet, and the author has them:** the clock; the advanced game, where each side sets out its own line-up
+**Not built yet, and the author has them:** the clock; the short line-up without Engineers; the advanced game, where each side sets out its own line-up
 before the first move; total war over two games, one moving first and one second. The later places of the campaign
 are planned around the last two.
