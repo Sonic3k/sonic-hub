@@ -57,6 +57,15 @@ GAMES = {
             'vs': {'mina': {'w': 5, 'l': 0, 'd': 0}, 'odette': {'w': 5, 'l': 1, 'd': 0}, 'claire': {'w': 4, 'l': 2, 'd': 0}, 'vera': {'w': 3, 'l': 3, 'd': 0}, 'isolde': {'w': 1, 'l': 2, 'd': 0}},
             'match': {'opp': 'isolde', 'rated': True, 'side': 0, 'moves': [1942,2153,1682,2413,1552,2218,6298,6305,1624,2543,1812,6379,1689,5859,5850,1698,2267,2478,2007,6054,6623,2991,1617,5722,2072,6184,5720,1178,1747,658,8898,5534,2137,5462,6177,853,1422,4429,12612,2794,6883,1893,2332,6899,2211,6444,2592]}}},
         play=['waitsel:#said:not(:empty)', 'wait:1600']),
+    # on its own site as well. The title picture is its first screen. The picture of play goes back to a game for points
+    # against the Hard opponent, both sides down to one ship and one plane, and waits for her to move
+    'commander-chess': dict(
+        site='https://sonic-commander-chess-production.up.railway.app/',
+        ls={'commander-chess.v1': {'rating': 912, 'peak': 930, 'sound': True, 'side': 0, 'all': False, 'rules': 2, 'seen': {},
+            'record': {'pia': {'w': 5, 'l': 0, 'd': 0}, 'sol': {'w': 4, 'l': 1, 'd': 0}, 'hana': {'w': 3, 'l': 2, 'd': 0}, 'nadia': {'w': 1, 'l': 2, 'd': 0}},
+            'met': {'pia': True, 'sol': True, 'hana': True, 'nadia': True},
+            'match': {'w': 'nadia', 'side': 0, 'rated': True, 'moves': [36192019,44583538,33555718,44057455,34084620,44057923,41433647,44057157,33886213,44117570,67441168,393216,44057134,38287139,44058178,38288183,44181574,38427707,44057670,36709145,44060228,34093079,44181070,34164280,48320090,36260415,46221942,38428475]}}},
+        play=['click:[data-act=resume]', 'wait:5200']),
 }
 
 
