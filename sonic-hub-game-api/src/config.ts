@@ -13,20 +13,16 @@ export interface DatabaseConfig {
   ssl: false | 'verify' | 'no-verify';
 }
 
-/** How much one code, and one address, may ask of the service. */
+/** How much is kept, and how much one address may ask of the service. */
 export interface Limits {
-  /** Players a code may keep in one game. */
+  /** Players a game keeps. */
   playersPerGame: number;
-  /** Different games a code may keep players in. */
-  gamesPerCode: number;
+  /** Different games players are kept for. Games are not listed anywhere, so this is what bounds what can pile up. */
+  games: number;
   /** The size of one saved game, as JSON text. */
   saveBytes: number;
   /** Requests a minute from one address. */
   requestsPerMinute: number;
-  /** New codes an hour for one address. */
-  newCodesPerHour: number;
-  /** Wrong codes an hour from one address, after which it is told to wait. */
-  wrongCodesPerHour: number;
 }
 
 export interface AppConfig {
@@ -80,7 +76,7 @@ function databaseConfig(env: NodeJS.ProcessEnv): DatabaseConfig {
   return db;
 }
 
-export const defaultLimits: Limits = { playersPerGame: 3, gamesPerCode: 24, saveBytes: 64 * 1024, requestsPerMinute: 240, newCodesPerHour: 10, wrongCodesPerHour: 30 };
+export const defaultLimits: Limits = { playersPerGame: 3, games: 50, saveBytes: 64 * 1024, requestsPerMinute: 240 };
 
 /**
  * ADDRESS_HEADER names it; `none` says there is no such header. Left unset, it is x-real-ip on Railway (whose edge
@@ -103,11 +99,9 @@ export function loadAppConfig(env: NodeJS.ProcessEnv = process.env): AppConfig {
     corsOrigins: origins === '*' ? true : origins.split(',').map((s) => s.trim()),
     limits: {
       playersPerGame: count(env, 'PLAYERS_PER_GAME', defaultLimits.playersPerGame),
-      gamesPerCode: count(env, 'GAMES_PER_CODE', defaultLimits.gamesPerCode),
+      games: count(env, 'GAMES', defaultLimits.games),
       saveBytes: count(env, 'SAVE_BYTES', defaultLimits.saveBytes),
       requestsPerMinute: count(env, 'REQUESTS_PER_MINUTE', defaultLimits.requestsPerMinute),
-      newCodesPerHour: count(env, 'NEW_CODES_PER_HOUR', defaultLimits.newCodesPerHour),
-      wrongCodesPerHour: count(env, 'WRONG_CODES_PER_HOUR', defaultLimits.wrongCodesPerHour),
     },
   };
 }

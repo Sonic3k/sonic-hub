@@ -1,7 +1,7 @@
 import { Inject, Injectable, Module, type DynamicModule, type OnApplicationShutdown } from '@nestjs/common';
 import { APP_GUARD } from '@nestjs/core';
 import type pg from 'pg';
-import { AddressGuard, HolderGuard } from './common/guards.js';
+import { AddressGuard } from './common/guards.js';
 import { Limiter } from './common/limiter.js';
 import { APP_CONFIG, LIMITER } from './common/tokens.js';
 import type { AppConfig } from './config.js';
@@ -32,7 +32,6 @@ export class AppModule {
         { provide: APP_GUARD, useClass: AddressGuard },
         PoolLifecycle,
         SavesService,
-        HolderGuard,
       ],
     };
   }
