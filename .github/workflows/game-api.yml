@@ -1,0 +1,45 @@
+name: game-api
+on:
+  push:
+    branches: [main]
+    paths: ['sonic-hub-game-api/**', '.github/workflows/game-api.yml']
+  pull_request:
+    paths: ['sonic-hub-game-api/**', '.github/workflows/game-api.yml']
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: game
+          POSTGRES_PASSWORD: game
+          POSTGRES_DB: game
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd "pg_isready -U game"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    defaults:
+      run:
+        working-directory: sonic-hub-game-api
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: sonic-hub-game-api/package-lock.json
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm run build
+      - name: Tests
+        run: npm test
+        env:
+          TEST_DATABASE_URL: postgresql://game:game@localhost:5432/game
