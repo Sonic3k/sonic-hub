@@ -1,13 +1,15 @@
 /* ── Commander Chess: the rules ──
-   The game is Cờ Tư Lệnh, by Nguyễn Quý Hải. The rules here are the ones the community site cotulenh.vn plays by
-   (its guide, checked move by move against the site itself; test/site-vectors.js holds what was seen there).
+   The game is Cờ Tư Lệnh, by Nguyễn Quý Hải, played by his own rules: the rule book, and his own account of the game
+   on Board Game Arena's help pages. Where those are silent (how many may ride, what happens when nobody can move) the
+   game follows Board Game Arena's version of it, which he worked on, and where that is silent too, cotulenh.vn.
+   RULES.md lists every point where this differs from cotulenh.vn, and why.
 
    The board has 11 files (a–k) and 12 ranks; pieces stand on the points. Files a and b are sea, file c and the
-   four points d6 e6 d7 e7 are shore (ships and land pieces both stand there), f6 f7 h6 h7 are the two bridges,
+   four points d6 e6 d7 e7 are shore (ships and land pieces both stand there), f6 f7 h6 h7 are the two fords,
    the rest is land. The river runs between ranks 6 and 7.
 
    A position is a handful of small arrays, so that copying one is cheap: the computer player copies a position
-   for every move it looks at. Pieces are numbered; a stack is a carrier with up to two pieces riding on it.
+   for every move it looks at. Pieces are numbered; a stack is a carrier with one or two pieces riding on it.
 
    A turn is one move, or a deployment: pieces of one stack moving off one after another from the same point
    (S.dOrg ≥ 0 while that is going on), ended by COMMIT. */
@@ -31,9 +33,6 @@ for (let s = 0; s < NSQ; s++) {
   TERRAIN[s] = f < 2 ? WATER : mid && (f === 5 || f === 7) ? BRIDGE : f === 2 || (mid && (f === 3 || f === 4)) ? MIXED : LAND;
   BANK[s] = mid && f !== 5 && f !== 7 && f > 1 ? 1 : 0;      // where an Engineer may carry a heavy piece
 }
-/** the two points each side's Headquarters start on: holding one of the other side's for three turns wins */
-const CORE = [[sqNamed('f2'), sqNamed('h2')], [sqNamed('f11'), sqNamed('h11')]];
-
 /* the eight ways a piece can go: E W N S, then NE SE NW SW */
 const DIRS = [[1, 0], [-1, 0], [0, 1], [0, -1], [1, 1], [1, -1], [-1, 1], [-1, -1]];
 const RAY = [], LINE = new Uint8Array(NSQ * NSQ).fill(255);
@@ -42,44 +41,66 @@ for (let s = 0; s < NSQ; s++) for (let d = 0; d < 8; d++) {
   while (f >= 0 && f < NF && r >= 1 && r <= NR) { const t = sqOf(f, r); LINE[s * NSQ + t] = (d << 4) | list.length; list.push(t); f += DIRS[d][0]; r += DIRS[d][1]; }
   RAY.push(Uint8Array.from(list));
 }
-/* how far each kind goes and takes; a hero adds one to every number here (a Commander is never a hero) */
+/* how far each kind goes and takes; a hero adds one to every number here (a Commander is never a hero, and a
+   Headquarters that becomes one goes like a hero Infantry: see reach) */
 const MOVE_ORTH = [12, 1, 2, 1, 1, 3, 1, 2, 4, 4, 0], MOVE_DIAG = [0, 0, 0, 1, 0, 3, 0, 1, 4, 4, 0];
 const CAP_ORTH = [1, 1, 2, 1, 1, 3, 1, 2, 4, 4, 0], CAP_DIAG = [0, 0, 0, 1, 0, 3, 0, 1, 4, 4, 0];
-const HEAVY = [0, 0, 0, 0, 0, 1, 1, 1, 0, 0, 0];             // these cross the river only over a bridge
-const SHOOT_OVER = [0, 0, 0, 0, 0, 1, 0, 1, 1, 1, 0];        // take over the heads of pieces in between
-const SHOOT_HQ = [0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 0];          // … even over a Headquarters
+const reach = (orth, diag, k, h, d) => (k === HQ ? (h ? (d >= 4 ? 1 : 2) : 0) : (d >= 4 ? diag[k] : orth[k]) + h);
+const HEAVY = [0, 0, 0, 0, 0, 1, 1, 1, 0, 0, 0];             // these cross the river only at a ford
+const SHOOT_OVER = [0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0];        // take over the heads of whatever is in between: lobbed shells, and planes
+const SMALL_ARMS = [0, 1, 0, 1, 0, 0, 1, 1, 0, 0, 0];        // these cannot break a Headquarters that has the Commander inside
+const POINTS = [100, 10, 20, 10, 10, 30, 10, 20, 40, 80, 0]; // the author's count for a piece taken (a hero: ten more)
 const AD_R = [0, 0, 0, 0, 0, 0, 1, 2, 0, 1, 0];              // air-defence radius
 const AD_SQ = [];                                            // AD_SQ[r][s]: the points within r of s, as the crow flies
 for (let r = 0; r <= 3; r++) { const per = []; for (let s = 0; s < NSQ; s++) { const l = []; for (let t = 0; t < NSQ; t++) { const dx = fileOf(t) - fileOf(s), dy = rankOf(t) - rankOf(s); if (dx * dx + dy * dy <= r * r) l.push(t); } per.push(Uint8Array.from(l)); } AD_SQ.push(per); }
-/* who may ride on whom: each carrier has one or two seats, each seat takes certain kinds */
+/* who may ride on whom, by the rule book: how many a carrier takes, and of which kinds. Nobody rides on a rider. */
 const bit = (...ks) => ks.reduce((m, k) => m | (1 << k), 0);
-const SEATS = [];
-SEATS[NAVY] = [bit(AIR), bit(COMMANDER, INFANTRY, MILITIA, TANK)];
-SEATS[AIR] = [bit(TANK), bit(COMMANDER, INFANTRY, MILITIA)];
-SEATS[TANK] = [bit(INFANTRY, MILITIA), bit(INFANTRY, MILITIA)];
-SEATS[ENGINEER] = [bit(ARTILLERY, ANTIAIR, MISSILE)];
-SEATS[HQ] = [bit(COMMANDER)];
+const CARRY = [];
+CARRY[NAVY] = [2, bit(COMMANDER, INFANTRY, MILITIA, TANK, AIR)];      // … but never two Tanks
+CARRY[AIR] = [1, bit(COMMANDER, INFANTRY, MILITIA, TANK)];
+CARRY[TANK] = [1, bit(COMMANDER, INFANTRY, MILITIA)];
+CARRY[ENGINEER] = [1, bit(ARTILLERY, ANTIAIR, MISSILE)];              // across the river only: see okMove
+CARRY[HQ] = [1, bit(COMMANDER)];
 
 /** the usual starting position: [kind, point] for Red; Blue's is the same seen from the other side */
 const SETUP_STANDARD = [[COMMANDER, 'g1'], [NAVY, 'b2'], [AIR, 'e2'], [HQ, 'f2'], [HQ, 'h2'], [AIR, 'i2'], [ARTILLERY, 'd3'], [MISSILE, 'g3'], [ARTILLERY, 'j3'],
   [NAVY, 'c4'], [ANTIAIR, 'e4'], [TANK, 'f4'], [TANK, 'h4'], [ANTIAIR, 'i4'], [INFANTRY, 'c5'], [ENGINEER, 'd5'], [MILITIA, 'g5'], [ENGINEER, 'j5'], [INFANTRY, 'k5']];
 const mirror = name => name[0] + (13 - +name.slice(1));
 
-/** A new game. setup: {red: [[kind, point]…], blue: […]} — blue defaults to red's mirrored. */
+/** A new game. setup: {red: [[kind, point]…], blue: […], game: 'battles' | 'total'} — blue defaults to red's mirrored.
+ *  The author's two ways of playing: battles (the game is over when a side has lost its Commander, or all its ships, or
+ *  all its planes, or all of its infantry, tanks and artillery) and total war (only the Commander counts). */
 function newGame(setup) {
   const red = (setup && setup.red) || SETUP_STANDARD, blue = (setup && setup.blue) || red.map(([k, n]) => [k, mirror(n)]);
   const all = red.map(x => [x[0], x[1], RED]).concat(blue.map(x => [x[0], x[1], BLUE])), n = all.length;
-  const S = { n, kind: new Uint8Array(n), own: new Uint8Array(n), cmd: [-1, -1],
+  const S = { n, kind: new Uint8Array(n), own: new Uint8Array(n), cmd: [-1, -1], total: setup && setup.game === 'total' ? 1 : 0, had: [[0, 0, 0], [0, 0, 0]],
     top: new Int8Array(NSQ).fill(-1), at: new Int16Array(n).fill(-1), car: new Int8Array(n).fill(-1), c1: new Int8Array(n).fill(-1), c2: new Int8Array(n).fill(-1), hero: new Uint8Array(n),
-    turn: RED, half: 0, full: 1, core: [0, 0], over: null, dOrg: -1, dAct: [], dIrr: 0, exp: [], ad: [null, null], log: null };
-  all.forEach(([k, name, side], p) => { const s = sqNamed(name); S.kind[p] = k; S.own[p] = side; S.at[p] = s; S.top[s] = p; if (k === COMMANDER) S.cmd[side] = p; });
+    turn: RED, half: 0, full: 1, over: null, dOrg: -1, dAct: [], dIrr: 0, ad: [null, null], log: null };
+  all.forEach(([k, name, side], p) => { const s = sqNamed(name); S.kind[p] = k; S.own[p] = side; S.at[p] = s; S.top[s] = p; if (k === COMMANDER) S.cmd[side] = p; const arm = armOf(k); if (arm >= 0) S.had[side][arm]++; });
   return S;
 }
 function clone(S) {
-  return { n: S.n, kind: S.kind, own: S.own, cmd: S.cmd, top: S.top.slice(), at: S.at.slice(), car: S.car.slice(), c1: S.c1.slice(), c2: S.c2.slice(), hero: S.hero.slice(),
-    turn: S.turn, half: S.half, full: S.full, core: [S.core[0], S.core[1]], over: S.over, dOrg: S.dOrg, dAct: S.dAct.length ? S.dAct.slice() : S.dAct, dIrr: S.dIrr,
-    exp: S.exp.length ? S.exp.map(x => ({ p: x.p, d: x.d, e: x.e })) : S.exp, ad: [null, null], log: null };
+  return { n: S.n, kind: S.kind, own: S.own, cmd: S.cmd, total: S.total, had: S.had, top: S.top.slice(), at: S.at.slice(), car: S.car.slice(), c1: S.c1.slice(), c2: S.c2.slice(), hero: S.hero.slice(),
+    turn: S.turn, half: S.half, full: S.full, over: S.over, dOrg: S.dOrg, dAct: S.dAct.length ? S.dAct.slice() : S.dAct, dIrr: S.dIrr, ad: [null, null], log: null };
 }
+/* the three arms a battle is fought over: 0 the sea (ships), 1 the air (planes), 2 the land (infantry, tanks, artillery) */
+const ARM_NAME = ['sea', 'air', 'land'];
+const armOf = k => (k === NAVY ? 0 : k === AIR ? 1 : k === INFANTRY || k === TANK || k === ARTILLERY ? 2 : -1);
+/** how many pieces a side still has in each arm */
+function arms(S, side) { const n = [0, 0, 0]; for (let p = 0; p < S.n; p++) if (S.own[p] === side && S.at[p] >= 0) { const a = armOf(S.kind[p]); if (a >= 0) n[a]++; } return n; }
+/** what a side has lost that ends the game: 'commander', or in a game of battles 'sea', 'air' or 'land'; null if nothing */
+function lostBattle(S, side) {
+  const c = S.cmd[side]; if (c < 0 || S.at[c] < 0) return 'commander';
+  if (S.total) return null;
+  const n = arms(S, side);
+  for (let a = 0; a < 3; a++) if (S.had[side][a] && !n[a]) return ARM_NAME[a];
+  return null;
+}
+/** what each side has scored: the author's count, for every piece of the other side that is gone */
+function points(S) { const pts = [0, 0]; for (let p = 0; p < S.n; p++) if (S.at[p] < 0) pts[1 - S.own[p]] += POINTS[S.kind[p]] + (S.hero[p] ? 10 : 0); return pts; }
+/** a game nobody has won on the board is settled the author's way, on points. cause: 'quiet' (a hundred turns with
+ *  nothing taken) or 'repeat' (the same position a third time): what stands in here for his clock. */
+function onPoints(S, cause) { const pts = points(S); return { winner: pts[0] > pts[1] ? RED : pts[1] > pts[0] ? BLUE : -1, why: 'points', cause, pts }; }
 
 /* ── stacks ── */
 /** the pieces on a point: the carrier first */
@@ -87,11 +108,10 @@ function members(S, s) { const t = S.top[s]; if (t < 0) return []; const a = S.c
 /** may c carry these others? */
 function fits(S, c, others) {
   if (!others.length) return true;
-  const seats = SEATS[S.kind[c]]; if (!seats || others.length > seats.length) return false;
-  const ka = S.kind[others[0]]; if (ka === ENGINEER) return false;
-  if (others.length === 1) return seats.some(m => (m >> ka) & 1);
-  const kb = S.kind[others[1]]; if (kb === ENGINEER) return false;
-  return !!((((seats[0] >> ka) & 1) && ((seats[1] >> kb) & 1)) || (((seats[0] >> kb) & 1) && ((seats[1] >> ka) & 1)));
+  const rule = CARRY[S.kind[c]]; if (!rule || others.length > rule[0]) return false;
+  let tanks = 0;
+  for (const p of others) { const k = S.kind[p]; if (!((rule[1] >> k) & 1)) return false; if (k === TANK) tanks++; }
+  return tanks < 2;
 }
 /** which of these pieces carries the rest, or −1 if they cannot make one stack */
 function carrierOf(S, ids) {
@@ -136,6 +156,8 @@ function airOutcome(S, me, from, d, i) {
   for (let j = 0; j < i && j <= first; j++) if (m[ray[j]] & ~T) return INTERCEPTED;
   return T ? TRADE : SAFE;
 }
+/** the same for one particular plane: a hero is a stealth plane, and no air defence touches it */
+const flight = (S, a, from, d, i) => (S.hero[a] ? SAFE : airOutcome(S, S.own[a], from, d, i));
 function interceptPoint(S, me, from, d, i) {
   const m = adMask(S, 1 - me), ray = RAY[from * 8 + d], T = m[ray[i]];
   for (let j = 0; j < i; j++) if (m[ray[j]] & ~T) return ray[j];
@@ -164,7 +186,6 @@ function pathOK(S, k, from, d, i) {
   for (let j = 0; j < i; j++) {
     const s = ray[j], q = S.top[s];
     if (q < 0) continue;
-    if (S.kind[q] === HQ && k === MISSILE) continue;          // the site lets a Missile pass a Headquarters
     if (S.kind[q] === NAVY && TERRAIN[s] === MIXED) {
       if (corridor < 0) {
         corridor = 0;
@@ -198,34 +219,39 @@ function transitSafe(S, a, from, d, i) {
 /** to an empty point (also asked about a point with a friend on it, when joining it) */
 function okMove(S, a, loaded, from, d, i) {
   const k = S.kind[a], t = RAY[from * 8 + d][i];
-  if (k === ENGINEER && loaded && !(BANK[from] && BANK[t])) return false;
+  if (k === ENGINEER && loaded && !ferry(from, t)) return false;
   if (k === AIR) { if (TERRAIN[t] === WATER) { const q = S.top[t]; if (q < 0 || S.own[q] !== S.own[a] || S.kind[q] !== NAVY) return false; } }
   else if (!standsOn(k, t)) return false;
   if (HEAVY[k] && crosses(from, t) && !((d === 2 || d === 3) && (fileOf(from) === 5 || fileOf(from) === 7))) return false;
   if (k === COMMANDER && !transitSafe(S, a, from, d, i)) return false;
-  if (k === AIR && airOutcome(S, S.own[a], from, d, i) !== SAFE) return false;
+  if (k === AIR && flight(S, a, from, d, i) !== SAFE) return false;
   return pathOK(S, k, from, d, i);
 }
+/** an Engineer with a gun on its back makes one move only: straight over the river, bank to bank */
+const ferry = (from, t) => BANK[from] && BANK[t] && crosses(from, t);
 /** can a reach the enemy on t at all: near enough, and nothing it cannot shoot past in between */
 function okAttack(S, a, from, d, i) {
-  const k = S.kind[a], h = k === COMMANDER ? 0 : S.hero[a], ray = RAY[from * 8 + d];
-  if (i >= (d >= 4 ? CAP_DIAG[k] : CAP_ORTH[k]) + h) return false;
-  if (k === NAVY && S.kind[S.top[ray[i]]] !== NAVY && i + 1 > CAP_ORTH[k] + h - 1) return false;   // a ship reaches one less at anything but a ship
-  if (!SHOOT_HQ[k]) for (let j = 0; j < i; j++) { const q = S.top[ray[j]]; if (q >= 0 && S.kind[q] === HQ) return false; }
-  if (k === NAVY || SHOOT_OVER[k]) return true;
-  for (let j = 0; j < i; j++) if (S.top[ray[j]] >= 0) return false;
+  const k = S.kind[a], h = k === COMMANDER ? 0 : S.hero[a], ray = RAY[from * 8 + d], q = S.top[ray[i]], kq = S.kind[q], far = reach(CAP_ORTH, CAP_DIAG, k, h, d);
+  if (i >= far) return false;
+  if (kq === HQ && SMALL_ARMS[k] && S.c1[q] >= 0) return false;       // the Commander is safe in there from small arms
+  if (k === NAVY) {                                           // missiles at a ship, with no ship in between; guns, one point less, at anything else, over everything
+    if (kq !== NAVY) return i < far - 1;
+    for (let j = 0; j < i; j++) { const x = S.top[ray[j]]; if (x >= 0 && S.kind[x] === NAVY) return false; }
+    return true;
+  }
+  if (SHOOT_OVER[k]) return true;
+  for (let j = 0; j < i; j++) if (S.top[ray[j]] >= 0) return false;   // a Headquarters stops straight fire like anything else
   return true;
 }
 /** take it and stand where it stood */
 function okCapture(S, a, loaded, from, d, i) {
-  const k = S.kind[a], ray = RAY[from * 8 + d], t = ray[i], q = S.top[t];
-  if (k === COMMANDER && S.kind[q] === COMMANDER && d < 4) { let clear = true; for (let j = 0; j < i; j++) if (S.top[ray[j]] >= 0) { clear = false; break; } if (clear) return true; }
-  if (k === ENGINEER && loaded && !(BANK[from] && BANK[t])) return false;
+  const k = S.kind[a], ray = RAY[from * 8 + d], t = ray[i];
+  if (k === ENGINEER && loaded && !ferry(from, t)) return false;
   if (k === AIR ? TERRAIN[t] === WATER : !standsOn(k, t)) return false;
   if (!okAttack(S, a, from, d, i)) return false;
   if (k === COMMANDER && !transitSafe(S, a, from, d, i)) return false;
   if (k === NAVY && !pathOK(S, k, from, d, i)) return false;
-  if (k === AIR && airOutcome(S, S.own[a], from, d, i) !== SAFE) return false;
+  if (k === AIR && flight(S, a, from, d, i) !== SAFE) return false;
   return true;
 }
 /** take it without leaving one's place. deployed: a is acting apart from the stack it stands in, and then it has to be
@@ -234,7 +260,7 @@ function okStay(S, a, loaded, from, d, i, deployed) {
   const k = S.kind[a], t = RAY[from * 8 + d][i];
   if (k === COMMANDER || !okAttack(S, a, from, d, i)) return false;
   if (deployed && !standsOn(k, from)) return false;
-  if (k === AIR) return S.kind[S.top[t]] !== AIR && airOutcome(S, S.own[a], from, d, i) === SAFE;
+  if (k === AIR) return S.kind[S.top[t]] !== AIR && flight(S, a, from, d, i) === SAFE;
   if (k === TANK || k === NAVY) return !okCapture(S, a, loaded, from, d, i);
   return TERRAIN[t] === WATER;                                // the rest fire only at what lies in the sea, where they cannot follow
 }
@@ -246,9 +272,9 @@ function okCombine(S, a, group, from, d, i) {
   const loaded = group.length > 1;
   if (okMove(S, a, loaded, from, d, i)) return true;
   if (S.kind[S.top[t]] !== NAVY) return false;                // boarding a ship that lies in the sea
-  if (k === ENGINEER && loaded && !(BANK[from] && BANK[t])) return false;
+  if (k === ENGINEER && loaded) return false;
   if (HEAVY[k] && crosses(from, t) && !((d === 2 || d === 3) && (fileOf(from) === 5 || fileOf(from) === 7))) return false;
-  if (k === AIR) return airOutcome(S, S.own[a], from, d, i) === SAFE;
+  if (k === AIR) return flight(S, a, from, d, i) === SAFE;
   if (k === NAVY) return pathOK(S, k, from, d, i);
   for (let j = 0; j < i; j++) if (TERRAIN[ray[j]] === WATER || S.top[ray[j]] >= 0) return false;
   return true;
@@ -257,11 +283,23 @@ function okCombine(S, a, group, from, d, i) {
 function attacks(S, p, target) {
   const from = S.at[p], li = LINE[from * NSQ + target]; if (li === 255) return false;
   const d = li >> 4, i = li & 15, k = S.kind[p];
-  if (k === COMMANDER) return false;
   const loaded = S.car[p] < 0 && S.c1[p] >= 0;
   if (okCapture(S, p, loaded, from, d, i)) return true;
-  if (k === AIR) return okAttack(S, p, from, d, i) && airOutcome(S, S.own[p], from, d, i) !== INTERCEPTED && (airOutcome(S, S.own[p], from, d, i) === TRADE || S.kind[S.top[target]] !== AIR);
+  if (k === AIR) { if (!okAttack(S, p, from, d, i)) return false; const o = flight(S, p, from, d, i); return o !== INTERCEPTED && (o === TRADE || S.kind[S.top[target]] !== AIR); }
   return okStay(S, p, loaded, from, d, i, false);
+}
+/** A Commander may not pass over a point where it could be taken: the author's "control zone". The Commander is `a`, going
+ *  alone from `from` to `to`; the point it stops on is the check rule's business, this looks at the ones before it. */
+function safePassage(S, a, from, to) {
+  const li = LINE[from * NSQ + to], n = li & 15; if (li === 255 || !n) return true;
+  const T = clone(S), ray = RAY[from * 8 + (li >> 4)], rest = members(T, from).filter(p => p !== a);
+  const c = rest.length ? carrierOf(T, rest) : -1; setStack(T, from, rest, c < 0 && rest.length ? rest[0] : c);
+  for (let j = 0; j < n; j++) {
+    const s = ray[j]; if (T.top[s] >= 0) continue;            // a ship it slips past along the shore
+    setStack(T, s, [a], a); const taken = inCheck(T, S.own[a]); T.top[s] = -1;
+    if (taken) return false;
+  }
+  return true;
 }
 /** is this side's Commander under attack? */
 function inCheck(S, side) {
@@ -289,8 +327,8 @@ const COMMIT_MOVE = COMMIT << 16;
 function genGroup(S, from, a, grp, group, whole, out, takesOnly) {
   const k = S.kind[a], h = k === COMMANDER ? 0 : S.hero[a], me = S.own[a], loaded = group.length > 1, alone = group.length === 1;
   for (let d = 0; d < 8; d++) {
-    const rm = (d >= 4 ? MOVE_DIAG[k] : MOVE_ORTH[k]) + h, ray = RAY[from * 8 + d];
-    const rc = (d >= 4 ? CAP_DIAG[k] : CAP_ORTH[k]) + h;
+    const rm = reach(MOVE_ORTH, MOVE_DIAG, k, h, d), ray = RAY[from * 8 + d];
+    const rc = reach(CAP_ORTH, CAP_DIAG, k, h, d);
     const n = Math.min(ray.length, Math.max(rm, rc));
     for (let i = 0; i < n; i++) {
       const t = ray[i], q = S.top[t];
@@ -298,7 +336,7 @@ function genGroup(S, from, a, grp, group, whole, out, takesOnly) {
       if (S.own[q] === me) { if (!takesOnly && i < rm && okCombine(S, a, group, from, d, i)) out.push(mk(from, t, COMBINE, a, grp)); continue; }
       if (i < rm) {
         if (okCapture(S, a, loaded, from, d, i)) out.push(mk(from, t, CAPTURE, a, grp));
-        else if (k === AIR && okAttack(S, a, from, d, i)) { const o = airOutcome(S, me, from, d, i); if (o !== SAFE) out.push(mk(from, t, o === TRADE ? SUICIDE : INTERCEPT, a, grp)); }
+        else if (k === AIR && okAttack(S, a, from, d, i)) { const o = flight(S, a, from, d, i); if (o !== SAFE) out.push(mk(from, t, o === TRADE ? SUICIDE : INTERCEPT, a, grp)); }
       }
       if (i < rc && (whole || alone) && okStay(S, a, loaded, from, d, i, !whole)) out.push(mk(from, t, STAY, a, grp));
     }
@@ -328,12 +366,6 @@ function gen(S, out, takesOnly) {
   return out;
 }
 
-/** enemy planes that none of my air defence reaches yet */
-function planesInTheClear(S, me) {
-  const m = adMask(S, me), out = [];
-  for (let p = 0; p < S.n; p++) if (S.kind[p] === AIR && S.own[p] !== me && S.at[p] >= 0 && S.car[p] < 0 && !m[S.at[p]]) out.push(p);
-  return out;
-}
 const note = (S, what) => { if (S.log) S.log.push(what); };
 
 /** Plays move m on S (make a copy first if S is still needed). strict: refuse what the rules forbid for the safety of
@@ -344,7 +376,7 @@ function play(S, m, strict) {
   const from = mFrom(m), to = mTo(m), a = mActor(m), grp = mGroup(m), me = S.turn, M = members(S, from), G = [a], L = [];
   for (let j = 0; j < M.length; j++) if (M[j] !== a) ((grp >> j) & 1 ? G : L).push(M[j]);
   const session = S.dOrg >= 0, deploy = session || L.length > 0;
-  const clear = !deploy && AD_R[S.kind[a]] ? planesInTheClear(S, me) : null;
+  if (strict && S.kind[a] === COMMANDER && mode !== STAY && !safePassage(S, a, from, to)) return false;
   const dead = S.log ? [] : null;
   let hit = -1;
   if (mode === INTERCEPT) { const li = LINE[from * NSQ + to]; hit = interceptPoint(S, me, from, li >> 4, li & 15); }
@@ -374,7 +406,7 @@ function play(S, m, strict) {
     return true;
   }
   if (strict && (exposed(S) || inCheck(S, me))) return false;
-  endTurn(S, me, mode !== MOVE, a, clear);
+  endTurn(S, me, mode !== MOVE);
   return true;
 }
 /** ends a deployment: what was left on the point must make one stack again */
@@ -383,7 +415,7 @@ function commit(S, strict) {
   if (here.length > 1) { const c = carrierOf(S, here); if (c < 0) return false; setStack(S, s, here, c); }
   if (strict && (exposed(S) || inCheck(S, me))) return false;
   const irr = S.dIrr; S.dOrg = -1; S.dAct = []; S.dIrr = 0;
-  endTurn(S, me, !!irr, -1, null);
+  endTurn(S, me, !!irr);
   return true;
 }
 /** pieces that now threaten the other Commander become heroes; so does a side's last piece. Returns how many. */
@@ -401,39 +433,15 @@ function promote(S, me) {
   if (n) S.ad[0] = S.ad[1] = null;
   return n;
 }
-function endTurn(S, me, irreversible, mover, clear) {
-  const foe = 1 - me, ec = S.cmd[foe];
-  if (ec < 0 || S.at[ec] < 0) { S.over = { winner: me, why: 'commander' }; note(S, { what: 'over' }); return; }
-  let holds = false; for (const s of CORE[foe]) { const q = S.top[s]; if (q >= 0 && S.own[q] === me) holds = true; }
-  S.core[me] = holds ? S.core[me] + 1 : 0;
+/** A turn is over. The side that has just lost what the game is played for has lost: looked at for the other side first,
+ *  so that a plane that goes down taking the last ship with it has won. */
+function endTurn(S, me, irreversible) {
+  const foe = 1 - me, theirs = lostBattle(S, foe), mine = theirs ? null : lostBattle(S, me);
+  if (theirs || mine) { S.over = theirs ? { winner: me, why: theirs } : { winner: foe, why: mine }; note(S, { what: 'over' }); return; }
   const promoted = promote(S, me);
   S.half = irreversible || promoted ? 0 : S.half + 1;
-  if (S.core[me] >= 3) S.over = { winner: me, why: 'hq' }; else if (S.half >= 100) S.over = { winner: -1, why: 'fifty' };
-  // air defence that has moved up to a plane may shoot it down two turns later, if the plane is still there
-  if (S.exp.length) {
-    const keep = [];
-    for (const x of S.exp) { const p = x.p; if (S.at[p] >= 0 && S.car[p] < 0 && adMask(S, x.d)[S.at[p]]) { if (S.own[p] === me) x.e = 1; keep.push(x); } }
-    S.exp = keep;
-  }
-  if (clear && clear.length && S.at[mover] >= 0 && S.car[mover] < 0) {
-    const reach = AD_R[S.kind[mover]] + S.hero[mover], at = S.at[mover];
-    for (const p of clear) {
-      if (S.at[p] < 0 || S.car[p] >= 0) continue;
-      const dx = fileOf(S.at[p]) - fileOf(at), dy = rankOf(S.at[p]) - rankOf(at);
-      if (dx * dx + dy * dy <= reach * reach && !S.exp.some(x => x.p === p && x.d === me)) { S.exp = S.exp.concat([{ p, d: me, e: 0 }]); note(S, { what: 'lock', piece: p, by: mover }); }
-    }
-  }
-  if (S.over) { note(S, { what: 'over' }); return; }
+  if (S.half >= 100) { S.over = onPoints(S, 'quiet'); note(S, { what: 'over' }); return; }
   S.turn = foe; if (me === BLUE) S.full++;
-  if (S.exp.length) {                                         // the side now to move fires first, and it costs no move
-    for (const x of S.exp.slice()) {
-      if (x.d !== foe || !x.e) continue;
-      const p = x.p; if (S.at[p] < 0 || S.car[p] >= 0 || !adMask(S, foe)[S.at[p]]) continue;
-      const s = S.at[p], dead = S.log ? [] : null; killStack(S, s, dead); S.ad[0] = S.ad[1] = null;
-      S.exp = S.exp.filter(y => y.p !== p); note(S, { what: 'shotdown', at: s, dead, side: foe });
-      if (S.at[S.cmd[me]] < 0) { S.over = { winner: foe, why: 'commander' }; note(S, { what: 'over' }); return; }
-    }
-  }
 }
 
 /** can a deployment that has begun be brought to an end the rules allow? */
@@ -454,13 +462,12 @@ function legalMoves(S) {
 function status(S) {
   if (S.over) return S.over;
   if (S.dOrg >= 0 || legalMoves(S).length) return null;
-  return inCheck(S, S.turn) ? { winner: 1 - S.turn, why: 'mate' } : { winner: -1, why: 'stalemate' };
+  return { winner: 1 - S.turn, why: inCheck(S, S.turn) ? 'mate' : 'stuck' };    // a side with no move left has lost, attacked or not
 }
 /** a position as text: the same for two positions exactly when the same moves are possible in both */
 function posKey(S) {
   let k = S.turn ? 'b' : 'r';
   for (let s = 0; s < NSQ; s++) { const t = S.top[s]; if (t < 0) continue; k += '|' + s + ':'; for (const p of [t].concat(members(S, s).slice(1).sort((x, y) => S.kind[x] - S.kind[y]))) k += KIND_CODE[S.kind[p]] + (S.own[p] ? 'b' : 'r') + (S.hero[p] ? '*' : ''); }
-  for (const x of S.exp) k += '|x' + S.at[x.p] + x.d + x.e;
   return k;
 }
 /** the position after these moves from the start (null if one of them cannot be played) */
@@ -478,6 +485,6 @@ function moveText(S, m) {
 }
 
 if (typeof module !== 'undefined') module.exports = { NF, NR, NSQ, FILES, RED, BLUE, COMMANDER, INFANTRY, TANK, MILITIA, ENGINEER, ARTILLERY, ANTIAIR, MISSILE, AIR, NAVY, HQ, KIND_NAME, KIND_CODE,
-  LAND, WATER, MIXED, BRIDGE, MOVE, CAPTURE, STAY, SUICIDE, INTERCEPT, COMBINE, COMMIT, COMMIT_MOVE, SAFE, TRADE, INTERCEPTED, TERRAIN, BANK, CORE, DIRS, RAY, LINE, AD_R, AD_SQ, SETUP_STANDARD,
+  LAND, WATER, MIXED, BRIDGE, MOVE, CAPTURE, STAY, SUICIDE, INTERCEPT, COMBINE, COMMIT, COMMIT_MOVE, SAFE, TRADE, INTERCEPTED, TERRAIN, BANK, DIRS, RAY, LINE, AD_R, AD_SQ, SETUP_STANDARD, POINTS, ARM_NAME, armOf, arms, lostBattle, points, onPoints, safePassage, flight,
   MOVE_ORTH, MOVE_DIAG, CAP_ORTH, CAP_DIAG, sqOf, fileOf, rankOf, sqName, sqNamed, newGame, clone, members, fits, carrierOf, setStack, killStack, standsOn, adMask, airOutcome, interceptPoint, attacks, inCheck, exposed,
   mk, mFrom, mTo, mMode, mActor, mGroup, gen, genSquare, play, commit, legalMoves, canFinish, status, posKey, replay, moveText };

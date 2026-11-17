@@ -24,7 +24,6 @@ function drawPoint(S, s) {
   const old = V.pcs.get(s); if (old) { old.remove(); V.pcs.delete(s); }
   const ids = members(S, s); if (!ids.length) return null;
   const el = makeStack(S, ids); setAt(el, xy(s)); V.pcs.set(s, el); V.L.pieces.appendChild(el);
-  if (S.exp.some(x => ids.includes(x.p))) el.insertAdjacentHTML('beforeend', '<g class="lock"><circle r="31"/><path d="M-37 0h12M25 0h12M0 -37v12M0 25v12"/></g>');
   return el;
 }
 /** the board as position S has it, with nothing moving */
@@ -82,10 +81,6 @@ async function showLog(S, log) {
       if (ev.mode !== MOVE) await sleep(REDUCED ? 0 : 160);
     } else if (ev.what === 'hero') {
       const s = S.at[ev.piece]; if (s >= 0) { const el = drawPoint(S, s); if (el) el.classList.add('risen'); restack(); SFX.play('hero'); await sleep(REDUCED ? 0 : 420); }
-    } else if (ev.what === 'lock') {
-      const s = S.at[ev.piece]; if (s >= 0) { drawPoint(S, s); restack(); SFX.play('lock'); }
-    } else if (ev.what === 'shotdown') {
-      await sleep(REDUCED ? 0 : 260); burst(xy(ev.at), true); SFX.play('boom'); drawPoint(S, ev.at); await sleep(REDUCED ? 0 : 320);
     }
   }
 }

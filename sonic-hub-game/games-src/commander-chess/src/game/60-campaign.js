@@ -15,19 +15,19 @@ const CARD_WINS = [1, 3, 5];                                  // wins against he
 const PLACES = [
   { id: 'halcyon', name: 'Port Halcyon', room: 'The Harbour Mess', open: 0, built: true,
     blurb: 'The fleet’s home port. After the evening gun the officers’ mess above the docks clears a table, and nobody goes to bed until the last Commander has fallen.',
-    house: 'The standard board.' },
+    house: 'The standard line-up, and a game of battles: it ends with a Commander, or with a side’s last ship, its last plane, or the last of its infantry, tanks and artillery. The Commandant alone plays total war.' },
   { id: 'kestrel', name: 'Kestrel Field', room: 'The Ready Room', open: 760, built: false,
     blurb: 'The air station on the northern cliffs. The pilots play fast, between scrambles, and they do not believe in holding anything back.',
-    house: 'Open skies: a third squadron for each side, thinner air defence.' },
+    house: 'Battles, from the pilots’ own line-up: their planes start well forward.' },
   { id: 'ironwood', name: 'Ironwood Depot', room: 'The Motor Pool', open: 900, built: false,
     blurb: 'The armoured brigade’s workshops in the pine hills. Games are played on an engine crate, and settled on the bridges.',
-    house: 'Land war: no ships, a second bridge road, more armour.' },
+    house: 'Battles, from the brigade’s line-up: armour massed on the fords.' },
   { id: 'meridian', name: 'Fort Meridian', room: 'The Gun Deck', open: 1050, built: false,
     blurb: 'The old fortress over the strait. Its gunners have had two hundred years to learn patience.',
-    house: 'Siege: the host starts dug in behind the river, the guest has the numbers.' },
+    house: 'Battles, and you set out your own line-up before the first move, as the fortress does.' },
   { id: 'admiralty', name: 'The Admiralty', room: 'The Long Table', open: 1250, built: false,
     blurb: 'The capital. The staff who write the Maneuvers play here, under the portraits of everyone who ever beat them.',
-    house: 'The host chooses the board, game by game.' },
+    house: 'Total war over two games, one moving first and one moving second, each side with its own line-up.' },
 ];
 
 /* rating: the order is measured by letting the five play each other (tools/sim.js; the scores are in the README), the
@@ -48,8 +48,8 @@ const WOMEN = [
       check: ['Is that check? I think that’s check. Check!', 'Your Commander looks nervous. I would be.'],
       checked: ['Oh no. Oh no no no.', 'Don’t look at my Commander like that.'],
       hero: ['She’s a hero now! I’m going to give her a medal. A real one. I have ribbon.'],
-      hqHers: ['I’m standing on your headquarters. Is that good? It feels good.'],
-      hqYours: ['Um. You’re not supposed to be in there. That’s ours.'],
+      lastYours: ['That’s your last one, isn’t it? I counted. Twice.', 'One more and it’s over! …Did I say that out loud?'],
+      lastHers: ['I only have one left. Nobody look at it.', 'Um. That was not supposed to be my last one.'],
       ahead: ['Am I winning? Don’t tell me. I’ll get nervous.'],
       behind: ['It’s fine. It’s fine! I have a plan. I’m about to have a plan.'],
       idle: ['Do you think the pieces mind being carried? I’d like being carried.', 'Take your time. I’ll just be here. Winning. Possibly.'],
@@ -72,8 +72,8 @@ const WOMEN = [
       check: ['Knock knock, Commander.', 'Check. Don’t sweat on my board.'],
       checked: ['Cheeky. I’m almost impressed.', 'Careful where you point that.'],
       hero: ['Hero! Drinks for the hero. On you.'],
-      hqHers: ['Nice headquarters. I’m moving in.'],
-      hqYours: ['Get your boots off my deck.'],
+      lastYours: ['One left, Lieutenant. I’d keep it somewhere I can’t see.', 'Down to your last. This is the fun part.'],
+      lastHers: ['One left. Good. I was carrying too many anyway.', 'Touch my last one and we are going to have words.'],
       ahead: ['You’re running out of things for me to take, Lieutenant.'],
       behind: ['Quiet, you. I’m thinking. It happens.'],
       idle: ['You always take this long? No wonder you’re still a lieutenant.', 'The board won’t bite. I might.'],
@@ -96,8 +96,8 @@ const WOMEN = [
       check: ['Check. I’d move, if I were you. Precisely.', 'Your Commander is bracketed.'],
       checked: ['Bold. Let’s see if it was sound.', 'You have my attention.'],
       hero: ['Promoted in the field. She earned it.'],
-      hqHers: ['Your headquarters, Lieutenant. I’m told three turns is the custom.'],
-      hqYours: ['You’re inside my lines. That is… irritating.'],
+      lastYours: ['You have one left of those. I have its range.', 'One more loss there and the battle is mine. I’m only telling you once.'],
+      lastHers: ['My last. It will not be standing where you expect.', 'Noted. That one is now under orders to be careful.'],
       ahead: ['The arithmetic is not on your side. It rarely argues.'],
       behind: ['I’ve made an error somewhere. I will find it. Then I’ll find you.'],
       idle: ['Silence is fine. I like to hear people think.', 'There is a good move here. I wonder if you’ll see it.'],
@@ -107,10 +107,10 @@ const WOMEN = [
     } },
   { id: 'nadia', place: 'halcyon', name: 'Nadia Rahimi', rank: 'Commander', job: 'Captain of the destroyer Simurgh', level: 'Hard', rating: 1700, needs: 670,
     hair: 'wave', tone: ['#ffb238', '#b3273a', '#fff0d0'],
-    style: 'Attacks from the first move and goes straight for your headquarters. She will trade anything for speed.',
+    style: 'Attacks from the first move and goes straight for your Commander. She will trade anything for speed.',
     cards: [['Simurgh', 'Fastest ship in the flotilla. She says it is the paint.'], ['Night run', 'Lights out, thirty knots, and that smile.'], ['The wager', 'She only bets on herself. So far it has paid.']],
     say: {
-      intro: ['So this is the lieutenant Hana keeps frowning about. Come here, let me look at you.', 'Nadia Rahimi. I drive the Simurgh. I don’t sit behind rivers and I don’t wait to be asked.', 'I’m coming for your headquarters, darling. You can try to stop me, or you can race me there.'],
+      intro: ['So this is the lieutenant Hana keeps frowning about. Come here, let me look at you.', 'Nadia Rahimi. I drive the Simurgh. I don’t sit behind rivers and I don’t wait to be asked.', 'I’m coming for your Commander, darling. You can hide it, or you can come and get mine first.'],
       rematch: ['There you are. I was getting bored of winning against the others.', 'Back already? Careful, Lieutenant. I could get used to you.'],
       start: ['First one across the river buys nothing and wins everything.', 'Don’t build me a wall. Walls are so dull.'],
       sheTakes: ['Mine.', 'You were always going to lose that one. I just hurried it up.', 'Lovely. What else have you got?', 'Keep them coming.'],
@@ -120,8 +120,8 @@ const WOMEN = [
       check: ['Check, darling.', 'Run along, Commander. I’ll be right behind you.'],
       checked: ['Oh, I like you.', 'Close. Very close. Now watch.'],
       hero: ['A hero. She gets it from me.'],
-      hqHers: ['Knock, knock. I let myself in.', 'One. Count with me, Lieutenant.'],
-      hqYours: ['In my headquarters? The nerve. …I’m a little flattered.'],
+      lastYours: ['Your last one, darling. I’ll be gentle. No, I won’t.', 'One left. Hide it well; I do love looking.'],
+      lastHers: ['My last one? Then I’ll just have to finish sooner.', 'Careful. I’m more dangerous with less to lose.'],
       ahead: ['You’re bleeding, Lieutenant. I can smell it from here.'],
       behind: ['Now it gets interesting. I’m at my best when I’m behind.'],
       idle: ['Tick, tock. The Simurgh would be in the next port by now.', 'Thinking? Don’t. Just come at me.'],
@@ -129,12 +129,12 @@ const WOMEN = [
       lose: ['Well. Well, well. Nobody’s done that to me in a while. Say you’ll play me again.', 'You beat me to it. I may have to keep you, Lieutenant.'],
       draw: ['A draw. How unsatisfying. We’ll have to do it again, properly.'],
     } },
-  { id: 'isolde', place: 'halcyon', name: 'Isolde Varga', rank: 'Captain', job: 'Commandant of Port Halcyon', level: 'Hardest', rating: 2000, needs: 700,
+  { id: 'isolde', place: 'halcyon', name: 'Isolde Varga', rank: 'Captain', job: 'Commandant of Port Halcyon', level: 'Hardest', rating: 2000, needs: 700, game: 'total',
     hair: 'updo', tone: ['#c9a4ff', '#3b2a78', '#f4ecff'],
-    style: 'Gives you nothing and waits. By the time you see what she wanted, she has had it for five moves.',
+    style: 'Total war: only the Commander counts. She gives you nothing and waits; by the time you see what she wanted, she has had it for five moves.',
     cards: [['The Commandant', 'Port Halcyon runs on her signature.'], ['The long table', 'She has not lost at this table since the old Admiral retired.'], ['After hours', 'Her door is open after ten. Bring the board.']],
     say: {
-      intro: ['Lieutenant. Do sit. I am Captain Varga; this is my port, and for the moment this is my table.', 'They tell me you beat Commander Rahimi. She will have enjoyed that more than she lets on.', 'I should say that I do not attack, and I do not hurry. I simply wait for you to tell me how you would like to lose.'],
+      intro: ['Lieutenant. Do sit. I am Captain Varga; this is my port, and for the moment this is my table.', 'They tell me you beat Commander Rahimi. She will have enjoyed that more than she lets on.', 'I should say that I do not attack, and I do not hurry. I simply wait for you to tell me how you would like to lose.', 'One thing more. Downstairs they stop when the last ship goes down. At my table we play total war: nothing ends it but a Commander.'],
       rematch: ['Good evening, Lieutenant. I wondered how long your pride would need.', 'You again. I’m glad. Most people only try me once.'],
       start: ['Whenever you’re ready. I have all night, and the keys to the building.', 'Show me something I have not seen. I’ve been here a long time.'],
       sheTakes: ['Thank you.', 'I’m afraid that was decided some moves ago.', 'Yes. That one.', 'You saw it too, just now. A little late.'],
@@ -144,8 +144,8 @@ const WOMEN = [
       check: ['Check.', 'Your Commander has fewer places to go than you think. Count them.'],
       checked: ['Ah. Good. Now we’re playing.', 'Brave. Let us see whether it was also correct.'],
       hero: ['Promoted. I do like to reward good work.'],
-      hqHers: ['I believe this is your headquarters. I’ll try not to disturb anything.'],
-      hqYours: ['You are in my headquarters, Lieutenant. Nobody has been in there for years.'],
+      lastYours: ['One remains, Lieutenant. Look after it better than you did its sister.', 'Your last. I shall take my time over it.'],
+      lastHers: ['My last. You will find it better guarded than the first.', 'So. You have my attention, and my last one.'],
       ahead: ['You are playing well. It will not be enough, but I wanted you to know.'],
       behind: ['You have me under some pressure. I had forgotten how that feels. Thank you.'],
       idle: ['No hurry. The tide comes in whether we watch it or not.', 'You’re looking for a way through. There is one. I left it for you.'],
@@ -165,10 +165,11 @@ const pointsFor = (mine, hers, result) => { const p = Math.round(K_FACTOR * (res
 
 /* ── what is kept between visits ── */
 const STORE = 'commander-chess.v1';
-const freshSave = () => ({ rating: START_RATING, peak: START_RATING, record: {}, met: {}, seen: {}, sound: true, side: 0, all: false, match: null });
+const RULES = 2;                                              // 2: the author's own rules. A game begun under other rules is not gone back to.
+const freshSave = () => ({ rating: START_RATING, peak: START_RATING, record: {}, met: {}, seen: {}, sound: true, side: 0, all: false, match: null, rules: RULES });
 let SAVE = freshSave();
 function loadSave() {
-  try { const d = JSON.parse(localStorage.getItem(STORE) || 'null'); if (d && typeof d.rating === 'number') SAVE = Object.assign(freshSave(), d); } catch (e) { /* nothing kept: start fresh */ }
+  try { const d = JSON.parse(localStorage.getItem(STORE) || 'null'); if (d && typeof d.rating === 'number') { if (d.rules !== RULES) { d.match = null; d.rules = RULES; } SAVE = Object.assign(freshSave(), d); } } catch (e) { /* nothing kept: start fresh */ }
   return SAVE;
 }
 function keep() { try { localStorage.setItem(STORE, JSON.stringify(SAVE)); } catch (e) { /* a browser that keeps nothing: the game still plays */ } }

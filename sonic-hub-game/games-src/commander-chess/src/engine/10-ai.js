@@ -12,9 +12,14 @@
      ms            thinking time for the deepening levels
      noise, slip   how shaky its judgement is, and how often it just plays something
      style         what it likes: see STYLE0 below. Two players of the same strength with different styles go
-                   for different things, which is what makes them different people to play against. */
+                   for different things, which is what makes them different people to play against.
+                   adv: gaining ground. hunt: closing in on the other Commander. guard: keeping its own at home and
+                   covered. arms: how much a whole arm matters to it, its own and the other side's (a game of battles
+                   is lost with the last ship, the last plane, or the last of infantry, tanks and artillery).
+                   air, sea, guns, armor, foot: what it thinks its planes, ships, artillery and missiles, tanks,
+                   infantry and militia are worth. */
 const VALUE = [0, 100, 240, 115, 110, 320, 170, 280, 450, 500, 150];
-const STYLE0 = { adv: 1, hq: 1, guard: 1, air: 1, sea: 1, guns: 1, armor: 1, foot: 1 };
+const STYLE0 = { adv: 1, hunt: 1, guard: 1, arms: 1, air: 1, sea: 1, guns: 1, armor: 1, foot: 1 };
 const WIN = 100000;
 
 const AI = (() => {
@@ -33,24 +38,21 @@ const AI = (() => {
   function stackValue(S, s) { let v = 0; const t = S.top[s]; if (t < 0) return 0; for (const p of members(S, s)) v += S.kind[p] === COMMANDER ? 5000 : VALUE[S.kind[p]] * (S.hero[p] ? 1.4 : 1); return v; }
 
   /** The position as the side to move sees it. Counted: the pieces (a hero is worth two fifths more); ground gained
-   *  by the pieces that have to walk; how near they are to the other side's Headquarters points and how many turns
-   *  either side has held one; how crowded each Commander is by enemies and how far it has strayed from home; a plane
-   *  that air defence has locked on to. */
+   *  by the pieces that have to walk; how crowded each Commander is by enemies and how far it has strayed from home;
+   *  and, in a game of battles, an arm that is down to its last piece or two. */
   function evaluate(S) {
     let sc = 0;
-    const cr = S.at[S.cmd[RED]], cb = S.at[S.cmd[BLUE]];
+    const cr = S.at[S.cmd[RED]], cb = S.at[S.cmd[BLUE]], left = [[0, 0, 0], [0, 0, 0]];
     for (let p = 0; p < S.n; p++) {
       const s = S.at[p]; if (s < 0) continue;
       const k = S.kind[p], side = S.own[p]; if (k === COMMANDER) continue;
       let v = val[k] * (S.hero[p] ? 1.4 : 1);
       const fwd = side === RED ? rankOf(s) - 1 : 12 - rankOf(s), foe = side === RED ? cb : cr, mine = side === RED ? cr : cb;
-      if (k === INFANTRY || k === MILITIA || k === TANK || k === ENGINEER) {
-        v += fwd * 4 * W.adv;
-        const c = CORE[1 - side], dc = Math.min(DIST[s * NSQ + c[0]], DIST[s * NSQ + c[1]]);
-        if (dc < 5) v += (5 - dc) * 9 * W.hq;
-      } else if (k === AIR) { v += Math.min(fwd, 5) * 3 * W.adv; }
+      const arm = armOf(k); if (arm >= 0) left[side][arm]++;
+      if (k === INFANTRY || k === MILITIA || k === TANK || k === ENGINEER) v += fwd * 4 * W.adv;
+      else if (k === AIR) { v += Math.min(fwd, 5) * 3 * W.adv; }
       else if (k === ARTILLERY || k === MISSILE) { v += Math.min(fwd, 6) * 3 * W.adv; }
-      if (foe >= 0 && k !== HQ) { const d = DIST[s * NSQ + foe]; if (d <= 3) v += (4 - d) * 7 * W.adv; }       // pressing the other Commander
+      if (foe >= 0 && k !== HQ) { const d = DIST[s * NSQ + foe]; if (d <= 3) v += (4 - d) * 7 * W.hunt; }      // pressing the other Commander
       if (mine >= 0 && k !== AIR && k !== NAVY && k !== HQ) { const d = DIST[s * NSQ + mine]; if (d <= 2) v += 4 * W.guard; }   // standing by one's own
       sc += side === RED ? v : -v;
     }
@@ -59,11 +61,14 @@ const AI = (() => {
       let v = 0;
       const away = side === RED ? rankOf(c) - 1 : 12 - rankOf(c); v -= away * 14 * W.guard + (away > 2 ? (away - 2) * 20 * W.guard : 0);
       if (S.car[S.cmd[side]] >= 0) v += 10 * W.guard;
-      v += S.core[side] * S.core[side] * 260 * W.hq;
-      for (const h of CORE[1 - side]) { const q = S.top[h]; if (q >= 0 && S.own[q] === side) v += 120 * W.hq; }
+      if (!S.total) {                                         // one ship or one plane from losing the game; the land arm thins out more slowly
+        const n = left[side], had = S.had[side];
+        if (had[0] && n[0] === 1) v -= 280 * W.arms;
+        if (had[1] && n[1] === 1) v -= 280 * W.arms;
+        if (had[2] && n[2] <= 2) v -= (n[2] === 1 ? 300 : 120) * W.arms;
+      }
       sc += side === RED ? v : -v;
     }
-    for (const x of S.exp) sc += (S.own[x.p] === RED ? -1 : 1) * 300;
     sc = S.turn === RED ? sc : -sc;
     if (jitter) { let h = (salt ^ (S.at[S.cmd[RED]] * 131 + S.at[S.cmd[BLUE]] * 31 + S.half * 7)) >>> 0; for (let p = 0; p < S.n; p += 3) h = (Math.imul(h, 16777619) ^ (S.at[p] + 1)) >>> 0; sc += (h % (2 * jitter + 1)) - jitter; }
     return sc + 8;
@@ -163,7 +168,7 @@ const AI = (() => {
         const T = clone(S); play(T, r.m, true);
         let v;
         if (T.over) v = overValue(T, me, 0);
-        else if (opt.seen && T.dOrg < 0 && (opt.seen[posKey(T)] || 0) >= 2) v = 0;        // a third time is a draw
+        else if (opt.seen && T.dOrg < 0 && (opt.seen[posKey(T)] || 0) >= 2) { const pts = points(T), lead = pts[me] - pts[1 - me]; v = lead > 0 ? WIN - 500 : lead < 0 ? 500 - WIN : 0; }   // a third time ends the game on points
         else if (T.turn === me) v = search(T, depth, wide ? -WIN * 2 : alpha, WIN * 2, 1);
         else v = -search(T, depth - 1, -WIN * 2, wide ? WIN * 2 : -alpha, 1);
         if (out) break;

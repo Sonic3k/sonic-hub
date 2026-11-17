@@ -1,20 +1,22 @@
 # Commander Chess
 
-Cờ Tư Lệnh (by Nguyễn Quý Hải) with a campaign: a coast of five garrisons, opponents with ratings and their own way
-of playing, points won and lost by rating, and a card for every opponent beaten. One self-contained page.
+Cờ Tư Lệnh (by Nguyễn Quý Hải), by his own rules, with a campaign: a coast of five garrisons, opponents with ratings
+and their own way of playing, points won and lost by rating, and a card for every opponent beaten. One self-contained
+page. RULES.md says where the rules come from and where they differ from cotulenh.vn.
 
     npm run build     # src/ → dist/index.html
-    npm test          # the rules: 11 positions from cotulenh.vn, one check per rule, random games
+    npm test          # the rules: one check per rule, 11 positions from cotulenh.vn, random games
     npm run sim -- isolde nadia 10    # let two of the computer's players meet
     npm start         # serve dist/ (Railway runs build, then this)
 
 ## What is where
 
-- `src/engine/00-core.js`: the rules, as cotulenh.vn plays them (its guide, then checked against the site itself).
+- `src/engine/00-core.js`: the rules (see RULES.md).
 - `src/engine/10-ai.js`, `20-players.js`: the computer player, and how each opponent plays.
 - `src/game/60-campaign.js`: places, the women, what they say, points, what is saved.
 - `src/game/40-art.js`, `50-board.js`, `70-screens.js`, `80-main.js`, `src/shell.html`: everything seen.
-- `test/site-vectors.js`: what the site lit up for every piece in eleven positions of two games played there.
+- `test/site-vectors.js`: what cotulenh.vn lit up for every piece in eleven positions of two games played there
+  (plain moves, where it and the author agree).
 
 ## Pictures
 

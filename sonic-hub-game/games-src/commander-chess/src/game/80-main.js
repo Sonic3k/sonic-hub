@@ -1,5 +1,5 @@
 /* ── The game itself: going from screen to screen, a match from the first move to the result, what is kept ── */
-const SETUP = null;                                           // every table at Port Halcyon uses the standard board
+const setupFor = w => ({ game: w.game === 'total' ? 'total' : 'battles' });   // every table at Port Halcyon uses the standard line-up; the Commandant plays total war
 const MIN_THINK = 700;                                        // she never answers faster than a hand could
 
 /** w: who is across the table; side: the player's; moves: every move of the game so far (steps of a deployment and their
@@ -41,7 +41,7 @@ function quiet(m) {
 }
 function startMatch(w, rated, side, resume) {
   G.token++; closeDialog();
-  Object.assign(G, { w, rated, side, S: newGame(SETUP), moves: [], seen: {}, legal: [], sel: -1, grp: 0, byTo: null, choice: null, snap: null, busy: true, marks: [], taken: [[], []], turns: 0, saidAt: -9, repeat: false, note: '', drag: null, lines: [], cur: [] });
+  Object.assign(G, { w, rated, side, S: newGame(setupFor(w)), moves: [], seen: {}, legal: [], sel: -1, grp: 0, byTo: null, choice: null, snap: null, busy: true, marks: [], taken: [[], []], turns: 0, saidAt: -9, repeat: false, note: '', drag: null, lines: [], cur: [] });
   G.seen[posKey(G.S)] = 1;
   show('match', screenMatch(w, rated));
   buildBoard(side === BLUE);
@@ -55,7 +55,7 @@ function saveMatch() { SAVE.match = { w: G.w.id, side: G.side, rated: G.rated, m
 /** whose turn it is, and what follows from that */
 async function nextTurn() {
   const S = G.S, token = G.token;
-  const st = S.over || (S.dOrg < 0 && G.repeat ? { winner: -1, why: 'repeat' } : null) || status(S);
+  const st = S.over || (S.dOrg < 0 && G.repeat ? onPoints(S, 'repeat') : null) || status(S);
   if (st) return finish(st);
   if (S.turn === G.side) {
     G.legal = legalMoves(S); G.busy = false;
@@ -64,7 +64,7 @@ async function nextTurn() {
   }
   G.busy = true; clearSel(); renderHud(); saveMatch();
   const t0 = performance.now();
-  const moves = await Brain.turn(SETUP, G.moves, G.w.id, G.seen, (Math.random() * 1e9) | 0);
+  const moves = await Brain.turn(setupFor(G.w), G.moves, G.w.id, G.seen, (Math.random() * 1e9) | 0);
   if (token !== G.token) return;
   const rest = MIN_THINK - (performance.now() - t0); if (rest > 0) { await sleep(rest); if (token !== G.token) return; }
   for (const m of moves) if (!(await perform(m, token))) return;
@@ -111,7 +111,7 @@ function finish(st) {
   G.busy = true; G.token++; clearSel(); renderHud(st); speak(line); SFX.play(res === 1 ? 'win' : res === 0 ? 'lose' : 'draw');
   const got = G.rated ? scoreGame(w, res) : null; if (!G.rated) { SAVE.match = null; keep(); }
   const token = G.token;
-  setTimeout(() => { if (token !== G.token) return; openDialog(resultHTML(w, res, st.why, line, got), 'result'); if (got && got.newCards.length) SFX.play('card'); }, 1100);
+  setTimeout(() => { if (token !== G.token) return; openDialog(resultHTML(w, res, st, line, got), 'result'); if (got && got.newCards.length) SFX.play('card'); }, 1100);
 }
 
 /* ── what she says ── */
@@ -123,7 +123,7 @@ function speak(text, loud) {
   const c = document.createElement('div'); c.className = 'cutin'; c.innerHTML = `${portrait(G.w)}<p><b>${first(G.w)}</b>${esc(text)}</p>`;
   $('.board-wrap').appendChild(c); setTimeout(() => c.remove(), 3000);
 }
-/** picks what the turn just played calls for, if anything: a threat to a Commander or a Headquarters first, then losses */
+/** picks what the turn just played calls for, if anything: a threat to a Commander, an arm down to its last piece, then losses */
 function react(log, mover) {
   const S = G.S, her = 1 - G.side, w = G.w; let key = '', pri = 0;
   const set = (k, p) => { if (p > pri) { key = k; pri = p; } };
@@ -133,14 +133,15 @@ function react(log, mover) {
       if (ev.dead.some(p => S.own[p] === G.side)) set(plane(G.side) ? 'youLosePlane' : 'sheTakes', plane(G.side) ? 5 : 4);
       if (ev.dead.some(p => S.own[p] === her)) set(plane(her) ? 'sheLosesPlane' : 'youTake', plane(her) ? 5 : 4);
     }
-    if (ev.what === 'shotdown') set(ev.side === her ? 'youLosePlane' : 'sheLosesPlane', 6);
     if (ev.what === 'hero' && S.own[ev.piece] === her) set('hero', 3);
   }
   if (S.over) return;
   if (mover === her && inCheck(S, G.side)) { set('check', 7); SFX.play('check'); }
   if (mover === G.side && inCheck(S, her)) set('checked', 7);
-  if (mover === her && S.core[her] > 0) set('hqHers', 8);
-  if (mover === G.side && S.core[G.side] > 0) set('hqYours', 8);
+  if (!S.total) for (const side of [G.side, her]) {             // an arm that has just come down to its last piece: one more and the game is over
+    const n = arms(S, side);
+    for (const ev of log) if (ev.what === 'move' && ev.dead) for (const p of ev.dead) { const a = armOf(S.kind[p]); if (S.own[p] === side && a >= 0 && n[a] === 1) set(side === G.side ? 'lastYours' : 'lastHers', 8); }
+  }
   if (!key && G.turns - G.saidAt > 7) { const d = worth(S, her) - worth(S, G.side); key = d > 600 ? 'ahead' : d < -600 ? 'behind' : Math.random() < 0.3 ? 'idle' : ''; }
   if (key && (pri >= 5 || G.turns - G.saidAt >= 3)) speak(pick(w.say[key]), pri >= 6);
 }
@@ -154,6 +155,26 @@ function groupsAt(s) {
   const bits = g => (g & 1) + ((g >> 1) & 1) + ((g >> 2) & 1);
   return [...set].sort((a, b) => bits(b) - bits(a) || a - b);
 }
+/** which arm of this side the other could finish off with its next move: 'sea', 'air', 'land' or '' */
+function armThreat(S, side) {
+  if (S.total) return '';
+  const T = clone(S); T.turn = 1 - side;
+  for (const m of gen(T, [])) {
+    const mode = mMode(m); if (mode !== CAPTURE && mode !== STAY && mode !== SUICIDE) continue;
+    const U = clone(T); if (play(U, m, true) && U.over && U.over.winner === 1 - side && U.over.why !== 'commander') return U.over.why;
+  }
+  return '';
+}
+/** what each side still has of the three arms a game of battles is fought over */
+function armsHTML(S) {
+  if (S.total) return '<p class="arms-note"><b>Total war.</b> Only the Commander counts.</p>';
+  const row = (side, who) => {
+    const n = arms(S, side);
+    return `<div class="arm-row"><span class="arm-who">${who}</span>` + [[[NAVY], 'ships', 'ship'], [[AIR], 'planes', 'plane'], [[INFANTRY, TANK, ARTILLERY], 'on land', 'on land']].map(([kinds, many, one], a) =>
+      (S.had[side][a] ? `<span class="arm${n[a] === 1 ? ' low' : ''}"><i>${kinds.map(k => pieceIcon(k, side, 20)).join('')}</i><b>${n[a]}</b><em>${n[a] === 1 ? one : many}</em></span>` : '<span></span>')).join('') + '</div>';
+  };
+  return row(1 - G.side, esc(first(G.w))) + row(G.side, 'You');
+}
 function renderHud(st) {
   const S = G.S, w = G.w, me = G.side, her = 1 - me, mine = S.turn === me, name = first(w);
   let text, sub = G.note;
@@ -161,10 +182,14 @@ function renderHud(st) {
   else if (!mine) text = `${name} is thinking<span class="dots"></span>`;
   else if (S.dOrg >= 0) { text = 'Who else gets off?'; sub = sub || 'Move another piece from the stack, or press Done.'; }
   else { text = 'Your move'; if (!sub && inCheck(S, me)) sub = 'Your Commander is under attack.'; }
-  if (!sub && S.core[me] > 0) sub = `You have held her Headquarters ${S.core[me]} of 3 turns.`;
-  if (!sub && S.core[her] > 0) sub = `${name} has held your Headquarters ${S.core[her]} of 3 turns.`;
+  if (!sub && mine && !S.over && !st && S.dOrg < 0) {
+    const risk = armThreat(S, me);
+    if (risk) sub = `Your last ${risk === 'sea' ? 'ship' : risk === 'air' ? 'plane' : 'piece of infantry, tanks and artillery'} can be taken. Lose it and the game is over.`;
+    else if ((G.seen[posKey(S)] || 0) >= 2) sub = 'This position has come up twice. A third time ends the game on points.';
+    else if (S.half >= 80) sub = `Nothing taken for ${S.half >> 1} turns each. At fifty the points decide.`;
+  }
   if (!sub && G.turns < 2 && mine) sub = 'Tap a piece, then where it should go.';
-  $('#status').innerHTML = text; $('#sub').textContent = sub;
+  $('#status').innerHTML = text; $('#sub').textContent = sub; $('#arms').innerHTML = armsHTML(S);
   const tray = side => G.taken[side].map(p => pieceIcon(S.kind[p], S.own[p], 24)).join('');
   $('#tray-her').innerHTML = tray(her); $('#tray-me').innerHTML = tray(me);
   $('#her').classList.toggle('busy', !mine && !S.over && !st);
@@ -181,7 +206,8 @@ function renderOrders() {
   const o = $('#orders'); if (!o) return;
   const S = G.S; let h = '';
   if (G.choice) {
-    const lost = mMode(G.choice[0]) === SUICIDE ? 'Air defence covers that point: the plane takes it and is lost with it.' : mMode(G.choice[0]) === INTERCEPT ? 'There is air defence on the way: the plane is shot down before it gets there.' : '';
+    let lost = mMode(G.choice[0]) === SUICIDE ? 'Air defence covers that point: the plane takes it and is lost with it.' : mMode(G.choice[0]) === INTERCEPT ? 'There is air defence on the way: the plane is shot down before it gets there.' : '';
+    if (lost) { const T = clone(S); if (play(T, G.choice[0], true) && T.over) lost += T.over.winner === G.side ? ' That wins the game.' : ' It is your last plane: that loses the game.'; }
     h += `<p class="ord-q">${lost || 'Take it how?'}</p><div class="ord-row">` + G.choice.map((m, i) => `<button type="button" class="btn" data-act="mode" data-i="${i}">${mMode(m) === STAY ? 'Fire from here' : mMode(m) === SUICIDE ? 'Strike anyway' : mMode(m) === INTERCEPT ? 'Fly anyway' : 'Move in'}</button>`).join('') + (lost ? '<button type="button" class="btn ghost" data-act="unpick">Leave it</button>' : '') + '</div>';
   } else if (G.sel >= 0 && canPlay()) {
     const M = members(S, G.sel), gs = groupsAt(G.sel);

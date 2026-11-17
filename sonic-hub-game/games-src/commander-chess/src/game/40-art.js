@@ -68,7 +68,6 @@ function boardSheet(xy, flip) {
   for (let r = 1; r <= NR; r++) g += `<path class="gl sea" d="M${X(0)} ${Y(r)}H${X(2)}"/><path class="gl" d="M${X(2)} ${Y(r)}H${X(10)}"/>`;
   for (const f of [5, 7]) g += `<g><rect x="${X(f) - 13}" y="${top - 6}" width="26" height="${bot - top + 12}" rx="3" fill="url(#plank)" stroke="#6f4c1f" stroke-width="1.200"/><path d="M${X(f) - 13} ${top + 6}h26M${X(f) - 13} ${mid}h26M${X(f) - 13} ${bot - 6}h26" stroke="#6f4c1f" stroke-opacity=".5" stroke-width="1"/></g>`;
   // the Headquarters points
-  for (const side of [0, 1]) for (const s of CORE[side]) { const [x, y] = xy(s); g += `<path class="core c${side}" d="M${x} ${y - 30}L${x + 30} ${y}L${x} ${y + 30}L${x - 30} ${y}Z"/>`; }
   for (let f = 0; f < NF; f++) g += `<text class="coord" x="${X(f)}" y="${BH - 14}">${FILES[f]}</text><text class="coord" x="${X(f)}" y="22">${FILES[f]}</text>`;
   for (let r = 1; r <= NR; r++) g += `<text class="coord" x="${flip ? BW - 16 : 16}" y="${Y(r) + 5}">${r}</text><text class="coord" x="${flip ? 16 : BW - 16}" y="${Y(r) + 5}">${r}</text>`;
   return g + `<rect x="1.500" y="1.500" width="${BW - 3}" height="${BH - 3}" rx="9" fill="none" stroke="#7a5a2a" stroke-opacity=".55" stroke-width="3"/>`;
