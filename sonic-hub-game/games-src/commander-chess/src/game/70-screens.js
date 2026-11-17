@@ -85,7 +85,7 @@ function screenVersus(w, rated) {
           <button type="button" role="radio" class="side-pick" data-act="side" data-val="1" aria-checked="${SAVE.side === 1}">${pieceIcon(COMMANDER, 1, 34)}<span><b>Blue</b>moves second</span></button>
         </div>
         <p class="stakes">${rated ? `Win ${signed(win)}, draw ${signed(draw)}, lose ${signed(loss)} points.` : 'Sparring: no points, no cards, moves can be taken back.'}</p>
-        <p class="format">${w.game === 'total' ? '<b>Total war.</b> Only the Commander counts.' : '<b>A game of battles.</b> Lose your Commander, your last ship, your last plane, or the last of your infantry, tanks and artillery, and it is over.'}</p>
+        <p class="format">${w.game === 'total' ? '<b>Total war.</b> Nothing ends it but a Commander: taken, cornered, or left with nobody to command.' : '<b>A game of battles.</b> Lose your Commander, your last ship, your last plane, or the last of your infantry, tanks and artillery, and it is over.'}</p>
         <div class="vs-btns"><button type="button" class="btn ghost" data-act="place" data-id="${w.place}">Not now</button><button type="button" class="btn big" data-act="begin">Sit down</button></div>
       </div>
     </div>`;
@@ -128,16 +128,16 @@ const RULE_PIECES = [
 function rulesHTML() {
   return `<h2 id="dlg-title">How to play</h2>
   <div class="rules">
-    <p><b>To win.</b> Take the other Commander, or leave the other side without a move. In a game of battles, which is what most tables play, three more things end it at once: a side has lost when its last ship is gone, or its last plane, or the last of its Infantry, Tanks and Artillery. In total war only the Commander counts.</p>
+    <p><b>To win.</b> Take the other Commander, or leave the other side without a move. In a game of battles, which is what most tables play, three more things end it at once: a side has lost when its last ship is gone, or its last plane, or the last of its Infantry, Tanks and Artillery. In total war only the Commander counts. In either game a Commander left with nobody to command has lost.</p>
     <p><b>The board.</b> Pieces stand where the lines cross. The two files on the sea side are for ships only; the shore line and the river mouth take ships and land pieces alike. The river runs across the middle: Artillery, Anti-Air and Missiles cross it only at the two fords, unless an Engineer carries them or they cross by taking something on the far side.</p>
     <table class="rule-pieces">${RULE_PIECES.map(([k, mv, more]) => `<tr><td>${pieceIcon(k, 0, 38)}</td><th>${KIND_NAME[k]}</th><td>${mv} ${more}</td></tr>`).join('')}</table>
     <p><b>Taking.</b> A piece takes by moving onto its target. One that cannot stand where the target stands fires from its place instead: a land piece at a ship out at sea, a ship at the land behind the shore. A plane may choose between flying in and striking from where it is, unless the target is another plane. Only Artillery, planes and a ship’s guns reach over what stands in between; everything else fires straight and is stopped by the first piece in the way. A stack that is taken is lost whole.</p>
     <p><b>Air defence.</b> Anti-Air guards the four points next to it, a Missile the points within two of it, a ship the points next to it. A plane cannot land on a guarded point. It can take a piece that stands on one, and is lost with it. It cannot fly through a guard to reach something beyond: it is shot down on the way, and the marks on the board show which targets are like that.</p>
     <p><b>Riding.</b> Move onto a friend to ride on it; that is your move. A Tank carries one of Commander, Infantry, Militia. A plane carries one of those, or a Tank. A ship carries two of Commander, Infantry, Militia, Tank and plane, but never two Tanks. An Engineer takes Artillery, Anti-Air or a Missile on its back at the river bank, for the one move straight across. A Headquarters holds the Commander. When you pick a stack you choose who goes: all together, or some of them getting off. Several can leave in one turn, each taking as it goes; press Done when the turn is over.</p>
     <p><b>Heroes.</b> A piece that gives check becomes a hero for the rest of the game: it reaches one point further in every direction, slantwise too, and so does its air defence. A hero plane is a stealth plane, which no air defence touches. A side’s last piece becomes a hero as well.</p>
-    <p><b>The Commander</b> may not stop on a point where it could be taken, nor pass over one. The two Commanders may never face each other along an open line; one that is riding in something, or sitting in a Headquarters, is hidden. In a Headquarters it is safe from Infantry, Militia, Anti-Air and Missiles: it takes an Engineer, a Tank, Artillery, a plane or a ship to break in.</p>
+    <p><b>The Commander</b> may not stop on a point where it could be taken. The two Commanders may never face each other along an open line, so neither may cross the other’s line of sight; one that is riding in something, or sitting in a Headquarters, is hidden. In a Headquarters it is safe from Infantry, Militia, Anti-Air and Missiles: it takes an Engineer, a Tank, Artillery, a plane or a ship to break in.</p>
     <p><b>On points.</b> When fifty turns each have passed with nothing taken, or the same position comes up a third time, the game stops and the points decide: 10 for Infantry, Engineer, Militia or Anti-Air taken, 20 for a Tank or Missile, 30 for Artillery, 40 for a plane, 80 for a ship, and ten more if it was a hero. Level points are a draw.</p>
-    <p class="rules-src">These are Nguyễn Quý Hải’s own rules, from his rule book and his notes for Board Game Arena. He plays to a clock, fifteen minutes for battles and thirty for total war, and counts the points when it runs out; here the fifty quiet turns stand in for the clock.</p>
+    <p class="rules-src">These are Nguyễn Quý Hải’s rules, as his rule book and the Vietnamese accounts of them agree. He plays to a clock, fifteen minutes for battles and thirty for total war, and counts the points when it runs out; here the fifty quiet turns stand in for the clock.</p>
   </div>
   <button type="button" class="btn" data-act="close">Back</button>`;
 }
@@ -154,6 +154,7 @@ function whyText(st, res) {
     case 'stuck': return won ? 'She has no move left.' : 'You have no move left.';
     case 'sea': return won ? 'Her last ship is gone: the battle at sea is yours, and the game with it.' : 'Your last ship is gone: the battle at sea is hers, and the game with it.';
     case 'air': return won ? 'Her last plane is gone: the battle in the air is yours, and the game with it.' : 'Your last plane is gone: the battle in the air is hers, and the game with it.';
+    case 'alone': return won ? 'Her Commander has nobody left to command.' : 'Your Commander has nobody left to command.';
     case 'land': return won ? 'Her infantry, tanks and artillery are all gone: the battle on land is yours, and the game with it.' : 'Your infantry, tanks and artillery are all gone: the battle on land is hers, and the game with it.';
     case 'resign': return 'You resigned.';
     case 'points': return `${st.cause === 'repeat' ? 'The same position three times' : 'Fifty turns each with nothing taken'}. On points: you ${st.pts[G.side]}, ${first(G.w)} ${st.pts[1 - G.side]}.`;

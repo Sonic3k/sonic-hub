@@ -1,37 +1,44 @@
 # Whose rules these are
 
-The game plays by Nguyễn Quý Hải's own rules. Three sources, in this order:
+The game is Nguyễn Quý Hải's Cờ Tư Lệnh. There is no single official text to point at, so a rule here is **what the
+accounts of his rules agree on**. The accounts:
 
-1. **The rule-book text**: the Vietnamese rules page on Board Game Arena (posted by the account Quyhainhk, 2023) and
-   RulesPal's English transcription of the rule book. They agree with each other.
-2. **Board Game Arena's version of the game**, which credits him as designer: used where the rule book says nothing
-   (who is safe in a Headquarters, what happens when a side cannot move).
-3. **cotulenh.vn**: used only where both of those are silent (how a stack's pieces leave it one by one in a turn, how
-   a flight through air defence is judged). The first build of this game followed cotulenh.vn throughout; the table
-   is everything that changed when it was set against the sources above.
+- **The rule book** in English, as RulesPal transcribes it. The only text that says how many pieces a carrier takes.
+- **The Vietnamese rules text**, in four copies that agree with each other almost word for word: Board Game Arena's
+  help page (posted 2023 by the account Quyhainhk), the Political University's page (signed Hà Nội, 15 May 2012, "new
+  version with additions"), Ziga, thuthuatchoi.com.
+- **Board Game Arena's version of the game**, which credits him as designer.
+- **Wikipedia (Vietnamese)**: its page would not open from here; only what the search index carries of it was read
+  (the pieces, the Headquarters as a fixed obstacle, mate "of the sea battle and the air battle too").
+- **cotulenh.vn**: followed only where every account above is silent. The first build followed it throughout.
 
-| | cotulenh.vn | The author's rule | Here now |
-|---|---|---|---|
-| Ways to win | Take or mate the Commander; or stand on a Headquarters point for three turns | Take the Commander. In a game of battles also: the other side loses both ships, or both planes, or its 2 infantry, 2 tanks and 2 artillery. In total war only the Commander | The author's. Nothing is won by standing on a Headquarters point |
-| A side with no move | Draw, unless in check | Loses (Board Game Arena) | Loses |
-| Nothing happening | Draw after 100 quiet turns or a third repetition | No draws: a clock (15 minutes for battles, 30 for total war), then points | No clock; at 100 quiet turns or a third repetition the author's points decide |
-| Riding | Tank: two of infantry, militia. Plane: a tank and one more. Ship: a plane and one more | Tank: one of Commander, infantry, militia. Plane: one of those or a tank. Ship: two of those, tank and plane | The rule book's, with Board Game Arena's "never two tanks" |
-| Missile | Fires over pieces, passes a Headquarters | Straight fire, stopped by anything | Stopped by anything |
-| Artillery and a Headquarters | Stopped by it | Lobbed fire, goes over | Goes over |
-| Commander in a Headquarters | Any piece takes it | Safe from infantry, militia, anti-air, missile | Safe from those |
-| A gun moving up beside a plane | Locks on; the plane is shot down two turns later for free | Not in the rules: planes burn when they fly into a zone | Removed. The gun takes the plane with a move |
-| Hero plane | Like any hero | A stealth plane: no air defence touches it | Stealth |
-| Hero Headquarters | One point, any direction | Like a hero infantry | Two along a line, one slantwise |
-| Commander riding in something | Takes the other Commander down an open line, at any distance | Hidden: the facing rule does not apply to it, and a Commander takes one point off | Takes one point off, always |
-| Check by the other Commander | Not counted | A Commander takes what is next to it, a carrier with the other Commander too | Counted |
-| Commander on the move | May pass points under attack | "Control zone": passing one, it is destroyed | May not pass over a point where it could be taken |
-| Engineer with a gun on its back | Moves along the bank as well | One move, bank to bank | One move, straight across |
-| A ship's missiles | Reach a ship beyond another ship | "Passes any piece but a ship" | Stopped by a ship in between |
+Where the accounts part, the rule book decides. Where one account alone has a rule, the rule is not used.
 
-**Kept from cotulenh.vn because the author's text does not settle it:** taking turns to leave a stack and pressing
-Done; the three outcomes of a flight (clear, lost with its target, shot down on the way); round air-defence zones,
-one point wider for a hero; land pieces passing a ship along the shore; no ship round the two corners of the river
-mouth; Red moving first (the author draws lots).
+| | Who says what | Here |
+|---|---|---|
+| Ways to win | Every account: the Commander taken or cornered; in battles also both ships, or both planes, or all Infantry, Tanks and Artillery. No account has cotulenh.vn's win by standing on a Headquarters point | As every account says |
+| A Commander with no piece left | Political University and thuthuatchoi: it has lost. The others say nothing | Lost. It can only matter in total war: in battles a side has lost long before |
+| A side with no move | Board Game Arena's game: loses. The texts speak of a Commander "chased to the end of the road" | Loses |
+| Points for a piece | All four Vietnamese copies: 10 Infantry, Engineer, Anti-Air, Militia; 20 Tank, Missile; 30 Artillery; 40 plane; 80 ship; a hero ten more | The same, when a game is decided on points |
+| The clock | 2012 text and thuthuatchoi: 10 or 15 minutes a game, then points. Board Game Arena's page: 15 for battles, 30 for total war | No clock. Fifty turns each with nothing taken, or a position a third time, and the points decide |
+| Bonus points | 100 for winning a battle (all that mention it). For the Commander: 200 and the title "Siêu Tư lệnh" (2012 text, thuthuatchoi), 100 (Board Game Arena's page) | Not used: the campaign has its own points |
+| How many ride | Rule book: a Tank one, a plane one, a ship two. Board Game Arena's game: a carrier and two riders, for Tank, plane and ship alike. The Vietnamese copies give no numbers. cotulenh.vn has a third set | The rule book's, with Board Game Arena's "never two Tanks" |
+| Who rides on whom | Every account that speaks of riding (the Political University's page does not): Commander, Infantry, Militia on Tank, plane, ship; a plane on a ship; an Engineer takes Artillery, Anti-Air, Missile across the river, bank to bank. Rule book: a Tank on a plane or ship. Getting on costs the move; riders may go and take in different directions in one turn | As they say |
+| Commander passing a point under attack | Board Game Arena's help page alone: it is destroyed there ("vùng kiểm soát"). Not in the 2012 text, Ziga, thuthuatchoi, the rule book, or Board Game Arena's own game | May pass. It may not stop there |
+| The two Commanders | Every account but Ziga, which leaves it out: they may not face each other; the one that shows itself is taken. A Commander riding in a Tank or plane may pass (Board Game Arena's page, thuthuatchoi; the rule book adds the ship). Board Game Arena's game: a Commander may not cross the other's line of sight | As they say; riding in anything, or sitting in a Headquarters, it is hidden; it may not cross the other's line |
+| A Commander's reach | All: any distance along a line, never slantwise, takes one point away | The same, riding or not (cotulenh.vn lets a riding Commander take the other down an open line) |
+| Straight fire and lobbed fire | Board Game Arena's page, thuthuatchoi: an obstacle stops straight fire such as a Tank's or a Missile's, not Artillery's. All: Artillery takes over what stands between | Missiles and Tanks are stopped by anything; Artillery and planes are not (cotulenh.vn has it the other way round at a Headquarters) |
+| Commander in a Headquarters | Vietnamese copies: Engineers, Tanks, Artillery, planes break in. Board Game Arena's game: safe from Infantry, Militia, Anti-Air, Missile | Safe from those four |
+| Air defence | All: Anti-Air one point round, a Missile two (one slantwise), a ship's guns like Anti-Air. A plane flying through burns. One aimed at the gun, or at something inside the ring, is lost with its target. No account has cotulenh.vn's lock-on | As all say |
+| Heroes | All: a piece that checks becomes one; one point further, slantwise too, ten points more; a side's last piece as well. A hero plane is a stealth plane. Rule book: a hero Headquarters moves like a hero Infantry | As all say |
+| Heavy pieces and the river | Board Game Arena's game: Artillery, Anti-Air, Missile cross only at the two fords. Its help page and thuthuatchoi: an Engineer carries them over deep water, bank to bank; taking something on the far side, they cross anywhere | The same |
+| Plane takes plane | 2012 text: only by moving in. Board Game Arena's game: a plane strikes from its place at anything but a plane | The same |
+| A ship's missiles | Ziga, 2012 text: one to four points, at ships only, moving in. Board Game Arena's game: they pass any piece but a ship | One to four, at ships only, stopped by a ship in between |
+| Who moves first | Rule book: Blue. Board Game Arena's page: lots, then the loser of the last game | Red, and the player picks a side |
+
+**Kept from cotulenh.vn because no account settles it:** taking turns to leave a stack and pressing Done; the three
+outcomes of a flight (clear, lost with its target, shot down on the way); round air-defence zones, one point wider
+for a hero; land pieces passing a ship along the shore; no ship round the two corners of the river mouth.
 
 **Not built yet, and the author has them:** the clock; the advanced game, where each side sets out its own line-up
 before the first move; total war over two games, one moving first and one second. The later places of the campaign

@@ -45,7 +45,7 @@ function startMatch(w, rated, side, resume) {
   G.seen[posKey(G.S)] = 1;
   show('match', screenMatch(w, rated));
   buildBoard(side === BLUE);
-  for (const m of resume || []) if (!quiet(m)) break;
+  for (const m of resume || []) if (G.S.over || !quiet(m)) break;   // a kept game stops where the rules, as they now are, end it
   placeAll(G.S); wireBoard();
   const token = G.token;                                      // she opens the game with a line, and has one for a game that is picked up again
   setTimeout(() => { if (G.screen === 'match' && token === G.token && !G.S.over) { if (resume && resume.length) speak(pick(w.say.idle)); else speak(pick(w.say.start), true); } }, 500);
@@ -143,6 +143,10 @@ function react(log, mover) {
     const n = arms(S, side);
     for (const ev of log) if (ev.what === 'move' && ev.dead) for (const p of ev.dead) { const a = armOf(S.kind[p]); if (S.own[p] === side && a >= 0 && n[a] === 1) set(side === G.side ? 'lastYours' : 'lastHers', 8); }
   }
+  if (S.total) for (const side of [G.side, her]) {              // total war: a Commander down to the last piece it has to command
+    let men = 0; for (let p = 0; p < S.n; p++) if (S.own[p] === side && S.at[p] >= 0 && S.kind[p] !== COMMANDER) men++;
+    if (men === 1 && log.some(ev => ev.what === 'move' && ev.dead && ev.dead.some(p => S.own[p] === side))) set(side === G.side ? 'lastYours' : 'lastHers', 8);
+  }
   if (!key && G.turns - G.saidAt > 7) { const d = worth(S, her) - worth(S, G.side); key = d > 600 ? 'ahead' : d < -600 ? 'behind' : Math.random() < 0.3 ? 'idle' : ''; }
   if (key && (pri >= 5 || G.turns - G.saidAt >= 3)) speak(pick(w.say[key]), pri >= 6);
 }
@@ -156,9 +160,9 @@ function groupsAt(s) {
   const bits = g => (g & 1) + ((g >> 1) & 1) + ((g >> 2) & 1);
   return [...set].sort((a, b) => bits(b) - bits(a) || a - b);
 }
-/** which arm of this side the other could finish off with its next move: 'sea', 'air', 'land' or '' */
+/** what the other side could finish this side off by taking with its next move: an arm ('sea', 'air', 'land'), the last
+ *  piece the Commander has ('alone'), or '' */
 function armThreat(S, side) {
-  if (S.total) return '';
   const T = clone(S); T.turn = 1 - side;
   for (const m of gen(T, [])) {
     const mode = mMode(m); if (mode !== CAPTURE && mode !== STAY && mode !== SUICIDE) continue;
@@ -168,7 +172,7 @@ function armThreat(S, side) {
 }
 /** what each side still has of the three arms a game of battles is fought over */
 function armsHTML(S) {
-  if (S.total) return '<p class="arms-note"><b>Total war.</b> Only the Commander counts.</p>';
+  if (S.total) return '<p class="arms-note"><b>Total war.</b> It ends with a Commander: taken, cornered, or left alone.</p>';
   const row = (side, who) => {
     const n = arms(S, side);
     return `<div class="arm-row"><span class="arm-who">${who}</span>` + [[[NAVY], 'ships', 'ship'], [[AIR], 'planes', 'plane'], [[INFANTRY, TANK, ARTILLERY], 'on land', 'on land']].map(([kinds, many, one], a) =>
@@ -185,7 +189,7 @@ function renderHud(st) {
   else { text = 'Your move'; if (!sub && inCheck(S, me)) sub = 'Your Commander is under attack.'; }
   if (!sub && mine && !S.over && !st && S.dOrg < 0) {
     const risk = armThreat(S, me);
-    if (risk) sub = `Your last ${risk === 'sea' ? 'ship' : risk === 'air' ? 'plane' : 'piece of infantry, tanks and artillery'} can be taken. Lose it and the game is over.`;
+    if (risk) sub = `Your last ${risk === 'sea' ? 'ship' : risk === 'air' ? 'plane' : risk === 'alone' ? 'piece' : 'piece of infantry, tanks and artillery'} can be taken. Lose it and the game is over.`;
     else if ((G.seen[posKey(S)] || 0) >= 2) sub = 'This position has come up twice. A third time ends the game on points.';
     else if (S.half >= 80) sub = `Nothing taken for ${S.half >> 1} turns each. At fifty the points decide.`;
   }

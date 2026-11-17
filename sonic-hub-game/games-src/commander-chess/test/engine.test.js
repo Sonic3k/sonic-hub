@@ -105,8 +105,7 @@ const K = 'i1=C d12=c ';                                      // two Commanders 
   S = position('g1=C g12=c g2=T(I) a12=n'); ok(!has(S, 'g2', 'h2', MOVE, m => E.mGroup(m) === 3), 'a stack between the Commanders stays too'); ok(has(S, 'g2', 'h2', MOVE, m => E.mGroup(m) === 1), 'but its tank may leave the infantry there');
   S = position('f2=H(C) f12=c a1=N'); ok(!E.exposed(S), 'a Commander inside a Headquarters is not seen'); ok(has(S, 'f2', 'g2', MOVE), 'and may come out sideways'); ok(!has(S, 'f2', 'f3'), 'not out into the line');
   S = position('k1=C d12=c h3=t a1=N'); ok(has(S, 'k1', 'i1', MOVE), 'a Commander runs along its line'); ok(!has(S, 'k1', 'h1'), 'not onto a point where it would be taken');
-  ok(!has(S, 'k1', 'g1') && !has(S, 'k1', 'e1'), 'and not over such a point either');
-  S = position('k1=C d12=c h3=t h2=I a1=N'); ok(has(S, 'k1', 'g1', MOVE), 'with the tank’s fire stopped, it passes');
+  ok(has(S, 'k1', 'g1', MOVE) && has(S, 'k1', 'e1', MOVE), 'it may pass such a point: only the other Commander’s line stops it on the way');
 }
 { // a Headquarters
   let S = position('k1=C f11=h(c) f10=I g11=S a12=n'); ok(!has(S, 'f10', 'f11') && !has(S, 'g11', 'f11'), 'infantry and missile cannot break a Headquarters with the Commander inside');
@@ -140,6 +139,7 @@ const K = 'i1=C d12=c ';                                      // two Commanders 
   S = position(K + 'k5=T k7=i j12=a'); go(S, 'k5', 'k7', CAPTURE); ok(!S.over, 'infantry gone, artillery left: the land battle is still on');
   S = position(K + 'k5=T k7=i j12=g'); go(S, 'k5', 'k7', CAPTURE); ok(S.over && S.over.winner === RED && S.over.why === 'land', 'the last of infantry, tanks and artillery lost: the battle on land');
   S = position(K + 'k5=T k7=i j12=g', RED, 'total'); go(S, 'k5', 'k7', CAPTURE); ok(!S.over, 'in total war none of that ends the game');
+  S = position(K + 'k5=T k7=g', RED, 'total'); go(S, 'k5', 'k7', CAPTURE); ok(S.over && S.over.winner === RED && S.over.why === 'alone', 'but a Commander with nobody left to command has lost, in total war too');
   S = position(K + 'c4=F a4=n k1=I k12=i'); go(S, 'c4', 'a4', SUICIDE); ok(S.over && S.over.winner === RED && S.over.why === 'sea', 'the last plane going down with the last ship has won');
   S = position(K + 'f3=F f5=g f7=i k1=I'); go(S, 'f3', 'f7', INTERCEPT); ok(S.over && S.over.winner === BLUE && S.over.why === 'air', 'the last plane thrown away has lost');
 }

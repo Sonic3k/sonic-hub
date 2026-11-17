@@ -1,8 +1,8 @@
 # Commander Chess
 
-Cờ Tư Lệnh (by Nguyễn Quý Hải), by his own rules, with a campaign: a coast of five garrisons, opponents with ratings
+Cờ Tư Lệnh (by Nguyễn Quý Hải), by the rules the accounts of it agree on, with a campaign: a coast of five garrisons, opponents with ratings
 and their own way of playing, points won and lost by rating, and a card for every opponent beaten. One self-contained
-page. RULES.md says where the rules come from and where they differ from cotulenh.vn.
+page. RULES.md says where each rule comes from, and who says what where the accounts part.
 
     npm run build     # src/ → dist/index.html
     npm test          # the rules: one check per rule, 11 positions from cotulenh.vn, random games
