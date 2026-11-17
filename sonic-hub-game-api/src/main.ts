@@ -1,0 +1,47 @@
+import 'reflect-metadata';
+import { Logger } from '@nestjs/common';
+import { NestFactory } from '@nestjs/core';
+import type { NextFunction, Request, Response } from 'express';
+import { pathToFileURL } from 'node:url';
+import type { NestExpressApplication } from '@nestjs/platform-express';
+import { AppModule } from './app.module.js';
+import { loadAppConfig, type AppConfig } from './config.js';
+import { createDb, openPool, runMigrations } from './db/db.js';
+
+export async function createApp(config: AppConfig): Promise<NestExpressApplication> {
+  const pool = await openPool(config.database);
+  await runMigrations(createDb(pool));
+  const app = await NestFactory.create<NestExpressApplication>(AppModule.forRoot(config, pool), {
+    logger: process.env.NODE_ENV === 'test' ? ['error'] : ['log', 'warn', 'error'],
+  });
+  // one proxy stands in front (Railway's edge), and the address it reports is the caller's: what the limits count by
+  app.set('trust proxy', 1);
+  app.disable('x-powered-by');
+  app.setGlobalPrefix('api');
+  app.useBodyParser('json', { limit: config.limits.saveBytes * 2 + 4096 });
+  // any page may call: what is kept is opened by the code a request carries, never by a cookie
+  app.enableCors({ origin: config.corsOrigins, methods: ['GET', 'PUT', 'POST', 'DELETE'], allowedHeaders: ['Authorization', 'Content-Type'], exposedHeaders: ['X-Now', 'Retry-After'], maxAge: 86400 });
+  // A saved game is never served from a cache: what a browser reads is what was last written. Every answer also says
+  // what time it is here (X-Now, in ms), so two devices with different clocks can still tell which of them played last.
+  app.use((req: Request, res: Response, next: NextFunction) => {
+    if (!req.path.endsWith('/client.js')) res.setHeader('Cache-Control', 'no-store');
+    res.setHeader('X-Now', String(Date.now()));
+    next();
+  });
+  app.enableShutdownHooks();
+  return app;
+}
+
+async function bootstrap(): Promise<void> {
+  const config = loadAppConfig();
+  const app = await createApp(config);
+  await app.listen(config.port, '0.0.0.0');
+  new Logger('game-api').log(`listening on :${config.port}`);
+}
+
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
+  bootstrap().catch((e) => {
+    console.error(e);
+    process.exit(1);
+  });
+}

@@ -63,7 +63,7 @@
       "players": 1, "ai": 1, "inputs": ["mouse", "touch", "keyboard"], "maker": "Sonic Hub", "added": "2026-11-17",
       "kind": "Board game campaign, you against the AI",
       "blurb": "Keep It Down with somewhere to go. In a bookshop after closing, five opponents from the newcomer to the owner play you for points: beat someone who stands above you and the next one agrees to a game. They talk while they play, and each keeps an album that fills as you beat her.",
-      "shots": ["title", "play"], "play": "https://keepitdown-game-production.up.railway.app/"
+      "shots": ["title", "play"], "play": "https://keepitdown-game-production.up.railway.app/", "saves": true
     },
     {
       "key": "commander-chess", "title": "Commander Chess", "alt": ["Cờ Tư Lệnh", "Co Tu Lenh", "Commander-Chess"],
