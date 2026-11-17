@@ -57,8 +57,9 @@ export class SavesController {
   @Post('codes')
   @HttpCode(201)
   newCode(@Req() req: Request, @Res({ passthrough: true }) res: Response) {
-    const turn = this.limiter.take(`new ${addressOf(req)}`, this.config.limits.newCodesPerHour, 3600_000);
-    if (!turn.ok) throw slowDown(res, turn.retryAfter);
+    const address = addressOf(req, this.config.addressHeader);
+    const turn = this.limiter.take(`new ${address}`, this.config.limits.newCodesPerHour, 3600_000);
+    if (!turn.ok) throw slowDown(res, turn.retryAfter, address);
     return this.saves.newHolder();
   }
 

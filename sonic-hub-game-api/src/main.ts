@@ -36,7 +36,7 @@ async function bootstrap(): Promise<void> {
   const config = loadAppConfig();
   const app = await createApp(config);
   await app.listen(config.port, '0.0.0.0');
-  new Logger('game-api').log(`listening on :${config.port}`);
+  new Logger('game-api').log(`listening on :${config.port}; callers are told apart by ${config.addressHeader ?? 'the address they connect from'}`);
 }
 
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {

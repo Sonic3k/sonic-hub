@@ -144,7 +144,7 @@ describe('the browser client against the service', { skip: !adminUrl && 'TEST_DA
     const url = new URL(adminUrl!);
     url.pathname = `/${dbName}`;
     process.env.NODE_ENV = 'test';
-    const config: AppConfig = { database: { url: url.toString(), adminUrl: null, name: dbName, user: '', password: null, ssl: false }, port: 0, corsOrigins: true, limits: { ...defaultLimits, requestsPerMinute: 100_000, newCodesPerHour: 1000 } };
+    const config: AppConfig = { database: { url: url.toString(), adminUrl: null, name: dbName, user: '', password: null, ssl: false }, port: 0, corsOrigins: true, addressHeader: null, limits: { ...defaultLimits, requestsPerMinute: 100_000, newCodesPerHour: 1000 } };
     const app = await createApp(config);
     await app.listen(0, '127.0.0.1');
     stop = () => app.close();

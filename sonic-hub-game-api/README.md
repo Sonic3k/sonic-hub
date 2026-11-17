@@ -63,6 +63,10 @@ On the shared Postgres it makes its own role and database at the start, as Ôn B
 Limits, all by environment: `PLAYERS_PER_GAME` 3, `GAMES_PER_CODE` 24, `SAVE_BYTES` 65536, and by address
 `REQUESTS_PER_MINUTE` 240, `NEW_CODES_PER_HOUR` 10, `WRONG_CODES_PER_HOUR` 30. `CORS_ORIGIN` is `*` unless set.
 
+A caller's address is read from the header the proxy in front writes: `X-Real-IP` on Railway, where nothing needs
+setting. Elsewhere `ADDRESS_HEADER` names it, and without one it is the address the connection came from. It must
+never be a header a caller could send. An IPv6 caller is counted by its network (/64).
+
 On Railway: a service with this folder as its root, built by Railpack (`npm ci`, `npm run build`, `npm start`),
 health check `/api/health`.
 

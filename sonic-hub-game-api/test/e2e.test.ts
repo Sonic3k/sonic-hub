@@ -2,7 +2,8 @@ import assert from 'node:assert/strict';
 import type { AddressInfo } from 'node:net';
 import { after, before, describe, test } from 'node:test';
 import pg from 'pg';
-import { defaultLimits, type AppConfig, type Limits } from '../src/config.js';
+import { countedAs } from '../src/common/guards.js';
+import { defaultLimits, loadAppConfig, type AppConfig, type Limits } from '../src/config.js';
 import { createApp } from '../src/main.js';
 
 /*
@@ -18,8 +19,8 @@ let sqlPool: pg.Pool;
 const running: Array<() => Promise<void>> = [];
 
 /** An app of its own on the scratch database, with whatever limits the test needs. */
-async function start(limits: Partial<Limits> = {}): Promise<string> {
-  const config: AppConfig = { database: { url: dbUrl, adminUrl: null, name: dbName, user: '', password: null, ssl: false }, port: 0, corsOrigins: true, limits: { ...defaultLimits, ...limits } };
+async function start(limits: Partial<Limits> = {}, addressHeader: string | null = null): Promise<string> {
+  const config: AppConfig = { database: { url: dbUrl, adminUrl: null, name: dbName, user: '', password: null, ssl: false }, port: 0, corsOrigins: true, addressHeader, limits: { ...defaultLimits, ...limits } };
   const app = await createApp(config);
   await app.listen(0, '127.0.0.1');
   running.push(() => app.close());
@@ -310,6 +311,50 @@ describe('game saves API end to end', { skip: !adminUrl && 'TEST_DATABASE_URL no
     const statuses = [];
     for (let i = 0; i < 7; i++) statuses.push((await call(busy, 'GET', '/health')).status);
     assert.deepEqual(statuses, [200, 200, 200, 200, 200, 429, 429]);
+  });
+
+  test('behind a proxy that names the caller, each caller has a count of their own', async () => {
+    const edge = await start({ requestsPerMinute: 3 }, 'x-real-ip');
+    const as = (ip: string | undefined, more: Record<string, string> = {}) => call(edge, 'GET', '/health', { headers: { ...(ip === undefined ? {} : { 'x-real-ip': ip }), ...more } });
+    for (let i = 0; i < 3; i++) assert.equal((await as('203.0.113.7')).status, 200);
+    const stopped = await as('203.0.113.7');
+    assert.deepEqual([stopped.status, stopped.data.error, stopped.data.address], [429, 'slow_down', '203.0.113.7']);
+    assert.match(stopped.data.message, /203\.0\.113\.7/);
+    assert.equal((await as('203.0.113.8')).status, 200, 'someone else is not held up by it');
+    assert.equal((await as('203.0.113.7', { 'x-forwarded-for': '198.51.100.1' })).status, 429, 'and another header does not get the first one out of it');
+
+    // an IPv6 caller is counted by network: a new address within it is still the same caller
+    for (const ip of ['2001:db8:1:2::1', '2001:0DB8:0001:0002:aaaa:bbbb:cccc:dddd', '2001:db8:1:2:ffff::']) assert.equal((await as(ip)).status, 200, ip);
+    const six = await as('2001:db8:1:2:1234::9');
+    assert.deepEqual([six.status, six.data.address], [429, '2001:db8:1:2::/64']);
+    assert.equal((await as('2001:db8:1:3::1')).status, 200, 'the network next door is someone else');
+
+    // what holds no address is not believed: such callers are counted by where they connect from
+    for (const said of ['hello', '', '999.1.1.1', '<script>']) assert.equal((await as(said)).status, said === '<script>' ? 429 : 200, said);
+    assert.match((await as(undefined)).data.address, /^(127\.0\.0\.1|::1.*|0:0:0:0::\/64)$/);
+  });
+
+  test('where no proxy names the caller, a header that claims to is not believed', async () => {
+    const bare = await start({ requestsPerMinute: 3 });
+    const statuses = [];
+    for (let i = 0; i < 5; i++) statuses.push((await call(bare, 'GET', '/health', { headers: { 'x-real-ip': `203.0.113.${i}` } })).status);
+    assert.deepEqual(statuses, [200, 200, 200, 429, 429]);
+  });
+
+  test('what a caller is counted by, and where the header to read comes from', () => {
+    const cases: Array<[string, string]> = [
+      ['203.0.113.7', '203.0.113.7'], ['::ffff:203.0.113.7', '203.0.113.7'], ['::FFFF:10.0.0.1', '10.0.0.1'],
+      ['2001:db8:1:2:3:4:5:6', '2001:db8:1:2::/64'], ['2001:db8::1', '2001:db8:0:0::/64'], ['::1', '0:0:0:0::/64'], ['fe80::1%eth0', 'fe80:0:0:0::/64'],
+      ['2001:db8:1:2::', '2001:db8:1:2::/64'], ['::2001:db8:1:2:3', '0:0:0:2001::/64'], ['64:ff9b::192.0.2.33', '64:ff9b:0:0::/64'], ['1:2:3:4:5:6:192.0.2.33', '1:2:3:4::/64'],
+      ['unknown', 'unknown'],
+    ];
+    for (const [ip, want] of cases) assert.equal(countedAs(ip), want, ip);
+    const header = (env: Record<string, string>) => loadAppConfig({ DATABASE_URL: 'postgresql://x/y', ...env }).addressHeader;
+    assert.equal(header({}), null);
+    assert.equal(header({ RAILWAY_ENVIRONMENT_ID: 'abc' }), 'x-real-ip', 'on Railway it is the edge’s own header');
+    assert.equal(header({ RAILWAY_ENVIRONMENT_ID: 'abc', ADDRESS_HEADER: 'none' }), null);
+    assert.equal(header({ ADDRESS_HEADER: 'CF-Connecting-IP' }), 'cf-connecting-ip');
+    assert.throws(() => header({ ADDRESS_HEADER: 'x real ip' }), /ADDRESS_HEADER/);
   });
 
   test('a code keeps players in so many games and no more', async () => {
