@@ -26,12 +26,13 @@ the pictures are used instead; a missing file falls back to the stand-in.
 
 ## Ratings
 
-The five at Port Halcyon were put in order by letting them play each other (`tools/sim.js`, colours alternating):
+The five at Port Halcyon were put in order by letting them play each other under the rules as they are now
+(`tools/sim.js`, colours alternating):
 
-    Marisol beat Pia      39 of 40
-    Hana    beat Marisol  20 of 20   (and Pia 10 of 10)
-    Nadia   beat Hana      6 of 6
-    Isolde  beat Nadia     6 of 6
+    Marisol beat Pia      38 of 40
+    Hana    beat Marisol  19 of 20
+    Nadia   beat Hana      8 of 8
+    Isolde  beat Nadia     5 of 6 at battles, 4 of 4 at total war
 
 So the order is measured. The numbers (500, 950, 1350, 1700, 2000) are spaced narrower than those scores say,
 because machines beating machines exaggerate the gap a person feels; they want adjusting once people have played.

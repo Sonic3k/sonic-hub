@@ -59,7 +59,7 @@ function dossier(w) {
     ${portrait(w)}
     <div class="d-body">
       <h3>${w.rank} ${esc(w.name)}</h3><p class="d-job">${esc(w.job)}</p>
-      <p class="d-facts"><span class="lvl">${w.level}</span>${w.game === 'total' ? '<span class="fmt">Total war</span>' : ''}<span class="rate">${w.rating}</span><span class="stars" aria-label="${won.filter(Boolean).length} of 3 cards">${won.map(v => (v ? '★' : '☆')).join('')}</span></p>
+      <p class="d-facts"><span class="lvl">${w.level}</span><span class="rate">${w.rating}</span><span class="stars" aria-label="${won.filter(Boolean).length} of 3 cards">${won.map(v => (v ? '★' : '☆')).join('')}</span></p>
       <p class="d-style">${esc(w.style)}</p>
       ${open ? `<p class="d-rec">${r.w + r.l + r.d ? `Won ${r.w}, lost ${r.l}${r.d ? ', drew ' + r.d : ''}` : 'Not played yet'}</p>
         <div class="d-acts"><button type="button" class="btn" data-act="challenge" data-id="${w.id}">Challenge <small>${signed(win)} / ${signed(loss)}</small></button><button type="button" class="btn ghost" data-act="spar" data-id="${w.id}">Spar</button></div>`
