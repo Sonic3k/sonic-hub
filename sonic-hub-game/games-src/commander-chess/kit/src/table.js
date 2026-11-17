@@ -9,7 +9,7 @@ function makeTable(CC) {
   const MODE = ['MOVE', 'CAPTURE', 'STAY', 'SUICIDE', 'INTERCEPT', 'COMBINE', 'COMMIT'];
   /* how a turn may go wrong, in numbers: how often a player is asked before its turn has to be over; from where a
      turn counts as late (reported); from where it loses the game */
-  const LIMITS = { calls: 6, late: ms => ms * 1.1 + 15, dead: ms => ms * 2 + 250, size: 300 * 1024, moves: 12 };
+  const LIMITS = { calls: 6, late: ms => ms * 1.1 + 15, dead: ms => ms * 2 + 250, size: 300 * 1024, moves: 12, levels: 10 };
 
   /** a random source that gives the same numbers for the same seed */
   function rng(seed) {
@@ -22,17 +22,34 @@ function makeTable(CC) {
     return s === undefined ? 'undefined' : s.length > 140 ? s.slice(0, 140) + '…' : s;
   }
 
-  /** Runs a player's file and returns what it registered. The file's text is the body of a function that is given
-   *  CC and registerAI; nothing it defines leaks out. */
-  function loadAI(source, label) {
+  /** how many levels a player has: what it says, or one */
+  const levelsOf = ai => (ai.levels === undefined ? 1 : ai.levels);
+  const metaOf = ai => ({ id: ai.id, name: ai.name, author: ai.author, about: ai.about, levels: levelsOf(ai) });
+  /** Runs a file of players and returns what it registered: one player for every call of registerAI. The file's text
+   *  is the body of a function that is given CC and registerAI; nothing it defines leaks out. */
+  function loadAIs(source, label) {
     if (source.length > LIMITS.size) throw new Error('the file is over 300 KB');
-    let got = null, n = 0;
-    new Function('CC', 'registerAI', source + '\n//# sourceURL=' + (label || 'ai.js'))(CC, spec => { n++; got = spec; });
-    if (n !== 1) throw new Error(n ? 'registerAI was called ' + n + ' times: one file is one player' : 'the file never called registerAI');
-    if (!got || typeof got.turn !== 'function') throw new Error('registerAI needs an object with a turn(S, ctx) function');
-    for (const f of ['id', 'name', 'author', 'about']) if (typeof got[f] !== 'string' || !got[f].trim()) throw new Error('registerAI: "' + f + '" is missing or empty');
-    if (!/^[a-z0-9][a-z0-9-]{1,22}[a-z0-9]$/.test(got.id)) throw new Error('registerAI: id has to be 3 to 24 lowercase letters, digits or hyphens ("' + got.id + '")');
+    const got = [], ids = new Set();
+    new Function('CC', 'registerAI', source + '\n//# sourceURL=' + (label || 'ai.js'))(CC, spec => { got.push(spec); });
+    if (!got.length) throw new Error('the file never called registerAI');
+    for (const g of got) {
+      const who = 'registerAI' + (g && typeof g.id === 'string' ? ' of "' + g.id + '"' : '') + ': ';
+      if (!g || typeof g.turn !== 'function') throw new Error(who + 'it needs an object with a turn(S, ctx) function');
+      for (const f of ['id', 'name', 'author', 'about']) if (typeof g[f] !== 'string' || !g[f].trim()) throw new Error(who + '"' + f + '" is missing or empty');
+      if (!/^[a-z0-9][a-z0-9-]{1,22}[a-z0-9]$/.test(g.id)) throw new Error(who + 'an id has to be 3 to 24 lowercase letters, digits or hyphens');
+      if (ids.has(g.id)) throw new Error(who + 'two players in one file have this id');
+      ids.add(g.id);
+      if (!Number.isInteger(levelsOf(g)) || levelsOf(g) < 1 || levelsOf(g) > LIMITS.levels) throw new Error(who + '"levels" has to be a whole number from 1 to ' + LIMITS.levels);
+    }
     return got;
+  }
+  /** one player of a file: the one with this id, or the only one there is */
+  function loadAI(source, label, id) {
+    const all = loadAIs(source, label), list = all.map(a => a.id).join(', ');
+    if (id === undefined || id === null) { if (all.length > 1) throw new Error((label || 'the file') + ' holds ' + all.length + ' players (' + list + '): say which one'); return all[0]; }
+    const ai = all.find(a => a.id === id);
+    if (!ai) throw new Error('there is no player "' + id + '" in ' + (label || 'the file') + ' (it holds: ' + list + ')');
+    return ai;
   }
 
   /** Asks a player for its turn in position S. q: { level, timeMs, seen, seed }. guard(fn, ms), where there is one,
@@ -64,7 +81,7 @@ function makeTable(CC) {
     const setup = { game: o.setup && o.setup.game === 'total' ? 'total' : 'battles', lineup: o.setup && o.setup.lineup === 'light' ? 'light' : 'standard' };
     const S = CC.newGame(setup);
     const M = { setup, S, moves: [], marks: [0], seen: {}, turns: 0, result: null, timeMs: o.timeMs > 0 ? +o.timeMs : 1000, seed: (o.seed >>> 0) || 1, maxTurns: o.maxTurns || 0,
-      levels: o.levels || [5, 5], names: o.names || ['Red', 'Blue'], used: 0, calls: 0, stats: [stat(), stat()], lines: [], cur: [], last: null };
+      levels: o.levels || [1, 1], names: o.names || ['Red', 'Blue'], used: 0, calls: 0, stats: [stat(), stat()], lines: [], cur: [], last: null };
     M.seen[CC.posKey(S)] = 1;
     return M;
   }
@@ -163,6 +180,6 @@ function makeTable(CC) {
     return who + ': ' + why;
   }
 
-  return { LIMITS, SIDE, MODE, rng, show, loadAI, ask, newMatch, request, apply, takeAnswer, describe, record, fromRecord, ascii, resultText };
+  return { LIMITS, SIDE, MODE, rng, show, levelsOf, metaOf, loadAIs, loadAI, ask, newMatch, request, apply, takeAnswer, describe, record, fromRecord, ascii, resultText };
 }
 if (typeof module !== 'undefined') module.exports = { makeTable };

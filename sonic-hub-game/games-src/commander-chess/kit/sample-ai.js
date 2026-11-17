@@ -1,6 +1,6 @@
 /* The sample player: the least that keeps to the contract.
    It is here to show the calls and to be beaten. It is not a model of how to play: it looks no further than its own
-   move, knows nothing of what the other side can do, and plays the same at every level. Yours should do none of that. */
+   move and knows nothing of what the other side can do. It has one level, so it says nothing about levels. */
 'use strict';
 
 registerAI({

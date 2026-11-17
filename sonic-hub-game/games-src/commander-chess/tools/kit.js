@@ -5,7 +5,7 @@
 'use strict';
 const fs = require('fs'), path = require('path'), { execFileSync } = require('child_process');
 const root = path.join(__dirname, '..'), dir = path.join(root, 'kit-out', 'commander-chess-ai-kit');
-const KIT = 1;                                                // goes up when the contract in kit/README.md changes
+const KIT = 2;                                                // goes up when the contract in kit/README.md changes
 const read = f => fs.readFileSync(path.join(root, f), 'utf8');
 const write = (f, text) => { fs.writeFileSync(path.join(dir, f), text); console.log('  ' + f.padEnd(16) + (Buffer.byteLength(text) / 1024).toFixed(1).padStart(7) + ' KB'); };
 

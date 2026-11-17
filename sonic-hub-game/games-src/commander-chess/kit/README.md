@@ -14,29 +14,35 @@ That part is yours.
 |---|---|
 | `RULES.md` | the rules of the game |
 | `engine.js` | the rules as code: positions, legal moves, playing a move. The reference: use it, do not change it |
-| `match.html` | a table in the browser: open the file, load your player, play against it or watch it play. It carries its own copy of the engine |
-| `arena.js` | the same table for Node 18 or later: checks a player's file, runs matches |
+| `match.html` | a table in the browser: open the file, load your players, play against one or watch them play. It carries its own copy of the engine |
+| `arena.js` | the same table for Node 18 or later: checks a file of players, runs matches |
 | `sample-ai.js` | the smallest valid player. It shows the calls and is there to be beaten |
 
 ## What to deliver
 
-One JavaScript file that registers one player:
+One JavaScript file. It registers the players you were asked for, with one call of `registerAI` for each:
 
 ```js
 registerAI({
-  id: 'iron-tide',            // 3 to 24 lowercase letters, digits, hyphens. Name the file after it: iron-tide.js
+  id: 'iron-tide',            // 3 to 24 lowercase letters, digits, hyphens. Your own: not this one
   name: 'Iron Tide',          // what the player is called
   author: 'who wrote it',     // you: the model and its version
   about: 'How it plays, in a sentence or two: what it goes for, what it guards, what it will risk.',
+  levels: 3,                  // how many levels of strength it has, 1 to 10. Left out: one
   turn(S, ctx) { /* … */ return moves; },
 });
 ```
 
+A file may register several players. Each has its own `id`, `name`, `about`, `levels` and `turn`; they may share
+whatever else the file defines.
+
 The file's text is run as the body of a function that is given two names: `CC`, the engine, and `registerAI`. So it
-is a plain script: no `import`, `export` or `require`; no DOM, network, timers, workers or storage; nothing
-asynchronous. It has to run unchanged in a browser's Web Worker and in Node 18, stay under 300 KB, and be ready
-within a second of loading. What it defines is private to it. It may keep state between turns, but it has to give
-a legal answer for any position it is handed, with or without that state.
+is a plain script: no `import`, `export` or `require`. A player works from what is in the file alone: no network
+(`fetch`, `XMLHttpRequest`, `WebSocket`, `importScripts`: no asking a server or a model for the move), no DOM,
+timers, workers or storage, and nothing asynchronous. The file has to run unchanged in a browser's Web Worker and
+in Node 18, stay under 300 KB, and be ready within a second of loading. What it defines is private to it. A player
+may keep state between turns, but it has to give a legal answer for any position it is handed, with or without
+that state.
 
 ### `turn(S, ctx)`
 
@@ -66,7 +72,7 @@ moves, `turn` is called again for the rest, with the time that is left.
 
 | `ctx` | |
 |---|---|
-| `ctx.level` | 1 to 5: how strong to play (see below) |
+| `ctx.level` | from 1 to the player's `levels`: how strong to play (see below) |
 | `ctx.timeMs` | the time for this answer, in milliseconds |
 | `ctx.timeLeft()` | how much of it is left |
 | `ctx.random()` | a number from 0 up to 1. Use it in place of `Math.random`, so that a game can be played again move for move |
@@ -83,17 +89,22 @@ moves, `turn` is called again for the rest, with the time that is left.
 A turn that runs over `ctx.timeMs` by less than that is reported as late. A late turn does not lose a game here,
 but a player that is often late will not be used.
 
-## Strength and character
+## Players and levels
 
-**Five levels.** `ctx.level` 5 is the best your player can do in the time. Level 1 is a beginner that somebody new
-to the game can beat. The steps between should be about even: at the same `ctx.timeMs`, each level should win
-about three games in four against the level below it. The game will give between 300 and 3000 ms a turn, and the
-levels have to keep their order at any of these, so make the difference in how the player thinks and not in how
-long. Low levels should answer quickly.
+**How many.** How many players to write, and how many levels each of them is to have, is for whoever gave you
+this kit to say. If nothing was said: one player with one level, playing as well as it can.
 
-**A character.** Give your player a way of playing that is its own: what it values, what it goes for first, how it
-uses stacks and the air, how much it will risk. Say it in `about`. A weak level should be weak the way a person
-is (greedy, hasty, timid, blind to one kind of threat), not a strong player with random moves mixed in.
+**Levels.** A player with `levels: N` is asked to play at `ctx.level` 1, its weakest, up to N, its strongest. The
+top level is the best it can do in the time. Unless you were told what the levels are to be, make level 1 a
+player that somebody new to the game can beat, and space the others evenly up to the top: at the same
+`ctx.timeMs`, each level should win about three games in four against the level below it. The game will give
+between 300 and 3000 ms a turn, and the levels have to keep their order at any of these, so make the difference in
+how the player thinks and not in how long. Low levels should answer quickly. A weak level should be weak the way a
+person is (greedy, hasty, timid, blind to one kind of threat), not a strong player with random moves mixed in.
+
+**Characters.** Every player is a character: a way of playing that is its own, in what it values, what it goes
+for first, how it uses stacks and the air, how much it will risk. Say it in `about`. When you write several, make
+them different to play against, not one player under several names.
 
 Any method is fine: search, playouts, rules of thumb, tables worked out beforehand and written into the file. The
 sample player is not a starting point; nothing of its judgement is worth keeping.
@@ -175,15 +186,17 @@ Tables: `CC.TERRAIN[s]` (`CC.LAND`, `WATER`, `MIXED`, `BRIDGE`); `CC.MOVE_ORTH[k
 
 ## Testing
 
-    node arena.js check iron-tide.js
+    node arena.js check my-players.js
 
-plays your file at every level, as both colours, in both games and with both line-ups, against the sample player,
-and ends in `RESULT: PASS` or in the list of faults. A game lost by a fault is kept as `fault-….json`, and
-`node arena.js show fault-….json` prints that position as text, with the legal moves (Red in capitals, Blue in
-small letters, a stack written carrier first, `!` after a hero; `~` sea, `,` shore, `=` ford).
+plays every player in the file at each of its levels, as both colours, in both games and with both line-ups,
+against the sample player, and ends in `RESULT: PASS` or in the list of faults. A game lost by a fault is kept as
+`fault-….json`, and `node arena.js show fault-….json` prints that position as text, with the legal moves (Red in
+capitals, Blue in small letters, a stack written carrier first, `!` after a hero; `~` sea, `,` shore, `=` ford).
 
-    node arena.js iron-tide.js sample-ai.js --games 20 --level 5 --ms 1000     a match
-    node arena.js ladder iron-tide.js --games 10 --ms 500                      each level against the one below
+    node arena.js my-players.js#iron-tide sample-ai.js --games 20 --ms 1000     a match; --level 2:1 sets the levels
+    node arena.js ladder my-players.js --games 10 --ms 500                      each level against the one below
+
+`#id` picks one player out of a file that holds several; a file with one player needs none.
 
 `match.html` does the same without Node: open it, load the file, and play a game or run a series.
 
@@ -192,4 +205,4 @@ person who gave you the kit will run the check and send you what it prints.
 
 ## Send back
 
-The one file.
+The file.

@@ -1,8 +1,9 @@
 /* ── arena: the table, for Node ──
-     node arena.js check my-ai.js                    is the file a valid player? every level, both colours, both games, both line-ups
-     node arena.js my-ai.js sample-ai.js             a match between two files
-     node arena.js ladder my-ai.js                   each level against the level below it
-     node arena.js show fault-my-ai-1.json           the position of a kept game, as text
+     node arena.js check my-players.js               are the players in the file valid? every player, every level, both colours, both games, both line-ups
+     node arena.js my-players.js sample-ai.js        a match between two players
+     node arena.js ladder my-players.js              each level of each player against the level below it
+     node arena.js show fault-iron-tide-1.json       the position of a kept game, as text
+   A file that holds several players: name one of them as my-players.js#its-id
    Options: --games N   --level A or A:B   --ms T   --seed N   --game battles|total|both   --lineup standard|light|both
             --max-turns N   --at N (show: stop after N moves)   --quiet */
 (() => {
@@ -16,11 +17,12 @@
 
   function usage(msg) {
     if (msg) out(msg + '\n');
-    out(['node arena.js check <ai.js>                 is the file a valid player?',
-      'node arena.js <a.js> <b.js>                 a match between two files',
-      'node arena.js ladder <ai.js>                each level against the level below it',
-      'node arena.js show <record.json>            the position of a kept game, as text',
+    out(['node arena.js check <file.js>                are the players in the file valid?',
+      'node arena.js <a.js> <b.js>                  a match between two players',
+      'node arena.js ladder <file.js>               each level of each player against the level below it',
+      'node arena.js show <record.json>             the position of a kept game, as text',
       '',
+      'a file that holds several players: name one of them as file.js#its-id',
       'options: --games N  --level A|A:B  --ms T  --seed N  --game battles|total|both  --lineup standard|light|both',
       '         --max-turns N  --at N  --quiet'].join('\n'));
     process.exit(msg ? 2 : 0);
@@ -41,17 +43,28 @@
     const list = []; for (const lineup of lineups) for (const game of games) list.push({ game, lineup });
     return list;
   }
-  function source(file) {
+  /** a file of players, given as file.js, or as file.js#id for one player of it */
+  function source(arg) {
+    const cut = arg.lastIndexOf('#'), file = cut > 0 ? arg.slice(0, cut) : arg, id = cut > 0 ? arg.slice(cut + 1) : null;
     let text; try { text = fs.readFileSync(file, 'utf8'); } catch (e) { usage('cannot read ' + file); }
     const label = path.basename(file);
-    return { file, label, make: () => T.loadAI(text, label) };
+    return { file, label, id, metas: () => (id ? [T.loadAI(text, label, id)] : T.loadAIs(text, label)).map(T.metaOf), make: pick => T.loadAI(text, label, pick) };
   }
+  /** the one player a match is about */
+  function one(src) {
+    const metas = src.metas();
+    if (metas.length > 1) throw new Error(src.label + ' holds ' + metas.length + ' players: name one of them, as ' + metas.map(m => src.label + '#' + m.id).join(' or '));
+    return metas[0];
+  }
+  const sampleSeat = () => { const src = source(path.join(__dirname, 'sample-ai.js')); return { src, id: 'sample', level: 1 }; };
   const setupText = s => (s.game === 'total' ? 'total war' : 'battles') + ', ' + s.lineup + ' line-up';
+  const levelsText = n => (n === 1 ? 'one level' : n + ' levels');
   const add = (a, b) => { a.turns += b.turns; a.ms += b.ms; a.late += b.late; if (b.max > a.max) a.max = b.max; };
   const timeText = (st, ms) => 'avg ' + (st.turns ? Math.round(st.ms / st.turns) : 0) + ' ms, longest ' + Math.round(st.max) + ' ms of ' + ms + (st.late ? ', LATE on ' + st.late + ' of ' + st.turns + ' turns' : ', never late');
 
+  /** one game. red, blue: { src, id, level }; each side gets the file run afresh, so that nothing is shared */
   function playGame(red, blue, o) {
-    const ais = [red.src.make(), blue.src.make()];
+    const ais = [red.src.make(red.id), blue.src.make(blue.id)];
     const M = T.newMatch({ setup: o.setup, timeMs: o.ms, seed: o.seed, maxTurns: o.maxTurns, levels: [red.level, blue.level], names: [ais[0].name, ais[1].name] });
     while (!M.result) T.takeAnswer(M, T.ask(ais[M.S.turn], M.S, T.request(M), guard));
     return M;
@@ -61,8 +74,8 @@
     const file = 'fault-' + id + '-' + (++kept) + '.json';
     try { fs.writeFileSync(file, JSON.stringify(T.record(M))); return file; } catch (e) { return null; }
   }
-  /** games between a and b ({src, level}), colours changing every game. o.first: the number of the first game, for
-   *  the choice of setup and seed. */
+  /** games between a and b, colours changing every game. o.first: the number of the first game, for the choice of
+   *  setup and seed. */
   function series(a, b, o) {
     const t = { a: 0, b: 0, d: 0, faults: [], stats: [{ turns: 0, ms: 0, max: 0, late: 0 }, { turns: 0, ms: 0, max: 0, late: 0 }] };
     for (let g = 0; g < o.games; g++) {
@@ -72,7 +85,7 @@
       if (w < 0) t.d++; else if (w === aSide) t.a++; else t.b++;
       add(t.stats[0], M.stats[aSide]); add(t.stats[1], M.stats[1 - aSide]);
       let note = '';
-      if (M.result.why === 'fault') { const who = M.result.fault.side === aSide ? 'a' : 'b', file = keepFault(M, (who === 'a' ? a : b).src.label.replace(/\.js$/, '')); t.faults.push({ who, M, file, setup }); note = file ? '\n      kept as ' + file + '  (node arena.js show ' + file + ')' : ''; }
+      if (M.result.why === 'fault') { const who = M.result.fault.side === aSide ? 'a' : 'b', file = keepFault(M, (who === 'a' ? a : b).id); t.faults.push({ who, M, file, setup }); note = file ? '\n      kept as ' + file + '  (node arena.js show ' + file + ')' : ''; }
       if (!o.quiet) out('  game ' + String(g + 1).padStart(2) + '  ' + (o.tag || '') + (swap ? 'as Blue' : 'as Red ') + ', ' + setupText(setup) + ', ' + M.turns + ' turns: ' + T.resultText(M) + note);
     }
     return t;
@@ -80,47 +93,54 @@
 
   function cmdMatch(o) {
     const A = source(o._[0]), B = source(o._[1]);
-    const lv = String(o.level === undefined ? '5' : o.level).split(':'), la = whole(lv[0], 'level', 1, 5), lb = whole(lv[1] === undefined ? lv[0] : lv[1], 'level', 1, 5);
-    let ma, mb; try { ma = A.make(); mb = B.make(); } catch (e) { out('LOAD FAILED: ' + e.message); process.exit(1); }
+    let ma, mb; try { ma = one(A); mb = one(B); } catch (e) { out('LOAD FAILED: ' + e.message); process.exit(1); }
+    const lv = o.level === undefined ? [] : String(o.level).split(':');
+    const levelOf = (v, m) => { if (v === undefined || v === '') return m.levels; const n = Number(v); if (!Number.isInteger(n) || n < 1 || n > m.levels) usage(m.name + ' has ' + levelsText(m.levels) + ': --level ' + v + ' is not one of them'); return n; };
+    const la = levelOf(lv[0], ma), lb = levelOf(lv[1], mb);
     const ms = whole(o.ms, 'ms', 20, 60000, 1000), games = whole(o.games, 'games', 1, 1000, 10);
-    out('Commander Chess AI kit ' + CC.KIT + ': ' + ma.name + ' (' + A.label + ', level ' + la + ') against ' + mb.name + ' (' + B.label + ', level ' + lb + '), ' + games + ' games, ' + ms + ' ms a turn');
-    const t = series({ src: A, level: la }, { src: B, level: lb }, { games, ms, seed: whole(o.seed, 'seed', 0, 2147483647, 1), setups: setups(o), maxTurns: whole(o['max-turns'], 'max-turns', 10, 100000, 400), quiet: o.quiet, tag: ma.name + ' ' });
+    out('Commander Chess AI kit ' + CC.KIT + ': ' + ma.name + ' (' + A.label + ', level ' + la + ' of ' + ma.levels + ') against ' + mb.name + ' (' + B.label + ', level ' + lb + ' of ' + mb.levels + '), ' + games + ' games, ' + ms + ' ms a turn');
+    const t = series({ src: A, id: ma.id, level: la }, { src: B, id: mb.id, level: lb }, { games, ms, seed: whole(o.seed, 'seed', 0, 2147483647, 1), setups: setups(o), maxTurns: whole(o['max-turns'], 'max-turns', 10, 100000, 400), quiet: o.quiet, tag: ma.name + ' ' });
     out('\n' + ma.name + ' won ' + t.a + ', ' + mb.name + ' won ' + t.b + ', drawn ' + t.d + (t.faults.length ? '   (' + t.faults.length + ' decided by a fault)' : ''));
     out('time a turn   ' + ma.name + ': ' + timeText(t.stats[0], ms) + '\n              ' + mb.name + ': ' + timeText(t.stats[1], ms));
   }
 
   function cmdCheck(o) {
-    const A = source(o._[1]), sample = source(path.join(__dirname, 'sample-ai.js'));
+    const A = source(o._[1]), sample = sampleSeat();
     out('Commander Chess AI kit ' + CC.KIT + ': check of ' + A.label);
-    let meta; try { meta = A.make(); } catch (e) { out('  LOAD FAILED: ' + e.message + '\nRESULT: FAIL'); process.exit(1); }
-    out('  loaded: ' + meta.name + ' (' + meta.id + ') by ' + meta.author + '\n  about: ' + meta.about);
+    let metas; try { metas = A.metas(); } catch (e) { out('  LOAD FAILED: ' + e.message + '\nRESULT: FAIL'); process.exit(1); }
     const ms = whole(o.ms, 'ms', 20, 60000, 300), games = whole(o.games, 'games', 1, 100, 2), all = setups({ game: 'both', lineup: 'both' });
-    out('  ' + games + ' games at each level against the sample player, ' + ms + ' ms a turn\n');
-    let faults = 0, late = 0, turns = 0;
-    for (let level = 1; level <= 5; level++) {
-      const t = series({ src: A, level }, { src: sample, level: 5 }, { games, ms, seed: whole(o.seed, 'seed', 0, 2147483647, 1), first: (level - 1) * games, setups: all, maxTurns: whole(o['max-turns'], 'max-turns', 10, 100000, 300), quiet: o.quiet, tag: 'level ' + level + ' ' });
-      const mine = t.faults.filter(f => f.who === 'a'); faults += mine.length; late += t.stats[0].late; turns += t.stats[0].turns;
-      out('  level ' + level + ': won ' + t.a + ', lost ' + t.b + ', drawn ' + t.d + '   ' + timeText(t.stats[0], ms) + '   faults ' + mine.length);
-      for (const f of mine) out('    FAULT [' + f.M.result.fault.kind + '] turn ' + f.M.result.fault.turn + ', as ' + T.SIDE[f.M.result.fault.side] + ', ' + setupText(f.setup) + ': ' + f.M.result.fault.detail.split('\n').join('\n      ') + (f.file ? '\n      kept as ' + f.file : ''));
-      for (const f of t.faults.filter(x => x.who === 'b')) out('    (the sample player was at fault in a game: that is a fault of the kit, please report it) ' + f.M.result.fault.detail);
-      if (!o.quiet) out('');
+    out('  ' + (metas.length === 1 ? 'one player' : metas.length + ' players') + ' in the file; ' + games + ' games at each level against the sample player, ' + ms + ' ms a turn');
+    let faults = 0, late = 0, turns = 0, n = 0;
+    for (const meta of metas) {
+      out('\n  ' + meta.name + ' (' + meta.id + ') by ' + meta.author + ', ' + levelsText(meta.levels) + '\n  about: ' + meta.about + (o.quiet ? '' : '\n'));
+      for (let level = 1; level <= meta.levels; level++) {
+        const t = series({ src: A, id: meta.id, level }, sample, { games, ms, seed: whole(o.seed, 'seed', 0, 2147483647, 1), first: n, setups: all, maxTurns: whole(o['max-turns'], 'max-turns', 10, 100000, 300), quiet: o.quiet, tag: 'level ' + level + ' ' });
+        n += games;
+        const mine = t.faults.filter(f => f.who === 'a'); faults += mine.length; late += t.stats[0].late; turns += t.stats[0].turns;
+        out('  level ' + level + ': won ' + t.a + ', lost ' + t.b + ', drawn ' + t.d + '   ' + timeText(t.stats[0], ms) + '   faults ' + mine.length);
+        for (const f of mine) out('    FAULT [' + f.M.result.fault.kind + '] turn ' + f.M.result.fault.turn + ', as ' + T.SIDE[f.M.result.fault.side] + ', ' + setupText(f.setup) + ': ' + f.M.result.fault.detail.split('\n').join('\n      ') + (f.file ? '\n      kept as ' + f.file : ''));
+        for (const f of t.faults.filter(x => x.who === 'b')) out('    (the sample player was at fault in a game: that is a fault of the kit, please report it) ' + f.M.result.fault.detail);
+        if (!o.quiet) out('');
+      }
     }
-    out('RESULT: ' + (faults ? 'FAIL, ' + faults + ' game' + (faults > 1 ? 's' : '') + ' lost by a fault' : late ? 'PASS, but late on ' + late + ' of ' + turns + ' turns (a turn has to stay inside ctx.timeMs)' : 'PASS, no fault in ' + turns + ' turns'));
+    out((o.quiet ? '\n' : '') + 'RESULT: ' + (faults ? 'FAIL, ' + faults + ' game' + (faults > 1 ? 's' : '') + ' lost by a fault' : late ? 'PASS, but late on ' + late + ' of ' + turns + ' turns (a turn has to stay inside ctx.timeMs)' : 'PASS, no fault in ' + turns + ' turns'));
     process.exit(faults ? 1 : 0);
   }
 
   function cmdLadder(o) {
-    const A = source(o._[1]), sample = source(path.join(__dirname, 'sample-ai.js'));
-    let meta; try { meta = A.make(); } catch (e) { out('LOAD FAILED: ' + e.message); process.exit(1); }
+    const A = source(o._[1]), sample = sampleSeat();
+    let metas; try { metas = A.metas(); } catch (e) { out('LOAD FAILED: ' + e.message); process.exit(1); }
     const ms = whole(o.ms, 'ms', 20, 60000, 500), games = whole(o.games, 'games', 2, 1000, 10);
-    out('Commander Chess AI kit ' + CC.KIT + ': ladder of ' + meta.name + ' (' + A.label + '), ' + games + ' games a step, ' + ms + ' ms a turn\n');
-    const rows = [], base = { games, ms, seed: whole(o.seed, 'seed', 0, 2147483647, 1), setups: setups(o), maxTurns: whole(o['max-turns'], 'max-turns', 10, 100000, 400), quiet: o.quiet };
-    for (let level = 1; level <= 5; level++) {
-      const low = level === 1 ? { src: sample, level: 5 } : { src: A, level: level - 1 }, what = 'level ' + level + ' against ' + (level === 1 ? 'the sample player' : 'level ' + (level - 1));
-      if (!o.quiet) out(what);
-      const t = series({ src: A, level }, low, Object.assign({ tag: 'level ' + level + ' ' }, base));
-      rows.push(what.padEnd(34) + 'won ' + String(t.a).padStart(2) + ', lost ' + String(t.b).padStart(2) + ', drawn ' + String(t.d).padStart(2) + '   ' + timeText(t.stats[0], ms) + (t.faults.length ? '   FAULTS ' + t.faults.length : ''));
-      if (!o.quiet) out('');
+    out('Commander Chess AI kit ' + CC.KIT + ': ladder of ' + A.label + ', ' + games + ' games a step, ' + ms + ' ms a turn');
+    const base = { games, ms, seed: whole(o.seed, 'seed', 0, 2147483647, 1), setups: setups(o), maxTurns: whole(o['max-turns'], 'max-turns', 10, 100000, 400), quiet: o.quiet }, rows = [];
+    for (const meta of metas) {
+      rows.push('\n' + meta.name + ' (' + meta.id + '), ' + levelsText(meta.levels));
+      for (let level = 1; level <= meta.levels; level++) {
+        const low = level === 1 ? sample : { src: A, id: meta.id, level: level - 1 }, what = 'level ' + level + ' against ' + (level === 1 ? 'the sample player' : 'level ' + (level - 1));
+        if (!o.quiet) out('\n' + meta.name + ', ' + what);
+        const t = series({ src: A, id: meta.id, level }, low, Object.assign({ tag: 'level ' + level + ' ' }, base));
+        rows.push('  ' + what.padEnd(34) + 'won ' + String(t.a).padStart(2) + ', lost ' + String(t.b).padStart(2) + ', drawn ' + String(t.d).padStart(2) + '   ' + timeText(t.stats[0], ms) + (t.faults.length ? '   FAULTS ' + t.faults.length : ''));
+      }
     }
     out(rows.join('\n'));
   }

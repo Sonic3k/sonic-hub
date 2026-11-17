@@ -63,7 +63,7 @@
 <body>
 <header>
   <h1>Commander Chess: test table</h1>
-  <p>AI kit {{KIT}}, rules of {{RULES}}. Load a player's file, then play against it, watch it play, or run a series.</p>
+  <p>AI kit {{KIT}}, rules of {{RULES}}. Load a file of players, then play against one, watch two of them play, or run a series.</p>
 </header>
 <main>
   <section id="left">
@@ -87,7 +87,8 @@
     <div class="card"><h2>Moves</h2><div id="log"></div></div>
     <div class="card">
       <h2>Player files</h2>
-      <input type="file" id="file" accept=".js,text/javascript" multiple aria-label="Load a player's file">
+      <input type="file" id="file" accept=".js,text/javascript" multiple aria-label="Load a file of players">
+      <p class="hint">A file may hold one player or several. Loading a file again takes the place of the one loaded before.</p>
       <div id="ais"></div><div id="ai-msg"></div>
     </div>
     <div class="card">
@@ -118,8 +119,13 @@ const GLUE = `
 const T = makeTable(CC); let ai = null;
 self.onmessage = e => {
   const q = e.data;
+  if (q.type === 'list') {
+    try { self.postMessage({ id: q.id, metas: T.loadAIs(q.source, q.label).map(T.metaOf) }); }
+    catch (err) { self.postMessage({ id: q.id, error: String((err && err.message) || err) }); }
+    return;
+  }
   if (q.type === 'load') {
-    try { ai = T.loadAI(q.source, q.label); self.postMessage({ id: q.id, meta: { id: ai.id, name: ai.name, author: ai.author, about: ai.about } }); }
+    try { ai = T.loadAI(q.source, q.label, q.pick); self.postMessage({ id: q.id, meta: T.metaOf(ai) }); }
     catch (err) { self.postMessage({ id: q.id, error: String((err && err.message) || err) }); }
     return;
   }
@@ -150,9 +156,9 @@ function rpc(worker, msg, ms) {
     worker.postMessage(Object.assign({ id }, msg));
   });
 }
-/** a worker with this player's file loaded in it; the answer says who it is */
+/** a worker with this player's file run in it, and that player picked out of it */
 async function spawn(ai) {
-  const worker = new Worker(WORKER_URL), r = await rpc(worker, { type: 'load', source: ai.source, label: ai.label }, 5000);
+  const worker = new Worker(WORKER_URL), r = await rpc(worker, { type: 'load', source: ai.source, label: ai.label, pick: ai.meta.id }, 5000);
   if (r.timedOut || r.error) { worker.terminate(); throw new Error(r.timedOut ? ai.label + ' was not ready after 5 seconds' : ai.label + ': ' + r.error); }
   return { worker, meta: r.meta };
 }
@@ -172,25 +178,36 @@ async function askSeat(seat, M) {
 }
 
 /* ── the players to choose from ── */
-async function addAI(source, label) {
-  const { worker, meta } = await spawn({ source, label }); worker.terminate();
-  const entry = { source, label, meta }, i = ui.ais.findIndex(a => a.meta.id === meta.id);
-  if (i >= 0) ui.ais[i] = entry; else ui.ais.push(entry);
-  return entry;
+/** takes in a file: every player it registers becomes one to choose. A file loaded again takes the place of itself. */
+async function addFile(source, label) {
+  const worker = new Worker(WORKER_URL), r = await rpc(worker, { type: 'list', source, label }, 5000); worker.terminate();
+  if (r.timedOut || r.error) throw new Error(label + ': ' + (r.timedOut ? 'not ready after 5 seconds' : r.error));
+  const at = ui.ais.findIndex(a => a.label === label), fresh = r.metas.map(meta => ({ key: label + '#' + meta.id, source, label, meta }));
+  ui.ais = ui.ais.filter(a => a.label !== label);
+  ui.ais.splice(at < 0 ? ui.ais.length : Math.min(at, ui.ais.length), 0, ...fresh);
+  return fresh;
 }
+const levelsText = n => (n === 1 ? 'one level' : n + ' levels');
+const seatText = x => x.ai.meta.name + (x.ai.meta.levels > 1 ? ', level ' + x.level + ' of ' + x.ai.meta.levels : '');
 function fillSelects(prefer) {
   for (const side of [0, 1]) {
     const sel = $('p' + side), was = prefer && side === 1 ? 'ai:' + prefer : sel.value;
-    sel.innerHTML = '<option value="human">Human</option>' + ui.ais.map(a => '<option value="ai:' + esc(a.meta.id) + '">' + esc(a.meta.name) + ' (' + esc(a.label) + ')</option>').join('');
-    sel.value = [...sel.options].some(o => o.value === was) ? was : side === 1 && ui.ais.length ? 'ai:' + ui.ais[0].meta.id : 'human';
-    $('l' + side).disabled = sel.value === 'human';
+    sel.innerHTML = '<option value="human">Human</option>' + ui.ais.map(a => '<option value="ai:' + esc(a.key) + '">' + esc(a.meta.name) + ' (' + esc(a.label) + ')</option>').join('');
+    sel.value = [...sel.options].some(o => o.value === was) ? was : side === 1 && ui.ais.length ? 'ai:' + ui.ais[0].key : 'human';
+    fillLevels(side);
   }
-  $('ais').innerHTML = ui.ais.map(a => '<div class="ai"><b>' + esc(a.meta.name) + '</b> · ' + esc(a.meta.id) + ' · by ' + esc(a.meta.author) + '<small>' + esc(a.meta.about) + '</small></div>').join('');
+  $('ais').innerHTML = ui.ais.map(a => '<div class="ai"><b>' + esc(a.meta.name) + '</b> · ' + esc(a.meta.id) + ' · by ' + esc(a.meta.author) + ' · ' + levelsText(a.meta.levels) + '<small>' + esc(a.meta.about) + '</small></div>').join('');
+}
+/** the levels of the player chosen for this side: its top one, unless another had been set for that same player */
+function fillLevels(side) {
+  const sel = $('l' + side), who = $('p' + side).value, ai = ui.ais.find(a => 'ai:' + a.key === who), n = ai ? ai.meta.levels : 1, was = sel.dataset.of === who ? +sel.value : 0;
+  sel.innerHTML = Array.from({ length: n }, (x, i) => '<option value="' + (i + 1) + '">' + (n === 1 ? 'one level' : 'level ' + (i + 1) + ' of ' + n) + '</option>').join('');
+  sel.value = String(was >= 1 && was <= n ? was : n); sel.dataset.of = who; sel.disabled = n === 1; sel.hidden = !ai;
 }
 function choice(side) {
   const v = $('p' + side).value;
   if (v === 'human') return { kind: 'human' };
-  return { kind: 'ai', ai: ui.ais.find(a => 'ai:' + a.meta.id === v), level: +$('l' + side).value };
+  return { kind: 'ai', ai: ui.ais.find(a => 'ai:' + a.key === v), level: +$('l' + side).value };
 }
 const setupNow = () => ({ game: $('game').value, lineup: $('lineup').value });
 const timeNow = () => clamp(Math.round(+$('ms').value) || 1000, 20, 60000);
@@ -328,7 +345,7 @@ function drawStatus() {
   if (M.result) head.textContent = T.resultText(M);
   else {
     const side = S.turn, seat = ui.seats[side];
-    head.textContent = 'Turn ' + (M.turns + 1) + ': ' + T.SIDE[side] + ' to move' + (seat && seat.kind === 'ai' ? ' (' + seat.ai.meta.name + ', level ' + seat.level + ')' : '') +
+    head.textContent = 'Turn ' + (M.turns + 1) + ': ' + T.SIDE[side] + ' to move' + (seat && seat.kind === 'ai' ? ' (' + seatText(seat) + ')' : '') +
       (ui.thinking === side ? ', thinking…' : '') + (S.dOrg >= 0 ? ', unloading the stack on ' + CC.sqName(S.dOrg) : '') + (CC.inCheck(S, side) ? '. Its Commander is attacked' : '');
   }
   const seen = M.seen[CC.posKey(S)] || 0;
@@ -359,7 +376,7 @@ function drawSeries() {
   const R = ui.tally, box = $('series-out');
   $('series-run').disabled = !!ui.series; $('series-stop').disabled = !ui.series;
   if (!R) { box.innerHTML = ''; return; }
-  const who = i => esc(R.c[i].ai.meta.name) + ', level ' + R.c[i].level, avg = st => (st.turns ? Math.round(st.ms / st.turns) : 0);
+  const who = i => esc(seatText(R.c[i])), avg = st => (st.turns ? Math.round(st.ms / st.turns) : 0);
   let h = '<table><tr><th>' + R.done + ' of ' + R.n + ' games' + (R.stopped ? ', stopped' : '') + '</th><th>won</th><th>lost</th><th>drawn</th><th>ms a turn</th><th>longest</th><th>late</th></tr>';
   for (const i of [0, 1]) h += '<tr><td>' + who(i) + '</td><td>' + R.won[i] + '</td><td>' + R.won[1 - i] + '</td><td>' + R.drawn + '</td><td>' + avg(R.stats[i]) + '</td><td>' + Math.round(R.stats[i].max) + '</td><td>' + R.stats[i].late + '</td></tr>';
   h += '</table>' + R.faults.map((f, i) => '<div class="flt">Game ' + f.game + ': ' + esc(f.text) + ' <button data-fault="' + i + '">Show</button></div>').join('');
@@ -430,14 +447,14 @@ $('step').addEventListener('click', () => { ui.step = true; drive(); });
 $('auto').addEventListener('change', () => { render(); drive(); });
 $('back').addEventListener('click', back);
 $('flip').addEventListener('click', () => { ui.flip = !ui.flip; render(); });
-for (const side of [0, 1]) $('p' + side).addEventListener('change', () => { $('l' + side).disabled = $('p' + side).value === 'human'; });
+for (const side of [0, 1]) $('p' + side).addEventListener('change', () => fillLevels(side));
 $('file').addEventListener('change', async e => {
   const files = [...e.target.files]; $('ai-msg').textContent = ''; let last = null;
   for (const f of files) {
-    try { last = await addAI(await f.text(), f.name); }
+    try { last = (await addFile(await f.text(), f.name))[0]; }
     catch (err) { $('ai-msg').textContent += (err.message || err) + '\n'; }
   }
-  e.target.value = ''; fillSelects(last && last.meta.id);
+  e.target.value = ''; fillSelects(last && last.key);
 });
 $('series-run').addEventListener('click', runSeries);
 $('series-stop').addEventListener('click', () => { if (ui.series) ui.series.stop = true; });
@@ -452,8 +469,7 @@ $('rec-load').addEventListener('click', () => {
   $('auto').checked = false; newGame(rec);
 });
 
-for (const side of [0, 1]) { $('l' + side).innerHTML = [1, 2, 3, 4, 5].map(n => '<option value="' + n + '"' + (n === 5 ? ' selected' : '') + '>level ' + n + '</option>').join(''); }
-addAI(SAMPLE, 'sample-ai.js').then(() => { fillSelects(); newGame(); }, err => { fillSelects(); ui.note = 'The sample player could not be started: ' + (err.message || err); newGame(); });
+addFile(SAMPLE, 'sample-ai.js').then(() => { fillSelects(); newGame(); }, err => { fillSelects(); ui.note = 'The sample player could not be started: ' + (err.message || err); newGame(); });
 </script>
 </body>
 </html>
