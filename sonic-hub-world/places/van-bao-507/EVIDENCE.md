@@ -47,11 +47,11 @@ and a **mattress** (1.6 × 2.0) in the parents' room, the flat **bars** of the c
 | Television | 0.95 | **0.73** × 0.44 | 2012 photograph |
 | Long sofa | 1.92 | **about 1.6** | video 3:09, taken some 6.2 m from the sofa wall |
 | Balcony door (west) | 2.1 × 2.55 | **2.1 × 2.31**, transom from 2.06 | video 4:51 |
-| Kitchen | 2.15 × 4.38 | 2.25 × 4.4–4.55 — **kept** | counter, tiles |
-| Washing alcove / bathroom width | 1.85 | 1.7 ± 0.2 — **kept** | washing machine (0.57) |
+| Kitchen | 2.15 × 4.38 | **2.75** × 4.4 | the 2013 fridge, the table, the walk past them — see "Two doors and the kitchen's width" below (the first re-survey read 2.25 and kept 2.15) |
+| Washing alcove / bathroom, east to west | 1.85 | **1.25** — what the kitchen leaves | the bathroom door's wall is at least 1.2 long (video 2:27) |
 
-So only the north strip was too deep (by a quarter) and a little too long; the rooms south of it keep their size and
-stand 0.7 m further north. The rooms add up to about 76 m², not 84.
+So the north strip was too deep (by a quarter) and a little too long; the rooms south of it stand 0.7 m further north,
+and the wall between kitchen and bathroom stands 0.6 m further west. The rooms add up to about 76 m², not 84.
 
 Two corrections to earlier notes made on the way: the lens of the 2012 photograph was first put at 1.34 m by a point on
 a skirting board, which made the ceiling 2.48 — the people standing in the lobby would then be 1.51 and 1.43 m tall;
@@ -62,6 +62,40 @@ grade, by the school albums): living room and parents' bedroom were one long roo
 television; the front wall stood where the shallow pier at x 1.68–1.94 is now, and the strip west of it — where the
 front door and the fish tank are — was the end of the gallery, closed by a green iron gate; a wider balcony room on
 the east was taken into the parents' room, leaving the cage. The model shows 2005–2012, after all that.
+
+## Two doors and the kitchen's width (18 November 2026, evening)
+
+The owner, on seeing the re-surveyed flat: "phòng bố mẹ phải có cửa đi ra ban công ngoài chứ" — and he is right; and
+"bạn cảm thấy đúng thì tiếp tục di dời và sửa cho hợp lý".
+
+**The parents' door to the balcony.** The re-survey read the east wall as one wide window, because in the video the
+camera, at that wall, only looks out through the glass (3:55–4:31: it never leaves the room). Looked at again: between
+the north-east corner and the window frame a long peach curtain hangs to the floor, lit from top to bottom, with no dark
+band where the wall under a sill would be; and beside the window's north frame a strip of glass with the bars behind it
+runs on below the sill (3:52.8–3:53.6). That is a glazed door at the north end of the wall, hidden by its curtain; in
+June 2013 the folded deck chair, a stool and the fan stood before it, and outside, north of the window, the air
+conditioner's outdoor unit and the folding ladder — a door hardly used by then. Drawn: door 0.18–0.88 from the north
+corner, a post, the window of three leaves 0.95–2.33, half a metre of wall. Its width, its leaf (drawn like the balcony
+leaves of the living room, swung out) and the furniture cleared from its way are guesses.
+
+**The kitchen is 2.75 wide, not 2.15.** Frame 2:10, looking down the kitchen: on its far wall the scale is 250–270 px
+to the metre (counter 0.8 high, 0.5 m tiles, the loggia 1.07 deep behind it). The fridge that stood in the south-west
+corner in 2013 shows its whole north side, 0.75 deep, and its front is 2.0 ± 0.1 m from the east wall — so the west wall
+is 2.75 from it. The same from three other sides: the table stands with its short end to that wall and its other end
+1.3–1.5 m from the east wall (2:10, 3:09), the chair on its north side sits at its middle (3:09), and the camera walking
+past the table sees the alcove's mouth 2.0 m away (2:24). The first re-survey had taken the fridge's front corner for
+the corner of the room. Drawn: west wall at 1.35, which leaves 1.25 for the alcove and the bathroom.
+
+**The loggia door.** Same frame: from the east wall the counter (0.6), 0.35 of white tiles, the door's frame at
+0.95; the opening runs on for a metre, to the fridge's corner. Nothing divides it; at its east jamb a tall barred leaf
+stands edge-on beyond the wall, its foot some 0.6 m out on the loggia — a leaf swung outward. The "leaf opening inward
+to the west" of the earlier notes was the glossy front of the fridge, mirroring the loggia. Drawn: opening 2.08–3.12,
+two leaves, both open outward; the number of leaves is a guess. West of the door 0.7 m of wall: the fridge inside
+(2013), the rack with the microwave outside (3:05).
+
+**Not settled by this:** the alcove. Its towel wall (north side) is only 0.8 m long before a white pier 0.7 wide (2:24),
+while its south side — the bathroom door's wall — is at least 1.2 (2:27); and the bathroom's west wall seems to stand a
+little east of the alcove's. Drawn as plain rectangles 1.25 deep.
 
 ## What the owner said (November 2026)
 
@@ -103,23 +137,25 @@ side, its frame starting at the TV wall's line (2012 photographs 1035 and 1036; 
 are narrow, about 0.7. Depth of the recess: **0.7 drawn, a guess** between what a 0.7 door needs and what the pictures
 allow; `LOBBY` in `plan.js`.
 
-**Kitchen, 2.15 × 4.4.** Length by its half-metre floor tiles and the counter (0.6 deep, 0.8 high): 4.4–4.55; its far
-wall is then about 7.3 m from the gallery wall. The counter's front meets the north wall at the opening's east jamb, so
-the east wall is one counter depth beyond it. East wall, from the
+**Kitchen, 2.75 × 4.4.** Length by its half-metre floor tiles and the counter (0.6 deep, 0.8 high): 4.4–4.55; its far
+wall is then about 7.3 m from the gallery wall. Width: see "Two doors and the kitchen's width". The counter's front
+meets the north wall at the opening's east jamb, so the east wall is one counter depth beyond it. East wall, from the
 north: fridge (the silver two-door one stands right behind the jamb in the 2012 photo, a mahogany cupboard and a clay jar
-over it), sink, hob, a white-tiled pier. In the south wall, between that pier and the south-west corner, the glazed door
-to the loggia, its leaf opening inward to the west (video 2:31). West side: the glass-topped table with the food cover.
-In June 2013 a new side-by-side fridge stood in the south-west corner; it is not drawn (outside the years).
+over it), sink, hob at the far end against the south wall. In the south wall a third of a metre of white tiles, then
+the double door to the loggia, a metre wide, then 0.7 m of wall to the corner. West side: the glass-topped table, its
+short end to the wall (about 0.8 × 1.25), the food cover on it, a chair on its north side. In June 2013 a new
+French-door fridge stood in the south-west corner, beside the door; it is not drawn (outside the years).
 
 **Washing alcove and bathroom** (video 2:21–2:29). West of the kitchen's north end, behind the fish-tank wall, an
-alcove open to the kitchen: on its west wall the basin under a mirror and a top-loading washing machine. The bathroom
-door is in the alcove's **south** wall and opens inward on its east jamb. The toilet stands about 2.2 m beyond the door
-against the far wall, a high window beside it (an outside wall: the loggia does not reach this far west), a water heater
-above; dark purple tiles to waist height under a wavy border, white above.
+alcove open to the kitchen: on its west wall the basin under a mirror and a top-loading washing machine, towels on a
+rail on its north wall. The bathroom door is in the alcove's **south** wall and opens inward on its east jamb. The
+toilet stands against the far wall near the west corner, about 2 m beyond the door; the high window is over it and to
+the east (an outside wall: the loggia does not reach this far west), the water heater in the corner above; dark purple
+tiles to waist height under a wavy border, white above. Both 1.25 m east to west as drawn — see above.
 
 **Loggia** (video 2:31–3:07, and the owner). Hung on the south face. Its **west** end is level with the kitchen's west
-wall, just beside the door: there stand the steel rack with the basins and the microwave, in front of two glazed faces
-(the evening sun comes in here). It runs **east** along the big room's wall — a stainless water tank and the gas bottle,
+wall, 0.7 m beyond the door: there stand the steel racks with the basins and the microwave — one against the house wall
+beside the door, one against the end — in front of two glazed faces (the evening sun comes in here); one rack is drawn. It runs **east** along the big room's wall — a stainless water tank and the gas bottle,
 red hangers on a wall rail, the bent steel clothes rail with pastel hangers, clay jars at the far end — and stops just
 short of the big room's window. Bars all round; depth 1.1 is a guess.
 
@@ -147,14 +183,16 @@ stretch of west wall between his desk and his bed, video 0:13, which a 3.5 m roo
 the photograph of 25/5/2013 (a person walking toward the far wall of the big room) gave 2.7–2.9. Nobody has measured it.
 
 **Parents' room, 4.13 × 2.8** (video 3:52–3:57 its east end, 4:41–4:50 the bed, the wardrobe and the door).
-- **The east wall has a wide window with a sill and a wall under it — not a door** (the first drawing had a glazed door
-  to a balcony). Long peach and green drapes on a rod; a knob to tie them back on the strip of wall by the south-east
-  corner. Outside, what is left of the old balcony is closed in by a **steel cage about a metre deep** (flat bars 30 mm
-  wide every 150): the air conditioner's outdoor unit, a folding ladder, the flag tied to a post (video 3:58–4:31; the
-  camera is held out through the window). Where this wall stands and how deep the cage is hang together: a guess.
+- **The east wall: the door to the balcony at its north end, then the window** — three leaves on a sill, a wall under
+  it (see "Two doors and the kitchen's width": the re-survey had missed the door behind its curtain). Long peach and
+  green drapes on one rod; a knob to tie them back on the strip of wall by the south-east corner. Outside, what is left
+  of the old balcony is closed in by a **steel cage about a metre deep** (flat bars 30 mm wide every 150): the air
+  conditioner's outdoor unit, a folding ladder, the flag tied to a post (video 3:58–4:31, filmed through the window's
+  glass). Where this wall stands and how deep the balcony is hang together: a guess.
 - The **bed** has its head to the north wall under a boarded frame; east of the frame three shelves with a rounded
   corner, then **four narrow wall cupboards, 1.06 m** by the hanger hooked on them, reaching nearly to the corner. Beside
-  the bed the cabinet with the house phone, then a low table of odds and ends; a pink fan, a cushioned stool.
+  the bed the cabinet with the house phone, then a low table of odds and ends; a pink fan, a cushioned stool (moved
+  aside in the model, to leave the way to the door).
 - In the niche behind the TV wall the **two-door wardrobe** (south) and the open shelves of bedding (north), 0.9 m from
   the bed, their fronts a little behind the door wall; two switches on the strip of wall between the door and the niche.
 - South wall: the door's leaf lies open along it, then the rail of hooks with the day's clothes, a calendar with a net
@@ -163,9 +201,10 @@ the photograph of 25/5/2013 (a person walking toward the far wall of the big roo
 ## Still open
 
 - Ceiling height: 2.65 drawn (2.5–2.8); nobody has measured it.
-- The glazed door to the loggia: the frames put it about half a metre further west than drawn, near the kitchen's
-  south-west corner. Not moved yet — the rack by it and the walk out would have to move with it.
-- The parents' east wall and the depth of the cage; whether the block's east face is straight.
+- The alcove and the bathroom east to west (1.25 drawn): the pier north of the alcove's mouth, the bathroom's west
+  side. The loggia door's leaves.
+- The parents' east wall and the depth of the balcony; how wide their door is and which way it opened; whether the
+  block's east face is straight.
 - The length of the big room and the width of his corner (2.2 drawn; readings run from 2.2 to 2.8).
 - What stood in the kitchen's south-west corner before the 2013 fridge.
 - The years the television, the fridge and the piano changed; whether the row of wardrobes was shorter in the first years.

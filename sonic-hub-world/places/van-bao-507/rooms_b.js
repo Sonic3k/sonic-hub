@@ -205,8 +205,8 @@ export function piano(b) {
 /* ── the parents' room ───────────────────────────────────────────────── */
 /* Set out again on 18/11/2026 from the video (3:52–3:57 the east end, 4:41–4:50 the bed, the wardrobe and the door) and
    written in REAL metres (b.real): 4.13 × 2.8, with the niche behind the TV wall on its west. Rulers: the mattress
-   (1.6 × 2.0), a coat hanger (0.41) under the wall cupboards, the bars of the cage. Its east wall has a wide window with
-   a sill, not a door. */
+   (1.6 × 2.0), a coat hanger (0.41) under the wall cupboards, the bars of the cage. In its east wall, from the north
+   corner: the door to the balcony, then the window on its sill (plan.js PAR_DOOR, PAR_WIN). */
 export function buildParents(b, ctx) {
   b.real = true;
   const cherry = wood('#a8542a', 0.7), red = wood(C.bedred, 0.75), mah = wood(C.mahog, 0.85);
@@ -253,23 +253,25 @@ export function buildParents(b, ctx) {
   b.box(M.plain('#ebe4cf', 0.5), 0.1, 0.52, 0.12, 0.34, 0.58, 0.32, {}); b.box(M.plain('#e2dac2', 0.5), 0.1, 0.58, 0.14, 0.17, 0.62, 0.3, {}); b.box(M.plain('#3a3a3a', 0.6), 0.2, 0.582, 0.2, 0.32, 0.585, 0.3, { cast: false });
   ctx.hot.push({ id: 'phone', pos: b.at(0.23, 0.7, 0.23), r: 0.3 });
   b.pop();
-  N(b, bx + 2.16, 0.06); table(b, 0.86, 0.5, 0.52, { mat: red, leg: 0.045 });
+  N(b, bx + 2.13, 0.06); table(b, 0.8, 0.5, 0.52, { mat: red, leg: 0.045 });
   { const R = rng(31), cols = ['#6fbf3a', '#f29a3a', '#3aa0d8', '#f2d23a', '#e8556a', '#f3f1ea', '#8a6fd0'];
-    for (let i = 0; i < 12; i++) { const x = 0.08 + R() * 0.7, z = 0.08 + R() * 0.34; if (R() < 0.5) bottle(b, cols[(R() * 7) | 0], x, 0.5, z, 0.02 + R() * 0.012, 0.1 + R() * 0.1); else b.box(M.plain(cols[(R() * 7) | 0], 0.7), x - 0.05, 0.5, z - 0.04, x + 0.05, 0.54 + R() * 0.06, z + 0.04, {}); }
-    b.box(M.plain('#7fd03a', 0.6), 0.3, 0.5, 0.08, 0.62, 0.56, 0.3, {}); b.box(M.plain('#e9a6c0', 0.7), 0.5, 0.2, 0.1, 0.8, 0.5, 0.4, {});
+    for (let i = 0; i < 12; i++) { const x = 0.08 + R() * 0.64, z = 0.08 + R() * 0.34; if (R() < 0.5) bottle(b, cols[(R() * 7) | 0], x, 0.5, z, 0.02 + R() * 0.012, 0.1 + R() * 0.1); else b.box(M.plain(cols[(R() * 7) | 0], 0.7), x - 0.05, 0.5, z - 0.04, x + 0.05, 0.54 + R() * 0.06, z + 0.04, {}); }
+    b.box(M.plain('#7fd03a', 0.6), 0.3, 0.5, 0.08, 0.62, 0.56, 0.3, {}); b.box(M.plain('#e9a6c0', 0.7), 0.46, 0.2, 0.1, 0.76, 0.5, 0.4, {});
   }
   b.pop();
-  blob(b, bx + 1.64, 0.05, bx + 3.02, 0.58, 0.4);
-  // the pink fan in front of the table; in the corner a folded deck chair with a bag hung on it, and the cushioned stool
-  b.push(9.3, 0, 0.98, 235); standFan(b, { h: 1.05, r: 0.17, color: '#f2d7e2' }); b.pop();
+  blob(b, bx + 1.64, 0.05, bx + 2.93, 0.58, 0.4);
+  /* the way to the balcony door is kept clear here: the pink fan stands by the bedside cabinet and the cushioned stool before
+     the table; only the folded deck chair with its bag leans in the corner (in June 2013 all three stood before the door) */
+  b.push(8.72, 0, 0.76, 200); standFan(b, { h: 1.05, r: 0.17, color: '#f2d7e2' }); b.pop();
   b.rbox(M.cloth(floralTex('#b0412a', ['#e8b0a0', '#f2d6c0', '#7a2a1a'], 5)), X1 - 0.22, 0.62, 0.1, 0.34, 1.2, 0.03, 0, { rx: 7 }); b.sphere(M.plain('#f08ab0', 0.9), X1 - 0.24, 0.98, 0.17, 0.5, { sx: 0.3, sy: 0.3, sz: 0.1 });
-  b.push(X1 - 0.52, 0, 0.72, 0); stool(b, { w: 0.34, h: 0.42, mat: wood('#2c130d', 0.7) }); b.box(M.plain('#7f9aa0', 0.95), 0.02, 0.42, 0.02, 0.32, 0.48, 0.32, {}); b.pop();
-  /* the east wall: long drapes on a rod before the wide window — the green ones at the ends, the peach ones drawn over its
-     south half and bunched at the north, so one leaf shows; the knob that ties them back on the strip of wall by the corner */
+  b.push(9.22, 0, 0.6, 0); stool(b, { w: 0.34, h: 0.42, mat: wood('#2c130d', 0.7) }); b.box(M.plain('#7f9aa0', 0.95), 0.02, 0.42, 0.02, 0.32, 0.48, 0.32, {}); b.pop();
+  /* the east wall: long drapes on one rod before the door and the window — drawn back from the door to the corner and to
+     the post, the peach ones closed over the window's two southern leaves, a green one at the end; the knob that ties them
+     back on the strip of wall by the south corner */
   { const peach = cloth2(curtainTex('#e9b79a', 4)), green = cloth2(curtainTex('#c9cfae', 5));
     E(b, X1, 0.04);
-    curtain(b, green, 0.0, 0.3, 0.08, 2.28, 0.05, { folds: 5 }); curtain(b, peach, 0.26, 0.66, 0.08, 2.28, 0.075, { folds: 7 });
-    curtain(b, peach, 1.32, 2.12, 0.08, 2.28, 0.075, { folds: 9 }); curtain(b, green, 2.06, 2.42, 0.08, 2.28, 0.05, { folds: 5 });
+    curtain(b, green, 0.0, 0.13, 0.08, 2.28, 0.05, { folds: 3 }); curtain(b, peach, 0.8, 1.0, 0.08, 2.28, 0.075, { folds: 5 });
+    curtain(b, peach, 1.38, 2.14, 0.08, 2.28, 0.075, { folds: 9 }); curtain(b, green, 2.08, 2.44, 0.08, 2.28, 0.05, { folds: 5 });
     b.bar(M.plain('#d9d2c2', 0.5), -0.03, 2.3, 0.07, 2.5, 2.3, 0.07, 0.022, { round: true });
     b.cyl(M.plain('#1c1c1e', 0.5), 2.58, 1.22, 0, 0.018, 0.04, { rx: 90, seg: 8 });
     b.pop();
