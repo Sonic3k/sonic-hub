@@ -20,7 +20,7 @@ import { HOME_PATHS, MomentProvider, momentHref, useMoment } from '../lib/moment
 import { angelsByYear, useMetYears } from '../lib/people';
 
 interface Tab { n: string; to: string; c: string; end?: boolean }
-/* The menu in its groups: time · what is kept · people · play and listen · the sites of their own (Huyền học, Bóng đá, Nơi chốn). */
+/* The menu in its groups: time · what is kept · people · play and listen · the sites of their own (Huyền học, Bóng đá, Hidden Palace, Nơi chốn). */
 const GROUPS: Tab[][] = [
   [{ n: 'Hôm nay', to: '/', c: '--ink', end: true }, { n: 'Dòng thời gian', to: '/timeline', c: '--ink' }],
   [{ n: 'Ảnh', to: '/photos', c: '--photo' }, { n: 'Ký ức', to: '/memories', c: '--memory' }, { n: 'Nhật ký', to: '/journal', c: '--journal' }],

@@ -1,7 +1,9 @@
 /* Portal: the sites of their own that grew out of Sonic Hub — Huyền học (tử vi from grandma's notes), Bóng đá
-   (Fantasy) and Nơi chốn (the places of his life rebuilt in 3D: sonic-hub-world). Each lives at its own address
-   (VITE_MYSTIC_URL, VITE_FOOTBALL_URL, VITE_WORLD_URL); this page only points there: a door each, in its site's
-   colour with a drawing of what is behind it (the twelve houses of a tử vi chart, a pitch, the plan of a home).
+   (Fantasy), Hidden Palace (the things he is curious about, with their numbers: sonic-hidden-palace) and Nơi chốn
+   (the places of his life rebuilt in 3D: sonic-hub-world). Each lives at its own address (VITE_MYSTIC_URL,
+   VITE_FOOTBALL_URL, VITE_PALACE_URL, VITE_WORLD_URL); this page only points there: a door each, in its site's
+   colour with a drawing of what is behind it (the twelve houses of a tử vi chart, a pitch, a palace on its cliff,
+   the plan of a home).
    The old networks (Facebook, Yahoo…) are no longer a site here: they open inside the machines (/pc, /phone). */
 import { useEffect, useState, type ReactNode } from 'react';
 
@@ -22,6 +24,17 @@ const PITCH = (
   </svg>
 );
 
+/* a palace on its cliff: the dome between two towers, the arcade, the falls down the rock */
+const PALACE = (
+  <svg viewBox="0 0 220 200" aria-hidden="true">
+    <path d="M18 199 38 122l22-18h100l20 16 22 79" /><path d="M56 104V92h108v12" /><rect x="78" y="58" width="64" height="34" />
+    <path d="M84 58a26 26 0 0 1 52 0" /><path d="M110 32V20" /><circle cx="110" cy="16" r="3.5" />
+    <rect x="61" y="46" width="13" height="46" /><path d="M58 46l9.5-20L77 46" /><rect x="146" y="46" width="13" height="46" /><path d="M143 46l9.5-20L162 46" />
+    <path d="M88 92V80a5 5 0 0 1 10 0v12M105 92V80a5 5 0 0 1 10 0v12M122 92V80a5 5 0 0 1 10 0v12" />
+    <path d="M151 104v62M156 104v44" />
+  </svg>
+);
+
 const PORTALS: Site[] = [
   {
     key: 'mystic', name: 'Huyền học', open: 'Mở Huyền học', url: import.meta.env.VITE_MYSTIC_URL, env: 'VITE_MYSTIC_URL', mark: CHART,
@@ -32,6 +45,11 @@ const PORTALS: Site[] = [
     key: 'football', name: 'Bóng đá', open: 'Mở Fantasy Football', url: import.meta.env.VITE_FOOTBALL_URL, env: 'VITE_FOOTBALL_URL', mark: PITCH,
     line: 'Fantasy Football: giải đấu, đội hình, bảng điểm.',
     detail: 'Trang quản lý giải và đội của Competition Fantasy.',
+  },
+  {
+    key: 'palace', name: 'Hidden Palace', open: 'Mở Hidden Palace', url: import.meta.env.VITE_PALACE_URL, env: 'VITE_PALACE_URL', mark: PALACE,
+    line: 'Những điều đáng tò mò, có số liệu đi kèm: mô hình Hệ Mặt Trời, bảng xếp hạng Eurovision từ 2004.',
+    detail: 'Song ngữ Việt – Anh. Sinh học trực quan, lịch sử, thời tiết qua các năm: sắp có.',
   },
 ];
 
