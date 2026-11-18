@@ -209,14 +209,14 @@ export function buildKitchen(b, ctx) {
   const mah = wood('#571a15', 0.8), ch = M.chrome(), granite = M.plain('#17181a', 0.25), tiles = M.wallTile();
   const K = P.KIT, A = P.ALC, Wc = P.WC;
   /* The east wall, from the living-room end: the fridge (the silver two-door one of the 2012 photograph, its front level
-     with the jamb of the opening), then the run of cabinets under black stone with the sink and the hob, a tiled pier,
-     and in the south wall, between that pier and the south-west corner, the glazed door to the loggia
+     with the jamb of the opening), then the run of cabinets under black stone, the sink first and the hob at the far end,
+     right up to the south wall. In the south wall a third of a metre of white tiles, then the double door to the loggia
      (video 2:06–2:20, 2:31, 3:08–3:10). */
-  const zr = K.z0 + 0.74, w = 3.3, d = 0.56, h = 0.84;            // where the run starts; its length, depth, height
+  const zr = K.z0 + 0.74, w = K.z1 - zr, d = 0.56, h = 0.84;      // where the run starts; its length, depth, height
   b.box(tiles, K.x1 - 0.012, 0.84, zr, K.x1, 1.62, zr + w, { uv: [0.6, 0.6], uvw: true, cast: false });
   b.box(M.plain('#a8743a', 0.4), K.x1 - 0.014, 1.5, zr, K.x1, 1.55, zr + w, { cast: false });
   b.box(tiles, P.KIT_OPEN.b, 0, K.z0, K.x1, 2.3, K.z0 + 0.012, { uv: [0.6, 0.6], uvw: true, cast: false });      // the return beside the opening
-  b.box(tiles, K.x1 - 0.3, 0, zr + w + 0.04, K.x1, H, K.z1, { uv: [0.6, 0.6], uvw: true, solid: true });        // the pier at the far end
+  b.box(tiles, P.LOG_DOOR.b, 0, K.z1 - 0.012, K.x1, 2.3, K.z1, { uv: [0.6, 0.6], uvw: true, cast: false });      // the south wall beside the door, and behind the hob
   // the fridge, and the wall cupboard over it with the clay jar on top
   E(b, K.x1, K.z0 + 0.04);
   b.box(M.plain('#aeb4b8', 0.35, 0.5), 0, 0.03, 0, 0.62, 1.66, 0.62, { solid: true }); b.box(M.plain('#8f969a', 0.4, 0.5), 0.004, 1.14, 0.62, 0.616, 1.15, 0.626, { cast: false });
@@ -231,7 +231,7 @@ export function buildKitchen(b, ctx) {
   // the run of cabinets: louvred doors, the sink, the two-ring gas hob
   E(b, K.x1, zr);
   cabinet(b, 2.0, h - 0.04, d - 0.02, 5, { mat: mah, louvre: true, handle: 'none' });
-  b.push(2.0, 0, 0, 0); cabinet(b, 1.3, h - 0.04, d - 0.02, 3, { mat: mah, handle: 'none' }); b.pop();
+  b.push(2.0, 0, 0, 0); cabinet(b, w - 2.0, h - 0.04, d - 0.02, 4, { mat: mah, handle: 'none' }); b.pop();
   b.box(granite, -0.01, h - 0.04, 0, w + 0.01, h, d + 0.02, {});
   // sink with drainer
   b.box(M.plain('#b9bcbf', 0.3, 0.85), 0.55, h, 0.08, 1.35, h + 0.006, 0.5, { cast: false }); b.box(M.plain('#6d7074', 0.35, 0.8), 0.6, h + 0.004, 0.12, 0.98, h + 0.008, 0.46, { cast: false });
@@ -241,11 +241,11 @@ export function buildKitchen(b, ctx) {
   b.box(M.plain('#b8324a', 0.6), 0.1, h, 0.14, 0.46, h + 0.08, 0.44, {}); b.sphere(M.plain('#f2f0ea', 0.3), 0.22, h + 0.11, 0.3, 0.5, { sx: 0.2, sy: 0.1, sz: 0.2 }); b.sphere(M.plain('#c9ccd0', 0.3, 0.7), 0.34, h + 0.12, 0.28, 0.5, { sx: 0.18, sy: 0.12, sz: 0.18 });
   bottle(b, '#6fc22e', 0.5, h, 0.08, 0.032, 0.24, '#e8e23a'); bottle(b, '#58b82a', 0.42, h, 0.07, 0.03, 0.22, '#e8e23a'); bottle(b, '#e2c53a', 1.5, h, 0.08, 0.033, 0.23, '#f2d23a');
   // hob
-  b.box(M.plain('#0e0e10', 0.15), 2.05, h, 0.1, 2.8, h + 0.05, 0.5, {});
-  for (const x of [2.24, 2.61]) { b.cyl(M.plain('#2a2a2c', 0.6), x, h + 0.05, 0.28, 0.085, 0.02, { seg: 14 }); for (let i = 0; i < 4; i++) b.rbox(M.plain('#1a1a1c', 0.6), x, h + 0.075, 0.28, 0.2, 0.012, 0.014, i * 45, { cast: false }); b.cyl(M.plain('#c9c9cc', 0.4, 0.5), x, h + 0.01, 0.5, 0.018, 0.03, { rx: 90, seg: 8 }); }
-  b.cyl(M.plain('#c9ccd0', 0.3, 0.8), 2.61, h + 0.085, 0.28, 0.1, 0.1, { seg: 16 }); b.cyl(M.plain('#d8dadc', 0.3, 0.8), 2.61, h + 0.185, 0.28, 0.105, 0.012, { seg: 16 }); b.sphere(M.plain('#1a1a1c', 0.5), 2.61, h + 0.21, 0.28, 0.018, { seg: 8 });
+  b.box(M.plain('#0e0e10', 0.15), 2.5, h, 0.1, 3.25, h + 0.05, 0.5, {});
+  for (const x of [2.69, 3.06]) { b.cyl(M.plain('#2a2a2c', 0.6), x, h + 0.05, 0.28, 0.085, 0.02, { seg: 14 }); for (let i = 0; i < 4; i++) b.rbox(M.plain('#1a1a1c', 0.6), x, h + 0.075, 0.28, 0.2, 0.012, 0.014, i * 45, { cast: false }); b.cyl(M.plain('#c9c9cc', 0.4, 0.5), x, h + 0.01, 0.5, 0.018, 0.03, { rx: 90, seg: 8 }); }
+  b.cyl(M.plain('#c9ccd0', 0.3, 0.8), 3.06, h + 0.085, 0.28, 0.1, 0.1, { seg: 16 }); b.cyl(M.plain('#d8dadc', 0.3, 0.8), 3.06, h + 0.185, 0.28, 0.105, 0.012, { seg: 16 }); b.sphere(M.plain('#1a1a1c', 0.5), 3.06, h + 0.21, 0.28, 0.018, { seg: 8 });
   // seasonings against the wall
-  const R = rng(13); for (let i = 0; i < 6; i++) bottle(b, ['#5a2a1a', '#e8c23a', '#2a2a2a', '#b83a2a', '#f2ead2', '#3a5a2a'][i], 2.95 + (i % 3) * 0.08, h, 0.07 + ((i / 3) | 0) * 0.08, 0.022 + R() * 0.008, 0.14 + R() * 0.08, '#c93a2a');
+  const R = rng(13); for (let i = 0; i < 6; i++) bottle(b, ['#5a2a1a', '#e8c23a', '#2a2a2a', '#b83a2a', '#f2ead2', '#3a5a2a'][i], 3.36 + (i % 3) * 0.08, h, 0.07 + ((i / 3) | 0) * 0.08, 0.022 + R() * 0.008, 0.14 + R() * 0.08, '#c93a2a');
   b.solid(0, 0, 0, w, h, d);
   // wall cupboards with glass doors, the plate rack hung under them, the hood
   const uy = 1.62, ud = 0.33;
@@ -261,26 +261,29 @@ export function buildKitchen(b, ctx) {
   for (const x of [0.5, 1.6]) { b.bar(ch, x, 1.42, 0.05, x, 1.62, 0.05, 0.008, { round: true }); b.bar(ch, x, 1.42, 0.3, x, 1.62, 0.3, 0.008, { round: true }); }
   for (let i = 0; i < 9; i++) b.cyl(M.plain('#f3f2ec', 0.25), 0.58 + i * 0.058, 1.53, 0.17, 0.1, 0.012, { rz: 90, seg: 16 });
   for (let i = 0; i < 5; i++) b.sphere(M.plain('#f1efe8', 0.25), 1.24 + i * 0.07, 1.5, 0.17, 0.5, { sx: 0.06, sy: 0.14, sz: 0.14 });
-  b.box(M.plain('#231512', 0.5), 2.05, 1.46, 0, 2.8, 1.62, 0.42, {});
+  b.box(M.plain('#231512', 0.5), 2.5, 1.46, 0, 3.25, 1.62, 0.42, {});
   for (let i = 0; i < 5; i++) { b.bar(ch, 1.7 + i * 0.06, 1.3, 0.012, 1.7 + i * 0.06, 1.48, 0.012, 0.01, { round: true }); }
   b.pop();
   blob(b, K.x1 - 0.58, zr, K.x1, zr + w, 0.4);
 
-  // the west side: the glass-topped table with the food cover against the screen wall, a chair at its near end
-  W(b, K.x0, 6.35); table(b, 1.2, 0.76, 0.7, { mat: wood('#3d1711', 0.75), glass: true, leg: 0.055 });
-  b.box(M.plain('#efe6cc', 0.7), 0.32, 0.77, 0.14, 0.86, 0.94, 0.56, {}); b.box(M.plain('#e6dcc0', 0.7), 0.3, 0.77, 0.12, 0.88, 0.8, 0.58, { cast: false });
-  for (let x = 0.35; x < 0.85; x += 0.05) b.box(M.plain('#cfc4a4', 0.8), x, 0.8, 0.135, x + 0.012, 0.93, 0.565, { cast: false });
-  b.cyl(M.plain('#f3f1ea', 0.3), 1.02, 0.77, 0.32, 0.06, 0.018, { seg: 14 }); b.rbox(M.plain('#f3f1ea', 0.4), 1.0, 0.8, 0.42, 0.2, 0.012, 0.05, 30, {});
+  /* the west side: the glass-topped table stands with its short end to the wall (0.8 × 1.25: video 2:10, 2:21, 3:09), the
+     food cover and the day's tins on it, a chair pushed in on its north side with a cloth over the back. South of it, in
+     the corner by the door, the big fridge of 2013 stood later — not drawn, it is outside these years */
+  W(b, K.x0, 6.6); table(b, 0.8, 0.76, 1.25, { mat: wood('#3d1711', 0.75), glass: true, leg: 0.055 });
+  b.box(M.plain('#efe6cc', 0.7), 0.13, 0.77, 0.22, 0.67, 0.94, 0.64, {}); b.box(M.plain('#e6dcc0', 0.7), 0.11, 0.77, 0.2, 0.69, 0.8, 0.66, { cast: false });
+  for (let x = 0.16; x < 0.66; x += 0.05) b.box(M.plain('#cfc4a4', 0.8), x, 0.8, 0.215, x + 0.012, 0.93, 0.645, { cast: false });
+  b.cyl(M.plain('#f3f1ea', 0.3), 0.44, 0.77, 0.98, 0.06, 0.018, { seg: 14 }); b.rbox(M.plain('#f3f1ea', 0.4), 0.42, 0.8, 0.86, 0.2, 0.012, 0.05, 30, {});
+  b.box(M.plain('#b8322a', 0.5), 0.5, 0.77, 0.03, 0.72, 0.9, 0.17, {}); b.box(M.plain('#f1eee6', 0.6), 0.2, 0.77, 0.03, 0.44, 0.86, 0.19, {}); b.cyl(M.plain('#2a2a2c', 0.4), 0.1, 0.77, 0.1, 0.06, 0.16, { seg: 12 });
   b.pop();
-  N(b, K.x0 + 0.12, 4.64); chair(b, { mat: wood('#3d1711', 0.7) }); b.box(M.plain('#f3f3f0', 0.95), -0.015, 0.55, -0.03, 0.435, 0.98, 0.035, {}); b.pop();
-  blob(b, K.x0, 5.15, K.x0 + 0.7, 6.35, 0.42);
-  // on the floor: the blue basket, a mat by the loggia door
-  b.box(M.plain('#3a9fd0', 0.6), 2.02, 0, 7.72, 2.32, 0.16, 7.92, {}); b.box(M.plain('#6fbf3a', 0.7), 2.05, 0.1, 7.75, 2.29, 0.17, 7.89, { cast: false });
-  b.box(M.plain('#8a7a5a', 1), 2.86, 0, 7.5, 3.46, 0.012, 7.95, { cast: false });
-  // tube light and a socket on the screen wall; the pull-cord and the switch on the wall beside the opening
+  N(b, K.x0 + 0.42, 5.33); chair(b, { mat: wood('#3d1711', 0.7) }); b.box(M.plain('#f3f3f0', 0.95), -0.015, 0.55, -0.03, 0.435, 0.98, 0.035, {}); b.pop();
+  blob(b, K.x0, 5.8, K.x0 + 1.25, 6.6, 0.42);
+  // on the floor: the blue basket at the counter's end, a mat by the loggia door
+  b.box(M.plain('#3a9fd0', 0.6), 3.18, 0, 7.66, 3.48, 0.16, 7.88, {}); b.box(M.plain('#6fbf3a', 0.7), 3.21, 0.1, 7.69, 3.45, 0.17, 7.85, { cast: false });
+  b.box(M.plain('#8a7a5a', 1), 2.3, 0, 7.5, 2.9, 0.012, 7.95, { cast: false });
+  // tube light and a socket on the west wall; the pull-cord and the switch on the wall beside the opening
   b.box(M.plain('#e8e6de', 0.5), K.x0, 2.42, 5.2, K.x0 + 0.05, 2.47, 6.4, { cast: false }); b.cyl(ctx.lampMat('#f4f8ff', 2.4, 0.95), K.x0 + 0.06, 2.4, 5.25, 0.016, 1.1, { rx: 90, seg: 8, cast: false });
-  switchPlate(b, K.x0, 1.25, 5.02, '+x'); switchPlate(b, 1.62, 1.3, K.z0, '+z');
-  b.box(M.plain('#e9e6dc', 0.5), 1.38, 2.3, K.z0, 1.46, 2.38, K.z0 + 0.03, { cast: false }); b.bar(M.plain('#d9d6cc', 0.8), 1.42, 2.3, K.z0 + 0.02, 1.42, 1.62, K.z0 + 0.02, 0.004, { cast: false });
+  switchPlate(b, K.x0, 1.25, 5.02, '+x'); switchPlate(b, 1.8, 1.3, K.z0, '+z');
+  b.box(M.plain('#e9e6dc', 0.5), 1.57, 2.3, K.z0, 1.65, 2.38, K.z0 + 0.03, { cast: false }); b.bar(M.plain('#d9d6cc', 0.8), 1.61, 2.3, K.z0 + 0.02, 1.61, 1.62, K.z0 + 0.02, 0.004, { cast: false });
 
   /* the washing alcove, behind the fish-tank wall and open to the kitchen on its east side: on its west wall the washing
      machine and the basin under its mirror; the bathroom door is in its south wall (video 2:21–2:26) */
@@ -296,11 +299,12 @@ export function buildKitchen(b, ctx) {
     b.cyl(M.plain('#6fbf5a', 0.6), 0.34, 0, 4.5, 0.17, 0.14, { seg: 14, r2: 0.2 }); b.cyl(M.plain('#5a8fc0', 0.6), 0.36, 0.14, 4.5, 0.14, 0.1, { seg: 14, r2: 0.17 });
     b.box(M.plain('#2f6fb8', 0.6), 0.68, 0, 3.7, 0.88, 0.26, 3.84, {});
     // cloths on a dark rail on the north wall
-    b.box(M.plain('#3a2a22', 0.7), 1.0, 1.5, A.z0, 1.62, 1.54, A.z0 + 0.03, { cast: false });
-    for (const [x, c, len] of [[1.08, '#e8a0b8', 0.42], [1.34, '#a9d8ea', 0.5]]) b.box(M.plain(c, 0.95), x, 1.5 - len, A.z0 + 0.03, x + 0.2, 1.5, A.z0 + 0.045, { cast: false });
+    b.box(M.plain('#3a2a22', 0.7), 0.52, 1.5, A.z0, 1.14, 1.54, A.z0 + 0.03, { cast: false });
+    for (const [x, c, len] of [[0.6, '#e8a0b8', 0.42], [0.86, '#a9d8ea', 0.5]]) b.box(M.plain(c, 0.95), x, 1.5 - len, A.z0 + 0.03, x + 0.2, 1.5, A.z0 + 0.045, { cast: false });
   }
   /* the bathroom, south of the alcove: purple-grey tiles to waist height under a wavy border, white above; the toilet against
-     the far wall, the high window beside it (an outside wall: bottles on its sill), the water heater over the toilet (video 2:26–2:29) */
+     the far wall near the corner, the high window over it and to the east (an outside wall: bottles on its sill), the water
+     heater on the west wall above (video 2:26–2:29) */
   {
     const wh = M.plain('#f2f2ee', 0.25), t = 0.012, wn = P.WC_WIN, dr = P.WC_DOOR;
     const dado = new THREE.MeshStandardMaterial({ map: tileTex('#5b4e66', '#3a3142', 4, 0.06, 12), roughness: 0.3 }), upper = M.whiteTile();
@@ -312,18 +316,18 @@ export function buildKitchen(b, ctx) {
     slab(0, Wc.z0, t, Wc.z1); slab(Wc.x1 - t, Wc.z0, Wc.x1, Wc.z1);
     slab(0, Wc.z0, dr.a - 0.02, Wc.z0 + t); slab(dr.b + 0.02, Wc.z0, Wc.x1, Wc.z0 + t); slab(dr.a - 0.02, Wc.z0, dr.b + 0.02, Wc.z0 + t, dr.y1 + 0.02);
     slab(0, Wc.z1 - t, wn.a, Wc.z1); slab(wn.b, Wc.z1 - t, Wc.x1, Wc.z1); slab(wn.a, Wc.z1 - t, wn.b, Wc.z1, 0, wn.y0); slab(wn.a, Wc.z1 - t, wn.b, Wc.z1, wn.y1);
-    S(b, 0.86, Wc.z1 - 0.02);
+    S(b, 0.66, Wc.z1 - 0.02);
     b.box(wh, 0.04, 0.38, 0, 0.44, 0.78, 0.18, {}); b.cyl(wh, 0.24, 0, 0.38, 0.14, 0.38, { seg: 14, r2: 0.18 }); b.cyl(wh, 0.24, 0.38, 0.4, 0.2, 0.04, { seg: 16 }); b.cyl(M.plain('#e4e4de', 0.3), 0.24, 0.42, 0.4, 0.2, 0.025, { seg: 16 });
     b.sphere(M.plain('#f2b8d0', 0.9), 0.24, 0.87, 0.09, 0.5, { sx: 0.3, sy: 0.17, sz: 0.15 });
     b.solid(0, 0, 0, 0.48, 0.8, 0.62); b.pop();
-    b.cyl(wh, 0.28, 2.08, Wc.z1 - 0.2, 0.16, 0.6, { rz: -90, seg: 16 }); b.bar(ch, 0.82, 1.92, Wc.z1 - 0.06, 0.82, 1.2, Wc.z1 - 0.04, 0.008, {});
-    b.bar(ch, 0.05, 0.8, 7.55, 0.05, 0.5, 7.62, 0.01, { round: true }); b.cyl(M.plain('#c9382e', 0.6), 1.5, 0, 6.3, 0.12, 0.2, { seg: 12, r2: 0.14 });
-    stool(b.push(1.36, 0, 7.36, 0), { w: 0.26, h: 0.24, mat: M.plain('#b8322a', 0.6) }); b.pop();
+    b.cyl(wh, 0.19, 2.1, Wc.z1 - 0.74, 0.16, 0.6, { rx: 90, seg: 16 }); b.bar(ch, 0.1, 1.94, Wc.z1 - 0.2, 0.1, 1.2, Wc.z1 - 0.2, 0.008, {});
+    b.bar(ch, 0.05, 0.8, 7.55, 0.05, 0.5, 7.62, 0.01, { round: true }); b.cyl(M.plain('#c9382e', 0.6), 0.98, 0, 6.55, 0.12, 0.2, { seg: 12, r2: 0.14 });
+    stool(b.push(0.9, 0, 7.3, 0), { w: 0.26, h: 0.24, mat: M.plain('#b8322a', 0.6) }); b.pop();
     for (const [dx, c, hh] of [[0.1, '#3a6fd8', 0.15], [0.22, '#e8e2d2', 0.12], [0.36, '#3a8fd0', 0.16], [0.5, '#f2f0ea', 0.11]]) bottle(b, c, wn.a + dx, wn.y0, Wc.z1 + 0.05, 0.024, hh);
-    b.sphere(ctx.lampMat('#fff4dc', 1.8, 0.9), 0.92, H - 0.07, 6.7, 0.05, { seg: 10, cast: false });
+    b.sphere(ctx.lampMat('#fff4dc', 1.8, 0.9), 0.62, H - 0.07, 6.7, 0.05, { seg: 10, cast: false });
   }
-  /* The loggia, outside the kitchen door and on east along the big room's wall (video 2:31–3:07). At its west end, by the
-     door: the steel rack with the basins and the oven. Then, going east: a stainless water tank and the gas bottle by the
+  /* The loggia, outside the kitchen door and on east along the big room's wall (video 2:31–3:07). At its west end, against
+     the house wall beside the door: the steel rack with the basins and the oven. Then, going east: a stainless water tank and the gas bottle by the
      wall, red hangers on a rail above them, the bent steel clothes rail with its hangers, the clay jars at the far end. */
   {
     const L = P.LOG, st = M.plain('#c9ccd0', 0.3, 0.8);
@@ -364,20 +368,21 @@ export function buildOutsideRooms(b, ctx) {
     b.bar(M.plain('#c9a45a', 0.8), -0.32, 0, 0.32, -0.26, 1.25, 0.26, 0.022, { round: true }); b.cyl(M.plain('#b9963a', 0.9), -0.32, 0, 0.32, 0.09, 0.22, { seg: 8, r2: 0.03 });
     b.box(M.plain('#f1efe8', 0.7), -0.9, 0, 2.6, -0.5, 0.3, 3.1, {});
   }
-  /* the cage outside the parents' window (real metres): the air conditioner's outdoor unit at its north end, the folding
-     ladder stood against the bars, a couple of pots, the flag tied to a post and hanging out over the street */
+  /* the parents' balcony in its cage (real metres): the door comes out at its north end; under the window the air
+     conditioner's outdoor unit, at the south end the folding ladder stood against the bars, a couple of pots, the flag
+     tied to a post and hanging out over the street */
   {
     b.real = true;
     const x0 = P.BE.x0, x1 = P.BE.x1, z0 = P.sz(P.BE.z0), z1 = P.sz(P.BE.z1), al = M.plain('#b9bcc0', 0.35, 0.8);
     const flag = new THREE.MeshStandardMaterial({ map: plateTex(192, 128, (g, w, h) => { g.fillStyle = '#d42a22'; g.fillRect(0, 0, w, h); g.fillStyle = '#f7d23a'; g.beginPath(); for (let i = 0; i < 10; i++) { const a = -Math.PI / 2 + i * Math.PI / 5, r = i % 2 ? 13 : 32; g.lineTo(w / 2 + Math.cos(a) * r, h / 2 + Math.sin(a) * r); } g.closePath(); g.fill(); }), roughness: 0.9, side: THREE.DoubleSide });
     b.bar(M.plain('#c9a45a', 0.7), x1 - 0.05, 1.05, z0 + 0.66, x1 + 0.8, 2.2, z0 + 0.6, 0.024, { round: true });
     b.push(x1 + 0.3, 1.52, z0 + 0.63, 0); b.quad(flag, '+z', 0.27, 0.2, 0, 0.75, 0.5, { segA: 10, wave: [9, 0.035], ry: 0 }); b.pop();
-    b.box(M.plain('#e6e5df', 0.5), x0 + 0.06, 0.08, z0 + 0.2, x0 + 0.38, 0.66, z0 + 1.0, {}); b.cyl(M.plain('#2c2e30', 0.6), x0 + 0.38, 0.37, z0 + 0.52, 0.2, 0.012, { rz: -90, seg: 18, cast: false });
-    for (const y of [0.16, 0.26, 0.48, 0.58]) b.box(M.plain('#c4c3bc', 0.6), x0 + 0.381, y, z0 + 0.78, x0 + 0.386, y + 0.05, z0 + 0.96, { cast: false });
+    b.box(M.plain('#e6e5df', 0.5), x0 + 0.06, 0.08, z0 + 1.12, x0 + 0.38, 0.66, z0 + 1.92, { solid: true }); b.cyl(M.plain('#2c2e30', 0.6), x0 + 0.38, 0.37, z0 + 1.44, 0.2, 0.012, { rz: -90, seg: 18, cast: false });
+    for (const y of [0.16, 0.26, 0.48, 0.58]) b.box(M.plain('#c4c3bc', 0.6), x0 + 0.381, y, z0 + 1.7, x0 + 0.386, y + 0.05, z0 + 1.88, { cast: false });
     for (const z of [z1 - 0.5, z1 - 0.12]) { b.bar(al, x1 - 0.5, 0, z, x1 - 0.12, 1.5, z, 0.03); b.bar(al, x1 - 0.72, 0, z, x1 - 0.14, 1.5, z, 0.026); }
     for (let i = 1; i <= 4; i++) { const t = i / 5; b.box(al, x1 - 0.5 + 0.38 * t - 0.05, 1.5 * t, z1 - 0.5, x1 - 0.5 + 0.38 * t + 0.05, 1.5 * t + 0.02, z1 - 0.12, {}); }
     b.box(M.plain('#2a2a2c', 0.6), x1 - 0.34, 1.5, z1 - 0.52, x1 - 0.06, 1.53, z1 - 0.1, {});
-    pot(b, x0 + 0.2, 0, z1 - 0.3, { r: 0.13, h: 0.2, n: 12, ph: 0.2, color: '#a8553a' }); pot(b, x0 + 0.62, 0, z0 + 1.3, { r: 0.1, h: 0.16, n: 9, ph: 0.14, color: '#a8553a', seed: 8 });
+    pot(b, x0 + 0.2, 0, z1 - 0.3, { r: 0.13, h: 0.2, n: 12, ph: 0.2, color: '#a8553a' }); pot(b, x1 - 0.18, 0, z0 + 1.62, { r: 0.1, h: 0.16, n: 9, ph: 0.14, color: '#a8553a', seed: 8 });
     b.real = false;
   }
   // gallery: two brooms by the steel rail at its end, a bicycle further along the wall, the bulb under its roof

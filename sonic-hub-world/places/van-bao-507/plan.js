@@ -5,18 +5,18 @@
           ▲ the gallery (hành lang) runs north from the front door, along the west face of the block: 506, 505 … the stairs
           │                          (north of here: flat 506)
         ┌─[main door]────────────────────┬────────────────────────────────┐
-   west │ LIVING   sofa N · TV on the E  │ wardrobe   PARENTS             ║ the cage over
-   balc.│ wall · fish tank on the S wall ├──┐  bed N · desk SE     (wide  ║ the street
-        │ [tank] ▪     (plain wall)      │LOBBY D2                 window)║
-        ├─────────┬──[ opening ]─────────┴─D1─┴────────────────────────────────┐
-        │ WASHING ·                 ┃ desk       ║ wardrobes  BIG ROOM: books  │
-        │ basin W ·  KITCHEN        ┃ (his       ║ (face E)   and piano (N),   │ wide
-        ├─[door]──┤  table W        ┃  corner)   ║            his sister's     │ window
-        │ BATH    │  fridge, sink,  ┃ bed        ║ study      bed and desk (S) │
-        │ WC S    │  hob on E wall  ┃            ║ desk                        │
-        └[window]─┴──[glazed door]──┸━━━━━━[win]━╩━[win]━━━━━━━━━━━━━━━━━━━━━━━┘   ← one straight south face
-                  │ LOGGIA (barred; from the kitchen's  │
-                  └ west wall to beside his window) ────┘
+   west │ LIVING   sofa N · TV on the E  │ wardrobe   PARENTS         [door]  the balcony
+   balc.│ wall · fish tank on the S wall ├──┐  bed N · desk SE     (wide  ║ in its cage,
+        │ [tank] ▪     (plain wall)      │LOBBY D2                 window)║ over the street
+        ├──────┬─────[ opening ]─────────┴─D1─┴────────────────────────────────┐
+        │WASH- ·                    ┃ desk       ║ wardrobes  BIG ROOM: books  │
+        │ING   ·     KITCHEN        ┃ (his       ║ (face E)   and piano (N),   │ wide
+        ├[door]┤ table W            ┃  corner)   ║            his sister's     │ window
+        │ BATH │      fridge, sink, ┃ bed        ║ study      bed and desk (S) │
+        │ WC S │      hob on E wall ┃            ║ desk                        │
+        └[win]─┴─────[double door]──┸━━━━━━[win]━╩━[win]━━━━━━━━━━━━━━━━━━━━━━━┘   ← one straight south face
+               │ LOGGIA (barred; from the kitchen's     │
+               └ west wall to beside his window) ───────┘
 
    THE DRAWING AND THE SURVEY. The flat was first drawn by eye, and the re-measuring of 18 November 2026 — with things
    of known size in the pictures: a 1.2 m fluorescent tube, the kitchen counter, half-metre floor tiles, the sofa —
@@ -75,16 +75,18 @@ export const LOBBY = { x0: LIV.x1, x1: LIV.x1 + 0.7, z0: 2.3, z1: 3.5, soffit: d
 export const NICHE = { x0: LIV.x1 + 0.12, x1: LOBBY.x1 + 0.12, z0: 0, z1: 2.18 };   // the parents' room runs on behind the TV wall: wardrobe and shelves stand here
 export const PAR = { x0: LOBBY.x1 + 0.12, x1: 10.2, z0: 0, z1: 3.5 };                 // really 4.13 × 2.8; its east wall is a guess tied to the cage's depth
 /* south of the living room's west half: the washing alcove behind the fish-tank wall (open to the kitchen on its east side
-   as far as ALC_MOUTH), the bathroom south of it, and the kitchen; the loggia is outside the kitchen and runs on east */
-export const ALC = { x0: 0, x1: 1.85, z0: 3.62, z1: 5.6 };
-export const ALC_MOUTH = 4.9;     // the kitchen's west wall (x 1.85…1.95) starts here and runs south: it hides the bathroom door from the table
-export const WC = { x0: 0, x1: 1.85, z0: 5.72, z1: 8.0 };
-export const KIT = { x0: 1.95, x1: 4.1, z0: 3.62, z1: 8.0 };
+   as far as ALC_MOUTH), the bathroom south of it, and the kitchen; the loggia is outside the kitchen and runs on east.
+   The kitchen is 2.75 wide (video 2:10: a fridge 0.75 deep stands against its west wall with its front 2.0 m from the
+   east wall; the table, the chair and the walk past them say the same), which leaves the alcove and the bathroom 1.25 */
+export const ALC = { x0: 0, x1: 1.25, z0: 3.62, z1: 5.6 };
+export const ALC_MOUTH = 4.9;     // the kitchen's west wall (x 1.25…1.35) starts here and runs south: it hides the bathroom door from the table
+export const WC = { x0: 0, x1: ALC.x1, z0: 5.72, z1: 8.0 };
+export const KIT = { x0: ALC.x1 + 0.1, x1: 4.1, z0: 3.62, z1: 8.0 };
 export const KIT_WALL = 4.4;      // the wall between kitchen and big room runs from KIT.x1 to here (thick: a guess, see EVIDENCE.md)
 export const BIG = { x0: KIT_WALL, x1: 10.6 + EAST, z0: 3.62, z1: 8.0 };   // as deep as the kitchen: their south walls are one line
-export const LOG = { x0: 1.95, x1: 4.94 + EAST, z0: 8.22, z1: 9.3 };        // hung on the south face: from the kitchen's west wall to beside his window
+export const LOG = { x0: KIT.x0, x1: 4.94 + EAST, z0: 8.22, z1: 9.3 };      // hung on the south face: from the kitchen's west wall to beside his window
 export const BW = { x0: -1.2, x1: -0.22, z0: 0.22, z1: 3.42 };    // the west balcony: as long as the room is wide, less its two cheeks
-export const BE = { x0: PAR.x1 + T, x1: 10.6 + EAST, z0: 0.2, z1: 3.3 };            // the steel cage outside the parents' window: about a metre deep (video 3:58, 4:29)
+export const BE = { x0: PAR.x1 + T, x1: 10.6 + EAST, z0: 0.1, z1: 3.3 };            // the parents' balcony, closed in by a steel cage: about a metre deep (video 3:58, 4:29)
 export const COR = { x0: -0.02, x1: 1.78, z0: -18, z1: -0.22 };   // the gallery: runs north from the front door
 
 /* openings (a…b along the wall, y0…y1) */
@@ -93,15 +95,22 @@ export const BALC_DOOR = { a: dz(0.56), b: dz(2.68), y1: dy(2.31), tr: dy(2.06) 
 export const D1 = { a: LIV.x1 + 0.02, b: LOBBY.x1, y1: 2.04 };     // big room, in the wall z 3.5…3.62, along x: it fills the lobby's south side, its frame starting at the TV wall's line
 export const D2 = { a: dz(2.0), b: dz(2.7), y1: 2.04 };           // parents, in the lobby's east wall (x LOBBY.x1 … PAR.x0), along z; the doors here are narrow, 0.7, their frames 2.05 high
 export const KIT_OPEN = { a: 2.05, b: 3.45, y1: 2.1 };             // living room → kitchen, in the wall z 3.5…3.62, along x: 1.4 wide, its head level with the door frames (2.05)
-export const WC_DOOR = { a: 0.42, b: 1.12, y1: 2.0 };              // bathroom, in the wall z 5.6…5.72, along x (hinged on the east jamb, opens in)
-export const LOG_DOOR = { a: 2.7, b: 3.52, y1: dy(2.1) };          // glazed door to the loggia, in the south wall (z 8.0…8.22), along x; its frame ends at 2.07
+export const WC_DOOR = { a: 0.4, b: 1.1, y1: 2.0 };                // bathroom, in the wall z 5.6…5.72, along x (hinged on the east jamb, opens in); a third of a metre of tiled wall west of it (video 2:27)
+/* the door to the loggia, in the south wall (z 8.0…8.22), along x: two leaves in an opening a metre wide. Its east post is
+   0.95 m from the east wall — the counter, then a third of a metre of white tiles (video 2:10) — and it reaches to where
+   the 2013 fridge stood, 0.7 m short of the west wall */
+export const LOG_DOOR = { a: 2.08, b: 3.12, y1: dy(2.1) };
 /* the big room's south window: the row of wardrobes stands against its middle, so one pair of leaves lights his corner
    and the other his sister's side (in the south wall, along x) */
 export const S_WIN_W = { a: 5.12 + EAST, b: 5.83 + EAST, y0: 0.95, y1: 2.25 };
 export const S_WIN_E = { a: 6.31 + EAST, b: 7.02 + EAST, y0: 0.95, y1: 2.25 };
 export const BIG_WIN = { a: 4.1, b: 6.9, y0: 0.88, y1: 2.2 };       // the wide window, in the east wall, along z
-export const PAR_WIN = { a: dz(0.3), b: dz(2.35), y0: 0.85, y1: dy(2.2) };   // the parents' wide window, in the east wall, along z: a sill and a wall under it, no door (video 3:52–3:57)
-export const WC_WIN = { a: 0.95, b: 1.55, y0: 1.55, y1: 2.2 };     // high in the bathroom's south wall (z 8.0…8.22), an outside wall; along x
+/* the parents' east wall, along z. From the north corner: the DOOR to the balcony (the owner: "phòng bố mẹ phải có cửa
+   đi ra ban công ngoài"; in the 2013 video a long curtain hangs before it and only a strip of its glass shows beside the
+   window frame, 3:53), a post, then the WINDOW of three leaves on a sill, and half a metre of wall to the south corner */
+export const PAR_DOOR = { a: dz(0.18), b: dz(0.88), y1: dy(2.2), tr: dy(2.02) };   // tr: where its fanlight starts
+export const PAR_WIN = { a: dz(0.95), b: dz(2.33), y0: 0.85, y1: dy(2.2) };
+export const WC_WIN = { a: 0.45, b: 1.05, y0: 1.55, y1: 2.2 };     // high in the bathroom's south wall (z 8.0…8.22), an outside wall; along x: over the toilet and east of it (video 2:27)
 
 /* the row of wardrobes that cuts his corner off the big room: one unit deep, doors to the east, the study desk in a
    niche at its south end */
@@ -113,9 +122,10 @@ export const VIEWS = {
   'goc-may-tinh': { name: 'Góc máy tính', pose: [4.95 + EAST, 1.4, sz(4.5), 267, -19] },
   'phong-lon': { name: 'Phòng lớn', pose: [7.3 + EAST, 1.52, sz(4.25), 96, -6] },
   'bep': { name: 'Bếp', pose: [2.75, 1.52, 2.6, 172, -8] },
-  'cho-giat': { name: 'Chỗ giặt, nhà tắm', pose: [1.5, 1.52, sz(4.3), 218, -9] },
-  'lo-gia': { name: 'Lô gia', pose: [3.2, 1.52, sz(8.98), 92, -8] },
+  'cho-giat': { name: 'Chỗ giặt, nhà tắm', pose: [1.62, 1.52, sz(4.3), 236, -9] },
+  'lo-gia': { name: 'Lô gia', pose: [3.42, 1.52, sz(8.98), 92, -8] },
   'phong-bo-me': { name: 'Phòng bố mẹ', pose: [6.45, 1.52, 2.42, 58, -6] },
+  'ban-cong-dong': { name: 'Ban công phòng bố mẹ', pose: [10.9, 1.52, 0.56, 118, -16] },
   'ban-cong': { name: 'Ban công', pose: [-0.62, 1.52, 1.0, 292, -10] },
   'hanh-lang': { name: 'Hành lang', pose: [0.95, 1.52, -4.6, 176, -5] },
 };

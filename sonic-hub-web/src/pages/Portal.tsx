@@ -62,7 +62,7 @@ const WORLD_URL = (import.meta.env.VITE_WORLD_URL ?? 'https://sonic-hub-world-pr
 interface Plan { box: [number, number]; rooms: [number, number, number, number][] }
 interface Place { id: string; title: string; years: { from: number; to: number } | null; plan: Plan | null }
 /* the plan drawn until the site has answered: flat 507, the first place built */
-const HOME: Plan = { box: [1260, 860], rooms: [[120, 0, 525, 280], [645, 184, 70, 96], [657, 0, 70, 174], [727, 0, 413, 280], [315, 292, 215, 438], [560, 292, 700, 438], [120, 292, 185, 198], [120, 502, 185, 228], [315, 752, 379, 108], [0, 18, 98, 256], [1162, 16, 98, 248]] };
+const HOME: Plan = { box: [1260, 860], rooms: [[120, 0, 525, 280], [645, 184, 70, 96], [657, 0, 70, 174], [727, 0, 413, 280], [255, 292, 275, 438], [560, 292, 700, 438], [120, 292, 125, 198], [120, 502, 125, 228], [255, 752, 439, 108], [0, 18, 98, 256], [1162, 8, 98, 256]] };
 const planMark = (p: Plan) => (
   <svg viewBox={`-6 -6 ${p.box[0] + 12} ${p.box[1] + 12}`} aria-hidden="true">
     {p.rooms.map(([x, y, w, h], i) => <rect key={i} x={x} y={y} width={w} height={h} vectorEffect="non-scaling-stroke" />)}

@@ -22,7 +22,7 @@ const D = (x, y, z) => [x, P.sy(y), P.sz(z)];
 const light = {
   sun: [1, -0.135, -0.05],                                   // from the west, 8° above the horizon, drifting a little north
   shadow: { center: [5.4, 1.45, -1.3], left: -11.8, right: 11.8, top: 3.6, bottom: -3.4, near: 6, far: 64 },   // the flat and the near half of the gallery
-  lamps: { living: [3.4, 2.28, 1.4, 9], kitchen: [...D(3.0, 2.55, 5.8), 7.5], bath: [...D(0.92, 2.5, 6.6), 4.5], nook: [...D(4.7 + E, 2.45, 5.9), 6.5], big: [...D(8.5 + E, 2.5, 5.7), 8.5], parents: [8.1, 2.28, 1.4, 8], gallery: [...D(0.9, 2.55, -3.2), 9], screen: [...D(4.25 + E, 1.05, 4.3), 2.6] },
+  lamps: { living: [3.4, 2.28, 1.4, 9], kitchen: [...D(2.75, 2.55, 5.8), 7.5], bath: [...D(0.62, 2.5, 6.6), 4.5], nook: [...D(4.7 + E, 2.45, 5.9), 6.5], big: [...D(8.5 + E, 2.5, 5.7), 8.5], parents: [8.1, 2.28, 1.4, 8], gallery: [...D(0.9, 2.55, -3.2), 9], screen: [...D(4.25 + E, 1.05, 4.3), 2.6] },
   hours: {
     chieu: {
       sky: { top: '#5d86c4', mid: '#c9b9c0', horizon: '#ffc98f', ground: '#6a6058', sun: '#fff1c8', glow: '#ff9a4a', stars: 0 },
@@ -41,7 +41,7 @@ const light = {
 };
 
 /* The walk the tour takes, in the order of the 2013 video: his corner, the big room, living room, kitchen, loggia,
-   the parents' room and its window over the street, then out to the gallery and back in by the front door.
+   the parents' room and out through its door to the balcony over the street, then the gallery and back in by the front door.
    A key is { p: [x, y, z], h: heading, pitch, t: seconds to get there, cut?: jump instead of walking, label? }. */
 const tour = [
   { p: D(4.8 + E, 1.22, 4.52), h: 266, pitch: -14, t: 0.01, cut: true, label: 'Góc máy tính' },
@@ -64,18 +64,20 @@ const tour = [
   { p: [2.35, 1.52, 2.0], h: 238, pitch: -4, t: 4.0 },
   { p: [2.75, 1.52, 2.5], h: 178, pitch: -6, t: 3.0 },
   { p: D(2.95, 1.52, 4.5), h: 172, pitch: -10, t: 3.2, label: 'Bếp' },
-  { p: D(2.5, 1.52, 4.3), h: 252, pitch: -8, t: 2.6, label: 'Chỗ giặt, nhà tắm' },
-  { p: D(1.25, 1.52, 4.6), h: 192, pitch: -7, t: 3.2 },
-  { p: D(2.6, 1.52, 4.35), h: 140, pitch: -6, t: 3.0 },
-  { p: D(3.05, 1.52, 6.4), h: 180, pitch: -4, t: 3.0 },
-  { p: D(3.13, 1.52, 7.6), h: 182, pitch: -4, t: 2.2 },
-  { p: D(3.2, 1.52, 8.9), h: 110, pitch: -6, t: 2.6, label: 'Lô gia' },
-  { p: D(4.2, 1.52, 8.98), h: 92, pitch: -8, t: 3.0 },
+  { p: D(2.2, 1.52, 4.3), h: 252, pitch: -8, t: 2.6, label: 'Chỗ giặt, nhà tắm' },
+  { p: D(0.94, 1.52, 4.62), h: 188, pitch: -7, t: 3.4 },                     // in the alcove, before the bathroom door
+  { p: D(2.3, 1.52, 4.35), h: 140, pitch: -6, t: 3.2 },
+  { p: D(3.07, 1.52, 5.6), h: 184, pitch: -5, t: 2.6 },                      // between the table's end and the counter
+  { p: D(3.05, 1.52, 6.9), h: 196, pitch: -4, t: 2.4 },
+  { p: D(2.6, 1.52, 7.7), h: 182, pitch: -4, t: 2.0 },
+  { p: D(2.6, 1.52, 8.98), h: 110, pitch: -6, t: 2.8, label: 'Lô gia' },     // out between the two leaves
+  { p: D(4.2, 1.52, 8.98), h: 92, pitch: -8, t: 3.2 },
   { p: D(5.0, 1.52, 8.98), h: 150, pitch: -14, t: 3.0 },
   { p: D(4.9, 1.52, 8.98), h: 262, pitch: -5, t: 3.4 },
-  { p: D(3.3, 1.52, 8.95), h: 290, pitch: -4, t: 3.2 },
-  { p: D(3.13, 1.52, 7.5), h: 355, pitch: -4, t: 2.6 },
-  { p: D(3.0, 1.52, 6.2), h: 354, pitch: -4, t: 2.4 },
+  { p: D(2.62, 1.52, 8.98), h: 286, pitch: -6, t: 3.6 },                     // the rack at the west end
+  { p: D(2.6, 1.52, 7.6), h: 355, pitch: -4, t: 2.6 },
+  { p: D(3.05, 1.52, 6.7), h: 356, pitch: -4, t: 2.0 },
+  { p: D(3.05, 1.52, 5.5), h: 352, pitch: -4, t: 2.0 },
   { p: D(2.75, 1.52, 4.0), h: 2, pitch: -3, t: 3.2 },
   { p: [2.8, 1.52, 2.55], h: 40, pitch: -2, t: 2.0 },
   { p: [4.3, 1.52, 2.3], h: 82, pitch: -2, t: 2.6 },
@@ -83,8 +85,10 @@ const tour = [
   { p: [6.5, 1.52, 2.42], h: 44, pitch: -8, t: 2.6 },
   { p: [8.62, 1.52, 2.46], h: 20, pitch: -10, t: 3.6 },
   { p: [8.8, 1.52, 1.4], h: 86, pitch: -3, t: 2.6 },
-  { p: [9.85, 1.52, 1.36], h: 90, pitch: -6, t: 2.6, label: 'Cửa sổ nhìn xuống phố' },
-  { p: [9.85, 1.52, 1.36], h: 128, pitch: -20, t: 3.4 },
+  { p: [9.72, 1.52, 1.2], h: 62, pitch: -4, t: 2.4 },
+  { p: [9.97, 1.52, 0.56], h: 88, pitch: -4, t: 2.0 },                        // at the door
+  { p: [10.9, 1.52, 0.55], h: 100, pitch: -10, t: 2.6, label: 'Ban công nhìn xuống phố' },
+  { p: [10.92, 1.52, 0.72], h: 152, pitch: -24, t: 3.6 },
   { p: [0.95, 1.52, -9.0], h: 180, pitch: -3, t: 0.01, cut: true, label: 'Hành lang tầng 5' },
   { p: [0.95, 1.52, -6.2], h: 178, pitch: -3, t: 4.2 },
   { p: [0.82, 1.52, -3.6], h: 255, pitch: -9, t: 4.0 },
