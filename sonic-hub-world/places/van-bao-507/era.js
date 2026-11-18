@@ -265,11 +265,12 @@ export function buildEra(scene, shared, ctx) {
     b.box(M.glow('#ff3a20', 1.2), 0.2, 0.045, 0.05, 0.212, 0.055, 0.0525, { cast: false });
   });
   mk('tv-lcd', ctx.tvSpot, b => {
-    b.box(gloss(), -0.4, 0.07, -0.02, 0.4, 0.55, 0.025, {}); b.box(gloss(), -0.2, 0, -0.1, 0.2, 0.014, 0.1, {}); b.box(gloss(), -0.04, 0.012, -0.03, 0.04, 0.08, 0.0, {});
-    b.box(M.plain('#b9bcc0', 0.3, 0.7), -0.4, 0.07, 0.025, 0.4, 0.085, 0.027, { cast: false });
+    // 0.73 wide and 0.44 high on a short foot: measured on the photograph of 22/9/2012 (a 32-inch set)
+    b.box(gloss(), -0.365, 0.03, -0.02, 0.365, 0.47, 0.025, {}); b.box(gloss(), -0.2, 0, -0.1, 0.2, 0.014, 0.1, {}); b.box(gloss(), -0.04, 0.012, -0.03, 0.04, 0.05, 0.0, {});
+    b.box(M.plain('#b9bcc0', 0.3, 0.7), -0.365, 0.03, 0.025, 0.365, 0.048, 0.027, { cast: false });
   });
   const mkTv = (name, w, h, y, z) => { const m = new THREE.Mesh(new THREE.PlaneGeometry(w, h), tvOff); m.position.set(0, y, z); const g = new THREE.Group(); g.applyMatrix4(ctx.tvSpot); g.add(m); scene.add(g); g.visible = false; groups[name] = g; tvScreens.push(m); };
-  mkTv('tv-crt-s', 0.5, 0.375, 0.275, 0.0545); mkTv('tv-lcd-s', 0.76, 0.43, 0.32, 0.0265);
+  mkTv('tv-crt-s', 0.5, 0.375, 0.275, 0.0545); mkTv('tv-lcd-s', 0.7, 0.394, 0.258, 0.0265);
 
   /* the parents' desk: the old tower once the Fujitsu had his desk (a guess), a flat monitor later (it is there in 2013) */
   mk('par-xp', PD, b => { crt(b, 0.42, 0.27, scr('xp-plain', () => xpScreen('plain', '9:00 PM')), 0.4); tower(b, 0.8, 0, 0.05, 0.19, 0.43, 0.44); keyboard(b, 0.19, 0.385, false); mouse(b, 0.72, 0.47, false); });

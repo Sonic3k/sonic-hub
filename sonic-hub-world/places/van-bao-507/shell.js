@@ -1,4 +1,7 @@
-/* Walls, floors, ceiling, doors and windows of flat 507, its two balconies, the loggia and the gallery outside. */
+/* Walls, floors, ceiling, doors and windows of flat 507, its two balconies, the loggia and the gallery outside.
+   Everything here is laid down ON THE DRAWING'S GRID (heights against a 2.75 ceiling, the north strip 3.5 deep) and the
+   builder's survey sets it where it was measured to be — see plan.js. Sizes that must come out right in real metres
+   (a door leaf that has to fill its opening) are asked of the survey with P.sz / P.sy. */
 import * as THREE from 'three';
 import { M, plateTex, blindTex, canvasTex } from '../../engine/tex.js';
 import { part } from '../../engine/kit.js';
@@ -29,7 +32,7 @@ export function buildShell(b, scene, shared) {
   floor(terra, { x0: P.LOG_DOOR.a, x1: P.LOG_DOOR.b, z0: 8.0, z1: ZS }, [1.2, 1.2]);                // the door's threshold
   floor(M.bathTile(), { x0: 0, x1: 1.85, z0: 3.62, z1: 8.0 }, [0.6, 0.6]);                          // washing alcove and bathroom
   floor(btile, { x0: BW.x0, x1: 0, z0: BW.z0, z1: BW.z1 }, [0.8, 0.8], -0.02);
-  floor(btile, { x0: PAR.x1, x1: BE.x1 + 0.06, z0: BE.z0, z1: BE.z1 }, [0.8, 0.8], -0.02);
+  floor(M.cement(), { x0: PAR.x1, x1: BE.x1 + 0.06, z0: BE.z0, z1: BE.z1 }, [0.8, 0.8], -0.02);            // the slab left of the old balcony, inside the cage
   floor(btile, { x0: LA, x1: LB, z0: ZS, z1: LOG.z1 + 0.05 }, [0.8, 0.8], -0.02);
   // the brass strip where boards meet tiles
   b.box(M.plain('#b9a36a', 0.35, 0.8), P.KIT_OPEN.a, 0, 3.5, P.KIT_OPEN.b, 0.006, 3.54, { cast: false });
@@ -37,18 +40,17 @@ export function buildShell(b, scene, shared) {
   /* ── outer walls ── */
   const p = paint(), e = ext();
   // north: the front door closes the end of the gallery; the rest of this wall is shared with 506
-  wall(b, 'x', -T, 0, -T, XE, [{ a: P.MAIN_DOOR.a, b: P.MAIN_DOOR.b, y1: P.MAIN_DOOR.y1 }], galleryWhite(), p);
+  wall(b, 'x', -T, 0, -T, PAR.x1 + T, [{ a: P.MAIN_DOOR.a, b: P.MAIN_DOOR.b, y1: P.MAIN_DOOR.y1 }], galleryWhite(), p);
   // west: living room, washing alcove and bathroom behind one face
   wall(b, 'z', -T, 0, 0, 8.22, [{ a: P.BALC_DOOR.a, b: P.BALC_DOOR.b, y1: P.BALC_DOOR.y1 }], e, p);
   // south: one straight face — bathroom, kitchen, big room. The loggia is hung outside it.
   wall(b, 'x', 8.0, ZS, -T, XE, [P.WC_WIN, P.LOG_DOOR, P.S_WIN_W, P.S_WIN_E].map(o => ({ a: o.a, b: o.b, y0: o.y0, y1: o.y1 })), p, e);
   // east: the big room, then (set back) the parents' room behind its balcony
   wall(b, 'z', BIG.x1, XE, 3.5, ZS, [{ a: P.BIG_WIN.a, b: P.BIG_WIN.b, y0: P.BIG_WIN.y0, y1: P.BIG_WIN.y1 }], p, e);
-  wall(b, 'z', PAR.x1, PAR.x1 + T, 0, 3.5, [{ a: P.PAR_DOOR.a, b: P.PAR_DOOR.b, y1: P.PAR_DOOR.y1 }], p, e);
-  wall(b, 'x', 0, 0.2, PAR.x1 + T, XE, [], e);                      // the balcony's two cheeks
-  wall(b, 'x', 3.3, 3.5, PAR.x1 + T, XE, [], e);
-  wall(b, 'x', 0, 0.22, BW.x0, -T, [], e);
-  wall(b, 'x', 3.3, 3.5, BW.x0, -T, [], e);
+  wall(b, 'z', PAR.x1, PAR.x1 + T, 0, 3.5, [{ a: P.PAR_WIN.a, b: P.PAR_WIN.b, y0: P.PAR_WIN.y0, y1: P.PAR_WIN.y1 }], p, e);
+  wall(b, 'x', 3.3, 3.5, PAR.x1 + T, XE, [], e);                    // the cage's south side is the big room's wall; its north end is barred
+  wall(b, 'x', 0, BW.z0, BW.x0, -T, [], e);
+  wall(b, 'x', BW.z1, 3.5, BW.x0, -T, [], e);
 
   /* ── inner walls ── */
   wall(b, 'z', LIV.x1, NICHE.x0, 0, NICHE.z1, [], p);                                             // the TV wall
@@ -59,7 +61,7 @@ export function buildShell(b, scene, shared) {
   wall(b, 'z', 1.85, 1.95, P.ALC_MOUTH, 8.0, [], p);                                              // the screen between the kitchen table and the bathroom door
   wall(b, 'x', 5.6, 5.72, 0, 1.85, [{ a: P.WC_DOOR.a, b: P.WC_DOOR.b, y1: P.WC_DOOR.y1 }], p);    // washing alcove | bathroom
   // the pier beside his desk (the switch is on it), the column in the sofa wall
-  b.box(p, P.D1.a - 0.32, 0, 3.62, P.D1.a, H, 3.9, { ...uvOf(p), solid: true });
+  b.box(p, P.D1.a - 0.22, 0, 3.62, P.D1.a, H, 3.9, { ...uvOf(p), solid: true });
   b.box(p, 1.68, 0, 0, 1.94, H, 0.07, { ...uvOf(p) });
   // the lobby's lowered ceiling, its face flush with the TV wall (the 2012 photograph shows it, and a downlight in it)
   b.box(p, L.x0, L.soffit, L.z0, L.x1, H, 3.5, { ...uvOf(p) });
@@ -80,19 +82,19 @@ export function buildShell(b, scene, shared) {
     if (a1 > cur) put(sk, cur, 0, c, a1, 0.085, c + side * 0.014, { cast: false });
   };
   // living room and lobby (the stone behind the fish tank comes down to the floor)
-  skirt('x', 0, 0, 5.6, 1, [[P.MAIN_DOOR.a - 0.03, P.MAIN_DOOR.b + 0.03]]);
+  skirt('x', 0, 0, LIV.x1, 1, [[P.MAIN_DOOR.a - 0.03, P.MAIN_DOOR.b + 0.03]]);
   skirt('x', 3.5, 0, L.x1, -1, [[0.25, 1.45], [P.KIT_OPEN.a, P.KIT_OPEN.b], [P.D1.a - 0.03, P.D1.b + 0.03]]);
   skirt('z', 0, 0, 3.5, 1, [[P.BALC_DOOR.a, P.BALC_DOOR.b]]);
-  skirt('z', 5.6, 0, L.z0, -1); skirt('x', L.z0, 5.6, L.x1, 1); skirt('z', L.x1, L.z0, 3.5, -1, [[P.D2.a - 0.03, P.D2.b + 0.03]]);
+  skirt('z', LIV.x1, 0, L.z0, -1); skirt('x', L.z0, LIV.x1, L.x1, 1); skirt('z', L.x1, L.z0, 3.5, -1, [[P.D2.a - 0.03, P.D2.b + 0.03]]);
   // the parents' room and its niche
   skirt('z', NICHE.x0, 0, NICHE.z1, 1); skirt('x', NICHE.z1, NICHE.x0, PAR.x0, -1);
-  skirt('z', PAR.x0, NICHE.z1, 3.5, 1, [[P.D2.a - 0.03, P.D2.b + 0.03]]); skirt('z', PAR.x1, 0, 3.5, -1, [[P.PAR_DOOR.a, P.PAR_DOOR.b]]);
+  skirt('z', PAR.x0, NICHE.z1, 3.5, 1, [[P.D2.a - 0.03, P.D2.b + 0.03]]); skirt('z', PAR.x1, 0, 3.5, -1);
   skirt('x', 0, NICHE.x0, PAR.x1, 1); skirt('x', 3.5, PAR.x0, PAR.x1, -1);
   // the big room
   skirt('x', 3.62, BIG.x0, BIG.x1, 1, [[P.D1.a - 0.03, P.D1.b + 0.03]]); skirt('x', BIG.z1, BIG.x0, BIG.x1, -1);
   skirt('z', BIG.x0, 3.62, BIG.z1, 1); skirt('z', BIG.x1, 3.62, BIG.z1, -1);
   const cor = (x0, z0, x1, z1) => b.box(sk, x0, H - 0.075, z0, x1, H, z1, { cast: false });
-  cor(0, 0, 5.6, 0.035); cor(0, 3.465, 5.6, 3.5); cor(0, 0, 0.035, 3.5); cor(5.565, 0, 5.6, 3.5);
+  cor(0, 0, LIV.x1, 0.035); cor(0, 3.465, LIV.x1, 3.5); cor(0, 0, 0.035, 3.5); cor(LIV.x1 - 0.035, 0, LIV.x1, 3.5);
 
   /* ── door linings ── */
   const mh = mahog();
@@ -105,7 +107,7 @@ export function buildShell(b, scene, shared) {
 
   /* ── the west balcony door: four barred leaves under a transom ── */
   {
-    const d = P.BALC_DOOR, c = -T / 2, w = (d.b - d.a) / 4;
+    const d = P.BALC_DOOR, c = -T / 2, q = (d.b - d.a) / 4, w = (P.sz(d.b) - P.sz(d.a)) / 4;   // a quarter of the opening as drawn (to place a leaf), and a leaf's real width
     windowFrame(b, 'z', d.a, d.b, d.tr, d.y1, c, { mull: 3 });
     bars(b, 'z', d.a + 0.05, d.b - 0.05, d.tr + 0.04, d.y1 - 0.04, c - 0.05, wt, 0.145);
     b.box(wt, c - 0.035, 0, d.a, c + 0.035, d.tr, d.a + 0.05); b.box(wt, c - 0.035, 0, d.b - 0.05, c + 0.035, d.tr, d.b);
@@ -113,9 +115,9 @@ export function buildShell(b, scene, shared) {
     // outer leaves shut, middle pair open onto the balcony
     b.push(c, 0, d.a + 0.05, 90); glazedLeaf(b, w - 0.05, d.tr - 0.05); b.pop();
     b.push(c, 0, d.b - 0.05, -90); glazedLeaf(b, w - 0.05, d.tr - 0.05); b.pop();
-    b.push(c, 0, d.a + w, 190); glazedLeaf(b, w, d.tr - 0.05); b.pop();
-    b.push(c, 0, d.b - w, 170); glazedLeaf(b, w, d.tr - 0.05); b.pop();
-    b.solid(c - 0.04, 0, d.a, c + 0.04, 2, d.a + w); b.solid(c - 0.04, 0, d.b - w, c + 0.04, 2, d.b);
+    b.push(c, 0, d.a + q, 190); glazedLeaf(b, w, d.tr - 0.05); b.pop();
+    b.push(c, 0, d.b - q, 170); glazedLeaf(b, w, d.tr - 0.05); b.pop();
+    b.solid(c - 0.04, 0, d.a, c + 0.04, 2, d.a + q); b.solid(c - 0.04, 0, d.b - q, c + 0.04, 2, d.b);
   }
   /* ── west balcony: floor curb, planter, full-height bars, the bamboo blind ── */
   {
@@ -132,20 +134,20 @@ export function buildShell(b, scene, shared) {
     b.quad(M.alpha(blindTex()), '+x', x + 0.1, 2.06, (BW.z0 + zm) / 2, zm - BW.z0 - 0.05, 0.16, { uv: [0.9, 0.25] });
     b.solid(x - 0.05, 0, BW.z0, x + 0.02, 2, BW.z1);
   }
-  /* ── the parents' balcony door and the steel cage over the street ── */
+  /* ── the parents' window and the steel cage over the street. The wall has a sill and no door (video 3:52–3:57): a wide
+        white window, four leaves under a row of fanlights. Outside it what the renovation left of the old balcony, a
+        slab about a metre deep, is closed in by a cage of flat bars — the air conditioner's outdoor unit and the folding
+        ladder live in it, the flag is tied to one of its posts (video 3:58–4:02, 4:28–4:31) ── */
   {
-    const d = P.PAR_DOOR, c = PAR.x1 + T / 2, w = (d.b - d.a) / 2;
-    windowFrame(b, 'z', d.a, d.b, 2.1, d.y1, c, { mull: 1 });
-    b.box(wt, c - 0.035, 0, d.a, c + 0.035, 2.1, d.a + 0.045); b.box(wt, c - 0.035, 0, d.b - 0.045, c + 0.035, 2.1, d.b);
-    b.box(wt, c - 0.035, 2.06, d.a, c + 0.035, 2.1, d.b);
-    b.push(c, 0, d.a + 0.045, 12); glazedLeaf(b, w - 0.045, 2.06); b.pop();          // open, out over the balcony
-    b.push(c, 0, d.b - 0.045, -90); glazedLeaf(b, w - 0.045, 2.06); b.pop();
-    b.solid(c - 0.04, 0, d.b - w, c + 0.04, 2, d.b);
-    const sd = M.steelDark(), x = BE.x1;
-    for (let y = 0.12; y < H - 0.05; y += 0.135) b.box(sd, x, y, BE.z0, x + 0.02, y + 0.028, BE.z1);
-    for (let z = BE.z0; z <= BE.z1 + 0.01; z += (BE.z1 - BE.z0) / 6) b.box(sd, x - 0.012, 0, z - 0.014, x + 0.032, H, z + 0.014);
-    b.box(sd, x - 0.03, 1.0, BE.z0, x + 0.05, 1.05, BE.z1);
-    b.solid(x - 0.02, 0, BE.z0, x + 0.05, 2, BE.z1);
+    const w = P.PAR_WIN, c = PAR.x1 + T / 2;
+    windowFrame(b, 'z', w.a, w.b, w.y0, w.y1, c, { mull: 3, trans: w.y1 - 0.34 });
+    b.box(M.wood('#8a5a34', 0.6), PAR.x1 - 0.05, w.y0 - 0.035, w.a - 0.04, PAR.x1 + T + 0.02, w.y0, w.b + 0.04, { uv: [1, 1] });     // the sill board
+    const sd = M.steelGrey(), x = BE.x1, zn = BE.z0 + 0.02;
+    for (let y = 0.1; y < H - 0.05; y += 0.15) { b.box(sd, x, y, zn, x + 0.016, y + 0.03, BE.z1); b.box(sd, PAR.x1 + T, y, zn - 0.016, x + 0.016, y + 0.03, zn); }   // the face over the street, the north end
+    for (let i = 0; i <= 4; i++) { const z = zn + (BE.z1 - zn) * i / 4; b.box(sd, x - 0.02, 0, z - 0.02, x + 0.02, H, z + 0.02); }
+    for (const xx of [PAR.x1 + T + 0.02, (PAR.x1 + T + x) / 2]) b.box(sd, xx - 0.02, 0, zn - 0.03, xx + 0.02, H, zn + 0.01);
+    b.box(M.concrete('#b9ad90', 9, 0.9), PAR.x1 + T, -0.14, BE.z0, x + 0.06, -0.02, BE.z1, { uv: [2, 2] });                         // the slab's edge
+    b.solid(x - 0.02, 0, BE.z0, x + 0.05, 2, BE.z1); b.solid(PAR.x1 + T, 0, zn - 0.04, x, 2, zn + 0.02);
   }
   /* ── the wide window of the big room ── */
   {
@@ -243,7 +245,8 @@ export function buildShell(b, scene, shared) {
     const body = M.concrete('#cfc5a6', 21, 1), cc = M.concrete('#e2d9be', 11, 0.9);
     b.box(body, -T, -13.4, -T, XE, -0.16, ZS, { uv: [3, 3], uvw: true, cast: false });
     b.box(body, LA, -13.4, ZS, LB, -0.16, LOG.z1 + 0.14, { uv: [3, 3], uvw: true, cast: false });        // the loggias of the floors below
-    b.box(body, COR.x1 + 0.2, -13.4, -40, XE, H + 0.22, -T, { uv: [3, 3], uvw: true, cast: false });
+    b.box(body, COR.x1 + 0.2, -13.4, -5.5, PAR.x1 + T, H + 0.22, -T, { uv: [3, 3], uvw: true, cast: false });     // 506: its east wall in line with the parents'
+    b.box(body, COR.x1 + 0.2, -13.4, -40, XE, H + 0.22, -5.5, { uv: [3, 3], uvw: true, cast: false });               // further north the block steps out again (video 4:29)
     for (let f = 1; f <= 4; f++) {
       b.box(cc, COR.x0 - 0.2, -f * 3.2 - 0.12, -40, COR.x1 + 0.2, -f * 3.2, -T, { uv: [2, 2], cast: false });
       b.box(cc, COR.x0 - 0.22, -f * 3.2 + 0.74, -40, COR.x0, -f * 3.2 + 0.9, -T, { uv: [2, 2], cast: false });
@@ -259,17 +262,17 @@ export function buildShell(b, scene, shared) {
 export function buildDoors(scene, shared) {
   const mh = M.wood(MAHOG, 0.85);
   // D1, his door: hung on its east jamb (photo of 25/5/2013), swung right round into the room until it rests by the bookshelf
-  part(scene, shared, b => { b.push(P.D1.b - 0.03, 0, 3.64, 36); doorLeaf(b, P.D1.b - P.D1.a - 0.1, P.D1.y1 - 0.05, mh, {}); b.solid(0, 0, -0.03, 0.74, 2, 0.03); b.pop(); }, 'door-d1');
+  part(scene, shared, b => { b.push(P.D1.b - 0.03, 0, 3.64, 36); doorLeaf(b, P.D1.b - P.D1.a - 0.1, P.D1.y1 - 0.05, mh, {}); b.solid(0, 0, -0.03, P.D1.b - P.D1.a - 0.1, 2, 0.03); b.pop(); }, 'door-d1', P.SURVEY);
   // D2, the parents' door: open, flat to the south wall
-  part(scene, shared, b => { b.push(P.PAR.x0 + 0.01, 0, P.D2.b - 0.05, 5); doorLeaf(b, P.D2.b - P.D2.a - 0.1, P.D2.y1 - 0.05, mh, {}); b.pop(); }, 'door-d2');
+  part(scene, shared, b => { b.push(P.PAR.x0 + 0.01, 0, P.D2.b - 0.05, 5); doorLeaf(b, P.sz(P.D2.b) - P.sz(P.D2.a) - 0.1, P.D2.y1 - 0.05, mh, {}); b.pop(); }, 'door-d2', P.SURVEY);
   // the bathroom door: hinged on its east jamb, swung well open toward the east wall, so the window shows beside it (video 2:27)
-  part(scene, shared, b => { b.push(P.WC_DOOR.b - 0.05, 0, 5.72, 48); doorLeaf(b, P.WC_DOOR.b - P.WC_DOOR.a - 0.1, P.WC_DOOR.y1 - 0.05, mh, {}); b.pop(); }, 'door-wc');
-  // the main door: two leaves swung in
+  part(scene, shared, b => { b.push(P.WC_DOOR.b - 0.05, 0, 5.72, 48); doorLeaf(b, P.WC_DOOR.b - P.WC_DOOR.a - 0.1, P.WC_DOOR.y1 - 0.05, mh, {}); b.pop(); }, 'door-wc', P.SURVEY);
+  // the main door: a narrow west leaf that stays shut (the rack stands before it) and the leaf with the handle, swung in
   part(scene, shared, b => {
-    const d = P.MAIN_DOOR, w = (d.b - d.a - 0.11) / 2, rows = [[0.14, 0.72], [0.82, 1.4], [1.5, d.y1 - 0.2]];
-    b.push(d.a + 0.055, 0, 0.01, 93); doorLeaf(b, w, d.y1 - 0.06, mh, { rows, cols: 2, handle: 'none' }); b.solid(0, 0, -0.03, w, 2, 0.03); b.pop();
-    b.push(d.b - 0.055, 0, 0.01, 87); doorLeaf(b, w, d.y1 - 0.06, mh, { rows, cols: 2, handle: 'lever' }); b.solid(0, 0, -0.03, w, 2, 0.03); b.pop();
-  }, 'door-main');
+    const d = P.MAIN_DOOR, wl = d.leaf - 0.055, wr = d.b - d.a - d.leaf - 0.055, rows = [[0.14, 0.72], [0.82, 1.4], [1.5, d.y1 - 0.2]];
+    b.push(d.a + 0.055, 0, -T / 2, 0); doorLeaf(b, wl, d.y1 - 0.06, mh, { rows, cols: 1, handle: 'none' }); b.solid(0, 0, -0.03, wl, 2, 0.03); b.pop();
+    b.push(d.b - 0.055, 0, 0.01, 92); doorLeaf(b, wr, d.y1 - 0.06, mh, { rows, cols: 2, handle: 'lever' }); b.solid(0, 0, -0.03, wr, 2, 0.03); b.pop();
+  }, 'door-main', P.SURVEY);
   // the iron gate outside it, and the number
   const plate = plateTex(128, 64, (g, W, Hh) => {
     g.fillStyle = '#1d3f8f'; g.fillRect(0, 0, W, Hh); g.strokeStyle = '#e9edf5'; g.lineWidth = 5; g.strokeRect(5, 5, W - 10, Hh - 10);
@@ -282,10 +285,10 @@ export function buildDoors(scene, shared) {
       b.box(sg, 0, 0.03, -0.014, 0.03, top, 0.014); b.box(sg, gw - 0.03, 0.03, -0.014, gw, top, 0.014);
       for (let x = 0.055; x < gw - 0.04; x += 0.042) b.box(sg, x, 0.45, -0.006, x + 0.018, top - 0.04, 0.006);
       for (let y = 0.1; y < 0.4; y += 0.05) b.box(sg, 0.03, y, -0.006, gw - 0.03, y + 0.022, 0.006);
-      if (numbered) b.quad(new THREE.MeshBasicMaterial({ map: plate }), '+z', gw - 0.17, 1.74, 0.017, 0.2, 0.1, { cast: false });
+      if (numbered) b.quad(new THREE.MeshBasicMaterial({ map: plate }), '-z', gw - 0.17, 1.74, -0.017, 0.2, 0.1, { cast: false });
       b.solid(0, 0, -0.03, gw, 2, 0.03);
     };
-    b.push(d.a, 0, -T - 0.02, 264); leaf(false); b.pop();      // west leaf: open, pointing up the gallery
-    b.push(d.b, 0, -T - 0.02, 180); leaf(true); b.pop();       // east leaf: shut, so the number is read from the gallery
-  }, 'gate-507');
+    b.push(d.a, 0, -T - 0.02, 0); leaf(true); b.pop();         // west leaf: shut like the door's own narrow leaf, the number on it read from the gallery
+    b.push(d.b, 0, -T - 0.02, 276); leaf(false); b.pop();      // east leaf: open, pointing up the gallery
+  }, 'gate-507', P.SURVEY);
 }

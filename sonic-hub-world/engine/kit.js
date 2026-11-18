@@ -1,6 +1,10 @@
 /* The building kit: everything in a place is boxes, cylinders and a few spheres, collected by material and merged
    into one mesh per material, so a whole home costs a few dozen draw calls. Boxes can register as solids: the
-   walker collides with those (their footprint, when they stand between ankle and head height). */
+   walker collides with those (their footprint, when they stand between ankle and head height).
+
+   A place that was drawn first and measured later need not move every number: it hands the builder a survey —
+   { y(y), z(z), rigid } — and what is laid down on the drawing's grid lands where it was measured to be (see
+   Builder.survey below; the place says what its own survey means). */
 import * as THREE from 'three';
 
 const _v = new THREE.Vector3();
@@ -48,24 +52,68 @@ function boxUV(geo, w, h, d, tu, tv, grain, ox, oy, oz) {
 }
 
 export class Builder {
-  constructor(shared) {
+  /** `survey` (optional): { y(y), z(z), rigid } — two rising functions from the drawing's grid to the measured place.
+   *  With one, everything laid down goes through it:
+   *  · heights always, point by point (a wardrobe drawn against a ceiling that proved lower shrinks with it) — except
+   *    small round things, and anything laid down with { whole: true }, which move whole, so a clock stays round;
+   *  · across the floor, what is built inside a frame (push) moves whole with the frame's origin — a sofa keeps its
+   *    depth and stays against its wall; outside a frame, walls and long things (`shell`, or longer than `rigid`)
+   *    are mapped point by point and small things move whole.
+   *  `real = true` switches it off for a while: what is laid down then is already in measured metres. */
+  constructor(shared, survey = null) {
     this.buckets = new Map();
     this.solids = shared ? shared.solids : [];
     this.stack = [new THREE.Matrix4()];
+    this.anchor = [null];            // per frame: the drawn z of the outermost frame it stands in (null at the root or in a soft frame)
     this.noSolid = false;
+    this.survey = survey; this.shell = false; this.real = false;
   }
   get m() { return this.stack[this.stack.length - 1]; }
-  /** Work in a local frame: origin at (x,y,z), turned ry degrees clockwise seen from above. */
-  push(x = 0, y = 0, z = 0, ry = 0) {
+  /** Work in a local frame: origin at (x,y,z), turned ry degrees clockwise seen from above. `soft`: only a shift of
+   *  the numbers (a whole wing written in its own measure), not a thing that moves as one piece. */
+  push(x = 0, y = 0, z = 0, ry = 0, soft = false) {
     const t = new THREE.Matrix4().makeRotationY(-ry * Math.PI / 180); t.setPosition(x, y, z);
-    this.stack.push(this.m.clone().multiply(t)); return this;
+    return this._enter(this.m.clone().multiply(t), soft);
   }
   /** the same, by a ready matrix (a spot a room left for something set down later) */
-  pushM(m) { this.stack.push(this.m.clone().multiply(m)); return this; }
-  pop() { this.stack.pop(); return this; }
+  pushM(m) { return this._enter(this.m.clone().multiply(m), false); }
+  _enter(m, soft) {
+    const a = this.anchor[this.anchor.length - 1];
+    this.stack.push(m); this.anchor.push(a !== null ? a : soft ? null : m.elements[14]); return this;
+  }
+  pop() { this.stack.pop(); this.anchor.pop(); return this; }
+  /** how far the survey moves a stretch z0…z1 of the current frame's world across the floor when it moves whole;
+   *  null when it is to be mapped point by point */
+  _dz(z0, z1, round) {
+    const S = this.survey, a = this.anchor[this.anchor.length - 1];
+    if (a !== null) return S.z(a) - a;
+    if (!this.shell && (round || z1 - z0 <= S.rigid)) { const c = (z0 + z1) / 2; return S.z(c) - c; }
+    return null;
+  }
+  /** where a point of the current frame really stands: [x, y, z] in the place */
+  at(x, y, z) {
+    _v.set(x, y, z).applyMatrix4(this.m);
+    if (this.survey && !this.real) { const d = this._dz(_v.z, _v.z, true); return [_v.x, this.survey.y(_v.y), d === null ? this.survey.z(_v.z) : _v.z + d]; }
+    return [_v.x, _v.y, _v.z];
+  }
+  /** the current frame moved to (x,y,z), as it really stands: a place for something set down later (pushM, applyMatrix4) */
+  spot(x = 0, y = 0, z = 0) {
+    const m = this.m.clone().multiply(new THREE.Matrix4().makeTranslation(x, y, z)), p = this.at(x, y, z);
+    return m.setPosition(p[0], p[1], p[2]);
+  }
 
   geo(mat, g, o = {}) {
     g.applyMatrix4(this.m);
+    const S = this.survey;
+    if (S && !this.real) {
+      const a = g.attributes.position.array, n = a.length;
+      let y0 = Infinity, y1 = -Infinity, z0 = Infinity, z1 = -Infinity;
+      for (let i = 0; i < n; i += 3) { const y = a[i + 1], z = a[i + 2]; if (y < y0) y0 = y; if (y > y1) y1 = y; if (z < z0) z0 = z; if (z > z1) z1 = z; }
+      const round = /Sphere|Cylinder|Torus|Circle/.test(g.type);
+      const dz = this._dz(z0, z1, round);
+      let dy = null; if ((round || o.whole) && y1 - y0 <= 0.5) { const c = (y0 + y1) / 2; dy = S.y(c) - c; }
+      for (let i = 0; i < n; i += 3) { a[i + 1] = dy === null ? S.y(a[i + 1]) : a[i + 1] + dy; a[i + 2] = dz === null ? S.z(a[i + 2]) : a[i + 2] + dz; }
+    }
     if (mat.isPlain) {              // a plain colour: painted on the vertices, so all such things share one material
       const n = g.attributes.position.count, a = new Float32Array(n * 3), c = mat.rgb;
       for (let i = 0; i < n; i++) { a[i * 3] = c[0]; a[i * 3 + 1] = c[1]; a[i * 3 + 2] = c[2]; }
@@ -146,6 +194,12 @@ export class Builder {
       _v.set(x, y, z).applyMatrix4(this.m);
       ax = Math.min(ax, _v.x); bx = Math.max(bx, _v.x); az = Math.min(az, _v.z); bz = Math.max(bz, _v.z); ay = Math.min(ay, _v.y); by = Math.max(by, _v.y);
     }
+    const S = this.survey;
+    if (S && !this.real) {
+      const d = this._dz(az, bz, false);
+      if (d === null) { az = S.z(az); bz = S.z(bz); } else { az += d; bz += d; }
+      ay = S.y(ay); by = S.y(by);
+    }
     this.solids.push({ x0: ax, x1: bx, z0: az, z1: bz, y0: ay, y1: by });
     return this;
   }
@@ -165,10 +219,11 @@ export class Builder {
   }
 }
 
-/** A group built with its own builder (things that are swapped by year, or move). */
-export function part(parent, shared, fn, name) {
+/** A group built with its own builder (things that are swapped by year, or move). `survey`: for a part laid down on
+ *  the drawing's grid; leave it out for one built at a spot a room handed over, which is already real. */
+export function part(parent, shared, fn, name, survey = null) {
   const g = new THREE.Group(); if (name) g.name = name;
-  const b = new Builder(shared);
+  const b = new Builder(shared, survey);
   fn(b, g);
   b.build(g);
   parent.add(g);

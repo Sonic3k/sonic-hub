@@ -1,5 +1,5 @@
 /* The big room — his corner behind the wardrobes, the books and the piano, his sister's side by the wide window —
-   and the parents' room. After the 2013 video (0:00–1:46, 3:40–4:48) and the 2012 rehearsal photos. */
+   and the parents' room. After the 2013 video (0:00–1:46, 3:52–4:50) and the 2012 rehearsal photos. */
 import * as THREE from 'three';
 import { M, canvasTex, plateTex, plaidTex, quiltTex, dotsTex, floralTex, curtainTex, rng } from '../../engine/tex.js';
 import * as P from './plan.js';
@@ -8,31 +8,31 @@ import { C, wood, N, S, W, E, wardrobe, bookshelf, cabinet, drawers, chair, stoo
 const G = { grain: 'y', uv: [1, 1] }, U = { uv: [1, 1] };
 const { H } = P;
 const cloth2 = (tex, key) => { const m = new THREE.MeshStandardMaterial({ map: tex, roughness: 0.95, side: THREE.DoubleSide }); return m; };
-const spot = (b, x, y, z) => b.m.clone().multiply(new THREE.Matrix4().makeTranslation(x, y, z));
-/* Everything in this file is measured the east half's own way: x here = true x − P.EAST (the lobby recess pushed the two
-   bedrooms that much further east than they were first drawn; see plan.js). Both builders therefore work inside a frame
-   moved east by EX, and what they hand back as plain positions — bright dots, clocks, the calendar's place — is moved here. */
+/* The big room is measured the old way: x here = real x − P.EAST (the lobby once pushed the bedrooms that much further
+   east than first drawn; see plan.js), z and heights on the drawing's grid. Its builder therefore works inside a frame
+   moved east by EX — a soft one: only the numbers shift — and what it hands back as plain positions (bright dots,
+   clocks, the calendar's place) is put right here: moved east, and through the survey. */
 const EX = P.EAST;
-const hotE = (ctx, ...list) => ctx.hot.push(...list.map(h => ({ ...h, pos: [h.pos[0] + EX, h.pos[1], h.pos[2]] })));
-const clockE = (ctx, c) => ctx.clocks.push({ ...c, x: c.x + EX });
+const hotE = (ctx, ...list) => ctx.hot.push(...list.map(h => ({ ...h, pos: [h.pos[0] + EX, P.sy(h.pos[1]), P.sz(h.pos[2])] })));
+const clockE = (ctx, c) => ctx.clocks.push({ ...c, x: c.x + EX, y: P.sy(c.y), z: P.sz(c.z) });
 
 export function buildBigRoom(b, ctx) {
-  b.push(EX, 0, 0, 0);
+  b.push(EX, 0, 0, 0, true);
   const mah = wood(C.mahog, 0.85), shelfW = wood(C.shelf, 0.45), light = wood(C.light, 0.45), ch = M.chrome(), deskW = wood(C.desk, 0.7);
 
   /* ── his corner ── */
   // the desk on the west wall (the machines of each year are set on it by era.js), the chair, the bag by the pier
   W(b, 3.6, 5.02); desk(b, 1.1, 0.74, 0.56, { mat: deskW, ped: 0.34 });
-  ctx.spots.nookDesk = spot(b, 0, 0.74, 0); ctx.spots.nookFloor = spot(b, 0, 0, 0);
+  ctx.spots.nookDesk = b.spot(0, 0.74, 0); ctx.spots.nookFloor = b.spot(0, 0, 0);
   b.pop();
   blob(b, 3.6, 3.92, 4.16, 5.02, 0.42);
-  E(b, 4.98, 4.2); chair(b, { mat: wood('#5a2416', 0.6), cushion: M.plain('#e0a02a', 0.9), slats: 4 }); b.pop();
-  b.sphere(M.plain('#17181c', 0.8), 4.46, 0.24, 4.05, 0.5, { sx: 0.34, sy: 0.48, sz: 0.24 }); b.sphere(M.plain('#22242a', 0.8), 4.47, 0.2, 4.17, 0.5, { sx: 0.26, sy: 0.3, sz: 0.1 }); b.bar(M.plain('#7fd03a', 0.6), 4.36, 0.4, 4.16, 4.4, 0.06, 4.19, 0.012, { cast: false });
+  E(b, 4.4, 4.25); chair(b, { mat: wood('#5a2416', 0.6), cushion: M.plain('#e0a02a', 0.9), slats: 4 }); b.pop();      // pushed in at the desk: the door is right beside it
+  b.sphere(M.plain('#17181c', 0.8), 4.3, 0.24, 4.05, 0.5, { sx: 0.34, sy: 0.48, sz: 0.24 }); b.sphere(M.plain('#22242a', 0.8), 4.31, 0.2, 4.17, 0.5, { sx: 0.26, sy: 0.3, sz: 0.1 }); b.bar(M.plain('#7fd03a', 0.6), 4.2, 0.4, 4.16, 4.24, 0.06, 4.19, 0.012, { cast: false });
   // on the north wall beside the pier: the hook rail with the charger on it, the little shelf of keepsakes above
-  b.box(M.plain('#b9bcc0', 0.3, 0.8), 3.72, 1.6, 3.62, 4.26, 1.63, 3.632, { cast: false });
-  for (let x = 3.76; x < 4.24; x += 0.095) b.bar(M.plain('#b9bcc0', 0.3, 0.8), x, 1.615, 3.63, x, 1.56, 3.67, 0.008, { cast: false });
-  b.box(M.plain('#1c1c1f', 0.6), 4.12, 1.36, 3.63, 4.2, 1.6, 3.66, {}); b.box(M.glow('#ff3a20', 1.2), 4.15, 1.57, 3.66, 4.17, 1.585, 3.662, { cast: false });
-  N(b, 3.68, 3.62, 1.82);
+  b.box(M.plain('#b9bcc0', 0.3, 0.8), 3.66, 1.6, 3.62, 4.2, 1.63, 3.632, { cast: false });
+  for (let x = 3.7; x < 4.18; x += 0.095) b.bar(M.plain('#b9bcc0', 0.3, 0.8), x, 1.615, 3.63, x, 1.56, 3.67, 0.008, { cast: false });
+  b.box(M.plain('#1c1c1f', 0.6), 4.06, 1.36, 3.63, 4.14, 1.6, 3.66, {}); b.box(M.glow('#ff3a20', 1.2), 4.09, 1.57, 3.66, 4.11, 1.585, 3.662, { cast: false });
+  N(b, 3.63, 3.62, 1.82);
   { const sm = wood('#6a2a18', 0.7), w = 0.6, h = 0.66, d = 0.19, t = 0.02;
     b.box(sm, 0, 0, 0, t, h, d, G); b.box(sm, w - t, 0, 0, w, h, d, G); b.box(sm, 0, 0, 0, w, t, d, U); b.box(sm, 0, h - t, 0, w, h, d, U); b.box(sm, 0, 0.3, 0, w, 0.3 + t, d, U);
     b.box(sm, 0.28, 0, 0, 0.28 + t, 0.3, d, G); b.box(sm, 0.34, 0.3, 0, 0.34 + t, h, d, G);
@@ -49,8 +49,8 @@ export function buildBigRoom(b, ctx) {
     b.bar(M.plain('#c9ccd0', 0.3, 0.7), 0.54, 0.34, 0.09, 0.5, 0.56, 0.12, 0.006, {});
   }
   b.pop();
-  switchPlate(b, 4.49, 1.32, 3.9, '+z', true);
-  ctx.spots.calendar = new THREE.Matrix4().makeRotationY(Math.PI / 2).setPosition(3.608 + EX, 1.98, 5.5);      // on the west wall between the desk and the bed (video 0:13, photo of 25/5/2013)
+  switchPlate(b, P.D1.a - EX - 0.11, 1.32, 3.9, '+z', true);
+  ctx.spots.calendar = new THREE.Matrix4().makeRotationY(Math.PI / 2).setPosition(3.608 + EX, P.sy(1.98), P.sz(5.5));      // on the west wall between the desk and the bed (video 0:13, photo of 25/5/2013)
   // the bed along the west wall: head to the south wall, the folded quilt and the pillow at that end
   S(b, 4.55, 7.98); bed(b, 0.95, 1.98, { frame: wood('#4a1c14', 0.7), fh: 0.32, mh: 0.16, head: 0.5, sheet: M.cloth(plaidTex()), sheetUV: [0.9, 0.9] });
   quiltRoll(b, M.cloth(quiltTex()), 0.93, 0.46, 0.34, 0.86, 0.5, 0.2);
@@ -113,13 +113,13 @@ export function buildBigRoom(b, ctx) {
   b.pop();
   blob(b, 5.92, 3.63, 8.42, 3.95, 0.5);
   { const cx = 8.66, cy = 2.08;
-    b.cyl(wood('#2c130d', 0.7), cx, cy, 3.62, 0.17, 0.045, { rx: 90, seg: 24 }); b.quad(new THREE.MeshStandardMaterial({ map: clockFace(256), roughness: 0.6 }), '+z', cx, cy, 3.668, 0.29, 0.29, { cast: false });
+    b.cyl(wood('#2c130d', 0.7), cx, cy, 3.62, 0.17, 0.045, { rx: 90, seg: 24 }); b.quad(new THREE.MeshStandardMaterial({ map: clockFace(256), roughness: 0.6 }), '+z', cx, cy, 3.668, 0.29, 0.29, { cast: false, whole: true });
     clockE(ctx, { x: cx, y: cy, z: 3.672, ry: 0, r: 0.115 });
   }
   /* The north-east corner changes with the years (era.js sets what stands here): until 2008 a study desk under the hanging
      shelves — the Onthi.com reportage of 23/4/2008 was filmed at it — and from 2009 the piano and its stool. Whatever
      stands there, the walker meets the same two obstacles. */
-  N(b, 8.9, 3.63); ctx.spots.neCorner = spot(b, 0, 0, 0); b.solid(0, 0, 0, 1.5, 1.2, 0.62); b.solid(0.38, 0, 0.85, 1.11, 0.5, 1.215); b.pop();
+  N(b, 8.9, 3.63); ctx.spots.neCorner = b.spot(0, 0, 0); b.solid(0, 0, 0, 1.5, 1.2, 0.62); b.solid(0.38, 0, 0.85, 1.11, 0.5, 1.215); b.pop();
   blob(b, 8.9, 3.63, 10.4, 4.25, 0.55);
   N(b, 8.98, 3.63, 1.5);
   { const sm = wood('#6a2a18', 0.7), w = 1.36, t = 0.022, d = 0.2;
@@ -203,80 +203,96 @@ export function piano(b) {
 }
 
 /* ── the parents' room ───────────────────────────────────────────────── */
+/* Set out again on 18/11/2026 from the video (3:52–3:57 the east end, 4:41–4:50 the bed, the wardrobe and the door) and
+   written in REAL metres (b.real): 4.13 × 2.8, with the niche behind the TV wall on its west. Rulers: the mattress
+   (1.6 × 2.0), a coat hanger (0.41) under the wall cupboards, the bars of the cage. Its east wall has a wide window with
+   a sill, not a door. */
 export function buildParents(b, ctx) {
-  b.push(EX, 0, 0, 0);
+  b.real = true;
   const cherry = wood('#a8542a', 0.7), red = wood(C.bedred, 0.75), mah = wood(C.mahog, 0.85);
-  const X0 = P.NICHE.x0 - EX;      // the wardrobe and the shelves stand in the niche behind the TV wall, their fronts near the door wall
-  // wardrobe and the open shelves of bedding on the west wall
-  W(b, X0, 1.92); wardrobe(b, 1.2, 2.02, 0.55, 2, { mat: cherry, panels: [[0.12, 0.42], [0.5, 1.9]] }); b.pop();
-  W(b, X0, 0.7);
-  { const w = 0.62, d = 0.52;
+  const X0 = P.PAR.x0, X1 = P.PAR.x1, NX = P.NICHE.x0, NZ = P.sz(P.NICHE.z1), ZS = P.sz(P.PAR.z1), RH = P.CEILING;
+  // in the niche behind the TV wall: the two-door wardrobe at its south end, the open shelves of bedding north of it;
+  // their fronts stand a little behind the door wall (video 4:43)
+  W(b, NX, NZ - 0.03); wardrobe(b, 1.1, 2.02, 0.55, 2, { mat: cherry, panels: [[0.12, 0.42], [0.5, 1.9]] }); b.pop();
+  W(b, NX, 0.6);
+  { const w = 0.57, d = 0.52;
     b.box(cherry, 0, 0, 0, 0.025, 2.02, d, G); b.box(cherry, w - 0.025, 0, 0, w, 2.02, d, G); b.box(cherry, 0, 0, 0, w, 2.02, 0.015, G);
     const R = rng(8), cols = ['#f1ece0', '#c9d8c0', '#e8d0d6', '#d9e0ec', '#8fa39a', '#f3e9c9'];
     for (const y of [0.06, 0.55, 0.98, 1.4, 1.8]) { b.box(cherry, 0, y, 0, w, y + 0.024, d, U); if (y < 1.7) for (let i = 0; i < 3; i++) b.box(M.plain(cols[(R() * cols.length) | 0], 0.95), 0.05 + R() * 0.04, y + 0.024 + i * 0.1, 0.08, w - 0.05 - R() * 0.05, y + 0.12 + i * 0.1, d - 0.04 - R() * 0.06, {}); }
     b.solid(0, 0, 0, w, 2.02, d);
   }
   b.pop();
-  blob(b, X0, 0.08, X0 + 0.55, 1.92, 0.5);
-  // the bed, its head to the north wall, and the boarded frame behind it
-  N(b, 6.5, 0.07); bed(b, 1.6, 2.05, { frame: red, fh: 0.32, mh: 0.18, head: 0.95, headSlats: 4, foot: 0.4, sheet: M.cloth(floralTex('#a59aa6', ['#c98aa0', '#8f8a9a', '#d9c9d0', '#7a8a8a'], 4)), sheetUV: [1.1, 1.1] });
+  blob(b, NX, 0.03, NX + 0.55, NZ - 0.03, 0.5);
+  // the bed, its head to the north wall, 0.9 from the wardrobe; the boarded frame behind it
+  const bx = 6.82;
+  N(b, bx, 0.07); bed(b, 1.6, 2.05, { frame: red, fh: 0.32, mh: 0.18, head: 0.95, headSlats: 4, foot: 0.4, sheet: M.cloth(floralTex('#a59aa6', ['#c98aa0', '#8f8a9a', '#d9c9d0', '#7a8a8a'], 4)), sheetUV: [1.1, 1.1] });
   pillow(b, M.plain('#f2f0ea', 0.95), 0.42, 0.52, 0.32, 0.6, 0.4, 0.13, 4); pillow(b, M.cloth(floralTex('#f1ead2', ['#e88aa6', '#9fc79a', '#f0c23a'], 7)), 1.14, 0.52, 0.34, 0.6, 0.4, 0.13, -5);
   quiltRoll(b, M.cloth(floralTex('#5a6a5c', ['#8fa39a', '#c9d2c0', '#3f4a40'], 9)), 1.25, 0.5, 0.95, 0.9, 0.5, 0.26, 8);
   b.pop();
-  blob(b, 6.5, 0.07, 8.1, 2.14, 0.55);
-  { const x0 = 6.3, x1 = 8.28;
-    b.box(red, x0, 0.05, 0, x1, 2.3, 0.022, { uv: [1, 1] });
-    for (let y = 0.12; y < 2.28; y += 0.13) b.box(wood('#6a2c1a', 0.7), x0, y, 0.022, x1, y + 0.012, 0.026, { cast: false });
-    b.box(M.plain('#f1eee6', 0.9), x0 + 0.26, 0.7, 0.022, x1 - 0.26, 2.06, 0.03, { cast: false });
-    // the quarter-round shelves, then the wall cupboards with hangers hooked under them
-    for (const y of [1.76, 2.06, 2.36]) b.cyl(cherry, x1, y, 0, 0.19, 0.022, { seg: 16 });
-    b.cyl(M.plain('#17171a', 0.5), x1 + 0.06, 1.782, 0.08, 0.03, 0.07, { seg: 10 }); b.sphere(M.plain('#e8558a', 0.7), x1 + 0.06, 1.9, 0.08, 0.03, { seg: 8 }); b.bar(M.plain('#3f7a3a', 0.8), x1 + 0.06, 1.85, 0.08, x1 + 0.06, 1.9, 0.08, 0.006, {});
-    N(b, 8.47, 0, 1.76); wardrobe(b, 0.7, 0.64, 0.36, 4, { mat: cherry, panels: [], cornice: false, handle: 'none' });
-    for (let i = 0; i < 4; i++) b.box(M.chrome(), 0.06 + i * 0.175 + (i % 2 ? 0 : 0.06), 0.06, 0.36, 0.075 + i * 0.175 + (i % 2 ? 0 : 0.06), 0.3, 0.38, { cast: false });
+  blob(b, bx, 0.07, bx + 1.6, 2.14, 0.55);
+  const x0 = bx - 0.2, x1 = bx + 1.78;           // the frame: a pilaster each side of a white panel
+  {
+    b.box(red, x0, 0.05, 0, x1, 2.2, 0.022, { uv: [1, 1] });
+    for (let y = 0.12; y < 2.18; y += 0.13) b.box(wood('#6a2c1a', 0.7), x0, y, 0.022, x1, y + 0.012, 0.026, { cast: false });
+    b.box(M.plain('#f1eee6', 0.9), x0 + 0.24, 0.7, 0.022, x1 - 0.24, 1.96, 0.03, { cast: false });
+    b.box(M.plain('#e8e6de', 0.5), bx + 0.2, 2.3, 0, bx + 1.42, 2.35, 0.05, { cast: false }); b.cyl(ctx.lampMat('#f4f8ff', 2.0, 0.95), bx + 0.25, 2.285, 0.065, 0.016, 1.12, { rz: -90, seg: 8, cast: false });   // the tube lamp over it
+    /* east of the frame, the length of a hanger's ruler: three shelves with a rounded corner, then the wall cupboards — four
+       narrow doors, 1.06 m in all — with hangers hooked on their handles; one top board runs over both */
+    const cy0 = 1.5, cy1 = 2.22, sx = x1 + 0.3;
+    for (const y of [cy0, 1.86, cy1]) { b.box(cherry, x1 + 0.12, y, 0, sx, y + 0.022, 0.3, U); b.box(cherry, x1, y, 0, x1 + 0.12, y + 0.022, 0.18, U); b.cyl(cherry, x1 + 0.12, y, 0.18, 0.12, 0.022, { seg: 16 }); }
+    b.box(cherry, sx, cy1, 0, sx + 1.06, cy1 + 0.022, 0.34, U);
+    b.cyl(M.plain('#17171a', 0.5), x1 + 0.16, cy0 + 0.022, 0.12, 0.03, 0.07, { seg: 10 }); b.sphere(M.plain('#e8558a', 0.7), x1 + 0.16, cy0 + 0.2, 0.12, 0.03, { seg: 8 }); b.bar(M.plain('#3f7a3a', 0.8), x1 + 0.16, cy0 + 0.09, 0.12, x1 + 0.16, cy0 + 0.18, 0.12, 0.006, {});
+    b.box(M.plain('#f3f1ea', 0.8), x1 + 0.1, 1.882, 0.06, x1 + 0.27, 1.9, 0.2, { cast: false });
+    N(b, sx, 0, cy0); wardrobe(b, 1.06, cy1 - cy0, 0.33, 4, { mat: cherry, panels: [], cornice: false, handle: 'none' });
+    for (const x of [0.225, 0.29, 0.755, 0.82]) b.box(M.chrome(), x, 0.05, 0.33, x + 0.014, 0.3, 0.35, { cast: false });
     b.pop();
-    for (const [x, c] of [[8.62, '#17171a'], [8.95, '#f2e6a0']]) { b.bar(M.plain(c, 0.5), x, 1.76, 0.3, x, 1.68, 0.3, 0.006, {}); b.bar(M.plain(c, 0.5), x - 0.2, 1.6, 0.3, x, 1.68, 0.3, 0.008, {}); b.bar(M.plain(c, 0.5), x + 0.2, 1.6, 0.3, x, 1.68, 0.3, 0.008, {}); b.bar(M.plain(c, 0.5), x - 0.2, 1.6, 0.3, x + 0.2, 1.6, 0.3, 0.008, {}); }
+    for (const [x, c] of [[sx + 0.26, '#17171a'], [sx + 0.79, '#f2e6a0']]) { b.bar(M.plain(c, 0.5), x, cy0 + 0.06, 0.345, x, cy0 - 0.1, 0.33, 0.006, {}); b.bar(M.plain(c, 0.5), x - 0.2, cy0 - 0.2, 0.33, x, cy0 - 0.1, 0.33, 0.008, {}); b.bar(M.plain(c, 0.5), x + 0.2, cy0 - 0.2, 0.33, x, cy0 - 0.1, 0.33, 0.008, {}); b.bar(M.plain(c, 0.5), x - 0.2, cy0 - 0.2, 0.33, x + 0.2, cy0 - 0.2, 0.33, 0.008, {}); }
   }
-  // bedside cabinet with the house phone, and the small table that collects everything
-  N(b, 8.16, 0.05); cabinet(b, 0.46, 0.52, 0.42, 1, { mat: red });
+  // bedside cabinet with the house phone, and the low table that collects everything
+  N(b, bx + 1.64, 0.05); cabinet(b, 0.46, 0.52, 0.42, 1, { mat: red });
   b.box(M.plain('#ebe4cf', 0.5), 0.1, 0.52, 0.12, 0.34, 0.58, 0.32, {}); b.box(M.plain('#e2dac2', 0.5), 0.1, 0.58, 0.14, 0.17, 0.62, 0.3, {}); b.box(M.plain('#3a3a3a', 0.6), 0.2, 0.582, 0.2, 0.32, 0.585, 0.3, { cast: false });
+  ctx.hot.push({ id: 'phone', pos: b.at(0.23, 0.7, 0.23), r: 0.3 });
   b.pop();
-  N(b, 8.68, 0.06); table(b, 0.86, 0.5, 0.52, { mat: red, leg: 0.045 });
+  N(b, bx + 2.16, 0.06); table(b, 0.86, 0.5, 0.52, { mat: red, leg: 0.045 });
   { const R = rng(31), cols = ['#6fbf3a', '#f29a3a', '#3aa0d8', '#f2d23a', '#e8556a', '#f3f1ea', '#8a6fd0'];
     for (let i = 0; i < 12; i++) { const x = 0.08 + R() * 0.7, z = 0.08 + R() * 0.34; if (R() < 0.5) bottle(b, cols[(R() * 7) | 0], x, 0.5, z, 0.02 + R() * 0.012, 0.1 + R() * 0.1); else b.box(M.plain(cols[(R() * 7) | 0], 0.7), x - 0.05, 0.5, z - 0.04, x + 0.05, 0.54 + R() * 0.06, z + 0.04, {}); }
     b.box(M.plain('#7fd03a', 0.6), 0.3, 0.5, 0.08, 0.62, 0.56, 0.3, {}); b.box(M.plain('#e9a6c0', 0.7), 0.5, 0.2, 0.1, 0.8, 0.5, 0.4, {});
   }
   b.pop();
-  blob(b, 8.16, 0.05, 9.54, 0.58, 0.4);
-  hotE(ctx, { id: 'phone', pos: [8.39, 0.7, 0.28], r: 0.3 });
-  // the balcony door: long drapes on both sides, a fan, a stool
+  blob(b, bx + 1.64, 0.05, bx + 3.02, 0.58, 0.4);
+  // the pink fan in front of the table; in the corner a folded deck chair with a bag hung on it, and the cushioned stool
+  b.push(9.3, 0, 0.98, 235); standFan(b, { h: 1.05, r: 0.17, color: '#f2d7e2' }); b.pop();
+  b.rbox(M.cloth(floralTex('#b0412a', ['#e8b0a0', '#f2d6c0', '#7a2a1a'], 5)), X1 - 0.22, 0.62, 0.1, 0.34, 1.2, 0.03, 0, { rx: 7 }); b.sphere(M.plain('#f08ab0', 0.9), X1 - 0.24, 0.98, 0.17, 0.5, { sx: 0.3, sy: 0.3, sz: 0.1 });
+  b.push(X1 - 0.52, 0, 0.72, 0); stool(b, { w: 0.34, h: 0.42, mat: wood('#2c130d', 0.7) }); b.box(M.plain('#7f9aa0', 0.95), 0.02, 0.42, 0.02, 0.32, 0.48, 0.32, {}); b.pop();
+  /* the east wall: long drapes on a rod before the wide window — the green ones at the ends, the peach ones drawn over its
+     south half and bunched at the north, so one leaf shows; the knob that ties them back on the strip of wall by the corner */
   { const peach = cloth2(curtainTex('#e9b79a', 4)), green = cloth2(curtainTex('#c9cfae', 5));
-    E(b, 9.6, 0.5);
-    curtain(b, green, 0.0, 0.34, 0.06, 2.62, 0.05, { folds: 5 }); curtain(b, peach, 0.3, 0.68, 0.06, 2.62, 0.075, { folds: 6 });
-    curtain(b, peach, 1.74, 2.14, 0.06, 2.62, 0.075, { folds: 6 }); curtain(b, green, 2.1, 2.5, 0.06, 2.62, 0.05, { folds: 5 });
-    b.bar(M.plain('#d9d2c2', 0.5), -0.05, 2.64, 0.07, 2.6, 2.64, 0.07, 0.022, { round: true });
+    E(b, X1, 0.04);
+    curtain(b, green, 0.0, 0.3, 0.08, 2.28, 0.05, { folds: 5 }); curtain(b, peach, 0.26, 0.66, 0.08, 2.28, 0.075, { folds: 7 });
+    curtain(b, peach, 1.32, 2.12, 0.08, 2.28, 0.075, { folds: 9 }); curtain(b, green, 2.06, 2.42, 0.08, 2.28, 0.05, { folds: 5 });
+    b.bar(M.plain('#d9d2c2', 0.5), -0.03, 2.3, 0.07, 2.5, 2.3, 0.07, 0.022, { round: true });
+    b.cyl(M.plain('#1c1c1e', 0.5), 2.58, 1.22, 0, 0.018, 0.04, { rx: 90, seg: 8 });
     b.pop();
-    b.push(9.22, 0, 0.82, 250); standFan(b, { h: 1.05, r: 0.17, color: '#f2d7e2' }); b.pop();
-    b.push(9.1, 0, 2.38, 0); stool(b, { w: 0.3, h: 0.4, mat: wood('#2c130d', 0.7) }); b.pop();
   }
   // the desk in the south-east corner (its machine is set by era.js), the chair with a shirt over its back
-  S(b, 9.56, 3.48); desk(b, 1.1, 0.75, 0.55, { mat: cherry, ped: 0.34 });
-  ctx.spots.parDesk = spot(b, 0, 0.75, 0); ctx.spots.parFloor = spot(b, 0, 0, 0);
+  S(b, X1 - 0.04, ZS - 0.02); desk(b, 1.1, 0.75, 0.55, { mat: cherry, ped: 0.34 });
+  ctx.spots.parDesk = b.spot(0, 0.75, 0); ctx.spots.parFloor = b.spot(0, 0, 0);
   b.cyl(M.plain('#2a2a2c', 0.4), 0.95, 0.75, 0.38, 0.06, 0.015, { seg: 12 }); b.bar(M.plain('#2a2a2c', 0.4), 0.95, 0.76, 0.38, 0.95, 1.05, 0.3, 0.012, { round: true }); b.bar(M.plain('#2a2a2c', 0.4), 0.95, 1.05, 0.3, 0.82, 1.1, 0.42, 0.012, { round: true }); b.cyl(M.plain('#2a2a2c', 0.4), 0.82, 1.06, 0.42, 0.05, 0.06, { seg: 10, r2: 0.025 });
   b.pop();
-  blob(b, 8.46, 2.93, 9.56, 3.48, 0.45);
-  N(b, 8.72, 2.28); chair(b, { mat: wood('#5a2416', 0.6) }); b.box(M.plain('#f3f3f0', 0.95), -0.015, 0.55, -0.03, 0.435, 0.98, 0.035, {}); b.pop();
-  // on the south wall: the air conditioner, the hanging pockets, the row of hooks by the door with the day's clothes
-  b.box(M.plain('#f2f2ee', 0.4), 8.4, 2.44, 3.3, 9.25, 2.72, 3.5, {}); b.box(M.plain('#d4d6d6', 0.5), 8.44, 2.46, 3.296, 9.21, 2.51, 3.3, { cast: false });
-  b.box(M.plain('#3a8fc0', 0.9), 7.55, 1.15, 3.47, 7.98, 1.95, 3.5, {}); for (const y of [1.2, 1.46, 1.72]) b.box(M.plain('#4fa6d8', 0.9), 7.57, y, 3.455, 7.96, y + 0.2, 3.47, { cast: false });
-  b.box(mah, 6.62, 1.72, 3.48, 7.28, 1.76, 3.5, { cast: false });
+  blob(b, X1 - 1.14, ZS - 0.57, X1 - 0.04, ZS - 0.02, 0.45);
+  N(b, X1 - 0.88, ZS - 1.22); chair(b, { mat: wood('#5a2416', 0.6) }); b.box(M.plain('#f3f3f0', 0.95), -0.015, 0.55, -0.03, 0.435, 0.98, 0.035, {}); b.pop();
+  // on the south wall: the air conditioner, the calendar with the net of odds and ends, the row of hooks by the door with the day's clothes
+  b.box(M.plain('#f2f2ee', 0.4), X1 - 1.2, 2.18, ZS - 0.2, X1 - 0.38, 2.45, ZS, {}); b.box(M.plain('#d4d6d6', 0.5), X1 - 1.16, 2.2, ZS - 0.204, X1 - 0.42, 2.25, ZS - 0.2, { cast: false });
+  b.box(M.plain('#3a8fc0', 0.9), 8.2, 1.2, ZS - 0.03, 8.63, 1.95, ZS, {}); for (const y of [1.25, 1.48, 1.71]) b.box(M.plain('#4fa6d8', 0.9), 8.22, y, ZS - 0.045, 8.61, y + 0.18, ZS - 0.03, { cast: false });
+  b.box(mah, 6.82, 1.72, ZS - 0.02, 7.48, 1.76, ZS, { cast: false });
   { const R = rng(17), cl = [['#f3f3f0', 0.72], ['#8a8f96', 0.6], ['#9a7fd0', 0.52], ['#b8d86a', 0.5], ['#e9d0c0', 0.66]];
-    cl.forEach(([c, len], i) => { const x = 6.7 + i * 0.13; b.quad(new THREE.MeshStandardMaterial({ color: c, roughness: 0.95, side: THREE.DoubleSide }), '-z', x, 1.72 - len / 2, 3.44 - i * 0.012 - R() * 0.01, 0.3, len, { segA: 6, wave: [18, 0.018, i] }); });
+    cl.forEach(([c, len], i) => { const x = 6.9 + i * 0.13; b.quad(new THREE.MeshStandardMaterial({ color: c, roughness: 0.95, side: THREE.DoubleSide }), '-z', x, 1.72 - len / 2, ZS - 0.06 - i * 0.012 - R() * 0.01, 0.3, len, { segA: 6, wave: [18, 0.018, i] }); });
   }
-  switchPlate(b, P.PAR.x0 - EX, 1.3, 2.4, '+x');
+  switchPlate(b, X0, 1.3, P.sz(P.D2.a) - 0.14, '+x');
   // the vent fan high on the gallery wall, the ceiling lamp
-  b.cyl(M.plain('#e9e7e0', 0.5), 9.36, 2.46, 0, 0.16, 0.03, { rx: 90, seg: 18 }); for (let i = 0; i < 4; i++) b.rbox(M.plain('#cfcdc4', 0.5), 9.36, 2.46, 0.032, 0.28, 0.02, 0.004, 0, { rz: i * 45, cast: false });
-  b.cyl(M.plain('#e9e7e0', 0.5), 7.6, H - 0.03, 1.8, 0.2, 0.03, { seg: 20 }); b.cyl(ctx.lampMat('#fff4dc', 2.2, 0.9), 7.6, H - 0.075, 1.8, 0.17, 0.045, { seg: 20, cast: false });
-  b.pop();
+  b.cyl(M.plain('#e9e7e0', 0.5), X1 - 0.26, 2.28, 0, 0.14, 0.03, { rx: 90, seg: 18 }); for (let i = 0; i < 4; i++) b.rbox(M.plain('#cfcdc4', 0.5), X1 - 0.26, 2.28, 0.032, 0.25, 0.02, 0.004, 0, { rz: i * 45, cast: false });
+  b.cyl(M.plain('#e9e7e0', 0.5), 8.1, RH - 0.03, 1.4, 0.2, 0.03, { seg: 20 }); b.cyl(ctx.lampMat('#fff4dc', 2.2, 0.9), 8.1, RH - 0.075, 1.4, 0.17, 0.045, { seg: 20, cast: false });
+  b.real = false;
 }
 
 /** the piano's stool: black, buttoned */

@@ -30,14 +30,14 @@ try {
   const p4 = await pose(page);
   ok('→ turns', p4[3] !== p3[3], `${p3[3]}° → ${p4[3]}°`);
   // walls hold: walk into the north wall for a while
-  await page.evaluate(() => window.__world.setPose(2.5, 1.52, 0.8, 0, 0)); await page.keyboard.down('KeyW'); await wait(page, 2500); await page.keyboard.up('KeyW'); await wait(page, 200);
+  await page.evaluate(() => window.__world.setPose(4.3, 1.52, 0.9, 0, 0)); await page.keyboard.down('KeyW'); await wait(page, 2500); await page.keyboard.up('KeyW'); await wait(page, 200);
   const p5 = await pose(page);
   ok('a wall stops the walker', p5[2] > 0.15 && p5[2] < 0.8, `z = ${p5[2]}`);
   // rooms list
   await page.click('#b-rooms'); ok('rooms list opens', await page.evaluate(() => document.getElementById('rooms').classList.contains('on')));
   await page.click('#room-list li:nth-child(4) button'); await page.waitForTimeout(700); await wait(page, 100);
   const p6 = await pose(page);
-  ok('"Bếp" takes you to the kitchen', Math.abs(p6[0] - 2.55) < 0.05 && Math.abs(p6[2] - 3.4) < 0.05 && await page.evaluate(() => !document.getElementById('rooms').classList.contains('on')), JSON.stringify(p6));
+  ok('"Bếp" takes you to the kitchen', Math.abs(p6[0] - 2.75) < 0.05 && Math.abs(p6[2] - 2.6) < 0.05 && await page.evaluate(() => !document.getElementById('rooms').classList.contains('on')), JSON.stringify(p6));
   // year
   await page.focus('#year'); for (let i = 0; i < 3; i++) await page.keyboard.press('ArrowRight'); await wait(page, 300);
   ok('year slider moves by keys', await page.evaluate(() => document.getElementById('year-out').textContent === '2010' && document.getElementById('where').textContent.endsWith('2010') && document.documentElement.dataset.era === '2008'), await page.evaluate(() => document.getElementById('year-out').textContent));
@@ -66,7 +66,7 @@ try {
   const { page, ctx, logs } = await open({ width: 900, height: 560 }, false, { query: '?at=2010-06-15T21:00', hash: '#bep' });
   const st = await page.evaluate(() => ({ s: window.__world.state(), pose: window.__world.pose(), era: document.documentElement.dataset.era, toi: document.getElementById('h-toi').getAttribute('aria-pressed'), where: document.getElementById('where').textContent, back: [...document.querySelectorAll('.back')].every(a => a.hidden) }));
   ok('?at=2010-06-15T21:00 opens on 2010, in the evening', st.s.year === 2010 && st.s.hour === 'toi' && st.toi === 'true' && st.era === '2008' && st.where.endsWith('2010'), JSON.stringify(st.s));
-  ok('#bep opens in the kitchen', Math.abs(st.pose[0] - 2.55) < 0.05 && Math.abs(st.pose[2] - 3.4) < 0.05, JSON.stringify(st.pose));
+  ok('#bep opens in the kitchen', Math.abs(st.pose[0] - 2.75) < 0.05 && Math.abs(st.pose[2] - 2.6) < 0.05, JSON.stringify(st.pose));
   ok('a lone copy of the page shows no link back to the list', st.back);
   await ctx.close();
   const b = await open({ width: 900, height: 560 }, false, { query: '?at=1999-01-01T03:00' });
@@ -104,11 +104,11 @@ try {
   ok('phone: tapping the TV dot opens the card and switches it on', c1.on && c1.t === 'Tivi' && c1.b.startsWith('Đang bật'), JSON.stringify(c1) + ' at ' + tv.map(v => v.toFixed(0)));
   if (c1.on) await page.tap('#card .x');
   // tap on the floor: walk there
-  await page.evaluate(() => window.__world.setPose(2.6, 1.52, 2.9, 20, -30)); await wait(page, 100);
+  await page.evaluate(() => window.__world.setPose(2.6, 1.52, 2.35, 20, -30)); await wait(page, 100);
   const p3 = await pose(page); await page.touchscreen.tap(250, 300); await wait(page, 2500); const p4 = await pose(page);
   ok('phone: a tap on the floor walks there', Math.hypot(p4[0] - p3[0], p4[2] - p3[2]) > 0.3, `moved ${Math.hypot(p4[0] - p3[0], p4[2] - p3[2]).toFixed(2)} m`);
   // the same in the corner where the left thumb rests: a quick touch there is a tap too
-  await page.evaluate(() => window.__world.setPose(2.6, 1.52, 2.9, 20, -30)); await wait(page, 100);
+  await page.evaluate(() => window.__world.setPose(2.6, 1.52, 2.35, 20, -30)); await wait(page, 100);
   const p5 = await pose(page); await page.touchscreen.tap(90, 330); await wait(page, 2500); const p6 = await pose(page);
   ok('phone: a quick touch in the thumb corner is a tap too', Math.hypot(p6[0] - p5[0], p6[2] - p5[2]) > 0.3, `moved ${Math.hypot(p6[0] - p5[0], p6[2] - p5[2]).toFixed(2)} m`);
   // layout: nothing wider than the screen, the bar in two rows, buttons big enough

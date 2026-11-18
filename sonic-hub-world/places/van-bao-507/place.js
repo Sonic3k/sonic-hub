@@ -15,11 +15,14 @@ import { card, notes, sayYear } from './cards.js';
 
 /* Two moments of a day: "chieu" — a June afternoon about half an hour before sunset, the sun low in the west and
    coming in through the balcony door, as on the 2013 video — and "toi", nine in the evening, the lamps and screens on. */
-const E = P.EAST;        // the east half of the flat stands this much further east than its first numbers (see plan.js)
+const E = P.EAST;        // the big room stands this much further east than its first numbers (see plan.js)
+/* Everything in this file is in REAL metres. Where a position is still known by its place on the drawing's grid (the
+   rooms south of the living room, and heights above 1.5 m), D(x, y, z) puts it through the survey of plan.js. */
+const D = (x, y, z) => [x, P.sy(y), P.sz(z)];
 const light = {
   sun: [1, -0.135, -0.05],                                   // from the west, 8° above the horizon, drifting a little north
   shadow: { center: [5.4, 1.45, -1.3], left: -11.8, right: 11.8, top: 3.6, bottom: -3.4, near: 6, far: 64 },   // the flat and the near half of the gallery
-  lamps: { living: [2.75, 2.5, 1.75, 9], kitchen: [3.0, 2.55, 5.8, 7.5], bath: [0.92, 2.5, 6.6, 4.5], nook: [4.7 + E, 2.45, 5.9, 6.5], big: [8.5 + E, 2.5, 5.7, 8.5], parents: [7.6 + E, 2.5, 1.8, 8], gallery: [0.9, 2.55, -3.2, 9], screen: [4.25 + E, 1.05, 4.3, 2.6] },
+  lamps: { living: [3.4, 2.28, 1.4, 9], kitchen: [...D(3.0, 2.55, 5.8), 7.5], bath: [...D(0.92, 2.5, 6.6), 4.5], nook: [...D(4.7 + E, 2.45, 5.9), 6.5], big: [...D(8.5 + E, 2.5, 5.7), 8.5], parents: [8.1, 2.28, 1.4, 8], gallery: [...D(0.9, 2.55, -3.2), 9], screen: [...D(4.25 + E, 1.05, 4.3), 2.6] },
   hours: {
     chieu: {
       sky: { top: '#5d86c4', mid: '#c9b9c0', horizon: '#ffc98f', ground: '#6a6058', sun: '#fff1c8', glow: '#ff9a4a', stars: 0 },
@@ -38,55 +41,58 @@ const light = {
 };
 
 /* The walk the tour takes, in the order of the 2013 video: his corner, the big room, living room, kitchen, loggia,
-   the parents' room and its balcony, then out to the gallery and back in by the front door.
+   the parents' room and its window over the street, then out to the gallery and back in by the front door.
    A key is { p: [x, y, z], h: heading, pitch, t: seconds to get there, cut?: jump instead of walking, label? }. */
 const tour = [
-  { p: [4.8 + E, 1.22, 4.52], h: 266, pitch: -14, t: 0.01, cut: true, label: 'Góc máy tính' },
-  { p: [4.8 + E, 1.22, 4.52], h: 266, pitch: -14, t: 3.2 },
-  { p: [4.95 + E, 1.5, 5.3], h: 214, pitch: -18, t: 3.4 },
-  { p: [5.1 + E, 1.5, 6.3], h: 168, pitch: -6, t: 3.4 },
-  { p: [5.05 + E, 1.5, 6.1], h: 118, pitch: 8, t: 3.0 },
-  { p: [5.2 + E, 1.52, 4.42], h: 75, pitch: 0, t: 3.0 },
-  { p: [6.5 + E, 1.52, 4.42], h: 100, pitch: -4, t: 3.0, label: 'Phòng lớn' },
-  { p: [7.6 + E, 1.52, 4.7], h: 100, pitch: -6, t: 3.0 },
-  { p: [8.85 + E, 1.52, 5.3], h: 18, pitch: -5, t: 3.6 },
-  { p: [8.85 + E, 1.52, 5.4], h: 214, pitch: -12, t: 3.6 },
-  { p: [7.6 + E, 1.52, 4.7], h: 262, pitch: -3, t: 3.2 },
-  { p: [6.0 + E, 1.52, 4.42], h: 280, pitch: -2, t: 2.6 },
-  { p: [5.1 + E, 1.52, 4.3], h: 345, pitch: 0, t: 2.4 },
-  { p: [5.05 + E, 1.52, 3.2], h: 300, pitch: -2, t: 2.2 },
-  { p: [4.2, 1.52, 2.25], h: 298, pitch: -5, t: 3.2, label: 'Phòng khách' },
-  { p: [2.9, 1.52, 2.3], h: 72, pitch: -2, t: 4.2 },
-  { p: [2.6, 1.52, 2.2], h: 240, pitch: -4, t: 4.2 },
-  { p: [2.65, 1.52, 3.2], h: 178, pitch: -6, t: 3.0 },
-  { p: [2.95, 1.52, 4.5], h: 172, pitch: -10, t: 3.2, label: 'Bếp' },
-  { p: [2.5, 1.52, 4.3], h: 252, pitch: -8, t: 2.6, label: 'Chỗ giặt, nhà tắm' },
-  { p: [1.25, 1.52, 4.6], h: 192, pitch: -7, t: 3.2 },
-  { p: [2.6, 1.52, 4.35], h: 140, pitch: -6, t: 3.0 },
-  { p: [3.05, 1.52, 6.4], h: 180, pitch: -4, t: 3.0 },
-  { p: [3.13, 1.52, 7.6], h: 182, pitch: -4, t: 2.2 },
-  { p: [3.2, 1.52, 8.9], h: 110, pitch: -6, t: 2.6, label: 'Lô gia' },
-  { p: [4.2, 1.52, 8.98], h: 92, pitch: -8, t: 3.0 },
-  { p: [5.0, 1.52, 8.98], h: 150, pitch: -14, t: 3.0 },
-  { p: [4.9, 1.52, 8.98], h: 262, pitch: -5, t: 3.4 },
-  { p: [3.3, 1.52, 8.95], h: 290, pitch: -4, t: 3.2 },
-  { p: [3.13, 1.52, 7.5], h: 355, pitch: -4, t: 2.6 },
-  { p: [3.0, 1.52, 6.2], h: 354, pitch: -4, t: 2.4 },
-  { p: [2.7, 1.52, 3.9], h: 2, pitch: -3, t: 3.2 },
-  { p: [3.9, 1.52, 2.92], h: 78, pitch: -2, t: 3.0 },
-  { p: [5.15 + E, 1.52, 2.95], h: 86, pitch: -4, t: 3.0, label: 'Phòng bố mẹ' },
-  { p: [6.2 + E, 1.52, 2.7], h: 42, pitch: -8, t: 3.0 },
-  { p: [8.4 + E, 1.52, 2.42], h: 78, pitch: -3, t: 3.6 },
-  { p: [9.0 + E, 1.52, 1.52], h: 88, pitch: -3, t: 2.6 },
-  { p: [10.15 + E, 1.52, 1.5], h: 82, pitch: -8, t: 3.0, label: 'Ban công nhìn xuống phố' },
-  { p: [10.15 + E, 1.52, 1.5], h: 128, pitch: -20, t: 3.4 },
+  { p: D(4.8 + E, 1.22, 4.52), h: 266, pitch: -14, t: 0.01, cut: true, label: 'Góc máy tính' },
+  { p: D(4.8 + E, 1.22, 4.52), h: 266, pitch: -14, t: 3.2 },
+  { p: D(4.95 + E, 1.5, 5.3), h: 214, pitch: -18, t: 3.4 },
+  { p: D(5.1 + E, 1.5, 6.3), h: 168, pitch: -6, t: 3.4 },
+  { p: D(5.05 + E, 1.5, 6.1), h: 118, pitch: 8, t: 3.0 },
+  { p: D(5.2 + E, 1.52, 4.42), h: 75, pitch: 0, t: 3.0 },
+  { p: D(6.5 + E, 1.52, 4.42), h: 100, pitch: -4, t: 3.0, label: 'Phòng lớn' },
+  { p: D(7.6 + E, 1.52, 4.7), h: 100, pitch: -6, t: 3.0 },
+  { p: D(8.85 + E, 1.52, 5.3), h: 18, pitch: -5, t: 3.6 },
+  { p: D(8.85 + E, 1.52, 5.4), h: 214, pitch: -12, t: 3.6 },
+  { p: D(7.6 + E, 1.52, 4.7), h: 262, pitch: -3, t: 3.2 },
+  { p: D(6.0 + E, 1.52, 4.42), h: 280, pitch: -2, t: 2.6 },
+  { p: [5.72, 1.52, 3.62], h: 330, pitch: 0, t: 2.4 },                        // to his door, between the pushed-in chair and the open leaf
+  { p: [5.61, 1.52, 3.0], h: 350, pitch: -2, t: 1.6 },
+  { p: [5.58, 1.52, 2.36], h: 292, pitch: -2, t: 1.8 },                       // the lobby
+  { p: [4.3, 1.52, 2.2], h: 296, pitch: -5, t: 3.0, label: 'Phòng khách' },
+  { p: [2.75, 1.52, 2.1], h: 72, pitch: -2, t: 4.0 },
+  { p: [2.35, 1.52, 2.0], h: 238, pitch: -4, t: 4.0 },
+  { p: [2.75, 1.52, 2.5], h: 178, pitch: -6, t: 3.0 },
+  { p: D(2.95, 1.52, 4.5), h: 172, pitch: -10, t: 3.2, label: 'Bếp' },
+  { p: D(2.5, 1.52, 4.3), h: 252, pitch: -8, t: 2.6, label: 'Chỗ giặt, nhà tắm' },
+  { p: D(1.25, 1.52, 4.6), h: 192, pitch: -7, t: 3.2 },
+  { p: D(2.6, 1.52, 4.35), h: 140, pitch: -6, t: 3.0 },
+  { p: D(3.05, 1.52, 6.4), h: 180, pitch: -4, t: 3.0 },
+  { p: D(3.13, 1.52, 7.6), h: 182, pitch: -4, t: 2.2 },
+  { p: D(3.2, 1.52, 8.9), h: 110, pitch: -6, t: 2.6, label: 'Lô gia' },
+  { p: D(4.2, 1.52, 8.98), h: 92, pitch: -8, t: 3.0 },
+  { p: D(5.0, 1.52, 8.98), h: 150, pitch: -14, t: 3.0 },
+  { p: D(4.9, 1.52, 8.98), h: 262, pitch: -5, t: 3.4 },
+  { p: D(3.3, 1.52, 8.95), h: 290, pitch: -4, t: 3.2 },
+  { p: D(3.13, 1.52, 7.5), h: 355, pitch: -4, t: 2.6 },
+  { p: D(3.0, 1.52, 6.2), h: 354, pitch: -4, t: 2.4 },
+  { p: D(2.75, 1.52, 4.0), h: 2, pitch: -3, t: 3.2 },
+  { p: [2.8, 1.52, 2.55], h: 40, pitch: -2, t: 2.0 },
+  { p: [4.3, 1.52, 2.3], h: 82, pitch: -2, t: 2.6 },
+  { p: [5.58, 1.52, 2.36], h: 88, pitch: -4, t: 2.4, label: 'Phòng bố mẹ' },
+  { p: [6.5, 1.52, 2.42], h: 44, pitch: -8, t: 2.6 },
+  { p: [8.62, 1.52, 2.46], h: 20, pitch: -10, t: 3.6 },
+  { p: [8.8, 1.52, 1.4], h: 86, pitch: -3, t: 2.6 },
+  { p: [9.85, 1.52, 1.36], h: 90, pitch: -6, t: 2.6, label: 'Cửa sổ nhìn xuống phố' },
+  { p: [9.85, 1.52, 1.36], h: 128, pitch: -20, t: 3.4 },
   { p: [0.95, 1.52, -9.0], h: 180, pitch: -3, t: 0.01, cut: true, label: 'Hành lang tầng 5' },
   { p: [0.95, 1.52, -6.2], h: 178, pitch: -3, t: 4.2 },
-  { p: [0.75, 1.52, -3.6], h: 255, pitch: -9, t: 4.0 },
-  { p: [0.7, 1.52, -2.2], h: 186, pitch: -2, t: 3.4 },
-  { p: [0.68, 1.52, -0.7], h: 180, pitch: -3, t: 2.8 },
-  { p: [0.7, 1.52, 0.75], h: 150, pitch: -3, t: 2.8, label: 'Về nhà' },
-  { p: [1.1, 1.52, 2.6], h: 62, pitch: -4, t: 3.2 },
+  { p: [0.82, 1.52, -3.6], h: 255, pitch: -9, t: 4.0 },
+  { p: [0.95, 1.52, -2.2], h: 184, pitch: -2, t: 3.4 },
+  { p: [0.98, 1.52, -0.7], h: 180, pitch: -3, t: 2.8 },
+  { p: [0.96, 1.52, 0.62], h: 150, pitch: -3, t: 2.8, label: 'Về nhà' },
+  { p: [0.82, 1.52, 1.8], h: 100, pitch: -4, t: 2.4 },
+  { p: [1.1, 1.52, 2.05], h: 62, pitch: -4, t: 1.6 },
 ];
 
 export default {
@@ -94,14 +100,14 @@ export default {
   views: P.VIEWS,
   start: 'phong-khach',
   /* how far the walker may go: the flat, its balconies and loggia, the gallery as far as the stairs */
-  bounds: { x0: -1.14, x1: 10.56 + E, z0: -12.0, z1: 9.27 },
+  bounds: { x0: -1.14, x1: 10.56 + E, z0: -12.0, z1: P.sz(9.27) },
   light, tour, card, notes, sayYear,
 
   /** Builds the flat into the scene. `w` is what the engine lends: { scene, shared (the solids), ctx (what rooms hand
    *  back: bright dots, spots for the machines, lamp shades), renderer }. Returns what the engine may ask of it later. */
   build({ scene, shared, ctx }) {
-    const b = new Builder(shared);
-    buildShell(b, scene, shared);
+    const b = new Builder(shared, P.SURVEY);            // what is laid down on the drawing's grid lands where it was measured (plan.js)
+    b.shell = true; buildShell(b, scene, shared); b.shell = false;
     buildLiving(b, ctx); buildKitchen(b, ctx); buildOutsideRooms(b, ctx);
     buildBigRoom(b, ctx); buildParents(b, ctx);
     b.build(scene);

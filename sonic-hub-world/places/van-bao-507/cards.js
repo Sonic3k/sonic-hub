@@ -8,15 +8,17 @@ export const notes = {
   body: [
     ['p', 'Mặt bằng, đồ đạc và chỗ đặt của chúng theo hai video quay nhà tháng 6/2013 (Hydrocity → [2013.06] Van Bao Home), mấy tấm ảnh chụp ở nhà ngày 22/9/2012, một tấm 25/5/2013, hai tấm Tết 2009 (bể cá, tượng Di Lặc) và phóng sự về onthi.com quay ở phòng lớn ngày 23/4/2008.'],
     ['p', 'Đã rà lại theo từng khung hình: bể cá nằm trên tường phía bếp; sau mảng tường đó là chỗ giặt có bồn rửa và máy giặt, cửa nhà tắm mở từ đấy; hai cửa phòng ngủ mở ra một hốc nhỏ ở cuối phòng khách; mặt nam của bếp và phòng lớn là một đường thẳng; lô gia treo ngoài bếp, chạy sang đông tới sát cửa sổ phòng lớn, và ô cửa sổ ấy bị dãy tủ (chỗ hốc bàn học) chia đôi.'],
+    ['p', 'Đo lại ngày 18/11/2026 bằng những vật đã biết cỡ có trong ảnh và video — bóng tuýp 1,2 m trên tường phòng khách, bình nước 19 lít, bệ bếp, gạch lát bếp 50 cm: dải phía bắc (phòng khách, hốc cửa, phòng bố mẹ, hai ban công) chỉ sâu 2,8 m chứ không phải 3,5 m như bản vẽ đầu; phòng khách dài 5,25 m; các phòng cộng lại khoảng 76 m² (bản vẽ đầu: 84).'],
     ['p', 'Máy tính, điện thoại và ngày tháng của chúng lấy từ mục Máy tính của Sonic Hub.'],
     ['p', 'Những chỗ đoán:'],
     ['ul', [
-      'Kích thước: phòng khách, bếp, chỗ giặt, nhà tắm đo theo hình (lệch chừng 20–30 cm); hai phòng ngủ và độ sâu lô gia vẫn là ước.',
-      'Trần cao 2,75 m: đo theo hai tấm ảnh (2,64–2,74 m và 2,7–2,9 m), chưa có số đo thật.',
+      'Kích thước: phòng khách, bếp, chỗ giặt, nhà tắm đo theo hình (lệch chừng 10–25 cm); phòng lớn, chiều dài phòng bố mẹ và độ sâu lô gia vẫn là ước.',
+      'Trần cao khoảng 2,65 m: hai cách đo cho 2,5–2,65 m và 2,6–2,8 m, chưa có số đo thật.',
+      'Phòng bố mẹ: tường phía đông là một cửa sổ rộng có bậu, ngoài là lồng sắt trên khoảng ban công còn lại (video 3:52–4:31). Tường ấy đứng ở đâu và lồng sâu bao nhiêu (đặt 1 m) là ước.',
       'Trước 2009 chỉ có phóng sự tháng 4/2008 (quay trong phòng lớn); phần còn lại của 2005–2008 dựng theo những năm sau.',
       'Đàn piano đặt từ 2009 (ảnh sớm nhất 9/2009); tháng 4/2008 chỗ đó còn là bàn học.',
       'Tủ lạnh: chiếc hai cửa đứng đầu bếp như ảnh 9/2012, đặt cho mọi năm. Góc bếp cạnh cửa lô gia để trống.',
-      'Mảng tường dày giữa bếp và phòng lớn, và độ sâu của hốc trước hai cửa phòng ngủ (80 cm).',
+      'Mảng tường dày giữa bếp và phòng lớn, và độ sâu của hốc trước hai cửa phòng ngủ (70 cm).',
       'Nhà giữ nguyên bài trí của 2013 cho cả 2005–2012; chỉ máy móc và tờ lịch đổi theo năm.',
       'Chiếc máy Win XP cũ đặt ở bàn phòng bố mẹ trong 2006–2008.',
       'Tivi: loại đèn hình đến 2009, màn hình phẳng từ 2010.',
@@ -48,8 +50,8 @@ export function card(id, { year, hour, extra }) {
       ? { title: 'Đàn piano', body: [['p', 'Đàn đứng màu đen, phủ khăn ren, kê sát tường dưới mấy tầng giá sách.'], ['p', 'Mỗi lần chạm là một hợp âm. Đàn có trong ảnh từ tháng 9/2009; năm đàn về (2009) là đoán.', 'dim']] }
       : { title: 'Bàn học', body: [['p', 'Trước khi có đàn piano, góc này là bàn học cạnh cửa sổ, dưới mấy tầng giá sách treo tường.'], ['p', 'Phóng sự truyền hình về onthi.com quay ngay tại bàn này ngày 23/4/2008 (2007-2017 → onthi.com → onthi_vcd.mp4).', 'dim']] };
     case 'fish': return { title: 'Bể cá', body: [['p', 'Bể treo tường, khung gỗ như khung tranh, trên mảng tường ốp đá phía bếp, sát góc ban công. Dưới là chiếc tủ thấp.'], ['p', 'Vị trí theo video 6/2013 (phút 3:23). Ảnh mùng 2 Tết 2009 (Family → 2009 → Nha): cành đào cắm ngay trước bể.', 'dim']] };
-    case 'dilac': return { title: 'Tượng Di Lặc', body: [['p', 'Tượng gỗ nâng thỏi vàng qua đầu, đứng ở đầu kệ tivi.'], ['p', 'Có trong ảnh Tết 2009 và trong video 2013.', 'dim']] };
-    case 'door507': return { title: 'Cửa căn 507', body: [['p', 'Cửa gỗ hai cánh, ngoài là cửa sắt song dọc gắn biển số 507.'], ['p', 'Theo video hành lang tháng 6/2013.', 'dim']] };
+    case 'dilac': return { title: 'Tượng Di Lặc', body: [['p', 'Tượng gỗ nhỏ nâng thỏi vàng qua đầu, đứng trên kệ tivi, cạnh màn hình.'], ['p', 'Có trong ảnh Tết 2009, ảnh 22/9/2012 và video 2013.', 'dim']] };
+    case 'door507': return { title: 'Cửa căn 507', body: [['p', 'Cửa gỗ hai cánh sát góc nhà: cánh nhỏ đóng im, cánh lớn có tay nắm; ngoài là cửa sắt song dọc gắn biển số 507.'], ['p', 'Theo video tháng 6/2013 (4:52–5:01).', 'dim']] };
     case 'gallery': return { title: 'Hành lang tầng 5', body: [['p', 'Hành lang chung lát gạch bông, lan can bê tông nan đứng; 507 là căn cuối dãy.'], ['p', 'Đi dọc hành lang, qua mấy căn bên cạnh là tới cầu thang.', 'dim']] };
     case 'globe': return { title: 'Quả địa cầu', body: [['p', 'Đặt trên nóc dãy tủ ngăn đôi phòng lớn, nên đứng bên nào cũng thấy.']] };
     case 'books': return { title: 'Giá sách', body: [['p', 'Giá sách kín tường, từ cửa phòng tới cây đàn.']] };

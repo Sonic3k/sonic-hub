@@ -61,6 +61,13 @@ for a shade that glows when the hour is lit, `ctx.spots` for places where someth
 
 Coordinates: metres; x east, z south, y up. A heading is in degrees clockwise from north.
 
+**A place measured after it was drawn.** `new Builder(shared, survey)` takes a survey — `{ y(y), z(z), rigid }`, two
+rising functions from the drawing's grid to the measured place — and puts everything laid down through it: furniture
+built inside a frame (`push`) moves whole with the frame's origin, walls are mapped point by point (`b.shell = true`),
+heights are squeezed. `b.real = true` switches it off for code already written in measured metres; `b.at(x, y, z)` and
+`b.spot(x, y, z)` give real positions to hand back through `ctx`. Flat 507 is built this way since its re-survey
+(`places/van-bao-507/plan.js` tells the story); a place drawn to measure needs none of it.
+
 ### Adding a place
 
 1. `places/<id>/meta.js` and `place.js` (start from `van-bao-507`; `plan.js` first — every room, door and window as numbers).
