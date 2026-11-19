@@ -21,10 +21,11 @@
    opened, and stay when there is no connection. A game built with no service to talk to (api left empty) has the
    game's own cast and nothing else.
 
-   Pictures are handed out at a few widths: 320, 640, 960, 1280 and 1920 pixels. An address asks for the one that
-   fits the place: the place's width, half as much again on a screen with finer dots than CSS pixels, and from there
-   the next width up. Looked at large, it is 1280 on a phone and 1920 on a wider screen. An address names the
-   picture's version, so a browser keeps a picture for good and fetches another only when she is given another. */
+   A picture is not read from the service: it is kept on the hub's CDN, and the cast says at which address. The CDN
+   hands a picture out at a few widths (320, 640, 960, 1280 and 1920 pixels), whichever its address asks for with
+   ?width=. cast.photo() asks for the one that fits the place: the place's width, half as much again on a screen
+   with finer dots than CSS pixels, and from there the next width up. Looked at large, it is 1280 on a phone and
+   1920 on a wider screen. A picture's address is its own for good: another picture is at another address. */
 function SonicCast(opt) {
   const api = String(opt.api || '').replace(/\/+$/, ''), game = opt.game;
   const onChange = opt.onChange || (() => {});
@@ -33,13 +34,13 @@ function SonicCast(opt) {
   const screen = opt.screen || (() => ({ fine: typeof devicePixelRatio === 'number' && devicePixelRatio > 1, narrow: typeof matchMedia === 'function' && matchMedia('(max-width: 760px)').matches }));
   const KEY = 'sonic-cast.' + game, WIDTHS = [320, 640, 960, 1280, 1920], PROFILE = 640, WAIT_MS = 8000;
 
-  /** id → { name, photo }, only for those who were given something; kept as the service's own answer */
+  /** id → { name, photo }, only for those who were given something. photo: her picture's address at the CDN, with no width asked for yet */
   let members = {}, heard = null;
   const take = list => {
     const next = {};
     for (const m of Array.isArray(list) ? list : []) {
       if (!m || typeof m.id !== 'string') continue;
-      const name = typeof m.name === 'string' && m.name ? m.name : null, photo = Number.isSafeInteger(m.photo) && m.photo > 0 ? m.photo : null;
+      const name = typeof m.name === 'string' && m.name ? m.name : null, photo = typeof m.photo === 'string' && /^https?:\/\/[^\s?#]+$/.test(m.photo) ? m.photo : null;
       if (name !== null || photo !== null) next[m.id] = { name, photo };
     }
     return next;
@@ -82,7 +83,7 @@ function SonicCast(opt) {
     name: id => (members[id] ? members[id].name : null),
     photo(id, px) {
       const m = members[id];
-      return api && m && m.photo ? `${api}/api/games/${encodeURIComponent(game)}/cast/${encodeURIComponent(id)}/photo?v=${m.photo}&width=${widthFor(px)}` : '';
+      return api && m && m.photo ? `${m.photo}?width=${widthFor(px)}` : '';
     },
     heard: () => heard,
     refresh,

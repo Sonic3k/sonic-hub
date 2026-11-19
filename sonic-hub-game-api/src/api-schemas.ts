@@ -59,16 +59,11 @@ export const PutMemberBody = z.object({
 });
 export type PutMemberInput = z.infer<typeof PutMemberBody>;
 
-/** How wide a place the picture is wanted for, in pixels. Left out, it is the width a profile is shown at. */
-export const PhotoWidth = z
-  .union([z.undefined(), z.string().regex(/^[1-9][0-9]{0,4}$/, 'a width is a whole number of pixels')])
-  .transform((s) => (s === undefined ? undefined : Number(s)));
-
 /** A member of a cast as the API gives her: only what was changed here. */
 export interface MemberView {
   id: string;
   /** null: the game's own name */
   name: string | null;
-  /** The version of her picture, which its address names (…/photo?v=), or null when she has none. */
-  photo: number | null;
+  /** The address of her picture at the CDN, or null when she has none. A width is asked for by adding ?width= to it. */
+  photo: string | null;
 }

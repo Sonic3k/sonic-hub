@@ -9,8 +9,9 @@ Nobody signs in, so anyone who can open a game can also rename, play or remove i
 
 A game also has a **cast**: the characters a player meets in it. The game knows them, each by a key of its own
 (`mina`, `celeste`). Here any of them can be given another name and a picture, which the game then shows in place
-of its own. Everyone reads these; changing them takes the admin key (`ADMIN_KEY`), and a game brings its own page
-for doing so (Keep It Down's is at `/admin` on the game's address).
+of its own. As with players, nobody signs in: whoever opens the page a game brings for keeping its cast (Keep It
+Down's is at `/admin` on the game's address) changes it. A name is kept here. A picture goes into the hub's bucket
+as it came and is read through the hub's CDN, which hands it out at whatever width its address asks for.
 
 ## For a game
 
@@ -39,10 +40,11 @@ cast.photo('mina', 54);      // the address of her picture for a place 54 CSS pi
 cast.photo('mina', 'full');  // for looking at it as large as the screen
 ```
 
-Pictures are handed out at five widths: 320, 640, 960, 1280 and 1920 pixels. The client asks for the one that fits
-the place (half as much again on a screen with finer dots, then the next width up; looked at large, 1280 on a phone
-and 1920 on a wider screen). What was last heard is kept in the browser, so names and pictures are there at once
-the next time and stay when there is no connection.
+A picture is not read from this service: the cast gives its address at the CDN, and the client asks there for the
+width that fits the place, with `?width=`: one of the CDN's five (320, 640, 960, 1280, 1920), which is the place's
+width, half as much again on a screen with finer dots, then the next one up; looked at large, 1280 on a phone and
+1920 on a wider screen. What was last heard is kept in the browser, so names and pictures are there at once the
+next time and stay when there is no connection.
 
 ## The API
 
@@ -53,16 +55,11 @@ All under `/api`. Every answer carries `X-Now` (the service's clock, ms) and is 
 | `GET /games/{game}/players` | `{ max, epoch, players: [{ id, name, data, version, createdAt, updatedAt, playedAt }] }`, oldest first |
 | `PUT /games/{game}/players/{id}` | one write: `{ base, name?, data?, at? }` → the player as it now stands |
 | `DELETE /games/{game}/players/{id}` | removes a player (204, also when already gone) |
-| `GET /games/{game}/cast` | `{ cast: [{ id, name, photo }] }`: who was given a name (else `null`) or a picture (its version, else `null`) |
-| `GET /games/{game}/cast/{id}/photo` | her picture, a WebP file. `?width=` how wide a place it is for (the next of the five widths up; 640 when left out); `?v=` its version |
-| `PUT /games/{game}/cast/{id}` | 🔑 `{ name }`: the name she is to go by, at most 24 signs; `null` gives the game's own back |
-| `PUT /games/{game}/cast/{id}/photo` | 🔑 the picture itself as the body: a JPEG, PNG or WebP file, with its kind as the `Content-Type` |
-| `DELETE /games/{game}/cast/{id}/photo` | 🔑 takes her picture away |
-| `GET /admin` | 🔑 `{ ok: true, photoBytes }`: is this the key, and how large a picture may be |
+| `GET /games/{game}/cast` | `{ cast: [{ id, name, photo }], photoBytes }`: who was given a name (else `null`) or a picture (its address at the CDN, else `null`); `photoBytes` is how large a picture may be, `null` where there is no bucket to keep one in |
+| `PUT /games/{game}/cast/{id}` | `{ name }`: the name she is to go by, at most 24 signs; `null` gives the game's own back |
+| `PUT /games/{game}/cast/{id}/photo` | the picture itself as the body: a JPEG, PNG or WebP file, with its kind as the `Content-Type` |
+| `DELETE /games/{game}/cast/{id}/photo` | takes her picture away |
 | `GET /client.js`, `GET /cast.js`, `GET /health` | the two browser clients; `{ ok: true }` |
-
-🔑 needs the admin key in `X-Admin-Key`. Without it: `401 not_admin`; where the service has no `ADMIN_KEY`:
-`503 no_admin`; after ten wrong keys from one address: `429 slow_down` for ten minutes, even with the right one.
 
 `id` is a UUID the browser chooses, so a new player sent twice is one player. `base` is the version the write was
 made from (0 for a new player): a write from an older version is refused with `409 { error: 'stale', player }`, the
@@ -71,12 +68,13 @@ has another, and a browser then sends what it still holds again instead of takin
 `404 gone` (with `epoch`), `409 full` (with `max`), `409 taken`, `400 invalid`, `413 too_big`, `429 slow_down`
 (with `retryAfter`).
 
-A picture is kept as copies of itself, one for each of the five widths up to its own (a picture narrower than 320
-pixels is kept as it came), each drawn afresh: upright, whatever way the phone was held, and without what the file
-said about itself (where it was taken, by what). An address that names the picture's version (`?v=`, as the cast
-gives it) always leads to that picture and may be kept by a browser for good; a new picture has a new version. The
-key is looked at before a single byte of a picture is read. What is refused: `415 not_a_picture` (not sent as a
-picture), `400 not_a_picture` (not a JPEG, PNG or WebP file, damaged, or more than 100 megapixels), `413 too_big`.
+A picture is kept as it was sent: the file goes into the bucket under `games/{game}/cast/{id}/<name>.jpg` (`.png`,
+`.webp`), and all that is looked at here is how it begins, which says what kind of file it is. Nothing is resized
+here: that is the CDN's work. The file's name is made from the file itself, so another picture is at another
+address, and an address can be kept for good by the CDN and by every browser; the file a new picture takes the
+place of is removed from the bucket. What is refused: `415 not_a_picture` (not sent as a picture), `400
+not_a_picture` (not a JPEG, PNG or WebP file), `413 too_big`, `409 full`, `503 no_storage` (the service has no
+bucket) and `502 storage_failed` (the bucket did not take it: she keeps the picture she had).
 
 ## Run it
 
@@ -95,22 +93,27 @@ After a backup has been put back, give the database a new epoch (`update service
 and start the service again: browsers then send what the backup lacks, and where both hold a player, the save
 played last stands. Without that, a player made after the backup is taken for removed.
 
-`ADMIN_KEY` is what lets a cast be changed: at least 16 characters, sent by the page that keeps the cast as
-`X-Admin-Key`. Left unset, casts are read as ever and changed by nobody.
+Pictures go where the hub's other files are: `B2_KEY_ID` and `B2_APP_KEY` open the bucket (the same pair the
+hub's other services have; `B2_BUCKET` is `sonic-hub`, `B2_ENDPOINT` `s3.us-east-005.backblazeb2.com` and
+`B2_REGION` `us-east-005` unless set). They are kept in the folder `MEDIA_PREFIX` (`games`) and read at `CDN_BASE`
+(`https://sonic-hub.b-cdn.net`). Without the pair, names are given as ever and a picture is turned away.
 
-Limits, all by environment: `PLAYERS_PER_GAME` 3, `GAMES` 50 (how many different games players are kept for),
-`SAVE_BYTES` 65536, `REQUESTS_PER_MINUTE` 240 from one address, `PHOTO_BYTES` 16777216 (one picture as it is sent
-up) and `CAST_PER_GAME` 200 (members of one game's cast with a name or a picture). `CORS_ORIGIN` is `*` unless set.
+Limits, all by environment: `PLAYERS_PER_GAME` 3, `GAMES` 50 (how many different games players are kept for, and
+as many a cast), `SAVE_BYTES` 65536, `REQUESTS_PER_MINUTE` 240 from one address, `PHOTO_BYTES` 16777216 (one
+picture) and `CAST_PER_GAME` 200 (members of one game's cast with a name or a picture). `CORS_ORIGIN` is `*`
+unless set.
 
 A caller's address is read from the header the proxy in front writes: `X-Real-IP` on Railway, where nothing needs
 setting. Elsewhere `ADDRESS_HEADER` names it, and without one it is the address the connection came from. It must
 never be a header a caller could send. An IPv6 caller is counted by its network (/64).
 
 On Railway: the service `sonic-hub-game-api`, with this folder as its root, built by Railpack (`npm ci`,
-`npm run build`, `npm start`), health check `/api/health`. A merge that touches this folder deploys it. Pictures
-are resized with `sharp`, which brings its own library from npm: nothing has to be installed beside it.
+`npm run build`, `npm start`), health check `/api/health`. A merge that touches this folder deploys it.
 
 ## What it does not do
+
+Nobody signs in: whoever can reach the service can change a game's players and its cast. How the hub is to sign
+anyone in is not settled, and nothing here takes a side on it.
 
 A save is taken as the browser sends it. A game whose results must be trusted (points that unlock something the
 service itself hands out) will need its results checked here, by replaying the game from its moves.

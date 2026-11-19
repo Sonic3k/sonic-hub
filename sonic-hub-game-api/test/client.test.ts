@@ -4,7 +4,7 @@ import type { AddressInfo } from 'node:net';
 import { after, before, describe, test } from 'node:test';
 import { setTimeout as sleep } from 'node:timers/promises';
 import pg from 'pg';
-import { defaultLimits, type AppConfig } from '../src/config.js';
+import { defaultLimits, defaultMedia, type AppConfig } from '../src/config.js';
 import { createApp } from '../src/main.js';
 
 /*
@@ -129,7 +129,7 @@ describe('the browser client against the service', { skip: !adminUrl && 'TEST_DA
   let sqlPool: pg.Pool;
   /** the service, started (again) on the scratch database */
   async function startApp(): Promise<string> {
-    const config: AppConfig = { database: { url: dbUrl, adminUrl: null, name: dbName, user: '', password: null, ssl: false }, port: 0, corsOrigins: true, addressHeader: null, adminKey: null, limits: { ...defaultLimits, requestsPerMinute: 100_000, games: 1000 } };
+    const config: AppConfig = { database: { url: dbUrl, adminUrl: null, name: dbName, user: '', password: null, ssl: false }, port: 0, corsOrigins: true, addressHeader: null, media: defaultMedia, limits: { ...defaultLimits, requestsPerMinute: 100_000, games: 1000 } };
     const app = await createApp(config);
     await app.listen(0, '127.0.0.1');
     running.push(() => app.close());

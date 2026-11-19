@@ -1,15 +1,15 @@
 import { sql } from 'drizzle-orm';
-import { boolean, check, customType, foreignKey, index, integer, jsonb, pgTable, primaryKey, text, timestamp, uuid } from 'drizzle-orm/pg-core';
+import { boolean, check, index, integer, jsonb, pgTable, primaryKey, text, timestamp, uuid } from 'drizzle-orm/pg-core';
 
 /*
- * Four tables:
+ * Three tables:
  *  - player: one player of one game, with the game's own save. A game has a few, and they are the game's own: whoever
  *    opens the game sees the same list, as on the machine an old game was installed on. Nobody signs in.
  *  - service: one row, made when the database is. It tells a database that was set up anew from one that has only
  *    lost a player, so a browser knows whether what it still holds was removed or never arrived.
  *  - cast_member: a character of a game who has been given a name or a picture here in place of the game's own.
- *    Whoever has neither is not in it: the game knows its own cast, this service only what was changed.
- *  - cast_photo: her picture, once for each width it is handed out at.
+ *    Whoever has neither is not in it: the game knows its own cast, this service only what was changed. Her picture
+ *    itself is not here: it is a file in the hub's bucket, and this table knows under which key.
  */
 
 const ts = (name: string) => timestamp(name, { withTimezone: true, mode: 'date' });
@@ -51,8 +51,6 @@ export const service = pgTable(
   (t) => [check('service_one_row', sql`${t.one}`)],
 );
 
-const bytea = customType<{ data: Buffer; driverData: Buffer }>({ dataType: () => 'bytea' });
-
 export const castMember = pgTable(
   'cast_member',
   {
@@ -62,30 +60,13 @@ export const castMember = pgTable(
     /** The name she goes by in place of the game's own, or null for the game's own. */
     name: text('name'),
     /**
-     * When her picture was put up, or null when she has none. The moment is part of the picture's address, so a
-     * browser may keep a picture for good: another picture is another moment, and another address.
+     * The key her picture is kept under in the bucket (games/<game>/cast/<member>/<…>.jpg), or null when she has
+     * none. The address it is read at is made from it when the cast is read, so the CDN can change without this table.
      */
-    photoAt: ts('photo_at'),
+    photoKey: text('photo_key'),
     updatedAt: ts('updated_at').notNull().defaultNow(),
   },
-  (t) => [primaryKey({ columns: [t.game, t.member] }), check('cast_member_has_something', sql`${t.name} is not null or ${t.photoAt} is not null`)],
-);
-
-export const castPhoto = pgTable(
-  'cast_photo',
-  {
-    game: text('game').notNull(),
-    member: text('member').notNull(),
-    /** How wide this copy is: one of the widths pictures are handed out at, or the picture's own when it came narrower than the narrowest. */
-    width: integer('width').notNull(),
-    height: integer('height').notNull(),
-    /** The copy itself, a WebP file. A few to a member and none of them large: they are read one at a time, by address. */
-    bytes: bytea('bytes').notNull(),
-  },
-  (t) => [
-    primaryKey({ columns: [t.game, t.member, t.width] }),
-    foreignKey({ columns: [t.game, t.member], foreignColumns: [castMember.game, castMember.member], name: 'cast_photo_member_fk' }).onDelete('cascade'),
-  ],
+  (t) => [primaryKey({ columns: [t.game, t.member] }), check('cast_member_has_something', sql`${t.name} is not null or ${t.photoKey} is not null`)],
 );
 
 export type PlayerRow = typeof player.$inferSelect;

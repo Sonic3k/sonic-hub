@@ -1,5 +1,5 @@
 {
-  "id": "296becff-0bd0-48c3-9415-f44b3c8f57fc",
+  "id": "aacdfdf7-80c5-4886-b52c-c59ca8f53244",
   "prevId": "95e82b9a-5bd8-4ed6-aa14-68f4f9c1b716",
   "version": "7",
   "dialect": "postgresql",
@@ -26,9 +26,9 @@
           "primaryKey": false,
           "notNull": false
         },
-        "photo_at": {
-          "name": "photo_at",
-          "type": "timestamp with time zone",
+        "photo_key": {
+          "name": "photo_key",
+          "type": "text",
           "primaryKey": false,
           "notNull": false
         },
@@ -56,77 +56,9 @@
       "checkConstraints": {
         "cast_member_has_something": {
           "name": "cast_member_has_something",
-          "value": "\"cast_member\".\"name\" is not null or \"cast_member\".\"photo_at\" is not null"
+          "value": "\"cast_member\".\"name\" is not null or \"cast_member\".\"photo_key\" is not null"
         }
       },
-      "isRLSEnabled": false
-    },
-    "public.cast_photo": {
-      "name": "cast_photo",
-      "schema": "",
-      "columns": {
-        "game": {
-          "name": "game",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "member": {
-          "name": "member",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "width": {
-          "name": "width",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "height": {
-          "name": "height",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "bytes": {
-          "name": "bytes",
-          "type": "bytea",
-          "primaryKey": false,
-          "notNull": true
-        }
-      },
-      "indexes": {},
-      "foreignKeys": {
-        "cast_photo_member_fk": {
-          "name": "cast_photo_member_fk",
-          "tableFrom": "cast_photo",
-          "tableTo": "cast_member",
-          "columnsFrom": [
-            "game",
-            "member"
-          ],
-          "columnsTo": [
-            "game",
-            "member"
-          ],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
-        }
-      },
-      "compositePrimaryKeys": {
-        "cast_photo_game_member_width_pk": {
-          "name": "cast_photo_game_member_width_pk",
-          "columns": [
-            "game",
-            "member",
-            "width"
-          ]
-        }
-      },
-      "uniqueConstraints": {},
-      "policies": {},
-      "checkConstraints": {},
       "isRLSEnabled": false
     },
     "public.player": {

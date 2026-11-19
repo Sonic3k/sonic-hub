@@ -19,13 +19,13 @@ export async function createApp(config: AppConfig): Promise<NestExpressApplicati
   app.disable('x-powered-by');
   app.setGlobalPrefix('api');
   app.useBodyParser('json', { limit: config.limits.saveBytes * 2 + 4096 });
-  // (A picture comes as the body itself and is read by the one handler that takes pictures, after the key has been
-  // looked at: no parser here reads megabytes on behalf of a caller who has not shown it.)
-  // any page may call: nothing here goes by a cookie, and what changes a cast goes by a key the page sends itself
-  app.enableCors({ origin: config.corsOrigins, methods: ['GET', 'PUT', 'DELETE'], allowedHeaders: ['Content-Type', 'X-Admin-Key'], exposedHeaders: ['X-Now', 'Retry-After'], maxAge: 86400 });
+  // (A picture comes as the body itself and is read by the one handler that takes pictures, which first sees that it
+  // is one and how long it is: no parser here reads megabytes of anything else.)
+  // any page may call: nothing here goes by a cookie or by who is asking
+  app.enableCors({ origin: config.corsOrigins, methods: ['GET', 'PUT', 'DELETE'], allowedHeaders: ['Content-Type'], exposedHeaders: ['X-Now', 'Retry-After'], maxAge: 86400 });
   // A saved game is never served from a cache: what a browser reads is what was last written. (The two files for the
-  // browser and a cast's pictures say for themselves how long they may be kept.) Every answer also says what time it is
-  // here (X-Now, in ms), so two devices with different clocks can still tell which of them played last.
+  // browser say for themselves how long they may be kept.) Every answer also says what time it is here (X-Now, in
+  // ms), so two devices with different clocks can still tell which of them played last.
   app.use((req: Request, res: Response, next: NextFunction) => {
     if (!/\/(client|cast)\.js$/.test(req.path)) res.setHeader('Cache-Control', 'no-store');
     res.setHeader('X-Now', String(Date.now()));
@@ -39,7 +39,8 @@ async function bootstrap(): Promise<void> {
   const config = loadAppConfig();
   const app = await createApp(config);
   await app.listen(config.port, '0.0.0.0');
-  new Logger('game-api').log(`listening on :${config.port}; callers are told apart by ${config.addressHeader ?? 'the address they connect from'}; casts ${config.adminKey ? 'can be changed with the key' : 'cannot be changed: no ADMIN_KEY'}`);
+  const { b2, prefix, publicBaseUrl } = config.media;
+  new Logger('game-api').log(`listening on :${config.port}; callers are told apart by ${config.addressHeader ?? 'the address they connect from'}; a cast's pictures ${b2 ? `are kept in ${b2.bucket}/${prefix} and read at ${publicBaseUrl}` : 'cannot be kept: no B2_KEY_ID and B2_APP_KEY'}`);
 }
 
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
