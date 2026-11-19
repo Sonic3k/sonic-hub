@@ -1,33 +1,52 @@
 /* ── The game itself: going from screen to screen, a match from the first move to the result, what is kept ── */
-const setupFor = w => ({ game: w.game === 'total' ? 'total' : 'battles', lineup: placeById(w.place).lineup || 'standard' });   // the place sets the line-up, the opponent the game: at Port Halcyon the Commandant alone plays total war
+const setupFor = () => SETUP;                                 // every table plays the league's game
 const MIN_THINK = 700;                                        // she never answers faster than a hand could
 
-/** w: who is across the table; side: the player's; moves: every move of the game so far (steps of a deployment and their
+/** w: who is across the table; side: the player's; seed: the game's own, for whatever she leaves to chance; moves: every move of the game so far (steps of a deployment and their
  *  COMMIT included); seen: how often each position has come up; marks: where in `moves` each of the player's turns began;
  *  snap: the position before a deployment the player has begun, to go back to. */
-const G = { screen: 'title', w: null, rated: true, side: RED, S: null, moves: [], seen: {}, legal: [], sel: -1, grp: 0, byTo: null, choice: null, snap: null,
+const G = { screen: 'title', w: null, rated: true, side: RED, seed: 1, S: null, moves: [], seen: {}, legal: [], sel: -1, grp: 0, byTo: null, choice: null, snap: null,
   busy: true, token: 0, marks: [], taken: [[], []], turns: 0, saidAt: -9, repeat: false, note: '', drag: null, talk: [], talkAt: 0, lines: [], cur: [] };
 
 function show(screen, html) { G.screen = screen; document.body.dataset.screen = screen; $('#app').innerHTML = html; window.scrollTo(0, 0); }
 function goTitle() { G.token++; show('title', screenTitle()); }
-function goChart() { G.token++; show('chart', screenChart()); fitChart(); }
-/** the chart's sheet takes the largest size that fits whole inside the frame; the sea around it is the frame's own */
+function goChart() { G.token++; show('chart', screenChart()); fitChart(); fillChart(); }
+/** the chart's sheet takes the largest size that fits whole inside the frame; the sea around it is the picture's own */
 function fitChart() {
-  const c = $('.chart'); if (!c) return;
-  for (const m of c.querySelectorAll('.map')) { const r = m.classList.contains('tall') ? CHART.tall.w / CHART.tall.h : CHART.wide.w / CHART.wide.h, w = Math.min(c.clientWidth, c.clientHeight * r); m.style.width = w + 'px'; m.style.height = w / r + 'px'; }
+  const c = $('.chart'), m = c && c.querySelector('.map'); if (!m) return;
+  const [W, H] = Chart.size(c.dataset.tall === '1'), r = W / H, w = Math.min(c.clientWidth, c.clientHeight * r);
+  m.style.width = w + 'px'; m.style.height = w / r + 'px';
 }
+/** Puts the picture of the coast on the sheet, and what is written on its sea. Making a sheet takes a moment the first
+ *  time, so the screen is shown first and the picture follows; after that it is kept. */
+const CHART_URL = {};
+function fillChart() {
+  const c = $('.chart'); if (!c) return;
+  const tall = c.dataset.tall === '1', k = tall ? 'tall' : 'wide', token = G.token;
+  const put = () => {
+    if (token !== G.token || G.screen !== 'chart') return;
+    const s = Chart.sheet(tall);
+    if (!CHART_URL[k]) CHART_URL[k] = URL.createObjectURL(new Blob([s.svg], { type: 'image/svg+xml' }));
+    const img = $('.map-art'), ink = $('.map-text');
+    if (img) img.src = CHART_URL[k]; if (ink) ink.innerHTML = s.text;
+  };
+  if (CHART_URL[k]) put(); else setTimeout(put, 30);
+}
+function goList() { G.token++; closeDialog(); show('list', screenList()); }
 function goPlace(id) { G.token++; closeDialog(); show('place', screenPlace(placeById(id))); }
 function goCards() { G.token++; show('cards', screenCards()); }
 function goVersus(w, rated) {
   G.token++; closeDialog(); G.w = w; G.rated = rated;
   show('versus', screenVersus(w, rated));
-  G.talk = SAVE.met[w.id] ? [pick(w.say.rematch)] : w.say.intro; G.talkAt = 0; SAVE.met[w.id] = true; keep();
+  G.talk = (SAVE.met[w.id] ? [pick(w.say.rematch)] : w.say.intro).map(said); G.talkAt = 0; SAVE.met[w.id] = true; keep();
   showTalk();
 }
 function showTalk() { $('#talk-text').textContent = G.talk[G.talkAt]; $('#talk-more').hidden = G.talkAt >= G.talk.length - 1; }
 
 /* ── a match ── */
 const canPlay = () => G.screen === 'match' && !G.busy && !G.S.over && G.S.turn === G.side;
+/** what a piece counts for when she remarks on who is ahead: Commander, Infantry, Tank, Militia, Engineer, Artillery, Anti-air, Missile, Air force, Navy, Headquarters */
+const VALUE = [0, 100, 240, 115, 110, 320, 170, 280, 450, 500, 150];
 const worth = (S, side) => { let v = 0; for (let p = 0; p < S.n; p++) if (S.at[p] >= 0 && S.own[p] === side) v += VALUE[S.kind[p]]; return v; };
 /** plays a move without showing it (going back to a game that was kept) */
 function quiet(m) {
@@ -39,9 +58,9 @@ function quiet(m) {
   if (S.dOrg < 0) { G.turns++; const k = posKey(S); G.seen[k] = (G.seen[k] || 0) + 1; }
   return true;
 }
-function startMatch(w, rated, side, resume) {
+function startMatch(w, rated, side, resume, seed) {
   G.token++; closeDialog();
-  Object.assign(G, { w, rated, side, S: newGame(setupFor(w)), moves: [], seen: {}, legal: [], sel: -1, grp: 0, byTo: null, choice: null, snap: null, busy: true, marks: [], taken: [[], []], turns: 0, saidAt: -9, repeat: false, note: '', drag: null, lines: [], cur: [] });
+  Object.assign(G, { w, rated, side, seed: seed > 0 ? seed : 1 + Math.floor(Math.random() * 0x7ffffffe), S: newGame(setupFor(w)), moves: [], seen: {}, legal: [], sel: -1, grp: 0, byTo: null, choice: null, snap: null, busy: true, marks: [], taken: [[], []], turns: 0, saidAt: -9, repeat: false, note: '', drag: null, lines: [], cur: [] });
   G.seen[posKey(G.S)] = 1;
   show('match', screenMatch(w, rated));
   buildBoard(side === BLUE);
@@ -51,7 +70,7 @@ function startMatch(w, rated, side, resume) {
   setTimeout(() => { if (G.screen === 'match' && token === G.token && !G.S.over) { if (resume && resume.length) speak(pick(w.say.idle)); else speak(pick(w.say.start), true); } }, 500);
   nextTurn();
 }
-function saveMatch() { SAVE.match = { w: G.w.id, side: G.side, rated: G.rated, moves: G.moves.slice() }; keep(); }
+function saveMatch() { SAVE.match = { w: G.w.id, side: G.side, rated: G.rated, seed: G.seed, moves: G.moves.slice() }; keep(); }
 
 /** whose turn it is, and what follows from that */
 async function nextTurn() {
@@ -65,7 +84,7 @@ async function nextTurn() {
   }
   G.busy = true; clearSel(); renderHud(); saveMatch();
   const t0 = performance.now();
-  const moves = await Brain.turn(setupFor(G.w), G.moves, G.w.id, G.seen, (Math.random() * 1e9) | 0);
+  const moves = await Brain.turn(setupFor(G.w), G.moves, G.w.bot, G.seed);
   if (token !== G.token) return;
   const rest = MIN_THINK - (performance.now() - t0); if (rest > 0) { await sleep(rest); if (token !== G.token) return; }
   for (const m of moves) if (!(await perform(m, token))) return;
@@ -105,10 +124,10 @@ function undo() {
   if (G.rated || G.screen !== 'match') return;
   let mark = -1; while (G.marks.length) { const x = G.marks.pop(); if (x < G.moves.length) { mark = x; break; } }
   if (mark < 0) return;
-  SFX.play('tick'); startMatch(G.w, false, G.side, G.moves.slice(0, mark));
+  SFX.play('tick'); startMatch(G.w, false, G.side, G.moves.slice(0, mark), G.seed);
 }
 function finish(st) {
-  const res = st.winner < 0 ? 0.5 : st.winner === G.side ? 1 : 0, w = G.w, line = pick(w.say[res === 1 ? 'lose' : res === 0 ? 'win' : 'draw']);
+  const res = st.winner < 0 ? 0.5 : st.winner === G.side ? 1 : 0, w = G.w, line = said(pick(w.say[res === 1 ? 'lose' : res === 0 ? 'win' : 'draw']));
   G.busy = true; G.token++; clearSel(); renderHud(st); speak(line); SFX.play(res === 1 ? 'win' : res === 0 ? 'lose' : 'draw');
   const got = G.rated ? scoreGame(w, res) : null; if (!G.rated) { SAVE.match = null; keep(); }
   const token = G.token;
@@ -118,6 +137,7 @@ function finish(st) {
 /* ── what she says ── */
 function speak(text, loud) {
   const b = $('#bubble'); if (!b) return;
+  text = said(text);
   b.textContent = text; b.classList.remove('pop'); b.getBoundingClientRect(); b.classList.add('pop'); G.saidAt = G.turns;
   if (!loud || REDUCED) return;                               // the moments that matter: she leans across the board to say it
   const old = $('.cutin'); if (old) old.remove();
@@ -298,13 +318,14 @@ function wire() {
       case 'chart': goChart(); break;
       case 'place': goPlace(id); break;
       case 'cards': goCards(); break;
+      case 'list': goList(); break;
       case 'locked': openDialog(placeNote(placeById(id))); SFX.play('tick'); break;
       case 'challenge': goVersus(womanById(id), true); break;
       case 'spar': goVersus(womanById(id), false); break;
       case 'talk': if (G.talkAt < G.talk.length - 1) { G.talkAt++; showTalk(); SFX.play('tick'); } break;
       case 'side': SAVE.side = +act.dataset.val; keep(); for (const b of document.querySelectorAll('.side-pick')) b.setAttribute('aria-checked', String(+b.dataset.val === SAVE.side)); SFX.play('tick'); break;
       case 'begin': startMatch(G.w, G.rated, SAVE.side); break;
-      case 'resume': { const m = SAVE.match, w = m && womanById(m.w); if (w) startMatch(w, m.rated, m.side, m.moves); else goChart(); break; }
+      case 'resume': { const m = SAVE.match, w = m && womanById(m.w); if (w) startMatch(w, m.rated, m.side, m.moves, m.seed); else goChart(); break; }
       case 'mode': if (G.choice) humanMove(G.choice[+act.dataset.i]); break;
       case 'group': select(G.sel, +act.dataset.g); SFX.play('pick'); break;
       case 'unpick': if (G.sel >= 0) select(G.sel, G.grp); break;
@@ -332,5 +353,8 @@ function wire() {
 function boot() {
   loadSave(); SFX.on = SAVE.sound !== false;
   $('#defs').innerHTML = '<defs>' + DEFS + '</defs>';
-  Brain.start(); wire(); goTitle(); window.addEventListener('resize', fitChart);
+  Brain.start(); wire(); goTitle();
+  window.addEventListener('resize', () => { const c = $('.chart'); if (G.screen === 'chart' && c && c.dataset.tall !== (TALL.matches ? '1' : '0')) goChart(); else fitChart(); });
+  // a picture of hers that will not load gives way to her stand-in
+  document.addEventListener('error', ev => { const el = ev.target; if (el && el.tagName === 'IMG' && el.dataset && el.dataset.bust) { const w = womanById(el.dataset.bust); delete el.dataset.bust; if (w) el.src = bustURL(w); } }, true);
 }
