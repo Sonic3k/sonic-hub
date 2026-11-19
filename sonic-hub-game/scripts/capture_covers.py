@@ -66,6 +66,14 @@ GAMES = {
             'met': {'pia': True, 'sol': True, 'hana': True, 'nadia': True},
             'match': {'w': 'nadia', 'side': 0, 'rated': True, 'moves': [36192019,44583538,33555718,44057455,34084620,44057923,41433647,44057157,33886213,44117570,67441168,393216,44057134,38287139,44058178,38288183,44181574,38427707,44057670,36709145,44060228,34093079,44181070,34164280,48320090,36260415,46221942,38428475]}}},
         play=['click:[data-act=resume]', 'wait:5200']),
+    # its title screen plays the game by itself: wait for a few moves. The picture of play goes back to a game against
+    # the computer in its middle, with the person to move and every square a disc can go on marked
+    'wax-and-wane': dict(
+        title=['wait:15000'],
+        ls={'wax-and-wane.v1': {'cfg': {'vs': 'bot', 'level': 'gibbous', 'side': 0}, 'sound': True,
+            'game': {'moves': [44,29,20,43,30,22,38,31,42,51,21,37,45,34,39,47,23,15,19,26,25,46,58,12,11,53],
+                     'seat': [{'kind': 'human'}, {'kind': 'bot', 'bot': 'house', 'level': 'gibbous', 'name': 'The computer', 'label': 'Computer'}]}}},
+        play=['waitsel:.cell.can', 'wait:900']),
 }
 
 

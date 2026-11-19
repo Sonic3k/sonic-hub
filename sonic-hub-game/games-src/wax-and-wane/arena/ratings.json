@@ -1,0 +1,86 @@
+{
+ "anchor": {
+  "id": "house:new",
+  "rating": 600
+ },
+ "ms": 1000,
+ "players": [
+  {
+   "id": "house:full",
+   "bot": "house",
+   "level": "full",
+   "name": "House",
+   "author": "Claude",
+   "rating": 1710,
+   "won": 176,
+   "lost": 4,
+   "drawn": 0
+  },
+  {
+   "id": "house:gibbous",
+   "bot": "house",
+   "level": "gibbous",
+   "name": "House",
+   "author": "Claude",
+   "rating": 1484,
+   "won": 153,
+   "lost": 27,
+   "drawn": 0
+  },
+  {
+   "id": "house:quarter",
+   "bot": "house",
+   "level": "quarter",
+   "name": "House",
+   "author": "Claude",
+   "rating": 1200,
+   "won": 118,
+   "lost": 62,
+   "drawn": 0
+  },
+  {
+   "id": "house:crescent",
+   "bot": "house",
+   "level": "crescent",
+   "name": "House",
+   "author": "Claude",
+   "rating": 975,
+   "won": 87,
+   "lost": 93,
+   "drawn": 0
+  },
+  {
+   "id": "greedy:greedy",
+   "bot": "greedy",
+   "level": "greedy",
+   "name": "Greedy",
+   "author": "Claude",
+   "rating": 648,
+   "won": 37,
+   "lost": 140,
+   "drawn": 3
+  },
+  {
+   "id": "house:new",
+   "bot": "house",
+   "level": "new",
+   "name": "House",
+   "author": "Claude",
+   "rating": 600,
+   "won": 30,
+   "lost": 146,
+   "drawn": 4
+  },
+  {
+   "id": "random:random",
+   "bot": "random",
+   "level": "random",
+   "name": "Random",
+   "author": "Claude",
+   "rating": 562,
+   "won": 24,
+   "lost": 153,
+   "drawn": 3
+  }
+ ]
+}

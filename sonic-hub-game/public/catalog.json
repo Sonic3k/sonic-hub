@@ -74,6 +74,14 @@
       "shots": ["title", "play"], "play": "https://sonic-commander-chess-production.up.railway.app/"
     },
     {
+      "key": "wax-and-wane", "title": "Wax & Wane", "alt": ["Wax and Wane", "Othello", "Reversi", "Cờ lật", "Co lat"],
+      "lang": "en", "group": "cards", "sub": "board", "machine": "web", "year": 2026, "tags": ["originals", "two-player"],
+      "players": 2, "ai": 1, "inputs": ["mouse", "touch", "keyboard"], "maker": "Sonic Hub", "added": "2026-11-19",
+      "kind": "Board game of moons that turn, against the AI or a friend",
+      "blurb": "Othello, played with moons. Every disc is a moon, light on one face and dark on the other. Put one down so that it encloses the other side’s moons in a straight line, and they turn to your side one after another. Whoever holds more of the sky when nobody can move has won. Plays by the rules of Othello.",
+      "shots": ["title", "play"], "play": "/games/wax-and-wane"
+    },
+    {
       "key": "len-doi", "title": "Lên Đời", "alt": ["Len Doi", "Age Duel"],
       "lang": "vi", "group": "strategy", "sub": "turn-based", "machine": "web", "year": 2026, "tags": ["originals"],
       "players": 1, "ai": 1, "inputs": ["mouse", "touch"], "maker": "Sonic Hub", "added": "2026-10-05", "highlight": true,
