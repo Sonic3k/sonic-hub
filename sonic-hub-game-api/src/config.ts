@@ -17,12 +17,30 @@ export interface DatabaseConfig {
 export interface Limits {
   /** Players a game keeps. */
   playersPerGame: number;
-  /** Different games players are kept for. Games are not listed anywhere, so this is what bounds what can pile up. */
+  /** Different games players are kept for, and as many a cast is kept for. Games are not listed anywhere, so this is what bounds what can pile up. */
   games: number;
   /** The size of one saved game, as JSON text. */
   saveBytes: number;
   /** Requests a minute from one address. */
   requestsPerMinute: number;
+  /** The size of one picture: it is kept as it is sent up. */
+  photoBytes: number;
+  /** Members of one game's cast that can be given a name or a picture. */
+  castPerGame: number;
+}
+
+/**
+ * Where a cast's pictures are kept and read. As everywhere on the hub: the file goes into the hub's bucket (Backblaze
+ * B2, spoken to as S3), in a folder of this service's own, and is read through the CDN in front of the bucket, which
+ * hands a picture out at whatever width its address asks for (?width=).
+ */
+export interface MediaConfig {
+  /** The bucket and what opens it, or null where none is set up: then names are given as ever and pictures cannot be kept. */
+  b2: { endpoint: string; region: string; keyId: string; appKey: string; bucket: string; /** addresses as S3-compatible test servers want them; B2 itself works either way */ pathStyle: boolean } | null;
+  /** This service's folder in the bucket (games), beside the hub's others (angels-islands, learn, music). */
+  prefix: string;
+  /** The address the bucket is read at (the CDN): a file's key is appended to it. */
+  publicBaseUrl: string;
 }
 
 export interface AppConfig {
@@ -36,6 +54,7 @@ export interface AppConfig {
    * it is only ever a header the proxy writes itself, never one a caller could send.
    */
   addressHeader: string | null;
+  media: MediaConfig;
 }
 
 function ssl(env: NodeJS.ProcessEnv): DatabaseConfig['ssl'] {
@@ -76,7 +95,28 @@ function databaseConfig(env: NodeJS.ProcessEnv): DatabaseConfig {
   return db;
 }
 
-export const defaultLimits: Limits = { playersPerGame: 3, games: 50, saveBytes: 64 * 1024, requestsPerMinute: 240 };
+export const defaultLimits: Limits = { playersPerGame: 3, games: 50, saveBytes: 64 * 1024, requestsPerMinute: 240, photoBytes: 16 * 1024 * 1024, castPerGame: 200 };
+
+/** With nothing set: no bucket to keep pictures in, and the hub's own folder and CDN for when there is one. */
+export const defaultMedia: MediaConfig = { b2: null, prefix: 'games', publicBaseUrl: 'https://sonic-hub.b-cdn.net' };
+
+/**
+ * B2_KEY_ID and B2_APP_KEY open the bucket (the same pair the hub's other services have); B2_BUCKET, B2_ENDPOINT and
+ * B2_REGION say which, and default to the hub's. CDN_BASE (or MEDIA_BASE_URL) is the address it is read at, and
+ * MEDIA_PREFIX this service's folder in it.
+ */
+function mediaConfig(env: NodeJS.ProcessEnv): MediaConfig {
+  const keyId = opt(env, 'B2_KEY_ID'), appKey = opt(env, 'B2_APP_KEY');
+  if (!keyId !== !appKey) throw new Error('B2_KEY_ID and B2_APP_KEY go together: set both, or neither (then pictures cannot be kept)');
+  const endpoint = opt(env, 'B2_ENDPOINT') ?? 's3.us-east-005.backblazeb2.com';
+  const prefix = (opt(env, 'MEDIA_PREFIX') ?? defaultMedia.prefix).replace(/^\/+|\/+$/g, '');
+  if (!/^[a-z0-9][a-z0-9/_-]*$/.test(prefix)) throw new Error(`MEDIA_PREFIX has to be a folder name in small letters, not "${prefix}"`);
+  return {
+    b2: keyId && appKey ? { endpoint: /^https?:\/\//.test(endpoint) ? endpoint : `https://${endpoint}`, region: opt(env, 'B2_REGION') ?? 'us-east-005', keyId, appKey, bucket: opt(env, 'B2_BUCKET') ?? 'sonic-hub', pathStyle: (opt(env, 'B2_PATH_STYLE') ?? 'false') === 'true' } : null,
+    prefix,
+    publicBaseUrl: (opt(env, 'MEDIA_BASE_URL') ?? opt(env, 'CDN_BASE') ?? defaultMedia.publicBaseUrl).replace(/\/+$/, ''),
+  };
+}
 
 /**
  * ADDRESS_HEADER names it; `none` says there is no such header. Left unset, it is x-real-ip on Railway (whose edge
@@ -94,6 +134,7 @@ export function loadAppConfig(env: NodeJS.ProcessEnv = process.env): AppConfig {
   const origins = opt(env, 'CORS_ORIGIN') ?? '*';
   return {
     addressHeader: addressHeader(env),
+    media: mediaConfig(env),
     database: databaseConfig(env),
     port: Number(opt(env, 'PORT') ?? 3200),
     corsOrigins: origins === '*' ? true : origins.split(',').map((s) => s.trim()),
@@ -102,6 +143,8 @@ export function loadAppConfig(env: NodeJS.ProcessEnv = process.env): AppConfig {
       games: count(env, 'GAMES', defaultLimits.games),
       saveBytes: count(env, 'SAVE_BYTES', defaultLimits.saveBytes),
       requestsPerMinute: count(env, 'REQUESTS_PER_MINUTE', defaultLimits.requestsPerMinute),
+      photoBytes: count(env, 'PHOTO_BYTES', defaultLimits.photoBytes),
+      castPerGame: count(env, 'CAST_PER_GAME', defaultLimits.castPerGame),
     },
   };
 }

@@ -3,7 +3,7 @@ import type { AddressInfo } from 'node:net';
 import { after, before, describe, test } from 'node:test';
 import pg from 'pg';
 import { countedAs } from '../src/common/guards.js';
-import { defaultLimits, loadAppConfig, type AppConfig, type Limits } from '../src/config.js';
+import { defaultLimits, defaultMedia, loadAppConfig, type AppConfig, type Limits } from '../src/config.js';
 import { createApp } from '../src/main.js';
 
 /*
@@ -19,7 +19,7 @@ const running: Array<() => Promise<void>> = [];
 
 /** An app of its own on the scratch database, with whatever limits the test needs. */
 async function start(limits: Partial<Limits> = {}, addressHeader: string | null = null): Promise<string> {
-  const config: AppConfig = { database: { url: dbUrl, adminUrl: null, name: dbName, user: '', password: null, ssl: false }, port: 0, corsOrigins: true, addressHeader, limits: { ...defaultLimits, ...limits } };
+  const config: AppConfig = { database: { url: dbUrl, adminUrl: null, name: dbName, user: '', password: null, ssl: false }, port: 0, corsOrigins: true, addressHeader, media: defaultMedia, limits: { ...defaultLimits, ...limits } };
   const app = await createApp(config);
   await app.listen(0, '127.0.0.1');
   running.push(() => app.close());

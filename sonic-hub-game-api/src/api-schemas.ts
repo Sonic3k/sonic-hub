@@ -5,10 +5,13 @@ export const GameKey = z.string().regex(/^[a-z0-9](?:[a-z0-9-]{0,62}[a-z0-9])?$/
 
 export const PlayerId = z.uuid('a player id is a UUID').transform((s) => s.toLowerCase());
 
-/** A player's name as it will be shown: spaces tidied, nothing unprintable, at most 24 signs. */
+/** A name as it will be shown: spaces tidied, nothing unprintable. */
+const tidy = (s: string) => s.replace(/\s+/g, ' ').replace(/[\p{Cc}\p{Cf}]/gu, '').trim();
+
+/** A player's name: tidied, not empty, at most 24 signs. */
 const PlayerName = z
   .string()
-  .transform((s) => s.replace(/\s+/g, ' ').replace(/[\p{Cc}\p{Cf}]/gu, '').trim())
+  .transform(tidy)
   .refine((s) => s.length > 0, 'a name cannot be empty')
   .refine((s) => [...s].length <= 24, 'a name is at most 24 signs');
 
@@ -42,4 +45,25 @@ export interface PlayerView {
   updatedAt: string;
   /** when it was played: `at` as the write gave it, never later than updatedAt, always later than the version before */
   playedAt: string;
+}
+
+/** A member of a game's cast, by the key the game's own content knows her by (mina, celeste): small letters, digits and dashes. */
+export const MemberKey = z.string().regex(/^[a-z0-9](?:[a-z0-9-]{0,38}[a-z0-9])?$/, 'a cast member is named in small letters, digits and dashes');
+
+/** The name a member is to go by, tidied as a player's is. null, or nothing but spaces, gives her the game's own back. */
+export const PutMemberBody = z.object({
+  name: z
+    .union([z.null(), z.string()])
+    .transform((s) => (s === null ? null : tidy(s) || null))
+    .refine((s) => s === null || [...s].length <= 24, 'a name is at most 24 signs'),
+});
+export type PutMemberInput = z.infer<typeof PutMemberBody>;
+
+/** A member of a cast as the API gives her: only what was changed here. */
+export interface MemberView {
+  id: string;
+  /** null: the game's own name */
+  name: string | null;
+  /** The address of her picture at the CDN, or null when she has none. A width is asked for by adding ?width= to it. */
+  photo: string | null;
 }
