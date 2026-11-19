@@ -5,3 +5,5 @@ dist/
 __pycache__/
 # other people's game files: brought in by scripts/fetch-kept.mjs, never committed
 public/kept/
+# a game's kit, packed by its own kit/build.js: made when it is wanted, never committed
+dist-kit/

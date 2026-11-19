@@ -1,0 +1,20 @@
+{
+  "name": "wax-and-wane",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Wax & Wane: Othello played with moons. The rules, the page, the house bot, and a kit for writing and rating bots.",
+  "license": "UNLICENSED",
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "test": "node engine/rules.test.js && node engine/rules.doc.test.js && node arena/contract.test.js && node arena/house.test.js && node game/build.test.js && node kit/build.test.js",
+    "arena": "node arena/arena.js",
+    "build": "node game/build.js",
+    "kit": "node kit/build.js"
+  },
+  "devDependencies": {
+    "@fontsource/jost": "5.3.0",
+    "@fontsource/marcellus": "5.3.0"
+  }
+}

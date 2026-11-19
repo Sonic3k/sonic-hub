@@ -1,0 +1,233 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#13244f">
+<title>/*__TITLE__*/</title>
+<!--__ICON__-->
+<!--__FONTS__-->
+<style>
+  /* ── Wax & Wane ── a sky at dusk painted in gouache, a sea-green chart of it in a lacquer frame ruled with gold,
+     and moons to play on it. Everything painted is painted on canvases by the page itself (game/src/20-art.js);
+     what is set in type here is either an inscription (Marcellus) or something to read and press (Jost). */
+  :root { box-sizing: border-box; color-scheme: dark;
+    --night: #13244f; --ink: #141c3c; --lacquer: #1a2150; --lacquer-hi: #2b3672; --gold: #e8c36f; --gold-hi: #fbe6a8; --gold-lo: #a47c35; --moon: #f5edd8; --rim: #8ea2df;
+    --title: Marcellus, "Palatino Linotype", Palatino, Georgia, serif; --text: Jost, "Century Gothic", "Avenir Next", system-ui, sans-serif;
+    --vh: 100vh; --side: 344px; --gap: 60px; --board: min(calc(100vw - var(--side) - var(--gap) - 72px), calc(var(--vh) - 104px), 800px); }
+  @supports (height: 100dvh) { :root { --vh: 100dvh; } }
+  *, *::before, *::after { box-sizing: inherit; }
+  /* the sky is painted on a canvas behind everything; until it is, the page has its colours */
+  html { -webkit-text-size-adjust: 100%; background: var(--night) linear-gradient(#13244f, #213d7c 30%, #4a66a4 58%, #a898b4 78%, #efb48c 90%, #fbdda8) fixed; }
+  body { margin: 0; min-height: var(--vh); color: var(--moon); font: 400 16px/1.45 var(--text); -webkit-tap-highlight-color: transparent; overscroll-behavior-y: none; }
+  button { font: inherit; color: inherit; cursor: pointer; touch-action: manipulation; } button:disabled { cursor: default; }
+  :focus-visible { outline: 2px solid var(--gold-hi); outline-offset: 3px; }
+  [hidden] { display: none !important; }
+  #sky { position: fixed; inset: 0; width: 100%; height: 100%; z-index: -2; }
+  /* a few of the sky's stars are not paint: they brighten and dim, each in its own time */
+  #stars { position: fixed; inset: 0; z-index: -1; pointer-events: none; overflow: hidden; }
+  #stars i { position: absolute; width: var(--d); height: var(--d); translate: -50% -50%; background: radial-gradient(#fffdf2, #fbe6a8 60%);
+    clip-path: polygon(50% 0, 55% 45%, 100% 50%, 55% 55%, 50% 100%, 45% 55%, 0 50%, 45% 45%); filter: drop-shadow(0 0 4px rgba(251,230,168,.8)); animation: shine var(--t) ease-in-out var(--w) infinite; }
+  @keyframes shine { 0%, 100% { opacity: .25; scale: .7; } 50% { opacity: 1; scale: 1; } }
+
+  /* the strip above the table: the way back to the shelf, sound, the rules */
+  .top { display: flex; align-items: center; gap: 8px; min-height: 54px; padding: calc(8px + env(safe-area-inset-top, 0px)) calc(16px + env(safe-area-inset-right, 0px)) 0 calc(14px + env(safe-area-inset-left, 0px)); }
+  .top-sp { flex: 1; }
+  .home { color: var(--moon); text-decoration: none; font: 500 15px/1 var(--text); padding: 14px 8px; opacity: .86; text-shadow: 0 1px 3px rgba(8,12,40,.5); white-space: nowrap; }
+  .home:hover { opacity: 1; color: var(--gold-hi); }
+  .mini { min-height: 40px; padding: 0 15px; border-radius: 22px; white-space: nowrap; border: 1px solid rgba(232,195,111,.5); background: linear-gradient(rgba(43,54,114,.78), rgba(22,28,70,.82)); color: var(--moon); font: 500 14px/1 var(--text); letter-spacing: .02em;
+    box-shadow: 0 1px 0 rgba(255,255,255,.12) inset, 0 3px 10px rgba(8,12,40,.3); }
+  .mini:hover { border-color: var(--gold-hi); color: var(--gold-hi); }
+
+  .table { display: grid; grid-template-columns: var(--board) var(--side); gap: var(--gap); justify-content: center; align-items: center; min-height: calc(var(--vh) - 62px); padding: 6px 28px calc(30px + env(safe-area-inset-bottom, 0px)); }
+
+  /* the board: the painted canvas, and over it one button to a square */
+  .board { position: relative; width: var(--board); aspect-ratio: 1; border-radius: calc(var(--board) * .016); touch-action: none; user-select: none; -webkit-user-select: none;
+    box-shadow: 0 1px 0 rgba(255,244,210,.5), 0 28px 60px rgba(9,13,48,.5), 0 8px 18px rgba(9,13,48,.42); }
+  #board { display: block; width: 100%; height: 100%; border-radius: inherit; }
+  #cells { position: absolute; display: grid; grid-template-columns: repeat(8, 1fr); grid-template-rows: repeat(8, 1fr); }
+  .cell { position: relative; padding: 0; border: 0; background: none; border-radius: 12%; cursor: default; outline-offset: -3px; }
+  .cell:focus-visible { outline: 2px solid var(--gold-hi); }
+  /* where the side to move may put a disc: a small gold star */
+  .cell.can { cursor: pointer; }
+  .cell.can::before { content: ""; position: absolute; left: 50%; top: 50%; width: 30%; height: 30%; translate: -50% -50%; background: radial-gradient(#fff6d2, var(--gold) 70%);
+    clip-path: polygon(50% 0, 57% 43%, 100% 50%, 57% 57%, 50% 100%, 43% 57%, 0 50%, 43% 43%); opacity: .9; animation: twinkle 2.6s ease-in-out infinite; animation-delay: calc(var(--i) * -0.37s); }
+  @keyframes twinkle { 0%, 100% { opacity: .55; scale: .84; } 50% { opacity: 1; scale: 1.06; } }
+  #cells.nudge .cell.can::before { animation: nudge .5s ease-out; }
+  @keyframes nudge { 0% { scale: 1; opacity: 1; } 35% { scale: 1.9; opacity: 1; } 100% { scale: 1; opacity: .9; } }
+  /* the square the pointer is on: the canvas shows the disc that would stand there, so its star goes */
+  .cell.ghost::before { content: none; }
+  /* the disc that was put down last */
+  .cell.last::after { content: ""; position: absolute; inset: 3.5%; border-radius: 50%; border: max(1.5px, calc(var(--board) * .0026)) solid var(--gold); box-shadow: 0 0 9px rgba(232,195,111,.55); opacity: .95; }
+
+  /* what is said across the board when a side has to miss its turn */
+  #toast { position: absolute; left: 50%; top: 50%; translate: -50% -50%; max-width: 86%; padding: .62em 1.3em .7em; border-radius: 999px; pointer-events: none; text-align: center; white-space: nowrap;
+    font: 400 clamp(17px, calc(var(--board) * .038), 26px)/1.2 var(--title); color: var(--moon); background: linear-gradient(rgba(43,54,114,.96), rgba(17,22,58,.97)); border: 1.5px solid var(--gold);
+    box-shadow: 0 0 0 4px rgba(17,22,58,.55), 0 14px 34px rgba(5,8,30,.55); opacity: 0; scale: .92; transition: opacity .22s, scale .22s; }
+  #toast.on { opacity: 1; scale: 1; }
+
+  /* beside the board: the name on the box, then either what a game needs settling or how the game stands */
+  .side { width: var(--side); display: flex; flex-direction: column; align-items: center; text-align: center; text-shadow: 0 1px 2px rgba(8,12,44,.75), 0 0 14px rgba(19,36,79,.7); }
+  .brand { display: flex; flex-direction: column; align-items: center; }
+  #emblem { width: 168px; height: 30px; }
+  .brand h1 { margin: 6px 0 0; font: 400 50px/1.05 var(--title); letter-spacing: .01em; color: var(--gold); text-shadow: 0 1px 0 rgba(90,60,10,.6), 0 2px 5px rgba(10,14,50,.55), 0 0 22px rgba(19,36,79,.9); white-space: nowrap; }
+  .brand .tag { margin: 6px 0 0; font: 400 16px/1.3 var(--text); letter-spacing: .02em; color: rgba(245,237,216,.86); }
+  .playing .brand h1 { font-size: 34px; } .playing .brand .tag, .playing #emblem { display: none; }
+
+  #setup { width: 100%; margin-top: 22px; display: flex; flex-direction: column; gap: 15px; }
+  .opt { margin: 0; padding: 0; border: 0; min-width: 0; }
+  .opt > legend, .opt > .legend { display: block; width: 100%; padding: 0; margin: 0 0 7px; font: 500 14px/1.2 var(--text); letter-spacing: .03em; color: rgba(245,237,216,.84); }
+  .seg { display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; gap: 8px; }
+  .plate { position: relative; min-height: 46px; padding: 6px 12px; border-radius: 8px; border: 1px solid rgba(232,195,111,.42); color: rgba(245,237,216,.86); font: 500 15px/1.15 var(--text); text-shadow: none;
+    background: linear-gradient(160deg, rgba(47,58,122,.9), rgba(24,30,76,.92) 55%, rgba(15,19,52,.94)); box-shadow: 0 1px 0 rgba(255,255,255,.13) inset, 0 5px 14px rgba(8,12,44,.34); transition: border-color .15s, color .15s, translate .08s; }
+  .plate:hover:not(:disabled) { border-color: var(--gold-hi); color: #fff; }
+  .plate:active:not(:disabled) { translate: 0 1px; }
+  .plate[aria-pressed="true"] { border: 1.5px solid var(--gold-hi); color: #fff; background: linear-gradient(160deg, rgba(64,78,156,.96), rgba(31,39,98,.96) 55%, rgba(19,24,66,.96)); box-shadow: 0 1px 0 rgba(255,255,255,.2) inset, 0 0 0 3px rgba(232,195,111,.2), 0 5px 14px rgba(8,12,44,.34); }
+  .plate:disabled { opacity: .45; }
+  .plate.small { min-height: 40px; font-size: 14px; }
+  .plate .disc { display: inline-block; width: 22px; height: 22px; vertical-align: -5px; margin-right: 7px; }
+  .phases { display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; gap: 7px; }
+  .phases .plate { min-height: 58px; padding: 5px 2px; display: flex; align-items: center; justify-content: center; }
+  .phases canvas { width: 38px; height: 38px; display: block; }
+  .cap { min-height: 2.9em; margin: 9px 0 0; font: 400 15px/1.4 var(--text); color: rgba(245,237,216,.9); }
+  .cap b { font: 400 17px/1.2 var(--title); color: var(--gold-hi); letter-spacing: .02em; }
+  .go { min-height: 54px; margin-top: 3px; border-radius: 9px; border: 1px solid #fff3c9; color: #1b1f4b; font: 400 22px/1 var(--title); letter-spacing: .04em; text-shadow: 0 1px 0 rgba(255,250,220,.6);
+    background: linear-gradient(178deg, #fff3c4, #f0cf7f 38%, #d9ae58 72%, #c79b47); box-shadow: 0 1px 0 rgba(255,255,255,.7) inset, 0 -2px 0 rgba(120,84,20,.35) inset, 0 8px 20px rgba(8,12,44,.4); transition: filter .15s, translate .08s; }
+  .go:hover { filter: brightness(1.07); } .go:active { translate: 0 1px; }
+  .seat { padding: 10px; border-radius: 10px; border: 1px solid rgba(232,195,111,.3); background: rgba(17,22,58,.5); text-shadow: none; }
+  .seat-top { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 8px; font: 500 15px/1.2 var(--text); }
+  .seat-top .disc { width: 22px; height: 22px; vertical-align: -5px; margin-right: 7px; }
+  .seat .who-bot { margin: 8px 0 6px; font: 400 14px/1.35 var(--text); color: rgba(245,237,216,.9); text-align: left; overflow-wrap: anywhere; }
+  .seat .who-bot b { font-weight: 600; color: #fff; }
+  .seat .err { margin: 8px 0 0; font-size: 14px; color: #ffd0b8; text-align: left; overflow-wrap: anywhere; }
+  .levels { display: flex; flex-wrap: wrap; gap: 6px; }
+  .levels .plate { min-height: 38px; padding: 4px 11px; font-size: 14px; }
+
+  #hud { width: 100%; margin-top: 8px; display: flex; flex-direction: column; align-items: center; }
+  .score { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; width: 100%; }
+  #dial { width: 236px; height: 236px; display: block; margin: 0 -14px; }
+  .who { position: relative; display: flex; flex-direction: column; align-items: center; gap: 1px; min-width: 0; }
+  .who .num { font: 400 56px/1 var(--title); color: var(--moon); font-variant-numeric: lining-nums; transition: color .3s; }
+  .who .name { font: 500 15px/1.2 var(--text); color: rgba(245,237,216,.88); max-width: 100%; overflow-wrap: anywhere; }
+  /* whose move it is: a gold ring round that side's disc, as round the last disc on the board, and its count in gold */
+  .who .disc { width: 28px; height: 28px; margin-bottom: 7px; border-radius: 50%; box-shadow: 0 0 0 0 rgba(251,230,168,0); transition: box-shadow .3s; }
+  .who.turn .disc { box-shadow: 0 0 0 3px rgba(19,36,79,.55), 0 0 0 5px var(--gold-hi), 0 0 16px 6px rgba(251,230,168,.6); }
+  .who.turn .num { color: var(--gold-hi); }
+  .status { margin: 4px 0 0; min-height: 1.25em; font: 400 27px/1.25 var(--title); color: #fffaf0; letter-spacing: .01em; }
+  .sub { margin: 4px 0 0; min-height: 1.45em; font: 400 15.5px/1.45 var(--text); color: rgba(245,237,216,.9); }
+  .btns { display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; gap: 9px; width: 100%; margin-top: 14px; }
+
+  /* the rules, a step at a time, each with a small board */
+  .overlay { position: fixed; inset: 0; z-index: 10; display: grid; place-items: center; padding: 18px; background: rgba(8,12,40,.62); overflow: auto; overscroll-behavior: contain; }
+  .sheet { position: relative; width: min(760px, 100%); padding: 26px 28px 24px; border-radius: 14px; border: 1.5px solid var(--gold); color: var(--moon);
+    background: linear-gradient(165deg, #2b3672, #1a2150 42%, #111634); box-shadow: 0 0 0 5px rgba(17,22,58,.6), 0 30px 80px rgba(3,5,24,.65); }
+  .sheet h2 { margin: 0 44px 4px 0; font: 400 34px/1.1 var(--title); color: var(--gold); }
+  .sheet .lead { margin: 0 0 16px; color: rgba(245,237,216,.86); }
+  .steps { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px 22px; }
+  .step { display: grid; grid-template-columns: 132px 1fr; gap: 14px; align-items: center; }
+  .step canvas { width: 132px; height: 99px; border-radius: 6px; box-shadow: 0 0 0 1.5px rgba(232,195,111,.75), 0 6px 16px rgba(3,5,24,.5); display: block; }
+  .step p { margin: 0; font-size: 15.5px; line-height: 1.42; }
+  .step b { font-weight: 600; color: var(--gold-hi); }
+  .x { position: absolute; top: 14px; right: 14px; width: 44px; height: 44px; border-radius: 50%; border: 1px solid rgba(232,195,111,.5); background: rgba(17,22,58,.6); color: var(--moon); font: 400 24px/1 var(--text); }
+  .x:hover { border-color: var(--gold-hi); color: var(--gold-hi); }
+
+  /* one column: the board first, the rest under it */
+  @media (max-width: 880px) and (min-height: 561px), (max-aspect-ratio: 1/1) {
+    :root { --board: min(calc(100vw - 20px), calc(var(--vh) - 262px), 640px); --side: min(calc(100vw - 28px), 460px); }
+    /* before a game the board only shows the game playing itself: it gives way so that everything to settle is in sight */
+    body:not(.playing) { --board: max(170px, min(calc(100vw - 20px), calc(var(--vh) - 470px), 640px)); }
+    .table { grid-template-columns: 1fr; justify-items: center; align-content: start; gap: 10px; min-height: 0; padding: 2px 10px calc(22px + env(safe-area-inset-bottom, 0px)); }
+    .top { gap: 6px; padding-left: calc(8px + env(safe-area-inset-left, 0px)); padding-right: calc(10px + env(safe-area-inset-right, 0px)); }
+    .home .far { display: none; }
+    .brand h1 { margin: 0; font-size: 34px; } .brand .tag { margin-top: 2px; font-size: 15px; } #emblem { display: none; }
+    .playing .brand { display: none; }
+    #setup { margin-top: 9px; gap: 9px; }
+    .opt > legend { margin-bottom: 5px; font-size: 13.5px; }
+    .plate { min-height: 44px; } .phases .plate { min-height: 52px; } .phases canvas { width: 34px; height: 34px; }
+    .cap { min-height: 2.8em; margin-top: 6px; } .cap br { display: none; } .cap b::after { content: ". "; }
+    .go { min-height: 50px; }
+    #hud { margin-top: 0; }
+    #dial { width: 132px; height: 132px; margin: 0; }
+    .who .num { font-size: 40px; }
+    .status { font-size: 22px; margin-top: 0; } .sub { font-size: 15px; margin-top: 1px; }
+    .btns { margin-top: 9px; }
+    .mini { min-height: 44px; }
+    .steps { grid-template-columns: 1fr; } .sheet { padding: 20px 16px 18px; } .sheet h2 { font-size: 28px; }
+    .step { grid-template-columns: 112px 1fr; gap: 12px; } .step canvas { width: 112px; height: 84px; }
+  }
+  /* a wide, low window (a phone on its side): the board as tall as it can be, the rest beside it and smaller */
+  @media (max-height: 560px) and (min-aspect-ratio: 1/1) {
+    :root { --side: min(320px, calc(100vw - var(--vh) - 40px)); --gap: 26px; --board: min(calc(100vw - var(--side) - var(--gap) - 40px), calc(var(--vh) - 62px)); }
+    .top { min-height: 46px; padding-top: calc(2px + env(safe-area-inset-top, 0px)); }
+    .home .far { display: none; }
+    .table { min-height: calc(var(--vh) - 48px); padding: 2px 20px 8px; }
+    .brand h1 { font-size: 26px; } #emblem, .brand .tag { display: none; } .playing .brand { display: none; }
+    #setup { margin-top: 5px; gap: 6px; }
+    .opt > legend { margin-bottom: 3px; font-size: 13px; }
+    .plate { min-height: 44px; padding: 4px 8px; } .phases .plate { min-height: 44px; } .phases canvas { width: 30px; height: 30px; }
+    .cap { min-height: 2.7em; margin-top: 4px; font-size: 13.5px; line-height: 1.35; } .cap br { display: none; } .cap b { font-size: 15px; } .cap b::after { content: ". "; }
+    .go { min-height: 44px; font-size: 20px; }
+    #dial { width: 126px; height: 126px; margin: 0; } .who .num { font-size: 38px; }
+    .status { font-size: 21px; margin-top: 0; } .sub { font-size: 14px; margin-top: 0; min-height: 2.8em; } .btns { margin-top: 6px; }
+    .mini { min-height: 44px; }
+    .steps { grid-template-columns: repeat(2, 1fr); gap: 10px 16px; } .sheet { padding: 16px 18px; } .sheet h2 { font-size: 26px; } .sheet .lead { margin-bottom: 10px; }
+    .step { grid-template-columns: 100px 1fr; gap: 10px; } .step canvas { width: 100px; height: 75px; } .step p { font-size: 14px; line-height: 1.35; }
+  }
+  @media (prefers-reduced-motion: reduce) { .cell.can::before, #stars i { animation: none; } #toast, .plate, .go, .who .disc { transition: none; } }
+</style>
+</head>
+<body>
+<canvas id="sky" aria-hidden="true"></canvas>
+<div id="stars" aria-hidden="true"></div>
+<header class="top">
+  <!--__HOME__-->
+  <span class="top-sp"></span>
+  <button type="button" class="mini" id="sound" data-act="sound">Sound on</button>
+  <button type="button" class="mini" data-act="help">How to play</button>
+</header>
+<main class="table" id="table">
+  <div class="board" id="boardbox">
+    <canvas id="board" role="img" aria-label="The board"></canvas>
+    <div id="cells" role="group" aria-label="The squares of the board"></div>
+    <div id="toast" aria-hidden="true"></div>
+  </div>
+  <aside class="side">
+    <div class="brand">
+      <canvas id="emblem" aria-hidden="true"></canvas>
+      <h1>Wax &amp; Wane</h1>
+      <p class="tag">/*__TAG__*/</p>
+    </div>
+    <div id="setup"></div>
+    <div id="hud" hidden>
+      <div class="score">
+        <div class="who" id="who0"><canvas class="disc" data-side="0" aria-hidden="true"></canvas><span class="num" id="num0">2</span><span class="name" id="name0">Dark</span></div>
+        <canvas id="dial" role="img" aria-label="How the discs are shared"></canvas>
+        <div class="who" id="who1"><canvas class="disc" data-side="1" aria-hidden="true"></canvas><span class="num" id="num1">2</span><span class="name" id="name1">Light</span></div>
+      </div>
+      <p class="status" id="status" aria-live="polite"></p>
+      <p class="sub" id="sub" aria-live="polite"></p>
+      <div class="btns" id="btns"></div>
+    </div>
+  </aside>
+</main>
+<div class="overlay" id="help" hidden>
+  <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="help-title">
+    <button type="button" class="x" data-act="help-close" aria-label="Close">×</button>
+    <h2 id="help-title">How to play</h2>
+    <p class="lead">Wax &amp; Wane is played by the rules of Othello.</p>
+    <div class="steps" id="steps"></div>
+  </div>
+</div>
+<input type="file" id="pick" accept=".js,.mjs,.txt,text/javascript,text/plain" hidden>
+<script id="rules">
+/*__RULES__*/
+</script>
+<script id="host" type="text/plain">
+/*__HOST__*/
+</script>
+/*__BOTS__*/
+<script>
+/*__JS__*/
+</script>
+</body>
+</html>

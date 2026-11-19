@@ -104,6 +104,14 @@ GAMES = {
             'vs': {'mei': {'w': 5, 'l': 0, 'd': 0}, 'lan': {'w': 5, 'l': 1, 'd': 0}, 'lian': {'w': 3, 'l': 2, 'd': 0}},
             'match': {'opp': 'yue', 'rated': True, 'side': 0, 'moves': [2585,8384,2305,8146,7059,8646,3079,8920,2836,9537,8247,8394,8640,8659,5409,6588,6570,6595,128,6072,8193,8641,8384,11353,6081,9139,4635,2136,4754,1936,5272,1423]}}),
         play=['waitsel:#said:not(:empty)', 'wait:1500', 'js:press(sqOf("f5"))', 'wait:500']),
+    # its title screen plays the game by itself: wait for a few moves. The picture of play goes back to a game against
+    # the computer in its middle, with the person to move and every square a disc can go on marked
+    'wax-and-wane': dict(
+        title=['wait:15000'],
+        ls={'wax-and-wane.v1': {'cfg': {'vs': 'bot', 'level': 'gibbous', 'side': 0}, 'sound': True,
+            'game': {'moves': [44,29,20,43,30,22,38,31,42,51,21,37,45,34,39,47,23,15,19,26,25,46,58,12,11,53],
+                     'seat': [{'kind': 'human'}, {'kind': 'bot', 'bot': 'house', 'level': 'gibbous', 'name': 'The computer', 'label': 'Computer'}]}}},
+        play=['waitsel:.cell.can', 'wait:900']),
 }
 
 
