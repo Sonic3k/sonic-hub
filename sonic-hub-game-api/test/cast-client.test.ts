@@ -134,7 +134,7 @@ describe('the browser side of a game’s cast', { skip: !adminUrl && 'TEST_DATAB
     const up = await change('PUT', `/games/${game}/cast/thu/photo`, picture('thu', 'webp'), 'image/webp');
     const first = open(base, game);
     await first.cast.refresh();
-    assert.deepEqual(JSON.parse(first.storage.get(`sonic-cast.${game}`)!), [{ id: 'thu', name: 'Thu Hà', photo: up.photo }]);
+    assert.deepEqual(JSON.parse(first.storage.get(`sonic-cast.${game}`)!), [{ id: 'thu', name: 'Thu Hà', age: null, photo: up.photo, album: [] }]);
 
     // the page opened again with the service out of reach: she is there before anything is heard, and stays
     const offline = open(base, game, { storage: first.storage, down: true });
@@ -148,6 +148,24 @@ describe('the browser side of a game’s cast', { skip: !adminUrl && 'TEST_DATAB
     assert.equal(await offline.cast.refresh(), true);
     assert.deepEqual([offline.cast.heard(), offline.cast.name('thu'), offline.changes], [true, 'Thu', 2]);
     assert.equal(JSON.parse(first.storage.get(`sonic-cast.${game}`)!)[0].name, 'Thu');
+  });
+
+  test('an age and the pictures of her album come with the cast, each picture asked for at the width that fits', async () => {
+    const game = aGame('album');
+    await change('PUT', `/games/${game}/cast/vera`, { age: 37 });
+    const up = await change('PUT', `/games/${game}/cast/vera/album/2`, picture('vera, two'), 'image/jpeg');
+    const b = open(base, game);
+    await b.cast.refresh();
+    assert.deepEqual([b.cast.age('vera'), b.cast.age('mina'), b.cast.plates('vera'), b.cast.plates('mina')], [37, null, [2], []]);
+    assert.equal(b.cast.plate('vera', 2, 74), `${up.album[0].photo}?width=320`);
+    assert.deepEqual([b.cast.plate('vera', 1, 74), b.cast.plate('mina', 2, 74)], ['', '']);
+    assert.match(b.cast.plate('vera', 2, 'full'), /\?width=1920$/);
+    // kept by the browser with the rest
+    const offline = open(base, game, { storage: b.storage, down: true });
+    assert.deepEqual([offline.cast.age('vera'), offline.cast.plate('vera', 2, 74)], [37, `${up.album[0].photo}?width=320`]);
+    // an age no adult has is not believed, wherever it came from, nor a place or an address that is none
+    const odd = open(base, game, { storage: new Map([[`sonic-cast.${game}`, JSON.stringify([{ id: 'x', name: 'X', age: 12, album: [{ n: 0, photo: 'https://cdn.example/a.jpg' }, { n: 1, photo: 'javascript:alert(1)' }] }])]]), down: true });
+    assert.deepEqual([odd.cast.name('x'), odd.cast.age('x'), odd.cast.plates('x')], ['X', null, []]);
   });
 
   test('what a browser holds that is not a cast is not believed, and a game with no service has only its own', async () => {

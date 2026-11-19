@@ -4,7 +4,7 @@ import type { Request } from 'express';
 import { readFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { GameKey, MemberKey, PlayerId, PutMemberBody, PutPlayerBody, type PutMemberInput, type PutPlayerInput } from './api-schemas.js';
+import { AlbumPlace, GameKey, MemberKey, PlayerId, PutMemberBody, PutPlayerBody, type PutMemberInput, type PutPlayerInput } from './api-schemas.js';
 import { CastService } from './cast.service.js';
 import { APP_CONFIG } from './common/tokens.js';
 import { ZodPipe } from './common/zod-pipe.js';
@@ -104,10 +104,12 @@ function pictureSent(req: Request, most: number): Promise<Buffer> {
 }
 
 /*
- *   GET    /api/games/{game}/cast                    who in the game's cast has a name or a picture from here
- *   PUT    /api/games/{game}/cast/{member}           { name }: the name she is to go by; null for the game's own
- *   PUT    /api/games/{game}/cast/{member}/photo     the picture itself as the body: a JPEG, PNG or WebP file
- *   DELETE /api/games/{game}/cast/{member}/photo     takes her picture away
+ *   GET    /api/games/{game}/cast                        who in the game's cast was given something here
+ *   PUT    /api/games/{game}/cast/{member}               { name?, age? }: what she is to go by; null for the game's own
+ *   PUT    /api/games/{game}/cast/{member}/photo         her picture itself as the body: a JPEG, PNG or WebP file
+ *   DELETE /api/games/{game}/cast/{member}/photo         takes her picture away
+ *   PUT    /api/games/{game}/cast/{member}/album/{n}     the picture at place n of her album, as the body
+ *   DELETE /api/games/{game}/cast/{member}/album/{n}     takes that picture out of her album
  * Nobody signs in, as with a game's players. A picture is not read from here: the cast gives its address at the CDN.
  */
 @Controller()
@@ -123,8 +125,8 @@ export class CastController {
   }
 
   @Put('games/:game/cast/:member')
-  rename(@Param('game', new ZodPipe(GameKey)) game: string, @Param('member', new ZodPipe(MemberKey)) member: string, @Body(new ZodPipe(PutMemberBody)) body: PutMemberInput) {
-    return this.castOf.rename(game, member, body.name);
+  set(@Param('game', new ZodPipe(GameKey)) game: string, @Param('member', new ZodPipe(MemberKey)) member: string, @Body(new ZodPipe(PutMemberBody)) body: PutMemberInput) {
+    return this.castOf.set(game, member, body);
   }
 
   /** The body is the file itself. It is read here, no further than a picture may be long, and only where there is somewhere to keep it. */
@@ -137,5 +139,16 @@ export class CastController {
   @Delete('games/:game/cast/:member/photo')
   removePhoto(@Param('game', new ZodPipe(GameKey)) game: string, @Param('member', new ZodPipe(MemberKey)) member: string) {
     return this.castOf.removePhoto(game, member);
+  }
+
+  @Put('games/:game/cast/:member/album/:n')
+  async putPlate(@Param('game', new ZodPipe(GameKey)) game: string, @Param('member', new ZodPipe(MemberKey)) member: string, @Param('n', new ZodPipe(AlbumPlace)) n: number, @Req() req: Request) {
+    this.castOf.needsStorage();
+    return this.castOf.putPlate(game, member, n, await pictureSent(req, this.config.limits.photoBytes));
+  }
+
+  @Delete('games/:game/cast/:member/album/:n')
+  removePlate(@Param('game', new ZodPipe(GameKey)) game: string, @Param('member', new ZodPipe(MemberKey)) member: string, @Param('n', new ZodPipe(AlbumPlace)) n: number) {
+    return this.castOf.removePlate(game, member, n);
   }
 }
