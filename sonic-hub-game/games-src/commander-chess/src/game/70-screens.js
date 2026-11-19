@@ -10,20 +10,54 @@ const cardsChip = () => `<button type="button" class="chip" data-act="cards">Car
 /** the strip along the top of the chart, a station, the List and the cards */
 const bar = (back, act, title = '') => `<header class="bar"><button type="button" class="chip" data-act="${act}">‹ ${back}</button>${title ? `<span class="bar-title">${title}</span>` : ''}<span class="bar-sp"></span>${plate()}<span class="bar-br"></span>${listChip()}${cardsChip()}<button type="button" class="chip" data-act="rules">Rules</button>${soundBtn()}</header>`;
 
-function screenTitle() {
-  const played = Object.keys(SAVE.record).length > 0 || SAVE.match;
+/** note: a word for the title to say once (a game taken up from elsewhere) */
+function screenTitle(note = '') {
+  const me = ROLL.current(), played = Object.keys(SAVE.record).length > 0 || SAVE.match;
   return `<div class="title-art">${sceneHalcyon()}</div>
   <a class="chip home" href="${SHELF}">‹ Sonic Hub Game</a>
   <div class="title-box">
     <h1 class="logo" aria-label="Commander Chess"><span>Commander</span><span>Chess</span></h1>
     <p class="tag">The Grand Maneuvers</p>
+    ${me ? `<p class="who"><span>Welcome back, <b>${myRank()} ${esc(me.name)}</b>.</span> <button type="button" class="who-change" data-act="roll">Not you? Change player</button></p>` : ''}
+    ${note ? `<p class="title-note">${esc(note)}</p>` : ''}
     <div class="title-btns">
-      <button type="button" class="btn big" data-act="${SAVE.match ? 'resume' : 'chart'}">${SAVE.match ? 'Back to your game' : played ? 'Continue the tour' : 'Report for duty'}</button>
-      ${SAVE.match ? '<button type="button" class="btn" data-act="chart">The chart</button>' : ''}
+      <button type="button" class="btn big" data-act="${!me ? 'roll' : SAVE.match ? 'resume' : 'chart'}">${me && SAVE.match ? 'Back to your game' : me && played ? 'Continue the tour' : 'Report for duty'}</button>
+      ${me && SAVE.match ? '<button type="button" class="btn" data-act="chart">The chart</button>' : ''}
       <button type="button" class="btn ghost" data-act="rules">How to play</button>
     </div>
     <p class="credit">The game is Cờ Tư Lệnh, by Nguyễn Quý Hải, played by his own rules.</p>
   </div>`;
+}
+
+/* ── the muster roll: who is playing ── */
+const firstSign = name => esc(Array.from(name)[0].toUpperCase());
+/** when a player last played, in a word or two */
+function ago(iso) {
+  const day = t => { const d = new Date(t); return new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime(); };
+  const days = Math.round((day(Date.now()) - day(Date.parse(iso))) / 86400000);
+  return !(days > 0) ? 'today' : days === 1 ? 'yesterday' : days < 60 ? `${days} days ago` : `${Math.round(days / 30)} months ago`;
+}
+/** one line of the roll: a player to pick, or (G.edit) the line being changed */
+function rollRow(p, me) {
+  if (G.edit === p.id) return `<li><form class="roll-form" data-form="rename" data-id="${p.id}"><span class="medal">${firstSign(p.name)}</span><input class="field" name="name" value="${esc(p.name)}" maxlength="24" autocomplete="off" aria-label="Name"><button type="submit" class="btn">Save</button><span class="roll-more"><button type="button" class="link strike" data-act="roll-remove" data-id="${p.id}">${G.sure ? 'Sure? Points and cards go too' : 'Remove'}</button><button type="button" class="link" data-act="roll-cancel">Cancel</button></span></form></li>`;
+  const d = readSave(p.data), her = d.match && womanById(d.match.w);
+  const line = p.full ? 'Only on this device: the roll is full' : `${rankFor(d.peak)}, ${her ? 'in a game with ' + esc(first(her)) : 'played ' + ago(p.playedAt)}`;
+  return `<li><div class="roll-row${me && me.id === p.id ? ' on' : ''}"><button type="button" class="roll-pick" data-act="roll-pick" data-id="${p.id}"><span class="medal">${firstSign(p.name)}</span><span class="nm"><b>${esc(p.name)}</b><small>${line}</small></span><span class="rate"><b>${d.rating}</b>points</span></button><button type="button" class="link" data-act="roll-edit" data-id="${p.id}" aria-label="Rename or remove ${esc(p.name)}">Edit</button></div></li>`;
+}
+/** under the names, only when there is something to say: the roll could not be read, or not all of it is kept yet */
+const rollNote = () => (ROLL.players().length && ROLL.heard() === false ? 'The roll cannot be reached just now: these are the names as this device last saw them.' : ROLL.status() === 'waiting' ? 'Not all of it is kept yet. It is tried again by itself.' : '');
+function rollHTML() {
+  const list = ROLL.players(), me = ROLL.current(), max = ROLL.max(), heard = ROLL.heard();
+  const fits = (['No', 'One', 'Two', 'Three', 'Four', 'Five', 'Six'][max] || String(max)) + (max === 1 ? ' name fits' : ' names fit');
+  // until the roll has been read there may be names on it that are not shown yet: nobody is asked to sign before that
+  const lead = list.length ? 'Pick your name and go on from where you were.' : heard === null ? 'Reading the roll…' : heard ? 'Nobody has signed on yet. The first line is yours.' : 'The roll cannot be reached just now. A name signed here is sent to it as soon as it can be.';
+  let h = `<h2 id="dlg-title">The muster roll</h2><p class="dlg-sub">${lead}</p><ol class="roll">${list.map(p => rollRow(p, me)).join('')}`;
+  if (list.length >= max) h += '<li class="roll-full">The roll is full. Remove a name to sign another.</li>';
+  else if (list.length || heard !== null) h += '<li><form class="roll-form" data-form="new"><span class="medal blank" aria-hidden="true"></span><input class="field" name="name" maxlength="24" autocomplete="off" placeholder="Sign a new name" aria-label="A new player’s name"><button type="submit" class="btn">Sign on</button></form></li>';
+  h += `</ol><p class="roll-note" aria-live="polite">${rollNote()}</p>
+    <p class="roll-about">${ROLL.remote() ? 'The roll is the game’s own: whoever opens the game, on any device, sees the same names and picks theirs.' : 'The roll is kept in this browser.'} Each keeps their points, their record, their cards and a game left on the table. ${fits} on it.</p>`;
+  if (me) h += '<div class="dlg-btns"><button type="button" class="btn ghost" data-act="close">Back</button></div>';
+  return h;
 }
 
 /* what stands in each station's flag */
@@ -36,6 +70,8 @@ const EMBLEM = {
   meridian: '<path d="M5.500 21.500V11.500H4.500V4.500H7.700V7.300H10.400V4.500H13.600V7.300H16.300V4.500H19.500V11.500H18.500V21.500H14V16.500A2 2 0 0 0 10 16.500V21.500Z" fill="#fff"/>',
   admiralty: '<path d="M12 2.800L14.250 9.400L21.200 9.500L15.650 13.700L17.700 20.400L12 16.400L6.300 20.400L8.350 13.700L2.800 9.500L9.750 9.400Z" fill="#fff"/>',
 };
+/** a screen wide enough for the officers of a station to stand side by side */
+const WIDE = window.matchMedia('(min-width: 901px)');
 /** an upright phone gets the tall sheet */
 const TALL = window.matchMedia('(max-width: 900px) and (orientation: portrait)');
 /** a station's flag on the chart: its emblem on a medal that stands over the place, and beside it the name and who is
@@ -59,13 +95,16 @@ function nextStep() {
   const p = PLACES.find(x => x.open === n[0]);
   return ` ${n[1]} at ${n[0]}${p ? ': ' + p.name + ' opens' : n[0] === 1700 ? ': the General and the Second Sea Lord sit down' : n[0] === 1900 ? ': the First Sea Lord sits down' : ''}.`;
 }
+/** in the logbook, only when there is something to say: the roll has no room for this player, or what was played has
+ *  not reached it yet */
+const keptNote = () => { const me = ROLL.current(); return me && me.full ? 'Only on this device: the roll is full.' : ROLL.status() === 'waiting' ? 'Not on the roll yet. It is tried again by itself.' : ''; };
 function screenChart() {
   const tall = TALL.matches;
   return `${bar('Title', 'title')}
     <div class="chart-wrap"><div class="chart" data-tall="${tall ? 1 : 0}">${chartSheet(tall)}<i class="neat"></i></div>
       <div class="logbook"><h2>The Lumen coast</h2><p>Every spring the Grand Maneuvers go round the coast, table by table. Each promotion opens the next station.</p>
         <p class="log-line"><b>${SAVE.rating}</b> points${SAVE.peak > SAVE.rating ? ` (best ${SAVE.peak})` : ''}, ${ordinal(listPlace())} on the List.${nextStep()}</p>
-        <label class="check"><input type="checkbox" data-act="all" ${SAVE.all ? 'checked' : ''}> Open everyone (for trying things out)</label></div>
+        <label class="check"><input type="checkbox" data-act="all" ${SAVE.all ? 'checked' : ''}> Open everyone (for trying things out)</label><p class="kept-note" aria-live="polite">${keptNote()}</p></div>
     </div>`;
 }
 function placeNote(p) {
@@ -75,12 +114,12 @@ function placeNote(p) {
 const ARMS = ['at sea', 'in the air', 'on land'];
 /** an officer at her station: her picture, who she is, where she stands on the List, how she plays and how she won
  *  last season, and what a game with her is worth */
-function dossier(w) {
+function dossier(w, px) {
   const open = isOpen(w), r = recordOf(w.id), won = cardsWon(w), loss = pointsFor(SAVE.rating, w.rating, 0);
   const wins = w.wins ? `<div class="d-wins"><div class="d-bar">${w.wins.map((v, i) => `<i class="a${i}" style="flex:${v} 0 0"></i>`).join('')}<i style="flex:${100 - w.wins[0] - w.wins[1] - w.wins[2]} 0 0"></i></div><p>Of her wins last season: ${w.wins.map((v, i) => [v, v + '% ' + ARMS[i]]).filter(x => x[0]).map(x => x[1]).join(', ')}.</p></div>`
     : '<div class="d-wins"><p>No wins last season.</p></div>';
   return `<article class="dossier${open ? '' : ' locked'}">
-    <div class="d-pic">${portrait(w)}${isNew(w) ? '<span class="d-new">New at the table</span>' : ''}</div>
+    <div class="d-pic">${portrait(w, '', px)}${isNew(w) ? '<span class="d-new">New at the table</span>' : ''}</div>
     <div class="d-body">
       <h3>${w.rank} ${esc(w.name)}</h3><p class="d-job">${esc(w.job)}</p>
       <p class="d-facts"><span class="lvl">${ordinal(w.list)} on the List</span><span class="rate">${w.rating}</span><span class="stars" aria-label="${won.filter(Boolean).length} of 3 cards">${won.map(v => (v ? '★' : '☆')).join('')}</span></p>
@@ -92,17 +131,19 @@ function dossier(w) {
 }
 function screenPlace(p) {
   const os = WOMEN.filter(w => w.place === p.id);
+  // how wide a portrait stands: side by side they share the screen's width; on a narrow screen each is a strip beside her text
+  const px = WIDE.matches ? Math.ceil((document.documentElement.clientWidth - 28 - 14 * (os.length - 1)) / os.length) : 135;
   return `${bar('Chart', 'chart')}
     <div class="place-top">${scene(p.id)}<div class="place-name"><h2>${p.room}</h2><p>${p.name}</p></div></div>
     <div class="place-text"><p>${esc(p.blurb)}</p><p class="house">House rules: the standard line-up and a game of battles. A challenge counts for points and cards; sparring counts for nothing and lets you take moves back.</p></div>
-    <div class="roster${os.length > 4 ? ' many' : ''}" style="--n:${os.length}">${os.map(dossier).join('')}</div>`;
+    <div class="roster${os.length > 4 ? ' many' : ''}${os.some(w => pictureOf(w)) ? ' own' : ''}" style="--n:${os.length}">${os.map(w => dossier(w, px)).join('')}</div>`;
 }
 /** The List: last season's table, with the player on it where their points put them */
 function screenList() {
   const rows = WOMEN.map(w => ({ w, pts: w.rating })).concat([{ me: true, pts: SAVE.rating }]).sort((a, b) => b.pts - a.pts || (a.me ? 1 : -1));
   const won = WOMEN.reduce((n, w) => n + recordOf(w.id).w, 0), lost = WOMEN.reduce((n, w) => n + recordOf(w.id).l, 0);
   const row = (r, i) => (r.me
-    ? `<li class="you"><span class="l-n">${i + 1}</span><span class="l-you">You</span><span class="l-who">${myRank()} on the round<small>You, this spring</small></span><span class="l-rec">won ${won}, lost ${lost}</span><span class="l-pts">${SAVE.rating}</span></li>`
+    ? `<li class="you"><span class="l-n">${i + 1}</span><span class="l-you">You</span><span class="l-who">${myRank()} ${esc((ROLL.current() || { name: 'on the round' }).name)}<small>You, this spring</small></span><span class="l-rec">won ${won}, lost ${lost}</span><span class="l-pts">${SAVE.rating}</span></li>`
     : `<li><span class="l-n">${i + 1}</span>${face(r.w, recordOf(r.w.id).w ? 'won' : 'open')}<span class="l-who">${r.w.rank} ${esc(r.w.name)}<small>${placeById(r.w.place).name}</small></span><span class="l-rec">won ${r.w.rec[0]}, lost ${r.w.rec[2]}${r.w.rec[1] ? ', drew ' + r.w.rec[1] : ''}</span><span class="l-pts">${r.w.rating}</span></li>`);
   const half = Math.ceil(rows.length / 2), col = (from, to) => `<ol start="${from + 1}">${rows.slice(from, to).map((r, k) => row(r, from + k)).join('')}</ol>`;
   return `${bar('Chart', 'chart')}
@@ -149,7 +190,7 @@ function screenMatch(w, rated) {
 
 function screenCards() {
   return `${bar('Chart', 'chart', 'Cards')}
-    <div class="album"><p class="album-note">Each of them has three cards: one for beating her, one for beating her three times, one for five. ${ART.base ? '' : 'The portraits are stand-ins until the real pictures are in.'}</p>
+    <div class="album"><p class="album-note">Each of them has three cards: one for beating her, one for beating her three times, one for five. ${WOMEN.some(w => pictureOf(w)) ? '' : 'The portraits are stand-ins until the real pictures are in.'}</p>
     ${PLACES.map(p => `<h2 class="album-place">${p.name}</h2><div class="album-rows">${WOMEN.filter(w => w.place === p.id).map(w => `<section class="album-row"><h3>${w.rank} ${esc(w.name)}</h3><div class="album-cards">${cardsWon(w).map((v, i) => cardArt(w, i, v)).join('')}</div></section>`).join('')}</div>`).join('')}</div>`;
 }
 
@@ -181,8 +222,8 @@ function rulesHTML() {
 }
 
 /* ── boxes over the screen ── */
-function openDialog(html, cls = '') { const o = $('#overlay'); o.innerHTML = `<div class="dlg ${cls}" role="dialog" aria-modal="true" aria-labelledby="dlg-title">${html}</div>`; o.hidden = false; o.scrollTop = 0; const b = o.querySelector('.btn.big, .btn'); if (b) b.focus({ preventScroll: true }); }
-function closeDialog() { $('#overlay').hidden = true; $('#overlay').innerHTML = ''; }
+function openDialog(html, cls = '') { G.roll = false; const o = $('#overlay'); o.innerHTML = `<div class="dlg ${cls}" role="dialog" aria-modal="true" aria-labelledby="dlg-title">${html}</div>`; o.hidden = false; o.scrollTop = 0; const b = o.querySelector('.btn.big, .btn'); if (b) b.focus({ preventScroll: true }); }
+function closeDialog() { $('#overlay').hidden = true; $('#overlay').innerHTML = ''; G.roll = false; }
 /** how a game ended, in a line. res: 1 won, 0.5 drawn, 0 lost */
 function whyText(st, res) {
   const won = res === 1;

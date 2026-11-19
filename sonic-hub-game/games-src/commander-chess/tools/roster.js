@@ -3,14 +3,10 @@
        node tools/roster.js
    The campaign's own files are the source (src/game/60-campaign.js … 66-admiralty.js); test/campaign.test.js fails when
    ROSTER.md no longer says what they say. */
-const fs = require('fs'), path = require('path'), vm = require('vm');
-const root = path.join(__dirname, '..');
+const fs = require('fs'), path = require('path'), { loadCampaign, root } = require('./campaign.js');
 
 function rosterText() {
-  const ctx = vm.createContext({ console, localStorage: { getItem: () => null, setItem() {} } });
-  const files = fs.readdirSync(path.join(root, 'src/game')).filter(f => /^6\d-.*\.js$/.test(f)).sort();
-  vm.runInContext(files.map(f => fs.readFileSync(path.join(root, 'src/game', f), 'utf8')).join('\n') + '\nthis.C = { PLACES, WOMEN, RANKS, START_RATING, WIN_K, LOSS_K, FIRST };', ctx);
-  const { PLACES, WOMEN, RANKS, START_RATING, WIN_K, LOSS_K, FIRST } = ctx.C;
+  const { PLACES, WOMEN, RANKS, START_RATING, WIN_K, LOSS_K, FIRST } = loadCampaign('{ PLACES, WOMEN, RANKS, START_RATING, WIN_K, LOSS_K, FIRST }');
   const rank = r => RANKS.filter(x => r >= x[0]).pop()[1];
   let t = `# Who is who
 

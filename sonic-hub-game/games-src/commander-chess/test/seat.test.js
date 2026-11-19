@@ -1,8 +1,10 @@
 /* Checks that every player of the league can be seated in the game and asked for a turn the way the game asks:
    node test/seat.test.js
-   Each of them is given three positions: the first move as Red, the first reply as Blue, and a middle game reached by
-   moves taken at random. What comes back has to be one whole legal turn, with no fault, within the league's time. */
-const fs = require('fs'), path = require('path');
+   Each of them is given four positions: the first move as Red, the first reply as Blue, and two middle games reached
+   by moves taken at random. What comes back has to be one whole legal turn, with no fault, within the league's time.
+   They are asked through the page as it is built (dist/index.html is built first): its engine script, in a world
+   where no code can be made from text, with every file carried as a function. */
+const fs = require('fs'), path = require('path'), vm = require('vm'), { execFileSync } = require('child_process');
 const CC = require('../league/kit/engine.js'), { makeTable } = require('../kit/src/table.js'), { makeSeat } = require('../src/engine/30-seat.js');
 const PLAYERS = require('../league/tools/players.js');
 const Seat = makeSeat(CC, makeTable), T = Seat.table;
@@ -36,15 +38,22 @@ function wholeTurn(moves, turn) {
   return S.over || S.turn !== side ? '' : 'the turn was left open';
 }
 
+/* the page's own seat: the engine script out of the built page, run where code cannot be made from text */
+execFileSync(process.execPath, [path.join(__dirname, '..', 'build.mjs')], { stdio: 'pipe' });
+const built = /<script id="engine">([\s\S]*?)<\/script>/.exec(fs.readFileSync(path.join(__dirname, '..', 'dist/index.html'), 'utf8'))[1];
+const world = vm.createContext({ console, performance }, { codeGeneration: { strings: false, wasm: false } });   // what a worker has: a clock
+vm.runInContext(built + '\nthis.Seat = Seat;', world, { filename: 'engine.js' });
+const Page = world.Seat;
+
 const only = process.argv[2];
 const positions = [['as Red, first move', []], ['as Blue, first reply', wander(1, 11)], ['in a middle game', wander(14, 5)], ['in another middle game', wander(21, 9)]];
 let slowest = 0;
 for (const p of PLAYERS) {
   if (only && !p.key.includes(only)) continue;
-  const file = path.basename(p.file), source = fs.readFileSync(path.join(__dirname, '..', 'league', p.file), 'utf8');
+  const file = path.basename(p.file);
   for (const [where, moves] of positions) {
     let r;
-    try { r = Seat.turn({ setup, moves, file, id: p.id, level: p.level, seed: 20261119, source }); } catch (e) { r = { moves: [], ms: 0, fault: 'threw: ' + e.message }; }
+    try { r = JSON.parse(JSON.stringify(Page.turn({ setup, moves, file, id: p.id, level: p.level, seed: 20261119 }))); } catch (e) { r = { moves: [], ms: 0, fault: 'threw: ' + e.message }; }
     const bad = r.fault || wholeTurn(moves, r.moves);
     ok(!bad, p.key + ' ' + where + ': ' + bad);
     ok(r.ms <= T.LIMITS.dead(Seat.TIME), p.key + ' ' + where + ': took ' + r.ms + ' ms');
@@ -63,5 +72,16 @@ ok(!wholeTurn(wander(9, 4), r3.moves), 'a turn can be played with nobody to ask'
 let threw = false; try { Seat.turn({ setup, moves: [], file: 'never-sent.js', id: 'x', level: 1, seed: 1 }); } catch (e) { threw = true; }
 ok(threw, 'a player whose file was never given cannot be asked');
 
+/* a page carries its files as functions: the seat hands one to the table as it is, and leaves Function as it found it */
+{
+  const own = { 'plain.js': function (CC, registerAI) { registerAI({ id: 'plain', name: 'Plain', author: 'test', about: 'takes the first move there is', turn(S) { return CC.legalMoves(S)[0]; } }); }, 'mute.js': function () { /* registers nobody */ } };
+  const Carried = makeSeat(CC, makeTable, own), F = Function;
+  const r3 = Carried.turn({ setup, moves: [], file: 'plain.js', id: 'plain', level: 1, seed: 3 });
+  ok(!r3.fault && !wholeTurn([], r3.moves) && Function === F, 'a file carried as a function is seated without its text: ' + r3.fault);
+  let said = ''; try { Carried.turn({ setup, moves: [], file: 'mute.js', id: 'mute', level: 1, seed: 3 }); } catch (e) { said = e.message; }
+  ok(/never called registerAI/.test(said) && Function === F && new Function('return 7')() === 7, 'a file the table refuses is refused as ever, and Function is itself again: ' + said);
+  said = ''; try { Carried.turn({ setup, moves: [], file: 'absent.js', id: 'x', level: 1, seed: 3 }); } catch (e) { said = e.message; }
+  ok(/no file absent\.js/.test(said), 'a file that is not carried and whose text is not given is said to be missing: ' + said);
+}
 console.log(`${passed} passed, ${failed} failed; the slowest turn took ${slowest} ms`);
 process.exit(failed ? 1 : 0);

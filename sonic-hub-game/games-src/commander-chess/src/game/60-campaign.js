@@ -21,7 +21,7 @@
 
    Each officer has a drawn stand-in until her own picture is there (ART.base), and three cards to win. In what she
    says, {you} stands for the player's rank at that moment. */
-const ART = { base: '' };                                     // e.g. 'https://cdn.example/commander-chess/' → <base><id>/portrait.webp, card-1.webp …
+const ART = { base: typeof ART_BASE === 'string' ? ART_BASE : '' };   // a folder beside the page with <id>.jpg in it: only on a page built to try pictures out (--art)
 const START_RATING = 600, WIN_K = 48, LOSS_K = 24, FIRST = 30, FLOOR = 100;   // FLOOR: points never fall below it
 const CARD_WINS = [1, 3, 5];                                  // wins against her that earn her first, second and third card
 const SETUP = { game: 'battles', lineup: 'standard' };        // every table's game: the league's
@@ -73,16 +73,60 @@ const pointsFor = (mine, hers, result) => { const d = result - expected(mine, he
 /** what a win against her is worth now, the first-win bonus included */
 const winWorth = w => pointsFor(SAVE.rating, w.rating, 1) + (recordOf(w.id).w ? 0 : FIRST);
 
-/* ── what is kept between visits ── */
-const STORE = 'commander-chess.v1';
+/* ── who is playing, and what is kept ──
+   The game has a few players of its own, as on the machine an old game was installed on: whoever opens the game, on
+   any device, sees the same names and picks theirs. Nobody signs in. They are kept by the Sonic Hub games' saves
+   service through its own client (10-save.js, copied as it is; SAVES says where the service is): everything is
+   written to this browser at once and sent a moment later, so the game never waits and plays on with no connection.
+
+   A player's save is all that is theirs: points, best points, the record against each officer, who has been met,
+   the colour they like to play, a game left on the table. SAVE is the save of whoever is being played, and a fresh
+   one while nobody is. The sound is this device's own and is kept beside it. */
 const RULES = 3;                                              // 2: the author's own rules. 3: the league's players at every table. A game begun before is not gone back to.
-const freshSave = () => ({ rating: START_RATING, peak: START_RATING, record: {}, met: {}, seen: {}, sound: true, side: 0, all: false, match: null, rules: RULES });
+const LEGACY = 'commander-chess.v1', SOUND = 'commander-chess.sound';   // what the game kept before it had players; this device's sound
+const freshSave = () => ({ rating: START_RATING, peak: START_RATING, record: {}, met: {}, side: 0, all: false, match: null, rules: RULES });
 let SAVE = freshSave();
+/** what the officers were given at the same service: their pictures (12-cast.js; 41-busts.js shows them) */
+const CAST = SonicCast({ api: SAVES.api, game: SAVES.game, onChange: () => { if (typeof hangPictures === 'function') hangPictures(); } });
+const ROLL = SonicSave({ api: SAVES.api, game: SAVES.game, onChange: what => { if (typeof savesChanged === 'function') savesChanged(what); } });
+const count = n => Math.max(0, Math.floor(Number(n)) || 0);
+/** A save as it was kept, made safe to play from: whatever is missing or cannot be right is left out, and a game
+ *  begun under other rules is not gone back to. */
+function readSave(d) {
+  const s = freshSave();
+  if (!d || typeof d !== 'object') return s;
+  if (Number.isFinite(d.rating)) s.rating = Math.max(FLOOR, Math.round(d.rating));
+  s.peak = Math.max(s.rating, Number.isFinite(d.peak) ? Math.round(d.peak) : 0);
+  for (const id in d.record || {}) if (womanById(id)) { const r = d.record[id] || {}; s.record[id] = { w: count(r.w), l: count(r.l), d: count(r.d) }; }
+  for (const id in d.met || {}) if (womanById(id) && d.met[id]) s.met[id] = true;
+  s.side = d.side === 1 ? 1 : 0; s.all = d.all === true;
+  const m = d.match;
+  if (d.rules === RULES && m && womanById(m.w) && (m.side === 0 || m.side === 1) && Array.isArray(m.moves) && m.moves.every(Number.isInteger)) s.match = { w: m.w, side: m.side, rated: !!m.rated, seed: m.seed > 0 ? Math.floor(m.seed) : 1, moves: m.moves.slice() };
+  return s;
+}
+/** Takes up the game of the player being played, as it was kept. False when nobody is being played. */
+function takeUp() { const me = ROLL.current(); SAVE = readSave(me ? me.data : null); return !!me; }
+/** what was just played, kept: in this browser at once, with the service a moment later */
+function keep() { ROLL.write(SAVE); }
+/** the game a new player starts with */
+const newcomer = () => freshSave();
+function keepSound() { try { localStorage.setItem(SOUND, SFX.on ? 'on' : 'off'); } catch (e) { /* a browser that keeps nothing */ } }
+/** What this browser holds when the page opens: the sound, the one game the first versions kept (it goes on as a
+ *  player of its own, whose name can be changed on the roll), and the game of whoever was playing last. */
 function loadSave() {
-  try { const d = JSON.parse(localStorage.getItem(STORE) || 'null'); if (d && typeof d.rating === 'number') { if (d.rules !== RULES) { d.match = null; d.rules = RULES; } SAVE = Object.assign(freshSave(), d); } } catch (e) { /* nothing kept: start fresh */ }
+  try {
+    if (localStorage.getItem(SOUND) === 'off') SFX.on = false;
+    const d = JSON.parse(localStorage.getItem(LEGACY) || 'null');
+    if (d && typeof d === 'object') {
+      if (d.sound === false) { SFX.on = false; keepSound(); }
+      const old = readSave(d), played = old.rating !== START_RATING || old.peak !== START_RATING || old.match || Object.keys(old.record).length;
+      // with no room on the roll it waits where it is
+      if (!played || ROLL.add('Player 1', old)) localStorage.removeItem(LEGACY);
+    }
+  } catch (e) { /* what was kept cannot be read: start afresh */ }
+  takeUp();
   return SAVE;
 }
-function keep() { try { localStorage.setItem(STORE, JSON.stringify(SAVE)); } catch (e) { /* a browser that keeps nothing: the game still plays */ } }
 const recordOf = id => SAVE.record[id] || { w: 0, l: 0, d: 0 };
 const placeOpen = p => SAVE.all || SAVE.peak >= p.open;
 /** does she sit down with the player? Her station has to be open, and the player's best points within her reach */
