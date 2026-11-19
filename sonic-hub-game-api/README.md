@@ -57,11 +57,11 @@ All under `/api`. Every answer carries `X-Now` (the service's clock, ms) and is 
 | `GET /games/{game}/players` | `{ max, epoch, players: [{ id, name, data, version, createdAt, updatedAt, playedAt }] }`, oldest first |
 | `PUT /games/{game}/players/{id}` | one write: `{ base, name?, data?, at? }` → the player as it now stands |
 | `DELETE /games/{game}/players/{id}` | removes a player (204, also when already gone) |
-| `GET /games/{game}/cast` | `{ cast: [{ id, name, age, photo, album: [{ n, photo }] }], photoBytes, albumPlaces }`: who was given something here; what she was not given is `null` (an album: `[]`). A picture is its address at the CDN. `photoBytes` is how large a picture may be, `null` where there is no bucket to keep one in |
+| `GET /games/{game}/cast` | `{ cast: [{ id, name, age, photo, album: [{ n, photo }] }], photoBytes, albumPictures }`: who was given something here; what she was not given is `null` (an album: `[]`, else its pictures in the order of their places). A picture is its address at the CDN. `photoBytes` is how large a picture may be, `null` where there is no bucket to keep one in; `albumPictures` is how many pictures one album holds |
 | `PUT /games/{game}/cast/{id}` | `{ name?, age? }`: the name she is to go by (at most 24 signs) and her age (18 to 99); `null` gives the game's own back, and what is left out is left alone |
 | `PUT /games/{game}/cast/{id}/photo` | her picture itself as the body: a JPEG, PNG or WebP file, with its kind as the `Content-Type` |
 | `DELETE /games/{game}/cast/{id}/photo` | takes her picture away |
-| `PUT /games/{game}/cast/{id}/album/{n}` | the picture at place `n` of her album (1 to `albumPlaces`), sent the same way |
+| `PUT /games/{game}/cast/{id}/album/{n}` | the picture at place `n` of her album, sent the same way. A place (1 to 99) is where the picture stands among the others; places may be left out. One more picture than an album holds is refused with 409 `album_full` |
 | `DELETE /games/{game}/cast/{id}/album/{n}` | takes that picture out of her album |
 | `GET /client.js`, `GET /cast.js`, `GET /health` | the two browser clients; `{ ok: true }` |
 
@@ -118,7 +118,7 @@ hub's other services have; `B2_BUCKET` is `sonic-hub`, `B2_ENDPOINT` `s3.us-east
 Limits, all by environment: `PLAYERS_PER_GAME` 3, `GAMES` 50 (how many different games players are kept for, and
 as many a cast), `SAVE_BYTES` 65536, `REQUESTS_PER_MINUTE` 240 from one address, `PHOTO_BYTES` 16777216 (one
 picture), `CAST_PER_GAME` 200 (members of one game's cast who were given anything) and `ALBUM_PER_MEMBER` 12 (the
-places of one member's album). `CORS_ORIGIN` is `*`
+pictures of one member's album). `CORS_ORIGIN` is `*`
 unless set.
 
 A caller's address is read from the header the proxy in front writes: `X-Real-IP` on Railway, where nothing needs

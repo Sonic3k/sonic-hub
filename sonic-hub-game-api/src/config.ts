@@ -27,7 +27,7 @@ export interface Limits {
   photoBytes: number;
   /** Members of one game's cast that can be given a name or a picture. */
   castPerGame: number;
-  /** Pictures one member's album can hold: its places are 1 to this. */
+  /** Pictures one member's album can hold. */
   albumPerMember: number;
 }
 
@@ -147,7 +147,7 @@ export function loadAppConfig(env: NodeJS.ProcessEnv = process.env): AppConfig {
       requestsPerMinute: count(env, 'REQUESTS_PER_MINUTE', defaultLimits.requestsPerMinute),
       photoBytes: count(env, 'PHOTO_BYTES', defaultLimits.photoBytes),
       castPerGame: count(env, 'CAST_PER_GAME', defaultLimits.castPerGame),
-      albumPerMember: Math.min(99, count(env, 'ALBUM_PER_MEMBER', defaultLimits.albumPerMember)),
+      albumPerMember: Math.min(99, count(env, 'ALBUM_PER_MEMBER', defaultLimits.albumPerMember)),   // a place is 1 to 99
     },
   };
 }

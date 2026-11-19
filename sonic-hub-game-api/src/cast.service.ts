@@ -53,7 +53,7 @@ export class CastService {
    * Everyone in a game's cast who was given something here, by key. Two reads for the whole cast, however many
    * they are: who they are, and the pictures of all their albums.
    */
-  async cast(game: string): Promise<{ cast: MemberView[]; photoBytes: number | null; albumPlaces: number }> {
+  async cast(game: string): Promise<{ cast: MemberView[]; photoBytes: number | null; albumPictures: number }> {
     const [members, album] = await Promise.all([
       this.db.select().from(castMember).where(eq(castMember.game, game)),
       this.db.select().from(castAlbum).where(eq(castAlbum.game, game)).orderBy(asc(castAlbum.member), asc(castAlbum.n)),
@@ -62,7 +62,7 @@ export class CastService {
     const pictures = new Map<string, AlbumRow[]>();
     for (const a of album) pictures.set(a.member, [...(pictures.get(a.member) ?? []), a]);
     const ids = [...new Set([...by.keys(), ...pictures.keys()])].sort();
-    return { cast: ids.map((id) => this.view(id, by.get(id), pictures.get(id) ?? [])), photoBytes: this.photoBytes, albumPlaces: this.config.limits.albumPerMember };
+    return { cast: ids.map((id) => this.view(id, by.get(id), pictures.get(id) ?? [])), photoBytes: this.photoBytes, albumPictures: this.config.limits.albumPerMember };
   }
 
   /** One member as she now stands. */
@@ -107,15 +107,18 @@ export class CastService {
     return changed.now;
   }
 
-  /** Puts a picture at a place in a member's album, in place of any that was there. */
+  /**
+   * Puts a picture at a place in a member's album, in place of any that was there. An album is its pictures in the
+   * order of their places: a place (1 to 99) says where a picture stands among the others and nothing more, so
+   * places may be left out. How many pictures an album holds is a limit of its own.
+   */
   async putPlate(game: string, member: string, n: number, file: Buffer): Promise<MemberView> {
-    const places = this.config.limits.albumPerMember;
-    if (n > places) throw new HttpException({ error: 'invalid', message: `An album has ${places} places.`, max: places }, 400);
     const kind = this.pictureKind(file);
     const key = this.store.albumKeyFor(game, member, n, file, kind);
     const at = and(eq(castAlbum.game, game), eq(castAlbum.member, member), eq(castAlbum.n, n));
     const [before] = await this.db.select().from(castAlbum).where(at);
     if (before?.photoKey === key) return this.her(this.db, game, member);   // the picture that is there, sent again
+    if (!before) await this.albumRoom(this.db, game, member);               // turned away before the file is put anywhere
     if (!(await this.isIn(this.db, game, member))) await this.room(this.db, game);
     await this.putAway(key, file, kind);
     let was: string | null = null;
@@ -123,6 +126,7 @@ export class CastService {
       const now = await this.db.transaction(async (tx) => {
         await tx.execute(sql`select pg_advisory_xact_lock(7302002)`);
         const [had] = await tx.select().from(castAlbum).where(at);
+        if (!had) await this.albumRoom(tx, game, member);
         if (!had && !(await this.isIn(tx, game, member))) await this.room(tx, game);
         was = had?.photoKey ?? null;
         await tx.insert(castAlbum).values({ game, member, n, photoKey: key }).onConflictDoUpdate({ target: [castAlbum.game, castAlbum.member, castAlbum.n], set: { photoKey: key, updatedAt: new Date() } });
@@ -176,6 +180,13 @@ export class CastService {
     if (m) return true;
     const [a] = await db.select({ n: castAlbum.n }).from(castAlbum).where(and(eq(castAlbum.game, game), eq(castAlbum.member, member))).limit(1);
     return !!a;
+  }
+
+  /** Whether a member's album can take one more picture. */
+  private async albumRoom(db: DbExecutor, game: string, member: string): Promise<void> {
+    const most = this.config.limits.albumPerMember;
+    const [{ n }] = await db.select({ n: sql<number>`count(*)::int` }).from(castAlbum).where(and(eq(castAlbum.game, game), eq(castAlbum.member, member)));
+    if (n >= most) throw new ConflictException({ error: 'album_full', message: `An album holds ${most} pictures.`, max: most });
   }
 
   /** Whether one more member of `game` can be given something: so many to a game, and casts for so many games. */

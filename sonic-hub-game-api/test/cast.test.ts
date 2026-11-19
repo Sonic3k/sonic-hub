@@ -107,7 +107,7 @@ describe('a game’s cast: names and pictures given here', { skip: !adminUrl && 
     const game = aGame('own');
     const res = await call(base, 'GET', `/games/${game}/cast`);
     assert.equal(res.status, 200);
-    assert.deepEqual(res.data, { cast: [], photoBytes: defaultLimits.photoBytes, albumPlaces: defaultLimits.albumPerMember });
+    assert.deepEqual(res.data, { cast: [], photoBytes: defaultLimits.photoBytes, albumPictures: defaultLimits.albumPerMember });
     assert.equal(res.headers.get('cache-control'), 'no-store', 'the list is never kept: it is what tells a browser that a name or a picture has changed');
     assert.equal((await call(base, 'GET', '/games/Not A Game/cast')).status, 400);
     // no picture is handed out from here, and there is no door to knock at
@@ -160,7 +160,7 @@ describe('a game’s cast: names and pictures given here', { skip: !adminUrl && 
     await plate('vera', 1, one, 'image/png');
     const listed = (await call(base, 'GET', `/games/${game}/cast`)).data;
     assert.deepEqual(listed.cast, [{ id: 'vera', name: null, age: null, photo: null, album: [{ n: 1, photo: `${store.cdn}/${albumKey('vera', 1, one, 'png')}` }, { n: 3, photo: `${store.cdn}/${albumKey('vera', 3, three)}` }] }]);
-    assert.equal(listed.albumPlaces, defaultLimits.albumPerMember);
+    assert.equal(listed.albumPictures, defaultLimits.albumPerMember);
     assert.deepEqual(kept(game), [albumKey('vera', 1, one, 'png'), albumKey('vera', 3, three)], 'side by side in the album folder: whose it is, then its place');
     assert.ok(store.objects.get(albumKey('vera', 3, three))!.bytes.equals(three), 'as it came');
     // her own picture and her album are apart
@@ -177,9 +177,22 @@ describe('a game’s cast: names and pictures given here', { skip: !adminUrl && 
     const gone = await call(base, 'DELETE', `/games/${game}/cast/vera/album/1`);
     assert.deepEqual([gone.data.album.map((a: any) => a.n), kept(game).filter((k) => k.includes('/album/')).length], [[3], 1]);
     assert.equal((await call(base, 'DELETE', `/games/${game}/cast/vera/album/1`)).status, 200);
-    // a place the album does not have, and what is not a picture
-    assert.deepEqual([(await plate('vera', defaultLimits.albumPerMember + 1, three)).status, (await plate('vera', 0, three)).status, (await plate('vera', 'two', three)).status], [400, 400, 400]);
+    // what is not a place, and what is not a picture
+    assert.deepEqual([(await plate('vera', 100, three)).status, (await plate('vera', 0, three)).status, (await plate('vera', 'two', three)).status], [400, 400, 400]);
     assert.equal((await plate('vera', 2, Buffer.from('<html>'))).data.error, 'not_a_picture');
+    // an album holds so many pictures, wherever they stand: one more is turned away before it is put anywhere, and
+    // another picture at a place already taken is not one more
+    const short = await start({ limits: { albumPerMember: 2 } });
+    const few = aGame('album-most');
+    const at = (n: number, file: Buffer) => call(short, 'PUT', `/games/${few}/cast/ines/album/${n}`, { body: file, headers: { 'content-type': 'image/jpeg' } });
+    assert.deepEqual([(await at(4, picture('i4'))).status, (await at(90, picture('i90'))).status], [200, 200], 'a place is where a picture stands in the order, up to 99');
+    assert.equal((await call(short, 'GET', `/games/${few}/cast`)).data.albumPictures, 2);
+    const before = store.puts.length;
+    const over = await at(5, picture('i5'));
+    assert.deepEqual([over.status, over.data.error, over.data.max, store.puts.length], [409, 'album_full', 2, before]);
+    assert.deepEqual([(await at(90, picture('i90 again'))).status, (await call(short, 'GET', `/games/${few}/cast`)).data.cast[0].album.map((a: any) => a.n)], [200, [4, 90]]);
+    await call(short, 'DELETE', `/games/${few}/cast/ines/album/4`);
+    assert.deepEqual([(await at(5, picture('i5'))).status, (await call(short, 'GET', `/games/${few}/cast`)).data.cast[0].album.map((a: any) => a.n)], [200, [5, 90]], 'room again once one is taken out');
     // someone with nothing but an album is in the cast, and counts as one of it
     const tight = await start({ limits: { castPerGame: 1 } });
     const lone = aGame('album-room');
@@ -219,7 +232,7 @@ describe('a game’s cast: names and pictures given here', { skip: !adminUrl && 
     assert.deepEqual([there.type, there.cache], ['image/jpeg', 'public, max-age=31536000, immutable']);
     // the service keeps the key, not the picture
     assert.deepEqual(await q('select name, photo_key from cast_member where game = $1', [game]), [{ name: null, photo_key: key }]);
-    assert.deepEqual((await call(base, 'GET', `/games/${game}/cast`)).data, { cast: [{ id: 'vera', name: null, photo: `${store.cdn}/${key}`, age: null, album: [] }], photoBytes: defaultLimits.photoBytes, albumPlaces: defaultLimits.albumPerMember });
+    assert.deepEqual((await call(base, 'GET', `/games/${game}/cast`)).data, { cast: [{ id: 'vera', name: null, photo: `${store.cdn}/${key}`, age: null, album: [] }], photoBytes: defaultLimits.photoBytes, albumPictures: defaultLimits.albumPerMember });
     // the address leads to the file, and a width is asked of the CDN at that address
     const read = await fetch(`${up.data.photo}?width=320`);
     assert.deepEqual([read.status, read.headers.get('content-type')], [200, 'image/jpeg']);
@@ -296,7 +309,7 @@ describe('a game’s cast: names and pictures given here', { skip: !adminUrl && 
     assert.equal((await put(small, game, 'x', picture('just fits', 'png', 49_000), 'image/png')).status, 200);
     await call(small, 'DELETE', `/games/${game}/cast/x/photo`);
     assert.deepEqual([await q('select 1 from cast_member where game = $1', [game]), kept(game)], [[], []]);
-    assert.deepEqual((await call(small, 'GET', `/games/${game}/cast`)).data, { cast: [], photoBytes: 50_000, albumPlaces: defaultLimits.albumPerMember });
+    assert.deepEqual((await call(small, 'GET', `/games/${game}/cast`)).data, { cast: [], photoBytes: 50_000, albumPictures: defaultLimits.albumPerMember });
   });
 
   test('when the bucket does not take a picture she keeps the one she had, and names are given as ever', async () => {
@@ -321,13 +334,13 @@ describe('a game’s cast: names and pictures given here', { skip: !adminUrl && 
   test('where the service has no bucket, names are given and read as ever and a picture is turned away unread', async () => {
     const bare = await start({ media: defaultMedia });
     const game = aGame('bare');
-    assert.deepEqual((await call(bare, 'GET', `/games/${game}/cast`)).data, { cast: [], photoBytes: null, albumPlaces: defaultLimits.albumPerMember });
+    assert.deepEqual((await call(bare, 'GET', `/games/${game}/cast`)).data, { cast: [], photoBytes: null, albumPictures: defaultLimits.albumPerMember });
     assert.deepEqual((await call(bare, 'PUT', `/games/${game}/cast/mina`, { body: { name: 'Minna' } })).data, { id: 'mina', name: 'Minna', photo: null, age: null, album: [] });
     const res = await put(bare, game, 'mina', picture('mina'));
     assert.deepEqual([res.status, res.data.error], [503, 'no_storage']);
     assert.deepEqual((await put(bare, game, 'mina', Buffer.from('not even a picture'), 'text/plain')).status, 503, 'said before anything of what was sent is looked at');
     assert.deepEqual((await call(bare, 'DELETE', `/games/${game}/cast/mina/photo`)).data, { id: 'mina', name: 'Minna', photo: null, age: null, album: [] });
-    assert.deepEqual((await call(bare, 'GET', `/games/${game}/cast`)).data, { cast: [{ id: 'mina', name: 'Minna', photo: null, age: null, album: [] }], photoBytes: null, albumPlaces: defaultLimits.albumPerMember });
+    assert.deepEqual((await call(bare, 'GET', `/games/${game}/cast`)).data, { cast: [{ id: 'mina', name: 'Minna', photo: null, age: null, album: [] }], photoBytes: null, albumPictures: defaultLimits.albumPerMember });
   });
 
   test('a cast has room for so many, and the room comes back when someone is the game’s own again', async () => {
@@ -349,7 +362,8 @@ describe('a game’s cast: names and pictures given here', { skip: !adminUrl && 
   });
 
   test('a cast is kept for so many games, as players are', async () => {
-    const [{ n }] = await q<{ n: number }>('select count(distinct game)::int as n from cast_member');
+    // counted as the service counts them: a game whose cast has nothing but album pictures has a cast too
+    const [{ n }] = await q<{ n: number }>('select count(*)::int as n from (select game from cast_member union select game from cast_album) games');
     const few = await start({ limits: { games: n! + 1 } });
     const last = aGame('last-in');
     assert.equal((await call(few, 'PUT', `/games/${last}/cast/a`, { body: { name: 'A' } })).status, 200);
