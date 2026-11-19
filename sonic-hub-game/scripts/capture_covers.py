@@ -24,11 +24,14 @@ ROOT = os.path.normpath(os.path.join(os.path.dirname(os.path.abspath(__file__)),
 PUBLIC, OUT = os.path.join(ROOT, 'public'), os.path.join(ROOT, 'public', 'covers')
 W, H = 1280, 800
 
-# Steps: key:<Key> | hold:<Key>:<ms> | click:<css> | text:<visible text> | wait:<ms> | waitsel:<css>.  ls = what the
+# Steps: key:<Key> | hold:<Key>:<ms> | click:<css> | text:<visible text> | wait:<ms> | waitsel:<css> | js:<script the
+# page runs>.  ls = what the
 # browser already holds for the game when the screen of play is taken (a save that opens later levels), so that picture
 # is not always level 1; the title screen is taken in a browser that has never seen the game. title = steps before the
 # title screen is taken, for a game whose title screen moves (Penned In and Keep It Down play themselves there: wait
-# for a few moves).
+# for a few moves). register = the address of the service a game keeps its players with: while its pictures are
+# taken the list of players there reads as empty and nothing is written to it (see keep_out), so no real player's
+# name gets into a picture and none is added.
 GAMES = {
     'muop': dict(
         ls={'muop-12-den.v1': {'v': 1, 'unlocked': 12, 'abilities': {'wall': True, 'dash': True}, 'levels': {}, 'sfx': False, 'music': False}},
@@ -66,6 +69,17 @@ GAMES = {
             'met': {'pia': True, 'sol': True, 'hana': True, 'nadia': True},
             'match': {'w': 'nadia', 'side': 0, 'rated': True, 'moves': [36192019,44583538,33555718,44057455,34084620,44057923,41433647,44057157,33886213,44117570,67441168,393216,44057134,38287139,44058178,38288183,44181574,38427707,44057670,36709145,44060228,34093079,44181070,34164280,48320090,36260415,46221942,38428475]}}},
         play=['click:[data-act=resume]', 'wait:5200']),
+    # on its own site, and its players are kept by the hub's game service (register). The title picture is the game
+    # as a newcomer finds it; the picture of play is a game for points against the fan painter, taken up from what
+    # the browser is given to hold, with a Horse in hand
+    'xiangqi': dict(
+        site='https://sonic-xiangqi-production.up.railway.app/',
+        register='**/sonic-hub-game-api-production.up.railway.app/**',
+        ls={'sonic-save.xiangqi': {'v': 1, 'current': 'cover', 'max': 3, 'epoch': None, 'gone': [], 'players': [{
+            'id': 'cover', 'name': 'Guest', 'version': 0, 'dirty': True, 'playedAt': '2026-11-19T12:00:00.000Z', 'data': {
+                'points': 1236, 'peak': 1300, 'vs': {'mei': {'w': 5, 'l': 0, 'd': 0}, 'lan': {'w': 5, 'l': 1, 'd': 0}, 'lian': {'w': 3, 'l': 2, 'd': 0}},
+                'match': {'opp': 'yue', 'rated': True, 'side': 0, 'moves': [2585,8384,2305,8146,7059,8646,3079,8920,2836,9537,8247,8394,8640,8659,5409,6588,6570,6595,128,6072,8193,8641,8384,11353,6081,9139,4635,2136,4754,1936,5272,1423]}}}]}},
+        play=['waitsel:#board .l-pieces > *', 'wait:1500', 'js:press(sqOf("f5"))', 'wait:500']),
 }
 
 
@@ -86,10 +100,22 @@ def run(pg, steps):
         elif k == 'wait': pg.wait_for_timeout(int(v))
         elif k == 'click': pg.click(v, timeout=5000)
         elif k == 'waitsel': pg.wait_for_selector(v, timeout=20000)
+        elif k == 'js': pg.evaluate(v)
         elif k == 'text': pg.get_by_text(v, exact=False).first.click(timeout=5000)
         elif k == 'hold':
             key, ms = v.split(':'); pg.keyboard.down(key); pg.wait_for_timeout(int(ms)); pg.keyboard.up(key)
         else: raise ValueError(s)
+
+
+def keep_out(route):
+    """The service a game keeps its players with, while the game is pictured: the list of players reads as empty and
+    nothing is written. What the game only reads there (the cast and their pictures) comes through as it is."""
+    r = route.request
+    if r.method != 'GET': route.abort()
+    elif r.url.split('?')[0].endswith('/players'):
+        route.fulfill(status=200, content_type='application/json', headers={'access-control-allow-origin': '*'},
+                      body=json.dumps({'players': [], 'max': 3, 'epoch': 'cover'}))
+    else: route.continue_()
 
 
 def save(png, name):
@@ -112,6 +138,7 @@ def main(keys):
                 ctx = b.new_context(viewport={'width': W, 'height': H}, device_scale_factor=1)
                 if ls:
                     ctx.add_init_script('(() => { const o = %s; for (const k in o) localStorage.setItem(k, JSON.stringify(o[k])); })()' % json.dumps(ls))
+                if g.get('register'): ctx.route(g['register'], keep_out)
                 pg = ctx.new_page()
                 pg.goto(g.get('site') or f'{base}/games/{key}', wait_until='load')
                 pg.wait_for_timeout(1800)

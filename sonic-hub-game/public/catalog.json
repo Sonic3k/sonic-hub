@@ -74,6 +74,14 @@
       "shots": ["title", "play"], "play": "https://sonic-commander-chess-production.up.railway.app/"
     },
     {
+      "key": "xiangqi", "title": "Xiangqi", "alt": ["Cờ Tướng", "Co Tuong", "Chinese Chess", "象棋"],
+      "lang": "en", "group": "cards", "sub": "board", "machine": "web", "year": 2026, "tags": ["originals"],
+      "players": 1, "ai": 1, "inputs": ["mouse", "touch", "keyboard"], "maker": "Sonic Hub", "added": "2026-11-19",
+      "kind": "Board game campaign, you against the AI",
+      "blurb": "Cờ tướng, the chess of the river and the palace, played beside Mirror Lake. Generals keep to their palaces, Cannons take by leaping, and no Elephant crosses the water. At the Willow Pavilion the women of the teahouse play you for points, from the girl who pours the tea to the mistress of the house. They talk while they play, and each keeps an album that fills as you beat her.",
+      "shots": ["title", "play"], "play": "https://sonic-xiangqi-production.up.railway.app/"
+    },
+    {
       "key": "len-doi", "title": "Lên Đời", "alt": ["Len Doi", "Age Duel"],
       "lang": "vi", "group": "strategy", "sub": "turn-based", "machine": "web", "year": 2026, "tags": ["originals"],
       "players": 1, "ai": 1, "inputs": ["mouse", "touch"], "maker": "Sonic Hub", "added": "2026-10-05", "highlight": true,
