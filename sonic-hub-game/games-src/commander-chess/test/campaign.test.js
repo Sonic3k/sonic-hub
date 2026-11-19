@@ -133,6 +133,13 @@ ok(fine, 'a win pays 1 to WIN_K, a loss costs 0 to LOSS_K, and both go by how st
   ok(campaign({ nonsense: true }).loadSave().rating === 600, 'something else under the same name is not taken for a save');
 }
 ok(fs.existsSync(path.join(root, 'ROSTER.md')) && fs.readFileSync(path.join(root, 'ROSTER.md'), 'utf8') === require('../tools/roster.js').rosterText(), 'ROSTER.md says what the campaign says (node tools/roster.js writes it)');
+{ // a portrait prompt for everyone, and the file that holds them says what the campaign says
+  let all = [], err = '';
+  try { all = require('../tools/avatar-prompts.js').prompts().flatMap(p => p.officers); } catch (e) { err = e.message; }
+  ok(!err && all.length === WOMEN.length, 'every officer has a portrait prompt: ' + err);
+  ok(all.every(o => o.prompt.includes('an adult woman, age ' + o.w.age) && /^SHOT TYPE: .*\nFRAMING: /.test(o.prompt)), 'each says she is a grown woman of her age, and names the shot before the framing');
+  ok(!err && fs.existsSync(path.join(root, 'art/avatar-prompts.md')) && fs.readFileSync(path.join(root, 'art/avatar-prompts.md'), 'utf8') === require('../tools/avatar-prompts.js').promptsText(), 'art/avatar-prompts.md is up to date (node tools/avatar-prompts.js writes it)');
+}
 ok(['1st', '2nd', '3rd', '4th', '11th', '12th', '13th', '21st', '22nd', '23rd', '26th'].join() === [1, 2, 3, 4, 11, 12, 13, 21, 22, 23, 26].map(C.ordinal).join(), 'ordinals');
 
 console.log(`${passed} passed, ${failed} failed; ${WOMEN.length} officers at ${PLACES.length} stations, ${WOMEN.reduce((n, w) => n + Object.values(w.say).flat().length, 0)} lines`);
