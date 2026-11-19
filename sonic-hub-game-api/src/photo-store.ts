@@ -19,13 +19,19 @@ export function kindOf(file: Buffer): Kind | null {
   return null;
 }
 
+/** The folder, inside a game's own, that the profile pictures of its cast are kept in. */
+export const PROFILE_PHOTOS = 'profile-photos';
+
 export interface PhotoStore {
   /** Whether there is anywhere to keep a picture. */
   readonly ready: boolean;
   /**
-   * The key a member's picture is kept under: <folder>/<game>/cast/<member>/<what the file is>.<kind>. The name is
-   * made from the file itself, so another picture is another address (and one address is one picture for good, which
-   * is what lets the CDN and every browser keep it), and the same picture sent twice is kept once.
+   * The key a member's picture is kept under: <folder>/<game>/profile-photos/<member>-<what the file is>.<kind>, for
+   * one: games/keep-it-down-extended/profile-photos/nell-6b4be6e45efb.jpg. So what is uploaded here has a folder of
+   * its own in the bucket, a game's profile pictures lie side by side in one place, and each says by its name whose
+   * it is. The rest of the name is made from the file itself, so another picture is at another address (and one
+   * address is one picture for good, which is what lets the CDN and every browser keep it), and the same picture
+   * sent twice is kept once.
    */
   keyFor(game: string, member: string, file: Buffer, kind: Kind): string;
   /** The address a kept file is read at. A width is asked for by adding ?width= to it. */
@@ -52,7 +58,7 @@ export function createPhotoStore(media: MediaConfig): PhotoStore {
   const none = () => new Error('no storage is set up');
   return {
     ready: !!client,
-    keyFor: (game, member, file, kind) => `${media.prefix}/${game}/cast/${member}/${createHash('sha256').update(file).digest('hex').slice(0, 24)}.${kind.ext}`,
+    keyFor: (game, member, file, kind) => `${media.prefix}/${game}/${PROFILE_PHOTOS}/${member}-${createHash('sha256').update(file).digest('hex').slice(0, 12)}.${kind.ext}`,
     url: (key) => `${media.publicBaseUrl}/${key.split('/').map(encodeURIComponent).join('/')}`,
     async put(key, bytes, contentType) {
       if (!client) throw none();

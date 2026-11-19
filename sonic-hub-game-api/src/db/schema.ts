@@ -60,7 +60,7 @@ export const castMember = pgTable(
     /** The name she goes by in place of the game's own, or null for the game's own. */
     name: text('name'),
     /**
-     * The key her picture is kept under in the bucket (games/<game>/cast/<member>/<…>.jpg), or null when she has
+     * The key her picture is kept under in the bucket (games/<game>/profile-photos/<member>-<…>.jpg), or null when she has
      * none. The address it is read at is made from it when the cast is read, so the CDN can change without this table.
      */
     photoKey: text('photo_key'),

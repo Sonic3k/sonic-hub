@@ -98,7 +98,7 @@ describe('the browser side of a game’s cast', { skip: !adminUrl && 'TEST_DATAB
     await b.cast.refresh();
     assert.deepEqual([b.cast.name('nell'), b.cast.name('dagny'), b.cast.photo('nell', 54), b.changes], ['Nelly', null, '', 2]);
     // her picture is at the CDN, at the address the cast gave, and the width is asked of the CDN there
-    assert.match(up.photo, new RegExp(`^${store.cdn}/games/${game}/cast/dagny/[0-9a-f]{24}\\.jpg$`));
+    assert.match(up.photo, new RegExp(`^${store.cdn}/games/${game}/profile-photos/dagny-[0-9a-f]{12}\\.jpg$`));
     assert.equal(b.cast.photo('dagny', 54), `${up.photo}?width=320`);
     const res = await fetch(b.cast.photo('dagny', 300));
     assert.deepEqual([res.status, res.headers.get('content-type'), res.headers.get('cache-control')], [200, 'image/jpeg', 'public, max-age=31536000, immutable']);
@@ -157,8 +157,8 @@ describe('the browser side of a game’s cast', { skip: !adminUrl && 'TEST_DATAB
       assert.deepEqual(['a', 'b', 'c', 'd', 'e'].map((id) => [b.cast.name(id), b.cast.photo(id, 54)]), Array(5).fill([null, '']));
     }
     // an address that already asks for something is not one a width can be added to
-    const asked = open(base, game, { storage: new Map([[`sonic-cast.${game}`, JSON.stringify([{ id: 'mina', name: 'Minna', photo: 'https://cdn.example/x.jpg?width=99' }, { id: 'vera', name: null, photo: 'https://cdn.example/games/g/cast/vera/abc.jpg' }])]]), down: true });
-    assert.deepEqual([asked.cast.name('mina'), asked.cast.photo('mina', 54), asked.cast.photo('vera', 54)], ['Minna', '', 'https://cdn.example/games/g/cast/vera/abc.jpg?width=320']);
+    const asked = open(base, game, { storage: new Map([[`sonic-cast.${game}`, JSON.stringify([{ id: 'mina', name: 'Minna', photo: 'https://cdn.example/x.jpg?width=99' }, { id: 'vera', name: null, photo: 'https://cdn.example/games/g/profile-photos/vera-abc.jpg' }])]]), down: true });
+    assert.deepEqual([asked.cast.name('mina'), asked.cast.photo('mina', 54), asked.cast.photo('vera', 54)], ['Minna', '', 'https://cdn.example/games/g/profile-photos/vera-abc.jpg?width=320']);
     const alone = open(base, game, { api: '', storage: new Map([[`sonic-cast.${game}`, JSON.stringify([{ id: 'mina', name: 'Minna', photo: 'https://cdn.example/x.jpg' }])]]) });
     assert.deepEqual([alone.cast.remote(), await alone.cast.refresh(), alone.net.calls.length, alone.cast.photo('mina', 54)], [false, false, 0, '']);
   });

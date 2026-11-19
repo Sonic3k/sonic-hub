@@ -50,7 +50,7 @@ const aGame = (what: string) => `k${++games}-${what}`;
 const q = async <T = Record<string, unknown>>(text: string, params: unknown[] = []) => (await sqlPool.query(text, params)).rows as T[];
 
 /** The key a member's picture is to be found under in the bucket. */
-const keyOf = (game: string, member: string, file: Buffer, ext = 'jpg') => `games/${game}/cast/${member}/${createHash('sha256').update(file).digest('hex').slice(0, 24)}.${ext}`;
+const keyOf = (game: string, member: string, file: Buffer, ext = 'jpg') => `games/${game}/profile-photos/${member}-${createHash('sha256').update(file).digest('hex').slice(0, 12)}.${ext}`;
 const put = (base: string, game: string, member: string, file: Buffer, type = 'image/jpeg') => call(base, 'PUT', `/games/${game}/cast/${member}/photo`, { body: file, headers: { 'content-type': type } });
 /** The keys the bucket holds for a game. */
 const kept = (game: string) => [...store.objects.keys()].filter((k) => k.startsWith(`games/${game}/`)).sort();
@@ -146,12 +146,14 @@ describe('a game’s cast: names and pictures given here', { skip: !adminUrl && 
     assert.deepEqual((await call(base, 'GET', `/games/${game}/cast`)).data.cast.length, 1);
   });
 
-  test('a picture goes into the hub’s bucket as it came, in the game’s folder, and the cast gives the address it is read at', async () => {
+  test('a picture goes into the hub’s bucket as it came, into the folder of the game’s profile pictures, and the cast gives the address it is read at', async () => {
     const game = aGame('photo');
     const file = picture('vera');
     const up = await put(base, game, 'vera', file);
     assert.equal(up.status, 200, JSON.stringify(up.data));
     const key = keyOf(game, 'vera', file);
+    // a folder of their own for what is uploaded: the game's, then its profile pictures, each named for whose it is
+    assert.match(key, new RegExp(`^games/${game}/profile-photos/vera-[0-9a-f]{12}\\.jpg$`));
     assert.deepEqual(up.data, { id: 'vera', name: null, photo: `${store.cdn}/${key}` });
     const there = store.objects.get(key);
     assert.ok(there, `the bucket holds ${[...store.objects.keys()].join(', ') || 'nothing'}`);
@@ -178,7 +180,8 @@ describe('a game’s cast: names and pictures given here', { skip: !adminUrl && 
     assert.equal(store.objects.get(keyOf(game, 'c', mislabelled, 'png'))?.type, 'image/png');
     assert.equal((await put(base, game, 'd', other, 'image/webp')).status, 200);
     assert.equal(store.objects.get(keyOf(game, 'd', other, 'jpg'))?.type, 'image/jpeg');
-    assert.equal(kept(game).length, 4);
+    // side by side in the one folder, and told apart by name
+    assert.deepEqual(kept(game).map((k) => k.slice(`games/${game}/profile-photos/`.length).replace(/-[0-9a-f]{12}\./, '.')), ['a.png', 'b.webp', 'c.png', 'd.jpg']);
   });
 
   test('a new picture takes the place of the old one under a new address, and a picture can be taken away', async () => {

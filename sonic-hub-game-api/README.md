@@ -68,13 +68,23 @@ has another, and a browser then sends what it still holds again instead of takin
 `404 gone` (with `epoch`), `409 full` (with `max`), `409 taken`, `400 invalid`, `413 too_big`, `429 slow_down`
 (with `retryAfter`).
 
-A picture is kept as it was sent: the file goes into the bucket under `games/{game}/cast/{id}/<name>.jpg` (`.png`,
-`.webp`), and all that is looked at here is how it begins, which says what kind of file it is. Nothing is resized
-here: that is the CDN's work. The file's name is made from the file itself, so another picture is at another
-address, and an address can be kept for good by the CDN and by every browser; the file a new picture takes the
-place of is removed from the bucket. What is refused: `415 not_a_picture` (not sent as a picture), `400
-not_a_picture` (not a JPEG, PNG or WebP file), `413 too_big`, `409 full`, `503 no_storage` (the service has no
-bucket) and `502 storage_failed` (the bucket did not take it: she keeps the picture she had).
+A picture is kept as it was sent, and all that is looked at here is how the file begins, which says what kind of
+file it is. Nothing is resized here: that is the CDN's work. Uploaded pictures have a folder of their own in the
+bucket, a game's profile pictures side by side in one place, each named for whose it is:
+
+```
+games/                                  this service's folder in the hub's bucket (MEDIA_PREFIX)
+  keep-it-down-extended/                one folder a game
+    profile-photos/                     the profile pictures of its cast
+      nell-6b4be6e45efb.jpg             <member>-<a name made from the file>.jpg, .png or .webp
+      dagny-86e8e2c8a040.jpg
+```
+
+The end of a file's name is made from the file itself, so another picture is at another address, and an address
+can be kept for good by the CDN and by every browser; the file a new picture takes the place of is removed from
+the bucket, so each member has one file there at most. What is refused: `415 not_a_picture` (not sent as a
+picture), `400 not_a_picture` (not a JPEG, PNG or WebP file), `413 too_big`, `409 full`, `503 no_storage` (the
+service has no bucket) and `502 storage_failed` (the bucket did not take it: she keeps the picture she had).
 
 ## Run it
 
