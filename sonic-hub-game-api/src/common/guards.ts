@@ -1,5 +1,6 @@
-import { type CanActivate, type ExecutionContext, HttpException, Inject, Injectable } from '@nestjs/common';
+import { type CanActivate, type ExecutionContext, HttpException, Inject, Injectable, UnauthorizedException } from '@nestjs/common';
 import type { Request, Response } from 'express';
+import { createHash, timingSafeEqual } from 'node:crypto';
 import { isIP } from 'node:net';
 import type { AppConfig } from '../config.js';
 import type { Limiter } from './limiter.js';
@@ -54,5 +55,36 @@ export class AddressGuard implements CanActivate {
     const turn = this.limiter.take(`all ${address}`, this.config.limits.requestsPerMinute, 60_000);
     if (!turn.ok) throw slowDown(http.getResponse<Response>(), turn.retryAfter, address);
     return true;
+  }
+}
+
+/** Wrong keys one address may send before it is told to wait, and for how long they are held against it. */
+const GUESSES = 10, GUESS_WINDOW_MS = 600_000;
+/** Whether two texts are the same, in a time that does not tell how much of one was right. */
+const same = (a: string, b: string) => timingSafeEqual(createHash('sha256').update(a).digest(), createHash('sha256').update(b).digest());
+
+/**
+ * What changes a game's cast: the request has to carry the key (X-Admin-Key: what ADMIN_KEY is set to). Where the
+ * service has no key, nobody gets in. An address that has sent ten wrong keys is told to wait ten minutes, and waits
+ * even with the right one, so that the waiting does not say which guess was right.
+ */
+@Injectable()
+export class AdminGuard implements CanActivate {
+  constructor(
+    @Inject(LIMITER) private readonly limiter: Limiter,
+    @Inject(APP_CONFIG) private readonly config: AppConfig,
+  ) {}
+
+  canActivate(context: ExecutionContext): boolean {
+    const http = context.switchToHttp();
+    const req = http.getRequest<Request>();
+    const key = this.config.adminKey;
+    if (!key) throw new HttpException({ error: 'no_admin', message: 'Nothing can be changed here: the service has no ADMIN_KEY set.' }, 503);
+    const address = addressOf(req, this.config.addressHeader), guesses = `key ${address}`;
+    if (this.limiter.used(guesses) >= GUESSES) throw slowDown(http.getResponse<Response>(), this.limiter.take(guesses, GUESSES, GUESS_WINDOW_MS).retryAfter, address);
+    const said = req.headers['x-admin-key'];
+    if (typeof said === 'string' && same(said, key)) return true;
+    if (typeof said === 'string' && said) this.limiter.take(guesses, GUESSES, GUESS_WINDOW_MS);   // a request with no key at all is not a guess
+    throw new UnauthorizedException({ error: 'not_admin', message: 'That is not the key.' });
   }
 }

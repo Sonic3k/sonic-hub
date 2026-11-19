@@ -70,7 +70,8 @@ describe('a database from the first version', { skip: !adminUrl && 'TEST_DATABAS
     await runMigrations(createDb(pool));
     assert.deepEqual(await rows(), before, 'the same players, with their saves, versions and times');
     const tables = (await pool.query(`select table_name from information_schema.tables where table_schema = 'public' order by 1`)).rows.map((r) => r.table_name);
-    assert.deepEqual(tables, ['player', 'service']);
+    assert.deepEqual(tables, ['cast_member', 'cast_photo', 'player', 'service']);
+    assert.deepEqual((await pool.query('select (select count(*) from cast_member)::int as members, (select count(*) from cast_photo)::int as photos')).rows[0], { members: 0, photos: 0 }, 'a cast is the game’s own until it is changed here');
     const columns = (await pool.query(`select column_name from information_schema.columns where table_name = 'player' order by ordinal_position`)).rows.map((r) => r.column_name);
     assert.deepEqual(columns, ['id', 'game', 'name', 'data', 'version', 'created_at', 'updated_at', 'played_at']);
     const indexes = (await pool.query(`select indexname from pg_indexes where tablename = 'player' order by 1`)).rows.map((r) => r.indexname);
@@ -83,7 +84,7 @@ describe('a database from the first version', { skip: !adminUrl && 'TEST_DATABAS
     await runMigrations(createDb(pool));
     assert.equal((await pool.query('select epoch from service')).rows[0].epoch, epoch);
     process.env.NODE_ENV = 'test';
-    const config: AppConfig = { database: { url: dbUrl, adminUrl: null, name: dbName, user, password: null, ssl: false }, port: 0, corsOrigins: true, addressHeader: null, limits: defaultLimits };
+    const config: AppConfig = { database: { url: dbUrl, adminUrl: null, name: dbName, user, password: null, ssl: false }, port: 0, corsOrigins: true, addressHeader: null, adminKey: null, limits: defaultLimits };
     const app = await createApp(config);
     await app.listen(0, '127.0.0.1');
     try {

@@ -5,7 +5,8 @@ import { AddressGuard } from './common/guards.js';
 import { Limiter } from './common/limiter.js';
 import { APP_CONFIG, LIMITER } from './common/tokens.js';
 import type { AppConfig } from './config.js';
-import { ClientController, HealthController, SavesController } from './controllers.js';
+import { CastService } from './cast.service.js';
+import { AdminController, CastClientController, CastController, ClientController, HealthController, SavesController } from './controllers.js';
 import { createDb, DB, PG_POOL } from './db/db.js';
 import { SavesService } from './saves.service.js';
 
@@ -23,7 +24,7 @@ export class AppModule {
   static forRoot(config: AppConfig, pool: pg.Pool): DynamicModule {
     return {
       module: AppModule,
-      controllers: [HealthController, ClientController, SavesController],
+      controllers: [HealthController, ClientController, CastClientController, SavesController, CastController, AdminController],
       providers: [
         { provide: APP_CONFIG, useValue: config },
         { provide: PG_POOL, useValue: pool },
@@ -32,6 +33,7 @@ export class AppModule {
         { provide: APP_GUARD, useClass: AddressGuard },
         PoolLifecycle,
         SavesService,
+        CastService,
       ],
     };
   }

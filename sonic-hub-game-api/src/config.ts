@@ -23,6 +23,10 @@ export interface Limits {
   saveBytes: number;
   /** Requests a minute from one address. */
   requestsPerMinute: number;
+  /** The size of one picture as it is sent up, before it is made into the copies that are kept. */
+  photoBytes: number;
+  /** Members of one game's cast that can be given a name or a picture. */
+  castPerGame: number;
 }
 
 export interface AppConfig {
@@ -36,6 +40,11 @@ export interface AppConfig {
    * it is only ever a header the proxy writes itself, never one a caller could send.
    */
   addressHeader: string | null;
+  /**
+   * What whoever keeps the casts sends to be let change them (ADMIN_KEY), or null where there is none: then they are
+   * read by all as ever and changed by nobody.
+   */
+  adminKey: string | null;
 }
 
 function ssl(env: NodeJS.ProcessEnv): DatabaseConfig['ssl'] {
@@ -76,7 +85,15 @@ function databaseConfig(env: NodeJS.ProcessEnv): DatabaseConfig {
   return db;
 }
 
-export const defaultLimits: Limits = { playersPerGame: 3, games: 50, saveBytes: 64 * 1024, requestsPerMinute: 240 };
+export const defaultLimits: Limits = { playersPerGame: 3, games: 50, saveBytes: 64 * 1024, requestsPerMinute: 240, photoBytes: 16 * 1024 * 1024, castPerGame: 200 };
+
+/** ADMIN_KEY: long enough that it cannot be guessed at the pace guesses are let through, or nothing at all. */
+function adminKey(env: NodeJS.ProcessEnv): string | null {
+  const v = opt(env, 'ADMIN_KEY');
+  if (v === undefined) return null;
+  if (v.length < 16) throw new Error('ADMIN_KEY has to be at least 16 characters long');
+  return v;
+}
 
 /**
  * ADDRESS_HEADER names it; `none` says there is no such header. Left unset, it is x-real-ip on Railway (whose edge
@@ -94,6 +111,7 @@ export function loadAppConfig(env: NodeJS.ProcessEnv = process.env): AppConfig {
   const origins = opt(env, 'CORS_ORIGIN') ?? '*';
   return {
     addressHeader: addressHeader(env),
+    adminKey: adminKey(env),
     database: databaseConfig(env),
     port: Number(opt(env, 'PORT') ?? 3200),
     corsOrigins: origins === '*' ? true : origins.split(',').map((s) => s.trim()),
@@ -102,6 +120,8 @@ export function loadAppConfig(env: NodeJS.ProcessEnv = process.env): AppConfig {
       games: count(env, 'GAMES', defaultLimits.games),
       saveBytes: count(env, 'SAVE_BYTES', defaultLimits.saveBytes),
       requestsPerMinute: count(env, 'REQUESTS_PER_MINUTE', defaultLimits.requestsPerMinute),
+      photoBytes: count(env, 'PHOTO_BYTES', defaultLimits.photoBytes),
+      castPerGame: count(env, 'CAST_PER_GAME', defaultLimits.castPerGame),
     },
   };
 }

@@ -129,7 +129,7 @@ describe('the browser client against the service', { skip: !adminUrl && 'TEST_DA
   let sqlPool: pg.Pool;
   /** the service, started (again) on the scratch database */
   async function startApp(): Promise<string> {
-    const config: AppConfig = { database: { url: dbUrl, adminUrl: null, name: dbName, user: '', password: null, ssl: false }, port: 0, corsOrigins: true, addressHeader: null, limits: { ...defaultLimits, requestsPerMinute: 100_000, games: 1000 } };
+    const config: AppConfig = { database: { url: dbUrl, adminUrl: null, name: dbName, user: '', password: null, ssl: false }, port: 0, corsOrigins: true, addressHeader: null, adminKey: null, limits: { ...defaultLimits, requestsPerMinute: 100_000, games: 1000 } };
     const app = await createApp(config);
     await app.listen(0, '127.0.0.1');
     running.push(() => app.close());

@@ -19,7 +19,7 @@ const running: Array<() => Promise<void>> = [];
 
 /** An app of its own on the scratch database, with whatever limits the test needs. */
 async function start(limits: Partial<Limits> = {}, addressHeader: string | null = null): Promise<string> {
-  const config: AppConfig = { database: { url: dbUrl, adminUrl: null, name: dbName, user: '', password: null, ssl: false }, port: 0, corsOrigins: true, addressHeader, limits: { ...defaultLimits, ...limits } };
+  const config: AppConfig = { database: { url: dbUrl, adminUrl: null, name: dbName, user: '', password: null, ssl: false }, port: 0, corsOrigins: true, addressHeader, adminKey: null, limits: { ...defaultLimits, ...limits } };
   const app = await createApp(config);
   await app.listen(0, '127.0.0.1');
   running.push(() => app.close());
