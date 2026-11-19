@@ -74,6 +74,14 @@
       "shots": ["title", "play"], "play": "https://sonic-commander-chess-production.up.railway.app/"
     },
     {
+      "key": "caro", "title": "Caro", "alt": ["Cờ Caro", "Co Caro", "Caro XO", "Gomoku", "Five in a Row"],
+      "lang": "en", "group": "cards", "sub": "board", "machine": "web", "year": 2026, "tags": ["originals"],
+      "players": 1, "ai": 1, "inputs": ["mouse", "touch", "keyboard"], "maker": "Sonic Hub", "added": "2026-11-19",
+      "kind": "Board game campaign, you against the AI",
+      "blurb": "Caro, the five-in-a-row of Vietnamese school days, written in ballpoint on the squared back pages of a notebook. Five in a line wins, unless the other side’s marks stand at both ends of it. Around the school gate, the people you knew there play you for points, and each sits down with you once your points come near hers. They talk while they play, and each keeps an album that fills as you beat her.",
+      "shots": ["title", "play"], "play": "https://sonic-gomoku-production.up.railway.app/"
+    },
+    {
       "key": "xiangqi", "title": "Xiangqi", "alt": ["Cờ Tướng", "Co Tuong", "Chinese Chess", "象棋"],
       "lang": "en", "group": "cards", "sub": "board", "machine": "web", "year": 2026, "tags": ["originals"],
       "players": 1, "ai": 1, "inputs": ["mouse", "touch", "keyboard"], "maker": "Sonic Hub", "added": "2026-11-19",

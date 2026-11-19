@@ -11,12 +11,13 @@ For every game: its title screen and one screen of play, each saved at two width
 Run it again after a game's look changes. The steps below walk each game from its title to a screen worth showing.
 A game that lives on a site of its own (`site`) is pictured there.
 With no Chromium of Playwright's own at hand, point CHROME at a browser: CHROME=/usr/bin/google-chrome python3 scripts/capture_covers.py
+(and where that browser needs switches to start at all, as in a container, give them in CHROME_ARGS: CHROME_ARGS=--no-sandbox).
 
 Not taken here: Saltline (someone else's file, a 3D shooter). A browser without a graphics card draws it too slowly
 to picture, so its covers were made by hand: the title screen at 1280x800, and a still of play (16:9) set between
 black bands the way the game's own title screen is.
 """
-import functools, http.server, io, json, os, sys, threading
+import functools, http.server, io, json, os, re, sys, threading
 from PIL import Image
 from playwright.sync_api import sync_playwright
 
@@ -29,9 +30,17 @@ W, H = 1280, 800
 # browser already holds for the game when the screen of play is taken (a save that opens later levels), so that picture
 # is not always level 1; the title screen is taken in a browser that has never seen the game. title = steps before the
 # title screen is taken, for a game whose title screen moves (Penned In and Keep It Down play themselves there: wait
-# for a few moves). register = the address of the service a game keeps its players with: while its pictures are
-# taken the list of players there reads as empty and nothing is written to it (see keep_out), so no real player's
-# name gets into a picture and none is added.
+# for a few moves).
+# A game that keeps its players with the saves service (sonic-save.js) opens on the list of them, and what a browser holds
+# for it is one of those players: title_ls is that for the title picture, so it shows what a player sees on coming in;
+# shut is the addresses (regular expressions) left unanswered while a picture with something held is taken, so the
+# made-up player is never written to the service, and is not dropped on the service's list not having him.
+def kept_player(game, name, data):
+    pid = 'c0ffee00-0000-4000-8000-000000000001'
+    return {'sonic-save.' + game: {'v': 1, 'current': pid, 'max': 3, 'epoch': None, 'gone': [], 'players': [
+        {'id': pid, 'name': name, 'data': data, 'version': 1, 'dirty': False, 'playedAt': '2026-11-19T08:00:00.000Z', 'full': False}]}}
+
+
 GAMES = {
     'muop': dict(
         ls={'muop-12-den.v1': {'v': 1, 'unlocked': 12, 'abilities': {'wall': True, 'dash': True}, 'levels': {}, 'sfx': False, 'music': False}},
@@ -69,17 +78,32 @@ GAMES = {
             'met': {'pia': True, 'sol': True, 'hana': True, 'nadia': True},
             'match': {'w': 'nadia', 'side': 0, 'rated': True, 'moves': [36192019,44583538,33555718,44057455,34084620,44057923,41433647,44057157,33886213,44117570,67441168,393216,44057134,38287139,44058178,38288183,44181574,38427707,44057670,36709145,44060228,34093079,44181070,34164280,48320090,36260415,46221942,38428475]}}},
         play=['click:[data-act=resume]', 'wait:5200']),
-    # on its own site, and its players are kept by the hub's game service (register). The title picture is the game
-    # as a newcomer finds it; the picture of play is a game for points against the fan painter, taken up from what
-    # the browser is given to hold, with a Horse in hand
+    # on its own site as well, with its players at the saves service. The title picture is the place a player comes
+    # in to, part of the way up it. The picture of play goes back to a game for points against the owner at the moment
+    # the player is one mark from five in a line: she closes it and says so
+    'caro': dict(
+        site='https://sonic-gomoku-production.up.railway.app/',
+        shut=[r'/games/[^/]+/players'],
+        title_ls=kept_player('sonic-gomoku', 'Minh', {'points': 1164, 'peak': 1190, 'match': None,
+            'vs': {'hanh': {'w': 5, 'l': 0, 'd': 0}, 'thu': {'w': 4, 'l': 1, 'd': 0}, 'diep': {'w': 2, 'l': 2, 'd': 0}}}),
+        title=['waitsel:#rooms .tile', 'wait:400'],
+        ls=kept_player('sonic-gomoku', 'Minh', {'points': 1432, 'peak': 1448,
+            'vs': {'hanh': {'w': 5, 'l': 0, 'd': 0}, 'thu': {'w': 5, 'l': 1, 'd': 0}, 'diep': {'w': 5, 'l': 2, 'd': 0}, 'ngan': {'w': 4, 'l': 3, 'd': 0}, 'lan': {'w': 1, 'l': 2, 'd': 0}},
+            'match': {'opp': 'lan', 'rated': True, 'side': 0, 'seed': 20261119, 'moves': [112,96,82,84,114,97,95,98,100,111,128,142,81,139,125,109,94,140,141,107,108,123,91,136,137,169,80,154,184,171,187,79,65]}}),
+        play=['waitsel:#said:not(:empty)', 'wait:1700']),
+    # on its own site, with its players at the saves service, like Caro. The title picture is the lake as a player
+    # finds it on coming in. The picture of play goes back to a game for points against the fan painter; once she has
+    # said her word a Horse is picked up, so the points it may go to are showing
     'xiangqi': dict(
         site='https://sonic-xiangqi-production.up.railway.app/',
-        register='**/sonic-hub-game-api-production.up.railway.app/**',
-        ls={'sonic-save.xiangqi': {'v': 1, 'current': 'cover', 'max': 3, 'epoch': None, 'gone': [], 'players': [{
-            'id': 'cover', 'name': 'Guest', 'version': 0, 'dirty': True, 'playedAt': '2026-11-19T12:00:00.000Z', 'data': {
-                'points': 1236, 'peak': 1300, 'vs': {'mei': {'w': 5, 'l': 0, 'd': 0}, 'lan': {'w': 5, 'l': 1, 'd': 0}, 'lian': {'w': 3, 'l': 2, 'd': 0}},
-                'match': {'opp': 'yue', 'rated': True, 'side': 0, 'moves': [2585,8384,2305,8146,7059,8646,3079,8920,2836,9537,8247,8394,8640,8659,5409,6588,6570,6595,128,6072,8193,8641,8384,11353,6081,9139,4635,2136,4754,1936,5272,1423]}}}]}},
-        play=['waitsel:#board .l-pieces > *', 'wait:1500', 'js:press(sqOf("f5"))', 'wait:500']),
+        shut=[r'/games/[^/]+/players'],
+        title_ls=kept_player('xiangqi', 'Vân', {'points': 1236, 'peak': 1262, 'match': None,
+            'vs': {'mei': {'w': 5, 'l': 0, 'd': 0}, 'lan': {'w': 5, 'l': 1, 'd': 0}, 'lian': {'w': 3, 'l': 2, 'd': 0}}}),
+        title=['waitsel:#rooms .tile', 'wait:400'],
+        ls=kept_player('xiangqi', 'Vân', {'points': 1236, 'peak': 1262,
+            'vs': {'mei': {'w': 5, 'l': 0, 'd': 0}, 'lan': {'w': 5, 'l': 1, 'd': 0}, 'lian': {'w': 3, 'l': 2, 'd': 0}},
+            'match': {'opp': 'yue', 'rated': True, 'side': 0, 'moves': [2585,8384,2305,8146,7059,8646,3079,8920,2836,9537,8247,8394,8640,8659,5409,6588,6570,6595,128,6072,8193,8641,8384,11353,6081,9139,4635,2136,4754,1936,5272,1423]}}),
+        play=['waitsel:#said:not(:empty)', 'wait:1500', 'js:press(sqOf("f5"))', 'wait:500']),
 }
 
 
@@ -107,17 +131,6 @@ def run(pg, steps):
         else: raise ValueError(s)
 
 
-def keep_out(route):
-    """The service a game keeps its players with, while the game is pictured: the list of players reads as empty and
-    nothing is written. What the game only reads there (the cast and their pictures) comes through as it is."""
-    r = route.request
-    if r.method != 'GET': route.abort()
-    elif r.url.split('?')[0].endswith('/players'):
-        route.fulfill(status=200, content_type='application/json', headers={'access-control-allow-origin': '*'},
-                      body=json.dumps({'players': [], 'max': 3, 'epoch': 'cover'}))
-    else: route.continue_()
-
-
 def save(png, name):
     im = Image.open(io.BytesIO(png)).convert('RGB')
     for w in (1280, 640):
@@ -131,14 +144,14 @@ def main(keys):
     threading.Thread(target=srv.serve_forever, daemon=True).start()
     base = f'http://127.0.0.1:{srv.server_address[1]}'
     with sync_playwright() as p:
-        b = p.chromium.launch(executable_path=os.environ.get('CHROME') or None)
+        b = p.chromium.launch(executable_path=os.environ.get('CHROME') or None, args=os.environ.get('CHROME_ARGS', '').split())
         for key in keys:
             g = GAMES[key]
-            for shot, ls, steps in (('title', None, g.get('title', [])), ('play', g.get('ls'), g['play'])):
+            for shot, ls, steps in (('title', g.get('title_ls'), g.get('title', [])), ('play', g.get('ls'), g['play'])):
                 ctx = b.new_context(viewport={'width': W, 'height': H}, device_scale_factor=1)
                 if ls:
                     ctx.add_init_script('(() => { const o = %s; for (const k in o) localStorage.setItem(k, JSON.stringify(o[k])); })()' % json.dumps(ls))
-                if g.get('register'): ctx.route(g['register'], keep_out)
+                    for pattern in g.get('shut', []): ctx.route(re.compile(pattern), lambda route: route.abort())
                 pg = ctx.new_page()
                 pg.goto(g.get('site') or f'{base}/games/{key}', wait_until='load')
                 pg.wait_for_timeout(1800)
