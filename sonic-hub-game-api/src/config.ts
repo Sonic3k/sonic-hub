@@ -27,6 +27,8 @@ export interface Limits {
   photoBytes: number;
   /** Members of one game's cast that can be given a name or a picture. */
   castPerGame: number;
+  /** Pictures one member's album can hold: its places are 1 to this. */
+  albumPerMember: number;
 }
 
 /**
@@ -95,7 +97,7 @@ function databaseConfig(env: NodeJS.ProcessEnv): DatabaseConfig {
   return db;
 }
 
-export const defaultLimits: Limits = { playersPerGame: 3, games: 50, saveBytes: 64 * 1024, requestsPerMinute: 240, photoBytes: 16 * 1024 * 1024, castPerGame: 200 };
+export const defaultLimits: Limits = { playersPerGame: 3, games: 50, saveBytes: 64 * 1024, requestsPerMinute: 240, photoBytes: 16 * 1024 * 1024, castPerGame: 200, albumPerMember: 12 };
 
 /** With nothing set: no bucket to keep pictures in, and the hub's own folder and CDN for when there is one. */
 export const defaultMedia: MediaConfig = { b2: null, prefix: 'games', publicBaseUrl: 'https://sonic-hub.b-cdn.net' };
@@ -145,6 +147,7 @@ export function loadAppConfig(env: NodeJS.ProcessEnv = process.env): AppConfig {
       requestsPerMinute: count(env, 'REQUESTS_PER_MINUTE', defaultLimits.requestsPerMinute),
       photoBytes: count(env, 'PHOTO_BYTES', defaultLimits.photoBytes),
       castPerGame: count(env, 'CAST_PER_GAME', defaultLimits.castPerGame),
+      albumPerMember: Math.min(99, count(env, 'ALBUM_PER_MEMBER', defaultLimits.albumPerMember)),
     },
   };
 }

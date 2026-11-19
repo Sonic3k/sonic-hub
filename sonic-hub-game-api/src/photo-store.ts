@@ -21,6 +21,8 @@ export function kindOf(file: Buffer): Kind | null {
 
 /** The folder, inside a game's own, that the profile pictures of its cast are kept in. */
 export const PROFILE_PHOTOS = 'profile-photos';
+/** The folder, inside a game's own, that the pictures of its cast's albums are kept in. */
+export const ALBUM = 'album';
 
 export interface PhotoStore {
   /** Whether there is anywhere to keep a picture. */
@@ -34,6 +36,12 @@ export interface PhotoStore {
    * sent twice is kept once.
    */
   keyFor(game: string, member: string, file: Buffer, kind: Kind): string;
+  /**
+   * The key a picture of her album is kept under: <folder>/<game>/album/<member>-<place>-<what the file is>.<kind>,
+   * for one: games/keep-it-down-extended/album/nell-03-6b4be6e45efb.jpg. A game's album pictures lie in one folder,
+   * in order: whose it is, then its place.
+   */
+  albumKeyFor(game: string, member: string, n: number, file: Buffer, kind: Kind): string;
   /** The address a kept file is read at. A width is asked for by adding ?width= to it. */
   url(key: string): string;
   put(key: string, bytes: Buffer, contentType: string): Promise<void>;
@@ -59,6 +67,7 @@ export function createPhotoStore(media: MediaConfig): PhotoStore {
   return {
     ready: !!client,
     keyFor: (game, member, file, kind) => `${media.prefix}/${game}/${PROFILE_PHOTOS}/${member}-${createHash('sha256').update(file).digest('hex').slice(0, 12)}.${kind.ext}`,
+    albumKeyFor: (game, member, n, file, kind) => `${media.prefix}/${game}/${ALBUM}/${member}-${String(n).padStart(2, '0')}-${createHash('sha256').update(file).digest('hex').slice(0, 12)}.${kind.ext}`,
     url: (key) => `${media.publicBaseUrl}/${key.split('/').map(encodeURIComponent).join('/')}`,
     async put(key, bytes, contentType) {
       if (!client) throw none();

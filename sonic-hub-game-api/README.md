@@ -8,8 +8,8 @@ machine an old game was installed on: whoever opens the game, on any device, see
 Nobody signs in, so anyone who can open a game can also rename, play or remove its players.
 
 A game also has a **cast**: the characters a player meets in it. The game knows them, each by a key of its own
-(`mina`, `celeste`). Here any of them can be given another name and a picture, which the game then shows in place
-of its own. As with players, nobody signs in: whoever opens the page a game brings for keeping its cast (Keep It
+(`mina`, `celeste`). Here any of them can be given another name, another age (an adult's: 18 to 99), a picture, and
+the pictures of her album, which the game then shows in place of its own. As with players, nobody signs in: whoever opens the page a game brings for keeping its cast (Keep It
 Down's is at `/admin` on the game's address) changes it. A name is kept here. A picture goes into the hub's bucket
 as it came and is read through the hub's CDN, which hands it out at whatever width its address asks for.
 
@@ -38,6 +38,8 @@ const cast = SonicCast({ api: 'https://<this service>', game: 'commander-chess',
 cast.name('mina');           // the name she was given, or null: the game's own stands
 cast.photo('mina', 54);      // the address of her picture for a place 54 CSS pixels wide, or '' when she has none
 cast.photo('mina', 'full');  // for looking at it as large as the screen
+cast.age('mina');            // the age she was given, or null
+cast.plate('mina', 2, 74);   // the picture at place 2 of her album, or '' when there is none there
 ```
 
 A picture is not read from this service: the cast gives its address at the CDN, and the client asks there for the
@@ -55,10 +57,12 @@ All under `/api`. Every answer carries `X-Now` (the service's clock, ms) and is 
 | `GET /games/{game}/players` | `{ max, epoch, players: [{ id, name, data, version, createdAt, updatedAt, playedAt }] }`, oldest first |
 | `PUT /games/{game}/players/{id}` | one write: `{ base, name?, data?, at? }` → the player as it now stands |
 | `DELETE /games/{game}/players/{id}` | removes a player (204, also when already gone) |
-| `GET /games/{game}/cast` | `{ cast: [{ id, name, photo }], photoBytes }`: who was given a name (else `null`) or a picture (its address at the CDN, else `null`); `photoBytes` is how large a picture may be, `null` where there is no bucket to keep one in |
-| `PUT /games/{game}/cast/{id}` | `{ name }`: the name she is to go by, at most 24 signs; `null` gives the game's own back |
-| `PUT /games/{game}/cast/{id}/photo` | the picture itself as the body: a JPEG, PNG or WebP file, with its kind as the `Content-Type` |
+| `GET /games/{game}/cast` | `{ cast: [{ id, name, age, photo, album: [{ n, photo }] }], photoBytes, albumPlaces }`: who was given something here; what she was not given is `null` (an album: `[]`). A picture is its address at the CDN. `photoBytes` is how large a picture may be, `null` where there is no bucket to keep one in |
+| `PUT /games/{game}/cast/{id}` | `{ name?, age? }`: the name she is to go by (at most 24 signs) and her age (18 to 99); `null` gives the game's own back, and what is left out is left alone |
+| `PUT /games/{game}/cast/{id}/photo` | her picture itself as the body: a JPEG, PNG or WebP file, with its kind as the `Content-Type` |
 | `DELETE /games/{game}/cast/{id}/photo` | takes her picture away |
+| `PUT /games/{game}/cast/{id}/album/{n}` | the picture at place `n` of her album (1 to `albumPlaces`), sent the same way |
+| `DELETE /games/{game}/cast/{id}/album/{n}` | takes that picture out of her album |
 | `GET /client.js`, `GET /cast.js`, `GET /health` | the two browser clients; `{ ok: true }` |
 
 `id` is a UUID the browser chooses, so a new player sent twice is one player. `base` is the version the write was
@@ -78,6 +82,9 @@ games/                                  this service's folder in the hub's bucke
     profile-photos/                     the profile pictures of its cast
       nell-6b4be6e45efb.jpg             <member>-<a name made from the file>.jpg, .png or .webp
       dagny-86e8e2c8a040.jpg
+    album/                              the pictures of their albums, in order: whose, then which place
+      nell-01-3f0a91c2d7be.jpg          <member>-<place>-<a name made from the file>
+      nell-02-a41c07e5b9d2.jpg
 ```
 
 The end of a file's name is made from the file itself, so another picture is at another address, and an address
@@ -110,7 +117,8 @@ hub's other services have; `B2_BUCKET` is `sonic-hub`, `B2_ENDPOINT` `s3.us-east
 
 Limits, all by environment: `PLAYERS_PER_GAME` 3, `GAMES` 50 (how many different games players are kept for, and
 as many a cast), `SAVE_BYTES` 65536, `REQUESTS_PER_MINUTE` 240 from one address, `PHOTO_BYTES` 16777216 (one
-picture) and `CAST_PER_GAME` 200 (members of one game's cast with a name or a picture). `CORS_ORIGIN` is `*`
+picture), `CAST_PER_GAME` 200 (members of one game's cast who were given anything) and `ALBUM_PER_MEMBER` 12 (the
+places of one member's album). `CORS_ORIGIN` is `*`
 unless set.
 
 A caller's address is read from the header the proxy in front writes: `X-Real-IP` on Railway, where nothing needs

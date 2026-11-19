@@ -50,20 +50,37 @@ export interface PlayerView {
 /** A member of a game's cast, by the key the game's own content knows her by (mina, celeste): small letters, digits and dashes. */
 export const MemberKey = z.string().regex(/^[a-z0-9](?:[a-z0-9-]{0,38}[a-z0-9])?$/, 'a cast member is named in small letters, digits and dashes');
 
-/** The name a member is to go by, tidied as a player's is. null, or nothing but spaces, gives her the game's own back. */
-export const PutMemberBody = z.object({
-  name: z
-    .union([z.null(), z.string()])
-    .transform((s) => (s === null ? null : tidy(s) || null))
-    .refine((s) => s === null || [...s].length <= 24, 'a name is at most 24 signs'),
-});
+/** The youngest and the oldest a member of a cast can be said to be. Everyone in a cast is an adult. */
+export const AGES = [18, 99] as const;
+
+/**
+ * What a member is given in place of the game's own: a name (tidied as a player's is; null, or nothing but spaces,
+ * gives her the game's own back) and an age (null for the game's own). Either may be left out, and is then left alone.
+ */
+export const PutMemberBody = z
+  .object({
+    name: z
+      .union([z.null(), z.string()])
+      .transform((s) => (s === null ? null : tidy(s) || null))
+      .refine((s) => s === null || [...s].length <= 24, 'a name is at most 24 signs')
+      .optional(),
+    age: z.union([z.null(), z.number().int().min(AGES[0], `an age is at least ${AGES[0]}: everyone in a cast is an adult`).max(AGES[1], `an age is at most ${AGES[1]}`)]).optional(),
+  })
+  .refine((b) => b.name !== undefined || b.age !== undefined, 'say her name, her age, or both');
 export type PutMemberInput = z.infer<typeof PutMemberBody>;
+
+/** A picture's place in an album: 1, 2, 3… */
+export const AlbumPlace = z.string().regex(/^[1-9][0-9]?$/, 'a place in an album is a number from 1').transform(Number);
 
 /** A member of a cast as the API gives her: only what was changed here. */
 export interface MemberView {
   id: string;
   /** null: the game's own name */
   name: string | null;
+  /** null: the game's own age */
+  age: number | null;
   /** The address of her picture at the CDN, or null when she has none. A width is asked for by adding ?width= to it. */
   photo: string | null;
+  /** The pictures of her album that were put up here, by place. Places with none are left out. */
+  album: Array<{ n: number; photo: string }>;
 }

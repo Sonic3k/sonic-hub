@@ -4,10 +4,15 @@
      const cast = SonicCast({ api: 'https://…', game: 'keep-it-down-extended', onChange: () => … });
 
    A game has a CAST: the characters a player meets in it. The game knows them, each by a key of its own (mina,
-   celeste). With the service, any of them can be given another name and a picture, which the game shows in place
-   of its own. This file reads what they were given; changing it is not done from the game.
+   celeste). With the service, any of them can be given another name, another age, a picture, and the pictures of
+   her album, which the game shows in place of its own. This file reads what they were given; changing it is not
+   done from the game.
 
      cast.name(id)             the name she was given, or null: the game's own stands
+     cast.age(id)              the age she was given, or null: the game's own stands
+     cast.plate(id, n, px)     the address of the picture at place n of her album (1, 2, 3…), for a place px CSS
+                               pixels wide or 'full' as below, or '' when there is none at that place
+     cast.plates(id)           the places of her album that have a picture, in order
      cast.photo(id, px)        the address of her picture for a place px CSS pixels wide, or '' when she has none.
                                px left out: the width a profile is shown at. px 'full': for looking at it as
                                large as the screen
@@ -34,18 +39,25 @@ function SonicCast(opt) {
   const screen = opt.screen || (() => ({ fine: typeof devicePixelRatio === 'number' && devicePixelRatio > 1, narrow: typeof matchMedia === 'function' && matchMedia('(max-width: 760px)').matches }));
   const KEY = 'sonic-cast.' + game, WIDTHS = [320, 640, 960, 1280, 1920], PROFILE = 640, WAIT_MS = 8000;
 
-  /** id → { name, photo }, only for those who were given something. photo: her picture's address at the CDN, with no width asked for yet */
+  /** id → { name, age, photo, album }, only for those who were given something. photo: her picture's address at the CDN,
+   *  with no width asked for yet; album: place → address, the same way */
   let members = {}, heard = null;
+  const address = v => (typeof v === 'string' && /^https?:\/\/[^\s?#]+$/.test(v) ? v : null);
   const take = list => {
     const next = {};
     for (const m of Array.isArray(list) ? list : []) {
       if (!m || typeof m.id !== 'string') continue;
-      const name = typeof m.name === 'string' && m.name ? m.name : null, photo = typeof m.photo === 'string' && /^https?:\/\/[^\s?#]+$/.test(m.photo) ? m.photo : null;
-      if (name !== null || photo !== null) next[m.id] = { name, photo };
+      const name = typeof m.name === 'string' && m.name ? m.name : null, photo = address(m.photo);
+      const age = Number.isInteger(m.age) && m.age >= 18 && m.age <= 99 ? m.age : null, album = {};
+      for (const a of Array.isArray(m.album) ? m.album : []) if (a && Number.isInteger(a.n) && a.n > 0 && a.n < 100 && address(a.photo)) album[a.n] = a.photo;
+      if (name !== null || age !== null || photo !== null || Object.keys(album).length) next[m.id] = { name, age, photo, album };
     }
     return next;
   };
-  const text = of => JSON.stringify(Object.keys(of).sort().map(id => [id, of[id].name, of[id].photo]));
+  const places = m => Object.keys(m.album).map(Number).sort((a, b) => a - b);
+  /** as the service gives a cast: what is kept in the browser, and what two readings are compared by */
+  const flat = of => Object.keys(of).sort().map(id => ({ id, name: of[id].name, age: of[id].age, photo: of[id].photo, album: places(of[id]).map(n => ({ n, photo: of[id].album[n] })) }));
+  const text = of => JSON.stringify(flat(of));
   try { members = take(JSON.parse((store && store.getItem(KEY)) || '[]')); } catch (e) { members = {}; }
 
   /** The width a picture is asked for at, for a place so many CSS pixels wide. */
@@ -68,7 +80,7 @@ function SonicCast(opt) {
       .then(body => {
         const next = take(body && body.cast), changed = text(next) !== text(members);
         members = next;
-        try { if (store) store.setItem(KEY, JSON.stringify(Object.keys(next).map(id => ({ id, name: next[id].name, photo: next[id].photo })))); } catch (e) { /* a browser that keeps nothing: asked again next time */ }
+        try { if (store) store.setItem(KEY, text(next)); } catch (e) { /* a browser that keeps nothing: asked again next time */ }
         const first = heard !== true;
         heard = true;
         if (changed || first) onChange();
@@ -81,6 +93,12 @@ function SonicCast(opt) {
 
   const cast = {
     name: id => (members[id] ? members[id].name : null),
+    age: id => (members[id] ? members[id].age : null),
+    plate(id, n, px) {
+      const m = members[id], at = m && m.album[n];
+      return api && at ? `${at}?width=${widthFor(px)}` : '';
+    },
+    plates: id => (members[id] ? places(members[id]) : []),
     photo(id, px) {
       const m = members[id];
       return api && m && m.photo ? `${m.photo}?width=${widthFor(px)}` : '';
