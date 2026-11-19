@@ -113,12 +113,12 @@
   #hud { width: 100%; margin-top: 8px; display: flex; flex-direction: column; align-items: center; }
   .score { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; width: 100%; }
   #dial { width: 236px; height: 236px; display: block; margin: 0 -14px; }
-  .who { position: relative; display: flex; flex-direction: column; align-items: center; gap: 1px; padding-top: 22px; min-width: 0; }
+  .who { position: relative; display: flex; flex-direction: column; align-items: center; gap: 1px; min-width: 0; }
   .who .num { font: 400 56px/1 var(--title); color: var(--moon); font-variant-numeric: lining-nums; transition: color .3s; }
   .who .name { font: 500 15px/1.2 var(--text); color: rgba(245,237,216,.88); max-width: 100%; overflow-wrap: anywhere; }
-  .who .disc { width: 26px; height: 26px; margin-bottom: 4px; }
-  .who::before { content: ""; position: absolute; top: 0; left: 50%; width: 17px; height: 17px; translate: -50% 0; background: radial-gradient(#fff6d2, var(--gold) 70%); clip-path: polygon(50% 0, 57% 43%, 100% 50%, 57% 57%, 50% 100%, 43% 57%, 0 50%, 43% 43%); opacity: 0; scale: .4; transition: opacity .25s, scale .25s; }
-  .who.turn::before { opacity: 1; scale: 1; }
+  /* whose move it is: a gold ring round that side's disc, as round the last disc on the board, and its count in gold */
+  .who .disc { width: 28px; height: 28px; margin-bottom: 7px; border-radius: 50%; box-shadow: 0 0 0 0 rgba(251,230,168,0); transition: box-shadow .3s; }
+  .who.turn .disc { box-shadow: 0 0 0 3px rgba(19,36,79,.55), 0 0 0 5px var(--gold-hi), 0 0 16px 6px rgba(251,230,168,.6); }
   .who.turn .num { color: var(--gold-hi); }
   .status { margin: 4px 0 0; min-height: 1.25em; font: 400 27px/1.25 var(--title); color: #fffaf0; letter-spacing: .01em; }
   .sub { margin: 4px 0 0; min-height: 1.45em; font: 400 15.5px/1.45 var(--text); color: rgba(245,237,216,.9); }
@@ -155,7 +155,7 @@
     .go { min-height: 50px; }
     #hud { margin-top: 0; }
     #dial { width: 132px; height: 132px; margin: 0; }
-    .who { padding-top: 16px; } .who .num { font-size: 40px; } .who::before { width: 14px; height: 14px; }
+    .who .num { font-size: 40px; }
     .status { font-size: 22px; margin-top: 0; } .sub { font-size: 15px; margin-top: 1px; }
     .btns { margin-top: 9px; }
     .mini { min-height: 44px; }
@@ -174,13 +174,13 @@
     .plate { min-height: 44px; padding: 4px 8px; } .phases .plate { min-height: 44px; } .phases canvas { width: 30px; height: 30px; }
     .cap { min-height: 2.7em; margin-top: 4px; font-size: 13.5px; line-height: 1.35; } .cap br { display: none; } .cap b { font-size: 15px; } .cap b::after { content: ". "; }
     .go { min-height: 44px; font-size: 20px; }
-    #dial { width: 126px; height: 126px; margin: 0; } .who { padding-top: 16px; } .who .num { font-size: 38px; } .who::before { width: 14px; height: 14px; }
+    #dial { width: 126px; height: 126px; margin: 0; } .who .num { font-size: 38px; }
     .status { font-size: 21px; margin-top: 0; } .sub { font-size: 14px; margin-top: 0; min-height: 2.8em; } .btns { margin-top: 6px; }
     .mini { min-height: 44px; }
     .steps { grid-template-columns: repeat(2, 1fr); gap: 10px 16px; } .sheet { padding: 16px 18px; } .sheet h2 { font-size: 26px; } .sheet .lead { margin-bottom: 10px; }
     .step { grid-template-columns: 100px 1fr; gap: 10px; } .step canvas { width: 100px; height: 75px; } .step p { font-size: 14px; line-height: 1.35; }
   }
-  @media (prefers-reduced-motion: reduce) { .cell.can::before, #stars i { animation: none; } #toast, .plate, .go, .who::before { transition: none; } }
+  @media (prefers-reduced-motion: reduce) { .cell.can::before, #stars i { animation: none; } #toast, .plate, .go, .who .disc { transition: none; } }
 </style>
 </head>
 <body>
