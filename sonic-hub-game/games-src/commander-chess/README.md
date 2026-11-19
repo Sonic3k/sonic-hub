@@ -1,9 +1,9 @@
 # Commander Chess
 
-Cờ Tư Lệnh (by Nguyễn Quý Hải), by his own rules as he last set them out, with a campaign: the Lumen coast, six
-stations along it, and twenty-five officers to play. Every one of them is a computer player written by an AI model
-from the AI kit; they played a league among themselves, and their ratings, records and places on the List are what
-that league left. Points are won and lost by rating, promotions open the stations, and every officer has three cards
+Cờ Tư Lệnh (by Nguyễn Quý Hải), by his own rules as he last set them out, with a campaign: the Lumen coast, the
+stations along it, and the officers posted there. Every officer is a computer player written by an AI model from the
+AI kit; they played a league among themselves, and their ratings, records and places on the List are what that
+league left. Points are won and lost by rating, promotions open the stations, and every officer has three cards
 to win. One self-contained page. RULES.md says where each rule comes from, and what was read and not followed;
 ROSTER.md says which player and which model every officer is.
 
@@ -44,8 +44,8 @@ head-and-shoulders picture with the eyes about a third of the way down sits righ
 
 ## Ratings and the journey
 
-A rating is the league's: 25 players, every pair meeting six times (three with each colour), at the standard line-up
-and a game of battles with one second a turn, which is therefore the game every table plays. The build stops if the rules or the
+A rating is the league's: every pair of players met six times (three with each colour), at the standard line-up and
+a game of battles with one second a turn, which is therefore the game every table plays. The build stops if the rules or the
 table are no longer the league's to the letter, because the ratings would not hold. A changed player is a new player:
 the league has to be played again before the campaign can seat it.
 

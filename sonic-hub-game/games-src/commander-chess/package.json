@@ -2,7 +2,7 @@
   "name": "sonic-commander-chess",
   "private": true,
   "version": "0.1.0",
-  "description": "Commander Chess (Cờ Tư Lệnh) with a campaign: six stations along a coast, twenty-five opponents from a league of computer players, points, promotions, cards.",
+  "description": "Commander Chess (Cờ Tư Lệnh) with a campaign: stations along a coast, opponents from a league of computer players, points, promotions, cards.",
   "engines": { "node": ">=18" },
   "scripts": {
     "build": "node build.mjs",
