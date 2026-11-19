@@ -1,17 +1,13 @@
 /* ── Asking an opponent for her turn ──
-   The rules, the table and the seat sit in their own <script id="engine">, so the same text can be started as a
-   worker: an opponent thinks for up to a second, and the page keeps drawing meanwhile. Who she is, is one of the
-   league's players (a file of <script id="bots">, a player in it, a level): the worker is handed the file's text
-   the first time it is asked for her. Where a worker cannot be started the turn is worked out on the page's own
-   thread. An opponent who has not answered after a long while is given up on: the worker is started afresh and her
-   turn is played for her with a plain move, so a game can never hang. */
+   The rules, the table, the seat and the league's players sit in their own <script id="engine">, so the same text
+   can be started as a worker: an opponent thinks for up to a second, and the page keeps drawing meanwhile. Who she
+   is, is one of the league's players: a file, a player in it, a level. Where a worker cannot be started the turn is
+   worked out on the page's own thread. An opponent who has not answered after a long while is given up on: the
+   worker is started afresh and her turn is played for her with a plain move, so a game can never hang. */
 const Brain = {
-  worker: null, seq: 0, waiting: new Map(), sent: new Set(), files: null, fault: '',
+  worker: null, seq: 0, waiting: new Map(), fault: '',
   GIVE_UP: 20000,                                             // ms: twenty times what a turn has
-  /** the players' files, as text */
-  source(file) { if (!this.files) this.files = JSON.parse(document.getElementById('bots').textContent); return this.files[file]; },
   start() {
-    this.sent = new Set();
     try {
       const glue = 'onmessage = e => { const q = e.data; let r; try { r = Seat.turn(q); } catch (err) { try { r = Seat.anyTurn(q); r.fault = String((err && err.message) || err); } catch (e2) { r = { moves: [], ms: 0, fault: String(e2) }; } } postMessage({ req: q.req, moves: r.moves, ms: r.ms, fault: r.fault }); };';
       const url = URL.createObjectURL(new Blob([document.getElementById('engine').textContent, '\n', glue], { type: 'text/javascript' }));
@@ -28,18 +24,17 @@ const Brain = {
     fs.forEach(f => f(null));
   },
   /** on the page's own thread */
-  here(q) { try { return Seat.turn(Object.assign({ source: this.source(q.file) }, q)); } catch (e) { const r = Seat.anyTurn(q); r.fault = String((e && e.message) || e); return r; } },
+  here(q) { try { return Seat.turn(q); } catch (e) { const r = Seat.anyTurn(q); r.fault = String((e && e.message) || e); return r; } },
   /** the moves of one whole turn for the side to move, played by `bot` ({ file, id, level }); seed: the game's own */
   turn(setup, moves, bot, seed) {
     const q = { setup, moves: moves.slice(), file: bot.file, id: bot.id, level: bot.level, seed };
     const done = r => { this.fault = (r && r.fault) || ''; if (this.fault && typeof console !== 'undefined') console.warn('The opponent went wrong (' + bot.id + '): ' + this.fault); return r.moves; };
     if (!this.worker) return new Promise(res => setTimeout(() => res(done(this.here(q))), 30));
     return new Promise(res => {
-      const req = ++this.seq, k = bot.file + '|' + bot.id;                    // req: this asking's number (q.id is who is asked)
+      const req = ++this.seq;                                 // this asking's number (q.id is who is asked)
       const timer = setTimeout(() => { if (this.waiting.has(req)) this.again(); }, this.GIVE_UP);
       this.waiting.set(req, r => { clearTimeout(timer); res(done(r && Array.isArray(r.moves) && r.moves.length ? r : Object.assign(Seat.anyTurn(q), { fault: r ? r.fault || 'no move came back' : 'no answer in time' }))); });
-      this.worker.postMessage(this.sent.has(k) ? Object.assign({ req }, q) : Object.assign({ req, source: this.source(bot.file) }, q));
-      this.sent.add(k);
+      this.worker.postMessage(Object.assign({ req }, q));
     });
   },
 };

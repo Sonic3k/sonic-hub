@@ -2,10 +2,10 @@
      src/shell.html + the rules and the table + the league's players + src/game/*.js → dist/index.html
 
    <script id="engine"> holds the rules (src/engine/00-core.js), the same rules under the one name the AI kit gives
-   them (CC), the kit's table (kit/src/table.js) and the seat an opponent is asked from (src/engine/30-seat.js). The
-   page runs that text itself and starts it again as a worker, so an opponent can think without holding up the
-   drawing. The players themselves, the files of league/bots/ exactly as they played the league, go in as text
-   (<script id="bots">): the worker is handed the one it needs when it is first needed.
+   them (CC), the kit's table (kit/src/table.js), the seat an opponent is asked from (src/engine/30-seat.js) and the
+   players themselves: every file of league/bots/ exactly as it played the league, as the body of the function the
+   table would make of its text (BOTS). The page runs that script itself and starts its text again as a worker, so an
+   opponent can think without holding up the drawing. Nothing on the page is made from text as it runs.
 
    src/engine/10-ai.js and 20-players.js are the game's own computer player. It plays through league/bots/house.js
    like everyone else (league/tools/build-house.js makes that file from the two), so they are not on the page.
@@ -42,20 +42,23 @@ if (!tag) throw new Error('league/kit/engine.js no longer says which kit and rul
 const rated = kit.slice(kit.indexOf('*/') + 3, kit.indexOf('/** everything above, under one name */'));
 if (rated !== core.slice(0, cut).replace(' RULES.md has it point by point.', '')) throw new Error('src/engine/00-core.js is no longer the rules the league was played on (league/kit/engine.js): the ratings of the campaign would not hold. Play the league again, or put the rules back.');
 if (read('kit/src/table.js') !== read('league/kit/table.js')) throw new Error('kit/src/table.js is no longer the table the league was played at (league/kit/table.js)');
-const engine = [core, `/** the rules under one name, as the AI kit hands them to a player */\nconst CC = { KIT: ${tag[1]}, RULES: '${tag[2]}', ${names.join(', ')} };`,
-  read('kit/src/table.js'), read('src/engine/30-seat.js'), '/** where every opponent sits */\nconst Seat = makeSeat(CC, makeTable);'].join('\n');
-
-/* the players: every file of league/bots/, as text */
-const bots = {};
-for (const f of all('league/bots')) bots[f] = read('league/bots/' + f);
-const botsText = JSON.stringify(bots).replace(/</g, '\\u003c');   // nothing in it can end the script it sits in
+/* the players: every file of league/bots/, each as the body of a function given CC and registerAI, which is what the
+   table makes of a file's text. Word for word: a file is not changed to fit, and one that could not stand inside a
+   script is refused. */
+const botFiles = all('league/bots');
+for (const f of botFiles) if (/<\/script|<!--|<script/i.test(read('league/bots/' + f))) throw new Error('league/bots/' + f + ' has something in it that a script in a page cannot hold (a script tag or the start of an HTML comment)');
+const bots = `/** the league's players: each file of league/bots/ as it was handed in, as the function the table makes of its text */\nconst BOTS = {\n${botFiles.map(f => `${JSON.stringify(f)}: function (CC, registerAI) {\n${read('league/bots/' + f)}\n}`).join(',\n')}\n};`;
+const rules = [core, `/** the rules under one name, as the AI kit hands them to a player */\nconst CC = { KIT: ${tag[1]}, RULES: '${tag[2]}', ${names.join(', ')} };`,
+  read('kit/src/table.js'), read('src/engine/30-seat.js')].join('\n');
+const engine = [rules, bots, '/** where every opponent sits */\nconst Seat = makeSeat(CC, makeTable, BOTS);'].join('\n');
 
 const game = `/** where the players are kept: the saves service and the name this game has there (api '': in this browser only) */\nconst SAVES = ${JSON.stringify({ api: saves.api || '', game: saves.game })};\n` + all('src/game').map(f => read('src/game/' + f)).join('\n');
 for (const [what, text] of [['the engine', engine], ['the game', game]]) if (/<\/script/i.test(text)) throw new Error(what + ' has a closing script tag in it: it cannot go into the page');
-const page = read('src/shell.html').replace('/*__BOTS__*/', () => botsText).replace('/*__ENGINE__*/', () => engine).replace('/*__JS__*/', () => game);
-if (/\/\*__[A-Z]+__\*\//.test(page.slice(0, page.indexOf('<script type="application/json" id="bots">')))) throw new Error('the shell has a place nothing was put into');
+const shell = read('src/shell.html');
+if (/\/\*__[A-Z]+__\*\//.test(shell.replace('/*__ENGINE__*/', '').replace('/*__JS__*/', ''))) throw new Error('the shell has a place the build puts nothing into');
+const page = shell.replace('/*__ENGINE__*/', () => engine).replace('/*__JS__*/', () => game);
 mkdirSync(OUT, { recursive: true });
 writeFileSync(join(OUT, 'index.html'), page);
 const kb = t => Math.round(Buffer.byteLength(t) / 1024);
-console.log(`built ${OUT === join(root, 'dist') ? 'dist' : OUT}/index.html ${kb(page)} KB: the players ${kb(botsText)} KB (${Object.keys(bots).length} files), rules and table ${kb(engine)} KB, the game ${kb(game)} KB`);
+console.log(`built ${OUT === join(root, 'dist') ? 'dist' : OUT}/index.html ${kb(page)} KB: the players ${kb(bots)} KB (${botFiles.length} files), rules and table ${kb(rules)} KB, the game ${kb(game)} KB`);
 console.log(saves.api ? `  players kept with ${saves.api} as ${saves.game}` : '  players kept in the browser only');

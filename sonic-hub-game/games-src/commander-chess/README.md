@@ -23,8 +23,9 @@ from, and what was read and not followed; ROSTER.md says which player and which 
 - `src/engine/30-seat.js`: how an opponent is asked for her turn: through the kit's table (`kit/src/table.js`), at
   the league's time, so she plays in the game as she played in the league.
 - `league/`: the league. `bots/` are the players as they were handed in, `tools/players.js` who took part,
-  `out/standings.json` how it ended. The page carries the files of `bots/` as text and hands one to its worker when
-  it is first needed.
+  `out/standings.json` how it ended. The page carries every file of `bots/` word for word, as the body of the function
+  the table would make of its text, so nothing on the page is made from text as it runs: it also plays where a page's
+  policy forbids that.
 - `src/engine/10-ai.js`, `20-players.js`: the game's own computer player. It is in the league as `bots/house.js`
   (`league/tools/build-house.js` makes that file from the two), so the page does not load them.
 - `src/game/10-save.js`: the saves service's own browser client, copied as it is (`sonic-hub`, `sonic-hub-game-api/client/sonic-save.js`).
