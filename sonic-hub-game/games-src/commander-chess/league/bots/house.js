@@ -1,0 +1,249 @@
+/* The game's own five opponents (Port Halcyon), as they play in the game: src/engine/10-ai.js and 20-players.js,
+   behind the kit's contract. The only thing that is not the game's: the clock. In the game each of them has her
+   own thinking time (Nadia 1600 ms, Isolde 3000 ms a move) and may run over it; here all of them keep to
+   ctx.timeMs, and the look-ahead stops when that is up. How they judge and choose is the game's, line for line. */
+const { NF, NR, NSQ, FILES, RED, BLUE, COMMANDER, INFANTRY, TANK, MILITIA, ENGINEER, ARTILLERY, ANTIAIR, MISSILE, AIR, NAVY, HQ, KIND_NAME, KIND_CODE, LAND, WATER, MIXED, BRIDGE, MOVE, CAPTURE, STAY, SUICIDE, INTERCEPT, COMBINE, COMMIT, COMMIT_MOVE, SAFE, TRADE, INTERCEPTED, TERRAIN, BANK, DIRS, RAY, LINE, AD_R, AD_SQ, SETUP_STANDARD, LINEUPS, POINTS, ARM_NAME, armOf, arms, lostBattle, points, onPoints, flight, MOVE_ORTH, MOVE_DIAG, CAP_ORTH, CAP_DIAG, sqOf, fileOf, rankOf, sqName, sqNamed, newGame, clone, members, fits, carrierOf, setStack, killStack, standsOn, adMask, airOutcome, interceptPoint, attacks, inCheck, exposed, mk, mFrom, mTo, mMode, mActor, mGroup, gen, genSquare, play, commit, legalMoves, canFinish, status, posKey, replay, moveText } = CC;
+/* ── The computer player ──
+   It looks ahead move by move (alpha-beta, deepening one move at a time while its clock allows), and at the end of
+   each line plays out the captures that are still hanging, so that it does not count a piece it has just taken
+   without seeing what takes back. A deployment is looked at step by step: after a step the same side is still to
+   move, and ending the deployment is a move like any other.
+
+   Inside the look-ahead a side may leave its Commander where it can be taken; the answer is then to take it, and
+   that line is lost. At the top it only ever chooses among moves the rules allow.
+
+   A player is a strength and a temperament:
+     depth, quiet  how far it looks, and how far it follows captures beyond that
+     ms            thinking time for the deepening levels
+     noise, slip   how shaky its judgement is, and how often it just plays something
+     style         what it likes: see STYLE0 below. Two players of the same strength with different styles go
+                   for different things, which is what makes them different people to play against.
+                   adv: gaining ground. hunt: closing in on the other Commander. guard: keeping its own at home and
+                   covered. arms: how much a whole arm matters to it, its own and the other side's (a game of battles
+                   is lost with the last ship, the last plane, or the last of infantry, tanks and artillery).
+                   air, sea, guns, armor, foot: what it thinks its planes, ships, artillery and missiles, tanks,
+                   infantry and militia are worth.
+                   ride: how much it likes the rapid march, pieces riding on a carrier for the reach it lends them
+                   (0, the plain player, never thinks of it: it only rides when a line it can see calls for it). */
+const VALUE = [0, 100, 240, 115, 110, 320, 170, 280, 450, 500, 150];
+const STYLE0 = { adv: 1, hunt: 1, guard: 1, arms: 1, air: 1, sea: 1, guns: 1, armor: 1, foot: 1, ride: 0 };
+const WIN = 100000;
+
+const AI = (() => {
+  const clock = typeof performance !== 'undefined' && performance.now ? () => performance.now() : () => Date.now();
+  let nodes = 0, deadline = 0, out = false, W = STYLE0, val = VALUE, qDepth = 4, jitter = 0, salt = 0;
+  const hist = new Int32Array(NSQ * NSQ), killer = new Int32Array(128);
+  const HOME = [1, 12], DIST = new Uint8Array(NSQ * NSQ);
+  for (let a = 0; a < NSQ; a++) for (let b = 0; b < NSQ; b++) DIST[a * NSQ + b] = Math.max(Math.abs(fileOf(a) - fileOf(b)), Math.abs(rankOf(a) - rankOf(b)));
+
+  function setStyle(style) {
+    W = Object.assign({}, STYLE0, style || {});
+    val = VALUE.slice();
+    val[AIR] *= W.air; val[NAVY] *= W.sea; val[ARTILLERY] *= W.guns; val[MISSILE] *= W.guns; val[TANK] *= W.armor; val[INFANTRY] *= W.foot; val[MILITIA] *= W.foot;
+  }
+  /** what stands on a point is worth, riders and all */
+  function stackValue(S, s) { let v = 0; const t = S.top[s]; if (t < 0) return 0; for (const p of members(S, s)) v += S.kind[p] === COMMANDER ? 5000 : VALUE[S.kind[p]] * (S.hero[p] ? 1.4 : 1); return v; }
+
+  /** The position as the side to move sees it. Counted: the pieces (a hero is worth two fifths more); ground gained
+   *  by the pieces that have to walk; how crowded each Commander is by enemies and how far it has strayed from home;
+   *  and, in a game of battles, an arm that is down to its last piece or two. */
+  function evaluate(S) {
+    let sc = 0;
+    const cr = S.at[S.cmd[RED]], cb = S.at[S.cmd[BLUE]], left = [[0, 0, 0], [0, 0, 0]];
+    for (let p = 0; p < S.n; p++) {
+      const s = S.at[p]; if (s < 0) continue;
+      const k = S.kind[p], side = S.own[p]; if (k === COMMANDER) continue;
+      let v = val[k] * (S.hero[p] ? 1.4 : 1);
+      const fwd = side === RED ? rankOf(s) - 1 : 12 - rankOf(s), foe = side === RED ? cb : cr, mine = side === RED ? cr : cb;
+      const arm = armOf(k); if (arm >= 0) left[side][arm]++;
+      if (k === INFANTRY || k === MILITIA || k === TANK || k === ENGINEER) v += fwd * 4 * W.adv;
+      else if (k === AIR) { v += Math.min(fwd, 5) * 3 * W.adv; }
+      else if (k === ARTILLERY || k === MISSILE) { v += Math.min(fwd, 6) * 3 * W.adv; }
+      if (foe >= 0 && k !== HQ) { const d = DIST[s * NSQ + foe]; if (d <= 3) v += (4 - d) * 7 * W.hunt; }      // pressing the other Commander
+      if (mine >= 0 && k !== AIR && k !== NAVY && k !== HQ) { const d = DIST[s * NSQ + mine]; if (d <= 2) v += 4 * W.guard; }   // standing by one's own
+      if (W.ride && S.car[p] >= 0) { const kc = S.kind[S.car[p]]; if (kc !== HQ && kc !== ENGINEER) v += 5 * W.ride * Math.max(0, MOVE_ORTH[kc] - MOVE_ORTH[k]); }   // riding: the reach its carrier lends it
+      sc += side === RED ? v : -v;
+    }
+    for (let side = 0; side < 2; side++) {
+      const c = side === RED ? cr : cb; if (c < 0) continue;
+      let v = 0;
+      const away = side === RED ? rankOf(c) - 1 : 12 - rankOf(c); v -= away * 14 * W.guard + (away > 2 ? (away - 2) * 20 * W.guard : 0);
+      if (S.car[S.cmd[side]] >= 0) v += 10 * W.guard;
+      if (!S.total) {                                         // one ship or one plane from losing the game; the land arm thins out more slowly
+        const n = left[side], had = S.had[side];
+        if (had[0] && n[0] === 1) v -= 280 * W.arms;
+        if (had[1] && n[1] === 1) v -= 280 * W.arms;
+        if (had[2] && n[2] <= 2) v -= (n[2] === 1 ? 300 : 120) * W.arms;
+      }
+      sc += side === RED ? v : -v;
+    }
+    sc = S.turn === RED ? sc : -sc;
+    if (jitter) { let h = (salt ^ (S.at[S.cmd[RED]] * 131 + S.at[S.cmd[BLUE]] * 31 + S.half * 7)) >>> 0; for (let p = 0; p < S.n; p += 3) h = (Math.imul(h, 16777619) ^ (S.at[p] + 1)) >>> 0; sc += (h % (2 * jitter + 1)) - jitter; }
+    return sc + 8;
+  }
+
+  /** how a finished game counts for the side that would be to move at `ply` */
+  const overValue = (S, me, ply) => (S.over.winner < 0 ? 0 : S.over.winner === me ? WIN - ply : -WIN + ply);
+
+  function order(S, list, ply, first) {
+    const sc = new Array(list.length);
+    for (let i = 0; i < list.length; i++) {
+      const m = list[i], mode = mMode(m);
+      let v;
+      if (m === first) v = 2e9;
+      else if (mode === CAPTURE || mode === STAY) v = 1e6 + stackValue(S, mTo(m)) * 16 - VALUE[S.kind[mActor(m)]];
+      else if (mode === SUICIDE) v = 1e6 + (stackValue(S, mTo(m)) - VALUE[S.kind[mActor(m)]]) * 16;
+      else if (mode === INTERCEPT) v = -1e9;
+      else if (mode === COMMIT) v = 5e5;
+      else v = (m === killer[ply * 2] || m === killer[ply * 2 + 1] ? 8e5 : 0) + hist[mFrom(m) * NSQ + mTo(m)] - (mode === COMBINE ? 40 : 0);
+      sc[i] = v;
+    }
+    const idx = list.map((_, i) => i).sort((a, b) => sc[b] - sc[a]);
+    return idx.map(i => list[i]);
+  }
+  const takes = mode => mode === CAPTURE || mode === STAY || mode === SUICIDE;
+
+  /** the captures still on, played out */
+  function quiesce(S, alpha, beta, ply, left) {
+    nodes++;
+    if ((nodes & 255) === 0 && clock() > deadline) out = true;
+    if (out) return 0;
+    const stand = evaluate(S);
+    if (left <= 0 || stand >= beta || ply > 60) return stand;
+    if (stand > alpha) alpha = stand;
+    const me = S.turn, raw = genTakes(S), list = order(S, raw, ply, 0);
+    let best = stand;
+    for (const m of list) {
+      if (mMode(m) === SUICIDE && stackValue(S, mTo(m)) < VALUE[AIR]) continue;       // throwing a plane at something cheaper never settles anything
+      const T = clone(S); if (!play(T, m, false)) continue;
+      const v = T.over ? overValue(T, me, ply) : T.turn === me ? quiesce(T, alpha, beta, ply + 1, left - 1) : -quiesce(T, -beta, -alpha, ply + 1, left - 1);
+      if (out) return 0;
+      if (v > best) { best = v; if (v > alpha) { alpha = v; if (alpha >= beta) break; } }
+    }
+    return best;
+  }
+  /** captures by whole stacks only: getting off a carrier in the middle of an exchange is left to the full look-ahead */
+  function genTakes(S) { return gen(S, [], true).filter(m => takes(mMode(m))); }
+
+  function search(S, depth, alpha, beta, ply) {
+    if (depth <= 0) return quiesce(S, alpha, beta, ply, qDepth);
+    nodes++;
+    if ((nodes & 255) === 0 && clock() > deadline) out = true;
+    if (out) return 0;
+    const me = S.turn, list = order(S, gen(S, []), ply, 0);
+    let best = -WIN * 2, n = 0;
+    for (const m of list) {
+      const mode = mMode(m); if (mode === INTERCEPT) continue;
+      const T = clone(S); if (!play(T, m, false)) continue;
+      let v;
+      if (T.over) v = overValue(T, me, ply);
+      else if (T.turn === me) v = search(T, depth, alpha, beta, ply + 1);                 // still deploying
+      else {
+        const quiet = !takes(mode) && mode !== COMMIT;
+        if (depth >= 3 && n >= 6 && quiet) {                                               // late quiet moves get a shallower look first
+          v = -search(T, depth - 2, -alpha - 1, -alpha, ply + 1);
+          if (v > alpha) v = -search(T, depth - 1, -beta, -alpha, ply + 1);
+        } else v = -search(T, depth - 1, -beta, -alpha, ply + 1);
+      }
+      if (out) return 0;
+      n++;
+      if (v > best) {
+        best = v;
+        if (v > alpha) {
+          alpha = v;
+          if (alpha >= beta) { if (!takes(mode) && ply < 64) { if (killer[ply * 2] !== m) { killer[ply * 2 + 1] = killer[ply * 2]; killer[ply * 2] = m; } hist[mFrom(m) * NSQ + mTo(m)] += depth * depth; } break; }
+        }
+      }
+    }
+    if (!n) return -WIN + ply;                                                             // nothing playable: the Commander is lost
+    return best;
+  }
+
+  /** One move for the side to move in S (a step of a deployment, or COMMIT, when one is going on).
+   *  opt: { depth, quiet, ms, noise, slip, style, seen } — seen maps positions (posKey) to how often they have come up. */
+  function think(S, opt = {}) {
+    const legal = legalMoves(S); if (!legal.length) return { move: -1, score: 0, depth: 0, nodes: 0 };
+    const sane = legal.filter(m => mMode(m) !== INTERCEPT), pool = sane.length ? sane : legal;
+    if (pool.length === 1) return { move: pool[0], score: 0, depth: 0, nodes: 0 };
+    setStyle(opt.style); qDepth = opt.quiet === undefined ? 4 : opt.quiet; jitter = opt.jitter || 0; salt = (opt.salt || 0) >>> 0;
+    nodes = 0; out = false; hist.fill(0); killer.fill(0);
+    const me = S.turn, rnd = opt.random || Math.random;
+    if (opt.slip && rnd() < opt.slip) return { move: pool[Math.floor(rnd() * pool.length)], score: 0, depth: 0, nodes: 0, slipped: true };
+    const maxDepth = opt.depth || 2, t0 = clock();
+    deadline = t0 + (opt.ms || 1e9);
+    let ranked = pool.map(m => ({ m, v: 0 })), done = 0;
+    for (let depth = 1; depth <= maxDepth; depth++) {
+      let alpha = -WIN * 2; const next = [];
+      const wide = opt.noise > 0 || depth === 1;                                           // a shaky player needs a true value for every move, to be wrong about
+      for (const r of ranked) {
+        const T = clone(S); play(T, r.m, true);
+        let v;
+        if (T.over) v = overValue(T, me, 0);
+        else if (opt.seen && T.dOrg < 0 && (opt.seen[posKey(T)] || 0) >= 2) { const pts = points(T), lead = pts[me] - pts[1 - me]; v = lead > 0 ? WIN - 500 : lead < 0 ? 500 - WIN : 0; }   // a third time ends the game on points
+        else if (T.turn === me) v = search(T, depth, wide ? -WIN * 2 : alpha, WIN * 2, 1);
+        else v = -search(T, depth - 1, -WIN * 2, wide ? WIN * 2 : -alpha, 1);
+        if (out) break;
+        next.push({ m: r.m, v }); if (v > alpha) alpha = v;
+      }
+      if (out && !next.length) break;
+      if (out) { const top = next.slice().sort((a, b) => b.v - a.v)[0]; if (top.v > ranked[0].v || top.m === ranked[0].m) ranked = [top].concat(ranked.filter(r => r.m !== top.m)); break; }
+      ranked = next.sort((a, b) => b.v - a.v); done = depth;
+      if (ranked[0].v > WIN - 100 || clock() - t0 > (opt.ms || 1e9) * 0.45) break;
+    }
+    let pick = ranked[0];
+    if (opt.noise > 0 && done) {
+      let top = -Infinity;
+      for (const r of ranked) { const v = Math.abs(r.v) > WIN - 200 ? r.v : r.v + (rnd() + rnd() + rnd() - 1.5) * opt.noise * 1.4; if (v > top) { top = v; pick = r; } }
+    }
+    return { move: pick.m, score: pick.v, depth: done, nodes, ms: Math.round(clock() - t0) };
+  }
+  /** a whole turn: the moves of a deployment up to and including its end, or the one move */
+  function turn(S, opt) {
+    const T = clone(S), moves = [], me = T.turn; let info = null;
+    for (let guard = 0; guard < 6 && !T.over && T.turn === me; guard++) {
+      const r = think(T, guard ? Object.assign({}, opt, { slip: 0 }) : opt); if (r.move < 0) break;
+      if (!info) info = r; moves.push(r.move); if (!play(T, r.move, true)) break;
+    }
+    return { moves, info };
+  }
+  return { think, turn, evaluate: S => { setStyle(null); jitter = 0; return evaluate(S); } };
+})();
+
+if (typeof module !== 'undefined') module.exports = { AI, VALUE, STYLE0, WIN };
+
+/* ── The players the computer can be ──
+   One entry for each opponent of the campaign (the people themselves, their words and their cards are in the game's
+   own files; here is only how each of them plays). style: what she counts for more or less than the plain value —
+   see the head of the computer player's file for what each word means.
+   The order of the ratings in the campaign was measured by letting these play each other: node tools/sim.js */
+const PLAYERS = {
+  pia: { depth: 1, quiet: 0, noise: 220, slip: 0.18, style: { air: 0.8, adv: 1.4, arms: 0.3 } },
+  sol: { depth: 1, quiet: 1, noise: 150, slip: 0.12, style: { adv: 1.3, foot: 1.2, armor: 1.1, arms: 0.6 } },
+  hana: { depth: 2, quiet: 3, noise: 55, slip: 0.02, style: { guns: 1.15, sea: 1.1, adv: 0.7, guard: 1.5, arms: 1.3 } },
+  nadia: { depth: 3, quiet: 4, noise: 12, ms: 1600, style: { adv: 1.5, hunt: 1.7, air: 0.92, ride: 2 } },   // speed above all: she is the one who uses the rapid march
+  isolde: { depth: 5, quiet: 5, noise: 0, ms: 3000, jitter: 4, style: { guard: 1.2 } },
+};
+if (typeof module !== 'undefined') module.exports = { PLAYERS };
+
+const HOUSE = [
+  ['pia', 'Pia', 'Ensign Pia Lindqvist, the easiest of Port Halcyon: looks one move ahead, shakily, and now and then just plays something.'],
+  ['sol', 'Marisol', 'Chief Marisol Ortega: one move ahead and the captures after it; likes ground, infantry and armour.'],
+  ['hana', 'Hana', 'Lieutenant Hana Sorel: two moves ahead, keeps her Commander home and her arms whole, trusts guns and ships.'],
+  ['nadia', 'Nadia', 'Commander Nadia Rahimi: three moves ahead, hunts the Commander and loads her tanks and planes to get there.'],
+  ['isolde', 'Isolde', 'Captain Isolde Varga, the hardest: as deep as her clock allows, up to five moves, and gives nothing away.'],
+];
+for (const [who, name, about] of HOUSE) registerAI({
+  id: 'house-' + who, name, author: 'Claude Fable 5.2 (the game)', about,
+  turn(S, ctx) {
+    const cfg = PLAYERS[who], me = S.turn, moves = [], salt = Math.floor(ctx.random() * 4294967296);
+    for (let step = 0; step < 6 && !S.over && S.turn === me; step++) {
+      /* a turn is nearly always one move: it gets most of the time; what is left is halved for each further step */
+      const ms = Math.max(4, Math.min(cfg.ms || 1e9, step ? ctx.timeLeft() * 0.5 : ctx.timeMs * 0.8));
+      const r = AI.think(S, Object.assign({}, cfg, { seen: ctx.seen, salt, random: ctx.random, ms, slip: step ? 0 : cfg.slip }));
+      if (r.move < 0) break;
+      moves.push(r.move);
+      if (!play(S, r.move, true)) break;
+    }
+    return moves;
+  },
+});
