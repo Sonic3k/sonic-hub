@@ -1,4 +1,5 @@
-// who plays in the league: the 14 bots that were handed in (a bot with levels: one player for each level) and the game's own five
+// who plays in the league: the 14 bots that were handed in (a bot with levels: one player for each level), the game's own five,
+// and the two test opponents that two of the sessions had written for their own trials
 const one = (key, file, id, ai, by, levelName) => ({ key, file: 'bots/' + file, id, level: 1, ai, by, levelName: levelName || 'one level' });
 const three = (id, file, ai, by) => ['Easy', 'Medium', 'Hard'].map((n, i) => ({ key: id + ':' + n, file: 'bots/' + file, id, level: i + 1, ai, by, levelName: n }));
 const FABLE = 'Claude Fable 5.2', HOUSE = 'Claude Fable 5.2 (the game)';
@@ -22,4 +23,7 @@ module.exports = [
   one('house:Hana', 'house.js', 'house-hana', 'House', HOUSE, 'Hana (moderate)'),
   one('house:Marisol', 'house.js', 'house-sol', 'House', HOUSE, 'Marisol (easy)'),
   one('house:Pia', 'house.js', 'house-pia', 'House', HOUSE, 'Pia (easiest)'),
+  /* the two test opponents that came inside two of the submissions; added after the first 1518 games */
+  one('titan-scout', 'titan-scout.js', 'titan-scout', 'Titan Scout', 'GPT-6.1 Terra Max'),
+  one('counterplay', 'counterplay.js', 'counterplay', 'Counterplay', 'GPT-6.2 Astra Max'),
 ];

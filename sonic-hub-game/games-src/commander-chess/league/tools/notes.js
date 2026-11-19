@@ -12,5 +12,7 @@ const lines = [
   faults.length ? faults.length + ' game' + (faults.length > 1 ? 's were' : ' was') + ' lost by forfeit: ' + Object.entries(who).map(([k, n]) => k + (n > 1 ? ' ×' + n : '')).join(', ') + '. See the last column of the Games sheet.' : 'No game was lost by forfeit: not one illegal move, error or turn out of time in ' + rows.reduce((a, g) => a + g.turns, 0).toLocaleString('en-US') + ' turns.' + (Object.keys(late).length ? ' Turns that ran over 1000 ms without losing the game: ' + Object.entries(late).map(([k, n]) => k + ' ' + n).join(', ') + '.' : ''),
 ];
 if (v && v.repeatGames) lines.push(v.repeatGames + ' game' + (v.repeatGames > 1 ? 's repeat' : ' repeats') + ' an earlier game between the same two players with the same colours move for move: players that leave nothing to chance play the same game again.');
-lines.push('Every game: battles, the standard line-up of 19 a side. Not in the league: titan-scout.js and counterplay.js, which the notes that came with them call test opponents.');
+const late2 = rows.filter(g => ['titan-scout', 'counterplay'].includes(g.red) || ['titan-scout', 'counterplay'].includes(g.blue)).length;
+if (late2) lines.push('titan-scout and counterplay are the test opponents that came inside two of the submissions (with Titan Commander and with Lạc Hồng).', 'They joined after the first ' + (rows.length - late2).toLocaleString('en-US') + ' games: only their own ' + late2 + ' games were played then, and nobody else\'s were played again.');
+lines.push('Every game: battles, the standard line-up of 19 a side.');
 process.stdout.write(JSON.stringify(lines));
