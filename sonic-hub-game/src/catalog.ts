@@ -3,6 +3,9 @@
    A catalogue entry needs only key, title, group and machine; everything else has a default. An entry with no
    `play` is on the shelf without a game behind it yet. `blurb` is optional and worth writing only for games that
    will be shown large (highlights): a small tile never shows it.
+   A blurb says what the game is, in words that stay true while the game grows: no count of its levels, rooms or
+   opponents and no single place in it, since the next version makes that wrong. A number belongs in a blurb only
+   when it is the game's own rule and never changes (eight Rams a side).
 
    A game that is someone else's file (found on the web, kept to look at) has `frame` instead of `play`: the file's
    address under /kept/ and the only other sites its page may load from. It is played at /play/<key>, in a frame
