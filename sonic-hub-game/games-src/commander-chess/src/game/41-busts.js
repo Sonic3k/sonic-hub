@@ -66,15 +66,20 @@ const picture = (w, px = 132) => { const own = pictureOf(w, px); return `<img sr
 /** her picture in a frame that cuts it to shape */
 const portrait = (w, cls = '', px = 132) => `<span class="portrait ${cls}">${picture(w, px)}</span>`;
 /** Hangs every picture on the page again where it is: the cast has changed, and someone's picture is no longer the
- *  one shown. Nothing else is drawn again, so a game under way is not disturbed. */
+ *  one shown. Nothing else is drawn again, so a game under way is not disturbed. A picture of her own takes the place
+ *  of what is shown only once it has come: until then what is there stays as it is. */
 function hangPictures() {
+  const frames = () => { for (const r of document.querySelectorAll('.roster')) r.classList.toggle('own', [...r.querySelectorAll('.d-pic img')].some(i => i.dataset.bust)); };
   for (const img of document.querySelectorAll('img[data-who]')) {
     const w = womanById(img.dataset.who); if (!w) continue;
-    const own = pictureOf(w, +img.dataset.px || undefined), src = own || bustURL(w);
-    if (own) img.dataset.bust = w.id; else delete img.dataset.bust;
-    if (img.getAttribute('src') !== src) img.src = src;
+    const px = +img.dataset.px || undefined, own = pictureOf(w, px);
+    if (img.getAttribute('src') === (own || bustURL(w))) continue;
+    if (!own) { delete img.dataset.bust; img.src = bustURL(w); continue; }
+    const pre = new Image();
+    pre.onload = () => { if (img.isConnected && pictureOf(w, px) === own) { img.dataset.bust = w.id; img.src = own; frames(); } };
+    pre.src = own;
   }
-  for (const r of document.querySelectorAll('.roster')) r.classList.toggle('own', [...r.querySelectorAll('.d-pic img')].some(i => i.dataset.bust));
+  frames();
 }
 /** her face as a round token. state: 'won' she has been beaten, 'open' she sits down, 'new' she sits down and has not
  *  been played, 'shut' she does not sit down yet */
