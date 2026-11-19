@@ -21,7 +21,7 @@
 
    Each officer has a drawn stand-in until her own picture is there (ART.base), and three cards to win. In what she
    says, {you} stands for the player's rank at that moment. */
-const ART = { base: '' };                                     // e.g. 'https://cdn.example/commander-chess/' → <base><id>/portrait.webp, card-1.webp …
+const ART = { base: typeof ART_BASE === 'string' ? ART_BASE : '' };   // a folder beside the page with <id>.jpg in it: only on a page built to try pictures out (--art)
 const START_RATING = 600, WIN_K = 48, LOSS_K = 24, FIRST = 30, FLOOR = 100;   // FLOOR: points never fall below it
 const CARD_WINS = [1, 3, 5];                                  // wins against her that earn her first, second and third card
 const SETUP = { game: 'battles', lineup: 'standard' };        // every table's game: the league's
@@ -86,6 +86,8 @@ const RULES = 3;                                              // 2: the author's
 const LEGACY = 'commander-chess.v1', SOUND = 'commander-chess.sound';   // what the game kept before it had players; this device's sound
 const freshSave = () => ({ rating: START_RATING, peak: START_RATING, record: {}, met: {}, side: 0, all: false, match: null, rules: RULES });
 let SAVE = freshSave();
+/** what the officers were given at the same service: their pictures (12-cast.js; 41-busts.js shows them) */
+const CAST = SonicCast({ api: SAVES.api, game: SAVES.game, onChange: () => { if (typeof hangPictures === 'function') hangPictures(); } });
 const ROLL = SonicSave({ api: SAVES.api, game: SAVES.game, onChange: what => { if (typeof savesChanged === 'function') savesChanged(what); } });
 const count = n => Math.max(0, Math.floor(Number(n)) || 0);
 /** A save as it was kept, made safe to play from: whatever is missing or cannot be right is left out, and a game

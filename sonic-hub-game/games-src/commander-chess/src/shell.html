@@ -97,6 +97,8 @@
   .face { position: relative; flex: none; display: block; width: 34px; height: 34px; }
   .face-in { display: block; width: 100%; height: 100%; border-radius: 50%; overflow: hidden; position: relative; background: var(--ink); box-shadow: 0 0 0 2px #fff, 0 1px 3px rgba(8,30,46,.5); }
   .face-in img { position: absolute; left: -43%; top: -30%; width: 186%; height: 198.4%; max-width: none; object-fit: cover; object-position: 50% 16%; }
+  /* a picture of her own is a portrait half as tall again as it is wide: the window takes the face out of it */
+  .face-in img[data-bust] { left: -25.8%; top: -43.2%; width: 151.5%; height: auto; }
   .face.won .face-in { box-shadow: 0 0 0 2px var(--brass), 0 0 0 3px #7a5a2a; } .face.shut .face-in { box-shadow: 0 0 0 2px #8a96a3; filter: grayscale(1) brightness(.62); }
   .face-new { position: absolute; right: -3px; top: -3px; width: 10px; height: 10px; border-radius: 50%; background: #ff7f51; box-shadow: 0 0 0 1.5px #fff; }
   .logbook { position: absolute; left: 28px; bottom: 30px; width: min(330px, calc(100% - 56px)); padding: 14px 16px 12px; border-radius: 6px; background: rgba(251,245,227,.95); box-shadow: 0 4px 14px rgba(8,30,46,.45); }
@@ -111,6 +113,9 @@
   .dossier { display: flex; flex-direction: column; border-radius: 8px; overflow: hidden; background: var(--card); box-shadow: 0 0 0 1px rgba(20,36,58,.25), 0 14px 24px -12px rgba(8,30,46,.7); }
   .portrait { display: block; position: relative; overflow: hidden; background: #14243a; } .portrait img { display: block; width: 100%; height: 100%; object-fit: cover; object-position: 50% 16%; }
   .d-pic { position: relative; height: 271px; border-bottom: 3px solid var(--brass); overflow: hidden; background: var(--ink); } .roster.many .d-pic { height: 239px; } .d-pic .portrait { height: 100%; }
+  /* a station whose officers have pictures of their own: the frame is as tall as it is wide, near enough, so a
+     portrait shows from the cap to the collar however wide the cards run */
+  @media (min-width: 901px) { .roster.own .d-pic, .roster.own.many .d-pic { height: auto; aspect-ratio: 20 / 21; } }
   .d-new { position: absolute; left: 10px; top: 10px; padding: 4px 9px 3px; border-radius: 3px; background: #ff7f51; color: #2a1206; font: 700 13.5px/1.2 var(--ui); box-shadow: 0 2px 5px rgba(8,30,46,.4); }
   .d-body { display: flex; flex-direction: column; flex: 1; padding: 11px 14px 14px; } .dossier h3 { font: 700 21px/1.05 var(--display); } .d-job { font-size: 15px; color: var(--muted); }
   .d-facts { display: flex; align-items: center; gap: 8px; margin-top: 8px; } .lvl { padding: 3px 8px 2px; border-radius: 3px; background: var(--ink); color: #fff; font: 700 13.5px/1.2 var(--ui); white-space: nowrap; } .rate { font: 700 21px/1 var(--display); color: var(--red); } .stars { margin-left: auto; font-size: 17px; color: var(--brass-lo); letter-spacing: 2px; white-space: nowrap; }
@@ -199,6 +204,8 @@
   .card { width: 168px; aspect-ratio: 5 / 7; padding: 6px; border-radius: 11px; background: linear-gradient(135deg, #d59a5b, #8c5a2b 45%, #e0b07a 60%, #7a4a20); box-shadow: 0 10px 20px -8px rgba(6,26,40,.75), inset 0 0 0 1px rgba(255,255,255,.3); }
   .card.t1 { background: linear-gradient(135deg, #f1f4f7, #8b96a3 45%, #fff 60%, #7c8794); } .card.t2 { background: linear-gradient(135deg, #ffe9a0, #c0902c 45%, #fff3c4 60%, #9a6d1c); }
   .card-in { position: relative; height: 100%; border-radius: 6px; overflow: hidden; background: #14243a; } .card-pic, .card-in > img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+  /* a portrait of her own on a card: drawn a little larger and higher, so her face stands clear of the caption */
+  .card-pic img[data-bust] { height: 118%; transform: translateY(-7.5%); }
   .card-star { position: absolute; left: 7px; top: 5px; font-size: 15px; letter-spacing: 1px; color: #ffd45c; text-shadow: 0 1px 2px #000; }
   .card-cap { position: absolute; left: 0; right: 0; bottom: 0; padding: 26px 9px 8px; color: #fff; background: linear-gradient(transparent, rgba(8,20,36,.92) 42%); } .card-cap b { display: block; font: 700 17px/1.05 var(--display); } .card-cap i { display: block; font: 600 13.5px/1.2 var(--ui); font-style: normal; color: #ffd9a8; } .card-cap p { margin-top: 3px; font-size: 12.5px; line-height: 1.22; color: #e6edf3; }
   .card.back { background: linear-gradient(135deg, #5e7a8c, #2c4456); } .card.back .card-in { display: grid; place-items: center; text-align: center; background: repeating-linear-gradient(45deg, #1b3147 0 10px, #1f3850 10px 20px); }

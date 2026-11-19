@@ -11,6 +11,7 @@
     "kit": "node tools/kit.js",
     "roster": "node tools/roster.js",
     "avatars": "node tools/avatar-prompts.js",
+    "cast": "node tools/cast-upload.js",
     "start": "serve dist -l ${PORT:-3000}"
   },
   "dependencies": { "serve": "^14.2.3" }

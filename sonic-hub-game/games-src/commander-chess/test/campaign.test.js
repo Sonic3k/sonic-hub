@@ -187,6 +187,13 @@ ok(fine, 'a win pays 1 to WIN_K, a loss costs 0 to LOSS_K, and both go by how st
   ok(all.every(o => o.prompt.includes('an adult woman, age ' + o.w.age) && /^SHOT TYPE: .*\nFRAMING: /.test(o.prompt)), 'each says she is a grown woman of her age, and names the shot before the framing');
   ok(!err && fs.existsSync(path.join(root, 'art/avatar-prompts.md')) && fs.readFileSync(path.join(root, 'art/avatar-prompts.md'), 'utf8') === require('../tools/avatar-prompts.js').promptsText(), 'art/avatar-prompts.md is up to date (node tools/avatar-prompts.js writes it)');
 }
+{ // the portraits kept with the game are pictures, each of someone in the campaign
+  const dir = path.join(root, 'art/portraits'), files = fs.existsSync(dir) ? fs.readdirSync(dir) : [];
+  const kind = f => { const b = fs.readFileSync(path.join(dir, f)); return b[0] === 0xff && b[1] === 0xd8 && b[2] === 0xff ? '.jpg' : b.subarray(0, 8).equals(Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a])) ? '.png' : b.toString('latin1', 0, 4) === 'RIFF' && b.toString('latin1', 8, 12) === 'WEBP' ? '.webp' : ''; };
+  ok(files.every(f => WOMEN.some(w => w.id === path.basename(f, path.extname(f)))), 'every portrait in art/portraits is of an officer: ' + files.filter(f => !WOMEN.some(w => w.id === path.basename(f, path.extname(f)))).join(', '));
+  ok(files.every(f => kind(f) === path.extname(f)), 'and is the kind of picture its name says');
+  ok(new Set(files.map(f => path.basename(f, path.extname(f)))).size === files.length, 'one for each of them at most');
+}
 ok(['1st', '2nd', '3rd', '4th', '11th', '12th', '13th', '21st', '22nd', '23rd', '26th'].join() === [1, 2, 3, 4, 11, 12, 13, 21, 22, 23, 26].map(C.ordinal).join(), 'ordinals');
 
 console.log(`${passed} passed, ${failed} failed; ${WOMEN.length} officers at ${PLACES.length} stations, ${WOMEN.reduce((n, w) => n + Object.values(w.say).flat().length, 0)} lines`);

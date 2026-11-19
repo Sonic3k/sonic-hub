@@ -16,6 +16,7 @@ from, and what was read and not followed; ROSTER.md says which player and which 
     npm run kit       # kit/ → kit-out/commander-chess-ai-kit.zip, for whoever writes a computer player of their own
     npm run roster    # ROSTER.md, from the campaign's own files
     npm run avatars   # art/avatar-prompts.md: a portrait prompt for each officer
+    npm run cast      # what tools/cast-upload.js would send to the saves service (add -- --send to send it)
 
 ## What is where
 
@@ -28,8 +29,9 @@ from, and what was read and not followed; ROSTER.md says which player and which 
   policy forbids that.
 - `src/engine/10-ai.js`, `20-players.js`: the game's own computer player. It is in the league as `bots/house.js`
   (`league/tools/build-house.js` makes that file from the two), so the page does not load them.
-- `src/game/10-save.js`: the saves service's own browser client, copied as it is (`sonic-hub`, `sonic-hub-game-api/client/sonic-save.js`).
-  `src/saves.json`: where that service is, and the name this game keeps its players under.
+- `src/game/10-save.js`, `12-cast.js`: the saves service's own browser clients, copied as they are (`sonic-hub`,
+  `sonic-hub-game-api/client/`): the players, and the cast with its pictures. `src/saves.json`: where that service is,
+  and the name this game has there.
 - `src/game/60-campaign.js`: stations, ranks, points, who is playing and what is kept. `61-halcyon.js` … `66-admiralty.js`: the officers
   of each station, what they say, their cards.
 - `src/game/41-busts.js`, `42-scenes.js`, `43-chart.js`: the stand-in portraits, the view at each station, the chart
@@ -54,10 +56,18 @@ behind is told and goes back to the title. The single save the first versions ke
 
 ## Pictures
 
-Every officer has a drawn stand-in. Set `ART.base` in `60-campaign.js` to a folder that has
-`<id>/portrait.webp`, `<id>/card-1.webp`, `card-2.webp`, `card-3.webp` (the ids are in ROSTER.md) and the pictures
-are used instead; a missing file falls back to the stand-in. A portrait is shown from 16% below its top edge, so a
-head-and-shoulders picture with the eyes about a third of the way down sits right in every frame.
+The officers' portraits are in `art/portraits/<id>.jpg` (the ids are in ROSTER.md), painted from the prompts of
+`art/avatar-prompts.md`. The game does not read them from there: it reads the cast at the saves service
+(`src/game/12-cast.js`, the service's own client), where each officer is given her picture, and asks the hub's CDN
+for it at the width that fits the place it is shown in. `node tools/cast-upload.js --send` gives every officer the
+picture kept here; one she has already is left alone, so it can be run again after a portrait is changed. The pictures
+of her three cards are the places 1 to 3 of her album there; a card that has none shows her portrait. Whoever has no
+picture, or one that does not load, has a drawn stand-in.
+
+A portrait is taller than wide (these are 2:3) with the face in the upper half: the frames cut it from a little below
+the top, and a face token takes the middle of the upper half.
+
+    node build.mjs --saves none --art art/ --out /tmp/cc     # a page that reads /tmp/cc/art/<id>.jpg instead of the cast
 
 ## Ratings and the journey
 

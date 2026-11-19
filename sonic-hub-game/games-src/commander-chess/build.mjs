@@ -13,6 +13,7 @@
    The players are kept with the saves service src/saves.json names. For trying the page out against something else:
      node build.mjs --saves http://127.0.0.1:3200 --out /tmp/cc     the players are kept with a service on this machine
      node build.mjs --saves none --out /tmp/cc                      the players are kept in the browser only
+     node build.mjs --saves none --art art/ --out /tmp/cc           and the officers' pictures are read from /tmp/cc/art/<id>.jpg
    The address is fixed when the page is built. Nothing in the page's own address can change it. */
 import { readFileSync, readdirSync, writeFileSync, mkdirSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
@@ -21,7 +22,9 @@ const root = dirname(fileURLToPath(import.meta.url));
 const read = f => readFileSync(join(root, f), 'utf8');
 const all = dir => readdirSync(join(root, dir)).filter(f => f.endsWith('.js')).sort();
 const flag = name => { const i = process.argv.indexOf('--' + name); if (i < 0) return undefined; const v = process.argv[i + 1]; if (!v || v.startsWith('--')) throw new Error(`--${name} needs something after it`); return v; };
-const OUT = resolve(flag('out') || join(root, 'dist')), TRIAL = flag('saves');
+const OUT = resolve(flag('out') || join(root, 'dist')), TRIAL = flag('saves'), ART = flag('art');
+if (ART !== undefined && !/^(?:[a-z0-9_-]+\/)+$/.test(ART)) throw new Error('--art is a folder beside the page, written as it is asked for: small letters, digits, dashes, and a slash at the end (art/)');
+if (ART !== undefined && OUT === join(root, 'dist')) throw new Error('--art is for trying pictures out: give it somewhere else to write with --out');
 
 /* where the players are kept: the service src/saves.json names, or what this one build was asked to use */
 let saves = JSON.parse(read('src/saves.json'));
@@ -52,7 +55,7 @@ const rules = [core, `/** the rules under one name, as the AI kit hands them to 
   read('kit/src/table.js'), read('src/engine/30-seat.js')].join('\n');
 const engine = [rules, bots, '/** where every opponent sits */\nconst Seat = makeSeat(CC, makeTable, BOTS);'].join('\n');
 
-const game = `/** where the players are kept: the saves service and the name this game has there (api '': in this browser only) */\nconst SAVES = ${JSON.stringify({ api: saves.api || '', game: saves.game })};\n` + all('src/game').map(f => read('src/game/' + f)).join('\n');
+const game = `/** where the players are kept: the saves service and the name this game has there (api '': in this browser only) */\nconst SAVES = ${JSON.stringify({ api: saves.api || '', game: saves.game })};\n${ART === undefined ? '' : `/** a page for trying pictures out: the officers' own pictures are files in this folder beside it */\nconst ART_BASE = ${JSON.stringify(ART)};\n`}` + all('src/game').map(f => read('src/game/' + f)).join('\n');
 for (const [what, text] of [['the engine', engine], ['the game', game]]) if (/<\/script/i.test(text)) throw new Error(what + ' has a closing script tag in it: it cannot go into the page');
 const shell = read('src/shell.html');
 if (/\/\*__[A-Z]+__\*\//.test(shell.replace('/*__ENGINE__*/', '').replace('/*__JS__*/', ''))) throw new Error('the shell has a place the build puts nothing into');

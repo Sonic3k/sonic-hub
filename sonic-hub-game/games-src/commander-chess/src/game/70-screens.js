@@ -70,6 +70,8 @@ const EMBLEM = {
   meridian: '<path d="M5.500 21.500V11.500H4.500V4.500H7.700V7.300H10.400V4.500H13.600V7.300H16.300V4.500H19.500V11.500H18.500V21.500H14V16.500A2 2 0 0 0 10 16.500V21.500Z" fill="#fff"/>',
   admiralty: '<path d="M12 2.800L14.250 9.400L21.200 9.500L15.650 13.700L17.700 20.400L12 16.400L6.300 20.400L8.350 13.700L2.800 9.500L9.750 9.400Z" fill="#fff"/>',
 };
+/** a screen wide enough for the officers of a station to stand side by side */
+const WIDE = window.matchMedia('(min-width: 901px)');
 /** an upright phone gets the tall sheet */
 const TALL = window.matchMedia('(max-width: 900px) and (orientation: portrait)');
 /** a station's flag on the chart: its emblem on a medal that stands over the place, and beside it the name and who is
@@ -112,12 +114,12 @@ function placeNote(p) {
 const ARMS = ['at sea', 'in the air', 'on land'];
 /** an officer at her station: her picture, who she is, where she stands on the List, how she plays and how she won
  *  last season, and what a game with her is worth */
-function dossier(w) {
+function dossier(w, px) {
   const open = isOpen(w), r = recordOf(w.id), won = cardsWon(w), loss = pointsFor(SAVE.rating, w.rating, 0);
   const wins = w.wins ? `<div class="d-wins"><div class="d-bar">${w.wins.map((v, i) => `<i class="a${i}" style="flex:${v} 0 0"></i>`).join('')}<i style="flex:${100 - w.wins[0] - w.wins[1] - w.wins[2]} 0 0"></i></div><p>Of her wins last season: ${w.wins.map((v, i) => [v, v + '% ' + ARMS[i]]).filter(x => x[0]).map(x => x[1]).join(', ')}.</p></div>`
     : '<div class="d-wins"><p>No wins last season.</p></div>';
   return `<article class="dossier${open ? '' : ' locked'}">
-    <div class="d-pic">${portrait(w)}${isNew(w) ? '<span class="d-new">New at the table</span>' : ''}</div>
+    <div class="d-pic">${portrait(w, '', px)}${isNew(w) ? '<span class="d-new">New at the table</span>' : ''}</div>
     <div class="d-body">
       <h3>${w.rank} ${esc(w.name)}</h3><p class="d-job">${esc(w.job)}</p>
       <p class="d-facts"><span class="lvl">${ordinal(w.list)} on the List</span><span class="rate">${w.rating}</span><span class="stars" aria-label="${won.filter(Boolean).length} of 3 cards">${won.map(v => (v ? '★' : '☆')).join('')}</span></p>
@@ -129,10 +131,12 @@ function dossier(w) {
 }
 function screenPlace(p) {
   const os = WOMEN.filter(w => w.place === p.id);
+  // how wide a portrait stands: side by side they share the screen's width; on a narrow screen each is a strip beside her text
+  const px = WIDE.matches ? Math.ceil((document.documentElement.clientWidth - 28 - 14 * (os.length - 1)) / os.length) : 135;
   return `${bar('Chart', 'chart')}
     <div class="place-top">${scene(p.id)}<div class="place-name"><h2>${p.room}</h2><p>${p.name}</p></div></div>
     <div class="place-text"><p>${esc(p.blurb)}</p><p class="house">House rules: the standard line-up and a game of battles. A challenge counts for points and cards; sparring counts for nothing and lets you take moves back.</p></div>
-    <div class="roster${os.length > 4 ? ' many' : ''}" style="--n:${os.length}">${os.map(dossier).join('')}</div>`;
+    <div class="roster${os.length > 4 ? ' many' : ''}${os.some(w => pictureOf(w)) ? ' own' : ''}" style="--n:${os.length}">${os.map(w => dossier(w, px)).join('')}</div>`;
 }
 /** The List: last season's table, with the player on it where their points put them */
 function screenList() {
@@ -186,7 +190,7 @@ function screenMatch(w, rated) {
 
 function screenCards() {
   return `${bar('Chart', 'chart', 'Cards')}
-    <div class="album"><p class="album-note">Each of them has three cards: one for beating her, one for beating her three times, one for five. ${ART.base ? '' : 'The portraits are stand-ins until the real pictures are in.'}</p>
+    <div class="album"><p class="album-note">Each of them has three cards: one for beating her, one for beating her three times, one for five. ${WOMEN.some(w => pictureOf(w)) ? '' : 'The portraits are stand-ins until the real pictures are in.'}</p>
     ${PLACES.map(p => `<h2 class="album-place">${p.name}</h2><div class="album-rows">${WOMEN.filter(w => w.place === p.id).map(w => `<section class="album-row"><h3>${w.rank} ${esc(w.name)}</h3><div class="album-cards">${cardsWon(w).map((v, i) => cardArt(w, i, v)).join('')}</div></section>`).join('')}</div>`).join('')}</div>`;
 }
 

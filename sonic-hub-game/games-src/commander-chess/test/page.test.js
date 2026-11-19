@@ -22,7 +22,8 @@ for (const [name, text] of [['the engine', engine], ['the game', game]]) { let e
 const saves = JSON.parse(fs.readFileSync(path.join(root, 'src/saves.json'), 'utf8')), said = /\nconst SAVES = (\{[^\n]*\});\n/.exec(game);
 ok(said && JSON.stringify(JSON.parse(said[1])) === JSON.stringify({ api: saves.api, game: saves.game }), 'the page keeps its players where src/saves.json says: ' + (said && said[1]));
 ok(/^https:\/\/[a-z0-9.-]+$/.test(saves.api) && saves.game === 'commander-chess', 'which is the saves service, over https, under the game\'s own name');
-ok(game.includes(fs.readFileSync(path.join(root, 'src/game/10-save.js'), 'utf8')), 'and carries the service\'s client whole');
+ok(game.includes(fs.readFileSync(path.join(root, 'src/game/10-save.js'), 'utf8')) && game.includes(fs.readFileSync(path.join(root, 'src/game/12-cast.js'), 'utf8')), 'and carries the service\'s two clients whole: the players, and the cast with its pictures');
+ok(!/\nconst ART_BASE = /.test(game), 'the page that ships reads no pictures from a folder beside it');
 { // a page built for trying things out goes somewhere else, and says where its players are kept
   const os = require('os'), tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'cc-trial-'));
   const run = args => { try { return execFileSync(process.execPath, [path.join(root, 'build.mjs'), ...args], { stdio: 'pipe' }).toString(); } catch (e) { return 'refused: ' + String(e.stderr || e.message); } };
@@ -31,6 +32,9 @@ ok(game.includes(fs.readFileSync(path.join(root, 'src/game/10-save.js'), 'utf8')
   const local = run(['--saves', 'http://127.0.0.1:3200', '--out', tmp]);
   ok(/players kept with http:\/\/127\.0\.0\.1:3200/.test(local) && fs.readFileSync(path.join(tmp, 'index.html'), 'utf8').includes('const SAVES = {"api":"http://127.0.0.1:3200","game":"commander-chess"};'), 'a trial page can be pointed at a service on this machine');
   ok(/^refused: /.test(run(['--saves', 'none'])) && /^refused: /.test(run(['--saves', 'http://example.com', '--out', tmp])) && /^refused: /.test(run(['--saves', 'https://example.com/path', '--out', tmp])), 'dist/ is never a trial page, and a service is https with nothing after the host');
+  const art = run(['--saves', 'none', '--art', 'art/', '--out', tmp]);
+  ok(!/^refused/.test(art) && fs.readFileSync(path.join(tmp, 'index.html'), 'utf8').includes('\nconst ART_BASE = "art/";\n'), 'a trial page can read the officers\' pictures from a folder beside it');
+  ok(/^refused: /.test(run(['--art', 'art/'])) && /^refused: /.test(run(['--saves', 'none', '--art', 'https://example.com/', '--out', tmp])) && /^refused: /.test(run(['--saves', 'none', '--art', '../art/', '--out', tmp])), 'but only a folder beside the page, and never in dist/');
   ok(fs.readFileSync(path.join(root, 'dist/index.html'), 'utf8') === page, 'and none of that touched dist/');
   fs.rmSync(tmp, { recursive: true, force: true });
 }

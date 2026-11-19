@@ -52,20 +52,39 @@ function bust(w) {
 const BUSTS = new Map();
 /** the stand-in as a picture's address */
 function bustURL(w) { if (!BUSTS.has(w.id)) BUSTS.set(w.id, 'data:image/svg+xml,' + encodeURIComponent(bust(w))); return BUSTS.get(w.id); }
-/** the address of her own picture, or '' while she has none */
-const pictureOf = w => (ART.base ? `${ART.base}${w.id}/portrait.webp` : '');
-/** her picture as an <img>: her own where there is one, the stand-in otherwise and whenever her own does not load */
-const picture = w => { const own = pictureOf(w); return own ? `<img src="${own}" alt="" data-bust="${w.id}">` : `<img src="${bustURL(w)}" alt="">`; };
+/* ── her own picture ──
+   An officer's own picture is one she was given at the saves service (the cast, 12-cast.js). It is kept on the hub's
+   CDN, which hands it out at a few widths: it is asked for at the width that fits the place it is shown in (px, in
+   CSS pixels). Her album there holds the pictures of her three cards, at places 1 to 3; a card that has none shows
+   her portrait. A page built to try things out can read pictures from a folder beside it instead (ART.base).
+   Whoever has no picture, or one that does not load, has her stand-in. */
+/** the address of her own picture for a place px wide, or '' while she has none */
+const pictureOf = (w, px) => CAST.photo(w.id, px) || (ART.base ? `${ART.base}${w.id}.jpg` : '');
+/** her picture as an <img>. It says whose it is and how wide its place is, so it can be hung again where it is when
+ *  the cast changes (hangPictures); data-bust marks a picture of her own, which gives way to the stand-in if it fails. */
+const picture = (w, px = 132) => { const own = pictureOf(w, px); return `<img src="${own || bustURL(w)}" alt="" data-who="${w.id}" data-px="${px}"${own ? ` data-bust="${w.id}"` : ''}>`; };
 /** her picture in a frame that cuts it to shape */
-const portrait = (w, cls = '') => `<span class="portrait ${cls}">${picture(w)}</span>`;
+const portrait = (w, cls = '', px = 132) => `<span class="portrait ${cls}">${picture(w, px)}</span>`;
+/** Hangs every picture on the page again where it is: the cast has changed, and someone's picture is no longer the
+ *  one shown. Nothing else is drawn again, so a game under way is not disturbed. */
+function hangPictures() {
+  for (const img of document.querySelectorAll('img[data-who]')) {
+    const w = womanById(img.dataset.who); if (!w) continue;
+    const own = pictureOf(w, +img.dataset.px || undefined), src = own || bustURL(w);
+    if (own) img.dataset.bust = w.id; else delete img.dataset.bust;
+    if (img.getAttribute('src') !== src) img.src = src;
+  }
+  for (const r of document.querySelectorAll('.roster')) r.classList.toggle('own', [...r.querySelectorAll('.d-pic img')].some(i => i.dataset.bust));
+}
 /** her face as a round token. state: 'won' she has been beaten, 'open' she sits down, 'new' she sits down and has not
  *  been played, 'shut' she does not sit down yet */
-const face = (w, state) => `<span class="face ${state}"><span class="face-in">${picture(w)}</span>${state === 'new' ? '<i class="face-new"></i>' : ''}</span>`;
+const face = (w, state) => `<span class="face ${state}"><span class="face-in">${picture(w, 34)}</span>${state === 'new' ? '<i class="face-new"></i>' : ''}</span>`;
 const faceState = w => (!isOpen(w) ? 'shut' : recordOf(w.id).w ? 'won' : isNew(w) ? 'new' : 'open');
 /** one of her three cards: won, or still face down */
 function cardArt(w, i, won) {
   const stars = '★'.repeat(i + 1);
   if (!won) return `<div class="card back"><div class="card-in"><span class="card-star">${stars}</span><span class="card-lock">Beat ${w.name.split(' ')[0]} ${CARD_WINS[i] === 1 ? 'once' : CARD_WINS[i] + ' times'}</span></div></div>`;
-  const pic = ART.base ? `<img src="${ART.base}${w.id}/card-${i + 1}.webp" alt="" onerror="this.remove()">` : '';
-  return `<div class="card t${i}"><div class="card-in">${portrait(w, 'card-pic')}${pic}<span class="card-star">${stars}</span><div class="card-cap"><b>${w.name}</b><i>${w.cards[i][0]}</i><p>${w.cards[i][1]}</p></div></div></div>`;
+  const own = CAST.plate(w.id, i + 1, 156);                    // the picture this card was given, at its place in her album
+  const pic = own ? `<img src="${own}" alt="" onerror="this.remove()">` : '';
+  return `<div class="card t${i}"><div class="card-in">${portrait(w, 'card-pic', 156)}${pic}<span class="card-star">${stars}</span><div class="card-cap"><b>${w.name}</b><i>${w.cards[i][0]}</i><p>${w.cards[i][1]}</p></div></div></div>`;
 }
