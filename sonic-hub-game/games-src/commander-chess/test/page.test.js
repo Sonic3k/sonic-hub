@@ -17,6 +17,22 @@ const botsText = scripts.find(s => /id="bots"/.test(s.attrs)).text, engine = scr
 ok(scripts.length === 3, 'the page has its three scripts: the players, the engine, the game');
 ok(!/\/\*__[A-Z]+__\*\//.test(page.replace(botsText, '')), 'nothing in the shell was left unfilled');
 for (const [name, text] of [['the engine', engine], ['the game', game]]) { let err = ''; try { new vm.Script(text); } catch (e) { err = e.message; } ok(!err, name + ' is a script that reads: ' + err); }
+/* where the players are kept: the page says so itself, and carries the saves service's client as it is */
+const saves = JSON.parse(fs.readFileSync(path.join(root, 'src/saves.json'), 'utf8')), said = /\nconst SAVES = (\{[^\n]*\});\n/.exec(game);
+ok(said && JSON.stringify(JSON.parse(said[1])) === JSON.stringify({ api: saves.api, game: saves.game }), 'the page keeps its players where src/saves.json says: ' + (said && said[1]));
+ok(/^https:\/\/[a-z0-9.-]+$/.test(saves.api) && saves.game === 'commander-chess', 'which is the saves service, over https, under the game\'s own name');
+ok(game.includes(fs.readFileSync(path.join(root, 'src/game/10-save.js'), 'utf8')), 'and carries the service\'s client whole');
+{ // a page built for trying things out goes somewhere else, and says where its players are kept
+  const os = require('os'), tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'cc-trial-'));
+  const run = args => { try { return execFileSync(process.execPath, [path.join(root, 'build.mjs'), ...args], { stdio: 'pipe' }).toString(); } catch (e) { return 'refused: ' + String(e.stderr || e.message); } };
+  const none = run(['--saves', 'none', '--out', tmp]), trial = fs.readFileSync(path.join(tmp, 'index.html'), 'utf8');
+  ok(/players kept in the browser only/.test(none) && trial.includes('const SAVES = {"api":"","game":"commander-chess"};'), 'a trial page with no service keeps its players in the browser only');
+  const local = run(['--saves', 'http://127.0.0.1:3200', '--out', tmp]);
+  ok(/players kept with http:\/\/127\.0\.0\.1:3200/.test(local) && fs.readFileSync(path.join(tmp, 'index.html'), 'utf8').includes('const SAVES = {"api":"http://127.0.0.1:3200","game":"commander-chess"};'), 'a trial page can be pointed at a service on this machine');
+  ok(/^refused: /.test(run(['--saves', 'none'])) && /^refused: /.test(run(['--saves', 'http://example.com', '--out', tmp])) && /^refused: /.test(run(['--saves', 'https://example.com/path', '--out', tmp])), 'dist/ is never a trial page, and a service is https with nothing after the host');
+  ok(fs.readFileSync(path.join(root, 'dist/index.html'), 'utf8') === page, 'and none of that touched dist/');
+  fs.rmSync(tmp, { recursive: true, force: true });
+}
 const bots = JSON.parse(botsText), files = fs.readdirSync(path.join(root, 'league/bots')).filter(f => f.endsWith('.js')).sort();
 ok(Object.keys(bots).sort().join() === files.join() && files.every(f => bots[f] === fs.readFileSync(path.join(root, 'league/bots', f), 'utf8')), 'the players on the page are the files of league/bots/, to the letter');
 

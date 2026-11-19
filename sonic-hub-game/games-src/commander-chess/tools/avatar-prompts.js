@@ -3,18 +3,14 @@
    Who she is (name, rank, age, uniform, cap, backdrop colours) comes from the campaign's own files; what she looks
    like and the words every prompt shares come from art/avatars.js. test/campaign.test.js fails when the file no
    longer says what the two say. */
-const fs = require('fs'), path = require('path'), vm = require('vm');
-const root = path.join(__dirname, '..');
+const fs = require('fs'), path = require('path'), { loadCampaign, root } = require('./campaign.js');
 const A = require(path.join(root, 'art/avatars.js'));
 
-/** the campaign, as the page loads it */
+/** the campaign, and who wears shoulder boards on her stand-in */
 function campaign() {
-  const ctx = vm.createContext({ console, localStorage: { getItem: () => null, setItem() {} } });
-  const files = fs.readdirSync(path.join(root, 'src/game')).filter(f => /^6\d-.*\.js$/.test(f)).sort();
-  vm.runInContext(files.map(f => fs.readFileSync(path.join(root, 'src/game', f), 'utf8')).join('\n') + '\nthis.C = { PLACES, WOMEN };', ctx);
   const src = fs.readFileSync(path.join(root, 'src/game/41-busts.js'), 'utf8'), senior = /const SENIOR = new Set\(\[([^\]]+)\]\)/.exec(src);
   if (!senior) throw new Error('41-busts.js no longer says who wears shoulder boards');
-  return Object.assign(ctx.C, { SENIOR: new Set(senior[1].split(',').map(s => s.trim().replace(/^'|'$/g, ''))) });
+  return Object.assign(loadCampaign('{ PLACES, WOMEN }'), { SENIOR: new Set(senior[1].split(',').map(s => s.trim().replace(/^'|'$/g, ''))) });
 }
 /** the prompt for one officer */
 function promptFor(w, SENIOR) {

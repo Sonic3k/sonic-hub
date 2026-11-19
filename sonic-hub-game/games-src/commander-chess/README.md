@@ -4,8 +4,9 @@ Cờ Tư Lệnh (by Nguyễn Quý Hải), by his own rules as he last set them o
 stations along it, and the officers posted there. Every officer is a computer player written by an AI model from the
 AI kit; they played a league among themselves, and their ratings, records and places on the List are what that
 league left. Points are won and lost by rating, promotions open the stations, and every officer has three cards
-to win. One self-contained page. RULES.md says where each rule comes from, and what was read and not followed;
-ROSTER.md says which player and which model every officer is.
+to win. The game has a few players of its own, as an old game had on the machine it was installed on, and keeps
+their games with the Sonic Hub games' saves service. One self-contained page. RULES.md says where each rule comes
+from, and what was read and not followed; ROSTER.md says which player and which model every officer is.
 
     npm run build     # src/ → dist/index.html
     npm test          # the rules (one check per rule, 11 positions from cotulenh.vn, random games), the campaign
@@ -14,6 +15,7 @@ ROSTER.md says which player and which model every officer is.
     npm start         # serve dist/ (Railway runs build, then this)
     npm run kit       # kit/ → kit-out/commander-chess-ai-kit.zip, for whoever writes a computer player of their own
     npm run roster    # ROSTER.md, from the campaign's own files
+    npm run avatars   # art/avatar-prompts.md: a portrait prompt for each officer
 
 ## What is where
 
@@ -25,7 +27,9 @@ ROSTER.md says which player and which model every officer is.
   it is first needed.
 - `src/engine/10-ai.js`, `20-players.js`: the game's own computer player. It is in the league as `bots/house.js`
   (`league/tools/build-house.js` makes that file from the two), so the page does not load them.
-- `src/game/60-campaign.js`: stations, ranks, points, what is saved. `61-halcyon.js` … `66-admiralty.js`: the officers
+- `src/game/10-save.js`: the saves service's own browser client, copied as it is (`sonic-hub`, `sonic-hub-game-api/client/sonic-save.js`).
+  `src/saves.json`: where that service is, and the name this game keeps its players under.
+- `src/game/60-campaign.js`: stations, ranks, points, who is playing and what is kept. `61-halcyon.js` … `66-admiralty.js`: the officers
   of each station, what they say, their cards.
 - `src/game/41-busts.js`, `42-scenes.js`, `43-chart.js`: the stand-in portraits, the view at each station, the chart
   of the coast. `40-art.js`, `50-board.js`, `70-screens.js`, `80-main.js`, `src/shell.html`: everything else seen.
@@ -34,6 +38,18 @@ ROSTER.md says which player and which model every officer is.
   computer player stays out of it, so that what comes back was written without seeing it.
 - `test/site-vectors.js`: what cotulenh.vn lit up for every piece in eleven positions of two games played there
   (plain moves, where it and the author agree).
+
+## Players
+
+The muster roll is the game's own: whoever opens the game, on any device, sees the same few names and picks theirs,
+and nobody signs in. A player's save is all that is theirs (points, best points, the record against each officer, who
+has been met, a game left on the table); it is written to the browser at once and sent to the service a moment later,
+so the game never waits and plays on with no connection. A game played on from another device stands; the device left
+behind is told and goes back to the title. The single save the first versions kept in the browser goes on as
+"Player 1". The sound is each device's own.
+
+    node build.mjs --saves none --out /tmp/cc                      # a page that keeps its players in the browser only
+    node build.mjs --saves http://127.0.0.1:3200 --out /tmp/cc     # with a saves service run on this machine
 
 ## Pictures
 

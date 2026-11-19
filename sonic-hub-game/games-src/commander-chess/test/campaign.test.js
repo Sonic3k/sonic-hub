@@ -2,22 +2,20 @@
    node test/campaign.test.js
    Every officer has to be one player of the league, seated once, with the rating, the record and the place on the
    List that the league left; everything she can be asked to say has to be there. Then the rules of the journey: what
-   a result is worth, what a promotion opens, and that nothing closes again. */
-const fs = require('fs'), path = require('path'), vm = require('vm');
+   a result is worth, what a promotion opens, and that nothing closes again. Then the players: each with a game of
+   their own, a save that is not trusted, and the one game the first versions kept carried over. */
+const fs = require('fs'), path = require('path');
 const root = path.join(__dirname, '..');
 let failed = 0, passed = 0;
 const ok = (cond, what) => { if (cond) passed++; else { failed++; console.log('FAIL  ' + what); } };
 
-/** the campaign as the page loads it, with nothing kept */
-function campaign(kept) {
-  const store = {}; if (kept) store['commander-chess.v1'] = JSON.stringify(kept);
-  const ctx = vm.createContext({ console, localStorage: { getItem: k => (k in store ? store[k] : null), setItem(k, v) { store[k] = String(v); } } });
-  const files = fs.readdirSync(path.join(root, 'src/game')).filter(f => /^6\d-.*\.js$/.test(f)).sort();
-  vm.runInContext(files.map(f => fs.readFileSync(path.join(root, 'src/game', f), 'utf8')).join('\n') +
-    '\nthis.C = { PLACES, WOMEN, RANKS, MODELS, SETUP, START_RATING, WIN_K, LOSS_K, FIRST, FLOOR, CARD_WINS, STORE, pointsFor, winWorth, scoreGame, rankFor, nextRank, myRank, said, placeOpen, isOpen, isNew, listPlace, ordinal, cardsWon, cardCount, womanById, placeById, recordOf, loadSave, freshSave, save: () => SAVE, set: s => { SAVE = s; } };', ctx);
-  ctx.C.store = store;
-  return ctx.C;
-}
+/** The campaign as the page loads it, in a browser of its own (tools/campaign.js). kept: what that browser holds
+ *  already ({ key: text }); the players are kept in the browser only, as on a page built with no saves service. */
+const { loadCampaign } = require('../tools/campaign.js');
+const campaign = kept => loadCampaign('{ PLACES, WOMEN, RANKS, MODELS, SETUP, START_RATING, WIN_K, LOSS_K, FIRST, FLOOR, CARD_WINS, LEGACY, SOUND, RULES, ROLL, SFX, pointsFor, winWorth, scoreGame, rankFor, nextRank, myRank, said, placeOpen, isOpen, isNew, listPlace, ordinal, cardsWon, cardCount, womanById, placeById, recordOf, loadSave, freshSave, readSave, takeUp, keep, newcomer, save: () => SAVE }', kept);
+/** the same, with someone signed on and being played */
+function playing(name = 'Tester') { const J = campaign(); J.loadSave(); J.ROLL.add(name, J.newcomer()); J.takeUp(); return J; }
+const MIRROR = 'sonic-save.commander-chess';                  // where the saves client keeps the players in the browser
 const C = campaign(), { PLACES, WOMEN, RANKS } = C;
 const standings = require(path.join(root, 'league/out/standings.json')).order, players = require(path.join(root, 'league/tools/players.js'));
 
@@ -81,13 +79,13 @@ ok(fine, 'a win pays 1 to WIN_K, a loss costs 0 to LOSS_K, and both go by how st
 
 /* ── a journey ── */
 {
-  const J = campaign(), S = () => J.save(), w = id => J.womanById(id);
+  const J = playing(), S = () => J.save(), w = id => J.womanById(id);
   ok(S().rating === J.START_RATING && S().peak === J.START_RATING && J.myRank() === 'Lieutenant' && J.listPlace() === 25, 'a new lieutenant: ' + S().rating + ' points, second from the bottom of the List');
   ok(PLACES.filter(J.placeOpen).map(p => p.id).join() === 'halcyon' && WOMEN.filter(J.isOpen).map(x => x.id).join() === 'pia,sol', 'at first: the home port, the ensign and the chief');
   ok(J.isNew(w('pia')) && !J.isNew(w('hana')), 'who has sat down and not been played is new');
   const worth = J.winWorth(w('sol')), a = J.scoreGame(w('sol'), 1);
   ok(a.delta === worth && a.first === J.FIRST && a.after === 600 + worth && a.newCards.join() === '0', 'a first win pays the bonus and her first card: +' + a.delta);
-  ok(JSON.parse(J.store[J.STORE]).rating === a.after, 'and it is kept');
+  ok(J.ROLL.current().data.rating === a.after && JSON.parse(J.store[MIRROR]).players[0].data.rating === a.after, 'and it is kept, with the player whose game it is');
   const b = J.scoreGame(w('sol'), 1);
   ok(b.first === 0 && b.delta === P(a.after, 814, 1) && !b.newCards.length, 'a second win pays no bonus: +' + b.delta);
   ok(a.promoted === 'Lieutenant Commander' || b.promoted === 'Lieutenant Commander', 'two wins over the chief make a Lieutenant Commander');
@@ -107,7 +105,7 @@ ok(fine, 'a win pays 1 to WIN_K, a loss costs 0 to LOSS_K, and both go by how st
   ok(draw.delta > 0 && J.recordOf('isolde').d === 1 && draw.first === 0, 'a draw with someone far stronger gains points');
 }
 { // up the whole route: everything opens, in order, and the top can be reached
-  const J = campaign(), S = () => J.save(), opened = [], sat = [];
+  const J = playing(), S = () => J.save(), opened = [], sat = [];
   let games = 0;
   for (; games < 4000 && !(WOMEN.every(J.isOpen) && J.recordOf('vasilisa').w); games++) {
     const open = WOMEN.filter(J.isOpen), next = open.reduce((b, x) => (J.winWorth(x) > J.winWorth(b) ? x : b));
@@ -122,17 +120,66 @@ ok(fine, 'a win pays 1 to WIN_K, a loss costs 0 to LOSS_K, and both go by how st
   for (const x of WOMEN) if (!J.recordOf(x.id).w) J.scoreGame(x, 1);
   ok(J.cardCount() >= WOMEN.length && !WOMEN.some(J.isNew), 'a card from everyone once everyone is beaten');
 }
-{ // what is kept comes back; a game kept under other rules does not
-  const J = campaign({ rating: 1180, peak: 1210, record: { pia: { w: 2, l: 0, d: 0 } }, met: {}, seen: {}, sound: false, side: 1, all: false, rules: 2, match: { w: 'pia', side: 0, rated: true, moves: [1, 2] } });
-  const s = J.loadSave();
-  ok(s.rating === 1180 && s.peak === 1210 && s.sound === false && s.record.pia.w === 2, 'points, record and settings come back');
-  ok(s.match === null && s.rules === 3, 'a game begun under the old rules is not gone back to');
-  ok(J.myRank() === 'Commodore' && J.listPlace() === 22, 'rank by best points, place on the List by points now');
-  const K = campaign({ rating: 900, peak: 900, record: {}, met: {}, seen: {}, sound: true, side: 0, all: false, rules: 3, match: { w: 'sol', side: 0, rated: true, seed: 5, moves: [] } });
-  ok(K.loadSave().match && K.save().match.seed === 5, 'a game begun under these rules is');
-  ok(campaign({ nonsense: true }).loadSave().rating === 600, 'something else under the same name is not taken for a save');
+{ // the roll: each player has a game of their own
+  const J = campaign(); J.loadSave();
+  ok(!J.ROLL.current() && J.takeUp() === false && J.save().rating === J.START_RATING, 'with nobody signed on, nobody is being played');
+  J.scoreGame(J.womanById('sol'), 1);
+  ok(!(MIRROR in J.store) || !JSON.parse(J.store[MIRROR]).players.length, 'and nothing is kept for nobody');
+  const a = J.ROLL.add('  Ngọc   Anh ', J.newcomer()); J.takeUp();
+  ok(a && a.name === 'Ngọc Anh' && J.ROLL.current().id === a.id && J.save().rating === J.START_RATING, 'a new name starts a new game: ' + (a && a.name));
+  J.scoreGame(J.womanById('sol'), 1); J.scoreGame(J.womanById('pia'), 1);
+  const first = J.save().rating;
+  const b = J.ROLL.add('Jun', J.newcomer()); J.takeUp();
+  ok(J.ROLL.players().length === 2 && J.save().rating === J.START_RATING && !J.recordOf('sol').w, 'a second player starts from the start');
+  J.scoreGame(J.womanById('sol'), 0);
+  J.save().match = { w: 'pia', side: 1, rated: true, seed: 77, moves: [] }; J.keep();
+  ok(J.ROLL.choose(a.id) && J.takeUp() && J.save().rating === first && J.recordOf('sol').w === 1 && J.recordOf('pia').w === 1 && J.save().match === null, 'the first player has their own points and record back');
+  ok(J.ROLL.choose(b.id) && J.takeUp() && J.recordOf('sol').l === 1 && J.save().match && J.save().match.seed === 77 && J.save().match.side === 1, 'and the second theirs, with the game left on the table');
+  ok(J.ROLL.rename(a.id, 'Anh') && J.ROLL.players()[0].name === 'Anh' && !J.ROLL.rename(a.id, '   '), 'a name can be changed, but not to nothing');
+  ok(J.ROLL.add('Third', J.newcomer()) && J.ROLL.add('Fourth', J.newcomer()) === null && J.ROLL.players().length === J.ROLL.max(), 'the roll holds so many names and no more');
+  const third = J.ROLL.current().id;
+  J.ROLL.remove(third); J.takeUp();
+  ok(J.ROLL.players().length === 2 && !J.ROLL.current() && J.save().rating === J.START_RATING, 'a player taken off the roll is gone, and nobody is being played until someone is picked');
+  // the page opened again in the same browser: whoever played last goes on
+  J.ROLL.choose(a.id);
+  const K = campaign(J.store); K.loadSave();
+  ok(K.ROLL.current() && K.ROLL.current().name === 'Anh' && K.save().rating === first && K.ROLL.players().length === 2, 'opened again, the game goes on as whoever played last');
 }
-ok(fs.existsSync(path.join(root, 'ROSTER.md')) && fs.readFileSync(path.join(root, 'ROSTER.md'), 'utf8') === require('../tools/roster.js').rosterText(), 'ROSTER.md says what the campaign says (node tools/roster.js writes it)');
+{ // what a save may hold is not trusted
+  const J = campaign(), R = J.readSave;
+  const fresh = JSON.stringify(J.freshSave());
+  ok([null, undefined, 7, 'x', [], {}].every(d => JSON.stringify(R(d)) === fresh), 'nothing, or something that is no save, reads as a fresh game');
+  const odd = R({ rating: -50, peak: 'high', record: { pia: { w: 2.7, l: -1, d: 'x' }, nobody: { w: 9 }, sol: null }, met: { pia: 1, ghost: true, sol: 0 }, side: 5, all: 'yes', rules: J.RULES, match: { w: 'ghost', side: 0, moves: [] } });
+  ok(odd.rating === J.FLOOR && odd.peak === J.FLOOR && JSON.stringify(odd.record) === '{"pia":{"w":2,"l":0,"d":0},"sol":{"w":0,"l":0,"d":0}}' && JSON.stringify(odd.met) === '{"pia":true}' && odd.side === 0 && odd.all === false && odd.match === null, 'what cannot be right is left out: ' + JSON.stringify(odd));
+  const m = { w: 'sol', side: 1, rated: 1, seed: 5.9, moves: [3, 4] };
+  ok(JSON.stringify(R({ rating: 900, peak: 800, rules: J.RULES, match: m })) === JSON.stringify(Object.assign(J.freshSave(), { rating: 900, peak: 900, match: { w: 'sol', side: 1, rated: true, seed: 5, moves: [3, 4] } })), 'a game left on the table is read back whole, and the best points are never below the points');
+  ok(R({ rating: 900, rules: J.RULES - 1, match: m }).match === null, 'a game begun under other rules is not gone back to');
+  ok(R({ rating: 900, rules: J.RULES, match: Object.assign({}, m, { moves: [3, 'x'] }) }).match === null && R({ rating: 900, rules: J.RULES, match: Object.assign({}, m, { side: 2 }) }).match === null, 'nor one whose moves or side are not what they should be');
+}
+{ // the one game the first versions kept goes on as a player of its own
+  const old = { rating: 1180, peak: 1210, record: { pia: { w: 2, l: 0, d: 0 } }, met: { pia: true }, seen: {}, sound: false, side: 1, all: false, rules: 3, match: { w: 'sol', side: 0, rated: true, seed: 5, moves: [] } };
+  const J = campaign({ 'commander-chess.v1': JSON.stringify(old) });
+  const s = J.loadSave(), me = J.ROLL.current();
+  ok(me && me.name === 'Player 1' && s.rating === 1180 && s.peak === 1210 && s.record.pia.w === 2 && s.side === 1 && s.match && s.match.seed === 5, 'points, record and the game on the table come along as Player 1');
+  ok(!(J.LEGACY in J.store) && J.SFX.on === false && J.store[J.SOUND] === 'off', 'the old save is gone from where it was, and the sound stays off on this device');
+  ok(J.myRank() === 'Commodore' && J.listPlace() === 22, 'rank by best points, place on the List by points now');
+  const again = campaign(J.store); again.loadSave();
+  ok(again.ROLL.players().length === 1 && again.save().rating === 1180 && again.SFX.on === false, 'opened again, there is still one of them');
+  const stale = campaign({ 'commander-chess.v1': JSON.stringify(Object.assign({}, old, { rules: 2 })) }); 
+  ok(stale.loadSave().match === null && stale.save().rating === 1180, 'a game begun under the old rules is not gone back to, the points are');
+  const unplayed = campaign({ 'commander-chess.v1': JSON.stringify(J.freshSave()) }); unplayed.loadSave();
+  ok(!unplayed.ROLL.players().length && !(unplayed.LEGACY in unplayed.store), 'a save nothing was played on makes no player');
+  const junk = campaign({ 'commander-chess.v1': '{"nonsense":tru' }); junk.loadSave();
+  ok(!junk.ROLL.players().length && junk.save().rating === 600, 'something else under the same name is not taken for a save');
+  // with no room on the roll, the old save waits where it is
+  const full = campaign(); full.loadSave(); for (const n of ['A', 'B', 'C']) full.ROLL.add(n, full.newcomer());
+  full.store['commander-chess.v1'] = JSON.stringify(old);
+  const F = campaign(full.store); F.loadSave();
+  ok(F.ROLL.players().length === 3 && F.LEGACY in F.store, 'with the roll full, the old save waits where it is');
+  F.ROLL.remove(F.ROLL.players()[0].id);
+  const G2 = campaign(F.store); G2.loadSave();
+  ok(G2.ROLL.players().length === 3 && G2.ROLL.players().some(p => p.name === 'Player 1' && p.data.rating === 1180) && !(G2.LEGACY in G2.store), 'and comes along once there is room');
+}
 { // a portrait prompt for everyone, and the file that holds them says what the campaign says
   let all = [], err = '';
   try { all = require('../tools/avatar-prompts.js').prompts().flatMap(p => p.officers); } catch (e) { err = e.message; }

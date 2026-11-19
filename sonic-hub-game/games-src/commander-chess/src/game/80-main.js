@@ -6,11 +6,12 @@ const MIN_THINK = 700;                                        // she never answe
  *  COMMIT included); seen: how often each position has come up; marks: where in `moves` each of the player's turns began;
  *  snap: the position before a deployment the player has begun, to go back to. */
 const G = { screen: 'title', w: null, rated: true, side: RED, seed: 1, S: null, moves: [], seen: {}, legal: [], sel: -1, grp: 0, byTo: null, choice: null, snap: null,
-  busy: true, token: 0, marks: [], taken: [[], []], turns: 0, saidAt: -9, repeat: false, note: '', drag: null, talk: [], talkAt: 0, lines: [], cur: [] };
+  busy: true, token: 0, marks: [], taken: [[], []], turns: 0, saidAt: -9, repeat: false, note: '', drag: null, talk: [], talkAt: 0, lines: [], cur: [],
+  place: '', roll: false, edit: '', sure: 0 };   // place: the station being looked at. The roll: is it open, whose line is being changed, has removing been asked once
 
 function show(screen, html) { G.screen = screen; document.body.dataset.screen = screen; $('#app').innerHTML = html; window.scrollTo(0, 0); }
-function goTitle() { G.token++; show('title', screenTitle()); }
-function goChart() { G.token++; show('chart', screenChart()); fitChart(); fillChart(); }
+function goTitle(note) { G.token++; show('title', screenTitle(note)); }
+function goChart() { if (!ROLL.current()) return openRoll(); G.token++; show('chart', screenChart()); fitChart(); fillChart(); }
 /** the chart's sheet takes the largest size that fits whole inside the frame; the sea around it is the picture's own */
 function fitChart() {
   const c = $('.chart'), m = c && c.querySelector('.map'); if (!m) return;
@@ -33,7 +34,7 @@ function fillChart() {
   if (CHART_URL[k]) put(); else setTimeout(put, 30);
 }
 function goList() { G.token++; closeDialog(); show('list', screenList()); }
-function goPlace(id) { G.token++; closeDialog(); show('place', screenPlace(placeById(id))); }
+function goPlace(id) { G.token++; closeDialog(); G.place = id; show('place', screenPlace(placeById(id))); }
 function goCards() { G.token++; show('cards', screenCards()); }
 function goVersus(w, rated) {
   G.token++; closeDialog(); G.w = w; G.rated = rated;
@@ -42,6 +43,45 @@ function goVersus(w, rated) {
   showTalk();
 }
 function showTalk() { $('#talk-text').textContent = G.talk[G.talkAt]; $('#talk-more').hidden = G.talkAt >= G.talk.length - 1; }
+
+/* ── the muster roll ── */
+function renderRoll() { openDialog(rollHTML(), 'roll'); G.roll = true; const f = $('#overlay .roll-form[data-form=rename] .field'); if (f) { f.focus({ preventScroll: true }); f.select(); } }
+function openRoll() { G.edit = ''; G.sure = 0; renderRoll(); ROLL.refresh(); }   // whoever signed on from somewhere else meanwhile is read in
+/** on as the player just picked, back at the title, which says who is playing and what they left */
+function enter() { takeUp(); closeDialog(); goTitle(); }
+/** a player's line off the roll, with their points and cards: asked twice */
+function removePlayer(id) {
+  // the first time only the button changes its words, for a few seconds: a name being typed beside it is left alone
+  const ask = () => $('#overlay [data-act=roll-remove]');
+  if (!G.sure) { G.sure = 1; if (ask()) ask().textContent = 'Sure? Points and cards go too'; setTimeout(() => { if (G.sure && G.roll && G.edit === id) { G.sure = 0; if (ask()) ask().textContent = 'Remove'; } }, 5000); return; }
+  ROLL.remove(id); G.edit = ''; G.sure = 0; takeUp();
+  if (G.screen === 'title') show('title', screenTitle());
+  renderRoll();
+}
+/** the screen being looked at, drawn again from what is now kept */
+function redraw() {
+  if (G.screen === 'chart') goChart(); else if (G.screen === 'place') goPlace(G.place); else if (G.screen === 'list') goList(); else if (G.screen === 'cards') goCards(); else show('title', screenTitle());
+}
+/** The saves have something to say (10-save.js): the list of players changed, or what is kept; or the game of the
+ *  player being played is now another one, because it was played on from another device or the player was removed. */
+function savesChanged(what) {
+  if (what === 'replaced') {
+    const open = G.roll;
+    takeUp();
+    if (!ROLL.current()) { G.token++; closeDialog(); goTitle(); return openRoll(); }
+    // a game at the table is not played on from two places: this one goes back to the title, which offers the game as it now stands
+    if (G.screen === 'match' || G.screen === 'versus') { closeDialog(); goTitle('Taken up from where it was left elsewhere.'); }
+    else { redraw(); if (open) renderRoll(); }
+    return;
+  }
+  if (G.roll) {
+    // someone typing a name is not interrupted: only the line under the names is brought up to date
+    const typing = document.activeElement && document.activeElement.closest('#overlay form'), note = $('#overlay .roll-note');
+    if (what === 'status' || typing) { if (note) note.textContent = rollNote(); } else renderRoll();
+  }
+  if (G.screen === 'chart') { const note = $('.kept-note'); if (note) note.textContent = keptNote(); }
+  else if (G.screen === 'title' && what === 'players') show('title', screenTitle());   // a name changed elsewhere: the roll, if it is open, lies over the title and is not touched by this
+}
 
 /* ── a match ── */
 const canPlay = () => G.screen === 'match' && !G.busy && !G.S.over && G.S.turn === G.side;
@@ -319,13 +359,18 @@ function wire() {
       case 'place': goPlace(id); break;
       case 'cards': goCards(); break;
       case 'list': goList(); break;
+      case 'roll': SFX.play('tick'); openRoll(); break;
+      case 'roll-pick': SFX.play('tick'); if (ROLL.choose(id)) enter(); else renderRoll(); break;
+      case 'roll-edit': G.edit = id; G.sure = 0; renderRoll(); break;
+      case 'roll-cancel': G.edit = ''; G.sure = 0; renderRoll(); break;
+      case 'roll-remove': removePlayer(id); break;
       case 'locked': openDialog(placeNote(placeById(id))); SFX.play('tick'); break;
       case 'challenge': goVersus(womanById(id), true); break;
       case 'spar': goVersus(womanById(id), false); break;
       case 'talk': if (G.talkAt < G.talk.length - 1) { G.talkAt++; showTalk(); SFX.play('tick'); } break;
       case 'side': SAVE.side = +act.dataset.val; keep(); for (const b of document.querySelectorAll('.side-pick')) b.setAttribute('aria-checked', String(+b.dataset.val === SAVE.side)); SFX.play('tick'); break;
       case 'begin': startMatch(G.w, G.rated, SAVE.side); break;
-      case 'resume': { const m = SAVE.match, w = m && womanById(m.w); if (w) startMatch(w, m.rated, m.side, m.moves, m.seed); else goChart(); break; }
+      case 'resume': { const m = ROLL.current() && SAVE.match, w = m && womanById(m.w); if (w) startMatch(w, m.rated, m.side, m.moves, m.seed); else goChart(); break; }
       case 'mode': if (G.choice) humanMove(G.choice[+act.dataset.i]); break;
       case 'group': select(G.sel, +act.dataset.g); SFX.play('pick'); break;
       case 'unpick': if (G.sel >= 0) select(G.sel, G.grp); break;
@@ -339,7 +384,7 @@ function wire() {
       case 'resign': closeDialog(); finish({ winner: 1 - G.side, why: 'resign' }); break;
       case 'rules': openDialog(rulesHTML(), 'wide'); break;
       case 'close': closeDialog(); break;
-      case 'sound': SFX.on = !SFX.on; SAVE.sound = SFX.on; keep(); for (const b of document.querySelectorAll('[data-act=sound]')) { b.textContent = SFX.on ? 'Sound on' : 'Sound off'; b.setAttribute('aria-pressed', String(SFX.on)); } SFX.play('tick'); break;
+      case 'sound': SFX.on = !SFX.on; keepSound(); for (const b of document.querySelectorAll('[data-act=sound]')) { b.textContent = SFX.on ? 'Sound on' : 'Sound off'; b.setAttribute('aria-pressed', String(SFX.on)); } SFX.play('tick'); break;
       case 'all': SAVE.all = act.checked; keep(); goChart(); break;
     }
   });
@@ -348,12 +393,30 @@ function wire() {
     if ((ev.key === 'Enter' || ev.key === ' ') && ev.target.dataset && ev.target.dataset.act === 'talk') { ev.preventDefault(); ev.target.click(); }
   });
   $('#overlay').addEventListener('click', ev => { if (ev.target.id === 'overlay' && !$('#overlay .result')) closeDialog(); });
+  // the roll's two forms: a new name, and a name changed
+  document.addEventListener('submit', ev => {
+    const form = ev.target.closest('form[data-form]');
+    if (!form) return;
+    ev.preventDefault();
+    const field = form.querySelector('.field'), typed = field.value;
+    if (form.dataset.form === 'new') {
+      if (!typed.trim()) return field.focus();
+      SFX.init();
+      if (ROLL.add(typed, newcomer())) { SFX.play('tick'); takeUp(); closeDialog(); goChart(); } else renderRoll();   // a new name goes straight to the chart
+    } else if (form.dataset.form === 'rename') {
+      if (!ROLL.rename(form.dataset.id, typed)) return field.focus();
+      G.edit = ''; G.sure = 0;
+      if (G.screen === 'title') show('title', screenTitle());
+      renderRoll();
+    }
+  });
 }
 
 function boot() {
-  loadSave(); SFX.on = SAVE.sound !== false;
+  loadSave();
   $('#defs').innerHTML = '<defs>' + DEFS + '</defs>';
   Brain.start(); wire(); goTitle();
+  if (!ROLL.current()) openRoll();                            // nobody is being played yet: the roll comes first
   window.addEventListener('resize', () => { const c = $('.chart'); if (G.screen === 'chart' && c && c.dataset.tall !== (TALL.matches ? '1' : '0')) goChart(); else fitChart(); });
   // a picture of hers that will not load gives way to her stand-in
   document.addEventListener('error', ev => { const el = ev.target; if (el && el.tagName === 'IMG' && el.dataset && el.dataset.bust) { const w = womanById(el.dataset.bust); delete el.dataset.bust; if (w) el.src = bustURL(w); } }, true);
