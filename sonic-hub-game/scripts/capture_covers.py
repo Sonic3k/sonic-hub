@@ -25,7 +25,8 @@ ROOT = os.path.normpath(os.path.join(os.path.dirname(os.path.abspath(__file__)),
 PUBLIC, OUT = os.path.join(ROOT, 'public'), os.path.join(ROOT, 'public', 'covers')
 W, H = 1280, 800
 
-# Steps: key:<Key> | hold:<Key>:<ms> | click:<css> | text:<visible text> | wait:<ms> | waitsel:<css>.  ls = what the
+# Steps: key:<Key> | hold:<Key>:<ms> | click:<css> | text:<visible text> | wait:<ms> | waitsel:<css> | js:<script the
+# page runs>.  ls = what the
 # browser already holds for the game when the screen of play is taken (a save that opens later levels), so that picture
 # is not always level 1; the title screen is taken in a browser that has never seen the game. title = steps before the
 # title screen is taken, for a game whose title screen moves (Penned In and Keep It Down play themselves there: wait
@@ -90,6 +91,19 @@ GAMES = {
             'vs': {'hanh': {'w': 5, 'l': 0, 'd': 0}, 'thu': {'w': 5, 'l': 1, 'd': 0}, 'diep': {'w': 5, 'l': 2, 'd': 0}, 'ngan': {'w': 4, 'l': 3, 'd': 0}, 'lan': {'w': 1, 'l': 2, 'd': 0}},
             'match': {'opp': 'lan', 'rated': True, 'side': 0, 'seed': 20261119, 'moves': [112,96,82,84,114,97,95,98,100,111,128,142,81,139,125,109,94,140,141,107,108,123,91,136,137,169,80,154,184,171,187,79,65]}}),
         play=['waitsel:#said:not(:empty)', 'wait:1700']),
+    # on its own site, with its players at the saves service, like Caro. The title picture is the lake as a player
+    # finds it on coming in. The picture of play goes back to a game for points against the fan painter; once she has
+    # said her word a Horse is picked up, so the points it may go to are showing
+    'xiangqi': dict(
+        site='https://sonic-xiangqi-production.up.railway.app/',
+        shut=[r'/games/[^/]+/players'],
+        title_ls=kept_player('xiangqi', 'Vân', {'points': 1236, 'peak': 1262, 'match': None,
+            'vs': {'mei': {'w': 5, 'l': 0, 'd': 0}, 'lan': {'w': 5, 'l': 1, 'd': 0}, 'lian': {'w': 3, 'l': 2, 'd': 0}}}),
+        title=['waitsel:#rooms .tile', 'wait:400'],
+        ls=kept_player('xiangqi', 'Vân', {'points': 1236, 'peak': 1262,
+            'vs': {'mei': {'w': 5, 'l': 0, 'd': 0}, 'lan': {'w': 5, 'l': 1, 'd': 0}, 'lian': {'w': 3, 'l': 2, 'd': 0}},
+            'match': {'opp': 'yue', 'rated': True, 'side': 0, 'moves': [2585,8384,2305,8146,7059,8646,3079,8920,2836,9537,8247,8394,8640,8659,5409,6588,6570,6595,128,6072,8193,8641,8384,11353,6081,9139,4635,2136,4754,1936,5272,1423]}}),
+        play=['waitsel:#said:not(:empty)', 'wait:1500', 'js:press(sqOf("f5"))', 'wait:500']),
     # its title screen plays the game by itself: wait for a few moves. The picture of play goes back to a game against
     # the computer in its middle, with the person to move and every square a disc can go on marked
     'wax-and-wane': dict(
@@ -118,6 +132,7 @@ def run(pg, steps):
         elif k == 'wait': pg.wait_for_timeout(int(v))
         elif k == 'click': pg.click(v, timeout=5000)
         elif k == 'waitsel': pg.wait_for_selector(v, timeout=20000)
+        elif k == 'js': pg.evaluate(v)
         elif k == 'text': pg.get_by_text(v, exact=False).first.click(timeout=5000)
         elif k == 'hold':
             key, ms = v.split(':'); pg.keyboard.down(key); pg.wait_for_timeout(int(ms)); pg.keyboard.up(key)
