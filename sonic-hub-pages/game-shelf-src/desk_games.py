@@ -112,9 +112,15 @@ WIN_GAMES = [
     ("Jacks", "jacks"), ("LifeGenesis", "lifegen"), ("Pegged", "pegged"), ("Rattler Race", "rattler"), ("Sticks", "sticks"),
     ("TicTactics", "tictactics"), ("WordZap", "wordzap"),
 ]
+# a Win Game that was not on PC Win 98 from the machine's first day: package → (day, note)
+# Fences (said 20/11/2026): "probably this date, it cannot go from 98" — the day FENCES.EXE is dated on his drive
+WIN_GAMES_FROM = {
+    "fences": ("2001-10-19", "Thư mục [Win Games] trên ổ D:; file FENCES.EXE ghi ngày 19/10/2001, theo anh khả năng có từ ngày này, không thể từ năm 98"),
+}
 for dev in ("pc-old", "pc-xp"):
     for label, pkg in WIN_GAMES:
-        START.append(("win-games", dev, label, pkg, f"exe:{pkg}", None, None, "Thư mục [Win Games] trên ổ D:"))
+        day, note = WIN_GAMES_FROM.get(pkg, (None, None)) if dev == "pc-old" else (None, None)
+        START.append(("win-games", dev, label, pkg, f"exe:{pkg}", day, None, note or "Thư mục [Win Games] trên ổ D:"))
 
 # Games that are only their icon (his rule: PopCap and the heavier games need their shortcut, not to play): the card
 # of the game when the shelf has it, else what Windows says of a shortcut whose program is gone.

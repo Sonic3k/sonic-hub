@@ -380,8 +380,8 @@
   "game": "fences",
   "caption": "Fences khi vừa mở. Chụp lại ngày 11/11/2026, chạy từ thư mục game trên ổ D: của anh.",
   "event": {
-   "date": "2001",
-   "precision": "YEAR",
+   "date": "2001-10-19",
+   "precision": "DAY",
    "approx": true
   }
  },
