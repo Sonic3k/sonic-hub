@@ -41,6 +41,14 @@ def kept_player(game, name, data):
         {'id': pid, 'name': name, 'data': data, 'version': 1, 'dirty': False, 'playedAt': '2026-11-19T08:00:00.000Z', 'full': False}]}}
 
 
+def lines_kept(at, game=None):
+    """What a browser holds for Line 98: Bảy Sắc part of the way along its road: where the traveller stands, each
+    place's best score, and (game) the game left unfinished at the place he stands on. The page is told to speak
+    Vietnamese, as its name does, whatever the browser speaks."""
+    best = {'home': 268, 'lantern': 312, 'market': 140, 'school': 104, 'pond': 520, 'sea': 85}
+    places = {k: {'best': v, 'games': 4, 'game': game if game and k == at else None} for k, v in best.items()}
+    return {'line-98-bay-sac.v1': {'v': 1, 'lang': 'vi', 'sound': True, 'show': 'both', 'marks': False, 'at': at, 'places': places}}
+
 GAMES = {
     'muop': dict(
         ls={'muop-12-den.v1': {'v': 1, 'unlocked': 12, 'abilities': {'wall': True, 'dash': True}, 'levels': {}, 'sfx': False, 'music': False}},
@@ -112,6 +120,24 @@ GAMES = {
             'game': {'moves': [44,29,20,43,30,22,38,31,42,51,21,37,45,34,39,47,23,15,19,26,25,46,58,12,11,53],
                      'seat': [{'kind': 'human'}, {'kind': 'bot', 'bot': 'house', 'level': 'gibbous', 'name': 'The computer', 'label': 'Computer'}]}}},
         play=['waitsel:.cell.can', 'wait:900']),
+    # its title picture is the map, as a player finds it part of the way along the road: stars won at the first places,
+    # the rainbow half lit. The picture of play goes back to a game at the lantern street with a row of stars one short,
+    # picks the lantern that would fill it and points at the gap, so the way it would take is showing
+    'line-98-bay-sac': dict(
+        title_ls=lines_kept('pond'),
+        title=['wait:1500'],
+        ls=lines_kept('lantern', {'score': 187, 'moves': 64, 'back': None, 'time': 412, 'was': 312, 'shown': True,
+            'next': [{'c': 0, 'at': 34}, {'c': 3, 'at': 75}, {'c': 5, 'at': 6}],
+            'board': [0, -1, -1, 6, -1, -1, -1, -1, -1,
+                 -1, 0, -1, -1, 1, -1, 4, -1, -1,
+                 -1, -1, 3, -1, 0, -1, -1, 1, -1,
+                 3, -1, -1, -1, -1, 5, -1, -1, -1,
+                 -1, 2, 2, 2, -1, 2, -1, -1, -1,
+                 4, -1, -1, 6, -1, -1, -1, 6, -1,
+                 -1, 1, -1, -1, 2, -1, 3, -1, -1,
+                 -1, -1, -1, 5, -1, -1, 2, -1, 0,
+                 -1, 6, -1, -1, -1, 4, -1, -1, -1]}),
+        play=['click:#tk-go', 'wait:1700', 'js:L98.press(58)', 'wait:150', 'js:L98.table.point(40)', 'wait:520']),
 }
 
 

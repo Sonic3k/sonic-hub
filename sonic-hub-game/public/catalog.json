@@ -18,6 +18,14 @@
       "shots": ["title", "play"], "play": "/games/tim-4"
     },
     {
+      "key": "line-98-bay-sac", "title": "Line 98: Bảy Sắc", "alt": ["Line 98", "Lines 98", "Lines98", "Color Lines", "Bay Sac", "Bảy Sắc", "Seven Colours"],
+      "lang": "vi", "group": "puzzle", "sub": "match", "machine": "web", "year": 2026, "tags": ["originals"],
+      "players": 1, "inputs": ["mouse", "touch", "keyboard"], "maker": "Sonic Hub", "added": "2026-11-20",
+      "kind": "Five-in-a-line puzzle, 1 player",
+      "blurb": "Lines 98, the game of the family computer, by its own rules: move a ball along free squares, put five of a colour in a line and they are gone, and three more come up after every move that takes nothing. It is played in painted places chosen from a map, a land for each colour of ball, where the balls are lanterns, fruit, marbles or planets and move as those do. The rules are the same in every place. In Vietnamese or English.",
+      "shots": ["title", "play"], "play": "/games/line-98-bay-sac"
+    },
+    {
       "key": "medieval-mayhem-2", "title": "Medieval Mayhem II", "alt": ["Medieval Mayhem 2", "MM2", "Civ Clash"],
       "lang": "en", "group": "cards", "sub": "card-battle", "machine": "web", "year": 2026, "tags": ["originals"],
       "players": 1, "ai": 3, "inputs": ["mouse", "touch"], "maker": "Sonic Hub", "added": "2026-10-09", "highlight": true,
