@@ -15,6 +15,7 @@ the name of each file and the id it got are kept here (uploads.json, under "priv
 
   python3 upload_shots.py /mnt/user-data/uploads/Games      (needs pillow, requests)
   python3 upload_shots.py --private <folder>                only the captures of that folder
+  python3 upload_shots.py --only captures/<file>.png …      only those captures (the others keep what the hub has)
 """
 import io
 import json
@@ -83,7 +84,7 @@ def album():
     return r.json()["id"]
 
 
-def main(root, private=None):
+def main(root, private=None, only=None):
     col = album()
     store = os.path.join(HERE, "uploads.json")
     done = {u["file"]: u for u in json.load(open(store))} if os.path.exists(store) else {}
@@ -107,7 +108,7 @@ def main(root, private=None):
         print(game, m["id"], "duplicate" if out.get("duplicate") else "new")
         return m["id"]
 
-    for rel, mtime, game, caption in ([] if private else SHOTS):
+    for rel, mtime, game, caption in ([] if private or only else SHOTS):
         if rel in done:
             continue
         path = os.path.join(root, rel)
@@ -118,6 +119,10 @@ def main(root, private=None):
     if private:
         captures = [("private/" + c["file"], os.path.join(private, c["file"]), c)
                     for c in json.load(open(os.path.join(private, "captures.json"), encoding="utf-8"))]
+    if only:
+        if only - {rel for rel, _, _ in captures}:
+            sys.exit("no such capture: " + ", ".join(sorted(only - {rel for rel, _, _ in captures})))
+        captures = [c for c in captures if c[0] in only]
     for rel, path, c in captures:   # a capture keeps the day it was taken as its file date; the moment it shows is its event date
         mid = done[rel]["mediaId"] if rel in done else send(rel, path, int(os.path.getmtime(path) * 1000), c["game"])
         if mid:
@@ -128,5 +133,7 @@ def main(root, private=None):
 if __name__ == "__main__":
     if sys.argv[1] == "--private":
         main(None, sys.argv[2])
+    elif sys.argv[1] == "--only":
+        main(None, only=set(sys.argv[2:]))
     else:
         main(sys.argv[1])

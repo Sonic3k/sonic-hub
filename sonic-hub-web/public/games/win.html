@@ -7,8 +7,9 @@
 <!-- A Windows game (Windows 3.1 or 9x) in Boxedwine: Wine and an x86 machine in WebAssembly, run in this page. The game
      windows of Sonic Hub open it in a frame: ?rt=<the hub's /api/game-runtime/>&zip=<the game's folder, zipped>
      &dir=<its folder in the zip>&exe=<program, from that folder>[&res=640x480][&bpp=8][&win=FILE.DAT,…: files of its
-     folder that it wants in the Windows directory, put there before it starts][&arg=<what it is started with>, once
-     for each].
+     folder that it wants in the Windows directory, put there before it starts][&reg=FILE.REG,…: files of its folder
+     with what it had written into the registry, put into Wine's registry before it starts][&arg=<what it is started
+     with>, once for each].
      Boxedwine's engine (the 2020 web build of boxedwine.org) and the Wine files it starts from (Wine 1.7.55, cut down
      to what his games use) come from the hub: /api/game-runtime/<name>.
      Wine draws its own desktop with the game's window on it; only that window is shown, without Wine's title bar (the
@@ -31,6 +32,7 @@
   const ENGINE = 'boxedwine-2020', ROOT = 'winroot-v1.zip';
   const ZIP = Q.get('zip') || '', DIR = Q.get('dir') || '', EXE = (Q.get('exe') || '').replace(/\\/g, '/'), RES = Q.get('res');
   const BPP = Q.get('bpp'), TO_WINDOWS = (Q.get('win') || '').split(',').filter(n => /^[\w.-]+$/.test(n));
+  const TO_REGISTRY = (Q.get('reg') || '').split(',').filter(n => /^[\w.-]+$/.test(n));
   /* what the program is started with. After Dark Games takes the rest of its command line as the game's file, quotes
      and all, so "Rodger Dodger.adz" comes as two words and reaches it unquoted */
   const ARGS = Q.getAll('arg');
@@ -58,6 +60,29 @@
     return a.concat(['-w', work, '/bin/wine', EXE.slice(cut + 1)], ARGS);
   }
 
+  /* Nothing a game writes outlasts its window here, the registry included: a game that kept a choice there (Lines 98
+     its skin) starts each time as on its first day. What it had there on his machine comes as a regedit file (REGEDIT4)
+     of its folder; its keys go to the end of the files Wine reads its registry from when it starts (system.reg for
+     HKEY_LOCAL_MACHINE, user.reg for HKEY_CURRENT_USER), which write a key the same way but for its name: without the
+     hive, its backslashes doubled, the time it was written after it. */
+  function toRegistry(text) {
+    const files = { HKEY_LOCAL_MACHINE: 'system.reg', HKEY_CURRENT_USER: 'user.reg' }, add = {}, now = Math.floor(Date.now() / 1000);
+    let lines = null;
+    for (const line of text.split(/\r?\n/)) {
+      const key = /^\[(HKEY_[A-Z_]+)\\(.+)\]\s*$/.exec(line);
+      if (key) lines = files[key[1]] ? (add[key[1]] = add[key[1]] || []) : null;
+      if (key && lines) lines.push('', '[' + key[2].replace(/\\/g, '\\\\') + '] ' + now);
+      else if (!key && lines && line.trim() && !line.startsWith(';')) lines.push(line);
+    }
+    for (const hive in add) {
+      const path = '/root/base/home/username/.wine/' + files[hive];
+      const had = FS.readFile(path), more = new TextEncoder().encode(add[hive].join('\n') + '\n');
+      const all = new Uint8Array(had.length + more.length);
+      all.set(had); all.set(more, had.length);
+      FS.writeFile(path, all);
+    }
+  }
+
   /* the file systems, as Boxedwine's own page builds them: each zip read-only under a layer that takes what is written */
   function setup() {
     Module.addRunDependency('win-fs');
@@ -81,6 +106,9 @@
                 /* a game that keeps a file in C:\\WINDOWS (FujiGolf's course) finds it there, as on his machine */
                 for (const n of TO_WINDOWS) {
                   try { FS.writeFile('/root/base/home/username/.wine/drive_c/windows/' + n, FS.readFile('/root/files/' + (DIR ? DIR + '/' : '') + n)); } catch { /* it will ask, as before */ }
+                }
+                for (const n of TO_REGISTRY) {
+                  try { toRegistry(new TextDecoder('latin1').decode(FS.readFile('/root/files/' + (DIR ? DIR + '/' : '') + n))); } catch { /* it starts as on its first day */ }
                 }
                 for (const a of args()) Module.arguments.push(a);
                 Module.removeRunDependency('win-fs');

@@ -98,10 +98,13 @@ MADE = {"school-nc": (2002, 9, 1, 8, 0, 0), "school-cch": (2002, 9, 1, 8, 0, 0)}
 # (made/school-cch), which puts it back when the game ends.
 SPEED = {"cch": "fixed 20000"}
 # what a Windows game needs besides its program: files of its folder it wants in C:\\WINDOWS (win.html puts them
-# there), what it is started with
+# there), what it is started with, what it had written into the registry (a regedit file of its folder, which win.html
+# puts into Wine's registry: nothing a game writes there outlasts its window)
 WIN_OPTIONS = {"fujigolf": {"win": "FUJIGOLF.DAT"},
                # After Dark Games is started with the game to open
-               "rodger-dodger": {"arg": "Rodger Dodger.adz"}}
+               "rodger-dodger": {"arg": "Rodger Dodger.adz"},
+               # Lines 98 keeps the skin it was left on in the registry
+               "lines98-fruit": {"reg": "fruit.reg"}}
 
 # A DOS prompt with a drive C: of its own: the computer room of his school, where the games were started by typing.
 # key, game it is kept under, title, {folder on its C: → the folder it comes from (see source()), or several},
@@ -214,7 +217,38 @@ WIN_FILES = {
     # engine, the game and the After Dark module it is built on, the default game the program looks for, and in data\
     # their pictures and sounds (the frame's, the default's, Rodger Dodger's)
     "rodger-dodger": ("/mnt/user-data/uploads/Games/_incoming/after-dark-games/rodger-dodger-src.zip", "", "adg", []),
+    # Lines 98 with the Fruit skin (see lines98_fruit below): Lines 98 v5.0 as his bot took it from the Internet Archive
+    # (item lines98v50) and he uploaded it on 20/11/2026
+    "lines98-fruit": ("/mnt/user-data/uploads/1a978bc5-lines98-fruit.zip", "Lines98-v50/", "lines98-fruit", []),
 }
+
+
+def lines98_fruit(zi):
+    """Lines 98 as PC Win 98 had it from about 2002: left on the Fruit skin (FruitSkin 1.0, © 1998 ASN).
+
+    The build he found again (lines98, of 08/1998) cannot read that skin, which comes as a RAR archive; Lines 98 v5.0
+    (SorcererSoft, 08/02/2004) can, and stands in for whichever build the machine had by then. It is the unregistered
+    shareware as it came, so it opens on its reminder (Continue). Out of its folder go his bot's guide and screenshot
+    and the other ten skins (he remembers this one; one of the others is made of photographs of people). Made here:
+      lang.txt    what its first start writes once a language is picked (English), so it does not ask each time
+      fruit.skn   the same skin with its bitmaps uncompressed, which the machines' Wine draws whole (skn.py)
+      fruit.reg   the choice of that skin as the game keeps it — the default value of the key Skin, not a value named
+                  Skin: it reads it with RegQueryValueA — dated the day the skin's time starts on that machine
+    → (names of the folder left out, {name: (bytes, date)})"""
+    import skn
+    drop = WIN_FILES["lines98-fruit"][1]
+    names = [n[len(drop):] for n in zi.namelist() if n.startswith(drop)]
+    out = {n for n in names if n in ("HUONG-DAN.txt", "man-hinh-fruit.png") or (n.endswith(".skn") and n not in ("lines98.skn", "fruit.skn"))}
+    english, fruit = zi.getinfo(drop + "english.txt"), zi.getinfo(drop + "fruit.skn")
+    reg = 'REGEDIT4\r\n\r\n[HKEY_LOCAL_MACHINE\\SOFTWARE\\SORCERER\\Lines98\\Skin]\r\n@="fruit.skn"\r\n'
+    return out, {"lang.txt": (zi.read(english), english.date_time),
+                 "fruit.skn": (skn.plain(zi.read(fruit)), fruit.date_time),
+                 "fruit.reg": (reg.encode("ascii"), (2002, 1, 1, 0, 0, 0))}
+
+
+# a package whose zip is not just its folder: package → what tells, from the folder's zip, which files are left out
+# and which are made here (they take the place of a file of the same name)
+WIN_MADE = {"lines98-fruit": lines98_fruit}
 
 # key, game, title, zip (another package's file; None = its own), program, screen (None = 800x600), portal, note
 WG = "wingames"
@@ -253,6 +287,10 @@ WIN = [
     ("s3k", "sonic-3-knuckles", "Sonic & Knuckles Collection", None, "SONIC3K.EXE", None, True,
      "Bản PC của anh, kèm file lưu SONIC3K.BIN ngày 17/03/2014; mở lên nó hỏi đĩa CD như hồi đó, bấm OK là vào game"),
     ("lines98", "lines-98", "Lines 98", None, "lines98.exe", None, False, "Bản gốc anh tìm lại được (narod.ru, qua Wayback Machine)"),
+    ("lines98-fruit", "lines-98", "Lines 98 (Fruit)", None, "lines98.exe", None, False,
+     "Lines 98 v5.0 (SorcererSoft, 02/2004) mở sẵn bộ skin Fruit (FruitSkin 1.0 của ASN), bot của anh lấy ngày 20/11/2026 từ Internet "
+     "Archive. Bản gốc năm 1998 không đọc được skin này nên bản 5.0 thay cho bản máy nhà dùng hồi đó; là bản chưa đăng ký, mở lên "
+     "có bảng nhắc, bấm Continue là vào chơi"),
     ("pikachu", "pikachu", "Pikachu (Kawai 2003)", None, "Kawai2003.exe", None, False,
      "Kawai 2003 của CHEN PROGRAM STUDY (Đài Loan), chạy cùng Visual Basic 5 runtime của Microsoft"),
     ("pinball", "space-cadet-pinball", "3D Pinball for Windows – Space Cadet", None, "PINBALL.EXE", None, False,
@@ -337,24 +375,29 @@ def build_flash(src, out):
 
 def build_win(out, only=None):
     """the Windows games' zips (all, or those keys): each folder under one top folder, every file with the date it has
-    on his drive"""
+    on his drive; what WIN_MADE leaves out or makes for a package apart"""
     os.makedirs(out, exist_ok=True)
     for key, (src, drop, top, extra) in WIN_FILES.items():
         if only and key not in only:
             continue
         path = os.path.join(out, f"{key}.zip")
         with zipfile.ZipFile(src) as zi, zipfile.ZipFile(path, "w", zipfile.ZIP_DEFLATED) as zo:
+            left_out, made = WIN_MADE[key](zi) if key in WIN_MADE else (set(), {})
             zo.writestr(f"{top}/", b"")
             for info in zi.infolist():
                 name = info.filename
                 if drop and not name.startswith(drop):
                     continue
                 name = name[len(drop):]
-                if not name:
+                if not name or name in left_out or name in made:
                     continue
                 ni = zipfile.ZipInfo(f"{top}/{name}", info.date_time)
                 ni.compress_type = zipfile.ZIP_DEFLATED
                 zo.writestr(ni, b"" if info.is_dir() else zi.read(info))
+            for name, (data, date) in made.items():
+                ni = zipfile.ZipInfo(f"{top}/{name}", date)
+                ni.compress_type, ni.external_attr = zipfile.ZIP_DEFLATED, 0o644 << 16
+                zo.writestr(ni, data)
             for f in extra:
                 zo.write(f, f"{top}/{os.path.basename(f)}")
         print(key, os.path.getsize(path))

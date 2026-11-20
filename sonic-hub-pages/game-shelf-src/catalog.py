@@ -524,7 +524,11 @@ GAMES = [
     dict(key="lines-98", title="Lines 98", platform="Windows", genre="Puzzle", handName="LINES", handOrder=3,
          summary="Xếp năm viên bi cùng màu thành hàng để ăn; bản Windows của Color Lines.",
          plays=[play("1998", "pc-old", end="2004", precision="YEAR", approx=True,
-                     evidence="Biểu tượng Lines 98 trên màn hình PC Win 98; “LINES” số 3 trong danh sách 100 trò, 2004")],          links=[wiki("Color_Lines")]),
+                     evidence="Biểu tượng Lines 98 trên màn hình PC Win 98; “LINES” số 3 trong danh sách 100 trò, 2004"),
+                # the Fruit skin (said 20/11/2026): the icon of PC Win 98 opens that version from 2002 (desk_games.py, LATER)
+                play("2002", "pc-old", end="2004", precision="YEAR", approx=True, version="Bản Fruit",
+                     evidence="Theo anh: máy mẹ có một thời gian có bộ skin Fruit, khoảng 2002 cho tới khi cài Win XP máy mới")],
+         links=[wiki("Color_Lines")]),
 
     # ── PopCap and other casual games ──────────────────────────────────────────────────────────────────────────
     dict(key="bejeweled-2", title="Bejeweled 2", series="popcap", seriesOrder=1, platform="Windows",
