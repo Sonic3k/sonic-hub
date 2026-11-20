@@ -17,6 +17,7 @@ sonic-hub-world/
     sound.js
   places/
     van-bao-507/         flat 507, Vạn Bảo, 2005–2012 (the first place)
+    esa-el-segundo-2015/ his studio at Extended Stay America, El Segundo, onsite 8–9/2015, and the streets around it
   site/                  the list of places (index.html), serve.json, favicon
   tools/                 photographs and checks, through headless Chrome
   build.mjs
@@ -36,7 +37,8 @@ A folder under `places/` with two files the build looks for, and whatever else i
 
 **`meta.js`** — data only (the build reads it in Node): `id` (the folder's name), `title`, `sub`, `kind`, `where`,
 `years { from, to, start }` (leave out for a place of one moment), `hours [{ id, from, label, name, say }]`, `intro`,
-`blurb`, `aria`, `plan` (its rooms as rectangles, drawn on its card).
+`blurb`, `aria`, `plan` (its rooms as rectangles, drawn on its card), and `tz` for a place abroad: the hours its clocks
+stood from Vietnam's (Sonic Hub names moments on Vietnam's clock; `?at=` is then read on the place's own).
 
 **`place.js`** — the default export:
 
@@ -46,7 +48,9 @@ export default {
   views: { 'bep': { name: 'Bếp', pose: [x, y, z, heading, pitch] }, … },   // the list of rooms; a key is also its #address
   start: 'phong-khach',
   bounds: { x0, x1, z0, z1 },                // how far the walker may go
-  light: { sun, shadow, lamps, hours },      // see engine/light.js
+  floor(x, z, y) → height,                   // optional: the floor under a walker standing about y (stairs, an upper storey)
+  far, speed, tapRange,                      // optional: camera depth (m), walking pace (m/s), how far a tap may send him
+  light: { sun, shadow, lamps, hours, outdoor? },  // see engine/light.js (an hour may bring its own sun: dir)
   tour: [{ p: [x, y, z], h, pitch, t, cut?, label? }, …],                   // optional
   card(id, { year, hour, extra }) → { title, body } | null,                // what a bright dot opens
   notes: { title, body },                    // what is real and what is guessed — every place says so
@@ -101,6 +105,19 @@ cdnjs), so `dist/places/<id>.html` also works on its own, opened from disk or pu
 Its own Railway service, like the other folders: root directory `sonic-hub-world`, `railway.toml` here (build
 `npm install && npm run build`, start `npm start`). `sonic-hub-web` finds it at `VITE_WORLD_URL`, or by default at
 `https://sonic-hub-world-production.up.railway.app`.
+
+## esa-el-segundo-2015: what it rests on
+
+- The four photographs of the studio of 21/9/2015 at 19:15 California time, the walkway and lot at 09:47 the next
+  morning, the walk east along Mariposa to the Green Line (09:52–09:59), and the iPhone pictures of August and September
+  (Fsoft → [2015.08] Onsite 2015). The DirecTV badge from the trip's scanned documents. The desk of Sonic Hub for
+  that moment: Asus N56 on Windows 8.1, iPhone 6s.
+- Streets, footprints and heights from OpenStreetMap (© OpenStreetMap contributors, ODbL; `data/osm2js.py` →
+  `osm.js`), the lots and roofs from satellite pictures looked at but not copied. No logos: shop names are plain words.
+- `places/esa-el-segundo-2015/EVIDENCE.md` says which photograph each part rests on and what is a guess (which studio
+  of the row, ±1; its size; the bathroom; the fence's north end; the corner pad; the second girder north of the
+  station). Cars are instanced (`cars.js`), street trees merged in bands of x so that what is behind the walker is not
+  drawn; `node tools/stats.mjs` (with `PLACE=`) prints the triangles per part.
 
 ## van-bao-507: what it rests on
 

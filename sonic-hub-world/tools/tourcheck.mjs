@@ -19,8 +19,8 @@ const out = await page.evaluate(() => {
       const s = solids[i], cx = Math.min(s.x1, Math.max(s.x0, x)), cz = Math.min(s.z1, Math.max(s.z0, z)), d = Math.hypot(x - cx, z - cz);
       const eye = y >= s.y0 - 0.02 && y <= s.y1 + 0.02;
       if (eye && d < 0.1) hits.push(['eye', +t.toFixed(2), x, y, z, i, +d.toFixed(2), box(s)]);
-      // the same place as a walker would meet it: anything between shin and shoulder, body 19 cm
-      else if (!eye && s.y0 < 1.45 && s.y1 > 0.3 && d < 0.12) hits.push(['body', +t.toFixed(2), x, y, z, i, +d.toFixed(2), box(s)]);
+      // the same place as a walker would meet it: anything between shin and shoulder (above the floor he stands on), body 19 cm
+      else if (!eye && s.y0 < y - 1.52 + 1.45 && s.y1 > y - 1.52 + 0.3 && d < 0.12) hits.push(['body', +t.toFixed(2), x, y, z, i, +d.toFixed(2), box(s)]);
     }
   }
   return { total: +t.toFixed(1), hits, n: solids.length };

@@ -22,7 +22,7 @@ function start(place) {
   setAniso(Math.min(8, renderer.capabilities.getMaxAnisotropy()));
 
   const scene = new THREE.Scene();
-  const camera = new THREE.PerspectiveCamera(70, 1, 0.05, 700);
+  const camera = new THREE.PerspectiveCamera(70, 1, 0.05, place.far || 700);   // a street needs to see further than a flat
   const shared = { solids: [] };
 
   /* what the rooms hand back: bright dots on what can be touched, spots for things that change, shades that glow */
@@ -69,7 +69,7 @@ function start(place) {
     onLabel: name => ui && ui.label(name),
     onTouch: () => { if (ui) ui.hideIntro(); },
     onCut: () => ui && ui.blink(),
-  }, { start: first.pose, bounds: place.bounds });
+  }, { start: first.pose, bounds: place.bounds, floor: place.floor, speed: place.speed, tapRange: place.tapRange });
 
   /** a bright dot was touched: the place may act on it (switch the TV, play a chord), then its card opens */
   function touch(id) { const extra = live.touch ? live.touch(id) : undefined; ui.showCard(id, extra); }
@@ -106,7 +106,7 @@ function start(place) {
   /* The moment to open on. ?at=2007-06-15T18:05 is how Sonic Hub names a moment (/pc?at=…, /phone?at=…): the year
      picks the machines (kept inside the years this place has), the hour of the clock picks the hour of the day.
      Without it: the year this visitor left it on, or the place's own. */
-  const want = readMoment(new URLSearchParams(location.search).get('at'));
+  const want = readMoment(new URLSearchParams(location.search).get('at'), meta.tz || 0);
   if (Y) ui.setYear(want ? Math.min(Y.to, Math.max(Y.from, want.year)) : ui.year0, true);
   const hourOf = h => { const hs = [...meta.hours].sort((a, b) => (a.from ?? 0) - (b.from ?? 0)); let pick = hs[hs.length - 1]; for (const x of hs) if (h >= (x.from ?? 0)) pick = x; return pick.id; };
   ui.setHour(want && meta.hours.length > 1 ? hourOf(want.hour) : meta.hours[0].id, true);
@@ -116,7 +116,8 @@ function start(place) {
   canvas.addEventListener('pointerdown', () => { woke = performance.now(); });
   function animate(dt) {
     clock += dt;
-    if (live.animate) live.animate(dt, clock);
+    if (live.animate) live.animate(dt, clock, camera);
+    light.tick(dt);
     const pulse = 0.085 + Math.sin(clock * 2.4) * 0.008;
     for (const d of dots) { const dist = d.v.distanceTo(camera.position); d.s.visible = dist < 7.5; d.s.scale.setScalar(pulse * Math.min(1.5, 0.55 + dist * 0.2)); }
     if (walkMark.material.opacity > 0) walkMark.material.opacity = Math.max(0, walkMark.material.opacity - dt * 1.3);
@@ -130,6 +131,7 @@ function start(place) {
     if (idle && now - last < 38) return;
     const raw = (now - last) / 1000, dt = Math.min(0.05, raw); last = now;
     nav.update(dt); animate(dt);
+    light.follow(camera.position);   // a place bigger than one shadow box takes the box along
     renderer.render(scene, camera);
     // a phone that cannot keep up gets a slightly softer picture, not a slower walk
     if (!idle) { frames++; if (raw > 0.034) slow++; }
@@ -146,7 +148,7 @@ function start(place) {
     goto: name => { const v = place.views[name]; if (v) nav.setPose(...v.pose); },
     setHour: h => ui.setHour(h, true), setYear: y => ui.setYear(y, true),
     hideIntro: () => ui.hideIntro(), card: id => touch(id), tour: () => place.tour && nav.startTour(place.tour),
-    renderOnce: () => { nav.update(0); animate(0.016); renderer.render(scene, camera); },
+    renderOnce: () => { nav.update(0); animate(0.016); light.follow(camera.position); renderer.render(scene, camera); },
     hot: () => dots.map(d => ({ id: d.id, pos: d.pos, r: d.r })),
     project: (x, y, z) => { camera.updateMatrixWorld(); const v = new THREE.Vector3(x, y, z).project(camera), r = canvas.getBoundingClientRect(); return [r.left + (v.x + 1) / 2 * r.width, r.top + (1 - v.y) / 2 * r.height, v.z]; },
     texKeys,
@@ -155,5 +157,7 @@ function start(place) {
     pose: () => nav.getPose(), pause: v => { paused = v; },
     step: dt => { nav.update(dt); animate(dt); }, touring: () => nav.touring, solids: () => shared.solids, tourKeys: place.tour || [],
     state: () => ({ ...ui.state }),
+    /** triangles per top-level part of the scene (instances counted), for tools/stats.mjs */
+    stats: () => { const out = {}; for (const c of scene.children) { let t = 0, n = 0; c.traverse(o => { if (o.isMesh && o.geometry) { const g = o.geometry; t += (g.index ? g.index.count : g.attributes.position.count) / 3 * (o.isInstancedMesh ? o.count : 1); n++; } }); if (!n) continue; const k = c.name || c.type; out[k] = [(out[k]?.[0] || 0) + Math.round(t), (out[k]?.[1] || 0) + n]; } return out; },
   };
 }
