@@ -70,7 +70,8 @@ describe('a database from the first version', { skip: !adminUrl && 'TEST_DATABAS
     await runMigrations(createDb(pool));
     assert.deepEqual(await rows(), before, 'the same players, with their saves, versions and times');
     const tables = (await pool.query(`select table_name from information_schema.tables where table_schema = 'public' order by 1`)).rows.map((r) => r.table_name);
-    assert.deepEqual(tables, ['cast_album', 'cast_member', 'player', 'service']);
+    assert.deepEqual(tables, ['cast_album', 'cast_member', 'highlight', 'player', 'service']);
+    assert.deepEqual((await pool.query('select count(*)::int as picked from highlight')).rows[0], { picked: 0 }, 'nothing is picked out until someone picks it');
     assert.deepEqual((await pool.query('select count(*)::int as members from cast_member')).rows[0], { members: 0 }, 'a cast is the game’s own until it is changed here');
     const columns = (await pool.query(`select column_name from information_schema.columns where table_name = 'player' order by ordinal_position`)).rows.map((r) => r.column_name);
     assert.deepEqual(columns, ['id', 'game', 'name', 'data', 'version', 'created_at', 'updated_at', 'played_at']);

@@ -47,6 +47,14 @@ export interface PlayerView {
   playedAt: string;
 }
 
+/** A game picked out on the shelf, as the API gives it. */
+export interface HighlightView {
+  /** the game's key on the shelf */
+  game: string;
+  /** when it was picked out */
+  since: string;
+}
+
 /** A member of a game's cast, by the key the game's own content knows her by (mina, celeste): small letters, digits and dashes. */
 export const MemberKey = z.string().regex(/^[a-z0-9](?:[a-z0-9-]{0,38}[a-z0-9])?$/, 'a cast member is named in small letters, digits and dashes');
 

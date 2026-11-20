@@ -6,8 +6,9 @@ import { Limiter } from './common/limiter.js';
 import { APP_CONFIG, LIMITER, PHOTO_STORE } from './common/tokens.js';
 import type { AppConfig } from './config.js';
 import { CastService } from './cast.service.js';
-import { CastClientController, CastController, ClientController, HealthController, SavesController } from './controllers.js';
+import { CastClientController, CastController, ClientController, HealthController, HighlightsController, SavesController } from './controllers.js';
 import { createDb, DB, PG_POOL } from './db/db.js';
+import { HighlightsService } from './highlights.service.js';
 import { createPhotoStore } from './photo-store.js';
 import { SavesService } from './saves.service.js';
 
@@ -25,7 +26,7 @@ export class AppModule {
   static forRoot(config: AppConfig, pool: pg.Pool): DynamicModule {
     return {
       module: AppModule,
-      controllers: [HealthController, ClientController, CastClientController, SavesController, CastController],
+      controllers: [HealthController, ClientController, CastClientController, SavesController, CastController, HighlightsController],
       providers: [
         { provide: APP_CONFIG, useValue: config },
         { provide: PG_POOL, useValue: pool },
@@ -36,6 +37,7 @@ export class AppModule {
         PoolLifecycle,
         SavesService,
         CastService,
+        HighlightsService,
       ],
     };
   }

@@ -1,4 +1,4 @@
-# sonic-hub-game-api: where the games keep their players, and their cast
+# sonic-hub-game-api: where the games keep their players and their cast, and the shelf its highlights
 
 One small service that every Sonic Hub game saves to, whichever repository and address the game lives at.
 
@@ -12,6 +12,11 @@ A game also has a **cast**: the characters a player meets in it. The game knows 
 the pictures of her album, which the game then shows in place of its own. As with players, nobody signs in: whoever opens the page a game brings for keeping its cast (Keep It
 Down's is at `/admin` on the game's address) changes it. A name is kept here. A picture goes into the hub's bucket
 as it came and is read through the hub's CDN, which hands it out at whatever width its address asks for.
+
+The shelf (Sonic Hub Games, `sonic-hub-game`) keeps its **highlights** here too: the games picked out to stand in
+front of their kind, large. The shelf has its own list of games and knows what kind each is; kept here is only which
+of them are picked out, and since when. Its page for picking them is at `/admin` on the shelf's address, and again
+nobody signs in.
 
 ## For a game
 
@@ -63,6 +68,9 @@ All under `/api`. Every answer carries `X-Now` (the service's clock, ms) and is 
 | `DELETE /games/{game}/cast/{id}/photo` | takes her picture away |
 | `PUT /games/{game}/cast/{id}/album/{n}` | the picture at place `n` of her album, sent the same way. A place (1 to 99) is where the picture stands among the others; places may be left out. One more picture than an album holds is refused with 409 `album_full` |
 | `DELETE /games/{game}/cast/{id}/album/{n}` | takes that picture out of her album |
+| `GET /highlights` | `{ max, highlights: [{ game, since }] }`: the games picked out on the shelf, the one picked last first. `max` is how many can be picked out at one time |
+| `PUT /games/{game}/highlight` | picks a game out (no body) → `{ game, since }`. One picked out already stays as it was, with the moment it was picked: to bring it to the front it is dropped and picked anew. One more than `max` is refused with 409 `full` |
+| `DELETE /games/{game}/highlight` | no longer picked out (204, also when it was not) |
 | `GET /client.js`, `GET /cast.js`, `GET /health` | the two browser clients; `{ ok: true }` |
 
 `id` is a UUID the browser chooses, so a new player sent twice is one player. `base` is the version the write was
@@ -117,8 +125,8 @@ hub's other services have; `B2_BUCKET` is `sonic-hub`, `B2_ENDPOINT` `s3.us-east
 
 Limits, all by environment: `PLAYERS_PER_GAME` 3, `GAMES` 50 (how many different games players are kept for, and
 as many a cast), `SAVE_BYTES` 65536, `REQUESTS_PER_MINUTE` 240 from one address, `PHOTO_BYTES` 16777216 (one
-picture), `CAST_PER_GAME` 200 (members of one game's cast who were given anything) and `ALBUM_PER_MEMBER` 12 (the
-pictures of one member's album). `CORS_ORIGIN` is `*`
+picture), `CAST_PER_GAME` 200 (members of one game's cast who were given anything), `ALBUM_PER_MEMBER` 12 (the
+pictures of one member's album) and `HIGHLIGHTS` 500 (games picked out on the shelf at one time). `CORS_ORIGIN` is `*`
 unless set.
 
 A caller's address is read from the header the proxy in front writes: `X-Real-IP` on Railway, where nothing needs
@@ -130,8 +138,11 @@ On Railway: the service `sonic-hub-game-api`, with this folder as its root, buil
 
 ## What it does not do
 
-Nobody signs in: whoever can reach the service can change a game's players and its cast. How the hub is to sign
+Nobody signs in: whoever can reach the service can change a game's players, its cast and the shelf's highlights. How the hub is to sign
 anyone in is not settled, and nothing here takes a side on it.
+
+It does not know the shelf's list of games: a highlight is a game's key and nothing more, taken as it is sent.
+The shelf leaves out a key it has no game for.
 
 A save is taken as the browser sends it. A game whose results must be trusted (points that unlock something the
 service itself hands out) will need its results checked here, by replaying the game from its moves.

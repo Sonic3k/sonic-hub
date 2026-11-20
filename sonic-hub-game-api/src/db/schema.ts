@@ -2,7 +2,7 @@ import { sql } from 'drizzle-orm';
 import { boolean, check, index, integer, jsonb, pgTable, primaryKey, text, timestamp, uuid } from 'drizzle-orm/pg-core';
 
 /*
- * Four tables:
+ * Five tables:
  *  - player: one player of one game, with the game's own save. A game has a few, and they are the game's own: whoever
  *    opens the game sees the same list, as on the machine an old game was installed on. Nobody signs in.
  *  - service: one row, made when the database is. It tells a database that was set up anew from one that has only
@@ -12,6 +12,8 @@ import { boolean, check, index, integer, jsonb, pgTable, primaryKey, text, times
  *    itself is not here: it is a file in the hub's bucket, and this table knows under which key.
  *  - cast_album: the pictures of her album, the ones a game hands out as she is beaten: one row a picture, by the
  *    place it has in the album. The files are in the bucket too.
+ *  - highlight: a game picked out on the shelf, to stand in front of its kind. Which games there are, and of what
+ *    kind, is the shelf's own list; this table knows only which of them are picked out, and since when.
  */
 
 const ts = (name: string) => timestamp(name, { withTimezone: true, mode: 'date' });
@@ -91,6 +93,14 @@ export const castAlbum = pgTable(
   (t) => [primaryKey({ columns: [t.game, t.member, t.n] }), check('cast_album_place', sql`${t.n} between 1 and 99`)],
 );
 
+export const highlight = pgTable('highlight', {
+  /** The game's key on the shelf. Games are not listed here, so it is not checked against anything. */
+  game: text('game').primaryKey(),
+  /** When it was picked out. Among the highlights of one kind, the one picked last stands first. */
+  createdAt: ts('created_at').notNull().defaultNow(),
+});
+
 export type PlayerRow = typeof player.$inferSelect;
+export type HighlightRow = typeof highlight.$inferSelect;
 export type MemberRow = typeof castMember.$inferSelect;
 export type AlbumRow = typeof castAlbum.$inferSelect;
