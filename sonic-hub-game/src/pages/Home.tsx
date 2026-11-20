@@ -1,17 +1,18 @@
 /* The front of the shelf. Whatever the size of the catalogue, this screen shows a little of everything and a way
    into the rest: one game on the big screen, the visitor's own games, and one line per kind of game.
    Every line is laid out alike: the two games that stand up front (its highlights, else its newest), given room, and
-   the tank its pipe drains into. A kind with two games and a kind with two thousand differ only in the door to the
-   rest ("See all"), so the screen keeps its shape as the shelf fills. */
+   the tank its pipe drains into; under them one row of the games that come next, small. A kind with a few games and
+   a kind with two thousand differ only in how full that row is and in the door to the rest ("See all"), so the
+   screen keeps its shape as the shelf fills. */
 import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { gamePage, type Game } from '../catalog';
-import { FRONT, groupLink, machineLink, useData } from '../data';
+import { BEHIND, FRONT, groupLink, machineLink, useData } from '../data';
 import { AnotherIcon, PlayIcon } from '../icons';
 import { Skyline, Stars } from '../scene';
 import { useFavorites, useRecent } from '../store';
 import { groupOf, type Group } from '../taxonomy';
-import { Front, Inputs, LineHead, Picture, PlayLink, Tile, calm, useSeen } from '../ui';
+import { Behind, Front, Inputs, LineHead, Picture, PlayLink, Tile, calm, useSeen } from '../ui';
 import { useTitle } from './GamePage';
 
 /** The game on the big screen: the one last opened from this browser, or else a pick that changes with every visit. */
@@ -101,7 +102,7 @@ function YourGames({ favs }: { favs: Set<string> }) {
 }
 
 /** One kind of game. `games` come as they stand on the shelf (highlights first, then the newest), so the first of
- *  them are the ones up front. */
+ *  them are the ones up front and the next ones the row behind. */
 function GroupLine({ group, games, favs }: { group: Group; games: Game[]; favs: Set<string> }) {
   const [pipe, seen] = useSeen<HTMLDivElement>();
   const to = groupLink(group.key), front = games.slice(0, FRONT);
@@ -110,6 +111,7 @@ function GroupLine({ group, games, favs }: { group: Group; games: Game[]; favs: 
       <LineHead pipe={pipe} id={`h-${group.key}`} title={group.name} to={to}
         action={games.length > front.length ? <SeeAll to={to}>See all<span className="sr-only"> in {group.name}</span></SeeAll> : undefined} />
       <Front games={front} favs={favs} />
+      <Behind games={games.slice(FRONT, FRONT + BEHIND)} favs={favs} />
     </section>
   );
 }

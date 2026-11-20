@@ -24,17 +24,18 @@ interface ShelfOf { title: string; liquid: Liquid; base: Game[]; whole?: boolean
 const RAIL_WINDOWS = 3;
 const SORT_NAME: Record<Sort, string> = { relevance: 'Best match', az: 'A to Z', new: 'Newest on the shelf', year: 'Year, newest first' };
 
-/** The room a shelf has on this screen: how wide its tiles can run and how tall the window is, kept current. It is
- *  read from an element of its own that nothing on the page narrows, so what is decided from it cannot change it. */
+/** The room a shelf has on this screen: how wide its tiles can run and how tall the window is, kept current. Both
+ *  are read from one element of its own (.room in styles.css) that nothing on the page narrows, so what is decided
+ *  from it cannot change it; and not from the window, whose height moves as a phone's bars slide away. */
 function useRoom(): [(node: HTMLDivElement | null) => void, { w: number; h: number }] {
   const [node, setNode] = useState<HTMLDivElement | null>(null);
   const [room, setRoom] = useState({ w: 0, h: 0 });
   useLayoutEffect(() => {
     if (!node) return;
-    const read = () => setRoom(r => { const w = node.clientWidth, h = window.innerHeight; return r.w === w && r.h === h ? r : { w, h }; });
+    const read = () => { const w = node.clientWidth, h = node.clientHeight; setRoom(r => (r.w === w && r.h === h ? r : { w, h })); };
     const ro = new ResizeObserver(read);
-    ro.observe(node); window.addEventListener('resize', read); read();
-    return () => { ro.disconnect(); window.removeEventListener('resize', read); };
+    ro.observe(node); read();
+    return () => ro.disconnect();
   }, [node]);
   return [setNode, room];
 }

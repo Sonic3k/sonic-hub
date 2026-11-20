@@ -49,8 +49,10 @@ ul { list-style: none; }
 img { display: block; }
 a { color: inherit; }
 .wrap, .room { width: min(1200px, 100% - 48px); margin-inline: auto; }
-/* as wide as a shelf can run on this screen, and nothing else: a shelf page reads its room from it (pages/Browse.tsx) */
-.room { height: 0; }
+/* As wide as a shelf can run on this screen and as tall as its window, and nothing else: a shelf page reads its room
+   from it (pages/Browse.tsx). The height is the window's with a phone's bars showing, which does not change as
+   they slide away, so nothing decided from it flickers while the page is scrolled. */
+.room { position: fixed; left: 0; right: 0; top: 0; height: 100vh; height: 100svh; visibility: hidden; pointer-events: none; }
 .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
 :focus-visible { outline: 3px solid var(--paper); outline-offset: 3px; }
 
@@ -225,6 +227,8 @@ h1.line-plate { max-width: calc(100% - 8px); white-space: nowrap; overflow: hidd
    many games the shelf holds, so the tank never moves, wraps or goes missing as games are added. */
 .front { position: relative; z-index: 1; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 36px 30px; }
 .browse .front { margin-bottom: 34px; }
+/* behind them on a line: one row of the games that come next, small */
+.behind { margin-top: 30px; }
 
 /* a game: a steel chamber around its screen */
 .chamber { --c: 14px; display: flex; flex-direction: column; padding: 14px 14px 16px; filter: drop-shadow(0 7px 0 var(--shadow)); transition: transform .1s; }
@@ -533,6 +537,7 @@ h1.line-plate { max-width: calc(100% - 8px); white-space: nowrap; overflow: hidd
   .front > .chamber { flex: 0 0 86%; scroll-snap-align: start; }
   .front > .chamber:only-of-type { flex-basis: 100%; }
   .browse .front { margin-bottom: 20px; }
+  .behind { margin-top: 8px; }
   .go { height: 44px; padding-inline: 16px 20px; font-size: 20px; }
   /* a row runs edge to edge on a phone and scrolls sideways; its first tile lines up with everything else on the page */
   .row { display: flex; gap: 12px; width: auto; margin-inline: 0; padding: 0 16px 14px; overflow-x: auto; scroll-snap-type: x proximity; scroll-padding-inline: 16px; scrollbar-width: none; }

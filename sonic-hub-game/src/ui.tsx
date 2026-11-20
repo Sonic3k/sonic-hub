@@ -1,6 +1,6 @@
 /* The pieces every screen is built from: a game's picture, the sizes a game is shown at (a chamber when it stands
    up front, a tile on the shelf behind, a row in a list), the pipe that heads a shelf, and what stands under that
-   pipe on every screen: two chambers and the tank the pipe drains into. */
+   pipe on every screen: two chambers and the tank the pipe drains into, then a row of tiles for the games behind. */
 import { memo, useEffect, useRef, useState, type CSSProperties, type ReactNode } from 'react';
 import { Link } from 'react-router-dom';
 import { cover, coverSet, gamePage, seedOf, type Game } from './catalog';
@@ -162,6 +162,13 @@ export function Front({ games, favs }: { games: Game[]; favs: Set<string> }) {
       <Tank />
     </div>
   );
+}
+
+/** What a line shows behind its front: the next games of the shelf, small, in one row. A screen shows as many as fit
+ *  across it and a phone swipes through them. A shelf with nothing behind its front has no such row. */
+export function Behind({ games, favs, mixed }: { games: Game[]; favs: Set<string>; mixed?: boolean }) {
+  if (!games.length) return null;
+  return <div className="wrap row behind">{games.map(g => <Tile key={g.key} game={g} fav={favs.has(g.key)} mixed={mixed} />)}</div>;
 }
 
 /** The tank a shelf's pipe drains into: the last place of a row of chambers. */

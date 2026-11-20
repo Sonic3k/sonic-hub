@@ -28,6 +28,10 @@ export const tagLink = (key: string) => `/tag/${encodeURIComponent(key)}`;
 /** How many games stand up front on a shelf, given room. The same on every shelf, whatever it holds: a shelf of
  *  two games and a shelf of two thousand look alike, and nothing about a screen's layout turns on a count. */
 export const FRONT = 2;
+/** How many more a line shows behind them, small, in one row: the next games of the shelf in the same order. A
+ *  screen shows as many of these as fit across it and a phone swipes through them all; the rest of the shelf is
+ *  behind "See all". */
+export const BEHIND = 8;
 
 /** how games stand on a shelf: its highlights first, the one picked last before the others; then the newest */
 const order = (a: Game, b: Game) =>

@@ -5,7 +5,7 @@ import { arrange, takeStock, type Data } from './arrange';
 import { NO_PICKS, fetchCatalog, type Game, type Picked } from './catalog';
 import { fetchHighlights, keepHighlights, keptHighlights, samePicks, setHighlight } from './highlights';
 
-export { FRONT, frontOf, groupLink, machineLink, seriesLink, tagLink, type Data } from './arrange';
+export { BEHIND, FRONT, frontOf, groupLink, machineLink, seriesLink, tagLink, type Data } from './arrange';
 
 const TEST = 'sonic-hub-games.test';
 /** The size of the test shelf asked for with ?test=N, remembered until the tab closes or it is turned off. */
