@@ -766,5 +766,15 @@
   "event": {
    "date": null
   }
+ },
+ {
+  "file": "captures/lines98-fruit.png",
+  "game": "lines-98",
+  "caption": "Lines 98 với bộ skin Fruit khi vừa mở. Chụp lại ngày 20/11/2026, chạy bản Lines 98 v5.0 bot của anh tìm về.",
+  "event": {
+   "date": "2003",
+   "precision": "YEAR",
+   "approx": true
+  }
  }
 ]
