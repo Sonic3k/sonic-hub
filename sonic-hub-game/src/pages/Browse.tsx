@@ -217,6 +217,8 @@ export default function Browse({ kind }: { kind: ShelfKind }) {
           <div className="notice notice-in">
             {kind === 'favorites' && !narrowed
               ? <><p className="notice-title">No favorites yet</p><p>Star a game and it will wait for you here.</p><Link className="btn btn-play" to="/">See all games</Link></>
+              : !narrowed && !searching
+              ? <><p className="notice-title">Nothing on this shelf yet</p><Link className="btn btn-play" to="/">See all games</Link></>
               : <><p className="notice-title">Nothing here matches</p><p>{fx.q.trim() && !anyFilter(fx) ? 'Try another name it goes by, or fewer words.' : 'Loosen a filter to see more.'}</p>{narrowed && <button type="button" className="btn btn-steel" onClick={clear}>Clear filters</button>}</>}
           </div>
         ) : (
