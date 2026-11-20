@@ -622,5 +622,11 @@
   "mediaId": "2311b54b-e91e-4c51-858f-e00f2afddd01",
   "game": "aoe-league",
   "role": "SCREENSHOT"
+ },
+ {
+  "file": "captures/lines98-fruit.png",
+  "mediaId": "68a12018-3304-492f-8d61-6770e91a0c95",
+  "game": "lines-98",
+  "role": "SCREENSHOT"
  }
 ]

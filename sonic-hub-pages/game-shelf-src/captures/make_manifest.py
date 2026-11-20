@@ -90,6 +90,11 @@ for kind, cap in (("title", "Màn hình mở đầu của Chinese Chess Master I
 # Saltline: someone else's game kept to look at, from none of his years, so its pictures carry no date of their own
 for kind, cap in (("title", "Màn hình mở đầu của Saltline."), ("play", "Saltline, lúc vừa vào màn: cảng container, la bàn chỉ ba trạm phát A, B, C.")):
     add(f"cap7/saltline-{kind}", f"saltline-{kind}", "saltline", cap + " Chụp lại ngày 11/11/2026, chạy file HTML anh chép trên mạng về.", {"date": None})
+# Lines 98 left on the Fruit skin (he said 20/11/2026: about 2002 until the new machine): opened from the icon of
+# PC Win 98 at a day of 2003; its date is the middle of that play, as event() takes a play given in years
+add("lines/prod/p1_game", "lines98-fruit", "lines-98",
+    "Lines 98 với bộ skin Fruit khi vừa mở. Chụp lại ngày 20/11/2026, chạy bản Lines 98 v5.0 bot của anh tìm về.",
+    {"date": "2003", "precision": "YEAR", "approx": True})
 rows.insert(0, {"file": "captures/textris-best-scores.png", "game": "textris", "event": {"date": "2003-11-09", "precision": "DAY", "approx": False},
     "caption": "Bảng Best Scores của Textris, đọc từ file TEXTRIS.SCO trên ổ D: của anh: Chelsea 1.210 điểm ghi 11-09-03 (09/11/2003), "
                "NGOC ANH 1.029 điểm ghi 01-10-03 (10/01/2003); Everton và Fulham cũng là anh. Chụp lại ngày 10/11/2026, chạy từ thư mục English ABC."})
