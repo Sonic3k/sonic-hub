@@ -497,8 +497,16 @@ GAMES = [
          summary="Trò anh tự làm từ Chip's Challenge, có trong danh sách các trò tự làm.", ),
     dict(key="dots", title="Dots", series="windows", seriesOrder=11, platform="Windows", genre="Paper and pencil",
          handName="Dots", summary="Nối chấm thành ô vuông, ai khép ô thì được ô ấy.", ),
+    # Fences V 1.0 "Written by Steve Blanding" (its own About), the one win16.page lists under 1991. Not on PC Win 98
+    # from the machine's first day (said 20/11/2026): from the day FENCES.EXE is dated (desk_games.py, WIN_GAMES_FROM).
+    # That day is the earliest trace of it, not proof of the day it came: AMNESIA.EXE was written six seconds after
+    # it, and Amnesia's own records in the same folder go back to 29/08/1999.
     dict(key="fences", title="Fences", series="windows", seriesOrder=12, platform="Windows", genre="Paper and pencil",
-         handName="Fences", ),
+         releaseYear=1991, developer="Steve Blanding", handName="Fences",
+         summary="Hai người lần lượt nối các chấm màu mình; ai dựng xong hàng rào từ bên này sang bên kia bàn trước thì thắng.",
+         plays=[play("2001-10-19", "pc-old", precision="DAY", approx=True,
+                     evidence="File FENCES.EXE trên ổ D: ghi ngày 19/10/2001; theo anh khả năng có từ ngày này, không thể từ năm 98")],
+         links=[{"kind": "OTHER", "title": "Fences — win16.page", "url": "https://win16.page/fences.htm"}]),
     dict(key="hearts", title="Hearts", series="windows", seriesOrder=13, platform="Windows", developer="Microsoft",
          genre="Card", handName="Tú Hearts", summary="Bài tránh ăn cơ và đầm bích, có sẵn trong Windows.",
          links=[wiki("Microsoft_Hearts")]),
