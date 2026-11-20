@@ -4,13 +4,17 @@
 - The icons that were already on his desktops (REAL) now open something: Lines 98, Pikachu, Sticks play; the others
   show the game's card from the shelf. Only app, target and the icon are sent, so what he set (label, place, period,
   source) stays.
+- An icon whose game changed on a day (LATER: Lines 98 left on the Fruit skin) stays where it is and opens the other
+  version from that day: his own item ends then and a RECONSTRUCTED twin of it starts.
 - New Start-menu entries (Programs ▸ Games, Programs ▸ Win Games) are RECONSTRUCTED: the game folders on D:\\Games and
   their dates, or what he said, put them there, not a screenshot of the menu; each note says what that rests on.
   Entries moved to other machines are deleted where they were (GONE).
 
-  python3 desk_games.py
+  python3 desk_games.py                    everything below
+  python3 desk_games.py <key> [<key> …]    only those items (nothing is deleted)
 """
 import os
+import sys
 
 import requests
 
@@ -51,6 +55,15 @@ UPGRADE = {
     "pc-fujitsu/desktop/2005/008-feeding-frenzy": ("gamecard", "feeding-frenzy", "exe:feeding-frenzy"),
     "pc-fujitsu/desktop/2005/009-shortcut-to-lines98": ("none", None, "exe:lines98"),
     "pc-fujitsu/desktop/2005/011-shortcut-to-picachu": ("game", "pikachu", "exe:pikachu"),
+}
+
+# One of his icons that opened another version of its game from a day on: his icon → (day, key of the twin, package,
+# note). The twin takes his icon's label, picture and place on the desktop.
+# Lines 98 on PC Win 98 (said 20/11/2026): the machine had the Fruit skin for a time, from about 2002 until the new
+# machine with Windows XP.
+LATER = {
+    "pc-old/desktop/_/006-lines-98": ("2002-01-01", "pc-old/desktop/2002/006-lines-98", "lines98-fruit",
+                                      "Theo anh: máy mẹ có một thời gian có bộ skin Fruit, khoảng 2002 cho tới khi cài Win XP máy mới"),
 }
 
 WIN98, XP = "Theo anh: game DOS chỉ chơi trên PC Win 98", "Theo anh: game Flash ở các máy Windows XP"
@@ -166,7 +179,19 @@ def main():
         items.append({"key": f"{device}/start/games/emu-{emu}", "device": device, "place": "START", "label": label, "glyph": "game",
                       "app": "emulator", "target": emu, "sort": 200 + n, "from": start, "to": end, "note": note,
                       "source": "RECONSTRUCTED"})
-    r = requests.post(f"{API}/desk/sync", json={"items": items, "delete": {"items": GONE}}, timeout=120)
+    if LATER:
+        his = {i["key"]: i for i in requests.get(f"{API}/desk/raw", timeout=120).json()["items"]}
+        for key, (day, twin, pkg, note) in LATER.items():
+            items.append({"key": key, "to": day})
+            items.append({"key": twin, "device": his[key]["device"], "place": his[key]["place"], "label": his[key]["label"],
+                          "glyph": UPGRADE[key][2] or his[key]["glyph"], "app": "game", "target": pkg, "sort": his[key]["sort"],
+                          "from": day, "note": note, "source": "RECONSTRUCTED"})
+    only = set(sys.argv[1:])
+    if only:
+        if only - {i["key"] for i in items}:
+            sys.exit("no such item: " + ", ".join(sorted(only - {i["key"] for i in items})))
+        items = [i for i in items if i["key"] in only]
+    r = requests.post(f"{API}/desk/sync", json={"items": items, "delete": {"items": [] if only else GONE}}, timeout=120)
     r.raise_for_status()
     out = r.json()
     print(out["counts"])
