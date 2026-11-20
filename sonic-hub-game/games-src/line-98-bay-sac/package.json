@@ -1,0 +1,18 @@
+{
+  "name": "line-98-bay-sac",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Line 98: Bảy Sắc. Lines 98 by its own rules, played in eight painted places chosen from a map.",
+  "license": "UNLICENSED",
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "test": "node engine/rules.test.js && node game/build.test.js",
+    "build": "node game/build.js"
+  },
+  "devDependencies": {
+    "@fontsource/be-vietnam-pro": "5.3.0",
+    "@fontsource/fraunces": "5.3.0"
+  }
+}
