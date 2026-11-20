@@ -2,6 +2,7 @@ import { useEffect, useLayoutEffect, useRef, type CSSProperties } from 'react';
 import { BrowserRouter, Outlet, Route, Routes, useLocation, useNavigationType } from 'react-router-dom';
 import { DataProvider, turnOffTestShelf, useData } from './data';
 import { Header } from './Header';
+import Admin from './pages/Admin';
 import Browse from './pages/Browse';
 import GamePage, { Missing } from './pages/GamePage';
 import Home from './pages/Home';
@@ -102,6 +103,7 @@ export default function App() {
             <Route path="favorites" element={<Browse kind="favorites" />} />
             <Route path="highlights" element={<Browse kind="highlights" />} />
             <Route path="game/:key" element={<GamePage />} />
+            <Route path="admin" element={<Admin />} />
             <Route path="*" element={<Missing />} />
           </Route>
           <Route path="play/:key" element={<Player />} />

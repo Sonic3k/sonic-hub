@@ -29,6 +29,13 @@
       "when": 1795085481567,
       "tag": "0003_cast_age_album",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1795190636422,
+      "tag": "0004_highlights",
+      "breakpoints": true
     }
   ]
 }

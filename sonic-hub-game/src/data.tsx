@@ -1,28 +1,11 @@
-/* The catalogue once loaded, with everything the screens ask of it worked out a single time: games by key, by group,
-   the machines and shelves that exist, and the search index. */
-import { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
-import { fetchCatalog, type Game } from './catalog';
-import { buildIndex, type SearchIndex, type Shelf } from './search';
-import { GROUPS, MACHINES, groupOf, machineOf, subOf, tagName, type Group, type Machine } from './taxonomy';
-import { makeTestShelf } from './testShelf';
+/* The catalogue once loaded and laid out (arrange.ts), handed to every screen. Which games are picked out comes from
+   the game service and is laid over the catalogue here, so every screen reads one list. */
+import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
+import { arrange, takeStock, type Data } from './arrange';
+import { NO_PICKS, fetchCatalog, type Game, type Picked } from './catalog';
+import { fetchHighlights, keepHighlights, keptHighlights, samePicks, setHighlight } from './highlights';
 
-export interface Data {
-  games: Game[];
-  byKey: Map<string, Game>;
-  index: SearchIndex;
-  /** the groups that have games, in the shelf's order; each group's games with its highlights first, then the newest */
-  groups: { group: Group; games: Game[] }[];
-  machines: Machine[];
-  /** every shelf a visitor can be sent to: groups, sub-groups, machines, series, tags */
-  shelves: Shelf[];
-  /** how many sample entries the test shelf added (0 when it is off) */
-  testCount: number;
-}
-
-export const groupLink = (key: string, sub?: string | null) => `/group/${key}${sub ? `?sub=${encodeURIComponent(sub)}` : ''}`;
-export const machineLink = (key: string) => `/machine/${key}`;
-export const seriesLink = (name: string) => `/series/${encodeURIComponent(name)}`;
-export const tagLink = (key: string) => `/tag/${encodeURIComponent(key)}`;
+export { BEHIND, FRONT, frontOf, groupLink, machineLink, seriesLink, tagLink, type Data } from './arrange';
 
 const TEST = 'sonic-hub-games.test';
 /** The size of the test shelf asked for with ?test=N, remembered until the tab closes or it is turned off. */
@@ -38,44 +21,67 @@ export function turnOffTestShelf() {
   const u = new URL(location.href); u.searchParams.delete('test'); location.replace(u.pathname + u.search);
 }
 
-const order = (a: Game, b: Game) => Number(b.highlight) - Number(a.highlight) || (b.added ?? '').localeCompare(a.added ?? '') || a.title.localeCompare(b.title);
-
-export function arrange(real: Game[], testCount: number): Data {
-  const games = testCount ? [...real, ...makeTestShelf(testCount, new Set(real.map(g => g.key)))] : real;
-  const byKey = new Map(games.map(g => [g.key, g]));
-  const by = new Map<string, Game[]>();
-  for (const g of games) { const list = by.get(g.group); if (list) list.push(g); else by.set(g.group, [g]); }
-  const known = GROUPS.filter(g => by.has(g.key)).map(g => g.key);
-  const groups = [...known, ...[...by.keys()].filter(k => !known.includes(k)).sort()].map(k => ({ group: groupOf(k), games: by.get(k)!.sort(order) }));
-
-  const machineKeys = new Set(games.map(g => g.machine));
-  const machines = [...MACHINES.filter(m => machineKeys.has(m.key)), ...[...machineKeys].filter(k => !MACHINES.some(m => m.key === k)).sort().map(machineOf)];
-
-  const subs = new Set<string>(), series = new Set<string>(), tags = new Set<string>();
-  for (const g of games) { if (g.sub) subs.add(`${g.group}/${g.sub}`); if (g.series) series.add(g.series); g.tags.forEach(t => tags.add(t)); }
-  const shelves: Shelf[] = [
-    ...groups.map(({ group }) => ({ kind: 'group' as const, key: group.key, name: group.name, to: groupLink(group.key) })),
-    ...[...subs].map(s => { const [g, k] = s.split('/'); return { kind: 'sub' as const, key: s, name: subOf(g, k)!.name, note: groupOf(g).name, to: groupLink(g, k) }; }),
-    ...machines.map(m => ({ kind: 'machine' as const, key: m.key, name: m.name, note: 'Machine', to: machineLink(m.key) })),
-    ...[...series].map(s => ({ kind: 'series' as const, key: s, name: s, note: 'Series', to: seriesLink(s) })),
-    ...[...tags].map(t => ({ kind: 'tag' as const, key: t, name: tagName(t), note: 'Tag', to: tagLink(t) })),
-  ];
-  return { games, byKey, index: buildIndex(games), groups, machines, shelves, testCount };
+/** The highlights as the game service has them, and the two things the shelf's back room does with them. */
+export interface HighlightControl {
+  /** asking: not heard from the service yet; live: as it has them now; off: it did not answer */
+  state: 'asking' | 'live' | 'off';
+  /** every key picked out, also one the shelf has no game for (a game renamed or taken off since) */
+  picked: Picked;
+  /** asks the service again */
+  ask(): void;
+  /** picks a game out or drops it; the shelf follows once the service has answered. Rejects with a HighlightError. */
+  set(game: string, on: boolean): Promise<void>;
 }
 
 const Ctx = createContext<Data | null>(null);
+const HighlightCtx = createContext<HighlightControl | null>(null);
 export const useData = (): Data => useContext(Ctx)!;
+export const useHighlightControl = (): HighlightControl => useContext(HighlightCtx)!;
+
+/** how long a browser that has never heard the highlights waits for them before it shows the shelf without */
+const FIRST_WAIT = 1200;
+const pause = (ms: number) => new Promise<void>(done => setTimeout(done, ms));
 
 export function DataProvider({ children }: { children: ReactNode }) {
-  const [state, setState] = useState<{ data?: Data; failed?: boolean }>({});
-  const load = () => { setState({}); fetchCatalog().then(real => setState({ data: arrange(real, testShelfSize()) })).catch(() => setState({ failed: true })); };
-  useEffect(load, []);
-  if (state.failed) return (
+  const [real, setReal] = useState<Game[] | null>(null);
+  const [failed, setFailed] = useState(false);
+  const kept = useRef(keptHighlights());
+  const [heard, setHeard] = useState<{ state: HighlightControl['state']; picked: Picked }>({ state: 'asking', picked: kept.current ?? NO_PICKS });
+  const testCount = useRef(testShelfSize()).current;
+
+  /** settles either way: a service that does not answer leaves the shelf as it stands */
+  const ask = useCallback((): Promise<void> => {
+    setHeard(h => (h.state === 'asking' ? h : { ...h, state: 'asking' }));
+    return fetchHighlights().then(
+      picked => setHeard(h => ({ state: 'live', picked: samePicks(h.picked, picked) ? h.picked : picked })),
+      () => setHeard(h => ({ ...h, state: 'off' })),
+    );
+  }, []);
+  const set = useCallback(async (game: string, on: boolean) => {
+    const since = await setHighlight(game, on);
+    setHeard(h => { const picked = new Map(h.picked); if (since) picked.set(game, since); else picked.delete(game); return { ...h, state: 'live', picked }; });
+  }, []);
+  // what the service said last, or the back room just changed, is what the next visit starts from
+  useEffect(() => { if (heard.state === 'live') keepHighlights(heard.picked); }, [heard]);
+
+  const load = useCallback(() => {
+    setFailed(false);
+    // asked alongside the catalogue. A browser that heard them before shows the shelf at once and follows if they changed
+    const asked = ask();
+    Promise.all([fetchCatalog(), kept.current ? null : Promise.race([asked, pause(FIRST_WAIT)])]).then(([games]) => setReal(games), () => setFailed(true));
+  }, [ask]);
+  useEffect(load, [load]);
+
+  const stock = useMemo(() => (real ? takeStock(real, testCount) : null), [real, testCount]);
+  const data = useMemo(() => (stock ? arrange(stock, heard.picked) : null), [stock, heard.picked]);
+  const control = useMemo((): HighlightControl => ({ state: heard.state, picked: heard.picked, ask: () => { void ask(); }, set }), [heard, ask, set]);
+
+  if (failed) return (
     <div className="notice">
       <p>The list of games did not load.</p>
       <button type="button" className="btn btn-steel" onClick={load}>Try again</button>
     </div>
   );
-  if (!state.data) return <div className="notice" aria-busy="true"><p>Loading the shelf</p></div>;
-  return <Ctx.Provider value={state.data}>{children}</Ctx.Provider>;
+  if (!data) return <div className="notice" aria-busy="true"><p>Loading the shelf</p></div>;
+  return <HighlightCtx.Provider value={control}><Ctx.Provider value={data}>{children}</Ctx.Provider></HighlightCtx.Provider>;
 }

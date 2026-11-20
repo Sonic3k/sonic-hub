@@ -3,11 +3,11 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import type { Game } from '../catalog';
-import { groupLink, machineLink, seriesLink, tagLink, useData } from '../data';
+import { BEHIND, FRONT, groupLink, machineLink, seriesLink, tagLink, useData } from '../data';
 import { PlayIcon } from '../icons';
 import { useFavorites } from '../store';
 import { groupOf, machineOf, subOf, tagName } from '../taxonomy';
-import { Chamber, FavButton, Inputs, LineHead, Picture, PlayLink, Tank, Tile, calm, useSeen } from '../ui';
+import { Behind, FavButton, Front, Inputs, LineHead, Picture, PlayLink, calm, useSeen } from '../ui';
 
 export function useTitle(title: string) {
   useEffect(() => { document.title = title ? `${title} · Sonic Hub Games` : 'Sonic Hub Games'; }, [title]);
@@ -24,14 +24,15 @@ export function Missing() {
   );
 }
 
-/** the games nearest to one game: its series first, then its sub-group by year, then its group */
+/** the games nearest to one game, as many as a line shows (two up front and a row behind): its series first, then
+ *  its sub-group by year, then its group */
 function near(game: Game, all: Game[]): Game[] {
   const same = all.filter(g => g !== game && g.group === game.group);
   const gap = (g: Game) => Math.abs((g.year ?? 0) - (game.year ?? 0));
   const series = game.series ? all.filter(g => g !== game && g.series === game.series) : [];
   const sub = same.filter(g => g.sub && g.sub === game.sub && !series.includes(g)).sort((a, b) => gap(a) - gap(b));
   const rest = same.filter(g => !series.includes(g) && !sub.includes(g));
-  return [...series, ...sub, ...rest].slice(0, 8);
+  return [...series, ...sub, ...rest].slice(0, FRONT + BEHIND);
 }
 
 export default function GamePage() {
@@ -89,9 +90,8 @@ export default function GamePage() {
       {more.length > 0 && (
         <section className={`line gp-more${moreSeen ? ' open' : ''}`} aria-labelledby="h-more">
           <LineHead pipe={morePipe} id="h-more" title="More like this" action={<Link className="see-all" to={groupLink(group.key, sub?.key)}>See all</Link>} />
-          {more.length <= 3
-            ? <div className="wrap grid strip">{more.map(g => <Chamber key={g.key} game={g} fav={favs.has(g.key)} />)}<Tank count={more.length} /></div>
-            : <div className="wrap row">{more.map(g => <Tile key={g.key} game={g} fav={favs.has(g.key)} />)}</div>}
+          <Front games={more.slice(0, FRONT)} favs={favs} />
+          <Behind games={more.slice(FRONT)} favs={favs} />
         </section>
       )}
     </div>

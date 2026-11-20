@@ -10,6 +10,7 @@ import { APP_CONFIG } from './common/tokens.js';
 import { ZodPipe } from './common/zod-pipe.js';
 import type { AppConfig } from './config.js';
 import { DB, type Db } from './db/db.js';
+import { HighlightsService } from './highlights.service.js';
 import { SavesService } from './saves.service.js';
 
 const here = dirname(fileURLToPath(import.meta.url));
@@ -74,6 +75,33 @@ export class SavesController {
   @HttpCode(204)
   remove(@Param('game', new ZodPipe(GameKey)) game: string, @Param('id', new ZodPipe(PlayerId)) id: string) {
     return this.saves.remove(game, id);
+  }
+}
+
+/*
+ *   GET    /api/highlights                the games picked out on the shelf, the one picked last first
+ *   PUT    /api/games/{game}/highlight    picks a game out (one already picked out stays as it was)
+ *   DELETE /api/games/{game}/highlight    no longer picked out
+ * Nobody signs in, as with a game's players: whoever opens the shelf's page for it changes it.
+ */
+@Controller()
+export class HighlightsController {
+  constructor(@Inject(HighlightsService) private readonly highlights: HighlightsService) {}
+
+  @Get('highlights')
+  all() {
+    return this.highlights.all();
+  }
+
+  @Put('games/:game/highlight')
+  pick(@Param('game', new ZodPipe(GameKey)) game: string) {
+    return this.highlights.pick(game);
+  }
+
+  @Delete('games/:game/highlight')
+  @HttpCode(204)
+  drop(@Param('game', new ZodPipe(GameKey)) game: string) {
+    return this.highlights.drop(game);
   }
 }
 
