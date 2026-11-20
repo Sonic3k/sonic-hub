@@ -5,6 +5,7 @@
     { "source": "/search", "destination": "/index.html" },
     { "source": "/favorites", "destination": "/index.html" },
     { "source": "/highlights", "destination": "/index.html" },
+    { "source": "/admin", "destination": "/index.html" },
     { "source": "/group/**", "destination": "/index.html" },
     { "source": "/machine/**", "destination": "/index.html" },
     { "source": "/series/**", "destination": "/index.html" },

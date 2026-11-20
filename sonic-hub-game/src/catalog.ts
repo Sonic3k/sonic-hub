@@ -1,8 +1,11 @@
 /* The catalogue: every game on the shelf, read at runtime from /catalog.json so the list is data and not code.
 
    A catalogue entry needs only key, title, group and machine; everything else has a default. An entry with no
-   `play` is on the shelf without a game behind it yet. `blurb` is optional and worth writing only for games that
-   will be shown large (highlights): a small tile never shows it.
+   `play` is on the shelf without a game behind it yet. `added` is the day it went on the shelf: the newest games of
+   a kind stand in front of it, large, so every entry should say. `blurb` is what a game shown large says under its
+   name; a small tile never shows it.
+   Which games are picked out as highlights is not in this file. The game service keeps that (highlights.ts), and a
+   `highlight` written here is not read.
    A blurb says what the game is, in words that stay true while the game grows: no count of its levels, rooms or
    opponents and no single place in it, since the next version makes that wrong. A number belongs in a blurb only
    when it is the game's own rule and never changes (eight Rams a side).
@@ -35,8 +38,10 @@ export interface Game {
   kind: string;
   blurb: string | null;
   maker: string | null;
-  /** the owner's pick: shown large, and first on its shelf */
+  /** picked out by the owner: it stands in front of its kind. Kept by the game service, not by the catalogue file. */
   highlight: boolean;
+  /** the moment it was picked out, when it is */
+  picked: string | null;
   /** the day it went on the shelf (YYYY-MM-DD) */
   added: string | null;
   /** the pictures it has under /covers/<key>-<shot>-<width>.webp */
@@ -49,7 +54,12 @@ export interface Game {
   test?: boolean;
 }
 
-type Raw = Partial<Game> & { key: string; title: string; group: string };
+/** which games are picked out: a game's key and the moment it was picked, as the game service writes it (one form for
+ *  all, so a later moment sorts after an earlier one) */
+export type Picked = ReadonlyMap<string, string>;
+export const NO_PICKS: Picked = new Map();
+
+export type Raw = Partial<Game> & { key: string; title: string; group: string };
 
 export function toGame(r: Raw): Game {
   const players = r.players ?? 1, ai = r.ai ?? 0;
@@ -59,17 +69,19 @@ export function toGame(r: Raw): Game {
     key: r.key, title: r.title, alt: r.alt ?? [], lang: r.lang ?? 'en', group: r.group, sub, machine: r.machine ?? 'web',
     year: r.year ?? null, series: r.series ?? null, tags: r.tags ?? [], players, ai, inputs: r.inputs ?? [],
     kind: r.kind ?? `${subOf(r.group, sub)?.name ?? groupOf(r.group).name}, ${who}`,
-    blurb: r.blurb ?? null, maker: r.maker ?? null, highlight: !!r.highlight, added: r.added ?? null, shots: r.shots ?? [],
+    blurb: r.blurb ?? null, maker: r.maker ?? null, highlight: !!r.highlight, picked: r.picked ?? null, added: r.added ?? null, shots: r.shots ?? [],
     play: r.play ?? (r.frame ? `/play/${encodeURIComponent(r.key)}` : null), frame: r.frame ?? null,
     test: r.test,
   };
 }
 
+/** The games of a catalogue file. Whatever it says of highlights is left out: the game service alone says. */
+export const readCatalog = (file: { games: Raw[] }): Game[] => file.games.map(r => toGame({ ...r, highlight: false, picked: null }));
+
 export async function fetchCatalog(): Promise<Game[]> {
   const res = await fetch('/catalog.json', { cache: 'no-cache' });
   if (!res.ok) throw new Error(`catalog.json: ${res.status}`);
-  const data = (await res.json()) as { games: Raw[] };
-  return data.games.map(toGame);
+  return readCatalog((await res.json()) as { games: Raw[] });
 }
 
 export const cover = (g: Game, shot: Shot, width: 640 | 1280) => `/covers/${g.key}-${shot}-${width}.webp`;

@@ -48,7 +48,9 @@ h1, h2, h3, p, ul { margin: 0; padding: 0; }
 ul { list-style: none; }
 img { display: block; }
 a { color: inherit; }
-.wrap { width: min(1200px, 100% - 48px); margin-inline: auto; }
+.wrap, .room { width: min(1200px, 100% - 48px); margin-inline: auto; }
+/* as wide as a shelf can run on this screen, and nothing else: a shelf page reads its room from it (pages/Browse.tsx) */
+.room { height: 0; }
 .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
 :focus-visible { outline: 3px solid var(--paper); outline-offset: 3px; }
 
@@ -218,7 +220,11 @@ main {
 .line-plate a:hover { text-decoration: underline; text-decoration-thickness: 3px; text-underline-offset: 6px; }
 h1.line-plate { max-width: calc(100% - 8px); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: inline-block; line-height: 60px; }
 
-.grid { position: relative; z-index: 1; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 36px 30px; }
+/* What stands under a shelf's pipe: the games up front and the tank the pipe drains into. Three places, always. The
+   tank's is the last, and a game that stands alone takes the first two (.chamber-wide). Nothing here turns on how
+   many games the shelf holds, so the tank never moves, wraps or goes missing as games are added. */
+.front { position: relative; z-index: 1; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 36px 30px; }
+.browse .front { margin-bottom: 34px; }
 
 /* a game: a steel chamber around its screen */
 .chamber { --c: 14px; display: flex; flex-direction: column; padding: 14px 14px 16px; filter: drop-shadow(0 7px 0 var(--shadow)); transition: transform .1s; }
@@ -316,8 +322,6 @@ h1.line-plate { max-width: calc(100% - 8px); white-space: nowrap; overflow: hidd
 .view { display: inline-flex; border: 3px solid var(--ink); }
 .view button { display: grid; place-items: center; width: 44px; height: 36px; border: 0; background: var(--steel-0); color: var(--muted); cursor: pointer; }
 .view button.on { background: var(--paper); color: var(--ink); }
-.picks { margin-top: 26px; }
-.picks .row-label:first-child { margin-top: 0; }
 
 /* the bar that stays in view while wading: find within the shelf, jump to a letter, back to the top */
 .wade { position: sticky; top: var(--top-h); z-index: 10; margin-top: 20px; background: var(--night); border-block: 3px solid var(--ink); box-shadow: inset 0 3px 0 var(--steel-0); }
@@ -333,10 +337,34 @@ h1.line-plate { max-width: calc(100% - 8px); white-space: nowrap; overflow: hidd
 .letters button:hover:enabled { background: var(--steel-1); }
 .letters button:disabled { color: #5564BD; cursor: default; }
 .wade-top { display: grid; place-items: center; flex: none; width: 42px; height: 42px; margin-left: auto; border: 3px solid var(--ink); background: var(--steel-1); box-shadow: inset 0 3px 0 var(--steel-3), inset 0 -4px 0 var(--steel-0); color: var(--paper); cursor: pointer; }
-.shelf-body { margin-top: 26px; min-height: 46vh; }
+.shelf-body { margin-top: 26px; }
+/* a shelf with tools keeps its height while it is narrowed, so the page does not shrink under the bar that stays */
+.shelf-body.long { min-height: 46vh; }
 .vgrid { position: relative; }
 .vgrid-list { border: 3px solid var(--ink); border-bottom-width: 1px; background: #0D1669; }
 .vcell { position: absolute; left: 0; top: 0; }
+
+/* ── the back room: picking the highlights ──────────────────────────────────────────────────────────────────── */
+.backroom-how { max-width: 66ch; margin-top: -4px; color: var(--soft); font-size: 18px; line-height: 1.45; text-wrap: pretty; }
+.backroom-said { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 18px; margin-top: 18px; padding: 12px 16px; border: 3px solid var(--ink); background: var(--steel-0); box-shadow: inset 4px 0 0 var(--hazard); color: var(--paper); font-weight: 600; line-height: 1.35; }
+.backroom-said .see-all:disabled { cursor: default; opacity: .55; }
+.backroom .chips { margin-top: 24px; }
+.backroom-find { margin-top: 4px; }
+.backroom-find .find { width: min(360px, 100%); }
+.backroom .shelf-body { margin-top: 18px; }
+.pickline { display: grid; grid-template-columns: 148px minmax(0, 1fr) minmax(0, 150px) minmax(0, 236px) 74px; align-items: center; gap: 14px; height: 100%; padding: 0 12px 0 5px; border-bottom: 2px solid rgba(4, 6, 31, .42); }
+.pickline:hover { background: rgba(255, 255, 255, .055); }
+.pick-btn { display: inline-flex; align-items: center; justify-self: start; gap: 8px; height: 36px; padding: 0 12px 2px 9px; border: 3px solid var(--ink); background: var(--steel-1); box-shadow: inset 0 3px 0 var(--steel-3), inset 0 -3px 0 var(--steel-0); color: var(--paper); font: 700 15.5px/1 var(--text); white-space: nowrap; cursor: pointer; }
+.pick-btn:hover:enabled { background: var(--steel-2); }
+.pick-btn[aria-pressed="true"] { background: var(--hazard); box-shadow: inset 0 3px 0 var(--hazard-hi), inset 0 -3px 0 var(--hazard-lo); color: var(--hazard-ink); }
+.pick-btn[aria-pressed="true"]:hover:enabled { background: #FFE04F; }
+.pick-btn:disabled { cursor: default; opacity: .55; }
+.pick-btn[aria-busy="true"] { opacity: 1; cursor: progress; }
+/* the corner a highlighted tile wears: hollow until the game is picked out */
+.pick-mark { flex: none; width: 13px; height: 13px; border: 2px solid currentColor; clip-path: polygon(0 0, 100% 0, 0 100%); }
+.pick-btn[aria-pressed="true"] .pick-mark { background: currentColor; }
+.pick-added { overflow: hidden; color: var(--muted); font-size: 15.5px; white-space: nowrap; text-overflow: ellipsis; }
+.pick-front { justify-self: end; color: var(--hazard); font: 700 14.5px/1 var(--text); white-space: nowrap; }
 
 /* ── one game's page ────────────────────────────────────────────────────────────────────────────────────────── */
 .gp { display: grid; grid-template-columns: minmax(0, 1.22fr) minmax(0, 1fr); gap: 56px; align-items: start; margin-top: 6px; }
@@ -359,9 +387,9 @@ h1.line-plate { max-width: calc(100% - 8px); white-space: nowrap; overflow: hidd
 .notice-title { color: var(--paper); font: italic 900 36px/1.1 var(--display); text-shadow: 0 4px 0 var(--ink); }
 .notice .btn { margin-top: 12px; }
 
-/* the tank at the end of a row that is not full: a glass vessel between two steel collars, fed from the pipe above */
-.tank { --w: min(250px, 72%); display: none; position: relative; flex-direction: column; align-items: center; min-height: 270px; filter: drop-shadow(0 7px 0 var(--shadow)); }
-.tank-feed { display: none; position: absolute; left: 50%; top: -58px; width: 28px; height: 62px; margin-left: -14px; border-inline: 3px solid var(--ink); background: #0A1050; }
+/* the tank in the last place under a pipe: a glass vessel between two steel collars, fed from the pipe above */
+.tank { --w: min(250px, 72%); display: flex; position: relative; flex-direction: column; align-items: center; min-height: 270px; filter: drop-shadow(0 7px 0 var(--shadow)); }
+.tank-feed { position: absolute; left: 50%; top: -58px; width: 28px; height: 62px; margin-left: -14px; border-inline: 3px solid var(--ink); background: #0A1050; }
 .tank-feed::before { content: ""; position: absolute; inset: 0; background: linear-gradient(90deg, var(--liq-hi) 0 5px, var(--liq) 5px 14px, var(--liq-lo) 14px); clip-path: inset(0 0 100% 0); transition: clip-path .22s linear .95s; }
 .line.open .tank-feed::before { clip-path: inset(0); }
 .tank-cap { position: relative; width: var(--w); height: 20px; margin-top: 18px; border: 3px solid var(--ink); background: var(--steel-face); }
@@ -433,15 +461,17 @@ h1.line-plate { max-width: calc(100% - 8px); white-space: nowrap; overflow: hidd
   .chamber-wide .g-title { padding-right: 40px; font-size: 30px; }
   .chamber-wide .g-blurb { font-size: 18px; }
 }
-@media (min-width: 1040px) {
-  .tank.t3-1, .tank.t3-2 { display: flex; }
-  .tank.t3-2 { grid-column: span 2; }
-  .tank.f3 .tank-feed { display: block; }
+/* between a desk and a tablet held upright the tank's place is slimmer, so the two chambers keep their width */
+@media (min-width: 860px) and (max-width: 1039.98px) {
+  .front { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(0, .58fr); column-gap: 24px; }
+  .tank { --w: min(190px, 84%); }
+}
+/* narrower than that there is room for the two chambers only: the pipe runs on without a tank */
+@media (max-width: 859.98px) {
+  .front { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .tank { display: none; }
 }
 @media (min-width: 680px) and (max-width: 1039.98px) {
-  .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  .tank.t2-1 { display: flex; }
-  .tank.f2 .tank-feed { display: block; }
   .row { grid-template-columns: repeat(4, minmax(0, 1fr)); }
   .row > :nth-child(n+5) { display: none; }
   .top-btn-text { display: none; }
@@ -459,11 +489,13 @@ h1.line-plate { max-width: calc(100% - 8px); white-space: nowrap; overflow: hidd
   .skyline { height: 300px; }
   .sc-tall { display: none; }
   .letters { justify-content: flex-start; }
+  .pickline { grid-template-columns: 148px minmax(0, 1fr) minmax(0, 150px) 74px; }
+  .pick-added { display: none; }
 }
 @media (max-width: 679.98px) {
   :root { --top-h: 61px; }
   body { font-size: 17px; }
-  .wrap { width: calc(100% - 32px); }
+  .wrap, .room { width: calc(100% - 32px); }
   .brandbar { position: relative; z-index: 21; display: flex; align-items: center; justify-content: space-between; gap: 10px; min-height: 58px; padding: 0 16px; background: var(--night); }
   .brand, .top .top-actions { display: none; }
   .top-in { grid-template-columns: minmax(0, 1fr); min-height: 58px; }
@@ -495,13 +527,12 @@ h1.line-plate { max-width: calc(100% - 8px); white-space: nowrap; overflow: hidd
   h1.line-plate { line-height: 50px; }
   .see-all { height: 44px; padding: 0 12px 3px; font-size: 15.5px; }
   .line-head:has(.see-all) .pipe-joints { display: none; }
-  .grid { grid-template-columns: minmax(0, 1fr); gap: 30px; }
-  /* a few large cards side by side on a phone: one fills the screen, the next shows its edge, and the shelf below stays close */
-  .grid.strip { display: flex; gap: 14px; width: auto; margin-inline: 0; padding: 0 16px 14px; overflow-x: auto; scroll-snap-type: x mandatory; scroll-padding-inline: 16px; scrollbar-width: none; }
-  .picks .grid.strip { margin-inline: -16px; }
-  .grid.strip::-webkit-scrollbar { display: none; }
-  .grid.strip > .chamber { flex: 0 0 86%; scroll-snap-align: start; }
-  .grid.strip > .chamber:only-of-type { flex-basis: 100%; }
+  /* the games up front side by side on a phone: one fills the screen, the next shows its edge, and what follows stays close */
+  .wrap.front { display: flex; gap: 14px; width: auto; margin-inline: 0; padding: 0 16px 14px; overflow-x: auto; scroll-snap-type: x mandatory; scroll-padding-inline: 16px; scrollbar-width: none; }
+  .front::-webkit-scrollbar { display: none; }
+  .front > .chamber { flex: 0 0 86%; scroll-snap-align: start; }
+  .front > .chamber:only-of-type { flex-basis: 100%; }
+  .browse .front { margin-bottom: 20px; }
   .go { height: 44px; padding-inline: 16px 20px; font-size: 20px; }
   /* a row runs edge to edge on a phone and scrolls sideways; its first tile lines up with everything else on the page */
   .row { display: flex; gap: 12px; width: auto; margin-inline: 0; padding: 0 16px 14px; overflow-x: auto; scroll-snap-type: x proximity; scroll-padding-inline: 16px; scrollbar-width: none; }
@@ -527,7 +558,11 @@ h1.line-plate { max-width: calc(100% - 8px); white-space: nowrap; overflow: hidd
   .letters button { min-width: 0; width: 20px; height: 2.25dvh; max-height: 19px; min-height: 13px; padding: 0; font-size: 11.5px; line-height: 1; }
   /* the letter rail owns the right edge on a phone: everything on the shelf page stops short of it */
   .browse:has(.letters) .wrap { width: calc(100% - 42px); margin-left: 16px; margin-right: 26px; }
-  .browse:has(.letters) .chips ul, .browse:has(.letters) .picks .grid.strip { margin-right: 0; padding-right: 0; }
+  .browse:has(.letters) .chips ul { margin-right: 0; padding-right: 0; }
+  .browse:has(.letters) .wrap.front { width: auto; margin-left: 0; margin-right: 26px; }
+  .pickline { grid-template-columns: 122px minmax(0, 1fr) auto; gap: 8px; padding: 0 8px 0 4px; }
+  .pickline .row-where, .pick-added { display: none; }
+  .pick-btn { padding: 0 9px 2px 7px; font-size: 14.5px; }
   .rowline { grid-template-columns: 40px minmax(0, 1fr) auto; }
   .rowline .row-where, .rowline .row-year { display: none; }
   .gp-facts div { grid-template-columns: 112px minmax(0, 1fr); }

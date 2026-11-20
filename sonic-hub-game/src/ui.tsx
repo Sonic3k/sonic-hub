@@ -1,5 +1,6 @@
-/* The pieces every screen is built from: a game's picture, the two sizes a game is shown at (a chamber when it is
-   given room, a tile on a full shelf, a row in a list), the pipe that heads a shelf, and the tank that fills a row. */
+/* The pieces every screen is built from: a game's picture, the sizes a game is shown at (a chamber when it stands
+   up front, a tile on the shelf behind, a row in a list), the pipe that heads a shelf, and what stands under that
+   pipe on every screen: two chambers and the tank the pipe drains into. */
 import { memo, useEffect, useRef, useState, type CSSProperties, type ReactNode } from 'react';
 import { Link } from 'react-router-dom';
 import { cover, coverSet, gamePage, seedOf, type Game } from './catalog';
@@ -65,8 +66,8 @@ export function Inputs({ game, names }: { game: Game; names?: boolean }) {
   );
 }
 
-/** A game given room: for highlights, favorites and shelves with only a few games on them. `wide` lays it across two
- *  columns, for a game that has a row to itself. */
+/** A game given room: one of those that stand up front on a shelf. `wide` lays it across both places, for a game
+ *  that stands there alone. */
 export const Chamber = memo(function Chamber({ game, fav, wide }: { game: Game; fav: boolean; wide?: boolean }) {
   const [over, setOver] = useState(false);
   return (
@@ -149,15 +150,24 @@ export function LineHead({ title, to, id, level = 2, pipe, action }: { title: Re
   );
 }
 
-/** What stands in the empty places at the end of a row of chambers: the tank the shelf's pipe drains into. */
-export function Tank({ count }: { count: number }) {
-  const r3 = count % 3, r2 = count % 2;
-  const cls = `${r3 ? ` t3-${3 - r3}` : ''}${r2 ? ' t2-1' : ''}`;
-  if (!cls) return null;
-  // the pipe above reaches down to it only when it stands in the first row, right under that pipe
-  const fed = `${count < 3 ? ' f3' : ''}${count < 2 ? ' f2' : ''}`;
+/** What stands under a shelf's pipe: the games up front, given room, and the tank the pipe drains into. It is laid
+ *  out the same whatever the shelf holds. There are never more than two chambers, a game that stands alone takes
+ *  both places, and the tank is always the last thing in the row, right under the pipe that feeds it. So nothing
+ *  here moves, wraps or goes missing as games are added. */
+export function Front({ games, favs }: { games: Game[]; favs: Set<string> }) {
+  if (!games.length) return null;
   return (
-    <div className={`tank${cls}${fed}`} aria-hidden="true">
+    <div className="wrap front">
+      {games.map(g => <Chamber key={g.key} game={g} fav={favs.has(g.key)} wide={games.length === 1} />)}
+      <Tank />
+    </div>
+  );
+}
+
+/** The tank a shelf's pipe drains into: the last place of a row of chambers. */
+function Tank() {
+  return (
+    <div className="tank" aria-hidden="true">
       <div className="tank-feed" />
       <div className="tank-cap" />
       <div className="tank-glass">

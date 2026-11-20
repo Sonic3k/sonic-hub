@@ -1,21 +1,18 @@
 /* The front of the shelf. Whatever the size of the catalogue, this screen shows a little of everything and a way
-   into the rest: one game on the big screen, the visitor's own games, the owner's highlights, and one row per group.
-   A group with only a few games gives each of them room; a full group shows a row and the door to all of it. */
+   into the rest: one game on the big screen, the visitor's own games, and one line per kind of game.
+   Every line is laid out alike: the two games that stand up front (its highlights, else its newest), given room, and
+   the tank its pipe drains into. A kind with two games and a kind with two thousand differ only in the door to the
+   rest ("See all"), so the screen keeps its shape as the shelf fills. */
 import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { gamePage, type Game } from '../catalog';
-import { groupLink, machineLink, useData } from '../data';
+import { FRONT, groupLink, machineLink, useData } from '../data';
 import { AnotherIcon, PlayIcon } from '../icons';
 import { Skyline, Stars } from '../scene';
 import { useFavorites, useRecent } from '../store';
 import { groupOf, type Group } from '../taxonomy';
-import { Chamber, Inputs, LineHead, Picture, PlayLink, Tank, Tile, calm, useSeen } from '../ui';
+import { Front, Inputs, LineHead, Picture, PlayLink, Tile, calm, useSeen } from '../ui';
 import { useTitle } from './GamePage';
-
-/** how many games a group may have and still be shown as chambers on this screen */
-const FEW = 5;
-/** below this many games the catalogue is small enough to be seen whole: no highlights row, no random row */
-const SMALL_SHELF = 30;
 
 /** The game on the big screen: the one last opened from this browser, or else a pick that changes with every visit. */
 function Featured() {
@@ -78,20 +75,20 @@ function SeeAll({ to, children }: { to: string; children: React.ReactNode }) {
   return <Link className="see-all" to={to}>{children}</Link>;
 }
 
-/** the visitor's own shelf: favorites given room, then what they opened lately */
+/** the visitor's own shelf: the favorites starred last, given room, then what they opened lately */
 function YourGames({ favs }: { favs: Set<string> }) {
   const data = useData(), favKeys = useFavorites(), recent = useRecent();
   const [pipe, seen] = useSeen<HTMLDivElement>();
   const favorites = favKeys.map(k => data.byKey.get(k)).filter((g): g is Game => !!g);
-  const shown = favorites.slice(0, 3);
+  const shown = favorites.slice(0, FRONT);
   // the game opened last is already on the big screen when it has a picture: the row starts after it
   const onScreen = data.byKey.get(recent[0] ?? '')?.shots.includes('title') ? recent[0] : null;
   const lately = recent.filter(k => k !== onScreen).map(k => data.byKey.get(k)).filter((g): g is Game => !!g && !shown.includes(g)).slice(0, 8);
   if (!favorites.length && !lately.length) return null;
   return (
     <section className={`line liq-ice${seen ? ' open' : ''}`} aria-labelledby="h-yours">
-      <LineHead pipe={pipe} id="h-yours" title="Your games" to="/favorites" action={favorites.length > 3 ? <SeeAll to="/favorites">All favorites</SeeAll> : undefined} />
-      {shown.length > 0 && <div className="wrap grid strip">{shown.map(g => <Chamber key={g.key} game={g} fav />)}<Tank count={shown.length} /></div>}
+      <LineHead pipe={pipe} id="h-yours" title="Your games" to="/favorites" action={favorites.length > shown.length ? <SeeAll to="/favorites">All favorites</SeeAll> : undefined} />
+      <Front games={shown} favs={favs} />
       {lately.length > 0 && (
         <>
           <h3 className="wrap row-label">Recently played</h3>
@@ -103,55 +100,16 @@ function YourGames({ favs }: { favs: Set<string> }) {
   );
 }
 
-/** the owner's picks, three at a time, a different three each day so every highlight gets its turn up front */
-function Highlights({ favs }: { favs: Set<string> }) {
-  const data = useData();
-  const [pipe, seen] = useSeen<HTMLDivElement>();
-  const all = useMemo(() => data.games.filter(g => g.highlight), [data]);
-  if (!all.length) return null;
-  const day = Math.floor(Date.now() / 86400000), start = (day * 3) % all.length;
-  const shown = [0, 1, 2].filter(i => i < all.length).map(i => all[(start + i) % all.length]);
-  return (
-    <section className={`line liq-gold${seen ? ' open' : ''}`} aria-labelledby="h-highlights">
-      <LineHead pipe={pipe} id="h-highlights" title="Highlights" to="/highlights" action={all.length > 3 ? <SeeAll to="/highlights">See all</SeeAll> : undefined} />
-      <div className="wrap grid strip">{shown.map(g => <Chamber key={g.key} game={g} fav={favs.has(g.key)} />)}<Tank count={shown.length} /></div>
-    </section>
-  );
-}
-
+/** One kind of game. `games` come as they stand on the shelf (highlights first, then the newest), so the first of
+ *  them are the ones up front. */
 function GroupLine({ group, games, favs }: { group: Group; games: Game[]; favs: Set<string> }) {
   const [pipe, seen] = useSeen<HTMLDivElement>();
-  const to = groupLink(group.key), few = games.length <= FEW;
+  const to = groupLink(group.key), front = games.slice(0, FRONT);
   return (
     <section className={`line liq-${group.liquid}${seen ? ' open' : ''}`} id={group.key} aria-labelledby={`h-${group.key}`}>
-      <LineHead pipe={pipe} id={`h-${group.key}`} title={group.name} to={to} action={few ? undefined : <SeeAll to={to}>See all<span className="sr-only"> in {group.name}</span></SeeAll>} />
-      {few ? (
-        <div className="wrap grid">
-          {games.map(g => <Chamber key={g.key} game={g} fav={favs.has(g.key)} wide={games.length === 1} />)}
-          <Tank count={games.length === 1 ? 2 : games.length} />
-        </div>
-      ) : (
-        <div className="wrap row">{games.slice(0, 8).map(g => <Tile key={g.key} game={g} fav={favs.has(g.key)} />)}</div>
-      )}
-    </section>
-  );
-}
-
-/** a handful drawn from anywhere on the shelf, so games that sit deep get seen too */
-function RandomPicks({ favs }: { favs: Set<string> }) {
-  const data = useData();
-  const [pipe, seen] = useSeen<HTMLDivElement>();
-  const [turn, setTurn] = useState(0);
-  const picks = useMemo(() => {
-    const out = new Set<Game>();
-    while (out.size < Math.min(8, data.games.length)) out.add(data.games[Math.floor(Math.random() * data.games.length)]);
-    return [...out];
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [data, turn]);
-  return (
-    <section className={`line liq-mint${seen ? ' open' : ''}`} aria-labelledby="h-random">
-      <LineHead pipe={pipe} id="h-random" title="Random picks" action={<button type="button" className="see-all" onClick={() => setTurn(t => t + 1)}><AnotherIcon size={18} />Shuffle</button>} />
-      <div className="wrap row">{picks.map(g => <Tile key={g.key} game={g} fav={favs.has(g.key)} mixed />)}</div>
+      <LineHead pipe={pipe} id={`h-${group.key}`} title={group.name} to={to}
+        action={games.length > front.length ? <SeeAll to={to}>See all<span className="sr-only"> in {group.name}</span></SeeAll> : undefined} />
+      <Front games={front} favs={favs} />
     </section>
   );
 }
@@ -170,7 +128,6 @@ function Machines() {
 export default function Home() {
   const data = useData(), favKeys = useFavorites();
   const favs = useMemo(() => new Set(favKeys), [favKeys]);
-  const large = data.games.length >= SMALL_SHELF;
   useTitle('');
   return (
     <>
@@ -178,9 +135,7 @@ export default function Home() {
       <Featured />
       <div className="lines">
         <YourGames favs={favs} />
-        {large && <Highlights favs={favs} />}
         {data.groups.map(({ group, games }) => <GroupLine key={group.key} group={group} games={games} favs={favs} />)}
-        {large && <RandomPicks favs={favs} />}
         {data.machines.length > 1 && <Machines />}
       </div>
     </>

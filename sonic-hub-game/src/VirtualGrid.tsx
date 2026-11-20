@@ -19,17 +19,22 @@ const GAP = 18, MIN = 164, NARROW_MIN = 150, LIST_ROW = 46, NEAR = 700;
 /** a tile's height for its width: the picture keeps its shape, the words below take a fixed block (see .tile in styles.css) */
 export const tileHeight = (width: number) => Math.round((width - 16) * 0.625) + 16 + 84;
 
-export const VirtualGrid = forwardRef<GridHandle, Props>(function VirtualGrid({ items, view, children }, ref) {
-  const el = useRef<HTMLDivElement>(null);
-  const [width, setWidth] = useState(0);
-  const [range, setRange] = useState<[number, number]>([0, 0]);
-
+/** The shape a shelf takes in a space `width` wide: how many cells go across, and how much height a row takes. */
+export function gridShape(width: number, view: View) {
   const list = view === 'list', narrow = width < 520;
   const gap = list ? 0 : narrow ? 12 : GAP;
   const cols = list ? 1 : Math.max(2, Math.floor((width + gap) / ((narrow ? NARROW_MIN : MIN) + gap)));
   const cellW = width ? (width - gap * (cols - 1)) / cols : 0;
   const cellH = list ? LIST_ROW : tileHeight(cellW);
-  const rowH = cellH + (list ? 0 : gap + 6);
+  return { list, gap, cols, cellW, cellH, rowH: cellH + (list ? 0 : gap + 6) };
+}
+
+export const VirtualGrid = forwardRef<GridHandle, Props>(function VirtualGrid({ items, view, children }, ref) {
+  const el = useRef<HTMLDivElement>(null);
+  const [width, setWidth] = useState(0);
+  const [range, setRange] = useState<[number, number]>([0, 0]);
+
+  const { list, gap, cols, cellW, cellH, rowH } = gridShape(width, view);
   const rows = Math.ceil(items.length / cols);
 
   useLayoutEffect(() => {

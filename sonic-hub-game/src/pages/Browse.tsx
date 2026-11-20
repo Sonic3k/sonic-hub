@@ -1,28 +1,43 @@
 /* A shelf read in full: a group, a machine, a series, a tag, the favorites, the highlights, every match of a search,
-   or simply everything. One screen serves them all, because wading through a long shelf needs the same tools
-   whichever shelf it is: narrow it (chips, filters, a box that finds within the shelf), order it, jump to a letter,
-   and switch to a plain list when names matter more than pictures. */
-import { useMemo, useRef, useState } from 'react';
+   or simply everything. One screen serves them all, and it is laid out the same whatever the shelf holds: under the
+   shelf's pipe the games that stand up front and the tank, as on the front page; behind them the rest of the shelf
+   as tiles. Wading through a long shelf needs the same tools whichever shelf it is: narrow it (chips, filters, a box
+   that finds within the shelf), order it, jump to a letter, and switch to a plain list when names matter more than
+   pictures. They come when the shelf no longer fits in the window, which is a matter of the screen and not of a
+   number of games written here. */
+import { useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { Link, useParams, useSearchParams } from 'react-router-dom';
 import type { Game } from '../catalog';
-import { useData } from '../data';
+import { FRONT, frontOf, useData } from '../data';
 import { CloseIcon, ListIcon, SearchIcon, TilesIcon, UpIcon } from '../icons';
 import { LETTERS, anyFilter, letterOf, narrow, readFilters, withFilters, type Filters, type Sort } from '../shelf';
 import { useFavorites, useRecent } from '../store';
 import { groupOf, langName, machineOf, tagName, type Liquid } from '../taxonomy';
-import { Chamber, LineHead, Row, Tank, Tile, useSeen } from '../ui';
-import { VirtualGrid, type GridHandle } from '../VirtualGrid';
+import { Front, LineHead, Row, Tile, useSeen } from '../ui';
+import { VirtualGrid, gridShape, type GridHandle } from '../VirtualGrid';
 import { Missing, useTitle } from './GamePage';
 
 export type ShelfKind = 'group' | 'machine' | 'series' | 'tag' | 'all' | 'search' | 'favorites' | 'highlights';
 interface ShelfOf { title: string; liquid: Liquid; base: Game[]; whole?: boolean; group?: string }
 
-/** up to this many games are simply given room; beyond it the shelf becomes a grid of tiles */
-const ROOMY = 9;
-/** a letter rail is worth its space only on a shelf this long */
-const LONG = 60;
+/** a letter rail is worth its place once the shelf behind the front runs to this many windows */
+const RAIL_WINDOWS = 3;
 const SORT_NAME: Record<Sort, string> = { relevance: 'Best match', az: 'A to Z', new: 'Newest on the shelf', year: 'Year, newest first' };
-const ALL_NAME: Record<Sort, string> = { relevance: 'Everything', az: 'Everything, A to Z', new: 'Everything, newest on the shelf first', year: 'Everything, newest year first' };
+
+/** The room a shelf has on this screen: how wide its tiles can run and how tall the window is, kept current. It is
+ *  read from an element of its own that nothing on the page narrows, so what is decided from it cannot change it. */
+function useRoom(): [(node: HTMLDivElement | null) => void, { w: number; h: number }] {
+  const [node, setNode] = useState<HTMLDivElement | null>(null);
+  const [room, setRoom] = useState({ w: 0, h: 0 });
+  useLayoutEffect(() => {
+    if (!node) return;
+    const read = () => setRoom(r => { const w = node.clientWidth, h = window.innerHeight; return r.w === w && r.h === h ? r : { w, h }; });
+    const ro = new ResizeObserver(read);
+    ro.observe(node); window.addEventListener('resize', read); read();
+    return () => { ro.disconnect(); window.removeEventListener('resize', read); };
+  }, [node]);
+  return [setNode, room];
+}
 
 export default function Browse({ kind }: { kind: ShelfKind }) {
   const data = useData(), { key = '' } = useParams(), [params, setParams] = useSearchParams();
@@ -31,6 +46,7 @@ export default function Browse({ kind }: { kind: ShelfKind }) {
   const f = readFilters(params);
   const grid = useRef<GridHandle>(null), bar = useRef<HTMLDivElement>(null);
   const [pipe, seen] = useSeen<HTMLDivElement>();
+  const [probe, room] = useRoom();
   const [filtersOpen, setFiltersOpen] = useState(false);
   const searching = kind === 'search' && !!f.q.trim();
 
@@ -83,13 +99,28 @@ export default function Browse({ kind }: { kind: ShelfKind }) {
     };
   }, [shelf, matched, fx.group, fx.machine, fx.lang, kind, data]);
 
+  // Up front: the games the front page shows for this shelf (a search has none: its best matches come first). They
+  // stay where they are while the shelf behind them is narrowed, so nothing above the tools moves under a finger.
+  const front = useMemo(() => (!shelf || searching ? [] : kind === 'favorites' ? shelf.base.slice(0, FRONT) : frontOf(shelf.base)), [shelf, searching, kind]);
+  const narrowed = anyFilter(fx) || (kind !== 'search' && !!fx.q.trim());
+  // behind them, the rest of the shelf; once narrowed, everything that matches, the games up front among it
+  const rest = useMemo(() => (narrowed || !front.length ? list : list.filter(g => !front.includes(g))), [list, front, narrowed]);
+
+  // How long the shelf behind the front is, in windows, at the size its tiles take on this screen. The tools for
+  // wading come once it no longer fits in one window, and stay while anything is narrowed.
+  const behind = searching ? matched.length : (shelf?.base.length ?? 0) - front.length;
+  const shape = gridShape(room.w, 'tiles');
+  const windows = room.w && room.h ? (Math.ceil(behind / shape.cols) * shape.rowH) / room.h : 0;
+  const long = windows > 1 || narrowed;
+
   const sort: Sort = fx.sort || (fx.q.trim() ? 'relevance' : 'az');
+  const railed = sort === 'az' && !fx.q.trim() && windows >= RAIL_WINDOWS;
   const letters = useMemo(() => {
-    if (sort !== 'az' || fx.q.trim() || list.length < LONG) return null;
+    if (!railed) return null;
     const first = new Map<string, number>();
-    list.forEach((g, i) => { const l = letterOf(g); if (!first.has(l)) first.set(l, i); });
+    rest.forEach((g, i) => { const l = letterOf(g); if (!first.has(l)) first.set(l, i); });
     return first;
-  }, [list, sort, fx.q]);
+  }, [rest, railed]);
 
   if (!shelf) return <Missing />;
 
@@ -97,22 +128,17 @@ export default function Browse({ kind }: { kind: ShelfKind }) {
   const clear = () => setParams(withFilters(new URLSearchParams(), { q: kind === 'search' ? f.q : '', view: f.view }), { replace: true });
   /** the height of everything that stays at the top of the window, so a jump lands below it */
   const clearTop = () => (document.querySelector<HTMLElement>('.top')?.offsetHeight ?? 0) + (bar.current?.offsetHeight ?? 0);
-  const narrowed = anyFilter(fx) || (kind !== 'search' && !!fx.q.trim());
-  const roomy = fx.view === 'tiles' && list.length <= ROOMY;
-  // tools are worth their space when there is enough to narrow, or when a filter is already on and must be reachable
-  const long = matched.length > ROOMY || anyFilter(fx);
-  // up front on an untouched shelf: the visitor's own favorites from it, then the owner's highlights
-  const upFront = !narrowed && !searching && kind !== 'highlights' && kind !== 'favorites' && list.length > ROOMY;
-  const mine = upFront ? shelf.base.filter(g => favs.has(g.key)) : [];
-  const picks = upFront ? [...mine, ...shelf.base.filter(g => g.highlight && !favs.has(g.key))].slice(0, 3) : [];
-  const picksName = !mine.length ? 'Highlights' : mine.length >= picks.length ? 'Your favorites here' : 'Your favorites and highlights';
+  // nothing to show behind the front: because nothing matches, or because the shelf itself is empty
+  const none = !rest.length && (narrowed || searching || !front.length);
   const mixed = !shelf.group && !fx.group;
   const marked = fx.q.trim() || undefined;
 
   return (
     <div className={`browse liq-${shelf.liquid}`}>
+      <div className="room" ref={probe} aria-hidden="true" />
       <div className={`line${seen ? ' open' : ''}`}>
         <LineHead pipe={pipe} level={1} title={shelf.title} />
+        <Front games={front} favs={favs} />
       </div>
 
       {long && (facets.groups.length > 1 || facets.subs.length > 0) && (
@@ -165,14 +191,6 @@ export default function Browse({ kind }: { kind: ShelfKind }) {
         </div>
       </div>}
 
-      {picks.length > 0 && (
-        <section className="wrap picks" aria-label={picksName}>
-          <h2 className="row-label">{picksName}</h2>
-          <div className="grid strip">{picks.map(g => <Chamber key={g.key} game={g} fav={favs.has(g.key)} />)}<Tank count={picks.length} /></div>
-          <h2 className="row-label">{ALL_NAME[sort]}</h2>
-        </section>
-      )}
-
       {(kind !== 'search' || letters) && long && (
         <div className="wade" ref={bar}>
           <div className="wrap wade-in">
@@ -194,23 +212,21 @@ export default function Browse({ kind }: { kind: ShelfKind }) {
         </div>
       )}
 
-      <div className="wrap shelf-body">
-        {!list.length ? (
+      {(none || rest.length > 0) && <div className={`wrap shelf-body${long ? ' long' : ''}`}>
+        {none ? (
           <div className="notice notice-in">
             {kind === 'favorites' && !narrowed
               ? <><p className="notice-title">No favorites yet</p><p>Star a game and it will wait for you here.</p><Link className="btn btn-play" to="/">See all games</Link></>
               : <><p className="notice-title">Nothing here matches</p><p>{fx.q.trim() && !anyFilter(fx) ? 'Try another name it goes by, or fewer words.' : 'Loosen a filter to see more.'}</p>{narrowed && <button type="button" className="btn btn-steel" onClick={clear}>Clear filters</button>}</>}
           </div>
-        ) : roomy ? (
-          <div className="grid">{list.map(g => <Chamber key={g.key} game={g} fav={favs.has(g.key)} />)}<Tank count={list.length} /></div>
         ) : (
-          <VirtualGrid ref={grid} items={list} view={fx.view}>
+          <VirtualGrid ref={grid} items={rest} view={fx.view}>
             {g => (fx.view === 'list'
               ? <Row game={g} fav={favs.has(g.key)} mixed={mixed} query={marked} />
               : <Tile game={g} fav={favs.has(g.key)} mixed={mixed} query={marked} />)}
           </VirtualGrid>
         )}
-      </div>
+      </div>}
     </div>
   );
 }

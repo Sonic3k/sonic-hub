@@ -4,7 +4,7 @@
     {
       "key": "muop", "title": "Mướp và Mười Hai Ngọn Đèn", "alt": ["Muop", "Mười Hai Ngọn Đèn", "Twelve Lanterns"],
       "lang": "vi", "group": "platformer", "sub": "classic", "machine": "web", "year": 2026, "tags": ["originals"],
-      "players": 1, "inputs": ["keyboard", "gamepad", "touch"], "maker": "Sonic Hub", "added": "2026-09-30", "highlight": true,
+      "players": 1, "inputs": ["keyboard", "gamepad", "touch"], "maker": "Sonic Hub", "added": "2026-09-30",
       "kind": "Platformer, 1 player",
       "blurb": "A ginger cat carries the last spark through one long day, from morning hills to an aurora peak, to relight twelve lanterns.",
       "shots": ["title", "play"], "play": "/games/muop"
@@ -28,7 +28,7 @@
     {
       "key": "medieval-mayhem-2", "title": "Medieval Mayhem II", "alt": ["Medieval Mayhem 2", "MM2", "Civ Clash"],
       "lang": "en", "group": "cards", "sub": "card-battle", "machine": "web", "year": 2026, "tags": ["originals"],
-      "players": 1, "ai": 3, "inputs": ["mouse", "touch"], "maker": "Sonic Hub", "added": "2026-10-09", "highlight": true,
+      "players": 1, "ai": 3, "inputs": ["mouse", "touch"], "maker": "Sonic Hub", "added": "2026-10-09",
       "kind": "Card battle, you against up to 3 AI rivals",
       "blurb": "Pick a civilization and outlast the table. Every card is a unit, and everything it does is printed in its symbols.",
       "shots": ["title", "play"], "play": "/games/medieval-mayhem-2"
@@ -108,7 +108,7 @@
     {
       "key": "len-doi", "title": "Lên Đời", "alt": ["Len Doi", "Age Duel"],
       "lang": "vi", "group": "strategy", "sub": "turn-based", "machine": "web", "year": 2026, "tags": ["originals"],
-      "players": 1, "ai": 1, "inputs": ["mouse", "touch"], "maker": "Sonic Hub", "added": "2026-10-05", "highlight": true,
+      "players": 1, "ai": 1, "inputs": ["mouse", "touch"], "maker": "Sonic Hub", "added": "2026-10-05",
       "kind": "Turn-based strategy, you against the AI",
       "blurb": "Medieval empires on a small map. Both sides give their orders in secret, then reveal them at the same moment.",
       "shots": ["title", "play"], "play": "/games/len-doi"
