@@ -86,7 +86,7 @@
       "lang": "en", "group": "cards", "sub": "board", "machine": "web", "year": 2026, "tags": ["originals"],
       "players": 1, "ai": 1, "inputs": ["mouse", "touch", "keyboard"], "maker": "Sonic Hub", "added": "2026-11-19",
       "kind": "Board game campaign, you against the AI",
-      "blurb": "Caro, the five-in-a-row of Vietnamese school days, written in ballpoint on the squared back pages of a notebook. Five in a line wins, unless the other side’s marks stand at both ends of it. Around the school gate, the people you knew there play you for points, and each sits down with you once your points come near hers. They talk while they play, and each keeps an album that fills as you beat her.",
+      "blurb": "Caro, the five-in-a-row of Vietnam: five in a line wins, unless the other side stands at both ends of it. A road runs from a harbour up to a summit, by a floating market, a town of lanterns, an old citadel and a city of neon, and the people along it play you for points. Each sits down with you once your points come near hers, and a place comes out from under the cloud with the first of its people. They talk while they play, and each keeps an album that fills as you beat her.",
       "shots": ["title", "play"], "play": "https://sonic-gomoku-production.up.railway.app/"
     },
     {

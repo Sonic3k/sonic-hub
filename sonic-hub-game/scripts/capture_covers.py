@@ -92,13 +92,17 @@ GAMES = {
     'caro': dict(
         site='https://sonic-gomoku-production.up.railway.app/',
         shut=[r'/games/[^/]+/players'],
-        title_ls=kept_player('sonic-gomoku', 'Minh', {'points': 1164, 'peak': 1190, 'match': None,
-            'vs': {'hanh': {'w': 5, 'l': 0, 'd': 0}, 'thu': {'w': 4, 'l': 1, 'd': 0}, 'diep': {'w': 2, 'l': 2, 'd': 0}}}),
-        title=['waitsel:#rooms .tile', 'wait:400'],
-        ls=kept_player('sonic-gomoku', 'Minh', {'points': 1432, 'peak': 1448,
-            'vs': {'hanh': {'w': 5, 'l': 0, 'd': 0}, 'thu': {'w': 5, 'l': 1, 'd': 0}, 'diep': {'w': 5, 'l': 2, 'd': 0}, 'ngan': {'w': 4, 'l': 3, 'd': 0}, 'lan': {'w': 1, 'l': 2, 'd': 0}},
-            'match': {'opp': 'lan', 'rated': True, 'side': 0, 'seed': 20261119, 'moves': [112,96,82,84,114,97,95,98,100,111,128,142,81,139,125,109,94,140,141,107,108,123,91,136,137,169,80,154,184,171,187,79,65]}}),
-        play=['waitsel:#said:not(:empty)', 'wait:1700']),
+        # the title picture is the map, with the Lantern Quarter picked on it: some places open, some still under cloud
+        title_ls=kept_player('sonic-gomoku', 'Sonic', {'points': 1164, 'peak': 1190, 'match': None, 'at': 'lantern', 'streak': 3, 'fresh': ['nguyet'],
+            'vs': {'suong': {'w': 5, 'l': 0, 'd': 0}, 'hanh': {'w': 5, 'l': 0, 'd': 0}, 'nhi': {'w': 5, 'l': 1, 'd': 0}, 'yen': {'w': 4, 'l': 1, 'd': 0}, 'tram': {'w': 2, 'l': 2, 'd': 1},
+                   'thom': {'w': 5, 'l': 0, 'd': 0}, 'cuc': {'w': 5, 'l': 0, 'd': 0}, 'man': {'w': 3, 'l': 1, 'd': 0}, 'dao': {'w': 2, 'l': 1, 'd': 0},
+                   'thu': {'w': 4, 'l': 1, 'd': 0}, 'vy': {'w': 3, 'l': 1, 'd': 0}, 'hien': {'w': 1, 'l': 1, 'd': 1}, 'quyen': {'w': 2, 'l': 0, 'd': 0}, 'ly': {'w': 1, 'l': 1, 'd': 0}}}),
+        title=['waitsel:#mapbox .spot', 'wait:2200'],
+        # the picture of play: a game for points in the Old Citadel, the player's move
+        ls=kept_player('sonic-gomoku', 'Sonic', {'points': 1432, 'peak': 1448, 'at': 'citadel', 'streak': 2, 'fresh': [],
+            'vs': {'hanh': {'w': 5, 'l': 0, 'd': 0}, 'thu': {'w': 5, 'l': 1, 'd': 0}, 'diep': {'w': 5, 'l': 2, 'd': 0}, 'oanh': {'w': 3, 'l': 2, 'd': 0}, 'uyen': {'w': 2, 'l': 2, 'd': 0}, 'bich': {'w': 1, 'l': 2, 'd': 0}},
+            'match': {'opp': 'bich', 'rated': True, 'side': 1, 'seed': 20261119, 'moves': [112,96,82,84,114,97,95,98,100,111,128,142,81,139,125,109,94,140,141,107,108,123,91,136,137,169,80,154,184,171,187,79,65]}}),
+        play=['waitsel:#said:not(:empty)', 'wait:1500']),
     # on its own site, with its players at the saves service, like Caro. The title picture is the lake as a player
     # finds it on coming in. The picture of play goes back to a game for points against the fan painter; once she has
     # said her word a Horse is picked up, so the points it may go to are showing
