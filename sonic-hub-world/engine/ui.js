@@ -39,18 +39,18 @@ export function setupUI(place, api) {
   if (/^https?:$/.test(location.protocol) && /\/places\//.test(location.pathname)) document.querySelectorAll('.back').forEach(a => { a.hidden = false; });
 
   // year
-  const yr = $('year'), out = $('year-out');
+  const yr = $('year'), out = $('year-out');   // none for a place of one year: it keeps that year's paper and ink
   function setYear(y, silent) {
     if (!Y) return;
-    state.year = y; yr.value = String(y); out.textContent = String(y);
+    state.year = y; if (yr) { yr.value = String(y); out.textContent = String(y); }
     root.dataset.era = eraOf(y).key;
     $('where').textContent = `${meta.sub} · ${y}`;
     api.setYear(y);
-    if (!silent) { const t = place.sayYear ? place.sayYear(y) : ''; speak([el('b', String(y)), document.createTextNode(t ? ` · ${t}` : '')], 3200); }
+    if (!silent && yr) { const t = place.sayYear ? place.sayYear(y) : ''; speak([el('b', String(y)), document.createTextNode(t ? ` · ${t}` : '')], 3200); }
     if (state.cardId) showCard(state.cardId);
     try { localStorage.setItem(`world:${meta.id}:year`, String(y)); } catch { /* storage is a convenience only */ }
   }
-  if (Y) {
+  if (Y && yr) {
     yr.addEventListener('input', () => setYear(+yr.value));
     // a touch on a year under the line goes straight to it
     document.querySelectorAll('#ticks span').forEach(t => t.addEventListener('click', () => setYear(+t.dataset.y)));
