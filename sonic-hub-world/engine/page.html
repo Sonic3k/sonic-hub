@@ -44,6 +44,12 @@ button { cursor: pointer; }
 #hours button { border: 1px solid var(--rule); background: var(--paper); padding: 8px 12px; font-size: 13px; font-weight: 600; color: var(--text2); min-height: 40px; }
 #hours button + button { border-left: 0; }
 #hours button[aria-pressed="true"] { background: var(--ink); border-color: var(--ink); color: var(--on); }
+/* under the hours: how the place is drawn */
+#side { display: flex; flex-direction: column; align-items: flex-end; gap: 6px; }
+#looks { display: flex; }
+#looks button { border: 1px solid var(--rule); background: var(--paper); padding: 6px 10px; font-size: 12px; font-weight: 600; color: var(--text2); min-height: 34px; }
+#looks button + button { border-left: 0; }
+#looks button[aria-pressed="true"] { background: var(--ink); border-color: var(--ink); color: var(--on); }
 
 #bottom { position: fixed; left: 10px; right: 10px; bottom: 10px; display: flex; align-items: flex-end; gap: 8px; pointer-events: none; }
 #bottom > * { pointer-events: auto; }
@@ -60,6 +66,7 @@ button { cursor: pointer; }
 #ticks { display: flex; justify-content: space-between; font-size: 10px; color: var(--text2); font-variant-numeric: tabular-nums; margin: -3px 2px 0; }
 #ticks span { cursor: pointer; padding: 5px 5px 4px; margin: -5px -5px -4px; }
 @media (pointer: coarse) {
+  #looks button { min-height: 40px; }
   #year { height: 34px; }
   #year::-webkit-slider-thumb { width: 24px; height: 28px; margin-top: -13px; }
   #year::-moz-range-thumb { width: 24px; height: 28px; }
@@ -126,8 +133,11 @@ button { cursor: pointer; }
 
 <header id="top">
   <div id="name" class="slip"><h1>{{title}}</h1><p id="where">{{sub}}</p></div>
-  <div id="hours" role="group" aria-label="Giờ trong ngày"{{hours_hidden}}>
-    {{hours}}
+  <div id="side">
+    <div id="hours" role="group" aria-label="Giờ trong ngày"{{hours_hidden}}>
+      {{hours}}
+    </div>
+    <div id="looks" role="group" aria-label="Cách vẽ"></div>
   </div>
 </header>
 

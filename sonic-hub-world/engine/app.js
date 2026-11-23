@@ -3,6 +3,7 @@
 import * as THREE from 'three';
 import { setAniso, canvasTex, texKeys } from './tex.js';
 import { setupLight } from './light.js';
+import { setupLook, LOOKS, PLAIN } from './look.js';
 import { setupNav } from './nav.js';
 import { setupUI } from './ui.js';
 import { readMoment } from './hub.js';
@@ -39,6 +40,8 @@ function start(place) {
 
   const live = place.build({ scene, shared, ctx, renderer }) || {};
   const light = setupLight(renderer, scene, place.light);
+  const look = setupLook(renderer, scene, camera);            // another way of drawing the same place (engine/look.js)
+  const draw = () => { if (look.on) look.render(); else renderer.render(scene, camera); };
 
   /* ── the bright dots on what can be touched ── */
   const dotTex = canvasTex(64, 64, (g, w) => { g.clearRect(0, 0, w, w); const r = g.createRadialGradient(32, 32, 2, 32, 32, 30); r.addColorStop(0, 'rgba(255,255,255,1)'); r.addColorStop(0.3, 'rgba(255,255,255,0.95)'); r.addColorStop(0.36, 'rgba(255,255,255,0.28)'); r.addColorStop(0.7, 'rgba(255,255,255,0.22)'); r.addColorStop(0.78, 'rgba(255,255,255,0.9)'); r.addColorStop(0.86, 'rgba(255,255,255,0)'); g.fillStyle = r; g.fillRect(0, 0, w, w); }, { repeat: false });
@@ -51,7 +54,7 @@ function start(place) {
   walkMark.position.y = 0.012; walkMark.renderOrder = 19; scene.add(walkMark);
 
   /* ── wiring ── */
-  let ui;
+  let ui, woke = performance.now(), asked = 0;   // woke: the last moment something asked for a fresh picture · asked: looks asked for so far
   const first = place.views[place.start] || Object.values(place.views)[0];
   const nav = setupNav(camera, canvas, shared.solids, {
     onTap(ray) {
@@ -85,6 +88,13 @@ function start(place) {
   ui = setupUI(place, {
     setYear(y) { if (live.setYear) live.setYear(y); renderer.shadowMap.needsUpdate = true; },
     setHour: applyHour,
+    looks: [PLAIN, ...LOOKS],
+    // a tap: the page goes on as it is drawn while the card builds the look's programs, then turns (the last tap wins);
+    // now (the page opening, a tool): built and turned before this returns
+    setLook(id, now) {
+      const n = ++asked, turn = () => { if (n === asked) { look.set(id); woke = performance.now(); } };
+      if (now) { look.prepare(id, true); turn(); } else look.prepare(id).then(turn);
+    },
     goto(key) { const v = place.views[key]; if (!v) return; ui.cut(() => nav.setPose(...v.pose)); try { history.replaceState(null, '', '#' + key); } catch { /* the address stays as it was */ } },
     startTour() { ui.close(); if (place.tour) nav.startTour(place.tour); },
     stopTour() { nav.stopTour(); },
@@ -111,8 +121,11 @@ function start(place) {
   const hourOf = h => { const hs = [...meta.hours].sort((a, b) => (a.from ?? 0) - (b.from ?? 0)); let pick = hs[hs.length - 1]; for (const x of hs) if (h >= (x.from ?? 0)) pick = x; return pick.id; };
   ui.setHour(want && meta.hours.length > 1 ? hourOf(want.hour) : meta.hours[0].id, true);
   { const k = viewOfHash(); if (k) nav.setPose(...place.views[k].pose); }
+  /* the look to open in: ?look=hoat-hinh, or the one the page itself was made to open in (<html data-look>); this
+     also has the card build the programs of whichever way the place is drawn first */
+  ui.setLook(new URLSearchParams(location.search).get('look') ?? document.documentElement.dataset.look ?? '', true);
 
-  let last = performance.now(), clock = 0, slow = 0, frames = 0, paused = false, woke = performance.now();
+  let last = performance.now(), clock = 0, slow = 0, frames = 0, paused = false;
   canvas.addEventListener('pointerdown', () => { woke = performance.now(); });
   function animate(dt) {
     clock += dt;
@@ -132,12 +145,11 @@ function start(place) {
     const raw = (now - last) / 1000, dt = Math.min(0.05, raw); last = now;
     nav.update(dt); animate(dt);
     light.follow(camera.position);   // a place bigger than one shadow box takes the box along
-    renderer.render(scene, camera);
+    draw();
     // a phone that cannot keep up gets a slightly softer picture, not a slower walk
     if (!idle) { frames++; if (raw > 0.034) slow++; }
     if (frames >= 90) { if (slow > 55 && dpr > 1) { dpr = Math.max(1, dpr - 0.25); resize(); } frames = slow = 0; }
   }
-  renderer.compile(scene, camera);
   ui.ready();
   requestAnimationFrame(frame);
 
@@ -148,14 +160,14 @@ function start(place) {
     /** a lens for tools/shot.mjs: the vertical field of view in degrees (a resize puts the engine's own back) */
     setFov: deg => { camera.fov = deg; camera.updateProjectionMatrix(); },
     goto: name => { const v = place.views[name]; if (v) nav.setPose(...v.pose); },
-    setHour: h => ui.setHour(h, true), setYear: y => ui.setYear(y, true),
+    setHour: h => ui.setHour(h, true), setYear: y => ui.setYear(y, true), setLook: id => ui.setLook(id, true), look: () => look.id,
     hideIntro: () => ui.hideIntro(), card: id => touch(id), tour: () => place.tour && nav.startTour(place.tour),
-    renderOnce: () => { nav.update(0); animate(0.016); light.follow(camera.position); renderer.render(scene, camera); },
+    renderOnce: () => { nav.update(0); animate(0.016); light.follow(camera.position); draw(); },
     hot: () => dots.map(d => ({ id: d.id, pos: d.pos, r: d.r })),
     project: (x, y, z) => { camera.updateMatrixWorld(); const v = new THREE.Vector3(x, y, z).project(camera), r = canvas.getBoundingClientRect(); return [r.left + (v.x + 1) / 2 * r.width, r.top + (1 - v.y) / 2 * r.height, v.z]; },
     texKeys,
     texMB: () => { const seen = new Set(); let n = 0; scene.traverse(o => { for (const m of [].concat(o.material || [])) for (const k of ['map', 'emissiveMap', 'alphaMap', 'bumpMap', 'normalMap', 'roughnessMap']) { const t = m[k]; if (t && t.image && !seen.has(t.uuid)) { seen.add(t.uuid); n += t.image.width * t.image.height * 4 * 4 / 3; } } }); return [seen.size, +(n / 1048576).toFixed(1)]; },
-    info: () => ({ calls: renderer.info.render.calls, tris: renderer.info.render.triangles, solids: shared.solids.length, pose: nav.getPose(), dpr, geoms: renderer.info.memory.geometries, tex: renderer.info.memory.textures }),
+    info: () => ({ calls: (look.on ? look.info : renderer.info.render).calls, tris: (look.on ? look.info : renderer.info.render).triangles, solids: shared.solids.length, pose: nav.getPose(), dpr, geoms: renderer.info.memory.geometries, tex: renderer.info.memory.textures, programs: renderer.info.programs.length }),
     pose: () => nav.getPose(), pause: v => { paused = v; },
     scene: () => scene, camera: () => camera,                // for a tool that has to look inside (which part draws this pixel?)
     step: dt => { nav.update(dt); animate(dt); }, touring: () => nav.touring, solids: () => shared.solids, tourKeys: place.tour || [],

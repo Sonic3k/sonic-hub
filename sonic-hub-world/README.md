@@ -11,6 +11,7 @@ sonic-hub-world/
     kit.js  tex.js       geometry builder (merged per material) and drawn textures / materials
     walls.js  furn.js    walls with openings, doors, windows, bars · furniture
     light.js             sky, sun, lamps, the hours of a day
+    look.js              another way of drawing the same place (for now: as an animated film would)
     nav.js               touch stick, drag to look, tap to walk, keys, collision, the tour's camera path
     ui.js  page.html     the slips over the picture (year, hour, rooms, cards) and the page they sit in
     eras.js  hub.js      the hub's eras (paper and ink by year) · the hub's address and how it names a moment
@@ -28,7 +29,7 @@ sonic-hub-world/
 | address | what |
 |---|---|
 | `/` | the list of places |
-| `/places/<id>` | a place. `?at=2007-06-15T18:05` opens it on that year and hour (the hub's own way of naming a moment, as on `/pc?at=`); `#<room>` opens it in that room |
+| `/places/<id>` | a place. `?at=2007-06-15T18:05` opens it on that year and hour (the hub's own way of naming a moment, as on `/pc?at=`); `#<room>` opens it in that room; `?look=hoat-hinh` opens it drawn that way (see Looks) |
 | `/places.json` | the list as data (served with CORS): `sonic-hub-web`'s Portal reads it to show what is inside |
 
 ## What a place is
@@ -86,6 +87,32 @@ Places stand alone: each is one page. Streets that join them (walking out of the
 will need places to share one ground and the engine to load a neighbour while you walk — `outside.js` of
 `van-bao-507` is the first sketch of that neighbourhood, seen only from the windows.
 
+## Looks
+
+A place is built once, as it was: its surfaces, its lamps, its hours. A look (`engine/look.js`) is another way of
+getting a frame of that same place to the screen; the two buttons under the hours switch between the plain way
+(*Chân thực*) and the looks there are, and the address keeps the choice (`?look=<id>`). One look so far:
+
+- `hoat-hinh` (*Hoạt hình*): as an animated film would draw it. Light from the sun and the lamps falls in three flat
+  steps, softly joined; nothing shines or mirrors; carpet, wood and plaster lose most of their grain; every thing gets a soft outline
+  in a darker shade of its own colour, full round its silhouette and lighter along its folds; what no lamp and no
+  sun reaches leans toward plum; what is bright glows a little.
+
+A place does nothing for a look, and a look changes nothing in a place. While a frame is drawn, each lit material
+(`MeshStandardMaterial`) is stood in for by a toon material sharing its colour and pictures (not its relief), and is
+back on its mesh when the frame is done, so whatever a place does to its materials through the hours keeps working.
+What is drawn unlit (a lit screen, a lamp's glow, the sky, the bright dots) keeps its own material; the whole
+picture then takes the hour's exposure and the renderer's tone curve together, so the few things the plain way
+keeps out of that curve (`toneMapped: false`) come out a shade softer. The outlines are read from the picture's
+depth: no second drawing of the place, a few passes over the screen. The surroundings an hour paints for
+reflections (`light.js`) light a stand-in the way they light a matt surface, which keeps a look about as bright as
+the plain picture without a setting per place; `tools/lookcheck.mjs` holds every place to that at every hour, and
+to getting its own materials and its plain picture back. A tap on a look's button has the card build that look's
+programs on the side while the page goes on, and turns when they are there.
+
+A new look is an entry in `LOOKS` and its settings in `SET` (and, if it draws lines or light another way, its own
+pass). A page can be made to open in a look when its address names none: `<html data-look="hoat-hinh">`.
+
 ## Build, run, test
 
 ```
@@ -97,8 +124,10 @@ node tools/site.mjs http://127.0.0.1:3000     # the site as served: the list, a 
 ```
 
 The tools need Playwright and Chrome (`PLAYWRIGHT`, `CHROME`, see tools/lib.mjs) and serve three.js from
-`node_modules` in place of the CDN. A place's page is one self-contained file (script inline, three.js 0.170.0 from
-cdnjs), so `dist/places/<id>.html` also works on its own, opened from disk or published as a single page.
+`node_modules` in place of the CDN. `tools/shot.mjs` photographs a place from its views or from given poses;
+`LOOK=hoat-hinh` draws it in a look, `DPR=2` as a dense phone screen shows it. A place's page is one self-contained
+file (script inline, three.js 0.170.0 from cdnjs), so `dist/places/<id>.html` also works on its own, opened from
+disk or published as a single page.
 
 ## Deploy
 

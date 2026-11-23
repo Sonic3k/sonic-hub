@@ -7,7 +7,7 @@ const el = (tag, text, cls) => { const e = document.createElement(tag); if (text
 
 export function setupUI(place, api) {
   const meta = place.meta, Y = meta.years || null, hours = meta.hours;
-  const state = { year: Y ? Y.start : null, hour: hours[0].id, open: null, cardId: null };
+  const state = { year: Y ? Y.start : null, hour: hours[0].id, look: '', open: null, cardId: null };
   const root = document.documentElement;
   // how far the bottom bar reaches up (one row or two, fat slider or thin): the cards and the labels sit just above it
   const bar = $('bottom'), fit = () => root.style.setProperty('--bar', Math.round(innerHeight - bar.getBoundingClientRect().top + 8) + 'px');
@@ -66,6 +66,20 @@ export function setupUI(place, api) {
   }
   for (const h of hours) $('h-' + h.id).addEventListener('click', () => setHour(h.id));
 
+  // look: how the place is drawn (engine/look.js). The first of the list is the plain way.
+  const looks = api.looks || [], lk = $('looks'), lid = l => 'l-' + (l.id || 'plain');
+  function setLook(id, silent) {
+    const l = looks.find(x => x.id === id) || looks[0]; if (!l) return;
+    state.look = l.id; for (const x of looks) $(lid(x)).setAttribute('aria-pressed', String(x === l));
+    api.setLook(l.id, !!silent);
+    if (silent) return;
+    speak([el('b', l.label), document.createTextNode(l.say ? ` · ${l.say}` : '')], 3000);
+    // the address keeps the look, so that it can be passed on as it is seen
+    try { const u = new URL(location.href); if (l.id) u.searchParams.set('look', l.id); else u.searchParams.delete('look'); history.replaceState(null, '', u); } catch { /* the address stays as it was */ }
+  }
+  if (looks.length > 1) for (const l of looks) { const b = el('button', l.label); b.type = 'button'; b.id = lid(l); b.setAttribute('aria-pressed', 'false'); b.addEventListener('click', () => setLook(l.id)); lk.append(b); }
+  else lk.hidden = true;
+
   // tour
   const bt = $('b-tour');
   function tourState(on) { bt.setAttribute('aria-pressed', String(on)); bt.textContent = on ? 'Dừng' : 'Tham quan'; }
@@ -90,5 +104,5 @@ export function setupUI(place, api) {
 
   let y0 = Y ? Y.start : null;
   if (Y) try { const s = +localStorage.getItem(`world:${meta.id}:year`); if (s >= Y.from && s <= Y.to) y0 = s; } catch { /* no storage */ }
-  return { state, setYear, setHour, showCard, close, label, speak, tourState, onStick, hideIntro, cut, blink, year0: y0, ready() { $('load').remove(); for (const b of $('go').children) b.disabled = false; $('fail').style.display = 'none'; }, notes: () => place.notes && fill(place.notes) };
+  return { state, setYear, setHour, setLook, showCard, close, label, speak, tourState, onStick, hideIntro, cut, blink, year0: y0, ready() { $('load').remove(); for (const b of $('go').children) b.disabled = false; $('fail').style.display = 'none'; }, notes: () => place.notes && fill(place.notes) };
 }
