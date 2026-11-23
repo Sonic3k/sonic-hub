@@ -210,6 +210,16 @@
 .mm-boot .tile.on .tile-v { font-size: 15px; }
 .mm-cover { width: 100%; max-height: 420px; margin: 12px 0; object-fit: cover; }
 
+/* ═══ Giấc mơ ═══ (laid out as Ký ức: dated lines, a page on the paper of its year) */
+.dr-line { grid-template-columns: 126px minmax(0, 1fr); }
+.dr-lead { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; font-size: 14.5px; line-height: 1.55; color: var(--ink2); }
+/* what the dream calls up in his waking life is real: ruled off from the dream, in plain ink */
+.dr-wake { margin: 34px 0 6px; padding: 2px 0 2px 20px; border-left: 3px solid var(--ink); }
+.dr-wake h5 { margin: 0 0 8px; font-size: 14px; font-weight: 700; color: var(--ink); }
+.dr-wake p { margin: 0 0 12px; font-size: 16.5px; line-height: 1.7; color: var(--ink2); }
+.dr-wake p:last-child { margin-bottom: 0; }
+.dr .mem-same a:hover, .dr .pn a:hover b { color: var(--dream); }
+
 /* reading pages: the column and what goes beside it; under 1180px what was beside comes after */
 /* ═══ Portal: the doors to the sites of their own ═══
    Each in its site's colour, with a drawing of what is behind it: the twelve houses of a tử vi chart, a pitch, a palace on its cliff, the plan of a home. */
@@ -266,6 +276,7 @@ a.pt-door:hover .pt-go i { filter: brightness(1.12); }
   .mm-feats.n1 .mm-feat { flex-direction: column; align-items: stretch; gap: 12px; }
   .mm-feats.n1 .mm-feat img { width: 100%; }
   .mm-line { grid-template-columns: 86px minmax(0, 1fr) auto; gap: 0 12px; }
+  .dr-line { grid-template-columns: 86px minmax(0, 1fr); }
   .mm-d { font-size: 13px; }
   .mm-b b { font-size: 16px; }
   .mm-line img { width: 52px; height: 40px; }

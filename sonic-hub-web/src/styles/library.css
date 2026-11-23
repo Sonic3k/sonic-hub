@@ -10,7 +10,7 @@
   :root {
     --bg: #F6F8F5; --card: #FDFEFC; --line: #D0D6D2; --soft: #E8EDE9; --ink: #1F2630; --ink2: #4D5863; --ink3: #68737D;
     --paper: #FDFEFC; --hand: #27408B; --field: #A9B4B6; --tape: rgba(186, 212, 222, .82);
-    --photo: #0E5A78; --journal: #27408B; --angels: #A8385F; --forum: #4B4FA6; --football: #23A35E; --games: #1F4FA8; --portal: #4D5863; --mystic: #9E2B25; --memory: #2F6B4F; --social: #3B5998; --music: #0F6A63;
+    --photo: #0E5A78; --journal: #27408B; --angels: #A8385F; --forum: #4B4FA6; --football: #23A35E; --games: #1F4FA8; --portal: #4D5863; --mystic: #9E2B25; --memory: #2F6B4F; --social: #3B5998; --music: #0F6A63; --dream: #6B4F8F;
     --sans: "Be Vietnam Pro", system-ui, sans-serif; --serif: "Be Vietnam Pro", system-ui, sans-serif;
     --display: Phudu, "Be Vietnam Pro", system-ui, sans-serif; --script: "Playwrite VN", Itim, cursive; --cap: Itim, "Be Vietnam Pro", cursive;
     --r: 0px; --wrap: 1240px; --top: 48px;

@@ -22,6 +22,7 @@ import { PostHits } from './Forum';
 import PersonNumbers from '../components/PersonNumbers';
 import { Attachment, AttachmentGallery, Lightbox, type Shown } from '../components/ChatAttachments';
 import { kindName, memoryHref, memoryWhen } from './Memories';
+import { DreamLine } from './Dreams';
 import { isOwner } from '../components/money/data';
 
 const T = 10 * 60_000;
@@ -202,6 +203,8 @@ export function PersonPage() {
   const shared = useQuery({ queryKey: ['memories-with', me?.id, id], enabled: !!me && me.id !== id, staleTime: T,
     queryFn: async () => (await hub.episodes(me!.id, { withPersonId: id })).sort((a, b) => (a.occurredAt ?? '9999').localeCompare(b.occurredAt ?? '9999')) });
   const photos = useQuery({ queryKey: ['person-photos', id], staleTime: T, queryFn: () => hub.search({ personId: id, size: 30, sortBy: 'effectiveDate', sortDir: 'asc', inclPersons: true, inclTags: true }) });
+  /* his dreams this person appears in, oldest first like the rest of the story */
+  const dreams = useQuery({ queryKey: ['dreams-with', id], staleTime: T, queryFn: async () => [...await hub.dreams({ withPersonId: id })].reverse() });
   const items = photos.data?.content ?? [], viewer = useViewer(items);
   const openById = (mid: string) => { const i = items.findIndex(m => m.id === mid); if (i >= 0) viewer.open(i); };
   const p = person.data, order = angelsInOrder(persons.data ?? [], years), k = order.findIndex(x => x.id === id), prev = k > 0 ? order[k - 1] : undefined, next = k >= 0 ? order[k + 1] : undefined;
@@ -236,7 +239,7 @@ export function PersonPage() {
   /* the parts of this page, for the way through it at the side (and under the name on a narrow screen) */
   const parts = [
     chs.length > 0 && ['chuyen', 'Câu chuyện'], hasNumbers && ['con-so', 'Những con số'], eps.length > 0 && ['khoanh-khac', 'Những khoảnh khắc'],
-    !!shared.data?.length && ['ky-uc', 'Trong ký ức của anh'], items.length > 0 && ['anh', 'Ảnh cùng nhau'], !!writings.data?.content.length && ['bai-viet', 'Bài viết'],
+    !!shared.data?.length && ['ky-uc', 'Trong ký ức của anh'], !!dreams.data?.length && ['giac-mo', 'Trong giấc mơ của anh'], items.length > 0 && ['anh', 'Ảnh cùng nhau'], !!writings.data?.content.length && ['bai-viet', 'Bài viết'],
     !!forums.data?.length && ['dien-dan', 'Trên diễn đàn'], chats.length > 0 && ['tin-nhan', 'Tin nhắn'],
   ].filter(Boolean) as [string, string][];
 
@@ -303,6 +306,9 @@ export function PersonPage() {
                 <span className="mm-d">{memoryWhen(e)}</span>
                 <span className="mm-b"><b>{e.title || e.summary}</b>{e.kind && <small><i className={`k-${e.kind}`}>{kindName(e.kind)}</i></small>}</span>
               </Link>))}</div></>}
+
+          {!!dreams.data?.length && <><h2 className="an-h" id="giac-mo">Trong giấc mơ của anh</h2>
+            <div className="an-rows">{dreams.data.map(d => <DreamLine key={d.id} d={d} />)}</div></>}
 
           {items.length > 0 && <><h2 className="an-h" id="anh">Ảnh cùng nhau<Link to={`/photos?person=${id}`}>Xem tất cả</Link></h2>
             <Justified items={items} rowHeight={180} gap={6} onOpen={viewer.open} /></>}

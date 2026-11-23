@@ -1,4 +1,4 @@
-/* Search everything from the top bar: people, regions, albums, writing, years, photos. */
+/* Search everything from the top bar: people, regions, albums, memories, dreams, writing, years, photos. */
 import { useEffect, useRef, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
@@ -7,6 +7,7 @@ import { cdn, pic } from '../api/client';
 import { counts, excerptOf, noteDate, noteHref, useAllAlbums, useNotes, usePersons, useTagStats, useTimeline } from '../lib/queries';
 import { matches } from '../lib/text';
 import { memoryHref, memoryWhen } from '../pages/Memories';
+import { dreamDay, dreamHref, dreamName } from '../lib/dreams';
 
 export default function Search() {
   const [q, setQ] = useState(''), [dq, setDq] = useState(''), [open, setOpen] = useState(false), box = useRef<HTMLDivElement>(null), nav = useNavigate(), loc = useLocation();
@@ -17,6 +18,7 @@ export default function Search() {
   const self = persons.data?.find(p => p.isSelf);
   const mems = useQuery({ queryKey: ['search-memories', self?.id, dq], queryFn: () => hub.episodes(self!.id, { q: dq, inclMedia: true }), enabled: !!self && dq.length >= 2, staleTime: 60_000 });
   const photos = useQuery({ queryKey: ['search-photos', dq], queryFn: () => hub.search({ q: dq, size: 8, type: 'IMAGE' }), enabled: dq.length >= 2, staleTime: 60_000 });
+  const dreams = useQuery({ queryKey: ['search-dreams', dq], queryFn: () => hub.dreams({ q: dq }), enabled: dq.length >= 2, staleTime: 60_000 });
   const t = q.trim(), years = Object.keys(counts(tl.data ?? [])).map(Number);
   const P = t ? (persons.data ?? []).filter(p => !p.isSelf && (matches(p.name, t) || matches(p.displayName, t) || matches(p.nickname, t))).slice(0, 4) : [];
   const R = t ? (tags.data ?? []).filter(x => matches(x.name, t)).slice(0, 4) : [];
@@ -24,7 +26,8 @@ export default function Search() {
   const N = t ? (notes.data ?? []).filter(n => matches(n.title, t) || matches(n.excerpt, t)).slice(0, 4) : [];
   const Y = /^\d{4}$/.test(t) && years.includes(+t) ? [+t] : [];
   const M = t ? (mems.data ?? []).slice(0, 4) : [];
-  const ph = photos.data?.content ?? [], none = t.length >= 2 && !P.length && !R.length && !A.length && !N.length && !M.length && !Y.length && !ph.length && !photos.isFetching && !mems.isFetching;
+  const D = t ? (dreams.data ?? []).slice(0, 3) : [];
+  const ph = photos.data?.content ?? [], none = t.length >= 2 && !P.length && !R.length && !A.length && !N.length && !M.length && !D.length && !Y.length && !ph.length && !photos.isFetching && !mems.isFetching && !dreams.isFetching;
   const submit = () => { if (t) nav(`/photos?q=${encodeURIComponent(t)}`); };
   return (
     <div className="search" ref={box}>
@@ -38,6 +41,7 @@ export default function Search() {
           {R.length > 0 && <div className="sg"><h6>Vùng</h6>{R.map(r => <Link key={r.id} className="sr" to={`/tags/${encodeURIComponent(r.name)}`}><span className="dot" style={{ background: r.color || 'var(--ink3)' }} /><b>{r.name}</b><small>{r.mediaCount} ảnh</small></Link>)}</div>}
           {A.length > 0 && <div className="sg"><h6>Album</h6>{A.map(a => <Link key={a.id} className="sr" to={`/photos/albums/${a.id}`}>{a.thumbnailUrl ? <img className="sr-th" src={cdn(a.thumbnailUrl, 80)} alt="" /> : <span className="sr-th ph" />}<b>{a.name}</b><small>{a.mediaCount ?? 0} ảnh</small></Link>)}</div>}
           {M.length > 0 && <div className="sg"><h6>Ký ức</h6>{M.map(e => <Link key={e.id} className="sr" to={memoryHref(e)}>{e.media?.[0]?.url ? <img className="sr-th" src={cdn(e.media[0].url, 80)} alt="" /> : <span className="sr-th ph" />}<b>{e.title || e.summary.slice(0, 50)}</b><small>{memoryWhen(e)}</small></Link>)}</div>}
+          {D.length > 0 && <div className="sg"><h6>Giấc mơ</h6>{D.map(d => <Link key={d.id} className="sr" to={dreamHref(d)}><b>{dreamName(d)}</b><small>{dreamDay(d.dreamtOn)}</small></Link>)}</div>}
           {N.length > 0 && <div className="sg"><h6>Bài viết</h6>{N.map(n => <Link key={n.id} className="sr" to={noteHref(n)}><b>{n.title || excerptOf(n, 40)}</b><small>{noteDate(n).slice(0, 4)}</small></Link>)}</div>}
           {ph.length > 0 && <div className="sg"><h6>Ảnh</h6><div className="sr-photos">{ph.map(m => <Link key={m.id} to={`/photos?q=${encodeURIComponent(t)}&p=${m.id}`}>{pic(m) ? <img src={cdn(pic(m), 120)} alt="" /> : <span className="sr-ph">▶</span>}</Link>)}</div>
             <button type="button" className="sr-all" onClick={submit}>Xem tất cả ảnh khớp “{t}” →</button></div>}

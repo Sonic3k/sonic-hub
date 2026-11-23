@@ -1,6 +1,7 @@
 package com.sonic.angels.model.dto;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
@@ -34,6 +35,8 @@ public class LifeEventDto {
                                  String payeeName, String category, String account) {}
     /** money of the event in one currency: out = spent (positive), in = received */
     public record Money(String currency, BigDecimal out, BigDecimal in, int count) {}
+    /** a dream that calls this event up: it does not belong to the event, it only refers to it */
+    public record DreamRef(UUID id, String title, String lead, LocalDate dreamtOn) {}
 
     public static class Summary {
         public UUID id, personId, parentId, coverMediaId;
@@ -53,6 +56,8 @@ public class LifeEventDto {
         public List<AlbumRef> albumList;
         public List<MemoryRef> memoryList;
         public List<TransactionRef> transactionList;
+        /** the dreams that call it up, the newest first */
+        public List<DreamRef> dreamList;
     }
 
     /** Where a moment falls: the events it is inside (shortest first), the one that ended last before it, the next one. */

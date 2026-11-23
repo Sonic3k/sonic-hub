@@ -10,6 +10,7 @@ import MapPage from './pages/MapPage'
 import TagsPage from './pages/TagsPage'
 import UploadPage from './pages/UploadPage'
 import EventsPage from './pages/EventsPage'
+import DreamsPage from './pages/DreamsPage'
 import MemoryPage from './pages/MemoryPage'
 import ScriptsPage from './pages/ScriptsPage'
 import JournalPage from './pages/JournalPage'
@@ -38,6 +39,7 @@ export default function App() {
             <Route path="upload" element={<UploadPage />} />
             <Route path="memory" element={<MemoryPage />} />
             <Route path="events" element={<EventsPage />} />
+            <Route path="dreams" element={<DreamsPage />} />
             <Route path="scripts" element={<ScriptsPage />} />
             <Route path="journal" element={<JournalPage />} />
             <Route path="other-chats" element={<OtherChatsPage />} />

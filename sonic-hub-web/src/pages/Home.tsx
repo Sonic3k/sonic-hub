@@ -1,7 +1,7 @@
 /* Hôm nay: the day being looked at — today's date in a year of his, or any day picked on the header's calendar.
    The page brings up what the hub holds around that day, and only what it holds: the photos, what happened, the
    stretch of life it falls in, the machines he had, what he was playing and listening to, what was being said on
-   the forums, what he wrote. Paper and ink are those of the day's era. */
+   the forums, what he wrote, what he dreamt that night. Paper and ink are those of the day's era. */
 import { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
@@ -13,6 +13,7 @@ import { excerptOf, noteDate, noteHref, readMinutes, useNotes, useTimeline } fro
 import { dayMonthYear, eventLabel, isoDay, longDay } from '../lib/date';
 import { atOf, isoOf, useMoment, type Moment } from '../lib/moment';
 import { eraClass } from '../lib/era';
+import { dreamHref, dreamName } from '../lib/dreams';
 import { chaptersAt, deviceRange, gamesAt, listsAt, notesNear, sameDayCards } from '../lib/life';
 import { kindName, useLifeChapters, useMemories, useSelf } from './Memories';
 import { eventDays, useEvents } from './Events';
@@ -47,6 +48,7 @@ function Today({ moment }: { moment: Moment }) {
   const around = useQuery({ queryKey: ['events-at', at], queryFn: () => hub.eventsAt(at), staleTime: T });
   const upTo = useQuery({ queryKey: ['memories-upto', at], queryFn: () => hub.memoriesUpTo(at), staleTime: T });
   const plays = useQuery({ queryKey: ['sp-day', iso], queryFn: () => musicApi.day(iso), enabled: iso >= '2018-12-29', staleTime: T });
+  const dreamsQ = useQuery({ queryKey: ['dreams-day', iso], queryFn: () => hub.dreams({ from: iso, to: iso }), staleTime: T });
   const forums = useQuery({ queryKey: ['forums'], queryFn: hub.forums, staleTime: T });
   const alive = (forums.data ?? []).filter(f => f.firstPostAt && f.lastPostAt && f.firstPostAt.slice(0, 10) <= iso && iso <= f.lastPostAt.slice(0, 10));
   const threads = useQuery({ queryKey: ['forum-at', alive.map(f => f.key).join(','), at], enabled: alive.length > 0, staleTime: T,
@@ -94,6 +96,8 @@ function Today({ moment }: { moment: Moment }) {
   }, [plays.data]);
   const kept = listsAt(lists.data ?? [], iso).slice(0, 2);
   const wrote = notesNear(notes.data ?? [], iso, 1)[0];
+  // what he dreamt that night, in the order he told it (the first one opens; its page has the others of the morning)
+  const dreamt = dreamsQ.data ?? [];
   const note = quoted(story?.title) ?? quoted(lead?.caption);
 
   // ── the same day in other years: memories and events on it, then the years with photos this month
@@ -157,6 +161,7 @@ function Today({ moment }: { moment: Moment }) {
                 : kept.length > 0 && <Tile label="Music" to={kept.length === 1 ? `/music/lists/${kept[0].key}` : '/music'}>{kept.map(p => p.title).join(', ')}</Tile>}
               {(threads.data ?? []).map(({ forum, thread }) => <Tile key={forum.key} label={forum.name.replace(/\s*\(.*\)$/, '')} to={`/forum/t/${thread.id}`}>{thread.title}</Tile>)}
               {wrote && <Tile label={`Nhật ký · ${dayMonthYear(noteDate(wrote))}`} to={noteHref(wrote)}>{wrote.title || 'Không tiêu đề'}</Tile>}
+              {dreamt.length > 0 && <Tile label="Giấc mơ" to={dreamHref(dreamt[0])}>{dreamt.map(dreamName).join(' · ')}</Tile>}
             </div>
           </div>
         </div>

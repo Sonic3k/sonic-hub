@@ -12,6 +12,7 @@ import { Fragment, useEffect, useLayoutEffect, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { MoneySide } from '../pages/Money';
 import { MemoriesSide } from '../pages/Memories';
+import { DreamsSide } from '../pages/Dreams';
 import { GamesSide } from '../pages/Games';
 import { MusicSide } from '../pages/Music';
 import { isOwner } from './money/data';
@@ -23,7 +24,7 @@ interface Tab { n: string; to: string; c: string; end?: boolean }
 /* The menu in its groups: time · what is kept · people · play and listen · the sites of their own (Huyền học, Bóng đá, Hidden Palace, Nơi chốn). */
 const GROUPS: Tab[][] = [
   [{ n: 'Hôm nay', to: '/', c: '--ink', end: true }, { n: 'Dòng thời gian', to: '/timeline', c: '--ink' }],
-  [{ n: 'Ảnh', to: '/photos', c: '--photo' }, { n: 'Ký ức', to: '/memories', c: '--memory' }, { n: 'Nhật ký', to: '/journal', c: '--journal' }],
+  [{ n: 'Ảnh', to: '/photos', c: '--photo' }, { n: 'Ký ức', to: '/memories', c: '--memory' }, { n: 'Nhật ký', to: '/journal', c: '--journal' }, { n: 'Giấc mơ', to: '/dreams', c: '--dream' }],
   [{ n: 'Angels', to: '/angels', c: '--angels' }, { n: 'Diễn đàn', to: '/forum', c: '--forum' }],
   [{ n: 'Game', to: '/games', c: '--games' }, { n: 'Music', to: '/music', c: '--music' }],
   [{ n: 'Portal', to: '/portal', c: '--portal' }],
@@ -43,9 +44,9 @@ function Frame() {
   const [more, setMore] = useState(false), [filters, setFilters] = useState(false);
   const inPortal = path.startsWith('/portal');
   /* pages with no sidebar: one thing being read (a note, a memory, a game, a list, a person and what hangs under them, a thread), and the Portal's doors */
-  const reading = /^\/(journal|memories)\/(?!events\/?$).+/.test(path) || /^\/games\/(?!series\/|play\/)[^/]+$/.test(path) || /^\/music\/lists\/[^/]+$/.test(path)
+  const reading = /^\/(journal|memories|dreams)\/(?!events\/?$).+/.test(path) || /^\/games\/(?!series\/|play\/)[^/]+$/.test(path) || /^\/music\/lists\/[^/]+$/.test(path)
     || /^\/angels\/.+/.test(path) || /^\/forum\/t\//.test(path) || inPortal, inMemories = path.startsWith('/memories'), inJournal = path.startsWith('/journal'), inPhotos = /^\/(photos|tags)/.test(path), inAngels = path.startsWith('/angels'), inForum = path.startsWith('/forum');
-  const inMoney = path.startsWith('/money'), inGames = path.startsWith('/games'), inMusic = path.startsWith('/music');
+  const inMoney = path.startsWith('/money'), inGames = path.startsWith('/games'), inMusic = path.startsWith('/music'), inDreams = path.startsWith('/dreams');
   const onHome = HOME_PATHS.includes(path);
   /* on a phone the sidebar is a sheet behind a button: on the pages that list things, not where one thing is read, played or chatted */
   const sheet = !onHome && !reading && path !== '/forum' && !/^\/games\/play\//.test(path);
@@ -83,7 +84,7 @@ function Frame() {
       </div>
       <div className={`frame ${reading ? 'reading' : ''} ${onHome ? 'home' : ''}`} style={{ ['--sec' as string]: `var(${current?.c ?? '--ink'})` }}>
         {!onHome && <aside className={`side ${filters ? 'open' : ''}`} onClick={e => { if ((e.target as HTMLElement).closest('a')) setFilters(false); }}>
-          {inJournal ? <JournalSide /> : inMemories ? <MemoriesSide /> : inPhotos ? <PhotosSide /> : inAngels ? <AngelsSide /> : inForum ? <ForumSide /> : inMoney ? <MoneySide /> : inGames ? <GamesSide /> : inMusic ? <MusicSide /> : null}
+          {inJournal ? <JournalSide /> : inMemories ? <MemoriesSide /> : inDreams ? <DreamsSide /> : inPhotos ? <PhotosSide /> : inAngels ? <AngelsSide /> : inForum ? <ForumSide /> : inMoney ? <MoneySide /> : inGames ? <GamesSide /> : inMusic ? <MusicSide /> : null}
           <button type="button" className="side-x" onClick={() => setFilters(false)}>{inMoney ? 'Close' : 'Đóng'}</button>
         </aside>}
         <main><Outlet /></main>

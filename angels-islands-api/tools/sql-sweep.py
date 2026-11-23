@@ -9,7 +9,7 @@ time and the size. Exits 1 when a read sent more statements than --max (50): a l
 whatever its length, so a higher count means something is fetched row by row.
 
 Placeholders in a path are filled from the API itself: {self} {person} {album} {forum} {game} {memory} {note} {event}
-{media} {fb}.
+{dream} {media} {fb}.
 A path whose placeholder cannot be filled (nothing of that kind yet) is skipped. Python 3, no packages needed.
 """
 import argparse, json, os, sys, time, urllib.request
@@ -55,6 +55,7 @@ except Exception: ids['fb'] = None
 if ids['self']:
     ids['memory'] = first(f"/api/persons/{ids['self']}/memory/episodes", lambda e: e['id'])
     ids['event'] = first(f"/api/events?personId={ids['self']}", lambda e: e['id'])
+    ids['dream'] = first(f"/api/dreams?personId={ids['self']}", lambda d: d['id'])
 
 over, total, n = [], 0, 0
 print(f"{'sql':>6} {'ms':>7} {'bytes':>10}  status  path")
