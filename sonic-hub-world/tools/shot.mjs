@@ -2,13 +2,15 @@
 // usage: node tools/shot.mjs <name> [w=1280] [h=720] ['x,y,z,heading,pitch;…' | names of views] [hour] [year] [intro|rooms|notes|card:<id>]
 // FOV=<degrees> in the environment sets the vertical field of view (to stand a render beside a photograph taken
 // with a known lens: 54.4 for a 4:3 frame at 25 mm equivalent, 43.4 for a phone at 33 mm).
+// LOOK=<id> draws it in a look (engine/look.js), e.g. LOOK=hoat-hinh.
+// DPR=<n> photographs it as a dense screen shows it (a phone: 2 or 3); the picture is n times as large.
 import fs from 'fs';
 import { launch, open } from './lib.mjs';
 
 const [name = 'shot', W = '1280', H = '720', poses = '', hour = '', year = '', uiState = ''] = process.argv.slice(2);
 fs.mkdirSync('shots', { recursive: true });
 const browser = await launch();
-const { page, logs } = await open(browser, { width: +W, height: +H });
+const { page, logs } = await open(browser, { width: +W, height: +H, dpr: +process.env.DPR || 1, query: process.env.LOOK ? '?look=' + process.env.LOOK : '' });
 if (hour) await page.evaluate(h => window.__world.setHour(h), hour);
 if (process.env.FOV) await page.evaluate(f => window.__world.setFov(f), +process.env.FOV);
 if (year) await page.evaluate(y => window.__world.setYear(+y), year);

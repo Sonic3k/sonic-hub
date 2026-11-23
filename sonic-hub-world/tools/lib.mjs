@@ -22,11 +22,11 @@ export async function launch() {
   return chromium.launch({ executablePath: process.env.CHROME || '/usr/bin/google-chrome', headless: true, args: ['--use-gl=angle', '--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist', '--no-sandbox', '--enable-webgl'] });
 }
 
-/** Opens a place's page. o: { width, height, mobile, place, query ('?at=…'), hash ('#bep'), wait (for the place to be built), pause (stop its own frame loop) } */
+/** Opens a place's page. o: { width, height, dpr (device pixels per CSS pixel), mobile, place, query ('?at=…'), hash ('#bep'), wait (for the place to be built), pause (stop its own frame loop) } */
 export async function open(browser, o = {}) {
-  const { width = 1280, height = 720, mobile = width < 700, place = PLACE, query = '', hash = '', wait = true, pause = true } = o;
+  const { width = 1280, height = 720, dpr = 1, mobile = width < 700, place = PLACE, query = '', hash = '', wait = true, pause = true } = o;
   const three = fs.readFileSync('node_modules/three/build/three.module.min.js');
-  const ctx = await browser.newContext({ viewport: { width, height }, deviceScaleFactor: 1, hasTouch: mobile, isMobile: mobile });
+  const ctx = await browser.newContext({ viewport: { width, height }, deviceScaleFactor: dpr, hasTouch: mobile, isMobile: mobile });
   const page = await ctx.newPage(); const logs = [];
   page.on('pageerror', e => logs.push('pageerror ' + e.message));
   page.on('console', m => { if (m.type() === 'error' && !/ERR_FAILED/.test(m.text())) logs.push('console ' + m.text()); });
