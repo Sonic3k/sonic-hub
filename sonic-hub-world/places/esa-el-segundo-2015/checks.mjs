@@ -1,5 +1,6 @@
 // Extended Stay America, El Segundo: drives the page the way a visitor would (mouse, keys, touch) and checks that it
-// answers — the studio, its door, the stairs down to the lot, the streets, the cards, the address, the cost of a frame.
+// answers — the studio, its door, the bathroom, the stairs down to the lot, the streets, the cards, the address, the
+// cost of a frame.
 // Run from the module's folder after a build: node places/esa-el-segundo-2015/checks.mjs
 import { launch, open as openPage } from '../../tools/lib.mjs';
 
@@ -45,6 +46,20 @@ try {
   await page.click('#card .x'); await walk(page, 'KeyW', 3000);
   const pe = await pose(page);
   ok('an open door lets him out onto the walkway', pe[0] < ROOM_X0 - 0.4 && Math.abs(pe[1] - (G2 + 1.52)) < 0.1 && dc.startsWith('Đang mở'), `x = ${pe[0]}, card "${dc.slice(0, 20)}"`);
+  // the bathroom: shut, its doorway holds; open, the walker goes in between the tub and the basin, and both stop him
+  await page.evaluate(([x0, z0]) => window.__world.setPose(x0 + 5.4, 4.55, z0 + 1.55, 180, 0), [ROOM_X0, ROOM_Z0]); await walk(page, 'KeyW', 2500);
+  const b1 = await pose(page);
+  ok('a shut bathroom door holds', b1[2] < ROOM_Z0 + 2.0, `z = ${b1[2]}`);
+  await page.evaluate(() => window.__world.card('bathdoor')); const bc = await page.evaluate(() => document.getElementById('card-b').textContent);
+  await page.click('#card .x'); await walk(page, 'KeyW', 2500);
+  const b2 = await pose(page);
+  ok('an open one lets him into the bathroom', b2[2] > ROOM_Z0 + 2.4 && b2[2] < ROOM_Z0 + 3.63 && bc.startsWith('Đang mở'), `z = ${b2[2]}, card "${bc.slice(0, 9)}"`);
+  await turnTo(page, 270); await walk(page, 'KeyW', 2500); const b3 = await pose(page);
+  await turnTo(page, 90); await walk(page, 'KeyW', 3000); const b4 = await pose(page);
+  ok('the tub and the basin\'s side of the bathroom stop him', b3[0] > ROOM_X0 + 4.82 && b3[0] < ROOM_X0 + 5.3 && b4[0] < ROOM_X0 + 5.9 && b4[0] > b3[0] + 0.3, `x = ${b3[0]} … ${b4[0]}`);
+  await page.evaluate(() => window.__world.card('bath')); const bt = await page.evaluate(() => document.getElementById('card-t').textContent); await page.click('#card .x');
+  await page.evaluate(() => window.__world.goto('nha-tam')); await wait(page, 100); const b5 = await pose(page);
+  ok('the bathroom has its card, and its own place in the list of rooms', bt === 'Nhà tắm' && b5[0] > ROOM_X0 + 4.9 && b5[0] < ROOM_X0 + 5.8 && b5[2] > ROOM_Z0 + 2.1 && b5[2] < ROOM_Z0 + 3.6, `"${bt}", ${JSON.stringify(b5)}`);
   // the south-west stairs: down the upper flight, round the landing, down the lower flight to the lot
   await page.evaluate(g2 => window.__world.setPose(12.6, g2 + 1.52, 38.8, 270, 0), G2); await walk(page, 'KeyW', 3500);
   const s1 = await pose(page);
@@ -55,6 +70,7 @@ try {
   await page.click('#b-rooms'); ok('rooms list opens', await page.evaluate(() => document.getElementById('rooms').classList.contains('on')));
   const names = await page.evaluate(() => [...document.querySelectorAll('#room-list button')].map(b => b.textContent));
   const si = names.indexOf('Starbucks');
+  ok('the list of rooms has the bathroom', names.includes('Nhà tắm'), names.join(' · '));
   if (si >= 0) await page.click(`#room-list li:nth-child(${si + 1}) button`); await page.waitForTimeout(500); await wait(page, 100);
   const pf = await pose(page);
   ok('"Starbucks" takes you to the corner of the lot', si >= 0 && Math.abs(pf[0] + 58) < 0.1 && Math.abs(pf[2] + 6) < 0.1, JSON.stringify(pf));

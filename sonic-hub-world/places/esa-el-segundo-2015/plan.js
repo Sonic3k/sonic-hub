@@ -114,6 +114,17 @@ export const IN = {
   fridge: { v0: 0.03, v1: 0.63, front: D - 0.70, h: 1.548, split: 1.07 },
   bath: { u0: 3.96, v0: 2.0 }, bathDoor: [5.015, 5.775],            // the box's west and north faces; its door is hinged at the east jamb and opens out
   bathSwitch: { u: 4.135, y: 1.18 }, detector: { u: 4.765, y: 2.25 },
+  /* INSIDE THE BATHROOM. None of his photographs shows it; these come off a traveller's photograph of 2026, taken from the
+     door of a studio like his (its mirror image), by its rows of six-inch tiles: the tub's rim, the tiles' top, the valve,
+     the spout, the towel shelf and the paper on the party wall; and off the same photograph's camera, the basin's
+     cabinet (two feet long, its top at 0.83) and the arm of its top over the pan's tank (EVIDENCE.md, "The bathroom's
+     inside").
+     tub: its width · rim: over the floor · pan: its middle off the party wall · shelf, paper: u of the west end / middle */
+  bathIn: {
+    wall: '#b48a42', tub: 0.76, rim: 0.31, tile: { top: 1.86, size: 0.152 }, valve: 0.78, spout: 0.42, rose: 1.98, rod: 2.03,
+    shelf: { u: 4.94, w: 0.49, y: 1.70 }, paper: { u: 5.77, y: 0.50 }, pan: 0.46,
+    vanity: { len: 0.58, depth: 0.57, h: 0.83 }, arm: { depth: 0.18, splash: 0.12 },
+  },
   print: { v0: 2.27, v1: 2.97, y0: 0.93, y1: 1.94 },                 // on the box's west face
   /* a full (double) bed, its head to the south wall: the mattress; its covers stand 3 cm proud of it all round. The
      runner's two edges across the bed, and how wide its dark borders are */
@@ -128,7 +139,9 @@ export const IN = {
 
 /* VIEWS: the rooms list. Poses [x, y, z, heading, pitch]. Heading: degrees clockwise from north. `phong`, `hanh-lang`
    and `bai-xe` stand where the camera stood for a photograph; `ban`, `tu-guong` and `giuong` a step from where it did
-   (he took those three sitting on the bed and on the chair at the counter, where a walker cannot stand). */
+   (he took those three sitting on the bed and on the chair at the counter, where a walker cannot stand). `nha-tam`
+   stands just inside the bathroom's door and looks toward the tub and the party wall, the side the traveller's
+   photograph it is built from shows. */
 const R = (u, v) => [ROOM.x0 + u, ROOM.z0 + v];
 const at = (u, v, y, h, p) => { const [x, z] = R(u, v); return [x, G2 + y, z, h, p]; };
 export const ROOMPT = R;
@@ -139,6 +152,7 @@ export const VIEWS = {
   'tu-guong': { name: 'Tủ, tivi, gương', pose: at(3.62, 2.72, 1.38, 345, -5) },
   'giuong': { name: 'Giường', pose: at(3.6, 0.62, 1.36, 212, -13.5) },
   'bep': { name: 'Bếp nhỏ', pose: at(4.2, 1.62, 1.5, 62, -9) },
+  'nha-tam': { name: 'Nhà tắm', pose: at(5.5, 2.28, 1.5, 205, -20) },
   'cua': { name: 'Cửa phòng', pose: at(2.5, 1.3, 1.5, 266, -3) },
   'hanh-lang': { name: 'Hành lang tầng 2', pose: [ROOM.x0 - WALL - 0.86, G2 + 1.5, doorZ + 1.95, 353, -3.5] },   // where the photograph of 09:47:46 was taken
   'lan-can': { name: 'Lan can nhìn sang Ralphs', pose: [13.05, G2 + 1.52, doorZ, 248, -5] },

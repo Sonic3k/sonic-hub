@@ -100,6 +100,20 @@ const plaidTex = () => once('esaPlaid3', () => canvasTex(256, 256, (g, w, h) => 
   for (const [p, s, c, a] of bands) { g.globalAlpha = a; g.fillStyle = c; g.fillRect(p, 0, s, h); g.fillRect(0, p, w, s); }
   g.globalAlpha = 1; const R = rng(4); for (let i = 0; i < 5000; i++) { g.fillStyle = `rgba(${R() < 0.5 ? '0,0,0' : '255,240,210'},${(R() * 0.1).toFixed(3)})`; g.fillRect(R() * w, R() * h, 2, 1); }
 }));
+/** cultured marble of the bathroom's top: sand, flecked with grey and umber · 1 m */
+const marbleTex = () => once('marble', () => canvasTex(256, 256, (g, w, h) => {
+  const R = rng(21); g.fillStyle = '#dccfb3'; g.fillRect(0, 0, w, h);
+  for (let i = 0; i < 2600; i++) { g.fillStyle = ['#9a8f7c', '#b9ab90', '#6f675b', '#efe6d2', '#c9b79a', '#8a7c68'][(R() * 6) | 0]; g.globalAlpha = 0.3 + R() * 0.5; g.beginPath(); g.ellipse(R() * w, R() * h, 0.5 + R() * 1.4, 0.4 + R() * 1.1, R() * 3, 0, 7); g.fill(); }
+  g.globalAlpha = 1;
+}));
+/** the tub's surround: six-inch tiles of the same flecked sand, their joints a shade darker · two tiles to a repeat */
+const bathTileTex = () => once('bathTile', () => canvasTex(256, 256, (g, w, h) => {
+  const R = rng(22); g.fillStyle = '#d6c6a5'; g.fillRect(0, 0, w, h);
+  for (let i = 0; i < 1500; i++) { g.fillStyle = ['#9a8f7c', '#b9ab90', '#77705f', '#ece2cc', '#c4b294'][(R() * 5) | 0]; g.globalAlpha = 0.3 + R() * 0.45; g.beginPath(); g.ellipse(R() * w, R() * h, 0.8 + R() * 2.2, 0.6 + R() * 1.8, R() * 3, 0, 7); g.fill(); }
+  g.globalAlpha = 1; g.fillStyle = 'rgba(146,124,92,0.62)';
+  for (const p of [0, 128, 256]) { g.fillRect(p - 1.25, 0, 2.5, h); g.fillRect(0, p - 1.25, w, 2.5); }
+  g.fillStyle = 'rgba(255,250,235,0.16)'; for (const p of [0, 128]) { g.fillRect(p + 1.25, 1.25, 1.5, 126); g.fillRect(p + 1.25, 129.25, 1.5, 126); }      // the glaze catches the light along one edge
+}));
 /** the white quilted cover: diamond stitching, four diamonds to a repeat (laid 1.48 m to a repeat on the bed) */
 const quiltTex = (base = '#f1efe9', line = 'rgba(150,140,125,0.55)') => once('quilt' + base, () => canvasTex(256, 256, (g, w, h) => {
   g.fillStyle = base; g.fillRect(0, 0, w, h);
@@ -147,6 +161,11 @@ export const X = {
   mulch: () => mat('mulch', () => std({ map: mulchTex(), roughness: 1 })),
   plaid: () => mat('plaid', () => std({ map: plaidTex(), roughness: 0.95, side: THREE.DoubleSide })),
   quilt: () => mat('quilt', () => std({ map: quiltTex(), roughness: 0.9 })),
+  marble: () => mat('marble', () => std({ map: marbleTex(), roughness: 0.32 })),
+  marbleIn: () => mat('marbleIn', () => std({ map: marbleTex(), roughness: 0.3, side: THREE.DoubleSide })),
+  bathTile: () => mat('bathTile', () => std({ map: bathTileTex(), roughness: 0.38 })),
+  /** chromed brass: not a pure mirror, so that by one lamp at night it still reads as bright metal */
+  chrome: () => mat('chrome2', () => std({ color: '#e4e7e9', roughness: 0.26, metalness: 0.62 })),
   runner: (border = 0.075) => mat('runner' + border.toFixed(3), () => std({ map: runnerTex(border), roughness: 0.9 })),
   leather: () => mat('leather', () => std({ map: leatherTex(), roughness: 0.55 })),
   pine: () => mat('pine', () => std({ map: pineTex(), roughness: 0.5 })),
