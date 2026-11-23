@@ -6,13 +6,13 @@ import * as THREE from 'three';
 import { along, makeWall, windowFrame, doorLeaf } from '../../engine/walls.js';
 import { M, canvasTex, rng, shade } from '../../engine/tex.js';
 import { X } from './mat.js';
-import { WINGS, G1, G2, CEIL, EAVE, PITCH, COL, FRONT, WALL, MOD, TOWER_D, HIS, flat, ramp } from './plan.js';
+import { WINGS, G1, G2, CEIL, EAVE, PITCH, COL, FRONT, WALL, MOD, TOWER_D, HIS, IN, doorAtStart, flat, ramp } from './plan.js';
 
 const SOFFIT = EAVE - 0.3;               // the ceiling of the upper walkway
 const SLAB = G2 - 0.28;                  // underside of the upper walkway
-const DOOR_W = 0.9, DOOR_H = 2.03, WIN_W = 1.55;
-/** where a studio's door and window sit along its front wall (from its north/west party wall, or mirrored) */
-export const OPEN = { door: [0.8, 1.7], win: [2.3, 3.85], sill: 0.85, head: 2.15 };
+const DOOR_W = IN.door[1] - IN.door[0], DOOR_H = IN.doorH, PARTY = 0.22, BAY = 5.9;
+/** where a studio's door and window sit along its front wall, from the party wall its door is nearer to (plan.js: IN) */
+export const OPEN = { door: IN.door, win: IN.win, sill: IN.sill, head: IN.head, louvre: IN.louvre };
 
 /* ── a few drawn things ── */
 const louvreTex = () => canvasTex(128, 64, (g, w, h) => { g.fillStyle = '#cdbf9e'; g.fillRect(0, 0, w, h); for (let y = 4; y < h - 2; y += 6) { g.fillStyle = 'rgba(60,45,25,0.55)'; g.fillRect(4, y, w - 8, 2.4); g.fillStyle = 'rgba(255,250,235,0.5)'; g.fillRect(4, y + 2.4, w - 8, 1); } g.strokeStyle = 'rgba(80,60,35,0.6)'; g.lineWidth = 3; g.strokeRect(1.5, 1.5, w - 3, h - 3); }, { repeat: false });
@@ -25,7 +25,7 @@ function materials(ctx) {
     wall: X.stucco('#dcc58a', 1), wall2: X.stucco('#d7bd80', 2), tower: X.stucco('#dfca91', 3),
     col: X.stucco('#8c3b2b', 4), trim: M.plain('#f1ece0', 0.6), soffit: X.stucco('#e7dcc0', 5),
     roof: X.roof('#b4553a', 2), roof2: X.roof('#a94c33', 5), ridge: M.plain('#9c4630', 0.7),
-    walk: X.conc('#b9b5ac', 1, true), slab: X.conc('#c9c5bb', 2, false),
+    walk: X.conc('#aaa497', 1, true), slab: X.conc('#c9c5bb', 2, false),
     inside: X.roomWall('#d8c49c'),
     door: M.plain('#4f4842', 0.55), mat: M.plain('#1d1c1b', 0.95), metal: M.plain('#2b2b2b', 0.4, 0.6),
     frame: M.plain('#f3f2ee', 0.45), glass: X.glassDark(),
@@ -108,10 +108,11 @@ export function buildWing(b, key, ctx, opts = {}) {
   for (const S of sides) {
     const ops = [];
     for (let k = 0; k < N; k++) {
-      const s0 = A0 + k * MOD + 0.075, odd = k % 2 === 1;   // odd studios have their door at the north/west end (as his)
-      const d = odd ? [s0 + OPEN.door[0], s0 + OPEN.door[1]] : [s0 + MOD - 0.15 - OPEN.door[1], s0 + MOD - 0.15 - OPEN.door[0]];
-      const wn = odd ? [s0 + OPEN.win[0], s0 + OPEN.win[1]] : [s0 + MOD - 0.15 - OPEN.win[1], s0 + MOD - 0.15 - OPEN.win[0]];
-      for (const [fl, y] of [[1, G1], [2, G2]]) { ops.push({ a: d[0], b: d[1], y0: y, y1: y + DOOR_H, k, fl, door: true, odd }); ops.push({ a: wn[0], b: wn[1], y0: y + OPEN.sill, y1: y + OPEN.head, k, fl, odd }); }
+      // a studio's own stretch of wall runs s0…e0; its door is at one end or the other (plan.js: hands)
+      const s0 = A0 + k * MOD + PARTY / 2, e0 = s0 + MOD - PARTY, odd = doorAtStart(key, S.s, k);
+      const span = ([p, q]) => (odd ? [s0 + p, s0 + q] : [e0 - q, e0 - p]);
+      const d = span(OPEN.door), wn = span(OPEN.win), lv = span(OPEN.louvre);
+      for (const [fl, y] of [[1, G1], [2, G2]]) { ops.push({ a: d[0], b: d[1], y0: y, y1: y + DOOR_H, k, fl, door: true, odd }); ops.push({ a: wn[0], b: wn[1], y0: y + OPEN.sill, y1: y + OPEN.head, k, fl, odd, lv }); }
     }
     const cF = S.C(FRONT), cI = S.C(FRONT + WALL);
     // the front wall in two bands, one per floor (each with its own doors and windows): stucco outside, paint inside
@@ -124,6 +125,7 @@ export function buildWing(b, key, ctx, opts = {}) {
         for (const [p0, p1] of [[op.a - t, op.a], [op.b, op.b + t]]) put(m.trim, p0, y, outer + S.sgn * 0.0, p1, y + DOOR_H + t, outer + S.sgn * 0.025, { cast: false });
         put(m.trim, op.a - t, y + DOOR_H, outer, op.b + t, y + DOOR_H + t, outer + S.sgn * 0.025, { cast: false });
         put(m.mat, op.a + 0.02, y + 0.001, S.C(FRONT - 0.62), op.b - 0.02, y + 0.012, S.C(FRONT - 0.04), { cast: false, recv: true });
+        { const pa = op.odd ? op.b + 0.14 : op.a - 0.22; put(m.metal, pa, y + 1.46, outer, pa + 0.08, y + 1.58, outer + S.sgn * 0.012, { cast: false }); }     // the room's number, by the latch
         if (isHis(S.s, op.k, op.fl)) { ctx.hisDoor = { a0: op.a, a1: op.b, c: (outer + inner) / 2, y, world }; continue; }
         const hingeA = op.odd ? op.a : op.b, dirA = op.odd ? 1 : -1, cc = (outer + inner) / 2;
         const [lx, lz] = loc(hingeA, cc);
@@ -138,18 +140,27 @@ export function buildWing(b, key, ctx, opts = {}) {
         put(m.glass, op.a + 0.04, op.y0 + 0.04, outer - S.sgn * 0.052, op.b - 0.04, op.y1 - 0.04, outer - S.sgn * 0.058, { cast: false });
         // drawn curtains: the pale lining faces out; some rooms are lit at night
         put(lit(op.k, S.s, op.fl) ? m.linerLit : m.liner, op.a - 0.12, op.y0 - 0.1, inner - S.sgn * 0.06, op.b + 0.12, op.y1 + 0.18, inner - S.sgn * 0.07, { cast: false });
-        // the wall unit's grille under the sill
-        const g0 = (op.a + op.b) / 2 - 0.53;
-        put(m.louvre, g0, y + 0.08, outer + S.sgn * -0.005, g0 + 1.06, y + 0.5, outer + S.sgn * 0.02, { uv: [1.06, 0.42], cast: false });
+        // a louvre low on the wall under the window's end nearer the door (the walkway photograph of 22/9)
+        put(m.louvre, op.lv[0], y + 0.06, outer + S.sgn * -0.005, op.lv[1], y + 0.47, outer + S.sgn * 0.02, { uv: [0.3, 0.41], cast: false });
+        put(m.trim, op.lv[0] - 0.02, y + 0.47, outer + S.sgn * -0.005, op.lv[1] + 0.02, y + 0.5, outer + S.sgn * 0.05, { cast: false });
       }
     }
-    /* sconces by the pairs of doors, globes in the ceiling by the pairs of windows */
+    /* a lamp on the wall between two doors that stand side by side, a globe in the ceiling between two windows, and
+       here and there a white service box where a door meets the next studio's window */
     for (let k = 0; k <= N; k++) {
-      const a = A0 + k * MOD, doorPair = k % 2 === 1;
+      const a = A0 + k * MOD, doorL = k > 0 && !doorAtStart(key, S.s, k - 1), doorR = k < N && doorAtStart(key, S.s, k), doorPair = doorL && doorR;
       for (const [fl, y] of [[1, G1], [2, G2]]) {
+        if ((wing.boxes?.[S.s] || []).includes(k)) {
+          // a fire-extinguisher cabinet: white, a glazed door, the red of the cylinder behind it
+          put(m.frame, a - 0.17, y + 0.75, Math.min(S.C(FRONT - 0.16), S.C(FRONT)), a + 0.17, y + 1.5, Math.max(S.C(FRONT - 0.16), S.C(FRONT)), { solid: true });
+          put(m.glass, a - 0.11, y + 0.84, S.C(FRONT - 0.164), a + 0.11, y + 1.41, S.C(FRONT - 0.16), { cast: false });
+          put(M.plain('#b3261c', 0.5), a - 0.05, y + 0.9, S.C(FRONT - 0.162), a + 0.05, y + 1.3, S.C(FRONT - 0.158), { cast: false });
+        }
+        if (doorL !== doorR) continue;
         if (doorPair) {
-          put(m.metal, a - 0.08, y + 2.12, S.C(FRONT - 0.13), a + 0.08, y + 2.44, S.C(FRONT), { cast: false });
-          put(m.sconce, a - 0.06, y + 2.15, S.C(FRONT - 0.135), a + 0.06, y + 2.36, S.C(FRONT - 0.125), { cast: false });
+          // a bronze hood on the wall, a frosted lens hanging under it
+          put(m.metal, a - 0.075, y + 2.32, S.C(FRONT - 0.14), a + 0.075, y + 2.46, S.C(FRONT), { cast: false });
+          { const [lx, lz] = loc(a, S.C(FRONT - 0.075)); b.cyl(m.sconce, lx, y + 2.14, lz, 0.055, 0.18, { seg: 12, cast: false }); }
           if (S.s === 'A' && fl === 2 && key === HIS.wing && Math.abs(k - HIS.module) <= 1) lamps.push(world(a, S.C(FRONT - 0.3)).concat(y + 2.2));
         } else {
           const cy = fl === 1 ? SLAB : SOFFIT, [lx, lz] = loc(a, S.C(1.15));
@@ -196,7 +207,14 @@ export function buildWing(b, key, ctx, opts = {}) {
   for (const S of sides) {
     const T = towersOf(S.s);
     const gap = a => T.some(t => t.stair && a > t.a0 + 1.6 && a < t.a0 + 2.85);     // the opening onto a stair's top landing
-    const cols = []; for (let k = 0; k <= N; k++) cols.push(A0 + k * MOD);
+    // columns: at the ends, at each tower's two edges, and in equal bays of about 5.9 m between (the photographs of
+    // 17/8 and 22/9: five bays between the two towers of the west face)
+    const cols = [], marks = [A0, ...T.flatMap(t => [t.a0, t.a1]), ROWS].sort((p, q) => p - q);
+    for (let i = 0; i < marks.length - 1; i++) {
+      const p = marks[i], q = marks[i + 1], inTower = T.some(t => p >= t.a0 - 1e-6 && q <= t.a1 + 1e-6), n = inTower ? 1 : Math.max(1, Math.round((q - p) / BAY));
+      for (let j = 0; j < n; j++) cols.push(p + (q - p) * j / n);
+    }
+    cols.push(ROWS);
     for (const a of cols) {
       const c = S.C(COL);
       put(m.col, a - 0.2, 0, c - 0.2, a + 0.2, SOFFIT - 0.32, c + 0.2, { uv: [2, 2], uvw: true, solid: true });

@@ -4,7 +4,7 @@
 import { launch, open as openPage } from '../../tools/lib.mjs';
 
 const PLACE = 'esa-el-segundo-2015';
-const G2 = 3.05, ROOM_X0 = 14.48;
+const G2 = 3.05, ROOM_X0 = 14.48, ROOM_Z0 = 32.86;      // plan.js: the studio's floor, its front wall and its north wall
 const browser = await launch();
 const results = []; const ok = (name, cond, extra = '') => { results.push([cond ? 'PASS' : 'FAIL', name, extra]); console.log(cond ? 'PASS' : 'FAIL', '·', name, extra ? '— ' + extra : ''); };
 const open = (vp, mobile, more = {}) => openPage(browser, { ...vp, mobile, place: PLACE, ...more });
@@ -26,11 +26,15 @@ try {
   ok('drag turns the head', p1[3] !== p0[3] && p1[0] === p0[0], `${p0[3]}° → ${p1[3]}°`);
   await page.evaluate(() => window.__world.goto('phong')); await wait(page, 100);
   const pa = await pose(page); await page.mouse.click(450, 470); await wait(page, 2500); const pb = await pose(page);
-  ok('click on the floor walks there', Math.hypot(pb[0] - pa[0], pb[2] - pa[2]) > 0.3 && Math.abs(pb[1] - pa[1]) < 0.05, `moved ${Math.hypot(pb[0] - pa[0], pb[2] - pa[2]).toFixed(2)} m`);
-  // the back wall (the kitchen end) holds
-  await page.evaluate(x0 => window.__world.setPose(x0 + 3.0, 4.55, 19.4, 90, 0), ROOM_X0); await walk(page, 'KeyW', 4000);
+  ok('click on the floor walks there (and stays on this floor)', Math.hypot(pb[0] - pa[0], pb[2] - pa[2]) > 0.3 && Math.abs(pb[1] - (G2 + 1.52)) < 0.05, `moved ${Math.hypot(pb[0] - pa[0], pb[2] - pa[2]).toFixed(2)} m, eye at ${pb[1]}`);
+  // the kitchen end holds: east along the aisle between the counter and the bathroom, to the cupboards
+  await page.evaluate(([x0, z0]) => window.__world.setPose(x0 + 3.62, 4.55, z0 + 1.8, 90, 0), [ROOM_X0, ROOM_Z0]); await walk(page, 'KeyW', 4000);
   const pc = await pose(page);
-  ok('a wall stops the walker', pc[0] < ROOM_X0 + 6.9, `x = ${pc[0]}`);
+  ok('the kitchen cupboards stop the walker', pc[0] > ROOM_X0 + 5.0 && pc[0] < ROOM_X0 + 5.9, `x = ${pc[0]}`);
+  // the counter he worked at is in the way: north from the aisle, the walker stops at its end
+  await page.evaluate(([x0, z0]) => window.__world.setPose(x0 + 4.4, 4.55, z0 + 1.8, 0, 0), [ROOM_X0, ROOM_Z0]); await walk(page, 'KeyW', 2500);
+  const pk = await pose(page);
+  ok('the counter stops the walker', pk[2] > ROOM_Z0 + 1.2 && pk[2] < ROOM_Z0 + 1.6, `z = ${pk[2]}`);
   // the door: shut, the doorway holds; open, the walker goes out onto the walkway
   const doorZ = await page.evaluate(() => window.__world.hot().find(h => h.id === 'door').pos[2]);
   await page.evaluate(() => window.__world.card('door')); await page.click('#card .x');
@@ -70,7 +74,7 @@ try {
   const ids = await page.evaluate(() => window.__world.hot().map(h => h.id));
   const missing = [];
   for (const id of ids) { if (id === 'door' || id === 'bathdoor' || id === 'curtain' || id === 'tv') continue; await page.evaluate(id => window.__world.card(id), id); const t = await page.evaluate(() => document.getElementById('card').classList.contains('on') && document.getElementById('card-t').textContent); if (!t) missing.push(id); else await page.click('#card .x'); }
-  ok('every bright dot opens a card', missing.length === 0 && ids.length >= 13, `${ids.length} dots${missing.length ? ', no card: ' + missing.join(' ') : ''}`);
+  ok('every bright dot opens a card', missing.length === 0 && ids.length >= 15, `${ids.length} dots${missing.length ? ', no card: ' + missing.join(' ') : ''}`);
   // the tour
   await page.click('#b-tour'); await wait(page, 600);
   ok('tour starts', await page.evaluate(() => window.__world.touring() && document.getElementById('b-tour').textContent === 'Dừng'));
