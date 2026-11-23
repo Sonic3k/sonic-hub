@@ -74,7 +74,9 @@ ROOM.z1 = ROOM.z0 + ROOM.w;
    from the west; the walkway of 22/9 for the door and window). The scale comes from the things that have a standard
    size: counter tops at 36 in (0.914), the bathroom door at 80 in (2.03); the ceiling then comes out at 2.39, the room
    at 3.63 wall to wall and about 6.45 deep. Positions along the north wall are good to a few centimetres; depths
-   toward the kitchen and across the bed to about 0.1 m. EVIDENCE.md has the table.
+   toward the kitchen to about 0.1 m. The bed's side of the room is seen in two pictures (from the door, and from the
+   chair at the counter): the second camera was fitted together with the bed, its runner and the headboard so that
+   both agree, and the lamp shade they both show then meets within 2 cm. EVIDENCE.md has the table.
 
         west (walkway)                                                                              east
         ┌─ closet ──┬┬── dresser+TV ──┬ mirror ┬─ counter ─┬ panel ┬──────── fridge ┐  v = 0  (north wall)
@@ -113,10 +115,14 @@ export const IN = {
   bath: { u0: 3.96, v0: 2.0 }, bathDoor: [5.015, 5.775],            // the box's west and north faces; its door is hinged at the east jamb and opens out
   bathSwitch: { u: 4.135, y: 1.18 }, detector: { u: 4.765, y: 2.25 },
   print: { v0: 2.27, v1: 2.97, y0: 0.93, y1: 1.94 },                 // on the box's west face
-  bed: { u0: 1.94, u1: 3.31, v0: 1.60, v1: 3.55, top: 0.62, runner: [1.67, 2.38] },        // a full (double) bed, head to the south wall
-  headboard: { u0: 1.895, u1: 3.355, top: 1.555, panel: [0.83, 1.45], pw: 0.60 },
-  stand: { u0: 3.405, u1: 3.945, v0: 3.19, h: 0.64 },
-  bedLamps: [{ u: 3.475, du: 0.135, out: 0.23 }, { u: 1.775, du: -0.165, out: 0.16 }], bedLampY: 1.06,   // arms swung away from the bed
+  /* a full (double) bed, its head to the south wall: the mattress; its covers stand 3 cm proud of it all round. The
+     runner's two edges across the bed, and how wide its dark borders are */
+  bed: { u0: 1.80, u1: 3.19, v0: 1.58, v1: 3.57, top: 0.63, runner: [1.66, 2.345], border: 0.051 },
+  headboard: { u0: 1.77, u1: 3.295, top: 1.556, panel: [0.79, 1.458], pw: 0.622 },                  // 6 cm thick, two tan panels 9 cm apart
+  stand: { u0: 3.34, u1: 3.88, v0: 3.135, h: 0.63 },
+  bedLamps: [{ u: 3.46, du: 0.07, out: 0.26 }, { u: 1.60, du: -0.13, out: 0.23 }], bedLampY: 1.065,     // their plates 17 cm clear of the headboard's ends; arms swung away from the bed
+  recliner: { u: 0.85, v: 2.94, ry: 32 },            // in the south-west corner, turned toward the TV
+  curtainEnd: 3.41,                                  // where the curtains stop short of the green wall
   ceiling: { supply: [3.375, 1.83], ret: [4.69, 0.55], tube: [D - 0.98, 1.02], sprinkler: [4.485, 1.87] },
 };
 
@@ -131,7 +137,7 @@ export const VIEWS = {
   'phong': { name: 'Phòng (từ cửa nhìn vào)', pose: at(0.5, 1.44, 1.47, 97, -7.5) },
   'ban': { name: 'Bàn làm việc', pose: at(1.1, 1.6, 1.49, 79, -5) },
   'tu-guong': { name: 'Tủ, tivi, gương', pose: at(3.62, 2.72, 1.38, 345, -5) },
-  'giuong': { name: 'Giường', pose: at(3.62, 1.0, 1.38, 214, -13) },
+  'giuong': { name: 'Giường', pose: at(3.6, 0.62, 1.36, 212, -13.5) },
   'bep': { name: 'Bếp nhỏ', pose: at(4.2, 1.62, 1.5, 62, -9) },
   'cua': { name: 'Cửa phòng', pose: at(2.5, 1.3, 1.5, 266, -3) },
   'hanh-lang': { name: 'Hành lang tầng 2', pose: [ROOM.x0 - WALL - 0.86, G2 + 1.5, doorZ + 1.95, 353, -3.5] },   // where the photograph of 09:47:46 was taken

@@ -64,6 +64,36 @@ const drape = (w, w1, h, folds = 3, depth = 0.014, thick = 0.02) => {
   }
   g.computeVertexNormals(); return g;
 };
+/** a box of w × h × d eased to the radius r along its edges, k steps round each; its texture lies flat on every face,
+    o.rep metres to a repeat. o.floor: the bottom edges stay sharp (a hem); o.z === false: the two ends are cut square;
+    o.band: the texture's V runs once across d (a runner with a border down each side) */
+const eased = (w, h, d, r, o = {}) => {
+  const k = o.k || 4, per = o.rep || 0.5, S = 2 * k + 1, g = new THREE.BoxGeometry(w, h, d, S, S, S), p = g.attributes.position, uv = g.attributes.uv, nm = g.attributes.normal;
+  const step = (t, len) => { const i = Math.round((t / len + 0.5) * S); return i <= k ? -len / 2 + r * i / k : len / 2 - r * (S - i) / k; };   // k steps round each end, one flat step between them
+  const cl = (t, len) => Math.max(-len / 2 + r, Math.min(len / 2 - r, t)), v = new THREE.Vector3(), q = new THREE.Vector3(), face = (S + 1) * (S + 1);
+  for (let i = 0; i < p.count; i++) {
+    v.set(step(p.getX(i), w), step(p.getY(i), h), step(p.getZ(i), d));
+    q.set(cl(v.x, w), o.floor ? Math.min(h / 2 - r, v.y) : cl(v.y, h), o.z === false ? v.z : cl(v.z, d));
+    v.sub(q); if (v.lengthSq() > 1e-12) { v.setLength(r); nm.setXYZ(i, v.x / r, v.y / r, v.z / r); }
+    v.add(q); p.setXYZ(i, v.x, v.y, v.z);
+    const f = Math.floor(i / face) >> 1;                       // BoxGeometry's faces come as ±x, ±y, ±z
+    if (o.band) uv.setXY(i, (f === 0 ? v.y : v.x) / per, v.z / d + 0.5); else uv.setXY(i, (f === 0 ? v.z : v.x) / per, (f === 1 ? v.z : v.y) / per);
+  }
+  return g;
+};
+/** a pillow: w × d in plan and h thick at its middle, thinning to a seam all round, its sides drawn in a little between the corners */
+const pillow = (w, h, d, nu = 14, nv = 10) => {
+  const pos = [], uv = [], idx = [];
+  for (const s of [1, -1]) {
+    const base = pos.length / 3;
+    for (let j = 0; j <= nv; j++) for (let i = 0; i <= nu; i++) {
+      const a = Math.sin((i / nu - 0.5) * Math.PI), c = Math.sin((j / nv - 0.5) * Math.PI), fa = 1 - a * a, fc = 1 - c * c;       // closer rows toward the seam
+      pos.push(a * w / 2 * (1 - 0.05 * fc), s * h / 2 * Math.pow(fa * fc, 0.4), c * d / 2 * (1 - 0.07 * fa)); uv.push(i / nu, j / nv);
+    }
+    for (let j = 0; j < nv; j++) for (let i = 0; i < nu; i++) { const e = base + j * (nu + 1) + i, f = e + nu + 1; if (s > 0) idx.push(e, f, e + 1, e + 1, f, f + 1); else idx.push(e, e + 1, f, e + 1, f + 1, f); }
+  }
+  const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3)); g.setAttribute('uv', new THREE.Float32BufferAttribute(uv, 2)); g.setIndex(idx); g.computeVertexNormals(); return g;
+};
 /** set a shape down in the builder's frame: tilted (o.rx, o.rz, degrees) about its own origin, then turned ry clockwise from above */
 const set = (b, mat, g, x, y, z, ry = 0, o = {}) => { if (o.rx) g.rotateX(o.rx * Math.PI / 180); if (o.rz) g.rotateZ(o.rz * Math.PI / 180); if (ry) g.rotateY(-ry * Math.PI / 180); g.translate(x, y, z); return b.geo(mat, g, o); };
 
@@ -132,7 +162,7 @@ export function buildRoom(scene, shared, ctx) {
     b.box(plain('#f3f2ee', 0.45), -0.13, IN.sill - 0.012, wv0 - 0.01, 0.03, IN.sill + 0.02, wv1 + 0.01, {});
     for (const v of [wv0, wv1 - 0.03]) b.box(plain('#f3f2ee', 0.45), -0.13, IN.sill, v, 0.0, IN.head, v + 0.03, { cast: false });
     b.box(plain('#f3f2ee', 0.45), -0.13, IN.head - 0.03, wv0, 0.0, IN.head, wv1, { cast: false });
-    const cv0 = wv0 - 0.15, cv1 = Math.min(w - 0.16, wv1 + 0.16);
+    const cv0 = wv0 - 0.15, cv1 = IN.curtainEnd;
     b.box(plain('#e9e6dc', 0.5, 0.2), 0.07, CEIL - 0.022, cv0 - 0.03, 0.13, CEIL, cv1 + 0.03, { cast: false });
     parts.curtainsAt = { u: 0.1, v0: cv0, v1: cv1, y0: 0.45, y1: CEIL - 0.022 };
     for (const v of [2.8, 2.92]) b.cyl(plain('#f1f0ea', 0.4), 0.165, 1.36, v, 0.005, 0.95, { seg: 6, cast: false });
@@ -304,21 +334,18 @@ export function buildRoom(scene, shared, ctx) {
     b.box(esp, Hb.u0, 0, B.v1, Hb.u1, Hb.top, w, { uv: [1, 1] });
     { const side = (Hb.u1 - Hb.u0 - 2 * Hb.pw - 0.09) / 2; for (const a0 of [Hb.u0 + side, Hb.u1 - side - Hb.pw]) b.box(M.plain('#b27f48', 0.75), a0, Hb.panel[0], B.v1 - 0.018, a0 + Hb.pw, Hb.panel[1], B.v1, { cast: false }); }
     b.box(M.plain('#4b3a2d', 0.9), B.u0 + 0.02, 0, B.v0 + 0.02, B.u1 - 0.02, 0.34, B.v1, { solid: true });            // the skirt
-    b.box(M.plain('#ece9e2', 0.9), B.u0, 0.34, B.v0, B.u1, B.top - 0.04, B.v1, { cast: false });                       // mattress
-    const q = X.quilt();
-    b.box(q, B.u0 - 0.03, B.top - 0.09, B.v0 - 0.03, B.u1 + 0.03, B.top, B.v1 - 0.3, { uv: [0.5, 0.5] });
-    b.box(q, B.u0 - 0.03, 0.24, B.v0 - 0.03, B.u1 + 0.03, B.top - 0.09, B.v0, { uv: [0.5, 0.5], cast: false });        // its drop at the foot
-    for (const u of [B.u0 - 0.012, B.u1 + 0.012]) b.cyl(q, u, B.top - 0.045, B.v0 - 0.02, 0.045, B.v1 - 0.28 - B.v0, { rx: 90, seg: 10, cast: false });     // the quilt rounds over each edge
-    b.cyl(q, B.u0 - 0.02, B.top - 0.045, B.v0 - 0.012, 0.045, B.u1 - B.u0 + 0.04, { rz: -90, seg: 10, cast: false });
-    for (const u of [B.u0 - 0.03, B.u1]) b.box(q, u, 0.26, B.v0 - 0.03, u + 0.03, B.top - 0.02, B.v1 - 0.3, { uv: [0.5, 0.5], cast: false });
-    const rn = X.runner(), [r0, r1] = B.runner;
-    b.box(rn, B.u0 - 0.036, B.top - 0.02, r0, B.u1 + 0.036, B.top + 0.008, r1, { uv: [B.u1 - B.u0 + 0.1, r1 - r0], cast: false });
-    for (const u of [B.u0 - 0.04, B.u1 + 0.004]) b.box(rn, u, 0.3, r0, u + 0.036, B.top + 0.008, r1, { uv: [r1 - r0, r1 - r0], cast: false });
-    b.box(q, B.u0, B.top - 0.02, B.v1 - 0.4, B.u1, B.top + 0.03, B.v1 - 0.26, { uv: [0.5, 0.5], cast: false });         // the fold at the head
+    // the cover: white, quilted in diamonds 0.37 m across; over the top and down three sides to its hem,
+    // rounding over the mattress's edges; turned back in a fold where the pillows lie
+    const q = X.quilt(), hem = 0.26, cr = 0.05, cu0 = B.u0 - 0.03, cu1 = B.u1 + 0.03, cf = B.v0 - 0.03, ch = B.v1 + 0.05;
+    set(b, q, eased(cu1 - cu0, B.top - hem, ch - cf, cr, { floor: true, rep: 1.48 }), (cu0 + cu1) / 2, (B.top + hem) / 2, (cf + ch) / 2);
+    set(b, q, eased(cu1 - cu0 - 0.02, 0.075, 0.15, 0.035, { rep: 1.48, k: 3 }), (cu0 + cu1) / 2, B.top - 0.005, B.v1 - 0.57, 0, { cast: false });
+    // the runner across its foot: tan between two dark borders, hanging down both sides
+    const [r0, r1] = B.runner, rn = X.runner(B.border / (r1 - r0)), rt = 0.008, rlow = 0.3;
+    set(b, rn, eased(cu1 - cu0 + 2 * rt, B.top + rt - rlow, r1 - r0, cr + rt, { floor: true, z: false, band: true, rep: r1 - r0 }), (cu0 + cu1) / 2, (B.top + rt + rlow) / 2, (r0 + r1) / 2, 0, { cast: false });
     const pil = M.plain('#f4f3ef', 0.92);
-    set(b, pil, cushion(0.66, 0.17, 0.42, 0.55, 0.7), B.u1 - 0.38, B.top + 0.095, B.v1 - 0.3, 4);                       // one flat on the nightstand's side
-    set(b, pil, cushion(0.64, 0.16, 0.42, 0.55, 0.7), B.u0 + 0.38, B.top + 0.09, B.v1 - 0.27, -3);                      // one flat on the window's
-    set(b, pil, cushion(0.68, 0.18, 0.42, 0.55, 0.7), (B.u0 + B.u1) / 2 - 0.04, B.top + 0.24, B.v1 - 0.26, -8, { rx: -14 });   // one across them, against the headboard
+    set(b, pil, pillow(0.68, 0.15, 0.46), B.u1 - 0.38, B.top + 0.07, B.v1 - 0.27, 4);                                   // one flat on the nightstand's side
+    set(b, pil, pillow(0.68, 0.15, 0.46), B.u0 + 0.39, B.top + 0.068, B.v1 - 0.26, -3);                                 // one flat on the window's
+    set(b, pil, pillow(0.7, 0.17, 0.48), (B.u0 + B.u1) / 2 + 0.06, B.top + 0.205, B.v1 - 0.26, -8, { rx: -15 });        // one across them, against the headboard
     b.solid(B.u0, 0, B.v0, B.u1, B.top, B.v1);
     const N = IN.stand, nh = N.h;
     b.box(pine, N.u0, nh - 0.03, N.v0 - 0.015, N.u1, nh, w - 0.005, { uv: [1, 1] });
@@ -337,15 +364,16 @@ export function buildRoom(scene, shared, ctx) {
     for (const l of IN.bedLamps) swing(l.u, w, IN.bedLampY, -1, l.du, l.out, true);
 
     /* by the window: the recliner in the corner, a carton against the wall, his shoes just inside the door */
-    b.push(0.86, 0, 3.0, 31);
+    const Rc = IN.recliner;
+    b.push(Rc.u, 0, Rc.v, Rc.ry);
     b.box(M.plain('#1d130f', 0.6), -0.38, 0, -0.38, 0.38, 0.1, 0.36, { cast: false });
     set(b, lea, cushion(0.86, 0.38, 0.86, 0.3, 0.35), 0, 0.27, -0.01);                                                  // the body
     set(b, lea, cushion(0.56, 0.16, 0.6, 0.4, 0.6), 0, 0.47, -0.1);                                                     // the seat
-    set(b, lea, cushion(0.6, 0.66, 0.22, 0.4, 0.5), 0, 0.72, 0.3, 0, { rx: 12 });                                       // the back, leaning
-    set(b, lea, cushion(0.5, 0.2, 0.16, 0.45, 0.6), 0, 0.93, 0.33, 0, { rx: 12 });                                      // its head roll
+    set(b, lea, cushion(0.6, 0.6, 0.22, 0.38, 0.45), 0, 0.67, 0.3, 0, { rx: 11 });                                      // the back, leaning: its top at 0.96
+    set(b, lea, cushion(0.5, 0.18, 0.15, 0.45, 0.6), 0, 0.86, 0.32, 0, { rx: 11 });                                     // its head roll
     for (const sx of [-1, 1]) set(b, lea, cushion(0.2, 0.3, 0.8, 0.45, 0.5), sx * 0.34, 0.47, 0.0);                     // the arms
     b.pop();
-    b.solid(0.36, 0, 2.48, 1.36, 0.62, 3.48);
+    b.solid(Rc.u - 0.5, 0, Rc.v - 0.5, Rc.u + 0.5, 0.62, Math.min(w, Rc.v + 0.5));
     const card = M.plain('#a7835a', 0.9), card2 = M.plain('#8f6d47', 0.9);
     b.box(card, 0.03, 0, 2.27, 0.33, 0.31, 2.57, {}); b.box(M.plain('#5d4630', 0.95), 0.05, 0.29, 2.29, 0.31, 0.312, 2.55, { cast: false });
     b.rbox(card2, 0.18, 0.345, 2.255, 0.28, 0.01, 0.12, 0, { rx: 50, cast: false }); b.rbox(card2, 0.345, 0.345, 2.42, 0.01, 0.01, 0.28, 0, { rz: -15, cast: false });

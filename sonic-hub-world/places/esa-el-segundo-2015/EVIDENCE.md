@@ -31,8 +31,17 @@ laptop's lock screen in 1774 is too small to read; the place shows 7:15). Sonic 
   cameras fixed, each edge of the furniture was carried back from its pixels onto the plane it lies in. The scale comes
   from standard sizes — a kitchen counter at 36 in (0.914 m), the bathroom door at 80 in (2.03 m) — and is borne out by
   things that were not used to set it: the laptop (a 15.6 in Asus N56, 380 × 255 mm; its diagonal measures 0.45 m),
-  the bed (1.37 × 1.95 m: a full), the 32 in TV (0.80 m wide). `IN` in `plan.js` holds the result. A number there is
-  good to about 3 cm along the north wall, 5 cm elsewhere, 10 cm in depth toward the kitchen.
+  the bed (its covers 1.45 m across: a full), the 32 in TV (0.80 m wide, its screen 0.715 × 0.394). `IN` in `plan.js`
+  holds the result. A number there is good to about 3 cm along the north wall, 5 cm elsewhere, 10 cm in depth toward
+  the kitchen.
+- **The bed's side, measured twice.** The first reading took the bed, its headboard and lamps from 1773 alone, with a
+  camera fitted to the far wall only. That camera stood 0.39 m from where the picture was really taken, and what was
+  read from it came out too far east: the bed by 13 cm, the west lamp by 18, the nightstand by 6. On 23 November 2026 the camera of 1773 was fitted again together with the things both it and
+  1776 show — the two borders of the runner (traced along their length in both pictures), the edges of the cover, the
+  headboard's corners and panels, the lamps' cord covers, the room's south-west corner and its ceiling line — with the
+  camera of 1776 held fixed: 139 measurements, 7 px rms, none worse than 19 px. A check that was not in the fit: the
+  east lamp's shade, sighted from both pictures, meets within 2 cm. The front wall comes out 2–5 cm further west than
+  the plan has it (the room 6.47–6.50 m deep, not 6.45); the plan was left as it is.
 - **Size.** 3.63 m between the party walls, about 6.45 m from the front wall to the kitchen's back wall, the ceiling at
   2.39 m (7 ft 10 in). A module along the wing is 3.85 m; the wings hold 14, 15 and 13 a side (the hotel has 150
   rooms; some modules must be laundry and stores).
@@ -64,10 +73,14 @@ laptop's lock screen in 1774 is too small to read; the place shows 7:15). Sonic 
 - **Bathroom box** in the south-east corner: its west face carries the framed print and faces the bed; its door, a flat
   slab with a round knob in the north face, is hinged on the east and opens out toward the kitchen (open in 0272, shut
   in 1776). The inside was not photographed: it is drawn as this chain's studios have it.
-- **Bed** against the green south wall (1773): a full; espresso headboard with two tan panels; white quilt, a tan runner
-  with dark borders, three pillows; a swing lamp either side, their arms turned away from the bed; a pine nightstand
-  with the phone, the clock radio and two remotes. The leather recliner in the south-west corner, a carton by the wall,
-  shoes just inside the door.
+- **Bed** against the green south wall (1773, and 1776 from the door): a full — its covers 1.45 m across, their foot
+  2.08 m from the wall, their top 0.63 high; an espresso headboard 1.53 wide, 1.56 high and 6 cm thick with two tan
+  panels 0.62 wide; a white quilt stitched in diamonds, turned back in a fold before three pillows; a tan runner 0.69
+  wide with dark borders of 5 cm, its nearer edge 1.23 m from the headboard; a swing lamp either side, their plates
+  17 cm clear of the headboard's ends and 1.07 high, their arms turned away from the bed (the east shade 0.26 off the
+  wall; the west one's distance off the wall is a guess); a pine nightstand 0.54 wide, 0.63 high, with the phone, the
+  clock radio and two remotes. The leather recliner in the south-west corner, its back 0.96 high, turned toward the
+  TV; a carton by the wall, shoes just inside the door. The curtains stop 0.22 m short of the green wall.
 - **Front wall**: the entry door 0.82–1.73 m from the north wall (hinged north, opening in across the closet), the
   window 2.15–3.31, plaid curtains from a track at the ceiling down to 0.45 above the floor, two white wands. Door and
   window are the mean of what 1779, 0127 and the inside pictures give (±5 cm).

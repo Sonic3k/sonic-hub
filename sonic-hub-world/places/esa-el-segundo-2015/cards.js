@@ -13,7 +13,7 @@ export const notes = {
   title: 'Chỗ nào là thật, chỗ nào là đoán',
   body: [
     ['p', 'Phòng dựng theo bốn tấm ảnh chụp tối 21/9/2015 lúc 19:15 giờ California (từ cửa nhìn vào; giường; hai tấm chụp bức tường có tủ, tivi, gương và chiếc bàn anh ngồi làm việc) và ảnh iPhone các ngày 19/8 (bữa sáng ở bàn), 18/9 (bàn và bếp, cửa nhà tắm đang mở), 25/9 (cửa phòng mở ra hành lang, hốc treo đồ sau cánh cửa). Album: Fsoft → [2015.08] Onsite 2015.'],
-    ['p', 'Với mỗi tấm ảnh, vị trí máy chụp được dựng lại rồi đo ngược ra từng món đồ: phòng rộng 3,63 m, sâu chừng 6,45 m, trần 2,39 m; mặt bàn cao 0,91 m. Thước đo là những thứ có cỡ chuẩn — mặt bếp 36 inch, cửa nhà tắm 80 inch — và nó khớp với chiếc laptop 15,6 inch và chiếc giường cỡ full (1,37 × 1,9 m).'],
+    ['p', 'Với mỗi tấm ảnh, vị trí máy chụp được dựng lại rồi đo ngược ra từng món đồ: phòng rộng 3,63 m, sâu chừng 6,45 m, trần 2,39 m; mặt bàn cao 0,91 m. Thước đo là những thứ có cỡ chuẩn — mặt bếp 36 inch, cửa nhà tắm 80 inch — và nó khớp với chiếc laptop 15,6 inch, chiếc tivi 32 inch và chiếc giường cỡ full (cả chăn rộng 1,45 m). Phía giường được đo từ hai tấm ảnh cùng lúc (từ cửa và từ ghế ở bàn), sao cho cả hai khớp nhau.'],
     ['p', 'Khách sạn, bãi xe, hàng rào và cầu thang theo ảnh chụp từ hành lang (19/8, 2/9, 18/9) và sáng 22/9 (9:47–9:48). Đường phố theo những tấm chụp trên đường đi bộ sáng hôm ấy (9:52–9:59), dọc Mariposa tới gầm đường ray Green Line.'],
     ['p', 'Khu đất, khối nhà và đường sá theo OpenStreetMap (© những người đóng góp OpenStreetMap, giấy phép ODbL) và ảnh vệ tinh; chiều cao nhà theo số liệu của Quận Los Angeles có trong bản đồ. Nhà xây sau 2015 đã bỏ ra.'],
     ['p', 'Thẻ ra vào theo bản scan trong Onsite 2015 → Documents. Laptop và điện thoại theo mục Máy tính của Sonic Hub: Asus N56 chạy Windows 8.1, iPhone 6s.'],
@@ -54,7 +54,7 @@ export function card(id, { hour, extra }) {
     ] };
     case 'tv': return { title: 'Tivi LG', body: [['p', extra ? 'Đang bật.' : 'Đang tắt.'], ['p', 'Tivi LG 32 inch trên chiếc tủ bốn ngăn kéo gỗ thông, cạnh đèn bàn chân gốm xanh — như ảnh 21/9.', 'dim'], ['p', 'Mỗi lần chạm là bật hoặc tắt.', 'dim']] };
     case 'bed': return { title: 'Giường', body: [
-      ['p', 'Giường cỡ full (rộng 1,37 m), đầu giường gỗ sẫm có hai ô bọc màu bò, hai đèn tay xoay trên bức tường xanh, tấm phủ chân giường màu nâu vàng. Tủ đầu giường có điện thoại bàn, đồng hồ số đỏ và điều khiển; ghế bành da nâu ở góc cạnh cửa sổ, bên nó là thùng các-tông, giày để gần cửa.'],
+      ['p', 'Giường cỡ full (cả chăn rộng 1,45 m, mặt chăn cao 0,63 m), đầu giường gỗ sẫm rộng 1,53 m có hai ô bọc màu bò, hai đèn tay xoay trên bức tường xanh, tấm phủ chân giường màu nâu vàng viền nâu sẫm. Tủ đầu giường có điện thoại bàn, đồng hồ số đỏ và điều khiển; ghế bành da nâu ở góc cạnh cửa sổ, bên nó là thùng các-tông, giày để gần cửa.'],
       ['p', 'Theo ảnh 21/9, 19:15.', 'dim'],
     ] };
     case 'counter': return { title: 'Bàn làm việc', body: [
