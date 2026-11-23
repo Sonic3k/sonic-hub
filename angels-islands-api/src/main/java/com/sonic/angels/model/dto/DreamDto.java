@@ -10,8 +10,8 @@ public class DreamDto {
 
     /** Create / update. On update a field left out (null) keeps what is there, a blank text clears it (the content,
      *  being the dream itself, cannot be cleared); a list given replaces the links.
-     *  dreamtOn: yyyy-MM-dd, the morning he woke up with it. sortOrder: left out on create, the dream goes after the
-     *  ones already kept for that morning. personIds: who appears in it; eventIds: the real events it calls up. */
+     *  dreamtOn: yyyy-MM-dd, the day he dreamt it (the morning after, or the day of a nap). sortOrder: left out on create, the dream goes after the
+     *  ones already kept for that day. personIds: who appears in it; eventIds: the real events it calls up. */
     public static class Request {
         public UUID personId;
         public String dreamtOn, title, content, associations;

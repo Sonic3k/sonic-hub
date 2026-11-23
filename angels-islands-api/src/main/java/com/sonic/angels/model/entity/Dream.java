@@ -9,7 +9,7 @@ import java.util.Set;
 import java.util.UUID;
 
 /**
- * A dream (giấc mơ): one record per dream, two dreams of one morning being two records of the same day.
+ * A dream (giấc mơ): one record per dream, two dreams of one day being two records of the same day.
  *
  * Kept apart from memories (Episode: what really happened) and from writings (JournalNote): what happens in a dream
  * did not happen. So its two texts are never mixed — content is the dream as he told it (not real), associations is
@@ -32,11 +32,11 @@ public class Dream extends BaseEntity {
     @JoinColumn(name = "person_id", nullable = false)
     private Person person;
 
-    /** the morning he woke up with it: a day of the calendar, no hour */
+    /** the day he dreamt it — the morning he woke up with it, or the day of a nap: a day of the calendar, no hour */
     @Column(name = "dreamt_on", nullable = false)
     private LocalDate dreamtOn;
 
-    /** its place among the dreams of that morning, in the order he told them */
+    /** its place among the dreams of that day, in the order he told them */
     @Column(name = "sort_order")
     private Integer sortOrder;
 
