@@ -31,7 +31,7 @@ export default function DreamsPage() {
     const needle = q.trim().toLowerCase()
     return !needle ? all : all.filter(d => `${d.title ?? ''} ${d.lead ?? ''} ${(d.persons ?? []).map(p => p.name).join(' ')}`.toLowerCase().includes(needle))
   }, [all, q])
-  // morning by morning, the newest first (the API sends them so)
+  // day by day, the newest first (the API sends them so)
   const byDay = useMemo(() => {
     const m = new Map<string, Dream[]>()
     for (const d of shown) m.set(d.dreamtOn, [...(m.get(d.dreamtOn) ?? []), d])
@@ -105,7 +105,7 @@ function DreamEditor({ id, ownerId, onClose, onSaved, onDeleted }: {
   const set = (k: keyof DreamRequest, v: unknown) => setF(prev => ({ ...prev, [k]: v }))
   const save = async () => {
     setErr('')
-    if (!f.dreamtOn?.trim() || !f.content?.trim()) { setErr('The morning and the dream itself are needed.'); return }
+    if (!f.dreamtOn?.trim() || !f.content?.trim()) { setErr('The day and the dream itself are needed.'); return }
     setSaving(true)
     try {
       const body: DreamRequest = { ...f, personId: ownerId, personIds: people.map(p => p.id), eventIds: events.map(e => e.id) }
@@ -124,8 +124,8 @@ function DreamEditor({ id, ownerId, onClose, onSaved, onDeleted }: {
       {id && detail.isLoading ? <p className="text-sm text-slate-400">Loading…</p> : (
         <div className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-6 gap-3">
-            <Field label="Morning" className="md:col-span-2"><input type="date" value={f.dreamtOn ?? ''} onChange={e => set('dreamtOn', e.target.value)} className={inp} /></Field>
-            <Field label="Order that morning" className="md:col-span-1">
+            <Field label="Day" className="md:col-span-2"><input type="date" value={f.dreamtOn ?? ''} onChange={e => set('dreamtOn', e.target.value)} className={inp} /></Field>
+            <Field label="Order that day" className="md:col-span-1">
               <input type="number" min={1} value={f.sortOrder ?? ''} onChange={e => set('sortOrder', e.target.value ? Number(e.target.value) : undefined)} placeholder="next" className={inp} />
             </Field>
             <Field label="Title" className="md:col-span-3"><input value={f.title ?? ''} onChange={e => set('title', e.target.value)} className={inp} /></Field>

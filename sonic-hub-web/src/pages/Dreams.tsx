@@ -1,4 +1,4 @@
-/* Giấc mơ: what he dreamt, a morning at a time. A dream did not happen, so it stays apart from Ký ức: its page sets
+/* Giấc mơ: what he dreamt, a day at a time (the night's dreams, and a nap's). A dream did not happen, so it stays apart from Ký ức: its page sets
    the dream as he told it, and under it, ruled off, what it calls up in his waking life — the one part that is real —
    then the real events it calls up. Written from what he tells Claude, corrected in the admin; here only read. */
 import { useMemo, useState } from 'react';
@@ -19,10 +19,10 @@ const yearOf = (d: Dream) => +d.dreamtOn.slice(0, 4);
 const nameOf = (p: { name: string; displayName?: string | null }) => p.displayName || p.name;
 const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
 /** "Thứ Hai, 23 tháng 11" */
-const morning = (iso: string) => cap(new Date(+iso.slice(0, 4), +iso.slice(5, 7) - 1, +iso.slice(8, 10)).toLocaleDateString('vi-VN', { weekday: 'long', day: 'numeric', month: 'long' }));
+const dayLine = (iso: string) => cap(new Date(+iso.slice(0, 4), +iso.slice(5, 7) - 1, +iso.slice(8, 10)).toLocaleDateString('vi-VN', { weekday: 'long', day: 'numeric', month: 'long' }));
 const paragraphs = (text?: string | null) => (text ?? '').split(/\n+/).filter(p => p.trim()).map((p, k) => <p key={k}>{p}</p>);
 
-/** every dream, the newest morning first, each with who is in it and the events it calls up (its texts come with the dream) */
+/** every dream, the newest day first, each with who is in it and the events it calls up (its texts come with the dream) */
 export function useDreams() {
   return useQuery({ queryKey: ['dreams'], staleTime: T, queryFn: () => hub.dreams({ inclPersons: true, inclEvents: true }) });
 }
@@ -73,7 +73,7 @@ export function DreamsIndex() {
   );
 }
 
-/** A dream as a dated line: the morning, its title and opening, who is in it, what it calls up. */
+/** A dream as a dated line: the day, its title and opening, who is in it, what it calls up. */
 export function DreamLine({ d }: { d: Dream }) {
   const meta = [(d.persons ?? []).map(nameOf).join(', '), (d.events ?? []).map(e => `gợi về ${e.title}`).join(', ')].filter(Boolean);
   return (
@@ -112,9 +112,9 @@ export function DreamsSide() {
 
 // ── one dream ────────────────────────────────────────────────────────────────
 
-/* A dream opens on the paper of its year, the morning under it. Then the dream as he told it; ruled off below it, what
-   it calls up in his waking life; the real events it calls up; the other dreams of that morning. Beside it: what was
-   going on in his life that morning. */
+/* A dream opens on the paper of its year, the day under it. Then the dream as he told it; ruled off below it, what
+   it calls up in his waking life; the real events it calls up; the other dreams of that day. Beside it: what was going
+   on in his life that day. */
 export function DreamPage() {
   const { id } = useParams(), all = useDreams();
   const q = useQuery({ queryKey: ['dream', id], enabled: !!id, staleTime: T, queryFn: () => hub.dream(id!) });
@@ -122,17 +122,17 @@ export function DreamPage() {
   if (q.isLoading) return <div className="page mm dr"><div className="reader"><article className="article"><p className="empty">Đang mở…</p></article></div></div>;
   if (!d) return <div className="page mm dr"><div className="reader"><article className="article"><Link className="back" to="/dreams">← Giấc mơ</Link><h1>Không tìm thấy giấc mơ này</h1></article></div></div>;
 
-  // the dreams in the order they came: morning after morning, and within a morning as he told them
+  // the dreams in the order they came: day after day, and within a day as he told them
   const list = all.data ?? [];
   const chrono = [...list].sort((a, b) => a.dreamtOn.localeCompare(b.dreamtOn) || (a.sortOrder ?? 0) - (b.sortOrder ?? 0));
   const i = chrono.findIndex(x => x.id === d.id), older = i > 0 ? chrono[i - 1] : undefined, newer = i >= 0 ? chrono[i + 1] : undefined;
-  const sameMorning = chrono.filter(x => x.dreamtOn === d.dreamtOn && x.id !== d.id);
+  const sameDay = chrono.filter(x => x.dreamtOn === d.dreamtOn && x.id !== d.id);
   const y = +d.dreamtOn.slice(0, 4);
 
   return (
     <div className="page mm dr">
       <header className={`mm-top ${eraClass(y)}`}><div className="mm-top-in">
-        <div className="mm-top-y"><b>{y}</b><span>{morning(d.dreamtOn)}</span></div>
+        <div className="mm-top-y"><b>{y}</b><span>{dayLine(d.dreamtOn)}</span></div>
         <div className="mm-top-t">
           <Link className="back" to="/dreams">← Giấc mơ</Link>
           <span className="mm-k">Giấc mơ</span>
@@ -148,8 +148,8 @@ export function DreamPage() {
           {d.associations && <section className="dr-wake"><h5>Ngoài đời</h5>{paragraphs(d.associations)}</section>}
           {!!d.events?.length && <><h5 className="mem-h">Gợi về</h5>
             <nav className="mem-same">{d.events.map(e => <Link key={e.id} to={eventHref(e)}>{e.title}<small>{eventWhen({ when: e.when ?? '' })}</small></Link>)}</nav></>}
-          {sameMorning.length > 0 && <><h5 className="mem-h">Cùng sáng hôm đó</h5>
-            <nav className="mem-same">{sameMorning.map(x => <Link key={x.id} to={dreamHref(x)}>{dreamName(x)}</Link>)}</nav></>}
+          {sameDay.length > 0 && <><h5 className="mem-h">Cùng ngày hôm đó</h5>
+            <nav className="mem-same">{sameDay.map(x => <Link key={x.id} to={dreamHref(x)}>{dreamName(x)}</Link>)}</nav></>}
           <div className="pn">{older ? <Link to={dreamHref(older)}><small>← Trước đó · {dreamDay(older.dreamtOn)}</small><b>{dreamName(older)}</b></Link> : <span />}
             {newer ? <Link to={dreamHref(newer)}><small>Sau đó · {dreamDay(newer.dreamtOn)} →</small><b>{dreamName(newer)}</b></Link> : <span />}</div>
         </article>
