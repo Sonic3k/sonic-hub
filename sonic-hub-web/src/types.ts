@@ -161,8 +161,21 @@ export interface LifeEventDetail extends LifeEvent {
   albumList: { id: string; name: string; mediaCount?: number | null; thumbnailUrl?: string | null }[];
   memoryList: { id: string; title?: string | null; summary?: string | null; when?: string | null; occurredAt?: string | null; kind?: string | null }[];
   transactionList: { id: string; occurredAt: string; amount: number; currency: string; kind: string; description?: string | null; payeeName?: string | null; category?: string | null }[];
+  /** the dreams that call it up, newest first */
+  dreamList?: { id: string; title?: string | null; lead?: string | null; dreamtOn: string }[];
 }
 export interface LifeEventAt { moment: string; current: LifeEvent[]; previous?: LifeEvent | null; next?: LifeEvent | null }
+
+/** Giấc mơ: one dream. content is the dream as he told it (it did not happen); associations is what it calls up in his
+ *  waking life (that part is real). A list carries title and lead; the texts, people and events only when it asks. */
+export interface Dream {
+  id: string; personId: string; dreamtOn: string; sortOrder?: number | null;
+  title?: string | null; lead?: string | null;
+  content?: string | null; associations?: string | null;
+  persons?: { id: string; name: string; displayName?: string | null; nickname?: string | null; avatarUrl?: string | null }[] | null;
+  events?: { id: string; title: string; kind?: string | null; when?: string | null }[] | null;
+  createdAt?: string; updatedAt?: string;
+}
 
 /** Kệ game: a game as the shelf lists it. played = "2007 – 2010"; spans = each stretch he played it and on which machine;
  *  portal = playable on the portal itself, machine = playable inside a machine of its time; mine = something of his is on it. */

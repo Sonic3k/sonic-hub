@@ -41,6 +41,14 @@
 /api/events?personId={self}
 /api/events/{event}
 /api/events/at?personId={self}&moment=2011-06-15T21:00:00
+# dreams
+/api/dreams
+/api/dreams?inclPersons=true&inclEvents=true
+/api/dreams?inclContent=true&inclPersons=true&inclEvents=true
+/api/dreams?q=mua&inclPersons=true
+/api/dreams?from=2026-01-01&to=2026-12-31
+/api/dreams?withPersonId={person}
+/api/dreams/{dream}
 # journal
 /api/journal/notes?size=100
 /api/journal/notes?size=100&inclTags=true

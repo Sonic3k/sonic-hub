@@ -16,6 +16,7 @@ import SeriesPage from './pages/Series';
 import Money from './pages/Money';
 import Portal from './pages/Portal';
 import { MemoriesIndex, MemoryPage } from './pages/Memories';
+import { DreamPage, DreamsIndex } from './pages/Dreams';
 import { GamePage, GameSeriesPage, GamesIndex } from './pages/Games';
 import GamePlayPage from './pages/GamePlay';
 import { ListPage, MusicIndex } from './pages/Music';
@@ -38,6 +39,8 @@ export function AppRoutes() {
         <Route path="memories/events" element={<EventsIndex />} />
         <Route path="memories/events/:id" element={<EventPage />} />
         <Route path="memories/:id" element={<MemoryPage />} />
+        <Route path="dreams" element={<DreamsIndex />} />
+        <Route path="dreams/:id" element={<DreamPage />} />
         <Route path="photos" element={<Photos />} />
         <Route path="photos/albums" element={<AlbumsIndex />} />
         <Route path="photos/albums/:id" element={<AlbumPage />} />

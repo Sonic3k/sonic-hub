@@ -197,6 +197,8 @@ export interface LifeEventDetail extends LifeEventSummary {
   memoryList: { id: string; title?: string | null; summary?: string | null; when?: string | null; occurredAt?: string | null; kind?: string | null }[]
   transactionList: { id: string; occurredAt: string; amount: number; currency: string; originalAmount?: number | null; originalCurrency?: string | null
     kind: string; description?: string | null; payeeName?: string | null; category?: string | null; account?: string | null }[]
+  /** the dreams that call it up */
+  dreamList?: { id: string; title?: string | null; lead?: string | null; dreamtOn: string }[]
 }
 /** start: yyyy | yyyy-MM | yyyy-MM-dd | yyyy-MM-ddTHH:mm; end: last day ('' clears); lists replace the links */
 export interface LifeEventRequest {
@@ -205,3 +207,19 @@ export interface LifeEventRequest {
   personIds?: string[]; collectionIds?: string[]; episodeIds?: string[]; transactionIds?: string[]
 }
 export interface LifeEventAt { moment: string; current: LifeEventSummary[]; previous?: LifeEventSummary | null; next?: LifeEventSummary | null }
+
+// ── Dreams (giấc mơ) ────────────────────────────────────────────────────────
+/** One dream. content = the dream as he told it (did not happen); associations = what it calls up in his waking life
+ *  (real). A list sends title and lead, and people / events / texts only when asked; one dream comes whole. */
+export interface Dream {
+  id: string; personId: string; dreamtOn: string; sortOrder?: number | null
+  title?: string | null; lead?: string | null; content?: string | null; associations?: string | null
+  persons?: { id: string; name: string; displayName?: string | null; nickname?: string | null; avatarUrl?: string | null }[] | null
+  events?: { id: string; title: string; kind?: string | null; when?: string | null }[] | null
+  createdAt?: string; updatedAt?: string
+}
+/** dreamtOn: yyyy-MM-dd. Left out = kept; '' clears title / associations; lists replace the links. */
+export interface DreamRequest {
+  personId?: string; dreamtOn?: string; sortOrder?: number; title?: string; content?: string; associations?: string
+  personIds?: string[]; eventIds?: string[]
+}

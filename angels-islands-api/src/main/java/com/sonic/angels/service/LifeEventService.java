@@ -91,6 +91,11 @@ public class LifeEventService {
             (rs, n) -> new LifeEventDto.TransactionRef(rs.getObject("id", UUID.class), rs.getTimestamp("occurred_at").toLocalDateTime(),
                 rs.getBigDecimal("amount"), rs.getString("currency"), rs.getBigDecimal("original_amount"), rs.getString("original_currency"),
                 rs.getString("kind"), rs.getString("description"), rs.getString("payee_name"), rs.getString("category"), rs.getString("account")));
+        d.dreamList = jdbc.query("SELECT dr.id, dr.title, LEFT(dr.content, " + DreamService.LEAD_READ + ") AS content, char_length(dr.content) AS len, dr.dreamt_on "
+                + "FROM dreams dr JOIN dream_life_events de ON de.dream_id = dr.id WHERE de.life_event_id = :id "
+                + "ORDER BY dr.dreamt_on DESC, dr.sort_order NULLS LAST", m,
+            (rs, n) -> new LifeEventDto.DreamRef(rs.getObject("id", UUID.class), rs.getString("title"),
+                DreamService.lead(rs.getString("content"), rs.getInt("len")), rs.getObject("dreamt_on", java.time.LocalDate.class)));
         return d;
     }
 
@@ -135,10 +140,12 @@ public class LifeEventService {
         return detail(e.getId());
     }
 
-    /** The event goes; its albums, memories and money stay, no longer linked; its parts move up to its parent. */
+    /** The event goes; its albums, memories and money stay, no longer linked; the dreams that called it up stay, without
+     *  it; its parts move up to its parent. */
     public void delete(UUID id) {
         LifeEvent e = get(id);
         MapSqlParameterSource m = new MapSqlParameterSource("id", id).addValue("parent", e.getParent() != null ? e.getParent().getId() : null, java.sql.Types.OTHER);
+        jdbc.update("DELETE FROM dream_life_events WHERE life_event_id = :id", m);
         jdbc.update("UPDATE collections SET life_event_id = NULL WHERE life_event_id = :id", m);
         jdbc.update("UPDATE episodes SET life_event_id = NULL WHERE life_event_id = :id", m);
         jdbc.update("UPDATE finance_transactions SET life_event_id = NULL WHERE life_event_id = :id", m);

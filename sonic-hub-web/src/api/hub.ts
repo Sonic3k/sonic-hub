@@ -1,5 +1,5 @@
 import { apiUrl, get } from './client';
-import type { DeskMemory, DeskMoment, GameCard, GameDetail, GameMatch, GamePackage, GameSeries, GameTrace, Chapter, LifeEvent, LifeEventAt, LifeEventDetail, ChatArchive, ChatBoard, ChatStats, RandomMemory, ChatAttachment, ChatMessage, Collection, Episode, Fact, Forum, ForumBoard, ForumMember, ForumPage, ForumPostHit, ForumThread, ForumThreadDetail, MediaFile, MysticBrief, Note, Paged, Person, PersonDetail, PersonForum, PersonRanking, RankingDetail, SeriesPart, Tag, TagStats, TimelineBucket, Trait } from '../types';
+import type { DeskMemory, DeskMoment, Dream, GameCard, GameDetail, GameMatch, GamePackage, GameSeries, GameTrace, Chapter, LifeEvent, LifeEventAt, LifeEventDetail, ChatArchive, ChatBoard, ChatStats, RandomMemory, ChatAttachment, ChatMessage, Collection, Episode, Fact, Forum, ForumBoard, ForumMember, ForumPage, ForumPostHit, ForumThread, ForumThreadDetail, MediaFile, MysticBrief, Note, Paged, Person, PersonDetail, PersonForum, PersonRanking, RankingDetail, SeriesPart, Tag, TagStats, TimelineBucket, Trait } from '../types';
 import { isoDay, addDays } from '../lib/date';
 
 export interface Search {
@@ -79,6 +79,10 @@ export const hub = {
   event: (id: string) => get<LifeEventDetail>(`/events/${id}`),
   /** the events a moment is inside, the one before and the next one */
   eventsAt: (moment: string) => get<LifeEventAt>('/events/at', { moment }),
+  /** dreams of the hub's owner, newest morning first, each with its title and opening; from / to are days (both kept);
+   *  people and events only when asked, the texts only on a single dream (hub.dream) */
+  dreams: (p?: { from?: string; to?: string; q?: string; withPersonId?: string; eventId?: string; inclPersons?: boolean; inclEvents?: boolean }) => get<Dream[]>('/dreams', p),
+  dream: (id: string) => get<Dream>(`/dreams/${id}`),
   /** the computer and the phone of a moment ("2007-11-12T21:00", Vietnam wall-clock), every machine he had, that day's memories */
   deskAt: (at: string) => get<DeskMoment>('/desk/at', { at }),
   /** memories up to a moment, newest first — everyone's, a page of them */

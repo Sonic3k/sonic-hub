@@ -11,6 +11,7 @@ import Viewer from '../components/Viewer';
 import type { LifeEvent, LifeEventMoney, MediaFile } from '../types';
 import { eraClass } from '../lib/era';
 import { yearBlocks, yearsLabel } from '../lib/life';
+import { dreamDay, dreamHref, dreamName } from '../lib/dreams';
 
 const T = 10 * 60_000;
 /** the kinds of event, as they read here */
@@ -123,6 +124,7 @@ export function EventPage() {
           {e.parent && <p className="meta">Thuộc <Link to={eventHref(e.parent)}>{e.parent.title}</Link> ({eventWhen(e.parent)})</p>}
           {e.childEvents.length > 0 && <><h5 className="mem-h">Bao gồm</h5><nav className="mem-same">{e.childEvents.map(c => <Link key={c.id} to={eventHref(c)}>{c.title}<small>{eventWhen(c)}</small></Link>)}</nav></>}
           {e.memoryList.length > 0 && <><h5 className="mem-h">Ký ức</h5><nav className="mem-same">{e.memoryList.map(m => <Link key={m.id} to={`/memories/${m.id}`}>{m.title || m.summary?.slice(0, 80)}<small>{m.when?.replace(/(\d{4})-(\d{2})-(\d{2})/, '$3/$2/$1')}</small></Link>)}</nav></>}
+          {!!e.dreamList?.length && <><h5 className="mem-h">Giấc mơ gợi về</h5><nav className="mem-same">{e.dreamList.map(d => <Link key={d.id} to={dreamHref(d)}>{dreamName(d)}<small>{dreamDay(d.dreamtOn)}</small></Link>)}</nav></>}
           {e.transactionList.length > 0 && <><h5 className="mem-h">Chi tiêu{spent(e.money) ? ` · ${spent(e.money)}` : ''}</h5>
             <nav className="mem-same">{e.transactionList.map(t => <Link key={t.id} to={`/money?txn=${t.id}`}>{t.description || t.payeeName || t.category || '—'}<small>{t.occurredAt.slice(8, 10)}/{t.occurredAt.slice(5, 7)}/{t.occurredAt.slice(0, 4)} · {fmt(Math.round(t.amount))} {t.currency}</small></Link>)}</nav></>}
           <div className="pn">{prev ? <Link to={eventHref(prev)}><small>← Trước đó</small><b>{prev.title}</b></Link> : <span />}
