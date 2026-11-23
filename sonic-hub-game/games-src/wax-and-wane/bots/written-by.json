@@ -1,0 +1,22 @@
+{
+ "house": { "model": "Claude Fable 5.2" },
+ "greedy": { "model": "Claude Fable 5.2" },
+ "random": { "model": "Claude Fable 5.2" },
+ "am-duong": { "model": "Claude Opus 5.5", "sentAs": "am-duong_Claude Opus 5.5.js" },
+ "crescent-easy": { "model": "Claude Fable 5.2 Max" },
+ "crescent-medium": { "model": "Claude Fable 5.2 Max" },
+ "crescent-hard": { "model": "Claude Fable 5.2 Max" },
+ "crescent-expert": { "model": "Claude Fable 5.2 Max" },
+ "crescent-master": { "model": "Claude Fable 5.2 Max" },
+ "eclipse": { "model": "Claude Fable 5.2 Max" },
+ "da-trieu": { "model": "GPT-6.1 Terra Max" },
+ "moonwarden": { "model": "GPT-6 Luna Max" },
+ "soi-trang": { "model": "GPT-6 Luna Max" },
+ "positional": { "model": "GPT-6.2 Astra Max", "sentAs": "verification/positional.js" },
+ "soc-vong": { "model": "GPT-6.2 Astra Max" },
+ "trang-khuyet": { "model": "GPT-6.2 Astra Max" },
+ "thuong-huyen": { "model": "Claude Haiku 5.5" },
+ "trang-ram-grok": { "model": "Grok", "sentAs": "trangram.js" },
+ "trang-ram-sonnet": { "model": "Claude Sonnet 5.5", "sentAs": "trang-ram.js" },
+ "trieu-ngan": { "model": "GPT-6.2 Sol Max" }
+}
