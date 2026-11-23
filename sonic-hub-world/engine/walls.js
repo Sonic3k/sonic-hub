@@ -77,7 +77,7 @@ export function doorLeaf(b, w, h, mat, o = {}) {
   if (o.handle === 'lever') {
     for (const s of [-1, 1]) { b.box(ch, w - 0.085, 0.86, s * 0.02, w - 0.045, 1.12, s * 0.028, { cast: false }); b.box(ch, w - 0.19, 1.02, s * 0.03, w - 0.055, 1.04, s * 0.05, { cast: false }); }
   } else if (o.handle !== 'none') {
-    for (const s of [-1, 1]) { b.cyl(ch, w - 0.065, 0, 0, 0.012, 0.045, { rx: 90 * s, seg: 8, cast: false }); b.geo(ch, new THREE.SphereGeometry(0.03, 10, 8).translate(w - 0.065, 1.0, s * 0.06), { cast: false }); }
+    for (const s of [-1, 1]) { b.cyl(ch, w - 0.065, 1.0, 0, 0.012, 0.045, { rx: 90 * s, seg: 8, cast: false }); b.geo(ch, new THREE.SphereGeometry(0.03, 10, 8).translate(w - 0.065, 1.0, s * 0.06), { cast: false }); }
   }
   return b;
 }

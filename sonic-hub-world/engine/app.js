@@ -145,6 +145,8 @@ function start(place) {
   window.__world = {
     ready: true, place: meta.id,
     setPose: (x, y, z, h, p) => nav.setPose(x, y, z, h, p),
+    /** a lens for tools/shot.mjs: the vertical field of view in degrees (a resize puts the engine's own back) */
+    setFov: deg => { camera.fov = deg; camera.updateProjectionMatrix(); },
     goto: name => { const v = place.views[name]; if (v) nav.setPose(...v.pose); },
     setHour: h => ui.setHour(h, true), setYear: y => ui.setYear(y, true),
     hideIntro: () => ui.hideIntro(), card: id => touch(id), tour: () => place.tour && nav.startTour(place.tour),
@@ -155,6 +157,7 @@ function start(place) {
     texMB: () => { const seen = new Set(); let n = 0; scene.traverse(o => { for (const m of [].concat(o.material || [])) for (const k of ['map', 'emissiveMap', 'alphaMap', 'bumpMap', 'normalMap', 'roughnessMap']) { const t = m[k]; if (t && t.image && !seen.has(t.uuid)) { seen.add(t.uuid); n += t.image.width * t.image.height * 4 * 4 / 3; } } }); return [seen.size, +(n / 1048576).toFixed(1)]; },
     info: () => ({ calls: renderer.info.render.calls, tris: renderer.info.render.triangles, solids: shared.solids.length, pose: nav.getPose(), dpr, geoms: renderer.info.memory.geometries, tex: renderer.info.memory.textures }),
     pose: () => nav.getPose(), pause: v => { paused = v; },
+    scene: () => scene, camera: () => camera,                // for a tool that has to look inside (which part draws this pixel?)
     step: dt => { nav.update(dt); animate(dt); }, touring: () => nav.touring, solids: () => shared.solids, tourKeys: place.tour || [],
     state: () => ({ ...ui.state }),
     /** triangles per top-level part of the scene (instances counted), for tools/stats.mjs */

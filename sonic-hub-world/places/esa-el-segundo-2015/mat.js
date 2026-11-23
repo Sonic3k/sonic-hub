@@ -39,16 +39,17 @@ const tileRoofTex = (base = '#b4553a', seed = 2) => once('roof' + base + seed, (
 }, { aniso: 16 }));
 
 /* ── floors ── */
-/** the studio's carpet: brown, streaked with rust and sand along one way · 1 m */
-const carpetTex = () => once('carpet', () => canvasTex(512, 512, (g, w, h) => {
-  const R = rng(77); g.fillStyle = '#5e4632'; g.fillRect(0, 0, w, h);
-  for (let i = 0; i < 1600; i++) {
-    const y = R() * h, x = R() * w, len = 8 + R() * 60, c = ['#7a5a3c', '#4a3524', '#8d6a45', '#6b4a33', '#3b2a1d', '#9a7650', '#5a2f22'][(R() * 7) | 0];
-    g.strokeStyle = c; g.globalAlpha = 0.35 + R() * 0.5; g.lineWidth = 1 + R() * 2.2;
-    g.beginPath(); g.moveTo(x, y); g.lineTo(x + len, y + (R() - 0.5) * 2); g.stroke();
+/** the studio's carpet: a loop pile in fine ribs, brown flecked with sand and umber along them · 1 m */
+const carpetTex = () => once('carpet3', () => canvasTex(512, 512, (g, w, h) => {
+  const R = rng(77); g.fillStyle = '#5c4b37'; g.fillRect(0, 0, w, h);
+  for (let y = 0; y < h; y += 4) { g.fillStyle = `rgba(0,0,0,${(0.1 + R() * 0.06).toFixed(3)})`; g.fillRect(0, y, w, 1.5); }
+  for (let i = 0; i < 2600; i++) {
+    const y = ((R() * h / 4) | 0) * 4 + 2.6, x = R() * w, len = 6 + R() * 46, c = ['#7d6a4c', '#43382a', '#8f7a5a', '#66563f', '#372e22', '#9c8763', '#5a4832'][(R() * 7) | 0];
+    g.strokeStyle = c; g.globalAlpha = 0.3 + R() * 0.45; g.lineWidth = 1.2 + R() * 1.4;
+    g.beginPath(); g.moveTo(x, y); g.lineTo(x + len, y); g.stroke();
     if (x + len > w) { g.beginPath(); g.moveTo(x - w, y); g.lineTo(x + len - w, y); g.stroke(); }
   }
-  g.globalAlpha = 1; speck(g, w, h, R, 6000, 0.18); speck(g, w, h, R, 2000, 0.1, true);
+  g.globalAlpha = 1; speck(g, w, h, R, 5000, 0.14); speck(g, w, h, R, 1500, 0.07, true);
 }, { aniso: 16 }));
 /** wood-look vinyl planks of the kitchen · 1.2 m along the planks */
 const vinylTex = () => once('vinyl', () => canvasTex(512, 512, (g, w, h) => {
@@ -92,14 +93,14 @@ const mulchTex = () => once('mulch', () => canvasTex(256, 256, (g, w, h) => {
 }));
 
 /* ── cloth ── */
-/** the curtains: a brown tartan with rust, olive and cream · 0.45 m */
-const plaidTex = () => once('esaPlaid', () => canvasTex(256, 256, (g, w, h) => {
-  g.fillStyle = '#5a3a28'; g.fillRect(0, 0, w, h);
-  const bands = [[0, 22, 'rgba(160,70,45,0.75)'], [40, 10, 'rgba(110,120,70,0.7)'], [70, 5, 'rgba(230,205,160,0.7)'], [100, 26, 'rgba(90,55,35,0.9)'], [150, 8, 'rgba(160,70,45,0.6)'], [180, 14, 'rgba(120,110,70,0.65)'], [215, 4, 'rgba(230,205,160,0.6)']];
-  for (const [p, s, c] of bands) { g.fillStyle = c; g.fillRect(p, 0, s, h); g.fillRect(0, p, w, s); }
-  const R = rng(4); for (let i = 0; i < 3000; i++) { g.fillStyle = `rgba(0,0,0,${R() * 0.12})`; g.fillRect(R() * w, R() * h, 1, 2); }
+/** the curtains: a tartan on khaki — umber and grey-olive bands, thin lines of dull red and cream · 0.30 m */
+const plaidTex = () => once('esaPlaid3', () => canvasTex(256, 256, (g, w, h) => {
+  g.fillStyle = '#9c8667'; g.fillRect(0, 0, w, h);
+  const bands = [[0, 30, '#6f5038', 0.55], [30, 5, '#e6d3a6', 0.6], [46, 4, '#8a3d36', 0.85], [62, 40, '#6c6e58', 0.45], [108, 5, '#8a3d36', 0.7], [124, 30, '#6f5038', 0.5], [160, 5, '#e6d3a6', 0.55], [176, 40, '#8f7a58', 0.3], [226, 4, '#8a3d36', 0.8], [240, 10, '#5b4431', 0.5]];
+  for (const [p, s, c, a] of bands) { g.globalAlpha = a; g.fillStyle = c; g.fillRect(p, 0, s, h); g.fillRect(0, p, w, s); }
+  g.globalAlpha = 1; const R = rng(4); for (let i = 0; i < 5000; i++) { g.fillStyle = `rgba(${R() < 0.5 ? '0,0,0' : '255,240,210'},${(R() * 0.1).toFixed(3)})`; g.fillRect(R() * w, R() * h, 2, 1); }
 }));
-/** the white quilted duvet: diamond stitching · 0.5 m */
+/** the white quilted cover: diamond stitching, four diamonds to a repeat (laid 1.48 m to a repeat on the bed) */
 const quiltTex = (base = '#f1efe9', line = 'rgba(150,140,125,0.55)') => once('quilt' + base, () => canvasTex(256, 256, (g, w, h) => {
   g.fillStyle = base; g.fillRect(0, 0, w, h);
   for (let i = -2; i < 4; i++) { const sh_ = g.createLinearGradient(0, 0, w, h); sh_.addColorStop(0, 'rgba(0,0,0,0.03)'); sh_.addColorStop(1, 'rgba(255,255,255,0.03)'); g.fillStyle = sh_; }
@@ -107,12 +108,13 @@ const quiltTex = (base = '#f1efe9', line = 'rgba(150,140,125,0.55)') => once('qu
   for (let i = -4; i <= 4; i++) { g.beginPath(); g.moveTo(i * 64, 0); g.lineTo(i * 64 + h, h); g.stroke(); g.beginPath(); g.moveTo(i * 64 + h, 0); g.lineTo(i * 64, h); g.stroke(); }
   const R = rng(3); for (let i = 0; i < 40; i++) { g.fillStyle = `rgba(0,0,0,${R() * 0.04})`; g.beginPath(); g.ellipse(R() * w, R() * h, 10 + R() * 30, 6 + R() * 20, R() * 3, 0, 7); g.fill(); }
 }));
-/** the runner across the foot of the bed: tan quilting between dark brown bands · the whole runner along V */
-const runnerTex = () => once('runner', () => canvasTex(256, 256, (g, w, h) => {
+/** the runner across the foot of the bed: tan, quilted in diamonds half its width across, between two dark brown borders,
+    each `border` of its width · the whole runner along V, one diamond pair along U */
+const runnerTex = (border) => once('runner' + border.toFixed(3), () => canvasTex(256, 256, (g, w, h) => {
   g.fillStyle = '#b38f5f'; g.fillRect(0, 0, w, h);
-  g.strokeStyle = 'rgba(80,55,30,0.45)'; g.lineWidth = 1.4;
-  for (let i = -6; i <= 6; i++) { g.beginPath(); g.moveTo(i * 42, 0); g.lineTo(i * 42 + h, h); g.stroke(); g.beginPath(); g.moveTo(i * 42 + h, 0); g.lineTo(i * 42, h); g.stroke(); }
-  g.fillStyle = '#4a3527'; g.fillRect(0, 0, w, 26); g.fillRect(0, h - 26, w, 26);
+  g.strokeStyle = 'rgba(80,55,30,0.45)'; g.lineWidth = 1.6;
+  for (let i = -3; i <= 3; i++) { g.beginPath(); g.moveTo(i * 128, 0); g.lineTo(i * 128 + h, h); g.stroke(); g.beginPath(); g.moveTo(i * 128 + h, 0); g.lineTo(i * 128, h); g.stroke(); }
+  const bw = Math.round(h * border); g.fillStyle = '#4a3527'; g.fillRect(0, 0, w, bw); g.fillRect(0, h - bw, w, bw);
   const R = rng(8); speck(g, w, h, R, 1500, 0.08);
 }, { repeat: true }));
 /** faux leather, dark brown · 0.5 m */
@@ -145,12 +147,13 @@ export const X = {
   mulch: () => mat('mulch', () => std({ map: mulchTex(), roughness: 1 })),
   plaid: () => mat('plaid', () => std({ map: plaidTex(), roughness: 0.95, side: THREE.DoubleSide })),
   quilt: () => mat('quilt', () => std({ map: quiltTex(), roughness: 0.9 })),
-  runner: () => mat('runner', () => std({ map: runnerTex(), roughness: 0.9 })),
+  runner: (border = 0.075) => mat('runner' + border.toFixed(3), () => std({ map: runnerTex(border), roughness: 0.9 })),
   leather: () => mat('leather', () => std({ map: leatherTex(), roughness: 0.55 })),
   pine: () => mat('pine', () => std({ map: pineTex(), roughness: 0.5 })),
   laminate: (c = '#f3f1ea') => mat('lam' + c, () => std({ color: c, roughness: 0.35 })),
   oak: () => M.wood('#b8762e', 0.6, 4),
-  espresso: () => M.wood('#2b1a12', 0.55, 6),
+  espresso: () => M.wood('#1c1310', 0.5, 6),
+  walnut: () => M.wood('#4b2e1e', 0.5, 9),
   steel: () => mat('steel', () => std({ color: '#c9ccce', roughness: 0.28, metalness: 0.9 })),
   black: () => mat('blk', () => std({ color: '#0d0d0f', roughness: 0.25 })),
   glassDark: () => mat('gdark', () => { const m = std({ color: '#2a3238', roughness: 0.06, metalness: 0.5, transparent: true, opacity: 0.55, depthWrite: false }); m.userData.noCast = true; m.userData.order = 3; return m; }),

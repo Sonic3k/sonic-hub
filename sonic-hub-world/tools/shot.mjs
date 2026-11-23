@@ -1,5 +1,7 @@
 // Photographs a place from given poses.
 // usage: node tools/shot.mjs <name> [w=1280] [h=720] ['x,y,z,heading,pitch;…' | names of views] [hour] [year] [intro|rooms|notes|card:<id>]
+// FOV=<degrees> in the environment sets the vertical field of view (to stand a render beside a photograph taken
+// with a known lens: 54.4 for a 4:3 frame at 25 mm equivalent, 43.4 for a phone at 33 mm).
 import fs from 'fs';
 import { launch, open } from './lib.mjs';
 
@@ -8,6 +10,7 @@ fs.mkdirSync('shots', { recursive: true });
 const browser = await launch();
 const { page, logs } = await open(browser, { width: +W, height: +H });
 if (hour) await page.evaluate(h => window.__world.setHour(h), hour);
+if (process.env.FOV) await page.evaluate(f => window.__world.setFov(f), +process.env.FOV);
 if (year) await page.evaluate(y => window.__world.setYear(+y), year);
 // the state of the slips over the scene
 if (uiState !== 'intro') await page.evaluate(() => window.__world.hideIntro());

@@ -1,18 +1,19 @@
-/* His studio, upper floor, west face of the north wing: everything inside it, from the photographs of 21/9/2015
-   (19:15, four of them: the bed, the dresser and TV, the kitchen past the bed) and the iPhone pictures of 19/8 (his
-   breakfast at the counter), 30/8 (crabs at the kitchen sink), 18/9 (the room at night from the bed), 25/9 (the door
-   open on the walkway). The frame here: u runs east from the front wall, v south from the north wall, y up from the
-   floor (plan.js: IN, ROOM). */
+/* His studio, upper floor, west face of the north wing: everything inside it. Every size and place comes from plan.js
+   (IN), which was measured off the photographs of 21/9/2015 19:15 (from the door looking east; the bed; two of the north
+   wall with the dresser, the TV, the mirror and the counter he worked at) and the iPhone pictures of 19/8 (breakfast at
+   the counter), 18/9 (the counter and kitchen from the west, the bathroom door standing open) and 25/9 (the entry door
+   open on the walkway, the closet behind it). The frame here: u runs east from the front wall, v south from the north
+   wall, y up from the floor. */
 import * as THREE from 'three';
-import { M, canvasTex, plateTex, rng } from '../../engine/tex.js';
+import { M, plateTex, rng } from '../../engine/tex.js';
 import { doorLeaf } from '../../engine/walls.js';
 import { part } from '../../engine/kit.js';
 import { curtain, papers, bottle } from '../../engine/furn.js';
 import { X } from './mat.js';
-import { ROOM, IN, CEIL, G2, flat, counterEdge } from './plan.js';
+import { ROOM, IN, CEIL, G2, flat } from './plan.js';
 
 const D = () => ROOM.d, Wd = () => ROOM.w;
-const BEIGE = '#d6c4a0', GREEN = '#667a3c';
+const BEIGE = '#d3be93', GREEN = '#55753c';
 
 /* ── small drawn things ── */
 const printTex = () => plateTex(128, 192, (g, w, h) => {     // the hotel print: a red door frame standing in a garden
@@ -23,7 +24,6 @@ const printTex = () => plateTex(128, 192, (g, w, h) => {     // the hotel print:
   g.fillStyle = '#c4271d'; g.fillRect(w * 0.26, h * 0.16, w * 0.12, h * 0.68); g.fillRect(w * 0.62, h * 0.16, w * 0.12, h * 0.68); g.fillRect(w * 0.2, h * 0.12, w * 0.6, h * 0.08);
   g.fillStyle = '#5c6b58'; g.fillRect(w * 0.38, h * 0.2, w * 0.24, h * 0.62);
 });
-const evacTex = () => plateTex(96, 128, (g, w, h) => { g.fillStyle = '#f6f4ee'; g.fillRect(0, 0, w, h); g.fillStyle = '#a3281f'; g.fillRect(0, 0, w, 16); g.strokeStyle = '#333'; g.lineWidth = 1.2; g.strokeRect(12, 30, w - 24, h - 48); for (let i = 0; i < 6; i++) g.strokeRect(12 + i * (w - 24) / 6, 30, (w - 24) / 6, 26); g.fillStyle = '#c33'; g.beginPath(); g.arc(w * 0.62, 70, 4, 0, 7); g.fill(); });
 const clockTex = () => plateTex(64, 24, (g, w, h) => { g.fillStyle = '#101010'; g.fillRect(0, 0, w, h); g.fillStyle = '#ff2a1a'; g.font = 'bold 17px monospace'; g.textBaseline = 'middle'; g.fillText('7:15', 8, 13); });
 const screenTex = () => plateTex(256, 160, (g, w, h) => {    // the laptop's lock screen of 2015: a dark field crossed by coloured ribbons
   g.fillStyle = '#16131f'; g.fillRect(0, 0, w, h);
@@ -43,321 +43,494 @@ const mirrorTex = () => plateTex(96, 160, (g, w, h) => {   // what the mirror sh
   g.fillStyle = '#56585c'; g.fillRect(w * 0.55, h * 0.72, w * 0.28, h * 0.28);
   g.fillStyle = 'rgba(255,255,255,0.08)'; g.fillRect(0, 0, w, h);
 });
-const louvreIn = () => canvasTex(128, 32, (g, w, h) => { g.fillStyle = '#e4dccb'; g.fillRect(0, 0, w, h); for (let x = 3; x < w; x += 5) { g.fillStyle = 'rgba(60,50,40,0.5)'; g.fillRect(x, 3, 2, h - 6); } }, { repeat: false });
+
+const glowTex = () => plateTex(128, 128, (g, w, h) => { const r = g.createRadialGradient(w / 2, h / 2, 2, w / 2, h / 2, w / 2); r.addColorStop(0, 'rgba(255,255,255,1)'); r.addColorStop(0.25, 'rgba(255,255,255,0.5)'); r.addColorStop(0.6, 'rgba(255,255,255,0.12)'); r.addColorStop(1, 'rgba(255,255,255,0)'); g.fillStyle = '#000'; g.fillRect(0, 0, w, h); g.fillStyle = r; g.fillRect(0, 0, w, h); });
+
+/* ── soft and turned shapes ── */
+/** a cushion: a ball squared off toward a box of w × h × d (e: how square in plan, ey: how flat above and below) */
+const cushion = (w, h, d, e = 0.5, ey = 0.75, seg = 18) => {
+  const g = new THREE.SphereGeometry(1, seg, Math.max(8, Math.round(seg * 0.7))), p = g.attributes.position, pw = (v, k) => Math.sign(v) * Math.pow(Math.abs(v), k);
+  for (let i = 0; i < p.count; i++) p.setXYZ(i, pw(p.getX(i), e) * w / 2, pw(p.getY(i), ey) * h / 2, pw(p.getZ(i), e) * d / 2);
+  g.computeVertexNormals(); return g;
+};
+/** a profile [[radius, height]…] turned about the upright axis */
+const turned = (pts, seg = 24) => new THREE.LatheGeometry(pts.map(([r, y]) => new THREE.Vector2(r, y)), seg);
+/** cloth hanging against something: w wide at its top edge (y = 0), w1 at the hem, h long, in soft upright folds */
+const drape = (w, w1, h, folds = 3, depth = 0.014, thick = 0.02) => {
+  const g = new THREE.BoxGeometry(1, h, thick, 20, 8, 1), p = g.attributes.position;
+  for (let i = 0; i < p.count; i++) {
+    const x = p.getX(i), y = p.getY(i), t = 0.5 - y / h;                           // t: 0 at the top, 1 at the hem
+    p.setXYZ(i, x * (w + (w1 - w) * t), y - h / 2, p.getZ(i) + Math.sin(x * folds * 6.283 + t * 2.2) * depth * (0.25 + 0.75 * t));
+  }
+  g.computeVertexNormals(); return g;
+};
+/** a box of w × h × d eased to the radius r along its edges, k steps round each; its texture lies flat on every face,
+    o.rep metres to a repeat. o.floor: the bottom edges stay sharp (a hem); o.z === false: the two ends are cut square;
+    o.band: the texture's V runs once across d (a runner with a border down each side) */
+const eased = (w, h, d, r, o = {}) => {
+  const k = o.k || 4, per = o.rep || 0.5, S = 2 * k + 1, g = new THREE.BoxGeometry(w, h, d, S, S, S), p = g.attributes.position, uv = g.attributes.uv, nm = g.attributes.normal;
+  const step = (t, len) => { const i = Math.round((t / len + 0.5) * S); return i <= k ? -len / 2 + r * i / k : len / 2 - r * (S - i) / k; };   // k steps round each end, one flat step between them
+  const cl = (t, len) => Math.max(-len / 2 + r, Math.min(len / 2 - r, t)), v = new THREE.Vector3(), q = new THREE.Vector3(), face = (S + 1) * (S + 1);
+  for (let i = 0; i < p.count; i++) {
+    v.set(step(p.getX(i), w), step(p.getY(i), h), step(p.getZ(i), d));
+    q.set(cl(v.x, w), o.floor ? Math.min(h / 2 - r, v.y) : cl(v.y, h), o.z === false ? v.z : cl(v.z, d));
+    v.sub(q); if (v.lengthSq() > 1e-12) { v.setLength(r); nm.setXYZ(i, v.x / r, v.y / r, v.z / r); }
+    v.add(q); p.setXYZ(i, v.x, v.y, v.z);
+    const f = Math.floor(i / face) >> 1;                       // BoxGeometry's faces come as ±x, ±y, ±z
+    if (o.band) uv.setXY(i, (f === 0 ? v.y : v.x) / per, v.z / d + 0.5); else uv.setXY(i, (f === 0 ? v.z : v.x) / per, (f === 1 ? v.z : v.y) / per);
+  }
+  return g;
+};
+/** a pillow: w × d in plan and h thick at its middle, thinning to a seam all round, its sides drawn in a little between the corners */
+const pillow = (w, h, d, nu = 14, nv = 10) => {
+  const pos = [], uv = [], idx = [];
+  for (const s of [1, -1]) {
+    const base = pos.length / 3;
+    for (let j = 0; j <= nv; j++) for (let i = 0; i <= nu; i++) {
+      const a = Math.sin((i / nu - 0.5) * Math.PI), c = Math.sin((j / nv - 0.5) * Math.PI), fa = 1 - a * a, fc = 1 - c * c;       // closer rows toward the seam
+      pos.push(a * w / 2 * (1 - 0.05 * fc), s * h / 2 * Math.pow(fa * fc, 0.4), c * d / 2 * (1 - 0.07 * fa)); uv.push(i / nu, j / nv);
+    }
+    for (let j = 0; j < nv; j++) for (let i = 0; i < nu; i++) { const e = base + j * (nu + 1) + i, f = e + nu + 1; if (s > 0) idx.push(e, f, e + 1, e + 1, f, f + 1); else idx.push(e, e + 1, f, e + 1, f + 1, f); }
+  }
+  const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3)); g.setAttribute('uv', new THREE.Float32BufferAttribute(uv, 2)); g.setIndex(idx); g.computeVertexNormals(); return g;
+};
+/** set a shape down in the builder's frame: tilted (o.rx, o.rz, degrees) about its own origin, then turned ry clockwise from above */
+const set = (b, mat, g, x, y, z, ry = 0, o = {}) => { if (o.rx) g.rotateX(o.rx * Math.PI / 180); if (o.rz) g.rotateZ(o.rz * Math.PI / 180); if (ry) g.rotateY(-ry * Math.PI / 180); g.translate(x, y, z); return b.geo(mat, g, o); };
 
 export function buildRoom(scene, shared, ctx) {
   const parts = {};
   // where one walks: the studio's floor and the threshold of its door
   flat(ROOM.x0, ROOM.z0, ROOM.x1, ROOM.z1, G2);
   flat(ROOM.x0 - 0.25, ROOM.z0 + IN.door[0] + 0.05, ROOM.x0 + 0.05, ROOM.z0 + IN.door[1] - 0.05, G2);
+  const shade = ctx.lampMat('#fff2da', 1.6, 0.96, 0.05); shade.side = THREE.DoubleSide;        // a drum shade is seen from inside too
   const g = part(scene, shared, (b) => {
     b.push(ROOM.x0, G2, ROOM.z0);
-    const d = D(), w = Wd(), bu = IN.bath.u0, bv = IN.bath.v0, kv = IN.kitchen;
-    const beige = X.roomWall(BEIGE), green = X.roomWall(GREEN), white = X.laminate(), oak = X.oak(), pine = X.pine();
+    const d = D(), w = Wd(), bu = IN.bath.u0, bv = IN.bath.v0, K = IN.kitchen, C = IN.counter;
+    const beige = X.roomWall(BEIGE), green = X.roomWall(GREEN), white = X.laminate(), oak = X.oak(), pine = X.pine(), lea = X.leather();
+    const honey = M.wood('#b8762e', 0.15, 4);                  // the mirror's frame: the same oak, duller
     const plain = (c, r = 0.6, mt = 0) => M.plain(c, r, mt);
+    const trim = plain('#efe8d8', 0.5), base = plain('#5f4a38', 0.6), plate = plain('#f4f2ec', 0.45);
 
-    /* floor, ceiling, the party walls, the bathroom box */
+    /* floor, ceiling, the walls this studio does not share with the hotel's shell */
     b.box(X.conc('#9a958c', 4, false), 0, -0.28, 0, d, -0.012, w, {});
-    b.box(X.carpet(), 0, -0.012, 0, bu, 0, w, { uv: [1, 1], uvw: true, cast: false });
-    b.box(X.vinyl(), bu, -0.012, 0, d, 0.002, kv, { uv: [1.2, 1.2], uvw: true, grain: 'z', cast: false });
-    b.box(X.carpet(), 0, -0.012, 0, bu, 0.0005, 0, { cast: false });
-    b.box(M.plain('#7b6a52', 0.5), bu - 0.02, 0, 0, bu + 0.02, 0.006, kv, { cast: false });         // the metal strip where carpet meets vinyl
-    b.box(X.ceiling(), 0, CEIL, 0, d, CEIL + 0.02, w, { uv: [1, 1], uvw: true, cast: false });
-    b.box(beige, 0, 0, -0.16, d, CEIL + 0.3, 0, { solid: true });                                   // north party wall
-    b.box(green, 0, 0, w, bu, CEIL + 0.3, w + 0.16, { solid: true });                               // south: the bed wall, green
-    b.box(beige, bu, 0, w, d, CEIL + 0.3, w + 0.16, { solid: true });
-    // skirting all round the main room
-    for (const [u0, v0, u1, v1] of [[0.02, 0, d, 0.012], [0.02, w - 0.012, bu, w], [bu - 0.012, bv, bu, w]]) b.box(plain('#6b5440', 0.6), u0, 0, v0, u1, 0.09, v1, { cast: false });
+    b.box(X.carpet(), 0, -0.012, 0, bu, 0, w, { uv: [1, 1], uvw: true, grain: 'z', cast: false });
+    b.box(X.carpet(), bu, -0.012, 0, IN.vinyl, 0, bv, { uv: [1, 1], uvw: true, grain: 'z', cast: false });
+    b.box(X.vinyl(), IN.vinyl, -0.012, 0, d, 0.002, bv, { uv: [1.2, 1.2], uvw: true, cast: false });
+    b.box(plain('#8a7658', 0.4, 0.5), IN.vinyl - 0.015, 0, IN.cab.v1, IN.vinyl + 0.015, 0.005, bv, { cast: false });      // the strip where carpet meets vinyl
+    { const cm = X.ceiling(); cm.shadowSide = THREE.FrontSide;                                                   // its shadow is its top's, so no light creeps in along the walls
+      b.box(cm, -0.02, CEIL, -0.02, d + 0.02, CEIL + 0.3, w + 0.02, { uv: [1, 1], uvw: true }); }
+    b.box(beige, -0.02, 0, -0.16, d + 0.12, CEIL + 0.3, 0, { solid: true });                          // north party wall
+    b.box(green, -0.02, 0, w, bu, CEIL + 0.3, w + 0.16, { solid: true });                             // south: the bed wall, green
+    b.box(beige, bu, 0, w, d + 0.12, CEIL + 0.3, w + 0.16, { solid: true });
+    b.box(beige, d, 0, 0, d + 0.12, CEIL + 0.3, w, { solid: true });                                  // the back wall (plumbing behind it)
     // the bathroom box: its west face (with the print) and its north face (with the door), to the ceiling
+    const [bd0, bd1] = IN.bathDoor;
     b.box(beige, bu, 0, bv + 0.1, bu + 0.1, CEIL, w, { solid: true });
-    b.box(beige, bu, 0, bv, IN.bathDoor[0], CEIL, bv + 0.1, { solid: true });
-    b.box(beige, IN.bathDoor[1], 0, bv, d, CEIL, bv + 0.1, { solid: true });
-    b.box(beige, IN.bathDoor[0], 2.03, bv, IN.bathDoor[1], CEIL, bv + 0.1, {});
-    for (const [u0, u1] of [[IN.bathDoor[0] - 0.06, IN.bathDoor[0]], [IN.bathDoor[1], IN.bathDoor[1] + 0.06]]) b.box(plain('#efe8d8', 0.5), u0, 0, bv - 0.015, u1, 2.09, bv + 0.115, { cast: false });
-    b.box(plain('#efe8d8', 0.5), IN.bathDoor[0] - 0.06, 2.03, bv - 0.015, IN.bathDoor[1] + 0.06, 2.09, bv + 0.115, { cast: false });
+    b.box(beige, bu, 0, bv, bd0, CEIL, bv + 0.1, { solid: true });
+    b.box(beige, bd1, 0, bv, d, CEIL, bv + 0.1, { solid: true });
+    b.box(beige, bd0, 2.03, bv, bd1, CEIL, bv + 0.1, {});
+    for (const [u0, u1] of [[bd0 - 0.06, bd0], [bd1, bd1 + 0.06]]) b.box(trim, u0, 0, bv - 0.015, u1, 2.09, bv + 0.115, { cast: false });
+    b.box(trim, bd0 - 0.06, 2.03, bv - 0.015, bd1 + 0.06, 2.09, bv + 0.115, { cast: false });
+    b.box(plate, IN.bathSwitch.u - 0.058, IN.bathSwitch.y - 0.057, bv - 0.008, IN.bathSwitch.u + 0.058, IN.bathSwitch.y + 0.057, bv, { cast: false });   // two switches by the box's corner
+    for (const du of [-0.024, 0.024]) b.box(plain('#e3dfd4', 0.4), IN.bathSwitch.u + du - 0.006, IN.bathSwitch.y - 0.014, bv - 0.013, IN.bathSwitch.u + du + 0.006, IN.bathSwitch.y + 0.014, bv - 0.008, { cast: false });
+    b.cyl(plate, IN.detector.u, IN.detector.y, bv, 0.055, 0.035, { rx: -90, seg: 16, cast: false });                  // a round detector high on that face
+    // the closet in the north-west corner: a wing wall, a shelf and a rail behind where the entry door swings
+    const cl = IN.closet;
+    b.box(beige, cl.wing[0], 0, 0, cl.wing[1], CEIL, cl.v1, { solid: true });
+    b.box(trim, cl.wing[0] - 0.006, 0, cl.v1 - 0.004, cl.wing[1] + 0.006, CEIL, cl.v1 + 0.006, { cast: false });
+    b.box(plain('#e9e4d6', 0.6), 0, 1.74, 0, cl.wing[0], 1.765, 0.36, {});
+    b.cyl(M.chrome(), 0.02, 1.64, 0.27, 0.014, cl.wing[0] - 0.04, { rz: -90, seg: 8, cast: false });
+    for (const [u, c] of [[0.42, '#3f8f5a'], [0.55, '#3f8f5a'], [0.69, '#3f8f5a'], [1.02, '#d9d6cf'], [1.14, '#d9d6cf']]) {
+      b.box(plain(c, 0.5), u - 0.004, 1.42, 0.07, u + 0.004, 1.44, 0.47, { cast: false });                            // a hanger: its bar, its two arms, its hook
+      b.bar(plain(c, 0.5), u, 1.44, 0.07, u, 1.56, 0.27, 0.008, { cast: false }); b.bar(plain(c, 0.5), u, 1.44, 0.47, u, 1.56, 0.27, 0.008, { cast: false }); b.bar(plain(c, 0.5), u, 1.56, 0.27, u, 1.626, 0.27, 0.006, { cast: false });
+    }
+    b.box(plain('#e7e5e0', 0.4), 1.22, 1.765, 0.08, 1.44, 1.86, 0.2, {});                                              // the iron on the shelf, its cord hanging
+    b.bar(plain('#161616', 0.6), 1.4, 1.77, 0.2, 1.36, 0.95, 0.33, 0.007, { round: true, seg: 5, cast: false });
+    // skirting: the carpet turned up the wall, a hand high, wherever the floor is carpet; dark vinyl by the kitchen
+    for (const [u0, v0, u1, v1] of [[0, 0, cl.wing[0], 0.012], [cl.wing[1], 0, IN.cab.u0, 0.012], [0, w - 0.012, bu, w], [bu - 0.012, bv, bu, w], [bu, bv - 0.012, IN.vinyl, bv], [0, 0, 0.012, IN.door[0] - 0.07], [0, IN.door[1] + 0.07, 0.012, w], [cl.wing[0] - 0.012, 0, cl.wing[0], cl.v1], [cl.wing[1], 0, cl.wing[1] + 0.012, cl.v1], [cl.wing[0] - 0.012, cl.v1, cl.wing[1] + 0.012, cl.v1 + 0.012]])
+      b.box(X.carpet(), u0, 0, v0, u1, 0.1, v1, { uv: [1, 1], cast: false });
+    for (const [u0, v0, u1, v1] of [[C.u1, 0, IN.fridge.front, 0.012], [IN.vinyl, bv - 0.012, bd0 - 0.06, bv], [bd1 + 0.06, bv - 0.012, K.front, bv]]) b.box(base, u0, 0, v0, u1, 0.1, v1, { cast: false });
     // the casing of the entry door, inside
     const [dv0, dv1] = IN.door;
-    for (const [v0, v1] of [[dv0 - 0.07, dv0], [dv1, dv1 + 0.07]]) b.box(plain('#efe8d8', 0.5), 0, 0, v0, 0.02, IN.doorH + 0.07, v1, { cast: false });
-    b.box(plain('#efe8d8', 0.5), 0, IN.doorH, dv0 - 0.07, 0.02, IN.doorH + 0.07, dv1 + 0.07, { cast: false });
+    for (const [v0, v1] of [[dv0 - 0.07, dv0], [dv1, dv1 + 0.07]]) b.box(trim, 0, 0, v0, 0.02, IN.doorH + 0.07, v1, { cast: false });
+    b.box(trim, 0, IN.doorH, dv0 - 0.07, 0.02, IN.doorH + 0.07, dv1 + 0.07, { cast: false });
+    b.box(plate, 0, 1.17, dv1 + 0.16, 0.008, 1.285, dv1 + 0.23, { cast: false });                                       // the light switch by the door
 
-    /* the window: glass of the slider, the plaid curtains on their rod, the wall unit under the sill */
+    /* the window: the slider's glass, its stool, the track on the ceiling that carries the plaid curtains, their wands */
     const [wv0, wv1] = IN.win;
     b.box(M.glass('#c9d6dc', 0.18), -0.14, IN.sill + 0.04, wv0 + 0.04, -0.13, IN.head - 0.04, wv1 - 0.04, { cast: false });
-    b.box(plain('#f3f2ee', 0.45), -0.13, IN.sill - 0.01, wv0, 0.02, IN.sill + 0.02, wv1, {});                      // the sill
-    b.cyl(M.plain('#5a4632', 0.5, 0.4), 0.11, 2.36, wv0 - 0.32, 0.012, wv1 - wv0 + 0.62, { rx: 90, seg: 8, cast: false });
-    for (const v of [wv0 - 0.3, wv1 + 0.3]) b.box(M.plain('#5a4632', 0.5, 0.4), 0, 2.33, v - 0.02, 0.13, 2.39, v + 0.02, { cast: false });
-    parts.curtainsAt = { u: 0.1, v0: wv0 - 0.28, v1: wv1 + 0.3, y0: 0.78, y1: 2.34 };
-    const ac = louvreIn();
-    b.box(plain('#e6dfcf', 0.55), 0, 0.06, wv0 + 0.25, 0.25, 0.46, wv0 + 1.3, { solid: true });
-    b.box(new THREE.MeshStandardMaterial({ map: ac, roughness: 0.7 }), 0.04, 0.46, wv0 + 0.32, 0.22, 0.465, wv0 + 1.23, { cast: false });
-    b.box(plain('#cfc6b2', 0.5), 0.2, 0.25, wv0 + 1.12, 0.252, 0.4, wv0 + 1.25, { cast: false });
+    b.box(plain('#f3f2ee', 0.45), -0.13, IN.sill - 0.012, wv0 - 0.01, 0.03, IN.sill + 0.02, wv1 + 0.01, {});
+    for (const v of [wv0, wv1 - 0.03]) b.box(plain('#f3f2ee', 0.45), -0.13, IN.sill, v, 0.0, IN.head, v + 0.03, { cast: false });
+    b.box(plain('#f3f2ee', 0.45), -0.13, IN.head - 0.03, wv0, 0.0, IN.head, wv1, { cast: false });
+    const cv0 = wv0 - 0.15, cv1 = IN.curtainEnd;
+    b.box(plain('#e9e6dc', 0.5, 0.2), 0.07, CEIL - 0.022, cv0 - 0.03, 0.13, CEIL, cv1 + 0.03, { cast: false });
+    parts.curtainsAt = { u: 0.1, v0: cv0, v1: cv1, y0: 0.45, y1: CEIL - 0.022 };
+    for (const v of [2.8, 2.92]) b.cyl(plain('#f1f0ea', 0.4), 0.165, 1.36, v, 0.005, 0.95, { seg: 6, cast: false });
 
-    /* the entry door's inside: the evacuation plan, the latch */
-    parts.evac = new THREE.MeshBasicMaterial({ map: evacTex(), toneMapped: true });
-
-    /* dresser, its lamp, the TV, the mirror and the wall lamp over the counter */
-    const [du0, du1] = IN.dresser, dd = IN.dresserD, dh = IN.dresserH;
-    b.box(pine, du0, 0.06, 0, du1, dh - 0.03, dd - 0.02, { uv: [1, 1], solid: true });
-    b.box(pine, du0 - 0.015, dh - 0.03, -0.0, du1 + 0.015, dh, dd + 0.01, { uv: [1, 1] });
-    b.box(pine, du0 + 0.02, 0, 0.03, du1 - 0.02, 0.06, dd - 0.06, { uv: [1, 1] });
-    const dw = (du1 - du0) / 2, rowH = (dh - 0.12) / 2;
-    for (let c = 0; c < 2; c++) for (let r = 0; r < 2; r++) {
-      const x0 = du0 + c * dw + 0.012, x1 = du0 + (c + 1) * dw - 0.012, y0 = 0.08 + r * rowH + 0.008, y1 = 0.08 + (r + 1) * rowH - 0.008;
-      b.box(pine, x0, y0, dd - 0.02, x1, y1, dd + 0.005, { uv: [1, 1], cast: false });
-      b.box(pine, x0 + 0.025, y0 + 0.025, dd + 0.005, x1 - 0.025, y1 - 0.025, dd + 0.011, { uv: [1, 1], cast: false });
-      for (const f of [0.28, 0.72]) b.sphere(plain('#1c1714', 0.4, 0.5), x0 + (x1 - x0) * f, (y0 + y1) / 2, dd + 0.025, 0.017, { seg: 8, cast: false });
+    /* the dresser with its lamp and the TV: knotty pine, two drawers wide and two high */
+    const dr = IN.dresser, dd = dr.d, dh = dr.h;
+    b.box(pine, dr.u0, 0.071, 0.01, dr.u1, dh - 0.04, dd, { uv: [1, 1], solid: true });
+    b.box(pine, dr.u0 - 0.015, dh - 0.04, 0, dr.u1 + 0.015, dh, dd + 0.03, { uv: [1, 1] });
+    b.box(pine, dr.u0 - 0.015, dh, 0, dr.u1 + 0.015, dr.rail, 0.02, { uv: [1, 1], cast: false });                        // the low rail at the back of the top
+    b.box(plain('#5a3d22', 0.8), dr.u0 + 0.03, 0, 0.04, dr.u1 - 0.03, 0.071, dd - 0.04, {});
+    const dw = (dr.u1 - dr.u0) / 2, knob = plain('#2b2019', 0.35, 0.4);
+    for (let c = 0; c < 2; c++) for (const [y0, y1] of [[0.071, 0.41], [0.427, 0.712]]) {
+      const x0 = dr.u0 + c * dw + 0.008, x1 = dr.u0 + (c + 1) * dw - 0.008;
+      b.box(pine, x0, y0 + 0.006, dd, x1, y1 - 0.006, dd + 0.018, { uv: [1, 1], cast: false });
+      b.box(pine, x0 + 0.012, y0 + 0.018, dd + 0.018, x1 - 0.012, y1 - 0.018, dd + 0.022, { uv: [1, 1], cast: false });       // a plain front, its edges eased
+      for (const s of [-0.225, 0.225]) { b.cyl(knob, (x0 + x1) / 2 + s, (y0 + y1) / 2, dd + 0.018, 0.012, 0.018, { rx: 90, seg: 10, cast: false }); b.sphere(knob, (x0 + x1) / 2 + s, (y0 + y1) / 2, dd + 0.042, 0.019, { seg: 10, cast: false }); }
     }
-    // the table lamp: a teal glazed jar, a white drum shade
-    const lu = du0 + 0.2, lv = 0.24;
-    b.cyl(M.plain('#4f7d77', 0.35), lu, dh, lv, 0.07, 0.04, { seg: 16 });
-    b.cyl(M.plain('#4f7d77', 0.35), lu, dh + 0.04, lv, 0.08, 0.2, { seg: 16, r2: 0.105 });
-    b.cyl(M.plain('#4f7d77', 0.35), lu, dh + 0.24, lv, 0.105, 0.12, { seg: 16, r2: 0.06 });
-    b.cyl(M.plain('#c8c8c4', 0.3, 0.8), lu, dh + 0.36, lv, 0.008, 0.12, { seg: 6 });
-    b.cyl(ctx.lampMat('#fff1d6', 1.6, 0.97, 0.05), lu, dh + 0.43, lv, 0.2, 0.3, { seg: 24, r2: 0.18, open: true });
-    // the TV: an LG of 32 in on a round foot, a little east of the middle
-    const tu = du0 + 0.83, tv = 0.22;
-    b.cyl(X.black(), tu, dh, tv, 0.13, 0.025, { seg: 20 });
-    b.box(X.black(), tu - 0.03, dh + 0.02, tv - 0.02, tu + 0.03, dh + 0.12, tv + 0.02, {});
-    b.box(X.black(), tu - 0.395, dh + 0.09, tv - 0.045, tu + 0.395, dh + 0.61, tv + 0.035, { solid: false });
-    parts.tvAt = { u: tu, v: tv + 0.036, y: dh + 0.35 };
-    b.box(M.plain('#b9bcc0', 0.3, 0.8), tu - 0.02, dh + 0.105, tv + 0.036, tu + 0.02, dh + 0.115, tv + 0.037, { cast: false });
-    // things on the dresser: a book or two, papers, the box of rice crackers
-    papers(b, du0 + 0.48, dh, 0.3, 0.2, 0.14, 0.03, 3, ['#d33a2a', '#f0d24a', '#ebe7dc']);
-    papers(b, du1 - 0.22, dh, 0.33, 0.22, 0.3, 0.025, 5);
-    b.box(M.plain('#f1c419', 0.6), du0 + 0.35, dh, 0.36, du0 + 0.55, dh + 0.012, 0.44, { cast: false });
-    // the mirror: a pale wooden frame with an arched crown
-    const [mu0, mu1] = IN.mirror, my0 = 1.06, my1 = 1.98;
-    b.box(oak, mu0, my0, 0, mu1, my1, 0.03, { uv: [1, 1], grain: 'y' });
-    b.box(M.plain('#c7d2d6', 0.04, 1), mu0 + 0.055, my0 + 0.055, 0.03, mu1 - 0.055, my1 - 0.055, 0.032, { cast: false });
-    b.quad(new THREE.MeshStandardMaterial({ map: mirrorTex(), roughness: 0.08, metalness: 0.15, envMapIntensity: 0.6 }), '+z', (mu0 + mu1) / 2, (my0 + my1) / 2, 0.0345, mu1 - mu0 - 0.11, my1 - my0 - 0.11, { cast: false });
-    for (let i = 0; i < 8; i++) { const a0 = mu0 - 0.03 + (mu1 - mu0 + 0.06) * i / 8, a1 = mu0 - 0.03 + (mu1 - mu0 + 0.06) * (i + 1) / 8, t = (i + 0.5) / 8; b.box(oak, a0, my1, -0.005, a1, my1 + 0.03 + Math.sin(t * Math.PI) * 0.07, 0.045, { uv: [1, 1] }); }
-    b.box(M.plain('#f2efe6', 0.5), mu0 + 0.24, 2.2, 0, mu0 + 0.36, 2.34, 0.012, { cast: false });                      // the bell of the fire alarm over it
-    // swing-arm lamps: one over the counter, two by the bed
-    const swing = (u, v, y, dir) => {                                                                                    // dir: which way the wall faces (+1 south, -1 north)
-      b.box(M.plain('#4f6650', 0.5, 0.5), u - 0.045, y - 0.12, v, u + 0.045, y + 0.06, v + dir * 0.02, {});
-      b.box(M.plain('#4f6650', 0.5, 0.5), u - 0.012, 0.25, v, u + 0.012, y - 0.12, v + dir * 0.014, { cast: false });   // the cord cover down to the outlet
-      b.bar(M.plain('#b49447', 0.3, 0.9), u, y, v + dir * 0.03, u + 0.24, y + 0.02, v + dir * 0.3, 0.012, { round: true, seg: 6, cast: false });
-      b.cyl(ctx.lampMat('#fff2da', 1.6, 0.97, 0.05), u + 0.24, y - 0.02, v + dir * 0.3, 0.12, 0.2, { seg: 20, r2: 0.11, open: true });
-    };
-    swing(2.98, 0, 1.55, 1);
-    // the thermostat and the panel by the counter
-    b.box(M.plain('#f3f1ec', 0.5), 3.42, 1.42, 0, 3.56, 1.54, 0.025, { cast: false });
-    b.box(M.plain('#ece8de', 0.6), 3.62, 1.25, 0, 3.92, 1.8, 0.02, { cast: false });
+    // the table lamp at the west end: a ginger jar glazed verdigris, a wide white shade
+    const L = IN.tvLamp;
+    set(b, plain('#4f8582', 0.38), turned([[0.001, 0], [0.07, 0], [0.073, 0.018], [0.056, 0.034], [0.06, 0.07], [0.079, 0.13], [0.093, 0.19], [0.096, 0.222], [0.088, 0.26], [0.067, 0.295], [0.049, 0.31], [0.051, 0.324], [0.059, 0.334], [0.059, 0.35], [0.03, 0.358], [0.001, 0.358]], 28), L.u, dh, L.v);
+    b.cyl(M.plain('#b9a36a', 0.3, 0.8), L.u, dh + 0.355, L.v, 0.009, 0.07, { seg: 6 });
+    b.cyl(shade, L.u, dh + 0.393, L.v, 0.215, 0.335, { seg: 28, r2: 0.2, open: true });
+    // the TV: an LG of 32 in on an oval foot, at the east end
+    const T = IN.tv, tu = (T.u0 + T.u1) / 2;
+    b.sphere(X.black(), tu, dh + 0.012, T.v - 0.03, 1, { sx: 0.285, sy: 0.014, sz: 0.115, seg: 20 });
+    b.box(X.black(), tu - 0.05, dh + 0.01, T.v - 0.06, tu + 0.05, T.y0 + 0.02, T.v - 0.02, {});
+    b.box(X.black(), T.u0, T.y0, T.v - 0.07, T.u1, T.y1, T.v, {});
+    b.box(plain('#0b0c0e', 0.25, 0.3), T.u0 + 0.004, T.y0 + 0.004, T.v, T.u1 - 0.004, T.y1 - 0.004, T.v + 0.006, { cast: false });
+    parts.tvAt = { u: tu, v: T.v + 0.0075, y: (T.y0 + T.y1) / 2 + 0.022, w: T.u1 - T.u0 - 0.075, h: T.y1 - T.y0 - 0.115 };
+    b.box(M.plain('#b9bcc0', 0.3, 0.8), tu - 0.022, T.y0 + 0.022, T.v + 0.006, tu + 0.022, T.y0 + 0.032, T.v + 0.0075, { cast: false });     // the maker's badge, unlettered
+    b.solid(T.u0, dh, T.v - 0.1, T.u1, T.y1, T.v + 0.02);
+    // on the dresser: a red box on two books, papers, leaflets by the TV
+    b.box(plain('#3d6b3a', 0.7), L.u + 0.2, dh, 0.1, L.u + 0.52, dh + 0.03, 0.31, {});
+    b.rbox(plain('#c8362b', 0.6), L.u + 0.33, dh + 0.075, 0.2, 0.24, 0.09, 0.15, 6, {});
+    b.rbox(plain('#f0d24a', 0.6), L.u + 0.33, dh + 0.122, 0.2, 0.2, 0.004, 0.05, 6, { cast: false });
+    papers(b, L.u + 0.5, dh, 0.4, 0.2, 0.14, 0.012, 3);
+    papers(b, T.u1 - 0.12, dh, 0.5, 0.2, 0.26, 0.03, 5);
+    b.rbox(plain('#f1dc3a', 0.6), tu - 0.33, dh + 0.006, 0.5, 0.19, 0.01, 0.12, -14, { cast: false });
+    // a parcel box on the floor in front of it, red and blue on white
+    b.rbox(plain('#f1f0ec', 0.7), dr.u0 + 0.28, 0.08, 0.92, 0.38, 0.16, 0.3, 14, {});
+    b.rbox(plain('#c5342c', 0.7), dr.u0 + 0.28, 0.162, 0.92, 0.38, 0.004, 0.05, 14, { cast: false }); b.rbox(plain('#2b4f9c', 0.7), dr.u0 + 0.29, 0.162, 1.0, 0.38, 0.004, 0.03, 14, { cast: false });
 
-    /* the counter along the north wall, from the mirror to the kitchen: white laminate on an oak edge, deeper at its
-       east end where a curved bracket holds it; two high chairs at it, facing the wall */
-    const C = IN.counter, N = 14, edge = [];
-    for (let i = 0; i <= N; i++) { const u = C.u1 - 0.22 - (C.u1 - 0.22 - C.u0) * i / N; edge.push([u, counterEdge(u)]); }
-    const top = new THREE.Shape(); { const r = 0.22; top.moveTo(C.u0, 0); top.lineTo(C.u1, 0); top.lineTo(C.u1, C.v1 - r); top.absarc(C.u1 - r, C.v1 - r, r, 0, Math.PI / 2, false); for (const [u, v] of edge) top.lineTo(u, v); top.lineTo(C.u0, 0); }
-    const tg = new THREE.ExtrudeGeometry(top, { depth: 0.035, bevelEnabled: false, curveSegments: 8 }); tg.rotateX(Math.PI / 2); tg.translate(0, C.h, 0);
-    b.geo(white, tg);
-    for (let i = 0; i < edge.length - 1; i++) { const [ua, va] = edge[i], [ub, vb] = edge[i + 1], len = Math.hypot(ub - ua, vb - va), ang = Math.atan2(vb - va, ub - ua) * 180 / Math.PI; b.rbox(oak, (ua + ub) / 2, C.h - 0.055, (va + vb) / 2 + 0.005, len + 0.01, 0.035, 0.012, ang, { cast: false }); }
-    b.box(oak, C.u1 - 0.012, C.h - 0.07, 0.02, C.u1 + 0.002, C.h - 0.035, C.v1 - 0.22, { cast: false });
-    b.box(white, C.u0, 0, 0, C.u0 + 0.025, C.h - 0.035, C.v0 - 0.04, { solid: true });                              // its west end panel
-    b.box(white, C.u0 + 0.025, C.h - 0.17, C.v0 - 0.06, C.u1 - 0.3, C.h - 0.035, C.v0 - 0.04, { cast: false });      // the apron
-    for (let i = 0; i < 7; i++) { const t = i / 7, y = C.h - 0.04 - Math.sin(t * Math.PI / 2) * 0.34; b.box(white, C.u1 - 0.42 + t * 0.02, y - 0.035, 0.02 + t * (C.v1 - 0.3), C.u1 - 0.38 + t * 0.02, y, 0.06 + t * (C.v1 - 0.3), { cast: false }); }
-    b.box(white, C.u1 - 0.42, 0.0, 0.0, C.u1 - 0.38, C.h - 0.36, 0.08, {});
-    b.solid(C.u0, 0, 0, C.u1, C.h, C.v0); b.solid(C.u0 + 0.6, 0, 0, C.u1, C.h, C.v1 - 0.1);
-    const chair = (u, v, face, jacket) => {
-      b.push(u, 0, v, face);
-      const lg = M.plain('#2a1d16', 0.5), lea = X.leather(), sh = 0.64, bh = 1.08;
-      for (const [x, z] of [[-0.19, -0.19], [0.19, -0.19], [-0.19, 0.19], [0.19, 0.19]]) b.box(lg, x - 0.02, 0, z - 0.02, x + 0.02, sh - 0.04, z + 0.02, {});
-      for (const z of [-0.19, 0.19]) b.box(lg, -0.19, 0.24, z - 0.012, 0.19, 0.26, z + 0.012, { cast: false });
-      b.box(lg, -0.19, 0.24, -0.19, -0.17, 0.26, 0.19, { cast: false });
-      b.box(lea, -0.22, sh - 0.06, -0.22, 0.22, sh + 0.02, 0.22, { uv: [0.5, 0.5] });
-      b.box(lea, -0.2, sh + 0.02, 0.18, 0.2, bh, 0.24, { uv: [0.5, 0.5] });
-      if (jacket) { b.box(M.plain('#7f8486', 0.95), -0.23, sh - 0.15, 0.17, 0.23, bh + 0.02, 0.26, {}); b.box(M.plain('#7f8486', 0.95), -0.2, bh - 0.08, 0.05, 0.2, bh + 0.03, 0.26, { cast: false }); b.box(M.plain('#e6e7e8', 0.9), -0.05, sh, 0.255, 0.05, bh - 0.1, 0.262, { cast: false }); }
+    /* the mirror: a pale wooden frame under an arched crown; the horn of the fire alarm over it; the phone jack */
+    const Mi = IN.mirror, fw = 0.048;
+    b.box(honey, Mi.u0, Mi.y0, 0, Mi.u1, Mi.y1, 0.03, { uv: [1, 1], grain: 'y' });
+    b.quad(new THREE.MeshStandardMaterial({ map: mirrorTex(), roughness: 0.08, metalness: 0.15, envMapIntensity: 0.6 }), '+z', (Mi.u0 + Mi.u1) / 2, (Mi.y0 + Mi.y1) / 2 - 0.005, 0.0312, Mi.u1 - Mi.u0 - 2 * fw, Mi.y1 - Mi.y0 - 2 * fw - 0.01, { cast: false });
+    b.box(honey, Mi.u0 - 0.04, Mi.y1, 0, Mi.u1 + 0.04, Mi.y1 + 0.028, 0.07, { uv: [1, 1] });                               // the cornice
+    { const a0 = Mi.u0 - 0.032, a1 = Mi.u1 + 0.032, mid = (a0 + a1) / 2, y0 = Mi.y1 + 0.028, pk = Mi.crown, sh = new THREE.Shape();
+      sh.moveTo(a0, y0); sh.lineTo(a0, y0 + 0.02); sh.bezierCurveTo(a0 + 0.13, y0 + 0.02, mid - 0.22, pk, mid - 0.08, pk); sh.lineTo(mid + 0.08, pk);
+      sh.bezierCurveTo(mid + 0.22, pk, a1 - 0.13, y0 + 0.02, a1, y0 + 0.02); sh.lineTo(a1, y0); sh.lineTo(a0, y0);
+      b.geo(honey, new THREE.ExtrudeGeometry(sh, { depth: 0.05, bevelEnabled: false, curveSegments: 14 })); }
+    b.box(plate, IN.alarm.u - 0.036, IN.alarm.y - 0.06, 0, IN.alarm.u + 0.036, IN.alarm.y + 0.06, 0.012, { cast: false });
+    b.cyl(plain('#d8d5cc', 0.6), IN.alarm.u, IN.alarm.y + 0.012, 0.012, 0.022, 0.003, { rx: 90, seg: 12, cast: false });
+    b.box(plain('#c4372c', 0.5), IN.alarm.u - 0.01, IN.alarm.y - 0.04, 0.012, IN.alarm.u + 0.01, IN.alarm.y - 0.03, 0.014, { cast: false });
+    b.box(plate, IN.jack.u - 0.035, IN.jack.y - 0.057, 0, IN.jack.u + 0.035, IN.jack.y + 0.057, 0.007, { cast: false });
+    // his backpack on the floor under the mirror, against the cupboard; a dark bundle of clothes beside it
+    const pack = M.plain('#1c1d20', 0.85);
+    set(b, pack, cushion(0.3, 0.48, 0.2, 0.45, 0.55), Mi.u0 + 0.53, 0.24, 0.15);
+    set(b, M.plain('#24262a', 0.85), cushion(0.22, 0.26, 0.1, 0.45, 0.6), Mi.u0 + 0.53, 0.18, 0.26);
+    b.bar(pack, Mi.u0 + 0.44, 0.46, 0.12, Mi.u0 + 0.62, 0.46, 0.12, 0.02, { round: true, seg: 6, cast: false });
+    set(b, M.plain('#17181b', 0.95), cushion(0.34, 0.1, 0.26, 0.6, 0.8), Mi.u0 + 0.16, 0.05, 0.3, 20);
+    b.solid(Mi.u0 + 0.38, 0, 0, Mi.u0 + 0.68, 0.47, 0.3);
+
+    /* swing-arm lamps: a patina plate on the wall, a brass arm in two rods, a white drum shade above its end. One over
+       the counter, two by the bed (their cord covers run down the wall) */
+    const swing = (u, v, y, out, du, dOut, cover) => {        // out: +1 where the wall faces south (into +v), −1 north; (du, dOut): where the arm carries the shade
+      const pat = M.plain('#5d7466', 0.55, 0.3), brass = M.plain('#b49447', 0.3, 0.9);
+      b.box(pat, u - 0.06, y - 0.08, v, u + 0.06, y + 0.08, v + out * 0.022, {});
+      if (cover) b.box(pat, u - 0.014, 0.3, v, u + 0.014, y - 0.08, v + out * 0.012, { cast: false });
+      const su = u + du, sv = v + out * dOut, ey = y + 0.03;
+      b.bar(brass, u, ey, v + out * 0.022, u, ey, v + out * 0.05, 0.024, { round: true, seg: 8, cast: false });
+      b.bar(brass, u, ey, v + out * 0.045, su, ey, sv, 0.011, { round: true, seg: 6, cast: false });
+      b.bar(brass, u, ey - 0.026, v + out * 0.045, su, ey - 0.026, sv, 0.008, { round: true, seg: 6, cast: false });
+      b.cyl(brass, su, ey - 0.035, sv, 0.014, 0.08, { seg: 8, cast: false });
+      b.cyl(shade, su, y + 0.027, sv, 0.142, 0.245, { seg: 24, r2: 0.13, open: true });
+    };
+    const WL = IN.wallLamp;
+    swing(WL.u, 0, WL.y, 1, WL.du, WL.out, false);
+    b.bar(plain('#ecebe4', 0.6), WL.u + 0.01, WL.y - 0.07, 0.012, IN.outlet.u - 0.02, IN.outlet.y + 0.03, 0.02, 0.006, { round: true, seg: 5, cast: false });    // its cord, down to the outlet
+    b.box(plate, IN.outlet.u - 0.058, IN.outlet.y - 0.057, 0, IN.outlet.u + 0.058, IN.outlet.y + 0.057, 0.007, { cast: false });
+    b.box(plain('#f7f6f1', 0.4), IN.outlet.u + 0.008, IN.outlet.y - 0.03, 0.007, IN.outlet.u + 0.05, IN.outlet.y + 0.03, 0.05, { cast: false });               // a charger in it
+    // the breaker panel and the thermostat further along the wall
+    const Pn = IN.panel;
+    b.box(plain('#d9c8a6', 0.7), Pn.u0, Pn.y0, 0, Pn.u1, Pn.y1, 0.01, { cast: false });
+    b.box(plain('#cdbc98', 0.7), Pn.u0 + 0.03, Pn.y0 + 0.03, 0.01, Pn.u1 - 0.03, Pn.y1 - 0.03, 0.014, { cast: false });
+    b.box(plate, IN.thermostat.u - 0.03, IN.thermostat.y - 0.048, 0, IN.thermostat.u + 0.03, IN.thermostat.y + 0.048, 0.022, { cast: false });
+    b.box(plain('#9aa39b', 0.3), IN.thermostat.u - 0.02, IN.thermostat.y + 0.005, 0.022, IN.thermostat.u + 0.02, IN.thermostat.y + 0.032, 0.023, { cast: false });
+
+    /* THE COUNTER he worked at: a table for two that stands out from the north wall. A white laminate top 0.87 wide and
+       1.155 long, its two free corners rounded; under its wall end a white cupboard with an oak pull strip along its
+       top, opening west; down its middle a panel whose front edge rakes back to the floor, under a short apron board
+       cut in an ogee at each end. A high chair is pushed in from either side, into the knee room the panel leaves. */
+    { const r = C.r, sh = new THREE.Shape();
+      sh.moveTo(C.u0, 0); sh.lineTo(C.u1, 0); sh.lineTo(C.u1, C.v1 - r); sh.absarc(C.u1 - r, C.v1 - r, r, 0, Math.PI / 2, false); sh.lineTo(C.u0 + r, C.v1); sh.absarc(C.u0 + r, C.v1 - r, r, Math.PI / 2, Math.PI, false); sh.lineTo(C.u0, 0);
+      const tg = new THREE.ExtrudeGeometry(sh, { depth: C.t, bevelEnabled: false, curveSegments: 10 }); tg.rotateX(Math.PI / 2); tg.translate(0, C.h, 0);
+      b.geo(white, tg); }
+    const cb = IN.cab, under = C.h - C.t;
+    b.box(white, cb.u0, 0.1, 0, cb.u1, under, cb.v1, { solid: true });
+    b.box(plain('#2a2522', 0.8), cb.u0 + 0.05, 0, 0, cb.u1, 0.1, cb.v1, { cast: false });                                // its recessed kick, on the west
+    b.box(white, cb.u0, 0, cb.v1 - 0.018, cb.u1, 0.1, cb.v1, { cast: false });                                          // its south side comes down to the floor
+    b.box(oak, cb.u0 - 0.012, under - 0.036, 0.004, cb.u0, under - 0.001, cb.v1, { uv: [1, 1], cast: false });           // the oak strip along the top of its door
+    b.box(white, cb.u0 - 0.018, 0.105, 0.012, cb.u0, under - 0.04, cb.v1 - 0.012, { cast: false });                      // the door, opening west
+    const lg = IN.leg, ap = IN.apron;
+    { const sh = new THREE.Shape(); sh.moveTo(0, 0); sh.lineTo(lg.foot, 0); sh.lineTo(lg.top, under); sh.lineTo(0, under); sh.lineTo(0, 0);
+      const pg = new THREE.ExtrudeGeometry(sh, { depth: lg.u1 - lg.u0, bevelEnabled: false }); pg.rotateY(-Math.PI / 2); pg.translate(lg.u1, 0, 0); b.geo(white, pg); }
+    { const og = 0.131, y1 = under, y0 = ap.y0, sh = new THREE.Shape();
+      sh.moveTo(ap.u0, y1); sh.quadraticCurveTo(ap.u0 + 0.004, y1 - 0.058, ap.u0 + 0.034, y1 - 0.064); sh.lineTo(ap.u0 + 0.085, y1 - 0.074); sh.quadraticCurveTo(ap.u0 + og, y1 - 0.08, ap.u0 + og, y0);
+      sh.lineTo(ap.u1 - og, y0); sh.quadraticCurveTo(ap.u1 - og, y1 - 0.08, ap.u1 - 0.085, y1 - 0.074); sh.lineTo(ap.u1 - 0.034, y1 - 0.064); sh.quadraticCurveTo(ap.u1 - 0.004, y1 - 0.058, ap.u1, y1); sh.lineTo(ap.u0, y1);
+      const ag = new THREE.ExtrudeGeometry(sh, { depth: ap.v1 - ap.v0, bevelEnabled: false, curveSegments: 8 }); ag.translate(0, 0, ap.v0); b.geo(white, ag); }
+    b.solid(C.u0, 0, 0, C.u1, C.h, C.v1 - 0.02);
+    // the laptop, as on the evening of 21/9: open at the west edge, square with it, its screen to the chair
+    const lap = IN.laptop, tilt = 18 * Math.PI / 180;
+    b.push(lap.u, C.h, lap.v, lap.ry);
+    b.box(M.plain('#2a2c30', 0.45, 0.4), -0.19, 0, -0.1275, 0.19, 0.016, 0.1275, {});
+    b.box(M.plain('#17181b', 0.6), -0.165, 0.016, -0.105, 0.165, 0.0175, 0.02, { cast: false });                         // keys
+    b.box(M.plain('#3a3d42', 0.5), -0.05, 0.016, 0.04, 0.05, 0.0172, 0.105, { cast: false });                            // the touchpad
+    b.rbox(M.plain('#1b1c1f', 0.4, 0.3), 0, 0.016 + 0.1225 * Math.cos(tilt), -0.1275 - 0.1225 * Math.sin(tilt), 0.38, 0.245, 0.008, 0, { rx: -18 });
+    b.pop();
+    parts.screenAt = { u: lap.u, v: lap.v, y: C.h, ry: lap.ry, tilt };
+    // what stood round it: the box of lemon tea and a dark tin against the wall, water, a sleeve of discs, papers; behind
+    // the screen a steel flask, a clear bottle, the gallon jug, the red flask, a spectacle case; a black pouch
+    b.box(plain('#f1efe8', 0.6), C.u0 + 0.085, C.h, 0.012, C.u0 + 0.32, C.h + 0.08, 0.082, {});
+    b.box(plain('#3f9a4a', 0.6), C.u0 + 0.083, C.h, 0.01, C.u0 + 0.17, C.h + 0.082, 0.084, { cast: false });
+    b.cyl(plain('#f2d64a', 0.6), C.u0 + 0.24, C.h + 0.04, 0.082, 0.024, 0.002, { rx: 90, seg: 12, cast: false });
+    b.box(plain('#1f2a22', 0.5), C.u0 + 0.33, C.h, 0.015, C.u0 + 0.4, C.h + 0.075, 0.085, {});
+    bottle(b, '#cfe6f5', C.u0 + 0.4, C.h, 0.14, 0.032, 0.235, '#2f8a3e');
+    b.rbox(plain('#c9d2d6', 0.3), C.u0 + 0.19, C.h + 0.006, 0.19, 0.2, 0.012, 0.15, 14, { cast: false });               // the sleeve of discs
+    papers(b, C.u0 + 0.3, C.h, 0.36, 0.3, 0.21, 0.012, 11); papers(b, C.u0 + 0.21, C.h, 0.47, 0.22, 0.16, 0.006, 12, ['#f3f1ea', '#dfe8f0']);
+    b.cyl(plain('#9a9da0', 0.3, 0.8), C.u0 + 0.765, C.h, 0.08, 0.034, 0.19, { seg: 14 }); b.cyl(plain('#1b1b1c', 0.4), C.u0 + 0.765, C.h + 0.19, 0.08, 0.03, 0.03, { seg: 12, cast: false }); b.cyl(plain('#c63a2e', 0.4), C.u0 + 0.765, C.h + 0.22, 0.08, 0.022, 0.012, { seg: 10, cast: false });
+    bottle(b, '#dfeaf0', C.u0 + 0.625, C.h, 0.17, 0.03, 0.2, '#e9eef2');
+    b.cyl(M.glass('#e9f0f2', 0.55), C.u0 + 0.745, C.h, 0.29, 0.078, 0.2, { seg: 14 }); b.cyl(M.glass('#e9f0f2', 0.55), C.u0 + 0.745, C.h + 0.2, 0.29, 0.078, 0.07, { seg: 14, r2: 0.025 }); b.cyl(plain('#2f6fd6', 0.4), C.u0 + 0.745, C.h + 0.27, 0.29, 0.024, 0.022, { seg: 10 });
+    b.cyl(plain('#e23a22', 0.35), C.u0 + 0.795, C.h, 0.44, 0.045, 0.2, { seg: 14 }); b.cyl(plain('#1c1c1c', 0.4), C.u0 + 0.795, C.h + 0.2, 0.44, 0.038, 0.05, { seg: 12 });
+    b.geo(plain('#1c1c1c', 0.5), new THREE.TorusGeometry(0.035, 0.006, 6, 14).translate(C.u0 + 0.795, C.h + 0.275, 0.44), { cast: false });          // its loop
+    set(b, plain('#8fb1c9', 0.5), cushion(0.15, 0.04, 0.06, 0.7, 0.7, 10), C.u0 + 0.705, C.h + 0.02, 0.535, 35);         // the spectacle case
+    set(b, plain('#141517', 0.6), cushion(0.13, 0.04, 0.1, 0.55, 0.7, 10), C.u0 + 0.425, C.h + 0.02, 0.85, 8);           // the pouch
+    parts.badgeAt = { u: C.u0 + 0.62, v: 1.0, y: C.h + 0.004 };
+    // the two high chairs: dark leather on walnut legs, a low padded back; his grey jacket over the back of his own
+    const stool = ({ u, v, face, jacket }) => {
+      b.push(u, 0, v, face);                         // it faces local −z; x is its width
+      const wood = X.walnut(), lw = 0.048, ax = 0.2, az = 0.23, wo = { uv: [0.6, 0.6], grain: 'y' };
+      for (const sx of [-1, 1]) {
+        b.box(wood, sx * ax - lw / 2, 0, -az - lw / 2, sx * ax + lw / 2, 0.5, -az + lw / 2, wo);                        // front leg
+        b.box(wood, sx * ax - lw / 2, 0, az - lw / 2, sx * ax + lw / 2, 0.945, az + lw / 2, wo);                        // back post
+        b.box(wood, sx * ax - 0.011, 0.455, -az, sx * ax + 0.011, 0.5, az, { uv: [0.6, 0.6], cast: false });             // rail under the seat
+        b.box(wood, sx * ax - 0.011, 0.17, -az, sx * ax + 0.011, 0.205, az, { uv: [0.6, 0.6], cast: false });            // stretcher
+      }
+      for (const z of [-az, az]) b.box(wood, -ax, 0.455, z - 0.011, ax, 0.5, z + 0.011, { uv: [0.6, 0.6], cast: false });
+      b.box(wood, -ax, 0.24, -az - 0.011, ax, 0.275, -az + 0.011, { uv: [0.6, 0.6], cast: false });                      // the foot rail
+      b.box(wood, -ax, 0.17, az - 0.011, ax, 0.205, az + 0.011, { uv: [0.6, 0.6], cast: false });
+      set(b, lea, cushion(0.47, 0.09, 0.5, 0.42, 0.7), 0, 0.54, -0.005);                                                // the seat
+      b.box(wood, -ax, 0.905, az - 0.02, ax, 0.945, az + 0.024, { uv: [0.6, 0.6], cast: false });                        // top rail of the back
+      set(b, lea, cushion(0.36, 0.31, 0.06, 0.35, 0.45), 0, 0.745, az - 0.012);                                         // its pad
+      if (jacket) {                                  // a long fall behind the back, a short one in front, a sleeve down each side
+        const grey = M.plain('#8e948c', 0.95), band = M.plain('#22262b', 0.9);
+        set(b, grey, drape(0.46, 0.5, 0.68, 2.4, 0.014), 0, 0.95, az + 0.05);
+        set(b, grey, drape(0.44, 0.46, 0.28, 2.4, 0.008), 0, 0.95, az - 0.05);
+        b.cyl(grey, -0.23, 0.946, az + 0.001, 0.034, 0.46, { rz: -90, seg: 12 });
+        for (const sx of [-1, 1]) set(b, grey, cushion(0.09, 0.56, 0.085, 0.6, 0.6, 12), sx * 0.245, 0.62, az + 0.03, 0, { rz: sx * 4 });
+        for (const dz of [-0.012, 0.012]) b.box(band, 0.289, 0.73, az + 0.03 + dz - 0.004, 0.292, 0.88, az + 0.03 + dz + 0.004, { cast: false });   // two dark bands at one shoulder
+      }
       b.pop();
-      b.solid(u - 0.24, 0, v - 0.24, u + 0.24, 0.66, v + 0.24);
     };
-    chair(2.72, counterEdge(2.72) + 0.32, 0, true);      // facing the counter (north), his grey jacket over its back
-    chair(3.42, counterEdge(3.42) + 0.34, 350, false);
-    // on the counter: the laptop (open, facing the chair), the gallon of water, a red flask, bottles, the badge, a mug, papers
-    const lu0 = 2.82, lv0 = 0.33;
-    b.push(lu0, C.h, lv0, 180);
-    b.box(M.plain('#1d1f22', 0.4, 0.3), -0.18, 0, -0.12, 0.18, 0.018, 0.12, {});
-    b.box(M.plain('#3b3e43', 0.5), -0.165, 0.018, -0.1, 0.165, 0.02, 0.03, { cast: false });
-    b.push(0, 0.018, 0.12, 0); b.rbox(M.plain('#1d1f22', 0.4, 0.3), 0, 0.12, 0.03, 0.36, 0.24, 0.012, 0, { rx: 18 }); b.pop();
+    IN.chairs.forEach(stool);
+    b.solid(C.u0 - 0.13, 0, 0.65, C.u0 + 0.02, 0.95, 1.1); b.solid(C.u1 - 0.01, 0, 0.72, C.u1 + 0.125, 0.95, 1.18);     // what of each chair stands clear of the top
+
+    /* the bed: a full, its head on the green south wall; an espresso headboard with two tan panels; white quilt, a tan
+       runner across its foot; the nightstand to its east with the phone and the clock */
+    const B = IN.bed, Hb = IN.headboard, esp = X.espresso();
+    b.box(esp, Hb.u0, 0, B.v1, Hb.u1, Hb.top, w, { uv: [1, 1] });
+    { const side = (Hb.u1 - Hb.u0 - 2 * Hb.pw - 0.09) / 2; for (const a0 of [Hb.u0 + side, Hb.u1 - side - Hb.pw]) b.box(M.plain('#b27f48', 0.75), a0, Hb.panel[0], B.v1 - 0.018, a0 + Hb.pw, Hb.panel[1], B.v1, { cast: false }); }
+    b.box(M.plain('#4b3a2d', 0.9), B.u0 + 0.02, 0, B.v0 + 0.02, B.u1 - 0.02, 0.34, B.v1, { solid: true });            // the skirt
+    // the cover: white, quilted in diamonds 0.37 m across; over the top and down three sides to its hem,
+    // rounding over the mattress's edges; turned back in a fold where the pillows lie
+    const q = X.quilt(), hem = 0.26, cr = 0.05, cu0 = B.u0 - 0.03, cu1 = B.u1 + 0.03, cf = B.v0 - 0.03, ch = B.v1 + 0.05;
+    set(b, q, eased(cu1 - cu0, B.top - hem, ch - cf, cr, { floor: true, rep: 1.48 }), (cu0 + cu1) / 2, (B.top + hem) / 2, (cf + ch) / 2);
+    set(b, q, eased(cu1 - cu0 - 0.02, 0.075, 0.15, 0.035, { rep: 1.48, k: 3 }), (cu0 + cu1) / 2, B.top - 0.005, B.v1 - 0.57, 0, { cast: false });
+    // the runner across its foot: tan between two dark borders, hanging down both sides
+    const [r0, r1] = B.runner, rn = X.runner(B.border / (r1 - r0)), rt = 0.008, rlow = 0.3;
+    set(b, rn, eased(cu1 - cu0 + 2 * rt, B.top + rt - rlow, r1 - r0, cr + rt, { floor: true, z: false, band: true, rep: r1 - r0 }), (cu0 + cu1) / 2, (B.top + rt + rlow) / 2, (r0 + r1) / 2, 0, { cast: false });
+    const pil = M.plain('#f4f3ef', 0.92);
+    set(b, pil, pillow(0.68, 0.15, 0.46), B.u1 - 0.38, B.top + 0.07, B.v1 - 0.27, 4);                                   // one flat on the nightstand's side
+    set(b, pil, pillow(0.68, 0.15, 0.46), B.u0 + 0.39, B.top + 0.068, B.v1 - 0.26, -3);                                 // one flat on the window's
+    set(b, pil, pillow(0.7, 0.17, 0.48), (B.u0 + B.u1) / 2 + 0.06, B.top + 0.205, B.v1 - 0.26, -8, { rx: -15 });        // one across them, against the headboard
+    b.solid(B.u0, 0, B.v0, B.u1, B.top, B.v1);
+    const N = IN.stand, nh = N.h;
+    b.box(pine, N.u0, nh - 0.03, N.v0 - 0.015, N.u1, nh, w - 0.005, { uv: [1, 1] });
+    for (const [u0, u1] of [[N.u0 + 0.01, N.u0 + 0.035], [N.u1 - 0.035, N.u1 - 0.01]]) b.box(pine, u0, 0, N.v0, u1, nh - 0.03, w - 0.01, { uv: [1, 1] });
+    b.box(pine, N.u0 + 0.035, 0.07, N.v0 + 0.02, N.u1 - 0.035, 0.095, w - 0.01, { uv: [1, 1], cast: false });           // the open shelf
+    b.box(pine, N.u0 + 0.035, 0, w - 0.03, N.u1 - 0.035, nh - 0.03, w - 0.01, { uv: [1, 1], cast: false });
+    b.box(pine, N.u0 + 0.035, 0.4, N.v0, N.u1 - 0.035, nh - 0.035, N.v0 + 0.018, { uv: [1, 1], cast: false });          // the drawer
+    b.sphere(plain('#3a2416', 0.4), (N.u0 + N.u1) / 2, 0.5, N.v0 - 0.012, 0.02, { seg: 8, cast: false });
+    papers(b, (N.u0 + N.u1) / 2, 0.095, N.v0 + 0.22, 0.3, 0.2, 0.05, 21, ['#3b4a6a', '#c9b48a', '#8a2f2a']);
+    b.solid(N.u0, 0, N.v0, N.u1, nh, w);
+    b.rbox(plain('#f1efea', 0.4), N.u1 - 0.2, nh + 0.03, N.v0 + 0.17, 0.2, 0.06, 0.2, 12, {});                           // the phone, its handset on the left
+    b.rbox(plain('#f1efea', 0.4), N.u1 - 0.27, nh + 0.075, N.v0 + 0.17, 0.055, 0.04, 0.2, 12, {});
+    b.rbox(plain('#141414', 0.4), N.u0 + 0.15, nh + 0.035, N.v0 + 0.27, 0.19, 0.07, 0.11, -8, {});                       // the clock radio
+    b.push(N.u0 + 0.15, nh + 0.035, N.v0 + 0.27, -8); b.quad(M.screen(clockTex()), '-z', 0, 0.002, -0.056, 0.12, 0.042, { cast: false }); b.pop();
+    for (const [du, ang] of [[0.13, 70], [0.2, 64]]) b.rbox(plain('#1a1a1a', 0.5), N.u0 + du, nh + 0.01, N.v0 + 0.09, 0.045, 0.02, 0.19, ang, { cast: false });     // two remotes
+    for (const l of IN.bedLamps) swing(l.u, w, IN.bedLampY, -1, l.du, l.out, true);
+
+    /* by the window: the recliner in the corner, a carton against the wall, his shoes just inside the door */
+    const Rc = IN.recliner;
+    b.push(Rc.u, 0, Rc.v, Rc.ry);
+    b.box(M.plain('#1d130f', 0.6), -0.38, 0, -0.38, 0.38, 0.1, 0.36, { cast: false });
+    set(b, lea, cushion(0.86, 0.38, 0.86, 0.3, 0.35), 0, 0.27, -0.01);                                                  // the body
+    set(b, lea, cushion(0.56, 0.16, 0.6, 0.4, 0.6), 0, 0.47, -0.1);                                                     // the seat
+    set(b, lea, cushion(0.6, 0.6, 0.22, 0.38, 0.45), 0, 0.67, 0.3, 0, { rx: 11 });                                      // the back, leaning: its top at 0.96
+    set(b, lea, cushion(0.5, 0.18, 0.15, 0.45, 0.6), 0, 0.86, 0.32, 0, { rx: 11 });                                     // its head roll
+    for (const sx of [-1, 1]) set(b, lea, cushion(0.2, 0.3, 0.8, 0.45, 0.5), sx * 0.34, 0.47, 0.0);                     // the arms
     b.pop();
-    parts.screenAt = { u: lu0, v: lv0 - 0.135, y: C.h + 0.13, face: 'south' };
-    b.cyl(M.glass('#e9f0f2', 0.55), 3.78, C.h, 0.22, 0.08, 0.27, { seg: 14 });
-    b.cyl(M.plain('#2f6fd6', 0.4), 3.78, C.h + 0.27, 0.22, 0.025, 0.03, { seg: 10 });
-    b.cyl(M.plain('#d8361f', 0.35), 3.9, C.h, 0.45, 0.055, 0.24, { seg: 14 }); b.cyl(M.plain('#f3f1ea', 0.4), 3.9, C.h + 0.24, 0.45, 0.035, 0.05, { seg: 10 });
-    bottle(b, '#cfe6f5', 3.25, C.h, 0.12, 0.033, 0.24, '#1d5fb8');
-    bottle(b, '#d7ecd9', 3.35, C.h, 0.1, 0.03, 0.2, '#2f8a3e');
-    b.cyl(M.plain('#f4f2ec', 0.3), 2.5, C.h, 0.2, 0.04, 0.09, { seg: 12 });
-    papers(b, 3.15, C.h, 0.5, 0.28, 0.21, 0.012, 11);
-    b.box(M.plain('#e9e3cf', 0.6), 2.48, C.h, 0.36, 2.6, C.h + 0.06, 0.48, {});                                        // the lemon tea box
-    parts.badgeAt = { u: 3.45, v: 0.7, y: C.h + 0.005 };
-    // the backpack under the mirror, by the counter
-    b.push(IN.mirror[0] + 0.1, 0, 0.12, 0); b.box(M.plain('#1c1d20', 0.85), 0, 0, 0, 0.3, 0.46, 0.2, {}); b.box(M.plain('#26282c', 0.85), 0.04, 0.05, 0.2, 0.26, 0.3, 0.27, {}); b.pop();
+    b.solid(Rc.u - 0.5, 0, Rc.v - 0.5, Rc.u + 0.5, 0.62, Math.min(w, Rc.v + 0.5));
+    const card = M.plain('#a7835a', 0.9), card2 = M.plain('#8f6d47', 0.9);
+    b.box(card, 0.03, 0, 2.27, 0.33, 0.31, 2.57, {}); b.box(M.plain('#5d4630', 0.95), 0.05, 0.29, 2.29, 0.31, 0.312, 2.55, { cast: false });
+    b.rbox(card2, 0.18, 0.345, 2.255, 0.28, 0.01, 0.12, 0, { rx: 50, cast: false }); b.rbox(card2, 0.345, 0.345, 2.42, 0.01, 0.01, 0.28, 0, { rz: -15, cast: false });
+    b.solid(0, 0, 2.25, 0.35, 0.31, 2.59);
+    const shoe = (u, v, c, ang, sole = '#e9e9e6') => { set(b, M.plain(c, 0.7), cushion(0.1, 0.09, 0.27, 0.6, 0.6, 10), u, 0.055, v, ang); b.rbox(M.plain(sole, 0.7), u, 0.012, v, 0.1, 0.024, 0.27, ang, { cast: false }); };
+    shoe(0.55, 2.2, '#26272b', 74); shoe(0.6, 2.32, '#26272b', 80);                                                    // dark trainers
+    shoe(0.27, 1.92, '#2c68b4', 60); shoe(0.36, 2.03, '#2c68b4', 52);                                                  // the blue pair
+    for (const [u, v] of [[0.62, 1.94], [0.72, 2.03]]) b.rbox(M.plain('#17181a', 0.8), u, 0.012, v, 0.1, 0.022, 0.27, 66, { cast: false });   // flip-flops
 
-    /* the bed: queen, head on the green south wall, a dark headboard with two tan panels, white duvet, tan runner */
-    const B = IN.bed, bu0 = B.u0, bu1 = B.u0 + B.w, bv1 = w - 0.03, bv0 = bv1 - B.l;
-    const esp = X.espresso();
-    b.box(esp, bu0 - 0.06, 0, w - 0.05, bu1 + 0.06, 1.42, w - 0.0, { uv: [1, 1] });
-    for (const [a0, a1] of [[bu0 + 0.02, bu0 + B.w / 2 - 0.04], [bu0 + B.w / 2 + 0.04, bu1 - 0.02]]) b.box(M.plain('#c4955e', 0.75), a0, 0.68, w - 0.065, a1, 1.34, w - 0.05, { cast: false });
-    b.box(M.plain('#4b3a2d', 0.9), bu0, 0.0, bv0, bu1, 0.36, bv1, { solid: true });                                   // the skirt
-    b.box(M.plain('#ece9e2', 0.9), bu0 + 0.01, 0.36, bv0 + 0.01, bu1 - 0.01, 0.58, bv1 - 0.01, { cast: false });       // mattress
-    const q = X.quilt();
-    b.box(q, bu0 - 0.035, 0.52, bv0 - 0.035, bu1 + 0.035, 0.635, bv1 - 0.32, { uv: [0.5, 0.5] });
-    b.box(q, bu0 - 0.035, 0.2, bv0 - 0.035, bu1 + 0.035, 0.52, bv0, { uv: [0.5, 0.5], cast: false });                 // the drop at the foot
-    for (const u of [bu0 - 0.035, bu1]) b.box(q, u, 0.2, bv0 - 0.035, u + 0.035, 0.6, bv1 - 0.32, { uv: [0.5, 0.5], cast: false });
-    const rn = X.runner();
-    b.box(rn, bu0 - 0.04, 0.6, bv0 + 0.32, bu1 + 0.04, 0.645, bv0 + 1.0, { uv: [B.w + 0.1, 0.68], cast: false });
-    for (const u of [bu0 - 0.045, bu1 + 0.005]) b.box(rn, u, 0.28, bv0 + 0.32, u + 0.04, 0.645, bv0 + 1.0, { uv: [0.68, 0.68], cast: false });
-    b.box(q, bu0 + 0.0, 0.6, bv1 - 0.36, bu1, 0.66, bv1 - 0.22, { uv: [0.5, 0.5], cast: false });                     // the fold at the head
-    const pil = M.plain('#f6f5f1', 0.9);
-    for (const [u, v, s] of [[bu0 + 0.4, bv1 - 0.18, 1], [bu1 - 0.4, bv1 - 0.18, 1], [bu0 + 0.55, bv1 - 0.42, 0.9], [bu1 - 0.45, bv1 - 0.45, 0.9]]) b.sphere(pil, u, 0.7 + (s < 1 ? 0.0 : 0.08), v, 0.5, { sx: 0.62 * s, sy: 0.2, sz: 0.36 * s, seg: 14 });
-    b.solid(bu0, 0, bv0, bu1, 0.62, bv1);
-    // the nightstand east of the bed: pine, a drawer, a shelf; the phone, the clock, the remote
-    const [nu0, nu1] = IN.stand, nv0 = w - 0.5, nh = 0.62;
-    b.box(pine, nu0, 0.0, nv0, nu1, nh, w - 0.01, { uv: [1, 1], solid: true });
-    b.box(pine, nu0 + 0.02, 0.06, nv0 - 0.01, nu1 - 0.02, 0.36, nv0 + 0.42, { uv: [1, 1], cast: false });
-    b.box(M.plain('#2b1b10', 0.9), nu0 + 0.03, 0.07, nv0 - 0.012, nu1 - 0.03, 0.34, nv0 + 0.4, { cast: false });
-    papers(b, (nu0 + nu1) / 2, 0.075, nv0 + 0.2, 0.3, 0.22, 0.05, 21, ['#3b4a6a', '#c9b48a', '#8a2f2a']);
-    b.box(pine, nu0 + 0.02, 0.38, nv0 - 0.015, nu1 - 0.02, 0.58, nv0, { uv: [1, 1], cast: false });
-    b.sphere(M.plain('#3a2416', 0.4), (nu0 + nu1) / 2, 0.48, nv0 - 0.025, 0.02, { seg: 8, cast: false });
-    b.box(M.plain('#f1efea', 0.4), nu0 + 0.06, nh, nv0 + 0.06, nu0 + 0.25, nh + 0.06, nv0 + 0.26, {});                  // the phone
-    b.box(M.plain('#f1efea', 0.4), nu0 + 0.08, nh + 0.06, nv0 + 0.06, nu0 + 0.11, nh + 0.1, nv0 + 0.26, {});
-    b.box(M.plain('#121212', 0.4), nu0 + 0.3, nh, nv0 + 0.12, nu0 + 0.46, nh + 0.07, nv0 + 0.2, {});                    // the clock
-    b.quad(M.screen(clockTex()), '-z', nu0 + 0.38, nh + 0.035, nv0 + 0.119, 0.12, 0.045, { cast: false });
-    b.box(M.plain('#1a1a1a', 0.5), nu0 + 0.12, nh, nv0 + 0.32, nu0 + 0.32, nh + 0.02, nv0 + 0.36, { cast: false });
-    swing(nu0 - 0.04, w, 1.2, -1);
-    swing(bu0 - 0.22, w, 1.2, -1);
-    // the recliner by the window, turned toward the TV; his shoes and a carton by the wall
-    b.push(0.95, 0, 3.45, 30);
-    const lea = X.leather();
-    b.box(lea, -0.42, 0.08, -0.42, 0.42, 0.46, 0.42, { uv: [0.5, 0.5] });
-    b.box(lea, -0.36, 0.46, -0.34, 0.36, 0.55, 0.32, { uv: [0.5, 0.5] });
-    b.box(lea, -0.42, 0.08, 0.3, 0.42, 1.02, 0.46, { uv: [0.5, 0.5] });
-    for (const x of [-0.44, 0.3]) b.box(lea, x, 0.08, -0.4, x + 0.14, 0.68, 0.42, { uv: [0.5, 0.5] });
-    b.box(M.plain('#1d130f', 0.6), -0.4, 0, -0.4, 0.4, 0.08, 0.4, { cast: false });
-    b.pop();
-    b.solid(0.45, 0, 2.95, 1.45, 0.6, 3.95);
-    b.box(M.plain('#a7835a', 0.9), 0.3, 0, 3.75, 0.72, 0.36, 4.07, {});                                                 // the carton
-    for (const [u, v, c] of [[1.45, 3.92, '#1e5ba8'], [1.58, 3.95, '#1e5ba8'], [0.9, 2.62, '#26272b'], [1.0, 2.66, '#26272b']]) b.rbox(M.plain(c, 0.7), u, 0.045, v, 0.11, 0.09, 0.28, 12);
+    /* the print on the bathroom box, facing the bed */
+    const Pr = IN.print, pv = (Pr.v0 + Pr.v1) / 2, py = (Pr.y0 + Pr.y1) / 2;
+    b.box(M.plain('#1f1712', 0.5), bu - 0.03, Pr.y0, Pr.v0, bu, Pr.y1, Pr.v1, {});
+    b.box(M.plain('#f1ede2', 0.8), bu - 0.034, Pr.y0 + 0.035, Pr.v0 + 0.035, bu - 0.03, Pr.y1 - 0.035, Pr.v1 - 0.035, { cast: false });
+    b.quad(new THREE.MeshStandardMaterial({ map: printTex(), roughness: 0.6 }), '-x', bu - 0.036, py, pv, 0.41, 0.67, { cast: false });
 
-    /* the print on the bathroom box */
-    const pv = (bv + 0.1 + w) / 2, py = 1.55;
-    b.box(M.plain('#1f1712', 0.5), bu - 0.035, py - 0.48, pv - 0.33, bu, py + 0.48, pv + 0.33, {});
-    b.box(M.plain('#f1ede2', 0.8), bu - 0.04, py - 0.42, pv - 0.27, bu - 0.035, py + 0.42, pv + 0.27, { cast: false });
-    b.quad(new THREE.MeshStandardMaterial({ map: printTex(), roughness: 0.6 }), '-x', bu - 0.042, py + 0.03, pv, 0.34, 0.54, { cast: false });
-    b.box(M.plain('#f4f3ee', 0.4), bu - 0.012, 1.15, bv + 0.1 + 0.08, bu, 1.27, bv + 0.1 + 0.15, { cast: false });           // the switch by the bathroom door
+    /* the kitchenette along the back wall: fridge in the corner, then sink and a two-ring hob under four wall cupboards,
+       the microwave under the first two, the hood under the others. White laminate; an oak strip is every door's handle */
+    const F = IN.fridge, fw0 = plain('#f3f3f0', 0.35);
+    b.box(fw0, F.front + 0.05, 0.03, F.v0, d - 0.03, F.h, F.v1, { solid: true });
+    b.box(fw0, F.front, F.split + 0.012, F.v0, F.front + 0.05, F.h - 0.004, F.v1, {}); b.box(fw0, F.front, 0.06, F.v0, F.front + 0.05, F.split - 0.012, F.v1, {});
+    b.box(plain('#cfcfc9', 0.4), F.front + 0.012, F.split - 0.03, F.v0 + 0.02, F.front + 0.05, F.split + 0.03, F.v1 - 0.02, { cast: false });    // the grip between the two doors
+    b.sphere(plain('#9ea2a6', 0.3, 0.6), F.front - 0.001, F.h - 0.06, F.v1 - 0.12, 1, { sx: 0.003, sy: 0.012, sz: 0.035, seg: 10, cast: false });
+    b.box(plain('#2a2522', 0.8), F.front + 0.06, 0, F.v0 + 0.02, d - 0.05, 0.03, F.v1 - 0.02, { cast: false });
+    const k0 = K.v0, k1 = K.v1, kf = K.front, topY = 0.914, under2 = topY - 0.037;
+    b.box(white, kf + 0.02, 0.115, k0, d, under2, k1, { solid: true });
+    b.box(plain('#2a2522', 0.8), kf + 0.07, 0, k0, d, 0.115, k1, { cast: false });
+    b.box(white, K.top, under2, k0, d, topY, k1, {});
+    for (const [v0, v1] of [[k0 + 0.004, K.split - 0.002], [K.split + 0.002, k1 - 0.004]]) b.box(white, kf + 0.004, 0.742, v0, kf + 0.02, under2 - 0.006, v1, { cast: false });   // a white band under the top
+    b.box(oak, kf, 0.7, k0 + 0.004, kf + 0.02, 0.74, k1 - 0.004, { uv: [1, 1], cast: false });                            // along the tops of the doors
+    { const mid = (k0 + K.split) / 2; for (const [v0, v1] of [[k0 + 0.004, mid - 0.002], [mid + 0.002, K.split - 0.002]]) b.box(white, kf + 0.002, 0.12, v0, kf + 0.02, 0.698, v1, { cast: false }); }
+    b.box(white, kf + 0.002, 0.432, K.split + 0.002, kf + 0.02, 0.698, k1 - 0.004, { cast: false });                    // two drawers by the bathroom door
+    b.box(oak, kf, 0.387, K.split + 0.004, kf + 0.02, 0.43, k1 - 0.004, { uv: [1, 1], cast: false });
+    b.box(white, kf + 0.002, 0.12, K.split + 0.002, kf + 0.02, 0.385, k1 - 0.004, { cast: false });
+    // the sink and its tall tap; the hob with a pot on its back ring; things left by the sink
+    const [s0, s1] = K.sink, steel = X.steel();
+    b.box(steel, d - 0.5, topY - 0.001, s0 - 0.03, d - 0.1, topY + 0.004, s1 + 0.03, { cast: false });
+    b.box(M.plain('#7d8287', 0.3, 0.8), d - 0.47, topY - 0.15, s0, d - 0.13, topY + 0.001, s1, { cast: false });
+    b.cyl(steel, d - 0.075, topY, K.faucet, 0.018, 0.2, { seg: 10, cast: false }); b.bar(steel, d - 0.075, topY + 0.2, K.faucet, d - 0.24, topY + 0.24, K.faucet, 0.018, { round: true, seg: 8, cast: false }); b.bar(steel, d - 0.24, topY + 0.24, K.faucet, d - 0.25, topY + 0.19, K.faucet, 0.016, { round: true, seg: 8, cast: false });
+    b.bar(steel, d - 0.07, topY + 0.1, K.faucet + 0.03, d - 0.07, topY + 0.13, K.faucet + 0.11, 0.012, { round: true, seg: 6, cast: false });
+    const [h0, h1] = K.hob, hu = d - 0.3, rings = [h0 + 0.15, h1 - 0.16];
+    b.box(plain('#d9dadb', 0.3, 0.5), d - 0.55, topY, h0, d - 0.06, topY + 0.012, h1 - 0.01, { cast: false });
+    for (const hv of rings) { for (const k of [1, 0.6, 0.25]) b.geo(M.plain('#1a1a1a', 0.5, 0.3), new THREE.TorusGeometry(0.085 * k, 0.011, 6, 22).rotateX(Math.PI / 2).translate(hu, topY + 0.02, hv), { cast: false }); b.cyl(plain('#2a2a2a', 0.4, 0.3), hu, topY + 0.011, hv, 0.105, 0.004, { seg: 20, cast: false }); }
+    for (const dv of [-0.035, 0.035]) b.cyl(plain('#1c1c1c', 0.4), d - 0.5, topY + 0.012, (h0 + h1) / 2 + dv, 0.016, 0.016, { seg: 10, cast: false });
+    b.cyl(steel, hu, topY + 0.03, rings[1], 0.1, 0.11, { seg: 18 }); b.cyl(M.glass('#d9e4e8', 0.4), hu, topY + 0.14, rings[1], 0.103, 0.012, { seg: 18, r2: 0.07 }); b.sphere(plain('#1b1b1b', 0.4), hu, topY + 0.165, rings[1], 0.018, { seg: 8, cast: false });
+    b.bar(plain('#1b1b1b', 0.5), hu - 0.02, topY + 0.115, rings[1] - 0.1, hu - 0.06, topY + 0.12, rings[1] - 0.24, 0.02, { cast: false });
+    b.cyl(plain('#e8d23a', 0.4), d - 0.11, topY, K.faucet + 0.12, 0.026, 0.15, { seg: 10 }); b.cyl(plain('#f1efe8', 0.4), d - 0.11, topY + 0.15, K.faucet + 0.12, 0.012, 0.035, { seg: 8, cast: false });        // washing-up liquid
+    set(b, plain('#f7f6f2', 0.95), cushion(0.2, 0.07, 0.17, 0.6, 0.8, 10), d - 0.33, topY + 0.035, s1 + 0.1, 15);       // tea towels
+    b.cyl(plain('#f4f4f1', 0.3), d - 0.3, topY, s1 + 0.3, 0.085, 0.02, { seg: 16 }); b.cyl(plain('#7a2f28', 0.4), d - 0.2, topY, s1 + 0.2, 0.035, 0.08, { seg: 12 });       // a plate, a jar
+    b.box(plain('#f6f5f0', 0.3), d - 0.008, topY, k0, d, K.y0, k1, { cast: false });                                     // the splashback
+    b.box(plate, d - 0.014, K.outlet.y - 0.057, K.outlet.v - 0.035, d - 0.008, K.outlet.y + 0.057, K.outlet.v + 0.035, { cast: false });
+    // wall cupboards, microwave, hood
+    const ud = K.upper;
+    b.box(white, ud + 0.02, K.y0, K.doors[0], d, K.y1, K.doors[4], {});
+    for (let i = 0; i < 4; i++) b.box(white, ud, K.y0 + 0.004, K.doors[i] + 0.003, ud + 0.02, K.y1 - 0.004, K.doors[i + 1] - 0.003, { cast: false });
+    b.box(oak, ud - 0.002, K.y0 - 0.04, K.doors[0] + 0.003, ud + 0.02, K.y0, K.doors[4] - 0.003, { uv: [1, 1], cast: false });
+    const mw = K.mw; b.box(plain('#f0efe9', 0.35), mw.front, mw.y0, mw.v0, d, mw.y1, mw.v1, {});
+    b.box(plain('#2b2e30', 0.15, 0.2), mw.front - 0.004, mw.y0 + 0.035, mw.v0 + 0.03, mw.front, mw.y1 - 0.035, mw.v0 + 0.4, { cast: false });
+    b.box(plain('#e2e1da', 0.4), mw.front - 0.004, mw.y0 + 0.02, mw.v1 - 0.13, mw.front, mw.y1 - 0.02, mw.v1 - 0.02, { cast: false });
+    b.box(plain('#20262a', 0.3), mw.front - 0.006, mw.y1 - 0.075, mw.v1 - 0.115, mw.front - 0.004, mw.y1 - 0.045, mw.v1 - 0.035, { cast: false });
+    const hd = K.hood; b.box(plain('#f0efe9', 0.35), hd.front, hd.y0, hd.v0, d, hd.y1, hd.v1, {}); b.box(plain('#c9c9c4', 0.4, 0.4), hd.front + 0.03, hd.y0 - 0.003, hd.v0 + 0.03, d - 0.08, hd.y0, hd.v1 - 0.03, { cast: false });
+    b.box(white, ud + 0.02, hd.y1, hd.v0, d, K.y0 - 0.04, hd.v1, { cast: false });
+    // the ceiling: the tube light over the kitchen, the air grilles, the sprinkler
+    const Ce = IN.ceiling;
+    b.box(plain('#f1efe8', 0.5), Ce.tube[0] - 0.15, CEIL - 0.012, Ce.tube[1] - 0.62, Ce.tube[0] + 0.15, CEIL, Ce.tube[1] + 0.62, { cast: false });
+    b.box(ctx.lampMat('#f4f8ff', 2.4, 0.95, 0.06), Ce.tube[0] - 0.14, CEIL - 0.075, Ce.tube[1] - 0.61, Ce.tube[0] + 0.14, CEIL - 0.012, Ce.tube[1] + 0.61, { cast: false });   // a wraparound lens: it glows all over
+    const grille = (u, v, a, c, dark) => { b.box(plain('#e9e6dc', 0.5), u - a / 2, CEIL - 0.014, v - c / 2, u + a / 2, CEIL, v + c / 2, { cast: false }); for (let x = u - a / 2 + 0.035; x < u + a / 2 - 0.02; x += 0.04) b.box(plain(dark ? '#3c3a36' : '#8d897f', 0.6), x, CEIL - 0.016, v - c / 2 + 0.03, x + 0.022, CEIL - 0.014, v + c / 2 - 0.03, { cast: false }); };
+    grille(Ce.supply[0], Ce.supply[1], 0.25, 0.3, false); grille(Ce.ret[0], Ce.ret[1], 0.42, 0.36, true);
+    b.cyl(plain('#f3f2ee', 0.5), Ce.sprinkler[0], CEIL - 0.012, Ce.sprinkler[1], 0.035, 0.012, { seg: 12, cast: false }); b.cyl(M.chrome(), Ce.sprinkler[0], CEIL - 0.04, Ce.sprinkler[1], 0.01, 0.03, { seg: 8, cast: false });
 
-    /* the kitchenette in the north-east corner */
-    const fr = IN.fridge, fu0 = d - 0.68;
-    b.box(M.plain('#f3f3f0', 0.35), fu0, 0.02, fr[0] + 0.02, d - 0.02, 1.47, fr[1], { solid: true });
-    b.box(M.plain('#e4e4df', 0.4), fu0 - 0.005, 1.0, fr[0] + 0.03, fu0, 1.012, fr[1] - 0.01, { cast: false });            // the line between freezer and fridge
-    for (const [y0, y1] of [[1.08, 1.38], [0.6, 0.94]]) b.box(M.plain('#d8d8d2', 0.35), fu0 - 0.035, y0, fr[1] - 0.06, fu0 - 0.005, y1, fr[1] - 0.035, { cast: false });
-    b.box(M.plain('#8f9296', 0.4, 0.5), fu0 - 0.004, 1.38, fr[0] + 0.08, fu0, 1.42, fr[0] + 0.2, { cast: false });
-    const k0 = fr[1] + 0.02, k1 = kv, cd = 0.6, ch = 0.91;
-    b.box(white, d - cd, 0.1, k0, d, ch - 0.035, k1, { solid: true });
-    b.box(M.plain('#2a2522', 0.8), d - cd + 0.06, 0, k0, d, 0.1, k1, { cast: false });
-    b.box(white, d - cd - 0.03, ch - 0.035, k0 - 0.0, d, ch, k1, {});                                                   // the top
-    const doors = 3, dvw = (k1 - k0) / doors;
-    for (let i = 0; i < doors; i++) {
-      const v0 = k0 + i * dvw + 0.006, v1 = k0 + (i + 1) * dvw - 0.006;
-      if (i === doors - 1) { for (const [y0, y1] of [[0.12, 0.47], [0.49, 0.82]]) { b.box(white, d - cd - 0.02, y0, v0, d - cd, y1, v1, { cast: false }); b.box(oak, d - cd - 0.03, y1 - 0.04, v0 + 0.02, d - cd - 0.02, y1, v1 - 0.02, { cast: false }); } }
-      else { b.box(white, d - cd - 0.02, 0.12, v0, d - cd, 0.82, v1, { cast: false }); b.box(oak, d - cd - 0.03, 0.78, v0 + 0.02, d - cd - 0.02, 0.82, v1 - 0.02, { cast: false }); }
-    }
-    // the sink, its faucet; the two coils; the backsplash, the upper cabinets with the microwave and the hood under them
-    const sv = k0 + 0.42;
-    b.box(X.steel(), d - cd + 0.06, ch - 0.002, sv - 0.25, d - 0.08, ch + 0.003, sv + 0.25, { cast: false });
-    b.box(M.plain('#7d8287', 0.3, 0.8), d - cd + 0.1, ch - 0.16, sv - 0.21, d - 0.12, ch - 0.0, sv + 0.21, { cast: false });
-    b.cyl(X.steel(), d - 0.1, ch, sv, 0.02, 0.24, { seg: 10, cast: false }); b.bar(X.steel(), d - 0.1, ch + 0.24, sv, d - 0.3, ch + 0.22, sv, 0.022, { round: true, seg: 8, cast: false });
-    b.bar(X.steel(), d - 0.12, ch + 0.25, sv + 0.06, d - 0.2, ch + 0.25, sv + 0.13, 0.012, { round: true, seg: 6, cast: false });
-    const hv0 = k1 - 0.5, hv1 = k1 - 0.04;
-    b.box(M.plain('#efeee8', 0.3), d - cd + 0.04, ch, hv0, d - 0.04, ch + 0.012, hv1, { cast: false });
-    for (const [uu, rr] of [[d - cd + 0.18, 0.085], [d - 0.2, 0.075]]) { b.geo(M.plain('#1a1a1a', 0.5, 0.3), new THREE.TorusGeometry(rr, 0.012, 6, 24).rotateX(Math.PI / 2).translate(uu, ch + 0.018, (hv0 + hv1) / 2), { cast: false }); b.geo(M.plain('#1a1a1a', 0.5, 0.3), new THREE.TorusGeometry(rr * 0.55, 0.01, 6, 18).rotateX(Math.PI / 2).translate(uu, ch + 0.018, (hv0 + hv1) / 2), { cast: false }); }
-    for (const vv of [hv0 + 0.12, hv0 + 0.3]) b.cyl(M.plain('#ddd', 0.4), d - cd - 0.005, ch - 0.06, vv, 0.018, 0.02, { rx: 90, seg: 10, cast: false });
-    // a pot on the back coil
-    b.cyl(X.steel(), d - 0.2, ch + 0.03, (hv0 + hv1) / 2, 0.1, 0.12, { seg: 18 }); b.cyl(M.glass('#d9e4e8', 0.4), d - 0.2, ch + 0.15, (hv0 + hv1) / 2, 0.105, 0.012, { seg: 18 }); b.bar(M.plain('#222', 0.5), d - 0.3, ch + 0.13, (hv0 + hv1) / 2, d - 0.42, ch + 0.13, (hv0 + hv1) / 2, 0.02, { cast: false });
-    b.box(M.plain('#f6f5f0', 0.3), d - 0.012, ch, k0, d, 1.78, k1, { cast: false });
-    b.box(M.plain('#f1efe9', 0.4), d - 0.014, 1.12, sv + 0.4, d - 0.01, 1.2, sv + 0.47, { cast: false });                 // an outlet
-    const uy0 = 1.78, uy1 = 2.45, ud = 0.34;
-    b.box(white, d - ud, uy0, k0, d, uy1, k1, { solid: false });
-    for (let i = 0; i < 4; i++) { const v0 = k0 + i * (k1 - k0) / 4 + 0.006, v1 = k0 + (i + 1) * (k1 - k0) / 4 - 0.006; b.box(white, d - ud - 0.02, uy0 + 0.01, v0, d - ud, uy1 - 0.01, v1, { cast: false }); b.box(oak, d - ud - 0.03, uy0 + 0.01, v0 + 0.02, d - ud - 0.02, uy0 + 0.05, v1 - 0.02, { cast: false }); }
-    b.box(M.plain('#f0efe9', 0.35), d - 0.36, uy0 - 0.3, k0 + 0.06, d - 0.02, uy0 - 0.005, k0 + 0.56, {});                    // microwave
-    b.box(M.plain('#2b2e30', 0.15, 0.2), d - 0.365, uy0 - 0.26, k0 + 0.08, d - 0.36, uy0 - 0.05, k0 + 0.4, { cast: false });
-    b.box(M.plain('#f0efe9', 0.35), d - 0.48, uy0 - 0.16, hv0 - 0.04, d - 0.02, uy0 - 0.005, hv1 + 0.02, {});                 // the hood
-    b.box(M.plain('#c9c9c4', 0.4, 0.4), d - 0.48, uy0 - 0.162, hv0, d - 0.1, uy0 - 0.158, hv1 - 0.02, { cast: false });
-    // a rack of drying dishes, a gallon by the sink
-    for (let i = 0; i < 4; i++) b.cyl(M.plain('#f4f4f1', 0.3), d - cd + 0.25, ch + 0.03, k0 + 0.1 + i * 0.03, 0.11, 0.012, { rx: 90, seg: 18, cast: false });
-    // the fluorescent tube over the kitchen
-    b.box(M.plain('#f1efe8', 0.5), 5.36, CEIL - 0.07, 0.42, 5.66, CEIL, 1.68, {});
-    b.box(ctx.lampMat('#f4f8ff', 2.4, 0.95, 0.06), 5.38, CEIL - 0.072, 0.44, 5.64, CEIL - 0.068, 1.66, { cast: false });
-    // the air diffusers and the smoke alarm in the ceiling
-    for (const [u, v] of [[2.05, 2.1], [4.05, 0.85]]) { b.box(M.plain('#e9e6dc', 0.5), u - 0.2, CEIL - 0.015, v - 0.2, u + 0.2, CEIL, v + 0.2, { cast: false }); for (let i = 0; i < 4; i++) b.box(M.plain('#55524b', 0.6), u - 0.15 + i * 0.1, CEIL - 0.017, v - 0.15, u - 0.12 + i * 0.1, CEIL - 0.015, v + 0.15, { cast: false }); }
-    b.cyl(M.plain('#f3f2ee', 0.5), 4.3, CEIL - 0.04, 1.9, 0.07, 0.04, { seg: 14, cast: false });
-
-    /* inside the bathroom: a tub against the back wall, the toilet on the south wall, the vanity on the west */
+    /* inside the bathroom (no photograph: this chain's studios have a tub across the far end, the pan facing the door,
+       the basin to the right) */
     const iu0 = bu + 0.1, iv0 = bv + 0.1;
     b.box(M.whiteTile(), iu0, -0.01, iv0, d, 0.003, w, { uv: [0.8, 0.8], uvw: true, cast: false });
-    b.box(M.plain('#f4f3ef', 0.25), d - 0.78, 0, iv0, d, 0.5, iv0 + 1.52, { solid: true });
-    b.box(M.plain('#e9e8e2', 0.2), d - 0.7, 0.2, iv0 + 0.08, d - 0.08, 0.505, iv0 + 1.44, { cast: false });
-    b.box(M.whiteTile(), d - 0.012, 0.5, iv0, d, 1.95, iv0 + 1.52, { uv: [0.8, 0.8], uvw: true, cast: false });
-    b.cyl(X.steel(), d - 0.8, 1.98, iv0, 0.012, 1.52, { rx: -90, seg: 8, cast: false });
+    b.box(M.plain('#f4f3ef', 0.25), d - 0.78, 0, iv0, d, 0.5, w, { solid: true });
+    b.box(M.plain('#e9e8e2', 0.2), d - 0.7, 0.2, iv0 + 0.08, d - 0.08, 0.505, w - 0.08, { cast: false });
+    b.box(M.whiteTile(), d - 0.012, 0.5, iv0, d, 1.95, w, { uv: [0.8, 0.8], uvw: true, cast: false });
+    b.cyl(X.steel(), d - 0.8, 1.98, iv0, 0.012, w - iv0, { rx: 90, seg: 8, cast: false });
     b.box(M.plain('#e9e4d6', 0.95), d - 0.8, 0.55, iv0 + 0.02, d - 0.79, 1.96, iv0 + 0.62, { cast: false });
-    // the toilet
-    b.push(5.62, 0, w - 0.02, 180);
+    b.push((bd0 + bd1) / 2 - 0.05, 0, w - 0.02, 180);
     const por = M.plain('#f5f5f2', 0.2);
     b.cyl(por, 0, 0, 0.36, 0.13, 0.38, { seg: 16, r2: 0.17 }); b.sphere(por, 0, 0.38, 0.4, 1, { sx: 0.2, sy: 0.05, sz: 0.26, seg: 16 });
     b.box(por, -0.2, 0.38, 0.0, 0.2, 0.78, 0.2, {}); b.box(por, -0.21, 0.78, -0.01, 0.21, 0.81, 0.21, {});
-    b.pop(); b.solid(5.4, 0, w - 0.72, 5.84, 0.8, w);
-    // the vanity and its mirror and light
-    b.box(M.plain('#e9e2d2', 0.5), iu0, 0, iv0 + 0.75, iu0 + 0.52, 0.82, w - 0.02, { solid: true });
-    b.box(M.plain('#f2efe7', 0.25), iu0, 0.82, iv0 + 0.73, iu0 + 0.56, 0.86, w, {});
-    b.cyl(M.plain('#fafaf7', 0.15), iu0 + 0.27, 0.8, (iv0 + 0.75 + w) / 2, 0.17, 0.065, { seg: 18, cast: false });
-    b.box(M.plain('#cbd5d9', 0.04, 1), iu0, 1.1, iv0 + 0.8, iu0 + 0.012, 1.85, w - 0.08, { cast: false });
-    b.box(ctx.lampMat('#fff5e6', 1.8, 0.95, 0.04), iu0 + 0.02, 1.95, iv0 + 0.9, iu0 + 0.1, 2.03, w - 0.18, { cast: false });
-    // towels on a bar on the north wall's inside
-    b.cyl(X.steel(), 5.6, 1.35, iv0 + 0.02, 0.01, 0.55, { rz: 90, seg: 6, cast: false });
-    b.box(M.plain('#f7f6f2', 0.95), 5.62, 0.95, iv0 + 0.0, 6.12, 1.37, iv0 + 0.06, { cast: false });
+    b.pop(); b.solid((bd0 + bd1) / 2 - 0.27, 0, w - 0.72, (bd0 + bd1) / 2 + 0.17, 0.8, w);
+    b.box(M.plain('#e9e2d2', 0.5), iu0, 0, iv0 + 0.5, iu0 + 0.52, 0.82, w - 0.02, { solid: true });
+    b.box(M.plain('#f2efe7', 0.25), iu0, 0.82, iv0 + 0.48, iu0 + 0.56, 0.86, w, {});
+    b.cyl(M.plain('#fafaf7', 0.15), iu0 + 0.27, 0.8, (iv0 + 0.5 + w) / 2, 0.17, 0.065, { seg: 18, cast: false });
+    b.box(M.plain('#cbd5d9', 0.04, 1), iu0, 1.1, iv0 + 0.55, iu0 + 0.012, 1.85, w - 0.08, { cast: false });
+    b.box(ctx.lampMat('#fff5e6', 1.8, 0.95, 0.04), iu0 + 0.02, 1.95, iv0 + 0.65, iu0 + 0.1, 2.03, w - 0.18, { cast: false });
+    b.cyl(X.steel(), iu0 + 0.7, 1.35, w - 0.03, 0.01, 0.5, { rz: -90, seg: 6, cast: false });                           // a towel on its bar, on the south wall
+    b.box(M.plain('#f7f6f2', 0.95), iu0 + 0.74, 0.95, w - 0.07, iu0 + 1.16, 1.37, w - 0.01, { cast: false });
     b.pop();
   }, 'room');
 
-  /* the doors that open and shut: the entry (hinged at the north jamb, swinging in) and the bathroom's (west jamb, out) */
-  const doorMat = M.plain('#4f4842', 0.55);
-  const hinge = (x, z, ry, build) => { const pv = new THREE.Group(); pv.position.set(x, G2, z); pv.rotation.y = -ry * Math.PI / 180; const leaf = part(pv, null, build, 'leaf'); scene.add(pv); return pv; };
-  const entry = hinge(ROOM.x0 - 0.09, ROOM.z0 + IN.door[0], 90, b => {
-    doorLeaf(b, 0.9, IN.doorH - 0.01, doorMat, { rows: [[0.12, 0.72], [0.82, 1.55], [1.65, 1.93]], cols: 2, handle: 'lever' });
-    b.box(M.plain('#2b2b2b', 0.4, 0.6), 0.76, 0.95, -0.035, 0.85, 1.18, 0.035, { cast: false });                     // the card lock
-    b.box(M.plain('#c9ccd0', 0.3, 0.9), 0.72, 1.32, -0.045, 0.82, 1.36, -0.03, { cast: false });                     // the swing bar of the latch
-    b.quad(parts.evac, '-z', 0.45, 1.45, -0.031, 0.2, 0.27, { cast: false });
-    b.cyl(M.plain('#c9ccd0', 0.3, 0.9), 0.45, 1.52, -0.03, 0.008, 0.01, { rx: 90, seg: 8, cast: false });           // the peephole
+  /* the doors that open and shut: the entry (hinged at its north jamb, swinging in across the closet) and the
+     bathroom's (hinged at its east jamb, swinging out toward the kitchen, as on 18/9) */
+  const doorMat = M.plain('#4b3d34', 0.55), satin = M.plain('#aeb2b5', 0.35, 0.8);
+  const hinge = (x, z, build) => { const pv = new THREE.Group(); pv.position.set(x, G2, z); part(pv, null, build, 'leaf'); scene.add(pv); return pv; };
+  const DW = IN.door[1] - IN.door[0];
+  const entry = hinge(ROOM.x0 - 0.09, ROOM.z0 + IN.door[0], b => {
+    doorLeaf(b, DW, IN.doorH - 0.01, doorMat, { rows: [[0.12, 0.72], [0.82, 1.55], [1.65, 1.93]], cols: 2, handle: 'lever' });
+    b.box(satin, DW - 0.13, 0.9, -0.034, DW - 0.055, 1.17, 0.034, { cast: false });                                  // the card lock's plate
+    b.box(M.plain('#efe8d8', 0.5), DW - 0.003, 0.012, -0.021, DW + 0.001, IN.doorH - 0.01, 0.021, { cast: false });      // the leaf's cream edge
+    b.box(satin, DW - 0.13, 1.5, -0.05, DW - 0.03, 1.535, -0.03, { cast: false });                                   // the swing bar of the guard
+    b.box(satin, DW - 0.13, 1.47, -0.034, DW - 0.1, 1.565, -0.03, { cast: false });
+    b.cyl(M.plain('#c9ccd0', 0.3, 0.9), DW / 2, 1.52, -0.03, 0.008, 0.01, { rx: 90, seg: 8, cast: false });          // the peephole
   });
-  const bath = hinge(ROOM.x0 + IN.bathDoor[0], ROOM.z0 + IN.bath.v0 + 0.05, 0, b => doorLeaf(b, IN.bathDoor[1] - IN.bathDoor[0] - 0.01, 2.02, M.plain('#ece4d2', 0.5), { rows: [[0.12, 0.72], [0.82, 1.55], [1.65, 1.93]], cols: 2, handle: 'lever' }));
+  const BW = IN.bathDoor[1] - IN.bathDoor[0] - 0.01;
+  const bath = hinge(ROOM.x0 + IN.bathDoor[1] - 0.005, ROOM.z0 + IN.bath.v0 + 0.05, b => {
+    doorLeaf(b, BW, 2.02, M.plain('#e6dcc6', 0.5), { rows: [], handle: 'knob' });                                      // a flat slab, a round knob
+    b.box(M.chrome(), BW / 2 - 0.02, 1.66, -0.06, BW / 2 + 0.02, 1.7, -0.02, { cast: false });                        // the hook on its inside
+  });
 
-  /* curtains: open by day, drawn at night (as in every photograph after dark) */
-  const ca = parts.curtainsAt, cmat = X.plaid();
-  const curtains = { open: part(scene, null, b => { b.push(ROOM.x0, G2, ROOM.z0); curtain(b, cmat, ca.v0, ca.v0 + 0.62, ca.y0, ca.y1, 0, { folds: 9, depth: 0.05 }); curtain(b, cmat, ca.v1 - 0.62, ca.v1, ca.y0, ca.y1, 0, { folds: 9, depth: 0.05 }); b.pop(); }, 'curtainsOpen'), shut: part(scene, null, b => { b.push(ROOM.x0, G2, ROOM.z0); curtain(b, cmat, ca.v0, (ca.v0 + ca.v1) / 2 + 0.02, ca.y0, ca.y1, 0, { folds: 14, depth: 0.035 }); curtain(b, cmat, (ca.v0 + ca.v1) / 2 - 0.02, ca.v1, ca.y0, ca.y1, 0, { folds: 14, depth: 0.035 }); b.pop(); }, 'curtainsShut') };
+  /* curtains: open by day, drawn at night (as in every photograph after dark); the plaid repeats every 0.30 m */
+  const ca = parts.curtainsAt, cmat = X.plaid(), cH = ca.y1 - ca.y0, mid = (ca.v0 + ca.v1) / 2, rep = (wd, full) => [wd * full / 0.3, cH / 0.3];
+  const curtains = {
+    open: part(scene, null, b => { b.push(ROOM.x0, G2, ROOM.z0); curtain(b, cmat, ca.v0, ca.v0 + 0.36, ca.y0, ca.y1, 0, { folds: 7, depth: 0.05, uvr: rep(0.36, 2.6) }); curtain(b, cmat, ca.v1 - 0.36, ca.v1, ca.y0, ca.y1, 0, { folds: 7, depth: 0.05, uvr: rep(0.36, 2.6) }); b.pop(); }, 'curtainsOpen'),
+    shut: part(scene, null, b => { b.push(ROOM.x0, G2, ROOM.z0); curtain(b, cmat, ca.v0, mid + 0.02, ca.y0, ca.y1, 0, { folds: 10, depth: 0.032, uvr: rep(mid - ca.v0, 1.2) }); curtain(b, cmat, mid - 0.02, ca.v1, ca.y0, ca.y1, 0, { folds: 10, depth: 0.032, uvr: rep(ca.v1 - mid, 1.2) }); b.pop(); }, 'curtainsShut'),
+  };
   fixCurtains(curtains, ca);
 
+  /* the pools of light the shades throw on the wall behind them, when the lamps burn */
+  const glows = new THREE.Group(), glowMat = new THREE.MeshBasicMaterial({ map: glowTex(), color: '#ffd9a0', transparent: true, opacity: 0.34, blending: THREE.AdditiveBlending, depthWrite: false, toneMapped: false });
+  const glow = (u, y, v, south, size) => { const m = new THREE.Mesh(new THREE.PlaneGeometry(size, size), glowMat); m.position.set(ROOM.x0 + u, G2 + y, ROOM.z0 + v); if (south) m.rotation.y = Math.PI; m.renderOrder = 2; glows.add(m); };
+  glow(IN.tvLamp.u, 1.68, 0.004, false, 1.1); glow(IN.wallLamp.su, 1.74, 0.004, false, 0.8);
+  for (const l of IN.bedLamps) glow(l.u + l.du, 1.5, Wd() - 0.004, true, 1.05);
+  glows.visible = false; scene.add(glows);
+
   /* the screens: the TV (off unless touched) and the laptop's lock screen */
-  const tvScreen = new THREE.Mesh(new THREE.PlaneGeometry(0.71, 0.4), new THREE.MeshStandardMaterial({ color: '#08090b', roughness: 0.12, metalness: 0.2, emissive: '#000000' }));
+  const tvScreen = new THREE.Mesh(new THREE.PlaneGeometry(parts.tvAt.w, parts.tvAt.h), new THREE.MeshStandardMaterial({ color: '#08090b', roughness: 0.12, metalness: 0.2, emissive: '#000000' }));
   tvScreen.position.set(ROOM.x0 + parts.tvAt.u, G2 + parts.tvAt.y, ROOM.z0 + parts.tvAt.v); scene.add(tvScreen);
   const tvGlow = (() => { const c = document.createElement('canvas'); c.width = 128; c.height = 72; const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; return { c, t }; })();
-  const laptop = new THREE.Mesh(new THREE.PlaneGeometry(0.31, 0.19), new THREE.MeshBasicMaterial({ map: screenTex(), toneMapped: false }));
-  laptop.position.set(ROOM.x0 + parts.screenAt.u, G2 + parts.screenAt.y, ROOM.z0 + parts.screenAt.v); laptop.rotation.set(-18 * Math.PI / 180, 0, 0); scene.add(laptop);
+  const sa = parts.screenAt, yaw = -sa.ry * Math.PI / 180, tilt = sa.tilt;
+  const laptop = new THREE.Mesh(new THREE.PlaneGeometry(0.345, 0.195), new THREE.MeshBasicMaterial({ map: screenTex(), toneMapped: false }));
+  { // the lid's inner face: half-way up the lid from the hinge at the base's back edge, a hair in front of it
+    const back = new THREE.Vector3(0, 0.016 + 0.1225 * Math.cos(tilt) + 0.005 * Math.sin(tilt), -0.1275 - 0.1225 * Math.sin(tilt) + 0.005 * Math.cos(tilt)).applyAxisAngle(new THREE.Vector3(0, 1, 0), yaw);
+    laptop.position.set(ROOM.x0 + sa.u + back.x, G2 + sa.y + back.y, ROOM.z0 + sa.v + back.z); laptop.rotation.set(-tilt, yaw, 0, 'YXZ'); scene.add(laptop);
+    parts.screenPos = [sa.u + back.x, sa.y + back.y, sa.v + back.z]; }
   const badge = new THREE.Mesh(new THREE.PlaneGeometry(0.055, 0.08), new THREE.MeshStandardMaterial({ map: badgeTex(), roughness: 0.4 }));
   badge.position.set(ROOM.x0 + parts.badgeAt.u, G2 + parts.badgeAt.y, ROOM.z0 + parts.badgeAt.v); badge.rotation.set(-Math.PI / 2, 0, 0.4); scene.add(badge);
 
   /* bright dots */
   const P = (u, y, v) => [ROOM.x0 + u, G2 + y, ROOM.z0 + v];
-  ctx.hot.push({ id: 'tv', pos: P(parts.tvAt.u, parts.tvAt.y + 0.3, parts.tvAt.v + 0.05), r: 0.2 });
-  ctx.hot.push({ id: 'bed', pos: P(IN.bed.u0 + IN.bed.w / 2, 0.85, Wd() - 1.0), r: 0.25 });
-  ctx.hot.push({ id: 'laptop', pos: P(parts.screenAt.u, parts.screenAt.y + 0.16, parts.screenAt.v), r: 0.16 });
-  ctx.hot.push({ id: 'badge', pos: P(parts.badgeAt.u, 0.98, parts.badgeAt.v), r: 0.12 });
-  ctx.hot.push({ id: 'kitchen', pos: P(D() - 0.35, 1.25, 1.2), r: 0.22 });
-  ctx.hot.push({ id: 'print', pos: P(IN.bath.u0 - 0.06, 2.12, (IN.bath.v0 + 0.1 + Wd()) / 2), r: 0.18 });
-  ctx.hot.push({ id: 'door', pos: P(0.25, 1.75, IN.door[0] + 0.45), r: 0.2 });
-  ctx.hot.push({ id: 'bathdoor', pos: P(IN.bathDoor[0] + 0.35, 1.8, IN.bath.v0 - 0.12), r: 0.18 });
+  ctx.hot.push({ id: 'tv', pos: P(parts.tvAt.u, IN.tv.y1 + 0.1, parts.tvAt.v + 0.05), r: 0.2 });
+  ctx.hot.push({ id: 'bed', pos: P((IN.bed.u0 + IN.bed.u1) / 2, 0.85, IN.bed.v0 + 1.0), r: 0.25 });
+  ctx.hot.push({ id: 'laptop', pos: P(parts.screenPos[0], parts.screenPos[1] + 0.17, parts.screenPos[2]), r: 0.16 });
+  ctx.hot.push({ id: 'badge', pos: P(parts.badgeAt.u, 1.0, parts.badgeAt.v), r: 0.12 });
+  ctx.hot.push({ id: 'counter', pos: P(IN.counter.u1 - 0.1, 1.02, IN.counter.v1 - 0.06), r: 0.14 });
+  ctx.hot.push({ id: 'kitchen', pos: P(D() - 0.4, 1.28, 1.35), r: 0.22 });
+  ctx.hot.push({ id: 'print', pos: P(IN.bath.u0 - 0.06, IN.print.y1 + 0.12, (IN.print.v0 + IN.print.v1) / 2), r: 0.18 });
+  ctx.hot.push({ id: 'door', pos: P(0.25, 1.75, IN.door[0] + 0.5), r: 0.2 });
+  ctx.hot.push({ id: 'closet', pos: P(0.9, 1.5, 0.5), r: 0.18 });
+  ctx.hot.push({ id: 'bathdoor', pos: P(IN.bathDoor[0] + 0.3, 1.8, IN.bath.v0 - 0.12), r: 0.18 });
   ctx.hot.push({ id: 'curtain', pos: P(0.3, 1.9, (IN.win[0] + IN.win[1]) / 2), r: 0.2 });
-  ctx.hot.push({ id: 'mirror', pos: P((IN.mirror[0] + IN.mirror[1]) / 2, 2.12, 0.06), r: 0.15 });
+  ctx.hot.push({ id: 'mirror', pos: P((IN.mirror.u0 + IN.mirror.u1) / 2, IN.mirror.crown + 0.2, 0.08), r: 0.15 });
 
   const state = { entry: 1, bath: 0, tv: false, night: false, curtainsShut: null };
-  const setDoors = () => { entry.rotation.y = -(90 - 88 * state.entry) * Math.PI / 180; bath.rotation.y = (state.bath ? 72 : 0) * Math.PI / 180; };
+  const setDoors = () => { entry.rotation.y = -(90 - 88 * state.entry) * Math.PI / 180; bath.rotation.y = Math.PI - (state.bath ? 62 : 0) * Math.PI / 180; };
   setDoors();
   function setCurtains(shut) { state.curtainsShut = shut; curtains.open.visible = !shut; curtains.shut.visible = shut; }
   function setTv(on) {
@@ -377,7 +550,7 @@ export function buildRoom(scene, shared, ctx) {
       if (id === 'tv') { setTv(!state.tv); return state.tv; }
       return undefined;
     },
-    setHour(night) { state.night = night; setCurtains(night); },
+    setHour(night) { state.night = night; setCurtains(night); glows.visible = night; },
   };
 }
 

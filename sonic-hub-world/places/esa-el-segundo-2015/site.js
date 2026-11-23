@@ -52,14 +52,30 @@ export function buildSite(scene, shared, ctx) {
     const towerAt = (z, wing) => wing.towers.some(t => t.side === 'A' && z > t.a0 - 0.8 && z < t.a1 + 0.8);
     const towerAtE = (z, wing) => wing.towers.some(t => t.side === 'B' && z > t.a0 - 0.8 && z < t.a1 + 0.8);
     // west of the two wings: a row of stalls nose-in to the building, the drive, a row nose-in to the fence
+    // (four stalls of the north wing are kept as they stood on the morning of 22/9: the two handicap stalls south of the
+    // north-west tower, empty, the island beyond them, and the one by the fence where the brown Beetle was; `keep`
+    // passes a stall over while drawing the same numbers as a filled or empty stall would, so every other car stays
+    // where it was)
+    const keep = (centres, fill) => z => { if (!centres.some(c => Math.abs(z - c) < 0.05)) return false; if (R() < fill) { R(); R(); } return true; };
+    const HC = [n.z0 + 0.6 + 4.5 * STALL, n.z0 + 0.6 + 5.5 * STALL], ISLAND = n.z0 + 0.6 + 6.5 * STALL, BEETLE = n.z0 - 2 + 0.5 * STALL;
+    // (and the fence row stood empty from the Beetle down to where he took the photograph)
+    const keepE = keep([...HC, ISLAND], 0.5), keepW = keep(Array.from({ length: 11 }, (_, i) => BEETLE + i * STALL), 0.55);
     for (const w of [n, s]) {
-      stallsZ(b, 6.6, 11.9, w.z0 + 0.6, w.z1 - 0.6, 90, 0.5, R, z => towerAt(z, w));
-      stallsZ(b, -6.7, -1.3, w.z0 - 2, w.z1 + 1, 270, 0.55, R);
+      stallsZ(b, 6.6, 11.9, w.z0 + 0.6, w.z1 - 0.6, 90, 0.5, R, z => towerAt(z, w) || (w === n && keepE(z)));
+      stallsZ(b, -6.7, -1.3, w.z0 - 2, w.z1 + 1, 270, 0.55, R, z => w === n && keepW(z));
       stallsZ(b, 30.7, 35.7, w.z0 + 0.6, w.z1 - 0.6, 270, 0.45, R, z => towerAtE(z, w));
     }
-    // the drive's edge stripes, the handicap stalls by the north-west tower (blue, as in the photograph of 09:48)
-    b.box(M.plain('#2d6db5', 0.8), 6.7, 0.013, 7.5, 11.8, 0.017, 13.0, { cast: false });
-    b.box(P.stripe(), 7.5, 0.018, 9.6, 9.5, 0.02, 10.9, { cast: false });
+    // the two handicap stalls south of the north-west tower: a blue square with its white mark at the head of each, blue
+    // lines round them (the photograph of 09:48); south of them a red-curbed island of shrubs
+    for (const zc of HC) {
+      b.box(M.plain('#2d6db5', 0.8), 7.0, 0.013, zc - 0.65, 8.3, 0.017, zc + 0.65, { cast: false });
+      b.box(P.stripe(), 7.15, 0.018, zc - 0.5, 8.15, 0.02, zc - 0.42, { cast: false }); b.box(P.stripe(), 7.15, 0.018, zc + 0.42, 8.15, 0.02, zc + 0.5, { cast: false });
+      b.box(P.stripe(), 7.15, 0.018, zc - 0.5, 7.23, 0.02, zc + 0.5, { cast: false }); b.box(P.stripe(), 8.07, 0.018, zc - 0.5, 8.15, 0.02, zc + 0.5, { cast: false });
+      b.box(P.stripe(), 7.5, 0.018, zc - 0.12, 7.85, 0.02, zc + 0.12, { cast: false });
+      for (const dz of [-STALL / 2, STALL / 2]) b.box(M.plain('#2d6db5', 0.8), 6.6, 0.017, zc + dz - 0.06, 11.9, 0.021, zc + dz + 0.06, { cast: false });
+    }
+    planter(b, 6.9, ISLAND - STALL / 2 + 0.15, 11.9, ISLAND + STALL / 2 - 0.15, { red: true, solid: true });
+    for (const [x, z, r] of [[8.0, ISLAND - 0.4, 0.6], [9.6, ISLAND + 0.3, 0.7], [11.0, ISLAND - 0.2, 0.55]]) b.sphere(P.leaves('#46682c', 1), x, 0.45, z, r, { seg: 7, sy: 0.75, cast: false });
     // the curb and planting strip along the fence, its trees and lights; the fence itself
     // (it stops short of the main wing: the drive from Mariposa comes round the wing's west end into this lot)
     b.box(P.curb(), -7.05, 0, -13, -6.75, 0.16, 128, { cast: false, solid: true });
@@ -89,10 +105,13 @@ export function buildSite(scene, shared, ctx) {
     picnic(b, 6.0, 55.0);
     // the hotel's sign at the west entrance on Mariposa: a stucco monument with its name in plain letters
     monument(b, -17.5, -66.6);
-    // the morning of 22/9: the brown Beetle across the drive, a mattress against the north-west tower
-    beetle(b, -3.6, 4.5, 94);
-    b.rbox(M.plain('#7ea7d8', 0.9), 7.9, 0.95, 6.0, 0.28, 1.9, 1.4, 0, { rz: -12 });
-    b.rbox(M.plain('#f2f2f0', 0.9), 7.75, 0.95, 6.0, 0.06, 1.88, 1.38, 0, { rz: -12, cast: false });
+    // the morning of 22/9: the brown Beetle nose-in to the fence at the lot's north end, a blue mattress on its side
+    // against the south face of the north-west stair tower (the photograph of 09:48:14, taken from the drive 16 m south)
+    beetle(b, -3.75, BEETLE, 270);
+    { const tw = n.towers.find(t => t.side === 'A' && t.a0 < 30);
+      b.rbox(M.plain('#8fb4dd', 0.9), 10.0, 0.72, tw.a1 + 0.3, 1.9, 1.4, 0.24, 0, { rx: -11 });
+      for (let i = 0; i < 5; i++) b.rbox(M.plain('#a9c7e8', 0.9), 9.24 + i * 0.38, 0.72, tw.a1 + 0.425, 0.012, 1.36, 0.005, 0, { rx: -11, cast: false });     // its quilting
+      b.solid(9.0, 0, tw.a1, 11.0, 1.4, tw.a1 + 0.6); }
   }, 'hotelLot');
 
   /* ── the shopping centre's lot: rows of stalls from the Starbucks corner down to the front of Ralphs ── */

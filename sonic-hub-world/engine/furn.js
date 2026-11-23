@@ -273,10 +273,11 @@ export function lace(b, x0, x1, y, z0, z1, drop = 0.16, sides = ['f']) {
   if (sides.includes('l')) b.quad(m, '-x', x0 - 0.003, y - drop / 2 + 0.004, (z0 + z1) / 2, z1 - z0, drop, { uv: [0.35, drop], cast: false });
   if (sides.includes('r')) b.quad(m, '+x', x1 + 0.003, y - drop / 2 + 0.004, (z0 + z1) / 2, z1 - z0, drop, { uv: [0.35, drop], cast: false });
 }
-/** a hanging curtain: a cloth in folds from y1 down to y0, a…b along its rail (which runs along local x) */
+/** a hanging curtain: a cloth in folds from y1 down to y0, a…b along its rail (which runs along local x);
+    o.uvr [across, down]: how many times a patterned cloth repeats (left out: once per fold, once down) */
 export function curtain(b, mat, x0, x1, y0, y1, z, o = {}) {
   const w = x1 - x0, folds = o.folds ?? Math.max(3, Math.round(w / 0.085));
-  b.quad(mat, '+z', (x0 + x1) / 2, (y0 + y1) / 2, z, w, y1 - y0, { segA: folds * 4, segB: 1, wave: [folds * Math.PI * 2 / w, o.depth ?? 0.028, 0.6], uvr: [folds, 1], cast: o.cast !== false });
+  b.quad(mat, '+z', (x0 + x1) / 2, (y0 + y1) / 2, z, w, y1 - y0, { segA: folds * 4, segB: 1, wave: [folds * Math.PI * 2 / w, o.depth ?? 0.028, 0.6], uvr: o.uvr ?? [folds, 1], cast: o.cast !== false });
 }
 /** a wall switch plate */
 export const switchPlate = (b, x, y, z, axis = '+z', led = false) => {

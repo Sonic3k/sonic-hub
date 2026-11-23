@@ -114,10 +114,16 @@ Its own Railway service, like the other folders: root directory `sonic-hub-world
   that moment: Asus N56 on Windows 8.1, iPhone 6s.
 - Streets, footprints and heights from OpenStreetMap (© OpenStreetMap contributors, ODbL; `data/osm2js.py` →
   `osm.js`), the lots and roofs from satellite pictures looked at but not copied. No logos: shop names are plain words.
-- `places/esa-el-segundo-2015/EVIDENCE.md` says which photograph each part rests on and what is a guess (which studio
-  of the row, ±1; its size; the bathroom; the fence's north end; the corner pad; the second girder north of the
-  station). Cars are instanced (`cars.js`), street trees merged in bands of x so that what is behind the walker is not
-  drawn; `node tools/stats.mjs` (with `PLACE=`) prints the triangles per part.
+- The studio's inside is measured, not eyeballed: a camera was fitted to each photograph and every edge carried back
+  onto the plane it lies in (`plan.js`: `IN`; the story is in `EVIDENCE.md`). To stand a render beside the photograph
+  it should match, give the screenshot tool the lens: `FOV=54.43 PLACE=esa-el-segundo-2015 node tools/shot.mjs cmp 1200
+  900 phong toi` (54.43° is the Canon's 4:3 frame at its widest; the views `phong`, `tu-guong`, `giuong`, `hanh-lang`
+  and `bai-xe` stand where photographs were taken).
+- `places/esa-el-segundo-2015/EVIDENCE.md` says which photograph each part rests on and what is a guess (the bathroom's
+  inside; the closet; small things on the counter; the fence's north end; the corner pad; the second girder north of
+  the station). Cars are instanced (`cars.js`), street trees merged in bands of x so that what is behind the walker is
+  not drawn; inside the studio the far plane comes in whenever neither the door nor the window is in view (`place.js`:
+  `sight`); `node tools/stats.mjs` (with `PLACE=`) prints the triangles per part.
 
 ## van-bao-507: what it rests on
 

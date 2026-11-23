@@ -207,7 +207,9 @@ export function buildTown(scene, shared, ctx) {
   const mats = Object.values(facMats);
   return {
     setHour(h) { const night = h === 'toi'; for (const m of mats) m.emissiveIntensity = night ? 0.9 : 0; for (const m of LIT) m.emissiveIntensity = night ? 1.1 : 0; pools.visible = shine.visible = night; traffic.setNight(night); },
-    animate(dt, clock, camera) { traffic.step(dt); },
+    // the viaduct, 700 m off, is drawn only from the hotel's east side on: from the west the hotel hides it, and seen
+    // through a near wall its slivers on the horizon would sparkle
+    animate(dt, clock, camera) { traffic.step(dt); metro.visible = camera.position.x > 32; },
   };
 }
 
