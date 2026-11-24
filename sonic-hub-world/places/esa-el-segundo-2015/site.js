@@ -187,8 +187,6 @@ export function buildSite(scene, shared, ctx) {
       b.box(walk, C.x0 + 3.1, 0, C.z0 + 0.12, C.cx, 0.15, C.z0 + 0.12 + w, { uv: [1.5, 1.5], uvw: true, cast: false });
       b.box(walk, C.x1 - 0.12 - w, 0, C.cz, C.x1 - 0.12, 0.15, mn.z1 - KERB, { uv: [1.5, 1.5], uvw: true, cast: false });
       b.box(walk, LOBBY.porch.x1, 0, door - 1.35, C.x1 - 0.12 - w, 0.15, door + 1.05, { uv: [1.5, 1.5], uvw: true, cast: false });
-      b.box(walk, xe + 0.2, 0, LOBBY.porch.z0 - 1.5, xe + 2.4, 0.156, LOBBY.porch.z0, { uv: [1.5, 1.5], uvw: true, cast: false });       // to the porch's north arch (a hair over the gravel it crosses)
-      b.box(walk, xe + 0.9, 0, C.z0 + 0.12 + w, xe + 2.3, 0.156, LOBBY.porch.z0 - 1.5, { uv: [1.5, 1.5], uvw: true, cast: false });
       b.box(walk, mn.towers[3].a1 + 0.2, 0, mn.z1 - KERB, C.x1 - 0.12, 0.15, mn.z1 - KERB + w, { uv: [1.5, 1.5], uvw: true, cast: false });
       flat(C.x0, C.z0, C.x1, zEnd, 0.15);
       // its kerb: west side, north side, the quarter round, the east side

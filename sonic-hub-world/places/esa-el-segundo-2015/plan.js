@@ -58,7 +58,7 @@ export const WINGS = {
     towers: [{ side: 'A', a0: 62.6, a1: 66.9 }, { side: 'A', a0: 104.4, a1: 109.0 }, { side: 'B', a0: 64.0, a1: 68.8 }, { side: 'B', a0: 106.1, a1: 110.7 }],
     gables: { A: 87.75, B: 87.75 }, strip: { A: 1.85, B: 2.1 },
     low: [[18.5, 55.6, 24.2, 57.3, 'n'], [18.8, 115.8, 24.4, 117.6, 's']] },
-  main: { axis: 'x', x0: -24.6, x1: 30.1, z0: -46.5, z1: -26.7, start: -24.575, n: 13,
+  main: { axis: 'x', x0: -24.6, x1: 31.1, z0: -46.5, z1: -26.7, start: -24.575, n: 13,      // x1: the lobby's block is 5.3 m long by its inside (see LOBBY)
     towers: [{ side: 'A', a0: -19.6, a1: -15.3 }, { side: 'A', a0: 19.65, a1: 24.15, label: '1910' }, { side: 'B', a0: -18.5, a1: -14.3 }, { side: 'B', a0: 21.0, a1: 25.7 }],
     gables: { A: 3.2, B: 2.8 }, strip: { A: 1.35, B: 2.05 },
     low: [[-26.7, -39.1, -24.6, -33.4, 'w']], lobby: true },
@@ -87,31 +87,45 @@ export const GABLE = { span: 2.5, over: 0.3, back: 2.4 };
 
 /* THE LOBBY, on the main wing's east end (the hotel's own pictures for what it looks like, the satellite picture for
    where it stands): past the last studio the wing is a closed block out to the columns' line — "A" on its corner, a
-   window on each floor to Mariposa, the word Lobby between them, the rooms' numbers on the corner by the walkway (the
-   County draws the wing 1.15 m shorter at this end than the satellite picture has it; the picture is followed). The
-   office's door is on the east face, under a low tiled porch: a flat arch to the drive between two stubby columns, a
-   narrow arched way through its north side; south of the porch stands the sign tower, 3.6 m square and about 9 m to its
-   eaves, the hotel's name on its face to Mariposa. That this is the reception he confirmed on 24 Nov 2026.
-   INSIDE. None of his photographs shows it (all of the weeks' 1,500 were gone through: EVIDENCE.md), so the room
-   follows pictures of today — two of the hotel's own, one a traveller's: it runs west along the wing's north side (the last studio's ground
-   floor); on the left as one comes in, a wall with the desk's opening in it and the office behind, the office's door
-   at its far end; a narrow shelf in the corner by the way in; at the far end on the right, under the window, a counter. On that counter in
-   2015 stood the breakfast one took away — and what was on it IS in a photograph of his: 19 Aug 2015, 07:10, on the
+   window on each floor to Mariposa, the word Lobby between them, the rooms' numbers on the corner by the walkway.
+   From the block's east face an entry bay stands out a metre with the door in it, under a low tiled roof; before the
+   door a flat arch to the drive between two stubby columns; south of that the sign tower, 3.6 m square and about 9 m
+   to its eaves, the hotel's name on its face to Mariposa. That this is the reception he confirmed on 24 Nov 2026.
+   INSIDE. None of his photographs shows it (all of the weeks' 1,500 were gone through: EVIDENCE.md). The room is
+   measured from pictures of today — the hotel's own and travellers' — one of them square to the desk's wall, one
+   fitted along the room (EVIDENCE.md has the fit): ONE ROOM 2.83 m wide along the block's north wall and 4.85 m from
+   the block's west wall to its end wall, which has a wide cased opening; beyond it the entry bay, 0.85 m deep. That
+   makes the block 5.3 m long, a metre more than it was drawn from the satellite picture (WINGS.main.x1).
+   In the west wall, by the window wall, A BACK DOOR to the ground-floor walkway — his word, 24 Nov 2026: "nó còn có
+   cửa sau thông ra hành lang đi lại phía sau"; the hotel's picture has it, half glazed, EXIT over it. On the left as
+   one comes in, a wall with the desk's opening in it and the office behind, the office's door at its far end.
+   THE BREAKFAST stood right by the way in, on the right — his word again: "vào phát nhìn bên phải là thấy đồ ăn, chứ
+   ko phải ở góc xa" — so it stands against the north wall just inside the cased opening, not under the window at the
+   far end, where the coffee counter is today. What was on it IS in a photograph of his: 19 Aug 2015, 07:10, on the
    table in his room, coffee in the hotel's paper cup, a packet of instant oatmeal, a wrapped muffin, a red apple.
-   He checked in here on the evening of 17 Aug 2015 and out at 22:52 on 25 Sept (the folio's own print time). */
+   He checked in here on the evening of 17 Aug 2015 and out at 22:52 on 25 Sept (the folio's own print time).
+   (Until the afternoon of 24 Nov the room was drawn 7.65 m long, through the last studio's ground floor: wrong.) */
 export const LOBBY = {
-  porch: { out: 3.05, z0: -45.4, z1: -40.7, eave: 3.6, pier: 0.55, cap: [1.5, 1.95], arch: [2.05, 2.5], side: [0.7, 2.0] },    // out: from the end wall
-  door: [-43.35, -42.45], doorH: 2.03,                // 1.3 m from the desk's wall, as inside in the hotel's picture; near the middle of the porch's arch, as outside
+  porch: { x1: 32.85, z0: -45.65, z1: -40.7, eave: 3.6, pier: 0.55, cap: [1.5, 1.95], arch: [2.05, 2.5] },    // x1: the columns' outer face; z0: the entry bay's north wall carried on
   tower: { x0: 29.4, x1: 33.0, z0: -40.7, z1: -37.1, eave: 9.0, cap: [4.5, 5.0] },
-  room: { x0: 21.9, z1: -39.5, split: 25.7, h: 2.6, desk: -41.6 },      // L-shaped: west of `split` it is the last studio's ground floor; `desk`: the face to the guest of the wall the desk is in; z1: the office's back wall
-  /* the desk (x along the wall): the office's door, the opening, the low stretch of it where one signs; heights above the floor */
-  desk: { door: [22.88, 23.78], open: [24.0, 29.55], low: [24.93, 25.8], sill: 0.85, ledge: 1.19, lowTop: 0.91, head: 2.42 },      // the opening runs to the east wall
-  breakfast: { x0: 21.96, x1: 23.95, depth: 0.55, h: 0.92 },             // the counter under the window at the room's far end
-  yard: [30.1, -35.1, 32.7, -30.3],
+  room: { w: 2.83, h: 2.6 },                           // from the north wall to the wall the desk is in; the ceiling. (Its length is the block's: 4.85 inside.)
+  cross: { stub: 0.5, head: 2.27 },                    // the block's end wall: what is left of it at the north, the cased opening's head
+  bay: { d: 0.85, n: 0.45, s: 3.38, wall: 0.2 },       // the entry bay: its depth, its north and south walls (metres south of the room's north wall), its front wall
+  entry: { door: [1.40, 2.32], side: 0.40, post: 0.14, h: 2.03, transom: [2.27, 2.55] },      // the door (metres south of the north wall), the glass each side, the lights over them
+  back: { z: [0.25, 1.165], h: 2.03 },                 // the back door in the west wall, metres south of the north wall
+  win: { x: [0.97, 2.91], sill: 0.55, head: 2.0 },     // the window to Mariposa, metres east of the west wall; above the floor
+  /* the desk's wall, metres east of the west wall: the office's door, the opening, the low stretch of it where one
+     signs; heights above the floor; how far the ceiling's drop stands out over the guest */
+  desk: { wall: 0.14, door: [0.195, 1.11], open: [1.305, 4.765], low: [1.96, 2.877], sill: 0.85, ledge: 1.19, lowTop: 0.91, head: 2.15, drop: 0.85 },
+  office: 2.03,                                        // its depth behind the desk's wall
+  breakfast: { x: [3.25, 4.7], depth: 0.5, h: 0.92 },  // 2015: by the way in, on the right (metres east of the west wall)
+  yard: [31.1, -35.1, 32.7, -30.3],
 };
-LOBBY.east = WINGS.main.x1 - 0.3;                    // the end wall's outer face
-LOBBY.porch.x1 = LOBBY.east + LOBBY.porch.out;
-Object.assign(LOBBY.room, { x1: LOBBY.east - 0.25, z0: WINGS.main.z0 + 0.55, zs: WINGS.main.z0 + FRONT + WALL });
+LOBBY.east = WINGS.main.x1 - 0.3;                    // the block's end wall, outer face
+{ const R = LOBBY.room, w = WINGS.main;
+  R.x0 = w.start + w.n * MOD + 0.225; R.x1 = LOBBY.east - 0.25; R.z0 = w.z0 + 0.55; R.zp = R.z0 + R.w;
+  LOBBY.doorX = LOBBY.east + LOBBY.bay.d + LOBBY.bay.wall;                                    // the entry wall's outer face
+  LOBBY.door = [R.z0 + LOBBY.entry.door[0], R.z0 + LOBBY.entry.door[1]]; }                   // the door in the place's own z
 
 /* THE LOT, measured on the satellite picture and then moved 1.2 m east and 1.2 m south into the frame of the County's
    footprints: the picture and the footprints do not lie on each other. Two checks give that shift — the wings' roofs
@@ -260,8 +274,9 @@ export const VIEWS = {
   'cau-thang': { name: 'Cầu thang', pose: [12.95, G2 + 1.52, STAIR.z + 0.75, 262, -30] },                          // at the head of the flight down
   'chan-cau-thang': { name: 'Chân cầu thang', pose: [-1.88, 1.6, 22.6, 130, 6] },                                 // where the photograph of 17/8 was taken, in the lot
   'bai-xe': { name: 'Bãi xe trong khách sạn', pose: [1.2, 1.52, 30.6, 6, 2] },          // about where the photograph of 09:48:14 was taken
-  'le-tan': { name: 'Lễ tân', pose: [41.0, 1.6, -43.2, 268, 10] },
-  'bua-sang': { name: 'Đồ ăn sáng ở lễ tân', pose: [24.75, G1 + 1.5, -42.25, 300, -17] },          // inside, before the counter
+  'le-tan': { name: 'Lễ tân', pose: [41.0, 1.6, -44.3, 268, 10] },
+  'bua-sang': { name: 'Đồ ăn sáng ở lễ tân', pose: [29.95, G1 + 1.5, -44.2, 349, -22] },           // inside, just past the door: the table on the right
+  'cua-sau': { name: 'Cửa sau lễ tân (hành lang tầng trệt)', pose: [22.95, G1 + 1.52, -45.3, 92, -2] },      // on the ground-floor walkway, facing the block's west wall
   'loi-xe-vao': { name: 'Lối xe vào (Mariposa)', pose: [40.2, 1.6, -67.35, 240, 3] },          // on Mariposa's sidewalk, east of the drive
   'starbucks': { name: 'Starbucks', pose: [-58.0, 1.52, -6.0, 262, 0] },
   'ralphs': { name: 'Ralphs', pose: [-43.0, 1.52, 33.0, 204, 7] },

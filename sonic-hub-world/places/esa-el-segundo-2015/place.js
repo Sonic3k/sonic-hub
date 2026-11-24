@@ -31,7 +31,7 @@ const light = {
     bed: [...R((IN.bedLamps[0].u + IN.bedLamps[1].u) / 2, 1.5, ROOM.w - 1.0), 6.5],
     kitchen: [...R(IN.ceiling.tube[0], 2.2, IN.ceiling.tube[1]), 5.5], bath: [...R(5.15, 2.15, 2.7), 3.2],
     walk1: [ROOM.x0 - 0.55, G2 + 2.2, ROOM.z0 - 0.11, 7], walk2: [13.45, G2 + 2.55, ROOM.z0 - 0.11 + P.MOD, 7],
-    lot: [-2.5, 8.5, 22, 26], lobby: [P.LOBBY.room.split + 0.6, P.G1 + P.LOBBY.room.h - 0.4, (P.LOBBY.room.zs + P.LOBBY.room.desk) / 2, 7], porch: [P.LOBBY.porch.x1 + 1.6, 3.2, (P.LOBBY.door[0] + P.LOBBY.door[1]) / 2, 10],
+    lot: [-2.5, 8.5, 22, 26], lobby: [(P.LOBBY.room.x0 + P.LOBBY.room.x1) / 2, P.G1 + 1.95, (P.LOBBY.room.z0 + P.LOBBY.room.zp) / 2, 7], porch: [P.LOBBY.porch.x1 + 1.6, 3.2, (P.LOBBY.door[0] + P.LOBBY.door[1]) / 2, 10],
   },
   hours: {
     sang: {
@@ -66,7 +66,7 @@ const light = {
    trees and the Green Line. */
 const dz = (IN.door[0] + IN.door[1]) / 2;      // the middle of his doorway, along the wall
 const SZ = P.STAIR.z, TY = P.TOWER.y, LB = P.LOBBY, LT = P.LOT, eye = 1.52;
-const lobbyZ = (LB.door[0] + LB.door[1]) / 2, driveX = (LT.eastTail + LT.eastEdge) / 2, aisleS = (LT.southTail + LT.southEdge) / 2;
+const LR = LB.room, backZ = (LB.back.z[0] + LB.back.z[1]) / 2, lobbyZ = (LB.door[0] + LB.door[1]) / 2, driveX = (LT.eastTail + LT.eastEdge) / 2, aisleS = (LT.southTail + LT.southEdge) / 2;
 const tour = [
   { p: R(0.5, 1.47, 1.44), h: 97, pitch: -7.5, t: 0.01, cut: true, label: 'Phòng 271' },
   { p: R(0.5, 1.47, 1.44), h: 97, pitch: -7.5, t: 3.4 },
@@ -108,13 +108,17 @@ const tour = [
   { p: [driveX, eye, lobbyZ + 2.4], h: 330, pitch: 4, t: 7.0 },
   { p: [LB.porch.x1 + 5.7, 1.6, lobbyZ + 0.65], h: 266, pitch: 7, t: 3.0, label: 'Lễ tân' },
   { p: [LB.porch.x1 + 1.75, P.G1 + eye, lobbyZ], h: 270, pitch: 3, t: 3.2 },
-  { p: [LB.east + 0.95, P.G1 + eye, lobbyZ], h: 270, pitch: 0, t: 3.0 },
-  { p: [LB.east - 1.3, P.G1 + eye, lobbyZ], h: 232, pitch: -6, t: 2.6 },
-  { p: [LB.desk.low[1] + 0.9, P.G1 + eye, lobbyZ + 0.1], h: 205, pitch: -8, t: 2.8, label: 'Quầy lễ tân' },
-  { p: [LB.breakfast.x1 + 1.15, P.G1 + eye, lobbyZ + 0.25], h: 270, pitch: -8, t: 2.6 },
-  { p: [LB.breakfast.x1 + 0.95, P.G1 + eye, lobbyZ + 0.35], h: 296, pitch: -18, t: 3.6, label: 'Đồ ăn sáng' },
-  { p: [LB.breakfast.x1 + 1.3, P.G1 + eye, lobbyZ + 0.1], h: 80, pitch: -2, t: 2.4 },
-  { p: [LB.east - 1.05, P.G1 + eye, lobbyZ], h: 90, pitch: 0, t: 3.4 },
+  { p: [LB.doorX + 0.55, P.G1 + eye, lobbyZ], h: 270, pitch: 0, t: 2.6 },                                      // under the arch, before the door
+  { p: [LB.east - 0.75, P.G1 + eye, lobbyZ], h: 300, pitch: -10, t: 2.8 },                                      // in through the bay: the breakfast is on the right
+  { p: [LR.x0 + LB.breakfast.x[0] + 0.75, P.G1 + eye, LR.z0 + 1.55], h: 4, pitch: -24, t: 3.6, label: 'Đồ ăn sáng' },
+  { p: [LR.x0 + LB.desk.low[1] + 0.1, P.G1 + eye, LR.z0 + 1.5], h: 196, pitch: -8, t: 3.0, label: 'Quầy lễ tân' },
+  { p: [LR.x0 + 1.9, P.G1 + eye, LR.z0 + 1.45], h: 262, pitch: -2, t: 2.4 },
+  { p: [LR.x0 + 0.7, P.G1 + eye, LR.z0 + backZ], h: 270, pitch: 0, t: 2.4, label: 'Cửa sau' },
+  { p: [LR.x0 - 1.5, P.G1 + eye, LR.z0 + backZ], h: 268, pitch: 0, t: 2.6 },                                    // out by the back door onto the ground-floor walkway
+  { p: [LR.x0 - 1.9, P.G1 + eye, LR.z0 + backZ + 0.1], h: 92, pitch: 0, t: 2.6 },                               // and round, to see it from outside
+  { p: [LR.x0 + 0.7, P.G1 + eye, LR.z0 + backZ], h: 96, pitch: 0, t: 2.6 },
+  { p: [LR.x0 + 1.9, P.G1 + eye, LR.z0 + 1.45], h: 96, pitch: 0, t: 2.0 },
+  { p: [LB.east - 0.75, P.G1 + eye, lobbyZ], h: 90, pitch: 0, t: 3.2 },
   { p: [LB.porch.x1 + 1.95, P.G1 + eye, lobbyZ], h: 80, pitch: 0, t: 3.4 },
   { p: [driveX - 0.6, eye, lobbyZ - 2.0], h: 0, pitch: 0, t: 3.0 },
   { p: [driveX - 1.2, eye, LT.island[3] + 2.6], h: 350, pitch: 0, t: 5.6 },
