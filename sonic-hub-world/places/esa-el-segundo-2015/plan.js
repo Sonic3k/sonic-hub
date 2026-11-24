@@ -3,61 +3,147 @@
    south, y up; the origin is 33.92290 N, 118.39500 W, the frame of the OpenStreetMap data in osm.js. Ground at y = 0.
    EVIDENCE.md says which photograph each part rests on and what is guessed.
 
-               E Mariposa Ave (6 lanes) ─────────────────────────────────────────────────────────▶ Nash St, the Green Line
-     Sepulveda    ┌ pad ┐   ╔══════════ MAIN WING (lobby at its east end) ══════════╗
-     Blvd (PCH)   └─────┘   ╚═══════════════════════════════════════════════════════╝
-     8 lanes      ┌ Starbucks/Jersey Mike's ┐        ║ NORTH ║   14 rooms a side, two floors, walkways on both faces
+               E Mariposa Ave (6 lanes) ──────────────────────────── the drive in ▼ ───────────▶ Nash St, the Green Line
+     Sepulveda    ┌ pad ┐   ╔══════════ MAIN WING ══════════════════════╗ lobby   ║ ║
+     Blvd (PCH)   └─────┘   ╚═══════════════════════════════════════════╝ + sign  ║ ║ the drive goes on south
+     8 lanes      ┌ Starbucks/Jersey Mike's ┐        ║ NORTH ║   12 rooms a side, two floors, walkways on both faces
                   └─────────────────────────┘  lot   ║ WING  ║◀── his room: upper floor, west face, just north of the south-west stairs
-                       Ralphs' parking lot   fence   ║       ║
-                  ┌──── RALPHS (1997) ────┐          ║ SOUTH ║
+                       Ralphs' parking lot   fence   ╟ block ╢   (a low block at its south end, then a passage)
+                  ┌──── RALPHS (1997) ────┐          ║ SOUTH ║   15 rooms a side
                   └───────────────────────┘          ║ WING  ║
 
    THE THREE WINGS. Each is a long two-storey block of studios back to back, with an open walkway along each long face
-   on both floors (the photographs of 22/9/2015 and 17/8/2015); 150 rooms in all. The roof outlines are LA County's
-   footprints (osm.js keeps them out: they are built here). A wing's section, from a roof edge inward: 0.45 to the line
-   of the terracotta columns and the white railing, a walkway to 2.0, the front wall (0.18), the studio (6.45 deep),
-   the spine and its plumbing. Floor to floor 2.9; upper walkway 3.05; eaves 5.95; a hip roof of clay tile at 4 in 12. */
+   on both floors (the photographs of 22/9/2015 and 17/8/2015). The roof outlines are LA County's footprints (osm.js
+   keeps them out: they are built here), checked against the satellite picture. A wing's section, from a roof edge
+   inward: 0.45 to the line of the terracotta columns and the white railing, a walkway to 2.0, the front wall (0.18),
+   the studio (6.45 deep), the spine and its plumbing. Floor to floor 2.9; upper walkway 3.05; eaves 5.95; a hip roof
+   of clay tile at 5½ in 12.
+   HOW MANY ROOMS. 13 studios a side in the main wing, 12 in the north, 15 in the south: 160 doors on the walkways. The
+   hotel lets 151 rooms; the others are the lobby and its office, the laundry, the housekeepers' and the stores. The
+   sign on the main wing counts 25 rooms on its ground floor (103–127) and 27 above (151–177): 13 a side, one given to
+   the lobby below and one more over it.
+   ON EACH FACE: a stair tower near each end and, between the two, one gabled bay. A tower stands out from the walkway,
+   open to the lot between two heavy terracotta columns under an arch; inside, the stair goes out to a landing at the
+   tower's face and comes back (TOWER, below). The gabled bay is the same two columns and arch set on the walkway's own
+   edge, with a small raised roof and nothing behind it. */
 
 export const G1 = 0.15;          // the ground-floor walkway and rooms: a curb above the parking
 export const G2 = 3.05;          // the upper walkway and the upper rooms
 export const CEIL = 2.39;        // a studio's ceiling over its floor (7'10": the four photographs of 21/9/2015)
 export const EAVE = 5.95;
-export const PITCH = 1 / 3;
+export const PITCH = 0.46;        // 5½ in 12: the ridge stands about 10.1 m in the photograph of 17/8 from the lot (its camera fitted to the doors and windows)
 export const COL = 0.45;         // from a roof edge to the line of columns and railing
 export const FRONT = 2.0;        // from a roof edge to the front wall
 export const WALL = 0.18;        // front wall
 export const MOD = 3.85;         // one studio (3.63 wall to wall) and one party wall, along a wing
+export const KERB = 0.25;        // from a roof edge in to the edge of the walkway's slab (and the ground walkway's kerb)
 
 /* A wing: its roof outline as a rectangle (x0…x1, z0…z1), which way it runs, where its studios start and how many
-   there are on each face, and the stair towers (as the County drew them, in the map's own x or z) and small end bays.
+   there are on each face, the stair towers (as the County drew their roofs, in the map's own x or z — but the one by
+   the lobby, which the County has 1.65 m further west than the satellite picture and the hotel's photograph of it
+   allow) and what else is particular to it.
    `hands`: for each studio of a face, N if its door is at the end nearer the wing's start (north or west), S if at
-   the other; left out, studios alternate S N S N. */
+   the other; left out, studios alternate S N S N.
+   `gables`: the middle of the gabled bay on each face. `cols`: where the plain columns of a face stand when a
+   photograph says so (otherwise in equal bays between the towers and the gabled bay).
+   `strip`: how wide the planting is between a face's walkway and the stalls' kerb (plan.js: LOT).
+   `low`: single-storey parts under their own low tile roofs — the lean-tos on the wings' ends and the block at the
+   north wing's south end (x0, z0, x1, z1 of the roof, and which way its door looks). */
 export const WINGS = {
-  north: { axis: 'z', x0: 12.3, x1: 30.4, z0: -4.1, z1: 52.6, start: -1.9, n: 14, hands: { A: 'NSNSNSNSSNSNSN' },
-    towers: [{ side: 'A', a0: 2.2, a1: 6.9, stair: true }, { side: 'A', a0: 36.6, a1: 41.4, stair: true }, { side: 'B', a0: 1.3, a1: 6.0 }, { side: 'B', a0: 36.8, a1: 40.9 }],
-    boxes: { A: [8] },
-    bumps: [[18.1, -6.4, 24.1, -4.1]] },
+  north: { axis: 'z', x0: 12.3, x1: 30.4, z0: -4.1, z1: 46.8, start: -0.2, n: 12, hands: { A: 'NSNSNSNSSNSN' },
+    towers: [{ side: 'A', a0: 2.2, a1: 6.9 }, { side: 'A', a0: 36.6, a1: 41.4 }, { side: 'B', a0: 1.3, a1: 6.0 }, { side: 'B', a0: 36.8, a1: 40.9 }],
+    gables: { A: 20.8, B: 22.4 }, cols: { A: [27.15, 32.25] }, boxes: { A: [8] }, strip: { A: 1.85, B: 2.1 },
+    low: [[18.1, -6.4, 24.1, -4.1, 'n'], [13.7, 46.8, 30.4, 52.6, 'w']] },
   south: { axis: 'z', x0: 12.3, x1: 30.4, z0: 57.3, z1: 115.8, start: 57.675, n: 15,
-    towers: [{ side: 'A', a0: 62.6, a1: 66.9, stair: true }, { side: 'A', a0: 104.4, a1: 109.0, stair: true }, { side: 'B', a0: 64.0, a1: 68.8 }, { side: 'B', a0: 106.1, a1: 110.7 }],
-    bumps: [[18.5, 55.6, 24.2, 57.3], [18.8, 115.8, 24.4, 117.6]] },
-  main: { axis: 'x', x0: -24.6, x1: 25.5, z0: -46.5, z1: -26.7, start: -24.575, n: 13,
-    towers: [{ side: 'A', a0: -19.6, a1: -15.3 }, { side: 'A', a0: 18.0, a1: 22.5 }, { side: 'B', a0: -18.5, a1: -14.3, stair: true }, { side: 'B', a0: 21.0, a1: 25.7, stair: true }],
-    lobby: [25.5, -46.6, 31.8, -27.7], bumps: [[-26.7, -39.1, -24.6, -33.4]] },
+    towers: [{ side: 'A', a0: 62.6, a1: 66.9 }, { side: 'A', a0: 104.4, a1: 109.0 }, { side: 'B', a0: 64.0, a1: 68.8 }, { side: 'B', a0: 106.1, a1: 110.7 }],
+    gables: { A: 87.75, B: 87.75 }, strip: { A: 1.85, B: 2.1 },
+    low: [[18.5, 55.6, 24.2, 57.3, 'n'], [18.8, 115.8, 24.4, 117.6, 's']] },
+  main: { axis: 'x', x0: -24.6, x1: 30.1, z0: -46.5, z1: -26.7, start: -24.575, n: 13,
+    towers: [{ side: 'A', a0: -19.6, a1: -15.3 }, { side: 'A', a0: 19.65, a1: 24.15, label: '1910' }, { side: 'B', a0: -18.5, a1: -14.3 }, { side: 'B', a0: 21.0, a1: 25.7 }],
+    gables: { A: 3.2, B: 2.8 }, strip: { A: 1.35, B: 2.05 },
+    low: [[-26.7, -39.1, -24.6, -33.4, 'w']], lobby: true },
 };
 /** is studio k's door at the end nearer the wing's start? */
 export const doorAtStart = (key, side, k) => { const h = WINGS[key].hands?.[side]; return h ? h[k] === 'N' : k % 2 === 1; };
-/* Side A of a north–south wing is its west face; of the main wing, its north face (Mariposa). A tower stands outside
-   the walkway, 3.9 m deep; `stair` ones hold the stairs up. */
-export const TOWER_D = 3.9;
+/* Side A of a north–south wing is its west face; of the main wing, its north face (Mariposa).
+   A STAIR TOWER, as the photographs of 17/8 (from the lot, two of them), 2/9 (from the walkway) and 22/9 (from the
+   drive) show it, and the hotel's own pictures of the one by the lobby: a body 3.9 wide standing 3.45 out from the
+   wing's roof edge, its two side walls blank from the ground to its own eaves (half a metre over the wing's) under a
+   steep little hipped roof; the face to the lot open between two terracotta columns 0.68 square whose white capitals
+   sit at 3.78–4.30 (a little above the upper walkway's railing), a flat arch over them, a floodlight over the arch. In the opening, at the tower's
+   face: the stair's landing with a white railing, eight risers up from the ground, and a post in the middle. From the
+   ground walkway one flight goes OUT to the landing; the other comes BACK up nine risers to the upper walkway. Seen
+   from the lot, the flight from the ground is on the left (the hotel's picture of the tower by the lobby). */
+export const TOWER = {
+  out: 3.45, w: 3.9, wall: 0.5, col: 0.68, proud: 0.1, cap: [3.78, 4.12, 4.30], arch: [4.85, 5.2], rise: 0.45, over: 0.35, pitch: 0.8, flood: 5.85,
+  land: 1.25, tread: 0.28, risers: [8, 9], post: 0.32,
+};
+TOWER.step = (G2 - G1) / (TOWER.risers[0] + TOWER.risers[1]);          // one riser: 2.9 m in seventeen
+TOWER.y = G1 + TOWER.risers[0] * TOWER.step;                           // the landing
+/* THE GABLED BAY between a face's two towers: two of the same columns 2.3 apart on the walkway's edge, the same arch
+   and floodlight, a little hipped roof raised over the eaves (the walkway photograph of 22/9: the two columns whose
+   capitals stand at railing height; the photographs of 19/8 and 2/9, taken beside one; the satellite picture). */
+export const GABLE = { span: 2.5, over: 0.3, back: 2.4 };
 
-/* HIS STUDIO: the north wing, upper floor, west face, the first studio north of the south-west stair tower (module 9,
-   counting from 0). The photographs of 22/9/2015, taken one after the other on the way to work, say so: from the
-   railing in front of the door to Ralphs (09:47:21); then the walkway looking north, taken two steps south of his own
-   door, which is at the right edge (09:47:46: his door and the next are a pair with a lamp between them, then that
-   studio's window, a fire-extinguisher cabinet on the wall, and the next door a module further on); and 28 seconds
-   later the drive 16 m south of the north-west tower (09:48:14) — down the south-west stairs and north through the
-   lot. The iPhone picture of 17/8, taken from the lot to the north-west, shows the same stretch running into the stair
-   tower: window, door, lamp, door, window, cabinet, door. */
+/* THE LOBBY, on the main wing's east end (the hotel's own pictures for what it looks like, the satellite picture for
+   where it stands): past the last studio the wing is a closed block out to the columns' line — "A" on its corner, a
+   window on each floor to Mariposa, the word Lobby between them, the rooms' numbers on the corner by the walkway (the
+   County draws the wing 1.15 m shorter at this end than the satellite picture has it; the picture is followed). The
+   office's door is on the east face, under a low tiled porch: a flat arch to the drive between two stubby columns, a
+   narrow arched way through its north side; south of the porch stands the sign tower, 3.6 m square and about 9 m to its
+   eaves, the hotel's name on its face to Mariposa. The room behind the door runs west along the wing's north side
+   (the last studio's ground floor): the desk on the left as one comes in. Its furniture follows the hotel's pictures
+   of today, plainly — no photograph of 2015 shows it. */
+export const LOBBY = {
+  porch: { out: 3.05, z0: -45.4, z1: -40.7, eave: 3.6, pier: 0.55, cap: [1.5, 1.95], arch: [2.05, 2.5], side: [0.7, 2.0] },    // out: from the end wall
+  door: [-43.9, -43.0], doorH: 2.03,
+  tower: { x0: 29.4, x1: 33.0, z0: -40.7, z1: -37.1, eave: 9.0, cap: [4.5, 5.0] },
+  room: { x0: 21.9, z1: -40.0, split: 25.7, h: 2.6, desk: -41.1 },      // L-shaped: west of `split` it is the last studio's ground floor
+  yard: [30.1, -35.1, 32.7, -30.3],
+};
+LOBBY.east = WINGS.main.x1 - 0.3;                    // the end wall's outer face
+LOBBY.porch.x1 = LOBBY.east + LOBBY.porch.out;
+Object.assign(LOBBY.room, { x1: LOBBY.east - 0.25, z0: WINGS.main.z0 + 0.55, zs: WINGS.main.z0 + FRONT + WALL });
+
+/* THE LOT, measured on the satellite picture and then moved 1.2 m east and 1.2 m south into the frame of the County's
+   footprints: the picture and the footprints do not lie on each other. Two checks give that shift — the wings' roofs
+   on the picture against their outlines, and the photograph of 17/8, whose fitted camera puts the stalls' kerb 1.8 m
+   from the walkway, as the picture does (EVIDENCE.md has the table). Good to about half a metre.
+   West of the north and south wings, going out from the walkway: 1.85 m of planting, a row of stalls nose-in to it,
+   the drive, a row nose-in to the fence's strip, the strip and its trees, the white fence. East of them: planting, a
+   row of stalls, the drive, trees on the boundary. North of the main wing: planting, a row of stalls, the aisle, a
+   hedge and a lawn, Mariposa's sidewalk. South of it: planting, a row of stalls, the aisle.
+   THE WAY IN is at the north-east corner, off Mariposa: a two-lane drive between the island that carries the sign and
+   the trees on the boundary. It runs south past the lobby's forecourt (a kerb round the wing's north-east corner) and
+   on down the east side; the aisle north of the main wing leaves it to the west. */
+export const LOT = {
+  stall: 2.7,
+  westKerb: 10.7, westTail: 5.4, fenceTail: -3.1, fenceKerb: -8.5, fence: -11.6,           // x, west of the two wings
+  eastKerb: 32.25, eastTail: 37.55, eastEdge: 43.5,                                        // x, east of them
+  northKerb: -47.6, northTail: -53.0, northEdge: -59.5, walk: -66.4,                       // z, north of the main wing; the sidewalk's back edge (the street's own frame)
+  southKerb: -24.9, southTail: -19.6, southEdge: -13.0,                                    // z, south of it
+  westDrive: [-30.3, -27.0],                                                               // x, round the main wing's west end
+  drive: [28.5, 37.5],                                                                     // x, the way in from Mariposa
+  island: [15.5, -66.4, 28.5, -60.0], sign: [23.9, -63.7],                                 // the sign's island (x0, z0, x1, z1) and the sign
+  court: { x0: 17.8, z0: -53.4, cx: 29.2, cz: -45.3, r: 8.1, x1: 37.3 },                   // the forecourt's kerb: straight, a quarter round, straight
+  trees: { west: [[20.0, 23.4], [86.1, 89.4]], east: [[18.8, 23.4], [86.2, 89.5]], north: [0.6, 4.6], south: [-1.1, 4.7], fence: [51.8, 66.8] },   // the islands with a tree, along their rows
+};
+
+/* HIS STUDIO: the north wing, upper floor, west face, the tenth studio from the wing's north end (module 9, counting
+   from 0), with the south-west stair tower beside it. Three photographs fix that:
+   · the walkway looking north on 22/9 (09:47:46), taken a step south of his own door, which is at the right edge: his
+     door and the next are a pair with a lamp between them, then that studio's window, a fire-extinguisher cabinet,
+     doors on to the wall with a door that ends the walkway — nine studios' length away by that door's size in the
+     picture; and nothing of the stair tower in the left of the frame, so its wall stood level with the camera or behind;
+   · the wing from the lot at dusk on 17/8, its camera fitted to the doors and windows: window, door, lamp, door, window
+     — and the tower's north wall coming to the walkway at the last window, 0.6 m (± 0.4) past his door;
+   · both put the gabled bay half-way between the two towers, where the satellite picture has its roof, and the plain
+     columns in equal bays of about 4.9 m.
+   So the row of studios starts at z = −0.2 and the tower's north wall crosses the walkway at his window. (The first
+   build had the rooms 1.7 m further north, clear of the tower; the photograph of 17/8 was not fitted then.)
+   The photograph toward Ralphs of 09:47:21 was taken from the railing a few steps north of his door (the tower's
+   shadow lies in its lower left corner, the tower itself out of frame); the one of 09:48:14 in the drive, looking north
+   past the island with the tree and the two handicap stalls to the north-west tower. */
 export const HIS = { wing: 'north', module: 9 };
 const w = WINGS.north;
 export const ROOM = {
@@ -140,14 +226,16 @@ export const IN = {
   ceiling: { supply: [3.375, 1.83], ret: [4.69, 0.55], tube: [D - 0.98, 1.02], sprinkler: [4.485, 1.87] },
 };
 
-/* VIEWS: the rooms list. Poses [x, y, z, heading, pitch]. Heading: degrees clockwise from north. `phong`, `hanh-lang`
-   and `bai-xe` stand where the camera stood for a photograph; `ban`, `tu-guong` and `giuong` a step from where it did
+/* VIEWS: the rooms list. Poses [x, y, z, heading, pitch]. Heading: degrees clockwise from north. `phong`, `hanh-lang`,
+   `lan-can`, `chan-cau-thang` and `bai-xe` stand where the camera stood for a photograph; `ban`, `tu-guong` and `giuong` a step from where it did
    (he took those three sitting on the bed and on the chair at the counter, where a walker cannot stand). `nha-tam`
    stands inside the bathroom, to the right of its door, and looks across to the pan and the tub. */
 const R = (u, v) => [ROOM.x0 + u, ROOM.z0 + v];
 const at = (u, v, y, h, p) => { const [x, z] = R(u, v); return [x, G2 + y, z, h, p]; };
 export const ROOMPT = R;
 const doorZ = ROOM.z0 + (IN.door[0] + IN.door[1]) / 2;
+/* the stair tower next to his studio (the south-west one of the north wing's west face): its middle along the wing */
+export const STAIR = { z: (w.towers[1].a0 + w.towers[1].a1) / 2 };
 export const VIEWS = {
   'phong': { name: 'Phòng (từ cửa nhìn vào)', pose: at(0.5, 1.44, 1.47, 97, -7.5) },
   'ban': { name: 'Bàn làm việc', pose: at(1.1, 1.6, 1.49, 79, -5) },
@@ -156,11 +244,13 @@ export const VIEWS = {
   'bep': { name: 'Bếp nhỏ', pose: at(4.2, 1.62, 1.5, 62, -9) },
   'nha-tam': { name: 'Nhà tắm', pose: at(4.5, 2.34, 1.5, 112, -20) },
   'cua': { name: 'Cửa phòng', pose: at(2.5, 1.3, 1.5, 266, -3) },
-  'hanh-lang': { name: 'Hành lang tầng 2', pose: [ROOM.x0 - WALL - 0.86, G2 + 1.5, doorZ + 1.95, 353, -3.5] },   // where the photograph of 09:47:46 was taken
-  'lan-can': { name: 'Lan can nhìn sang Ralphs', pose: [13.05, G2 + 1.52, doorZ, 248, -5] },
-  'cau-thang': { name: 'Cầu thang', pose: [12.5, G2 + 1.52, 38.8, 268, -24] },
-  'bai-xe': { name: 'Bãi xe trong khách sạn', pose: [3.7, 1.52, 22.2, 2, 2] },          // where the photograph of 09:48:14 was taken
-  'cong': { name: 'Cổng trên Mariposa', pose: [-23.0, 1.52, -67.5, 128, 2] },
+  'hanh-lang': { name: 'Hành lang tầng 2', pose: [ROOM.x0 - WALL - 0.86, G2 + 1.5, doorZ + 1.57, 353, -3.5] },   // where the photograph of 09:47:46 was taken
+  'lan-can': { name: 'Lan can nhìn sang Ralphs', pose: [13.05, G2 + 1.52, doorZ - 5.8, 248, -5] },               // and that of 09:47:21, a few steps north
+  'cau-thang': { name: 'Cầu thang', pose: [12.95, G2 + 1.52, STAIR.z + 0.75, 262, -30] },                          // at the head of the flight down
+  'chan-cau-thang': { name: 'Chân cầu thang', pose: [-1.88, 1.6, 22.6, 130, 6] },                                 // where the photograph of 17/8 was taken, in the lot
+  'bai-xe': { name: 'Bãi xe trong khách sạn', pose: [1.2, 1.52, 30.6, 6, 2] },          // about where the photograph of 09:48:14 was taken
+  'le-tan': { name: 'Lễ tân', pose: [41.0, 1.6, -43.7, 268, 10] },
+  'loi-xe-vao': { name: 'Lối xe vào (Mariposa)', pose: [40.2, 1.6, -67.35, 240, 3] },          // on Mariposa's sidewalk, east of the drive
   'starbucks': { name: 'Starbucks', pose: [-58.0, 1.52, -6.0, 262, 0] },
   'ralphs': { name: 'Ralphs', pose: [-43.0, 1.52, 33.0, 204, 7] },
   'sepulveda': { name: 'Đại lộ Sepulveda', pose: [-97.5, 1.52, -40.0, 200, 0] },

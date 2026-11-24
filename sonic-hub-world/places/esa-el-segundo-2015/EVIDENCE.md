@@ -46,15 +46,27 @@ laptop's lock screen in 1774 is too small to read; the place shows 7:15). Sonic 
   east lamp's shade, sighted from both pictures, meets within 2 cm. The front wall comes out 2–5 cm further west than
   the plan has it (the room 6.47–6.50 m deep, not 6.45); the plan was left as it is.
 - **Size.** 3.63 m between the party walls, about 6.45 m from the front wall to the kitchen's back wall, the ceiling at
-  2.39 m (7 ft 10 in). A module along the wing is 3.85 m; the wings hold 14, 15 and 13 a side (the hotel has 150
-  rooms; some modules must be laundry and stores).
-- **Which one.** Upper floor, west face of the north wing, the first studio north of the south-west stair tower
-  (`HIS`: module 9). 1779 (09:47:46) was taken on the walkway two steps south of his own door, which is at its right
-  edge: his door and the next make a pair with a lamp between them, then that studio's window, a fire-extinguisher
-  cabinet, the next door. The iPhone picture of 17 Aug (0127), taken from the lot to the north-west, shows the same
-  stretch running into the stair tower: window, door, lamp, door, window, cabinet, door. Twenty-eight seconds after
-  1779 he stood in the drive 16 m south of the north-west tower (1780): down the south-west stairs and north through
-  the lot. The room's number is not known.
+  2.39 m (7 ft 10 in): 23.4 m² (252 sq ft) with the bathroom. A module along the wing is 3.85 m. Checked on 24 Nov
+  2026 against the building: two rooms back to back with their walkways, walls and the plumbing spine come to 18.1 m,
+  which is what the roof measures across on the satellite picture and in the County's footprint (see "The hotel").
+- **Which one.** Upper floor, west face of the north wing, the tenth studio from the wing's north end (`HIS`: module
+  9), with the south-west stair tower beside it. Three photographs fix that:
+  - 1779 (22 Sept 09:47:46), on the walkway a step south of his own door, which is at its right edge: his door and
+    the next make a pair with a lamp between them, then that studio's window, a fire-extinguisher cabinet, doors on
+    to the wall with a door that ends the walkway. That end door stands 150 px high in the frame (2.03 m at
+    f = 3360 px): 45 m away, nine studios. Nothing of the stair tower shows at the frame's left edge, so its wall was
+    level with the camera or behind it.
+  - 0127 (17 Aug, from the lot at dusk), its camera fitted to door heads, window heads and sills on both floors
+    (phone lens f = 1509 px at 1600 wide; residual about 4 px): window, door, lamp, door, window — and the tower's
+    north wall coming to the walkway at that last window, 0.6 m (± 0.4) past his door. The first fit of this place
+    put the tower 1.7 m further south, clear of his room; this photograph had not been fitted then.
+  - Both put the plain columns in bays of about 4.9 m and the gabled bay half-way between the towers, where the
+    satellite picture has its roof.
+  So the row starts at z = −0.2 (the County's roof starts at −4.1: a closed end bay, as on the main wing's west end)
+  and the tower's north wall crosses the walkway at his window. 1777 (09:47:21, toward Ralphs) was taken from the
+  railing a few steps north of his door: the tower's shadow lies in its lower left corner and the tower is out of
+  frame. 1780 (09:48:14) was taken in the drive, looking north past the island with the tree and the two handicap
+  stalls to the north-west tower. The room's number is not known.
 - **The counter he worked at** — what the first build had wrong (an east–west bar set off the wall). It is a dining
   peninsula for two that stands out from the north wall: a white laminate top 0.87 wide × 1.155 long, 0.914 high,
   37 mm thick, its two free corners rounded (r ≈ 0.16); under its wall end a white cupboard (0.44 × 0.52) with an oak
@@ -149,22 +161,132 @@ mirror shows a painted reflection.
 
 ## The hotel
 
-- Three two-storey wings — along Mariposa (main, with the lobby at its east end) and two running south from it, the
-  studio's (north) and the south wing — with open walkways on terracotta columns, white railings, yellow stucco, hip
-  roofs of clay tile and stair towers with an arch at the top. Wings, towers and the lobby are rectangles in `WINGS`
-  (`plan.js`), read off the satellite picture and checked against 1777, 1779, 1780, 0127, 0130 and 0190.
-- A studio's front is a door, 0.42 m of wall, a window, with a louvre low under the window's near end and the room's
-  number by the latch. Studios are handed in pairs, so doors meet at a wall lamp and windows at a globe in the soffit
-  (`hands` in `WINGS` for the stretch the photographs show; elsewhere simply alternating, which is a guess). The
-  walkway's columns stand at the stair towers' corners and in equal bays of about 5.9 m between them: 1779 fits that
-  to within half a metre.
-- The white picket fence and the planting strip west of the hotel's lot, the rows of stalls, the red-curbed island with
-  the blue sign, the lot lights (0130, 0190, 1777, 1780). From 1780, taken in the drive at z ≈ 22 looking north: the
-  two handicap stalls and the red-curbed island south of the north-west tower, the blue mattress leaning on that
-  tower's south face, the brown Beetle nose-in to the fence at the lot's north end, the fence row empty. The fence's
-  north end (z = −12.6) is a guess: it leaves the drive round the main wing's west end open into the lot, which the
-  satellite picture suggests and which a hotel's cars need.
-- The monument sign by the entrance on Mariposa is a guess (place and shape); its words are plain lettering.
+Rebuilt on 24 Nov 2026, when he asked whether the sizes were right and said the stairs made no sense and that he could
+find neither the way in for cars nor the reception. He was right on all three.
+
+### What was wrong
+
+| | the build before | what the evidence says |
+|---|---|---|
+| stair towers | closed on three sides, a small arch at the upper floor, the stair in one corner behind a wall; six of the twelve had no stair at all | open to the lot between two heavy columns under an arch, the landing with its railing at the tower's face (0125, 0127, 1780, 0191); all twelve alike on the satellite picture |
+| the north wing | 14 studios a side under one roof 56.7 m long | 12 a side under a roof 50.9 m long; south of it a lower block 5.8 m long under its own roof |
+| rooms in all | 168 doors | 160 doors; the hotel lets 151 rooms |
+| the lot west of the wings | stalls against the walkway, the fence 22.5 m from the roof's edge | 1.85 m of planting between walkway and stalls; the fence 23.9 m from the roof's edge |
+| the way in | a sign at the north-west, no drive | a two-lane drive at the north-east corner, the sign on its island |
+| the lobby | a box at the main wing's east end | the wing's own end block, a porch on its east face, a sign tower south of the porch |
+| the roofs | 4 in 12 | about 5½ in 12 (the ridge at 10.1 m in 0127); the towers' own steeper |
+
+### The wings' sizes
+
+Roof outlines are LA County's building footprints as OpenStreetMap carries them (ways 233384215, 233386980,
+233386985). The satellite picture was laid on them and the tile roofs found by their colour along some twenty lines.
+
+**The picture and the footprints do not lie on each other.** Everything on the picture sits about 1.2 m west and
+1.2 m north of where the footprints have it:
+
+| check | on the picture | County | shift |
+|---|---|---|---|
+| north wing, west eaves (five lines) | x 11.05–11.2 | 12.3 | +1.1…1.25 |
+| main wing, west end | x −25.6 | −24.6 | +1.0 |
+| main wing, its north-west tower | x −20.6…−16.7 | −19.6…−15.3 | +1.2 |
+| main wing, north and south eaves | z −47.35, −28.5 | −46.5, −26.7 | +0.85, +1.8 |
+| the towers' sunlit ends, north wing | z 5.5, 39.4 | 6.9, 41.4 | +1.4, +2.0 |
+| the stalls' kerb west of the north wing | x 9.5 | 10.5–10.9 by the photograph of 17 Aug, whose camera is fitted to the building | +1.0…1.4 |
+| the gabled bay, north wing's west face | z 19.25 | 20.8 by 0127 and 1779 | +1.55 |
+
+The last two matter most: they tie the ground to the building without either map. So what is measured on the picture
+is moved 1.2 m east and 1.2 m south before it is built (`LOT` and `LOBBY` in `plan.js` hold the moved numbers). The
+first build after his question mixed the two frames and drew three metres of planting between walkway and stalls; the
+photograph of 17 Aug shows under two. Good to about half a metre.
+
+Where the County and the picture still disagree after the move, the picture is followed: the main wing ends 1.15 m
+further east than the County draws it (its east end is drawn as steps there), and its north-east stair tower stands
+1.65 m further east, a short bay from the lobby's block as in the hotel's own photograph.
+
+| | roof outline (m) | long × wide | studios a side |
+|---|---|---|---|
+| main, along Mariposa | x −24.6…30.1, z −46.5…−26.7 | 54.7 × 19.8 | 13 |
+| north (his) | x 12.3…30.4, z −4.1…46.8 | 50.9 × 18.1 | 12 |
+| the low block south of it | x 13.7…30.4, z 46.8…52.6 | 5.8 × 16.7, one storey | — |
+| south | x 12.3…30.4, z 57.3…115.8 | 58.5 × 18.1 | 15 |
+
+- Across a wing: 0.45 to the columns, the walkway to 2.0, the front wall, a studio 6.45 deep, the spine: 2 × (2.0 +
+  0.18 + 6.45) + 0.84 = 18.1. His room's depth, measured from inside, fits the building measured from above. (The
+  main wing is 1.7 m wider by the County's outline; its rooms are drawn the same and its spine takes the difference.)
+- Along a wing: 3.85 a module. The main wing's sign by the lobby reads, as far as its small letters can be made out in
+  the hotel's picture, "Rooms 151–177, 103–127": 25 below and 27 above, which is 13 a side with one module given to
+  the lobby below and the block's own room over it. The north wing's 12 rest on 1779 and 0127 (see "Which one"); the
+  south wing's 15 only on its length.
+- 160 doors on the walkways against the 151 rooms the booking sites give: the rest must be the laundry, the stores and
+  the fitness room. Which doors those are is not known; every door is drawn as a room's.
+- The lean-tos on the wings' ends and the low block are single-storey on the satellite picture (their roofs lie in the
+  wings' shadows) and in 0127, which shows the block's eaves at 2.6 m and a door in its west wall.
+
+### The stair towers
+
+Seen in 0125 and 0127 (17 Aug, from the lot), 0191 (2 Sept, from the walkway beside one), 1780 (22 Sept, from the
+drive) and, for the one by the lobby, the hotel's own pictures. Heights are read off 0127 with its fitted camera, on
+the plane of the tower's face.
+
+| | drawn | read off 0127 |
+|---|---|---|
+| the tower's face from the wing's roof edge | 3.45 | the County's footprint: 3.4–3.9 |
+| its width | 3.9 | 4.1 between the columns' outer faces |
+| the two columns | 0.68 square, shafts to 3.78 | shafts to 3.7–3.9 |
+| their capitals | 3.78–4.30 | tops at 4.4 (± 0.15) |
+| the arch | springs 4.85, crown 5.2 | 4.9, 5.2 |
+| the floodlight | 5.85 | 6.1 |
+| its eaves | 6.4 | 6.35–6.6 |
+| the roof's point | 8.25 | 8.2–8.4 |
+| the landing's floor | 1.51 | 1.7 (± 0.15) |
+| its railing's cap | 2.58 | 2.7 |
+
+- The landing is the half-way stop of a stair that goes out from the building and comes back: eight risers of 0.17 up
+  to it from the ground walkway, nine more back to the upper walkway (2.9 m in seventeen). In the hotel's picture of
+  the tower by the lobby the flight from the ground is on the left as one faces the tower; all are drawn so.
+- **Not seen:** the inside of a tower. The treads, the wall between the two flights, the handrails and the steel
+  strings are what such a stair needs, not what a photograph shows. No photograph of his looks down these stairs.
+- The same two columns and arch stand once more on each face, half-way between the towers, on the walkway's own edge
+  under a small raised roof (1779: the two columns whose capitals come at railing height; 0190 and 0191, taken beside
+  them; a small hip on the satellite picture). On the north wing's west face it is drawn at z = 20.8, where 0127 and
+  1779 put it; the picture, moved, has it at 20.45.
+- Plain columns: at 27.15 and 32.25 on his stretch (0127), otherwise in equal bays of about 4.9 m.
+
+### The lot, the way in, the lobby
+
+Measured on the satellite picture (taken years after 2015; kerbs do not move, stripes and planting may have) and
+moved into the footprints' frame as above.
+
+| | m |
+|---|---|
+| west of the wings: planting 10.7…12.55 · stalls 5.4…10.7 · drive · stalls −8.5…−3.1 · strip · fence | fence at x = −11.6 |
+| east of them: planting · stalls 32.25…37.55 · drive · trees | boundary kerb at x = 43.5 |
+| north of the main wing: planting · stalls z −53.0…−47.6 · aisle · hedge and lawn · sidewalk | hedge kerb at −59.5; the walk's back at −66.4 (the street's own frame) |
+| south of it: planting · stalls −24.9…−19.6 · aisle | to −13.0 |
+| the drive in from Mariposa | x 28.5…37.5 |
+| the sign's island | x 15.5…28.5, z −66.4…−60.0 |
+| the forecourt's kerb | from (17.8, −53.4) east, a quarter round of 8.1 m, south along x = 37.3 |
+| the lobby's porch | x 29.8…32.85, z −45.4…−40.7 |
+| the sign tower | x 29.4…33.0, z −40.7…−37.1 |
+
+- From the photograph of 17 Aug, with its fitted camera: the stalls' kerb at x = 10.5–10.9, their painted lines 2.4–2.5 m
+  apart and ending at x ≈ 5.7–6.5, the red kerb of the tower's island at 5.8–6.1. A clipped hedge stands right behind
+  the kerb, small round-headed trees behind it with their heads at the upper walkway's floor.
+- 0190, 0191, 1777 and 1780 show the west side as drawn: the planting with its small round-headed trees, stalls with
+  wheel stops, the two handicap stalls with their blue signs, the red-kerbed island with the bigger tree, the fence
+  row, the strip with its trees and lot lights, the white picket fence. On the morning of 22 Sept the fence row stood
+  empty and the brown Beetle was at its north end; the blue mattress leaned on the north-west tower's south face.
+- **The way in** is what the satellite picture shows: a kerb cut at the lot's north-east corner, arrows and a centre
+  line on the asphalt, a hatched crossing to the forecourt. None of his photographs shows it — he walked out the other
+  way, past the shops.
+- **The lobby from outside** follows the hotel's present pictures: the block with a window on each floor and "Lobby"
+  between them, "A" on its corner, the porch with a flat arch to the drive and a narrow one in its north side, "Lobby"
+  and "1910" over the arch, a glazed door with a transom, the tower with a gridded panel to the drive and the name on
+  its face to Mariposa, gravel and agaves where 2015 may have had lawn. The tower is 3.6 m square on the satellite
+  picture; its height (9 m to the eaves) is taken from those pictures by the ratio to the porch.
+- **Guesses:** the lobby's inside (a desk on the left, a window, chairs — the layout of today's pictures, plainly
+  drawn); both signs' faces (plain lettering on a dark cabinet; no photograph of 2015 shows them, and no logo is
+  drawn); the planting of every bed but the west side's; the picnic table's place.
 
 ## The streets
 
