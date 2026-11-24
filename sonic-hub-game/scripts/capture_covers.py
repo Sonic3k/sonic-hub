@@ -33,8 +33,9 @@ W, H = 1280, 800
 # for a few moves).
 # A game that keeps its players with the saves service (sonic-save.js) opens on the list of them, and what a browser holds
 # for it is one of those players: title_ls is that for the title picture, so it shows what a player sees on coming in;
-# shut is the addresses (regular expressions) left unanswered while a picture with something held is taken, so the
-# made-up player is never written to the service, and is not dropped on the service's list not having him.
+# shut is the addresses (regular expressions) left unanswered while that game's pictures are taken, so the made-up
+# player is never written to the service, and is not dropped on the service's list not having him; and a picture
+# taken with nothing held neither waits on the service nor has anyone who really plays there in it.
 def kept_player(game, name, data):
     pid = 'c0ffee00-0000-4000-8000-000000000001'
     return {'sonic-save.' + game: {'v': 1, 'current': pid, 'max': 3, 'epoch': None, 'gone': [], 'players': [
@@ -116,15 +117,19 @@ GAMES = {
             'vs': {'mei': {'w': 5, 'l': 0, 'd': 0}, 'lan': {'w': 5, 'l': 1, 'd': 0}, 'lian': {'w': 3, 'l': 2, 'd': 0}},
             'match': {'opp': 'yue', 'rated': True, 'side': 0, 'moves': [2585,8384,2305,8146,7059,8646,3079,8920,2836,9537,8247,8394,8640,8659,5409,6588,6570,6595,128,6072,8193,8641,8384,11353,6081,9139,4635,2136,4754,1936,5272,1423]}}),
         play=['waitsel:#said:not(:empty)', 'wait:1500', 'js:press(sqOf("f5"))', 'wait:500']),
-    # on the portal, with its players at the saves service, like Caro. The title picture is the Moon as a player finds
-    # it part of the way across: half of it lit, the people of the first sea with their albums filling. The picture of
-    # play goes back to a game for points in the Sea of Cold, the player to move, once she has said her word
+    # on the portal, with its players at the saves service, like Caro. It opens by asking who is playing; its title
+    # picture is the table behind that, where a game with no points is set up, the name of the game stands beside the
+    # board and the board plays by itself: one thing to look at, which is what a small picture on a shelf can carry
+    # (the map of the Moon with a sea's people beside it could not). The moves the board plays there are drawn by
+    # lot, so for the picture the lot is fixed once the table is up, and the picture is taken with the board at
+    # rest: the same moons every time, both faces among them. The picture of play goes back to a game for points in
+    # the Sea of Cold, the player to move, once she has said her word
     'wax-and-wane': dict(
         shut=[r'/games/[^/]+/players'],
-        title_ls=kept_player('wax-and-wane', 'Sonic', {'points': 948, 'peak': 960, 'at': 'nectar', 'streak': 3, 'fresh': ['ines'], 'match': None,
-            'vs': {'posy': {'w': 5, 'l': 0, 'd': 0}, 'dot': {'w': 5, 'l': 0, 'd': 0}, 'greta': {'w': 4, 'l': 1, 'd': 0}, 'wren': {'w': 3, 'l': 1, 'd': 0}, 'sabine': {'w': 1, 'l': 2, 'd': 0},
-                   'pippa': {'w': 4, 'l': 0, 'd': 0}, 'tilde': {'w': 3, 'l': 1, 'd': 0}, 'noor': {'w': 2, 'l': 1, 'd': 0}, 'coral': {'w': 2, 'l': 2, 'd': 0}, 'luz': {'w': 1, 'l': 1, 'd': 0}, 'fern': {'w': 1, 'l': 0, 'd': 0}}}),
-        title=['waitsel:#mapbox .spot', 'wait:2600'],
+        title=['waitsel:#who [data-act=free]', 'click:#who [data-act=free]',
+               'js:(() => { let s = 4; Math.random = () => (s = s * 16807 % 2147483647) / 2147483647; })()',
+               'js:new Promise(done => { const t = setInterval(() => { if (View.disc.filter(Boolean).length >= 16 && !View.acts.length) { clearInterval(t); done(); } }, 40); })',
+               'wait:400'],
         ls=kept_player('wax-and-wane', 'Sonic', {'points': 948, 'peak': 960, 'at': 'cold', 'streak': 3, 'fresh': [],
             'vs': {'posy': {'w': 5, 'l': 0, 'd': 0}, 'dot': {'w': 5, 'l': 0, 'd': 0}, 'greta': {'w': 4, 'l': 1, 'd': 0}, 'wren': {'w': 3, 'l': 1, 'd': 0}, 'sabine': {'w': 1, 'l': 2, 'd': 0},
                    'pippa': {'w': 4, 'l': 0, 'd': 0}, 'tilde': {'w': 3, 'l': 1, 'd': 0}, 'noor': {'w': 2, 'l': 1, 'd': 0}, 'coral': {'w': 2, 'l': 2, 'd': 0}, 'luz': {'w': 1, 'l': 1, 'd': 0}, 'fern': {'w': 1, 'l': 0, 'd': 0}},
@@ -195,7 +200,7 @@ def main(keys):
                 ctx = b.new_context(viewport={'width': W, 'height': H}, device_scale_factor=1)
                 if ls:
                     ctx.add_init_script('(() => { const o = %s; for (const k in o) localStorage.setItem(k, JSON.stringify(o[k])); })()' % json.dumps(ls))
-                    for pattern in g.get('shut', []): ctx.route(re.compile(pattern), lambda route: route.abort())
+                for pattern in g.get('shut', []): ctx.route(re.compile(pattern), lambda route: route.abort())
                 pg = ctx.new_page()
                 pg.goto(g.get('site') or f'{base}/games/{key}', wait_until='load')
                 pg.wait_for_timeout(1800)
