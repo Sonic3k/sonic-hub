@@ -151,6 +151,20 @@ GAMES = {
                    'pippa': {'w': 4, 'l': 0, 'd': 0}, 'tilde': {'w': 3, 'l': 1, 'd': 0}, 'noor': {'w': 2, 'l': 1, 'd': 0}, 'coral': {'w': 2, 'l': 2, 'd': 0}, 'luz': {'w': 1, 'l': 1, 'd': 0}, 'fern': {'w': 1, 'l': 0, 'd': 0}},
             'match': {'opp': 'tove', 'rated': True, 'side': 0, 'moves': [44,29,20,43,30,22,38,31,42,51,21,37,45,34,39,47,23,15,19,26,25,46,58,12,11,53]}}),
         play=['waitsel:#said:not(:empty)', 'waitsel:.cell.can', 'wait:1200']),
+    # its first picture is a game at the board: the quick board against the computer at Shifen, both colours of lantern
+    # lit, the player to move. The second goes back to the long board at Pingxi with the score level and one chain
+    # left: the player takes it, wins, and the station's stamp comes down
+    'lantern-line': dict(
+        title_ls={'lantern-line.v1': {'cfg': {'size': 5, 'vs': 'bot', 'level': 'steady', 'side': 0}, 'sound': True,
+            'stamps': {'easy:5': True, 'casual:5': True}, 'wins': {'easy:5': 3, 'casual:5': 1},
+            'game': {'size': 5, 'moves': [57,11,36,37,12,28,26,20,21,0,3,49,18,14,32,30,43,9,33,17,46,1,22,59,24,53,35,25,42,39,27,56,54,55,13,45,44,16,51,50,4,34,8,41,40],
+                     'seat': [{'kind': 'human'}, {'kind': 'bot', 'bot': 'house', 'level': 'steady', 'name': 'The computer', 'label': 'Computer'}]}}},
+        title=['wait:1500'],
+        ls={'lantern-line.v1': {'cfg': {'size': 7, 'vs': 'bot', 'level': 'sharp', 'side': 0}, 'sound': True,
+            'stamps': {'easy:5': True, 'casual:5': True, 'steady:5': True, 'easy:7': True, 'casual:7': True, 'steady:7': True}, 'wins': {'easy:5': 3, 'casual:5': 2, 'steady:5': 1, 'easy:7': 1, 'casual:7': 1, 'steady:7': 2},
+            'game': {'size': 7, 'moves': [64,96,82,32,51,56,68,81,14,94,100,88,45,92,34,70,59,84,97,105,21,20,49,23,11,43,91,63,8,0,107,77,74,89,27,111,40,26,4,103,36,98,15,67,24,44,106,50,109,101,48,78,19,79,6,13,62,71,2,3,1,76,54,86,87,5,53,22,73,72,90,29,28,80,35,104,42,30,83,31,99,37,38,10,60,61,12,17,69,18,75,16,25,85,33,93,39,46,52,108,7,57,58,66,9,65,41],
+                     'seat': [{'kind': 'human'}, {'kind': 'bot', 'bot': 'house', 'level': 'sharp', 'name': 'The computer', 'label': 'Computer'}]}}},
+        play=['wait:600', 'js:(async () => { for (const m of [95, 102, 47, 110, 55]) { while (!View.input) await sleep(40); View.input(m); await sleep(120); } })()', 'wait:1700']),
     # its title picture is the map, as a player finds it part of the way along the road: stars won at the first places,
     # the rainbow half lit. The picture of play goes back to a game at the lantern street with a row of stars one short,
     # picks the lantern that would fill it and points at the gap, so the way it would take is showing

@@ -1,0 +1,1181 @@
+{
+ "ms": 1000,
+ "pairs": [
+  {
+   "size": 7,
+   "a": "greedy:greedy",
+   "b": "house:easy",
+   "wa": 12,
+   "wb": 0,
+   "plies": 1344,
+   "forfeits": [],
+   "redWins": 6,
+   "squaresA": 467,
+   "squaresB": 121,
+   "time": [
+    {
+     "id": "greedy:greedy",
+     "mean": 0.32443409964412845,
+     "max": 8.886657000000014,
+     "late": 0,
+     "moves": 843
+    },
+    {
+     "id": "house:easy",
+     "mean": 0.29390244311377284,
+     "max": 5.218990000000019,
+     "late": 0,
+     "moves": 501
+    }
+   ]
+  },
+  {
+   "size": 7,
+   "a": "greedy:greedy",
+   "b": "house:casual",
+   "wa": 4,
+   "wb": 8,
+   "plies": 1344,
+   "forfeits": [],
+   "redWins": 4,
+   "squaresA": 267,
+   "squaresB": 321,
+   "time": [
+    {
+     "id": "greedy:greedy",
+     "mean": 0.3887030481366467,
+     "max": 9.137144000000006,
+     "late": 0,
+     "moves": 644
+    },
+    {
+     "id": "house:casual",
+     "mean": 0.33780362428571553,
+     "max": 7.0271490000000085,
+     "late": 0,
+     "moves": 700
+    }
+   ]
+  },
+  {
+   "size": 7,
+   "a": "greedy:greedy",
+   "b": "house:steady",
+   "wa": 1,
+   "wb": 11,
+   "plies": 1344,
+   "forfeits": [],
+   "redWins": 7,
+   "squaresA": 218,
+   "squaresB": 370,
+   "time": [
+    {
+     "id": "greedy:greedy",
+     "mean": 0.7920451527531134,
+     "max": 7.89258400000017,
+     "late": 0,
+     "moves": 563
+    },
+    {
+     "id": "house:steady",
+     "mean": 2.487922950064019,
+     "max": 120.8753529999999,
+     "late": 0,
+     "moves": 781
+    }
+   ]
+  },
+  {
+   "size": 7,
+   "a": "greedy:greedy",
+   "b": "house:sharp",
+   "wa": 0,
+   "wb": 12,
+   "plies": 1344,
+   "forfeits": [],
+   "redWins": 6,
+   "squaresA": 195,
+   "squaresB": 393,
+   "time": [
+    {
+     "id": "greedy:greedy",
+     "mean": 0.7422277426470864,
+     "max": 8.606611999999586,
+     "late": 0,
+     "moves": 544
+    },
+    {
+     "id": "house:sharp",
+     "mean": 17.611646401250013,
+     "max": 424.89456999999993,
+     "late": 0,
+     "moves": 800
+    }
+   ]
+  },
+  {
+   "size": 7,
+   "a": "greedy:greedy",
+   "b": "random:random",
+   "wa": 12,
+   "wb": 0,
+   "plies": 1344,
+   "forfeits": [],
+   "redWins": 6,
+   "squaresA": 511,
+   "squaresB": 77,
+   "time": [
+    {
+     "id": "greedy:greedy",
+     "mean": 0.29436605518019876,
+     "max": 8.707352999999785,
+     "late": 0,
+     "moves": 888
+    },
+    {
+     "id": "random:random",
+     "mean": 0.2760902149122374,
+     "max": 4.9184560000012425,
+     "late": 0,
+     "moves": 456
+    }
+   ]
+  },
+  {
+   "size": 7,
+   "a": "house:easy",
+   "b": "house:casual",
+   "wa": 0,
+   "wb": 12,
+   "plies": 1344,
+   "forfeits": [],
+   "redWins": 6,
+   "squaresA": 140,
+   "squaresB": 448,
+   "time": [
+    {
+     "id": "house:easy",
+     "mean": 0.3267874166666554,
+     "max": 5.487917999998899,
+     "late": 0,
+     "moves": 516
+    },
+    {
+     "id": "house:casual",
+     "mean": 0.2629825120773071,
+     "max": 7.662044999999125,
+     "late": 0,
+     "moves": 828
+    }
+   ]
+  },
+  {
+   "size": 7,
+   "a": "house:easy",
+   "b": "house:steady",
+   "wa": 0,
+   "wb": 12,
+   "plies": 1344,
+   "forfeits": [],
+   "redWins": 6,
+   "squaresA": 141,
+   "squaresB": 447,
+   "time": [
+    {
+     "id": "house:easy",
+     "mean": 0.7688596679999282,
+     "max": 4.947143000001233,
+     "late": 0,
+     "moves": 500
+    },
+    {
+     "id": "house:steady",
+     "mean": 3.1196725023696437,
+     "max": 187.49845300000015,
+     "late": 0,
+     "moves": 844
+    }
+   ]
+  },
+  {
+   "size": 7,
+   "a": "house:easy",
+   "b": "house:sharp",
+   "wa": 0,
+   "wb": 12,
+   "plies": 1344,
+   "forfeits": [],
+   "redWins": 6,
+   "squaresA": 113,
+   "squaresB": 475,
+   "time": [
+    {
+     "id": "house:easy",
+     "mean": 0.5087387907950486,
+     "max": 4.217263999998977,
+     "late": 0,
+     "moves": 478
+    },
+    {
+     "id": "house:sharp",
+     "mean": 22.045724829099232,
+     "max": 299.37901899999997,
+     "late": 0,
+     "moves": 866
+    }
+   ]
+  },
+  {
+   "size": 7,
+   "a": "greedy:greedy",
+   "b": "house:master",
+   "wa": 0,
+   "wb": 12,
+   "plies": 1344,
+   "forfeits": [],
+   "redWins": 6,
+   "squaresA": 238,
+   "squaresB": 350,
+   "time": [
+    {
+     "id": "greedy:greedy",
+     "mean": 0.732225029059701,
+     "max": 13.531253000008292,
+     "late": 0,
+     "moves": 585
+    },
+    {
+     "id": "house:master",
+     "mean": 149.07017241633704,
+     "max": 748.7847270000057,
+     "late": 0,
+     "moves": 759
+    }
+   ]
+  },
+  {
+   "size": 7,
+   "a": "house:easy",
+   "b": "random:random",
+   "wa": 10,
+   "wb": 2,
+   "plies": 1344,
+   "forfeits": [],
+   "redWins": 6,
+   "squaresA": 349,
+   "squaresB": 239,
+   "time": [
+    {
+     "id": "house:easy",
+     "mean": 0.35470178052124685,
+     "max": 5.473485000009532,
+     "late": 0,
+     "moves": 729
+    },
+    {
+     "id": "random:random",
+     "mean": 0.45189874471573166,
+     "max": 4.990079000010155,
+     "late": 0,
+     "moves": 615
+    }
+   ]
+  },
+  {
+   "size": 7,
+   "a": "house:casual",
+   "b": "house:steady",
+   "wa": 2,
+   "wb": 10,
+   "plies": 1344,
+   "forfeits": [],
+   "redWins": 6,
+   "squaresA": 196,
+   "squaresB": 392,
+   "time": [
+    {
+     "id": "house:casual",
+     "mean": 0.5319174609801769,
+     "max": 7.970291000005091,
+     "late": 0,
+     "moves": 551
+    },
+    {
+     "id": "house:steady",
+     "mean": 1.9721429760402762,
+     "max": 213.55910199999926,
+     "late": 0,
+     "moves": 793
+    }
+   ]
+  },
+  {
+   "size": 7,
+   "a": "house:casual",
+   "b": "house:sharp",
+   "wa": 0,
+   "wb": 12,
+   "plies": 1344,
+   "forfeits": [],
+   "redWins": 6,
+   "squaresA": 191,
+   "squaresB": 397,
+   "time": [
+    {
+     "id": "house:casual",
+     "mean": 0.4689498089057843,
+     "max": 5.438668999995571,
+     "late": 0,
+     "moves": 539
+    },
+    {
+     "id": "house:sharp",
+     "mean": 17.081252386335606,
+     "max": 396.2470939999912,
+     "late": 0,
+     "moves": 805
+    }
+   ]
+  },
+  {
+   "size": 7,
+   "a": "house:easy",
+   "b": "house:master",
+   "wa": 0,
+   "wb": 12,
+   "plies": 1344,
+   "forfeits": [],
+   "redWins": 6,
+   "squaresA": 140,
+   "squaresB": 448,
+   "time": [
+    {
+     "id": "house:easy",
+     "mean": 0.5991109802369594,
+     "max": 5.120133000003989,
+     "late": 0,
+     "moves": 506
+    },
+    {
+     "id": "house:master",
+     "mean": 140.48515663007186,
+     "max": 741.627575999999,
+     "late": 0,
+     "moves": 838
+    }
+   ]
+  },
+  {
+   "size": 7,
+   "a": "house:casual",
+   "b": "random:random",
+   "wa": 12,
+   "wb": 0,
+   "plies": 1344,
+   "forfeits": [],
+   "redWins": 6,
+   "squaresA": 509,
+   "squaresB": 79,
+   "time": [
+    {
+     "id": "house:casual",
+     "mean": 0.2938799018056198,
+     "max": 11.117702999996254,
+     "late": 0,
+     "moves": 886
+    },
+    {
+     "id": "random:random",
+     "mean": 0.2916828733622976,
+     "max": 5.001067000004696,
+     "late": 0,
+     "moves": 458
+    }
+   ]
+  },
+  {
+   "size": 7,
+   "a": "house:steady",
+   "b": "house:sharp",
+   "wa": 0,
+   "wb": 12,
+   "plies": 1344,
+   "forfeits": [],
+   "redWins": 6,
+   "squaresA": 171,
+   "squaresB": 417,
+   "time": [
+    {
+     "id": "house:steady",
+     "mean": 2.621695932821369,
+     "max": 125.2946219999867,
+     "late": 0,
+     "moves": 521
+    },
+    {
+     "id": "house:sharp",
+     "mean": 16.080645511542656,
+     "max": 321.6273999999976,
+     "late": 0,
+     "moves": 823
+    }
+   ]
+  },
+  {
+   "size": 7,
+   "a": "house:casual",
+   "b": "house:master",
+   "wa": 1,
+   "wb": 11,
+   "plies": 1344,
+   "forfeits": [],
+   "redWins": 7,
+   "squaresA": 204,
+   "squaresB": 384,
+   "time": [
+    {
+     "id": "house:casual",
+     "mean": 0.6227024733107036,
+     "max": 6.162590000021737,
+     "late": 0,
+     "moves": 562
+    },
+    {
+     "id": "house:master",
+     "mean": 143.57752805498703,
+     "max": 720.6220159999793,
+     "late": 0,
+     "moves": 782
+    }
+   ]
+  },
+  {
+   "size": 7,
+   "a": "house:steady",
+   "b": "random:random",
+   "wa": 12,
+   "wb": 0,
+   "plies": 1344,
+   "forfeits": [],
+   "redWins": 6,
+   "squaresA": 510,
+   "squaresB": 78,
+   "time": [
+    {
+     "id": "house:steady",
+     "mean": 3.364719066217676,
+     "max": 197.48359499999788,
+     "late": 0,
+     "moves": 891
+    },
+    {
+     "id": "random:random",
+     "mean": 0.5665978145687718,
+     "max": 4.62751799999387,
+     "late": 0,
+     "moves": 453
+    }
+   ]
+  },
+  {
+   "size": 7,
+   "a": "house:steady",
+   "b": "house:master",
+   "wa": 3,
+   "wb": 9,
+   "plies": 1344,
+   "forfeits": [],
+   "redWins": 7,
+   "squaresA": 247,
+   "squaresB": 341,
+   "time": [
+    {
+     "id": "house:steady",
+     "mean": 2.958083300501262,
+     "max": 135.83728300000075,
+     "late": 0,
+     "moves": 599
+    },
+    {
+     "id": "house:master",
+     "mean": 159.2045440067107,
+     "max": 761.2188909999968,
+     "late": 0,
+     "moves": 745
+    }
+   ]
+  },
+  {
+   "size": 7,
+   "a": "house:sharp",
+   "b": "random:random",
+   "wa": 12,
+   "wb": 0,
+   "plies": 1344,
+   "forfeits": [],
+   "redWins": 6,
+   "squaresA": 486,
+   "squaresB": 102,
+   "time": [
+    {
+     "id": "house:sharp",
+     "mean": 16.826061124427532,
+     "max": 489.4026719999965,
+     "late": 0,
+     "moves": 876
+    },
+    {
+     "id": "random:random",
+     "mean": 0.5925360085454104,
+     "max": 5.758624000009149,
+     "late": 0,
+     "moves": 468
+    }
+   ]
+  },
+  {
+   "size": 7,
+   "a": "house:sharp",
+   "b": "house:master",
+   "wa": 2,
+   "wb": 10,
+   "plies": 1344,
+   "forfeits": [],
+   "redWins": 4,
+   "squaresA": 239,
+   "squaresB": 349,
+   "time": [
+    {
+     "id": "house:sharp",
+     "mean": 22.51185516188875,
+     "max": 357.8734350000159,
+     "late": 0,
+     "moves": 593
+    },
+    {
+     "id": "house:master",
+     "mean": 164.163422490013,
+     "max": 766.6673900000169,
+     "late": 0,
+     "moves": 751
+    }
+   ]
+  },
+  {
+   "size": 5,
+   "a": "greedy:greedy",
+   "b": "house:easy",
+   "wa": 11,
+   "wb": 1,
+   "plies": 720,
+   "forfeits": [],
+   "redWins": 5,
+   "squaresA": 211,
+   "squaresB": 89,
+   "time": [
+    {
+     "id": "greedy:greedy",
+     "mean": 0.4001205437359825,
+     "max": 4.929035000037402,
+     "late": 0,
+     "moves": 423
+    },
+    {
+     "id": "house:easy",
+     "mean": 0.43884866666703354,
+     "max": 7.417680000013206,
+     "late": 0,
+     "moves": 297
+    }
+   ]
+  },
+  {
+   "size": 5,
+   "a": "greedy:greedy",
+   "b": "house:casual",
+   "wa": 5,
+   "wb": 7,
+   "plies": 720,
+   "forfeits": [],
+   "redWins": 5,
+   "squaresA": 136,
+   "squaresB": 164,
+   "time": [
+    {
+     "id": "greedy:greedy",
+     "mean": 0.7839577225434952,
+     "max": 5.6415609999676235,
+     "late": 0,
+     "moves": 346
+    },
+    {
+     "id": "house:casual",
+     "mean": 0.7679563930457679,
+     "max": 4.776026000035927,
+     "late": 0,
+     "moves": 374
+    }
+   ]
+  },
+  {
+   "size": 5,
+   "a": "greedy:greedy",
+   "b": "house:steady",
+   "wa": 0,
+   "wb": 12,
+   "plies": 720,
+   "forfeits": [],
+   "redWins": 6,
+   "squaresA": 100,
+   "squaresB": 200,
+   "time": [
+    {
+     "id": "greedy:greedy",
+     "mean": 0.6703635637606213,
+     "max": 7.936802999989595,
+     "late": 0,
+     "moves": 298
+    },
+    {
+     "id": "house:steady",
+     "mean": 0.9763339075831734,
+     "max": 41.91363599995384,
+     "late": 0,
+     "moves": 422
+    }
+   ]
+  },
+  {
+   "size": 5,
+   "a": "greedy:greedy",
+   "b": "house:sharp",
+   "wa": 0,
+   "wb": 12,
+   "plies": 720,
+   "forfeits": [],
+   "redWins": 6,
+   "squaresA": 72,
+   "squaresB": 228,
+   "time": [
+    {
+     "id": "greedy:greedy",
+     "mean": 0.6694172727253118,
+     "max": 7.509707999997772,
+     "late": 0,
+     "moves": 275
+    },
+    {
+     "id": "house:sharp",
+     "mean": 9.303462366290583,
+     "max": 206.20465099997818,
+     "late": 0,
+     "moves": 445
+    }
+   ]
+  },
+  {
+   "size": 5,
+   "a": "greedy:greedy",
+   "b": "house:master",
+   "wa": 0,
+   "wb": 12,
+   "plies": 720,
+   "forfeits": [],
+   "redWins": 6,
+   "squaresA": 99,
+   "squaresB": 201,
+   "time": [
+    {
+     "id": "greedy:greedy",
+     "mean": 0.7480907953788432,
+     "max": 7.835250000003725,
+     "late": 0,
+     "moves": 303
+    },
+    {
+     "id": "house:master",
+     "mean": 44.635120589928746,
+     "max": 308.4566660000128,
+     "late": 0,
+     "moves": 417
+    }
+   ]
+  },
+  {
+   "size": 5,
+   "a": "greedy:greedy",
+   "b": "random:random",
+   "wa": 12,
+   "wb": 0,
+   "plies": 720,
+   "forfeits": [],
+   "redWins": 6,
+   "squaresA": 261,
+   "squaresB": 39,
+   "time": [
+    {
+     "id": "greedy:greedy",
+     "mean": 0.40736769574355,
+     "max": 4.819376999977976,
+     "late": 0,
+     "moves": 470
+    },
+    {
+     "id": "random:random",
+     "mean": 0.30954946400038896,
+     "max": 5.427029000013135,
+     "late": 0,
+     "moves": 250
+    }
+   ]
+  },
+  {
+   "size": 5,
+   "a": "house:easy",
+   "b": "house:casual",
+   "wa": 1,
+   "wb": 11,
+   "plies": 720,
+   "forfeits": [],
+   "redWins": 5,
+   "squaresA": 74,
+   "squaresB": 226,
+   "time": [
+    {
+     "id": "house:easy",
+     "mean": 0.3873776328665289,
+     "max": 4.277394999982789,
+     "late": 0,
+     "moves": 286
+    },
+    {
+     "id": "house:casual",
+     "mean": 0.40035858525519585,
+     "max": 4.349902000045404,
+     "late": 0,
+     "moves": 434
+    }
+   ]
+  },
+  {
+   "size": 5,
+   "a": "house:easy",
+   "b": "house:steady",
+   "wa": 0,
+   "wb": 12,
+   "plies": 720,
+   "forfeits": [],
+   "redWins": 6,
+   "squaresA": 67,
+   "squaresB": 233,
+   "time": [
+    {
+     "id": "house:easy",
+     "mean": 0.6509224411747709,
+     "max": 5.573962000024039,
+     "late": 0,
+     "moves": 272
+    },
+    {
+     "id": "house:steady",
+     "mean": 0.9770748102694468,
+     "max": 67.5154399999883,
+     "late": 0,
+     "moves": 448
+    }
+   ]
+  },
+  {
+   "size": 5,
+   "a": "house:easy",
+   "b": "house:sharp",
+   "wa": 0,
+   "wb": 12,
+   "plies": 720,
+   "forfeits": [],
+   "redWins": 6,
+   "squaresA": 55,
+   "squaresB": 245,
+   "time": [
+    {
+     "id": "house:easy",
+     "mean": 0.6242592623592319,
+     "max": 7.694786000007298,
+     "late": 0,
+     "moves": 263
+    },
+    {
+     "id": "house:sharp",
+     "mean": 10.004835890590124,
+     "max": 164.758434999967,
+     "late": 0,
+     "moves": 457
+    }
+   ]
+  },
+  {
+   "size": 7,
+   "a": "house:master",
+   "b": "random:random",
+   "wa": 12,
+   "wb": 0,
+   "plies": 1344,
+   "forfeits": [],
+   "redWins": 6,
+   "squaresA": 453,
+   "squaresB": 135,
+   "time": [
+    {
+     "id": "house:master",
+     "mean": 130.4614010786648,
+     "max": 714.9512340000365,
+     "late": 0,
+     "moves": 839
+    },
+    {
+     "id": "random:random",
+     "mean": 0.5867433722764899,
+     "max": 4.825618000002578,
+     "late": 0,
+     "moves": 505
+    }
+   ]
+  },
+  {
+   "size": 5,
+   "a": "house:easy",
+   "b": "random:random",
+   "wa": 10,
+   "wb": 2,
+   "plies": 720,
+   "forfeits": [],
+   "redWins": 4,
+   "squaresA": 179,
+   "squaresB": 121,
+   "time": [
+    {
+     "id": "house:easy",
+     "mean": 0.475775308482969,
+     "max": 5.9540629999828525,
+     "late": 0,
+     "moves": 389
+    },
+    {
+     "id": "random:random",
+     "mean": 0.376093761326838,
+     "max": 4.374337000015657,
+     "late": 0,
+     "moves": 331
+    }
+   ]
+  },
+  {
+   "size": 5,
+   "a": "house:casual",
+   "b": "house:steady",
+   "wa": 0,
+   "wb": 12,
+   "plies": 720,
+   "forfeits": [],
+   "redWins": 6,
+   "squaresA": 91,
+   "squaresB": 209,
+   "time": [
+    {
+     "id": "house:casual",
+     "mean": 0.3021690921507118,
+     "max": 7.113335000001825,
+     "late": 0,
+     "moves": 293
+    },
+    {
+     "id": "house:steady",
+     "mean": 0.573978627634816,
+     "max": 31.283491000009235,
+     "late": 0,
+     "moves": 427
+    }
+   ]
+  },
+  {
+   "size": 5,
+   "a": "house:casual",
+   "b": "house:sharp",
+   "wa": 0,
+   "wb": 12,
+   "plies": 720,
+   "forfeits": [],
+   "redWins": 6,
+   "squaresA": 85,
+   "squaresB": 215,
+   "time": [
+    {
+     "id": "house:casual",
+     "mean": 0.6310686514088573,
+     "max": 5.050435999990441,
+     "late": 0,
+     "moves": 284
+    },
+    {
+     "id": "house:sharp",
+     "mean": 9.958506302752664,
+     "max": 160.91986000002362,
+     "late": 0,
+     "moves": 436
+    }
+   ]
+  },
+  {
+   "size": 5,
+   "a": "house:easy",
+   "b": "house:master",
+   "wa": 0,
+   "wb": 12,
+   "plies": 720,
+   "forfeits": [],
+   "redWins": 6,
+   "squaresA": 81,
+   "squaresB": 219,
+   "time": [
+    {
+     "id": "house:easy",
+     "mean": 0.7598341484095443,
+     "max": 8.237711999972817,
+     "late": 0,
+     "moves": 283
+    },
+    {
+     "id": "house:master",
+     "mean": 42.695501919906135,
+     "max": 336.09178800001973,
+     "late": 0,
+     "moves": 437
+    }
+   ]
+  },
+  {
+   "size": 5,
+   "a": "house:casual",
+   "b": "random:random",
+   "wa": 12,
+   "wb": 0,
+   "plies": 720,
+   "forfeits": [],
+   "redWins": 6,
+   "squaresA": 275,
+   "squaresB": 25,
+   "time": [
+    {
+     "id": "house:casual",
+     "mean": 0.25137952489609816,
+     "max": 4.510009000019636,
+     "late": 0,
+     "moves": 482
+    },
+    {
+     "id": "random:random",
+     "mean": 0.23496952100692145,
+     "max": 4.626873000001069,
+     "late": 0,
+     "moves": 238
+    }
+   ]
+  },
+  {
+   "size": 5,
+   "a": "house:steady",
+   "b": "house:sharp",
+   "wa": 1,
+   "wb": 11,
+   "plies": 720,
+   "forfeits": [],
+   "redWins": 5,
+   "squaresA": 93,
+   "squaresB": 207,
+   "time": [
+    {
+     "id": "house:steady",
+     "mean": 1.2302705870296429,
+     "max": 47.73045999999158,
+     "late": 0,
+     "moves": 293
+    },
+    {
+     "id": "house:sharp",
+     "mean": 9.412651702575848,
+     "max": 160.40734299999895,
+     "late": 0,
+     "moves": 427
+    }
+   ]
+  },
+  {
+   "size": 5,
+   "a": "house:casual",
+   "b": "house:master",
+   "wa": 0,
+   "wb": 12,
+   "plies": 720,
+   "forfeits": [],
+   "redWins": 6,
+   "squaresA": 94,
+   "squaresB": 206,
+   "time": [
+    {
+     "id": "house:casual",
+     "mean": 0.5826454478104737,
+     "max": 5.175241999968421,
+     "late": 0,
+     "moves": 297
+    },
+    {
+     "id": "house:master",
+     "mean": 44.03062273049658,
+     "max": 301.66649699996924,
+     "late": 0,
+     "moves": 423
+    }
+   ]
+  },
+  {
+   "size": 5,
+   "a": "house:steady",
+   "b": "random:random",
+   "wa": 12,
+   "wb": 0,
+   "plies": 720,
+   "forfeits": [],
+   "redWins": 6,
+   "squaresA": 258,
+   "squaresB": 42,
+   "time": [
+    {
+     "id": "house:steady",
+     "mean": 1.0466899384295612,
+     "max": 65.41387899999972,
+     "late": 0,
+     "moves": 471
+    },
+    {
+     "id": "random:random",
+     "mean": 0.44974203212827213,
+     "max": 4.12303899996914,
+     "late": 0,
+     "moves": 249
+    }
+   ]
+  },
+  {
+   "size": 5,
+   "a": "house:steady",
+   "b": "house:master",
+   "wa": 0,
+   "wb": 12,
+   "plies": 720,
+   "forfeits": [],
+   "redWins": 6,
+   "squaresA": 97,
+   "squaresB": 203,
+   "time": [
+    {
+     "id": "house:steady",
+     "mean": 0.8734792799983795,
+     "max": 57.19927699997788,
+     "late": 0,
+     "moves": 300
+    },
+    {
+     "id": "house:master",
+     "mean": 40.28308493571184,
+     "max": 263.8781370000215,
+     "late": 0,
+     "moves": 420
+    }
+   ]
+  },
+  {
+   "size": 5,
+   "a": "house:sharp",
+   "b": "house:master",
+   "wa": 3,
+   "wb": 9,
+   "plies": 720,
+   "forfeits": [],
+   "redWins": 7,
+   "squaresA": 126,
+   "squaresB": 174,
+   "time": [
+    {
+     "id": "house:sharp",
+     "mean": 10.292480652567155,
+     "max": 113.31891700002598,
+     "late": 0,
+     "moves": 331
+    },
+    {
+     "id": "house:master",
+     "mean": 42.924417588689664,
+     "max": 291.58610499999486,
+     "late": 0,
+     "moves": 389
+    }
+   ]
+  },
+  {
+   "size": 5,
+   "a": "house:sharp",
+   "b": "random:random",
+   "wa": 12,
+   "wb": 0,
+   "plies": 720,
+   "forfeits": [],
+   "redWins": 6,
+   "squaresA": 252,
+   "squaresB": 48,
+   "time": [
+    {
+     "id": "house:sharp",
+     "mean": 10.11035400643558,
+     "max": 139.9234380000271,
+     "late": 0,
+     "moves": 466
+    },
+    {
+     "id": "random:random",
+     "mean": 0.5030580118092741,
+     "max": 7.69816400000127,
+     "late": 0,
+     "moves": 254
+    }
+   ]
+  },
+  {
+   "size": 5,
+   "a": "house:master",
+   "b": "random:random",
+   "wa": 12,
+   "wb": 0,
+   "plies": 720,
+   "forfeits": [],
+   "redWins": 6,
+   "squaresA": 237,
+   "squaresB": 63,
+   "time": [
+    {
+     "id": "house:master",
+     "mean": 39.4743689600894,
+     "max": 253.43622999999207,
+     "late": 0,
+     "moves": 451
+    },
+    {
+     "id": "random:random",
+     "mean": 0.3348974907064471,
+     "max": 3.980267000035383,
+     "late": 0,
+     "moves": 269
+    }
+   ]
+  }
+ ]
+}
