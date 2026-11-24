@@ -93,17 +93,19 @@ GAMES = {
     'caro': dict(
         site='https://sonic-gomoku-production.up.railway.app/',
         shut=[r'/games/[^/]+/players'],
-        # the title picture is the film with In Bloom picked on it: its people as prints, the later frames still out of focus
-        title_ls=kept_player('sonic-gomoku', 'Sonic', {'points': 1164, 'peak': 1190, 'match': None, 'at': 'market', 'streak': 3, 'fresh': ['giang'],
+        # The first picture is the one a shelf shows small, so it is a game at the board: one board and one face, the
+        # player's move, in a game for points under the open sky. (The film with a place's people on it is many small
+        # things, which a small picture cannot carry: that is the second picture.)
+        title_ls=kept_player('sonic-gomoku', 'Sonic', {'points': 1432, 'peak': 1448, 'at': 'citadel', 'streak': 2, 'fresh': [],
+            'vs': {'hanh': {'w': 5, 'l': 0, 'd': 0}, 'thu': {'w': 5, 'l': 1, 'd': 0}, 'diep': {'w': 5, 'l': 2, 'd': 0}, 'oanh': {'w': 3, 'l': 2, 'd': 0}, 'uyen': {'w': 2, 'l': 2, 'd': 0}, 'bich': {'w': 1, 'l': 2, 'd': 0}},
+            'match': {'opp': 'oanh', 'rated': True, 'side': 1, 'seed': 20261119, 'moves': [112,96,82,84,114,97,95,98,100,111,128,142,81,139,125,109,94,140,141,107,108,123,91,136,137,169,80,154,184,171,187,79,65]}}),
+        title=['waitsel:#said:not(:empty)', 'waitsel:#rival img[src]', 'wait:3500'],
+        # the second picture is the film with In Bloom picked on it: its people as prints, the later frames still out of focus
+        ls=kept_player('sonic-gomoku', 'Sonic', {'points': 1164, 'peak': 1190, 'match': None, 'at': 'market', 'streak': 3, 'fresh': ['giang'],
             'vs': {'suong': {'w': 5, 'l': 0, 'd': 0}, 'hanh': {'w': 5, 'l': 0, 'd': 0}, 'nhi': {'w': 5, 'l': 1, 'd': 0}, 'yen': {'w': 4, 'l': 1, 'd': 0}, 'tram': {'w': 2, 'l': 2, 'd': 1},
                    'thom': {'w': 5, 'l': 0, 'd': 0}, 'cuc': {'w': 5, 'l': 0, 'd': 0}, 'man': {'w': 3, 'l': 1, 'd': 0}, 'dao': {'w': 2, 'l': 1, 'd': 0},
                    'thu': {'w': 4, 'l': 1, 'd': 0}, 'vy': {'w': 3, 'l': 1, 'd': 0}, 'hien': {'w': 1, 'l': 1, 'd': 1}, 'quyen': {'w': 2, 'l': 0, 'd': 0}, 'ly': {'w': 1, 'l': 1, 'd': 0}}}),
-        title=['waitsel:.prints img[src]', 'wait:5000'],
-        # the picture of play: a game for points under the open sky, the player's move
-        ls=kept_player('sonic-gomoku', 'Sonic', {'points': 1432, 'peak': 1448, 'at': 'citadel', 'streak': 2, 'fresh': [],
-            'vs': {'hanh': {'w': 5, 'l': 0, 'd': 0}, 'thu': {'w': 5, 'l': 1, 'd': 0}, 'diep': {'w': 5, 'l': 2, 'd': 0}, 'oanh': {'w': 3, 'l': 2, 'd': 0}, 'uyen': {'w': 2, 'l': 2, 'd': 0}, 'bich': {'w': 1, 'l': 2, 'd': 0}},
-            'match': {'opp': 'oanh', 'rated': True, 'side': 1, 'seed': 20261119, 'moves': [112,96,82,84,114,97,95,98,100,111,128,142,81,139,125,109,94,140,141,107,108,123,91,136,137,169,80,154,184,171,187,79,65]}}),
-        play=['waitsel:#said:not(:empty)', 'waitsel:#rival img[src]', 'wait:3500']),
+        play=['waitsel:.prints img[src]', 'wait:5000']),
     # on its own site, with its players at the saves service, like Caro. The title picture is the lake as a player
     # finds it on coming in. The picture of play goes back to a game for points against the fan painter; once she has
     # said her word a Horse is picked up, so the points it may go to are showing
