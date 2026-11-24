@@ -50,8 +50,10 @@ const View = {
     });
   },
 
-  /** paints the board again at the size its box has now */
-  fit() {
+  /** paints the board again at the size its box has now; again: even if that is the size it was painted at (its
+   *  colours have changed). A board that is out of sight is painted when it is next looked at. */
+  fit(again) {
+    if (again) this.size = 0;
     const size = Math.round($('#boardbox').clientWidth), dpr = Math.min(2.5, window.devicePixelRatio || 1);
     if (!size || (size === this.size && dpr === this.dpr)) return;
     this.size = size; this.dpr = dpr;

@@ -1,0 +1,2362 @@
+{
+ "saves": {
+  "api": "https://sonic-hub-game-api-production.up.railway.app",
+  "game": "wax-and-wane"
+ },
+ "venues": [
+  {
+   "id": "nectar",
+   "name": "Sea of Nectar",
+   "line": "Orchards come down to the water here and the air is sweet all year. Everyone who crosses the Moon sets out from this shore, and nobody on it is in a hurry to beat you.",
+   "scene": "nectar",
+   "opponents": [
+    "posy",
+    "dot",
+    "greta",
+    "wren",
+    "sabine",
+    "honora"
+   ]
+  },
+  {
+   "id": "tranquility",
+   "name": "Sea of Tranquility",
+   "line": "Flat water, a long pier, and lamps that are lit before it is dark. Nobody hurries here. They let you make the first mistake, and are in no rush to point it out.",
+   "scene": "tranquility",
+   "opponents": [
+    "pippa",
+    "tilde",
+    "noor",
+    "coral",
+    "ines",
+    "marguerite"
+   ]
+  },
+  {
+   "id": "dreams",
+   "name": "Lake of Dreams",
+   "line": "Mist on the water, and lights that drift across it all night. People here play the game they dreamed, and some of them dream very well.",
+   "scene": "dreams",
+   "opponents": [
+    "luz",
+    "fern",
+    "odile",
+    "yara",
+    "celestine",
+    "isolde"
+   ]
+  },
+  {
+   "id": "cold",
+   "name": "Sea of Cold",
+   "line": "Ice on the water and green fire in the sky. Up here nobody moves until it is worth moving, and they have all winter.",
+   "scene": "cold",
+   "opponents": [
+    "tove",
+    "kiri",
+    "marit",
+    "anouk",
+    "zofia",
+    "solveig"
+   ]
+  },
+  {
+   "id": "clouds",
+   "name": "Sea of Clouds",
+   "line": "A sea of cloud with the peaks standing out of it like islands. From up here they see the whole board at once, and they will tell you so.",
+   "scene": "clouds",
+   "opponents": [
+    "juno",
+    "amara",
+    "talia",
+    "leontine",
+    "petra"
+   ]
+  },
+  {
+   "id": "showers",
+   "name": "Sea of Showers",
+   "line": "Stars fall here every night, and somebody counts every one. They will count your discs the same way, and they do not lose count.",
+   "scene": "showers",
+   "opponents": [
+    "mei",
+    "ingrid",
+    "dalia",
+    "keiko",
+    "octavia"
+   ]
+  },
+  {
+   "id": "rainbows",
+   "name": "Bay of Rainbows",
+   "line": "A bay that stands under seven colours whenever the rain has passed. The finest glass on the Moon is cut here, and the people who cut it do not leave rough edges.",
+   "scene": "rainbows",
+   "opponents": [
+    "esme",
+    "farah",
+    "paloma",
+    "imani",
+    "aurelia"
+   ]
+  },
+  {
+   "id": "storms",
+   "name": "Ocean of Storms",
+   "line": "The far side of the map, where the weather never lifts. Whoever plays out here stopped making mistakes a long time ago.",
+   "scene": "storms",
+   "opponents": [
+    "maren",
+    "vesper",
+    "cordelia",
+    "soraya",
+    "selene"
+   ]
+  }
+ ],
+ "opponents": {
+  "posy": {
+   "name": "Posy",
+   "age": 22,
+   "role": "Fruit picker",
+   "about": "She picks fruit in the orchards above the shore and plays in the shade between two baskets. Half the time her disc goes wherever her hand happens to be. The other half she takes the move that turns the most over, and she has never yet asked what a corner is for.",
+   "bot": "house",
+   "level": "new",
+   "plates": 5,
+   "look": "ponytail",
+   "lines": {
+    "hello": [
+     "Oh, a game! Sit down, mind the plums. I still mix up which side is mine, so shout if I turn the wrong ones."
+    ],
+    "start": [
+     "Is it me? It’s me. Here, then.",
+     "I’ll just put one… somewhere."
+    ],
+    "iCorner": [
+     "I’m in the corner! Is that good? {fern} says it’s good."
+    ],
+    "youCorner": [
+     "You went all the way into the corner. It looks lonely there."
+    ],
+    "iBig": [
+     "Look at them all go over! That’s my favourite part."
+    ],
+    "youBig": [
+     "Oh. That was a lot of mine."
+    ],
+    "iPass": [
+     "Nowhere to go? I didn’t know that could happen."
+    ],
+    "youPass": [
+     "You can’t move? Then I get another one. Lucky me."
+    ],
+    "late": [
+     "It’s nearly full already. I never see that coming."
+    ],
+    "win": [
+     "I won? Are you sure you counted mine and not yours?",
+     "I’m telling everyone in the orchard."
+    ],
+    "lose": [
+     "That’s all right. The plums need picking anyway.",
+     "I was ahead for a bit, wasn’t I? In the middle?"
+    ],
+    "draw": [
+     "The same each! We should share a plum."
+    ]
+   }
+  },
+  "dot": {
+   "name": "Dot",
+   "age": 71,
+   "role": "Beekeeper, retired",
+   "about": "She kept the hives on this shore for forty years and now keeps a bench by the jetty. She plays for the company and hardly looks at the board: her disc goes on any square the rules allow, and it is the bees she is listening to.",
+   "bot": "random",
+   "level": "random",
+   "plates": 5,
+   "look": "bun shawl",
+   "lines": {
+    "hello": [
+     "Sit, sit. I can’t see the board as I used to, so I don’t try. It makes no odds to the bees."
+    ],
+    "start": [
+     "You tell me when it’s my turn, dear.",
+     "Any square will do. They always have."
+    ],
+    "iCorner": [
+     "The corner? Well I never. My hand went there by itself."
+    ],
+    "youCorner": [
+     "You wanted that one, I could tell. I’ve no idea why."
+    ],
+    "iBig": [
+     "Did I do all that? Goodness."
+    ],
+    "youBig": [
+     "There they go. Like a swarm leaving."
+    ],
+    "iPass": [
+     "Nothing for me? Then I shall have a rest."
+    ],
+    "youPass": [
+     "You’re stuck, are you? I’ll have another go, then."
+    ],
+    "late": [
+     "Nearly done. Just as the tea is ready."
+    ],
+    "win": [
+     "Did I win? The bees will never believe it.",
+     "Well! Forty years of hives, and now this."
+    ],
+    "lose": [
+     "There now. You play nicely.",
+     "I enjoyed that, and I couldn’t tell you a thing that happened."
+    ],
+    "draw": [
+     "Level? How tidy."
+    ]
+   }
+  },
+  "greta": {
+   "name": "Greta",
+   "age": 34,
+   "role": "Jam maker",
+   "about": "She boils the orchard down into jars and plays the way she fills them: as much as will go in, every time. Her move is always the one that turns the most discs over right now. What you will do next, and what a corner is worth, are not things she weighs.",
+   "bot": "greedy",
+   "level": "greedy",
+   "plates": 5,
+   "look": "braid",
+   "lines": {
+    "hello": [
+     "A game? Good. I like to see the board fill up in my colour. As fast as possible."
+    ],
+    "start": [
+     "Most discs wins. So I take the most, every turn. Simple.",
+     "Let’s see how many this one turns."
+    ],
+    "iCorner": [
+     "A corner. It turned the most, that’s all."
+    ],
+    "youCorner": [
+     "One disc in a corner? That hardly turned anything."
+    ],
+    "iBig": [
+     "Now that is a full jar."
+    ],
+    "youBig": [
+     "You took a whole row of mine. I’ll have them back next turn."
+    ],
+    "iPass": [
+     "No move at all? But I had so many discs."
+    ],
+    "youPass": [
+     "Nothing for you. More for me."
+    ],
+    "late": [
+     "In the middle of a game I always have the most. It’s the end that goes wrong."
+    ],
+    "win": [
+     "Count them. I always do.",
+     "Most discs. As I said."
+    ],
+    "lose": [
+     "I was ahead for most of it. I don’t understand where they went.",
+     "You gave me discs all game and took them back at the end. That’s not polite."
+    ],
+    "draw": [
+     "Exactly half each. I’ve never measured that badly."
+    ]
+   }
+  },
+  "wren": {
+   "name": "Wren",
+   "age": 20,
+   "role": "Orchard hand",
+   "about": "She is new on the shore this season and learning the game from whoever will play. More often than not her disc goes down without a thought. Now and then she remembers what she has been told, that corners are good and the squares beside them are not, and plays a move that surprises her as much as you.",
+   "bot": "soi-trang",
+   "level": "Easy",
+   "plates": 5,
+   "look": "crop",
+   "lines": {
+    "hello": [
+     "{juno} taught me the rules by post. I remember about half of what she wrote."
+    ],
+    "start": [
+     "Corners good, next to corners bad. I think that’s all of it.",
+     "I’m ready. Mostly."
+    ],
+    "iCorner": [
+     "A corner! I remembered!"
+    ],
+    "youCorner": [
+     "That’s the good kind of square, isn’t it. I should have looked."
+    ],
+    "iBig": [
+     "I didn’t know it would turn so many."
+    ],
+    "youBig": [
+     "Oh no, all of those were mine."
+    ],
+    "iPass": [
+     "I can’t go anywhere. Is that my fault?"
+    ],
+    "youPass": [
+     "You’ve nowhere to go? I’ll write to {juno} about this."
+    ],
+    "late": [
+     "This is where I usually stop knowing what is happening."
+    ],
+    "win": [
+     "I won! I have to write to {juno}.",
+     "Don’t tell me how. I want to think I meant it."
+    ],
+    "lose": [
+     "I forgot the bit about corners again.",
+     "Next season I’ll be better. Come back then."
+    ],
+    "draw": [
+     "Even! That’s the best I’ve done."
+    ]
+   }
+  },
+  "sabine": {
+   "name": "Sabine",
+   "age": 41,
+   "role": "Cider maker",
+   "about": "She presses the cider and judges a move the way she judges a barrel: by what is in front of her. She looks one move ahead. A corner or an edge pleases her, a square beside an empty corner she will not touch, and of two moves she takes the one that leaves you fewer. What you might be preparing two moves from now she does not ask.",
+   "bot": "crescent-easy",
+   "level": "easy",
+   "plates": 5,
+   "look": "bob",
+   "lines": {
+    "hello": [
+     "One thing at a time. That’s how you press cider, and it’s how I play."
+    ],
+    "start": [
+     "I’ll take the edges if you leave them.",
+     "Let’s see what this move leaves you."
+    ],
+    "iCorner": [
+     "A corner is a corner. I take them when they’re there."
+    ],
+    "youCorner": [
+     "I didn’t see that one coming. I never look that far."
+    ],
+    "iBig": [
+     "A good press."
+    ],
+    "youBig": [
+     "That cost me. I only looked at my own move."
+    ],
+    "iPass": [
+     "Nothing I can play. You planned that, and I don’t plan."
+    ],
+    "youPass": [
+     "No move for you. I like leaving people few. None is better."
+    ],
+    "late": [
+     "Not many squares left. I’ll go on taking them one at a time."
+    ],
+    "win": [
+     "One move at a time got me there.",
+     "You gave me the edges. I only had to hold them."
+    ],
+    "lose": [
+     "You were thinking two moves on. I only ever think one.",
+     "{marit} keeps telling me to look further. She may be right."
+    ],
+    "draw": [
+     "Level. A fair pressing."
+    ]
+   }
+  },
+  "honora": {
+   "name": "Honora",
+   "age": 58,
+   "role": "Keeps the orchard",
+   "about": "The orchard is hers, and so is the long table under the oldest tree, where the whole shore plays. She thinks of your answer before she moves, counts how many moves each of you will be left with, and keeps off the squares beside an empty corner. The last handful of squares she plays out to the end before she touches a disc.",
+   "bot": "house",
+   "level": "quarter",
+   "plates": 5,
+   "look": "chignon comb",
+   "lines": {
+    "hello": [
+     "You’ve met the others, then. Good. They are kind, and they do not look ahead. I do, a little."
+    ],
+    "start": [
+     "Before I move, I ask what you will do about it.",
+     "Take your time. The tree has been here longer than both of us."
+    ],
+    "iCorner": [
+     "Mine. You left me the way in."
+    ],
+    "youCorner": [
+     "Well taken. I should not have gone so near it."
+    ],
+    "iBig": [
+     "They ripen all at once, sometimes."
+    ],
+    "youBig": [
+     "A heavy harvest. Let us see what it leaves you to move with."
+    ],
+    "iPass": [
+     "No move. You saw further than I did."
+    ],
+    "youPass": [
+     "Nothing for you this turn. I counted on that."
+    ],
+    "late": [
+     "The last few squares I can see to the end of. Mind them."
+    ],
+    "win": [
+     "You played to turn discs. I played to leave you no moves.",
+     "Come back when you have beaten me twice in your head."
+    ],
+    "lose": [
+     "You looked further than one answer ahead. {celestine} will want to meet you.",
+     "Well played. The table is yours whenever you like."
+    ],
+    "draw": [
+     "Even. The old tree has seen a few of those."
+    ]
+   }
+  },
+  "pippa": {
+   "name": "Pippa",
+   "age": 23,
+   "role": "Ferry deckhand",
+   "about": "She ties up the ferry and plays on a coil of rope between crossings. She knows the squares by heart, corners best and the ones beside them worst, and looks no further than her own move. Her eye is unsteady, and now and then she simply plays anything, usually when the bell goes.",
+   "bot": "trang-ram-grok",
+   "level": "Easy",
+   "plates": 5,
+   "look": "ponytail cap",
+   "lines": {
+    "hello": [
+     "Quick one before the next crossing? I know which squares are good. Finding them in time is the trouble."
+    ],
+    "start": [
+     "Corners first. Everything else I make up as I go.",
+     "Take your time, the ferry’s not due yet."
+    ],
+    "iCorner": [
+     "Got it! That’s the one square I never miss."
+    ],
+    "youCorner": [
+     "I had my eye on that. Then the bell went."
+    ],
+    "iBig": [
+     "That turned more than I meant it to."
+    ],
+    "youBig": [
+     "Hey! I was using those."
+    ],
+    "iPass": [
+     "No move? I’ll coil a rope, then."
+    ],
+    "youPass": [
+     "You’re stuck. I’ll go again before the bell."
+    ],
+    "late": [
+     "Nearly full, and I’ve only just worked out who’s winning."
+    ],
+    "win": [
+     "Ha! Wait till I tell {yara}.",
+     "Good squares and a bit of luck. Mostly luck."
+    ],
+    "lose": [
+     "I played two of those without looking. You could tell, couldn’t you.",
+     "That’s the ferry. Same again tomorrow?"
+    ],
+    "draw": [
+     "Level! I’ll take that between crossings."
+    ]
+   }
+  },
+  "tilde": {
+   "name": "Tilde",
+   "age": 26,
+   "role": "Postwoman",
+   "about": "She carries the post round the bay and plays a move at every door. She goes by what a square is worth, one move at a time, and about one move in three she plays without looking at all, because the next letter is already in her hand.",
+   "bot": "thuong-huyen",
+   "level": "L1",
+   "plates": 5,
+   "look": "bob hat",
+   "lines": {
+    "hello": [
+     "One for you… no, that’s next door. A game? Yes, if I can play it walking."
+    ],
+    "start": [
+     "I’ll look at this move properly. The next one, we’ll see.",
+     "One move to a door. I’ll be back for yours."
+    ],
+    "iCorner": [
+     "Corner delivered."
+    ],
+    "youCorner": [
+     "That one was addressed to you, was it."
+    ],
+    "iBig": [
+     "A heavy bag, that move."
+    ],
+    "youBig": [
+     "All those gone at once. Like a dropped sack."
+    ],
+    "iPass": [
+     "Nothing to deliver. I’ll wait at the gate."
+    ],
+    "youPass": [
+     "Nobody home for you? I’ll leave another, then."
+    ],
+    "late": [
+     "End of the round. I never remember how it stands by now."
+    ],
+    "win": [
+     "Signed for! I don’t win many.",
+     "I must have been paying attention for once."
+    ],
+    "lose": [
+     "I played that one with a parcel in each hand.",
+     "{tove} says to think of your answer first. I never have the time."
+    ],
+    "draw": [
+     "Return to sender. Half each."
+    ]
+   }
+  },
+  "noor": {
+   "name": "Noor",
+   "age": 29,
+   "role": "Runs the pier café",
+   "about": "The café at the end of the pier is hers, and she plays between orders. She has a real feeling for a position and judges her move by how the board looks once it is made. But she is always listening for the kettle: her judgement swings wide, and some moves go down with no thought at all.",
+   "bot": "trang-ram-sonnet",
+   "level": "Easy",
+   "plates": 5,
+   "look": "long scarf",
+   "lines": {
+    "hello": [
+     "Coffee’s on. I play by how the board looks, when I’m looking at it. Which isn’t always."
+    ],
+    "start": [
+     "I like the shape of this already.",
+     "You start thinking. I’ll just see to that table."
+    ],
+    "iCorner": [
+     "A corner makes the whole board look better. Even I can see that."
+    ],
+    "youCorner": [
+     "Oh. That spoils the look of my side."
+    ],
+    "iBig": [
+     "Lovely. Did I do that on purpose? Let’s say yes."
+    ],
+    "youBig": [
+     "I turned my back for one order."
+    ],
+    "iPass": [
+     "No move. Good, the milk was about to boil."
+    ],
+    "youPass": [
+     "Stuck? Have a biscuit while I go again."
+    ],
+    "late": [
+     "Almost closing time on this board."
+    ],
+    "win": [
+     "The board looked right, and for once I was watching it.",
+     "On the house, that one."
+    ],
+    "lose": [
+     "I had the right idea and the wrong square. Twice.",
+     "{ines} has the same eye as me and keeps it on the board. Try her."
+    ],
+    "draw": [
+     "Even. Like a well-poured cup."
+    ]
+   }
+  },
+  "coral": {
+   "name": "Coral",
+   "age": 31,
+   "role": "Fishmonger",
+   "about": "She sells the morning’s catch and likes a full slab. The move that turns the most discs is the one she wants, unless a corner is going, which she takes first. She does not play the same game twice.",
+   "bot": "trang-khuyet",
+   "level": "Easy",
+   "plates": 5,
+   "look": "curls band",
+   "lines": {
+    "hello": [
+     "Fresh in this morning, and so am I. I take corners and I take the lot. In that order."
+    ],
+    "start": [
+     "Biggest catch first.",
+     "Never the same tide twice. Let’s see what today brings."
+    ],
+    "iCorner": [
+     "Corner. Before anything else, always."
+    ],
+    "youCorner": [
+     "You got there first. I’d have had that."
+    ],
+    "iBig": [
+     "That’s a net full!"
+    ],
+    "youBig": [
+     "That was half my slab."
+    ],
+    "iPass": [
+     "Nothing biting. I’ll wait."
+    ],
+    "youPass": [
+     "Empty net for you. I’ll cast again."
+    ],
+    "late": [
+     "Stall’s nearly cleared. Let’s weigh what’s left."
+    ],
+    "win": [
+     "Weighed and sold. Mine’s heavier.",
+     "Corners and big catches. It does work sometimes."
+    ],
+    "lose": [
+     "I took the most every turn and you still had more at the end. Explain that.",
+     "{odile} tells me to think what you’ll do next. I’d rather just fish."
+    ],
+    "draw": [
+     "Same weight to the gram."
+    ]
+   }
+  },
+  "ines": {
+   "name": "Ines",
+   "age": 38,
+   "role": "Librarian",
+   "about": "She keeps the reading room over the harbour office. She sees the answer you will make to her move and no further: there is no plan behind it. Her judgement is good and a little wide of the mark, and the last half-dozen squares she reads properly.",
+   "bot": "trang-ram-sonnet",
+   "level": "Medium",
+   "plates": 5,
+   "look": "chignon glasses",
+   "lines": {
+    "hello": [
+     "Quietly, please. I read one answer ahead: yours. After that the page is blank."
+    ],
+    "start": [
+     "I know what you will reply to this. Beyond that I shall find out.",
+     "Shh. I am thinking of your move."
+    ],
+    "iCorner": [
+     "I saw you could not stop that."
+    ],
+    "youCorner": [
+     "That was two moves in the making. I only read one."
+    ],
+    "iBig": [
+     "A long passage, turned at once."
+    ],
+    "youBig": [
+     "I read your reply and misjudged what it was worth."
+    ],
+    "iPass": [
+     "No move for me. I did not read far enough to see it."
+    ],
+    "youPass": [
+     "You have no move. I admit I did not plan that."
+    ],
+    "late": [
+     "The last few squares I can read to the final page."
+    ],
+    "win": [
+     "One answer ahead was enough today.",
+     "A good position is like a good shelf. Everything in reach."
+    ],
+    "lose": [
+     "You had a plan. I only had a next move.",
+     "{marguerite} reads further than I do. Ask at the harbour office."
+    ],
+    "draw": [
+     "Balanced. I shall file it under neither."
+    ]
+   }
+  },
+  "marguerite": {
+   "name": "Marguerite",
+   "age": 52,
+   "role": "Harbour master",
+   "about": "Every boat on this water comes and goes by her leave. She reads a short exchange through, her move, yours, hers, yours, and judges what is left by where the discs stand, not by how many there are. Now and then she plays her second choice. The last eight squares she plays without error.",
+   "bot": "trang-ram-sonnet",
+   "level": "Hard",
+   "plates": 5,
+   "look": "updo earring",
+   "lines": {
+    "hello": [
+     "Nothing moves in this harbour that I have not thought two berths ahead. Sit. The tide waits for neither of us."
+    ],
+    "start": [
+     "Mine, yours, mine, yours. I have been through it. Now we play it.",
+     "I am not counting discs. I am looking at where they lie."
+    ],
+    "iCorner": [
+     "That berth was reserved."
+    ],
+    "youCorner": [
+     "You came in on a tide I had not charted."
+    ],
+    "iBig": [
+     "A whole convoy, brought round."
+    ],
+    "youBig": [
+     "You have more discs now. I would still rather have my squares."
+    ],
+    "iPass": [
+     "No berth for me this turn. That was well piloted."
+    ],
+    "youPass": [
+     "You are becalmed. I shall move twice."
+    ],
+    "late": [
+     "From here on I do not guess."
+    ],
+    "win": [
+     "Fewer discs for most of the game, and more at the end. That is how it is done.",
+     "The harbour is closed. Good night."
+    ],
+    "lose": [
+     "I took my second choice once. Once was enough.",
+     "You read further than four moves. {leontine} is the one for you now."
+    ],
+    "draw": [
+     "Slack water. Neither of us gets the tide."
+    ]
+   }
+  },
+  "luz": {
+   "name": "Luz",
+   "age": 25,
+   "role": "Lamplighter",
+   "about": "She goes round the lake at dusk with a long pole, lighting the lamps. She does not look ahead at all. Each square has its worth to her, a corner high and a square beside an empty corner low, she adds the discs it would turn, and then some evenings she picks another one anyway.",
+   "bot": "am-duong",
+   "level": "Easy",
+   "plates": 5,
+   "look": "wave",
+   "lines": {
+    "hello": [
+     "I light one lamp, then the next. I never think about the one after. Shall we?"
+    ],
+    "start": [
+     "This square looks bright enough.",
+     "One lamp at a time."
+    ],
+    "iCorner": [
+     "The corner lamp. That one stays lit."
+    ],
+    "youCorner": [
+     "You lit that one before I got round to it."
+    ],
+    "iBig": [
+     "They all came on at once!"
+    ],
+    "youBig": [
+     "Half my lamps, out at one go."
+    ],
+    "iPass": [
+     "No lamp I can reach. I’ll wait here."
+    ],
+    "youPass": [
+     "Nothing for you to light? I’ll do the next one too."
+    ],
+    "late": [
+     "Nearly all lit. I never know which colour until the end."
+    ],
+    "win": [
+     "Every lamp mine. Well, most.",
+     "I just lit what looked good. It was enough tonight."
+    ],
+    "lose": [
+     "You were thinking about the lamp after next. I never do.",
+     "{anouk} counts how many moves she leaves me. I should try that."
+    ],
+    "draw": [
+     "Half lit, half dark. That’s how the lake looks anyway."
+    ]
+   }
+  },
+  "fern": {
+   "name": "Fern",
+   "age": 27,
+   "role": "Rows the night ferry",
+   "about": "She rows people across the lake after dark and plays in the stern with the board on her knees. She looks at her own move and nothing after it. A corner she knows the worth of, and the squares beside an empty one she knows to leave alone, but the boat rocks, and her eye for everything in between is unsteady.",
+   "bot": "house",
+   "level": "crescent",
+   "plates": 5,
+   "look": "braid hood",
+   "lines": {
+    "hello": [
+     "Step in, sit low. I know a corner when I see one. The rest I do by the feel of the oars."
+    ],
+    "start": [
+     "Corners, and keep off the squares next to them. That’s my whole chart.",
+     "Push off, then."
+    ],
+    "iCorner": [
+     "There. That one I never miss, even in fog."
+    ],
+    "youCorner": [
+     "I was rowing. I’d have had that."
+    ],
+    "iBig": [
+     "A good long pull."
+    ],
+    "youBig": [
+     "You’ve turned my whole wake."
+    ],
+    "iPass": [
+     "No move? I’ll rest the oars."
+    ],
+    "youPass": [
+     "You’re aground. I’ll take another stroke."
+    ],
+    "late": [
+     "Nearly across. The landing is where I tend to bump."
+    ],
+    "win": [
+     "Dry feet and a win. Good crossing.",
+     "Corners were enough tonight."
+    ],
+    "lose": [
+     "The boat rocked and I picked the wrong square. More than once.",
+     "{honora} thinks about your answer before she moves. I only think about mine."
+    ],
+    "draw": [
+     "Level in the water. Nobody bails."
+    ]
+   }
+  },
+  "odile": {
+   "name": "Odile",
+   "age": 33,
+   "role": "Innkeeper",
+   "about": "The inn by the landing is hers, with a board on every table. She thinks of her move and the one reply you will make to it. Where a disc stands matters to her, and a square beside an empty corner she treats as a guest who will not pay.",
+   "bot": "trang-khuyet",
+   "level": "Medium",
+   "plates": 5,
+   "look": "bun earring",
+   "lines": {
+    "hello": [
+     "There is a bed if you lose and supper if you win. I think one move past my own. Sit by the fire."
+    ],
+    "start": [
+     "I know what you will say to this. I have my answer ready.",
+     "The table by the window is the lucky one. It is taken."
+    ],
+    "iCorner": [
+     "You left the door open. I walked in."
+    ],
+    "youCorner": [
+     "I gave you that. I went too near it."
+    ],
+    "iBig": [
+     "A full house."
+    ],
+    "youBig": [
+     "That emptied my tables."
+    ],
+    "iPass": [
+     "No move for me. I shall see to the fire."
+    ],
+    "youPass": [
+     "Nothing for you? Then I serve twice."
+    ],
+    "late": [
+     "Last orders on this board."
+    ],
+    "win": [
+     "I only looked one reply ahead. Tonight you did not look past it.",
+     "Supper is extra. You lost."
+    ],
+    "lose": [
+     "You saw the reply after my reply.",
+     "{zofia} looks twice as far as I do. She is a cold walk north of here."
+    ],
+    "draw": [
+     "We split the bill."
+    ]
+   }
+  },
+  "yara": {
+   "name": "Yara",
+   "age": 36,
+   "role": "Harpist",
+   "about": "She plays for the lake at night from the end of the landing stage. She hears her move and your answer to it, and judges what is left by everything she knows: the moves each of you has, the corners, the discs lying open at the edge of play. Her ear wanders a little. The last eight squares she plays note for note.",
+   "bot": "trang-ram-grok",
+   "level": "Medium",
+   "plates": 5,
+   "look": "long flower",
+   "lines": {
+    "hello": [
+     "Listen first. A move and its answer are two notes, and I always hear both. Then I play."
+    ],
+    "start": [
+     "I have the first two notes. The rest I shall hear as it comes.",
+     "Softly, to begin."
+    ],
+    "iCorner": [
+     "That note holds until the end of the piece."
+    ],
+    "youCorner": [
+     "You resolved that before I could."
+    ],
+    "iBig": [
+     "A whole chord."
+    ],
+    "youBig": [
+     "You changed the key on me."
+    ],
+    "iPass": [
+     "A bar’s rest for me."
+    ],
+    "youPass": [
+     "You rest. I play on."
+    ],
+    "late": [
+     "The last eight bars I know by heart."
+    ],
+    "win": [
+     "It ended on my note.",
+     "Two notes at a time, and the ending exact."
+    ],
+    "lose": [
+     "I drifted off the tune once or twice.",
+     "{talia} hears four moves where I hear two. Higher up, in the clouds."
+    ],
+    "draw": [
+     "Unresolved. I rather like it."
+    ]
+   }
+  },
+  "celestine": {
+   "name": "Celestine",
+   "age": 45,
+   "role": "Astronomer",
+   "about": "She watches from the tower at the head of the lake and is in bed by sunrise. She looks four moves ahead, every move, and what she is counting is how many moves you will have left: as few as she can arrange. The last eight squares she works out to the end.",
+   "bot": "house",
+   "level": "gibbous",
+   "plates": 5,
+   "look": "updo glasses",
+   "lines": {
+    "hello": [
+     "Four moves ahead. No more, and never less. It is surprising how few people look that far."
+    ],
+    "start": [
+     "I am not after your discs. I am after your moves.",
+     "The sky is clear tonight. So is the board."
+    ],
+    "iCorner": [
+     "Predicted four moves ago."
+    ],
+    "youCorner": [
+     "That was past the edge of what I could see."
+    ],
+    "iBig": [
+     "A meteor of a move."
+    ],
+    "youBig": [
+     "Many discs. Count how many moves it has left you."
+    ],
+    "iPass": [
+     "No move for me. You have turned my own method on me."
+    ],
+    "youPass": [
+     "And now you have none. That is what I was working towards."
+    ],
+    "late": [
+     "Eight squares. I can see every one of them to the end."
+    ],
+    "win": [
+     "You ran out of moves before you ran out of discs.",
+     "The last eight were never in doubt."
+    ],
+    "lose": [
+     "You saw the fifth move. I stop at four.",
+     "{solveig} keeps the north light and looks deeper than I do. Dress warmly."
+    ],
+    "draw": [
+     "An exact conjunction. Rare."
+    ]
+   }
+  },
+  "isolde": {
+   "name": "Isolde",
+   "age": 49,
+   "role": "Warden of the lake",
+   "about": "The lake and everything that drifts on it are in her keeping. She takes her time and looks as deep as it allows. Early on she prefers the quiet move that turns very little, so that you are the one left with few places to go. She wants the discs along an edge that can never be turned back, she minds who will have the last move in each corner of the board, and the ending she plays exactly.",
+   "bot": "moonwarden",
+   "level": "Moonwarden",
+   "plates": 5,
+   "look": "long hood",
+   "lines": {
+    "hello": [
+     "You have come a long way round the lake to find me. I shall not hurry, and I would rather you did not either."
+    ],
+    "start": [
+     "I begin quietly. The fewer I turn, the fewer doors I open for you.",
+     "Take what you like in the middle. I am watching the edges."
+    ],
+    "iCorner": [
+     "And from here, along the edge, nothing of mine turns again."
+    ],
+    "youCorner": [
+     "That one will cost me the whole edge. Well found."
+    ],
+    "iBig": [
+     "Now I can afford to. Earlier, I could not."
+    ],
+    "youBig": [
+     "So many. You have just made yourself a great deal of shoreline to defend."
+    ],
+    "iPass": [
+     "I have no move. Someone has been playing my own game against me."
+    ],
+    "youPass": [
+     "No move left for you. The lake is very still."
+    ],
+    "late": [
+     "From here I do not judge. I know."
+    ],
+    "win": [
+     "You took discs. I took the last move in every corner.",
+     "Quiet moves early, exact ones late."
+    ],
+    "lose": [
+     "You were quieter than I was. I did not think that could be done.",
+     "The lake is yours tonight. I shall still be here tomorrow."
+    ],
+    "draw": [
+     "Still water on both sides."
+    ]
+   }
+  },
+  "tove": {
+   "name": "Tove",
+   "age": 24,
+   "role": "Ice cutter",
+   "about": "She saws blocks out of the sea ice and plays on one of them. She thinks of her move and of your answer, and judges both by one thing only: what each square is worth. How many moves either of you has left does not enter into it.",
+   "bot": "thuong-huyen",
+   "level": "L2",
+   "plates": 5,
+   "look": "braid cap",
+   "lines": {
+    "hello": [
+     "Mind the edge, it’s fresh cut. I look at my move and your answer. Then I saw."
+    ],
+    "start": [
+     "Every square has a weight. I just add them up.",
+     "You answer, I answer. That’s as far as I go."
+    ],
+    "iCorner": [
+     "Best block on the ice."
+    ],
+    "youCorner": [
+     "You cut that one out from under me."
+    ],
+    "iBig": [
+     "A clean long cut."
+    ],
+    "youBig": [
+     "That split my whole row."
+    ],
+    "iPass": [
+     "No move. I’ll sharpen the saw."
+    ],
+    "youPass": [
+     "You’re frozen in. I cut again."
+    ],
+    "late": [
+     "Not much ice left to cut."
+    ],
+    "win": [
+     "Good squares, added up. It came to more than yours.",
+     "Stacked and counted. Mine."
+    ],
+    "lose": [
+     "You left me squares that looked good and went nowhere.",
+     "{kiri} counts how many moves she has left. I only count the squares."
+    ],
+    "draw": [
+     "Two blocks the same size."
+    ]
+   }
+  },
+  "kiri": {
+   "name": "Kiri",
+   "age": 28,
+   "role": "Sled driver",
+   "about": "She runs the sled between the stations on the ice. She looks three moves ahead, and besides what a square is worth she counts the moves each of you is left with, the way she counts how many trails are still open before the weather closes.",
+   "bot": "thuong-huyen",
+   "level": "L3",
+   "plates": 5,
+   "look": "ponytail scarf",
+   "lines": {
+    "hello": [
+     "Three moves ahead and always a trail left open. That’s how you get home out here."
+    ],
+    "start": [
+     "I want more roads than you. Squares come second.",
+     "Hup. Off we go."
+    ],
+    "iCorner": [
+     "Shelter. I’ll take it."
+    ],
+    "youCorner": [
+     "You reached the hut first."
+    ],
+    "iBig": [
+     "The whole team pulling at once."
+    ],
+    "youBig": [
+     "You’ve covered my tracks."
+    ],
+    "iPass": [
+     "Every trail closed. I didn’t see the drift coming."
+    ],
+    "youPass": [
+     "Snowed in, are you? I’ll run on."
+    ],
+    "late": [
+     "Last stretch. I can’t see past three bends, so hold tight."
+    ],
+    "win": [
+     "I kept more trails open than you did.",
+     "Home before the weather."
+    ],
+    "lose": [
+     "You closed my trails one by one. I saw each too late.",
+     "{amara} sees five moves from up in her balloon. I only see three from down here."
+    ],
+    "draw": [
+     "Both sleds in at the same time."
+    ]
+   }
+  },
+  "marit": {
+   "name": "Marit",
+   "age": 35,
+   "role": "Weather watcher",
+   "about": "She reads the instruments at the ice station and sends the forecast south. She looks about three moves ahead, by rule of thumb: what each square is worth, and which of you has more moves. Only in the first few moves does she let chance choose between equals. After that she plays what the readings say.",
+   "bot": "crescent-medium",
+   "level": "medium",
+   "plates": 5,
+   "look": "bob band",
+   "lines": {
+    "hello": [
+     "Tomorrow: cold. I am sure of three moves ahead and no more, like any forecast."
+    ],
+    "start": [
+     "Good squares, and more moves than you. Those are my two instruments.",
+     "The glass is steady. We can begin."
+    ],
+    "iCorner": [
+     "As forecast."
+    ],
+    "youCorner": [
+     "That front came in faster than I had it."
+    ],
+    "iBig": [
+     "A sudden thaw on your side."
+    ],
+    "youBig": [
+     "I had that down as a light shower."
+    ],
+    "iPass": [
+     "No move. The instruments did not show it."
+    ],
+    "youPass": [
+     "Still air for you. I move again."
+    ],
+    "late": [
+     "When few enough squares are left I can work them all out. Nearly there."
+    ],
+    "win": [
+     "Three moves ahead is not far. Today it was far enough.",
+     "The forecast held."
+    ],
+    "lose": [
+     "You were a move beyond my instruments.",
+     "{esme} was at this station before me. She sees further now, down in the bay."
+    ],
+    "draw": [
+     "Pressure equal on both sides."
+    ]
+   }
+  },
+  "anouk": {
+   "name": "Anouk",
+   "age": 39,
+   "role": "Mapmaker",
+   "about": "She is charting the northern shore and has a rule for everything on it. Three moves ahead she counts the moves each of you has, the discs lying open beside empty squares, the corners, and the squares set diagonally to them. From eight empty squares on she stops estimating and plays the exact ending.",
+   "bot": "am-duong",
+   "level": "Medium",
+   "plates": 5,
+   "look": "chignon",
+   "lines": {
+    "hello": [
+     "I drew my rules up myself: your moves, my moves, the open edges, the corners. Three moves deep. Shall we survey?"
+    ],
+    "start": [
+     "A disc beside an empty square is a coast somebody can land on. I keep mine short.",
+     "North is at the top. Let us begin."
+    ],
+    "iCorner": [
+     "Charted. That one is fixed for good."
+    ],
+    "youCorner": [
+     "I marked that square as dangerous and went beside it all the same."
+    ],
+    "iBig": [
+     "A whole coastline redrawn."
+    ],
+    "youBig": [
+     "You have given yourself a very long shore to guard."
+    ],
+    "iPass": [
+     "No move. A gap in my own map."
+    ],
+    "youPass": [
+     "You are off the edge of the chart. I move again."
+    ],
+    "late": [
+     "Eight squares. From here it is measurement, not estimate."
+    ],
+    "win": [
+     "My rules are home-made. They held.",
+     "Short coasts, more moves, and the last eight exact."
+    ],
+    "lose": [
+     "My rules are my own guesses. Yours were better.",
+     "{dalia} plays by what was learned from the games themselves. That is past my rules."
+    ],
+    "draw": [
+     "The border runs down the middle."
+    ]
+   }
+  },
+  "zofia": {
+   "name": "Zofia",
+   "age": 47,
+   "role": "Icebreaker captain",
+   "about": "She takes the icebreaker out when nobody else will sail. She looks four moves ahead, five once the board is down to a dozen empty squares, and with seven left she goes through every ending there is until one of them is certain.",
+   "bot": "trang-khuyet",
+   "level": "Hard",
+   "plates": 5,
+   "look": "crop cap",
+   "lines": {
+    "hello": [
+     "Four moves ahead, then straight through. Hold the rail."
+    ],
+    "start": [
+     "I don’t go round. I go through.",
+     "Engines ahead. You move when I leave you a move."
+    ],
+    "iCorner": [
+     "Port made."
+    ],
+    "youCorner": [
+     "You broke through there before I did."
+    ],
+    "iBig": [
+     "That’s the ice giving way."
+    ],
+    "youBig": [
+     "You opened a wide lead. Now hold it."
+    ],
+    "iPass": [
+     "Stuck fast. No move."
+    ],
+    "youPass": [
+     "You’re iced in. I’ll take the channel."
+    ],
+    "late": [
+     "A dozen squares. I look one move deeper from here, and at seven I see the end."
+    ],
+    "win": [
+     "Four ahead, five near the end, all of it at the last. In that order.",
+     "Clear water."
+    ],
+    "lose": [
+     "You were through before my bow turned.",
+     "{aurelia} at the glassworks has the opening moves written down. I work mine out at the board."
+    ],
+    "draw": [
+     "Bow to bow. Neither gives way."
+    ]
+   }
+  },
+  "solveig": {
+   "name": "Solveig",
+   "age": 63,
+   "role": "Keeper of the north light",
+   "about": "She has kept the light at the top of the map since before most of the stations were built. She looks as deep as a fixed count of positions lets her, never by the clock, so she plays the same on a slow night as on a fast one. She weighs corners and what hangs on them, the discs along an edge that can never turn again, and how few moves she can leave you. The last twelve squares or so she plays exactly.",
+   "bot": "house",
+   "level": "full",
+   "plates": 5,
+   "look": "plait",
+   "lines": {
+    "hello": [
+     "Come in out of the wind. I count positions, not minutes. The light turns at its own speed and so do I."
+    ],
+    "start": [
+     "I shall not rush, and I shall not be slow. I am always the same.",
+     "Every disc of yours beside an empty square is a place I may land later."
+    ],
+    "iCorner": [
+     "And now this edge is mine as far as I care to walk it."
+    ],
+    "youCorner": [
+     "You have the corner. I shall have to give up that whole side."
+    ],
+    "iBig": [
+     "The beam goes round, and the whole shore turns."
+    ],
+    "youBig": [
+     "A great many. I was waiting for you to take them."
+    ],
+    "iPass": [
+     "No move. It is a long time since anyone did that to me."
+    ],
+    "youPass": [
+     "You have no move. I have been arranging that for a while."
+    ],
+    "late": [
+     "Twelve squares. Now I stop judging and start knowing."
+    ],
+    "win": [
+     "{posy} in the orchard plays from the same house as I do. One day she will look further.",
+     "The same game I play every night. It was enough."
+    ],
+    "lose": [
+     "You looked deeper than my count goes. Very few do.",
+     "Well played. The light is yours to turn tonight."
+    ],
+    "draw": [
+     "Day and night the same length. It happens twice a year."
+    ]
+   }
+  },
+  "juno": {
+   "name": "Juno",
+   "age": 26,
+   "role": "Kite maker",
+   "about": "She builds kites on the lowest peak and flies them over the cloud. She looks three moves ahead with a short list of things to weigh: what a square is worth, how many moves each of you has now, and how many more may open up.",
+   "bot": "soi-trang",
+   "level": "Medium",
+   "plates": 5,
+   "look": "curls",
+   "lines": {
+    "hello": [
+     "Hold this line a moment. There. I look three moves ahead, which is as far as a kite string goes."
+    ],
+    "start": [
+     "Good squares and plenty of moves. A kite needs little else.",
+     "Let it out slowly."
+    ],
+    "iCorner": [
+     "Tied off at the corner. That won’t come loose."
+    ],
+    "youCorner": [
+     "The wind took that one your way."
+    ],
+    "iBig": [
+     "Up it goes!"
+    ],
+    "youBig": [
+     "You’ve cut half my lines."
+    ],
+    "iPass": [
+     "No wind for me. I wait."
+    ],
+    "youPass": [
+     "Becalmed? I’ll fly another."
+    ],
+    "late": [
+     "Reeling in. Past three moves I’m guessing, same as always."
+    ],
+    "win": [
+     "Three moves of string was enough today.",
+     "I’m writing to {wren} about this one."
+    ],
+    "lose": [
+     "You were flying higher than my string reaches.",
+     "{mei} looks five moves where I look three. Same teacher."
+    ],
+    "draw": [
+     "Two kites, one height."
+    ]
+   }
+  },
+  "amara": {
+   "name": "Amara",
+   "age": 32,
+   "role": "Balloon pilot",
+   "about": "She takes the mail balloon across the cloud every morning. She looks five moves ahead and weighs it all: the worth of the squares, the moves each of you has, the discs left open beside empty squares, and late in the game the count itself. The last ten squares she plays out exactly.",
+   "bot": "thuong-huyen",
+   "level": "L4",
+   "plates": 5,
+   "look": "bun scarf",
+   "lines": {
+    "hello": [
+     "Climb in. From up here you see five moves ahead without trying."
+    ],
+    "start": [
+     "Squares, moves, open edges. I check all three before I let go of the rope.",
+     "Ballast away."
+    ],
+    "iCorner": [
+     "Landed on the mark."
+    ],
+    "youCorner": [
+     "You came down on my landing ground."
+    ],
+    "iBig": [
+     "A good strong updraught."
+    ],
+    "youBig": [
+     "That dropped me a long way."
+    ],
+    "iPass": [
+     "No move. Dead air."
+    ],
+    "youPass": [
+     "Nothing for you? Then I rise again."
+    ],
+    "late": [
+     "Ten squares. I can see the ground all the way down from here."
+    ],
+    "win": [
+     "Five moves up is a long view.",
+     "Down gently, and with more discs."
+    ],
+    "lose": [
+     "You were above me the whole way.",
+     "{ingrid} down at the Showers looks eight moves where I look five."
+    ],
+    "draw": [
+     "We touched down together."
+    ]
+   }
+  },
+  "talia": {
+   "name": "Talia",
+   "age": 37,
+   "role": "Glider pilot",
+   "about": "She flies without an engine and reads the air instead. Four moves ahead she weighs how many moves each of you has, the discs lying open at the edge of play, the corners and the squares that give them away, and the discs that can no longer be turned. Her hand is almost steady. The last twelve squares she plays exactly.",
+   "bot": "trang-ram-grok",
+   "level": "Hard",
+   "plates": 5,
+   "look": "crop band",
+   "lines": {
+    "hello": [
+     "No engine, no noise. I look four moves ahead and let the air do the rest."
+    ],
+    "start": [
+     "I count what can’t be turned back. That is the only height you keep.",
+     "Release."
+    ],
+    "iCorner": [
+     "That is lift I do not lose."
+    ],
+    "youCorner": [
+     "You found the thermal before me."
+    ],
+    "iBig": [
+     "A long clean glide."
+    ],
+    "youBig": [
+     "I lost a lot of height there."
+    ],
+    "iPass": [
+     "No move. I circle."
+    ],
+    "youPass": [
+     "Nothing under your wing. I go on."
+    ],
+    "late": [
+     "Twelve squares to the field. I know the whole approach."
+    ],
+    "win": [
+     "Four moves ahead and a steady hand.",
+     "{pippa} on the ferry learned the same squares I did. I just look further."
+    ],
+    "lose": [
+     "I wobbled once. You were waiting for it.",
+     "{keiko} looks twice as deep. Follow the falling stars."
+    ],
+    "draw": [
+     "Wingtip to wingtip."
+    ]
+   }
+  },
+  "leontine": {
+   "name": "Leontine",
+   "age": 44,
+   "role": "Forecaster",
+   "about": "The forecast for every sea on the Moon goes out from her desk on the middle peak. She looks seven moves ahead and judges a position by its shape: the corners, the edges, the squares beside them, every row and diagonal, each weighed as she learned it from more games than she could tell you. She is very seldom wrong. From fourteen empty squares she plays the ending to the last disc.",
+   "bot": "trang-ram-sonnet",
+   "level": "Expert",
+   "plates": 5,
+   "look": "wave earring",
+   "lines": {
+    "hello": [
+     "I read shapes, not numbers. You may have more discs than I do for most of the game. It will not mean what you think."
+    ],
+    "start": [
+     "Seven moves out the picture is already clear.",
+     "Do not count discs yet. Neither shall I."
+    ],
+    "iCorner": [
+     "The shape asked for it."
+    ],
+    "youCorner": [
+     "I gave that a small chance. Small is not none."
+    ],
+    "iBig": [
+     "The front has arrived."
+    ],
+    "youBig": [
+     "More discs for you. The pattern has not changed."
+    ],
+    "iPass": [
+     "No move for me. I must have misread a pattern."
+    ],
+    "youPass": [
+     "No move for you. That was in the forecast."
+    ],
+    "late": [
+     "Fourteen squares. From here it is arithmetic, and I do not get it wrong."
+    ],
+    "win": [
+     "The shape was mine from early on. The discs came later.",
+     "As forecast."
+    ],
+    "lose": [
+     "One reading in a great many is off. You found it.",
+     "{cordelia} reads the same shapes further and never guesses. The Ocean of Storms."
+    ],
+    "draw": [
+     "Even odds, and it came out even."
+    ]
+   }
+  },
+  "petra": {
+   "name": "Petra",
+   "age": 55,
+   "role": "Surveyor of the peaks",
+   "about": "She has measured every peak that stands out of the cloud. She keeps four things in her book: the corners, how many squares each of you can play, the discs that lie beside an empty square, and anything left exposed next to a vacant corner. She uses nearly all the time she is given and looks as deep as it lets her. Discs she does not count at all until the last dozen squares.",
+   "bot": "positional",
+   "level": "Tournament",
+   "plates": 5,
+   "look": "braid hat",
+   "lines": {
+    "hello": [
+     "Four measurements and a long look. I take all the time I am given. Sit, it is a fine clear day for it."
+    ],
+    "start": [
+     "I shall not count a single disc until twelve squares are left.",
+     "Corners, moves, open edges, and what you leave beside an empty corner. That is the whole survey."
+    ],
+    "iCorner": [
+     "A fixed point. Everything else is measured from it."
+    ],
+    "youCorner": [
+     "I left something exposed beside that. My mistake."
+    ],
+    "iBig": [
+     "A landslide. I did not go looking for one."
+    ],
+    "youBig": [
+     "You count them. I shall not, yet."
+    ],
+    "iPass": [
+     "No move. Somebody has surveyed me."
+    ],
+    "youPass": [
+     "You have nowhere to stand. Good."
+    ],
+    "late": [
+     "Twelve squares. Now the discs count, and I begin counting."
+    ],
+    "win": [
+     "{aurelia} practised her game against me for a long time. You have not had that advantage.",
+     "Four measurements, used to the last second."
+    ],
+    "lose": [
+     "You had more moves than I did from start to finish. I know what that means.",
+     "Measured and found short. By me, of myself."
+    ],
+    "draw": [
+     "Two peaks of the same height."
+    ]
+   }
+  },
+  "mei": {
+   "name": "Mei",
+   "age": 27,
+   "role": "Counts the falling stars",
+   "about": "She sits on the ridge with a tally book and marks every star that falls. She looks five moves ahead and weighs a short list: the worth of the squares, the moves each of you has, and the moves that may yet open. It is a plain way of judging, and five moves is where she stops.",
+   "bot": "soi-trang",
+   "level": "Hard",
+   "plates": 5,
+   "look": "bob",
+   "lines": {
+    "hello": [
+     "Four hundred and six tonight so far. I look five moves ahead and keep my sums simple."
+    ],
+    "start": [
+     "Squares, moves, and moves to come. Three columns in my book.",
+     "One more for the tally."
+    ],
+    "iCorner": [
+     "That one I mark with a ring."
+    ],
+    "youCorner": [
+     "You caught that one. I only saw it fall."
+    ],
+    "iBig": [
+     "A whole shower at once."
+    ],
+    "youBig": [
+     "I shall have to rub out half a page."
+    ],
+    "iPass": [
+     "Nothing falls my way. I wait."
+    ],
+    "youPass": [
+     "A clear sky for you. I mark another."
+    ],
+    "late": [
+     "Nearly the end of the page."
+    ],
+    "win": [
+     "Five moves and simple sums. It added up.",
+     "Tallied. More of mine."
+    ],
+    "lose": [
+     "You were counting something I do not have a column for.",
+     "{isolde} taught me, and kept the deep part to herself."
+    ],
+    "draw": [
+     "The two columns come to the same."
+    ]
+   }
+  },
+  "ingrid": {
+   "name": "Ingrid",
+   "age": 40,
+   "role": "Clockmaker",
+   "about": "Every clock on the ridge is hers, and none of them is ever out. She looks eight moves ahead and weighs the squares, the moves each of you has, the discs left open beside empty squares, and, late on, the count. She uses half the time she is given and no more, and from the same position she plays the same move every time. The last fourteen squares she plays exactly.",
+   "bot": "thuong-huyen",
+   "level": "L5",
+   "plates": 5,
+   "look": "updo comb",
+   "lines": {
+    "hello": [
+     "I use half my time, exactly. The other half is yours to worry in."
+    ],
+    "start": [
+     "Put me in this position again tomorrow and I shall play this same move.",
+     "Eight moves ahead. The mechanism does not vary."
+    ],
+    "iCorner": [
+     "Click. That wheel is set."
+    ],
+    "youCorner": [
+     "You slipped a tooth past me."
+    ],
+    "iBig": [
+     "The whole train turning."
+    ],
+    "youBig": [
+     "That will want rewinding."
+    ],
+    "iPass": [
+     "No move. The works have stopped, on my side."
+    ],
+    "youPass": [
+     "You have stopped. I run on."
+    ],
+    "late": [
+     "Fourteen squares. From here it runs like a clock."
+    ],
+    "win": [
+     "Regular as ever.",
+     "{tilde} is of my school and plays one move in three without looking. I have never played one."
+    ],
+    "lose": [
+     "You found the one position I always answer wrongly. I shall answer it wrongly again, and you will know it.",
+     "Well made. I mean your game."
+    ],
+    "draw": [
+     "Both hands on the same hour."
+    ]
+   }
+  },
+  "dalia": {
+   "name": "Dalia",
+   "age": 34,
+   "role": "Smith of star iron",
+   "about": "She forges what falls on the ridge. She looks only four moves ahead, but her judgement was not written down by anyone: it was beaten out of a great many games played to the end, a weight for every way the discs can lie along each edge, round each corner, down each row and diagonal. From twelve empty squares she plays the exact ending.",
+   "bot": "am-duong",
+   "level": "Hard",
+   "plates": 5,
+   "look": "braid band",
+   "lines": {
+    "hello": [
+     "Four moves is not far. But nobody told me what a good position looks like. I learned it from the iron."
+    ],
+    "start": [
+     "I know this edge. I have seen it come out of the fire both ways.",
+     "Strike while it glows."
+    ],
+    "iCorner": [
+     "Welded. That will not come apart."
+    ],
+    "youCorner": [
+     "That corner was soft and I knew it."
+    ],
+    "iBig": [
+     "Sparks everywhere."
+    ],
+    "youBig": [
+     "A heavy blow. The metal is still mine to work."
+    ],
+    "iPass": [
+     "No move. The fire is out on my side."
+    ],
+    "youPass": [
+     "Cold iron for you. I strike again."
+    ],
+    "late": [
+     "Twelve squares. I do not judge these. I finish them."
+    ],
+    "win": [
+     "I looked no further than you did. I knew better what I was looking at.",
+     "Tempered."
+    ],
+    "lose": [
+     "Four moves was too short today.",
+     "{imani} has my judgement and looks twice as deep. Follow the colours to the bay."
+    ],
+    "draw": [
+     "Two bars of the same weight."
+    ]
+   }
+  },
+  "keiko": {
+   "name": "Keiko",
+   "age": 43,
+   "role": "Telescope maker",
+   "about": "She grinds the mirrors that everyone on the ridge looks through. She looks deeper with each pass, as far as eight moves, and keeps what she has already worked out. In her first move or two she may choose between moves she cannot tell apart, so her games do not all begin alike. With sixteen squares empty she knows who wins, and with fourteen, by how many.",
+   "bot": "trang-ram-grok",
+   "level": "Expert",
+   "plates": 5,
+   "look": "bun glasses",
+   "lines": {
+    "hello": [
+     "Look through this. Eight moves ahead, sharp to the edge. That is what I see on a board."
+    ],
+    "start": [
+     "One pass, then a deeper one, then deeper again.",
+     "My openings vary a little. After that, nothing does."
+    ],
+    "iCorner": [
+     "In focus."
+    ],
+    "youCorner": [
+     "That was beyond my eighth move."
+    ],
+    "iBig": [
+     "The whole field of view."
+    ],
+    "youBig": [
+     "A bright flare. It passes."
+    ],
+    "iPass": [
+     "No move for me. A flaw in the glass."
+    ],
+    "youPass": [
+     "Nothing in your sights. I look again."
+    ],
+    "late": [
+     "Sixteen squares, and I know who wins. At fourteen I shall know by how much."
+    ],
+    "win": [
+     "I knew at sixteen. Thank you for playing it out.",
+     "Eight moves deep and nothing forgotten."
+    ],
+    "lose": [
+     "You were looking through a longer glass.",
+     "{paloma} has what I have and a great deal learned besides. The Bay of Rainbows."
+    ],
+    "draw": [
+     "Two stars of one brightness."
+    ]
+   }
+  },
+  "octavia": {
+   "name": "Octavia",
+   "age": 57,
+   "role": "Master of the observatory",
+   "about": "The observatory on the ridge answers to her. She looks nine or ten moves ahead and judges by shapes: every corner, edge and diagonal has a number she learned from games, and then learned again from better ones. A line that a quick look says is hopeless she drops early and does not go back to. The last fourteen squares and more she plays out to the end. And she answers almost before your disc is down.",
+   "bot": "crescent-master",
+   "level": "master",
+   "plates": 5,
+   "look": "chignon earring",
+   "lines": {
+    "hello": [
+     "You will find I do not keep you waiting. I have usually finished thinking before you have let go of the disc."
+    ],
+    "start": [
+     "Ten moves deep, and I have already thrown away the lines that were going nowhere.",
+     "Let us begin. I am ready, I am always ready."
+    ],
+    "iCorner": [
+     "Noted in the log."
+    ],
+    "youCorner": [
+     "I had dropped that line as hopeless. It was not."
+    ],
+    "iBig": [
+     "A shower, as promised."
+    ],
+    "youBig": [
+     "Count them if you like. I am counting shapes."
+    ],
+    "iPass": [
+     "No move for me. That has not been logged in some time."
+    ],
+    "youPass": [
+     "You have no move. I saw that some way off."
+    ],
+    "late": [
+     "Fourteen squares. I have played them all already. Now we do it on the board."
+    ],
+    "win": [
+     "{sabine} presses cider and looks one move ahead. We began in the same place, she and I.",
+     "Quickly done. I hope you did not mind the pace."
+    ],
+    "lose": [
+     "I cut a line short that deserved a longer look.",
+     "{selene} sees further than this observatory does. She keeps the last light, out in the storms."
+    ],
+    "draw": [
+     "An exact opposition."
+    ]
+   }
+  },
+  "esme": {
+   "name": "Esme",
+   "age": 30,
+   "role": "Glassblower",
+   "about": "She blows the bay’s glass and has the patience for it. She looks about five moves ahead, by rule of thumb: what each square is worth and which of you has more moves. Chance has a hand only in her first few moves. When some ten squares are left she plays every one of them out before she moves.",
+   "bot": "crescent-hard",
+   "level": "hard",
+   "plates": 5,
+   "look": "curls band",
+   "lines": {
+    "hello": [
+     "Glass forgives nothing once it cools. I look five moves ahead before I breathe."
+    ],
+    "start": [
+     "Good squares, and more moves than you. The rule is old and it works.",
+     "Steady, now."
+    ],
+    "iCorner": [
+     "Set. It will hold its shape."
+    ],
+    "youCorner": [
+     "That cooled before I could turn it."
+    ],
+    "iBig": [
+     "One long breath, and it is all mine."
+    ],
+    "youBig": [
+     "A crack right across my side."
+    ],
+    "iPass": [
+     "No move. The glass has set against me."
+    ],
+    "youPass": [
+     "Nothing you can shape. I go again."
+    ],
+    "late": [
+     "Ten squares. I have blown every one of them already, in my head."
+    ],
+    "win": [
+     "Five moves, a rule of thumb, and no mistakes at the end.",
+     "{marit} watches the weather up north with the same rule. I just look further."
+    ],
+    "lose": [
+     "My rule is a rule of thumb. Yours was finer.",
+     "{maren} gave up rules and learned from the games themselves. She flies in the storms now."
+    ],
+    "draw": [
+     "Two halves of one bowl."
+    ]
+   }
+  },
+  "farah": {
+   "name": "Farah",
+   "age": 42,
+   "role": "Dyer",
+   "about": "Her vats line the shore and her cloth dries on every wall of the bay. She uses her time and looks as deep as it lets her, remembering what she has already worked through. She values corners, having moves, keeping her discs away from empty squares, and the edge discs that are safe for good, and she weighs them differently as the board fills. When there is time she plays the ending through to the result.",
+   "bot": "da-trieu",
+   "level": "Maximum",
+   "plates": 5,
+   "look": "long scarf",
+   "lines": {
+    "hello": [
+     "A colour is right or it is not, and you only know when it dries. I take my time. So should you."
+    ],
+    "start": [
+     "Early on I want moves. Later I want what cannot be undone.",
+     "The first dip is always the palest."
+    ],
+    "iCorner": [
+     "Fast colour. That will not wash out."
+    ],
+    "youCorner": [
+     "That stain is permanent, and it is yours."
+    ],
+    "iBig": [
+     "The whole cloth takes the dye."
+    ],
+    "youBig": [
+     "You have run your colour through mine."
+    ],
+    "iPass": [
+     "No move. My vat is dry."
+    ],
+    "youPass": [
+     "Nothing for you to dip. I go again."
+    ],
+    "late": [
+     "If there is time I shall see this to the very end. There usually is."
+    ],
+    "win": [
+     "It dried the colour I meant.",
+     "Moves first, safe edges after. Nothing else in the vat."
+    ],
+    "lose": [
+     "I ran out of time before I ran out of depth.",
+     "Your colour held better than mine."
+    ],
+    "draw": [
+     "Two colours, the same weight of cloth."
+    ]
+   }
+  },
+  "paloma": {
+   "name": "Paloma",
+   "age": 38,
+   "role": "Prism cutter",
+   "about": "She cuts the prisms that throw the bay’s colours indoors. To her own careful rules she has added shapes learned from a great many games, among them games in which one move was played wrong on purpose, so that she knows what a mistake costs. She looks as deep as most of her time allows. With some two dozen squares empty she knows who wins, and soon after, by how many.",
+   "bot": "trang-ram-grok",
+   "level": "Master",
+   "plates": 5,
+   "look": "ponytail earring",
+   "lines": {
+    "hello": [
+     "I have studied a great many bad moves. Nobody plays one against me without my knowing what it is worth."
+    ],
+    "start": [
+     "My first move or two may differ from last time. Nothing after that will.",
+     "One clean cut."
+    ],
+    "iCorner": [
+     "A true facet."
+    ],
+    "youCorner": [
+     "That edge was off, and I let it pass."
+    ],
+    "iBig": [
+     "All seven colours at once."
+    ],
+    "youBig": [
+     "Bright. It will not last."
+    ],
+    "iPass": [
+     "No move for me. A flaw in my own stone."
+    ],
+    "youPass": [
+     "No move for you. The light goes straight through."
+    ],
+    "late": [
+     "Two dozen squares, and I know who wins. I shall know the margin shortly."
+    ],
+    "win": [
+     "I knew a while ago. It was kind of you to finish.",
+     "{pippa} on the ferry knows the same squares I do. She has not yet learned what a mistake costs."
+    ],
+    "lose": [
+     "You made no move I had a price for.",
+     "Flawless. I do not say that of much."
+    ],
+    "draw": [
+     "Split exactly down the middle."
+    ]
+   }
+  },
+  "imani": {
+   "name": "Imani",
+   "age": 46,
+   "role": "Lens grinder",
+   "about": "She grinds lenses for every instrument on the Moon. She looks eight moves ahead with a judgement learned from games played to the end, and a line that a shorter look makes very unlikely she sets aside without regret. With sixteen squares empty she searches for a win that cannot be taken from her, and from twelve she knows the exact count.",
+   "bot": "am-duong",
+   "level": "Expert",
+   "plates": 5,
+   "look": "bun earring",
+   "lines": {
+    "hello": [
+     "Hold still, I am measuring you. Eight moves deep, and I do not waste a look on what is not going to happen."
+    ],
+    "start": [
+     "Most lines I never follow. A glance tells me they are not worth it.",
+     "Finer, and finer again."
+    ],
+    "iCorner": [
+     "Ground true."
+    ],
+    "youCorner": [
+     "I judged that unlikely and set it aside. It was not unlikely enough."
+    ],
+    "iBig": [
+     "Everything comes into focus at once."
+    ],
+    "youBig": [
+     "A blur of yours. It will sharpen in my favour."
+    ],
+    "iPass": [
+     "No move. I looked past this."
+    ],
+    "youPass": [
+     "You have no move. I saw that eight moves ago."
+    ],
+    "late": [
+     "Sixteen squares. I am looking for the win that cannot be taken away."
+    ],
+    "win": [
+     "It could not be taken away, from sixteen squares out.",
+     "{dalia} at the forge has my eye and half my depth."
+    ],
+    "lose": [
+     "I set aside the line that mattered.",
+     "{soraya} looks as far as her time lets her. Mine has a limit. The Ocean of Storms."
+    ],
+    "draw": [
+     "A perfect lens. It favours nobody."
+    ]
+   }
+  },
+  "aurelia": {
+   "name": "Aurelia",
+   "age": 60,
+   "role": "Mistress of the glassworks",
+   "about": "The glassworks is hers and has been for thirty years. Her opening moves are written down: she worked them out long ago, far deeper than anyone looks at the board. After that she judges by the shape of every corner, edge, row and diagonal, as learned from more positions than there are panes in the bay, and she looks as deep as her time lets her. In the ending she first makes certain of the result, and then of every disc she can add to it.",
+   "bot": "soc-vong",
+   "level": "Max",
+   "plates": 5,
+   "look": "updo comb",
+   "lines": {
+    "hello": [
+     "My first moves were decided years ago. You are welcome to try something I have not written down."
+    ],
+    "start": [
+     "This is in my book. So is your best answer.",
+     "I shall not think for a while. I do not need to."
+    ],
+    "iCorner": [
+     "That was set in the furnace long before today."
+    ],
+    "youCorner": [
+     "That is not in the book. I shall add it tonight."
+    ],
+    "iBig": [
+     "The whole window, in one firing."
+    ],
+    "youBig": [
+     "A great many. My book says they come back."
+    ],
+    "iPass": [
+     "No move. That page I have never had to write."
+    ],
+    "youPass": [
+     "You have no move. That is on a page of its own."
+    ],
+    "late": [
+     "First I make sure of the win. Then I see how large it can be made."
+    ],
+    "win": [
+     "First the result, then the margin. Both are mine.",
+     "{petra} stood across the board from me while I learned this. You should thank her for today."
+    ],
+    "lose": [
+     "You left the book early and did not get lost. Almost nobody manages that.",
+     "I shall put this whole game in the book."
+    ],
+    "draw": [
+     "Flawless on both sides. I shall frame it."
+    ]
+   }
+  },
+  "maren": {
+   "name": "Maren",
+   "age": 33,
+   "role": "Storm pilot",
+   "about": "She guides ships in through the weather and has never lost one. She was the first of her school to stop trusting rules of thumb: she judges by shapes, each with a number learned from games, and remembers what she has already worked out. She looks about five moves ahead, plays the last twelve squares out to the end, and answers at once.",
+   "bot": "crescent-expert",
+   "level": "expert",
+   "plates": 5,
+   "look": "crop scarf",
+   "lines": {
+    "hello": [
+     "You came through that? Then sit. I threw the old rules overboard and learned the board from the games themselves."
+    ],
+    "start": [
+     "Five moves ahead, and every shape on the board means something to me.",
+     "Hold on. It gets rough from here."
+    ],
+    "iCorner": [
+     "Safe harbour."
+    ],
+    "youCorner": [
+     "You made that harbour in weather I misjudged."
+    ],
+    "iBig": [
+     "The squall hits."
+    ],
+    "youBig": [
+     "A big sea. I have ridden bigger."
+    ],
+    "iPass": [
+     "No move. Becalmed in a storm, of all things."
+    ],
+    "youPass": [
+     "You have no steerage. I go on."
+    ],
+    "late": [
+     "Twelve squares. I know these waters to the last rock."
+    ],
+    "win": [
+     "Shapes, not rules. And the last twelve exact.",
+     "You are ashore. That is more than some manage out here."
+    ],
+    "lose": [
+     "Five moves ahead is the weakest thing about me. You found it.",
+     "{octavia} learned the same lesson twice over and looks twice as far."
+    ],
+    "draw": [
+     "We came in on the same wave."
+    ]
+   }
+  },
+  "vesper": {
+   "name": "Vesper",
+   "age": 41,
+   "role": "Deep-sea captain",
+   "about": "She sails where the charts stop. She reads each edge and each corner as a whole, never disc by disc, uses her time, and looks as deep as it lets her, with every position she has passed kept exactly. Near the end she goes first for the part of the board where an odd number of squares is left, so that the last move there is hers, and she plays the ending without error.",
+   "bot": "trieu-ngan",
+   "level": "max",
+   "plates": 5,
+   "look": "long hat",
+   "lines": {
+    "hello": [
+     "Past this point there are no charts. I read the whole edge at a glance, and I am never the one who moves second at the end."
+    ],
+    "start": [
+     "I do not see discs. I see an edge, and what kind of edge it is.",
+     "Cast off."
+    ],
+    "iCorner": [
+     "And with it the whole coast."
+    ],
+    "youCorner": [
+     "You read that edge better than I did."
+    ],
+    "iBig": [
+     "Broadside."
+    ],
+    "youBig": [
+     "Heavy seas. The hull holds."
+    ],
+    "iPass": [
+     "No move. I am in irons."
+    ],
+    "youPass": [
+     "You are in irons. I come about."
+    ],
+    "late": [
+     "Count the empty squares in each corner of the board. Odd is where I go. The last move there is mine."
+    ],
+    "win": [
+     "The last move in every quarter. That is all an ending is.",
+     "Deep water, and I know the bottom."
+    ],
+    "lose": [
+     "You took the last move from me. Nobody takes that from me.",
+     "I shall be thinking about that edge all night."
+    ],
+    "draw": [
+     "Neither ship gives way."
+    ]
+   }
+  },
+  "cordelia": {
+   "name": "Cordelia",
+   "age": 48,
+   "role": "Reads the barometers",
+   "about": "Every storm on this ocean is named in her log before it breaks. She cares where the discs lie and not how many they are, and judges by shapes learned from more positions than she has seen days. She looks ten or eleven moves ahead in the middle of a game and further as the board fills, and her judgement never wanders. With twenty squares empty she knows who wins. With fifteen she knows the score.",
+   "bot": "trang-ram-sonnet",
+   "level": "Master",
+   "plates": 5,
+   "look": "wave comb",
+   "lines": {
+    "hello": [
+     "You will have more discs than I do for a long time. Do not let it comfort you."
+    ],
+    "start": [
+     "Ten moves out, the glass is already falling for one of us.",
+     "I care where they lie. How many is for later."
+    ],
+    "iCorner": [
+     "The pressure drops, exactly here."
+    ],
+    "youCorner": [
+     "I had that storm tracking the other way."
+    ],
+    "iBig": [
+     "Now it breaks."
+    ],
+    "youBig": [
+     "Thunder. The glass has not moved."
+    ],
+    "iPass": [
+     "No move for me. That reading I did not have."
+    ],
+    "youPass": [
+     "You have no move. The eye of it."
+    ],
+    "late": [
+     "Twenty squares, and I know who wins. Say nothing. At fifteen I shall tell you the score."
+    ],
+    "win": [
+     "I knew at twenty squares. I knew the score at fifteen.",
+     "{noor} at the pier has my eye. She has only to keep it on the board."
+    ],
+    "lose": [
+     "The glass was wrong. It is never wrong.",
+     "You out-read me. I shall log it under your name."
+    ],
+    "draw": [
+     "Dead calm. In this ocean."
+    ]
+   }
+  },
+  "soraya": {
+   "name": "Soraya",
+   "age": 52,
+   "role": "Admiral of the storm fleet",
+   "about": "The fleet that rides out the storms sails under her flag. She looks as deep as her time allows, most often nine to fourteen moves, with a judgement learned from games played to the end: a weight for every way the discs can lie on each edge, round each corner and along each row and diagonal. Lines that a shorter look makes unlikely she lets go. With twenty squares empty, if there is time, she looks for the win that is certain.",
+   "bot": "am-duong",
+   "level": "Master",
+   "plates": 5,
+   "look": "chignon hat",
+   "lines": {
+    "hello": [
+     "I give no orders I have not followed to the end. Take your station."
+    ],
+    "start": [
+     "However deep the clock lets me go. No shallower.",
+     "Signal the fleet. We engage."
+    ],
+    "iCorner": [
+     "That flank is closed."
+    ],
+    "youCorner": [
+     "You turned my flank. That is rare."
+    ],
+    "iBig": [
+     "The line advances."
+    ],
+    "youBig": [
+     "You have taken ground. Holding it is another matter."
+    ],
+    "iPass": [
+     "No move. I am outmanoeuvred, for the moment."
+    ],
+    "youPass": [
+     "You have no move. As ordered."
+    ],
+    "late": [
+     "Twenty squares. I am no longer looking for a good move. I am looking for the certain one."
+    ],
+    "win": [
+     "Certain from twenty squares out.",
+     "{luz} lights lamps by the lake and sees no further than her pole. We are of one house, she and I."
+    ],
+    "lose": [
+     "The clock ran out before the sea did.",
+     "You have beaten the fleet. Only {selene} is left, and she does not sail. She waits."
+    ],
+    "draw": [
+     "Both fleets intact. I have had worse days."
+    ]
+   }
+  },
+  "selene": {
+   "name": "Selene",
+   "age": 66,
+   "role": "Keeper of the last light",
+   "about": "Her lighthouse stands where the map ends, and every ship on the ocean steers by it. She uses almost all the time she is given and looks sixteen to eighteen moves ahead. She judges by shapes whose worth she learned from games, and learned again, and learned a third time. Long before the board is full she has played the whole game through to its end, and from about eighteen empty squares she knows the final count. Only in the first ten moves, between two moves she cannot tell apart, does she let chance decide.",
+   "bot": "eclipse",
+   "level": "max",
+   "plates": 5,
+   "look": "long comb",
+   "lines": {
+    "hello": [
+     "So you have crossed the whole Moon. Sit. I have been watching your light come nearer for some time."
+    ],
+    "start": [
+     "The first few moves I may leave to chance. Nothing after them.",
+     "I shall take my time. All of it."
+    ],
+    "iCorner": [
+     "The light turns, and that shore is mine."
+    ],
+    "youCorner": [
+     "You have a corner from me. Very few ever have."
+    ],
+    "iBig": [
+     "Now you see the whole coast, lit at once."
+    ],
+    "youBig": [
+     "Take them. I played this game to its end some moves ago."
+    ],
+    "iPass": [
+     "No move. Now that, I did not foresee."
+    ],
+    "youPass": [
+     "You have no move. I saw this from a long way off."
+    ],
+    "late": [
+     "I finished this game some time ago. You are welcome to see how it ends."
+    ],
+    "win": [
+     "The light does not go out. Come back when you have looked further.",
+     "{octavia} keeps an observatory and does not use her time. I use all of mine."
+    ],
+    "lose": [
+     "Then the light is yours. I did not think to hand it on.",
+     "You saw further than I did. I had stopped believing that could happen."
+    ],
+    "draw": [
+     "Neither light dims the other. I can live with that. I am not sure you should."
+    ]
+   }
+  }
+ }
+}

@@ -1,6 +1,8 @@
 /* ── The game on the page: who sits where, whose turn it is, and what is said about it ──
-   KIT is set by the build. The game's own page seats a person against the house bot or against a friend. The
-   kit's board (KIT) carries no bot: a person sits on each side unless a bot's file is loaded for it. */
+   KIT is set by the build. The game's own page opens on the campaign (70-campaign.js), which seats one of its
+   opponents across the board; beside it a person can still sit down against the house bot or against a friend,
+   with nothing at stake. The kit's board (KIT) carries no bot and no campaign: a person sits on each side unless
+   a bot's file is loaded for it. */
 const STORE = KIT ? 'wax-and-wane-kit.v1' : 'wax-and-wane.v1';
 /** what the page calls each level of the house bot, weakest first, and how that level plays */
 const LEVELS = {
@@ -17,14 +19,27 @@ const G = {
   house: [],                                                 // the house bot's levels
   kit: [{ bot: '', info: null, level: '', file: '', error: '' }, { bot: '', info: null, level: '', file: '', error: '' }],
   shown: [2, 2], dialRaf: 0,
+  camp: null,                                                // in a game of the campaign: who sits across, and what is at stake (70-campaign.js)
 };
 const Store = {
   read() { try { return JSON.parse(localStorage.getItem(STORE)) || {}; } catch (e) { return {}; } },
   write(d) { try { localStorage.setItem(STORE, JSON.stringify(d)); } catch (e) { /* nowhere to keep it: the game goes on */ } },
 };
 function save() {
-  const live = G.screen === 'play' && !G.S.over && !G.forfeit && G.seat.every(s => s.kind === 'human' || s.bot === 'house');
+  const live = !G.camp && G.screen === 'play' && !G.S.over && !G.forfeit && G.seat.every(s => s.kind === 'human' || s.bot === 'house');
   Store.write({ cfg: G.cfg, sound: SFX.on, game: live ? { moves: G.S.history.slice(), seat: G.seat } : null });
+  if (G.camp) Camp.keep();                                   // a game of the campaign is kept with the player's points
+}
+/** Which of the page's screens is in sight: the table (setup, play), or one of the campaign's (who, world, face). */
+function show(screen) {
+  G.screen = screen;
+  const table = screen === 'setup' || screen === 'play';
+  for (const [id, on] of [['who', screen === 'who'], ['world', screen === 'world'], ['face', screen === 'face'], ['table', table]]) { const el = document.getElementById(id); if (el) el.hidden = !on; }
+  document.body.dataset.screen = screen;
+  document.body.classList.toggle('playing', screen === 'play');
+  document.body.classList.toggle('match', screen === 'play' && !!G.camp);
+  if (!KIT) Camp.top();
+  window.scrollTo(0, 0);
 }
 const esc = t => String(t).replace(/[&<>"]/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[ch]);
 
@@ -137,27 +152,30 @@ function renderHud() {
   $('#dial').setAttribute('aria-label', `${n[0]} ${S.count[0]}, ${n[1]} ${S.count[1]}`);
   dialTo(S.count[0], S.count[1]);
   const done = S.over || G.forfeit;
-  $('#btns').innerHTML = (done ? '<button type="button" class="plate" data-act="again">Play again</button>'
+  $('#btns').innerHTML = G.camp ? Camp.buttons() : (done ? '<button type="button" class="plate" data-act="again">Play again</button>'
     : `<button type="button" class="plate" data-act="undo"${canUndo() ? '' : ' disabled'}>Take back</button>`)
     + `<button type="button" class="plate" data-act="new">${G.armed ? 'Leave this game?' : 'New game'}</button>`;
+  $('#rival').classList.toggle('thinking', !!G.camp && !done && G.seat[S.turn].kind === 'bot');
   View.mark(S);
 }
-/** is there a move of a person's to take back? */
-function canUndo() { return !G.forfeit && G.S.history.some((m, i) => m !== PASS_MOVE && G.seat[i % 2].kind === 'human'); }
+/** is there a move of a person's to take back? With points at stake none is. */
+function canUndo() { return !G.forfeit && !(G.camp && G.camp.rated) && G.S.history.some((m, i) => m !== PASS_MOVE && G.seat[i % 2].kind === 'human'); }
 function startGame(kept) {
-  G.token++; G.screen = 'play'; G.forfeit = null; G.armed = 0; G.note = '';
+  G.token++; G.forfeit = null; clearTimeout(G.armed); G.armed = 0; G.note = '';
   G.seat = kept ? kept.seat : seats(); G.S = (kept && replay(kept.moves)) || newGame();
   View.quiet = false; View.setInput(null);
-  document.body.classList.add('playing'); $('#setup').hidden = true; $('#hud').hidden = false; $('#toast').classList.remove('on');
+  $('#setup').hidden = true; $('#hud').hidden = false; $('#rival').hidden = !G.camp; $('#toast').classList.remove('on');
+  show('play');
   View.fit(); View.set(G.S.b); drawDiscs(); G.shown = G.S.count.slice(); dialTo(G.S.count[0], G.S.count[1], true);
   if (!kept) snd('start');
   save(); turn(G.token);
 }
 function toSetup() {
-  G.token++; G.screen = 'setup'; G.forfeit = null; G.armed = 0;
+  G.token++; G.forfeit = null; clearTimeout(G.armed); G.armed = 0; G.camp = null;
   Bots.dropAll('the game was left'); View.setInput(null);
-  document.body.classList.remove('playing'); $('#hud').hidden = true; $('#setup').hidden = false; $('#toast').classList.remove('on');
-  renderSetup(); View.fit(); save(); demo(G.token);
+  $('#hud').hidden = true; $('#rival').hidden = true; $('#setup').hidden = false; $('#toast').classList.remove('on');
+  show('setup');
+  renderSetup(); View.fit(); paintEmblem(); save(); demo(G.token);
 }
 /** While nothing is being played, the board plays by itself, slowly and without a sound. */
 async function demo(token) {
@@ -195,6 +213,7 @@ async function turn(token) {
   if (legal[0] === PASS_MOVE) {
     say(`${has(n[me])} no move`, `${plays(n[1 - me])} again.`); renderHud();
     toast(`${has(n[me])} no move`, 1250); snd('pass');
+    if (G.camp) Camp.passed(me);
     await sleep(1400);
     if (token !== G.token) return;
     playMove(S, PASS_MOVE); save();
@@ -224,6 +243,7 @@ async function turn(token) {
   $('#sub').textContent = G.note;
   await View.show(ev);
   if (token !== G.token) return;
+  if (G.camp) Camp.react(ev);
   save(); turn(token);
 }
 async function personMoves(s, token) {
@@ -231,18 +251,20 @@ async function personMoves(s, token) {
   View.setInput(null);
   const ev = playMove(G.S, s);
   if (!ev) return turn(token);
-  G.note = ''; G.armed = 0; $('#sub').textContent = '';
+  G.note = ''; clearTimeout(G.armed); G.armed = 0; $('#sub').textContent = '';
   await View.show(ev);
   if (token !== G.token) return;
+  if (G.camp) Camp.react(ev);
   save(); turn(token);
 }
 function finish() {
   const S = G.S, o = S.over, n = names(), [dark, light] = o.discs, people = G.seat.filter(s => s.kind === 'human').length;
   View.setInput(null);
-  const why = o.why === 'swept' ? `${has(n[o.loser])} no disc left.` : o.why === 'blocked' ? 'Neither side can move.' : 'The board is full.';
+  const why = o.why === 'swept' ? `${has(n[o.loser])} no disc left.` : o.why === 'blocked' ? 'Neither side can move.' : o.why === 'resign' ? 'The game was given up.' : 'The board is full.';
   if (o.winner < 0) { say(`A draw, ${dark} all`, why); snd('draw'); }
-  else { say(`${wins(n[o.winner])}, ${Math.max(dark, light)} to ${Math.min(dark, light)}`, why); snd(people === 1 && G.seat[o.winner].kind !== 'human' ? 'lose' : 'win'); View.cheer(o.winner + 1); }
-  toast($('#status').textContent, 2600);
+  else { say(o.why === 'resign' ? wins(n[o.winner]) : `${wins(n[o.winner])}, ${Math.max(dark, light)} to ${Math.min(dark, light)}`, why); snd(people === 1 && G.seat[o.winner].kind !== 'human' ? 'lose' : 'win'); View.cheer(o.winner + 1); }
+  toast($('#status').textContent, G.camp ? 1250 : 2600);       // in the campaign a sheet follows, which says it again
+  if (G.camp) Camp.finish();                                 // what the game did to the player's points, and what it opened
   renderHud(); save();
 }
 function undo() {
@@ -250,7 +272,7 @@ function undo() {
   const S = G.S;
   G.token++; Bots.dropAll('the move was taken back');
   for (;;) { const i = S.history.length - 1; if (i < 0) break; const m = undoMove(S); if (m !== PASS_MOVE && G.seat[i % 2].kind === 'human') break; }
-  G.note = ''; G.armed = 0; $('#toast').classList.remove('on');
+  G.note = ''; clearTimeout(G.armed); G.armed = 0; $('#toast').classList.remove('on');
   View.setInput(null); View.set(S.b); snd('tick');
   save(); turn(G.token);
 }
@@ -279,15 +301,18 @@ function openHelp() { $('#help').hidden = false; buildHelp(); $('[data-act=help-
 function closeHelp() { $('#help').hidden = true; }
 
 /* ── wiring ── */
-function renderSound() { $('#sound').textContent = SFX.on ? 'Sound on' : 'Sound off'; $('#sound').setAttribute('aria-pressed', SFX.on); }
+function renderSound() { const b = $('#sound'), say = SFX.on ? 'Sound on' : 'Sound off'; $('#sound-say').textContent = say; b.classList.toggle('off', !SFX.on); b.setAttribute('aria-pressed', SFX.on); b.setAttribute('aria-label', say); }
 /** The sky is painted for the window as it is. A window that only grows or shrinks a little in height (a phone's
- *  address bar coming and going) keeps the sky it has, stretched: painting it again each time would stutter. */
-const Sky = { w: 0, h: 0, paint(force) {
+ *  address bar coming and going) keeps the sky it has, stretched: painting it again each time would stutter.
+ *  scene: in the campaign, the place whose picture stands behind everything; '' for the game's own dusk. */
+const Sky = { w: 0, h: 0, scene: '', paint(force) {
   const w = window.innerWidth, h = window.innerHeight;
   if (!force && w === this.w && Math.abs(h - this.h) < 140) return;
-  this.w = w; this.h = h; paintSky($('#sky'), w, h, Math.min(2, window.devicePixelRatio || 1));
-  // and over the paint, a handful of stars that twinkle
-  const rand = rngOf(7 + Math.round(w / 40)), n = Math.max(6, Math.round(w / 150)); let html = '';
+  this.w = w; this.h = h;
+  const dpr = Math.min(2, window.devicePixelRatio || 1), place = KIT ? '' : this.scene;
+  if (place) World.scene($('#sky'), place, w, h, dpr); else paintSky($('#sky'), w, h, dpr);
+  // and over the paint, a handful of stars that twinkle, where the place has a night sky for them
+  const rand = rngOf(7 + Math.round(w / 40)), n = place && !World.lookOf(place).stars ? 0 : Math.max(6, Math.round(w / 150)); let html = '';
   for (let i = 0; i < n; i++) html += `<i style="left:${((i + 0.15 + rand() * 0.7) / n * 100).toFixed(1)}%;top:${(3 + Math.pow(rand(), 1.4) * 44).toFixed(1)}%;--d:${(7 + rand() * 9).toFixed(1)}px;--t:${(3.2 + rand() * 4).toFixed(1)}s;--w:${(-rand() * 6).toFixed(1)}s"></i>`;
   $('#stars').innerHTML = html;
 } };
@@ -297,6 +322,7 @@ function paintAll() {
 }
 function wire() {
   document.addEventListener('click', ev => {
+    if (!KIT && Camp.click(ev)) return;                      // the campaign's own screens answer for themselves
     const b = ev.target.closest('[data-act]');
     if (!b) { if (ev.target.id === 'help') closeHelp(); return; }
     const act = b.dataset.act, v = b.dataset.v;
@@ -309,19 +335,18 @@ function wire() {
     if (act === 'pick') { const p = $('#pick'); p.dataset.side = v; p.value = ''; return p.click(); }
     if (act === 'kit-level') { G.kit[+b.dataset.side].level = v; snd('pick'); return renderSetup(); }
     if (act === 'unseat') { Object.assign(G.kit[+v], { bot: '', info: null, level: '', file: '', error: '' }); Bots.drop('file' + v, 'the seat was given up'); return renderSetup(); }
-    if (act === 'start') return startGame();
-    if (act === 'again') return startGame();
+    if (act === 'start' || act === 'again') { G.camp = null; return startGame(); }
     if (act === 'undo') return undo();
     if (act === 'new') {
       // one press too many should not cost a game that is under way
-      if (G.S.history.length && !G.S.over && !G.forfeit && !G.armed) { G.armed = setTimeout(() => { G.armed = 0; if (G.screen === 'play') renderHud(); }, 3200); return renderHud(); }
+      if (G.S.history.length && !G.S.over && !G.forfeit && !G.armed) { G.armed = setTimeout(() => { G.armed = 0; if (G.screen === 'play') { renderHud(); if (!KIT) Camp.top(); } }, 3200); renderHud(); if (!KIT) Camp.top(); return; }
       clearTimeout(G.armed); return toSetup();
     }
   });
   $('#pick').addEventListener('change', ev => { const f = ev.target.files && ev.target.files[0]; if (f) takeFile(+ev.target.dataset.side, f); });
-  document.addEventListener('keydown', ev => { if (ev.key === 'Escape' && !$('#help').hidden) closeHelp(); });
+  document.addEventListener('keydown', ev => { if (ev.key !== 'Escape') return; if (!$('#help').hidden) closeHelp(); else if (!KIT) Camp.escape(); });
   let again = 0;
-  window.addEventListener('resize', () => { clearTimeout(again); again = setTimeout(paintAll, 140); });
+  window.addEventListener('resize', () => { clearTimeout(again); again = setTimeout(() => { paintAll(); if (!KIT) Camp.resized(); }, 140); });
 }
 async function boot() {
   const kept = Store.read();
@@ -336,8 +361,9 @@ async function boot() {
     G.house = info.levels || [];
     if (!G.house.includes(G.cfg.level)) G.cfg.level = G.house[Math.min(1, G.house.length - 1)] || '';
   }
+  if (KIT) return toSetup();
+  // a game with nothing at stake that was left under way comes first; else the campaign opens, on whoever played last
   const game = kept.game, fits = game && Array.isArray(game.moves) && Array.isArray(game.seat) && game.seat.length === 2
     && game.seat.every(s => s && (s.kind === 'human' || (s.kind === 'bot' && s.bot === 'house' && G.house.includes(s.level)))) && replay(game.moves) && !replay(game.moves).over;
-  if (fits && !KIT) startGame(game); else toSetup();
+  Camp.boot(fits ? game : null);
 }
-boot();

@@ -116,14 +116,20 @@ GAMES = {
             'vs': {'mei': {'w': 5, 'l': 0, 'd': 0}, 'lan': {'w': 5, 'l': 1, 'd': 0}, 'lian': {'w': 3, 'l': 2, 'd': 0}},
             'match': {'opp': 'yue', 'rated': True, 'side': 0, 'moves': [2585,8384,2305,8146,7059,8646,3079,8920,2836,9537,8247,8394,8640,8659,5409,6588,6570,6595,128,6072,8193,8641,8384,11353,6081,9139,4635,2136,4754,1936,5272,1423]}}),
         play=['waitsel:#said:not(:empty)', 'wait:1500', 'js:press(sqOf("f5"))', 'wait:500']),
-    # its title screen plays the game by itself: wait for a few moves. The picture of play goes back to a game against
-    # the computer in its middle, with the person to move and every square a disc can go on marked
+    # on the portal, with its players at the saves service, like Caro. The title picture is the Moon as a player finds
+    # it part of the way across: half of it lit, the people of the first sea with their albums filling. The picture of
+    # play goes back to a game for points in the Sea of Cold, the player to move, once she has said her word
     'wax-and-wane': dict(
-        title=['wait:15000'],
-        ls={'wax-and-wane.v1': {'cfg': {'vs': 'bot', 'level': 'gibbous', 'side': 0}, 'sound': True,
-            'game': {'moves': [44,29,20,43,30,22,38,31,42,51,21,37,45,34,39,47,23,15,19,26,25,46,58,12,11,53],
-                     'seat': [{'kind': 'human'}, {'kind': 'bot', 'bot': 'house', 'level': 'gibbous', 'name': 'The computer', 'label': 'Computer'}]}}},
-        play=['waitsel:.cell.can', 'wait:900']),
+        shut=[r'/games/[^/]+/players'],
+        title_ls=kept_player('wax-and-wane', 'Sonic', {'points': 948, 'peak': 960, 'at': 'nectar', 'streak': 3, 'fresh': ['ines'], 'match': None,
+            'vs': {'posy': {'w': 5, 'l': 0, 'd': 0}, 'dot': {'w': 5, 'l': 0, 'd': 0}, 'greta': {'w': 4, 'l': 1, 'd': 0}, 'wren': {'w': 3, 'l': 1, 'd': 0}, 'sabine': {'w': 1, 'l': 2, 'd': 0},
+                   'pippa': {'w': 4, 'l': 0, 'd': 0}, 'tilde': {'w': 3, 'l': 1, 'd': 0}, 'noor': {'w': 2, 'l': 1, 'd': 0}, 'coral': {'w': 2, 'l': 2, 'd': 0}, 'luz': {'w': 1, 'l': 1, 'd': 0}, 'fern': {'w': 1, 'l': 0, 'd': 0}}}),
+        title=['waitsel:#mapbox .spot', 'wait:2600'],
+        ls=kept_player('wax-and-wane', 'Sonic', {'points': 948, 'peak': 960, 'at': 'cold', 'streak': 3, 'fresh': [],
+            'vs': {'posy': {'w': 5, 'l': 0, 'd': 0}, 'dot': {'w': 5, 'l': 0, 'd': 0}, 'greta': {'w': 4, 'l': 1, 'd': 0}, 'wren': {'w': 3, 'l': 1, 'd': 0}, 'sabine': {'w': 1, 'l': 2, 'd': 0},
+                   'pippa': {'w': 4, 'l': 0, 'd': 0}, 'tilde': {'w': 3, 'l': 1, 'd': 0}, 'noor': {'w': 2, 'l': 1, 'd': 0}, 'coral': {'w': 2, 'l': 2, 'd': 0}, 'luz': {'w': 1, 'l': 1, 'd': 0}, 'fern': {'w': 1, 'l': 0, 'd': 0}},
+            'match': {'opp': 'tove', 'rated': True, 'side': 0, 'moves': [44,29,20,43,30,22,38,31,42,51,21,37,45,34,39,47,23,15,19,26,25,46,58,12,11,53]}}),
+        play=['waitsel:#said:not(:empty)', 'waitsel:.cell.can', 'wait:1200']),
     # its title picture is the map, as a player finds it part of the way along the road: stars won at the first places,
     # the rainbow half lit. The picture of play goes back to a game at the lantern street with a row of stars one short,
     # picks the lantern that would fill it and points at the gap, so the way it would take is showing

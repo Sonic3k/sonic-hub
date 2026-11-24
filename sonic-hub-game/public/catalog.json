@@ -101,8 +101,8 @@
       "key": "wax-and-wane", "title": "Wax & Wane", "alt": ["Wax and Wane", "Othello", "Reversi", "Cờ lật", "Co lat"],
       "lang": "en", "group": "cards", "sub": "board", "machine": "web", "year": 2026, "tags": ["originals", "two-player"],
       "players": 2, "ai": 1, "inputs": ["mouse", "touch", "keyboard"], "maker": "Sonic Hub", "added": "2026-11-19",
-      "kind": "Board game of moons that turn, against the AI or a friend",
-      "blurb": "Othello, played with moons. Every disc is a moon, light on one face and dark on the other. Put one down so that it encloses the other side’s moons in a straight line, and they turn to your side one after another. Whoever holds more of the sky when nobody can move has won. Plays by the rules of Othello.",
+      "kind": "Board game campaign of moons that turn, against the AI or a friend",
+      "blurb": "Othello, played with moons. Every disc is a moon, light on one face and dark on the other: enclose the other side’s moons in a straight line and they turn to yours, one after another. The campaign is a crossing of the Moon. On the shore of each of its seas women sit down to play you for points, and every win brings the light further across the map and puts a picture in her album. They talk while they play, each about the way she plays. A friend can sit down too, with nothing at stake. Plays by the rules of Othello.",
       "shots": ["title", "play"], "play": "/games/wax-and-wane"
     },
     {
