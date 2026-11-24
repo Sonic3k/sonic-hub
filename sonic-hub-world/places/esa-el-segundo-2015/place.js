@@ -28,7 +28,7 @@ const light = {
     // over the kitchen, the bathroom; outside, the lamp between his door and the next and the globe by the stair tower
     desk: [...R(IN.wallLamp.su, 1.3, IN.wallLamp.sv + 0.12), 5.5], lamp: [...R(IN.tvLamp.u, 1.42, IN.tvLamp.v + 0.2), 6],
     bed: [...R((IN.bedLamps[0].u + IN.bedLamps[1].u) / 2, 1.5, ROOM.w - 1.0), 6.5],
-    kitchen: [...R(IN.ceiling.tube[0], 2.2, IN.ceiling.tube[1]), 5.5], bath: [...R(5.0, 2.1, 2.95), 3.2],
+    kitchen: [...R(IN.ceiling.tube[0], 2.2, IN.ceiling.tube[1]), 5.5], bath: [...R(5.15, 2.15, 2.7), 3.2],
     walk1: [ROOM.x0 - 0.55, G2 + 2.2, ROOM.z0 - 0.11, 7], walk2: [13.45, G2 + 2.55, ROOM.z0 - 0.11 + P.MOD, 7],
     lot: [-2.5, 8.5, 22, 26],
   },
@@ -166,12 +166,15 @@ function sight(camera) {
   if (far !== farNow) { farNow = far; camera.far = far; camera.updateProjectionMatrix(); }
 }
 
-/* the doorway of his studio is a wall when the door is shut (the walker cannot pass a closed door) */
+/* a doorway is a wall when its door is shut (the walker cannot pass a closed door): the studio's, and the bathroom's */
 const doors = { room: null };
 function floorWithDoors(x, z, y) {
   const f = P.floorAt(x, z, y);
   if (doors.room && !doors.room.entryOpen()) {
     if (x > ROOM.x0 - 0.3 && x < ROOM.x0 + 0.1 && z > ROOM.z0 + IN.door[0] && z < ROOM.z0 + IN.door[1] && Math.abs(y - G2) < 0.6) return 99;
+  }
+  if (doors.room && !doors.room.bathOpen()) {            // and the bathroom's, in its own wall
+    if (x > ROOM.x0 + IN.bathDoor[0] && x < ROOM.x0 + IN.bathDoor[1] && z > ROOM.z0 + IN.bath.v0 - 0.1 && z < ROOM.z0 + IN.bath.v0 + 0.2 && Math.abs(y - G2) < 0.6) return 99;
   }
   return f;
 }

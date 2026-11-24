@@ -1,7 +1,9 @@
 # Extended Stay America, El Segundo — what the place rests on
 
 Written in November 2026, when the place was first built; the studio's part was rewritten on 23 November 2026, after
-its interior was measured again from the photographs (the first build had the counter wrong). Numbers are **metres in the place's own frame**: origin at
+its interior was measured again from the photographs (the first build had the counter wrong). The bathroom's inside
+keeps the first build's arrangement, which he found right; on 24 November its fixtures were redrawn after photographs
+of this hotel's bathrooms found on the web. Numbers are **metres in the place's own frame**: origin at
 33.92290 N, 118.39500 W, x east, z south, y up (ground 0, the upper walkway 3.05). `plan.js` holds the hotel and the
 studio as numbers; `osm.js` the streets and buildings around it.
 
@@ -17,6 +19,7 @@ studio as numbers; `osm.js` the streets and buildings around it.
 | The computer and the phone of that moment | Sonic Hub `/api/desk/at?at=2015-09-22T11:15`: Asus N56, Windows 8.1; iPhone 6s | |
 | Streets (centre lines, lanes, one-way), building footprints and heights (LA County), the light rail and the station platform | OpenStreetMap, © OpenStreetMap contributors, ODbL; read in November 2026 by `data/osm2js.py` into `osm.js`. Buildings mapped as built after 2015 are left out (`LATER` there), and the hotel and the shopping centre's own buildings are drawn by hand (`HAND`) | |
 | Layout of the lots, rows, planters, roofs, trees | satellite pictures (Google, Esri), looked at for reference only; nothing of them is in the page | |
+| The bathroom's inside, which he did not photograph | travellers' photographs of this hotel (2024, 2026), the hotel's own (about 2021), guests' reviews of 2015 — see "The bathroom's inside"; looked at for reference only, nothing of them is in the page | |
 
 **Clocks.** The Canon kept Vietnam time (UTC+7): its 23:47 is 09:47 in California (PDT, UTC−7), when the lot photos
 are in morning sun from the south-east, as they should be; its 09:15 on the 22nd is 19:15 on Monday the 21st (the
@@ -71,8 +74,9 @@ laptop's lock screen in 1774 is too small to read; the place shows 7:15). Sonic 
   top of each door and drawer. A fluorescent fitting with a wraparound lens over it; a supply diffuser and a return
   grille in the ceiling (there is no unit under the window).
 - **Bathroom box** in the south-east corner: its west face carries the framed print and faces the bed; its door, a flat
-  slab with a round knob in the north face, is hinged on the east and opens out toward the kitchen (open in 0272, shut
-  in 1776). The inside was not photographed: it is drawn as this chain's studios have it.
+  cream slab in the north face with a lever on a round rose and a double hook on its inside (0272), is hinged on the
+  east and opens out toward the kitchen (open in 0272, shut in 1776). Shut, it stops the walker. The inside was not
+  photographed: see "The bathroom's inside" below. The door stands 9 cm west of where 0272 alone would put it (same section).
 - **Bed** against the green south wall (1773, and 1776 from the door): a full — its covers 1.45 m across, their foot
   2.08 m from the wall, their top 0.63 high; an espresso headboard 1.53 wide, 1.56 high and 6 cm thick with two tan
   panels 0.62 wide; a white quilt stitched in diamonds, turned back in a fold before three pillows; a tan runner 0.69
@@ -84,9 +88,64 @@ laptop's lock screen in 1774 is too small to read; the place shows 7:15). Sonic 
 - **Front wall**: the entry door 0.82–1.73 m from the north wall (hinged north, opening in across the closet), the
   window 2.15–3.31, plaid curtains from a track at the ceiling down to 0.45 above the floor, two white wands. Door and
   window are the mean of what 1779, 0127 and the inside pictures give (±5 cm).
-- **Guessed or approximate:** the bathroom's inside; what the closet holds beyond its rail; the exact places of the small
+- **Guessed or approximate:** that the bathroom's fixtures and colours in 2015 looked as later photographs show them
+  (below; where they stand is as he remembers); what the closet holds beyond its rail; the exact places of the small
   things on the counter and the dresser; the badge lying on the counter (no photograph shows where it was — it is drawn
   with its words only, no portrait, no logo); the mirror shows a painted reflection, not a real one.
+
+### The bathroom's inside
+
+None of his photographs shows it (0272 looks along its door wall; the open leaf hides the doorway).
+
+**Where things stand is his own word.** The first build guessed an arrangement: the tub across the far end, against
+the back wall, on the left of the door; the pan on the party wall, facing the door, towels over it; the basin to the
+right, in the far corner against the wall that carries the print. He looked at it and found it right (24 November
+2026). It stands, and nothing below moves a fixture.
+
+**A wrong turn, kept here so that it is not taken again.** On 23 November the inside was rebuilt from a traveller's
+photograph of another studio's bathroom in this building. That studio is the other hand of his (in the same
+traveller's pictures its door, window, bed and kitchen are his mirrored), so the bathroom was mirrored with it: the tub
+went against the print's wall, the basin and the pan to the back wall. He saw at once that it was wrong. A photograph
+of another room says what the fixtures of this hotel look like; it does not say where they stand in his room, and it
+was not what he had asked for, which was to check the things in the arrangement he had already found right.
+
+**What each thing looks like** is after pictures of bathrooms in this same building, found on the web on 23 November
+2026 and used for reference only:
+
+| What it shows | Whose, when |
+|---|---|
+| A standard studio's bathroom from its door: the tub's end with its taps and tiles, the curtain, the towel shelf, the paper holder, the pan, a corner of the basin's top | a traveller's photograph on TripAdvisor, 2026 |
+| The basin close up: a flecked cultured-marble top with the bowl cast in it, a splash, one chrome tap with a lever; a white cabinet with a dark wooden pull strip; a wood-look floor and a dark base (perhaps an accessible room) | a traveller's two photographs on TripAdvisor, 2024 |
+| An accessible room's bathroom: a one-piece tub with a curved chrome rod and a white curtain, the same chrome towel shelf, a dark-framed mirror over the basin, ochre walls | the hotel's own pictures as a booking site shows them, about 2021 |
+| Words: the tub's finish and "the grout around the tub" (a guest, September 2015); "shower/tub combination", hair dryer | guests' reviews and the listings' lists of amenities |
+
+**Heights and sizes, measured off the first picture.** Its far wall carries ten rows of square tiles between the tub's
+rim and their top. Six-inch tiles are the only standard size that leaves the towel shelf within reach and the tiles'
+top under the ceiling (the roll of paper then comes out 11.8 cm wide, which a roll is). The rows give a scale up that
+wall and the wall's foot its zero; the picture hangs 3.8° off level and is levelled first. So: the tub's rim 0.31 m
+over the floor (low: a 14-inch tub with the floor built up round it), the tiles' top 1.86, the valve 0.78, the spout
+0.42, the towel shelf 0.49 wide with its rails at 1.70, the basin's top 0.83 high and 0.57 deep (`plan.js`,
+`IN.bathIn`).
+
+**Checked for sense** (`checks.mjs` holds it): nothing stands in the doorway; the tub, the pan and the basin stand
+apart; from the pan's middle it is 0.44 m to the tub and 0.60 m to the basin; there is 0.79 m of floor before it; the
+shelf is over its tank, a hand from the tub; the taps are on the party wall, where the next studio's bathroom backs
+on. One thing did not fit: a 30-inch tub against the back wall reaches to 5.69 m, and 0272 puts the hinge jamb of the
+door at about 5.78 (± 0.06, by the leaf's height in the picture) — inside the tub. The door is drawn 9 cm west of
+that, its jamb flush with the tub's edge; set beside 0272 the difference cannot be seen.
+
+**Where that photograph and his room part.** In the traveller's picture the pan stands in the corner beside the
+basin, its tank under an arm of the basin's top, and the wall facing the door carries only the towel shelf and the
+paper. Here the pan is where he found it right: on that wall, facing the door, the shelf over it.
+
+**Likely, not seen:** that the look of 2015 was this one. For it: the bedroom in the same traveller's pictures of 2026
+still has the green wall, the headboard and the lamps of his photographs, so the refit he lived in was still standing;
+and a guest of September 2015 writes of the tub and of the grout round it — a tiled tub, as here. Against: the floor in
+the 2026 picture is a later grey board (the 2024 picture has brown ones like his kitchen's, which are what is drawn)
+and its base a dark teal (drawn brown, like the room's). The ochre of the walls, the curved rod, the mirror and its
+frame are known only from 2021 and after; the light is a white wraparound cover seen in one corner of a 2026 picture
+and is put over the mirror; the shower's rose, the fan's grille and what lies on the shelves are after the usual. The
+mirror shows a painted reflection.
 
 ## The hotel
 
@@ -134,4 +193,5 @@ laptop's lock screen in 1774 is too small to read; the place shows 7:15). Sonic 
 
 No logo anywhere: shop names are plain words in common typefaces. The badge has no portrait and no logo. The
 bed-cover, curtains and the print on the bathroom wall are drawn after their kind, not copied. Satellite pictures are
-not in the page.
+not in the page; nor are the photographs of the bathroom found on the web: its tiles, stone and fittings are drawn
+after their kind.

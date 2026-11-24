@@ -44,6 +44,21 @@ const mirrorTex = () => plateTex(96, 160, (g, w, h) => {   // what the mirror sh
   g.fillStyle = 'rgba(255,255,255,0.08)'; g.fillRect(0, 0, w, h);
 });
 
+const bathMirrorTex = () => plateTex(128, 160, (g, w, h) => {   // what the bathroom's mirror shows: the tub's tiled recess across the room, the curtain drawn back at the taps' end (on the left, as one stands at the basin)
+  g.translate(w, 0); g.scale(-1, 1);
+  g.fillStyle = '#b08a48'; g.fillRect(0, 0, w, h);
+  g.fillStyle = '#e9e4d6'; g.fillRect(0, 0, w, h * 0.09);                                                   // the ceiling
+  g.fillStyle = '#c9b790'; g.fillRect(w * 0.24, h * 0.3, w * 0.5, h * 0.52);                                // the tiles, to above head height
+  g.strokeStyle = 'rgba(120,100,70,0.35)'; g.lineWidth = 1;
+  for (let i = 1; i < 9; i++) { g.beginPath(); g.moveTo(w * 0.24 + w * 0.5 * i / 9, h * 0.3); g.lineTo(w * 0.24 + w * 0.5 * i / 9, h * 0.82); g.stroke(); }
+  for (let j = 1; j < 9; j++) { g.beginPath(); g.moveTo(w * 0.24, h * 0.3 + h * 0.52 * j / 9); g.lineTo(w * 0.74, h * 0.3 + h * 0.52 * j / 9); g.stroke(); }
+  g.fillStyle = '#f2f1ec'; g.fillRect(w * 0.22, h * 0.82, w * 0.54, h * 0.07);                               // the tub's rim
+  g.fillStyle = '#9a7a40'; g.fillRect(0, h * 0.09, w * 0.22, h * 0.91); g.fillStyle = '#a5844a'; g.fillRect(w * 0.76, h * 0.09, w * 0.24, h * 0.91);   // the walls at either hand, nearer and darker
+  g.fillStyle = '#efeee8'; g.fillRect(w * 0.66, h * 0.22, w * 0.085, h * 0.64); g.fillStyle = 'rgba(160,160,150,0.5)'; for (let i = 0; i < 4; i++) g.fillRect(w * (0.672 + i * 0.02), h * 0.22, 1, h * 0.64);   // the curtain
+  g.fillStyle = '#c9ccce'; g.fillRect(w * 0.22, h * 0.205, w * 0.54, 2);                                    // its rod
+  g.fillStyle = '#5f4a38'; g.fillRect(0, h * 0.95, w, h * 0.05);
+  const v = g.createLinearGradient(0, 0, 0, h); v.addColorStop(0, 'rgba(255,246,225,0.22)'); v.addColorStop(0.5, 'rgba(255,246,225,0.04)'); v.addColorStop(1, 'rgba(40,30,15,0.28)'); g.fillStyle = v; g.fillRect(0, 0, w, h);
+});
 const glowTex = () => plateTex(128, 128, (g, w, h) => { const r = g.createRadialGradient(w / 2, h / 2, 2, w / 2, h / 2, w / 2); r.addColorStop(0, 'rgba(255,255,255,1)'); r.addColorStop(0.25, 'rgba(255,255,255,0.5)'); r.addColorStop(0.6, 'rgba(255,255,255,0.12)'); r.addColorStop(1, 'rgba(255,255,255,0)'); g.fillStyle = '#000'; g.fillRect(0, 0, w, h); g.fillStyle = r; g.fillRect(0, 0, w, h); });
 
 /* ── soft and turned shapes ── */
@@ -94,6 +109,28 @@ const pillow = (w, h, d, nu = 14, nv = 10) => {
   }
   const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3)); g.setAttribute('uv', new THREE.Float32BufferAttribute(uv, 2)); g.setIndex(idx); g.computeVertexNormals(); return g;
 };
+/** the outline of the rectangle x0..x1 × z0..z1 with its corners rounded to r, n steps a corner: [[x, z], …], turning from x toward z */
+const rounded = (x0, x1, z0, z1, r, n = 6) => {
+  const out = [];
+  for (const [cx, cz, a0] of [[x1 - r, z1 - r, 0], [x0 + r, z1 - r, 90], [x0 + r, z0 + r, 180], [x1 - r, z0 + r, 270]])
+    for (let i = 0; i <= n; i++) { const a = (a0 + 90 * i / n) * Math.PI / 180; out.push([cx + Math.cos(a) * r, cz + Math.sin(a) * r]); }
+  return out;
+};
+/** a hollow sunk from that outline (its rim at y = 0): rings step down by `depth` and in by ins = [toward +x, toward -x, toward +z,
+    toward -z] to a flat floor, steep at the rim and rounding into the floor. Seen from inside. Its texture lies flat, seen from above */
+const hollow = (x0, x1, z0, z1, r, depth, ins, o = {}) => {
+  const n = o.n ?? 6, k = o.k ?? 7, per = o.rep ?? 1, N = 4 * (n + 1), pos = [], uv = [], idx = [];
+  for (let j = 0; j <= k; j++) {
+    const a = j / k * Math.PI / 2, e = 1 - Math.cos(a), y = -depth * Math.sin(a);
+    for (const [x, z] of rounded(x0 + ins[0] * e, x1 - ins[1] * e, z0 + ins[2] * e, z1 - ins[3] * e, r * (1 - 0.3 * e), n)) { pos.push(x, y, z); uv.push(x / per, z / per); }
+  }
+  const mid = pos.length / 3, mx = (x0 + ins[0] + x1 - ins[1]) / 2, mz = (z0 + ins[2] + z1 - ins[3]) / 2; pos.push(mx, -depth, mz); uv.push(mx / per, mz / per);
+  for (let j = 0; j < k; j++) for (let i = 0; i < N; i++) { const A = j * N + i, B = j * N + (i + 1) % N; idx.push(A, A + N, B, B, A + N, B + N); }
+  for (let i = 0; i < N; i++) idx.push(k * N + i, mid, k * N + (i + 1) % N);
+  const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3)); g.setAttribute('uv', new THREE.Float32BufferAttribute(uv, 2)); g.setIndex(idx); g.computeVertexNormals(); return g;
+};
+/** lay a shape's texture flat as seen from above, per metres to a repeat (for a bowl cast in a speckled top: the flecks run on) */
+const flatUV = (g, per = 1) => { const p = g.attributes.position, uv = g.attributes.uv; for (let i = 0; i < p.count; i++) uv.setXY(i, p.getX(i) / per, p.getZ(i) / per); return g; };
 /** set a shape down in the builder's frame: tilted (o.rx, o.rz, degrees) about its own origin, then turned ry clockwise from above */
 const set = (b, mat, g, x, y, z, ry = 0, o = {}) => { if (o.rx) g.rotateX(o.rx * Math.PI / 180); if (o.rz) g.rotateZ(o.rz * Math.PI / 180); if (ry) g.rotateY(-ry * Math.PI / 180); g.translate(x, y, z); return b.geo(mat, g, o); };
 
@@ -443,27 +480,104 @@ export function buildRoom(scene, shared, ctx) {
     grille(Ce.supply[0], Ce.supply[1], 0.25, 0.3, false); grille(Ce.ret[0], Ce.ret[1], 0.42, 0.36, true);
     b.cyl(plain('#f3f2ee', 0.5), Ce.sprinkler[0], CEIL - 0.012, Ce.sprinkler[1], 0.035, 0.012, { seg: 12, cast: false }); b.cyl(M.chrome(), Ce.sprinkler[0], CEIL - 0.04, Ce.sprinkler[1], 0.01, 0.03, { seg: 8, cast: false });
 
-    /* inside the bathroom (no photograph: this chain's studios have a tub across the far end, the pan facing the door,
-       the basin to the right) */
-    const iu0 = bu + 0.1, iv0 = bv + 0.1;
-    b.box(M.whiteTile(), iu0, -0.01, iv0, d, 0.003, w, { uv: [0.8, 0.8], uvw: true, cast: false });
-    b.box(M.plain('#f4f3ef', 0.25), d - 0.78, 0, iv0, d, 0.5, w, { solid: true });
-    b.box(M.plain('#e9e8e2', 0.2), d - 0.7, 0.2, iv0 + 0.08, d - 0.08, 0.505, w - 0.08, { cast: false });
-    b.box(M.whiteTile(), d - 0.012, 0.5, iv0, d, 1.95, w, { uv: [0.8, 0.8], uvw: true, cast: false });
-    b.cyl(X.steel(), d - 0.8, 1.98, iv0, 0.012, w - iv0, { rx: 90, seg: 8, cast: false });
-    b.box(M.plain('#e9e4d6', 0.95), d - 0.8, 0.55, iv0 + 0.02, d - 0.79, 1.96, iv0 + 0.62, { cast: false });
-    b.push((bd0 + bd1) / 2 - 0.05, 0, w - 0.02, 180);
-    const por = M.plain('#f5f5f2', 0.2);
-    b.cyl(por, 0, 0, 0.36, 0.13, 0.38, { seg: 16, r2: 0.17 }); b.sphere(por, 0, 0.38, 0.4, 1, { sx: 0.2, sy: 0.05, sz: 0.26, seg: 16 });
-    b.box(por, -0.2, 0.38, 0.0, 0.2, 0.78, 0.2, {}); b.box(por, -0.21, 0.78, -0.01, 0.21, 0.81, 0.21, {});
-    b.pop(); b.solid((bd0 + bd1) / 2 - 0.27, 0, w - 0.72, (bd0 + bd1) / 2 + 0.17, 0.8, w);
-    b.box(M.plain('#e9e2d2', 0.5), iu0, 0, iv0 + 0.5, iu0 + 0.52, 0.82, w - 0.02, { solid: true });
-    b.box(M.plain('#f2efe7', 0.25), iu0, 0.82, iv0 + 0.48, iu0 + 0.56, 0.86, w, {});
-    b.cyl(M.plain('#fafaf7', 0.15), iu0 + 0.27, 0.8, (iv0 + 0.5 + w) / 2, 0.17, 0.065, { seg: 18, cast: false });
-    b.box(M.plain('#cbd5d9', 0.04, 1), iu0, 1.1, iv0 + 0.55, iu0 + 0.012, 1.85, w - 0.08, { cast: false });
-    b.box(ctx.lampMat('#fff5e6', 1.8, 0.95, 0.04), iu0 + 0.02, 1.95, iv0 + 0.65, iu0 + 0.1, 2.03, w - 0.18, { cast: false });
-    b.cyl(X.steel(), iu0 + 0.7, 1.35, w - 0.03, 0.01, 0.5, { rz: -90, seg: 6, cast: false });                           // a towel on its bar, on the south wall
-    b.box(M.plain('#f7f6f2', 0.95), iu0 + 0.74, 0.95, w - 0.07, iu0 + 1.16, 1.37, w - 0.01, { cast: false });
+    /* INSIDE THE BATHROOM. None of his photographs shows it. WHERE things stand is the first build's, which he looked at
+       and found right (24 Nov 2026): the tub across the far end, against the back wall, on the left of the door; the pan
+       on the party wall, facing the door, towels over it; the basin to the right, against the wall that carries the
+       print. WHAT each thing looks like, and its heights, are after photographs of bathrooms in this same building (a
+       traveller's of 2026 and another's of 2024, the hotel's own of about 2021). The floor is the kitchen's boards.
+       EVIDENCE.md, "The bathroom's inside", says which is which, and what was got wrong on the way. */
+    {
+      const Bi = IN.bathIn, iu0 = bu + 0.1, iv0 = bv + 0.1, T = Bi.tile, rim = Bi.rim, tw = Bi.tub, tl = w - iv0, tu0 = d - tw, tc = d - (0.05 + tw - 0.085) / 2, sw = w - 0.012;
+      const ochre = X.roomWall(Bi.wall), enamel = M.plain('#f6f5f1', 0.16), por = M.plain('#f5f5f2', 0.2), chr = X.chrome(), stone = X.marble(), cloth = M.plain('#f6f5f0', 0.95), mahog = M.plain('#6a3b25', 0.5), tile = X.bathTile();
+      const tuv = { uv: [T.size * 2, T.size * 2], cast: false };
+      b.box(X.vinyl(), iu0, -0.012, iv0, d, 0.003, w, { uv: [1.2, 1.2], uvw: true, cast: false });
+      // the paint: a skin on each wall's inner face, the doorway left clear
+      b.box(ochre, iu0, 0, w - 0.006, d, CEIL, w, { cast: false }); b.box(ochre, d - 0.006, 0, iv0, d, CEIL, w, { cast: false }); b.box(ochre, iu0, 0, iv0, iu0 + 0.006, CEIL, w, { cast: false });
+      b.box(ochre, iu0, 0, iv0, bd0 - 0.06, CEIL, iv0 + 0.006, { cast: false }); b.box(ochre, bd1 + 0.06, 0, iv0, d, CEIL, iv0 + 0.006, { cast: false }); b.box(ochre, bd0 - 0.06, 2.09, iv0, bd1 + 0.06, CEIL, iv0 + 0.006, { cast: false });
+
+      // THE TUB across the far end: white enamelled steel from wall to wall along the back wall, low (its rim 31 cm
+      // over the floor), its waste at the party wall, a sloped back at the door's end
+      b.push(d, 0, w, 180);                       // its own frame: x from the back wall out into the room, z from the party wall toward the door
+      const ox0 = 0.05, ox1 = tw - 0.085, oz0 = 0.07, oz1 = tl - 0.065, deep = rim - 0.05;
+      { const sh = new THREE.Shape(); sh.moveTo(0, 0); sh.lineTo(tw + 0.008, 0); sh.lineTo(tw + 0.008, tl); sh.lineTo(0, tl); sh.lineTo(0, 0);
+        const hole = new THREE.Path(); rounded(ox0, ox1, oz0, oz1, 0.11).forEach(([x, z], k) => (k ? hole.lineTo(x, z) : hole.moveTo(x, z))); hole.closePath(); sh.holes.push(hole);
+        const dk = new THREE.ExtrudeGeometry(sh, { depth: 0.02, bevelEnabled: false }); dk.rotateX(Math.PI / 2); dk.translate(0, rim, 0); b.geo(enamel, dk); }
+      set(b, enamel, hollow(ox0, ox1, oz0, oz1, 0.11, deep, [0.045, 0.045, 0.075, 0.27]), 0, rim - 0.014, 0, 0, { cast: false });
+      b.box(enamel, tw - 0.022, 0, 0, tw, rim - 0.02, tl, {});                                                        // its apron
+      b.cyl(chr, (ox0 + ox1) / 2, rim - 0.014 - deep, oz0 + 0.075 + 0.16, 0.03, 0.004, { seg: 14, cast: false });     // the waste
+      b.cyl(chr, (ox0 + ox1) / 2, rim - 0.125, oz0 - 0.002, 0.034, 0.008, { rx: 90, seg: 16, cast: false });          // the overflow's plate
+      b.pop(); b.solid(tu0, 0, iv0, d, 0.62, w);
+      // six-inch flecked tiles on the three walls round it, from the rim to above head height
+      b.box(tile, d - 0.012, rim, iv0, d, T.top, w, tuv); b.box(tile, tu0 - 0.012, rim, sw, d, T.top, w, tuv); b.box(tile, Math.max(tu0 - 0.012, bd1), rim, iv0, d, T.top, iv0 + 0.012, tuv);
+      // its taps on the party wall: the valve's round plate with one lever, the spout below it, the shower's arm and rose above the tiles
+      b.cyl(chr, tc, Bi.valve, sw, 0.072, 0.01, { rx: -90, seg: 22, cast: false }); b.cyl(chr, tc, Bi.valve, sw - 0.01, 0.045, 0.012, { rx: -90, seg: 18, cast: false }); b.cyl(chr, tc, Bi.valve, sw - 0.022, 0.02, 0.04, { rx: -90, seg: 12, cast: false });
+      b.bar(chr, tc, Bi.valve, sw - 0.055, tc - 0.055, Bi.valve - 0.06, sw - 0.055, 0.015, { round: true, seg: 6, cast: false });
+      b.cyl(chr, tc, Bi.spout, sw, 0.021, 0.115, { rx: -90, seg: 12, cast: false }); b.box(chr, tc - 0.021, Bi.spout - 0.04, sw - 0.135, tc + 0.021, Bi.spout + 0.021, sw - 0.1, { cast: false });
+      b.cyl(chr, tc, Bi.spout + 0.021, sw - 0.118, 0.006, 0.02, { seg: 6, cast: false });                             // the diverter's pull
+      b.cyl(chr, tc, Bi.rose, w - 0.006, 0.028, 0.006, { rx: -90, seg: 12, cast: false });
+      b.bar(chr, tc, Bi.rose, w - 0.006, tc, Bi.rose - 0.03, w - 0.15, 0.016, { round: true, seg: 6, cast: false });
+      { const rose = turned([[0.001, 0], [0.014, 0], [0.02, 0.03], [0.04, 0.055], [0.044, 0.062], [0.001, 0.062]], 14); set(b, chr, rose, tc, Bi.rose - 0.03, w - 0.145, 0, { rx: -118, cast: false }); }
+      // the curtain's rod: its ends inside the tub's edge, bowed out over the room; the white curtain gathered at the taps' end
+      const rodAt = t => [tu0 + 0.15 - 0.21 * Math.sin(Math.PI * t), iv0 + tl * t];
+      for (let k = 0; k < 14; k++) { const [a0, c0] = rodAt(k / 14), [a1, c1] = rodAt((k + 1) / 14); b.bar(chr, a0, Bi.rod, c0, a1, Bi.rod, c1, 0.025, { round: true, seg: 8, cast: false }); }
+      b.cyl(chr, tu0 + 0.15, Bi.rod, iv0 + 0.006, 0.027, 0.007, { rx: 90, seg: 12, cast: false }); b.cyl(chr, tu0 + 0.15, Bi.rod, w - 0.006, 0.027, 0.007, { rx: -90, seg: 12, cast: false });
+      { const [a0, c0] = rodAt(0.7), [a1, c1] = rodAt(0.985), len = Math.hypot(a1 - a0, c1 - c0), ang = Math.atan2(c1 - c0, a1 - a0) * 180 / Math.PI;
+        for (const [lean, fo, dp] of [[-2.6, 4.5, 0.05], [0, 5.5, 0.05], [2.5, 3.5, 0.045]]) set(b, cloth, drape(len, len + 0.06, Bi.rod - 0.1, fo, dp, 0.012), (a0 + a1) / 2, Bi.rod - 0.03, (c0 + c1) / 2, ang, { rx: lean, cast: false });   // the one cloth gathered: its folds fan apart toward the hem
+        for (let k = 0; k <= 7; k++) { const [a, c] = rodAt(0.7 + 0.285 * k / 7); b.cyl(chr, a, Bi.rod - 0.034, c, 0.019, 0.004, { seg: 10, open: true, cast: false }); } }
+
+      // THE PAN on the party wall, facing the door, its tank against the wall
+      b.push(Bi.pan, 0, w - 0.006, 180);
+      b.box(por, -0.235, 0.34, 0, 0.235, 0.712, 0.19, {}); b.box(por, -0.245, 0.712, -0.003, 0.245, 0.745, 0.198, {});
+      b.box(chr, -0.205, 0.642, 0.19, -0.14, 0.657, 0.2, { cast: false }); b.box(chr, -0.205, 0.645, 0.2, -0.19, 0.654, 0.235, { cast: false });   // the flush lever
+      { const bowl = turned([[0.001, 0], [0.11, 0], [0.115, 0.04], [0.092, 0.1], [0.1, 0.2], [0.145, 0.295], [0.182, 0.352], [0.188, 0.37], [0.001, 0.37]], 22); bowl.scale(1, 1, 1.32); set(b, por, bowl, 0, 0, 0.445); }
+      set(b, por, cushion(0.375, 0.05, 0.47, 0.72, 0.7, 16), 0, 0.392, 0.455);
+      b.box(por, -0.1, 0.2, 0.17, 0.1, 0.37, 0.3, { cast: false });
+      b.pop(); b.solid(Bi.pan - 0.26, 0, w - 0.74, Bi.pan + 0.26, 0.8, w);
+      // over its tank, on the party wall: a chromed shelf of rails with a bar under it, towels folded on it; beside the tank, the paper
+      const Sf = Bi.shelf, f0 = Bi.pan - Sf.w / 2, f1 = Bi.pan + Sf.w / 2;
+      for (let k = 0; k < 5; k++) b.bar(chr, f0, Sf.y, w - 0.03 - k * 0.045, f1, Sf.y, w - 0.03 - k * 0.045, 0.01, { round: true, seg: 6, cast: false });
+      b.bar(chr, f0 + 0.02, Sf.y - 0.075, w - 0.2, f1 - 0.02, Sf.y - 0.075, w - 0.2, 0.018, { round: true, seg: 8, cast: false });
+      for (const u of [f0 + 0.015, f1 - 0.015]) {
+        b.bar(chr, u, Sf.y, w - 0.006, u, Sf.y, w - 0.225, 0.012, { cast: false }); b.bar(chr, u, Sf.y, w - 0.2, u, Sf.y - 0.075, w - 0.2, 0.012, { cast: false });
+        b.bar(chr, u, Sf.y - 0.1, w - 0.006, u, Sf.y - 0.075, w - 0.2, 0.012, { cast: false }); b.cyl(chr, u, Sf.y - 0.06, w - 0.006, 0.026, 0.008, { rx: -90, seg: 12, cast: false });
+      }
+      for (const [u, y, ry] of [[f0 + 0.135, 0.045, 0], [f1 - 0.135, 0.045, 0], [(f0 + f1) / 2 - 0.02, 0.12, 6]]) set(b, cloth, eased(0.24, 0.078, 0.19, 0.034, { k: 3 }), u, Sf.y + y, w - 0.12, ry);
+      const Pp = Bi.paper;
+      for (const du of [-0.08, 0.08]) { b.box(chr, Pp.u + du - 0.018, Pp.y - 0.018, w - 0.014, Pp.u + du + 0.018, Pp.y + 0.018, w - 0.006, { cast: false }); b.box(chr, Pp.u + du - 0.007, Pp.y - 0.009, w - 0.07, Pp.u + du + 0.007, Pp.y + 0.009, w - 0.014, { cast: false }); }
+      b.cyl(chr, Pp.u + 0.075, Pp.y, w - 0.062, 0.006, 0.15, { rz: 90, seg: 6, cast: false });
+      b.cyl(M.plain('#f7f6f2', 0.95), Pp.u + 0.055, Pp.y - 0.03, w - 0.062, 0.052, 0.11, { rz: 90, seg: 16, cast: false });
+
+      // THE BASIN to the right, in the far corner against the wall that carries the print: a white cabinet with a dark
+      // pull strip along it; its top of flecked cultured marble with the bowl cast in it, a splash up the two walls; one
+      // chrome tap with a lever; over it a mirror in a dark frame and the tube light in its white cover
+      const V = Bi.vanity, vf = iu0 + V.depth, vn = V.v0, vy = V.h - 0.04, bcu = iu0 + 0.3, bcv = (vn + w) / 2;
+      b.box(white, iu0, 0.1, vn, vf - 0.02, vy - 0.1, w, {}); b.box(plain('#2a2522', 0.8), iu0, 0, vn + 0.02, vf - 0.07, 0.1, w, { cast: false });   // the carcase stops under the bowl
+      b.box(white, vf - 0.036, vy - 0.1, vn, vf - 0.02, vy, w, { cast: false }); b.box(white, iu0, vy - 0.1, vn, vf - 0.036, vy, vn + 0.016, { cast: false });
+      b.box(mahog, vf - 0.02, vy - 0.15, vn, vf - 0.006, vy - 0.114, w - 0.004, { cast: false });
+      { const mid = (vn + w) / 2; for (const [v0, v1] of [[vn + 0.004, mid - 0.002], [mid + 0.002, w - 0.004]]) b.box(white, vf - 0.02, 0.105, v0, vf - 0.004, vy - 0.153, v1, { cast: false }); }
+      b.quad(ctx.lampMat('#f1efe8', 0.2, 1, 0), '-z', (iu0 + vf - 0.02) / 2, (0.1 + vy) / 2, vn - 0.0015, vf - 0.02 - iu0, vy - 0.1, { cast: false });   // its end, turned from the lamp: what the walls throw back on it
+      b.solid(iu0, 0, vn, vf + 0.02, V.h + 0.1, w);
+      { const sh = new THREE.Shape(), f = vf + 0.02, e = vn - 0.012;
+        sh.moveTo(iu0, w - 0.006); sh.lineTo(f, w - 0.006); sh.lineTo(f, e + 0.04); sh.quadraticCurveTo(f, e, f - 0.04, e); sh.lineTo(iu0, e); sh.lineTo(iu0, w - 0.006);
+        const hole = new THREE.Path(); hole.absellipse(bcu, bcv, 0.145, 0.19, 0, Math.PI * 2, true, 0); sh.holes.push(hole);
+        const tg = new THREE.ExtrudeGeometry(sh, { depth: 0.04, bevelEnabled: false, curveSegments: 22 }); tg.rotateX(Math.PI / 2); tg.translate(0, V.h, 0); b.geo(stone, tg);
+        const bowl = turned([[0.001, -0.11], [0.3, -0.107], [0.62, -0.086], [0.86, -0.048], [0.97, -0.014], [1, 0.001]], 28); bowl.scale(0.145, 1, 0.19); bowl.translate(bcu, V.h - 0.001, bcv); b.geo(X.marbleIn(), flatUV(bowl), { cast: false }); }
+      b.cyl(chr, bcu - 0.02, V.h - 0.112, bcv, 0.02, 0.004, { seg: 12, cast: false });
+      const sp = { uv: [1, 1], uvw: true, cast: false };
+      b.box(stone, iu0 + 0.006, V.h, vn - 0.012, iu0 + 0.022, V.h + 0.1, w - 0.006, sp); b.box(stone, iu0 + 0.022, V.h, sw - 0.01, vf + 0.02, V.h + 0.1, sw + 0.006, sp);
+      b.box(chr, iu0 + 0.072, V.h, bcv - 0.078, iu0 + 0.13, V.h + 0.012, bcv + 0.078, { cast: false }); b.cyl(chr, iu0 + 0.1, V.h + 0.01, bcv, 0.024, 0.06, { r2: 0.02, seg: 12, cast: false });
+      b.bar(chr, iu0 + 0.1, V.h + 0.05, bcv, iu0 + 0.2, V.h + 0.075, bcv, 0.026, { round: true, seg: 8, cast: false }); b.cyl(chr, iu0 + 0.2, V.h + 0.05, bcv, 0.012, 0.03, { seg: 8, cast: false });
+      b.bar(chr, iu0 + 0.1, V.h + 0.07, bcv, iu0 + 0.15, V.h + 0.13, bcv, 0.014, { round: true, seg: 6, cast: false });
+      for (const [a2, c2, y2, ry2] of [[0.14, 0.13, 0.018, 3], [0.13, 0.12, 0.05, -4]]) set(b, cloth, eased(a2, y2 < 0.03 ? 0.036 : 0.03, c2, 0.014, { k: 2 }), iu0 + 0.14, V.h + y2, w - 0.13, ry2, { cast: false });   // face cloths, folded
+      const m0 = vn + 0.1, m1 = w - 0.1;
+      b.box(X.espresso(), iu0 + 0.006, 1.0, m0, iu0 + 0.03, 1.86, m1, { uv: [1, 1] });
+      b.quad(new THREE.MeshStandardMaterial({ map: bathMirrorTex(), roughness: 0.08, metalness: 0.15, envMapIntensity: 0.6 }), '+x', iu0 + 0.031, 1.43, (m0 + m1) / 2, m1 - m0 - 0.14, 0.86 - 0.14, { cast: false });
+      b.box(plain('#f1efe8', 0.5), iu0 + 0.006, 2.2, m0 + 0.08, iu0 + 0.028, 2.32, m1 - 0.08, { cast: false }); set(b, ctx.lampMat('#fff5e6', 1.9, 0.95, 0.9), eased(0.085, 0.105, m1 - m0 - 0.2, 0.035, { k: 3 }), iu0 + 0.07, 2.26, (m0 + m1) / 2, 0, { cast: false });
+
+      // the dark base along the floor where the walls are bare, and the fan's grille overhead
+      for (const [u0, v0, u1, v1] of [[vf + 0.02, w - 0.016, tu0, w - 0.006], [iu0 + 0.006, iv0 + 0.006, bd0 - 0.06, iv0 + 0.016], [iu0 + 0.006, iv0 + 0.006, iu0 + 0.016, vn - 0.012]]) b.box(base, u0, 0, v0, u1, 0.1, v1, { cast: false });
+      grille(5.15, 2.75, 0.26, 0.26, false);
+    }
     b.pop();
   }, 'room');
 
@@ -482,8 +596,10 @@ export function buildRoom(scene, shared, ctx) {
   });
   const BW = IN.bathDoor[1] - IN.bathDoor[0] - 0.01;
   const bath = hinge(ROOM.x0 + IN.bathDoor[1] - 0.005, ROOM.z0 + IN.bath.v0 + 0.05, b => {
-    doorLeaf(b, BW, 2.02, M.plain('#e6dcc6', 0.5), { rows: [], handle: 'knob' });                                      // a flat slab, a round knob
-    b.box(M.chrome(), BW / 2 - 0.02, 1.66, -0.06, BW / 2 + 0.02, 1.7, -0.02, { cast: false });                        // the hook on its inside
+    doorLeaf(b, BW, 2.02, M.plain('#e6dcc6', 0.5), { rows: [], handle: 'none' });                                      // a flat slab
+    for (const sd of [-1, 1]) { b.cyl(satin, BW - 0.07, 1.02, sd * 0.02, 0.03, 0.012, { rx: 90 * sd, seg: 14, cast: false }); b.cyl(satin, BW - 0.07, 1.02, sd * 0.032, 0.011, 0.03, { rx: 90 * sd, seg: 8, cast: false }); b.box(satin, BW - 0.185, 1.012, sd * 0.05, BW - 0.06, 1.03, sd * 0.062, { cast: false }); }   // a lever on a round rose, as his picture of 18/9 shows
+    b.box(X.chrome(), BW / 2 - 0.022, 1.655, -0.026, BW / 2 + 0.022, 1.705, -0.02, { cast: false });                   // the hook on its inside: a plate and two prongs
+    for (const du of [-0.012, 0.012]) { b.bar(X.chrome(), BW / 2 + du, 1.68, -0.026, BW / 2 + du * 1.6, 1.668, -0.058, 0.008, { cast: false }); b.bar(X.chrome(), BW / 2 + du * 1.6, 1.668, -0.058, BW / 2 + du * 1.6, 1.69, -0.064, 0.008, { cast: false }); }
   });
 
   /* curtains: open by day, drawn at night (as in every photograph after dark); the plaid repeats every 0.30 m */
@@ -526,6 +642,8 @@ export function buildRoom(scene, shared, ctx) {
   ctx.hot.push({ id: 'door', pos: P(0.25, 1.75, IN.door[0] + 0.5), r: 0.2 });
   ctx.hot.push({ id: 'closet', pos: P(0.9, 1.5, 0.5), r: 0.18 });
   ctx.hot.push({ id: 'bathdoor', pos: P(IN.bathDoor[0] + 0.3, 1.8, IN.bath.v0 - 0.12), r: 0.18 });
+  ctx.hot.push({ id: 'bathdoor', pos: P(IN.bathDoor[0] + 0.3, 1.8, IN.bath.v0 + 0.17), r: 0.16 });                 // and on its inside: shut, the other cannot be seen from within
+  ctx.hot.push({ id: 'bath', pos: P(IN.bath.u0 + 0.15, 1.5, IN.bath.v0 + 0.36), r: 0.16 });                      // on the bare wall to the right of the door
   ctx.hot.push({ id: 'curtain', pos: P(0.3, 1.9, (IN.win[0] + IN.win[1]) / 2), r: 0.2 });
   ctx.hot.push({ id: 'mirror', pos: P((IN.mirror.u0 + IN.mirror.u1) / 2, IN.mirror.crown + 0.2, 0.08), r: 0.15 });
 

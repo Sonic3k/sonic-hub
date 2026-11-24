@@ -24,7 +24,7 @@ export const notes = {
       'Hai chiếc ghế cao đặt như tối 21/9: đẩy vào hai bên bàn, áo khoác xám vắt trên lưng ghế phía tây. Đồ trên bàn (hộp trà, chai nước, can nước, bình đỏ) đúng loại và gần đúng chỗ, không đúng từng li.',
       'Thẻ ra vào đặt trên bàn là thêm vào: không tấm ảnh nào cho thấy nó nằm ở đâu.',
       'Hốc treo đồ: ảnh 25/9 chỉ cho thấy thanh treo, mấy chiếc mắc xanh và sợi dây bàn là; phần còn lại là đoán.',
-      'Nhà tắm không có ảnh; dựng theo kiểu phòng studio của chuỗi khách sạn này.',
+      'Nhà tắm: anh không chụp tấm nào bên trong. Chỗ đặt các món giữ theo bản dựng đầu, bản anh đã xem và thấy đúng: bồn tắm ở cuối, sát tường trong cùng; bồn cầu ở tường giáp phòng bên, quay ra cửa; bồn rửa bên phải, sát vách treo tranh. Kiểu và cỡ từng món thì theo ảnh nhà tắm của chính khách sạn này trên mạng (ảnh khách chụp năm 2024 và 2026, ảnh của khách sạn khoảng 2021). Màu tường, sàn, gương, đèn, thanh rèm cong là của những năm sau; năm 2015 có đúng thế không thì không chắc.',
       'Rèm, chăn, thảm vẽ lại theo kiểu và màu, không chép hoa văn; bức tranh trên vách nhà tắm chỉ phỏng theo. Hình trong gương là vẽ, không phải phản chiếu thật.',
       'Cột hành lang chia đều giữa hai tháp cầu thang; có thể lệch nửa mét. Ô tô trong bãi: số lượng, kiểu và màu là ngẫu nhiên. Chiếc Beetle nâu và tấm nệm dựa chân cầu thang là có thật, sáng 22/9.',
       'Ralphs, Starbucks, Jersey Mike\'s, In-N-Out: hình khối theo ảnh vệ tinh và ảnh của anh; biển hiệu chỉ là chữ thường, không có logo.',
@@ -75,7 +75,11 @@ export function card(id, { hour, extra }) {
       ['p', openShut('Đang mở. Ra ngoài là hành lang tầng 2 và lan can nhìn xuống bãi xe.', 'Đang đóng — cửa đóng thì không đi qua được.')],
       ['p', 'Ảnh iPhone 25/9 chụp cửa mở ra hành lang. Chạm để mở hoặc đóng.', 'dim'],
     ] };
-    case 'bathdoor': return { title: 'Cửa nhà tắm', body: [['p', openShut('Đang mở.', 'Đang đóng.')], ['p', 'Cửa mở ra phía bếp (ảnh 18/9 chụp lúc nó đang mở). Bên trong không có ảnh; dựng theo kiểu phòng studio của chuỗi khách sạn này. Chạm để mở hoặc đóng.', 'dim']] };
+    case 'bathdoor': return { title: 'Cửa nhà tắm', body: [['p', openShut('Đang mở.', 'Đang đóng — cửa đóng thì không đi qua được.')], ['p', 'Cánh phẳng màu kem, tay gạt, móc treo áo ở mặt trong; mở ra phía bếp (ảnh iPhone 18/9 chụp lúc nó đang mở). Chạm để mở hoặc đóng.', 'dim']] };
+    case 'bath': return { title: 'Nhà tắm', body: [
+      ['p', 'Bước vào: bồn tắm men trắng bên trái, nằm ở cuối phòng tắm sát tường trong cùng, vòi và sen ở tường giáp phòng bên; gạch 6 inch màu cát lấm chấm ốp quanh bồn tới quá đầu người, rèm trắng trên thanh cong. Bồn cầu ở tường đối diện cửa, phía trên két nước là kệ khăn mạ crôm, bên cạnh là hộp giấy. Bồn rửa bên phải, sát vách treo tranh: chậu đúc liền mặt đá, tủ trắng viền gỗ nâu, gương khung sẫm.'],
+      ['p', 'Anh không chụp tấm nào trong này. Chỗ đặt các món là theo bản dựng đầu, bản anh đã xem và thấy đúng. Kiểu và cỡ từng món theo ảnh nhà tắm của chính khách sạn này trên mạng: thành bồn cao 31 cm, gạch ốp tới 1,86 m, kệ khăn cao 1,70 m, mặt bồn rửa 0,83 m (đo từ một tấm khách chụp năm 2026), mặt đá và tủ theo ảnh năm 2024, gương và thanh rèm theo ảnh của khách sạn khoảng 2021. Màu tường, sàn, gương, đèn của năm 2015 có đúng thế này không thì không chắc.', 'dim'],
+    ] };
     case 'curtain': return { title: 'Rèm cửa sổ', body: [['p', openShut('Đang kéo ra.', 'Đang kéo lại.')], ['p', 'Rèm vải kẻ ô nâu treo từ sát trần, hai cây gậy trắng để kéo — như ảnh 21/9. Tối thì kéo lại. Chạm để kéo.', 'dim']] };
     case 'ralphs': return { title: 'Ralphs', body: [
       ['p', 'Siêu thị Ralphs ở góc Sepulveda và Mariposa: khối nhà lớn, mặt trước có hai đầu hồi kiểu Tây Ban Nha lợp ngói đỏ.'],
