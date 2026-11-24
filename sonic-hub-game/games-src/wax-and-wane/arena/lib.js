@@ -44,18 +44,19 @@ class Player {
 }
 
 /** A game between two players; Dark moves first. Returns { winner: 0 Dark | 1 Light | -1 drawn, why, discs: [Dark's,
- *  Light's], plies, forfeit }. A bot that breaks, answers with a move it may not make, or runs past the cap loses
- *  the game there and then. A side that has to pass is not asked for anything: the host passes for it. */
+ *  Light's], plies, moves, forfeit }: moves is the whole game, passes included, as engine/rules.js numbers them. A
+ *  bot that breaks, answers with a move it may not make, or runs past the cap loses the game there and then. A side
+ *  that has to pass is not asked for anything: the host passes for it. */
 function playGame(R, dark, light, { timeMs = 1000, seed = 1, cap = Math.max(timeMs * 3, timeMs + 400) } = {}) {
   const S = R.newGame(), slowest = [0, 0]; let n = 0;   // slowest: the longest each side took over one move, in ms
   while (!S.over) {
     const who = S.turn === R.DARK ? dark : light;
     const a = who.move(S.history.slice(), timeMs, (seed * 7919 + n * 104729) | 0, cap);
     if (a.ms > slowest[S.turn]) slowest[S.turn] = a.ms;
-    if (a.error || !R.playMove(S, a.move)) return { winner: 1 - S.turn, why: 'forfeit', discs: Array.from(S.count), plies: S.history.length, slowest, forfeit: { by: who.id, why: a.error || 'the move was refused' } };
+    if (a.error || !R.playMove(S, a.move)) return { winner: 1 - S.turn, why: 'forfeit', discs: Array.from(S.count), plies: S.history.length, moves: Array.from(S.history), slowest, forfeit: { by: who.id, why: a.error || 'the move was refused' } };
     n++;
   }
-  return { winner: S.over.winner, why: S.over.why, discs: Array.from(S.over.discs), plies: S.history.length, slowest, forfeit: null };
+  return { winner: S.over.winner, why: S.over.why, discs: Array.from(S.over.discs), plies: S.history.length, moves: Array.from(S.history), slowest, forfeit: null };
 }
 
 /** Ratings that best explain a set of results, on the usual scale (400 points: ten to one).
