@@ -70,14 +70,28 @@ GAMES = {
         title=['wait:9000'],
         ls={'keep-it-down.v1': {'cfg': {'level': 'hard', 'side': 0}, 'sound': True, 'game': {'moves': [1682,2413,1747,2283,1812,2926,2007,2153,1951,2218,1877,2469,6558,5794,5787,2209,6298,6574,6818,6054,7338,11514,6045,2527,2462,2023,1942,1503,5713,2991,7078,7085,2543,5729,1886,1763,2471,5915,7078,7094,2397,983,2738,911,2794,11955,1234,5209,6955,846,8965,4689,1,6957,2731,649,3242,4234]}}},
         play=['wait:900']),
-    # on its own site. The title picture is its first screen, the rooms. The picture of play opens a game for points
-    # against the owner at the moment she has a Ram to take: she takes it and says so
+    # on its own site, with its players at the saves service, like Caro. The first picture is the one a shelf shows
+    # small, so it is a game at the board: one board and one face, in a game for points in the Reading Room against
+    # the one who runs its coffee corner, the move the player's. The game is taken up where she has a Ram to take.
+    # She does not play the same move every time: when she takes it she says so, and when she plays something quiet
+    # instead she is given one of her own lines about how the game stands, so that the picture never has her silent.
+    # (The town with a house's people on its wall is many small things, which a small picture cannot carry: that is
+    # the second picture.)
     'keep-it-down-extended': dict(
         site='https://keepitdown-game-production.up.railway.app/',
-        ls={'keepitdown.campaign.v1': {'points': 1104, 'peak': 1128, 'sound': True,
-            'vs': {'mina': {'w': 5, 'l': 0, 'd': 0}, 'odette': {'w': 5, 'l': 1, 'd': 0}, 'claire': {'w': 4, 'l': 2, 'd': 0}, 'vera': {'w': 3, 'l': 3, 'd': 0}, 'isolde': {'w': 1, 'l': 2, 'd': 0}},
-            'match': {'opp': 'isolde', 'rated': True, 'side': 0, 'moves': [1942,2153,1682,2413,1552,2218,6298,6305,1624,2543,1812,6379,1689,5859,5850,1698,2267,2478,2007,6054,6623,2991,1617,5722,2072,6184,5720,1178,1747,658,8898,5534,2137,5462,6177,853,1422,4429,12612,2794,6883,1893,2332,6899,2211,6444,2592]}}},
-        play=['waitsel:#said:not(:empty)', 'wait:1600']),
+        shut=[r'/games/[^/]+/players'],
+        title_ls=kept_player('keep-it-down-extended', 'Sonic', {'points': 836, 'peak': 848,
+            'vs': {'mina': {'w': 5, 'l': 0, 'd': 0}, 'odette': {'w': 2, 'l': 1, 'd': 0}, 'nell': {'w': 3, 'l': 0, 'd': 0}, 'quinn': {'w': 1, 'l': 0, 'd': 0}},
+            'match': {'opp': 'odette', 'rated': True, 'side': 0, 'moves': [1942,2153,1682,2413,1552,2218,6298,6305,1624,2543,1812,6379,1689,5859,5850,1698,2267,2478,2007,6054,6623,2991,1617,5722,2072,6184,5720,1178,1747,658,8898,5534,2137,5462,6177,853,1422,4429,12612,2794,6883,1893,2332,6899,2211,6444,2592]}}),
+        title=["js:new Promise(done => { const t = setInterval(() => { if (G.screen === 'play' && G.S && !G.busy && G.S.turn === G.side) { clearInterval(t); done(); } }, 60); })",
+               "js:G.said || speak(herLead() >= 0 ? 'ahead' : 'behind', true)",
+               'waitsel:#said:not(:empty)', 'waitsel:#rival img[src]', 'wait:2600'],
+        # the second picture is the town as a player finds it part of the way up the hill: five places with a light
+        # on and the Citadel still dark, and under it the Reading Room with its people on the wall
+        ls=kept_player('keep-it-down-extended', 'Sonic', {'points': 1216, 'peak': 1228, 'match': None,
+            'vs': {'mina': {'w': 5, 'l': 0, 'd': 0}, 'odette': {'w': 5, 'l': 1, 'd': 0}, 'claire': {'w': 4, 'l': 2, 'd': 0}, 'vera': {'w': 2, 'l': 2, 'd': 0}, 'isolde': {'w': 0, 'l': 1, 'd': 0},
+                   'nell': {'w': 5, 'l': 0, 'd': 0}, 'britt': {'w': 3, 'l': 1, 'd': 0}, 'quinn': {'w': 2, 'l': 0, 'd': 0}, 'lan': {'w': 1, 'l': 1, 'd': 0}}}),
+        play=['waitsel:#rooms .seat .shot img[src]', 'wait:4600']),
     # on its own site as well. The title picture is its first screen. The picture of play goes back to a game for points
     # against the Hard opponent, both sides down to one ship and one plane, and waits for her to move
     'commander-chess': dict(
