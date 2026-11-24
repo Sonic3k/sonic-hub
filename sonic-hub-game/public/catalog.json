@@ -106,6 +106,14 @@
       "shots": ["title", "play"], "play": "/games/wax-and-wane"
     },
     {
+      "key": "lantern-line", "title": "Lantern Line", "alt": ["Lantern-Line", "LanternLine", "Dots and Boxes", "Dots & Boxes", "Nối chấm khép ô", "Noi cham khep o", "Pingxi"],
+      "lang": "en", "group": "cards", "sub": "board", "machine": "web", "year": 2026, "tags": ["originals", "two-player"],
+      "players": 2, "ai": 1, "inputs": ["mouse", "touch", "keyboard"], "maker": "Sonic Hub", "added": "2026-11-24",
+      "kind": "Dots and boxes under sky lanterns, against the AI or a friend",
+      "blurb": "Dots and boxes on a festival night in the Pingxi valley. Draw a line between two dots; close the fourth side of a square and its sky lantern lights in your colour, and you draw again. Ride the line against the computer, on a quick board or a long one, and collect each station’s stamp.",
+      "shots": ["title", "play"], "play": "/games/lantern-line"
+    },
+    {
       "key": "len-doi", "title": "Lên Đời", "alt": ["Len Doi", "Age Duel"],
       "lang": "vi", "group": "strategy", "sub": "turn-based", "machine": "web", "year": 2026, "tags": ["originals"],
       "players": 1, "ai": 1, "inputs": ["mouse", "touch"], "maker": "Sonic Hub", "added": "2026-10-05",

@@ -1,0 +1,5 @@
+{
+ "house": { "model": "Claude Opus 5.5" },
+ "greedy": { "model": "Claude Opus 5.5" },
+ "random": { "model": "Claude Opus 5.5" }
+}
