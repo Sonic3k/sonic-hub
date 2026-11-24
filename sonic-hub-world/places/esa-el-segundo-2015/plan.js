@@ -112,18 +112,21 @@ export const IN = {
     sink: [0.67, 0.99], faucet: 0.84, hob: [1.36, 1.94], split: 1.41, mw: { v0: 0.60, v1: 1.19, y0: 1.385, y1: 1.63, front: D - 0.36 }, hood: { v0: 1.20, v1: 1.94, y0: 1.49, y1: 1.62, front: D - 0.48 },
     doors: [0.60, 0.897, 1.195, 1.57, 1.95], outlet: { v: 1.24, y: 1.09 } },
   fridge: { v0: 0.03, v1: 0.63, front: D - 0.70, h: 1.548, split: 1.07 },
-  bath: { u0: 3.96, v0: 2.0 }, bathDoor: [5.015, 5.775],            // the box's west and north faces; its door is hinged at the east jamb and opens out
+  /* the box's west and north faces; its door is hinged at the east jamb and opens out. 0272 puts that jamb at 5.78 ± 0.06
+     (by its height in the picture); it is drawn 9 cm west of that, where it clears the tub he remembers across the far
+     end — a 30-inch tub and the door cannot both stand where the picture alone would put them */
+  bath: { u0: 3.96, v0: 2.0 }, bathDoor: [4.925, 5.685],
   bathSwitch: { u: 4.135, y: 1.18 }, detector: { u: 4.765, y: 2.25 },
-  /* INSIDE THE BATHROOM. None of his photographs shows it; these come off a traveller's photograph of 2026, taken from the
-     door of a studio like his (its mirror image), by its rows of six-inch tiles: the tub's rim, the tiles' top, the valve,
-     the spout, the towel shelf and the paper on the party wall; and off the same photograph's camera, the basin's
-     cabinet (two feet long, its top at 0.83) and the arm of its top over the pan's tank (EVIDENCE.md, "The bathroom's
-     inside").
-     tub: its width · rim: over the floor · pan: its middle off the party wall · shelf, paper: u of the west end / middle */
+  /* INSIDE THE BATHROOM. None of his photographs shows it. WHERE things stand is as he remembers it (the first build, which
+     he found right): the tub across the far end against the back wall, the pan on the party wall facing the door with
+     the towel shelf over it, the basin against the print's wall in the far right corner. The HEIGHTS and sizes come off a
+     traveller's photograph of 2026 of a bathroom in this building, by its rows of six-inch tiles (EVIDENCE.md, "The
+     bathroom's inside"). tub: its width · rim: over the floor · pan: u of its middle · paper: on the party wall ·
+     vanity.v0: its free end; from there it runs to the party wall */
   bathIn: {
     wall: '#b48a42', tub: 0.76, rim: 0.31, tile: { top: 1.86, size: 0.152 }, valve: 0.78, spout: 0.42, rose: 1.98, rod: 2.03,
-    shelf: { u: 4.94, w: 0.49, y: 1.70 }, paper: { u: 5.77, y: 0.50 }, pan: 0.46,
-    vanity: { len: 0.58, depth: 0.57, h: 0.83 }, arm: { depth: 0.18, splash: 0.12 },
+    pan: 5.25, shelf: { w: 0.49, y: 1.70 }, paper: { u: 4.84, y: 0.6 },
+    vanity: { v0: 2.6, depth: 0.57, h: 0.83 },
   },
   print: { v0: 2.27, v1: 2.97, y0: 0.93, y1: 1.94 },                 // on the box's west face
   /* a full (double) bed, its head to the south wall: the mattress; its covers stand 3 cm proud of it all round. The
@@ -140,8 +143,7 @@ export const IN = {
 /* VIEWS: the rooms list. Poses [x, y, z, heading, pitch]. Heading: degrees clockwise from north. `phong`, `hanh-lang`
    and `bai-xe` stand where the camera stood for a photograph; `ban`, `tu-guong` and `giuong` a step from where it did
    (he took those three sitting on the bed and on the chair at the counter, where a walker cannot stand). `nha-tam`
-   stands just inside the bathroom's door and looks toward the tub and the party wall, the side the traveller's
-   photograph it is built from shows. */
+   stands inside the bathroom, to the right of its door, and looks across to the pan and the tub. */
 const R = (u, v) => [ROOM.x0 + u, ROOM.z0 + v];
 const at = (u, v, y, h, p) => { const [x, z] = R(u, v); return [x, G2 + y, z, h, p]; };
 export const ROOMPT = R;
@@ -152,7 +154,7 @@ export const VIEWS = {
   'tu-guong': { name: 'Tủ, tivi, gương', pose: at(3.62, 2.72, 1.38, 345, -5) },
   'giuong': { name: 'Giường', pose: at(3.6, 0.62, 1.36, 212, -13.5) },
   'bep': { name: 'Bếp nhỏ', pose: at(4.2, 1.62, 1.5, 62, -9) },
-  'nha-tam': { name: 'Nhà tắm', pose: at(5.5, 2.28, 1.5, 205, -20) },
+  'nha-tam': { name: 'Nhà tắm', pose: at(4.5, 2.34, 1.5, 112, -20) },
   'cua': { name: 'Cửa phòng', pose: at(2.5, 1.3, 1.5, 266, -3) },
   'hanh-lang': { name: 'Hành lang tầng 2', pose: [ROOM.x0 - WALL - 0.86, G2 + 1.5, doorZ + 1.95, 353, -3.5] },   // where the photograph of 09:47:46 was taken
   'lan-can': { name: 'Lan can nhìn sang Ralphs', pose: [13.05, G2 + 1.52, doorZ, 248, -5] },

@@ -28,7 +28,7 @@ const light = {
     // over the kitchen, the bathroom; outside, the lamp between his door and the next and the globe by the stair tower
     desk: [...R(IN.wallLamp.su, 1.3, IN.wallLamp.sv + 0.12), 5.5], lamp: [...R(IN.tvLamp.u, 1.42, IN.tvLamp.v + 0.2), 6],
     bed: [...R((IN.bedLamps[0].u + IN.bedLamps[1].u) / 2, 1.5, ROOM.w - 1.0), 6.5],
-    kitchen: [...R(IN.ceiling.tube[0], 2.2, IN.ceiling.tube[1]), 5.5], bath: [...R(5.4, 2.15, 3.15), 3.2],
+    kitchen: [...R(IN.ceiling.tube[0], 2.2, IN.ceiling.tube[1]), 5.5], bath: [...R(5.15, 2.15, 2.7), 3.2],
     walk1: [ROOM.x0 - 0.55, G2 + 2.2, ROOM.z0 - 0.11, 7], walk2: [13.45, G2 + 2.55, ROOM.z0 - 0.11 + P.MOD, 7],
     lot: [-2.5, 8.5, 22, 26],
   },
