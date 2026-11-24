@@ -4,7 +4,7 @@
    Run from the app's folder: npm test */
 import { readFileSync } from 'node:fs';
 import { FRONT, arrange, frontOf, takeStock } from '../src/arrange';
-import { readCatalog, type Game, type Raw } from '../src/catalog';
+import { cover, coverSet, readCatalog, type Game, type Raw } from '../src/catalog';
 
 const file = JSON.parse(readFileSync('public/catalog.json', 'utf8')) as { games: Raw[] };
 const real = readCatalog(file);
@@ -27,6 +27,13 @@ for (const r of file.games) {
   check(`catalog.json: "${r.key}" must not say "highlight": highlights are picked on /admin and kept by the game service`, !('highlight' in r));
 }
 check('a highlight written in a catalogue file is not read', readCatalog({ games: [{ ...game('a', day(1)), highlight: true }] })[0].highlight === false);
+for (const r of file.games) check(`catalog.json: "${r.key}" must not say "stamp": the build makes it from the game's pictures (scripts/stamp-covers.mjs)`, !('stamp' in r));
+
+// ── where a game's pictures are ──
+const [plain0, stamped] = readCatalog({ games: [game('a', day(1)), { ...game('b', day(1)), stamp: '3f9a0c21d4' }] });
+check('a picture of a game with no stamp is asked for by name alone', cover(plain0, 'title', 640) === '/covers/a-title-640.webp', cover(plain0, 'title', 640));
+check('a stamp is part of the address of every picture of its game, at both widths', cover(stamped, 'play', 1280) === '/covers/b-play-1280.webp?v=3f9a0c21d4'
+  && coverSet(stamped, 'title') === '/covers/b-title-640.webp?v=3f9a0c21d4 640w, /covers/b-title-1280.webp?v=3f9a0c21d4 1280w', coverSet(stamped, 'title'));
 
 // ── the rule ──
 const five = [game('a', day(1)), game('b', day(5)), game('c', day(3)), game('d', day(5)), game('e', day(2))];
