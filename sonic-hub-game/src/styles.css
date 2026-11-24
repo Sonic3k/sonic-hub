@@ -246,7 +246,9 @@ h1.line-plate { max-width: calc(100% - 8px); white-space: nowrap; overflow: hidd
 .g-title a { text-decoration: none; outline: none; }
 .g-title a::after { content: ""; position: absolute; inset: 0; z-index: 1; }
 .g-kind { margin-top: 5px; font-weight: 600; font-size: 16px; line-height: 1.3; color: var(--liq-hi); }
-.g-blurb { margin-top: 8px; font-size: 17px; line-height: 1.4; color: var(--soft); }
+/* a chamber is a look at the game, not its page: whatever a blurb's length it takes four lines at most here, so two
+   chambers side by side keep the same shape. The game's own page says all of it. */
+.g-blurb { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 4; line-clamp: 4; overflow: hidden; margin-top: 8px; font-size: 17px; line-height: 1.4; color: var(--soft); }
 .g-foot { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: auto; padding-top: 14px; }
 .inputs { display: flex; align-items: center; gap: 11px; color: var(--paper); }
 .inputs li { display: inline-flex; }
@@ -463,7 +465,7 @@ h1.line-plate { max-width: calc(100% - 8px); white-space: nowrap; overflow: hidd
   .chamber-wide .sight { grid-column: 1; grid-row: 2; align-self: start; }
   .chamber-wide .info { grid-column: 2; grid-row: 1 / span 2; padding: 6px 4px 0 0; }
   .chamber-wide .g-title { padding-right: 40px; font-size: 30px; }
-  .chamber-wide .g-blurb { font-size: 18px; }
+  .chamber-wide .g-blurb { font-size: 18px; -webkit-line-clamp: 6; line-clamp: 6; }
 }
 /* between a desk and a tablet held upright the tank's place is slimmer, so the two chambers keep their width */
 @media (min-width: 860px) and (max-width: 1039.98px) {

@@ -86,7 +86,7 @@
       "lang": "en", "group": "cards", "sub": "board", "machine": "web", "year": 2026, "tags": ["originals"],
       "players": 1, "ai": 1, "inputs": ["mouse", "touch", "keyboard"], "maker": "Sonic Hub", "added": "2026-11-19",
       "kind": "Board game campaign, you against the AI",
-      "blurb": "Caro, the five-in-a-row of Vietnam: five in a line wins, unless the other side stands at both ends of it. The campaign is made of photographs. Its places are the frames of a film, each in a light of its own, from first light to lamplight, and the women in them play you for points. Someone you cannot play yet is out of focus, and her picture comes clear as your points near hers. They talk while they play, and each keeps a roll of film that develops a frame every time you beat her.",
+      "blurb": "Five in a row, the Vietnamese way: a line blocked at both ends does not win. Each win develops a frame of your rival’s film.",
       "shots": ["title", "play"], "play": "https://sonic-gomoku-production.up.railway.app/"
     },
     {
