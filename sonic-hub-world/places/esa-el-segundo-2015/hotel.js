@@ -89,6 +89,15 @@ function spandrel(b, mat, ax, a0, a1, yS, yC, yT, c0, c1, o = {}) {
   if (ax === 'x') g.translate(0, 0, lo); else { g.rotateY(-Math.PI / 2); g.translate(hi, 0, 0); }
   b.geo(mat, g, o);
 }
+/** a slab whose outline is drawn across the wing — points [c, y] — and which is a0…a1 thick along it (a raked wall) */
+function prism(b, mat, ax, pts, a0, a1, o = {}) {
+  const sh = new THREE.Shape(), k = ax === 'x' ? -1 : 1;
+  pts.forEach(([c, y], i) => (i ? sh.lineTo(k * c, y) : sh.moveTo(k * c, y))); sh.closePath();
+  const g = new THREE.ExtrudeGeometry(sh, { depth: a1 - a0, bevelEnabled: false });
+  const uv = g.attributes.uv; for (let i = 0; i < uv.count; i++) uv.setXY(i, uv.getX(i) / 2, uv.getY(i) / 2);
+  if (ax === 'x') { g.rotateY(Math.PI / 2); g.translate(a0, 0, 0); } else g.translate(0, 0, a0);
+  b.geo(mat, g, o);
+}
 /** a wall from yb to yt along a (c0…c1 across it) with openings { a, b, y0, y1 }; m0 faces the smaller c, m1 the larger */
 function band(put, c0, c1, a0, a1, yb, yt, ops, m0, m1) {
   const mid = (c0 + c1) / 2, halves = m0 === m1 ? [[c0, c1, m0]] : [[c0, mid, m0], [mid, c1, m1]];
@@ -373,10 +382,12 @@ function buildTower(b, m, ctx, t) {
   for (let i = 0; i < 8; i++) {
     const d0 = dL - i * tr, d1 = d0 - tr, [u0, u1] = fa(sU), y = yL + (i + 1) * st;
     box(m.tread, u0, y - 0.05, d0, u1, y, d1 - 0.025, { uv: [1, 1], uvw: true }); box(m.slab, u0, y - 0.24, d0, u1, y - 0.05, d1, { cast: false });
-    box(m.towerLo, am - 0.15, 0, d0, am + 0.15, y + 0.95, d1, { solid: true, cast: i % 3 === 0 });                 // the wall between the flights, stepped with them
     if (i < 7) { const [l0, l1] = fa(sL), yl = yL - (i + 1) * st; box(m.tread, l0, yl - 0.05, d0, l1, yl, d1 - 0.025, { uv: [1, 1], uvw: true }); box(m.slab, l0, Math.max(G1, yl - 0.24), d0, l1, yl - 0.05, d1, { cast: false }); }
   }
   { const [u0, u1] = fa(sU); box(m.walk, u0, SLAB, dTop, u1, G2, -KERB, { uv: [1.5, 1.5], uvw: true }); }             // the last tread runs into the walkway
+  // the wall between the two flights: from the ground to a rake a guard's height over the upper one
+  prism(b, m.towerLo, ax, [[O(dL), 0], [O(dTop), 0], [O(dTop), G2 + 1.02], [O(dL), yL + 1.02]], am - 0.15, am + 0.15);
+  solid(am - 0.15, 0, dTop, am + 0.15, G2 + 1.02, dL);
   box(m.towerLo, am - 0.15, 0, dTop, am + 0.15, G2 + 1.07, -0.62, { solid: true });                                 // the wall's head, at the walkway's edge
   solid(fa(sU)[0], 0, 0.96, fa(sU)[1], 1.5, dL);                                              // nor under the low end of the upper flight
   // steel strings and white handrails along both sides of each flight
