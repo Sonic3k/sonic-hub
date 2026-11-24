@@ -42,6 +42,8 @@ const SFX = {
       case 'win': [523.25, 659.25, 783.99, 1046.5].forEach((f, i) => this.bell(0.2 + i * 0.15, 0.06, f, 1.6)); break;
       case 'lose': [523.25, 440, 349.23, 293.66].forEach((f, i) => this.bell(0.2 + i * 0.22, 0.05, f, 1.5)); break;
       case 'draw': [587.33, 587.33, 783.99].forEach((f, i) => this.bell(0.2 + i * 0.26, 0.05, f, 1.3)); break;
+      case 'coin': [0, 1, 2, 3, 4, 5].forEach(i => this.bell(i * 0.07, 0.03, 1174.66 * this.note(i % 3), 0.35)); break;      // points counting up
+      case 'open': [0, 2, 4, 7, 9].forEach((n, i) => this.bell(i * 0.11, 0.045, 523.25 * this.note(n), 1.8)); break;          // something new will play, or the light has reached a place
     }
   },
 };

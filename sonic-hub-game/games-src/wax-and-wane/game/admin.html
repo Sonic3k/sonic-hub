@@ -1,0 +1,457 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#13244f">
+<meta name="robots" content="noindex, nofollow">
+<title>Wax &amp; Wane: the cast</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='14' fill='%23141c3c'/%3E%3Cpath d='M16 2a14 14 0 0 1 0 28z' fill='%23f5edd8'/%3E%3C/svg%3E">
+<!--__FONTS__-->
+<style>
+  /* ── Wax & Wane: the cast ── the page behind the game where its opponents are given a name, an age, a picture
+     and the pictures of their albums.
+     The same dusk, gold and typefaces as the game (game/shell.html), with nothing of its board and maps: sheets of
+     cream paper to write on.
+     Built by game/build.js beside the game, with the campaign's cast put in where the mark is. */
+  :root { box-sizing: border-box; color-scheme: light;
+    --ink: #1b1f4b; --muted: #555b84; --card: #fffbee; --line: #e7dcbc; --you: #2b3672; --you2: #141a44; --sun: #e8c36f; --loud: #b3261e; --ok: #1a6e55;
+    --title: Marcellus, "Palatino Linotype", Palatino, Georgia, serif; --print: Jost, "Century Gothic", "Avenir Next", system-ui, sans-serif; }
+  *, *::before, *::after { box-sizing: inherit; }
+  html { -webkit-text-size-adjust: 100%; scroll-behavior: smooth; scroll-padding-top: 76px; }
+  body { margin: 0; min-height: 100vh; color: var(--ink); font: 400 16px/1.45 var(--print); -webkit-tap-highlight-color: transparent; -webkit-font-smoothing: antialiased;
+    background: #13244f linear-gradient(180deg, #13244f 0%, #213d7c 36%, #4a66a4 72%, #8f86b4 100%) fixed; }
+  button { font: inherit; color: inherit; cursor: pointer; touch-action: manipulation; } button:disabled { cursor: default; }
+  :focus-visible { outline: 3px solid var(--sun); outline-offset: 2px; }
+  [hidden] { display: none !important; }
+
+  .top { position: sticky; top: 0; z-index: 5; display: flex; align-items: center; gap: 8px; min-height: 64px; padding: calc(8px + env(safe-area-inset-top, 0px)) calc(16px + env(safe-area-inset-right, 0px)) 8px calc(16px + env(safe-area-inset-left, 0px)); background: #13244f; overflow-x: auto; scrollbar-width: none; }
+  .top::-webkit-scrollbar { display: none; }
+  .top .back, .top .jump { flex: none; display: inline-flex; align-items: center; min-height: 44px; padding: 0 14px; border: 0; border-radius: 14px; background: rgba(8, 12, 44, .46); color: #fff; font: 600 14px/1 var(--print); text-decoration: none; white-space: nowrap; } .top .back:hover, .top .jump:hover { background: rgba(8, 12, 44, .7); }
+  .top .jump { background: #fff; color: var(--ink); box-shadow: 0 3px 0 rgba(8, 12, 44, .2); } .top .jump:hover { background: #fff; filter: brightness(.96); }
+  .back { display: inline-flex; align-items: center; justify-content: center; min-height: 44px; padding: 0 10px; border: 0; border-radius: 12px; background: none; color: var(--muted); font: 500 14px/1.2 var(--print); text-decoration: underline; text-underline-offset: 3px; } .back:hover { color: var(--ink); }
+  .plate { min-height: 46px; padding: 0 18px; border: 0; border-radius: 14px; background: #f1e8cf; color: var(--ink); font: 600 14.5px/1 var(--print); white-space: nowrap; box-shadow: 0 3px 0 #cdbf96; transition: transform .12s, filter .12s, box-shadow .12s; }
+  .plate:hover:not(:disabled) { transform: translateY(-1px); filter: brightness(1.03); } .plate:active:not(:disabled) { transform: translateY(2px); box-shadow: 0 1px 0 #cdbf96; } .plate:disabled { opacity: .45; }
+  .plate.ink { background: linear-gradient(180deg, #fff3c4, #e0b65e); color: #1b1f4b; box-shadow: 0 3px 0 #a47c35; } .plate.ink:active:not(:disabled) { box-shadow: 0 1px 0 #a47c35; }
+  .field { flex: 1 1 200px; min-width: 0; min-height: 46px; padding: 0 14px; border: 2px solid var(--line); border-radius: 12px; background: #fff; color: var(--ink); font: 500 17px/1 var(--print); }
+  .field::placeholder { color: #8d8a9c; font-weight: 400; } .field:focus { outline: 0; border-color: var(--you); box-shadow: 0 0 0 4px rgba(232, 195, 111, .4); }
+
+  .wrap { max-width: 1000px; margin: 0 auto; padding: 10px calc(18px + env(safe-area-inset-right, 0px)) calc(48px + env(safe-area-inset-bottom, 0px)) calc(18px + env(safe-area-inset-left, 0px)); }
+  .head { margin: 6px 6px 22px; color: #fff; }
+  .head h1 { margin: 0; font: 400 54px/1.05 var(--title); letter-spacing: .01em; color: #e8c36f; text-shadow: 0 2px 5px rgba(8, 12, 44, .55); }
+  .head .of { display: block; margin: 0 0 4px 2px; font: 600 14px/1 var(--print); opacity: .9; }
+  .head p { max-width: 62ch; margin: 10px 0 0 2px; font: 400 16px/1.45 var(--print); }
+  .card { border-radius: 26px; background: var(--card); box-shadow: 0 5px 0 rgba(8, 12, 44, .3), 0 24px 44px -20px rgba(8, 12, 44, .8); } .card + .card { margin-top: 22px; }
+  .card-in { padding: 22px 28px 12px; }
+  .card header { padding-bottom: 12px; border-bottom: 2px dashed var(--line); }
+  .card h2 { margin: 0; font: 400 34px/1.1 var(--title); }
+  .card header p { margin: 5px 0 0; font: 400 15px/1.35 var(--print); color: var(--muted); }
+
+  /* when the cast cannot be read: a word about it, and a way to try again */
+  .trouble { margin: 0 0 22px; padding: 16px 20px; border-radius: 20px; background: var(--card); } .trouble p { max-width: 62ch; margin: 0 0 14px; font: 500 16px/1.4 var(--print); color: var(--loud); }
+
+  /* a member: her picture, her name and age, what the game knows of her, what can be done; under it, her album */
+  .members { margin: 6px 0 0; padding: 0; list-style: none; }
+  .member { display: grid; grid-template-columns: 92px minmax(0, 1fr) auto; gap: 6px 20px; align-items: start; padding: 18px 4px 16px; border-radius: 14px; } .member + .member { border-top: 2px solid var(--line); }
+  .member.over { background: #fff1c4; box-shadow: inset 0 0 0 2px var(--sun); }   /* a picture is being held over her */
+  .pic { position: relative; display: grid; place-items: center; grid-column: 1; grid-row: 1; width: 92px; aspect-ratio: 3 / 4; overflow: hidden; border-radius: 14px; background: linear-gradient(160deg, #4a5aa8, var(--you)); color: #fff; font: 400 46px/1 var(--title); box-shadow: 0 3px 0 rgba(8, 12, 44, .22); }
+  .pic img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: 50% 18%; background: #e7dcbc; }
+  .pic.busy img, .pic.busy .mono { opacity: .35; }
+  .name { display: flex; flex-wrap: wrap; gap: 10px; align-items: flex-end; }
+  .lab { display: grid; gap: 6px; flex: 1 1 200px; max-width: 380px; min-width: 0; } .lab.age { flex: 0 0 78px; }
+  .lab span, .lab-line { font: 600 12.5px/1 var(--print); color: var(--muted); }
+  .lab .field { flex: none; width: 100%; } .lab.age .field { padding: 0 6px; text-align: center; }
+  .field:disabled { opacity: .6; }
+  .meta { margin: 9px 0 0; font: 400 14px/1.4 var(--print); color: var(--muted); overflow-wrap: anywhere; } .meta b { font-weight: 600; color: var(--ink); }
+  .note { margin: 6px 0 0; min-height: 1.35em; font: 500 14px/1.35 var(--print); color: var(--ok); } .note.bad { color: var(--loud); } .note:empty { min-height: 0; }
+  .acts { display: flex; flex-direction: column; gap: 6px; align-items: stretch; grid-column: 3; grid-row: 1; min-width: 190px; }
+  .text { grid-column: 2; grid-row: 1; min-width: 0; }   /* each is told its place: left to itself, the grid seats the buttons before the name */
+  /* her album: its pictures in the order a player wins them, and a way to add more */
+  .album { grid-column: 2 / 4; grid-row: 2; min-width: 0; margin-top: 8px; padding: 12px 14px 11px; border-radius: 16px; background: #f1e8cf; }
+  .album.over { background: #fff1c4; box-shadow: inset 0 0 0 2px var(--sun); }   /* pictures are being held over it */
+  .lab-line { margin: 0 0 10px; }
+  .leaves { display: flex; flex-wrap: wrap; gap: 9px; }
+  .leaf { position: relative; flex: none; width: 66px; height: 88px; padding: 0; border: 0; border-radius: 10px; overflow: hidden; background: #e7dcbc; color: var(--ink); box-shadow: 0 2px 0 rgba(8, 12, 44, .2); }
+  .leaf img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+  .leaf b { position: absolute; top: 0; left: 0; min-width: 22px; padding: 4px 5px; border-radius: 0 0 8px 0; background: var(--card); font: 600 12.5px/1 var(--print); text-align: center; }
+  .leaf.on { outline: 3px solid var(--you); outline-offset: 2px; }
+  .leaf.add { display: grid; place-content: center; justify-items: center; gap: 5px; width: auto; min-width: 104px; padding: 0 14px; background: none; border: 2px dashed #8d8a9c; box-shadow: none; }
+  .leaf.add i { font: 600 26px/.8 var(--print); font-style: normal; } .leaf.add span { font: 600 12px/1.2 var(--print); }
+  .leaf.add:hover:not(:disabled) { background: #fff; } .leaf:disabled { opacity: .45; }
+  .leaf-acts { display: flex; align-items: center; gap: 16px; margin-top: 12px; padding: 10px 12px 10px 10px; border-radius: 14px; background: var(--card); }
+  .leaf-big { position: relative; flex: none; width: 108px; height: 144px; overflow: hidden; border-radius: 12px; background: #e7dcbc; } .leaf-big img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+  .leaf-acts p { margin: 0 0 10px; font: 400 15px/1.35 var(--print); } .leaf-acts .btns { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 8px; }
+  .album-say { margin: 10px 0 0; font: 400 13.5px/1.4 var(--print); color: var(--muted); }
+
+  .foot { margin: 26px 6px 0; font: 400 14.5px/1.45 var(--print); color: #fff; max-width: 70ch; }
+
+  @media (max-width: 760px) {
+    .wrap { padding-left: calc(12px + env(safe-area-inset-left, 0px)); padding-right: calc(12px + env(safe-area-inset-right, 0px)); }
+    .head h1 { font-size: 40px; } .head p { font-size: 15px; }
+    .card-in { padding: 18px 16px 8px; } .card h2 { font-size: 28px; }
+    .member { grid-template-columns: 72px minmax(0, 1fr); gap: 4px 14px; padding: 16px 0 14px; }
+    .pic { width: 72px; font-size: 36px; }
+    .acts { grid-column: 1 / 3; grid-row: 2; flex-direction: row; flex-wrap: wrap; min-width: 0; margin-top: 8px; } .acts .plate { flex: 1 1 150px; } .acts .back { flex: 0 1 auto; }
+    .lab { max-width: none; } .lab.age { flex-basis: 70px; }
+    .album { grid-column: 1 / 3; grid-row: 3; padding: 11px 10px 10px; } .leaf { width: 60px; height: 80px; } .leaf.add { min-width: 96px; }
+    .leaf-acts { gap: 12px; } .leaf-big { width: 84px; height: 112px; }
+  }
+</style>
+</head>
+<body>
+<div class="top" id="top">
+  <a class="back" href="wax-and-wane">‹ The game</a>
+</div>
+<main class="wrap">
+  <div class="head">
+    <span class="of">Wax &amp; Wane</span>
+    <h1>The cast</h1>
+    <p id="lede"></p>
+  </div>
+
+  <div class="trouble" id="trouble" hidden>
+    <p id="say" role="alert"></p>
+    <button type="button" class="plate" id="again">Try again</button>
+  </div>
+
+  <div id="rooms" hidden></div>
+  <p class="foot" id="foot" hidden>What is given here takes the place of the campaign’s own for everyone who plays, from the next time the game is opened. Her page in the game goes on saying which bot plays her. Everyone in the cast is an adult, so an age is 18 or more. An album is the pictures a player wins from her, one for each game won for points, in the order they stand here; until she has any of her own, numbered cards stand in for them. A picture may be a JPEG, PNG or WebP file. It is kept as it is sent, where the hub keeps its files, and the game asks for it there at the width each place needs.</p>
+</main>
+
+<script>
+/* The campaign's cast, as the build knows it: { api, game, rooms: [{ name, members: [{ id, name, age, plates, role, rating, bot, level, by }] }] }.
+   plates: how many numbered cards her album has in the game until it is given pictures of its own. */
+const CASTING = /*__CAST__*/null;
+
+const $ = s => document.querySelector(s);
+const esc = t => String(t).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
+const firstSign = name => esc(Array.from(name)[0].toUpperCase());
+const MEMBER = {};
+for (const room of CASTING.rooms) for (const m of room.members) MEMBER[m.id] = m;
+
+/** given: id → { name, age, photo, album: [{ n, photo }] }, what the service holds in place of the campaign's own.
+ *  photo is the address a picture is read at, with no width asked for yet; an album is its pictures in the order of
+ *  their places (n). most: the most bytes a picture may have, as the service says; null: the service has nowhere to
+ *  keep pictures. album: how many pictures one album holds. */
+const state = { given: {}, most: 0, album: 12 };
+const NO_STORAGE = 'Pictures cannot be kept yet: the service has no storage set up for them.';
+
+/** One request to the service. status 0: it could not be reached at all. */
+async function call(method, path, o = {}) {
+  try {
+    const res = await fetch(CASTING.api + '/api' + path, { method, headers: o.body === undefined ? {} : { 'Content-Type': 'application/json' }, body: o.body === undefined ? undefined : JSON.stringify(o.body), cache: 'no-store' });
+    let data = null;
+    try { data = await res.json(); } catch (e) { /* no body, or not JSON */ }
+    return { status: res.status, data: data || {} };
+  } catch (e) { return { status: 0, data: {} }; }
+}
+const minutes = s => (s >= 90 ? `${Math.round(s / 60)} minutes` : `${Math.max(1, Math.round(s))} seconds`);
+const mb = n => (n / 1048576).toFixed(n < 10485760 ? 1 : 0);
+/** What to say when the service turned something down. */
+function refusal(r) {
+  if (r.status === 0) return 'The service could not be reached. Try again in a moment.';
+  if (r.status === 429) return `Too much from this address just now. Try again in ${minutes(r.data.retryAfter || 60)}.`;
+  if (r.status === 503 && r.data.error === 'no_storage') return NO_STORAGE;
+  if (r.status === 413) return `That picture is too large${state.most ? `: the most is ${mb(state.most)} MB` : ''}.`;
+  if (r.status === 409 && r.data.error === 'album_full') return `Her album is full: it holds ${r.data.max || state.album} pictures.`;
+  if (r.status === 409 && r.data.error === 'full') return 'The cast has no room for more of its members to be given something.';
+  return r.data.message ? r.data.message.replace(/^[a-z]/, c => c.toUpperCase()).replace(/([^.])$/, '$1.') : `The service answered ${r.status}.`;
+}
+
+/* ── the cast ── */
+/** A picture as this page shows it: a small place, so the narrowest width the CDN hands out. */
+const small = photo => `${photo}?width=320`;
+const NOTHING = { name: null, age: null, photo: null, album: [] };
+/** what she has been given; nothing of it, for someone who is as the campaign has her */
+const given = id => state.given[id] || NOTHING;
+/** members a change is on its way for: until the service has answered, nothing else of hers can be changed */
+const working = new Set();
+/** the picture of an album that is picked out, to be looked at, changed or taken away: { id, n } */
+let picked = null;
+
+function line(m) {
+  const g = given(m.id), shown = g.name || m.name, busy = working.has(m.id), off = busy ? ' disabled' : '', noStore = busy || state.most === null ? ' disabled' : '';
+  const at = picked && picked.id === m.id ? g.album.findIndex(a => a.n === picked.n) : -1, full = g.album.length >= state.album;
+  const leaves = g.album.map((a, i) => `<button type="button" class="leaf${i === at ? ' on' : ''}" data-act="leaf" data-n="${a.n}" aria-pressed="${i === at}" aria-label="Picture ${i + 1} of her album"${off}><img src="${esc(small(a.photo))}" alt="" loading="lazy" decoding="async"><b>${i + 1}</b></button>`).join('');
+  const own = [g.name ? `The campaign’s own name for her is <b>${esc(m.name)}</b>. ` : '', g.age ? `The campaign has her at <b>${m.age}</b>. ` : ''].join('');
+  const say = g.album.length ? `A player wins them from her one at a time, in this order: a picture for each game won for points.${full ? ` It is full: an album holds ${state.album} pictures.` : ''}`
+    : `None of her own yet: in the game, ${m.plates} numbered cards stand in for them.`;
+  return `<li class="member" data-id="${m.id}">
+    <div class="pic${g.photo ? ' has' : ''}"><span class="mono">${firstSign(shown)}</span>${g.photo ? `<img src="${esc(small(g.photo))}" alt="${esc(shown)}" loading="lazy" decoding="async">` : ''}</div>
+    <div class="text">
+      <div class="name">
+        <label class="lab"><span>Name</span><input class="field" data-field="name" maxlength="24" value="${esc(g.name || '')}" placeholder="${esc(m.name)}" autocomplete="off" spellcheck="false" enterkeyhint="done"${off}></label>
+        <label class="lab age"><span>Age</span><input class="field" data-field="age" inputmode="numeric" maxlength="2" value="${g.age || ''}" placeholder="${m.age}" autocomplete="off" enterkeyhint="done"${off}></label>
+        <button type="button" class="plate ink" data-act="save" disabled>Save</button>
+      </div>
+      <p class="meta">${own}${esc(m.role)} · ${m.rating} points · played by ${esc(m.bot)} · ${esc(m.level)}, a bot written by ${esc(m.by)}</p>
+      <p class="note" aria-live="polite"></p>
+    </div>
+    <div class="acts">
+      <button type="button" class="plate" data-act="pick"${noStore}>${g.photo ? 'New picture' : 'Add a picture'}</button>
+      ${g.photo ? `<button type="button" class="back" data-act="unpic"${off}>Take the picture away</button>` : ''}
+      ${g.name ? `<button type="button" class="back" data-act="unname"${off}>Use the campaign’s name</button>` : ''}
+      <input type="file" data-for="face" accept="image/jpeg,image/png,image/webp" hidden>
+    </div>
+    <div class="album">
+      <p class="lab-line">Her album</p>
+      <div class="leaves">${leaves}<button type="button" class="leaf add" data-act="more"${busy || state.most === null || full ? ' disabled' : ''}><i aria-hidden="true">+</i><span>Add pictures</span></button></div>
+      ${at < 0 ? '' : `<div class="leaf-acts"><div class="leaf-big"><img src="${esc(small(g.album[at].photo))}" alt="Picture ${at + 1} of her album" decoding="async"></div><div><p>Picture <b>${at + 1}</b> of her album.</p><div class="btns"><button type="button" class="plate" data-act="leaf-new"${noStore}>New picture</button><button type="button" class="back" data-act="leaf-out"${off}>Take it away</button><button type="button" class="back" data-act="leaf-shut"${off}>Close</button></div></div></div>`}
+      <p class="album-say">${say}</p>
+      <input type="file" data-for="album" accept="image/jpeg,image/png,image/webp" multiple hidden><input type="file" data-for="leaf" accept="image/jpeg,image/png,image/webp" hidden>
+    </div>
+  </li>`;
+}
+/** The line under the heading. */
+function lede() {
+  $('#lede').textContent = `The campaign’s opponents, place by place: what each goes by in the game, how old she is, her picture, and the album a player wins from her.${state.most === null ? ` ${NO_STORAGE} Names and ages can be given all the same.` : ''}`;
+}
+function open() {
+  $('#trouble').hidden = true; $('#foot').hidden = false;
+  lede();
+  $('#rooms').innerHTML = CASTING.rooms.map((room, i) => `<section class="card" id="room-${i}"><div class="card-in"><header><h2>${esc(room.name)}</h2></header><ul class="members">${room.members.map(line).join('')}</ul></div></section>`).join('');
+  $('#rooms').hidden = false;
+  if (!$('#top .jump')) $('#top').insertAdjacentHTML('beforeend', CASTING.rooms.map((room, i) => `<a class="jump" href="#room-${i}">${esc(room.name)}</a>`).join(''));
+}
+/** How she stands, as the service has just said: taken up in place of what was known of her. */
+function take(id, m) {
+  const album = Array.isArray(m.album) ? m.album : [];
+  if (m.name == null && m.age == null && m.photo == null && !album.length) delete state.given[id];
+  else state.given[id] = { name: m.name || null, age: m.age || null, photo: m.photo || null, album };
+}
+/** Reads the cast from the service and shows it. Where that does not work, it says so and offers to try again. */
+async function read() {
+  $('#trouble').hidden = true;
+  $('#lede').textContent = 'Opening…';
+  const cast = await call('GET', `/games/${CASTING.game}/cast`);
+  if (cast.status !== 200) {
+    $('#lede').textContent = 'The campaign’s opponents, each with the name, the age, the picture and the album the game shows for her.';
+    $('#say').textContent = refusal(cast);
+    $('#trouble').hidden = false;
+    return;
+  }
+  state.most = cast.data.photoBytes === undefined ? 0 : cast.data.photoBytes;
+  state.album = cast.data.albumPictures || state.album;
+  state.given = {};
+  for (const m of cast.data.cast || []) take(m.id, m);
+  open();
+}
+$('#again').addEventListener('click', read);
+
+const rowOf = id => $(`.member[data-id="${id}"]`);
+const fieldOf = (row, which) => row.querySelector(`[data-field=${which}]`);
+const typed = row => ({ name: fieldOf(row, 'name').value.replace(/\s+/g, ' ').trim(), age: fieldOf(row, 'age').value.trim() });
+/** Save can be pressed when what is typed is not what she has. */
+function weigh(row) {
+  const g = given(row.dataset.id), t = typed(row);
+  row.querySelector('[data-act=save]').disabled = working.has(row.dataset.id) || (t.name === (g.name || '') && t.age === String(g.age || ''));
+}
+/** Draws one member again, with a word about what has just happened to her. What is being typed for the others
+ *  stays; so does what is typed for her, but for the fields that have just been saved or given up (fresh). */
+function redraw(id, said = '', bad = false, fresh = []) {
+  const was = rowOf(id), box = document.createElement('ul');
+  const at = was.contains(document.activeElement) && document.activeElement.dataset.field, kept = { name: fieldOf(was, 'name').value, age: fieldOf(was, 'age').value };
+  box.innerHTML = line(MEMBER[id]);
+  was.replaceWith(box.firstElementChild);
+  const row = rowOf(id);
+  for (const which of ['name', 'age']) if (!fresh.includes(which)) fieldOf(row, which).value = kept[which];
+  weigh(row);
+  if (at && !fieldOf(row, at).disabled) fieldOf(row, at).focus({ preventScroll: true });
+  note(id, said, bad);
+}
+function note(id, said, bad = false) { const n = rowOf(id).querySelector('.note'); n.textContent = said; n.classList.toggle('bad', bad); }
+const SHOWN = 'The game shows it the next time it is opened.';
+
+/** Saves her name and her age as they are typed; or only `what`, where that is given ({ name: null }: the campaign's name back). */
+async function save(id, what) {
+  const row = rowOf(id), g = given(id), at = row.contains(document.activeElement) && document.activeElement.dataset.field;
+  if (!what) {
+    const t = typed(row);
+    if (Array.from(t.name).length > 24) return note(id, 'A name is at most 24 signs.', true);
+    if (t.age && !/^(1[89]|[2-9][0-9])$/.test(t.age)) return note(id, 'An age is a whole number from 18 to 99: everyone in the cast is an adult.', true);
+    what = {};
+    if (t.name !== (g.name || '')) what.name = t.name || null;
+    if (t.age !== String(g.age || '')) what.age = t.age ? Number(t.age) : null;
+    if (!Object.keys(what).length) return;
+  }
+  working.add(id); redraw(id, 'Saving…');
+  const r = await call('PUT', `/games/${CASTING.game}/cast/${id}`, { body: what });
+  working.delete(id);
+  if (r.status !== 200) { redraw(id, refusal(r), true); if (at) fieldOf(rowOf(id), at).focus({ preventScroll: true }); return; }   // nothing changed: it can be tried again as it stands
+  take(id, r.data);
+  const said = [];
+  if ('name' in what) said.push(what.name ? `she goes by ${what.name}` : 'she has the campaign’s name again');
+  if ('age' in what) said.push(what.age ? `she is ${what.age}` : 'she is as old as the campaign has her again');
+  const all = said.join(', and ');
+  redraw(id, `${all[0].toUpperCase()}${all.slice(1)}. ${SHOWN}`, false, Object.keys(what));
+  if (at) fieldOf(rowOf(id), at).focus({ preventScroll: true });   // whoever saved with Enter is still in the field
+}
+/** One change that needs nothing sent but the asking: done, taken up, said. */
+async function change(id, method, path, during, done) {
+  working.add(id); redraw(id, during);
+  const r = await call(method, `/games/${CASTING.game}/cast/${id}${path}`);
+  working.delete(id);
+  if (r.status !== 200) return redraw(id, refusal(r), true);
+  take(id, r.data);
+  redraw(id, done);
+}
+const removePicture = id => change(id, 'DELETE', '/photo', 'Taking it away…', `Her picture is gone; her initial stands in for it. ${SHOWN}`);
+function removeLeaf(id, n) {
+  picked = null;
+  return change(id, 'DELETE', `/album/${n}`, 'Taking it away…', `It is out of her album. ${SHOWN}`);
+}
+
+/** Why a file cannot be sent as a picture; '' when it can. */
+function unfit(file) {
+  if (!/^image\/(jpeg|png|webp)$/.test(file.type)) return 'is not a JPEG, PNG or WebP file';
+  if (state.most && file.size > state.most) return `is ${mb(file.size)} MB, and the most is ${mb(state.most)} MB`;
+  return '';
+}
+/** Sends one picture up. Done with XMLHttpRequest, which says how much has gone: a picture can be many megabytes. */
+function upload(path, file, gone) {
+  return new Promise(done => {
+    const x = new XMLHttpRequest();
+    x.open('PUT', `${CASTING.api}/api/games/${CASTING.game}/cast/${path}`);
+    x.setRequestHeader('Content-Type', file.type);
+    x.upload.onprogress = e => { if (e.lengthComputable) gone(e.loaded < e.total ? `${Math.round(100 * e.loaded / e.total)}%` : 'Sent. Putting it away…'); };
+    const answered = status => {
+      let data = {};
+      try { data = JSON.parse(x.responseText) || {}; } catch (e) { /* no body, or not JSON */ }
+      done({ status, data });
+    };
+    x.onload = () => answered(x.status);
+    x.onerror = x.onabort = x.ontimeout = () => answered(0);
+    x.send(file);
+  });
+}
+/** One picture, sent to where it belongs: her own (path '/photo') or a place of her album that has one already. */
+async function sendPicture(id, path, file, done) {
+  if (!file || working.has(id)) return;
+  if (state.most === null) return note(id, NO_STORAGE, true);
+  const why = unfit(file);
+  if (why) return note(id, `That ${why}.`, true);
+  working.add(id); redraw(id, 'Sending…');
+  rowOf(id).querySelector('.pic').classList.toggle('busy', path === '/photo');
+  const r = await upload(id + path, file, how => rowOf(id) && note(id, /%$/.test(how) ? `Sending… ${how}` : how));
+  working.delete(id);
+  if (r.status !== 200) return redraw(id, refusal(r), true);
+  take(id, r.data);
+  redraw(id, `${done} ${SHOWN}`);
+}
+/** The place a picture added to her album takes: the one after the last, so that it is the last. (Places run to 99;
+ *  should the last one stand there, the lowest place free.) */
+function nextPlace(album) {
+  const last = album.length ? album[album.length - 1].n : 0;
+  if (last < 99) return last + 1;
+  for (let n = 1; n < 100; n++) if (!album.some(a => a.n === n)) return n;
+  return 0;
+}
+/** Pictures added to her album, one after another in the order of their file names (2 before 10), for as many as it
+ *  has room for. Says what went in, and of each one that did not, why. */
+async function addLeaves(id, files) {
+  if (!files.length || working.has(id)) return;
+  if (state.most === null) return note(id, NO_STORAGE, true);
+  const sorted = [...files].sort((a, b) => a.name.localeCompare(b.name, undefined, { numeric: true, sensitivity: 'base' })), left = [];
+  const fit = sorted.filter(f => { const why = unfit(f); if (why) left.push(`${f.name} ${why}.`); return !why; });
+  const go = fit.slice(0, Math.max(0, state.album - given(id).album.length)), over = fit.length - go.length;
+  let done = 0, failed = null;
+  if (go.length) {
+    working.add(id);
+    for (const file of go) {
+      const which = go.length > 1 ? `Sending picture ${done + 1} of ${go.length}…` : 'Sending…';
+      redraw(id, which);
+      const r = await upload(`${id}/album/${nextPlace(given(id).album)}`, file, how => rowOf(id) && note(id, /%$/.test(how) ? `${which} ${how}` : how));
+      if (r.status !== 200) { failed = r; break; }
+      take(id, r.data); done++;
+    }
+    working.delete(id);
+  }
+  const said = [];
+  if (done) said.push(`${done === 1 ? 'One picture is' : `${done} pictures are`} in her album now. ${SHOWN}`);
+  if (failed) said.push(`${done ? 'Then it stopped: ' : ''}${refusal(failed)}`);
+  if (over) said.push(`${over === 1 ? 'One was' : `${over} were`} left out: an album holds ${state.album} pictures.`);
+  said.push(...left);
+  redraw(id, said.join(' '), !!failed || !done);
+}
+
+const rooms = $('#rooms');
+rooms.addEventListener('input', e => {
+  const row = e.target.closest('.member');
+  if (!row || !e.target.matches('.field')) return;
+  if (e.target.dataset.field === 'age') e.target.value = e.target.value.replace(/\D/g, '');
+  weigh(row);
+  note(row.dataset.id, '');
+});
+rooms.addEventListener('keydown', e => {
+  const row = e.target.closest('.member');
+  if (!row) return;
+  if (e.key === 'Escape' && picked && picked.id === row.dataset.id && !e.target.matches('.field')) { picked = null; return redraw(row.dataset.id); }
+  if (!e.target.matches('.field')) return;
+  if (e.key === 'Enter' && !row.querySelector('[data-act=save]').disabled) { e.preventDefault(); save(row.dataset.id); }
+  if (e.key === 'Escape') { const g = given(row.dataset.id); fieldOf(row, 'name').value = g.name || ''; fieldOf(row, 'age').value = g.age || ''; weigh(row); note(row.dataset.id, ''); }
+});
+rooms.addEventListener('click', e => {
+  const b = e.target.closest('[data-act]'), row = b && b.closest('.member');
+  if (!row || b.disabled) return;
+  const id = row.dataset.id, act = b.dataset.act;
+  if (act === 'save') save(id);
+  else if (act === 'unname') save(id, { name: null });
+  else if (act === 'unpic') removePicture(id);
+  else if (act === 'pick') row.querySelector('input[data-for=face]').click();
+  else if (act === 'more') row.querySelector('input[data-for=album]').click();
+  else if (act === 'leaf') {
+    const n = Number(b.dataset.n), other = picked && picked.id !== id ? picked.id : null, same = picked && picked.id === id && picked.n === n;
+    picked = same ? null : { id, n };
+    if (other && rowOf(other)) redraw(other);
+    redraw(id);
+    const now = rowOf(id).querySelector(same ? `.leaf[data-n="${n}"]` : '.leaf.on');
+    if (now) now.focus({ preventScroll: true });
+  }
+  else if (act === 'leaf-shut') { picked = null; redraw(id); }
+  else if (act === 'leaf-new') row.querySelector('input[data-for=leaf]').click();
+  else if (act === 'leaf-out' && picked) removeLeaf(id, picked.n);
+});
+rooms.addEventListener('change', e => {
+  const row = e.target.closest('.member'), to = e.target.matches('input[type=file]') && e.target.dataset.for;
+  if (!row || !to) return;
+  const id = row.dataset.id, files = [...e.target.files];
+  e.target.value = '';
+  if (to === 'face') sendPicture(id, '/photo', files[0], 'Her picture is up.');
+  else if (to === 'album') addLeaves(id, files);
+  else if (to === 'leaf' && picked && picked.id === id) sendPicture(id, `/album/${picked.n}`, files[0], 'The new picture is in its place.');
+});
+/* Pictures dragged from a folder: let go over her album, they are added to it; let go anywhere else on her, the first is her own picture. */
+const held = e => !!e.dataTransfer && Array.from(e.dataTransfer.types || []).includes('Files');
+const lit = () => rooms.querySelectorAll('.member.over, .album.over');
+rooms.addEventListener('dragover', e => {
+  const row = e.target.closest('.member');
+  if (!row || !held(e)) return;
+  e.preventDefault(); e.dataTransfer.dropEffect = 'copy';
+  const over = e.target.closest('.album') || row;
+  for (const o of lit()) if (o !== over) o.classList.remove('over');
+  over.classList.add('over');
+});
+rooms.addEventListener('dragleave', e => { const row = e.target.closest('.member'); if (row && !row.contains(e.relatedTarget)) for (const o of lit()) o.classList.remove('over'); });
+rooms.addEventListener('drop', e => {
+  const row = e.target.closest('.member');
+  if (!row || !held(e)) return;
+  e.preventDefault();
+  for (const o of lit()) o.classList.remove('over');
+  const files = [...e.dataTransfer.files];
+  if (e.target.closest('.album')) addLeaves(row.dataset.id, files); else sendPicture(row.dataset.id, '/photo', files[0], 'Her picture is up.');
+});
+/* let go anywhere else, a picture is not opened in place of this page */
+for (const type of ['dragover', 'drop']) window.addEventListener(type, e => { if (held(e) && !e.target.closest('.member')) e.preventDefault(); });
+/* a picture that does not come leaves her initial standing, or the number of its place */
+document.addEventListener('error', e => {
+  const img = e.target;
+  if (!(img instanceof HTMLImageElement)) return;
+  if (img.closest('.pic')) { img.closest('.pic').classList.remove('has'); img.remove(); } else if (img.closest('.leaf, .leaf-big')) img.remove();
+}, true);
+
+/* ── when the page opens ── */
+if (!CASTING.api) $('#lede').textContent = 'This copy of the game keeps nothing with a service, so there is no cast to keep either: its opponents are as the campaign has them.';
+else read();
+</script>
+</body>
+</html>
