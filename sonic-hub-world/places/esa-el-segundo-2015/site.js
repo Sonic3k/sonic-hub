@@ -72,9 +72,8 @@ export function buildSite(scene, shared, ctx) {
     // asphalt over the whole block (the streets and the shops' lot draw their own on top)
     b.box(X.asphalt('#3d3d3c', 3), -100, -0.04, -68.4, 52, 0.0, 132, { uv: [4, 4], uvw: true, cast: false });
     const n = WINGS.north, s = WINGS.south, mn = WINGS.main, L = LOT;
-    const gravel = X.gravel(), red = P.red(), walk = X.conc('#c6c2b8', 4, true), yellow = M.plain('#d9b030', 0.8), white = P.stripe();
+    const red = P.red(), walk = X.conc('#c6c2b8', 4, true), yellow = M.plain('#d9b030', 0.8), white = P.stripe();
     const shrub = (x, z, r = 0.6, c = '#46682c') => b.sphere(P.leaves(c, 1), x, r * 0.7, z, r, { seg: 7, sy: 0.75, cast: false });
-    const agave = (x, z, r = 0.5) => { const g = M.plain('#6f8f6a', 0.8); for (let i = 0; i < 13; i++) { const a = i / 13 * 6.283 + x, up = i % 3 === 0 ? 1.25 : i % 3 === 1 ? 0.75 : 0.4, out = i % 3 === 0 ? 0.45 : i % 3 === 1 ? 0.85 : 1.0; b.bar(g, x, 0.1, z, x + Math.cos(a) * r * out, 0.12 + r * up, z + Math.sin(a) * r * out, 0.075, { t2: 0.02, cast: false }); } };
     /** where a face's stair towers break its row of stalls: [from, to, the island's options] — as long as the tower with the
         walk that passes either side of it; the island itself starts at the tower's face (`face`: x or z) */
     const WALK = 1.4, towerCuts = (wing, side, face) => wing.towers.filter(t => t.side === side).map(t => { const am = (t.a0 + t.a1) / 2; return [am - TOWER.w / 2 - WALK, am + TOWER.w / 2 + WALK, { shrubs: 3, face }]; });
@@ -143,16 +142,20 @@ export function buildSite(scene, shared, ctx) {
     b.box(X.lawn(), -38.8, 0.0, L.walk, L.island[0], 0.1, L.northEdge - 3.9, { uv: [2, 2], uvw: true, cast: false });
     for (const x of [-23, -6, 3]) tree(b, x, L.walk + 1.2, { h: 9.5, r: 3.5, leaves: P.leaves('#3f5f2a', 6) });
     b.box(M.plain('#d8d6cf', 0.7), 13.2, 0.1, L.walk + 0.6, 13.8, 0.75, L.walk + 1.1, { cast: false });                  // a utility box on the lawn
-    /* THE WAY IN from Mariposa (the satellite picture; the hotel's pictures): a two-lane drive at the lot's north-east
-       corner, between an island of gravel and agaves that carries the sign and a bed of trees on the boundary. A walk
-       crosses the island from the sidewalk and goes over the aisle on a hatched strip to the lobby's forecourt. */
+    /* THE WAY IN from Mariposa (the satellite picture for where things are; Street View of July 2015, a month before he
+       came, for what grew there): a two-lane drive at the lot's north-east corner, between the island that carries the
+       sign — clipped round shrubs under two tall pines; the gravel and agaves of today came later — and a bed of trees
+       on the boundary. A walk crosses the island from the sidewalk and goes over the aisle on a hatched strip to the
+       lobby's forecourt. West of the island a low white fence ran along the sidewalk before the lawn. */
     const [ix0, iz0, ix1, iz1] = L.island, [dx0, dx1] = L.drive, C = L.court, hx0 = C.x0, hx1 = C.x0 + 3.2;
     planter(b, ix0, iz0, ix1, iz1, { red: true, solid: false });
-    b.box(gravel, ix0 + 0.15, 0, iz0 + 0.15, ix1 - 0.15, 0.13, iz1 - 0.15, { uv: [1.5, 1.5], uvw: true, cast: false });
+    const bed = X.mulch(), pine = () => P.leaves('#2f4a25', 6), ball = (x, z, r) => shrub(x, z, r * 1.35, '#3c5a28');
+    b.box(bed, ix0 + 0.15, 0, iz0 + 0.15, ix1 - 0.15, 0.13, iz1 - 0.15, { uv: [1.5, 1.5], uvw: true, cast: false });
     for (const [x0, z0, x1, z1] of [[ix0 + 0.15, iz0, hx0 + 0.7, iz0 + 3.2], [ix0 + 0.15, iz0 + 1.8, hx0 + 2.9, iz0 + 3.2], [hx0 + 1.2, iz0 + 1.8, hx0 + 2.9, iz1]]) b.box(walk, x0, 0, z0, x1, 0.145, z1, { uv: [1.5, 1.5], uvw: true, cast: false });
     b.box(yellow, hx0 + 1.25, 0.145, iz1 - 0.75, hx0 + 2.85, 0.155, iz1 - 0.05, { cast: false });
-    for (const [x, z, r] of [[ix0 + 4.6, iz0 + 0.9, 0.5], [ix0 + 6.6, iz0 + 1.2, 0.6], [ix0 + 7.0, iz1 - 1.3, 0.45], [ix1 - 2.2, iz0 + 1.3, 0.6], [ix1 - 1.7, iz1 - 1.5, 0.5], [ix0 + 10.3, iz1 - 1.0, 0.45]]) agave(x, z, r);
-    for (const [x, z] of [[ix0 + 6.0, iz1 - 2.6], [ix1 - 3.2, iz1 - 1.0]]) shrub(x, z, 0.4, '#6f8a4a');
+    for (const [x, z, r] of [[ix0 + 4.6, iz0 + 0.9, 0.5], [ix0 + 6.6, iz0 + 1.2, 0.6], [ix0 + 7.0, iz1 - 1.3, 0.45], [ix1 - 2.2, iz0 + 1.3, 0.6], [ix1 - 1.7, iz1 - 1.5, 0.5], [ix0 + 10.3, iz1 - 1.0, 0.45], [ix0 + 9.6, iz0 + 1.1, 0.55]]) ball(x, z, r);
+    for (const [x, z] of [[ix0 + 6.1, iz0 + 3.0], [ix1 - 2.2, iz0 + 3.8]]) tree(b, x, z, { h: 11.5, r: 3.3, blobs: 7, leaves: pine() });      // the two pines (their places: two panoramas of July 2015 crossed)
+    fence(b, -38.3, L.walk + 0.3, ix0 - 2.2, L.walk + 0.3, 0.95);
     monument(b, L.sign[0], L.sign[1]);
     b.solid(L.sign[0] - 0.3, 0, L.sign[1] - 1.9, L.sign[0] + 0.3, 2.3, L.sign[1] + 1.9);
     ctx.hot.push({ id: 'sign', pos: [L.sign[0], 2.45, L.sign[1]], r: 0.3 });
@@ -167,22 +170,23 @@ export function buildSite(scene, shared, ctx) {
     }
     // the bed on the boundary side, its trees
     b.box(red, dx1, 0, iz0, dx1 + 0.15, 0.16, -54.8, { cast: false, solid: true });
-    b.box(gravel, dx1 + 0.15, 0, iz0, L.eastEdge + 5.6, 0.13, -54.8, { uv: [1.5, 1.5], uvw: true, cast: false });
+    b.box(bed, dx1 + 0.15, 0, iz0, L.eastEdge + 5.6, 0.13, -54.8, { uv: [1.5, 1.5], uvw: true, cast: false });
     for (const [x, z] of [[dx1 + 2.4, iz0 + 2.2], [dx1 + 4.8, -58.3], [dx1 + 2.0, -56.4]]) tree(b, x, z, { h: 7.5, r: 2.8 });
-    agave(dx1 + 1.6, iz0 + 5.0, 0.5); agave(dx1 + 3.4, -61.3, 0.45);
+    ball(dx1 + 1.6, iz0 + 5.0, 0.5); ball(dx1 + 3.4, -61.3, 0.45);
     // the walk over the aisle: a hatched strip, a yellow pad at the forecourt's kerb
     { const z0 = L.northEdge + 0.1, z1 = C.z0;
       for (const x of [hx0, hx1]) b.box(white, x - 0.05, 0.012, z0, x + 0.05, 0.016, z1, { cast: false });
       for (let z = z0 + 0.5; z < z1 - 0.3; z += 0.95) b.rbox(white, (hx0 + hx1) / 2, 0.014, z, 0.1, 0.004, 3.5, 62, { cast: false });
       b.box(yellow, hx0 + 1.2, 0.16, z1, hx0 + 3.1, 0.17, z1 + 0.85, { cast: false }); }
     /* THE LOBBY'S FORECOURT: a red kerb round the wing's north-east corner (a fire lane), a concrete walk inside it from
-       the hatched strip round to the porch and on south along the drive, gravel and agaves between walk and wall */
+       the hatched strip round to the porch and on south along the drive; between walk and wall, in 2015, a planted bed —
+       low shrubs, a tall pine before the block, a small round tree by the porch (Street View, July 2015) */
     { const N = 14, zb = mn.z0 + KERB, xe = LOBBY.east, zEnd = mn.z1 - KERB + 1.35, w = 1.35, door = (LOBBY.door[0] + LOBBY.door[1]) / 2;
-      b.box(gravel, C.x0, 0, C.z0, C.cx, 0.13, zb, { uv: [1.5, 1.5], uvw: true, cast: false });
-      b.box(gravel, C.cx, 0, C.cz, C.x1, 0.13, zb, { uv: [1.5, 1.5], uvw: true, cast: false });
-      b.box(gravel, xe, 0, zb, C.x1, 0.13, zEnd, { uv: [1.5, 1.5], uvw: true, cast: false });
+      b.box(bed, C.x0, 0, C.z0, C.cx, 0.13, zb, { uv: [1.5, 1.5], uvw: true, cast: false });
+      b.box(bed, C.cx, 0, C.cz, C.x1, 0.13, zb, { uv: [1.5, 1.5], uvw: true, cast: false });
+      b.box(bed, xe, 0, zb, C.x1, 0.13, zEnd, { uv: [1.5, 1.5], uvw: true, cast: false });
       const fan = (mat, r, y) => { const g = new THREE.CircleGeometry(r, N, 0, Math.PI / 2); g.rotateX(-Math.PI / 2); g.translate(C.cx, y, C.cz); const uv = g.attributes.uv, pp = g.attributes.position; for (let i = 0; i < uv.count; i++) uv.setXY(i, pp.getX(i) / 1.5, pp.getZ(i) / 1.5); b.geo(mat, g, { cast: false }); };
-      fan(gravel, C.r, 0.13); fan(walk, C.r - 0.12, 0.15); fan(gravel, C.r - 0.12 - w, 0.152);
+      fan(bed, C.r, 0.13); fan(walk, C.r - 0.12, 0.15); fan(bed, C.r - 0.12 - w, 0.152);
       // the walk's two straight legs, the pad out to it from the porch, its turn to the south-east stair tower
       b.box(walk, C.x0 + 3.1, 0, C.z0 + 0.12, C.cx, 0.15, C.z0 + 0.12 + w, { uv: [1.5, 1.5], uvw: true, cast: false });
       b.box(walk, C.x1 - 0.12 - w, 0, C.cz, C.x1 - 0.12, 0.15, mn.z1 - KERB, { uv: [1.5, 1.5], uvw: true, cast: false });
@@ -192,7 +196,8 @@ export function buildSite(scene, shared, ctx) {
       // its kerb: west side, north side, the quarter round, the east side
       b.box(red, C.x0 - 0.15, 0, C.z0, C.x0, 0.16, L.northKerb, { cast: false }); b.box(red, C.x0 - 0.15, 0, C.z0 - 0.15, C.cx, 0.16, C.z0, { cast: false }); b.box(red, C.x1, 0, C.cz, C.x1 + 0.15, 0.16, zEnd, { cast: false });
       for (let i = 0; i < N; i++) { const a0 = i / N * Math.PI / 2, a1 = (i + 1) / N * Math.PI / 2, am = (a0 + a1) / 2, r = C.r + 0.075; b.rbox(red, C.cx + Math.cos(am) * r, 0.08, C.cz - Math.sin(am) * r, 0.15, 0.16, r * (a1 - a0) + 0.03, -am * 180 / Math.PI, { cast: false }); }
-      for (const [x, z, r] of [[C.x0 + 1.4, C.z0 + 2.6, 0.45], [C.cx - 4.6, C.z0 + 3.2, 0.55], [C.cx + 3.2, C.cz - 3.9, 0.5], [C.x1 - 2.6, C.cz + 7.4, 0.5], [C.x1 - 2.9, C.cz + 13.0, 0.45], [xe + 3.3, zb + 0.5, 0.4]]) agave(x, z, r);
+      for (const [x, z, r] of [[C.x0 + 1.4, C.z0 + 2.6, 0.45], [C.cx - 4.6, C.z0 + 3.2, 0.55], [C.cx + 3.2, C.cz - 3.9, 0.5], [C.x1 - 2.6, C.cz + 7.4, 0.5], [C.x1 - 2.9, C.cz + 13.0, 0.45], [xe + 3.3, zb + 0.5, 0.4], [C.cx - 1.6, C.z0 + 4.6, 0.5], [C.cx - 6.8, C.z0 + 5.0, 0.45]]) ball(x, z, r);
+      tree(b, C.cx + 2.2, C.cz - 5.1, { h: 11, r: 3.2, blobs: 7, leaves: pine() }); tree(b, C.cx + 4.8, C.cz - 2.3, { h: 4.6, r: 1.7, blobs: 5 });
       for (const [x, z] of [[C.cx - 7.5, C.z0 + 4.2], [C.x1 - 2.2, LOBBY.yard[3] + 2.2]]) shrub(x, z, 0.45, '#6f8a4a');
       tree(b, C.x1 - 2.6, mn.z1 - 1.6, { h: 6.5, r: 2.4 }); }
     /* SOUTH OF THE MAIN WING: stalls nose-in to its planting between the stair towers, a tree on an island; the aisle.

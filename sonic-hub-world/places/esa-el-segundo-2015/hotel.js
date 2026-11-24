@@ -469,49 +469,56 @@ function buildLobby(b, m, ctx, wing) {
   const K = LOBBY, R = K.room, Po = K.porch, Tw = K.tower, xE = K.east, xW = wing.start + wing.n * MOD, zN = wing.z0 + 0.3, zS = wing.z1 - 0.3;
   const U = { uv: [2, 2], uvw: true }, H1 = G1 + R.h, paint = X.roomWall('#e4cc98'), putX = along(b, 'x'), putZ = along(b, 'z');
   const planks = X.vinyl().clone(); planks.color.set('#8d837a');                 // the room's floor: wood-look planks, darker than the studios'
-  const glassy = X.glassDark(), dark = M.plain('#3f4446', 0.5, 0.3), cream = M.plain('#ece7da', 0.7), black = M.plain('#26272a', 0.4, 0.15), white = M.plain('#f3f1ea', 0.6), base = M.plain('#c9b28a', 0.6), ceil = M.plain('#f1eee6', 0.9), steel = M.plain('#b9bcbf', 0.3, 0.7);
-  /* the room's lines (plan.js, LOBBY): x0 its west wall, x1 the block's end wall (the cross wall) on the inside and xE
-     on the outside, vx the entry wall's inside and dx its outside; z0 the north wall, zp the desk's wall (its face to
-     the guest), zo its back, zb the office's back wall; bz0…bz1 the entry bay; yLow the top of the bay's walls */
-  const x0 = R.x0, x1 = R.x1, vx = xE + K.bay.d, dx = K.doorX, z0 = R.z0, zp = R.zp, zo = zp + K.desk.wall, zb = zo + K.office;
-  const bz0 = z0 + K.bay.n, bz1 = z0 + K.bay.s, bw = 0.15, yLow = Po.eave - 0.2, px = Po.x1, pz0 = Po.z0, pz1 = Po.z1, ph = Po.pier / 2;
-  /* the closed block: all of it above the room's ceiling, and at the ground the part south of the office */
-  b.box(m.wall, xW, H1 + 0.25, zN, xE, EAVE, zS, { ...U });
+  const glassy = X.glassDark(), dark = M.plain('#3f4446', 0.5, 0.3), cream = M.plain('#ece7da', 0.7), black = M.plain('#26272a', 0.4, 0.15), white = M.plain('#f3f1ea', 0.6), base = M.plain('#c9b28a', 0.6), ceil = M.plain('#f1eee6', 0.9), steel = M.plain('#b9bcbf', 0.3, 0.7), soff = M.plain('#e6e4de', 0.95);
+  /* the lines (plan.js, LOBBY). Along x: x0 the west wall's inside; xB the beam's face to the room and xE its face to the
+     bay, which is the block's end; xP the cased east end of the desk's wall; vx the door wall's inside and dx its outside;
+     px the porch columns' outer face. Along z: z0 the north wall's inside; bz0 the bay's north wall inside and zc0 its
+     outside, the porch's north face; zp the desk's wall (its face to the guest), zo its back, zb the office's back wall;
+     bz1 the back of the nook by the door. Heights: H1 the room's ceiling, HB the bay's, yBm the beam's underside (and
+     the dropped ceiling's over the desk), yLow the top of the low walls under the tiled roof */
+  const D = K.desk, x0 = R.x0, xB = R.x1, xP = x0 + D.end, vx = xE + K.bay.d, dx = K.doorX, px = Po.x1, pw = Po.pier[0], pd = Po.pier[1];
+  const z0 = R.z0, zp = R.zp, zo = zp + D.wall, zb = zo + K.office, bz0 = z0 + K.bay.n, bw = 0.15, zc0 = bz0 - bw, bz1 = z0 + K.bay.s, pz0 = Po.z0, pz1 = Po.z1;
+  const HB = G1 + K.bay.h, yBm = G1 + K.beam.under, yLow = Po.eave - 0.2;
+  const wx0 = x0 + K.win.x[0], wx1 = x0 + K.win.x[1], win = [[G1 + K.win.sill, G1 + K.win.head, true], [G2 + K.win.sill, G2 + K.win.head, false]];
+
+  /* THE BLOCK: two storeys, one module long. Upstairs a room like the others' (its window to Mariposa, its door on the
+     upper walkway's end); at the ground the lobby, and south of the office the closed back of the house */
+  band(putX, zN, zN + 0.25, xW, xE, H1 + 0.25, EAVE, [{ a: wx0, b: wx1, y0: win[1][0], y1: win[1][1] }], m.wall, m.wall);
+  b.box(m.wall, xW, H1 + 0.25, zN + 0.25, xE, EAVE, zS, { ...U });
   b.box(m.wall, xW, 0, zb, xE, H1 + 0.25, zS, { ...U, solid: true });
-  // its corners: pilasters with their capitals under the eaves, as on the walkways
-  for (const [x, z] of [[xW + 0.22, zN - 0.02], [xE - 0.22, zN - 0.02], [xW + 0.22, zS + 0.02], [xE - 0.22, zS + 0.02], [xE + 0.02, zN + 0.22], [xE + 0.02, zS - 0.22]]) {
-    const y1 = SOFFIT - 0.02, h = 0.24;
-    b.box(m.col, x - h, 0, z - h, x + h, y1, z + h, { ...U });
-    for (const [y, t, e] of [[y1 - 0.3, 0.1, 0.03], [y1 - 0.2, 0.2, 0.08]]) b.box(m.trim, x - h - e, y, z - h - e, x + h + e, y + t, z + h + e, { cast: false });
-  }
+  // its corners to Mariposa: wide terracotta piers, white capitals under the eaves (the east one runs back as far as the bay's wall)
+  { const y1 = SOFFIT - 0.02, cap = (xa, za, xb, zb2) => { for (const [y, t, e] of [[y1 - 0.3, 0.1, 0.03], [y1 - 0.2, 0.2, 0.08]]) b.box(m.trim, xa - e, y, za - e, xb + e, y + t, zb2 + e, { cast: false }); };
+    for (const [xa, za, xb, zb2] of [[xW - 0.03, zN - 0.1, xW + 0.68, zN + 0.2], [xE - 0.68, zN - 0.1, xE + 0.06, zN + 0.2], [xW - 0.02, zS - 0.2, xW + 0.46, zS + 0.1], [xE - 0.46, zS - 0.2, xE + 0.06, zS + 0.1]]) { b.box(m.col, xa, 0, za, xb, y1, zb2, { ...U }); cap(xa, za, xb, zb2); }
+    b.box(m.col, xE - 0.02, 0, zN + 0.2, xE + 0.06, y1, zc0 + 0.02, { ...U }); cap(xE - 0.02, zN + 0.2, xE + 0.06, zc0 + 0.02); }      // the east pier's return along the block's end, as far as the bay's wall
   b.box(m.trim, xW, SOFFIT, zN - 0.02, xE + 0.3, EAVE + 0.08, zN + 0.04, { cast: false }); b.box(m.trim, xW, SOFFIT, zS - 0.04, xE + 0.3, EAVE + 0.08, zS + 0.02, { cast: false });
   b.box(m.soffit, xW, SOFFIT, wing.z0, xE + 0.3, SOFFIT + 0.04, zN, { cast: false }); b.box(m.soffit, xW, SOFFIT, zS, xE + 0.3, SOFFIT + 0.04, wing.z1, { cast: false });
-  // the north face: a window on each floor, "Lobby" between them, the building's letter on the corner
-  const wx0 = x0 + K.win.x[0], wx1 = x0 + K.win.x[1], win = [[G1 + K.win.sill, G1 + K.win.head, true], [G2 + K.win.sill, G2 + K.win.head, false]];
+  // the north face: a window on each floor, "Lobby" between them, the building's letter on the east pier, the rooms' numbers on the west one
   band(putX, zN, zN + 0.25, xW, xE, 0, H1 + 0.25, [{ a: wx0, b: wx1, y0: win[0][0], y1: win[0][1] }], m.wall, paint);
   for (const [y0, y1, real] of win) {
     windowFrame(b, 'x', wx0, wx1, y0, y1, zN + 0.05, { mat: m.frame, mull: 1, t: 0.05, d: 0.07, glass: false });
-    for (let i = 1; i < 3; i++) b.box(m.frame, wx0, y0 + (y1 - y0) * i / 3 - 0.012, zN + 0.03, wx1, y0 + (y1 - y0) * i / 3 + 0.012, zN + 0.06, { cast: false });
+    for (let i = 1; i < 4; i++) b.box(m.frame, wx0, y0 + (y1 - y0) * i / 4 - 0.01, zN + 0.03, wx1, y0 + (y1 - y0) * i / 4 + 0.01, zN + 0.06, { cast: false });
+    for (const xm of [wx0, (wx0 + wx1) / 2]) for (let i = 1; i < 3; i++) b.box(m.frame, xm + (wx1 - wx0) * i / 6 - 0.01, y0, zN + 0.03, xm + (wx1 - wx0) * i / 6 + 0.01, y1, zN + 0.06, { cast: false });
     b.box(glassy, wx0 + 0.04, y0 + 0.04, zN + 0.05, wx1 - 0.04, y1 - 0.04, zN + 0.056, { cast: false });
-    if (!real) b.box(m.liner, wx0 - 0.1, y0 - 0.1, zN + 0.3, wx1 + 0.1, y1 + 0.15, zN + 0.31, { cast: false });
+    if (!real) b.box(m.liner, wx0 - 0.1, y0 - 0.1, zN + 0.2, wx1 + 0.1, y1 + 0.15, zN + 0.21, { cast: false });
   }
-  plate(b, 'Lobby', (wx0 + wx1) / 2, G2 - 0.16, zN - 0.012, 0.95, 0.34, '-z', '#4a4640', '#f4f1e8');
-  plate(b, 'A', xE - 0.22, G2 + 1.0, zN - 0.275, 0.3, 0.38, '-z', '#8c3b2b', '#f4f1e8', { size: 0.9, font: 'Arial, sans-serif' });
-  plate(b, 'Rooms\n151 – 177\n103 – 127', xW + 0.22, G2 - 0.22, zN - 0.275, 0.4, 0.5, '-z', '#3b3a48', '#f4f1e8', { size: 0.62, font: 'Arial, sans-serif' });
+  plate(b, 'Lobby', (wx0 + wx1) / 2, G2 - 0.11, zN - 0.012, 0.98, 0.4, '-z', '#4a4640', '#f4f1e8');
+  plate(b, 'A', xE - 0.31, G2 + 1.05, zN - 0.112, 0.34, 0.4, '-z', '#8c3b2b', '#f4f1e8', { size: 0.92, font: 'Arial, sans-serif' });
+  plate(b, 'Rooms\n151 – 177\n103 – 127', xW + 0.34, G2 - 0.18, zN - 0.112, 0.58, 0.6, '-z', '#3b3a48', '#f4f1e8', { size: 0.62, font: 'Arial, sans-serif' });
 
-  /* THE ROOM (plan.js has what it rests on): one room along the block's north wall from the block's west wall to its end
-     wall, which has a wide cased opening; beyond that, under the low roof, the entry bay with the door */
-  b.box(planks, x0, G1 - 0.02, z0, x1, G1 + 0.008, zb, { uv: [1.2, 1.2], uvw: true, cast: false });
-  b.box(planks, x1, G1 - 0.02, bz0, vx, G1 + 0.008, bz1, { uv: [1.2, 1.2], uvw: true, cast: false });
+  /* THE ROOM under the block, the strip under the beam, the bay and the office: floors and ceilings */
+  b.box(planks, x0, G1 - 0.02, z0, xE, G1 + 0.008, zb, { uv: [1.2, 1.2], uvw: true, cast: false });
+  b.box(planks, xE, G1 - 0.02, bz0, vx, G1 + 0.008, bz1, { uv: [1.2, 1.2], uvw: true, cast: false });
+  b.box(planks, xE, G1 - 0.02, bz1, xP, G1 + 0.008, zb, { uv: [1.2, 1.2], uvw: true, cast: false });
   b.box(ceil, xW + 0.02, H1, zN + 0.02, xE - 0.02, H1 + 0.25, zb, { cast: false });
-  b.box(ceil, xE - 0.02, H1, bz0 - bw + 0.02, dx - 0.02, H1 + 0.12, bz1 + bw - 0.02, { cast: false });
-  /* the west wall: the block's own, to the walkway; in it, by the window wall, THE BACK DOOR — half glazed, white, EXIT over
-     it inside — standing open onto the ground-floor walkway */
+  b.box(ceil, xE - 0.02, HB, zc0 + 0.02, dx - 0.02, HB + 0.1, bz1 + 0.02, { cast: false });
+  b.box(ceil, xE - 0.02, H1, bz1 + 0.02, xP, H1 + 0.1, zb, { cast: false });
+  /* the west wall: the block's own, to the walkway; in it, by the window wall, THE BACK DOOR — half glazed, white inside, EXIT
+     over it — standing open onto the ground-floor walkway */
   const zk0 = z0 + K.back.z[0], zk1 = z0 + K.back.z[1], kH = G1 + K.back.h;
   band(putZ, xW, x0, z0, zb, 0, H1 + 0.25, [{ a: zk0, b: zk1, y0: 0, y1: kH }], m.wall, paint);
   b.box(m.walk, xW, 0, zk0, x0, G1, zk1, { cast: false });
   for (const x of [x0, xW - 0.02]) for (const [a0, a1, y0, y1] of [[zk0 - 0.07, zk0, G1, kH + 0.07], [zk1, zk1 + 0.07, G1, kH + 0.07], [zk0 - 0.07, zk1 + 0.07, kH, kH + 0.07]]) b.box(white, x, y0, a0, x + 0.02, y1, a1, { cast: false });
-  b.push(xW + 0.02, G1, zk1 - 0.025, 180);                                     // hinged at its south jamb, swung out against the studio's wall
+  b.push(xW + 0.02, G1, zk1 - 0.025, 180);                                     // hinged at its south jamb, swung out against the next wall
   { const h = K.back.h, g0 = 1.04, g1 = h - 0.16;
     b.box(white, 0, 0.02, -0.02, 0.9, h - 0.02, 0.02, {}); b.box(glassy, 0.14, g0, -0.026, 0.76, g1, 0.026, { cast: false });
     for (let i = 1; i < 3; i++) b.box(white, 0.14 + 0.62 * i / 3 - 0.008, g0, -0.03, 0.14 + 0.62 * i / 3 + 0.008, g1, 0.03, { cast: false });
@@ -524,95 +531,108 @@ function buildLobby(b, m, ctx, wing) {
   b.box(m.trim, -0.07, 0, -0.03, 0, 2.1, 0.03, { cast: false }); b.box(m.trim, zk1 - zk0, 0, -0.03, zk1 - zk0 + 0.07, 2.1, 0.03, { cast: false }); b.box(m.trim, -0.07, 2.03, -0.03, zk1 - zk0 + 0.07, 2.1, 0.03, { cast: false }); b.pop();
   ctx.hot.push({ id: 'backdoor', pos: [x0 + 0.06, G1 + 1.5, (zk0 + zk1) / 2], r: 0.2 });
 
-  /* the end wall (the cross wall): a short stub at the north, then the cased opening to the entry bay as far as the desk's
-     wall; south of that it is the office's east wall. Outside, north of the bay, it is the block's own face */
-  const co0 = z0 + K.cross.stub, coH = G1 + K.cross.head;
-  band(putZ, x1, xE, z0, zb, 0, H1 + 0.25, [{ a: co0, b: zp, y0: 0, y1: coH }], paint, m.wall);
-  for (const [a0, a1, y0, y1] of [[co0 - 0.09, co0, G1, coH + 0.09], [co0 - 0.09, zp, coH, coH + 0.09]]) b.box(white, x1 - 0.016, y0, a0, x1, y1, a1, { cast: false });
-  b.box(white, x1, G1, co0, xE, coH, co0 + 0.008, { cast: false }); b.box(white, x1, coH - 0.008, co0, xE, coH, zp, { cast: false });
-  for (const [a0, a1, y0, y1] of [[bz0, co0, G1, H1], [zp, bz1, G1, H1], [co0, zp, coH, H1]]) b.box(paint, xE, y0, a0, xE + 0.012, y1, a1, { cast: false });      // its face to the bay
+  /* THE BLOCK'S END WALL at the ground: a stub by the window wall, its end cased in white; over the rest a beam, its
+     underside level with the dropped ceiling over the desk, which it runs into */
+  band(putZ, xB, xE, z0, bz0, 0, H1 + 0.25, [], paint, m.wall);
+  b.box(white, xB - 0.014, G1, bz0 - 0.07, xB, yBm, bz0, { cast: false }); b.box(white, xB - 0.014, G1, bz0, xE + 0.014, yBm, bz0 + 0.012, { cast: false });
+  b.box(black, xB - 0.02, G1 + 1.2, bz0 - 0.055, xB - 0.012, G1 + 1.36, bz0 - 0.015, { cast: false });                  // a small black plate on the casing
+  b.box(paint, xB, yBm, bz0, xE, H1 + 0.25, zo, { cast: false }); b.box(soff, xB - 0.002, yBm - 0.006, bz0, xE + 0.002, yBm, zo, { cast: false });
+  b.box(paint, xE, yBm, bz0, xE + 0.012, HB, zp - D.clip, { cast: false });                                             // the beam's face to the bay
 
-  /* THE ENTRY BAY: 0.85 m deep; in its east wall the door, glass with blinds each side of it, a row of lights over them */
-  const E = K.entry, e0 = z0 + E.door[0], e1 = z0 + E.door[1], sN = e0 - E.post - E.side, sS = e1 + E.post, sy0 = G1 + 0.14, sy1 = G1 + 2.06, t0 = G1 + E.transom[0], t1 = G1 + E.transom[1], dT = G1 + E.h;
-  band(putX, bz0 - bw, bz0, xE, vx, 0, yLow, [], m.wall, paint);
-  band(putX, bz1, bz1 + bw, xE, vx, 0, yLow, [], paint, m.wall);
-  band(putZ, vx, dx, bz0 - bw, bz1 + bw, 0, yLow, [
+  /* THE ENTRY BAY under the low roof, 1.3 m from the beam to the door wall: its north wall half a metre back from the room's,
+     the air-conditioner in it; in the door wall the door, glass with blinds each side of it, a row of lights over them */
+  const E = K.entry, e0 = z0 + E.door[0], e1 = z0 + E.door[1], sN = e0 - E.post - E.side, sS = e1 + E.post, sy0 = G1 + 0.14, sy1 = G1 + E.h, t0 = G1 + E.transom[0], t1 = G1 + E.transom[1], dT = G1 + E.h;
+  band(putX, zc0, bz0, xE, dx, 0, yLow, [], m.towerLo, paint);
+  { const a0 = xE + K.ac[0], a1 = a0 + K.ac[1];
+    b.box(m.louvre, a0, 0.2, zc0 - 0.02, a1, 0.6, zc0, { uv: [K.ac[1], 0.4], cast: false }); b.box(m.trim, a0 - 0.02, 0.6, zc0 - 0.03, a1 + 0.02, 0.63, zc0, { cast: false });
+    b.box(cream, a0, G1, bz0, a1, G1 + 0.42, bz0 + 0.2, { solid: true }); b.box(dark, a0 + 0.06, G1 + 0.42, bz0 + 0.03, a1 - 0.06, G1 + 0.424, bz0 + 0.16, { cast: false }); }
+  band(putZ, vx, dx, zc0, pz1, 0, yLow, [
     { a: sN, b: sN + E.side, y0: sy0, y1: t1 }, { a: sN + E.side, b: e0, y0: t0, y1: t1 }, { a: e0, b: e1, y0: 0, y1: t1 },
-    { a: e1, b: sS, y0: t0, y1: t1 }, { a: sS, b: sS + E.side, y0: sy0, y1: t1 }], paint, m.wall);
+    { a: e1, b: sS, y0: t0, y1: t1 }, { a: sS, b: sS + E.side, y0: sy0, y1: t1 }], paint, m.towerLo);
   { const xm = (vx + dx) / 2;                                                   // the wall between the door's head and the lights over it
-    for (const [a0, a1, y0] of [[sN, sN + E.side, sy1], [e0, e1, dT + 0.03], [sS, sS + E.side, sy1]]) { b.box(paint, vx, y0, a0, xm, t0, a1, { cast: false }); b.box(m.wall, xm, y0, a0, dx, t0, a1, { cast: false }); }
+    for (const [a0, a1, y0] of [[sN, sN + E.side, sy1], [e0, e1, dT + 0.03], [sS, sS + E.side, sy1]]) { b.box(paint, vx, y0, a0, xm, t0, a1, { cast: false }); b.box(m.towerLo, xm, y0, a0, dx, t0, a1, { cast: false }); }
     const fr = (y0, y1, a0, a1) => b.box(dark, xm - 0.035, y0, a0, xm + 0.035, y1, a1, { cast: false });
     for (const [a0, a1] of [[sN, sN + E.side], [sS, sS + E.side]]) { fr(sy0, sy1, a0 - 0.02, a0 + 0.025); fr(sy0, sy1, a1 - 0.025, a1 + 0.02); fr(sy0 - 0.02, sy0 + 0.025, a0, a1); fr(sy1 - 0.025, sy1 + 0.02, a0, a1); b.box(glassy, xm - 0.006, sy0, a0, xm + 0.006, sy1, a1, { cast: false }); }
     fr(G1, dT + 0.03, e0 - 0.03, e0 + 0.02); fr(G1, dT + 0.03, e1 - 0.02, e1 + 0.03); fr(dT, dT + 0.05, e0, e1);
     fr(t0 - 0.02, t0 + 0.025, sN, sS + E.side); fr(t1 - 0.025, t1 + 0.02, sN, sS + E.side); b.box(glassy, xm - 0.006, t0, sN, xm + 0.006, t1, sS + E.side, { cast: false });
     for (let i = 0; i <= 6; i++) { const z = sN + (sS + E.side - sN) * i / 6; fr(t0, t1, z - 0.012, z + 0.012); }
-    b.box(M.plain('#d9d7cf', 0.5), vx - 0.11, G1 + 2.07, e0 - 0.04, vx, G1 + 2.25, e1 + 0.04, { cast: false });      // the door's operator over its head, inside
-    // a lantern outside, south of the door: a dark hood, a frosted box that glows after dark
-    { const z = sS + E.side + 0.26; b.box(dark, dx, G1 + 2.02, z - 0.09, dx + 0.16, G1 + 2.08, z + 0.09, { cast: false }); b.box(m.sconce, dx + 0.02, G1 + 1.74, z - 0.065, dx + 0.13, G1 + 2.02, z + 0.065, { cast: false }); }
+    b.box(M.plain('#d9d7cf', 0.5), vx - 0.11, dT + 0.03, e0 - 0.04, vx, dT + 0.2, e1 + 0.04, { cast: false });      // the door's operator over its head, inside
+    // a lantern outside each side of the glass: a dark hood, a frosted box that glows after dark
+    for (const z of [sN - 0.22, sS + E.side + 0.26]) { b.box(dark, dx, G1 + 2.16, z - 0.09, dx + 0.16, G1 + 2.22, z + 0.09, { cast: false }); b.box(m.sconce, dx + 0.02, G1 + 1.88, z - 0.065, dx + 0.13, G1 + 2.16, z + 0.065, { cast: false }); }
     // the leaf: glass in fifteen lights, hinged at its north jamb, standing open onto the porch
     b.push(dx - 0.02, G1, e0 + 0.025, 0);
     b.box(dark, 0, 0.02, -0.02, 0.9, E.h - 0.02, 0.02, {}); b.box(glassy, 0.12, 0.3, -0.026, 0.78, E.h - 0.16, 0.026, { cast: false });
     for (let i = 1; i < 3; i++) b.box(M.plain('#d9d6cc', 0.5), 0.12 + 0.66 * i / 3 - 0.008, 0.3, -0.03, 0.12 + 0.66 * i / 3 + 0.008, E.h - 0.16, 0.03, { cast: false });
     for (let i = 1; i < 5; i++) b.box(M.plain('#d9d6cc', 0.5), 0.12, 0.3 + (E.h - 0.46) * i / 5 - 0.008, -0.03, 0.78, 0.3 + (E.h - 0.46) * i / 5 + 0.008, 0.03, { cast: false });
     b.pop(); b.solid(dx, G1, e0 - 0.03, dx + 0.93, dT, e0 + 0.05);
-    b.box(dark, dx, 0.28, bz0 - 0.02, dx + 0.02, 0.72, sN - 0.1, { cast: false });                                 // a vent low in the wall north of the glass (the hotel's picture)
-    b.box(M.plain('#2c2c2c', 0.95), dx + 0.2, G1 + 0.004, e0 - 0.05, dx + 1.0, G1 + 0.016, e1 + 0.05, { cast: false }); }     // the mat before the door
+    b.box(M.plain('#2c2c2c', 0.95), dx + 0.12, G1 + 0.004, e0 - 0.05, dx + 0.66, G1 + 0.016, e1 + 0.05, { cast: false }); }     // the mat before the door
+  /* past the desk's wall's end, by the door: a shallow nook with a shelf of pale wood; behind it and the office, the low
+     roof's closed part (its wall to the porch carries the night boxes) */
+  band(putZ, xP, xP + 0.08, zp, bz1, 0, HB, [], paint, paint);
+  b.box(white, xP - 0.03, G1, zp - 0.014, xP + 0.094, yBm, zp, { cast: false });                                       // the wall's white-cased end
+  b.box(m.towerLo, xP, 0, bz1, vx, yLow, pz1, { ...U, solid: true }); b.box(paint, xP + 0.08, G1, bz1 - 0.012, vx, HB, bz1, { cast: false });
+  b.box(m.towerLo, xE, 0, zb, xP, yLow, pz1, { ...U, solid: true });
+  { const s0 = xP + 0.1, s1 = vx - 0.03, t1s = bz1 - 0.02, t0s = t1s - 0.3, pale = M.wood('#c9a66b', 0.3, 5);
+    for (const [x, z] of [[s0, t0s], [s1 - 0.03, t0s], [s0, t1s - 0.03], [s1 - 0.03, t1s - 0.03]]) b.box(pale, x, G1, z, x + 0.03, G1 + 1.5, z + 0.03, {});
+    for (let i = 0; i < 5; i++) b.box(pale, s0, G1 + 0.1 + i * 0.34, t0s, s1, G1 + 0.12 + i * 0.34, t1s, { cast: false });
+    b.solid(s0, G1, t0s, s1, G1 + 1.5, t1s); }
 
-  /* THE DESK'S WALL, on the left as one comes in: the office's door at its west end, then a pier, then the opening as far
-     as the end wall — a black front and ledge chest-high, notched down where one signs; the office behind */
-  const D = K.desk, dA = x0 + D.door[0], dB = x0 + D.door[1], oA = x0 + D.open[0], oB = x0 + D.open[1], lA = x0 + D.low[0], lB = x0 + D.low[1];
-  band(putX, zp, zo, x0, x1, 0, H1, [{ a: dA, b: dB, y0: 0, y1: G1 + 2.03 }, { a: oA, b: oB, y0: G1 + D.sill, y1: G1 + D.head }], cream, paint);
-  b.push(dA, G1, zp + 0.05, 0); doorLeaf(b, dB - dA, 2.03, white, { rows: [[0.12, 0.72], [0.82, 1.55], [1.65, 1.93]], cols: 2, handle: 'lever' }); b.pop();      // white, six panels, shut; its lever on the east edge
-  for (const [a0, a1, y0, y1] of [[dA - 0.07, dA, G1, G1 + 2.1], [dB, dB + 0.07, G1, G1 + 2.1], [dA - 0.07, dB + 0.07, G1 + 2.03, G1 + 2.1]]) b.box(white, a0, y0, zp - 0.02, a1, y1, zp, { cast: false });
-  b.solid(dA, G1, zp, dB, G1 + 2.03, zo);
-  for (const [a0, a1] of [[x0, dA - 0.07], [dB + 0.07, x1]]) b.box(base, a0, G1, zp - 0.012, a1, G1 + 0.1, zp, { cast: false });      // the skirting
-  for (const [a0, a1] of [[oA, lA], [lB, oB]]) { b.box(black, a0, G1 + D.sill, zp - 0.05, a1, G1 + D.ledge, zp + 0.3, {}); b.solid(a0, G1, zp - 0.05, a1, G1 + D.ledge, zp); }
-  b.box(black, lA, G1 + D.sill, zp - 0.05, lB, G1 + D.lowTop, zp + 0.45, {}); b.solid(lA, G1, zp - 0.05, lB, G1 + D.lowTop, zp);
+  /* THE DESK'S WALL, on the left as one comes in: from its cased end in the bay to the room's south-west corner, where the
+     office's door is — a black front and ledge chest-high, notched down where one signs; the office behind */
+  const dA = x0 + D.door[0], dB = x0 + D.door[1], oA = x0 + D.open[0], oB = x0 + D.open[1], lA = x0 + D.low[0], lB = x0 + D.low[1];
+  band(putX, zp, zo, x0, xP, 0, H1, [{ a: dA, b: dB, y0: 0, y1: G1 + D.doorH }, { a: oA, b: oB, y0: G1 + D.sill, y1: G1 + D.head }], cream, paint);
+  b.box(paint, xE, H1, zp, xP, HB, zo, { cast: false });
+  b.push(dA, G1, zp + 0.05, 0); doorLeaf(b, dB - dA, D.doorH, white, { rows: [[0.12, 0.76], [0.86, 1.62], [1.72, 2.03]], cols: 2, handle: 'lever' }); b.pop();      // white, six panels, shut; its lever on the east edge
+  for (const [a0, a1, y0, y1] of [[Math.max(x0, dA - 0.07), dA, G1, G1 + D.doorH + 0.07], [dB, dB + 0.07, G1, G1 + D.doorH + 0.07], [Math.max(x0, dA - 0.07), dB + 0.07, G1 + D.doorH, G1 + D.doorH + 0.07]]) b.box(white, a0, y0, zp - 0.02, a1, y1, zp, { cast: false });
+  b.solid(dA, G1, zp, dB, G1 + D.doorH, zo);
+  for (const [a0, a1] of [[dB + 0.07, xP - 0.03]]) b.box(base, a0, G1, zp - 0.012, a1, G1 + 0.1, zp, { cast: false });      // the skirting
+  for (const [a0, a1] of [[oA, lA], [lB, oB]]) { b.box(black, a0, G1 + D.sill, zp - 0.03, a1, G1 + D.ledge, zp + 0.3, {}); b.solid(a0, G1, zp - 0.03, a1, G1 + D.ledge, zp); }
+  b.box(black, lA, G1 + D.sill, zp - 0.03, lB, G1 + D.lowTop, zp + 0.45, {}); b.solid(lA, G1, zp - 0.03, lB, G1 + D.lowTop, zp);
   b.box(black, oA, G1 + 0.72, zo, oB, G1 + 0.76, zo + 0.62, { cast: false });                    // the clerk's top
-  for (const [x, y, z] of [[(lA + lB) / 2 - 0.16, G1 + D.lowTop, zp + 0.06], [oB - 1.25, G1 + D.ledge, zp + 0.06]]) {      // a small screen and a card reader
+  for (const [x, y, z] of [[(lA + lB) / 2 - 0.16, G1 + D.lowTop, zp + 0.06], [oB - 0.55, G1 + D.ledge, zp + 0.06]]) {      // a small screen and a card reader
     b.box(black, x - 0.06, y, z + 0.02, x + 0.06, y + 0.02, z + 0.14, { cast: false }); b.rbox(M.plain('#3d4046', 0.35), x, y + 0.11, z + 0.08, 0.25, 0.17, 0.016, 0, { rx: -22, cast: false });
     b.rbox(M.plain('#3d4046', 0.35), x + 0.3, y + 0.07, z + 0.08, 0.085, 0.15, 0.045, 0, { rx: -18, cast: false });
   }
   // the office: its back wall red, a big framed picture of a door mat on it (drawn plainly, not the hotel's own); a dark
   // screen on its east wall; a low run of cabinets under a black top
-  { const red = X.roomWall('#b2382c'), fw = 1.5, fh = 0.88, fx = x1 - 1.25 - fw / 2, fy = G1 + 1.72;
-    b.box(paint, x0, G1, zb - 0.012, oA + 0.6, H1, zb, { cast: false }); b.box(red, oA + 0.6, G1, zb - 0.012, x1, H1, zb, { cast: false });
-    b.box(red, x1 - 0.012, G1, zb - 0.6, x1, H1, zb, { cast: false });
+  { const red = X.roomWall('#b2382c'), fw = 1.4, fh = 0.81, fx = x0 + 2.6, fy = G1 + 1.655;                      // the frame's place and size: read off the hotel's picture
+    b.box(paint, x0, G1, zb - 0.012, oA + 0.6, H1, zb, { cast: false }); b.box(red, oA + 0.6, G1, zb - 0.012, xP, H1, zb, { cast: false });
+    b.box(red, xP - 0.012, G1, zb - 0.6, xP, H1, zb, { cast: false }); b.box(paint, xP - 0.012, G1, bz1, xP, H1, zb - 0.6, { cast: false });
     b.box(black, fx - fw / 2, fy - fh / 2, zb - 0.045, fx + fw / 2, fy + fh / 2, zb - 0.012, { cast: false });
     const t = plateTex(420, 246, (g, W, H) => { g.fillStyle = '#f2f0ea'; g.fillRect(0, 0, W, H); g.fillStyle = '#a8763f'; g.fillRect(W * 0.14, H * 0.2, W * 0.72, H * 0.6); g.fillStyle = 'rgba(70,45,20,0.35)'; for (let y = H * 0.2; y < H * 0.8; y += 5) g.fillRect(W * 0.14, y, W * 0.72, 1.4); g.fillStyle = '#3a2c1e'; g.font = `700 ${Math.round(H * 0.27)}px Arial, sans-serif`; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText('WELCOME', W / 2, H * 0.52); });
     b.quad(new THREE.MeshStandardMaterial({ map: t, roughness: 0.7 }), '-z', fx, fy, zb - 0.047, fw - 0.1, fh - 0.1, { cast: false });
-    b.box(black, x1 - 0.045, G1 + 1.4, zo + 0.25, x1 - 0.004, G1 + 1.95, zo + 1.2, { cast: false });
-    b.box(M.plain('#2f4638', 0.6), oA + 0.5, G1, zb - 0.5, x1, G1 + 0.86, zb - 0.012, {}); b.box(black, oA + 0.48, G1 + 0.86, zb - 0.52, x1, G1 + 0.9, zb - 0.012, { cast: false }); }
-  // the ceiling drops over the desk, lights in it; a white moulding where the walls meet the ceiling
-  const tube = ctx.lampMat('#fff6e6', 1.8, 0.95, 0.75), sA = oA - 0.05, sB = oB + 0.05;
-  b.box(M.plain('#efece4', 0.9), sA, G1 + D.head - 0.004, zp - D.drop, sB, H1, zo + 1.0, { cast: false });
-  for (let i = 0; i < 3; i++) b.cyl(tube, sA + 0.6 + i * (sB - sA - 1.2) / 2, G1 + D.head - 0.012, zp - D.drop / 2, 0.085, 0.012, { seg: 14, cast: false });
-  for (const [a0, c0, a1, c1] of [[x0, z0, x1, z0 + 0.05], [x0, z0, x0 + 0.05, zp], [x0, zp - 0.05, sA, zp], [x1 - 0.05, z0, x1, zp - D.drop], [sA, zp - D.drop - 0.05, sB, zp - D.drop], [sA - 0.05, zp - D.drop - 0.05, sA, zp]])
+    b.box(black, xP - 0.05, G1 + 1.6, zo + 0.335, xP - 0.014, G1 + 2.275, zo + 1.54, { cast: false });                // a 55-inch screen: its size in the picture
+    b.box(M.plain('#2f4638', 0.6), oA + 0.5, G1, zb - 0.5, xP - 0.014, G1 + 0.86, zb - 0.012, {}); b.box(black, oA + 0.48, G1 + 0.86, zb - 0.52, xP - 0.014, G1 + 0.9, zb - 0.012, { cast: false }); }
+  /* the ceiling drops over the desk to the beam's level, lights in it; east of the beam it runs slantwise back to the wall's
+     cased end. A white moulding where the walls meet the ceiling */
+  const tube = ctx.lampMat('#fff6e6', 1.8, 0.95, 0.75), sA = oA - 0.05, zd = zp - D.drop;
+  b.box(soff, sA, yBm - 0.004, zd, xB, H1, zo + 1.0, { cast: false }); b.box(soff, xB, yBm - 0.004, zo, xP, H1, zo + 1.0, { cast: false });
+  { const wedge = (mat, y0, y1) => { const sh = new THREE.Shape(); sh.moveTo(xE, zp - D.clip); sh.lineTo(xP + 0.08, zp); sh.lineTo(xE, zp); sh.closePath();
+      const g = new THREE.ExtrudeGeometry(sh, { depth: y1 - y0, bevelEnabled: false }); g.rotateX(Math.PI / 2); g.translate(0, y1, 0); b.geo(mat, g, { cast: false }); };
+    wedge(paint, yBm, HB); wedge(soff, yBm - 0.005, yBm); }
+  b.box(paint, sA, yBm, zd - 0.012, xB, H1, zd, { cast: false }); b.box(paint, sA - 0.012, yBm, zd, sA, H1, zp, { cast: false });           // its two faces to the room
+  for (let i = 0; i < 3; i++) b.cyl(tube, sA + 0.5 + i * (xB - sA - 1.0) / 2, yBm - 0.014, zp - D.drop / 2, 0.085, 0.012, { seg: 14, cast: false });
+  for (const [a0, c0, a1, c1] of [[x0, z0, xB, z0 + 0.05], [x0, z0, x0 + 0.05, zp], [x0, zp - 0.05, sA - 0.012, zp], [xB - 0.05, z0, xB, zd - 0.012], [sA - 0.012, zd - 0.062, xB, zd - 0.012], [sA - 0.062, zd - 0.062, sA - 0.012, zp]])
     b.box(white, a0, H1 - 0.07, c0, a1, H1, c1, { cast: false });
-  for (const [x, z, ew] of [[(x0 + x1) / 2, (z0 + zp - D.drop) / 2, true], [(oA + oB) / 2, zo + 1.35, true], [(xE + vx) / 2, (e0 + e1) / 2, false]]) b.box(tube, x - (ew ? 0.6 : 0.09), H1 - 0.05, z - (ew ? 0.11 : 0.45), x + (ew ? 0.6 : 0.09), H1 - 0.005, z + (ew ? 0.11 : 0.45), { cast: false });
+  for (const [x, z, ew, y] of [[xB - 0.63, z0 + 1.32, true, H1], [(oA + oB) / 2, zo + 1.35, true, H1], [(xE + vx) / 2, (e0 + e1) / 2, false, HB]]) b.box(tube, x - (ew ? 0.61 : 0.09), y - 0.07, z - (ew ? 0.16 : 0.45), x + (ew ? 0.61 : 0.09), y - 0.005, z + (ew ? 0.16 : 0.45), { cast: false });      // the room's one long fixture hangs by the beam (the hotel's picture)
 
   /* blinds: in the glass each side of the door, and at the window to Mariposa (with a white casing) */
   const slats = new THREE.MeshStandardMaterial({ map: plateTex(64, 256, (g, W, H) => { g.fillStyle = '#e9e6dc'; g.fillRect(0, 0, W, H); for (let y = 0; y < H; y += 8) { g.fillStyle = 'rgba(120,115,100,0.55)'; g.fillRect(0, y, W, 1.6); g.fillStyle = 'rgba(255,255,255,0.7)'; g.fillRect(0, y + 1.6, W, 2); } g.fillStyle = 'rgba(90,90,80,0.5)'; for (const x of [W * 0.2, W * 0.8]) g.fillRect(x, 0, 1.2, H); }), roughness: 0.8, side: THREE.DoubleSide });
   for (const z of [sN + E.side / 2, sS + E.side / 2]) b.quad(slats, '-x', vx + 0.03, (sy0 + sy1) / 2, z, E.side - 0.03, sy1 - sy0 - 0.03, { cast: false });
   b.quad(slats, '+z', (wx0 + wx1) / 2, (win[0][0] + win[0][1]) / 2, z0 - 0.09, wx1 - wx0 - 0.04, win[0][1] - win[0][0] - 0.04, { cast: false });
-  for (const [a0, a1, y0, y1] of [[wx0 - 0.1, wx0, win[0][0] - 0.1, win[0][1] + 0.1], [wx1, wx1 + 0.1, win[0][0] - 0.1, win[0][1] + 0.1], [wx0 - 0.1, wx1 + 0.1, win[0][1], win[0][1] + 0.1], [wx0 - 0.1, wx1 + 0.1, win[0][0] - 0.1, win[0][0]]]) b.box(white, a0, y0, z0, a1, y1, z0 + 0.02, { cast: false });
-  // a shelf of pale wood in the bay's south corner
-  { const s1 = vx - 0.03, s0 = s1 - 0.7, t1 = bz1 - 0.02, t0 = t1 - 0.32, pale = M.wood('#c9a66b', 0.3, 5);
-    for (const [x, z] of [[s0, t0], [s1 - 0.03, t0], [s0, t1 - 0.03], [s1 - 0.03, t1 - 0.03]]) b.box(pale, x, G1, z, x + 0.03, G1 + 1.5, z + 0.03, {});
-    for (let i = 0; i < 5; i++) b.box(pale, s0, G1 + 0.1 + i * 0.34, t0, s1, G1 + 0.12 + i * 0.34, t1, { cast: false });
-    b.solid(s0, G1, t0, s1, G1 + 1.5, t1); }
+  for (const [a0, a1, y0, y1] of [[wx0 - 0.08, wx0, win[0][0] - 0.08, win[0][1] + 0.08], [wx1, wx1 + 0.08, win[0][0] - 0.08, win[0][1] + 0.08], [wx0 - 0.08, wx1 + 0.08, win[0][1], win[0][1] + 0.08], [wx0 - 0.08, wx1 + 0.08, win[0][0] - 0.08, win[0][0]]]) b.box(white, a0, y0, z0, a1, y1, z0 + 0.02, { cast: false });
 
-  /* THE BREAKFAST, by the way in, on the right — where he remembers it (24 Nov 2026), not under the window at the far end
-     where the coffee counter is today. What stood on it is in his own photograph of 19 Aug 2015 (07:10, on the table in
-     his room): coffee in the hotel's paper cup, a packet of instant oatmeal, a wrapped muffin, a red apple */
+  /* THE BREAKFAST, by the way in, on the right — where he remembers it (24 Nov 2026): against the window wall where it
+     begins past the beam, two steps from the door. What stood on it is in his own photograph of 19 Aug 2015 (07:10, on the
+     table in his room): coffee in the hotel's paper cup, a packet of instant oatmeal, a wrapped muffin, a red apple */
   { const B = K.breakfast, bx0 = x0 + B.x[0], bx1 = x0 + B.x[1], c0 = z0 + 0.02, c1 = c0 + B.depth, y = G1 + B.h, zc = c0 + 0.27, espresso = M.wood('#3b2a20', 0.3, 7), wicker = M.plain('#8a6a43', 0.9);
     b.box(espresso, bx0, G1 + 0.08, c0, bx1, y - 0.04, c1 - 0.03, {}); b.box(black, bx0 - 0.02, y - 0.04, c0, bx1 + 0.02, y, c1, {}); b.box(black, bx0 + 0.04, G1, c0 + 0.04, bx1 - 0.04, G1 + 0.08, c1 - 0.08, { cast: false });
     b.solid(bx0, G1, c0, bx1, y, c1);
-    // two pump pots of coffee, a drip tray before each
+    // two pump pots of coffee at its far end, a drip tray before each
     [0.16, 0.4].forEach(d => { const x = bx0 + d; b.cyl(black, x, y, zc - 0.07, 0.085, 0.3, { seg: 16 }); b.cyl(black, x, y + 0.3, zc - 0.07, 0.07, 0.05, { seg: 14, r2: 0.045, cast: false }); b.box(black, x - 0.012, y + 0.33, zc - 0.07, x + 0.012, y + 0.355, zc + 0.06, { cast: false }); b.box(steel, x - 0.055, y, zc + 0.03, x + 0.055, y + 0.012, zc + 0.15, { cast: false }); });
     // paper cups upside down in two stacks (plain: the real ones carried the hotel's name)
     for (const [x, n] of [[bx0 + 0.6, 7], [bx0 + 0.7, 5]]) for (let i = 0; i < n; i++) b.cyl(white, x, y + i * 0.022, zc - 0.1, 0.04, 0.095, { seg: 12, r2: 0.03, cast: false });
-    // a basket of red apples, a basket of wrapped muffins, packets of oatmeal standing in a rack against the wall
+    // nearest the door: a basket of red apples, a basket of wrapped muffins, packets of oatmeal standing in a rack against the wall
     const ax = bx0 + 0.94, mx = bx0 + 1.27;
     b.cyl(wicker, ax, y, zc + 0.02, 0.12, 0.085, { seg: 16, r2: 0.155 });
     [[0, 0], [0.07, 0.02], [-0.065, 0.03], [0.02, -0.07], [-0.045, -0.055], [0.06, -0.05], [0.0, 0.072]].forEach(([ox, oz], i) => b.sphere(M.plain(i % 3 ? '#a3201c' : '#7d1719', 0.35), ax + ox, y + 0.105 + (i === 0 ? 0.045 : 0), zc + 0.02 + oz, 0.038, { seg: 10, cast: false }));
@@ -623,32 +643,31 @@ function buildLobby(b, m, ctx, wing) {
     plate(b, 'Breakfast\n6:00 – 9:30', bx0 + 0.65, y + 0.07, c1 - 0.07, 0.2, 0.13, '+z', '#f4f1e8', '#3a3a3a', { size: 0.6, font: 'Arial, sans-serif' });
     b.box(white, bx0 + 0.55, y, c1 - 0.1, bx0 + 0.75, y + 0.006, c1 - 0.045, { cast: false });
     ctx.hot.push({ id: 'breakfast', pos: [bx0 + 1.05, y + 0.42, zc], r: 0.2 });
-    // under the window at the far end, where the coffee counter is today: two armchairs and a low table (a guess)
+    // under the window beyond it, where the long coffee counter is today: two armchairs (a guess)
     const gold = M.plain('#b78a2d', 0.85);
-    for (const x of [wx0 + 0.2, wx0 + 1.2]) { b.box(gold, x, G1 + 0.16, c0, x + 0.62, G1 + 0.44, c0 + 0.62, {}); b.box(gold, x, G1 + 0.44, c0, x + 0.62, G1 + 0.86, c0 + 0.14, {}); for (const ox of [0, 0.54]) b.box(gold, x + ox, G1 + 0.44, c0 + 0.14, x + ox + 0.08, G1 + 0.6, c0 + 0.6, { cast: false }); for (const [ox, oz] of [[0.03, 0.03], [0.55, 0.03], [0.03, 0.55], [0.55, 0.55]]) b.box(espresso, x + ox, G1, c0 + oz, x + ox + 0.04, G1 + 0.16, c0 + oz + 0.04, { cast: false }); b.solid(x, G1, c0, x + 0.62, G1 + 0.86, c0 + 0.62); }
-    b.cyl(espresso, wx0 + 1.01, G1, c0 + 0.3, 0.05, 0.5, { seg: 10 }); b.cyl(espresso, wx0 + 1.01, G1 + 0.5, c0 + 0.3, 0.17, 0.03, { seg: 18 });
+    for (const x of [wx0 + 0.05, wx0 + 0.78]) { b.box(gold, x, G1 + 0.16, c0, x + 0.62, G1 + 0.44, c0 + 0.62, {}); b.box(gold, x, G1 + 0.44, c0, x + 0.62, G1 + 0.86, c0 + 0.14, {}); for (const ox of [0, 0.54]) b.box(gold, x + ox, G1 + 0.44, c0 + 0.14, x + ox + 0.08, G1 + 0.6, c0 + 0.6, { cast: false }); for (const [ox, oz] of [[0.03, 0.03], [0.55, 0.03], [0.03, 0.55], [0.55, 0.55]]) b.box(espresso, x + ox, G1, c0 + oz, x + ox + 0.04, G1 + 0.16, c0 + oz + 0.04, { cast: false }); b.solid(x, G1, c0, x + 0.62, G1 + 0.86, c0 + 0.62); }
   }
   ctx.hot.push({ id: 'desk', pos: [(lA + lB) / 2, G1 + 1.5, zp - 0.03], r: 0.2 });
-  flat(x0, z0, x1, zp, G1); flat(x1, co0, xE, zp, G1); flat(xE, bz0, vx, bz1, G1); flat(vx, e0, dx + 0.05, e1, G1); flat(xW - 0.05, zk0, x0, zk1, G1);
+  flat(x0, z0, xB, zp, G1); flat(xB, bz0, xE, zp, G1); flat(xE, bz0, vx, zp, G1); flat(xP + 0.08, zp, vx, bz1, G1); flat(vx, e0, dx + 0.05, e1, G1); flat(xW - 0.05, zk0, x0, zk1, G1);
 
-  /* the porch before the door: two stubby terracotta columns with white caps, a flat arch between them, a low tiled roof
-     over it and the bay; south of the bay a recess with the night boxes on its wall */
-  b.box(m.walk, xE, 0, pz0, px, G1, pz1, { uv: [1.5, 1.5], uvw: true, cast: false }); flat(dx, pz0 + 0.55, px, pz1 - 0.1, G1); flat(xE, bz1 + bw, dx, pz1 - 0.1, G1);
-  for (const z of [pz0 + ph, pz1 - ph]) {
-    b.box(m.col, px - 2 * ph, 0, z - ph, px, Po.cap[0], z + ph, { ...U, solid: true });
-    b.box(m.trim, px - 2 * ph - 0.04, Po.cap[0], z - ph - 0.04, px + 0.04, Po.cap[0] + 0.28, z + ph + 0.04, { cast: false }); b.box(m.trim, px - 2 * ph - 0.1, Po.cap[0] + 0.28, z - ph - 0.1, px + 0.1, Po.cap[1], z + ph + 0.1, { cast: false });
-    b.box(m.towerLo, px - 2 * ph + 0.04, Po.cap[1], z - ph + 0.04, px - 0.04, Po.eave, z + ph - 0.04, U);
+  /* THE PORCH before the door, a metre deep: two stubby terracotta columns with white caps and a flat arch between them to
+     the drive; a narrow round arch in its north side, through which the door shows from Mariposa; a low tiled roof over it
+     and the bay, leaning on the block. On the door wall south of the glass, the night boxes */
+  b.box(m.walk, dx, 0, pz0, px, G1, pz1, { uv: [1.5, 1.5], uvw: true, cast: false }); flat(dx, pz0 + 0.3, px, pz1 - 0.1, G1);
+  for (const za of [pz0, pz1 - pd]) {
+    b.box(m.col, px - pw, 0, za, px, Po.cap[0], za + pd, { ...U, solid: true });
+    b.box(m.trim, px - pw - 0.04, Po.cap[0], za - 0.04, px + 0.04, Po.cap[0] + 0.28, za + pd + 0.04, { cast: false }); b.box(m.trim, px - pw - 0.1, Po.cap[0] + 0.28, za - 0.1, px + 0.1, Po.cap[1], za + pd + 0.1, { cast: false });
+    b.box(m.towerLo, px - pw + 0.04, Po.cap[1], za + 0.04, px - 0.04, Po.eave, za + pd - 0.04, U);
   }
-  { const ohw = (pz1 - pz0) / 2 - 2 * ph + 0.04, zc = (pz0 + pz1) / 2;
-    b.box(m.towerLo, px - 0.4, Po.arch[1], pz0, px - 0.04, Po.eave, pz1, U);
-    spandrel(b, m.towerLo, 'z', zc - ohw, zc + ohw, Po.arch[0], Po.arch[1], Po.arch[1] + 0.002, px - 0.4, px - 0.04); }
-  b.box(m.towerLo, dx, 0, pz0 + 0.02, px - 2 * ph + 0.04, Po.eave, pz0 + 0.3, { ...U, solid: true });                  // its north side: the bay's wall carried on to the column
-  for (const [y0, y1, a0, a1] of [[G1 + 0.95, G1 + 1.5, bz1 + bw + 0.55, bz1 + bw + 0.95], [G1 + 1.05, G1 + 1.4, bz1 + bw + 1.05, bz1 + bw + 1.3]]) b.box(M.plain('#c9c7c0', 0.5, 0.3), xE, y0, a0, xE + 0.06, y1, a1, { cast: false });      // the night boxes
+  b.box(m.towerLo, px - pw + 0.04, Po.arch[1], pz0, px - 0.04, Po.eave, pz1, U);
+  spandrel(b, m.towerLo, 'z', pz0 + pd - 0.04, pz1 - pd + 0.04, Po.arch[0], Po.arch[1], Po.arch[1] + 0.002, px - pw + 0.04, px - 0.04);
+  spandrel(b, m.towerLo, 'x', dx, px - pw + 0.04, Po.side[1] - Po.side[0] / 2, Po.side[1], Po.eave, pz0 + 0.02, pz0 + 0.3);                 // its north side: the arch
+  { const zz = sS + E.side; for (const [y0, y1, a0, a1] of [[G1 + 0.95, G1 + 1.5, zz + 0.55, zz + 0.95], [G1 + 1.05, G1 + 1.4, zz + 1.05, zz + 1.3]]) b.box(M.plain('#c9c7c0', 0.5, 0.3), dx, y0, a0, dx + 0.06, y1, a1, { cast: false }); }      // the night boxes
   b.box(m.soffit, xE, Po.eave - 0.2, pz0 - 0.3, px, Po.eave - 0.16, pz1, { cast: false });
   b.box(m.trim, xE, Po.eave - 0.14, pz0 - 0.33, px + 0.33, Po.eave + 0.06, pz0 - 0.27, { cast: false }); b.box(m.trim, px + 0.27, Po.eave - 0.14, pz0 - 0.33, px + 0.33, Po.eave + 0.06, pz1, { cast: false });
-  hipRoof(b, m.roof2, xE - 1.6, pz0 - 0.3, px + 0.3, pz1 + 0.05, Po.eave + 0.04, 0.36, m.ridge);
-  plate(b, 'Lobby', px - 0.03, Po.arch[1] + 0.58, pz1 - 0.95, 0.8, 0.3, '+x', '#4a4640', '#f4f1e8');
-  plate(b, '1910', px - 0.03, Po.arch[1] + 0.58, (e0 + e1) / 2, 0.95, 0.36, '+x', '#4a4640', '#f4f1e8', { font: 'Arial, sans-serif' });
+  hipRoof(b, m.roof2, 2 * xE - (px + 0.3), pz0 - 0.3, px + 0.3, pz1 + 0.05, Po.eave + 0.04, 0.36, m.ridge);
+  plate(b, 'Lobby', px - 0.03, Po.arch[1] + 0.62, pz1 - 1.15, 0.8, 0.3, '+x', '#4a4640', '#f4f1e8');
+  plate(b, '1910', px - 0.03, Po.arch[1] + 0.62, pz0 + 1.45, 0.95, 0.36, '+x', '#4a4640', '#f4f1e8', { font: 'Arial, sans-serif' });
   /* the sign tower: a square shaft, a column on each corner with its capital half-way up, a gridded panel to the drive, the
      hotel's name high on the face to Mariposa (plain letters; lit at night), a tiled cap */
   b.box(m.towerLo, Tw.x0, 0, Tw.z0, Tw.x1, Tw.eave, Tw.z1, { ...U, solid: true });
@@ -667,9 +686,9 @@ function buildLobby(b, m, ctx, wing) {
   for (const [x0, z0, x1, z1] of [[Tw.x0 - 0.58, Tw.z0 - 0.58, Tw.x1 + 0.58, Tw.z0 - 0.52], [Tw.x0 - 0.58, Tw.z1 + 0.52, Tw.x1 + 0.58, Tw.z1 + 0.58], [Tw.x0 - 0.58, Tw.z0 - 0.58, Tw.x0 - 0.52, Tw.z1 + 0.58], [Tw.x1 + 0.52, Tw.z0 - 0.58, Tw.x1 + 0.58, Tw.z1 + 0.58]]) b.box(m.trim, x0, Tw.eave - 0.2, z0, x1, Tw.eave + 0.1, z1, { cast: false });
   hipRoof(b, m.roof2, Tw.x0 - 0.55, Tw.z0 - 0.55, Tw.x1 + 0.55, Tw.z1 + 0.55, Tw.eave + 0.06, 0.5, m.ridge);
   /* the yard south of the tower: a low wall round the air-conditioners */
-  { const [x0, z0, x1, z1] = K.yard;
+  { const [, z0, x1, z1] = K.yard;
     b.box(m.wall2, x1 - 0.15, 0, z0, x1, 1.3, z1, { ...U, solid: true }); b.box(m.wall2, xE, 0, z0, x1, 1.3, z0 + 0.15, { ...U, solid: true }); b.box(m.wall2, xE, 0, z1 - 0.15, x1, 1.3, z1, { ...U, solid: true });
     for (let i = 0; i < 3; i++) { const z = z0 + 0.9 + i * 1.35; b.box(M.plain('#b9bcbb', 0.5, 0.4), xE + 0.5, 0, z - 0.45, xE + 1.4, 0.95, z + 0.45, {}); b.cyl(M.plain('#3a3d3e', 0.5, 0.5), xE + 0.95, 0.95, z, 0.34, 0.03, { seg: 14, cast: false }); } }
-  ctx.lobby = { door: [dx, G1 + 1.2, (e0 + e1) / 2], lamp: [(x0 + x1) / 2, H1 - 0.3, (z0 + zp) / 2] };
+  ctx.lobby = { door: [dx, G1 + 1.2, (e0 + e1) / 2], lamp: [(x0 + xB) / 2, H1 - 0.3, (z0 + zp) / 2] };
   ctx.hot.push({ id: 'lobby', pos: [px + 0.05, Po.arch[1] + 0.2, (pz0 + pz1) / 2 - 0.6], r: 0.26 });
 }

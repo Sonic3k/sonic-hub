@@ -6,7 +6,7 @@ import { launch, open as openPage } from '../../tools/lib.mjs';
 
 const PLACE = 'esa-el-segundo-2015';
 const G2 = 3.05, ROOM_X0 = 14.48, ROOM_Z0 = 34.56, STAIR_Z = 39.0, TOWER_Y = 0.15 + 8 * 2.9 / 17;      // plan.js: the studio's floor, its front wall and its north wall; the stair tower beside it, its landing
-const LB = { xW: 25.475, x0: 25.7, x1: 30.55, z0: -45.95, zp: -43.12, doorX: 31.85, doorZ: -44.09, backZ: -45.2425, table: [28.95, 30.4, -45.43] };      // plan.js, LOBBY: the block's west face, the room, the front door, the back door, the breakfast table (x0, x1, its front)
+const LB = { xW: 25.475, x0: 25.7, x1: 29.73, z0: -45.95, zp: -43.07, doorX: 31.46, doorZ: -44.1925, backZ: -45.2425, table: [28.2, 29.65, -45.43] };      // plan.js, LOBBY: the block's west face, the room (to the beam), the front door, the back door, the breakfast table (x0, x1, its front)
 const browser = await launch();
 const results = []; const ok = (name, cond, extra = '') => { results.push([cond ? 'PASS' : 'FAIL', name, extra]); console.log(cond ? 'PASS' : 'FAIL', '·', name, extra ? '— ' + extra : ''); };
 const open = (vp, mobile, more = {}) => openPage(browser, { ...vp, mobile, place: PLACE, ...more });
@@ -108,12 +108,12 @@ try {
   await page.evaluate(() => window.__world.goto('bua-sang')); await wait(page, 100); const f0 = await pose(page);
   await page.evaluate(([x, z]) => window.__world.setPose(x, 1.67, z, 0, 0), [(LB.table[0] + LB.table[1]) / 2, LB.z0 + 1.6]); await walk(page, 'KeyW', 2500); const f1 = await pose(page);
   await page.evaluate(() => window.__world.card('breakfast')); const ft = await page.evaluate(() => document.getElementById('card-t').textContent + ' | ' + document.getElementById('card').textContent); await page.click('#card .x');
-  ok('"Đồ ăn sáng" stands just inside the front door, the table to the right of the way in, and the table stops him; its card tells where he remembers it and of the photograph of 19/8',
-    f0[0] > LB.table[1] - 1.0 && f0[0] < LB.doorX && f0[2] > LB.z0 + 0.9 && f0[2] < LB.zp && Math.abs(f0[1] - 1.65) < 0.05 && LB.table[2] < LB.doorZ - 0.9 && LB.table[1] < LB.x1 && f1[2] > LB.table[2] + 0.08 && f1[2] < LB.table[2] + 0.4 && /Đồ ăn sáng/.test(ft) && /sang phải/.test(ft) && /19\/8\/2015/.test(ft),
+  ok('"Đồ ăn sáng" stands just inside the front door, the table to the right of the way in — within 2.5 m of the door, the first thing past the beam — and the table stops him; its card tells where he remembers it and of the photograph of 19/8',
+    f0[0] > LB.x1 && f0[0] < LB.doorX && f0[2] > LB.z0 + 0.9 && f0[2] < LB.zp && Math.abs(f0[1] - 1.65) < 0.05 && LB.table[2] < LB.doorZ - 0.9 && LB.table[1] < LB.x1 && LB.table[1] > LB.x1 - 0.2 && LB.doorX - LB.table[1] < 2.5 && f1[2] > LB.table[2] + 0.08 && f1[2] < LB.table[2] + 0.4 && /Đồ ăn sáng/.test(ft) && /sang phải/.test(ft) && /19\/8\/2015/.test(ft),
     `${JSON.stringify(f0)} → ${JSON.stringify(f1)}; ${ft.replace(/\s+/g, ' ').slice(0, 60)}`);
   const solids = await page.evaluate(() => window.__world.solids().filter(s => s.x0 > 23 && s.x1 < 34 && s.z0 > -47 && s.z1 < -40 && s.y0 < 1.2 && s.y1 > 0.3).map(s => [s.x0, s.z0, s.x1, s.z1].map(v => +v.toFixed(2))));
   const clear = (x0, z0, x1, z1) => !solids.some(s => s[0] < x1 && s[2] > x0 && s[1] < z1 && s[3] > z0);
-  ok('the lobby makes sense: a clear way 0.8 m wide from the porch through the front door and the cased opening into the room, and 0.7 m wide from the room through the back door onto the walkway',
+  ok('the lobby makes sense: a clear way 0.8 m wide from the porch through the front door and under the beam into the room, and 0.7 m wide from the room through the back door onto the walkway',
     clear(LB.x0 + 0.3, LB.doorZ - 0.4, LB.doorX + 0.3, LB.doorZ + 0.4) && clear(LB.xW - 1.0, LB.backZ - 0.35, LB.x0 + 1.0, LB.backZ + 0.35), JSON.stringify(solids.filter(s => s[0] < 32.5 && s[2] > 24.4)));
   await page.evaluate(([x, z]) => window.__world.setPose(x, 1.67, z, 270, 0), [LB.x0 + 1.0, LB.backZ]); await walk(page, 'KeyW', 2200); const k1 = await pose(page);
   await turnTo(page, 90); await walk(page, 'KeyW', 2400); const k2 = await pose(page);

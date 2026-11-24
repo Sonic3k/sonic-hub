@@ -109,7 +109,7 @@ const tour = [
   { p: [LB.porch.x1 + 5.7, 1.6, lobbyZ + 0.65], h: 266, pitch: 7, t: 3.0, label: 'Lễ tân' },
   { p: [LB.porch.x1 + 1.75, P.G1 + eye, lobbyZ], h: 270, pitch: 3, t: 3.2 },
   { p: [LB.doorX + 0.55, P.G1 + eye, lobbyZ], h: 270, pitch: 0, t: 2.6 },                                      // under the arch, before the door
-  { p: [LB.east - 0.75, P.G1 + eye, lobbyZ], h: 300, pitch: -10, t: 2.8 },                                      // in through the bay: the breakfast is on the right
+  { p: [LB.east + 0.62, P.G1 + eye, lobbyZ], h: 300, pitch: -10, t: 2.8 },                                      // in the bay, before the beam: the breakfast is on the right
   { p: [LR.x0 + LB.breakfast.x[0] + 0.75, P.G1 + eye, LR.z0 + 1.55], h: 4, pitch: -24, t: 3.6, label: 'Đồ ăn sáng' },
   { p: [LR.x0 + LB.desk.low[1] + 0.1, P.G1 + eye, LR.z0 + 1.5], h: 196, pitch: -8, t: 3.0, label: 'Quầy lễ tân' },
   { p: [LR.x0 + 1.9, P.G1 + eye, LR.z0 + 1.45], h: 262, pitch: -2, t: 2.4 },
@@ -118,7 +118,7 @@ const tour = [
   { p: [LR.x0 - 1.9, P.G1 + eye, LR.z0 + backZ + 0.1], h: 92, pitch: 0, t: 2.6 },                               // and round, to see it from outside
   { p: [LR.x0 + 0.7, P.G1 + eye, LR.z0 + backZ], h: 96, pitch: 0, t: 2.6 },
   { p: [LR.x0 + 1.9, P.G1 + eye, LR.z0 + 1.45], h: 96, pitch: 0, t: 2.0 },
-  { p: [LB.east - 0.75, P.G1 + eye, lobbyZ], h: 90, pitch: 0, t: 3.2 },
+  { p: [LB.east + 0.62, P.G1 + eye, lobbyZ], h: 90, pitch: 0, t: 3.2 },
   { p: [LB.porch.x1 + 1.95, P.G1 + eye, lobbyZ], h: 80, pitch: 0, t: 3.4 },
   { p: [driveX - 0.6, eye, lobbyZ - 2.0], h: 0, pitch: 0, t: 3.0 },
   { p: [driveX - 1.2, eye, LT.island[3] + 2.6], h: 350, pitch: 0, t: 5.6 },
