@@ -8,8 +8,9 @@
     "node": ">=18"
   },
   "scripts": {
-    "test": "node engine/rules.test.js && node engine/rules.doc.test.js && node arena/contract.test.js && node arena/house.test.js && node game/build.test.js && node kit/build.test.js",
+    "test": "node engine/rules.test.js && node engine/rules.doc.test.js && node arena/contract.test.js && node arena/league.test.js && node arena/house.test.js && node game/build.test.js && node kit/build.test.js",
     "arena": "node arena/arena.js",
+    "league": "node arena/league.js",
     "build": "node game/build.js",
     "kit": "node kit/build.js"
   },
