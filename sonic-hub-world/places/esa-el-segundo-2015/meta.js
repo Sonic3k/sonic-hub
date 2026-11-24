@@ -16,7 +16,7 @@ export default {
     { id: 'chieu', from: 16, label: 'Chiều 18:20', name: 'Chiều, 18:20', say: 'nắng tây chiếu thẳng vào hành lang và cửa sổ' },
     { id: 'toi', from: 20, label: 'Tối 21:30', name: 'Tối, 21:30', say: 'đèn phòng, đèn hành lang, biển Ralphs sáng' },
   ],
-  intro: 'Phòng tầng 2 ở dãy phía bắc của khách sạn, sáu tuần onsite ở DirecTV năm 2015. Dựng lại từ ảnh trong kho Sonic Hub (Fsoft → [2015.08] Onsite 2015), ảnh vệ tinh và dữ liệu OpenStreetMap. Đi ra hành lang, xuống cầu thang, ra Mariposa, sang Starbucks và Ralphs, đi dọc hàng si tới đường ray Green Line.',
+  intro: 'Phòng 271, tầng 2 ở dãy phía bắc của khách sạn, sáu tuần onsite ở DirecTV năm 2015. Dựng lại từ ảnh trong kho Sonic Hub (Fsoft → [2015.08] Onsite 2015), ảnh vệ tinh và dữ liệu OpenStreetMap. Đi ra hành lang, xuống cầu thang, ra Mariposa, sang Starbucks và Ralphs, đi dọc hàng si tới đường ray Green Line.',
   blurb: 'Một studio của Extended Stay America cạnh sân bay LAX: giường, bếp nhỏ, quầy có laptop, hành lang ngoài trời có lan can trắng nhìn sang Ralphs. Ra đường: Sepulveda, Mariposa, Starbucks, Ralphs, hàng si, ga Mariposa của Green Line.',
   aria: 'Phòng khách sạn Extended Stay America ở El Segundo năm 2015, dựng 3D.',
   plan: PLAN,

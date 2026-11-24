@@ -91,14 +91,22 @@ export const GABLE = { span: 2.5, over: 0.3, back: 2.4 };
    County draws the wing 1.15 m shorter at this end than the satellite picture has it; the picture is followed). The
    office's door is on the east face, under a low tiled porch: a flat arch to the drive between two stubby columns, a
    narrow arched way through its north side; south of the porch stands the sign tower, 3.6 m square and about 9 m to its
-   eaves, the hotel's name on its face to Mariposa. The room behind the door runs west along the wing's north side
-   (the last studio's ground floor): the desk on the left as one comes in. Its furniture follows the hotel's pictures
-   of today, plainly — no photograph of 2015 shows it. */
+   eaves, the hotel's name on its face to Mariposa. That this is the reception he confirmed on 24 Nov 2026.
+   INSIDE. None of his photographs shows it (all of the weeks' 1,500 were gone through: EVIDENCE.md), so the room
+   follows pictures of today — two of the hotel's own, one a traveller's: it runs west along the wing's north side (the last studio's ground
+   floor); on the left as one comes in, a wall with the desk's opening in it and the office behind, the office's door
+   at its far end; a narrow shelf in the corner by the way in; at the far end on the right, under the window, a counter. On that counter in
+   2015 stood the breakfast one took away — and what was on it IS in a photograph of his: 19 Aug 2015, 07:10, on the
+   table in his room, coffee in the hotel's paper cup, a packet of instant oatmeal, a wrapped muffin, a red apple.
+   He checked in here on the evening of 17 Aug 2015 and out at 22:52 on 25 Sept (the folio's own print time). */
 export const LOBBY = {
   porch: { out: 3.05, z0: -45.4, z1: -40.7, eave: 3.6, pier: 0.55, cap: [1.5, 1.95], arch: [2.05, 2.5], side: [0.7, 2.0] },    // out: from the end wall
-  door: [-43.9, -43.0], doorH: 2.03,
+  door: [-43.35, -42.45], doorH: 2.03,                // 1.3 m from the desk's wall, as inside in the hotel's picture; near the middle of the porch's arch, as outside
   tower: { x0: 29.4, x1: 33.0, z0: -40.7, z1: -37.1, eave: 9.0, cap: [4.5, 5.0] },
-  room: { x0: 21.9, z1: -40.0, split: 25.7, h: 2.6, desk: -41.1 },      // L-shaped: west of `split` it is the last studio's ground floor
+  room: { x0: 21.9, z1: -39.5, split: 25.7, h: 2.6, desk: -41.6 },      // L-shaped: west of `split` it is the last studio's ground floor; `desk`: the face to the guest of the wall the desk is in; z1: the office's back wall
+  /* the desk (x along the wall): the office's door, the opening, the low stretch of it where one signs; heights above the floor */
+  desk: { door: [22.88, 23.78], open: [24.0, 29.55], low: [24.93, 25.8], sill: 0.85, ledge: 1.19, lowTop: 0.91, head: 2.42 },      // the opening runs to the east wall
+  breakfast: { x0: 21.96, x1: 23.95, depth: 0.55, h: 0.92 },             // the counter under the window at the room's far end
   yard: [30.1, -35.1, 32.7, -30.3],
 };
 LOBBY.east = WINGS.main.x1 - 0.3;                    // the end wall's outer face
@@ -144,7 +152,10 @@ export const LOT = {
    The photograph toward Ralphs of 09:47:21 was taken from the railing a few steps north of his door (the tower's
    shadow lies in its lower left corner, the tower itself out of frame); the one of 09:48:14 in the drive, looking north
    past the island with the tree and the two handicap stalls to the north-west tower. */
-export const HIS = { wing: 'north', module: 9 };
+/* The room's number is 271: the hotel's folio (scanned with his receipts on 29 Sept 2015; "Room: 271, Arrival 8/17/2015,
+   Departure 9/26/2015"). No photograph shows a number on a door, so which door carries it rests on the photographs
+   above, not on the number; the two agree if this face is numbered 262–273 from its north end (EVIDENCE.md). */
+export const HIS = { wing: 'north', module: 9, room: 271 };
 const w = WINGS.north;
 export const ROOM = {
   x0: w.x0 + FRONT + WALL,                           // the inner face of the front wall (west)
@@ -237,7 +248,7 @@ const doorZ = ROOM.z0 + (IN.door[0] + IN.door[1]) / 2;
 /* the stair tower next to his studio (the south-west one of the north wing's west face): its middle along the wing */
 export const STAIR = { z: (w.towers[1].a0 + w.towers[1].a1) / 2 };
 export const VIEWS = {
-  'phong': { name: 'Phòng (từ cửa nhìn vào)', pose: at(0.5, 1.44, 1.47, 97, -7.5) },
+  'phong': { name: 'Phòng 271 (từ cửa nhìn vào)', pose: at(0.5, 1.44, 1.47, 97, -7.5) },
   'ban': { name: 'Bàn làm việc', pose: at(1.1, 1.6, 1.49, 79, -5) },
   'tu-guong': { name: 'Tủ, tivi, gương', pose: at(3.62, 2.72, 1.38, 345, -5) },
   'giuong': { name: 'Giường', pose: at(3.6, 0.62, 1.36, 212, -13.5) },
@@ -249,7 +260,8 @@ export const VIEWS = {
   'cau-thang': { name: 'Cầu thang', pose: [12.95, G2 + 1.52, STAIR.z + 0.75, 262, -30] },                          // at the head of the flight down
   'chan-cau-thang': { name: 'Chân cầu thang', pose: [-1.88, 1.6, 22.6, 130, 6] },                                 // where the photograph of 17/8 was taken, in the lot
   'bai-xe': { name: 'Bãi xe trong khách sạn', pose: [1.2, 1.52, 30.6, 6, 2] },          // about where the photograph of 09:48:14 was taken
-  'le-tan': { name: 'Lễ tân', pose: [41.0, 1.6, -43.7, 268, 10] },
+  'le-tan': { name: 'Lễ tân', pose: [41.0, 1.6, -43.2, 268, 10] },
+  'bua-sang': { name: 'Đồ ăn sáng ở lễ tân', pose: [24.75, G1 + 1.5, -42.25, 300, -17] },          // inside, before the counter
   'loi-xe-vao': { name: 'Lối xe vào (Mariposa)', pose: [40.2, 1.6, -67.35, 240, 3] },          // on Mariposa's sidewalk, east of the drive
   'starbucks': { name: 'Starbucks', pose: [-58.0, 1.52, -6.0, 262, 0] },
   'ralphs': { name: 'Ralphs', pose: [-43.0, 1.52, 33.0, 204, 7] },

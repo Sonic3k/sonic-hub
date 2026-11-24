@@ -99,10 +99,17 @@ try {
   ok('the main wing\'s south-west tower has stairs too', Math.abs(e0[1] - (G2 + 1.52)) < 0.06 && Math.abs(down[1] - (TOWER_Y + 1.52)) < 0.08 && down[2] > -24.2, `${JSON.stringify(e0)} → ${JSON.stringify(down)}`);
   // the lobby and the way in: both are on the list; one walks in at the lobby's door and stands before the desk
   await page.evaluate(() => window.__world.goto('le-tan')); await wait(page, 100); const l0 = await pose(page);
-  await page.evaluate(() => window.__world.setPose(34.7, 1.67, -43.45, 270, 0)); await walk(page, 'KeyW', 4200);
+  await page.evaluate(() => window.__world.setPose(34.7, 1.67, -42.9, 270, 0)); await walk(page, 'KeyW', 4200);
   const l1 = await pose(page);
   await turnTo(page, 180); await walk(page, 'KeyW', 2500); const l2 = await pose(page);
-  ok('"Lễ tân" stands before the lobby; its door lets one in, the desk stops him', l0[0] > 37 && l0[0] < 42 && l1[0] < 29.4 && l1[0] > 26.5 && Math.abs(l1[1] - 1.67) < 0.05 && l2[2] < -41.1 && l2[2] > l1[2] + 0.5, `${JSON.stringify(l0)} → ${JSON.stringify(l1)} → ${JSON.stringify(l2)}`);
+  ok('"Lễ tân" stands before the lobby; its door lets one in, the desk stops him', l0[0] > 37 && l0[0] < 42 && l1[0] < 29.4 && l1[0] > 26.5 && Math.abs(l1[1] - 1.67) < 0.05 && l2[2] < -41.6 && l2[2] > l1[2] + 0.5, `${JSON.stringify(l0)} → ${JSON.stringify(l1)} → ${JSON.stringify(l2)}`);
+  await page.evaluate(() => window.__world.goto('bua-sang')); await wait(page, 100); const f0 = await pose(page);
+  await page.evaluate(() => window.__world.setPose(23.0, 1.67, -42.6, 0, 0)); await walk(page, 'KeyW', 2500); const f1 = await pose(page);
+  await page.evaluate(() => window.__world.card('breakfast')); const ft = await page.evaluate(() => document.getElementById('card-t').textContent + ' | ' + document.getElementById('card').textContent); await page.click('#card .x');
+  const solids = await page.evaluate(() => window.__world.solids().filter(s => s.x0 > 21 && s.x1 < 30 && s.z0 > -46.5 && s.z1 < -41 && s.y0 < 1.2 && s.y1 > 0.3).map(s => [s.x0, s.z0, s.x1, s.z1].map(v => +v.toFixed(2))));
+  const clear = (x0, z0, x1, z1) => !solids.some(s => s[0] < x1 && s[2] > x0 && s[1] < z1 && s[3] > z0);
+  ok('"Đồ ăn sáng" stands in the lobby before the counter, which stops him; its card tells of the photograph of 19/8', f0[0] > 22 && f0[0] < 25.7 && f0[2] > -44.3 && f0[2] < -41.6 && Math.abs(f0[1] - 1.65) < 0.05 && Math.abs(f1[0] - 23.0) < 0.05 && f1[2] > -43.74 && f1[2] < -43.4 && /Đồ ăn sáng/.test(ft) && /19\/8\/2015/.test(ft), `${JSON.stringify(f0)} → ${JSON.stringify(f1)}; ${ft.replace(/\s+/g, ' ').slice(0, 60)}`);
+  ok('the lobby makes sense: a clear way from its door (the open leaf to its north) past the shelf and the desk to the counter, 1.3 m wide', clear(22.1, -43.3, 29.5, -42.0) && clear(28.9, -43.3, 29.9, -42.5), JSON.stringify(solids));
   await page.evaluate(() => window.__world.goto('loi-xe-vao')); await wait(page, 100); const d0 = await pose(page);
   await page.evaluate(() => window.__world.setPose(33.0, 1.52, -71.0, 180, 0)); await walk(page, 'KeyW', 6000); const d1 = await pose(page);
   ok('"Lối xe vào" stands on Mariposa\'s sidewalk by the drive; the drive runs in from the street', d0[2] < -66.4 && d0[2] > -68.4 && d0[0] > 37.5 && d1[2] > -62.5 && Math.abs(d1[0] - 33) < 0.4, `${JSON.stringify(d0)} → ${JSON.stringify(d1)}`);
@@ -110,7 +117,7 @@ try {
   await page.click('#b-rooms'); ok('rooms list opens', await page.evaluate(() => document.getElementById('rooms').classList.contains('on')));
   const names = await page.evaluate(() => [...document.querySelectorAll('#room-list button')].map(b => b.textContent));
   const si = names.indexOf('Starbucks');
-  ok('the list of rooms has the bathroom, the stairs, the lobby and the way in', ['Nhà tắm', 'Cầu thang', 'Lễ tân', 'Lối xe vào (Mariposa)'].every(n => names.includes(n)), names.join(' · '));
+  ok('the list of rooms has his room by its number, the bathroom, the stairs, the lobby, the breakfast and the way in', ['Phòng 271 (từ cửa nhìn vào)', 'Nhà tắm', 'Cầu thang', 'Lễ tân', 'Đồ ăn sáng ở lễ tân', 'Lối xe vào (Mariposa)'].every(n => names.includes(n)), names.join(' · '));
   if (si >= 0) await page.click(`#room-list li:nth-child(${si + 1}) button`); await page.waitForTimeout(500); await wait(page, 100);
   const pf = await pose(page);
   ok('"Starbucks" takes you to the corner of the lot', si >= 0 && Math.abs(pf[0] + 58) < 0.1 && Math.abs(pf[2] + 6) < 0.1, JSON.stringify(pf));

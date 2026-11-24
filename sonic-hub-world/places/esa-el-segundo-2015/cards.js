@@ -19,7 +19,7 @@ export const notes = {
     ['p', 'Thẻ ra vào theo bản scan trong Onsite 2015 → Documents. Laptop và điện thoại theo mục Máy tính của Sonic Hub: Asus N56 chạy Windows 8.1, iPhone 6s.'],
     ['p', 'Những chỗ đoán:'],
     ['ul', [
-      'Phòng nào: tầng 2, mặt tây của dãy nhà phía bắc, phòng thứ mười tính từ đầu bắc, ngay cạnh tháp cầu thang tây-nam — suy từ ảnh hành lang sáng 22/9 (cửa phòng ở mép phải ảnh, đếm được chín phòng tới bức tường cuối hành lang) và ảnh chiều 17/8 chụp từ bãi xe (cửa sổ, cửa, đèn, cửa, cửa sổ, rồi tới tường tháp). Hai ảnh khớp nhau khi tường bắc của tháp chạm hành lang ngay chỗ cửa sổ phòng anh; có thể lệch chừng 0,4 m. Số phòng thì không biết.',
+      'Phòng 271 — số phòng ghi trên hóa đơn khách sạn (Onsite 2015 → Documents). Phòng nào: tầng 2, mặt tây của dãy nhà phía bắc, phòng thứ mười tính từ đầu bắc, ngay cạnh tháp cầu thang tây-nam — suy từ ảnh hành lang sáng 22/9 (cửa phòng ở mép phải ảnh; đếm thảm chùi chân trước từng cửa thì có chín phòng nữa tới bức tường cuối hành lang) và ảnh chiều 17/8 chụp từ bãi xe (cửa sổ, cửa, đèn, cửa, cửa sổ, rồi tới tường tháp). Không có ảnh nào chụp biển số trên cửa, nên số 271 chưa dùng để kiểm lại vị trí được; hai điều khớp nhau nếu mặt này đánh số 262–273 từ đầu bắc. Tấm biển 271 cạnh cửa là thêm vào.',
       'Chiều sâu phòng về phía bếp có thể lệch chừng 10 cm; vị trí cửa ra vào và cửa sổ dọc bức tường mặt tiền chừng 5 cm.',
       'Hai chiếc ghế cao đặt như tối 21/9: đẩy vào hai bên bàn, áo khoác xám vắt trên lưng ghế phía tây. Đồ trên bàn (hộp trà, chai nước, can nước, bình đỏ) đúng loại và gần đúng chỗ, không đúng từng li.',
       'Thẻ ra vào đặt trên bàn là thêm vào: không tấm ảnh nào cho thấy nó nằm ở đâu.',
@@ -28,7 +28,7 @@ export const notes = {
       'Rèm, chăn, thảm vẽ lại theo kiểu và màu, không chép hoa văn; bức tranh trên vách nhà tắm chỉ phỏng theo. Hình trong gương là vẽ, không phải phản chiếu thật.',
       'Cầu thang: hình dáng bên ngoài (hai cột đất nung, vòm, chiếu nghỉ có lan can, mái ngói) đo từ ảnh; bên trong tháp chưa có ảnh nào, nên số bậc (8 lên chiếu nghỉ, 9 lên tầng 2), tay vịn và bức tường giữa hai vế là suy ra. Vế nào bên trái, vế nào bên phải lấy theo ảnh của khách sạn chụp tháp cạnh lễ tân.',
       'Số phòng: dãy chính 13 phòng mỗi mặt, dãy bắc 12, dãy nam 15 — 160 cửa trên các hành lang, trong khi khách sạn có 151 phòng cho thuê; chỗ chênh là lễ tân, phòng giặt, kho. Phòng nào là kho thì không biết, nên cửa nào cũng dựng như cửa phòng.',
-      'Lễ tân: bên ngoài theo ảnh hiện nay; nội thất năm 2015 không có ảnh, chỉ dựng đơn giản (quầy bên trái lối vào, cửa sổ, ghế chờ). Biển trên tháp và biển ở lối xe vào là hộp biển chữ thường; biển thật năm 2015 trông thế nào thì không có ảnh.',
+      'Lễ tân: vị trí anh đã xác nhận. Bên ngoài và bên trong đều theo ảnh hiện nay của khách sạn, vì kho ảnh 2015 không có tấm nào chụp lễ tân; riêng những món ở bàn đồ ăn sáng là theo ảnh anh chụp sáng 19/8/2015. Biển trên tháp và biển ở lối xe vào là hộp biển chữ thường; biển thật năm 2015 trông thế nào thì không có ảnh.',
       'Bãi xe: bề rộng các dải (ô đỗ, lối xe, dải cây, hàng rào) đo trên ảnh vệ tinh chụp những năm sau, sai số chừng nửa mét; hai ô cho người khuyết tật, đảo có cây và dãy ô sát hàng rào để trống theo ảnh sáng 22/9. Khối nhà thấp ở đầu nam dãy bắc và các chái ở đầu hồi: biết là một tầng, mái ngói thấp, có cửa; bên trong là gì thì không biết.',
       'Cột hành lang mặt tây dãy bắc đặt theo ảnh (cách nhau chừng 4,9 m); các mặt khác chia đều theo cùng nhịp, có thể lệch nửa mét. Ô tô trong bãi: số lượng, kiểu và màu là ngẫu nhiên. Chiếc Beetle nâu và tấm nệm dựa chân tháp cầu thang là có thật, sáng 22/9.',
       'Ralphs, Starbucks, Jersey Mike\'s, In-N-Out: hình khối theo ảnh vệ tinh và ảnh của anh; biển hiệu chỉ là chữ thường, không có logo.',
@@ -102,9 +102,15 @@ export function card(id, { hour, extra }) {
       ['p', 'Mỗi mặt nhà có hai tháp như thế và một ô mái nhô ở giữa; cả khách sạn có 12 tháp.'],
       ['p', 'Bên ngoài đo từ ảnh anh chụp chiều 17/8 ở bãi xe, ảnh 2/9 từ hành lang, ảnh sáng 22/9 và ảnh của khách sạn chụp tháp cạnh lễ tân. Chưa có ảnh nào chụp trong tháp: số bậc, tay vịn và bức tường giữa hai vế là suy ra từ độ cao chiếu nghỉ.', 'dim'],
     ] };
-    case 'lobby': return { title: 'Lễ tân', body: [
-      ['p', 'Lễ tân nằm ở đầu đông của dãy nhà dọc Mariposa. Cửa quay ra lối xe, dưới một mái hiên thấp giữa hai cột lùn; bên cạnh là tháp biển cao chừng 9 m. Bước vào, quầy ở bên trái.'],
-      ['p', 'Vị trí theo ảnh vệ tinh; bên ngoài theo ảnh hiện nay của khách sạn. Nội thất năm 2015 không có ảnh: quầy, cửa sổ, ghế chờ chỉ dựng đơn giản theo bố cục ảnh hiện nay. Biển chỉ là chữ, không có logo.', 'dim'],
+    case 'lobby': case 'desk': return { title: 'Lễ tân', body: [
+      ['p', 'Lễ tân nằm ở đầu đông của dãy nhà dọc Mariposa — anh xác nhận ngày 24/11/2026. Cửa quay ra lối xe, dưới một mái hiên thấp giữa hai cột lùn; bên cạnh là tháp biển cao chừng 9 m. Bước vào, quầy ở bên trái; đi hết phòng, bên phải dưới cửa sổ là bàn đồ ăn sáng.'],
+      ['p', 'Tối 17/8/2015 anh đi taxi từ sân bay LAX tới đây nhận phòng 271; ba tấm ảnh đầu tiên ở khách sạn chụp lúc 19:45. Hóa đơn trả phòng in ở quầy này lúc 22:52 tối 25/9/2015, rồi anh ra sân bay.'],
+      ['p', 'Trong kho ảnh 2015 không có tấm nào chụp lễ tân, cả trong lẫn ngoài (đã xem hết khoảng 1.500 ảnh từ 10/8 đến 2/10/2015). Bên ngoài dựng theo ảnh hiện nay của khách sạn. Bên trong — bức tường có ô quầy, cửa văn phòng, kệ gỗ, ghế, mảng tường đỏ và bức tranh tấm thảm chùi chân — cũng theo ảnh hiện nay; năm 2015 có thể khác. Số phòng, ngày giờ nhận và trả phòng theo hóa đơn khách sạn và hai phiếu taxi trong Onsite 2015 → Documents. Biển chỉ là chữ, không có logo.', 'dim'],
+    ] };
+    case 'breakfast': return { title: 'Đồ ăn sáng', body: [
+      ['p', 'Mỗi sáng lễ tân bày đồ ăn sáng để khách cầm về phòng: cà phê, bánh muffin, yến mạch gói, hoa quả.'],
+      ['p', 'Ảnh anh chụp lúc 7:10 sáng 19/8/2015, trên bàn trong phòng, có đúng những món lấy ở đây: cốc giấy in tên khách sạn, gói yến mạch vị táo và quế, chiếc muffin còn bọc, quả táo đỏ — đặt cạnh bát mì gà của anh.'],
+      ['p', 'Món gì thì theo ảnh của anh; chuỗi khách sạn này phát bữa sáng mang đi từ đầu năm 2013, mỗi ngày 6:00–9:30 (thông cáo tháng 1/2013). Bàn đặt ở đâu, trông thế nào thì không có ảnh năm 2015: ở đây đặt cuối phòng, dưới cửa sổ, chỗ quầy cà phê trong ảnh hiện nay của khách sạn. Cốc để trơn, không vẽ logo.', 'dim'],
     ] };
     case 'sign': return { title: 'Lối xe vào', body: [
       ['p', 'Xe vào khách sạn ở góc đông bắc, từ đường Mariposa: hai làn, một bên là đảo sỏi có biển hiệu, bên kia là hàng cây sát ranh đất. Qua khỏi đảo là sân trước lễ tân; chạy tiếp về phía nam là bãi xe phía đông hai dãy phòng, rẽ phải là lối dọc mặt bắc dãy chính.'],

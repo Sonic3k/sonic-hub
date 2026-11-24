@@ -3,7 +3,9 @@
 Written in November 2026, when the place was first built; the studio's part was rewritten on 23 November 2026, after
 its interior was measured again from the photographs (the first build had the counter wrong). The bathroom's inside
 keeps the first build's arrangement, which he found right; on 24 November its fixtures were redrawn after photographs
-of this hotel's bathrooms found on the web. Numbers are **metres in the place's own frame**: origin at
+of this hotel's bathrooms found on the web. The same day, after he confirmed where the reception is, its inside was
+drawn after the hotel's present pictures, the breakfast on its counter after a photograph of his own, and the room got
+its number from the hotel's folio (see "The reception and the breakfast"). Numbers are **metres in the place's own frame**: origin at
 33.92290 N, 118.39500 W, x east, z south, y up (ground 0, the upper walkway 3.05). `plan.js` holds the hotel and the
 studio as numbers; `osm.js` the streets and buildings around it.
 
@@ -16,10 +18,14 @@ studio as numbers; `osm.js` the streets and buildings around it.
 | The walk east, 22 Sept 09:52–09:59: Continental Blvd and Mariposa Ave with their fig trees (1783–1786), under the Green Line on Nash St (1787) | same album, `IMG_1783`–`1787` | same |
 | iPhone: the hotel from the lot at dusk 17 Aug (0127), from the walkway 19 Aug (0130) and 2 Sept (0190–0191), the kitchen sink 30 Aug (0182–0185), the counter and kitchen from the west at night 18 Sept (0272), the door open on the walkway 25 Sept (0283, 0285: a person stands in them; only the door, the closet and the floor are used) | Onsite 2015 → onsite-iphone | iPhone, 3264 × 2448 |
 | DirecTV contractor badge: name, FPT, VIETNAM, valid to 9/25/2015 6:00 PM | Onsite 2015 → Documents → `scan0185.jpg` | scan |
+| The breakfast taken from the reception, on the table in his room, 19 Aug 2015 07:10: coffee in the hotel's paper cup, a packet of instant oatmeal (apples and cinnamon), a muffin in its wrapper, a red apple — beside a bowl of his own instant noodles | Onsite 2015 → Onsite iphone, `IMG_0129` | iPhone |
+| The hotel's folio and two taxi slips, scanned on 29 Sept 2015. Used: the room's number, the dates of arrival and departure, the folio's print time, the days of the two taxi rides. Nothing else on those papers is used or written down anywhere in this place | Onsite 2015 → Documents (the scanned receipts) | scan |
 | The computer and the phone of that moment | Sonic Hub `/api/desk/at?at=2015-09-22T11:15`: Asus N56, Windows 8.1; iPhone 6s | |
 | Streets (centre lines, lanes, one-way), building footprints and heights (LA County), the light rail and the station platform | OpenStreetMap, © OpenStreetMap contributors, ODbL; read in November 2026 by `data/osm2js.py` into `osm.js`. Buildings mapped as built after 2015 are left out (`LATER` there), and the hotel and the shopping centre's own buildings are drawn by hand (`HAND`) | |
 | Layout of the lots, rows, planters, roofs, trees | satellite pictures (Google, Esri), looked at for reference only; nothing of them is in the page | |
 | The bathroom's inside, which he did not photograph | travellers' photographs of this hotel (2024, 2026), the hotel's own (about 2021), guests' reviews of 2015 — see "The bathroom's inside"; looked at for reference only, nothing of them is in the page | |
+| The reception's inside, which he did not photograph either | the hotel's own two pictures of its lobby and a traveller's of the desk, all of recent years — see "The reception and the breakfast"; looked at for reference only, nothing of them is in the page | |
+| What the breakfast was | the chain's announcement of 17 Jan 2013 (a free breakfast to take away at its 610 hotels, every day from 6 to 9:30: instant oatmeal, fruit, muffins, drinks), as carried by Hotel Executive and Travel Weekly | |
 
 **Clocks.** The Canon kept Vietnam time (UTC+7): its 23:47 is 09:47 in California (PDT, UTC−7), when the lot photos
 are in morning sun from the south-east, as they should be; its 09:15 on the 22nd is 19:15 on Monday the 21st (the
@@ -53,15 +59,26 @@ laptop's lock screen in 1774 is too small to read; the place shows 7:15). Sonic 
   9), with the south-west stair tower beside it. Three photographs fix that:
   - 1779 (22 Sept 09:47:46), on the walkway a step south of his own door, which is at its right edge: his door and
     the next make a pair with a lamp between them, then that studio's window, a fire-extinguisher cabinet, doors on
-    to the wall with a door that ends the walkway. That end door stands 150 px high in the frame (2.03 m at
-    f = 3360 px): 45 m away, nine studios. Nothing of the stair tower shows at the frame's left edge, so its wall was
-    level with the camera or behind it.
+    to the wall with a door that ends the walkway. That end door stands 185–190 px high in the frame (2.03 m at
+    f = 3360 px): 36–37 m away, which is where the row's north end lies if nine studios stand north of his. They can
+    be counted, too: a mat lies before every door, and beyond the neighbour's there are eight, at about 8.0, 12.6,
+    14.6, 18.8, 22.5, 27.1, 29.8 and 34.3 m from the camera (the place's doors would put them at 8.2, 13.1, 15.9, 20.8,
+    23.6, 28.5, 31.3 and 36.2). *This file said "150 px … 45 m" until 24 Nov 2026: a misreading of the frame, found
+    when the picture was measured again; nine studios it was and is.* Nothing of the stair tower shows at the frame's
+    left edge, so its wall was level with the camera or behind it.
   - 0127 (17 Aug, from the lot at dusk), its camera fitted to door heads, window heads and sills on both floors
     (phone lens f = 1509 px at 1600 wide; residual about 4 px): window, door, lamp, door, window — and the tower's
     north wall coming to the walkway at that last window, 0.6 m (± 0.4) past his door. The first fit of this place
     put the tower 1.7 m further south, clear of his room; this photograph had not been fitted then.
   - Both put the plain columns in bays of about 4.9 m and the gabled bay half-way between the towers, where the
     satellite picture has its roof.
+  **Its number is 271**: the hotel's folio is headed "Room: 271" (arrival 8/17/2015, departure 9/26/2015). No
+  photograph shows a number on any door, so the number cannot be used to check which door was his; it does not speak
+  against the photographs either. The sign by the lobby gives the main wing the rooms 103–127 and 151–177, so 2xx is
+  another building and x51 upward its upper floor; if the wings are counted from Mariposa this one is the second,
+  and if its west face runs 262–273 from the north end, the tenth door is 271. That is a guess about the numbering, not
+  evidence for the door. The small plate reading 271 by his door is an addition: what the real one looked like is not
+  known.
   So the row starts at z = −0.2 (the County's roof starts at −4.1: a closed end bay, as on the main wing's west end)
   and the tower's north wall crosses the walkway at his window. 1777 (09:47:21, toward Ralphs) was taken from the
   railing a few steps north of his door: the tower's shadow lies in its lower left corner and the tower is out of
@@ -284,9 +301,63 @@ moved into the footprints' frame as above.
   and "1910" over the arch, a glazed door with a transom, the tower with a gridded panel to the drive and the name on
   its face to Mariposa, gravel and agaves where 2015 may have had lawn. The tower is 3.6 m square on the satellite
   picture; its height (9 m to the eaves) is taken from those pictures by the ratio to the porch.
-- **Guesses:** the lobby's inside (a desk on the left, a window, chairs — the layout of today's pictures, plainly
-  drawn); both signs' faces (plain lettering on a dark cabinet; no photograph of 2015 shows them, and no logo is
+- **Guesses:** the lobby's inside as it was in 2015 (it is drawn as it is today: see below); both signs' faces (plain lettering on a dark cabinet; no photograph of 2015 shows them, and no logo is
   drawn); the planting of every bed but the west side's; the picnic table's place.
+
+### The reception and the breakfast
+
+**That this is the reception** he confirmed on 24 Nov 2026 ("số 2 đúng là lễ tân": the block at the main wing's east
+end, its door under the porch on the drive).
+
+**What his photographs have of it: nothing.** That day every picture of those weeks in the archive was gone through
+for it: 1,533 files dated 13 Aug–29 Sept 2015 (all there is between 10 Aug and 2 Oct) — 1,508 in the trip's albums
+(159 from the phone, the 15 of the El Segundo album, nine albums of days out with 30 to 318 each, two in the trip's own
+folder) and 25 elsewhere (the five scanned receipts; the rest are not of the trip). None carries a position. They were
+looked at as contact sheets, and at full size wherever there was a counter, a doorway, a porch, a sign or food: none
+shows the reception, its porch, the sign tower or the way in from Mariposa. Ten of the files are videos, all in the
+albums of days out and between photographs of those outings; their frames were not looked at. The folder of visa
+papers was not opened.
+
+**What they do have is what the reception gave out.** `IMG_0129` (the phone, 19 Aug 2015, 07:10, on the table in his
+room): coffee in the hotel's paper cup, a packet of instant oatmeal (apples and cinnamon), a muffin in its wrapper and
+a red apple, beside a bowl of his own instant noodles. The chain had been giving a breakfast to take away at all its
+hotels since January 2013, every day from 6 to 9:30 — instant oatmeal, fruit, muffins, drinks (its announcement of
+17 Jan 2013). So the counter in the place carries pump pots, cups, a basket of red apples, a basket of wrapped muffins,
+packets of oatmeal and a card with the hours. The cups are plain (the real ones bore the hotel's name), the packets
+plain colours.
+
+Two other pictures of a red apple are **not** of the hotel: `IMG_0286`–`0287`, on a glass table by a window. The phone
+stamps them 26 Sept 15:18, still on California's clock; he had left the hotel at about eleven the
+night before, and `0288`–`0289`, taken there seventeen minutes later by the world's clock, are stamped 27 Sept 06:35 —
+the phone had meanwhile taken the local time of the airport where he changed planes.
+
+**What the folio adds.** Room 271; arrival 17 Aug 2015 (a taxi slip of that day is for the ride from the airport, and
+his first photographs of the hotel, `0125`–`0127`, are of 19:45 that evening); the folio was printed at the desk at
+10:52 PM on 25 Sept, and a second taxi slip of that day is for the ride back to the airport, a night earlier than the
+departure the folio has. The place's cards say so; nothing else of those papers is used.
+
+**The inside** follows the hotel's two pictures of its lobby and a traveller's of the desk, all of recent years; in 2015
+it may have looked different. One of the hotel's pictures (taken from the room's west end) was fitted: the floor's and
+the desk's lines meet at one point and the entrance door gives the scale (2.03 m), which puts its camera 1.2 m up,
+1.75 m from the desk's wall, a hand from the west wall, turned 24° south of east. From it, in the place's frame:
+
+| | m |
+|---|---|
+| the room | 7.65 long (x 21.9…29.55): the last studio's ground floor and the block's north part; 2.7 wide at its west end, 4.35 at the door |
+| the wall the desk is in (its face to the guest) | z = −41.6 |
+| the entrance door, in the east wall | z −43.35…−42.45 (the picture: −43.47…−42.52), glass with blinds each side, lights over it |
+| a narrow shelf of pale wood | in the corner between the door's glass and the desk's wall; 0.3 square, 1.55 high |
+| the desk's opening | from x = 24.0 to the east wall; cream wall to 0.85 m, a black front and ledge to 1.19 m, notched to 0.91 m over x 24.93…25.8, where one signs |
+| the office's door, white, six panels | x 22.88…23.78, a lever on its east edge |
+| the office behind | 2 m deep; its back wall red, a framed picture of a door mat 1.9 × 0.86 m on it toward the east end; a dark screen on its east wall; dark green cabinets under a black top |
+| the ceiling | drops to 2.42 m over the desk and 0.85 m out from it, lights in the drop; a white moulding at the walls' heads |
+| the counter | under the window at the west end of the north wall, 2 m long; two armchairs east of it |
+
+Checked by rendering the place from that camera and setting it under the picture: the door, the shelf, the screen, the
+red wall and its frame, the notch and the office's door fall where the picture has them, within about two hand-widths.
+Not from the pictures: the framed mat is drawn plainly (a brown mat, the word WELCOME), the screens are blank, and the
+walls carry no notices. The office's east end is lined 0.28 m in from the end wall: the sign tower, 3.6 m square on the
+satellite picture, stands that far into the block in the place's frame, and the lining hides it.
 
 ## The streets
 
@@ -316,4 +387,6 @@ moved into the footprints' frame as above.
 No logo anywhere: shop names are plain words in common typefaces. The badge has no portrait and no logo. The
 bed-cover, curtains and the print on the bathroom wall are drawn after their kind, not copied. Satellite pictures are
 not in the page; nor are the photographs of the bathroom found on the web: its tiles, stone and fittings are drawn
-after their kind.
+after their kind. Nor are the pictures of the lobby: the room is drawn after them plainly, the mat in its frame is a
+brown mat with one word on it, the paper cups are blank. The receipts are not in the page, and of what they say only
+the room's number and the days and hours of arriving and leaving are written anywhere.

@@ -61,14 +61,14 @@ const light = {
 /* The tour, as he would have walked it on the morning of 22/9: the studio (from the door, as he photographed it; the
    dresser and TV; the counter he worked at; the bed; the kitchen), out of the door, a few steps north along the walkway
    to the railing (the photograph toward Ralphs), back to his door (the photograph up the walkway), then the stairs
-   beside it down to the lot; north through the lot and round the main wing to the lobby, in at its door, out by the
-   drive to Mariposa; along the sidewalk to Sepulveda, Starbucks and Ralphs; then a jump east along Mariposa to the fig
+   beside it down to the lot; north through the lot and round the main wing to the lobby, in at its door, past the desk
+   to the breakfast counter, out by the drive to Mariposa; along the sidewalk to Sepulveda, Starbucks and Ralphs; then a jump east along Mariposa to the fig
    trees and the Green Line. */
 const dz = (IN.door[0] + IN.door[1]) / 2;      // the middle of his doorway, along the wall
 const SZ = P.STAIR.z, TY = P.TOWER.y, LB = P.LOBBY, LT = P.LOT, eye = 1.52;
 const lobbyZ = (LB.door[0] + LB.door[1]) / 2, driveX = (LT.eastTail + LT.eastEdge) / 2, aisleS = (LT.southTail + LT.southEdge) / 2;
 const tour = [
-  { p: R(0.5, 1.47, 1.44), h: 97, pitch: -7.5, t: 0.01, cut: true, label: 'Phòng tầng 2' },
+  { p: R(0.5, 1.47, 1.44), h: 97, pitch: -7.5, t: 0.01, cut: true, label: 'Phòng 271' },
   { p: R(0.5, 1.47, 1.44), h: 97, pitch: -7.5, t: 3.4 },
   { p: R(1.5, 1.5, 1.45), h: 22, pitch: -12, t: 3.4, label: 'Tủ và tivi' },
   { p: R(2.6, 1.5, 1.3), h: 74, pitch: -14, t: 3.6, label: 'Bàn làm việc' },
@@ -109,9 +109,12 @@ const tour = [
   { p: [LB.porch.x1 + 5.7, 1.6, lobbyZ + 0.65], h: 266, pitch: 7, t: 3.0, label: 'Lễ tân' },
   { p: [LB.porch.x1 + 1.75, P.G1 + eye, lobbyZ], h: 270, pitch: 3, t: 3.2 },
   { p: [LB.east + 0.95, P.G1 + eye, lobbyZ], h: 270, pitch: 0, t: 3.0 },
-  { p: [LB.east - 1.15, P.G1 + eye, lobbyZ + 0.4], h: 235, pitch: -6, t: 2.6 },
-  { p: [LB.east - 1.65, P.G1 + eye, lobbyZ + 0.8], h: 300, pitch: -4, t: 2.6 },
-  { p: [LB.east - 1.05, P.G1 + eye, lobbyZ], h: 90, pitch: 0, t: 2.2 },
+  { p: [LB.east - 1.3, P.G1 + eye, lobbyZ], h: 232, pitch: -6, t: 2.6 },
+  { p: [LB.desk.low[1] + 0.9, P.G1 + eye, lobbyZ + 0.1], h: 205, pitch: -8, t: 2.8, label: 'Quầy lễ tân' },
+  { p: [LB.breakfast.x1 + 1.15, P.G1 + eye, lobbyZ + 0.25], h: 270, pitch: -8, t: 2.6 },
+  { p: [LB.breakfast.x1 + 0.95, P.G1 + eye, lobbyZ + 0.35], h: 296, pitch: -18, t: 3.6, label: 'Đồ ăn sáng' },
+  { p: [LB.breakfast.x1 + 1.3, P.G1 + eye, lobbyZ + 0.1], h: 80, pitch: -2, t: 2.4 },
+  { p: [LB.east - 1.05, P.G1 + eye, lobbyZ], h: 90, pitch: 0, t: 3.4 },
   { p: [LB.porch.x1 + 1.95, P.G1 + eye, lobbyZ], h: 80, pitch: 0, t: 3.4 },
   { p: [driveX - 0.6, eye, lobbyZ - 2.0], h: 0, pitch: 0, t: 3.0 },
   { p: [driveX - 1.2, eye, LT.island[3] + 2.6], h: 350, pitch: 0, t: 5.6 },
