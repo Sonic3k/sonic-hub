@@ -10,6 +10,11 @@
    opponents and no single place in it, since the next version makes that wrong. A number belongs in a blurb only
    when it is the game's own rule and never changes (eight Rams a side).
 
+   A game's pictures keep their names when they are taken again, and a browser keeps a picture for a while without
+   asking for it again. So the catalogue that is served also says, of each game that has pictures, a `stamp` made
+   from the pictures themselves, and it is part of their addresses: a picture that changed is at another address, and
+   nobody goes on seeing the old one. The stamp is not written by hand: the build puts it in (scripts/stamp-covers.mjs).
+
    A game that is someone else's file (found on the web, kept to look at) has `frame` instead of `play`: the file's
    address under /kept/ and the only other sites its page may load from. It is played at /play/<key>, in a frame
    with none of this site's origin (pages/Player.tsx). Such files are not in the repository: see kept.json. */
@@ -46,6 +51,9 @@ export interface Game {
   added: string | null;
   /** the pictures it has under /covers/<key>-<shot>-<width>.webp */
   shots: Shot[];
+  /** made from those pictures as they are now, and part of their addresses; null where the catalogue was not stamped
+   *  (a page run from the sources), and the pictures are then asked for by name alone */
+  stamp: string | null;
   /** where it runs */
   play: string | null;
   /** set when the game is someone else's file, played in a frame of its own */
@@ -69,7 +77,7 @@ export function toGame(r: Raw): Game {
     key: r.key, title: r.title, alt: r.alt ?? [], lang: r.lang ?? 'en', group: r.group, sub, machine: r.machine ?? 'web',
     year: r.year ?? null, series: r.series ?? null, tags: r.tags ?? [], players, ai, inputs: r.inputs ?? [],
     kind: r.kind ?? `${subOf(r.group, sub)?.name ?? groupOf(r.group).name}, ${who}`,
-    blurb: r.blurb ?? null, maker: r.maker ?? null, highlight: !!r.highlight, picked: r.picked ?? null, added: r.added ?? null, shots: r.shots ?? [],
+    blurb: r.blurb ?? null, maker: r.maker ?? null, highlight: !!r.highlight, picked: r.picked ?? null, added: r.added ?? null, shots: r.shots ?? [], stamp: r.stamp ?? null,
     play: r.play ?? (r.frame ? `/play/${encodeURIComponent(r.key)}` : null), frame: r.frame ?? null,
     test: r.test,
   };
@@ -84,7 +92,7 @@ export async function fetchCatalog(): Promise<Game[]> {
   return readCatalog((await res.json()) as { games: Raw[] });
 }
 
-export const cover = (g: Game, shot: Shot, width: 640 | 1280) => `/covers/${g.key}-${shot}-${width}.webp`;
+export const cover = (g: Game, shot: Shot, width: 640 | 1280) => `/covers/${g.key}-${shot}-${width}.webp${g.stamp ? `?v=${encodeURIComponent(g.stamp)}` : ''}`;
 export const coverSet = (g: Game, shot: Shot) => `${cover(g, shot, 640)} 640w, ${cover(g, shot, 1280)} 1280w`;
 export const gamePage = (g: Game) => `/game/${encodeURIComponent(g.key)}`;
 export const playsOnPhone = (g: Game) => g.inputs.includes('touch');
