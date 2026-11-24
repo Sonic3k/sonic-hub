@@ -3,7 +3,13 @@
 Written in November 2026, when the place was first built; the studio's part was rewritten on 23 November 2026, after
 its interior was measured again from the photographs (the first build had the counter wrong). The bathroom's inside
 keeps the first build's arrangement, which he found right; on 24 November its fixtures were redrawn after photographs
-of this hotel's bathrooms found on the web. Numbers are **metres in the place's own frame**: origin at
+of this hotel's bathrooms found on the web. The same day, after he confirmed where the reception is, its inside was
+drawn after the hotel's present pictures, the breakfast on its counter after a photograph of his own, and the room got
+its number from the hotel's folio (see "The reception and the breakfast"). That first inside was wrong in its plan; the
+same afternoon, on his word, the room was measured again and rebuilt, with its back door and the breakfast by the way in.
+That second inside was wrong too, in its length; in the evening, with Google Street View open at last, the block was
+measured from outside and the room a third time, and the beds by the way in were planted as July 2015 shows them.
+Numbers are **metres in the place's own frame**: origin at
 33.92290 N, 118.39500 W, x east, z south, y up (ground 0, the upper walkway 3.05). `plan.js` holds the hotel and the
 studio as numbers; `osm.js` the streets and buildings around it.
 
@@ -16,10 +22,15 @@ studio as numbers; `osm.js` the streets and buildings around it.
 | The walk east, 22 Sept 09:52–09:59: Continental Blvd and Mariposa Ave with their fig trees (1783–1786), under the Green Line on Nash St (1787) | same album, `IMG_1783`–`1787` | same |
 | iPhone: the hotel from the lot at dusk 17 Aug (0127), from the walkway 19 Aug (0130) and 2 Sept (0190–0191), the kitchen sink 30 Aug (0182–0185), the counter and kitchen from the west at night 18 Sept (0272), the door open on the walkway 25 Sept (0283, 0285: a person stands in them; only the door, the closet and the floor are used) | Onsite 2015 → onsite-iphone | iPhone, 3264 × 2448 |
 | DirecTV contractor badge: name, FPT, VIETNAM, valid to 9/25/2015 6:00 PM | Onsite 2015 → Documents → `scan0185.jpg` | scan |
+| The breakfast taken from the reception, on the table in his room, 19 Aug 2015 07:10: coffee in the hotel's paper cup, a packet of instant oatmeal (apples and cinnamon), a muffin in its wrapper, a red apple — beside a bowl of his own instant noodles | Onsite 2015 → Onsite iphone, `IMG_0129` | iPhone |
+| The hotel's folio and two taxi slips, scanned on 29 Sept 2015. Used: the room's number, the dates of arrival and departure, the folio's print time, the days of the two taxi rides. Nothing else on those papers is used or written down anywhere in this place | Onsite 2015 → Documents (the scanned receipts) | scan |
 | The computer and the phone of that moment | Sonic Hub `/api/desk/at?at=2015-09-22T11:15`: Asus N56, Windows 8.1; iPhone 6s | |
 | Streets (centre lines, lanes, one-way), building footprints and heights (LA County), the light rail and the station platform | OpenStreetMap, © OpenStreetMap contributors, ODbL; read in November 2026 by `data/osm2js.py` into `osm.js`. Buildings mapped as built after 2015 are left out (`LATER` there), and the hotel and the shopping centre's own buildings are drawn by hand (`HAND`) | |
 | Layout of the lots, rows, planters, roofs, trees | satellite pictures (Google, Esri), looked at for reference only; nothing of them is in the page | |
 | The bathroom's inside, which he did not photograph | travellers' photographs of this hotel (2024, 2026), the hotel's own (about 2021), guests' reviews of 2015 — see "The bathroom's inside"; looked at for reference only, nothing of them is in the page | |
+| The reception's inside, which he did not photograph either | the hotel's own pictures of its lobby (two along the room, one square to the desk's wall, one of the coffee counter with the back door beside it) and two of travellers', all of recent years; and what he said of it on 24 Nov 2026 — see "The reception and the breakfast"; the pictures were looked at for reference only, nothing of them is in the page | |
+| The lobby's block, the entry bay and the porch from outside; what grew by the way in a month before he came | Google Street View on E Mariposa Ave, looked at in a browser on 24 Nov 2026: four panoramas of May 2024 from the near lane, 27 m north of the block (three of them 10 m apart), and four of July 2015 from the far lane; the list of other years it offers (2008, 2012, 2014, 2016–2023) was seen and not gone through. For reference only: nothing of them is kept, sent or in the page | |
+| What the breakfast was | the chain's announcement of 17 Jan 2013 (a free breakfast to take away at its 610 hotels, every day from 6 to 9:30: instant oatmeal, fruit, muffins, drinks), as carried by Hotel Executive and Travel Weekly | |
 
 **Clocks.** The Canon kept Vietnam time (UTC+7): its 23:47 is 09:47 in California (PDT, UTC−7), when the lot photos
 are in morning sun from the south-east, as they should be; its 09:15 on the 22nd is 19:15 on Monday the 21st (the
@@ -46,15 +57,38 @@ laptop's lock screen in 1774 is too small to read; the place shows 7:15). Sonic 
   east lamp's shade, sighted from both pictures, meets within 2 cm. The front wall comes out 2–5 cm further west than
   the plan has it (the room 6.47–6.50 m deep, not 6.45); the plan was left as it is.
 - **Size.** 3.63 m between the party walls, about 6.45 m from the front wall to the kitchen's back wall, the ceiling at
-  2.39 m (7 ft 10 in). A module along the wing is 3.85 m; the wings hold 14, 15 and 13 a side (the hotel has 150
-  rooms; some modules must be laundry and stores).
-- **Which one.** Upper floor, west face of the north wing, the first studio north of the south-west stair tower
-  (`HIS`: module 9). 1779 (09:47:46) was taken on the walkway two steps south of his own door, which is at its right
-  edge: his door and the next make a pair with a lamp between them, then that studio's window, a fire-extinguisher
-  cabinet, the next door. The iPhone picture of 17 Aug (0127), taken from the lot to the north-west, shows the same
-  stretch running into the stair tower: window, door, lamp, door, window, cabinet, door. Twenty-eight seconds after
-  1779 he stood in the drive 16 m south of the north-west tower (1780): down the south-west stairs and north through
-  the lot. The room's number is not known.
+  2.39 m (7 ft 10 in): 23.4 m² (252 sq ft) with the bathroom. A module along the wing is 3.85 m. Checked on 24 Nov
+  2026 against the building: two rooms back to back with their walkways, walls and the plumbing spine come to 18.1 m,
+  which is what the roof measures across on the satellite picture and in the County's footprint (see "The hotel").
+- **Which one.** Upper floor, west face of the north wing, the tenth studio from the wing's north end (`HIS`: module
+  9), with the south-west stair tower beside it. Three photographs fix that:
+  - 1779 (22 Sept 09:47:46), on the walkway a step south of his own door, which is at its right edge: his door and
+    the next make a pair with a lamp between them, then that studio's window, a fire-extinguisher cabinet, doors on
+    to the wall with a door that ends the walkway. That end door stands 185–190 px high in the frame (2.03 m at
+    f = 3360 px): 36–37 m away, which is where the row's north end lies if nine studios stand north of his. They can
+    be counted, too: a mat lies before every door, and beyond the neighbour's there are eight, at about 8.0, 12.6,
+    14.6, 18.8, 22.5, 27.1, 29.8 and 34.3 m from the camera (the place's doors would put them at 8.2, 13.1, 15.9, 20.8,
+    23.6, 28.5, 31.3 and 36.2). *This file said "150 px … 45 m" until 24 Nov 2026: a misreading of the frame, found
+    when the picture was measured again; nine studios it was and is.* Nothing of the stair tower shows at the frame's
+    left edge, so its wall was level with the camera or behind it.
+  - 0127 (17 Aug, from the lot at dusk), its camera fitted to door heads, window heads and sills on both floors
+    (phone lens f = 1509 px at 1600 wide; residual about 4 px): window, door, lamp, door, window — and the tower's
+    north wall coming to the walkway at that last window, 0.6 m (± 0.4) past his door. The first fit of this place
+    put the tower 1.7 m further south, clear of his room; this photograph had not been fitted then.
+  - Both put the plain columns in bays of about 4.9 m and the gabled bay half-way between the towers, where the
+    satellite picture has its roof.
+  **Its number is 271**: the hotel's folio is headed "Room: 271" (arrival 8/17/2015, departure 9/26/2015). No
+  photograph shows a number on any door, so the number cannot be used to check which door was his; it does not speak
+  against the photographs either. The sign by the lobby gives the main wing the rooms 103–127 and 151–177, so 2xx is
+  another building and x51 upward its upper floor; if the wings are counted from Mariposa this one is the second,
+  and if its west face runs 262–273 from the north end, the tenth door is 271. That is a guess about the numbering, not
+  evidence for the door. The small plate reading 271 by his door is an addition: what the real one looked like is not
+  known.
+  So the row starts at z = −0.2 (the County's roof starts at −4.1: a closed end bay, as on the main wing's west end)
+  and the tower's north wall crosses the walkway at his window. 1777 (09:47:21, toward Ralphs) was taken from the
+  railing a few steps north of his door: the tower's shadow lies in its lower left corner and the tower is out of
+  frame. 1780 (09:48:14) was taken in the drive, looking north past the island with the tree and the two handicap
+  stalls to the north-west tower. The room's number is not known.
 - **The counter he worked at** — what the first build had wrong (an east–west bar set off the wall). It is a dining
   peninsula for two that stands out from the north wall: a white laminate top 0.87 wide × 1.155 long, 0.914 high,
   37 mm thick, its two free corners rounded (r ≈ 0.16); under its wall end a white cupboard (0.44 × 0.52) with an oak
@@ -149,22 +183,289 @@ mirror shows a painted reflection.
 
 ## The hotel
 
-- Three two-storey wings — along Mariposa (main, with the lobby at its east end) and two running south from it, the
-  studio's (north) and the south wing — with open walkways on terracotta columns, white railings, yellow stucco, hip
-  roofs of clay tile and stair towers with an arch at the top. Wings, towers and the lobby are rectangles in `WINGS`
-  (`plan.js`), read off the satellite picture and checked against 1777, 1779, 1780, 0127, 0130 and 0190.
-- A studio's front is a door, 0.42 m of wall, a window, with a louvre low under the window's near end and the room's
-  number by the latch. Studios are handed in pairs, so doors meet at a wall lamp and windows at a globe in the soffit
-  (`hands` in `WINGS` for the stretch the photographs show; elsewhere simply alternating, which is a guess). The
-  walkway's columns stand at the stair towers' corners and in equal bays of about 5.9 m between them: 1779 fits that
-  to within half a metre.
-- The white picket fence and the planting strip west of the hotel's lot, the rows of stalls, the red-curbed island with
-  the blue sign, the lot lights (0130, 0190, 1777, 1780). From 1780, taken in the drive at z ≈ 22 looking north: the
-  two handicap stalls and the red-curbed island south of the north-west tower, the blue mattress leaning on that
-  tower's south face, the brown Beetle nose-in to the fence at the lot's north end, the fence row empty. The fence's
-  north end (z = −12.6) is a guess: it leaves the drive round the main wing's west end open into the lot, which the
-  satellite picture suggests and which a hotel's cars need.
-- The monument sign by the entrance on Mariposa is a guess (place and shape); its words are plain lettering.
+Rebuilt on 24 Nov 2026, when he asked whether the sizes were right and said the stairs made no sense and that he could
+find neither the way in for cars nor the reception. He was right on all three.
+
+### What was wrong
+
+| | the build before | what the evidence says |
+|---|---|---|
+| stair towers | closed on three sides, a small arch at the upper floor, the stair in one corner behind a wall; six of the twelve had no stair at all | open to the lot between two heavy columns under an arch, the landing with its railing at the tower's face (0125, 0127, 1780, 0191); all twelve alike on the satellite picture |
+| the north wing | 14 studios a side under one roof 56.7 m long | 12 a side under a roof 50.9 m long; south of it a lower block 5.8 m long under its own roof |
+| rooms in all | 168 doors | 160 doors; the hotel lets 151 rooms |
+| the lot west of the wings | stalls against the walkway, the fence 22.5 m from the roof's edge | 1.85 m of planting between walkway and stalls; the fence 23.9 m from the roof's edge |
+| the way in | a sign at the north-west, no drive | a two-lane drive at the north-east corner, the sign on its island |
+| the lobby | a box at the main wing's east end | the wing's own end block, a porch on its east face, a sign tower south of the porch |
+| the roofs | 4 in 12 | about 5½ in 12 (the ridge at 10.1 m in 0127); the towers' own steeper |
+
+### The wings' sizes
+
+Roof outlines are LA County's building footprints as OpenStreetMap carries them (ways 233384215, 233386980,
+233386985). The satellite picture was laid on them and the tile roofs found by their colour along some twenty lines.
+
+**The picture and the footprints do not lie on each other.** Everything on the picture sits about 1.2 m west and
+1.2 m north of where the footprints have it:
+
+| check | on the picture | County | shift |
+|---|---|---|---|
+| north wing, west eaves (five lines) | x 11.05–11.2 | 12.3 | +1.1…1.25 |
+| main wing, west end | x −25.6 | −24.6 | +1.0 |
+| main wing, its north-west tower | x −20.6…−16.7 | −19.6…−15.3 | +1.2 |
+| main wing, north and south eaves | z −47.35, −28.5 | −46.5, −26.7 | +0.85, +1.8 |
+| the towers' sunlit ends, north wing | z 5.5, 39.4 | 6.9, 41.4 | +1.4, +2.0 |
+| the stalls' kerb west of the north wing | x 9.5 | 10.5–10.9 by the photograph of 17 Aug, whose camera is fitted to the building | +1.0…1.4 |
+| the gabled bay, north wing's west face | z 19.25 | 20.8 by 0127 and 1779 | +1.55 |
+
+The last two matter most: they tie the ground to the building without either map. So what is measured on the picture
+is moved 1.2 m east and 1.2 m south before it is built (`LOT` and `LOBBY` in `plan.js` hold the moved numbers). The
+first build after his question mixed the two frames and drew three metres of planting between walkway and stalls; the
+photograph of 17 Aug shows under two. Good to about half a metre.
+
+Where the County and the picture still disagree after the move, the picture is followed: the main wing ends 1.15 m
+further east than the County draws it (its east end is drawn as steps there), and its north-east stair tower stands
+1.65 m further east, a short bay from the lobby's block as in the hotel's own photograph. For some hours on 24 Nov the
+wing's east end was drawn another metre east (x = 31.1), to hold a lobby that had been measured too long from inside;
+Street View put it back. The block is 4.45 m long on Mariposa, its end wall's face at x = 29.93, the roof's edge at
+30.23 — the County has 30.1 (see "The reception and the breakfast").
+
+| | roof outline (m) | long × wide | studios a side |
+|---|---|---|---|
+| main, along Mariposa | x −24.6…30.23, z −46.5…−26.7 | 54.8 × 19.8 | 13 |
+| north (his) | x 12.3…30.4, z −4.1…46.8 | 50.9 × 18.1 | 12 |
+| the low block south of it | x 13.7…30.4, z 46.8…52.6 | 5.8 × 16.7, one storey | — |
+| south | x 12.3…30.4, z 57.3…115.8 | 58.5 × 18.1 | 15 |
+
+- Across a wing: 0.45 to the columns, the walkway to 2.0, the front wall, a studio 6.45 deep, the spine: 2 × (2.0 +
+  0.18 + 6.45) + 0.84 = 18.1. His room's depth, measured from inside, fits the building measured from above. (The
+  main wing is 1.7 m wider by the County's outline; its rooms are drawn the same and its spine takes the difference.)
+- Along a wing: 3.85 a module. The main wing's sign by the lobby reads, as far as its small letters can be made out in
+  the hotel's picture, "Rooms 151–177, 103–127": 25 below and 27 above. Above, that is 13 a side and the room over
+  the lobby (its door is at the upper walkway's end, in the hotel's picture). Below, one of the 26 is then not a
+  numbered room — travellers' photographs show a guests' laundry and a room of vending machines without saying where.
+  (The lobby itself was first taken to be that one; it is not: it lies in the block. The module beside the block has
+  a door with a lamp and a plate by it, 0.8 m from the block's corner: Street View.) The north wing's 12 rest on 1779 and 0127 (see "Which one"); the
+  south wing's 15 only on its length.
+- 160 doors on the walkways against the 151 rooms the booking sites give: the rest must be the laundry, the stores and
+  the fitness room. Which doors those are is not known; every door is drawn as a room's.
+- The lean-tos on the wings' ends and the low block are single-storey on the satellite picture (their roofs lie in the
+  wings' shadows) and in 0127, which shows the block's eaves at 2.6 m and a door in its west wall.
+
+### The stair towers
+
+Seen in 0125 and 0127 (17 Aug, from the lot), 0191 (2 Sept, from the walkway beside one), 1780 (22 Sept, from the
+drive) and, for the one by the lobby, the hotel's own pictures. Heights are read off 0127 with its fitted camera, on
+the plane of the tower's face.
+
+| | drawn | read off 0127 |
+|---|---|---|
+| the tower's face from the wing's roof edge | 3.45 | the County's footprint: 3.4–3.9 |
+| its width | 3.9 | 4.1 between the columns' outer faces |
+| the two columns | 0.68 square, shafts to 3.78 | shafts to 3.7–3.9 |
+| their capitals | 3.78–4.30 | tops at 4.4 (± 0.15) |
+| the arch | springs 4.85, crown 5.2 | 4.9, 5.2 |
+| the floodlight | 5.85 | 6.1 |
+| its eaves | 6.4 | 6.35–6.6 |
+| the roof's point | 8.25 | 8.2–8.4 |
+| the landing's floor | 1.51 | 1.7 (± 0.15) |
+| its railing's cap | 2.58 | 2.7 |
+
+- The landing is the half-way stop of a stair that goes out from the building and comes back: eight risers of 0.17 up
+  to it from the ground walkway, nine more back to the upper walkway (2.9 m in seventeen). In the hotel's picture of
+  the tower by the lobby the flight from the ground is on the left as one faces the tower; all are drawn so.
+- **Not seen:** the inside of a tower. The treads, the wall between the two flights, the handrails and the steel
+  strings are what such a stair needs, not what a photograph shows. No photograph of his looks down these stairs.
+- The same two columns and arch stand once more on each face, half-way between the towers, on the walkway's own edge
+  under a small raised roof (1779: the two columns whose capitals come at railing height; 0190 and 0191, taken beside
+  them; a small hip on the satellite picture). On the north wing's west face it is drawn at z = 20.8, where 0127 and
+  1779 put it; the picture, moved, has it at 20.45.
+- Plain columns: at 27.15 and 32.25 on his stretch (0127), otherwise in equal bays of about 4.9 m.
+
+### The lot, the way in, the lobby
+
+Measured on the satellite picture (taken years after 2015; kerbs do not move, stripes and planting may have) and
+moved into the footprints' frame as above.
+
+| | m |
+|---|---|
+| west of the wings: planting 10.7…12.55 · stalls 5.4…10.7 · drive · stalls −8.5…−3.1 · strip · fence | fence at x = −11.6 |
+| east of them: planting · stalls 32.25…37.55 · drive · trees | boundary kerb at x = 43.5 |
+| north of the main wing: planting · stalls z −53.0…−47.6 · aisle · hedge and lawn · sidewalk | hedge kerb at −59.5; the walk's back at −66.4 (the street's own frame) |
+| south of it: planting · stalls −24.9…−19.6 · aisle | to −13.0 |
+| the drive in from Mariposa | x 28.5…37.5 |
+| the sign's island | x 15.5…28.5, z −66.4…−60.0 |
+| the forecourt's kerb | from (17.8, −53.4) east, a quarter round of 8.1 m, south along x = 37.3 |
+| the lobby: the block's end wall · the door wall under the low roof · the columns of the porch | x = 29.93 · 31.28…31.46, z −45.66…−40.7 · their face at 32.55, z −45.66…−40.7 |
+| the sign tower | x 29.4…33.0, z −40.7…−37.1 |
+
+- From the photograph of 17 Aug, with its fitted camera: the stalls' kerb at x = 10.5–10.9, their painted lines 2.4–2.5 m
+  apart and ending at x ≈ 5.7–6.5, the red kerb of the tower's island at 5.8–6.1. A clipped hedge stands right behind
+  the kerb, small round-headed trees behind it with their heads at the upper walkway's floor.
+- 0190, 0191, 1777 and 1780 show the west side as drawn: the planting with its small round-headed trees, stalls with
+  wheel stops, the two handicap stalls with their blue signs, the red-kerbed island with the bigger tree, the fence
+  row, the strip with its trees and lot lights, the white picket fence. On the morning of 22 Sept the fence row stood
+  empty and the brown Beetle was at its north end; the blue mattress leaned on the north-west tower's south face.
+- **The way in** is where the satellite picture has it: a kerb cut at the lot's north-east corner, arrows and a centre
+  line on the asphalt, a hatched crossing to the forecourt. None of his photographs shows it — he walked out the other
+  way, past the shops. **What grew there in 2015** is from Street View's panoramas of July 2015, taken from Mariposa's
+  far lane a month before he came: on the sign's island clipped round shrubs under two tall pines (their trunks, seen
+  from two panoramas ten metres apart, cross at about (21, −63.5) and (25, −62.6) in Street View's frame; drawn at
+  21.6 and 26.3) and a low dark sign among them; a pine before the lobby's block and a small round-headed tree by the
+  porch; a low white fence along the sidewalk before the lawn, a clipped hedge and a hydrant by the walk in. The
+  gravel, agaves and roses of the hotel's present pictures came later and are not drawn any more. The lobby's block,
+  its colours and the plate "Lobby" over its window are the same in July 2015 as now.
+- **The lobby from outside** is measured on Street View of May 2024 (the next section has the numbers) and looks as
+  the hotel's present pictures have it: the block with a window on each floor and "Lobby" between them, "A" on its east
+  pier, the rooms' numbers on its west one; east of the block, under a low tiled roof that leans on it, a cream wall
+  set back half a metre with an air-conditioner's grille low in it, then the porch — a narrow round arch in its north
+  side, a flat arch to the drive between two stubby columns, "Lobby" and "1910" over that arch; behind the columns, a
+  metre in, the door with glass each side, the night boxes on the same wall south of it; the tower with a gridded panel
+  to the drive and the name on its face to Mariposa. The tower is 3.6 m square on the satellite picture; its height
+  (9 m to the eaves) is taken from the pictures by the ratio to the porch.
+- **Guesses:** the lobby's inside as it was in 2015 (it is drawn as it is today: see below); both signs' faces (plain
+  lettering on a dark cabinet: July 2015 shows only that the sign by the way in was low and dark; no logo is drawn);
+  the planting of the beds east and south of the wings; the picnic table's place.
+
+### The reception and the breakfast
+
+**That this is the reception** he confirmed on 24 Nov 2026 ("số 2 đúng là lễ tân": the block at the main wing's east
+end, its door under the porch on the drive).
+
+**What his photographs have of it: nothing.** That day every picture of those weeks in the archive was gone through
+for it: 1,533 files dated 13 Aug–29 Sept 2015 (all there is between 10 Aug and 2 Oct) — 1,508 in the trip's albums
+(159 from the phone, the 15 of the El Segundo album, nine albums of days out with 30 to 318 each, two in the trip's own
+folder) and 25 elsewhere (the five scanned receipts; the rest are not of the trip). None carries a position. They were
+looked at as contact sheets, and at full size wherever there was a counter, a doorway, a porch, a sign or food: none
+shows the reception, its porch, the sign tower or the way in from Mariposa. Ten of the files are videos, all in the
+albums of days out and between photographs of those outings; their frames were not looked at. The folder of visa
+papers was not opened.
+
+**What they do have is what the reception gave out.** `IMG_0129` (the phone, 19 Aug 2015, 07:10, on the table in his
+room): coffee in the hotel's paper cup, a packet of instant oatmeal (apples and cinnamon), a muffin in its wrapper and
+a red apple, beside a bowl of his own instant noodles. The chain had been giving a breakfast to take away at all its
+hotels since January 2013, every day from 6 to 9:30 — instant oatmeal, fruit, muffins, drinks (its announcement of
+17 Jan 2013). So the table in the place carries pump pots, cups, a basket of red apples, a basket of wrapped muffins,
+packets of oatmeal and a card with the hours. The cups are plain (the real ones bore the hotel's name), the packets
+plain colours.
+
+Two other pictures of a red apple are **not** of the hotel: `IMG_0286`–`0287`, on a glass table by a window. The phone
+stamps them 26 Sept 15:18, still on California's clock; he had left the hotel at about eleven the
+night before, and `0288`–`0289`, taken there seventeen minutes later by the world's clock, are stamped 27 Sept 06:35 —
+the phone had meanwhile taken the local time of the airport where he changed planes.
+
+**What the folio adds.** Room 271; arrival 17 Aug 2015 (a taxi slip of that day is for the ride from the airport, and
+his first photographs of the hotel, `0125`–`0127`, are of 19:45 that evening); the folio was printed at the desk at
+10:52 PM on 25 Sept, and a second taxi slip of that day is for the ride back to the airport, a night earlier than the
+departure the folio has. The place's cards say so; nothing else of those papers is used.
+
+**What he said of the first inside** (24 Nov 2026, 15:33, having seen it): "bàn ăn sáng có bát mỳ là bàn của tôi. Còn
+góc bày breakfast thì nó nằm ở ngay cửa ra vào lễ tân cơ, tức là vào phát nhìn bên phải là thấy đồ ăn, chứ ko phải ở
+góc xa. Bạn tính toán lại độ rộng phòng lễ tân nhé, nó còn có cửa sau thông ra hành lang đi lại phía sau. Cần thì check
+lại google street map". Three things: the breakfast stood right by the way in, on the right, not in the far corner; the
+room has a back door to the walkway behind; its size was to be worked out again. All three were right, and the first
+inside was wrong in its plan — 7.65 m long, L-shaped, through the last studio's ground floor.
+
+**The second inside** (that afternoon) put the back door and the breakfast right and the length wrong: a room 4.85 m
+long to a "cased opening" in the block's end wall, an entry bay 0.85 m deep beyond it, and the block stretched from
+4.3 to 5.3 m to hold them. Three things were at fault: the frame across the room was taken for an opening in a wall
+standing where the desk's wall ends; the camera of the picture along the room was put where the office's door seemed to
+need it; and the outside was not looked at, for want of a browser.
+
+**The outside, on Street View** (May 2024; four panoramas on Mariposa's near lane, 27 m north of the block). Each view
+is the panorama's own flat cut-out of a known width in degrees, so a pixel is an angle. The scale needs no map: the
+grille low in the cream wall measures 1.07 × 0.37 m by the nominal distance, which is the 42 × 16 inch sleeve of a
+through-the-wall air-conditioner; the block's two windows come out 1.83–1.85 × 1.49 m, a 6 ft × 5 ft slider; a room
+door beside the block 0.88 m wide. Two panoramas ten metres apart place the block's corners within 0.25 m of each
+other. (Street View's own positions sit about two metres west of the place's frame; only lengths are taken from it.)
+
+| from the north, west to east | m |
+|---|---|
+| the block's face between the outer edges of its two piers | 4.33, 4.45, 4.52 by three readings: **4.45** |
+| in it: pier 0.66 · wall 0.63 · window 1.83 · wall 0.65 · pier 0.66 (to 0.75 in one view) | |
+| the window: its head above the lobby's floor · its sill | 2.13 (set by the head of the door beside the block, 2.03) · 0.64 |
+| window head to window head, the two floors | 2.95 (the place has 2.9) |
+| east of the block, under the low roof: a cream wall, set back 0.6–0.75 m | 1.47–1.55 long; the grille 0.19…1.26 m along it |
+| then a round-headed arch in the porch's north side | 0.67–0.69 wide, about 2.6 high; the door shows through it |
+| then the porch's corner column | 0.40–0.44 east–west (0.55 north–south, from the north-east) |
+| the porch's columns' caps · its eaves | about 1.65–2.1 · about 3.8 above the ground |
+
+From the north-west (and in the hotel's own picture from there) **the back door** is on the block's return wall,
+hard by the west pier, a door over it on the upper floor; the door with the lamp and the plate, further west on the
+wall behind the walkway, is the next module's. From the north-north-east the porch's east face is two columns and a
+flat arch with the two plates over it, the door behind the north column.
+
+**The inside, measured the third time.** The same pictures of recent years, for reference only; this time each
+camera was found from the picture's own lines before anything was measured with it.
+
+- *Along the room, from its west end* (the hotel's). Twenty-five long edges that run along the room meet at (415, 464)
+  in the 1280-px frame, thirteen that run across it at (1693, 460): the horizon is at 462, the lens 487 px, the camera
+  turned 24.9° south of east. The entrance door's leaf, taken as 0.915 m wide, puts the camera 1.35 m up and makes
+  the leaf 2.12 m high: a 3 ft × 7 ft door. The desk's wall stands 2.26 m south of the camera by its foot on the floor.
+- *From nearly the same spot, a longer lens* (the hotel's). Thirty edges along the room, twenty-five across: horizon
+  471, lens 757 px, 42° south of east, 1.31 m up, 1.76 m from the desk's wall.
+- *Square to the desk's wall* (the hotel's). The band of the desk's front is 0.355 m high in both pictures above and
+  82 px here; the white wall under it 0.87–0.90 m and 202 px: 230 px to the metre in the middle of the frame (the
+  wall is 1.4° off square, so 225 at its east end and 237 at the office's door, which is then 2.11 m high — 7 ft too).
+  Along the wall from its east end: the ledge 0.10…3.80, its notch 2.14…3.11, the office's door 4.01…4.93 with its
+  casings, so the wall is 4.96 m to the room's corner. Its floor, the band and the ceiling's moulding (2.45 m to its
+  lower edge, 2.55 to the ceiling) are read in this picture's own edges. (The afternoon's 246.5 px to the metre came
+  of taking the office's door for 2.03 m, and three heights then were read 72 px off.)
+- *The coffee counter* (the hotel's, and a traveller's): the window, the back door in the wall at right angles to it
+  a hand from the corner — white, six lights in its upper half, EXIT over it — and a wall lamp 0.4 m east of the
+  window, which the picture along the room shows just short of the room's north-east corner.
+
+One fit of the picture along the room, by least squares over the camera and the room's lengths together, with the
+outside as it must be: the camera 0.68 m from the west wall and 0.62 m from the north wall — in front of the open
+back door; every edge it was given falls within a pixel or two.
+
+| | m |
+|---|---|
+| the room's width, north wall to the desk's wall | **2.88** |
+| the north-east corner of the room (the stub's face) from the west wall | **4.03** — the block's end wall, as outside: 4.45 − 0.28 − 0.2 = 3.97 |
+| over the rest of that line, a beam: its lower edge · its depth | 2.27 (the dropped ceiling over the desk is 2.29–2.33 where it meets the wall's end) · about 0.22 |
+| the desk's wall's east end from the west wall | 4.96: it runs 0.9 m past the beam, into the bay |
+| the door wall: the leaf's plane from the west wall | 5.70 (outside: the arch's jamb at 5.70–5.75) |
+| the door's leaf · the glass each side · the lights over them | 1.30…2.215 m from the north wall, 2.13 high · 0.41 wide · 2.36…2.645 up |
+| the ceiling | 2.55; the bay's is higher (its lights reach 2.65) and is drawn at 2.75 |
+| the screen on the office's east wall | 1.21 × 0.68 m: a 55-inch one, which says that wall is where the desk's wall ends |
+
+So: THE ROOM, 4.03 × 2.88 m, lies under the two-storey block. Its east side is the block's end wall, of which the
+ground floor keeps a stub 0.44 m long by the window wall and a beam. Beyond the beam, under the low roof, THE ENTRY
+BAY, 1.35 m deep to the door wall, its north wall 0.44 m back from the room's — the cream wall with the grille, and
+the air-conditioner inside it. The desk's wall starts in the bay, 0.6 m short of the door wall; between its cased end
+and the door wall a shallow nook holds the shelf. East of the beam the dropped ceiling runs slantwise from 0.43 m out
+back to the wall's end — which is why, from both cameras, the beam seems to land on the wall's end.
+
+| | m, in the place's frame |
+|---|---|
+| the block on Mariposa | x 25.475…29.93 (4.45); its roof's edge at 30.23 |
+| the room | x 25.7…29.73, z −45.95…−43.07: 4.03 × 2.88, 2.55 high |
+| the back door, in the west wall | z −45.70…−44.79, 2.13 high; its leaf stands open on the walkway |
+| the window to Mariposa | x 26.70…28.53, 0.64 to 2.13 m above the floor; the same on the floor above |
+| the stub and the beam | x 29.73…29.93; the stub z −45.95…−45.51; the beam's underside at 2.28 |
+| the entry bay | x 29.93…31.28, z −45.51…−43.07; the nook by the door to z −42.70; the air-conditioner x 30.07…31.14 |
+| the door wall | x 31.28…31.46; the door z −44.65…−43.735; glass each side 0.41 wide |
+| the porch | to x = 32.55: an arch 0.69 wide in its north side, columns 0.40 × 0.55 |
+| the desk's wall (its face to the guest) | z = −43.07, x 25.7…30.66; the office's door x 25.77…26.685; the opening 26.86…30.56, its notch 27.55…28.52 |
+| the office behind | 2.03 m deep (two pictures cross at 1.0 to 1.5: not settled); red back wall, the framed mat 1.4 × 0.81, the screen on its east wall |
+| the breakfast table, 2015 | against the north wall where it begins past the beam, x 28.2…29.65, its near end 1.7 m from the door — **his word**, not a picture |
+
+**Checked** by rendering the place from each of the two fitted cameras and laying its edges over the hotel's picture:
+door, glass, lights, stub, beam, desk, notch, screen and frame fall where the pictures have them, in both. And from
+Mariposa the place now shows what Street View shows: block, cream wall and grille, side arch, column.
+
+**Street View of July 2015** (a month before he came; from the far lane, through the pines): the same block, the same
+colours, the same plate over the window. It is too coarse and too hidden to measure by. Nothing of the inside is in it.
+
+**Not known.** How the room was furnished in 2015; whether the long coffee counter that runs under the whole window
+today was there (the chain's breakfast to take away dates from 2013, so it may well have been); the office's depth.
+
+**Whose word each thing is.** His (24 Nov 2026): that this is the reception; the breakfast by the way in, on the right;
+the back door to the walkway. His photograph: what the breakfast was. Street View of 2024: the block's and the low
+roof's sizes outside. Pictures of today: the room's shape and size inside, the desk and its office, the door and its
+glass, the blinds, the shelf — in 2015 they may have looked different. Street View of 2015: the pines and shrubs by
+the way in. Guessed: what the breakfast table looked like and that it was a table of its own; the two armchairs under
+the window; that the doors stand open. Drawn plainly on purpose: the framed mat (a brown mat, the word WELCOME), blank screens, blank cups,
+no notices on the walls.
 
 ## The streets
 
@@ -194,4 +495,6 @@ mirror shows a painted reflection.
 No logo anywhere: shop names are plain words in common typefaces. The badge has no portrait and no logo. The
 bed-cover, curtains and the print on the bathroom wall are drawn after their kind, not copied. Satellite pictures are
 not in the page; nor are the photographs of the bathroom found on the web: its tiles, stone and fittings are drawn
-after their kind.
+after their kind. Nor are the pictures of the lobby: the room is drawn after them plainly, the mat in its frame is a
+brown mat with one word on it, the paper cups are blank. Nor is anything of Street View. The receipts are not in the page, and of what they say only
+the room's number and the days and hours of arriving and leaving are written anywhere.

@@ -92,6 +92,13 @@ const mulchTex = () => once('mulch', () => canvasTex(256, 256, (g, w, h) => {
   for (let i = 0; i < 2500; i++) { g.fillStyle = ['#7a5236', '#3e2718', '#8c6545', '#4d3220'][(R() * 4) | 0]; g.save(); g.translate(R() * w, R() * h); g.rotate(R() * 3.14); g.fillRect(-3, -1, 4 + R() * 6, 1.5 + R() * 1.5); g.restore(); }
 }));
 
+/** the gravel of the beds by the way in (decomposed granite, pinkish tan) · 1.5 m */
+const gravelTex = () => once('gravel', () => canvasTex(256, 256, (g, w, h) => {
+  const R = rng(23); g.fillStyle = '#c4a283'; g.fillRect(0, 0, w, h);
+  blotch(g, w, h, R, 24, '220,190,160', 0.12, 12, 50); blotch(g, w, h, R, 20, '120,90,70', 0.1, 12, 50);
+  for (let i = 0; i < 5200; i++) { g.fillStyle = ['#a8876b', '#d8bb9c', '#8d7058', '#e3cdb2', '#b79679'][(R() * 5) | 0]; g.fillRect(R() * w, R() * h, 1 + R() * 1.6, 1 + R() * 1.6); }
+}));
+
 /* ── cloth ── */
 /** the curtains: a tartan on khaki — umber and grey-olive bands, thin lines of dull red and cream · 0.30 m */
 const plaidTex = () => once('esaPlaid3', () => canvasTex(256, 256, (g, w, h) => {
@@ -159,6 +166,7 @@ export const X = {
   asphalt: (c = '#3b3b3b', seed = 3) => mat('asph' + c + seed, () => std({ map: asphaltTex(c, seed), roughness: 0.93 })),
   lawn: () => mat('lawn', () => std({ map: lawnTex(), roughness: 0.95 })),
   mulch: () => mat('mulch', () => std({ map: mulchTex(), roughness: 1 })),
+  gravel: () => mat('gravel', () => std({ map: gravelTex(), roughness: 1 })),
   plaid: () => mat('plaid', () => std({ map: plaidTex(), roughness: 0.95, side: THREE.DoubleSide })),
   quilt: () => mat('quilt', () => std({ map: quiltTex(), roughness: 0.9 })),
   marble: () => mat('marble', () => std({ map: marbleTex(), roughness: 0.32 })),

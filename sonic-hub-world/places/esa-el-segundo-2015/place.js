@@ -4,7 +4,7 @@ import * as THREE from 'three';
 import { Builder } from '../../engine/kit.js';
 import meta from './meta.js';
 import * as P from './plan.js';
-import { buildWing } from './hotel.js';
+import { buildWing, hotelHour } from './hotel.js';
 import { buildRoom } from './room.js';
 import { buildSite } from './site.js';
 import { buildTown } from './town.js';
@@ -25,45 +25,50 @@ const light = {
   shadow: { center: [ROOM.x0, 3, ROOM.z0], left: -62, right: 62, top: 62, bottom: -62, near: 1, far: 260, back: 120, follow: 24, bias: -0.0004, normalBias: 0.03 },
   lamps: {
     // the swing lamp over the counter, the jar lamp on the dresser, the two by the bed (one light between them), the tube
-    // over the kitchen, the bathroom; outside, the lamp between his door and the next and the globe by the stair tower
+    // over the kitchen, the bathroom; outside, the lamp between his door and the next and the one at the stairs' head;
+    // the lobby's own lights and the lanterns by its door
     desk: [...R(IN.wallLamp.su, 1.3, IN.wallLamp.sv + 0.12), 5.5], lamp: [...R(IN.tvLamp.u, 1.42, IN.tvLamp.v + 0.2), 6],
     bed: [...R((IN.bedLamps[0].u + IN.bedLamps[1].u) / 2, 1.5, ROOM.w - 1.0), 6.5],
     kitchen: [...R(IN.ceiling.tube[0], 2.2, IN.ceiling.tube[1]), 5.5], bath: [...R(5.15, 2.15, 2.7), 3.2],
     walk1: [ROOM.x0 - 0.55, G2 + 2.2, ROOM.z0 - 0.11, 7], walk2: [13.45, G2 + 2.55, ROOM.z0 - 0.11 + P.MOD, 7],
-    lot: [-2.5, 8.5, 22, 26],
+    lot: [-2.5, 8.5, 22, 26], lobby: [(P.LOBBY.room.x0 + P.LOBBY.room.x1) / 2, P.G1 + 1.95, (P.LOBBY.room.z0 + P.LOBBY.room.zp) / 2, 7], porch: [P.LOBBY.porch.x1 + 1.6, 3.2, (P.LOBBY.door[0] + P.LOBBY.door[1]) / 2, 10],
   },
   hours: {
     sang: {
       sky: { top: '#7f9fc4', mid: '#b9c7d3', horizon: '#dfe2e0', ground: '#7d7a72', sun: '#fff6e0', glow: '#fff2d8', stars: 0, clouds: [0.62, '#eef0f0', '#a8adb2'] },
       sun: ['#fff1dc', 2.6], hemi: ['#d5e0ea', '#8f8676', 1.15], room: ['#c4bdb1', '#bdb3a2', '#6f6a62', '#ffffff'], env: 0.55, exposure: 1.0,
       fog: ['#d7dbdc', 140, 900],
-      lamps: { desk: ['#ffe9c8', 0.5], lamp: ['#ffe9c8', 0.4], bed: ['#ffe9c8', 0.6], kitchen: ['#eef3ff', 1.4], bath: ['#fff2e0', 0.3] },
+      lamps: { desk: ['#ffe9c8', 0.5], lamp: ['#ffe9c8', 0.4], bed: ['#ffe9c8', 0.6], kitchen: ['#eef3ff', 1.4], bath: ['#fff2e0', 0.3], lobby: ['#fff3e0', 2.2] },
       lit: false,
     },
     chieu: {
       sky: { top: '#5f87c2', mid: '#b8b6c4', horizon: '#ffcf9e', ground: '#6a5f55', sun: '#fff0c8', glow: '#ffa45a', stars: 0, clouds: [0.28, '#ffe1c2', '#9a8f99'] },
       dir: SUN.chieu, sun: ['#ffb871', 3.6], hemi: ['#b9c6df', '#a08a74', 0.75], room: ['#c8b7a6', '#c4a98f', '#6b5d50', '#ffcf98'], env: 0.5, exposure: 1.02,
       fog: ['#e3cdb8', 160, 1000],
-      lamps: { desk: ['#ffd9a8', 0.8], lamp: ['#ffd9a8', 1.0], bed: ['#ffd9a8', 0.9], kitchen: ['#eef3ff', 1.6], bath: ['#fff2e0', 0.4] },
+      lamps: { desk: ['#ffd9a8', 0.8], lamp: ['#ffd9a8', 1.0], bed: ['#ffd9a8', 0.9], kitchen: ['#eef3ff', 1.6], bath: ['#fff2e0', 0.4], lobby: ['#fff3e0', 2.4] },
       lit: false,
     },
     toi: {
       sky: { top: '#0b1226', mid: '#1d2439', horizon: '#57443f', ground: '#0c0b0d', sun: '#000000', glow: '#000000', stars: 0.55, clouds: [0.25, '#3a3540', '#16151c'] },
       dir: dir(200, 55), sun: ['#9fb4ff', 0.18], hemi: ['#3a4766', '#1f1914', 0.62], room: ['#2e2a28', '#262220', '#1b1612', '#ffc788'], env: 0.12, exposure: 1.14,
       fog: ['#1e2030', 120, 800],
-      lamps: { desk: ['#ffcf92', 3], lamp: ['#ffcf92', 3.6], bed: ['#ffcf92', 4.4], kitchen: ['#f2f6ff', 5.5], bath: ['#fff0dc', 3], walk1: ['#fff0d0', 7], walk2: ['#fff0d0', 7], lot: ['#ffc070', 90] },
+      lamps: { desk: ['#ffcf92', 3], lamp: ['#ffcf92', 3.6], bed: ['#ffcf92', 4.4], kitchen: ['#f2f6ff', 5.5], bath: ['#fff0dc', 3], walk1: ['#fff0d0', 7], walk2: ['#fff0d0', 7], lot: ['#ffc070', 90], lobby: ['#fff3e0', 4.5], porch: ['#ffe2b0', 14] },
       lit: true,
     },
   },
 };
 
 /* The tour, as he would have walked it on the morning of 22/9: the studio (from the door, as he photographed it; the
-   dresser and TV; the counter he worked at; the bed; the kitchen), out of the door to the railing (the photograph toward
-   Ralphs), a look north along the walkway, then the stairs next door down to the lot, out to Mariposa, along to
-   Sepulveda, Starbucks and Ralphs; then a jump east along Mariposa to the fig trees and the Green Line. */
+   dresser and TV; the counter he worked at; the bed; the kitchen), out of the door, a few steps north along the walkway
+   to the railing (the photograph toward Ralphs), back to his door (the photograph up the walkway), then the stairs
+   beside it down to the lot; north through the lot and round the main wing to the lobby, in at its door, past the desk
+   to the breakfast counter, out by the drive to Mariposa; along the sidewalk to Sepulveda, Starbucks and Ralphs; then a jump east along Mariposa to the fig
+   trees and the Green Line. */
 const dz = (IN.door[0] + IN.door[1]) / 2;      // the middle of his doorway, along the wall
+const SZ = P.STAIR.z, TY = P.TOWER.y, LB = P.LOBBY, LT = P.LOT, eye = 1.52;
+const LR = LB.room, backZ = (LB.back.z[0] + LB.back.z[1]) / 2, lobbyZ = (LB.door[0] + LB.door[1]) / 2, driveX = (LT.eastTail + LT.eastEdge) / 2, aisleS = (LT.southTail + LT.southEdge) / 2;
 const tour = [
-  { p: R(0.5, 1.47, 1.44), h: 97, pitch: -7.5, t: 0.01, cut: true, label: 'Phòng tầng 2' },
+  { p: R(0.5, 1.47, 1.44), h: 97, pitch: -7.5, t: 0.01, cut: true, label: 'Phòng 271' },
   { p: R(0.5, 1.47, 1.44), h: 97, pitch: -7.5, t: 3.4 },
   { p: R(1.5, 1.5, 1.45), h: 22, pitch: -12, t: 3.4, label: 'Tủ và tivi' },
   { p: R(2.6, 1.5, 1.3), h: 74, pitch: -14, t: 3.6, label: 'Bàn làm việc' },
@@ -77,39 +82,66 @@ const tour = [
   { p: R(3.62, 1.5, 1.76), h: 266, pitch: -4, t: 3.0 },
   { p: R(3.58, 1.5, 1.36), h: 268, pitch: -4, t: 1.6 },
   { p: R(1.9, 1.5, dz + 0.08), h: 268, pitch: -3, t: 2.6 },
-  { p: R(0.7, 1.52, dz), h: 268, pitch: -3, t: 2.4, label: 'Ra hành lang' },
-  { p: R(-0.6, 1.52, dz), h: 262, pitch: -4, t: 2.2 },
-  { p: [13.05, G2 + 1.52, ROOM.z0 + dz], h: 248, pitch: -5, t: 3.8, label: 'Nhìn sang Ralphs' },
-  { p: [13.44, G2 + 1.52, ROOM.z0 + dz + 1.95], h: 353, pitch: -3.5, t: 3.6, label: 'Hành lang' },
-  { p: [13.5, G2 + 1.52, 36.9], h: 182, pitch: -4, t: 3.2 },
-  { p: [13.3, G2 + 1.52, 38.7], h: 196, pitch: -6, t: 2.4 },
-  { p: [12.2, G2 + 1.52, 38.8], h: 270, pitch: -22, t: 2.0, label: 'Cầu thang' },
-  { p: [9.3, (G2 + 0.15) / 2 + 1.52, 38.8], h: 270, pitch: -10, t: 3.0 },
-  { p: [9.2, (G2 + 0.15) / 2 + 1.52, 37.5], h: 90, pitch: -12, t: 2.0 },
-  { p: [12.3, 1.67, 37.5], h: 90, pitch: -6, t: 3.0 },
-  { p: [12.9, 1.67, 37.3], h: 0, pitch: 0, t: 1.2 },
-  { p: [12.9, 1.67, 35.8], h: 300, pitch: 0, t: 1.6 },
-  { p: [3.0, 1.52, 30.0], h: 350, pitch: 2, t: 4.6, label: 'Bãi xe' },
-  { p: [1.0, 1.52, 8.0], h: 0, pitch: 0, t: 6.0 },
-  { p: [-2.0, 1.52, -17.5], h: 280, pitch: 0, t: 5.0 },
-  { p: [-27.3, 1.52, -17.5], h: 340, pitch: 0, t: 7.0 },
-  { p: [-27.3, 1.52, -52.0], h: 10, pitch: 0, t: 9.0 },
-  { p: [-23.0, 1.52, -67.5], h: 128, pitch: 2, t: 5.0, label: 'Cổng ra Mariposa' },
-  { p: [-30.0, 1.52, -68.5], h: 270, pitch: 0, t: 3.0 },
-  { p: [-96.0, 1.52, -68.5], h: 262, pitch: 0, t: 12.0 },
-  { p: [-96.0, 1.52, -45.0], h: 180, pitch: 0, t: 6.0, label: 'Sepulveda' },
-  { p: [-96.0, 1.52, -0.3], h: 160, pitch: 0, t: 9.0 },
-  { p: [-67.0, 1.52, -0.3], h: 80, pitch: 0, t: 7.0 },
-  { p: [-66.5, 1.52, -2.6], h: 262, pitch: 2, t: 2.0, label: 'Starbucks' },
-  { p: [-61.0, 1.52, 4.0], h: 170, pitch: 0, t: 3.0 },
-  { p: [-61.0, 1.52, 50.0], h: 180, pitch: 2, t: 10.0 },
-  { p: [-62.0, 1.52, 59.6], h: 190, pitch: 8, t: 3.4, label: 'Ralphs' },
-  { p: [250.0, 1.52, -64.0], h: 92, pitch: 2, t: 0.01, cut: true, label: 'Mariposa, hàng si' },
-  { p: [300.0, 1.52, -64.0], h: 96, pitch: 3, t: 8.0 },
-  { p: [655.0, 1.52, -65.5], h: 76, pitch: 8, t: 0.01, cut: true, label: 'Green Line, ga Mariposa' },
-  { p: [676.0, 1.52, -65.5], h: 110, pitch: 16, t: 6.0 },
-  { p: [690.5, 1.52, -76.0], h: 10, pitch: 10, t: 5.0 },
-  { p: [691.2, 1.52, -112.0], h: 356, pitch: 12, t: 9.0 },
+  { p: R(0.7, eye, dz), h: 268, pitch: -3, t: 2.4, label: 'Ra hành lang' },
+  { p: R(-0.75, eye, dz), h: 300, pitch: -4, t: 2.2 },
+  { p: [13.3, G2 + eye, ROOM.z0 + dz - 3.0], h: 330, pitch: -4, t: 2.6 },
+  { p: [13.05, G2 + eye, ROOM.z0 + dz - 5.8], h: 248, pitch: -5, t: 3.8, label: 'Nhìn sang Ralphs' },
+  { p: [13.4, G2 + eye, ROOM.z0 + dz - 2.0], h: 185, pitch: -4, t: 3.2 },
+  { p: [13.44, G2 + eye, ROOM.z0 + dz + 1.57], h: 353, pitch: -3.5, t: 4.0, label: 'Hành lang' },
+  { p: [13.4, G2 + eye, SZ - 0.2], h: 190, pitch: -6, t: 2.6 },
+  { p: [13.25, G2 + eye, SZ + 0.8], h: 250, pitch: -18, t: 2.0 },
+  { p: [12.6, G2 + eye, SZ + 0.8], h: 268, pitch: -28, t: 2.0, label: 'Cầu thang' },
+  { p: [10.2, TY + eye + 0.05, SZ + 0.8], h: 270, pitch: -14, t: 3.4 },
+  { p: [9.5, TY + eye, SZ + 0.7], h: 285, pitch: -6, t: 1.4 },
+  { p: [9.5, TY + eye, SZ - 0.75], h: 60, pitch: -16, t: 2.6 },
+  { p: [10.2, TY + eye, SZ - 0.8], h: 90, pitch: -22, t: 1.4 },
+  { p: [12.25, P.G1 + eye, SZ - 0.8], h: 90, pitch: -8, t: 3.4 },
+  { p: [13.2, P.G1 + eye, SZ - 0.9], h: 20, pitch: -2, t: 1.6 },
+  { p: [13.2, P.G1 + eye, SZ - 2.65], h: 300, pitch: 0, t: 2.0 },
+  { p: [10.5, P.G1 + eye, SZ - 2.65], h: 270, pitch: 0, t: 2.4 },
+  { p: [3.2, eye, SZ - 2.65], h: 300, pitch: 0, t: 4.4 },
+  { p: [1.2, eye, 30.6], h: 6, pitch: 2, t: 4.6, label: 'Bãi xe' },
+  { p: [0.6, eye, 6.0], h: 0, pitch: 0, t: 7.0 },
+  { p: [0.4, eye, aisleS], h: 60, pitch: 0, t: 6.4 },
+  { p: [31.0, eye, aisleS], h: 80, pitch: 0, t: 8.6 },
+  { p: [driveX, eye, aisleS - 1.6], h: 10, pitch: 0, t: 3.4 },
+  { p: [driveX, eye, lobbyZ + 2.4], h: 330, pitch: 4, t: 7.0 },
+  { p: [LB.porch.x1 + 5.7, 1.6, lobbyZ + 0.65], h: 266, pitch: 7, t: 3.0, label: 'Lễ tân' },
+  { p: [LB.porch.x1 + 1.75, P.G1 + eye, lobbyZ], h: 270, pitch: 3, t: 3.2 },
+  { p: [LB.doorX + 0.55, P.G1 + eye, lobbyZ], h: 270, pitch: 0, t: 2.6 },                                      // under the arch, before the door
+  { p: [LB.east + 0.62, P.G1 + eye, lobbyZ], h: 300, pitch: -10, t: 2.8 },                                      // in the bay, before the beam: the breakfast is on the right
+  { p: [LR.x0 + LB.breakfast.x[0] + 0.75, P.G1 + eye, LR.z0 + 1.55], h: 4, pitch: -24, t: 3.6, label: 'Đồ ăn sáng' },
+  { p: [LR.x0 + LB.desk.low[1] + 0.1, P.G1 + eye, LR.z0 + 1.5], h: 196, pitch: -8, t: 3.0, label: 'Quầy lễ tân' },
+  { p: [LR.x0 + 1.9, P.G1 + eye, LR.z0 + 1.45], h: 262, pitch: -2, t: 2.4 },
+  { p: [LR.x0 + 0.7, P.G1 + eye, LR.z0 + backZ], h: 270, pitch: 0, t: 2.4, label: 'Cửa sau' },
+  { p: [LR.x0 - 1.5, P.G1 + eye, LR.z0 + backZ], h: 268, pitch: 0, t: 2.6 },                                    // out by the back door onto the ground-floor walkway
+  { p: [LR.x0 - 1.9, P.G1 + eye, LR.z0 + backZ + 0.1], h: 92, pitch: 0, t: 2.6 },                               // and round, to see it from outside
+  { p: [LR.x0 + 0.7, P.G1 + eye, LR.z0 + backZ], h: 96, pitch: 0, t: 2.6 },
+  { p: [LR.x0 + 1.9, P.G1 + eye, LR.z0 + 1.45], h: 96, pitch: 0, t: 2.0 },
+  { p: [LB.east + 0.62, P.G1 + eye, lobbyZ], h: 90, pitch: 0, t: 3.2 },
+  { p: [LB.porch.x1 + 1.95, P.G1 + eye, lobbyZ], h: 80, pitch: 0, t: 3.4 },
+  { p: [driveX - 0.6, eye, lobbyZ - 2.0], h: 0, pitch: 0, t: 3.0 },
+  { p: [driveX - 1.2, eye, LT.island[3] + 2.6], h: 350, pitch: 0, t: 5.6 },
+  { p: [LT.drive[1] - 2.3, eye, LT.island[1] + 1.6], h: 315, pitch: 2, t: 3.4, label: 'Lối xe vào' },
+  { p: [LT.drive[1] - 2.1, eye, LT.walk - 1.0], h: 170, pitch: 3, t: 2.6 },
+  { p: [LT.drive[0] + 1.5, eye, LT.walk - 1.0], h: 200, pitch: 3, t: 3.4 },
+  { p: [12.0, eye, LT.walk - 1.0], h: 268, pitch: 0, t: 6.0 },
+  { p: [-42.0, eye, LT.walk - 1.0], h: 268, pitch: 0, t: 12.0 },
+  { p: [-48.0, eye, -65.2], h: 266, pitch: 0, t: 2.4 },
+  { p: [-96.0, eye, -65.2], h: 262, pitch: 0, t: 10.0 },
+  { p: [-96.0, eye, -45.0], h: 180, pitch: 0, t: 6.0, label: 'Sepulveda' },
+  { p: [-96.0, eye, -0.3], h: 160, pitch: 0, t: 9.0 },
+  { p: [-67.0, eye, -0.3], h: 80, pitch: 0, t: 7.0 },
+  { p: [-66.5, eye, -2.6], h: 262, pitch: 2, t: 2.0, label: 'Starbucks' },
+  { p: [-61.0, eye, 4.0], h: 170, pitch: 0, t: 3.0 },
+  { p: [-61.0, eye, 50.0], h: 180, pitch: 2, t: 10.0 },
+  { p: [-62.0, eye, 59.6], h: 190, pitch: 8, t: 3.4, label: 'Ralphs' },
+  { p: [250.0, eye, -64.0], h: 92, pitch: 2, t: 0.01, cut: true, label: 'Mariposa, hàng si' },
+  { p: [300.0, eye, -64.0], h: 96, pitch: 3, t: 8.0 },
+  { p: [655.0, eye, -65.5], h: 76, pitch: 8, t: 0.01, cut: true, label: 'Green Line, ga Mariposa' },
+  { p: [676.0, eye, -65.5], h: 110, pitch: 16, t: 6.0 },
+  { p: [690.5, eye, -76.0], h: 10, pitch: 10, t: 5.0 },
+  { p: [691.2, eye, -112.0], h: 356, pitch: 12, t: 9.0 },
 ];
 
 export default {
@@ -136,7 +168,7 @@ export default {
     return {
       setHour(hour) {
         night = hour === 'toi';
-        room.setHour(night); site.setHour(hour); town.setHour(hour);
+        room.setHour(night); site.setHour(hour); town.setHour(hour); hotelHour(night);
       },
       touch(id) { const r = room.toggle(id); if (r !== undefined) return r; return town.touch ? town.touch(id) : undefined; },
       animate(dt, clock, camera) { town.animate(dt, clock, camera); site.animate(dt, clock, camera); sight(camera); },

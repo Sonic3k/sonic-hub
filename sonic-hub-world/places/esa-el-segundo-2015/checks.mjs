@@ -1,11 +1,12 @@
 // Extended Stay America, El Segundo: drives the page the way a visitor would (mouse, keys, touch) and checks that it
-// answers — the studio, its door, the bathroom, the stairs down to the lot, the streets, the cards, the address, the
-// cost of a frame.
+// answers — the studio, its door, the bathroom, the stairs down to the lot, the lobby and the way in, the streets, the
+// cards, the address, the cost of a frame.
 // Run from the module's folder after a build: node places/esa-el-segundo-2015/checks.mjs
 import { launch, open as openPage } from '../../tools/lib.mjs';
 
 const PLACE = 'esa-el-segundo-2015';
-const G2 = 3.05, ROOM_X0 = 14.48, ROOM_Z0 = 32.86;      // plan.js: the studio's floor, its front wall and its north wall
+const G2 = 3.05, ROOM_X0 = 14.48, ROOM_Z0 = 34.56, STAIR_Z = 39.0, TOWER_Y = 0.15 + 8 * 2.9 / 17;      // plan.js: the studio's floor, its front wall and its north wall; the stair tower beside it, its landing
+const LB = { xW: 25.475, x0: 25.7, x1: 29.73, z0: -45.95, zp: -43.07, doorX: 31.46, doorZ: -44.1925, backZ: -45.2425, table: [28.2, 29.65, -45.43] };      // plan.js, LOBBY: the block's west face, the room (to the beam), the front door, the back door, the breakfast table (x0, x1, its front)
 const browser = await launch();
 const results = []; const ok = (name, cond, extra = '') => { results.push([cond ? 'PASS' : 'FAIL', name, extra]); console.log(cond ? 'PASS' : 'FAIL', '·', name, extra ? '— ' + extra : ''); };
 const open = (vp, mobile, more = {}) => openPage(browser, { ...vp, mobile, place: PLACE, ...more });
@@ -76,16 +77,58 @@ try {
   await page.evaluate(() => window.__world.goto('nha-tam')); await wait(page, 100); const b5 = await pose(page);
   ok('the bathroom has its card, and its own place in the list of rooms', bt === 'Nhà tắm' && b5[0] > ROOM_X0 + 4.1 && b5[0] < ROOM_X0 + 5.6 && b5[2] > ROOM_Z0 + 2.1 && b5[2] < ROOM_Z0 + 3.6, `"${bt}", ${JSON.stringify(b5)}`);
   // the south-west stairs: down the upper flight, round the landing, down the lower flight to the lot
-  await page.evaluate(g2 => window.__world.setPose(12.6, g2 + 1.52, 38.8, 270, 0), G2); await walk(page, 'KeyW', 3500);
+  await page.evaluate(([g2, z]) => window.__world.setPose(12.75, g2 + 1.52, z + 0.8, 270, 0), [G2, STAIR_Z]); await walk(page, 'KeyW', 3500);
   const s1 = await pose(page);
-  await turnTo(page, 0); await walk(page, 'KeyW', 900); await turnTo(page, 90); await walk(page, 'KeyW', 4000);
+  await turnTo(page, 90); await walk(page, 'KeyW', 300);                    // a step back from the railing, to pass behind the post in the middle
+  await turnTo(page, 0); await walk(page, 'KeyW', 1000); await turnTo(page, 90); await walk(page, 'KeyW', 4000);
   const s2 = await pose(page);
-  ok('the stairs go down to the lot', s1[1] < G2 + 1.52 - 0.9 && s2[1] < 1.9 && s2[0] > 11.4, `${JSON.stringify(s1)} → ${JSON.stringify(s2)}`);
+  ok('the stairs go down to the lot: nine risers out to the landing, eight back to the ground', Math.abs(s1[1] - (TOWER_Y + 1.52)) < 0.06 && s1[0] < 9.6 && s2[1] < 1.72 && s2[0] > 12.6, `${JSON.stringify(s1)} → ${JSON.stringify(s2)}`);
+  // and back up them; the landing's railing holds; the walkway's edge over the lower flight does not let one fall
+  await page.evaluate(z => window.__world.setPose(12.4, 0.15 + 1.52, z - 0.8, 270, 0), STAIR_Z); await walk(page, 'KeyW', 3500);
+  const s3 = await pose(page);
+  await turnTo(page, 90); await walk(page, 'KeyW', 300);
+  await turnTo(page, 180); await walk(page, 'KeyW', 1000); await turnTo(page, 90); await walk(page, 'KeyW', 4000);
+  const s4 = await pose(page);
+  await page.evaluate(([g2, z]) => window.__world.setPose(13.3, g2 + 1.52, z - 0.8, 270, 0), [G2, STAIR_Z]); await walk(page, 'KeyW', 2500);
+  const s5 = await pose(page);
+  ok('and up again; the railings hold', s3[0] > 8.95 && s3[0] < 9.6 && Math.abs(s3[1] - (TOWER_Y + 1.52)) < 0.06 && Math.abs(s4[1] - (G2 + 1.52)) < 0.06 && s4[0] > 13 && Math.abs(s5[1] - (G2 + 1.52)) < 0.06 && s5[0] > 12.6, `${JSON.stringify(s3)} → ${JSON.stringify(s4)}; at the edge ${JSON.stringify(s5)}`);
+  // the stairs make sense: every tower on the place has a way up — the flights and landing of one on another wing's far face
+  await page.evaluate(([g2]) => window.__world.setPose(-16.4, g2 + 1.52, -28.0, 180, 0), [G2]); await walk(page, 'KeyW', 700);
+  const e0 = await pose(page);
+  let down = e0;
+  for (const [x, turn] of [[-17.2, 180], [-15.6, 180]]) { await page.evaluate(([x, g2]) => window.__world.setPose(x, g2 + 1.52, -27.6, 180, 0), [x, G2]); await walk(page, 'KeyW', 3500); const q = await pose(page); if (q[1] < down[1]) down = q; }
+  ok('the main wing\'s south-west tower has stairs too', Math.abs(e0[1] - (G2 + 1.52)) < 0.06 && Math.abs(down[1] - (TOWER_Y + 1.52)) < 0.08 && down[2] > -24.2, `${JSON.stringify(e0)} → ${JSON.stringify(down)}`);
+  // the lobby: one walks in at its front door and the desk stops him; the breakfast is on the right just inside; the back
+  // door lets one out onto the ground-floor walkway and in again
+  await page.evaluate(() => window.__world.goto('le-tan')); await wait(page, 100); const l0 = await pose(page);
+  await page.evaluate(z => window.__world.setPose(35.2, 1.67, z, 270, 0), LB.doorZ); await walk(page, 'KeyW', 4200);
+  const l1 = await pose(page);
+  await turnTo(page, 180); await walk(page, 'KeyW', 2500); const l2 = await pose(page);
+  ok('"Lễ tân" stands before the lobby; its front door lets one in, the desk stops him', l0[0] > 37 && l0[0] < 42 && l1[0] < LB.x1 - 0.3 && l1[0] > LB.x0 + 0.1 && Math.abs(l1[1] - 1.67) < 0.05 && Math.abs(l1[2] - LB.doorZ) < 0.1 && l2[2] < LB.zp && l2[2] > l1[2] + 0.4, `${JSON.stringify(l0)} → ${JSON.stringify(l1)} → ${JSON.stringify(l2)}`);
+  await page.evaluate(() => window.__world.goto('bua-sang')); await wait(page, 100); const f0 = await pose(page);
+  await page.evaluate(([x, z]) => window.__world.setPose(x, 1.67, z, 0, 0), [(LB.table[0] + LB.table[1]) / 2, LB.z0 + 1.6]); await walk(page, 'KeyW', 2500); const f1 = await pose(page);
+  await page.evaluate(() => window.__world.card('breakfast')); const ft = await page.evaluate(() => document.getElementById('card-t').textContent + ' | ' + document.getElementById('card').textContent); await page.click('#card .x');
+  ok('"Đồ ăn sáng" stands just inside the front door, the table to the right of the way in — within 2.5 m of the door, the first thing past the beam — and the table stops him; its card tells where he remembers it and of the photograph of 19/8',
+    f0[0] > LB.x1 && f0[0] < LB.doorX && f0[2] > LB.z0 + 0.9 && f0[2] < LB.zp && Math.abs(f0[1] - 1.65) < 0.05 && LB.table[2] < LB.doorZ - 0.9 && LB.table[1] < LB.x1 && LB.table[1] > LB.x1 - 0.2 && LB.doorX - LB.table[1] < 2.5 && f1[2] > LB.table[2] + 0.08 && f1[2] < LB.table[2] + 0.4 && /Đồ ăn sáng/.test(ft) && /sang phải/.test(ft) && /19\/8\/2015/.test(ft),
+    `${JSON.stringify(f0)} → ${JSON.stringify(f1)}; ${ft.replace(/\s+/g, ' ').slice(0, 60)}`);
+  const solids = await page.evaluate(() => window.__world.solids().filter(s => s.x0 > 23 && s.x1 < 34 && s.z0 > -47 && s.z1 < -40 && s.y0 < 1.2 && s.y1 > 0.3).map(s => [s.x0, s.z0, s.x1, s.z1].map(v => +v.toFixed(2))));
+  const clear = (x0, z0, x1, z1) => !solids.some(s => s[0] < x1 && s[2] > x0 && s[1] < z1 && s[3] > z0);
+  ok('the lobby makes sense: a clear way 0.8 m wide from the porch through the front door and under the beam into the room, and 0.7 m wide from the room through the back door onto the walkway',
+    clear(LB.x0 + 0.3, LB.doorZ - 0.4, LB.doorX + 0.3, LB.doorZ + 0.4) && clear(LB.xW - 1.0, LB.backZ - 0.35, LB.x0 + 1.0, LB.backZ + 0.35), JSON.stringify(solids.filter(s => s[0] < 32.5 && s[2] > 24.4)));
+  await page.evaluate(([x, z]) => window.__world.setPose(x, 1.67, z, 270, 0), [LB.x0 + 1.0, LB.backZ]); await walk(page, 'KeyW', 2200); const k1 = await pose(page);
+  await turnTo(page, 90); await walk(page, 'KeyW', 2400); const k2 = await pose(page);
+  await page.evaluate(() => window.__world.card('backdoor')); const kt = await page.evaluate(() => document.getElementById('card-t').textContent); await page.click('#card .x');
+  await page.evaluate(() => window.__world.goto('cua-sau')); await wait(page, 100); const k0 = await pose(page);
+  ok('the back door lets one out onto the ground-floor walkway and in again; it has its card and its place in the list', k1[0] < LB.xW - 0.5 && Math.abs(k1[1] - 1.67) < 0.05 && Math.abs(k1[2] - LB.backZ) < 0.15 && k2[0] > LB.x0 + 0.5 && kt === 'Cửa sau của lễ tân' && k0[0] < LB.xW - 1 && k0[0] > LB.xW - 4 && Math.abs(k0[2] - LB.backZ) < 0.4,
+    `${JSON.stringify(k1)} → ${JSON.stringify(k2)}; "${kt}"; ${JSON.stringify(k0)}`);
+  await page.evaluate(() => window.__world.goto('loi-xe-vao')); await wait(page, 100); const d0 = await pose(page);
+  await page.evaluate(() => window.__world.setPose(33.0, 1.52, -71.0, 180, 0)); await walk(page, 'KeyW', 6000); const d1 = await pose(page);
+  ok('"Lối xe vào" stands on Mariposa\'s sidewalk by the drive; the drive runs in from the street', d0[2] < -66.4 && d0[2] > -68.4 && d0[0] > 37.5 && d1[2] > -62.5 && Math.abs(d1[0] - 33) < 0.4, `${JSON.stringify(d0)} → ${JSON.stringify(d1)}`);
   // the streets: the rooms list takes you to Starbucks; Sepulveda is walkable
   await page.click('#b-rooms'); ok('rooms list opens', await page.evaluate(() => document.getElementById('rooms').classList.contains('on')));
   const names = await page.evaluate(() => [...document.querySelectorAll('#room-list button')].map(b => b.textContent));
   const si = names.indexOf('Starbucks');
-  ok('the list of rooms has the bathroom', names.includes('Nhà tắm'), names.join(' · '));
+  ok('the list of rooms has his room by its number, the bathroom, the stairs, the lobby, the breakfast, the back door and the way in', ['Phòng 271 (từ cửa nhìn vào)', 'Nhà tắm', 'Cầu thang', 'Lễ tân', 'Đồ ăn sáng ở lễ tân', 'Cửa sau lễ tân (hành lang tầng trệt)', 'Lối xe vào (Mariposa)'].every(n => names.includes(n)), names.join(' · '));
   if (si >= 0) await page.click(`#room-list li:nth-child(${si + 1}) button`); await page.waitForTimeout(500); await wait(page, 100);
   const pf = await pose(page);
   ok('"Starbucks" takes you to the corner of the lot', si >= 0 && Math.abs(pf[0] + 58) < 0.1 && Math.abs(pf[2] + 6) < 0.1, JSON.stringify(pf));

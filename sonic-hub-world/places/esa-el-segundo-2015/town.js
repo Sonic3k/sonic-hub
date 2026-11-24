@@ -11,11 +11,24 @@ import { P, tree, ficus, palm, car, streetLight, lotLight, glare } from './props
 import { hipRoof } from './hotel.js';
 import { swarm, pickKind, pickColour } from './cars.js';
 import { BUILDINGS, ROADS, SERVICE, RAIL, PLATFORM } from './osm.js';
+import { LOT } from './plan.js';
 
 const LANE = 3.4;
 const R0 = rng(77);
 /* ── polylines ── */
 const pts = flat => { const p = []; for (let i = 0; i < flat.length; i += 2) p.push([flat[i], flat[i + 1]]); return p; };
+/** the part of a polyline (running west to east) between x0 and x1 */
+function cutX(p, x0, x1) {
+  const out = [], at = (a, c, x) => [x, a[1] + (c[1] - a[1]) * (x - a[0]) / (c[0] - a[0])];
+  for (let i = 0; i < p.length - 1; i++) {
+    const a = p[i], c = p[i + 1]; if (c[0] <= x0 || a[0] >= x1 || c[0] === a[0]) continue;
+    const s = a[0] < x0 ? at(a, c, x0) : a, e = c[0] > x1 ? at(a, c, x1) : c;
+    if (!out.length || out[out.length - 1][0] !== s[0]) out.push(s);
+    out.push(e);
+  }
+  return out;
+}
+const FRONT = [-40, 47];             // the hotel's frontage on Mariposa (x)
 function offsetLine(p, d) {        // a polyline moved sideways by d (positive: to the right of travel, i.e. +normal)
   const out = [];
   for (let i = 0; i < p.length; i++) {
@@ -128,7 +141,17 @@ export function buildTown(scene, shared, ctx) {
     // sidewalks along the big streets, a lawn parkway between walk and curb on Mariposa
     for (const r of major) for (const side of [-1, 1]) {
       if (r.oneway && /Pacific Coast/.test(r.name)) { if (side > 0) walkStrip(b, walkMat, offsetLine(r.p, r.w / 2 + 1.25), 2.4, 0.12); continue; }   // only on the kerb side of each carriageway
-      if (/Mariposa/.test(r.name)) { walkStrip(b, X.lawn(), offsetLine(r.p, side * (r.w / 2 + 1.1)), 2.0, 0.1); walkStrip(b, walkMat, offsetLine(r.p, side * (r.w / 2 + 3.2)), 1.9, 0.12); }
+      if (/Mariposa/.test(r.name)) {
+        // along the hotel's frontage the walk is at the kerb (the satellite picture) — the lawn and the hedge behind it are the
+        // hotel's (site.js) — and it drops flush across the drive in; elsewhere a lawn parkway lies between kerb and walk
+        const front = side > 0 && r.p[0][0] < FRONT[0] && r.p[r.p.length - 1][0] > FRONT[1];
+        for (const seg of front ? [cutX(r.p, -1e9, FRONT[0]), cutX(r.p, FRONT[1], 1e9)] : [r.p]) { if (seg.length < 2) continue; walkStrip(b, X.lawn(), offsetLine(seg, side * (r.w / 2 + 1.1)), 2.0, 0.1); walkStrip(b, walkMat, offsetLine(seg, side * (r.w / 2 + 3.2)), 1.9, 0.12); }
+        if (front) {
+          for (const seg of [cutX(r.p, FRONT[0], LOT.drive[0]), cutX(r.p, LOT.drive[1], FRONT[1])]) walkStrip(b, walkMat, offsetLine(seg, r.w / 2 + 1.05), 1.9, 0.12);
+          ribbon(b, walkMat, offsetLine(cutX(r.p, LOT.drive[0], LOT.drive[1]), r.w / 2 + 1.05), 1.9, 0.012, { tile: 1.5 });
+          for (const x of [FRONT[0], FRONT[1]]) { const q = offsetLine(cutX(r.p, x - 0.01, x + 0.01), r.w / 2 + 2.1)[0]; b.box(walkMat, x - 0.95, 0, q[1] - 1.0, x + 0.95, 0.12, q[1] + 2.1, { uv: [1.5, 1.5], uvw: true, cast: false }); }      // where the two layouts meet
+        }
+      }
       else walkStrip(b, walkMat, offsetLine(r.p, side * (r.w / 2 + 1.1)), 2.0, 0.12);
     }
     // lane lines: dashes between lanes, a double yellow line down two-way streets
@@ -160,7 +183,7 @@ export function buildTown(scene, shared, ctx) {
         if (x < -100 || (x > -40 && x < 45 && side > 0)) continue;                                   // the corner and the hotel's own frontage
         put(x, b => { if (x > 40 && x < 700) ficus(b, x, z, {}); else tree(b, x, z, { h: 7 }); });
       }
-      for (const [x, z, hd] of along(offsetLine(r.p, side * (r.w / 2 + 0.6)), 42, side > 0 ? 10 : 31)) { const f = hd + (side > 0 ? -90 : 90); put(x, b => streetLight(b, x, z, f, glowStreet)); const hx = x + Math.sin(f * Math.PI / 180) * 2.5, hz = z - Math.cos(f * Math.PI / 180) * 2.5; POOLS.push([hx, hz, 24, 'street']); HEADS.push([hx, 8.95, hz]); }
+      for (const [x, z, hd] of along(offsetLine(r.p, side * (r.w / 2 + 0.6)), 42, side > 0 ? 4 : 31)) { const f = hd + (side > 0 ? -90 : 90); put(x, b => streetLight(b, x, z, f, glowStreet)); const hx = x + Math.sin(f * Math.PI / 180) * 2.5, hz = z - Math.cos(f * Math.PI / 180) * 2.5; POOLS.push([hx, hz, 24, 'street']); HEADS.push([hx, 8.95, hz]); }
     }
     for (let z = -240; z < 240; z += 22) { const dz = R0() * 6, h = 14 + R0() * 6; put(-117, b => palm(b, -117, z + dz, { h })); }
     for (const r of major.filter(r => /Pacific Coast/.test(r.name))) for (const [x, z] of along(r.p, 45, 12)) { const out = x < -116 ? -1 : 1, px = x + out * (r.w / 2 + 0.5); put(x, b => streetLight(b, px, z, out > 0 ? 270 : 90, glowStreet)); POOLS.push([px - out * 2.5, z, 24, 'street']); HEADS.push([px - out * 2.5, 8.95, z]); }
