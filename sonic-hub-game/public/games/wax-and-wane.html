@@ -3642,6 +3642,9 @@ const Camp = (() => {
   }
   /** whatever is going on at the board stops here: an answer being thought of is dropped */
   function stop() { G.token++; C.sure = ''; C.busy = ''; Bots.dropAll('the game was left'); View.setInput(null); $('#result').hidden = true; $('#toast').classList.remove('on'); G.camp = null; }
+  /** the map drawn again where it stands, because someone's name or picture has changed: the light goes on from
+   *  where it was on its way to where it belongs */
+  function redrawWorld() { renderWorld(); requestAnimationFrame(() => { paint(); lightTo(edgeFor(P.peak)); }); }
   /** the map; `inside`: someone coming back from a game goes on from the place they were in, not from the top of the page */
   function toWorld(inside) {
     if (!SAVE.current()) return toWho();
@@ -3840,7 +3843,7 @@ const Camp = (() => {
     const before = worn();
     wearCast();
     if (worn() === before) return;
-    if (G.screen === 'world') renderWorld();
+    if (G.screen === 'world') redrawWorld();
     else if (G.screen === 'face') renderFace();
     else if (G.screen === 'play' && G.camp) { G.seat.forEach(s => { if (s.kind === 'bot') s.name = s.label = G.camp.opp.name; }); top(); renderRival(); renderHud(); }
   }
@@ -3861,8 +3864,11 @@ const Camp = (() => {
       const typing = document.activeElement && document.activeElement.closest('#who form'), note = $('#who .who-note');
       if (what === 'status' || typing) { if (note) note.textContent = seatNote(); } else renderWho();
     } else if (G.screen === 'world') {
-      const note = $('#mapbox .kept-note');
-      if (what === 'status') { if (note) note.textContent = keptNote(); } else { renderWorld(); requestAnimationFrame(paint); }
+      // the map shows the player being played, whose game has not changed: only what is said of keeping it, and the name
+      const note = $('#mapbox .kept-note'), name = $('#mapbox .rank span'), me = SAVE.current();
+      if (note) note.textContent = keptNote();
+      if (name && me) name.textContent = me.name;
+      top();
     }
   }
 
