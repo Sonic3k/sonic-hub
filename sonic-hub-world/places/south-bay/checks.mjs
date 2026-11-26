@@ -156,6 +156,37 @@ for (const [name, vp] of [['upright', { width: 390, height: 743 }], ['on its sid
   await page.context().close();
 }
 
+/* ── the streets themselves: what the tiles hold, read here as the page's worker reads it ── */
+{
+  const fs = await import('fs'), dir = new URL('./world/', import.meta.url);
+  const index = JSON.parse(fs.readFileSync(new URL('index.json', dir))), routes = JSON.parse(fs.readFileSync(new URL('routes.json', dir))), A = index.streets || {};
+  ok('the streets keep their own rules: no limit line inside a crosswalk, no crosswalk where nobody stops, every signal with crosswalks, STOP on the road at every stop sign, no corner that crosses itself',
+    A['limit lines inside a crosswalk'] === 0 && A['crosswalks at a crossing nobody stops at'] === 0 && A['signals without a crosswalk'] === 0 && A['STOP on the road'] >= A.stops && A.stops > 100 && A['corners whose outline crosses itself'] === 0,
+    `${A.crossings} crossings (${A.signals} with signals), ${A['crosswalks the map has']} crosswalks from the map and ${A['crosswalks by the rule']} by the rule, ${A['limit lines']} limit lines, ${A.corners} round corners, ${Math.round(A['kerb m'] / 1000)} km of kerb`);
+  const { makeBuilder } = await import('../../engine/world/tilework.js'), build = makeBuilder();
+  let faces = 0, wrong = 0; const ends = new Map(), corners = [], key = (x, z) => Math.round(x * 20) + ':' + Math.round(z * 20);
+  for (const f of fs.readdirSync(new URL('tiles/', dir))) {
+    const [ti, tj] = f.replace('.json', '').split('_').map(Number), t = JSON.parse(fs.readFileSync(new URL('tiles/' + f, dir))), o = build.build(t).tile;
+    // every face of the streets turns the way its normal says (one that does not is not drawn: a hole). The lots' own ways (y −0.035) are not the streets'.
+    for (const g of [o.road, o.marks, o.conc, o.plain]) for (let i = 0; g && i < g.n; i += 3) {
+      const P = k => [g.pos[3 * (i + k)], g.pos[3 * (i + k) + 1], g.pos[3 * (i + k) + 2]], a = P(0), b = P(1), c = P(2), u = [b[0] - a[0], b[1] - a[1], b[2] - a[2]], v = [c[0] - a[0], c[1] - a[1], c[2] - a[2]];
+      const n = [u[1] * v[2] - u[2] * v[1], u[2] * v[0] - u[0] * v[2], u[0] * v[1] - u[1] * v[0]], l = Math.hypot(...n); if (l < 1e-4 || Math.abs(a[1] + 0.035) < 1e-3) continue;
+      faces++; if ((n[0] * g.nor[3 * i] + n[1] * g.nor[3 * i + 1] + n[2] * g.nor[3 * i + 2]) / l / 127 < 0.3) wrong++;
+    }
+    // where each walk's kerb ends; where each round corner's kerb begins and ends
+    for (const k of t.k || []) if (k[0] === 3 || k[0] === 5) { let x = 0, z = 0; const n = (k.length - 1) >> 2; for (let i = 0; i < n; i++) { x += k[1 + 4 * i]; z += k[2 + 4 * i]; if (i === 0 || i === n - 1) ends.set(key(x / 100 + ti * 500, z / 100 + tj * 500), 1); } }
+    for (const c of t.c || []) { let x = 0, z = 0; for (let i = 0; i < c[0]; i++) { x += c[1 + 2 * i]; z += c[2 + 2 * i]; if (i === 0 || i === c[0] - 1) corners.push([x / 100 + ti * 500, z / 100 + tj * 500]); } }
+  }
+  ok('no face of the streets is inside out', faces > 100000 && wrong === 0, `${faces} faces, ${wrong} wrong`);
+  const near = ([x, z]) => { for (const dx of [-0.05, 0, 0.05]) for (const dz of [-0.05, 0, 0.05]) if (ends.has(key(x + dx, z + dz))) return true; return false; }, met = corners.filter(near).length;
+  ok('the kerbs close up: a round corner begins where a walk\'s kerb ends', corners.length > 800 && met >= 0.97 * corners.length, `${met} of ${corners.length} corner ends meet a kerb's end (the others: a side with no kerb of its own)`);
+  // the hotel's way in: its white line is where places/esa-el-segundo-2015 paints it; the car leaves on its east, comes in on its west
+  const { LOT } = await import('../esa-el-segundo-2015/plan.js'), half = 0.92, inDrive = r => { const xs = []; for (let i = 0; i < r.pts.length; i += 2) { const x = r.pts[i] / 1000, z = r.pts[i + 1] / 1000; if (z > -67.5 && z < -59 && x > LOT.drive[0] - 3 && x < LOT.drive[1] + 3) xs.push(x); } return xs; };
+  const out = inDrive(routes.find(r => r.id === 'esa-att')), back = inDrive(routes.find(r => r.id === 'att-esa'));
+  ok('at the hotel\'s way in the car keeps to the right of the line: out by the east lane, in by the west', out.length > 5 && back.length > 5 && Math.min(...out) - half > LOT.driveLine && Math.max(...out) + half < LOT.drive[1] && Math.max(...back) + half < LOT.driveLine && Math.min(...back) - half > LOT.drive[0],
+    `line at x ${LOT.driveLine}; out at x ${Math.min(...out).toFixed(1)}…${Math.max(...out).toFixed(1)}, in at x ${Math.min(...back).toFixed(1)}…${Math.max(...back).toFixed(1)}`);
+}
+
 await browser.close();
 const bad = results.filter(r => !r).length;
 console.log(bad ? `${bad} of ${results.length} checks FAILED` : `all ${results.length} checks passed`);

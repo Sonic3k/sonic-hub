@@ -12,6 +12,11 @@ export function signalState(junction, group, time) {
   const t = (((time + junction * 17.3) % CYCLE) + CYCLE) % CYCLE, u = group ? (t + CYCLE / 2) % CYCLE : t;
   return u < 26 ? 2 : u < 29.5 ? 1 : 0;
 }
+/** seconds of yellow left before that group's light turns red (0 unless it is yellow) */
+export function untilRed(junction, group, time) {
+  const t = (((time + junction * 17.3) % CYCLE) + CYCLE) % CYCLE, u = group ? (t + CYCLE / 2) % CYCLE : t;
+  return u >= 26 && u < 29.5 ? 29.5 - u : 0;
+}
 /** seconds until that group's light next turns green (0 while it is green) */
 export function untilGreen(junction, group, time) {
   const t = (((time + junction * 17.3) % CYCLE) + CYCLE) % CYCLE, u = group ? (t + CYCLE / 2) % CYCLE : t;

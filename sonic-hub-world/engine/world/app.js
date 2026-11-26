@@ -53,7 +53,7 @@ async function start(world) {
     const group = new THREE.Group(); group.name = 'site ' + s.id; scene.add(group);
     const shared = { solids: [] };
     const ctx = {
-      hot: [], spots: {}, clocks: [], hour: hourId.v, world: { cuts: index.cuts || [] },
+      hot: [], spots: {}, clocks: [], hour: hourId.v, world: {},
       lampMat(c, k = 2, b = 0.9, day = 0) { const key = `${c}|${k}|${b}|${day}`; let m = lampCache.get(key); if (!m) { m = new THREE.MeshStandardMaterial({ color: new THREE.Color(c).multiplyScalar(b), emissive: c, emissiveIntensity: day, roughness: 0.6 }); m.userData.noCast = true; m.userData.lamp = { k, day }; lampCache.set(key, m); lampMats.push(m); } return m; },
     };
     const live = s.build({ scene: group, shared, ctx, renderer }) || {};
@@ -96,7 +96,11 @@ async function start(world) {
     if (view === 'cabin') { const h = cabin.head(); camera.position.copy(h.eye); camera.rotation.set(h.pitch, -h.yaw, 0); }
     else { camera.position.set(0, 1.18, -1.9); camera.rotation.set(-0.07, 0, 0); }
     rig.updateMatrixWorld(true); camera.getWorldPosition(eyeWorld); camera.getWorldDirection(dirWorld);
+    if (over) eyeWorld.set(over.x, 1.2, over.z);                                   // the ground is streamed round the place looked at
   }
+  /* for the tools: the world drawn as a plan — from straight above a place, north up, so many metres across; with `cut`,
+     only what lies below that height (trees and roofs hide the street from above) */
+  let over = null; const topCam = new THREE.OrthographicCamera(-1, 1, 1, -1, 1, 3000), cutPlane = new THREE.Plane(new THREE.Vector3(0, -1, 0), 0);
 
   let dpr = Math.min(window.devicePixelRatio || 1, 2);
   function resize() {
@@ -181,6 +185,12 @@ async function start(world) {
     hud(false); unit.tick();
   }
   function draw() {
+    if (over) {
+      const half = over.span / 2, fog = scene.fog; topCam.left = -half; topCam.right = half; topCam.top = half / camera.aspect; topCam.bottom = -half / camera.aspect; topCam.updateProjectionMatrix();
+      topCam.up.set(0, 0, -1); topCam.position.set(over.x, 900, over.z); topCam.lookAt(over.x, 0, over.z);
+      scene.fog = null; cutPlane.constant = over.cut || 0; renderer.clippingPlanes = over.cut ? [cutPlane] : [];
+      renderer.clear(); renderer.render(scene, topCam); scene.fog = fog; renderer.clippingPlanes = []; return;
+    }
     renderer.clear(); renderer.render(scene, camera);
     if (view === 'cabin') { renderer.clearDepth(); renderer.render(cabin.scene, cabin.camera); }
   }
@@ -212,5 +222,7 @@ async function start(world) {
     /** one frame's cost, the two passes told apart */
     cost: () => { renderer.info.autoReset = false; renderer.info.reset(); renderer.clear(); renderer.render(scene, camera); const w = { calls: renderer.info.render.calls, tris: renderer.info.render.triangles }; renderer.info.reset(); if (view === 'cabin') { renderer.clearDepth(); renderer.render(cabin.scene, cabin.camera); } const c = { calls: renderer.info.render.calls, tris: renderer.info.render.triangles }; renderer.info.autoReset = true; return { world: w, cabin: c }; },
     scene: () => scene, camera: () => camera, cabin: () => cabin, drive: () => drive, signal: signalState, view: () => view,
+    /** the plan round (x, z), `span` metres across, cut at `cut` metres above the ground (0: nothing cut); over() goes back to the car */
+    over: (x, z, span = 120, cut = 0) => { over = x == null ? null : { x, z, span, cut }; pose(0); },
   };
 }

@@ -9,16 +9,38 @@ export function makeBuilder() {
   const hash = (a, b, c) => { let h = (Math.imul(a | 0, 374761393) + Math.imul(b | 0, 668265263) + Math.imul(c | 0, 1274126177)) | 0; h = Math.imul(h ^ (h >>> 13), 1274126177); return (h ^ (h >>> 16)) >>> 0; };
   const now = () => (typeof performance !== 'undefined' ? performance.now() : Date.now());
 
-  /* heights of the layers that lie on the ground (the hotel place's own streets are at 0.004, its lawns at −0.03) */
-  const Y = { base: -0.14, use: -0.11, area: -0.08, service: -0.035, street: -0.02, mark: 0.012, walk: 0.12, kerbFoot: -0.05 };
+  /* heights of the layers that lie on the ground. A street inside the hotel place's box lies at 0, as that place's own
+     streets did (its lots and aprons are fitted to that; its lawns are at −0.03). */
+  const Y = { base: -0.14, use: -0.11, area: -0.08, service: -0.035, street: -0.02, box: 0, mark: 0.02, gutter: 0.03, apron: 0.04, walk: 0.12, median: 0.15, kerbFoot: -0.05 };
+  const GUT = 0.5, LAP = 0.08;                                                         // the concrete gutter in front of a kerb; how far it runs in under the walk
   /* flat ground, by kind (no texture) */
   const BASE = [hex('#716f69'), hex('#7d8261')];                                       // paved lots · yards
   const USE = [hex('#6c6a65'), hex('#7b8160')];
   const AREA = [hex('#47474a'), hex('#5f7f45'), hex('#a09d94'), hex('#8a7a62'), hex('#4f7f9a')];   // parking · green · concrete · bare · water
   /* the paved ribbons wear the hotel place's asphalt (#363636): street as it is, a service way and a runway lighter */
   const RIB = [[1, 1, 1], [1.34, 1.34, 1.32], [3.4, 3.4, 3.3]];
-  const MARK = [hex('#d9b030'), hex('#e8e6dd'), hex('#e8e6dd'), hex('#e8e6dd'), hex('#d9b030')];
-  const CONC = { walk: [1, 1, 1], deck: [0.62, 0.62, 0.63], pier: [0.55, 0.55, 0.56] };   // multiply the sidewalk's concrete (#c6c2b8)
+  /* painted lines: 0 yellow · 1 white · 2 white, broken 12 ft in 48 (fast roads) · 3 a crosswalk's bars · 4 yellow, broken likewise
+     · 5 white, broken 7 ft in 24 (city streets) · 6 yellow, broken likewise */
+  const MARK = [hex('#d9b030'), hex('#e8e6dd'), hex('#e8e6dd'), hex('#e8e6dd'), hex('#d9b030'), hex('#e8e6dd'), hex('#d9b030')];
+  const DASH = { 2: [3.66, 10.97], 3: [0.6, 0.6], 4: [3.66, 10.97], 5: [2.13, 5.18], 6: [2.13, 5.18] };
+  const PAINT = { white: hex('#e8e6dd'), pad: hex('#d8b23a') };
+  const CONC = { walk: [1, 1, 1], gutter: [0.8, 0.8, 0.8], apron: [0.9, 0.9, 0.89], deck: [0.62, 0.62, 0.63], pier: [0.55, 0.55, 0.56] };   // multiply the sidewalk's concrete (#c6c2b8)
+  const LAWN = hex('#5f7f45');
+  /* figures painted on the road, in metres: u along the travel they are read from, v to its right. Each a list of
+     outlines turning the way a strip's corners do (left start, left end, right end, right start). */
+  const stroke = (pts, w) => { const out = []; for (let i = 0; i + 1 < pts.length; i++) { const [u0, v0] = pts[i], [u1, v1] = pts[i + 1], l = Math.hypot(u1 - u0, v1 - v0) || 1, nu = -(v1 - v0) / l * w / 2, nv = (u1 - u0) / l * w / 2; out.push([u0 - nu, v0 - nv, u1 - nu, v1 - nv, u1 + nu, v1 + nv, u0 + nu, v0 + nv]); } return out; };
+  const head = (u, v, du, dv, len, half) => [[u + dv * half, v - du * half, u + du * len, v + dv * len, u - dv * half, v + du * half]];   // an arrow's head at (u, v) pointing (du, dv)
+  const bent = s => [...stroke([[-1.6, 0], [0.1, 0], [0.75, s * 0.62]], 0.3), ...head(0.75, s * 0.62, 0.72, s * 0.69, 1.0, 0.48)];      // a turn arrow: s −1 left, +1 right
+  const thru = [...stroke([[-1.6, 0], [0.5, 0]], 0.3), ...head(0.5, 0, 1, 0, 1.15, 0.48)];
+  const bar = (x0, y0, x1, y1) => [y0, x0, y1, x0, y1, x1, y0, x1];                    // a letter's stroke: x across (to the right), y up (onwards)
+  const LETTER = {
+    S: [[0, 2.05, 0.5, 2.4], [0, 1.375, 0.13, 2.05], [0, 1.025, 0.5, 1.375], [0.37, 0.35, 0.5, 1.025], [0, 0, 0.5, 0.35]],
+    T: [[0, 2.05, 0.5, 2.4], [0.185, 0, 0.315, 2.05]],
+    O: [[0, 0, 0.13, 2.4], [0.37, 0, 0.5, 2.4], [0.13, 2.05, 0.37, 2.4], [0.13, 0, 0.37, 0.35]],
+    P: [[0, 0, 0.13, 2.4], [0.13, 2.05, 0.5, 2.4], [0.13, 1.05, 0.5, 1.4], [0.37, 1.4, 0.5, 2.05]],
+  };
+  const word = w => { const out = [], wide = w.length * 0.5 + (w.length - 1) * 0.26; [...w].forEach((ch, i) => { const x = -wide / 2 + i * 0.76; for (const [x0, y0, x1, y1] of LETTER[ch]) out.push(bar(x + x0, y0 - 1.2, x + x1, y1 - 1.2)); }); return out; };
+  const FIG = [bent(-1), thru, bent(1), [...thru, ...bent(-1).slice(1)], [...thru, ...bent(1).slice(1)], word('STOP'), [...bent(-1), ...bent(1).slice(1)], [], [[-0.45, -0.6, 0.45, -0.6, 0.45, 0.6, -0.45, 0.6]]];
   const METAL = { pole: hex('#8c8f90'), head: hex('#22281f'), plate: hex('#15171a'), light: hex('#9a9c9c'), post: hex('#7d8082') };
   /* buildings: [rows of the façade sheet (ground, upper), ground floor height, floor height, bay width, roof colour, tints] */
   const STYLE = [
@@ -80,6 +102,7 @@ export function makeBuilder() {
         let inside = false;
         for (let m = 0; m < V.length; m++) {
           const v = V[m]; if (v === a || v === b || v === c) continue; const px = P[2 * v], pz = P[2 * v + 1];
+          if ((px === ax && pz === az) || (px === bx && pz === bz) || (px === cx && pz === cz)) continue;      // (an outline that comes back to one of its own points)
           if ((bx - ax) * (pz - az) - (bz - az) * (px - ax) >= 0 && (cx - bx) * (pz - bz) - (cz - bz) * (px - bx) >= 0 && (ax - cx) * (pz - cz) - (az - cz) * (px - cx) >= 0) { inside = true; break; }
         }
         if (inside) continue;
@@ -91,9 +114,11 @@ export function makeBuilder() {
   }
   /** an outline (any turn) as triangles facing up */
   function poly(A, y, c, flat, from, ox, oz, ut) {
-    const n = (flat.length - from) >> 1; if (n < 3) return;
-    const P = new Float32Array(2 * n); let area = 0;
-    for (let i = 0; i < n; i++) { P[2 * i] = flat[from + 2 * i] / 10; P[2 * i + 1] = flat[from + 2 * i + 1] / 10; }
+    let n = 0; const all = (flat.length - from) >> 1, P = new Float32Array(2 * all); let area = 0;
+    const same = (i, x, z) => Math.abs(P[2 * i] - x) < 1e-3 && Math.abs(P[2 * i + 1] - z) < 1e-3;
+    for (let i = 0; i < all; i++) { const x = flat[from + 2 * i] / 10, z = flat[from + 2 * i + 1] / 10; if (n && same(n - 1, x, z)) continue; P[2 * n] = x; P[2 * n + 1] = z; n++; }      // (no point twice running: an outline's corner cannot be cut off across an edge of no length)
+    while (n > 1 && same(n - 1, P[0], P[1])) n--;
+    if (n < 3) return;
     for (let i = 0; i < n; i++) { const j = (i + 1) % n; area += P[2 * i] * P[2 * j + 1] - P[2 * j] * P[2 * i + 1]; }
     if (area < 0) for (let a = 0, b = n - 1; a < b; a++, b--) { const tx = P[2 * a], tz = P[2 * a + 1]; P[2 * a] = P[2 * b]; P[2 * a + 1] = P[2 * b + 1]; P[2 * b] = tx; P[2 * b + 1] = tz; }
     const idx = []; ears(P, n, idx);
@@ -142,35 +167,81 @@ export function makeBuilder() {
     for (const u of t.u || []) poly(flat, Y.use, USE[u[0]], u, 1, ox, oz, 1);
     for (const a of t.a || []) poly(flat, Y.area + (a[0] === 1 ? 0.01 : 0), AREA[a[0]], a, 1, ox, oz, 1);
 
-    /* paved ribbons */
+    /* paved ribbons: service ways, runways */
     for (const r of t.r || []) {
-      const p = line(r, 2), hw = r[0] / 10, [L, R] = sides(p, -hw, hw);
+      let p = line(r, 2); const hw = r[0] / 10;
+      { let m = 1; for (let i = 1; i < p.length / 2; i++) if (Math.hypot(p[2 * i] - p[2 * m - 2], p[2 * i + 1] - p[2 * m - 1]) > 0.05) { p[2 * m] = p[2 * i]; p[2 * m + 1] = p[2 * i + 1]; m++; } p = p.subarray(0, 2 * m); }      // (no point twice)
+      if (p.length < 4) continue;
+      const [L, R] = sides(p, -hw, hw);
+      for (const E of [L, R]) for (let pass = 0, moved = true; moved && pass < 6; pass++) {                           // inside a sharp bend an edge would fold back on itself: its points there are brought together
+        moved = false;
+        for (let i = 0; i + 1 < p.length / 2; i++) if ((E[2 * i + 2] - E[2 * i]) * (p[2 * i + 2] - p[2 * i]) + (E[2 * i + 3] - E[2 * i + 1]) * (p[2 * i + 3] - p[2 * i + 1]) < -1e-9) { const x = (E[2 * i] + E[2 * i + 2]) / 2, z = (E[2 * i + 1] + E[2 * i + 3]) / 2; E[2 * i] = E[2 * i + 2] = x; E[2 * i + 1] = E[2 * i + 3] = z; moved = true; }
+      }
       ribbon(road, L, R, r[1] === 0 ? Y.street : Y.service, RIB[r[1]], ox, oz, 4);
     }
-    /* markings */
-    for (const m of t.m || []) {
-      const p = line(m, 2), w = m[1] / 100, c = MARK[m[0]];
-      if (m[0] === 0 || m[0] === 1) { const [L, R] = sides(p, -w / 2, w / 2); ribbon(marks, L, R, Y.mark, c, 0, 0, 1); }
-      else if (m[0] === 3) dashes(p, 0.6, 0.6, (x0, z0, x1, z1) => { const dx = x1 - x0, dz = z1 - z0, l = Math.hypot(dx, dz) || 1, nx = -dz / l * w / 2, nz = dx / l * w / 2; marks.up(Y.mark, c, [x0 - nx, z0 - nz, x1 - nx, z1 - nz, x1 + nx, z1 + nz, x0 + nx, z0 + nz], 0, 0, 1); });
-      else dashes(p, 3, 6, (x0, z0, x1, z1) => { const dx = x1 - x0, dz = z1 - z0, l = Math.hypot(dx, dz) || 1, nx = -dz / l * w / 2, nz = dx / l * w / 2; marks.up(Y.mark, c, [x0 - nx, z0 - nz, x1 - nx, z1 - nz, x1 + nx, z1 + nz, x0 + nx, z0 + nz], 0, 0, 1); });
-    }
-    /* sidewalks: a raised strip 2 m wide with a kerb on both sides; rounded corners */
-    for (const w of t.w || []) {
-      const p = line(w, 0), [L, R] = sides(p, -1, 1), n = p.length >> 1;
-      ribbon(conc, L, R, Y.walk, CONC.walk, ox, oz, 1.5);
-      for (let i = 0; i < n - 1; i++) {
-        conc.wall(R[2 * i], R[2 * i + 1], R[2 * i + 2], R[2 * i + 3], Y.kerbFoot, Y.walk, CONC.walk, 0, 1, 0, 0.1);
-        conc.wall(L[2 * i + 2], L[2 * i + 3], L[2 * i], L[2 * i + 1], Y.kerbFoot, Y.walk, CONC.walk, 0, 1, 0, 0.1);
+    /* the streets (a place's data/streets.py). Strips: [kind, then for each point four numbers in centimetres] — the left
+       edge's point (the first as it is, the others as the step from the one before) and the step from it across to the
+       right edge, looking along the list. 0 a street · 1 a street in the hotel place's box · 3 a walk behind its kerb ·
+       5 a driveway's apron · 6 half of a paved median · 7 half of a planted one. Of 3, 5, 6 and 7 the LEFT edge is the
+       kerb: the road lies to the left of it, and a walk's and an apron's gutter with it (GUT wide, not in the strip). */
+    for (const k of t.k || []) {
+      const kind = k[0], n = (k.length - 1) >> 2, A = new Float32Array(2 * n), B = new Float32Array(2 * n);
+      for (let i = 0, x = 0, z = 0; i < n; i++) { x += k[1 + 4 * i]; z += k[2 + 4 * i]; A[2 * i] = x / 100; A[2 * i + 1] = z / 100; B[2 * i] = (x + k[3 + 4 * i]) / 100; B[2 * i + 1] = (z + k[4 + 4 * i]) / 100; }
+      /** the edge that lies `o` metres from A towards B (o < 0: beyond A, in the road) */
+      const edge = (o, most) => { const E = new Float32Array(2 * n); for (let i = 0; i < n; i++) { const dx = B[2 * i] - A[2 * i], dz = B[2 * i + 1] - A[2 * i + 1], l = Math.hypot(dx, dz) || 1, m = most ? Math.min(o, l * most) : o; E[2 * i] = A[2 * i] + dx / l * m; E[2 * i + 1] = A[2 * i + 1] + dz / l * m; } return E; };
+      const face = (E, y1, left) => { for (let i = 0; i < n - 1; i++) { if (left) conc.wall(E[2 * i + 2], E[2 * i + 3], E[2 * i], E[2 * i + 1], Y.kerbFoot, y1, CONC.walk, 0, 1, 0, 0.1); else conc.wall(E[2 * i], E[2 * i + 1], E[2 * i + 2], E[2 * i + 3], Y.kerbFoot, y1, CONC.walk, 0, 1, 0, 0.1); } };
+      const caps = y1 => { conc.wall(A[0], A[1], B[0], B[1], Y.kerbFoot, y1, CONC.walk, 0, 1, 0, 0.1); conc.wall(B[2 * n - 2], B[2 * n - 1], A[2 * n - 2], A[2 * n - 1], Y.kerbFoot, y1, CONC.walk, 0, 1, 0, 0.1); };
+      if (kind === 0 || kind === 1) ribbon(road, A, B, kind ? Y.box : Y.street, RIB[0], ox, oz, 4);
+      else if (kind === 3 || kind === 5) {
+        ribbon(conc, edge(-GUT), edge(LAP), Y.gutter, CONC.gutter, ox, oz, 1.5);                                  // (a little way in under the walk: no crack at the kerb's foot)
+        if (kind === 3) { ribbon(conc, A, B, Y.walk, CONC.walk, ox, oz, 1.5); face(A, Y.walk, true); face(B, Y.walk, false); caps(Y.walk); }
+        else ribbon(conc, A, B, Y.apron, CONC.apron, ox, oz, 1.5);
+      } else if (kind === 6) { ribbon(conc, A, B, Y.median, CONC.walk, ox, oz, 1.5); face(A, Y.median, true); caps(Y.median); }
+      else if (kind === 7) {                                                                                         // a kerb along the roadway, grass behind it
+        const K = edge(0.3, 0.5);
+        ribbon(conc, A, K, Y.median, CONC.walk, ox, oz, 1.5); face(A, Y.median, true); caps(Y.median);
+        for (let i = 0; i < n - 1; i++) flat.up(Y.median, LAWN, [K[2 * i], K[2 * i + 1], K[2 * i + 2], K[2 * i + 3], B[2 * i + 2], B[2 * i + 3], B[2 * i], B[2 * i + 1]], 0, 0, 1);
       }
     }
+    /* outlines: the paving where roads meet */
+    for (const o of t.o || []) poly(road, o[0] === 1 ? Y.box : Y.street, RIB[0], o, 1, ox, oz, 4);
+    /* the round corners of the walks: [how many points the kerb has, then the outline in centimetres — its first point,
+       and the step to each next one]: the kerb from where one street's kerb ends, round the arc, to where the next
+       one's begins; then the walk's back edge from that street's back to the first one's. The walk fills the outline;
+       the gutter runs along the kerb, in the road. */
     for (const c of t.c || []) {
-      const x = c[0] / 10, z = c[1] / 10, r = c[2] / 10, a0 = c[3] / 10 * Math.PI / 180; let da = c[4] / 10 * Math.PI / 180 - a0; da = ((da + Math.PI) % (2 * Math.PI) + 2 * Math.PI) % (2 * Math.PI) - Math.PI;
-      const N = 6, P = []; for (let k = 0; k <= N; k++) { const a = a0 + da * k / N; P.push([x + r * Math.cos(a), z + r * Math.sin(a)]); }
-      for (let k = 0; k < N; k++) {
-        const a = P[k], b = P[k + 1], order = da > 0 ? [[x, z], b, a] : [[x, z], a, b];   // up-facing either way round
-        for (const q of order) conc.v(q[0], Y.walk, q[1], 0, 1, 0, CONC.walk, (q[0] + ox) / 1.5, (q[1] + oz) / 1.5);
-        if (da > 0) conc.wall(b[0], b[1], a[0], a[1], Y.kerbFoot, Y.walk, CONC.walk, 0, 1, 0, 0.1); else conc.wall(a[0], a[1], b[0], b[1], Y.kerbFoot, Y.walk, CONC.walk, 0, 1, 0, 0.1);
+      const nk = c[0], n = (c.length - 1) >> 1, P = [], fl = [0]; let area = 0;
+      for (let i = 0, x = 0, z = 0; i < n; i++) { x += c[1 + 2 * i]; z += c[2 + 2 * i]; P.push([x / 100, z / 100]); fl.push(x / 10, z / 10); }
+      if (n < 3 || nk < 2) continue;
+      poly(conc, Y.walk, CONC.walk, fl, 1, ox, oz, 1.5);
+      for (let i = 0; i < n; i++) { const a = P[i], b = P[(i + 1) % n]; area += a[0] * b[1] - b[0] * a[1]; }
+      const left = area > 0;                                                             // the walk lies to the right of the outline as listed: the road is on the kerb's left
+      const unit = (x, z) => { const l = Math.hypot(x, z); return l > 1e-6 ? [x / l, z / l] : null; };
+      const out = (a, b) => { const d = unit(b[0] - a[0], b[1] - a[1]) || [1, 0]; return left ? [d[1], -d[0]] : [-d[1], d[0]]; };          // across a piece of the kerb, towards the road
+      const N = [];
+      for (let i = 0; i < nk; i++) {
+        if (i === 0) N.push(unit(P[0][0] - P[n - 1][0], P[0][1] - P[n - 1][1]) || out(P[0], P[1]));                    // at its two ends: straight on from the walk's end, as the gutter of the walk's own strip goes
+        else if (i === nk - 1) N.push(unit(P[i][0] - P[nk][0], P[i][1] - P[nk][1]) || out(P[i - 1], P[i]));
+        else { const u = out(P[i - 1], P[i]), v = out(P[i], P[i + 1]), m = unit(u[0] + v[0], u[1] + v[1]) || v, k = 1 / Math.max(0.6, m[0] * v[0] + m[1] * v[1]); N.push([m[0] * k, m[1] * k]); }
       }
+      const off = (i, d) => [P[i][0] + N[i][0] * d, P[i][1] + N[i][1] * d];
+      for (let i = 0; i + 1 < nk; i++) {
+        const a = P[i], b = P[i + 1], g = off(i, GUT), h = off(i + 1, GUT), u = off(i, -LAP), v = off(i + 1, -LAP);
+        if (left) { conc.wall(b[0], b[1], a[0], a[1], Y.kerbFoot, Y.walk, CONC.walk, 0, 1, 0, 0.1); conc.up(Y.gutter, CONC.gutter, [g[0], g[1], h[0], h[1], v[0], v[1], u[0], u[1]], ox, oz, 1.5); }
+        else { conc.wall(a[0], a[1], b[0], b[1], Y.kerbFoot, Y.walk, CONC.walk, 0, 1, 0, 0.1); conc.up(Y.gutter, CONC.gutter, [u[0], u[1], v[0], v[1], h[0], h[1], g[0], g[1]], ox, oz, 1.5); }
+      }
+      for (let i = nk; i + 1 < n; i++) { const a = P[i], b = P[i + 1]; if (left) conc.wall(b[0], b[1], a[0], a[1], Y.kerbFoot, Y.walk, CONC.walk, 0, 1, 0, 0.1); else conc.wall(a[0], a[1], b[0], b[1], Y.kerbFoot, Y.walk, CONC.walk, 0, 1, 0, 0.1); }      // the back of the walk, facing away from the road
+    }
+    /* painted lines (centimetres) */
+    for (const m of t.m || []) {
+      const n = (m.length - 2) >> 1, p = new Float32Array(2 * n), w = m[1] / 100, c = MARK[m[0]]; for (let i = 0; i < 2 * n; i++) p[i] = m[2 + i] / 100;
+      if (m[0] === 0 || m[0] === 1) { const [L, R] = sides(p, -w / 2, w / 2); ribbon(marks, L, R, Y.mark, c, 0, 0, 1); }
+      else dashes(p, DASH[m[0]][0], DASH[m[0]][1], (x0, z0, x1, z1) => { const dx = x1 - x0, dz = z1 - z0, l = Math.hypot(dx, dz) || 1, nx = -dz / l * w / 2, nz = dx / l * w / 2; marks.up(Y.mark, c, [x0 - nx, z0 - nz, x1 - nx, z1 - nz, x1 + nx, z1 + nz, x0 + nx, z0 + nz], 0, 0, 1); });
+    }
+    /* painted figures: arrows, the word STOP; the yellow pads at the corners (on the walk) */
+    for (const f of t.y || []) {
+      const x = f[1] / 100, z = f[2] / 100, a = f[3] * Math.PI / 180, cu = Math.cos(a), su = Math.sin(a), pad = f[0] === 8;
+      for (const g of FIG[f[0]] || []) { const pts = []; for (let i = 0; i < g.length; i += 2) pts.push(x + cu * g[i] - su * g[i + 1], z + su * g[i] + cu * g[i + 1]); marks.up(pad ? Y.walk + 0.006 : Y.mark, pad ? PAINT.pad : PAINT.white, pts, 0, 0, 1); }
     }
     /* decks in the air: a girder along the line, piers under it */
     for (const e of t.e || []) {

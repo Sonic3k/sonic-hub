@@ -6,7 +6,7 @@
    By default the car drives itself along it: it keeps the lane, slows for bends, stops at a red light and at a stop
    sign, and parks at the end. With a hand on the wheel the driver chooses the speed and the
    place in the road; the car still follows the route's turnings (other streets are closed to it). */
-import { signalState } from './tiles.js';
+import { signalState, untilRed } from './tiles.js';
 
 const WHEELBASE = 2.775, RATIO = 14.6;            // a 2014 Camry: metres between the axles; turns of the wheel per turn of the road wheels
 const AXLE = WHEELBASE / 2;                       // the car's middle is this far ahead of the axle the path belongs to
@@ -72,8 +72,14 @@ export function setupDrive() {
         for (const c of R.ctl) {
           const d = c.at - st.s; if (d < -1.5 || d > 140) continue;
           if (c.kind === 1) { if (!passed.has(c.at) && c.at < stopAt) { stopAt = c.at; why = 'stop'; } continue; }
-          const sig = signalState(c.junction, c.group, time), need = st.v * st.v / (2 * A_EASE) + 2;   // room to stop gently
-          if (sig === 0 || (sig === 1 && d > need * 0.75)) { if (d > -0.5 && c.at < stopAt) { stopAt = c.at; why = 'red'; } }
+          // Red: stop. Yellow: go on only if the nose will be over the line before the red — at the speed it has now and
+          // the speed the road lets it have at the line (a turn just past the line slows it on the way there); else stop,
+          // and brake as hard as that takes. (The first rule went by the room to stop gently, and at 35 mph the car
+          // then came to the line a moment after the red: found by the checks when the limit lines moved, 26/11/2026.)
+          const sig = signalState(c.junction, c.group, time);
+          let halt = sig === 0;
+          if (sig === 1) { const vl = Math.min(st.v, at(R.cap, index(Math.min(R.length, Math.max(0, c.at))))); halt = (d + 0.6) / Math.max(0.5, (st.v + vl) / 2) > untilRed(c.junction, c.group, time) - 0.2; }
+          if (halt) { if (d > -0.5 && c.at < stopAt) { stopAt = c.at; why = 'red'; } }
         }
         const room = stopAt - st.s;
         if (room < 160) want = Math.min(want, Math.sqrt(Math.max(0, 2 * A_EASE * 0.92 * Math.max(0, room - 0.35))));
