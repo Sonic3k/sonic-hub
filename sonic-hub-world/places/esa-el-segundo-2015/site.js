@@ -90,8 +90,8 @@ export function buildSite(scene, shared, ctx) {
       let from = z0; const lo = Math.min(xHead, xTail), hi = Math.max(xHead, xTail);
       for (const [c0, c1, io] of [...cuts].sort((p, q) => p[0] - q[0])) {
         if (c0 > from + 1.5) rowZ(b, xHead, xTail, from, c0, fill, R, o.seg ? o.seg(from, c0) : o);
-        const w = io.tree ? 0 : WALK;                    // a tower's island: a concrete walk either side of it, from the aisle to the walkway
-        island(io.face ?? xHead, c0 + w + 0.12, xTail, c1 - w - 0.12, io);
+        const w = io.tree || io.plain || io.open ? 0 : WALK;                    // a tower's island: a concrete walk either side of it, from the aisle to the walkway
+        if (!io.open) island(io.face ?? xHead, c0 + w + 0.12, xTail, c1 - w - 0.12, io);
         if (w) for (const z of [c0, c1 - w]) { b.box(walk, lo, 0, z, hi, 0.15, z + w, { uv: [1.5, 1.5], uvw: true, cast: false }); flat(lo, z, hi, z + w, 0.15); }
         from = c1;
       }
@@ -112,19 +112,43 @@ export function buildSite(scene, shared, ctx) {
     /* WEST OF THE TWO WINGS (the photographs of 17/8, 19/8, 2/9 and 22/9): stalls nose-in to the planting in front of the
        walkway, an island before each stair tower, one with a tree between them and the two handicap stalls north of
        it; the drive; stalls nose-in to the strip along the fence. On the morning of 22/9 the fence row stood empty
-       from the Beetle at its north end down past where he took the photograph, and the handicap stalls were free. */
+       from the Beetle at its north end down past where he took the photograph, and the handicap stalls were free.
+       THE WAY THROUGH TO THE SHOPS' LOT (he said on 26/11/2026 that the fence was drawn wrong at the real way in; the
+       satellite picture; his photograph of 22/9, 09:47:21, where the white fence ends at a lamp post and a van stands
+       beyond it): level with the front of Ralphs the strip and its fence stop for some 9 m, z 54.6 … 63.6 — the two lots
+       are one there, a hatched box painted either side of the line to keep it clear. Everywhere else the lot is shut:
+       the strip runs north to a planted bed that closes the corner behind the main wing (L.gate, L.bed in plan.js). */
     const westFace = n.x0 - TOWER.out - 0.05, eastFace = n.x1 + TOWER.out + 0.05;
     rowsZ(L.westKerb, L.westTail, -5.0, 116.2, [...towerCuts(n, 'A', westFace), ...towerCuts(s, 'A', westFace), ...L.trees.west.map(t => treeCut(t, { dx: -1.2 }))], 0.5,
       { seg: (z0, z1) => ({ hc: z1 === L.trees.west[0][0] ? 2 : 0, empty: z => z > 26 && z < 34.5 }) });      // nothing stood under his stretch of railing at 09:47
-    rowsZ(L.fenceKerb, L.fenceTail, -5.8, 113.2, [treeCut(L.trees.fence, { shrubs: 5, h: 7 })], 0.55, { empty: z => z < 41.5 });      // 1777: three cars at its south end, the rest of it free
+    const [g0, g1] = L.gate, [bx0, bz0, bz1] = L.bed;
+    rowsZ(L.fenceKerb, L.fenceTail, -5.8, 113.2, [[L.trees.fence[0], g0, { plain: true, shrubs: 2 }], [g0, g1, { open: true }], [g1, L.trees.fence[1], { plain: true, shrubs: 2 }]], 0.55, { empty: z => z < 41.5 });      // 1777: three cars at its south end, the rest of it free
     beetle(b, (L.fenceKerb + L.fenceTail) / 2 - 0.2, -5.8 + 1.35, 270);
-    // the strip along the fence: kerb, mulch, its trees and shrubs, the lot's lights; the fence itself
-    b.box(P.curb(), L.fenceKerb - 0.15, 0, -12.8, L.fenceKerb, 0.16, 128, { cast: false, solid: true });
-    b.box(X.mulch(), L.fence, 0, -12.8, L.fenceKerb - 0.15, 0.1, 128, { uv: [1.5, 1.5], uvw: true, cast: false });
-    for (let z = -8; z < 126; z += 7.5 + R() * 3.5) tree(b, L.fence + 1.5 + (R() - 0.5) * 0.7, z, { h: 6.5 + R() * 2, r: 2.3 + R() * 0.8, leaves: P.leaves(R() < 0.6 ? '#79a046' : '#5f8a35', 2 + ((R() * 3) | 0)) });
-    for (let z = -3; z < 126; z += 7) shrub(L.fence + 2.2 + R() * 0.5, z + R() * 3, 0.5, '#3f6328');
-    fence(b, L.fence, -12.3, L.fence, 128, 1.5);
-    for (const z of [7, 35, 63, 93, 121]) { lotLight(b, L.fence + 2.3, z, 8.2, glowLot, 2, 90); lights.push([L.fence + 2.3, 8, z]); }
+    // the strip along the fence: kerb, mulch, its trees and shrubs, the lot's lights; the fence itself — in two lengths, the way through between them
+    const xm = (L.fence + L.fenceKerb) / 2, rr = (L.fenceKerb - L.fence) / 2;        // (its ends at the way through are round: the straight lengths stop short of it by that much)
+    for (const [z0, z1] of [[bz0, g0 - rr], [g1 + rr, 128]]) {
+      b.box(P.curb(), L.fenceKerb - 0.15, 0, z0, L.fenceKerb, 0.16, z1, { cast: false, solid: true });
+      b.box(X.mulch(), L.fence, 0, z0, L.fenceKerb - 0.15, 0.1, z1, { uv: [1.5, 1.5], uvw: true, cast: false });
+      fence(b, L.fence, Math.max(z0, bz1), L.fence, z1, 1.5);                    // (the fence stops with the strip's straight length; its last post stands where the round end begins)
+    }
+    // the strip's two ends at the way through: rounded (the satellite picture)
+    for (const z of [g0 - rr, g1 + rr]) { b.cyl(P.curb(), xm, 0, z, rr, 0.16, { seg: 18, cast: false }); b.cyl(X.mulch(), xm, 0, z, rr - 0.15, 0.17, { seg: 18, cast: false }); b.solid(xm - rr, 0, z - rr, xm + rr, 0.16, z + rr); shrub(xm, z, 0.5, '#3f6328'); }
+    for (let z = -2; z < 126; z += 7.5 + R() * 3.5) if (z < g0 - 3.4 || z > g1 + 3.4) tree(b, L.fence + 1.5 + (R() - 0.5) * 0.7, z, { h: 6.5 + R() * 2, r: 2.3 + R() * 0.8, leaves: P.leaves(R() < 0.6 ? '#79a046' : '#5f8a35', 2 + ((R() * 3) | 0)) });
+    for (let z = -3; z < 126; z += 7) { const zz = z + R() * 3; if (zz < g0 - 2.2 || zz > g1 + 2.2) shrub(L.fence + 2.2 + R() * 0.5, zz, 0.5, '#3f6328'); }
+    for (const z of [7, 35, 67, 93, 121]) { lotLight(b, L.fence + 2.3, z, 8.2, glowLot, 2, 90); lights.push([L.fence + 2.3, 8, z]); }
+    // the way through: a hatched box either side of the line
+    for (const x0 of [L.fence - 5.3, L.fence + 0.9]) {
+      const x1 = x0 + 3.3, z0 = g0 + 1.9, z1 = g1 - 1.9;
+      for (const [a0, c0, a1, c1] of [[x0, z0, x1, z0 + 0.1], [x0, z1 - 0.1, x1, z1], [x0, z0, x0 + 0.1, z1], [x1 - 0.1, z0, x1, z1]]) b.box(white, a0, 0.012, c0, a1, 0.016, c1, { cast: false });
+      for (let k = 0; k < 6; k++) b.rbox(white, (x0 + x1) / 2, 0.014, z0 + 0.45 + k * 0.86, 0.1, 0.004, 4.2, 52, { cast: false });
+    }
+    // the bed that shuts the corner behind the main wing: from the big trees' kerb east to the fence's strip; the fence along its far side; stalls nose-in to it
+    b.box(P.curb(), bx0, 0, bz0 - 0.15, L.fenceKerb, 0.16, bz0, { cast: false, solid: true });
+    b.box(X.mulch(), bx0, 0, bz0, L.fence, 0.1, bz1, { uv: [1.5, 1.5], uvw: true, cast: false });
+    fence(b, bx0, bz1, L.fence, bz1, 1.5);
+    for (let x = bx0 + 2.5; x < L.fence - 1.5; x += 5.2 + R() * 2.4) tree(b, x, (bz0 + bz1) / 2 + (R() - 0.5) * 1.2, { h: 7.5 + R() * 3, r: 2.9 + R(), leaves: P.leaves(R() < 0.5 ? '#3f5f2a' : '#5f8a35', 4) });
+    for (let x = bx0 + 1; x < L.fence - 0.6; x += 3.4) shrub(x + R(), bz0 + 0.9 + R() * 0.6, 0.5, '#3f6328');
+    rowX(b, bz0 - 0.15, L.southEdge + 0.3, -33.0, -12.2, 0.6, R);
     /* EAST OF THEM: the same planting, stalls nose-in to it, the drive, a strip of trees against the neighbours' lot */
     rowsZ(L.eastKerb, L.eastTail, -1.8, 53.2, [...towerCuts(n, 'B', eastFace), treeCut(L.trees.east[0], { dx: 1.0 })], 0.45);
     rowsZ(L.eastKerb, L.eastTail, 59.2, 116.6, [...towerCuts(s, 'B', eastFace), treeCut(L.trees.east[1], { dx: 1.0 })], 0.45);
@@ -139,7 +163,7 @@ export function buildSite(scene, shared, ctx) {
     b.box(X.mulch(), -38.8, 0, L.northEdge - 1.9, L.island[0], 0.1, L.northEdge - 0.15, { uv: [1.5, 1.5], uvw: true, cast: false });
     for (let x = -38.3; x < L.island[0] - 0.4; x += 3) { const e = Math.min(x + 3, L.island[0] - 0.4); b.box(M.plain(Math.round(x) % 2 ? '#314d24' : '#3a5a2a', 0.95), x, 0.08, L.northEdge - 3.9, e, 1.05, L.northEdge - 1.9, { cast: false }); }
     b.solid(-38.3, 0, L.northEdge - 3.9, L.island[0] - 0.4, 1.05, L.northEdge - 1.9);
-    b.box(X.lawn(), -38.8, 0.0, L.walk, L.island[0], 0.1, L.northEdge - 3.9, { uv: [2, 2], uvw: true, cast: false });
+    b.box(X.lawn(), -38.8, 0.0, L.walk - 0.15, L.island[0], 0.1, L.northEdge - 3.9, { uv: [2, 2], uvw: true, cast: false });      // (a hand's breadth in under the sidewalk: no crack at its back edge)
     for (const x of [-23, -6, 3]) tree(b, x, L.walk + 1.2, { h: 9.5, r: 3.5, leaves: P.leaves('#3f5f2a', 6) });
     b.box(M.plain('#d8d6cf', 0.7), 13.2, 0.1, L.walk + 0.6, 13.8, 0.75, L.walk + 1.1, { cast: false });                  // a utility box on the lawn
     /* THE WAY IN from Mariposa (the satellite picture for where things are; Street View of July 2015, a month before he
@@ -159,15 +183,16 @@ export function buildSite(scene, shared, ctx) {
     monument(b, L.sign[0], L.sign[1]);
     b.solid(L.sign[0] - 0.3, 0, L.sign[1] - 1.9, L.sign[0] + 0.3, 2.3, L.sign[1] + 1.9);
     ctx.hot.push({ id: 'sign', pos: [L.sign[0], 2.45, L.sign[1]], r: 0.3 });
-    // the drive's marks: a yellow line between its lanes, an arrow in each, a bar where one stops before the street
-    const dm = (dx0 + dx1) / 2;
-    b.box(yellow, dm - 0.3, 0.012, iz0 + 0.3, dm - 0.2, 0.016, iz1 + 0.4, { cast: false });
-    b.box(white, dx0 + 0.3, 0.012, iz0 + 0.5, dm - 0.5, 0.016, iz0 + 0.9, { cast: false });
-    for (const [x, dir] of [[dm - 2.2, -1], [dm + 2.0, 1]]) {            // out to the street, in from it
-      const zc = (iz0 + iz1) / 2 + 0.4;
-      b.box(white, x - 0.09, 0.012, zc - 1.1, x + 0.09, 0.016, zc + 1.1, { cast: false });
-      for (const sgn of [-1, 1]) b.rbox(white, x + sgn * 0.26, 0.014, zc + dir * 0.75, 0.16, 0.004, 0.9, dir * sgn * 35, { cast: false });
-    }
+    // the drive's marks (the satellite picture): a white line between its lanes; in the lane OUT — the east one, on the
+    // right of a car leaving — a bar before the sidewalk and the word STOP. (The first build had an arrow in each lane,
+    // out on the west and in on the east: the wrong side of the road. He saw it at once from the car, 26/11/2026.)
+    const dv = L.driveLine;
+    b.box(white, dv - 0.05, 0.012, iz0 + 0.3, dv + 0.05, 0.016, iz1 + 0.4, { cast: false });
+    b.box(white, dv + 0.3, 0.012, iz0 + 0.5, dx1 - 0.3, 0.016, iz0 + 0.9, { cast: false });
+    { const STOP = { S: [[0, 2.05, 0.5, 2.4], [0, 1.375, 0.13, 2.05], [0, 1.025, 0.5, 1.375], [0.37, 0.35, 0.5, 1.025], [0, 0, 0.5, 0.35]], T: [[0, 2.05, 0.5, 2.4], [0.185, 0, 0.315, 2.05]],
+        O: [[0, 0, 0.13, 2.4], [0.37, 0, 0.5, 2.4], [0.13, 2.05, 0.37, 2.4], [0.13, 0, 0.37, 0.35]], P: [[0, 0, 0.13, 2.4], [0.13, 2.05, 0.5, 2.4], [0.13, 1.05, 0.5, 1.4], [0.37, 1.4, 0.5, 2.05]] };
+      const xm = (dv + dx1) / 2, foot = iz0 + 4.0;                                   // read by the car leaving: its top to the street, the letters from west to east
+      [...'STOP'].forEach((ch, i) => { const x = xm - 1.39 + i * 0.76; for (const [x0, y0, x1, y1] of STOP[ch]) b.box(white, x + x0, 0.012, foot - y1, x + x1, 0.016, foot - y0, { cast: false }); }); }
     // the bed on the boundary side, its trees
     b.box(red, dx1, 0, iz0, dx1 + 0.15, 0.16, -54.8, { cast: false, solid: true });
     b.box(bed, dx1 + 0.15, 0, iz0, L.eastEdge + 5.6, 0.13, -54.8, { uv: [1.5, 1.5], uvw: true, cast: false });
@@ -213,9 +238,12 @@ export function buildSite(scene, shared, ctx) {
       for (let x = 11.6; x < 29.2; x += 3) { const e = Math.min(x + 3, 29.4); if (x < 17.5 || x > 24.5) { b.box(M.plain(Math.round(x) % 2 ? '#314d24' : '#3a5a2a', 0.95), x, 0.1, z1 + 0.5, e, 0.9, z1 + 1.3, { cast: false }); b.solid(x, 0, z1 + 0.5, e, 0.9, z1 + 1.3); } } }
     /* ROUND THE MAIN WING'S WEST END: a single lane between the wing and the kerb of the big trees that stand against the
        shops' lot */
-    b.box(P.curb(), L.westDrive[0] - 0.15, 0, L.northEdge, L.westDrive[0], 0.16, L.southEdge - 2, { cast: false, solid: true });
-    b.box(X.mulch(), -36.3, 0, L.northEdge - 4, L.westDrive[0] - 0.15, 0.1, L.southEdge - 2, { uv: [1.5, 1.5], uvw: true, cast: false });
-    for (let z = -62; z < L.southEdge - 3; z += 7.5) tree(b, -33.2 + (R() - 0.5) * 1.6, z, { h: 9 + R() * 3, r: 3.4 + R(), leaves: P.leaves('#3f5f2a', 6) });
+    b.box(P.curb(), L.bed[0] + 3.85, 0, L.northEdge, L.bed[0] + 4.0, 0.16, L.bed[1], { cast: false, solid: true });
+    b.box(X.mulch(), L.bed[0], 0, L.northEdge - 4, L.bed[0] + 3.85, 0.1, L.bed[2], { uv: [1.5, 1.5], uvw: true, cast: false });
+    b.box(X.mulch(), L.bed[0], 0, L.walk, -38.8, 0.1, L.northEdge - 4, { uv: [1.5, 1.5], uvw: true, cast: false });                    // … up to the sidewalk, beside the frontage's lawn
+    b.box(P.curb(), L.bed[0] - 0.15, 0, L.walk, L.bed[0], 0.16, L.bed[2] + 0.15, { cast: false, solid: true });                      // its kerb on the shops' side, and round the bed's far side
+    b.box(P.curb(), L.bed[0], 0, L.bed[2], L.fence, 0.16, L.bed[2] + 0.15, { cast: false });
+    for (let z = -62; z < L.bed[1] - 2; z += 7.5) tree(b, L.bed[0] + 2.0 + (R() - 0.5) * 1.6, z, { h: 9 + R() * 3, r: 3.4 + R(), leaves: P.leaves('#3f5f2a', 6) });
     // the picnic table and the grill in the passage between the two north–south wings (the hotel's "picnic area"; where exactly is a guess)
     picnic(b, 8.0, 54.9);
     // the morning of 22/9: a blue mattress on its side against the south face of the north-west stair tower (the
@@ -244,9 +272,9 @@ export function buildSite(scene, shared, ctx) {
     }
     stallsZ(b, LOT.fence - 5.7, LOT.fence - 0.4, 5, 53, 90, 0.62, R);
     stallsZ(b, -92, -86.5, 6, 50, 270, 0.62, R);
-    b.box(P.curb(), LOT.fence - 0.4, 0, 3, LOT.fence - 0.25, 0.16, 128, { cast: false });
+    for (const [z0, z1] of [[3, LOT.gate[0] - 1.5], [LOT.gate[1] + 1.5, 128]]) b.box(P.curb(), LOT.fence - 0.4, 0, z0, LOT.fence - 0.25, 0.16, z1, { cast: false });      // the kerb along the hotel's fence, open at the way through
     // the drive in front of Ralphs, its stripes
-    b.box(P.stripe(), -84, 0.012, 59.2, -14, 0.016, 59.3, { cast: false });
+    b.box(P.stripe(), -84, 0.012, 59.2, -19, 0.016, 59.3, { cast: false });
   }, 'shopLot');
 
   /* ── at night: pools of light under the lot lights ── */

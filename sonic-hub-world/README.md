@@ -96,14 +96,25 @@ load, and what a frame may cost is checked.
 
 - **Tiles.** The ground comes 500 m at a time: `places/<id>/data/world.py` turns OpenStreetMap extracts into
   `places/<id>/world/` (`index.json`, `routes.json`, `tiles/<i>_<j>.json`; the build copies it to `dist/world/<id>/`).
-  Everything that needs the whole network is worked out there — where a street's lines and sidewalks stop for a
-  junction, the rounded corners, stop lines, signal poles, street trees, the cars in the lots, the piers of a
-  viaduct (none in a road). `engine/world/tiles.js` holds the 5 × 5 squares round the eye; each is built in a Worker
-  (`tilework.js`, a function with no outer names) into five meshes and a few instanced ones, and dropped 1.5 km on.
+  Everything that needs the whole network is worked out there — the streets (below), signal poles, street trees,
+  the cars in the lots, the piers of a viaduct (none in a road). `engine/world/tiles.js` holds the 5 × 5 squares
+  round the eye; each is built in a Worker (`tilework.js`, a function with no outer names) into five meshes and a
+  few instanced ones, and dropped 1.5 km on.
+- **Streets.** One set of rules lays out every street of a world, the way California lays its streets out
+  (`places/<id>/data/streets.py`; the rules are at its head): the lanes of each road from the map's `lanes` and
+  `turn:lanes`; a double yellow line between opposite ways, the two-way left-turn lane's solid-and-broken pair,
+  broken white lines between lanes going the same way (solid before a signal); where roads meet — several points on
+  a divided road are one crossing — round corners, the crosswalks the map has (and one on each arm of a signal it
+  has none for), a limit line before each, arrows in the lanes to turn from, the word STOP at a stop sign; kerb,
+  gutter and a walk at the kerb, dropped to an apron at every driveway; a raised median between the two roadways of
+  a divided road. What a place knows that the map does not goes in as a short list (`STRIPES`, `DRIVES`, `TREES`,
+  `MEDIAN_W` in `world.py`). The script counts what must never be — a limit line inside a crosswalk, a corner whose
+  outline crosses itself — and the checks hold the tiles to it.
 - **Sites.** A place built by hand stands in a world whole, in a group of its own (`sites` in the world's
-  `place.js`): the hotel of El Segundo with its streets. Its fine parts show only from near (`near`). A place that
-  can be a site reads `ctx.world`: `esa-el-segundo-2015/town.js` then leaves its sidewalks and lines open where the
-  world's data says a junction is, draws no signals and no traffic (the world's signals change; its car obeys them).
+  `place.js`): the hotel of El Segundo with its lots, its buildings and the shops next door. Its fine parts show
+  only from near (`near`). A place that can be a site reads `ctx.world`: the streets inside a world are the world's
+  own, there as everywhere, so `esa-el-segundo-2015/town.js` then draws no road, walk, line, crosswalk, median,
+  street tree, light, signal or traffic of its own (alone, as a place to walk, it draws them all as before).
 - **Routes and the car.** A route in `routes.json` is a path a car can drive, not a line on a map: the data script
   eases the map's roads into curves, plans the lane (least moving sideways), then drives a car along the lane's
   line (a wheelbase, a look ahead, hands that turn the wheel no faster than a turn a second) and stores what its
@@ -117,9 +128,12 @@ load, and what a frame may cost is checked.
   a straight street the wheel, the nose and the body hold still; the wheel changes direction fewer than 12 times a
   minute (2° and more: the steering reversal rate); the foot does not hunt between the pedals — the wheels off the
   kerbs, the frame under the ceiling measured on his telephone (460 draw calls, 1.2 M triangles in view), both
-  telephone layouts. A picture cannot show a twitch: what moves is checked as a series in time.
+  telephone layouts; and the streets themselves: their own rules kept, no face inside out, every round corner
+  beginning where a walk's kerb ends, the car on the right of the line at the hotel's way in. A picture cannot show
+  a twitch: what moves is checked as a series in time.
   `tools/worldfeel.mjs` prints those figures for one drive; `tools/worldshot.mjs` photographs a world along a route;
-  `places/<id>/data/plot.py` draws the data as a map.
+  `tools/worldtop.mjs` photographs it from straight above (a plan of any spot, cut at any height: the way to see
+  what the streets are); `places/<id>/data/plot.py` draws the data as a map.
 
 Not there yet: walking and the scooter in a world, the car seen from outside, other cars on the road, more
 routes and sites, scenes far away (Point Vicente, Orange County), the layers of years.

@@ -124,6 +124,12 @@ try {
   await page.evaluate(() => window.__world.goto('loi-xe-vao')); await wait(page, 100); const d0 = await pose(page);
   await page.evaluate(() => window.__world.setPose(33.0, 1.52, -71.0, 180, 0)); await walk(page, 'KeyW', 6000); const d1 = await pose(page);
   ok('"Lối xe vào" stands on Mariposa\'s sidewalk by the drive; the drive runs in from the street', d0[2] < -66.4 && d0[2] > -68.4 && d0[0] > 37.5 && d1[2] > -62.5 && Math.abs(d1[0] - 33) < 0.4, `${JSON.stringify(d0)} → ${JSON.stringify(d1)}`);
+  // the fence between the hotel's lot and the shops': one way through, level with the front of Ralphs — and none at the
+  // north-west corner, where the first build left a gap (he said so on 26/11/2026; the satellite picture)
+  await page.evaluate(() => window.__world.setPose(-5.5, 1.52, 59.1, 270, 0)); await walk(page, 'KeyW', 7000); const fw1 = await pose(page);
+  await page.evaluate(() => window.__world.setPose(-5.5, 1.52, 30.0, 270, 0)); await walk(page, 'KeyW', 7000); const fw2 = await pose(page);
+  await page.evaluate(() => window.__world.setPose(-22.0, 1.52, -16.0, 180, 0)); await walk(page, 'KeyW', 9000); const fw3 = await pose(page);
+  ok('the fence to the shops\' lot: a way through level with Ralphs\' front; shut along the row of stalls and at the north-west corner', fw1[0] < -13 && fw2[0] > -11.6 && fw3[2] < -3.2, `through to x ${fw1[0]}; held at x ${fw2[0]}; held at z ${fw3[2]}`);
   // the streets: the rooms list takes you to Starbucks; Sepulveda is walkable
   await page.click('#b-rooms'); ok('rooms list opens', await page.evaluate(() => document.getElementById('rooms').classList.contains('on')));
   const names = await page.evaluate(() => [...document.querySelectorAll('#room-list button')].map(b => b.textContent));

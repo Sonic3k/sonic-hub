@@ -161,7 +161,10 @@ export const LOT = {
   drive: [28.5, 37.5],                                                                     // x, the way in from Mariposa
   island: [15.5, -66.4, 28.5, -60.0], sign: [23.9, -63.7],                                 // the sign's island (x0, z0, x1, z1) and the sign
   court: { x0: 17.8, z0: -53.4, cx: 29.2, cz: -45.3, r: 8.1, x1: 37.3 },                   // the forecourt's kerb: straight, a quarter round, straight
-  trees: { west: [[20.0, 23.4], [86.1, 89.4]], east: [[18.8, 23.4], [86.2, 89.5]], north: [0.6, 4.6], south: [-1.1, 4.7], fence: [51.8, 66.8] },   // the islands with a tree, along their rows
+  trees: { west: [[20.0, 23.4], [86.1, 89.4]], east: [[18.8, 23.4], [86.2, 89.5]], north: [0.6, 4.6], south: [-1.1, 4.7], fence: [51.8, 66.8] },   // the islands with a tree, along their rows (fence: where that row breaks for the way through)
+  driveLine: 32.6,                                                                         // x, the white line between the drive's two lanes: in on its west, out on its east (satellite picture)
+  gate: [54.6, 63.6],                                                                      // z, the way through the fence to the shops' lot, level with Ralphs' front (satellite picture, ± 1 m)
+  bed: [-40.0, -7.3, -3.0],                                                                // the planted bed that shuts the lot's north-west corner: its west edge x; its kerb z and its far side z (satellite picture)
 };
 
 /* HIS STUDIO: the north wing, upper floor, west face, the tenth studio from the wing's north end (module 9, counting

@@ -28,18 +28,52 @@ for t, ox, oz in tiles:
     for r in t.get('r', []):
         if r[1] != 1: pl(W(r[2:], ox, oz), r[0] / 5, (52, 52, 56) if r[1] == 0 else (120, 120, 118))
 E = json.load(open(esaf))
-for name, cls, lanes, ow, fl in E['R']: pl(pairs(fl), lanes * 3.4 + (0.8 if ow else 1.2), (60, 44, 44))
 for kind, fl in E['S']: pl(pairs(fl), 6.5, (86, 74, 74))
 for wid, h, kind, name, fl in E['B']: d.polygon([X(*p) for p in pairs(fl)], fill=(170, 120, 110), outline=(90, 50, 50))
+# the streets (streets.py): strips (their two edges), the paving where roads meet, the walks' round corners, painted lines and figures
+KC = [(52, 52, 56), (58, 50, 52), (150, 148, 142), (218, 214, 204), (112, 150, 90), (186, 182, 172), (200, 196, 186), (120, 156, 96)]   # street · street in the hotel's box · gutter · walk · lawn · apron · median · planted median
+def quads(st, ox, oz):
+    P = []; x = z = 0
+    for i in range(1, len(st), 4): x += st[i]; z += st[i + 1]; P.append(((x / 100 + ox, z / 100 + oz), ((x + st[i + 2]) / 100 + ox, (z + st[i + 3]) / 100 + oz)))
+    return [[a0, b0, b1, a1] for (a0, b0), (a1, b1) in zip(P, P[1:])]
+def corner(c, ox, oz):
+    P = []; x = z = 0
+    for i in range(1, len(c), 2): x += c[i]; z += c[i + 1]; P.append((x / 100 + ox, z / 100 + oz))
+    return P
+for layer in ((0, 1), (2, 5), (6, 7), (3, 4)):
+    for t, ox, oz in tiles:
+        for st in t.get('k', []):
+            if st[0] in layer:
+                for q in quads(st, ox, oz): d.polygon([X(*p) for p in q], fill=KC[st[0]])
+        for o in t.get('o', []):
+            if o[0] in layer: d.polygon([X(*p) for p in W(o[1:], ox, oz)], fill=KC[o[0]])
+        if 3 in layer:
+            for c in t.get('c', []): d.polygon([X(*p) for p in corner(c, ox, oz)], fill=KC[3], outline=(150, 146, 136))
+def dash(pts, on, off):
+    out = []; carry = off / 2
+    for (x0, z0), (x1, z1) in zip(pts, pts[1:]):
+        L = math.hypot(x1 - x0, z1 - z0)
+        if L < 1e-6: continue
+        s0 = carry
+        while s0 < L: e0 = min(L, s0 + on); out.append([(x0 + (x1 - x0) * s0 / L, z0 + (z1 - z0) * s0 / L), (x0 + (x1 - x0) * e0 / L, z0 + (z1 - z0) * e0 / L)]); s0 += on + off
+        carry = s0 - L
+    return out
 for t, ox, oz in tiles:
-    for w in t.get('w', []): pl(W(w, ox, oz), 2.0, (214, 210, 200))
-    for c in t.get('c', []):
-        x, z, r, a0, a1 = c[0] / 10 + ox, c[1] / 10 + oz, c[2] / 10, math.radians(c[3] / 10), math.radians(c[4] / 10)
-        da = (a1 - a0 + math.pi) % (2 * math.pi) - math.pi
-        d.polygon([X(x, z)] + [X(x + r * math.cos(a0 + da * i / 8), z + r * math.sin(a0 + da * i / 8)) for i in range(9)], fill=(230, 226, 214))
     for m in t.get('m', []):
-        col = [(230, 190, 40), (245, 245, 240), (245, 245, 240), (245, 245, 240), (230, 190, 40)][m[0]]
-        pl(W(m[2:], ox, oz), max(m[1] / 100, 1.2 / k), col + ((255,) if m[0] in (0, 1) else (170,)))
+        col = [(230, 190, 40), (245, 245, 240), (245, 245, 240), (245, 245, 240), (230, 190, 40), (245, 245, 240), (230, 190, 40)][m[0]]
+        pts = [(m[i] / 100 + ox, m[i + 1] / 100 + oz) for i in range(2, len(m), 2)]; w = max(m[1] / 100, 1.2 / k)
+        if m[0] in (0, 1): pl(pts, w, col + (255,))
+        else:
+            for seg in dash(pts, *{2: (3.66, 10.97), 4: (3.66, 10.97), 3: (0.6, 0.6), 5: (2.13, 5.18), 6: (2.13, 5.18)}[m[0]]): pl(seg, w, col + (255,))
+    for f in t.get('y', []):
+        x, z, a = f[1] / 100 + ox, f[2] / 100 + oz, math.radians(f[3]); u = (math.cos(a), math.sin(a)); rt = (-u[1], u[0])
+        if f[0] == 8: d.polygon([X(x + u[0] * du + rt[0] * dr, z + u[1] * du + rt[1] * dr) for du, dr in ((-0.45, -0.6), (0.45, -0.6), (0.45, 0.6), (-0.45, 0.6))], fill=(236, 200, 40))
+        elif f[0] == 5: d.polygon([X(x + u[0] * du + rt[0] * dr, z + u[1] * du + rt[1] * dr) for du, dr in ((-1.2, -1.1), (1.2, -1.1), (1.2, 1.1), (-1.2, 1.1))], outline=(245, 245, 240))
+        else:
+            bend = {0: -1, 2: 1}.get(f[0], 0); tip = (x + u[0] * 1.5 + rt[0] * bend * 0.9, z + u[1] * 1.5 + rt[1] * bend * 0.9)
+            d.line([X(x - u[0] * 1.5, z - u[1] * 1.5), X(x + u[0] * 0.6, z + u[1] * 0.6), X(*tip)], fill=(245, 245, 240), width=max(1, int(0.3 * k)))
+            if f[0] in (3, 4, 6): d.line([X(x + u[0] * 0.2, z + u[1] * 0.2), X(x + u[0] * 1.1 + rt[0] * (-1 if f[0] == 3 else 1) * 0.9, z + u[1] * 1.1 + rt[1] * (-1 if f[0] == 3 else 1) * 0.9)], fill=(245, 245, 240), width=max(1, int(0.3 * k)))
+for t, ox, oz in tiles:
     for b in t.get('b', []):
         kc = [(196, 170, 140), (200, 160, 130), (120, 170, 200), (170, 176, 184), (176, 172, 160), (210, 170, 110), (130, 130, 136), (190, 150, 170), (220, 220, 220)][b[1]]
         d.polygon([X(*p) for p in W(b[2:], ox, oz)], fill=kc, outline=(60, 60, 60))
