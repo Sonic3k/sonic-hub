@@ -15,6 +15,7 @@ export function mergeGeoms(list) {
   for (const g of list) { nv += g.attributes.position.count; ni += g.index ? g.index.count : g.attributes.position.count; }
   const pos = new Float32Array(nv * 3), nor = new Float32Array(nv * 3), uv = new Float32Array(nv * 2);
   const col = list[0].attributes.color ? new Float32Array(nv * 3) : null;
+  const sway = list[0].attributes.sway ? new Float32Array(nv) : null;                // (plants: how much each vertex moves in the wind — engine/plants.js)
   const idx = nv > 65535 ? new Uint32Array(ni) : new Uint16Array(ni);
   let vo = 0, io = 0;
   for (const g of list) {
@@ -22,6 +23,7 @@ export function mergeGeoms(list) {
     pos.set(p.array, vo * 3); nor.set(n.array, vo * 3);
     if (u) uv.set(u.array, vo * 2);
     if (col && g.attributes.color) col.set(g.attributes.color.array, vo * 3);
+    if (sway && g.attributes.sway) sway.set(g.attributes.sway.array, vo);
     if (g.index) { const a = g.index.array; for (let i = 0; i < a.length; i++) idx[io + i] = a[i] + vo; io += a.length; }
     else { for (let i = 0; i < p.count; i++) idx[io + i] = vo + i; io += p.count; }
     vo += p.count;
@@ -32,6 +34,7 @@ export function mergeGeoms(list) {
   out.setAttribute('normal', new THREE.BufferAttribute(nor, 3));
   out.setAttribute('uv', new THREE.BufferAttribute(uv, 2));
   if (col) out.setAttribute('color', new THREE.BufferAttribute(col, 3));
+  if (sway) out.setAttribute('sway', new THREE.BufferAttribute(sway, 1));
   out.setIndex(new THREE.BufferAttribute(idx, 1));
   return out;
 }

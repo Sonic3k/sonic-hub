@@ -139,6 +139,31 @@ const open = (vp, mobile, more = {}) => openPage(browser, { ...vp, mobile, place
   ok(`${id}: in the parking structure the wheels are on its decks`, kerb.decks > 900 && kerb.air.length === 0, kerb.air.length ? kerb.air.slice(0, 6).join(' · ') + (kerb.air.length > 6 ? ` … ${kerb.air.length} in all` : '') : `${kerb.decks} points above the ground, a deck within 9 cm under each`);
   }
 
+  /* the plants (engine/plants.js): near the car a tree is drawn leaf by leaf and a palm has its head of leaves, each
+     of them once (its far shape put away meanwhile); the leaf pictures keep their cover in their smaller copies; the
+     wind's clock runs with the world's */
+  const plants = await page.evaluate(async () => {
+    const W = window.__world; W.route('esa-att'); const out = { spots: [] };
+    for (const s of [330, 900, 1330]) {                                             // Mariposa under its figs; Nash under its palms
+      W.at(s); for (let w = 0; w < 80 && !W.settled(1); w++) await new Promise(f => setTimeout(f, 50)); W.step(0.05); W.step(0.05);
+      const near = W.near(), tiles = W.scene().getObjectByName('tiles'), e = W.eye(); let hidden = 0, pooled = 0, far = 0, nearest = 1e9;
+      for (const g of tiles.children) {
+        if (g.name.startsWith('near trees')) { pooled += g.count; continue; }
+        const m = g.children.find(c => c.name === 'trees'); if (!m) continue;
+        for (let k = 0; k < m.count; k++) { const a = m.instanceMatrix.array, o = 16 * k; if (a[o] === 0 && a[o + 5] === 0) hidden++; else { far++; nearest = Math.min(nearest, Math.hypot(g.position.x + a[o + 12] - e[0], g.position.z + a[o + 14] - e[2])); } }
+      }
+      out.spots.push({ s, ...near, hidden, pooled, far, nearest: Math.round(nearest) });
+    }
+    const t0 = W.plantTime(); for (let k = 0; k < 20; k++) W.step(0.05); out.wind = W.plantTime() - t0; out.cover = W.plantCover();
+    const leaf = tiles => tiles.children.filter(c => c.name.startsWith('near')).every(c => c.material.userData.plants && c.material.alphaTest > 0 && c.geometry.attributes.sway);
+    out.cards = leaf(W.scene().getObjectByName('tiles')); return out;
+  });
+  ok('near the car the trees are drawn leaf by leaf and the palms have their heads, each once', plants.cards && plants.spots.every(p => p.hidden === p.trees && p.pooled === p.trees && p.nearest >= 100) && plants.spots[0].trees >= 8 && plants.spots[2].palms >= 6,
+    plants.spots.map(p => `at ${p.s} m: ${p.trees} trees and ${p.palms} palms leaf by leaf, ${p.far} trees as far shapes (the nearest ${p.nearest} m off)`).join(' · '));
+  const cov = Object.entries(plants.cover).map(([k, v]) => [k, v[0], Math.max(...v.map(c => Math.abs(c - v[0])))]);
+  ok('the leaf pictures keep their cover from far (their smaller copies pass as much of a spray as the full one)', cov.length === 5 && cov.every(([, c0, off]) => c0 > 0.15 && c0 < 0.8 && off < 0.05), cov.map(([k, c0, off]) => `${k} ${Math.round(c0 * 100)}% (±${(off * 100).toFixed(1)})`).join(', '));
+  ok('the wind\'s clock runs with the world\'s', Math.abs(plants.wind - 1) < 0.01, `${plants.wind.toFixed(2)} s in 1 s`);
+
   /* a hand on the wheel */
   const hand = await page.evaluate(() => {
     const W = window.__world, D = W.drive(), st = D.state; W.route('esa-att'); W.at(140); W.go(); W.setAuto(false);

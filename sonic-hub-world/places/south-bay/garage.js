@@ -15,6 +15,7 @@ import * as THREE from 'three';
 import { canvasTex } from '../../engine/tex.js';
 import { concTex } from '../esa-el-segundo-2015/mat.js';
 import { carGeo, CAR_COLOURS } from '../../engine/world/tiles.js';
+import { plantMaterial, treeAt, hedgeBox, mergePlants } from '../../engine/plants.js';
 import G from './garage.json';
 
 const F = G.floor, lvl = k => (k - 1) * F;
@@ -192,6 +193,10 @@ export function buildGarage({ scene }) {
   for (const z of isl) { fine.box(gx - 3.4, 0, z - 0.25, gx + 1.0, 0.15, z + 0.25, YELLOW, 'y'); fine.box(gx - 0.2, 0.15, z - 0.17, gx + 0.2, 1.25, z + 0.17, WHITE, 'y'); }      // an island, the machine on it
   const bedN = Math.max(...G.lanesVisitor) + 1.75 + 0.6, bedS = Math.min(...G.lanesOut) - 1.75 - 0.6;
   fine.box(x0 - 5.6, 0, bedN, x0 - 0.2, 0.22, bedS, MULCH, 'y');
+  /* in it a clipped hedge towards the street and two gums (Street View, 12/2023: tall eucalyptus before the face) */
+  const plants = new THREE.Mesh(mergePlants([hedgeBox({ x0: x0 - 5.3, y0: 0.2, z0: bedN + 0.4, x1: x0 - 4.3, y1: 1.15, z1: bedS - 0.4, seed: 7 }),
+    treeAt('gum', { h: 15, r: 2.6, seed: 5, at: [x0 - 3.3, 0.2, bedN + 2.1] }), treeAt('gum', { h: 13, r: 2.4, seed: 9, at: [x0 - 3.5, 0.2, bedS - 2.3] })]), plantMaterial());
+  plants.name = 'garage shell plants'; plants.castShadow = true; plants.receiveShadow = false; plants.matrixAutoUpdate = false;
   const signs = Acc(1), SIGN = [['↑ EMPLOYEE / VISITOR ENTRANCE ↑', (G.lanesVisitor[0] + G.lanesVisitor[1]) / 2, 6.4], ['EMPLOYEE ONLY EXIT', G.lanesOut[1], 3.2], ['EMPLOYEE ONLY EXIT', G.lanesOut[0], 3.2], ['EMPLOYEE ONLY ENTRANCE', G.laneIn, 3.2]];
   const signTex = canvasTex(1024, 256, (g, w, h) => {
     g.fillStyle = '#1d2c4a'; g.fillRect(0, 0, w, h); g.fillStyle = '#f4f3ee'; g.textAlign = 'center'; g.textBaseline = 'middle';
@@ -223,7 +228,7 @@ export function buildGarage({ scene }) {
 
   const lampMat = new THREE.MeshBasicMaterial({ vertexColors: true, toneMapped: false });
   const parts = [shell.mesh(shellMat, 'garage shell'), inside.mesh(insideMat, 'garage shell decks'), flat.mesh(flatMat, 'garage shell glass', false),
-    fine.mesh(insideMat, 'garage inside'), marks.mesh(lineMat, 'garage inside lines', false), lamps.mesh(lampMat, 'garage inside lamps', false), signMesh, arms, cars];
+    fine.mesh(insideMat, 'garage inside'), marks.mesh(lineMat, 'garage inside lines', false), lamps.mesh(lampMat, 'garage inside lamps', false), signMesh, arms, cars, plants];
   for (const m of parts) scene.add(m);
   return {
     setHour(id) { const night = id === 'toi'; hourU.value = night ? 0 : 1; for (const m of [insideMat, lineMat, carMat]) m.emissiveIntensity = night ? 0.55 : 0.2; },   // by night the tubes are all the light there is

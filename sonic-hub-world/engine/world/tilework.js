@@ -319,7 +319,7 @@ export function makeBuilder() {
     /* things along the streets */
     for (const p of t.p || []) {
       const x = p[1] / 10, z = p[2] / 10;
-      if (p[0] === 0) { const hh = hash(p[1], p[2], 3); trees.push(x, z, p[4] / 10, (hh % 628) / 100, 0.85 + (hh >>> 9) % 30 / 100, (hh >>> 16) % 6); }
+      if (p[0] === 0) { const hh = hash(p[1], p[2], 3); trees.push(x, z, p[4] / 10, (hh % 628) / 100, 0.85 + (hh >>> 9) % 30 / 100, (hh >>> 16) % 6 + 16 * Math.min(2, Math.max(0, p[3] | 0))); }   // (a: its kind — 0 a fig, 1 a round-headed tree, 2 a gum)
       else if (p[0] === 1) { const hh = hash(p[1], p[2], 5); palms.push(x, z, p[4] / 10, (hh % 628) / 100, ((hh >>> 10) % 100) / 100 - 0.5); }
       else if (p[0] === 2) {                                                          // a street light: a pole, an arm over the road, the lamp's box
         const a = p[3] * Math.PI / 180, ux = Math.cos(a), uz = Math.sin(a);

@@ -14,6 +14,7 @@
      music     { api, prefer, fallback } for the head unit
      start     { route, hour } */
 import * as THREE from 'three';
+import { plantTime, plantCover } from '../plants.js';
 import { setAniso } from '../tex.js';
 import { setupLight } from '../light.js';
 import { setupTiles, signalState } from './tiles.js';
@@ -225,6 +226,8 @@ async function start(world) {
     /** one frame's cost, the two passes told apart */
     cost: () => { renderer.info.autoReset = false; renderer.info.reset(); renderer.clear(); renderer.render(scene, camera); const w = { calls: renderer.info.render.calls, tris: renderer.info.render.triangles }; renderer.info.reset(); if (view === 'cabin') { renderer.clearDepth(); renderer.render(cabin.scene, cabin.camera); } const c = { calls: renderer.info.render.calls, tris: renderer.info.render.triangles }; renderer.info.autoReset = true; return { world: w, cabin: c }; },
     scene: () => scene, camera: () => camera, cabin: () => cabin, drive: () => drive, signal: signalState, view: () => view,
+    /** the plants: how many trees and palms are drawn leaf by leaf round the eye just now; the wind's clock; the leaf pictures' cover level by level */
+    near: () => tiles.near(), plantTime: () => plantTime.value, plantCover,
     /** what a site built by hand gave back (its live object) */
     site: id => (sites.find(s => s.id === id) || {}).live,
     /** the plan round (x, z), `span` metres across, cut at `cut` metres above the ground (0: nothing cut); over() goes back to the car */

@@ -2,6 +2,7 @@
    the frame's time (engine/world/tilework.js in a Worker), put in a mesh or two per material, and dropped again when
    the eye has gone 1.5 km on. What a square holds is worked out beforehand (a place's data/world.py). */
 import * as THREE from 'three';
+import { plantMaterial, plantTime, treeUnit, palmHead, TREE_KINDS, TREE_BLOB, TREE_FAR } from '../plants.js';
 import { makeBuilder } from './tilework.js';
 
 const T = 500;
@@ -94,8 +95,9 @@ function mergeGeos(list) {
   const out = new THREE.BufferGeometry(); out.setAttribute('position', new THREE.BufferAttribute(pos, 3)); out.setAttribute('normal', new THREE.BufferAttribute(nor, 3)); out.setAttribute('color', new THREE.BufferAttribute(col, 3)); return out;
 }
 function treeGeo(detail) {
-  /* a street tree of the South Bay (an Indian laurel fig, more or less): a short grey trunk, a dense dark dome wider than
-     tall. One unit is the crown's radius. */
+  /* a street tree from far (beyond NEAR; nearer, engine/plants.js draws it leaf by leaf): a short grey trunk, a dense
+     dark dome wider than tall — an Indian laurel fig; stretched and tinted, it stands for the other kinds (TREE_BLOB,
+     TREE_FAR). One unit is the crown's radius. */
   const leaf = new THREE.Color('#33531f'), under = new THREE.Color('#1f3414'), bark = new THREE.Color('#6d6a63');
   const crown = wobble(new THREE.IcosahedronGeometry(1, detail), detail ? 0.22 : 0.1, 3).scale(1, 0.72, 1).translate(0, 1.42, 0);
   crown.computeVertexNormals();
@@ -104,12 +106,13 @@ function treeGeo(detail) {
   return mergeGeos([crown, trunk]);
 }
 function palmGeo() {
-  /* a Mexican fan palm: a thin trunk (one unit tall; the instance stretches it), a mop of fronds, a skirt of dead ones */
+  /* a Mexican fan palm: a thin trunk (one unit tall; the instance stretches it), a mop of fronds, a skirt of dead ones.
+     Within NEAR a head of real leaves stands on the trunk (engine/plants.js) and this mop is inside it. */
   const bark = new THREE.Color('#7a6a55'), frond = new THREE.Color('#4a6628'), dead = new THREE.Color('#6f5a3e'), parts = [];
   parts.push(paint(new THREE.CylinderGeometry(0.17, 0.24, 1, 6, 1, true).translate(0, 0.5, 0), c => c.copy(bark)));
-  parts.push(paint(new THREE.SphereGeometry(0.5, 6, 4).scale(1, 0.09, 1).translate(0, 0.975, 0), c => c.copy(dead)));
+  parts.push(paint(new THREE.SphereGeometry(0.34, 6, 4).scale(1, 0.07, 1).translate(0, 0.975, 0), c => c.copy(dead)));
   for (let i = 0; i < 9; i++) {
-    const a = i / 9 * Math.PI * 2 + (i % 2) * 0.3, tilt = i % 3 === 0 ? 0.062 : i % 3 === 1 ? 0.018 : -0.035, L = 2.5, w = 0.55;
+    const a = i / 9 * Math.PI * 2 + (i % 2) * 0.3, tilt = i % 3 === 0 ? 0.062 : i % 3 === 1 ? 0.018 : -0.035, L = 2.0, w = 0.46;
     const g = new THREE.BufferGeometry(), ca = Math.cos(a), sa = Math.sin(a), px = -sa * w, pz = ca * w;
     const P = [[0, 1, 0], [ca * L * 0.55 + px, 1 + tilt + 0.02, sa * L * 0.55 + pz], [ca * L * 0.55 - px, 1 + tilt + 0.02, sa * L * 0.55 - pz], [ca * L, 1 + tilt * 0.4 - 0.03, sa * L]];
     const tri = [0, 1, 2, 1, 3, 2, 0, 2, 1, 1, 2, 3], pos = new Float32Array(tri.length * 3); tri.forEach((k, j) => pos.set(P[k], j * 3));
@@ -174,6 +177,43 @@ export function setupTiles(scene, o) {
   for (const k of ['road', 'marks']) M[k].userData.noCast = true;
   const G = { treeHi: treeGeo(1), treeLo: treeGeo(0), palm: palmGeo(), carHi: carGeo(true), carLo: carGeo(false), lamp: new THREE.CircleGeometry(0.108, 10), stop: new THREE.PlaneGeometry(0.76, 0.76), glow: new THREE.PlaneGeometry(0.62, 0.3).rotateX(Math.PI / 2) };
   const TREE_TINT = ['#ffffff', '#e6f0d8', '#f2ead0', '#d8ecd8', '#fff4d6', '#e0e6c8'].map(c => new THREE.Color(c));
+  /* Near the eye a tree is drawn leaf by leaf and a palm gets its head of leaves (engine/plants.js): one pool of
+     instances for each kind, filled from the squares' own lists with what stands within NEAR metres; a tree taken into
+     a pool is taken out of its square's far ones (its blob shrunk to nothing) until it is far again. */
+  const NEAR = 105, POOL = 240, ZERO = new THREE.Matrix4().makeScale(0, 0, 0), BLOBS = TREE_KINDS.map(k => TREE_BLOB[k]), FAR = TREE_KINDS.map(k => new THREE.Color(...TREE_FAR[k]));
+  const pool = (geo, name) => { const m = new THREE.InstancedMesh(geo, plantMaterial(), POOL); m.count = 0; m.visible = false; m.frustumCulled = false; m.castShadow = true; m.receiveShadow = false; m.matrixAutoUpdate = false; m.name = name; root.add(m); return m; };
+  const nearTrees = TREE_KINDS.map((k, i) => pool(treeUnit(k, 3 + i * 4), 'near trees ' + k)), nearPalms = pool(palmHead(2), 'near palms');
+  const nearAt = { x: 1e9, z: 1e9, dirty: false, trees: 0, palms: 0 }, top = new THREE.Vector3();
+  function refreshNear(x, z) {
+    nearAt.x = x; nearAt.z = z; nearAt.dirty = false; const n = TREE_KINDS.map(() => 0); let np = 0;
+    for (const t of tiles.values()) {
+      if (t.state !== 'live') continue;
+      const ox = t.i * T, oz = t.j * T, close = Math.hypot(Math.max(ox - x, 0, x - ox - T), Math.max(oz - z, 0, z - oz - T)) < NEAR;
+      if (t.trees && (close || t.hid)) {
+        const tr = t.treeData, nt = tr.length / 6; let hid = false;
+        for (let k = 0; k < nt; k++) {
+          const wx = ox + tr[6 * k], wz = oz + tr[6 * k + 1], sp = (tr[6 * k + 5] >> 4) & 3;
+          if (close && (wx - x) ** 2 + (wz - z) ** 2 < NEAR * NEAR && n[sp] < POOL) {
+            const s = tr[6 * k + 2]; dummy.position.set(wx, 0, wz); dummy.scale.set(s, s * tr[6 * k + 4], s); dummy.rotation.set(0, tr[6 * k + 3], 0); dummy.updateMatrix();
+            nearTrees[sp].setMatrixAt(n[sp], dummy.matrix); nearTrees[sp].setColorAt(n[sp], TREE_TINT[tr[6 * k + 5] & 15]); n[sp]++; t.trees.setMatrixAt(k, ZERO); hid = true;
+          } else { t.treeAt(k); dummy.updateMatrix(); t.trees.setMatrixAt(k, dummy.matrix); }
+        }
+        t.trees.instanceMatrix.needsUpdate = true; t.hid = hid;
+      }
+      if (t.palms && close) {
+        const pa = t.palmData, npa = pa.length / 5;
+        for (let k = 0; k < npa && np < POOL; k++) {
+          const wx = ox + pa[5 * k], wz = oz + pa[5 * k + 1]; if ((wx - x) ** 2 + (wz - z) ** 2 >= NEAR * NEAR) continue;
+          t.palmAt(k); dummy.updateMatrix(); top.set(0, 1, 0).applyMatrix4(dummy.matrix);                                // where its trunk ends
+          const s = 0.9 + ((k * 37) % 26) / 100; dummy.position.set(ox + top.x, top.y, oz + top.z); dummy.scale.set(s, s, s); dummy.rotation.set(0, pa[5 * k + 3] * 2.3, 0); dummy.updateMatrix();
+          nearPalms.setMatrixAt(np++, dummy.matrix);
+        }
+      }
+    }
+    nearTrees.forEach((m, i) => { m.count = n[i]; m.visible = n[i] > 0; m.instanceMatrix.needsUpdate = true; if (m.instanceColor) m.instanceColor.needsUpdate = true; });
+    nearPalms.count = np; nearPalms.visible = np > 0; nearPalms.instanceMatrix.needsUpdate = true;
+    nearAt.trees = n.reduce((a, b) => a + b, 0); nearAt.palms = np;
+  }
   const CAR_TINT = CAR_COLOURS.map(c => new THREE.Color(c));
 
   /* the builder: in a Worker where the browser allows one made from the page's own text */
@@ -209,12 +249,15 @@ export function setupTiles(scene, o) {
     add('plain', M.flat, true, true); add('road', M.road, false, true, true); t.marks = add('marks', M.marks, false, true);
     add('conc', M.conc, true, true, true); add('walls', M.walls, true, true, true);
     const inst = (geo, mat, n, each, cast) => { if (!n) return null; const m = new THREE.InstancedMesh(geo, mat, n); for (let k = 0; k < n; k++) { each(k); dummy.updateMatrix(); m.setMatrixAt(k, dummy.matrix); } m.castShadow = cast; m.receiveShadow = false; m.matrixAutoUpdate = false; m.frustumCulled = true; m.computeBoundingSphere(); grp.add(m); return m; };
-    const tr = d.trees, nt = tr.length / 6;
-    t.trees = inst(G.treeLo, M.tree, nt, k => { dummy.position.set(tr[6 * k], 0, tr[6 * k + 1]); const s = tr[6 * k + 2]; dummy.scale.set(s, s * tr[6 * k + 4], s); dummy.rotation.set(0, tr[6 * k + 3], 0); }, true);
-    if (t.trees) { for (let k = 0; k < nt; k++) t.trees.setColorAt(k, TREE_TINT[tr[6 * k + 5] % TREE_TINT.length]); t.trees.name = 'trees'; }
+    const tr = d.trees, nt = tr.length / 6;                                        // each: x, z, its crown's radius, its turn, how squat it is, its tint (0…15) + 16 × its kind
+    t.treeAt = k => { const s = tr[6 * k + 2], B = BLOBS[(tr[6 * k + 5] >> 4) & 3]; dummy.position.set(tr[6 * k], 0, tr[6 * k + 1]); dummy.scale.set(s * B[0], s * tr[6 * k + 4] * B[1], s * B[2]); dummy.rotation.set(0, tr[6 * k + 3], 0); };
+    t.trees = inst(G.treeLo, M.tree, nt, t.treeAt, true);
+    if (t.trees) { for (let k = 0; k < nt; k++) t.trees.setColorAt(k, col.copy(TREE_TINT[tr[6 * k + 5] & 15]).multiply(FAR[(tr[6 * k + 5] >> 4) & 3])); t.trees.name = 'trees'; t.treeData = tr; }
     const pa = d.palms, np = pa.length / 5;
-    t.palms = inst(G.palm, M.palm, np, k => { dummy.position.set(pa[5 * k], 0, pa[5 * k + 1]); dummy.scale.set(1, pa[5 * k + 2], 1); dummy.rotation.set(0, pa[5 * k + 3], pa[5 * k + 4] * 0.08); }, true);
-    if (t.palms) t.palms.name = 'palms';
+    t.palmAt = k => { dummy.position.set(pa[5 * k], 0, pa[5 * k + 1]); dummy.scale.set(1, pa[5 * k + 2], 1); dummy.rotation.set(0, pa[5 * k + 3], pa[5 * k + 4] * 0.08); };
+    t.palms = inst(G.palm, M.palm, np, t.palmAt, true);
+    if (t.palms) { t.palms.name = 'palms'; t.palmData = pa; }
+    nearAt.dirty = true;
     const cr = d.cars, nc = cr.length / 4;
     t.cars = inst(G.carLo, M.car, nc, k => { dummy.position.set(cr[4 * k], 0, cr[4 * k + 1]); dummy.scale.set(1, 1, 1); dummy.rotation.set(0, -Math.PI / 2 - cr[4 * k + 2], 0); }, false);
     if (t.cars) { for (let k = 0; k < nc; k++) t.cars.setColorAt(k, CAR_TINT[cr[4 * k + 3] % CAR_TINT.length]); t.cars.name = 'parked cars'; }
@@ -234,7 +277,7 @@ export function setupTiles(scene, o) {
   }
   function drop(key, t) {
     if (t.group) { root.remove(t.group); t.group.traverse(m => { if (m.isMesh && m.geometry && !Object.values(G).includes(m.geometry)) m.geometry.dispose(); if (m.isInstancedMesh) m.dispose(); }); st.live--; st.tris -= t.tris; st.bytes -= t.bytes; st.dropped++; }
-    t.state = 'gone'; tiles.delete(key);
+    t.state = 'gone'; tiles.delete(key); nearAt.dirty = true;
   }
   const built = (t, data) => { t.data = data; t.state = 'built'; ready.push(t); st.built++; st.msSum += data.ms; st.msMax = Math.max(st.msMax, data.ms); };
   function want(i, j) {
@@ -263,7 +306,7 @@ export function setupTiles(scene, o) {
   return {
     /** call every frame with where the eye is and the world's own clock */
     update(x, z, now) {
-      time = now;
+      time = now; plantTime.value = now;
       const ci = Math.floor(x / T), cj = Math.floor(z / T);
       const order = []; for (let di = -KEEP; di <= KEEP; di++) for (let dj = -KEEP; dj <= KEEP; dj++) order.push([Math.abs(di) + Math.abs(dj), ci + di, cj + dj]);
       order.sort((a, b) => a[0] - b[0]); let asked = 0;
@@ -280,6 +323,7 @@ export function setupTiles(scene, o) {
         if (t.heads) { t.heads.visible = d < 420; if (sig !== lastSig && d < 420) paintSignals(t); }
       }
       lastSig = sig;
+      if (nearAt.dirty || Math.hypot(x - nearAt.x, z - nearAt.z) > 6) refreshNear(x, z);
     },
     /** are the squares round this point all in place (for a start, or a tool that waits) */
     settled(x, z, reach = 1) {
@@ -288,6 +332,7 @@ export function setupTiles(scene, o) {
       return true;
     },
     setNight(v) { night = v; M.walls.emissiveIntensity = v ? 0.5 : 0; for (const t of tiles.values()) if (t.glow) t.glow.visible = v; },
+    near: () => ({ trees: nearAt.trees, palms: nearAt.palms }),
     stats: () => ({ ...st, msAvg: st.built ? +(st.msSum / st.built).toFixed(1) : 0, waiting: ready.length, held: tiles.size, mb: +(st.bytes / 1048576).toFixed(1), worker: !!worker }),
     materials: M, root,
   };

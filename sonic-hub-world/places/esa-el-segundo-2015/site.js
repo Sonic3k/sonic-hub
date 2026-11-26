@@ -8,7 +8,7 @@ import * as THREE from 'three';
 import { part } from '../../engine/kit.js';
 import { M, canvasTex, plateTex, rng } from '../../engine/tex.js';
 import { X } from './mat.js';
-import { P, tree, car, beetle, lotLight, fence, glare } from './props.js';
+import { P, tree, shrub as shrubAt, car, beetle, lotLight, fence, glare } from './props.js';
 import { WINGS, LOT, LOBBY, TOWER, KERB, G1, flat } from './plan.js';
 import { plate } from './hotel.js';
 
@@ -73,7 +73,7 @@ export function buildSite(scene, shared, ctx) {
     b.box(X.asphalt('#3d3d3c', 3), -100, -0.04, -68.4, 52, 0.0, 132, { uv: [4, 4], uvw: true, cast: false });
     const n = WINGS.north, s = WINGS.south, mn = WINGS.main, L = LOT;
     const red = P.red(), walk = X.conc('#c6c2b8', 4, true), yellow = M.plain('#d9b030', 0.8), white = P.stripe();
-    const shrub = (x, z, r = 0.6, c = '#46682c') => b.sphere(P.leaves(c, 1), x, r * 0.7, z, r, { seg: 7, sy: 0.75, cast: false });
+    const shrub = (x, z, r = 0.6, c = '#46682c') => shrubAt(b, x, z, r, c);
     /** where a face's stair towers break its row of stalls: [from, to, the island's options] — as long as the tower with the
         walk that passes either side of it; the island itself starts at the tower's face (`face`: x or z) */
     const WALK = 1.4, towerCuts = (wing, side, face) => wing.towers.filter(t => t.side === side).map(t => { const am = (t.a0 + t.a1) / 2; return [am - TOWER.w / 2 - WALK, am + TOWER.w / 2 + WALK, { shrubs: 3, face }]; });

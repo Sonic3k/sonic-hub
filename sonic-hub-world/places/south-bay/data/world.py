@@ -52,7 +52,7 @@ TILE (lengths in decimetres, local to the tile's north-west corner; angles in de
                                     2 right 3 left + through 4 through + right 5 the word STOP 6 left + right
                                     8 the yellow pad at a corner
   e  [[kind, height, halfwidth, x,z,…]]   decks in the air: 0 a track of the light rail 1 a road bridge
-  p  [[type, x, z, a, s]]           things: 0 tree (s: crown radius) 1 palm (s: height) 2 street light (a: the way
+  p  [[type, x, z, a, s]]           things: 0 tree (s: crown radius; a: its kind) 1 palm (s: height) 2 street light (a: the way
                                     its arm reaches) 4 stop sign (a: the way it faces) 5 a parked car (a: the way its
                                     nose points; s: which colour)
   q  [[x, z, a, height, kind]]      the piers under the decks (a: along the deck; kind as e), none standing in a road
@@ -387,7 +387,8 @@ def build(W, bounds):
             # (the streets of the hotel place's box too: the kerbs there are the world's now, and what stands along a kerb
             # goes where the kerb is. What that place knew of its streets' trees is in TREES; its own block stays its own.)
             p, cl = r['p'], r['cl']; seed = h32('road', r['name'] or r['id'])
-            species = TREES.get(r['name'], -1 if seed % 100 < 4 else (1 if seed % 100 < 28 else 0))
+            species = TREES.get(r['name'], -1 if seed % 100 < 4 else (1 if seed % 100 < 28 else 0))                       # a street is planted with one kind: none, palms, or trees —
+            kind = TREE_KIND.get(r['name'], 0 if (seed >> 12) % 100 < 38 else (1 if (seed >> 12) % 100 < 86 else 2))        # figs, round-headed trees or gums (engine/plants.js)
             own = lambda x, z: ESA_BLOCK[0] < x < ESA_BLOCK[1] and ESA_BLOCK[2] < z < ESA_BLOCK[3]
             every = 12.0 + (seed >> 8) % 7
             for side in (1, -1):
@@ -398,7 +399,7 @@ def build(W, bounds):
                         back = offset(seg, side * (r['hw'] + 3.6)); bl = lens(back); d = 5.0 + (seed >> 4) % 6
                         while d < bl[-1] - 3:
                             (x, z), _ = at(back, bl, d); hh = h32('t', round(x), round(z))
-                            if not paved(x, z, 0.8) and not own(x, z): point('p', x, z, [0, int((3.0 + hh % 22 / 10.0) * 10)] if species == 0 else [0, int((11 + hh % 70 / 10.0) * 10)], [species])
+                            if not paved(x, z, 0.8) and not own(x, z): point('p', x, z, [kind, tree_size(kind, hh)] if species == 0 else [0, int((11 + hh % 70 / 10.0) * 10)], [species])
                             d += every
                     if r['prof'][-1 if side > 0 else 0][0] in 'pq':                      # cars parked along the kerb, nose the way that side's traffic goes; about one place in three taken
                         line = offset(seg, side * (r['hw'] - 1.2)); ll = lens(line); d = 7.5 + h32('kerb', r['id'], side, round(a)) % 50 / 10.0
@@ -522,14 +523,15 @@ def build(W, bounds):
                     for a in range(len(q)):
                         (x0, z0), (x1, z1) = q[a], q[(a + 1) % len(q)]
                         if (z0 > z) != (z1 > z) and x < x0 + (z - z0) / (z1 - z0) * (x1 - x0): ins = not ins
-                    if ins and n > 0: point('p', x, z, [0, int((3.2 + hh % 20 / 10.0) * 10)], [0]); n -= 1
+                    if ins and n > 0: kd = (1, 0, 1, 2)[(hh >> 20) % 4]; point('p', x, z, [kd, tree_size(kd, hh)], [0]); n -= 1
     for rid, (tg, mem) in W.rels.items():
         if len(mem) == 1 and mem[0] in W.ways: add_building('r' + rid, tg, W.ways[mem[0]][1])
     for n, tg in W.ntag.items():
         if tg.get('natural') == 'tree' and n in W.xz:
             x, z = W.xz[n]
             if not (ESA_BOX[0] < x < ESA_BOX[1] and ESA_BOX[2] < z < ESA_BOX[3]):
-                point('p', x, z, [0, 40], [0])
+                hh = h32('n', round(x / 90), round(z / 90)); kd = (1, 0, 1, 2)[hh % 4]                                   # (trees the map has one by one: of a kind with their neighbours)
+                point('p', x, z, [kd, tree_size(kd, h32('t', round(x), round(z)))], [0])
     return tiles, roads, service, counts, S, place
 
 # ── a route: the lane a car keeps, and the path it drives along it ─────────────────────────────────────────────────────────
@@ -885,6 +887,13 @@ STRIPES = [('East Mariposa Avenue', 6, None, 'bbcff'),
 # What places/esa-el-segundo-2015 knows of the trees along its streets (his photographs, Street View), for the rule that
 # plants every street's: 0 broad-leaved, 1 palms, -1 none. And the medians that carry a row of palms.
 TREES = {'East Mariposa Avenue': 0, 'Continental Boulevard': 0, 'North Nash Street': 1, 'North Pacific Coast Highway': -1}
+# … and of which kind its trees are (0 an Indian laurel fig, 1 a round-headed tree, 2 a gum): the figs of Mariposa and
+# Continental are in his photographs of 2015. Elsewhere a street's kind is drawn by lot, one kind to a street.
+TREE_KIND = {'East Mariposa Avenue': 0, 'Continental Boulevard': 0}
+def tree_size(kind, hh):
+    """a tree's crown radius in decimetres: a fig's 3.0–5.1 m, a round-headed tree's 2.0–3.1 m, a gum's 2.5–3.4 m (its
+    height is five times that)"""
+    return int(((3.0, 2.0, 2.5)[kind] + hh % 22 / 10.0 * (1.0, 0.52, 0.42)[kind]) * 10)
 MEDIAN_PALMS = ('Pacific Coast Highway', 'East Maple Avenue')
 # Streets whose width and lanes are known from the satellite picture: kerb to kerb, and its strips from the left kerb
 # to the right ('q', 'p': where cars park). Lairport: 16 m, a double yellow line, cars parked along both kerbs.

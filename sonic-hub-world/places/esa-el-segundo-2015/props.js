@@ -1,74 +1,45 @@
 /* Things that stand about in a Los Angeles parking lot and along its streets, built with a Builder: trees (the
-   rounded broadleaf trees of the lot, the Indian laurel figs of Mariposa, fan palms), parked cars of 2015, light poles,
-   the steel picket fence, curbs, stripes and wheel stops, street lights, signal poles, hydrants. */
+   rounded broadleaf trees of the lot, the Indian laurel figs of Mariposa, fan palms), shrubs, parked cars of 2015,
+   light poles, the steel picket fence, curbs, stripes and wheel stops, street lights, signal poles, hydrants.
+   The plants are the engine's (engine/plants.js): crowns of leaf cards round a core, one material for them all. */
 import * as THREE from 'three';
 import { park } from './cars.js';
 import { M, canvasTex, rng, shade } from '../../engine/tex.js';
 import { X } from './mat.js';
+import { plantMaterial, treeAt, palmAt, shrubAt } from '../../engine/plants.js';
 
 const mats = new Map();
 const mat = (k, f) => { let m = mats.get(k); if (!m) mats.set(k, m = f()); return m; };
-const leafTex = (base, seed) => canvasTex(256, 256, (g, w, h) => {
-  const R = rng(seed); g.fillStyle = shade(base, -0.25); g.fillRect(0, 0, w, h);
-  for (let i = 0; i < 2600; i++) { const v = R(); g.fillStyle = v < 0.45 ? shade(base, -0.45 + R() * 0.2) : v < 0.85 ? shade(base, (R() - 0.3) * 0.3) : shade(base, 0.25 + R() * 0.25); g.beginPath(); g.ellipse(R() * w, R() * h, 2 + R() * 4, 1.5 + R() * 2.5, R() * 3, 0, 7); g.fill(); }
-});
-const frondTex = () => canvasTex(128, 256, (g, w, h) => {
-  g.clearRect(0, 0, w, h); const R = rng(4);
-  g.strokeStyle = '#5b5a2c'; g.lineWidth = 4; g.beginPath(); g.moveTo(w / 2, h); g.lineTo(w / 2, 20); g.stroke();
-  for (let i = 0; i < 46; i++) { const a = -Math.PI / 2 + (i / 45 - 0.5) * 2.6, len = 70 + R() * 50; g.strokeStyle = R() < 0.6 ? '#4f6a2c' : '#6c8a3c'; g.lineWidth = 3 + R() * 2; g.beginPath(); g.moveTo(w / 2, 40); g.lineTo(w / 2 + Math.cos(a) * len * 0.55, 40 + Math.abs(Math.sin(a)) * len * 0.3 + len * 0.55); g.stroke(); }
-}, { repeat: false });
 const pickTex = () => canvasTex(256, 64, (g, w, h) => { g.clearRect(0, 0, w, h); g.fillStyle = '#f4f3ef'; for (let x = 4; x < w; x += 16) g.fillRect(x, 0, 4, h); g.fillRect(0, 4, w, 4); g.fillRect(0, h - 10, w, 4); }, { repeat: true });
 
 export const P = {
-  leaves: (c = '#4d6b30', seed = 1) => mat('leaf' + c + seed, () => new THREE.MeshStandardMaterial({ map: leafTex(c, seed), roughness: 0.9 })),
+  leaves: (c = '#4d6b30', seed = 1) => ({ leaf: c, seed }),                         // (a tree's leaves: their colour — the plants' one material wears it on its vertices)
   bark: (c = '#6b5a48') => M.plain(c, 0.9),
-  frond: () => mat('frond', () => { const m = new THREE.MeshStandardMaterial({ map: frondTex(), alphaTest: 0.45, side: THREE.DoubleSide, roughness: 0.85 }); return m; }),
   picket: () => mat('picket', () => new THREE.MeshStandardMaterial({ map: pickTex(), alphaTest: 0.5, side: THREE.DoubleSide, roughness: 0.6 })),
   stripe: () => M.plain('#e9e8e2', 0.85), red: () => M.plain('#b3332b', 0.8), curb: () => X.conc('#c3bfb6', 3, false),
   pole: () => M.plain('#5d5f60', 0.5, 0.6), poleDark: () => M.plain('#2f3133', 0.5, 0.6),
 };
 
-/** a rounded broadleaf tree (the lot's water gums and pittosporums): h tall, crown r wide */
+/** a rounded broadleaf tree (the lot's water gums and pittosporums): h tall, crown r wide. o.kind: 'round' | 'fig' | 'gum' */
 export function tree(b, x, z, o = {}) {
-  const R = rng(o.seed ?? ((x * 73 + z * 31) | 0)), h = o.h ?? 6 + R() * 2.5, r = o.r ?? 2.2 + R() * 1.0, lean = (R() - 0.5) * 6;
-  const leaves = o.leaves ?? P.leaves(['#4d6b30', '#577838', '#466428', '#5f7f3b'][(R() * 4) | 0], (R() * 9) | 0);
-  b.cyl(P.bark(o.bark), x, 0, z, 0.13 + h * 0.012, h * 0.55, { seg: 7, r2: 0.09, rz: lean });
-  for (let i = 0; i < 3; i++) { const a = R() * 6.283; b.bar(P.bark(o.bark), x, h * 0.42, z, x + Math.cos(a) * r * 0.55, h * (0.62 + R() * 0.1), z + Math.sin(a) * r * 0.55, 0.08, { round: true, seg: 5, cast: false }); }
-  const n = o.blobs ?? 6;
-  for (let i = 0; i < n; i++) { const a = i / n * 6.283 + R(), d = r * (0.25 + R() * 0.4), s = r * (0.55 + R() * 0.3); b.sphere(leaves, x + Math.cos(a) * d, h * 0.68 + R() * h * 0.22, z + Math.sin(a) * d, s, { seg: 7, sy: 0.82 }); }
-  b.sphere(leaves, x, h * 0.84, z, r * 0.7, { seg: 7, sy: 0.75 });
+  const R = rng(o.seed ?? ((x * 73 + z * 31) | 0)), h = o.h ?? 6 + R() * 2.5, r = o.r ?? 2.2 + R() * 1.0; R();
+  const leaf = (o.leaves ?? P.leaves(['#4d6b30', '#577838', '#466428', '#5f7f3b'][(R() * 4) | 0], (R() * 9) | 0)).leaf;
+  b.geo(plantMaterial(), treeAt(o.kind || 'round', { h, r, tint: leaf, seed: 1 + ((R() * 97) | 0), at: [x, 0, z] }), { cast: o.cast });
 }
-/** an Indian laurel fig of Mariposa Ave: a wide dome on a grey trunk that splits low */
+/** an Indian laurel fig of Mariposa Ave: a dense dark dome much wider than tall on a short grey trunk that splits low
+    (photographs 1783–1786), its underside a ceiling some 3.5 m up */
 export function ficus(b, x, z, o = {}) {
-  /* the Indian laurel figs of Mariposa and Continental (photographs 1783–1786): a short grey trunk splitting low into
-     five or six smooth limbs, a dense dark dome much wider than tall, its underside a ceiling some 3.5 m up */
   const R = rng(o.seed ?? ((x * 37 + z * 11) | 0)), h = o.h ?? 8.2 + R() * 2, r = o.r ?? 5.2 + R() * 1.4;
-  const bark = P.bark('#706d67'), leaves = P.leaves('#2f4d22', 3 + ((R() * 3) | 0)), dark = P.leaves('#26421c', 6);
-  b.cyl(bark, x, 0, z, 0.46, 0.4, { seg: 10, r2: 0.38 });
-  b.cyl(bark, x, 0.35, z, 0.38, 1.5, { seg: 10, r2: 0.32 });
-  const n = 5;
-  for (let i = 0; i < n; i++) {
-    const a = i / n * 6.283 + R() * 0.5, d1 = r * 0.3, d2 = r * 0.62, y1 = 3.2 + R() * 0.7, y2 = h * 0.62;
-    const x1 = x + Math.cos(a) * d1, z1 = z + Math.sin(a) * d1;
-    b.bar(bark, x, 1.6, z, x1, y1, z1, 0.3, { round: true, seg: 6 });
-    b.bar(bark, x1, y1 - 0.1, z1, x + Math.cos(a + 0.3) * d2, y2, z + Math.sin(a + 0.3) * d2, 0.17, { round: true, seg: 5 });
-  }
-  // the crown: a ring of clumps hanging low at the rim, a dome inside it
-  for (let i = 0; i < 7; i++) { const a = i / 7 * 6.283 + R() * 0.4, d = r * (0.58 + R() * 0.14); b.sphere(i % 3 ? leaves : dark, x + Math.cos(a) * d, h * 0.6 + R() * 0.6, z + Math.sin(a) * d, r * 0.5, { seg: 8, seg2: 6, sy: 0.7 }); }
-  b.sphere(leaves, x, h * 0.74, z, r * 0.78, { seg: 10, seg2: 6, sy: 0.5 });
+  b.geo(plantMaterial(), treeAt('fig', { h, r, seed: 1 + ((R() * 97) | 0), at: [x, 0, z] }));
 }
-/** a Mexican fan palm: a tall thin trunk and a ball of fronds */
+/** a Mexican fan palm: a tall thin ringed trunk, a head of fan leaves, the dead ones hanging against the trunk */
 export function palm(b, x, z, o = {}) {
   const R = rng(o.seed ?? ((x * 13 + z * 7) | 0)), h = o.h ?? 12 + R() * 7, lean = (R() - 0.5) * 5;
-  b.cyl(P.bark('#7a6a55'), x, 0, z, 0.24, h, { seg: 8, r2: 0.17, rz: lean });
-  const tx = x + Math.sin(lean * Math.PI / 180) * -h, ty = h;
-  b.sphere(P.bark('#6f5a3e'), tx, ty - 0.4, z, 0.55, { seg: 7, sy: 1.4 });           // the skirt of dead fronds
-  const fr = P.frond();
-  for (let i = 0; i < 11; i++) {
-    const a = i / 11 * 360 + R() * 20, tilt = 25 + R() * 50;
-    b.push(tx, ty, z, a); b.rbox(fr, 0, 0.0, -1.25, 0.05, 1.6, 2.5, 0, { rx: -(90 - tilt), cast: true }); b.pop();
-  }
-  for (let i = 0; i < 11; i++) { const a = (i + 0.5) / 11 * 360; b.push(tx, ty, z, a); b.quad(fr, '+y', 0, 0.15, -1.3, 1.4, 2.6, { cast: false }); b.pop(); }
+  b.geo(plantMaterial(), palmAt({ h, lean: lean * Math.PI / 180, seed: 1 + ((R() * 97) | 0), at: [x, 0, z] }));
+}
+/** a clipped ball of a shrub, r its radius, c the colour of its leaves */
+export function shrub(b, x, z, r = 0.6, c = '#46682c') {
+  b.geo(plantMaterial(), shrubAt({ r, tint: c, seed: 1 + (Math.abs((x * 31 + z * 17) | 0) % 97), at: [x, 0, z] }), { cast: false });
 }
 /** a car parked in a stall, nose toward `face` (degrees, clockwise from north): recorded, set down with the others (cars.js) */
 export function car(b, x, z, face, o = {}) { park(b, x, z, face, o); }

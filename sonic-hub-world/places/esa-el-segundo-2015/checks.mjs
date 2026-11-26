@@ -163,7 +163,7 @@ try {
   // the streets are the South Bay world's: its tiles, cut to this ground, come with the page and are built by its builder
   const st = await page.evaluate(() => {
     const root = window.__world.scene().getObjectByName('tiles'), out = { squares: 0, walks: 0, marks: 0, lamps: 0, own: [] };
-    if (root) for (const g of root.children) { out.squares++; for (const m of g.children) { const n = m.geometry.attributes.position ? m.geometry.attributes.position.count / 3 : 0; if (m.name === 'conc') out.walks += n; if (m.name === 'marks') out.marks += n; if (m.name === 'signal lamps') out.lamps += m.count; } }
+    if (root) for (const g of root.children) { if (!g.name.startsWith('tile ')) continue; out.squares++; for (const m of g.children) { const n = m.geometry.attributes.position ? m.geometry.attributes.position.count / 3 : 0; if (m.name === 'conc') out.walks += n; if (m.name === 'marks') out.marks += n; if (m.name === 'signal lamps') out.lamps += m.count; } }
     window.__world.scene().traverse(o => { if (/^greenery/.test(o.name)) out.own.push(o.name); });
     return out;
   });
