@@ -12,3 +12,6 @@ export function readMoment(s, tz = 0) {
   const t = new Date(Date.UTC(+m[1], +m[2] - 1, +m[3], +m[4], +m[5]) + tz * 3600e3);
   return { year: t.getUTCFullYear(), hour: t.getUTCHours() };
 }
+
+/** Sonic Hub's own archive (photographs, music): what a place may read while it runs. Open to any page (CORS: *). */
+export const API = 'https://angels-islands-api-production.up.railway.app/api';

@@ -2,6 +2,7 @@
   "cleanUrls": true,
   "headers": [
     { "source": "places/**", "headers": [{ "key": "Cache-Control", "value": "no-cache" }] },
+    { "source": "world/**", "headers": [{ "key": "Cache-Control", "value": "no-cache" }] },
     { "source": "index.html", "headers": [{ "key": "Cache-Control", "value": "no-cache" }] },
     { "source": "places.json", "headers": [
       { "key": "Cache-Control", "value": "no-cache" },

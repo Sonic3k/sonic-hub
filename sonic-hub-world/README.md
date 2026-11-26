@@ -87,6 +87,35 @@ Places stand alone: each is one page. Streets that join them (walking out of the
 will need places to share one ground and the engine to load a neighbour while you walk — `outside.js` of
 `van-bao-507` is the first sketch of that neighbourhood, seen only from the windows.
 
+## Worlds
+
+A world is a stretch of country too wide to build at load (the first: `south-bay`, El Segundo for a kilometre round
+one drive). Its `meta.js` says `engine: 'world'`; `engine/world/app.js` runs it and `engine/world/page.html` is its
+page. The rules it keeps (the Project's `claude/chuan-dung-the-gioi-3d.md`): nothing wider than a house is built at
+load, and what a frame may cost is checked.
+
+- **Tiles.** The ground comes 500 m at a time: `places/<id>/data/world.py` turns OpenStreetMap extracts into
+  `places/<id>/world/` (`index.json`, `routes.json`, `tiles/<i>_<j>.json`; the build copies it to `dist/world/<id>/`).
+  Everything that needs the whole network is worked out there — where a street's lines and sidewalks stop for a
+  junction, the rounded corners, stop lines, signal poles, street trees, the cars in the lots, the piers of a
+  viaduct (none in a road). `engine/world/tiles.js` holds the 5 × 5 squares round the eye; each is built in a Worker
+  (`tilework.js`, a function with no outer names) into five meshes and a few instanced ones, and dropped 1.5 km on.
+- **Sites.** A place built by hand stands in a world whole, in a group of its own (`sites` in the world's
+  `place.js`): the hotel of El Segundo with its streets. Its fine parts show only from near (`near`). A place that
+  can be a site reads `ctx.world`: `esa-el-segundo-2015/town.js` then leaves its sidewalks and lines open where the
+  world's data says a junction is, draws no signals and no traffic (the world's signals change; its car obeys them).
+- **Routes and the car.** `routes.json` holds the middle of the lane to keep, metre by metre, the speed each stretch
+  allows, the signals and stop signs, the turns, and how far a hand on the wheel may stray. `engine/world/drive.js`
+  drives it (by itself by default); `camry.js` is the cabin of his black 2014 Camry, drawn in a pass of its own over
+  the world; `headunit.js` the screen in the middle, which plays his own lists from Sonic Hub's music library.
+- **Checks.** `places/<id>/checks.mjs`: each route driven end to end with the rules kept, the wheels off the
+  kerbs, the frame under the ceiling measured on his telephone (460 draw calls, 1.2 M triangles in view), both
+  telephone layouts. `tools/worldshot.mjs` photographs a world along a route; `places/<id>/data/plot.py` draws the
+  data as a map.
+
+Not there yet: walking and the scooter in a world, the car seen from outside, other cars on the road, more
+routes and sites, scenes far away (Point Vicente, Orange County), the layers of years.
+
 ## Looks
 
 A place is built once, as it was: its surfaces, its lamps, its hours. A look (`engine/look.js`) is another way of
@@ -124,7 +153,8 @@ node tools/site.mjs http://127.0.0.1:3000     # the site as served: the list, a 
 ```
 
 The tools need Playwright and Chrome (`PLAYWRIGHT`, `CHROME`, see tools/lib.mjs) and serve three.js from
-`node_modules` in place of the CDN. `tools/shot.mjs` photographs a place from its views or from given poses;
+`node_modules` in place of the CDN (a world's page is served from `dist/` under a made-up address, since it fetches
+its data as it goes). `tools/shot.mjs` photographs a place from its views or from given poses;
 `LOOK=hoat-hinh` draws it in a look, `DPR=2` as a dense phone screen shows it. A place's page is one self-contained
 file (script inline, three.js 0.170.0 from cdnjs), so `dist/places/<id>.html` also works on its own, opened from
 disk or published as a single page.

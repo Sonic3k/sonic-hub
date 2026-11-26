@@ -30,8 +30,17 @@ export async function open(browser, o = {}) {
   const page = await ctx.newPage(); const logs = [];
   page.on('pageerror', e => logs.push('pageerror ' + e.message));
   page.on('console', m => { if (m.type() === 'error' && !/ERR_FAILED/.test(m.text())) logs.push('console ' + m.text()); });
-  await page.route('**/*', route => { const u = route.request().url(); if (u.startsWith('file://')) return route.continue(); if (u.endsWith('/three.module.min.js')) return route.fulfill({ status: 200, contentType: 'text/javascript', body: three }); return route.abort(); });
-  await page.goto('file://' + pageFile(place) + query + hash);
+  // a world fetches its data as it goes, which a page opened from a file may not: it is served from dist/ under a made-up address
+  const world = fs.existsSync(`dist/world/${place}`), SITE = 'http://world.test/';
+  const types = { html: 'text/html', json: 'application/json', js: 'text/javascript', svg: 'image/svg+xml' };
+  await page.route('**/*', route => {
+    const u = route.request().url();
+    if (u.startsWith('file://')) return route.continue();
+    if (u.endsWith('/three.module.min.js')) return route.fulfill({ status: 200, contentType: 'text/javascript', body: three });
+    if (u.startsWith(SITE)) { const f = path.resolve('dist', decodeURIComponent(new URL(u).pathname).replace(/^\/+/, '')); return fs.existsSync(f) && fs.statSync(f).isFile() ? route.fulfill({ status: 200, contentType: types[f.split('.').pop()] || 'application/octet-stream', body: fs.readFileSync(f) }) : route.fulfill({ status: 404, body: 'not found' }); }
+    return route.abort();
+  });
+  await page.goto((world ? `${SITE}places/${place}.html` : 'file://' + pageFile(place)) + query + hash);
   if (wait) {
     const ok = await page.waitForFunction(() => window.__world && window.__world.ready, null, { timeout: 120000 }).then(() => true).catch(() => false);
     if (!ok) { console.log('NOT READY'); console.log(logs.join('\n')); await browser.close(); process.exit(1); }
