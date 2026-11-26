@@ -120,19 +120,24 @@ GAMES = {
                    'thom': {'w': 5, 'l': 0, 'd': 0}, 'cuc': {'w': 5, 'l': 0, 'd': 0}, 'man': {'w': 3, 'l': 1, 'd': 0}, 'dao': {'w': 2, 'l': 1, 'd': 0},
                    'thu': {'w': 4, 'l': 1, 'd': 0}, 'vy': {'w': 3, 'l': 1, 'd': 0}, 'hien': {'w': 1, 'l': 1, 'd': 1}, 'quyen': {'w': 2, 'l': 0, 'd': 0}, 'ly': {'w': 1, 'l': 1, 'd': 0}}}),
         play=['waitsel:.prints img[src]', 'wait:5000']),
-    # on its own site, with its players at the saves service, like Caro. The title picture is the lake as a player
-    # finds it on coming in. The picture of play goes back to a game for points against the fan painter; once she has
-    # said her word a Horse is picked up, so the points it may go to are showing
+    # on its own site as well, with its players at the saves service. The first picture is the one a shelf shows small,
+    # so it is a game at the board: a game for points part of the way through, the player to move with a piece in hand,
+    # and who sits across. The second is the road the campaign is walked on: the middle of the hanging scroll, the
+    # player on it, the lanterns of whoever will play lit and the seals already won in red.
     'xiangqi': dict(
         site='https://sonic-xiangqi-production.up.railway.app/',
         shut=[r'/games/[^/]+/players'],
-        title_ls=kept_player('xiangqi', 'Vân', {'points': 1236, 'peak': 1262, 'match': None,
-            'vs': {'mei': {'w': 5, 'l': 0, 'd': 0}, 'lan': {'w': 5, 'l': 1, 'd': 0}, 'lian': {'w': 3, 'l': 2, 'd': 0}}}),
-        title=['waitsel:#rooms .tile', 'wait:400'],
-        ls=kept_player('xiangqi', 'Vân', {'points': 1236, 'peak': 1262,
+        title_ls=kept_player('xiangqi', 'Vân', {'points': 1318, 'peak': 1340, 'at': 'willow-pavilion',
             'vs': {'mei': {'w': 5, 'l': 0, 'd': 0}, 'lan': {'w': 5, 'l': 1, 'd': 0}, 'lian': {'w': 3, 'l': 2, 'd': 0}},
             'match': {'opp': 'yue', 'rated': True, 'side': 0, 'moves': [2585,8384,2305,8146,7059,8646,3079,8920,2836,9537,8247,8394,8640,8659,5409,6588,6570,6595,128,6072,8193,8641,8384,11353,6081,9139,4635,2136,4754,1936,5272,1423]}}),
-        play=['waitsel:#said:not(:empty)', 'wait:1500', 'js:press(sqOf("f5"))', 'wait:500']),
+        title=['waitsel:#said:not(:empty)', 'wait:1500', 'js:press(sqOf("f5"))', 'wait:500'],
+        ls=kept_player('xiangqi', 'Vân', {'points': 1318, 'peak': 1340, 'match': None, 'at': 'goldwall',
+            'vs': {'lu': {'w': 3, 'l': 0, 'd': 0}, 'tang': {'w': 5, 'l': 0, 'd': 0}, 'mei': {'w': 5, 'l': 0, 'd': 0}, 'lan': {'w': 5, 'l': 1, 'd': 0}, 'lian': {'w': 3, 'l': 2, 'd': 0},
+                   'shui': {'w': 5, 'l': 0, 'd': 0}, 'wan': {'w': 4, 'l': 1, 'd': 0}, 'lang': {'w': 2, 'l': 1, 'd': 0}, 'qiao': {'w': 1, 'l': 2, 'd': 0}, 'guo': {'w': 1, 'l': 3, 'd': 0},
+                   'cao': {'w': 5, 'l': 0, 'd': 0}, 'feng': {'w': 3, 'l': 1, 'd': 0}, 'ding': {'w': 2, 'l': 2, 'd': 0}, 'zhu': {'w': 5, 'l': 0, 'd': 0}, 'wei': {'w': 4, 'l': 0, 'd': 0},
+                   'miao': {'w': 5, 'l': 0, 'd': 0}, 'kuang': {'w': 3, 'l': 1, 'd': 0}, 'xiao': {'w': 1, 'l': 1, 'd': 0}, 'tao': {'w': 4, 'l': 0, 'd': 0}, 'si': {'w': 2, 'l': 1, 'd': 0},
+                   'gu': {'w': 5, 'l': 2, 'd': 0}, 'gong': {'w': 2, 'l': 2, 'd': 0}, 'suo': {'w': 1, 'l': 2, 'd': 0}, 'quan': {'w': 5, 'l': 0, 'd': 0}, 'mi': {'w': 3, 'l': 0, 'd': 0}, 'chen': {'w': 4, 'l': 1, 'd': 0}}}),
+        play=['waitsel:.stop .slip', 'wait:3200']),
     # on the portal, with its players at the saves service, like Caro. It opens by asking who is playing; its title
     # picture is the table behind that, where a game with no points is set up, the name of the game stands beside the
     # board and the board plays by itself: one thing to look at, which is what a small picture on a shelf can carry

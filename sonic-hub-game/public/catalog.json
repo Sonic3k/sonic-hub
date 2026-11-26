@@ -94,7 +94,7 @@
       "lang": "en", "group": "cards", "sub": "board", "machine": "web", "year": 2026, "tags": ["originals"],
       "players": 1, "ai": 1, "inputs": ["mouse", "touch", "keyboard"], "maker": "Sonic Hub", "added": "2026-11-19",
       "kind": "Board game campaign, you against the AI",
-      "blurb": "Cờ tướng, the chess of the river and the palace, played beside Mirror Lake. Generals keep to their palaces, Cannons take by leaping, and no Elephant crosses the water. At the Willow Pavilion the women of the teahouse play you for points, from the girl who pours the tea to the mistress of the house. They talk while they play, and each keeps an album that fills as you beat her.",
+      "blurb": "Cờ tướng, the chess of the river and the palace, on a road painted as one long hanging scroll: from Mirror Lake up through the hills to the temple of Cloudrest. Generals keep to their palaces, Cannons take by leaping, and no Elephant crosses the water. Every place on the road is a house with its own way of playing, from the girl who has only just learned the moves to the head of the house. They talk while they play, each keeps an album that fills as you beat her, and each house has a seal to win.",
       "shots": ["title", "play"], "play": "https://sonic-xiangqi-production.up.railway.app/"
     },
     {
