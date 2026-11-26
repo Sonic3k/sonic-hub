@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="vi" class="intro" data-era="{{era}}" data-view="cabin">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{page}}</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Phudu:wght@500;700;800&family=Be+Vietnam+Pro:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+/* A world's page: the road fills the screen; over it a few slips of the paper Sonic Hub uses for those years (the same
+   paper and ink as a place's page, engine/page.html), and the things a driver's hands want within a thumb's reach. */
+:root {
+  color-scheme: dark;
+  --paper: #0E1E2B; --ink: #8FD9CF; --rule: #25394A; --text: #EEF3F5; --text2: #B7C6CF; --on: #0E1E2B; --wash: rgba(255,255,255,.08);
+  --night: #0c1016;
+  --display: 'Phudu', 'Arial Narrow', 'Helvetica Neue', Arial, sans-serif;
+  --body: 'Be Vietnam Pro', 'Helvetica Neue', Arial, sans-serif;
+}
+{{era_css}}
+* { box-sizing: border-box; }
+html, body { height: 100%; margin: 0; background: var(--night); color: var(--text); font-family: var(--body); font-size: 15px; line-height: 1.45; overflow: hidden; -webkit-tap-highlight-color: transparent; -webkit-user-select: none; user-select: none; }
+button, input, select { font: inherit; color: inherit; }
+button { cursor: pointer; }
+:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
+[hidden] { display: none !important; }
+#scene { position: fixed; inset: 0; width: 100%; height: 100%; display: block; touch-action: none; outline: none; }
+.slip { background: var(--paper); border: 1px solid var(--rule); }
+
+#top { position: fixed; top: 10px; left: 10px; right: 10px; display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; pointer-events: none; }
+#top > * { pointer-events: auto; }
+#name { padding: 7px 12px 6px; }
+#name h1 { margin: 0; font-family: var(--display); font-weight: 800; font-size: 19px; line-height: 1.05; text-transform: uppercase; color: var(--ink); }
+#name p { margin: 1px 0 0; font-size: 12px; color: var(--text2); white-space: nowrap; }
+#hours { display: flex; }
+#hours button { border: 1px solid var(--rule); background: var(--paper); padding: 8px 11px; font-size: 13px; font-weight: 600; color: var(--text2); min-height: 40px; }
+#hours button + button { border-left: 0; }
+#hours button[aria-pressed="true"] { background: var(--ink); border-color: var(--ink); color: var(--on); }
+
+/* where the car is, and what it is doing */
+#road { position: fixed; left: 50%; top: 66px; transform: translateX(-50%); display: flex; flex-direction: column; align-items: center; gap: 4px; pointer-events: none; width: min(92vw, 520px); }
+#street { font-family: var(--display); font-weight: 700; font-size: 17px; letter-spacing: .02em; text-transform: uppercase; color: #fff; text-shadow: 0 1px 6px rgba(0,0,0,.75), 0 0 2px rgba(0,0,0,.9); text-align: center; }
+#say-row { display: flex; gap: 6px; align-items: center; }
+#say { padding: 4px 10px; font-size: 13px; font-weight: 500; color: var(--text); background: rgba(10,18,26,.78); border: 1px solid var(--rule); }
+#why { padding: 4px 9px; font-size: 13px; font-weight: 600; background: #b3261e; color: #fff; border: 1px solid #e0685f; }
+#speed { position: fixed; right: 12px; bottom: 76px; padding: 6px 12px 5px; text-align: right; pointer-events: none; }
+#speed b { display: block; font-family: var(--display); font-weight: 800; font-size: 34px; line-height: .95; color: var(--ink); font-variant-numeric: tabular-nums; }
+#speed b::after { content: ' mph'; font-family: var(--body); font-weight: 600; font-size: 12px; color: var(--text2); }
+#speed span { font-size: 12px; color: var(--text2); font-variant-numeric: tabular-nums; }
+[data-view="cabin"] #speed { display: none; }
+
+/* the bar under the thumb */
+#bar { position: fixed; left: 10px; right: 10px; bottom: 10px; display: flex; gap: 0; }
+#bar button { flex: 1 1 0; min-width: 0; min-height: 54px; padding: 6px 4px 7px; border: 1px solid var(--rule); background: var(--paper); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1px; }
+#bar button + button { border-left: 0; }
+#bar small { font-size: 11px; color: var(--text2); font-weight: 500; white-space: nowrap; }
+#bar b { font-size: 14px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
+#bar button[aria-pressed="true"] b { color: var(--ink); }
+#bar button:active { background: var(--rule); }
+
+/* a hand on the wheel: left and right under the left thumb, the two pedals under the right */
+.pads { position: fixed; bottom: 136px; display: none; gap: 8px; }
+.manual .pads { display: flex; }
+.manual #speed { bottom: 216px; }
+#pads-l { left: 12px; } #pads-r { right: 12px; }
+.pads button { width: 74px; height: 66px; border: 1px solid var(--rule); background: rgba(14,30,43,.86); font-size: 13px; font-weight: 600; color: var(--text); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; touch-action: none; }
+.pads button i { font-style: normal; font-size: 22px; line-height: 1; color: var(--ink); }
+.pads button:active { background: var(--ink); color: var(--on); }
+.pads button:active i { color: var(--on); }
+#p-gas { height: 82px; margin-top: -16px; }
+
+/* before setting off, and on arriving */
+#intro, #arrive { position: fixed; inset: 0; display: none; align-items: flex-end; justify-content: flex-start; padding: 16px; background: linear-gradient(180deg, rgba(8,10,14,0) 25%, rgba(8,10,14,.7) 100%); }
+.intro #intro, #arrive.on { display: flex; }
+.intro #top, .intro #bar, .intro #road, .intro #speed, .intro .pads { visibility: hidden; }
+#intro .slip, #arrive .slip { max-width: 440px; padding: 16px 16px 14px; }
+#intro h2, #arrive h2 { margin: 0 0 2px; font-family: var(--display); font-weight: 800; font-size: 29px; line-height: 1; text-transform: uppercase; color: var(--ink); text-wrap: balance; }
+#intro .sub { margin: 0 0 10px; color: var(--text2); }
+#intro p, #arrive p { margin: 0 0 10px; max-width: 60ch; }
+.go { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+.act { border: 1px solid var(--rule); background: var(--paper); padding: 10px 14px; min-height: 44px; font-weight: 600; font-size: 14px; color: var(--text); text-decoration: none; display: inline-flex; align-items: center; }
+.act.main { background: var(--ink); border-color: var(--ink); color: var(--on); }
+.act:disabled { opacity: .55; cursor: default; }
+#load { margin: 12px 0 0; color: var(--ink); font-size: 13px; font-weight: 600; }
+#turn { display: none; margin: 10px 0 0; font-size: 13px; color: var(--text2); }
+.upright #turn { display: block; }
+
+/* the sheet behind the car's screen: his music, and where to drive */
+#unit { position: fixed; left: 0; right: 0; bottom: 0; max-height: min(78vh, 640px); display: none; flex-direction: column; background: var(--paper); border-top: 1px solid var(--rule); box-shadow: 0 -10px 30px rgba(0,0,0,.45); -webkit-user-select: none; }
+#unit.open { display: flex; }
+@media (min-width: 760px) { #unit { left: auto; right: 14px; bottom: 14px; width: 400px; border: 1px solid var(--rule); } }
+.unit-head { display: flex; align-items: stretch; justify-content: space-between; border-bottom: 1px solid var(--rule); flex: none; }
+.unit-tabs { display: flex; }
+.unit-tabs button { border: 0; border-right: 1px solid var(--rule); background: transparent; padding: 12px 16px; font-family: var(--display); font-weight: 700; font-size: 15px; text-transform: uppercase; letter-spacing: .03em; color: var(--text2); min-height: 46px; }
+.unit-tabs button[aria-selected="true"] { color: var(--ink); box-shadow: inset 0 -3px 0 var(--ink); }
+.unit-x { border: 0; border-left: 1px solid var(--rule); background: transparent; padding: 0 16px; font-size: 13px; font-weight: 600; color: var(--text2); }
+.unit-body { padding: 12px 14px 14px; overflow-y: auto; overscroll-behavior: contain; min-height: 0; }
+.unit-now { display: flex; flex-direction: column; gap: 1px; min-height: 44px; }
+.unit-title { font-size: 17px; font-weight: 600; line-height: 1.25; text-wrap: balance; }
+.unit-sub { font-size: 13px; color: var(--text2); }
+.unit-bar { display: flex; align-items: center; gap: 8px; margin: 8px 0 6px; font-size: 12px; color: var(--text2); font-variant-numeric: tabular-nums; }
+.unit-seek { flex: 1; min-width: 0; accent-color: var(--ink); height: 28px; }
+.unit-keys { display: flex; gap: 0; }
+.unit-keys button { flex: 1 1 0; min-height: 46px; border: 1px solid var(--rule); background: transparent; font-size: 13px; font-weight: 600; padding: 0 4px; }
+.unit-keys button + button { border-left: 0; }
+.unit-keys .unit-play { background: var(--ink); border-color: var(--ink); color: var(--on); font-size: 17px; }
+.unit-keys button[aria-pressed="true"] { color: var(--ink); box-shadow: inset 0 -3px 0 var(--ink); }
+.unit-say { margin: 10px 0 0; padding: 8px 10px; font-size: 13px; background: var(--wash); border-left: 3px solid var(--ink); }
+.unit-pick { display: flex; align-items: center; gap: 8px; margin: 12px 0 6px; font-size: 13px; color: var(--text2); }
+.unit-pick select { flex: 1; min-width: 0; min-height: 40px; background: var(--paper); border: 1px solid var(--rule); padding: 0 8px; color: var(--text); }
+.unit-tracks, .unit-routes { list-style: none; margin: 0; padding: 0; border-top: 1px solid var(--rule); }
+.unit-tracks li, .unit-routes li { border-bottom: 1px solid var(--rule); }
+.unit-tracks button { width: 100%; display: grid; grid-template-columns: 1fr auto; gap: 0 10px; text-align: left; border: 0; background: transparent; padding: 8px 2px; min-height: 46px; }
+.unit-tracks b { font-weight: 500; font-size: 14px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.unit-tracks span { grid-column: 1; font-size: 12px; color: var(--text2); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.unit-tracks i { grid-column: 2; grid-row: 1 / span 2; align-self: center; font-style: normal; font-size: 12px; color: var(--text2); font-variant-numeric: tabular-nums; }
+.unit-tracks button[aria-current="true"] b { color: var(--ink); font-weight: 600; }
+.unit-routes button { width: 100%; display: flex; flex-direction: column; gap: 1px; text-align: left; border: 0; background: transparent; padding: 11px 2px; min-height: 54px; }
+.unit-routes b { font-size: 15px; font-weight: 600; }
+.unit-routes span { font-size: 12px; color: var(--text2); }
+.unit-routes button[aria-current="true"] b { color: var(--ink); }
+.unit-more { margin: 12px 0 0; font-size: 13px; color: var(--text2); }
+
+#fail { position: fixed; inset: 0; display: none; flex-direction: column; gap: 8px; align-items: center; justify-content: center; padding: 24px; background: var(--night); color: #e6eaec; text-align: center; }
+#fail small { color: #8fa0aa; }
+@media (max-width: 380px) { #bar b { font-size: 13px; } #name h1 { font-size: 17px; } #hours button { padding: 8px 8px; } }
+/* a telephone on its side: the wheel, the dials and the screen fill the bottom of the picture, so the buttons stand in a
+   column at the left edge and what the car is doing is said at the top, between the name and the hours */
+@media (max-height: 500px) {
+  #road { top: 8px; width: min(46vw, 460px); } #street { font-size: 15px; } #say, #why { font-size: 12px; padding: 2px 8px; }
+  #bar { left: 8px; right: auto; bottom: 8px; flex-direction: column; width: 92px; }
+  #bar button { min-height: 40px; padding: 3px 4px 4px; } #bar button + button { border-left: 1px solid var(--rule); border-top: 0; } #bar small { display: none; } #bar b { font-size: 13px; }
+  #name { padding: 5px 9px 4px; } #name h1 { font-size: 15px; } #name p { display: none; } #hours button { min-height: 34px; padding: 5px 9px; font-size: 12px; }
+  #intro .slip, #arrive .slip { padding: 12px; } #intro h2, #arrive h2 { font-size: 22px; } #intro p, #arrive p { font-size: 13px; margin-bottom: 6px; }
+  .pads { bottom: 8px; } #pads-l { left: 108px; } #pads-r { right: 8px; } .pads button { width: 62px; height: 54px; font-size: 11px; } #p-gas { height: 66px; margin-top: -12px; }
+  #speed { bottom: 8px; right: 8px; } .manual #speed { bottom: 84px; }
+  #unit { max-height: 92vh; }
+}
+</style>
+</head>
+<body>
+<canvas id="scene" tabindex="0" aria-label="{{aria}}"></canvas>
+
+<header id="top">
+  <div id="name" class="slip"><h1>{{title}}</h1><p>{{sub}}</p></div>
+  <div id="hours" role="group" aria-label="Giờ trong ngày">{{hours}}</div>
+</header>
+
+<div id="road" aria-live="polite">
+  <div id="street"></div>
+  <div id="say-row"><span id="say"></span><span id="why" hidden></span></div>
+</div>
+<div id="speed" class="slip" aria-hidden="true"><b id="mph">0</b><span id="kmh">0 km/h</span></div>
+
+<div class="pads" id="pads-l"><button type="button" id="p-left" aria-label="Lệch trái"><i>◀</i>Trái</button><button type="button" id="p-right" aria-label="Lệch phải"><i>▶</i>Phải</button></div>
+<div class="pads" id="pads-r"><button type="button" id="p-brake" aria-label="Phanh"><i>■</i>Phanh</button><button type="button" id="p-gas" aria-label="Ga"><i>▲</i>Ga</button></div>
+
+<nav id="bar" aria-label="Điều khiển">
+  <button type="button" id="b-auto" aria-pressed="true"><small>Lái</small><b>Tự lái</b></button>
+  <button type="button" id="b-view"><small>Góc nhìn</small><b>Trong xe</b></button>
+  <button type="button" id="b-music"><small>Màn hình</small><b>Nhạc</b></button>
+  <button type="button" id="b-where"><small>Tuyến</small><b>Điểm đến</b></button>
+</nav>
+
+<div id="intro">
+  <div class="slip">
+    <h2>{{title}}</h2>
+    <p class="sub">{{sub}}</p>
+    <p>{{intro}}</p>
+    <p id="turn">Xoay ngang điện thoại thì nhìn đường rộng hơn; để dọc thì thấy cả vô-lăng lẫn màn hình.</p>
+    <p id="load" role="status">Đang dựng đường…</p>
+    <div class="go"><button type="button" class="act main" id="go" disabled>Đang dựng…</button></div>
+  </div>
+</div>
+<div id="arrive">
+  <div class="slip">
+    <h2 id="arrive-t">Đã tới nơi</h2>
+    <p id="arrive-b"></p>
+    <div class="go"><button type="button" class="act main" id="go-back"></button><button type="button" class="act" id="go-again">Đi lại tuyến này</button><a class="act" id="go-walk" hidden>Xuống xe, vào khách sạn</a></div>
+  </div>
+</div>
+
+<section id="unit" aria-label="Màn hình giữa của xe" aria-hidden="true"></section>
+
+<div id="fail"><p>Trình duyệt này không vẽ được 3D (WebGL), hoặc không tải được dữ liệu của trang. Thử mở lại.</p><small></small></div>
+<script>setTimeout(function(){ if (!(window.__world && window.__world.ready)) document.getElementById("fail").style.display = "flex"; }, 45000);</script>
+<script type="module">/*__BUNDLE__*/</script>
+</body>
+</html>

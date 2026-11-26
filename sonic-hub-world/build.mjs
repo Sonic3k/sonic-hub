@@ -1,5 +1,7 @@
 // Builds the site into dist/:
 //   places/<id>.html   one self-contained page per place (its script inline; three.js comes from the CDN)
+//   world/<id>/…       the data a world loads as the eye moves (places/<id>/world/, written by its data/world.py);
+//                      a world is a place whose meta says engine: 'world' (engine/world/app.js runs it)
 //   index.html         the list of places
 //   places.json        the same list as data, for Sonic Hub's Portal (served with CORS, see site/serve.json)
 // usage: node build.mjs [--min]
@@ -41,11 +43,13 @@ function planOf(rooms) {
 }
 const planSvg = p => (p ? `<svg viewBox="-4 -4 ${p.box[0] + 8} ${p.box[1] + 8}" preserveAspectRatio="xMaxYMin meet" aria-hidden="true">${p.rooms.map(([x, y, w, h]) => `<rect x="${x}" y="${y}" width="${w}" height="${h}" vector-effect="non-scaling-stroke"/>`).join('')}</svg>` : '');
 
-async function buildPlace(id, tpl) {
+async function buildPlace(id, tpls) {
   const meta = (await import(pathToFileURL(at('places', id, 'meta.js')).href)).default;
   if (meta.id !== id) throw new Error(`places/${id}/meta.js says its id is "${meta.id}"`);
+  const world = meta.engine === 'world', tpl = world ? tpls.world : tpls.place;
+  if (world && fs.existsSync(at('places', id, 'world'))) fs.cpSync(at('places', id, 'world'), at('dist', 'world', id), { recursive: true });
   const r = await build({
-    stdin: { contents: `import place from './places/${id}/place.js';\nimport { run } from './engine/app.js';\nrun(place);\n`, resolveDir: root, loader: 'js' },
+    stdin: { contents: `import place from './places/${id}/place.js';\nimport { run } from './engine/${world ? 'world/' : ''}app.js';\nrun(place);\n`, resolveDir: root, loader: 'js' },
     bundle: true, format: 'esm', external: ['three'], minify: min, write: false, target: 'es2020', legalComments: 'none',
   });
   const src = r.outputFiles[0].text;
@@ -70,10 +74,10 @@ async function buildPlace(id, tpl) {
 
 fs.rmSync(at('dist'), { recursive: true, force: true });
 fs.mkdirSync(at('dist', 'places'), { recursive: true });
-const tpl = fs.readFileSync(at('engine', 'page.html'), 'utf8');
+const tpls = { place: fs.readFileSync(at('engine', 'page.html'), 'utf8'), world: fs.readFileSync(at('engine', 'world', 'page.html'), 'utf8') };
 const ids = fs.readdirSync(at('places')).filter(d => fs.existsSync(at('places', d, 'place.js'))).sort();
 const places = [];
-for (const id of ids) places.push(await buildPlace(id, tpl));
+for (const id of ids) places.push(await buildPlace(id, tpls));
 // oldest first: the list reads as a life
 places.sort((a, b) => (a.years ? a.years.from : 9999) - (b.years ? b.years.from : 9999) || a.title.localeCompare(b.title, 'vi'));
 
