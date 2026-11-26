@@ -241,6 +241,8 @@ for (const [name, vp] of [['upright', { width: 390, height: 743 }], ['on its sid
     for (const c of t.c || []) { let x = 0, z = 0; for (let i = 0; i < c[0]; i++) { x += c[1 + 2 * i]; z += c[2 + 2 * i]; if (i === 0 || i === c[0] - 1) corners.push([x / 100 + ti * 500, z / 100 + tj * 500]); } }
     for (const p of t.p || []) if (p[0] === 5) { const x = p[1] / 10 + ti * 500, z = p[2] / 10 + tj * 500, k = Math.floor(x / 20) + ':' + Math.floor(z / 20); (parked.get(k) || parked.set(k, []).get(k)).push([x, z]); }
   }
+  ok('between crossings a street\'s centre line runs on from one way to the next: led across where the next has a lane more on one side, never stepping', A['centre lines that step between two ways'] === 0 && A['ways joined between crossings'] > 100 && A["centre lines led across to the next way's"] > 40,
+    `${A['ways joined between crossings']} joints between crossings, the lines led across at ${A["centre lines led across to the next way's"]} ends, ${A['centre lines that step between two ways']} steps left`);
   ok('no face of the streets is inside out', faces > 100000 && wrong === 0, `${faces} faces, ${wrong} wrong`);
   const near = ([x, z]) => { for (const dx of [-0.05, 0, 0.05]) for (const dz of [-0.05, 0, 0.05]) if (ends.has(key(x + dx, z + dz))) return true; return false; }, met = corners.filter(near).length;
   ok('the kerbs close up: a round corner begins where a walk\'s kerb ends', corners.length > 800 && met >= 0.97 * corners.length, `${met} of ${corners.length} corner ends meet a kerb's end (the others: a side with no kerb of its own)`);

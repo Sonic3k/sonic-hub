@@ -904,7 +904,9 @@ ISLANDS = {'East Maple Avenue': [((x0, -441.6), (x1, -441.6)) for x0, x1 in ((16
 # Crosswalks that the map does not have (the satellite picture): [(one end, the other end)], across the street from kerb
 # to kerb. Maple's, in mid-block, between the two parts of its refuge island.
 CROSSWALKS = [((393.3, -455.0), (393.3, -428.0))]
-MEDIAN_W = {'North Pacific Coast Highway': 2.4, 'South Pacific Coast Highway': 2.4}      # Sepulveda's median is planted (lawn and palms: the satellite picture)
+# Sepulveda's median is planted (lawn and palms) north of Mariposa; south of it, along the hotel and the shops, it is a
+# narrow paved one (the satellite picture of today; no picture of 2015 shows it).
+MEDIAN_W = {'North Pacific Coast Highway': [((None, None, None, -80.0), 2.4)], 'South Pacific Coast Highway': 1.2}
 # The parking structure at 940 N Nash St (garage.json: its plan and where that comes from). The world's place builds it
 # by hand (garage.js), so the map's own block for it is left out of the tiles; the car's way in, up to level 3 and down
 # again is drawn here from the same plan.

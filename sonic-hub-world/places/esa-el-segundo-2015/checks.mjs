@@ -168,6 +168,17 @@ try {
     return out;
   });
   ok('the streets are the world\'s own: its squares of them in the page (walks, painted lines, signal lamps), none drawn by this place', st.squares === 6 && st.walks > 3000 && st.marks > 1500 && st.lamps >= 36 && st.own.length === 0, JSON.stringify(st));
+  // the plants are the engine's (engine/plants.js): leaf cards cut out by alpha on the one material, and none of the old balls
+  const pl = await page.evaluate(() => {
+    const out = { meshes: 0, tris: 0, cut: true, sway: true, balls: 0 };
+    window.__world.scene().traverse(o => {
+      if (!o.isMesh) return; const m = o.material;
+      if (m && m.userData && m.userData.plants) { out.meshes++; out.tris += (o.geometry.index ? o.geometry.index.count : o.geometry.attributes.position.count) / 3 * (o.isInstancedMesh ? o.count : 1); out.cut = out.cut && m.alphaTest > 0 && !!m.map; out.sway = out.sway && !!o.geometry.attributes.sway; }
+      else if (m && m.map && m.map.image && m.map.image.width === 256 && /leaf/.test(m.name || '')) out.balls++;
+    });
+    return out;
+  });
+  ok('the trees, shrubs and hedges are leaf cards on the plants\' one material', pl.meshes >= 2 && pl.meshes <= 12 && pl.tris > 20000 && pl.tris < 250000 && pl.cut && pl.sway && pl.balls === 0, `${pl.meshes} meshes, ${Math.round(pl.tris / 1000)}k triangles`);
   // the cars keep those streets' lanes and lights: six minutes of them
   const tr = await page.evaluate(() => {
     const W = window.__world, L = W.live(), dt = 0.05; let prev = L.traffic();
