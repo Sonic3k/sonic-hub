@@ -73,7 +73,7 @@ the path.
   band      [[from, left, right]]   the room a hand on the wheel has: metres to either side of the path
   ctl       [[at, kind, controller, group]]   where the car stands for a signal (kind 0) or a stop sign (1): its
                                     bumper half a metre short of the line
-  turns     [[from, to, ±1]]        where an indicator blinks (+1 right)
+  turns     [[from, to, ±1, at]]    where an indicator blinks (+1 right); at: where the turn itself begins
   names     [[from, street]]
   straight  [[from, to]]            where the street is straight: the lane's own line turns by no more than 0.6° within
                                     20 m either way. There the wheel is held still — checks.mjs holds the drive to it.
@@ -265,8 +265,8 @@ def build(W, bounds):
         if esa:
             if len(prof) != lanes: prof = ST.lanes_of({}, lanes, ow)             # (the hotel place's own widths stand: the lanes are fitted into them)
         else: lanes = max(1, min(len(prof), 10)); prof = prof[:lanes]
-        mx = sum(x for x, _ in p) / len(p)
-        known = [s for nm, n, span, s in STRIPES if nm == tg.get('name') and (n is None or n == lanes) and (span is None or span[0] <= mx <= span[1])]
+        mx = sum(x for x, _ in p) / len(p); mz = sum(z for _, z in p) / len(p); inbox = lambda b: b is None or ((b[0] is None or b[0] <= mx) and (b[1] is None or mx <= b[1]) and (b[2] is None or b[2] <= mz) and (b[3] is None or mz <= b[3]))
+        known = [s for nm, n, span, s in STRIPES if nm == tg.get('name') and (n is None or n == lanes) and inbox(span)]
         if known and not any(k.startswith(('lanes:', 'turn:')) for k in tg):
             prof = [(c, set()) for c in known[0]]
             if not esa: lanes = len(prof)                                        # (in the hotel place's box the street keeps that place's width; elsewhere the lanes make the width)
@@ -473,7 +473,7 @@ def build(W, bounds):
         return 3
     def add_building(wid, tg, nd):
         p = W.pts(nd)
-        if len(p) < 4 or not near(p) or W.esa(nd) or tg.get('location') == 'underground' or tg.get('building') in ('no',): return
+        if len(p) < 4 or not near(p) or W.esa(nd) or tg.get('location') == 'underground' or tg.get('building') in ('no',) or wid in SITE_WAYS: return
         sd = tg.get('start_date', '')
         if sd[:4].isdigit() and int(sd[:4]) > 2022: return
         rg = ring(p, 0.35)
@@ -692,7 +692,7 @@ def route(W, roads, service, S, spec):
     # the turn each leg ends with (+1 right, −1 left, 0 straight on)
     def heading_out(q): p = q['segs'][-1]['p']; return unit(p[-1][0] - p[-2][0], p[-1][1] - p[-2][1])
     def heading_in(q): p = q['segs'][0]['p']; return unit(p[1][0] - p[0][0], p[1][1] - p[0][1])
-    seq = ([dict(manual=head, v=spec.get('head_v', 3.2))] if head else []) + merged + ([dict(manual=tail, v=spec.get('tail_v', 3.2))] if tail else [])
+    seq = ([dict(manual=head, v=spec.get('head_v', 3.2), name=spec.get('head_name', ''))] if head else []) + merged + ([dict(manual=tail, v=spec.get('tail_v', 3.2), name=spec.get('tail_name', ''))] if tail else [])
     def hin(q): return unit(q['manual'][1][0] - q['manual'][0][0], q['manual'][1][1] - q['manual'][0][1]) if 'manual' in q else heading_in(q)
     def hout(q): return unit(q['manual'][-1][0] - q['manual'][-2][0], q['manual'][-1][1] - q['manual'][-2][1]) if 'manual' in q else heading_out(q)
     turns = []
@@ -702,7 +702,7 @@ def route(W, roads, service, S, spec):
     # each leg's lane line
     lines_, meta = [], []
     for k, q in enumerate(seq):
-        if 'manual' in q: lines_.append(list(q['manual'])); meta.append(dict(v=q['v'], lo=-1.0, hi=1.0, name='')); continue
+        if 'manual' in q: lines_.append(list(q['manual'])); meta.append(dict(v=q['v'], lo=-1.0, hi=1.0, name=q['name'])); continue
         before = turns[k - 1] if k > 0 else 0; after = turns[k] if k < len(turns) else 0
         pts, offs = [], []; segs = list(q['segs']); to = 'left' if after < 0 else 'right' if after > 0 else None
         if to == 'left' and segs[-1]['kind'] == 'r' and any(c == 'c' for c, _ in segs[-1]['rec']['prof']):   # a left turn from a street with a middle lane: into that lane for the last 70 m
@@ -789,6 +789,22 @@ def route(W, roads, service, S, spec):
             straight.append([round(cl[a], 1), round(cl[b], 1)])
         i = j2 + 1
     legi = legs_of(p)
+    # Heights. A part drawn by hand may climb (the floors of a parking structure): the path's points take its heights in
+    # the order they come — such a part lies over itself in plan, level above level — and where the slope changes the
+    # height is eased over some 6 m, as a floor is rounded where a ramp begins.
+    yy = [0.0] * len(p)
+    for which, ys in ((0, spec.get('head_y')), (len(seq) - 1, spec.get('tail_y'))):
+        if not ys: continue
+        M = seq[which]['manual']; j = 0; assert len(M) == len(ys)
+        for i, pt in enumerate(p):
+            if legi[i] != which: continue
+            best = None
+            for k in range(j, min(len(M) - 1, j + 14)):
+                dist, t = ST.seg_dist(pt, M[k], M[k + 1])
+                if best is None or dist < best[0] - 1e-9: best = (dist, k, t)
+            _, j, t = best; yy[i] = ys[j] + (ys[j + 1] - ys[j]) * t
+    if any(yy):
+        for _ in range(2): yy = [sum(yy[max(0, i - 6):i + 7]) / len(yy[max(0, i - 6):i + 7]) for i in range(len(yy))]
     lim, band = [], []
     for i, k in enumerate(legi):
         m = meta[k]
@@ -830,6 +846,11 @@ def route(W, roads, service, S, spec):
             at_stop = cross - 4.25; bx, bz = at(p, cl, at_stop)[0]; bump = (bx + u[0] * 3.75 - qx) * u[0] + (bz + u[1] * 3.75 - qz) * u[1]
             assert -0.8 < bump < -0.2, ('the car would not stop at the line', spec['id'], round(at_stop, 1), round(bump, 2))
             ctl.append([round(at_stop, 1), 0 if j['signal'] else 1, j['ctl'], 0 if abs(u[1]) >= abs(u[0]) else 1])
+    # a gate on a part drawn by hand (the arm at a parking structure's portal): the bumper stops half a metre short of it
+    for gx, gz in spec.get('gates', ()):
+        c = next((i for i in range(1, len(p)) if abs(p[i][1] - gz) < 2.0 and (p[i - 1][0] - gx) * (p[i][0] - gx) <= 0 and yy[i] < 0.5), None)
+        assert c is not None, ('the path does not pass a gate', spec['id'], gx, gz)
+        ctl.append([round(cl[c] - 4.25, 1), 2, 0, 0])
     # the turns, for the indicators: where the heading swings more than 35°
     hd, W12 = th, 12 * PM                                                          # 12 m of line
     tl, i = [], 0
@@ -839,7 +860,8 @@ def route(W, roads, service, S, spec):
             j2 = i
             while j2 < len(p) - W12 and abs(hd[j2 + W12] - hd[j2]) > math.radians(8): j2 += 1
             tot = hd[min(j2 + W12, len(p) - 1)] - hd[i]
-            if abs(tot) > math.radians(35): tl.append([round(max(0, cl[i] - 38), 1), round(cl[min(j2 + W12, len(p) - 1)], 1), 1 if tot > 0 else -1])
+            lead = 38.0 if meta[legi[i]]['v'] > 6.0 else 9.0                         # (some three seconds before the wheel turns: 38 m on a street, a few metres at a walk)
+            if abs(tot) > math.radians(35): tl.append([round(max(tl[-1][1] if tl else 0, cl[i] - lead), 1), round(cl[min(j2 + W12, len(p) - 1)], 1), 1 if tot > 0 else -1, round(cl[i], 1)])
             i = j2 + W12
         else: i += 1
     names = []
@@ -848,15 +870,18 @@ def route(W, roads, service, S, spec):
         if not names or names[-1][1] != nm: names.append([round(cl[i], 1), nm])
     return dict(id=spec['id'], name=spec['name'], frm=spec['from'], to=spec['to'], length=round(cl[-1], 1), stray=round(stray, 2),
                 pts=[int(round(v * 1000)) for pt in p for v in pt], hd=[int(round(a * 1e5)) for a in th], k=[int(round(c * 1e6)) for c in kap],
-                lim=lim, band=band, ctl=sorted(ctl), turns=tl, names=names, straight=straight)
+                lim=lim, band=band, ctl=sorted(ctl), turns=tl, names=names, straight=straight, **(dict(y=[int(round(v * 1000)) for v in yy]) if any(yy) else {}))
 
 # ── what the map does not say about this world's streets ──
 # East Mariposa Avenue where the map gives it six lanes and no more: the satellite picture has two lanes each way and
 # a middle lane for left turns between them (the kerb lanes wide), from Pacific Coast Highway to Nash Street.
 # Maple between Pacific Coast Highway and Nash has the same five (the map has no lanes there); east of Nash and west of
-# the highway it has not. Each: the street, the lanes the map gives it (or any), between which x, the lanes it has.
+# the highway it has not. Nash along the parking structure at number 940 (Atwood Way to Imperial Highway) likewise: two
+# lanes each way and the middle lane, 18.5 m from kerb to kerb (Street View 12/2023; the map says four lanes).
+# Each: the street, the lanes the map gives it (or any), where (x from, x to, z from, z to; None: anywhere), its lanes.
 STRIPES = [('East Mariposa Avenue', 6, None, 'bbcff'),
-           ('East Maple Avenue', None, (-60.0, 660.0), 'bbcff')]
+           ('East Maple Avenue', None, (-60.0, 660.0, None, None), 'bbcff'),
+           ('North Nash Street', 4, (None, None, -830.0, -610.0), 'bbcff')]
 # What places/esa-el-segundo-2015 knows of the trees along its streets (his photographs, Street View), for the rule that
 # plants every street's: 0 broad-leaved, 1 palms, -1 none. And the medians that carry a row of palms.
 TREES = {'East Mariposa Avenue': 0, 'Continental Boulevard': 0, 'North Nash Street': 1, 'North Pacific Coast Highway': -1}
@@ -871,10 +896,43 @@ ISLANDS = {'East Maple Avenue': [((x0, -441.6), (x1, -441.6)) for x0, x1 in ((16
 # to kerb. Maple's, in mid-block, between the two parts of its refuge island.
 CROSSWALKS = [((393.3, -455.0), (393.3, -428.0))]
 MEDIAN_W = {'North Pacific Coast Highway': 2.4, 'South Pacific Coast Highway': 2.4}      # Sepulveda's median is planted (lawn and palms: the satellite picture)
+# The parking structure at 940 N Nash St (garage.json: its plan and where that comes from). The world's place builds it
+# by hand (garage.js), so the map's own block for it is left out of the tiles; the car's way in, up to level 3 and down
+# again is drawn here from the same plan.
+GARAGE = json.load(open(os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'garage.json')))
+SITE_WAYS = {GARAGE['way']}
+def garage_ways(G=GARAGE):
+    """the way from Nash in at the south portal, up the sloping bay to the stall on level 3 — and the way down and out
+    again: each [(x, z, y)], keeping to the right of every aisle, its bends arcs a car can take"""
+    F, R, ln = G['floor'], G['turn'], G['lane']; zS, zN = G['aisleS'], G['aisleN']; xW, xE = G['crossW'], G['crossE']; r0, r1 = G['rampW'], G['rampE']
+    def slope(x, k): return (k - 1 + max(0.0, min(1.0, (x - r0) / (r1 - r0)))) * F          # the south bay's k-th run: level k at its west end, k + 1 at its east
+    def arc(cx, cz, a0, a1, y, n=7): return [(cx + R * math.cos(math.radians(a0 + (a1 - a0) * i / n)), cz + R * math.sin(math.radians(a0 + (a1 - a0) * i / n)), y) for i in range(n + 1)]
+    def run(x0, x1, z, k):                                                          # along the south bay's k-th run, a point every 6 m
+        n = max(1, int(abs(x1 - x0) / 6.0)); return [(x0 + (x1 - x0) * i / n, z, slope(x0 + (x1 - x0) * i / n, k)) for i in range(n + 1)]
+    bay = G['x0'] + G['grid'] * G['park']['bay']; xs = bay + 0.4 + G['stallW'] * (G['park']['stall'] + 0.5); top = (G['park']['level'] - 1) * F   # his stall: its middle
+    zin = zN - G['aisleW'] / 2; home = zin - 2.85                                   # the mouth of the stalls along the north wall; where the car's middle stands in one
+    up = [(G['x0'] - 9.3, G['laneIn'], 0.0), (G['gateX'] + 7.0, G['laneIn'], 0.0), (r0 - 4.0, zS + ln, 0.0)]
+    for k in (1, 2):
+        up += run(r0, r1, zS + ln, k)                                               # east, up the slope
+        y = k * F
+        up += arc(xE + ln - R, zS + ln - R, 90, 0, y) + arc(xE + ln - R, zN - ln + R, 0, -90, y)       # round to the north bay, and west along it
+        if k == 1: up += arc(xW - ln + R, zN - ln + R, -90, -180, y) + arc(xW - ln + R, zS + ln - R, 180, 90, y)   # round the west end to the next run
+    up += [(xs + R + 19.0, zN - ln, top), (xs + R + 6.0, zin + 0.9 + R, top)] + arc(xs + R, zin + 0.9, 90, 180, top) + [(xs, home, top)]   # a swing out to the aisle's far side, and nose first into the stall
+    down = [(xs, home, top), (xs, zin + 0.2, top)] + arc(xs + R, zin + 0.2, 180, 90, top)[1:]                      # out of it nose first (the car is not driven backwards here), east
+    for k in (2, 1):
+        y = k * F
+        down += arc(xE - ln - R, zN + ln + R, -90, 0, y) + arc(xE - ln - R, zS - ln - R, 0, 90, y)       # round the east end to the south bay
+        down += run(r1, r0, zS - ln, k)                                             # west, down the slope
+        if k == 2: down += arc(xW + ln + R, zS - ln - R, 90, 180, F) + arc(xW + ln + R, zN + ln + R, 180, 270, F)   # round the west end, east along the north bay
+    down += [(G['gateX'] + 9.0, G['lanesOut'][0], 0.0), (G['x0'] - 9.3, G['lanesOut'][0], 0.0)]
+    return up, down
 ESA_GROUND = (-300.0, -280.0, 800.0, 260.0)   # the ground that place lays under itself (town.js): x0, z0, x1, z1 — its own page shows the streets within it
 ESA_BLOCK = (-95.0, 52.0, -66.4, 132.0)   # the hotel's and the shops' own ground, behind the sidewalks (site.js): nothing of the streets' is planted there
 # The hotel's way in from Mariposa (places/esa-el-segundo-2015/plan.js LOT.drive: x 28.5 … 37.5): the walk drops for it.
-DRIVES = [('East Mariposa Avenue', (33.0, -66.0), 10.0)]
+# … and the two portals of the parking structure on Nash (the visitors' two lanes; the three lanes of the south bay).
+DRIVES = [('East Mariposa Avenue', (33.0, -66.0), 10.0),
+          ('North Nash Street', (GARAGE['x0'] - 4.0, sum(GARAGE['lanesVisitor']) / 2, ), 8.4),
+          ('North Nash Street', (GARAGE['x0'] - 4.0, (GARAGE['laneIn'] + GARAGE['lanesOut'][1]) / 2), 13.6)]
 
 # ── the routes of this world ───────────────────────────────────────────────────────────────────────────────────────
 # Extended Stay's lot is the hotel place's own (plan.js LOT, and site.js as built: looked at from above on 26/11/2026).
@@ -882,12 +940,15 @@ DRIVES = [('East Mariposa Avenue', (33.0, -66.0), 10.0)]
 # (x 24–37, z −59…−54) and the way in between the sign's island and the planting on the boundary (x 29–37, z −68…−60).
 # A car leaving keeps right up the aisle, swings west across the forecourt's mouth and leaves by the east half of the
 # way in; a car arriving takes the west half and swings east into the aisle.
+_UP, _DOWN = garage_ways(); _NASH = (692.1, -795.5); _GATES = lambda lane: [(GARAGE['gateX'], lane)]   # (the node of Nash just north of the structure: the car's lane passes the portal)
 ROUTES = [
-    dict(id='esa-att', name='Extended Stay → tòa AT&T', **{'from': 'Extended Stay America, El Segundo', 'to': 'AT&T (DirecTV) · bãi xe LA4'},
-         a=(34.6, -74.0), b=None, b_ll=(33.92981, -118.38479),
-         head=[(40.8, 6.0), (40.8, -45.5), (40.0, -49.5), (36.0, -54.3), (34.8, -57.2), (34.6, -60.0), (34.6, -67.8)], head_v=3.4),
-    dict(id='att-esa', name='Tòa AT&T → Extended Stay', **{'from': 'AT&T (DirecTV) · bãi xe LA4', 'to': 'Extended Stay America, El Segundo'},
-         a=None, a_ll=(33.92981, -118.38479), b=(31.0, -74.0),
+    dict(id='esa-att', name='Extended Stay → nhà để xe 940 N Nash', **{'from': 'Extended Stay America, El Segundo', 'to': 'AT&T (DirecTV) · nhà để xe 940 N Nash St, tầng 3'},
+         a=(34.6, -74.0), b=_NASH,
+         head=[(40.8, 6.0), (40.8, -45.5), (40.0, -49.5), (36.0, -54.3), (34.8, -57.2), (34.6, -60.0), (34.6, -67.8)], head_v=3.4,
+         tail=[(x, z) for x, z, _ in _UP], tail_y=[y for _, _, y in _UP], tail_v=4.5, tail_name='Nhà để xe 940 N Nash', gates=_GATES(GARAGE['laneIn'])),
+    dict(id='att-esa', name='Nhà để xe 940 N Nash → Extended Stay', **{'from': 'AT&T (DirecTV) · nhà để xe 940 N Nash St, tầng 3', 'to': 'Extended Stay America, El Segundo'},
+         a=_NASH, b=(31.0, -74.0),
+         head=[(x, z) for x, z, _ in _DOWN], head_y=[y for _, _, y in _DOWN], head_v=4.5, head_name='Nhà để xe 940 N Nash', gates=_GATES(GARAGE['lanesOut'][0]),
          tail=[(31.0, -67.8), (31.0, -59.5), (32.5, -56.0), (38.6, -51.0), (39.3, -47.0), (39.3, -20.0), (39.3, 4.0)], tail_v=3.4),
 ]
 

@@ -2,7 +2,8 @@
 // route by itself from end to end keeping the rules (the speed each street allows, no leaning in a bend, a full stop
 // at a stop sign, never over a line on red) and driving like a car (on a straight street the wheel holds still, the
 // body does not rock, the foot does not hunt between the pedals), it keeps off the kerbs, a hand on the wheel works and gives the wheel
-// back, the screen shows his list, and a frame never costs more than the ceiling measured on his telephone
+// back, the screen shows his list, the way into the parking structure holds (the gate, the floors under the wheels,
+// the stall on level 3, the cars standing there), and a frame never costs more than the ceiling measured on his telephone
 // (claude/chuan-dung-the-gioi-3d.md: 460 draw calls, 1.2 M triangles in view; 160 MB of streamed ground).
 // Run from the module's folder after a build: node places/south-bay/checks.mjs
 import { launch, open as openPage } from '../../tools/lib.mjs';
@@ -17,7 +18,7 @@ const open = (vp, mobile, more = {}) => openPage(browser, { ...vp, mobile, place
 {
   const { page, logs } = await open({ width: 1280, height: 720 }, false);
   const routes = await page.evaluate(() => window.__world.routes());
-  ok('two routes, there and back', routes.length === 2 && routes.every(r => r.length > 1500 && r.length < 2000), routes.map(r => `${r.id} ${Math.round(r.length)} m, ${r.ctl.length} signals and signs, ${r.turns.length} turns`).join(' · '));
+  ok('two routes, there and back', routes.length === 2 && routes.every(r => r.length > 1500 && r.length < 2200), routes.map(r => `${r.id} ${Math.round(r.length)} m, ${r.ctl.length} signals and signs, ${r.turns.length} turns`).join(' · '));
   for (const r of routes) {
     const run = await page.evaluate(async id => {
       const W = window.__world, D = W.drive(); W.route(id); W.setView('cabin');
@@ -30,8 +31,31 @@ const open = (vp, mobile, more = {}) => openPage(browser, { ...vp, mobile, place
       let wLast = 0, wDir = 0, wBase = 0, aSide = 0, pAcc = 0, pWheel = 0, pHead = st.heading;
       for (const c of R.ctl) if (c.kind === 1) out.stopsMin[c.at] = 99;
       let prev = st.s, red = false, nextCost = 0;
+      // the parking structure: the gate (a full stop; the arm down when the car draws up, up when its bumper passes, down again
+      // behind it), the slope under the car (how fast it changes), the cars standing in the stalls (how near the car's body comes)
+      const G = W.site('garage-940-nash'), gar = { y0: st.y, yTop: 0, gradeRate: 0, grade: 0, gateMin: 99, armStop: -1, armPass: -1, armsUp: 0, clear: 99, clearAt: '', inside: 0 };
+      const gate = R.ctl.find(c => c.kind === 2); let pGrade = st.grade, passedAt = -1;
+      const body = [[2.42, 0.915], [2.42, -0.915], [-2.42, 0.915], [-2.42, -0.915], [2.42, 0], [-2.42, 0], [0, 0.915], [0, -0.915], [1.2, 0.915], [1.2, -0.915], [-1.2, 0.915], [-1.2, -0.915]];
       for (let k = 0; k < 12000 && !out.arrived; k++) {
         W.step(0.05); out.t += 0.05;
+        if (G) {
+          gar.yTop = Math.max(gar.yTop, st.y); gar.grade = Math.max(gar.grade, Math.abs(st.grade)); gar.gradeRate = Math.max(gar.gradeRate, Math.abs(st.grade - pGrade) / 0.05); pGrade = st.grade;
+          const arms = G.arms(), up = Math.max(...arms);
+          if (gate) {
+            if (st.s > gate.at - 2.5 && st.s < gate.at + 1) { gar.gateMin = Math.min(gar.gateMin, st.v); if (st.v < 0.05 && gar.armStop < 0) gar.armStop = up; }
+            if (prev < gate.at + 0.5 && st.s >= gate.at + 0.5) { gar.armPass = up; gar.armsUp = arms.filter(a => a > 0.5).length; passedAt = out.t; }
+            if (passedAt > 0 && out.t > passedAt + 8 && gar.armAfter == null) gar.armAfter = up;
+          }
+          const c = Math.cos(st.heading), s = Math.sin(st.heading);
+          for (const [px, py, pz] of G.parked) {
+            if (Math.abs(py - st.y) > 1.6 || Math.abs(px - st.x) > 6 || Math.abs(pz - st.z) > 7) continue;
+            gar.inside++;
+            for (const [f, l] of body) {                                             // points of the car's outline against the standing car's (0.89 × 2.28 m either way of its middle)
+              const x = st.x + c * f - s * l, z = st.z + s * f + c * l, d = Math.hypot(Math.max(0, Math.abs(x - px) - 0.89), Math.max(0, Math.abs(z - pz) - 2.28));
+              if (d < gar.clear) { gar.clear = d; gar.clearAt = `${Math.round(st.s)} m`; }
+            }
+          }
+        }
         const v = st.v, cap = at(R.cap, st.s), kap = Math.abs(at(R.k, st.s));
         out.top = Math.max(out.top, v); out.over = Math.max(out.over, v - cap); out.lean = Math.max(out.lean, v * v * kap); out.off = Math.max(out.off, Math.abs(st.lat));
         // how it drives: the wheel's swings of 2° and more, what the wheel, the body and the sideways push do on a straight, the foot's changes of pedal
@@ -49,7 +73,7 @@ const open = (vp, mobile, more = {}) => openPage(browser, { ...vp, mobile, place
         const wr = Math.abs(w - pWheel) / 0.05; feel.wheelRate = Math.max(feel.wheelRate, wr); if (v > 8) feel.wheelRateFast = Math.max(feel.wheelRateFast, wr); pWheel = w;
         for (const c of R.ctl) {
           if (c.kind === 1) { if (st.s > c.at - 2.5 && st.s < c.at + 1) out.stopsMin[c.at] = Math.min(out.stopsMin[c.at], v); }
-          else if (prev < c.at + 0.6 && st.s >= c.at + 0.6 && W.signal(c.junction, c.group, W.clock()) === 0) out.redRun.push(c.at);
+          else if (c.kind === 0 && prev < c.at + 0.6 && st.s >= c.at + 0.6 && W.signal(c.junction, c.group, W.clock()) === 0) out.redRun.push(c.at);
         }
         if (st.waiting === 'red' && !red) out.waitsRed++; red = st.waiting === 'red';
         if (st.s >= nextCost) {                                                  // what a frame costs here, once the ground round the car is in place
@@ -62,6 +86,7 @@ const open = (vp, mobile, more = {}) => openPage(browser, { ...vp, mobile, place
         prev = st.s; out.arrived = st.phase === 'arrived';
       }
       out.feel = feel; out.events = R.ctl.length + R.turns.length;
+      if (G) { for (let k = 0; k < 200; k++) W.step(0.05); gar.armEnd = Math.max(...G.arms()); gar.gates = st.gates; gar.yEnd = st.y; gar.head = st.heading; gar.gate = !!gate; out.gar = gar; }
       out.tiles = W.tiles(); out.end = [st.x, st.z]; return out;
     }, r.id);
     const stops = Object.entries(run.stopsMin);
@@ -79,6 +104,14 @@ const open = (vp, mobile, more = {}) => openPage(browser, { ...vp, mobile, place
     ok(`${r.id}: never over a line on red`, run.redRun.length === 0, run.redRun.join(', '));
     ok(`${r.id}: it keeps to its lane`, run.off < 0.05);
     ok(`${r.id}: a frame stays under the ceiling`, run.calls <= CEIL.calls && run.tris <= CEIL.tris && run.cabinCalls <= CEIL.cabinCalls, `world ${run.calls} calls / ${Math.round(run.tris / 1000)}k triangles at most (${run.worst}); cabin ${run.cabinCalls} calls`);
+    if (run.gar && run.gar.gate) {
+      const g = run.gar, deg = 180 / Math.PI, up = r.id === 'esa-att';
+      ok(`${r.id}: a full stop at the parking structure's gate, and the arm answers`, g.gates === 1 && g.gateMin < 0.05 && g.armStop >= 0 && g.armStop < 0.35 && g.armPass > 0.9 && g.armsUp === 1 && g.armEnd < 0.02,
+        `down to ${g.gateMin.toFixed(2)} m/s; the arm ${Math.round(g.armStop * 100)}% up as the car stops, ${Math.round(g.armPass * 100)}% as its bumper passes (${g.armsUp} arm up), ${Math.round(g.armEnd * 100)}% afterwards`);
+      ok(`${r.id}: ${up ? 'up to level 3' : 'down from level 3'} on a slope that comes and goes gently`, Math.abs((up ? g.yEnd : g.y0) - 7.6) < 0.03 && Math.abs(up ? g.y0 : g.yEnd) < 0.03 && Math.abs(g.yTop - 7.6) < 0.03 && g.grade * deg < 2.2 && g.gradeRate * deg < 2.5,
+        `from ${g.y0.toFixed(2)} m to ${g.yEnd.toFixed(2)} m; ${(g.grade * deg).toFixed(2)}° at the steepest, changing by ${(g.gradeRate * deg).toFixed(2)}° a second at most`);
+      ok(`${r.id}: clear of the cars standing in the stalls`, g.inside > 500 && g.clear > 0.3, `${g.clear.toFixed(2)} m at the nearest (${g.clearAt})`);
+    }
     ok(`${r.id}: the ground streams without a failure`, run.tiles.failed === 0 && run.tiles.worker && run.tiles.held <= CEIL.held && run.tiles.mb <= CEIL.mb, `${run.tiles.built} squares built (${run.tiles.msAvg} ms each, ${run.tiles.msMax.toFixed(0)} ms at most), ${run.tiles.held} held, ${run.tiles.mb} MB`);
   }
 
@@ -87,20 +120,23 @@ const open = (vp, mobile, more = {}) => openPage(browser, { ...vp, mobile, place
   const kerb = await page.evaluate(async id => {
     const W = window.__world, D = W.drive(); W.route(id);
     const T = await import(document.querySelector('script[type=module]') ? 'https://cdnjs.cloudflare.com/ajax/libs/three.js/0.170.0/three.module.min.js' : '');
-    const ray = new T.Raycaster(), down = new T.Vector3(0, -1, 0), bad = [], st = D.state, R = D.route; let n = 0;
+    const ray = new T.Raycaster(), down = new T.Vector3(0, -1, 0), bad = [], air = [], st = D.state, R = D.route; let n = 0, decks = 0;
     const shown = o => { for (let p = o; p; p = p.parent) if (!p.visible) return false; return true; };
     for (let s = 2; s < R.length - 1; s += 3) {
       W.at(s); if (Math.round(s) % 120 < 3) { for (let w = 0; w < 80 && !W.settled(1); w++) await new Promise(f => setTimeout(f, 50)); W.step(1e-6); }
       const nx = -Math.sin(st.heading), nz = Math.cos(st.heading), fx = Math.cos(st.heading), fz = Math.sin(st.heading);
       for (const along of [0, 2.775]) for (const off of [-0.8, 0, 0.8]) {                          // under the back wheels and the front ones
-        ray.set(new T.Vector3(st.x + fx * along + nx * off, 1.5, st.z + fz * along + nz * off), down); ray.far = 1.7;      // from the height of the car's roof down
+        const floor = st.y + Math.tan(st.grade) * (along - 1.3875);                                // where the path has these wheels (the car's middle is 1.39 m ahead of its back axle)
+        ray.set(new T.Vector3(st.x + fx * along + nx * off, floor + 1.5, st.z + fz * along + nz * off), down); ray.far = 1.7;      // from the height of the car's roof down
         const hit = ray.intersectObjects(W.scene().children.filter(c => c.name === 'tiles' || c.name.startsWith('site')), true).find(h => shown(h.object) && !h.object.isInstancedMesh && !h.object.isSprite);
-        n++; if (hit && hit.point.y > 0.09) bad.push(`${Math.round(s)} m (${along ? 'front' : 'back'} ${off}): ${hit.point.y.toFixed(2)} m, ${hit.object.name || hit.object.parent.name}`);
+        n++; if (hit && hit.point.y - floor > 0.09) bad.push(`${Math.round(s)} m (${along ? 'front' : 'back'} ${off}): ${(hit.point.y - floor).toFixed(2)} m, ${hit.object.name || hit.object.parent.name}`);
+        if (floor > 0.3) { decks++; if (!hit || hit.point.y - floor < -0.09) air.push(`${Math.round(s)} m (${along ? 'front' : 'back'} ${off}): ${hit ? (hit.point.y - floor).toFixed(2) + ' m' : 'nothing under it'}`); }   // off the ground: a deck must be there
       }
     }
-    return { n, bad };
+    return { n, bad, air, decks };
   }, id);
   ok(`${id}: the wheels keep off the kerbs and the islands`, kerb.bad.length === 0, kerb.bad.length ? kerb.bad.slice(0, 6).join(' · ') + (kerb.bad.length > 6 ? ` … ${kerb.bad.length} in all` : '') : `${kerb.n} points looked at`);
+  ok(`${id}: in the parking structure the wheels are on its decks`, kerb.decks > 900 && kerb.air.length === 0, kerb.air.length ? kerb.air.slice(0, 6).join(' · ') + (kerb.air.length > 6 ? ` … ${kerb.air.length} in all` : '') : `${kerb.decks} points above the ground, a deck within 9 cm under each`);
   }
 
   /* a hand on the wheel */

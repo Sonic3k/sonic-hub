@@ -92,14 +92,16 @@ async function start(world) {
 
   /** puts the eye where the car is (and the car where its route says) */
   function pose(dt) {
-    rig.position.set(st.x, 0, st.z); rig.rotation.set(st.pitch, -Math.PI / 2 - st.heading, -st.roll);
+    rig.position.set(st.x, st.y, st.z); rig.rotation.set(st.pitch + st.grade, -Math.PI / 2 - st.heading, -st.roll);
     if (view === 'cabin') { const h = cabin.head(); camera.position.copy(h.eye); camera.rotation.set(h.pitch, -h.yaw, 0); }
     else { camera.position.set(0, 1.18, -1.9); camera.rotation.set(-0.07, 0, 0); }
     rig.updateMatrixWorld(true); camera.getWorldPosition(eyeWorld); camera.getWorldDirection(dirWorld);
     if (over) eyeWorld.set(over.x, 1.2, over.z);                                   // the ground is streamed round the place looked at
+    if (free) { eyeWorld.set(...free.eye); dirWorld.set(free.at[0] - free.eye[0], free.at[1] - free.eye[1], free.at[2] - free.eye[2]).normalize(); }
   }
   /* for the tools: the world drawn as a plan — from straight above a place, north up, so many metres across; with `cut`,
      only what lies below that height (trees and roofs hide the street from above) */
+  let free = null; const freeCam = new THREE.PerspectiveCamera(55, 1, 0.3, 4000);   // for the tools too: the world seen from any point towards any other
   let over = null; const topCam = new THREE.OrthographicCamera(-1, 1, 1, -1, 1, 3000), cutPlane = new THREE.Plane(new THREE.Vector3(0, -1, 0), 0);
 
   let dpr = Math.min(window.devicePixelRatio || 1, 2);
@@ -124,7 +126,7 @@ async function start(world) {
     let say = st.phase === 'arrived' ? 'Đã tới nơi' : st.phase === 'parked' ? 'Xe đang đỗ' : `${st.auto ? 'Tự lái' : 'Cầm lái'} · còn ${km(left)}`;
     if (st.phase === 'driving' && st.next && st.next.in < 260) say += ` · ${st.next.dir > 0 ? 'rẽ phải' : 'rẽ trái'}${st.next.in > 15 ? ' sau ' + km(st.next.in) : ''}`;
     $('say').textContent = say;
-    const why = $('why'); why.textContent = st.waiting === 'red' ? 'Đèn đỏ' : st.waiting === 'stop' ? 'Biển stop' : ''; why.hidden = !st.waiting;
+    const why = $('why'); why.textContent = st.waiting === 'red' ? 'Đèn đỏ' : st.waiting === 'stop' ? 'Biển stop' : st.waiting === 'gate' ? 'Barie' : ''; why.hidden = !st.waiting;
     $('mph').textContent = mph; $('kmh').textContent = Math.round(st.v * 3.6) + ' km/h';
   }
   function arrived() {
@@ -191,6 +193,7 @@ async function start(world) {
       scene.fog = null; cutPlane.constant = over.cut || 0; renderer.clippingPlanes = over.cut ? [cutPlane] : [];
       renderer.clear(); renderer.render(scene, topCam); scene.fog = fog; renderer.clippingPlanes = []; return;
     }
+    if (free) { freeCam.aspect = camera.aspect; freeCam.fov = free.fov || 55; freeCam.updateProjectionMatrix(); freeCam.position.set(...free.eye); freeCam.lookAt(...free.at); renderer.clear(); renderer.render(scene, freeCam); return; }
     renderer.clear(); renderer.render(scene, camera);
     if (view === 'cabin') { renderer.clearDepth(); renderer.render(cabin.scene, cabin.camera); }
   }
@@ -222,7 +225,11 @@ async function start(world) {
     /** one frame's cost, the two passes told apart */
     cost: () => { renderer.info.autoReset = false; renderer.info.reset(); renderer.clear(); renderer.render(scene, camera); const w = { calls: renderer.info.render.calls, tris: renderer.info.render.triangles }; renderer.info.reset(); if (view === 'cabin') { renderer.clearDepth(); renderer.render(cabin.scene, cabin.camera); } const c = { calls: renderer.info.render.calls, tris: renderer.info.render.triangles }; renderer.info.autoReset = true; return { world: w, cabin: c }; },
     scene: () => scene, camera: () => camera, cabin: () => cabin, drive: () => drive, signal: signalState, view: () => view,
+    /** what a site built by hand gave back (its live object) */
+    site: id => (sites.find(s => s.id === id) || {}).live,
     /** the plan round (x, z), `span` metres across, cut at `cut` metres above the ground (0: nothing cut); over() goes back to the car */
     over: (x, z, span = 120, cut = 0) => { over = x == null ? null : { x, z, span, cut }; pose(0); },
+    /** the world seen from a point towards another ([x, y, z] each); from() goes back to the car */
+    from: (eye, at, fov) => { free = eye ? { eye, at, fov } : null; pose(0); },
   };
 }

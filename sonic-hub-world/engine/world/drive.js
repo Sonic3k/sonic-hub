@@ -28,7 +28,10 @@ export function readRoute(r) {
     cap[i] = Math.min(r.lim[li][1], Math.sqrt(A_SIDE / Math.max(1e-4, Math.abs(k[i])))); lo[i] = r.band[bi][1]; hi[i] = r.band[bi][2];
   }
   for (let i = n - 2; i >= 0; i--) cap[i] = Math.min(cap[i], Math.sqrt(cap[i + 1] * cap[i + 1] + 2 * A_EASE * (s[i + 1] - s[i])));   // slow in good time for what comes
-  return { id: r.id, name: r.name, from: r.frm, to: r.to, n, x, z, s, hd, k, cap, lo, hi, length: s[n - 1], ctl: r.ctl.map(([at, kind, junction, group]) => ({ at, kind, junction, group })), turns: r.turns, names: r.names, straight: r.straight || [], wrap };
+  // how high the path is, where it climbs (the floors of a parking structure), and how steeply: metres up for a metre on
+  const y = new Float32Array(n), grade = new Float32Array(n);
+  if (r.y) { for (let i = 0; i < n; i++) y[i] = r.y[i] / 1000; for (let i = 0; i < n; i++) { const a = Math.max(0, i - 3), b = Math.min(n - 1, i + 3); grade[i] = (y[b] - y[a]) / Math.max(1e-6, s[b] - s[a]); } }
+  return { id: r.id, name: r.name, from: r.frm, to: r.to, n, x, z, s, hd, k, cap, lo, hi, y, grade, length: s[n - 1], ctl: r.ctl.map(([at, kind, junction, group]) => ({ at, kind, junction, group })), turns: r.turns, names: r.names, straight: r.straight || [], wrap };
 }
 
 export function setupDrive() {
@@ -37,9 +40,10 @@ export function setupDrive() {
     phase: 'parked',        // parked · driving · arrived
     auto: true, s: 0, v: 0, lat: 0, dev: 0, acc: 0,
     x: 0, z: 0, heading: 0, pitch: 0, roll: 0,
+    y: 0, grade: 0,         // how high the car's middle is, and the slope it stands on (radians, + nose up)
     wheel: 0,               // the steering wheel's angle, radians (+ to the right)
     blink: 0,               // −1 left, +1 right
-    street: '', waiting: '', next: null, rpm: 700, gear: 'P', held: 0, stops: 0, progress: 0,
+    street: '', waiting: '', next: null, rpm: 700, gear: 'P', held: 0, stops: 0, gates: 0, progress: 0,
   };
   const passed = new Set();   // stop signs already obeyed
   const at = (arr, f) => { const i = Math.min(R.n - 2, Math.max(0, Math.floor(f))), t = f - i; return arr[i] + (arr[i + 1] - arr[i]) * t; };
@@ -49,11 +53,12 @@ export function setupDrive() {
     const h0 = R.hd[i], h1 = R.hd[Math.min(R.n - 1, i + 1)], h = h0 + R.wrap(h1 - h0) * (f - i);
     const nx = -Math.sin(h), nz = Math.cos(h);                                     // to the right of travel
     st.x = x + Math.cos(h) * AXLE + nx * st.lat; st.z = z + Math.sin(h) * AXLE + nz * st.lat; st.heading = h + st.dev; index(st.s);
+    const g = at(R.grade, f); st.y = at(R.y, f) + g * AXLE; st.grade = Math.atan(g);
     return f;
   }
   function setRoute(route, o = {}) {
     R = route; i0 = 0; passed.clear();
-    Object.assign(st, { phase: 'parked', s: o.s ?? 0, v: 0, lat: 0, dev: 0, acc: 0, wheel: 0, blink: 0, waiting: '', gear: 'P', held: 0, stops: 0, pitch: 0, roll: 0 });
+    Object.assign(st, { phase: 'parked', s: o.s ?? 0, v: 0, lat: 0, dev: 0, acc: 0, wheel: 0, blink: 0, waiting: '', gear: 'P', held: 0, stops: 0, gates: 0, pitch: 0, roll: 0 });
     place(); st.street = streetAt(st.s); st.progress = 0;
   }
   const streetAt = s => { let nm = ''; for (const [a, name] of R.names) { if (a <= s) nm = name; else break; } return nm; };
@@ -71,7 +76,7 @@ export function setupDrive() {
         let stopAt = R.length - 0.6, why = 'end';
         for (const c of R.ctl) {
           const d = c.at - st.s; if (d < -1.5 || d > 140) continue;
-          if (c.kind === 1) { if (!passed.has(c.at) && c.at < stopAt) { stopAt = c.at; why = 'stop'; } continue; }
+          if (c.kind === 1 || c.kind === 2) { if (!passed.has(c.at) && c.at < stopAt) { stopAt = c.at; why = c.kind === 2 ? 'gate' : 'stop'; } continue; }   // a stop sign; the arm at a parking structure's gate
           // Red: stop. Yellow: go on only if the nose will be over the line before the red — at the speed it has now and
           // the speed the road lets it have at the line (a turn just past the line slows it on the way there); else stop,
           // and brake as hard as that takes. (The first rule went by the room to stop gently, and at 35 mph the car
@@ -87,6 +92,7 @@ export function setupDrive() {
           st.v = 0; want = 0;
           if (why === 'end') { st.phase = 'arrived'; st.gear = 'P'; }
           else if (why === 'stop') { st.held += dt; st.waiting = 'stop'; if (st.held > 1.6) { passed.add(stopAt); st.held = 0; st.stops++; } }
+          else if (why === 'gate') { st.held += dt; st.waiting = 'gate'; if (st.held > 1.5) { passed.add(stopAt); st.held = 0; st.gates++; } }   // the card, the arm going up
           else st.waiting = 'red';
         } else st.held = 0;
         let a = want > st.v ? Math.min(A_GO, (want - st.v) * 1.6) : Math.max(-A_HARD, (want - st.v) * 3.2);
@@ -123,7 +129,7 @@ export function setupDrive() {
     const span = (mph - G[g - 1]) / (G[g] - G[g - 1]), load = Math.max(0, st.acc) / A_GO;
     const rpm = st.phase === 'driving' ? 780 + (g === 1 ? mph * 95 : 1150 + span * (700 + 900 * load)) + load * 420 : 700;
     st.rpm += (rpm - st.rpm) * Math.min(1, dt * 6);
-    st.next = null; for (const [a, b, dir] of R.turns) if (b > st.s) { st.next = { in: Math.max(0, a + 38 - st.s), dir }; break; }
+    st.next = null; for (const [a, b, dir, at] of R.turns) if (b > st.s) { st.next = { in: Math.max(0, (at ?? a + 38) - st.s), dir }; break; }
     return st;
   }
   return {

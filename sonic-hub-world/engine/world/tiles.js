@@ -117,7 +117,7 @@ function palmGeo() {
   }
   return mergeGeos(parts);
 }
-function carGeo(wheels) {
+export function carGeo(wheels) {
   /* a parked saloon, plain: the body, the glass house (dark all round, the roof in the body's colour), four wheels.
      It stands along z with its nose to −z; white, so that each one's own colour tints it. */
   const pos = [], col = [], body = [1, 1, 1], glass = [0.05, 0.065, 0.08], tyre = [0.03, 0.03, 0.03], dark = [0.3, 0.3, 0.3];
@@ -140,6 +140,9 @@ function stopTexture() {
   g.fillStyle = '#f4f4f0'; g.font = '700 38px Arial, Helvetica, sans-serif'; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText('STOP', 64, 66);
   const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 4; return t;
 }
+
+/** the colours cars come in (a parked car's own tints the white body) */
+export const CAR_COLOURS = ['#e9e9e6', '#b9bcc0', '#1b1c1f', '#6d7178', '#243f6e', '#7d1f1f', '#d8d2bd', '#3d4a43', '#8f9296', '#101113'];
 
 /**
  * @param scene   where the squares go
@@ -171,7 +174,7 @@ export function setupTiles(scene, o) {
   for (const k of ['road', 'marks']) M[k].userData.noCast = true;
   const G = { treeHi: treeGeo(1), treeLo: treeGeo(0), palm: palmGeo(), carHi: carGeo(true), carLo: carGeo(false), lamp: new THREE.CircleGeometry(0.108, 10), stop: new THREE.PlaneGeometry(0.76, 0.76), glow: new THREE.PlaneGeometry(0.62, 0.3).rotateX(Math.PI / 2) };
   const TREE_TINT = ['#ffffff', '#e6f0d8', '#f2ead0', '#d8ecd8', '#fff4d6', '#e0e6c8'].map(c => new THREE.Color(c));
-  const CAR_TINT = ['#e9e9e6', '#b9bcc0', '#1b1c1f', '#6d7178', '#243f6e', '#7d1f1f', '#d8d2bd', '#3d4a43', '#8f9296', '#101113'].map(c => new THREE.Color(c));
+  const CAR_TINT = CAR_COLOURS.map(c => new THREE.Color(c));
 
   /* the builder: in a Worker where the browser allows one made from the page's own text */
   let worker = null, direct = null; const waiting = new Map(); let seq = 0;

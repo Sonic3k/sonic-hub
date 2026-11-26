@@ -1,0 +1,15 @@
+{
+  "note": "The parking structure at 940 N Nash St, El Segundo, where he left the car on working days (he went up to level 3): its plan in the world's metres, read by data/world.py (the way in, up and down again) and by garage.js (what is built). Outline and height from OpenStreetMap (way 233388658); the face on Nash, its two portals and their lanes, the floor height from Street View (12/2023); stalls, beams and lights from his two photographs of 27/4/2021. GUESSED: how the floors climb. No picture shows it: the north bay is level (seen from Nash), so the south bay is taken to be one sloping floor that rises a level over its length, as two-bay structures of this length usually are; the portal's signs (exit, exit, entrance on the south bay) agree with that.",
+  "way": "233388658",
+  "x0": 709.8, "x1": 884.2, "z0": -784.3, "z1": -742.8,
+  "zc": -763.55,
+  "floor": 3.8, "levels": 11, "open": 8,
+  "aisleN": -774.6, "aisleS": -752.4, "aisleW": 7.6, "lane": 1.9,
+  "stall": 5.5, "stallW": 2.64, "grid": 8.72, "stallBays": [2, 17],
+  "crossW": 718.5, "crossE": 875.5, "crossWidth": 8.0,
+  "rampW": 731.0, "rampE": 863.0,
+  "gateX": 708.6, "laneIn": -751.6, "lanesOut": [-755.6, -759.6], "lanesVisitor": [-776.2, -772.6],
+  "tower": 6.2,
+  "turn": 5.5,
+  "park": { "level": 3, "bay": 14, "stall": 1 }
+}
