@@ -104,14 +104,22 @@ load, and what a frame may cost is checked.
   `place.js`): the hotel of El Segundo with its streets. Its fine parts show only from near (`near`). A place that
   can be a site reads `ctx.world`: `esa-el-segundo-2015/town.js` then leaves its sidewalks and lines open where the
   world's data says a junction is, draws no signals and no traffic (the world's signals change; its car obeys them).
-- **Routes and the car.** `routes.json` holds the middle of the lane to keep, metre by metre, the speed each stretch
-  allows, the signals and stop signs, the turns, and how far a hand on the wheel may stray. `engine/world/drive.js`
-  drives it (by itself by default); `camry.js` is the cabin of his black 2014 Camry, drawn in a pass of its own over
-  the world; `headunit.js` the screen in the middle, which plays his own lists from Sonic Hub's music library.
-- **Checks.** `places/<id>/checks.mjs`: each route driven end to end with the rules kept, the wheels off the
+- **Routes and the car.** A route in `routes.json` is a path a car can drive, not a line on a map: the data script
+  eases the map's roads into curves, plans the lane (least moving sideways), then drives a car along the lane's
+  line (a wheelbase, a look ahead, hands that turn the wheel no faster than a turn a second) and stores what its
+  back axle traces — a point every half metre to the millimetre, with its heading and curvature — beside the speed
+  each stretch allows, the signals and stop signs, the turns, how far a hand on the wheel may stray, and where the
+  street is straight. `engine/world/drive.js` drives it (by itself by default) and takes heading, wheel and lean from
+  that path; never from differences between points (that made the car twitch on a straight street). `camry.js` is
+  the cabin of his black 2014 Camry, drawn in a pass of its own over the world; `headunit.js` the screen in the
+  middle, which plays his own lists from Sonic Hub's music library.
+- **Checks.** `places/<id>/checks.mjs`: each route driven end to end with the rules kept, and driven like a car — on
+  a straight street the wheel, the nose and the body hold still; the wheel changes direction fewer than 12 times a
+  minute (2° and more: the steering reversal rate); the foot does not hunt between the pedals — the wheels off the
   kerbs, the frame under the ceiling measured on his telephone (460 draw calls, 1.2 M triangles in view), both
-  telephone layouts. `tools/worldshot.mjs` photographs a world along a route; `places/<id>/data/plot.py` draws the
-  data as a map.
+  telephone layouts. A picture cannot show a twitch: what moves is checked as a series in time.
+  `tools/worldfeel.mjs` prints those figures for one drive; `tools/worldshot.mjs` photographs a world along a route;
+  `places/<id>/data/plot.py` draws the data as a map.
 
 Not there yet: walking and the scooter in a world, the car seen from outside, other cars on the road, more
 routes and sites, scenes far away (Point Vicente, Orange County), the layers of years.

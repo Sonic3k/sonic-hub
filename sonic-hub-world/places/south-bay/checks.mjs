@@ -1,6 +1,7 @@
 // South Bay: opens the world the way a visitor would and checks that it holds — the page comes up, the car drives each
 // route by itself from end to end keeping the rules (the speed each street allows, no leaning in a bend, a full stop
-// at a stop sign, never over a line on red), it keeps off the kerbs, a hand on the wheel works and gives the wheel
+// at a stop sign, never over a line on red) and driving like a car (on a straight street the wheel holds still, the
+// body does not rock, the foot does not hunt between the pedals), it keeps off the kerbs, a hand on the wheel works and gives the wheel
 // back, the screen shows his list, and a frame never costs more than the ceiling measured on his telephone
 // (claude/chuan-dung-the-gioi-3d.md: 460 draw calls, 1.2 M triangles in view; 160 MB of streamed ground).
 // Run from the module's folder after a build: node places/south-bay/checks.mjs
@@ -22,12 +23,30 @@ const open = (vp, mobile, more = {}) => openPage(browser, { ...vp, mobile, place
       const W = window.__world, D = W.drive(); W.route(id); W.setView('cabin');
       const R = D.route, st = D.state, at = (arr, s) => { let i = 0; while (i < R.n - 2 && R.s[i + 1] <= s) i++; return arr[i]; };
       const out = { t: 0, over: 0, lean: 0, redRun: [], stopsMin: {}, waitsRed: 0, top: 0, arrived: false, calls: 0, tris: 0, cabinCalls: 0, worst: '', off: 0 };
+      // where the street is straight is the map's word, not the path's (routes.json: straight — the lane's own line turns
+      // by no more than 0.6° within 20 m either way): what the car does there is what is held to account
+      const onStraight = s => R.straight.some(([a, b]) => s >= a && s <= b);
+      const deg = 180 / Math.PI, feel = { straightM: R.straight.reduce((a, [p, q]) => a + q - p, 0), wheelOnStraight: 0, rollOnStraight: 0, sideOnStraight: 0, yawOnStraight: 0, swings: 0, moving: 0, pedal: 0, jerk: 0, wheelRate: 0, wheelRateFast: 0 };
+      let wLast = 0, wDir = 0, wBase = 0, aSide = 0, pAcc = 0, pWheel = 0, pHead = st.heading;
       for (const c of R.ctl) if (c.kind === 1) out.stopsMin[c.at] = 99;
       let prev = st.s, red = false, nextCost = 0;
       for (let k = 0; k < 12000 && !out.arrived; k++) {
         W.step(0.05); out.t += 0.05;
         const v = st.v, cap = at(R.cap, st.s), kap = Math.abs(at(R.k, st.s));
         out.top = Math.max(out.top, v); out.over = Math.max(out.over, v - cap); out.lean = Math.max(out.lean, v * v * kap); out.off = Math.max(out.off, Math.abs(st.lat));
+        // how it drives: the wheel's swings of 2° and more, what the wheel, the body and the sideways push do on a straight, the foot's changes of pedal
+        const w = st.wheel * deg;
+        if (wDir === 0) { if (Math.abs(w - wBase) > 2) { wDir = w > wBase ? 1 : -1; wLast = w; } }
+        else if (wDir > 0) { if (w > wLast) wLast = w; else if (wLast - w > 2) { feel.swings++; wDir = -1; wLast = w; } }
+        else { if (w < wLast) wLast = w; else if (w - wLast > 2) { feel.swings++; wDir = 1; wLast = w; } }
+        if (v > 0.5) feel.moving += 0.05;
+        if (onStraight(st.s)) {
+          feel.wheelOnStraight = Math.max(feel.wheelOnStraight, Math.abs(w)); feel.rollOnStraight = Math.max(feel.rollOnStraight, Math.abs(st.roll) * deg);
+          feel.sideOnStraight = Math.max(feel.sideOnStraight, v * v * kap); feel.yawOnStraight = Math.max(feel.yawOnStraight, Math.abs(st.heading - pHead) / 0.05 * deg);
+        }
+        const side = st.acc > 0.3 ? 1 : st.acc < -0.3 ? -1 : 0; if (side && side !== aSide) { if (aSide) feel.pedal++; aSide = side; }
+        feel.jerk = Math.max(feel.jerk, Math.abs(st.acc - pAcc) / 0.05); pAcc = st.acc; pHead = st.heading;
+        const wr = Math.abs(w - pWheel) / 0.05; feel.wheelRate = Math.max(feel.wheelRate, wr); if (v > 8) feel.wheelRateFast = Math.max(feel.wheelRateFast, wr); pWheel = w;
         for (const c of R.ctl) {
           if (c.kind === 1) { if (st.s > c.at - 2.5 && st.s < c.at + 1) out.stopsMin[c.at] = Math.min(out.stopsMin[c.at], v); }
           else if (prev < c.at + 0.6 && st.s >= c.at + 0.6 && W.signal(c.junction, c.group, W.clock()) === 0) out.redRun.push(c.at);
@@ -42,12 +61,20 @@ const open = (vp, mobile, more = {}) => openPage(browser, { ...vp, mobile, place
         }
         prev = st.s; out.arrived = st.phase === 'arrived';
       }
+      out.feel = feel; out.events = R.ctl.length + R.turns.length;
       out.tiles = W.tiles(); out.end = [st.x, st.z]; return out;
     }, r.id);
     const stops = Object.entries(run.stopsMin);
     ok(`${r.id}: the car arrives by itself`, run.arrived, `${Math.round(run.t)} s for ${Math.round(r.length)} m, at most ${(run.top * 2.237).toFixed(0)} mph; waited at ${run.waitsRed} red light(s)`);
     ok(`${r.id}: never faster than the street allows`, run.over < 0.6, `over by at most ${run.over.toFixed(2)} m/s`);
     ok(`${r.id}: no leaning in the bends`, run.lean < 2.4, `${run.lean.toFixed(2)} m/s² sideways at most`);
+    const f = run.feel;
+    ok(`${r.id}: on a straight street the car goes straight`, f.straightM > 400 && f.wheelOnStraight < 2 && f.rollOnStraight < 0.05 && f.sideOnStraight < 0.12 && f.yawOnStraight < 0.5,
+      `${Math.round(f.straightM)} m of straight street: the wheel within ${f.wheelOnStraight.toFixed(1)}° of the middle, the body within ${f.rollOnStraight.toFixed(2)}°, the nose turning ${f.yawOnStraight.toFixed(2)}° a second at most, ${f.sideOnStraight.toFixed(2)} m/s² sideways`);
+    const perMin = f.swings / (f.moving / 60);
+    ok(`${r.id}: the wheel is turned, not sawn at`, perMin < 12 && f.wheelRate < 420 && f.wheelRateFast < 40,
+      `${f.swings} turns of the wheel's direction (2° and more) in ${Math.round(f.moving)} s of moving: ${perMin.toFixed(1)} a minute; the wheel never faster than ${Math.round(f.wheelRate)}° a second (${Math.round(f.wheelRateFast)}° a second above 18 mph)`);
+    ok(`${r.id}: the foot does not hunt between the pedals`, f.pedal <= 2 * run.events + 6 && f.jerk < 4.5, `${f.pedal} changes of pedal for ${run.events} signals, signs and turns; the push never grows faster than ${f.jerk.toFixed(1)} m/s³`);
     ok(`${r.id}: a full stop at every stop sign`, stops.every(([, v]) => v < 0.3), stops.map(([at, v]) => `at ${Math.round(at)} m down to ${v.toFixed(2)} m/s`).join(', ') || 'no stop sign on this route');
     ok(`${r.id}: never over a line on red`, run.redRun.length === 0, run.redRun.join(', '));
     ok(`${r.id}: it keeps to its lane`, run.off < 0.05);

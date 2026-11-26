@@ -57,10 +57,14 @@ x0, x1, z0, z1 = -280, 780, -270, 250
 d.rectangle([X(x0, z0), X(x1, z1)], outline=(255, 255, 255, 160), width=2)
 for gx in range(-10, 12): d.line([X(gx * T, -1e5), X(gx * T, 1e5)], fill=(255, 255, 255, 40)); d.line([X(-1e5, gx * T), X(1e5, gx * T)], fill=(255, 255, 255, 40))
 for ri, r in enumerate(json.load(open(out + '/routes.json'))):
-    p = [(a / 10, b / 10) for a, b in pairs(r['pts'])]; col = (255, 40, 200) if ri == 0 else (40, 220, 255)
+    # the path is the back axle's (millimetres, with its heading in 1e-5 rad): drawn is the car's middle, 1.39 m ahead of it
+    ax = [(a / 1000, b / 1000) for a, b in pairs(r['pts'])]; hd = [h / 1e5 for h in r['hd']]; col = (255, 40, 200) if ri == 0 else (40, 220, 255)
+    p = [(x + math.cos(h) * 1.3875, z + math.sin(h) * 1.3875) for (x, z), h in zip(ax, hd)]
     pl(p, 0.5, col + (255,))
     cl = [0]
-    for a, b in zip(p, p[1:]): cl.append(cl[-1] + math.hypot(b[0] - a[0], b[1] - a[1]))
-    for s, kind, ji, grp in r['ctl']:
-        i = min(range(len(cl)), key=lambda i: abs(cl[i] - s)); x, z = X(*p[i]); d.ellipse([x - 5, z - 5, x + 5, z + 5], outline=col, width=2)
+    for a, b in zip(ax, ax[1:]): cl.append(cl[-1] + math.hypot(b[0] - a[0], b[1] - a[1]))
+    for s0, s1 in r.get('straight', []):                                           # where the street is straight: a paler line beside the path
+        q = [(x - math.sin(h) * 1.2, z + math.cos(h) * 1.2) for (x, z), h, c in zip(p, hd, cl) if s0 <= c <= s1]; pl(q, 0.4, (255, 255, 255, 200))
+    for s, kind, ji, grp in r['ctl']:                                              # where the bumper stops
+        i = min(range(len(cl)), key=lambda i: abs(cl[i] - s)); x, z = X(ax[i][0] + math.cos(hd[i]) * 3.75, ax[i][1] + math.sin(hd[i]) * 3.75); d.ellipse([x - 5, z - 5, x + 5, z + 5], outline=col, width=2)
 im.save(png); print(png, len(tiles), 'tiles')

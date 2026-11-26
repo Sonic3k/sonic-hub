@@ -1,21 +1,24 @@
-/* A car on a route. The route is a line worked out beforehand (a place's data/world.py): the middle of the lane to keep,
-   metre by metre, with the speed each stretch allows, where the signals and stop signs are, and how far a hand on the
-   wheel may stray from it. By default the car drives itself along it: it keeps the lane, slows for bends, stops at a
-   red light and at a stop sign, and parks at the end. With a hand on the wheel the driver chooses the speed and the
+/* A car on a route. The route is a path worked out beforehand (a place's data/world.py): what the back axle of a car
+   traces when it is driven along the middle of the lane — every half metre its place (to the millimetre), its heading
+   and how tightly it is turning — with the speed each stretch allows, where the signals and stop signs are, and how
+   far a hand on the wheel may stray from it. The heading and the turning come with the path: taking them from
+   neighbouring points of a line kept to the decimetre made the car's nose and its wheel twitch on a straight street.
+   By default the car drives itself along it: it keeps the lane, slows for bends, stops at a red light and at a stop
+   sign, and parks at the end. With a hand on the wheel the driver chooses the speed and the
    place in the road; the car still follows the route's turnings (other streets are closed to it). */
 import { signalState } from './tiles.js';
 
 const WHEELBASE = 2.775, RATIO = 14.6;            // a 2014 Camry: metres between the axles; turns of the wheel per turn of the road wheels
+const AXLE = WHEELBASE / 2;                       // the car's middle is this far ahead of the axle the path belongs to
 const A_GO = 1.45, A_EASE = 1.7, A_HARD = 3.6, A_SIDE = 1.9;   // m/s²: pulling away, braking gently, braking hard, sideways in a bend
 
 /** route: what routes.json holds for one route → the same, ready for use */
 export function readRoute(r) {
-  const n = r.pts.length >> 1, x = new Float32Array(n), z = new Float32Array(n), s = new Float32Array(n);
-  for (let i = 0; i < n; i++) { x[i] = r.pts[2 * i] / 10; z[i] = r.pts[2 * i + 1] / 10; if (i) s[i] = s[i - 1] + Math.hypot(x[i] - x[i - 1], z[i] - z[i - 1]); }
-  const hd = new Float32Array(n), k = new Float32Array(n);
-  for (let i = 0; i < n; i++) { const a = Math.max(0, i - 2), b = Math.min(n - 1, i + 2); hd[i] = Math.atan2(z[b] - z[a], x[b] - x[a]); }
+  const n = r.pts.length >> 1, x = new Float64Array(n), z = new Float64Array(n), s = new Float64Array(n);
+  for (let i = 0; i < n; i++) { x[i] = r.pts[2 * i] / 1000; z[i] = r.pts[2 * i + 1] / 1000; if (i) s[i] = s[i - 1] + Math.hypot(x[i] - x[i - 1], z[i] - z[i - 1]); }
+  const hd = new Float64Array(n), k = new Float64Array(n);
+  for (let i = 0; i < n; i++) { hd[i] = r.hd[i] / 1e5; k[i] = r.k[i] / 1e6; }        // the heading (it runs on past ±180°); + bends to the right
   const wrap = a => { while (a > Math.PI) a -= 2 * Math.PI; while (a < -Math.PI) a += 2 * Math.PI; return a; };
-  for (let i = 0; i < n; i++) { const a = Math.max(0, i - 3), b = Math.min(n - 1, i + 3); k[i] = wrap(hd[b] - hd[a]) / Math.max(1e-3, s[b] - s[a]); }   // + bends to the right
   // the most each metre allows: the street's own limit, and what the bend takes without leaning
   const cap = new Float32Array(n); let li = 0, bi = 0;
   const lo = new Float32Array(n), hi = new Float32Array(n);
@@ -25,7 +28,7 @@ export function readRoute(r) {
     cap[i] = Math.min(r.lim[li][1], Math.sqrt(A_SIDE / Math.max(1e-4, Math.abs(k[i])))); lo[i] = r.band[bi][1]; hi[i] = r.band[bi][2];
   }
   for (let i = n - 2; i >= 0; i--) cap[i] = Math.min(cap[i], Math.sqrt(cap[i + 1] * cap[i + 1] + 2 * A_EASE * (s[i + 1] - s[i])));   // slow in good time for what comes
-  return { id: r.id, name: r.name, from: r.frm, to: r.to, n, x, z, s, hd, k, cap, lo, hi, length: s[n - 1], ctl: r.ctl.map(([at, kind, junction, group]) => ({ at, kind, junction, group })), turns: r.turns, names: r.names, wrap };
+  return { id: r.id, name: r.name, from: r.frm, to: r.to, n, x, z, s, hd, k, cap, lo, hi, length: s[n - 1], ctl: r.ctl.map(([at, kind, junction, group]) => ({ at, kind, junction, group })), turns: r.turns, names: r.names, straight: r.straight || [], wrap };
 }
 
 export function setupDrive() {
@@ -45,7 +48,7 @@ export function setupDrive() {
     const f = index(st.s), x = at(R.x, f), z = at(R.z, f), i = Math.floor(f);
     const h0 = R.hd[i], h1 = R.hd[Math.min(R.n - 1, i + 1)], h = h0 + R.wrap(h1 - h0) * (f - i);
     const nx = -Math.sin(h), nz = Math.cos(h);                                     // to the right of travel
-    st.x = x + nx * st.lat; st.z = z + nz * st.lat; st.heading = h + st.dev; index(st.s);
+    st.x = x + Math.cos(h) * AXLE + nx * st.lat; st.z = z + Math.sin(h) * AXLE + nz * st.lat; st.heading = h + st.dev; index(st.s);
     return f;
   }
   function setRoute(route, o = {}) {
@@ -80,8 +83,10 @@ export function setupDrive() {
           else if (why === 'stop') { st.held += dt; st.waiting = 'stop'; if (st.held > 1.6) { passed.add(stopAt); st.held = 0; st.stops++; } }
           else st.waiting = 'red';
         } else st.held = 0;
-        const a = want > st.v ? Math.min(A_GO, (want - st.v) * 1.6) : Math.max(-A_HARD, (want - st.v) * 3.2);
-        st.acc += (a - st.acc) * Math.min(1, dt * 5); st.v = Math.max(0, st.v + st.acc * dt);
+        let a = want > st.v ? Math.min(A_GO, (want - st.v) * 1.6) : Math.max(-A_HARD, (want - st.v) * 3.2);
+        if (want < 0.4 && st.v < 1.6) a = Math.max(a, -(0.35 + st.v * 0.9));          // the last metre of a stop: the foot eases off the brake
+        // a foot does not jump on a pedal: the push grows by so much a second (the brake faster than the throttle)
+        const most = (a < st.acc ? 3.4 : 1.6) * dt; st.acc += Math.max(-most, Math.min(most, a - st.acc)); st.v = Math.max(0, st.v + st.acc * dt);
         st.lat += (0 - st.lat) * Math.min(1, dt * 0.9); st.dev += (0 - st.dev) * Math.min(1, dt * 2.5);
       } else {
         const gas = input.gas || 0, brake = input.brake || 0;
@@ -101,8 +106,9 @@ export function setupDrive() {
     place();
     // the wheel: what the bend asks of the road wheels, and the driver's own hand on top of it
     const road = Math.atan(WHEELBASE * kappa) + st.dev * 0.9 + (st.auto ? 0 : (input.steer || 0) * 0.05);
-    st.wheel += (road * RATIO - st.wheel) * Math.min(1, dt * 7);
-    st.roll += (-st.v * st.v * kappa * 0.012 - st.roll) * Math.min(1, dt * 4); st.pitch += (st.acc * 0.006 - st.pitch) * Math.min(1, dt * 4);
+    st.wheel += (road * RATIO - st.wheel) * Math.min(1, dt * 12);
+    // the body on its springs: it leans out of a bend (about 0.35° for a tenth of g) and dips under the brake, and takes a moment over both
+    st.roll += (-st.v * st.v * kappa * 0.006 - st.roll) * Math.min(1, dt * 3); st.pitch += (st.acc * 0.005 - st.pitch) * Math.min(1, dt * 3);
     st.blink = 0; for (const [a, b, dir] of R.turns) if (st.s >= a && st.s <= b) st.blink = dir;
     if (st.phase === 'arrived' || st.phase === 'parked') st.blink = 0;
     st.street = streetAt(st.s); st.progress = st.s / R.length;
