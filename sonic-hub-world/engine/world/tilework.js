@@ -89,16 +89,21 @@ export function makeBuilder() {
     return A;
   }
 
-  /** index triples of an outline that turns the positive way in (x, z) */
+  /** index triples of an outline that turns the positive way in (x, z). A corner is cut off when no other point lies
+      in it; a point that lies on the line between its two neighbours (or doubles back on it) is no corner and is
+      dropped; and if the outline is so made that no corner can be cut, the flattest one goes, so that what is left
+      can be gone on with (a fan from one point would turn some of its triangles over). */
   function ears(P, n, out) {
     const V = []; for (let i = 0; i < n; i++) V.push(i);
+    const turn = (a, b, c) => (P[2 * b] - P[2 * a]) * (P[2 * c + 1] - P[2 * a + 1]) - (P[2 * b + 1] - P[2 * a + 1]) * (P[2 * c] - P[2 * a]);
     let guard = 0;
-    while (V.length > 3 && guard++ < 6000) {
-      let cut = false;
+    while (V.length > 3 && guard++ < 8000) {
+      let cut = false, flat = -1, least = Infinity;
       for (let k = 0; k < V.length; k++) {
-        const a = V[(k + V.length - 1) % V.length], b = V[k], c = V[(k + 1) % V.length];
+        const a = V[(k + V.length - 1) % V.length], b = V[k], c = V[(k + 1) % V.length], t = turn(a, b, c);
+        if (Math.abs(t) < least) { least = Math.abs(t); flat = k; }
+        if (t <= 1e-7) continue;
         const ax = P[2 * a], az = P[2 * a + 1], bx = P[2 * b], bz = P[2 * b + 1], cx = P[2 * c], cz = P[2 * c + 1];
-        if ((bx - ax) * (cz - az) - (bz - az) * (cx - ax) <= 1e-7) continue;
         let inside = false;
         for (let m = 0; m < V.length; m++) {
           const v = V[m]; if (v === a || v === b || v === c) continue; const px = P[2 * v], pz = P[2 * v + 1];
@@ -108,9 +113,9 @@ export function makeBuilder() {
         if (inside) continue;
         out.push(a, b, c); V.splice(k, 1); cut = true; break;
       }
-      if (!cut) { for (let k = 1; k + 1 < V.length; k++) out.push(V[0], V[k], V[k + 1]); return; }
+      if (!cut) V.splice(flat, 1);
     }
-    if (V.length === 3) out.push(V[0], V[1], V[2]);
+    if (V.length === 3 && turn(V[0], V[1], V[2]) > 1e-7) out.push(V[0], V[1], V[2]);
   }
   /** an outline (any turn) as triangles facing up */
   function poly(A, y, c, flat, from, ox, oz, ut) {
@@ -163,7 +168,7 @@ export function makeBuilder() {
     const trees = [], palms = [], lamps = [], stops = [], heads = [], cars = [];
 
     /* the ground: what lies under everything, land use, lots and greens */
-    flat.up(Y.base, BASE[t.g ? 1 : 0], [0, 0, T, 0, T, T, 0, T], ox, oz, 1);
+    if (!t.n) flat.up(Y.base, BASE[t.g ? 1 : 0], [0, 0, T, 0, T, T, 0, T], ox, oz, 1);          // (n: nothing under — a place that lays its own ground and takes only the streets)
     for (const u of t.u || []) poly(flat, Y.use, USE[u[0]], u, 1, ox, oz, 1);
     for (const a of t.a || []) poly(flat, Y.area + (a[0] === 1 ? 0.01 : 0), AREA[a[0]], a, 1, ox, oz, 1);
 
@@ -191,14 +196,16 @@ export function makeBuilder() {
       const edge = (o, most) => { const E = new Float32Array(2 * n); for (let i = 0; i < n; i++) { const dx = B[2 * i] - A[2 * i], dz = B[2 * i + 1] - A[2 * i + 1], l = Math.hypot(dx, dz) || 1, m = most ? Math.min(o, l * most) : o; E[2 * i] = A[2 * i] + dx / l * m; E[2 * i + 1] = A[2 * i + 1] + dz / l * m; } return E; };
       const face = (E, y1, left) => { for (let i = 0; i < n - 1; i++) { if (left) conc.wall(E[2 * i + 2], E[2 * i + 3], E[2 * i], E[2 * i + 1], Y.kerbFoot, y1, CONC.walk, 0, 1, 0, 0.1); else conc.wall(E[2 * i], E[2 * i + 1], E[2 * i + 2], E[2 * i + 3], Y.kerbFoot, y1, CONC.walk, 0, 1, 0, 0.1); } };
       const caps = y1 => { conc.wall(A[0], A[1], B[0], B[1], Y.kerbFoot, y1, CONC.walk, 0, 1, 0, 0.1); conc.wall(B[2 * n - 2], B[2 * n - 1], A[2 * n - 2], A[2 * n - 1], Y.kerbFoot, y1, CONC.walk, 0, 1, 0, 0.1); };
+      /** an edge made from A must run on as A does: where it would fold back, its points are brought together */
+      const along = E => { for (let pass = 0, moved = true; moved && pass < 6; pass++) { moved = false; for (let i = 0; i + 1 < n; i++) if ((E[2 * i + 2] - E[2 * i]) * (A[2 * i + 2] - A[2 * i]) + (E[2 * i + 3] - E[2 * i + 1]) * (A[2 * i + 3] - A[2 * i + 1]) < -1e-9) { const x = (E[2 * i] + E[2 * i + 2]) / 2, z = (E[2 * i + 1] + E[2 * i + 3]) / 2; E[2 * i] = E[2 * i + 2] = x; E[2 * i + 1] = E[2 * i + 3] = z; moved = true; } } return E; };
       if (kind === 0 || kind === 1) ribbon(road, A, B, kind ? Y.box : Y.street, RIB[0], ox, oz, 4);
       else if (kind === 3 || kind === 5) {
-        ribbon(conc, edge(-GUT), edge(LAP), Y.gutter, CONC.gutter, ox, oz, 1.5);                                  // (a little way in under the walk: no crack at the kerb's foot)
+        ribbon(conc, along(edge(-GUT)), along(edge(LAP)), Y.gutter, CONC.gutter, ox, oz, 1.5);                    // (a little way in under the walk: no crack at the kerb's foot)
         if (kind === 3) { ribbon(conc, A, B, Y.walk, CONC.walk, ox, oz, 1.5); face(A, Y.walk, true); face(B, Y.walk, false); caps(Y.walk); }
         else ribbon(conc, A, B, Y.apron, CONC.apron, ox, oz, 1.5);
       } else if (kind === 6) { ribbon(conc, A, B, Y.median, CONC.walk, ox, oz, 1.5); face(A, Y.median, true); caps(Y.median); }
       else if (kind === 7) {                                                                                         // a kerb along the roadway, grass behind it
-        const K = edge(0.3, 0.5);
+        const K = along(edge(0.3, 0.5));
         ribbon(conc, A, K, Y.median, CONC.walk, ox, oz, 1.5); face(A, Y.median, true); caps(Y.median);
         for (let i = 0; i < n - 1; i++) flat.up(Y.median, LAWN, [K[2 * i], K[2 * i + 1], K[2 * i + 2], K[2 * i + 3], B[2 * i + 2], B[2 * i + 3], B[2 * i], B[2 * i + 1]], 0, 0, 1);
       }
@@ -224,9 +231,14 @@ export function makeBuilder() {
         else if (i === nk - 1) N.push(unit(P[i][0] - P[nk][0], P[i][1] - P[nk][1]) || out(P[i - 1], P[i]));
         else { const u = out(P[i - 1], P[i]), v = out(P[i], P[i + 1]), m = unit(u[0] + v[0], u[1] + v[1]) || v, k = 1 / Math.max(0.6, m[0] * v[0] + m[1] * v[1]); N.push([m[0] * k, m[1] * k]); }
       }
-      const off = (i, d) => [P[i][0] + N[i][0] * d, P[i][1] + N[i][1] * d];
+      const off = (i, d) => [P[i][0] + N[i][0] * d, P[i][1] + N[i][1] * d], G = [], U = [];
+      for (let i = 0; i < nk; i++) { G.push(off(i, GUT)); U.push(off(i, -LAP)); }
+      for (const E of [G, U]) for (let pass = 0, moved = true; moved && pass < 6; pass++) {                              // where the kerb jogs, the gutter's edge would fold back on itself: its points there are brought together
+        moved = false;
+        for (let i = 0; i + 1 < nk; i++) if ((E[i + 1][0] - E[i][0]) * (P[i + 1][0] - P[i][0]) + (E[i + 1][1] - E[i][1]) * (P[i + 1][1] - P[i][1]) < -1e-9) { const m = [(E[i][0] + E[i + 1][0]) / 2, (E[i][1] + E[i + 1][1]) / 2]; E[i] = m; E[i + 1] = m; moved = true; }
+      }
       for (let i = 0; i + 1 < nk; i++) {
-        const a = P[i], b = P[i + 1], g = off(i, GUT), h = off(i + 1, GUT), u = off(i, -LAP), v = off(i + 1, -LAP);
+        const a = P[i], b = P[i + 1], g = G[i], h = G[i + 1], u = U[i], v = U[i + 1];
         if (left) { conc.wall(b[0], b[1], a[0], a[1], Y.kerbFoot, Y.walk, CONC.walk, 0, 1, 0, 0.1); conc.up(Y.gutter, CONC.gutter, [g[0], g[1], h[0], h[1], v[0], v[1], u[0], u[1]], ox, oz, 1.5); }
         else { conc.wall(a[0], a[1], b[0], b[1], Y.kerbFoot, Y.walk, CONC.walk, 0, 1, 0, 0.1); conc.up(Y.gutter, CONC.gutter, [u[0], u[1], v[0], v[1], h[0], h[1], g[0], g[1]], ox, oz, 1.5); }
       }

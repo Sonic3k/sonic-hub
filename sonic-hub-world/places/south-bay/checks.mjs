@@ -83,23 +83,25 @@ const open = (vp, mobile, more = {}) => openPage(browser, { ...vp, mobile, place
   }
 
   /* the wheels never climb a kerb: looking straight down under the car's middle and both sides, along the first route */
-  const kerb = await page.evaluate(async () => {
-    const W = window.__world, D = W.drive(); W.route('esa-att');
+  for (const id of routes.map(r => r.id)) {
+  const kerb = await page.evaluate(async id => {
+    const W = window.__world, D = W.drive(); W.route(id);
     const T = await import(document.querySelector('script[type=module]') ? 'https://cdnjs.cloudflare.com/ajax/libs/three.js/0.170.0/three.module.min.js' : '');
     const ray = new T.Raycaster(), down = new T.Vector3(0, -1, 0), bad = [], st = D.state, R = D.route; let n = 0;
     const shown = o => { for (let p = o; p; p = p.parent) if (!p.visible) return false; return true; };
     for (let s = 2; s < R.length - 1; s += 3) {
       W.at(s); if (Math.round(s) % 120 < 3) { for (let w = 0; w < 80 && !W.settled(1); w++) await new Promise(f => setTimeout(f, 50)); W.step(1e-6); }
-      const nx = -Math.sin(st.heading), nz = Math.cos(st.heading);
-      for (const off of [-0.8, 0, 0.8]) {
-        ray.set(new T.Vector3(st.x + nx * off, 1.5, st.z + nz * off), down); ray.far = 1.7;      // from the height of the car's roof down
+      const nx = -Math.sin(st.heading), nz = Math.cos(st.heading), fx = Math.cos(st.heading), fz = Math.sin(st.heading);
+      for (const along of [0, 2.775]) for (const off of [-0.8, 0, 0.8]) {                          // under the back wheels and the front ones
+        ray.set(new T.Vector3(st.x + fx * along + nx * off, 1.5, st.z + fz * along + nz * off), down); ray.far = 1.7;      // from the height of the car's roof down
         const hit = ray.intersectObjects(W.scene().children.filter(c => c.name === 'tiles' || c.name.startsWith('site')), true).find(h => shown(h.object) && !h.object.isInstancedMesh && !h.object.isSprite);
-        n++; if (hit && hit.point.y > 0.09) bad.push(`${Math.round(s)} m (${off}): ${hit.point.y.toFixed(2)} m, ${hit.object.name || hit.object.parent.name}`);
+        n++; if (hit && hit.point.y > 0.09) bad.push(`${Math.round(s)} m (${along ? 'front' : 'back'} ${off}): ${hit.point.y.toFixed(2)} m, ${hit.object.name || hit.object.parent.name}`);
       }
     }
     return { n, bad };
-  });
-  ok('esa-att: the wheels keep off the kerbs', kerb.bad.length === 0, kerb.bad.length ? kerb.bad.slice(0, 6).join(' · ') + (kerb.bad.length > 6 ? ` … ${kerb.bad.length} in all` : '') : `${kerb.n} points looked at`);
+  }, id);
+  ok(`${id}: the wheels keep off the kerbs and the islands`, kerb.bad.length === 0, kerb.bad.length ? kerb.bad.slice(0, 6).join(' · ') + (kerb.bad.length > 6 ? ` … ${kerb.bad.length} in all` : '') : `${kerb.n} points looked at`);
+  }
 
   /* a hand on the wheel */
   const hand = await page.evaluate(() => {
@@ -164,7 +166,7 @@ for (const [name, vp] of [['upright', { width: 390, height: 743 }], ['on its sid
     A['limit lines inside a crosswalk'] === 0 && A['crosswalks at a crossing nobody stops at'] === 0 && A['signals without a crosswalk'] === 0 && A['STOP on the road'] >= A.stops && A.stops > 100 && A['corners whose outline crosses itself'] === 0,
     `${A.crossings} crossings (${A.signals} with signals), ${A['crosswalks the map has']} crosswalks from the map and ${A['crosswalks by the rule']} by the rule, ${A['limit lines']} limit lines, ${A.corners} round corners, ${Math.round(A['kerb m'] / 1000)} km of kerb`);
   const { makeBuilder } = await import('../../engine/world/tilework.js'), build = makeBuilder();
-  let faces = 0, wrong = 0; const ends = new Map(), corners = [], key = (x, z) => Math.round(x * 20) + ':' + Math.round(z * 20);
+  let faces = 0, wrong = 0; const ends = new Map(), corners = [], parked = new Map(), key = (x, z) => Math.round(x * 20) + ':' + Math.round(z * 20);
   for (const f of fs.readdirSync(new URL('tiles/', dir))) {
     const [ti, tj] = f.replace('.json', '').split('_').map(Number), t = JSON.parse(fs.readFileSync(new URL('tiles/' + f, dir))), o = build.build(t).tile;
     // every face of the streets turns the way its normal says (one that does not is not drawn: a hole). The lots' own ways (y −0.035) are not the streets'.
@@ -176,10 +178,18 @@ for (const [name, vp] of [['upright', { width: 390, height: 743 }], ['on its sid
     // where each walk's kerb ends; where each round corner's kerb begins and ends
     for (const k of t.k || []) if (k[0] === 3 || k[0] === 5) { let x = 0, z = 0; const n = (k.length - 1) >> 2; for (let i = 0; i < n; i++) { x += k[1 + 4 * i]; z += k[2 + 4 * i]; if (i === 0 || i === n - 1) ends.set(key(x / 100 + ti * 500, z / 100 + tj * 500), 1); } }
     for (const c of t.c || []) { let x = 0, z = 0; for (let i = 0; i < c[0]; i++) { x += c[1 + 2 * i]; z += c[2 + 2 * i]; if (i === 0 || i === c[0] - 1) corners.push([x / 100 + ti * 500, z / 100 + tj * 500]); } }
+    for (const p of t.p || []) if (p[0] === 5) { const x = p[1] / 10 + ti * 500, z = p[2] / 10 + tj * 500, k = Math.floor(x / 20) + ':' + Math.floor(z / 20); (parked.get(k) || parked.set(k, []).get(k)).push([x, z]); }
   }
   ok('no face of the streets is inside out', faces > 100000 && wrong === 0, `${faces} faces, ${wrong} wrong`);
   const near = ([x, z]) => { for (const dx of [-0.05, 0, 0.05]) for (const dz of [-0.05, 0, 0.05]) if (ends.has(key(x + dx, z + dz))) return true; return false; }, met = corners.filter(near).length;
   ok('the kerbs close up: a round corner begins where a walk\'s kerb ends', corners.length > 800 && met >= 0.97 * corners.length, `${met} of ${corners.length} corner ends meet a kerb's end (the others: a side with no kerb of its own)`);
+  // no parked car stands in the car's way: none with its middle within 2.2 m of the path's (a car and a half's width)
+  let nearest = 99, where = '';
+  for (const r of routes) for (let i = 0; i < r.pts.length; i += 4) {
+    const x = r.pts[i] / 1000, z = r.pts[i + 1] / 1000;
+    for (let gx = -1; gx <= 1; gx++) for (let gz = -1; gz <= 1; gz++) for (const [px, pz] of parked.get((Math.floor(x / 20) + gx) + ':' + (Math.floor(z / 20) + gz)) || []) { const d = Math.hypot(px - x, pz - z); if (d < nearest) { nearest = d; where = `${r.id} at ${Math.round(i / 4)} m`; } }
+  }
+  ok('no parked car stands in the car\'s way', nearest >= 2.2, `the nearest one's middle is ${nearest.toFixed(2)} m from the path's (${where}); ${index.counts ? index.counts['cars at the kerb'] : '?'} cars parked along kerbs`);
   // the hotel's way in: its white line is where places/esa-el-segundo-2015 paints it; the car leaves on its east, comes in on its west
   const { LOT } = await import('../esa-el-segundo-2015/plan.js'), half = 0.92, inDrive = r => { const xs = []; for (let i = 0; i < r.pts.length; i += 2) { const x = r.pts[i] / 1000, z = r.pts[i + 1] / 1000; if (z > -67.5 && z < -59 && x > LOT.drive[0] - 3 && x < LOT.drive[1] + 3) xs.push(x); } return xs; };
   const out = inDrive(routes.find(r => r.id === 'esa-att')), back = inDrive(routes.find(r => r.id === 'att-esa'));

@@ -170,6 +170,7 @@ function start(place) {
     info: () => ({ calls: (look.on ? look.info : renderer.info.render).calls, tris: (look.on ? look.info : renderer.info.render).triangles, solids: shared.solids.length, pose: nav.getPose(), dpr, geoms: renderer.info.memory.geometries, tex: renderer.info.memory.textures, programs: renderer.info.programs.length }),
     pose: () => nav.getPose(), pause: v => { paused = v; },
     scene: () => scene, camera: () => camera,                // for a tool that has to look inside (which part draws this pixel?)
+    live: () => live,                                        // what the place handed back when it was built (a place's own checks ask it things)
     step: dt => { nav.update(dt); animate(dt); }, touring: () => nav.touring, solids: () => shared.solids, tourKeys: place.tour || [],
     state: () => ({ ...ui.state }),
     /** triangles per top-level part of the scene (instances counted), for tools/stats.mjs */

@@ -160,6 +160,33 @@ try {
   ok('tour starts', await page.evaluate(() => window.__world.touring() && document.getElementById('b-tour').textContent === 'Dừng'));
   await page.click('#b-tour'); await wait(page, 300);
   ok('tour stops', await page.evaluate(() => !window.__world.touring() && document.getElementById('b-tour').textContent === 'Tham quan'));
+  // the streets are the South Bay world's: its tiles, cut to this ground, come with the page and are built by its builder
+  const st = await page.evaluate(() => {
+    const root = window.__world.scene().getObjectByName('tiles'), out = { squares: 0, walks: 0, marks: 0, lamps: 0, own: [] };
+    if (root) for (const g of root.children) { out.squares++; for (const m of g.children) { const n = m.geometry.attributes.position ? m.geometry.attributes.position.count / 3 : 0; if (m.name === 'conc') out.walks += n; if (m.name === 'marks') out.marks += n; if (m.name === 'signal lamps') out.lamps += m.count; } }
+    window.__world.scene().traverse(o => { if (/^greenery/.test(o.name)) out.own.push(o.name); });
+    return out;
+  });
+  ok('the streets are the world\'s own: its squares of them in the page (walks, painted lines, signal lamps), none drawn by this place', st.squares === 6 && st.walks > 3000 && st.marks > 1500 && st.lamps >= 36 && st.own.length === 0, JSON.stringify(st));
+  // the cars keep those streets' lanes and lights: six minutes of them
+  const tr = await page.evaluate(() => {
+    const W = window.__world, L = W.live(), dt = 0.05; let prev = L.traffic();
+    const out = { cars: prev.length, ran: 0, close: 1e9, waited: 0, km: 0, hardest: 0 };
+    for (let k = 0; k < 360 / dt; k++) {
+      W.step(dt); const cur = L.traffic(), by = {};
+      cur.forEach((c, i) => {
+        const p = prev[i];
+        if (p.stop !== null && c.stop !== p.stop && p.sig === 0) out.ran++;                      // over its line while its light was red
+        if (c.v === 0 && c.sig === 0 && c.to !== null && c.to < 1.5) out.waited++;
+        out.km += c.v * dt / 1000; out.hardest = Math.max(out.hardest, (p.v - c.v) / dt); (by[c.lane] ||= []).push(c.d);
+      });
+      for (const ds of Object.values(by)) { ds.sort((a, b) => a - b); for (let i = 0; i + 1 < ds.length; i++) out.close = Math.min(out.close, ds[i + 1] - ds[i]); }
+      prev = cur;
+    }
+    return out;
+  });
+  ok('the cars keep the streets\' lanes and lights: none over a line on red in six minutes, none on another\'s tail, they wait and they go', tr.cars >= 30 && tr.ran === 0 && tr.close >= 7 && tr.waited > 500 && tr.km > 40 && tr.hardest < 4,
+    `${tr.cars} cars, ${tr.km.toFixed(0)} km between them; over a line on red: ${tr.ran}; nearest two ${tr.close.toFixed(1)} m apart; hardest braking ${tr.hardest.toFixed(1)} m/s²; ${Math.round(tr.waited * 0.05)} car-seconds waiting at red`);
   // what a frame costs where the most is in sight
   await page.evaluate(() => window.__world.goto('lan-can')); await page.evaluate(() => window.__world.renderOnce());
   const info = await page.evaluate(() => window.__world.info());

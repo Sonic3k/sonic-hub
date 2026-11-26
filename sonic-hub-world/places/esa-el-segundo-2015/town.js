@@ -1,34 +1,24 @@
-/* The streets around the hotel, from OpenStreetMap (osm.js) and the satellite picture: Sepulveda Blvd (Pacific Coast
-   Highway) with its median of palms, Mariposa Ave and its Indian laurel figs, Continental Blvd curving off it, Nash St
-   under the Green Line's viaduct and the Mariposa station; the buildings of 2015 along them (the County's heights),
-   Ralphs with its two Spanish gables, the Starbucks / Jersey Mike's pad on the corner, In-N-Out across the street; and a
-   little traffic. Shop signs are plain lettering: no logo is drawn. */
+/* What stands along the streets around the hotel: the buildings of 2015 (OpenStreetMap's outlines in osm.js, the
+   County's heights), Ralphs with its two Spanish gables, the Starbucks / Jersey Mike's pad on the corner, In-N-Out
+   across the street, the Green Line's viaduct over Nash St and its Mariposa station. The streets themselves —
+   Sepulveda Blvd (Pacific Coast Highway) with its median of palms, Mariposa Ave and its Indian laurel figs,
+   Continental Blvd, Nash St — are the South Bay world's, laid out by its one set of rules (engine/world; on this
+   place's own page their tiles come with it, in streets.js); a little traffic keeps to their lanes and their
+   lights. Shop signs are plain lettering: no logo is drawn. */
 import * as THREE from 'three';
 import { Builder, part } from '../../engine/kit.js';
 import { M, canvasTex, plateTex, rng, shade } from '../../engine/tex.js';
 import { X, concTex } from './mat.js';
-import { P, tree, ficus, palm, car, streetLight, lotLight, glare } from './props.js';
+import { P, palm, car, glare } from './props.js';
 import { hipRoof } from './hotel.js';
 import { swarm, pickKind, pickColour } from './cars.js';
-import { BUILDINGS, ROADS, SERVICE, RAIL, PLATFORM } from './osm.js';
+import { BUILDINGS, SERVICE, RAIL, PLATFORM } from './osm.js';
+import { TILES, LANES } from './streets.js';
+import { setupTiles, signalState } from '../../engine/world/tiles.js';
 import { LOT } from './plan.js';
 
-const LANE = 3.4;
-const R0 = rng(77);
 /* ── polylines ── */
 const pts = flat => { const p = []; for (let i = 0; i < flat.length; i += 2) p.push([flat[i], flat[i + 1]]); return p; };
-/** the part of a polyline (running west to east) between x0 and x1 */
-function cutX(p, x0, x1) {
-  const out = [], at = (a, c, x) => [x, a[1] + (c[1] - a[1]) * (x - a[0]) / (c[0] - a[0])];
-  for (let i = 0; i < p.length - 1; i++) {
-    const a = p[i], c = p[i + 1]; if (c[0] <= x0 || a[0] >= x1 || c[0] === a[0]) continue;
-    const s = a[0] < x0 ? at(a, c, x0) : a, e = c[0] > x1 ? at(a, c, x1) : c;
-    if (!out.length || out[out.length - 1][0] !== s[0]) out.push(s);
-    out.push(e);
-  }
-  return out;
-}
-const FRONT = [-40, 47];             // the hotel's frontage on Mariposa (x)
 function offsetLine(p, d) {        // a polyline moved sideways by d (positive: to the right of travel, i.e. +normal)
   const out = [];
   for (let i = 0; i < p.length; i++) {
@@ -49,11 +39,6 @@ function ribbon(b, mat, p, w, y, o = {}) {
   if (flip) { g.setIndex(idx.map((v, i) => idx[i - (i % 3) + [0, 2, 1][i % 3]])); g.computeVertexNormals(); }
   b.geo(mat, g, { cast: false, recv: true });
 }
-/** a raised strip (curb + sidewalk) along a polyline: its top at y, its outer face down to 0 */
-function walkStrip(b, mat, p, w, y) {
-  ribbon(b, mat, p, w, y, { tile: 1.5 });
-  for (const side of [-1, 1]) { const e = offsetLine(p, side * w / 2); for (let i = 0; i < e.length - 1; i++) { const [x0, z0] = e[i], [x1, z1] = e[i + 1], len = Math.hypot(x1 - x0, z1 - z0); if (len < 0.01) continue; b.rbox(P.curb(), (x0 + x1) / 2, y / 2, (z0 + z1) / 2, 0.16, y, len, Math.atan2(x1 - x0, -(z1 - z0)) * 180 / Math.PI, { cast: false }); } }
-}
 /** points along a polyline every `step` metres: [x, z, heading of travel] */
 function along(p, step, from = 0) {
   const out = []; let carry = from;
@@ -64,8 +49,6 @@ function along(p, step, from = 0) {
   }
   return out;
 }
-const lenOf = p => { let s = 0; for (let i = 0; i < p.length - 1; i++) s += Math.hypot(p[i + 1][0] - p[i][0], p[i + 1][1] - p[i][1]); return s; };
-function pointAt(p, d) { for (let i = 0; i < p.length - 1; i++) { const [x0, z0] = p[i], [x1, z1] = p[i + 1], L = Math.hypot(x1 - x0, z1 - z0); if (d <= L) return [x0 + (x1 - x0) * d / L, z0 + (z1 - z0) * d / L, Math.atan2(x1 - x0, -(z1 - z0))]; d -= L; } const a = p[p.length - 2], c = p[p.length - 1]; return [c[0], c[1], Math.atan2(c[0] - a[0], -(c[1] - a[1]))]; }
 
 /* ── façades: drawn per kind, with a second sheet of the windows lit at night ── */
 const FAC = {
@@ -126,82 +109,27 @@ function banded(scene, shared, name, fill) {
 }
 
 export function buildTown(scene, shared, ctx) {
-  const glowStreet = ctx.lampMat('#ffc98a', 2.4, 0.9, 0.04), glowLot = ctx.lampMat('#ffd9a0', 2.6, 0.9, 0.04);
   const roadMat = X.asphalt('#363636', 9), walkMat = new THREE.MeshStandardMaterial({ map: concTex('#c6c2b8', 4, true), roughness: 0.9 });
-  const roads = ROADS.map(([name, cls, lanes, oneway, flat]) => ({ name, cls, lanes, oneway, p: pts(flat), w: lanes * LANE + (oneway ? 0.8 : 1.2) }));
-  const major = roads.filter(r => /Pacific Coast|Mariposa|Nash|Continental|Lairport|Sepulveda/.test(r.name));
-  /* Inside a world (engine/world: ctx.world) the streets are the world's own, here as everywhere: its tiles lay the
-     roads of this place's box too — paving, kerbs and walks, lines, crosswalks, the median, the signals, the cars — by
-     the same rules as the streets beyond it (the world's data/streets.py). This place then keeps what stands along
-     them: its lawns and lots, trees and lights, buildings, the hotel. Alone, it draws its streets itself, as below. */
-  const own = !ctx.world;
+  /* The streets are the world's, here as everywhere (engine/world): paving, kerbs and walks, lines, crosswalks, the
+     median, the signals, the trees and lights along the kerbs — laid out by one set of rules for every street of the
+     South Bay (places/south-bay/data/streets.py). In a world its tiles bring them. On this place's own page the same
+     tiles come with the page, cut to this ground (streets.js, written by the world's data/world.py), and are built by
+     the same builder: so the street he walks along here is the street he drives along there. This place keeps what
+     stands beside them: its lawns and lots, its buildings, the hotel. */
+  const streets = ctx.world ? null : setupTiles(scene, { tiles: TILES, road: roadMat, walk: walkMat });
+  if (streets) for (const t of Object.values(TILES)) for (const p of t.p || []) {
+    if (p[0] !== 2) continue;                                                        // under each street light a pool of light after dark, and its glare
+    const a = p[3] * Math.PI / 180, x = t.i * 500 + p[1] / 10 + Math.cos(a) * 2.45, z = t.j * 500 + p[2] / 10 + Math.sin(a) * 2.45;
+    POOLS.push([x, z, 24, 'street']); HEADS.push([x, 8.8, z]);
+  }
 
   /* ── the ground beyond the block, the roads, the sidewalks, markings ── */
   const ground = part(scene, shared, b => {
     b.box(X.lawn(), -300, -0.06, -280, 800, -0.03, 260, { uv: [2, 2], uvw: true, cast: false });
     // business-park lots east of the hotel and north of Mariposa: asphalt aprons around each building
-    for (const [id, h, kind, name, fl] of BUILDINGS) { const p = pts(fl), xs = p.map(q => q[0]), zs = p.map(q => q[1]); if (kind === 'house' || kind === 'residential' || kind === 'apartments') continue; b.box(X.asphalt('#404040', 5), Math.min(...xs) - 14, -0.03, Math.min(...zs) - 14, Math.max(...xs) + 14, own ? -0.005 : -0.018, Math.max(...zs) + 14, { uv: [4, 4], uvw: true, cast: false }); }   // (in a world, clear of the world's own streets at 0)
-    if (own) for (const r of roads) ribbon(b, roadMat, r.p, r.w, 0.004);
+    for (const [id, h, kind, name, fl] of BUILDINGS) { const p = pts(fl), xs = p.map(q => q[0]), zs = p.map(q => q[1]); if (kind === 'house' || kind === 'residential' || kind === 'apartments') continue; b.box(X.asphalt('#404040', 5), Math.min(...xs) - 14, -0.03, Math.min(...zs) - 14, Math.max(...xs) + 14, -0.018, Math.max(...zs) + 14, { uv: [4, 4], uvw: true, cast: false }); }   // (clear of the streets, which lie at 0 here)
     for (const [kind, fl] of SERVICE) { const p = pts(fl); if (p.length > 1) ribbon(b, X.asphalt('#3d3d3c', 3), p, 6.5, 0.002); }
-    // sidewalks along the big streets, a lawn parkway between walk and curb on Mariposa
-    if (own) for (const r of major) for (const side of [-1, 1]) {
-      if (r.oneway && /Pacific Coast/.test(r.name)) { if (side > 0) walkStrip(b, walkMat, offsetLine(r.p, r.w / 2 + 1.25), 2.4, 0.12); continue; }   // only on the kerb side of each carriageway
-      if (/Mariposa/.test(r.name)) {
-        // along the hotel's frontage the walk is at the kerb (the satellite picture) — the lawn and the hedge behind it are the
-        // hotel's (site.js) — and it drops flush across the drive in; elsewhere a lawn parkway lies between kerb and walk
-        const front = side > 0 && r.p[0][0] < FRONT[0] && r.p[r.p.length - 1][0] > FRONT[1];
-        for (const seg of front ? [cutX(r.p, -1e9, FRONT[0]), cutX(r.p, FRONT[1], 1e9)] : [r.p]) { if (seg.length < 2) continue; walkStrip(b, X.lawn(), offsetLine(seg, side * (r.w / 2 + 1.1)), 2.0, 0.1); walkStrip(b, walkMat, offsetLine(seg, side * (r.w / 2 + 3.2)), 1.9, 0.12); }
-        if (front) {
-          for (const seg of [cutX(r.p, FRONT[0], LOT.drive[0]), cutX(r.p, LOT.drive[1], FRONT[1])]) walkStrip(b, walkMat, offsetLine(seg, r.w / 2 + 1.05), 1.9, 0.12);
-          ribbon(b, walkMat, offsetLine(cutX(r.p, LOT.drive[0], LOT.drive[1]), r.w / 2 + 1.05), 1.9, 0.012, { tile: 1.5 });
-          for (const x of [FRONT[0], FRONT[1]]) { const q = offsetLine(cutX(r.p, x - 0.01, x + 0.01), r.w / 2 + 2.1)[0]; b.box(walkMat, x - 0.95, 0, q[1] - 1.0, x + 0.95, 0.12, q[1] + 2.1, { uv: [1.5, 1.5], uvw: true, cast: false }); }      // where the two layouts meet
-        }
-      }
-      else walkStrip(b, walkMat, offsetLine(r.p, side * (r.w / 2 + 1.1)), 2.0, 0.12);
-    }
-    // lane lines: dashes between lanes, a double yellow line down two-way streets
-    const white = M.plain('#e8e6dd', 0.7), yellow = M.plain('#d9b030', 0.7);
-    if (own) for (const r of major) {
-      if (!r.oneway && lenOf(r.p) > 20) { ribbon(b, yellow, offsetLine(r.p, -0.12), 0.11, 0.009); ribbon(b, yellow, offsetLine(r.p, 0.12), 0.11, 0.009); }
-      const half = r.oneway ? r.lanes : r.lanes / 2;
-      for (let k = 1; k < half; k++) for (const side of r.oneway ? [1] : [-1, 1]) {
-        const off = r.oneway ? -r.w / 2 + 0.4 + k * LANE : side * k * LANE;
-        for (const [x, z, hd] of along(offsetLine(r.p, off), 9)) b.rbox(white, x, 0.009, z, 0.12, 0.003, 3, hd, { cast: false });
-      }
-    }
-    // crosswalks at the three signals
-    if (own) for (const [x, z, ax, len] of [[-116.5, -66.5, 'x', 32], [-116.5, -93.5, 'x', 32], [-98.5, -80.5, 'z', 21], [-134.5, -80.5, 'z', 21], [203, -80, 'z', 21], [692, -80, 'z', 21], [701, -94, 'x', 22], [701, -66, 'x', 22]]) {
-      for (let i = 0; i < len / 0.9; i++) { const t = -len / 2 + i * 0.9 + 0.2; if (ax === 'x') b.box(white, x + t, 0.009, z - 1.5, x + t + 0.45, 0.012, z + 1.5, { cast: false }); else b.box(white, x - 1.5, 0.009, z + t, x + 1.5, 0.012, z + t + 0.45, { cast: false }); }
-    }
-    // the median of Sepulveda: a raised strip of lawn with palms
-    if (own) {
-      b.box(X.lawn(), -118.6, 0, -68, -115.4, 0.16, 240, { uv: [2, 2], uvw: true, cast: false });
-      b.box(P.curb(), -118.8, 0, -68, -118.6, 0.17, 240, { cast: false }); b.box(P.curb(), -115.4, 0, -68, -115.2, 0.17, 240, { cast: false });
-      b.box(X.lawn(), -118.6, 0, -250, -115.4, 0.16, -92, { uv: [2, 2], uvw: true, cast: false });
-    }
   }, 'ground');
-
-  /* ── street trees and lights (in a world they stand where the world's kerbs are: its tiles plant them) ── */
-  if (own) banded(scene, shared, 'greenery', put => {
-    const mar = major.filter(r => /Mariposa/.test(r.name));
-    for (const r of mar) for (const side of [-1, 1]) {
-      const line = offsetLine(r.p, side * (r.w / 2 + (own ? 1.1 : 2.9)));              // in the lawn between kerb and walk — in a world, whose walk is at the kerb, behind the walk
-      for (const [x, z] of along(line, side > 0 ? 13 : 17, 4)) {
-        if (x < -100 || (x > -40 && x < 45 && side > 0)) continue;                                   // the corner and the hotel's own frontage
-        put(x, b => { if (x > 40 && x < 700) ficus(b, x, z, {}); else tree(b, x, z, { h: 7 }); });
-      }
-      for (const [x, z, hd] of along(offsetLine(r.p, side * (r.w / 2 + 0.6)), 42, side > 0 ? 4 : 31)) { const f = hd + (side > 0 ? -90 : 90); put(x, b => streetLight(b, x, z, f, glowStreet)); const hx = x + Math.sin(f * Math.PI / 180) * 2.5, hz = z - Math.cos(f * Math.PI / 180) * 2.5; POOLS.push([hx, hz, 24, 'street']); HEADS.push([hx, 8.95, hz]); }
-    }
-    for (let z = -240; z < 240; z += 22) { const dz = R0() * 6, h = 14 + R0() * 6; put(-117, b => palm(b, -117, z + dz, { h })); }
-    for (const r of major.filter(r => /Pacific Coast/.test(r.name))) for (const [x, z] of along(r.p, 45, 12)) { const out = x < -116 ? -1 : 1, px = x + out * (r.w / 2 + 0.5); put(x, b => streetLight(b, px, z, out > 0 ? 270 : 90, glowStreet)); POOLS.push([px - out * 2.5, z, 24, 'street']); HEADS.push([px - out * 2.5, 8.95, z]); }
-    for (const r of major.filter(r => /Nash|Continental|Lairport/.test(r.name))) for (const side of [-1, 1]) for (const [x, z, hd] of along(offsetLine(r.p, side * (r.w / 2 + 0.6)), 40, 15)) { const f = hd + (side > 0 ? -90 : 90); put(x, b => streetLight(b, x, z, f, glowStreet)); const hx = x + Math.sin(f * Math.PI / 180) * 2.5, hz = z - Math.cos(f * Math.PI / 180) * 2.5; POOLS.push([hx, hz, 24, 'street']); HEADS.push([hx, 8.95, hz]); }
-    // palms along Nash St by the station (the photograph under the viaduct)
-    for (let z = -160; z < 60; z += 14) { const h = 13 + R0() * 5; put(714.5, b => palm(b, 714.5, z, { h })); }
-    // (the first one 18 m along: Continental's line starts in the middle of Mariposa, and a tree 5 m along stood in the road)
-    for (const r of major.filter(r => /Continental/.test(r.name))) for (const [x, z] of along(offsetLine(r.p, r.w / 2 + 3), 21, 18)) put(x, b => ficus(b, x, z, { r: 4.8 }));
-    // the signals at Sepulveda & Mariposa, Mariposa & Continental, Mariposa & Nash
-    if (!ctx.world) for (const [x, z, face] of [[-100.5, -69.5, 270], [-133, -90.5, 90], [-100.5, -90.5, 0], [-133, -69.5, 180], [212, -69, 270], [212, -91, 0], [714, -69, 270], [714, -91, 0]]) put(x, b => signal(b, x, z, face, ctx));
-  });
 
   /* ── buildings ── */
   const blds = part(scene, shared, b => {
@@ -223,7 +151,7 @@ export function buildTown(scene, shared, ctx) {
   const metro = part(scene, shared, b => viaduct(b, ctx), 'metro');
 
   /* ── traffic: cars along Sepulveda and Mariposa, lights on after dark ── */
-  const traffic = ctx.world ? { step() {}, setNight() {} } : makeTraffic(scene, roads);
+  const traffic = ctx.world ? { step() {}, setNight() {}, report: () => [] } : makeTraffic(scene, LANES);
   /* ── after dark: pools of light under the street lights, at the shop fronts, on the platform ── */
   const pools = part(scene, null, b => {
     const tint = { street: [255, 205, 150], warm: [255, 214, 160], cool: [225, 235, 255] }, mats = {};
@@ -237,10 +165,11 @@ export function buildTown(scene, shared, ctx) {
   const shine = glare(scene, HEADS, 3.4, [255, 214, 160], 'street glare');
   const mats = Object.values(facMats);
   return {
-    setHour(h) { const night = h === 'toi'; for (const m of mats) m.emissiveIntensity = night ? 0.9 : 0; for (const m of LIT) m.emissiveIntensity = night ? 1.1 : 0; pools.visible = shine.visible = night; traffic.setNight(night); },
+    setHour(h) { const night = h === 'toi'; for (const m of mats) m.emissiveIntensity = night ? 0.9 : 0; for (const m of LIT) m.emissiveIntensity = night ? 1.1 : 0; pools.visible = shine.visible = night; traffic.setNight(night); if (streets) streets.setNight(night); },
     // the viaduct, 700 m off, is drawn only from the hotel's east side on: from the west the hotel hides it, and seen
     // through a near wall its slivers on the horizon would sparkle
-    animate(dt, clock, camera) { traffic.step(dt); metro.visible = camera.position.x > 32; },
+    animate(dt, clock, camera) { traffic.step(dt, clock); if (streets) streets.update(camera.position.x, camera.position.z, clock); metro.visible = camera.position.x > 32; },
+    traffic: () => traffic.report(),
   };
 }
 
@@ -353,15 +282,6 @@ function sonesta(b) {
     hipRoof(b, tile, a0 - 0.5, c0 - 0.5, a1 + 0.5, c1 + 0.5, h, 0.4, null);
   }
 }
-/* ── a signal pole with its mast arm and a head of three lamps ── */
-function signal(b, x, z, face, ctx) {
-  const pole = M.plain('#8c8f90', 0.5, 0.7), head = M.plain('#2d3a2c', 0.6);
-  b.cyl(pole, x, 0, z, 0.15, 6.4, { seg: 10 });
-  b.push(x, 6.0, z, face);
-  b.bar(pole, 0, 0, 0, 0, 0.2, 9, 0.12, { round: true, seg: 8 });
-  for (const d of [4, 8]) { b.box(head, -0.2, -1.05, d - 0.15, 0.2, 0.0, d + 0.15, {}); for (const [k, c] of [[0, '#d82a20'], [1, '#e6a21c'], [2, '#2fcf6b']]) b.cyl(M.plain(k === 2 ? c : shade(c, -0.55), 0.3), 0, -0.2 - k * 0.32, d - 0.16, 0.1, 0.02, { rx: 90, seg: 10, cast: false }); }
-  b.pop();
-}
 /* ── the Green Line: each track on its own box girder about 9 m up, single piers with hammerhead caps (photograph
    1787, under the viaduct on Nash St); the Mariposa station's island platform between the two ── */
 const segs = (p, fn) => { for (let i = 0; i < p.length - 1; i++) { const [x0, z0] = p[i], [x1, z1] = p[i + 1], len = Math.hypot(x1 - x0, z1 - z0); if (len > 0.05) fn((x0 + x1) / 2, (z0 + z1) / 2, len, Math.atan2(x1 - x0, -(z1 - z0)) * 180 / Math.PI); } };
@@ -381,7 +301,10 @@ function viaduct(b, ctx) {
     });
     for (const side of [-1, 1]) segs(offsetLine(p, side * 2.48), (x, z, len, hd) => { if (!atStation(x, z)) b.rbox(conc, x, deckY + 0.5, z, 0.24, 1.0, len + 0.05, hd, {}); });
     for (const side of [-1, 1]) segs(offsetLine(p, side * 2.48), (x, z, len, hd) => { if (!atStation(x, z)) b.rbox(steel, x, deckY + 1.75, z, 0.04, 0.04, len + 0.05, hd, { cast: false }); });
-    for (const [x, z, hd] of along(p, 30, 8)) {
+    // (a pier every 30 m — but none in Mariposa: one that would stand in its roadway, on its walks or where its crosswalks
+    // land, as the world lays that street out (z −92 … −66.4 here), stands at the nearer side of it instead)
+    for (const [x, z0, hd] of along(p, 30, 8)) {
+      const z = z0 > -93.2 && z0 < -65.2 ? (z0 < -79.2 ? -93.2 : -65.2) : z0;
       b.rbox(conc, x, (deckY - 3.6) / 2, z, 1.7, deckY - 3.6, 1.5, hd, {});                    // the pier, its hammerhead
       b.rbox(conc, x, deckY - 3.0, z, 4.4, 1.3, 1.9, hd, {});
       b.solid(x - 1, 0, z - 1, x + 1, 6, z + 1);
@@ -409,33 +332,51 @@ function viaduct(b, ctx) {
   }
 }
 
-/* ── traffic: cars running the lanes of Sepulveda and Mariposa. The map cuts a road into pieces; they are joined into
-   whole runs first, so a car does not vanish where one piece ends ── */
-function chain(list, oneway) {
-  const runs = list.map(p => p.slice()), near = (a, b) => Math.hypot(a[0] - b[0], a[1] - b[1]) < 1.5;
-  for (let again = true; again;) {
-    again = false;
-    for (let i = 0; i < runs.length && !again; i++) for (let j = 0; j < runs.length && !again; j++) {
-      if (i === j) continue; const A = runs[i], B = runs[j];
-      if (near(A[A.length - 1], B[0])) { runs[i] = A.concat(B.slice(1)); runs.splice(j, 1); again = true; }
-      else if (!oneway && near(A[A.length - 1], B[B.length - 1])) { runs[i] = A.concat(B.slice(0, -1).reverse()); runs.splice(j, 1); again = true; }
-    }
+/* Traffic on this place's own page: cars along Sepulveda and Mariposa, each keeping a lane the world's streets have
+   (streets.js LANES: the lane's line as a car drives it, written by the world's data/world.py). At a red light a car
+   stops at the line; at a yellow one if it gently can; behind another car it waits its turn. Where its lane leaves
+   this place's ground it comes in again at the other end. */
+function makeTraffic(scene, lanes) {
+  const R = rng(5), cars = [], rows = [];
+  for (const l of lanes) {
+    const L = (l.p.length / 2 - 1) * 2, count = Math.max(2, Math.round(L / 75)), row = [];        // (a point every 2 m)
+    for (let i = 0; i < count; i++) { const c = { l, L, d: (i + 0.15 + R() * 0.5) / count * L, v: l.v, top: l.v * (0.86 + R() * 0.28), dec: l.stops.map(() => 0), kind: pickKind(R), colour: pickColour(R) }; row.push(c); cars.push(c); }
+    rows.push(row);
   }
-  return runs;
-}
-function makeTraffic(scene, roads) {
-  const lanes = [], groups = {};
-  for (const r of roads) { if (!/Pacific Coast|Mariposa/.test(r.name)) continue; const k = r.name + (r.oneway ? '>' : '='); (groups[k] ||= { r, list: [] }).list.push(r.p); }
-  for (const { r, list } of Object.values(groups)) for (const p of chain(list, r.oneway)) {
-    const L = lenOf(p); if (L < 80) continue;
-    const n = Math.max(1, Math.round(L / 140)), w = r.lanes * LANE + (r.oneway ? 0.8 : 1.2);
-    if (r.oneway) for (const k of [0.5, 1.5]) lanes.push({ p: offsetLine(p, -w / 2 + 0.4 + LANE * k), v: 14 + k * 2, n });
-    else for (const k of [0.5, 1.5]) { lanes.push({ p: offsetLine(p, LANE * k), v: 12 + k * 2, n }); lanes.push({ p: offsetLine(p, -LANE * k).reverse(), v: 12 + k * 2, n }); }
-  }
-  const R = rng(5), cars = [];
-  for (const l of lanes) { const L = lenOf(l.p); for (let i = 0; i < l.n; i++) cars.push({ l, L, d: (i + R() * 0.6) / l.n * L, v: l.v * (0.85 + R() * 0.3), kind: pickKind(R), colour: pickColour(R) }); }
   const sw = swarm(scene, cars);
-  const place = () => { cars.forEach((c, i) => { const [x, z, a] = pointAt(c.l.p, c.d); sw.set(i, x, z, a); }); sw.commit(); };
+  const at = (l, d) => { const t = Math.min(l.p.length / 2 - 1.001, Math.max(0, d / 2)), i = Math.floor(t), f = t - i, x0 = l.p[2 * i] / 10, z0 = l.p[2 * i + 1] / 10, x1 = l.p[2 * i + 2] / 10, z1 = l.p[2 * i + 3] / 10; return [x0 + (x1 - x0) * f, z0 + (z1 - z0) * f, Math.atan2(x1 - x0, -(z1 - z0))]; };
+  const place = () => { cars.forEach((c, i) => { const [x, z, a] = at(c.l, c.d); c.x = x; c.z = z; sw.set(i, x, z, a); }); sw.commit(); };
   place();
-  return { step(dt) { for (const c of cars) c.d = (c.d + c.v * dt) % c.L; place(); }, setNight: n => sw.setNight(n), count: cars.length };
+  const BRAKE = 3.0, PULL = 1.5, LEN = 5.2, GAP = 2.2;                                             // m/s² · a car's length and the room it leaves, metres
+  let now = 0;
+  function step(dt, clock) {
+    now = clock;
+    if (dt > 0) for (const row of rows) {
+      row.sort((a, b) => a.d - b.d);
+      for (let k = row.length - 1; k >= 0; k--) {                                                  // from the car in front back
+        const c = row[k], ahead = row[(k + 1) % row.length];
+        let room = Infinity;                                                                       // how far it may still go
+        if (row.length > 1) { let g = ahead.d - c.d; if (g <= 0) g += c.L; room = g - LEN - GAP; }
+        c.l.stops.forEach(([s, junction, group], k) => {
+          const to = s - c.d; if (to < -1) { c.dec[k] = 0; return; }                               // over the line already: it clears the crossing
+          const sig = signalState(junction, group, clock);
+          if (sig === 2) { c.dec[k] = 0; return; }
+          // decided once, as the light leaves green, and kept to: 2 it goes on (too near to stop gently on the yellow), 1 it stops
+          if (!c.dec[k]) c.dec[k] = sig === 1 && c.v * c.v / (2 * Math.max(0.1, to)) > 0.85 * BRAKE ? 2 : 1;
+          if (c.dec[k] === 1) room = Math.min(room, Math.max(0, to));
+        });
+        const want = Math.min(c.top, Math.sqrt(2 * BRAKE * Math.max(0, room)));
+        c.v = Math.max(0, c.v + Math.max(-3.6 * dt, Math.min(PULL * dt, want - c.v)));
+        c.d += c.v * dt; if (c.d >= c.L) c.d -= c.L;
+      }
+    }
+    place();
+  }
+  /** for the checks: each car's lane, metres along it and speed; its next stop (which one, how far its middle has to it) and what that signal shows */
+  const report = () => cars.map(c => {
+    let stop = null, to = null, sig = -1;
+    c.l.stops.forEach(([s, junction, group], k) => { if (s - c.d > -1 && (to === null || s - c.d < to)) { stop = k; to = s - c.d; sig = signalState(junction, group, now); } });
+    return { lane: lanes.indexOf(c.l), d: c.d, v: c.v, x: c.x, z: c.z, stop, to, sig };
+  });
+  return { step, setNight: n => sw.setNight(n), count: cars.length, report };
 }

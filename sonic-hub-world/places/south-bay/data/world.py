@@ -13,13 +13,15 @@ usage: python3 world.py <out dir> <extract.osm> [more.osm …]
 Writes  <out>/tiles/<i>_<j>.json   one per 500 m square that holds anything (see TILE below)
         <out>/index.json           which tiles exist, and the counts
         <out>/routes.json          the routes (see route() below)
+        ../../esa-el-segundo-2015/streets.js   the streets of the hotel place's ground, for that place's own page: the
+                                   same tiles cut to it, with nothing but streets in them, and the lanes its cars keep
 Data (c) OpenStreetMap contributors, ODbL.
 
 Metres: x east, z south, y up; the origin is 33.92290 N, 118.39500 W — the frame of places/esa-el-segundo-2015, which
 this world holds as a site. What that place draws itself — the buildings, lots and service ways whose points' mean
 lies in its box (the rule of its own data/osm2js.py) — is left out of the tiles; the world loads the place there
 instead. The STREETS of the box are the world's all the same: one set of rules lays out every street (streets.py),
-and inside a world the place draws none of its own (its town.js).
+and the place draws none of its own (its town.js) — not on its own page either, which gets these streets from here.
 
 Everything about the streets that needs the whole network is worked out here and in streets.py — lanes and their
 lines, where roads meet, crosswalks, limit lines, arrows, kerbs, gutters, walks, round corners, driveways, medians,
@@ -205,6 +207,33 @@ def build(W, bounds):
     BX0, BX1, BZ0, BZ1 = bounds
     def near(p): return any(BX0 - 80 < x < BX1 + 80 and BZ0 - 80 < z < BZ1 + 80 for x, z in p)
 
+    # ── where the buildings stand (a street is not laid wider than the room between them; nothing is planted in one) ──
+    CELL = 30.0
+    bgrid = collections.defaultdict(list)
+    for wid, (tg, nd) in W.ways.items():
+        if 'building' in tg and tg.get('building') != 'no':
+            p = W.pts(nd)
+            if len(p) > 3 and near(p):
+                xs = [q[0] for q in p]; zs = [q[1] for q in p]
+                for gx in range(int(math.floor(min(xs) / CELL)), int(math.floor(max(xs) / CELL)) + 1):
+                    for gz in range(int(math.floor(min(zs) / CELL)), int(math.floor(max(zs) / CELL)) + 1): bgrid[(gx, gz)].append(p)
+    def built(x, z):
+        for p in bgrid.get((int(math.floor(x / CELL)), int(math.floor(z / CELL))), ()):
+            ins = False
+            for (x0, z0), (x1, z1) in zip(p, p[1:]):
+                if (z0 > z) != (z1 > z) and x < x0 + (z - z0) / (z1 - z0) * (x1 - x0): ins = not ins
+            if ins: return True
+        return False
+
+    def room(p, hw):
+        """is there room for a street hw to either side of this line, with its walks: no building within that"""
+        cl = lens(p); d = 0.0
+        while d <= cl[-1]:
+            (x, z), i = at(p, cl, d); rt = right(unit(p[i + 1][0] - p[i][0], p[i + 1][1] - p[i][1]))
+            if any(built(x + rt[0] * o, z + rt[1] * o) for o in (hw + 0.4, -hw - 0.4, hw + ST.WALKW + 0.3, -hw - ST.WALKW - 0.3)): return False
+            d += 5.0
+        return True
+
     # ── the roads ──
     roads, service, lanes_by_name = [], [], collections.defaultdict(list)
     for wid, (tg, nd) in W.ways.items():
@@ -229,24 +258,37 @@ def build(W, bounds):
         if l0.isdigit(): lanes = int(l0)
         elif esa: lanes = 2                                                      # the hotel place's own rule
         else:
-            same = lanes_by_name.get((tg.get('name', ''), hw, ow)) if tg.get('name') else None
+            same = lanes_by_name.get((tg.get('name', ''), hw, ow)) if tg.get('name') and hw not in ST.QUIET else None   # (a quiet street has its class's lanes: what it widens to at a signal is not what it is along its length)
             lanes = min(same) if same else ROAD[hw][1 if ow else 0]
         lanes = max(1, min(lanes, 10))
         prof = ST.lanes_of(tg, lanes, ow)                                        # its lanes from kerb to kerb
         if esa:
             if len(prof) != lanes: prof = ST.lanes_of({}, lanes, ow)             # (the hotel place's own widths stand: the lanes are fitted into them)
         else: lanes = max(1, min(len(prof), 10)); prof = prof[:lanes]
-        if (tg.get('name', ''), lanes) in STRIPES and not any(k.startswith(('lanes:', 'turn:')) for k in tg): prof = [(c, set()) for c in STRIPES[(tg.get('name', ''), lanes)]]
+        mx = sum(x for x, _ in p) / len(p)
+        known = [s for nm, n, span, s in STRIPES if nm == tg.get('name') and (n is None or n == lanes) and (span is None or span[0] <= mx <= span[1])]
+        if known and not any(k.startswith(('lanes:', 'turn:')) for k in tg):
+            prof = [(c, set()) for c in known[0]]
+            if not esa: lanes = len(prof)                                        # (in the hotel place's box the street keeps that place's width; elsewhere the lanes make the width)
+        w = lanes * LANE + (0.8 if ow else 1.2); park = None
+        if tg.get('name') in WIDTHS:                                             # a street whose width and lanes are known (the satellite picture)
+            w, known = WIDTHS[tg['name']]; prof = [(c, set()) for c in known]; lanes = sum(1 for c in known if c not in 'pq')
+            park = (w - (0.8 if ow else 1.2) - lanes * LANE) / max(1, len(known) - lanes) if len(known) > lanes else None
+        elif not esa and not tg.get('bridge') and ST.parks(tg, hw, prof, ow) and room(p, (ST.QUIETW if hw in ST.QUIET else w + 2 * ST.PARK) / 2):      # cars park along both kerbs
+            prof = [('q', set())] + prof + [('p', set())]
+            if hw in ST.QUIET: w = ST.QUIETW; park = (w - 1.2 - 2 * ST.QUIETL) / 2  # (a quiet street: 36 feet from kerb to kerb, and no lines)
+            else: w += 2 * ST.PARK; park = ST.PARK
         v = ROAD[hw][2]; ms = tg.get('maxspeed', '')
         if ms.endswith('mph') and ms.split()[0].isdigit(): v = int(ms.split()[0]) * 0.44704
         try: layer = int(tg.get('layer', '1' if tg.get('bridge') else '0'))
         except ValueError: layer = 0
-        roads.append(dict(id=wid, nd=nd, p=p, cl=lens(p), name=tg.get('name', ''), cls=hw, lanes=lanes, oneway=ow, w=lanes * LANE + (0.8 if ow else 1.2),
+        roads.append(dict(id=wid, nd=nd, p=p, cl=lens(p), name=tg.get('name', ''), cls=hw, lanes=lanes, oneway=ow, w=w,
                           bridge=bool(tg.get('bridge')) and tg.get('bridge') != 'no', layer=layer, esa=esa, v=v, rev=tg.get('oneway') == '-1', tg=tg, prof=prof))
+        if park is not None: roads[-1]['park'] = park
     for ri, r in enumerate(roads): r['hw'] = r['w'] / 2; r['ri'] = ri
 
     # ── where the paving is, to keep other things off it: segments by 30 m square ──
-    CELL = 30.0; seggrid = collections.defaultdict(list)
+    seggrid = collections.defaultdict(list)
     def lay(p, hw, tag):
         for (ax, az), (bx, bz) in zip(p, p[1:]):
             for gx in range(int(math.floor((min(ax, bx) - hw - 6) / CELL)), int(math.floor((max(ax, bx) + hw + 6) / CELL)) + 1):
@@ -260,53 +302,47 @@ def build(W, bounds):
             L2 = (bx - ax) ** 2 + (bz - az) ** 2 or 1e-9; t = max(0.0, min(1.0, ((x - ax) * (bx - ax) + (z - az) * (bz - az)) / L2))
             if math.hypot(ax + (bx - ax) * t - x, az + (bz - az) * t - z) < hw + margin: return True
         return False
-    bgrid = collections.defaultdict(list)
-    for wid, (tg, nd) in W.ways.items():
-        if 'building' in tg and tg.get('building') != 'no':
-            p = W.pts(nd)
-            if len(p) > 3 and near(p):
-                xs = [q[0] for q in p]; zs = [q[1] for q in p]
-                for gx in range(int(math.floor(min(xs) / CELL)), int(math.floor(max(xs) / CELL)) + 1):
-                    for gz in range(int(math.floor(min(zs) / CELL)), int(math.floor(max(zs) / CELL)) + 1): bgrid[(gx, gz)].append(p)
-    def built(x, z):
-        for p in bgrid.get((int(math.floor(x / CELL)), int(math.floor(z / CELL))), ()):
-            ins = False
-            for (x0, z0), (x1, z1) in zip(p, p[1:]):
-                if (z0 > z) != (z1 > z) and x < x0 + (z - z0) / (z1 - z0) * (x1 - x0): ins = not ins
-            if ins: return True
-        return False
-
     # ── the streets: lanes and their lines, where roads meet, kerbs and walks (streets.py) ──
-    S = ST.layout(W, roads, service, DRIVES, MEDIAN_W)
+    S = ST.layout(W, roads, service, DRIVES, MEDIAN_W, ISLANDS, CROSSWALKS)
 
-    # ── tiles ──
+    # ── tiles ── (two sheets of them are laid: the world's, and — the streets only, within that place's ground — the
+    # hotel place's, for its own page: SHEET is the one being laid, and the rectangle it keeps to)
     tiles = collections.defaultdict(lambda: collections.defaultdict(list))
+    SHEET = [tiles, None]
     def loc(p, i, j): return [v for x, z in p for v in (int(round((x - i * T) * 10)), int(round((z - j * T) * 10)))]
-    def inb(x, z): return BX0 <= x < BX1 and BZ0 <= z < BZ1
+    def inb(x, z): return BX0 <= x < BX1 and BZ0 <= z < BZ1 and (SHEET[1] is None or (SHEET[1][0] <= x < SHEET[1][2] and SHEET[1][1] <= z < SHEET[1][3]))
+    def square(i, j):
+        """the square (i, j), cut to the sheet's rectangle: x0, z0, x1, z1 — or None where the sheet has none of it"""
+        if not (BX0 <= i * T + 1 < BX1 and BZ0 <= j * T + 1 < BZ1): return None
+        q = (i * T, j * T, (i + 1) * T, (j + 1) * T); R = SHEET[1]
+        if R is not None: q = (max(q[0], R[0]), max(q[1], R[1]), min(q[2], R[2]), min(q[3], R[3]))
+        return q if q[2] > q[0] and q[3] > q[1] else None
     def lines(key, head, p, k=10):
         xs = [q[0] for q in p]; zs = [q[1] for q in p]
         for i in range(int(math.floor(min(xs) / T)), int(math.floor(max(xs) / T)) + 1):
             for j in range(int(math.floor(min(zs) / T)), int(math.floor(max(zs) / T)) + 1):
-                if not inb(i * T + 1, j * T + 1): continue
-                for piece in clip(p, i * T, j * T, (i + 1) * T, (j + 1) * T):
-                    if lens(piece)[-1] > 0.15: tiles[(i, j)][key].append(head + [v for x, z in piece for v in (int(round((x - i * T) * k)), int(round((z - j * T) * k)))])
+                sq = square(i, j)
+                if sq is None: continue
+                for piece in clip(p, *sq):
+                    if lens(piece)[-1] > 0.15: SHEET[0][(i, j)][key].append(head + [v for x, z in piece for v in (int(round((x - i * T) * k)), int(round((z - j * T) * k)))])
     def strip(kind, pts):
         xs = [q[0] for q in pts]; zs = [q[1] for q in pts]
         for i in range(int(math.floor(min(xs) / T)), int(math.floor(max(xs) / T)) + 1):
             for j in range(int(math.floor(min(zs) / T)), int(math.floor(max(zs) / T)) + 1):
-                if not inb(i * T + 1, j * T + 1): continue
-                for piece in clipn(pts, i * T, j * T, (i + 1) * T, (j + 1) * T):
+                sq = square(i, j)
+                if sq is None: continue
+                for piece in clipn(pts, *sq):
                     if len(piece) < 2: continue
                     # centimetres: the left edge's first point, then its steps from point to point; each time, the step across to the right edge
                     c = [[int(round((v - (i if n % 2 == 0 else j) * T) * 100)) for n, v in enumerate(q[2:])] for q in piece]; out = [kind]
                     for n, q in enumerate(c): out += [q[0] - (c[n - 1][0] if n else 0), q[1] - (c[n - 1][1] if n else 0), q[2] - q[0], q[3] - q[1]]
-                    tiles[(i, j)]['k'].append(out)
+                    SHEET[0][(i, j)]['k'].append(out)
     def point(key, x, z, rest, head=()):
         i, j = int(math.floor(x / T)), int(math.floor(z / T))
-        if inb(x, z): tiles[(i, j)][key].append(list(head) + [int(round((x - i * T) * 10)), int(round((z - j * T) * 10))] + rest)
+        if inb(x, z): SHEET[0][(i, j)][key].append(list(head) + [int(round((x - i * T) * 10)), int(round((z - j * T) * 10))] + rest)
     def area(key, head, p):
         cx = sum(q[0] for q in p) / len(p); cz = sum(q[1] for q in p) / len(p); i, j = int(math.floor(cx / T)), int(math.floor(cz / T))
-        if inb(cx, cz): tiles[(i, j)][key].append(head + loc(p, i, j))
+        if inb(cx, cz): SHEET[0][(i, j)][key].append(head + loc(p, i, j))
     def cut_poly(p, x0, z0, x1, z1):
         """the part of an outline inside a square (Sutherland–Hodgman)"""
         for axis, lim, keep_low in ((0, x0, False), (0, x1, True), (1, z0, False), (1, z1, True)):
@@ -325,9 +361,10 @@ def build(W, bounds):
         xs = [q[0] for q in p]; zs = [q[1] for q in p]
         for i in range(int(math.floor(min(xs) / T)), int(math.floor(max(xs) / T)) + 1):
             for j in range(int(math.floor(min(zs) / T)), int(math.floor(max(zs) / T)) + 1):
-                if not inb(i * T + 1, j * T + 1): continue
-                q = cut_poly(p, i * T, j * T, (i + 1) * T, (j + 1) * T)
-                if q and len(q) >= 3: tiles[(i, j)][key].append(head + loc(q, i, j))
+                sq = square(i, j)
+                if sq is None: continue
+                q = cut_poly(p, *sq)
+                if q and len(q) >= 3: SHEET[0][(i, j)][key].append(head + loc(q, i, j))
 
     counts = collections.Counter()
     def piers(p, h, kind, every, seed):
@@ -338,51 +375,69 @@ def build(W, bounds):
                 if not paved(x, z, 1.3) and 0 < d + shift < cl[-1]:
                     point('q', x, z, [int(round(math.degrees(math.atan2(p[i + 1][1] - p[i][1], p[i + 1][0] - p[i][0])))), int(round(h * 10)), kind]); counts['piers'] += 1; break
             d += every
-    for ri, r in enumerate(roads):
-        if r['bridge']:
-            if not r['esa']:
-                h = 4.5 + 3.5 * max(1, r['layer']); q = rdp(r['p'], 0.3)
-                lines('e', [1, int(round(h * 10)), int(round((r['hw'] + 0.7) * 10))], q); piers(q, h, 1 if r['hw'] >= 6.3 else 2, 32.0, h32('pier', r['id'])); counts['bridges'] += 1
-            continue
-        counts['roads'] += 1; counts['road_m'] += r['cl'][-1]
-        # (the streets of the hotel place's box too: the kerbs there are the world's now, and what stands along a kerb
-        # goes where the kerb is. What that place knew of its streets' trees is in TREES; its own block stays its own.)
-        p, cl = r['p'], r['cl']; seed = h32('road', r['name'] or r['id'])
-        species = TREES.get(r['name'], -1 if seed % 100 < 4 else (1 if seed % 100 < 28 else 0))
-        own = lambda x, z: ESA_BLOCK[0] < x < ESA_BLOCK[1] and ESA_BLOCK[2] < z < ESA_BLOCK[3]
-        every = 12.0 + (seed >> 8) % 7
-        for side in (1, -1):
-            for a, b in S['sides'].get((ri, side), ()):
-                seg = sub(p, cl, a, b)
-                if len(seg) < 2: continue
-                if species >= 0 and r['cls'] != 'motorway':
-                    back = offset(seg, side * (r['hw'] + 3.6)); bl = lens(back); d = 5.0 + (seed >> 4) % 6
-                    while d < bl[-1] - 3:
-                        (x, z), _ = at(back, bl, d); hh = h32('t', round(x), round(z))
-                        if not paved(x, z, 0.8) and not own(x, z): point('p', x, z, [0, int((3.0 + hh % 22 / 10.0) * 10)] if species == 0 else [0, int((11 + hh % 70 / 10.0) * 10)], [species])
-                        d += every
-                if r['cls'] in ('trunk', 'primary', 'secondary', 'tertiary'):
-                    kerb = offset(seg, side * (r['hw'] + 0.6)); kl = lens(kerb); d = 9.0 if side > 0 else 31.0
-                    while d < kl[-1] - 2:
-                        (x, z), i = at(kerb, kl, d); f = unit(kerb[i + 1][0] - kerb[i][0], kerb[i + 1][1] - kerb[i][1]); rt = right(f)
-                        if not own(x, z): point('p', x, z, [int(round(math.degrees(math.atan2(-side * rt[1], -side * rt[0])))), 0], [2])
-                        d += 44.0
-    for (x, z), name in S['medians']:                                               # palms down the planted medians that have them
-        if any(n in name for n in MEDIAN_PALMS): hh = h32('t', round(x), round(z)); point('p', x, z, [0, int((14 + hh % 60 / 10.0) * 10)], [1])
-    for kind, pts in S['bands']: strip(kind, pts)
-    for kind, pts in S['polys']: area('o', [kind], pts)
-    for kerb, back in S['corners']:                                                 # centimetres: how many points the kerb has; the outline — its first point, then the steps
-        mx, mz = kerb[len(kerb) // 2]; i, j = int(math.floor(mx / T)), int(math.floor(mz / T))
-        if not inb(mx, mz): continue
-        c = [(int(round((x - i * T) * 100)), int(round((z - j * T) * 100))) for x, z in kerb + back]; out = [len(kerb), c[0][0], c[0][1]]
-        for a, b in zip(c, c[1:]): out += [b[0] - a[0], b[1] - a[1]]
-        tiles[(i, j)]['c'].append(out)
-    for ty, wcm, pts in S['marks']: lines('m', [ty, wcm], pts, 100)
-    for kind, x, z, a in S['figures']:
-        i, j = int(math.floor(x / T)), int(math.floor(z / T))
-        if inb(x, z): tiles[(i, j)]['y'].append([kind, int(round((x - i * T) * 100)), int(round((z - j * T) * 100)), int(round(a))])
-    for x, z, a, arm, grp, ji in S['poles']: point('s', x, z, [int(round(a)), int(round(arm * 10)), grp, ji]); counts['signal poles'] += 1
-    for x, z, a in S['signs']: point('p', x, z, [int(round(a)), 0], [4]); counts['stop signs'] += 1
+    def lay_streets():
+        """what the streets are made of and what stands along them, into the sheet being laid"""
+        for ri, r in enumerate(roads):
+            if r['bridge']:
+                if not r['esa']:
+                    h = 4.5 + 3.5 * max(1, r['layer']); q = rdp(r['p'], 0.3)
+                    lines('e', [1, int(round(h * 10)), int(round((r['hw'] + 0.7) * 10))], q); piers(q, h, 1 if r['hw'] >= 6.3 else 2, 32.0, h32('pier', r['id'])); counts['bridges'] += 1
+                continue
+            counts['roads'] += 1; counts['road_m'] += r['cl'][-1]
+            # (the streets of the hotel place's box too: the kerbs there are the world's now, and what stands along a kerb
+            # goes where the kerb is. What that place knew of its streets' trees is in TREES; its own block stays its own.)
+            p, cl = r['p'], r['cl']; seed = h32('road', r['name'] or r['id'])
+            species = TREES.get(r['name'], -1 if seed % 100 < 4 else (1 if seed % 100 < 28 else 0))
+            own = lambda x, z: ESA_BLOCK[0] < x < ESA_BLOCK[1] and ESA_BLOCK[2] < z < ESA_BLOCK[3]
+            every = 12.0 + (seed >> 8) % 7
+            for side in (1, -1):
+                for a, b in S['sides'].get((ri, side), ()):
+                    seg = sub(p, cl, a, b)
+                    if len(seg) < 2: continue
+                    if species >= 0 and r['cls'] != 'motorway':
+                        back = offset(seg, side * (r['hw'] + 3.6)); bl = lens(back); d = 5.0 + (seed >> 4) % 6
+                        while d < bl[-1] - 3:
+                            (x, z), _ = at(back, bl, d); hh = h32('t', round(x), round(z))
+                            if not paved(x, z, 0.8) and not own(x, z): point('p', x, z, [0, int((3.0 + hh % 22 / 10.0) * 10)] if species == 0 else [0, int((11 + hh % 70 / 10.0) * 10)], [species])
+                            d += every
+                    if r['prof'][-1 if side > 0 else 0][0] in 'pq':                      # cars parked along the kerb, nose the way that side's traffic goes; about one place in three taken
+                        line = offset(seg, side * (r['hw'] - 1.2)); ll = lens(line); d = 7.5 + h32('kerb', r['id'], side, round(a)) % 50 / 10.0
+                        while d < ll[-1] - 7.5:
+                            (x, z), i = at(line, ll, d); hh = h32('kerb car', round(x * 2), round(z * 2))
+                            if hh % 100 < 34 and not own(x, z):
+                                f = unit(line[i + 1][0] - line[i][0], line[i + 1][1] - line[i][1])
+                                point('p', x, z, [int(round(math.degrees(math.atan2(side * f[1], side * f[0])))), (hh >> 12) % 10], [5]); counts['cars at the kerb'] += 1
+                            d += 6.4
+                    if r['cls'] in ('trunk', 'primary', 'secondary', 'tertiary'):
+                        kerb = offset(seg, side * (r['hw'] + 0.6)); kl = lens(kerb); d = 9.0 if side > 0 else 31.0
+                        while d < kl[-1] - 2:
+                            (x, z), i = at(kerb, kl, d); f = unit(kerb[i + 1][0] - kerb[i][0], kerb[i + 1][1] - kerb[i][1]); rt = right(f)
+                            if not own(x, z): point('p', x, z, [int(round(math.degrees(math.atan2(-side * rt[1], -side * rt[0])))), 0], [2])
+                            d += 44.0
+        for (x, z), name in S['medians']:                                               # palms down the planted medians that have them
+            if any(n in name for n in MEDIAN_PALMS): hh = h32('t', round(x), round(z)); point('p', x, z, [0, int((14 + hh % 60 / 10.0) * 10)], [1])
+        for kind, pts in S['bands']: strip(kind, pts)
+        for kind, pts in S['polys']: area('o', [kind], pts)
+        for kerb, back in S['corners']:                                                 # centimetres: how many points the kerb has; the outline — its first point, then the steps
+            mx, mz = kerb[len(kerb) // 2]; i, j = int(math.floor(mx / T)), int(math.floor(mz / T))
+            if not inb(mx, mz): continue
+            c = [(int(round((x - i * T) * 100)), int(round((z - j * T) * 100))) for x, z in kerb + back]; out = [len(kerb), c[0][0], c[0][1]]
+            for a, b in zip(c, c[1:]): out += [b[0] - a[0], b[1] - a[1]]
+            SHEET[0][(i, j)]['c'].append(out)
+        for ty, wcm, pts in S['marks']: lines('m', [ty, wcm], pts, 100)
+        for kind, x, z, a in S['figures']:
+            i, j = int(math.floor(x / T)), int(math.floor(z / T))
+            if inb(x, z): SHEET[0][(i, j)]['y'].append([kind, int(round((x - i * T) * 100)), int(round((z - j * T) * 100)), int(round(a))])
+        for x, z, a, arm, grp, ji in S['poles']: point('s', x, z, [int(round(a)), int(round(arm * 10)), grp, ji]); counts['signal poles'] += 1
+        for x, z, a in S['signs']: point('p', x, z, [int(round(a)), 0], [4]); counts['stop signs'] += 1
+    lay_streets()
+    # … and once more for the hotel place's own page: the same streets, cut to that place's ground (ESA_GROUND), with
+    # nothing but streets in them. So its page draws its streets from these tiles too, and the one set of rules holds
+    # whether the place is seen from a car in the world or on foot from its own page.
+    keep = counts.copy(); place = collections.defaultdict(lambda: collections.defaultdict(list)); SHEET[:] = [place, ESA_GROUND]
+    lay_streets()
+    SHEET[:] = [tiles, None]; counts.clear(); counts.update(keep)
+    place = {ij: {k: v for k, v in t.items() if k in 'kocmyps'} for ij, t in place.items()}
     counts['corners'] = S['audit']['corners']
     for sv in service:
         if sv['esa']: continue
@@ -475,7 +530,7 @@ def build(W, bounds):
             x, z = W.xz[n]
             if not (ESA_BOX[0] < x < ESA_BOX[1] and ESA_BOX[2] < z < ESA_BOX[3]):
                 point('p', x, z, [0, 40], [0])
-    return tiles, roads, service, counts, S
+    return tiles, roads, service, counts, S, place
 
 # ── a route: the lane a car keeps, and the path it drives along it ─────────────────────────────────────────────────────────
 def lane_plan(los, Ls, before, after):
@@ -655,19 +710,30 @@ def route(W, roads, service, S, spec):
             segs[-1:] = [dict(s, p=sub(s['p'], c0, 0, c0[-1] - 70)), dict(s, p=sub(s['p'], c0, c0[-1] - 70, c0[-1]), to=to)] if c0[-1] > 95 else [dict(s, to=to)]
         else: segs[-1] = dict(segs[-1], to=to)
         los = [[1.3] if s['kind'] == 's' else ST.lane_offsets(s['rec'], s['fwd'], s.get('to')) for s in segs]; Ls = [lens(s['p'])[-1] for s in segs]
+        pin = {}                                                                   # past an island in the middle lane the car keeps to a lane beside it: index in pts → the lane there
         for s, L, (first, last) in zip(segs, Ls, lane_plan(los, Ls, before, after)):
-            p = resample(s['p'], 2.0); cl = lens(p)
+            p = resample(s['p'], 2.0); cl = lens(p); k0 = len(pts)
             d0 = max(0.15 * L, L - 145.0); d1 = min(max(d0 + 30.0, L - 80.0), L - 12.0)   # a change of lane is over well before the piece is
             for i, pt in enumerate(p):
                 t = 0.0 if d1 <= d0 else max(0.0, min(1.0, (cl[i] - d0) / (d1 - d0))); t = t * t * (3 - 2 * t)
                 o = first + (last - first) * t
                 if pts and math.hypot(pt[0] - pts[-1][0], pt[1] - pts[-1][1]) < 0.3: offs[-1] = (offs[-1] + o) / 2; continue   # where two pieces of the street meet
                 pts.append(pt); offs.append(o)
+            if s['kind'] == 'r' and s['rec'].get('isl'):
+                beside = ST.lane_offsets(s['rec'], s['fwd'], None)[0]
+                for a, b in s['rec']['isl']:
+                    ends = [at(s['rec']['p'], s['rec']['cl'], d)[0] for d in (a, b)]
+                    for i in range(k0, len(pts)):
+                        if ST.seg_dist(pts[i], ends[0], ends[1])[0] < 2.6: pin[i] = max(offs[i], beside)
         # What kinks are left in the centre line (World.curve leaves those where roads meet): eased, about 5 m to
         # either side; the line's ends, at the junctions, stay put.
         for _ in range(12): pts = [pts[0]] + [((pts[i - 1][0] + 2 * pts[i][0] + pts[i + 1][0]) / 4, (pts[i - 1][1] + 2 * pts[i][1] + pts[i + 1][1]) / 4) for i in range(1, len(pts) - 1)] + [pts[-1]]
         # where a street's pieces differ in lanes the lane's place in it steps sideways: taken over some 60 m, as a driver drifts across
-        for _ in range(130): offs = [offs[0]] + [(offs[i - 1] + 2 * offs[i] + offs[i + 1]) / 4 for i in range(1, len(offs) - 1)] + [offs[-1]]
+        # … but not across an island: beside one the car is in its lane, and drifts into the pocket only once past it
+        for i, o in pin.items(): offs[i] = o
+        for _ in range(130): offs = [offs[0]] + [pin[i] if i in pin else (offs[i - 1] + 2 * offs[i] + offs[i + 1]) / 4 for i in range(1, len(offs) - 1)] + [offs[-1]]
+        if pin:                                                                    # (… and the corner that leaves at the island's end is rounded: a hand does not snap the wheel over)
+            for _ in range(24): offs = [offs[0]] + [(offs[i - 1] + 2 * offs[i] + offs[i + 1]) / 4 for i in range(1, len(offs) - 1)] + [offs[-1]]
         N = normals(pts); lines_.append([(x + nx * o, z + nz * o) for (x, z), (nx, nz), o in zip(pts, N, offs)])
         rec = q['segs'][0]['rec']
         if q['kind'] == 's': meta.append(dict(v=4.2, lo=-1.1, hi=1.1, name=''))
@@ -740,7 +806,7 @@ def route(W, roads, service, S, spec):
                     d = math.hypot(cx - pt[0], cz - pt[1])
                     if best is None or d < best[0]: f = unit(bx - ax, bz - az); rt = right(f); best = (d, (pt[0] - cx) * rt[0] + (pt[1] - cz) * rt[1], s['rec'])
             off, rec = best[1], best[2]
-            lo = (-rec['hw'] + 1.2 if rec['oneway'] else 1.1) - off; hi = rec['hw'] - 1.2 - off
+            lo = (-rec['hw'] + 1.2 if rec['oneway'] else 1.1) - off; hi = rec['hw'] - 1.2 - off - (rec.get('park', 0.0) if any(c in 'pq' for c, _ in rec['prof']) else 0.0)   # (not in among the parked cars)
             lo, hi = min(lo, -0.2), max(hi, 0.2)
         if not band or abs(band[-1][1] - lo) > 0.25 or abs(band[-1][2] - hi) > 0.25: band.append([round(cl[i], 1), round(lo, 2), round(hi, 2)])
     # signals and stop signs on the way: where the arm we come in along has its limit line (streets.py), there the bumper stops
@@ -787,12 +853,25 @@ def route(W, roads, service, S, spec):
 # ── what the map does not say about this world's streets ──
 # East Mariposa Avenue where the map gives it six lanes and no more: the satellite picture has two lanes each way and
 # a middle lane for left turns between them (the kerb lanes wide), from Pacific Coast Highway to Nash Street.
-STRIPES = {('East Mariposa Avenue', 6): 'bbcff'}
+# Maple between Pacific Coast Highway and Nash has the same five (the map has no lanes there); east of Nash and west of
+# the highway it has not. Each: the street, the lanes the map gives it (or any), between which x, the lanes it has.
+STRIPES = [('East Mariposa Avenue', 6, None, 'bbcff'),
+           ('East Maple Avenue', None, (-60.0, 660.0), 'bbcff')]
 # What places/esa-el-segundo-2015 knows of the trees along its streets (his photographs, Street View), for the rule that
 # plants every street's: 0 broad-leaved, 1 palms, -1 none. And the medians that carry a row of palms.
 TREES = {'East Mariposa Avenue': 0, 'Continental Boulevard': 0, 'North Nash Street': 1, 'North Pacific Coast Highway': -1}
-MEDIAN_PALMS = ('Pacific Coast Highway',)
+MEDIAN_PALMS = ('Pacific Coast Highway', 'East Maple Avenue')
+# Streets whose width and lanes are known from the satellite picture: kerb to kerb, and its strips from the left kerb
+# to the right ('q', 'p': where cars park). Lairport: 16 m, a double yellow line, cars parked along both kerbs.
+WIDTHS = {'Lairport Street': (16.0, 'qbfp')}
+# The planted islands in Maple's middle lane between Lairport and Nash (the satellite picture, 26/11/2026; x to about a
+# metre): each from one end to the other. The one at x 383–397 is the refuge of the crosswalk in mid-block.
+ISLANDS = {'East Maple Avenue': [((x0, -441.6), (x1, -441.6)) for x0, x1 in ((160.0, 197.6), (255.2, 268.6), (314.7, 348.5), (383.2, 391.2), (395.4, 397.6), (497.3, 538.2), (604.4, 640.1))]}
+# Crosswalks that the map does not have (the satellite picture): [(one end, the other end)], across the street from kerb
+# to kerb. Maple's, in mid-block, between the two parts of its refuge island.
+CROSSWALKS = [((393.3, -455.0), (393.3, -428.0))]
 MEDIAN_W = {'North Pacific Coast Highway': 2.4, 'South Pacific Coast Highway': 2.4}      # Sepulveda's median is planted (lawn and palms: the satellite picture)
+ESA_GROUND = (-300.0, -280.0, 800.0, 260.0)   # the ground that place lays under itself (town.js): x0, z0, x1, z1 — its own page shows the streets within it
 ESA_BLOCK = (-95.0, 52.0, -66.4, 132.0)   # the hotel's and the shops' own ground, behind the sidewalks (site.js): nothing of the streets' is planted there
 # The hotel's way in from Mariposa (places/esa-el-segundo-2015/plan.js LOT.drive: x 28.5 … 37.5): the walk drops for it.
 DRIVES = [('East Mariposa Avenue', (33.0, -66.0), 10.0)]
@@ -812,10 +891,14 @@ ROUTES = [
          tail=[(31.0, -67.8), (31.0, -59.5), (32.5, -56.0), (38.6, -51.0), (39.3, -47.0), (39.3, -20.0), (39.3, 4.0)], tail_v=3.4),
 ]
 
+# The cars of the hotel place's own page: from where to where each lane of them runs (Sepulveda south and north,
+# Mariposa east and west: the ends of those roadways just beyond that place's ground), and the speed they keep (m/s).
+ESA_TRAFFIC = [((-125.6, -279.9), (-116.5, 281.2), 15.0), ((-100.7, 267.9), (-108.5, -335.6), 15.0), ((-309.0, -79.5), (781.4, -80.3), 12.0), ((781.4, -80.3), (-309.0, -79.5), 12.0)]
+ESA_DIR = os.path.normpath(os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..', 'esa-el-segundo-2015'))
 def main():
     out = sys.argv[1]; W = World(sys.argv[2:])
     bounds = (-1000.0, 2000.0, -2000.0, 1000.0)                                     # the tiles this run makes: x0, x1, z0, z1
-    tiles, roads, service, counts, S = build(W, bounds)
+    tiles, roads, service, counts, S, place = build(W, bounds)
     os.makedirs(os.path.join(out, 'tiles'), exist_ok=True)
     for f in os.listdir(os.path.join(out, 'tiles')): os.remove(os.path.join(out, 'tiles', f))
     index, total = [], 0
@@ -824,6 +907,28 @@ def main():
         body = json.dumps(dict(v=1, i=i, j=j, g=1 if homes * 2 > len(t['b']) and len(t['b']) > 20 else 0, **{k: t[k] for k in sorted(t)}), separators=(',', ':'))
         with open(os.path.join(out, 'tiles', f'{i}_{j}.json'), 'w') as f: f.write(body)
         index.append([i, j, len(body), len(t['b'])]); total += len(body)
+    # the hotel place's streets, for its own page (a module of its own: that page is one file) — and the lanes the cars
+    # of that page keep: each a route like the car's own (the lane's line as a car drives it), cut to that place's
+    # ground, a point every 2 m; with it the speed they keep and where a car's middle stops for which signal
+    body = json.dumps({f'{i}_{j}': dict(v=1, i=i, j=j, n=1, **{k: t[k] for k in sorted(t)}) for (i, j), t in sorted(place.items()) if any(t.values())}, separators=(',', ':'))
+    lanes = []; G = ESA_GROUND
+    for n, (a, b, v) in enumerate(ESA_TRAFFIC):
+        r = route(W, roads, service, S, dict(id='esa-traffic-%d' % n, name='', a=a, b=b, **{'from': '', 'to': ''}))
+        p = [(r['pts'][2 * k] / 1000.0, r['pts'][2 * k + 1] / 1000.0) for k in range(len(r['pts']) // 2)]
+        ins = [k for k, (x, z) in enumerate(p) if G[0] + 2 <= x < G[2] - 2 and G[1] + 2 <= z < G[3] - 2]; k0, k1 = ins[0], ins[-1]
+        assert k1 - k0 == len(ins) - 1 and (k1 - k0) / 2 > 400, ('a lane of the hotel place\'s traffic leaves its ground', n, k0, k1, len(ins))
+        assert all(kind == 0 for _, kind, _, _ in r['ctl']), ('a stop sign on a lane of the hotel place\'s traffic', n, r['ctl'])
+        # (a route's stop is its back axle's, 3.75 m behind the bumper; a car here is placed by its middle, 2.3 m behind its own)
+        stops = [[round(s + 1.45 - k0 / 2.0, 1), j, g] for s, kind, j, g in r['ctl'] if k0 / 2.0 + 8 < s + 1.45 < k1 / 2.0]
+        lanes.append(dict(v=v, stops=stops, p=[int(round(c * 10)) for pt in p[k0:k1 + 1:4] for c in pt]))
+    with open(os.path.join(ESA_DIR, 'streets.js'), 'w') as f:
+        f.write('/* Written by places/south-bay/data/world.py: do not edit. The streets of this place\'s ground as the South Bay world lays\n'
+                '   them out (its tiles, cut to this ground, with nothing but streets in them: see TILE in that script), so that this\n'
+                '   place\'s own page and the world draw one and the same street; and the lanes this page\'s cars keep along Sepulveda\n'
+                '   and Mariposa (p: x, z in decimetres every 2 m; v: metres a second; stops: [metres along, junction, group] — where a\n'
+                '   car\'s middle stops while that signal is not green). Map data (c) OpenStreetMap contributors, ODbL. */\n'
+                'export const TILES = ' + body + ';\n'
+                'export const LANES = ' + json.dumps(lanes, separators=(',', ':')) + ';\n')
     routes = []
     for spec in ROUTES:
         spec = dict(spec)
@@ -834,6 +939,7 @@ def main():
     with open(os.path.join(out, 'index.json'), 'w') as f:
         json.dump(dict(v=1, tile=T, origin=[LAT0, LON0], bounds=bounds, tiles=index, signals=S['audit']['signals'], counts={k: round(v) for k, v in counts.items()}, streets={k: round(v) for k, v in sorted(S['audit'].items())}), f, separators=(',', ':'))
     print(len(index), 'tiles,', total // 1024, 'kB;', dict(counts))
+    print(' the hotel place\'s own streets: %d squares, %d kB; its cars\' lanes:' % (len(place), len(body) // 1024), ['%d m at %.1f m/s, stops %s' % (len(l['p']) - 2, l['v'], l['stops']) for l in lanes])
     print(' roads eased into curves: %d (of their points %d moved, %.2f m at most; %d added)' % W.eased)
     print(' streets:', dict(sorted(S['audit'].items())))
     for r in routes: print(' route', r['id'], r['length'], 'm · strays', r['stray'], 'm from the lane\'s line at most ·', round(sum(b - a for a, b in r['straight'])), 'm straight ·', len(r['ctl']), 'controls', r['ctl'], '· turns', r['turns'])

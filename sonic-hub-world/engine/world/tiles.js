@@ -146,10 +146,13 @@ function stopTexture() {
  * @param o       { base: the address of the tiles' folder, index: what index.json holds, road, walk: the materials
  *                  the paved ribbons and the sidewalks wear (the hotel place's own, so that streets join without a seam),
  *                  keep: how many squares each way round the eye (2), onError }
+ *                or, for a place that carries its few squares with its page (the hotel's own streets, on foot):
+ *                { tiles: { 'i_j': the square as data/world.py writes it }, road, walk } — all built at once and held.
  */
 export function setupTiles(scene, o) {
-  const have = new Map(o.index.tiles.map(([i, j, bytes, n]) => [i + '_' + j, { i, j, bytes }]));
-  const KEEP = o.keep ?? 2, DROP = KEEP + 1;
+  const own = o.tiles || null;
+  const have = new Map((own ? Object.values(own).map(t => [t.i, t.j, 0]) : o.index.tiles).map(([i, j, bytes]) => [i + '_' + j, { i, j, bytes }]));
+  const KEEP = o.keep ?? 2, DROP = own ? Infinity : KEEP + 1;
   const root = new THREE.Group(); root.name = 'tiles'; scene.add(root);
   const sheet = facadeSheet(false), sheetLit = facadeSheet(true);
   const M = {
@@ -172,7 +175,7 @@ export function setupTiles(scene, o) {
 
   /* the builder: in a Worker where the browser allows one made from the page's own text */
   let worker = null, direct = null; const waiting = new Map(); let seq = 0;
-  try {
+  if (!own) try {
     const src = `const B = (${makeBuilder.toString()})(); onmessage = e => { try { const r = B.build(JSON.parse(e.data.text)); postMessage({ id: e.data.id, tile: r.tile }, r.transfer); } catch (err) { postMessage({ id: e.data.id, error: String(err && err.stack || err) }); } };`;
     worker = new Worker(URL.createObjectURL(new Blob([src], { type: 'text/javascript' })));
     worker.onmessage = e => { const f = waiting.get(e.data.id); waiting.delete(e.data.id); if (f) f(e.data); };
@@ -230,12 +233,14 @@ export function setupTiles(scene, o) {
     if (t.group) { root.remove(t.group); t.group.traverse(m => { if (m.isMesh && m.geometry && !Object.values(G).includes(m.geometry)) m.geometry.dispose(); if (m.isInstancedMesh) m.dispose(); }); st.live--; st.tris -= t.tris; st.bytes -= t.bytes; st.dropped++; }
     t.state = 'gone'; tiles.delete(key);
   }
+  const built = (t, data) => { t.data = data; t.state = 'built'; ready.push(t); st.built++; st.msSum += data.ms; st.msMax = Math.max(st.msMax, data.ms); };
   function want(i, j) {
     const key = i + '_' + j; if (!have.has(key) || tiles.has(key)) return;
     const t = { state: 'loading', i, j }; tiles.set(key, t);
+    if (own) { try { built(t, direct.build(own[key]).tile); } catch (e) { t.state = 'failed'; st.failed++; if (o.onError) o.onError(key, e); else throw e; } return; }
     fetch(o.base + key + '.json').then(r => { if (!r.ok) throw new Error('HTTP ' + r.status); return r.text(); })
       .then(text => { st.fetched++; if (t.state !== 'loading') return null; return buildOff(text); })
-      .then(data => { if (!data || t.state !== 'loading') return; t.data = data; t.state = 'built'; ready.push(t); st.built++; st.msSum += data.ms; st.msMax = Math.max(st.msMax, data.ms); })
+      .then(data => { if (data && t.state === 'loading') built(t, data); })
       .catch(e => { t.state = 'failed'; st.failed++; if (o.onError) o.onError(key, e); });
   }
   function paintSignals(t) {
@@ -249,6 +254,8 @@ export function setupTiles(scene, o) {
     }
     t.heads.instanceColor.needsUpdate = true;
   }
+
+  if (own) { for (const { i, j } of have.values()) want(i, j); while (ready.length) raise(ready.shift()); }
 
   return {
     /** call every frame with where the eye is and the world's own clock */

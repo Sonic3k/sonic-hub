@@ -127,21 +127,28 @@ const tour = [
   { p: [LT.drive[0] + 1.5, eye, LT.walk - 1.0], h: 200, pitch: 3, t: 3.4 },
   { p: [12.0, eye, LT.walk - 1.0], h: 268, pitch: 0, t: 6.0 },
   { p: [-42.0, eye, LT.walk - 1.0], h: 268, pitch: 0, t: 12.0 },
-  { p: [-48.0, eye, -65.2], h: 266, pitch: 0, t: 2.4 },
-  { p: [-96.0, eye, -65.2], h: 262, pitch: 0, t: 10.0 },
-  { p: [-96.0, eye, -45.0], h: 180, pitch: 0, t: 6.0, label: 'Sepulveda' },
-  { p: [-96.0, eye, -0.3], h: 160, pitch: 0, t: 9.0 },
+  // (along the sidewalks as the world lays them — places/south-bay/data/streets.py: Mariposa's at z −68.8 … −66.8 here,
+  // round the corner, Sepulveda's at x −97.2 … −95.2, which bears a little west by the shops' way in)
+  { p: [-89.0, eye, -67.9], h: 268, pitch: 0, t: 10.4 },
+  { p: [-94.3, eye, -65.9], h: 225, pitch: 0, t: 2.0 },
+  { p: [-96.1, eye, -45.0], h: 180, pitch: 0, t: 6.0, label: 'Sepulveda' },
+  { p: [-96.3, eye, -14.0], h: 178, pitch: 0, t: 6.4 },
+  { p: [-97.4, eye, -0.6], h: 150, pitch: 0, t: 2.8 },
   { p: [-67.0, eye, -0.3], h: 80, pitch: 0, t: 7.0 },
   { p: [-66.5, eye, -2.6], h: 262, pitch: 2, t: 2.0, label: 'Starbucks' },
   { p: [-61.0, eye, 4.0], h: 170, pitch: 0, t: 3.0 },
   { p: [-61.0, eye, 50.0], h: 180, pitch: 2, t: 10.0 },
   { p: [-62.0, eye, 59.6], h: 190, pitch: 8, t: 3.4, label: 'Ralphs' },
-  { p: [250.0, eye, -64.0], h: 92, pitch: 2, t: 0.01, cut: true, label: 'Mariposa, hàng si' },
-  { p: [300.0, eye, -64.0], h: 96, pitch: 3, t: 8.0 },
-  { p: [655.0, eye, -65.5], h: 76, pitch: 8, t: 0.01, cut: true, label: 'Green Line, ga Mariposa' },
-  { p: [676.0, eye, -65.5], h: 110, pitch: 16, t: 6.0 },
-  { p: [690.5, eye, -76.0], h: 10, pitch: 10, t: 5.0 },
-  { p: [691.2, eye, -112.0], h: 356, pitch: 12, t: 9.0 },
+  { p: [250.0, eye, -66.6], h: 92, pitch: 2, t: 0.01, cut: true, label: 'Mariposa, hàng si' },
+  { p: [300.0, eye, -66.65], h: 96, pitch: 3, t: 8.0 },
+  { p: [655.0, eye, -67.3], h: 76, pitch: 8, t: 0.01, cut: true, label: 'Green Line, ga Mariposa' },
+  { p: [676.0, eye, -67.35], h: 74, pitch: 14, t: 6.0 },
+  { p: [685.2, eye, -67.9], h: 70, pitch: 10, t: 2.6 },                                                         // to the crosswalk on Nash's near side
+  { p: [688.6, eye, -71.0], h: 10, pitch: 10, t: 1.6 },
+  { p: [688.6, eye, -90.6], h: 0, pitch: 10, t: 5.0 },                                                          // over Mariposa by it, under the viaduct
+  { p: [690.9, eye, -91.6], h: 20, pitch: 10, t: 1.2 },                                                         // and north by Nash's sidewalk, past the pier
+  { p: [690.9, eye, -99.0], h: 0, pitch: 12, t: 2.0 },
+  { p: [690.6, eye, -112.0], h: 356, pitch: 12, t: 3.6 },
 ];
 
 export default {
@@ -172,6 +179,7 @@ export default {
       },
       touch(id) { const r = room.toggle(id); if (r !== undefined) return r; return town.touch ? town.touch(id) : undefined; },
       animate(dt, clock, camera) { town.animate(dt, clock, camera); site.animate(dt, clock, camera); sight(camera); },
+      traffic: () => town.traffic(),                       // (for the checks: where the cars of the streets are)
     };
   },
 };

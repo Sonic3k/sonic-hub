@@ -106,15 +106,25 @@ load, and what a frame may cost is checked.
   broken white lines between lanes going the same way (solid before a signal); where roads meet — several points on
   a divided road are one crossing — round corners, the crosswalks the map has (and one on each arm of a signal it
   has none for), a limit line before each, arrows in the lanes to turn from, the word STOP at a stop sign; kerb,
-  gutter and a walk at the kerb, dropped to an apron at every driveway; a raised median between the two roadways of
-  a divided road. What a place knows that the map does not goes in as a short list (`STRIPES`, `DRIVES`, `TREES`,
-  `MEDIAN_W` in `world.py`). The script counts what must never be — a limit line inside a crosswalk, a corner whose
-  outline crosses itself — and the checks hold the tiles to it.
+  gutter and a walk at the kerb, dropped to an apron at every driveway; a strip for parked cars along each kerb of
+  a two-lane street where there is room (a quiet street is then 36 ft from kerb to kerb, with no line on it), and
+  cars standing in it; between the two roadways of a divided road a raised median — one thing, laid from one of
+  the two, open only where something crosses both, its ends round. What a place knows that the map does not goes in
+  as a short list in `world.py`: `STRIPES` (a street's lanes, by stretch), `WIDTHS` (kerb to kerb, with its parking
+  strips), `ISLANDS` (planted islands in a middle lane: the lane between an island's end and a crossing is then a
+  pocket to turn left from), `CROSSWALKS` (one in mid-block), `DRIVES`, `TREES`, `MEDIAN_W`. The script counts what
+  must never be — a limit line inside a crosswalk, a corner whose outline crosses itself — and the checks hold the
+  tiles to it.
 - **Sites.** A place built by hand stands in a world whole, in a group of its own (`sites` in the world's
   `place.js`): the hotel of El Segundo with its lots, its buildings and the shops next door. Its fine parts show
-  only from near (`near`). A place that can be a site reads `ctx.world`: the streets inside a world are the world's
-  own, there as everywhere, so `esa-el-segundo-2015/town.js` then draws no road, walk, line, crosswalk, median,
-  street tree, light, signal or traffic of its own (alone, as a place to walk, it draws them all as before).
+  only from near (`near`). The streets round a site are the world's own, there as everywhere:
+  `esa-el-segundo-2015/town.js` draws no road, walk, line, crosswalk, median, street tree, light or signal. That
+  holds on the place's own page too, where he walks: `world.py` lays the street layer a second time, cut to that
+  place's ground and with nothing but streets in it, into `places/esa-el-segundo-2015/streets.js` (six squares, some
+  45 kB, inlined in the page), and `tiles.js` builds those squares at once with the same builder — so the street
+  walked along there is the street driven along in the world. The few cars of that page keep lanes written the same
+  way (routes along Sepulveda and Mariposa: `LANES`), stop at a red light, decide once at a yellow one, and wait
+  behind the car in front.
 - **Routes and the car.** A route in `routes.json` is a path a car can drive, not a line on a map: the data script
   eases the map's roads into curves, plans the lane (least moving sideways), then drives a car along the lane's
   line (a wheelbase, a look ahead, hands that turn the wheel no faster than a turn a second) and stores what its
@@ -135,8 +145,11 @@ load, and what a frame may cost is checked.
   `tools/worldtop.mjs` photographs it from straight above (a plan of any spot, cut at any height: the way to see
   what the streets are); `places/<id>/data/plot.py` draws the data as a map.
 
-Not there yet: walking and the scooter in a world, the car seen from outside, other cars on the road, more
-routes and sites, scenes far away (Point Vicente, Orange County), the layers of years.
+Not there yet: walking and the scooter in a world, the car seen from outside, other cars on the road (the hotel's
+own page has a few, see Sites), more routes and sites, scenes far away (Point Vicente, Orange County), the layers of
+years. Of the streets: six crossings where ramps and roadways tangle are paved out to their outermost points and
+five corners are left pointed (the script counts them); a centre line steps sideways where a street's lanes change
+from one piece to the next instead of easing over.
 
 ## Looks
 
