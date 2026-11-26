@@ -296,9 +296,9 @@ export const VIEWS = {
   'loi-xe-vao': { name: 'Lối xe vào (Mariposa)', pose: [40.2, 1.6, -67.35, 240, 3] },          // on Mariposa's sidewalk, east of the drive
   'starbucks': { name: 'Starbucks', pose: [-58.0, 1.52, -6.0, 262, 0] },
   'ralphs': { name: 'Ralphs', pose: [-43.0, 1.52, 33.0, 204, 7] },
-  'sepulveda': { name: 'Đại lộ Sepulveda', pose: [-97.5, 1.52, -40.0, 200, 0] },
-  'mariposa': { name: 'Đường Mariposa, hàng si', pose: [250.0, 1.52, -64.0, 92, 0] },
-  'green-line': { name: 'Dưới đường ray Green Line', pose: [691.2, 1.52, -112.0, 356, 12] },
+  'sepulveda': { name: 'Đại lộ Sepulveda', pose: [-96.2, 1.52, -40.0, 200, 0] },
+  'mariposa': { name: 'Đường Mariposa, hàng si', pose: [250.0, 1.52, -66.6, 92, 0] },
+  'green-line': { name: 'Dưới đường ray Green Line', pose: [690.6, 1.52, -112.0, 356, 12] },
 };
 
 /* For the plan on the list of places: the studio and the hotel's three wings (rectangles, metres). */

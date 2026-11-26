@@ -168,7 +168,7 @@ export function makeBuilder() {
     const trees = [], palms = [], lamps = [], stops = [], heads = [], cars = [];
 
     /* the ground: what lies under everything, land use, lots and greens */
-    flat.up(Y.base, BASE[t.g ? 1 : 0], [0, 0, T, 0, T, T, 0, T], ox, oz, 1);
+    if (!t.n) flat.up(Y.base, BASE[t.g ? 1 : 0], [0, 0, T, 0, T, T, 0, T], ox, oz, 1);          // (n: nothing under — a place that lays its own ground and takes only the streets)
     for (const u of t.u || []) poly(flat, Y.use, USE[u[0]], u, 1, ox, oz, 1);
     for (const a of t.a || []) poly(flat, Y.area + (a[0] === 1 ? 0.01 : 0), AREA[a[0]], a, 1, ox, oz, 1);
 
