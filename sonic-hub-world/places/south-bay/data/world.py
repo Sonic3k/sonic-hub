@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Turns OpenStreetMap extracts into the data of the South Bay world: its tiles and the lines a car follows.
+"""Turns OpenStreetMap extracts into the data of the South Bay world: its tiles and the paths a car drives.
 
 usage: python3 world.py <out dir> <extract.osm> [more.osm …]
        (extracts: the OSM API's /map?bbox=…, about a square kilometre or two each; ways are whole in each, so
@@ -41,6 +41,26 @@ TILE (lengths in decimetres, local to the tile's north-west corner; angles in de
   q  [[x, z, a, height, kind]]      the piers under the decks (a: along the deck; kind as e), none standing in a road
   s  [[x, z, a, arm, group, junction]]   signal poles: a = the way the traffic it governs travels; the arm reaches
                                     to that traffic's left; group 0 north–south 1 east–west
+
+Roads bend. The map draws a bend as a few straight strokes; before anything is made of the roads, World.curve eases
+each road's line into a curve (no point of it moved further than a metre; where roads meet nothing moves).
+
+ROUTE (routes.json holds a list of them). A route is not the lane's line but what a car's back axle traces when the
+car is driven along that line (drive_line) — so the page gets a heading and a curvature that are a car's, and not
+differences between the points of a line, which made the car twitch on a straight street. Lengths along: metres of
+the path.
+  pts       [x,z,…]                 the path, a point every half metre, in millimetres (the world's frame)
+  hd        [h,…]                   the heading at each point, 1e-5 rad (atan2(dz, dx), running on past ±180°)
+  k         [k,…]                   the curvature at each point, 1e-6 per metre (+ bends to the right)
+  lim       [[from, m/s]]           the speed each stretch allows
+  band      [[from, left, right]]   the room a hand on the wheel has: metres to either side of the path
+  ctl       [[at, kind, controller, group]]   where the car stands for a signal (kind 0) or a stop sign (1): its
+                                    bumper half a metre short of the line
+  turns     [[from, to, ±1]]        where an indicator blinks (+1 right)
+  names     [[from, street]]
+  straight  [[from, to]]            where the street is straight: the lane's own line turns by no more than 0.6° within
+                                    20 m either way. There the wheel is held still — checks.mjs holds the drive to it.
+  stray                             the furthest the path leaves the lane's line, metres
 
 index.json also holds `cuts`: for each of the hotel place's own roads, [x0, z0, x1, z1, right, left, lines] — the
 stretches (metres along it) of its right walk, its left walk and its lines that a junction or a driveway takes away.
@@ -167,10 +187,83 @@ class World:
                 if tg.get('type') == 'multipolygon' and 'building' in tg:
                     self.rels[r.get('id')] = (tg, [m.get('ref') for m in r.findall('member') if m.get('type') == 'way' and m.get('role') in ('outer', '')])
         self.xz = {i: ((lo - LON0) * KX, -(la - LAT0) * KZ) for i, (la, lo) in self.nodes.items()}
+        self.eased = self.curve()
     def pts(self, nd): return [self.xz[n] for n in nd if n in self.xz]
+    def curve(self, sigma=9.0, step=2.0, most=1.0):
+        """The map draws a bend in a road as a few straight strokes with a kink at each of its points; a road bends.
+        Here every road's line is eased as a draughtsman would ease it — each point drawn towards the mean of the line
+        about it, some `sigma` metres either way: a kink of 12° becomes a bend 40 m long of 120 m radius — and gets
+        the points in between that hold the curve (their names: <way>~<n>). A street cut into several ways is eased
+        as one line. No point of a road is moved further than `most` metres (a sharp bend is eased less). Left where
+        they are: where roads meet, where a road ends or turns a real corner (30° and more), and the streets the
+        hotel place draws itself. A straight road comes out as it went in.
+        → (roads eased, points moved, the furthest a point moved, points added)"""
+        road = {w: [n for n in nd if n in self.xz] for w, (tg, nd) in self.ways.items() if tg.get('highway') in ROAD and tg.get('area') != 'yes'}
+        road = {w: nd for w, nd in road.items() if len(nd) >= 2}
+        uses, ends, fixed = collections.Counter(), collections.defaultdict(list), set()
+        for w, nd in road.items():
+            for n in nd: uses[n] += 1
+            ends[nd[0]].append(w); ends[nd[-1]].append(w)
+            if self.esa(nd): fixed.update(nd)
+        held = {w for w, nd in road.items() if self.esa(nd)}
+        def link(n):
+            """the two ways that are one street carried on through point n, or None"""
+            if uses[n] != 2 or len(ends[n]) != 2 or ends[n][0] == ends[n][1] or n in fixed: return None
+            ta, tb = self.ways[ends[n][0]][0], self.ways[ends[n][1]][0]
+            return ends[n] if ta.get('name', '') == tb.get('name', '') and ta.get('highway') == tb.get('highway') else None
+        done, eased, moved, far, added = set(), 0, 0, 0.0, 0
+        for w0 in sorted(road):
+            if w0 in done or w0 in held: continue
+            chain = [(w0, False)]; done.add(w0)                                     # (way, taken backwards)
+            while True:                                                            # on from its end …
+                w, rev = chain[-1]; n = road[w][0] if rev else road[w][-1]; l = link(n)
+                o = (l[0] if l[1] == w else l[1]) if l else None
+                if o is None or o in done or o in held: break
+                chain.append((o, road[o][0] != n)); done.add(o)
+            while True:                                                            # … and back from its start
+                w, rev = chain[0]; n = road[w][-1] if rev else road[w][0]; l = link(n)
+                o = (l[0] if l[1] == w else l[1]) if l else None
+                if o is None or o in done or o in held: break
+                chain.insert(0, (o, road[o][-1] != n)); done.add(o)
+            ids, span = [], []                                                     # the line's points; for each way, which of them are its own
+            for w, rev in chain:
+                nd = road[w][::-1] if rev else road[w]; a = len(ids) - 1 if ids else 0
+                ids.extend(nd[1:] if ids else nd); span.append((a, len(ids) - 1))
+            P = [self.xz[n] for n in ids]
+            if len(P) < 3: continue
+            def kink(i):
+                a = math.atan2(P[i][1] - P[i - 1][1], P[i][0] - P[i - 1][0]); b = math.atan2(P[i + 1][1] - P[i][1], P[i + 1][0] - P[i][0])
+                return abs((b - a + math.pi) % (2 * math.pi) - math.pi)
+            pin = [True] + [ids[i] in fixed or (uses[ids[i]] > 1 and not link(ids[i])) or kink(i) >= math.radians(30) for i in range(1, len(P) - 1)] + [True]
+            if not any(not pin[i] and kink(i) > math.radians(0.3) for i in range(1, len(P) - 1)): continue
+            D, node_at, hold = [P[0]], [0], [True]                                 # a point every `step` metres
+            for i in range(1, len(P)):
+                L = math.hypot(P[i][0] - P[i - 1][0], P[i][1] - P[i - 1][1]); m = max(1, int(round(L / step)))
+                for k in range(1, m): t = k / m; D.append((P[i - 1][0] + (P[i][0] - P[i - 1][0]) * t, P[i - 1][1] + (P[i][1] - P[i - 1][1]) * t)); hold.append(False)
+                D.append(P[i]); hold.append(pin[i]); node_at.append(len(D) - 1)
+            D0, give, reach = D, [0.0 if h else 1.0 for h in hold], int(round(sigma / step))   # give: how freely each point moves
+            for _ in range(12):
+                D = D0
+                for _ in range(int(round(2 * (sigma / step) ** 2))):
+                    D = [D[i] if hold[i] else (D[i][0] + give[i] * ((D[i - 1][0] + D[i + 1][0]) / 2 - D[i][0]) / 2, D[i][1] + give[i] * ((D[i - 1][1] + D[i + 1][1]) / 2 - D[i][1]) / 2) for i in range(len(D))]
+                over = {j for i in range(len(D)) if math.hypot(D[i][0] - D0[i][0], D[i][1] - D0[i][1]) > most for j in range(max(0, i - reach), min(len(D), i + reach + 1))}
+                if not over: break
+                for j in over: give[j] *= 0.7
+            new, where = [ids[0]], [0]                                             # the line with its new points; where each old point now is in it
+            for i in range(1, len(P)):
+                for q in rdp(D[node_at[i - 1]:node_at[i] + 1], 0.03)[1:-1]:
+                    nid = '%s~%d' % (chain[0][0], added); added += 1; self.xz[nid] = q; new.append(nid)
+                d = math.hypot(D[node_at[i]][0] - P[i][0], D[node_at[i]][1] - P[i][1])
+                if d > 1e-6: self.xz[ids[i]] = D[node_at[i]]; moved += 1; far = max(far, d)
+                new.append(ids[i]); where.append(len(new) - 1)
+            for (w, rev), (a, b) in zip(chain, span):
+                nd = new[where[a]:where[b] + 1]; self.ways[w] = (self.ways[w][0], nd[::-1] if rev else nd)
+            eased += 1
+        assert held == {w for w in road if self.esa(self.ways[w][1])}, 'easing the roads moved a street into or out of the hotel place'
+        return eased, moved, round(far, 2), added
     def esa(self, nd):
         """does places/esa-el-segundo-2015 hold this way (its own rule: the mean of the way's points, to 0.1 m)"""
-        p = [(round(x, 1), round(z, 1)) for x, z in self.pts(nd)]
+        p = [(round(x, 1), round(z, 1)) for x, z in self.pts([n for n in nd if '~' not in n])]
         if len(p) < 2: return False
         cx = sum(q[0] for q in p) / len(p); cz = sum(q[1] for q in p) / len(p)
         return ESA_BOX[0] < cx < ESA_BOX[1] and ESA_BOX[2] < cz < ESA_BOX[3]
@@ -428,7 +521,7 @@ def build(W, bounds):
                 lines('e', [1, int(round(h * 10)), int(round((r['hw'] + 0.7) * 10))], q); piers(q, h, 1 if r['hw'] >= 6.3 else 2, 32.0, h32('pier', r['id'])); counts['bridges'] += 1
             continue
         if r['esa']: continue
-        p = rdp(r['p'], 0.25); cl = lens(p); L = cl[-1]; counts['roads'] += 1; counts['road_m'] += L
+        p = rdp(r['p'], 0.1); cl = lens(p); L = cl[-1]; counts['roads'] += 1; counts['road_m'] += L
         lines('r', [int(round(r['hw'] * 10)), 0], p)
         seed = h32('road', r['name'] or r['id'])
         species = -1 if seed % 100 < 4 else (1 if seed % 100 < 28 else 0)
@@ -570,7 +663,7 @@ def build(W, bounds):
              for ri, r in enumerate(roads) if r['esa'] and (cutW[(ri, 1)] or cutW[(ri, -1)] or cutM[ri])]
     return tiles, roads, junctions, service, counts, use, jat, trims
 
-# ── a route: the line of the lane a car keeps, start to end ─────────────────────────────────────────────────────────
+# ── a route: the lane a car keeps, and the path it drives along it ─────────────────────────────────────────────────────────
 def lane_offsets(r):
     """centres of the lanes that go the road's own way, counted from its middle outwards (metres to the right of the centre line)"""
     if r['oneway']: return [-r['hw'] + 0.4 + (k + 0.5) * LANE for k in range(r['lanes'])]
@@ -578,6 +671,29 @@ def lane_offsets(r):
     if n <= 2: return [r['w'] / 4]
     if n % 2 == 0 or r['esa']: return [(k + 0.5) * LANE for k in range(n // 2)]
     return [LANE / 2 + (k + 0.5) * LANE for k in range((n - 1) // 2)]
+
+def lane_plan(los, Ls, before, after):
+    """Which lane a car keeps on each piece of a street (the pieces differ in their lanes): [(the lane it comes into the
+    piece in, the lane it leaves it in)], a lane being its metres to the right of the centre line. Of all plans the one
+    that moves the car sideways least, given that it ends in the lane its next turn is made from (the left one for a
+    left turn, the right one for a right), that a lane is changed within a piece only where the piece is 100 m long, and
+    that a turn is finished in the near lane (the kerb's after a right turn — that counts for more — the middle's after
+    a left) where that lane goes on for 60 m.   los: each piece's lanes · Ls: its length · before, after: the turns (±1, 0)"""
+    best = {}                                                                      # the lane a plan leaves the piece in → (what it costs, the plan)
+    for j, lo in enumerate(los):
+        nxt = {}
+        for e in lo:
+            if j == 0:
+                near = lo[-1] if before > 0 else lo[0] if before < 0 else None
+                c, pl = ((1.2 if before > 0 else 0.3) * abs(e - near) if near is not None and Ls[0] >= 60 else 0.0), []
+            else: c, pl = min(((c + abs(x - e), pl) for x, (c, pl) in best.items()), key=lambda t: t[0])
+            for x in lo:
+                if x != e and Ls[j] < 100: continue
+                cc = c + (abs(x - e) + 0.5 if x != e else 0.0)
+                if x not in nxt or cc < nxt[x][0]: nxt[x] = (cc, pl + [(e, x)])
+        best = nxt
+    want = los[-1][0] if after < 0 else los[-1][-1] if after > 0 else None
+    return best[want][1] if want in best else min(best.values(), key=lambda t: t[0])[1]
 
 def plan(W, roads, service, use, jat, a, b):
     """the cheapest way over roads and service ways between the nodes nearest two points → [(way, node ids in travel order)]"""
@@ -639,6 +755,41 @@ def fillet(A, B, r):
     f0 = math.atan2(t1[1] - oz, t1[0] - ox); n = max(3, int(r * th / 0.8)); arc = [(ox + r * math.cos(f0 + sg * th * k / n), oz + r * math.sin(f0 + sg * th * k / n)) for k in range(1, n)]
     return A2 + arc + B2
 
+WHEELBASE = 2.775                                                                 # a 2014 Camry
+def drive_line(raw, rl, vref):
+    """A car's path along a line: its back axle is steered at a point of the line a little way ahead (the faster, the
+    further: 0.8 s of travel, 3 m at least, 12 m at most), with wheels that turn no further than a Camry's and hands
+    that turn the wheel no faster than a turn a second. What comes out bends smoothly into every turn and holds
+    straight where the line only wavers — which the line itself, taken as the path, did not. The car's middle goes
+    from the line's start to its end: the axle starts half a wheelbase behind the line and stops as far short of it.
+    → ([(x, z, heading, curvature)] every half metre of the axle's travel, for each of them where on the line the
+       car's middle then is (metres along it), the furthest the axle strays from the line)
+
+    Headings: atan2(dz, dx), running on past ±180°; curvature + bends to the right (x east, z south)."""
+    A = WHEELBASE / 2
+    b = unit(raw[1][0] - raw[0][0], raw[1][1] - raw[0][1]); e = unit(raw[-1][0] - raw[-2][0], raw[-1][1] - raw[-2][1])
+    ext = [(raw[0][0] - b[0] * A, raw[0][1] - b[1] * A)] + raw + [(raw[-1][0] + e[0] * d, raw[-1][1] + e[1] * d) for d in (4.0, 8.0, 12.0, 16.0)]
+    el = lens(ext); L = rl[-1]                                                     # along ext, the axle is at sp and the car's middle at sp + A: on the line itself, at sp
+    x, z = ext[0]; th = math.atan2(b[1], b[0]); delta, sp, ds, out, on, stray, step = 0.0, 0.0, 0.25, [], [], 0.0, 0
+    while step < 60000:
+        best = None; d = sp
+        while d <= min(el[-1], sp + 1.5):                                           # where on the line the axle now is (it never goes back)
+            (qx, qz), _ = at(ext, el, d); e2 = (qx - x) ** 2 + (qz - z) ** 2
+            if best is None or e2 < best[0]: best = (e2, d)
+            d += 0.05
+        sp = best[1]; stray = max(stray, math.sqrt(best[0]))
+        if sp >= L - 0.01: x -= math.cos(th) * (sp - L); z -= math.sin(th) * (sp - L); break   # there, to the centimetre
+        v = max(1.0, vref[min(len(vref) - 1, int(sp / L * (len(vref) - 1)))])
+        ahead = min(12.0, max(3.0, 0.8 * v)); (tx, tz), _ = at(ext, el, sp + ahead)
+        dx, dz = tx - x, tz - z; dist = math.hypot(dx, dz) or 1e-6
+        alpha = (math.atan2(dz, dx) - th + math.pi) % (2 * math.pi) - math.pi
+        want = max(-0.59, min(0.59, math.atan(WHEELBASE * 2 * math.sin(alpha) / dist)))
+        turn = 0.43 * ds / v; delta += max(-turn, min(turn, want - delta))
+        if step % 2 == 0: out.append((x, z, th, math.tan(delta) / WHEELBASE)); on.append(min(L, sp))
+        th += math.tan(delta) / WHEELBASE * ds; x += math.cos(th) * ds; z += math.sin(th) * ds; step += 1
+    out.append((x, z, th, math.tan(delta) / WHEELBASE)); on.append(L)
+    return out, on, stray
+
 def route(W, roads, service, junctions, use, jat, spec):
     rid = {r['id']: r for r in roads}; sid = {s['id']: s for s in service}
     legs = plan(W, roads, service, use, jat, spec['a'], spec['b'])
@@ -692,20 +843,21 @@ def route(W, roads, service, junctions, use, jat, spec):
     for k, q in enumerate(seq):
         if 'manual' in q: lines_.append(list(q['manual'])); meta.append(dict(v=q['v'], lo=-1.0, hi=1.0, name='')); continue
         before = turns[k - 1] if k > 0 else 0; after = turns[k] if k < len(turns) else 0
-        pts, offs, total = [], [], sum(lens(s['p'])[-1] for s in q['segs']); done = 0.0
-        d0 = max(0.15 * total, total - 125.0); d1 = min(max(d0 + 30.0, total - 60.0), total - 12.0)
-        for s in q['segs']:
-            rec = s['rec']; p = resample(s['p'], 2.0); cl = lens(p)
-            if s['kind'] == 's': lo = [1.3]
-            else: lo = lane_offsets(rec)
-            first = lo[0] if before < 0 else lo[-1]; last = lo[0] if after < 0 else lo[-1]
+        pts, offs = [], []
+        los = [[1.3] if s['kind'] == 's' else lane_offsets(s['rec']) for s in q['segs']]; Ls = [lens(s['p'])[-1] for s in q['segs']]
+        for s, L, (first, last) in zip(q['segs'], Ls, lane_plan(los, Ls, before, after)):
+            p = resample(s['p'], 2.0); cl = lens(p)
+            d0 = max(0.15 * L, L - 145.0); d1 = min(max(d0 + 30.0, L - 80.0), L - 12.0)   # a change of lane is over well before the piece is
             for i, pt in enumerate(p):
-                d = done + cl[i]; t = 0.0 if d1 <= d0 else max(0.0, min(1.0, (d - d0) / (d1 - d0))); t = t * t * (3 - 2 * t)
+                t = 0.0 if d1 <= d0 else max(0.0, min(1.0, (cl[i] - d0) / (d1 - d0))); t = t * t * (3 - 2 * t)
                 o = first + (last - first) * t
                 if pts and math.hypot(pt[0] - pts[-1][0], pt[1] - pts[-1][1]) < 0.3: offs[-1] = (offs[-1] + o) / 2; continue   # where two pieces of the street meet
                 pts.append(pt); offs.append(o)
-            done += cl[-1]
-        for _ in range(12): offs = [offs[0]] + [(offs[i - 1] + 2 * offs[i] + offs[i + 1]) / 4 for i in range(1, len(offs) - 1)] + [offs[-1]]
+        # What kinks are left in the centre line (World.curve leaves those where roads meet): eased, about 5 m to
+        # either side; the line's ends, at the junctions, stay put.
+        for _ in range(12): pts = [pts[0]] + [((pts[i - 1][0] + 2 * pts[i][0] + pts[i + 1][0]) / 4, (pts[i - 1][1] + 2 * pts[i][1] + pts[i + 1][1]) / 4) for i in range(1, len(pts) - 1)] + [pts[-1]]
+        # where a street's pieces differ in lanes the lane's place in it steps sideways: taken over some 60 m, as a driver drifts across
+        for _ in range(130): offs = [offs[0]] + [(offs[i - 1] + 2 * offs[i] + offs[i + 1]) / 4 for i in range(1, len(offs) - 1)] + [offs[-1]]
         N = normals(pts); lines_.append([(x + nx * o, z + nz * o) for (x, z), (nx, nz), o in zip(pts, N, offs)])
         rec = q['segs'][0]['rec']
         if q['kind'] == 's': meta.append(dict(v=4.2, lo=-1.1, hi=1.1, name=''))
@@ -716,11 +868,10 @@ def route(W, roads, service, junctions, use, jat, spec):
         slow = 'manual' in seq[k - 1] or 'manual' in seq[k] or seq[k - 1].get('kind') == 's' or seq[k].get('kind') == 's'
         r = 5.0 if slow else (6.5 if turns[k - 1] > 0 else 13.0)
         n0 = len(line); line = fillet(line, lines_[k], r); marks.append(min(len(line) - 1, max(0, n0 - 1)))
-    p = resample(line, 1.0)
-    for _ in range(4):                                                             # take the kinks out; the ends stay put
-        p = [p[0]] + [((p[i - 1][0] + 2 * p[i][0] + p[i + 1][0]) / 4, (p[i - 1][1] + 2 * p[i][1] + p[i + 1][1]) / 4) for i in range(1, len(p) - 1)] + [p[-1]]
-    cl = lens(p)
-    # which leg a point of the final line belongs to: the nearest leg's own line
+    raw = resample(line, 0.5)
+    for _ in range(10):                                                            # take the kinks out; the ends stay put
+        raw = [raw[0]] + [((raw[i - 1][0] + 2 * raw[i][0] + raw[i + 1][0]) / 4, (raw[i - 1][1] + 2 * raw[i][1] + raw[i + 1][1]) / 4) for i in range(1, len(raw) - 1)] + [raw[-1]]
+    # which leg a point belongs to: the nearest leg's own line
     def leg_of(pt, hint):
         best = None
         for k in range(max(0, hint - 1), min(len(lines_), hint + 3)):
@@ -729,8 +880,39 @@ def route(W, roads, service, junctions, use, jat, spec):
                 t = max(0.0, min(1.0, ((pt[0] - ax) * (bx - ax) + (pt[1] - az) * (bz - az)) / L2)); d = math.hypot(ax + (bx - ax) * t - pt[0], az + (bz - az) * t - pt[1])
                 if best is None or d < best[0] - 1e-6: best = (d, k)
         return best[1]
-    legi, hint = [], 0
-    for pt in p: hint = max(hint, leg_of(pt, hint)); legi.append(hint)
+    def legs_of(pts):
+        out, hint = [], 0
+        for pt in pts: hint = max(hint, leg_of(pt, hint)); out.append(hint)
+        return out
+    # The lane's line is not yet a path a car can keep: it is the map's line, with the map's small kinks, and its arcs
+    # begin at once. So a car is driven along it here (drive_line), and what its back axle traces is the route.
+    rl = lens(raw); rleg = legs_of(raw); n = len(raw)
+    rh = [math.atan2(raw[min(i + 4, n - 1)][1] - raw[max(i - 4, 0)][1], raw[min(i + 4, n - 1)][0] - raw[max(i - 4, 0)][0]) for i in range(n)]
+    vref = []
+    for i in range(n):
+        a, b = max(0, i - 4), min(n - 1, i + 4); k = abs((rh[b] - rh[a] + math.pi) % (2 * math.pi) - math.pi) / max(1e-6, rl[b] - rl[a])
+        vref.append(min(meta[rleg[i]]['v'], math.sqrt(1.9 / max(1e-4, k))))
+    for i in range(n - 2, -1, -1): vref[i] = min(vref[i], math.sqrt(vref[i + 1] ** 2 + 2 * 1.7 * (rl[i + 1] - rl[i])))
+    for i in range(1, n): vref[i] = min(vref[i], math.sqrt(vref[i - 1] ** 2 + 2 * 1.45 * (rl[i] - rl[i - 1])) if i > 1 else vref[i])
+    sim, on, stray = drive_line(raw, rl, vref)
+    if spec.get('dbg') is not None: spec['dbg'].update(seq=seq, lines=lines_, raw=raw, turns=turns, sim=sim)   # for tools that look into a route
+    p = [(x, z) for x, z, th, k in sim]; th = [q[2] for q in sim]; kap = [q[3] for q in sim]
+    cl = lens(p); PM = 2                                                           # points to a metre
+    # Where the street is straight: for 20 m either way the lane's line turns by no more than 0.6° all told (so not where
+    # it changes lane either). There a car's wheel is held still — places/south-bay/checks.mjs holds the drive to that.
+    tv = [0.0]
+    for i in range(1, n): tv.append(tv[-1] + abs((rh[i] - rh[i - 1] + math.pi) % (2 * math.pi) - math.pi))
+    calm = [i >= 40 and i + 40 < n and tv[i + 40] - tv[i - 40] < math.radians(0.6) for i in range(n)]
+    straight, i = [], 0
+    while i < n:
+        if not calm[i]: i += 1; continue
+        j2 = i
+        while j2 + 1 < n and calm[j2 + 1]: j2 += 1
+        if rl[j2] - rl[i] >= 40:                                                    # … in the path's own metres
+            a = next(k for k in range(len(on)) if on[k] >= rl[i]); b = next(k for k in range(len(on) - 1, -1, -1) if on[k] <= rl[j2])
+            straight.append([round(cl[a], 1), round(cl[b], 1)])
+        i = j2 + 1
+    legi = legs_of(p)
     lim, band = [], []
     for i, k in enumerate(legi):
         m = meta[k]
@@ -762,35 +944,41 @@ def route(W, roads, service, junctions, use, jat, spec):
         # the first point of the line that comes within reach of the junction tells the way we arrive
         idx = next((i for i, pt in enumerate(p) if math.hypot(pt[0] - jx, pt[1] - jz) < 45), None)
         if idx is None: continue
-        best = min(range(idx, min(len(p), idx + 120)), key=lambda i: math.hypot(p[i][0] - jx, p[i][1] - jz))
-        i0 = max(0, best - 30); u = unit(p[max(i0, 1)][0] - p[max(i0, 1) - 1][0], p[max(i0, 1)][1] - p[max(i0, 1) - 1][1])
+        best = min(range(idx, min(len(p), idx + 120 * PM)), key=lambda i: math.hypot(p[i][0] - jx, p[i][1] - jz))
+        i0 = max(1, best - 30 * PM); u = (math.cos(th[i0]), math.sin(th[i0]))
         leg = max(j['legs'], key=lambda l: -(l['d'][0] * u[0] + l['d'][1] * u[1]))  # the leg we arrive along points back at us
         if 'other' not in leg: continue
         stop = any(ri == leg['ri'] and sg == leg['sgn'] for ri, sg, _ in j['stops'])
         if not j['signal'] and not stop: continue
         qx, qz = jx - u[0] * (leg['other'] + 5.0), jz - u[1] * (leg['other'] + 5.0)
-        k = next((i for i in range(max(0, idx - 40), best + 1) if (p[i][0] - qx) * u[0] + (p[i][1] - qz) * u[1] > 0), None)
+        k = next((i for i in range(max(0, idx - 40 * PM), best + 1) if (p[i][0] - qx) * u[0] + (p[i][1] - qz) * u[1] > 0), None)
         if k is None: continue
         if ctl and ctl[-1][1] == 0 and j['signal'] and ctl[-1][2] == j['ctl'] and cl[k] - ctl[-1][0] < 60: continue    # the same crossing's other half
-        ctl.append([round(cl[k] - 2.9, 1), 0 if j['signal'] else 1, j['ctl'], 0 if abs(u[1]) >= abs(u[0]) else 1])
+        # the path is the back axle's and the bumper is 3.75 m ahead of it: it stops half a metre short of the line
+        over = lambda i: (p[i][0] - qx) * u[0] + (p[i][1] - qz) * u[1]                # how far past the line a point is
+        cross = cl[k] if k == 0 else cl[k - 1] + (cl[k] - cl[k - 1]) * -over(k - 1) / max(1e-9, over(k) - over(k - 1))
+        at_stop = cross - 4.25; bx, bz = at(p, cl, at_stop)[0]; bump = (bx + u[0] * 3.75 - qx) * u[0] + (bz + u[1] * 3.75 - qz) * u[1]
+        assert -0.7 < bump < -0.3, ('the car would not stop at the line', spec['id'], round(at_stop, 1), round(bump, 2))
+        ctl.append([round(at_stop, 1), 0 if j['signal'] else 1, j['ctl'], 0 if abs(u[1]) >= abs(u[0]) else 1])
     # the turns, for the indicators: where the heading swings more than 35°
-    hd = [math.atan2(p[min(i + 1, len(p) - 1)][1] - p[max(i - 1, 0)][1], p[min(i + 1, len(p) - 1)][0] - p[max(i - 1, 0)][0]) for i in range(len(p))]
+    hd, W12 = th, 12 * PM                                                          # 12 m of line
     tl, i = [], 0
-    while i < len(p) - 12:
-        dh = (hd[min(i + 12, len(p) - 1)] - hd[i] + math.pi) % (2 * math.pi) - math.pi
+    while i < len(p) - W12:
+        dh = hd[min(i + W12, len(p) - 1)] - hd[i]
         if abs(dh) > math.radians(22):
             j2 = i
-            while j2 < len(p) - 12 and abs((hd[j2 + 12] - hd[j2] + math.pi) % (2 * math.pi) - math.pi) > math.radians(8): j2 += 1
-            tot = (hd[min(j2 + 12, len(p) - 1)] - hd[i] + math.pi) % (2 * math.pi) - math.pi
-            if abs(tot) > math.radians(35): tl.append([round(max(0, cl[i] - 38), 1), round(cl[min(j2 + 12, len(p) - 1)], 1), 1 if tot > 0 else -1])
-            i = j2 + 12
+            while j2 < len(p) - W12 and abs(hd[j2 + W12] - hd[j2]) > math.radians(8): j2 += 1
+            tot = hd[min(j2 + W12, len(p) - 1)] - hd[i]
+            if abs(tot) > math.radians(35): tl.append([round(max(0, cl[i] - 38), 1), round(cl[min(j2 + W12, len(p) - 1)], 1), 1 if tot > 0 else -1])
+            i = j2 + W12
         else: i += 1
     names = []
     for i, k in enumerate(legi):
         nm = meta[k].get('name', '')
         if not names or names[-1][1] != nm: names.append([round(cl[i], 1), nm])
-    return dict(id=spec['id'], name=spec['name'], frm=spec['from'], to=spec['to'], length=round(cl[-1], 1),
-                pts=[int(round(v * 10)) for pt in p for v in pt], lim=lim, band=band, ctl=sorted(ctl), turns=tl, names=names)
+    return dict(id=spec['id'], name=spec['name'], frm=spec['from'], to=spec['to'], length=round(cl[-1], 1), stray=round(stray, 2),
+                pts=[int(round(v * 1000)) for pt in p for v in pt], hd=[int(round(a * 1e5)) for a in th], k=[int(round(c * 1e6)) for c in kap],
+                lim=lim, band=band, ctl=sorted(ctl), turns=tl, names=names, straight=straight)
 
 # ── the routes of this world ───────────────────────────────────────────────────────────────────────────────────────
 # Extended Stay's lot is the hotel place's own (plan.js LOT, and site.js as built: looked at from above on 26/11/2026).
@@ -830,6 +1018,7 @@ def main():
     with open(os.path.join(out, 'index.json'), 'w') as f:
         json.dump(dict(v=1, tile=T, origin=[LAT0, LON0], bounds=bounds, tiles=index, signals=len(sig), cuts=trims, counts={k: round(v) for k, v in counts.items()}), f, separators=(',', ':'))
     print(len(index), 'tiles,', total // 1024, 'kB;', dict(counts))
-    for r in routes: print(' route', r['id'], r['length'], 'm ·', len(r['ctl']), 'controls', r['ctl'], '· turns', r['turns'], '· streets', [n for _, n in r['names']])
+    print(' roads eased into curves: %d (of their points %d moved, %.2f m at most; %d added)' % W.eased)
+    for r in routes: print(' route', r['id'], r['length'], 'm · strays', r['stray'], 'm from the lane\'s line at most ·', round(sum(b - a for a, b in r['straight'])), 'm straight ·', len(r['ctl']), 'controls', r['ctl'], '· turns', r['turns'])
 
 if __name__ == '__main__': main()
