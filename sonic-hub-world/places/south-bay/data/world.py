@@ -13,13 +13,15 @@ usage: python3 world.py <out dir> <extract.osm> [more.osm …]
 Writes  <out>/tiles/<i>_<j>.json   one per 500 m square that holds anything (see TILE below)
         <out>/index.json           which tiles exist, and the counts
         <out>/routes.json          the routes (see route() below)
+        ../../esa-el-segundo-2015/streets.js   the streets of the hotel place's ground, for that place's own page: the
+                                   same tiles cut to it, with nothing but streets in them, and the lanes its cars keep
 Data (c) OpenStreetMap contributors, ODbL.
 
 Metres: x east, z south, y up; the origin is 33.92290 N, 118.39500 W — the frame of places/esa-el-segundo-2015, which
 this world holds as a site. What that place draws itself — the buildings, lots and service ways whose points' mean
 lies in its box (the rule of its own data/osm2js.py) — is left out of the tiles; the world loads the place there
 instead. The STREETS of the box are the world's all the same: one set of rules lays out every street (streets.py),
-and inside a world the place draws none of its own (its town.js).
+and the place draws none of its own (its town.js) — not on its own page either, which gets these streets from here.
 
 Everything about the streets that needs the whole network is worked out here and in streets.py — lanes and their
 lines, where roads meet, crosswalks, limit lines, arrows, kerbs, gutters, walks, round corners, driveways, medians,
