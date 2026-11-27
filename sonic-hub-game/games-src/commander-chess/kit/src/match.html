@@ -1,0 +1,475 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Commander Chess: test table</title>
+<style>
+  :root { --ink: #1b232d; --dim: #5b6877; --line: #d5dae1; --bg: #eef0f3; --card: #fff; --red: #b3382c; --blue: #2a5ca6; --go: #0f6b5c; --warn: #a64b00;
+    --land: #f3efe4; --sea: #bcd8ec; --shore: #d7e7dc; --ford: #e6cb8c; --river: #9fc8e6; --gold: #e0a800; }
+  * { box-sizing: border-box; }
+  body { margin: 0; font: 14px/1.45 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; color: var(--ink); background: var(--bg); }
+  header { max-width: 1180px; margin: 0 auto; padding: 14px 16px 0; }
+  h1 { font-size: 19px; margin: 0; font-weight: 650; }
+  header p { margin: 2px 0 0; color: var(--dim); }
+  main { max-width: 1180px; margin: 0 auto; padding: 12px 16px 28px; display: grid; grid-template-columns: minmax(0, 1fr) 400px; gap: 16px; align-items: start; }
+  @media (max-width: 900px) { main { grid-template-columns: minmax(0, 1fr); } }
+  #left { position: sticky; top: 8px; }
+  @media (max-width: 900px) { #left { position: static; } }
+  #board { display: block; width: 100%; max-height: calc(100vh - 130px); background: var(--card); border: 1px solid var(--line); border-radius: 8px; user-select: none; }
+  .legend { color: var(--dim); font-size: 12.5px; margin: 8px 2px 0; }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 8px; padding: 12px 14px; margin-bottom: 12px; }
+  h2 { font-size: 13.5px; font-weight: 650; margin: 0 0 8px; }
+  .row { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: 6px 0; }
+  .row > label:first-child { width: 78px; flex: none; color: var(--dim); }
+  .row.buttons > label:first-child, .row.free > label:first-child { width: auto; }
+  .side.r { color: var(--red); font-weight: 650; } .side.b { color: var(--blue); font-weight: 650; }
+  select, input[type=number], button, textarea { font: inherit; color: inherit; }
+  select, input[type=number] { padding: 4px 6px; border: 1px solid #b9c0ca; border-radius: 6px; background: #fff; }
+  select.who { flex: 1; min-width: 0; } input[type=number] { width: 86px; }
+  button { padding: 5px 11px; border: 1px solid #b9c0ca; border-radius: 6px; background: #f7f8fa; cursor: pointer; }
+  button:hover:not(:disabled) { background: #eceff3; } button:disabled { opacity: .5; cursor: default; }
+  button.primary { background: var(--go); border-color: var(--go); color: #fff; } button.primary:hover:not(:disabled) { background: #0c5a4d; }
+  button.on { border-color: var(--go); box-shadow: inset 0 0 0 1px var(--go); background: #e8f3f0; }
+  .check { display: inline-flex; align-items: center; gap: 5px; }
+  #head { font-weight: 650; white-space: pre-wrap; overflow-wrap: anywhere; }
+  #head.over { color: var(--go); } #head.fault { color: var(--warn); }
+  #facts { color: var(--dim); margin-top: 4px; font-size: 13px; }
+  #note { color: var(--warn); margin-top: 4px; white-space: pre-wrap; } #note:empty { display: none; }
+  #chooser p { margin: 0 0 6px; } #chooser .row { margin: 4px 0 8px; }
+  .hint { color: var(--dim); font-size: 12.5px; margin: 4px 0 0; }
+  #log { max-height: 190px; overflow: auto; font: 12.5px/1.5 ui-monospace, Menlo, Consolas, monospace; }
+  #log .n { color: var(--dim); display: inline-block; width: 34px; text-align: right; margin-right: 6px; }
+  #log .r { color: var(--red); } #log .b { color: var(--blue); } #log .ms { color: var(--dim); float: right; }
+  #ais { margin-top: 8px; } .ai { padding: 6px 0; border-top: 1px solid var(--line); } .ai b { font-weight: 650; } .ai small { color: var(--dim); display: block; }
+  #ai-msg { color: var(--warn); white-space: pre-wrap; overflow-wrap: anywhere; } #ai-msg:empty { display: none; }
+  table { border-collapse: collapse; width: 100%; margin-top: 8px; font-size: 13px; } th, td { text-align: right; padding: 3px 6px; border-top: 1px solid var(--line); } th:first-child, td:first-child { text-align: left; } th { color: var(--dim); font-weight: 500; }
+  .flt { margin-top: 6px; color: var(--warn); font-size: 12.5px; white-space: pre-wrap; overflow-wrap: anywhere; }
+  textarea { width: 100%; resize: vertical; font: 12px/1.4 ui-monospace, Menlo, Consolas, monospace; border: 1px solid #b9c0ca; border-radius: 6px; padding: 6px; }
+  /* the board */
+  .land { fill: var(--land); } .sea { fill: var(--sea); } .shore { fill: var(--shore); } .ford { fill: var(--land); }
+  .river { fill: var(--river); } .fordmark { fill: var(--ford); stroke: #b89a55; stroke-width: 1; }
+  .grid { stroke: #8b93a0; stroke-width: 1; opacity: .55; } .coord { font-size: 12px; fill: var(--dim); text-anchor: middle; }
+  .pc { stroke: #fff; stroke-width: 2; } .pc.r { fill: var(--red); } .pc.b { fill: var(--blue); } .pc.hero { stroke: var(--gold); stroke-width: 3.5; }
+  .pl { fill: #fff; font-weight: 700; font-size: 17px; text-anchor: middle; } .pl.s { font-size: 12px; }
+  svg text { pointer-events: none; }
+  .lastfrom { fill: none; stroke: #6b7480; stroke-width: 2; stroke-dasharray: 4 3; } .lastto { fill: #f4d35e; opacity: .55; }
+  .sel { fill: none; stroke: var(--go); stroke-width: 3.5; } .check { fill: none; stroke: #e02020; stroke-width: 3; stroke-dasharray: 6 3; }
+  .tg.move { fill: var(--go); opacity: .75; } .tg.take { fill: none; stroke: #d21f1f; stroke-width: 3.5; } .tg.join { fill: none; stroke: var(--go); stroke-width: 3.5; } .tg.lost { fill: none; stroke: #7a8390; stroke-width: 3; stroke-dasharray: 5 4; }
+  .tgs { font-size: 13px; font-weight: 700; text-anchor: middle; paint-order: stroke; stroke: #fff; stroke-width: 3px; } .tgs.take { fill: #d21f1f; } .tgs.join { fill: var(--go); } .tgs.lost { fill: #5b6877; }
+  .hit { fill: transparent; cursor: pointer; }
+</style>
+</head>
+<body>
+<header>
+  <h1>Commander Chess: test table</h1>
+  <p>AI kit {{KIT}}, rules of {{RULES}}. Load a file of players, then play against one, watch two of them play, or run a series.</p>
+</header>
+<main>
+  <section id="left">
+    <svg id="board" viewBox="0 0 576 620" role="img" aria-label="The board"></svg>
+    <p class="legend">C Commander · I Infantry · T Tank · M Militia · E Engineer · A Artillery · G Anti-Air · S Missile · F Air Force · N Navy · H Headquarters. Gold ring: a hero. Small discs: the pieces riding. Files a and b are sea, the green points are shore, the two fords are on files f and h.</p>
+  </section>
+  <aside>
+    <div class="card"><div id="head"></div><div id="facts"></div><div id="note"></div></div>
+    <div class="card" id="chooser" hidden></div>
+    <div class="card">
+      <h2>Players</h2>
+      <div class="row"><label class="side r" for="p0">Red</label><select id="p0" class="who"></select><select id="l0" aria-label="Red's level"></select></div>
+      <div class="row"><label class="side b" for="p1">Blue</label><select id="p1" class="who"></select><select id="l1" aria-label="Blue's level"></select></div>
+      <div class="row"><label for="game">Game</label><select id="game"><option value="battles">Battles</option><option value="total">Total war</option></select>
+        <select id="lineup" aria-label="Line-up"><option value="standard">Standard line-up</option><option value="light">No Engineers</option></select></div>
+      <div class="row"><label for="ms">Time a turn</label><input id="ms" type="number" min="20" max="60000" step="50" value="1000"> ms</div>
+      <div class="row buttons"><button id="new" class="primary">New game</button><button id="step">Step</button><label class="check"><input type="checkbox" id="auto" checked> The computer moves by itself</label></div>
+      <div class="row buttons"><button id="back">Back one turn</button><button id="flip">Turn the board</button>
+        <label class="check">Pause <select id="speed"><option value="0">none</option><option value="250" selected>short</option><option value="800">long</option></select></label></div>
+    </div>
+    <div class="card"><h2>Moves</h2><div id="log"></div></div>
+    <div class="card">
+      <h2>Player files</h2>
+      <input type="file" id="file" accept=".js,text/javascript" multiple aria-label="Load a file of players">
+      <p class="hint">A file may hold one player or several. Loading a file again takes the place of the one loaded before.</p>
+      <div id="ais"></div><div id="ai-msg"></div>
+    </div>
+    <div class="card">
+      <h2>Series</h2>
+      <div class="row"><label for="series-n">Games</label><input id="series-n" type="number" min="1" max="500" value="10"><button id="series-run">Run</button><button id="series-stop" disabled>Stop</button></div>
+      <p class="hint">Between the two players chosen above, changing colours every game, with the game, line-up and time set there.</p>
+      <div id="series-out"></div>
+    </div>
+    <div class="card">
+      <h2>Record of this game</h2>
+      <textarea id="record" rows="3" spellcheck="false" aria-label="Record of this game"></textarea>
+      <div class="row buttons"><button id="rec-copy">Copy</button><button id="rec-load">Load the record in the box</button></div>
+    </div>
+  </aside>
+</main>
+
+<script type="text/plain" id="engine"><!--ENGINE--></script>
+<script type="text/plain" id="table"><!--TABLE--></script>
+<script type="text/plain" id="sample"><!--SAMPLE--></script>
+<script>
+'use strict';
+/* The rules and the table are the same texts that arena.js runs. Every computer player runs in a worker of its
+   own, made from those texts and the player's file, so a player that hangs can be stopped without losing the page. */
+const ENGINE = document.getElementById('engine').textContent, TABLE = document.getElementById('table').textContent, SAMPLE = document.getElementById('sample').textContent;
+const CC = new Function(ENGINE + '\nreturn CC;')();
+const T = new Function('CC', TABLE + '\nreturn makeTable(CC);')(CC);
+const GLUE = `
+const T = makeTable(CC); let ai = null;
+self.onmessage = e => {
+  const q = e.data;
+  if (q.type === 'list') {
+    try { self.postMessage({ id: q.id, metas: T.loadAIs(q.source, q.label).map(T.metaOf) }); }
+    catch (err) { self.postMessage({ id: q.id, error: String((err && err.message) || err) }); }
+    return;
+  }
+  if (q.type === 'load') {
+    try { ai = T.loadAI(q.source, q.label, q.pick); self.postMessage({ id: q.id, meta: T.metaOf(ai) }); }
+    catch (err) { self.postMessage({ id: q.id, error: String((err && err.message) || err) }); }
+    return;
+  }
+  let S = null; try { S = CC.replay(q.setup, q.moves); } catch (err) {}
+  if (!S) { self.postMessage({ id: q.id, moves: null, ms: 0, error: 'the table sent a game that cannot be played again' }); return; }
+  const a = T.ask(ai, S, q);
+  self.postMessage({ id: q.id, moves: a.moves && a.moves.map(x => (typeof x === 'number' ? x : String(x))), ms: a.ms, error: a.error, got: a.got });
+};`;
+const WORKER_URL = URL.createObjectURL(new Blob([ENGINE, '\n', TABLE, '\n', GLUE], { type: 'text/javascript' }));
+
+const $ = id => document.getElementById(id);
+const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+const ui = { ais: [], M: null, seats: [null, null], token: 0, driving: 0, step: false, legal: [], sel: -1, combos: [], combo: 0, pick: null, flip: false, thinking: -1, series: null, tally: null, note: '' };
+
+/* ── workers ── */
+let rpcSeq = 0;
+/** sends msg to a worker and waits for the answer with the same id; { timedOut: true } after ms */
+function rpc(worker, msg, ms) {
+  return new Promise(resolve => {
+    const id = ++rpcSeq; let done = false;
+    const finish = v => { if (done) return; done = true; clearTimeout(timer); worker.removeEventListener('message', onMsg); worker.removeEventListener('error', onErr); resolve(v); };
+    const onMsg = e => { if (e.data && e.data.id === id) finish(e.data); };
+    const onErr = e => { if (e.preventDefault) e.preventDefault(); finish({ error: 'the worker stopped: ' + (e.message || 'error') }); };
+    const timer = setTimeout(() => finish({ timedOut: true }), ms);
+    worker.addEventListener('message', onMsg); worker.addEventListener('error', onErr);
+    worker.postMessage(Object.assign({ id }, msg));
+  });
+}
+/** a worker with this player's file run in it, and that player picked out of it */
+async function spawn(ai) {
+  const worker = new Worker(WORKER_URL), r = await rpc(worker, { type: 'load', source: ai.source, label: ai.label, pick: ai.meta.id }, 5000);
+  if (r.timedOut || r.error) { worker.terminate(); throw new Error(r.timedOut ? ai.label + ' was not ready after 5 seconds' : ai.label + ': ' + r.error); }
+  return { worker, meta: r.meta };
+}
+async function openSeats(c) {
+  const seats = [];
+  try { for (const x of c) seats.push(x.kind === 'human' ? { kind: 'human' } : Object.assign({ kind: 'ai', ai: x.ai, level: x.level }, await spawn(x.ai))); }
+  catch (e) { killSeats(seats); throw e; }
+  return seats;
+}
+const killSeats = seats => { for (const s of seats || []) if (s && s.worker) s.worker.terminate(); };
+async function askSeat(seat, M) {
+  const q = T.request(M), limit = T.LIMITS.dead(M.timeMs) + 400;
+  const r = await rpc(seat.worker, { type: 'turn', setup: M.setup, moves: M.moves.slice(), level: q.level, timeMs: q.timeMs, budget: q.budget, seen: q.seen, seed: q.seed }, limit);
+  if (r.timedOut) { seat.worker.terminate(); return { timedOut: true, ms: limit, moves: null }; }
+  if (r.error && !('moves' in r)) return { error: r.error, ms: 0, moves: null };
+  return r;
+}
+
+/* ── the players to choose from ── */
+/** takes in a file: every player it registers becomes one to choose. A file loaded again takes the place of itself. */
+async function addFile(source, label) {
+  const worker = new Worker(WORKER_URL), r = await rpc(worker, { type: 'list', source, label }, 5000); worker.terminate();
+  if (r.timedOut || r.error) throw new Error(label + ': ' + (r.timedOut ? 'not ready after 5 seconds' : r.error));
+  const at = ui.ais.findIndex(a => a.label === label), fresh = r.metas.map(meta => ({ key: label + '#' + meta.id, source, label, meta }));
+  ui.ais = ui.ais.filter(a => a.label !== label);
+  ui.ais.splice(at < 0 ? ui.ais.length : Math.min(at, ui.ais.length), 0, ...fresh);
+  return fresh;
+}
+const levelsText = n => (n === 1 ? 'one level' : n + ' levels');
+const seatText = x => x.ai.meta.name + (x.ai.meta.levels > 1 ? ', level ' + x.level + ' of ' + x.ai.meta.levels : '');
+function fillSelects(prefer) {
+  for (const side of [0, 1]) {
+    const sel = $('p' + side), was = prefer && side === 1 ? 'ai:' + prefer : sel.value;
+    sel.innerHTML = '<option value="human">Human</option>' + ui.ais.map(a => '<option value="ai:' + esc(a.key) + '">' + esc(a.meta.name) + ' (' + esc(a.label) + ')</option>').join('');
+    sel.value = [...sel.options].some(o => o.value === was) ? was : side === 1 && ui.ais.length ? 'ai:' + ui.ais[0].key : 'human';
+    fillLevels(side);
+  }
+  $('ais').innerHTML = ui.ais.map(a => '<div class="ai"><b>' + esc(a.meta.name) + '</b> · ' + esc(a.meta.id) + ' · by ' + esc(a.meta.author) + ' · ' + levelsText(a.meta.levels) + '<small>' + esc(a.meta.about) + '</small></div>').join('');
+}
+/** the levels of the player chosen for this side: its top one, unless another had been set for that same player */
+function fillLevels(side) {
+  const sel = $('l' + side), who = $('p' + side).value, ai = ui.ais.find(a => 'ai:' + a.key === who), n = ai ? ai.meta.levels : 1, was = sel.dataset.of === who ? +sel.value : 0;
+  sel.innerHTML = Array.from({ length: n }, (x, i) => '<option value="' + (i + 1) + '">' + (n === 1 ? 'one level' : 'level ' + (i + 1) + ' of ' + n) + '</option>').join('');
+  sel.value = String(was >= 1 && was <= n ? was : n); sel.dataset.of = who; sel.disabled = n === 1; sel.hidden = !ai;
+}
+function choice(side) {
+  const v = $('p' + side).value;
+  if (v === 'human') return { kind: 'human' };
+  return { kind: 'ai', ai: ui.ais.find(a => 'ai:' + a.key === v), level: +$('l' + side).value };
+}
+const setupNow = () => ({ game: $('game').value, lineup: $('lineup').value });
+const timeNow = () => clamp(Math.round(+$('ms').value) || 1000, 20, 60000);
+
+/* ── a game at the table ── */
+async function newGame(rec) {
+  if (ui.series) { ui.series.stop = true; ui.series = null; }
+  const my = ++ui.token; killSeats(ui.seats); ui.seats = [null, null];
+  const c = [choice(0), choice(1)], names = c.map(x => (x.kind === 'human' ? 'Human' : x.ai.meta.name)), levels = c.map(x => (x.kind === 'human' ? 0 : x.level));
+  ui.note = ''; ui.thinking = -1; clearSel();
+  try { ui.M = rec ? T.fromRecord(Object.assign({}, rec, { names, levels, timeMs: timeNow() })) : T.newMatch({ setup: setupNow(), timeMs: timeNow(), seed: (Math.random() * 2147483647) | 0, levels, names }); }
+  catch (e) { ui.note = 'That record cannot be played: ' + (e.message || e); render(); return; }
+  if (rec) { $('game').value = ui.M.setup.game; $('lineup').value = ui.M.setup.lineup; }
+  render();
+  let seats;
+  try { seats = await openSeats(c); } catch (e) { if (my === ui.token) { ui.note = String(e.message || e); render(); } return; }
+  if (my !== ui.token) { killSeats(seats); return; }
+  ui.seats = seats;
+  drive();
+}
+const humanToMove = () => !!(ui.M && !ui.M.result && !ui.series && ui.seats[ui.M.S.turn] && ui.seats[ui.M.S.turn].kind === 'human');
+/** goes on with the game for as long as it is a computer player's turn */
+async function drive() {
+  const M = ui.M, my = ui.token;
+  if (!M || ui.series || ui.driving === my) return;
+  ui.driving = my;
+  try {
+    while (!M.result && my === ui.token) {
+      const side = M.S.turn, seat = ui.seats[side];
+      if (!seat) return;
+      if (seat.kind === 'human') { ui.legal = CC.legalMoves(M.S); if (M.S.dOrg >= 0) select(M.S.dOrg); else if (ui.sel >= 0) select(ui.sel); render(); return; }
+      if (!$('auto').checked && !ui.step) { render(); return; }
+      ui.step = false; ui.thinking = side; clearSel(); render();
+      const ans = await askSeat(seat, M);
+      if (my !== ui.token) return;
+      ui.thinking = -1;
+      T.takeAnswer(M, ans);
+      render();
+      const pause = +$('speed').value;
+      if (!M.result && pause) { await sleep(pause); if (my !== ui.token) return; }
+    }
+  } finally { if (ui.driving === my) ui.driving = 0; }
+  render();
+}
+function humanPlay(m) {
+  if (!humanToMove() || !ui.legal.includes(m)) return;
+  T.apply(ui.M, m); clearSel(); render(); drive();
+}
+/** back to the start of this turn if it is half done, else to the start of the turn before; where a person plays
+ *  a computer, back to that person's move */
+function back() {
+  const M = ui.M; if (!M || ui.series || !M.moves.length) return;
+  const rec = T.record(M), marks = M.marks, human = ui.seats.some(s => s && s.kind === 'human');
+  let i = marks.length - 1;
+  if (M.moves.length === marks[i]) i--;
+  let M2 = T.fromRecord(rec, marks[Math.max(i, 0)]);
+  while (i > 0 && human && ui.seats[M2.S.turn] && ui.seats[M2.S.turn].kind === 'ai') { i--; M2 = T.fromRecord(rec, marks[i]); }
+  ui.token++; ui.M = M2; ui.thinking = -1; ui.note = ''; clearSel();
+  if (!human) $('auto').checked = false;
+  render(); drive();
+}
+
+/* ── choosing a move by hand ── */
+function clearSel() { ui.sel = -1; ui.combos = []; ui.combo = 0; ui.pick = null; }
+const bits = g => (g & 1) + ((g >> 1) & 1) + ((g >> 2) & 1);
+function select(s) {
+  const S = ui.M.S, from = ui.legal.filter(m => CC.mMode(m) !== CC.COMMIT && CC.mFrom(m) === s);
+  if (!from.length) { clearSel(); return; }
+  const by = new Map();
+  for (const m of from) { const k = CC.mActor(m) + ':' + CC.mGroup(m); if (!by.has(k)) by.set(k, { actor: CC.mActor(m), group: CC.mGroup(m), moves: [] }); by.get(k).moves.push(m); }
+  const mem = CC.members(S, s), full = (1 << mem.length) - 1;
+  ui.sel = s; ui.pick = null; ui.combo = 0;
+  ui.combos = [...by.values()].sort((a, b) => (b.group === full) - (a.group === full) || bits(b.group) - bits(a.group) || mem.indexOf(a.actor) - mem.indexOf(b.actor));
+}
+function comboText(c) {
+  const S = ui.M.S, mem = CC.members(S, ui.sel), name = p => CC.KIND_NAME[S.kind[p]], along = mem.filter((p, j) => p !== c.actor && ((c.group >> j) & 1));
+  return name(c.actor) + (along.length ? ' with ' + along.map(name).join(' and ') : mem.length > 1 ? ' alone' : '');
+}
+/** where the chosen pieces may go: point → the moves that go there */
+function targets() {
+  const by = new Map(), c = ui.combos[ui.combo];
+  if (c) for (const m of c.moves) { const to = CC.mTo(m); if (!by.has(to)) by.set(to, []); by.get(to).push(m); }
+  return by;
+}
+const HOW = ['Move there', 'Take it and move in', 'Take it from here, and stay', 'Take it: the plane is lost with it', 'Fly at it: the plane is shot down on the way', 'Join the pieces there'];
+
+/* ── drawing ── */
+const CELL = 50, X0 = 44, Y0 = 28;
+const px = s => { const f = CC.fileOf(s), r = CC.rankOf(s); return ui.flip ? [X0 + (10 - f) * CELL, Y0 + (r - 1) * CELL] : [X0 + f * CELL, Y0 + (12 - r) * CELL]; };
+let groundOf = null, ground = '';
+function groundSvg() {
+  if (groundOf === ui.flip) return ground;
+  let h = '';
+  for (let s = 0; s < CC.NSQ; s++) { const [x, y] = px(s), t = CC.TERRAIN[s]; h += '<rect class="' + (t === CC.WATER ? 'sea' : t === CC.MIXED ? 'shore' : t === CC.BRIDGE ? 'ford' : 'land') + '" x="' + (x - 25) + '" y="' + (y - 25) + '" width="50.5" height="50.5"/>'; }
+  const ym = (px(CC.sqOf(0, 6))[1] + px(CC.sqOf(0, 7))[1]) / 2, xa = px(CC.sqOf(2, 6))[0], xb = px(CC.sqOf(10, 6))[0];
+  h += '<rect class="river" x="' + (Math.min(xa, xb) - 25) + '" y="' + (ym - 6) + '" width="' + (Math.abs(xb - xa) + 50) + '" height="12"/>';
+  for (const f of [5, 7]) h += '<rect class="fordmark" x="' + (px(CC.sqOf(f, 6))[0] - 13) + '" y="' + (ym - 9) + '" width="26" height="18" rx="3"/>';
+  for (let r = 1; r <= 12; r++) { const [x1, y1] = px(CC.sqOf(0, r)), [x2] = px(CC.sqOf(10, r)); h += '<line class="grid" x1="' + x1 + '" y1="' + y1 + '" x2="' + x2 + '" y2="' + y1 + '"/><text class="coord" x="9" y="' + (y1 + 4) + '">' + r + '</text>'; }
+  for (let f = 0; f < 11; f++) { const [x1, y1] = px(CC.sqOf(f, 1)), [, y2] = px(CC.sqOf(f, 12)); h += '<line class="grid" x1="' + x1 + '" y1="' + y1 + '" x2="' + x1 + '" y2="' + y2 + '"/><text class="coord" x="' + x1 + '" y="616">' + CC.FILES[f] + '</text>'; }
+  groundOf = ui.flip; ground = h; return h;
+}
+let hits = '', hitsOf = null;
+function hitSvg() {
+  if (hitsOf === ui.flip) return hits;
+  let h = ''; for (let s = 0; s < CC.NSQ; s++) { const [x, y] = px(s); h += '<circle class="hit" data-s="' + s + '" cx="' + x + '" cy="' + y + '" r="24"/>'; }
+  hitsOf = ui.flip; hits = h; return h;
+}
+function pieceSvg(S, s) {
+  const mem = CC.members(S, s), top = mem[0], [x, y] = px(s), cls = p => (S.own[p] ? 'b' : 'r') + (S.hero[p] ? ' hero' : '');
+  let h = '<g transform="translate(' + x + ',' + y + ')"><circle class="pc ' + cls(top) + '" r="19"/><text class="pl" y="6">' + CC.KIND_CODE[S.kind[top]] + '</text>';
+  mem.slice(1).forEach((p, i) => { const cx = i ? -16 : 16; h += '<circle class="pc ' + cls(p) + '" cx="' + cx + '" cy="-16" r="10.5"/><text class="pl s" x="' + cx + '" y="-11.5">' + CC.KIND_CODE[S.kind[p]] + '</text>'; });
+  return h + '</g>';
+}
+function targetSvg(to, ms) {
+  const modes = ms.map(m => CC.mMode(m)), [x, y] = px(to);
+  if (modes.length === 1 && modes[0] === CC.MOVE) return '<circle class="tg move" cx="' + x + '" cy="' + y + '" r="7"/>';
+  const cls = modes.includes(CC.COMBINE) ? 'join' : modes.every(m => m === CC.INTERCEPT) ? 'lost' : 'take';
+  return '<circle class="tg ' + cls + '" cx="' + x + '" cy="' + y + '" r="23"/><text class="tgs ' + cls + '" x="' + (x + 19) + '" y="' + (y + 23) + '">' + (modes.length > 1 ? '…' : ['', '×', '∗', '×!', '?', '+'][modes[0]]) + '</text>';
+}
+function drawBoard() {
+  const M = ui.M; let h = groundSvg();
+  if (M) {
+    const S = M.S;
+    if (M.last) { const [x1, y1] = px(M.last.from), [x2, y2] = px(M.last.to); h += '<rect class="lastfrom" x="' + (x1 - 22) + '" y="' + (y1 - 22) + '" width="44" height="44" rx="7"/><circle class="lastto" cx="' + x2 + '" cy="' + y2 + '" r="24"/>'; }
+    for (let s = 0; s < CC.NSQ; s++) if (S.top[s] >= 0) h += pieceSvg(S, s);
+    if (!M.result && S.at[S.cmd[S.turn]] >= 0 && CC.inCheck(S, S.turn)) { const [x, y] = px(S.at[S.cmd[S.turn]]); h += '<circle class="check" cx="' + x + '" cy="' + y + '" r="24"/>'; }
+    if (ui.sel >= 0 && humanToMove()) { const [x, y] = px(ui.sel); h += '<circle class="sel" cx="' + x + '" cy="' + y + '" r="24"/>'; for (const [to, ms] of targets()) h += targetSvg(to, ms); }
+  }
+  $('board').innerHTML = h + hitSvg();
+}
+function drawStatus() {
+  const M = ui.M, head = $('head'); if (!M) { head.textContent = ''; return; }
+  const S = M.S, pts = CC.points(S);
+  head.className = M.result ? (M.result.why === 'fault' ? 'fault' : 'over') : '';
+  if (M.result) head.textContent = T.resultText(M);
+  else {
+    const side = S.turn, seat = ui.seats[side];
+    head.textContent = 'Turn ' + (M.turns + 1) + ': ' + T.SIDE[side] + ' to move' + (seat && seat.kind === 'ai' ? ' (' + seatText(seat) + ')' : '') +
+      (ui.thinking === side ? ', thinking…' : '') + (S.dOrg >= 0 ? ', unloading the stack on ' + CC.sqName(S.dOrg) : '') + (CC.inCheck(S, side) ? '. Its Commander is attacked' : '');
+  }
+  const seen = M.seen[CC.posKey(S)] || 0;
+  $('facts').innerHTML = (M.setup.game === 'total' ? 'Total war' : 'Battles') + (M.setup.lineup === 'light' ? ', no Engineers' : '') + ' · points: Red ' + pts[0] + ', Blue ' + pts[1] +
+    '<br>ships / planes / infantry, tanks and artillery: Red ' + CC.arms(S, 0).join(' / ') + ', Blue ' + CC.arms(S, 1).join(' / ') +
+    '<br>quiet turns ' + S.half + ' of 100' + (seen > 1 && !M.result ? ' · this position has stood ' + seen + ' times' : '');
+  $('note').textContent = ui.note;
+}
+function drawChooser() {
+  const box = $('chooser');
+  if (!humanToMove()) { box.hidden = true; return; }
+  const S = ui.M.S; let h = '';
+  if (S.dOrg >= 0) h += '<p>Unloading the stack on ' + CC.sqName(S.dOrg) + ': move another of its pieces, or end the turn.</p>';
+  else if (ui.sel < 0) h += '<p>Your move. Click one of your pieces.</p>';
+  if (ui.sel >= 0 && ui.combos.length > 1) h += '<p>Who goes?</p><div class="row free">' + ui.combos.map((c, i) => '<button data-combo="' + i + '"' + (i === ui.combo ? ' class="on"' : '') + '>' + esc(comboText(c)) + '</button>').join('') + '</div>';
+  if (ui.pick) h += '<p>How?</p><div class="row free">' + ui.pick.map(m => '<button data-move="' + m + '">' + HOW[CC.mMode(m)] + '</button>').join('') + '</div>';
+  if (ui.legal.includes(CC.COMMIT_MOVE)) h += '<div class="row free"><button data-move="' + CC.COMMIT_MOVE + '" class="primary">End the turn here</button></div>';
+  box.innerHTML = h; box.hidden = !h;
+}
+function drawLog() {
+  const M = ui.M, box = $('log'); if (!M) { box.innerHTML = ''; return; }
+  const row = (n, side, text, ms) => '<div><span class="n">' + n + '.</span><span class="' + (side ? 'b' : 'r') + '">' + T.SIDE[side] + '</span> ' + esc(text) + (ms ? '<span class="ms">' + ms + ' ms</span>' : '') + '</div>';
+  let h = M.lines.slice(-300).map(l => row(l.n, l.side, l.text, l.ms)).join('');
+  if (M.cur.length && !M.result) h += row(M.turns + 1, M.S.turn, M.cur.join('  ') + '  …', 0);
+  box.innerHTML = h; box.scrollTop = box.scrollHeight;
+}
+function drawSeries() {
+  const R = ui.tally, box = $('series-out');
+  $('series-run').disabled = !!ui.series; $('series-stop').disabled = !ui.series;
+  if (!R) { box.innerHTML = ''; return; }
+  const who = i => esc(seatText(R.c[i])), avg = st => (st.turns ? Math.round(st.ms / st.turns) : 0);
+  let h = '<table><tr><th>' + R.done + ' of ' + R.n + ' games' + (R.stopped ? ', stopped' : '') + '</th><th>won</th><th>lost</th><th>drawn</th><th>ms a turn</th><th>longest</th><th>late</th></tr>';
+  for (const i of [0, 1]) h += '<tr><td>' + who(i) + '</td><td>' + R.won[i] + '</td><td>' + R.won[1 - i] + '</td><td>' + R.drawn + '</td><td>' + avg(R.stats[i]) + '</td><td>' + Math.round(R.stats[i].max) + '</td><td>' + R.stats[i].late + '</td></tr>';
+  h += '</table>' + R.faults.map((f, i) => '<div class="flt">Game ' + f.game + ': ' + esc(f.text) + ' <button data-fault="' + i + '">Show</button></div>').join('');
+  box.innerHTML = h;
+}
+function render() {
+  drawBoard(); drawStatus(); drawChooser(); drawLog(); drawSeries();
+  const M = ui.M, busy = !!ui.series;
+  if (document.activeElement !== $('record')) $('record').value = M ? JSON.stringify(T.record(M)) : '';
+  $('step').disabled = busy || !M || !!M.result || $('auto').checked || !ui.seats[M.S.turn] || ui.seats[M.S.turn].kind !== 'ai' || ui.thinking >= 0;
+  $('back').disabled = busy || !M || !M.moves.length;
+  for (const id of ['new', 'rec-load', 'file']) $(id).disabled = busy;
+}
+
+/* ── a series: many games between the two players, with nobody watching the moves ── */
+async function runSeries() {
+  const c = [choice(0), choice(1)];
+  if (c[0].kind !== 'ai' || c[1].kind !== 'ai') { ui.note = 'A series needs a computer player on both sides.'; render(); return; }
+  const my = ++ui.token; killSeats(ui.seats); ui.seats = [null, null]; clearSel(); ui.note = '';
+  const n = clamp(Math.round(+$('series-n').value) || 10, 1, 500), setup = setupNow(), ms = timeNow(), base = (Math.random() * 1e9) | 0;
+  const zero = () => ({ turns: 0, ms: 0, max: 0, late: 0 });
+  const R = ui.series = ui.tally = { stop: false, stopped: false, n, done: 0, c, won: [0, 0], drawn: 0, stats: [zero(), zero()], faults: [] };
+  for (let g = 0; g < n && !R.stop && my === ui.token; g++) {
+    const swap = g % 2 === 1, red = swap ? c[1] : c[0], blue = swap ? c[0] : c[1];
+    const M = T.newMatch({ setup, timeMs: ms, seed: base + g, maxTurns: 400, levels: [red.level, blue.level], names: [red.ai.meta.name, blue.ai.meta.name] });
+    let seats;
+    try { seats = await openSeats([red, blue]); } catch (e) { ui.note = String(e.message || e); break; }
+    ui.M = M; ui.seats = seats;
+    while (!M.result && !R.stop && my === ui.token) {
+      ui.thinking = M.S.turn; render();
+      const ans = await askSeat(seats[M.S.turn], M);
+      if (my !== ui.token) break;
+      T.takeAnswer(M, ans);
+    }
+    killSeats(seats);
+    if (my !== ui.token) break;
+    if (!M.result) break;
+    const w = M.result.winner, a = swap ? 1 : 0;
+    if (w < 0) R.drawn++; else R.won[w === a ? 0 : 1]++;
+    for (const i of [0, 1]) { const st = M.stats[i === 0 ? a : 1 - a], to = R.stats[i]; to.turns += st.turns; to.ms += st.ms; to.late += st.late; if (st.max > to.max) to.max = st.max; }
+    if (M.result.why === 'fault') R.faults.push({ game: g + 1, text: T.resultText(M), rec: T.record(M) });
+    R.done++;
+  }
+  R.stopped = R.done < n;
+  if (ui.series === R) ui.series = null;
+  if (my !== ui.token) return;                                // another game has been started meanwhile: the table is its
+  ui.thinking = -1; ui.seats = [null, null];
+  if (R.stopped && !ui.note) ui.note = 'The series was stopped. Start a new game to play on.';
+  render();
+}
+
+/* ── the buttons ── */
+$('board').addEventListener('click', e => {
+  const t = e.target.closest('[data-s]'); if (!t || !humanToMove()) return;
+  const s = +t.dataset.s;
+  if (ui.sel >= 0) { const ms = targets().get(s); if (ms) { if (ms.length === 1) return humanPlay(ms[0]); ui.pick = ms; return render(); } }
+  if (ui.M.S.dOrg >= 0) return;
+  if (s === ui.sel) clearSel(); else select(s);
+  render();
+});
+$('chooser').addEventListener('click', e => {
+  const b = e.target.closest('button'); if (!b) return;
+  if (b.dataset.combo !== undefined) { ui.combo = +b.dataset.combo; ui.pick = null; render(); }
+  else if (b.dataset.move !== undefined) humanPlay(+b.dataset.move);
+});
+$('new').addEventListener('click', () => newGame());
+$('step').addEventListener('click', () => { ui.step = true; drive(); });
+$('auto').addEventListener('change', () => { render(); drive(); });
+$('back').addEventListener('click', back);
+$('flip').addEventListener('click', () => { ui.flip = !ui.flip; render(); });
+for (const side of [0, 1]) $('p' + side).addEventListener('change', () => fillLevels(side));
+$('file').addEventListener('change', async e => {
+  const files = [...e.target.files]; $('ai-msg').textContent = ''; let last = null;
+  for (const f of files) {
+    try { last = (await addFile(await f.text(), f.name))[0]; }
+    catch (err) { $('ai-msg').textContent += (err.message || err) + '\n'; }
+  }
+  e.target.value = ''; fillSelects(last && last.key);
+});
+$('series-run').addEventListener('click', runSeries);
+$('series-stop').addEventListener('click', () => { if (ui.series) ui.series.stop = true; });
+$('series-out').addEventListener('click', e => { const b = e.target.closest('[data-fault]'); if (b && ui.tally && !ui.series) { $('auto').checked = false; newGame(ui.tally.faults[+b.dataset.fault].rec); } });
+$('rec-copy').addEventListener('click', async () => {
+  const box = $('record');
+  try { await navigator.clipboard.writeText(box.value); } catch (e) { box.select(); document.execCommand('copy'); }
+});
+$('rec-load').addEventListener('click', () => {
+  let rec; try { rec = JSON.parse($('record').value); } catch (e) { ui.note = 'The box does not hold a record.'; render(); return; }
+  if (!rec || !Array.isArray(rec.moves)) { ui.note = 'The box does not hold a record.'; render(); return; }
+  $('auto').checked = false; newGame(rec);
+});
+
+addFile(SAMPLE, 'sample-ai.js').then(() => { fillSelects(); newGame(); }, err => { fillSelects(); ui.note = 'The sample player could not be started: ' + (err.message || err); newGame(); });
+</script>
+</body>
+</html>

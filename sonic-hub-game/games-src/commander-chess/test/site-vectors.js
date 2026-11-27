@@ -1,0 +1,41 @@
+/* What cotulenh.vn itself allowed, written down while playing its computer player (16–17 Nov 2026).
+   Each entry is a position with Red to move, and for each Red piece the points the site lit up when the piece was
+   picked: plain moves and joining a friend first, then after "|x" the enemy pieces it may take.
+   Pieces: C commander, H headquarters, T tank, I infantry, M militia, A artillery, S missile, G anti-air, E engineer,
+   F air force, N navy; capitals are Red; F(I) is a plane carrying infantry. */
+const SAME_NAVY = 'a1,a2,a3,b1,b3,b4,b5,b6,c1,c2,c3', SAME_C4 = 'a2,a4,a6,b3,b4,b5,c1,c2,c3,c5,c6,c7', CMD = 'c1,d1,e1,f1,g2,h1,i1,j1,k1', E2 = 'b2,c2,c4,d1,d2,e1,e3,e5,e6,f1,f3,g2,g4,h5,i2,i6';
+module.exports = [
+  { b: 'a1=N b11=n b8=n c4=N c5=I c8=i d10=a d3=A d5=E d8=e e2=F e4=G e9=g f11=h f2=H f4=T f9=t g1=C g12=c g3=S g6=M g8=m h11=h h2=H h4=T h9=t i10=s i11=f i4=G i7=f i9=g j12=a j3=A j5=E j8=e k4=F k5=I',
+    t: { a1: 'a2,a3,a4,a5,b1,b2,c1,c3', c4: SAME_C4, c5: 'c4,c6', d3: 'c2,c3,d1,d2,d4,e3,f3', d5: 'd4,d6,e5', e2: 'c2,c4,d1,d2,e1,e3,e5,e6,f1,f3,g2,g4,h5,i2,i6', e4: 'd4,e3,e5', f2: '', f4: 'f3,f5,f6,g4', g1: CMD,
+      g3: 'e3,f3,g2,g4,g5,h3,i3', g6: 'f5,f6,f7,g5,g7,h5,h6,h7', h2: '', h4: 'g4,h3,h5,h6', i4: 'i3,i5,j4', j3: 'h1,h3,i2,i3,j1,j2,j4,k2,k3', j5: 'i5,j4,j6', k4: 'g4,h1,h4,h7,i2,i6,j4,k1,k2,k3,k5,k6,k7,k8|xg8', k5: 'k4,k6' } },
+  { b: 'a1=N b11=n b8=n c4=N c5=I c8=i d10=a d3=A d5=E d8=e e2=F e4=G e9=g f11=h f2=H f9=t g1=C g12=c g3=S g6=M g8=m h11=h h2=H h4=T h9=t i10=s i11=f i4=G i9=g j12=a j3=A j5=E j8=e k4=F(I)',
+    t: { a1: 'a2,a3,a4,a5,b1,b2,c1,c3', c4: SAME_C4, c5: 'c4,c6', d3: 'c2,c3,d1,d2,d4,e3,f3', d5: 'd4,d6,e5', e2: 'c2,c4,d1,d2,e1,e3,e5,e6,f1,f3,g2,g4,h5,i2,i6', e4: 'd4,e3,e5,f4', f2: '', g1: CMD,
+      g3: 'e3,f3,f4,g2,g4,g5,h3,i3', g6: 'f5,f6,f7,g5,g7,h5,h6,h7', h2: '', h4: 'f4,g4,h3,h5,h6', i4: 'i3,i5,j4', j3: 'h1,h3,i2,i3,j1,j2,j4,k2,k3', j5: 'i5,j4,j6,k5', k4: 'g4,h1,h4,h7,i2,i6,j4,k1,k2,k3,k5,k6,k7,k8|xg8' } },
+  { b: 'b11=n b2=N c4=N c5=I c8=i c9=n d10=a d3=A d5=E d8=e e11=f e2=F e4=G e9=g f11=h f2=H f4=T f9=t g1=C g10=s g12=c g3=S g5=M g8=m h11=h h2=H h4=T h9=t i11=f i2=F i4=G i9=g j10=a j3=A j5=E j8=e k5=I k8=i',
+    t: { b2: SAME_NAVY, c4: SAME_C4, c5: 'c4,c6', d3: 'c2,c3,d1,d2,d4,e3,f3', d5: 'd4,d6,e5', e2: 'b2,c2,c4,d1,d2,e1,e3,e5,e6,f1,f3,g2,g4,h5,i6', e4: 'd4,e3,e5', f2: '', f4: 'f3,f5,f6,g4', g1: CMD, g3: 'e3,f3,g2,g4,h3,i3',
+      g5: 'f4,f5,f6,g4,g6,h4,h5,h6', h2: '', h4: 'g4,h3,h5,h6', i2: 'e6,f5,g2,g4,h1,h3,i1,i3,i5,i6,j1,j2,k2,k4', i4: 'i3,i5,j4', j3: 'h3,i3,j1,j2,j4,k2,k3,k4', j5: 'i5,j4,j6', k5: 'k4,k6' } },
+  { b: 'b11=n b2=N c4=N c5=I c8=i c9=n d10=a d3=A d5=E d8=e e2=F e4=G e7=f e9=g f11=h f2=H f4=T f9=t g1=C g10=s g12=c g3=S g5=M g8=m h11=h h2=H h4=T h9=t i11=f i4=G i9=g j10=a j3=A j5=E j8=e k4=F k5=I k8=i',
+    t: { b2: SAME_NAVY, c4: SAME_C4, c5: 'c4,c6', d3: 'c2,c3,d1,d2,d4,e3,f3', d5: 'd4,d6,e5', e2: E2, e4: 'd4,e3,e5', f2: '', f4: 'f3,f5,f6,g4', g1: CMD, g3: 'e3,f3,g2,g4,h3,i3', g5: 'f4,f5,f6,g4,g6,h4,h5,h6', h2: '',
+      h4: 'g4,h3,h5,h6', i4: 'i3,i5,j4', j3: 'h1,h3,i2,i3,j1,j2,j4,k2,k3', j5: 'i5,j4,j6', k4: 'g4,h1,h4,h7,i2,i6,j4,k1,k2,k3,k5,k6,k7|xg8,k8', k5: 'k4,k6' } },
+  { b: 'b11=n b2=N c4=N c5=I c8=i c9=n d10=a d3=A d5=E d8=e e2=F e4=G e9=g f11=h f2=H f4=T f9=t g1=C g10=s g12=c g3=S g5=M g8=m h11=h h2=H h9=t i11=f i4=G i9=g j10=a j3=A j5=E j8=e k4=F k5=I',
+    t: { b2: SAME_NAVY, c4: SAME_C4, c5: 'c4,c6', d3: 'c2,c3,d1,d2,d4,e3,f3', d5: 'd4,d6,e5', e2: E2, e4: 'd4,e3,e5', f2: '', f4: 'f3,f5,f6,g4,h4', g1: CMD, g3: 'e3,f3,g2,g4,h3,h4,i3', g5: 'f4,f5,f6,g4,g6,h4,h5,h6', h2: '',
+      i4: 'h4,i3,i5,j4', j3: 'h1,h3,i2,i3,j1,j2,j4,k2,k3', j5: 'i5,j4,j6', k4: 'g4,h1,h4,h7,i2,i6,j4,k1,k2,k3,k5,k6,k7,k8|xg8', k5: 'k4,k6' } },
+  { b: 'b11=n b2=N c4=N c5=I c8=i c9=n d10=a d3=A d5=E d8=e e2=F e4=G e9=g f11=h f2=H f4=T f9=t g1=C g10=s g12=c g3=S g5=M g8=m h11=h h2=H h7=t i11=f i4=G i9=g j10=a j3=A j4=F j5=E j8=e k5=I',
+    t: { b2: SAME_NAVY, c4: SAME_C4, c5: 'c4,c6', d3: 'c2,c3,d1,d2,d4,e3,f3', d5: 'd4,d6,e5', e2: E2, e4: 'd4,e3,e5', f2: '', f4: 'f3,f5,f6,g4,h4', g1: CMD, g3: 'e3,f3,g2,g4,h3,h4,i3', g5: 'f4,f5,f6,g4,g6,h4,h5,h6', h2: '',
+      i4: 'h4,i3,i5', j3: 'h1,h3,i2,i3,j1,j2,k2,k3,k4', j4: 'f4,f8,g1,g4,g7,h4,h6,i3,i5,j1,j2,j6,j7,k3,k4,k5|xj8', j5: 'i5,j6', k5: 'k4,k6' } },
+  { b: 'b11=n b2=N c4=N c5=I c8=i c9=n d10=a d3=A d5=E d8=e e2=F e4=G e9=g f11=h f2=H f4=T f9=t g1=C g10=s g12=c g3=S g5=M h11=h h2=H h7=t(m) i11=f i4=G i9=g j10=a j3=A j4=F j5=E k5=I',
+    t: { b2: SAME_NAVY, c4: SAME_C4, c5: 'c4,c6', d3: 'c2,c3,d1,d2,d4,e3,f3', d5: 'd4,d6,e5', e2: E2, e4: 'd4,e3,e5', f2: '', f4: 'f3,f5,f6,g4,h4', g1: CMD, g3: 'e3,f3,g2,g4,h3,h4,i3', g5: 'f4,f5,f6,g4,g6,h4,h5,h6', h2: '',
+      i4: 'h4,i3,i5', j3: 'h1,h3,i2,i3,j1,j2,k2,k3,k4', j4: 'f4,f8,g1,g4,g7,h4,h6,i3,i5,j1,j2,j6,j7,j8,k3,k4,k5', j5: 'i5,j6', k5: 'k4,k6' } },
+  { b: 'b11=n b2=N c4=N c5=I c8=i c9=n d10=a d3=A d5=E d8=e e2=F e4=G e9=g f11=h f2=H f9=t g1=C g10=s g12=c g3=S g5=M h11=h h2=H h4=T h6=t(m) i11=f i4=G i9=g j10=a j3=A j4=F j5=E k5=I',
+    t: { b2: SAME_NAVY, c4: SAME_C4, c5: 'c4,c6', d3: 'c2,c3,d1,d2,d4,e3,f3', d5: 'd4,d6,e5', e2: E2, e4: 'd4,e3,e5,f4', f2: '', g1: CMD, g3: 'e3,f3,f4,g2,g4,h3,i3', g5: 'f4,f5,f6,g4,g6,h4,h5|xh6', h2: '', h4: 'f4,g4,h3,h5|xh6',
+      i4: 'i3,i5', j3: 'h1,h3,i2,i3,j1,j2,k2,k3,k4', j4: 'f4,f8,g1,g4,g7,h4,i3,i5,j1,j2,j6,j7,j8,k3,k4,k5|xh6', j5: 'i5,j6', k5: 'k4,k6' } },
+  { b: 'b11=n b2=N c4=N c5=I c8=i c9=n d10=a d3=A d5=E d8=e e2=F e4=G e7=f e9=g f11=h f2=H f9=t g1=C g10=s g12=c g3=S g5=M h11=h h2=H h6=T i4=G i9=g j10=a j3=A j4=F j5=E k5=I',
+    t: { b2: SAME_NAVY, c4: SAME_C4, c5: 'c4,c6', d3: 'c2,c3,d1,d2,d4,e3,f3', d5: 'd4,d6,e5', e2: E2, e4: 'd4,e3,e5,f4', f2: '', g1: CMD, g3: 'e3,f3,f4,g2,g4,h3,h4,i3', g5: 'f4,f5,f6,g4,g6,h4,h5,h6', h2: '', h6: 'f6,g6,h4,h5,h7,h8,i6,j6',
+      i4: 'h4,i3,i5', j3: 'h1,h3,i2,i3,j1,j2,k2,k3,k4', j4: 'f4,f8,g1,g4,g7,h4,h6,i3,i5,j1,j2,j6,j7,j8,k3,k4,k5', j5: 'i5,j6', k5: 'k4,k6' } },
+  { b: 'b11=n b2=N c4=N c5=I c8=i c9=n d10=a d3=A d5=E d8=e e2=F e9=g f11=h f2=H f9=t g1=C g10=s g12=c g3=S g5=M h11=h h2=H h6=T i4=G i9=g j10=a j3=A j5=E j6=F k5=I',
+    t: { b2: SAME_NAVY, c4: SAME_C4, c5: 'c4,c6', d3: 'c2,c3,d1,d2,d4,e3,e4,f3,f5,g6', d5: 'd4,d6,e5', e2: 'b2,c2,c4,d1,d2,e1,e3,e4,e5,e6,f1,f3,g2,g4,h5,i2,i6', f2: '', g1: CMD, g3: 'e3,f3,f4,g2,g4,h3,h4,i3', g5: 'f4,f5,f6,g4,g6,h4,h5,h6', h2: '',
+      h6: 'f6,g6,h4,h5,h7,h8,i6,j6', i4: 'h4,i3,i5,j4', j3: 'h1,h3,i2,i3,j1,j2,j4,k2,k3,k4', j5: 'i5,j4', j6: 'f6,g6,h4,h6,h8,i5,i6,i7,j2,j4,j7,j8,k5,k6,k7' } },
+  { b: 'b11=n b2=N c4=N c5=I c8=i c9=n d10=a d3=A d5=E d8=e e2=F e9=g f11=h f2=H f8=t g1=C g10=s g12=c g3=S g5=M h11=h h2=H h6=T i4=G i9=g j10=a j3=A j5=E k5=I',
+    t: { b2: SAME_NAVY, c4: SAME_C4, c5: 'c4,c6', d3: 'c2,c3,d1,d2,d4,e3,e4,f3,f5,g6', d5: 'd4,d6,e5', e2: 'b2,c2,c4,d1,d2,e1,e3,e4,e5,e6,f1,f3,g2,g4,h5,i2,i6', f2: '', g1: CMD, g3: 'e3,f3,f4,g2,g4,h3,h4,i3', g5: 'f4,f5,f6,g4,g6,h4,h5,h6', h2: '',
+      h6: 'f6,g6,h4,h5,h7,h8,i6,j6', i4: 'h4,i3,i5,j4', j3: 'h1,h3,i2,i3,j1,j2,j4,k2,k3,k4', j5: 'i5,j4,j6', k5: 'k4,k6' } },
+];
