@@ -1,14 +1,15 @@
 /* Cards as the player sees them: a whole card (to read), a small one (in the hand), and a creature or building
    standing in a lane. A card's row is its line in the game's data; its picture is drawn by 25-pictures.js. */
 
-/** row: a card of the data. o: { cost (what it costs now), atk, def, glint, mini, cls } */
+/** row: a card of the data. o: { cost (what it costs now), atk, def, glint, mini, cls, lazy (draw its picture only
+ *  once it is near the screen) } */
 function cardEl(row, o = {}) {
   const el = h('div.card.r' + row.faction + (row.edition ? '.e-' + row.edition : '') + (o.mini ? '.mini' : '') + (o.cls ? '.' + o.cls : ''));
   el.dataset.id = row.id;
   const cost = o.cost !== undefined ? o.cost : row.cost;
   el.append(
     h('div.top', h('span.cost', String(cost)), h('span.name', row.name)),
-    h('div.pic-w', Pictures.img('card', row)),
+    h('div.pic-w', o.lazy ? Pictures.lazy('card', row) : Pictures.img('card', row)),
   );
   if (row.edition && !o.mini) el.append(h('span.ed', row.edition));
   if (!o.mini) el.append(h('div.line', `${REALM_SHORT[row.faction]} · ${KINDS[row.type]}`), h('div.text', row.text || ''));

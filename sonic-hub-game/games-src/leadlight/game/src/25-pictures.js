@@ -223,11 +223,21 @@ const Pictures = (() => {
     pump();
   }
   return {
+    want,
     card(card, fn, first) { want('c:' + card.id, () => drawCard(card), fn, first); },
     portrait(hero, person, fn, first) { want('h:' + hero.id, () => drawPortrait(person, hero.form), fn, first); },
     landscape(type, fn) { want('l:' + type, () => drawLandscape(type), fn, true); },
     /** an <img> that shows the picture when it is ready */
     img(kind, ...args) { const im = document.createElement('img'); im.alt = ''; im.decoding = 'async'; im.className = 'pic'; im.draggable = false; this[kind](...args, url => { im.src = url; im.classList.add('ready'); }); return im; },
+    /** the same, but the picture is only drawn once the <img> comes near the screen (for long lists) */
+    lazy(kind, ...args) {
+      const im = document.createElement('img'); im.alt = ''; im.decoding = 'async'; im.className = 'pic'; im.draggable = false;
+      const go = () => this[kind](...args, url => { im.src = url; im.classList.add('ready'); });
+      if (typeof IntersectionObserver === 'undefined') { go(); return im; }
+      if (!this._near) this._near = new IntersectionObserver(es => { for (const e of es) if (e.isIntersecting) { this._near.unobserve(e.target); e.target._go(); } }, { rootMargin: '500px' });
+      im._go = go; this._near.observe(im);
+      return im;
+    },
     ready(key) { return made.has(key); },
   };
 })();

@@ -1,4 +1,4 @@
-/* The game from the front door: who is playing, the menu, the practice tables, the options; and the start of it all. */
+/* The game from the front door: who is playing, the atelier that leads everywhere, the options; and the start of it all. */
 
 /** a question in a pane of its own: resolves true for yes */
 function ask(title, text, yes = 'Yes', no = 'No') {
@@ -20,10 +20,10 @@ const Door = {
     const box = $('#players'); box.innerHTML = '';
     const players = Game.save.players();
     for (const p of players) {
-      const d = mendSave(p.data), deck = d.decks[d.deck];
+      const d = mendSave(p.data), deck = d.decks[d.deck], next = nextTable(d), at = next && REGION_OF[next.id];
       box.append(h('div.player', { onclick: () => this.enter(p.id) },
         h('div', { style: { width: '48px', height: '48px', borderRadius: '50%', border: '3px solid var(--lead)', overflow: 'hidden', flex: 'none' } }, faceEl(HERO[deck.hero], 48)),
-        h('div.who', p.name, h('div.what', `${deck.name} · ${heroTitle(HERO[deck.hero])}`)),
+        h('div.who', p.name, h('div.what', `★ ${starsTotal(d)} · ${heroTitle(HERO[deck.hero])}, rank ${heroRank(d, deck.hero)}` + (at ? ` · ${REGIONS[at.region].name}` : ''))),
         h('button.x', { title: 'Remove this player', onclick: async e => { e.stopPropagation(); if (await ask(`Remove ${p.name}?`, 'Everything this player has done goes with her.', 'Remove', 'Keep')) { Game.save.remove(p.id); this.draw(); } } }, '×')));
     }
     const full = players.length >= Game.save.max();
@@ -39,14 +39,37 @@ const Door = {
   },
 };
 
-/* ---------------------------------------------------------------- the menu, the options */
+/* ---------------------------------------------------------------- the purse, the atelier, the options */
 
+/** every purse on the page shows the player's coins and Jewels */
+function purse() {
+  if (!Me.data) return;
+  for (const el of $$('.purse')) { el.innerHTML = ''; el.append(h('span.coin', { title: 'Coins' }, h('i'), fmt(Me.data.coins)), h('span.gem', { title: 'Jewels' }, h('i'), String(Me.data.jewels))); }
+}
 const Menu = {
   show() {
-    Screens.show('menu');
+    Screens.show('menu'); purse();
+    const s = Me.data;
     $('#menu-who').textContent = (Game.save.current() || {}).name || '';
-    const art = (id, card) => Pictures.card(ROW[card] || DATA.cards[0], url => { $(id).style.backgroundImage = `url(${url})`; });
-    art('#go-practice', 'standing-stones'); art('#go-decks', 'tome-of-the-dunes'); art('#go-options', 'seers-globe');
+    const bg = (id, url) => { $(id).style.backgroundImage = `url(${url})`; };
+    const next = nextTable(s), at = next ? REGION_OF[next.id] : { region: REGIONS.length - 1, at: 14, encore: false };
+    Pictures.region(at.region, true, url => bg('#go-campaign', url));
+    $('#go-campaign-where').textContent = `${REGIONS[at.region].name} · ★ ${starsTotal(s)}`;
+    const who = $('#go-campaign-who'); who.innerHTML = '';
+    if (next) {
+      const her = HERO[next.hero];
+      $('#go-campaign-next').textContent = `Next: ${at.encore ? 'encore table' : 'table'} ${at.at + 1}, ${nameOf(her.cast)} at rank ${next.rank}`;
+      who.append(faceEl(her, 92), h('small', 'Waiting at the table'));
+    } else $('#go-campaign-next').textContent = 'Every table of the land has its three stars.';
+    Pictures.card(ROW['tome-of-the-dunes'] || DATA.cards[0], url => bg('#go-decks', url));
+    Pictures.card(ROW['owl-archivist'] || DATA.cards[1], url => bg('#go-collection', url));
+    Pictures.kiln(url => bg('#go-kiln', url));
+    Pictures.chest('premium', url => bg('#go-chests', url));
+    Pictures.card(ROW['seers-globe'] || DATA.cards[2], url => bg('#go-options', url));
+    const badge = (id, text) => { const d = $(id); const old = d.querySelector('.new'); if (old) old.remove(); if (text) d.append(h('span.new', text)); };
+    const seen = new Set(s.seen.kiln || []);
+    badge('#go-kiln', openRecipes(s).some(r => !seen.has(r.card)) ? 'New' : '');
+    badge('#go-chests', s.freePremium ? 'Free' : '');
   },
 };
 function options() {
@@ -59,54 +82,16 @@ function options() {
       h('option', { value: 'calm', selected: o.pace !== 'brisk' }, 'Calm'), h('option', { value: 'brisk', selected: o.pace === 'brisk' }, 'Brisk'))));
 }
 
-/* ---------------------------------------------------------------- the practice tables */
-
-const Practice = (() => {
-  let who = null, at = null;
-  function show() {
-    Screens.show('practice');
-    const box = $('#ladies'); box.innerHTML = '';
-    for (const s of SITTERS) {
-      const hero = HERO[s.tables[0].hero], wins = s.tables.filter(q => (Me.data.record[q.id] || {}).won).length;
-      box.append(h('button.lady' + (who === s.key ? '.on' : ''), { onclick: () => { who = s.key; at = null; show(); } }, faceEl(hero, 92),
-        h('b', nameOf(s.key)), h('small', `Rank ${s.tables[0].rank}–${s.tables[s.tables.length - 1].rank}` + (wins ? ` · beaten ${wins}×` : ''))));
-    }
-    side();
-  }
-  function side() {
-    const box = $('#practice-side'); box.innerHTML = '';
-    if (!who) { box.append(h('h3', 'Choose who sits across'), h('p', 'Every woman you will meet in the land keeps her tables here. At a practice table your hero plays at the same rank as hers.')); return; }
-    const s = SITTERS.find(x => x.key === who), person = CONTENT.cast.people[who], age = (Game.cast && Game.cast.age(who)) || person.age;
-    box.append(h('div', { style: { width: '132px', height: '132px', margin: '0 auto 10px', borderRadius: '50%', border: '3px solid var(--lead)', overflow: 'hidden' } }, faceEl(HERO[s.tables[0].hero], 132)),
-      h('h3', { style: { textAlign: 'center' } }, nameOf(who)), h('p', { style: { textAlign: 'center', margin: '0 0 8px' } }, `${person.role}, ${age}`), h('p', person.about));
-    const tb = h('div.tables');
-    s.tables.forEach((q, k) => tb.append(h('button' + (at === q.id ? '.on' : ''), { onclick: () => { at = q.id; side(); }, title: `Rank ${q.rank}` }, h('b', String(k + 1) + ((Me.data.record[q.id] || {}).won ? ' ✓' : '')), h('small', { style: { display: 'block', fontSize: '11px', fontWeight: 500 } }, 'rank ' + q.rank))));
-    box.append(h('div.caps', { style: { marginTop: '12px' } }, 'Her tables'), tb);
-    if (!at) return;
-    const q = QUEST[at], hero = HERO[q.hero], their = q.deck === 'player-clone' ? null : Catalog.decks[q.deck];
-    const sel = h('select.pick', { onchange: e => { Me.data.deck = Number(e.target.value); Me.write(); side(); } });
-    Me.data.decks.forEach((d, i) => sel.append(h('option', { value: i, selected: i === Me.data.deck }, `${d.name} · ${d.cards.length} cards`)));
-    const mine = Me.deck, issues = deckIssues(mine, q.rank);
-    box.append(h('div', { style: { marginTop: '14px', display: 'grid', gap: '8px' } },
-      h('p', { style: { margin: 0 } }, `${heroTitle(hero)} plays ${their ? `a deck of ${their.cards.length} cards` : 'a copy of your own deck'}. Her gift: ${hero.text}`),
-      h('div.caps', 'Your deck'), sel,
-      h('p', { style: { margin: 0, fontSize: '14px' } }, `${heroTitle(HERO[mine.hero])} at rank ${q.rank}: ${10 + 5 * q.rank} health, up to ${deckMax(q.rank)} cards.`),
-      issues.length ? h('div.warn', issues.join(' ')) : '',
-      h('button.jewel.go', { disabled: issues.length > 0, onclick: () => Battle.start({ quest: q, deck: Me.data.deck }, () => show()) }, 'Sit down')));
-  }
-  return { show };
-})();
-
 /* ---------------------------------------------------------------- the start */
 
 (async function boot() {
   const service = CONTENT.saves || {};
   const savesChanged = what => {
-    if (what === 'replaced') { const p = Game.save.current(); if (p) Game.me = mendSave(p.data); else if (Screens.now !== 'door') Door.show(); }
+    if (what === 'replaced') { const p = Game.save.current(); if (p) { Game.me = mendSave(p.data); purse(); } else if (Screens.now !== 'door') Door.show(); }
     if (Screens.now === 'door') Door.draw();
   };
   Game.save = SonicSave({ api: service.api || '', game: service.game || 'leadlight', onChange: savesChanged });
-  Game.cast = SonicCast({ api: service.api || '', game: service.game || 'leadlight', onChange: () => { if (Screens.now === 'practice') Practice.show(); else if (Screens.now === 'door') Door.draw(); } });
+  Game.cast = SonicCast({ api: service.api || '', game: service.game || 'leadlight', onChange: () => { if (Screens.now === 'campaign') Campaign.show(); else if (Screens.now === 'door') Door.draw(); else if (Screens.now === 'menu') Menu.show(); } });
   glassTextures();
   try { await Promise.race([document.fonts.load('400 64px Federant'), sleep(1500)]); } catch (e) { /* the title is drawn in another face */ }
   drawTitle($('#title-glass'));
@@ -123,8 +108,11 @@ const Practice = (() => {
     Menu.show();
   });
   $('#switch').onclick = () => Door.show();
-  $('#go-practice').onclick = () => Practice.show();
+  $('#go-campaign').onclick = () => Campaign.show();
   $('#go-decks').onclick = () => Decks.list();
+  $('#go-collection').onclick = () => Album.show();
+  $('#go-kiln').onclick = () => Kiln.show();
+  $('#go-chests').onclick = () => Chests.show();
   $('#go-options').onclick = () => options();
   for (const b of $$('[data-back]')) b.onclick = () => Menu.show();
   const cur = Game.save.current();
