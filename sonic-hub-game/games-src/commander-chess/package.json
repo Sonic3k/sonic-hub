@@ -1,0 +1,17 @@
+{
+  "name": "commander-chess",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Commander Chess (Cờ Tư Lệnh) with a campaign: stations along a coast, opponents from a league of computer players, points, promotions, cards.",
+  "license": "UNLICENSED",
+  "engines": { "node": ">=18" },
+  "scripts": {
+    "build": "node build.mjs",
+    "test": "node test/engine.test.js && node test/campaign.test.js && node test/page.test.js && node test/seat.test.js",
+    "sim": "node tools/sim.js",
+    "kit": "node tools/kit.js",
+    "roster": "node tools/roster.js",
+    "avatars": "node tools/avatar-prompts.js",
+    "cast": "node tools/cast-upload.js"
+  }
+}

@@ -92,15 +92,31 @@ GAMES = {
             'vs': {'mina': {'w': 5, 'l': 0, 'd': 0}, 'odette': {'w': 5, 'l': 1, 'd': 0}, 'claire': {'w': 4, 'l': 2, 'd': 0}, 'vera': {'w': 2, 'l': 2, 'd': 0}, 'isolde': {'w': 0, 'l': 1, 'd': 0},
                    'nell': {'w': 5, 'l': 0, 'd': 0}, 'britt': {'w': 3, 'l': 1, 'd': 0}, 'quinn': {'w': 2, 'l': 0, 'd': 0}, 'lan': {'w': 1, 'l': 1, 'd': 0}}}),
         play=['waitsel:#rooms .seat .shot img[src]', 'wait:4600']),
-    # on its own site as well. The title picture is its first screen. The picture of play goes back to a game for points
-    # against the Hard opponent, both sides down to one ship and one plane, and waits for her to move
+    # in the portal now, its players at the saves service. The first picture goes back to a game for points against
+    # Commander Nadia Rahimi, both sides down to one ship and one plane: she makes her move, has something to say, and
+    # it is the player's turn. The second is the chart of the Lumen coast as a player finds it part of the way along:
+    # the stations that have opened with their officers' faces, and the last one still closed.
     'commander-chess': dict(
-        site='https://sonic-commander-chess-production.up.railway.app/',
-        ls={'commander-chess.v1': {'rating': 912, 'peak': 930, 'sound': True, 'side': 0, 'all': False, 'rules': 2, 'seen': {},
-            'record': {'pia': {'w': 5, 'l': 0, 'd': 0}, 'sol': {'w': 4, 'l': 1, 'd': 0}, 'hana': {'w': 3, 'l': 2, 'd': 0}, 'nadia': {'w': 1, 'l': 2, 'd': 0}},
-            'met': {'pia': True, 'sol': True, 'hana': True, 'nadia': True},
-            'match': {'w': 'nadia', 'side': 0, 'rated': True, 'moves': [36192019,44583538,33555718,44057455,34084620,44057923,41433647,44057157,33886213,44117570,67441168,393216,44057134,38287139,44058178,38288183,44181574,38427707,44057670,36709145,44060228,34093079,44181070,34164280,48320090,36260415,46221942,38428475]}}},
-        play=['click:[data-act=resume]', 'wait:5200']),
+        shut=[r'/games/[^/]+/players'],
+        title_ls=kept_player('commander-chess', 'Sonic', {'rating': 1312, 'peak': 1330, 'side': 0, 'all': False, 'rules': 3,
+            'record': {'pia': {'w': 5, 'l': 0, 'd': 0}, 'sol': {'w': 4, 'l': 0, 'd': 0}, 'yuna': {'w': 3, 'l': 1, 'd': 0}, 'maeve': {'w': 3, 'l': 1, 'd': 0},
+                       'ligaya': {'w': 3, 'l': 0, 'd': 0}, 'thandiwe': {'w': 3, 'l': 1, 'd': 0}, 'efua': {'w': 3, 'l': 0, 'd': 0}, 'hana': {'w': 3, 'l': 2, 'd': 0},
+                       'leilani': {'w': 2, 'l': 2, 'd': 0}, 'dandara': {'w': 2, 'l': 1, 'd': 0}, 'adjoa': {'w': 1, 'l': 2, 'd': 0}, 'greta': {'w': 1, 'l': 1, 'd': 0},
+                       'nadia': {'w': 1, 'l': 2, 'd': 0}},
+            'met': {k: True for k in ('pia', 'sol', 'yuna', 'maeve', 'ligaya', 'thandiwe', 'efua', 'hana', 'leilani', 'dandara', 'adjoa', 'greta', 'arevik', 'nadia')},
+            'match': {'w': 'nadia', 'side': 0, 'rated': True, 'seed': 1, 'moves': [36192019,44583538,33555718,44057455,34084620,44057923,41433647,44057157,33886213,44117570,67441168,393216,44057134,38287139,44058178,38288183,44181574,38427707,44057670,36709145,44060228,34093079,44181070,34164280,48320090,36260415,46221942,38428475]}}),
+        title=['click:[data-act=resume]',
+               "js:new Promise(done => { const t = setInterval(() => { if (G.screen === 'match' && !G.busy && !G.S.over && G.S.turn === G.side && G.moves.length > 28) { clearInterval(t); done(); } }, 60); })",
+               'waitsel:#bubble:not(:empty)', 'waitsel:#her img[data-bust]',
+               "js:new Promise(done => { const t = setInterval(() => { if (!document.querySelector('.cutin')) { clearInterval(t); done(); } }, 80); })", 'wait:900'],
+        ls=kept_player('commander-chess', 'Sonic', {'rating': 1312, 'peak': 1330, 'side': 0, 'all': False, 'rules': 3, 'match': None,
+            'record': {'pia': {'w': 5, 'l': 0, 'd': 0}, 'sol': {'w': 4, 'l': 0, 'd': 0}, 'yuna': {'w': 3, 'l': 1, 'd': 0}, 'maeve': {'w': 3, 'l': 1, 'd': 0},
+                       'ligaya': {'w': 3, 'l': 0, 'd': 0}, 'thandiwe': {'w': 3, 'l': 1, 'd': 0}, 'efua': {'w': 3, 'l': 0, 'd': 0}, 'hana': {'w': 3, 'l': 2, 'd': 0},
+                       'leilani': {'w': 2, 'l': 2, 'd': 0}, 'dandara': {'w': 2, 'l': 1, 'd': 0}, 'adjoa': {'w': 1, 'l': 2, 'd': 0}, 'greta': {'w': 1, 'l': 1, 'd': 0},
+                       'nadia': {'w': 2, 'l': 2, 'd': 0}},
+            'met': {k: True for k in ('pia', 'sol', 'yuna', 'maeve', 'ligaya', 'thandiwe', 'efua', 'hana', 'leilani', 'dandara', 'adjoa', 'greta', 'arevik', 'nadia')}}),
+        play=['click:[data-act=chart]', 'waitsel:.chart .pin-faces img[data-bust]',
+              "js:Promise.all([...document.querySelectorAll('.chart img')].map(i => i.complete ? 0 : new Promise(done => { i.onload = i.onerror = done; })))", 'wait:900']),
     # on its own site as well, with its players at the saves service. The title picture is the place a player comes
     # in to, part of the way up it. The picture of play goes back to a game for points against the owner at the moment
     # the player is one mark from five in a line: she closes it and says so
