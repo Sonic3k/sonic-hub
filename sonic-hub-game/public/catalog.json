@@ -110,7 +110,7 @@
       "lang": "en", "group": "cards", "sub": "card-battle", "machine": "web", "year": 2026, "tags": ["originals"],
       "players": 1, "ai": 1, "inputs": ["mouse", "touch"], "maker": "Sonic Hub", "added": "2026-11-27",
       "kind": "Lane card battles in stained glass, you against the AI",
-      "blurb": "A card battle at a glazier’s light table, every card a pane of stained glass. Four lanes a side, each laid with a landscape: a creature stands only on a lane of its own realm, buildings stand behind them, spells turn the battle, and each creature has a Glint that costs Light. Every attack goes through the Rose Window, whose brass needle you stop with a tap: on gold to strike, on red to strike twice as hard, and when you are attacked, on blue to block and on red to strike back. The women of the land sit across from you, each with her own deck and her own gift.",
+      "blurb": "A card battle at a glazier’s light table, every card a pane of stained glass. Four lanes a side, each laid with a landscape: a creature stands only on a lane of its own realm, buildings stand behind them, spells turn the battle, and each creature has a Glint that costs Light. Every attack goes through the Rose Window, whose brass needle you stop with a tap: on gold to strike, on red to strike twice as hard, and when you are attacked, on blue to block and on red to strike back. The women of the land sit across from you, each with her own deck and her own gift. Beat them and the road goes on across the land: every table has its stars to win, every win turns over new cards, and the kiln fires the cards you want from the ones you have.",
       "shots": ["title", "play"], "play": "/games/leadlight"
     },
     {
