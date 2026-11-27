@@ -1,10 +1,11 @@
-/* The bar a song plays in, under every page of Music: the song and where it came from, play / pause, how far along it
+/* The bar a song plays in, under every page of Music: the song, its picture and where it came from, play / pause, how far along it
    is (drag to move), the next song, close. The frame draws it while he is in Music; leaving Music stops the song.
    The audio element is there the whole time (the bar only while a song is on), so a tap can start it at once. */
 import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { apiUrl } from '../../api/client';
 import { player, usePlayer } from '../../lib/player';
+import Cover from './Cover';
 
 const clock = (s: number) => (isFinite(s) && s > 0 ? `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, '0')}` : '0:00');
 
@@ -27,6 +28,7 @@ export default function PlayerBar() {
         <button type="button" className="mu-pl-main" aria-label={on ? 'Tạm dừng' : 'Phát'} onClick={() => { const a = audio.current; if (a) { if (a.paused) void a.play().catch(() => {}); else a.pause(); } }}>
           {on ? <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 5h4v14H7zM13 5h4v14h-4z" /></svg> : <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5v14l11-7z" /></svg>}
         </button>
+        <Cover url={now.coverUrl} size={38} />
         <span className="mu-pl-t"><b>{now.title}{now.version ? ` (${now.version})` : ''}</b>
           <small>{now.artist?.name}{from && <> · <Link to={from.to}>{from.title}</Link></>}</small></span>
         <span className="mu-pl-seek">

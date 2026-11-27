@@ -95,9 +95,16 @@
 /api/music/tracks
 /api/music/cds
 /api/music/playlists
+/api/music/artists/{musicArtist}
+/api/music/albums/{musicAlbum}
+/api/music/tracks/{musicTrack}
+/api/music/playlists/{musicList}
+/api/music/at?at=2012-06
 /api/music/spotify/overview
 /api/music/spotify/report?group=song
 /api/music/spotify/report?group=year
+/api/music/spotify/songs/{spotifySong}
+/api/music/spotify/day?date=2020-03-19
 # facebook
 /api/social/range
 /api/social/status

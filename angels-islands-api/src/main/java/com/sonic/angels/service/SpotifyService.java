@@ -209,11 +209,14 @@ public class SpotifyService {
             (rs, i) -> new SpotifyDto.TrackRef(rs.getString(1), rs.getString(2), rs.getString(3), rs.getLong(4)));
         MusicTrack m = s.getMusicTrack();
         if (m != null) {
-            o.recording = music.track(musicTracks.findFullByIds(List.of(m.getId())).get(0), null);
+            o.recording = music.track(musicTracks.findFullByIds(List.of(m.getId())).get(0), null, music.extras());
             p.addValue("track", m.getId());
-            o.lists = jdbc.query("SELECT l.external_key, l.title, e.added_at FROM music_playlist_entries e JOIN music_playlists l ON l.id = e.playlist_id"
+            // the lists it is in, and the ones it was in and left (see MusicPlaylistEntry)
+            o.lists = jdbc.query("SELECT l.external_key, l.title, e.added_at, e.removed_at, e.added_approx, e.removed_approx"
+                + " FROM music_playlist_entries e JOIN music_playlists l ON l.id = e.playlist_id"
                 + " WHERE e.track_id = :track ORDER BY COALESCE(e.added_at, l.taken_at) NULLS LAST, l.title", p,
-                (rs, i) -> new SpotifyDto.ListRef(rs.getString(1), rs.getString(2), time(rs, 3)));
+                (rs, i) -> new SpotifyDto.ListRef(rs.getString(1), rs.getString(2), time(rs, 3), time(rs, 4),
+                    rs.getBoolean(5) ? Boolean.TRUE : null, rs.getBoolean(6) ? Boolean.TRUE : null));
         } else o.lists = List.of();
         return o;
     }
@@ -223,14 +226,20 @@ public class SpotifyService {
     public List<SpotifyDto.DayPlay> day(String date) {
         LocalDateTime from = moment(date, "date");
         MapSqlParameterSource p = new MapSqlParameterSource().addValue("from", from).addValue("to", from.plusDays(1));
+        // the picture of the recording in his music the song is: its own, else its album's
         return jdbc.query("SELECT p.local_at, p.ms_played, s.id AS song_id, s.title, s.version, s.artist_name, t.album_name, p.device, p.place, p.context,"
-            + " l.external_key AS list_key, l.title AS list_title, p.reason_start, p.reason_end, p.shuffle" + FROM
+            + " l.external_key AS list_key, l.title AS list_title, p.reason_start, p.reason_end, p.shuffle,"
+            + " ct.poster_storage_key, ct.file_type, ct.storage_key, ct.storage_provider, ca.poster_storage_key, ca.file_type, ca.storage_key, ca.storage_provider" + FROM
+            + " LEFT JOIN music_tracks mt ON mt.id = s.music_track_id LEFT JOIN music_albums ma ON ma.id = mt.album_id"
+            + " LEFT JOIN media_files ct ON ct.id = mt.cover_media_id LEFT JOIN media_files ca ON ca.id = ma.cover_media_id"
             + " WHERE p.local_at >= :from AND p.local_at < :to ORDER BY p.local_at, p.played_at LIMIT 3000", p, (rs, i) -> {
                 SpotifyDto.DayPlay o = new SpotifyDto.DayPlay();
                 o.at = time(rs, 1); o.ms = rs.getInt(2); o.songId = rs.getObject(3, UUID.class); o.title = rs.getString(4); o.version = rs.getString(5);
                 o.artist = rs.getString(6); o.album = rs.getString(7); o.device = rs.getString(8); o.place = rs.getString(9); o.context = rs.getString(10);
                 o.playlistKey = rs.getString(11); o.playlistTitle = rs.getString(12); o.start = rs.getString(13); o.end = rs.getString(14);
                 o.shuffle = (Boolean) rs.getObject(15);
+                int c = rs.getString(18) != null || rs.getString(16) != null ? 16 : 20;
+                o.coverUrl = music.picture(rs.getString(c), rs.getString(c + 1), rs.getString(c + 2), rs.getString(c + 3));
                 return o;
             });
     }

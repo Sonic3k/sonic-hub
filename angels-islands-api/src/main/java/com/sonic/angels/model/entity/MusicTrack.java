@@ -102,6 +102,11 @@ public class MusicTrack extends BaseEntity {
     @Column(name = "note", columnDefinition = "TEXT")
     private String note;
 
+    /** The song's own picture (a media file id, an asset kept out of his photos): what a single was released with. A
+     *  song without one shows its album's cover; see {@link com.sonic.angels.service.MusicCoverService}. */
+    @Column(name = "cover_media_id")
+    private UUID coverMediaId;
+
     // ── its audio, in the music folder of the bucket ─────────────────────────
 
     /** Full object key: "music/audio/<track key>/<file name>". */
@@ -185,6 +190,8 @@ public class MusicTrack extends BaseEntity {
     public void setAudioMime(String v) { this.audioMime = v; }
     public Integer getAudioBitrate() { return audioBitrate; }
     public void setAudioBitrate(Integer v) { this.audioBitrate = v; }
+    public UUID getCoverMediaId() { return coverMediaId; }
+    public void setCoverMediaId(UUID v) { this.coverMediaId = v; }
     public String getAudioSourcePath() { return audioSourcePath; }
     public void setAudioSourcePath(String v) { this.audioSourcePath = v; }
     public String getSource() { return source; }

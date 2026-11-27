@@ -6,6 +6,7 @@ import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query';
 import { musicApi, type Filters, type Group, type Report, type Row } from '../api/music';
 import { Bars, Facts, Legend, Punch, Stack, YearDays, type BarRow, type Serie } from '../components/music/Charts';
+import Cover from '../components/music/Cover';
 import { eraClass } from '../lib/era';
 import { CONTEXT, DEVICE, END, PALETTE, PLACE, REST, SHUFFLE, START, WEEKDAY, clock, dmy, hours, my, num, whenText } from '../lib/music';
 import { player, usePlayer } from '../lib/player';
@@ -347,12 +348,13 @@ export function SongPage() {
   return (
     <div className="wrap page mu mu-song" style={{ ['--c' as string]: 'var(--music)' }}>
       <div className="crumbs"><Link to="/music">Music</Link> / <Link to="/music/spotify">Spotify</Link> / <Link to="/music/spotify?v=songs">Bài hát</Link></div>
-      <div className="ptitle"><h1>{g.title}{g.version && <small> ({g.version})</small>}</h1><span><Link to={`/music/spotify?artist=${encodeURIComponent(g.artist)}`}>{g.artist}</Link></span></div>
+      <div className="ptitle mu-song-hd"><Cover url={rec?.coverUrl} size={84} />
+        <div><h1>{g.title}{g.version && <small> ({g.version})</small>}</h1><span><Link to={`/music/spotify?artist=${encodeURIComponent(g.artist)}`}>{g.artist}</Link></span></div></div>
       {g.assessment && <p className="mu-read">{g.assessment}</p>}
       <Facts items={[['Lượt nghe', num(t.plays), 'từ 30 giây trở lên'], ['Thời gian nghe', hours(t.ms)], ['Lần đầu', dmy(t.first) || '—'], ['Lần cuối', dmy(t.last) || '—'],
         ['Tự chọn', num(g.picked), 'anh bấm vào chính bài này'], ['Bấm qua', num(g.passed), `trên ${num(t.starts)} lần phát`], ['Nghe hết', num(g.finished)]]} />
       <div className="mu-links">
-        {sid && <a href={`https://open.spotify.com/track/${sid}`} target="_blank" rel="noreferrer">Mở trên Spotify ↗</a>}
+        {(rec?.spotifyUrl || sid) && <a href={rec?.spotifyUrl ?? `https://open.spotify.com/track/${sid}`} target="_blank" rel="noreferrer">Mở trên Spotify ↗</a>}
         {rec?.hasAudio && rec.audioUrl && <button type="button" className="mu-listen" onClick={() => player.toggle(rec, [rec], { title: 'Bài hát', to: `/music/spotify/song/${id}` })}>
           <svg viewBox="0 0 24 24" aria-hidden="true"><path d={now?.key === rec.key ? 'M7 7h10v10H7z' : 'M8 5v14l11-7z'} /></svg>{now?.key === rec.key ? 'Dừng' : 'Nghe'}</button>}
         {rec?.firstHeard && <span>Bắt đầu nghe: {whenText(rec.firstHeard)}</span>}
@@ -370,7 +372,8 @@ export function SongPage() {
       </>}
       <div className="mu-two">
         {g.lists.length > 0 && <Block title="Trong các danh sách">
-          <ul className="mu-plain">{g.lists.map(l => <li key={l.key}><Link to={`/music/lists/${l.key}`}>{l.title}</Link>{l.addedAt && <small>thêm ngày {dmy(l.addedAt)}</small>}</li>)}</ul>
+          <ul className="mu-plain">{g.lists.map(l => <li key={l.key}><Link to={`/music/lists/${l.key}`}>{l.title}</Link>
+            {l.removedAt ? <small>từng có, {l.addedApprox || l.removedApprox ? 'khoảng ' : ''}{dmy(l.addedAt)} – {dmy(l.removedAt)}</small> : l.addedAt && <small>thêm ngày {dmy(l.addedAt)}</small>}</li>)}</ul>
         </Block>}
         {g.tracks.length > 1 && <Block title="Các bản trên Spotify" hint="cùng một bài, phát hành ở nhiều nơi">
           <ul className="mu-plain">{g.tracks.map(x => <li key={x.spotifyId}><a href={`https://open.spotify.com/track/${x.spotifyId}`} target="_blank" rel="noreferrer">{x.name}</a><small>{x.album ?? ''} · {num(x.plays)} lượt</small></li>)}</ul>

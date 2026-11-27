@@ -7,7 +7,12 @@ import org.hibernate.annotations.OnDeleteAction;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
-/** A song in a list: its place, the file as it was in that folder (name and date) and anything noted about it there. */
+/**
+ * A song in a list: its place, the file as it was in that folder (name and date) and anything noted about it there.
+ * A playlist changes over time: addedAt is the day the song came into it, removedAt the day it left (none = still in
+ * it). Spotify keeps no trace of a song taken out, so an entry that has left was worked out from what the playlist
+ * played back then; a date that was worked out rather than recorded says so (addedApprox, removedApprox).
+ */
 @Entity
 @Table(name = "music_playlist_entries",
     uniqueConstraints = @UniqueConstraint(name = "uk_music_entry", columnNames = {"playlist_id", "track_id"}),
@@ -43,6 +48,18 @@ public class MusicPlaylistEntry extends BaseEntity {
     @Column(name = "added_at")
     private LocalDateTime addedAt;
 
+    /** addedAt was worked out (the first day the playlist played the song), not recorded. */
+    @Column(name = "added_approx")
+    private Boolean addedApprox;
+
+    /** The day the song left the list; none = it is in the list. */
+    @Column(name = "removed_at")
+    private LocalDateTime removedAt;
+
+    /** removedAt was worked out (the day after the playlist last played the song), not recorded. */
+    @Column(name = "removed_approx")
+    private Boolean removedApprox;
+
     @Column(name = "note", length = 1000)
     private String note;
 
@@ -61,6 +78,12 @@ public class MusicPlaylistEntry extends BaseEntity {
     public void setFileModifiedAt(LocalDateTime v) { this.fileModifiedAt = v; }
     public LocalDateTime getAddedAt() { return addedAt; }
     public void setAddedAt(LocalDateTime v) { this.addedAt = v; }
+    public Boolean getAddedApprox() { return addedApprox; }
+    public void setAddedApprox(Boolean v) { this.addedApprox = v; }
+    public LocalDateTime getRemovedAt() { return removedAt; }
+    public void setRemovedAt(LocalDateTime v) { this.removedAt = v; }
+    public Boolean getRemovedApprox() { return removedApprox; }
+    public void setRemovedApprox(Boolean v) { this.removedApprox = v; }
     public String getNote() { return note; }
     public void setNote(String v) { this.note = v; }
 }

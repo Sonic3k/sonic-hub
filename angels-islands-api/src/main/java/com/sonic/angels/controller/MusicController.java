@@ -2,6 +2,7 @@ package com.sonic.angels.controller;
 
 import com.sonic.angels.model.dto.MusicDto;
 import com.sonic.angels.service.MusicAudioService;
+import com.sonic.angels.service.MusicCoverService;
 import com.sonic.angels.service.MusicService;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.ContentDisposition;
@@ -28,16 +29,20 @@ import java.util.NoSuchElementException;
  *   PUT    /api/music/artists/{key}           create or update (ArtistIn)      DELETE /api/music/artists/{key}
  *   GET    /api/music/albums                  every album                      GET /api/music/albums/{key}: recordings, CDs
  *   PUT    /api/music/albums/{key}            (AlbumIn)                        DELETE /api/music/albums/{key}
+ *   POST   /api/music/albums/{key}/cover      multipart file: the album's cover (an asset, never among his photos)
+ *   DELETE /api/music/albums/{key}/cover      the cover goes, the album stays
  *   GET    /api/music/tracks                  every recording (lists it is in, whether it has a file)
  *   GET    /api/music/tracks/{key}            one recording: links, memories, events, lists, other versions
  *   PUT    /api/music/tracks/{key}            (TrackIn)                        DELETE /api/music/tracks/{key} (its file too)
  *   POST   /api/music/tracks/{key}/audio      multipart file [+ sourcePath, bitrate, durationSec, hash]: its file
  *   DELETE /api/music/tracks/{key}/audio      the file goes, the recording stays
  *   GET    /api/music/tracks/{key}/audio      the file, streamed (honours Range so a player can seek)
+ *   POST   /api/music/tracks/{key}/cover      multipart file: the song's own picture; without one it shows its album's
+ *   DELETE /api/music/tracks/{key}/cover      back to the album's cover (or the default picture)
  *   GET    /api/music/cds                     the CDs he owns, with their photos and scans
  *   GET    /api/music/cds/{key}   PUT /api/music/cds/{key} (CdIn)   DELETE /api/music/cds/{key}
  *   GET    /api/music/playlists               his lists (checkpoints), in the order of his life
- *   GET    /api/music/playlists/{key}         one list with its songs
+ *   GET    /api/music/playlists/{key}         one list with its songs, and the songs that were in it and left
  *   PUT    /api/music/playlists/{key}         (PlaylistIn)                     DELETE /api/music/playlists/{key}
  *   GET    /api/music/at?at=2012-06           the music of a moment: the lists that cover it and their songs that play
  *   POST   /api/music/sync                    artists, albums, recordings, CDs and lists at once (matched by key) + deletes
@@ -48,9 +53,10 @@ public class MusicController {
 
     private final MusicService music;
     private final MusicAudioService audio;
+    private final MusicCoverService covers;
 
-    public MusicController(MusicService music, MusicAudioService audio) {
-        this.music = music; this.audio = audio;
+    public MusicController(MusicService music, MusicAudioService audio, MusicCoverService covers) {
+        this.music = music; this.audio = audio; this.covers = covers;
     }
 
     @PostMapping("/sync")
@@ -89,6 +95,15 @@ public class MusicController {
     @DeleteMapping("/albums/{key}")
     public ResponseEntity<Void> deleteAlbum(@PathVariable String key) { music.deleteAlbum(key); return ResponseEntity.noContent().build(); }
 
+    @PostMapping(value = "/albums/{key}/cover", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<MusicDto.CoverOut> albumCover(@PathVariable String key, @RequestParam MultipartFile file) throws IOException {
+        MusicDto.CoverOut out = covers.album(key, file);
+        return ResponseEntity.status(out.created() ? HttpStatus.CREATED : HttpStatus.OK).body(out);
+    }
+
+    @DeleteMapping("/albums/{key}/cover")
+    public ResponseEntity<Void> removeAlbumCover(@PathVariable String key) { covers.removeAlbum(key); return ResponseEntity.noContent().build(); }
+
     // ── recordings ───────────────────────────────────────────────────────────
 
     @GetMapping("/tracks")
@@ -112,6 +127,15 @@ public class MusicController {
 
     @DeleteMapping("/tracks/{key}/audio")
     public ResponseEntity<Void> removeAudio(@PathVariable String key) { audio.remove(key); return ResponseEntity.noContent().build(); }
+
+    @PostMapping(value = "/tracks/{key}/cover", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<MusicDto.CoverOut> trackCover(@PathVariable String key, @RequestParam MultipartFile file) throws IOException {
+        MusicDto.CoverOut out = covers.track(key, file);
+        return ResponseEntity.status(out.created() ? HttpStatus.CREATED : HttpStatus.OK).body(out);
+    }
+
+    @DeleteMapping("/tracks/{key}/cover")
+    public ResponseEntity<Void> removeTrackCover(@PathVariable String key) { covers.removeTrack(key); return ResponseEntity.noContent().build(); }
 
     /** The file; a single HTTP Range gets 206 so <audio> can seek. The browser may keep it a day. */
     @GetMapping("/tracks/{key}/audio")

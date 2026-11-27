@@ -2,15 +2,18 @@
    playlists — and the door to his Spotify listening. The page opens on the playlists he listened to most or, with a
    day picked on the calendar, on the music of that day: what Spotify heard, or the list he kept then. The folders of
    a period ("bài mới của giai đoạn") stand as tiles in the colour of their years and can be played from here, in a
-   new order each time; the players he carried them on are shown beside them. A list reads with what it is, when each
-   song came into it and, for a Spotify playlist, how much it was played. Everything is read here; it is written
-   through the admin and importers. */
-import { useMemo } from 'react';
+   new order each time; the players he carried them on are shown beside them. A list reads with what it is, each
+   song with its picture (its cover, its album's, else the default one), when it came into the list and, for a
+   Spotify playlist, how much it was played and a way to open it on Spotify. With a day picked on the calendar a
+   Spotify playlist is shown as it was that day: the songs it held then, the ones added later (faint) and the ones
+   that had left. Everything is read here; it is written through the admin and importers. */
+import { useEffect, useMemo, useState, type ReactNode } from 'react';
 import { Link, useLocation, useParams } from 'react-router-dom';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { cdn } from '../api/client';
-import { musicApi, type Filters, type Playlist, type Track } from '../api/music';
+import { musicApi, type Entry, type Filters, type Playlist, type Track } from '../api/music';
 import { Facts, Stack } from '../components/music/Charts';
+import Cover from '../components/music/Cover';
 import { Print, YearGrid } from '../components/Paper';
 import { dayMonthYear } from '../lib/date';
 import { useDesk } from '../lib/desk';
@@ -33,6 +36,13 @@ const yearsOf = (l: Playlist) => { const to = yearOf(l), from = +(l.windowFrom ?
 const listHref = (l: Pick<Playlist, 'key'>) => `/music/lists/${l.key}`;
 const playable = (xs: (Track | null | undefined)[]) => xs.filter((x): x is Track => !!x?.hasAudio && !!x.audioUrl);
 const PLAY = <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5v14l11-7z" /></svg>;
+const OUT = <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14 4h6v6M20 4l-9 9M18 14v6H4V6h6" /></svg>;
+const dayPart = (iso?: string | null) => (iso ?? '').slice(0, 10);
+/** the day after: where a report's stretch ends (that day itself is not included) */
+const dayAfter = (iso: string) => { const d = new Date(+iso.slice(0, 4), +iso.slice(5, 7) - 1, +iso.slice(8, 10) + 1); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`; };
+/** the day a song came into a list or left it: "khoảng" when it was worked out from his plays, not recorded by Spotify */
+const dayOf = (iso?: string | null, approx?: boolean | null) => (iso ? <>{approx && <em>khoảng </em>}{dmy(iso)}</> : null);
+const byAdded = (a: Entry, b: Entry) => dayPart(a.addedAt).localeCompare(dayPart(b.addedAt)) || (a.position ?? 0) - (b.position ?? 0);
 
 /** Start a list playing: its songs that have a recording here, in a new order each time. */
 function useListen() {
@@ -66,8 +76,8 @@ export function MusicIndex() {
   const iso = picked && moment ? isoOf(moment) : null;
   const day = useQuery({ queryKey: ['sp-day', iso], queryFn: () => musicApi.day(iso!), enabled: !!iso && iso >= '2018-12-29', staleTime: T });
   const heard = useMemo(() => {
-    const by = new Map<string, { id: string; title: string; artist: string; ms: number }>();
-    (day.data ?? []).forEach(p => { const x = by.get(p.songId) ?? { id: p.songId, title: p.title, artist: p.artist, ms: 0 }; x.ms += p.ms; by.set(p.songId, x); });
+    const by = new Map<string, { id: string; title: string; artist: string; cover?: string | null; ms: number }>();
+    (day.data ?? []).forEach(p => { const x = by.get(p.songId) ?? { id: p.songId, title: p.title, artist: p.artist, cover: p.coverUrl, ms: 0 }; x.ms += p.ms; by.set(p.songId, x); });
     return [...by.values()].filter(x => x.ms >= 30_000).sort((a, b) => b.ms - a.ms).slice(0, 6);
   }, [day.data]);
   const dayList = useMemo(() => {
@@ -90,7 +100,7 @@ export function MusicIndex() {
         <div className="mu-open-hd"><h2>{heard.length ? 'Hôm đó anh nghe' : 'Lúc đó anh nghe'}</h2><span>{dayMonthYear(iso)}</span>
           {heard.length > 0 && <Link className="mu-open-go" to={`/music/spotify?y=${moment.y}&v=days&day=${iso}`}>Xem cả ngày</Link>}</div>
         {heard.length > 0 ? <div className="mu-heard">
-          <ol>{heard.map(x => <li key={x.id}><Link to={`/music/spotify/song/${x.id}`}><b>{x.title}</b><small>{x.artist}</small></Link></li>)}</ol>
+          <ol>{heard.map(x => <li key={x.id}><Link to={`/music/spotify/song/${x.id}`}><Cover url={x.cover} /><span><b>{x.title}</b><small>{x.artist}</small></span></Link></li>)}</ol>
           {dayList && <Link className="mu-heard-from" to={listHref(dayList)}><small>Nghe từ playlist</small><b>{dayList.title}</b></Link>}
         </div> : <div className="mu-tiles wide">{kept.map(l => <ListTile key={l.key} l={l} plain />)}</div>}
       </section> : top.length > 0 && <section className="mu-open">
@@ -169,11 +179,19 @@ function ListRow({ l }: { l: Playlist }) {
 
 export function ListPage() {
   const { key = '' } = useParams(), q = useQuery({ queryKey: ['music-list', key], queryFn: () => musicApi.list(key), staleTime: T, enabled: !!key });
-  const lists = useLists(), desk = useDesk(), { now } = usePlayer();
-  const l = q.data, spotify = !!l && isSpotify(l);
-  const f = useMemo<Filters>(() => ({ playlist: key }), [key]);
-  const months = useQuery({ queryKey: ['sp-report', 'month', f], queryFn: () => musicApi.report('month', f), staleTime: T, enabled: spotify });
-  const songs = useQuery({ queryKey: ['sp-report', 'song', f, 2000], queryFn: () => musicApi.report('song', f, { limit: 2000 }), staleTime: T, enabled: spotify });
+  const lists = useLists(), desk = useDesk(), { now } = usePlayer(), { moment, picked } = useMoment();
+  const l = q.data, spotify = !!l && isSpotify(l), dated = !!l && l.entries.some(e => e.addedAt);
+  // A day picked on the calendar: a playlist that knows when each song came in is shown as it was that day (he can
+  // still look at it as it is now). born = the day its first song went in.
+  const iso = picked && moment ? isoOf(moment) : null, timed = spotify && dated && !!iso;
+  const [asNow, setAsNow] = useState(false);
+  useEffect(() => { setAsNow(false); }, [key, iso]);
+  const then = timed && !asNow ? iso : null;
+  const born = useMemo(() => (l ? [...l.entries, ...(l.removed ?? [])].map(e => dayPart(e.addedAt)).filter(Boolean).sort()[0] ?? '' : ''), [l]);
+  const before = !!then && !!born && then < born;
+  const f = useMemo<Filters>(() => ({ playlist: key, ...(then ? { to: dayAfter(then) } : {}) }), [key, then]);
+  const months = useQuery({ queryKey: ['sp-report', 'month', f], queryFn: () => musicApi.report('month', f), staleTime: T, enabled: spotify && !before });
+  const songs = useQuery({ queryKey: ['sp-report', 'song', f, 2000], queryFn: () => musicApi.report('song', f, { limit: 2000 }), staleTime: T, enabled: spotify && !before });
   const plays = useMemo(() => new Map((songs.data?.rows ?? []).filter(r => r.trackKey).map(r => [r.trackKey!, r])), [songs.data]);
   const buckets = useMemo(() => {
     const have = (months.data?.rows ?? []).map(r => r.key).sort(), out: string[] = [];
@@ -181,10 +199,20 @@ export function ListPage() {
     for (let m = have[0]; m <= have[have.length - 1]; m = +m.slice(5, 7) === 12 ? `${+m.slice(0, 4) + 1}-01` : `${m.slice(0, 4)}-${String(+m.slice(5, 7) + 1).padStart(2, '0')}`) out.push(m);
     return out;
   }, [months.data]);
+  // the playlist on the day picked: the songs it held, the ones added later, the ones that had left
+  const at = useMemo(() => {
+    if (!l || !then) return null;
+    const all = [...l.entries, ...(l.removed ?? [])];
+    const gone = all.filter(e => e.removedAt && dayPart(e.removedAt) <= then).sort((a, b) => dayPart(a.removedAt).localeCompare(dayPart(b.removedAt)) || byAdded(a, b));
+    const later = all.filter(e => dayPart(e.addedAt) > then).sort(byAdded);
+    const here = all.filter(e => dayPart(e.addedAt) <= then && !(e.removedAt && dayPart(e.removedAt) <= then)).sort(byAdded);
+    return { here, later, gone };
+  }, [l, then]);
   if (q.isLoading) return <div className="page mu"><div className="mu-body"><p className="jn-wait">Đang mở danh sách…</p></div></div>;
   if (!l) return <div className="page mu"><div className="mu-body"><Link className="back" to="/music">← Music</Link><h1>Không tìm thấy danh sách này</h1></div></div>;
   const byMonth = new Map((months.data?.rows ?? []).map(r => [r.key, r.ms])), t = months.data?.total;
-  const dated = l.entries.some(e => e.addedAt), counted = plays.size > 0, queue = playable(l.entries.map(e => e.track)), audio = queue.length > 0;
+  const left = l.removed ?? [], every = [...l.entries, ...left];
+  const counted = plays.size > 0, queue = playable(l.entries.map(e => e.track)), audio = queue.length > 0, linked = every.some(e => e.track?.spotifyUrl);
   // a playlist of his carries the day its first song went in; Liked Songs has no day it was made; the rebuilt list is a state on a day
   const since = !spotify ? when(l.when) : l.spotifyId ? `tạo ngày ${dmy(l.takenAt)}` : dated ? `từ ${dmy(l.takenAt)}` : `tính đến ${dmy(l.takenAt)}`;
   const year = yearOf(l), from: PlayedFrom = { title: l.title, to: listHref(l) };
@@ -192,6 +220,27 @@ export function ListPage() {
   // the lists before and after it in time, among its own kind (his folders, or his Spotify playlists)
   const order = (lists.data ?? []).filter(x => isSpotify(x) === spotify).sort(byTime), i = order.findIndex(x => x.key === l.key);
   const prev = i > 0 ? order[i - 1] : undefined, next = i >= 0 ? order[i + 1] : undefined;
+  const cols = 3 + (dated ? 1 : 0) + (counted ? 2 : 0) + (linked ? 1 : 0) + (audio ? 1 : 0);
+  /** a song of the list as a line: its number (none when it is not in the list at the time shown), its picture, what it
+   *  is, when (the day it came in unless said otherwise), how much the list played it, its page on Spotify, play */
+  const line = (e: Entry, n: number | null, o: { faint?: boolean; when?: ReactNode; uncounted?: boolean } = {}) => {
+    const x = e.track; if (!x) return null;
+    const r = o.uncounted ? undefined : plays.get(x.key), on = now?.key === x.key;
+    return (
+      <tr key={x.key} className={`${on ? 'on' : ''} ${o.faint ? 'faint' : ''}`}>
+        <td>{n ?? ''}</td>
+        <td className="cv"><Cover url={x.coverUrl} /></td>
+        <td className="t">{x.spotifySongId ? <Link to={`/music/spotify/song/${x.spotifySongId}`}><b>{x.title}</b></Link> : <b>{x.title}</b>}{x.version && <em> ({x.version})</em>}
+          <small>{x.artist?.name}{x.featuring ? ` · cùng ${x.featuring}` : ''}</small></td>
+        {dated && <td className="d">{o.when ?? dayOf(e.addedAt, e.addedApprox)}</td>}
+        {counted && <td>{r?.plays ? num(r.plays) : ''}</td>}{counted && <td className="ms">{r?.plays ? hours(r.ms) : ''}</td>}
+        {linked && <td className="go">{x.spotifyUrl && <a className="mu-ext" href={x.spotifyUrl} target="_blank" rel="noreferrer" aria-label={`Mở ${x.title} trên Spotify`} title="Mở trên Spotify">{OUT}</a>}</td>}
+        {audio && <td className="go">{x.hasAudio && x.audioUrl && <button type="button" className={`mu-play ${on ? 'on' : ''}`} aria-label={on ? `Dừng ${x.title}` : `Nghe ${x.title}`}
+          onClick={() => player.toggle(x, queue, from)}>{on ? <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 7h10v10H7z" /></svg> : PLAY}</button>}</td>}
+      </tr>);
+  };
+  const head = (date: string) => <thead><tr><th>#</th><th className="cv" /><th>Bài</th>{dated && <th>{date}</th>}{counted && <th>Lượt nghe</th>}{counted && <th className="ms">Thời gian</th>}{linked && <th>Spotify</th>}{audio && <th />}</tr></thead>;
+  const sub = (text: string, note?: string) => <tr className="sub"><td colSpan={cols}>{text}{note && <small> · {note}</small>}</td></tr>;
   return (
     <div className="page mu">
       <header className={`mm-top mu-top ${year ? eraClass(l.kind === 'WINDOW' ? +(l.windowFrom ?? '').slice(0, 4) || year : year) : 'plain'}`}>
@@ -214,29 +263,45 @@ export function ListPage() {
       </header>
 
       <div className="mu-body">
-        {spotify && !!t?.starts && <>
-          <Facts items={[['Thời gian nghe', hours(t.ms)], ['Lượt nghe', num(t.plays)], ['Nghe từ', dmy(t.first)], ['đến', dmy(t.last)], ['Ngày có nghe', num(t.days)]]} />
-          <section className="mu-block">
-            <div className="hd"><h2>Nghe theo tháng</h2><span>đọc từ từng phiên nghe</span></div>
-            <Stack buckets={buckets} series={[{ key: '*', label: l.title, color: 'var(--music)' }]} value={b => byMonth.get(b) ?? 0} title={b => `Tháng ${+b.slice(5, 7)}/${b.slice(0, 4)}`}
-              tick={b => (buckets.length <= 14 ? `T${+b.slice(5, 7)}` : b.endsWith('-01') ? b.slice(0, 4) : null)} height={190} />
+        {timed && moment && (then ? <div className={`mu-asof ${eraClass(moment.y)}`}>
+          {before ? <><b>Ngày {dayMonthYear(then)} chưa có playlist này</b><span>Bài đầu tiên được thêm vào ngày {dmy(born)}.</span></>
+            : <><b>Playlist vào ngày {dayMonthYear(then)}</b>
+              {at && <span>{num(at.here.length)} bài{at.later.length > 0 && ` · ${num(at.later.length)} bài thêm sau đó`}{at.gone.length > 0 && ` · ${num(at.gone.length)} bài đã bỏ ra trước đó`}</span>}</>}
+          <button type="button" onClick={() => setAsNow(true)}>Xem playlist bây giờ</button>
+        </div> : <div className="mu-asof now">
+          <span>Đang xem playlist như bây giờ.</span>
+          <button type="button" onClick={() => setAsNow(false)}>Xem ngày {dmy(iso)}</button>
+        </div>)}
+        {!before && <>
+          {spotify && !!t?.starts && <>
+            <Facts items={[['Thời gian nghe', hours(t.ms)], ['Lượt nghe', num(t.plays)], ['Nghe từ', dmy(t.first)], ['đến', dmy(t.last)], ['Ngày có nghe', num(t.days)]]} />
+            <section className="mu-block">
+              <div className="hd"><h2>Nghe theo tháng</h2><span>{then ? `tính đến ${dmy(then)}` : 'đọc từ từng phiên nghe'}</span></div>
+              <Stack buckets={buckets} series={[{ key: '*', label: l.title, color: 'var(--music)' }]} value={b => byMonth.get(b) ?? 0} title={b => `Tháng ${+b.slice(5, 7)}/${b.slice(0, 4)}`}
+                tick={b => (buckets.length <= 14 ? `T${+b.slice(5, 7)}` : b.endsWith('-01') ? b.slice(0, 4) : null)} height={190} />
+            </section>
+          </>}
+          <section className="mu-tracks">
+            <div className="hd"><h2>Các bài</h2>{at ? <span>xếp theo ngày thêm vào</span> : !spotify && l.sourceFolder && <span>{l.sourceFolder}</span>}</div>
+            <div className="mu-scroll"><table className="mu-table mu-songs mu-list">
+              {head('Thêm ngày')}
+              {at ? <tbody>
+                {at.here.map((e, n) => line(e, n + 1))}
+                {at.later.length > 0 && sub(`Thêm vào sau ngày ${dmy(then)}`)}
+                {at.later.map(e => line(e, null, { faint: true, uncounted: true }))}
+                {at.gone.length > 0 && sub(`Đã bỏ ra trước ngày ${dmy(then)}`, 'ngày suy ra từ lịch sử nghe')}
+                {at.gone.map(e => line(e, null, { faint: true, when: <>{dmy(e.addedAt)}{'\u00a0'}– {dmy(e.removedAt)}</> }))}
+              </tbody> : <tbody>{l.entries.map((e, n) => line(e, e.position ?? n + 1))}</tbody>}
+            </table></div>
           </section>
+          {!at && left.length > 0 && <section className="mu-tracks mu-left">
+            <div className="hd"><h2>Từng có trong playlist</h2><span>Spotify không lưu những bài đã bỏ ra; ngày ở đây suy ra từ lịch sử nghe của anh</span></div>
+            <div className="mu-scroll"><table className="mu-table mu-songs mu-list">
+              {head('Trong playlist')}
+              <tbody>{left.map(e => line(e, null, { when: <>{dmy(e.addedAt)}{'\u00a0'}– {dmy(e.removedAt)}</> }))}</tbody>
+            </table></div>
+          </section>}
         </>}
-        <section className="mu-tracks">
-          <div className="hd"><h2>Các bài</h2>{!spotify && l.sourceFolder && <span>{l.sourceFolder}</span>}</div>
-          <div className="mu-scroll"><table className="mu-table mu-songs">
-            <thead><tr><th>#</th><th>Bài</th>{dated && <th>Thêm ngày</th>}{counted && <th>Lượt nghe</th>}{counted && <th>Thời gian</th>}{audio && <th />}</tr></thead>
-            <tbody>{l.entries.map((e, n) => { const x = e.track; if (!x) return null; const r = plays.get(x.key), on = now?.key === x.key; return (
-              <tr key={x.key} className={on ? 'on' : ''}>
-                <td>{e.position ?? n + 1}</td>
-                <td><b>{x.title}</b>{x.version && <em> ({x.version})</em>}<small>{x.artist?.name}{x.featuring ? ` · cùng ${x.featuring}` : ''}</small></td>
-                {dated && <td>{dmy(e.addedAt)}</td>}
-                {counted && <td>{r?.plays ? num(r.plays) : ''}</td>}{counted && <td>{r?.plays ? hours(r.ms) : ''}</td>}
-                {audio && <td>{x.hasAudio && x.audioUrl && <button type="button" className={`mu-play ${on ? 'on' : ''}`} aria-label={on ? `Dừng ${x.title}` : `Nghe ${x.title}`}
-                  onClick={() => player.toggle(x, queue, from)}>{on ? <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 7h10v10H7z" /></svg> : PLAY}</button>}</td>}
-              </tr>); })}</tbody>
-          </table></div>
-        </section>
         <div className="pn">{prev ? <Link to={listHref(prev)}><small>← Trước đó</small><b>{prev.title}</b></Link> : <span />}
           {next ? <Link to={listHref(next)}><small>Sau đó →</small><b>{next.title}</b></Link> : <span />}</div>
       </div>

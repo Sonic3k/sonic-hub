@@ -36,6 +36,9 @@ export interface MusicTrack {
   artist?: ArtistRef | null; album?: AlbumRef | null
   favorite?: number | null; releaseYear?: number | null; durationSec?: number | null; trackNo?: number | null
   playlists: string[]
+  // with a list or a single recording, not with the list of every recording: its picture (its own, else its album's),
+  // its page on Spotify, the song of his Spotify listening it is
+  coverUrl?: string | null; spotifyUrl?: string | null; spotifySongId?: string | null
 }
 export interface MusicLink { id: string; kind: LinkKind; title?: string | null; url: string; note?: string | null }
 export interface MusicMemoryLink {
@@ -44,7 +47,7 @@ export interface MusicMemoryLink {
 }
 export interface MusicEventLink { id: string; title: string; when?: string | null; kind?: string | null; role: TieRole; note?: string | null; startAt?: string | null }
 export interface MusicTrackDetail extends MusicTrack {
-  summary?: string | null; note?: string | null
+  summary?: string | null; note?: string | null; coverMediaId?: string | null   // its own picture (POST /music/tracks/{key}/cover)
   audioFileName?: string | null; audioMime?: string | null; audioSourcePath?: string | null; audioSize?: number | null; audioBitrate?: number | null
   links: MusicLink[]; memories: MusicMemoryLink[]; events: MusicEventLink[]; inPlaylists: PlaylistRef[]; versions: MusicTrack[]
 }
@@ -67,8 +70,13 @@ export interface MusicPlaylist {
   takenAt?: string | null; takenEnd?: string | null; windowFrom?: string | null; sortOrder?: number | null
   tracks: number; withAudio: number
 }
-export interface MusicEntry { position?: number | null; fileName?: string | null; note?: string | null; fileModifiedAt?: string | null; track?: MusicTrack | null }
-export interface MusicPlaylistDetail extends MusicPlaylist { entries: MusicEntry[] }
+// addedAt → removedAt = the stretch the song was in the list (no removedAt = still in it); *Approx = worked out from his plays
+export interface MusicEntry {
+  position?: number | null; fileName?: string | null; note?: string | null; fileModifiedAt?: string | null; track?: MusicTrack | null
+  addedAt?: string | null; removedAt?: string | null; addedApprox?: boolean | null; removedApprox?: boolean | null
+}
+// entries = the songs in the list; removed = the ones that were in it and left
+export interface MusicPlaylistDetail extends MusicPlaylist { entries: MusicEntry[]; removed?: MusicEntry[] | null }
 
 // ── write (fields left out keep what is there; '' clears text; favorite 0 clears) ──
 export interface ArtistIn { name?: string; kind?: string; country?: string; parentKey?: string; summary?: string; note?: string; favorite?: number }

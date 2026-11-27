@@ -27,8 +27,9 @@ export const momentQuery = (m: Moment) => `?y=${m.y}&d=${m.m}-${m.d}`;
 export const daysIn = (y: number, m: number) => new Date(y, m, 0).getDate();
 export const HOME_PATHS = ['/', '/timeline'];
 /** Where a section shows a moment: the photo library opens its month; Ký ức, Nhật ký and Giấc mơ open their list,
- *  which goes to the moment's year by itself; Game and Music open on what he played and heard then, Angels on who that month was
- *  about, Diễn đàn on what was being talked about; the timeline keeps its mode; anything else is Hôm nay. */
+ *  which goes to the moment's year by itself; Game and Music open on what he played and heard then (a Spotify playlist
+ *  stays open and shows the songs it held that day), Angels on who that month was about, Diễn đàn on what was being
+ *  talked about; the timeline keeps its mode; anything else is Hôm nay. */
 export function momentHref(path: string, m: Moment): string {
   if (path === '/timeline') return `/timeline${momentQuery(m)}`;
   if (/^\/(photos|tags)(\/|$)/.test(path)) return `/photos?year=${m.y}&month=${m.m}`;
@@ -36,6 +37,7 @@ export function momentHref(path: string, m: Moment): string {
   if (path.startsWith('/journal')) return '/journal';
   if (path.startsWith('/dreams')) return '/dreams';
   if (path.startsWith('/games')) return '/games';
+  if (/^\/music\/lists\/spotify-[^/]+$/.test(path)) return path;
   if (path.startsWith('/music')) return '/music';
   if (path.startsWith('/angels')) return '/angels';
   if (path.startsWith('/forum')) return '/forum';
