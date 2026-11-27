@@ -394,7 +394,6 @@
  "recruit": [
   "dot",
   "velvet",
-  "velvet-gold-mask",
   "mabel",
   "goldie",
   "bramble",
@@ -428,8 +427,714 @@
   "hoarfrost-radiant"
  ],
  "hidden": [
-  "hoarfrost-sweetheart",
-  "alix",
-  "tabitha"
+  "hoarfrost-sweetheart"
+ ],
+ "mirror": {
+  "opensAfter": "30",
+  "first": "5001",
+  "regions": [
+   {
+    "name": "Quicksilver Orchard",
+    "line": "Every tree here grows toward its own reflection.",
+    "reflects": 0,
+    "tables": [
+     "5001",
+     "5002",
+     "5003",
+     "5004",
+     "5005",
+     "5006",
+     "5007"
+    ],
+    "bonus": [
+     "5041"
+    ]
+   },
+   {
+    "name": "The Silvered Hollows",
+    "line": "Caverns where the crystal shows everything the other way round.",
+    "reflects": 4,
+    "tables": [
+     "5008",
+     "5009",
+     "5010",
+     "5011",
+     "5012",
+     "5013",
+     "5014",
+     "5015",
+     "5016",
+     "5017",
+     "5018",
+     "5019"
+    ],
+    "bonus": [
+     "5042"
+    ]
+   },
+   {
+    "name": "Silverspun Street",
+    "line": "Sugar and silver, and every shop sign reads backwards.",
+    "reflects": 2,
+    "tables": [
+     "5020",
+     "5021",
+     "5022",
+     "5023",
+     "5024",
+     "5025",
+     "5026",
+     "5027"
+    ],
+    "bonus": []
+   },
+   {
+    "name": "Looking-Glass Heights",
+    "line": "Snow that falls upward, and a throne of frozen mirror.",
+    "reflects": 5,
+    "tables": [
+     "5028",
+     "5029",
+     "5030",
+     "5031",
+     "5032",
+     "5033",
+     "5034",
+     "5035",
+     "5036",
+     "5037",
+     "5038",
+     "5039",
+     "5040"
+    ],
+    "bonus": [
+     "5043"
+    ]
+   },
+   {
+    "name": "Lilac Meadow",
+    "line": "A meadow behind the glass, where the long road splits in two.",
+    "reflects": 1,
+    "tables": [
+     "5044",
+     "5045",
+     "5046",
+     "5047",
+     "5048",
+     "5049",
+     "5050",
+     "5051",
+     "5052",
+     "5053",
+     "5054",
+     "5055",
+     "5056",
+     "5057",
+     "5058",
+     "5059",
+     "5060",
+     "5061"
+    ],
+    "bonus": []
+   }
+  ],
+  "heroes": [
+   "alix",
+   "tabitha"
+  ],
+  "firstCard": "lifeline"
+ },
+ "goldie": {
+  "opensAfter": "5019",
+  "every": 5,
+  "first": "5008",
+  "tables": [
+   "6001",
+   "6002",
+   "6003",
+   "6004",
+   "6005",
+   "6006",
+   "6007",
+   "6008",
+   "6009",
+   "6010",
+   "6011",
+   "6012",
+   "6013",
+   "6014",
+   "6015",
+   "6016",
+   "6017",
+   "6018",
+   "6019",
+   "6020"
+  ],
+  "hoard": "goldie-hoard"
+ },
+ "velvet": {
+  "opensAfter": "5019",
+  "lastForm": "velvet-gold-mask"
+ },
+ "cellars": [
+  {
+   "src": "Monday Dungeon",
+   "realm": 1,
+   "double": false,
+   "quests": [
+    "3001",
+    "3002",
+    "3003",
+    "3004",
+    "3005"
+   ],
+   "name": "Cobalt Cellar",
+   "line": "Blue glass stacked to the vaults, and the woman who keeps it."
+  },
+  {
+   "src": "Tuesday Dungeon",
+   "realm": 0,
+   "double": false,
+   "quests": [
+    "3006",
+    "3007",
+    "3008",
+    "3009",
+    "3010"
+   ],
+   "name": "Amber Cellar",
+   "line": "Sheets of amber laid down like old harvests."
+  },
+  {
+   "src": "Wednesday Dungeon",
+   "realm": 2,
+   "double": false,
+   "quests": [
+    "3011",
+    "3012",
+    "3013",
+    "3014",
+    "3015"
+   ],
+   "name": "Fen Cellar",
+   "line": "Green bottle-glass, cool and dripping."
+  },
+  {
+   "src": "Thursday Dungeon",
+   "realm": 3,
+   "double": false,
+   "quests": [
+    "3016",
+    "3017",
+    "3018",
+    "3019",
+    "3020"
+   ],
+   "name": "Cranberry Cellar",
+   "line": "Rose and ruby panes wrapped in straw."
+  },
+  {
+   "src": "Friday Dungeon",
+   "realm": 4,
+   "double": false,
+   "quests": [
+    "3021",
+    "3022",
+    "3023",
+    "3024",
+    "3025"
+   ],
+   "name": "Dune Cellar",
+   "line": "Sand and cullet waiting for the furnace."
+  },
+  {
+   "src": "Saturday Dungeon",
+   "realm": null,
+   "double": true,
+   "quests": [
+    "3026",
+    "3027",
+    "3028",
+    "3029",
+    "3030"
+   ],
+   "name": "The Gilt Cellar",
+   "line": "Where the workshop keeps its gold: twice the reward of the others."
+  },
+  {
+   "src": "Sunday Dungeon",
+   "realm": null,
+   "double": true,
+   "quests": [
+    "3031",
+    "3032",
+    "3033",
+    "3034",
+    "3035"
+   ],
+   "name": "The Silver Cellar",
+   "line": "Where the workshop keeps its silver: twice the reward of the others."
+  }
+ ],
+ "ladder": {
+  "opensAfter": "15",
+  "rungs": [
+   999,
+   640,
+   420,
+   270,
+   170,
+   110,
+   75,
+   50,
+   35,
+   25,
+   16,
+   10,
+   6,
+   3,
+   1
+  ],
+  "cups": [
+   {
+    "name": "The Cathedral Cup",
+    "prizes": [
+     {
+      "card": "noon-regent-obsidian",
+      "rank": 1
+     },
+     {
+      "card": "angler-fish-gilded",
+      "rank": 10
+     },
+     {
+      "jewels": 2,
+      "rank": 25
+     },
+     {
+      "coins": 100000,
+      "rank": 50
+     },
+     {
+      "coins": 1000,
+      "rank": 999
+     }
+    ]
+   },
+   {
+    "name": "The Opalescent Cup",
+    "prizes": [
+     {
+      "card": "glimmer-eyes-obsidian",
+      "rank": 1
+     },
+     {
+      "card": "brain-jelly-gilded",
+      "rank": 10
+     },
+     {
+      "jewels": 2,
+      "rank": 25
+     },
+     {
+      "coins": 100000,
+      "rank": 50
+     },
+     {
+      "coins": 1000,
+      "rank": 999
+     }
+    ]
+   },
+   {
+    "name": "The Flashed Cup",
+    "prizes": [
+     {
+      "card": "watchful-eye-obsidian",
+      "rank": 1
+     },
+     {
+      "card": "beaked-physician-gilded",
+      "rank": 10
+     },
+     {
+      "jewels": 2,
+      "rank": 25
+     },
+     {
+      "coins": 100000,
+      "rank": 50
+     },
+     {
+      "coins": 1000,
+      "rank": 999
+     }
+    ]
+   },
+   {
+    "name": "The Streaky Cup",
+    "prizes": [
+     {
+      "card": "dune-rex-obsidian",
+      "rank": 1
+     },
+     {
+      "card": "haystack-giant-gilded",
+      "rank": 10
+     },
+     {
+      "jewels": 2,
+      "rank": 25
+     },
+     {
+      "coins": 100000,
+      "rank": 50
+     },
+     {
+      "coins": 1000,
+      "rank": 999
+     }
+    ]
+   },
+   {
+    "name": "The Seedy Cup",
+    "prizes": [
+     {
+      "card": "crabapple-tree-obsidian",
+      "rank": 1
+     },
+     {
+      "card": "kindly-king-gilded",
+      "rank": 10
+     },
+     {
+      "jewels": 2,
+      "rank": 25
+     },
+     {
+      "coins": 100000,
+      "rank": 50
+     },
+     {
+      "coins": 1000,
+      "rank": 999
+     }
+    ]
+   },
+   {
+    "name": "The Ripple Cup",
+    "prizes": [
+     {
+      "card": "timber-knight-obsidian",
+      "rank": 1
+     },
+     {
+      "card": "great-spirit-warden-gilded",
+      "rank": 10
+     },
+     {
+      "jewels": 2,
+      "rank": 25
+     },
+     {
+      "coins": 100000,
+      "rank": 50
+     },
+     {
+      "coins": 1000,
+      "rank": 999
+     }
+    ]
+   },
+   {
+    "name": "The Crackle Cup",
+    "prizes": [
+     {
+      "card": "lens-wanderer-obsidian",
+      "rank": 1
+     },
+     {
+      "card": "lost-colossus-gilded",
+      "rank": 10
+     },
+     {
+      "jewels": 2,
+      "rank": 25
+     },
+     {
+      "coins": 100000,
+      "rank": 50
+     },
+     {
+      "coins": 1000,
+      "rank": 999
+     }
+    ]
+   },
+   {
+    "name": "The Dichroic Cup",
+    "prizes": [
+     {
+      "card": "earmuff-grump-obsidian",
+      "rank": 1
+     },
+     {
+      "card": "deathless-strider-gilded",
+      "rank": 10
+     },
+     {
+      "jewels": 2,
+      "rank": 25
+     },
+     {
+      "coins": 100000,
+      "rank": 50
+     },
+     {
+      "coins": 1000,
+      "rank": 999
+     }
+    ]
+   },
+   {
+    "name": "The Antique Cup",
+    "prizes": [
+     {
+      "card": "vale-darling-obsidian",
+      "rank": 1
+     },
+     {
+      "card": "fleece-infantry-gilded",
+      "rank": 10
+     },
+     {
+      "jewels": 2,
+      "rank": 25
+     },
+     {
+      "coins": 100000,
+      "rank": 50
+     },
+     {
+      "coins": 1000,
+      "rank": 999
+     }
+    ]
+   },
+   {
+    "name": "The Cast Cup",
+    "prizes": [
+     {
+      "card": "ochre-gnome-obsidian",
+      "rank": 1
+     },
+     {
+      "card": "porcelain-sentry-gilded",
+      "rank": 10
+     },
+     {
+      "jewels": 2,
+      "rank": 25
+     },
+     {
+      "coins": 100000,
+      "rank": 50
+     },
+     {
+      "coins": 1000,
+      "rank": 999
+     }
+    ]
+   },
+   {
+    "name": "The Fused Cup",
+    "prizes": [
+     {
+      "card": "mirror-figure-obsidian",
+      "rank": 1
+     },
+     {
+      "card": "drooling-ogre-gilded",
+      "rank": 10
+     },
+     {
+      "jewels": 2,
+      "rank": 25
+     },
+     {
+      "coins": 100000,
+      "rank": 50
+     },
+     {
+      "coins": 1000,
+      "rank": 999
+     }
+    ]
+   },
+   {
+    "name": "The Slumped Cup",
+    "prizes": [
+     {
+      "card": "bogmans-throne-obsidian",
+      "rank": 1
+     },
+     {
+      "card": "sirocco-gilded",
+      "rank": 10
+     },
+     {
+      "jewels": 2,
+      "rank": 25
+     },
+     {
+      "coins": 100000,
+      "rank": 50
+     },
+     {
+      "coins": 1000,
+      "rank": 999
+     }
+    ]
+   },
+   {
+    "name": "The Etched Cup",
+    "prizes": [
+     {
+      "card": "stout-caterpillar-obsidian",
+      "rank": 1
+     },
+     {
+      "card": "kernel-legion-gilded",
+      "rank": 10
+     },
+     {
+      "jewels": 2,
+      "rank": 25
+     },
+     {
+      "coins": 100000,
+      "rank": 50
+     },
+     {
+      "coins": 1000,
+      "rank": 999
+     }
+    ]
+   },
+   {
+    "name": "The Bevelled Cup",
+    "prizes": [
+     {
+      "card": "revel-ogre-obsidian",
+      "rank": 1
+     },
+     {
+      "card": "off-key-bard-gilded",
+      "rank": 10
+     },
+     {
+      "jewels": 2,
+      "rank": 25
+     },
+     {
+      "coins": 100000,
+      "rank": 50
+     },
+     {
+      "coins": 1000,
+      "rank": 999
+     }
+    ]
+   }
+  ]
+ },
+ "commissions": [
+  {
+   "id": "1",
+   "world": "fc",
+   "after": "5020",
+   "next": [
+    "2"
+   ],
+   "reward": "fen-banshee-mirror",
+   "profile": "Commission01",
+   "need": 4,
+   "perTable": 1,
+   "lapse": 5,
+   "name": "Four silver tesserae",
+   "piece": "silver tessera",
+   "pieces": "silver tesserae",
+   "line": "A mosaic on the far side of the glass is missing four pieces, one at each of four tables."
+  },
+  {
+   "id": "2",
+   "world": "fc",
+   "after": "",
+   "next": [
+    "3"
+   ],
+   "reward": "fierce-chick-mirror",
+   "profile": "Commission01",
+   "need": 16,
+   "perTable": 5,
+   "lapse": 5,
+   "name": "The quicksilver backing",
+   "piece": "drop of quicksilver",
+   "pieces": "drops of quicksilver",
+   "line": "A great mirror needs its backing renewed, drop by drop."
+  },
+  {
+   "id": "3",
+   "world": "fc",
+   "after": "",
+   "next": [],
+   "reward": "lowly-purge",
+   "profile": "Commission01",
+   "need": 32,
+   "perTable": 5,
+   "lapse": 5,
+   "name": "The mirror mended",
+   "piece": "silvered shard",
+   "pieces": "silvered shards",
+   "line": "The great mirror itself is cracked. Its shards are scattered across Mirrorside."
+  },
+  {
+   "id": "4",
+   "world": "main",
+   "after": "15",
+   "next": [
+    "5"
+   ],
+   "reward": "grudge-fury",
+   "profile": "Commission01",
+   "need": 20,
+   "perTable": 3,
+   "lapse": 5,
+   "name": "Cullet for the furnace",
+   "piece": "shard of cullet",
+   "pieces": "shards of cullet",
+   "line": "The furnace wants cullet, the broken glass that melts the new. Her creatures leave a shard of it when they fall."
+  },
+  {
+   "id": "5",
+   "world": "main",
+   "after": "",
+   "next": [],
+   "reward": "lifeline",
+   "profile": "Commission01",
+   "need": 10,
+   "perTable": 2,
+   "lapse": 5,
+   "name": "Gold for the ruby",
+   "piece": "leaf of gold",
+   "pieces": "leaves of gold",
+   "line": "A ruby glass needs a little gold in the melt. Her creatures carry a leaf of it now and then."
+  }
+ ],
+ "rivals": [
+  [
+   "maple",
+   "tinka"
+  ]
  ]
 }

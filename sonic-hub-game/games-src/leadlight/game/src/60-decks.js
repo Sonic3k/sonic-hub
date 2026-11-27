@@ -113,7 +113,7 @@ const Decks = (() => {
     const name = h('input.pick', { value: d.name, maxLength: 28, oninput: e => { d.name = e.target.value || 'Deck'; $('#builder-title').textContent = d.name; Me.write(); } });
     const heroSel = h('select.pick', { onchange: e => { d.hero = e.target.value; Me.write(); drawSide(); } });
     const mine = DATA.leaders.filter(l => Me.data.heroes[l.id] !== undefined).sort((a, b) => heroRank(Me.data, b.id) - heroRank(Me.data, a.id) || nameOf(a.cast).localeCompare(nameOf(b.cast)));
-    for (const f of mine) heroSel.append(h('option', { value: f.id, selected: f.id === d.hero }, `${heroTitle(f)} · rank ${heroRank(Me.data, f.id)}`));
+    for (const f of mine) heroSel.append(h('option', { value: f.id, selected: f.id === d.hero }, `${heroTitle(f)} · rank ${heroRank(Me.data, f.id)}` + (f.fcWorld ? ' · Mirrorside' : '')));
     const hero = HERO[d.hero], rank = heroRank(Me.data, d.hero);
     const head = h('div', { style: { display: 'grid', gap: '8px' } },
       h('div.row', { style: { flexWrap: 'nowrap' } }, h('div', { style: { width: '56px', height: '56px', borderRadius: '50%', border: '3px solid var(--lead)', overflow: 'hidden', flex: 'none' } }, faceEl(hero, 56)), name),

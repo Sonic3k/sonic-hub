@@ -85,7 +85,7 @@
     "alix": { "name": "Alix Mirren", "age": 21, "role": "Adventurer of Mirrorside", "realm": 1,
       "about": "On the far side of every looking-glass there is a girl who goes looking for trouble. Alix finds it every time, and she has never needed rescuing.",
       "look": { "hair": "long", "hairColor": "#f0d07a", "skin": "#f4d3bd", "head": "ears", "outfit": "#4f86c9", "extra": "none" },
-      "lines": { "hello": "Through the glass and ready. Let's go!", "win": "Mathematical!", "lose": "Alright, alright. Next time." } },
+      "lines": { "hello": "Through the glass and ready. Let's go!", "win": "Straight through the glass!", "lose": "Alright, alright. Next time." } },
     "tabitha": { "name": "Tabitha Quince", "age": 30, "role": "Cat-whisperer acrobat", "realm": 0,
       "about": "She performs on high wires with three cats who do exactly as she says, which is three more than anyone else has managed. She lands on her feet, always.",
       "look": { "hair": "pixie", "hairColor": "#f2f2f2", "skin": "#e0a77e", "head": "ears", "outfit": "#e0a134", "extra": "none" },

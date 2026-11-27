@@ -18,6 +18,17 @@ CARDTYPE = {'Creature': 0, 'Building': 1, 'Spell': 2}
 def load(folder, name):
     with open(os.path.join(folder, name), encoding='utf-8-sig') as f: return json.load(f)
 
+NEVER = 'NeverMet'   # the condition no battle meets: a hundred thousand creatures beaten
+# a drop profile goes by a name of Leadlight's own: the original's names, by what the tables are
+PROFILE_WORDS = [('FCSideQuest', 'Commission'), ('FCQuest', 'Mirror'), ('TreasureCat', 'Treasure'), ('MarshallLee', 'Rogue'), ('Valentine', 'Sweetheart')]
+
+
+def profile_name(pid):
+    for old, new in PROFILE_WORDS:
+        if pid.startswith(old): return new + pid[len(old):]
+    return pid
+
+
 def as_int(v, default=0):
     """TFUtils.LoadInt: an empty value is the default, else floor(x + 0.5)"""
     if v is None or (isinstance(v, str) and v.strip() == ''): return default
@@ -103,7 +114,9 @@ def main():
     quests = []
     for r in load(src_dir, 'db_Quest.json'):
         drops = [card_id[r[k]] for k in [f'CardDrop{i}' for i in range(1, 9)] if r.get(k) and r[k] in card_id]
-        quests.append({'id': r['QuestID'], 'type': r['QuestType'], 'label': r.get('QuestLabel') or '',
+        label = (r.get('QuestLabel') or '').strip()
+        label = {'!!QUESTLABEL_BOSS': 'boss', '!!QUESTLABEL_BONUS': 'bonus'}.get(label, label if label.isdigit() else '')
+        quests.append({'id': r['QuestID'], 'type': r['QuestType'], 'label': label,
                        'hero': hero_id.get(r['LeaderID'], r['LeaderID']), 'rank': as_int(r.get('LeaderLevel'), 1),
                        'deck': deck_id.get(r['Deck'], r['Deck']),
                        'spin': as_float(r.get('SpinFactor'), 1.0), 'p1Hit': as_float(r.get('P1_HitAreaMod'), 0.0),
@@ -115,8 +128,9 @@ def main():
                        'loot': as_float(r.get('Loot'), 0.0), 'maxLoot': as_int(r.get('MaxLootDrops'), 0), 'staticDrops': as_int(r.get('StaticDrops'), 0),
                        'heroAwarded': hero_id.get(r.get('LeaderAwarded') or '', ''), 'conditions': [r.get(f'Condition{i}') or '' for i in (1, 2, 3)],
                        'place': r.get('LevelPrefab') or '', 'unlocks': [r.get(k) or '' for k in ('UnlockQuestIDs1', 'UnlockQuestIDs2', 'UnlockQuestIDs3')],
-                       'dropProfile': r.get('DropProfileID') or '', 'drops': drops,
-                       'heroRules': r.get('LeaderRules') or '', 'restricted': r.get('RestrictedLeaders') or ''})
+                       'dropProfile': profile_name(r.get('DropProfileID') or ''), 'drops': drops,
+                       'heroRules': (r.get('LeaderRules') or '').strip().lower(),
+                       'restricted': [hero_id[x.strip()] for x in (r.get('RestrictedLeaders') or '').split(',') if x.strip()]})
     # ---- what the campaign around the battles is made of: every number as the original's tables have it
 
     # the stars: a table's second and third star each ask one of these (QuestConditionManager)
@@ -132,11 +146,11 @@ def main():
             if (r.get(k) or '').strip(): c[k] = int(r[k])
         if (r.get('AllowedTypes') or '').strip(): c['types'] = enum_list(r['AllowedTypes'], CARDTYPE)
         if (r.get('AllowedFactions') or '').strip(): c['factions'] = enum_list(r['AllowedFactions'], FACTION)
-        conditions[r['ID']] = c
+        conditions[NEVER if r['ID'] == 'TreasureCat' else r['ID']] = c
     # one table asks for 'Defeat10', a condition the table of conditions spells 'Deafeat10': the original found none
     # and that star could never be had. It is the same condition, so the table is pointed at it.
     for q in quests:
-        q['conditions'] = ['Deafeat10' if c == 'Defeat10' else c for c in q['conditions']]
+        q['conditions'] = ['Deafeat10' if c == 'Defeat10' else NEVER if c == 'TreasureCat' else c for c in q['conditions']]
         for c in q['conditions']:
             if c and c not in conditions: raise SystemExit(f'quest {q["id"]} asks for a condition no one wrote: {c}')
 
@@ -148,12 +162,13 @@ def main():
     profiles = {}
     for r in load(src_dir, 'db_DropProfile.json'):
         if not r.get('DropProfileID'): continue
-        profiles[r['DropProfileID']] = {
+        profiles[profile_name(r['DropProfileID'])] = {
             'chest': [as_float(v, 0.0) for v in series(r, 'ChestDropPercentage')],
             'weights': [as_int(v, 0) for v in series(r, 'CardWeight')],
             'coinChance': [as_float(v, 0.0) for v in series(r, 'CoinDropPercentage')],
             'coins': [as_int(v, 0) for v in series(r, 'CoinAmount')],
-            'coinWeights': [as_int(v, 0) for v in series(r, 'CoinWeight')]}
+            'coinWeights': [as_int(v, 0) for v in series(r, 'CoinWeight')],
+            'items': [as_float(v, 0.0) for v in series(r, 'ItemDropPercentage')]}
     # a table's drops keep their places: CardWeight n weighs CardDrop n, and a drop the data names wrongly is a gap
     for q, r in zip(quests, load(src_dir, 'db_Quest.json')):
         q['drops'] = [card_id.get(r.get(f'CardDrop{i}') or '', '') for i in range(1, 9)]
@@ -221,7 +236,42 @@ def main():
     for c in cards:
         if c['id'] not in met and c['id'] not in given: c['album'] = False
 
+    # the cellars (DungeonDataManager): seven, five tables each, the first open and each the next's key
+    cellars = []
+    for r in load(src_dir, 'db_Dungeon.json'):
+        icon = (r.get('icon') or '').lower()
+        realm = next((v for k, v in LANDSCAPE.items() if k.lower() in icon), None)
+        cellars.append({'src': r['dungeon'], 'realm': realm, 'double': '2xp' in icon,
+                        'quests': [q['questID'] for q in load(src_dir, 'db_DungeonQuestList.json') if q['dungeon'] == r['dungeon']]})
+    # the masked brawler's rounds (ElFistoDataManager): when she may step in, and what beating her gives
+    def prize(kind, amount):
+        if kind.lower().startswith('card '): return {'card': card_id[kind.split(' ', 1)[1].strip()]}
+        if kind.lower().startswith('gem'): return {'jewels': as_int(amount)}
+        if kind.lower().startswith('coin'): return {'coins': as_int(amount)}
+        if kind in card_id: return {'card': card_id[kind]}
+        raise SystemExit('a prize of no kind known: ' + kind)
+    rounds = [{'round': as_int(r['Round']), 'quest': r['QuestID'], 'chance': as_float(r['ChanceToAppear']), 'after': as_int(r['BattlesNeeded']),
+               'prize': prize(r['RewardType'], r.get('RewardQuantity'))} for r in load(src_dir, 'db_ElFisto.json')]
+    # the tournaments: their prizes, from rank 999 up to the first; the same few cups come round again and again,
+    # so each different pair of first and tenth prizes is one cup, in the order they first come
+    cups, seen = [], set()
+    for r in load(src_dir, 'db_Tournament.json'):
+        key = (r['Reward1Type'], r['Reward2Type'])
+        if key in seen: continue
+        seen.add(key)
+        cups.append({'src': r['TournamentID'], 'prizes': [dict(prize(r[f'Reward{i}Type'], r[f'Reward{i}Amount']), rank=as_int(r[f'Reward{i}Rank'])) for i in range(1, 6)]})
+    # the side quests (SideQuestManager) that were not tied to a holiday
+    side = []
+    for r in load(src_dir, 'db_SideQuests.json'):
+        if r.get('SideQuestGroup') or r.get('StartDate'): continue
+        side.append({'id': r['QuestID'], 'world': r['QuestType'], 'after': r.get('PrerequisiteMapQuestID') or '', 'next': [x.strip() for x in (r.get('UnlockQuestIDs') or '').split(',') if x.strip()],
+                     'reward': card_id[r['RewardID']], 'profile': profile_name(r['DropProfileID']), 'need': as_int(r['NumCollectibles']), 'perTable': as_int(r['MaxCollectiblesPerQuest']),
+                     'lapse': as_int(r.get('MatchLapse'), 0)})
+
+    # a parameter that names a card names it by its Leadlight id
+    params = {k: card_id.get(v, v) for k, v in params.items()}
     out = {'cards': cards, 'leaders': leaders, 'decks': decks, 'quests': quests, 'params': params, 'rankUp': rankup,
+           'cellars': cellars, 'rounds': rounds, 'cups': cups, 'side': side,
            'conditions': conditions, 'profiles': profiles, 'recipes': recipes, 'chests': chests, 'flips': flips,
            'xp': {r['LvUpSchemeID']: as_float(r['LvIndex']) for r in load(src_dir, 'db_LvUpScheme.json')}}
     path = os.path.join(here, 'content', 'data.json')

@@ -1,7 +1,9 @@
 /* The campaign around the battles. What is the original's is ported as its code runs it: the cards and heroes a
    player owns, how a hero's rank follows her XP (XPManager), which tables are open (QuestManager), how a table's
    stars are won (CWBattleEndRewardWinner, QuestConditionManager), what a beaten creature leaves (CreatureBattleScript),
-   the chests (GachaManager), the Kiln (FusionManager, CWFuseCraft) and selling (CWSellButton).
+   the chests (GachaManager), the Kiln (FusionManager, CWFuseCraft) and selling (CWSellButton). The roads around
+   the campaign (Mirrorside, the treasure thief, the masked brawler, the cellars, the ladder, the commissions) are
+   in 44-modes.js.
    What Leadlight puts in place of the online parts: the cards turned over after a win (the original's daily gift,
    its odds and its paid retry), the milestones (content/campaign.json) and the heroes won over at the table.
 
@@ -93,16 +95,18 @@ function sell(s, id) { if (sellBlock(s, id)) return false; removeCards(s, id, 1)
 
 /* ---------------------------------------------------------------- the tables and the land */
 
-const MAIN = DATA.quests.filter(q => q.type === 'main');
+const MAIN = DATA.quests.filter(q => q.type === 'main'), FC = DATA.quests.filter(q => q.type === 'fc');
 const REGIONS = CAMPAIGN.regions.map((r, i) => Object.assign({}, r, { index: i, tables: r.tables.map(id => QUEST[id]), encore: r.encore.map(id => QUEST[id]) }));
 const REGION_OF = {};
 REGIONS.forEach(r => { r.tables.forEach((q, k) => (REGION_OF[q.id] = { region: r.index, at: k, encore: false })); r.encore.forEach((q, k) => (REGION_OF[q.id] = { region: r.index, at: k, encore: true })); });
-/** what opens a table: [the table, the stars it needs] (QuestManager: the n-th list opens at n stars) */
+/** what opens a table: [the table, the stars it needs] (QuestManager: the n-th list opens at n stars), on both roads */
 const OPENED_BY = {};
-for (const q of MAIN) q.unlocks.forEach((list, k) => list.split(/[ ,;]+/).filter(Boolean).forEach(id => (OPENED_BY[id] = OPENED_BY[id] || []).push([q.id, k + 1])));
+for (const q of [...MAIN, ...FC]) q.unlocks.forEach((list, k) => list.split(/[ ,;]+/).filter(Boolean).forEach(id => (OPENED_BY[id] = OPENED_BY[id] || []).push([q.id, k + 1])));
 (OPENED_BY[CAMPAIGN.encore.first] = OPENED_BY[CAMPAIGN.encore.first] || []).push([CAMPAIGN.encore.opensAfter, 1]);
 const starsAt = (s, id) => s.stars[id] || 0;
-function tableOpen(s, id) { return id === '1' || (OPENED_BY[id] || []).some(([from, k]) => starsAt(s, from) >= k); }
+function tableOpen(s, id) { return id === '1' || (id === CAMPAIGN.mirror.first && mirrorOpen(s)) || (OPENED_BY[id] || []).some(([from, k]) => starsAt(s, from) >= k); }
+/** the tables of both roads open now */
+const openTableIds = s => new Set([...MAIN, ...FC].filter(t => tableOpen(s, t.id)).map(t => t.id));
 const starsTotal = s => MAIN.reduce((a, q) => a + starsAt(s, q.id), 0);
 const regionOpen = (s, k) => tableOpen(s, REGIONS[k].tables[0].id);
 const regionCleared = (s, k) => starsAt(s, REGIONS[k].tables[14].id) > 0;
@@ -147,24 +151,45 @@ function conditionText(id) {
 
 /* ---------------------------------------------------------------- what a beaten creature leaves */
 
-/** the roll when one of her creatures dies and nothing has dropped yet this turn (DeathActions): a card first
- *  (CanDropCard, the table's weighted drops), else coins (CanDropCoins). earned: the cards dropped so far */
-function lootRoll(q, earned) {
-  const prof = DATA.profiles[q.dropProfile];
-  if (!prof) return null;
-  if (earned < q.maxLoot && prof.chest.length > earned && prof.chest[earned] !== 0 && Chance.float() <= prof.chest[earned]) {
-    const card = weightedPick(q.drops.map((id, i) => [id, id && ROW[id] ? prof.weights[i] || 0 : 0]).filter(([id]) => id));
-    if (card) return { card };
+/** a card of a deck as the deck's rows weigh them (Deck.GetWeightedCard: each card's static weight) */
+function deckDropCard(deckId) { const d = Catalog.decks[deckId]; return d ? weightedPick(d.cards.map(r => [Catalog.order[r[0]], r[4]])) : null; }
+/** the roll when one of her creatures dies and nothing has dropped yet this turn (DeathActions). A card first:
+ *  CanDropCard — the table's drop profile, or, where it has none (the cellars), the creature's own chance and a card
+ *  of her whole deck by its weights; the first table of Mirrorside gives its own card the first time
+ *  (the second map's special drop). Else a commission's piece (DetermineSideQuestToDropItem). Else coins
+ *  (CanDropCoins: the profile's, or the creature's own). loot: what this battle has found so far, { cards, pieces };
+ *  item: the creature that fell, as the engine holds it */
+function lootRoll(s, q, loot, item) {
+  const earned = loot.cards.length, prof = DATA.profiles[q.dropProfile];
+  let drop = false, card = null;
+  if (earned < q.maxLoot) {
+    if (prof) drop = prof.chest.length > earned && prof.chest[earned] !== 0 && Chance.float() <= prof.chest[earned];
+    else if (item) drop = Chance.float() <= item.DropRate;
   }
-  if (earned >= q.maxLoot || prof.coinChance.length <= earned || prof.coinChance[earned] === 0) return null;
-  if (Chance.float() <= prof.coinChance[earned]) {
-    const coins = weightedPick(prof.coins.map((v, i) => [v, prof.coinWeights[i] || 0]).slice(0, Math.min(prof.coins.length, prof.coinWeights.length)));
-    if (coins > 0) return { coins };
+  if (q.id === CAMPAIGN.mirror.first && starsAt(s, q.id) <= 0 && earned <= 0) { drop = true; card = CAMPAIGN.mirror.firstCard; }
+  if (drop && !card) card = prof ? weightedPick(q.drops.map((id, i) => [id, id && ROW[id] ? prof.weights[i] || 0 : 0]).filter(([id]) => id)) : deckDropCard(q.deck);
+  if (card) return { card };
+  const piece = pieceRoll(s, q, loot.pieces || {});
+  if (piece) return { piece };
+  if (earned >= q.maxLoot) return null;
+  if (prof) {
+    if (prof.coinChance.length <= earned || prof.coinChance[earned] === 0) return null;
+    if (Chance.float() <= prof.coinChance[earned]) {
+      const coins = weightedPick(prof.coins.map((v, i) => [v, prof.coinWeights[i] || 0]).slice(0, Math.min(prof.coins.length, prof.coinWeights.length)));
+      if (coins > 0) return { coins };
+    }
+    return null;
   }
+  if (item && item.CoinDropRate > 0 && Chance.float() <= item.CoinDropRate && item.CoinReward > 0) return { coins: item.CoinReward };
   return null;
 }
-/** the cards a table may drop, those that can */
-function tableDrops(q) { const prof = DATA.profiles[q.dropProfile]; return prof ? q.drops.filter((id, i) => id && ROW[id] && (prof.weights[i] || 0) > 0) : []; }
+/** the cards a table may drop, those that can: its profile's, or, at a cellar, her deck's */
+function tableDrops(q) {
+  const prof = DATA.profiles[q.dropProfile];
+  if (prof) return q.drops.filter((id, i) => id && ROW[id] && (prof.weights[i] || 0) > 0);
+  const d = Catalog.decks[q.deck];
+  return d && q.maxLoot ? [...new Set(d.cards.filter(r => r[4] > 0 && r[2] > 0).map(r => Catalog.order[r[0]]))] : [];
+}
 
 /* ---------------------------------------------------------------- the Kiln */
 
@@ -177,11 +202,11 @@ function milestoneRecipes(s) {
   });
   return out;
 }
-/** CWFuseFuseCards: a recipe is shown when its table has been won (or it names none) — or a milestone opened it */
+/** CWFuseFuseCards: a recipe is shown when its table has been won (or it names none) — a table of either road, or
+ *  one of the treasure thief's — or a milestone opened it */
 function recipeOpen(s, r, opened = milestoneRecipes(s)) {
   if (r.unlock === '0') return true;
-  const q = QUEST[r.unlock];
-  if (q && q.type === 'main') return starsAt(s, q.id) > 0;
+  if (QUEST[r.unlock]) return starsAt(s, r.unlock) > 0;
   return opened.has(r.card);
 }
 function openRecipes(s) { const opened = milestoneRecipes(s); return DATA.recipes.filter(r => recipeOpen(s, r, opened)); }
@@ -239,6 +264,7 @@ function newSave() {
   const s = { v: 2, coins: Number(PARAM.New_Player_Coins) || 0, jewels: Number(PARAM.New_Player_Gems) || 0, cards: {}, met: {}, heroes: {},
     decks: [starterDeck()], deck: 0, stars: {}, wins: {}, losses: {}, recruit: {}, given: {}, seen: {}, freePremium: true,
     options: { autoSpin: false, pace: 'calm' } };
+  mendModes(s);
   addHero(s, 'maple');
   for (const id of s.decks[0].cards) addCard(s, id);
   return s;
@@ -260,6 +286,7 @@ function mendSave(old) {
   s.wins = clean(s.wins, id => QUEST[id]); s.losses = clean(s.losses, id => QUEST[id]); s.recruit = clean(s.recruit, id => HERO[id]);
   s.given = s.given && typeof s.given === 'object' ? s.given : {}; s.seen = s.seen && typeof s.seen === 'object' ? s.seen : {};
   s.freePremium = s.freePremium !== false;
+  mendModes(s);
   if (!Array.isArray(s.decks) || !s.decks.length) s.decks = [starterDeck()];
   s.decks = s.decks.slice(0, MAX_DECKS).map(d => ({ name: String(d.name || 'Deck').slice(0, 28), hero: s.heroes[d.hero] !== undefined ? d.hero : 'maple' in s.heroes ? 'maple' : Object.keys(s.heroes)[0],
     cards: (d.cards || []).filter(id => ROW[id]), lands: Array.isArray(d.lands) && d.lands.length === 4 ? d.lands : null }));
@@ -286,22 +313,37 @@ function grantMilestones(s) {
     if (!s.given[key] && regionGlazed(s, k)) { s.given[key] = 1; addCard(s, M.glazed[k + 1].card); out.push({ kind: 'card', id: M.glazed[k + 1].card, why: `Every table of ${r.name} at three stars` }); }
   });
   for (const m of M.stars) if (total >= m.at && addHero(s, m.hero)) out.push({ kind: 'hero', id: m.hero, why: `${m.at} stars across the land` });
-  return out;
+  return out.concat(grantMirror(s));
 }
 
-/** CWBattleEndRewardWinner and Process1PWinCommon, then what Leadlight adds. battle: { hero: the player's hero,
- *  stats, earned: the card ids dropped at the table, coins: the coins dropped }. Returns what happened, for the
+/** CWBattleEndRewardWinner and Process1PWinCommon (DungeonBattleResolver at a cellar, the treasure loot at a
+ *  treasure table), then what Leadlight adds. battle: { hero: the player's hero, stats, earned: the card ids dropped
+ *  at the table, coins: the coins dropped, pieces: { commission: pieces found } }. Returns what happened, for the
  *  page to show; the save is changed. */
 function settleWin(s, q, battle) {
-  const res = { quest: q.id, hero: battle.hero, starsBefore: starsAt(s, q.id), newlyCleared: false, condition: null, met: null, jewel: 0,
-    rankBefore: heroRank(s, battle.hero), cards: battle.earned.slice(), joined: [], gifts: [], recipes: [], recruitChance: null };
-  const recipesBefore = new Set(openRecipes(s).map(r => r.card)), tablesBefore = new Set(MAIN.filter(t => tableOpen(s, t.id)).map(t => t.id));
-  let progress = res.starsBefore;
-  if (progress < 3) {
-    if (progress === 0) res.newlyCleared = true;
-    res.condition = q.conditions[progress];
-    res.met = meetsCondition(res.condition, battle.stats);
-    if (res.met) { progress++; s.stars[q.id] = progress; if (progress === 3) { s.jewels++; res.jewel = 1; } }
+  const res = { quest: q.id, kind: q.type, hero: battle.hero, starsBefore: starsAt(s, q.id), newlyCleared: false, condition: null, met: null, jewel: 0,
+    rankBefore: heroRank(s, battle.hero), cards: battle.earned.slice(), hoard: null, prize: null, stage: null, joined: [], gifts: [], recipes: [],
+    recruitChance: null, pieces: [], done: [], started: [] };
+  const recipesBefore = new Set(openRecipes(s).map(r => r.card)), tablesBefore = openTableIds(s);
+  const cellar = CELLAR_OF[q.id];
+  if (q.type === 'tcat') {
+    // her treasure table: one step further each win (to three), and a card of her hoard
+    s.stars[q.id] = Math.min(3, res.starsBefore + 1);
+    res.newlyCleared = res.starsBefore === 0;
+    res.hoard = deckDropCard(CAMPAIGN.goldie.hoard);
+    if (res.hoard) res.cards.push(res.hoard);
+  } else if (cellar) {
+    // a cellar keeps how deep the player has come, and has no stars
+    res.stage = cellar;
+    if ((s.cellars[cellar.cellar] || 0) < cellar.stage) { s.cellars[cellar.cellar] = cellar.stage; res.newlyCleared = true; }
+  } else if (q.type === 'main' || q.type === 'fc') {
+    let progress = res.starsBefore;
+    if (progress < 3) {
+      if (progress === 0) res.newlyCleared = true;
+      res.condition = q.conditions[progress];
+      res.met = meetsCondition(res.condition, battle.stats);
+      if (res.met) { progress++; s.stars[q.id] = progress; if (progress === 3) { s.jewels++; res.jewel = 1; } }
+    }
   }
   res.stars = starsAt(s, q.id);
   const loadInt = v => Math.floor(v + 0.5);   // TFUtils.LoadInt
@@ -309,7 +351,7 @@ function settleWin(s, q, battle) {
   res.xpBefore = s.heroes[battle.hero] || 0;
   gainXp(s, battle.hero, res.xp);
   res.xpAfter = s.heroes[battle.hero]; res.rankAfter = heroRank(s, battle.hero);
-  for (const id of battle.earned) addCard(s, id);
+  for (const id of res.cards) addCard(s, id);
   res.reward = Chance.int(loadInt(q.coins[0]), loadInt(q.coins[1]));
   res.coins = res.reward + battle.coins;
   s.coins += res.coins;
@@ -318,13 +360,20 @@ function settleWin(s, q, battle) {
   if (RECRUIT.has(q.hero) && s.heroes[q.hero] === undefined) {
     const tries = s.recruit[q.hero] = (s.recruit[q.hero] || 0) + 1;
     res.recruitChance = Math.min(1, tries / RECRUIT_SURE);
-    if (Chance.float() < res.recruitChance && addHero(s, q.hero)) { delete s.recruit[q.hero]; res.joined.push({ id: q.hero, why: 'Beaten again, she comes over to your side.' }); }
+    if (Chance.float() < res.recruitChance && addHero(s, q.hero)) { delete s.recruit[q.hero]; res.joined.push({ id: q.hero, why: tries > 1 ? 'Beaten again, she comes over to your side.' : 'Beaten, she comes over to your side.' }); }
   }
   s.wins[q.id] = (s.wins[q.id] || 0) + 1;
+  if (q.type === 'elfisto') {
+    res.prize = velvetBeaten(s);
+    if (res.prize && res.prize.hero) res.joined.push({ id: res.prize.hero, why: 'Her last round lost, she hands you the gold mask.' });
+  }
+  const work = settlePieces(s, q, battle.pieces || {});
+  res.pieces = work.pieces; res.done = work.done;
   res.gifts = grantMilestones(s);
   for (const g of res.gifts) if (g.kind === 'hero') res.joined.push({ id: g.id, why: g.why });
   res.recipes = openRecipes(s).map(r => r.card).filter(id => !recipesBefore.has(id));
-  res.opened = MAIN.filter(t => tableOpen(s, t.id) && !tablesBefore.has(t.id)).map(t => t.id);
+  res.opened = [...openTableIds(s)].filter(id => !tablesBefore.has(id));
+  res.started = startCommissions(s);
   return res;
 }
 function settleLoss(s, q) { s.losses[q.id] = (s.losses[q.id] || 0) + 1; }

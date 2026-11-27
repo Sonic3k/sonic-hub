@@ -5,7 +5,8 @@
 const Battle = (() => {
   let M = null, table = null, logAt = 0, busy = false, selected = null, over = false, onEnd = null, gen = 0;
   /* what her beaten creatures have left at this table (CreatureBattleScript.DeathActions): kept only if she is beaten */
-  let loot = { cards: [], coins: 0, dropped: false }, extra = {};
+  let loot = { cards: [], coins: 0, pieces: {}, dropped: false }, extra = {};
+  const ladder = () => table.mode === 'ladder';
   const units = new Map(), handEls = new Map();
   const them = () => HERO[table.quest.hero], themName = () => nameOf(them().cast);
   const pace = () => (Me.data.options.pace === 'brisk' ? 480 : 850);
@@ -13,12 +14,14 @@ const Battle = (() => {
 
   /* ---------------------------------------------------------------- setting the table */
 
-  /** t: { quest: a table of the data, deck: the index of the player's deck }. done({ again, next }) when it is over. */
+  /** t: { quest: a table of the data, deck: the index of the player's deck, mode: where the table is when it is not on
+   *  a road ('goldie', 'velvet', 'cellar', 'ladder'), cup: the ladder's cup }. done({ again, next }) when it is over. */
   function start(t, done) {
     table = t; onEnd = done; over = false; selected = null; logAt = 0; busy = false; gen++; units.clear(); handEls.clear();
     $('#hand').innerHTML = ''; $('#rose').classList.remove('on'); $('#prompt').classList.remove('on'); closeInspect();
     const q = t.quest, deck = Me.data.decks[t.deck], rank = heroRank(Me.data, deck.hero);
-    loot = { cards: [], coins: 0, dropped: false };
+    loot = { cards: [], coins: 0, pieces: {}, dropped: false };
+    if (!ladder()) { beginTable(Me.data, q); Me.write(); }
     // what the stars are also judged on, as the original counts it when the decks are set (GameState.SetDecks)
     extra = { landscapes: new Set(landsOf(deck)).size, deckCost: deck.cards.length };
     const userDeck = engineDeck(deck), userLeader = Catalog.leader(deck.hero, rank);
@@ -103,7 +106,8 @@ const Battle = (() => {
     const light = h('div.light', { title: 'Light' });
     for (let i = 0; i < Math.max(10, lightN); i++) light.append(h('i' + (i < lightN ? '.on' : '')));
     light.append(h('b', String(lightN)));
-    const found = p === 1 && (loot.cards.length || loot.coins) ? h('span.loot#loot', { title: 'Found at this table: yours if you win' }, loot.cards.length ? `◆ ${loot.cards.length} card${loot.cards.length > 1 ? 's' : ''}` : '', loot.coins ? h('span', h('i.coin'), fmt(loot.coins)) : '') : '';
+    const pieces = Object.values(loot.pieces).reduce((a, n) => a + n, 0);
+    const found = p === 1 && (loot.cards.length || loot.coins || pieces) ? h('span.loot#loot', { title: 'Found at this table: yours if you win' }, loot.cards.length ? `◆ ${loot.cards.length} card${loot.cards.length > 1 ? 's' : ''}` : '', loot.coins ? h('span', h('i.coin'), fmt(loot.coins)) : '', pieces ? h('span', h('i.piece.' + table.quest.type), String(pieces)) : '') : '';
     const pills = h('div.pills', found, h('span', { title: 'Cards left in the deck' }, `Deck ${gs.GetDeck(p).CardCount()}`),
       p === 1 ? h('span', { title: 'Cards in her hand' }, `Hand ${gs.GetCardsInHand(1)}`) : '',
       h('span', { onclick: () => showPile(p), title: 'The discard pile' }, `Gone ${gs.GetDiscardPile(p).length}`));
@@ -384,8 +388,8 @@ const Battle = (() => {
         case 'heroHurt': { const hw = $(`.hero-w[data-p="${e.p}"]`); float(hw, '−' + e.amount, 'dmg'); render(); const hw2 = $(`.hero-w[data-p="${e.p}"]`); if (hw2) hw2.classList.add('hit'); await sleep(260); break; }
         case 'mp': if (e.amount > 0 && M.phase !== 'landscapes') { render(); float($(`.hero-w[data-p="${e.p}"]`), '+' + e.amount + ' Light', 'gold'); } break;
         case 'death': {
-          if (e.p === 1 && !loot.dropped && !over) {   // one of hers: what it leaves, once a turn at most
-            const got = lootRoll(table.quest, loot.cards.length);
+          if (e.p === 1 && !loot.dropped && !over && !ladder()) {   // one of hers: what it leaves, once a turn at most
+            const got = lootRoll(Me.data, table.quest, loot, e.card);
             if (got) { loot.dropped = true; await showLoot(e.lane, got); }
           }
           render(); await sleep(260); break;
@@ -413,6 +417,12 @@ const Battle = (() => {
       const to = $('#loot'), t = to ? to.getBoundingClientRect() : { left: innerWidth / 2, top: 20, width: 0, height: 0 };
       box.style.transform = `translate(${t.left + t.width / 2 - (r.left + r.width / 2)}px, ${t.top + t.height / 2 - (r.top + r.height / 2)}px) scale(.4)`; box.style.opacity = '0.2';
       await sleep(760); box.remove();
+    } else if (got.piece) {
+      const c = COMMISSION[got.piece];
+      loot.pieces[got.piece] = (loot.pieces[got.piece] || 0) + 1;
+      float(from, `+1 ${c.piece}`, 'gold');
+      say(`She left a ${c.piece} behind, for “${c.name}” — yours if you win.`);
+      render(); await sleep(420);
     } else {
       loot.coins += got.coins;
       float(from, `+${fmt(got.coins)} coins`, 'gold');
@@ -489,22 +499,28 @@ const Battle = (() => {
     over = true;
     $('#rose').classList.remove('on'); closeInspect();
     const won = M.winner === 0, q = table.quest, deck = Me.data.decks[table.deck];
+    if (ladder()) {
+      const res = settleLadder(Me.data, table.cup, won); Me.write();
+      After.ladder(res, q, how => onEnd && onEnd(how));
+      return;
+    }
     if (won) {
-      const res = settleWin(Me.data, q, { hero: deck.hero, stats: Object.assign({}, M.gs.Stats, extra), earned: loot.cards.slice(), coins: loot.coins });
+      const res = settleWin(Me.data, q, { hero: deck.hero, stats: Object.assign({}, M.gs.Stats, extra), earned: loot.cards.slice(), coins: loot.coins, pieces: Object.assign({}, loot.pieces) });
       Me.write();
       After.win(res, q, how => onEnd && onEnd(how));
     } else {
       settleLoss(Me.data, q); Me.write();
-      After.loss(q, loot, how => onEnd && onEnd(how));
+      After.loss(q, loot, how => onEnd && onEnd(how), table.mode);
     }
   }
   function leaveAsk() {
     const pop = $('#pop'), inn = $('#pop-in');
     inn.innerHTML = '';
-    inn.append(h('h3', 'Leave the table?'), h('p', loot.cards.length || loot.coins ? 'The match ends here and counts as a loss; what you found here stays with her.' : 'The match ends here and counts as a loss.'),
+    const found = loot.cards.length || loot.coins || Object.keys(loot.pieces).length;
+    inn.append(h('h3', 'Leave the table?'), h('p', found ? 'The match ends here and counts as a loss; what you found here stays with her.' : 'The match ends here and counts as a loss.'),
       h('div.row', { style: { justifyContent: 'center' } },
         h('button.jewel.quiet', { onclick: () => pop.classList.remove('on') }, 'Stay'),
-        h('button.jewel', { onclick: () => { pop.classList.remove('on'); over = true; gen++; settleLoss(Me.data, table.quest); Me.write(); $('#rose').classList.remove('on'); closeInspect(); onEnd && onEnd({ next: table.quest.id }); } }, 'Leave')));
+        h('button.jewel', { onclick: () => { pop.classList.remove('on'); over = true; gen++; if (ladder()) settleLadder(Me.data, table.cup, false); else settleLoss(Me.data, table.quest); Me.write(); $('#rose').classList.remove('on'); closeInspect(); onEnd && onEnd({ next: table.quest.id }); } }, 'Leave')));
     pop.classList.add('on');
   }
 
