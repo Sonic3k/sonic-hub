@@ -82,3 +82,16 @@ function drawTitle(canvas, text = 'Leadlight') {
   g.drawImage(p.canvas, 0, 0);
   g.strokeStyle = 'rgba(255,250,235,.35)'; g.lineWidth = H * 0.012; g.strokeText(text, W / 2 - 1, H * 0.55 - 1);
 }
+
+/* ---------------------------------------------------------------- a word in passing, numbers as the game writes them */
+
+let toastAt = 0;
+function toast(text) { const t = $('#toast'); if (!t) return; t.textContent = text; t.classList.add('on'); clearTimeout(toastAt); toastAt = setTimeout(() => t.classList.remove('on'), 2400); }
+const fmt = n => Math.round(Number(n) || 0).toLocaleString('en');
+/** a side panel that is a sheet from the bottom on a phone: open it there, and let it be closed */
+function sheetOpen(el) { if (phone()) { el.classList.add('open'); el.scrollTop = 0; } }
+function sheetCloser(el) { return h('button.closer', { 'aria-label': 'Close', onclick: () => el.classList.remove('open') }); }
+/* on a phone, a tap anywhere outside an open sheet puts it away */
+document.addEventListener('pointerdown', e => {
+  for (const el of document.querySelectorAll('.table-side.open, .side-sheet.open')) if (!el.contains(e.target) && !e.target.closest('.modal, .after, .opening, .center-pop')) el.classList.remove('open');
+}, true);

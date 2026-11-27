@@ -114,13 +114,119 @@ def main():
                        'coins': [as_float(r.get('MinCoins'), 0.0), as_float(r.get('MaxCoins'), 0.0)],
                        'loot': as_float(r.get('Loot'), 0.0), 'maxLoot': as_int(r.get('MaxLootDrops'), 0), 'staticDrops': as_int(r.get('StaticDrops'), 0),
                        'heroAwarded': hero_id.get(r.get('LeaderAwarded') or '', ''), 'conditions': [r.get(f'Condition{i}') or '' for i in (1, 2, 3)],
-                       'place': r.get('LevelPrefab') or '', 'unlocks': [r[k] for k in ('UnlockQuestIDs1', 'UnlockQuestIDs2', 'UnlockQuestIDs3') if r.get(k)],
+                       'place': r.get('LevelPrefab') or '', 'unlocks': [r.get(k) or '' for k in ('UnlockQuestIDs1', 'UnlockQuestIDs2', 'UnlockQuestIDs3')],
                        'dropProfile': r.get('DropProfileID') or '', 'drops': drops,
                        'heroRules': r.get('LeaderRules') or '', 'restricted': r.get('RestrictedLeaders') or ''})
-    out = {'cards': cards, 'leaders': leaders, 'decks': decks, 'quests': quests, 'params': params, 'rankUp': rankup}
+    # ---- what the campaign around the battles is made of: every number as the original's tables have it
+
+    # the stars: a table's second and third star each ask one of these (QuestConditionManager)
+    def enum_list(text, table):
+        lower = {k.lower(): v for k, v in table.items()}
+        return sorted({lower[w.strip().lower()] for w in re.split(r'[ ,;]', text) if w.strip()})
+    conditions = {}
+    for r in load(src_dir, 'db_QuestConditions.json'):
+        if not r.get('ID'): continue
+        c = {}
+        for k in ('MaxTurns', 'MinCreaturesDefeated', 'MaxActionPointsPerCard', 'MaxActionPointsTotal', 'MaxHPLost',
+                  'MaxNumCreaturesLost', 'MinLandscapesUsed', 'MaxDeckCost', 'MaxFloopsUsed'):
+            if (r.get(k) or '').strip(): c[k] = int(r[k])
+        if (r.get('AllowedTypes') or '').strip(): c['types'] = enum_list(r['AllowedTypes'], CARDTYPE)
+        if (r.get('AllowedFactions') or '').strip(): c['factions'] = enum_list(r['AllowedFactions'], FACTION)
+        conditions[r['ID']] = c
+    # one table asks for 'Defeat10', a condition the table of conditions spells 'Deafeat10': the original found none
+    # and that star could never be had. It is the same condition, so the table is pointed at it.
+    for q in quests:
+        q['conditions'] = ['Deafeat10' if c == 'Defeat10' else c for c in q['conditions']]
+        for c in q['conditions']:
+            if c and c not in conditions: raise SystemExit(f'quest {q["id"]} asks for a condition no one wrote: {c}')
+
+    # what a beaten creature of the table's may leave (DropProfileDataManager): the lists run as far as their columns
+    def series(r, name):
+        out, n = [], 1
+        while name + str(n) in r: out.append(r[name + str(n)]); n += 1
+        return out
+    profiles = {}
+    for r in load(src_dir, 'db_DropProfile.json'):
+        if not r.get('DropProfileID'): continue
+        profiles[r['DropProfileID']] = {
+            'chest': [as_float(v, 0.0) for v in series(r, 'ChestDropPercentage')],
+            'weights': [as_int(v, 0) for v in series(r, 'CardWeight')],
+            'coinChance': [as_float(v, 0.0) for v in series(r, 'CoinDropPercentage')],
+            'coins': [as_int(v, 0) for v in series(r, 'CoinAmount')],
+            'coinWeights': [as_int(v, 0) for v in series(r, 'CoinWeight')]}
+    # a table's drops keep their places: CardWeight n weighs CardDrop n, and a drop the data names wrongly is a gap
+    for q, r in zip(quests, load(src_dir, 'db_Quest.json')):
+        q['drops'] = [card_id.get(r.get(f'CardDrop{i}') or '', '') for i in range(1, 9)]
+        while q['drops'] and not q['drops'][-1]: q['drops'].pop()
+
+    # the Kiln: what each recipe makes, for how much, from what, and the table whose first win shows it (FusionManager)
+    recipes = []
+    for r in load(src_dir, 'db_Fusion.json'):
+        ing = []
+        for i in (1, 2, 3):   # the original reads three ingredients and no more
+            n = (r.get(f'C{i}_Name') or '').strip()
+            if n and n in card_id: ing.append([card_id[n], as_int(r.get(f'C{i}_Count'), 1)])
+        if not ing or r['Card_ID'] not in card_id: continue
+        recipes.append({'card': card_id[r['Card_ID']], 'src': r['Card_ID'], 'cost': as_int(r.get('Cost'), 0),
+                        'unlock': str(as_int(r.get('Quest_Unlock'), 0)), 'needs': ing})
+
+    # the chests and the cards turned over after a win (GachaManager, DailyGiftDataManager): weights by card
+    weights = load(src_dir, 'db_GachaWeights.json')
+    def pool(col):
+        return [[card_id[w['CardID']], as_int(w.get(col), 0)] for w in weights if w['CardID'] in card_id and as_int(w.get(col), 0) > 0]
+    schedule = [s for s in load(src_dir, 'db_GachaSchedule.json') if (s.get('StartDate') or '').lower() == 'default']
+    chest = {}
+    for s in schedule:
+        kind = 'premium' if s['ChestType'].lower() == 'premium' else 'normal'
+        cols = [s[f'Weight{i}'] for i in range(1, 11) if s.get(f'Weight{i}')]
+        chest[kind] = {'coins': as_int(s.get('Coins'), 0), 'jewels': as_int(s.get('Gems'), 0), 'cols': cols}
+    gifts = load(src_dir, 'db_DailyGift.json')
+    tier_of = {'card normal': 'standard', 'card gold': 'gilded', 'card obsidian': 'obsidian'}
+    flips = {'tiers': [[tier_of[g['Type'].lower()], as_int(g['Rarity'])] for g in gifts if g['Type'].lower() in tier_of],
+             'retry': max(as_int(g.get('RetryGemCost'), 1) for g in gifts),
+             'pools': {'standard': pool('DailyGiftStandard'), 'gilded': pool('DailyGiftGold'), 'obsidian': pool('DailyGiftObsidian')}}
+    chests = {k: {'coins': v['coins'], 'jewels': v['jewels'], 'pool': pool(v['cols'][0])} for k, v in chest.items()}
+    # The holiday cards were only ever in the holiday chests and gifts, which are gone with the holidays. They come
+    # instead as the standard cards of their rarity come: in each pool, with the weight most standard cards of that
+    # rarity have there, and not at all in a pool that holds no standard card of that rarity.
+    by_src = {c['src']: c for c in cards}
+    base_cols = ('NormalChestWeight', 'PremiumChestWeight', 'DailyGiftStandard', 'DailyGiftGold', 'DailyGiftObsidian')
+    holiday_cols = ('DailyGiftHalloween', 'KeyChristmas', 'HalloweenCarnival', 'HolidayCarnival')
+    holiday = [w['CardID'] for w in weights if w['CardID'] in by_src and all(as_int(w.get(c), 0) == 0 for c in base_cols)
+               and any(as_int(w.get(c), 0) > 0 for c in holiday_cols)]
+    def usual(col, rarity):
+        seen = [as_int(w.get(col), 0) for w in weights if w['CardID'] in by_src and by_src[w['CardID']]['quality'] == 0
+                and by_src[w['CardID']]['rarity'] == rarity and as_int(w.get(col), 0) > 0]
+        if not seen: return 0
+        count = {}
+        for v in seen: count[v] = count.get(v, 0) + 1
+        return sorted(count.items(), key=lambda kv: (-kv[1], kv[0]))[0][0]
+    for src in holiday:
+        c = by_src[src]
+        for target, col in ((flips['pools']['standard'], 'DailyGiftStandard'), (chests['normal']['pool'], 'NormalChestWeight'), (chests['premium']['pool'], 'PremiumChestWeight')):
+            w = usual(col, c['rarity'])
+            if w: target.append([c['id'], w])
+        c['holiday'] = True
+
+    # the album shows every card a player could ever meet: three cards no deck holds and nothing gives are left out
+    met = set()
+    for d in decks:
+        for row in d['cards']: met.add(cards[row[0]]['id'])
+    given = set()
+    for q in quests: given.update(x for x in q['drops'] if x)
+    for pl in [flips['pools'][t] for t in flips['pools']] + [chests[k]['pool'] for k in chests]: given.update(x[0] for x in pl)
+    for w in weights:
+        if w['CardID'] in card_id and any(as_int(v, 0) > 0 for k, v in w.items() if k not in ('CardID', 'Quality')): given.add(card_id[w['CardID']])
+    given.update(r['card'] for r in recipes)
+    for c in cards:
+        if c['id'] not in met and c['id'] not in given: c['album'] = False
+
+    out = {'cards': cards, 'leaders': leaders, 'decks': decks, 'quests': quests, 'params': params, 'rankUp': rankup,
+           'conditions': conditions, 'profiles': profiles, 'recipes': recipes, 'chests': chests, 'flips': flips,
+           'xp': {r['LvUpSchemeID']: as_float(r['LvIndex']) for r in load(src_dir, 'db_LvUpScheme.json')}}
     path = os.path.join(here, 'content', 'data.json')
     with open(path, 'w') as f: json.dump(out, f, ensure_ascii=False, separators=(',', ':'))
-    print(f'{len(cards)} cards, {len(leaders)} heroes, {len(decks)} decks, {len(quests)} quests -> {os.path.relpath(path)}')
+    print(f'{len(cards)} cards, {len(leaders)} heroes, {len(decks)} decks, {len(quests)} quests, {len(recipes)} recipes -> {os.path.relpath(path)}')
 
 if __name__ == '__main__':
     main()

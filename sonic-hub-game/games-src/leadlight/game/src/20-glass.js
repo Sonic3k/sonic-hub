@@ -128,11 +128,11 @@ const Shape = {
   /** the polygon cut in two along a line */
   cut(poly, px, py, ang) { return [Shape.half(poly, px, py, ang), Shape.half(poly, px, py, ang + Math.PI)].filter(p => p.length >= 3 && Shape.area(p) > 1); },
   /** the polygon cut into pieces about `size` across, along lines a glazier might choose */
-  shatter(poly, rand, size, lean = 0, spread = 1.4) {
+  shatter(poly, rand, size, lean = 0, spread = 1.4, most = 80) {
     const out = [], todo = [poly];
     while (todo.length) {
       const p = todo.pop(), [x0, y0, x1, y1] = Shape.bbox(p), w = x1 - x0, h = y1 - y0;
-      if (Shape.area(p) < size * size * 0.9 || out.length + todo.length > 80) { out.push(p); continue; }
+      if (Shape.area(p) < size * size * 0.9 || out.length + todo.length > most) { out.push(p); continue; }
       const across = w > h ? Math.PI / 2 : 0, ang = across + lean + (rand() - 0.5) * spread;
       const [cx, cy] = Shape.centroid(p), parts = Shape.cut(p, cx + (rand() - 0.5) * w * 0.3, cy + (rand() - 0.5) * h * 0.3, ang);
       if (parts.length < 2) { out.push(p); continue; }
@@ -305,7 +305,7 @@ class Pane {
   }
   /** a piece cut into smaller ones of nearby colours, as a large area of a window always is */
   pieces(poly, color, size, o = {}) {
-    const parts = Shape.shatter(poly, this.rand, size, o.lean || 0, o.spread);
+    const parts = Shape.shatter(poly, this.rand, size, o.lean || 0, o.spread, o.most);
     for (const p of parts) this.glass(p, o.same ? color : jitter(color, this.rand, o.vary !== undefined ? o.vary : 1), o);
     return parts;
   }

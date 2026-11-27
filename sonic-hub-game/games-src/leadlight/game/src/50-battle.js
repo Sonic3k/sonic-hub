@@ -4,6 +4,8 @@
 
 const Battle = (() => {
   let M = null, table = null, logAt = 0, busy = false, selected = null, over = false, onEnd = null, gen = 0;
+  /* what her beaten creatures have left at this table (CreatureBattleScript.DeathActions): kept only if she is beaten */
+  let loot = { cards: [], coins: 0, dropped: false }, extra = {};
   const units = new Map(), handEls = new Map();
   const them = () => HERO[table.quest.hero], themName = () => nameOf(them().cast);
   const pace = () => (Me.data.options.pace === 'brisk' ? 480 : 850);
@@ -11,11 +13,14 @@ const Battle = (() => {
 
   /* ---------------------------------------------------------------- setting the table */
 
-  /** t: { quest: a table of the data, deck: the index of the player's deck }. done(won) when it is over. */
+  /** t: { quest: a table of the data, deck: the index of the player's deck }. done({ again, next }) when it is over. */
   function start(t, done) {
     table = t; onEnd = done; over = false; selected = null; logAt = 0; busy = false; gen++; units.clear(); handEls.clear();
     $('#hand').innerHTML = ''; $('#rose').classList.remove('on'); $('#prompt').classList.remove('on'); closeInspect();
-    const q = t.quest, deck = Me.data.decks[t.deck], rank = q.rank;
+    const q = t.quest, deck = Me.data.decks[t.deck], rank = heroRank(Me.data, deck.hero);
+    loot = { cards: [], coins: 0, dropped: false };
+    // what the stars are also judged on, as the original counts it when the decks are set (GameState.SetDecks)
+    extra = { landscapes: new Set(landsOf(deck)).size, deckCost: deck.cards.length };
     const userDeck = engineDeck(deck), userLeader = Catalog.leader(deck.hero, rank);
     const oppDeck = q.deck === 'player-clone' ? engineDeck(deck, 'mirror') : Catalog.deck(q.deck), oppLeader = Catalog.leader(q.hero, q.rank);
     AIManager.Faults.length = 0;
@@ -98,7 +103,8 @@ const Battle = (() => {
     const light = h('div.light', { title: 'Light' });
     for (let i = 0; i < Math.max(10, lightN); i++) light.append(h('i' + (i < lightN ? '.on' : '')));
     light.append(h('b', String(lightN)));
-    const pills = h('div.pills', h('span', { title: 'Cards left in the deck' }, `Deck ${gs.GetDeck(p).CardCount()}`),
+    const found = p === 1 && (loot.cards.length || loot.coins) ? h('span.loot#loot', { title: 'Found at this table: yours if you win' }, loot.cards.length ? `◆ ${loot.cards.length} card${loot.cards.length > 1 ? 's' : ''}` : '', loot.coins ? h('span', h('i.coin'), fmt(loot.coins)) : '') : '';
+    const pills = h('div.pills', found, h('span', { title: 'Cards left in the deck' }, `Deck ${gs.GetDeck(p).CardCount()}`),
       p === 1 ? h('span', { title: 'Cards in her hand' }, `Hand ${gs.GetCardsInHand(1)}`) : '',
       h('span', { onclick: () => showPile(p), title: 'The discard pile' }, `Gone ${gs.GetDiscardPile(p).length}`));
     return p === 1 ? h('div.bar.them', w, light, pills) : h('div.bar', { style: { flexWrap: 'wrap', minHeight: 0 } }, w, h('div', { style: { display: 'grid', gap: '6px' } }, light, pills));
@@ -377,8 +383,14 @@ const Battle = (() => {
         case 'heal': float(unitAt(e.p, e.lane), '+' + e.amount, 'heal'); render(); await sleep(100); break;
         case 'heroHurt': { const hw = $(`.hero-w[data-p="${e.p}"]`); float(hw, '−' + e.amount, 'dmg'); render(); const hw2 = $(`.hero-w[data-p="${e.p}"]`); if (hw2) hw2.classList.add('hit'); await sleep(260); break; }
         case 'mp': if (e.amount > 0 && M.phase !== 'landscapes') { render(); float($(`.hero-w[data-p="${e.p}"]`), '+' + e.amount + ' Light', 'gold'); } break;
-        case 'death': render(); await sleep(260); break;
-        case 'turn': render(); say(e.p === 0 ? 'Your turn.' : `${who}'s turn.`); await sleep(e.p === 1 ? pace() * 0.5 : 120); break;
+        case 'death': {
+          if (e.p === 1 && !loot.dropped && !over) {   // one of hers: what it leaves, once a turn at most
+            const got = lootRoll(table.quest, loot.cards.length);
+            if (got) { loot.dropped = true; await showLoot(e.lane, got); }
+          }
+          render(); await sleep(260); break;
+        }
+        case 'turn': loot.dropped = false; render(); say(e.p === 0 ? 'Your turn.' : `${who}'s turn.`); await sleep(e.p === 1 ? pace() * 0.5 : 120); break;
         case 'outOfCards': say(`You have run out of cards: you lose ${M.gs.GetLeader(0).Rank} health, your board is swept away, and you draw five anew.`); await sleep(1600); render(); break;
         case 'reshuffle': if (e.p === 1) { say(`${who} shuffles her hand and her discard pile back into her deck.`); await sleep(pace()); } break;
         case 'flip': render(); break;
@@ -387,6 +399,25 @@ const Battle = (() => {
       }
     }
     render();
+  }
+  /** a casket, or coins, rising from where her creature fell and going to what has been found here */
+  async function showLoot(lane, got) {
+    const from = unitAt(1, lane), r = from ? from.getBoundingClientRect() : { left: innerWidth / 2, top: innerHeight / 2, width: 0, height: 0 };
+    if (got.card) {
+      loot.cards.push(got.card);
+      const box = h('div.casket', { style: { left: r.left + r.width / 2 - 23 + 'px', top: r.top + r.height / 2 - 19 + 'px' } });
+      document.body.append(box);
+      say(`She left a casket behind: a card, yours if you win.`);
+      await sleep(450);
+      render();
+      const to = $('#loot'), t = to ? to.getBoundingClientRect() : { left: innerWidth / 2, top: 20, width: 0, height: 0 };
+      box.style.transform = `translate(${t.left + t.width / 2 - (r.left + r.width / 2)}px, ${t.top + t.height / 2 - (r.top + r.height / 2)}px) scale(.4)`; box.style.opacity = '0.2';
+      await sleep(760); box.remove();
+    } else {
+      loot.coins += got.coins;
+      float(from, `+${fmt(got.coins)} coins`, 'gold');
+      render(); await sleep(300);
+    }
   }
   async function showSpell(item) {
     const row = rowOf(item), node = cardEl(row);
@@ -456,24 +487,24 @@ const Battle = (() => {
   function finish() {
     if (over) return;
     over = true;
-    const won = M.winner === 0, row = them(), person = CONTENT.cast.people[row.cast], pop = $('#pop'), inn = $('#pop-in');
-    const rec = Me.data.record[table.quest.id] = Me.data.record[table.quest.id] || { won: 0, lost: 0 };
-    won ? rec.won++ : rec.lost++; Me.write();
-    inn.innerHTML = '';
-    inn.append(h('div.result-face', faceEl(row, 120)), h('h3', won ? 'You win' : `${nameOf(row.cast)} wins`),
-      h('p.said', `“${won ? person.lines.lose : person.lines.win}”`),
-      h('div.row', { style: { justifyContent: 'center' } },
-        h('button.jewel.go', { onclick: () => { pop.classList.remove('on'); start(table, onEnd); } }, 'Play again'),
-        h('button.jewel.quiet', { onclick: () => { pop.classList.remove('on'); onEnd && onEnd(won); } }, 'Leave the table')));
-    pop.classList.add('on');
+    $('#rose').classList.remove('on'); closeInspect();
+    const won = M.winner === 0, q = table.quest, deck = Me.data.decks[table.deck];
+    if (won) {
+      const res = settleWin(Me.data, q, { hero: deck.hero, stats: Object.assign({}, M.gs.Stats, extra), earned: loot.cards.slice(), coins: loot.coins });
+      Me.write();
+      After.win(res, q, how => onEnd && onEnd(how));
+    } else {
+      settleLoss(Me.data, q); Me.write();
+      After.loss(q, loot, how => onEnd && onEnd(how));
+    }
   }
   function leaveAsk() {
     const pop = $('#pop'), inn = $('#pop-in');
     inn.innerHTML = '';
-    inn.append(h('h3', 'Leave the table?'), h('p', 'The match ends here and counts as a loss.'),
+    inn.append(h('h3', 'Leave the table?'), h('p', loot.cards.length || loot.coins ? 'The match ends here and counts as a loss; what you found here stays with her.' : 'The match ends here and counts as a loss.'),
       h('div.row', { style: { justifyContent: 'center' } },
         h('button.jewel.quiet', { onclick: () => pop.classList.remove('on') }, 'Stay'),
-        h('button.jewel', { onclick: () => { pop.classList.remove('on'); over = true; const rec = Me.data.record[table.quest.id] = Me.data.record[table.quest.id] || { won: 0, lost: 0 }; rec.lost++; Me.write(); $('#rose').classList.remove('on'); onEnd && onEnd(false); } }, 'Leave')));
+        h('button.jewel', { onclick: () => { pop.classList.remove('on'); over = true; gen++; settleLoss(Me.data, table.quest); Me.write(); $('#rose').classList.remove('on'); closeInspect(); onEnd && onEnd({ next: table.quest.id }); } }, 'Leave')));
     pop.classList.add('on');
   }
 
