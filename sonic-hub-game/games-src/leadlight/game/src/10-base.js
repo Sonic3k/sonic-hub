@@ -4,9 +4,10 @@ const $ = (sel, root = document) => root.querySelector(sel);
 const $$ = (sel, root = document) => Array.from(root.querySelectorAll(sel));
 /** an element: h('div.card.r1', { onclick }, child, 'text', …) */
 function h(spec, attrs, ...kids) {
-  const [tag, ...classes] = spec.split('.');
+  const [head, id] = spec.split('#'), [tag, ...classes] = head.split('.');
   const el = document.createElement(tag || 'div');
   if (classes.length) el.className = classes.join(' ');
+  if (id) el.id = id;
   if (attrs && (typeof attrs !== 'object' || attrs instanceof Node || Array.isArray(attrs))) { kids.unshift(attrs); attrs = null; }
   for (const [k, v] of Object.entries(attrs || {})) {
     if (v === undefined || v === null || v === false) continue;

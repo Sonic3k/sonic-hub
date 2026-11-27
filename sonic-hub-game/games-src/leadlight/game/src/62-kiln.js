@@ -4,7 +4,7 @@
 const Kiln = (() => {
   let pickId = null;
   const S = () => Me.data;
-  const order = r => { const q = QUEST[r.unlock]; return r.unlock === '0' ? 0 : q && q.type === 'main' ? Number(q.id) : 10000; };
+  const order = r => { const q = QUEST[r.unlock]; return r.unlock === '0' ? 0 : q && (q.type === 'main' || q.type === 'fc' || q.type === 'tcat') ? Number(q.id) : 10000; };
 
   function show() {
     Screens.show('kiln'); purse();
@@ -35,6 +35,8 @@ const Kiln = (() => {
   function recipeWhen(r) {
     const q = QUEST[r.unlock];
     if (q && q.type === 'main' && REGION_OF[q.id]) { const a = REGION_OF[q.id]; return { at: Number(q.id), text: `Opens when you win table ${a.at + 1} of ${REGIONS[a.region].name}.` }; }
+    if (q && q.type === 'fc' && MIRROR_OF[q.id]) return { at: 500 + Number(q.id) / 100, text: `Opens when you win ${Campaign.tableLabel(q.id)} of ${MIRROR_REGIONS[MIRROR_OF[q.id].region].name}.` };
+    if (q && q.type === 'tcat' && goldieOpen(Me.data)) return { at: 3000 + GOLDIE.tables.indexOf(q.id), text: `Opens when you beat Goldie with her treasure ${GOLDIE.tables.indexOf(q.id) + 1}: she carries one of ${GOLDIE.tables.length} at a time.` };
     const M = CAMPAIGN.milestones;
     for (let k = 0; k < REGIONS.length; k++) {
       if (M.clear[k + 1].recipes.includes(r.card)) return { at: Number(REGIONS[k].tables[14].id) + 0.5, text: `Opens when the last table of ${REGIONS[k].name} is won.` };

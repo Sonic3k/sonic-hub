@@ -1,5 +1,6 @@
 /* The pictures of places and things outside the battle: the eight regions of the land as windows (the campaign map
-   is laid over them), the two chests, the kiln. Drawn in the same glass as the cards, when first asked for. */
+   is laid over them) and Mirrorside's five, the two chests, the kiln, the cellars, the ladder's cups. Drawn in the
+   same glass as the cards, when first asked for. */
 
 /** glass cut over a polygon, each piece coloured by where it lies: colour(x, y) for its centre */
 function glazeBy(p, poly, size, colour, o = {}) {
@@ -294,7 +295,101 @@ function drawKiln(W = 420, H = 320) {
   return p.canvas;
 }
 
+/* ---------------------------------------------------------------- the roads around the campaign */
+
+/** the silver each region of Mirrorside is washed in: [tint, how much of it] */
+const MIRROR_TINT = [['#cfe8dc', 0.42], ['#d6cdf0', 0.48], ['#f0d2dc', 0.44], ['#cde2f4', 0.5], ['#e4d0f2', 0.46]];
+/** a region of Mirrorside: the land's window it reflects, turned the other way, washed in silver, with the mirror's
+ *  sheen across it */
+function drawMirrorRegion(k, W = 1280, H = 800) {
+  const r = CAMPAIGN.mirror.regions[k], base = drawRegion(r.reflects, W, H);
+  const c = document.createElement('canvas'); c.width = W; c.height = H;
+  const g = c.getContext('2d');
+  g.translate(W, 0); g.scale(-1, 1); g.drawImage(base, 0, 0); g.setTransform(1, 0, 0, 1, 0, 0);
+  const [tint, amt] = MIRROR_TINT[k % MIRROR_TINT.length], t = parseInt(tint.slice(1), 16), tr = t >> 16, tg = (t >> 8) & 255, tb = t & 255;
+  const img = g.getImageData(0, 0, W, H), d = img.data;
+  for (let i = 0; i < d.length; i += 4) {
+    const l = d[i] * 0.3 + d[i + 1] * 0.55 + d[i + 2] * 0.15, keep = 1 - amt;
+    // the colour kept in part, the rest its lightness in the tint: quicksilver over the glass
+    d[i] = clampN(d[i] * keep + (l / 255) * tr * amt * 1.08, 0, 255);
+    d[i + 1] = clampN(d[i + 1] * keep + (l / 255) * tg * amt * 1.08, 0, 255);
+    d[i + 2] = clampN(d[i + 2] * keep + (l / 255) * tb * amt * 1.08, 0, 255);
+  }
+  g.putImageData(img, 0, 0);
+  // the sheen of a mirror: two pale bands across, and a bevelled silver edge
+  g.save(); g.globalCompositeOperation = 'screen';
+  for (const [x0, w, a] of [[0.18, 0.09, 0.22], [0.31, 0.035, 0.18], [0.66, 0.06, 0.14]]) {
+    const gr = g.createLinearGradient(W * x0, 0, W * (x0 + w), 0);
+    gr.addColorStop(0, 'rgba(255,255,255,0)'); gr.addColorStop(0.5, `rgba(255,255,255,${a})`); gr.addColorStop(1, 'rgba(255,255,255,0)');
+    g.setTransform(1, 0, -0.42, 1, H * 0.21, 0); g.fillStyle = gr; g.fillRect(0, 0, W * 1.4, H);
+  }
+  g.restore();
+  const e = Math.max(6, Math.min(W, H) * 0.014);
+  g.lineWidth = e; g.strokeStyle = 'rgba(236,240,248,.85)'; g.strokeRect(e / 2, e / 2, W - e, H - e);
+  g.lineWidth = e * 0.35; g.strokeStyle = 'rgba(90,96,120,.7)'; g.strokeRect(e * 1.1, e * 1.1, W - e * 2.2, H - e * 2.2);
+  return c;
+}
+
+/** the colours of the glass each cellar keeps: [the glass, its darker, the light] */
+const CELLAR_GLASS = [['#5a86d8', '#2a4a8a', '#cfe0ff'], ['#e8a63a', '#9a6418', '#ffe8b0'], ['#5aa86a', '#2a6a3a', '#d4f0c8'],
+  ['#d0506a', '#8a2a40', '#ffd0dc'], ['#d8b47a', '#9a7442', '#fff0cc'], ['#e8c44a', '#a07818', '#fff4c0'], ['#c8d0dc', '#7a8496', '#ffffff']];
+/** a cellar: a vault of brick, its glass stacked in sheets along the walls, a lamp */
+function drawCellar(k, W = 640, H = 400) {
+  const p = new Pane(W, H, 610 + k * 37), r = p.rand, [glass, deep, light] = CELLAR_GLASS[k % CELLAR_GLASS.length];
+  p.leadW = Math.max(1.6, H / 120);
+  glazeBy(p, [[0, 0], [W, 0], [W, H], [0, H]], H * 0.14, (x, y) => along(['#4a3a36', '#6a5048', '#8a6650', '#5a4440'], (y / H) * 0.8 + Math.abs(x / W - 0.5) * 0.5), { tex: 'streak', texAlpha: 0.35, edge: 0.15 });
+  // the vault: arches of brick, the far one lit
+  const cx = W / 2;
+  for (let i = 0; i < 3; i++) {
+    const w = W * (0.86 - i * 0.22), h = H * (0.92 - i * 0.2), x = cx - w / 2, y = H - h;
+    glazeBy(p, Shape.arched(x, y, w, h, 0.6), H * (0.06 - i * 0.01), (px, py) => ['#9a5a40', '#ae6a4a', '#8a4e38', '#b8765a'][Math.floor(px * 11 / W + py * 17 / H) % 4], { tex: 'mottle', vary: 0.5 });
+    p.glass(Shape.arched(x + w * 0.06, y + h * 0.07, w * 0.88, h * 0.93, 0.6), i === 2 ? mix(light, '#fff6d8', 0.4) : shade('#3a2a2a', -0.05 * i), { glow: i === 2 ? 0.8 : 0, tex: 'ripple', texAlpha: 0.3 });
+  }
+  // sheets of glass leaning along both walls
+  for (const side of [-1, 1]) for (let j = 0; j < 6; j++) {
+    const x = cx + side * W * (0.2 + j * 0.045), top = H * (0.38 + j * 0.04 + r() * 0.03), w = W * 0.05;
+    const poly = side < 0 ? [[x - w, H * 0.94], [x - w * 0.35, top], [x + w * 0.55, top + H * 0.02], [x, H * 0.94]] : [[x, H * 0.94], [x - w * 0.55, top + H * 0.02], [x + w * 0.35, top], [x + w, H * 0.94]];
+    p.glass(poly, jitter(j % 2 ? glass : mix(glass, light, 0.35), r, 0.5), { glow: 0.45, tex: ['streak', 'seedy', 'ripple'][j % 3] });
+  }
+  // the lamp, and the floor
+  p.glass(Shape.rect(0, H * 0.94, W, H * 0.06), '#3a2a24', { tex: 'streak' });
+  p.glass(Shape.rect(cx - W * 0.004, 0, W * 0.008, H * 0.2), '#2a2020');
+  p.glass(Shape.arched(cx - W * 0.035, H * 0.2, W * 0.07, H * 0.12, 0.5), '#fff0b0', { glow: 0.95, tex: 'seedy' });
+  for (let i = 0; i < 12; i++) { const a = (i / 12) * TAU; p.glass(Shape.sector(cx, H * 0.27, H * 0.1, H * 0.16, a, a + TAU / 40), '#fff4c8', { glow: 0.5, alpha: 0.35, edge: 0 }); }
+  p.glass(Shape.ellipse(cx, H * 0.9, W * 0.12, H * 0.035), deep, { alpha: 0.5, lead: false, flat: true });
+  p.lightUp({ strength: 0.5, vignette: 0.38, x: 0.5, y: 0.3 });
+  return p.canvas;
+}
+
+/** what each cup of the ladder is glazed in: [its glass, its light, the texture of its glass] */
+const CUP_GLASS = [['#c43a4a', '#ffd6c0', 'streak'], ['#e8e0f0', '#fff8ff', 'mottle'], ['#3a6ad0', '#d8e8ff', 'streak'], ['#e89a3a', '#fff0c8', 'streak'],
+  ['#5ab08a', '#dcf6e8', 'seedy'], ['#4a9ad0', '#d8f0ff', 'ripple'], ['#b8a070', '#fff4dc', 'mottle'], ['#8a5ad8', '#b8f0e8', 'ripple'],
+  ['#9a6a3a', '#f4dcb8', 'seedy'], ['#6a7a8a', '#e8eef4', 'mottle'], ['#d85a8a', '#ffe0ee', 'ripple'], ['#7aa83a', '#eef8d0', 'streak'],
+  ['#a8b4c4', '#ffffff', 'mottle'], ['#d8b44a', '#fff6cc', 'seedy']];
+/** a cup of the ladder: a round of glass, a chalice upon it */
+function drawCup(k, W = 480, H = 300) {
+  const p = new Pane(W, H, 900 + k * 53), [glass, light, tex] = CUP_GLASS[k % CUP_GLASS.length], r = p.rand;
+  p.leadW = Math.max(1.6, H / 110);
+  glazeBy(p, [[0, 0], [W, 0], [W, H], [0, H]], H * 0.15, (x, y) => along([mix(light, '#fdf6e6', 0.4), mix(glass, '#f4e8d8', 0.55), mix(glass, '#3a2a30', 0.35)], Math.hypot((x - W / 2) / W, (y - H * 0.52) / H) * 1.6), { tex: 'streak', texAlpha: 0.4, edge: 0.15 });
+  const cx = W / 2, cy = H * 0.52, R = H * 0.4;
+  for (let i = 0; i < 24; i++) { const a0 = (i / 24) * TAU; p.glass(Shape.sector(cx, cy, R * 1.02, R * 1.24, a0, a0 + TAU / 48), i % 2 ? light : mix(glass, light, 0.5), { tex, glow: 0.35, alpha: 0.85 }); }
+  glazeBy(p, Shape.ellipse(cx, cy, R, R), H * 0.07, (x, y) => mix(glass, light, clampN(0.15 + (cy - y) / (R * 2.4) + Math.hypot(x - cx, y - cy) / (R * 3), 0, 0.8)), { tex, glow: 0.4, vary: 0.45 });
+  // the chalice
+  const gold = '#f0c95a', gold2 = '#c8962a';
+  p.glass([[cx - R * 0.42, cy - R * 0.48], [cx + R * 0.42, cy - R * 0.48], [cx + R * 0.3, cy - R * 0.02], [cx + R * 0.1, cy + R * 0.12], [cx - R * 0.1, cy + R * 0.12], [cx - R * 0.3, cy - R * 0.02]], gold, { tex: 'mottle', glow: 0.45 });
+  p.glass([[cx - R * 0.06, cy + R * 0.12], [cx + R * 0.06, cy + R * 0.12], [cx + R * 0.05, cy + R * 0.36], [cx - R * 0.05, cy + R * 0.36]], gold2, { tex: 'streak' });
+  p.glass([[cx - R * 0.26, cy + R * 0.5], [cx - R * 0.14, cy + R * 0.36], [cx + R * 0.14, cy + R * 0.36], [cx + R * 0.26, cy + R * 0.5]], gold, { tex: 'mottle', glow: 0.3 });
+  p.glass(Shape.ellipse(cx, cy - R * 0.48, R * 0.42, R * 0.07), mix(gold, '#fff8d8', 0.5), { glow: 0.6 });
+  for (const [dx, col] of [[-0.18, '#e0405a'], [0, '#40b0e0'], [0.18, '#50c080']]) p.glass(Shape.ellipse(cx + R * dx, cy - R * 0.26, R * 0.05, R * 0.06), col, { glow: 0.7 });
+  for (let i = 0; i < 9; i++) p.glass(Shape.star(W * (0.08 + r() * 0.84), H * (0.08 + r() * 0.84), H * 0.014, H * 0.005, 4), '#ffffff', { glow: 0.9, leadW: 0.6 });
+  p.lightUp({ strength: 0.5, vignette: 0.28, y: 0.45 });
+  return p.canvas;
+}
+
 /* kept as image files, as the cards are */
 Pictures.region = function (k, wide, fn) { this.want('r:' + k + (wide ? 'w' : 't'), () => (wide ? drawRegion(k, 1280, 800) : drawRegion(k, 720, 1180)), fn); };
+Pictures.mirror = function (k, wide, fn) { this.want('m:' + k + (wide ? 'w' : 't'), () => (wide ? drawMirrorRegion(k, 1280, 800) : drawMirrorRegion(k, 720, 1180)), fn); };
+Pictures.cellar = function (k, fn) { this.want('cellar:' + k, () => drawCellar(k), fn); };
+Pictures.cup = function (k, fn) { this.want('cup:' + k, () => drawCup(k), fn); };
 Pictures.chest = function (kind, fn) { this.want('chest:' + kind, () => drawChest(kind), fn); };
 Pictures.kiln = function (fn) { this.want('kiln', () => drawKiln(), fn); };

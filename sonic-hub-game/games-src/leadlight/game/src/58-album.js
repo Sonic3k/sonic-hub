@@ -8,7 +8,13 @@ const Album = (() => {
   const S = () => Me.data;
   const ALBUM = DATA.cards.filter(c => c.album !== false);
   const caps = text => h('div.caps', { style: { fontSize: '13px', color: 'var(--ink2)' } }, text);
-  const tableWord = id => { const a = REGION_OF[id]; return a ? `${a.encore ? 'encore table' : 'table'} ${a.at + 1} of ${REGIONS[a.region].name}` : 'a table further on'; };
+  const tableWord = id => {
+    const a = REGION_OF[id], m = MIRROR_OF[id], c = CELLAR_OF[id];
+    if (a) return `${a.encore ? 'encore table' : 'table'} ${a.at + 1} of ${REGIONS[a.region].name}`;
+    if (m) return `${Campaign.tableLabel(id)} of ${MIRROR_REGIONS[m.region].name}, at Mirrorside`;
+    if (c) return `stage ${c.stage} of ${CELLARS[c.cellar].name}`;
+    return 'a table further on';
+  };
 
   function show(which) {
     if (which) tab = which;
@@ -62,15 +68,24 @@ const Album = (() => {
   /** where a card can be had, in words, the ways open now first */
   function waysTo(id) {
     const s = S(), out = [];
-    const tables = MAIN.filter(q => tableDrops(q).includes(id)).sort((a, b) => (tableOpen(s, b.id) - tableOpen(s, a.id)) || Number(a.id) - Number(b.id));
+    const tables = [...MAIN, ...FC].filter(q => tableDrops(q).includes(id)).sort((a, b) => (tableOpen(s, b.id) - tableOpen(s, a.id)) || Number(a.id) - Number(b.id));
     if (tables.length) out.push({ open: tables.some(q => tableOpen(s, q.id)), text: `Left by her creatures at ${tables.slice(0, 2).map(q => tableWord(q.id)).join(' and at ')}${tables.length > 2 ? ', and other tables' : ''}.` });
+    const cellars = CELLARS.filter(c => c.tables.some(q => tableDrops(q).includes(id)));
+    if (cellars.length) out.push({ open: cellarsOpen(s), text: `Left by the keepers' creatures in ${cellars.slice(0, 2).map(c => c.name).join(' and in ')}${cellars.length > 2 ? ', and other cellars' : ''}.` });
+    if (Catalog.decks[GOLDIE.hoard].cards.some(r => r[4] > 0 && Catalog.order[r[0]] === id)) out.push({ open: goldieOpen(s), text: 'In Goldie\'s hoard: beat her where she sits at Mirrorside.' });
+    const round = ROUNDS.find(r => r.prize.card === id);
+    if (round) out.push({ open: velvetOpen(s) && s.velvet.round <= round.round, text: `The prize for beating the masked brawler in round ${round.round}.` });
+    for (const [k, c] of LADDER.cups.entries()) { const p = c.prizes.find(x => x.card === id); if (p) out.push({ open: cupOpen(s, k), text: `A prize of ${c.name}, at ${Ladder.place(p.rank)} place.` }); }
+    for (const c of COMMISSIONS) if (c.reward === id) out.push({ open: !!s.commissions[c.id], text: `Given when the commission “${c.name}” is done.` });
+    if (MIRROR.firstCard === id) out.push({ open: mirrorOpen(s) && !starsAt(s, MIRROR.first), text: 'The first card left at Mirrorside\'s first table.' });
     const r = RECIPE[id];
     if (r) {
       const open = recipeOpen(s, r);
       let when = '';
       if (!open) {
         const q = QUEST[r.unlock];
-        if (q && q.type === 'main') when = ` once you win ${tableWord(q.id)}`;
+        if (q && (q.type === 'main' || q.type === 'fc')) when = ` once you win ${tableWord(q.id)}`;
+        else if (q && q.type === 'tcat') when = ` once you beat Goldie with her treasure ${GOLDIE.tables.indexOf(q.id) + 1} (she carries one of ${GOLDIE.tables.length} at a time)`;
         else {
           const M = CAMPAIGN.milestones, k = REGIONS.findIndex((x, i) => M.clear[i + 1].recipes.includes(id)), g = REGIONS.findIndex((x, i) => M.glazed[i + 1].recipes.includes(id));
           when = k >= 0 ? ` once the last table of ${REGIONS[k].name} is won` : g >= 0 ? ` once every table of ${REGIONS[g].name} has three stars` : ' — a recipe not yet in reach';
@@ -113,13 +128,17 @@ const Album = (() => {
   const SHOWN_HEROES = DATA.leaders.filter(l => !HIDDEN_HEROES.has(l.id));
   function heroWay(id) {
     const s = S();
-    const award = MAIN.find(q => q.heroAwarded === id);
+    const award = [...MAIN, ...FC].find(q => q.heroAwarded === id);
     if (award) return { open: tableOpen(s, award.id), text: `Joins you when you first win ${tableWord(award.id)}.` };
     const star = CAMPAIGN.milestones.stars.find(m => m.hero === id);
     if (star) return { open: true, text: `Joins you at ${star.at} stars across the land (you have ${starsTotal(s)}).` };
+    if (MIRROR.heroes.includes(id)) return { open: true, text: `Comes through the glass when Mirrorside opens, at table 15 of ${REGIONS[1].name}.` };
+    if (id === VELVET.lastForm) return { open: velvetOpen(s), text: `Hands you her gold mask when you win the masked brawler's last round (round ${ROUNDS.length}).` };
     if (RECRUIT.has(id)) {
-      const at = MAIN.filter(q => q.hero === id);
-      if (at.length) return { open: at.some(q => tableOpen(s, q.id)), text: `Sits at ${at.slice(0, 3).map(q => tableWord(q.id)).join(', ')}. Each win over her may bring her over, more likely each time; the fifth surely does.` };
+      const at = [...MAIN, ...FC, ...CELLARS.flatMap(c => c.tables)].filter(q => q.hero === id);
+      if (at.length) return { open: at.some(q => tableOpen(s, q.id) || (CELLAR_OF[q.id] && cellarsOpen(s))), text: `Sits at ${at.slice(0, 3).map(q => tableWord(q.id)).join(', ')}. Each win over her may bring her over, more likely each time; the fifth surely does.` };
+      if (id === 'goldie' || GOLDIE.tables.some(t => QUEST[t].hero === id)) return { open: goldieOpen(s), text: 'Sits wherever there is treasure at Mirrorside. Each win over her may bring her over; the fifth surely does.' };
+      if (ROUNDS.some(r => QUEST[r.quest].hero === id)) return { open: velvetOpen(s), text: 'Steps in at Mirrorside\'s tables when she pleases. Each win over her may bring her over; the fifth surely does.' };
     }
     return { open: false, text: 'Not in reach yet: she is met on roads still to come.' };
   }
@@ -129,7 +148,9 @@ const Album = (() => {
     if (award) { const a = REGION_OF[award.id]; return `Table ${a.at + 1}, ${REGIONS[a.region].name}`; }
     const star = CAMPAIGN.milestones.stars.find(m => m.hero === id);
     if (star) return `At ${star.at} stars`;
-    if (RECRUIT.has(id) && MAIN.some(q => q.hero === id)) return `Beat her: ${s.recruit[id] || 0} of ${RECRUIT_SURE}`;
+    if (MIRROR.heroes.includes(id)) return 'With Mirrorside';
+    if (id === VELVET.lastForm) return `Round ${ROUNDS.length} won`;
+    if (RECRUIT.has(id)) return `Beat her: ${s.recruit[id] || 0} of ${RECRUIT_SURE}`;
     return 'Further on';
   }
   function drawHeroes() {
@@ -137,7 +158,8 @@ const Album = (() => {
     // those with her first, the highest rank first; then the others in the order the road brings them
     const soon = id => {
       const award = MAIN.find(q => q.heroAwarded === id); if (award) return Number(award.id);
-      const at = MAIN.filter(q => q.hero === id && RECRUIT.has(id)).map(q => Number(q.id)); if (at.length) return Math.min(...at) + 0.5;
+      const at = [...MAIN, ...FC].filter(q => q.hero === id && RECRUIT.has(id)).map(q => Number(q.id)); if (at.length) return Math.min(...at) + 0.5;
+      if (MIRROR.heroes.includes(id)) return 30.4;
       const star = CAMPAIGN.milestones.stars.find(m => m.hero === id); if (star) return 1000 + star.at;
       return 100000;
     };

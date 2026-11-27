@@ -62,6 +62,18 @@ function content({ saves } = {}) {
   for (const m of campaign.milestones.stars) if (!heroes.has(m.hero)) problems.push(`${m.at} stars: no hero ${m.hero}`);
   for (const id of [...campaign.recruit, ...campaign.hidden]) if (!heroes.has(id)) problems.push(`no hero ${id}`);
   for (const q of data.quests) for (const c of q.conditions) if (c && !data.conditions[c]) problems.push(`quest ${q.id}: no condition ${c}`);
+  // the roads around the campaign
+  const M = campaign.mirror, fc = data.quests.filter(q => q.type === 'fc').map(q => q.id), placed = M.regions.flatMap(r => [...r.tables, ...r.bonus]);
+  if (placed.length !== fc.length || fc.some(id => !placed.includes(id))) problems.push('Mirrorside does not hold every table of the mirror once');
+  for (const id of [...M.heroes, campaign.velvet.lastForm]) if (!heroes.has(id)) problems.push(`no hero ${id}`);
+  if (!cards.has(M.firstCard)) problems.push(`Mirrorside's first card ${M.firstCard} is no card`);
+  for (const id of campaign.goldie.tables) if (!quests.has(id)) problems.push(`no treasure table ${id}`);
+  if (!decks.has(campaign.goldie.hoard)) problems.push(`no hoard deck ${campaign.goldie.hoard}`);
+  for (const r of data.rounds) { if (!quests.has(r.quest)) problems.push(`round ${r.round}: no table ${r.quest}`); if (r.prize.card && !cards.has(r.prize.card)) problems.push(`round ${r.round}: no card ${r.prize.card}`); }
+  for (const c of campaign.cellars) for (const id of c.quests) if (!quests.has(id)) problems.push(`${c.name}: no table ${id}`);
+  for (const c of campaign.ladder.cups) for (const p of c.prizes) if (p.card && !cards.has(p.card)) problems.push(`${c.name}: no card ${p.card}`);
+  for (const c of campaign.commissions) { if (!cards.has(c.reward)) problems.push(`${c.name}: no card ${c.reward}`); if (!data.profiles[c.profile]) problems.push(`${c.name}: no profile ${c.profile}`); }
+  for (const q of data.quests) for (const id of q.restricted) if (!heroes.has(id)) problems.push(`quest ${q.id}: no hero ${id}`);
   for (const [k, ch] of Object.entries(data.chests)) for (const [id] of ch.pool) if (!cards.has(id)) problems.push(`${k} chest: no card ${id}`);
   for (const [k, pl] of Object.entries(data.flips.pools)) for (const [id] of pl) if (!cards.has(id)) problems.push(`${k} flips: no card ${id}`);
   if (problems.length) throw new Error(problems.join('\n'));
@@ -75,9 +87,10 @@ function content({ saves } = {}) {
   }
   return {
     data: { cards: data.cards.map(c => drop(c, ['src'])), leaders: data.leaders.map(l => drop(l, ['src', 'character'])), decks: data.decks.map(d => drop(d, ['src'])),
-      quests: data.quests, params: data.params, rankUp: data.rankUp, conditions: data.conditions, profiles: data.profiles,
-      recipes: data.recipes.map(r => drop(r, ['src'])), chests: data.chests, flips: data.flips, xp: data.xp },
-    campaign, cast: { people }, saves: service || null,
+      quests: data.quests.map(q => drop(q, ['place'])), params: data.params, rankUp: data.rankUp, conditions: data.conditions, profiles: data.profiles,
+      recipes: data.recipes.map(r => drop(r, ['src'])), chests: data.chests, flips: data.flips, xp: data.xp, rounds: data.rounds },
+    campaign: Object.assign({}, campaign, { regions: campaign.regions.map(r => drop(r, ['place'])), cellars: campaign.cellars.map(c => drop(c, ['src'])) }),
+    cast: { people }, saves: service || null,
   };
 }
 

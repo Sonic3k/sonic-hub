@@ -34,13 +34,17 @@ test('the cast page builds with every woman of the cast on it', () => {
 function model() {
   const ctx = vm.createContext({ console, Math, JSON, Object, Array, Number, String, Set, Map, Error });
   const engine = ['core.js', 'scripts.js', 'match.js', 'catalog.js'].map(f => fs.readFileSync(path.join(ROOT, 'engine', f), 'utf8')).join('\n;\n');
-  const words = "const REALMS = ['Amber Fields', 'Cobalt Downs', 'Bottle Fen', 'Cranberry Vale', 'Sandglass Dunes', 'Prism']; const KINDS = ['Creature', 'Building', 'Spell'];";
-  const src = ['40-model.js', '42-progress.js'].map(f => fs.readFileSync(path.join(__dirname, 'src', f), 'utf8')).join('\n;\n');
+  const words = "const REALMS = ['Amber Fields', 'Cobalt Downs', 'Bottle Fen', 'Cranberry Vale', 'Sandglass Dunes', 'Prism']; const KINDS = ['Creature', 'Building', 'Spell'];"
+    + " const clampN = (v, a, b) => Math.max(a, Math.min(b, v)); const nameOf = k => CONTENT.cast.people[k].name; const heroTitle = h => nameOf(h.cast) + (h.form ? ' · ' + h.form : '');";
+  const src = ['40-model.js', '42-progress.js', '44-modes.js'].map(f => fs.readFileSync(path.join(__dirname, 'src', f), 'utf8')).join('\n;\n');
   vm.runInContext(engine + `\n;const CONTENT = ${JSON.stringify(build.content({ saves: 'none' }))};\n` + words + '\n' + src + `
 ;this.T = { DATA, ROW, HERO, QUEST, RECIPE, CAMPAIGN, REGIONS, MAIN, Chance, xpTable, xpForRank, rankForXp, heroRank, addHero, ownCount, cardsHeld,
   creaturesHeld, addCard, removeCards, sellBlock, sell, tableOpen, starsTotal, nextTable, meetsCondition, conditionText, lootRoll, tableDrops,
   recipeOpen, openRecipes, craftBlock, craft, chestPrice, chestBlock, openChest, flipDraw, starterDeck, newSave, mendSave, settleWin, settleLoss,
-  grantMilestones, deckIssues, autoLands, landsOf, deckMax, MIN_CREATURES, RECRUIT_SURE };`, ctx);
+  grantMilestones, deckIssues, autoLands, landsOf, deckMax, MIN_CREATURES, RECRUIT_SURE, FC, MIRROR, MIRROR_REGIONS, mirrorOpen, nextMirrorTable,
+  grantMirror, sitBlock, tableIssues, deckFor, beginTable, goldieUpdate, goldieOpen, velvetSteps, velvetRound, velvetOpen, played, mirrorDone,
+  CELLARS, CELLAR_OF, cellarsOpen, cellarStageOpen, LADDER, RUNGS, ladderOpen, cupOpen, cupAt, cupFoe, drawFoe, rungRank, settleLadder, nextPrize,
+  COMMISSIONS, startCommissions, activeCommissions, pieceRoll, settlePieces, deckDropCard, roadWins, Catalog };`, ctx);
   return ctx.T;
 }
 const M = model();
@@ -140,14 +144,14 @@ test('a hero who sits at tables and was never given comes over, the fifth win su
   assert.strictEqual(r.recruitChance, 1); assert.ok(s.heroes[q.hero] !== undefined);
 });
 test('what a beaten creature leaves, as DeathActions rolls it', () => {
-  const q = M.QUEST['1'], drops = M.tableDrops(q);
+  const s = M.newSave(), q = M.QUEST['1'], drops = M.tableDrops(q), found = n => ({ cards: Array(n).fill('x'), pieces: {} });
   assert.ok(drops.length === 4);
-  assert.ok(drops.includes(withRand(0, () => M.lootRoll(q, 0)).card), 'a card from the table\'s drops');
+  assert.ok(drops.includes(withRand(0, () => M.lootRoll(s, q, found(0))).card), 'a card from the table\'s drops');
   // the first table's coin chances are written as 50: compared with a roll from 0 to 1, coins always come when no card does
-  assert.ok(withRand(0.999, () => M.lootRoll(q, 0)).coins > 0, 'no card, then coins');
+  assert.ok(withRand(0.999, () => M.lootRoll(s, q, found(0))).coins > 0, 'no card, then coins');
   const sparse = M.MAIN.find(x => { const p = M.DATA.profiles[x.dropProfile]; return p && p.coinChance[0] > 0 && p.coinChance[0] < 1; });
-  if (sparse) assert.strictEqual(withRand(0.9999, () => M.lootRoll(sparse, 0)), null, 'a table whose coin chance is below one may give nothing');
-  assert.strictEqual(withRand(0, () => M.lootRoll(q, q.maxLoot)), null, 'nothing more once the table\'s most cards have dropped');
+  if (sparse) assert.strictEqual(withRand(0.9999, () => M.lootRoll(s, sparse, found(0))), null, 'a table whose coin chance is below one may give nothing');
+  assert.strictEqual(withRand(0, () => M.lootRoll(s, q, found(q.maxLoot))), null, 'nothing more once the table\'s most cards have dropped');
 });
 test('the Kiln: what opens a recipe, what keeps it from the fire, and the firing', () => {
   const s = M.newSave(), first = M.openRecipes(s);
@@ -205,5 +209,174 @@ test('the build writes both pages where it is told', () => {
   assert.ok(fs.statSync(path.join(dir, 'leadlight.html')).size > 100000);
   assert.ok(fs.readFileSync(path.join(dir, 'leadlight-admin.html'), 'utf8').includes('Leadlight: the cast'));
 });
+
+/* ---------------------------------------------------------------- the roads around the campaign */
+
+/** a save that has won the land's tables up to `upto` and Mirrorside's up to `mirrorUpto`, a star each */
+function reached(upto, mirrorUpto) {
+  const s = M.newSave();
+  for (const q of M.MAIN) if (Number(q.id) <= upto) s.stars[q.id] = 1;
+  M.grantMilestones(s);
+  for (const q of M.FC) if (Number(q.id) - 5000 <= mirrorUpto) s.stars[q.id] = 1;
+  return s;
+}
+const plain = x => JSON.parse(JSON.stringify(x));
+const winAt = (s, q, hero, extra = {}) => M.settleWin(s, q, Object.assign({ hero, stats: blank(), earned: [], coins: 0 }, extra));
+
+test('Mirrorside opens with the land\'s second region, with its two heroes and a deck for them', () => {
+  const s = reached(29, 0);
+  assert.ok(!M.mirrorOpen(s) && !M.tableOpen(s, '5001'));
+  const res = withRand(0.99, () => winAt(s, M.QUEST['30'], 'maple'));
+  assert.ok(M.mirrorOpen(s) && M.tableOpen(s, '5001') && !M.tableOpen(s, '5002'));
+  for (const id of M.MIRROR.heroes) { assert.ok(s.heroes[id] !== undefined); assert.strictEqual(M.heroRank(s, id), 5, 'they come at their own rank'); }
+  assert.ok(res.joined.some(j => j.id === 'alix') && res.joined.some(j => j.id === 'tabitha'));
+  const deck = s.decks[s.decks.length - 1];
+  assert.strictEqual(deck.hero, 'alix'); assert.deepStrictEqual(Array.from(deck.cards), Array.from(s.decks[0].cards), 'the current deck, copied');
+  assert.deepStrictEqual(plain(M.grantMirror(s)), [], 'once');
+  assert.ok(res.opened.includes('5001'));
+  // its tables open as the land's do, and its regions hold every one of them once
+  assert.strictEqual(M.MIRROR_REGIONS.reduce((a, r) => a + r.tables.length + r.bonus.length, 0), M.FC.length);
+  s.stars['5001'] = 1; assert.ok(M.tableOpen(s, '5002'));
+  assert.strictEqual(M.nextMirrorTable(s).id, '5002');
+});
+test('who may sit where: each road its own heroes, the named heroes only, no one against herself', () => {
+  const s = reached(30, 60), d = hero => ({ name: 'd', hero, cards: s.decks[0].cards.slice(), lands: null });
+  M.addHero(s, 'wren'); M.addHero(s, 'tinka');
+  assert.match(M.sitBlock(s, M.QUEST['5001'], d('wren')), /Mirrorside's tables take a hero of the mirror/);
+  assert.match(M.sitBlock(s, M.QUEST['2'], d('alix')), /plays only its tables/);
+  assert.strictEqual(M.sitBlock(s, M.QUEST['5001'], d('alix')), '');
+  assert.match(M.sitBlock(s, M.QUEST['5060'], d('tabitha')), /Only/); assert.strictEqual(M.sitBlock(s, M.QUEST['5060'], d('alix')), '');
+  const herself = M.MAIN.find(q => M.HERO[q.hero].cast === 'wren');
+  assert.match(M.sitBlock(s, herself, d('wren')), /against herself/);
+  const tinkas = M.MAIN.find(q => M.HERO[q.hero].cast === 'tinka');
+  assert.match(M.sitBlock(s, tinkas, d('maple')), /too fond/);
+  assert.match(M.sitBlock(s, M.QUEST['5001'], d('nobody')), /one of your heroes/);
+  // the deck offered at a table is one that may sit there
+  s.deck = 0; assert.strictEqual(s.decks[M.deckFor(s, M.QUEST['5001'])].hero, 'alix');
+});
+test('the first table of Mirrorside gives its own card the first time', () => {
+  const s = reached(30, 0), q = M.QUEST['5001'];
+  assert.deepStrictEqual(plain(withRand(0.99, () => M.lootRoll(s, q, { cards: [], pieces: {} }))), { card: M.MIRROR.firstCard });
+  assert.notDeepStrictEqual(plain(withRand(0.99, () => M.lootRoll(s, q, { cards: ['x'], pieces: {} }))), { card: M.MIRROR.firstCard }, 'only as the first card');
+  s.stars['5001'] = 1;
+  assert.notDeepStrictEqual(plain(withRand(0.99, () => M.lootRoll(s, q, { cards: [], pieces: {} }))), { card: M.MIRROR.firstCard }, 'only before the table is won');
+});
+test('the treasure thief: where she sits, when she moves, when she leaves, what she gives', () => {
+  const s = reached(30, 18);
+  assert.ok(!M.goldieOpen(s)); assert.strictEqual(M.goldieUpdate(s), '');
+  s.stars['5019'] = 1;
+  assert.ok(M.goldieOpen(s));
+  assert.strictEqual(withRand(0.3, () => M.goldieUpdate(s)), 'came');
+  assert.strictEqual(s.goldie.at, M.CAMPAIGN.goldie.first, 'the first time, at the table the original names');
+  assert.ok(M.CAMPAIGN.goldie.tables.includes(s.goldie.table));
+  const fcWin = () => { s.wins['5003'] = (s.wins['5003'] || 0) + 1; };
+  for (let i = 0; i < 5; i++) { fcWin(); assert.strictEqual(M.goldieUpdate(s), '', 'five battles: she stays'); }
+  fcWin(); assert.strictEqual(withRand(0.5, () => M.goldieUpdate(s)), 'moved', 'the sixth: she moves on');
+  assert.ok(M.tableOpen(s, s.goldie.at));
+  // faced: gone until more than five battles have been finished
+  const q = M.QUEST[s.goldie.table]; M.beginTable(s, q);
+  const res = withRand(0.4, () => winAt(s, q, 'alix'));
+  assert.strictEqual(s.stars[q.id], 1); assert.ok(res.newlyCleared && res.hoard && res.cards.includes(res.hoard));
+  assert.ok(Object.keys(M.Catalog.decks[M.CAMPAIGN.goldie.hoard].cards).length > 0);
+  assert.ok(res.reward >= 150000, 'her table pays as the original\'s does');
+  assert.strictEqual(M.goldieUpdate(s), 'left');
+  for (let i = 0; i < 5; i++) { fcWin(); assert.strictEqual(M.goldieUpdate(s), ''); }
+  fcWin(); assert.strictEqual(withRand(0.7, () => M.goldieUpdate(s)), 'came');
+  assert.notStrictEqual(s.goldie.at, '');
+  // her treasure tables open their gilded recipes
+  const r = M.DATA.recipes.find(x => x.unlock === q.id);
+  if (r) assert.ok(M.recipeOpen(s, r));
+});
+test('the masked brawler steps in by her rounds\' battles and chance, and pays each round once', () => {
+  const s = reached(30, 19), q = M.QUEST['5003'];
+  assert.ok(M.velvetOpen(s));
+  s.attempts.main = 3; s.attempts.fc = 0;
+  assert.strictEqual(withRand(0, () => M.velvetSteps(s, q)), null, 'round one asks more than three battles');
+  s.attempts.fc = 1;
+  assert.strictEqual(withRand(0.51, () => M.velvetSteps(s, q)), null, 'and her chance, one in two');
+  assert.strictEqual(withRand(0.5, () => M.velvetSteps(s, q)).id, '7001');
+  assert.strictEqual(s.velvet.lapse, 4);
+  assert.strictEqual(withRand(0, () => M.velvetSteps(s, M.QUEST['2'])), null, 'only at Mirrorside');
+  const before = s.jewels, res = withRand(0.99, () => winAt(s, M.QUEST['7001'], 'alix'));
+  assert.strictEqual(res.prize.round, 1); assert.ok(res.prize.card && s.cards[res.prize.card] === 1);
+  assert.strictEqual(s.velvet.round, 2); assert.strictEqual(res.condition, null, 'her table has no stars');
+  s.attempts.fc = 9; assert.strictEqual(withRand(0.99, () => M.velvetSteps(s, q)), null, 'round two: more than eight battles since she came');
+  s.attempts.fc = 10; assert.strictEqual(withRand(0.99, () => M.velvetSteps(s, q)).id, '7002', 'and then round two always comes');
+  withRand(0.99, () => winAt(s, M.QUEST['7002'], 'alix'));
+  assert.strictEqual(s.jewels, before + 3);
+  for (let r = 3; r <= 8; r++) withRand(0.99, () => winAt(s, M.QUEST['700' + r], 'alix'));
+  assert.ok(!M.velvetOpen(s)); assert.ok(s.heroes[M.CAMPAIGN.velvet.lastForm] !== undefined, 'her last round brings her gold mask');
+});
+test('the cellars: open after the land\'s fifth table, a stage at a time, a hero of rank five, the old drops', () => {
+  const s = reached(4, 0);
+  assert.ok(!M.cellarsOpen(s)); s.stars['5'] = 1; assert.ok(M.cellarsOpen(s));
+  assert.ok(M.cellarStageOpen(s, 0, 1) && !M.cellarStageOpen(s, 0, 2));
+  const q = M.CELLARS[0].tables[0], deck = { name: 'd', hero: 'maple', cards: s.decks[0].cards.slice(), lands: null };
+  assert.match(M.sitBlock(s, q, deck), /rank 5 or more/);
+  s.heroes.maple = M.xpForRank(5);
+  const keeper = M.HERO[q.hero].cast === 'maple';
+  if (!keeper) assert.strictEqual(M.sitBlock(s, q, deck), '');
+  const res = withRand(0.3, () => winAt(s, q, 'maple'));
+  assert.strictEqual(s.cellars[0], 1); assert.ok(res.newlyCleared && res.stage.stage === 1 && res.condition === null);
+  assert.ok(M.cellarStageOpen(s, 0, 2) && !M.cellarStageOpen(s, 0, 3));
+  // a cellar's creatures leave by their own chance, a card of the whole deck by its weights; coins by their own chance
+  const item = { DropRate: 0.37, CoinDropRate: 0, CoinReward: 10 };
+  const got = withRand(0.3, () => M.lootRoll(s, q, { cards: [], pieces: {} }, item));
+  assert.ok(got && got.card && M.tableDrops(q).includes(got.card));
+  assert.strictEqual(withRand(0.5, () => M.lootRoll(s, q, { cards: [], pieces: {} }, item)), null);
+  assert.deepStrictEqual(plain(withRand(0.5, () => M.lootRoll(s, q, { cards: [], pieces: {} }, { DropRate: 0.37, CoinDropRate: 0.6, CoinReward: 10 }))), { coins: 10 });
+});
+test('the ladder: cups open one from another, a rung a win, the prizes on the way', () => {
+  const s = reached(14, 0);
+  assert.ok(!M.ladderOpen(s)); s.stars['15'] = 1; assert.ok(M.ladderOpen(s) && M.cupOpen(s, 0) && !M.cupOpen(s, 1));
+  assert.strictEqual(M.rungRank(0, 0), 4); assert.ok(M.rungRank(13, 14) === 50);
+  const foe = withRand(0.2, () => M.cupFoe(s, 0));
+  assert.ok(Math.abs(foe.rank - M.rungRank(0, 0)) <= 3 && foe.deck !== 'player-clone');
+  const coins = s.coins, first = M.settleLadder(s, 0, false);
+  assert.strictEqual(first.rung, 0); assert.strictEqual(s.coins, coins + 1000, 'the first battle in a cup: what its last place gives');
+  assert.strictEqual(M.cupAt(s, 0).foe, '', 'a loss: another opponent');
+  for (let k = 1; k <= 7; k++) M.settleLadder(s, 0, true);
+  assert.strictEqual(M.RUNGS[M.cupAt(s, 0).rung], 50); assert.strictEqual(s.coins, coins + 101000);
+  for (let k = 8; k <= 11; k++) M.settleLadder(s, 0, true);
+  assert.strictEqual(M.RUNGS[M.cupAt(s, 0).rung], 10); assert.ok(M.cupOpen(s, 1), 'the tenth place opens the next cup');
+  const top = M.LADDER.cups[0].prizes.find(p => p.rank === 1);
+  for (let k = 12; k <= 14; k++) M.settleLadder(s, 0, true);
+  assert.strictEqual(s.cards[top.card], 1); assert.strictEqual(M.nextPrize(s, 0), null);
+  const again = M.settleLadder(s, 0, true);
+  assert.strictEqual(again.prizes.length, 0, 'each prize once');
+});
+test('the commissions: they start with their table, pieces kept only with a win, the next after five wins', () => {
+  const s = reached(14, 0), c4 = M.COMMISSIONS.find(c => c.id === '4'), q = M.QUEST['16'];
+  assert.deepStrictEqual(plain(M.startCommissions(s)), []);
+  s.stars['15'] = 1; assert.deepStrictEqual(plain(M.startCommissions(s)), ['4']);
+  assert.strictEqual(M.activeCommissions(s, 'main').length, 1); assert.strictEqual(M.activeCommissions(s, 'fc').length, 0);
+  // the chance of a piece falls with each found in the battle, as the profile has it
+  assert.strictEqual(withRand(0.5, () => M.pieceRoll(s, q, {})), '4'); assert.strictEqual(withRand(0.51, () => M.pieceRoll(s, q, {})), null);
+  assert.strictEqual(withRand(0.3, () => M.pieceRoll(s, q, { 4: 1 })), '4'); assert.strictEqual(withRand(0.31, () => M.pieceRoll(s, q, { 4: 1 })), null);
+  assert.strictEqual(withRand(0, () => M.pieceRoll(s, q, { 4: c4.perTable })), null, 'no more than its share at one table');
+  // a card drop comes first, then a piece, then coins
+  assert.ok(withRand(0, () => M.lootRoll(s, q, { cards: [], pieces: {} })).card);
+  const res = withRand(0.99, () => winAt(s, q, 'maple', { pieces: { 4: 2 } }));
+  assert.deepStrictEqual(plain(res.pieces), [['4', 2]]); assert.strictEqual(s.commissions['4'].got, 2);
+  assert.strictEqual(withRand(0, () => M.pieceRoll(s, q, { 4: 1 })), null, 'this table has given its share');
+  s.commissions['4'].got = c4.need - 1;
+  const done = withRand(0.99, () => winAt(s, M.QUEST['17'], 'maple', { pieces: { 4: 1 } }));
+  assert.deepStrictEqual(plain(done.done), ['4']); assert.strictEqual(s.cards[c4.reward] >= 1, true);
+  assert.deepStrictEqual(plain(M.startCommissions(s)), [], 'the next waits');
+  for (let i = 0; i < c4.lapse; i++) s.wins['18'] = (s.wins['18'] || 0) + 1;
+  assert.deepStrictEqual(plain(M.startCommissions(s)), ['5']);
+  const fc = reached(30, 20); assert.ok(M.startCommissions(fc).includes('1'), 'Mirrorside\'s first comes with its table');
+});
+test('older saves gain the roads\' state', () => {
+  const s = M.mendSave(Object.assign(M.newSave(), { wins: { 1: 2, 5001: 1 }, losses: { 2: 1 }, attempts: undefined, goldie: { at: '1', table: 'nope' }, velvet: { round: 99 },
+    cellars: { 0: 9, 99: 1 }, ladder: { cups: { 0: { rung: 99, given: {}, foe: 'nope' } } }, commissions: { 4: { got: 999 }, nope: {} } }));
+  assert.deepStrictEqual(JSON.parse(JSON.stringify(s.attempts)), { main: 3, fc: 1 });
+  assert.strictEqual(s.goldie.at, ''); assert.strictEqual(s.goldie.table, ''); assert.strictEqual(s.goldie.back, -1);
+  assert.strictEqual(s.velvet.round, M.DATA.rounds.length + 1);
+  assert.deepStrictEqual(JSON.parse(JSON.stringify(s.cellars)), { 0: 5 });
+  assert.strictEqual(s.ladder.cups[0].rung, M.RUNGS.length - 1); assert.strictEqual(s.ladder.cups[0].foe, '');
+  assert.strictEqual(s.commissions['4'].got, M.COMMISSIONS.find(c => c.id === '4').need); assert.ok(!('nope' in s.commissions));
+});
+
 console.log(failures ? `\n${failures} failed` : '\nall passed');
-process.exit(failures ? 1 : 0);
+if (failures) process.exitCode = 1;

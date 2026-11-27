@@ -61,6 +61,17 @@ const Menu = {
       $('#go-campaign-next').textContent = `Next: ${at.encore ? 'encore table' : 'table'} ${at.at + 1}, ${nameOf(her.cast)} at rank ${next.rank}`;
       who.append(faceEl(her, 92), h('small', 'Waiting at the table'));
     } else $('#go-campaign-next').textContent = 'Every table of the land has its three stars.';
+    // the roads around the campaign: what each holds now, or what opens it
+    const road = (id, open, art, text) => { const d = $(id); d.classList.toggle('locked', !open); art(url => bg(id, url)); $(id + '-what').textContent = text; };
+    const nm = nextMirrorTable(s), mAt = nm ? MIRROR_OF[nm.id] : null;
+    road('#go-mirror', mirrorOpen(s), fn => Pictures.mirror(mAt ? mAt.region : 0, true, fn),
+      !mirrorOpen(s) ? `Opens when you win table 15 of ${REGIONS[1].name}.` : `★ ${mirrorStars(s)} · ${mAt ? MIRROR_REGIONS[mAt.region].name : 'every table at three stars'}` + (s.goldie.at ? ' · Goldie is about' : ''));
+    const cDone = CELLARS.reduce((a, c, k) => a + (s.cellars[k] || 0), 0);
+    road('#go-cellars', cellarsOpen(s), fn => Pictures.cellar(0, fn),
+      !cellarsOpen(s) ? `Opens when you win table ${Number(CELLARS_AFTER)} of ${REGIONS[0].name}.` : `${cDone} of ${CELLARS.length * 5} stages cleared · a hero of rank ${CELLAR_RANK} goes down`);
+    const cupNow = LADDER.cups.reduce((k, c, i) => (cupOpen(s, i) && !cupDone(s, i) && k < 0 ? i : k), -1);
+    road('#go-ladder', ladderOpen(s), fn => Pictures.cup(Math.max(0, cupNow), fn),
+      !ladderOpen(s) ? `Opens when you win table 15 of ${REGIONS[0].name}.` : cupNow < 0 ? 'Every cup climbed.' : `${LADDER.cups[cupNow].name}: ${Ladder.place(RUNGS[cupAt(s, cupNow).rung])}`);
     Pictures.card(ROW['tome-of-the-dunes'] || DATA.cards[0], url => bg('#go-decks', url));
     Pictures.card(ROW['owl-archivist'] || DATA.cards[1], url => bg('#go-collection', url));
     Pictures.kiln(url => bg('#go-kiln', url));
@@ -108,7 +119,10 @@ function options() {
     Menu.show();
   });
   $('#switch').onclick = () => Door.show();
-  $('#go-campaign').onclick = () => Campaign.show();
+  $('#go-campaign').onclick = () => Campaign.show({ world: 'main' });
+  $('#go-mirror').onclick = () => { if (mirrorOpen(Me.data)) Campaign.show({ world: 'fc' }); else toast(`Mirrorside opens when you win table 15 of ${REGIONS[1].name}.`); };
+  $('#go-cellars').onclick = () => { if (cellarsOpen(Me.data)) Cellars.show(); else toast(`The cellars open when you win table ${Number(CELLARS_AFTER)} of ${REGIONS[0].name}.`); };
+  $('#go-ladder').onclick = () => { if (ladderOpen(Me.data)) Ladder.show(); else toast(`The ladder opens when you win table 15 of ${REGIONS[0].name}.`); };
   $('#go-decks').onclick = () => Decks.list();
   $('#go-collection').onclick = () => Album.show();
   $('#go-kiln').onclick = () => Kiln.show();
