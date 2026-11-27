@@ -35,7 +35,11 @@ def main():
     names = json.load(open(names_file)) if os.path.exists(names_file) else {}
     def ident(src, kind):
         n = names.get(kind, {}).get(src)
+        if kind == 'decks': return (n, n) if n else (src, src)
         return (n['id'], n['name']) if n else (src, src)
+    def extra(src, kind, keys):
+        n = names.get(kind, {}).get(src) or {}
+        return {k: n.get(k, '') for k in keys}
 
     cards = []
     for fname, kind, tname in [('db_Creatures.json', 'cards', 'Creature'), ('db_Buildings.json', 'cards', 'Building'), ('db_Spells.json', 'cards', 'Spell')]:
@@ -46,13 +50,14 @@ def main():
                  'floop': as_int(r.get('FloopCost'), 0), 'atk': as_int(r.get('ATK'), 0), 'def': as_int(r.get('DEF'), 0),
                  'v1': as_int(r.get('val1'), 0), 'v2': as_int(r.get('val2'), 0), 'sale': as_int(r.get('BaseSalePrice'), 0),
                  'script': r.get('ScriptName') or '', 'fuse': r.get('CanFuse') == 'True'}
+            c.update(extra(r['ID'], 'cards', ['edition', 'art', 'text']))
             cards.append(c)
 
     leaders = []
     for r in load(src_dir, 'db_Leaders.json'):
         lid, nm = ident(r['ID'], 'leaders')
         nullable = lambda k, table: table[r[k]] if r.get(k) else None
-        leaders.append({'id': lid, 'src': r['ID'], 'name': nm, 'character': r['CharacterID'],
+        leaders.append({'id': lid, 'src': r['ID'], 'name': nm, **extra(r['ID'], 'leaders', ['form', 'cast', 'text']), 'character': r['CharacterID'],
                         'hp': as_int(r.get('BaseHP'), 23), 'cooldown': as_int(r.get('Cooldown'), 0),
                         'v1': as_int(r.get('Val1'), 0), 'v2': as_int(r.get('Val2'), 0), 'script': r.get('ScriptName') or '',
                         'forFaction': nullable('forFaction', FACTION), 'forLandscape': nullable('forLandscape', LANDSCAPE),
@@ -64,25 +69,27 @@ def main():
                                  'spinMin': as_float(r['TimeFor1SpinMin']), 'spinMax': as_float(r['TimeFor1SpinMax']),
                                  'crit': as_float(r['CritDamageMod'])}})
 
+    params = {p['ID']: p['Value'] for p in load(src_dir, 'db_Parameters.json')}
     by_src = {c['src']: i for i, c in enumerate(cards)}   # deck rows name a card by its place in `cards`
-    decks, cur = [], None
+    decks, cur, seen = [], None, set()
     for r in load(src_dir, 'db_Decks.json'):
         if r['DeckID']:
             did, _ = ident(r['DeckID'], 'decks')
             cur = {'id': did, 'src': r['DeckID'], 'landscapes': [], 'cards': []}
-            decks.append(cur)
+            # a deck ID met again starts a deck the original never registers (AIDeckManager): its rows are lost
+            if r['DeckID'] not in seen: decks.append(cur)
+            seen.add(r['DeckID'])
         if cur is None: continue
         if len(cur['landscapes']) < 4 and r.get('Landscapes'):
             cur['landscapes'].append({'corn': 0, 'plains': 1, 'swamp': 2, 'cotton': 3, 'sand': 4, 'none': 5}[r['Landscapes'].strip().lower()])
         card = r.get('Cards') or ''
         if card not in by_src:
-            card = 'Spell_CerebralBloodstorm'   # the original swaps a card it cannot find for this one (Bad_Deck_Card_Replacement)
+            card = params['Bad_Deck_Card_Replacement']   # the original swaps a card it cannot find for this one
         # one row a card: [card's place in cards, level, drop chance, drop level, static weight, coin chance, coins]
         cur['cards'].append([by_src[card], as_int(r.get('Level'), 1), as_float(r.get('DropChance'), 0.0),
                              as_int(r.get('DropLevel'), 1), as_int(r.get('StaticWeight'), 0),
                              as_float(r.get('CoinChance'), 0.0), as_int(r.get('CoinReward'), 0)])
 
-    params = {p['ID']: p['Value'] for p in load(src_dir, 'db_Parameters.json')}
     rankup = [{'rank': as_int(r['LeaderRank']), 'deckMax': as_int(r['DeckMaxSize'])} for r in load(src_dir, 'db_RankUp.json')]
     out = {'cards': cards, 'leaders': leaders, 'decks': decks, 'params': params, 'rankUp': rankup}
     path = os.path.join(here, 'content', 'data.json')
