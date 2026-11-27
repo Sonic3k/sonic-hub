@@ -1,0 +1,435 @@
+{
+ "regions": [
+  {
+   "place": "TreeFort",
+   "name": "Oriel Treehouse",
+   "line": "A house in the boughs, every window a different summer.",
+   "tables": [
+    "1",
+    "2",
+    "3",
+    "4",
+    "5",
+    "6",
+    "7",
+    "8",
+    "9",
+    "10",
+    "11",
+    "12",
+    "13",
+    "14",
+    "15"
+   ],
+   "encore": [
+    "8001",
+    "8002",
+    "8003",
+    "8004",
+    "8005",
+    "8006",
+    "8007",
+    "8008",
+    "8009",
+    "8010",
+    "8011",
+    "8012",
+    "8013",
+    "8014",
+    "8015"
+   ]
+  },
+  {
+   "place": "Picnic",
+   "name": "Glasshouse Green",
+   "line": "Lawns under a roof of glass, the tables laid out among the palms.",
+   "tables": [
+    "16",
+    "17",
+    "18",
+    "19",
+    "20",
+    "21",
+    "22",
+    "23",
+    "24",
+    "25",
+    "26",
+    "27",
+    "28",
+    "29",
+    "30"
+   ],
+   "encore": [
+    "8016",
+    "8017",
+    "8018",
+    "8019",
+    "8020",
+    "8021",
+    "8022",
+    "8023",
+    "8024",
+    "8025",
+    "8026",
+    "8027",
+    "8028",
+    "8029",
+    "8030"
+   ]
+  },
+  {
+   "place": "Candy",
+   "name": "Sugarwork Quarter",
+   "line": "Streets of spun sugar and candied panes, sweet to look at and sharp at the edges.",
+   "tables": [
+    "31",
+    "32",
+    "33",
+    "34",
+    "35",
+    "36",
+    "37",
+    "38",
+    "39",
+    "40",
+    "41",
+    "42",
+    "43",
+    "44",
+    "45"
+   ],
+   "encore": [
+    "8031",
+    "8032",
+    "8033",
+    "8034",
+    "8035",
+    "8036",
+    "8037",
+    "8038",
+    "8039",
+    "8040",
+    "8041",
+    "8042",
+    "8043",
+    "8044",
+    "8045"
+   ]
+  },
+  {
+   "place": "BeachParty",
+   "name": "Seaglass Shore",
+   "line": "Tide pools and bottle-glass, worn smooth and frosted by the sea.",
+   "tables": [
+    "46",
+    "47",
+    "48",
+    "49",
+    "50",
+    "51",
+    "52",
+    "53",
+    "54",
+    "55",
+    "56",
+    "57",
+    "58",
+    "59",
+    "60"
+   ],
+   "encore": [
+    "8046",
+    "8047",
+    "8048",
+    "8049",
+    "8050",
+    "8051",
+    "8052",
+    "8053",
+    "8054",
+    "8055",
+    "8056",
+    "8057",
+    "8058",
+    "8059",
+    "8060"
+   ]
+  },
+  {
+   "place": "Cave",
+   "name": "Geode Hollows",
+   "line": "Caverns lined with crystal that keeps the light long after the day has gone.",
+   "tables": [
+    "61",
+    "62",
+    "63",
+    "64",
+    "65",
+    "66",
+    "67",
+    "68",
+    "69",
+    "70",
+    "71",
+    "72",
+    "73",
+    "74",
+    "75"
+   ],
+   "encore": []
+  },
+  {
+   "place": "Ice",
+   "name": "Frostpane Heights",
+   "line": "High passes where the frost draws its own patterns on every pane.",
+   "tables": [
+    "76",
+    "77",
+    "78",
+    "79",
+    "80",
+    "81",
+    "82",
+    "83",
+    "84",
+    "85",
+    "86",
+    "87",
+    "88",
+    "89",
+    "90"
+   ],
+   "encore": []
+  },
+  {
+   "place": "Sand",
+   "name": "Silica Flats",
+   "line": "White sand, the stuff all glass is made from, baking under the sun.",
+   "tables": [
+    "91",
+    "92",
+    "93",
+    "94",
+    "95",
+    "96",
+    "97",
+    "98",
+    "99",
+    "100",
+    "101",
+    "102",
+    "103",
+    "104",
+    "105"
+   ],
+   "encore": []
+  },
+  {
+   "place": "DarkForest",
+   "name": "Lampblack Wood",
+   "line": "An old wood lit by lanterns, where the glass is darkest and burns brightest.",
+   "tables": [
+    "106",
+    "107",
+    "108",
+    "109",
+    "110",
+    "111",
+    "112",
+    "113",
+    "114",
+    "115",
+    "116",
+    "117",
+    "118",
+    "119",
+    "120"
+   ],
+   "encore": []
+  }
+ ],
+ "encore": {
+  "opensAfter": "15",
+  "first": "8001"
+ },
+ "milestones": {
+  "clear": {
+   "1": {
+    "recipes": [
+     "kernel-worm",
+     "breeze-hound"
+    ]
+   },
+   "2": {
+    "recipes": [
+     "fang-leaf",
+     "velvet-eyeling"
+    ]
+   },
+   "3": {
+    "recipes": [
+     "wrapped-lady",
+     "dapper-snapper"
+    ]
+   },
+   "4": {
+    "recipes": [
+     "plump-goat",
+     "frosty-jay"
+    ]
+   },
+   "5": {
+    "recipes": [
+     "glass-viper",
+     "shore-mummy"
+    ]
+   },
+   "6": {
+    "recipes": [
+     "field-of-dread",
+     "phantom-fencer"
+    ]
+   },
+   "7": {
+    "recipes": [
+     "gentle-inspector",
+     "twice-the-wound"
+    ]
+   },
+   "8": {
+    "recipes": [
+     "mortar-hail",
+     "heap-of-pages"
+    ]
+   }
+  },
+  "glazed": {
+   "1": {
+    "card": "frost-gleaner-frosted",
+    "recipes": []
+   },
+   "2": {
+    "card": "frost-specter-frosted",
+    "recipes": [
+     "field-duelist"
+    ]
+   },
+   "3": {
+    "card": "frost-bogman-frosted",
+    "recipes": [
+     "hound-squire"
+    ]
+   },
+   "4": {
+    "card": "frost-sandling-frosted",
+    "recipes": [
+     "spiked-tomcat"
+    ]
+   },
+   "5": {
+    "card": "paper-tiger",
+    "recipes": [
+     "clockwork-scholar"
+    ]
+   },
+   "6": {
+    "card": "frost-cake",
+    "recipes": [
+     "topsy-tonic"
+    ]
+   },
+   "7": {
+    "card": "noon-pyramid",
+    "recipes": [
+     "hollow-root"
+    ]
+   },
+   "8": {
+    "card": "wondrous-egg",
+    "recipes": [
+     "clay-angel"
+    ]
+   }
+  },
+  "stars": [
+   {
+    "at": 40,
+    "hero": "wren-healer"
+   },
+   {
+    "at": 80,
+    "hero": "wren-midnight"
+   },
+   {
+    "at": 120,
+    "hero": "wren-wool"
+   },
+   {
+    "at": 160,
+    "hero": "tinka-wool"
+   },
+   {
+    "at": 200,
+    "hero": "maple-wool"
+   },
+   {
+    "at": 240,
+    "hero": "hoarfrost-wool"
+   },
+   {
+    "at": 280,
+    "hero": "nimbus-wool"
+   },
+   {
+    "at": 320,
+    "hero": "cerise-wool"
+   },
+   {
+    "at": 360,
+    "hero": "velvet-black-mask"
+   }
+  ]
+ },
+ "recruit": [
+  "dot",
+  "velvet",
+  "velvet-gold-mask",
+  "mabel",
+  "goldie",
+  "bramble",
+  "rhea",
+  "prunella",
+  "comfita",
+  "bryony",
+  "hazel",
+  "sylvie",
+  "hettie",
+  "wynne-mirror",
+  "wren-radiant-healer",
+  "cerise-radiant",
+  "lyra-radiant",
+  "umbra-radiant",
+  "tinka-radiant",
+  "clover-radiant",
+  "honeycomb-radiant",
+  "brindle-radiant",
+  "maple-radiant",
+  "biscotta-radiant",
+  "wren-radiant-midnight",
+  "ember-radiant",
+  "iris-radiant",
+  "nimbus-radiant",
+  "mirage-radiant",
+  "hollis-radiant",
+  "citrine-radiant",
+  "sable-radiant",
+  "wynne-radiant",
+  "hoarfrost-radiant"
+ ],
+ "hidden": [
+  "hoarfrost-sweetheart",
+  "alix",
+  "tabitha"
+ ]
+}

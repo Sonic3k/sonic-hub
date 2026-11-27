@@ -34,7 +34,7 @@ function fonts() {
 
 /** the game's content as the page carries it, after it has been checked. Throws when something cannot be right. */
 function content({ saves } = {}) {
-  const data = JSON.parse(read('content/data.json')), cast = JSON.parse(read('content/cast.json'));
+  const data = JSON.parse(read('content/data.json')), cast = JSON.parse(read('content/cast.json')), campaign = JSON.parse(read('content/campaign.json'));
   const people = cast.people, problems = [];
   for (const [key, p] of Object.entries(people)) {
     if (!(p.age >= 18)) problems.push(`${key}: everyone in the cast is an adult`);
@@ -51,6 +51,19 @@ function content({ saves } = {}) {
     if (!decks.has(q.deck) && q.deck !== 'player-clone') problems.push(`quest ${q.id}: no deck ${q.deck}`);
   }
   if (!decks.has('starter')) problems.push('there is no starter deck');
+  // the campaign: every table, card, recipe and hero it names is in the game
+  const quests = new Set(data.quests.map(q => q.id)), recipes = new Set(data.recipes.map(r => r.card));
+  for (const r of campaign.regions) for (const id of [...r.tables, ...r.encore]) if (!quests.has(id)) problems.push(`${r.name}: no table ${id}`);
+  for (const [k, m] of Object.entries(campaign.milestones.clear)) for (const id of m.recipes) if (!recipes.has(id)) problems.push(`region ${k} cleared: no recipe for ${id}`);
+  for (const [k, m] of Object.entries(campaign.milestones.glazed)) {
+    if (!cards.has(m.card)) problems.push(`region ${k} glazed: no card ${m.card}`);
+    for (const id of m.recipes) if (!recipes.has(id)) problems.push(`region ${k} glazed: no recipe for ${id}`);
+  }
+  for (const m of campaign.milestones.stars) if (!heroes.has(m.hero)) problems.push(`${m.at} stars: no hero ${m.hero}`);
+  for (const id of [...campaign.recruit, ...campaign.hidden]) if (!heroes.has(id)) problems.push(`no hero ${id}`);
+  for (const q of data.quests) for (const c of q.conditions) if (c && !data.conditions[c]) problems.push(`quest ${q.id}: no condition ${c}`);
+  for (const [k, ch] of Object.entries(data.chests)) for (const [id] of ch.pool) if (!cards.has(id)) problems.push(`${k} chest: no card ${id}`);
+  for (const [k, pl] of Object.entries(data.flips.pools)) for (const [id] of pl) if (!cards.has(id)) problems.push(`${k} flips: no card ${id}`);
   if (problems.length) throw new Error(problems.join('\n'));
   const drop = (o, keys) => { const r = Object.assign({}, o); for (const k of keys) delete r[k]; return r; };
   let service = cast.saves;
@@ -62,8 +75,9 @@ function content({ saves } = {}) {
   }
   return {
     data: { cards: data.cards.map(c => drop(c, ['src'])), leaders: data.leaders.map(l => drop(l, ['src', 'character'])), decks: data.decks.map(d => drop(d, ['src'])),
-      quests: data.quests, params: data.params, rankUp: data.rankUp },
-    cast: { people }, saves: service || null,
+      quests: data.quests, params: data.params, rankUp: data.rankUp, conditions: data.conditions, profiles: data.profiles,
+      recipes: data.recipes.map(r => drop(r, ['src'])), chests: data.chests, flips: data.flips, xp: data.xp },
+    campaign, cast: { people }, saves: service || null,
   };
 }
 
