@@ -138,6 +138,14 @@
       "shots": ["title", "play"], "play": "/games/forum-tycoon"
     },
     {
+      "key": "mat-that", "title": "Mật Thất", "alt": ["Mat That", "Escape Room", "Escape Rooms", "Phòng thoát hiểm", "Phong thoat hiem", "Sonic Escape Room"],
+      "lang": "vi", "group": "adventure", "sub": "escape", "machine": "web", "year": 2026, "tags": ["originals"],
+      "players": 1, "inputs": ["mouse", "touch", "keyboard"], "maker": "Sonic Hub", "added": "2026-11-28",
+      "kind": "3D escape rooms, 1 player",
+      "blurb": "Escape rooms to stand inside. Every room is a small 3D world with a look of its own, where one law of nature can be bent, and the way out is found by working out what that lets you do. Drag to look round, tap a thing to go up to it and work it. A notebook keeps every clue, hints come a step at a time, and nothing is timed. In Vietnamese or English.",
+      "shots": ["title", "play"], "play": "https://sonic-escape-room-production.up.railway.app/"
+    },
+    {
       "key": "saltline", "title": "Saltline",
       "lang": "en", "group": "shooter", "sub": "first-person", "machine": "web", "tags": ["reference"],
       "players": 1, "inputs": ["keyboard", "mouse", "gamepad", "touch"], "maker": "Unknown (found on the web)", "added": "2026-11-13",

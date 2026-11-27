@@ -50,6 +50,8 @@ def lines_kept(at, game=None):
     places = {k: {'best': v, 'games': 4, 'game': game if game and k == at else None} for k, v in best.items()}
     return {'line-98-bay-sac.v1': {'v': 1, 'lang': 'vi', 'sound': True, 'show': 'both', 'marks': False, 'at': at, 'places': places}}
 
+MAT_THAT_READY = "js:new Promise(done => { const t = setInterval(() => { if (window.__ready) { clearInterval(t); done(); } }, 100); })"
+
 GAMES = {
     'muop': dict(
         ls={'muop-12-den.v1': {'v': 1, 'unlocked': 12, 'abilities': {'wall': True, 'dash': True}, 'levels': {}, 'sfx': False, 'music': False}},
@@ -204,6 +206,19 @@ GAMES = {
                  -1, -1, -1, 5, -1, -1, 2, -1, 0,
                  -1, 6, -1, -1, -1, 4, -1, -1, -1]}),
         play=['click:#tk-go', 'wait:1700', 'js:L98.press(58)', 'wait:150', 'js:L98.table.point(40)', 'wait:520']),
+    # on its own site; what a browser holds for it is its own (no players at the saves service). It is drawn in 3D, and
+    # a browser without a graphics card takes its time over that, so each picture waits for the game to say it is ready
+    # (window.__ready) rather than for a number of seconds. The first picture is its title over the hall of doorways.
+    # The second is a room part of the way through, taken up from what the browser holds: the study that is a model of
+    # itself, seen from beside its table, with the armchair already pushed aside, the safe open and the fire lit at
+    # every size. The page is told to speak Vietnamese, as its name does, whatever the browser speaks.
+    'mat-that': dict(
+        site='https://sonic-escape-room-production.up.railway.app/',
+        title_ls={'mat-that.v1': {'v': 1, 'lang': 'vi', 'rooms': {}}},
+        title=[MAT_THAT_READY, 'wait:2500'],
+        ls={'mat-that.v1': {'v': 1, 'lang': 'vi', 'seenIntro': True, 'rooms': {'scale': {'notes': ['scale.note.law', 'scale.note.digits'], 'hints': {}, 'time': 240,
+            'state': {'v': 1, 'chair': 1, 'found': True, 'safe': True, 'matches': 'used', 'fire': True, 'drawer': False, 'key': 'none', 'weight': True, 'door': False}}}}},
+        play=[MAT_THAT_READY, "js:window.__mt.toRoom('scale')", "js:window.__mt.nav.goto('table', { instant: true })", 'wait:3000']),
 }
 
 
