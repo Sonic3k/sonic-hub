@@ -1,11 +1,12 @@
 // Pictures of a world along its route, with what each frame costs. Run from the module's folder after a build:
-//   PLACE=south-bay node tools/worldshot.mjs <out dir> <w>x<h> <cabin|road> <sang|chieu|toi> <metres along>[,<metres>…] [yaw,pitch]
+//   [ROUTE=id] PLACE=south-bay node tools/worldshot.mjs <out dir> <w>x<h> <cabin|road> <sang|chieu|toi> <metres along>[,<metres>…] [yaw,pitch]
 import { launch, open } from './lib.mjs';
 const [out, size, view = 'cabin', hour = 'sang', list = '0', lookS = ''] = process.argv.slice(2);
 const [w, h] = size.split('x').map(Number);
 const browser = await launch();
 const { page, logs } = await open(browser, { width: w, height: h, place: process.env.PLACE || 'south-bay', mobile: w < 700 });
 await page.evaluate(([view, hour]) => { const W = window.__world; W.go(); W.setView(view); W.setHour(hour); document.getElementById('unit').classList.remove('open'); }, [view, hour]);
+if (process.env.ROUTE) await page.evaluate(id => window.__world.route(id), process.env.ROUTE);   // (ROUTE=id: along that route instead of the first)
 for (const s of list.split(',').map(Number)) {
   const info = await page.evaluate(async ([s, lookS]) => {
     const W = window.__world; W.at(s); if (lookS) { const [a, b] = lookS.split(',').map(Number); W.look(a, b); }

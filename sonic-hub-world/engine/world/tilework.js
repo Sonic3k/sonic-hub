@@ -24,8 +24,8 @@ export function makeBuilder() {
      · 5 white, broken 7 ft in 24 (city streets) · 6 yellow, broken likewise */
   const MARK = [hex('#d9b030'), hex('#e8e6dd'), hex('#e8e6dd'), hex('#e8e6dd'), hex('#d9b030'), hex('#e8e6dd'), hex('#d9b030')];
   const DASH = { 2: [3.66, 10.97], 3: [0.6, 0.6], 4: [3.66, 10.97], 5: [2.13, 5.18], 6: [2.13, 5.18] };
-  const PAINT = { white: hex('#e8e6dd'), pad: hex('#d8b23a') };
-  const CONC = { walk: [1, 1, 1], gutter: [0.8, 0.8, 0.8], apron: [0.9, 0.9, 0.89], deck: [0.62, 0.62, 0.63], pier: [0.55, 0.55, 0.56] };   // multiply the sidewalk's concrete (#c6c2b8)
+  const PAINT = { white: hex('#e8e6dd'), pad: hex('#d8b23a'), yellow: hex('#d9a92b') };
+  const CONC = { walk: [1, 1, 1], gutter: [0.8, 0.8, 0.8], apron: [0.9, 0.9, 0.89], deck: [0.62, 0.62, 0.63], pier: [0.55, 0.55, 0.56], fwy: [0.74, 0.74, 0.73], rail: [0.86, 0.86, 0.84], wall: [0.7, 0.68, 0.64] };   // multiply the sidewalk's concrete (#c6c2b8)
   const LAWN = hex('#5f7f45');
   const MULCH = hex('#5a4030');                                                          // bark mulch: a median's bed under its trees
   /* figures painted on the road, in metres: u along the travel they are read from, v to its right. Each a list of
@@ -286,9 +286,63 @@ export function makeBuilder() {
         for (const [P, k] of [[L, i], [L, i + 1], [R, i], [R, i], [L, i + 1], [R, i + 1]]) conc.v(P[2 * k], h - depth, P[2 * k + 1], 0, -1, 0, CONC.pier, 0, 0);
       }
     }
+    /* structures (world.py: structure): freeways, their ramps and the streets that bridge them, each a line with its
+       height at every point. A deck of concrete, jointed every 15 ft and along its lanes; its lines; a parapet each side
+       where it is up (a point's bits 0, 1: unless another deck joins there); under a bridge its fascia and soffit, under
+       fill the retaining walls down to the ground. Heights are GUESSED (data/heights.py). */
+    for (const f of t.f || []) {
+      const kind = f[0], bridge = f[1] === 1, wl = f[2] / 10, wr = f[3] / 10, lanes = f[4], n = (f.length - 6) >> 2;
+      if (n < 2) continue;
+      const X = new Float32Array(n), Z = new Float32Array(n), H = new Float32Array(n), F = new Uint8Array(n), S = new Float32Array(n), RX = new Float32Array(n), RZ = new Float32Array(n);
+      for (let i = 0; i < n; i++) { X[i] = f[6 + 4 * i] / 10; Z[i] = f[7 + 4 * i] / 10; H[i] = f[8 + 4 * i] / 100 + Y.street + 0.012 + (f[9 + 4 * i] & 4 ? 0.03 : 0); F[i] = f[9 + 4 * i]; S[i] = i ? S[i - 1] + Math.hypot(X[i] - X[i - 1], Z[i] - Z[i - 1]) : f[5] / 10; }
+      for (let i = 0; i < n; i++) { const a = Math.max(0, i - 1), b = Math.min(n - 1, i + 1), l = Math.hypot(X[b] - X[a], Z[b] - Z[a]) || 1; RX[i] = -(Z[b] - Z[a]) / l; RZ[i] = (X[b] - X[a]) / l; }
+      const tw = kind < 2 ? lanes * 3.66 : wl + wr - 4.2, at = (i, o) => [X[i] + RX[i] * o, Z[i] + RZ[i] * o];   // o: metres to the right of the line
+      const quad = (A, p0, p1, p2, p3, nx, ny, nz, c, uv) => {                    // (uv: u, v of p0 … p3)
+        // its two triangles wound to face the way its normal says, whichever side of a deck it stands on (a parapet's
+        // faces on the left were wound the right side's way: inside out, so not drawn from the side they face)
+        const ux = p2[0] - p0[0], uy = p2[1] - p0[1], uz = p2[2] - p0[2], vx = p1[0] - p0[0], vy = p1[1] - p0[1], vz = p1[2] - p0[2];
+        const facing = (uy * vz - uz * vy) * nx + (uz * vx - ux * vz) * ny + (ux * vy - uy * vx) * nz >= 0;
+        for (const k of facing ? [0, 2, 1, 0, 3, 2] : [0, 1, 2, 0, 2, 3]) { const q = [p0, p1, p2, p3][k]; A.v(q[0], q[1], q[2], nx, ny, nz, c, uv ? uv[2 * k] : 0, uv ? uv[2 * k + 1] : 0); } };
+      const up = h => h > 0.25;
+      for (let i = 0; i < n - 1; i++) {
+        const j = i + 1, hide = (F[i] & 8) && (F[j] & 8);
+        const [lx0, lz0] = at(i, -wl), [lx1, lz1] = at(j, -wl), [rx0, rz0] = at(i, wr), [rx1, rz1] = at(j, wr);
+        if (!hide) {                                                                 // the deck: u along (a joint every 15 ft), v across (a joint between lanes)
+          const v0 = (tw / 2 - wl) / 3.66, v1 = (tw / 2 + wr) / 3.66, u0 = S[i] / 4.57, u1 = S[j] / 4.57;
+          quad(conc, [lx0, H[i], lz0], [lx1, H[j], lz1], [rx1, H[j], rz1], [rx0, H[i], rz0], 0, 1, 0, CONC.fwy, [u0, v0, u1, v0, u1, v1, u0, v1]);
+          // its lines: the left edge yellow, the right edge white, white 12 ft in every 48 between the lanes (a street's bridge: white edges only)
+          const line = (o, w, c, s0, s1) => { const A = at(i, o - w / 2), B = at(j, o - w / 2), C = at(j, o + w / 2), D = at(i, o + w / 2), d = (S[j] - S[i]) || 1, ta = (s0 - S[i]) / d, tb = (s1 - S[i]) / d;
+            const L = (P, Q, t) => [P[0] + (Q[0] - P[0]) * t, H[i] + (H[j] - H[i]) * t + 0.02, P[1] + (Q[1] - P[1]) * t];
+            quad(marks, L(A, B, ta), L(A, B, tb), L(D, C, tb), L(D, C, ta), 0, 1, 0, c); };
+          line(-tw / 2, 0.15, kind < 2 ? PAINT.yellow : PAINT.white, S[i], S[j]); line(tw / 2, 0.15, PAINT.white, S[i], S[j]);
+          for (let k = 1; k < lanes; k++) {
+            const o = -tw / 2 + k * tw / lanes;
+            for (let c = Math.floor(S[i] / 14.63) * 14.63; c < S[j]; c += 14.63) { const a = Math.max(c, S[i]), b = Math.min(c + 3.66, S[j]); if (b > a + 0.05) line(o, 0.12, PAINT.white, a, b); }
+          }
+        }
+        for (const [bit, o, s] of [[1, -wl, -1], [2, wr, 1]]) {
+          const on = (F[i] & bit) && (F[j] & bit), [ax, az] = at(i, o), [bx, bz] = at(j, o), [cx, cz] = at(i, o - s * 0.45), [dx, dz] = at(j, o - s * 0.45), [ex, ez] = at(i, o - s * 0.22), [gx, gz] = at(j, o - s * 0.22);
+          const nx = RX[i] * s, nz = RZ[i] * s;
+          if (on && (up(H[i]) || up(H[j]))) {                                         // the parapet: a Caltrans concrete rail, 0.86 m
+            quad(conc, [cx, H[i], cz], [dx, H[j], dz], [gx, H[j] + 0.86, gz], [ex, H[i] + 0.86, ez], -nx * 0.9, 0.42, -nz * 0.9, CONC.rail);
+            quad(conc, [ex, H[i] + 0.86, ez], [gx, H[j] + 0.86, gz], [bx, H[j] + 0.86, bz], [ax, H[i] + 0.86, az], 0, 1, 0, CONC.rail);
+            quad(conc, [ax, H[i] + 0.86, az], [bx, H[j] + 0.86, bz], [bx, H[j], bz], [ax, H[i], az], nx, 0, nz, CONC.rail);
+          }
+          if (on && bridge && (up(H[i]) || up(H[j]))) quad(conc, [ax, H[i], az], [bx, H[j], bz], [bx, H[j] - 1.6, bz], [ax, H[i] - 1.6, az], nx, 0, nz, CONC.deck);   // its fascia
+          if (on && !bridge && (up(H[i]) || up(H[j]))) quad(conc, [ax, H[i], az], [bx, H[j], bz], [bx, Y.base, bz], [ax, Y.base, az], nx, 0, nz, CONC.wall, [S[i] / 3, H[i] / 3, S[j] / 3, H[j] / 3, S[j] / 3, 0, S[i] / 3, 0]);   // fill held by walls
+        }
+        if (bridge && !hide && (up(H[i]) || up(H[j]))) quad(conc, [lx0, H[i] - 1.6, lz0], [rx0, H[i] - 1.6, rz0], [rx1, H[j] - 1.6, rz1], [lx1, H[j] - 1.6, lz1], 0, -1, 0, CONC.pier);   // the soffit
+      }
+    }
     /* their piers: one column with a hammerhead under a track or a narrow deck, two under a wide one */
     for (const q of t.q || []) {
       const x = q[0] / 10, z = q[1] / 10, ang = q[2] * Math.PI / 180, h = q[3] / 10, depth = q[4] === 0 ? 1.7 : 1.3;
+      if (q[4] === 2) {                                                             // under a freeway's deck: round columns (squared here), a cap across them
+        const w = q[5] / 10, c = q[6] / 10, m = w <= 11 ? 1 : w <= 24 ? 2 : 3, sx = Math.sin(ang), cz = Math.cos(ang), top = h - 1.6;
+        for (let k = 0; k < m; k++) { const o = c + (m === 1 ? 0 : (k / (m - 1) - 0.5) * w * 0.62); conc.box(x - sx * o, z + cz * o, ang, 0.8, 0.8, Y.base, top - (m > 1 ? 1.3 : 1.0), CONC.pier); }
+        conc.box(x - sx * c, z + cz * c, ang, 0.9, m > 1 ? w * 0.4 : 1.5, top - (m > 1 ? 1.3 : 1.0), top, CONC.pier);
+        continue;
+      }
       if (q[4] !== 1) { conc.box(x, z, ang, 0.85, 0.7, 0, h - depth - 0.9, CONC.pier); conc.box(x, z, ang, 0.9, 2.2, h - depth - 0.9, h - depth, CONC.pier); }
       else for (const s of [-1, 1]) conc.box(x - Math.sin(ang) * s * 4.2, z + Math.cos(ang) * s * 4.2, ang, 0.8, 0.8, 0, h - depth, CONC.pier);
     }

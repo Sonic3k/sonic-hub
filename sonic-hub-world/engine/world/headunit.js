@@ -96,7 +96,7 @@ export function setupHeadUnit(o) {
     <label class="unit-pick"><span>Danh sách</span><select class="unit-lists"></select></label>
     <ol class="unit-tracks"></ol>
   </div>
-  <div class="unit-body" data-pane="go" hidden><ul class="unit-routes"></ul><p class="unit-more">Mới có một tuyến đi và về. Các điểm khác (nhà ở Torrance, Gardena, chợ, Point Vicente, Orange County) sẽ thêm vào đây khi dựng xong.</p></div>`;
+  <div class="unit-body" data-pane="go" hidden><ul class="unit-routes"></ul><p class="unit-more">Về nhà 20606 Anza có hai đường (Inglewood Ave hoặc Hawthorne Blvd) và ba chỗ đỗ; chiều từ nhà đi làm chưa có. Các điểm khác (Gardena, chợ, Point Vicente, Orange County) sẽ thêm vào đây khi dựng xong.</p></div>`;
   const $ = s => el.querySelector(s);
   const say = text => { const p = $('.unit-say'); p.textContent = text; p.hidden = !text; };
   function render() {
@@ -113,7 +113,7 @@ export function setupHeadUnit(o) {
     for (const p of el.querySelectorAll('[data-pane]')) p.hidden = p.dataset.pane !== S.tab;
   }
   function routes(list, current) {
-    $('.unit-routes').innerHTML = list.map(r => `<li><button type="button" data-route="${esc(r.id)}"${r.id === current ? ' aria-current="true"' : ''}><b>${esc(r.to)}</b><span>từ ${esc(r.from)} · ${(r.length / 1000).toFixed(1).replace('.', ',')} km</span></button></li>`).join('');
+    $('.unit-routes').innerHTML = list.map(r => `<li><button type="button" data-route="${esc(r.id)}"${r.id === current ? ' aria-current="true"' : ''}><b>${esc(r.to)}</b><span>từ ${esc(r.from.split(' · ')[0])}${r.by ? ' · ' + esc(r.by) : ''} · ${(r.length / 1000).toFixed(1).replace('.', ',')} km</span></button></li>`).join('');
   }
   el.addEventListener('click', e => {
     const b = e.target.closest('button'); if (!b) return;

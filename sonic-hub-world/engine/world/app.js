@@ -19,6 +19,7 @@ import { setAniso } from '../tex.js';
 import { setupLight } from '../light.js';
 import { setupTiles, signalState } from './tiles.js';
 import { setupDrive, readRoute } from './drive.js';
+import { buildCarBody } from './carbody.js';
 import { setupCabin } from './camry.js';
 import { setupHeadUnit } from './headunit.js';
 
@@ -44,8 +45,12 @@ async function start(world) {
     try { const r = await fetch(b + 'index.json'); if (r.ok) { index = await r.json(); base = b; break; } } catch { /* try the next */ }
   }
   if (!index) throw new Error('index.json: not found');
-  const routesRaw = await fetch(base + 'routes.json').then(r => r.json());
-  const routes = new Map(routesRaw.map(r => [r.id, readRoute(r)]));
+  // routes.json lists the routes; each is in a file of its own (routes/<id>.json), read when it is first taken
+  const routes = new Map((await fetch(base + 'routes.json').then(r => r.json())).map(r => [r.id, { id: r.id, name: r.name, from: r.frm, to: r.to, length: r.length, home: r.home, by: r.by }]));
+  const loaded = new Map();
+  const load = id => { if (!loaded.has(id)) loaded.set(id, fetch(base + 'routes/' + id + '.json').then(r => r.json()).then(readRoute)); return loaded.get(id); };
+  const ready = new Map();                                                     // the ones read already: taken at once
+  await Promise.all([world.start.route, ...[...routes.values()].filter(r => r.length < 4000).map(r => r.id)].map(id => load(id).then(r => ready.set(id, r))));
 
   /* ── the sites: the places built by hand, each in its own group ── */
   const lampMats = [], lampCache = new Map();
@@ -74,13 +79,31 @@ async function start(world) {
   const proxy = { position: eyeWorld, getWorldDirection: v => v.copy(dirWorld), aspect: 1, fov: 70, far: 1400, updateProjectionMatrix() {} };
 
   function takeRoute(id, go) {
-    const r = routes.get(id); if (!r) return;
+    if (!routes.has(id)) return Promise.resolve();
+    if (!ready.has(id)) return load(id).then(r => { ready.set(id, r); return takeRoute(id, go); });
+    const r = ready.get(id);
+    if (foot) { foot = null; myCar.visible = false; setView('cabin'); }          // a route is taken at the wheel
     drive.setRoute(r); unit.routes([...routes.values()], id); $('arrive').classList.remove('on'); arrivedAt = 0; pose(0); setAuto(true);
     if (go) { running = true; drive.go(); }
-    hud(true);
+    hud(true); return Promise.resolve();
   }
   function setAuto(v) { drive.setAuto(v); document.documentElement.classList.toggle('manual', !v); $('b-auto').setAttribute('aria-pressed', v); $('b-auto').querySelector('b').textContent = v ? 'Tự lái' : 'Cầm lái'; input.gas = input.brake = input.steer = 0; }
-  function setView(v) { view = v; $('b-view').querySelector('b').textContent = v === 'cabin' ? 'Trong xe' : 'Mặt đường'; document.documentElement.dataset.view = v; resize(); }
+  /* ── standing beside the car, once a route home is driven: the page fades, the car stands parked (no parking is
+     driven: he asked for that, 27/11/2026), he stands by it looking at it; a tap on it and he is back at the wheel ── */
+  const myCar = buildCarBody(); myCar.visible = false; scene.add(myCar);
+  const footCam = new THREE.PerspectiveCamera(62, 1, 0.1, 1400), ray = new THREE.Raycaster();
+  let foot = null;                                                               // { x, z, yaw, pitch }: where he stands, which way he looks
+  function fadeThen(fn) { const f = $('fade'); f.classList.add('on'); setTimeout(() => { fn(); renderer.shadowMap.needsUpdate = true; setTimeout(() => f.classList.remove('on'), 420); }, 600); }
+  function toFoot(P) {
+    myCar.position.set(P.x, -0.02, P.z); myCar.rotation.set(0, -P.a, 0); myCar.visible = true;
+    foot = { x: P.eye[0], z: P.eye[1], yaw: Math.atan2(P.at[1] - P.eye[1], P.at[0] - P.eye[0]), pitch: -0.16 }; setView('foot');
+  }
+  function getIn() { fadeThen(() => { foot = null; myCar.visible = false; $('arrive').classList.remove('on'); setView('cabin'); unit.open(true, 'go'); }); }
+  function skip() {                                                              // straight there: the page fades and the car is at the end of its route
+    const R = drive.route; if (!R || st.phase === 'arrived') return;
+    fadeThen(() => { if (drive.route !== R) return; running = true; st.s = R.length; st.v = 0; drive.update(1e-6, clock, input); pose(0); if (R.park) { arrivedAt = clock; toFoot(R.park); arrived(true); } });   // (unless another route was taken meanwhile)
+  }
+  function setView(v) { view = v; if (v !== 'foot') $('b-view').querySelector('b').textContent = v === 'cabin' ? 'Trong xe' : 'Mặt đường'; document.documentElement.dataset.view = v; resize(); }
   function setHour(id) {
     if (!world.light.hours[id]) return;
     hourId.v = id; light.setHour(id); const lit = light.lit(id);
@@ -98,6 +121,7 @@ async function start(world) {
     else { camera.position.set(0, 1.18, -1.9); camera.rotation.set(-0.07, 0, 0); }
     rig.updateMatrixWorld(true); camera.getWorldPosition(eyeWorld); camera.getWorldDirection(dirWorld);
     if (over) eyeWorld.set(over.x, 1.2, over.z);                                   // the ground is streamed round the place looked at
+    if (foot) { eyeWorld.set(foot.x, 1.62, foot.z); dirWorld.set(Math.cos(foot.yaw) * Math.cos(foot.pitch), Math.sin(foot.pitch), Math.sin(foot.yaw) * Math.cos(foot.pitch)); }
     if (free) { eyeWorld.set(...free.eye); dirWorld.set(free.at[0] - free.eye[0], free.at[1] - free.eye[1], free.at[2] - free.eye[2]).normalize(); }
   }
   /* for the tools: the world drawn as a plan — from straight above a place, north up, so many metres across; with `cut`,
@@ -130,8 +154,13 @@ async function start(world) {
     const why = $('why'); why.textContent = st.waiting === 'red' ? 'Đèn đỏ' : st.waiting === 'stop' ? 'Biển stop' : st.waiting === 'gate' ? 'Barie' : ''; why.hidden = !st.waiting;
     $('mph').textContent = mph; $('kmh').textContent = Math.round(st.v * 3.6) + ' km/h';
   }
-  function arrived() {
-    const R = drive.route, back = [...routes.values()].find(r => r.id !== R.id);
+  function arrived(already) {
+    const R = drive.route, back = [...routes.values()].find(r => r.from === R.to && r.to === R.from);
+    if (R.park) {                                                                // a route home: beside the car, a tap on it to get back in
+      if (!already) fadeThen(() => { if (drive.route === R && st.phase === 'arrived') toFoot(R.park); });   // (unless another route was taken meanwhile)
+      $('arrive-t').textContent = 'Về tới ' + R.to.split(' · ')[0]; $('arrive-b').textContent = (R.note ? R.note + ' ' : '') + 'Chạm vào xe để lên lại. Đi bộ về nhà và vào nhà: bước sau.';
+      $('go-back').hidden = true; $('go-walk').hidden = true; $('arrive').classList.add('on'); return;
+    }
     $('arrive-t').textContent = 'Đã tới ' + R.to;
     $('arrive-b').textContent = R.id === world.start.route ? 'Xe đỗ ở mặt nam nhà để xe LA4, trong khu AT&T (năm 2015 còn là DirecTV).' : 'Xe đỗ lại ở dãy phía đông của bãi, cạnh dãy phòng chính.';
     $('go-back').textContent = back ? 'Lái về ' + back.to.split(' · ')[0].split(',')[0] : ''; $('go-back').hidden = !back; $('go-back').dataset.route = back ? back.id : '';
@@ -151,12 +180,18 @@ async function start(world) {
   $('go').addEventListener('click', () => { document.documentElement.classList.remove('intro'); running = true; drive.go(); woke = performance.now(); });
   $('go-back').addEventListener('click', e => takeRoute(e.currentTarget.dataset.route, true));
   $('go-again').addEventListener('click', () => takeRoute(drive.route.id, true));
+  $('b-skip').addEventListener('click', skip);
   addEventListener('keydown', e => { if (e.target.closest && e.target.closest('input, select')) return; keys.add(e.key.toLowerCase()); if (e.key === 'v') setView(view === 'cabin' ? 'road' : 'cabin'); if (e.key === 't') setAuto(!st.auto); if (e.key === 'm') unit.open(!unit.state.open, 'music'); woke = performance.now(); });
   addEventListener('keyup', e => keys.delete(e.key.toLowerCase()));
   let drag = null, held = false;
   canvas.addEventListener('pointerdown', e => { drag = { x: e.clientX, y: e.clientY, x0: e.clientX, y0: e.clientY, t: performance.now() }; held = true; try { canvas.setPointerCapture(e.pointerId); } catch { /* a mouse */ } woke = performance.now(); });
-  canvas.addEventListener('pointermove', e => { if (!drag) return; const k = (camera.fov * Math.PI / 180) / (canvas.clientHeight || 1); if (view === 'cabin') cabin.look((e.clientX - drag.x) * k * -1.1, (e.clientY - drag.y) * k * 1.1); drag.x = e.clientX; drag.y = e.clientY; woke = performance.now(); });
+  canvas.addEventListener('pointermove', e => { if (!drag) return; const k = (camera.fov * Math.PI / 180) / (canvas.clientHeight || 1);
+    if (foot) { foot.yaw -= (e.clientX - drag.x) * k * 1.1; foot.pitch = Math.max(-0.9, Math.min(0.6, foot.pitch + (e.clientY - drag.y) * k * 1.1)); drag.x = e.clientX; drag.y = e.clientY; woke = performance.now(); return; } if (view === 'cabin') cabin.look((e.clientX - drag.x) * k * -1.1, (e.clientY - drag.y) * k * 1.1); drag.x = e.clientX; drag.y = e.clientY; woke = performance.now(); });
   const lift = e => {
+    if (drag && foot && Math.hypot(e.clientX - drag.x0, e.clientY - drag.y0) < 8 && performance.now() - drag.t < 450) {
+      const r = canvas.getBoundingClientRect(); ray.setFromCamera({ x: (e.clientX - r.left) / r.width * 2 - 1, y: -((e.clientY - r.top) / r.height) * 2 + 1 }, footCam);
+      if (ray.intersectObjects(myCar.userData.pick, false).length) getIn();
+    }
     if (drag && Math.hypot(e.clientX - drag.x0, e.clientY - drag.y0) < 8 && performance.now() - drag.t < 450 && view === 'cabin') {
       const r = canvas.getBoundingClientRect(); if (cabin.pick((e.clientX - r.left) / r.width * 2 - 1, -((e.clientY - r.top) / r.height) * 2 + 1)) unit.open(true, 'music');
     }
@@ -194,6 +229,7 @@ async function start(world) {
       scene.fog = null; cutPlane.constant = over.cut || 0; renderer.clippingPlanes = over.cut ? [cutPlane] : [];
       renderer.clear(); renderer.render(scene, topCam); scene.fog = fog; renderer.clippingPlanes = []; return;
     }
+    if (foot && !free) { footCam.aspect = camera.aspect; footCam.fov = Math.min(92, Math.max(62, 2 * Math.atan(Math.tan(37 * Math.PI / 180) / camera.aspect) * 180 / Math.PI)); footCam.updateProjectionMatrix();   /* (upright, wider: the whole car in the picture) */ footCam.position.copy(eyeWorld); footCam.lookAt(eyeWorld.x + dirWorld.x, eyeWorld.y + dirWorld.y, eyeWorld.z + dirWorld.z); renderer.clear(); renderer.render(scene, footCam); return; }
     if (free) { freeCam.aspect = camera.aspect; freeCam.fov = free.fov || 55; freeCam.updateProjectionMatrix(); freeCam.position.set(...free.eye); freeCam.lookAt(...free.at); renderer.clear(); renderer.render(scene, freeCam); return; }
     renderer.clear(); renderer.render(scene, camera);
     if (view === 'cabin') { renderer.clearDepth(); renderer.render(cabin.scene, cabin.camera); }
@@ -216,7 +252,7 @@ async function start(world) {
   window.__world = {
     ready: false, place: meta.id, kind: 'world',
     pause: v => { paused = v; }, step: dt => step(dt), renderOnce: () => draw(),
-    go: () => { document.documentElement.classList.remove('intro'); running = true; drive.go(); }, route: id => takeRoute(id, true), routes: () => [...routes.values()].map(r => ({ id: r.id, length: r.length, ctl: r.ctl, turns: r.turns })),
+    go: () => { document.documentElement.classList.remove('intro'); running = true; drive.go(); }, skip, foot: () => foot && { ...foot, car: myCar.visible }, getIn, myCar: () => myCar, draw: () => draw(), route: id => takeRoute(id, true), routes: () => [...routes.values()].map(r => ({ id: r.id, length: r.length, ...(ready.has(r.id) ? { ctl: ready.get(r.id).ctl, turns: ready.get(r.id).turns } : {}) })), loadAll: () => Promise.all([...routes.keys()].map(id => load(id).then(r => ready.set(id, r)))),
     setView, setHour, setAuto, input, look: (a, b) => cabin.look(a, b), unit,
     /** put the car this far along its route, standing still */
     at: s => { st.s = Math.max(0, Math.min(drive.route.length, s)); st.v = 0; drive.update(1e-6, clock, input); pose(0); },
