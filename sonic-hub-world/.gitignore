@@ -3,3 +3,6 @@ dist/
 shots/
 *.log
 .DS_Store
+
+# the OpenStreetMap data the South Bay world is baked from: fetched by places/south-bay/data/fetch.py
+places/south-bay/data/osm/

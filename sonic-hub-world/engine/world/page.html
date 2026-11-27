@@ -70,7 +70,12 @@ button { cursor: pointer; }
 #p-gas { height: 82px; margin-top: -16px; }
 
 /* before setting off, and on arriving */
+#fade { position: fixed; inset: 0; background: #07080a; opacity: 0; pointer-events: none; transition: opacity .55s ease; z-index: 30; }
+#fade.on { opacity: 1; pointer-events: auto; }
+[data-view="foot"] #bar, [data-view="foot"] #mph, [data-view="foot"] #kmh { visibility: hidden; }
 #intro, #arrive { position: fixed; inset: 0; display: none; align-items: flex-end; justify-content: flex-start; padding: 16px; background: linear-gradient(180deg, rgba(8,10,14,0) 25%, rgba(8,10,14,.7) 100%); }
+#arrive { pointer-events: none; } #arrive .slip { pointer-events: auto; }   /* the world under it stays live: a look round, a tap on the car */
+[data-view="foot"] #arrive { background: linear-gradient(180deg, rgba(8,10,14,0) 55%, rgba(8,10,14,.5) 100%); }
 .intro #intro, #arrive.on { display: flex; }
 .intro #top, .intro #bar, .intro #road, .intro #speed, .intro .pads { visibility: hidden; }
 #intro .slip, #arrive .slip { max-width: 440px; padding: 16px 16px 14px; }
@@ -160,7 +165,9 @@ button { cursor: pointer; }
   <button type="button" id="b-view"><small>Góc nhìn</small><b>Trong xe</b></button>
   <button type="button" id="b-music"><small>Màn hình</small><b>Nhạc</b></button>
   <button type="button" id="b-where"><small>Tuyến</small><b>Điểm đến</b></button>
+  <button type="button" id="b-skip"><small>Tới nơi</small><b>Bỏ qua đường</b></button>
 </nav>
+<div id="fade" aria-hidden="true"></div>
 
 <div id="intro">
   <div class="slip">

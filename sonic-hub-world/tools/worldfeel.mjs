@@ -6,8 +6,8 @@ import { launch, open } from './lib.mjs';
 const [route = '', ...wins] = process.argv.slice(2);
 const browser = await launch();
 const { page, logs } = await open(browser, { width: 844, height: 390, place: process.env.PLACE || 'south-bay' });
-const r = await page.evaluate(([route, wins]) => {
-  const W = window.__world, D = W.drive(), st = D.state; if (route) W.route(route); W.setAuto(true); W.go();
+const r = await page.evaluate(async ([route, wins]) => {
+  const W = window.__world, D = W.drive(), st = D.state; if (route) await W.route(route); W.setAuto(true); W.go();
   const R = D.route, deg = 180 / Math.PI, dt = 1 / 60, windows = wins.length ? wins : (R.straight || []);
   const on = s => windows.some(([a, b]) => s >= a && s <= b);
   const o = { id: R.id, moving: 0, swings: 0, tiny: 0, wheelOn: 0, yawOn: 0, rollOn: 0, rollMax: 0, pedal: 0, yawFlipsOn: 0, secsOn: 0, vMinOn: 99, vMaxOn: 0, straightM: windows.reduce((a, [p, q]) => a + q - p, 0) };

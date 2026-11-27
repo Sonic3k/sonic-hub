@@ -28,10 +28,25 @@ export function readRoute(r) {
     cap[i] = Math.min(r.lim[li][1], Math.sqrt(A_SIDE / Math.max(1e-4, Math.abs(k[i])))); lo[i] = r.band[bi][1]; hi[i] = r.band[bi][2];
   }
   for (let i = n - 2; i >= 0; i--) cap[i] = Math.min(cap[i], Math.sqrt(cap[i + 1] * cap[i + 1] + 2 * A_EASE * (s[i + 1] - s[i])));   // slow in good time for what comes
+  // … and no rise in it narrower than 120 m, in the speed the foot can reach (A_GO): between two bends close together a
+  // driver holds the speed, not gas then brake again (an opening: the lowest within 60 m either way, then the highest of that)
+  { const reach = new Float32Array(n); reach[0] = cap[0];
+    for (let i = 1; i < n; i++) reach[i] = Math.min(cap[i], Math.sqrt(reach[i - 1] * reach[i - 1] + 2 * A_GO * (s[i] - s[i - 1])));
+    const run = (src, pick) => {                                                    // the highest (pick 1) or lowest (−1) of src within 60 m either way
+      const one = order => { const out = new Float32Array(n), dq = []; let h = 0;
+        for (const i of order) {
+          while (dq.length > h && pick * (src[dq[dq.length - 1]] - src[i]) <= 0) dq.pop();
+          dq.push(i); while (Math.abs(s[dq[h]] - s[i]) > 60) h++; out[i] = src[dq[h]];
+        }
+        return out; };
+      const fwd = one([...Array(n).keys()]), back = one([...Array(n).keys()].reverse()), out = new Float32Array(n);
+      for (let i = 0; i < n; i++) out[i] = pick > 0 ? Math.max(fwd[i], back[i]) : Math.min(fwd[i], back[i]);
+      return out; };
+    const opened = run(run(reach, -1), 1); for (let i = 0; i < n; i++) cap[i] = Math.min(cap[i], opened[i]); }
   // how high the path is, where it climbs (the floors of a parking structure), and how steeply: metres up for a metre on
   const y = new Float32Array(n), grade = new Float32Array(n);
   if (r.y) { for (let i = 0; i < n; i++) y[i] = r.y[i] / 1000; for (let i = 0; i < n; i++) { const a = Math.max(0, i - 3), b = Math.min(n - 1, i + 3); grade[i] = (y[b] - y[a]) / Math.max(1e-6, s[b] - s[a]); } }
-  return { id: r.id, name: r.name, from: r.frm, to: r.to, n, x, z, s, hd, k, cap, lo, hi, y, grade, length: s[n - 1], ctl: r.ctl.map(([at, kind, junction, group]) => ({ at, kind, junction, group })), turns: r.turns, names: r.names, straight: r.straight || [], wrap };
+  return { id: r.id, name: r.name, from: r.frm, to: r.to, home: r.home, park: r.park, by: r.by, note: r.note, n, x, z, s, hd, k, cap, lo, hi, y, grade, length: s[n - 1], ctl: r.ctl.map(([at, kind, junction, group]) => ({ at, kind, junction, group })), turns: r.turns, names: r.names, straight: r.straight || [], wrap };
 }
 
 export function setupDrive() {
