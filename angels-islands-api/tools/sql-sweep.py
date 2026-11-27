@@ -9,7 +9,8 @@ time and the size. Exits 1 when a read sent more statements than --max (50): a l
 whatever its length, so a higher count means something is fetched row by row.
 
 Placeholders in a path are filled from the API itself: {self} {person} {album} {forum} {game} {memory} {note} {event}
-{dream} {media} {fb}.
+{dream} {media} {fb} {musicArtist} {musicAlbum} {musicTrack} {musicList} {spotifySong} (of his music: the artist, the
+album and the list with the most songs, so a count that grows with the rows shows).
 A path whose placeholder cannot be filled (nothing of that kind yet) is skipped. Python 3, no packages needed.
 """
 import argparse, json, os, sys, time, urllib.request
@@ -42,6 +43,15 @@ def first(path, pick):
         return None
 
 
+def most(path, size, pick):
+    """the row of a list answer with the most of something, or None"""
+    try:
+        rows = json.loads(call(path)[3] or b'null') or []
+        return pick(max(rows, key=size)) if rows else None
+    except Exception:
+        return None
+
+
 ids = {}
 ids['self'] = first('/api/persons', lambda p: p['id'] if p.get('isSelf') else None)
 ids['person'] = first('/api/persons', lambda p: None if p.get('isSelf') else p['id'])
@@ -50,6 +60,15 @@ ids['forum'] = first('/api/forums', lambda f: f.get('key'))
 ids['game'] = first('/api/games', lambda g: g.get('key'))
 ids['note'] = first('/api/journal/notes?size=1', lambda n: n['id'])
 ids['media'] = first('/api/media-files/library?size=1', lambda m: m['id'])
+ids['musicArtist'] = most('/api/music/artists', lambda a: a.get('tracks', 0), lambda a: a.get('key'))
+ids['musicAlbum'] = most('/api/music/albums', lambda a: a.get('tracks', 0), lambda a: a.get('key'))
+ids['musicList'] = most('/api/music/playlists', lambda p: p.get('tracks', 0), lambda p: p.get('key'))
+try:
+    entries = (json.loads(call('/api/music/playlists/' + ids['musicList'])[3] or b'{}').get('entries') or []) if ids['musicList'] else []
+    ids['musicTrack'] = next((e['track']['key'] for e in entries if e.get('track')), None)
+except Exception: ids['musicTrack'] = None
+try: ids['spotifySong'] = ((json.loads(call('/api/music/spotify/report?group=song&limit=1')[3] or b'{}').get('rows') or [{}])[0]).get('key')
+except Exception: ids['spotifySong'] = None
 try: ids['fb'] = (json.loads(call('/api/social/fb/home')[3] or b'{}').get('me') or {}).get('id')
 except Exception: ids['fb'] = None
 if ids['self']:

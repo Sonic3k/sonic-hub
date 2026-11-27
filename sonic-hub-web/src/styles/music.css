@@ -9,6 +9,14 @@
 .mu .pn a { border-radius: 0; } .mu .pn b { font-family: var(--sans); font-size: 16px; }
 .mu .mm-head { margin-bottom: 26px; }
 
+/* ── a song's picture: its cover, else the default one (a record, flat, in the colours of Music) ── */
+.mu-cover { flex: none; display: block; object-fit: cover; background: var(--music-soft); }
+.mu-cover.none svg { display: block; width: 100%; height: 100%; }
+.mu-cover.none circle { fill: var(--music); }
+.mu-cover.none .g { fill: none; stroke: var(--music-soft); stroke-width: .6; opacity: .5; }
+.mu-cover.none .l { fill: var(--music-soft); }
+.mu-cover.none .h { fill: var(--music); }
+
 /* ── the top of the lists: the playlists he listened to most, or the music of the day picked ── */
 .mu-open { margin-bottom: 48px; }
 .mu-open.then { padding: 20px 22px 24px; background: var(--e-bg); color: var(--e-ink); }
@@ -21,7 +29,8 @@
 .mu-heard { display: grid; grid-template-columns: minmax(0, 1fr) 280px; gap: 28px; align-items: start; }
 .mu-heard ol { margin: 0; padding: 0; list-style: none; columns: 2 220px; column-gap: 28px; }
 .mu-heard li { break-inside: avoid; border-bottom: 1px solid var(--e-rule); }
-.mu-heard li a { display: flex; flex-direction: column; gap: 1px; padding: 9px 0; }
+.mu-heard li a { display: flex; align-items: center; gap: 12px; padding: 8px 0; }
+.mu-heard li a > span { display: flex; flex-direction: column; gap: 1px; min-width: 0; }
 .mu-heard b { font-size: 16px; font-weight: 600; line-height: 1.3; }
 .mu-heard small { font-size: 13px; color: var(--e-ink2); }
 .mu-heard li a:hover b, .mu-heard-from:hover b { text-decoration: underline; }
@@ -100,6 +109,18 @@
 .mu-tracks .hd h2 { white-space: nowrap; }
 .mu-tracks .hd span { min-width: 0; overflow-wrap: anywhere; }
 .mu-body .pn { margin-top: 40px; }
+/* the playlist as it was on the day picked: said in a band in the colours of that day's era */
+.mu-asof { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 16px; margin: 0 0 24px; padding: 14px 18px; background: var(--e-bg); color: var(--e-ink); }
+.mu-asof.era-2013 { background: var(--paper); box-shadow: inset 0 0 0 1px var(--line); }
+.mu-asof b { font-size: 17px; font-weight: 700; line-height: 1.3; }
+.mu-asof span { font-size: 14.5px; color: var(--e-ink2); }
+.mu-asof button { display: inline-flex; align-items: center; min-height: 36px; margin-left: auto; padding: 0 13px; background: var(--e-ac); color: var(--e-on); font-size: 13.5px; font-weight: 700; }
+.mu-asof button:hover { filter: brightness(1.1); }
+.mu-asof.now { padding: 10px 14px; background: var(--soft); color: var(--ink2); }
+.mu-asof.now span { color: var(--ink2); }
+.mu-asof.now button { background: var(--music); color: var(--paper); }
+.mu .mu-left { margin-top: 44px; }
+.mu-left .hd span { font-size: 13.5px; color: var(--ink2); }
 
 /* ── the bar a song plays in ── */
 .mu-player { position: fixed; left: 0; right: 0; bottom: 0; z-index: 28; display: flex; align-items: center; gap: 14px; height: 58px; padding: 0 18px; background: #0E1E2B; color: #EEF3F5; }
@@ -230,6 +251,24 @@ a.mu-bar-row:hover { background: var(--soft); }
 .mu-songs td:nth-child(2) small, .mu-day td:nth-child(2) small { display: block; }
 .mu-songs td em, .mu-day td em { font-style: normal; color: var(--ink2); }
 .mu-songs td:last-child:has(.mu-play) { width: 50px; padding: 6px 8px; vertical-align: middle; }
+/* the songs of one list: number, picture, the song, then what the list knows of it */
+.mu-list td { vertical-align: middle; }
+.mu-list .cv { width: 52px; padding: 6px 0 6px 10px; }
+.mu-list td.t { min-width: 180px; }
+.mu-list td.t b { font-weight: 500; } .mu-list td.t small { display: block; }
+.mu-list td.d { white-space: nowrap; }
+.mu-list td.go { width: 50px; padding: 6px 8px; }
+.mu-list th { vertical-align: bottom; }
+.mu-ext { display: grid; place-items: center; width: 34px; height: 34px; box-shadow: inset 0 0 0 1px var(--line); color: var(--ink2); }
+.mu-ext svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 2; }
+.mu-ext:hover { background: var(--music); box-shadow: none; color: var(--paper); }
+/* a song that is not in the list at the time shown: still there, faint */
+.mu-list tr.faint td, .mu-list tr.faint td.t b { color: var(--ink3); }
+.mu-list tr.faint .mu-cover { opacity: .45; }
+.mu-list tr.sub td { padding: 22px 10px 7px; border-bottom: 1px solid var(--ink); font-size: 13px; font-weight: 700; color: var(--ink2); text-align: left; }
+.mu-list tr.sub td small { font-weight: 400; color: var(--ink3); }
+.mu .mu-song-hd { align-items: center; gap: 18px; flex-wrap: nowrap; }
+.mu-song-hd > div { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 16px; min-width: 0; }
 .mu-day td { white-space: nowrap; } .mu-day td:nth-child(2) { white-space: normal; min-width: 200px; }
 .mu-seg { margin-left: auto; } .mu-block .hd .mu-seg a { margin-left: 0; font-weight: 500; color: var(--ink2); cursor: pointer; user-select: none; text-decoration: none; }
 .mu-block .hd .mu-seg a.on { color: var(--paper); }
@@ -284,6 +323,20 @@ a.mu-bar-row:hover { background: var(--soft); }
   .mu-bar-row { grid-template-columns: minmax(0, 1fr) 72px auto; gap: 8px; } .mu-bars.numbered .mu-bar-row { grid-template-columns: 18px minmax(0, 1fr) 60px auto; }
   .mu-punch { gap: 2px; grid-template-columns: 22px repeat(24, minmax(0, 1fr)); } .mu-punch i { min-height: 9px; }
   .mu-player { bottom: calc(50px + env(safe-area-inset-bottom)); height: 54px; padding: 0 8px; gap: 8px; }
+  .mu-asof { margin-left: -16px; margin-right: -16px; padding: 14px 16px; } .mu-asof button { margin-left: 0; }
+  .mu-asof b, .mu-asof > span { flex: 0 0 100%; }
+  .mu-asof.now { margin-left: 0; margin-right: 0; } .mu-asof.now > span { flex: 1 1 auto; }
+  .mu-song-hd .mu-cover { width: 64px !important; height: 64px !important; }
+  /* a list on a phone: the picture, the song, its day, its plays and its page on Spotify fit the screen; the number
+     and the time played are left to the wide screen */
+  .mu-list tr:not(.sub) > :first-child, .mu-list .ms { display: none; }
+  .mu-list th, .mu-list td { padding-left: 6px; padding-right: 6px; }
+  .mu-list th { font-size: 12px; line-height: 1.25; white-space: normal; }
+  .mu-list .cv { width: 40px; padding: 6px 4px 6px 0; } .mu-list .cv .mu-cover { width: 36px !important; height: 36px !important; }
+  .mu-list td.t { width: 100%; min-width: 0; overflow-wrap: break-word; }
+  .mu-list td.d { font-size: 13px; white-space: normal; }
+  .mu-list td.go { width: 40px; padding: 6px 0 6px 6px; }
+  .mu-list tr.sub td { padding-left: 0; }
   .mu-pl-t { flex: 1 1 auto; }
   .mu-pl-seek { flex: 0 0 64px; } .mu-pl-seek i { display: none; }
   body.has-player main { padding-bottom: 54px; }

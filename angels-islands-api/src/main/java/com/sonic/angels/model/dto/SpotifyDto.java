@@ -1,5 +1,7 @@
 package com.sonic.angels.model.dto;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
@@ -81,7 +83,9 @@ public class SpotifyDto {
         public List<Year> years;
     }
 
-    public record ListRef(String key, String title, LocalDateTime addedAt) {}
+    /** A list the song is in, or was in until removedAt (then worked out from what the list played; see MusicPlaylistEntry). */
+    public record ListRef(String key, String title, LocalDateTime addedAt, @JsonInclude(JsonInclude.Include.NON_NULL) LocalDateTime removedAt,
+                          @JsonInclude(JsonInclude.Include.NON_NULL) Boolean addedApprox, @JsonInclude(JsonInclude.Include.NON_NULL) Boolean removedApprox) {}
     public record TrackRef(String spotifyId, String name, String album, long plays) {}
 
     /** A song with what his listening says about it. picked = plays he chose himself (a click on the song); passed = times
@@ -97,11 +101,13 @@ public class SpotifyDto {
     }
 
     /** One stream of a day, in the order it happened. */
+    /** coverUrl = the picture of the recording in his music the song is (its own, else its album's), when there is one. */
     public static class DayPlay {
         public LocalDateTime at;
         public int ms;
         public UUID songId;
         public String title, version, artist, album, device, place, context, playlistKey, playlistTitle, start, end;
+        @JsonInclude(JsonInclude.Include.NON_NULL) public String coverUrl;
         public Boolean shuffle;
     }
 }

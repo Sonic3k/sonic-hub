@@ -1,5 +1,7 @@
 package com.sonic.angels.model.dto;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
@@ -46,10 +48,15 @@ public class MusicDto {
     }
 
     /** A recording as the lists show it. audioUrl = the API path its file plays from (none = no file, maybe links only);
-     *  playlists = keys of the lists it is in; firstHeard = when he started listening to it, as text. */
+     *  playlists = keys of the lists it is in; firstHeard = when he started listening to it, as text.
+     *  coverUrl (its own picture, else its album's), spotifyUrl (its page on Spotify) and spotifySongId (the song of his
+     *  Spotify listening it is) come where one thing is read — a list, a recording, an album, an artist, a song — and
+     *  are left out of the list of every recording. */
     public static class Track {
         public UUID id;
         public String key, title, version, featuring, language, genre, firstHeard, firstHeardPrecision, firstHeardEvidence, audioUrl, versionOfKey;
+        @JsonInclude(JsonInclude.Include.NON_NULL) public String coverUrl, spotifyUrl;
+        @JsonInclude(JsonInclude.Include.NON_NULL) public UUID spotifySongId;
         public ArtistRef artist;
         public AlbumRef album;
         public Integer favorite, releaseYear, durationSec, trackNo;
@@ -59,6 +66,8 @@ public class MusicDto {
     }
 
     public static class TrackDetail extends Track {
+        /** its own picture, when it has one (coverUrl may be the album's) */
+        public UUID coverMediaId;
         public String summary, note, audioFileName, audioMime, audioSourcePath;
         public Long audioSize;
         public Integer audioBitrate;
@@ -115,16 +124,26 @@ public class MusicDto {
         public int tracks, withAudio;
     }
 
+    /** entries = the songs in the list; removed = the songs that were in it and left (a Spotify playlist he pruned or
+     *  split), oldest first. */
     public static class PlaylistDetail extends Playlist {
         public List<Entry> entries;
+        public List<Entry> removed;
     }
 
+    /** addedAt → removedAt = the stretch the song was in the list (no removedAt = still in it); *Approx = that date was
+     *  worked out from what the playlist played, not recorded. */
     public static class Entry {
         public Integer position;
         public String fileName, note;
         public LocalDateTime fileModifiedAt, addedAt;
+        @JsonInclude(JsonInclude.Include.NON_NULL) public LocalDateTime removedAt;
+        @JsonInclude(JsonInclude.Include.NON_NULL) public Boolean addedApprox, removedApprox;
         public Track track;
     }
+
+    /** What an upload of a cover gives back: whose it is now (track | album), the picture, whether the file was new. */
+    public record CoverOut(String kind, String key, UUID mediaId, String url, boolean created) {}
 
     /** The music of a moment: the WINDOW lists that cover it, the last FULL list before it, and their songs that play. */
     public static class Moment {
@@ -182,18 +201,23 @@ public class MusicDto {
         public String role, label;
     }
 
-    /** taken / windowFrom as firstHeard; device = a desk device key; spotifyId = the playlist's id on Spotify. */
+    /** taken / windowFrom as firstHeard; device = a desk device key; spotifyId = the playlist's id on Spotify.
+     *  entries = the songs in the list (replaces them); removed = the songs that left it (replaces those; each needs
+     *  removedAt). Either left out keeps what is there; a song is in one of the two, the list itself winning. */
     public static class PlaylistIn {
         public String key, title, kind, taken, takenPrecision, windowFrom, device, sourceFolder, spotifyId, summary, note;
         public Boolean takenApprox;
         public UUID eventId;
         public Integer sortOrder;
         public List<EntryIn> entries;
+        public List<EntryIn> removed;
     }
 
-    /** track = a recording key; fileModifiedAt = yyyy-MM-ddTHH:mm[:ss] (Vietnam wall clock); addedAt = yyyy-MM-dd. */
+    /** track = a recording key; fileModifiedAt = yyyy-MM-ddTHH:mm[:ss] (Vietnam wall clock); addedAt, removedAt =
+     *  yyyy-MM-dd; addedApprox / removedApprox = that date was worked out, not recorded. */
     public static class EntryIn {
-        public String track, fileName, fileModifiedAt, addedAt, note;
+        public String track, fileName, fileModifiedAt, addedAt, removedAt, note;
+        public Boolean addedApprox, removedApprox;
         public Integer position;
     }
 

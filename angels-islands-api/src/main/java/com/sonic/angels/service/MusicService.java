@@ -48,17 +48,18 @@ public class MusicService {
     private final NamedParameterJdbcTemplate jdbc;
     private final DtoMapper mapper;
     private final EntityManager em;
+    private final MusicCoverService coverService;
 
     public MusicService(MusicArtistRepository artists, MusicAlbumRepository albums, MusicTrackRepository tracks, MusicLinkRepository links,
                         MusicCdRepository cds, MusicCdMediaRepository cdMedia, MusicPlaylistRepository playlists,
                         MusicPlaylistEntryRepository entries, MusicTrackMemoryRepository trackMemories, MusicTrackEventRepository trackEvents,
                         MediaFileRepository mediaRepo, EpisodeRepository episodeRepo, LifeEventRepository eventRepo,
                         DeskDeviceRepository deviceRepo, StorageService storage, NamedParameterJdbcTemplate jdbc, DtoMapper mapper,
-                        EntityManager em) {
+                        EntityManager em, MusicCoverService coverService) {
         this.artists = artists; this.albums = albums; this.tracks = tracks; this.links = links; this.cds = cds; this.cdMedia = cdMedia;
         this.playlists = playlists; this.entries = entries; this.trackMemories = trackMemories; this.trackEvents = trackEvents;
         this.mediaRepo = mediaRepo; this.episodeRepo = episodeRepo; this.eventRepo = eventRepo; this.deviceRepo = deviceRepo;
-        this.storage = storage; this.jdbc = jdbc; this.mapper = mapper; this.em = em;
+        this.storage = storage; this.jdbc = jdbc; this.mapper = mapper; this.em = em; this.coverService = coverService;
     }
 
     // ── read: artists ────────────────────────────────────────────────────────
@@ -78,10 +79,12 @@ public class MusicService {
         Counts c = counts();
         MusicDto.ArtistDetail d = artist(new MusicDto.ArtistDetail(), a, c, members(all));
         d.imageMediaId = a.getImageMediaId();
-        d.albumList = albums.findByArtist(a.getId()).stream().map(x -> album(new MusicDto.Album(), x, c)).sorted(ALBUM_ORDER).toList();
+        Map<UUID, String> covers = albumCovers();
+        d.albumList = albums.findByArtist(a.getId()).stream().map(x -> album(new MusicDto.Album(), x, c, covers)).sorted(ALBUM_ORDER).toList();
         Map<UUID, List<String>> member = membership();
+        Extras extras = extras();
         d.trackList = tracks.findAllFull().stream().filter(t -> t.getArtist() != null && t.getArtist().getId().equals(a.getId()))
-            .map(t -> track(t, member)).sorted(TRACK_ORDER).toList();
+            .map(t -> track(t, member, extras)).sorted(TRACK_ORDER).toList();
         return d;
     }
 
@@ -107,17 +110,19 @@ public class MusicService {
     @Transactional(readOnly = true)
     public List<MusicDto.Album> albums() {
         Counts c = counts();
-        return albums.findAllWithArtist().stream().map(x -> album(new MusicDto.Album(), x, c)).sorted(ALBUM_ORDER).toList();
+        Map<UUID, String> covers = albumCovers();
+        return albums.findAllWithArtist().stream().map(x -> album(new MusicDto.Album(), x, c, covers)).sorted(ALBUM_ORDER).toList();
     }
 
     @Transactional(readOnly = true)
     public MusicDto.AlbumDetail album(String key) {
         MusicAlbum a = getAlbum(key);
-        MusicDto.AlbumDetail d = album(new MusicDto.AlbumDetail(), a, counts());
+        MusicDto.AlbumDetail d = album(new MusicDto.AlbumDetail(), a, counts(), albumCovers());
         d.coverMediaId = a.getCoverMediaId();
         Map<UUID, List<String>> member = membership();
+        Extras extras = extras();
         d.trackList = tracks.findAllFull().stream().filter(t -> t.getAlbum() != null && t.getAlbum().getId().equals(a.getId()))
-            .map(t -> track(t, member))
+            .map(t -> track(t, member, extras))
             .sorted(Comparator.comparing((MusicDto.Track t) -> t.trackNo, Comparator.nullsLast(Comparator.naturalOrder())).thenComparing(TRACK_ORDER))
             .toList();
         List<MusicCd> mine = cds.findByAlbum(a.getId());
@@ -131,13 +136,13 @@ public class MusicService {
         .thenComparing(a -> a.releaseYear, Comparator.nullsLast(Comparator.naturalOrder()))
         .thenComparing(a -> a.title, String.CASE_INSENSITIVE_ORDER);
 
-    private <T extends MusicDto.Album> T album(T o, MusicAlbum a, Counts c) {
+    private <T extends MusicDto.Album> T album(T o, MusicAlbum a, Counts c, Map<UUID, String> covers) {
         o.id = a.getId(); o.key = a.getExternalKey(); o.title = a.getTitle(); o.kind = a.getKind() == null ? null : a.getKind().name();
         o.summary = a.getSummary(); o.note = a.getNote(); o.releaseYear = a.getReleaseYear(); o.favorite = a.getFavorite();
         o.artist = ref(a.getArtist());
         o.tracks = c.tracksByAlbum().getOrDefault(a.getId(), 0);
         o.cds = c.cdsByAlbum().getOrDefault(a.getId(), 0);
-        if (a.getCoverMediaId() != null) o.coverUrl = mediaRepo.findById(a.getCoverMediaId()).map(mapper::imageUrl).orElse(null);
+        o.coverUrl = covers.get(a.getId());
         return o;
     }
 
@@ -154,7 +159,9 @@ public class MusicService {
         MusicTrack t = getTrack(key);
         Map<UUID, List<String>> member = membership();
         MusicDto.TrackDetail d = new MusicDto.TrackDetail();
-        fillTrack(d, t, member);
+        Extras extras = extras();
+        fillTrack(d, t, member, extras);
+        d.coverMediaId = t.getCoverMediaId();
         d.summary = t.getSummary(); d.note = t.getNote();
         d.audioFileName = t.getAudioFileName(); d.audioMime = t.getAudioMime(); d.audioSourcePath = t.getAudioSourcePath();
         d.audioSize = t.getAudioSize(); d.audioBitrate = t.getAudioBitrate();
@@ -163,13 +170,13 @@ public class MusicService {
             .sorted(Comparator.comparing((MusicDto.MemoryLink m) -> m.occurredAt, Comparator.nullsLast(Comparator.naturalOrder()))).toList();
         d.events = trackEvents.findByTrack(t.getId()).stream().map(MusicService::event)
             .sorted(Comparator.comparing((MusicDto.EventLink m) -> m.startAt, Comparator.nullsLast(Comparator.naturalOrder()))).toList();
-        d.inPlaylists = entries.findByTrack(t.getId()).stream().map(MusicPlaylistEntry::getPlaylist).sorted(PLAYLIST_ORDER)
+        d.inPlaylists = entries.findByTrack(t.getId()).stream().filter(e -> e.getRemovedAt() == null).map(MusicPlaylistEntry::getPlaylist).sorted(PLAYLIST_ORDER)
             .map(p -> new MusicDto.PlaylistRef(p.getExternalKey(), p.getTitle(), p.getKind().name(), when(p))).toList();
         MusicTrack root = t.getVersionOf() != null ? t.getVersionOf() : t;
         List<MusicTrack> family = new ArrayList<>(tracks.findByVersionOfId(root.getId()));
         family.add(root);
         List<UUID> ids = family.stream().map(MusicTrack::getId).filter(id -> !id.equals(t.getId())).distinct().toList();
-        d.versions = ids.isEmpty() ? List.of() : tracks.findFullByIds(ids).stream().map(x -> track(x, member)).sorted(TRACK_ORDER).toList();
+        d.versions = ids.isEmpty() ? List.of() : tracks.findFullByIds(ids).stream().map(x -> track(x, member, extras)).sorted(TRACK_ORDER).toList();
         return d;
     }
 
@@ -178,13 +185,16 @@ public class MusicService {
         .thenComparing(t -> t.title, String.CASE_INSENSITIVE_ORDER)
         .thenComparing(t -> t.version == null ? "" : t.version, String.CASE_INSENSITIVE_ORDER);
 
-    MusicDto.Track track(MusicTrack t, Map<UUID, List<String>> member) {
+    MusicDto.Track track(MusicTrack t, Map<UUID, List<String>> member) { return track(t, member, null); }
+
+    /** extras = its picture, its Spotify page and the song of his listening it is; null where a list leaves them out. */
+    MusicDto.Track track(MusicTrack t, Map<UUID, List<String>> member, Extras extras) {
         MusicDto.Track o = new MusicDto.Track();
-        fillTrack(o, t, member);
+        fillTrack(o, t, member, extras);
         return o;
     }
 
-    private void fillTrack(MusicDto.Track o, MusicTrack t, Map<UUID, List<String>> member) {
+    private void fillTrack(MusicDto.Track o, MusicTrack t, Map<UUID, List<String>> member, Extras extras) {
         o.id = t.getId(); o.key = t.getExternalKey(); o.title = t.getTitle(); o.version = t.getVersion(); o.featuring = t.getFeaturing();
         o.language = t.getLanguage(); o.genre = t.getGenre();
         o.artist = ref(t.getArtist()); o.album = ref(t.getAlbum());
@@ -198,6 +208,11 @@ public class MusicService {
         o.audioUrl = o.hasAudio ? audioPath(t) : null;
         o.versionOfKey = t.getVersionOf() == null ? null : t.getVersionOf().getExternalKey();
         o.playlists = member == null ? List.of() : member.getOrDefault(t.getId(), List.of());
+        if (extras != null) {
+            o.coverUrl = extras.cover().get(t.getId());
+            o.spotifyUrl = extras.spotify().get(t.getId());
+            o.spotifySongId = extras.song().get(t.getId());
+        }
     }
 
     /** Where its file plays from (relative to the API); the hash in it changes when the file does. */
@@ -288,14 +303,21 @@ public class MusicService {
         Map<UUID, MusicTrack> full = tracks.findFullByIds(es.stream().map(e -> e.getTrack().getId()).distinct().toList()).stream()
             .collect(Collectors.toMap(MusicTrack::getId, t -> t));
         Map<UUID, List<String>> member = membership();
-        d.entries = es.stream().map(e -> {
+        Extras extras = extras();
+        Function<MusicPlaylistEntry, MusicDto.Entry> entry = e -> {
             MusicDto.Entry o = new MusicDto.Entry();
             o.position = e.getPosition(); o.fileName = e.getFileName(); o.note = e.getNote(); o.fileModifiedAt = e.getFileModifiedAt();
-            o.addedAt = e.getAddedAt();
+            o.addedAt = e.getAddedAt(); o.removedAt = e.getRemovedAt();
+            o.addedApprox = Boolean.TRUE.equals(e.getAddedApprox()) ? Boolean.TRUE : null;
+            o.removedApprox = Boolean.TRUE.equals(e.getRemovedApprox()) ? Boolean.TRUE : null;
             MusicTrack t = full.get(e.getTrack().getId());
-            o.track = t == null ? null : track(t, member);
+            o.track = t == null ? null : track(t, member, extras);
             return o;
-        }).toList();
+        };
+        d.entries = es.stream().filter(e -> e.getRemovedAt() == null).map(entry).toList();
+        d.removed = es.stream().filter(e -> e.getRemovedAt() != null)
+            .sorted(Comparator.comparing(MusicPlaylistEntry::getRemovedAt).thenComparing(MusicPlaylistEntry::getPosition, Comparator.nullsLast(Comparator.naturalOrder())))
+            .map(entry).toList();
         return d;
     }
 
@@ -340,7 +362,7 @@ public class MusicService {
         m.full = full == null ? null : playlist(new MusicDto.Playlist(), full, n);
         List<UUID> ids = new ArrayList<>(windows.stream().map(MusicPlaylist::getId).toList());
         if (full != null) ids.add(full.getId());
-        Set<UUID> trackIds = ids.isEmpty() ? Set.of() : entries.findByPlaylists(ids).stream().map(e -> e.getTrack().getId())
+        Set<UUID> trackIds = ids.isEmpty() ? Set.of() : entries.findByPlaylists(ids).stream().filter(e -> e.getRemovedAt() == null).map(e -> e.getTrack().getId())
             .collect(Collectors.toCollection(LinkedHashSet::new));
         Map<UUID, List<String>> member = membership();
         m.tracks = trackIds.isEmpty() ? List.of() : tracks.findFullByIds(trackIds).stream().filter(x -> x.getAudioStorageKey() != null)
@@ -371,7 +393,7 @@ public class MusicService {
     private Map<UUID, int[]> entryCounts() {
         Map<UUID, int[]> m = new HashMap<>();
         jdbc.query("SELECT e.playlist_id AS k, COUNT(*) AS n, COUNT(t.audio_storage_key) AS a FROM music_playlist_entries e "
-                + "JOIN music_tracks t ON t.id = e.track_id GROUP BY e.playlist_id", new MapSqlParameterSource(),
+                + "JOIN music_tracks t ON t.id = e.track_id WHERE e.removed_at IS NULL GROUP BY e.playlist_id", new MapSqlParameterSource(),
             rs -> { m.put(rs.getObject("k", UUID.class), new int[]{rs.getInt("n"), rs.getInt("a")}); });
         return m;
     }
@@ -380,9 +402,50 @@ public class MusicService {
     private Map<UUID, List<String>> membership() {
         Map<UUID, List<String>> m = new HashMap<>();
         jdbc.query("SELECT e.track_id AS t, p.external_key AS k FROM music_playlist_entries e JOIN music_playlists p ON p.id = e.playlist_id "
-                + "ORDER BY p.taken_at NULLS LAST, p.sort_order NULLS LAST, p.title", new MapSqlParameterSource(),
+                + "WHERE e.removed_at IS NULL ORDER BY p.taken_at NULLS LAST, p.sort_order NULLS LAST, p.title", new MapSqlParameterSource(),
             rs -> { m.computeIfAbsent(rs.getObject("t", UUID.class), x -> new ArrayList<>()).add(rs.getString("k")); });
         return m;
+    }
+
+    /** What a recording shows beyond its own row: its picture (its own, else its album's), its page on Spotify, the song
+     *  of his Spotify listening it is. */
+    record Extras(Map<UUID, String> cover, Map<UUID, String> spotify, Map<UUID, UUID> song) {}
+
+    /** Read for every recording at once — three statements whatever the length of what is shown. */
+    Extras extras() {
+        Map<UUID, String> cover = new HashMap<>(), spotify = new HashMap<>();
+        Map<UUID, UUID> song = new HashMap<>();
+        // a cover id whose file is gone falls through to the album's
+        jdbc.query("SELECT t.id AS k, m.poster_storage_key, m.file_type, m.storage_key, m.storage_provider FROM music_tracks t"
+                + " LEFT JOIN music_albums a ON a.id = t.album_id LEFT JOIN media_files mt ON mt.id = t.cover_media_id"
+                + " LEFT JOIN media_files ma ON ma.id = a.cover_media_id JOIN media_files m ON m.id = COALESCE(mt.id, ma.id)",
+            new MapSqlParameterSource(), rs -> { String url = picture(rs); if (url != null) cover.put(rs.getObject("k", UUID.class), url); });
+        jdbc.query("SELECT track_id AS k, url FROM music_links WHERE kind = 'SPOTIFY' ORDER BY sort_order NULLS LAST, created_at",
+            new MapSqlParameterSource(), rs -> { spotify.putIfAbsent(rs.getObject("k", UUID.class), rs.getString("url")); });
+        jdbc.query("SELECT music_track_id AS k, id FROM spotify_songs WHERE music_track_id IS NOT NULL ORDER BY created_at, id",
+            new MapSqlParameterSource(), rs -> { song.putIfAbsent(rs.getObject("k", UUID.class), rs.getObject("id", UUID.class)); });
+        return new Extras(cover, spotify, song);
+    }
+
+    /** per album: its cover */
+    private Map<UUID, String> albumCovers() {
+        Map<UUID, String> m = new HashMap<>();
+        jdbc.query("SELECT a.id AS k, m.poster_storage_key, m.file_type, m.storage_key, m.storage_provider FROM music_albums a"
+                + " JOIN media_files m ON m.id = a.cover_media_id", new MapSqlParameterSource(),
+            rs -> { String url = picture(rs); if (url != null) m.put(rs.getObject("k", UUID.class), url); });
+        return m;
+    }
+
+    /** the picture of a media_files row read by hand */
+    private String picture(java.sql.ResultSet rs) throws java.sql.SQLException {
+        return picture(rs.getString("poster_storage_key"), rs.getString("file_type"), rs.getString("storage_key"), rs.getString("storage_provider"));
+    }
+
+    /** the same from the row's parts as text (none without a file) */
+    String picture(String poster, String fileType, String storageKey, String provider) {
+        if (storageKey == null && poster == null) return null;
+        return mapper.imageUrl(poster, fileType == null ? null : MediaFile.FileType.valueOf(fileType), storageKey,
+            provider == null ? null : MediaFile.StorageProvider.valueOf(provider));
     }
 
     private static MusicDto.ArtistRef ref(MusicArtist a) { return a == null ? null : new MusicDto.ArtistRef(a.getExternalKey(), a.getName(), a.getCountry()); }
@@ -510,7 +573,7 @@ public class MusicService {
             }
             applyPlaylist(x, p, book, warnings);
             x = playlists.save(x);
-            if (p.entries != null) entryList(x, p.entries, book, warnings, c);
+            if (p.entries != null || p.removed != null) entryLists(x, p.entries, p.removed, book, warnings, c);
             c.apply("playlists").merge(created ? "created" : "updated", 1, Integer::sum);
         }
         return new MusicDto.SyncResult(counts, warnings);
@@ -559,7 +622,7 @@ public class MusicService {
     }
 
     public void deleteArtist(String key) { artists.delete(getArtist(key)); }
-    public void deleteAlbum(String key) { albums.delete(getAlbum(key)); }
+    public void deleteAlbum(String key) { deleteAlbum(getAlbum(key)); }
     public void deleteTrack(String key) { deleteTrack(getTrack(key)); }
     public void deleteCd(String key) { cds.delete(getCd(key)); }
     public void deletePlaylist(String key) { playlists.delete(getPlaylist(key)); }
@@ -572,16 +635,26 @@ public class MusicService {
         for (String k : nn(d.playlists)) playlists.findByExternalKey(k).ifPresent(x -> { playlists.delete(x); c.apply("playlists").merge("deleted", 1, Integer::sum); });
         for (String k : nn(d.cds)) cds.findByExternalKey(k).ifPresent(x -> { cds.delete(x); c.apply("cds").merge("deleted", 1, Integer::sum); });
         for (String k : nn(d.tracks)) tracks.findByExternalKey(k).ifPresent(x -> { deleteTrack(x); c.apply("tracks").merge("deleted", 1, Integer::sum); });
-        for (String k : nn(d.albums)) albums.findByExternalKey(k).ifPresent(x -> { albums.delete(x); c.apply("albums").merge("deleted", 1, Integer::sum); });
+        for (String k : nn(d.albums)) albums.findByExternalKey(k).ifPresent(x -> { deleteAlbum(x); c.apply("albums").merge("deleted", 1, Integer::sum); });
         for (String k : nn(d.artists)) artists.findByExternalKey(k).ifPresent(x -> { artists.delete(x); c.apply("artists").merge("deleted", 1, Integer::sum); });
         em.flush();
     }
 
     private void deleteTrack(MusicTrack t) {
         String file = t.getAudioStorageKey();
+        UUID cover = t.getCoverMediaId();
         tracks.delete(t);
         em.flush();
         try { storage.deleteMusicFile(file); } catch (RuntimeException ignored) { /* the row is gone; a stray file costs nothing */ }
+        coverService.dropped(cover);
+    }
+
+    /** an album goes with its cover (when the cover is an asset nothing else shows) */
+    private void deleteAlbum(MusicAlbum a) {
+        UUID cover = a.getCoverMediaId();
+        albums.delete(a);
+        em.flush();
+        coverService.dropped(cover);
     }
 
     private void applyArtist(MusicArtist x, MusicDto.ArtistIn a) {
@@ -791,26 +864,68 @@ public class MusicService {
         if (p.sortOrder != null) x.setSortOrder(p.sortOrder);
     }
 
-    private void entryList(MusicPlaylist x, List<MusicDto.EntryIn> in, Book book, List<String> warnings, Function<String, Map<String, Integer>> c) {
+    /** The songs of a list as given: in = the ones in it, gone = the ones that left it. Each replaces its own kind and
+     *  leaves the other as it is (null = not given). A song is in one of the two, and the list itself wins: a song given
+     *  as in the list loses any trace of having left. */
+    private void entryLists(MusicPlaylist x, List<MusicDto.EntryIn> in, List<MusicDto.EntryIn> gone, Book book, List<String> warnings,
+                            Function<String, Map<String, Integer>> c) {
         String w = "playlists[" + x.getExternalKey() + "]";
-        entries.deleteAll(entries.findByPlaylistId(x.getId()));
-        em.flush();
-        Set<UUID> seen = new HashSet<>();
-        int i = 0;
-        for (MusicDto.EntryIn e : in) {
-            MusicTrack t = e == null || blank(e.track) ? null : book.track(e.track.trim());
-            if (t == null) { warnings.add(w + ".entries[" + i + "]: no recording " + (e == null ? null : e.track)); i++; continue; }
-            if (!seen.add(t.getId())) { i++; continue; }
-            MusicPlaylistEntry y = new MusicPlaylistEntry();
-            y.setPlaylist(x); y.setTrack(t);
-            y.setPosition(e.position != null ? e.position : i);
-            y.setFileName(text(e.fileName, 300)); y.setNote(text(e.note, 1000));
-            if (!blank(e.fileModifiedAt)) y.setFileModifiedAt(dated(e.fileModifiedAt, null, w + ".entries[" + i + "].fileModifiedAt").at());
-            if (!blank(e.addedAt)) y.setAddedAt(dated(e.addedAt, null, w + ".entries[" + i + "].addedAt").at());
-            entries.save(y);
-            i++;
+        List<MusicPlaylistEntry> have = entries.findByPlaylistId(x.getId());
+        // the songs in the list once this is written: the ones given, else the ones there
+        Map<UUID, MusicDto.EntryIn> current = new LinkedHashMap<>();
+        Map<UUID, MusicTrack> byId = new HashMap<>();
+        if (in != null) {
+            int i = 0;
+            for (MusicDto.EntryIn e : in) {
+                MusicTrack t = e == null || blank(e.track) ? null : book.track(e.track.trim());
+                if (t == null) warnings.add(w + ".entries[" + i + "]: no recording " + (e == null ? null : e.track));
+                else if (current.putIfAbsent(t.getId(), e) == null) { byId.put(t.getId(), t); if (e.position == null) e.position = i; }
+                i++;
+            }
         }
-        c.apply("entries").merge("written", seen.size(), Integer::sum);
+        Set<UUID> inList = in != null ? current.keySet()
+            : have.stream().filter(e -> e.getRemovedAt() == null).map(e -> e.getTrack().getId()).collect(Collectors.toSet());
+        entries.deleteAll(have.stream().filter(e -> e.getRemovedAt() == null ? in != null : gone != null || inList.contains(e.getTrack().getId())).toList());
+        em.flush();
+        if (in != null) {
+            for (Map.Entry<UUID, MusicDto.EntryIn> ce : current.entrySet()) {
+                MusicDto.EntryIn e = ce.getValue();
+                MusicPlaylistEntry y = entryOf(x, byId.get(ce.getKey()), e, w + ".entries");
+                entries.save(y);
+            }
+            c.apply("entries").merge("written", current.size(), Integer::sum);
+        }
+        if (gone != null) {
+            Set<UUID> seen = new HashSet<>();
+            int i = 0;
+            for (MusicDto.EntryIn e : gone) {
+                String at = w + ".removed[" + i + "]";
+                MusicTrack t = e == null || blank(e.track) ? null : book.track(e.track.trim());
+                if (t == null) warnings.add(at + ": no recording " + (e == null ? null : e.track));
+                else if (blank(e.removedAt)) warnings.add(at + ": removedAt is required (" + e.track + ")");
+                else if (inList.contains(t.getId())) warnings.add(at + ": " + e.track + " is in the list");
+                else if (seen.add(t.getId())) {
+                    if (e.position == null) e.position = i;
+                    MusicPlaylistEntry y = entryOf(x, t, e, w + ".removed");
+                    y.setRemovedAt(dated(e.removedAt, null, at + ".removedAt").at());
+                    y.setRemovedApprox(Boolean.TRUE.equals(e.removedApprox) ? Boolean.TRUE : null);
+                    entries.save(y);
+                }
+                i++;
+            }
+            c.apply("removed").merge("written", seen.size(), Integer::sum);
+        }
+    }
+
+    private MusicPlaylistEntry entryOf(MusicPlaylist x, MusicTrack t, MusicDto.EntryIn e, String where) {
+        MusicPlaylistEntry y = new MusicPlaylistEntry();
+        y.setPlaylist(x); y.setTrack(t);
+        y.setPosition(e.position);
+        y.setFileName(text(e.fileName, 300)); y.setNote(text(e.note, 1000));
+        if (!blank(e.fileModifiedAt)) y.setFileModifiedAt(dated(e.fileModifiedAt, null, where + "[" + e.track + "].fileModifiedAt").at());
+        if (!blank(e.addedAt)) y.setAddedAt(dated(e.addedAt, null, where + "[" + e.track + "].addedAt").at());
+        y.setAddedApprox(Boolean.TRUE.equals(e.addedApprox) ? Boolean.TRUE : null);
+        return y;
     }
 
     // ── helpers ─────────────────────────────────────────────────────────────

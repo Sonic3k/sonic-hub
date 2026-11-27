@@ -3,19 +3,29 @@
 import { get } from './client';
 
 export interface ArtistRef { key: string; name: string; country?: string | null }
+/** coverUrl = its own picture, else its album's (none: the pages draw the default one); spotifyUrl = its page on Spotify;
+ *  spotifySongId = the song of his Spotify listening it is (its page here). These three come with a list, a song, not
+ *  with the list of every recording. */
 export interface Track {
   key: string; title: string; version?: string | null; featuring?: string | null; artist?: ArtistRef | null;
   album?: { key: string; title: string; releaseYear?: number | null } | null;
   favorite?: number | null; durationSec?: number | null; firstHeard?: string | null; firstHeardEvidence?: string | null;
   hasAudio: boolean; audioUrl?: string | null; playlists?: string[];
+  coverUrl?: string | null; spotifyUrl?: string | null; spotifySongId?: string | null;
 }
 export interface Playlist {
   key: string; title: string; kind: 'WINDOW' | 'FULL' | 'CURATED'; when?: string | null; takenAt?: string | null; windowFrom?: string | null;
   deviceKey?: string | null; deviceName?: string | null; eventId?: string | null; eventTitle?: string | null; sourceFolder?: string | null; spotifyId?: string | null;
   summary?: string | null; note?: string | null; tracks: number; withAudio: number;
 }
-export interface Entry { position?: number | null; fileName?: string | null; note?: string | null; addedAt?: string | null; track?: Track | null }
-export interface PlaylistDetail extends Playlist { entries: Entry[] }
+/** addedAt → removedAt = the stretch the song was in the list (no removedAt = still in it); *Approx = that date was worked
+ *  out from what the playlist played then, not recorded by Spotify. */
+export interface Entry {
+  position?: number | null; fileName?: string | null; note?: string | null; addedAt?: string | null; removedAt?: string | null;
+  addedApprox?: boolean | null; removedApprox?: boolean | null; track?: Track | null;
+}
+/** entries = the songs in the list; removed = the songs that were in it and left */
+export interface PlaylistDetail extends Playlist { entries: Entry[]; removed?: Entry[] | null }
 
 /** starts = every stream; plays = the ones of 30 seconds or more; ms = time played; songs, artists, days, first, last = counted on plays */
 export interface Totals { starts: number; plays: number; ms: number; songs: number; artists: number; days: number; first: string | null; last: string | null }
@@ -28,11 +38,12 @@ export interface Song {
   id: string; key: string; title: string; version: string | null; artist: string; assessment: string | null; total: Totals;
   picked: number; passed: number; finished: number; recording: Track | null;
   tracks: { spotifyId: string; name: string; album: string | null; plays: number }[];
-  lists: { key: string; title: string; addedAt: string | null }[];
+  lists: { key: string; title: string; addedAt: string | null; removedAt?: string | null; addedApprox?: boolean | null; removedApprox?: boolean | null }[];
 }
 export interface DayPlay {
   at: string; ms: number; songId: string; title: string; version: string | null; artist: string; album: string | null; device: string | null; place: string | null;
   context: string | null; playlistKey: string | null; playlistTitle: string | null; start: string | null; end: string | null; shuffle: boolean | null;
+  coverUrl?: string | null;
 }
 /** What a report is cut down to: a stretch of time (from, to not included) and any side of a stream. */
 export interface Filters { from?: string; to?: string; song?: string; artist?: string; album?: string; playlist?: string; context?: string; device?: string; place?: string; q?: string }
