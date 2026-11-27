@@ -155,7 +155,7 @@ export const LOT = {
   stall: 2.7,
   westKerb: 10.7, westTail: 5.4, fenceTail: -3.1, fenceKerb: -8.5, fence: -11.6,           // x, west of the two wings
   eastKerb: 32.25, eastTail: 37.55, eastEdge: 43.5,                                        // x, east of them
-  northKerb: -47.6, northTail: -53.0, northEdge: -59.5, walk: -66.4,                       // z, north of the main wing; the sidewalk's back edge (the street's own frame)
+  northKerb: -47.6, northTail: -53.0, northEdge: -59.5, walk: -66.6,                       // z, north of the main wing; the sidewalk's back edge (the street's own frame)
   southKerb: -24.9, southTail: -19.6, southEdge: -13.0,                                    // z, south of it
   westDrive: [-30.3, -27.0],                                                               // x, round the main wing's west end
   drive: [28.5, 37.5],                                                                     // x, the way in from Mariposa

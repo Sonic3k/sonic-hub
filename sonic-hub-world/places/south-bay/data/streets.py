@@ -36,16 +36,22 @@ Everything is in metres in the world's frame (x east, z south). Sides: +1 is the
 import bisect, math, collections
 from geom import lens, at, sub, keep, unit, right, offset, rdp
 
-GUT, WALKW, KERBW, XW = 0.5, 2.0, 0.3, 3.0              # the gutter; a walk at the kerb; a kerb with no walk; a crosswalk
+GUT, WALKW, KERBW, XW = 0.5, 1.8, 0.3, 3.0              # the gutter; a walk at the kerb; a kerb with no walk; a crosswalk
+# A walk here lies AT the kerb (no planted strip between: his photographs of 2015 and Street View at seven spots of four
+# kinds of street), and El Segundo builds such a walk 6 ft wide (ESMC 15-31-4 B 1: 5 ft behind a parkway, 6 ft where it
+# adjoins the curb) — WALKW, measured from the kerb's face. The big roads' walks are wider: Sepulveda's is about 3 m
+# (Street View by the shops), Douglas's about 2.4 m. A place that knows a street's walk says so (layout: walks).
+WALK_BY = {'trunk': 3.0, 'primary': 3.0, 'secondary': 2.4}
 PARK = 2.4                                             # the strip along a kerb where cars park
 QUIETW, QUIETL = 11.0, 3.1                             # a quiet street with cars parked along both kerbs: 36 feet from kerb to kerb, and what is left to drive in each way
 MEDW = 1.2                                             # a raised median, at the least
 TAPER = 12.0                                           # either side of the point where a street's width changes
+EASE = 24.0                                            # … and of the point where its centre line moves sideways (a turn lane beginning: 1 in 28)
 VEE = 22.0                                             # how far out the map's two lines of a divided road have come apart to where its roadways really run
 ARTERIAL = ('trunk', 'primary', 'secondary', 'tertiary')
 QUIET = ('residential', 'living_street', 'unclassified')
 NOKERB = ('motorway', 'motorway_link', 'trunk_link')
-STREET, STREET_BOX, GUTTER, WALK, LAWN, APRON, MEDIAN, MEDIAN_GREEN = range(8)                  # bands and outlines
+STREET, STREET_BOX, GUTTER, WALK, LAWN, APRON, MEDIAN, MEDIAN_GREEN, MEDIAN_MULCH = range(9)    # bands and outlines
 YEL, WHT, WHT_LONG, BARS, YEL_LONG, WHT_DASH, YEL_DASH = range(7)                               # painted lines
 A_LEFT, A_THRU, A_RIGHT, A_LEFT_THRU, A_THRU_RIGHT, STOP, A_LEFT_RIGHT, ONLY, PAD = range(9)    # painted figures
 
@@ -106,7 +112,7 @@ def side_of(r, s):
     if r['oneway'] and s < 0 and r.get('pair'): return (False, 0.0)                # the median's side
     tg = r['tg']; side = 'right' if s > 0 else 'left'; v = tg.get('sidewalk:' + side, tg.get('sidewalk:both', '')); sw = tg.get('sidewalk', '')
     no = v == 'no' or sw in ('no', 'none') or (sw == 'left' and s > 0) or (sw == 'right' and s < 0)
-    return (True, KERBW if no or r['cls'].endswith('_link') else WALKW)
+    return (True, KERBW if no or r['cls'].endswith('_link') else (r.get('walk') or {}).get(1 if s > 0 else -1, WALK_BY.get(r['cls'], WALKW)))
 
 def seg_dist(q, a, b):
     dx, dz = b[0] - a[0], b[1] - a[1]; L2 = dx * dx + dz * dz or 1e-9
@@ -138,7 +144,7 @@ def hull(P):
         return h
     lo, up = half(P), half(P[::-1]); return lo[:-1] + up[:-1]
 
-def layout(W, roads, service, drives=(), median_w=None, islands=None, crosswalks=()):
+def layout(W, roads, service, drives=(), median_w=None, islands=None, crosswalks=(), walks=None, medians_known=None):
     """→ what the streets are made of, and what the routes need to know of them:
       bands    [(kind, [(x, z, lx, lz, rx, rz)])]   strips: the road's own line under each point (to cut the strip into
                                             tiles by), then the strip's left and right edge there, looking along the
@@ -151,7 +157,8 @@ def layout(W, roads, service, drives=(), median_w=None, islands=None, crosswalks
       marks    [(type, width cm, [(x, z)])] painted lines
       figures  [(kind, x, z, degrees)]      arrows, the word STOP, the pads at the corners
       poles, signs                          signal masts and stop signs
-      medians  [((x, z), name)]             spots down the middle of the planted medians, 22 m apart, with the road's name
+      medians  [((x, z), name)]             spots down the middle of the planted medians, 22 m apart (or as the place knows:
+                                            medians_known {street: {ground: 'mulch', every: metres}}), with the road's name
       junctions, jat, legat                 the crossings; which crossing a point belongs to; the arm of a crossing
                                             that a road forms at one of its points going one way (ri, k, sgn)
       sides    {(ri, side): [(d0, d1)]}     where a road has a kerb with a walk behind it (for trees and lights)
@@ -164,6 +171,20 @@ def layout(W, roads, service, drives=(), median_w=None, islands=None, crosswalks
     for ri, r in enumerate(roads):
         for k, n in enumerate(r['nd']): use[n].append((ri, k))
     bands, polys, corners, marks, figures, poles, signs, medians = [], [], [], [], [], [], [], []
+    # the walks a place knows: {street: width, or [((x from, x to, z from, z to; None: anywhere), width, side — 'n', 's',
+    # 'e', 'w' or None: both)]}, a way taken by its middle point
+    for r in roads:
+        known = (walks or {}).get(r['name'])
+        if known is None or len(r['p']) < 2: continue
+        if not isinstance(known, (list, tuple)): known = [((None, None, None, None), known, None)]
+        k = min(len(r['p']) - 2, len(r['p']) // 2); (ax, az), (bx, bz) = r['p'][k], r['p'][k + 1]; l = math.hypot(bx - ax, bz - az) or 1.0
+        mx, mz = (ax + bx) / 2, (az + bz) / 2; nx, nz = -(bz - az) / l, (bx - ax) / l
+        for (xa, xb, za, zb), w, side in known:
+            if not ((xa is None or xa <= mx) and (xb is None or mx <= xb) and (za is None or za <= mz) and (zb is None or mz <= zb)): continue
+            for s in (1, -1):
+                ox, oz = nx * s, nz * s; faces = 'e' if ox > 0.7 else 'w' if ox < -0.7 else 's' if oz > 0.7 else 'n'
+                if side is None or side == faces: r.setdefault('walk', {}).setdefault(s, w)
+
     audit = collections.Counter()
 
     # ── the two roadways of a divided road: how far each one's left edge is from the other's ──
@@ -195,14 +216,19 @@ def layout(W, roads, service, drives=(), median_w=None, islands=None, crosswalks
         # The map's lane counts make many a divided road's two roadways as wide as the space between their lines, or
         # wider: the median then stands in from each roadway's left edge, and the lanes share what is left.
         gs = sorted(m[1] for m in r['med'] if m[1] is not None and m[1] > -4.0)
-        if r['pair'] and gs: r['medw'] = (median_w or {}).get(r['name'], MEDW); r['inset'] = max(0.0, min(2.0, (r['medw'] - gs[len(gs) // 2]) / 2))
+        if r['pair'] and gs:
+            mw = (median_w or {}).get(r['name'], MEDW)
+            if isinstance(mw, (list, tuple)):                                      # known stretch by stretch: [((x from, x to, z from, z to; None: anywhere), its width)]
+                mx = sum(q[0] for q in r['p']) / len(r['p']); mz = sum(q[1] for q in r['p']) / len(r['p'])
+                mw = next((w for (xa, xb, za, zb), w in mw if (xa is None or xa <= mx) and (xb is None or mx <= xb) and (za is None or za <= mz) and (zb is None or mz <= zb)), MEDW)
+            r['medw'] = mw; r['inset'] = max(0.0, min(2.0, (r['medw'] - gs[len(gs) // 2]) / 2))
 
     # ── a street's half-width along it: where its width changes from one way to the next it tapers ──
     ends = collections.defaultdict(list)
     for ri, r in enumerate(roads):
         ends[r['nd'][0]].append((ri, 0)); ends[r['nd'][-1]].append((ri, 1))
     for ri, r in enumerate(roads):
-        r['hwe'] = [r['hw'], r['hw']]; r['on'] = [None, None]                      # its half-width at either end; which way it goes on from there
+        r['hwe'] = [r['hw'], r['hw']]; r['on'] = [None, None]; r['onr'] = [None, None]   # its half-width at either end; which way it goes on from there; as which road, by which of that road's ends
         if r['bridge']: continue
         for e, n in ((0, r['nd'][0]), (1, r['nd'][-1])):                            # the same street going on from this end, as another way
             p = r['p']; mine = unit(p[1][0] - p[0][0], p[1][1] - p[0][1]) if e == 0 else unit(p[-1][0] - p[-2][0], p[-1][1] - p[-2][1]); on = []
@@ -211,8 +237,8 @@ def layout(W, roads, service, drives=(), median_w=None, islands=None, crosswalks
                 if x == ri or o['name'] != r['name'] or o['cls'] != r['cls'] or o['oneway'] != r['oneway'] or o['bridge']: continue
                 q = o['p']; away = unit(q[1][0] - q[0][0], q[1][1] - q[0][1]) if e2 == 0 else unit(q[-2][0] - q[-1][0], q[-2][1] - q[-1][1])
                 g = away if e == 1 else (-away[0], -away[1])                       # … along this road's own way
-                if g[0] * mine[0] + g[1] * mine[1] >= 0.5: on.append((o, g))        # (not the other roadway of a divided road, which ends on the same point coming back)
-            if len(on) == 1 and (r['name'] or len(use[n]) == 2): r['hwe'][e] = (r['hw'] + on[0][0]['hw']) / 2; r['on'][e] = on[0][1]
+                if g[0] * mine[0] + g[1] * mine[1] >= 0.5: on.append((o, g, (x, e2)))   # (not the other roadway of a divided road, which ends on the same point coming back)
+            if len(on) == 1 and (r['name'] or len(use[n]) == 2): r['hwe'][e] = (r['hw'] + on[0][0]['hw']) / 2; r['on'][e] = on[0][1]; r['onr'][e] = on[0][2]
     def frame(r, d):
         """the place d metres along road r, and the step that takes a line one metre further to its right there: across
         the road — where the road bends (and at an end where the same street goes on as another way), across the bend,
@@ -603,10 +629,80 @@ def layout(W, roads, service, drives=(), median_w=None, islands=None, crosswalks
                 if e > worst: worst, wi = e, i
             return thin(a[:wi + 1])[:-1] + thin(a[wi:]) if worst > 0.03 else [p0, p1]
         bands.append((kind, thin(pts)))
+    # Where a street goes on as another way between crossings and its yellow lines do not meet the next way's (the next has
+    # a lane more on one side: a lane to turn from begins), the lines are not broken off and begun again a lane's width to
+    # the side: over EASE metres either side they run across to each other, each way's by half; and a middle lane that the
+    # next way has not opens out of its double line (and closes into it) the same way. At a crossing the lines stop
+    # anyway — the two approaches' centre lines do stand a lane apart there, each side's turn lane facing the other's.
+    def yellows(r):
+        P, e = r['prof'], lane_edges(r)
+        for i, (d, _) in enumerate(P):
+            if d == 'c': return [e[i], e[i + 1]]
+        return [e[i] for i in range(1, len(P)) if P[i - 1][0] == 'b' and P[i][0] == 'f'][:1]
+    for r in roads: r['ease'] = []                                                  # [(from, to along it, the end the lines come in by, how far sideways there, a middle lane's middle and half-width, metres already run, of how many)]
+    def joint(r, e):
+        """at its end e road r goes on, between crossings, as a way whose yellow lines do not meet its own → (its lines,
+        the next way's as they lie in r's frame), else None"""
+        if r['onr'][e] is None or r['nd'][0 if e == 0 else -1] in jnode or r['bridge']: return None
+        o, e2 = roads[r['onr'][e][0]], r['onr'][e][1]; ya = yellows(r); yb = [y if e != e2 else -y for y in yellows(o)]
+        return None if not ya or not yb or o['bridge'] or any(abs(a - b) < 0.3 for a in ya for b in yb) else (ya, yb)
+    def lead(r, e, delta, c, hc):
+        """the lines of road r run sideways by delta at its end e (or its middle lane closes there), easing out over EASE
+        metres along the street — through the ways it goes on as, where those are shorter; of a way whose other end has
+        lines of its own to lead, it has half"""
+        run, got = 0.0, []
+        while True:
+            L = r['cl'][-1]; far = 1 - e; half = joint(r, far) is not None; take = min(L / 2 if half else L, EASE - run); got.append((r, e, take, run, delta, c)); run += take
+            if half or run >= EASE - 0.05 or r['onr'][far] is None or r['nd'][0 if far == 0 else -1] in jnode: break
+            o, e2 = roads[r['onr'][far][0]], r['onr'][far][1]; same = far != e2
+            if o['bridge'] or not yellows(o): break
+            if not same: delta, c = -delta, -c
+            r, e = o, e2
+        for r, e, take, at0, delta, c in got: L = r['cl'][-1]; r['ease'].append((0.0, take, 0, delta, c, hc, at0, run) if e == 0 else (L - take, L, 1, delta, c, hc, at0, run))
+    for r in list(roads):
+        for e in (0, 1):
+            j = joint(r, e)
+            if not j: continue
+            ya, yb = j; ca, cb = sum(ya) / len(ya), sum(yb) / len(yb)
+            if len(ya) != len(yb) and abs(ca - cb) < 0.3:
+                if len(ya) == 2: lead(r, e, 0.0, ca, (ya[1] - ya[0]) / 2); audit['middle lanes opening out of a double line'] += 1
+                continue
+            a, b = min(((a, b) for a in ya for b in yb), key=lambda q: abs(q[0] - q[1]))
+            lead(r, e, (b - a) / 2, 0.0, 0.0); audit['centre lines led across to the next way\'s'] += 1
+    def led(r, d, off):
+        """where a line kept `off` to the right of road r's own line really runs at d along it"""
+        x = off
+        for a, b, e, delta, c, hc, run, T in r['ease']:
+            if not a - 1e-6 <= d <= b + 1e-6: continue
+            k = max(0.0, min(1.0, (run + (d - a if e == 0 else b - d)) / T)); k = k * k * (3 - 2 * k)      # 0 where the two ways meet, 1 where the street is itself again
+            if hc and abs(abs(off - c) - hc) < 0.3: x = c + math.copysign(max(0.12, abs(off - c) * k), off - c)
+            x += delta * (1 - k)
+        return x
+    steps = []
+    for ri, r in enumerate(roads):                                                 # what is left of the steps (for the checks: none)
+        for e in (0, 1):
+            if r['onr'][e] is None or r['onr'][e][0] < ri or r['nd'][0 if e == 0 else -1] in jnode or r['bridge']: continue
+            o, e2 = roads[r['onr'][e][0]], r['onr'][e][1]
+            ya = [led(r, 0.0 if e == 0 else r['cl'][-1], y) for y in yellows(r)]; yb = [(1 if e != e2 else -1) * led(o, 0.0 if e2 == 0 else o['cl'][-1], y) for y in yellows(o)]
+            if ya and yb and not o['bridge']:
+                audit['ways joined between crossings'] += 1
+                if min(abs(a - b) for a in ya for b in yb) > 0.15: audit['centre lines that step between two ways'] += 1; steps.append((r['p'][0 if e == 0 else -1], r['name'], ya, yb, ''.join(d for d, _ in r['prof']), ''.join(d for d, _ in o['prof']), r['cl'][-1], o['cl'][-1], r['ease'], o['ease']))
+    audit['centre lines that step between two ways'] += 0
     def paint(ty, wcm, r, d0, d1, off):
         if d1 - d0 < 0.6: return
-        seg = sub(r['p'], r['cl'], d0, d1)
-        if len(seg) >= 2: marks.append((ty, wcm, rdp(offset(seg, off), 0.03)))
+        zs = [z for z in r['ease'] if z[0] < d1 and z[1] > d0]
+        if not zs:
+            seg = sub(r['p'], r['cl'], d0, d1)
+            if len(seg) >= 2: marks.append((ty, wcm, rdp(offset(seg, off), 0.03)))
+            return
+        ds = {d0, d1} | {c for c in r['cl'] if d0 < c < d1}
+        for a, b, *_ in zs:
+            t = max(a, d0)
+            while t < min(b, d1): ds.add(t); t += 2.0
+            ds |= {c for c in (a, b) if d0 < c < d1}
+        pts = []
+        for d in sorted(ds): (px, pz), n = frame(r, d); x = led(r, d, off); pts.append((px + n[0] * x, pz + n[1] * x))
+        marks.append((ty, wcm, rdp(pts, 0.03)))
     for ri, r in enumerate(roads):
         L = r['cl'][-1]; P, e = r['prof'], lane_edges(r); N = len(P); fast = r['v'] > 20.5
         if r['bridge']: continue
@@ -814,16 +910,17 @@ def layout(W, roads, service, drives=(), median_w=None, islands=None, crosswalks
             inside = [d for d in ds if e0 < d < e1]; mean = sum(gt(d) for d in inside + [e0, e1]) / (len(inside) + 2); wide = max(mw, mean) >= 2.4
             h0, h1 = max(gt(e0), mw) / 2, max(gt(e1), mw) / 2
             more = [d for d in inside + ([e0 + h0 * k for k in (0.06, 0.2, 0.45, 0.72, 1.0)] if n0 else []) + ([e1 - h1 * k for k in (0.06, 0.2, 0.45, 0.72, 1.0)] if n1 else []) if e0 < d < e1]
-            kind = MEDIAN_GREEN if wide else MEDIAN
+            known = (medians_known or {}).get(r['name']) or {}
+            kind = (MEDIAN_MULCH if known.get('ground') == 'mulch' else MEDIAN_GREEN) if wide else MEDIAN
             band(kind, r, e0, e1, lambda d: mid(d) - half(d), lambda d: mid(d) + 0.02, more)                 # the far half: its kerb to the other roadway
             band(kind, r, e0, e1, lambda d: mid(d) - 0.02, lambda d: mid(d) + half(d), more, flip=True)      # the near half: its kerb to this one
             audit['median m'] += e1 - e0
-            if wide:                                                                # down the middle of a planted median, every 22 m
+            if wide:                                                                # down the middle of a planted median, every 22 m (or as the place knows)
                 d = e0 + 7.0
                 while d < e1 - 4.0:
                     (x, z), n = frame(r, d); o = mid(d)
                     medians.append(((x + n[0] * o, z + n[1] * o), r['name']))
-                    d += 22.0
+                    d += known.get('every', 22.0)
 
     audit['crossings'] = len(junctions); audit['signals'] = sum(1 for j in junctions if j['signal'])
     audit['stops'] = sum(1 for j in junctions for l in j['legs'] if l.get('ctl') == 'stop')
@@ -833,4 +930,4 @@ def layout(W, roads, service, drives=(), median_w=None, islands=None, crosswalks
     audit['signals without a crosswalk'] = sum(1 for j in junctions if j['signal'] and not any(l.get('synth') or any(mk for _, mk in l['xw']) for l in j['legs']))
     audit['corners whose outline crosses itself'] += 0; audit['corners left pointed (an arm curves away)'] += 0; audit['crossings paved out to their outermost points'] += 0
     audit['islands'] += 0; audit['streets with cars at the kerb m'] = round(sum(r['cl'][-1] for r in roads if any(d in 'pq' for d, _ in r['prof']) and not r['bridge']))
-    return dict(bands=bands, polys=polys, corners=corners, marks=marks, figures=figures, poles=poles, signs=signs, medians=medians, junctions=junctions, jat=jat, legat=legat, sides=sides, audit=audit, use=use, hwf=hwf)
+    return dict(bands=bands, polys=polys, corners=corners, marks=marks, figures=figures, poles=poles, signs=signs, medians=medians, junctions=junctions, jat=jat, legat=legat, sides=sides, audit=audit, use=use, hwf=hwf, steps=steps)

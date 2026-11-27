@@ -2,7 +2,8 @@
 // route by itself from end to end keeping the rules (the speed each street allows, no leaning in a bend, a full stop
 // at a stop sign, never over a line on red) and driving like a car (on a straight street the wheel holds still, the
 // body does not rock, the foot does not hunt between the pedals), it keeps off the kerbs, a hand on the wheel works and gives the wheel
-// back, the screen shows his list, and a frame never costs more than the ceiling measured on his telephone
+// back, the screen shows his list, the way into the parking structure holds (the gate, the floors under the wheels,
+// the stall on level 3, the cars standing there), and a frame never costs more than the ceiling measured on his telephone
 // (claude/chuan-dung-the-gioi-3d.md: 460 draw calls, 1.2 M triangles in view; 160 MB of streamed ground).
 // Run from the module's folder after a build: node places/south-bay/checks.mjs
 import { launch, open as openPage } from '../../tools/lib.mjs';
@@ -17,7 +18,7 @@ const open = (vp, mobile, more = {}) => openPage(browser, { ...vp, mobile, place
 {
   const { page, logs } = await open({ width: 1280, height: 720 }, false);
   const routes = await page.evaluate(() => window.__world.routes());
-  ok('two routes, there and back', routes.length === 2 && routes.every(r => r.length > 1500 && r.length < 2000), routes.map(r => `${r.id} ${Math.round(r.length)} m, ${r.ctl.length} signals and signs, ${r.turns.length} turns`).join(' · '));
+  ok('two routes, there and back', routes.length === 2 && routes.every(r => r.length > 1500 && r.length < 2200), routes.map(r => `${r.id} ${Math.round(r.length)} m, ${r.ctl.length} signals and signs, ${r.turns.length} turns`).join(' · '));
   for (const r of routes) {
     const run = await page.evaluate(async id => {
       const W = window.__world, D = W.drive(); W.route(id); W.setView('cabin');
@@ -30,8 +31,31 @@ const open = (vp, mobile, more = {}) => openPage(browser, { ...vp, mobile, place
       let wLast = 0, wDir = 0, wBase = 0, aSide = 0, pAcc = 0, pWheel = 0, pHead = st.heading;
       for (const c of R.ctl) if (c.kind === 1) out.stopsMin[c.at] = 99;
       let prev = st.s, red = false, nextCost = 0;
+      // the parking structure: the gate (a full stop; the arm down when the car draws up, up when its bumper passes, down again
+      // behind it), the slope under the car (how fast it changes), the cars standing in the stalls (how near the car's body comes)
+      const G = W.site('garage-940-nash'), gar = { y0: st.y, yTop: 0, gradeRate: 0, grade: 0, gateMin: 99, armStop: -1, armPass: -1, armsUp: 0, clear: 99, clearAt: '', inside: 0 };
+      const gate = R.ctl.find(c => c.kind === 2); let pGrade = st.grade, passedAt = -1;
+      const body = [[2.42, 0.915], [2.42, -0.915], [-2.42, 0.915], [-2.42, -0.915], [2.42, 0], [-2.42, 0], [0, 0.915], [0, -0.915], [1.2, 0.915], [1.2, -0.915], [-1.2, 0.915], [-1.2, -0.915]];
       for (let k = 0; k < 12000 && !out.arrived; k++) {
         W.step(0.05); out.t += 0.05;
+        if (G) {
+          gar.yTop = Math.max(gar.yTop, st.y); gar.grade = Math.max(gar.grade, Math.abs(st.grade)); gar.gradeRate = Math.max(gar.gradeRate, Math.abs(st.grade - pGrade) / 0.05); pGrade = st.grade;
+          const arms = G.arms(), up = Math.max(...arms);
+          if (gate) {
+            if (st.s > gate.at - 2.5 && st.s < gate.at + 1) { gar.gateMin = Math.min(gar.gateMin, st.v); if (st.v < 0.05 && gar.armStop < 0) gar.armStop = up; }
+            if (prev < gate.at + 0.5 && st.s >= gate.at + 0.5) { gar.armPass = up; gar.armsUp = arms.filter(a => a > 0.5).length; passedAt = out.t; }
+            if (passedAt > 0 && out.t > passedAt + 8 && gar.armAfter == null) gar.armAfter = up;
+          }
+          const c = Math.cos(st.heading), s = Math.sin(st.heading);
+          for (const [px, py, pz] of G.parked) {
+            if (Math.abs(py - st.y) > 1.6 || Math.abs(px - st.x) > 6 || Math.abs(pz - st.z) > 7) continue;
+            gar.inside++;
+            for (const [f, l] of body) {                                             // points of the car's outline against the standing car's (0.89 × 2.28 m either way of its middle)
+              const x = st.x + c * f - s * l, z = st.z + s * f + c * l, d = Math.hypot(Math.max(0, Math.abs(x - px) - 0.89), Math.max(0, Math.abs(z - pz) - 2.28));
+              if (d < gar.clear) { gar.clear = d; gar.clearAt = `${Math.round(st.s)} m`; }
+            }
+          }
+        }
         const v = st.v, cap = at(R.cap, st.s), kap = Math.abs(at(R.k, st.s));
         out.top = Math.max(out.top, v); out.over = Math.max(out.over, v - cap); out.lean = Math.max(out.lean, v * v * kap); out.off = Math.max(out.off, Math.abs(st.lat));
         // how it drives: the wheel's swings of 2° and more, what the wheel, the body and the sideways push do on a straight, the foot's changes of pedal
@@ -49,7 +73,7 @@ const open = (vp, mobile, more = {}) => openPage(browser, { ...vp, mobile, place
         const wr = Math.abs(w - pWheel) / 0.05; feel.wheelRate = Math.max(feel.wheelRate, wr); if (v > 8) feel.wheelRateFast = Math.max(feel.wheelRateFast, wr); pWheel = w;
         for (const c of R.ctl) {
           if (c.kind === 1) { if (st.s > c.at - 2.5 && st.s < c.at + 1) out.stopsMin[c.at] = Math.min(out.stopsMin[c.at], v); }
-          else if (prev < c.at + 0.6 && st.s >= c.at + 0.6 && W.signal(c.junction, c.group, W.clock()) === 0) out.redRun.push(c.at);
+          else if (c.kind === 0 && prev < c.at + 0.6 && st.s >= c.at + 0.6 && W.signal(c.junction, c.group, W.clock()) === 0) out.redRun.push(c.at);
         }
         if (st.waiting === 'red' && !red) out.waitsRed++; red = st.waiting === 'red';
         if (st.s >= nextCost) {                                                  // what a frame costs here, once the ground round the car is in place
@@ -62,6 +86,7 @@ const open = (vp, mobile, more = {}) => openPage(browser, { ...vp, mobile, place
         prev = st.s; out.arrived = st.phase === 'arrived';
       }
       out.feel = feel; out.events = R.ctl.length + R.turns.length;
+      if (G) { for (let k = 0; k < 200; k++) W.step(0.05); gar.armEnd = Math.max(...G.arms()); gar.gates = st.gates; gar.yEnd = st.y; gar.head = st.heading; gar.gate = !!gate; out.gar = gar; }
       out.tiles = W.tiles(); out.end = [st.x, st.z]; return out;
     }, r.id);
     const stops = Object.entries(run.stopsMin);
@@ -79,6 +104,14 @@ const open = (vp, mobile, more = {}) => openPage(browser, { ...vp, mobile, place
     ok(`${r.id}: never over a line on red`, run.redRun.length === 0, run.redRun.join(', '));
     ok(`${r.id}: it keeps to its lane`, run.off < 0.05);
     ok(`${r.id}: a frame stays under the ceiling`, run.calls <= CEIL.calls && run.tris <= CEIL.tris && run.cabinCalls <= CEIL.cabinCalls, `world ${run.calls} calls / ${Math.round(run.tris / 1000)}k triangles at most (${run.worst}); cabin ${run.cabinCalls} calls`);
+    if (run.gar && run.gar.gate) {
+      const g = run.gar, deg = 180 / Math.PI, up = r.id === 'esa-att';
+      ok(`${r.id}: a full stop at the parking structure's gate, and the arm answers`, g.gates === 1 && g.gateMin < 0.05 && g.armStop >= 0 && g.armStop < 0.35 && g.armPass > 0.9 && g.armsUp === 1 && g.armEnd < 0.02,
+        `down to ${g.gateMin.toFixed(2)} m/s; the arm ${Math.round(g.armStop * 100)}% up as the car stops, ${Math.round(g.armPass * 100)}% as its bumper passes (${g.armsUp} arm up), ${Math.round(g.armEnd * 100)}% afterwards`);
+      ok(`${r.id}: ${up ? 'up to level 3' : 'down from level 3'} on a slope that comes and goes gently`, Math.abs((up ? g.yEnd : g.y0) - 7.6) < 0.03 && Math.abs(up ? g.y0 : g.yEnd) < 0.03 && Math.abs(g.yTop - 7.6) < 0.03 && g.grade * deg < 2.2 && g.gradeRate * deg < 2.5,
+        `from ${g.y0.toFixed(2)} m to ${g.yEnd.toFixed(2)} m; ${(g.grade * deg).toFixed(2)}° at the steepest, changing by ${(g.gradeRate * deg).toFixed(2)}° a second at most`);
+      ok(`${r.id}: clear of the cars standing in the stalls`, g.inside > 500 && g.clear > 0.3, `${g.clear.toFixed(2)} m at the nearest (${g.clearAt})`);
+    }
     ok(`${r.id}: the ground streams without a failure`, run.tiles.failed === 0 && run.tiles.worker && run.tiles.held <= CEIL.held && run.tiles.mb <= CEIL.mb, `${run.tiles.built} squares built (${run.tiles.msAvg} ms each, ${run.tiles.msMax.toFixed(0)} ms at most), ${run.tiles.held} held, ${run.tiles.mb} MB`);
   }
 
@@ -87,21 +120,54 @@ const open = (vp, mobile, more = {}) => openPage(browser, { ...vp, mobile, place
   const kerb = await page.evaluate(async id => {
     const W = window.__world, D = W.drive(); W.route(id);
     const T = await import(document.querySelector('script[type=module]') ? 'https://cdnjs.cloudflare.com/ajax/libs/three.js/0.170.0/three.module.min.js' : '');
-    const ray = new T.Raycaster(), down = new T.Vector3(0, -1, 0), bad = [], st = D.state, R = D.route; let n = 0;
+    const ray = new T.Raycaster(), down = new T.Vector3(0, -1, 0), bad = [], air = [], st = D.state, R = D.route; let n = 0, decks = 0;
     const shown = o => { for (let p = o; p; p = p.parent) if (!p.visible) return false; return true; };
     for (let s = 2; s < R.length - 1; s += 3) {
       W.at(s); if (Math.round(s) % 120 < 3) { for (let w = 0; w < 80 && !W.settled(1); w++) await new Promise(f => setTimeout(f, 50)); W.step(1e-6); }
       const nx = -Math.sin(st.heading), nz = Math.cos(st.heading), fx = Math.cos(st.heading), fz = Math.sin(st.heading);
       for (const along of [0, 2.775]) for (const off of [-0.8, 0, 0.8]) {                          // under the back wheels and the front ones
-        ray.set(new T.Vector3(st.x + fx * along + nx * off, 1.5, st.z + fz * along + nz * off), down); ray.far = 1.7;      // from the height of the car's roof down
+        const floor = st.y + Math.tan(st.grade) * (along - 1.3875);                                // where the path has these wheels (the car's middle is 1.39 m ahead of its back axle)
+        ray.set(new T.Vector3(st.x + fx * along + nx * off, floor + 1.5, st.z + fz * along + nz * off), down); ray.far = 1.7;      // from the height of the car's roof down
         const hit = ray.intersectObjects(W.scene().children.filter(c => c.name === 'tiles' || c.name.startsWith('site')), true).find(h => shown(h.object) && !h.object.isInstancedMesh && !h.object.isSprite);
-        n++; if (hit && hit.point.y > 0.09) bad.push(`${Math.round(s)} m (${along ? 'front' : 'back'} ${off}): ${hit.point.y.toFixed(2)} m, ${hit.object.name || hit.object.parent.name}`);
+        n++; if (hit && hit.point.y - floor > 0.09) bad.push(`${Math.round(s)} m (${along ? 'front' : 'back'} ${off}): ${(hit.point.y - floor).toFixed(2)} m, ${hit.object.name || hit.object.parent.name}`);
+        if (floor > 0.3) { decks++; if (!hit || hit.point.y - floor < -0.09) air.push(`${Math.round(s)} m (${along ? 'front' : 'back'} ${off}): ${hit ? (hit.point.y - floor).toFixed(2) + ' m' : 'nothing under it'}`); }   // off the ground: a deck must be there
       }
     }
-    return { n, bad };
+    return { n, bad, air, decks };
   }, id);
   ok(`${id}: the wheels keep off the kerbs and the islands`, kerb.bad.length === 0, kerb.bad.length ? kerb.bad.slice(0, 6).join(' · ') + (kerb.bad.length > 6 ? ` … ${kerb.bad.length} in all` : '') : `${kerb.n} points looked at`);
+  ok(`${id}: in the parking structure the wheels are on its decks`, kerb.decks > 900 && kerb.air.length === 0, kerb.air.length ? kerb.air.slice(0, 6).join(' · ') + (kerb.air.length > 6 ? ` … ${kerb.air.length} in all` : '') : `${kerb.decks} points above the ground, a deck within 9 cm under each`);
   }
+
+  /* the plants (engine/plants.js): near the car a tree is drawn leaf by leaf and a palm has its head of leaves, each
+     of them once (its far shape put away meanwhile); the leaf pictures keep their cover in their smaller copies; the
+     wind's clock runs with the world's */
+  const plants = await page.evaluate(async () => {
+    const W = window.__world; W.route('esa-att'); const out = { spots: [] };
+    for (const s of [330, 900, 1330]) {                                             // Mariposa under its figs; Nash under its palms
+      W.at(s); for (let w = 0; w < 80 && !W.settled(1); w++) await new Promise(f => setTimeout(f, 50)); W.step(0.05); W.step(0.05);
+      const near = W.near(), tiles = W.scene().getObjectByName('tiles'), e = W.eye(); let hidden = 0, pooled = 0, far = 0, nearest = 1e9;
+      for (const g of tiles.children) {
+        if (g.name.startsWith('near trees')) { pooled += g.count; continue; }
+        const m = g.children.find(c => c.name === 'trees'); if (!m) continue;
+        for (let k = 0; k < m.count; k++) { const a = m.instanceMatrix.array, o = 16 * k; if (a[o] === 0 && a[o + 5] === 0) hidden++; else { far++; nearest = Math.min(nearest, Math.hypot(g.position.x + a[o + 12] - e[0], g.position.z + a[o + 14] - e[2])); } }
+      }
+      out.spots.push({ s, ...near, hidden, pooled, far, nearest: Math.round(nearest) });
+    }
+    const t0 = W.plantTime(); for (let k = 0; k < 20; k++) W.step(0.05); out.wind = W.plantTime() - t0; out.cover = W.plantCover();
+    // nothing solid inside a crown, near or far: no face of a tree wears the leaves' solid picture (the atlas's sixth cell), and a far tree is leaves too
+    const lump = g => { const uv = g.attributes.uv ? g.attributes.uv.array : [1 / 3, 0.75]; let n = 0; for (let i = 0; i < uv.length; i += 2) if (uv[i] > 0.25 && uv[i] < 0.5 && uv[i + 1] > 0.5) n++; return n; };
+    out.lumps = 0; out.farLeaves = true; out.farN = 0;
+    for (const g of W.scene().getObjectByName('tiles').children) { if (g.name.startsWith('near trees')) out.lumps += lump(g.geometry); const m = g.children.find(c => c.name === 'trees'); if (m) { out.farN++; out.lumps += lump(m.geometry); if (!(m.material.userData.plants && m.material.alphaTest > 0)) out.farLeaves = false; } }
+    const leaf = tiles => tiles.children.filter(c => c.name.startsWith('near')).every(c => c.material.userData.plants && c.material.alphaTest > 0 && c.geometry.attributes.sway);
+    out.cards = leaf(W.scene().getObjectByName('tiles')); return out;
+  });
+  ok('near the car the trees are drawn leaf by leaf and the palms have their heads, each once', plants.cards && plants.spots.every(p => p.hidden === p.trees && p.pooled === p.trees && p.nearest >= 100) && plants.spots[0].trees >= 8 && plants.spots[2].palms >= 6,
+    plants.spots.map(p => `at ${p.s} m: ${p.trees} trees and ${p.palms} palms leaf by leaf, ${p.far} trees as far shapes (the nearest ${p.nearest} m off)`).join(' · '));
+  const cov = Object.entries(plants.cover).map(([k, v]) => [k, v[0], Math.max(...v.map(c => Math.abs(c - v[0])))]);
+  ok('the leaf pictures keep their cover from far (their smaller copies pass as much of a spray as the full one)', cov.length === 5 && cov.every(([, c0, off]) => c0 > 0.15 && c0 < 0.8 && off < 0.05), cov.map(([k, c0, off]) => `${k} ${Math.round(c0 * 100)}% (±${(off * 100).toFixed(1)})`).join(', '));
+  ok('a tree is leaves all the way in, near and far: no lump inside a crown, no ball for a far tree', plants.lumps === 0 && plants.farLeaves && plants.farN > 0, `${plants.lumps} solid faces in the trees' crowns; ${plants.farN} tiles' far trees ${plants.farLeaves ? 'drawn with leaves' : 'NOT drawn with leaves'}`);
+  ok('the wind\'s clock runs with the world\'s', Math.abs(plants.wind - 1) < 0.01, `${plants.wind.toFixed(2)} s in 1 s`);
 
   /* a hand on the wheel */
   const hand = await page.evaluate(() => {
@@ -166,6 +232,10 @@ for (const [name, vp] of [['upright', { width: 390, height: 743 }], ['on its sid
     A['limit lines inside a crosswalk'] === 0 && A['crosswalks at a crossing nobody stops at'] === 0 && A['signals without a crosswalk'] === 0 && A['STOP on the road'] >= A.stops && A.stops > 100 && A['corners whose outline crosses itself'] === 0,
     `${A.crossings} crossings (${A.signals} with signals), ${A['crosswalks the map has']} crosswalks from the map and ${A['crosswalks by the rule']} by the rule, ${A['limit lines']} limit lines, ${A.corners} round corners, ${Math.round(A['kerb m'] / 1000)} km of kerb`);
   const { makeBuilder } = await import('../../engine/world/tilework.js'), build = makeBuilder();
+  // (where a walk's width is known: Continental's flag of 5 ft in his photographs of 2015, Sepulveda's 3 m and Mariposa's 6 ft in Street View, Nash's west walk under the Green Line in IMG_1787)
+  const WALKS = [{ name: 'Continental', at: [331, 89], r: 40, want: 1.5 }, { name: 'Sepulveda by the shops', at: [-100, 20], r: 40, want: 3.0 }, { name: 'Mariposa by the hotel', at: [40, -79], r: 40, want: 1.8 },
+    { name: "Nash's west walk under the Green Line", at: [700, 200], r: 60, want: 2.5, side: x => x < 700 }, { name: "Nash's east walk there", at: [700, 200], r: 60, want: 1.8, side: x => x > 700 }].map(q => ({ ...q, w: [] }));
+  const mulch = [], figs = [], aslant = { n: 0, across: 0 };
   let faces = 0, wrong = 0; const ends = new Map(), corners = [], parked = new Map(), key = (x, z) => Math.round(x * 20) + ':' + Math.round(z * 20);
   for (const f of fs.readdirSync(new URL('tiles/', dir))) {
     const [ti, tj] = f.replace('.json', '').split('_').map(Number), t = JSON.parse(fs.readFileSync(new URL('tiles/' + f, dir))), o = build.build(t).tile;
@@ -177,11 +247,27 @@ for (const [name, vp] of [['upright', { width: 390, height: 743 }], ['on its sid
     }
     // where each walk's kerb ends; where each round corner's kerb begins and ends
     for (const k of t.k || []) if (k[0] === 3 || k[0] === 5) { let x = 0, z = 0; const n = (k.length - 1) >> 2; for (let i = 0; i < n; i++) { x += k[1 + 4 * i]; z += k[2 + 4 * i]; if (i === 0 || i === n - 1) ends.set(key(x / 100 + ti * 500, z / 100 + tj * 500), 1); } }
+    // the walks: how wide each is where a place is known; the mulch median's middle line and the figs in it; how a walk is scored
+    for (const k of t.k || []) if (k[0] === 3 || k[0] === 8) { let x = 0, z = 0, last = null; const n = (k.length - 1) >> 2; for (let i = 0; i < n; i++) { x += k[1 + 4 * i]; z += k[2 + 4 * i]; const X = x / 100 + ti * 500, Z = z / 100 + tj * 500, w = Math.hypot(k[3 + 4 * i], k[4 + 4 * i]) / 100;
+      if (k[0] === 8) { const m = [X + k[3 + 4 * i] / 100, Z + k[4 + 4 * i] / 100]; if (i) mulch.push([...last, ...m]); last = m; } else if (w >= 1.2) for (const q of WALKS) if (Math.hypot(X - q.at[0], Z - q.at[1]) < q.r && (!q.side || q.side(X, Z))) q.w.push(w); } }
+    for (const q of t.p || []) if (q[0] === 0 && (q[3] | 0) === 0) figs.push([q[1] / 10 + ti * 500, q[2] / 10 + tj * 500]);
+    for (let i = 0; i < o.conc.n; i += 3) {
+      const g = o.conc, V = k => [g.pos[3 * (i + k)] + ti * 500, g.pos[3 * (i + k) + 1], g.pos[3 * (i + k) + 2] + tj * 500, g.uv[2 * (i + k)]], T = [V(0), V(1), V(2)];
+      if (Math.abs(T[0][1] - 0.12) > 1e-3 || !T.some(v => Math.hypot(v[0] - 331, v[2] - 89) < 60)) continue;
+      aslant.n++; if ([[0, 1], [1, 2], [0, 2]].some(([a, b]) => Math.abs(T[a][3] - T[b][3]) < 1e-4 && Math.hypot(T[a][0] - T[b][0], T[a][2] - T[b][2]) > 1.2)) aslant.across++;
+    }
     for (const c of t.c || []) { let x = 0, z = 0; for (let i = 0; i < c[0]; i++) { x += c[1 + 2 * i]; z += c[2 + 2 * i]; if (i === 0 || i === c[0] - 1) corners.push([x / 100 + ti * 500, z / 100 + tj * 500]); } }
     for (const p of t.p || []) if (p[0] === 5) { const x = p[1] / 10 + ti * 500, z = p[2] / 10 + tj * 500, k = Math.floor(x / 20) + ':' + Math.floor(z / 20); (parked.get(k) || parked.set(k, []).get(k)).push([x, z]); }
   }
+  ok('between crossings a street\'s centre line runs on from one way to the next: led across where the next has a lane more on one side, never stepping', A['centre lines that step between two ways'] === 0 && A['ways joined between crossings'] > 100 && A["centre lines led across to the next way's"] > 40,
+    `${A['ways joined between crossings']} joints between crossings, the lines led across at ${A["centre lines led across to the next way's"]} ends, ${A['centre lines that step between two ways']} steps left`);
   ok('no face of the streets is inside out', faces > 100000 && wrong === 0, `${faces} faces, ${wrong} wrong`);
   const near = ([x, z]) => { for (const dx of [-0.05, 0, 0.05]) for (const dz of [-0.05, 0, 0.05]) if (ends.has(key(x + dx, z + dz))) return true; return false; }, met = corners.filter(near).length;
+  { const med = q => q.w.slice().sort((a, b) => a - b)[q.w.length >> 1], seg = (x, z, [a, b, c, d]) => { const l = (c - a) ** 2 + (d - b) ** 2 || 1, u = Math.max(0, Math.min(1, ((x - a) * (c - a) + (z - b) * (d - b)) / l)); return Math.hypot(x - a - (c - a) * u, z - b - (d - b) * u); }, inMedian = figs.filter(([x, z]) => mulch.some(s => seg(x, z, s) < 1.0)).length;
+    ok('a walk is as wide as its street has it: 6 ft at the kerb by the city\'s rule, the big roads\' wider, and what the photographs show where they show it',
+      WALKS.every(q => q.w.length >= 2 && Math.abs(med(q) - q.want) < 0.12), WALKS.map(q => `${q.name} ${q.w.length ? med(q).toFixed(2) : '—'} m (${q.want}; ${q.w.length} points)`).join(' · '));
+    ok('a walk is scored across its own line, also on a street that runs aslant on the map', aslant.n >= 12 && aslant.across >= 0.95 * aslant.n, `${aslant.across} of ${aslant.n} faces of Continental's walks have a joint running straight across`);
+    ok('Continental\'s figs stand in its median, in a bed of mulch (his photographs of 2015)', mulch.length > 20 && inMedian >= 15, `${inMedian} figs down the median's ${mulch.length} points`); }
   ok('the kerbs close up: a round corner begins where a walk\'s kerb ends', corners.length > 800 && met >= 0.97 * corners.length, `${met} of ${corners.length} corner ends meet a kerb's end (the others: a side with no kerb of its own)`);
   // no parked car stands in the car's way: none with its middle within 2.2 m of the path's (a car and a half's width)
   let nearest = 99, where = '';

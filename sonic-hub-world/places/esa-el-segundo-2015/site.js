@@ -8,7 +8,8 @@ import * as THREE from 'three';
 import { part } from '../../engine/kit.js';
 import { M, canvasTex, plateTex, rng } from '../../engine/tex.js';
 import { X } from './mat.js';
-import { P, tree, car, beetle, lotLight, fence, glare } from './props.js';
+import { P, tree, shrub as shrubAt, car, beetle, lotLight, fence, glare } from './props.js';
+import { plantMaterial, hedgeBox } from '../../engine/plants.js';
 import { WINGS, LOT, LOBBY, TOWER, KERB, G1, flat } from './plan.js';
 import { plate } from './hotel.js';
 
@@ -73,7 +74,7 @@ export function buildSite(scene, shared, ctx) {
     b.box(X.asphalt('#3d3d3c', 3), -100, -0.04, -68.4, 52, 0.0, 132, { uv: [4, 4], uvw: true, cast: false });
     const n = WINGS.north, s = WINGS.south, mn = WINGS.main, L = LOT;
     const red = P.red(), walk = X.conc('#c6c2b8', 4, true), yellow = M.plain('#d9b030', 0.8), white = P.stripe();
-    const shrub = (x, z, r = 0.6, c = '#46682c') => b.sphere(P.leaves(c, 1), x, r * 0.7, z, r, { seg: 7, sy: 0.75, cast: false });
+    const shrub = (x, z, r = 0.6, c = '#46682c') => shrubAt(b, x, z, r, c);
     /** where a face's stair towers break its row of stalls: [from, to, the island's options] — as long as the tower with the
         walk that passes either side of it; the island itself starts at the tower's face (`face`: x or z) */
     const WALK = 1.4, towerCuts = (wing, side, face) => wing.towers.filter(t => t.side === side).map(t => { const am = (t.a0 + t.a1) / 2; return [am - TOWER.w / 2 - WALK, am + TOWER.w / 2 + WALK, { shrubs: 3, face }]; });
@@ -161,9 +162,9 @@ export function buildSite(scene, shared, ctx) {
     rowsX(L.northKerb, L.northTail, -25.6, L.court.x0 - 0.2, [...towerCuts(mn, 'A', mn.z0 - TOWER.out - 0.05).filter(t => t[0] < 0), treeCut(L.trees.north, { h: 5.5, r: 2.2 })], 0.5);
     b.box(red, -30.8, 0, L.northEdge - 0.15, L.island[0], 0.16, L.northEdge, { cast: false, solid: true });
     b.box(X.mulch(), -38.8, 0, L.northEdge - 1.9, L.island[0], 0.1, L.northEdge - 0.15, { uv: [1.5, 1.5], uvw: true, cast: false });
-    for (let x = -38.3; x < L.island[0] - 0.4; x += 3) { const e = Math.min(x + 3, L.island[0] - 0.4); b.box(M.plain(Math.round(x) % 2 ? '#314d24' : '#3a5a2a', 0.95), x, 0.08, L.northEdge - 3.9, e, 1.05, L.northEdge - 1.9, { cast: false }); }
+    b.geo(plantMaterial(), hedgeBox({ x0: -38.3, y0: 0.08, z0: L.northEdge - 3.9, x1: L.island[0] - 0.4, y1: 1.05, z1: L.northEdge - 1.9, tint: '#36542a', seed: 11 }), { cast: true });   // the hedge: a run of leaves (engine/plants.js), not blocks
     b.solid(-38.3, 0, L.northEdge - 3.9, L.island[0] - 0.4, 1.05, L.northEdge - 1.9);
-    b.box(X.lawn(), -38.8, 0.0, L.walk - 0.15, L.island[0], 0.1, L.northEdge - 3.9, { uv: [2, 2], uvw: true, cast: false });      // (a hand's breadth in under the sidewalk: no crack at its back edge)
+    b.box(X.lawn(), -38.8, 0.0, L.walk - 0.45, L.island[0], 0.1, L.northEdge - 3.9, { uv: [2, 2], uvw: true, cast: false });      // (a hand's breadth in under the sidewalk: no crack at its back edge)
     for (const x of [-23, -6, 3]) tree(b, x, L.walk + 1.2, { h: 9.5, r: 3.5, leaves: P.leaves('#3f5f2a', 6) });
     b.box(M.plain('#d8d6cf', 0.7), 13.2, 0.1, L.walk + 0.6, 13.8, 0.75, L.walk + 1.1, { cast: false });                  // a utility box on the lawn
     /* THE WAY IN from Mariposa (the satellite picture for where things are; Street View of July 2015, a month before he
@@ -235,7 +236,7 @@ export function buildSite(scene, shared, ctx) {
       b.box(walk, 29.7, 0, z0, 31.2, 0.15, n.z0 + 2.4, { uv: [1.5, 1.5], uvw: true, cast: false }); flat(29.7, z0, 31.2, n.z0 + 2.4, 0.15);
       b.box(P.curb(), 11.2, 0, z1, 31.2, 0.16, z1 + 0.15, { cast: false });
       b.box(X.mulch(), 11.2, 0, z1 + 0.15, 29.7, 0.12, n.z0 + 0.3, { uv: [1.5, 1.5], uvw: true, cast: false });
-      for (let x = 11.6; x < 29.2; x += 3) { const e = Math.min(x + 3, 29.4); if (x < 17.5 || x > 24.5) { b.box(M.plain(Math.round(x) % 2 ? '#314d24' : '#3a5a2a', 0.95), x, 0.1, z1 + 0.5, e, 0.9, z1 + 1.3, { cast: false }); b.solid(x, 0, z1 + 0.5, e, 0.9, z1 + 1.3); } } }
+      for (const [x, e, seed] of [[11.6, 17.6, 17], [26.6, 29.4, 23]]) { b.geo(plantMaterial(), hedgeBox({ x0: x, y0: 0.1, z0: z1 + 0.5, x1: e, y1: 0.9, z1: z1 + 1.3, tint: '#36542a', seed }), { cast: true }); b.solid(x, 0, z1 + 0.5, e, 0.9, z1 + 1.3); } }
     /* ROUND THE MAIN WING'S WEST END: a single lane between the wing and the kerb of the big trees that stand against the
        shops' lot */
     b.box(P.curb(), L.bed[0] + 3.85, 0, L.northEdge, L.bed[0] + 4.0, 0.16, L.bed[1], { cast: false, solid: true });

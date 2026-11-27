@@ -106,18 +106,41 @@ load, and what a frame may cost is checked.
   broken white lines between lanes going the same way (solid before a signal); where roads meet — several points on
   a divided road are one crossing — round corners, the crosswalks the map has (and one on each arm of a signal it
   has none for), a limit line before each, arrows in the lanes to turn from, the word STOP at a stop sign; kerb,
-  gutter and a walk at the kerb, dropped to an apron at every driveway; a strip for parked cars along each kerb of
+  gutter and a walk AT the kerb (no planted strip between: so it is at every spot looked at here, in his photographs
+  of 2015 and in Street View), 6 ft wide from the kerb's face as El Segundo builds a walk that adjoins the curb
+  (ESMC 15-31-4 B 1), wider on the big roads (3 m on a primary, 2.4 m on a secondary), scored across its own line in
+  flags of 5 ft (not square to the map), dropped to an apron at every driveway; a strip for parked cars along each kerb of
   a two-lane street where there is room (a quiet street is then 36 ft from kerb to kerb, with no line on it), and
   cars standing in it; between the two roadways of a divided road a raised median — one thing, laid from one of
-  the two, open only where something crosses both, its ends round. What a place knows that the map does not goes in
+  the two, open only where something crosses both, its ends round; between crossings, where a street goes on as a
+  way with a lane more on one side, its yellow lines are led across to the next way's over some 24 m either side
+  (a turn lane beginning), never broken off and begun again a lane's width away. What a place knows that the map
+  does not goes in
   as a short list in `world.py`: `STRIPES` (a street's lanes, by stretch), `WIDTHS` (kerb to kerb, with its parking
   strips), `ISLANDS` (planted islands in a middle lane: the lane between an island's end and a crossing is then a
-  pocket to turn left from), `CROSSWALKS` (one in mid-block), `DRIVES`, `TREES`, `MEDIAN_W`. The script counts what
-  must never be — a limit line inside a crosswalk, a corner whose outline crosses itself — and the checks hold the
-  tiles to it.
+  pocket to turn left from), `CROSSWALKS` (one in mid-block), `DRIVES`, `TREES`, `TREE_KIND` and `TREE_BACK`,
+  `MEDIAN_W` (by stretch), `MEDIANS` (a median's bed and what stands in it: Continental's bark mulch and figs),
+  `WALKS` (a walk's width where a photograph shows it, by stretch and side). The script counts what must never be — a limit line inside a crosswalk, a corner whose outline crosses
+  itself, a centre line that steps between two ways — and the checks hold the tiles to it.
+- **Plants.** `engine/plants.js` builds every tree, palm, shrub and hedge of every place the way real-time worlds
+  do: a crown is cards all the way in — sprays of leaves cut out by alpha (alpha test; alpha to coverage where the
+  screen is multisampled) on its skin, fewer, bigger and darker ones in its shade, and nothing solid inside (the
+  first build had a dark lump there, which showed through as a green ball); the cards are lit as one rounded mass
+  (the crown's dome's normals), darker inside and underneath (painted on the vertices), with a share of light coming
+  through, the leaves on a crown's far side dimmed, and no mirror of the sky in any of them; a shrub is a mound of
+  sprays, a clipped hedge a rounded, slightly uneven run with sprays all over it (no box, no ball); one
+  atlas drawn on a canvas (no photograph), whose mip levels are made cell by cell so that a spray keeps its cover
+  from far; wind in the vertex shader; one material for all of it. Kinds: an Indian laurel fig, a round-headed
+  street tree, a gum, a Mexican fan palm; shrubs and clipped hedges. In a world a street is planted with one kind
+  (`TREE_KIND` where a place knows it); a far tree is a dome of a few big sprays of the same leaves (26 cards, 14
+  beyond 140 m), and within 105 m of the eye each is taken into a pool of its kind and drawn in full (a palm gets
+  its head of leaves) — some 40 k triangles and four draw calls at most.
 - **Sites.** A place built by hand stands in a world whole, in a group of its own (`sites` in the world's
-  `place.js`): the hotel of El Segundo with its lots, its buildings and the shops next door. Its fine parts show
-  only from near (`near`). The streets round a site are the world's own, there as everywhere:
+  `place.js`): the hotel of El Segundo with its lots, its buildings and the shops next door; and the parking
+  structure at 940 N Nash St where the drive to work ends (`places/south-bay/garage.js` from the plan in
+  `garage.json`, which says what each number rests on and what is guessed: how its floors climb). The map's own
+  block for a site built by hand is left out of the tiles (`SITE_WAYS`). Its fine parts show only from near
+  (`near`). The streets round a site are the world's own, there as everywhere:
   `esa-el-segundo-2015/town.js` draws no road, walk, line, crosswalk, median, street tree, light or signal. That
   holds on the place's own page too, where he walks: `world.py` lays the street layer a second time, cut to that
   place's ground and with nothing but streets in it, into `places/esa-el-segundo-2015/streets.js` (six squares, some
@@ -130,7 +153,10 @@ load, and what a frame may cost is checked.
   line (a wheelbase, a look ahead, hands that turn the wheel no faster than a turn a second) and stores what its
   back axle traces — a point every half metre to the millimetre, with its heading and curvature — beside the speed
   each stretch allows, the signals and stop signs, the turns, how far a hand on the wheel may stray, and where the
-  street is straight. `engine/world/drive.js` drives it (by itself by default) and takes heading, wheel and lean from
+  street is straight. A route may climb: a part drawn by hand (`head`, `tail` with heights) takes the car through a
+  gate (a control of its own: a full stop, the arm goes up) and up the floors of a parking structure; the path
+  then carries a height for every point, and the car its height and the slope it stands on.
+  `engine/world/drive.js` drives it (by itself by default) and takes heading, wheel and lean from
   that path; never from differences between points (that made the car twitch on a straight street). `camry.js` is
   the cabin of his black 2014 Camry, drawn in a pass of its own over the world; `headunit.js` the screen in the
   middle, which plays his own lists from Sonic Hub's music library.
@@ -139,17 +165,24 @@ load, and what a frame may cost is checked.
   minute (2° and more: the steering reversal rate); the foot does not hunt between the pedals — the wheels off the
   kerbs, the frame under the ceiling measured on his telephone (460 draw calls, 1.2 M triangles in view), both
   telephone layouts; and the streets themselves: their own rules kept, no face inside out, every round corner
-  beginning where a walk's kerb ends, the car on the right of the line at the hotel's way in. A picture cannot show
+  beginning where a walk's kerb ends, no centre line stepping between two ways, the car on the right of the line
+  at the hotel's way in; the parking structure (a full stop at the gate and the arm's answer, the slope coming and
+  going gently, a deck within 9 cm under every wheel, clear of the cars in the stalls); the plants (drawn leaf by
+  leaf near the car, each once; the leaf pictures keeping their cover level by level). A picture cannot show
   a twitch: what moves is checked as a series in time.
   `tools/worldfeel.mjs` prints those figures for one drive; `tools/worldshot.mjs` photographs a world along a route;
   `tools/worldtop.mjs` photographs it from straight above (a plan of any spot, cut at any height: the way to see
-  what the streets are); `places/<id>/data/plot.py` draws the data as a map.
+  what the streets are); `tools/worldfree.mjs` from any point towards any other; `places/<id>/data/plot.py` draws
+  the data as a map.
 
 Not there yet: walking and the scooter in a world, the car seen from outside, other cars on the road (the hotel's
 own page has a few, see Sites), more routes and sites, scenes far away (Point Vicente, Orange County), the layers of
-years. Of the streets: six crossings where ramps and roadways tangle are paved out to their outermost points and
-five corners are left pointed (the script counts them); a centre line steps sideways where a street's lanes change
-from one piece to the next instead of easing over.
+years. Of the streets: six crossings where the two roadways of divided roads come in at an angle (El Segundo
+Boulevard at Nash and at Isis, Pacific Coast Highway at Grand, none on a route yet) are paved out to their outermost
+points and five corners there are left pointed (the script counts them): the corner between two such arms has to be
+fitted on the pair's own axis. Of the parking structure: how its floors climb is guessed, its fourth to eleventh
+floors are a shell. Of the plants: one street, one kind by lot where no picture says which; no date palms, pines or
+jacarandas yet; the lawns are flat colour.
 
 ## Looks
 

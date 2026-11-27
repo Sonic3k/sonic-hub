@@ -8,6 +8,7 @@ import { along, makeWall, windowFrame, doorLeaf } from '../../engine/walls.js';
 import { M, canvasTex, plateTex, rng, shade } from '../../engine/tex.js';
 import { X } from './mat.js';
 import { tree } from './props.js';
+import { plantMaterial, hedgeBox } from '../../engine/plants.js';
 import { WINGS, G1, G2, CEIL, EAVE, PITCH, COL, KERB, FRONT, WALL, MOD, TOWER, GABLE, LOBBY, HIS, IN, doorAtStart, flat, ramp } from './plan.js';
 
 const SOFFIT = EAVE - 0.3;               // the ceiling of the upper walkway
@@ -36,7 +37,7 @@ function materials(ctx) {
     rail: (() => { const m = new THREE.MeshStandardMaterial({ map: railTex(), alphaTest: 0.5, side: THREE.DoubleSide, roughness: 0.6 }); m.userData.noCast = false; return m; })(),
     liner: M.plain('#dccfb4', 0.95), linerLit: ctx.lampMat('#ffd9a0', 0.55, 0.85, 0),
     sconce: ctx.lampMat('#fff1d0', 2.2, 0.95, 0), globe: ctx.lampMat('#fff6e4', 1.8, 0.95, 0),
-    hedge: M.plain('#314d24', 0.95), hedge2: M.plain('#3a5a2a', 0.95), mulch: X.mulch(),
+    mulch: X.mulch(),
     R,
   };
   return mats;
@@ -314,9 +315,9 @@ export function buildWing(b, key, ctx, opts = {}) {
       const h0 = KERB - strip + 0.2, h1 = KERB - strip + 1.0, top = 0.95;
       let from = p + 0.25;
       for (const g of [...gaps.sort((g, h) => g[0] - h[0]), [q - 0.25, q]]) {
-        for (let a = from; a < g[0] - 0.3; a += 3) {
-          const e = Math.min(a + 3, g[0]);
-          put(Math.round(a) % 2 ? m.hedge : m.hedge2, a, 0.1, Math.min(S.C(h0), S.C(h1)), e, top, Math.max(S.C(h0), S.C(h1)), { cast: false });
+        if (g[0] - from > 0.9) {                         // a clipped hedge, one run from walk to walk; its leaves the engine's (engine/plants.js)
+          const a = from, e = g[0], [ha, hc] = loc(a, Math.min(S.C(h0), S.C(h1))), [hb, hd] = loc(e, Math.max(S.C(h0), S.C(h1)));
+          b.geo(plantMaterial(), hedgeBox({ x0: Math.min(ha, hb), y0: 0.1, z0: Math.min(hc, hd), x1: Math.max(ha, hb), y1: top, z1: Math.max(hc, hd), tint: '#36542a', seed: 3 + Math.round(a * 3 + key.length * 7) % 89 }), { cast: true });
           block(a, 0, Math.min(S.C(h0), S.C(h1)), e, top, Math.max(S.C(h0), S.C(h1)));
         }
         from = Math.max(from, g[1]);
