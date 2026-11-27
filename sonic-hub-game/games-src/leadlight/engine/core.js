@@ -65,7 +65,7 @@ const PlayerType = { User: 0, Opponent: 1 };
 const CardType = { Creature: 0, Building: 1, Spell: 2, Dweeb: 3, None: 4 };
 const LandscapeType = { Corn: 0, Plains: 1, Swamp: 2, Cotton: 3, Sand: 4, None: 5 };
 const Faction = { Corn: 0, Plains: 1, Swamp: 2, Cotton: 3, Sand: 4, Universal: 5 };
-const Quality = { Standard: 0, Gold: 1, Obsidian: 2, Halloween: 3, Christmas: 4, FionnaCake: 5 };
+const Quality = { Standard: 0, Gold: 1, Obsidian: 2, Halloween: 3, Christmas: 4, Mirror: 5 };
 const SelectionType = { Creature: 0, Building: 1, Landscape: 2 };
 
 const PARAMS = { Starting_Magic_Points: 2, Max_Magic_Points: 10, CARDS_TO_DEAL: 5, MAX_HAND: 7 };
