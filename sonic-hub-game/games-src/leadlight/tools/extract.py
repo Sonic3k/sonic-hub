@@ -91,10 +91,36 @@ def main():
                              as_float(r.get('CoinChance'), 0.0), as_int(r.get('CoinReward'), 0)])
 
     rankup = [{'rank': as_int(r['LeaderRank']), 'deckMax': as_int(r['DeckMaxSize'])} for r in load(src_dir, 'db_RankUp.json')]
-    out = {'cards': cards, 'leaders': leaders, 'decks': decks, 'params': params, 'rankUp': rankup}
+
+    # the tables of the original's quests: who sits across, with which deck, and how the wheel is set for it
+    card_id = {c['src']: c['id'] for c in cards}
+    hero_id = {l['src']: l['id'] for l in leaders}
+    deck_id = {d['src']: d['id'] for d in decks}
+    deck_id['_PLAYER_CLONE_DECK'] = 'player-clone'   # the impostor plays a copy of the player's own deck
+    # the second run of main tables names a Remix1_Deck the data never had: the original found no deck there and its
+    # table could not be played. The other remixes are the first run's tables reworked, so this one is its own table's deck
+    deck_id['Remix1_Deck'] = deck_id['Quest1_Deck']
+    quests = []
+    for r in load(src_dir, 'db_Quest.json'):
+        drops = [card_id[r[k]] for k in [f'CardDrop{i}' for i in range(1, 9)] if r.get(k) and r[k] in card_id]
+        quests.append({'id': r['QuestID'], 'type': r['QuestType'], 'label': r.get('QuestLabel') or '',
+                       'hero': hero_id.get(r['LeaderID'], r['LeaderID']), 'rank': as_int(r.get('LeaderLevel'), 1),
+                       'deck': deck_id.get(r['Deck'], r['Deck']),
+                       'spin': as_float(r.get('SpinFactor'), 1.0), 'p1Hit': as_float(r.get('P1_HitAreaMod'), 0.0),
+                       'p1Crit': as_float(r.get('P1_CritAreaMod'), 0.0), 'p2Hit': as_float(r.get('P2_HitAreaMod'), 0.0),
+                       'p2Crit': as_float(r.get('P2_CritAreaMod'), 0.0),
+                       'reshuffle': (r.get('AIReshuffle') or 'True').strip().lower() != 'false',
+                       'xp': [as_float(r.get('MinXP'), 0.0), as_float(r.get('MaxXP'), 0.0)],
+                       'coins': [as_float(r.get('MinCoins'), 0.0), as_float(r.get('MaxCoins'), 0.0)],
+                       'loot': as_float(r.get('Loot'), 0.0), 'maxLoot': as_int(r.get('MaxLootDrops'), 0), 'staticDrops': as_int(r.get('StaticDrops'), 0),
+                       'heroAwarded': hero_id.get(r.get('LeaderAwarded') or '', ''), 'conditions': [r.get(f'Condition{i}') or '' for i in (1, 2, 3)],
+                       'place': r.get('LevelPrefab') or '', 'unlocks': [r[k] for k in ('UnlockQuestIDs1', 'UnlockQuestIDs2', 'UnlockQuestIDs3') if r.get(k)],
+                       'dropProfile': r.get('DropProfileID') or '', 'drops': drops,
+                       'heroRules': r.get('LeaderRules') or '', 'restricted': r.get('RestrictedLeaders') or ''})
+    out = {'cards': cards, 'leaders': leaders, 'decks': decks, 'quests': quests, 'params': params, 'rankUp': rankup}
     path = os.path.join(here, 'content', 'data.json')
     with open(path, 'w') as f: json.dump(out, f, ensure_ascii=False, separators=(',', ':'))
-    print(f'{len(cards)} cards, {len(leaders)} heroes, {len(decks)} decks -> {os.path.relpath(path)}')
+    print(f'{len(cards)} cards, {len(leaders)} heroes, {len(decks)} decks, {len(quests)} quests -> {os.path.relpath(path)}')
 
 if __name__ == '__main__':
     main()

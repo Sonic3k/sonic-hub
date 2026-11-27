@@ -1,0 +1,20 @@
+{
+  "name": "leadlight",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Leadlight: a lane card game played in stained glass. The battle engine, the game's data, the page and its cast page.",
+  "license": "UNLICENSED",
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "test": "node engine/engine.test.js && node game/build.test.js",
+    "sim": "node sim/smoke.js",
+    "build": "node game/build.js"
+  },
+  "devDependencies": {
+    "@fontsource/alegreya-sans": "5.3.0",
+    "@fontsource/alegreya-sans-sc": "5.3.0",
+    "@fontsource/federant": "5.3.0"
+  }
+}
