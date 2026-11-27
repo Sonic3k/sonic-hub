@@ -1,0 +1,3812 @@
+{
+ "cards": {
+  "Creature_AncientScholar": {
+   "id": "owl-archivist",
+   "name": "Owl Archivist",
+   "edition": "",
+   "art": "bird kind:owl hold:book",
+   "text": "Return a creature from the discard pile to your hand."
+  },
+  "Creature_AngelEye": {
+   "id": "sky-gazer",
+   "name": "Sky Gazer",
+   "edition": "",
+   "art": "hum outfit:robe hat:wizard hold:lens",
+   "text": "Draw 1 card."
+  },
+  "Creature_AngelHeart": {
+   "id": "heart-cherub",
+   "name": "Heart Cherub",
+   "edition": "",
+   "art": "orb shape:drop wings:feather",
+   "text": "Choose one of your creatures and heal it 3 points."
+  },
+  "Creature_AngelOfSand": {
+   "id": "dune-angel",
+   "name": "Dune Angel",
+   "edition": "",
+   "art": "hum outfit:robe wings halo",
+   "text": "Choose one of your creatures and give it +2 DEF."
+  },
+  "Creature_AngelOfVanilla": {
+   "id": "oasis-angel",
+   "name": "Oasis Angel",
+   "edition": "",
+   "art": "hum outfit:gown wings halo",
+   "text": "Choose one of your creatures and give it +4 DEF."
+  },
+  "Creature_ArcherDan": {
+   "id": "sheaf-archer",
+   "name": "Sheaf Archer",
+   "edition": "",
+   "art": "hum outfit:coat hat:straw hold:bow",
+   "text": "Choose an opposing creature and lower its ATK by 4."
+  },
+  "Creature_Axey": {
+   "id": "hatchet-imp",
+   "name": "Hatchet Imp",
+   "edition": "",
+   "art": "hum small outfit:rags hat:horns hold:axe",
+   "text": "Send Building in opposing lane back to opponent's hand."
+  },
+  "Creature_BeachMum": {
+   "id": "shore-mummy",
+   "name": "Shore Mummy",
+   "edition": "",
+   "art": "hum outfit:wrap",
+   "text": "Gain +2 ATK and +3 DEF."
+  },
+  "Creature_BlueberryDjini": {
+   "id": "berry-jinn",
+   "name": "Berry Jinn",
+   "edition": "",
+   "art": "jinn",
+   "text": "Heal your hero 2 points."
+  },
+  "Creature_BurningBush": {
+   "id": "cinder-sheaf",
+   "name": "Cinder Sheaf",
+   "edition": "",
+   "art": "plant kind:flame",
+   "text": "Lower the ATK of the opposing creature by 3 and destroy this creature."
+  },
+  "Creature_CactusBall": {
+   "id": "prickle-ball",
+   "name": "Prickle Ball",
+   "edition": "",
+   "art": "orb top:spikes",
+   "text": "Gain +2 DEF."
+  },
+  "Creature_CactusThug": {
+   "id": "cactus-brute",
+   "name": "Cactus Brute",
+   "edition": "",
+   "art": "brute skin:cactus",
+   "text": "Deal damage to creature in opposing lane equal to this creature's DEF."
+  },
+  "Creature_CaptainTaco": {
+   "id": "harvest-captain",
+   "name": "Harvest Captain",
+   "edition": "",
+   "art": "hum outfit:coat hat:bicorne hold:sword",
+   "text": "Lower the opposing creature's ATK by 1 for every card in your opponent's hand."
+  },
+  "Creature_CareCrow": {
+   "id": "wandering-gleaner",
+   "name": "Wandering Gleaner",
+   "edition": "",
+   "art": "hum outfit:rags hat:straw hold:fork",
+   "text": "Gain +1 ATK for each adjacent empty lane."
+  },
+  "Creature_ChestBurster": {
+   "id": "chest-lurker",
+   "name": "Chest Lurker",
+   "edition": "",
+   "art": "object kind:chest mouth:fangs",
+   "text": "Deal 2 damage to the opposing hero for every card in your hand."
+  },
+  "Creature_CoolDog": {
+   "id": "breeze-hound",
+   "name": "Breeze Hound",
+   "edition": "",
+   "art": "beast kind:hound",
+   "text": "Creature in opposing lane cannot use its Glint next turn."
+  },
+  "Creature_Cornataur": {
+   "id": "haybull",
+   "name": "Haybull",
+   "edition": "",
+   "art": "beast kind:bull",
+   "text": "This creature and adjacent creatures gain +5 ATK."
+  },
+  "Creature_Cornball": {
+   "id": "huskling",
+   "name": "Huskling",
+   "edition": "",
+   "art": "orb top:husk",
+   "text": "+1 ATK."
+  },
+  "Creature_CornDog": {
+   "id": "honey-hound",
+   "name": "Honey Hound",
+   "edition": "",
+   "art": "beast kind:hound",
+   "text": "+1 ATK for each of your Amber landscapes."
+  },
+  "Creature_CornEyeBat": {
+   "id": "chaffwing",
+   "name": "Chaffwing",
+   "edition": "",
+   "art": "orb top:ears wings:bat mouth:fangs",
+   "text": "Lower the ATK of the opposing creature equal to this creature's ATK."
+  },
+  "Creature_CornLord": {
+   "id": "sheaf-lord",
+   "name": "Sheaf Lord",
+   "edition": "",
+   "art": "hum outfit:robe hat:crown hold:staff",
+   "text": "Choose a creature and give it +6 ATK."
+  },
+  "Creature_CornRonin": {
+   "id": "field-duelist",
+   "name": "Field Duelist",
+   "edition": "",
+   "art": "hum outfit:coat hat:wide hold:sword",
+   "text": "+3 ATK for every card in your hand."
+  },
+  "Creature_CornWall": {
+   "id": "wall-of-sheaves",
+   "name": "Wall of Sheaves",
+   "edition": "",
+   "art": "object kind:wall top:husk",
+   "text": "Inflict 2 damage to this creature and gain +2 ATK."
+  },
+  "Creature_CornWorm": {
+   "id": "kernel-worm",
+   "name": "Kernel Worm",
+   "edition": "",
+   "art": "serpent kind:worm",
+   "text": "Lower the ATK of the creature in the opposing lane by 2."
+  },
+  "Creature_CottonEyeBat": {
+   "id": "rosy-glarewing",
+   "name": "Rosy Glarewing",
+   "edition": "",
+   "art": "eyewing",
+   "text": "Choose one of your creatures and heal it 3 points for each card in your hand."
+  },
+  "Creature_CottonsaurusRex": {
+   "id": "fleece-rex",
+   "name": "Fleece Rex",
+   "edition": "",
+   "art": "beast kind:rex",
+   "text": "Heal your hero equal to this creature's ATK."
+  },
+  "Creature_Cow": {
+   "id": "clover-cow",
+   "name": "Clover Cow",
+   "edition": "",
+   "art": "beast kind:cow",
+   "text": "Heal all of your creatures 5 points."
+  },
+  "Creature_CowGhost": {
+   "id": "mist-heifer",
+   "name": "Mist Heifer",
+   "edition": "",
+   "art": "beast kind:cow ghost",
+   "text": "Negate all damage, DEF, and ATK modifiers on this creature."
+  },
+  "Creature_DarkAngel": {
+   "id": "fen-seraph",
+   "name": "Fen Seraph",
+   "edition": "",
+   "art": "hum outfit:robe wings halo",
+   "text": "Deal 5 damage to all opposing creatures."
+  },
+  "Creature_DevilEye": {
+   "id": "baleful-eye",
+   "name": "Baleful Eye",
+   "edition": "",
+   "art": "eye",
+   "text": "Lower the ATK of the creature in the opposing lane by 4."
+  },
+  "Creature_DiamondDan": {
+   "id": "sapphire-sentinel",
+   "name": "Sapphire Sentinel",
+   "edition": "",
+   "art": "brute skin:crystal",
+   "text": "Destroy this creature and gain 6 Light this turn."
+  },
+  "Creature_DogBoy": {
+   "id": "hound-squire",
+   "name": "Hound Squire",
+   "edition": "",
+   "art": "hum outfit:coat hat:ears hold:sword",
+   "text": "Deal 5 damage to creature in opposing lane and heal this creature 5 points."
+  },
+  "Creature_DragonClaw": {
+   "id": "talon-drake",
+   "name": "Talon Drake",
+   "edition": "",
+   "art": "beast kind:rex wings",
+   "text": "Return a Building from the discard pile to your hand."
+  },
+  "Creature_DragonFoot": {
+   "id": "stomping-drake",
+   "name": "Stomping Drake",
+   "edition": "",
+   "art": "beast kind:rex",
+   "text": "Destroy a Building in the opposing lane."
+  },
+  "Creature_DrDeath": {
+   "id": "beaked-physician",
+   "name": "Beaked Physician",
+   "edition": "",
+   "art": "hum outfit:coat hat:top mask:beak hold:staff",
+   "text": "Deal 7 damage to the creature in the opposing lane and heal this creature 7 points."
+  },
+  "Creature_Earl": {
+   "id": "citrine-earl",
+   "name": "Citrine Earl",
+   "edition": "",
+   "art": "hum outfit:coat hat:top",
+   "text": "Adjacent creatures gain +3 ATK."
+  },
+  "Creature_ElfChief": {
+   "id": "bluestone-chieftain",
+   "name": "Bluestone Chieftain",
+   "edition": "",
+   "art": "hum outfit:mail hat:horns hold:spear",
+   "text": "No Creature or Building may be summoned on the opposing lane next turn."
+  },
+  "Creature_ElfMarauder": {
+   "id": "bluestone-raider",
+   "name": "Bluestone Raider",
+   "edition": "",
+   "art": "hum outfit:mail hat:helm hold:axe",
+   "text": "Choose an opposing Building and send it back to your opponent's hand."
+  },
+  "Creature_EmbarrassingBard": {
+   "id": "off-key-bard",
+   "name": "Off-Key Bard",
+   "edition": "",
+   "art": "hum outfit:coat hat:cap hold:lute",
+   "text": "Choose an opposing creature. It cannot use its Glint next turn."
+  },
+  "Creature_ExtraordinarySpider": {
+   "id": "brood-spider",
+   "name": "Brood Spider",
+   "edition": "",
+   "art": "spider",
+   "text": "For every 2 cards in your discard pile, deal 4 damage to creature in opposing lane."
+  },
+  "Creature_FairyShepard": {
+   "id": "fairy-shepherdess",
+   "name": "Fairy Shepherdess",
+   "edition": "",
+   "art": "hum small outfit:gown wings hold:crook",
+   "text": "Choose one of your creatures. Heal it and its adjacent creatures 3 points."
+  },
+  "Creature_FarmerTom": {
+   "id": "orchard-keeper",
+   "name": "Orchard Keeper",
+   "edition": "",
+   "art": "hum outfit:rags hat:straw hold:fork",
+   "text": "Choose one of your creatures and heal it 4 points for each of your buildings."
+  },
+  "Creature_FatGoat": {
+   "id": "plump-goat",
+   "name": "Plump Goat",
+   "edition": "",
+   "art": "beast kind:goat",
+   "text": "Heal adjacent creatures 4 points."
+  },
+  "Creature_FieldReaper": {
+   "id": "sickle-reaper",
+   "name": "Sickle Reaper",
+   "edition": "",
+   "art": "hum outfit:robe hat:hood hold:scythe",
+   "text": "Lower the ATK of all opposing creatures by 4."
+  },
+  "Creature_Fluffantry": {
+   "id": "fleece-infantry",
+   "name": "Fleece Infantry",
+   "edition": "",
+   "art": "hum outfit:fleece hat:helm hold:spear",
+   "text": "Increase this creature attack by 3 and heal this creature by 8."
+  },
+  "Creature_Flufflapillar": {
+   "id": "downy-caterpillar",
+   "name": "Downy Caterpillar",
+   "edition": "",
+   "art": "serpent kind:caterpillar",
+   "text": "Heal adjacent creatures 3 points."
+  },
+  "Creature_FreezyJ": {
+   "id": "frosty-jay",
+   "name": "Frosty Jay",
+   "edition": "",
+   "art": "bird kind:jay",
+   "text": "Gain +4 DEF."
+  },
+  "Creature_Fummy": {
+   "id": "linen-mummy",
+   "name": "Linen Mummy",
+   "edition": "",
+   "art": "hum outfit:wrap",
+   "text": "This creature and adjacent creatures gain +6 DEF."
+  },
+  "Creature_FutureScholar": {
+   "id": "clockwork-scholar",
+   "name": "Clockwork Scholar",
+   "edition": "",
+   "art": "hum outfit:robe hat:cap hold:book",
+   "text": "Gain 3 extra Light next turn."
+  },
+  "Creature_Ghost": {
+   "id": "clockwisp",
+   "name": "Clockwisp",
+   "edition": "",
+   "art": "ghost clock",
+   "text": "Opposing creature cannot attack on opponent's next Battle Phase."
+  },
+  "Creature_GhostHag": {
+   "id": "moor-crone",
+   "name": "Moor Crone",
+   "edition": "",
+   "art": "ghost hat:hood",
+   "text": "Choose a friendly creature and negate all damage, DEF, and ATK modifiers on it."
+  },
+  "Creature_GhostNinja": {
+   "id": "phantom-fencer",
+   "name": "Phantom Fencer",
+   "edition": "",
+   "art": "ghost hold:sword",
+   "text": "Deal 4 damage to creature in opposing lane and heal this creature 4 points."
+  },
+  "Creature_GhostStalker": {
+   "id": "furrow-stalker",
+   "name": "Furrow Stalker",
+   "edition": "",
+   "art": "hum outfit:rags hat:straw tall",
+   "text": "Make the ATK of the opposing creature equal to this creature's ATK."
+  },
+  "Creature_GiantFoot": {
+   "id": "hill-yeti",
+   "name": "Hill Yeti",
+   "edition": "",
+   "art": "brute skin:fur",
+   "text": "Deal 4 damage to opposing creature and its adjacent creatures."
+  },
+  "Creature_GL_AncientScholar": {
+   "id": "owl-archivist-gilded",
+   "name": "Owl Archivist",
+   "edition": "Gilded",
+   "art": "bird kind:owl hold:book",
+   "text": "Return a creature from the discard pile to your hand."
+  },
+  "Creature_GL_AngelEye": {
+   "id": "sky-gazer-gilded",
+   "name": "Sky Gazer",
+   "edition": "Gilded",
+   "art": "hum outfit:robe hat:wizard hold:lens",
+   "text": "Draw 1 card."
+  },
+  "Creature_GL_AngelHeart": {
+   "id": "heart-cherub-gilded",
+   "name": "Heart Cherub",
+   "edition": "Gilded",
+   "art": "orb shape:drop wings:feather",
+   "text": "Choose one of your creatures and heal it 3 points."
+  },
+  "Creature_GL_AngelOfSand": {
+   "id": "dune-angel-gilded",
+   "name": "Dune Angel",
+   "edition": "Gilded",
+   "art": "hum outfit:robe wings halo",
+   "text": "Choose one of your creatures and give it +2 DEF."
+  },
+  "Creature_GL_AngelOfVanilla": {
+   "id": "oasis-angel-gilded",
+   "name": "Oasis Angel",
+   "edition": "Gilded",
+   "art": "hum outfit:gown wings halo",
+   "text": "Choose one of your creatures and give it +4 DEF."
+  },
+  "Creature_GL_ArcherDan": {
+   "id": "sheaf-archer-gilded",
+   "name": "Sheaf Archer",
+   "edition": "Gilded",
+   "art": "hum outfit:coat hat:straw hold:bow",
+   "text": "Choose an opposing creature and lower its ATK by 4."
+  },
+  "Creature_GL_Axey": {
+   "id": "hatchet-imp-gilded",
+   "name": "Hatchet Imp",
+   "edition": "Gilded",
+   "art": "hum small outfit:rags hat:horns hold:axe",
+   "text": "Send Building in opposing lane back to opponent's hand."
+  },
+  "Creature_GL_BeachMum": {
+   "id": "shore-mummy-gilded",
+   "name": "Shore Mummy",
+   "edition": "Gilded",
+   "art": "hum outfit:wrap",
+   "text": "Gain +2 ATK and +3 DEF."
+  },
+  "Creature_GL_BlueberryDjini": {
+   "id": "berry-jinn-gilded",
+   "name": "Berry Jinn",
+   "edition": "Gilded",
+   "art": "jinn",
+   "text": "Heal your hero 2 points."
+  },
+  "Creature_GL_BurningBush": {
+   "id": "cinder-sheaf-gilded",
+   "name": "Cinder Sheaf",
+   "edition": "Gilded",
+   "art": "plant kind:flame",
+   "text": "Lower the ATK of the opposing creature by 3 and destroy this creature."
+  },
+  "Creature_GL_CactusBall": {
+   "id": "prickle-ball-gilded",
+   "name": "Prickle Ball",
+   "edition": "Gilded",
+   "art": "orb top:spikes",
+   "text": "Gain +2 DEF."
+  },
+  "Creature_GL_CactusThug": {
+   "id": "cactus-brute-gilded",
+   "name": "Cactus Brute",
+   "edition": "Gilded",
+   "art": "brute skin:cactus",
+   "text": "Deal damage to creature in opposing lane equal to this creature's DEF."
+  },
+  "Creature_GL_CaptainTaco": {
+   "id": "harvest-captain-gilded",
+   "name": "Harvest Captain",
+   "edition": "Gilded",
+   "art": "hum outfit:coat hat:bicorne hold:sword",
+   "text": "Lower the opposing creature's ATK by 1 for every card in your opponent's hand."
+  },
+  "Creature_GL_CareCrow": {
+   "id": "wandering-gleaner-gilded",
+   "name": "Wandering Gleaner",
+   "edition": "Gilded",
+   "art": "hum outfit:rags hat:straw hold:fork",
+   "text": "Gain +1 ATK for each adjacent empty lane."
+  },
+  "Creature_GL_ChestBurster": {
+   "id": "chest-lurker-gilded",
+   "name": "Chest Lurker",
+   "edition": "Gilded",
+   "art": "object kind:chest mouth:fangs",
+   "text": "Deal 2 damage to the opposing hero for every card in your hand."
+  },
+  "Creature_GL_CoolDog": {
+   "id": "breeze-hound-gilded",
+   "name": "Breeze Hound",
+   "edition": "Gilded",
+   "art": "beast kind:hound",
+   "text": "Creature in opposing lane cannot use its Glint next turn."
+  },
+  "Creature_GL_Cornataur": {
+   "id": "haybull-gilded",
+   "name": "Haybull",
+   "edition": "Gilded",
+   "art": "beast kind:bull",
+   "text": "This creature and adjacent creatures gain +5 ATK."
+  },
+  "Creature_GL_Cornball": {
+   "id": "huskling-gilded",
+   "name": "Huskling",
+   "edition": "Gilded",
+   "art": "orb top:husk",
+   "text": "+1 ATK."
+  },
+  "Creature_GL_CornDog": {
+   "id": "honey-hound-gilded",
+   "name": "Honey Hound",
+   "edition": "Gilded",
+   "art": "beast kind:hound",
+   "text": "+1 ATK for each of your Amber landscapes."
+  },
+  "Creature_GL_CornEyeBat": {
+   "id": "chaffwing-gilded",
+   "name": "Chaffwing",
+   "edition": "Gilded",
+   "art": "orb top:ears wings:bat mouth:fangs",
+   "text": "Lower the ATK of the opposing creature equal to this creature's ATK."
+  },
+  "Creature_GL_CornLord": {
+   "id": "sheaf-lord-gilded",
+   "name": "Sheaf Lord",
+   "edition": "Gilded",
+   "art": "hum outfit:robe hat:crown hold:staff",
+   "text": "Choose a creature and give it +6 ATK."
+  },
+  "Creature_GL_CornRonin": {
+   "id": "field-duelist-gilded",
+   "name": "Field Duelist",
+   "edition": "Gilded",
+   "art": "hum outfit:coat hat:wide hold:sword",
+   "text": "+3 ATK for every card in your hand."
+  },
+  "Creature_GL_CornWall": {
+   "id": "wall-of-sheaves-gilded",
+   "name": "Wall of Sheaves",
+   "edition": "Gilded",
+   "art": "object kind:wall top:husk",
+   "text": "Inflict 2 damage to this creature and gain +2 ATK."
+  },
+  "Creature_GL_CornWorm": {
+   "id": "kernel-worm-gilded",
+   "name": "Kernel Worm",
+   "edition": "Gilded",
+   "art": "serpent kind:worm",
+   "text": "Lower the ATK of the creature in the opposing lane by 2."
+  },
+  "Creature_GL_CottonEyeBat": {
+   "id": "rosy-glarewing-gilded",
+   "name": "Rosy Glarewing",
+   "edition": "Gilded",
+   "art": "eyewing",
+   "text": "Choose one of your creatures and heal it 3 points for each card in your hand."
+  },
+  "Creature_GL_CottonsaurusRex": {
+   "id": "fleece-rex-gilded",
+   "name": "Fleece Rex",
+   "edition": "Gilded",
+   "art": "beast kind:rex",
+   "text": "Heal your hero equal to this creature's ATK."
+  },
+  "Creature_GL_Cow": {
+   "id": "clover-cow-gilded",
+   "name": "Clover Cow",
+   "edition": "Gilded",
+   "art": "beast kind:cow",
+   "text": "Heal all of your creatures 5 points."
+  },
+  "Creature_GL_CowGhost": {
+   "id": "mist-heifer-gilded",
+   "name": "Mist Heifer",
+   "edition": "Gilded",
+   "art": "beast kind:cow ghost",
+   "text": "Negate all damage, DEF, and ATK modifiers on this creature."
+  },
+  "Creature_GL_DarkAngel": {
+   "id": "fen-seraph-gilded",
+   "name": "Fen Seraph",
+   "edition": "Gilded",
+   "art": "hum outfit:robe wings halo",
+   "text": "Deal 5 damage to all opposing creatures."
+  },
+  "Creature_GL_DevilEye": {
+   "id": "baleful-eye-gilded",
+   "name": "Baleful Eye",
+   "edition": "Gilded",
+   "art": "eye",
+   "text": "Lower the ATK of the creature in the opposing lane by 4."
+  },
+  "Creature_GL_DiamondDan": {
+   "id": "sapphire-sentinel-gilded",
+   "name": "Sapphire Sentinel",
+   "edition": "Gilded",
+   "art": "brute skin:crystal",
+   "text": "Destroy this creature and gain 6 Light this turn."
+  },
+  "Creature_GL_DogBoy": {
+   "id": "hound-squire-gilded",
+   "name": "Hound Squire",
+   "edition": "Gilded",
+   "art": "hum outfit:coat hat:ears hold:sword",
+   "text": "Deal 5 damage to creature in opposing lane and heal this creature 5 points."
+  },
+  "Creature_GL_DragonClaw": {
+   "id": "talon-drake-gilded",
+   "name": "Talon Drake",
+   "edition": "Gilded",
+   "art": "beast kind:rex wings",
+   "text": "Return a Building from the discard pile to your hand."
+  },
+  "Creature_GL_DragonFoot": {
+   "id": "stomping-drake-gilded",
+   "name": "Stomping Drake",
+   "edition": "Gilded",
+   "art": "beast kind:rex",
+   "text": "Destroy a Building in the opposing lane."
+  },
+  "Creature_GL_DrDeath": {
+   "id": "beaked-physician-gilded",
+   "name": "Beaked Physician",
+   "edition": "Gilded",
+   "art": "hum outfit:coat hat:top mask:beak hold:staff",
+   "text": "Deal 7 damage to the creature in the opposing lane and heal this creature 7 points."
+  },
+  "Creature_GL_Earl": {
+   "id": "citrine-earl-gilded",
+   "name": "Citrine Earl",
+   "edition": "Gilded",
+   "art": "hum outfit:coat hat:top",
+   "text": "Adjacent creatures gain +3 ATK."
+  },
+  "Creature_GL_ElfChief": {
+   "id": "bluestone-chieftain-gilded",
+   "name": "Bluestone Chieftain",
+   "edition": "Gilded",
+   "art": "hum outfit:mail hat:horns hold:spear",
+   "text": "No Creature or Building may be summoned on the opposing lane next turn."
+  },
+  "Creature_GL_ElfMarauder": {
+   "id": "bluestone-raider-gilded",
+   "name": "Bluestone Raider",
+   "edition": "Gilded",
+   "art": "hum outfit:mail hat:helm hold:axe",
+   "text": "Choose an opposing Building and send it back to your opponent's hand."
+  },
+  "Creature_GL_EmbarrassingBard": {
+   "id": "off-key-bard-gilded",
+   "name": "Off-Key Bard",
+   "edition": "Gilded",
+   "art": "hum outfit:coat hat:cap hold:lute",
+   "text": "Choose an opposing creature. It cannot use its Glint next turn."
+  },
+  "Creature_GL_ExtraordinarySpider": {
+   "id": "brood-spider-gilded",
+   "name": "Brood Spider",
+   "edition": "Gilded",
+   "art": "spider",
+   "text": "For every 2 cards in your discard pile, deal 4 damage to creature in opposing lane."
+  },
+  "Creature_GL_FairyShepard": {
+   "id": "fairy-shepherdess-gilded",
+   "name": "Fairy Shepherdess",
+   "edition": "Gilded",
+   "art": "hum small outfit:gown wings hold:crook",
+   "text": "Choose one of your creatures. Heal it and its adjacent creatures 3 points."
+  },
+  "Creature_GL_FarmerTom": {
+   "id": "orchard-keeper-gilded",
+   "name": "Orchard Keeper",
+   "edition": "Gilded",
+   "art": "hum outfit:rags hat:straw hold:fork",
+   "text": "Choose one of your creatures and heal it 4 points for each of your buildings."
+  },
+  "Creature_GL_FatGoat": {
+   "id": "plump-goat-gilded",
+   "name": "Plump Goat",
+   "edition": "Gilded",
+   "art": "beast kind:goat",
+   "text": "Heal adjacent creatures 4 points."
+  },
+  "Creature_GL_FieldReaper": {
+   "id": "sickle-reaper-gilded",
+   "name": "Sickle Reaper",
+   "edition": "Gilded",
+   "art": "hum outfit:robe hat:hood hold:scythe",
+   "text": "Lower the ATK of all opposing creatures by 4."
+  },
+  "Creature_GL_Fluffantry": {
+   "id": "fleece-infantry-gilded",
+   "name": "Fleece Infantry",
+   "edition": "Gilded",
+   "art": "hum outfit:fleece hat:helm hold:spear",
+   "text": "Increase this creature attack by 3 and heal this creature by 8."
+  },
+  "Creature_GL_Flufflapillar": {
+   "id": "downy-caterpillar-gilded",
+   "name": "Downy Caterpillar",
+   "edition": "Gilded",
+   "art": "serpent kind:caterpillar",
+   "text": "Heal adjacent creatures 3 points."
+  },
+  "Creature_GL_FreezyJ": {
+   "id": "frosty-jay-gilded",
+   "name": "Frosty Jay",
+   "edition": "Gilded",
+   "art": "bird kind:jay",
+   "text": "Gain +4 DEF."
+  },
+  "Creature_GL_Fummy": {
+   "id": "linen-mummy-gilded",
+   "name": "Linen Mummy",
+   "edition": "Gilded",
+   "art": "hum outfit:wrap",
+   "text": "This creature and adjacent creatures gain +6 DEF."
+  },
+  "Creature_GL_FutureScholar": {
+   "id": "clockwork-scholar-gilded",
+   "name": "Clockwork Scholar",
+   "edition": "Gilded",
+   "art": "hum outfit:robe hat:cap hold:book",
+   "text": "Gain 3 extra Light next turn."
+  },
+  "Creature_GL_Ghost": {
+   "id": "clockwisp-gilded",
+   "name": "Clockwisp",
+   "edition": "Gilded",
+   "art": "ghost clock",
+   "text": "Opposing creature cannot attack on opponent's next Battle Phase."
+  },
+  "Creature_GL_GhostHag": {
+   "id": "moor-crone-gilded",
+   "name": "Moor Crone",
+   "edition": "Gilded",
+   "art": "ghost hat:hood",
+   "text": "Choose a friendly creature and negate all damage, DEF, and ATK modifiers on it."
+  },
+  "Creature_GL_GhostNinja": {
+   "id": "phantom-fencer-gilded",
+   "name": "Phantom Fencer",
+   "edition": "Gilded",
+   "art": "ghost hold:sword",
+   "text": "Deal 4 damage to creature in opposing lane and heal this creature 4 points."
+  },
+  "Creature_GL_GhostStalker": {
+   "id": "furrow-stalker-gilded",
+   "name": "Furrow Stalker",
+   "edition": "Gilded",
+   "art": "hum outfit:rags hat:straw tall",
+   "text": "Make the ATK of the opposing creature equal to this creature's ATK."
+  },
+  "Creature_GL_GiantFoot": {
+   "id": "hill-yeti-gilded",
+   "name": "Hill Yeti",
+   "edition": "Gilded",
+   "art": "brute skin:fur",
+   "text": "Deal 4 damage to opposing creature and its adjacent creatures."
+  },
+  "Creature_GL_GrapeSlimey": {
+   "id": "indigo-slime-gilded",
+   "name": "Indigo Slime",
+   "edition": "Gilded",
+   "art": "slime",
+   "text": "Draw 1 card and send this creature to the discard pile."
+  },
+  "Creature_GL_GrayEyeBat": {
+   "id": "gray-glarewing-gilded",
+   "name": "Gray Glarewing",
+   "edition": "Gilded",
+   "art": "eyewing",
+   "text": "Deal 2 damage to any opposing creature."
+  },
+  "Creature_GL_GreenMermaid": {
+   "id": "reed-siren-gilded",
+   "name": "Reed Siren",
+   "edition": "Gilded",
+   "art": "fish kind:merfolk",
+   "text": "Deal 3 damage for each of your buildings to the creature in the opposing lane."
+  },
+  "Creature_GL_GreenMerman": {
+   "id": "reed-triton-gilded",
+   "name": "Reed Triton",
+   "edition": "Gilded",
+   "art": "fish kind:merfolk hold:spear",
+   "text": "Deal 3 damage for each enemy building to the creature in the opposing lane."
+  },
+  "Creature_GL_GreenSnakey": {
+   "id": "glass-viper-gilded",
+   "name": "Glass Viper",
+   "edition": "Gilded",
+   "art": "serpent kind:snake",
+   "text": "Lower the ATK of the creature in opposing lane by 2 for each of your opponent's creatures."
+  },
+  "Creature_GL_Herculeye": {
+   "id": "musclebulb-gilded",
+   "name": "Musclebulb",
+   "edition": "Gilded",
+   "art": "eye arms",
+   "text": "Deal 2 damage for each card in your hand to the creature in the opposing lane."
+  },
+  "Creature_GL_HotEyeBat": {
+   "id": "ember-glarewing-gilded",
+   "name": "Ember Glarewing",
+   "edition": "Gilded",
+   "art": "eyewing",
+   "text": "Deal 4 damage to any opposing creature."
+  },
+  "Creature_GL_HuskerGiant": {
+   "id": "haystack-giant-gilded",
+   "name": "Haystack Giant",
+   "edition": "Gilded",
+   "art": "brute skin:straw",
+   "text": "+2 ATK for each of your Amber landscapes."
+  },
+  "Creature_GL_HuskerKnight": {
+   "id": "straw-knight-gilded",
+   "name": "Straw Knight",
+   "edition": "Gilded",
+   "art": "hum outfit:armor hat:helm hold:sword",
+   "text": "Adjacent creatures gain +2 ATK."
+  },
+  "Creature_GL_IceIceBaby": {
+   "id": "icicle-sprite-gilded",
+   "name": "Icicle Sprite",
+   "edition": "Gilded",
+   "art": "orb shape:drop",
+   "text": "Creature in opposing lane cannot ATK next Battle Phase."
+  },
+  "Creature_GL_IceKnight": {
+   "id": "rime-paladin-gilded",
+   "name": "Rime Paladin",
+   "edition": "Gilded",
+   "art": "hum outfit:armor hat:helm hold:shield",
+   "text": "Adjacent creatures gain +5 DEF."
+  },
+  "Creature_GL_KingFluff": {
+   "id": "kindly-king-gilded",
+   "name": "Kindly King",
+   "edition": "Gilded",
+   "art": "hum outfit:robe hat:crown hold:staff",
+   "text": "Choose one of your creatures and heal all damage from it."
+  },
+  "Creature_GL_KnightOfObesity": {
+   "id": "great-spirit-warden-gilded",
+   "name": "Great Spirit Warden",
+   "edition": "Gilded",
+   "art": "brute ghost hold:spear",
+   "text": "Return this creature to your hand and draw 1 card."
+  },
+  "Creature_GL_LadyScarab": {
+   "id": "dune-duchess-gilded",
+   "name": "Dune Duchess",
+   "edition": "Gilded",
+   "art": "hum outfit:gown hat:crown hold:fan",
+   "text": "Increase the DEF of all of your creatures by 2 for each building you control."
+  },
+  "Creature_GL_LegionOfEarlings": {
+   "id": "kernel-legion-gilded",
+   "name": "Kernel Legion",
+   "edition": "Gilded",
+   "art": "orb crowd",
+   "text": "All your creatures gain +5 ATK."
+  },
+  "Creature_GL_LimeSlimey": {
+   "id": "lime-slime-gilded",
+   "name": "Lime Slime",
+   "edition": "Gilded",
+   "art": "slime",
+   "text": "This creature and adjacent creatures gain +3 DEF."
+  },
+  "Creature_GL_LostGolem": {
+   "id": "lost-colossus-gilded",
+   "name": "Lost Colossus",
+   "edition": "Gilded",
+   "art": "brute skin:stone",
+   "text": "Gain +8 DEF."
+  },
+  "Creature_GL_MaizeWalker": {
+   "id": "deathless-strider-gilded",
+   "name": "Deathless Strider",
+   "edition": "Gilded",
+   "art": "hum outfit:rags hat:straw tall",
+   "text": "Deal 33 damage to to any opposing Amber creature."
+  },
+  "Creature_GL_ManowarElf": {
+   "id": "time-strider-gilded",
+   "name": "Time Strider",
+   "edition": "Gilded",
+   "art": "hum outfit:robe hat:hood hold:staff",
+   "text": "damage done to opposing creature next Battle Phase is transferred to hero."
+  },
+  "Creature_GL_MermaidYellow": {
+   "id": "miller-maud-gilded",
+   "name": "Miller Maud",
+   "edition": "Gilded",
+   "art": "hum outfit:gown hat:cap hold:basket",
+   "text": "Deal 5 damage to the opposing creature and lower its ATK by 5."
+  },
+  "Creature_GL_MotherFluffBucket": {
+   "id": "mother-fleece-gilded",
+   "name": "Mother Fleece",
+   "edition": "Gilded",
+   "art": "beast kind:sheep",
+   "text": "Deal 5 damage to all opposing creatures and heal all of your creatures 5 points."
+  },
+  "Creature_GL_Mouthball": {
+   "id": "gulp-orb-gilded",
+   "name": "Gulp Orb",
+   "edition": "Gilded",
+   "art": "orb mouth:big",
+   "text": "Creature in opposing lane cannot use Glint next turn."
+  },
+  "Creature_GL_MsMummy": {
+   "id": "wrapped-lady-gilded",
+   "name": "Wrapped Lady",
+   "edition": "Gilded",
+   "art": "hum outfit:wrap hat:veil",
+   "text": "Adjacent creatures gain +3 DEF."
+  },
+  "Creature_GL_MudAngel": {
+   "id": "clay-angel-gilded",
+   "name": "Clay Angel",
+   "edition": "Gilded",
+   "art": "hum outfit:robe wings",
+   "text": "Choose an opposing creature and lower its DEF by 6."
+  },
+  "Creature_GL_Ninja": {
+   "id": "alley-rogue-gilded",
+   "name": "Alley Rogue",
+   "edition": "Gilded",
+   "art": "hum outfit:coat hat:hood hold:dagger",
+   "text": "Deal 3 damage to creature in opposing lane."
+  },
+  "Creature_GL_OrangeSlimey": {
+   "id": "rust-slime-gilded",
+   "name": "Rust Slime",
+   "edition": "Gilded",
+   "art": "slime",
+   "text": "Deal 4 damage to creature in the opposing lane and Discard this creature."
+  },
+  "Creature_GL_PatchyThePumpkin": {
+   "id": "lantern-gourd-gilded",
+   "name": "Lantern Gourd",
+   "edition": "Gilded",
+   "art": "orb shape:squat top:stem mouth:grin glow",
+   "text": "Lower the ATK of the creature in the opposing lane by 5."
+  },
+  "Creature_GL_PeachDjini": {
+   "id": "peach-jinn-gilded",
+   "name": "Peach Jinn",
+   "edition": "Gilded",
+   "art": "jinn",
+   "text": "Choose one of your creatures and heal it 4 points."
+  },
+  "Creature_GL_Pentacutie": {
+   "id": "gentle-inspector-gilded",
+   "name": "Gentle Inspector",
+   "edition": "Gilded",
+   "art": "hum outfit:coat hat:cap hold:lens",
+   "text": "Adjacent creatures heal 7 points."
+  },
+  "Creature_GL_Phyllis": {
+   "id": "prism-matron-gilded",
+   "name": "Prism Matron",
+   "edition": "Gilded",
+   "art": "hum outfit:gown hat:bun",
+   "text": "This creature and adjacent creatures gain +4 ATK."
+  },
+  "Creature_GL_Pickler": {
+   "id": "brine-pickler-gilded",
+   "name": "Brine Pickler",
+   "edition": "Gilded",
+   "art": "orb shape:drop",
+   "text": "Lower the DEF of all opposing creatures by 5."
+  },
+  "Creature_GL_Pieclops": {
+   "id": "tart-cyclops-gilded",
+   "name": "Tart Cyclops",
+   "edition": "Gilded",
+   "art": "orb shape:squat eyes:1 top:crust",
+   "text": "Lower the DEF of all opposing creatures by 5."
+  },
+  "Creature_GL_Pig": {
+   "id": "truffle-pig-gilded",
+   "name": "Truffle Pig",
+   "edition": "Gilded",
+   "art": "beast kind:pig",
+   "text": "Decrease the ATK of all Amber creatures by 1."
+  },
+  "Creature_GL_PirateBear": {
+   "id": "bog-bear-gilded",
+   "name": "Bog Bear",
+   "edition": "Gilded",
+   "art": "beast kind:bear",
+   "text": "Deal 5 damage to the opposing creature and hero."
+  },
+  "Creature_GL_PorcelainGuardian": {
+   "id": "porcelain-sentry-gilded",
+   "name": "Porcelain Sentry",
+   "edition": "Gilded",
+   "art": "hum outfit:armor hat:helm",
+   "text": "Inflict 2 damage on this creature and lower the DEF of the opposing creature by 10."
+  },
+  "Creature_GL_Poultrygeist": {
+   "id": "wisp-hen-gilded",
+   "name": "Wisp Hen",
+   "edition": "Gilded",
+   "art": "bird kind:hen ghost",
+   "text": "Gain +2 Light next turn."
+  },
+  "Creature_GL_PunkCat": {
+   "id": "spiked-tomcat-gilded",
+   "name": "Spiked Tomcat",
+   "edition": "Gilded",
+   "art": "beast kind:cat spikes",
+   "text": "Activate an adjacent creature's Glint if applicable."
+  },
+  "Creature_GL_Quadurai": {
+   "id": "four-armed-duelist-gilded",
+   "name": "Four-Armed Duelist",
+   "edition": "Gilded",
+   "art": "hum outfit:coat arms:4 hold:sword",
+   "text": "Deal 7 damage to creature in opposing lane."
+  },
+  "Creature_GL_RainbowBarfer": {
+   "id": "prism-belcher-gilded",
+   "name": "Prism Belcher",
+   "edition": "Gilded",
+   "art": "brute rainbow",
+   "text": "Deal 5 damage to creature in opposing lane for each of your different landscapes."
+  },
+  "Creature_GL_RecordThug": {
+   "id": "gramophone-thug-gilded",
+   "name": "Gramophone Thug",
+   "edition": "Gilded",
+   "art": "brute hold:disc",
+   "text": "Deal damage to opposing creature equal to the damage on this creature."
+  },
+  "Creature_GL_RedEyeling": {
+   "id": "red-starer-gilded",
+   "name": "Red Starer",
+   "edition": "Gilded",
+   "art": "eye",
+   "text": "Deal 4 damage to creature in opposing lane and its adjacent creatures."
+  },
+  "Creature_GL_Rocktopus": {
+   "id": "lens-inspector-gilded",
+   "name": "Lens Inspector",
+   "edition": "Gilded",
+   "art": "hum outfit:coat hat:cap hold:lens",
+   "text": "This creature and adjacent creatures gain +6 DEF."
+  },
+  "Creature_GL_SackOfPain": {
+   "id": "sack-of-thorns-gilded",
+   "name": "Sack of Thorns",
+   "edition": "Gilded",
+   "art": "object kind:sack",
+   "text": "Heal adjacent creatures equal to the damage on this creature."
+  },
+  "Creature_GL_SandEyeBat": {
+   "id": "dust-glarewing-gilded",
+   "name": "Dust Glarewing",
+   "edition": "Gilded",
+   "art": "eyewing",
+   "text": "Choose an opposing creature and lower its DEF by 2."
+  },
+  "Creature_GL_SandFoot": {
+   "id": "dunefoot-gilded",
+   "name": "Dunefoot",
+   "edition": "Gilded",
+   "art": "brute skin:fur",
+   "text": "Gain +4 DEF for each of your creatures."
+  },
+  "Creature_GL_SandJackal": {
+   "id": "dune-jackal-gilded",
+   "name": "Dune Jackal",
+   "edition": "Gilded",
+   "art": "beast kind:jackal",
+   "text": "Lower the DEF of the opposing creature equal to this creature's ATK."
+  },
+  "Creature_GL_SandKnight": {
+   "id": "sandstone-knight-gilded",
+   "name": "Sandstone Knight",
+   "edition": "Gilded",
+   "art": "hum outfit:armor hat:helm hold:sword",
+   "text": "All of your creatures gain +4 DEF."
+  },
+  "Creature_GL_SandShark": {
+   "id": "sirocco-gilded",
+   "name": "Sirocco",
+   "edition": "Gilded",
+   "art": "jinn",
+   "text": "Gain +3 ATK and +7 DEF."
+  },
+  "Creature_GL_SandSnake": {
+   "id": "sand-asp-gilded",
+   "name": "Sand Asp",
+   "edition": "Gilded",
+   "art": "serpent kind:snake",
+   "text": "Lower the DEF of creature in the opposite lane by 5."
+  },
+  "Creature_GL_Sandwitch": {
+   "id": "dune-witch-gilded",
+   "name": "Dune Witch",
+   "edition": "Gilded",
+   "art": "hum outfit:robe hat:wizard hold:staff",
+   "text": "+9 DEF to a random creature on the field, including your opponents.."
+  },
+  "Creature_GL_SgtMushroom": {
+   "id": "sergeant-morel-gilded",
+   "name": "Sergeant Morel",
+   "edition": "Gilded",
+   "art": "mush hold:sword",
+   "text": "Choose an opposing creature. Deal 4 damage to it and heal this creature 6 points."
+  },
+  "Creature_GL_SkeletalHand": {
+   "id": "ember-hand-gilded",
+   "name": "Ember Hand",
+   "edition": "Gilded",
+   "art": "object kind:hand",
+   "text": "Lower the DEF of creature in the opposite lane by 2."
+  },
+  "Creature_GL_Sludger": {
+   "id": "threshing-brute-gilded",
+   "name": "Threshing Brute",
+   "edition": "Gilded",
+   "art": "brute skin:mud",
+   "text": "Lower the DEF of adjacent creatures by 2 and increase their ATK by 4."
+  },
+  "Creature_GL_SnakeMint": {
+   "id": "mint-serpent-gilded",
+   "name": "Mint Serpent",
+   "edition": "Gilded",
+   "art": "serpent kind:snake",
+   "text": "Deal 2 damage to creature in opposing lane and heal this creature 4 points."
+  },
+  "Creature_GL_SnappyDresser": {
+   "id": "dapper-snapper-gilded",
+   "name": "Dapper Snapper",
+   "edition": "Gilded",
+   "art": "beast kind:croc hat:top",
+   "text": "Deal 2 damage to creature in opposing lane for each of your different landscapes."
+  },
+  "Creature_GL_SnuggleTree": {
+   "id": "cuddle-willow-gilded",
+   "name": "Cuddle Willow",
+   "edition": "Gilded",
+   "art": "tree kind:willow",
+   "text": "Heal adjacent creatures equal to the damage on this creature."
+  },
+  "Creature_GL_SoftEyeling": {
+   "id": "velvet-eyeling-gilded",
+   "name": "Velvet Eyeling",
+   "edition": "Gilded",
+   "art": "eye",
+   "text": "Choose a creature and heal 3 points for each of your different landscapes."
+  },
+  "Creature_GL_SpikedMaceStump": {
+   "id": "spiked-stump-gilded",
+   "name": "Spiked Stump",
+   "edition": "Gilded",
+   "art": "tree kind:stump hold:mace",
+   "text": "Deal 3 damage to creature in the opposing lane."
+  },
+  "Creature_GL_SteakChop": {
+   "id": "cleaver-brute-gilded",
+   "name": "Cleaver Brute",
+   "edition": "Gilded",
+   "art": "brute hold:cleaver",
+   "text": "Deal 2 damage to the opposing creature for each of your opponent's Discarded creatures."
+  },
+  "Creature_GL_StruzanJinn": {
+   "id": "gale-jinn-gilded",
+   "name": "Gale Jinn",
+   "edition": "Gilded",
+   "art": "jinn",
+   "text": "Send Creature in opposing lane back to opponent's hand."
+  },
+  "Creature_GL_SugarImp": {
+   "id": "sugar-imp-gilded",
+   "name": "Sugar Imp",
+   "edition": "Gilded",
+   "art": "hum small outfit:rags hat:horns",
+   "text": "Heal adjacent creatures 2 points."
+  },
+  "Creature_GL_TeethLeaf": {
+   "id": "fang-leaf-gilded",
+   "name": "Fang Leaf",
+   "edition": "Gilded",
+   "art": "plant kind:fang",
+   "text": "Deal 2 damage to the opposing hero."
+  },
+  "Creature_GL_TheDrooler": {
+   "id": "drooling-ogre-gilded",
+   "name": "Drooling Ogre",
+   "edition": "Gilded",
+   "art": "brute",
+   "text": "Gain +7 ATK and +3 DEF."
+  },
+  "Creature_GL_TheMariachi": {
+   "id": "strolling-minstrel-gilded",
+   "name": "Strolling Minstrel",
+   "edition": "Gilded",
+   "art": "hum outfit:coat hat:wide hold:lute",
+   "text": "All of your creatures gain +4 ATK."
+  },
+  "Creature_GL_TravelinSkeleton": {
+   "id": "roaming-skeleton-gilded",
+   "name": "Roaming Skeleton",
+   "edition": "Gilded",
+   "art": "hum outfit:bones",
+   "text": "Deal 4 damage to a random creature, including your own."
+  },
+  "Creature_GL_TravelinWizard": {
+   "id": "wandering-mage-gilded",
+   "name": "Wandering Mage",
+   "edition": "Gilded",
+   "art": "hum outfit:robe hat:wizard hold:staff",
+   "text": "Heal 12 damage from a random creature on the field (including opponents)."
+  },
+  "Creature_GL_TreeEvil": {
+   "id": "hollow-root-gilded",
+   "name": "Hollow Root",
+   "edition": "Gilded",
+   "art": "tree kind:willow",
+   "text": "Deal 2 damage to all opposing creatures and heal all of your creatures 4 points."
+  },
+  "Creature_GL_WallOfSand": {
+   "id": "sandstone-wall-gilded",
+   "name": "Sandstone Wall",
+   "edition": "Gilded",
+   "art": "object kind:wall",
+   "text": "Adjacent creatures gain +5 DEF."
+  },
+  "Creature_GL_WanderingBaldMan": {
+   "id": "wandering-bogman-gilded",
+   "name": "Wandering Bogman",
+   "edition": "Gilded",
+   "art": "hum outfit:rags bald",
+   "text": "Deal 2 damage to creature in the opposing lane."
+  },
+  "Creature_GL_WellDressedWolf": {
+   "id": "dapper-wolf-gilded",
+   "name": "Dapper Wolf",
+   "edition": "Gilded",
+   "art": "beast kind:wolf hat:top",
+   "text": "Heal all damage from this creature."
+  },
+  "Creature_GL_WhiteNinja": {
+   "id": "pale-fencer-gilded",
+   "name": "Pale Fencer",
+   "edition": "Gilded",
+   "art": "hum outfit:coat hat:hood hold:sword",
+   "text": "Deal 3 damage to the opposing creature and heal 3 points from this creature."
+  },
+  "Creature_GL_WizardElf": {
+   "id": "mind-architect-gilded",
+   "name": "Mind Architect",
+   "edition": "Gilded",
+   "art": "hum outfit:robe hold:scroll bigbrain",
+   "text": "Return a Spell from the discard pile to your hand."
+  },
+  "Creature_GrapeSlimey": {
+   "id": "indigo-slime",
+   "name": "Indigo Slime",
+   "edition": "",
+   "art": "slime",
+   "text": "Draw 1 card and send this creature to the discard pile."
+  },
+  "Creature_GrayEyeBat": {
+   "id": "gray-glarewing",
+   "name": "Gray Glarewing",
+   "edition": "",
+   "art": "eyewing",
+   "text": "Deal 2 damage to any opposing creature."
+  },
+  "Creature_GreenMermaid": {
+   "id": "reed-siren",
+   "name": "Reed Siren",
+   "edition": "",
+   "art": "fish kind:merfolk",
+   "text": "Deal 3 damage for each of your buildings to the creature in the opposing lane."
+  },
+  "Creature_GreenMerman": {
+   "id": "reed-triton",
+   "name": "Reed Triton",
+   "edition": "",
+   "art": "fish kind:merfolk hold:spear",
+   "text": "Deal 3 damage for each enemy building to the creature in the opposing lane."
+  },
+  "Creature_GreenSnakey": {
+   "id": "glass-viper",
+   "name": "Glass Viper",
+   "edition": "",
+   "art": "serpent kind:snake",
+   "text": "Lower the ATK of the creature in opposing lane by 2 for each of your opponent's creatures."
+  },
+  "Creature_Herculeye": {
+   "id": "musclebulb",
+   "name": "Musclebulb",
+   "edition": "",
+   "art": "eye arms",
+   "text": "Deal 2 damage for each card in your hand to the creature in the opposing lane."
+  },
+  "Creature_HotEyeBat": {
+   "id": "ember-glarewing",
+   "name": "Ember Glarewing",
+   "edition": "",
+   "art": "eyewing",
+   "text": "Deal 4 damage to any opposing creature."
+  },
+  "Creature_HuskerGiant": {
+   "id": "haystack-giant",
+   "name": "Haystack Giant",
+   "edition": "",
+   "art": "brute skin:straw",
+   "text": "+2 ATK for each of your Amber landscapes."
+  },
+  "Creature_HuskerKnight": {
+   "id": "straw-knight",
+   "name": "Straw Knight",
+   "edition": "",
+   "art": "hum outfit:armor hat:helm hold:sword",
+   "text": "Adjacent creatures gain +2 ATK."
+  },
+  "Creature_IceIceBaby": {
+   "id": "icicle-sprite",
+   "name": "Icicle Sprite",
+   "edition": "",
+   "art": "orb shape:drop",
+   "text": "Creature in opposing lane cannot ATK next Battle Phase."
+  },
+  "Creature_IceKnight": {
+   "id": "rime-paladin",
+   "name": "Rime Paladin",
+   "edition": "",
+   "art": "hum outfit:armor hat:helm hold:shield",
+   "text": "Adjacent creatures gain +5 DEF."
+  },
+  "Creature_KingFluff": {
+   "id": "kindly-king",
+   "name": "Kindly King",
+   "edition": "",
+   "art": "hum outfit:robe hat:crown hold:staff",
+   "text": "Choose one of your creatures and heal all damage from it."
+  },
+  "Creature_KnightOfObesity": {
+   "id": "great-spirit-warden",
+   "name": "Great Spirit Warden",
+   "edition": "",
+   "art": "brute ghost hold:spear",
+   "text": "Return this creature to your hand and draw 1 card."
+  },
+  "Creature_LadyScarab": {
+   "id": "dune-duchess",
+   "name": "Dune Duchess",
+   "edition": "",
+   "art": "hum outfit:gown hat:crown hold:fan",
+   "text": "Increase the DEF of all of your creatures by 2 for each building you control."
+  },
+  "Creature_LegionOfEarlings": {
+   "id": "kernel-legion",
+   "name": "Kernel Legion",
+   "edition": "",
+   "art": "orb crowd",
+   "text": "All your creatures gain +5 ATK."
+  },
+  "Creature_LimeSlimey": {
+   "id": "lime-slime",
+   "name": "Lime Slime",
+   "edition": "",
+   "art": "slime",
+   "text": "This creature and adjacent creatures gain +3 DEF."
+  },
+  "Creature_LostGolem": {
+   "id": "lost-colossus",
+   "name": "Lost Colossus",
+   "edition": "",
+   "art": "brute skin:stone",
+   "text": "Gain +8 DEF."
+  },
+  "Creature_MaizeWalker": {
+   "id": "deathless-strider",
+   "name": "Deathless Strider",
+   "edition": "",
+   "art": "hum outfit:rags hat:straw tall",
+   "text": "Deal 33 damage to to any opposing Amber creature."
+  },
+  "Creature_ManowarElf": {
+   "id": "time-strider",
+   "name": "Time Strider",
+   "edition": "",
+   "art": "hum outfit:robe hat:hood hold:staff",
+   "text": "damage done to opposing creature next Battle Phase is transferred to hero."
+  },
+  "Creature_MermaidYellow": {
+   "id": "miller-maud",
+   "name": "Miller Maud",
+   "edition": "",
+   "art": "hum outfit:gown hat:cap hold:basket",
+   "text": "Deal 5 damage to the opposing creature and lower its ATK by 5."
+  },
+  "Creature_MotherFluffBucket": {
+   "id": "mother-fleece",
+   "name": "Mother Fleece",
+   "edition": "",
+   "art": "beast kind:sheep",
+   "text": "Deal 5 damage to all opposing creatures and heal all of your creatures 5 points."
+  },
+  "Creature_Mouthball": {
+   "id": "gulp-orb",
+   "name": "Gulp Orb",
+   "edition": "",
+   "art": "orb mouth:big",
+   "text": "Creature in opposing lane cannot use Glint next turn."
+  },
+  "Creature_MsMummy": {
+   "id": "wrapped-lady",
+   "name": "Wrapped Lady",
+   "edition": "",
+   "art": "hum outfit:wrap hat:veil",
+   "text": "Adjacent creatures gain +3 DEF."
+  },
+  "Creature_MudAngel": {
+   "id": "clay-angel",
+   "name": "Clay Angel",
+   "edition": "",
+   "art": "hum outfit:robe wings",
+   "text": "Choose an opposing creature and lower its DEF by 6."
+  },
+  "Creature_Ninja": {
+   "id": "alley-rogue",
+   "name": "Alley Rogue",
+   "edition": "",
+   "art": "hum outfit:coat hat:hood hold:dagger",
+   "text": "Deal 3 damage to creature in opposing lane."
+  },
+  "Creature_OrangeSlimey": {
+   "id": "rust-slime",
+   "name": "Rust Slime",
+   "edition": "",
+   "art": "slime",
+   "text": "Deal 4 damage to creature in the opposing lane and Discard this creature."
+  },
+  "Creature_PatchyThePumpkin": {
+   "id": "lantern-gourd",
+   "name": "Lantern Gourd",
+   "edition": "",
+   "art": "orb shape:squat top:stem mouth:grin glow",
+   "text": "Lower the ATK of the creature in the opposing lane by 5."
+  },
+  "Creature_PeachDjini": {
+   "id": "peach-jinn",
+   "name": "Peach Jinn",
+   "edition": "",
+   "art": "jinn",
+   "text": "Choose one of your creatures and heal it 4 points."
+  },
+  "Creature_Pentacutie": {
+   "id": "gentle-inspector",
+   "name": "Gentle Inspector",
+   "edition": "",
+   "art": "hum outfit:coat hat:cap hold:lens",
+   "text": "Adjacent creatures heal 7 points."
+  },
+  "Creature_Phyllis": {
+   "id": "prism-matron",
+   "name": "Prism Matron",
+   "edition": "",
+   "art": "hum outfit:gown hat:bun",
+   "text": "This creature and adjacent creatures gain +4 ATK."
+  },
+  "Creature_Pickler": {
+   "id": "brine-pickler",
+   "name": "Brine Pickler",
+   "edition": "",
+   "art": "orb shape:drop",
+   "text": "Lower the DEF of all opposing creatures by 5."
+  },
+  "Creature_Pieclops": {
+   "id": "tart-cyclops",
+   "name": "Tart Cyclops",
+   "edition": "",
+   "art": "orb shape:squat eyes:1 top:crust",
+   "text": "Lower the DEF of all opposing creatures by 5."
+  },
+  "Creature_Pig": {
+   "id": "truffle-pig",
+   "name": "Truffle Pig",
+   "edition": "",
+   "art": "beast kind:pig",
+   "text": "Decrease the ATK of all Amber creatures by 1."
+  },
+  "Creature_PirateBear": {
+   "id": "bog-bear",
+   "name": "Bog Bear",
+   "edition": "",
+   "art": "beast kind:bear",
+   "text": "Deal 5 damage to the opposing creature and hero."
+  },
+  "Creature_PorcelainGuardian": {
+   "id": "porcelain-sentry",
+   "name": "Porcelain Sentry",
+   "edition": "",
+   "art": "hum outfit:armor hat:helm",
+   "text": "Inflict 2 damage on this creature and lower the DEF of the opposing creature by 10."
+  },
+  "Creature_Poultrygeist": {
+   "id": "wisp-hen",
+   "name": "Wisp Hen",
+   "edition": "",
+   "art": "bird kind:hen ghost",
+   "text": "Gain +2 Light next turn."
+  },
+  "Creature_PunkCat": {
+   "id": "spiked-tomcat",
+   "name": "Spiked Tomcat",
+   "edition": "",
+   "art": "beast kind:cat spikes",
+   "text": "Activate an adjacent creature's Glint if applicable."
+  },
+  "Creature_Quadurai": {
+   "id": "four-armed-duelist",
+   "name": "Four-Armed Duelist",
+   "edition": "",
+   "art": "hum outfit:coat arms:4 hold:sword",
+   "text": "Deal 7 damage to creature in opposing lane."
+  },
+  "Creature_RainbowBarfer": {
+   "id": "prism-belcher",
+   "name": "Prism Belcher",
+   "edition": "",
+   "art": "brute rainbow",
+   "text": "Deal 5 damage to creature in opposing lane for each of your different landscapes."
+  },
+  "Creature_RecordThug": {
+   "id": "gramophone-thug",
+   "name": "Gramophone Thug",
+   "edition": "",
+   "art": "brute hold:disc",
+   "text": "Deal damage to opposing creature equal to the damage on this creature."
+  },
+  "Creature_RedEyeling": {
+   "id": "red-starer",
+   "name": "Red Starer",
+   "edition": "",
+   "art": "eye",
+   "text": "Deal 4 damage to creature in opposing lane and its adjacent creatures."
+  },
+  "Creature_Rocktopus": {
+   "id": "lens-inspector",
+   "name": "Lens Inspector",
+   "edition": "",
+   "art": "hum outfit:coat hat:cap hold:lens",
+   "text": "This creature and adjacent creatures gain +6 DEF."
+  },
+  "Creature_SackOfPain": {
+   "id": "sack-of-thorns",
+   "name": "Sack of Thorns",
+   "edition": "",
+   "art": "object kind:sack",
+   "text": "Heal adjacent creatures equal to the damage on this creature."
+  },
+  "Creature_SandEyeBat": {
+   "id": "dust-glarewing",
+   "name": "Dust Glarewing",
+   "edition": "",
+   "art": "eyewing",
+   "text": "Choose an opposing creature and lower its DEF by 2."
+  },
+  "Creature_SandFoot": {
+   "id": "dunefoot",
+   "name": "Dunefoot",
+   "edition": "",
+   "art": "brute skin:fur",
+   "text": "Gain +4 DEF for each of your creatures."
+  },
+  "Creature_SandJackal": {
+   "id": "dune-jackal",
+   "name": "Dune Jackal",
+   "edition": "",
+   "art": "beast kind:jackal",
+   "text": "Lower the DEF of the opposing creature equal to this creature's ATK."
+  },
+  "Creature_SandKnight": {
+   "id": "sandstone-knight",
+   "name": "Sandstone Knight",
+   "edition": "",
+   "art": "hum outfit:armor hat:helm hold:sword",
+   "text": "All of your creatures gain +4 DEF."
+  },
+  "Creature_SandShark": {
+   "id": "sirocco",
+   "name": "Sirocco",
+   "edition": "",
+   "art": "jinn",
+   "text": "Gain +3 ATK and +7 DEF."
+  },
+  "Creature_SandSnake": {
+   "id": "sand-asp",
+   "name": "Sand Asp",
+   "edition": "",
+   "art": "serpent kind:snake",
+   "text": "Lower the DEF of creature in the opposite lane by 5."
+  },
+  "Creature_Sandwitch": {
+   "id": "dune-witch",
+   "name": "Dune Witch",
+   "edition": "",
+   "art": "hum outfit:robe hat:wizard hold:staff",
+   "text": "+9 DEF to a random creature on the field, including your opponents.."
+  },
+  "Creature_SgtMushroom": {
+   "id": "sergeant-morel",
+   "name": "Sergeant Morel",
+   "edition": "",
+   "art": "mush hold:sword",
+   "text": "Choose an opposing creature. Deal 4 damage to it and heal this creature 6 points."
+  },
+  "Creature_SkeletalHand": {
+   "id": "ember-hand",
+   "name": "Ember Hand",
+   "edition": "",
+   "art": "object kind:hand",
+   "text": "Lower the DEF of creature in the opposite lane by 2."
+  },
+  "Creature_Sludger": {
+   "id": "threshing-brute",
+   "name": "Threshing Brute",
+   "edition": "",
+   "art": "brute skin:mud",
+   "text": "Lower the DEF of adjacent creatures by 2 and increase their ATK by 4."
+  },
+  "Creature_SnakeMint": {
+   "id": "mint-serpent",
+   "name": "Mint Serpent",
+   "edition": "",
+   "art": "serpent kind:snake",
+   "text": "Deal 2 damage to creature in opposing lane and heal this creature 4 points."
+  },
+  "Creature_SnappyDresser": {
+   "id": "dapper-snapper",
+   "name": "Dapper Snapper",
+   "edition": "",
+   "art": "beast kind:croc hat:top",
+   "text": "Deal 2 damage to creature in opposing lane for each of your different landscapes."
+  },
+  "Creature_SnuggleTree": {
+   "id": "cuddle-willow",
+   "name": "Cuddle Willow",
+   "edition": "",
+   "art": "tree kind:willow",
+   "text": "Heal adjacent creatures equal to the damage on this creature."
+  },
+  "Creature_SoftEyeling": {
+   "id": "velvet-eyeling",
+   "name": "Velvet Eyeling",
+   "edition": "",
+   "art": "eye",
+   "text": "Choose a creature and heal 3 points for each of your different landscapes."
+  },
+  "Creature_SpikedMaceStump": {
+   "id": "spiked-stump",
+   "name": "Spiked Stump",
+   "edition": "",
+   "art": "tree kind:stump hold:mace",
+   "text": "Deal 3 damage to creature in the opposing lane."
+  },
+  "Creature_SteakChop": {
+   "id": "cleaver-brute",
+   "name": "Cleaver Brute",
+   "edition": "",
+   "art": "brute hold:cleaver",
+   "text": "Deal 2 damage to the opposing creature for each of your opponent's Discarded creatures."
+  },
+  "Creature_StruzanJinn": {
+   "id": "gale-jinn",
+   "name": "Gale Jinn",
+   "edition": "",
+   "art": "jinn",
+   "text": "Send Creature in opposing lane back to opponent's hand."
+  },
+  "Creature_SugarImp": {
+   "id": "sugar-imp",
+   "name": "Sugar Imp",
+   "edition": "",
+   "art": "hum small outfit:rags hat:horns",
+   "text": "Heal adjacent creatures 2 points."
+  },
+  "Creature_TeethLeaf": {
+   "id": "fang-leaf",
+   "name": "Fang Leaf",
+   "edition": "",
+   "art": "plant kind:fang",
+   "text": "Deal 2 damage to the opposing hero."
+  },
+  "Creature_TheDrooler": {
+   "id": "drooling-ogre",
+   "name": "Drooling Ogre",
+   "edition": "",
+   "art": "brute",
+   "text": "Gain +7 ATK and +3 DEF."
+  },
+  "Creature_TheMariachi": {
+   "id": "strolling-minstrel",
+   "name": "Strolling Minstrel",
+   "edition": "",
+   "art": "hum outfit:coat hat:wide hold:lute",
+   "text": "All of your creatures gain +4 ATK."
+  },
+  "Creature_TravelinSkeleton": {
+   "id": "roaming-skeleton",
+   "name": "Roaming Skeleton",
+   "edition": "",
+   "art": "hum outfit:bones",
+   "text": "Deal 4 damage to a random creature, including your own."
+  },
+  "Creature_TravelinWizard": {
+   "id": "wandering-mage",
+   "name": "Wandering Mage",
+   "edition": "",
+   "art": "hum outfit:robe hat:wizard hold:staff",
+   "text": "Heal 12 damage from a random creature on the field (including opponents)."
+  },
+  "Creature_TreeEvil": {
+   "id": "hollow-root",
+   "name": "Hollow Root",
+   "edition": "",
+   "art": "tree kind:willow",
+   "text": "Deal 2 damage to all opposing creatures and heal all of your creatures 4 points."
+  },
+  "Creature_WallOfSand": {
+   "id": "sandstone-wall",
+   "name": "Sandstone Wall",
+   "edition": "",
+   "art": "object kind:wall",
+   "text": "Adjacent creatures gain +5 DEF."
+  },
+  "Creature_WanderingBaldMan": {
+   "id": "wandering-bogman",
+   "name": "Wandering Bogman",
+   "edition": "",
+   "art": "hum outfit:rags bald",
+   "text": "Deal 2 damage to creature in the opposing lane."
+  },
+  "Creature_WellDressedWolf": {
+   "id": "dapper-wolf",
+   "name": "Dapper Wolf",
+   "edition": "",
+   "art": "beast kind:wolf hat:top",
+   "text": "Heal all damage from this creature."
+  },
+  "Creature_WhiteNinja": {
+   "id": "pale-fencer",
+   "name": "Pale Fencer",
+   "edition": "",
+   "art": "hum outfit:coat hat:hood hold:sword",
+   "text": "Deal 3 damage to the opposing creature and heal 3 points from this creature."
+  },
+  "Creature_WizardElf": {
+   "id": "mind-architect",
+   "name": "Mind Architect",
+   "edition": "",
+   "art": "hum outfit:robe hold:scroll bigbrain",
+   "text": "Return a Spell from the discard pile to your hand."
+  },
+  "Creature_BL_LogKnight": {
+   "id": "timber-knight-obsidian",
+   "name": "Timber Knight",
+   "edition": "Obsidian",
+   "art": "hum outfit:armor hat:helm hold:shield",
+   "text": "Raise this creature's ATK by 4 for every creature you Glinted this turn."
+  },
+  "Creature_BL_SunKing": {
+   "id": "noon-regent-obsidian",
+   "name": "Noon Regent",
+   "edition": "Obsidian",
+   "art": "hum outfit:robe hat:crown halo",
+   "text": "Choose a creature and raise its ATK 4 points for each Building you control."
+  },
+  "Creature_BL_PointyYellowGnome": {
+   "id": "ochre-gnome-obsidian",
+   "name": "Ochre Gnome",
+   "edition": "Obsidian",
+   "art": "hum small outfit:coat hat:cone",
+   "text": "Lower opposing creature's ATK by 4 and raise this creature's ATK by 4."
+  },
+  "Creature_BL_UselessThrone": {
+   "id": "bogmans-throne-obsidian",
+   "name": "Bogman's Throne",
+   "edition": "Obsidian",
+   "art": "object kind:throne",
+   "text": "Deal 5 damage to opposing creature for every creature you Glinted this turn."
+  },
+  "Creature_BL_EyeGuy": {
+   "id": "watchful-eye-obsidian",
+   "name": "Watchful Eye",
+   "edition": "Obsidian",
+   "art": "eye",
+   "text": "Deal 3 damage to opposing hero for every creature you Glinted this turn."
+  },
+  "Creature_BL_HeadphoneJerk": {
+   "id": "earmuff-grump-obsidian",
+   "name": "Earmuff Grump",
+   "edition": "Obsidian",
+   "art": "orb top:earmuffs",
+   "text": "Deal 3 damage to opposing creature for every rarity Star it has."
+  },
+  "Creature_BL_AppleBully": {
+   "id": "crabapple-tree-obsidian",
+   "name": "Crabapple Tree",
+   "edition": "Obsidian",
+   "art": "tree kind:apple",
+   "text": "Fully heal all of your creatures and destroy this creature."
+  },
+  "Creature_BL_Fatapillar": {
+   "id": "stout-caterpillar-obsidian",
+   "name": "Stout Caterpillar",
+   "edition": "Obsidian",
+   "art": "serpent kind:caterpillar",
+   "text": "Choose a creature and heal it 5 points for every creature you glinted this turn."
+  },
+  "Creature_BL_NicelandsCutie": {
+   "id": "vale-darling-obsidian",
+   "name": "Vale Darling",
+   "edition": "Obsidian",
+   "art": "orb top:bow",
+   "text": "Heal your hero 4 points for every creature you Glinted this turn."
+  },
+  "Creature_BL_GreenPartyOgre": {
+   "id": "revel-ogre-obsidian",
+   "name": "Revel Ogre",
+   "edition": "Obsidian",
+   "art": "brute hat:party",
+   "text": "Choose a friendly creature and raise its DEF by 4 for every creature you Glinted this turn."
+  },
+  "Creature_BL_SandasaurusRex": {
+   "id": "dune-rex-obsidian",
+   "name": "Dune Rex",
+   "edition": "Obsidian",
+   "art": "beast kind:rex",
+   "text": "Choose an enemy creature and lower its DEF by 5 for every creature you Glinted this turn."
+  },
+  "Creature_BL_TimmyMagicEyes": {
+   "id": "glimmer-eyes-obsidian",
+   "name": "Glimmer-Eyes",
+   "edition": "Obsidian",
+   "art": "eye many",
+   "text": "Lower the cost of Glinting creatures by 1 this turn."
+  },
+  "Creature_BL_CameraDude": {
+   "id": "lens-wanderer-obsidian",
+   "name": "Lens Wanderer",
+   "edition": "Obsidian",
+   "art": "hum outfit:coat lenshead",
+   "text": "Lower enemy hero's Light by 2 next turn."
+  },
+  "Creature_BL_InfiniteFigure": {
+   "id": "mirror-figure-obsidian",
+   "name": "Mirror Figure",
+   "edition": "Obsidian",
+   "art": "hum outfit:robe mirror",
+   "text": "Increase enemy's Glinting cost by 1 next turn."
+  },
+  "Creature_GL_FisherFish": {
+   "id": "angler-fish-gilded",
+   "name": "Angler Fish",
+   "edition": "Gilded",
+   "art": "fish kind:angler",
+   "text": "Select a Random card from the discard pile and put it in your hand."
+  },
+  "Creature_GL_BrainGooey": {
+   "id": "brain-jelly-gilded",
+   "name": "Brain Jelly",
+   "edition": "Gilded",
+   "art": "slime",
+   "text": "Lower ATK of all enemy creatures by 12 and destroy this creature."
+  },
+  "Creature_HW_BlackCat": {
+   "id": "night-cat-smoked",
+   "name": "Night Cat",
+   "edition": "Smoked",
+   "art": "beast kind:cat",
+   "text": "Choose an opposing creature and lower its DEF by 30."
+  },
+  "Creature_HW_DjiniGhost": {
+   "id": "phantom-jinn-smoked",
+   "name": "Phantom Jinn",
+   "edition": "Smoked",
+   "art": "jinn ghost",
+   "text": "Shuffle your hand back into your Deck and draw 5 cards."
+  },
+  "Creature_HW_GhostBull": {
+   "id": "phantom-bull-smoked",
+   "name": "Phantom Bull",
+   "edition": "Smoked",
+   "art": "beast kind:bull ghost",
+   "text": "Deal 20 damage to creature in opposing lane and heal this creature 28 points."
+  },
+  "Creature_HW_GhostlyTree": {
+   "id": "phantom-willow-smoked",
+   "name": "Phantom Willow",
+   "edition": "Smoked",
+   "art": "tree kind:willow ghost",
+   "text": "For every card in your discard pile, deal 3 damage to creature in opposing lane."
+  },
+  "Creature_HW_GhostSludger": {
+   "id": "chaff-phantom-smoked",
+   "name": "Chaff Phantom",
+   "edition": "Smoked",
+   "art": "ghost",
+   "text": "+13 ATK."
+  },
+  "Creature_HW_GiantMummyHand": {
+   "id": "mummys-grasp-smoked",
+   "name": "Mummy's Grasp",
+   "edition": "Smoked",
+   "art": "object kind:hand",
+   "text": "This creature and adjacent creatures gain +8 DEF."
+  },
+  "Creature_HW_LtMushroom": {
+   "id": "lieutenant-morel-smoked",
+   "name": "Lieutenant Morel",
+   "edition": "Smoked",
+   "art": "mush hold:spear",
+   "text": "Choose an opposing creature. Deal 14 damage to it and heal this creature 25 points."
+  },
+  "Creature_HW_MadameSeota": {
+   "id": "madame-lune-smoked",
+   "name": "Madame Lune",
+   "edition": "Smoked",
+   "art": "hum outfit:gown hat:veil hold:globe",
+   "text": "Draw 3 card."
+  },
+  "Creature_HW_PolterClops": {
+   "id": "haunted-cyclops-smoked",
+   "name": "Haunted Cyclops",
+   "edition": "Smoked",
+   "art": "ghost eyes:1",
+   "text": "Return this creature to your hand and draw 3 card."
+  },
+  "Creature_HW_TreeOfUgliness": {
+   "id": "gnarled-elm-smoked",
+   "name": "Gnarled Elm",
+   "edition": "Smoked",
+   "art": "tree kind:elm",
+   "text": "Adjacent creatures gain +9 ATK."
+  },
+  "Creature_HW_UniKnight": {
+   "id": "wheel-knight-smoked",
+   "name": "Wheel Knight",
+   "edition": "Smoked",
+   "art": "hum outfit:armor hat:helm wheel",
+   "text": "Adjacent creatures gain +13 DEF."
+  },
+  "Creature_HW_WizardOfPoo": {
+   "id": "bog-wizard-smoked",
+   "name": "Bog Wizard",
+   "edition": "Smoked",
+   "art": "hum outfit:robe hat:wizard hold:staff",
+   "text": "Deal 9 damage to all opposing creatures."
+  },
+  "Creature_XMAS_PeaSoupBarfer": {
+   "id": "frost-belcher-frosted",
+   "name": "Frost Belcher",
+   "edition": "Frosted",
+   "art": "brute",
+   "text": "Lower the DEF of adjacent creatures by 2 and increase the ATK of this creature by 7."
+  },
+  "Creature_XMAS_Paladim": {
+   "id": "winter-champion-frosted",
+   "name": "Winter Champion",
+   "edition": "Frosted",
+   "art": "hum outfit:armor hat:helm hold:sword",
+   "text": "Deal 8 damage to creature in opposing lane and damage this creature for 1 damage."
+  },
+  "Creature_XMAS_RainbowGnome": {
+   "id": "prism-gnome-frosted",
+   "name": "Prism Gnome",
+   "edition": "Frosted",
+   "art": "hum small outfit:coat hat:cone",
+   "text": "Lower the ATK of the opposing creature by half and raise this creatures' ATK, and also reduce its DEF, by that amount."
+  },
+  "Creature_XMAS_BlueSlimey": {
+   "id": "frost-slime-frosted",
+   "name": "Frost Slime",
+   "edition": "Frosted",
+   "art": "slime",
+   "text": "Heal adjacent creatures by this creature's current DEF and discard."
+  },
+  "Creature_XMAS_WallOfChocolate": {
+   "id": "cocoa-wall-frosted",
+   "name": "Cocoa Wall",
+   "edition": "Frosted",
+   "art": "object kind:wall",
+   "text": "Heal all creatures for 4 and take 2 damage in return."
+  },
+  "Creature_XMAS_CowPurple": {
+   "id": "violet-heifer-frosted",
+   "name": "Violet Heifer",
+   "edition": "Frosted",
+   "art": "beast kind:cow",
+   "text": "damage all enemy creatures for 5 and take 5 damage in return."
+  },
+  "Creature_XMAS_SnowBall": {
+   "id": "snowpuff-frosted",
+   "name": "Snowpuff",
+   "edition": "Frosted",
+   "art": "orb",
+   "text": "Raise ATK by the number of times you have glinted this creature."
+  },
+  "Creature_BanshePrincess": {
+   "id": "fen-banshee-mirror",
+   "name": "Fen Banshee",
+   "edition": "Mirror",
+   "art": "ghost hat:crown",
+   "text": "Deal 4 damage to creature in the opposing lane."
+  },
+  "Creature_BansheQueen": {
+   "id": "banshee-queen-mirror",
+   "name": "Banshee Queen",
+   "edition": "Mirror",
+   "art": "ghost hat:crown",
+   "text": "Deal 4 damage to all opposing creatures."
+  },
+  "Creature_Unicyclops": {
+   "id": "horned-cyclops-mirror",
+   "name": "Horned Cyclops",
+   "edition": "Mirror",
+   "art": "brute eyes:1 horn",
+   "text": "Deal 7 damage to all opposing creatures."
+  },
+  "Creature_FuriousHen": {
+   "id": "fierce-hen-mirror",
+   "name": "Fierce Hen",
+   "edition": "Mirror",
+   "art": "bird kind:hen",
+   "text": "Deal 7 damage to creature in opposing lane and heal this creature 3 points."
+  },
+  "Creature_FuriousRooster": {
+   "id": "fierce-rooster-mirror",
+   "name": "Fierce Rooster",
+   "edition": "Mirror",
+   "art": "bird kind:rooster",
+   "text": "Deal 10 damage to creature in opposing lane and heal this creature 6 points."
+  },
+  "Creature_FuriousChick": {
+   "id": "fierce-chick-mirror",
+   "name": "Fierce Chick",
+   "edition": "Mirror",
+   "art": "bird kind:chick",
+   "text": "Adjacent creatures gain +3 ATK."
+  },
+  "Creature_BogfrogBomb": {
+   "id": "bombfrog-mirror",
+   "name": "Bombfrog",
+   "edition": "Mirror",
+   "art": "beast kind:frog",
+   "text": "Deal 5 damage to all opposing creatures."
+  },
+  "Creature_BogbansheAngel": {
+   "id": "banshee-seraph",
+   "name": "Banshee Seraph",
+   "edition": "",
+   "art": "ghost wings",
+   "text": "Deal 4 damage for each card in your hand to the creature in the opposing lane."
+  },
+  "Creature_Cottonpult": {
+   "id": "fleecepult",
+   "name": "Fleecepult",
+   "edition": "",
+   "art": "object kind:catapult",
+   "text": "Deal 7 damage to creature in opposing lane and heal this creature 7 points."
+  },
+  "Creature_MusicMallard": {
+   "id": "melody-mallard",
+   "name": "Melody Mallard",
+   "edition": "",
+   "art": "bird kind:mallard",
+   "text": "Heal this creature and adjacent creatures 5 points."
+  },
+  "Creature_BogBum": {
+   "id": "bog-tramp",
+   "name": "Bog Tramp",
+   "edition": "",
+   "art": "hum outfit:rags hat:cap",
+   "text": "Deal 5 damage to creature in the opposing lane."
+  },
+  "Creature_ManWitch": {
+   "id": "hedge-witch",
+   "name": "Hedge Witch",
+   "edition": "",
+   "art": "hum outfit:robe hat:wizard hold:broom",
+   "text": "Deal 13 damage to creature in the opposing lane."
+  },
+  "Creature_DrStuffenstein": {
+   "id": "stitched-apprentice",
+   "name": "Stitched Apprentice",
+   "edition": "",
+   "art": "brute skin:stitched",
+   "text": "Choose one of your creatures and heal it 5 points for each of your buildings."
+  },
+  "Creature_FlySwatter": {
+   "id": "cracked-swatter",
+   "name": "Cracked Swatter",
+   "edition": "",
+   "art": "object kind:swatter",
+   "text": "Deal 5 damage to to any opposing Amber creature."
+  },
+  "Creature_PapercutTiger": {
+   "id": "paper-kitten",
+   "name": "Paper Kitten",
+   "edition": "",
+   "art": "beast kind:cat",
+   "text": "Increase this creature attack by 2 and heal this creature by 2."
+  },
+  "Creature_GL_BanshePrincess": {
+   "id": "fen-banshee-gilded",
+   "name": "Fen Banshee",
+   "edition": "Gilded",
+   "art": "ghost hat:crown",
+   "text": "Deal 4 damage to creature in the opposing lane."
+  },
+  "Creature_GL_BansheQueen": {
+   "id": "banshee-queen-gilded",
+   "name": "Banshee Queen",
+   "edition": "Gilded",
+   "art": "ghost hat:crown",
+   "text": "Deal 4 damage to all opposing creatures."
+  },
+  "Creature_GL_Unicyclops": {
+   "id": "horned-cyclops-gilded",
+   "name": "Horned Cyclops",
+   "edition": "Gilded",
+   "art": "brute eyes:1 horn",
+   "text": "Deal 7 damage to all opposing creatures."
+  },
+  "Creature_VampBaldMan": {
+   "id": "bog-vampire-gilded",
+   "name": "Bog Vampire",
+   "edition": "Gilded",
+   "art": "hum outfit:coat bald cape",
+   "text": "Deals 200 % of the damage that it received last turn to the opposing creature."
+  },
+  "Creature_VampCactus": {
+   "id": "count-saguaro-gilded",
+   "name": "Count Saguaro",
+   "edition": "Gilded",
+   "art": "plant kind:cactus hat:top",
+   "text": "Increase the spinner DEF zone by 150 % for all creatures on your opponent's next attack."
+  },
+  "Creature_VampCorn": {
+   "id": "fangkernel-gilded",
+   "name": "Fangkernel",
+   "edition": "Gilded",
+   "art": "orb top:husk mouth:fangs wings:bat",
+   "text": "Increase the spinner critical zone by 200 % for all your creatures on your next attack."
+  },
+  "Creature_VampGhost": {
+   "id": "grand-illusionist-gilded",
+   "name": "Grand Illusionist",
+   "edition": "Gilded",
+   "art": "hum outfit:coat hat:top hold:wand",
+   "text": "Does 4 damage. If the defending creature card dies, the card is added into the attacker’s hand instead of going into the defender’s discard pile."
+  },
+  "Creature_VampMarshmallow": {
+   "id": "count-bonbon-gilded",
+   "name": "Count Bonbon",
+   "edition": "Gilded",
+   "art": "hum outfit:coat cape",
+   "text": "Increased the spinner critical zone by 200 % for all your creatures on your opponent's next attack."
+  },
+  "Creature_WeakVampBaldMan": {
+   "id": "faded-bog-vampire-smoked",
+   "name": "Faded Bog Vampire",
+   "edition": "Smoked",
+   "art": "hum outfit:coat bald cape",
+   "text": "Deal 3 damage to creature in the opposing lane and Discard this creature."
+  },
+  "Creature_WeakVampCorn": {
+   "id": "faded-fangkernel-smoked",
+   "name": "Faded Fangkernel",
+   "edition": "Smoked",
+   "art": "orb top:husk mouth:fangs wings:bat",
+   "text": "Deal 3 damage to creature in the opposing lane and Discard this creature."
+  },
+  "Creature_WeakVampMarshmallow": {
+   "id": "faded-count-bonbon-smoked",
+   "name": "Faded Count Bonbon",
+   "edition": "Smoked",
+   "art": "hum outfit:coat cape",
+   "text": "Deal 3 damage to creature in the opposing lane and Discard this creature."
+  },
+  "Creature_XMAS_ChadBear": {
+   "id": "mittens-bear-frosted",
+   "name": "Mittens Bear",
+   "edition": "Frosted",
+   "art": "beast kind:bear",
+   "text": "+2 ATK."
+  },
+  "Creature_XMAS_SnowMan": {
+   "id": "snowfellow-frosted",
+   "name": "Snowfellow",
+   "edition": "Frosted",
+   "art": "snowman",
+   "text": "+1 ATK."
+  },
+  "Creature_XMAS_SnowCorn": {
+   "id": "frost-gleaner-frosted",
+   "name": "Frost Gleaner",
+   "edition": "Frosted",
+   "art": "snowman hat:straw",
+   "text": "Gain +2 ATK for each adjacent empty lane."
+  },
+  "Creature_XMAS_SnowCotton": {
+   "id": "frost-fleece-frosted",
+   "name": "Frost Fleece",
+   "edition": "Frosted",
+   "art": "beast kind:sheep",
+   "text": "Heal adjacent creatures 5 points."
+  },
+  "Creature_XMAS_SnowPlain": {
+   "id": "frost-specter-frosted",
+   "name": "Frost Specter",
+   "edition": "Frosted",
+   "art": "ghost",
+   "text": "Send Creature in opposing lane back to opponent's hand."
+  },
+  "Creature_XMAS_SnowSwamp": {
+   "id": "frost-bogman-frosted",
+   "name": "Frost Bogman",
+   "edition": "Frosted",
+   "art": "snowman",
+   "text": "Deal 3 damage for each card in your hand to the creature in the opposing lane."
+  },
+  "Creature_XMAS_SnowSand": {
+   "id": "frost-sandling-frosted",
+   "name": "Frost Sandling",
+   "edition": "Frosted",
+   "art": "snowman",
+   "text": "This creature and adjacent creatures gain +4 DEF."
+  },
+  "Creature_REAL_DrStuffenstein": {
+   "id": "stitched-doctor",
+   "name": "Stitched Doctor",
+   "edition": "",
+   "art": "brute skin:stitched hold:staff",
+   "text": "Choose one of your creatures and heal it 4 points for each of your buildings."
+  },
+  "Creature_REAL_FlySwatter": {
+   "id": "swatter",
+   "name": "Swatter",
+   "edition": "",
+   "art": "object kind:swatter",
+   "text": "Deal 5 damage to to any opposing Amber creature."
+  },
+  "Creature_REAL_PapercutTiger": {
+   "id": "paper-tiger",
+   "name": "Paper Tiger",
+   "edition": "",
+   "art": "beast kind:tiger",
+   "text": "Increase this creature attack by 2 and heal this creature by 2."
+  },
+  "Creature_NiceBird": {
+   "id": "gentle-swan-mirror",
+   "name": "Gentle Swan",
+   "edition": "Mirror",
+   "art": "bird kind:swan",
+   "text": "Adjacent creatures gain +5 ATK."
+  },
+  "Creature_HateBird": {
+   "id": "spiteful-crow-mirror",
+   "name": "Spiteful Crow",
+   "edition": "Mirror",
+   "art": "bird kind:crow",
+   "text": "Heals this creature with the amount of the opposing creature attack."
+  },
+  "Creature_BadRose": {
+   "id": "thorned-rose",
+   "name": "Thorned Rose",
+   "edition": "",
+   "art": "plant kind:rose",
+   "text": "Return all cards, draw 2 cards, and gain 2 Light next turn."
+  },
+  "Creature_GL_BogBum": {
+   "id": "bog-tramp-gilded",
+   "name": "Bog Tramp",
+   "edition": "Gilded",
+   "art": "hum outfit:rags hat:cap",
+   "text": "Deal 5 damage to creature in the opposing lane."
+  },
+  "Creature_GL_FuriousHen": {
+   "id": "fierce-hen-gilded",
+   "name": "Fierce Hen",
+   "edition": "Gilded",
+   "art": "bird kind:hen",
+   "text": "Deal 7 damage to creature in opposing lane and heal this creature 3 points."
+  },
+  "Creature_GL_FuriousRooster": {
+   "id": "fierce-rooster-gilded",
+   "name": "Fierce Rooster",
+   "edition": "Gilded",
+   "art": "bird kind:rooster",
+   "text": "Deal 10 damage to creature in opposing lane and heal this creature 6 points."
+  },
+  "Creature_GL_FuriousChick": {
+   "id": "fierce-chick-gilded",
+   "name": "Fierce Chick",
+   "edition": "Gilded",
+   "art": "bird kind:chick",
+   "text": "Adjacent creatures gain +3 ATK."
+  },
+  "Creature_GL_BogfrogBomb": {
+   "id": "bombfrog-gilded",
+   "name": "Bombfrog",
+   "edition": "Gilded",
+   "art": "beast kind:frog",
+   "text": "Deal 5 damage to all opposing creatures."
+  },
+  "Creature_GL_BogbansheAngel": {
+   "id": "banshee-seraph-gilded",
+   "name": "Banshee Seraph",
+   "edition": "Gilded",
+   "art": "ghost wings",
+   "text": "Deal 4 damage for each card in your hand to the creature in the opposing lane."
+  },
+  "Creature_GL_Cottonpult": {
+   "id": "fleecepult-gilded",
+   "name": "Fleecepult",
+   "edition": "Gilded",
+   "art": "object kind:catapult",
+   "text": "Deal 7 damage to creature in opposing lane and heal this creature 7 points."
+  },
+  "Creature_GL_MusicMallard": {
+   "id": "melody-mallard-gilded",
+   "name": "Melody Mallard",
+   "edition": "Gilded",
+   "art": "bird kind:mallard",
+   "text": "Heal this creature and adjacent creatures 5 points."
+  },
+  "Creature_GL_PapercutTiger": {
+   "id": "paper-tiger-gilded",
+   "name": "Paper Tiger",
+   "edition": "Gilded",
+   "art": "beast kind:tiger",
+   "text": "Increase this creature attack by 2 and heal this creature by 2."
+  },
+  "Creature_GL_DjiniGhost": {
+   "id": "phantom-jinn-gilded",
+   "name": "Phantom Jinn",
+   "edition": "Gilded",
+   "art": "jinn ghost",
+   "text": "Shuffle your hand back into your Deck and draw 5 cards."
+  },
+  "Creature_GL_GhostlyTree": {
+   "id": "phantom-willow-gilded",
+   "name": "Phantom Willow",
+   "edition": "Gilded",
+   "art": "tree kind:willow ghost",
+   "text": "For every card in your discard pile, deal 3 damage to creature in opposing lane."
+  },
+  "Creature_GL_GhostSludger": {
+   "id": "chaff-phantom-gilded",
+   "name": "Chaff Phantom",
+   "edition": "Gilded",
+   "art": "ghost",
+   "text": "+13 ATK."
+  },
+  "Creature_GL_GiantMummyHand": {
+   "id": "mummys-grasp-gilded",
+   "name": "Mummy's Grasp",
+   "edition": "Gilded",
+   "art": "object kind:hand",
+   "text": "This creature and adjacent creatures gain +8 DEF."
+  },
+  "Creature_GL_LtMushroom": {
+   "id": "lieutenant-morel-gilded",
+   "name": "Lieutenant Morel",
+   "edition": "Gilded",
+   "art": "mush hold:spear",
+   "text": "Choose an opposing creature. Deal 14 damage to it and heal this creature 25 points."
+  },
+  "Creature_GL_PolterClops": {
+   "id": "haunted-cyclops-gilded",
+   "name": "Haunted Cyclops",
+   "edition": "Gilded",
+   "art": "ghost eyes:1",
+   "text": "Return this creature to your hand and draw 3 card."
+  },
+  "Building_BlueCastle": {
+   "id": "cobalt-bastion",
+   "name": "Cobalt Bastion",
+   "edition": "",
+   "art": "building kind:castle",
+   "text": "Creature in this lane gets +4 DEF."
+  },
+  "Building_CaveOfSolitude": {
+   "id": "hermits-grotto",
+   "name": "Hermit's Grotto",
+   "edition": "",
+   "art": "building kind:cave",
+   "text": "Creature in this lane gets +5 ATK and +5 DEF for each of your empty lanes."
+  },
+  "Building_ComfyCave": {
+   "id": "snug-hollow",
+   "name": "Snug Hollow",
+   "edition": "",
+   "art": "building kind:cave",
+   "text": "Creature in this lane heals 2 damage for each creature you control at start of turn."
+  },
+  "Building_ElfTeePee": {
+   "id": "wayfarer-tent",
+   "name": "Wayfarer Tent",
+   "edition": "",
+   "art": "building kind:tent",
+   "text": "Creature in this lane gets +3 DEF for each of your creatures on the field."
+  },
+  "Building_NicelandsTower": {
+   "id": "rosewater-tower",
+   "name": "Rosewater Tower",
+   "edition": "",
+   "art": "building kind:tower",
+   "text": "Creature in this lane heals 5 damage at the start of your turn."
+  },
+  "Building_Obelisx": {
+   "id": "obelisk-of-reckoning",
+   "name": "Obelisk of Reckoning",
+   "edition": "",
+   "art": "building kind:obelisk",
+   "text": "Deal 4 damage to the opposing hero when your creature in this lane is destroyed."
+  },
+  "Building_PalaceOfBone": {
+   "id": "ossuary-palace",
+   "name": "Ossuary Palace",
+   "edition": "",
+   "art": "building kind:palace",
+   "text": "Deal 5 damage to the opposing creature when a new creature is placed on this lane."
+  },
+  "Building_PuffyCastle": {
+   "id": "cushion-keep",
+   "name": "Cushion Keep",
+   "edition": "",
+   "art": "building kind:castle",
+   "text": "Heal 5 damage from your hero when a creature in this lane is destroyed."
+  },
+  "Building_Pyramidia": {
+   "id": "sandglass-pyramid",
+   "name": "Sandglass Pyramid",
+   "edition": "",
+   "art": "building kind:pyramid",
+   "text": "Creature in this lane gets +2 DEF for each card in your hand."
+  },
+  "Building_RedCastle": {
+   "id": "amber-keep",
+   "name": "Amber Keep",
+   "edition": "",
+   "art": "building kind:castle",
+   "text": "Creature in this lane gets +2 ATK for each of your creatures on the field."
+  },
+  "Building_RedDome": {
+   "id": "amber-dome",
+   "name": "Amber Dome",
+   "edition": "",
+   "art": "building kind:dome",
+   "text": "Creature in this lane gets +3 ATK."
+  },
+  "Building_RedParthenon": {
+   "id": "amber-temple",
+   "name": "Amber Temple",
+   "edition": "",
+   "art": "building kind:temple",
+   "text": "Creature in this lane gets +2 ATK for each different landscape on the field."
+  },
+  "Building_SandCastle": {
+   "id": "dune-castle",
+   "name": "Dune Castle",
+   "edition": "",
+   "art": "building kind:castle",
+   "text": "Creature in this lane gets +4 ATK and +4 DEF."
+  },
+  "Building_SandPyramid": {
+   "id": "victors-pyramid",
+   "name": "Victor's Pyramid",
+   "edition": "",
+   "art": "building kind:pyramid",
+   "text": "Creature in this lane heals 5 damage when it destroys a creature."
+  },
+  "Building_SchoolHouse": {
+   "id": "old-schoolhouse",
+   "name": "Old Schoolhouse",
+   "edition": "",
+   "art": "building kind:house",
+   "text": "Your creature in this lane gains 5 DEF when a Glint is used."
+  },
+  "Building_SiloOfTruth": {
+   "id": "silo-of-whispers",
+   "name": "Silo of Whispers",
+   "edition": "",
+   "art": "building kind:silo",
+   "text": "Creature in this lane gets +2 ATK for each card in your opponent's hand."
+  },
+  "Building_Sphinx": {
+   "id": "dune-sphinx",
+   "name": "Dune Sphinx",
+   "edition": "",
+   "art": "building kind:sphinx",
+   "text": "Creature in this lane takes 5 less damage when attacked."
+  },
+  "Building_SpiritTower": {
+   "id": "spirit-spire",
+   "name": "Spirit Spire",
+   "edition": "",
+   "art": "building kind:spire",
+   "text": "Deal 5 damage to the opposing hero when a new creature is placed on this lane."
+  },
+  "Building_Stonehenge": {
+   "id": "standing-stones",
+   "name": "Standing Stones",
+   "edition": "",
+   "art": "building kind:stones",
+   "text": "Glint costs 1 less Light for creature in this lane."
+  },
+  "Building_ShadowPyramid": {
+   "id": "shade-pyramid",
+   "name": "Shade Pyramid",
+   "edition": "",
+   "art": "building kind:pyramid",
+   "text": "Enemy may only play creatures of 3 Rarity or lower into this lane."
+  },
+  "Building_Mausoleum": {
+   "id": "glass-mausoleum",
+   "name": "Glass Mausoleum",
+   "edition": "",
+   "art": "building kind:mausoleum",
+   "text": "When creature in this lane is destroyed, return it to your hand and send this Building to the discard pile."
+  },
+  "Building_SunPyramid": {
+   "id": "noon-pyramid",
+   "name": "Noon Pyramid",
+   "edition": "",
+   "art": "building kind:pyramid",
+   "text": "Creature in this lane gets 4 ATK every time it uses a Glint."
+  },
+  "Building_HauntedWindmill": {
+   "id": "haunted-windmill-smoked",
+   "name": "Haunted Windmill",
+   "edition": "Smoked",
+   "art": "building kind:windmill",
+   "text": "Gain 1 Light when a creature in this lane uses a Glint."
+  },
+  "Building_GhostCastle": {
+   "id": "phantom-keep-smoked",
+   "name": "Phantom Keep",
+   "edition": "Smoked",
+   "art": "building kind:castle",
+   "text": "Creature in this lane gets +8 ATK and +8 DEF."
+  },
+  "Building_XMAS_CandyIgloo": {
+   "id": "sugar-igloo-frosted",
+   "name": "Sugar Igloo",
+   "edition": "Frosted",
+   "art": "building kind:igloo",
+   "text": "Creatures in this lane swap ATK and DEF."
+  },
+  "Building_Autoplucker": {
+   "id": "plucking-engine-mirror",
+   "name": "Plucking Engine",
+   "edition": "Mirror",
+   "art": "building kind:engine",
+   "text": "Deals 5 damage to the opposing hero when your creature in this lane is destroyed."
+  },
+  "Building_XMAS_FruitCake": {
+   "id": "frost-cake",
+   "name": "Frost Cake",
+   "edition": "",
+   "art": "building kind:cake",
+   "text": "Creature in this lane gets +9 DEF."
+  },
+  "Spell_BananaButt": {
+   "id": "bitter-offering",
+   "name": "Bitter Offering",
+   "edition": "",
+   "art": "spell icon:dagger",
+   "text": "Destroy one of your Creatures and draw 1 card."
+  },
+  "Spell_BlackholePendant": {
+   "id": "void-pendant-mirror",
+   "name": "Void Pendant",
+   "edition": "Mirror",
+   "art": "spell icon:pendant",
+   "text": "Reduce the DEF of ALL creatures by 50%."
+  },
+  "Spell_BloodTransfusion": {
+   "id": "lifeline",
+   "name": "Lifeline",
+   "edition": "",
+   "art": "spell icon:vial",
+   "text": "Deal 5 damage to the opposing hero and heal your hero by 5 points."
+  },
+  "Spell_BoneWand": {
+   "id": "fen-wand",
+   "name": "Fen Wand",
+   "edition": "",
+   "art": "spell icon:wand",
+   "text": "Choose a Bottle Fen creature and attack the opposing creature in its lane."
+  },
+  "Spell_BriefPower": {
+   "id": "fleeting-might",
+   "name": "Fleeting Might",
+   "edition": "",
+   "art": "spell icon:hourglass",
+   "text": "Every card cast this turn costs 1 less Light."
+  },
+  "Spell_BubblegumButt": {
+   "id": "heap-of-pages",
+   "name": "Heap of Pages",
+   "edition": "",
+   "art": "spell icon:pages",
+   "text": "Draw 3 cards."
+  },
+  "Spell_CerebralBloodstorm": {
+   "id": "turnabout",
+   "name": "Turnabout",
+   "edition": "",
+   "art": "spell icon:mirror",
+   "text": "Choose an opposing creature and deal damage equal to its own ATK."
+  },
+  "Spell_ClairvoyantDaggerStorm": {
+   "id": "twice-the-wound",
+   "name": "Twice the Wound",
+   "edition": "",
+   "art": "spell icon:daggers",
+   "text": "Choose an opposing creature and double the amount of damage on it."
+  },
+  "Spell_CornScepter": {
+   "id": "amber-scepter",
+   "name": "Amber Scepter",
+   "edition": "",
+   "art": "spell icon:scepter",
+   "text": "Choose a Amber creature and attack the opposing creature in its lane."
+  },
+  "Spell_CoughSyrup": {
+   "id": "topsy-tonic",
+   "name": "Topsy Tonic",
+   "edition": "",
+   "art": "spell icon:potion",
+   "text": "Choose one of your creatures and switch its ATK and DEF values."
+  },
+  "Spell_CrystalBall": {
+   "id": "seers-globe",
+   "name": "Seer's Globe",
+   "edition": "",
+   "art": "spell icon:globe",
+   "text": "Shuffle your hand back into your Deck and draw 5 new cards."
+  },
+  "Spell_DarkPortal": {
+   "id": "shadow-door",
+   "name": "Shadow Door",
+   "edition": "",
+   "art": "spell icon:door",
+   "text": "Choose an opposing Building and move it to an empty lane."
+  },
+  "Spell_DoorOfStrength": {
+   "id": "barred-gate",
+   "name": "Barred Gate",
+   "edition": "",
+   "art": "spell icon:gate",
+   "text": "Opponent cannot summon Creatures next turn."
+  },
+  "Spell_ElfBlood": {
+   "id": "mending-draught",
+   "name": "Mending Draught",
+   "edition": "",
+   "art": "spell icon:potion",
+   "text": "Choose one of your creatures and heal all damage."
+  },
+  "Spell_FallingStar": {
+   "id": "falling-star",
+   "name": "Falling Star",
+   "edition": "",
+   "art": "spell icon:star",
+   "text": "Opponent gets 2 less Light next turn."
+  },
+  "Spell_FieldOfNightmares": {
+   "id": "field-of-dread",
+   "name": "Field of Dread",
+   "edition": "",
+   "art": "spell icon:eye",
+   "text": "Choose an opposing creature. It cannot use its Glint next turn."
+  },
+  "Spell_FountainOfForgiveness": {
+   "id": "fountain-of-mercy",
+   "name": "Fountain of Mercy",
+   "edition": "",
+   "art": "spell icon:fountain",
+   "text": "Choose one of your damaged creatures and heal it equal to its own ATK."
+  },
+  "Spell_GrapeButt": {
+   "id": "tear-down",
+   "name": "Tear Down",
+   "edition": "",
+   "art": "spell icon:hammer",
+   "text": "Destroy one of your Buildings and draw 1 card."
+  },
+  "Spell_HotDogRain": {
+   "id": "mortar-hail",
+   "name": "Mortar Hail",
+   "edition": "",
+   "art": "spell icon:hail",
+   "text": "Opponent cannot summon Buildings next turn."
+  },
+  "Spell_IncredibleEgg": {
+   "id": "wondrous-egg",
+   "name": "Wondrous Egg",
+   "edition": "",
+   "art": "spell icon:egg",
+   "text": "Put a random creature from your Deck into your hand."
+  },
+  "Spell_KungFuPower": {
+   "id": "humbling-wave",
+   "name": "Humbling Wave",
+   "edition": "",
+   "art": "spell icon:wave",
+   "text": "Destroy all enemy creatures of rarity 4 or higher."
+  },
+  "Spell_Migraine": {
+   "id": "clean-slate",
+   "name": "Clean Slate",
+   "edition": "",
+   "art": "spell icon:burst",
+   "text": "Discard your hand and gain 4 Light."
+  },
+  "Spell_PieStorm": {
+   "id": "healing-rain",
+   "name": "Healing Rain",
+   "edition": "",
+   "art": "spell icon:rain",
+   "text": "Heal all creatures on the field (including your opponent's)."
+  },
+  "Spell_PortalToNowhere": {
+   "id": "homeward-gate",
+   "name": "Homeward Gate",
+   "edition": "",
+   "art": "spell icon:arch",
+   "text": "Return all of your creatures on the field to your hand."
+  },
+  "Spell_PsychicTempest": {
+   "id": "silencing-storm",
+   "name": "Silencing Storm",
+   "edition": "",
+   "art": "spell icon:storm",
+   "text": "Opponent cannot cast Spells next turn."
+  },
+  "Spell_PumaClaw": {
+   "id": "cobalt-claw",
+   "name": "Cobalt Claw",
+   "edition": "",
+   "art": "spell icon:claw",
+   "text": "Choose a Cobalt Downs creature and attack the opposing creature in its lane."
+  },
+  "Spell_ScrollOfBadBreath": {
+   "id": "scroll-of-echoes",
+   "name": "Scroll of Echoes",
+   "edition": "",
+   "art": "spell icon:scroll",
+   "text": "Return a Spell card from your discard pile to your hand."
+  },
+  "Spell_ScrollOfFreshBreath": {
+   "id": "scroll-of-mortar",
+   "name": "Scroll of Mortar",
+   "edition": "",
+   "art": "spell icon:scroll",
+   "text": "Return a Building card from the discard pile to your hand."
+  },
+  "Spell_SkullJuice": {
+   "id": "inverting-brew",
+   "name": "Inverting Brew",
+   "edition": "",
+   "art": "spell icon:flask",
+   "text": "Choose one of your opponent's creatures and switch its ATK and DEF values."
+  },
+  "Spell_SnakeEyeRing": {
+   "id": "ring-of-vacancy",
+   "name": "Ring of Vacancy",
+   "edition": "",
+   "art": "spell icon:ring",
+   "text": "Draw 1 card for each of your empty lanes."
+  },
+  "Spell_SpiritTorch": {
+   "id": "warding-torch",
+   "name": "Warding Torch",
+   "edition": "",
+   "art": "spell icon:torch",
+   "text": "Choose an opposing lane. No building or creature may be summoned on this lane next turn."
+  },
+  "Spell_StrawberryButt": {
+   "id": "pair-of-pages",
+   "name": "Pair of Pages",
+   "edition": "",
+   "art": "spell icon:pages",
+   "text": "Draw 2 cards."
+  },
+  "Spell_SubliminalStrength": {
+   "id": "lowly-purge",
+   "name": "Lowly Purge",
+   "edition": "",
+   "art": "spell icon:wave",
+   "text": "Destroy all enemy creatures of rarity 3 or lower."
+  },
+  "Spell_SuperHug": {
+   "id": "rose-embrace",
+   "name": "Rose Embrace",
+   "edition": "",
+   "art": "spell icon:heart",
+   "text": "Choose a Cranberry Vale creature and attack the opposing creature in its lane."
+  },
+  "Spell_TaxReduction": {
+   "id": "free-glint",
+   "name": "Free Glint",
+   "edition": "",
+   "art": "spell icon:coin",
+   "text": "All your creatures' Glints cost 0 Light this turn."
+  },
+  "Spell_Teleport": {
+   "id": "recall",
+   "name": "Recall",
+   "edition": "",
+   "art": "spell icon:feather",
+   "text": "Choose one of your creatures and return it to your hand."
+  },
+  "Spell_ThroneOfDoom": {
+   "id": "throne-of-embers",
+   "name": "Throne of Embers",
+   "edition": "",
+   "art": "spell icon:throne",
+   "text": "Destroy any of your creatures and gain 4 Light."
+  },
+  "Spell_ThroneOfGloom": {
+   "id": "throne-of-ash",
+   "name": "Throne of Ash",
+   "edition": "",
+   "art": "spell icon:throne",
+   "text": "Destroy any of your Buildings and gain 4 Light."
+  },
+  "Spell_TomeOfAnkhs": {
+   "id": "tome-of-the-dunes",
+   "name": "Tome of the Dunes",
+   "edition": "",
+   "art": "spell icon:tome",
+   "text": "Choose a Sandglass Dunes creature and attack the opposing creature in its lane."
+  },
+  "Spell_UFOabduction": {
+   "id": "moving-day",
+   "name": "Moving Day",
+   "edition": "",
+   "art": "spell icon:lift",
+   "text": "Choose one of your Buildings and move it to one of your empty lanes."
+  },
+  "Spell_UltimateMagicHands": {
+   "id": "begone",
+   "name": "Begone",
+   "edition": "",
+   "art": "spell icon:hands",
+   "text": "Choose an opposing creature and send it back to your opponent's hand."
+  },
+  "Spell_UnemptyCoffin": {
+   "id": "restless-coffin",
+   "name": "Restless Coffin",
+   "edition": "",
+   "art": "spell icon:coffin",
+   "text": "Return any creature from the discard pile to your hand."
+  },
+  "Spell_Volcano": {
+   "id": "eruption",
+   "name": "Eruption",
+   "edition": "",
+   "art": "spell icon:volcano",
+   "text": "Choose a lane and destroy all Buildings and Creatures on it (player's and opponent's)."
+  },
+  "Spell_WitchWay": {
+   "id": "crossroads",
+   "name": "Crossroads",
+   "edition": "",
+   "art": "spell icon:signpost",
+   "text": "Gain 1 Light for every different landscape on the field."
+  },
+  "Spell_WizardRawk": {
+   "id": "grudge-fury",
+   "name": "Grudge Fury",
+   "edition": "",
+   "art": "spell icon:fist",
+   "text": "Choose one of your creatures and give it ATK equal to how much damage it has taken."
+  },
+  "Spell_XMAS_MagicHotDogPie": {
+   "id": "frost-feast-frosted",
+   "name": "Frost Feast",
+   "edition": "Frosted",
+   "art": "spell icon:pie",
+   "text": "Deal 10 damage to the opposing hero and heal your hero by 10 points."
+  },
+  "Spell_ZazosMagicSeeds": {
+   "id": "sowing-seeds",
+   "name": "Sowing Seeds",
+   "edition": "",
+   "art": "spell icon:seeds",
+   "text": "Gain 1 Light for each of your creatures on the field."
+  },
+  "Spell_LonelyHearts": {
+   "id": "lonesome-heart-mirror",
+   "name": "Lonesome Heart",
+   "edition": "Mirror",
+   "art": "spell icon:brokenheart",
+   "text": "Instantly kills the lone creature on the opponent side."
+  }
+ },
+ "leaders": {
+  "Leader_Finn": {
+   "id": "wren",
+   "name": "Wren Ashby",
+   "form": "",
+   "cast": "wren",
+   "text": "Gain 2 extra Light this turn."
+  },
+  "Leader_Jake": {
+   "id": "maple",
+   "name": "Maple Haverly",
+   "form": "",
+   "cast": "maple",
+   "text": "Your Amber creatures in play gain +3 ATK."
+  },
+  "Leader_PrincessBubblegum": {
+   "id": "cerise",
+   "name": "Princess Cerise",
+   "form": "",
+   "cast": "cerise",
+   "text": "Fully heal all your creatures."
+  },
+  "Leader_Marceline": {
+   "id": "lyra",
+   "name": "Lyra Nocturne",
+   "form": "",
+   "cast": "lyra",
+   "text": "All your creatures in play gain +2 ATK."
+  },
+  "Leader_BMO": {
+   "id": "tinka",
+   "name": "Tinka Brassbell",
+   "form": "",
+   "cast": "tinka",
+   "text": "Gain 2 extra Light this turn."
+  },
+  "Leader_Lumpy": {
+   "id": "nimbus",
+   "name": "Princess Nimbus",
+   "form": "",
+   "cast": "nimbus",
+   "text": "Fully heal all your Cobalt creatures."
+  },
+  "Leader_Earl": {
+   "id": "citrine",
+   "name": "Countess Citrine",
+   "form": "",
+   "cast": "citrine",
+   "text": "Your creatures cost 1 less Light this turn."
+  },
+  "Leader_IceKing": {
+   "id": "hoarfrost",
+   "name": "Mother Hoarfrost",
+   "form": "",
+   "cast": "hoarfrost",
+   "text": "Send every opposing building back to its owner's hand (to the discard pile if the hand is full)."
+  },
+  "Leader_LadyRainicorn": {
+   "id": "iris",
+   "name": "Lady Iris",
+   "form": "",
+   "cast": "iris",
+   "text": "Choose one of your creatures and fully heal it."
+  },
+  "Leader_Ricardio": {
+   "id": "coeur",
+   "name": "Madame Coeur",
+   "form": "",
+   "cast": "coeur",
+   "text": "Draw 1 card."
+  },
+  "Leader_Hunson": {
+   "id": "umbra",
+   "name": "Lady Umbra",
+   "form": "",
+   "cast": "umbra",
+   "text": "Every card costs 1 less Light this turn."
+  },
+  "Leader_Gunter": {
+   "id": "wynne",
+   "name": "Wynne Puffin",
+   "form": "",
+   "cast": "wynne",
+   "text": "Return a spell from your discard pile to your hand."
+  },
+  "Leader_DrDonut": {
+   "id": "honeycomb",
+   "name": "Dr. Honeycomb",
+   "form": "",
+   "cast": "honeycomb",
+   "text": "Return a creature from your discard pile to your hand."
+  },
+  "Leader_FlamePrincess": {
+   "id": "ember",
+   "name": "Princess Ember",
+   "form": "",
+   "cast": "ember",
+   "text": "Draw 2 cards."
+  },
+  "Leader_Ash": {
+   "id": "sable",
+   "name": "Sable Ashgrove",
+   "form": "",
+   "cast": "sable",
+   "text": "Return any card from your discard pile to your hand."
+  },
+  "Leader_MagicMan": {
+   "id": "mirage",
+   "name": "Mistress Mirage",
+   "form": "",
+   "cast": "mirage",
+   "text": "Gain 1 extra Light this turn."
+  },
+  "Leader_PeppermintButler": {
+   "id": "hollis",
+   "name": "Mrs. Hollis Mint",
+   "form": "",
+   "cast": "hollis",
+   "text": "Return a building from your discard pile to your hand."
+  },
+  "Leader_BananaGuard": {
+   "id": "brindle",
+   "name": "Sergeant Brindle",
+   "form": "",
+   "cast": "brindle",
+   "text": "All your creatures in play gain +3 DEF."
+  },
+  "Leader_CinnamonBun": {
+   "id": "clover",
+   "name": "Clover Bakewell",
+   "form": "",
+   "cast": "clover",
+   "text": "Your Cranberry creatures in play gain +3 ATK."
+  },
+  "Leader_FinnDoctor": {
+   "id": "wren-healer",
+   "name": "Wren Ashby",
+   "form": "Healer",
+   "cast": "wren",
+   "text": "Your spells cost 1 less Light this turn."
+  },
+  "Leader_FinnPajama": {
+   "id": "wren-midnight",
+   "name": "Wren Ashby",
+   "form": "Midnight",
+   "cast": "wren",
+   "text": "Your Prism creatures in play gain +5 DEF."
+  },
+  "Leader_PrincessCookie": {
+   "id": "biscotta",
+   "name": "Duchess Biscotta",
+   "form": "",
+   "cast": "biscotta",
+   "text": "Your Fen creatures in play gain +4 ATK."
+  },
+  "Leader_JakeGhost": {
+   "id": "maple-ghost",
+   "name": "Maple Haverly",
+   "form": "Ghost",
+   "cast": "maple",
+   "text": "Your Cobalt creatures in play gain +5 ATK."
+  },
+  "Leader_FinnSweater": {
+   "id": "wren-wool",
+   "name": "Wren Ashby",
+   "form": "Wool",
+   "cast": "wren",
+   "text": "Your Prism creatures in play gain +5 ATK."
+  },
+  "Leader_BMOSweater": {
+   "id": "tinka-wool",
+   "name": "Tinka Brassbell",
+   "form": "Wool",
+   "cast": "tinka",
+   "text": "Draw 3 cards."
+  },
+  "Leader_JakeSweater": {
+   "id": "maple-wool",
+   "name": "Maple Haverly",
+   "form": "Wool",
+   "cast": "maple",
+   "text": "Your spells cost 2 less Light this turn."
+  },
+  "Leader_IceKingSweater": {
+   "id": "hoarfrost-wool",
+   "name": "Mother Hoarfrost",
+   "form": "Wool",
+   "cast": "hoarfrost",
+   "text": "Fully heal all your Fen creatures."
+  },
+  "Leader_LumpySweater": {
+   "id": "nimbus-wool",
+   "name": "Princess Nimbus",
+   "form": "Wool",
+   "cast": "nimbus",
+   "text": "Gain 3 extra Light this turn."
+  },
+  "Leader_PrincessBubblegumSweater": {
+   "id": "cerise-wool",
+   "name": "Princess Cerise",
+   "form": "Wool",
+   "cast": "cerise",
+   "text": "All your creatures in play gain +4 ATK."
+  },
+  "Leader_Fionna": {
+   "id": "alix",
+   "name": "Alix Mirren",
+   "form": "",
+   "cast": "alix",
+   "text": "Your creatures cost 1 less Light this turn."
+  },
+  "Leader_Cake": {
+   "id": "tabitha",
+   "name": "Tabitha Quince",
+   "form": "",
+   "cast": "tabitha",
+   "text": "Gain 3 extra Light this turn."
+  },
+  "Leader_LumpyPrince": {
+   "id": "cirrus",
+   "name": "Lady Cirrus",
+   "form": "",
+   "cast": "cirrus",
+   "text": "Your spells cost 2 less Light this turn."
+  },
+  "Leader_DonutGoon": {
+   "id": "dot",
+   "name": "Dot Knuckle",
+   "form": "",
+   "cast": "dot",
+   "text": "All your creatures in play gain +5 ATK."
+  },
+  "Leader_ElFisto": {
+   "id": "velvet",
+   "name": "The Velvet Fist",
+   "form": "",
+   "cast": "velvet",
+   "text": "Draw 2 cards."
+  },
+  "Leader_ElFistoA": {
+   "id": "velvet-gold-mask",
+   "name": "The Velvet Fist",
+   "form": "Gold Mask",
+   "cast": "velvet",
+   "text": "Draw 2 cards."
+  },
+  "Leader_ElFistoB": {
+   "id": "velvet-black-mask",
+   "name": "The Velvet Fist",
+   "form": "Black Mask",
+   "cast": "velvet",
+   "text": "Draw 2 cards."
+  },
+  "Leader_LumpyMimic": {
+   "id": "mabel",
+   "name": "Mimic Mabel",
+   "form": "",
+   "cast": "mabel",
+   "text": "Gain 2 extra Light this turn."
+  },
+  "Leader_TreasureCat": {
+   "id": "goldie",
+   "name": "Goldie Catspaw",
+   "form": "",
+   "cast": "goldie",
+   "text": "Every card costs 1 less Light this turn."
+  },
+  "Leader_BerryBones": {
+   "id": "bramble",
+   "name": "Bramble Bones",
+   "form": "",
+   "cast": "bramble",
+   "text": "Return any card from your discard pile to your hand."
+  },
+  "Leader_BoneChill": {
+   "id": "rhea",
+   "name": "Rhea Rimebone",
+   "form": "",
+   "cast": "rhea",
+   "text": "Gain 3 extra Light this turn."
+  },
+  "Leader_Blumps": {
+   "id": "prunella",
+   "name": "Prunella Plum",
+   "form": "",
+   "cast": "prunella",
+   "text": "All your creatures in play gain +3 ATK."
+  },
+  "Leader_Sprinkles": {
+   "id": "comfita",
+   "name": "Comfita",
+   "form": "",
+   "cast": "comfita",
+   "text": "Gain 2 extra Light this turn."
+  },
+  "Leader_SnowBerry": {
+   "id": "bryony",
+   "name": "Bryony Snowberry",
+   "form": "",
+   "cast": "bryony",
+   "text": "Fully heal all your creatures."
+  },
+  "Leader_SnowNut": {
+   "id": "hazel",
+   "name": "Hazel Snowcap",
+   "form": "",
+   "cast": "hazel",
+   "text": "All your creatures in play gain +3 DEF."
+  },
+  "Leader_Slumpy": {
+   "id": "sylvie",
+   "name": "Sylvie Slump",
+   "form": "",
+   "cast": "sylvie",
+   "text": "Your creatures cost 1 less Light this turn."
+  },
+  "Leader_SnowFist": {
+   "id": "hettie",
+   "name": "Hettie Hailstone",
+   "form": "",
+   "cast": "hettie",
+   "text": "Your spells cost 2 less Light this turn."
+  },
+  "Leader_IceQueen": {
+   "id": "isolde",
+   "name": "The Snow Empress",
+   "form": "",
+   "cast": "isolde",
+   "text": "All your creatures in play gain +4 DEF."
+  },
+  "Leader_Gunter_FC": {
+   "id": "wynne-mirror",
+   "name": "Wynne Puffin",
+   "form": "Mirror",
+   "cast": "wynne",
+   "text": "Return a spell from your discard pile to your hand."
+  },
+  "Leader_MarshallLee": {
+   "id": "rowan",
+   "name": "Rowan Marsh",
+   "form": "",
+   "cast": "rowan",
+   "text": "All your creatures in play gain +3 ATK."
+  },
+  "Leader_SuperFinnDoctor": {
+   "id": "wren-radiant-healer",
+   "name": "Wren Ashby",
+   "form": "Radiant Healer",
+   "cast": "wren",
+   "text": "Return a spell from your discard pile to your hand."
+  },
+  "Leader_SuperPrincessBubblegum": {
+   "id": "cerise-radiant",
+   "name": "Princess Cerise",
+   "form": "Radiant",
+   "cast": "cerise",
+   "text": "Fully heal all your creatures."
+  },
+  "Leader_SuperMarceline": {
+   "id": "lyra-radiant",
+   "name": "Lyra Nocturne",
+   "form": "Radiant",
+   "cast": "lyra",
+   "text": "All your creatures in play gain +2 ATK."
+  },
+  "Leader_SuperHunson": {
+   "id": "umbra-radiant",
+   "name": "Lady Umbra",
+   "form": "Radiant",
+   "cast": "umbra",
+   "text": "Your Cobalt creatures in play gain +8 ATK."
+  },
+  "Leader_SuperBMO": {
+   "id": "tinka-radiant",
+   "name": "Tinka Brassbell",
+   "form": "Radiant",
+   "cast": "tinka",
+   "text": "Gain 3 extra Light this turn."
+  },
+  "Leader_SuperCinnamonBun": {
+   "id": "clover-radiant",
+   "name": "Clover Bakewell",
+   "form": "Radiant",
+   "cast": "clover",
+   "text": "All your creatures in play gain +4 ATK."
+  },
+  "Leader_SuperDrDonut": {
+   "id": "honeycomb-radiant",
+   "name": "Dr. Honeycomb",
+   "form": "Radiant",
+   "cast": "honeycomb",
+   "text": "Return a creature from your discard pile to your hand."
+  },
+  "Leader_SuperBananaGuard": {
+   "id": "brindle-radiant",
+   "name": "Sergeant Brindle",
+   "form": "Radiant",
+   "cast": "brindle",
+   "text": "All your creatures in play gain +3 DEF."
+  },
+  "Leader_SuperJake": {
+   "id": "maple-radiant",
+   "name": "Maple Haverly",
+   "form": "Radiant",
+   "cast": "maple",
+   "text": "Your Amber creatures in play gain +5 ATK."
+  },
+  "Leader_SuperPrincessCookie": {
+   "id": "biscotta-radiant",
+   "name": "Duchess Biscotta",
+   "form": "Radiant",
+   "cast": "biscotta",
+   "text": "Your Cranberry creatures in play gain +8 ATK."
+  },
+  "Leader_SuperFinnPajama": {
+   "id": "wren-radiant-midnight",
+   "name": "Wren Ashby",
+   "form": "Radiant Midnight",
+   "cast": "wren",
+   "text": "Your Prism creatures in play gain +6 DEF."
+  },
+  "Leader_SuperFlamePrincess": {
+   "id": "ember-radiant",
+   "name": "Princess Ember",
+   "form": "Radiant",
+   "cast": "ember",
+   "text": "Your Dune creatures in play gain +5 ATK."
+  },
+  "Leader_SuperLadyRainicorn": {
+   "id": "iris-radiant",
+   "name": "Lady Iris",
+   "form": "Radiant",
+   "cast": "iris",
+   "text": "Fully heal all your creatures."
+  },
+  "Leader_SuperLumpy": {
+   "id": "nimbus-radiant",
+   "name": "Princess Nimbus",
+   "form": "Radiant",
+   "cast": "nimbus",
+   "text": "Fully heal all your Cobalt creatures."
+  },
+  "Leader_SuperMagicMan": {
+   "id": "mirage-radiant",
+   "name": "Mistress Mirage",
+   "form": "Radiant",
+   "cast": "mirage",
+   "text": "Send every opposing building back to its owner's hand (to the discard pile if the hand is full)."
+  },
+  "Leader_SuperPeppermintButler": {
+   "id": "hollis-radiant",
+   "name": "Mrs. Hollis Mint",
+   "form": "Radiant",
+   "cast": "hollis",
+   "text": "Your Prism creatures in play gain +5 ATK."
+  },
+  "Leader_SuperEarl": {
+   "id": "citrine-radiant",
+   "name": "Countess Citrine",
+   "form": "Radiant",
+   "cast": "citrine",
+   "text": "Your creatures cost 1 less Light this turn."
+  },
+  "Leader_SuperAsh": {
+   "id": "sable-radiant",
+   "name": "Sable Ashgrove",
+   "form": "Radiant",
+   "cast": "sable",
+   "text": "Gain 3 extra Light this turn."
+  },
+  "Leader_SuperGunter": {
+   "id": "wynne-radiant",
+   "name": "Wynne Puffin",
+   "form": "Radiant",
+   "cast": "wynne",
+   "text": "All your creatures in play gain +2 DEF."
+  },
+  "Leader_SuperIceKing": {
+   "id": "hoarfrost-radiant",
+   "name": "Mother Hoarfrost",
+   "form": "Radiant",
+   "cast": "hoarfrost",
+   "text": "All your creatures in play gain +2 ATK."
+  },
+  "Leader_PrinceGumBall": {
+   "id": "praline",
+   "name": "Princess Praline",
+   "form": "",
+   "cast": "praline",
+   "text": "This turn your Cranberry creatures cost 2 less Light, and your other creatures 1 less."
+  },
+  "Leader_LordMonochromicorn": {
+   "id": "monochrome",
+   "name": "Lady Monochrome",
+   "form": "",
+   "cast": "monochrome",
+   "text": "Destroy every opposing building. Your opponent can't cast spells on their next turn."
+  },
+  "Leader_VDayIceKing": {
+   "id": "hoarfrost-sweetheart",
+   "name": "Mother Hoarfrost",
+   "form": "Sweetheart",
+   "cast": "hoarfrost",
+   "text": "Your Cranberry creatures in play gain +1 ATK and +2 DEF."
+  }
+ },
+ "decks": {
+  "TEST_DECK": "test",
+  "Quest1_Deck": "quest-1",
+  "Quest2_Deck": "quest-2",
+  "Quest3_Deck": "quest-3",
+  "Quest4_Deck": "quest-4",
+  "Quest5_Deck": "quest-5",
+  "Quest6_Deck": "quest-6",
+  "Quest7_Deck": "quest-7",
+  "Quest8_Deck": "quest-8",
+  "Quest9_Deck": "quest-9",
+  "Quest10_Deck": "quest-10",
+  "Quest11_Deck": "quest-11",
+  "Quest12_Deck": "quest-12",
+  "Quest13_Deck": "quest-13",
+  "Quest14_Deck": "quest-14",
+  "Quest15_Deck": "quest-15",
+  "Quest16_Deck": "quest-16",
+  "Quest17_Deck": "quest-17",
+  "Quest18_Deck": "quest-18",
+  "Quest19_Deck": "quest-19",
+  "Quest20_Deck": "quest-20",
+  "Quest21_Deck": "quest-21",
+  "Quest22_Deck": "quest-22",
+  "Quest23_Deck": "quest-23",
+  "Quest24_Deck": "quest-24",
+  "Quest25_Deck": "quest-25",
+  "Quest26_Deck": "quest-26",
+  "Quest27_Deck": "quest-27",
+  "Quest28_Deck": "quest-28",
+  "Quest29_Deck": "quest-29",
+  "Quest30_Deck": "quest-30",
+  "Quest31_Deck": "quest-31",
+  "Quest32_Deck": "quest-32",
+  "Quest33_Deck": "quest-33",
+  "Quest34_Deck": "quest-34",
+  "Quest35_Deck": "quest-35",
+  "Quest36_Deck": "quest-36",
+  "Quest37_Deck": "quest-37",
+  "Quest38_Deck": "quest-38",
+  "Quest39_Deck": "quest-39",
+  "Quest40_Deck": "quest-40",
+  "Quest41_Deck": "quest-41",
+  "Quest42_Deck": "quest-42",
+  "Quest43_Deck": "quest-43",
+  "Quest44_Deck": "quest-44",
+  "Quest45_Deck": "quest-45",
+  "Quest46_Deck": "quest-46",
+  "Quest47_Deck": "quest-47",
+  "Quest48_Deck": "quest-48",
+  "Quest49_Deck": "quest-49",
+  "Quest50_Deck": "quest-50",
+  "Quest51_Deck": "quest-51",
+  "Quest52_Deck": "quest-52",
+  "Quest53_Deck": "quest-53",
+  "Quest54_Deck": "quest-54",
+  "Quest55_Deck": "quest-55",
+  "Quest56_Deck": "quest-56",
+  "Quest57_Deck": "quest-57",
+  "Quest58_Deck": "quest-58",
+  "Quest59_Deck": "quest-59",
+  "Quest60_Deck": "quest-60",
+  "Quest61_Deck": "quest-61",
+  "Quest62_Deck": "quest-62",
+  "Quest63_Deck": "quest-63",
+  "Quest64_Deck": "quest-64",
+  "Quest65_Deck": "quest-65",
+  "Quest66_Deck": "quest-66",
+  "Quest67_Deck": "quest-67",
+  "Quest68_Deck": "quest-68",
+  "Quest69_Deck": "quest-69",
+  "Quest70_Deck": "quest-70",
+  "Quest71_Deck": "quest-71",
+  "Quest72_Deck": "quest-72",
+  "Quest73_Deck": "quest-73",
+  "Quest74_Deck": "quest-74",
+  "Quest75_Deck": "quest-75",
+  "Quest76_Deck": "quest-76",
+  "Quest77_Deck": "quest-77",
+  "Quest78_Deck": "quest-78",
+  "Quest79_Deck": "quest-79",
+  "Quest80_Deck": "quest-80",
+  "Quest81_Deck": "quest-81",
+  "Quest82_Deck": "quest-82",
+  "Quest83_Deck": "quest-83",
+  "Quest84_Deck": "quest-84",
+  "Quest85_Deck": "quest-85",
+  "Quest86_Deck": "quest-86",
+  "Quest87_Deck": "quest-87",
+  "Quest88_Deck": "quest-88",
+  "Quest89_Deck": "quest-89",
+  "Quest90_Deck": "quest-90",
+  "Quest91_Deck": "quest-91",
+  "Quest92_Deck": "quest-92",
+  "Quest93_Deck": "quest-93",
+  "Quest94_Deck": "quest-94",
+  "Quest95_Deck": "quest-95",
+  "Quest96_Deck": "quest-96",
+  "Quest97_Deck": "quest-97",
+  "Quest98_Deck": "quest-98",
+  "Quest99_Deck": "quest-99",
+  "Quest100_Deck": "quest-100",
+  "Quest101_Deck": "quest-101",
+  "Quest102_Deck": "quest-102",
+  "Quest103_Deck": "quest-103",
+  "Quest104_Deck": "quest-104",
+  "Quest105_Deck": "quest-105",
+  "Quest106_Deck": "quest-106",
+  "Quest107_Deck": "quest-107",
+  "Quest108_Deck": "quest-108",
+  "Quest109_Deck": "quest-109",
+  "Quest110_Deck": "quest-110",
+  "Quest111_Deck": "quest-111",
+  "Quest112_Deck": "quest-112",
+  "Quest113_Deck": "quest-113",
+  "Quest114_Deck": "quest-114",
+  "Quest115_Deck": "quest-115",
+  "Quest116_Deck": "quest-116",
+  "Quest117_Deck": "quest-117",
+  "Quest118_Deck": "quest-118",
+  "Quest119_Deck": "quest-119",
+  "Quest120_Deck": "quest-120",
+  "Corn": "amber-sampler",
+  "Plains": "cobalt-sampler",
+  "PlayerDeck1": "starter",
+  "Monday1_Deck": "hollow-1-1",
+  "Monday2_Deck": "hollow-1-2",
+  "Monday3_Deck": "hollow-1-3",
+  "Monday4_Deck": "hollow-1-4",
+  "Monday5_Deck": "hollow-1-5",
+  "Tuesday1_Deck": "hollow-2-1",
+  "Tuesday2_Deck": "hollow-2-2",
+  "Tuesday3_Deck": "hollow-2-3",
+  "Tuesday4_Deck": "hollow-2-4",
+  "Tuesday5_Deck": "hollow-2-5",
+  "Wednesday1_Deck": "hollow-3-1",
+  "Wednesday2_Deck": "hollow-3-2",
+  "Wednesday3_Deck": "hollow-3-3",
+  "Wednesday4_Deck": "hollow-3-4",
+  "Wednesday5_Deck": "hollow-3-5",
+  "Thursday1_Deck": "hollow-4-1",
+  "Thursday2_Deck": "hollow-4-2",
+  "Thursday3_Deck": "hollow-4-3",
+  "Thursday4_Deck": "hollow-4-4",
+  "Thursday5_Deck": "hollow-4-5",
+  "Friday1_Deck": "hollow-5-1",
+  "Friday2_Deck": "hollow-5-2",
+  "Friday3_Deck": "hollow-5-3",
+  "Friday4_Deck": "hollow-5-4",
+  "Friday5_Deck": "hollow-5-5",
+  "Saturday1_Deck": "hollow-6-1",
+  "Saturday2_Deck": "hollow-6-2",
+  "Saturday3_Deck": "hollow-6-3",
+  "Saturday4_Deck": "hollow-6-4",
+  "Saturday5_Deck": "hollow-6-5",
+  "Sunday1_Deck": "hollow-7-1",
+  "Sunday2_Deck": "hollow-7-2",
+  "Sunday3_Deck": "hollow-7-3",
+  "Sunday4_Deck": "hollow-7-4",
+  "Sunday5_Deck": "hollow-7-5",
+  "FC_Enemy_Demo01_Deck": "mirror-enemy-demo-01",
+  "FC_Enemy_Demo02_Deck": "mirror-enemy-demo-02",
+  "FC_Player_Demo01_Deck": "mirror-player-demo-01",
+  "FC_Player_Demo02_Deck": "mirror-player-demo-02",
+  "FCQuest01_Deck": "mirror-1",
+  "FCQuest02_Deck": "mirror-2",
+  "FCQuest03_Deck": "mirror-3",
+  "FCQuest04_Deck": "mirror-4",
+  "FCQuest05_Deck": "mirror-5",
+  "FCQuest06_Deck": "mirror-6",
+  "FCQuest07_Deck": "mirror-7",
+  "FCQuest08_Deck": "mirror-8",
+  "FCQuest09_Deck": "mirror-9",
+  "FCQuest10_Deck": "mirror-10",
+  "FCQuest11_Deck": "mirror-11",
+  "FCQuest12_Deck": "mirror-12",
+  "FCQuest13_Deck": "mirror-13",
+  "FCQuest14_Deck": "mirror-14",
+  "FCQuest15_Deck": "mirror-15",
+  "FCQuest16_Deck": "mirror-16",
+  "FCQuest17_Deck": "mirror-17",
+  "FCQuest18_Deck": "mirror-18",
+  "FCQuest19_Deck": "mirror-19",
+  "FCQuest20_Deck": "mirror-20",
+  "FCQuest21_Deck": "mirror-21",
+  "FCQuest22_Deck": "mirror-22",
+  "FCQuest23_Deck": "mirror-23",
+  "FCQuest24_Deck": "mirror-24",
+  "FCQuest25_Deck": "mirror-25",
+  "FCQuest26_Deck": "mirror-26",
+  "FCQuest27_Deck": "mirror-27",
+  "FCTC01_Deck": "goldie-1",
+  "FCTC02_Deck": "goldie-2",
+  "FCTC03_Deck": "goldie-3",
+  "FCTC04_Deck": "goldie-4",
+  "FCTC05_Deck": "goldie-5",
+  "FCTC06_Deck": "goldie-6",
+  "FCTC07_Deck": "goldie-7",
+  "FCTC08_Deck": "goldie-8",
+  "FCTC09_Deck": "goldie-9",
+  "FCTC10_Deck": "goldie-10",
+  "FCTC11_Deck": "goldie-11",
+  "tcat_Deck": "goldie-hoard",
+  "FCTC12_Deck": "goldie-12",
+  "FCTC13_Deck": "goldie-13",
+  "FCTC14_Deck": "goldie-14",
+  "FCTC15_Deck": "goldie-15",
+  "FCTC16_Deck": "goldie-16",
+  "FCTC17_Deck": "goldie-17",
+  "FCTC18_Deck": "goldie-18",
+  "FCTC19_Deck": "goldie-19",
+  "FCTC20_Deck": "goldie-20",
+  "FCQuest29_Deck": "mirror-29",
+  "FCQuest30_Deck": "mirror-30",
+  "FCQuest31_Deck": "mirror-31",
+  "FCQuest32_Deck": "mirror-32",
+  "FCQuest33_Deck": "mirror-33",
+  "FCQuest34_Deck": "mirror-34",
+  "FCQuest35_Deck": "mirror-35",
+  "FCQuest36_Deck": "mirror-36",
+  "FCQuest38_Deck": "mirror-38",
+  "FCQuest37_Deck": "mirror-37",
+  "FCQuest39_Deck": "mirror-39",
+  "FCQuest40_Deck": "mirror-40",
+  "ElFisto01_Deck": "velvet-1",
+  "ElFisto02_Deck": "velvet-2",
+  "ElFisto03_Deck": "velvet-3",
+  "ElFisto04_Deck": "velvet-4",
+  "ElFisto05_Deck": "velvet-5",
+  "ElFisto06_Deck": "velvet-6",
+  "ElFisto07_Deck": "velvet-7",
+  "ElFisto08_Deck": "velvet-8",
+  "FCMLee_Deck": "mirror-rowan",
+  "FCLSP_Deck": "mirror-cirrus",
+  "FCIQ_Deck": "mirror-isolde",
+  "Remix2_Deck": "campaign-2",
+  "Remix3_Deck": "campaign-3",
+  "Remix4_Deck": "campaign-4",
+  "Remix5_Deck": "campaign-5",
+  "Remix6_Deck": "campaign-6",
+  "Remix7_Deck": "campaign-7",
+  "Remix8_Deck": "campaign-8",
+  "Remix9_Deck": "campaign-9",
+  "Remix10_Deck": "campaign-10",
+  "Remix11_Deck": "campaign-11",
+  "Remix12_Deck": "campaign-12",
+  "Remix13_Deck": "campaign-13",
+  "Remix14_Deck": "campaign-14",
+  "Remix15_Deck": "campaign-15",
+  "Remix16_Deck": "campaign-16",
+  "Remix17_Deck": "campaign-17",
+  "Remix18_Deck": "campaign-18",
+  "Remix19_Deck": "campaign-19",
+  "Remix20_Deck": "campaign-20",
+  "Remix21_Deck": "campaign-21",
+  "Remix22_Deck": "campaign-22",
+  "Remix23_Deck": "campaign-23",
+  "Remix24_Deck": "campaign-24",
+  "Remix25_Deck": "campaign-25",
+  "Remix26_Deck": "campaign-26",
+  "Remix27_Deck": "campaign-27",
+  "Remix28_Deck": "campaign-28",
+  "Remix29_Deck": "campaign-29",
+  "Remix30_Deck": "campaign-30",
+  "Remix31_Deck": "campaign-31",
+  "Remix32_Deck": "campaign-32",
+  "Remix33_Deck": "campaign-33",
+  "Remix34_Deck": "campaign-34",
+  "Remix35_Deck": "campaign-35",
+  "Remix36_Deck": "campaign-36",
+  "Remix37_Deck": "campaign-37",
+  "Remix38_Deck": "campaign-38",
+  "Remix39_Deck": "campaign-39",
+  "Remix40_Deck": "campaign-40",
+  "Remix41_Deck": "campaign-41",
+  "Remix42_Deck": "campaign-42",
+  "Remix43_Deck": "campaign-43",
+  "Remix44_Deck": "campaign-44",
+  "Remix45_Deck": "campaign-45",
+  "Remix46_Deck": "campaign-46",
+  "Remix47_Deck": "campaign-47",
+  "Remix48_Deck": "campaign-48",
+  "Remix49_Deck": "campaign-49",
+  "Remix50_Deck": "campaign-50",
+  "Remix51_Deck": "campaign-51",
+  "Remix52_Deck": "campaign-52",
+  "Remix53_Deck": "campaign-53",
+  "Remix54_Deck": "campaign-54",
+  "Remix55_Deck": "campaign-55",
+  "Remix56_Deck": "campaign-56",
+  "Remix57_Deck": "campaign-57",
+  "Remix58_Deck": "campaign-58",
+  "Remix59_Deck": "campaign-59",
+  "Remix60_Deck": "campaign-60",
+  "Remix61_Deck": "campaign-61",
+  "Remix62_Deck": "campaign-62",
+  "Remix63_Deck": "campaign-63",
+  "Remix64_Deck": "campaign-64",
+  "Remix65_Deck": "campaign-65",
+  "Remix66_Deck": "campaign-66",
+  "Remix67_Deck": "campaign-67",
+  "Remix68_Deck": "campaign-68",
+  "Remix69_Deck": "campaign-69",
+  "Remix70_Deck": "campaign-70",
+  "Remix71_Deck": "campaign-71",
+  "Remix72_Deck": "campaign-72",
+  "Remix73_Deck": "campaign-73",
+  "Remix74_Deck": "campaign-74",
+  "Remix75_Deck": "campaign-75",
+  "Remix76_Deck": "campaign-76",
+  "Remix77_Deck": "campaign-77",
+  "Remix78_Deck": "campaign-78",
+  "Remix79_Deck": "campaign-79",
+  "Remix80_Deck": "campaign-80",
+  "Remix81_Deck": "campaign-81",
+  "Remix82_Deck": "campaign-82",
+  "Remix83_Deck": "campaign-83",
+  "Remix84_Deck": "campaign-84",
+  "Remix85_Deck": "campaign-85",
+  "Remix86_Deck": "campaign-86",
+  "Remix87_Deck": "campaign-87",
+  "Remix88_Deck": "campaign-88",
+  "Remix89_Deck": "campaign-89",
+  "Remix90_Deck": "campaign-90",
+  "Remix91_Deck": "campaign-91",
+  "Remix92_Deck": "campaign-92",
+  "Remix93_Deck": "campaign-93",
+  "Remix94_Deck": "campaign-94",
+  "Remix95_Deck": "campaign-95",
+  "Remix96_Deck": "campaign-96",
+  "Remix97_Deck": "campaign-97",
+  "Remix98_Deck": "campaign-98",
+  "Remix99_Deck": "campaign-99",
+  "Remix100_Deck": "campaign-100",
+  "Remix101_Deck": "campaign-101",
+  "Remix102_Deck": "campaign-102",
+  "Remix103_Deck": "campaign-103",
+  "Remix104_Deck": "campaign-104",
+  "Remix105_Deck": "campaign-105",
+  "Remix106_Deck": "campaign-106",
+  "Remix107_Deck": "campaign-107",
+  "Remix108_Deck": "campaign-108",
+  "Remix109_Deck": "campaign-109",
+  "Remix110_Deck": "campaign-110",
+  "Remix111_Deck": "campaign-111",
+  "Remix112_Deck": "campaign-112",
+  "Remix113_Deck": "campaign-113",
+  "Remix114_Deck": "campaign-114",
+  "Remix115_Deck": "campaign-115",
+  "Remix116_Deck": "campaign-116",
+  "Remix117_Deck": "campaign-117",
+  "Remix118_Deck": "campaign-118",
+  "Remix119_Deck": "campaign-119",
+  "Remix120_Deck": "campaign-120",
+  "Bobo_Deck": "wanderer",
+  "Valentine1_Deck": "rose-1",
+  "Valentine2_Deck": "rose-2",
+  "Valentine2b_Deck": "rose-2b",
+  "Valentine3_Deck": "rose-3",
+  "Valentine3b_Deck": "rose-3b",
+  "Valentine4_Deck": "rose-4",
+  "Valentine4b_Deck": "rose-4b",
+  "Valentine5_Deck": "rose-5",
+  "Valentine5b_Deck": "rose-5b",
+  "Valentine6_Deck": "rose-6",
+  "Valentine6b_Deck": "rose-6b",
+  "Valentine7_Deck": "rose-7",
+  "Valentine7b_Deck": "rose-7b",
+  "Valentine8_Deck": "rose-8",
+  "Valentine9_Deck": "rose-9",
+  "Valentine10a_Deck": "rose-10a",
+  "Valentine10b_Deck": "rose-10b",
+  "Valentine11_Deck": "rose-11",
+  "Mimic01_Deck": "mabel-1",
+  "FCTC21_Deck": "goldie-21",
+  "FCTC22_Deck": "goldie-22",
+  "FCTC23_Deck": "goldie-23",
+  "FCTC24_Deck": "goldie-24",
+  "FCTC25_Deck": "goldie-25",
+  "FCTC26_Deck": "goldie-26",
+  "FCTC27_Deck": "goldie-27",
+  "FCTC28_Deck": "goldie-28",
+  "FCTC29_Deck": "goldie-29",
+  "FCTC30_Deck": "goldie-30",
+  "FCTC31_Deck": "goldie-31",
+  "FCTC32_Deck": "goldie-32",
+  "FCTC33_Deck": "goldie-33",
+  "FCTC34_Deck": "goldie-34",
+  "FCTC35_Deck": "goldie-35"
+ }
+}
