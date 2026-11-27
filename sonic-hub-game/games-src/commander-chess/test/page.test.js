@@ -1,18 +1,24 @@
 /* Checks the page as it is built, without a browser:
    node test/page.test.js
-   dist/index.html is built, and what it is made of is taken out of it again: the script that is the rules, the
-   table, the seat and the league's players, and the game. Then an opponent is asked for her turn the way the page
+   The page is built from the sources into a folder of its own and held against the one the portal serves
+   (../../public/games/commander-chess.html, which is committed): the two are to be the same. Then what the page is
+   made of is taken out of it again: the script that is the rules, the table, the seat and the league's players, and
+   the game. Then an opponent is asked for her turn the way the page
    asks, through a worker that is stood in for here: the engine's own text started in a world of its own, talked to
    by messages that are copied on the way, as a browser copies them. Both worlds are ones where no code can be made
    from text (as under a page policy that forbids it), so what is checked is the text that ships, the words the page
    and its worker exchange, and that the page needs nothing of the kind. */
-const fs = require('fs'), path = require('path'), vm = require('vm'), { execFileSync } = require('child_process');
-const root = path.join(__dirname, '..');
+const fs = require('fs'), os = require('os'), path = require('path'), vm = require('vm'), { execFileSync } = require('child_process');
+const root = path.join(__dirname, '..'), hub = path.join(root, '..', '..', '..');
+const SERVED = path.join(root, '..', '..', 'public', 'games', 'commander-chess.html');   // what the portal serves at /games/commander-chess
 let failed = 0, passed = 0;
 const ok = (cond, what) => { if (cond) passed++; else { failed++; console.log('FAIL  ' + what); } };
 
-execFileSync(process.execPath, [path.join(root, 'build.mjs')], { stdio: 'pipe' });
-const page = fs.readFileSync(path.join(root, 'dist/index.html'), 'utf8');
+const made = fs.mkdtempSync(path.join(os.tmpdir(), 'cc-page-'));
+execFileSync(process.execPath, [path.join(root, 'build.mjs'), '--out', made], { stdio: 'pipe' });
+const page = fs.readFileSync(path.join(made, 'index.html'), 'utf8'), served = fs.existsSync(SERVED) ? fs.readFileSync(SERVED, 'utf8') : '';
+fs.rmSync(made, { recursive: true, force: true });
+ok(served === page, 'the page the portal serves (public/games/commander-chess.html) is what these sources build: run npm run build and commit it');
 const scripts = [...page.matchAll(/<script([^>]*)>([\s\S]*?)<\/script>/g)].map(m => ({ attrs: m[1], text: m[2] }));
 const engine = scripts.find(s => /id="engine"/.test(s.attrs)).text, game = scripts[scripts.length - 1].text;
 ok(scripts.length === 2, 'the page has its two scripts: the engine with the players, and the game');
@@ -23,19 +29,25 @@ const saves = JSON.parse(fs.readFileSync(path.join(root, 'src/saves.json'), 'utf
 ok(said && JSON.stringify(JSON.parse(said[1])) === JSON.stringify({ api: saves.api, game: saves.game }), 'the page keeps its players where src/saves.json says: ' + (said && said[1]));
 ok(/^https:\/\/[a-z0-9.-]+$/.test(saves.api) && saves.game === 'commander-chess', 'which is the saves service, over https, under the game\'s own name');
 ok(game.includes(fs.readFileSync(path.join(root, 'src/game/10-save.js'), 'utf8')) && game.includes(fs.readFileSync(path.join(root, 'src/game/12-cast.js'), 'utf8')), 'and carries the service\'s two clients whole: the players, and the cast with its pictures');
+for (const [mine, theirs] of [['10-save.js', 'sonic-save.js'], ['12-cast.js', 'sonic-cast.js']]) {   // the service is in this repository: its clients are copied, never changed here
+  const service = path.join(hub, 'sonic-hub-game-api', 'client', theirs);
+  ok(fs.existsSync(service) && fs.readFileSync(service, 'utf8') === fs.readFileSync(path.join(root, 'src/game', mine), 'utf8'), `src/game/${mine} is sonic-hub-game-api/client/${theirs} as the service has it: copy it again`);
+}
+ok(/\nconst SHELF = '\/';/.test(game) && !/sonic-commander-chess-production|sonic-hub-game-production/.test(page), 'the way back to the shelf is the portal that serves the page, and no address of a site of its own is left in it');
 ok(!/\nconst ART_BASE = /.test(game), 'the page that ships reads no pictures from a folder beside it');
 { // a page built for trying things out goes somewhere else, and says where its players are kept
-  const os = require('os'), tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'cc-trial-'));
+  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'cc-trial-'));
   const run = args => { try { return execFileSync(process.execPath, [path.join(root, 'build.mjs'), ...args], { stdio: 'pipe' }).toString(); } catch (e) { return 'refused: ' + String(e.stderr || e.message); } };
   const none = run(['--saves', 'none', '--out', tmp]), trial = fs.readFileSync(path.join(tmp, 'index.html'), 'utf8');
   ok(/players kept in the browser only/.test(none) && trial.includes('const SAVES = {"api":"","game":"commander-chess"};'), 'a trial page with no service keeps its players in the browser only');
   const local = run(['--saves', 'http://127.0.0.1:3200', '--out', tmp]);
   ok(/players kept with http:\/\/127\.0\.0\.1:3200/.test(local) && fs.readFileSync(path.join(tmp, 'index.html'), 'utf8').includes('const SAVES = {"api":"http://127.0.0.1:3200","game":"commander-chess"};'), 'a trial page can be pointed at a service on this machine');
-  ok(/^refused: /.test(run(['--saves', 'none'])) && /^refused: /.test(run(['--saves', 'http://example.com', '--out', tmp])) && /^refused: /.test(run(['--saves', 'https://example.com/path', '--out', tmp])), 'dist/ is never a trial page, and a service is https with nothing after the host');
+  ok(/^refused: /.test(run(['--saves', 'none'])) && /^refused: /.test(run(['--saves', 'http://example.com', '--out', tmp])) && /^refused: /.test(run(['--saves', 'https://example.com/path', '--out', tmp])), 'the page the portal serves is never a trial page, and a service is https with nothing after the host');
   const art = run(['--saves', 'none', '--art', 'art/', '--out', tmp]);
   ok(!/^refused/.test(art) && fs.readFileSync(path.join(tmp, 'index.html'), 'utf8').includes('\nconst ART_BASE = "art/";\n'), 'a trial page can read the officers\' pictures from a folder beside it');
-  ok(/^refused: /.test(run(['--art', 'art/'])) && /^refused: /.test(run(['--saves', 'none', '--art', 'https://example.com/', '--out', tmp])) && /^refused: /.test(run(['--saves', 'none', '--art', '../art/', '--out', tmp])), 'but only a folder beside the page, and never in dist/');
-  ok(fs.readFileSync(path.join(root, 'dist/index.html'), 'utf8') === page, 'and none of that touched dist/');
+  ok(/^refused: /.test(run(['--art', 'art/'])) && /^refused: /.test(run(['--saves', 'none', '--art', 'https://example.com/', '--out', tmp])) && /^refused: /.test(run(['--saves', 'none', '--art', '../art/', '--out', tmp])), 'but only a folder beside the page, and never for the page the portal serves');
+  ok(/^refused: /.test(run(['--out', path.dirname(SERVED)])) && /^refused: /.test(run(['--saves', 'none', '--out', path.join(path.dirname(SERVED), 'trial')])), 'and a page for trying things out is never written into the folder the portal serves from');
+  ok((fs.existsSync(SERVED) ? fs.readFileSync(SERVED, 'utf8') : '') === served && !fs.existsSync(path.join(path.dirname(SERVED), 'index.html')) && !fs.existsSync(path.join(path.dirname(SERVED), 'trial')), 'and none of that touched what the portal serves');
   fs.rmSync(tmp, { recursive: true, force: true });
 }
 const files = fs.readdirSync(path.join(root, 'league/bots')).filter(f => f.endsWith('.js')).sort();

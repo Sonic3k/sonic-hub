@@ -2,7 +2,7 @@
    node test/seat.test.js
    Each of them is given four positions: the first move as Red, the first reply as Blue, and two middle games reached
    by moves taken at random. What comes back has to be one whole legal turn, with no fault, within the league's time.
-   They are asked through the page as it is built (dist/index.html is built first): its engine script, in a world
+   They are asked through the page as it is built (into a folder of its own first): its engine script, in a world
    where no code can be made from text, with every file carried as a function. */
 const fs = require('fs'), path = require('path'), vm = require('vm'), { execFileSync } = require('child_process');
 const CC = require('../league/kit/engine.js'), { makeTable } = require('../kit/src/table.js'), { makeSeat } = require('../src/engine/30-seat.js');
@@ -39,8 +39,10 @@ function wholeTurn(moves, turn) {
 }
 
 /* the page's own seat: the engine script out of the built page, run where code cannot be made from text */
-execFileSync(process.execPath, [path.join(__dirname, '..', 'build.mjs')], { stdio: 'pipe' });
-const built = /<script id="engine">([\s\S]*?)<\/script>/.exec(fs.readFileSync(path.join(__dirname, '..', 'dist/index.html'), 'utf8'))[1];
+const made = fs.mkdtempSync(path.join(require('os').tmpdir(), 'cc-seat-'));
+execFileSync(process.execPath, [path.join(__dirname, '..', 'build.mjs'), '--out', made], { stdio: 'pipe' });
+const built = /<script id="engine">([\s\S]*?)<\/script>/.exec(fs.readFileSync(path.join(made, 'index.html'), 'utf8'))[1];
+fs.rmSync(made, { recursive: true, force: true });
 const world = vm.createContext({ console, performance }, { codeGeneration: { strings: false, wasm: false } });   // what a worker has: a clock
 vm.runInContext(built + '\nthis.Seat = Seat;', world, { filename: 'engine.js' });
 const Page = world.Seat;

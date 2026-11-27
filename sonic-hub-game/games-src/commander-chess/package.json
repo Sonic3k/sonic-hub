@@ -1,8 +1,9 @@
 {
-  "name": "sonic-commander-chess",
+  "name": "commander-chess",
   "private": true,
   "version": "0.1.0",
   "description": "Commander Chess (Cờ Tư Lệnh) with a campaign: stations along a coast, opponents from a league of computer players, points, promotions, cards.",
+  "license": "UNLICENSED",
   "engines": { "node": ">=18" },
   "scripts": {
     "build": "node build.mjs",
@@ -11,8 +12,6 @@
     "kit": "node tools/kit.js",
     "roster": "node tools/roster.js",
     "avatars": "node tools/avatar-prompts.js",
-    "cast": "node tools/cast-upload.js",
-    "start": "serve dist -l ${PORT:-3000}"
-  },
-  "dependencies": { "serve": "^14.2.3" }
+    "cast": "node tools/cast-upload.js"
+  }
 }

@@ -8,15 +8,22 @@ to win. The game has a few players of its own, as an old game had on the machine
 their games with the Sonic Hub games' saves service. One self-contained page. RULES.md says where each rule comes
 from, and what was read and not followed; ROSTER.md says which player and which model every officer is.
 
-    npm run build     # src/ → dist/index.html
+The portal serves it at `/games/commander-chess` (`../../public/games/commander-chess.html`). It was made in a
+repository of its own (`Sonic3k/sonic-commander-chess`, served from a site of its own) and moved here with its
+history on 27 November 2026. Its players and its cast are the ones it had there: the same saves service, under the
+same name.
+
+    npm run build     # src/ → ../../public/games/commander-chess.html, where the portal serves it from
     npm test          # the rules (one check per rule, 11 positions from cotulenh.vn, random games), the campaign
                       # against the league, the built page and its worker, every player asked for a turn
     npm run sim -- isolde nadia 10    # let two of the computer's players meet
-    npm start         # serve dist/ (Railway runs build, then this)
-    npm run kit       # kit/ → kit-out/commander-chess-ai-kit.zip, for whoever writes a computer player of their own
+    npm run kit       # kit/ → dist-kit/commander-chess-ai-kit.zip, for whoever writes a computer player of their own
     npm run roster    # ROSTER.md, from the campaign's own files
     npm run avatars   # art/avatar-prompts.md: a portrait prompt for each officer
     npm run cast      # what tools/cast-upload.js would send to the saves service (add -- --send to send it)
+
+What is built is committed, as the portal's other games are: after changing anything here, `npm run build`, and
+`npm test` says so if it was forgotten. Nothing needs installing.
 
 ## What is where
 
@@ -29,9 +36,9 @@ from, and what was read and not followed; ROSTER.md says which player and which 
   policy forbids that.
 - `src/engine/10-ai.js`, `20-players.js`: the game's own computer player. It is in the league as `bots/house.js`
   (`league/tools/build-house.js` makes that file from the two), so the page does not load them.
-- `src/game/10-save.js`, `12-cast.js`: the saves service's own browser clients, copied as they are (`sonic-hub`,
-  `sonic-hub-game-api/client/`): the players, and the cast with its pictures. `src/saves.json`: where that service is,
-  and the name this game has there.
+- `src/game/10-save.js`, `12-cast.js`: the saves service's own browser clients, copied as they are
+  (`sonic-hub-game-api/client/` in this repository; the page test holds them to it): the players, and the cast with
+  its pictures. `src/saves.json`: where that service is, and the name this game has there.
 - `src/game/60-campaign.js`: stations, ranks, points, who is playing and what is kept. `61-halcyon.js` … `66-admiralty.js`: the officers
   of each station, what they say, their cards.
 - `src/game/41-busts.js`, `42-scenes.js`, `43-chart.js`: the stand-in portraits, the view at each station, the chart

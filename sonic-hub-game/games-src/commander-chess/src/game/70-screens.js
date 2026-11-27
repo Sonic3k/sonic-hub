@@ -1,7 +1,7 @@
 /* ── The screens: title, the chart of the coast, a place and its people, face to face, the table, the cards ── */
 const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 const first = w => w.name.split(' ')[0];
-const SHELF = 'https://sonic-hub-game-production.up.railway.app/';   // the shelf this game stands on
+const SHELF = '/';   // the shelf this game stands on: the portal that serves this page
 const signed = n => (n > 0 ? '+' : n < 0 ? '−' : '±') + Math.abs(n);
 const soundBtn = () => `<button type="button" class="chip" data-act="sound" aria-pressed="${SFX.on}">${SFX.on ? 'Sound on' : 'Sound off'}</button>`;
 const plate = () => `<span class="plate"><b>${myRank()}</b><i>${SAVE.rating}</i></span>`;

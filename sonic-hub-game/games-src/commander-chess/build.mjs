@@ -1,5 +1,8 @@
 /* Puts the game together as one self-contained page:
-     src/shell.html + the rules and the table + the league's players + src/game/*.js → dist/index.html
+     src/shell.html + the rules and the table + the league's players + src/game/*.js
+       → ../../public/games/commander-chess.html, which the portal serves at /games/commander-chess
+   What is built is committed, as the portal's other games are: after changing anything here, build again (the tests
+   say so when it was forgotten).
 
    <script id="engine"> holds the rules (src/engine/00-core.js), the same rules under the one name the AI kit gives
    them (CC), the kit's table (kit/src/table.js), the seat an opponent is asked from (src/engine/30-seat.js) and the
@@ -10,7 +13,9 @@
    src/engine/10-ai.js and 20-players.js are the game's own computer player. It plays through league/bots/house.js
    like everyone else (league/tools/build-house.js makes that file from the two), so they are not on the page.
 
-   The players are kept with the saves service src/saves.json names. For trying the page out against something else:
+   The players are kept with the saves service src/saves.json names. A page for trying things out is built somewhere
+   else (--out <folder> writes <folder>/index.html), against something else when asked:
+     node build.mjs --out /tmp/cc                                   the page as the portal serves it, somewhere else
      node build.mjs --saves http://127.0.0.1:3200 --out /tmp/cc     the players are kept with a service on this machine
      node build.mjs --saves none --out /tmp/cc                      the players are kept in the browser only
      node build.mjs --saves none --art art/ --out /tmp/cc           and the officers' pictures are read from /tmp/cc/art/<id>.jpg
@@ -22,15 +27,18 @@ const root = dirname(fileURLToPath(import.meta.url));
 const read = f => readFileSync(join(root, f), 'utf8');
 const all = dir => readdirSync(join(root, dir)).filter(f => f.endsWith('.js')).sort();
 const flag = name => { const i = process.argv.indexOf('--' + name); if (i < 0) return undefined; const v = process.argv[i + 1]; if (!v || v.startsWith('--')) throw new Error(`--${name} needs something after it`); return v; };
-const OUT = resolve(flag('out') || join(root, 'dist')), TRIAL = flag('saves'), ART = flag('art');
+const PUBLIC = resolve(root, '..', '..', 'public'), SERVED = join(PUBLIC, 'games', 'commander-chess.html');   // what the portal serves at /games/commander-chess
+const DIR = flag('out'), TRIAL = flag('saves'), ART = flag('art');
+const FILE = DIR === undefined ? SERVED : join(resolve(DIR), 'index.html');
+if (DIR !== undefined && (FILE + '/').startsWith(PUBLIC + '/')) throw new Error('--out is for a page to try out: it does not go into the folder the portal serves from');
 if (ART !== undefined && !/^(?:[a-z0-9_-]+\/)+$/.test(ART)) throw new Error('--art is a folder beside the page, written as it is asked for: small letters, digits, dashes, and a slash at the end (art/)');
-if (ART !== undefined && OUT === join(root, 'dist')) throw new Error('--art is for trying pictures out: give it somewhere else to write with --out');
+if (ART !== undefined && DIR === undefined) throw new Error('--art is for trying pictures out: give it somewhere else to write with --out');
 
 /* where the players are kept: the service src/saves.json names, or what this one build was asked to use */
 let saves = JSON.parse(read('src/saves.json'));
 if (!/^[a-z0-9](?:[a-z0-9-]{0,62}[a-z0-9])?$/.test(saves.game || '')) throw new Error('saves.game is the name this game keeps its players under: small letters, digits and dashes');
 if (TRIAL !== undefined) {
-  if (OUT === join(root, 'dist')) throw new Error('--saves is for trying things out: give it somewhere else to write with --out, so that dist/ stays what src/saves.json says');
+  if (DIR === undefined) throw new Error('--saves is for trying things out: give it somewhere else to write with --out, so that the page the portal serves stays what src/saves.json says');
   saves = { api: TRIAL === 'none' ? '' : TRIAL, game: saves.game };
 }
 if (saves.api && !(/^https:\/\/[a-z0-9.-]+(:\d+)?$/.test(saves.api) || (TRIAL !== undefined && /^http:\/\/(127\.0\.0\.1|localhost)(:\d+)?$/.test(saves.api)))) throw new Error('saves.api is the address of the saves service, https and nothing after the host: ' + saves.api);
@@ -60,8 +68,8 @@ for (const [what, text] of [['the engine', engine], ['the game', game]]) if (/<\
 const shell = read('src/shell.html');
 if (/\/\*__[A-Z]+__\*\//.test(shell.replace('/*__ENGINE__*/', '').replace('/*__JS__*/', ''))) throw new Error('the shell has a place the build puts nothing into');
 const page = shell.replace('/*__ENGINE__*/', () => engine).replace('/*__JS__*/', () => game);
-mkdirSync(OUT, { recursive: true });
-writeFileSync(join(OUT, 'index.html'), page);
+mkdirSync(dirname(FILE), { recursive: true });
+writeFileSync(FILE, page);
 const kb = t => Math.round(Buffer.byteLength(t) / 1024);
-console.log(`built ${OUT === join(root, 'dist') ? 'dist' : OUT}/index.html ${kb(page)} KB: the players ${kb(bots)} KB (${botFiles.length} files), rules and table ${kb(rules)} KB, the game ${kb(game)} KB`);
+console.log(`built ${DIR === undefined ? 'public/games/commander-chess.html (the portal serves it at /games/commander-chess)' : FILE} ${kb(page)} KB: the players ${kb(bots)} KB (${botFiles.length} files), rules and table ${kb(rules)} KB, the game ${kb(game)} KB`);
 console.log(saves.api ? `  players kept with ${saves.api} as ${saves.game}` : '  players kept in the browser only');
