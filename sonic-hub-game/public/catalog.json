@@ -78,8 +78,8 @@
       "lang": "en", "group": "cards", "sub": "board", "machine": "web", "year": 2026, "tags": ["originals"],
       "players": 1, "ai": 1, "inputs": ["mouse", "touch"], "maker": "Sonic Hub", "added": "2026-11-17",
       "kind": "Board game campaign, you against the AI",
-      "blurb": "Cờ Tư Lệnh, Nguyễn Quý Hải’s chess of land, sea and air, played by his own rules. In the officers’ mess at Port Halcyon the officers, from an ensign to the commandant, play you for points: lose your Commander, your last ship or your last plane and the game is over. They talk while they play, and each has cards to win.",
-      "shots": ["title", "play"], "play": "https://sonic-commander-chess-production.up.railway.app/"
+      "blurb": "Cờ Tư Lệnh, Nguyễn Quý Hải’s chess of land, sea and air, played by his own rules: lose your Commander, your last ship or your last plane and the game is over. The campaign goes round the Lumen coast, station by station. At every table an officer plays you for points, from the newest ensign to the admirals, and each promotion opens the next station on the chart. They talk while they play, and each has cards to win.",
+      "shots": ["title", "play"], "play": "/games/commander-chess"
     },
     {
       "key": "caro", "title": "Caro", "alt": ["Cờ Caro", "Co Caro", "Caro XO", "Gomoku", "Five in a Row"],
