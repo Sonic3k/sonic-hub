@@ -23,7 +23,7 @@ function userTurn(m) {
     if (gs.Pending) {
       const pe = gs.Pending;
       if (pe.kind === 'lane') m.chooseLane(pick(pe.lanes));
-      else { if (!pe.cards.length) throw new Error('an empty discard pile to choose from: ' + pe.script.constructor.name); m.chooseCard(pick(pe.cards)); }
+      else if (pe.cards.length) m.chooseCard(pick(pe.cards)); else m.skipChoice();
       continue;
     }
     const acts = [];

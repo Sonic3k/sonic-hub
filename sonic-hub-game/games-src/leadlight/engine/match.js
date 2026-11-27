@@ -159,6 +159,17 @@ class Match {
     this.settle();
   }
 
+  /** a choice that cannot be made, let go: a discard pile in which there is nothing the card may take (the
+   *  original's pile could be closed with nothing taken) */
+  skipChoice() {
+    const pe = this.gs.Pending;
+    if (!pe) return;
+    if (pe.kind !== 'discard' || pe.cards.length) throw new Error('that choice has to be made');
+    this.gs.Pending = null;
+    pe.script.CloseDiscardPile();
+    this.settle();
+  }
+
   /** the player is done setting up: on to her battle (there is none on the game's very first turn) */
   endSetup() {
     if (this.phase !== 'user-setup' || this.busy) throw new Error('not now');

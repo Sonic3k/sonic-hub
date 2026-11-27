@@ -227,7 +227,7 @@ const Pictures = (() => {
     portrait(hero, person, fn, first) { want('h:' + hero.id, () => drawPortrait(person, hero.form), fn, first); },
     landscape(type, fn) { want('l:' + type, () => drawLandscape(type), fn, true); },
     /** an <img> that shows the picture when it is ready */
-    img(kind, ...args) { const im = document.createElement('img'); im.alt = ''; im.decoding = 'async'; im.className = 'pic'; this[kind](...args, url => { im.src = url; im.classList.add('ready'); }); return im; },
+    img(kind, ...args) { const im = document.createElement('img'); im.alt = ''; im.decoding = 'async'; im.className = 'pic'; im.draggable = false; this[kind](...args, url => { im.src = url; im.classList.add('ready'); }); return im; },
     ready(key) { return made.has(key); },
   };
 })();
