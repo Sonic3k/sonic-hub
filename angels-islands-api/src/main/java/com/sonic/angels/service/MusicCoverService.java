@@ -111,7 +111,9 @@ public class MusicCoverService {
     private record Put(MediaFile media, Collection album, boolean created) {}
 
     /** The file as an asset of the covers album: the one already there with the same content, else uploaded under the
-     *  name given (every cover a bot sends is called "cover.jpg"; a name of its own spares the search for a free key). */
+     *  name given and the start of its hash. The CDN and the browsers keep a picture for a month under its address, so
+     *  the address has to change with the content: a cover replaced, or taken off and set again, would otherwise go on
+     *  showing the picture before it. */
     private Put put(MultipartFile file, String name) throws IOException {
         if (file == null || file.isEmpty()) throw new IllegalArgumentException("file missing");
         String ext = ext(file.getOriginalFilename());
@@ -122,7 +124,8 @@ public class MusicCoverService {
         String hash = sha256(file);
         List<MediaFile> same = mediaRepo.findInCollectionByHash(album.getId(), hash);
         if (!same.isEmpty()) return new Put(same.get(0), album, false);
-        MediaFile mf = mediaFileService.upload(new Named(file, name + "." + (PICTURE_EXT.contains(ext) ? ext : "jpg")), null, album.getId(), null, null, hash, null);
+        String as = name + "-" + hash.substring(0, 10) + "." + (PICTURE_EXT.contains(ext) ? ext : "jpg");
+        MediaFile mf = mediaFileService.upload(new Named(file, as), null, album.getId(), null, null, hash, null);
         mf.setMediaCategory(MediaFile.MediaCategory.ASSET);
         return new Put(mediaRepo.save(mf), album, true);
     }
