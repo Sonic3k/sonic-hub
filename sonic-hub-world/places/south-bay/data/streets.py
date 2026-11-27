@@ -36,7 +36,12 @@ Everything is in metres in the world's frame (x east, z south). Sides: +1 is the
 import bisect, math, collections
 from geom import lens, at, sub, keep, unit, right, offset, rdp
 
-GUT, WALKW, KERBW, XW = 0.5, 2.0, 0.3, 3.0              # the gutter; a walk at the kerb; a kerb with no walk; a crosswalk
+GUT, WALKW, KERBW, XW = 0.5, 1.8, 0.3, 3.0              # the gutter; a walk at the kerb; a kerb with no walk; a crosswalk
+# A walk here lies AT the kerb (no planted strip between: his photographs of 2015 and Street View at seven spots of four
+# kinds of street), and El Segundo builds such a walk 6 ft wide (ESMC 15-31-4 B 1: 5 ft behind a parkway, 6 ft where it
+# adjoins the curb) — WALKW, measured from the kerb's face. The big roads' walks are wider: Sepulveda's is about 3 m
+# (Street View by the shops), Douglas's about 2.4 m. A place that knows a street's walk says so (layout: walks).
+WALK_BY = {'trunk': 3.0, 'primary': 3.0, 'secondary': 2.4}
 PARK = 2.4                                             # the strip along a kerb where cars park
 QUIETW, QUIETL = 11.0, 3.1                             # a quiet street with cars parked along both kerbs: 36 feet from kerb to kerb, and what is left to drive in each way
 MEDW = 1.2                                             # a raised median, at the least
@@ -46,7 +51,7 @@ VEE = 22.0                                             # how far out the map's t
 ARTERIAL = ('trunk', 'primary', 'secondary', 'tertiary')
 QUIET = ('residential', 'living_street', 'unclassified')
 NOKERB = ('motorway', 'motorway_link', 'trunk_link')
-STREET, STREET_BOX, GUTTER, WALK, LAWN, APRON, MEDIAN, MEDIAN_GREEN = range(8)                  # bands and outlines
+STREET, STREET_BOX, GUTTER, WALK, LAWN, APRON, MEDIAN, MEDIAN_GREEN, MEDIAN_MULCH = range(9)    # bands and outlines
 YEL, WHT, WHT_LONG, BARS, YEL_LONG, WHT_DASH, YEL_DASH = range(7)                               # painted lines
 A_LEFT, A_THRU, A_RIGHT, A_LEFT_THRU, A_THRU_RIGHT, STOP, A_LEFT_RIGHT, ONLY, PAD = range(9)    # painted figures
 
@@ -107,7 +112,7 @@ def side_of(r, s):
     if r['oneway'] and s < 0 and r.get('pair'): return (False, 0.0)                # the median's side
     tg = r['tg']; side = 'right' if s > 0 else 'left'; v = tg.get('sidewalk:' + side, tg.get('sidewalk:both', '')); sw = tg.get('sidewalk', '')
     no = v == 'no' or sw in ('no', 'none') or (sw == 'left' and s > 0) or (sw == 'right' and s < 0)
-    return (True, KERBW if no or r['cls'].endswith('_link') else WALKW)
+    return (True, KERBW if no or r['cls'].endswith('_link') else (r.get('walk') or {}).get(1 if s > 0 else -1, WALK_BY.get(r['cls'], WALKW)))
 
 def seg_dist(q, a, b):
     dx, dz = b[0] - a[0], b[1] - a[1]; L2 = dx * dx + dz * dz or 1e-9
@@ -139,7 +144,7 @@ def hull(P):
         return h
     lo, up = half(P), half(P[::-1]); return lo[:-1] + up[:-1]
 
-def layout(W, roads, service, drives=(), median_w=None, islands=None, crosswalks=()):
+def layout(W, roads, service, drives=(), median_w=None, islands=None, crosswalks=(), walks=None, medians_known=None):
     """→ what the streets are made of, and what the routes need to know of them:
       bands    [(kind, [(x, z, lx, lz, rx, rz)])]   strips: the road's own line under each point (to cut the strip into
                                             tiles by), then the strip's left and right edge there, looking along the
@@ -152,7 +157,8 @@ def layout(W, roads, service, drives=(), median_w=None, islands=None, crosswalks
       marks    [(type, width cm, [(x, z)])] painted lines
       figures  [(kind, x, z, degrees)]      arrows, the word STOP, the pads at the corners
       poles, signs                          signal masts and stop signs
-      medians  [((x, z), name)]             spots down the middle of the planted medians, 22 m apart, with the road's name
+      medians  [((x, z), name)]             spots down the middle of the planted medians, 22 m apart (or as the place knows:
+                                            medians_known {street: {ground: 'mulch', every: metres}}), with the road's name
       junctions, jat, legat                 the crossings; which crossing a point belongs to; the arm of a crossing
                                             that a road forms at one of its points going one way (ri, k, sgn)
       sides    {(ri, side): [(d0, d1)]}     where a road has a kerb with a walk behind it (for trees and lights)
@@ -165,6 +171,20 @@ def layout(W, roads, service, drives=(), median_w=None, islands=None, crosswalks
     for ri, r in enumerate(roads):
         for k, n in enumerate(r['nd']): use[n].append((ri, k))
     bands, polys, corners, marks, figures, poles, signs, medians = [], [], [], [], [], [], [], []
+    # the walks a place knows: {street: width, or [((x from, x to, z from, z to; None: anywhere), width, side — 'n', 's',
+    # 'e', 'w' or None: both)]}, a way taken by its middle point
+    for r in roads:
+        known = (walks or {}).get(r['name'])
+        if known is None or len(r['p']) < 2: continue
+        if not isinstance(known, (list, tuple)): known = [((None, None, None, None), known, None)]
+        k = min(len(r['p']) - 2, len(r['p']) // 2); (ax, az), (bx, bz) = r['p'][k], r['p'][k + 1]; l = math.hypot(bx - ax, bz - az) or 1.0
+        mx, mz = (ax + bx) / 2, (az + bz) / 2; nx, nz = -(bz - az) / l, (bx - ax) / l
+        for (xa, xb, za, zb), w, side in known:
+            if not ((xa is None or xa <= mx) and (xb is None or mx <= xb) and (za is None or za <= mz) and (zb is None or mz <= zb)): continue
+            for s in (1, -1):
+                ox, oz = nx * s, nz * s; faces = 'e' if ox > 0.7 else 'w' if ox < -0.7 else 's' if oz > 0.7 else 'n'
+                if side is None or side == faces: r.setdefault('walk', {}).setdefault(s, w)
+
     audit = collections.Counter()
 
     # ── the two roadways of a divided road: how far each one's left edge is from the other's ──
@@ -890,16 +910,17 @@ def layout(W, roads, service, drives=(), median_w=None, islands=None, crosswalks
             inside = [d for d in ds if e0 < d < e1]; mean = sum(gt(d) for d in inside + [e0, e1]) / (len(inside) + 2); wide = max(mw, mean) >= 2.4
             h0, h1 = max(gt(e0), mw) / 2, max(gt(e1), mw) / 2
             more = [d for d in inside + ([e0 + h0 * k for k in (0.06, 0.2, 0.45, 0.72, 1.0)] if n0 else []) + ([e1 - h1 * k for k in (0.06, 0.2, 0.45, 0.72, 1.0)] if n1 else []) if e0 < d < e1]
-            kind = MEDIAN_GREEN if wide else MEDIAN
+            known = (medians_known or {}).get(r['name']) or {}
+            kind = (MEDIAN_MULCH if known.get('ground') == 'mulch' else MEDIAN_GREEN) if wide else MEDIAN
             band(kind, r, e0, e1, lambda d: mid(d) - half(d), lambda d: mid(d) + 0.02, more)                 # the far half: its kerb to the other roadway
             band(kind, r, e0, e1, lambda d: mid(d) - 0.02, lambda d: mid(d) + half(d), more, flip=True)      # the near half: its kerb to this one
             audit['median m'] += e1 - e0
-            if wide:                                                                # down the middle of a planted median, every 22 m
+            if wide:                                                                # down the middle of a planted median, every 22 m (or as the place knows)
                 d = e0 + 7.0
                 while d < e1 - 4.0:
                     (x, z), n = frame(r, d); o = mid(d)
                     medians.append(((x + n[0] * o, z + n[1] * o), r['name']))
-                    d += 22.0
+                    d += known.get('every', 22.0)
 
     audit['crossings'] = len(junctions); audit['signals'] = sum(1 for j in junctions if j['signal'])
     audit['stops'] = sum(1 for j in junctions for l in j['legs'] if l.get('ctl') == 'stop')

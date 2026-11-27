@@ -315,10 +315,9 @@ export function buildWing(b, key, ctx, opts = {}) {
       const h0 = KERB - strip + 0.2, h1 = KERB - strip + 1.0, top = 0.95;
       let from = p + 0.25;
       for (const g of [...gaps.sort((g, h) => g[0] - h[0]), [q - 0.25, q]]) {
-        for (let a = from; a < g[0] - 0.3; a += 3) {
-          const e = Math.min(a + 3, g[0]);
-          { const [ha, hc] = loc(a, Math.min(S.C(h0), S.C(h1))), [hb, hd] = loc(e, Math.max(S.C(h0), S.C(h1)));               // a clipped hedge, its leaves the engine's (engine/plants.js)
-            b.geo(plantMaterial(), hedgeBox({ x0: Math.min(ha, hb), y0: 0.1, z0: Math.min(hc, hd), x1: Math.max(ha, hb), y1: top, z1: Math.max(hc, hd), tint: Math.round(a) % 2 ? '#314d24' : '#3a5a2a', seed: 3 + Math.round(a * 3) % 89 }), { cast: false }); }
+        if (g[0] - from > 0.9) {                         // a clipped hedge, one run from walk to walk; its leaves the engine's (engine/plants.js)
+          const a = from, e = g[0], [ha, hc] = loc(a, Math.min(S.C(h0), S.C(h1))), [hb, hd] = loc(e, Math.max(S.C(h0), S.C(h1)));
+          b.geo(plantMaterial(), hedgeBox({ x0: Math.min(ha, hb), y0: 0.1, z0: Math.min(hc, hd), x1: Math.max(ha, hb), y1: top, z1: Math.max(hc, hd), tint: '#36542a', seed: 3 + Math.round(a * 3 + key.length * 7) % 89 }), { cast: true });
           block(a, 0, Math.min(S.C(h0), S.C(h1)), e, top, Math.max(S.C(h0), S.C(h1)));
         }
         from = Math.max(from, g[1]);

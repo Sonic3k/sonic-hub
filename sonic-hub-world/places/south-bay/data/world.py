@@ -303,7 +303,7 @@ def build(W, bounds):
             if math.hypot(ax + (bx - ax) * t - x, az + (bz - az) * t - z) < hw + margin: return True
         return False
     # ── the streets: lanes and their lines, where roads meet, kerbs and walks (streets.py) ──
-    S = ST.layout(W, roads, service, DRIVES, MEDIAN_W, ISLANDS, CROSSWALKS)
+    S = ST.layout(W, roads, service, DRIVES, MEDIAN_W, ISLANDS, CROSSWALKS, WALKS, MEDIANS)
 
     # ── tiles ── (two sheets of them are laid: the world's, and — the streets only, within that place's ground — the
     # hotel place's, for its own page: SHEET is the one being laid, and the rectangle it keeps to)
@@ -396,7 +396,7 @@ def build(W, bounds):
                     seg = sub(p, cl, a, b)
                     if len(seg) < 2: continue
                     if species >= 0 and r['cls'] != 'motorway':
-                        back = offset(seg, side * (r['hw'] + 3.6)); bl = lens(back); d = 5.0 + (seed >> 4) % 6
+                        back = offset(seg, side * (r['hw'] + ST.side_of(r, side)[1] + TREE_BACK.get(r['name'], 1.6))); bl = lens(back); d = 5.0 + (seed >> 4) % 6
                         while d < bl[-1] - 3:
                             (x, z), _ = at(back, bl, d); hh = h32('t', round(x), round(z))
                             if not paved(x, z, 0.8) and not own(x, z): point('p', x, z, [kind, tree_size(kind, hh)] if species == 0 else [0, int((11 + hh % 70 / 10.0) * 10)], [species])
@@ -416,7 +416,9 @@ def build(W, bounds):
                             if not own(x, z): point('p', x, z, [int(round(math.degrees(math.atan2(-side * rt[1], -side * rt[0])))), 0], [2])
                             d += 44.0
         for (x, z), name in S['medians']:                                               # palms down the planted medians that have them
-            if any(n in name for n in MEDIAN_PALMS): hh = h32('t', round(x), round(z)); point('p', x, z, [0, int((14 + hh % 60 / 10.0) * 10)], [1])
+            hh = h32('t', round(x), round(z))
+            if name in MEDIANS and 'tree' in MEDIANS[name]: point('p', x, z, [MEDIANS[name]['tree'], tree_size(MEDIANS[name]['tree'], hh)], [0])
+            elif any(n in name for n in MEDIAN_PALMS): point('p', x, z, [0, int((14 + hh % 60 / 10.0) * 10)], [1])
         for kind, pts in S['bands']: strip(kind, pts)
         for kind, pts in S['polys']: area('o', [kind], pts)
         for kerb, back in S['corners']:                                                 # centimetres: how many points the kerb has; the outline — its first point, then the steps
@@ -895,6 +897,15 @@ def tree_size(kind, hh):
     height is five times that)"""
     return int(((3.0, 2.0, 2.5)[kind] + hh % 22 / 10.0 * (1.0, 0.52, 0.42)[kind]) * 10)
 MEDIAN_PALMS = ('Pacific Coast Highway', 'East Maple Avenue')
+# Continental Boulevard as his photographs of 22/9/2015 show it (IMG_1783–1786): its median is a bed of bark mulch
+# with the big Indian laurel figs standing IN it, some 13 m apart; more figs stand back on the lawns that slope up from
+# the walks (TREE_BACK: how far behind a street's walk its trees stand, 1.6 m where nothing is known).
+MEDIANS = {'Continental Boulevard': dict(ground='mulch', every=13.0, tree=0)}
+TREE_BACK = {'Continental Boulevard': 4.5}
+# The walks that are known (streets.py lays a walk at the kerb, as wide as its kind of street has it): Continental's
+# is one flag of 5 ft, scored across (the same photographs); Nash's west walk under the Green Line is about 2.5 m, a
+# strip for the posts and the walk behind it (IMG_1787). {street: width, or [(box, width, side or None)]}
+WALKS = {'Continental Boulevard': 1.5, 'North Nash Street': [((None, None, -100.0, 720.0), 2.5, 'w')]}
 # Streets whose width and lanes are known from the satellite picture: kerb to kerb, and its strips from the left kerb
 # to the right ('q', 'p': where cars park). Lairport: 16 m, a double yellow line, cars parked along both kerbs.
 WIDTHS = {'Lairport Street': (16.0, 'qbfp')}

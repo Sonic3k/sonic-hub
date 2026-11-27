@@ -2,7 +2,7 @@
    the frame's time (engine/world/tilework.js in a Worker), put in a mesh or two per material, and dropped again when
    the eye has gone 1.5 km on. What a square holds is worked out beforehand (a place's data/world.py). */
 import * as THREE from 'three';
-import { plantMaterial, plantTime, treeUnit, palmHead, TREE_KINDS, TREE_BLOB, TREE_FAR } from '../plants.js';
+import { plantMaterial, plantTime, treeUnit, treeFarUnit, palmHead, TREE_KINDS, TREE_BLOB, TREE_FAR } from '../plants.js';
 import { makeBuilder } from './tilework.js';
 
 const T = 500;
@@ -94,17 +94,6 @@ function mergeGeos(list) {
   for (const g of list) { pos.set(g.attributes.position.array, o * 3); nor.set(g.attributes.normal.array, o * 3); col.set(g.attributes.color.array, o * 3); o += g.attributes.position.count; }
   const out = new THREE.BufferGeometry(); out.setAttribute('position', new THREE.BufferAttribute(pos, 3)); out.setAttribute('normal', new THREE.BufferAttribute(nor, 3)); out.setAttribute('color', new THREE.BufferAttribute(col, 3)); return out;
 }
-function treeGeo(detail) {
-  /* a street tree from far (beyond NEAR; nearer, engine/plants.js draws it leaf by leaf): a short grey trunk, a dense
-     dark dome wider than tall — an Indian laurel fig; stretched and tinted, it stands for the other kinds (TREE_BLOB,
-     TREE_FAR). One unit is the crown's radius. */
-  const leaf = new THREE.Color('#33531f'), under = new THREE.Color('#1f3414'), bark = new THREE.Color('#6d6a63');
-  const crown = wobble(new THREE.IcosahedronGeometry(1, detail), detail ? 0.22 : 0.1, 3).scale(1, 0.72, 1).translate(0, 1.42, 0);
-  crown.computeVertexNormals();
-  paint(crown, (c, x, y) => c.copy(under).lerp(leaf, Math.min(1, Math.max(0, (y - 0.9) / 0.75))));
-  const trunk = paint(new THREE.CylinderGeometry(0.075, 0.105, 0.95, detail ? 6 : 4, 1, true).translate(0, 0.475, 0), c => c.copy(bark));
-  return mergeGeos([crown, trunk]);
-}
 function palmGeo() {
   /* a Mexican fan palm: a thin trunk (one unit tall; the instance stretches it), a mop of fronds, a skirt of dead ones.
      Within NEAR a head of real leaves stands on the trunk (engine/plants.js) and this mop is inside it. */
@@ -175,7 +164,7 @@ export function setupTiles(scene, o) {
     car: new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.42, metalness: 0.25 }),
   };
   for (const k of ['road', 'marks']) M[k].userData.noCast = true;
-  const G = { treeHi: treeGeo(1), treeLo: treeGeo(0), palm: palmGeo(), carHi: carGeo(true), carLo: carGeo(false), lamp: new THREE.CircleGeometry(0.108, 10), stop: new THREE.PlaneGeometry(0.76, 0.76), glow: new THREE.PlaneGeometry(0.62, 0.3).rotateX(Math.PI / 2) };
+  const G = { treeHi: treeFarUnit(26), treeLo: treeFarUnit(14), palm: palmGeo(), carHi: carGeo(true), carLo: carGeo(false), lamp: new THREE.CircleGeometry(0.108, 10), stop: new THREE.PlaneGeometry(0.76, 0.76), glow: new THREE.PlaneGeometry(0.62, 0.3).rotateX(Math.PI / 2) };
   const TREE_TINT = ['#ffffff', '#e6f0d8', '#f2ead0', '#d8ecd8', '#fff4d6', '#e0e6c8'].map(c => new THREE.Color(c));
   /* Near the eye a tree is drawn leaf by leaf and a palm gets its head of leaves (engine/plants.js): one pool of
      instances for each kind, filled from the squares' own lists with what stands within NEAR metres; a tree taken into
@@ -251,7 +240,7 @@ export function setupTiles(scene, o) {
     const inst = (geo, mat, n, each, cast) => { if (!n) return null; const m = new THREE.InstancedMesh(geo, mat, n); for (let k = 0; k < n; k++) { each(k); dummy.updateMatrix(); m.setMatrixAt(k, dummy.matrix); } m.castShadow = cast; m.receiveShadow = false; m.matrixAutoUpdate = false; m.frustumCulled = true; m.computeBoundingSphere(); grp.add(m); return m; };
     const tr = d.trees, nt = tr.length / 6;                                        // each: x, z, its crown's radius, its turn, how squat it is, its tint (0…15) + 16 × its kind
     t.treeAt = k => { const s = tr[6 * k + 2], B = BLOBS[(tr[6 * k + 5] >> 4) & 3]; dummy.position.set(tr[6 * k], 0, tr[6 * k + 1]); dummy.scale.set(s * B[0], s * tr[6 * k + 4] * B[1], s * B[2]); dummy.rotation.set(0, tr[6 * k + 3], 0); };
-    t.trees = inst(G.treeLo, M.tree, nt, t.treeAt, true);
+    t.trees = inst(G.treeLo, plantMaterial(), nt, t.treeAt, true);
     if (t.trees) { for (let k = 0; k < nt; k++) t.trees.setColorAt(k, col.copy(TREE_TINT[tr[6 * k + 5] & 15]).multiply(FAR[(tr[6 * k + 5] >> 4) & 3])); t.trees.name = 'trees'; t.treeData = tr; }
     const pa = d.palms, np = pa.length / 5;
     t.palmAt = k => { dummy.position.set(pa[5 * k], 0, pa[5 * k + 1]); dummy.scale.set(1, pa[5 * k + 2], 1); dummy.rotation.set(0, pa[5 * k + 3], pa[5 * k + 4] * 0.08); };

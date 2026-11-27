@@ -52,9 +52,9 @@ function drawAtlas() {
       }
     }
   };
-  spray('fig', { subs: 5, spread: 0.3, r0: 0.19, r1: 0.1, n: 1500, len: 11.5, wid: 4.4 });
-  spray('round', { subs: 4, spread: 0.26, r0: 0.2, r1: 0.1, n: 620, len: 19, wid: 7 });
-  spray('gum', { subs: 5, spread: 0.24, r0: 0.17, r1: 0.1, n: 760, len: 30, wid: 4.2, droop: 1.2 });
+  spray('fig', { subs: 7, spread: 0.34, r0: 0.2, r1: 0.1, n: 2600, len: 11.5, wid: 4.4 });
+  spray('round', { subs: 6, spread: 0.32, r0: 0.2, r1: 0.1, n: 1000, len: 19, wid: 7 });
+  spray('gum', { subs: 6, spread: 0.28, r0: 0.18, r1: 0.1, n: 1000, len: 30, wid: 4.2, droop: 1.2 });
   /* a fan palm's leaf: a stalk from the cell's foot, the fan's blades from its root */
   const fan = (name, o) => {
     const [x0, y0] = origin(name), cx = x0 + CELL / 2, cy = y0 + CELL * 0.56; gc.fillStyle = tone(o.base, o.warm); gc.fillRect(x0, y0, CELL, CELL);
@@ -144,8 +144,14 @@ export function plantMaterial() {
 	#endif
 	transformed.xz += sway * ( vec2( sin( uPlantTime * 1.1 + plantPhase ), cos( uPlantTime * 0.83 + plantPhase * 1.3 ) ) * 0.035 + sin( uPlantTime * 2.7 + plantPhase * 2.1 + position.x * 3.0 ) * 0.012 );`);
     s.fragmentShader = s.fragmentShader
-      .replace('#include <normal_fragment_begin>', 'float faceDirection = 1.0;\n\tvec3 normal = normalize( vNormal );\n\tvec3 nonPerturbedNormal = normal;')   // both sides of a card are lit by the crown's dome
-      .replace('#include <emissivemap_fragment>', '#include <emissivemap_fragment>\n\ttotalEmissiveRadiance *= diffuseColor.rgb;');   // the light that comes through a leaf has the leaf's colour
+      // both sides of a card are lit by the crown's dome. And the leaves on the crown's far side — the dome there turns
+      // away from the eye — are seen through the crown: what comes through is less, and yellower (with no lump inside to
+      // hide them they would stand round a tree as a pale rim against the sun)
+      .replace('#include <normal_fragment_begin>', 'float faceDirection = 1.0;\n\tvec3 normal = normalize( vNormal );\n\tvec3 nonPerturbedNormal = normal;\n\tdiffuseColor.rgb *= mix( vec3( 1.0 ), vec3( 0.4, 0.5, 0.27 ), smoothstep( 0.2, -0.6, dot( normal, normalize( vViewPosition ) ) ) );')
+      .replace('#include <emissivemap_fragment>', '#include <emissivemap_fragment>\n\ttotalEmissiveRadiance *= diffuseColor.rgb;')   // the light that comes through a leaf has the leaf's colour
+      // no mirror of the sky in the leaves: a card whose dome normal turns from the eye is "seen at a glancing angle" to
+      // the shader, and would wear the sky's sheen — pale grey sprays at the back of every crown, against the light
+      .replace('#include <lights_fragment_end>', '#include <lights_fragment_end>\n\treflectedLight.indirectSpecular = vec3( 0.0 );\n\treflectedLight.directSpecular *= 0.3;');
   };
   material.userData.plants = true;
   return material;
@@ -204,7 +210,10 @@ function Acc() {
 const TINT = { fig: lin('#4f7433'), round: lin('#6d9247'), gum: lin('#8b9f7a'), frond: lin('#74953f'), dead: lin('#a08c64'), shrub: lin('#5d853b'), hedge: lin('#4c7334') };
 const BARK = { fig: lin('#98959b'), round: lin('#7f6f64'), gum: lin('#c4bdb4'), palm: lin('#84735d') };
 
-/** a tree with one crown: a trunk, limbs into the leaves, a dark core, cards round it.
+/** a tree with one crown: a trunk, limbs into the leaves, and leaves all the way in — sprays on the crown's skin, sprays
+    in its shade behind them (fewer, bigger, darker), under a fig a ceiling of them. Nothing solid stands inside: a lump
+    there shows through the leaves as a green ball (it did, in the first build), and a crown is not built so — between
+    the leaves one sees more leaves, the limbs, and here and there the sky.
     o: h the crown's top · r its radius · rv its half height · flat: an underside cut level (a fig's ceiling) · cards, half
        (a card's half-size) · limbs · trunk (its radius at the foot) · tint, bark · cell · sway (metres a unit of sway is) */
 function broadleaf(A, o) {
@@ -218,9 +227,18 @@ function broadleaf(A, o) {
     const a = i / o.limbs * 6.2832 + R() * 0.6, l1 = [Math.cos(a) * o.r * 0.36, under + o.rv * 0.12, Math.sin(a) * o.r * 0.36], l2 = [Math.cos(a + 0.35) * o.r * 0.64, C[1] + o.rv * 0.1, Math.sin(a + 0.35) * o.r * 0.64];
     A.tube([0, th * 0.96, 0], l1, o.trunk * 0.62, o.trunk * 0.38, 5, 'bark', o.bark, o.bark, K * 0.05, K * 0.2); A.tube(l1, l2, o.trunk * 0.38, o.trunk * 0.14, 4, 'bark', o.bark, mul(o.bark, 0.8), K * 0.2, K * 0.4);
   }
-  const core = o.core ?? 0.68;                                                      // (a small tree's is smaller: its few sprays must hide it)
-  A.blob(C, [o.r * core, o.rv * core, o.r * core], 1, p => mul(o.tint, 0.6 * shade(p)), K * 0.4, o.seed, o.flat ? under + o.rv * 0.08 : null);
-  const ymin = o.flat ? -0.25 : -0.82;
+  const ymin = o.flat ? -0.25 : -0.82, inner = Math.round(o.cards * (o.inner ?? 0.5));
+  for (let i = 0; i < inner; i++) {                                                 // in the crown's shade: turned every way, a third to two thirds of the way out
+    const y = 1 - (i + 0.5) / inner * (1 - ymin), rr = Math.sqrt(Math.max(0, 1 - y * y)), ph = i * 2.39996 + 1.3 + R() * 0.8, deep = 0.3 + R() * 0.34;
+    const c = [C[0] + Math.cos(ph) * rr * o.r * deep, C[1] + y * o.rv * deep, C[2] + Math.sin(ph) * rr * o.r * deep], n = unit([R() - 0.5, (R() - 0.5) * 0.8, R() - 0.5]);
+    const ex = unit(cross(Math.abs(n[1]) > 0.9 ? [1, 0, 0] : [0, 1, 0], n)), size = o.half * (1.2 + R() * 0.4), light = 0.56 + R() * 0.16;
+    A.card(c, ex, cross(n, ex), size, size, o.cell, R() < 0.5, p => mul(o.tint, light * shade(p)), normal, swayOf);
+  }
+  if (o.flat) for (let i = 0; i < Math.round(o.cards / 4); i++) {                   // a fig's ceiling: leaves lying level over one's head, the limbs going up through them
+    const a = i * 2.39996 + R(), d = o.r * 0.74 * Math.sqrt((i + 0.5) / Math.round(o.cards / 4)), c = [Math.cos(a) * d, under + o.rv * (0.1 + R() * 0.22), Math.sin(a) * d], t = R() * 6.2832;
+    const size = o.half * (1.25 + R() * 0.4), light = 0.5 + R() * 0.16;
+    A.card(c, [Math.cos(t), (R() - 0.5) * 0.3, Math.sin(t)], unit([-Math.sin(t), (R() - 0.5) * 0.3, Math.cos(t)]), size, size, o.cell, R() < 0.5, p => mul(o.tint, light * shade(p)), normal, swayOf);
+  }
   for (let i = 0; i < o.cards; i++) {
     const y = 1 - (i + 0.5) / o.cards * (1 - ymin), rr = Math.sqrt(Math.max(0, 1 - y * y)), ph = i * 2.39996 + R() * 0.5, dir = [Math.cos(ph) * rr, y, Math.sin(ph) * rr], deep = 0.76 + R() * 0.26;
     const c = [C[0] + dir[0] * o.r * deep, C[1] + dir[1] * o.rv * deep, C[2] + dir[2] * o.r * deep], rnd = unit([R() - 0.5, R() - 0.5, R() - 0.5]);
@@ -252,7 +270,10 @@ function gum(A, o) {
     const rc = r * (0.5 + R() * 0.2), rv = rc * 1.25, lift = clamp((Cc[1] - h * 0.5) / (h * 0.5));
     const shade = p => 0.46 + 0.54 * clamp(0.3 + 0.45 * (p[1] - Cc[1]) / rv + 0.35 * lift + 0.2 * Math.hypot(p[0] - Cc[0], p[2] - Cc[2]) / rc);
     const normal = p => unit([(p[0] - Cc[0]) / rc, (p[1] - Cc[1]) / rv + 0.5, (p[2] - Cc[2]) / rc]), swayOf = p => K * (0.55 + 0.45 * clamp((Cc[1] + rv - p[1]) / (2 * rv)));   // the hanging ends swing most
-    A.blob(Cc, [rc * 0.44, rv * 0.42, rc * 0.44], 0, p => mul(o.tint, 0.62 * shade(p)), K * 0.5, o.seed + k * 3.1);
+    for (let i = 0; i < 3; i++) {                                                   // through its middle: three sprays hanging crosswise, in the clump's own shade
+      const t = i * 1.0472 + R() * 0.5, light = 0.6 + R() * 0.14;
+      A.card([Cc[0], Cc[1] - rv * 0.08, Cc[2]], [Math.cos(t), 0, Math.sin(t)], [0, 1, 0], rc * 0.72, rv * 0.86, 'gum', R() < 0.5, p => mul(o.tint, light * shade(p)), normal, swayOf);
+    }
     for (let i = 0; i < 9; i++) {
       const b = i * 2.39996 + R(), light = 0.86 + R() * 0.24;
       if (i % 3) {                                                                  // a spray hanging
@@ -293,10 +314,24 @@ export const TREE_BLOB = { fig: [1, 1, 1], round: [0.85, 1.35, 0.85], gum: [0.72
 /** what the far blob (painted as a fig) is tinted by to stand for each kind */
 export const TREE_FAR = Object.fromEntries(['fig', 'round', 'gum'].map(k => [k, TINT[k].map((v, i) => v / TINT.fig[i])]));
 const UNIT = {
-  fig: (A, seed) => broadleaf(A, { h: 2.14, r: 1, rv: 0.72, flat: true, cards: 78, half: 0.33, limbs: 5, trunk: 0.1, tint: TINT.fig, bark: BARK.fig, cell: 'fig', seed, sway: 1 }),
-  round: (A, seed) => broadleaf(A, { h: 2.9, r: 0.86, rv: 0.98, cards: 62, half: 0.31, limbs: 3, trunk: 0.062, tint: TINT.round, bark: BARK.round, cell: 'round', seed, sway: 1 }),
+  fig: (A, seed) => broadleaf(A, { h: 2.14, r: 1, rv: 0.72, flat: true, cards: 84, half: 0.33, limbs: 5, trunk: 0.1, tint: TINT.fig, bark: BARK.fig, cell: 'fig', seed, sway: 1 }),
+  round: (A, seed) => broadleaf(A, { h: 2.9, r: 0.86, rv: 0.98, cards: 66, half: 0.31, limbs: 3, trunk: 0.062, tint: TINT.round, bark: BARK.round, cell: 'round', seed, sway: 1 }),
   gum: (A, seed) => gum(A, { h: 5.1, r: 0.8, tint: TINT.gum, bark: BARK.gum, seed, sway: 1 }),
 };
+/** a street tree from far, one unit being its crown's radius: a fig's dome of a few big sprays on a short trunk — the
+    same leaves as from near, so that a tree does not turn from a ball into a tree as one drives up to it. Stretched
+    (TREE_BLOB) and tinted (TREE_FAR) it stands for the other kinds. `cards`: 26 for the nearer far, 14 beyond. */
+export function treeFarUnit(cards = 26, seed = 5) {
+  const A = Acc(), R = rng(seed), C = [0, 1.42, 0], rv = 0.72, half = cards > 20 ? 0.5 : 0.64, shade = p => 0.5 + 0.5 * clamp(0.3 + 0.7 * (p[1] - 0.8) / 1.3);
+  const normal = p => unit([p[0], (p[1] - C[1]) / rv + 0.45, p[2]]);
+  A.tube([0, 0, 0], [0, 1.05, 0], 0.105, 0.075, 4, 'bark', mul(BARK.fig, 0.7), mul(BARK.fig, 0.7), 0, 0);
+  for (let i = 0; i < cards; i++) {
+    const y = 1 - (i + 0.5) / cards * 1.3, rr = Math.sqrt(Math.max(0, 1 - y * y)), ph = i * 2.39996 + R() * 0.4, dir = [Math.cos(ph) * rr, y, Math.sin(ph) * rr], deep = 0.62 + R() * 0.2;
+    const c = [dir[0] * deep, C[1] + dir[1] * rv * deep, dir[2] * deep], n = unit(add(dir, mul([R() - 0.5, R() - 0.5, R() - 0.5], 0.7))), ex = unit(cross(Math.abs(n[1]) > 0.9 ? [1, 0, 0] : [0, 1, 0], n));
+    const light = 0.8 + R() * 0.2; A.card(c, ex, cross(n, ex), half, half, 'fig', R() < 0.5, p => mul(TINT.fig, light * shade(p)), normal, () => 0);
+  }
+  return A.geometry();
+}
 /** a street tree of a kind, one unit being its crown's radius (for instancing) */
 export function treeUnit(kind, seed = 1) { const A = Acc(); UNIT[kind](A, seed); return A.geometry(); }
 /** a fan palm's head in metres, at the origin (for instancing at the tops of trunks) */
@@ -309,8 +344,8 @@ const tintOf = (o, base) => (o.tint ? mul(lin(o.tint), o.gain ?? 1.45) : base);
 export function treeAt(kind, o) {
   const A = Acc(), seed = o.seed ?? 1, r = o.r, h = o.h;
   if (kind === 'gum') gum(A, { h, r, tint: tintOf(o, TINT.gum), bark: o.bark ? lin(o.bark) : BARK.gum, seed, sway: r * 1.2 });
-  else if (kind === 'fig') broadleaf(A, { h, r, rv: Math.min(h * 0.36, r * 0.74), flat: true, cards: o.cards ?? 78, half: r * 0.33, limbs: 5, trunk: r * 0.085, tint: tintOf(o, TINT.fig), bark: o.bark ? lin(o.bark) : BARK.fig, cell: 'fig', seed, sway: r });
-  else broadleaf(A, { h, r, rv: clamp(h * 0.33, r * 0.8, r * 1.2), cards: o.cards ?? (r < 1.3 ? 40 : 58), half: r * (r < 1.3 ? 0.46 : 0.37), core: r < 1.3 ? 0.5 : 0.68, limbs: 3, trunk: 0.06 + h * 0.014, tint: tintOf(o, TINT.round), bark: o.bark ? lin(o.bark) : BARK.round, cell: 'round', seed, sway: r });
+  else if (kind === 'fig') broadleaf(A, { h, r, rv: Math.min(h * 0.36, r * 0.74), flat: true, cards: o.cards ?? 84, half: r * 0.33, limbs: 5, trunk: r * 0.085, tint: tintOf(o, TINT.fig), bark: o.bark ? lin(o.bark) : BARK.fig, cell: 'fig', seed, sway: r });
+  else broadleaf(A, { h, r, rv: clamp(h * 0.33, r * 0.8, r * 1.2), cards: o.cards ?? (r < 1.3 ? 44 : 62), half: r * (r < 1.3 ? 0.46 : 0.37), limbs: 3, trunk: 0.06 + h * 0.014, tint: tintOf(o, TINT.round), bark: o.bark ? lin(o.bark) : BARK.round, cell: 'round', seed, sway: r });
   return placed(A, { ry: (seed * 2.1) % 6.2832, at: o.at });
 }
 /** a Mexican fan palm standing at o.at: h tall, leaning `lean` radians towards +x before it is turned */
@@ -321,40 +356,60 @@ export function palmAt(o) {
   const g = placed(A, {}), hg = head.geometry().translate(top[0], top[1], top[2]), out = mergePlants([g, hg]);
   return placed({ geometry: () => out }, { ry: o.ry ?? (seed * 1.7) % 6.2832, at: o.at });
 }
-/** a clipped ball of a shrub at o.at: r its radius */
+/** a shrub at o.at, r its radius: a mound of leaves — sprays all over it, close together, lying on it and standing out of
+    it. (Inside, a small body keeps the light from shining through; it wears the leaves' own picture and colour and is
+    half the mound's size: glimpses of it between the sprays are more leaves, not a ball.) */
 export function shrubAt(o) {
-  const A = Acc(), R = rng(o.seed ?? 3), r = o.r, tint = tintOf(o, TINT.shrub), C = [0, r * 0.62, 0], Rr = [r, r * 0.78, r];
-  const shade = p => 0.4 + 0.6 * clamp(0.15 + 0.85 * p[1] / (r * 1.4)), normal = p => unit([(p[0]) / r, (p[1] - C[1]) / Rr[1] + 0.4, p[2] / r]), sway = p => r * 0.5 * clamp(p[1] / (r * 1.4));
-  A.blob(C, mul(Rr, 0.86), 1, p => mul(tint, 0.62 * shade(p)), r * 0.2, o.seed ?? 3, 0.02);
-  for (let i = 0; i < 12; i++) {
-    const y = 1 - (i + 0.5) / 12 * 1.1, rr = Math.sqrt(Math.max(0, 1 - y * y)), ph = i * 2.39996 + R(), dir = [Math.cos(ph) * rr, y, Math.sin(ph) * rr], c = [dir[0] * Rr[0] * 0.92, C[1] + dir[1] * Rr[1] * 0.92, dir[2] * Rr[2] * 0.92];
-    const n = unit(add(dir, mul([R() - 0.5, R() - 0.5, R() - 0.5], 0.8))), ex = unit(cross(Math.abs(n[1]) > 0.9 ? [1, 0, 0] : [0, 1, 0], n)), size = r * (0.42 + R() * 0.16), light = 0.86 + R() * 0.24;
-    A.card(c, ex, cross(n, ex), size, size, 'round', R() < 0.5, p => mul(tint, light * shade(p)), normal, sway);
+  const A = Acc(), R = rng(o.seed ?? 3), r = o.r, tint = tintOf(o, TINT.shrub), C = [0, r * 0.6, 0], Rr = [r, r * 0.8, r], n = o.cards ?? 30;
+  const shade = p => 0.42 + 0.58 * clamp(0.12 + 0.88 * p[1] / (r * 1.4)), normal = p => unit([(p[0]) / r, (p[1] - C[1]) / Rr[1] + 0.4, p[2] / r]), sway = p => r * 0.5 * clamp(p[1] / (r * 1.4));
+  A.blob(C, mul(Rr, 0.56), 0, p => mul(tint, 0.74 * shade(p)), r * 0.2, o.seed ?? 3, 0.02);
+  for (let i = 0; i < n; i++) {
+    const y = 1 - (i + 0.5) / n * 1.3, rr = Math.sqrt(Math.max(0, 1 - y * y)), ph = i * 2.39996 + R(), dir = [Math.cos(ph) * rr, y, Math.sin(ph) * rr], deep = 0.66 + R() * 0.26;
+    const c = [dir[0] * Rr[0] * deep, Math.max(r * 0.16, C[1] + dir[1] * Rr[1] * deep), dir[2] * Rr[2] * deep], rnd = unit([R() - 0.5, R() - 0.5, R() - 0.5]);
+    let ex, ey;
+    if (i % 3 !== 2) { const m = unit(add(dir, mul(rnd, 0.7))); ex = unit(cross(Math.abs(m[1]) > 0.9 ? [1, 0, 0] : [0, 1, 0], m)); ey = cross(m, ex); }
+    else { ey = unit(add([dir[0], Math.max(0.2, dir[1]), dir[2]], mul(rnd, 0.35))); ex = unit(cross(ey, rnd)); }
+    const size = r * (0.46 + R() * 0.2), light = 0.84 + R() * 0.26;
+    A.card(c, ex, ey, size, size, 'round', R() < 0.5, p => mul(tint, light * shade(p)), normal, sway);
   }
   return placed(A, { ry: R() * 6.2832, at: o.at });
 }
-/** a clipped hedge: the box from (x0, y0, z0) to (x1, y1, z1), its faces a mass of leaves, sprays standing out of its top
-    edges and lying on its top so that its outline is not a ruler's */
+/** a clipped hedge along the box from (x0, y0, z0) to (x1, y1, z1) — not the box: a body with its shoulders rounded and
+    its line a little uneven from one arm's length to the next (shears do not cut by a ruler), wearing the mass of
+    leaves, and sprays all over it: up both sides, over the shoulders, along the top, at the ends. From no side is a flat
+    face or a straight edge to be seen. One call lays a whole run (the body's stations are 0.8 m apart). */
 export function hedgeBox(o) {
   const A = Acc(), R = rng(o.seed ?? 5), tint = tintOf(o, TINT.hedge), { x0, y0, z0, x1, y1, z1 } = o, H = y1 - y0;
-  const shade = p => 0.45 + 0.55 * clamp((p[1] - y0) / H), col = p => mul(tint, 0.78 * shade(p));
-  const face = (a, b, c, d, n) => {                                                 // a face, in pieces under a metre, each wearing the whole mass of leaves
-    const lu = Math.hypot(b[0] - a[0], b[1] - a[1], b[2] - a[2]), nu = Math.max(1, Math.round(lu / 0.85)), nn = unit(add(n, [0, 0.35, 0]));
-    for (let i = 0; i < nu; i++) {
-      const p = [mix(a, b, i / nu), mix(a, b, (i + 1) / nu), mix(d, c, (i + 1) / nu), mix(d, c, i / nu)], f = i % 2;
-      const ids = p.map((q, k) => A.v(q, nn, uvOf('mass', (k === 1 || k === 2) !== !!f ? 1 : 0, k > 1 ? 1 : 0, 3), col(q), 0)); A.quad(ids[0], ids[1], ids[2], ids[3]);
+  const long = x1 - x0 >= z1 - z0, L = long ? x1 - x0 : z1 - z0, hw = (long ? z1 - z0 : x1 - x0) / 2;
+  const P = (t, w, y) => (long ? [x0 + t, y0 + y, z0 + hw + w] : [x0 + hw + w, y0 + y, z0 + t]), V = (t, w, y) => (long ? [t, y, w] : [w, y, t]);   // t along, w across from the middle, y up from the foot
+  const shade = p => 0.5 + 0.5 * clamp((p[1] - y0) / H), patch = t => 0.9 + 0.2 * (0.5 + 0.5 * Math.sin(t * 0.83 + (o.seed ?? 5)) * Math.cos(t * 0.31 + 1.7));   // (a run is not one green from end to end)
+  const SEC = [[1.0, 0.0, 1, 0.15], [1.05, 0.5, 1, 0.3], [0.9, 0.85, 0.7, 0.75], [0.46, 1.0, 0.25, 1]];      // the section's half: half-width, height (of hw, H), the normal's out and up
+  const n = Math.max(1, Math.round(L / 0.8)), rings = [];
+  for (let i = 0; i <= n; i++) {
+    const end = i === 0 || i === n, t = L * i / n + (end ? 0 : (R() - 0.5) * 0.2), kw = (end ? 0.82 : 0.95 + R() * 0.12), kh = (end ? 0.9 : 0.95 + R() * 0.1), ring = [];
+    for (let k = 0; k < 8; k++) {
+      const s = k < 4 ? 1 : -1, [w, y, no, nu] = SEC[k < 4 ? k : 7 - k], q = P(t, s * w * hw * kw, y * H * kh);
+      ring.push(A.v(q, unit(V(0, s * no, nu)), uvOf('mass', i % 2, k % 2, 3), mul(tint, 0.86 * patch(t) * shade(q)), 0));   // (the leaves' picture laid to and fro: about a square of it to each face of the body)
     }
-  };
-  face([x0, y0, z1], [x1, y0, z1], [x1, y1, z1], [x0, y1, z1], [0, 0, 1]); face([x1, y0, z0], [x0, y0, z0], [x0, y1, z0], [x1, y1, z0], [0, 0, -1]);
-  face([x1, y0, z1], [x1, y0, z0], [x1, y1, z0], [x1, y1, z1], [1, 0, 0]); face([x0, y0, z0], [x0, y0, z1], [x0, y1, z1], [x0, y1, z0], [-1, 0, 0]);
-  if (x1 - x0 >= z1 - z0) face([x0, y1, z1], [x1, y1, z1], [x1, y1, z0], [x0, y1, z0], [0, 1, 0]); else face([x0, y1, z0], [x0, y1, z1], [x1, y1, z1], [x1, y1, z0], [0, 1, 0]);
-  const spray = (c, ex, ey, size) => { const light = 0.88 + R() * 0.24; A.card(c, ex, ey, size, size, 'round', R() < 0.5, p => mul(tint, light * shade(p)), () => unit(add(ey, [0, 0.8, 0])), p => 0.25 * clamp((p[1] - y1 + size) / size)); };
-  const long = x1 - x0 >= z1 - z0, L = long ? x1 - x0 : z1 - z0, Wd = long ? z1 - z0 : x1 - x0, at = (t, w, y) => (long ? [x0 + t, y, z0 + w] : [x0 + w, y, z0 + t]), along = long ? [1, 0, 0] : [0, 0, 1], across = long ? [0, 0, 1] : [1, 0, 0];
-  for (let t = 0.15; t < L; t += 0.34 + R() * 0.12) for (const side of [0, 1]) {                                        // along both top edges, leaning out
-    const out = mul(across, side ? 1 : -1), size = 0.17 + R() * 0.07;
-    spray(at(t, side ? Wd : 0, y1 - size * 0.25), unit(add(along, mul(out, (R() - 0.5) * 0.6))), unit(add([0, 1, 0], mul(out, 0.35 + R() * 0.5))), size);
+    rings.push(ring);
   }
-  for (let t = 0.3; t < L; t += 0.5 + R() * 0.2) { const size = 0.2 + R() * 0.08, a = R() * 6.2832; spray(at(t, Wd * (0.3 + R() * 0.4), y1 + size * 0.12), [Math.cos(a), 0, Math.sin(a)], unit([-Math.sin(a) * 0.9, 0.45, Math.cos(a) * 0.9]), size); }   // on the top, nearly lying
+  for (let i = 0; i < n; i++) for (let k = 0; k < 7; k++) A.quad(rings[i][k], rings[i + 1][k], rings[i + 1][k + 1], rings[i][k + 1]);
+  for (const [i, d] of [[0, -1], [n, 1]]) {                                         // its two ends
+    const q = P(i ? L : 0, 0, H * 0.45), c = A.v(q, V(d, 0, 0.2), uvOf('mass', 0.5, 0.5, 3), mul(tint, 0.8 * patch(i ? L : 0) * shade(q)), 0);
+    for (let k = 0; k < 7; k++) A.tri(c, rings[i][k], rings[i][k + 1]);
+  }
+  const spray = (c, ex, ey, size, out) => { const light = (0.86 + R() * 0.26) * patch(long ? c[0] - x0 : c[2] - z0); A.card(c, ex, ey, size, size, 'round', R() < 0.5, p => mul(tint, light * shade(p)), () => unit(add(out, [0, 0.7, 0])), p => 0.22 * clamp((p[1] - y0) / H)); };
+  const LANES = [[1, 0.42], [1, 0.8], [0, 1.0], [-1, 0.8], [-1, 0.42]];             // up a side, on a shoulder, on top
+  let lane = (R() * 5) | 0;
+  for (let t = 0.08; t < L - 0.05; t += 0.1 + R() * 0.07, lane = (lane + 2) % 5) {
+    const [s, y] = LANES[lane], size = Math.min(0.46, Math.max(0.22, H * 0.4)) * (0.85 + R() * 0.45), yaw = (R() - 0.5) * 0.9, al = V(Math.cos(yaw), Math.sin(yaw) * (s || 1), 0);
+    if (s) { const w = s * hw * (y > 0.6 ? 0.86 : 1.02), lean = y > 0.6 ? 0.55 + R() * 0.4 : 0.15 + R() * 0.3; spray(P(t, w, y * H), unit(al), unit(V(0, s * lean, 1)), size, V(0, s, 0)); }
+    else { const a = R() * 6.2832; spray(P(t, (R() - 0.5) * hw * 0.8, H * (0.98 + R() * 0.06)), unit(V(Math.cos(a), Math.sin(a), 0)), unit(V(-Math.sin(a) * 0.9, Math.cos(a) * 0.9, 0.42)), size, [0, 1, 0]); }
+  }
+  for (const [t, d] of [[0.02, -1], [L - 0.02, 1]]) for (let k = 0; k < 3; k++) {    // at each end, leaning out along the run
+    const size = Math.min(0.4, Math.max(0.2, H * 0.36)), w = (k - 1) * hw * 0.6;
+    spray(P(t, w, H * (0.5 + 0.2 * (k % 2))), unit(V(0, 1, 0)), unit(V(d * (0.3 + R() * 0.3), (R() - 0.5) * 0.3, 1)), size, V(d, 0, 0));
+  }
   return placed(A, { at: o.at });
 }
 /** several plants' geometries as one */

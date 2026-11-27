@@ -106,7 +106,10 @@ load, and what a frame may cost is checked.
   broken white lines between lanes going the same way (solid before a signal); where roads meet — several points on
   a divided road are one crossing — round corners, the crosswalks the map has (and one on each arm of a signal it
   has none for), a limit line before each, arrows in the lanes to turn from, the word STOP at a stop sign; kerb,
-  gutter and a walk at the kerb, dropped to an apron at every driveway; a strip for parked cars along each kerb of
+  gutter and a walk AT the kerb (no planted strip between: so it is at every spot looked at here, in his photographs
+  of 2015 and in Street View), 6 ft wide from the kerb's face as El Segundo builds a walk that adjoins the curb
+  (ESMC 15-31-4 B 1), wider on the big roads (3 m on a primary, 2.4 m on a secondary), scored across its own line in
+  flags of 5 ft (not square to the map), dropped to an apron at every driveway; a strip for parked cars along each kerb of
   a two-lane street where there is room (a quiet street is then 36 ft from kerb to kerb, with no line on it), and
   cars standing in it; between the two roadways of a divided road a raised median — one thing, laid from one of
   the two, open only where something crosses both, its ends round; between crossings, where a street goes on as a
@@ -115,19 +118,23 @@ load, and what a frame may cost is checked.
   does not goes in
   as a short list in `world.py`: `STRIPES` (a street's lanes, by stretch), `WIDTHS` (kerb to kerb, with its parking
   strips), `ISLANDS` (planted islands in a middle lane: the lane between an island's end and a crossing is then a
-  pocket to turn left from), `CROSSWALKS` (one in mid-block), `DRIVES`, `TREES` and `TREE_KIND`, `MEDIAN_W` (by
-  stretch). The script counts what must never be — a limit line inside a crosswalk, a corner whose outline crosses
+  pocket to turn left from), `CROSSWALKS` (one in mid-block), `DRIVES`, `TREES`, `TREE_KIND` and `TREE_BACK`,
+  `MEDIAN_W` (by stretch), `MEDIANS` (a median's bed and what stands in it: Continental's bark mulch and figs),
+  `WALKS` (a walk's width where a photograph shows it, by stretch and side). The script counts what must never be — a limit line inside a crosswalk, a corner whose outline crosses
   itself, a centre line that steps between two ways — and the checks hold the tiles to it.
 - **Plants.** `engine/plants.js` builds every tree, palm, shrub and hedge of every place the way real-time worlds
-  do: a crown is a dark core with cards round it that carry sprays of leaves cut out by alpha (alpha test; alpha
-  to coverage where the screen is multisampled); the cards are lit as one rounded mass (the crown's dome's
-  normals), darker inside and underneath (painted on the vertices), with a share of light coming through; one
+  do: a crown is cards all the way in — sprays of leaves cut out by alpha (alpha test; alpha to coverage where the
+  screen is multisampled) on its skin, fewer, bigger and darker ones in its shade, and nothing solid inside (the
+  first build had a dark lump there, which showed through as a green ball); the cards are lit as one rounded mass
+  (the crown's dome's normals), darker inside and underneath (painted on the vertices), with a share of light coming
+  through, the leaves on a crown's far side dimmed, and no mirror of the sky in any of them; a shrub is a mound of
+  sprays, a clipped hedge a rounded, slightly uneven run with sprays all over it (no box, no ball); one
   atlas drawn on a canvas (no photograph), whose mip levels are made cell by cell so that a spray keeps its cover
   from far; wind in the vertex shader; one material for all of it. Kinds: an Indian laurel fig, a round-headed
   street tree, a gum, a Mexican fan palm; shrubs and clipped hedges. In a world a street is planted with one kind
-  (`TREE_KIND` where a place knows it); far trees are the tiles' cheap shapes, and within 105 m of the eye each
-  is taken into a pool of its kind and drawn leaf by leaf (a palm gets its head of leaves) — some 40 k triangles
-  and four draw calls at most.
+  (`TREE_KIND` where a place knows it); a far tree is a dome of a few big sprays of the same leaves (26 cards, 14
+  beyond 140 m), and within 105 m of the eye each is taken into a pool of its kind and drawn in full (a palm gets
+  its head of leaves) — some 40 k triangles and four draw calls at most.
 - **Sites.** A place built by hand stands in a world whole, in a group of its own (`sites` in the world's
   `place.js`): the hotel of El Segundo with its lots, its buildings and the shops next door; and the parking
   structure at 940 N Nash St where the drive to work ends (`places/south-bay/garage.js` from the plan in

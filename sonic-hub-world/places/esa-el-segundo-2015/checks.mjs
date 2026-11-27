@@ -170,15 +170,24 @@ try {
   ok('the streets are the world\'s own: its squares of them in the page (walks, painted lines, signal lamps), none drawn by this place', st.squares === 6 && st.walks > 3000 && st.marks > 1500 && st.lamps >= 36 && st.own.length === 0, JSON.stringify(st));
   // the plants are the engine's (engine/plants.js): leaf cards cut out by alpha on the one material, and none of the old balls
   const pl = await page.evaluate(() => {
-    const out = { meshes: 0, tris: 0, cut: true, sway: true, balls: 0 };
+    const out = { meshes: 0, tris: 0, cut: true, sway: true, balls: 0, blocks: 0, lumps: 0, lumpy: 0 };
     window.__world.scene().traverse(o => {
       if (!o.isMesh) return; const m = o.material;
       if (m && m.userData && m.userData.plants) { out.meshes++; out.tris += (o.geometry.index ? o.geometry.index.count : o.geometry.attributes.position.count) / 3 * (o.isInstancedMesh ? o.count : 1); out.cut = out.cut && m.alphaTest > 0 && !!m.map; out.sway = out.sway && !!o.geometry.attributes.sway; }
       else if (m && m.map && m.map.image && m.map.image.width === 256 && /leaf/.test(m.name || '')) out.balls++;
+      else if (m && !(m.userData && m.userData.plants)) {                                                          // a hedge as a plain green block (the first build's): faces of its two flat greens
+        const lin = v => (v /= 255) <= 0.04045 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4), G = [[0x31, 0x4d, 0x24], [0x3a, 0x5a, 0x2a]].map(c => c.map(lin)), near = (a, b) => Math.abs(a - b) < 0.004;
+        const c = o.geometry.attributes.color;
+        if (c) { for (let i = 0; i < c.count; i++) if (G.some(g => near(c.getX(i), g[0]) && near(c.getY(i), g[1]) && near(c.getZ(i), g[2]))) out.blocks++; }
+        else if (m.color && G.some(g => near(m.color.r, g[0]) && near(m.color.g, g[1]) && near(m.color.b, g[2]))) out.blocks += o.geometry.attributes.position.count;
+      }
+      // the leaves' solid picture (the atlas's sixth cell) is worn by a hedge's body and a shrub's small one — a share of a mesh's faces, never most of them
+      if (m && m.userData && m.userData.plants) { const uv = o.geometry.attributes.uv.array; let n = 0; for (let i = 0; i < uv.length; i += 2) if (uv[i] > 0.25 && uv[i] < 0.5 && uv[i + 1] > 0.5) n++; out.lumps += n; if (n > 0.62 * uv.length / 2) out.lumpy++; }
     });
     return out;
   });
-  ok('the trees, shrubs and hedges are leaf cards on the plants\' one material', pl.meshes >= 2 && pl.meshes <= 12 && pl.tris > 20000 && pl.tris < 250000 && pl.cut && pl.sway && pl.balls === 0, `${pl.meshes} meshes, ${Math.round(pl.tris / 1000)}k triangles`);
+  ok('the trees, shrubs and hedges are leaf cards on the plants\' one material', pl.meshes >= 2 && pl.meshes <= 16 && pl.tris > 20000 && pl.tris < 250000 && pl.cut && pl.sway && pl.balls === 0, `${pl.meshes} meshes, ${Math.round(pl.tris / 1000)}k triangles`);
+  ok('no hedge is a plain green block, and no bush a ball: leaves all over', pl.blocks === 0 && pl.lumpy === 0, `${pl.blocks} corners of plain green blocks, ${pl.lumpy} meshes mostly of solid faces`);
   // the cars keep those streets' lanes and lights: six minutes of them
   const tr = await page.evaluate(() => {
     const W = window.__world, L = W.live(), dt = 0.05; let prev = L.traffic();

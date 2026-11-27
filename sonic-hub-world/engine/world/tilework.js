@@ -12,6 +12,7 @@ export function makeBuilder() {
   /* heights of the layers that lie on the ground. A street inside the hotel place's box lies at 0, as that place's own
      streets did (its lots and aprons are fitted to that; its lawns are at −0.03). */
   const Y = { base: -0.14, use: -0.11, area: -0.08, service: -0.035, street: -0.02, box: 0, mark: 0.02, gutter: 0.03, apron: 0.04, walk: 0.12, median: 0.15, kerbFoot: -0.05 };
+  const Y_GUTTER = Y.gutter, CONC_GUTTER = [0.8, 0.8, 0.8];
   const GUT = 0.5, LAP = 0.08;                                                         // the concrete gutter in front of a kerb; how far it runs in under the walk
   /* flat ground, by kind (no texture) */
   const BASE = [hex('#716f69'), hex('#7d8261')];                                       // paved lots · yards
@@ -26,6 +27,7 @@ export function makeBuilder() {
   const PAINT = { white: hex('#e8e6dd'), pad: hex('#d8b23a') };
   const CONC = { walk: [1, 1, 1], gutter: [0.8, 0.8, 0.8], apron: [0.9, 0.9, 0.89], deck: [0.62, 0.62, 0.63], pier: [0.55, 0.55, 0.56] };   // multiply the sidewalk's concrete (#c6c2b8)
   const LAWN = hex('#5f7f45');
+  const MULCH = hex('#5a4030');                                                          // bark mulch: a median's bed under its trees
   /* figures painted on the road, in metres: u along the travel they are read from, v to its right. Each a list of
      outlines turning the way a strip's corners do (left start, left end, right end, right start). */
   const stroke = (pts, w) => { const out = []; for (let i = 0; i + 1 < pts.length; i++) { const [u0, v0] = pts[i], [u1, v1] = pts[i + 1], l = Math.hypot(u1 - u0, v1 - v0) || 1, nu = -(v1 - v0) / l * w / 2, nv = (u1 - u0) / l * w / 2; out.push([u0 - nu, v0 - nv, u1 - nu, v1 - nv, u1 + nu, v1 + nv, u0 + nu, v0 + nv]); } return out; };
@@ -150,6 +152,24 @@ export function makeBuilder() {
     const n = L.length >> 1, put = (P, i) => A.v(P[2 * i], y, P[2 * i + 1], 0, 1, 0, c, (P[2 * i] + ox) / ut, (P[2 * i + 1] + oz) / ut);
     for (let i = 0; i < n - 1; i++) { put(L, i); put(R, i); put(L, i + 1); put(R, i); put(R, i + 1); put(L, i + 1); }
   }
+  /** A walk's own ribbon, scored as a walk is: across, a joint every FLAG metres along the kerb (a ribbon laid by the
+      world's x and z would be scored square to the map — on a street that runs aslant, in lozenges); along, a joint
+      behind the kerb's top and then flags of one width out to the back edge — one flag for a walk of 5 or 6 ft.
+      `s0`: how far along its street the ribbon starts (→ how far it ends), `lo`, `hi`: laid from A + lo to A + hi of
+      the way across (a gutter: from in the road to the kerb's foot). */
+  const FLAG = 1.5, KERBTOP = 0.15;
+  function scored(A, L, R, y, c, Lg, Rg) {
+    const n = L.length >> 1, s = new Float32Array(n), w = new Float32Array(n);
+    for (let i = 0; i < n; i++) { w[i] = Math.hypot(R[2 * i] - L[2 * i], R[2 * i + 1] - L[2 * i + 1]); if (i) s[i] = s[i - 1] + Math.hypot(L[2 * i] - L[2 * i - 2], L[2 * i + 1] - L[2 * i - 1]); }
+    const wm = Array.from(w).sort((a, b) => a - b)[n >> 1], nf = Math.max(1, Math.round((wm - KERBTOP) / FLAG)), kerbOnly = wm < 0.6;
+    const vl = i => kerbOnly ? 0.3 : -KERBTOP / (Math.max(0.3, w[i] - KERBTOP) / nf), vr = i => kerbOnly ? 0.3 + w[i] / FLAG : nf;
+    const put = (P, i, v) => A.v(P[2 * i], y, P[2 * i + 1], 0, 1, 0, c, s[i] / FLAG, v);
+    for (let i = 0; i < n - 1; i++) { put(L, i, vl(i)); put(R, i, vr(i)); put(L, i + 1, vl(i + 1)); put(R, i, vr(i)); put(R, i + 1, vr(i + 1)); put(L, i + 1, vl(i + 1)); }
+    if (Lg) {                                                                             // its gutter: the same joints across, none along
+      const g = (P, i, v) => A.v(P[2 * i], Y_GUTTER, P[2 * i + 1], 0, 1, 0, CONC_GUTTER, s[i] / FLAG, v);
+      for (let i = 0; i < n - 1; i++) { g(Lg, i, 0.25); g(Rg, i, 0.6); g(Lg, i + 1, 0.25); g(Rg, i, 0.6); g(Rg, i + 1, 0.6); g(Lg, i + 1, 0.25); }
+    }
+  }
   /** pieces of a line: each `on` metres long, `off` apart → calls f(x0, z0, x1, z1) */
   function dashes(p, on, off, f) {
     const n = p.length >> 1; let d = off / 2;                                            // distance to the next dash's start
@@ -187,7 +207,7 @@ export function makeBuilder() {
     /* the streets (a place's data/streets.py). Strips: [kind, then for each point four numbers in centimetres] — the left
        edge's point (the first as it is, the others as the step from the one before) and the step from it across to the
        right edge, looking along the list. 0 a street · 1 a street in the hotel place's box · 3 a walk behind its kerb ·
-       5 a driveway's apron · 6 half of a paved median · 7 half of a planted one. Of 3, 5, 6 and 7 the LEFT edge is the
+       5 a driveway's apron · 6 half of a paved median · 7 half of a planted one · 8 of one under bark mulch. Of 3 and 5–8 the LEFT edge is the
        kerb: the road lies to the left of it, and a walk's and an apron's gutter with it (GUT wide, not in the strip). */
     for (const k of t.k || []) {
       const kind = k[0], n = (k.length - 1) >> 2, A = new Float32Array(2 * n), B = new Float32Array(2 * n);
@@ -200,14 +220,14 @@ export function makeBuilder() {
       const along = E => { for (let pass = 0, moved = true; moved && pass < 6; pass++) { moved = false; for (let i = 0; i + 1 < n; i++) if ((E[2 * i + 2] - E[2 * i]) * (A[2 * i + 2] - A[2 * i]) + (E[2 * i + 3] - E[2 * i + 1]) * (A[2 * i + 3] - A[2 * i + 1]) < -1e-9) { const x = (E[2 * i] + E[2 * i + 2]) / 2, z = (E[2 * i + 1] + E[2 * i + 3]) / 2; E[2 * i] = E[2 * i + 2] = x; E[2 * i + 1] = E[2 * i + 3] = z; moved = true; } } return E; };
       if (kind === 0 || kind === 1) ribbon(road, A, B, kind ? Y.box : Y.street, RIB[0], ox, oz, 4);
       else if (kind === 3 || kind === 5) {
-        ribbon(conc, along(edge(-GUT)), along(edge(LAP)), Y.gutter, CONC.gutter, ox, oz, 1.5);                    // (a little way in under the walk: no crack at the kerb's foot)
-        if (kind === 3) { ribbon(conc, A, B, Y.walk, CONC.walk, ox, oz, 1.5); face(A, Y.walk, true); face(B, Y.walk, false); caps(Y.walk); }
-        else ribbon(conc, A, B, Y.apron, CONC.apron, ox, oz, 1.5);
+        const G0 = along(edge(-GUT)), G1 = along(edge(LAP));                                                      // (the gutter: a little way in under the walk — no crack at the kerb's foot)
+        if (kind === 3) { scored(conc, A, B, Y.walk, CONC.walk, G0, G1); face(A, Y.walk, true); face(B, Y.walk, false); caps(Y.walk); }
+        else { ribbon(conc, G0, G1, Y.gutter, CONC.gutter, ox, oz, 1.5); ribbon(conc, A, B, Y.apron, CONC.apron, ox, oz, 1.5); }
       } else if (kind === 6) { ribbon(conc, A, B, Y.median, CONC.walk, ox, oz, 1.5); face(A, Y.median, true); caps(Y.median); }
-      else if (kind === 7) {                                                                                         // a kerb along the roadway, grass behind it
+      else if (kind === 7 || kind === 8) {                                                                           // a kerb along the roadway; grass behind it, or a bed of bark mulch
         const K = along(edge(0.3, 0.5));
         ribbon(conc, A, K, Y.median, CONC.walk, ox, oz, 1.5); face(A, Y.median, true); caps(Y.median);
-        for (let i = 0; i < n - 1; i++) flat.up(Y.median, LAWN, [K[2 * i], K[2 * i + 1], K[2 * i + 2], K[2 * i + 3], B[2 * i + 2], B[2 * i + 3], B[2 * i], B[2 * i + 1]], 0, 0, 1);
+        for (let i = 0; i < n - 1; i++) flat.up(Y.median, kind === 8 ? MULCH : LAWN, [K[2 * i], K[2 * i + 1], K[2 * i + 2], K[2 * i + 3], B[2 * i + 2], B[2 * i + 3], B[2 * i], B[2 * i + 1]], 0, 0, 1);
       }
     }
     /* outlines: the paving where roads meet */

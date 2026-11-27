@@ -155,6 +155,10 @@ const open = (vp, mobile, more = {}) => openPage(browser, { ...vp, mobile, place
       out.spots.push({ s, ...near, hidden, pooled, far, nearest: Math.round(nearest) });
     }
     const t0 = W.plantTime(); for (let k = 0; k < 20; k++) W.step(0.05); out.wind = W.plantTime() - t0; out.cover = W.plantCover();
+    // nothing solid inside a crown, near or far: no face of a tree wears the leaves' solid picture (the atlas's sixth cell), and a far tree is leaves too
+    const lump = g => { const uv = g.attributes.uv ? g.attributes.uv.array : [1 / 3, 0.75]; let n = 0; for (let i = 0; i < uv.length; i += 2) if (uv[i] > 0.25 && uv[i] < 0.5 && uv[i + 1] > 0.5) n++; return n; };
+    out.lumps = 0; out.farLeaves = true; out.farN = 0;
+    for (const g of W.scene().getObjectByName('tiles').children) { if (g.name.startsWith('near trees')) out.lumps += lump(g.geometry); const m = g.children.find(c => c.name === 'trees'); if (m) { out.farN++; out.lumps += lump(m.geometry); if (!(m.material.userData.plants && m.material.alphaTest > 0)) out.farLeaves = false; } }
     const leaf = tiles => tiles.children.filter(c => c.name.startsWith('near')).every(c => c.material.userData.plants && c.material.alphaTest > 0 && c.geometry.attributes.sway);
     out.cards = leaf(W.scene().getObjectByName('tiles')); return out;
   });
@@ -162,6 +166,7 @@ const open = (vp, mobile, more = {}) => openPage(browser, { ...vp, mobile, place
     plants.spots.map(p => `at ${p.s} m: ${p.trees} trees and ${p.palms} palms leaf by leaf, ${p.far} trees as far shapes (the nearest ${p.nearest} m off)`).join(' · '));
   const cov = Object.entries(plants.cover).map(([k, v]) => [k, v[0], Math.max(...v.map(c => Math.abs(c - v[0])))]);
   ok('the leaf pictures keep their cover from far (their smaller copies pass as much of a spray as the full one)', cov.length === 5 && cov.every(([, c0, off]) => c0 > 0.15 && c0 < 0.8 && off < 0.05), cov.map(([k, c0, off]) => `${k} ${Math.round(c0 * 100)}% (±${(off * 100).toFixed(1)})`).join(', '));
+  ok('a tree is leaves all the way in, near and far: no lump inside a crown, no ball for a far tree', plants.lumps === 0 && plants.farLeaves && plants.farN > 0, `${plants.lumps} solid faces in the trees' crowns; ${plants.farN} tiles' far trees ${plants.farLeaves ? 'drawn with leaves' : 'NOT drawn with leaves'}`);
   ok('the wind\'s clock runs with the world\'s', Math.abs(plants.wind - 1) < 0.01, `${plants.wind.toFixed(2)} s in 1 s`);
 
   /* a hand on the wheel */
@@ -227,6 +232,10 @@ for (const [name, vp] of [['upright', { width: 390, height: 743 }], ['on its sid
     A['limit lines inside a crosswalk'] === 0 && A['crosswalks at a crossing nobody stops at'] === 0 && A['signals without a crosswalk'] === 0 && A['STOP on the road'] >= A.stops && A.stops > 100 && A['corners whose outline crosses itself'] === 0,
     `${A.crossings} crossings (${A.signals} with signals), ${A['crosswalks the map has']} crosswalks from the map and ${A['crosswalks by the rule']} by the rule, ${A['limit lines']} limit lines, ${A.corners} round corners, ${Math.round(A['kerb m'] / 1000)} km of kerb`);
   const { makeBuilder } = await import('../../engine/world/tilework.js'), build = makeBuilder();
+  // (where a walk's width is known: Continental's flag of 5 ft in his photographs of 2015, Sepulveda's 3 m and Mariposa's 6 ft in Street View, Nash's west walk under the Green Line in IMG_1787)
+  const WALKS = [{ name: 'Continental', at: [331, 89], r: 40, want: 1.5 }, { name: 'Sepulveda by the shops', at: [-100, 20], r: 40, want: 3.0 }, { name: 'Mariposa by the hotel', at: [40, -79], r: 40, want: 1.8 },
+    { name: "Nash's west walk under the Green Line", at: [700, 200], r: 60, want: 2.5, side: x => x < 700 }, { name: "Nash's east walk there", at: [700, 200], r: 60, want: 1.8, side: x => x > 700 }].map(q => ({ ...q, w: [] }));
+  const mulch = [], figs = [], aslant = { n: 0, across: 0 };
   let faces = 0, wrong = 0; const ends = new Map(), corners = [], parked = new Map(), key = (x, z) => Math.round(x * 20) + ':' + Math.round(z * 20);
   for (const f of fs.readdirSync(new URL('tiles/', dir))) {
     const [ti, tj] = f.replace('.json', '').split('_').map(Number), t = JSON.parse(fs.readFileSync(new URL('tiles/' + f, dir))), o = build.build(t).tile;
@@ -238,6 +247,15 @@ for (const [name, vp] of [['upright', { width: 390, height: 743 }], ['on its sid
     }
     // where each walk's kerb ends; where each round corner's kerb begins and ends
     for (const k of t.k || []) if (k[0] === 3 || k[0] === 5) { let x = 0, z = 0; const n = (k.length - 1) >> 2; for (let i = 0; i < n; i++) { x += k[1 + 4 * i]; z += k[2 + 4 * i]; if (i === 0 || i === n - 1) ends.set(key(x / 100 + ti * 500, z / 100 + tj * 500), 1); } }
+    // the walks: how wide each is where a place is known; the mulch median's middle line and the figs in it; how a walk is scored
+    for (const k of t.k || []) if (k[0] === 3 || k[0] === 8) { let x = 0, z = 0, last = null; const n = (k.length - 1) >> 2; for (let i = 0; i < n; i++) { x += k[1 + 4 * i]; z += k[2 + 4 * i]; const X = x / 100 + ti * 500, Z = z / 100 + tj * 500, w = Math.hypot(k[3 + 4 * i], k[4 + 4 * i]) / 100;
+      if (k[0] === 8) { const m = [X + k[3 + 4 * i] / 100, Z + k[4 + 4 * i] / 100]; if (i) mulch.push([...last, ...m]); last = m; } else if (w >= 1.2) for (const q of WALKS) if (Math.hypot(X - q.at[0], Z - q.at[1]) < q.r && (!q.side || q.side(X, Z))) q.w.push(w); } }
+    for (const q of t.p || []) if (q[0] === 0 && (q[3] | 0) === 0) figs.push([q[1] / 10 + ti * 500, q[2] / 10 + tj * 500]);
+    for (let i = 0; i < o.conc.n; i += 3) {
+      const g = o.conc, V = k => [g.pos[3 * (i + k)] + ti * 500, g.pos[3 * (i + k) + 1], g.pos[3 * (i + k) + 2] + tj * 500, g.uv[2 * (i + k)]], T = [V(0), V(1), V(2)];
+      if (Math.abs(T[0][1] - 0.12) > 1e-3 || !T.some(v => Math.hypot(v[0] - 331, v[2] - 89) < 60)) continue;
+      aslant.n++; if ([[0, 1], [1, 2], [0, 2]].some(([a, b]) => Math.abs(T[a][3] - T[b][3]) < 1e-4 && Math.hypot(T[a][0] - T[b][0], T[a][2] - T[b][2]) > 1.2)) aslant.across++;
+    }
     for (const c of t.c || []) { let x = 0, z = 0; for (let i = 0; i < c[0]; i++) { x += c[1 + 2 * i]; z += c[2 + 2 * i]; if (i === 0 || i === c[0] - 1) corners.push([x / 100 + ti * 500, z / 100 + tj * 500]); } }
     for (const p of t.p || []) if (p[0] === 5) { const x = p[1] / 10 + ti * 500, z = p[2] / 10 + tj * 500, k = Math.floor(x / 20) + ':' + Math.floor(z / 20); (parked.get(k) || parked.set(k, []).get(k)).push([x, z]); }
   }
@@ -245,6 +263,11 @@ for (const [name, vp] of [['upright', { width: 390, height: 743 }], ['on its sid
     `${A['ways joined between crossings']} joints between crossings, the lines led across at ${A["centre lines led across to the next way's"]} ends, ${A['centre lines that step between two ways']} steps left`);
   ok('no face of the streets is inside out', faces > 100000 && wrong === 0, `${faces} faces, ${wrong} wrong`);
   const near = ([x, z]) => { for (const dx of [-0.05, 0, 0.05]) for (const dz of [-0.05, 0, 0.05]) if (ends.has(key(x + dx, z + dz))) return true; return false; }, met = corners.filter(near).length;
+  { const med = q => q.w.slice().sort((a, b) => a - b)[q.w.length >> 1], seg = (x, z, [a, b, c, d]) => { const l = (c - a) ** 2 + (d - b) ** 2 || 1, u = Math.max(0, Math.min(1, ((x - a) * (c - a) + (z - b) * (d - b)) / l)); return Math.hypot(x - a - (c - a) * u, z - b - (d - b) * u); }, inMedian = figs.filter(([x, z]) => mulch.some(s => seg(x, z, s) < 1.0)).length;
+    ok('a walk is as wide as its street has it: 6 ft at the kerb by the city\'s rule, the big roads\' wider, and what the photographs show where they show it',
+      WALKS.every(q => q.w.length >= 2 && Math.abs(med(q) - q.want) < 0.12), WALKS.map(q => `${q.name} ${q.w.length ? med(q).toFixed(2) : '—'} m (${q.want}; ${q.w.length} points)`).join(' · '));
+    ok('a walk is scored across its own line, also on a street that runs aslant on the map', aslant.n >= 12 && aslant.across >= 0.95 * aslant.n, `${aslant.across} of ${aslant.n} faces of Continental's walks have a joint running straight across`);
+    ok('Continental\'s figs stand in its median, in a bed of mulch (his photographs of 2015)', mulch.length > 20 && inMedian >= 15, `${inMedian} figs down the median's ${mulch.length} points`); }
   ok('the kerbs close up: a round corner begins where a walk\'s kerb ends', corners.length > 800 && met >= 0.97 * corners.length, `${met} of ${corners.length} corner ends meet a kerb's end (the others: a side with no kerb of its own)`);
   // no parked car stands in the car's way: none with its middle within 2.2 m of the path's (a car and a half's width)
   let nearest = 99, where = '';

@@ -149,7 +149,7 @@ export function buildGarage({ scene }) {
   /* the decks. North bay: level slabs, 2 to the closed floors' underside. South bay: runs 1 to 7, then the top deck level. */
   for (let i = 0; i + 1 < xsFlat.length; i++) for (const zs of [zsN, zsS]) for (let j = 0; j + 1 < zs.length; j++) inside.quad([xsFlat[i], 0, zs[j + 1]], [xsFlat[i + 1], 0, zs[j + 1]], [xsFlat[i + 1], 0, zs[j]], [xsFlat[i], 0, zs[j]], FLOOR);   // the ground slab
   for (const [a, b] of [[z0, z0 + W], [z1 - W, z1]]) inside.quad([x0, 0, b], [x1, 0, b], [x1, 0, a], [x0, 0, a], FLOOR);
-  shell.box(x0 - 6.4, -0.2, z0, x0, 0.0, z1, FLOOR, 'yX');                          // the forecourt, out to the sidewalk's back
+  shell.box(x0 - 7.0, -0.2, z0, x0, 0.0, z1, FLOOR, 'yX');                          // the forecourt, out to the sidewalk's back and a little way in under it
   for (let k = 2; k <= G.open + 1; k++) inside.run(xsFlat, () => lvl(k), zsN, SLAB, FLOOR, SOFFIT);
   for (let k = 1; k < G.open; k++) inside.run(xsRun, x => slopeY(x, k), zsS, SLAB, FLOOR, SOFFIT);
   inside.run(xsFlat, () => lvl(G.open), zsS, SLAB, FLOOR, SOFFIT); inside.run(xsFlat, () => top, zsS, SLAB, FLOOR, SOFFIT);
