@@ -256,7 +256,7 @@ def build(W, bounds):
             if hw == 'service':
                 if tg.get('service') == 'drive-through': continue
                 kind = tg.get('service', '')
-                service.append(dict(id=wid, nd=nd, p=p, cl=lens(p), kind=kind, hw={'parking_aisle': 3.1, 'driveway': 2.6, 'alley': 2.5}.get(kind, 3.0), esa=esa,
+                service.append(dict(id=wid, nd=nd, p=p, cl=lens(p), kind=kind, hw=SERVICE_HW.get(wid, {'parking_aisle': 3.1, 'driveway': 2.6, 'alley': 2.5}.get(kind, 3.0)), esa=esa,
                                     oneway=tg.get('oneway') == 'yes'))
                 continue
             ow = tg.get('oneway') in ('yes', '1', 'true') or hw == 'motorway'
@@ -277,8 +277,12 @@ def build(W, bounds):
                 prof = [(c, set()) for c in known[0]]
                 if not esa: lanes = len(prof)                                        # (in the hotel place's box the street keeps that place's width; elsewhere the lanes make the width)
             w = lanes * (FWY_LANE if hw.startswith('motorway') else LANE) + (0.8 if ow else 1.2); park = None
-            if tg.get('name') in WIDTHS:                                             # a street whose width and lanes are known (the satellite picture)
-                w, known = WIDTHS[tg['name']]; prof = [(c, set()) for c in known]; lanes = sum(1 for c in known if c not in 'pq')
+            wk = WIDTHS.get(tg.get('name'))
+            if isinstance(wk, list): wk = next(((w_, s_) for box, w_, s_ in wk if inbox(box)), None)
+            if wk and wk[1] is None:                                                 # a street whose width is known, with the map's lanes: cars park along both kerbs in what is left
+                w = wk[0]; prof = [('q', set())] + prof + [('p', set())]; park = (w - (0.8 if ow else 1.2) - lanes * LANE) / 2
+            elif wk:                                                                 # a street whose width and lanes are known (the satellite picture)
+                w, known = wk; prof = [(c, set()) for c in known]; lanes = sum(1 for c in known if c not in 'pq')
                 park = (w - (0.8 if ow else 1.2) - lanes * LANE) / max(1, len(known) - lanes) if len(known) > lanes else None
             elif not esa and not tg.get('bridge') and ST.parks(tg, hw, prof, ow) and room(p, (ST.QUIETW if hw in ST.QUIET else w + 2 * ST.PARK) / 2):      # cars park along both kerbs
                 prof = [('q', set())] + prof + [('p', set())]
@@ -302,7 +306,10 @@ def build(W, bounds):
         if r['cls'] in FWY_SH or r['cls'] == 'trunk': tw = r['lanes'] * FWY_LANE; shl, shr = FWY_SH.get(r['cls'], (1.2, 2.4)); r['deck'] = (tw / 2 + shl, tw / 2 + shr)
     hprof, haudit = HT.solve(roads, rails); HAUDIT.update({'heights: ' + k: v for k, v in haudit.items()})
     pieces = split_by_height(W, roads, hprof)
-    if pieces: roads, service, lanes_by_name = make_roads()
+    # (the streets whose width changes along them are cut only now: they lie on the ground, and the heights above are
+    # worked out over the whole network in an order that the cut ways would change — 10 km off, a ramp would rise)
+    cuts = HAUDIT['streets: ways cut where a known width begins'] = cut_ways(W, CUTS)
+    if pieces or cuts: roads, service, lanes_by_name = make_roads()
     for r in roads:
         hp = hprof.get(r['id'])
         if r['id'] in pieces:
@@ -589,6 +596,13 @@ def build(W, bounds):
     def add_building(wid, tg, nd):
         p = W.pts(nd)
         if len(p) < 4 or not near(p) or W.esa(nd) or tg.get('location') == 'underground' or tg.get('building') in ('no',) or wid in SITE_WAYS: return
+        if wid in CARPORTS:                                                        # the strip on the alley is the site's (its carport, the floor over it)
+            X, q = CARPORTS[wid], p[:-1] if p[0] == p[-1] else p; out = []
+            for a, b in zip(q, q[1:] + q[:1]):
+                if a[0] <= X: out.append(a)
+                if (a[0] <= X) != (b[0] <= X): t = (X - a[0]) / (b[0] - a[0]); out.append((X, a[1] + (b[1] - a[1]) * t))
+            if len(out) < 3: return
+            p = out + out[:1]
         sd = tg.get('start_date', '')
         if sd[:4].isdigit() and int(sd[:4]) > 2022: return
         rg = ring(p, 0.35)
@@ -673,6 +687,34 @@ def lane_plan(los, Ls, before, after, change=100.0, near_cost=None):
         best = nxt
     want = los[-1][0] if after < 0 else los[-1][-1] if after > 0 else None
     return best[want][1] if want in best else min(best.values(), key=lambda t: t[0])[1]
+
+def cut_ways(W, cuts):
+    """cuts each way of the streets in `cuts` ({name: [(x, z)]}) at each point: at its node within 1.5 m of the way's
+    nearest point to it, or at a new node there (none within 2 m of the way's ends, none farther than 6 m from the way)
+    → how many cuts. The pieces are ways '<id>~<k>' with the way's tags."""
+    made = 0
+    for wid, (tg, nd) in sorted(W.ways.items()):
+        pts = cuts.get(tg.get('name')) if tg.get('highway') in ROAD else None
+        if not pts: continue
+        nd = [n for n in nd if n in W.xz]; p = [W.xz[n] for n in nd]
+        if len(p) < 2: continue
+        cl = lens(p); at_ = set()
+        for c in pts:
+            best = None
+            for k in range(len(p) - 1):
+                d, t = ST.seg_dist(c, p[k], p[k + 1])
+                if best is None or d < best[0]: best = (d, k, t)
+            d, k, t = best; s = cl[k] + (cl[k + 1] - cl[k]) * t
+            if d > 6.0 or s < 2.0 or s > cl[-1] - 2.0: continue
+            near_k = min(range(len(p)), key=lambda i: abs(cl[i] - s))
+            if abs(cl[near_k] - s) < 1.5: at_.add(near_k); continue
+            n = '%s~n%d' % (wid, len(at_)); (x, z), _ = at(p, cl, s); W.xz[n] = (x, z); W.nodes[n] = (LAT0 - z / KZ, LON0 + x / KX)
+            nd.insert(k + 1, n); p.insert(k + 1, (x, z)); cl = lens(p); at_ = {i + 1 if i > k else i for i in at_}; at_.add(k + 1)
+        if not at_: continue
+        del W.ways[wid]; ks = sorted(at_)
+        for j, (a, b) in enumerate(zip([0] + ks, ks + [len(nd) - 1])): W.ways['%s~%d' % (wid, j)] = (tg, nd[a:b + 1])
+        made += len(ks)
+    return made
 
 def split_by_height(W, roads, prof):
     """cuts each way that is partly up and partly on the ground where it leaves the ground (a node is put there) →
@@ -772,7 +814,7 @@ def staged(g, W, roads, service, snap, a, b, via):
 def parked(roads, service, spec):
     """the car standing at the end of a route home, and him beside it looking at it: {x, z, a (radians: the way the nose
     points, as atan2(dz, dx)), eye: [x, z], at: [x, z]}"""
-    key, side, nose, stand = spec['park']; b = spec['b']
+    key, side, nose, stand = spec['park'][:4]; b = spec['b']
     cands = [r for r in roads if r['name'] == key] + [s for s in service if s['id'] == key]
     best = None
     for r in cands:
@@ -783,8 +825,8 @@ def parked(roads, service, spec):
     px, pz = ax + (bx - ax) * t, az + (bz - az) * t
     want = {'north': (0, -1), 'south': (0, 1), 'east': (1, 0), 'west': (-1, 0)}[side]; sg = 1 if rt[0] * want[0] + rt[1] * want[1] > 0 else -1   # which of the way's sides that is
     if nose == 0:                                                                  # square to an alley, nose in, its middle 2.9 m beyond the alley's edge
-        hw = r.get('hw', 2.5); o = hw + 2.9; x, z = px + rt[0] * sg * o, pz + rt[1] * sg * o; a = math.atan2(rt[1] * sg, rt[0] * sg)
-        eye = (px - rt[0] * sg * 0.8 + u[0] * 4.2, pz - rt[1] * sg * 0.8 + u[1] * 4.2)
+        hw = r.get('hw', 2.5); o = spec['park'][4] if len(spec['park']) > 4 else hw + 2.9; x, z = px + rt[0] * sg * o, pz + rt[1] * sg * o; a = math.atan2(rt[1] * sg, rt[0] * sg)
+        eye = (x - rt[0] * sg * 5.5 + u[0] * 2.0, z - rt[1] * sg * 5.5 + u[1] * 2.0)       # before the stall, a little to one side of it
     else:                                                                          # along the kerb, 1.1 m off it, on the walk beside it to look at it from
         hw = r['hw']; o = hw - 1.15; x, z = px + rt[0] * sg * o, pz + rt[1] * sg * o; dirn = {'north': (0, -1), 'south': (0, 1), 'east': (1, 0), 'west': (-1, 0)}[nose]
         f = 1 if u[0] * dirn[0] + u[1] * dirn[1] > 0 else -1; a = math.atan2(u[1] * f, u[0] * f)
@@ -1380,8 +1422,35 @@ TREE_BACK = {'Continental Boulevard': 4.5}
 # strip for the posts and the walk behind it (IMG_1787). {street: width, or [(box, width, side or None)]}
 WALKS = {'Continental Boulevard': 1.5, 'North Nash Street': [((None, None, -100.0, 720.0), 2.5, 'w')]}
 # Streets whose width and lanes are known from the satellite picture: kerb to kerb, and its strips from the left kerb
-# to the right ('q', 'p': where cars park). Lairport: 16 m, a double yellow line, cars parked along both kerbs.
-WIDTHS = {'Lairport Street': (16.0, 'qbfp')}
+# to the right ('q', 'p': where cars park; None: the map's own lanes, with a strip for parked cars along each kerb) —
+# the whole street, or stretch by stretch: [((x from, x to, z from, z to; None: anywhere), width, strips)], a stretch
+# taking each way of the street whose middle lies in its box (CUTS cuts a way where a stretch begins; between two
+# widths the street tapers, as streets.py has it). Lairport: 16 m, a double yellow line, cars parked along both kerbs.
+# Round home (the satellite picture at its closest, 28/11/2026, kerb to kerb to about half a metre): Emerald St is
+# 14.7 m from Anza to Ladeene, 15.1 m along the church's lawn, 16.5 m from there to Earl, some 13.3 m beyond (seen
+# from further off); Spencer St 16.2 m from Anza past the alley, 15.1 m by the business park at Earl; Anza Ave by
+# number 20606 24.4 m — two lanes each way, the middle lane for left turns, a bike lane (these rules have none: it is
+# in the strip by the kerb) and cars parked along both kerbs (Street View 2025) — and as wide where it comes to
+# Spencer and to Emerald, where the map's lanes to turn from are kept (beyond those two it is not measured yet).
+WIDTHS = {'Lairport Street': (16.0, 'qbfp'),
+          'Emerald Street': [((3000.0, 3213.5, 8990.0, 9040.0), 14.7, 'qbfp'), ((3213.5, 3312.0, 8990.0, 9040.0), 15.1, 'qbfp'),
+                             ((3312.0, 3415.0, 8990.0, 9040.0), 16.5, 'qbfp'), ((3415.0, 3810.0, 8990.0, 9040.0), 13.3, 'qbfp')],
+          'Spencer Street': [((3000.0, 3250.0, 8590.0, 8640.0), 16.2, 'qbfp'), ((3250.0, 3415.0, 8590.0, 8640.0), 15.1, 'qbfp')],
+          'Anza Avenue': [((3000.0, 3025.0, 8650.0, 8980.0), 24.4, 'qbbcffp'), ((3000.0, 3025.0, 8600.0, 9035.0), 24.4, None)]}
+# … and where those stretches begin, a way of the street is cut (at its node nearest each point, or at a new one):
+# Emerald at Ladeene, at the lawn's east end and at Earl; Spencer between the alley and Earl, and at Earl.
+CUTS = {'Emerald Street': [(3213.0, 9017.0), (3312.0, 9017.0), (3415.0, 9017.0)], 'Spencer Street': [(3250.0, 8616.0), (3415.0, 8616.0)]}
+# Service ways whose width is known: the alley behind 20606 Anza (the satellite picture and Street View): its asphalt
+# runs from the block wall on its east to the buildings' aprons on its west — the site (anza.json) lays all of that;
+# the tiles' own strip stays inside it.
+SERVICE_HW = {'365566065': 2.0}
+# The home site, built by hand (anza.js from anza.json: the alley behind the building, the church's grounds on Emerald,
+# the business park's front by Spencer and Earl). Buildings whose back on the alley the site builds (Street View: a
+# carport under the floor above, closed garage doors, a plain wall): the tiles build each without the strip the site
+# builds — {way: the x beyond which the site builds} (0.4–0.5 m more than the strip: the tiles' outline is simplified to
+# 0.35 m, and their wall must not stand in front of the site's).
+ANZA = json.load(open(os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'anza.json')))
+CARPORTS = {f['way']: f['x'] - (f['depth'] + 0.4 if f['kind'] == 'carport' else 0.5) for f in ANZA['faces'] if f.get('way')}
 # The planted islands in Maple's middle lane between Lairport and Nash (the satellite picture, 26/11/2026; x to about a
 # metre): each from one end to the other. The one at x 383–397 is the refuge of the crosswalk in mid-block.
 ISLANDS = {'East Maple Avenue': [((x0, -441.6), (x1, -441.6)) for x0, x1 in ((160.0, 197.6), (255.2, 268.6), (314.7, 348.5), (383.2, 391.2), (395.4, 397.6), (497.3, 538.2), (604.4, 640.1))]}
@@ -1395,7 +1464,7 @@ MEDIAN_W = {'North Pacific Coast Highway': [((None, None, None, -80.0), 2.4)], '
 # by hand (garage.js), so the map's own block for it is left out of the tiles; the car's way in, up to level 3 and down
 # again is drawn here from the same plan.
 GARAGE = json.load(open(os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'garage.json')))
-SITE_WAYS = {GARAGE['way']}
+SITE_WAYS = {GARAGE['way']} | set(ANZA['ways'])
 def garage_ways(G=GARAGE):
     """the way from Nash in at the south portal, up the sloping bay to the stall on level 3 — and the way down and out
     again: each [(x, z, y)], keeping to the right of every aisle, its bends arcs a car can take"""
@@ -1453,18 +1522,21 @@ ROUTES = [
 # Spencer -> đường phía sau dãy nhà", and parked at one of three places: behind the building, on the alley (A); at the
 # kerb of Spencer St by Earl St (B: his photograph of 14/12/2022); at the kerb of Emerald St by the church's grounds
 # (C: his photographs of the same night). Where each of those is (world metres) is from those photographs' places;
-# the spot behind the building is GUESSED (the alley by the building's back: no picture shows his space).
+# behind the building the car stands in a stall of the carport under it (anza.json: home), and which stall is GUESSED
+# (no picture shows his space: the one by the gate with the bins, where the way in is).
 HOME = (3049.9, 8839.3)
-ENDS = {'a': ((3112.8, 8831.3), [('way', '365566065')], '20606 Anza Ave · sau nhà', 'Xe đỗ sau nhà, sát mép đường hẻm.'),
+_HF = ANZA['faces'][ANZA['home']['face']]; _HZ = round(_HF['z0'] + (ANZA['home']['stall'] + 0.5) * (_HF['z1'] - _HF['z0']) / _HF['stalls'], 2)   # (his stall's middle)
+ENDS = {'a': ((3113.7, _HZ), [('way', '365566065')], '20606 Anza Ave · sau nhà', 'Xe đỗ trong nhà xe dưới dãy nhà, cạnh cổng có thùng rác.'),
         'b': ((3379.6, 8623.3), [], '20606 Anza Ave · đỗ ở Spencer St', 'Xe đỗ sát lề Spencer St, cạnh Earl St.'),
         'c': ((3292.7, 9010.3), [('name', 'Earl Street'), ('name', 'Emerald Street')], '20606 Anza Ave · đỗ ở Emerald St',
               'Xe đỗ sát lề Emerald St, chỗ công viên lối vào Nova Community Church.')}
 # Where the car stands once there (the page fades and shows it so: no parking is driven), and where he stands looking
 # at it: (the way it stands by, the side of that way, the way its nose points: +1 along the way, −1 against, 0 square
 # to it, nose away from the way). At the kerb (B, C) as his photographs of 14/12/2022 show it: by the right-hand kerb.
-# Behind the building (A): along the alley's edge on the building's side, nose south as he came in from Spencer —
-# GUESSED (the building stands 3.5 m from the alley's edge: no room for a space square to it); he stands in the alley.
-PARK = {'a': ('365566065', 'west', 'south', 'road'), 'b': ('Spencer Street', 'south', 'east', 'walk'), 'c': ('Emerald Street', 'north', 'west', 'walk')}
+# Behind the building (A): nose in, in the carport under the floor above (Street View: a row of stalls square to the
+# alley), its middle 3 m inside the building's face; he stands in the alley. (A fifth number: how far the car's middle
+# is from the way's line.)
+PARK = {'a': ('365566065', 'west', 0, 'road', round(3113.7 - (_HF['x'] - 3.0), 2)), 'b': ('Spencer Street', 'south', 'east', 'walk'), 'c': ('Emerald Street', 'north', 'west', 'walk')}
 WALK_AREAS = [(HOME[0] - 480, HOME[0] + 1650, HOME[1] - 660, HOME[1] + 650), (3810.0, 4140.0, 7950.0, 8250.0)]   # where he may walk round home (his two boxes on the map): x0, x1, z0, z1
 _TRUNK = [('name', 'North Nash Street'), ('name', 'Atwood Way'), ('ref', 'I 105'), ('ref', 'I 405')]
 _WAYS = {'1': ('Inglewood Ave', _TRUNK + [('name', 'Inglewood Avenue', 'South Inglewood Avenue'), ('name', 'West 190th Street'), ('name', 'Anza Avenue'), ('name', 'Spencer Street')]),

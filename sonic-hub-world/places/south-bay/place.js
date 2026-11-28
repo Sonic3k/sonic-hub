@@ -2,8 +2,9 @@
    comes 500 m at a time as the car moves. What stands in it so far:
      · the tiles (world/, written by data/world.py from OpenStreetMap): the streets, buildings and lots of El Segundo
        for a kilometre round the first route;
-     · two sites built by hand: the hotel of 2015 with the streets round it (places/esa-el-segundo-2015), held whole,
-       and the parking structure at 940 N Nash St where he left the car on working days (garage.js);
+     · three sites built by hand: the hotel of 2015 with the streets round it (places/esa-el-segundo-2015), held whole,
+       the parking structure at 940 N Nash St where he left the car on working days (garage.js), and round home at
+       20606 Anza Ave in Torrance: the alley behind it, the church's grounds on Emerald, the kerb on Spencer (anza.js);
      · two routes, there and back: Extended Stay ↔ level 3 of that parking structure, by the AT&T campus (DirecTV in
        2015) on Imperial Highway.
    The brief, what his photographs and papers say, and what is still guessed: claude/south-bay-de-bai.md and
@@ -15,6 +16,7 @@ import { X, concTex } from '../esa-el-segundo-2015/mat.js';
 import { API } from '../../engine/hub.js';
 import music from './music.js';
 import { buildGarage } from './garage.js';
+import { buildAnza } from './anza.js';
 import G from './garage.json';
 
 export default {
@@ -32,6 +34,10 @@ export default {
        lamps, the cars in the stalls, the gates and their signs) only from within 300 m */
     { id: 'garage-940-nash', at: [(G.x0 + G.x1) / 2, (G.z0 + G.z1) / 2], reach: 950, build: o => buildGarage(o),
       near: { at: [(G.x0 + G.x1) / 2, (G.z0 + G.z1) / 2], reach: 300, far: /^garage shell/ } },
+    /* round home: the wall, the buildings' backs and the trees show from a kilometre off; the gates, the bins, the poles'
+       wires, the cars in the carports and the lamps only from within 500 m */
+    { id: 'anza-2019', at: [3250, 8820], reach: 1100, build: o => buildAnza(o),
+      near: { at: [3250, 8820], reach: 500, far: /^anza (ground|walls|trees)/ } },
   ],
   /* the tiles' streets wear the hotel place's own asphalt and sidewalk, so that a street runs on without a seam */
   paving: () => ({ road: X.asphalt('#363636', 9), walk: new THREE.MeshStandardMaterial({ map: concTex('#c6c2b8', 4, true), roughness: 0.9 }) }),

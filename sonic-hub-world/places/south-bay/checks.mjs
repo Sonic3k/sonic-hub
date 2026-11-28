@@ -296,6 +296,10 @@ for (const [name, vp] of [['upright', { width: 390, height: 743 }], ['on its sid
   // (where a walk's width is known: Continental's flag of 5 ft in his photographs of 2015, Sepulveda's 3 m and Mariposa's 6 ft in Street View, Nash's west walk under the Green Line in IMG_1787)
   const WALKS = [{ name: 'Continental', at: [331, 89], r: 40, want: 1.5 }, { name: 'Sepulveda by the shops', at: [-100, 20], r: 40, want: 3.0 }, { name: 'Mariposa by the hotel', at: [40, -79], r: 40, want: 1.8 },
     { name: "Nash's west walk under the Green Line", at: [700, 200], r: 60, want: 2.5, side: x => x < 700 }, { name: "Nash's east walk there", at: [700, 200], r: 60, want: 1.8, side: x => x > 700 }].map(q => ({ ...q, w: [] }));
+  // (round home, kerb to kerb as the satellite picture has it, 28/11/2026: data/world.py WIDTHS) — ew: the street runs east–west
+  const WIDE = [{ name: 'Emerald by the church\'s lawn', at: [3288, 9017], ew: true, want: 15.1 }, { name: 'Emerald from the lawn to Earl', at: [3365, 9017], ew: true, want: 16.5 },
+    { name: 'Spencer by the business park at Earl', at: [3380, 8615.7], ew: true, want: 15.1 }, { name: 'Spencer by the alley', at: [3140, 8616], ew: true, want: 16.2 },
+    { name: 'Anza by number 20606', at: [3013, 8839], ew: false, want: 24.4 }].map(q => ({ ...q, k: [] }));
   const mulch = [], figs = [], aslant = { n: 0, across: 0 }, decks = [], growing = [], walls = [];
   let faces = 0, wrong = 0; const ends = new Map(), corners = [], parked = new Map(), key = (x, z) => Math.round(x * 20) + ':' + Math.round(z * 20);
   for (const f of fs.readdirSync(new URL('tiles/', dir))) {
@@ -306,6 +310,15 @@ for (const [name, vp] of [['upright', { width: 390, height: 743 }], ['on its sid
       const n = [u[1] * v[2] - u[2] * v[1], u[2] * v[0] - u[0] * v[2], u[0] * v[1] - u[1] * v[0]], l = Math.hypot(...n); if (l < 1e-4 || Math.abs(a[1] + 0.035) < 1e-3) continue;
       faces++; if ((n[0] * g.nor[3 * i] + n[1] * g.nor[3 * i + 1] + n[2] * g.nor[3 * i + 2]) / l / 127 < 0.3) wrong++;
     }
+    // the kerbs round home: how far each lies from the street's middle where it is measured
+    for (const k of t.k || []) if (k[0] === 3) { let x = 0, z = 0, pa = null; const n = (k.length - 1) >> 2; for (let i = 0; i < n; i++) { x += k[1 + 4 * i]; z += k[2 + 4 * i]; const X = x / 100 + ti * 500, Z = z / 100 + tj * 500;
+      if (pa) for (const q of WIDE) {                                                  // where the kerb crosses the line across the street at the place measured
+        const al0 = q.ew ? pa[0] - q.at[0] : pa[1] - q.at[1], al1 = q.ew ? X - q.at[0] : Z - q.at[1];
+        if (al0 * al1 > 0 || al0 === al1) continue;
+        const u = al0 / (al0 - al1), ac = (q.ew ? pa[1] + (Z - pa[1]) * u - q.at[1] : pa[0] + (X - pa[0]) * u - q.at[0]);
+        if (Math.abs(ac) < q.want / 2 + 3) q.k.push(ac);
+      }
+      pa = [X, Z]; } }
     // where each walk's kerb ends; where each round corner's kerb begins and ends
     for (const k of t.k || []) if (k[0] === 3 || k[0] === 5) { let x = 0, z = 0; const n = (k.length - 1) >> 2; for (let i = 0; i < n; i++) { x += k[1 + 4 * i]; z += k[2 + 4 * i]; if (i === 0 || i === n - 1) ends.set(key(x / 100 + ti * 500, z / 100 + tj * 500), 1); } }
     // the walks: how wide each is where a place is known; the mulch median's middle line and the figs in it; how a walk is scored
@@ -341,6 +354,20 @@ for (const [name, vp] of [['upright', { width: 390, height: 743 }], ['on its sid
       WALKS.every(q => q.w.length >= 2 && Math.abs(med(q) - q.want) < 0.12), WALKS.map(q => `${q.name} ${q.w.length ? med(q).toFixed(2) : '—'} m (${q.want}; ${q.w.length} points)`).join(' · '));
     ok('a walk is scored across its own line, also on a street that runs aslant on the map', aslant.n >= 12 && aslant.across >= 0.95 * aslant.n, `${aslant.across} of ${aslant.n} faces of Continental's walks have a joint running straight across`);
     ok('Continental\'s figs stand in its median, in a bed of mulch (his photographs of 2015)', mulch.length > 20 && inMedian >= 15, `${inMedian} figs down the median's ${mulch.length} points`); }
+  { const width = q => { const a = q.k.filter(v => v < 0), b = q.k.filter(v => v > 0); return a.length && b.length ? b.reduce((s, v) => s + v, 0) / b.length - a.reduce((s, v) => s + v, 0) / a.length : NaN; };
+    ok('round home the streets are as wide as the satellite picture has them, kerb to kerb (Emerald wider by the church\'s lawn and wider still towards Earl)', WIDE.every(q => Math.abs(width(q) - q.want) < 0.35),
+      WIDE.map(q => `${q.name} ${width(q).toFixed(2)} m (${q.want})`).join(' · ')); }
+  /* the alley behind 20606 Anza (anza.json): walled on its east, the buildings' backs on its west; the car stands in his stall */
+  { const AZ = JSON.parse(fs.readFileSync(new URL('./anza.json', import.meta.url))), al = AZ.alley, xAt = (line, z) => { for (let i = 0; i + 1 < line.length; i++) { const [ax, az] = line[i], [bx, bz] = line[i + 1]; if ((z - az) * (z - bz) <= 0 && az !== bz) return ax + (bx - ax) * (z - az) / (bz - az); } return NaN; };
+    const ra = routes.find(r => r.id === 'att-anza-1a'), east = [], west = [];
+    for (let i = 0; i < ra.pts.length; i += 2) { const x = ra.pts[i] / 1000, z = ra.pts[i + 1] / 1000; if (x > 3105 && x < 3120 && z > 8632 && z < 8836) { east.push(xAt(al.wall, z) - x); west.push(x - xAt(al.west, z)); } }
+    ok('home: the alley is walled on its east and the buildings\' backs close it on its west — under 9 m between them — and the car passes with a metre clear of either', east.length > 50 && east.every((d, i) => d > 1.91 && west[i] > 1.91 && d + west[i] < 9.0),
+      `${east.length} points of the way in: the wall ${Math.min(...east).toFixed(1)}–${Math.max(...east).toFixed(1)} m to the east of the car's middle, the buildings ${Math.min(...west).toFixed(1)}–${Math.max(...west).toFixed(1)} m to the west, ${Math.min(...east.map((d, i) => d + west[i])).toFixed(1)}–${Math.max(...east.map((d, i) => d + west[i])).toFixed(1)} m between them`);
+    const F = AZ.faces[AZ.home.face], sw = (F.z1 - F.z0) / F.stalls, sz = F.z0 + (AZ.home.stall + 0.5) * sw, P = ra.park;
+    ok('home: behind the building the car stands nose in, in a stall of the carport under the floor above, clear of the posts either side', Math.abs(P.z - sz) < 0.05 && Math.abs(P.x - (F.x - 3.0)) < 0.1 && Math.cos(P.a) < -0.99 && sw / 2 - 0.08 - 0.91 > 0.3,
+      `its middle ${(F.x - P.x).toFixed(2)} m inside the building's face, ${Math.abs(P.z - sz).toFixed(2)} m off the stall's middle, the posts ${(sw / 2 - 0.08 - 0.91).toFixed(2)} m from its sides`);
+    const rc = routes.find(r => r.id === 'att-anza-1c'), near = [...AZ.park.row, ...AZ.park.trees.map(t => t.slice(1))].filter(([x, z]) => Math.hypot(x - rc.park.x, z - rc.park.z) < 15).length;
+    ok('home: at Emerald the car stands under the trees along the church\'s lawn', near >= 4, `${near} trees within 15 m of it`); }
   ok('the kerbs close up: a round corner begins where a walk\'s kerb ends', corners.length > 800 && met >= 0.97 * corners.length, `${met} of ${corners.length} corner ends meet a kerb's end (the others: a side with no kerb of its own)`);
   // no parked car stands in the car's way: none with its middle within 2.2 m of the path's (a car and a half's width)
   // where the path is on the ground (on a bridge it passes over the streets' parked cars, not by them)

@@ -117,7 +117,8 @@ load, and what a frame may cost is checked.
   (a turn lane beginning), never broken off and begun again a lane's width away. What a place knows that the map
   does not goes in
   as a short list in `world.py`: `STRIPES` (a street's lanes, by stretch), `WIDTHS` (kerb to kerb, with its parking
-  strips), `ISLANDS` (planted islands in a middle lane: the lane between an island's end and a crossing is then a
+  strips — the whole street or stretch by stretch, a way of it cut where a stretch begins: `CUTS`, done after the heights
+  so that nothing else moves), `SERVICE_HW` (a service way's width), `ISLANDS` (planted islands in a middle lane: the lane between an island's end and a crossing is then a
   pocket to turn left from), `CROSSWALKS` (one in mid-block), `DRIVES`, `TREES`, `TREE_KIND` and `TREE_BACK`,
   `MEDIAN_W` (by stretch), `MEDIANS` (a median's bed and what stands in it: Continental's bark mulch and figs),
   `WALKS` (a walk's width where a photograph shows it, by stretch and side). The script counts what must never be — a limit line inside a crosswalk, a corner whose outline crosses
@@ -138,8 +139,11 @@ load, and what a frame may cost is checked.
 - **Sites.** A place built by hand stands in a world whole, in a group of its own (`sites` in the world's
   `place.js`): the hotel of El Segundo with its lots, its buildings and the shops next door; and the parking
   structure at 940 N Nash St where the drive to work ends (`places/south-bay/garage.js` from the plan in
-  `garage.json`, which says what each number rests on and what is guessed: how its floors climb). The map's own
-  block for a site built by hand is left out of the tiles (`SITE_WAYS`). Its fine parts show only from near
+  `garage.json`, which says what each number rests on and what is guessed: how its floors climb); round home in
+  Torrance (`places/south-bay/anza.js` from `anza.json`: the walled alley behind the building with the buildings'
+  backs on it, the church's grounds on Emerald, the kerb on Spencer). The map's own block for a site built by hand is
+  left out of the tiles (`SITE_WAYS`); a building whose strip on an alley a site builds (a carport under the floor
+  above) is built by the tiles without that strip (`CARPORTS`). Its fine parts show only from near
   (`near`). The streets round a site are the world's own, there as everywhere:
   `esa-el-segundo-2015/town.js` draws no road, walk, line, crosswalk, median, street tree, light or signal. That
   holds on the place's own page too, where he walks: `world.py` lays the street layer a second time, cut to that

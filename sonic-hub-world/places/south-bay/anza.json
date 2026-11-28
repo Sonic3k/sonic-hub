@@ -1,0 +1,78 @@
+{
+  "note": "Home in Torrance, 2019–2022: round 20606 Anza Ave (Anza Townhomes), what the South Bay world builds by hand (anza.js), in the world's metres (x east, z south). From Street View (the alley 2023–2025, Anza, Spencer and Emerald 2025), the satellite picture at its closest (28/11/2026) and OpenStreetMap (the buildings' outlines). GUESSED, and said so to him: which stall of the carport is his (no picture shows it: the one by the gate with the bins); how far apart the poles stand where no picture shows one; where the creeper covers the wall; the course of the path from the corner of Ladeene and Emerald; the trees along the church's east fence and behind the alley's wall (kinds and sizes from the pictures, places from the satellite picture to a few metres). No people, no plates, no names on signs.",
+  "ways": ["442655810"],
+  "alley": {
+    "way": "365566065",
+    "west": [[3109.5, 8626.6], [3109.5, 8784.0], [3108.0, 8786.0], [3108.0, 9007.6]],
+    "wall": [[3117.4, 8626.6], [3117.47, 8628.4], [3116.56, 8784.75], [3116.39, 8816.08], [3116.2, 9004.79], [3179.95, 9007.8]],
+    "wallH": 1.85,
+    "gutter": 3.0,
+    "gutterW": 0.9,
+    "apron": 2.3,
+    "poles": [8634.0, 8676.0, 8718.0, 8760.0, 8803.0, 8846.4, 8888.0, 8931.0, 8973.0],
+    "creeper": [[8738.0, 8772.0], [8905.0, 8925.0]],
+    "trees": [["gum", 3119.2, 8640.0, 16, 3.0], ["gum", 3119.4, 8652.0, 14, 2.8], ["gum", 3119.3, 8668.0, 15, 3.1], ["round", 3119.0, 8690.0, 7, 3.0],
+              ["round", 3119.0, 8708.0, 6, 2.6], ["gum", 3119.2, 8727.0, 13, 2.6], ["round", 3118.9, 8750.0, 7, 3.2], ["round", 3118.8, 8771.0, 6, 2.7],
+              ["round", 3118.6, 8794.0, 6, 2.6], ["round", 3118.6, 8812.0, 7, 3.0], ["round", 3118.5, 8829.0, 6, 2.5], ["round", 3118.5, 8846.0, 6, 2.6],
+              ["round", 3118.5, 8863.0, 7, 2.9], ["fig", 3118.6, 8881.0, 6, 3.0], ["round", 3118.4, 8899.0, 6, 2.7], ["round", 3118.4, 8916.0, 7, 3.3],
+              ["round", 3118.4, 8934.0, 6, 2.6], ["round", 3118.4, 8952.0, 6, 2.8], ["fig", 3118.3, 8970.0, 6, 3.0], ["round", 3118.3, 8989.0, 6, 2.6]]
+  },
+  "faces": [
+    {"name": "Saltaire", "way": "442655698", "kind": "plain", "x": 3109.5, "z0": 8630.3, "z1": 8783.8, "h": 6.9, "storeys": 2, "wall": "#b8bcbe", "trim": "#f2f2ee", "src": "Street View 2025 from the alley: grey stucco, white-framed windows, vents at the foot"},
+    {"name": "Barcelona Apartments", "kind": "garages", "new": true, "x": 3107.4, "z0": 8785.0, "z1": 8812.8, "west": 3032.9, "court": [3060.0, 3092.0, 8792.5, 8805.5], "h": 9.6, "storeys": 3, "wall": "#f3f1ea", "trim": "#2f7d77", "doors": "#3d8d86", "roof": "#b4553a", "bays": 8, "src": "Street View 2023 from the alley (white, three floors, teal garage doors) and from Anza (red tile roof); the map has no outline: the satellite picture's"},
+    {"name": "Anza Townhomes", "way": "442655781", "kind": "carport", "x": 3108.05, "z0": 8817.2, "z1": 8842.75, "depth": 6.0, "h": 6.2, "storeys": 2, "stalls": 9, "wall": "#e6b493", "trim": "#2d7c75", "post": "#3f8c85", "src": "Street View 2023: peach stucco, a carport under the floor above, teal posts with red-and-white bollards, teal fascia"},
+    {"name": "The Anza North", "way": "442655604", "kind": "carport", "x": 3107.7, "z0": 8847.9, "z1": 8885.0, "depth": 6.0, "h": 6.8, "storeys": 2, "stalls": 13, "wall": "#d8c29e", "trim": "#7a6550", "post": "#ece6d8", "src": "Street View 2023: beige stucco, carport"},
+    {"name": "20700 Anza", "way": "442655751", "kind": "garages", "x": 3108.0, "z0": 8887.4, "z1": 8912.5, "h": 7.0, "storeys": 2, "bays": 8, "wall": "#efefea", "trim": "#2f6f6a", "doors": "#f4f4f0", "src": "Street View 2023: white, closed garage doors under the floor above"},
+    {"name": "Hacienda Square", "way": "442655721", "kind": "carport", "x": 3108.0, "z0": 8920.4, "z1": 8945.6, "depth": 6.0, "h": 7.5, "storeys": 2, "stalls": 9, "wall": "#f1f0ea", "trim": "#3a8880", "post": "#f1f0ea", "src": "Street View 2023: white with a teal band, carport, bins at its corner"}
+  ],
+  "home": {"face": 2, "stall": 7},
+  "front": {
+    "name": "Anza Townhomes, its front on Anza", "segs": [[3033.3, 8816.9, 8837.7], [3032.5, 8837.7, 8846.0]], "h": 6.2, "storeys": 2,
+    "siding": "#ccb38d", "brick": "#93543f", "shutter": "#a3402c", "roof": "#6c6d6b", "entry": 8837.7,
+    "yard": [[3026.6, 8816.9], [3032.4, 8816.9], [3032.4, 8846.0], [3026.6, 8846.0]],
+    "src": "Street View 2025 from Anza: tan board siding over a brick base, red shutters by white-framed windows, a grey shingle hip roof, the way in under a gabled canopy on brick piers, a lawn and clipped hedges before it"
+  },
+  "gaps": [
+    {"z0": 8812.8, "z1": 8817.2, "x": 3108.3, "fence": "iron", "gate": true, "bollards": 2, "bins": [["blue", 3109.0, 8815.9]], "src": "Street View 2023: an iron gate, red bollards, a blue bin"},
+    {"z0": 8842.75, "z1": 8847.9, "x": 3106.8, "fence": "iron", "gate": true, "bollards": 0,
+     "bins": [["blue", 3107.6, 8844.0], ["blue", 3107.6, 8844.8], ["blue", 3107.6, 8845.6], ["green", 3107.6, 8846.5]],
+     "dumpsters": [[3109.4, 8844.4], [3109.4, 8846.6]], "src": "Street View 2023: the way in between the two buildings, an iron gate, two grey bins of the size a truck lifts and blue carts in front of it, a pole beside them"},
+    {"z0": 8885.0, "z1": 8887.4, "x": 3108.0, "fence": "picket", "gate": false, "bollards": 0, "bins": [], "src": "GUESSED: a grey picket fence"}
+  ],
+  "park": {
+    "lawn": [[3222.0, 9007.6], [3311.8, 9007.6], [3311.8, 8862.0], [3264.0, 8862.0], [3264.0, 8960.0], [3222.0, 8960.0]],
+    "lot": [[3220.4, 8960.0], [3262.0, 8960.0], [3262.0, 8899.5], [3220.4, 8899.5]],
+    "paths": [[[3263.0, 8862.0], [3263.0, 8960.0]], [[3224.5, 9006.5], [3229.0, 8990.0], [3236.0, 8975.0], [3240.0, 8961.0]], [[3263.0, 8930.0], [3290.0, 8930.0], [3300.0, 8920.0], [3300.0, 8882.0]]],
+    "playground": [[3290.87, 8856.46], [3291.41, 8854.04], [3292.51, 8851.92], [3294.01, 8850.6], [3297.0, 8850.21], [3299.43, 8850.44], [3302.58, 8851.3], [3305.33, 8852.48], [3306.82, 8855.13], [3306.75, 8857.32], [3305.41, 8860.6], [3304.94, 8864.35], [3304.94, 8867.17], [3305.81, 8870.3], [3306.12, 8874.13], [3305.88, 8876.7], [3305.25, 8878.82], [3303.44, 8880.3], [3300.06, 8880.93], [3297.7, 8881.08], [3295.35, 8880.14], [3293.62, 8877.64], [3291.88, 8873.9], [3291.18, 8869.98], [3291.81, 8866.0], [3291.6, 8861.83], [3291.57, 8861.31]],
+    "plaza": [[3274.7, 8847.8], [3274.7, 8853.4], [3267.6, 8858.9], [3263.9, 8858.9], [3264.15, 8873.0], [3271.6, 8865.2], [3284.75, 8865.1], [3284.75, 8862.7], [3288.9, 8862.7], [3288.9, 8853.4], [3284.9, 8853.4], [3284.9, 8847.8]],
+    "row": [[3263.3, 9006.3, 9.5, 4.2], [3273.8, 9006.3, 10.5, 4.6], [3281.0, 9006.4, 9.0, 4.0], [3288.2, 9006.3, 10.0, 4.4], [3293.9, 9006.4, 9.5, 4.1], [3306.1, 9006.3, 10.5, 4.7]],
+    "trees": [["fig", 3268.0, 8873.0, 10, 5.2], ["fig", 3282.0, 8869.0, 9, 4.6], ["round", 3308.0, 8890.0, 9, 4.0], ["round", 3309.5, 8906.0, 8, 3.4], ["round", 3309.5, 8924.0, 8, 3.6],
+              ["round", 3309.6, 8942.0, 8, 3.3], ["round", 3309.6, 8960.0, 9, 3.8], ["round", 3309.6, 8978.0, 8, 3.4], ["round", 3309.6, 8994.0, 9, 3.9], ["round", 3225.5, 8968.0, 5, 2.2],
+              ["round", 3225.5, 8983.0, 5, 2.4], ["round", 3225.5, 8998.0, 5, 2.1], ["gum", 3243.0, 8880.5, 12, 2.6], ["round", 3259.0, 8889.0, 6, 2.6]],
+    "fence": [[3312.3, 8862.0], [3312.3, 9006.0]],
+    "fenceH": 3.6,
+    "hedge": [[3311.2, 8866.0], [3311.2, 9005.0]],
+    "corner": [3224.6, 9004.8],
+    "goal": [3303.2, 8996.2],
+    "lamps": [[3262.0, 8880.0], [3262.0, 8915.0], [3262.0, 8950.0], [3236.0, 8994.0], [3288.0, 8950.0]],
+    "tables": [[3278.0, 8873.5], [3286.0, 8876.5]],
+    "benches": [[3288.5, 8882.5, 0], [3263.9, 8940.0, 90]],
+    "shrubs": [[3230.0, 8879.5], [3235.0, 8879.6], [3245.0, 8879.6], [3252.0, 8879.4], [3259.5, 8872.0], [3260.0, 8852.0], [3226.0, 8862.0], [3226.0, 8851.0]],
+    "poles": [3228.0, 3268.3, 3312.0, 3356.0, 3400.0],
+    "src": "the satellite picture (28/11/2026): lawn, lot, the row of trees along Emerald, the playground, the fence and hedge on the east; Street View 2025 from Emerald: the trees' kind (light, open crowns), the poles, the planter at the corner"
+  },
+  "storage": {
+    "x0": 3244.3, "x1": 3314.0, "z": 9033.4, "h": 3.3, "wall": "#cdbf9f", "band": "#b5392d",
+    "gravel": [[3229.0, 9026.4], [3314.5, 9026.4], [3314.5, 9033.3], [3229.0, 9033.3]],
+    "plants": [[3252.0, 9029.8, 1.2], [3271.0, 9029.6, 0.9], [3297.0, 9029.9, 1.3]],
+    "src": "Street View 2025 from Emerald: the self storage's long block wall, a red band along its top, a bed of gravel with a few plants before it (no sign drawn)"
+  },
+  "spencer": {
+    "lawn": [[3345.0, 8625.1], [3412.0, 8625.1], [3412.0, 8633.5], [3345.0, 8633.5]],
+    "trees": [[3359.4, 8626.4], [3363.8, 8626.4], [3375.2, 8626.4], [3379.5, 8626.4], [3385.3, 8626.4], [3392.5, 8626.4], [3399.0, 8626.4]],
+    "cabinet": [3383.0, 8626.2],
+    "sign": [3370.5, 8627.6],
+    "hedge": [[3345.0, 8632.6], [3412.0, 8632.6]],
+    "src": "Street View 2025 at the kerb where he parked (14/12/2022): the business park's clipped round-headed figs, a grey cabinet, a low stone sign (no words drawn); the satellite picture for where they stand"
+  }
+}
